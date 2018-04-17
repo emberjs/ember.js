@@ -1,7 +1,8 @@
 /* global EmberDev */
 
 import Controller from '@ember/controller';
-import { Service, Object as EmberObject, inject } from 'ember-runtime';
+import Service from '@ember/service';
+import { Object as EmberObject, inject } from 'ember-runtime';
 import { Mixin, get } from 'ember-metal';
 import { runDestroy, buildOwner } from 'internal-test-helpers';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';

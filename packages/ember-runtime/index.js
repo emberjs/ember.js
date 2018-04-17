@@ -64,7 +64,6 @@ export {
   collect,
 } from './lib/computed/reduce_computed_macros';
 
-export { default as Service } from './lib/system/service';
 export { default as RSVP, onerrorDefault } from './lib/ext/rsvp'; // just for side effect of extending Ember.RSVP
 export { isArray, typeOf } from './lib/utils';
 

@@ -1,5 +1,4 @@
-import EmberObject from './object';
-import { createInjectionHelper } from '../inject';
+import { Object as EmberObject, createInjectionHelper } from 'ember-runtime';
 
 /**
  @module @ember/service

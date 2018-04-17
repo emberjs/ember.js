@@ -1,6 +1,7 @@
 import { getOwner } from 'ember-owner';
 import Controller from '@ember/controller';
-import { inject, Service, _ProxyMixin } from 'ember-runtime';
+import Service from '@ember/service';
+import { inject, _ProxyMixin } from 'ember-runtime';
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 import { computed } from 'ember-metal';
 import { EMBER_MODULE_UNIFICATION } from 'ember/features';

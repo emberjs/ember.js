@@ -1,6 +1,7 @@
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 import Controller from '@ember/controller';
-import { Service, inject } from 'ember-runtime';
+import Service from '@ember/service';
+import { inject } from 'ember-runtime';
 import { Helper, helper } from 'ember-glimmer';
 
 moduleFor(

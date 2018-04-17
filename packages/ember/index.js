@@ -25,6 +25,7 @@ import {
   underscore,
   w,
 } from '@ember/string';
+import Service from '@ember/service';
 import {
   Object as EmberObject,
   RegistryProxyMixin,
@@ -43,7 +44,6 @@ import {
   Observable,
   typeOf,
   isArray,
-  Service,
   _ProxyMixin,
   RSVP,
   Comparable,
@@ -55,7 +55,6 @@ import {
   CoreObject,
   NativeArray,
   A,
-
   // computed macros
   empty,
   notEmpty,
@@ -72,7 +71,6 @@ import {
   readOnly,
   deprecatingAlias,
   and,
-
   // reduced computed macros
   or,
   sum,

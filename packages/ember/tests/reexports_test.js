@@ -225,7 +225,7 @@ let allExports = [
   ['runLoadHooks', '@ember/application'],
   ['Controller', '@ember/controller', 'default'],
   ['ControllerMixin', '@ember/controller/lib/controller_mixin', 'default'],
-  ['Service', 'ember-runtime'],
+  ['Service', '@ember/service', 'default'],
   ['_ProxyMixin', 'ember-runtime'],
   ['RSVP', 'ember-runtime'],
   ['STRINGS', '@ember/string', { get: '_getStrings', set: '_setStrings' }],
