@@ -1,7 +1,7 @@
 import AbstractApplicationTestCase from './abstract-application';
 import { ModuleBasedResolver } from '../test-resolver';
 import { Component } from 'ember-glimmer';
-import { assign } from 'ember-utils';
+import { assign } from '@ember/polyfills';
 
 export default class TestResolverApplicationTestCase extends AbstractApplicationTestCase {
   get applicationOptions() {

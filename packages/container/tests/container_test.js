@@ -1,5 +1,5 @@
 import { OWNER } from 'ember-owner';
-import { assign } from 'ember-utils';
+import { assign } from '@ember/polyfills';
 import { EMBER_MODULE_UNIFICATION } from 'ember/features';
 import { Registry } from '..';
 import { factory, moduleFor, AbstractTestCase } from 'internal-test-helpers';

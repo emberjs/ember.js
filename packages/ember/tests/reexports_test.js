@@ -42,7 +42,7 @@ let allExports = [
   // ember-utils
   ['getOwner', '@ember/application', 'getOwner'],
   ['setOwner', '@ember/application', 'setOwner'],
-  ['assign', 'ember-utils'],
+  ['assign', '@ember/polyfills'],
   ['GUID_KEY', 'ember-utils'],
   ['uuid', 'ember-utils'],
   ['generateGuid', 'ember-utils'],
@@ -74,7 +74,7 @@ let allExports = [
   ['computed.alias', 'ember-metal', 'alias'],
   ['ComputedProperty', 'ember-metal'],
   ['cacheFor', 'ember-metal', 'getCachedValueFor'],
-  ['merge', 'ember-metal'],
+  ['merge', '@ember/polyfills'],
   ['instrument', '@ember/instrumentation'],
   ['subscribe', '@ember/instrumentation', 'subscribe'],
   ['Instrumentation.instrument', '@ember/instrumentation', 'instrument'],

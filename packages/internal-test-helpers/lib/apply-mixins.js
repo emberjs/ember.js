@@ -1,4 +1,4 @@
-import { assign } from 'ember-utils';
+import { assign } from '@ember/polyfills';
 import getAllPropertyNames from './get-all-property-names';
 
 function isGenerator(mixin) {

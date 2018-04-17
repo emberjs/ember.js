@@ -1,4 +1,4 @@
-import { assign } from 'ember-utils';
+import { assign } from '@ember/polyfills';
 import EmberError from '@ember/error';
 import _default from './default';
 

@@ -1,7 +1,7 @@
+import { assign } from '@ember/polyfills';
 import { schedule } from '@ember/runloop';
 import { Simple } from '@glimmer/interfaces';
 import { OWNER, Owner } from 'ember-owner';
-import { assign } from 'ember-utils';
 import { OutletDefinitionState } from '../component-managers/outlet';
 import { Renderer } from '../renderer';
 import { OwnedTemplate } from '../template';

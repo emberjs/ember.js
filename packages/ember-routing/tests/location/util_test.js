@@ -1,4 +1,4 @@
-import { assign } from 'ember-utils';
+import { assign } from '@ember/polyfills';
 import { replacePath, getPath, getQuery, getFullPath } from '../../lib/location/util';
 import { supportsHistory, supportsHashChange } from '../../lib/location/util';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';

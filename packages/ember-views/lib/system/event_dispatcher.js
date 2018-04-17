@@ -3,7 +3,7 @@ import { getOwner } from 'ember-owner';
 @module ember
 */
 
-import { assign } from 'ember-utils';
+import { assign } from '@ember/polyfills';
 import { assert } from 'ember-debug';
 import { get, set, isNone } from 'ember-metal';
 import { Object as EmberObject } from 'ember-runtime';

@@ -9,10 +9,6 @@
  elsewhere (so they can be lazily evaluated / parsed).
 */
 export { default as symbol, isInternalSymbol } from './lib/symbol';
-
-// Export `assignPolyfill` for testing
-export { default as assign, assign as assignPolyfill } from './lib/assign';
-
 export { default as dictionary } from './lib/dictionary';
 export { uuid, GUID_KEY, generateGuid, guidFor } from './lib/guid';
 export { default as intern } from './lib/intern';

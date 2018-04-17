@@ -182,6 +182,7 @@ module.exports = function() {
           '@ember/error/index.js',
           '@ember/debug/index.js',
           '@ember/polyfills/index.js',
+          '@ember/polyfills/lib/**',
           'ember/version.js',
           'ember-debug/**',
           'ember-environment.js',

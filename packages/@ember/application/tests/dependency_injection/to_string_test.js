@@ -1,4 +1,5 @@
-import { guidFor, assign } from 'ember-utils';
+import { assign } from '@ember/polyfills';
+import { guidFor } from 'ember-utils';
 import { Object as EmberObject } from 'ember-runtime';
 import {
   moduleFor,

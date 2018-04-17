@@ -7,7 +7,6 @@ export {
   _globalsComputed,
 } from './lib/computed';
 export { default as alias } from './lib/alias';
-export { default as merge } from './lib/merge';
 export { deprecateProperty } from './lib/deprecate_property';
 export { descriptorFor, meta, peekMeta, deleteMeta } from './lib/meta';
 export { default as Cache } from './lib/cache';

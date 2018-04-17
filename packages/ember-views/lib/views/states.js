@@ -1,4 +1,4 @@
-import { assign } from 'ember-utils';
+import { assign } from '@ember/polyfills';
 import _default from './states/default';
 import preRender from './states/pre_render';
 import hasElement from './states/has_element';

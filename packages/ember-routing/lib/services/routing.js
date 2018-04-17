@@ -2,7 +2,7 @@
 @module ember
 */
 
-import { assign } from 'ember-utils';
+import { assign } from '@ember/polyfills';
 import { Service, readOnly } from 'ember-runtime';
 import { get } from 'ember-metal';
 

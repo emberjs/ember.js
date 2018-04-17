@@ -1,5 +1,5 @@
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
-import { assign } from 'ember-utils';
+import { assign } from '@ember/polyfills';
 import { isNone } from 'ember-metal';
 import { run, later, backburner, hasScheduledTimers, getCurrentRunLoop } from '..';
 

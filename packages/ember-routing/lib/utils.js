@@ -1,5 +1,5 @@
 import { getOwner } from 'ember-owner';
-import { assign } from 'ember-utils';
+import { assign } from '@ember/polyfills';
 import { get } from 'ember-metal';
 import EmberError from '@ember/error';
 

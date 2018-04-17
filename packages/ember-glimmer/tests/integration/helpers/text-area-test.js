@@ -1,4 +1,4 @@
-import { assign } from 'ember-utils';
+import { assign } from '@ember/polyfills';
 import { set } from 'ember-metal';
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { classes } from '../../utils/test-helpers';

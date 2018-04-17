@@ -1,6 +1,6 @@
 /* global Element */
 
-import { assign } from 'ember-utils';
+import { assign } from '@ember/polyfills';
 import { getCurrentRunLoop, hasScheduledTimers, next, run } from '@ember/runloop';
 
 import NodeQuery from './node-query';

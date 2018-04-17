@@ -1,6 +1,9 @@
 /**
  @module @ember/polyfills
 */
+
+export default function merge<T, U>(original: T, updates: U): T & U;
+
 /**
   Merge the contents of two objects together into the first object.
 
@@ -21,7 +24,7 @@
   @return {Object}
   @public
 */
-export default function merge(original, updates) {
+export default function merge(original: object, updates: object) {
   if (updates === null || typeof updates !== 'object') {
     return original;
   }

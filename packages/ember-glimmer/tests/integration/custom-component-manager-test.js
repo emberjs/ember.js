@@ -7,7 +7,7 @@ import { set, setProperties, computed } from 'ember-metal';
 import { GLIMMER_CUSTOM_COMPONENT_MANAGER } from 'ember/features';
 import { componentManager } from 'ember-glimmer';
 import { getChildViews } from 'ember-views';
-import { assign } from 'ember-utils';
+import { assign } from '@ember/polyfills';
 
 const MANAGER_ID = 'test-custom';
 
