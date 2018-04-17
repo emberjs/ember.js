@@ -1,10 +1,5 @@
-import {
-  A as emberA,
-  typeOf,
-  String as StringUtils,
-  Namespace,
-  Object as EmberObject,
-} from 'ember-runtime';
+import { classify, dasherize } from '@ember/string';
+import { A as emberA, typeOf, Namespace, Object as EmberObject } from 'ember-runtime';
 
 /**
 @module @ember/debug
@@ -84,7 +79,7 @@ export default EmberObject.extend({
   catalogEntriesByType(type) {
     let namespaces = emberA(Namespace.NAMESPACES);
     let types = emberA();
-    let typeSuffixRegex = new RegExp(`${StringUtils.classify(type)}$`);
+    let typeSuffixRegex = new RegExp(`${classify(type)}$`);
 
     namespaces.forEach(namespace => {
       for (let key in namespace) {
@@ -94,7 +89,7 @@ export default EmberObject.extend({
         if (typeSuffixRegex.test(key)) {
           let klass = namespace[key];
           if (typeOf(klass) === 'class') {
-            types.push(StringUtils.dasherize(key.replace(typeSuffixRegex, '')));
+            types.push(dasherize(key.replace(typeSuffixRegex, '')));
           }
         }
       }

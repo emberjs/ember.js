@@ -14,7 +14,18 @@ import Logger from 'ember-console';
 import Controller from '@ember/controller';
 import ControllerMixin from '@ember/controller/lib/controller_mixin';
 import {
-  String as EmberString,
+  _getStrings,
+  _setStrings,
+  dasherize,
+  camelize,
+  capitalize,
+  classify,
+  decamelize,
+  loc,
+  underscore,
+  w,
+} from '@ember/string';
+import {
   Object as EmberObject,
   RegistryProxyMixin,
   ContainerProxyMixin,
@@ -44,10 +55,8 @@ import {
   CoreObject,
   NativeArray,
   A,
-  getStrings,
 
   // computed macros
-  setStrings,
   empty,
   notEmpty,
   none,
@@ -342,7 +351,16 @@ Ember.Logger = Logger;
 
 // ****ember-runtime****
 Ember.A = A;
-Ember.String = EmberString;
+Ember.String = {
+  loc,
+  w,
+  dasherize,
+  decamelize,
+  camelize,
+  classify,
+  underscore,
+  capitalize,
+};
 Ember.Object = EmberObject;
 Ember._RegistryProxyMixin = RegistryProxyMixin;
 Ember._ContainerProxyMixin = ContainerProxyMixin;
@@ -423,8 +441,8 @@ computed.collect = collect;
 */
 Object.defineProperty(Ember, 'STRINGS', {
   configurable: false,
-  get: getStrings,
-  set: setStrings,
+  get: _getStrings,
+  set: _setStrings,
 });
 
 /**
@@ -472,8 +490,8 @@ if (ENV.EXTEND_PROTOTYPES.String) {
     return htmlSafe(this);
   };
 }
-EmberString.htmlSafe = htmlSafe;
-EmberString.isHTMLSafe = isHTMLSafe;
+Ember.String.htmlSafe = htmlSafe;
+Ember.String.isHTMLSafe = isHTMLSafe;
 
 /**
   Global hash of shared templates. This will automatically be populated

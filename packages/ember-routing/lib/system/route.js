@@ -4,10 +4,10 @@ import { once } from '@ember/runloop';
 import { get, set, getProperties, setProperties, computed, isEmpty } from 'ember-metal';
 import { assert, info, isTesting, deprecate } from 'ember-debug';
 import { DEBUG } from '@glimmer/env';
+import { classify } from '@ember/string';
 import {
   typeOf,
   copy,
-  String as StringUtils,
   Object as EmberObject,
   A as emberA,
   Evented,
@@ -1650,7 +1650,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
         let modelClass = owner.factoryFor(`model:${name}`);
 
         assert(
-          `You used the dynamic segment ${name}_id in your route ${routeName}, but ${namespace}.${StringUtils.classify(
+          `You used the dynamic segment ${name}_id in your route ${routeName}, but ${namespace}.${classify(
             name
           )} did not exist and you did not override your route's \`model\` hook.`,
           !!modelClass
@@ -1662,10 +1662,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
 
         modelClass = modelClass.class;
 
-        assert(
-          `${StringUtils.classify(name)} has no method \`find\`.`,
-          typeof modelClass.find === 'function'
-        );
+        assert(`${classify(name)} has no method \`find\`.`, typeof modelClass.find === 'function');
 
         return modelClass.find(value);
       },

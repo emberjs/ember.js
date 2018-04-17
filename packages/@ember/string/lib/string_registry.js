@@ -11,6 +11,6 @@ export function getStrings() {
   return STRINGS;
 }
 
-export function get(name) {
+export function getString(name) {
   return STRINGS[name];
 }

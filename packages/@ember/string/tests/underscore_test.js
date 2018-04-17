@@ -1,5 +1,5 @@
 import { ENV } from 'ember-environment';
-import { underscore } from '../../../lib/system/string';
+import { underscore } from '@ember/string';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 function test(assert, given, expected, description) {

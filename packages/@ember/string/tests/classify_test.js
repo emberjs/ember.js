@@ -1,5 +1,5 @@
 import { ENV } from 'ember-environment';
-import { classify } from '../../../lib/system/string';
+import { classify } from '@ember/string';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 function test(assert, given, expected, description) {

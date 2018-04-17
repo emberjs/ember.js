@@ -1,5 +1,6 @@
 import Controller from '@ember/controller';
-import { RSVP, Object as EmberObject, A as emberA, String as StringUtils } from 'ember-runtime';
+import { dasherize } from '@ember/string';
+import { RSVP, Object as EmberObject, A as emberA } from 'ember-runtime';
 import { run } from '@ember/runloop';
 import { get, computed, peekMeta } from 'ember-metal';
 import { Route } from 'ember-routing';
@@ -193,7 +194,7 @@ moduleFor(
       this.add(
         'route:index',
         Route.extend({
-          serializeQueryParamKey: StringUtils.dasherize,
+          serializeQueryParamKey: dasherize,
         })
       );
 
