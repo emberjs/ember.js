@@ -1,4 +1,3 @@
-import { DEBUG } from '@glimmer/env';
 import { Object as EmberObject } from 'ember-runtime';
 import {
   ComputedProperty,
