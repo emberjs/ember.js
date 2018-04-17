@@ -1,5 +1,15 @@
 # Ember Changelog
 
+### v3.2.0-beta.2 (April 16, 2018)
+
+- [#16493](https://github.com/emberjs/ember.js/pull/16493) [BUGFIX] Ensure proxies have access to `getOwner(this)`.
+- [#16494](https://github.com/emberjs/ember.js/pull/16494) [BUGFIX] Adjust assertion to allow for either undefined or null
+- [#16499](https://github.com/emberjs/ember.js/pull/16499) [BUGFIX] Object to string serialization
+- [#16514](https://github.com/emberjs/ember.js/pull/16514) [BUGFIX] Bring back (with deprecation) Ember.EXTEND_PROTOTYPES.
+- [#16520](https://github.com/emberjs/ember.js/pull/16520) [BUGFIX] Adds options checking ability to debug/deprecation test helpers
+- [#16526](https://github.com/emberjs/ember.js/pull/16526) [BUGFIX] Ensure setting a `NAME_KEY` does not error.
+- [#16527](https://github.com/emberjs/ember.js/pull/16527) [BUGFIX] Update glimmer-vm to 0.33.5.
+
 ### v3.2.0-beta.1 (April 10, 2018)
 
 - [#16250](https://github.com/emberjs/ember.js/pull/16250) [DEPRECATION] Deprecation of `Ember.Logger`
