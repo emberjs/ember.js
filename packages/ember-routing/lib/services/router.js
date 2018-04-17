@@ -8,6 +8,27 @@ import { shallowEqual, resemblesURL, extractRouteArgs } from '../utils';
 /**
    The Router service is the public API that provides component/view layer
    access to the router.
+   
+   For example, you can mirror the route name to the class property on 
+   a component. Handy when scoping CSS based on the current route.
+   
+   ```js
+   import Component from '@ember/component';
+   import { inject } from '@ember/service';
+   import { computed } from '@ember/object';
+   import { dasherize } from '@ember/string';
+
+   export default Component.extend({
+     router: inject.service(),
+     classNameBindings: ['_routeAsClass'],
+
+     _routeAsClass: computed('router.currentRouteName', function() {
+       let name = this.get('router.currentRouteName');
+       let dasherizedName = dasherize(name).replace(/\./g, '-');
+       return `${name}-route`;
+     }),
+   });
+   ```
 
    @public
    @class RouterService
