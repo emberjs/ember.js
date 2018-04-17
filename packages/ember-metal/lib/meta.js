@@ -673,12 +673,6 @@ if (DEBUG) {
   meta._counters = counters;
 }
 
-// Using `symbol()` here causes some node test to fail, presumably
-// because we define the CP with one copy of Ember and boot the app
-// with a different copy, so the random key we generate do not line
-// up. Is that testing a legit scenario?
-export const DESCRIPTOR = '__DESCRIPTOR__';
-
 /**
   Returns the CP descriptor assocaited with `obj` and `keyName`, if any.
 
@@ -701,18 +695,6 @@ export function descriptorFor(obj, keyName, _meta) {
   if (meta !== undefined) {
     return meta.peekDescriptors(keyName);
   }
-}
-
-export let isDescriptorTrap;
-
-if (DEBUG) {
-  isDescriptorTrap = function isDescriptorTrap(possibleDesc) {
-    return (
-      possibleDesc !== null &&
-      typeof possibleDesc === 'object' &&
-      possibleDesc[DESCRIPTOR] !== undefined
-    );
-  };
 }
 
 /**
