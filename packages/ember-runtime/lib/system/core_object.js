@@ -111,7 +111,6 @@ function makeCtor(base) {
                 property === 'didUnwatchProperty' ||
                 property === 'didAddListener' ||
                 property === 'didRemoveListener' ||
-                property === '__DESCRIPTOR__' ||
                 property === 'isDescriptor' ||
                 property === '_onLookup' ||
                 property in target
