@@ -3,7 +3,8 @@ import { assert } from 'ember-debug';
 import { EMBER_MODULE_UNIFICATION } from 'ember/features';
 import { DEBUG } from '@glimmer/env';
 import { OWNER, setOwner } from 'ember-owner';
-import { dictionary, assign, HAS_NATIVE_PROXY } from 'ember-utils';
+import { assign } from '@ember/polyfills';
+import { dictionary, HAS_NATIVE_PROXY } from 'ember-utils';
 
 /**
  A container used to instantiate and cache objects.

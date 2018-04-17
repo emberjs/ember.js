@@ -1,4 +1,4 @@
-import { assign } from 'ember-utils';
+import { assign } from '@ember/polyfills';
 import { applyMixins } from './abstract-test-case';
 import { RenderingTest } from './test-case';
 import { get, set } from 'ember-metal';

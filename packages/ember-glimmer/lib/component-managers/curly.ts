@@ -1,4 +1,5 @@
 import { _instrumentStart } from '@ember/instrumentation';
+import { assign } from '@ember/polyfills';
 import { dasherize } from '@ember/string';
 import { DEBUG } from '@glimmer/env';
 import {
@@ -28,7 +29,7 @@ import { assert, deprecate } from 'ember-debug';
 import { ENV } from 'ember-environment';
 import { get } from 'ember-metal';
 import { getOwner } from 'ember-owner';
-import { assign, guidFor } from 'ember-utils';
+import { guidFor } from 'ember-utils';
 import { addChildView, OwnedTemplateMeta, setViewElement } from 'ember-views';
 import { BOUNDS, DIRTY_TAG, HAS_BLOCK, IS_DISPATCHING_ATTRS, ROOT_REF } from '../component';
 import Environment from '../environment';

@@ -2,7 +2,8 @@
 @module @ember/object
 */
 import { EMBER_METAL_ES5_GETTERS } from 'ember/features';
-import { assign, guidFor, ROOT, wrap, makeArray, NAME_KEY } from 'ember-utils';
+import { assign } from '@ember/polyfills';
+import { guidFor, ROOT, wrap, makeArray, NAME_KEY } from 'ember-utils';
 import { assert } from 'ember-debug';
 import { DEBUG } from '@glimmer/env';
 import { ENV } from 'ember-environment';

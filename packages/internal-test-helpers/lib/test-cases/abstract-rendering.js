@@ -1,4 +1,4 @@
-import { assign } from 'ember-utils';
+import { assign } from '@ember/polyfills';
 import { compile } from 'ember-template-compiler';
 import { EventDispatcher } from 'ember-views';
 import { helper, Helper, Component, _resetRenderers } from 'ember-glimmer';

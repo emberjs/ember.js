@@ -2,7 +2,7 @@
 @module @ember/application
 */
 
-import { assign } from 'ember-utils';
+import { assign } from '@ember/polyfills';
 import { get, set, computed } from 'ember-metal';
 import * as environment from 'ember-browser-environment';
 import { jQuery } from 'ember-views';

@@ -1,5 +1,5 @@
 import { OWNER } from 'ember-owner';
-import { assign } from 'ember-utils';
+import { assign } from '@ember/polyfills';
 import { window } from 'ember-browser-environment';
 import { run } from '@ember/runloop';
 import { get } from 'ember-metal';

@@ -300,7 +300,7 @@ module.exports.emberFeaturesES = function _emberFeaturesES(production = false) {
   let FEATURES = production ? RELEASE : DEBUG;
   let content = stripIndent`
     import { ENV } from 'ember-environment';
-    import { assign } from 'ember-utils';
+    import { assign } from '@ember/polyfills';
     export const DEFAULT_FEATURES = ${JSON.stringify(FEATURES)};
     export const FEATURES = assign(DEFAULT_FEATURES, ENV.FEATURES);
 

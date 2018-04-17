@@ -2,7 +2,7 @@ import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 import Application from '@ember/application';
 import { Component } from 'ember-glimmer';
 import { getOwner } from 'ember-owner';
-import { assign } from 'ember-utils';
+import { assign } from '@ember/polyfills';
 import { resolve } from 'rsvp';
 
 moduleFor(

@@ -1,4 +1,4 @@
-import { assign } from 'ember-utils';
+import { assign } from '@ember/polyfills';
 import { moduleFor, DefaultResolverApplicationTestCase } from 'internal-test-helpers';
 
 moduleFor(

@@ -1,4 +1,4 @@
-import { assign } from 'ember-utils';
+import { assign } from '@ember/polyfills';
 import { shallowEqual } from '../utils';
 
 export default class RouterState {

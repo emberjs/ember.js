@@ -1,4 +1,4 @@
-import { assign } from 'ember-utils';
+import { assign } from '@ember/polyfills';
 import _default from './default';
 import { join } from '@ember/runloop';
 import { flaggedInstrument } from '@ember/instrumentation';

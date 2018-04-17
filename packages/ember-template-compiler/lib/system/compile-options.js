@@ -1,4 +1,4 @@
-import { assign } from 'ember-utils';
+import { assign } from '@ember/polyfills';
 import PLUGINS from '../plugins/index';
 
 let USER_PLUGINS = [];

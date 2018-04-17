@@ -42,7 +42,7 @@ let allExports = [
   // ember-utils
   ['getOwner', '@ember/application', 'getOwner'],
   ['setOwner', '@ember/application', 'setOwner'],
-  ['assign', 'ember-utils'],
+  ['assign', '@ember/polyfills'],
   ['GUID_KEY', 'ember-utils'],
   ['uuid', 'ember-utils'],
   ['generateGuid', 'ember-utils'],

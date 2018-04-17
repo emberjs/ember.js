@@ -123,6 +123,7 @@ import EngineInstance from '@ember/engine/instance';
 import Map from '@ember/map';
 import MapWithDefault from '@ember/map/with-default';
 import OrderedSet from '@ember/map/lib/ordered-set';
+import { assign } from '@ember/polyfills';
 
 // ****ember-environment****
 
@@ -186,7 +187,7 @@ Ember.canInvoke = utils.canInvoke;
 Ember.tryInvoke = utils.tryInvoke;
 Ember.wrap = utils.wrap;
 Ember.uuid = utils.uuid;
-Ember.assign = utils.assign;
+Ember.assign = assign;
 Ember.NAME_KEY = utils.NAME_KEY;
 
 // ****container****

@@ -1,5 +1,5 @@
 import { run } from '@ember/runloop';
-import { assign } from 'ember-utils';
+import { assign } from '@ember/polyfills';
 import isFormControl from './helpers/-is-form-control';
 
 const DEFAULT_EVENT_OPTIONS = { canBubble: true, cancelable: true };

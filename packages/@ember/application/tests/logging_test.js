@@ -4,7 +4,7 @@ import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 
 import Controller from '@ember/controller';
 import { Route } from 'ember-routing';
-import { assign } from 'ember-utils';
+import { assign } from '@ember/polyfills';
 
 class LoggingApplicationTestCase extends ApplicationTestCase {
   constructor() {

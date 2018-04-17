@@ -11,7 +11,7 @@ import Controller from '@ember/controller';
 import { Object as EmberObject } from 'ember-runtime';
 import { setTemplates } from 'ember-glimmer';
 import { privatize as P } from 'container';
-import { assign } from 'ember-utils';
+import { assign } from '@ember/polyfills';
 import {
   moduleFor,
   ApplicationTestCase,

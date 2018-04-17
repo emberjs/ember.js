@@ -5,8 +5,8 @@
 // using ember-metal/lib/main here to ensure that ember-debug is setup
 // if present
 import { FACTORY_FOR } from 'container';
+import { assign } from '@ember/polyfills';
 import {
-  assign,
   guidFor,
   getName,
   setName,
