@@ -1,7 +1,7 @@
 import { guidFor } from 'ember-utils';
 import { descriptor, descriptorFor, Mixin } from 'ember-metal';
-import { assert, deprecate } from 'ember-debug';
-import { environment } from 'ember-environment';
+import { assert } from 'ember-debug';
+import { hasDOM } from 'ember-browser-environment';
 import { matches } from '../system/utils';
 import { default as jQuery, jQueryDisabled } from '../system/jquery';
 
@@ -199,10 +199,9 @@ export default Mixin.create({
     @private
   */
   appendTo(selector) {
-    let env = this._environment || environment;
     let target;
 
-    if (env.hasDOM) {
+    if (hasDOM) {
       target = typeof selector === 'string' ? document.querySelector(selector) : selector;
 
       assert(`You tried to append to (${selector}) but that isn't in the DOM`, target);
@@ -429,23 +428,6 @@ export default Mixin.create({
 
     if (!this.elementId && this.tagName !== '') {
       this.elementId = guidFor(this);
-    }
-
-    if (environment._ENABLE_DID_INIT_ATTRS_SUPPORT) {
-      deprecate(
-        `[DEPRECATED] didInitAttrs called in ${this.toString()}.`,
-        typeof this.didInitAttrs !== 'function',
-        {
-          id: 'ember-views.did-init-attrs',
-          until: '3.0.0',
-          url: 'https://emberjs.com/deprecations/v2.x#toc_ember-component-didinitattrs',
-        }
-      );
-    } else {
-      assert(
-        `didInitAttrs called in ${this.toString()} is no longer supported.`,
-        typeof this.didInitAttrs !== 'function'
-      );
     }
 
     assert('Using a custom `.render` function is no longer supported.', !this.render);

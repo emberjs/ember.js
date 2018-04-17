@@ -1,7 +1,7 @@
 import { isArray } from '../../lib/utils';
 import { A as emberA } from '../../lib/mixins/array';
 import ArrayProxy from '../../lib/system/array_proxy';
-import { environment } from 'ember-environment';
+import { window } from 'ember-browser-environment';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 const global = this;
@@ -33,7 +33,7 @@ moduleFor(
     }
 
     ['@test Ember.isArray(fileList)'](assert) {
-      if (environment.window && typeof environment.window.FileList === 'function') {
+      if (window && typeof window.FileList === 'function') {
         let fileListElement = document.createElement('input');
         fileListElement.type = 'file';
         let fileList = fileListElement.files;

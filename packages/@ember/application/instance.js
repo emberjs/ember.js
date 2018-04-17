@@ -4,7 +4,7 @@
 
 import { assign } from 'ember-utils';
 import { get, set, computed } from 'ember-metal';
-import { environment } from 'ember-environment';
+import * as environment from 'ember-browser-environment';
 import { jQuery } from 'ember-views';
 import EngineInstance from '@ember/engine/instance';
 import { renderSettled } from 'ember-glimmer';
@@ -499,6 +499,7 @@ class BootOptions {
   }
 
   toEnvironment() {
+    // Do we really want to assign all of this!?
     let env = assign({}, environment);
     // For compatibility with existing code
     env.hasDOM = this.isBrowser;

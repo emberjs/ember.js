@@ -1,6 +1,6 @@
 import { typeOf } from '../../lib/utils';
 import EmberObject from '../../lib/system/object';
-import { environment } from 'ember-environment';
+import { window } from 'ember-browser-environment';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
@@ -41,7 +41,7 @@ moduleFor(
     }
 
     ['@test Ember.typeOf(fileList)'](assert) {
-      if (environment.window && typeof environment.window.FileList === 'function') {
+      if (window && typeof window.FileList === 'function') {
         let fileListElement = document.createElement('input');
         fileListElement.type = 'file';
         let fileList = fileListElement.files;

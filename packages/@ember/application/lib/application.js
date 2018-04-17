@@ -3,7 +3,8 @@
 */
 
 import { dictionary } from 'ember-utils';
-import { ENV, environment } from 'ember-environment';
+import { ENV } from 'ember-environment';
+import { hasDOM } from 'ember-browser-environment';
 import { assert, isTesting } from 'ember-debug';
 import { DEBUG } from '@glimmer/env';
 import { bind, join, once, run, schedule } from '@ember/runloop';
@@ -1132,7 +1133,7 @@ function registerLibraries() {
   if (!librariesRegistered) {
     librariesRegistered = true;
 
-    if (environment.hasDOM && !jQueryDisabled) {
+    if (hasDOM && !jQueryDisabled) {
       libraries.registerCoreLibrary('jQuery', jQuery().jquery);
     }
   }

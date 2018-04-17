@@ -1,5 +1,5 @@
 import { assert } from 'ember-debug';
-import { environment } from 'ember-environment';
+import { location } from 'ember-browser-environment';
 import { getHash } from './util';
 
 /**
@@ -100,7 +100,7 @@ export default {
   },
 
   implementations: {},
-  _location: environment.location,
+  _location: location,
 
   /**
     Returns the current `location.hash` by parsing location.href since browsers

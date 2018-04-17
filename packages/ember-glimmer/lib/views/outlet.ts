@@ -1,6 +1,5 @@
 import { schedule } from '@ember/runloop';
 import { Simple } from '@glimmer/interfaces';
-import { environment } from 'ember-environment';
 import { OWNER, Owner } from 'ember-owner';
 import { assign } from 'ember-utils';
 import { OutletDefinitionState } from '../component-managers/outlet';
@@ -70,10 +69,9 @@ export default class OutletView {
   }
 
   appendTo(selector: string | Simple.Element) {
-    let env = this._environment || environment;
     let target;
 
-    if (env.hasDOM) {
+    if (this._environment.hasDOM) {
       target = typeof selector === 'string' ? document.querySelector(selector) : selector;
     } else {
       target = selector;
