@@ -1,5 +1,5 @@
 import { lookupDescriptor } from 'ember-utils';
-import { MANDATORY_SETTER } from 'ember/features';
+import { DEBUG } from '@glimmer/env';
 import { descriptorFor, isDescriptor, meta as metaFor, peekMeta, UNDEFINED } from './meta';
 import {
   MANDATORY_SETTER_FUNCTION,
@@ -26,14 +26,14 @@ export function watchKey(obj, keyName, _meta) {
       obj.willWatchProperty(keyName);
     }
 
-    if (MANDATORY_SETTER) {
+    if (DEBUG) {
       // NOTE: this is dropped for prod + minified builds
       handleMandatorySetter(meta, obj, keyName);
     }
   }
 }
 
-if (MANDATORY_SETTER) {
+if (DEBUG) {
   let hasOwnProperty = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
   let propertyIsEnumerable = (obj, key) => Object.prototype.propertyIsEnumerable.call(obj, key);
 
@@ -95,7 +95,7 @@ export function unwatchKey(obj, keyName, _meta) {
       obj.didUnwatchProperty(keyName);
     }
 
-    if (MANDATORY_SETTER) {
+    if (DEBUG) {
       // It is true, the following code looks quite WAT. But have no fear, It
       // exists purely to improve development ergonomics and is removed from
       // ember.min.js and ember.prod.js builds.

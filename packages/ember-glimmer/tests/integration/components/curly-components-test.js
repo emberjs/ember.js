@@ -1,4 +1,5 @@
 import { run } from '@ember/runloop';
+import { DEBUG } from '@glimmer/env';
 /* globals EmberDev */
 import { set, get, observer, on, computed } from 'ember-metal';
 import { Object as EmberObject, A as emberA, inject, Service } from 'ember-runtime';
@@ -8,7 +9,6 @@ import { Component, compile, htmlSafe } from '../../utils/helpers';
 import { strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { classes, equalTokens, equalsElement, styles } from '../../utils/test-helpers';
-import { MANDATORY_SETTER } from 'ember/features';
 
 moduleFor(
   'Components test: curly components',
@@ -2638,7 +2638,7 @@ moduleFor(
 
       this.assertText('initial value - initial value');
 
-      if (MANDATORY_SETTER) {
+      if (DEBUG) {
         expectAssertion(() => {
           component.bar = 'foo-bar';
         }, /You must use set\(\) to set the `bar` property \(of .+\) to `foo-bar`\./);

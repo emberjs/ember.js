@@ -1,15 +1,10 @@
 /**
 @module @ember/object
 */
-
+import { DEBUG } from '@glimmer/env';
 import { assert, deprecate } from 'ember-debug';
 import { HAS_NATIVE_PROXY, symbol } from 'ember-utils';
-import {
-  DESCRIPTOR_TRAP,
-  EMBER_METAL_ES5_GETTERS,
-  EMBER_METAL_TRACKED_PROPERTIES,
-  MANDATORY_GETTER,
-} from 'ember/features';
+import { EMBER_METAL_TRACKED_PROPERTIES } from 'ember/features';
 import { isPath } from './path_cache';
 import { isDescriptor, isDescriptorTrap, DESCRIPTOR, descriptorFor } from './meta';
 import { getCurrentTracker } from './tracked';
@@ -24,7 +19,7 @@ const ALLOWABLE_TYPES = {
 export const PROXY_CONTENT = symbol('PROXY_CONTENT');
 
 export function getPossibleMandatoryProxyValue(obj, keyName) {
-  if (MANDATORY_GETTER && EMBER_METAL_ES5_GETTERS && HAS_NATIVE_PROXY) {
+  if (DEBUG && HAS_NATIVE_PROXY) {
     let content = obj[PROXY_CONTENT];
     if (content === undefined) {
       return obj[keyName];
@@ -109,21 +104,19 @@ export function get(obj, keyName) {
       if (tracker) tracker.add(tagForProperty(obj, keyName));
     }
 
-    if (EMBER_METAL_ES5_GETTERS) {
-      descriptor = descriptorFor(obj, keyName);
-    }
+    descriptor = descriptorFor(obj, keyName);
 
-    if (!EMBER_METAL_ES5_GETTERS || descriptor === undefined) {
+    if (descriptor === undefined) {
       value = getPossibleMandatoryProxyValue(obj, keyName);
 
-      if (DESCRIPTOR_TRAP && isDescriptorTrap(value)) {
+      if (DEBUG && isDescriptorTrap(value)) {
         descriptor = value[DESCRIPTOR];
       } else if (isDescriptor(value)) {
         deprecate(
           `[DEPRECATED] computed property '${keyName}' was not set on object '${obj &&
             obj.toString &&
             obj.toString()}' via 'defineProperty'`,
-          !EMBER_METAL_ES5_GETTERS,
+          false,
           {
             id: 'ember-meta.descriptor-on-object',
             until: '3.5.0',

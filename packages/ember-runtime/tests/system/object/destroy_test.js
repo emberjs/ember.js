@@ -8,7 +8,7 @@ import {
   peekMeta,
 } from 'ember-metal';
 import EmberObject from '../../../lib/system/object';
-import { MANDATORY_SETTER } from 'ember/features';
+import { DEBUG } from '@glimmer/env';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
@@ -36,7 +36,7 @@ moduleFor(
     ['@test should raise an exception when modifying watched properties on a destroyed object'](
       assert
     ) {
-      if (MANDATORY_SETTER) {
+      if (DEBUG) {
         let obj = EmberObject.extend({
           fooDidChange: observer('foo', function() {}),
         }).create({
