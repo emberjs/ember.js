@@ -61,37 +61,6 @@ moduleFor(
       assert.equal(count, 1, 'should have invoked computed property');
     }
 
-    ['@test accessing computed property descriptor through the object triggers an assertion'](
-      assert
-    ) {
-      // this is !EMBER_METAL_ES5_GETTERS
-      if (DEBUG) {
-        let obj = {
-          toString() {
-            return 'obj';
-          },
-        };
-        let count = 0;
-        defineProperty(
-          obj,
-          'foo',
-          computed(function(key) {
-            count++;
-            return 'computed ' + key;
-          })
-        );
-
-        expectAssertion(
-          () => obj.foo.isDescriptor,
-          /You attempted to access `foo\.isDescriptor` \(on `obj`\)/
-        );
-        expectAssertion(() => obj.foo.get(), /You attempted to access `foo\.get` \(on `obj`\)/);
-        assert.strictEqual(count, 0, 'should not have invoked computed property');
-      } else {
-        assert.expect(0);
-      }
-    }
-
     ['@test defining computed property should invoke property on get'](assert) {
       let obj = {};
       let count = 0;

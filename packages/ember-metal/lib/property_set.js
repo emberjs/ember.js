@@ -1,4 +1,4 @@
-import { toString } from 'ember-utils';
+import { HAS_NATIVE_PROXY, toString } from 'ember-utils';
 import EmberError from '@ember/error';
 import { DEBUG } from '@glimmer/env';
 import { assert } from 'ember-debug';
@@ -6,7 +6,7 @@ import { getPossibleMandatoryProxyValue, _getPath as getPath } from './property_
 import { notifyPropertyChange } from './property_events';
 
 import { isPath } from './path_cache';
-import { isDescriptor, isDescriptorTrap, peekMeta, DESCRIPTOR, descriptorFor } from './meta';
+import { isDescriptor, peekMeta, descriptorFor } from './meta';
 
 /**
  @module @ember/object
@@ -69,10 +69,11 @@ export function set(obj, keyName, value, tolerant) {
     return value;
   }
 
-  let currentValue = getPossibleMandatoryProxyValue(obj, keyName);
-
-  if (DEBUG && isDescriptorTrap(currentValue)) {
-    currentValue = currentValue[DESCRIPTOR];
+  let currentValue;
+  if (DEBUG && HAS_NATIVE_PROXY) {
+    currentValue = getPossibleMandatoryProxyValue(obj, keyName);
+  } else {
+    currentValue = obj[keyName];
   }
 
   if (isDescriptor(currentValue)) {
