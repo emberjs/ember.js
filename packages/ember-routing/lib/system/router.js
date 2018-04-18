@@ -451,19 +451,6 @@ const EmberRouter = EmberObject.extend(Evented, {
     return this._routerMicrolib.hasRoute(route);
   },
 
-  /**
-    Resets the state of the router by clearing the current route
-    handlers and deactivating them.
-
-    @private
-    @method reset
-   */
-  reset() {
-    if (this._routerMicrolib) {
-      this._routerMicrolib.reset();
-    }
-  },
-
   willDestroy() {
     if (this._toplevelView) {
       this._toplevelView.destroy();
@@ -471,8 +458,6 @@ const EmberRouter = EmberObject.extend(Evented, {
     }
 
     this._super(...arguments);
-
-    this.reset();
 
     let instances = this._engineInstances;
     for (let name in instances) {
