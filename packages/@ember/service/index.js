@@ -1,5 +1,5 @@
-import EmberObject from './object';
-import { createInjectionHelper } from '../inject';
+import { Object as EmberObject } from 'ember-runtime';
+import { InjectedProperty } from 'ember-metal';
 
 /**
  @module @ember/service
@@ -38,7 +38,9 @@ import { createInjectionHelper } from '../inject';
   @return {Ember.InjectedProperty} injection descriptor instance
   @public
 */
-createInjectionHelper('service');
+export function inject(name, options) {
+  return new InjectedProperty('service', name, options);
+}
 
 /**
   @class Service

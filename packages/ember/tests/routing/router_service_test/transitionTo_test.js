@@ -1,4 +1,4 @@
-import { inject } from 'ember-runtime';
+import { inject as injectService } from '@ember/service';
 import { Component } from 'ember-glimmer';
 import { Route, NoneLocation } from 'ember-routing';
 import Controller from '@ember/controller';
@@ -105,7 +105,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
 
         this.addComponent('foo-bar', {
           ComponentClass: Component.extend({
-            routerService: inject.service('router'),
+            routerService: injectService('router'),
             init() {
               this._super();
               componentInstance = this;
@@ -137,7 +137,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
 
         this.addComponent('foo-bar', {
           ComponentClass: Component.extend({
-            routerService: inject.service('router'),
+            routerService: injectService('router'),
             init() {
               this._super();
               componentInstance = this;
@@ -171,7 +171,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
 
         this.addComponent('foo-bar', {
           ComponentClass: Component.extend({
-            routerService: inject.service('router'),
+            routerService: injectService('router'),
             init() {
               this._super();
               componentInstance = this;
@@ -216,7 +216,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
 
         this.addComponent('foo-bar', {
           ComponentClass: Component.extend({
-            routerService: inject.service('router'),
+            routerService: injectService('router'),
             init() {
               this._super();
               componentInstance = this;

@@ -3,7 +3,8 @@
 */
 
 import { assign } from '@ember/polyfills';
-import { Service, readOnly } from 'ember-runtime';
+import Service from '@ember/service';
+import { readOnly } from 'ember-runtime';
 import { get } from 'ember-metal';
 
 /**

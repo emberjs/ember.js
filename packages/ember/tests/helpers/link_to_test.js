@@ -1,8 +1,6 @@
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
-
-import Controller from '@ember/controller';
-
-import { inject, A as emberA } from 'ember-runtime';
+import Controller, { inject as injectController } from '@ember/controller';
+import { A as emberA } from 'ember-runtime';
 import { alias } from 'ember-metal';
 import { subscribe, reset } from '@ember/instrumentation';
 import { Route, NoneLocation } from 'ember-routing';
@@ -1725,7 +1723,7 @@ moduleFor(
         'controller:application',
         Controller.extend({
           defaultPost: { id: 1 },
-          postController: inject.controller('post'),
+          postController: injectController('post'),
           currentPost: alias('postController.model'),
         })
       );

@@ -31,7 +31,6 @@ import {
   classToString,
 } from 'ember-metal';
 import ActionHandler from '../mixins/action_handler';
-import { validatePropertyInjections } from '../inject';
 import { assert } from 'ember-debug';
 import { DEBUG } from '@glimmer/env';
 import { ENV } from 'ember-environment';
@@ -982,10 +981,6 @@ let ClassMixinProps = {
   },
 };
 
-function injectedPropertyAssertion() {
-  assert('Injected properties are invalid', validatePropertyInjections(this));
-}
-
 function flattenProps(...props) {
   let { concatenatedProperties, mergedProperties } = this;
   let hasConcatenatedProps =
@@ -1039,7 +1034,21 @@ if (DEBUG) {
     @private
     @method _onLookup
   */
-  ClassMixinProps._onLookup = injectedPropertyAssertion;
+  ClassMixinProps._onLookup = function injectedPropertyAssertion(debugContainerKey) {
+    let [type] = debugContainerKey.split(':');
+    let proto = this.proto();
+
+    for (let key in proto) {
+      let desc = descriptorFor(proto, key);
+      if (desc instanceof InjectedProperty) {
+        assert(
+          `Defining \`${key}\` as an injected controller property on a non-controller (\`${debugContainerKey}\`) is not allowed.`,
+          type === 'controller' || desc.type !== 'controller'
+        );
+      }
+    }
+  };
+
   /**
     Returns a hash of property names and container names that injected
     properties will lookup on the container lazily.

@@ -2,7 +2,8 @@ import { run } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 /* globals EmberDev */
 import { set, get, observer, on, computed } from 'ember-metal';
-import { Object as EmberObject, A as emberA, inject, Service } from 'ember-runtime';
+import Service, { inject as injectService } from '@ember/service';
+import { Object as EmberObject, A as emberA } from 'ember-runtime';
 import { jQueryDisabled } from 'ember-views';
 import { ENV } from 'ember-environment';
 import { Component, compile, htmlSafe } from '../../utils/helpers';
@@ -2777,7 +2778,7 @@ moduleFor(
 
       this.registerComponent('foo-bar', {
         ComponentClass: Component.extend({
-          name: inject.service(),
+          name: injectService(),
         }),
         template: '{{name.last}}',
       });
@@ -2806,7 +2807,7 @@ moduleFor(
     ['@test injecting an unknown service raises an exception']() {
       this.registerComponent('foo-bar', {
         ComponentClass: Component.extend({
-          missingService: inject.service(),
+          missingService: injectService(),
         }),
       });
 

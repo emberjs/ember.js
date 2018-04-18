@@ -297,10 +297,10 @@
 */
 
 import { flaggedInstrument } from '@ember/instrumentation';
+import { inject as injectService } from '@ember/service';
 import { DEBUG } from '@glimmer/env';
 import { assert, warn } from 'ember-debug';
 import { computed, get } from 'ember-metal';
-import { inject } from 'ember-runtime';
 import { isSimpleClick } from 'ember-views';
 import EmberComponent, { HAS_BLOCK } from '../component';
 import layout from '../templates/link-to';
@@ -501,7 +501,7 @@ const LinkComponent = EmberComponent.extend({
     this.on(eventName, this, this._invoke);
   },
 
-  _routing: inject.service('-routing'),
+  _routing: injectService('-routing'),
 
   /**
     Accessed as a classname binding to apply the `LinkComponent`'s `disabledClass`

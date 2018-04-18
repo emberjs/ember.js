@@ -8,10 +8,10 @@ import * as instrumentation from '@ember/instrumentation';
 import * as metal from 'ember-metal';
 import * as FLAGS from 'ember/features';
 import * as EmberDebug from 'ember-debug';
-import { deprecate } from 'ember-debug';
+import { assert, deprecate } from 'ember-debug';
 import Backburner from 'backburner';
 import Logger from 'ember-console';
-import Controller from '@ember/controller';
+import Controller, { inject as injectController } from '@ember/controller';
 import ControllerMixin from '@ember/controller/lib/controller_mixin';
 import {
   _getStrings,
@@ -25,6 +25,7 @@ import {
   underscore,
   w,
 } from '@ember/string';
+import Service, { inject as injectService } from '@ember/service';
 import {
   Object as EmberObject,
   RegistryProxyMixin,
@@ -32,7 +33,6 @@ import {
   compare,
   copy,
   isEqual,
-  inject,
   Array as EmberArray,
   Copyable,
   MutableEnumerable,
@@ -43,7 +43,6 @@ import {
   Observable,
   typeOf,
   isArray,
-  Service,
   _ProxyMixin,
   RSVP,
   Comparable,
@@ -55,7 +54,6 @@ import {
   CoreObject,
   NativeArray,
   A,
-
   // computed macros
   empty,
   notEmpty,
@@ -72,7 +70,6 @@ import {
   readOnly,
   deprecatingAlias,
   and,
-
   // reduced computed macros
   or,
   sum,
@@ -370,7 +367,29 @@ Ember._ContainerProxyMixin = ContainerProxyMixin;
 Ember.compare = compare;
 Ember.copy = copy;
 Ember.isEqual = isEqual;
-Ember.inject = inject;
+
+/**
+@module ember
+*/
+
+/**
+  Namespace for injection helper methods.
+
+  @class inject
+  @namespace Ember
+  @static
+  @public
+*/
+Ember.inject = function inject() {
+  assert(
+    `Injected properties must be created through helpers, see '${Object.keys(inject)
+      .map(k => `'inject.${k}'`)
+      .join(' or ')}'`
+  );
+};
+Ember.inject.service = injectService;
+Ember.inject.controller = injectController;
+
 Ember.Array = EmberArray;
 Ember.Comparable = Comparable;
 Ember.Enumerable = Enumerable;

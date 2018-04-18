@@ -1,7 +1,6 @@
-/* global EmberDev */
-
-import Controller from '@ember/controller';
-import { Service, Object as EmberObject, inject } from 'ember-runtime';
+import Controller, { inject as injectController } from '@ember/controller';
+import Service, { inject as injectService } from '@ember/service';
+import { Object as EmberObject } from 'ember-runtime';
 import { Mixin, get } from 'ember-metal';
 import { runDestroy, buildOwner } from 'internal-test-helpers';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
@@ -152,23 +151,19 @@ moduleFor(
 moduleFor(
   'Controller deprecations -> Controller injected properties',
   class extends AbstractTestCase {
-    ['@test defining a controller on a non-controller should fail assertion'](assert) {
-      if (!EmberDev.runningProdBuild) {
-        expectAssertion(function() {
-          let owner = buildOwner();
+    ['@test defining a controller on a non-controller should fail assertion']() {
+      expectAssertion(function() {
+        let owner = buildOwner();
 
-          let AnObject = EmberObject.extend({
-            foo: inject.controller('bar'),
-          });
+        let AnObject = EmberObject.extend({
+          foo: injectController('bar'),
+        });
 
-          owner.register('controller:bar', EmberObject.extend());
-          owner.register('foo:main', AnObject);
+        owner.register('controller:bar', EmberObject.extend());
+        owner.register('foo:main', AnObject);
 
-          owner.lookup('foo:main');
-        }, /Defining an injected controller property on a non-controller is not allowed./);
-      } else {
-        assert.expect(0);
-      }
+        owner.lookup('foo:main');
+      }, /Defining `foo` as an injected controller property on a non-controller \(`foo:main`\) is not allowed/);
     }
 
     ['@test controllers can be injected into controllers'](assert) {
@@ -177,7 +172,7 @@ moduleFor(
       owner.register(
         'controller:post',
         Controller.extend({
-          postsController: inject.controller('posts'),
+          postsController: injectController('posts'),
         })
       );
 
@@ -199,7 +194,7 @@ moduleFor(
       owner.register(
         'controller:application',
         Controller.extend({
-          authService: inject.service('auth'),
+          authService: injectService('auth'),
         })
       );
 

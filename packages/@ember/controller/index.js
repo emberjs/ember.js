@@ -1,7 +1,6 @@
-import { assert } from 'ember-debug';
 import { Object as EmberObject } from 'ember-runtime';
-import Mixin from './lib/controller_mixin';
-import { createInjectionHelper } from 'ember-runtime';
+import ControllerMixin from './lib/controller_mixin';
+import { InjectedProperty } from 'ember-metal';
 
 /**
 @module @ember/controller
@@ -13,14 +12,7 @@ import { createInjectionHelper } from 'ember-runtime';
   @uses Ember.ControllerMixin
   @public
 */
-const Controller = EmberObject.extend(Mixin);
-
-function controllerInjectionHelper(factory) {
-  assert(
-    'Defining an injected controller property on a ' + 'non-controller is not allowed.',
-    Mixin.detect(factory.PrototypeMixin)
-  );
-}
+const Controller = EmberObject.extend(ControllerMixin);
 
 /**
   Creates a property that lazily looks up another controller in the container.
@@ -51,6 +43,8 @@ function controllerInjectionHelper(factory) {
   @return {Ember.InjectedProperty} injection descriptor instance
   @public
 */
-createInjectionHelper('controller', controllerInjectionHelper);
+export function inject(name, options) {
+  return new InjectedProperty('controller', name, options);
+}
 
 export default Controller;

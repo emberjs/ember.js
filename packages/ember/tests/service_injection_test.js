@@ -1,6 +1,7 @@
 import { getOwner } from 'ember-owner';
 import Controller from '@ember/controller';
-import { inject, Service, _ProxyMixin } from 'ember-runtime';
+import Service, { inject as injectService } from '@ember/service';
+import { _ProxyMixin } from 'ember-runtime';
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 import { computed } from 'ember-metal';
 import { EMBER_MODULE_UNIFICATION } from 'ember/features';
@@ -12,7 +13,7 @@ moduleFor(
       this.add(
         'controller:application',
         Controller.extend({
-          myService: inject.service('my-service'),
+          myService: injectService('my-service'),
         })
       );
       let MyService = Service.extend();
@@ -31,7 +32,7 @@ moduleFor(
       this.add(
         'controller:application',
         Controller.extend({
-          myService: inject.service('my-service'),
+          myService: injectService('my-service'),
         })
       );
       let MyService = Service.extend(_ProxyMixin, {
@@ -60,7 +61,7 @@ moduleFor(
       this.add(
         'controller:application',
         Controller.extend({
-          myService: inject.service('my-service'),
+          myService: injectService('my-service'),
         })
       );
       let MyService = Service.extend({
@@ -89,7 +90,7 @@ if (EMBER_MODULE_UNIFICATION) {
         this.add(
           'controller:application',
           Controller.extend({
-            myService: inject.service('my-service', { source }),
+            myService: injectService('my-service', { source }),
           })
         );
         let MyService = Service.extend();
@@ -119,14 +120,14 @@ if (EMBER_MODULE_UNIFICATION) {
         this.add(
           'controller:route-a',
           Controller.extend({
-            myService: inject.service('my-service', { source: routeASource }),
+            myService: injectService('my-service', { source: routeASource }),
           })
         );
 
         this.add(
           'controller:route-b',
           Controller.extend({
-            myService: inject.service('my-service', { source: routeBSource }),
+            myService: injectService('my-service', { source: routeBSource }),
           })
         );
 
@@ -173,14 +174,14 @@ if (EMBER_MODULE_UNIFICATION) {
         this.add(
           'controller:route-a',
           Controller.extend({
-            myService: inject.service('my-service', { source: routeASource }),
+            myService: injectService('my-service', { source: routeASource }),
           })
         );
 
         this.add(
           'controller:route-b',
           Controller.extend({
-            myService: inject.service('my-service', { source: routeBSource }),
+            myService: injectService('my-service', { source: routeBSource }),
           })
         );
 
@@ -219,14 +220,14 @@ if (EMBER_MODULE_UNIFICATION) {
         this.add(
           'controller:route-a',
           Controller.extend({
-            myService: inject.service('my-service', { source: routeASource }),
+            myService: injectService('my-service', { source: routeASource }),
           })
         );
 
         this.add(
           'controller:route-b',
           Controller.extend({
-            myService: inject.service('my-service'),
+            myService: injectService('my-service'),
           })
         );
 
@@ -255,7 +256,7 @@ if (EMBER_MODULE_UNIFICATION) {
         this.add(
           'controller:application',
           Controller.extend({
-            myService: inject.service('my-namespace::my-service'),
+            myService: injectService('my-namespace::my-service'),
           })
         );
         let MyService = Service.extend();
