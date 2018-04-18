@@ -41,7 +41,7 @@
     "start": "ember serve",
     "pretest": "ember build",
     "lint": "TEST_SUITE=code-quality node bin/run-tests.js",
-    "lint:fix": "eslint --fix .",
+    "lint:fix": "eslint --fix . && tslint --fix -p tsconfig.json",
     "test": "node bin/run-tests.js",
     "test:blueprints": "node node-tests/nodetest-runner.js",
     "test:blueprints-debugger": "node --inspect-brk node-tests/nodetest-runner.js",
