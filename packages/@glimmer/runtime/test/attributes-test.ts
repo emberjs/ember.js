@@ -159,6 +159,12 @@ export class AttributesTests extends RenderTest {
     this.assertStableRerender();
   }
 
+  @test "can read the form attribute"() {
+    this.render('<button form="gnargnar" />');
+    this.assert.equal(this.readDOMAttr('form'), 'gnargnar');
+    this.assertStableRerender();
+  }
+
   @test "handles null input values"() {
     this.render('<input value={{isNull}} />', { isNull: null});
     this.assert.equal(this.readDOMAttr('value'), '');
