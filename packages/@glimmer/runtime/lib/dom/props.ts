@@ -65,7 +65,8 @@ const ATTR_OVERRIDES = {
   LABEL:    { form: true },
   FIELDSET: { form: true },
   LEGEND:   { form: true },
-  OBJECT:   { form: true }
+  OBJECT:   { form: true },
+  BUTTON:   { form: true }
 };
 
 function preferAttr(tagName: string, propName: string) {
