@@ -70,7 +70,7 @@ moduleFor(
 
     ['@test works with argument form'](assert) {
       assert.equal(loc('_Hello %@', 'John'), 'Bonjour John');
-      assert.equal(loc('_Hello %@ %@', ['John'], 'Doe'), 'Bonjour [John] Doe');
+      assert.equal(loc('_Hello %@ %@', ['John'], 'Doe'), 'Bonjour John Doe');
     }
   }
 );

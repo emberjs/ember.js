@@ -5,7 +5,7 @@ moduleFor(
   'Ember.inspect',
   class extends TestCase {
     ['@test strings'](assert) {
-      assert.equal(inspect('foo'), 'foo');
+      assert.equal(inspect('foo'), '"foo"');
     }
 
     ['@test numbers'](assert) {
@@ -29,25 +29,95 @@ moduleFor(
     }
 
     ['@test object'](assert) {
-      assert.equal(inspect({}), '{}');
-      assert.equal(inspect({ foo: 'bar' }), '{foo: bar}');
+      assert.equal(inspect({}), '{ }');
+      assert.equal(inspect({ foo: 'bar' }), '{ foo: "bar" }');
       assert.equal(
         inspect({
           foo() {
             return this;
           },
         }),
-        '{foo: function() { ... }}'
+        '{ foo: [Function:foo] }'
       );
     }
 
     ['@test objects without a prototype'](assert) {
       let prototypelessObj = Object.create(null);
-      assert.equal(inspect({ foo: prototypelessObj }), '{foo: [object Object]}');
+      prototypelessObj.a = 1;
+      prototypelessObj.b = [Object.create(null)];
+      assert.equal(inspect({ foo: prototypelessObj }), '{ foo: { a: 1, b: [ { } ] } }');
     }
 
     ['@test array'](assert) {
-      assert.equal(inspect([1, 2, 3]), '[1,2,3]');
+      assert.equal(inspect([1, 2, 3]), '[ 1, 2, 3 ]');
+    }
+
+    ['@test array list limit'](assert) {
+      let a = [];
+      for (let i = 0; i < 120; i++) {
+        a.push(1);
+      }
+      assert.equal(inspect(a), `[ ${a.slice(0, 100).join(', ')}, ... 20 more items ]`);
+    }
+
+    ['@test object list limit'](assert) {
+      let obj = {};
+      let pairs = [];
+      for (let i = 0; i < 120; i++) {
+        obj['key' + i] = i;
+        pairs.push(`key${i}: ${i}`);
+      }
+      assert.equal(inspect(obj), `{ ${pairs.slice(0, 100).join(', ')}, ... 20 more keys }`);
+    }
+
+    ['@test depth limit'](assert) {
+      assert.equal(
+        inspect([[[['here', { a: 1 }, [1]]]]]),
+        '[ [ [ [ "here", [Object], [Array] ] ] ] ]'
+      );
+    }
+
+    ['@test odd key'](assert) {
+      assert.equal(
+        inspect({
+          [`Hello world!
+How are you?`]: 1,
+        }),
+        '{ "Hello world!\\nHow are you?": 1 }'
+      );
+    }
+
+    ['@test node call'](assert) {
+      let obj = { a: 1 };
+      obj.inspect = inspect;
+      let depth = 2;
+      let options = {};
+      assert.equal(obj.inspect(depth, options), obj);
+    }
+
+    ['@test cycle'](assert) {
+      let obj = {};
+      obj.a = obj;
+      let arr = [obj];
+      arr.push(arr);
+      assert.equal(inspect(arr), '[ { a: [Circular] }, [Circular] ]');
+    }
+
+    ['@test custom toString'](assert) {
+      class Component {
+        static toString() {
+          return '@ember/component';
+        }
+
+        toString() {
+          return `<${this.constructor}:ember234>`;
+        }
+      }
+
+      assert.equal(
+        inspect([new Component(), Component]),
+        '[ <@ember/component:ember234>, @ember/component ]'
+      );
     }
 
     ['@test regexp'](assert) {
