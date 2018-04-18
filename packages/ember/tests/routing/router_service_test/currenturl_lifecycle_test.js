@@ -1,4 +1,5 @@
-import { inject, readOnly } from 'ember-runtime';
+import { inject as injectService } from '@ember/service';
+import { readOnly } from 'ember-runtime';
 import { Component } from 'ember-glimmer';
 import { Route } from 'ember-routing';
 import { get } from 'ember-metal';
@@ -11,7 +12,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
   let ROUTE_NAMES = ['index', 'child', 'sister', 'brother'];
 
   let InstrumentedRoute = Route.extend({
-    routerService: inject.service('router'),
+    routerService: injectService('router'),
 
     beforeModel() {
       let service = get(this, 'routerService');
@@ -45,7 +46,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
 
         this.addComponent('current-url', {
           ComponentClass: Component.extend({
-            routerService: inject.service('router'),
+            routerService: injectService('router'),
             currentURL: readOnly('routerService.currentURL'),
           }),
           template: '{{currentURL}}',

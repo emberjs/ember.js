@@ -7,10 +7,6 @@ export function deprecatingAlias(name: string, opts: {
   until: string;
 }): any;
 
-export const inject: {
-  service(name: string): any;
-};
-
 export const FrameworkObject: any;
 
 export function isEmberArray(arr: any): boolean;

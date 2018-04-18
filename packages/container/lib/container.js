@@ -235,7 +235,7 @@ function factoryFor(container, normalizedName, fullName) {
   }
 
   if (DEBUG && factory && typeof factory._onLookup === 'function') {
-    factory._onLookup(fullName); // What should this pass? fullname or the normalized key?
+    factory._onLookup(fullName);
   }
 
   let manager = new FactoryManager(container, factory, fullName, normalizedName);

@@ -1,5 +1,6 @@
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
-import { Object as EmberObject, inject, RSVP, onerrorDefault } from 'ember-runtime';
+import { inject as injectService } from '@ember/service';
+import { Object as EmberObject, RSVP, onerrorDefault } from 'ember-runtime';
 import { later } from '@ember/runloop';
 import Application from '@ember/application';
 import ApplicationInstance from '@ember/application/instance';
@@ -661,8 +662,8 @@ moduleFor(
         Component.extend({
           tagName: 'x-foo',
 
-          isolatedCounter: inject.service(),
-          sharedCounter: inject.service(),
+          isolatedCounter: injectService(),
+          sharedCounter: injectService(),
 
           init() {
             this._super();
@@ -691,7 +692,7 @@ moduleFor(
       this.add(
         'component:x-bar',
         Component.extend({
-          counter: inject.service('sharedCounter'),
+          counter: injectService('sharedCounter'),
 
           actions: {
             incrementCounter() {

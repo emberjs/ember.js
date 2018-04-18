@@ -1,7 +1,7 @@
 import { setOwner } from 'ember-owner';
 import { runDestroy, buildOwner, moduleFor, AbstractTestCase } from 'internal-test-helpers';
-import Service from '@ember/service';
-import { Object as EmberObject, inject } from 'ember-runtime';
+import Service, { inject as injectService } from '@ember/service';
+import { Object as EmberObject } from 'ember-runtime';
 import EmberRoute from '../../lib/system/route';
 
 let route, routeOne, routeTwo, lookupHash;
@@ -304,7 +304,7 @@ moduleFor(
       owner.register(
         'route:application',
         EmberRoute.extend({
-          authService: inject.service('auth'),
+          authService: injectService('auth'),
         })
       );
 
