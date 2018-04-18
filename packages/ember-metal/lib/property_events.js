@@ -3,7 +3,7 @@ import { descriptorFor, peekMeta } from './meta';
 import { sendEvent } from './events';
 import { markObjectAsDirty } from './tags';
 import ObserverSet from './observer_set';
-import { EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER } from 'ember/features';
+import { EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER } from '@ember/canary-features';
 import { deprecate } from '@ember/debug';
 import { assertNotRendered } from './transaction';
 import { changeEvent } from './observer';

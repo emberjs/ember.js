@@ -1,5 +1,5 @@
 import { assert } from '@ember/debug';
-import { EMBER_GLIMMER_NAMED_ARGUMENTS } from 'ember/features';
+import { EMBER_GLIMMER_NAMED_ARGUMENTS } from '@ember/canary-features';
 import calculateLocationDisplay from '../system/calculate-location-display';
 
 const RESERVED = ['@arguments', '@args', '@block', '@else'];

@@ -1,6 +1,6 @@
 import { CONSTANT_TAG, UpdatableTag, DirtyableTag, combine } from '@glimmer/reference';
 import { isProxy } from 'ember-utils';
-import { EMBER_METAL_TRACKED_PROPERTIES } from 'ember/features';
+import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { meta as metaFor } from './meta';
 import { backburner } from '@ember/runloop';
 

@@ -1,6 +1,6 @@
 /* globals Proxy */
 import { assert } from '@ember/debug';
-import { EMBER_MODULE_UNIFICATION } from 'ember/features';
+import { EMBER_MODULE_UNIFICATION } from '@ember/canary-features';
 import { DEBUG } from '@glimmer/env';
 import { OWNER, setOwner } from 'ember-owner';
 import { assign } from '@ember/polyfills';

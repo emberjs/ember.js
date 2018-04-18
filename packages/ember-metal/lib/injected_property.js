@@ -2,7 +2,7 @@ import { getOwner } from 'ember-owner';
 import { assert } from '@ember/debug';
 import { ComputedProperty } from './computed';
 import { descriptorFor } from './meta';
-import { EMBER_MODULE_UNIFICATION } from 'ember/features';
+import { EMBER_MODULE_UNIFICATION } from '@ember/canary-features';
 
 /**
  @module ember

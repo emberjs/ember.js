@@ -2,7 +2,7 @@
 /* global console */
 
 import { ENV } from 'ember-environment';
-import { EMBER_IMPROVED_INSTRUMENTATION } from 'ember/features';
+import { EMBER_IMPROVED_INSTRUMENTATION } from '@ember/canary-features';
 
 /**
 @module @ember/instrumentation

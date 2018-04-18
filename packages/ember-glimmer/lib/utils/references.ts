@@ -1,3 +1,4 @@
+import { EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER } from '@ember/canary-features';
 import { DEBUG } from '@glimmer/env';
 import { Opaque } from '@glimmer/interfaces';
 import {
@@ -22,7 +23,6 @@ import {
 import { Option } from '@glimmer/util';
 import { didRender, get, set, tagFor, tagForProperty, watchKey } from 'ember-metal';
 import { isProxy, symbol } from 'ember-utils';
-import { EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER } from 'ember/features';
 import { HelperFunction, HelperInstance, RECOMPUTE_TAG } from '../helper';
 import emberToBool from './to-bool';
 

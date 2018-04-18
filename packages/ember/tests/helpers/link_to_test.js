@@ -4,7 +4,7 @@ import { A as emberA } from 'ember-runtime';
 import { alias } from 'ember-metal';
 import { subscribe, reset } from '@ember/instrumentation';
 import { Route, NoneLocation } from 'ember-routing';
-import { EMBER_IMPROVED_INSTRUMENTATION } from 'ember/features';
+import { EMBER_IMPROVED_INSTRUMENTATION } from '@ember/canary-features';
 
 // IE includes the host name
 function normalizeUrl(url) {

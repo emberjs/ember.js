@@ -4,7 +4,7 @@ import { symbol } from 'ember-utils';
 
 import CustomComponentManager, { CustomComponentState } from '../component-managers/custom';
 
-import { GLIMMER_CUSTOM_COMPONENT_MANAGER } from 'ember/features';
+import { GLIMMER_CUSTOM_COMPONENT_MANAGER } from '@ember/canary-features';
 
 export const COMPONENT_MANAGER = symbol('COMPONENT_MANAGER');
 

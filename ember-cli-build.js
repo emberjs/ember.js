@@ -29,7 +29,6 @@ const {
   nodeModuleUtils,
   emberVersionES,
   emberLicense,
-  emberFeaturesES,
   nodeTests,
   buildEmberEnvFlagsES,
   getPackagesES,
@@ -66,12 +65,9 @@ module.exports = function() {
     getPackagesES(),
   ]);
 
-  let es = new MergeTrees(
-    [packagesES, emberFeaturesES(), dependenciesES, templateCompilerDependenciesES],
-    {
-      overwrite: true,
-    }
-  );
+  let es = new MergeTrees([packagesES, dependenciesES, templateCompilerDependenciesES], {
+    overwrite: true,
+  });
   let pkgAndTestESInAMD = toNamedAMD(es);
   let emberEnvFlagsDebug = toNamedAMD(buildEmberEnvFlagsES({ DEBUG: true }));
 
@@ -118,7 +114,6 @@ module.exports = function() {
   let packagesES5 = toES5(packagesESRollup);
   let dependenciesES5 = toES5(dependenciesES);
   let templateCompilerDependenciesES5 = toES5(templateCompilerDependenciesES);
-  let emberDebugFeaturesES5 = toES5(emberFeaturesES());
 
   // Bundling
   let emberTestsBundle = new MergeTrees([
@@ -141,7 +136,6 @@ module.exports = function() {
       exclude: ['*/tests/**', 'ember-template-compiler/**', 'internal-test-helpers/**'],
     }),
     dependenciesES5,
-    emberDebugFeaturesES5,
     loader,
     license,
     nodeModule,
@@ -185,9 +179,10 @@ module.exports = function() {
     return new MergeTrees([
       new Funnel(packagesES5, {
         include: [
-          '@ember/error/index.js',
+          '@ember/canary-features/**',
           '@ember/debug/index.js',
           '@ember/debug/lib/**',
+          '@ember/error/index.js',
           '@ember/polyfills/index.js',
           '@ember/polyfills/lib/**',
           'ember/version.js',
@@ -208,9 +203,6 @@ module.exports = function() {
     let babelProdHelpersES5 = toES5(babelHelpers('prod'), {
       environment: 'production',
     });
-    let productionFeatures = toES5(emberFeaturesES(true), {
-      environment: 'production',
-    });
 
     let emberProdBundle = new MergeTrees([
       new Funnel(prodPackagesES5, {
@@ -227,7 +219,6 @@ module.exports = function() {
       nodeModule,
       bootstrapModule('ember'),
       babelProdHelpersES5,
-      productionFeatures,
     ]);
 
     emberProdBundle = concatBundle(emberProdBundle, {
@@ -267,7 +258,6 @@ module.exports = function() {
       license,
       babelProdHelpersES5,
       nodeModule,
-      productionFeatures,
     ]);
 
     emberTemplateCompilerBundle = concatBundle(emberTemplateCompilerBundle, {
@@ -282,7 +272,6 @@ module.exports = function() {
       license,
       babelDebugHelpersES5,
       nodeModule,
-      emberDebugFeaturesES5,
     ]);
 
     emberTemplateCompilerBundle = concatBundle(emberTemplateCompilerBundle, {

@@ -26,7 +26,7 @@ import Engine from '@ember/engine';
 import { privatize as P } from 'container';
 import { setupApplicationRegistry } from 'ember-glimmer';
 import { RouterService } from 'ember-routing';
-import { EMBER_ROUTING_ROUTER_SERVICE } from 'ember/features';
+import { EMBER_ROUTING_ROUTER_SERVICE } from '@ember/canary-features';
 
 let librariesRegistered = false;
 

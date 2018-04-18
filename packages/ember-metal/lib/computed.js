@@ -3,7 +3,7 @@ import { assert, warn } from '@ember/debug';
 import EmberError from '@ember/error';
 import { set } from './property_set';
 import { meta as metaFor, peekMeta } from './meta';
-import { EMBER_METAL_TRACKED_PROPERTIES } from 'ember/features';
+import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import expandProperties from './expand_properties';
 import { Descriptor, defineProperty } from './properties';
 import { notifyPropertyChange } from './property_events';

@@ -1,7 +1,7 @@
 import { debug, warn } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { get } from './property_get';
-import { EMBER_LIBRARIES_ISREGISTERED } from 'ember/features';
+import { EMBER_LIBRARIES_ISREGISTERED } from '@ember/canary-features';
 import VERSION from 'ember/version';
 
 /**

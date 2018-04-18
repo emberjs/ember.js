@@ -1,4 +1,5 @@
 import Ember from '../index';
+import { FEATURES } from '@ember/canary-features';
 import { confirmExport } from 'internal-test-helpers';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
@@ -30,6 +31,16 @@ moduleFor(
           'Ember.EXTEND_PROTOTYPES exists'
         );
       }, /EXTEND_PROTOTYPES is deprecated/);
+    }
+
+    '@test Ember.FEATURES is exported'(assert) {
+      for (let feature in FEATURES) {
+        assert.equal(
+          Ember.FEATURES[feature],
+          FEATURES[feature],
+          'Ember.FEATURES contains ${feature} with correct value'
+        );
+      }
     }
   }
 );
@@ -83,8 +94,7 @@ let allExports = [
   ['Instrumentation.reset', '@ember/instrumentation', 'reset'],
   ['testing', '@ember/debug', { get: 'isTesting', set: 'setTesting' }],
   ['onerror', 'ember-error-handling', { get: 'getOnerror', set: 'setOnerror' }],
-  ['FEATURES', '@ember/features'],
-  ['FEATURES.isEnabled', '@ember/debug', 'isFeatureEnabled'],
+  ['FEATURES.isEnabled', '@ember/canary-features', 'isEnabled'],
   ['meta', 'ember-metal'],
   ['get', 'ember-metal'],
   ['set', 'ember-metal'],

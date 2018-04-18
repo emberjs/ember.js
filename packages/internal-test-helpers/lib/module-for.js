@@ -1,4 +1,4 @@
-import { isFeatureEnabled } from '@ember/debug';
+import { isEnabled } from '@ember/canary-features';
 import applyMixins from './apply-mixins';
 import getAllPropertyNames from './get-all-property-names';
 import { all } from 'rsvp';
@@ -49,9 +49,9 @@ export default function moduleFor(description, TestClass, ...mixins) {
 
   function shouldTest(features) {
     return features.every(feature => {
-      if (feature[0] === '!' && isFeatureEnabled(feature.slice(1))) {
+      if (feature[0] === '!' && isEnabled(feature.slice(1))) {
         return false;
-      } else if (!isFeatureEnabled(feature)) {
+      } else if (!isEnabled(feature)) {
         return false;
       } else {
         return true;

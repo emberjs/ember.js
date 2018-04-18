@@ -1,7 +1,7 @@
 /* globals EmberDev */
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 import { Libraries } from '..';
-import { EMBER_LIBRARIES_ISREGISTERED } from 'ember/features';
+import { EMBER_LIBRARIES_ISREGISTERED } from '@ember/canary-features';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 let libs, registry;

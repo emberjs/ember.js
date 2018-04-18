@@ -28,7 +28,7 @@ import {
 } from '../../lib/computed/reduce_computed_macros';
 import { isArray } from '../../lib/utils';
 import { A as emberA, removeAt } from '../../lib/mixins/array';
-import { EMBER_METAL_TRACKED_PROPERTIES } from 'ember/features';
+import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 let obj;
