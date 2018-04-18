@@ -44,28 +44,6 @@ moduleFor(
       assert.equal(count, 2);
     }
 
-    ['@test caches computation correctly with custom cache keys'](assert) {
-      let count = 0;
-      let cache = new Cache(
-        100,
-        obj => {
-          count++;
-          return obj.value.toUpperCase();
-        },
-        obj => obj.key
-      );
-
-      assert.equal(count, 0);
-      cache.get({ key: 'foo', value: 'foo' });
-      assert.equal(count, 1);
-      cache.get({ key: 'bar', value: 'bar' });
-      assert.equal(count, 2);
-      cache.get({ key: 'bar', value: 'bar' });
-      assert.equal(count, 2);
-      cache.get({ key: 'foo', value: 'foo' });
-      assert.equal(count, 2);
-    }
-
     ['@test handles undefined value correctly'](assert) {
       let count = 0;
       let cache = new Cache(100, () => {

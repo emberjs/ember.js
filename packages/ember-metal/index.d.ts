@@ -27,15 +27,5 @@ export function isNone(obj: any): boolean;
 
 export function watchKey(obj: any, keyName: string, meta?: any): void;
 
-export class Cache<T, V> {
-  constructor(
-    limit: number,
-    func: (obj: T) => V,
-    key?: (obj: T) => string,
-    store?: any
-  );
-  get(obj: T): V;
-}
-
 export { tagForProperty, tagFor } from './lib/tags';
 export { tracked } from './lib/tracked';

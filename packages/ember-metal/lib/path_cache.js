@@ -1,4 +1,4 @@
-import Cache from './cache';
+import { Cache } from 'ember-utils';
 
 const firstDotIndexCache = new Cache(1000, key => key.indexOf('.'));
 
