@@ -1,3 +1,4 @@
+import { assert } from '@ember/debug';
 import { _instrumentStart } from '@ember/instrumentation';
 import {
   ComponentDefinition,
@@ -8,7 +9,6 @@ import {
 import { LazyCompiler, Macros, PartialDefinition } from '@glimmer/opcode-compiler';
 import { ComponentManager, getDynamicVar, Helper, ModifierManager } from '@glimmer/runtime';
 import { privatize as P } from 'container';
-import { assert } from 'ember-debug';
 import { ENV } from 'ember-environment';
 import { LookupOptions, Owner, setOwner } from 'ember-owner';
 import { lookupComponent, lookupPartial, OwnedTemplateMeta } from 'ember-views';

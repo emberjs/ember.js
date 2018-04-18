@@ -58,15 +58,15 @@ let allExports = [
   ['Registry', 'container', 'Registry'],
   ['Container', 'container', 'Container'],
 
-  // ember-debug
-  ['deprecateFunc', 'ember-debug'],
-  ['deprecate', 'ember-debug'],
-  ['assert', 'ember-debug'],
-  ['warn', 'ember-debug'],
-  ['debug', 'ember-debug'],
-  ['runInDebug', 'ember-debug'],
-  ['Debug.registerDeprecationHandler', 'ember-debug', 'registerDeprecationHandler'],
-  ['Debug.registerWarnHandler', 'ember-debug', 'registerWarnHandler'],
+  // @ember/debug
+  ['deprecateFunc', '@ember/debug'],
+  ['deprecate', '@ember/debug'],
+  ['assert', '@ember/debug'],
+  ['warn', '@ember/debug'],
+  ['debug', '@ember/debug'],
+  ['runInDebug', '@ember/debug'],
+  ['Debug.registerDeprecationHandler', '@ember/debug', 'registerDeprecationHandler'],
+  ['Debug.registerWarnHandler', '@ember/debug', 'registerWarnHandler'],
   ['Error', '@ember/error', 'default'],
 
   // ember-metal
@@ -81,10 +81,10 @@ let allExports = [
   ['Instrumentation.subscribe', '@ember/instrumentation', 'subscribe'],
   ['Instrumentation.unsubscribe', '@ember/instrumentation', 'unsubscribe'],
   ['Instrumentation.reset', '@ember/instrumentation', 'reset'],
-  ['testing', 'ember-debug', { get: 'isTesting', set: 'setTesting' }],
+  ['testing', '@ember/debug', { get: 'isTesting', set: 'setTesting' }],
   ['onerror', 'ember-error-handling', { get: 'getOnerror', set: 'setOnerror' }],
-  ['FEATURES', 'ember/features'],
-  ['FEATURES.isEnabled', 'ember-debug', 'isFeatureEnabled'],
+  ['FEATURES', '@ember/features'],
+  ['FEATURES.isEnabled', '@ember/debug', 'isFeatureEnabled'],
   ['meta', 'ember-metal'],
   ['get', 'ember-metal'],
   ['set', 'ember-metal'],

@@ -1,4 +1,4 @@
-import { deprecate } from 'ember-debug';
+import { deprecate } from '@ember/debug';
 
 // Deliver message that the function is deprecated
 

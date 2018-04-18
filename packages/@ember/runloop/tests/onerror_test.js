@@ -5,7 +5,7 @@ import {
   setDispatchOverride,
   setOnerror,
 } from 'ember-error-handling';
-import { isTesting, setTesting } from 'ember-debug';
+import { isTesting, setTesting } from '@ember/debug';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(

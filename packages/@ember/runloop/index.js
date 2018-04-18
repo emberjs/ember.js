@@ -1,4 +1,4 @@
-import { assert, deprecate, isTesting } from 'ember-debug';
+import { assert, deprecate, isTesting } from '@ember/debug';
 import { onErrorTarget } from 'ember-error-handling';
 import { beginPropertyChanges, endPropertyChanges } from 'ember-metal';
 import Backburner from 'backburner';

@@ -1,5 +1,5 @@
 import { assign } from '@ember/polyfills';
-import { assert } from 'ember-debug';
+import { assert } from '@ember/debug';
 
 let uuid = 0;
 

@@ -1,8 +1,8 @@
+import { assert } from '@ember/debug';
 import { CompilableBlock } from '@glimmer/interfaces';
 import { Macros, OpcodeBuilder } from '@glimmer/opcode-compiler';
 import { Option } from '@glimmer/util';
 import { Core } from '@glimmer/wire-format';
-import { assert } from 'ember-debug';
 import { OwnedTemplateMeta } from 'ember-views';
 import { EMBER_TEMPLATE_BLOCK_LET_HELPER } from 'ember/features';
 import CompileTimeLookup from './compile-time-lookup';

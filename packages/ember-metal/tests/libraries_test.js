@@ -1,5 +1,5 @@
 /* globals EmberDev */
-import { getDebugFunction, setDebugFunction } from 'ember-debug';
+import { getDebugFunction, setDebugFunction } from '@ember/debug';
 import { Libraries } from '..';
 import { EMBER_LIBRARIES_ISREGISTERED } from 'ember/features';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';

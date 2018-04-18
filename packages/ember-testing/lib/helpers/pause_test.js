@@ -2,7 +2,7 @@
 @module ember
 */
 import { RSVP } from 'ember-runtime';
-import { assert, info } from 'ember-debug';
+import { assert, info } from '@ember/debug';
 
 let resume;
 

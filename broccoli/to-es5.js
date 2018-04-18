@@ -24,7 +24,7 @@ module.exports = function toES5(tree, _options) {
       'debug-macros',
       {
         debugTools: {
-          source: 'ember-debug',
+          source: '@ember/debug',
           assertPredicateIndex: 1,
         },
         envFlags: {

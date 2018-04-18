@@ -1,9 +1,9 @@
+import { assert } from '@ember/debug';
 import { dasherize } from '@ember/string';
 import { Opaque, Option, Simple } from '@glimmer/interfaces';
 import { CachedReference, combine, map, Reference, Tag } from '@glimmer/reference';
 import { ElementOperations, PrimitiveReference } from '@glimmer/runtime';
 import { Core, Ops } from '@glimmer/wire-format';
-import { assert } from 'ember-debug';
 import { get } from 'ember-metal';
 import { ROOT_REF } from '../component';
 import { Component } from './curly-component-state-bucket';

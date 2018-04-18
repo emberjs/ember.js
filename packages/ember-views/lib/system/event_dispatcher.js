@@ -4,7 +4,7 @@ import { getOwner } from 'ember-owner';
 */
 
 import { assign } from '@ember/polyfills';
-import { assert } from 'ember-debug';
+import { assert } from '@ember/debug';
 import { get, set, isNone } from 'ember-metal';
 import { Object as EmberObject } from 'ember-runtime';
 import jQuery from './jquery';

@@ -155,7 +155,13 @@ module.exports = function() {
 
   let emberTestingBundle = new MergeTrees([
     new Funnel(packagesES5, {
-      include: ['ember-debug/**', 'ember-testing/**', 'license.js'],
+      include: [
+        '@ember/debug/lib/**',
+        '@ember/debug/index.js',
+        'ember-testing/index.js',
+        'ember-testing/lib/**',
+        'license.js',
+      ],
     }),
     loader,
     license,
@@ -181,10 +187,10 @@ module.exports = function() {
         include: [
           '@ember/error/index.js',
           '@ember/debug/index.js',
+          '@ember/debug/lib/**',
           '@ember/polyfills/index.js',
           '@ember/polyfills/lib/**',
           'ember/version.js',
-          'ember-debug/**',
           'ember-environment.js',
           'ember-browser-environment.js',
           'ember-template-compiler/**',

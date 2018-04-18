@@ -1,4 +1,4 @@
-import { assert } from 'ember-debug';
+import { assert } from '@ember/debug';
 import { guidFor } from 'ember-utils';
 import OrderedSet from './lib/ordered-set';
 import { copyMap } from './lib/utils';

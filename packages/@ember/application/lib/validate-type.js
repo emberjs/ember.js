@@ -1,4 +1,4 @@
-import { assert } from 'ember-debug';
+import { assert } from '@ember/debug';
 
 const VALIDATED_TYPES = {
   route: ['assert', 'isRouteFactory', 'Ember.Route'],

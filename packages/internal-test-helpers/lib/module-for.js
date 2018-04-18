@@ -1,4 +1,4 @@
-import { isFeatureEnabled } from 'ember-debug';
+import { isFeatureEnabled } from '@ember/debug';
 import applyMixins from './apply-mixins';
 import getAllPropertyNames from './get-all-property-names';
 import { all } from 'rsvp';

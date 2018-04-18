@@ -233,8 +233,8 @@ function generateEachPackageTests() {
 
 function generateBuiltTests() {
   // Container isn't publicly available.
-  // ember-testing/ember-debug are stripped from prod/min.
-  var common = 'skipPackage=container,ember-testing,ember-debug';
+  // ember-testing and @ember/debug are stripped from prod/min.
+  var common = 'skipPackage=container,ember-testing,@ember/debug';
   testFunctions.push(function() {
     return run(common + '&nolint=true');
   });

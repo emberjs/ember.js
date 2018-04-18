@@ -4,7 +4,7 @@
 
 import { ENV } from 'ember-environment';
 import { on, computed, observer } from 'ember-metal';
-import { assert } from 'ember-debug';
+import { assert } from '@ember/debug';
 
 const FunctionPrototype = Function.prototype;
 

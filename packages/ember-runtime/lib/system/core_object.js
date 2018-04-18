@@ -2,8 +2,6 @@
   @module @ember/object
 */
 
-// using ember-metal/lib/main here to ensure that ember-debug is setup
-// if present
 import { FACTORY_FOR } from 'container';
 import { assign } from '@ember/polyfills';
 import {
@@ -31,7 +29,7 @@ import {
   classToString,
 } from 'ember-metal';
 import ActionHandler from '../mixins/action_handler';
-import { assert } from 'ember-debug';
+import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { ENV } from 'ember-environment';
 

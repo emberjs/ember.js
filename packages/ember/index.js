@@ -7,8 +7,8 @@ import { Registry, Container } from 'container';
 import * as instrumentation from '@ember/instrumentation';
 import * as metal from 'ember-metal';
 import * as FLAGS from 'ember/features';
-import * as EmberDebug from 'ember-debug';
-import { assert, deprecate } from 'ember-debug';
+import * as EmberDebug from '@ember/debug';
+import { assert, deprecate } from '@ember/debug';
 import Backburner from 'backburner';
 import Logger from 'ember-console';
 import Controller, { inject as injectController } from '@ember/controller';
@@ -194,7 +194,7 @@ Ember.NAME_KEY = utils.NAME_KEY;
 Ember.Container = Container;
 Ember.Registry = Registry;
 
-// ****ember-debug****
+// ****@ember/debug****
 Ember.assert = EmberDebug.assert;
 Ember.warn = EmberDebug.warn;
 Ember.debug = EmberDebug.debug;

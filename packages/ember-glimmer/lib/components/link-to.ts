@@ -296,10 +296,10 @@
   @public
 */
 
+import { assert, warn } from '@ember/debug';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { inject as injectService } from '@ember/service';
 import { DEBUG } from '@glimmer/env';
-import { assert, warn } from 'ember-debug';
 import { computed, get } from 'ember-metal';
 import { isSimpleClick } from 'ember-views';
 import EmberComponent, { HAS_BLOCK } from '../component';

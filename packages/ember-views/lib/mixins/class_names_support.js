@@ -3,7 +3,7 @@
 */
 
 import { Mixin, descriptorFor } from 'ember-metal';
-import { assert } from 'ember-debug';
+import { assert } from '@ember/debug';
 
 const EMPTY_ARRAY = Object.freeze([]);
 

@@ -1,4 +1,4 @@
-import { assert } from 'ember-debug';
+import { assert } from '@ember/debug';
 import { Owner } from 'ember-owner';
 import { symbol } from 'ember-utils';
 

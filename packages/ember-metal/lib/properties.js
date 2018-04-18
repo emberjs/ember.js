@@ -2,7 +2,7 @@
 @module @ember/object
 */
 
-import { assert } from 'ember-debug';
+import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { descriptorFor, meta as metaFor, peekMeta, UNDEFINED } from './meta';
 import { overrideChains } from './property_events';

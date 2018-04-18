@@ -1,7 +1,7 @@
 import { getOwner } from 'ember-owner';
 import { tryInvoke } from 'ember-utils';
 import { get, set } from 'ember-metal';
-import { assert } from 'ember-debug';
+import { assert } from '@ember/debug';
 import { Object as EmberObject } from 'ember-runtime';
 import { location, history, window, userAgent } from 'ember-browser-environment';
 

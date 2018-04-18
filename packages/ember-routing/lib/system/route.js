@@ -2,7 +2,7 @@ import { getOwner } from 'ember-owner';
 import { assign } from '@ember/polyfills';
 import { once } from '@ember/runloop';
 import { get, set, getProperties, setProperties, computed, isEmpty } from 'ember-metal';
-import { assert, info, isTesting, deprecate } from 'ember-debug';
+import { assert, deprecate, info, isTesting } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { classify } from '@ember/string';
 import {

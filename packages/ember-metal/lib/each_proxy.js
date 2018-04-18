@@ -1,4 +1,4 @@
-import { assert } from 'ember-debug';
+import { assert } from '@ember/debug';
 import { get } from './property_get';
 import { notifyPropertyChange } from './property_events';
 import { addObserver, removeObserver } from './observer';

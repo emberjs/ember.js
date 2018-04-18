@@ -1,7 +1,7 @@
 import { next, run, schedule } from '@ember/runloop';
 import { getOnerror, setOnerror } from 'ember-error-handling';
 import RSVP from '../../lib/ext/rsvp';
-import { isTesting, setTesting } from 'ember-debug';
+import { isTesting, setTesting } from '@ember/debug';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 const ORIGINAL_ONERROR = getOnerror();

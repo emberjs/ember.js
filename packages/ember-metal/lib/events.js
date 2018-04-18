@@ -2,7 +2,7 @@
 @module @ember/object
 */
 import { ENV } from 'ember-environment';
-import { deprecate, assert } from 'ember-debug';
+import { assert, deprecate } from '@ember/debug';
 import { meta as metaFor, peekMeta } from './meta';
 
 /*

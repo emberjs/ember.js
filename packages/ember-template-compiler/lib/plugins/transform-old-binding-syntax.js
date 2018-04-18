@@ -1,4 +1,4 @@
-import { assert, deprecate } from 'ember-debug';
+import { assert, deprecate } from '@ember/debug';
 import calculateLocationDisplay from '../system/calculate-location-display';
 
 export default function transformOldBindingSyntax(env) {

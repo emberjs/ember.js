@@ -1,4 +1,4 @@
-import { assert } from 'ember-debug';
+import { assert } from '@ember/debug';
 import { EMBER_GLIMMER_NAMED_ARGUMENTS } from 'ember/features';
 import calculateLocationDisplay from '../system/calculate-location-display';
 

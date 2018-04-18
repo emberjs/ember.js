@@ -1,6 +1,6 @@
 /* global Node */
 
-import { assert } from 'ember-debug';
+import { assert } from '@ember/debug';
 import { fireEvent, focus, matches } from '../system/synthetic-events';
 
 export default class NodeQuery {

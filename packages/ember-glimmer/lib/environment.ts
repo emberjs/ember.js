@@ -1,3 +1,4 @@
+import { warn } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { OpaqueIterable, VersionedReference } from '@glimmer/reference';
 import {
@@ -6,7 +7,6 @@ import {
   SimpleDynamicAttribute,
 } from '@glimmer/runtime';
 import { Destroyable, Opaque } from '@glimmer/util';
-import { warn } from 'ember-debug';
 import { OWNER, Owner } from 'ember-owner';
 import { constructStyleDeprecationMessage, lookupComponent } from 'ember-views';
 import DebugStack from './utils/debug-stack';

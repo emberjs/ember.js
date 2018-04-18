@@ -1,4 +1,4 @@
-import { assert } from 'ember-debug';
+import { assert } from '@ember/debug';
 import calculateLocationDisplay from '../system/calculate-location-display';
 
 export default function errorOnInputWithContent(env) {

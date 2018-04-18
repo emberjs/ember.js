@@ -1,4 +1,4 @@
-import { assert } from 'ember-debug';
+import { assert } from '@ember/debug';
 import { Object as EmberObject } from 'ember-runtime';
 
 export default EmberObject.extend({

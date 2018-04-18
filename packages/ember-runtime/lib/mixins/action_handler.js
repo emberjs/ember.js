@@ -3,7 +3,7 @@
 */
 
 import { Mixin, get } from 'ember-metal';
-import { assert } from 'ember-debug';
+import { assert } from '@ember/debug';
 
 /**
   `Ember.ActionHandler` is available on some familiar classes including

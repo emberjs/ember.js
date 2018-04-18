@@ -1,5 +1,5 @@
 import { get } from 'ember-metal';
-import { info } from 'ember-debug';
+import { info } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 /**
 @module ember
