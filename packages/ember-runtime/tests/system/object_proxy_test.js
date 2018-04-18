@@ -1,6 +1,6 @@
+import { DEBUG } from '@glimmer/env';
 import { addObserver, computed, get, set, isWatching, removeObserver } from 'ember-metal';
 import { HAS_NATIVE_PROXY } from 'ember-utils';
-import { MANDATORY_GETTER, EMBER_METAL_ES5_GETTERS } from 'ember/features';
 import ObjectProxy from '../../lib/system/object_proxy';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
@@ -128,7 +128,7 @@ moduleFor(
     }
 
     ['@test getting proxied properties with [] should be an error'](assert) {
-      if (MANDATORY_GETTER && EMBER_METAL_ES5_GETTERS && HAS_NATIVE_PROXY) {
+      if (DEBUG && HAS_NATIVE_PROXY) {
         let proxy = ObjectProxy.create({
           content: {
             foo: 'FOO',

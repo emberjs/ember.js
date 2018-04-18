@@ -308,7 +308,7 @@ function glimmerDependenciesES() {
   if (ENV === 'development') {
     let hasGlimmerDebug = true;
     try {
-      require('@glimmer/debug'); // eslint-disable-line node/no-missing-require
+      require.resolve('@glimmer/debug');
     } catch (e) {
       hasGlimmerDebug = false;
     }

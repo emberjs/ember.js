@@ -1,4 +1,3 @@
-import { DESCRIPTOR_TRAP, EMBER_METAL_ES5_GETTERS } from 'ember/features';
 import { Object as EmberObject } from 'ember-runtime';
 import {
   ComputedProperty,
@@ -46,53 +45,19 @@ moduleFor(
     }
 
     ['@test computed property can be accessed without `get`'](assert) {
-      if (EMBER_METAL_ES5_GETTERS) {
-        let obj = {};
-        let count = 0;
-        defineProperty(
-          obj,
-          'foo',
-          computed(function(key) {
-            count++;
-            return 'computed ' + key;
-          })
-        );
+      let obj = {};
+      let count = 0;
+      defineProperty(
+        obj,
+        'foo',
+        computed(function(key) {
+          count++;
+          return 'computed ' + key;
+        })
+      );
 
-        assert.equal(obj.foo, 'computed foo', 'should return value');
-        assert.equal(count, 1, 'should have invoked computed property');
-      } else {
-        assert.expect(0);
-      }
-    }
-
-    ['@test accessing computed property descriptor through the object triggers an assertion'](
-      assert
-    ) {
-      if (!EMBER_METAL_ES5_GETTERS && DESCRIPTOR_TRAP) {
-        let obj = {
-          toString() {
-            return 'obj';
-          },
-        };
-        let count = 0;
-        defineProperty(
-          obj,
-          'foo',
-          computed(function(key) {
-            count++;
-            return 'computed ' + key;
-          })
-        );
-
-        expectAssertion(
-          () => obj.foo.isDescriptor,
-          /You attempted to access `foo\.isDescriptor` \(on `obj`\)/
-        );
-        expectAssertion(() => obj.foo.get(), /You attempted to access `foo\.get` \(on `obj`\)/);
-        assert.strictEqual(count, 0, 'should not have invoked computed property');
-      } else {
-        assert.expect(0);
-      }
+      assert.equal(obj.foo, 'computed foo', 'should return value');
+      assert.equal(count, 1, 'should have invoked computed property');
     }
 
     ['@test defining computed property should invoke property on get'](assert) {

@@ -3,7 +3,7 @@ import Controller from '@ember/controller';
 import { inject, Service, _ProxyMixin } from 'ember-runtime';
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 import { computed } from 'ember-metal';
-import { EMBER_METAL_ES5_GETTERS, EMBER_MODULE_UNIFICATION } from 'ember/features';
+import { EMBER_MODULE_UNIFICATION } from 'ember/features';
 
 moduleFor(
   'Service Injection',
@@ -53,38 +53,32 @@ moduleFor(
   }
 );
 
-if (EMBER_METAL_ES5_GETTERS) {
-  moduleFor(
-    'Service Injection with ES5 Getters',
-    class extends ApplicationTestCase {
-      ['@test Service can be injected and is resolved without calling `get`'](assert) {
-        this.add(
-          'controller:application',
-          Controller.extend({
-            myService: inject.service('my-service'),
-          })
-        );
-        let MyService = Service.extend({
-          name: computed(function() {
-            return 'The service name';
-          }),
-        });
-        this.add('service:my-service', MyService);
-        this.addTemplate('application', '');
+moduleFor(
+  'Service Injection with ES5 Getters',
+  class extends ApplicationTestCase {
+    ['@test Service can be injected and is resolved without calling `get`'](assert) {
+      this.add(
+        'controller:application',
+        Controller.extend({
+          myService: inject.service('my-service'),
+        })
+      );
+      let MyService = Service.extend({
+        name: computed(function() {
+          return 'The service name';
+        }),
+      });
+      this.add('service:my-service', MyService);
+      this.addTemplate('application', '');
 
-        this.visit('/').then(() => {
-          let controller = this.applicationInstance.lookup('controller:application');
-          assert.ok(controller.myService instanceof MyService);
-          assert.equal(
-            controller.myService.name,
-            'The service name',
-            'service property accessible'
-          );
-        });
-      }
+      this.visit('/').then(() => {
+        let controller = this.applicationInstance.lookup('controller:application');
+        assert.ok(controller.myService instanceof MyService);
+        assert.equal(controller.myService.name, 'The service name', 'service property accessible');
+      });
     }
-  );
-}
+  }
+);
 
 if (EMBER_MODULE_UNIFICATION) {
   moduleFor(

@@ -1,17 +1,12 @@
 /**
 @module @ember/object
 */
-
+import { DEBUG } from '@glimmer/env';
 import { assert, deprecate } from 'ember-debug';
 import { HAS_NATIVE_PROXY, symbol } from 'ember-utils';
-import {
-  DESCRIPTOR_TRAP,
-  EMBER_METAL_ES5_GETTERS,
-  EMBER_METAL_TRACKED_PROPERTIES,
-  MANDATORY_GETTER,
-} from 'ember/features';
+import { EMBER_METAL_TRACKED_PROPERTIES } from 'ember/features';
 import { isPath } from './path_cache';
-import { isDescriptor, isDescriptorTrap, DESCRIPTOR, descriptorFor } from './meta';
+import { isDescriptor, descriptorFor } from './meta';
 import { getCurrentTracker } from './tracked';
 import { tagForProperty } from './tags';
 
@@ -23,8 +18,10 @@ const ALLOWABLE_TYPES = {
 
 export const PROXY_CONTENT = symbol('PROXY_CONTENT');
 
-export function getPossibleMandatoryProxyValue(obj, keyName) {
-  if (MANDATORY_GETTER && EMBER_METAL_ES5_GETTERS && HAS_NATIVE_PROXY) {
+export let getPossibleMandatoryProxyValue;
+
+if (DEBUG && HAS_NATIVE_PROXY) {
+  getPossibleMandatoryProxyValue = function getPossibleMandatoryProxyValue(obj, keyName) {
     let content = obj[PROXY_CONTENT];
     if (content === undefined) {
       return obj[keyName];
@@ -32,9 +29,7 @@ export function getPossibleMandatoryProxyValue(obj, keyName) {
       /* global Reflect */
       return Reflect.get(content, keyName, obj);
     }
-  } else {
-    return obj[keyName];
-  }
+  };
 }
 
 // ..........................................................
@@ -100,7 +95,7 @@ export function get(obj, keyName) {
   let isFunction = type === 'function';
   let isObjectLike = isObject || isFunction;
 
-  let descriptor = undefined;
+  let descriptor;
   let value;
 
   if (isObjectLike) {
@@ -109,21 +104,21 @@ export function get(obj, keyName) {
       if (tracker) tracker.add(tagForProperty(obj, keyName));
     }
 
-    if (EMBER_METAL_ES5_GETTERS) {
-      descriptor = descriptorFor(obj, keyName);
-    }
+    descriptor = descriptorFor(obj, keyName);
 
-    if (!EMBER_METAL_ES5_GETTERS || descriptor === undefined) {
-      value = getPossibleMandatoryProxyValue(obj, keyName);
+    if (descriptor === undefined) {
+      if (DEBUG && HAS_NATIVE_PROXY) {
+        value = getPossibleMandatoryProxyValue(obj, keyName);
+      } else {
+        value = obj[keyName];
+      }
 
-      if (DESCRIPTOR_TRAP && isDescriptorTrap(value)) {
-        descriptor = value[DESCRIPTOR];
-      } else if (isDescriptor(value)) {
+      if (isDescriptor(value)) {
         deprecate(
           `[DEPRECATED] computed property '${keyName}' was not set on object '${obj &&
             obj.toString &&
             obj.toString()}' via 'defineProperty'`,
-          !EMBER_METAL_ES5_GETTERS,
+          false,
           {
             id: 'ember-meta.descriptor-on-object',
             until: '3.5.0',
@@ -142,18 +137,15 @@ export function get(obj, keyName) {
     value = obj[keyName];
   }
 
-  if (isPath(keyName)) {
-    return _getPath(obj, keyName);
-  } else if (
-    value === undefined &&
-    isObject &&
-    !(keyName in obj) &&
-    typeof obj.unknownProperty === 'function'
-  ) {
-    return obj.unknownProperty(keyName);
-  } else {
-    return value;
+  if (value === undefined) {
+    if (isPath(keyName)) {
+      return _getPath(obj, keyName);
+    }
+    if (isObject && !(keyName in obj) && typeof obj.unknownProperty === 'function') {
+      return obj.unknownProperty(keyName);
+    }
   }
+  return value;
 }
 
 export function _getPath(root, path) {

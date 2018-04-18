@@ -35,7 +35,6 @@ import { validatePropertyInjections } from '../inject';
 import { assert } from 'ember-debug';
 import { DEBUG } from '@glimmer/env';
 import { ENV } from 'ember-environment';
-import { MANDATORY_GETTER, MANDATORY_SETTER, EMBER_METAL_ES5_GETTERS } from 'ember/features';
 
 const applyMixin = Mixin._apply;
 const reopen = Mixin.prototype.reopen;
@@ -80,13 +79,7 @@ function makeCtor(base) {
           beforeInitCalled = true;
         }
 
-        if (
-          DEBUG &&
-          MANDATORY_GETTER &&
-          EMBER_METAL_ES5_GETTERS &&
-          HAS_NATIVE_PROXY &&
-          typeof self.unknownProperty === 'function'
-        ) {
+        if (DEBUG && HAS_NATIVE_PROXY && typeof self.unknownProperty === 'function') {
           let messageFor = (obj, property) => {
             return (
               `You attempted to access the \`${String(property)}\` property (of ${obj}).\n` +
@@ -118,7 +111,6 @@ function makeCtor(base) {
                 property === 'didUnwatchProperty' ||
                 property === 'didAddListener' ||
                 property === 'didRemoveListener' ||
-                property === '__DESCRIPTOR__' ||
                 property === 'isDescriptor' ||
                 property in target
               ) {
@@ -206,7 +198,7 @@ function makeCtor(base) {
             } else if (typeof self.setUnknownProperty === 'function' && !(keyName in self)) {
               self.setUnknownProperty(keyName, value);
             } else {
-              if (MANDATORY_SETTER) {
+              if (DEBUG) {
                 defineProperty(self, keyName, null, value); // setup mandatory setter
               } else {
                 self[keyName] = value;

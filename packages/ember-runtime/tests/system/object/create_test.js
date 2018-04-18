@@ -1,6 +1,6 @@
 import { getOwner, setOwner } from 'ember-owner';
 import { computed, Mixin, observer } from 'ember-metal';
-import { MANDATORY_SETTER } from 'ember/features';
+import { DEBUG } from '@glimmer/env';
 import EmberObject from '../../../lib/system/object';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
@@ -29,7 +29,7 @@ moduleFor(
     }
 
     ['@test sets up mandatory setters for watched simple properties'](assert) {
-      if (MANDATORY_SETTER) {
+      if (DEBUG) {
         let MyClass = EmberObject.extend({
           foo: null,
           bar: null,

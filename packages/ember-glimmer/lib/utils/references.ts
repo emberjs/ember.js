@@ -22,7 +22,7 @@ import {
 import { Option } from '@glimmer/util';
 import { didRender, get, set, tagFor, tagForProperty, watchKey } from 'ember-metal';
 import { isProxy, symbol } from 'ember-utils';
-import { EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER, MANDATORY_SETTER } from 'ember/features';
+import { EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER } from 'ember/features';
 import { HelperFunction, HelperInstance, RECOMPUTE_TAG } from '../helper';
 import emberToBool from './to-bool';
 
@@ -196,7 +196,7 @@ export class RootPropertyReference extends PropertyReference
       this.tag = tagForProperty(parentValue, propertyKey);
     }
 
-    if (MANDATORY_SETTER) {
+    if (DEBUG) {
       watchKey(parentValue, propertyKey);
     }
   }
@@ -254,7 +254,7 @@ export class NestedPropertyReference extends PropertyReference {
     }
 
     if ((parentValueType === 'object' && parentValue !== null) || parentValueType === 'function') {
-      if (MANDATORY_SETTER) {
+      if (DEBUG) {
         watchKey(parentValue, _propertyKey);
       }
 

@@ -2,7 +2,6 @@ import { lookupDescriptor, symbol, toString } from 'ember-utils';
 import { protoMethods as listenerMethods } from './meta_listeners';
 import { assert } from 'ember-debug';
 import { DEBUG } from '@glimmer/env';
-import { DESCRIPTOR_TRAP, EMBER_METAL_ES5_GETTERS, MANDATORY_SETTER } from 'ember/features';
 import { removeChainWatcher } from './chains';
 import { ENV } from 'ember-environment';
 
@@ -36,19 +35,13 @@ export class Meta {
   constructor(obj, parentMeta) {
     if (DEBUG) {
       counters.metaInstantiated++;
+      this._values = undefined;
     }
-
-    if (EMBER_METAL_ES5_GETTERS) {
-      this._descriptors = undefined;
-    }
-
+    this._descriptors = undefined;
     this._watching = undefined;
     this._mixins = undefined;
     if (ENV._ENABLE_BINDING_SUPPORT) {
       this._bindings = undefined;
-    }
-    if (MANDATORY_SETTER) {
-      this._values = undefined;
     }
     this._deps = undefined;
     this._chainWatchers = undefined;
@@ -456,13 +449,55 @@ export class Meta {
     );
     this._bindings = undefined;
   }
+
+  writeDescriptors(subkey, value) {
+    assert(
+      this.isMetaDestroyed() &&
+        `Cannot update descriptors for \`${subkey}\` on \`${toString(
+          this.source
+        )}\` after it has been destroyed.`,
+      !this.isMetaDestroyed()
+    );
+    let map = this._getOrCreateOwnMap('_descriptors');
+    map[subkey] = value;
+  }
+
+  peekDescriptors(subkey) {
+    let possibleDesc = this._findInherited('_descriptors', subkey);
+    return possibleDesc === UNDEFINED ? undefined : possibleDesc;
+  }
+
+  removeDescriptors(subkey) {
+    this.writeDescriptors(subkey, UNDEFINED);
+  }
+
+  forEachDescriptors(fn) {
+    let pointer = this;
+    let seen;
+    while (pointer !== undefined) {
+      let map = pointer._descriptors;
+      if (map !== undefined) {
+        for (let key in map) {
+          seen = seen === undefined ? new Set() : seen;
+          if (!seen.has(key)) {
+            seen.add(key);
+            let value = map[key];
+            if (value !== UNDEFINED) {
+              fn(key, value);
+            }
+          }
+        }
+      }
+      pointer = pointer.parent;
+    }
+  }
 }
 
 for (let name in listenerMethods) {
   Meta.prototype[name] = listenerMethods[name];
 }
 
-if (MANDATORY_SETTER) {
+if (DEBUG) {
   Meta.prototype.writeValues = function(subkey, value) {
     assert(
       this.isMetaDestroyed() &&
@@ -512,50 +547,6 @@ if (MANDATORY_SETTER) {
       this.writeValues(key, value);
     } else {
       obj[key] = value;
-    }
-  };
-}
-
-if (EMBER_METAL_ES5_GETTERS) {
-  Meta.prototype.writeDescriptors = function(subkey, value) {
-    assert(
-      this.isMetaDestroyed() &&
-        `Cannot update descriptors for \`${subkey}\` on \`${toString(
-          this.source
-        )}\` after it has been destroyed.`,
-      !this.isMetaDestroyed()
-    );
-    let map = this._getOrCreateOwnMap('_descriptors');
-    map[subkey] = value;
-  };
-
-  Meta.prototype.peekDescriptors = function(subkey) {
-    let possibleDesc = this._findInherited('_descriptors', subkey);
-    return possibleDesc === UNDEFINED ? undefined : possibleDesc;
-  };
-
-  Meta.prototype.removeDescriptors = function(subkey) {
-    this.writeDescriptors(subkey, UNDEFINED);
-  };
-
-  Meta.prototype.forEachDescriptors = function(fn) {
-    let pointer = this;
-    let seen;
-    while (pointer !== undefined) {
-      let map = pointer._descriptors;
-      if (map !== undefined) {
-        for (let key in map) {
-          seen = seen === undefined ? new Set() : seen;
-          if (!seen.has(key)) {
-            seen.add(key);
-            let value = map[key];
-            if (value !== UNDEFINED) {
-              fn(key, value);
-            }
-          }
-        }
-      }
-      pointer = pointer.parent;
     }
   };
 }
@@ -682,12 +673,6 @@ if (DEBUG) {
   meta._counters = counters;
 }
 
-// Using `symbol()` here causes some node test to fail, presumably
-// because we define the CP with one copy of Ember and boot the app
-// with a different copy, so the random key we generate do not line
-// up. Is that testing a legit scenario?
-export const DESCRIPTOR = '__DESCRIPTOR__';
-
 /**
   Returns the CP descriptor assocaited with `obj` and `keyName`, if any.
 
@@ -705,32 +690,10 @@ export function descriptorFor(obj, keyName, _meta) {
     typeof obj === 'object' || typeof obj === 'function'
   );
 
-  if (EMBER_METAL_ES5_GETTERS) {
-    let meta = _meta === undefined ? peekMeta(obj) : _meta;
+  let meta = _meta === undefined ? peekMeta(obj) : _meta;
 
-    if (meta !== undefined) {
-      return meta.peekDescriptors(keyName);
-    }
-  } else {
-    let possibleDesc = obj[keyName];
-
-    if (DESCRIPTOR_TRAP && isDescriptorTrap(possibleDesc)) {
-      return possibleDesc[DESCRIPTOR];
-    } else {
-      return isDescriptor(possibleDesc) ? possibleDesc : undefined;
-    }
-  }
-}
-
-export function isDescriptorTrap(possibleDesc) {
-  if (DESCRIPTOR_TRAP) {
-    return (
-      possibleDesc !== null &&
-      typeof possibleDesc === 'object' &&
-      possibleDesc[DESCRIPTOR] !== undefined
-    );
-  } else {
-    throw new Error('Cannot call `isDescriptorTrap` in production');
+  if (meta !== undefined) {
+    return meta.peekDescriptors(keyName);
   }
 }
 
