@@ -185,14 +185,7 @@ export function defineProperty(obj, keyName, desc, data, meta) {
       };
 
       Object.defineProperty(obj, keyName, defaultDescriptor);
-    } else if (wasDescriptor) {
-      Object.defineProperty(obj, keyName, {
-        configurable: true,
-        enumerable,
-        writable: true,
-        value,
-      });
-    } else if (enumerable === false) {
+    } else if (wasDescriptor || enumerable === false) {
       Object.defineProperty(obj, keyName, {
         configurable: true,
         enumerable,
