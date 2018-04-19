@@ -1039,6 +1039,7 @@ if (!jQueryDisabled) {
       }
 
       [`@test pendingRequests is maintained for ajaxSend and ajaxComplete events`](assert) {
+        let done = assert.async();
         assert.equal(pendingRequests(), 0);
 
         let xhr = { some: 'xhr' };
@@ -1047,7 +1048,10 @@ if (!jQueryDisabled) {
         assert.equal(pendingRequests(), 1, 'Ember.Test.pendingRequests was incremented');
 
         this.trigger('ajaxComplete', xhr);
-        assert.equal(pendingRequests(), 0, 'Ember.Test.pendingRequests was decremented');
+        setTimeout(function() {
+          assert.equal(pendingRequests(), 0, 'Ember.Test.pendingRequests was decremented');
+          done();
+        }, 0);
       }
 
       [`@test pendingRequests is ignores ajaxComplete events from past setupForTesting calls`](
