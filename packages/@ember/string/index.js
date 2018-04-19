@@ -6,8 +6,6 @@ export { getStrings as _getStrings, setStrings as _setStrings } from './lib/stri
 
 import { ENV } from 'ember-environment';
 import { Cache } from 'ember-metal';
-import { inspect } from 'ember-utils';
-import { isArray } from 'ember-runtime';
 import { getString } from './lib/string_registry';
 
 const STRING_DASHERIZE_REGEXP = /[ _]/g;
@@ -76,22 +74,12 @@ const DECAMELIZE_CACHE = new Cache(1000, str =>
 */
 
 function _fmt(str, formats) {
-  let cachedFormats = formats;
-
-  if (!isArray(cachedFormats) || arguments.length > 2) {
-    cachedFormats = new Array(arguments.length - 1);
-
-    for (let i = 1; i < arguments.length; i++) {
-      cachedFormats[i - 1] = arguments[i];
-    }
-  }
-
   // first, replace any ORDERED replacements.
   let idx = 0; // the current index for non-numerical replacements
   return str.replace(/%@([0-9]+)?/g, (s, argIndex) => {
-    argIndex = argIndex ? parseInt(argIndex, 10) - 1 : idx++;
-    s = cachedFormats[argIndex];
-    return s === null ? '(null)' : s === undefined ? '' : inspect(s);
+    let i = argIndex ? parseInt(argIndex, 10) - 1 : idx++;
+    let r = i < formats.length ? formats[i] : undefined;
+    return typeof r === 'string' ? r : r === null ? '(null)' : r === undefined ? '' : '' + r;
   });
 }
 
@@ -122,7 +110,7 @@ function _fmt(str, formats) {
   @public
 */
 export function loc(str, formats) {
-  if (!isArray(formats) || arguments.length > 2) {
+  if (!Array.isArray(formats) || arguments.length > 2) {
     formats = Array.prototype.slice.call(arguments, 1);
   }
 
