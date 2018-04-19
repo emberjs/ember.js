@@ -4,7 +4,7 @@
 
 import { assign } from '@ember/polyfills';
 import Service from '@ember/service';
-import { readOnly } from 'ember-runtime';
+import { readOnly } from '@ember/object/computed';
 import { get } from 'ember-metal';
 
 /**

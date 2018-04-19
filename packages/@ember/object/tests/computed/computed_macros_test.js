@@ -15,10 +15,9 @@ import {
   deprecatingAlias,
   and,
   or,
-} from '../../lib/computed/computed_macros';
+} from '@ember/object/computed';
 
-import EmberObject from '../../lib/system/object';
-import { A as emberA } from '../../lib/mixins/array';
+import { Object as EmberObject, A as emberA } from 'ember-runtime';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(

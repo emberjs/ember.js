@@ -3,9 +3,7 @@
 */
 import { assert } from '@ember/debug';
 import { get, ComputedProperty, addObserver, removeObserver, getProperties } from 'ember-metal';
-import compare from '../compare';
-import { isArray } from '../utils';
-import { A as emberA } from '../mixins/array';
+import { compare, isArray, A as emberA } from 'ember-runtime';
 
 function reduceMacro(dependentKey, callback, initialValue, name) {
   assert(

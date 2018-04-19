@@ -13,10 +13,10 @@ import {
   defineProperty,
   Mixin,
   tagFor,
+  computed,
 } from 'ember-metal';
 import { setProxy } from 'ember-utils';
 import { assert } from '@ember/debug';
-import { bool } from '../computed/computed_macros';
 
 function contentPropertyDidChange(content, contentKey) {
   let key = contentKey.slice(8); // remove "content."
@@ -61,7 +61,9 @@ export default Mixin.create({
     m.writableTag(() => combine([DirtyableTag.create(), UpdatableTag.create(CONSTANT_TAG)]));
   },
 
-  isTruthy: bool('content'),
+  isTruthy: computed('content', function() {
+    return !!get(this, 'content');
+  }),
 
   willWatchProperty(key) {
     let contentKey = `content.${key}`;
