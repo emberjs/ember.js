@@ -13,10 +13,12 @@ export function incrementPendingRequests(_, xhr) {
 }
 
 export function decrementPendingRequests(_, xhr) {
-  for (let i = 0; i < requests.length; i++) {
-    if (xhr === requests[i]) {
-      requests.splice(i, 1);
-      break;
+  setTimeout(function() {
+    for (let i = 0; i < requests.length; i++) {
+      if (xhr === requests[i]) {
+        requests.splice(i, 1);
+        break;
+      }
     }
-  }
+  }, 0);
 }
