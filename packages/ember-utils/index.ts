@@ -23,6 +23,7 @@ export { HAS_NATIVE_SYMBOL } from './lib/symbol-utils';
 export { HAS_NATIVE_PROXY } from './lib/proxy-utils';
 export { default as WeakSet } from './lib/weak_set';
 export { isProxy, setProxy } from './lib/is_proxy';
+export { default as Cache } from './lib/cache';
 
 import symbol from './lib/symbol';
 export const NAME_KEY = symbol('NAME_KEY');

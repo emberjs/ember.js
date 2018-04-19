@@ -101,7 +101,7 @@ let allExports = [
   ['_getPath', 'ember-metal'],
   ['getWithDefault', 'ember-metal'],
   ['trySet', 'ember-metal'],
-  ['_Cache', 'ember-metal', 'Cache'],
+  ['_Cache', 'ember-utils', 'Cache'],
   ['on', 'ember-metal'],
   ['addListener', 'ember-metal'],
   ['removeListener', 'ember-metal'],

@@ -189,6 +189,7 @@ Ember.tryInvoke = utils.tryInvoke;
 Ember.wrap = utils.wrap;
 Ember.uuid = utils.uuid;
 Ember.NAME_KEY = utils.NAME_KEY;
+Ember._Cache = utils.Cache;
 
 // ****container****
 Ember.Container = Container;
@@ -264,7 +265,7 @@ Ember._getPath = metal._getPath;
 Ember.set = metal.set;
 Ember.trySet = metal.trySet;
 Ember.FEATURES = assign({ isEnabled }, FEATURES);
-Ember._Cache = metal.Cache;
+Ember._Cache = utils.Cache;
 Ember.on = metal.on;
 Ember.addListener = metal.addListener;
 Ember.removeListener = metal.removeListener;
