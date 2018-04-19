@@ -31,14 +31,17 @@ moduleFor(
     ['@test object'](assert) {
       assert.equal(inspect({}), '{ }');
       assert.equal(inspect({ foo: 'bar' }), '{ foo: "bar" }');
-      assert.equal(
-        inspect({
-          foo() {
-            return this;
-          },
-        }),
-        '{ foo: [Function:foo] }'
-      );
+      let obj = {
+        foo() {
+          return this;
+        },
+      };
+      // IE 11 doesn't have function name
+      if (obj.foo.name) {
+        assert.equal(inspect(obj), `{ foo: [Function:foo] }`);
+      } else {
+        assert.equal(inspect(obj), `{ foo: [Function] }`);
+      }
     }
 
     ['@test objects without a prototype'](assert) {
