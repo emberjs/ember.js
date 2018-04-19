@@ -1,6 +1,6 @@
+import { assert } from '@ember/debug';
 import { DirtyableTag } from '@glimmer/reference';
 import { normalizeProperty, SVG_NAMESPACE } from '@glimmer/runtime';
-import { assert } from 'ember-debug';
 import { get, PROPERTY_DID_CHANGE } from 'ember-metal';
 import { getOwner } from 'ember-owner';
 import { TargetActionSupport } from 'ember-runtime';

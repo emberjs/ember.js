@@ -5,7 +5,7 @@ import {
   subscribe as instrumentationSubscribe,
   reset as instrumentationReset,
 } from '@ember/instrumentation';
-import { EMBER_IMPROVED_INSTRUMENTATION } from 'ember/features';
+import { EMBER_IMPROVED_INSTRUMENTATION } from '@ember/canary-features';
 
 let canDataTransfer = !!document.createEvent('HTMLEvents').dataTransfer;
 

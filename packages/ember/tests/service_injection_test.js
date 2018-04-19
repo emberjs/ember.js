@@ -4,7 +4,7 @@ import Service, { inject as injectService } from '@ember/service';
 import { _ProxyMixin } from 'ember-runtime';
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 import { computed } from 'ember-metal';
-import { EMBER_MODULE_UNIFICATION } from 'ember/features';
+import { EMBER_MODULE_UNIFICATION } from '@ember/canary-features';
 
 moduleFor(
   'Service Injection',

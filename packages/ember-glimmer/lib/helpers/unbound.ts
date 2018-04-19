@@ -2,8 +2,8 @@
 @module ember
 */
 
+import { assert } from '@ember/debug';
 import { Arguments, VM } from '@glimmer/runtime';
-import { assert } from 'ember-debug';
 import { UnboundReference } from '../utils/references';
 
 /**

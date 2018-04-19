@@ -1,5 +1,5 @@
 import { moduleFor, RenderingTest } from '../../utils/test-case';
-import { EMBER_MODULE_UNIFICATION } from 'ember/features';
+import { EMBER_MODULE_UNIFICATION } from '@ember/canary-features';
 import { Component, helper } from 'ember-glimmer';
 
 if (EMBER_MODULE_UNIFICATION) {

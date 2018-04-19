@@ -1,7 +1,7 @@
 /**
 @module @ember/object
 */
-import { assert } from 'ember-debug';
+import { assert } from '@ember/debug';
 import { get, ComputedProperty, addObserver, removeObserver, getProperties } from 'ember-metal';
 import compare from '../compare';
 import { isArray } from '../utils';

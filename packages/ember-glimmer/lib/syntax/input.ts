@@ -1,10 +1,10 @@
 /**
 @module ember
 */
+import { assert } from '@ember/debug';
 import { Option } from '@glimmer/interfaces';
 import { OpcodeBuilder } from '@glimmer/opcode-compiler';
 import * as WireFormat from '@glimmer/wire-format';
-import { assert } from 'ember-debug';
 import { OwnedTemplateMeta } from 'ember-views';
 import { wrapComponentClassAttribute } from '../utils/bindings';
 import { hashToArgs } from './utils';

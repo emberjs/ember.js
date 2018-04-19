@@ -1,3 +1,4 @@
+import { assert, deprecate } from '@ember/debug';
 import { _instrumentStart } from '@ember/instrumentation';
 import { assign } from '@ember/polyfills';
 import { dasherize } from '@ember/string';
@@ -25,7 +26,6 @@ import {
 } from '@glimmer/runtime';
 import { Destroyable, EMPTY_ARRAY } from '@glimmer/util';
 import { privatize as P } from 'container';
-import { assert, deprecate } from 'ember-debug';
 import { ENV } from 'ember-environment';
 import { get } from 'ember-metal';
 import { getOwner } from 'ember-owner';

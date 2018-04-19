@@ -20,7 +20,7 @@ import {
   getCachedValueFor,
   isNone,
 } from 'ember-metal';
-import { assert } from 'ember-debug';
+import { assert } from '@ember/debug';
 
 /**
   ## Overview

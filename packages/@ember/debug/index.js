@@ -1,17 +1,12 @@
 import { DEBUG } from '@glimmer/env';
-import { ENV } from 'ember-environment';
 import { isChrome, isFirefox } from 'ember-browser-environment';
 import { isTesting } from './lib/testing';
 import EmberError from '@ember/error';
-import { default as isFeatureEnabled } from './lib/features';
-import * as FLAGS from 'ember/features';
-let { DEFAULT_FEATURES, FEATURES } = FLAGS;
 import _deprecate from './lib/deprecate';
 import _warn from './lib/warn';
 
 export { registerHandler as registerWarnHandler } from './lib/warn';
 export { registerHandler as registerDeprecationHandler } from './lib/deprecate';
-export { default as isFeatureEnabled } from './lib/features';
 export { isTesting, setTesting } from './lib/testing';
 
 // These are the default production build versions:
@@ -265,55 +260,6 @@ if (DEBUG) {
 let _warnIfUsingStrippedFeatureFlags;
 
 if (DEBUG && !isTesting()) {
-  /**
-     Will call `warn()` if ENABLE_OPTIONAL_FEATURES or
-     any specific FEATURES flag is truthy.
-
-     This method is called automatically in debug canary builds.
-
-     @private
-     @method _warnIfUsingStrippedFeatureFlags
-     @return {void}
-  */
-  _warnIfUsingStrippedFeatureFlags = function _warnIfUsingStrippedFeatureFlags(
-    FEATURES,
-    knownFeatures,
-    featuresWereStripped
-  ) {
-    if (featuresWereStripped) {
-      warn(
-        'Ember.ENV.ENABLE_OPTIONAL_FEATURES is only available in canary builds.',
-        !ENV.ENABLE_OPTIONAL_FEATURES,
-        { id: 'ember-debug.feature-flag-with-features-stripped' }
-      );
-
-      let keys = Object.keys(FEATURES || {});
-      for (let i = 0; i < keys.length; i++) {
-        let key = keys[i];
-        if (key === 'isEnabled' || !(key in knownFeatures)) {
-          continue;
-        }
-
-        warn(
-          `FEATURE["${key}"] is set as enabled, but FEATURE flags are only available in canary builds.`,
-          !FEATURES[key],
-          { id: 'ember-debug.feature-flag-with-features-stripped' }
-        );
-      }
-    }
-  };
-
-  // Complain if they're using FEATURE flags in builds other than canary
-  FEATURES['features-stripped-test'] = true;
-  let featuresWereStripped = true;
-
-  if (isFeatureEnabled('features-stripped-test')) {
-    featuresWereStripped = false;
-  }
-
-  delete FEATURES['features-stripped-test'];
-  _warnIfUsingStrippedFeatureFlags(ENV.FEATURES, DEFAULT_FEATURES, featuresWereStripped);
-
   if (typeof window !== 'undefined' && (isFirefox || isChrome) && window.addEventListener) {
     window.addEventListener(
       'load',

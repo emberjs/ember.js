@@ -4,9 +4,9 @@ import { CONSTANT_TAG, Tag, VersionedPathReference } from '@glimmer/reference';
 import { ComponentDefinition, Invocation, WithDynamicLayout } from '@glimmer/runtime';
 import { Destroyable, Opaque, Option } from '@glimmer/util';
 
+import { EMBER_ENGINES_MOUNT_PARAMS } from '@ember/canary-features';
 import { generateControllerFactory } from 'ember-routing';
 import { OwnedTemplateMeta } from 'ember-views';
-import { EMBER_ENGINES_MOUNT_PARAMS } from 'ember/features';
 import Environment from '../environment';
 import RuntimeResolver from '../resolver';
 import { OwnedTemplate } from '../template';

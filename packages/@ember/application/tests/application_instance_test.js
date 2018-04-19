@@ -6,7 +6,7 @@ import { privatize as P } from 'container';
 import { factory } from 'internal-test-helpers';
 import { Object as EmberObject } from 'ember-runtime';
 import { moduleFor, AbstractTestCase as TestCase } from 'internal-test-helpers';
-import { getDebugFunction, setDebugFunction } from 'ember-debug';
+import { getDebugFunction, setDebugFunction } from '@ember/debug';
 
 const originalDebug = getDebugFunction('debug');
 const noop = function() {};

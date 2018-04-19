@@ -3,8 +3,8 @@ import { descriptorFor, peekMeta } from './meta';
 import { sendEvent } from './events';
 import { markObjectAsDirty } from './tags';
 import ObserverSet from './observer_set';
-import { EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER } from 'ember/features';
-import { deprecate } from 'ember-debug';
+import { DEBUG } from '@glimmer/env';
+import { deprecate } from '@ember/debug';
 import { assertNotRendered } from './transaction';
 import { changeEvent } from './observer';
 
@@ -108,7 +108,7 @@ function notifyPropertyChange(obj, keyName, _meta) {
     markObjectAsDirty(obj, keyName, meta);
   }
 
-  if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER) {
+  if (DEBUG) {
     assertNotRendered(obj, keyName, meta);
   }
 }

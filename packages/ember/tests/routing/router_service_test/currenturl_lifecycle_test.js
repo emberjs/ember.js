@@ -5,7 +5,7 @@ import { Route } from 'ember-routing';
 import { get } from 'ember-metal';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
 
-import { EMBER_ROUTING_ROUTER_SERVICE } from 'ember/features';
+import { EMBER_ROUTING_ROUTER_SERVICE } from '@ember/canary-features';
 
 if (EMBER_ROUTING_ROUTER_SERVICE) {
   let results = [];

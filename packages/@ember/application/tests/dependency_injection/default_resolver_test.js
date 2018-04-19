@@ -7,7 +7,7 @@ import Service from '@ember/service';
 import { Object as EmberObject, Namespace } from 'ember-runtime';
 import { Route } from 'ember-routing';
 import { Component, Helper, helper as makeHelper } from 'ember-glimmer';
-import { getDebugFunction, setDebugFunction } from 'ember-debug';
+import { getDebugFunction, setDebugFunction } from '@ember/debug';
 
 moduleFor(
   'Application Dependency Injection - Integration - default resolver',

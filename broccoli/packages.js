@@ -13,10 +13,8 @@ const funnelLib = require('./funnel-lib');
 const { VERSION } = require('./version');
 const WriteFile = require('broccoli-file-creator');
 const StringReplace = require('broccoli-string-replace');
-const { RELEASE, DEBUG, toConst } = require('./features');
 const GlimmerTemplatePrecompiler = require('./glimmer-template-compiler');
 const VERSION_PLACEHOLDER = /VERSION_STRING_PLACEHOLDER/g;
-const { stripIndent } = require('common-tags');
 
 const debugTree = BroccoliDebug.buildDebugCallback('ember-source');
 
@@ -293,27 +291,6 @@ module.exports.emberLicense = function _emberLicense() {
       },
     ],
     annotation: 'license',
-  });
-};
-
-module.exports.emberFeaturesES = function _emberFeaturesES(production = false) {
-  let FEATURES = production ? RELEASE : DEBUG;
-  let content = stripIndent`
-    import { ENV } from 'ember-environment';
-    import { assign } from '@ember/polyfills';
-    export const DEFAULT_FEATURES = ${JSON.stringify(FEATURES)};
-    export const FEATURES = assign(DEFAULT_FEATURES, ENV.FEATURES);
-
-
-    ${Object.keys(toConst(FEATURES))
-      .map(FEATURE => {
-        return `export const ${FEATURE} = FEATURES["${FEATURE.replace(/_/g, '-').toLowerCase()}"];`;
-      })
-      .join('\n')}
-  `;
-
-  return new WriteFile('ember/features.js', content, {
-    annotation: `ember/features ${production ? 'production' : 'debug'}`,
   });
 };
 

@@ -1,6 +1,6 @@
 import { assign } from '@ember/polyfills';
 import { dictionary, intern } from 'ember-utils';
-import { assert, deprecate } from 'ember-debug';
+import { assert, deprecate } from '@ember/debug';
 import Container from './container';
 import { DEBUG } from '@glimmer/env';
 import { ENV } from 'ember-environment';

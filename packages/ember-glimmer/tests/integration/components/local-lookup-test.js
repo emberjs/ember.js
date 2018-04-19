@@ -3,7 +3,7 @@ import { compile } from 'ember-template-compiler';
 import { ModuleBasedTestResolver } from 'internal-test-helpers';
 import { moduleFor as applicationModuleFor, ApplicationTestCase } from 'internal-test-helpers';
 import { Component } from '../../utils/helpers';
-import { EMBER_MODULE_UNIFICATION } from 'ember/features';
+import { EMBER_MODULE_UNIFICATION } from '@ember/canary-features';
 import { helper, Helper } from 'ember-glimmer';
 
 class LocalLookupTest extends RenderingTest {

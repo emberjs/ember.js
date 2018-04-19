@@ -1,4 +1,4 @@
-import { assert } from 'ember-debug';
+import { assert } from '@ember/debug';
 import { guidFor } from 'ember-utils';
 import { copyNull } from './utils';
 

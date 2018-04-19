@@ -2,9 +2,9 @@
 @module ember
 */
 
+import { assert } from '@ember/debug';
 import { combine, CONSTANT_TAG, isConst, TagWrapper, UpdatableTag } from '@glimmer/reference';
 import { Arguments, PrimitiveReference, VM } from '@glimmer/runtime';
-import { assert } from 'ember-debug';
 import { CachedReference, ConditionalReference } from '../utils/references';
 
 class ConditionalHelperReference extends CachedReference {

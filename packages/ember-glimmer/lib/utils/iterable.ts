@@ -1,3 +1,4 @@
+import { assert } from '@ember/debug';
 import {
   AbstractIterable,
   combine,
@@ -9,7 +10,6 @@ import {
   VersionedReference,
 } from '@glimmer/reference';
 import { Opaque, Option } from '@glimmer/util';
-import { assert } from 'ember-debug';
 import { get, objectAt, tagFor, tagForProperty } from 'ember-metal';
 import { _contentFor, isEmberArray } from 'ember-runtime';
 import { guidFor, HAS_NATIVE_SYMBOL, isProxy } from 'ember-utils';

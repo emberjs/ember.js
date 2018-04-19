@@ -1,7 +1,7 @@
 import Controller from '@ember/controller';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
 
-import { EMBER_ROUTING_ROUTER_SERVICE } from 'ember/features';
+import { EMBER_ROUTING_ROUTER_SERVICE } from '@ember/canary-features';
 
 if (EMBER_ROUTING_ROUTER_SERVICE) {
   moduleFor(

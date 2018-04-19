@@ -4,7 +4,7 @@ import { createTracked } from './support';
 
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
-import { EMBER_METAL_TRACKED_PROPERTIES } from 'ember/features';
+import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 
 if (EMBER_METAL_TRACKED_PROPERTIES) {
   moduleFor(

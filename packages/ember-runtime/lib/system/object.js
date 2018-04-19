@@ -8,7 +8,7 @@ import { symbol, setName } from 'ember-utils';
 import { on, descriptor } from 'ember-metal';
 import CoreObject from './core_object';
 import Observable from '../mixins/observable';
-import { assert } from 'ember-debug';
+import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 
 let OVERRIDE_OWNER = symbol('OVERRIDE_OWNER');

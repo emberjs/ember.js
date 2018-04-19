@@ -4,7 +4,7 @@ import { Component } from '../utils/helpers';
 
 import { Object as EmberObject } from 'ember-runtime';
 import { set, setProperties, computed } from 'ember-metal';
-import { GLIMMER_CUSTOM_COMPONENT_MANAGER } from 'ember/features';
+import { GLIMMER_CUSTOM_COMPONENT_MANAGER } from '@ember/canary-features';
 import { componentManager } from 'ember-glimmer';
 import { getChildViews } from 'ember-views';
 import { assign } from '@ember/polyfills';

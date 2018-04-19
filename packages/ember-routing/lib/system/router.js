@@ -3,7 +3,7 @@ import { assign } from '@ember/polyfills';
 import { cancel, once, run, scheduleOnce, schedule } from '@ember/runloop';
 import { get, set, defineProperty, computed } from 'ember-metal';
 import EmberError from '@ember/error';
-import { deprecate, assert, info } from 'ember-debug';
+import { assert, deprecate, info } from '@ember/debug';
 import { Object as EmberObject, Evented, typeOf, A as emberA } from 'ember-runtime';
 import { defaultSerialize, hasDefaultSerialize } from './route';
 import EmberRouterDSL from './dsl';

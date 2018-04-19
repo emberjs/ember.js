@@ -1,4 +1,4 @@
-import { assert } from 'ember-debug';
+import { assert } from '@ember/debug';
 import EmberObject from './system/object';
 import Copyable from './mixins/copyable';
 /**

@@ -2,9 +2,9 @@
 @module @ember/object
 */
 import { DEBUG } from '@glimmer/env';
-import { assert, deprecate } from 'ember-debug';
+import { assert, deprecate } from '@ember/debug';
 import { HAS_NATIVE_PROXY, symbol } from 'ember-utils';
-import { EMBER_METAL_TRACKED_PROPERTIES } from 'ember/features';
+import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { isPath } from './path_cache';
 import { isDescriptor, descriptorFor } from './meta';
 import { getCurrentTracker } from './tracked';

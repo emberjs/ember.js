@@ -2,7 +2,7 @@
 @module ember
 */
 import { get } from 'ember-metal';
-import { assert } from 'ember-debug';
+import { assert } from '@ember/debug';
 import { jQueryDisabled } from 'ember-views';
 
 /**

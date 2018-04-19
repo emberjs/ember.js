@@ -1,4 +1,4 @@
-import { warn } from 'ember-debug';
+import { warn } from '@ember/debug';
 import { jQuery, jQueryDisabled } from 'ember-views';
 
 import { hasDOM } from 'ember-browser-environment';

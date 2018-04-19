@@ -18,7 +18,7 @@ import {
 } from '../lib/test/pending_requests';
 import { setAdapter, getAdapter } from '../lib/test/adapter';
 import { registerWaiter, unregisterWaiter } from '../lib/test/waiters';
-import { getDebugFunction, setDebugFunction } from 'ember-debug';
+import { getDebugFunction, setDebugFunction } from '@ember/debug';
 
 var originalInfo = getDebugFunction('info');
 var noop = function() {};

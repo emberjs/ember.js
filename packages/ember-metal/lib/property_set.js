@@ -1,7 +1,7 @@
 import { HAS_NATIVE_PROXY, toString } from 'ember-utils';
 import EmberError from '@ember/error';
 import { DEBUG } from '@glimmer/env';
-import { assert } from 'ember-debug';
+import { assert } from '@ember/debug';
 import { getPossibleMandatoryProxyValue, _getPath as getPath } from './property_get';
 import { notifyPropertyChange } from './property_events';
 

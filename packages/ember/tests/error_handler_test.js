@@ -1,4 +1,4 @@
-import { isTesting, setTesting } from 'ember-debug';
+import { isTesting, setTesting } from '@ember/debug';
 import { later, run } from '@ember/runloop';
 import { getOnerror, setOnerror } from 'ember-error-handling';
 import RSVP from 'rsvp';

@@ -14,7 +14,7 @@ import {
 import { isArray } from '../utils';
 import EmberObject from './object';
 import { MutableArray } from '../mixins/array';
-import { assert } from 'ember-debug';
+import { assert } from '@ember/debug';
 
 const ARRAY_OBSERVER_MAPPING = {
   willChange: '_arrangedContentArrayWillChange',

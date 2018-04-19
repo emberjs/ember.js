@@ -21,7 +21,7 @@ import {
   arrayContentWillChange,
   arrayContentDidChange,
 } from 'ember-metal';
-import { assert, deprecate } from 'ember-debug';
+import { assert, deprecate } from '@ember/debug';
 import Enumerable from './enumerable';
 import compare from '../compare';
 import { ENV } from 'ember-environment';

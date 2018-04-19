@@ -1,4 +1,4 @@
-import * as FLAGS from 'ember/features';
+import { FEATURES } from '@ember/canary-features';
 import { ENV, context } from 'ember-environment';
 import VERSION from 'ember/version';
 
@@ -9,7 +9,7 @@ if (!_Ember.ENV) {
   _Ember.ENV = ENV;
 }
 if (!_Ember.FEATURES) {
-  _Ember.FEATURES = FLAGS.FEATURES;
+  _Ember.FEATURES = FEATURES;
 }
 if (!_Ember.VERSION) {
   _Ember.VERSION = VERSION;

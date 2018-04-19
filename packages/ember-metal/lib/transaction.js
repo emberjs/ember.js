@@ -1,11 +1,10 @@
-import { assert } from 'ember-debug';
+import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER } from 'ember/features';
 
 let runInTransaction, didRender, assertNotRendered;
 
 // detect-backtracking-rerender by default is debug build only
-if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER) {
+if (DEBUG) {
   // there are 2 states
 
   // DEBUG

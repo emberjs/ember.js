@@ -1,7 +1,7 @@
 import Controller from '@ember/controller';
 import { moduleFor, ApplicationTest, RenderingTest } from '../../utils/test-case';
 import { Component } from '../../utils/helpers';
-import { getDebugFunction, setDebugFunction } from 'ember-debug';
+import { getDebugFunction, setDebugFunction } from '@ember/debug';
 
 const originalDebug = getDebugFunction('debug');
 const noop = function() {};

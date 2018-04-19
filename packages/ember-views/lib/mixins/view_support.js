@@ -1,6 +1,6 @@
 import { guidFor } from 'ember-utils';
 import { descriptor, descriptorFor, Mixin } from 'ember-metal';
-import { assert } from 'ember-debug';
+import { assert } from '@ember/debug';
 import { hasDOM } from 'ember-browser-environment';
 import { matches } from '../system/utils';
 import { default as jQuery, jQueryDisabled } from '../system/jquery';

@@ -2,7 +2,7 @@
 import { RenderingTest, moduleFor } from '../utils/test-case';
 import { applyMixins } from '../utils/abstract-test-case';
 import { set, computed } from 'ember-metal';
-import { getDebugFunction, setDebugFunction } from 'ember-debug';
+import { getDebugFunction, setDebugFunction } from '@ember/debug';
 import { Object as EmberObject, ObjectProxy, readOnly } from 'ember-runtime';
 import { classes } from '../utils/test-helpers';
 import { constructStyleDeprecationMessage } from 'ember-views';

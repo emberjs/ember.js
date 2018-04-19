@@ -1,6 +1,8 @@
 /**
 @module ember
 */
+import { EMBER_ENGINES_MOUNT_PARAMS } from '@ember/canary-features';
+import { assert } from '@ember/debug';
 import { Opaque, Option } from '@glimmer/interfaces';
 import { OpcodeBuilder } from '@glimmer/opcode-compiler';
 import { Tag, VersionedPathReference } from '@glimmer/reference';
@@ -12,9 +14,7 @@ import {
   VM,
 } from '@glimmer/runtime';
 import * as WireFormat from '@glimmer/wire-format';
-import { assert } from 'ember-debug';
 import { OwnedTemplateMeta } from 'ember-views';
-import { EMBER_ENGINES_MOUNT_PARAMS } from 'ember/features';
 import { MountDefinition } from '../component-managers/mount';
 import Environment from '../environment';
 

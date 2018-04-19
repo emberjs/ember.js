@@ -40,7 +40,7 @@ publish_to_bower/
 bower_components/
 npm-debug.log
 .ember-cli
-DEBUG/
+/DEBUG/
 *.tgz
 *.tar.gz
 *.log

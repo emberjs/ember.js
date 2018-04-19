@@ -6,9 +6,9 @@ import * as utils from 'ember-utils';
 import { Registry, Container } from 'container';
 import * as instrumentation from '@ember/instrumentation';
 import * as metal from 'ember-metal';
-import * as FLAGS from 'ember/features';
-import * as EmberDebug from 'ember-debug';
-import { assert, deprecate } from 'ember-debug';
+import { FEATURES, isEnabled } from '@ember/canary-features';
+import * as EmberDebug from '@ember/debug';
+import { assert, deprecate } from '@ember/debug';
 import Backburner from 'backburner';
 import Logger from 'ember-console';
 import Controller, { inject as injectController } from '@ember/controller';
@@ -194,7 +194,7 @@ Ember.NAME_KEY = utils.NAME_KEY;
 Ember.Container = Container;
 Ember.Registry = Registry;
 
-// ****ember-debug****
+// ****@ember/debug****
 Ember.assert = EmberDebug.assert;
 Ember.warn = EmberDebug.warn;
 Ember.debug = EmberDebug.debug;
@@ -263,8 +263,7 @@ Ember.getWithDefault = metal.getWithDefault;
 Ember._getPath = metal._getPath;
 Ember.set = metal.set;
 Ember.trySet = metal.trySet;
-Ember.FEATURES = FLAGS.FEATURES;
-Ember.FEATURES.isEnabled = EmberDebug.isFeatureEnabled;
+Ember.FEATURES = assign({ isEnabled }, FEATURES);
 Ember._Cache = metal.Cache;
 Ember.on = metal.on;
 Ember.addListener = metal.addListener;

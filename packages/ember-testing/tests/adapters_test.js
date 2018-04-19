@@ -6,7 +6,7 @@ import QUnitAdapter from '../lib/adapters/qunit';
 import EmberApplication from '@ember/application';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 import { RSVP } from 'ember-runtime';
-import { getDebugFunction, setDebugFunction } from 'ember-debug';
+import { getDebugFunction, setDebugFunction } from '@ember/debug';
 
 const originalDebug = getDebugFunction('debug');
 const noop = function() {};

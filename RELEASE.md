@@ -128,11 +128,11 @@ end
 1. Branch locally to `beta`
     1. `git checkout -b beta`
 1. Manually disable features
-    1. Change everything in `features.json` from `null` to `false` to ensure they are stripped
+    1. Change everything in `packages/@ember/canary-features.ts`'s `DEFAULT_FEATURES` export from `null` to `false` to ensure they are stripped
     1. Any feature that has been GOed gets changed to true
 1. Run `ember s -prod`
 1. Run tests at `http://localhost:4200/tests/index.html`
-1. Run production tests `http://localhost:4200/tests/index.htmlskipPackage=container,ember-testing,ember-debug&dist=prod&prod=true`
+1. Run production tests `http://localhost:4200/tests/index.htmlskipPackage=container,ember-testing,@ember/debug&dist=prod&prod=true`
 1. In `.travis.yml`, remove `branches:` section e.g. [this commit](https://github.com/emberjs/ember.js/commit/e38ec5d910721a9e02a819b4105a4875723f4b1b).
 1. Now we have to look at the commit just prior to branching 2.4.0.beta-1. Then find the commit after that to start the new branch at.
 

@@ -5,7 +5,7 @@ import {
   AbstractTestCase,
   ModuleBasedTestResolver,
 } from 'internal-test-helpers';
-import { EMBER_MODULE_UNIFICATION } from 'ember/features';
+import { EMBER_MODULE_UNIFICATION } from '@ember/canary-features';
 import { ENV } from 'ember-environment';
 
 moduleFor(

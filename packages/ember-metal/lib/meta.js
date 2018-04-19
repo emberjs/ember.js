@@ -1,6 +1,6 @@
 import { lookupDescriptor, symbol, toString } from 'ember-utils';
 import { protoMethods as listenerMethods } from './meta_listeners';
-import { assert } from 'ember-debug';
+import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { removeChainWatcher } from './chains';
 import { ENV } from 'ember-environment';
