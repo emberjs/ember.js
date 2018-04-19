@@ -128,7 +128,7 @@ end
 1. Branch locally to `beta`
     1. `git checkout -b beta`
 1. Manually disable features
-    1. Change everything in `features.json` from `null` to `false` to ensure they are stripped
+    1. Change everything in `packages/@ember/canary-features.ts`'s `DEFAULT_FEATURES` export from `null` to `false` to ensure they are stripped
     1. Any feature that has been GOed gets changed to true
 1. Run `ember s -prod`
 1. Run tests at `http://localhost:4200/tests/index.html`

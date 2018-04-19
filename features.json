@@ -1,16 +1,4 @@
 {
-  "features": {
-    "features-stripped-test": null,
-    "ember-libraries-isregistered": null,
-    "ember-improved-instrumentation": null,
-    "ember-glimmer-named-arguments": true,
-    "ember-routing-router-service": true,
-    "ember-engines-mount-params": true,
-    "ember-module-unification": null,
-    "glimmer-custom-component-manager": null,
-    "ember-template-block-let-helper": true,
-    "ember-metal-tracked-properties": null
-  },
   "deprecations": {
     "container-lookupFactory": "2.12.0",
     "ember-application.injected-container": "2.3.0",

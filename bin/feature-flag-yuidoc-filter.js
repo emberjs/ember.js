@@ -1,4 +1,4 @@
-var fs = require('fs');
+var FEATURES = require('../broccoli/features');
 
 function isClassToBeIncluded(item, featuresToFilter) {
   if (item.category) {
@@ -14,8 +14,7 @@ function isClassToBeIncluded(item, featuresToFilter) {
 }
 
 function gatherFeatures() {
-  var featuresJson = JSON.parse(fs.readFileSync('features.json'));
-  var featuresObj = featuresJson.features;
+  var featuresObj = Object.assign({}, FEATURES);
   var featuresToFilter = [];
   for (var feature in featuresObj) {
     if (featuresObj[feature] === null || featuresObj[feature] === false) {
