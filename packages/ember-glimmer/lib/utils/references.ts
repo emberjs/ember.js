@@ -1,4 +1,3 @@
-import { EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER } from '@ember/canary-features';
 import { DEBUG } from '@glimmer/env';
 import { Opaque } from '@glimmer/interfaces';
 import {
@@ -113,7 +112,7 @@ let TwoWayFlushDetectionTag: {
   ): TagWrapper<TwoWayFlushDetectionTag>;
 };
 
-if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER) {
+if (DEBUG) {
   TwoWayFlushDetectionTag = class {
     public tag: Tag;
     public parent: Opaque;
@@ -186,7 +185,7 @@ export class RootPropertyReference extends PropertyReference
     this._parentValue = parentValue;
     this._propertyKey = propertyKey;
 
-    if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER) {
+    if (DEBUG) {
       this.tag = TwoWayFlushDetectionTag.create(
         tagForProperty(parentValue, propertyKey),
         propertyKey,
@@ -204,7 +203,7 @@ export class RootPropertyReference extends PropertyReference
   compute() {
     let { _parentValue, _propertyKey } = this;
 
-    if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER) {
+    if (DEBUG) {
       (this.tag.inner as TwoWayFlushDetectionTag).didCompute(_parentValue);
     }
 
@@ -232,7 +231,7 @@ export class NestedPropertyReference extends PropertyReference {
     this._parentObjectTag = parentObjectTag;
     this._propertyKey = propertyKey;
 
-    if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER) {
+    if (DEBUG) {
       let tag = combine([parentReferenceTag, parentObjectTag]);
       this.tag = TwoWayFlushDetectionTag.create(tag, propertyKey, this);
     } else {
@@ -258,7 +257,7 @@ export class NestedPropertyReference extends PropertyReference {
         watchKey(parentValue, _propertyKey);
       }
 
-      if (EMBER_GLIMMER_DETECT_BACKTRACKING_RERENDER) {
+      if (DEBUG) {
         (this.tag.inner as TwoWayFlushDetectionTag).didCompute(parentValue);
       }
 
