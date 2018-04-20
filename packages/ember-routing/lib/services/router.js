@@ -6,27 +6,32 @@ import { Service, readOnly } from 'ember-runtime';
 import { shallowEqual, resemblesURL, extractRouteArgs } from '../utils';
 
 /**
-   The Router service is the public API that provides component/view layer
-   access to the router.
+   The Router service is the public API that provides components and
+   other services access to the router.
    
-   For example, you can mirror the route name to the class property on 
-   a component. Handy when scoping CSS based on the current route.
+   It provides access to the current route, route transitions and more.
+   
+   Below is an example of how it can be used. In this example we transition
+   to a dedicated route if the application goes offline. Note that this is
+   a boiled down example, in your app you should remove the event listener on 
+   teardown.
    
    ```js
-   import Component from '@ember/component';
-   import { inject } from '@ember/service';
-   import { computed } from '@ember/object';
-   import { dasherize } from '@ember/string';
+   // app/services/network-connection.js
+   
+   import Service, { inject } from '@ember/service';
 
-   export default Component.extend({
+   export default Service.extend({
      router: inject.service(),
-     classNameBindings: ['_routeAsClass'],
-
-     _routeAsClass: computed('router.currentRouteName', function() {
-       let name = this.get('router.currentRouteName');
-       let dasherizedName = dasherize(name).replace(/\./g, '-');
-       return `${name}-route`;
-     }),
+     
+     init() {
+       this._super();
+       
+       window.addEventListener('offline', () => {
+         this.get('router').transitionTo('offline');
+       });
+     },
+     
    });
    ```
 
