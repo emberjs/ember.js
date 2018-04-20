@@ -6,6 +6,60 @@ import { runDestroy, runAppend } from 'internal-test-helpers';
 moduleFor(
   'Layout cache test',
   class extends RenderingTest {
+    '@test a component definition is only generated once'(assert) {
+      // static layout
+      this.registerComponent('component-one', { template: 'One' });
+      this.registerComponent('component-two', {
+        ComponentClass: Component.extend(),
+        template: 'Two',
+      });
+      // assert precondition
+      let state = this.getCacheCounters();
+      assert.deepEqual(
+        state,
+        {
+          templateCacheHits: 0,
+          templateCacheMisses: 0,
+          componentDefinitionCount: 0,
+        },
+        'precondition'
+      );
+
+      // show component-one for the first time
+      this.render(`{{component componentName}}`, {
+        componentName: 'component-one',
+      });
+
+      this.assertText('One');
+      state = this.expectCacheChanges(
+        { componentDefinitionCount: 1 },
+        state,
+        'test case component and component-one no change'
+      );
+
+      // show component-two for the first time
+      this.runTask(() => set(this.context, 'componentName', 'component-two'));
+
+      this.assertText('Two');
+      state = this.expectCacheChanges(
+        { componentDefinitionCount: 1 },
+        state,
+        'component-two first render'
+      );
+
+      // show component-one again
+      this.runTask(() => set(this.context, 'componentName', 'component-one'));
+
+      this.assertText('One');
+      state = this.expectCacheChanges({}, state, 'toggle back to component-one no change');
+
+      // show component-two again
+      this.runTask(() => set(this.context, 'componentName', 'component-two'));
+
+      this.assertText('Two');
+      state = this.expectCacheChanges({}, state, 'toggle back to component-two no change');
+    }
+
     ['@test each template is only compiled once'](assert) {
       // static layout
       this.registerComponent('component-one', { template: 'One' });
@@ -30,6 +84,7 @@ moduleFor(
         {
           templateCacheHits: 0,
           templateCacheMisses: 0,
+          componentDefinitionCount: 0,
         },
         'precondition'
       );
@@ -48,7 +103,11 @@ moduleFor(
       );
 
       this.assertText('One');
-      state = this.expectCacheChanges({}, state, 'test case component and component-one no change');
+      state = this.expectCacheChanges(
+        { componentDefinitionCount: 1 },
+        state,
+        'test case component and component-one no change'
+      );
 
       // show component-two for the first time
       this.runTask(() => set(this.context, 'cond', false));
@@ -57,6 +116,7 @@ moduleFor(
       state = this.expectCacheChanges(
         {
           templateCacheMisses: 1,
+          componentDefinitionCount: 1,
         },
         state,
         'component-two first render misses template cache'
@@ -103,10 +163,16 @@ moduleFor(
     }
 
     getCacheCounters() {
-      let { runtimeResolver: { templateCacheHits, templateCacheMisses } } = this;
+      let {
+        templateCacheHits,
+        templateCacheMisses,
+        componentDefinitionCount,
+      } = this.runtimeResolver;
+
       return {
         templateCacheHits,
         templateCacheMisses,
+        componentDefinitionCount,
       };
     }
 
