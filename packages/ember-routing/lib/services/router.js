@@ -6,15 +6,14 @@ import { Service, readOnly } from 'ember-runtime';
 import { shallowEqual, resemblesURL, extractRouteArgs } from '../utils';
 
 /**
-   The Router service is the public API that provides components and
-   other services access to the router.
+   The Router service is provides components, and other services, access
+   to the router.
    
-   It provides access to the current route, route transitions and more.
+   It can be used to check the current route, initiate route transitions and more.
    
-   Below is an example of how it can be used. In this example we transition
-   to a dedicated route if the application goes offline. Note that this is
-   a boiled down example, in your app you should remove the event listener on 
-   teardown.
+   For exapmle, it can be used to transition to a dedicated route if the 
+   application goes offline. Note that this is a boiled down example, 
+   in your app you should remove the event listener on service teardown.
    
    ```js
    // app/services/network-connection.js
