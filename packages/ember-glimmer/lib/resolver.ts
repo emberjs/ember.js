@@ -120,6 +120,7 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
   public templateCacheHits = 0;
   public templateCacheMisses = 0;
   public componentDefinitionCount = 0;
+  public helperDefinitionCount = 0;
 
   constructor() {
     populateMacros(this.templateOptions.macros);
@@ -152,9 +153,15 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
    * Called by CompileTimeLookup compiling Unknown or Helper OpCode
    */
   lookupHelper(name: string, meta: OwnedTemplateMeta): Option<number> {
-    let handle = this._lookupHelper(name, meta);
-    if (handle !== null) {
-      return this.handle(handle);
+    let nextHandle = this.handles.length;
+    let helper = this._lookupHelper(name, meta);
+    if (helper !== null) {
+      let handle = this.handle(helper);
+
+      if (nextHandle === handle) {
+        this.helperDefinitionCount++;
+      }
+      return handle;
     }
     return null;
   }
