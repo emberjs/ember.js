@@ -1,5 +1,5 @@
 import { inject as injectService } from '@ember/service';
-import { readOnly } from 'ember-runtime';
+import { readOnly } from '@ember/object/computed';
 import { Component } from 'ember-glimmer';
 import { Route } from 'ember-routing';
 import { get } from 'ember-metal';

@@ -1,6 +1,5 @@
 import { get, setProperties, computed, Mixin } from 'ember-metal';
 import EmberError from '@ember/error';
-import { not, or } from '../computed/computed_macros';
 
 /**
   @module @ember/object
@@ -116,7 +115,9 @@ export default Mixin.create({
     @default true
     @public
   */
-  isPending: not('isSettled').readOnly(),
+  isPending: computed('isSettled', function() {
+    return !get(this, 'isSettled');
+  }).readOnly(),
 
   /**
     Once the proxied promise has settled this will become `true`.
@@ -125,7 +126,9 @@ export default Mixin.create({
     @default false
     @public
   */
-  isSettled: or('isRejected', 'isFulfilled').readOnly(),
+  isSettled: computed('isRejected', 'isFulfilled', function() {
+    return get(this, 'isRejected') || get(this, 'isFulfilled');
+  }).readOnly(),
 
   /**
     Will become `true` if the proxied promise is rejected.
