@@ -14,8 +14,6 @@ function makeTag() {
   return DirtyableTag.create();
 }
 
-export const TRACKED_GETTERS = EMBER_METAL_TRACKED_PROPERTIES ? new WeakMap() : undefined;
-
 export function tagForProperty(object, propertyKey, _meta) {
   if (typeof object !== 'object' || object === null) {
     return CONSTANT_TAG;
