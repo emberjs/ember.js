@@ -4,15 +4,12 @@ import { set } from 'ember-metal';
 import { runDestroy, runAppend } from 'internal-test-helpers';
 
 moduleFor(
-  'Layout cache test',
+  'ember-glimmer runtime resolver cache',
   class extends RenderingTest {
-    '@test a component definition is only generated once'(assert) {
-      // static layout
-      this.registerComponent('component-one', { template: 'One' });
-      this.registerComponent('component-two', {
-        ComponentClass: Component.extend(),
-        template: 'Two',
-      });
+    '@test a helper definition is only generated once'(assert) {
+      this.registerHelper('foo-bar', () => 'foo-bar helper!');
+      this.registerHelper('baz-qux', () => 'baz-qux helper!');
+
       // assert precondition
       let state = this.getCacheCounters();
       assert.deepEqual(
@@ -21,6 +18,72 @@ moduleFor(
           templateCacheHits: 0,
           templateCacheMisses: 0,
           componentDefinitionCount: 0,
+          helperDefinitionCount: 0,
+        },
+        'precondition'
+      );
+
+      this.render(
+        `
+          {{~#if cond~}}
+            {{foo-bar}}
+          {{~else~}}
+            {{baz-qux}}
+          {{~/if}}`,
+        {
+          cond: true,
+        }
+      );
+
+      this.assertText('foo-bar helper!');
+      state = this.expectCacheChanges(
+        { helperDefinitionCount: 1 },
+        state,
+        'calculate foo-bar helper only'
+      );
+
+      // show component-two for the first time
+      this.runTask(() => set(this.context, 'cond', false));
+
+      this.assertText('baz-qux helper!');
+      state = this.expectCacheChanges(
+        {
+          helperDefinitionCount: 1,
+        },
+        state,
+        'calculate baz-qux helper, misses cache'
+      );
+
+      // show foo-bar again
+      this.runTask(() => set(this.context, 'cond', true));
+
+      this.assertText('foo-bar helper!');
+      state = this.expectCacheChanges({}, state, 'toggle back to foo-bar cache hit');
+
+      // show baz-qux again
+      this.runTask(() => set(this.context, 'cond', false));
+
+      this.assertText('baz-qux helper!');
+      state = this.expectCacheChanges({}, state, 'toggle back to baz-qux cache hit');
+    }
+
+    '@test a component definition is only generated once'(assert) {
+      // static layout
+      this.registerComponent('component-one', { template: 'One' });
+      this.registerComponent('component-two', {
+        ComponentClass: Component.extend(),
+        template: 'Two',
+      });
+
+      // assert precondition
+      let state = this.getCacheCounters();
+      assert.deepEqual(
+        state,
+        {
+          templateCacheHits: 0,
+          templateCacheMisses: 0,
+          componentDefinitionCount: 0,
+          helperDefinitionCount: 0,
         },
         'precondition'
       );
@@ -85,6 +148,7 @@ moduleFor(
           templateCacheHits: 0,
           templateCacheMisses: 0,
           componentDefinitionCount: 0,
+          helperDefinitionCount: 0,
         },
         'precondition'
       );
@@ -167,12 +231,14 @@ moduleFor(
         templateCacheHits,
         templateCacheMisses,
         componentDefinitionCount,
+        helperDefinitionCount,
       } = this.runtimeResolver;
 
       return {
         templateCacheHits,
         templateCacheMisses,
         componentDefinitionCount,
+        helperDefinitionCount,
       };
     }
 
