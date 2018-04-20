@@ -1,5 +1,13 @@
 import { Register } from '@glimmer/vm';
-import { ProgramSymbolTable, CompilableProgram, CompilableBlock, LayoutWithContext, Compiler, Recast } from '@glimmer/interfaces';
+import {
+  ProgramSymbolTable,
+  CompilableProgram,
+  CompilableBlock,
+  LayoutWithContext,
+  Compiler,
+  Option,
+  Recast
+} from '@glimmer/interfaces';
 
 import {
   ComponentArgs,
@@ -11,13 +19,17 @@ import { CompilableBlock as CompilableBlockInstance } from './compilable-templat
 import { OpcodeBuilder } from './opcode-builder';
 import { ATTRS_BLOCK } from './syntax';
 
-import { DEBUG } from "@glimmer/local-debug-flags";
-import { EMPTY_ARRAY } from "@glimmer/util";
+import { DEBUG } from '@glimmer/local-debug-flags';
+import { EMPTY_ARRAY } from '@glimmer/util';
 
 export class WrappedBuilder<Locator> implements CompilableProgram {
   public symbolTable: ProgramSymbolTable;
+  private compiled: Option<number> = null;
 
-  constructor(private compiler: Compiler<OpcodeBuilder<Locator>>, private layout: LayoutWithContext<Locator>) {
+  constructor(
+    private compiler: Compiler<OpcodeBuilder<Locator>>,
+    private layout: LayoutWithContext<Locator>
+  ) {
     let { block } = layout;
 
     this.symbolTable = {
@@ -27,6 +39,7 @@ export class WrappedBuilder<Locator> implements CompilableProgram {
   }
 
   compile(): number {
+    if (this.compiled !== null) return this.compiled;
     //========DYNAMIC
     //        PutValue(TagExpr)
     //        Test
@@ -92,14 +105,23 @@ export class WrappedBuilder<Locator> implements CompilableProgram {
     let handle = b.commit();
 
     if (DEBUG) {
-      debug(compiler as Recast<Compiler<OpcodeBuilder<Locator>>, AnyAbstractCompiler>, handle);
+      debug(
+        compiler as Recast<
+          Compiler<OpcodeBuilder<Locator>>,
+          AnyAbstractCompiler
+        >,
+        handle
+      );
     }
 
-    return handle;
+    return (this.compiled = handle);
   }
 }
 
-function blockFor<Locator>(layout: LayoutWithContext, compiler: Compiler<OpcodeBuilder<Locator>>): CompilableBlock {
+function blockFor<Locator>(
+  layout: LayoutWithContext,
+  compiler: Compiler<OpcodeBuilder<Locator>>
+): CompilableBlock {
   return new CompilableBlockInstance(compiler, {
     block: {
       statements: layout.block.statements,
@@ -117,14 +139,34 @@ export class ComponentBuilder<Locator> implements IComponentBuilder {
     let { builder } = this;
 
     if (handle !== null) {
-      let { capabilities, compilable } = builder.compiler.resolveLayoutForHandle(handle);
+      let {
+        capabilities,
+        compilable
+      } = builder.compiler.resolveLayoutForHandle(handle);
 
       if (compilable) {
         builder.pushComponentDefinition(handle);
-        builder.invokeStaticComponent(capabilities, compilable, null, params, hash, false, _default, inverse);
+        builder.invokeStaticComponent(
+          capabilities,
+          compilable,
+          null,
+          params,
+          hash,
+          false,
+          _default,
+          inverse
+        );
       } else {
         builder.pushComponentDefinition(handle);
-        builder.invokeComponent(capabilities, null, params, hash, false, _default, inverse);
+        builder.invokeComponent(
+          capabilities,
+          null,
+          params,
+          hash,
+          false,
+          _default,
+          inverse
+        );
       }
     }
   }
