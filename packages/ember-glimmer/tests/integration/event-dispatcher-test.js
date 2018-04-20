@@ -62,6 +62,44 @@ moduleFor('EventDispatcher', class extends RenderingTest {
     assert.strictEqual(receivedEvent.target, this.$('#is-done')[0]);
   }
 
+  ['@test case insensitive events'](assert) {
+    let receivedEvent;
+
+    this.registerComponent('x-bar', {
+      ComponentClass: Component.extend({
+        clicked(event) {
+          receivedEvent = event;
+        },
+      }),
+      template: `<button id="is-done" onclick={{action clicked}}>my button</button>`,
+    });
+
+    this.render(`{{x-bar}}`);
+
+    this.runTask(() => this.$('#is-done').trigger('click'));
+    assert.ok(receivedEvent, 'change event was triggered');
+    assert.strictEqual(receivedEvent.target, this.$('#is-done')[0]);
+  }
+
+  ['@test case sensitive events'](assert) {
+    let receivedEvent;
+
+    this.registerComponent('x-bar', {
+      ComponentClass: Component.extend({
+        clicked(event) {
+          receivedEvent = event;
+        },
+      }),
+      template: `<button id="is-done" onClick={{action clicked}}>my button</button>`,
+    });
+
+    this.render(`{{x-bar}}`);
+
+    this.runTask(() => this.$('#is-done').trigger('click'));
+    assert.ok(receivedEvent, 'change event was triggered');
+    assert.strictEqual(receivedEvent.target, this.$('#is-done')[0]);
+  }
+
   ['@test events bubbling up can be prevented'](assert) {
     let hasReceivedEvent;
 
