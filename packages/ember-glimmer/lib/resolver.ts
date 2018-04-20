@@ -109,6 +109,7 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
 
   public templateCacheHits = 0;
   public templateCacheMisses = 0;
+  public componentDefinitionCount = 0;
 
   constructor() {
     populateMacros(this.templateOptions.macros);
@@ -117,6 +118,7 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
   /***  IRuntimeResolver ***/
 
   /**
+   * public componentDefHandleCount = 0;
    * Called while executing Append Op.PushDynamicComponentManager if string
    */
   lookupComponent(name: string, meta: OwnedTemplateMeta): Option<ComponentDefinition> {
@@ -151,7 +153,12 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
    * Called by CompileTimeLookup compiling the Component OpCode
    */
   lookupComponentDefinition(name: string, meta: OwnedTemplateMeta): Option<number> {
-    return this.handle(this._lookupComponentDefinition(name, meta));
+    let nextHandle = this.handles.length;
+    let handle = this.handle(this._lookupComponentDefinition(name, meta));
+    if (nextHandle === handle) {
+      this.componentDefinitionCount++;
+    }
+    return handle;
   }
 
   /**
