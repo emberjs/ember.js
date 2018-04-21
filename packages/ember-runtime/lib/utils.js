@@ -1,3 +1,6 @@
+import { DEBUG } from '@glimmer/env';
+import { PROXY_CONTENT } from 'ember-metal';
+import { HAS_NATIVE_PROXY } from 'ember-utils';
 import EmberArray from './mixins/array';
 import EmberObject from './system/object';
 
@@ -48,10 +51,24 @@ const { toString } = Object.prototype;
   @return {Boolean} true if the passed object is an array or Array-like
   @public
 */
-export function isArray(obj) {
-  if (!obj || obj.setInterval) { return false; }
-  if (Array.isArray(obj)) { return true; }
-  if (EmberArray.detect(obj)) { return true; }
+export function isArray(_obj) {
+  let obj = _obj;
+  if (DEBUG && HAS_NATIVE_PROXY && typeof _obj === 'object' && _obj !== null) {
+    let possibleProxyContent = _obj[PROXY_CONTENT];
+    if (possibleProxyContent !== undefined) {
+      obj = possibleProxyContent;
+    }
+  }
+
+  if (!obj || obj.setInterval) {
+    return false;
+  }
+  if (Array.isArray(obj)) {
+    return true;
+  }
+  if (EmberArray.detect(obj)) {
+    return true;
+  }
 
   let type = typeOf(obj);
   if ('array' === type) { return true; }

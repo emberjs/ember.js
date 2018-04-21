@@ -2,6 +2,7 @@ import { isArray } from '../../utils';
 import { A as emberA } from '../../mixins/array';
 import ArrayProxy from '../../system/array_proxy';
 import { environment } from 'ember-environment';
+import EmberObject from '../../lib/system/object';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 const global = this;
@@ -31,7 +32,6 @@ moduleFor('Ember Type Checking', class extends AbstractTestCase {
     assert.equal(isArray(arrayProxy), true, '[]');
   }
 
-
   ['@test Ember.isArray(fileList)'](assert) {
     if (environment.window && typeof environment.window.FileList === 'function') {
       let fileListElement = document.createElement('input');
@@ -42,4 +42,18 @@ moduleFor('Ember Type Checking', class extends AbstractTestCase {
       assert.ok(true, 'FileList is not present on window');
     }
   }
+
+  '@test Ember.isArray does not trigger proxy assertion when probing for length GH#16495'(
+    assert
+  ) {
+    let instance = EmberObject.extend({
+      // intentionally returning non-null / non-undefined
+      unknownProperty() {
+        return false;
+      },
+    }).create();
+
+    assert.equal(isArray(instance), false);
+  }
+
 });
