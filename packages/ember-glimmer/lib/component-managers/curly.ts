@@ -301,8 +301,7 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
     }
     operations.setAttribute('class', PrimitiveReference.create('ember-view'), false, null);
 
-    const ariaRole = get(component, 'ariaRole');
-    if (ariaRole) {
+    if ('ariaRole' in component) {
       operations.setAttribute('role', referenceForKey(component, 'ariaRole'), false, null);
     }
 
