@@ -602,12 +602,10 @@ const Component = CoreView.extend(
       }
 
       let args = this[ARGS];
-      let reference = args && args[key];
+      let reference = args !== undefined ? args[key] : undefined;
 
-      if (reference) {
-        if (reference[UPDATE]) {
-          reference[UPDATE](get(this, key));
-        }
+      if (reference !== undefined && reference[UPDATE] !== undefined) {
+        reference[UPDATE](get(this, key));
       }
     },
 
@@ -653,13 +651,10 @@ const Component = CoreView.extend(
       let isSVG = element.namespaceURI === SVG_NAMESPACE;
       let { type, normalized } = normalizeProperty(element, name);
 
-      if (isSVG) {
+      if (isSVG || type === 'attr') {
         return element.getAttribute(normalized);
       }
 
-      if (type === 'attr') {
-        return element.getAttribute(normalized);
-      }
       return element[normalized];
     },
 
