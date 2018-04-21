@@ -312,6 +312,70 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { class: classes('ember-view some-truth') }, content: 'hello' });
   }
 
+  ['@test should update class using inline if, initially false, no alternate']() {
+    this.registerComponent('foo-bar', { template: 'hello' });
+
+    this.render('{{foo-bar class=(if predicate "thing") }}', {
+      predicate: false,
+    });
+
+    this.assertComponentElement(this.firstChild, {
+      tagName: 'div',
+      attrs: { class: 'ember-view' },
+      content: 'hello',
+    });
+
+    this.runTask(() => set(this.context, 'predicate', true));
+    this.runTask(() => this.rerender());
+
+    this.assertComponentElement(this.firstChild, {
+      tagName: 'div',
+      attrs: { class: classes('ember-view thing') },
+      content: 'hello',
+    });
+
+    this.runTask(() => set(this.context, 'predicate', false));
+    this.runTask(() => this.rerender());
+
+    this.assertComponentElement(this.firstChild, {
+      tagName: 'div',
+      attrs: { class: 'ember-view' },
+      content: 'hello',
+    });
+  }
+
+  ['@test should update class using inline if, initially true, no alternate']() {
+    this.registerComponent('foo-bar', { template: 'hello' });
+
+    this.render('{{foo-bar class=(if predicate "thing") }}', {
+      predicate: true,
+    });
+
+    this.assertComponentElement(this.firstChild, {
+      tagName: 'div',
+      attrs: { class: classes('ember-view thing') },
+      content: 'hello',
+    });
+
+    this.runTask(() => set(this.context, 'predicate', false));
+    this.runTask(() => this.rerender());
+
+    this.assertComponentElement(this.firstChild, {
+      tagName: 'div',
+      attrs: { class: 'ember-view' },
+      content: 'hello',
+    });
+
+    this.runTask(() => set(this.context, 'predicate', true));
+    this.runTask(() => this.rerender());
+
+    this.assertComponentElement(this.firstChild, {
+      tagName: 'div',
+      attrs: { class: classes('ember-view thing') },
+      content: 'hello',
+    });
+  }
+
   ['@test class property on components can be dynamic']() {
     this.registerComponent('foo-bar', { template: 'hello' });
 
