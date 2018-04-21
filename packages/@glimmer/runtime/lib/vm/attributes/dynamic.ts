@@ -7,48 +7,46 @@ import { SVG_NAMESPACE } from '../../dom/helper';
 import { Attribute, AttributeOperation } from './index';
 import { normalizeStringValue } from '../../dom/normalize';
 
-export interface DynamicAttributeFactory {
-  new(attribute: Attribute): DynamicAttribute;
-}
-
-export function defaultDynamicAttributes(element: Simple.Element, attr: string): DynamicAttributeFactory {
+export function dynamicAttribute(element: Simple.Element, attr: string, namespace: Option<string>): DynamicAttribute {
   let { tagName, namespaceURI } = element;
+  let attribute = { element, name: attr, namespace };
 
   if (namespaceURI === SVG_NAMESPACE) {
-    return defaultDynamicAttribute(tagName, attr);
+    return buildDynamicAttribute(tagName, attr, attribute);
   }
 
   let { type, normalized } = normalizeProperty(element, attr);
 
   if (type === 'attr') {
-    return defaultDynamicAttribute(tagName, normalized);
+    return buildDynamicAttribute(tagName, normalized, attribute);
   } else {
-    return defaultDynamicProperty(tagName, normalized);
+    return buildDynamicProperty(tagName, normalized, attribute);
+  }
+
+}
+
+function buildDynamicAttribute(tagName: string, name: string, attribute: Attribute): DynamicAttribute {
+  if (requiresSanitization(tagName, name)) {
+    return new SafeDynamicAttribute(attribute);
+  } else {
+    return new SimpleDynamicAttribute(attribute);
   }
 }
 
-export function defaultDynamicAttribute(tagName: string, name: string): DynamicAttributeFactory {
+function buildDynamicProperty(tagName: string, name: string, attribute: Attribute): DynamicAttribute {
   if (requiresSanitization(tagName, name)) {
-    return SafeDynamicAttribute;
-  } else {
-    return SimpleDynamicAttribute;
-  }
-}
-
-export function defaultDynamicProperty(tagName: string, name: string): DynamicAttributeFactory {
-  if (requiresSanitization(tagName, name)) {
-    return SafeDynamicProperty;
+    return new SafeDynamicProperty(name, attribute);
   }
 
   if (isUserInputValue(tagName, name)) {
-    return InputValueDynamicAttribute;
+    return new InputValueDynamicAttribute(name, attribute);
   }
 
   if (isOptionSelected(tagName, name)) {
-    return OptionSelectedDynamicAttribute;
+    return new OptionSelectedDynamicAttribute(name, attribute);
   }
 
-  return DefaultDynamicProperty;
+  return new DefaultDynamicProperty(name, attribute);
 }
 
 export abstract class DynamicAttribute implements AttributeOperation {
@@ -81,20 +79,23 @@ export class SimpleDynamicAttribute extends DynamicAttribute {
 }
 
 export class DefaultDynamicProperty extends DynamicAttribute {
+  constructor(private normalizedName: string, attribute: Attribute) {
+    super(attribute);
+  }
+
   value: Opaque;
   set(dom: ElementBuilder, value: Opaque, _env: Environment): void {
     if (value !== null && value !== undefined) {
-      let { name } = this.attribute;
       this.value = value;
-      dom.__setProperty(name, value);
+      dom.__setProperty(this.normalizedName, value);
     }
   }
 
   update(value: Opaque, _env: Environment): void {
-    let { element, name } = this.attribute;
+    let { element } = this.attribute;
 
     if (this.value !== value) {
-      element[name] = this.value = value;
+      element[this.normalizedName] = this.value = value;
 
       if (value === null || value === undefined) {
         this.removeAttribute();
@@ -106,12 +107,12 @@ export class DefaultDynamicProperty extends DynamicAttribute {
   protected removeAttribute() {
     // TODO this sucks but to preserve properties first and to meet current
     // semantics we must do this.
-    let { element, name, namespace } = this.attribute;
+    let { element, namespace } = this.attribute;
 
     if (namespace) {
-      element.removeAttributeNS(namespace, name);
+      element.removeAttributeNS(namespace, this.normalizedName);
     } else {
-      element.removeAttribute(name);
+      element.removeAttribute(this.normalizedName);
     }
   }
 }

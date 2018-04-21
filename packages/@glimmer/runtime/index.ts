@@ -18,7 +18,6 @@ export { PublicVM as VM, VM as LowLevelVM, UpdatingVM, RenderResult, IteratorRes
 
 export {
   SimpleDynamicAttribute,
-  DynamicAttributeFactory,
   DynamicAttribute
 } from './lib/vm/attributes/dynamic';
 
