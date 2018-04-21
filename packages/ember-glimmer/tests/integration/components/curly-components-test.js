@@ -1512,7 +1512,6 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { attrs: { role: 'main' } });
   }
 
-<<<<<<< HEAD
   ['@test `template` specified in component is overridden by block']() {
     this.registerComponent('with-template', {
       ComponentClass: Component.extend({
