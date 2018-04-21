@@ -1756,6 +1756,59 @@ moduleFor(
       this.assertComponentElement(this.firstChild, { attrs: { role: 'main' } });
     }
 
+    ['@test with ariaRole defined but initially falsey GH#16379']() {
+      this.registerComponent('aria-test', {
+        template: 'Here!',
+      });
+
+      this.render('{{aria-test ariaRole=role}}', {
+        role: undefined,
+      });
+
+      this.assertComponentElement(this.firstChild, { attrs: {} });
+
+      this.runTask(() => this.rerender());
+
+      this.assertComponentElement(this.firstChild, { attrs: {} });
+
+      this.runTask(() => this.context.set('role', 'input'));
+
+      this.assertComponentElement(this.firstChild, {
+        attrs: { role: 'input' },
+      });
+
+      this.runTask(() => this.context.set('role', undefined));
+
+      this.assertComponentElement(this.firstChild, { attrs: {} });
+    }
+
+    ['@test without ariaRole defined initially']() {
+      // we are using the ability to lazily add a role as a sign that we are
+      // doing extra work
+      let instance;
+      this.registerComponent('aria-test', {
+        ComponentClass: Component.extend({
+          init() {
+            this._super(...arguments);
+            instance = this;
+          },
+        }),
+        template: 'Here!',
+      });
+
+      this.render('{{aria-test}}');
+
+      this.assertComponentElement(this.firstChild, { attrs: {} });
+
+      this.runTask(() => this.rerender());
+
+      this.assertComponentElement(this.firstChild, { attrs: {} });
+
+      this.runTask(() => instance.set('ariaRole', 'input'));
+
+      this.assertComponentElement(this.firstChild, { attrs: {} });
+    }
+
     ['@test `template` specified in component is overridden by block']() {
       this.registerComponent('with-template', {
         ComponentClass: Component.extend({
