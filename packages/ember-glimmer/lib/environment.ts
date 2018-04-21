@@ -1,3 +1,4 @@
+import { Option } from '@glimmer/interfaces';
 import { OpaqueIterable, VersionedReference } from '@glimmer/reference';
 import {
   ElementBuilder,
@@ -142,10 +143,10 @@ if (DEBUG) {
     element,
     attribute: string,
     isTrusting: boolean,
-    _namespace?
+    namespace: Option<string>
   ) {
     if (attribute === 'style' && !isTrusting) {
-      return StyleAttributeManager;
+      return new StyleAttributeManager({ element, name: attribute, namespace });
     }
 
     return GlimmerEnvironment.prototype.attributeFor.call(
@@ -153,7 +154,7 @@ if (DEBUG) {
       element,
       attribute,
       isTrusting,
-      _namespace
+      namespace
     );
   };
 }
