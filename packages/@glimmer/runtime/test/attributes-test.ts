@@ -451,6 +451,35 @@ export class AttributesTests extends RenderTest {
     this.assertHTML('<input list="bar" />');
     this.assertStableNodes();
   }
+
+  @test "normalizes lowercase dynamic properties correctly"() {
+    this.render('<div tiTle={{foo}} />', { foo: "bar" });
+    this.assertHTML('<div title="bar" />');
+    this.assertStableRerender();
+
+    this.rerender({ foo: 'baz' });
+    this.assertHTML('<div title="baz" />');
+    this.assertStableNodes();
+
+    this.rerender({ foo: 'bar' });
+    this.assertHTML('<div title="bar" />');
+    this.assertStableNodes();
+  }
+
+  @test "normalizes mix-case dynamic properties correctly"() {
+    this.render('<svg viewBox={{foo}} />', { foo: "0 0 100 100" });
+    this.assertHTML('<svg viewBox="0 0 100 100" />');
+    this.assertStableRerender();
+
+    this.rerender({ foo: '0 0 100 200' });
+    this.assertHTML('<svg viewBox="0 0 100 200" />');
+    this.assertStableNodes();
+
+    this.rerender({ foo: '0 0 100 100' });
+    this.assertHTML('<svg viewBox="0 0 100 100" />');
+    this.assertStableNodes();
+  }
+
 }
 
 module("Attributes Test", AttributesTests);
