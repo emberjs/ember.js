@@ -72,8 +72,11 @@ export const AttributeBinding = {
     let colonIndex = microsyntax.indexOf(':');
 
     if (colonIndex === -1) {
-      assert('You cannot use class as an attributeBinding, use classNameBindings instead.', microsyntax !== 'class');
-      return [microsyntax, microsyntax.toLowerCase(), true];
+      assert(
+        'You cannot use class as an attributeBinding, use classNameBindings instead.',
+        microsyntax !== 'class'
+      );
+      return [microsyntax, microsyntax, true];
     } else {
       let prop = microsyntax.substring(0, colonIndex);
       let attribute = microsyntax.substring(colonIndex + 1);

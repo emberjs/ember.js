@@ -1,3 +1,4 @@
+import { Option } from '@glimmer/interfaces';
 import {
   Reference,
 } from '@glimmer/reference';
@@ -237,11 +238,22 @@ if (DEBUG) {
     }
   }
 
-  Environment.prototype.attributeFor = function (element, attribute: string, isTrusting: boolean, _namespace?) {
+  Environment.prototype.attributeFor = function(
+    element,
+    attribute: string,
+    isTrusting: boolean,
+    namespace: Option<string>
+  ) {
     if (attribute === 'style' && !isTrusting) {
-      return StyleAttributeManager;
+      return new StyleAttributeManager({ element, name: attribute, namespace });
     }
 
-    return GlimmerEnvironment.prototype.attributeFor.call(this, element, attribute, isTrusting, _namespace);
+    return GlimmerEnvironment.prototype.attributeFor.call(
+      this,
+      element,
+      attribute,
+      isTrusting,
+      namespace
+    );
   };
 }

@@ -187,6 +187,42 @@ moduleFor('Attribute bindings integration', class extends RenderingTest {
     this.assertComponentElement(this.firstChild, { tagName: 'div', attrs: { 'data-foo': 'qux' }, content: 'hello' });
   }
 
+  ['@test  attributeBindings preserves case for mixed-case attributes']() {
+    let FooBarComponent = Component.extend({
+      tagName: 'svg',
+      attributeBindings: ['viewBox'],
+    });
+
+    this.registerComponent('foo-bar', {
+      ComponentClass: FooBarComponent,
+      template: '',
+    });
+
+    this.render('{{foo-bar viewBox=foo}}', {
+      foo: '0 0 100 100',
+    });
+
+    this.assert.equal(
+      this.firstChild.getAttribute('viewBox'),
+      '0 0 100 100',
+      'viewBox attribute'
+    );
+
+    this.assertStableRerender();
+
+    this.runTask(() => set(this.context, 'foo', null));
+
+    this.assert.ok(!this.firstChild.hasAttribute('viewBox'), 'viewBox attribute removed');
+
+    this.runTask(() => set(this.context, 'foo', '0 0 100 200'));
+
+    this.assert.equal(
+      this.firstChild.getAttribute('viewBox'),
+      '0 0 100 200',
+      'viewBox attribute'
+    );
+  }
+
   ['@test attributeBindings handles null/undefined']() {
     let FooBarComponent = Component.extend({
       attributeBindings: ['fizz', 'bar']
