@@ -206,4 +206,42 @@ describe('Blueprint: service', function() {
       });
     });
   });
+
+  describe('in in-repo-addon', function() {
+    beforeEach(function() {
+      return emberNew({ target: 'in-repo-addon' });
+    });
+
+    it('service foo --in-repo-addon=my-addon', function() {
+      return emberGenerateDestroy(['service', 'foo', '--in-repo-addon=my-addon'], _file => {
+        expect(_file('lib/my-addon/addon/services/foo.js'))
+          .to.contain("import Service from '@ember/service';")
+          .to.contain('export default Service.extend({\n});');
+
+        expect(_file('lib/my-addon/app/services/foo.js')).to.contain(
+          "export { default } from 'my-addon/services/foo';"
+        );
+
+        expect(_file('tests/unit/services/foo-test.js'))
+          .to.contain("import { moduleFor, test } from 'ember-qunit';")
+          .to.contain("moduleFor('service:foo'");
+      });
+    });
+
+    it('service foo/bar --in-repo-addon=my-addon', function() {
+      return emberGenerateDestroy(['service', 'foo/bar', '--in-repo-addon=my-addon'], _file => {
+        expect(_file('lib/my-addon/addon/services/foo/bar.js'))
+          .to.contain("import Service from '@ember/service';")
+          .to.contain('export default Service.extend({\n});');
+
+        expect(_file('lib/my-addon/app/services/foo/bar.js')).to.contain(
+          "export { default } from 'my-addon/services/foo/bar';"
+        );
+
+        expect(_file('tests/unit/services/foo/bar-test.js'))
+          .to.contain("import { moduleFor, test } from 'ember-qunit';")
+          .to.contain("moduleFor('service:foo/bar'");
+      });
+    });
+  });
 });
