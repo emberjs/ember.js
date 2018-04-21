@@ -9,9 +9,10 @@ import {
 } from '@glimmer/interfaces';
 import { LazyCompiler, Macros, PartialDefinition } from '@glimmer/opcode-compiler';
 import { ComponentManager, getDynamicVar, Helper, ModifierManager } from '@glimmer/runtime';
-import { privatize as P } from 'container';
+import { FACTORY_FOR, privatize as P } from 'container';
 import { ENV } from 'ember-environment';
 import { LookupOptions, Owner, setOwner } from 'ember-owner';
+import { guidFor } from 'ember-utils';
 import { lookupComponent, lookupPartial, OwnedTemplateMeta } from 'ember-views';
 import CompileTimeLookup from './compile-time-lookup';
 import { CurlyComponentDefinition } from './component-managers/curly';
@@ -53,6 +54,15 @@ function makeOptions(moduleName: string, namespace?: string): LookupOptions {
     source: moduleName !== undefined ? `template:${moduleName}` : undefined,
     namespace,
   };
+}
+
+// returns the qualified / expanded name
+// which accounts for local lookup...
+function getNormalizedName(obj: any) {
+  let factoryManager = FACTORY_FOR.get(obj);
+  if (factoryManager) {
+    return factoryManager.normalizedName;
+  }
 }
 
 const BUILTINS_HELPERS = {
@@ -100,9 +110,12 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
 
   // supports directly imported late bound layouts on component.prototype.layout
   private templateCache: WeakMap<Owner, WeakMap<TemplateFactory, OwnedTemplate>> = new WeakMap();
+  private componentDefinitionCache: Map<string, ComponentDefinition | null> = new Map();
 
   public templateCacheHits = 0;
   public templateCacheMisses = 0;
+  public componentDefinitionCount = 0;
+  public helperDefinitionCount = 0;
 
   constructor() {
     let macros = new Macros();
@@ -113,6 +126,7 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
   /***  IRuntimeResolver ***/
 
   /**
+   * public componentDefHandleCount = 0;
    * Called while executing Append Op.PushDynamicComponentManager if string
    */
   lookupComponentDefinition(name: string, meta: OwnedTemplateMeta): Option<ComponentDefinition> {
@@ -127,7 +141,12 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
   }
 
   lookupComponentHandle(name: string, meta: OwnedTemplateMeta) {
-    return this.handle(this._lookupComponentDefinition(name, meta));
+    let nextHandle = this.handles.length;
+    let handle = this.handle(this._lookupComponentDefinition(name, meta));
+    if (nextHandle === handle) {
+      this.componentDefinitionCount++;
+    }
+    return handle;
   }
 
   /**
@@ -142,9 +161,15 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
    * Called by CompileTimeLookup compiling Unknown or Helper OpCode
    */
   lookupHelper(name: string, meta: OwnedTemplateMeta): Option<number> {
-    let handle = this._lookupHelper(name, meta);
-    if (handle !== null) {
-      return this.handle(handle);
+    let nextHandle = this.handles.length;
+    let helper = this._lookupHelper(name, meta);
+    if (helper !== null) {
+      let handle = this.handle(helper);
+
+      if (nextHandle === handle) {
+        this.helperDefinitionCount++;
+      }
+      return handle;
     }
     return null;
   }
@@ -291,8 +316,18 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
       makeOptions(meta.moduleName, namespace)
     );
 
+    let ownerId = guidFor(meta.owner);
+    let componentDefinitionCacheKey =
+      ownerId + '|' + getNormalizedName(component) + '|' + getNormalizedName(layout);
+    let cachedComponentDefinition = this.componentDefinitionCache.get(componentDefinitionCacheKey);
+    if (cachedComponentDefinition !== undefined) {
+      return cachedComponentDefinition;
+    }
+
     if (layout && !component && ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
-      return new TemplateOnlyComponentDefinition(layout);
+      let definition = new TemplateOnlyComponentDefinition(layout);
+      this.componentDefinitionCache.set(componentDefinitionCacheKey, definition);
+      return definition;
     }
 
     let manager:
@@ -317,6 +352,9 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
         : null;
 
     finalizer();
+
+    this.componentDefinitionCache.set(componentDefinitionCacheKey, definition);
+
     return definition;
   }
 }
