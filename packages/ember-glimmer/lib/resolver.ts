@@ -15,7 +15,7 @@ import { FACTORY_FOR, privatize as P } from 'container';
 import { assert } from 'ember-debug';
 import { ENV } from 'ember-environment';
 import { _instrumentStart } from 'ember-metal';
-import { LookupOptions, Owner, setOwner } from 'ember-utils';
+import { guidFor, LookupOptions, Owner, setOwner } from 'ember-utils';
 import {
   lookupComponent,
   lookupPartial,
