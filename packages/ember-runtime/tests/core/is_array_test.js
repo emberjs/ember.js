@@ -1,6 +1,7 @@
 import { isArray } from '../../lib/utils';
 import { A as emberA } from '../../lib/mixins/array';
 import ArrayProxy from '../../lib/system/array_proxy';
+import EmberObject from '../../lib/system/object';
 import { window } from 'ember-browser-environment';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
@@ -30,6 +31,19 @@ moduleFor(
       assert.equal(isArray(global), false, 'global');
       assert.equal(isArray(fn), false, 'function() {}');
       assert.equal(isArray(arrayProxy), true, '[]');
+    }
+
+    '@test Ember.isArray does not trigger proxy assertion when probing for length GH#16495'(
+      assert
+    ) {
+      let instance = EmberObject.extend({
+        // intentionally returning non-null / non-undefined
+        unknownProperty() {
+          return false;
+        },
+      }).create();
+
+      assert.equal(isArray(instance), false);
     }
 
     ['@test Ember.isArray(fileList)'](assert) {
