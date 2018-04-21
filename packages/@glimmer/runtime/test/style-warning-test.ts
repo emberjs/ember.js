@@ -1,6 +1,6 @@
 import { TestEnvironment, equalTokens } from "@glimmer/test-helpers";
 import { test, module } from "@glimmer/runtime/test/support";
-import { RenderResult, DynamicAttributeFactory, SimpleDynamicAttribute, ElementBuilder, clientBuilder } from "@glimmer/runtime";
+import { RenderResult, DynamicAttribute, SimpleDynamicAttribute, ElementBuilder, clientBuilder } from "@glimmer/runtime";
 import { UpdatableReference } from "@glimmer/object-reference";
 import { Option, Simple, Opaque, Template } from "@glimmer/interfaces";
 
@@ -35,9 +35,9 @@ function render(template: Template, self: any) {
 module('Style attributes', {
   beforeEach() {
     class StyleEnv extends TestEnvironment {
-      attributeFor(element: Simple.Element, attr: string, isTrusting: boolean, namespace: Option<string>): DynamicAttributeFactory {
+      attributeFor(element: Simple.Element, attr: string, isTrusting: boolean, namespace: Option<string>): DynamicAttribute {
         if (attr === 'style' && !isTrusting) {
-          return StyleAttribute;
+          return new StyleAttribute({ element, name, namespace });
         }
 
         return super.attributeFor(element, attr, isTrusting, namespace);

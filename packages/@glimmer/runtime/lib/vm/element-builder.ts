@@ -369,11 +369,8 @@ export class NewElementBuilder implements ElementBuilder {
 
   setDynamicAttribute(name: string, value: Opaque, trusting: boolean, namespace: Option<string>): DynamicAttribute {
     let element = this.constructing!;
-    let DynamicAttribute = this.env.attributeFor(element, name, trusting, namespace);
-    let attribute = new DynamicAttribute({ element, name, namespace: namespace || null });
-
+    let attribute = this.env.attributeFor(element, name, trusting, namespace);
     attribute.set(this, value, this.env);
-
     return attribute;
   }
 }

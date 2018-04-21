@@ -15,7 +15,7 @@ import { DOMChanges, DOMTreeConstruction } from './dom/helper';
 import { PublicVM } from './vm/append';
 import { IArguments } from './vm/arguments';
 import { UNDEFINED_REFERENCE, ConditionalReference } from './references';
-import { DynamicAttributeFactory, defaultDynamicAttributes } from './vm/attributes/dynamic';
+import { DynamicAttribute, dynamicAttribute } from './vm/attributes/dynamic';
 import {
   ModifierManager, Modifier
 } from './modifier/interfaces';
@@ -284,8 +284,8 @@ export abstract class Environment {
     transaction.commit();
   }
 
-  attributeFor(element: Simple.Element, attr: string, _isTrusting: boolean, _namespace: Option<string> = null): DynamicAttributeFactory {
-    return defaultDynamicAttributes(element, attr);
+  attributeFor(element: Simple.Element, attr: string, _isTrusting: boolean, namespace: Option<string> = null): DynamicAttribute {
+    return dynamicAttribute(element, attr, namespace);
   }
 }
 
