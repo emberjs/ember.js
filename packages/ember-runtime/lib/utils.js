@@ -1,4 +1,4 @@
-import { DEBUG } from '@glimmer/env';
+import { DEBUG } from 'ember-env-flags';
 import { PROXY_CONTENT } from 'ember-metal';
 import { HAS_NATIVE_PROXY } from 'ember-utils';
 import EmberArray from './mixins/array';
