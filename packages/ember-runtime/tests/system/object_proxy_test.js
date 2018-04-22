@@ -1,3 +1,4 @@
+import { DEBUG } from 'ember-env-flags';
 import { addObserver, computed, get, set, isWatching, removeObserver } from 'ember-metal';
 import { HAS_NATIVE_PROXY } from 'ember-utils';
 import { MANDATORY_GETTER, EMBER_METAL_ES5_GETTERS } from 'ember/features';
