@@ -40,7 +40,6 @@ export function isEmberArray(obj) {
 
 function iter(key, value) {
   let valueProvided = arguments.length === 2;
-
   return valueProvided ? item => value === get(item, key) : item => !!get(item, key);
 }
 
@@ -156,7 +155,6 @@ const ArrayMixin = Mixin.create(Enumerable, {
   */
   '[]': computed({
     get() {
-      // eslint-disable-line no-unused-vars
       return this;
     },
     set(key, value) {
@@ -507,7 +505,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @return {Array} The mapped array.
     @public
   */
-  map(callback, target) {
+  map(callback, target = null) {
     assert('map expects a function as first argument.', typeof callback === 'function');
 
     let ret = A();
@@ -559,7 +557,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @return {Array} A filtered array.
     @public
   */
-  filter(callback, target) {
+  filter(callback, target = null) {
     assert('filter expects a function as first argument.', typeof callback === 'function');
 
     let ret = A();
@@ -600,7 +598,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @return {Array} A rejected array.
     @public
   */
-  reject(callback, target) {
+  reject(callback, target = null) {
     assert('reject expects a function as first argument.', typeof callback === 'function');
 
     return this.filter(function() {
@@ -620,8 +618,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   filterBy() {
-    // eslint-disable-line no-unused-vars
-    return this.filter(iter.apply(this, arguments));
+    return this.filter(iter(...arguments));
   },
 
   /**
@@ -635,12 +632,8 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @return {Array} rejected array
     @public
   */
-  rejectBy(key, value) {
-    let exactValue = item => get(item, key) === value;
-    let hasValue = item => !!get(item, key);
-    let use = arguments.length === 2 ? exactValue : hasValue;
-
-    return this.reject(use);
+  rejectBy() {
+    return this.reject(iter(...arguments));
   },
 
   /**
@@ -699,8 +692,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   findBy() {
-    // eslint-disable-line no-unused-vars
-    return this.find(iter.apply(this, arguments));
+    return this.find(iter(...arguments));
   },
 
   /**
@@ -738,7 +730,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @return {Boolean}
     @public
   */
-  every(callback, target) {
+  every(callback, target = null) {
     assert('every expects a function as first argument.', typeof callback === 'function');
 
     return !this.find((x, idx, i) => !callback.call(target, x, idx, i));
@@ -760,8 +752,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   isEvery() {
-    // eslint-disable-line no-unused-vars
-    return this.every(iter.apply(this, arguments));
+    return this.every(iter(...arguments));
   },
 
   /**
@@ -830,8 +821,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   isAny() {
-    // eslint-disable-line no-unused-vars
-    return this.any(iter.apply(this, arguments));
+    return this.any(iter(...arguments));
   },
 
   /**
@@ -1143,7 +1133,6 @@ const ArrayMixin = Mixin.create(Enumerable, {
 });
 
 const OUT_OF_RANGE_EXCEPTION = 'Index out of range';
-const EMPTY = [];
 
 export function removeAt(array, start, len) {
   if ('number' === typeof start) {
@@ -1156,7 +1145,7 @@ export function removeAt(array, start, len) {
       len = 1;
     }
 
-    array.replace(start, len, EMPTY);
+    array.replace(start, len, EMPTY_ARRAY);
   }
 
   return array;
@@ -1224,7 +1213,7 @@ const MutableArray = Mixin.create(ArrayMixin, MutableEnumerable, {
       return this;
     }
 
-    this.replace(0, len, EMPTY);
+    this.replace(0, len, EMPTY_ARRAY);
     return this;
   },
 
