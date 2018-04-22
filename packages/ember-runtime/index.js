@@ -28,6 +28,6 @@ export { default as Evented } from './lib/mixins/evented';
 export { default as PromiseProxyMixin } from './lib/mixins/promise_proxy';
 
 export { default as RSVP, onerrorDefault } from './lib/ext/rsvp'; // just for side effect of extending Ember.RSVP
-export { isArray, typeOf } from './lib/utils';
+export { isArray, typeOf, uniqBy } from './lib/utils';
 
 import './lib/ext/function'; // just for side effect of extending Function.prototype

@@ -3,7 +3,7 @@
 */
 import { assert } from '@ember/debug';
 import { get, ComputedProperty, addObserver, removeObserver, getProperties } from 'ember-metal';
-import { compare, isArray, A as emberA } from 'ember-runtime';
+import { compare, isArray, A as emberA, uniqBy as uniqByArray } from 'ember-runtime';
 
 function reduceMacro(dependentKey, callback, initialValue, name) {
   assert(
@@ -495,19 +495,8 @@ export function uniqBy(dependentKey, propertyKey) {
 
   let cp = new ComputedProperty(
     function() {
-      let uniq = emberA();
       let list = get(this, dependentKey);
-      if (isArray(list)) {
-        let seen = new Set();
-        list.forEach(item => {
-          let val = get(item, propertyKey);
-          if (!seen.has(val)) {
-            seen.add(val);
-            uniq.push(item);
-          }
-        });
-      }
-      return uniq;
+      return isArray(list) ? uniqByArray(list, propertyKey) : emberA();
     },
     { dependentKeys: [`${dependentKey}.[]`], readOnly: true }
   );
