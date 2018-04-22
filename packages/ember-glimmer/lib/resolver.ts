@@ -6,11 +6,11 @@ import {
 } from '@glimmer/interfaces';
 import { LazyCompiler, Macros, PartialDefinition } from '@glimmer/opcode-compiler';
 import { ComponentManager, getDynamicVar, Helper, ModifierManager } from '@glimmer/runtime';
-import { FACTORY_FOR, privatize as P } from 'container';
+import { privatize as P } from 'container';
 import { assert } from 'ember-debug';
 import { ENV } from 'ember-environment';
 import { _instrumentStart } from 'ember-metal';
-import { guidFor, LookupOptions, Owner, setOwner } from 'ember-utils';
+import { LookupOptions, Owner, setOwner } from 'ember-utils';
 import { lookupComponent, lookupPartial, OwnedTemplateMeta } from 'ember-views';
 import { EMBER_MODULE_UNIFICATION, GLIMMER_CUSTOM_COMPONENT_MANAGER } from 'ember/features';
 import CompileTimeLookup from './compile-time-lookup';
@@ -53,15 +53,6 @@ function makeOptions(moduleName: string, namespace?: string): LookupOptions {
     source: moduleName !== undefined ? `template:${moduleName}` : undefined,
     namespace,
   };
-}
-
-// returns the qualified / expanded name
-// which accounts for local lookup...
-function getNormalizedName(obj: any) {
-  let factoryManager = FACTORY_FOR.get(obj);
-  if (factoryManager) {
-    return factoryManager.normalizedName;
-  }
 }
 
 const BUILTINS_HELPERS = {
@@ -109,7 +100,7 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
 
   // supports directly imported late bound layouts on component.prototype.layout
   private templateCache: WeakMap<Owner, WeakMap<TemplateFactory, OwnedTemplate>> = new WeakMap();
-  private componentDefinitionCache: Map<string, ComponentDefinition | null> = new Map();
+  private componentDefinitionCache: Map<object, ComponentDefinition | null> = new Map();
 
   public templateCacheHits = 0;
   public templateCacheMisses = 0;
@@ -311,17 +302,14 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
       makeOptions(meta.moduleName, namespace)
     );
 
-    let ownerId = guidFor(meta.owner);
-    let componentDefinitionCacheKey =
-      ownerId + '|' + getNormalizedName(component) + '|' + getNormalizedName(layout);
-    let cachedComponentDefinition = this.componentDefinitionCache.get(componentDefinitionCacheKey);
+    let cachedComponentDefinition = this.componentDefinitionCache.get(component || layout);
     if (cachedComponentDefinition !== undefined) {
       return cachedComponentDefinition;
     }
 
     if (layout && !component && ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
       let definition = new TemplateOnlyComponentDefinition(layout);
-      this.componentDefinitionCache.set(componentDefinitionCacheKey, definition);
+      this.componentDefinitionCache.set(layout, definition);
       return definition;
     }
 
@@ -348,7 +336,7 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
 
     finalizer();
 
-    this.componentDefinitionCache.set(componentDefinitionCacheKey, definition);
+    this.componentDefinitionCache.set(component, definition);
 
     return definition;
   }
