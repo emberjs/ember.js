@@ -1,7 +1,6 @@
 import { assert, deprecate } from '@ember/debug';
 import { _instrumentStart } from '@ember/instrumentation';
 import { assign } from '@ember/polyfills';
-import { dasherize } from '@ember/string';
 import { DEBUG } from '@glimmer/env';
 import {
   ComponentCapabilities,
@@ -39,9 +38,9 @@ import { Factory as TemplateFactory, OwnedTemplate } from '../template';
 import {
   AttributeBinding,
   ClassNameBinding,
-  ColonClassNameBindingReference,
   IsVisibleBinding,
   referenceForKey,
+  SimpleClassNameBindingReference,
 } from '../utils/bindings';
 import ComponentStateBucket, { Component } from '../utils/curly-component-state-bucket';
 import { processComponentArgs } from '../utils/process-args';
@@ -330,11 +329,8 @@ export default class CurlyComponentManager
       IsVisibleBinding.install(element, component, operations);
     }
 
-    if (classRef && classRef.value()) {
-      const ref =
-        classRef.value() === true
-          ? new ColonClassNameBindingReference(classRef, dasherize(classRef['_propertyKey']), null)
-          : classRef;
+    if (classRef) {
+      const ref = new SimpleClassNameBindingReference(classRef, classRef['_propertyKey']);
       operations.setAttribute('class', ref, false, null);
     }
 
