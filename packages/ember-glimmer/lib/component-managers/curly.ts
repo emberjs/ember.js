@@ -32,7 +32,6 @@ import { DEBUG } from 'ember-env-flags';
 import {
   _instrumentStart, get,
 } from 'ember-metal';
-import { String as StringUtils } from 'ember-runtime';
 import {
   assign,
   getOwner,
@@ -56,9 +55,9 @@ import {
 import {
   AttributeBinding,
   ClassNameBinding,
-  ColonClassNameBindingReference,
   IsVisibleBinding,
-  referenceForKey
+  referenceForKey,
+  SimpleClassNameBindingReference,
 } from '../utils/bindings';
 import ComponentStateBucket, { Component } from '../utils/curly-component-state-bucket';
 import { processComponentArgs } from '../utils/process-args';
@@ -281,10 +280,8 @@ export default class CurlyComponentManager extends AbstractManager<ComponentStat
       IsVisibleBinding.install(element, component, operations);
     }
 
-    if (classRef && classRef.value()) {
-      const ref = classRef.value() === true ?
-                         new ColonClassNameBindingReference(classRef, StringUtils.dasherize(classRef['_propertyKey']), null) :
-                         classRef;
+    if (classRef) {
+      const ref = new SimpleClassNameBindingReference(classRef, classRef['_propertyKey']);
       operations.setAttribute('class', ref, false, null);
     }
 
