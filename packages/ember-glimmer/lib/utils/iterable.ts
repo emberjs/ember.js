@@ -139,7 +139,6 @@ class ObjectIterator extends BoundedIterator {
     let keys: Opaque[] = [];
     let values: Opaque[] = [];
     let length = 0;
-
     let isMapLike = false;
 
     obj.forEach((value: Opaque, key: Opaque) => {
@@ -147,10 +146,8 @@ class ObjectIterator extends BoundedIterator {
 
       if (isMapLike) {
         keys.push(key);
-        values.push(value);
-      } else {
-        values.push(value);
       }
+      values.push(value);
 
       length++;
     });
@@ -452,7 +449,7 @@ function KeyPath(keyPath: string): KeyFor {
 }
 
 function Unique(func: KeyFor): KeyFor {
-  let seen = new Set();
+  let seen = {};
 
   return (value: Opaque, memo: Opaque, position: number) => {
     let key = func(value, memo, position);
