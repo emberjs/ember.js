@@ -330,11 +330,13 @@ export default class CurlyComponentManager
       IsVisibleBinding.install(element, component, operations);
     }
 
-    if (classRef && classRef.value()) {
+    if (classRef) {
+      let val = classRef.value();
       const ref =
-        classRef.value() === true
+        val === true || val === false
           ? new ColonClassNameBindingReference(classRef, dasherize(classRef['_propertyKey']), null)
           : classRef;
+
       operations.setAttribute('class', ref, false, null);
     }
 
