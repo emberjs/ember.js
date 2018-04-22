@@ -1,5 +1,3 @@
-import { privatize as P } from 'container';
-import { ENV } from 'ember-environment';
 import { EMBER_MODULE_UNIFICATION } from '@ember/canary-features';
 
 function lookupModuleUnificationComponentPair(componentLookup, owner, name, options) {
@@ -9,32 +7,26 @@ function lookupModuleUnificationComponentPair(componentLookup, owner, name, opti
   let globalComponent = componentLookup.componentFor(name, owner);
   let globalLayout = componentLookup.layoutFor(name, owner);
 
-  let localAndUniqueComponent =
-    !!localComponent && (!globalComponent || localComponent.class !== globalComponent.class);
-  let localAndUniqueLayout =
-    !!localLayout &&
-    (!globalLayout || localLayout.referrer.moduleName !== globalLayout.referrer.moduleName);
+  // TODO: we shouldn't have to recheck fallback, we should have a lookup that doesn't fallback
+  if (localComponent !== undefined) {
+    if (globalComponent !== undefined && globalComponent.class === localComponent.class) {
+      localComponent = undefined;
+    }
+  }
+  if (localLayout !== undefined) {
+    if (
+      globalLayout !== undefined &&
+      localLayout.referrer.moduleName !== globalLayout.referrer.moduleName
+    ) {
+      localLayout = undefined;
+    }
+  }
 
-  if (localAndUniqueComponent && localAndUniqueLayout) {
+  if (localLayout !== undefined || localComponent !== undefined) {
     return { layout: localLayout, component: localComponent };
   }
 
-  if (localAndUniqueComponent && !localAndUniqueLayout) {
-    return { layout: null, component: localComponent };
-  }
-
-  let defaultComponentFactory = null;
-
-  if (!ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
-    defaultComponentFactory = owner.factoryFor(P`component:-default`);
-  }
-
-  if (!localAndUniqueComponent && localAndUniqueLayout) {
-    return { layout: localLayout, component: defaultComponentFactory };
-  }
-
-  let component = globalComponent || (globalLayout && defaultComponentFactory);
-  return { layout: globalLayout, component };
+  return { layout: globalLayout, component: globalComponent };
 }
 
 function lookupComponentPair(componentLookup, owner, name, options) {
@@ -46,10 +38,6 @@ function lookupComponentPair(componentLookup, owner, name, options) {
   let layout = componentLookup.layoutFor(name, owner, options);
 
   let result = { layout, component };
-
-  if (!ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS && layout && !component) {
-    result.component = owner.factoryFor(P`component:-default`);
-  }
 
   return result;
 }

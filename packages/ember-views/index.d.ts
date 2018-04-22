@@ -37,8 +37,8 @@ export function lookupComponent(
   name: string,
   options?: { source?: string }
 ): {
-  layout: Template<OwnedTemplateMeta>;
-  component: Factory<any, any>;
+  layout: Template<OwnedTemplateMeta> | undefined;
+  component: Factory<any, any> | undefined;
 };
 
 export function lookupPartial(templateName: string, owner: Owner): any;

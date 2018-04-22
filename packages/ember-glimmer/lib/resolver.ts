@@ -99,7 +99,7 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
   } = BUILTIN_MODIFIERS;
 
   // supports directly imported late bound layouts on component.prototype.layout
-  private templateCache: WeakMap<Owner, WeakMap<TemplateFactory, OwnedTemplate>> = new WeakMap();
+  private templateCache: Map<Owner, Map<TemplateFactory, OwnedTemplate>> = new Map();
   private componentDefinitionCache: Map<object, ComponentDefinition | null> = new Map();
 
   public templateCacheHits = 0;
@@ -306,14 +306,20 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
       makeOptions(meta.moduleName, namespace)
     );
 
-    let cachedComponentDefinition = this.componentDefinitionCache.get(component || layout);
+    let key = component === undefined ? layout : component;
+
+    if (key === undefined) {
+      return null;
+    }
+
+    let cachedComponentDefinition = this.componentDefinitionCache.get(key);
     if (cachedComponentDefinition !== undefined) {
       return cachedComponentDefinition;
     }
 
     if (layout && !component && ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
       let definition = new TemplateOnlyComponentDefinition(layout);
-      this.componentDefinitionCache.set(layout, definition);
+      this.componentDefinitionCache.set(key, definition);
       return definition;
     }
 
@@ -334,13 +340,13 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
             manager,
             component || meta.owner.factoryFor(P`component:-default`),
             null,
-            layout
+            layout! // TODO fix type
           )
         : null;
 
     finalizer();
 
-    this.componentDefinitionCache.set(component, definition);
+    this.componentDefinitionCache.set(key, definition);
 
     return definition;
   }
