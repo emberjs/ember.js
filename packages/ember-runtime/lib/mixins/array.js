@@ -30,6 +30,7 @@ import Copyable from '../mixins/copyable';
 import copy from '../copy';
 import EmberError from '@ember/error';
 import MutableEnumerable from './mutable_enumerable';
+import { uniqBy } from '../utils';
 
 const EMPTY_ARRAY = Object.freeze([]);
 const EMBER_ARRAY = symbol('EMBER_ARRAY');
@@ -1002,17 +1003,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   uniq() {
-    let ret = A();
-
-    let seen = new Set();
-    this.forEach(item => {
-      if (!seen.has(item)) {
-        seen.add(item);
-        ret.push(item);
-      }
-    });
-
-    return ret;
+    return uniqBy(this);
   },
 
   /**
@@ -1030,18 +1021,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
   */
 
   uniqBy(key) {
-    let ret = A();
-    let seen = new Set();
-
-    this.forEach(item => {
-      let val = get(item, key);
-      if (!seen.has(val)) {
-        seen.add(val);
-        ret.push(item);
-      }
-    });
-
-    return ret;
+    return uniqBy(this, key);
   },
 
   /**
