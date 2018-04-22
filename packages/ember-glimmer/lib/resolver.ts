@@ -15,7 +15,7 @@ import { privatize as P } from 'container';
 import { assert } from 'ember-debug';
 import { ENV } from 'ember-environment';
 import { _instrumentStart } from 'ember-metal';
-import { guidFor, LookupOptions, Owner, setOwner } from 'ember-utils';
+import { LookupOptions, Owner, setOwner } from 'ember-utils';
 import {
   lookupComponent,
   lookupPartial,
@@ -105,7 +105,7 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
   } = BUILTIN_MODIFIERS;
 
   // supports directly imported late bound layouts on component.prototype.layout
-  private templateCache: WeakMap<Owner, WeakMap<TemplateFactory, OwnedTemplate>> = new WeakMap();
+  private templateCache: Map<Owner, Map<TemplateFactory, OwnedTemplate>> = new Map();
   private componentDefinitionCache: Map<object, ComponentDefinition | null> = new Map();
 
   public templateCacheHits = 0;
@@ -194,7 +194,7 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
   createTemplate(factory: TemplateFactory, owner: Owner): OwnedTemplate {
     let cache = this.templateCache.get(owner);
     if (cache === undefined) {
-      cache = new WeakMap();
+      cache = new Map();
       this.templateCache.set(owner, cache);
     }
     let template = cache.get(factory);
@@ -271,14 +271,20 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
   private _lookupComponentDefinition(name: string, meta: OwnedTemplateMeta): Option<ComponentDefinition> {
     let { layout, component } = lookupComponent(meta.owner, name, makeOptions(meta.moduleName));
 
-    let cachedComponentDefinition = this.componentDefinitionCache.get(component || layout);
+    let key = component === undefined ? layout : component;
+
+    if (key === undefined) {
+      return null;
+    }
+
+    let cachedComponentDefinition = this.componentDefinitionCache.get(key);
     if (cachedComponentDefinition !== undefined) {
       return cachedComponentDefinition;
     }
 
     if (layout && !component && ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
       let definition = new TemplateOnlyComponentDefinition(layout);
-      this.componentDefinitionCache.set(layout, definition);
+      this.componentDefinitionCache.set(key, definition);
       return definition;
     }
 
@@ -289,12 +295,12 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
         undefined,
         component || meta.owner.factoryFor(P`component:-default`),
         null,
-        layout
+        layout! // TODO fix type
       ) : null;
 
     finalizer();
 
-    this.componentDefinitionCache.set(component, definition);
+    this.componentDefinitionCache.set(key, definition);
 
     return definition;
   }
