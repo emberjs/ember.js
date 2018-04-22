@@ -100,6 +100,31 @@ moduleFor(
       assert.equal(JSON.stringify(proxy), JSON.stringify({ content: { foo: 'FOO' } }));
     }
 
+    ['@test calling a function on the proxy avoids the assertion'](assert) {
+      if (DEBUG && HAS_NATIVE_PROXY) {
+        let proxy = ObjectProxy.extend({
+          init() {
+            if (!this.foobar) {
+              this.foobar = function() {
+                let content = get(this, 'content');
+                return content.foobar.apply(content, []);
+              };
+            }
+          },
+        }).create({
+          content: {
+            foobar() {
+              return 'xoxo';
+            },
+          },
+        });
+
+        assert.equal(proxy.foobar(), 'xoxo', 'should be able to use a function from a proxy');
+      } else {
+        assert.expect(0);
+      }
+    }
+
     [`@test setting a property on the proxy avoids the assertion`](assert) {
       let proxy = ObjectProxy.create({
         toJSON: undefined,
