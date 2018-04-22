@@ -43,6 +43,26 @@ function iter(key, value) {
   return valueProvided ? item => value === get(item, key) : item => !!get(item, key);
 }
 
+function indexOf(array, val, startAt = 0, withNaNCheck) {
+  let len = get(array, 'length');
+
+  if (startAt < 0) {
+    startAt += len;
+  }
+
+  // SameValueZero comparison (NaN !== NaN)
+  let predicate = withNaNCheck && val !== val ? item => item !== item : item => item === val;
+
+  for (let idx = startAt; idx < len; idx++) {
+    let item = objectAt(array, idx);
+    if (predicate(item)) {
+      return idx;
+    }
+  }
+
+  return -1;
+}
+
 // ..........................................................
 // ARRAY
 //
@@ -251,20 +271,8 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @return {Number} index or -1 if not found
     @public
   */
-  indexOf(object, startAt = 0) {
-    let len = get(this, 'length');
-
-    if (startAt < 0) {
-      startAt += len;
-    }
-
-    for (let idx = startAt; idx < len; idx++) {
-      if (objectAt(this, idx) === object) {
-        return idx;
-      }
-    }
-
-    return -1;
+  indexOf(object, startAt) {
+    return indexOf(this, object, startAt, false);
   },
 
   /**
@@ -938,28 +946,13 @@ const ArrayMixin = Mixin.create(Enumerable, {
     ```
 
     @method includes
-    @param {Object} obj The object to search for.
+    @param {Object} object The object to search for.
     @param {Number} startAt optional starting location to search, default 0
     @return {Boolean} `true` if object is found in the array.
     @public
   */
-  includes(item, startAt = 0) {
-    let len = get(this, 'length');
-
-    if (startAt < 0) {
-      startAt += len;
-    }
-
-    for (let idx = startAt; idx < len; idx++) {
-      let currentItem = objectAt(this, idx);
-
-      // SameValueZero comparison (NaN !== NaN)
-      if (item === currentItem || (item !== item && currentItem !== currentItem)) {
-        return true;
-      }
-    }
-
-    return false;
+  includes(object, startAt) {
+    return indexOf(this, object, startAt, true) !== -1;
   },
 
   /**
@@ -1070,6 +1063,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     if (!this.includes(value)) {
       return this; // nothing to do
     }
+
     // SameValueZero comparison (NaN !== NaN)
     let predicate = value === value ? item => item !== value : item => item === item;
     return this.filter(predicate);
