@@ -2,7 +2,7 @@ import { isArray } from '../../utils';
 import { A as emberA } from '../../mixins/array';
 import ArrayProxy from '../../system/array_proxy';
 import { environment } from 'ember-environment';
-import EmberObject from '../../lib/system/object';
+import EmberObject from '../../system/object';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 const global = this;
