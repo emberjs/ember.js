@@ -189,7 +189,7 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
   createTemplate(factory: TemplateFactory, owner: Owner): OwnedTemplate {
     let cache = this.templateCache.get(owner);
     if (cache === undefined) {
-      cache = new WeakMap();
+      cache = new Map();
       this.templateCache.set(owner, cache);
     }
     let template = cache.get(factory);
