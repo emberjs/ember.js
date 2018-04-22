@@ -193,7 +193,7 @@ export const ClassNameBinding = {
   },
 };
 
-class SimpleClassNameBindingReference extends CachedReference<Option<string>> {
+export class SimpleClassNameBindingReference extends CachedReference<Option<string>> {
   public tag: Tag;
   private dasherizedPath: Option<string>;
 
@@ -220,7 +220,7 @@ class SimpleClassNameBindingReference extends CachedReference<Option<string>> {
   }
 }
 
-export class ColonClassNameBindingReference extends CachedReference<Option<string>> {
+class ColonClassNameBindingReference extends CachedReference<Option<string>> {
   public tag: Tag;
 
   constructor(
