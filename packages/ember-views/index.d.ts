@@ -32,9 +32,13 @@ export function constructStyleDeprecationMessage(affectedStyle: any): string;
 
 export function hasPartial(name: string, owner: any): boolean;
 
-export function lookupComponent(owner: Owner, name: string, options?: { source?: string }): {
-  layout: Template<OwnedTemplateMeta>;
-  component: Factory<any, any>;
+export function lookupComponent(
+  owner: Owner,
+  name: string,
+  options?: { source?: string }
+): {
+  layout: Template<OwnedTemplateMeta> | undefined;
+  component: Factory<any, any> | undefined;
 };
 
 export function lookupPartial(templateName: string, owner: Owner): any;
