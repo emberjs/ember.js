@@ -1,3 +1,4 @@
+import { DEBUG } from 'ember-env-flags';
 import {
   addObserver,
   computed,
@@ -80,6 +81,31 @@ QUnit.test(`JSON.stringify doens't assert`, assert => {
   });
 
   assert.equal(JSON.stringify(proxy), JSON.stringify({ content: { foo: 'FOO' } }));
+});
+
+QUnit.test('calling a function on the proxy avoids the assertion', function(assert) {
+  if (DEBUG && HAS_NATIVE_PROXY) {
+    let proxy = ObjectProxy.extend({
+      init() {
+        if (!this.foobar) {
+          this.foobar = function() {
+            let content = get(this, 'content');
+            return content.foobar.apply(content, []);
+          };
+        }
+      },
+    }).create({
+      content: {
+        foobar() {
+          return 'xoxo';
+        },
+      },
+    });
+
+    assert.equal(proxy.foobar(), 'xoxo', 'should be able to use a function from a proxy');
+  } else {
+    assert.expect(0);
+  }
 });
 
 QUnit.test(`setting a property on the proxy avoids the assertion`, assert => {
