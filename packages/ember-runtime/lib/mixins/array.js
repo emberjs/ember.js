@@ -251,12 +251,8 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @return {Number} index or -1 if not found
     @public
   */
-  indexOf(object, startAt) {
+  indexOf(object, startAt = 0) {
     let len = get(this, 'length');
-
-    if (startAt === undefined) {
-      startAt = 0;
-    }
 
     if (startAt < 0) {
       startAt += len;
@@ -904,11 +900,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   toArray() {
-    let ret = A();
-
-    this.forEach((o, idx) => (ret[idx] = o));
-
-    return ret;
+    return this.map(item => item);
   },
 
   /**
@@ -951,22 +943,18 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @return {Boolean} `true` if object is found in the array.
     @public
   */
-  includes(obj, startAt) {
+  includes(item, startAt = 0) {
     let len = get(this, 'length');
-
-    if (startAt === undefined) {
-      startAt = 0;
-    }
 
     if (startAt < 0) {
       startAt += len;
     }
 
     for (let idx = startAt; idx < len; idx++) {
-      let currentObj = objectAt(this, idx);
+      let currentItem = objectAt(this, idx);
 
       // SameValueZero comparison (NaN !== NaN)
-      if (obj === currentObj || (obj !== obj && currentObj !== currentObj)) {
+      if (item === currentItem || (item !== item && currentItem !== currentItem)) {
         return true;
       }
     }
@@ -1082,17 +1070,9 @@ const ArrayMixin = Mixin.create(Enumerable, {
     if (!this.includes(value)) {
       return this; // nothing to do
     }
-
-    let ret = A();
-
-    this.forEach(k => {
-      // SameValueZero comparison (NaN !== NaN)
-      if (!(k === value || (k !== k && value !== value))) {
-        ret[ret.length] = k;
-      }
-    });
-
-    return ret;
+    // SameValueZero comparison (NaN !== NaN)
+    let predicate = value === value ? item => item !== value : item => item === item;
+    return this.filter(predicate);
   },
 
   /**
