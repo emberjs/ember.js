@@ -1553,16 +1553,6 @@ const MutableArray = Mixin.create(ArrayMixin, MutableEnumerable, {
   @public
 */
 let NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
-  // because length is a built-in property we need to know to just get the
-  // original property.
-  get(key) {
-    if ('number' === typeof key) {
-      return this[key];
-    } else {
-      return this._super(key);
-    }
-  },
-
   objectAt(idx) {
     return this[idx];
   },
@@ -1574,16 +1564,6 @@ let NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
     replaceInNativeArray(this, start, deleteCount, items);
 
     return this;
-  },
-
-  // If you ask for an unknown property, then try to collect the value
-  // from member items.
-  unknownProperty(key, value) {
-    let ret; // = this.reducedProperty(key, value);
-    if (value !== undefined && ret === undefined) {
-      ret = this[key] = value;
-    }
-    return ret;
   },
 
   indexOf: Array.prototype.indexOf,
