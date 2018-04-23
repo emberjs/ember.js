@@ -118,7 +118,7 @@ export function arrayContentDidChange(array, startIdx, removeAmt, addAmt) {
 
   let cache = peekCacheFor(array);
   if (cache !== undefined) {
-    let length = get(array, 'length');
+    let length = array.length;
     let addedAmount = addAmt === -1 ? 0 : addAmt;
     let removedAmount = removeAmt === -1 ? 0 : removeAmt;
     let delta = addedAmount - removedAmount;

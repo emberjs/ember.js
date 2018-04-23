@@ -45,7 +45,7 @@ function iter(key, value) {
 }
 
 function indexOf(array, val, startAt = 0, withNaNCheck) {
-  let len = get(array, 'length');
+  let len = array.length;
 
   if (startAt < 0) {
     startAt += len;
@@ -139,7 +139,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   objectAt(idx) {
-    if (idx < 0 || idx >= get(this, 'length')) {
+    if (idx < 0 || idx >= this.length) {
       return undefined;
     }
 
@@ -179,7 +179,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
       return this;
     },
     set(key, value) {
-      this.replace(0, get(this, 'length'), value);
+      this.replace(0, this.length, value);
       return this;
     },
   }),
@@ -203,7 +203,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   lastObject: computed(function() {
-    return objectAt(this, get(this, 'length') - 1);
+    return objectAt(this, this.length - 1);
   }).readOnly(),
 
   // Add any extra methods to EmberArray that are native to the built-in Array.
@@ -228,7 +228,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
   */
   slice(beginIndex, endIndex) {
     let ret = A();
-    let length = get(this, 'length');
+    let length = this.length;
 
     if (isNone(beginIndex)) {
       beginIndex = 0;
@@ -272,6 +272,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @return {Number} index or -1 if not found
     @public
   */
+
   indexOf(object, startAt) {
     return indexOf(this, object, startAt, false);
   },
@@ -300,7 +301,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   lastIndexOf(object, startAt) {
-    let len = get(this, 'length');
+    let len = this.length;
 
     if (startAt === undefined || startAt >= len) {
       startAt = len - 1;
@@ -447,7 +448,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
   forEach(callback, target = null) {
     assert('forEach expects a function as first argument.', typeof callback === 'function');
 
-    let length = get(this, 'length');
+    let length = this.length;
 
     for (let index = 0; index < length; index++) {
       let item = this.objectAt(index);
@@ -672,7 +673,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
   find(callback, target = null) {
     assert('find expects a function as first argument.', typeof callback === 'function');
 
-    let length = get(this, 'length');
+    let length = this.length;
 
     for (let index = 0; index < length; index++) {
       let item = this.objectAt(index);
@@ -800,7 +801,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
   any(callback, target = null) {
     assert('any expects a function as first argument.', typeof callback === 'function');
 
-    let length = get(this, 'length');
+    let length = this.length;
 
     for (let index = 0; index < length; index++) {
       let item = this.objectAt(index);
@@ -1094,7 +1095,7 @@ const OUT_OF_RANGE_EXCEPTION = 'Index out of range';
 
 export function removeAt(array, start, len) {
   if ('number' === typeof start) {
-    if (start < 0 || start >= get(array, 'length')) {
+    if (start < 0 || start >= array.length) {
       throw new EmberError(OUT_OF_RANGE_EXCEPTION);
     }
 
@@ -1166,7 +1167,7 @@ const MutableArray = Mixin.create(ArrayMixin, MutableEnumerable, {
     @public
   */
   clear() {
-    let len = get(this, 'length');
+    let len = this.length;
     if (len === 0) {
       return this;
     }
@@ -1193,7 +1194,7 @@ const MutableArray = Mixin.create(ArrayMixin, MutableEnumerable, {
     @public
   */
   insertAt(idx, object) {
-    if (idx > get(this, 'length')) {
+    if (idx > this.length) {
       throw new EmberError(OUT_OF_RANGE_EXCEPTION);
     }
 
@@ -1243,7 +1244,7 @@ const MutableArray = Mixin.create(ArrayMixin, MutableEnumerable, {
     @public
   */
   pushObject(obj) {
-    this.insertAt(get(this, 'length'), obj);
+    this.insertAt(this.length, obj);
     return obj;
   },
 
@@ -1266,7 +1267,7 @@ const MutableArray = Mixin.create(ArrayMixin, MutableEnumerable, {
     if (!Array.isArray(objects)) {
       throw new TypeError('Must pass Enumerable to MutableArray#pushObjects');
     }
-    this.replace(get(this, 'length'), 0, objects);
+    this.replace(this.length, 0, objects);
     return this;
   },
 
@@ -1286,7 +1287,7 @@ const MutableArray = Mixin.create(ArrayMixin, MutableEnumerable, {
     @public
   */
   popObject() {
-    let len = get(this, 'length');
+    let len = this.length;
     if (len === 0) {
       return null;
     }
@@ -1312,7 +1313,7 @@ const MutableArray = Mixin.create(ArrayMixin, MutableEnumerable, {
     @public
   */
   shiftObject() {
-    if (get(this, 'length') === 0) {
+    if (this.length === 0) {
       return null;
     }
 
@@ -1372,7 +1373,7 @@ const MutableArray = Mixin.create(ArrayMixin, MutableEnumerable, {
      @public
   */
   reverseObjects() {
-    let len = get(this, 'length');
+    let len = this.length;
     if (len === 0) {
       return this;
     }
@@ -1404,7 +1405,7 @@ const MutableArray = Mixin.create(ArrayMixin, MutableEnumerable, {
       return this.clear();
     }
 
-    let len = get(this, 'length');
+    let len = this.length;
     this.replace(0, len, objects);
     return this;
   },
@@ -1426,7 +1427,7 @@ const MutableArray = Mixin.create(ArrayMixin, MutableEnumerable, {
     @public
   */
   removeObject(obj) {
-    let loc = get(this, 'length') || 0;
+    let loc = this.length || 0;
     while (--loc >= 0) {
       let curObject = objectAt(this, loc);
 
