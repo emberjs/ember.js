@@ -177,10 +177,10 @@ export function uniqBy(array, key = identityFunction) {
 
   let ret = A();
   let seen = new Set();
-  let getter = typeof key === 'function' ? key : get;
+  let getter = typeof key === 'function' ? key : item => get(item, key);
 
   array.forEach(item => {
-    let val = getter(item, key);
+    let val = getter(item);
     if (!seen.has(val)) {
       seen.add(val);
       ret.push(item);
