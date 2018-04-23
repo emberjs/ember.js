@@ -9,7 +9,6 @@ import {
   objectAt,
   replaceInNativeArray,
   computed,
-  isNone,
   aliasMethod,
   Mixin,
   hasListeners,
@@ -226,17 +225,15 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @return {Array} New array with specified slice
     @public
   */
-  slice(beginIndex, endIndex) {
+  slice(beginIndex = 0, endIndex) {
     let ret = A();
     let length = this.length;
 
-    if (isNone(beginIndex)) {
-      beginIndex = 0;
-    } else if (beginIndex < 0) {
+    if (beginIndex < 0) {
       beginIndex = length + beginIndex;
     }
 
-    if (isNone(endIndex) || endIndex > length) {
+    if (endIndex === undefined || endIndex > length) {
       endIndex = length;
     } else if (endIndex < 0) {
       endIndex = length + endIndex;

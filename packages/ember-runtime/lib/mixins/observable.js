@@ -18,7 +18,6 @@ import {
   addObserver,
   removeObserver,
   getCachedValueFor,
-  isNone,
 } from 'ember-metal';
 import { assert } from '@ember/debug';
 
@@ -419,10 +418,7 @@ export default Mixin.create({
     @return {Number} The new property value
     @public
   */
-  incrementProperty(keyName, increment) {
-    if (isNone(increment)) {
-      increment = 1;
-    }
+  incrementProperty(keyName, increment = 1) {
     assert(
       'Must pass a numeric value to incrementProperty',
       !isNaN(parseFloat(increment)) && isFinite(increment)
@@ -444,10 +440,7 @@ export default Mixin.create({
     @return {Number} The new property value
     @public
   */
-  decrementProperty(keyName, decrement) {
-    if (isNone(decrement)) {
-      decrement = 1;
-    }
+  decrementProperty(keyName, decrement = 1) {
     assert(
       'Must pass a numeric value to decrementProperty',
       !isNaN(parseFloat(decrement)) && isFinite(decrement)

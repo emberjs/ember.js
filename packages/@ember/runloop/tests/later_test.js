@@ -1,15 +1,12 @@
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 import { assign } from '@ember/polyfills';
-import { isNone } from 'ember-metal';
 import { run, later, backburner, hasScheduledTimers, getCurrentRunLoop } from '..';
 
 const originalSetTimeout = window.setTimeout;
 const originalDateValueOf = Date.prototype.valueOf;
 const originalPlatform = backburner._platform;
 
-function wait(callback, maxWaitCount) {
-  maxWaitCount = isNone(maxWaitCount) ? 100 : maxWaitCount;
-
+function wait(callback, maxWaitCount = 100) {
   originalSetTimeout(() => {
     if (maxWaitCount > 0 && (hasScheduledTimers() || getCurrentRunLoop())) {
       wait(callback, maxWaitCount - 1);
