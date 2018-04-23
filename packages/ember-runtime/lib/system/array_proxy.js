@@ -60,6 +60,22 @@ const ARRAY_OBSERVER_MAPPING = {
   ap.get('firstObject'); // . 'DOG'
   ```
 
+  When overriding this class it is important to place the call to
+  `_super` *after* setting `content` so the internal observers have
+  a chance to fire properly:
+
+  ```javascript
+  import { A } from '@ember/array';
+  import ArrayProxy from '@ember/array/proxy';
+
+  export default ArrayProxy.extend({
+    init() {
+      this.set('content', A(['dog', 'cat', 'fish']));
+      this._super(...arguments);
+    }
+  });
+  ```
+
   @class ArrayProxy
   @extends EmberObject
   @uses MutableArray
