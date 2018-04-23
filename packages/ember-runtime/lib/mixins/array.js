@@ -1013,9 +1013,13 @@ const ArrayMixin = Mixin.create(Enumerable, {
     ```javascript
     let arr = [{ value: 'a' }, { value: 'a' }, { value: 'b' }, { value: 'b' }];
     arr.uniqBy('value');  // [{ value: 'a' }, { value: 'b' }]
+
+    let arr = [2.2, 2.1, 3.2, 3.3];
+    arr.uniqBy(Math.floor);  // [2.2, 3.2];
     ```
 
     @method uniqBy
+    @param {String,Function} key
     @return {EmberArray}
     @public
   */
