@@ -72,6 +72,7 @@ export class InnerStack {
 
   reset(): void {
     this.inner.reset();
+    this.js.length = 0;
   }
 
   get length(): number {
