@@ -118,8 +118,8 @@ moduleFor(
       assert.equal(obj.foo, 'bar');
     }
 
-    ['@test does not warn on attempts of calling set on a destroyed object with `trySet`'](assert) {
-      let obj = { isDestroyed: true };
+    ['@test does not warn on attempts of calling set on a destroying object with `trySet`'](assert) {
+      let obj = { isDestroying: true };
 
       trySet(obj, 'favoriteFood', 'hot dogs');
       assert.equal(obj.favoriteFood, undefined, 'does not set and does not error');
