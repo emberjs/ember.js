@@ -29,6 +29,11 @@ const DataAdapter = EmberDataAdapter.extend({
 moduleFor(
   'Data Adapter',
   class extends ApplicationTestCase {
+    teardown() {
+      super.teardown();
+      adapter = undefined;
+    }
+
     ['@test Model types added'](assert) {
       this.add(
         'data-adapter:main',

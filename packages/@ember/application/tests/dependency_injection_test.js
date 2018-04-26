@@ -42,8 +42,9 @@ moduleFor(
     }
 
     teardown() {
+      super.teardown();
       run(application, 'destroy');
-      application = locator = null;
+      registry = application = locator = null;
       context.lookup = originalLookup;
     }
 

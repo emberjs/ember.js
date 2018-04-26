@@ -11,10 +11,12 @@ moduleFor(
       run(() => {
         if (myEngineInstance) {
           myEngineInstance.destroy();
+          myEngineInstance = null;
         }
 
         if (myEngine) {
           myEngine.destroy();
+          myEngine = null;
         }
       });
     }

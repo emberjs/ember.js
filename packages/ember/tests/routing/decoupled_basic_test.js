@@ -6,7 +6,7 @@ import { ENV } from 'ember-environment';
 import { Route, NoneLocation, HistoryLocation } from 'ember-routing';
 import Controller from '@ember/controller';
 import { Object as EmberObject, A as emberA, copy } from 'ember-runtime';
-import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
+import { moduleFor, ApplicationTestCase, runDestroy } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
 import { Mixin, computed, set, addObserver, observer } from 'ember-metal';
 import { getTextOf } from 'internal-test-helpers';
@@ -2026,27 +2026,29 @@ moduleFor(
         obj.set('history', { state: { path: path } });
       };
 
+      let location = HistoryLocation.create({
+        initState() {
+          let path = rootURL + '/posts';
+
+          setHistory(this, path);
+          this.set('location', {
+            pathname: path,
+            href: 'http://localhost/' + path,
+          });
+        },
+
+        replaceState(path) {
+          setHistory(this, path);
+        },
+
+        pushState(path) {
+          setHistory(this, path);
+        },
+      });
+
       this.router.reopen({
         // location: 'historyTest',
-        location: HistoryLocation.create({
-          initState() {
-            let path = rootURL + '/posts';
-
-            setHistory(this, path);
-            this.set('location', {
-              pathname: path,
-              href: 'http://localhost/' + path,
-            });
-          },
-
-          replaceState(path) {
-            setHistory(this, path);
-          },
-
-          pushState(path) {
-            setHistory(this, path);
-          },
-        }),
+        location,
         rootURL: rootURL,
       });
 
@@ -2066,6 +2068,9 @@ moduleFor(
 
       return this.visit('/').then(() => {
         assert.ok(postsTemplateRendered, 'Posts route successfully stripped from rootURL');
+
+        runDestroy(location);
+        location = null;
       });
     }
 

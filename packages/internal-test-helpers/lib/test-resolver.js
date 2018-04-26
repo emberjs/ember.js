@@ -14,7 +14,6 @@ function serializeKey(specifier, source, namespace) {
 class Resolver {
   constructor() {
     this._registered = {};
-    this.constructor.lastInstance = this;
   }
   resolve(specifier) {
     return this._registered[specifier] || this._registered[serializeKey(specifier)];

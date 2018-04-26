@@ -34,7 +34,12 @@ moduleFor(
     }
 
     ['@test Namespace should be duck typed'](assert) {
-      assert.ok(get(Namespace.create(), 'isNamespace'), 'isNamespace property is true');
+      let namespace = Namespace.create();
+      try {
+        assert.ok(get(namespace, 'isNamespace'), 'isNamespace property is true');
+      } finally {
+        run(namespace, 'destroy');
+      }
     }
 
     ['@test Namespace is found and named'](assert) {
@@ -90,23 +95,27 @@ moduleFor(
         name: 'NamespaceA',
       });
 
-      let nsB = (lookup.NamespaceB = Namespace.create({
-        name: 'CustomNamespaceB',
-      }));
+      try {
+        let nsB = (lookup.NamespaceB = Namespace.create({
+          name: 'CustomNamespaceB',
+        }));
 
-      nsA.Foo = EmberObject.extend();
-      nsB.Foo = EmberObject.extend();
+        nsA.Foo = EmberObject.extend();
+        nsB.Foo = EmberObject.extend();
 
-      assert.equal(
-        nsA.Foo.toString(),
-        'NamespaceA.Foo',
-        "The namespace's name is used when the namespace is not in the lookup object"
-      );
-      assert.equal(
-        nsB.Foo.toString(),
-        'CustomNamespaceB.Foo',
-        "The namespace's name is used when the namespace is in the lookup object"
-      );
+        assert.equal(
+          nsA.Foo.toString(),
+          'NamespaceA.Foo',
+          "The namespace's name is used when the namespace is not in the lookup object"
+        );
+        assert.equal(
+          nsB.Foo.toString(),
+          'CustomNamespaceB.Foo',
+          "The namespace's name is used when the namespace is in the lookup object"
+        );
+      } finally {
+        run(nsA, 'destroy');
+      }
     }
 
     ['@test Calling namespace.nameClasses() eagerly names all classes'](assert) {
@@ -138,6 +147,8 @@ moduleFor(
       UI.Nav = Namespace.create();
 
       assert.equal(Namespace.byName('UI.Nav'), UI.Nav);
+
+      run(UI.Nav, 'destroy');
     }
 
     ['@test Destroying a namespace before caching lookup removes it from the list of namespaces'](

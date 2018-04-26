@@ -7,7 +7,7 @@ export default class AutobootApplicationTestCase extends TestResolverApplication
   createApplication(options, MyApplication = Application) {
     let myOptions = assign(this.applicationOptions, options);
     let application = (this.application = MyApplication.create(myOptions));
-    this.resolver = myOptions.Resolver.lastInstance;
+    this.resolver = application.__registry__.resolver;
 
     if (this.resolver) {
       this.resolver.add('router:main', Router.extend(this.routerOptions));

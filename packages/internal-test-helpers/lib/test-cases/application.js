@@ -8,9 +8,9 @@ export default class ApplicationTestCase extends TestResolverApplicationTestCase
     super(...arguments);
 
     let { applicationOptions } = this;
-    this.application = this.runTask(() => this.createApplication(applicationOptions));
+    this.application = this.runTask(this.createApplication.bind(this, applicationOptions));
 
-    this.resolver = applicationOptions.Resolver.lastInstance;
+    this.resolver = this.application.__registry__.resolver;
 
     if (this.resolver) {
       this.resolver.add('router:main', Router.extend(this.routerOptions));

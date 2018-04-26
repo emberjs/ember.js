@@ -30,10 +30,12 @@ moduleFor(
       setDebugFunction('debug', originalDebug);
       if (appInstance) {
         run(appInstance, 'destroy');
+        appInstance = null;
       }
 
       if (application) {
         run(application, 'destroy');
+        application = null;
       }
 
       document.getElementById('qunit-fixture').innerHTML = '';
