@@ -60,7 +60,7 @@ const ARRAY_OBSERVER_MAPPING = {
   ap.get('firstObject'); // . 'DOG'
   ```
 
-  When overriding this class it is important to place the call to
+  When overriding this class, it is important to place the call to
   `_super` *after* setting `content` so the internal observers have
   a chance to fire properly:
 
