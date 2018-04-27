@@ -49,9 +49,9 @@ export function set(obj, keyName, value, tolerant) {
     typeof keyName !== 'string' || keyName.lastIndexOf('this.', 0) !== 0
   );
 
-  if (obj.isDestroyed) {
+  if (obj.isDestroying) {
     assert(
-      `calling set on destroyed object: ${toString(obj)}.${keyName} = ${toString(value)}`,
+      `calling set on destroyed/destroying object: ${toString(obj)}.${keyName} = ${toString(value)}`,
       tolerant
     );
     return;
