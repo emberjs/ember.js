@@ -35,7 +35,7 @@
     "babel-plugin-debug-macros": "^0.1.11",
     "handlebars": "^4.0.6",
     "simple-dom": "^0.3.0",
-    "simple-html-tokenizer": "^0.5.0"
+    "simple-html-tokenizer": "^0.5.1"
   },
   "devDependencies": {
     "@glimmer/build": "^0.8.2",
