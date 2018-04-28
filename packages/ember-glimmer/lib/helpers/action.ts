@@ -29,8 +29,8 @@ import { ACTION, INVOKE, UnboundReference } from '../utils/references';
   In these contexts,
   the helper is called a "closure action" helper. Its behavior is simple:
   If passed a function name, read that function off the `actions` property
-  of the current context. Once that function is read (or if a function was
-  passed), create a closure over that function and any arguments.
+  of the current context. Once that function is read, or immediately if a function was
+  passed, create a closure over that function and any arguments.
   The resulting value of an action helper used this way is simply a function.
 
   For example, in the attribute context:
