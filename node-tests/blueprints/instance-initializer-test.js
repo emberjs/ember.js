@@ -5,9 +5,11 @@ const setupTestHooks = blueprintHelpers.setupTestHooks;
 const emberNew = blueprintHelpers.emberNew;
 const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
 const setupPodConfig = blueprintHelpers.setupPodConfig;
+const expectError = require('../helpers/expect-error');
 
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
+const fs = require('fs-extra');
 
 describe('Blueprint: instance-initializer', function() {
   setupTestHooks(this);
@@ -113,6 +115,59 @@ describe('Blueprint: instance-initializer', function() {
           );
         });
       });
+    });
+  });
+
+  describe.only('in app - module unification', function() {
+    beforeEach(function() {
+      return emberNew().then(() => fs.ensureDirSync('src'));
+    });
+
+    it('instance-initializer foo', function() {
+      return emberGenerateDestroy(['instance-initializer', 'foo'], _file => {
+        expect(_file('src/instance-initializers/foo.js')).to.contain(
+          'export function initialize(/* appInstance */) {\n' +
+          "  // appInstance.inject('route', 'foo', 'service:foo');\n" +
+          '}\n' +
+          '\n' +
+          'export default {\n' +
+          '  initialize\n' +
+          '};'
+        );
+
+        expect(_file('src/instance-initializers/foo-test.js')).to.contain(
+          "import { initialize } from 'my-app/instance-initializers/foo';"
+        );
+
+        expect(_file('app/instance-initializers/foo-test.js')).to.not.exist;
+      });
+    });
+
+    it('instance-initializer foo/bar', function() {
+      return emberGenerateDestroy(['instance-initializer', 'foo/bar'], _file => {
+        expect(_file('src/instance-initializers/foo/bar.js')).to.contain(
+          'export function initialize(/* appInstance */) {\n' +
+          "  // appInstance.inject('route', 'foo', 'service:foo');\n" +
+          '}\n' +
+          '\n' +
+          'export default {\n' +
+          '  initialize\n' +
+          '};'
+        );
+
+        expect(_file('src/instance-initializers/foo/bar-test.js')).to.contain(
+          "import { initialize } from 'my-app/instance-initializers/foo/bar';"
+        );
+
+        expect(_file('tests/unit/instance-initializers/foo/bar-test.js')).to.not.exist;
+      });
+    });
+
+    it('instance-initializer foo --pod', function() {
+      return expectError(
+        emberGenerateDestroy(['instance-initializer', 'foo', '--pod']),
+        "Pods aren't supported within a module unification app"
+      );
     });
   });
 
