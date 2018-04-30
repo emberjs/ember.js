@@ -11,39 +11,33 @@ export const RECOMPUTE_TAG = symbol('RECOMPUTE_TAG');
 
 export type HelperFunction = (positional: Opaque[], named: Dict<Opaque>) => Opaque;
 
-export type SimpleHelperFactory = Factory<SimpleHelper, SimpleHelper>;
-export type ClassHelperFactory = Factory<HelperInstance, HelperStatic>;
+export type SimpleHelperFactory = Factory<SimpleHelper, HelperFactory<SimpleHelper>>;
+export type ClassHelperFactory = Factory<HelperInstance, HelperFactory<HelperInstance>>;
 
-export type HelperFactory = SimpleHelperFactory | ClassHelperFactory;
-
-export interface SimpleHelper {
+export interface HelperFactory<T> {
   isHelperFactory: true;
-  isSimpleHelper: true;
-
-  create(): SimpleHelper;
-  compute: HelperFunction;
-}
-
-export interface HelperStatic {
-  isHelperFactory: true;
-  isSimpleHelper: false;
-
-  create(): HelperInstance;
+  create(): T;
 }
 
 export interface HelperInstance {
-  compute: HelperFunction;
+  compute(positional: Opaque[], named: Dict<Opaque>): Opaque;
   destroy(): void;
 }
 
-export function isHelperFactory(helper: any | undefined | null): helper is HelperFactory {
-  return typeof helper === 'object' &&
-         helper !== null &&
-         helper.class && helper.class.isHelperFactory;
+export interface SimpleHelper {
+  compute: HelperFunction;
 }
 
-export function isSimpleHelper(helper: HelperFactory): helper is SimpleHelperFactory {
-  return helper.class.isSimpleHelper;
+export function isHelperFactory(
+  helper: any | undefined | null
+): helper is SimpleHelperFactory | ClassHelperFactory {
+  return (
+    typeof helper === 'object' && helper !== null && helper.class && helper.class.isHelperFactory
+  );
+}
+
+export function isSimpleHelper(helper: SimpleHelper | HelperInstance): helper is SimpleHelper {
+  return (helper as any).destroy === undefined;
 }
 
 /**
@@ -134,19 +128,18 @@ let Helper = FrameworkObject.extend({
   */
 });
 
-Helper.reopenClass({
-  isHelperFactory: true,
-  isSimpleHelper: false,
-});
+Helper.isHelperFactory = true;
 
-class Wrapper implements SimpleHelper {
+class Wrapper implements HelperFactory<SimpleHelper> {
   isHelperFactory: true = true;
-  isSimpleHelper: true = true;
 
   constructor(public compute: HelperFunction) {}
 
   create() {
-    return this;
+    // needs new instance or will leak containers
+    return {
+      compute: this.compute,
+    };
   }
 }
 
@@ -172,8 +165,8 @@ class Wrapper implements SimpleHelper {
   @public
   @since 1.13.0
 */
-export function helper(helperFn: HelperFunction): SimpleHelper {
+export function helper(helperFn: HelperFunction): HelperFactory<SimpleHelper> {
   return new Wrapper(helperFn);
 }
 
-export default Helper as HelperStatic;
+export default Helper as HelperFactory<HelperInstance>;

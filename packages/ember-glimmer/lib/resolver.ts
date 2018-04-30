@@ -248,15 +248,11 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
       return null;
     }
 
-    if (isSimpleHelper(factory)) {
-      const helper = factory.create().compute;
-      return (_vm, args) => {
-        return SimpleHelperReference.create(helper, args.capture());
-      };
-    }
-
     return (vm, args) => {
       const helper = factory.create();
+      if (isSimpleHelper(helper)) {
+        return new SimpleHelperReference(helper.compute, args.capture());
+      }
       vm.newDestroyable(helper);
       return ClassBasedHelperReference.create(helper, args.capture());
     };
