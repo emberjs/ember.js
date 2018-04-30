@@ -107,10 +107,10 @@ describe.only('Blueprint: helper', function() {
 
   describe('in addon', function() {
     beforeEach(function() {
-      return emberNew({ target: 'addon' }).then(() => fs.ensureDirSync('src'));
+      return emberNew({ target: 'addon' });
     });
 
-    it.only('helper foo/bar-baz', function() {
+    it('helper foo/bar-baz', function() {
       return emberGenerateDestroy(['helper', 'foo/bar-baz'], _file => {
         expect(_file('src/ui/components/foo/bar-baz.js')).to.equal(fixture('helper.js'));
         expect(_file('app/helpers/foo/bar-baz.js')).to.not.exist;
@@ -141,7 +141,7 @@ describe.only('Blueprint: helper', function() {
 
   describe('in addon - module unification', function() {
     beforeEach(function() {
-      return emberNew({ target: 'addon' });
+      return emberNew({ target: 'addon' }).then(() => fs.ensureDirSync('src'));
     });
 
     it('helper foo/bar-baz', function() {
