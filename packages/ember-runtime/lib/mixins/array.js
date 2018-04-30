@@ -44,6 +44,34 @@ function iter(key, value) {
   return valueProvided ? item => value === get(item, key) : item => !!get(item, key);
 }
 
+function findIndex(array, predicate, startAt) {
+  let len = array.length;
+  for (let index = startAt; index < len; index++) {
+    let item = objectAt(array, index);
+    if (predicate(item, index, array)) {
+      return index;
+    }
+  }
+  return -1;
+}
+
+function find(array, callback, target) {
+  let predicate = callback.bind(target);
+  let index = findIndex(array, predicate, 0);
+  return index === -1 ? undefined : objectAt(array, index);
+}
+
+function any(array, callback, target) {
+  let predicate = callback.bind(target);
+  return findIndex(array, predicate, 0) !== -1;
+}
+
+function every(array, callback, target) {
+  let cb = callback.bind(target);
+  let predicate = (item, index, array) => !cb(item, index, array);
+  return findIndex(array, predicate, 0) === -1;
+}
+
 function indexOf(array, val, startAt = 0, withNaNCheck) {
   let len = array.length;
 
@@ -53,15 +81,7 @@ function indexOf(array, val, startAt = 0, withNaNCheck) {
 
   // SameValueZero comparison (NaN !== NaN)
   let predicate = withNaNCheck && val !== val ? item => item !== item : item => item === val;
-
-  for (let idx = startAt; idx < len; idx++) {
-    let item = objectAt(array, idx);
-    if (predicate(item)) {
-      return idx;
-    }
-  }
-
-  return -1;
+  return findIndex(array, predicate, startAt);
 }
 
 // ..........................................................
@@ -446,7 +466,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   forEach(callback, target = null) {
-    assert('forEach expects a function as first argument.', typeof callback === 'function');
+    assert('`forEach` expects a function as first argument.', typeof callback === 'function');
 
     let length = this.length;
 
@@ -512,7 +532,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   map(callback, target = null) {
-    assert('map expects a function as first argument.', typeof callback === 'function');
+    assert('`map` expects a function as first argument.', typeof callback === 'function');
 
     let ret = A();
 
@@ -564,7 +584,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   filter(callback, target = null) {
-    assert('filter expects a function as first argument.', typeof callback === 'function');
+    assert('`filter` expects a function as first argument.', typeof callback === 'function');
 
     let ret = A();
 
@@ -605,8 +625,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   reject(callback, target = null) {
-    assert('reject expects a function as first argument.', typeof callback === 'function');
-
+    assert('`reject` expects a function as first argument.', typeof callback === 'function');
     return this.filter(function() {
       return !callback.apply(target, arguments);
     });
@@ -671,17 +690,8 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   find(callback, target = null) {
-    assert('find expects a function as first argument.', typeof callback === 'function');
-
-    let length = this.length;
-
-    for (let index = 0; index < length; index++) {
-      let item = this.objectAt(index);
-
-      if (callback.call(target, item, index, this)) {
-        return item;
-      }
-    }
+    assert('`find` expects a function as first argument.', typeof callback === 'function');
+    return find(this, callback, target);
   },
 
   /**
@@ -737,9 +747,8 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   every(callback, target = null) {
-    assert('every expects a function as first argument.', typeof callback === 'function');
-
-    return !this.find((x, idx, i) => !callback.call(target, x, idx, i));
+    assert('`every` expects a function as first argument.', typeof callback === 'function');
+    return every(this, callback, target);
   },
 
   /**
@@ -799,19 +808,8 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   any(callback, target = null) {
-    assert('any expects a function as first argument.', typeof callback === 'function');
-
-    let length = this.length;
-
-    for (let index = 0; index < length; index++) {
-      let item = this.objectAt(index);
-
-      if (callback.call(target, item, index, this)) {
-        return true;
-      }
-    }
-
-    return false;
+    assert('`any` expects a function as first argument.', typeof callback === 'function');
+    return any(this, callback, target);
   },
 
   /**
@@ -865,7 +863,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   reduce(callback, initialValue, reducerProperty) {
-    assert('reduce expects a function as first argument.', typeof callback === 'function');
+    assert('`reduce` expects a function as first argument.', typeof callback === 'function');
 
     let ret = initialValue;
 
