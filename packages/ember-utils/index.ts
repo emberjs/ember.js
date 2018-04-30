@@ -12,7 +12,15 @@ export { default as symbol, isInternalSymbol } from './lib/symbol';
 export { default as dictionary } from './lib/dictionary';
 export { uuid, GUID_KEY, generateGuid, guidFor } from './lib/guid';
 export { default as intern } from './lib/intern';
-export { checkHasSuper, ROOT, wrap } from './lib/super';
+export {
+  checkHasSuper,
+  ROOT,
+  wrap,
+  getObservers,
+  getListeners,
+  setObservers,
+  setListeners,
+} from './lib/super';
 export { default as inspect } from './lib/inspect';
 export { default as lookupDescriptor } from './lib/lookup-descriptor';
 export { canInvoke, tryInvoke } from './lib/invoke';
