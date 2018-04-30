@@ -11,9 +11,11 @@ import { DESCRIPTOR_TRAP, EMBER_METAL_ES5_GETTERS, MANDATORY_SETTER } from 'embe
 */
 /**
   Sets the value of a property on an object, respecting computed properties
-  and notifying observers and other listeners of the change. If the
-  property is not defined but the object implements the `setUnknownProperty`
-  method then that will be invoked as well.
+  and notifying observers and other listeners of the change.
+  If the specified property is not defined on the object and the object
+  implements the `setUnknownProperty` method, then instead of setting the
+  value of the property on the object, its `setUnknownProperty` handler
+  will be invoked with the two parameters `keyName` and `value`.
 
   ```javascript
   import { set } from '@ember/object';
