@@ -253,6 +253,48 @@ describe('Blueprint: instance-initializer', function() {
     });
   });
 
+  describe('in addon - module unification', function() {
+    beforeEach(function() {
+      return emberNew({ target: 'addon' }).then(() => fs.ensureDirSync('src'));
+    });
+
+    it('instance-initializer foo', function() {
+      return emberGenerateDestroy(['instance-initializer', 'foo'], _file => {
+        expect(_file('src/init/instance-initializers/foo.js')).to.contain(
+          'export function initialize(/* appInstance */) {\n' +
+            "  // appInstance.inject('route', 'foo', 'service:foo');\n" +
+            '}\n' +
+            '\n' +
+            'export default {\n' +
+            '  initialize\n' +
+            '};'
+        );
+
+        expect(_file('src/init/instance-initializers/foo-test.js'));
+
+        expect(_file('app/instance-initializers/foo.js')).to.not.exist;
+      });
+    });
+
+    it('instance-initializer foo/bar', function() {
+      return emberGenerateDestroy(['instance-initializer', 'foo/bar'], _file => {
+        expect(_file('src/init/instance-initializers/foo/bar.js')).to.contain(
+          'export function initialize(/* appInstance */) {\n' +
+            "  // appInstance.inject('route', 'foo', 'service:foo');\n" +
+            '}\n' +
+            '\n' +
+            'export default {\n' +
+            '  initialize\n' +
+            '};'
+        );
+
+        expect(_file('app/src/instance-initializers/foo/bar-test.js'));
+
+        expect(_file('app/instance-initializers/foo/bar.js')).to.not.exist;
+      });
+    });
+  });
+
   describe('in in-repo-addon', function() {
     beforeEach(function() {
       return emberNew({ target: 'in-repo-addon' });
