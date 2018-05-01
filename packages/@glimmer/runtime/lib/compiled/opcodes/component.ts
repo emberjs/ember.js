@@ -60,8 +60,6 @@ import {
   CheckFinishedComponentInstance
 } from './-debug-strip';
 
-export const ARGS = new Arguments();
-
 /**
  * The VM creates a new ComponentInstance data structure for every component
  * invocation it encounters.
@@ -226,14 +224,14 @@ APPEND_OPCODES.add(Op.PushArgs, (vm, { op1: _names, op2: flags }) => {
   if (flags & 0b0010) blockNames.push('else');
   if (flags & 0b0001) blockNames.push('attrs');
 
-  ARGS.setup(stack, names, blockNames, positionalCount, !!synthetic);
-  stack.push(ARGS);
+  vm.args.setup(stack, names, blockNames, positionalCount, !!synthetic);
+  stack.push(vm.args);
 });
 
 APPEND_OPCODES.add(Op.PushEmptyArgs, vm => {
   let { stack } = vm;
 
-  stack.push(ARGS.empty(stack));
+  stack.push(vm.args.empty(stack));
 });
 
 APPEND_OPCODES.add(Op.CaptureArgs, vm => {
