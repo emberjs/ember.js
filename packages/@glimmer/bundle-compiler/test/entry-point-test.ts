@@ -2,7 +2,7 @@ import { module, test, EagerTestEnvironment } from "@glimmer/test-helpers";
 import { BundleCompiler, CompilerDelegate } from "@glimmer/bundle-compiler";
 import { RuntimeResolver, ComponentCapabilities, Option } from "@glimmer/interfaces";
 import { RuntimeProgram } from "@glimmer/program";
-import { LowLevelVM, NewElementBuilder, ComponentManager, MINIMAL_CAPABILITIES, ARGS, UNDEFINED_REFERENCE, PrimitiveReference } from "@glimmer/runtime";
+import { LowLevelVM, NewElementBuilder, ComponentManager, MINIMAL_CAPABILITIES, UNDEFINED_REFERENCE, PrimitiveReference } from "@glimmer/runtime";
 import { CONSTANT_TAG, VersionedPathReference, Tag } from "@glimmer/reference";
 import { Destroyable } from "@glimmer/util";
 
@@ -131,8 +131,8 @@ export class EntryPointTest {
 
     // @title="hello renderComponent"
     vm.stack.push(PrimitiveReference.create('hello renderComponent'));
-    ARGS.setup(vm.stack, ['@title'], ['main', 'else', 'attrs'], 0, false);
-    vm.stack.push(ARGS);
+    vm.args.setup(vm.stack, ['@title'], ['main', 'else', 'attrs'], 0, false);
+    vm.stack.push(vm.args);
 
     // Setup `main()` by pushing an invocation and definition onto the stack
     vm.stack.push({ handle: title, symbolTable: { hasEval: false, symbols: titleBlock.symbols, referrer: null } });
