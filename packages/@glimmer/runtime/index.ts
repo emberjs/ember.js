@@ -61,10 +61,6 @@ export {
 } from './lib/component/curried-component';
 
 export {
-  ARGS
-} from './lib/compiled/opcodes/component';
-
-export {
   ModifierManager,
   Modifier
 } from './lib/modifier/interfaces';

@@ -84,7 +84,7 @@ export interface ICapturedNamedArguments extends VersionedPathReference<Dict<Opa
 }
 
 export class Arguments implements IArguments {
-  private stack: EvaluationStack = null as any;
+  private stack: EvaluationStack | null = null;
   public positional = new PositionalArguments();
   public named = new NamedArguments();
   public blocks = new BlockArguments();
@@ -145,8 +145,9 @@ export class Arguments implements IArguments {
   }
 
   realloc(offset: number) {
-    if (offset > 0) {
-      let { positional, named, stack } = this;
+    let { stack } = this;
+    if (offset > 0 && stack !== null) {
+      let { positional, named } = this;
       let newBase = positional.base + offset;
       let length = positional.length + named.length;
 
@@ -173,7 +174,7 @@ export class Arguments implements IArguments {
 
   clear(): void {
     let { stack, length } = this;
-    stack.pop(length);
+    if (length > 0 && stack !== null) stack.pop(length);
   }
 }
 
