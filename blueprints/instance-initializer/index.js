@@ -13,7 +13,7 @@ module.exports = {
             throw "Pods aren't supported within a module unification app";
           }
 
-          return 'src';
+          return 'src/init';
         },
       };
     }
