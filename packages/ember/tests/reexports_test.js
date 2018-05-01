@@ -128,6 +128,7 @@ let allExports = [
   ['run.scheduleOnce', '@ember/runloop', 'scheduleOnce'],
   ['run.throttle', '@ember/runloop', 'throttle'],
   ['run.currentRunLoop', '@ember/runloop', { get: 'getCurrentRunLoop' }],
+  ['run.cancelTimers', '@ember/runloop', 'cancelTimers'],
   ['propertyWillChange', 'ember-metal'],
   ['propertyDidChange', 'ember-metal'],
   ['notifyPropertyChange', 'ember-metal'],
