@@ -17,7 +17,7 @@ module.exports = useTestFrameworkDetector({
             throw "Pods aren't supported within a module unification app";
           }
 
-          return 'src';
+          return 'src/init';
         },
         __testType__() {
           return '';
