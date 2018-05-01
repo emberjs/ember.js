@@ -117,6 +117,7 @@ let allExports = [
   ['run.schedule', 'ember-metal', 'schedule'],
   ['run.scheduleOnce', 'ember-metal', 'scheduleOnce'],
   ['run.throttle', 'ember-metal', 'throttle'],
+  ['run.cancelTimers', 'ember-metal', 'cancelTimers'],
   ['run.currentRunLoop', 'ember-metal', { get: 'getCurrentRunLoop' }],
   ['propertyWillChange', 'ember-metal'],
   ['propertyDidChange', 'ember-metal'],

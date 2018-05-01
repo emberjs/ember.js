@@ -231,6 +231,7 @@ Ember.run.once = metal.once;
 Ember.run.schedule = metal.schedule;
 Ember.run.scheduleOnce = metal.scheduleOnce;
 Ember.run.throttle = metal.throttle;
+Ember.run.cancelTimers = metal.cancelTimers;
 Object.defineProperty(Ember.run, 'currentRunLoop', {
   get: metal.getCurrentRunLoop,
   enumerable: false,
