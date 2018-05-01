@@ -1,18 +1,18 @@
 {
   "name": "@glimmer/bundle-compiler",
-  "version": "0.34.1",
+  "version": "0.34.2",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/bundle-compiler",
   "dependencies": {
-    "@glimmer/syntax": "^0.34.1",
-    "@glimmer/util": "^0.34.1",
-    "@glimmer/wire-format": "^0.34.1",
-    "@glimmer/interfaces": "^0.34.1",
-    "@glimmer/program": "^0.34.1",
-    "@glimmer/compiler": "^0.34.1",
-    "@glimmer/opcode-compiler": "^0.34.1"
+    "@glimmer/syntax": "^0.34.2",
+    "@glimmer/util": "^0.34.2",
+    "@glimmer/wire-format": "^0.34.2",
+    "@glimmer/interfaces": "^0.34.2",
+    "@glimmer/program": "^0.34.2",
+    "@glimmer/compiler": "^0.34.2",
+    "@glimmer/opcode-compiler": "^0.34.2"
   },
   "devDependencies": {
     "typescript": "^2.2.0",
-    "@glimmer/runtime": "^0.34.1"
+    "@glimmer/runtime": "^0.34.2"
   }
 }
