@@ -246,6 +246,7 @@ Ember.run.once = runloop.once;
 Ember.run.schedule = runloop.schedule;
 Ember.run.scheduleOnce = runloop.scheduleOnce;
 Ember.run.throttle = runloop.throttle;
+Ember.run.cancelTimers = runloop.cancelTimers;
 Object.defineProperty(Ember.run, 'currentRunLoop', {
   get: runloop.getCurrentRunLoop,
   enumerable: false,
