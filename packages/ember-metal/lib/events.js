@@ -3,6 +3,7 @@
 */
 import { ENV } from 'ember-environment';
 import { assert, deprecate } from '@ember/debug';
+import { setListeners } from 'ember-utils';
 import { meta as metaFor, peekMeta } from './meta';
 
 /*
@@ -196,6 +197,6 @@ export function on(...args) {
     events.length > 0 && events.every(p => typeof p === 'string' && p.length)
   );
 
-  func.__ember_listens__ = events;
+  setListeners(func, events);
   return func;
 }

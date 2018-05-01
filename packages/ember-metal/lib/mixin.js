@@ -2,7 +2,16 @@
 @module @ember/object
 */
 import { assign } from '@ember/polyfills';
-import { guidFor, ROOT, wrap, makeArray, NAME_KEY } from 'ember-utils';
+import {
+  guidFor,
+  ROOT,
+  wrap,
+  makeArray,
+  NAME_KEY,
+  getObservers,
+  getListeners,
+  setObservers,
+} from 'ember-utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { ENV } from 'ember-environment';
@@ -273,13 +282,13 @@ function updateObserversAndListeners(obj, key, paths, updateMethod) {
 
 function replaceObserversAndListeners(obj, key, prev, next) {
   if (typeof prev === 'function') {
-    updateObserversAndListeners(obj, key, prev.__ember_observes__, removeObserver);
-    updateObserversAndListeners(obj, key, prev.__ember_listens__, removeListener);
+    updateObserversAndListeners(obj, key, getObservers(prev), removeObserver);
+    updateObserversAndListeners(obj, key, getListeners(prev), removeListener);
   }
 
   if (typeof next === 'function') {
-    updateObserversAndListeners(obj, key, next.__ember_observes__, addObserver);
-    updateObserversAndListeners(obj, key, next.__ember_listens__, addListener);
+    updateObserversAndListeners(obj, key, getObservers(next), addObserver);
+    updateObserversAndListeners(obj, key, getListeners(next), addListener);
   }
 }
 
@@ -732,7 +741,7 @@ export function observer(...args) {
     expandProperties(_paths[i], addWatchedProperty);
   }
 
-  func.__ember_observes__ = paths;
+  setObservers(func, paths);
   return func;
 }
 
