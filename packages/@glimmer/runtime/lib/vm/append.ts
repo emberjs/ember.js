@@ -8,6 +8,7 @@ import LowLevelVM, { Program } from './low-level';
 import { VMState, ListBlockOpcode, TryOpcode, BlockOpcode, Runtime } from './update';
 import RenderResult from './render-result';
 import EvaluationStack from './stack';
+import { Arguments } from "./arguments";
 
 import {
   APPEND_OPCODES,
@@ -62,6 +63,7 @@ export default class VM<T> implements PublicVM {
   public listBlockStack = new Stack<ListBlockOpcode>();
   public constants: Constants<T>;
   public heap: Heap;
+  public args: Arguments;
 
   get stack(): EvaluationStack {
     return this.inner.stack as EvaluationStack;
@@ -225,6 +227,7 @@ export default class VM<T> implements PublicVM {
     this.elementStack = elementStack;
     this.scopeStack.push(scope);
     this.dynamicScopeStack.push(dynamicScope);
+    this.args = new Arguments();
     this.inner = new LowLevelVM(EvaluationStack.empty(), this.heap, runtime.program, {
       debugBefore: (opcode: Opcode): DebugState => {
         return APPEND_OPCODES.debugBefore(this, opcode, opcode.type);
