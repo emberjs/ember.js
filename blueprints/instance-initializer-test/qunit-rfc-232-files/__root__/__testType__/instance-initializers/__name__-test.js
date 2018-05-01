@@ -1,6 +1,6 @@
 import Application from '@ember/application';
 
-import { initialize } from '<%= dasherizedModulePrefix %>/<% if (moduleUnificationApp) { %>src/init/<% } %>instance-initializers/<%= dasherizedModuleName %>';
+import { initialize } from '<%= dasherizedModulePrefix %>/<% if (isModuleUnificationApp) { %>src/init/<% } %>instance-initializers/<%= dasherizedModuleName %>';
 import { module, test } from 'qunit';
 import { setupTest } from 'ember-qunit';
 <% if (destroyAppExists) { %>import destroyApp from '../../helpers/destroy-app';<% } else { %>import { run } from '@ember/runloop';<% } %>
