@@ -41,9 +41,7 @@ module.exports = useTestFrameworkDetector({
       destroyAppExists: fs.existsSync(
         path.join(this.project.root, '/tests/helpers/destroy-app.js')
       ),
-      isModuleUnificationApp: fs.existsSync(
-        path.join(this.project.root, '/src')
-      ),
+      isModuleUnificationApp: fs.existsSync(path.join(this.project.root, '/src')),
     };
   },
 });
