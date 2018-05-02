@@ -10,6 +10,7 @@ import {
   isWatching,
   addObserver,
   meta as metaFor,
+  notifyPropertyChange,
 } from '..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
@@ -58,6 +59,26 @@ moduleFor(
 
       assert.equal(obj.foo, 'computed foo', 'should return value');
       assert.equal(count, 1, 'should have invoked computed property');
+    }
+
+    ['@test `notifyPropertyChange` works for a computed property not setup using Ember.defineProperty #GH16427'](
+      assert
+    ) {
+      let obj = {
+        a: 50,
+        b: computed(function() {
+          return this.a / 5;
+        }),
+      };
+
+      expectDeprecation(function() {
+        assert.equal(get(obj, 'b'), 10);
+      });
+
+      obj.a = 10;
+      notifyPropertyChange(obj, 'b');
+
+      assert.equal(get(obj, 'b'), 2);
     }
 
     ['@test defining computed property should invoke property on get'](assert) {
