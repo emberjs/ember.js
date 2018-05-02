@@ -706,7 +706,12 @@ export function descriptorFor(obj, keyName, _meta) {
   @private
 */
 export function isDescriptor(possibleDesc) {
-  return possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
+  return (
+    possibleDesc !== undefined &&
+    possibleDesc !== null &&
+    typeof possibleDesc === 'object' &&
+    possibleDesc.isDescriptor === true
+  );
 }
 
 export { counters };
