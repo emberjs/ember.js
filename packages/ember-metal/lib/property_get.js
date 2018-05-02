@@ -3,10 +3,10 @@
 */
 import { DEBUG } from '@glimmer/env';
 import { assert, deprecate } from '@ember/debug';
-import { HAS_NATIVE_PROXY, symbol } from 'ember-utils';
+import { HAS_NATIVE_PROXY, symbol, toString } from 'ember-utils';
 import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { isPath } from './path_cache';
-import { isDescriptor, descriptorFor } from 'ember-meta';
+import { descriptorFor, isDescriptor, meta } from 'ember-meta';
 import { getCurrentTracker } from './tracked';
 import { tagForProperty } from './tags';
 
@@ -105,33 +105,46 @@ export function get(obj, keyName) {
     }
 
     descriptor = descriptorFor(obj, keyName);
-
-    if (descriptor === undefined) {
-      if (DEBUG && HAS_NATIVE_PROXY) {
-        value = getPossibleMandatoryProxyValue(obj, keyName);
-      } else {
-        value = obj[keyName];
-      }
-
-      if (isDescriptor(value)) {
-        deprecate(
-          `[DEPRECATED] computed property '${keyName}' was not set on object '${obj &&
-            obj.toString &&
-            obj.toString()}' via 'defineProperty'`,
-          false,
-          {
-            id: 'ember-meta.descriptor-on-object',
-            until: '3.5.0',
-            url:
-              'https://emberjs.com/deprecations/v3.x#toc_use-defineProperty-to-define-computed-properties',
-          }
-        );
-        descriptor = value;
-      }
-    }
-
     if (descriptor !== undefined) {
       return descriptor.get(obj, keyName);
+    }
+
+    if (DEBUG && HAS_NATIVE_PROXY) {
+      value = getPossibleMandatoryProxyValue(obj, keyName);
+    } else {
+      value = obj[keyName];
+    }
+
+    // TODO turn if block into a sveltable deprecated block
+    if (isDescriptor(value)) {
+      deprecate(
+        `[DEPRECATED] computed property '${keyName}' was not set on object '${toString(
+          obj
+        )}' via 'defineProperty'`,
+        false,
+        {
+          id: 'ember-meta.descriptor-on-object',
+          until: '3.5.0',
+          url:
+            'https://emberjs.com/deprecations/v3.x#toc_use-defineProperty-to-define-computed-properties',
+        }
+      );
+
+      Object.defineProperty(obj, keyName, {
+        configurable: true,
+        enumerable: value.enumerable === false,
+        get() {
+          return value.get(this, keyName);
+        },
+      });
+
+      meta(obj).writeDescriptors(keyName, value);
+
+      if (typeof value.setup === 'function') {
+        value.setup(obj, keyName);
+      }
+
+      return value.get(obj, keyName);
     }
   } else {
     value = obj[keyName];

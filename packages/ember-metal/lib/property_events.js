@@ -86,8 +86,7 @@ function notifyPropertyChange(obj, keyName, _meta) {
 
   let possibleDesc = descriptorFor(obj, keyName, meta);
 
-  // shouldn't this mean that we're watching this key?
-  if (possibleDesc !== undefined && possibleDesc.didChange) {
+  if (possibleDesc !== undefined && typeof possibleDesc.didChange === 'function') {
     possibleDesc.didChange(obj, keyName);
   }
 

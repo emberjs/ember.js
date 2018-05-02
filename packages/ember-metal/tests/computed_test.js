@@ -78,7 +78,36 @@ moduleFor(
       obj.a = 10;
       notifyPropertyChange(obj, 'b');
 
-      assert.equal(get(obj, 'b'), 2);
+      assert.equal(obj.b, 2);
+    }
+
+    ['@test set works for a computed property not setup using Ember.defineProperty'](assert) {
+      let obj = {
+        a: 50,
+        b: computed('a', {
+          get() {
+            return this.a * 2;
+          },
+          set(_, value) {
+            set(this, 'a', value / 2);
+            return value;
+          },
+        }),
+      };
+
+      assert.equal(obj.a, 50);
+
+      expectDeprecation(function() {
+        set(obj, 'b', 80);
+      });
+
+      assert.equal(obj.b, 80);
+      assert.equal(obj.a, 40);
+
+      set(obj, 'a', 100);
+
+      assert.equal(obj.a, 100);
+      assert.equal(obj.b, 200);
     }
 
     ['@test defining computed property should invoke property on get'](assert) {
