@@ -34,6 +34,7 @@ function destroyApp() {
   if (App) {
     run(App, 'destroy');
     App = null;
+    helperContainer = null;
   }
 }
 
@@ -81,6 +82,7 @@ moduleFor(
 
       unregisterHelper();
 
+      run(App, 'destroy');
       setupApp();
 
       assert.ok(

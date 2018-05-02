@@ -15,7 +15,9 @@ moduleFor(
     }
 
     teardown() {
+      super.teardown();
       runDestroy(route);
+      route = routeOne = routeTwo = lookupHash = undefined;
     }
 
     ['@test default store utilizes the container to acquire the model factory'](assert) {
@@ -48,12 +50,15 @@ moduleFor(
         },
       };
 
-      setOwner(route, buildOwner(ownerOptions));
+      let owner = buildOwner(ownerOptions);
+      setOwner(route, owner);
 
       route.set('_qp', null);
 
       assert.equal(route.model({ post_id: 1 }), post);
       assert.equal(route.findModel('post', 1), post, '#findModel returns the correct post');
+
+      runDestroy(owner);
     }
 
     ["@test 'store' can be injected by data persistence frameworks"](assert) {
@@ -84,6 +89,8 @@ moduleFor(
 
       assert.equal(route.model({ post_id: 1 }), post, '#model returns the correct post');
       assert.equal(route.findModel('post', 1), post, '#findModel returns the correct post');
+
+      runDestroy(owner);
     }
 
     ["@test assert if 'store.find' method is not found"]() {
@@ -100,6 +107,8 @@ moduleFor(
       expectAssertion(function() {
         route.findModel('post', 1);
       }, 'Post has no method `find`.');
+
+      runDestroy(owner);
     }
 
     ['@test asserts if model class is not found']() {
@@ -113,6 +122,8 @@ moduleFor(
       expectAssertion(function() {
         route.model({ post_id: 1 });
       }, /You used the dynamic segment post_id in your route undefined, but <Ember.Object:ember\d+>.Post did not exist and you did not override your route\'s `model` hook./);
+
+      runDestroy(owner);
     }
 
     ["@test 'store' does not need to be injected"](assert) {
@@ -129,6 +140,8 @@ moduleFor(
       });
 
       assert.ok(true, 'no error was raised');
+
+      runDestroy(owner);
     }
 
     ["@test modelFor doesn't require the router"](assert) {
@@ -144,6 +157,8 @@ moduleFor(
       owner.register('route:foo', FooRoute);
 
       assert.strictEqual(route.modelFor('foo'), foo);
+
+      runDestroy(owner);
     }
 
     ['@test .send just calls an action if the router is absent'](assert) {
@@ -167,6 +182,8 @@ moduleFor(
       assert.equal(true, route.send('returnsTrue', 1, 2));
       assert.equal(false, route.send('returnsFalse'));
       assert.equal(undefined, route.send('nonexistent', 1, 2, 3));
+
+      runDestroy(route);
     }
 
     ['@test .send just calls an action if the routers internal router property is absent'](assert) {
@@ -191,6 +208,8 @@ moduleFor(
       assert.equal(true, route.send('returnsTrue', 1, 2));
       assert.equal(false, route.send('returnsFalse'));
       assert.equal(undefined, route.send('nonexistent', 1, 2, 3));
+
+      runDestroy(route);
     }
 
     ['@test .send asserts if called on a destroyed route']() {

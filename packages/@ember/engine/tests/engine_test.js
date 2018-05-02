@@ -12,7 +12,6 @@ import {
 
 let engine;
 let originalLookup = context.lookup;
-let lookup;
 
 moduleFor(
   'Engine',
@@ -20,20 +19,21 @@ moduleFor(
     constructor() {
       super();
 
-      lookup = context.lookup = {};
-      engine = run(() => Engine.create());
+      run(() => {
+        engine = Engine.create();
+        context.lookup = { TestEngine: engine };
+      });
     }
 
     teardown() {
       context.lookup = originalLookup;
       if (engine) {
         run(engine, 'destroy');
+        engine = null;
       }
     }
 
     ['@test acts like a namespace'](assert) {
-      engine = run(() => (lookup.TestEngine = Engine.create()));
-
       engine.Foo = EmberObject.extend();
       assert.equal(
         engine.Foo.toString(),

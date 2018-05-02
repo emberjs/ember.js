@@ -31,7 +31,7 @@ moduleFor(
       let secondApplicationOptions = { rootElement: '#two' };
       let myOptions = assign(applicationOptions, secondApplicationOptions, options);
       this.secondApp = Application.create(myOptions);
-      this.secondResolver = myOptions.Resolver.lastInstance;
+      this.secondResolver = this.secondApp.__registry__.resolver;
       return this.secondApp;
     }
 

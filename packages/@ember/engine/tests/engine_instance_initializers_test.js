@@ -22,6 +22,7 @@ moduleFor(
   'Engine instance initializers',
   class extends TestCase {
     teardown() {
+      super.teardown();
       run(() => {
         if (myEngineInstance) {
           myEngineInstance.destroy();
@@ -31,6 +32,7 @@ moduleFor(
           myEngine.destroy();
         }
       });
+      MyEngine = myEngine = myEngineInstance = undefined;
     }
 
     ["@test initializers require proper 'name' and 'initialize' properties"]() {

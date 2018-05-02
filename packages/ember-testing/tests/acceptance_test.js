@@ -9,18 +9,20 @@ import { jQueryDisabled } from 'ember-views';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 
 const originalDebug = getDebugFunction('debug');
-const noop = function() {};
 
 var originalConsoleError = console.error; // eslint-disable-line no-console
+let testContext;
 
 if (!jQueryDisabled) {
   moduleFor(
     'ember-testing Acceptance',
     class extends AutobootApplicationTestCase {
       constructor() {
-        setDebugFunction('debug', noop);
+        setDebugFunction('debug', function() {});
         super();
         this._originalAdapter = Test.adapter;
+
+        testContext = this;
 
         this.runTask(() => {
           this.createApplication();
@@ -35,7 +37,6 @@ if (!jQueryDisabled) {
 
           this.indexHitCount = 0;
           this.currentRoute = 'index';
-          let testContext = this;
 
           this.add(
             'route:index',
@@ -115,6 +116,9 @@ if (!jQueryDisabled) {
       teardown() {
         setDebugFunction('debug', originalDebug);
         Test.adapter = this._originalAdapter;
+        Test.unregisterHelper('slowHelper');
+        window.slowHelper = undefined;
+        testContext = undefined;
         super.teardown();
       }
 

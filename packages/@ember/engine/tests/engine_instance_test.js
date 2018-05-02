@@ -20,10 +20,12 @@ moduleFor(
     teardown() {
       if (engineInstance) {
         run(engineInstance, 'destroy');
+        engineInstance = undefined;
       }
 
       if (engine) {
         run(engine, 'destroy');
+        engine = undefined;
       }
     }
 

@@ -15,7 +15,10 @@ moduleFor(
     }
 
     teardown() {
+      super.teardown();
       run(application, 'destroy');
+      application = undefined;
+      registry = undefined;
     }
 
     ['@test normalization'](assert) {

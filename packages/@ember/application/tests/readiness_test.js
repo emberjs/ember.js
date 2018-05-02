@@ -55,6 +55,7 @@ moduleFor(
     teardown() {
       if (application) {
         run(() => application.destroy());
+        jQuery = readyCallbacks = domReady = Application = application = undefined;
       }
     }
 

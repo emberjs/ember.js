@@ -234,7 +234,7 @@ moduleFor(
     [`@test acts like a namespace`](assert) {
       let lookup = (context.lookup = {});
 
-      lookup.TestApp = this.runTask(() => this.createApplication());
+      lookup.TestApp = this.application = this.runTask(() => this.createApplication());
 
       setNamespaceSearchDisabled(false);
       let Foo = (this.application.Foo = EmberObject.extend());

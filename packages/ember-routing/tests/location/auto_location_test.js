@@ -40,7 +40,7 @@ function mockBrowserHistory(overrides, assert) {
 }
 
 function createLocation(location, history) {
-  let owner = buildOwner();
+  owner = buildOwner();
 
   owner.register('location:history', HistoryLocation);
   owner.register('location:hash', HashLocation);
@@ -56,14 +56,15 @@ function createLocation(location, history) {
   return autolocation;
 }
 
-let location;
+let location, owner;
 
 moduleFor(
   'AutoLocation',
   class extends AbstractTestCase {
     teardown() {
-      if (location) {
-        run(location, 'destroy');
+      if (owner) {
+        run(owner, 'destroy');
+        owner = location = undefined;
       }
     }
 
