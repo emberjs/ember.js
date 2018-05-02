@@ -93,7 +93,7 @@ export default class Container {
    @method destroy
    */
   destroy() {
-    destroyDestroyables(this);
+    resetCache(this);
     this.isDestroyed = true;
   }
 
@@ -105,6 +105,7 @@ export default class Container {
    @param {String} fullName optional key to reset; if missing, resets everything
   */
   reset(fullName) {
+    if (this.isDestroyed) return;
     if (fullName === undefined) {
       resetCache(this);
     } else {
@@ -154,6 +155,7 @@ export default class Container {
     return factoryFor(this, normalizedName, fullName);
   }
 }
+
 /*
  * Wrap a factory manager in a proxy which will not permit properties to be
  * set on the manager.
