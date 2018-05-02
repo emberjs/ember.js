@@ -671,6 +671,40 @@ moduleFor(
       assert.deepEqual(Object.keys(instance), []);
     }
 
+    [`@test assert when calling lookup after destroy on a container`](assert) {
+      let registry = new Registry();
+      let container = registry.container();
+      let Component = factory();
+      registry.register('component:foo-bar', Component);
+      let instance = container.lookup('component:foo-bar');
+      assert.ok(instance, 'precond lookup successful');
+
+      this.runTask(() => {
+        container.destroy();
+      });
+
+      expectAssertion(() => {
+        container.lookup('component:foo-bar');
+      });
+    }
+
+    [`@test assert when calling factoryFor after destroy on a container`](assert) {
+      let registry = new Registry();
+      let container = registry.container();
+      let Component = factory();
+      registry.register('component:foo-bar', Component);
+      let instance = container.factoryFor('component:foo-bar');
+      assert.ok(instance, 'precond lookup successful');
+
+      this.runTask(() => {
+        container.destroy();
+      });
+
+      expectAssertion(() => {
+        container.factoryFor('component:foo-bar');
+      });
+    }
+
     // this is skipped until templates and the glimmer environment do not require `OWNER` to be
     // passed in as constructor args
     ['@skip #factoryFor does not add properties to the object being instantiated'](assert) {
