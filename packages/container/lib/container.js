@@ -84,6 +84,7 @@ export default class Container {
    @return {any}
    */
   lookup(fullName, options) {
+    assert('expected container not to be destroyed', !this.isDestroyed);
     assert('fullName must be a proper full name', this.registry.isValidFullName(fullName));
     return lookup(this, this.registry.normalize(fullName), options);
   }
@@ -95,7 +96,7 @@ export default class Container {
    @method destroy
    */
   destroy() {
-    destroyDestroyables(this);
+    resetCache(this);
     this.isDestroyed = true;
   }
 
@@ -107,6 +108,7 @@ export default class Container {
    @param {String} fullName optional key to reset; if missing, resets everything
   */
   reset(fullName) {
+    if (this.isDestroyed) return;
     if (fullName === undefined) {
       resetCache(this);
     } else {
@@ -138,6 +140,7 @@ export default class Container {
    @return {any}
    */
   factoryFor(fullName, options = {}) {
+    assert('expected container not to be destroyed', !this.isDestroyed);
     let normalizedName = this.registry.normalize(fullName);
 
     assert('fullName must be a proper full name', this.registry.isValidFullName(normalizedName));
@@ -156,6 +159,7 @@ export default class Container {
     return factoryFor(this, normalizedName, fullName);
   }
 }
+
 /*
  * Wrap a factory manager in a proxy which will not permit properties to be
  * set on the manager.
