@@ -6,6 +6,37 @@ import { OWNER, setOwner } from 'ember-owner';
 import { assign } from '@ember/polyfills';
 import { dictionary, HAS_NATIVE_PROXY } from 'ember-utils';
 
+let leakTracking, containers;
+if (DEBUG) {
+  // requires v8
+  // chrome --js-flags="--allow-natives-syntax --expose-gc"
+  // node --allow-natives-syntax --expose-gc
+  try {
+    /* globals gc, WeakSet */
+    if (typeof gc === 'function') {
+      leakTracking = (() => {
+        // avoid syntax errors when --allow-natives-syntax not present
+        let GetWeakSetValues = new Function('weakSet', 'return %GetWeakSetValues(weakSet, 0)');
+        containers = new WeakSet();
+        return {
+          hasContainers() {
+            gc();
+            return GetWeakSetValues(containers).length > 0;
+          },
+          reset() {
+            let values = GetWeakSetValues(containers);
+            for (let i = 0; i < values.length; i++) {
+              containers.delete(values[i]);
+            }
+          },
+        };
+      })();
+    }
+  } catch (e) {
+    // ignore
+  }
+}
+
 /**
  A container used to instantiate and cache objects.
 
@@ -29,6 +60,9 @@ export default class Container {
 
     if (DEBUG) {
       this.validationCache = dictionary(options.validationCache || null);
+      if (containers !== undefined) {
+        containers.add(this);
+      }
     }
   }
 
@@ -158,6 +192,10 @@ export default class Container {
 
     return factoryFor(this, normalizedName, fullName);
   }
+}
+
+if (DEBUG) {
+  Container._leakTracking = leakTracking;
 }
 
 /*
