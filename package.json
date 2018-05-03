@@ -130,7 +130,7 @@
     "lodash.uniq": "^4.5.0",
     "mocha": "^5.0.0",
     "prettier": "1.11.1",
-    "puppeteer": "^0.13.0",
+    "puppeteer": "^1.3.0",
     "qunit": "^2.5.0",
     "route-recognizer": "^0.3.3",
     "router_js": "2.0.0-beta.3",
