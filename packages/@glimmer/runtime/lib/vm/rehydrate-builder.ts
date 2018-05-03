@@ -200,6 +200,11 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
       this.remove(first);
       this.remove(last);
 
+      let possibleEmptyMarker = first.nextSibling;
+      if (possibleEmptyMarker !== null && isEmpty(possibleEmptyMarker)) {
+        this.currentCursor.candidate = this.remove(possibleEmptyMarker);
+      }
+
       return newBounds;
     } else {
       return super.__appendHTML(html);
