@@ -49,7 +49,12 @@ class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
         }
       }
     }
-    super.__appendHTML(html);
+    if (html === '') {
+      this.__appendComment('% %');
+    } else {
+      super.__appendHTML(html);
+    }
+
     let last = this.__appendComment('%glmr%');
     return new ConcreteBounds(this.element, first, last);
   }
