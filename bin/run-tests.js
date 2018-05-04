@@ -52,9 +52,9 @@ function runInBrowser(url, retries, resolve, reject) {
       var crashed;
 
       page.on('console', function(msg) {
-        console.log(msg.text);
+        console.log(msg.text());
 
-        result.output.push(msg.text);
+        result.output.push(msg.text());
       });
 
       page.on('error', function(err) {
