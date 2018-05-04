@@ -3,6 +3,7 @@ import Controller from '@ember/controller';
 import { Component } from 'ember-glimmer';
 import { compile } from 'ember-template-compiler';
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
+import { ENV } from 'ember-environment';
 
 moduleFor(
   'Application Lifecycle - Component Registration',
@@ -12,7 +13,7 @@ moduleFor(
       return super.createApplication(options, Application.extend());
     }
 
-    ['@feature(!ember-glimmer-template-only-components) The helper becomes the body of the component']() {
+    ['@test The helper becomes the body of the component']() {
       this.addTemplate('components/expand-it', '<p>hello {{yield}}</p>');
       this.addTemplate('application', 'Hello world {{#expand-it}}world{{/expand-it}}');
 
@@ -25,12 +26,14 @@ moduleFor(
       });
     }
 
-    ['@feature(ember-glimmer-template-only-components) The helper becomes the body of the component']() {
+    ['@test The helper becomes the body of the component (ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = true;)']() {
+      ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = true;
       this.addTemplate('components/expand-it', '<p>hello {{yield}}</p>');
       this.addTemplate('application', 'Hello world {{#expand-it}}world{{/expand-it}}');
 
       return this.visit('/').then(() => {
         this.assertInnerHTML('Hello world <p>hello world</p>');
+        ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = false;
       });
     }
 
