@@ -16,6 +16,7 @@ import TransformDotComponentInvocation from './transform-dot-component-invocatio
 import AssertInputHelperWithoutBlock from './assert-input-helper-without-block';
 import TransformInElement from './transform-in-element';
 import AssertIfHelperWithoutArguments from './assert-if-helper-without-arguments';
+import AssertSplattributeExpressions from './assert-splattribute-expression';
 
 const transforms = [
   TransformDotComponentInvocation,
@@ -36,6 +37,7 @@ const transforms = [
   AssertInputHelperWithoutBlock,
   TransformInElement,
   AssertIfHelperWithoutArguments,
+  AssertSplattributeExpressions,
 ];
 
 export default Object.freeze(transforms);
