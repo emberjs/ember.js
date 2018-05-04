@@ -6,10 +6,9 @@ import { Service, readOnly } from 'ember-runtime';
 import { shallowEqual, resemblesURL, extractRouteArgs } from '../utils';
 
 /**
-   The Router service provides components, and other services, access
-   to the router.
+   The Router service provides access to the router.
    
-   It can be used to check the current route, initiate route transitions and more.
+   It can be used to check the current route, initiate route transitions, and more.
    
    For example, it can be used to transition to a dedicated route if the 
    application goes offline. Note that this is a boiled down example, 
@@ -18,10 +17,10 @@ import { shallowEqual, resemblesURL, extractRouteArgs } from '../utils';
    ```js
    // app/services/network-connection.js
    
-   import Service, { inject } from '@ember/service';
+   import Service, { inject as service } from '@ember/service';
 
    export default Service.extend({
-     router: inject.service(),
+     router: service(),
      
      init() {
        this._super();
