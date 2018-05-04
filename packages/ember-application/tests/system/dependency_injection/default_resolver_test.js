@@ -204,7 +204,7 @@ moduleFor(
       expectAssertion(() => {
         this.application.FooService = EmberObject.extend();
         this.privateRegistry.resolve('service:foo');
-      }, /Expected service:foo to resolve to an Ember.Service but instead it was \.FooService\./);
+      }, /Expected service:foo to resolve to an Ember.Service but instead it was TestApp\.FooService\./);
     }
 
     [`@test no deprecation warning for service factories that extend from Service`](assert) {
@@ -217,7 +217,7 @@ moduleFor(
       expectAssertion(() => {
         this.application.FooComponent = EmberObject.extend();
         this.privateRegistry.resolve('component:foo');
-      }, /Expected component:foo to resolve to an Ember\.Component but instead it was \.FooComponent\./);
+      }, /Expected component:foo to resolve to an Ember\.Component but instead it was TestApp\.FooComponent\./);
     }
 
     [`@test no deprecation warning for component factories that extend from Component`]() {

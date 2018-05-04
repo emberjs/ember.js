@@ -1,7 +1,7 @@
 /*globals EmberDev */
 import VERSION from 'ember/version';
 import { ENV, context } from 'ember-environment';
-import { libraries, setNamespaceSearchDisabled } from 'ember-metal';
+import { libraries } from 'ember-metal';
 import { getDebugFunction, setDebugFunction } from 'ember-debug';
 import Application from '../../lib/system/application';
 import { Router, NoneLocation, Route as EmberRoute } from 'ember-routing';
@@ -229,11 +229,7 @@ moduleFor(
     }
 
     [`@test acts like a namespace`](assert) {
-      let lookup = (context.lookup = {});
-
-      lookup.TestApp = this.runTask(() => this.createApplication());
-
-      setNamespaceSearchDisabled(false);
+      this.application = this.runTask(() => this.createApplication());
       let Foo = (this.application.Foo = EmberObject.extend());
       assert.equal(Foo.toString(), 'TestApp.Foo', 'Classes pick up their parent namespace');
     }
