@@ -59,18 +59,13 @@
           ENV.__test_hook_count__ += object;
         });
 
-        window.ENV.FEATURES = !!QUnit.urlParams.prod ? {{PROD_FEATURES}} : {{DEV_FEATURES}};
 
         // Handle extending prototypes
         ENV['EXTEND_PROTOTYPES'] = !!QUnit.urlParams.extendprototypes;
 
         // Handle testing feature flags
         if (QUnit.urlParams.enableoptionalfeatures) {
-          for (var feature in window.ENV.FEATURES) {
-            if (window.ENV.FEATURES[feature] === null) {
-              window.ENV.FEATURES[feature] = true;
-            }
-          }
+          ENV.ENABLE_OPTIONAL_FEATURES = true;
         }
 
         ENV['RAISE_ON_DEPRECATION'] = true;
