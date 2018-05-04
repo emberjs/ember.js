@@ -12,7 +12,7 @@ import {
   processAllNamespaces,
   removeNamespace,
 } from 'ember-metal'; // Preloaded into namespaces
-import { getName } from 'ember-utils';
+import { getName, guidFor, setName } from 'ember-utils';
 import EmberObject from './object';
 
 /**
@@ -45,9 +45,13 @@ const Namespace = EmberObject.extend({
     if (name) {
       return name;
     }
-
     findNamespaces();
-    return getName(this);
+    name = getName(this);
+    if (name === undefined) {
+      name = guidFor(this);
+      setName(this, name);
+    }
+    return name;
   },
 
   nameClasses() {

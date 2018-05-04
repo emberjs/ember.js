@@ -1,6 +1,7 @@
 import { context } from 'ember-environment';
 import { run } from '@ember/runloop';
 import { get, setNamespaceSearchDisabled } from 'ember-metal';
+import { guidFor } from 'ember-utils';
 import EmberObject from '../../../lib/system/object';
 import Namespace from '../../../lib/system/namespace';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
@@ -87,7 +88,7 @@ moduleFor(
 
     ['@test Lowercase namespaces are no longer supported'](assert) {
       let nsC = (lookup.namespaceC = Namespace.create());
-      assert.equal(nsC.toString(), undefined);
+      assert.equal(nsC.toString(), guidFor(nsC));
     }
 
     ['@test A namespace can be assigned a custom name'](assert) {
