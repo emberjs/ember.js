@@ -1,7 +1,7 @@
 import { getOwner, setOwner } from 'ember-utils';
 import { get } from 'ember-metal';
 import CoreObject from '../../lib/system/core_object';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, buildOwner } from 'internal-test-helpers';
 
 moduleFor(
   'Ember.CoreObject',
@@ -60,6 +60,24 @@ moduleFor(
 
       let proxy = get(obj, 'someProxyishThing');
       assert.equal(get(proxy, 'lolol'), true, 'should be able to get data from a proxy');
+    }
+
+    ['@test should not trigger proxy assertion when retrieving a re-registered proxy (GH#16610)'](
+      assert
+    ) {
+      let owner = buildOwner();
+
+      let someProxyishThing = CoreObject.extend({
+        unknownProperty() {
+          return true;
+        },
+      }).create();
+
+      // emulates ember-engines's process of registering services provided
+      // by the host app down to the engine
+      owner.register('thing:one', someProxyishThing, { instantiate: false });
+
+      assert.equal(owner.lookup('thing:one'), someProxyishThing);
     }
 
     ['@test should not trigger proxy assertion when probing for a "symbol"'](assert) {
