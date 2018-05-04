@@ -43,7 +43,9 @@ function runInBrowser(url, retries, resolve, reject) {
   console.log('Running Chrome headless: ' + url);
 
   if (!browserPromise) {
-    browserPromise = puppeteer.launch();
+    browserPromise = puppeteer.launch({
+      args: ['--js-flags="--allow-natives-syntax --expose-gc"'],
+    });
   }
 
   browserPromise.then(function(browser) {
