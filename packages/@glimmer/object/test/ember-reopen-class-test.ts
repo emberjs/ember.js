@@ -9,8 +9,10 @@ QUnit.module('GlimmerObject.reopenClass');
 QUnit.test('adds new properties to subclass', assert => {
   let Subclass: any = EmberObject.extend();
   Subclass.reopenClass({
-    foo() { return 'FOO'; },
-    bar: 'BAR'
+    foo() {
+      return 'FOO';
+    },
+    bar: 'BAR',
   });
 
   assert.equal(Subclass.foo(), 'FOO', 'Adds method');
@@ -20,8 +22,10 @@ QUnit.test('adds new properties to subclass', assert => {
 QUnit.test('class properties inherited by subclasses', assert => {
   let Subclass = EmberObject.extend();
   Subclass.reopenClass({
-    foo() { return 'FOO'; },
-    bar: 'BAR'
+    foo() {
+      return 'FOO';
+    },
+    bar: 'BAR',
   });
 
   let SubSub = Subclass.extend();

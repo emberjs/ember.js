@@ -5,19 +5,18 @@ export enum Ops {
   DidCreateElement,
   SetComponentAttrs,
   DidRenderLayout,
-  Debugger
+  Debugger,
 }
 
 import ClientSideStatement = WireFormatOps.ClientSideStatement;
 
-export type OpenComponentElement  = [ClientSideStatement, Ops.OpenComponentElement, string];
-export type DidCreateElement      = [ClientSideStatement, Ops.DidCreateElement];
-export type SetComponentAttrs     = [ClientSideStatement, Ops.SetComponentAttrs, boolean];
-export type DidRenderLayout       = [ClientSideStatement, Ops.DidRenderLayout];
+export type OpenComponentElement = [ClientSideStatement, Ops.OpenComponentElement, string];
+export type DidCreateElement = [ClientSideStatement, Ops.DidCreateElement];
+export type SetComponentAttrs = [ClientSideStatement, Ops.SetComponentAttrs, boolean];
+export type DidRenderLayout = [ClientSideStatement, Ops.DidRenderLayout];
 
 export type ClientSideStatement =
-    OpenComponentElement
+  | OpenComponentElement
   | DidCreateElement
   | SetComponentAttrs
-  | DidRenderLayout
-  ;
+  | DidRenderLayout;

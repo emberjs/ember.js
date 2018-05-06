@@ -1,10 +1,10 @@
-import TemplateVisitor, { Action } from "./template-visitor";
-import JavaScriptCompiler, { Template } from "./javascript-compiler";
-import { assert, Option } from "@glimmer/util";
+import TemplateVisitor, { Action } from './template-visitor';
+import JavaScriptCompiler, { Template } from './javascript-compiler';
+import { assert, Option } from '@glimmer/util';
 import { AST, isLiteral, SyntaxError } from '@glimmer/syntax';
 import { getAttrNamespace } from './utils';
-import { Opaque } from "@glimmer/interfaces";
-import { SymbolAllocator, InOp as SymbolInOp, OutOp as SymbolOutOp } from "./allocate-symbols";
+import { Opaque } from '@glimmer/interfaces';
+import { SymbolAllocator, InOp as SymbolInOp, OutOp as SymbolOutOp } from './allocate-symbols';
 
 export interface CompileOptions {
   meta: Opaque;
@@ -35,7 +35,9 @@ export default class TemplateCompiler {
 
   process(actions: Action[]): SymbolInOp[] {
     actions.forEach(([name, ...args]) => {
-      if (!this[name]) { throw new Error(`Unimplemented ${name} on TemplateCompiler`); }
+      if (!this[name]) {
+        throw new Error(`Unimplemented ${name} on TemplateCompiler`);
+      }
       (this[name] as any)(...args);
     });
     return this.opcodes;
@@ -85,7 +87,7 @@ export default class TemplateCompiler {
       this.opcode(['openElement', action], action);
     }
 
-    let typeAttr : Option<AST.AttrNode> = null;
+    let typeAttr: Option<AST.AttrNode> = null;
     let attrs = action.attributes;
     for (let i = 0; i < attrs.length; i++) {
       if (attrs[i].name === 'type') {
@@ -145,7 +147,9 @@ export default class TemplateCompiler {
   modifier([action]: [AST.ElementModifierStatement]) {
     assertIsSimplePath(action.path, action.loc, 'modifier');
 
-    let { path: { parts } } = action;
+    let {
+      path: { parts },
+    } = action;
 
     this.prepareHelper(action);
     this.opcode(['modifier', parts[0]], action);
@@ -172,7 +176,7 @@ export default class TemplateCompiler {
     }
   }
 
-  block([action/*, index, count*/]: [AST.BlockStatement]) {
+  block([action /*, index, count*/]: [AST.BlockStatement]) {
     this.prepareHelper(action);
     let templateId = this.templateIds.pop()!;
     let inverseId = action.inverse === null ? null : this.templateIds.pop()!;
@@ -182,7 +186,9 @@ export default class TemplateCompiler {
   /// Internal actions, not found in the original processed actions
 
   arg([path]: [AST.PathExpression]) {
-    let { parts: [head, ...rest] } = path;
+    let {
+      parts: [head, ...rest],
+    } = path;
     this.opcode(['get', [`@${head}`, rest]], path);
   }
 
@@ -387,16 +393,22 @@ export default class TemplateCompiler {
 
   meta(node: AST.BaseNode) {
     let loc = node.loc;
-    if (!loc) { return []; }
+    if (!loc) {
+      return [];
+    }
 
     let { source, start, end } = loc;
-    return [ 'loc', [source || null, [start.line, start.column], [end.line, end.column]] ];
+    return ['loc', [source || null, [start.line, start.column], [end.line, end.column]]];
   }
 }
 
-function isHelperInvocation(mustache: AST.MustacheStatement): mustache is AST.MustacheStatement & { path: AST.PathExpression } {
-  return (mustache.params && mustache.params.length > 0) ||
-    (mustache.hash && mustache.hash.pairs.length > 0);
+function isHelperInvocation(
+  mustache: AST.MustacheStatement
+): mustache is AST.MustacheStatement & { path: AST.PathExpression } {
+  return (
+    (mustache.params && mustache.params.length > 0) ||
+    (mustache.hash && mustache.hash.pairs.length > 0)
+  );
 }
 
 function isSimplePath({ parts }: AST.PathExpression): boolean {
@@ -433,7 +445,10 @@ function isArg(path: AST.PathExpression): boolean {
 
 function assertIsSimplePath(path: AST.PathExpression, loc: AST.SourceLocation, context: string) {
   if (!isSimplePath(path)) {
-    throw new SyntaxError(`\`${path.original}\` is not a valid name for a ${context} on line ${loc.start.line}.`, path.loc);
+    throw new SyntaxError(
+      `\`${path.original}\` is not a valid name for a ${context} on line ${loc.start.line}.`,
+      path.loc
+    );
   }
 }
 
@@ -455,11 +470,24 @@ function assertValidPartial(statement: AST.MustacheStatement) /* : expr */ {
   let { params, hash, escaped, loc } = statement;
 
   if (params && params.length !== 1) {
-    throw new SyntaxError(`Partial found with no arguments. You must specify a template name. (on line ${loc.start.line})`, statement.loc);
+    throw new SyntaxError(
+      `Partial found with no arguments. You must specify a template name. (on line ${
+        loc.start.line
+      })`,
+      statement.loc
+    );
   } else if (hash && hash.pairs.length > 0) {
-    throw new SyntaxError(`partial does not take any named arguments (on line ${loc.start.line})`, statement.loc);
+    throw new SyntaxError(
+      `partial does not take any named arguments (on line ${loc.start.line})`,
+      statement.loc
+    );
   } else if (!escaped) {
-    throw new SyntaxError(`{{{partial ...}}} is not supported, please use {{partial ...}} instead (on line ${loc.start.line})`, statement.loc);
+    throw new SyntaxError(
+      `{{{partial ...}}} is not supported, please use {{partial ...}} instead (on line ${
+        loc.start.line
+      })`,
+      statement.loc
+    );
   }
 
   return params;
@@ -479,10 +507,16 @@ function assertValidHasBlockUsage(type: string, call: AST.Call): string {
     if (param.type === 'StringLiteral') {
       return param.value;
     } else {
-      throw new SyntaxError(`you can only yield to a literal value (on line ${loc.start.line})`, call.loc);
+      throw new SyntaxError(
+        `you can only yield to a literal value (on line ${loc.start.line})`,
+        call.loc
+      );
     }
   } else {
-    throw new SyntaxError(`${type} only takes a single positional argument (on line ${loc.start.line})`, call.loc);
+    throw new SyntaxError(
+      `${type} only takes a single positional argument (on line ${loc.start.line})`,
+      call.loc
+    );
   }
 }
 

@@ -6,17 +6,25 @@ import {
   isModified,
   ReferenceCache,
   Revision,
-  Tag
+  Tag,
 } from '@glimmer/reference';
 import { initializeGuid, assert } from '@glimmer/util';
-import { CheckNumber, check, CheckInstanceof, CheckOption, CheckBlockSymbolTable, CheckHandle, CheckPrimitive } from '@glimmer/debug';
+import {
+  CheckNumber,
+  check,
+  CheckInstanceof,
+  CheckOption,
+  CheckBlockSymbolTable,
+  CheckHandle,
+  CheckPrimitive,
+} from '@glimmer/debug';
 import { stackAssert } from './assert';
 import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
 import { Scope } from '../../environment';
 import { PrimitiveReference } from '../../references';
 import { VM, UpdatingVM } from '../../vm';
 import { Arguments } from '../../vm/arguments';
-import { LazyConstants, PrimitiveType } from "@glimmer/program";
+import { LazyConstants, PrimitiveType } from '@glimmer/program';
 import { CheckReference, CheckScope } from './-debug-strip';
 
 APPEND_OPCODES.add(Op.ChildScope, vm => vm.pushChildScope());
@@ -103,7 +111,7 @@ APPEND_OPCODES.add(Op.PushSymbolTable, (vm, { op1: _table }) => {
   stack.push(vm.constants.getSerializable(_table));
 });
 
-APPEND_OPCODES.add(Op.PushBlockScope, (vm) => {
+APPEND_OPCODES.add(Op.PushBlockScope, vm => {
   let stack = vm.stack;
   stack.push(vm.scope());
 });
@@ -128,12 +136,14 @@ APPEND_OPCODES.add(Op.InvokeYield, vm => {
   let scope = check(stack.pop(), CheckOption(CheckScope)) as Option<Scope>; // FIXME(mmun): shouldn't need to cast this
   let table = check(stack.pop(), CheckOption(CheckBlockSymbolTable));
 
-  assert(table === null || (table && typeof table === 'object' && Array.isArray(table.parameters)), stackAssert('Option<BlockSymbolTable>', table));
+  assert(
+    table === null || (table && typeof table === 'object' && Array.isArray(table.parameters)),
+    stackAssert('Option<BlockSymbolTable>', table)
+  );
 
   let args = check(stack.pop(), CheckInstanceof(Arguments));
 
   if (table === null) {
-
     // To balance the pop{Frame,Scope}
     vm.pushFrame();
     vm.pushScope(scope!); // Could be null but it doesnt matter as it is immediatelly popped.
@@ -150,7 +160,7 @@ APPEND_OPCODES.add(Op.InvokeYield, vm => {
     if (localsCount > 0) {
       invokingScope = invokingScope.child();
 
-      for (let i=0; i<localsCount; i++) {
+      for (let i = 0; i < localsCount; i++) {
         invokingScope.bindSymbol(locals![i], args.at(i));
       }
     }

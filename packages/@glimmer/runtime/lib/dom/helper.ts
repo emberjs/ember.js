@@ -1,10 +1,6 @@
 import { Bounds, ConcreteBounds } from '../bounds';
-import {
-  applySVGInnerHTMLFix
-} from '../compat/svg-inner-html-fix';
-import {
-  applyTextNodeMergingFix
-} from '../compat/text-node-merging-fix';
+import { applySVGInnerHTMLFix } from '../compat/svg-inner-html-fix';
+import { applyTextNodeMergingFix } from '../compat/text-node-merging-fix';
 import { Simple } from '@glimmer/interfaces';
 
 import { Option } from '@glimmer/util';
@@ -23,12 +19,52 @@ const SVG_INTEGRATION_POINTS = { foreignObject: 1, desc: 1, title: 1 };
 // http://www.w3.org/TR/html/syntax.html#parsing-main-inforeign
 export const BLACKLIST_TABLE = Object.create(null);
 
-([
-  "b", "big", "blockquote", "body", "br", "center", "code", "dd", "div", "dl", "dt", "em", "embed",
-  "h1", "h2", "h3", "h4", "h5", "h6", "head", "hr", "i", "img", "li", "listing", "main", "meta", "nobr",
-  "ol", "p", "pre", "ruby", "s", "small", "span", "strong", "strike", "sub", "sup", "table", "tt", "u",
-  "ul", "var"
-]).forEach(tag => BLACKLIST_TABLE[tag] = 1);
+[
+  'b',
+  'big',
+  'blockquote',
+  'body',
+  'br',
+  'center',
+  'code',
+  'dd',
+  'div',
+  'dl',
+  'dt',
+  'em',
+  'embed',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
+  'head',
+  'hr',
+  'i',
+  'img',
+  'li',
+  'listing',
+  'main',
+  'meta',
+  'nobr',
+  'ol',
+  'p',
+  'pre',
+  'ruby',
+  's',
+  'small',
+  'span',
+  'strong',
+  'strike',
+  'sub',
+  'sup',
+  'table',
+  'tt',
+  'u',
+  'ul',
+  'var',
+].forEach(tag => (BLACKLIST_TABLE[tag] = 1));
 
 const WHITESPACE = /[\t-\r \xA0\u1680\u180E\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]/;
 
@@ -38,7 +74,11 @@ export function isWhitespace(string: string) {
   return WHITESPACE.test(string);
 }
 
-export function moveNodesBefore(source: Simple.Node, target: Simple.Element, nextSibling: Simple.Node) {
+export function moveNodesBefore(
+  source: Simple.Node,
+  target: Simple.Element,
+  nextSibling: Simple.Node
+) {
   let first = source.firstChild;
   let last: Simple.Node | null = null;
   let current = first;
@@ -92,7 +132,11 @@ export class DOMOperations {
     parent.insertBefore(node, reference);
   }
 
-  insertHTMLBefore(_parent: Simple.Element, nextSibling: Option<Simple.Node>, html: string): Bounds {
+  insertHTMLBefore(
+    _parent: Simple.Element,
+    nextSibling: Option<Simple.Node>,
+    html: string
+  ): Bounds {
     return insertHTMLBefore(this.uselessElement, _parent, nextSibling, html);
   }
 
@@ -111,7 +155,12 @@ export namespace DOM {
       return this.document.createElementNS(namespace, tag);
     }
 
-    setAttribute(element: Simple.Element, name: string, value: string, namespace: Option<string> = null) {
+    setAttribute(
+      element: Simple.Element,
+      name: string,
+      value: string,
+      namespace: Option<string> = null
+    ) {
       if (namespace) {
         element.setAttributeNS(namespace, name, value);
       } else {
@@ -121,8 +170,15 @@ export namespace DOM {
   }
 
   let appliedTreeContruction = TreeConstruction;
-  appliedTreeContruction = applyTextNodeMergingFix(doc, appliedTreeContruction) as typeof TreeConstruction;
-  appliedTreeContruction = applySVGInnerHTMLFix(doc, appliedTreeContruction, SVG_NAMESPACE) as typeof TreeConstruction;
+  appliedTreeContruction = applyTextNodeMergingFix(
+    doc,
+    appliedTreeContruction
+  ) as typeof TreeConstruction;
+  appliedTreeContruction = applySVGInnerHTMLFix(
+    doc,
+    appliedTreeContruction,
+    SVG_NAMESPACE
+  ) as typeof TreeConstruction;
 
   export const DOMTreeConstruction = appliedTreeContruction;
   export type DOMTreeConstruction = TreeConstruction;
@@ -149,7 +205,14 @@ export class DOMChanges extends DOMOperations {
   }
 }
 
-export function insertHTMLBefore(this: void, useless: HTMLElement, _parent: Simple.Element, _nextSibling: Option<Simple.Node>, html: string): Bounds { // tslint:disable-line
+export function insertHTMLBefore(
+  this: void,
+  useless: HTMLElement,
+  _parent: Simple.Element,
+  _nextSibling: Option<Simple.Node>,
+  html: string
+): Bounds {
+  // tslint:disable-line
   // TypeScript vendored an old version of the DOM spec where `insertAdjacentHTML`
   // only exists on `HTMLElement` but not on `Element`. We actually work with the
   // newer version of the DOM API here (and monkey-patch this method in `./compat`

@@ -2,15 +2,15 @@ import { RenderTest, test } from '../render-test';
 
 export class EachSuite extends RenderTest {
   @test
-  "basic #each"() {
-    let list = [1,2,3,4];
+  'basic #each'() {
+    let list = [1, 2, 3, 4];
     this.render('{{#each list key="@index" as |item|}}{{item}}{{else}}Empty{{/each}}', {
-      list
+      list,
     });
     this.assertHTML('1234');
     this.assertStableRerender();
 
-    list.push(5,6);
+    list.push(5, 6);
     this.rerender({ list });
     this.assertHTML('123456');
     this.assertStableNodes();
@@ -20,17 +20,17 @@ export class EachSuite extends RenderTest {
     this.assertHTML('Empty');
     this.assertStableNodes();
 
-    list = [1,2,3,4];
+    list = [1, 2, 3, 4];
     this.rerender({ list });
     this.assertHTML('1234');
     this.assertStableNodes();
   }
 
   @test
-  "keyed #each"() {
+  'keyed #each'() {
     let list = [{ text: 'hello' }];
     this.render('{{#each list key="text" as |item|}}{{item.text}}{{else}}Empty{{/each}}', {
-      list
+      list,
     });
     this.assertHTML('hello');
     this.assertStableRerender();
@@ -46,22 +46,22 @@ export class EachSuite extends RenderTest {
     this.assertHTML('Empty');
     this.assertStableNodes();
 
-    list = [{text: 'hello'}];
+    list = [{ text: 'hello' }];
     this.rerender({ list });
     this.assertHTML('hello');
     this.assertStableNodes();
   }
 
   @test
-  "receives the index as the second parameter"() {
-    let list = [1,2,3,4];
+  'receives the index as the second parameter'() {
+    let list = [1, 2, 3, 4];
     this.render('{{#each list key="@index" as |item i|}}{{item}}-{{i}}{{else}}Empty{{/each}}', {
-      list
+      list,
     });
     this.assertHTML('1-02-13-24-3');
     this.assertStableRerender();
 
-    list.push(5,6);
+    list.push(5, 6);
     this.rerender({ list });
     this.assertHTML('1-02-13-24-35-46-5');
     this.assertStableNodes();
@@ -71,7 +71,7 @@ export class EachSuite extends RenderTest {
     this.assertHTML('Empty');
     this.assertStableNodes();
 
-    list = [1,2,3,4];
+    list = [1, 2, 3, 4];
     this.rerender({ list });
     this.assertHTML('1-02-13-24-3');
     this.assertStableNodes();
@@ -81,7 +81,7 @@ export class EachSuite extends RenderTest {
   'it can render duplicate primitive items'() {
     let list = ['a', 'a', 'a'];
     this.render('{{#each list key="@index" as |item|}}{{item}}{{/each}}', {
-      list
+      list,
     });
     this.assertHTML('aaa');
     this.assertStableRerender();
@@ -102,7 +102,7 @@ export class EachSuite extends RenderTest {
     let dup = { text: 'dup' };
     let list = [dup, dup, { text: 'uniq' }];
     this.render('{{#each list key="@index" as |item|}}{{item.text}}{{/each}}', {
-      list
+      list,
     });
     this.assertHTML('dupdupuniq');
     this.assertStableRerender();
@@ -123,13 +123,13 @@ export class EachSuite extends RenderTest {
     let list = [{ text: 'Hello' }, { text: 'Hello' }, { text: 'Hello' }];
 
     this.render(`{{#each list key="@identity" as |item|}}{{item.text}}{{/each}}`, {
-      list
+      list,
     });
 
     this.assertHTML('HelloHelloHello');
     this.assertStableRerender();
 
-    list.forEach(item => item.text = 'Goodbye');
+    list.forEach(item => (item.text = 'Goodbye'));
 
     this.rerender({ list });
     this.assertHTML('GoodbyeGoodbyeGoodbye');
@@ -148,7 +148,7 @@ export class EachSuite extends RenderTest {
 
     this.render(`{{name}}-{{#each list key="@index" as |name|}}{{name}}{{/each}}-{{name}}`, {
       list,
-      name: 'Stef'
+      name: 'Stef',
     });
 
     this.assertHTML('Stef-Wycats-Stef');
@@ -174,10 +174,13 @@ export class EachSuite extends RenderTest {
   'inverse template is displayed with context'() {
     let list: string[] = [];
 
-    this.render(`{{#each list key="@index" as |name|}}Has thing{{else}}No thing {{otherThing}}{{/each}}`, {
-      list,
-      otherThing: 'Chad'
-    });
+    this.render(
+      `{{#each list key="@index" as |name|}}Has thing{{else}}No thing {{otherThing}}{{/each}}`,
+      {
+        list,
+        otherThing: 'Chad',
+      }
+    );
 
     this.assertHTML('No thing Chad');
     this.assertStableRerender();

@@ -42,11 +42,7 @@ export abstract class HandlebarsNodeVisitors extends Parser {
       let elementNode = poppedNode as AST.ElementNode;
 
       throw new SyntaxError(
-        'Unclosed element `' +
-          elementNode.tag +
-          '` (on line ' +
-          elementNode.loc!.start.line +
-          ').',
+        'Unclosed element `' + elementNode.tag + '` (on line ' + elementNode.loc!.start.line + ').',
         elementNode.loc
       );
     }
@@ -103,7 +99,7 @@ export abstract class HandlebarsNodeVisitors extends Parser {
         params: [],
         hash: b.hash(),
         escaped,
-        loc
+        loc,
       };
     } else {
       let { path, params, hash } = acceptCallNodes(
@@ -191,9 +187,9 @@ export abstract class HandlebarsNodeVisitors extends Parser {
         throw new SyntaxError(
           `Using a Handlebars comment when in the \`${
             tokenizer['state']
-          }\` state is not supported: "${comment.value}" on line ${
-            loc.start.line
-          }:${loc.start.column}`,
+          }\` state is not supported: "${comment.value}" on line ${loc.start.line}:${
+            loc.start.column
+          }`,
           rawComment.loc
         );
     }
@@ -205,10 +201,9 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     let { loc } = partial;
 
     throw new SyntaxError(
-      `Handlebars partials are not supported: "${this.sourceForNode(
-        partial,
-        partial.name
-      )}" at L${loc.start.line}:C${loc.start.column}`,
+      `Handlebars partials are not supported: "${this.sourceForNode(partial, partial.name)}" at L${
+        loc.start.line
+      }:C${loc.start.column}`,
       partial.loc
     );
   }
@@ -261,17 +256,17 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     if (original.indexOf('/') !== -1) {
       if (original.slice(0, 2) === './') {
         throw new SyntaxError(
-          `Using "./" is not supported in Glimmer and unnecessary: "${
-            path.original
-          }" on line ${loc.start.line}.`,
+          `Using "./" is not supported in Glimmer and unnecessary: "${path.original}" on line ${
+            loc.start.line
+          }.`,
           path.loc
         );
       }
       if (original.slice(0, 3) === '../') {
         throw new SyntaxError(
-          `Changing context using "../" is not supported in Glimmer: "${
-            path.original
-          }" on line ${loc.start.line}.`,
+          `Changing context using "../" is not supported in Glimmer: "${path.original}" on line ${
+            loc.start.line
+          }.`,
           path.loc
         );
       }
@@ -310,7 +305,7 @@ export abstract class HandlebarsNodeVisitors extends Parser {
       this: thisHead,
       parts,
       data: path.data,
-      loc: path.loc
+      loc: path.loc,
     };
   }
 
@@ -319,9 +314,7 @@ export abstract class HandlebarsNodeVisitors extends Parser {
 
     for (let i = 0; i < hash.pairs.length; i++) {
       let pair = hash.pairs[i];
-      pairs.push(
-        b.pair(pair.key, this.acceptNode<AST.Expression>(pair.value), pair.loc)
-      );
+      pairs.push(b.pair(pair.key, this.acceptNode<AST.Expression>(pair.value), pair.loc));
     }
 
     return b.hash(pairs, hash.loc);
@@ -354,7 +347,7 @@ function calculateRightStrippedOffsets(original: string, value: string) {
     // in original
     return {
       lines: original.split('\n').length - 1,
-      columns: 0
+      columns: 0,
     };
   }
 
@@ -366,7 +359,7 @@ function calculateRightStrippedOffsets(original: string, value: string) {
 
   return {
     lines: lineCount,
-    columns: lines[lineCount].length
+    columns: lines[lineCount].length,
   };
 }
 
@@ -403,18 +396,13 @@ function acceptCallNodes(
 ): { path: AST.PathExpression; params: AST.Expression[]; hash: AST.Hash } {
   let path = compiler.PathExpression(node.path);
 
-  let params = node.params
-    ? node.params.map(e => compiler.acceptNode<AST.Expression>(e))
-    : [];
+  let params = node.params ? node.params.map(e => compiler.acceptNode<AST.Expression>(e)) : [];
   let hash = node.hash ? compiler.Hash(node.hash) : b.hash();
 
   return { path, params, hash };
 }
 
-function addElementModifier(
-  element: Tag<'StartTag'>,
-  mustache: AST.MustacheStatement
-) {
+function addElementModifier(element: Tag<'StartTag'>, mustache: AST.MustacheStatement) {
   let { path, params, hash, loc } = mustache;
 
   if (isLiteral(path)) {
@@ -422,9 +410,8 @@ function addElementModifier(
     let tag = `<${element.name} ... ${modifier} ...`;
 
     throw new SyntaxError(
-      `In ${tag}, ${modifier} is not a valid modifier: "${
-        path.original
-      }" on line ${loc && loc.start.line}.`,
+      `In ${tag}, ${modifier} is not a valid modifier: "${path.original}" on line ${loc &&
+        loc.start.line}.`,
       mustache.loc
     );
   }
@@ -433,11 +420,7 @@ function addElementModifier(
   element.modifiers.push(modifier);
 }
 
-function addInElementHash(
-  cursor: string,
-  hash: AST.Hash,
-  loc: AST.SourceLocation
-) {
+function addInElementHash(cursor: string, hash: AST.Hash, loc: AST.SourceLocation) {
   let hasNextSibling = false;
   hash.pairs.forEach(pair => {
     if (pair.key === 'guid') {
@@ -462,10 +445,7 @@ function addInElementHash(
   return hash;
 }
 
-function appendDynamicAttributeValuePart(
-  attribute: Attribute,
-  part: AST.MustacheStatement
-) {
+function appendDynamicAttributeValuePart(attribute: Attribute, part: AST.MustacheStatement) {
   attribute.isDynamic = true;
   attribute.parts.push(part);
 }

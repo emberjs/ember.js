@@ -3,13 +3,13 @@ import {
   CompileTimeConstants,
   Option,
   Opaque,
-  Recast
+  Recast,
 } from '@glimmer/interfaces';
 import { METADATA, Op, Register } from '@glimmer/vm';
 import { DEBUG } from '@glimmer/local-debug-flags';
-import { unreachable, dict } from "@glimmer/util";
-import { Primitive } from "@glimmer/debug";
-import { PrimitiveType } from "@glimmer/program";
+import { unreachable, dict } from '@glimmer/util';
+import { Primitive } from '@glimmer/debug';
+import { PrimitiveType } from '@glimmer/program';
 
 export interface DebugConstants {
   getNumber(value: number): number;
@@ -32,9 +32,16 @@ export function debugSlice(program: CompileTimeProgram, start: number, end: numb
     (console as any).group(`%c${start}:${end}`, 'color: #999');
 
     let _size = 0;
-    for (let i=start; i<end; i = i + _size) {
+    for (let i = start; i < end; i = i + _size) {
       let { type, op1, op2, op3, size } = program.opcode(i);
-      let [name, params] = debug(i, constants as Recast<CompileTimeConstants, DebugConstants>, type, op1, op2, op3);
+      let [name, params] = debug(
+        i,
+        constants as Recast<CompileTimeConstants, DebugConstants>,
+        type,
+        op1,
+        op2,
+        op3
+      );
       console.log(`${i}. ${logOpcode(name, params)}`);
       _size = size;
     }
@@ -48,7 +55,9 @@ export function logOpcode(type: string, params: Option<Object>): string | void {
   let out = type;
 
   if (params) {
-    let args = Object.keys(params).map(p => ` ${p}=${json(params[p])}`).join('');
+    let args = Object.keys(params)
+      .map(p => ` ${p}=${json(params[p])}`)
+      .join('');
     out += args;
   }
   return `(${out})`;
@@ -63,7 +72,7 @@ function json(param: Opaque) {
     let string;
     try {
       string = JSON.stringify(param);
-    } catch(e) {
+    } catch (e) {
       return '<object>';
     }
 
@@ -80,7 +89,12 @@ function json(param: Opaque) {
   }
 }
 
-export function debug(pos: number, c: DebugConstants, op: Op, ...operands: number[]): [string, object] {
+export function debug(
+  pos: number,
+  c: DebugConstants,
+  op: Op,
+  ...operands: number[]
+): [string, object] {
   let metadata = METADATA[op];
 
   if (!metadata) {
@@ -150,10 +164,14 @@ function decodePrimitive(primitive: number, constants: DebugConstants): Primitiv
       return constants.getString(value);
     case PrimitiveType.BOOLEAN_OR_VOID:
       switch (value) {
-        case 0: return false;
-        case 1: return true;
-        case 2: return null;
-        case 3: return undefined;
+        case 0:
+          return false;
+        case 1:
+          return true;
+        case 2:
+          return null;
+        case 3:
+          return undefined;
       }
     case PrimitiveType.NEGATIVE:
       return constants.getNumber(value);

@@ -1,5 +1,10 @@
 import { Option } from '@glimmer/util';
-import { ProgramSymbolTable, ComponentCapabilities, ModuleLocator, TemplateLocator } from '@glimmer/interfaces';
+import {
+  ProgramSymbolTable,
+  ComponentCapabilities,
+  ModuleLocator,
+  TemplateLocator,
+} from '@glimmer/interfaces';
 
 export interface Locator {
   locator: ModuleLocator;
@@ -12,7 +17,7 @@ export function locatorFor(locator: ModuleLocator): TemplateLocator<Locator> {
     module,
     name,
     kind: 'template',
-    meta: { locator }
+    meta: { locator },
   };
 }
 

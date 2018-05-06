@@ -1,6 +1,10 @@
 export function module(name: string, nested: (hooks: NestedHooks) => void): void;
 export function module(name: string, setup: Partial<NestedHooks>): void;
-export function module(name: string, setup: Partial<NestedHooks>, nested: (hooks: NestedHooks) => void): void;
+export function module(
+  name: string,
+  setup: Partial<NestedHooks>,
+  nested: (hooks: NestedHooks) => void
+): void;
 export function module(name: string, second?: any, third?: any) {
   let nested, setup;
 

@@ -3,7 +3,8 @@ import { ConstReference, PathReference, Reference, Tag } from '@glimmer/referenc
 
 export type Primitive = undefined | null | boolean | number | string;
 
-export class PrimitiveReference<T extends Primitive> extends ConstReference<T> implements PathReference<T> {
+export class PrimitiveReference<T extends Primitive> extends ConstReference<T>
+  implements PathReference<T> {
   static create<T extends Primitive>(value: T): PrimitiveReference<T> {
     if (value === undefined) {
       return UNDEFINED_REFERENCE as PrimitiveReference<T>;

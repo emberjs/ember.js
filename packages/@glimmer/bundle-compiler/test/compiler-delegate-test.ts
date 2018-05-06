@@ -4,7 +4,7 @@ import { BASIC_CAPABILITIES } from '@glimmer/test-helpers';
 
 const { test } = QUnit;
 
-QUnit.module("[glimmer-bundle-compiler] CompilerDelegate");
+QUnit.module('[glimmer-bundle-compiler] CompilerDelegate');
 
 type Locator = {
   locator: ModuleLocator;
@@ -16,11 +16,11 @@ function locatorFor(locator: ModuleLocator) {
   return {
     module,
     name,
-    meta: { locator }
+    meta: { locator },
   };
 }
 
-test("correct referrer is passed during component lookup", function(assert) {
+test('correct referrer is passed during component lookup', function(assert) {
   let inScopeReferrers: Locator[] = [];
   let resolveComponentReferrers: Locator[] = [];
 
@@ -45,18 +45,21 @@ test("correct referrer is passed during component lookup", function(assert) {
 
   let bundleCompiler = new BundleCompiler(new TestDelegate() as any);
 
-  bundleCompiler.add(locatorFor({ module: 'UserNav', name: 'default' }), '<div class="user-nav"></div>');
+  bundleCompiler.add(
+    locatorFor({ module: 'UserNav', name: 'default' }),
+    '<div class="user-nav"></div>'
+  );
   bundleCompiler.add(locatorFor({ module: 'Main', name: 'default' }), '<UserNav />');
   bundleCompiler.add(locatorFor({ module: 'SideBar', name: 'default' }), '<UserNav />');
   bundleCompiler.compile();
 
   assert.deepEqual(inScopeReferrers, [
     { locator: { module: 'Main', name: 'default' } },
-    { locator: { module: 'SideBar', name: 'default' } }
+    { locator: { module: 'SideBar', name: 'default' } },
   ]);
 
   assert.deepEqual(resolveComponentReferrers, [
     { locator: { module: 'Main', name: 'default' } },
-    { locator: { module: 'SideBar', name: 'default' } }
+    { locator: { module: 'SideBar', name: 'default' } },
   ]);
 });

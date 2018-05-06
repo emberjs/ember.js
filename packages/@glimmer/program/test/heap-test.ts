@@ -2,13 +2,13 @@ import { Heap } from '@glimmer/program';
 
 QUnit.module('Heap');
 
-QUnit.test('Can grow', (assert) => {
+QUnit.test('Can grow', assert => {
   let size = 0x100000;
   let heap = new Heap();
 
   let i = 0;
 
-  while (i !== (size - 1)) {
+  while (i !== size - 1) {
     heap.push(1);
     i++;
   }

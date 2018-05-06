@@ -1,4 +1,4 @@
-import { Opaque, SymbolTable, RuntimeResolver, CompileTimeConstants } from "@glimmer/interfaces";
+import { Opaque, SymbolTable, RuntimeResolver, CompileTimeConstants } from '@glimmer/interfaces';
 
 const UNRESOLVED = {};
 
@@ -14,12 +14,12 @@ export interface ConstantPool {
 }
 
 export const enum PrimitiveType {
-  NUMBER          = 0b000,
-  FLOAT           = 0b001,
-  STRING          = 0b010,
+  NUMBER = 0b000,
+  FLOAT = 0b001,
+  STRING = 0b010,
   BOOLEAN_OR_VOID = 0b011,
-  NEGATIVE        = 0b100,
-  BIG_NUM         = 0b101
+  NEGATIVE = 0b100,
+  BIG_NUM = 0b101,
 }
 
 export class WriteOnlyConstants implements CompileTimeConstants {
@@ -101,7 +101,7 @@ export class WriteOnlyConstants implements CompileTimeConstants {
       strings: this.strings,
       arrays: this.arrays,
       handles: this.handles,
-      numbers: this.numbers
+      numbers: this.numbers,
     };
   }
 }
@@ -157,7 +157,6 @@ export class RuntimeConstants<Locator> {
   }
 
   getSerializable<T>(s: number): T {
-
     return JSON.parse(this.strings[s]) as T;
   }
 }

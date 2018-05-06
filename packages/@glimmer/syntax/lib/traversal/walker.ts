@@ -1,4 +1,4 @@
-import { Option } from "@glimmer/interfaces";
+import { Option } from '@glimmer/interfaces';
 import * as AST from '../types/nodes';
 
 export type NodeCallback<N extends AST.Node> = (node: N, walker: Walker) => void;
@@ -49,5 +49,5 @@ let visitors = {
   BlockStatement(walker: Walker, node: AST.BlockStatement, callback: NodeCallback<AST.Program>) {
     walker.visit(node.program, callback);
     walker.visit(node.inverse || null, callback);
-  }
+  },
 };

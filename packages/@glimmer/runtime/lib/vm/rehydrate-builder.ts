@@ -1,16 +1,26 @@
-import { NewElementBuilder, ElementBuilder, RemoteBlockTracker } from "./element-builder";
+import { NewElementBuilder, ElementBuilder, RemoteBlockTracker } from './element-builder';
 
 import { Environment } from '../environment';
 import Bounds, { bounds, Cursor } from '../bounds';
-import { Simple, Option } from "@glimmer/interfaces";
-import { expect, assert, Stack, isSerializationFirstNode, SERIALIZATION_FIRST_NODE_STRING } from "@glimmer/util";
+import { Simple, Option } from '@glimmer/interfaces';
+import {
+  expect,
+  assert,
+  Stack,
+  isSerializationFirstNode,
+  SERIALIZATION_FIRST_NODE_STRING,
+} from '@glimmer/util';
 import { SVG_NAMESPACE } from '../dom/helper';
 
 export class RehydratingCursor extends Cursor {
   candidate: Option<Simple.Node> = null;
   openBlockDepth: number;
   injectedOmittedNode = false;
-  constructor(element: Simple.Element, nextSibling: Option<Simple.Node>, public readonly startingBlockDepth: number) {
+  constructor(
+    element: Simple.Element,
+    nextSibling: Option<Simple.Node>,
+    public readonly startingBlockDepth: number
+  ) {
     super(element, nextSibling);
     this.openBlockDepth = startingBlockDepth - 1;
   }
@@ -25,16 +35,21 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
 
   constructor(env: Environment, parentNode: Simple.Element, nextSibling: Option<Simple.Node>) {
     super(env, parentNode, nextSibling);
-    if (nextSibling) throw new Error("Rehydration with nextSibling not supported");
+    if (nextSibling) throw new Error('Rehydration with nextSibling not supported');
 
     let node = this.currentCursor!.element.firstChild;
 
     while (node !== null) {
-      if (isComment(node) && isSerializationFirstNode(node)) { break; }
+      if (isComment(node) && isSerializationFirstNode(node)) {
+        break;
+      }
       node = node.nextSibling;
     }
 
-    assert(node, `Must have opening comment <!--${SERIALIZATION_FIRST_NODE_STRING}--> for rehydration.`);
+    assert(
+      node,
+      `Must have opening comment <!--${SERIALIZATION_FIRST_NODE_STRING}--> for rehydration.`
+    );
     this.candidate = node;
   }
 
@@ -135,23 +150,26 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     let { candidate } = currentCursor;
     // rehydrating
     if (candidate !== null) {
-      assert(openBlockDepth === this.blockDepth, 'when rehydrating, openBlockDepth should match this.blockDepth here');
-      if (isComment(candidate) &&
-          getCloseBlockDepth(candidate) === openBlockDepth
-        ) {
+      assert(
+        openBlockDepth === this.blockDepth,
+        'when rehydrating, openBlockDepth should match this.blockDepth here'
+      );
+      if (isComment(candidate) && getCloseBlockDepth(candidate) === openBlockDepth) {
         currentCursor.candidate = this.remove(candidate);
         currentCursor.openBlockDepth--;
       } else {
         this.clearMismatch(candidate);
       }
-    // if the openBlockDepth matches the blockDepth we just closed to
-    // then restore rehydration
+      // if the openBlockDepth matches the blockDepth we just closed to
+      // then restore rehydration
     }
     if (currentCursor.openBlockDepth === this.blockDepth) {
       assert(
         currentCursor.nextSibling !== null &&
-        isComment(currentCursor.nextSibling) &&
-        getCloseBlockDepth(currentCursor.nextSibling) === openBlockDepth, "expected close block to match rehydrated open block");
+          isComment(currentCursor.nextSibling) &&
+          getCloseBlockDepth(currentCursor.nextSibling) === openBlockDepth,
+        'expected close block to match rehydrated open block'
+      );
       currentCursor.candidate = this.remove(currentCursor.nextSibling!);
       currentCursor.openBlockDepth--;
     }
@@ -244,12 +262,11 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
   __appendComment(string: string): Simple.Comment {
     let _candidate = this.candidate;
     if (_candidate && isComment(_candidate)) {
-
       if (_candidate.nodeValue !== string) {
         _candidate.nodeValue = string;
       }
 
-      this.candidate =_candidate.nextSibling;
+      this.candidate = _candidate.nextSibling;
       return _candidate;
     } else if (_candidate) {
       this.clearMismatch(_candidate);
@@ -313,7 +330,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
   __flushElement(parent: Simple.Element, constructing: Simple.Element): void {
     let { unmatchedAttributes: unmatched } = this;
     if (unmatched) {
-      for (let i=0; i<unmatched.length; i++) {
+      for (let i = 0; i < unmatched.length; i++) {
         this.constructing!.removeAttribute(unmatched[i].name);
       }
       this.unmatchedAttributes = null;
@@ -345,7 +362,11 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     throw new Error('Cannot find serialized cursor for `in-element`');
   }
 
-  __pushRemoteElement(element: Simple.Element, cursorId: string, nextSibling: Option<Simple.Node> = null) {
+  __pushRemoteElement(
+    element: Simple.Element,
+    cursorId: string,
+    nextSibling: Option<Simple.Node> = null
+  ) {
     let marker = this.getMarker(element as HTMLElement, cursorId);
 
     if (marker.parentNode === element) {

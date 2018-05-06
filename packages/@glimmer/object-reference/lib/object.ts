@@ -1,4 +1,4 @@
-import { bump } from "@glimmer/reference";
+import { bump } from '@glimmer/reference';
 
 // import { metaFor } from './meta';
 // import { intern } from '@glimmer/util';

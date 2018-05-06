@@ -9,7 +9,7 @@ export function debugAssert(test: any, msg: string) {
   // }
 
   if (!test) {
-    throw new Error(msg || "assertion failure");
+    throw new Error(msg || 'assertion failure');
   }
 }
 

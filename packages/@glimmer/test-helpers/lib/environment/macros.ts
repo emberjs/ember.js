@@ -1,6 +1,5 @@
-
-import { Macros } from "@glimmer/opcode-compiler";
-import { Option } from "@glimmer/interfaces";
+import { Macros } from '@glimmer/opcode-compiler';
+import { Option } from '@glimmer/interfaces';
 import * as WireFormat from '@glimmer/wire-format';
 
 export default class TestMacros extends Macros {

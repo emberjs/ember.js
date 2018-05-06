@@ -1,5 +1,5 @@
 import * as AST from './types/nodes';
-import { Option } from "@glimmer/interfaces";
+import { Option } from '@glimmer/interfaces';
 import SyntaxError from './errors/syntax-error';
 
 // Regex to validate the identifier for block parameters.
@@ -29,8 +29,11 @@ function parseBlockParams(element: AST.ElementNode): Option<string[]> {
   if (asIndex !== -1 && l > asIndex && attrNames[asIndex + 1].charAt(0) === '|') {
     // Some basic validation, since we're doing the parsing ourselves
     let paramsString = attrNames.slice(asIndex).join(' ');
-    if (paramsString.charAt(paramsString.length - 1) !== '|' || paramsString.match(/\|/g)!.length !== 2) {
-      throw new SyntaxError('Invalid block parameters syntax: \'' + paramsString + '\'', element.loc);
+    if (
+      paramsString.charAt(paramsString.length - 1) !== '|' ||
+      paramsString.match(/\|/g)!.length !== 2
+    ) {
+      throw new SyntaxError("Invalid block parameters syntax: '" + paramsString + "'", element.loc);
     }
 
     let params = [];
@@ -38,14 +41,20 @@ function parseBlockParams(element: AST.ElementNode): Option<string[]> {
       let param = attrNames[i].replace(/\|/g, '');
       if (param !== '') {
         if (ID_INVERSE_PATTERN.test(param)) {
-          throw new SyntaxError('Invalid identifier for block parameters: \'' + param + '\' in \'' + paramsString + '\'', element.loc);
+          throw new SyntaxError(
+            "Invalid identifier for block parameters: '" + param + "' in '" + paramsString + "'",
+            element.loc
+          );
         }
         params.push(param);
       }
     }
 
     if (params.length === 0) {
-      throw new SyntaxError('Cannot use zero block parameters: \'' + paramsString + '\'', element.loc);
+      throw new SyntaxError(
+        "Cannot use zero block parameters: '" + paramsString + "'",
+        element.loc
+      );
     }
 
     element.attributes = element.attributes.slice(0, asIndex);
@@ -57,8 +66,10 @@ function parseBlockParams(element: AST.ElementNode): Option<string[]> {
 
 export function childrenFor(node: AST.Program | AST.ElementNode): AST.Statement[] {
   switch (node.type) {
-    case 'Program': return node.body;
-    case 'ElementNode': return node.children;
+    case 'Program':
+      return node.body;
+    case 'ElementNode':
+      return node.children;
   }
 }
 
@@ -67,11 +78,13 @@ export function appendChild(parent: AST.Program | AST.ElementNode, node: AST.Sta
 }
 
 export function isLiteral(path: AST.PathExpression | AST.Literal): path is AST.Literal {
-  return path.type === 'StringLiteral'
-      || path.type === 'BooleanLiteral'
-      || path.type === 'NumberLiteral'
-      || path.type === 'NullLiteral'
-      || path.type === 'UndefinedLiteral';
+  return (
+    path.type === 'StringLiteral' ||
+    path.type === 'BooleanLiteral' ||
+    path.type === 'NumberLiteral' ||
+    path.type === 'NullLiteral' ||
+    path.type === 'UndefinedLiteral'
+  );
 }
 
 export function printLiteral(literal: AST.Literal): string {

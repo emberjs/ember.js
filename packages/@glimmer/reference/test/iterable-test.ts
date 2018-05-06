@@ -9,14 +9,14 @@ import {
   IteratorSynchronizer,
   IteratorSynchronizerDelegate,
   TagWrapper,
-  CURRENT_TAG
+  CURRENT_TAG,
 } from '@glimmer/reference';
 
 import { UpdatableReference } from '@glimmer/object-reference';
 
 import { Opaque, Option, LinkedList, ListNode, dict } from '@glimmer/util';
 
-QUnit.module("Reference iterables");
+QUnit.module('Reference iterables');
 
 class Target implements IteratorSynchronizerDelegate {
   private map = dict<ListNode<BasicReference<Opaque>>>();
@@ -25,20 +25,20 @@ class Target implements IteratorSynchronizerDelegate {
 
   retain(key: string, item: BasicReference<Opaque>) {
     if (item !== this.map[key].value) {
-      throw new Error("unstable reference");
+      throw new Error('unstable reference');
     }
   }
 
   done() {}
 
   append(key: string, item: BasicReference<Opaque>) {
-    let node = this.map[key] = new ListNode(item);
+    let node = (this.map[key] = new ListNode(item));
     this.list.append(node);
   }
 
   insert(key: string, item: BasicReference<Opaque>, _: BasicReference<Opaque>, before: string) {
     let referenceNode = before ? this.map[before] : null;
-    let node = this.map[key] = new ListNode(item);
+    let node = (this.map[key] = new ListNode(item));
     this.list.insertBefore(node, referenceNode);
   }
 
@@ -47,7 +47,7 @@ class Target implements IteratorSynchronizerDelegate {
     let node = this.map[key];
 
     if (item !== node.value) {
-      throw new Error("unstable reference");
+      throw new Error('unstable reference');
     }
 
     this.list.remove(node);
@@ -98,7 +98,7 @@ class TestIterator implements Iterator<Opaque, Opaque> {
     return this.array.length === 0;
   }
 
-  next(): Option<IterationItem<Opaque, Opaque>>  {
+  next(): Option<IterationItem<Opaque, Opaque>> {
     let { position, array } = this;
 
     if (position >= array.length) return null;
@@ -111,7 +111,15 @@ class TestIterator implements Iterator<Opaque, Opaque> {
   }
 }
 
-class TestIterable implements AbstractIterable<Opaque, Opaque, IterationItem<Opaque, Opaque>, UpdatableReference<Opaque>, UpdatableReference<Opaque>> {
+class TestIterable
+  implements
+    AbstractIterable<
+      Opaque,
+      Opaque,
+      IterationItem<Opaque, Opaque>,
+      UpdatableReference<Opaque>,
+      UpdatableReference<Opaque>
+    > {
   public tag: TagWrapper<RevisionTag | null>;
   private arrayRef: UpdatableReference<TestItem[]>;
 
@@ -141,13 +149,15 @@ class TestIterable implements AbstractIterable<Opaque, Opaque, IterationItem<Opa
   }
 }
 
-function initialize(arr: TestItem[]): { artifacts: IterationArtifacts, target: Target, reference: UpdatableReference<TestItem[]> } {
+function initialize(
+  arr: TestItem[]
+): { artifacts: IterationArtifacts; target: Target; reference: UpdatableReference<TestItem[]> } {
   let target = new Target();
   let reference = new UpdatableReference(arr);
   let iterator = new ReferenceIterator(new TestIterable(reference));
   let item;
 
-  while (item = iterator.next()) {
+  while ((item = iterator.next())) {
     target.append(item.key, item.value);
   }
 
@@ -159,15 +169,15 @@ function sync(target: Target, artifacts: IterationArtifacts) {
   synchronizer.sync();
 }
 
-QUnit.test("They provide a sequence of references with keys", assert => {
-  let arr = [{ key: "a", name: "Yehuda" }, { key: "b", name: "Godfrey" }];
+QUnit.test('They provide a sequence of references with keys', assert => {
+  let arr = [{ key: 'a', name: 'Yehuda' }, { key: 'b', name: 'Godfrey' }];
   let { target } = initialize(arr);
 
   assert.deepEqual(target.toValues(), arr);
 });
 
-QUnit.test("When re-iterated via mutation, the original references are updated", assert => {
-  let arr = [{ key: "a", name: "Yehuda" }, { key: "b", name: "Godfrey" }];
+QUnit.test('When re-iterated via mutation, the original references are updated', assert => {
+  let arr = [{ key: 'a', name: 'Yehuda' }, { key: 'b', name: 'Godfrey' }];
   let { target, artifacts } = initialize(arr);
 
   assert.deepEqual(target.toValues(), arr);
@@ -178,7 +188,7 @@ QUnit.test("When re-iterated via mutation, the original references are updated",
 
   assert.deepEqual(target.toValues(), arr);
 
-  arr.push({ key: "c", name: "Godhuda" });
+  arr.push({ key: 'c', name: 'Godhuda' });
 
   sync(target, artifacts);
 
@@ -191,29 +201,29 @@ QUnit.test("When re-iterated via mutation, the original references are updated",
   assert.deepEqual(target.toValues(), arr);
 });
 
-QUnit.test("When re-iterated via deep mutation, the original references are updated", assert => {
-  let arr = [{ key: "a", name: "Yehuda" }, { key: "b", name: "Godfrey" }];
+QUnit.test('When re-iterated via deep mutation, the original references are updated', assert => {
+  let arr = [{ key: 'a', name: 'Yehuda' }, { key: 'b', name: 'Godfrey' }];
   let { target, artifacts } = initialize(arr);
 
   assert.deepEqual(target.toValues(), arr);
 
-  arr[0].key = "b";
-  arr[0].name = "Godfrey";
-  arr[1].key = "a";
-  arr[1].name = "Yehuda";
+  arr[0].key = 'b';
+  arr[0].name = 'Godfrey';
+  arr[1].key = 'a';
+  arr[1].name = 'Yehuda';
 
   sync(target, artifacts);
 
   assert.deepEqual(target.toValues(), arr);
 
-  arr[0].name = "Yehuda";
-  arr[1].name = "Godfrey";
+  arr[0].name = 'Yehuda';
+  arr[1].name = 'Godfrey';
 
   sync(target, artifacts);
 
   assert.deepEqual(target.toValues(), arr);
 
-  arr.push({ key: "c", name: "Godhuda" });
+  arr.push({ key: 'c', name: 'Godhuda' });
 
   sync(target, artifacts);
 
@@ -226,8 +236,8 @@ QUnit.test("When re-iterated via deep mutation, the original references are upda
   assert.deepEqual(target.toValues(), arr);
 });
 
-QUnit.test("When re-iterated via replacement, the original references are updated", assert => {
-  let arr = [{ key: "a", name: "Yehuda" }, { key: "b", name: "Godfrey" }];
+QUnit.test('When re-iterated via replacement, the original references are updated', assert => {
+  let arr = [{ key: 'a', name: 'Yehuda' }, { key: 'b', name: 'Godfrey' }];
   let { target, reference, artifacts } = initialize(arr);
 
   assert.deepEqual(target.toValues(), arr);
@@ -240,14 +250,14 @@ QUnit.test("When re-iterated via replacement, the original references are update
 
   assert.deepEqual(target.toValues(), arr);
 
-  reference.update([{ key: 'a', name: "Tom" }, { key: "b", name: "Stef "}]);
+  reference.update([{ key: 'a', name: 'Tom' }, { key: 'b', name: 'Stef ' }]);
 
   sync(target, artifacts);
 
-  assert.deepEqual(target.toValues(), [{ key: 'a', name: "Tom" }, { key: "b", name: "Stef "}]);
+  assert.deepEqual(target.toValues(), [{ key: 'a', name: 'Tom' }, { key: 'b', name: 'Stef ' }]);
 
   arr = arr.slice();
-  arr.push({ key: "c", name: "Godhuda" });
+  arr.push({ key: 'c', name: 'Godhuda' });
   reference.update(arr);
 
   sync(target, artifacts);

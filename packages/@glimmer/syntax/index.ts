@@ -5,7 +5,7 @@ export {
   ASTPlugin,
   ASTPluginBuilder,
   ASTPluginEnvironment,
-  Syntax
+  Syntax,
 } from './lib/parser/tokenizer-event-handlers';
 
 // needed for tests only
@@ -14,9 +14,15 @@ export {
   default as TraversalError,
   cannotRemoveNode,
   cannotReplaceNode,
-  cannotReplaceOrRemoveInKeyHandlerYet
+  cannotReplaceOrRemoveInKeyHandlerYet,
 } from './lib/traversal/errors';
-export { default as traverse, NodeHandler, NodeVisitor, NodeHandlerFunction, EnterExitNodeHandler } from './lib/traversal/traverse';
+export {
+  default as traverse,
+  NodeHandler,
+  NodeVisitor,
+  NodeHandlerFunction,
+  EnterExitNodeHandler,
+} from './lib/traversal/traverse';
 export { default as Walker } from './lib/traversal/walker';
 export { default as print } from './lib/generation/print';
 

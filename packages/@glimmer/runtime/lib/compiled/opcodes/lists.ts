@@ -1,13 +1,8 @@
 import { Op } from '@glimmer/vm';
-import {
-  IterationArtifacts,
-  Reference,
-  ReferenceIterator,
-  Tag
-} from '@glimmer/reference';
+import { IterationArtifacts, Reference, ReferenceIterator, Tag } from '@glimmer/reference';
 import { APPEND_OPCODES } from '../../opcodes';
 import { CheckPathReference } from './-debug-strip';
-import { check, expectStackChange, CheckInstanceof } from "@glimmer/debug";
+import { check, expectStackChange, CheckInstanceof } from '@glimmer/debug';
 
 class IterablePresenceReference implements Reference<boolean> {
   public tag: Tag;

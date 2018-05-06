@@ -8,13 +8,14 @@ import {
   SSRComponentSuite,
   blockStack,
   strip,
-} from "@glimmer/test-helpers";
+} from '@glimmer/test-helpers';
 import { NodeDOMTreeConstruction, serializeBuilder } from '..';
-import { precompile } from "@glimmer/compiler";
-import { Environment, Cursor } from "@glimmer/runtime";
+import { precompile } from '@glimmer/compiler';
+import { Environment, Cursor } from '@glimmer/runtime';
 
 class DOMHelperTests extends SSRSuite {
-  @test 'can instantiate NodeDOMTreeConstruction without a document'() {
+  @test
+  'can instantiate NodeDOMTreeConstruction without a document'() {
     // this emulates what happens in Ember when using `App.visit('/', { shouldRender: false });`
 
     let helper = new NodeDOMTreeConstruction(null as any);
@@ -24,11 +25,12 @@ class DOMHelperTests extends SSRSuite {
 }
 
 class CompilationTests extends RenderTest {
-  @test 'generates id in node'() {
+  @test
+  'generates id in node'() {
     let template = precompile('hello');
     let obj = JSON.parse(template);
     this.assert.equal(obj.id, 'zgnsoV7o', 'short sha of template source');
-    template = precompile('hello', { meta: {moduleName: 'template/hello'} });
+    template = precompile('hello', { meta: { moduleName: 'template/hello' } });
     obj = JSON.parse(template);
     this.assert.equal(obj.id, 'Ybe5TwSG', 'short sha of template source and meta');
   }
@@ -47,7 +49,8 @@ class EagerSerializationDelegate extends NodeEagerRenderDelegate {
 }
 
 class SerializedDOMHelperTests extends DOMHelperTests {
-  @test "The compiler can handle unescaped HTML"() {
+  @test
+  'The compiler can handle unescaped HTML'() {
     this.render('<div>{{{title}}}</div>', { title: '<strong>hello</strong>' });
     let b = blockStack();
     this.assertHTML(strip`
@@ -61,8 +64,9 @@ class SerializedDOMHelperTests extends DOMHelperTests {
     `);
   }
 
-  @test "Unescaped helpers render correctly"() {
-    this.registerHelper('testing-unescaped', (params) => params[0]);
+  @test
+  'Unescaped helpers render correctly'() {
+    this.registerHelper('testing-unescaped', params => params[0]);
     this.render('{{{testing-unescaped "<span>hi</span>"}}}');
     let b = blockStack();
     this.assertHTML(strip`
@@ -74,12 +78,14 @@ class SerializedDOMHelperTests extends DOMHelperTests {
     `);
   }
 
-  @test 'Null literals do not have representation in DOM'() {
+  @test
+  'Null literals do not have representation in DOM'() {
     this.render('{{null}}');
     this.assertHTML('<!--% %-->');
   }
 
-  @test "Elements inside a yielded block"() {
+  @test
+  'Elements inside a yielded block'() {
     this.render('{{#if true}}<div id="test">123</div>{{/if}}');
     let b = blockStack();
     this.assertHTML(strip`
@@ -89,7 +95,8 @@ class SerializedDOMHelperTests extends DOMHelperTests {
     `);
   }
 
-  @test "A simple block helper can return text"() {
+  @test
+  'A simple block helper can return text'() {
     this.render('{{#if true}}test{{else}}not shown{{/if}}');
     let b = blockStack();
     this.assertHTML(strip`
@@ -109,9 +116,19 @@ class SerializedDOMHelperTests extends DOMHelperTests {
 rawModule('Server-side rendering in Node.js (lazy)', DOMHelperTests, NodeLazyRenderDelegate);
 rawModule('Server-side rendering in Node.js (eager)', DOMHelperTests, NodeEagerRenderDelegate);
 
-rawModule('Server-side rendering in Node.js (lazy serialization)', SerializedDOMHelperTests, LazySerializationDelegate);
-rawModule('Server-side rendering in Node.js (Eager serialization)', SerializedDOMHelperTests, EagerSerializationDelegate);
+rawModule(
+  'Server-side rendering in Node.js (lazy serialization)',
+  SerializedDOMHelperTests,
+  LazySerializationDelegate
+);
+rawModule(
+  'Server-side rendering in Node.js (Eager serialization)',
+  SerializedDOMHelperTests,
+  EagerSerializationDelegate
+);
 
 rawModule('Id generation', CompilationTests, NodeLazyRenderDelegate);
 
-rawModule("[Bundle Compiler] SSR Components", SSRComponentSuite, NodeEagerRenderDelegate, { componentModule: true });
+rawModule('[Bundle Compiler] SSR Components', SSRComponentSuite, NodeEagerRenderDelegate, {
+  componentModule: true,
+});

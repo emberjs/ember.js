@@ -4,7 +4,7 @@ import Meta from '../meta';
 import { PropertyReference } from './descriptors';
 import { PathReference as IPathReference, Reference, Tag, CURRENT_TAG } from '@glimmer/reference';
 import { Dict, HasGuid } from '@glimmer/util';
-import { Option } from "@glimmer/interfaces";
+import { Option } from '@glimmer/interfaces';
 
 export default class PathReference<T> implements IPathReference<T>, HasGuid {
   private parent: IPathReference<any>;
@@ -32,7 +32,10 @@ export default class PathReference<T> implements IPathReference<T>, HasGuid {
     if (lastParentValue === parentValue) {
       inner = this.inner;
     } else {
-      let ReferenceType = typeof parentValue === 'object' ? Meta.for(parentValue).referenceTypeFor(property) : PropertyReference;
+      let ReferenceType =
+        typeof parentValue === 'object'
+          ? Meta.for(parentValue).referenceTypeFor(property)
+          : PropertyReference;
       inner = this.inner = new ReferenceType(parentValue, property, this);
     }
 
@@ -45,7 +48,7 @@ export default class PathReference<T> implements IPathReference<T>, HasGuid {
 
   get(prop: string): IPathReference<any> {
     let chains = this._getChains();
-    if (prop as string in chains) return chains[prop];
+    if ((prop as string) in chains) return chains[prop];
     return (chains[prop] = new PathReference(this, prop));
   }
 

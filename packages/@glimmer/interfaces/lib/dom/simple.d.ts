@@ -2,12 +2,12 @@ import { FIXME, Option } from '../core';
 export type FIX_REIFICATION<T> = FIXME<T, 'needs to be reified properly'>;
 
 export type Namespace =
-    "http://www.w3.org/1999/xhtml"
-  | "http://www.w3.org/1998/Math/MathML"
-  | "http://www.w3.org/2000/svg"
-  | "http://www.w3.org/1999/xlink"
-  | "http://www.w3.org/XML/1998/namespace"
-  | "http://www.w3.org/2000/xmlns/";
+  | 'http://www.w3.org/1999/xhtml'
+  | 'http://www.w3.org/1998/Math/MathML'
+  | 'http://www.w3.org/2000/svg'
+  | 'http://www.w3.org/1999/xlink'
+  | 'http://www.w3.org/XML/1998/namespace'
+  | 'http://www.w3.org/2000/xmlns/';
 
 export const enum NodeType {
   Element = 1,
@@ -21,7 +21,7 @@ export const enum NodeType {
   Document = 9,
   DocumentType = 10,
   DocumentFragment = 11,
-  Notation = 12
+  Notation = 12,
 }
 
 // This is the subset of DOM used by the appending VM. It is

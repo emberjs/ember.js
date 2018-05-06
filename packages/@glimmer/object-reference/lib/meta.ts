@@ -8,7 +8,7 @@ import {
   RootReferenceFactory,
   PathReferenceFactory,
   Meta as IMeta,
-  RootReference as IRootReference
+  RootReference as IRootReference,
 } from './types';
 
 import { PathReference as IPathReference, CURRENT_TAG } from '@glimmer/reference';
@@ -26,7 +26,9 @@ class ConstPath implements IPathReference<any> {
     this.parent = parent;
   }
 
-  chain() { return NOOP_DESTROY; }
+  chain() {
+    return NOOP_DESTROY;
+  }
   notify() {}
 
   value() {
@@ -50,7 +52,9 @@ class ConstRoot implements IRootReference<any> {
     this.inner = inner;
   }
 
-  chain() { return NOOP_DESTROY; }
+  chain() {
+    return NOOP_DESTROY;
+  }
   notify() {}
 
   value(): any {
@@ -58,11 +62,11 @@ class ConstRoot implements IRootReference<any> {
   }
 
   referenceFromParts(_parts: string[]): IPathReference<any> {
-    throw new Error("Not implemented");
+    throw new Error('Not implemented');
   }
 
   chainFor(_prop: string): IPathReference<any> {
-    throw new Error("Not implemented");
+    throw new Error('Not implemented');
   }
 
   get(prop: string): IPathReference<any> {
@@ -82,7 +86,7 @@ class ConstMeta /*implements IMeta*/ {
   }
 }
 
-export const CLASS_META = "df8be4c8-4e89-44e2-a8f9-550c8dacdca7";
+export const CLASS_META = 'df8be4c8-4e89-44e2-a8f9-550c8dacdca7';
 
 const hasOwnProperty = Object.hasOwnProperty;
 
@@ -123,12 +127,15 @@ class Meta implements IMeta, HasGuid {
 
   constructor(object: any, { RootReferenceFactory }: MetaOptions) {
     this.object = object;
-    this.RootReferenceFactory = (RootReferenceFactory || RootReference) as RootReferenceFactory<any>;
+    this.RootReferenceFactory = (RootReferenceFactory || RootReference) as RootReferenceFactory<
+      any
+    >;
   }
 
   addReference(property: string, reference: IPathReference<any> & HasGuid) {
-    let refs = this.references = this.references || dict<DictSet<IPathReference<any> & HasGuid>>();
-    let set = refs[property] = refs[property] || new DictSet<IPathReference<any> & HasGuid>();
+    let refs = (this.references =
+      this.references || dict<DictSet<IPathReference<any> & HasGuid>>());
+    let set = (refs[property] = refs[property] || new DictSet<IPathReference<any> & HasGuid>());
     set.add(reference);
   }
 

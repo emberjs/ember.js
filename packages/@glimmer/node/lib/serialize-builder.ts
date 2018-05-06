@@ -1,10 +1,18 @@
-import { NewElementBuilder, ElementBuilder, Bounds, ConcreteBounds, Environment } from "@glimmer/runtime";
+import {
+  NewElementBuilder,
+  ElementBuilder,
+  Bounds,
+  ConcreteBounds,
+  Environment,
+} from '@glimmer/runtime';
 
-import { Simple, Option } from "@glimmer/interfaces";
+import { Simple, Option } from '@glimmer/interfaces';
 
 const TEXT_NODE = 3;
 
-function currentNode(cursor: ElementBuilder | { element: Simple.Element, nextSibling: Simple.Node }): Option<Simple.Node> {
+function currentNode(
+  cursor: ElementBuilder | { element: Simple.Element; nextSibling: Simple.Node }
+): Option<Simple.Node> {
   let { element, nextSibling } = cursor;
 
   if (nextSibling === null) {
@@ -50,7 +58,7 @@ class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
     let current = currentNode(this);
 
     if (string === '') {
-      return this.__appendComment('% %') as any as Simple.Text;
+      return (this.__appendComment('% %') as any) as Simple.Text;
     } else if (current && current.nodeType === TEXT_NODE) {
       this.__appendComment('%|%');
     }
@@ -83,7 +91,11 @@ class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
     return super.openElement(tag);
   }
 
-  pushRemoteElement(element: Simple.Element, cursorId: string,  nextSibling: Option<Simple.Node> = null) {
+  pushRemoteElement(
+    element: Simple.Element,
+    cursorId: string,
+    nextSibling: Option<Simple.Node> = null
+  ) {
     let { dom } = this;
     let script = dom.createElement('script');
     script.setAttribute('glmr', cursorId);
@@ -92,6 +104,9 @@ class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
   }
 }
 
-export function serializeBuilder(env: Environment, cursor: { element: Simple.Element, nextSibling: Option<Simple.Node> }): ElementBuilder {
+export function serializeBuilder(
+  env: Environment,
+  cursor: { element: Simple.Element; nextSibling: Option<Simple.Node> }
+): ElementBuilder {
   return SerializeBuilder.forInitialRender(env, cursor);
 }

@@ -5,10 +5,18 @@ import {
   Tag,
   VersionedReference,
   isConst,
-  isConstTag
+  isConstTag,
 } from '@glimmer/reference';
 import { Opaque, Option } from '@glimmer/util';
-import { expectStackChange, check, CheckString, CheckElement, CheckNode, CheckOption, CheckInstanceof } from '@glimmer/debug';
+import {
+  expectStackChange,
+  check,
+  CheckString,
+  CheckElement,
+  CheckNode,
+  CheckOption,
+  CheckInstanceof,
+} from '@glimmer/debug';
 import { Simple } from '@glimmer/interfaces';
 import { Op, Register } from '@glimmer/vm';
 import { Modifier, ModifierManager } from '../../modifier/interfaces';
@@ -69,7 +77,10 @@ APPEND_OPCODES.add(Op.PopRemoteElement, vm => {
 });
 
 APPEND_OPCODES.add(Op.FlushElement, vm => {
-  let operations = check(vm.fetchValue(Register.t0), CheckOption(CheckInstanceof(ComponentElementOperations)));
+  let operations = check(
+    vm.fetchValue(Register.t0),
+    CheckOption(CheckInstanceof(ComponentElementOperations))
+  );
 
   if (operations) {
     operations.flush(vm);
@@ -91,7 +102,12 @@ APPEND_OPCODES.add(Op.Modifier, (vm, { op1: handle }) => {
   let args = check(stack.pop(), CheckArguments);
   let { constructing: element, updateOperations } = vm.elements();
   let dynamicScope = vm.dynamicScope();
-  let modifier = manager.create(element as Simple.FIX_REIFICATION<Element>, args, dynamicScope, updateOperations);
+  let modifier = manager.create(
+    element as Simple.FIX_REIFICATION<Element>,
+    args,
+    dynamicScope,
+    updateOperations
+  );
 
   vm.env.scheduleInstallModifier(modifier, manager);
   let destructor = manager.getDestructor(modifier);
@@ -103,11 +119,7 @@ APPEND_OPCODES.add(Op.Modifier, (vm, { op1: handle }) => {
   let tag = manager.getTag(modifier);
 
   if (!isConstTag(tag)) {
-    vm.updateWith(new UpdateModifierOpcode(
-      tag,
-      manager,
-      modifier
-    ));
+    vm.updateWith(new UpdateModifierOpcode(tag, manager, modifier));
   }
 });
 
@@ -115,11 +127,7 @@ export class UpdateModifierOpcode extends UpdatingOpcode {
   public type = 'update-modifier';
   private lastUpdated: Revision;
 
-  constructor(
-    public tag: Tag,
-    private manager: ModifierManager,
-    private modifier: Modifier,
-  ) {
+  constructor(public tag: Tag, private manager: ModifierManager, private modifier: Modifier) {
     super();
     this.lastUpdated = tag.value();
   }

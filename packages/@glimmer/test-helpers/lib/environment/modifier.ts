@@ -1,19 +1,24 @@
-
-import { ModifierManager, CapturedArguments, IDOMChanges, Arguments, DynamicScope } from "@glimmer/runtime";
-import { Opaque, Option } from "@glimmer/interfaces";
-import { Tag, CONSTANT_TAG } from "@glimmer/reference";
-import { Destroyable } from "@glimmer/util";
+import {
+  ModifierManager,
+  CapturedArguments,
+  IDOMChanges,
+  Arguments,
+  DynamicScope,
+} from '@glimmer/runtime';
+import { Opaque, Option } from '@glimmer/interfaces';
+import { Tag, CONSTANT_TAG } from '@glimmer/reference';
+import { Destroyable } from '@glimmer/util';
 
 export class InertModifierManager implements ModifierManager<Opaque> {
-  create() { }
+  create() {}
 
   getTag(): Tag {
     return CONSTANT_TAG;
   }
 
-  install() { }
+  install() {}
 
-  update() { }
+  update() {}
 
   getDestructor(): Option<Destroyable> {
     return null;
@@ -21,11 +26,7 @@ export class InertModifierManager implements ModifierManager<Opaque> {
 }
 
 export class TestModifier {
-  constructor(
-    public element: Element,
-    public args: CapturedArguments,
-    public dom: IDOMChanges
-  ) { }
+  constructor(public element: Element, public args: CapturedArguments, public dom: IDOMChanges) {}
 }
 
 export class TestModifierManager implements ModifierManager<TestModifier> {
@@ -33,7 +34,12 @@ export class TestModifierManager implements ModifierManager<TestModifier> {
   public updatedElements: Element[] = [];
   public destroyedModifiers: TestModifier[] = [];
 
-  create(element: Element, args: Arguments, _dynamicScope: DynamicScope, dom: IDOMChanges): TestModifier {
+  create(
+    element: Element,
+    args: Arguments,
+    _dynamicScope: DynamicScope,
+    dom: IDOMChanges
+  ): TestModifier {
     return new TestModifier(element, args.capture(), dom);
   }
 
@@ -65,7 +71,7 @@ export class TestModifierManager implements ModifierManager<TestModifier> {
         this.destroyedModifiers.push(modifier);
         let { element, dom } = modifier;
         dom.removeAttribute(element, 'data-modifier');
-      }
+      },
     };
   }
 }

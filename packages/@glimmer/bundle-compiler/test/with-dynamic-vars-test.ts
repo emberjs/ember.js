@@ -1,3 +1,5 @@
-import { rawModule, EagerRenderDelegate, WithDynamicVarsSuite } from "@glimmer/test-helpers";
+import { rawModule, EagerRenderDelegate, WithDynamicVarsSuite } from '@glimmer/test-helpers';
 
-rawModule('[Bundle Compiler] With Dynamic Vars Tests', WithDynamicVarsSuite, EagerRenderDelegate, { componentModule: true });
+rawModule('[Bundle Compiler] With Dynamic Vars Tests', WithDynamicVarsSuite, EagerRenderDelegate, {
+  componentModule: true,
+});

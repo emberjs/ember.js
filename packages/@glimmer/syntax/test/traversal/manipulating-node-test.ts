@@ -5,12 +5,12 @@ import {
   builders as b,
   AST,
   cannotRemoveNode,
-  cannotReplaceNode
-} from "@glimmer/syntax";
+  cannotReplaceNode,
+} from '@glimmer/syntax';
 
 QUnit.module('[glimmer-syntax] Traversal - manipulating');
 
-(["enter", "exit"] as Array<"enter" | "exit">).forEach((eventName) => {
+(['enter', 'exit'] as Array<'enter' | 'exit'>).forEach(eventName => {
   QUnit.test(`[${eventName}] Replacing self in a key (returning null)`, assert => {
     let ast = parse(`<x y={{z}} />`);
     let el = ast.body[0] as AST.ElementNode;
@@ -24,8 +24,8 @@ QUnit.module('[glimmer-syntax] Traversal - manipulating');
               return null;
             }
             return;
-          }
-        }
+          },
+        },
       });
     }, cannotRemoveNode(attr.value, attr, 'value'));
   });
@@ -43,8 +43,8 @@ QUnit.module('[glimmer-syntax] Traversal - manipulating');
               return [];
             }
             return;
-          }
-        }
+          },
+        },
       });
     }, cannotRemoveNode(attr.value, attr, 'value'));
   });
@@ -59,52 +59,54 @@ QUnit.module('[glimmer-syntax] Traversal - manipulating');
             return b.mustache('a');
           }
           return;
-        }
-      }
+        },
+      },
     });
 
     astEqual(ast, `<x y={{a}} />`);
   });
 
-  QUnit.test(`[${eventName}] Replacing self in a key (returning an array with a single node)`, () => {
-    let ast = parse(`<x y={{z}} />`);
+  QUnit.test(
+    `[${eventName}] Replacing self in a key (returning an array with a single node)`,
+    () => {
+      let ast = parse(`<x y={{z}} />`);
 
-    traverse(ast, {
-      MustacheStatement: {
-        [eventName](node: AST.MustacheStatement) {
-          if (node.path.type === 'PathExpression' && node.path.parts[0] === 'z') {
-            return [b.mustache('a')];
-          }
-          return;
-        }
-      }
-    });
-
-    astEqual(ast, `<x y={{a}} />`);
-  });
-
-  QUnit.test(`[${eventName}] Replacing self in a key (returning an array with multiple nodes)`, assert => {
-    let ast = parse(`<x y={{z}} />`);
-    let el = ast.body[0] as AST.ElementNode;
-    let attr = el.attributes[0];
-
-    assert.throws(() => {
       traverse(ast, {
         MustacheStatement: {
           [eventName](node: AST.MustacheStatement) {
             if (node.path.type === 'PathExpression' && node.path.parts[0] === 'z') {
-              return [
-                b.mustache('a'),
-                b.mustache('b'),
-                b.mustache('c')
-              ];
+              return [b.mustache('a')];
             }
             return;
-          }
-        }
+          },
+        },
       });
-    }, cannotReplaceNode(attr.value, attr, 'value'));
-  });
+
+      astEqual(ast, `<x y={{a}} />`);
+    }
+  );
+
+  QUnit.test(
+    `[${eventName}] Replacing self in a key (returning an array with multiple nodes)`,
+    assert => {
+      let ast = parse(`<x y={{z}} />`);
+      let el = ast.body[0] as AST.ElementNode;
+      let attr = el.attributes[0];
+
+      assert.throws(() => {
+        traverse(ast, {
+          MustacheStatement: {
+            [eventName](node: AST.MustacheStatement) {
+              if (node.path.type === 'PathExpression' && node.path.parts[0] === 'z') {
+                return [b.mustache('a'), b.mustache('b'), b.mustache('c')];
+              }
+              return;
+            },
+          },
+        });
+      }, cannotReplaceNode(attr.value, attr, 'value'));
+    }
+  );
 
   QUnit.test(`[${eventName}] Replacing self in an array (returning null)`, () => {
     let ast = parse(`{{x}}{{y}}{{z}}`);
@@ -116,8 +118,8 @@ QUnit.module('[glimmer-syntax] Traversal - manipulating');
             return null;
           }
           return;
-        }
-      }
+        },
+      },
     });
 
     astEqual(ast, `{{x}}{{z}}`);
@@ -133,8 +135,8 @@ QUnit.module('[glimmer-syntax] Traversal - manipulating');
             return [];
           }
           return;
-        }
-      }
+        },
+      },
     });
 
     astEqual(ast, `{{x}}{{z}}`);
@@ -150,50 +152,52 @@ QUnit.module('[glimmer-syntax] Traversal - manipulating');
             return b.mustache('a');
           }
           return;
-        }
-      }
+        },
+      },
     });
 
     astEqual(ast, `{{x}}{{a}}{{z}}`);
   });
 
-  QUnit.test(`[${eventName}] Replacing self in an array (returning an array with a single node)`, () => {
-    let ast = parse(`{{x}}{{y}}{{z}}`);
+  QUnit.test(
+    `[${eventName}] Replacing self in an array (returning an array with a single node)`,
+    () => {
+      let ast = parse(`{{x}}{{y}}{{z}}`);
 
-    traverse(ast, {
-      MustacheStatement: {
-        [eventName](node: AST.MustacheStatement) {
-          if (node.path.type === 'PathExpression' && node.path.parts[0] === 'y') {
-            return [b.mustache('a')];
-          }
-          return;
-        }
-      }
-    });
+      traverse(ast, {
+        MustacheStatement: {
+          [eventName](node: AST.MustacheStatement) {
+            if (node.path.type === 'PathExpression' && node.path.parts[0] === 'y') {
+              return [b.mustache('a')];
+            }
+            return;
+          },
+        },
+      });
 
-    astEqual(ast, `{{x}}{{a}}{{z}}`);
-  });
+      astEqual(ast, `{{x}}{{a}}{{z}}`);
+    }
+  );
 
-  QUnit.test(`[${eventName}] Replacing self in an array (returning an array with multiple nodes)`, () => {
-    let ast = parse(`{{x}}{{y}}{{z}}`);
+  QUnit.test(
+    `[${eventName}] Replacing self in an array (returning an array with multiple nodes)`,
+    () => {
+      let ast = parse(`{{x}}{{y}}{{z}}`);
 
-    traverse(ast, {
-      MustacheStatement: {
-        [eventName](node: AST.MustacheStatement) {
-          if (node.path.type === 'PathExpression' && node.path.parts[0] === 'y') {
-            return [
-              b.mustache('a'),
-              b.mustache('b'),
-              b.mustache('c')
-            ];
-          }
-          return;
-        }
-      }
-    });
+      traverse(ast, {
+        MustacheStatement: {
+          [eventName](node: AST.MustacheStatement) {
+            if (node.path.type === 'PathExpression' && node.path.parts[0] === 'y') {
+              return [b.mustache('a'), b.mustache('b'), b.mustache('c')];
+            }
+            return;
+          },
+        },
+      });
 
-    astEqual(ast, `{{x}}{{a}}{{b}}{{c}}{{z}}`);
-  });
+      astEqual(ast, `{{x}}{{a}}{{b}}{{c}}{{z}}`);
+    }
+  );
 });
 
 QUnit.module('[glimmer-syntax] Traversal - manipulating (edge cases)');
@@ -204,14 +208,10 @@ QUnit.test('Inside of a block', () => {
   traverse(ast, {
     MustacheStatement(node) {
       if (node.path.type === 'PathExpression' && node.path.parts[0] === 'y') {
-        return [
-          b.mustache('a'),
-          b.mustache('b'),
-          b.mustache('c')
-        ];
+        return [b.mustache('a'), b.mustache('b'), b.mustache('c')];
       }
       return;
-    }
+    },
   });
 
   astEqual(ast, `{{a}}{{b}}{{c}}{{#w}}{{x}}{{a}}{{b}}{{c}}{{z}}{{/w}}`);
@@ -228,7 +228,7 @@ QUnit.test('Should recurrsively walk the transformed node', () => {
         return b.mustache('z');
       }
       return;
-    }
+    },
   });
 
   astEqual(ast, `{{z}}{{z}}{{z}}`);
@@ -240,9 +240,23 @@ QUnit.test('Should recurrsively walk the keys in the transformed node', () => {
   traverse(ast, {
     BlockStatement: function(node) {
       if (node.path.original === 'foo') {
-        return b.block(b.path('x-foo'), node.params, node.hash, node.program, node.inverse, node.loc);
+        return b.block(
+          b.path('x-foo'),
+          node.params,
+          node.hash,
+          node.program,
+          node.inverse,
+          node.loc
+        );
       } else if (node.path.original === 'bar') {
-        return b.block(b.path('x-bar'), node.params, node.hash, node.program, node.inverse, node.loc);
+        return b.block(
+          b.path('x-bar'),
+          node.params,
+          node.hash,
+          node.program,
+          node.inverse,
+          node.loc
+        );
       }
       return;
     },
@@ -254,10 +268,13 @@ QUnit.test('Should recurrsively walk the keys in the transformed node', () => {
         return b.mustache('x-bat');
       }
       return;
-    }
+    },
   });
 
-  astEqual(ast, `{{#x-foo}}{{#x-bar}}{{x-baz}}{{/x-bar}}{{else}}{{#x-bar}}{{x-bat}}{{/x-bar}}{{/x-foo}}`);
+  astEqual(
+    ast,
+    `{{#x-foo}}{{#x-bar}}{{x-baz}}{{/x-bar}}{{else}}{{#x-bar}}{{x-bat}}{{/x-bar}}{{/x-foo}}`
+  );
 });
 
 QUnit.test('Exit event is not triggered if the node is replaced during the enter event', assert => {
@@ -274,8 +291,8 @@ QUnit.test('Exit event is not triggered if the node is replaced during the enter
       },
       exit(node) {
         exited.push(node.path.original);
-      }
-    }
+      },
+    },
   });
 
   assert.deepEqual(entered, ['x', 'y']);

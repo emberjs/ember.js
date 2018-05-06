@@ -7,13 +7,13 @@ import { QUnitAssert } from './interfaces';
 export type TestFunction = (this: TestCase, assert: typeof QUnit.assert) => void;
 
 function setTestingDescriptor(descriptor: PropertyDescriptor): void {
-  let testFunction = descriptor.value as Function & { isTest: boolean } ;
+  let testFunction = descriptor.value as Function & { isTest: boolean };
   descriptor.enumerable = true;
-  testFunction["isTest"] = true;
+  testFunction['isTest'] = true;
 }
 
 function isTestFunction(value: any): value is TestFunction {
-  return typeof value === "function" && value.isTest;
+  return typeof value === 'function' && value.isTest;
 }
 
 export function test(meta: Dict<Opaque>): MethodDecorator;
@@ -26,7 +26,7 @@ export function test(...args: any[]) {
   if (args.length === 1) {
     let meta: Dict<Opaque> = args[0];
     return (_target: Object, _name: string, descriptor: PropertyDescriptor) => {
-      let testFunction = descriptor.value as Function & Dict<Opaque> ;
+      let testFunction = descriptor.value as Function & Dict<Opaque>;
       Object.keys(meta).forEach(key => (testFunction[key] = meta[key]));
       setTestingDescriptor(descriptor);
     };
@@ -38,17 +38,15 @@ export function test(...args: any[]) {
 }
 
 export interface Constructor<T = Opaque, Prototype = T> {
-  new(...args: any[]): T;
+  new (...args: any[]): T;
   prototype: Prototype;
 }
 
-export function module(
-  name: string
-): (klass: (typeof TestCase) & Constructor) => void {
+export function module(name: string): (klass: (typeof TestCase) & Constructor) => void {
   return function(klass: typeof TestCase & Constructor) {
     QUnit.module(name);
 
-    let proto = klass.prototype as any as Dict<Opaque>;
+    let proto = (klass.prototype as any) as Dict<Opaque>;
     for (let prop in proto) {
       const test = proto[prop];
 
