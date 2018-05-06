@@ -1,42 +1,51 @@
-import {AttributesTests} from './attributes-test';
-import { module, test, EmberishCurlyComponent, EmberishCurlyComponentFactory, TestEnvironment } from '@glimmer/test-helpers';
+import { AttributesTests } from './attributes-test';
+import {
+  module,
+  test,
+  EmberishCurlyComponent,
+  EmberishCurlyComponentFactory,
+  TestEnvironment,
+} from '@glimmer/test-helpers';
 import { EmberishRootView } from '@glimmer/runtime/test/ember-component-test';
 
 abstract class RangeTests extends AttributesTests {
   min = -5;
   max = 50;
 
-  abstract renderRange(value : number) : void;
-  abstract assertRangeValue(value : number) : void;
-  setup() {
+  abstract renderRange(value: number): void;
+  abstract assertRangeValue(value: number): void;
+  setup() {}
 
-  }
-
-  @test 'value over default max but below set max is kept'() {
+  @test
+  'value over default max but below set max is kept'() {
     this.setup();
     this.renderRange(25);
     this.assertRangeValue(25);
   }
 
-  @test 'value below default min but above set min is kept'() {
+  @test
+  'value below default min but above set min is kept'() {
     this.setup();
     this.renderRange(-2);
     this.assertRangeValue(-2);
   }
 
-  @test 'in the valid default range is kept'() {
+  @test
+  'in the valid default range is kept'() {
     this.setup();
     this.renderRange(5);
     this.assertRangeValue(5);
   }
 
-  @test 'value above max is reset to max'() {
+  @test
+  'value above max is reset to max'() {
     this.setup();
     this.renderRange(55);
     this.assertRangeValue(50);
   }
 
-  @test 'value below min is reset to min'() {
+  @test
+  'value below min is reset to min'() {
     this.setup();
     this.renderRange(-10);
     this.assertRangeValue(-5);
@@ -44,13 +53,13 @@ abstract class RangeTests extends AttributesTests {
 }
 
 class TemplateRangeTests extends RangeTests {
-  attrs : string;
+  attrs: string;
 
   renderRange(value: number) {
     this.render(`<input ${this.attrs} />`, {
       max: this.max,
       min: this.min,
-      value
+      value,
     });
   }
 
@@ -59,9 +68,12 @@ class TemplateRangeTests extends RangeTests {
   }
 }
 
-module(`[emberjs/ember.js#15675] Template <input type="range" value={{value}} min={{min}} max={{max}} />`, class extends TemplateRangeTests {
-  attrs = 'type="range" value={{value}} min={{min}} max={{max}}';
-});
+module(
+  `[emberjs/ember.js#15675] Template <input type="range" value={{value}} min={{min}} max={{max}} />`,
+  class extends TemplateRangeTests {
+    attrs = 'type="range" value={{value}} min={{min}} max={{max}}';
+  }
+);
 
 // Ember Components attributeBindings
 
@@ -71,14 +83,14 @@ class EmberInputRangeComponent extends EmberishCurlyComponent {
 }
 
 abstract class EmberComponentRangeTests extends RangeTests {
-  env : TestEnvironment;
-  view : EmberishRootView;
+  env: TestEnvironment;
+  view: EmberishRootView;
 
   setup() {
     this.env = new TestEnvironment();
   }
 
-  abstract component() : EmberishCurlyComponentFactory;
+  abstract component(): EmberishCurlyComponentFactory;
 
   appendViewFor(template: string, context: Object = {}) {
     this.view = new EmberishRootView(this.env, template, context);
@@ -93,7 +105,7 @@ abstract class EmberComponentRangeTests extends RangeTests {
     this.appendViewFor(`{{range-input max=max min=min value=value}}`, {
       max: this.max,
       min: this.min,
-      value
+      value,
     });
   }
   assertRangeValue(value: number): void {
@@ -102,7 +114,8 @@ abstract class EmberComponentRangeTests extends RangeTests {
   }
 }
 
-module(`Components - [emberjs/ember.js#15675] - type value min max`,
+module(
+  `Components - [emberjs/ember.js#15675] - type value min max`,
   class extends EmberComponentRangeTests {
     component(): EmberishCurlyComponentFactory {
       return class extends EmberInputRangeComponent {
@@ -126,6 +139,9 @@ class BasicComponentImplicitAttributesRangeTest extends RangeTests {
   }
 }
 
-module(`GlimmerComponent - [emberjs/ember.js#15675] ...attributes <input type="range" value="%x" min="-5" max="50" />`, class extends BasicComponentImplicitAttributesRangeTest {
-  attrs = 'type="range" value="%x" min="-5" max="50"';
-});
+module(
+  `GlimmerComponent - [emberjs/ember.js#15675] ...attributes <input type="range" value="%x" min="-5" max="50" />`,
+  class extends BasicComponentImplicitAttributesRangeTest {
+    attrs = 'type="range" value="%x" min="-5" max="50"';
+  }
+);

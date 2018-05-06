@@ -10,8 +10,10 @@ function validateAliasMethod(obj: { fooMethod(): string; barMethod(): string }) 
 
 QUnit.test('methods of another name are aliased when the mixin is applied', function() {
   let MyMixin = Mixin.create({
-    fooMethod() { return 'FOO'; },
-    barMethod: aliasMethod('fooMethod')
+    fooMethod() {
+      return 'FOO';
+    },
+    barMethod: aliasMethod('fooMethod'),
   }) as Mixin;
 
   let obj = MyMixin.apply({});
@@ -21,8 +23,10 @@ QUnit.test('methods of another name are aliased when the mixin is applied', func
 QUnit.test('should follow aliasMethods all the way down', assert => {
   let MyMixin = Mixin.create({
     bar: aliasMethod('foo'), // put first to break ordered iteration
-    baz() { return 'baz'; },
-    foo: aliasMethod('baz')
+    baz() {
+      return 'baz';
+    },
+    foo: aliasMethod('baz'),
   }) as Mixin;
 
   let obj = MyMixin.apply({});
@@ -31,11 +35,13 @@ QUnit.test('should follow aliasMethods all the way down', assert => {
 
 QUnit.test('should alias methods from other dependent mixins', function() {
   let BaseMixin = Mixin.create({
-    fooMethod() { return 'FOO'; }
+    fooMethod() {
+      return 'FOO';
+    },
   });
 
   let MyMixin = Mixin.create(BaseMixin, {
-    barMethod: aliasMethod('fooMethod')
+    barMethod: aliasMethod('fooMethod'),
   });
 
   let obj = MyMixin.apply({});
@@ -44,11 +50,13 @@ QUnit.test('should alias methods from other dependent mixins', function() {
 
 QUnit.test('should alias methods from other mixins applied at same time', function() {
   let BaseMixin = Mixin.create({
-    fooMethod() { return 'FOO'; }
+    fooMethod() {
+      return 'FOO';
+    },
   });
 
   let MyMixin = Mixin.create({
-    barMethod: aliasMethod('fooMethod')
+    barMethod: aliasMethod('fooMethod'),
   });
 
   let obj = mixin({}, BaseMixin, MyMixin);
@@ -57,16 +65,20 @@ QUnit.test('should alias methods from other mixins applied at same time', functi
 
 QUnit.test('should alias methods from mixins already applied on object', function() {
   let BaseMixin = Mixin.create({
-    quxMethod() { return 'qux'; }
+    quxMethod() {
+      return 'qux';
+    },
   });
 
   let MyMixin = Mixin.create({
     bar: aliasMethod('foo'),
-    barMethod: aliasMethod('fooMethod')
+    barMethod: aliasMethod('fooMethod'),
   });
 
   let obj = {
-    fooMethod() { return 'FOO'; }
+    fooMethod() {
+      return 'FOO';
+    },
   };
 
   BaseMixin.apply(obj);

@@ -1,4 +1,4 @@
-import { preprocess as parse, print, builders as b } from "@glimmer/syntax";
+import { preprocess as parse, print, builders as b } from '@glimmer/syntax';
 
 const { test } = QUnit;
 
@@ -61,7 +61,9 @@ test('ElementModifierStatement', function() {
 });
 
 test('SubExpression', function() {
-  printEqual('<p>{{my-component submit=(action (mut model.name) (full-name model.firstName "Smith"))}}</p>');
+  printEqual(
+    '<p>{{my-component submit=(action (mut model.name) (full-name model.firstName "Smith"))}}</p>'
+  );
 });
 
 test('BlockStatement: multiline', function() {
@@ -78,20 +80,12 @@ test('UndefinedLiteral', assert => {
 });
 
 test('NumberLiteral', assert => {
-  const ast = b.program([
-    b.mustache('foo', undefined,
-      b.hash([b.pair('bar', b.number(5))])
-    )
-  ]);
+  const ast = b.program([b.mustache('foo', undefined, b.hash([b.pair('bar', b.number(5))]))]);
   assert.equal(print(ast), '{{foo bar=5}}');
 });
 
 test('BooleanLiteral', assert => {
-  const ast = b.program([
-    b.mustache('foo', undefined,
-      b.hash([b.pair('bar', b.boolean(true))])
-    )
-  ]);
+  const ast = b.program([b.mustache('foo', undefined, b.hash([b.pair('bar', b.boolean(true))]))]);
   assert.equal(print(ast), '{{foo bar=true}}');
 });
 

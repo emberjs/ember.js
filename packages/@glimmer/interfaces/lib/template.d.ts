@@ -1,15 +1,18 @@
 import { Maybe, Opaque, Option } from './core';
-import {
-  BlockSymbolTable,
-  ProgramSymbolTable,
-  SymbolTable
-} from './tier1/symbol-table';
+import { BlockSymbolTable, ProgramSymbolTable, SymbolTable } from './tier1/symbol-table';
 import ComponentCapabilities from './component-capabilities';
 import { CompileTimeConstants } from './program';
 import { ComponentDefinition } from './components';
 import { CompilableProgram } from './serialize';
-import { Statement, SerializedTemplateBlock, Statements, Expression, Core, SerializedInlineBlock } from "@glimmer/wire-format";
-import { CompileTimeProgram } from "@glimmer/interfaces";
+import {
+  Statement,
+  SerializedTemplateBlock,
+  Statements,
+  Expression,
+  Core,
+  SerializedInlineBlock,
+} from '@glimmer/wire-format';
+import { CompileTimeProgram } from '@glimmer/interfaces';
 
 export type CompilableBlock = CompilableTemplate<BlockSymbolTable>;
 
@@ -66,11 +69,13 @@ export interface ResolvedLayout {
   compilable: Option<CompilableProgram>;
 }
 
-export type MaybeResolvedLayout = {
-  handle: null;
-  capabilities: null;
-  compilable: null;
-} | ResolvedLayout;
+export type MaybeResolvedLayout =
+  | {
+      handle: null;
+      capabilities: null;
+      compilable: null;
+    }
+  | ResolvedLayout;
 
 export interface Compiler<Builder = Opaque> {
   stdLib: STDLib;
@@ -85,7 +90,14 @@ export interface Compiler<Builder = Opaque> {
   resolveModifier(name: string, referrer: Opaque): Option<number>;
 
   compileInline(sexp: Statements.Append, builder: Builder): ['expr', Expression] | true;
-  compileBlock(name: string, params: Core.Params, hash: Core.Hash, template: Option<CompilableBlock>, inverse: Option<CompilableBlock>, builder: Builder): void;
+  compileBlock(
+    name: string,
+    params: Core.Params,
+    hash: Core.Hash,
+    template: Option<CompilableBlock>,
+    inverse: Option<CompilableBlock>,
+    builder: Builder
+  ): void;
   builderFor(containingLayout: LayoutWithContext): Builder;
 }
 

@@ -2,7 +2,7 @@ import {
   ComponentDefinition,
   Invocation,
   Helper as GlimmerHelper,
-  ModifierManager
+  ModifierManager,
 } from '@glimmer/runtime';
 import { Option, dict } from '@glimmer/util';
 import { PartialDefinition } from '@glimmer/opcode-compiler';

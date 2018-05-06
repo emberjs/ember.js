@@ -1,5 +1,5 @@
-import { preprocess } from "@glimmer/syntax";
-import { TemplateVisitor } from "@glimmer/compiler";
+import { preprocess } from '@glimmer/syntax';
+import { TemplateVisitor } from '@glimmer/compiler';
 
 const { test, assert } = QUnit;
 
@@ -18,30 +18,27 @@ function actionsEqual(input: string, expectedActions: any[]) {
   assert.deepEqual(actualActions, expectedActions);
 }
 
-QUnit.module("[glimmer-compiler] TemplateVisitor");
+QUnit.module('[glimmer-compiler] TemplateVisitor');
 
-test("empty", function() {
-  let input = "";
-  actionsEqual(input, [
-    ['startProgram', [0, []]],
-    ['endProgram', [0]]
-  ]);
+test('empty', function() {
+  let input = '';
+  actionsEqual(input, [['startProgram', [0, []]], ['endProgram', [0]]]);
 });
 
-test("basic", function() {
-  let input = "foo{{bar}}<div></div>";
+test('basic', function() {
+  let input = 'foo{{bar}}<div></div>';
   actionsEqual(input, [
     ['startProgram', [0, []]],
     ['text', [0, 3]],
     ['mustache', [1, 3]],
     ['openElement', [2, 3, 0, []]],
     ['closeElement', [2, 3]],
-    ['endProgram', [0]]
+    ['endProgram', [0]],
   ]);
 });
 
-test("nested HTML", function() {
-  let input = "<a></a><a><a><a></a></a></a>";
+test('nested HTML', function() {
+  let input = '<a></a><a><a><a></a></a></a>';
   actionsEqual(input, [
     ['startProgram', [0, []]],
     ['openElement', [0, 2, 0, []]],
@@ -52,12 +49,12 @@ test("nested HTML", function() {
     ['closeElement', [0, 1]],
     ['closeElement', [0, 1]],
     ['closeElement', [1, 2]],
-    ['endProgram', [0]]
+    ['endProgram', [0]],
   ]);
 });
 
-test("mustaches are counted correctly", function() {
-  let input = "<a><a>{{foo}}</a><a {{foo}}><a>{{foo}}</a><a>{{foo}}</a></a></a>";
+test('mustaches are counted correctly', function() {
+  let input = '<a><a>{{foo}}</a><a {{foo}}><a>{{foo}}</a><a>{{foo}}</a></a></a>';
   actionsEqual(input, [
     ['startProgram', [0, []]],
     ['openElement', [0, 1, 2, []]],
@@ -73,23 +70,23 @@ test("mustaches are counted correctly", function() {
     ['closeElement', [1, 2]],
     ['closeElement', [1, 2]],
     ['closeElement', [0, 1]],
-    ['endProgram', [0]]
+    ['endProgram', [0]],
   ]);
 });
 
-test("empty block", function() {
-  let input = "{{#a}}{{/a}}";
+test('empty block', function() {
+  let input = '{{#a}}{{/a}}';
   actionsEqual(input, [
     ['startBlock', [0, []]],
     ['endBlock', [1]],
     ['startProgram', [1, []]],
     ['block', [0, 1]],
-    ['endProgram', [0]]
+    ['endProgram', [0]],
   ]);
 });
 
-test("block with inverse", function() {
-  let input = "{{#a}}b{{^}}{{/a}}";
+test('block with inverse', function() {
+  let input = '{{#a}}b{{^}}{{/a}}';
   actionsEqual(input, [
     ['startBlock', [0, []]],
     ['endBlock', [1]],
@@ -98,12 +95,12 @@ test("block with inverse", function() {
     ['endBlock', [1]],
     ['startProgram', [2, []]],
     ['block', [0, 1]],
-    ['endProgram', [0]]
+    ['endProgram', [0]],
   ]);
 });
 
-test("nested blocks", function() {
-  let input = "{{#a}}{{#a}}<b></b>{{/a}}{{#a}}{{b}}{{/a}}{{/a}}{{#a}}b{{/a}}";
+test('nested blocks', function() {
+  let input = '{{#a}}{{#a}}<b></b>{{/a}}{{#a}}{{b}}{{/a}}{{/a}}{{#a}}b{{/a}}';
   actionsEqual(input, [
     ['startBlock', [0, []]],
     ['text', [0, 1]],
@@ -122,33 +119,26 @@ test("nested blocks", function() {
     ['startProgram', [2, []]],
     ['block', [0, 2]],
     ['block', [1, 2]],
-    ['endProgram', [0]]
+    ['endProgram', [0]],
   ]);
 });
 
-test("comment", function() {
-  let input = "<!-- some comment -->";
-  actionsEqual(input, [
-    ['startProgram', [0, []]],
-    ['comment', [0, 1]],
-    ['endProgram', [0]]
-  ]);
+test('comment', function() {
+  let input = '<!-- some comment -->';
+  actionsEqual(input, [['startProgram', [0, []]], ['comment', [0, 1]], ['endProgram', [0]]]);
 });
 
-test("handlebars comment", function() {
-  let input = "{{! some comment }}";
-  actionsEqual(input, [
-    ['startProgram', [0, []]],
-    ['endProgram', [0]]
-  ]);
+test('handlebars comment', function() {
+  let input = '{{! some comment }}';
+  actionsEqual(input, [['startProgram', [0, []]], ['endProgram', [0]]]);
 });
 
-test("handlebars comment in element space", function() {
-  let input = "<div {{! some comment }}></div>";
+test('handlebars comment in element space', function() {
+  let input = '<div {{! some comment }}></div>';
   actionsEqual(input, [
     ['startProgram', [0, []]],
     ['openElement', [0, 1, 0, []]],
     ['closeElement', [0, 1]],
-    ['endProgram', [0]]
+    ['endProgram', [0]],
   ]);
 });

@@ -1,11 +1,10 @@
 import { RenderTest, module, test, LazyRenderDelegate, rawModule } from '@glimmer/test-helpers';
 import { SVG_NAMESPACE, normalizeProperty } from '@glimmer/runtime';
-import { ConstReference, PathReference } from "@glimmer/reference";
+import { ConstReference, PathReference } from '@glimmer/reference';
 import { Opaque } from '@glimmer/util';
 
 export class AttributesTests extends RenderTest {
-
-  protected readDOMAttr(attr : string, element = this.element.firstChild as Element) {
+  protected readDOMAttr(attr: string, element = this.element.firstChild as Element) {
     let isSVG = element.namespaceURI === SVG_NAMESPACE;
     let { type, normalized } = normalizeProperty(element, attr);
 
@@ -19,15 +18,19 @@ export class AttributesTests extends RenderTest {
     return element[normalized];
   }
 
-  protected nativeValueForElementProperty < T extends keyof HTMLElementTagNameMap, P extends keyof HTMLElementTagNameMap[T] > (tagName: T, property: P, value: HTMLElementTagNameMap[T][P]) {
+  protected nativeValueForElementProperty<
+    T extends keyof HTMLElementTagNameMap,
+    P extends keyof HTMLElementTagNameMap[T]
+  >(tagName: T, property: P, value: HTMLElementTagNameMap[T][P]) {
     let element = document.createElement<T>(tagName);
     element[property] = value;
     return element[property];
   }
 
-  @test "helpers shadow self"() {
+  @test
+  'helpers shadow self'() {
     this.registerHelper('foo', function() {
-      return "hello";
+      return 'hello';
     });
 
     this.render('<div data-test="{{foo}}"></div>', { foo: 'bye' });
@@ -43,7 +46,8 @@ export class AttributesTests extends RenderTest {
     this.assertStableNodes();
   }
 
-  @test "disable updates properly"() {
+  @test
+  'disable updates properly'() {
     this.render('<input disabled={{enabled}} />', { enabled: true });
     this.assertHTML('<input disabled />');
     this.assertStableRerender();
@@ -73,7 +77,8 @@ export class AttributesTests extends RenderTest {
     this.assertStableNodes();
   }
 
-  @test "Quoted disabled is always disabled if a not-null, not-undefined value is given"() {
+  @test
+  'Quoted disabled is always disabled if a not-null, not-undefined value is given'() {
     this.render('<input disabled="{{enabled}}" />', { enabled: true });
     this.assertHTML('<input disabled />');
     this.assertStableRerender();
@@ -103,7 +108,8 @@ export class AttributesTests extends RenderTest {
     this.assertStableNodes();
   }
 
-  @test "disabled without an explicit value is truthy"(){
+  @test
+  'disabled without an explicit value is truthy'() {
     this.render('<input disabled />');
     this.assertHTML('<input disabled />');
     this.assert.ok(this.readDOMAttr('disabled'));
@@ -112,7 +118,8 @@ export class AttributesTests extends RenderTest {
     this.assert.ok(this.readDOMAttr('disabled'));
   }
 
-  @test "div[href] is not marked as unsafe"() {
+  @test
+  'div[href] is not marked as unsafe'() {
     this.render('<div href="{{foo}}"></div>', { foo: 'javascript:foo()' });
     this.assertHTML('<div href="javascript:foo()"></div>');
     this.assertStableRerender();
@@ -126,9 +133,11 @@ export class AttributesTests extends RenderTest {
     this.assertStableNodes();
   }
 
-  @test "triple curlies in attribute position"() {
-    this.render('<div data-bar="bar" data-foo={{{rawString}}}>Hello</div>',
-                { rawString: 'TRIPLE' });
+  @test
+  'triple curlies in attribute position'() {
+    this.render('<div data-bar="bar" data-foo={{{rawString}}}>Hello</div>', {
+      rawString: 'TRIPLE',
+    });
     this.assertHTML('<div data-foo="TRIPLE" data-bar="bar">Hello</div>');
     this.assertStableRerender();
 
@@ -141,32 +150,37 @@ export class AttributesTests extends RenderTest {
     this.assertStableNodes();
   }
 
-  @test "can read attributes"() {
+  @test
+  'can read attributes'() {
     this.render('<div data-bar="bar"></div>');
     this.assert.equal(this.readDOMAttr('data-bar'), 'bar');
     this.assertStableRerender();
   }
 
-  @test "can read attributes from namespace elements"() {
+  @test
+  'can read attributes from namespace elements'() {
     this.render('<svg viewBox="0 0 0 0"></svg>');
     this.assert.equal(this.readDOMAttr('viewBox'), '0 0 0 0');
     this.assertStableRerender();
   }
 
-  @test "can read properties"() {
+  @test
+  'can read properties'() {
     this.render('<input value="gnargnar" />');
     this.assert.equal(this.readDOMAttr('value'), 'gnargnar');
     this.assertStableRerender();
   }
 
-  @test "can read the form attribute"() {
+  @test
+  'can read the form attribute'() {
     this.render('<button form="gnargnar" />');
     this.assert.equal(this.readDOMAttr('form'), 'gnargnar');
     this.assertStableRerender();
   }
 
-  @test "handles null input values"() {
-    this.render('<input value={{isNull}} />', { isNull: null});
+  @test
+  'handles null input values'() {
+    this.render('<input value={{isNull}} />', { isNull: null });
     this.assert.equal(this.readDOMAttr('value'), '');
     this.assertStableRerender();
 
@@ -179,8 +193,9 @@ export class AttributesTests extends RenderTest {
     this.assertStableNodes();
   }
 
-  @test "handles undefined input values"() {
-    this.render('<input value={{isUndefined}} />', { isUndefined: null});
+  @test
+  'handles undefined input values'() {
+    this.render('<input value={{isUndefined}} />', { isUndefined: null });
     this.assert.equal(this.readDOMAttr('value'), '');
     this.assertStableRerender();
 
@@ -193,7 +208,8 @@ export class AttributesTests extends RenderTest {
     this.assertStableNodes();
   }
 
-  @test "handles undefined `toString` input values"() {
+  @test
+  'handles undefined `toString` input values'() {
     let obj = Object.create(null);
     this.render('<input value={{obj}} />', { obj });
     this.assert.equal(this.readDOMAttr('value'), '');
@@ -208,8 +224,9 @@ export class AttributesTests extends RenderTest {
     this.assertStableNodes();
   }
 
-  @test "input[checked] prop updates when set to undefined"() {
-    this.registerHelper('if', (params) => {
+  @test
+  'input[checked] prop updates when set to undefined'() {
+    this.registerHelper('if', params => {
       if (params[0]) {
         return params[1];
       } else {
@@ -230,7 +247,8 @@ export class AttributesTests extends RenderTest {
     this.assertStableNodes();
   }
 
-  @test "input[checked] prop updates when set to null"() {
+  @test
+  'input[checked] prop updates when set to null'() {
     this.render('<input checked={{foo}} />', { foo: true });
     this.assert.equal(this.readDOMAttr('checked'), true);
     this.assertStableRerender();
@@ -244,9 +262,13 @@ export class AttributesTests extends RenderTest {
     this.assertStableNodes();
   }
 
-  @test "select[value] prop updates when set to undefined"() {
+  @test
+  'select[value] prop updates when set to undefined'() {
     // setting `select[value]` only works after initial render, just use
-    this.render('<select value={{foo}}><option></option><option value="us" selected>us</option></select>', { foo: undefined });
+    this.render(
+      '<select value={{foo}}><option></option><option value="us" selected>us</option></select>',
+      { foo: undefined }
+    );
     this.assert.equal(this.readDOMAttr('value'), 'us');
     this.assertStableRerender();
 
@@ -260,7 +282,8 @@ export class AttributesTests extends RenderTest {
     this.assertStableNodes();
   }
 
-  @test "handles empty string textarea values"() {
+  @test
+  'handles empty string textarea values'() {
     this.render('<textarea value={{name}} />', { name: '' });
     this.assert.equal(this.readDOMAttr('value'), '');
     this.assertStableRerender();
@@ -274,7 +297,8 @@ export class AttributesTests extends RenderTest {
     this.assert.equal(this.readDOMAttr('value'), '');
   }
 
-  @test "handles empty string input placeholders"() {
+  @test
+  'handles empty string input placeholders'() {
     this.render('<input type="text" placeholder={{name}} />', { name: '' });
     this.assert.equal(this.readDOMAttr('placeholder'), '');
     this.assertStableRerender();
@@ -287,7 +311,8 @@ export class AttributesTests extends RenderTest {
     this.assertStableNodes();
   }
 
-  @test "type attribute can be set to non-valid type"() {
+  @test
+  'type attribute can be set to non-valid type'() {
     this.render('<input type="yolo" />');
     this.assert.equal(this.readDOMAttr('type'), 'text');
     this.assertStableRerender();
@@ -296,10 +321,11 @@ export class AttributesTests extends RenderTest {
     this.assertStableNodes();
   }
 
-  @test "does not set undefined attributes"() {
+  @test
+  'does not set undefined attributes'() {
     this.render('<div data-foo={{isUndefined}} /><div data-foo={{isNotUndefined}} />', {
       isUndefined: undefined,
-      isNotUndefined: 'hello'
+      isNotUndefined: 'hello',
     });
 
     let firstElement = this.element.firstChild as Element;
@@ -331,7 +357,8 @@ export class AttributesTests extends RenderTest {
     this.assertStableNodes();
   }
 
-  @test "does not set null attributes"() {
+  @test
+  'does not set null attributes'() {
     this.render('<div data-foo={{isNull}} /><div data-foo={{isNotNull}} />', {
       isNull: null,
       isNotNull: 'hello',
@@ -370,10 +397,11 @@ export class AttributesTests extends RenderTest {
     this.assertStableNodes();
   }
 
-  @test "does not set undefined properties initially"() {
+  @test
+  'does not set undefined properties initially'() {
     this.render('<div title={{isUndefined}} /><div title={{isNotUndefined}} />', {
       isUndefined: undefined,
-      isNotUndefined: 'hello'
+      isNotUndefined: 'hello',
     });
 
     let firstElement = this.element.firstChild as Element;
@@ -399,15 +427,18 @@ export class AttributesTests extends RenderTest {
     this.rerender({ isUndefined: undefined, isNotUndefined: 'hello' });
     this.assert.equal(this.readDOMAttr('title', secondElement), 'hello');
     this.assert.equal(this.readDOMAttr('title', firstElement), '');
-    this.assert.equal(this.readDOMAttr('title', firstElement),
-                      this.nativeValueForElementProperty('div', 'title', ''));
+    this.assert.equal(
+      this.readDOMAttr('title', firstElement),
+      this.nativeValueForElementProperty('div', 'title', '')
+    );
     this.assertHTML('<div></div><div title="hello"></div>');
   }
 
-  @test "does not set null properties initially"() {
+  @test
+  'does not set null properties initially'() {
     this.render('<div title={{isNull}} /><div title={{isNotNull}} />', {
       isNull: undefined,
-      isNotNull: 'hello'
+      isNotNull: 'hello',
     });
 
     let firstElement = this.element.firstChild as Element;
@@ -433,13 +464,16 @@ export class AttributesTests extends RenderTest {
     this.rerender({ isNull: undefined, isNotNull: 'hello' });
     this.assert.equal(this.readDOMAttr('title', secondElement), 'hello');
     this.assert.equal(this.readDOMAttr('title', firstElement), '');
-    this.assert.equal(this.readDOMAttr('title', firstElement),
-                      this.nativeValueForElementProperty('div', 'title', ''));
+    this.assert.equal(
+      this.readDOMAttr('title', firstElement),
+      this.nativeValueForElementProperty('div', 'title', '')
+    );
     this.assertHTML('<div></div><div title="hello"></div>');
   }
 
-  @test "input list attribute updates properly"() {
-    this.render('<input list="{{foo}}" />', { foo: "bar" });
+  @test
+  'input list attribute updates properly'() {
+    this.render('<input list="{{foo}}" />', { foo: 'bar' });
     this.assertHTML('<input list="bar" />');
     this.assertStableRerender();
 
@@ -452,8 +486,9 @@ export class AttributesTests extends RenderTest {
     this.assertStableNodes();
   }
 
-  @test "normalizes lowercase dynamic properties correctly"() {
-    this.render('<div tiTle={{foo}} />', { foo: "bar" });
+  @test
+  'normalizes lowercase dynamic properties correctly'() {
+    this.render('<div tiTle={{foo}} />', { foo: 'bar' });
     this.assertHTML('<div title="bar" />');
     this.assertStableRerender();
 
@@ -466,8 +501,9 @@ export class AttributesTests extends RenderTest {
     this.assertStableNodes();
   }
 
-  @test "normalizes mix-case dynamic properties correctly"() {
-    this.render('<svg viewBox={{foo}} />', { foo: "0 0 100 100" });
+  @test
+  'normalizes mix-case dynamic properties correctly'() {
+    this.render('<svg viewBox={{foo}} />', { foo: '0 0 100 100' });
     this.assertHTML('<svg viewBox="0 0 100 100" />');
     this.assertStableRerender();
 
@@ -479,20 +515,20 @@ export class AttributesTests extends RenderTest {
     this.assertHTML('<svg viewBox="0 0 100 100" />');
     this.assertStableNodes();
   }
-
 }
 
-module("Attributes Test", AttributesTests);
+module('Attributes Test', AttributesTests);
 
 abstract class BoundValuesToSpecialAttributeTests extends RenderTest {
-  protected abstract tag : string;
-  protected abstract attr : string;
+  protected abstract tag: string;
+  protected abstract attr: string;
   protected isEmptyElement = false;
   protected selfClosing = true;
 
-  @test "marks javascript: protocol as unsafe"() {
+  @test
+  'marks javascript: protocol as unsafe'() {
     this.render(this.tmplt('{{foo}}'), {
-      foo: 'javascript:foo()'
+      foo: 'javascript:foo()',
     });
     this.assertHTML(this.tmplt('unsafe:javascript:foo()'));
     this.assertStableRerender();
@@ -506,7 +542,8 @@ abstract class BoundValuesToSpecialAttributeTests extends RenderTest {
     this.assertStableNodes();
   }
 
-  @test "marks javascript: protocol as unsafe, http as safe"() {
+  @test
+  'marks javascript: protocol as unsafe, http as safe'() {
     this.render(this.tmplt('{{foo}}'), { foo: 'javascript:foo()' });
     this.assertHTML(this.tmplt('unsafe:javascript:foo()'));
     this.assertStableRerender();
@@ -520,7 +557,8 @@ abstract class BoundValuesToSpecialAttributeTests extends RenderTest {
     this.assertStableNodes();
   }
 
-  @test "marks javascript: protocol as unsafe on updates"() {
+  @test
+  'marks javascript: protocol as unsafe on updates'() {
     this.render(this.tmplt('{{foo}}'), { foo: 'http://foo.bar' });
     this.assertHTML(this.tmplt('http://foo.bar', true));
     this.assertStableRerender();
@@ -534,7 +572,8 @@ abstract class BoundValuesToSpecialAttributeTests extends RenderTest {
     this.assertStableNodes();
   }
 
-  @test "marks vbscript: protocol as unsafe"() {
+  @test
+  'marks vbscript: protocol as unsafe'() {
     this.render(this.tmplt('{{foo}}'), { foo: 'vbscript:foo()' });
     this.assertHTML(this.tmplt('unsafe:vbscript:foo()', true));
     this.assertStableRerender();
@@ -548,7 +587,8 @@ abstract class BoundValuesToSpecialAttributeTests extends RenderTest {
     this.assertStableNodes();
   }
 
-  @test "can be removed by setting to `null`"() {
+  @test
+  'can be removed by setting to `null`'() {
     this.render(this.tmplt('{{foo}}', false), { foo: 'http://foo.bar/derp.jpg' });
     this.assertHTML(this.tmplt('http://foo.bar/derp.jpg'));
     this.assertStableRerender();
@@ -562,7 +602,8 @@ abstract class BoundValuesToSpecialAttributeTests extends RenderTest {
     this.assertStableNodes();
   }
 
-  @test "can be removed by setting to `undefined`"() {
+  @test
+  'can be removed by setting to `undefined`'() {
     this.render(this.tmplt('{{foo}}', false), { foo: 'http://foo.bar/derp.jpg' });
     this.assertHTML(this.tmplt('http://foo.bar/derp.jpg'));
     this.assertStableRerender();
@@ -576,7 +617,7 @@ abstract class BoundValuesToSpecialAttributeTests extends RenderTest {
     this.assertStableNodes();
   }
 
-  protected emptyElementTemplate() : string {
+  protected emptyElementTemplate(): string {
     let template = `<${this.tag}>`;
     if (!this.isEmptyElement) {
       template += `</${this.tag}>`;
@@ -585,7 +626,7 @@ abstract class BoundValuesToSpecialAttributeTests extends RenderTest {
     return template;
   }
 
-  protected tmplt(valueForAttr : string, quoteValue = true) : string {
+  protected tmplt(valueForAttr: string, quoteValue = true): string {
     let value = valueForAttr;
     if (quoteValue) {
       value = `"${value}"`;
@@ -605,13 +646,13 @@ abstract class BoundValuesToSpecialAttributeTests extends RenderTest {
 
 class ConstedAttributeTests extends RenderTest {
   @test
-  "attributes should not be set if not invalidated"() {
-    this.render('<div class={{foo}}></div>', { foo: "bar" });
+  'attributes should not be set if not invalidated'() {
+    this.render('<div class={{foo}}></div>', { foo: 'bar' });
     this.assertHTML('<div class="bar"></div>');
     this.assertStableRerender();
 
     this.element!.firstChild!['setAttribute'] = function() {
-      throw new Error("Should not setAttribute on an unchanged element");
+      throw new Error('Should not setAttribute on an unchanged element');
     };
 
     this.rerender();
@@ -619,17 +660,23 @@ class ConstedAttributeTests extends RenderTest {
   }
 }
 
-module("Attribute a[href]", class extends BoundValuesToSpecialAttributeTests {
-  tag = 'a';
-  attr = 'href';
-});
+module(
+  'Attribute a[href]',
+  class extends BoundValuesToSpecialAttributeTests {
+    tag = 'a';
+    attr = 'href';
+  }
+);
 
-module("Attribute img[src]", class extends BoundValuesToSpecialAttributeTests {
-  protected tag = 'img';
-  protected attr = 'src';
-  protected isEmptyElement = true;
-  protected isSelfClosing = false;
-});
+module(
+  'Attribute img[src]',
+  class extends BoundValuesToSpecialAttributeTests {
+    protected tag = 'img';
+    protected attr = 'src';
+    protected isEmptyElement = true;
+    protected isSelfClosing = false;
+  }
+);
 
 class ConstPathReference<T> extends ConstReference<T> implements PathReference<T> {
   get(key: string): PathReference<Opaque> {

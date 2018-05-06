@@ -1,4 +1,4 @@
-import { Opaque, Simple } from "@glimmer/interfaces";
+import { Opaque, Simple } from '@glimmer/interfaces';
 
 export interface SafeString {
   toHTML(): string;
@@ -32,7 +32,9 @@ export function normalizeTrustedValue(value: Opaque): TrustingInsertion {
 }
 
 export function shouldCoerce(value: Opaque) {
-  return isString(value) || isEmpty(value) || typeof value === 'boolean' || typeof value === 'number';
+  return (
+    isString(value) || isEmpty(value) || typeof value === 'boolean' || typeof value === 'number'
+  );
 }
 
 export function isEmpty(value: Opaque): boolean {

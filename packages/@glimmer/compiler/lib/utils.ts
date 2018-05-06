@@ -1,5 +1,5 @@
 export function processOpcodes(compiler: any, opcodes: any) {
-  for (let i=0, l=opcodes.length; i<l; i++) {
+  for (let i = 0, l = opcodes.length; i < l; i++) {
     let method = opcodes[i][0];
     let params = opcodes[i][1];
     if (params) {
@@ -39,8 +39,8 @@ const WHITELIST = {
   'xml:base': XML,
   'xml:lang': XML,
   'xml:space': XML,
-  'xmlns': XMLNS,
-  'xmlns:xlink': XMLNS
+  xmlns: XMLNS,
+  'xmlns:xlink': XMLNS,
 };
 
 export function getAttrNamespace(attrName: string) {

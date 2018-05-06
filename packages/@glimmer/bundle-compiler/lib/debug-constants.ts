@@ -1,4 +1,4 @@
-import { WriteOnlyConstants } from "@glimmer/program";
+import { WriteOnlyConstants } from '@glimmer/program';
 
 export default class DebugConstants extends WriteOnlyConstants {
   getString(value: number): string {
@@ -22,7 +22,7 @@ export default class DebugConstants extends WriteOnlyConstants {
   }
 
   resolveHandle<T>(s: number): T {
-    return { handle: s } as any as T;
+    return ({ handle: s } as any) as T;
   }
 
   getSerializable<T>(s: number): T {

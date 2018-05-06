@@ -1,6 +1,3 @@
-import {
-  InElementSuite,
-  module
-} from "@glimmer/test-helpers";
+import { InElementSuite, module } from '@glimmer/test-helpers';
 
-module("#in-element Test", InElementSuite);
+module('#in-element Test', InElementSuite);

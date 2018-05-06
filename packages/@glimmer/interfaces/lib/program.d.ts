@@ -10,7 +10,7 @@ export interface Opcode {
   isMachine: number;
 }
 
-export type VMHandle = Unique<"Handle">;
+export type VMHandle = Unique<'Handle'>;
 
 export interface CompileTimeHeap {
   push(name: /* TODO: Op */ number, op1?: number, op2?: number, op3?: number): void;

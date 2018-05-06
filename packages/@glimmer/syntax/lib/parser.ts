@@ -1,7 +1,7 @@
 import {
   EventedTokenizer,
   EntityParser,
-  HTML5NamedCharRefs as namedCharRefs
+  HTML5NamedCharRefs as namedCharRefs,
 } from 'simple-html-tokenizer';
 import { Program } from './types/nodes';
 import * as AST from './types/nodes';
@@ -72,10 +72,7 @@ export abstract class Parser {
 
   get currentTag(): Tag<'StartTag' | 'EndTag'> {
     let node = this.currentNode;
-    assert(
-      node && (node.type === 'StartTag' || node.type === 'EndTag'),
-      'expected tag'
-    );
+    assert(node && (node.type === 'StartTag' || node.type === 'EndTag'), 'expected tag');
     return node as Tag<'StartTag' | 'EndTag'>;
   }
 
@@ -113,10 +110,7 @@ export abstract class Parser {
     return this.elementStack[this.elementStack.length - 1];
   }
 
-  sourceForNode(
-    node: HandlebarsAST.Node,
-    endNode?: { loc: HandlebarsAST.SourceLocation }
-  ): string {
+  sourceForNode(node: HandlebarsAST.Node, endNode?: { loc: HandlebarsAST.SourceLocation }): string {
     let firstLine = node.loc.start.line - 1;
     let currentLine = firstLine - 1;
     let firstColumn = node.loc.start.column;

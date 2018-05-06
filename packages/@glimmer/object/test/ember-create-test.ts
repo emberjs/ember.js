@@ -16,73 +16,73 @@ QUnit.test('reopening a parent flushes the child', assert => {
 
   MyClass.reopen({
     hello() {
-      return "hello";
-    }
+      return 'hello';
+    },
   });
 
   let sub: any = SubClass.create();
 
-  assert.equal(sub.hello(), "hello");
+  assert.equal(sub.hello(), 'hello');
 });
 
 QUnit.test('reopening a parent flushes the child', assert => {
   let MyClass = EmberObject.extend({
     hello() {
-      return "original hello";
-    }
+      return 'original hello';
+    },
   });
 
   let SubClass = MyClass.extend({
     hello(this: any) {
       return this._super();
-    }
+    },
   });
 
   let GrandChild = SubClass.extend({
     hello(this: any) {
       return this._super();
-    }
+    },
   });
 
   MyClass.reopen({
     hello(this: any) {
-      return this._super() + " new hello";
-    }
+      return this._super() + ' new hello';
+    },
   });
 
   let sub: any = GrandChild.create();
 
-  assert.equal(sub.hello(), "original hello new hello");
+  assert.equal(sub.hello(), 'original hello new hello');
 });
 
 QUnit.test('reopening a parent with a computed property flushes the child', assert => {
   let MyClass = EmberObject.extend({
     hello: computed(function() {
-      return "original hello";
-    })
+      return 'original hello';
+    }),
   });
 
   let SubClass = MyClass.extend({
     hello: computed(function(this: any) {
       return this._super();
-    })
+    }),
   });
 
   let GrandChild = SubClass.extend({
     hello: computed(function(this: any) {
       return this._super();
-    })
+    }),
   });
 
   MyClass.reopen({
     hello: computed(function(this: any) {
-      return this._super() + " new hello";
-    })
+      return this._super() + ' new hello';
+    }),
   });
 
   let sub: any = GrandChild.create();
 
-  assert.equal(sub.hello, "original hello new hello");
+  assert.equal(sub.hello, 'original hello new hello');
 });
 
 QUnit.test('calls computed property setters', assert => {
@@ -93,8 +93,8 @@ QUnit.test('calls computed property setters', assert => {
       },
       set: function(_, value) {
         return value;
-      }
-    })
+      },
+    }),
   });
 
   let o = MyClass.create({ foo: 'bar' });
@@ -104,15 +104,25 @@ QUnit.test('calls computed property setters', assert => {
 // This test is for IE8.
 QUnit.test('property name is the same as own prototype property', assert => {
   let MyClass = EmberObject.extend({
-    toString() { return 'MyClass'; }
+    toString() {
+      return 'MyClass';
+    },
   });
 
-  assert.equal(MyClass.create().toString(), 'MyClass', 'should inherit property from the arguments of `EmberObject.create`');
+  assert.equal(
+    MyClass.create().toString(),
+    'MyClass',
+    'should inherit property from the arguments of `EmberObject.create`'
+  );
 });
 
 QUnit.test('inherits properties from passed in EmberObject', assert => {
   let baseObj = EmberObject.create({ foo: 'bar' });
   let secondaryObj = EmberObject.create(baseObj);
 
-  assert.equal(secondaryObj['foo'], baseObj['foo'], 'Em.O.create inherits properties from EmberObject parameter');
+  assert.equal(
+    secondaryObj['foo'],
+    baseObj['foo'],
+    'Em.O.create inherits properties from EmberObject parameter'
+  );
 });

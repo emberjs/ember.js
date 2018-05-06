@@ -2,12 +2,13 @@ import { RenderTest, test } from '../render-test';
 import { setDebuggerCallback } from '@glimmer/runtime';
 
 export class DebuggerSuite extends RenderTest {
-  @test "basic debugger statement"() {
+  @test
+  'basic debugger statement'() {
     let expectedContext = {
       foo: 'bar',
       a: {
-        b: true
-      }
+        b: true,
+      },
     };
     let callbackExecuted = 0;
 
@@ -25,8 +26,8 @@ export class DebuggerSuite extends RenderTest {
     expectedContext = {
       foo: 'baz',
       a: {
-        b: false
-      }
+        b: false,
+      },
     };
     this.rerender(expectedContext);
     this.assert.equal(callbackExecuted, 2);
@@ -36,8 +37,8 @@ export class DebuggerSuite extends RenderTest {
     expectedContext = {
       foo: 'bar',
       a: {
-        b: true
-      }
+        b: true,
+      },
     };
     this.rerender(expectedContext);
     this.assert.equal(callbackExecuted, 3);
@@ -45,12 +46,13 @@ export class DebuggerSuite extends RenderTest {
     this.assertStableNodes();
   }
 
-  @test "can get locals"() {
+  @test
+  'can get locals'() {
     let expectedContext = {
       foo: 'bar',
       a: {
-        b: true
-      }
+        b: true,
+      },
     };
     let callbackExecuted = 0;
 
@@ -61,7 +63,10 @@ export class DebuggerSuite extends RenderTest {
       this.assert.deepEqual(get('this'), context);
     });
 
-    this.render('{{#with foo as |bar|}}{{#if a.b}}true{{debugger}}{{else}}false{{debugger}}{{/if}}{{/with}}', expectedContext);
+    this.render(
+      '{{#with foo as |bar|}}{{#if a.b}}true{{debugger}}{{else}}false{{debugger}}{{/if}}{{/with}}',
+      expectedContext
+    );
     this.assert.equal(callbackExecuted, 1);
     this.assertHTML('true');
     this.assertStableRerender();
@@ -69,8 +74,8 @@ export class DebuggerSuite extends RenderTest {
     expectedContext = {
       foo: 'baz',
       a: {
-        b: false
-      }
+        b: false,
+      },
     };
     this.rerender(expectedContext);
     this.assert.equal(callbackExecuted, 2);
@@ -80,8 +85,8 @@ export class DebuggerSuite extends RenderTest {
     expectedContext = {
       foo: 'bar',
       a: {
-        b: true
-      }
+        b: true,
+      },
     };
     this.rerender(expectedContext);
     this.assert.equal(callbackExecuted, 3);

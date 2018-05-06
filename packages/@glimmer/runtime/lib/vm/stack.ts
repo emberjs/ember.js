@@ -4,8 +4,8 @@ import { PrimitiveType } from '@glimmer/program';
 import { unreachable } from '@glimmer/util';
 import { Stack as WasmStack } from '@glimmer/low-level';
 
-const HI   = 0x80000000;
-const MASK = 0x7FFFFFFF;
+const HI = 0x80000000;
+const MASK = 0x7fffffff;
 
 export class InnerStack {
   constructor(private inner = new WasmStack(), private js: Opaque[] = []) {}
@@ -27,7 +27,7 @@ export class InnerStack {
   sliceInner<T = Opaque>(start: number, end: number): T[] {
     let out = [];
 
-    for (let i=start; i<end; i++) {
+    for (let i = start; i < end; i++) {
       out.push(this.get(i));
     }
 
@@ -88,7 +88,7 @@ export default class EvaluationStack {
   static restore(snapshot: Opaque[]): EvaluationStack {
     let stack = new InnerStack();
 
-    for (let i=0; i<snapshot.length; i++) {
+    for (let i = 0; i < snapshot.length; i++) {
       stack.write(i, snapshot[i]);
     }
 
@@ -193,7 +193,7 @@ function isImmediate(value: Opaque): value is number | boolean | null | undefine
       return true;
     case 'number':
       // not an integer
-      if (value as number % 1 !== 0) return false;
+      if ((value as number) % 1 !== 0) return false;
 
       let abs = Math.abs(value as number);
 
@@ -207,25 +207,25 @@ function isImmediate(value: Opaque): value is number | boolean | null | undefine
 }
 
 export const enum Type {
-  NUMBER          = 0b000,
-  FLOAT           = 0b001,
-  STRING          = 0b010,
+  NUMBER = 0b000,
+  FLOAT = 0b001,
+  STRING = 0b010,
   BOOLEAN_OR_VOID = 0b011,
-  NEGATIVE        = 0b100
+  NEGATIVE = 0b100,
 }
 
 export const enum Immediates {
-  False = 0 << 3 | Type.BOOLEAN_OR_VOID,
-  True  = 1 << 3 | Type.BOOLEAN_OR_VOID,
-  Null  = 2 << 3 | Type.BOOLEAN_OR_VOID,
-  Undef = 3 << 3 | Type.BOOLEAN_OR_VOID
+  False = (0 << 3) | Type.BOOLEAN_OR_VOID,
+  True = (1 << 3) | Type.BOOLEAN_OR_VOID,
+  Null = (2 << 3) | Type.BOOLEAN_OR_VOID,
+  Undef = (3 << 3) | Type.BOOLEAN_OR_VOID,
 }
 
 function encodeSmi(primitive: number) {
   if (primitive < 0) {
-    return Math.abs(primitive) << 3 | PrimitiveType.NEGATIVE;
+    return (Math.abs(primitive) << 3) | PrimitiveType.NEGATIVE;
   } else {
-    return primitive << 3 | PrimitiveType.NUMBER;
+    return (primitive << 3) | PrimitiveType.NUMBER;
   }
 }
 
@@ -258,10 +258,14 @@ function decodeSmi(smi: number): number {
 
 function decodeImmediate(immediate: number): number | boolean | null | undefined {
   switch (immediate) {
-    case Immediates.False: return false;
-    case Immediates.True:  return true;
-    case Immediates.Null:  return null;
-    case Immediates.Undef: return undefined;
+    case Immediates.False:
+      return false;
+    case Immediates.True:
+      return true;
+    case Immediates.Null:
+      return null;
+    case Immediates.Undef:
+      return undefined;
     default:
       return decodeSmi(immediate);
   }

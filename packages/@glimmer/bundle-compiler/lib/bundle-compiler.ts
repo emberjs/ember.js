@@ -1,7 +1,7 @@
-import { ASTPluginBuilder, preprocess } from "@glimmer/syntax";
-import { TemplateCompiler } from "@glimmer/compiler";
-import { expect } from "@glimmer/util";
-import { SerializedTemplateBlock } from "@glimmer/wire-format";
+import { ASTPluginBuilder, preprocess } from '@glimmer/syntax';
+import { TemplateCompiler } from '@glimmer/compiler';
+import { expect } from '@glimmer/util';
+import { SerializedTemplateBlock } from '@glimmer/wire-format';
 import {
   ProgramSymbolTable,
   Recast,
@@ -11,26 +11,22 @@ import {
   CompilableProgram,
   CompilableTemplate,
   CompileTimeLookup,
-  LayoutWithContext
-} from "@glimmer/interfaces";
+  LayoutWithContext,
+} from '@glimmer/interfaces';
 import {
   CompilableProgram as CompilableProgramInstance,
   Macros,
   OpcodeBuilderConstructor,
   EagerOpcodeBuilder,
-  AbstractCompiler
-} from "@glimmer/opcode-compiler";
-import {
-  WriteOnlyProgram,
-  ConstantPool,
-  SerializedHeap
-} from "@glimmer/program";
+  AbstractCompiler,
+} from '@glimmer/opcode-compiler';
+import { WriteOnlyProgram, ConstantPool, SerializedHeap } from '@glimmer/program';
 
-import ModuleLocatorMap from "./module-locator-map";
-import DebugConstants from "./debug-constants";
-import ExternalModuleTable from "./external-module-table";
-import BundleCompilerDelegate from "./delegate";
-import BundleCompilerLookup from "./lookup";
+import ModuleLocatorMap from './module-locator-map';
+import DebugConstants from './debug-constants';
+import ExternalModuleTable from './external-module-table';
+import BundleCompilerDelegate from './delegate';
+import BundleCompilerLookup from './lookup';
 
 export interface BundleCompileOptions {
   plugins: ASTPluginBuilder[];
@@ -83,7 +79,11 @@ export interface PartialTemplateLocator<Locator> extends ModuleLocator {
 // to make --declaration happy
 export { CompilableTemplate };
 
-export class EagerCompiler<Locator> extends AbstractCompiler<Locator, EagerOpcodeBuilder<Locator>, WriteOnlyProgram> {
+export class EagerCompiler<Locator> extends AbstractCompiler<
+  Locator,
+  EagerOpcodeBuilder<Locator>,
+  WriteOnlyProgram
+> {
   builderFor(containingLayout: LayoutWithContext<Locator>): EagerOpcodeBuilder<Locator> {
     return new EagerOpcodeBuilder(this, containingLayout);
   }
@@ -116,7 +116,7 @@ export default class BundleCompiler<Locator> {
 
   constructor(delegate: BundleCompilerDelegate<Locator>, options: BundleCompilerOptions = {}) {
     this.delegate = delegate;
-    let macros = this.macros = options.macros || new Macros();
+    let macros = (this.macros = options.macros || new Macros());
 
     let program = options.program || new WriteOnlyProgram(new DebugConstants());
     this.plugins = options.plugins || [];
@@ -136,7 +136,7 @@ export default class BundleCompiler<Locator> {
     let template = new CompilableProgramInstance(this.compiler, {
       block,
       referrer: locator.meta,
-      asPartial: false
+      asPartial: false,
     });
 
     this.addCompilableTemplate(locator, template);
@@ -175,17 +175,15 @@ export default class BundleCompiler<Locator> {
     let { heap, constants } = this.compiler.program;
 
     return {
-      main: main as Recast<Unique<"Handle">, number>,
+      main: main as Recast<Unique<'Handle'>, number>,
       heap: heap.capture() as SerializedHeap,
       pool: constants.toPool(),
       table: this.resolver.getTable(),
-      symbolTables
+      symbolTables,
     };
   }
 
-  preprocess(
-    input: string
-  ): SerializedTemplateBlock {
+  preprocess(input: string): SerializedTemplateBlock {
     let ast = preprocess(input, { plugins: { ast: this.plugins } });
     let template = TemplateCompiler.compile(ast);
     return template.toJSON();
@@ -215,7 +213,9 @@ export default class BundleCompiler<Locator> {
     // bundle via the add() or addCompilableTemplate() methods.
     let compilableTemplate = expect(
       this.compilableTemplates.get(locator),
-      `Can't compile a template that wasn't already added to the bundle (${locator.name} @ ${locator.module})`
+      `Can't compile a template that wasn't already added to the bundle (${locator.name} @ ${
+        locator.module
+      })`
     );
 
     // Compile the template, which writes opcodes to the heap and returns the VM
@@ -242,6 +242,6 @@ function normalizeLocator<T>(locator: PartialTemplateLocator<T>): TemplateLocato
     module,
     name,
     kind: 'template',
-    meta: meta || {} as T
+    meta: meta || ({} as T),
   };
 }

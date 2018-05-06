@@ -20,10 +20,14 @@ QUnit.test('Sub-subclass', assert => {
 QUnit.test('Overriding a method several layers deep', assert => {
   let SomeClass = EmberObject.extend({
     fooCnt: 0,
-    foo() { this.fooCnt++; },
+    foo() {
+      this.fooCnt++;
+    },
 
     barCnt: 0,
-    bar() { this.barCnt++; }
+    bar() {
+      this.barCnt++;
+    },
   });
 
   let AnotherClass = SomeClass.extend({
@@ -31,7 +35,7 @@ QUnit.test('Overriding a method several layers deep', assert => {
     bar(this: any) {
       this.barCnt++;
       this._super.apply(this, arguments);
-    }
+    },
   });
 
   let FinalClass = AnotherClass.extend({
@@ -39,7 +43,7 @@ QUnit.test('Overriding a method several layers deep', assert => {
     foo(this: any) {
       this.fooCnt++;
       this._super.apply(this, arguments);
-    }
+    },
   });
 
   let obj: any = new FinalClass();
@@ -53,7 +57,7 @@ QUnit.test('Overriding a method several layers deep', assert => {
     foo(this: any) {
       this.fooCnt++;
       this._super.apply(this, arguments);
-    }
+    },
   }).create();
 
   obj.foo();
@@ -70,8 +74,16 @@ QUnit.test('With concatenatedProperties', assert => {
   let another = new AnotherClass();
   let yetAnother = new YetAnotherClass();
   assert.deepEqual(some.get('things'), ['foo'], 'base class should have just its value');
-  assert.deepEqual(another.get('things'), ['foo', 'bar'], 'subclass should have base class\' and its own');
-  assert.deepEqual(yetAnother.get('things'), ['foo', 'baz'], 'subclass should have base class\' and its own');
+  assert.deepEqual(
+    another.get('things'),
+    ['foo', 'bar'],
+    "subclass should have base class' and its own"
+  );
+  assert.deepEqual(
+    yetAnother.get('things'),
+    ['foo', 'baz'],
+    "subclass should have base class' and its own"
+  );
 });
 
 function get(obj: any, key: string) {
@@ -82,7 +94,7 @@ QUnit.test('With concatenatedProperties class properties', assert => {
   let SomeClass = EmberObject.extend();
   SomeClass.reopenClass({
     concatenatedProperties: ['things'],
-    things: 'foo'
+    things: 'foo',
   });
   let AnotherClass = SomeClass.extend();
   AnotherClass.reopenClass({ things: 'bar' });
@@ -91,7 +103,19 @@ QUnit.test('With concatenatedProperties class properties', assert => {
   let some = new SomeClass();
   let another = new AnotherClass();
   let yetAnother = new YetAnotherClass();
-  assert.deepEqual(get(some.constructor, 'things'), ['foo'], 'base class should have just its value');
-  assert.deepEqual(get(another.constructor, 'things'), ['foo', 'bar'], 'subclass should have base class\' and its own');
-  assert.deepEqual(get(yetAnother.constructor, 'things'), ['foo', 'baz'], 'subclass should have base class\' and its own');
+  assert.deepEqual(
+    get(some.constructor, 'things'),
+    ['foo'],
+    'base class should have just its value'
+  );
+  assert.deepEqual(
+    get(another.constructor, 'things'),
+    ['foo', 'bar'],
+    "subclass should have base class' and its own"
+  );
+  assert.deepEqual(
+    get(yetAnother.constructor, 'things'),
+    ['foo', 'baz'],
+    "subclass should have base class' and its own"
+  );
 });

@@ -27,7 +27,14 @@ export interface Program extends BaseNode {
   blockParams: string[];
 }
 
-export type Statement = MustacheStatement | BlockStatement | PartialStatement | MustacheCommentStatement | CommentStatement | TextNode | ElementNode;
+export type Statement =
+  | MustacheStatement
+  | BlockStatement
+  | PartialStatement
+  | MustacheCommentStatement
+  | CommentStatement
+  | TextNode
+  | ElementNode;
 
 export interface Call extends BaseNode {
   name?: PathExpression | SubExpression;
@@ -70,8 +77,10 @@ export interface PartialStatement extends BaseNode {
 }
 
 export function isCall(node: any): node is Call {
-  return node.type === 'SubExpression' ||
-    (node.type === 'MustacheStatement' && node.path.type === 'PathExpression');
+  return (
+    node.type === 'SubExpression' ||
+    (node.type === 'MustacheStatement' && node.path.type === 'PathExpression')
+  );
 }
 
 export interface CommentStatement extends BaseNode {
@@ -127,7 +136,12 @@ export interface PathExpression extends BaseNode {
   parts: string[];
 }
 
-export type Literal = StringLiteral | BooleanLiteral | NumberLiteral | UndefinedLiteral | NullLiteral;
+export type Literal =
+  | StringLiteral
+  | BooleanLiteral
+  | NumberLiteral
+  | UndefinedLiteral
+  | NullLiteral;
 
 export interface StringLiteral extends BaseNode {
   type: 'StringLiteral';

@@ -12,31 +12,26 @@ import {
   STDLib,
   SymbolTable,
   Compiler,
-  LayoutWithContext
-} from "@glimmer/interfaces";
+  LayoutWithContext,
+} from '@glimmer/interfaces';
 import { dict, EMPTY_ARRAY, expect, Stack, unreachable } from '@glimmer/util';
 import { Op, Register } from '@glimmer/vm';
 import * as WireFormat from '@glimmer/wire-format';
-import { SerializedInlineBlock } from "@glimmer/wire-format";
-import { PrimitiveType } from "@glimmer/program";
+import { SerializedInlineBlock } from '@glimmer/wire-format';
+import { PrimitiveType } from '@glimmer/program';
+
+import { Primitive } from './interfaces';
+
+import { ATTRS_BLOCK, Compilers, expressionCompiler } from './syntax';
 
 import {
-  Primitive
-} from './interfaces';
+  PLACEHOLDER_HANDLE,
+  CompilableBlock as CompilableBlockInstance,
+} from './compilable-template';
 
-import {
-  ATTRS_BLOCK,
-  Compilers,
-  expressionCompiler
-} from './syntax';
-
-import { PLACEHOLDER_HANDLE, CompilableBlock as CompilableBlockInstance } from './compilable-template';
-
-import {
-  ComponentBuilder
-} from './wrapped-component';
-import { InstructionEncoder, Operand, OpcodeSize } from "@glimmer/encoder";
-import { ContentType } from "../../runtime/lib/compiled/opcodes/content";
+import { ComponentBuilder } from './wrapped-component';
+import { InstructionEncoder, Operand, OpcodeSize } from '@glimmer/encoder';
+import { ContentType } from '../../runtime/lib/compiled/opcodes/content';
 
 export type Label = string;
 
@@ -44,7 +39,7 @@ export type When = (match: number, callback: () => void) => void;
 
 class Labels {
   labels = dict<number>();
-  targets: Array<{ at: number, target: string }> = [];
+  targets: Array<{ at: number; target: string }> = [];
 
   label(name: string, index: number) {
     this.labels[name] = index;
@@ -71,10 +66,7 @@ export interface Blocks {
 }
 
 export interface OpcodeBuilderConstructor {
-  new<Locator>(
-    compiler: Compiler,
-    containingLayout: LayoutWithContext
-  ): OpcodeBuilder<Locator>;
+  new <Locator>(compiler: Compiler, containingLayout: LayoutWithContext): OpcodeBuilder<Locator>;
 }
 
 export class StdOpcodeBuilder {
@@ -99,10 +91,14 @@ export class StdOpcodeBuilder {
   push(name: Op, arg1: Operand, arg2: Operand, arg3: Operand): void;
   push(name: Op) {
     switch (arguments.length) {
-      case 1:  return this.encoder.encode(name, 0);
-      case 2:  return this.encoder.encode(name, 0, arguments[1]);
-      case 3:  return this.encoder.encode(name, 0, arguments[1], arguments[2]);
-      default: return this.encoder.encode(name, 0, arguments[1], arguments[2], arguments[3]);
+      case 1:
+        return this.encoder.encode(name, 0);
+      case 2:
+        return this.encoder.encode(name, 0, arguments[1]);
+      case 3:
+        return this.encoder.encode(name, 0, arguments[1], arguments[2]);
+      default:
+        return this.encoder.encode(name, 0, arguments[1], arguments[2], arguments[3]);
     }
   }
 
@@ -112,10 +108,20 @@ export class StdOpcodeBuilder {
   pushMachine(name: Op, arg1: Operand, arg2: Operand, arg3: Operand): void;
   pushMachine(name: Op) {
     switch (arguments.length) {
-      case 1:  return this.encoder.encode(name, OpcodeSize.MACHINE_MASK);
-      case 2:  return this.encoder.encode(name, OpcodeSize.MACHINE_MASK, arguments[1]);
-      case 3:  return this.encoder.encode(name, OpcodeSize.MACHINE_MASK, arguments[1], arguments[2]);
-      default: return this.encoder.encode(name, OpcodeSize.MACHINE_MASK, arguments[1], arguments[2], arguments[3]);
+      case 1:
+        return this.encoder.encode(name, OpcodeSize.MACHINE_MASK);
+      case 2:
+        return this.encoder.encode(name, OpcodeSize.MACHINE_MASK, arguments[1]);
+      case 3:
+        return this.encoder.encode(name, OpcodeSize.MACHINE_MASK, arguments[1], arguments[2]);
+      default:
+        return this.encoder.encode(
+          name,
+          OpcodeSize.MACHINE_MASK,
+          arguments[1],
+          arguments[2],
+          arguments[3]
+        );
     }
   }
 
@@ -188,7 +194,7 @@ export class StdOpcodeBuilder {
   }
 
   pushRootScope(symbols: number, bindCallerScope: boolean) {
-    this.push(Op.RootScope, symbols, (bindCallerScope ? 1 : 0));
+    this.push(Op.RootScope, symbols, bindCallerScope ? 1 : 0);
   }
 
   pushVirtualRootScope(register: Register) {
@@ -276,7 +282,12 @@ export class StdOpcodeBuilder {
     this.push(Op.ToBoolean);
   }
 
-  invokePreparedComponent(hasBlock: boolean, bindableBlocks: boolean, bindableAtNames: boolean, populateLayout: Option<() => void> = null) {
+  invokePreparedComponent(
+    hasBlock: boolean,
+    bindableBlocks: boolean,
+    bindableAtNames: boolean,
+    populateLayout: Option<() => void> = null
+  ) {
     this.beginComponentTransaction();
     this.pushDynamicScope();
 
@@ -321,7 +332,13 @@ export class StdOpcodeBuilder {
     return this.compiler.compileInline(sexp, this);
   }
 
-  compileBlock(name: string, params: WireFormat.Core.Params, hash: WireFormat.Core.Hash, template: Option<CompilableBlock>, inverse: Option<CompilableBlock>): void {
+  compileBlock(
+    name: string,
+    params: WireFormat.Core.Params,
+    hash: WireFormat.Core.Hash,
+    template: Option<CompilableBlock>,
+    inverse: Option<CompilableBlock>
+  ): void {
     this.compiler.compileBlock(name, params, hash, template, inverse, this);
   }
 
@@ -495,7 +512,7 @@ export class StdOpcodeBuilder {
 
   switch(_opcode: void, callback: (when: When) => void) {
     // Setup the switch DSL
-    let clauses: Array<{ match: number, label: string, callback: () => void }> = [];
+    let clauses: Array<{ match: number; label: string; callback: () => void }> = [];
 
     let count = 0;
 
@@ -515,9 +532,7 @@ export class StdOpcodeBuilder {
 
     // First, emit the jump opcodes. We don't need a jump for the last
     // opcode, since it bleeds directly into its clause.
-    clauses
-      .slice(0, -1)
-      .forEach(clause => this.jumpEq(clause.match, clause.label));
+    clauses.slice(0, -1).forEach(clause => this.jumpEq(clause.match, clause.label));
 
     // Enumerate the clauses in reverse order. Earlier matches will
     // require fewer checks.
@@ -609,7 +624,6 @@ export class StdOpcodeBuilder {
   pushBlockScope(): void {
     this.push(Op.PushBlockScope);
   }
-
 }
 
 export type VMHandlePlaceholder = [number, () => VMHandle];
@@ -622,10 +636,7 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
   private expressionCompiler: Compilers<WireFormat.TupleExpression> = expressionCompiler();
   private isComponentAttrs = false;
 
-  constructor(
-    compiler: Compiler,
-    public containingLayout: LayoutWithContext<Locator>
-  ) {
+  constructor(compiler: Compiler, public containingLayout: LayoutWithContext<Locator>) {
     super(compiler, containingLayout ? containingLayout.block.symbols.length : 0);
     this.constants = compiler.constants;
     this.stdLib = compiler.stdLib;
@@ -670,7 +681,12 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
     this.pushBlock(block);
   }
 
-  curryComponent(definition: WireFormat.Expression, /* TODO: attrs: Option<RawInlineBlock>, */ params: Option<WireFormat.Core.Params>, hash: WireFormat.Core.Hash, synthetic: boolean) {
+  curryComponent(
+    definition: WireFormat.Expression,
+    /* TODO: attrs: Option<RawInlineBlock>, */ params: Option<WireFormat.Core.Params>,
+    hash: WireFormat.Core.Hash,
+    synthetic: boolean
+  ) {
     let referrer = this.containingLayout.referrer;
 
     this.pushFrame();
@@ -691,7 +707,16 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
     }
   }
 
-  invokeComponent(capabilities: ComponentCapabilities | true, attrs: Option<CompilableBlock>, params: Option<WireFormat.Core.Params>, hash: WireFormat.Core.Hash, synthetic: boolean, block: Option<CompilableBlock>, inverse: Option<CompilableBlock> = null, layout?: CompilableProgram) {
+  invokeComponent(
+    capabilities: ComponentCapabilities | true,
+    attrs: Option<CompilableBlock>,
+    params: Option<WireFormat.Core.Params>,
+    hash: WireFormat.Core.Hash,
+    synthetic: boolean,
+    block: Option<CompilableBlock>,
+    inverse: Option<CompilableBlock> = null,
+    layout?: CompilableProgram
+  ) {
     this.fetch(Register.s0);
     this.dup(Register.sp, 1);
     this.load(Register.s0);
@@ -699,7 +724,8 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
     this.pushFrame();
 
     let bindableBlocks = !!(block || inverse || attrs);
-    let bindableAtNames = (capabilities === true || capabilities.prepareArgs) || !!(hash && hash[0].length !== 0);
+    let bindableAtNames =
+      capabilities === true || capabilities.prepareArgs || !!(hash && hash[0].length !== 0);
 
     let blocks = { main: block, else: inverse, attrs };
 
@@ -721,12 +747,19 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
     this.load(Register.s0);
   }
 
-  invokeStaticComponent(capabilities: ComponentCapabilities, layout: CompilableProgram, attrs: Option<CompilableBlock>, params: Option<WireFormat.Core.Params>, hash: WireFormat.Core.Hash, synthetic: boolean, block: Option<CompilableBlock>, inverse: Option<CompilableBlock> = null) {
+  invokeStaticComponent(
+    capabilities: ComponentCapabilities,
+    layout: CompilableProgram,
+    attrs: Option<CompilableBlock>,
+    params: Option<WireFormat.Core.Params>,
+    hash: WireFormat.Core.Hash,
+    synthetic: boolean,
+    block: Option<CompilableBlock>,
+    inverse: Option<CompilableBlock> = null
+  ) {
     let { symbolTable } = layout;
 
-    let bailOut =
-      symbolTable.hasEval ||
-      capabilities.prepareArgs;
+    let bailOut = symbolTable.hasEval || capabilities.prepareArgs;
 
     if (bailOut) {
       this.invokeComponent(capabilities, attrs, params, hash, synthetic, block, inverse, layout);
@@ -762,7 +795,7 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
 
     this.registerComponentDestructor(Register.s0);
 
-    let bindings: { symbol: number, isBlock: boolean }[] = [];
+    let bindings: { symbol: number; isBlock: boolean }[] = [];
 
     this.getComponentSelf(Register.s0);
     bindings.push({ symbol: 0, isBlock: false });
@@ -848,7 +881,14 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
     this.load(Register.s0);
   }
 
-  dynamicComponent(definition: WireFormat.Expression, /* TODO: attrs: Option<RawInlineBlock>, */ params: Option<WireFormat.Core.Params>, hash: WireFormat.Core.Hash, synthetic: boolean, block: Option<CompilableBlock>, inverse: Option<CompilableBlock> = null) {
+  dynamicComponent(
+    definition: WireFormat.Expression,
+    /* TODO: attrs: Option<RawInlineBlock>, */ params: Option<WireFormat.Core.Params>,
+    hash: WireFormat.Core.Hash,
+    synthetic: boolean,
+    block: Option<CompilableBlock>,
+    inverse: Option<CompilableBlock> = null
+  ) {
     this.replayable({
       args: () => {
         this.expr(definition);
@@ -866,7 +906,7 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
         this.invokeComponent(true, null, params, hash, synthetic, block, inverse);
 
         this.label('ELSE');
-      }
+      },
     });
   }
 
@@ -929,7 +969,7 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
 
     for (let i = 0; i < _names.length; i++) {
       let n = _names[i];
-      names[i]= this.constants.string(n);
+      names[i] = this.constants.string(n);
     }
 
     return this.constants.array(names);
@@ -946,8 +986,8 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
     let primitive: number;
     switch (typeof _primitive) {
       case 'number':
-        if (_primitive as number % 1 === 0) {
-          if (_primitive as number > -1) {
+        if ((_primitive as number) % 1 === 0) {
+          if ((_primitive as number) > -1) {
             primitive = _primitive as number;
           } else {
             primitive = this.constants.number(_primitive as number);
@@ -979,13 +1019,13 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
         throw new Error('Invalid primitive passed to pushPrimitive');
     }
 
-    let immediate = this.sizeImmediate(primitive << 3 | type, primitive);
+    let immediate = this.sizeImmediate((primitive << 3) | type, primitive);
     this.push(Op.Primitive, immediate);
   }
 
   sizeImmediate(shifted: number, primitive: number) {
     if (shifted >= OpcodeSize.MAX_SIZE || shifted < 0) {
-      return this.constants.number(primitive) << 3 | PrimitiveType.BIG_NUM;
+      return (this.constants.number(primitive) << 3) | PrimitiveType.BIG_NUM;
     }
 
     return shifted;
@@ -1006,8 +1046,15 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
     this.push(Op.ResolveDynamicComponent, this.constants.serializable(referrer));
   }
 
-  staticComponentHelper(tag: string, hash: WireFormat.Core.Hash, template: Option<CompilableBlock>) {
-    let { handle, capabilities, compilable } = this.compiler.resolveLayoutForTag(tag, this.referrer);
+  staticComponentHelper(
+    tag: string,
+    hash: WireFormat.Core.Hash,
+    template: Option<CompilableBlock>
+  ) {
+    let { handle, capabilities, compilable } = this.compiler.resolveLayoutForTag(
+      tag,
+      this.referrer
+    );
 
     if (handle !== null && capabilities !== null) {
       if (compilable) {
@@ -1018,7 +1065,15 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
         }
 
         this.pushComponentDefinition(handle);
-        this.invokeStaticComponent(capabilities, compilable, null, null, hash, false, template && template);
+        this.invokeStaticComponent(
+          capabilities,
+          compilable,
+          null,
+          null,
+          hash,
+          false,
+          template && template
+        );
         return true;
       }
     }
@@ -1056,7 +1111,11 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
     this.push(Op.OpenElement, this.constants.string(tag));
   }
 
-  modifier(locator: Locator, params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>) {
+  modifier(
+    locator: Locator,
+    params: Option<WireFormat.Core.Params>,
+    hash: Option<WireFormat.Core.Hash>
+  ) {
     this.pushFrame();
     this.compileArgs(params, hash, null, true);
     this.push(Op.Modifier, this.constants.handle(locator));
@@ -1073,9 +1132,9 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
     let namespace = _namespace ? this.constants.string(_namespace) : 0;
 
     if (this.isComponentAttrs) {
-      this.push(Op.ComponentAttr, name, (trusting === true ? 1 : 0), namespace);
+      this.push(Op.ComponentAttr, name, trusting === true ? 1 : 0, namespace);
     } else {
-      this.push(Op.DynamicAttr, name, (trusting === true ? 1 : 0), namespace);
+      this.push(Op.DynamicAttr, name, trusting === true ? 1 : 0, namespace);
     }
   }
 
@@ -1104,7 +1163,11 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
     this.push(Op.GetProperty, this.string(key));
   }
 
-  helper(helper: Locator, params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>) {
+  helper(
+    helper: Locator,
+    params: Option<WireFormat.Core.Params>,
+    hash: Option<WireFormat.Core.Hash>
+  ) {
     this.pushFrame();
     this.compileArgs(params, hash, null, true);
     this.push(Op.Helper, this.constants.handle(helper));
@@ -1179,7 +1242,7 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
    * encountered, the program jumps to -1 rather than the END label,
    * and the PopFrame opcode is not needed.
    */
-  replayable({ args, body }: { args(): number, body(): void }): void {
+  replayable({ args, body }: { args(): number; body(): void }): void {
     // Start a new label frame, to give END and RETURN
     // a unique meaning.
     this.startLabels();
@@ -1246,7 +1309,7 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
    * routine, as it can reuse the DOM block and is always only a single
    * frame deep.
    */
-  replayableIf({ args, ifTrue, ifFalse }: { args(): number, ifTrue(): void, ifFalse?(): void }) {
+  replayableIf({ args, ifTrue, ifFalse }: { args(): number; ifTrue(): void; ifFalse?(): void }) {
     this.replayable({
       args,
 
@@ -1271,19 +1334,21 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
         if (ifFalse) {
           ifFalse();
         }
-      }
+      },
     });
   }
 
   inlineBlock(block: SerializedInlineBlock): CompilableBlock {
     return new CompilableBlockInstance(this.compiler, {
       block,
-      containingLayout: this.containingLayout
+      containingLayout: this.containingLayout,
     });
   }
 
   evalSymbols(): Option<string[]> {
-    let { containingLayout: { block } } = this;
+    let {
+      containingLayout: { block },
+    } = this;
 
     return block.hasEval ? block.symbols : null;
   }
@@ -1298,7 +1363,12 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
     return params.length;
   }
 
-  compileArgs(params: Option<WireFormat.Core.Params>, hash: Option<WireFormat.Core.Hash>, blocks: Option<Blocks>, synthetic: boolean): void {
+  compileArgs(
+    params: Option<WireFormat.Core.Params>,
+    hash: Option<WireFormat.Core.Hash>,
+    blocks: Option<Blocks>,
+    synthetic: boolean
+  ): void {
     if (blocks) {
       this.pushYieldableBlock(blocks.main);
       this.pushYieldableBlock(blocks.else);
@@ -1381,7 +1451,7 @@ export class LazyOpcodeBuilder<Locator> extends OpcodeBuilder<Locator> {
 
 export class EagerOpcodeBuilder<Locator> extends OpcodeBuilder<Locator> {
   pushBlock(block: Option<CompilableBlock>): void {
-    let handle = block ? block.compile() as Recast<VMHandle, number> : null;
+    let handle = block ? (block.compile() as Recast<VMHandle, number>) : null;
     this.primitive(handle);
   }
 

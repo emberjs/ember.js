@@ -27,5 +27,5 @@ export enum Register {
   't1',
 
   // $8 or $v0 (return value)
-  'v0'
+  'v0',
 }

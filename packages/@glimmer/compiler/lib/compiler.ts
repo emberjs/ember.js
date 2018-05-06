@@ -1,8 +1,12 @@
-import { preprocess } from "@glimmer/syntax";
-import TemplateCompiler, { CompileOptions } from "./template-compiler";
-import { SerializedTemplateWithLazyBlock, TemplateJavascript, TemplateMeta } from "@glimmer/wire-format";
-import { Option } from "@glimmer/interfaces";
-import { PreprocessOptions } from "@glimmer/syntax";
+import { preprocess } from '@glimmer/syntax';
+import TemplateCompiler, { CompileOptions } from './template-compiler';
+import {
+  SerializedTemplateWithLazyBlock,
+  TemplateJavascript,
+  TemplateMeta,
+} from '@glimmer/wire-format';
+import { Option } from '@glimmer/interfaces';
+import { PreprocessOptions } from '@glimmer/syntax';
 
 export interface TemplateIdFn {
   (src: string): Option<string>;
@@ -25,22 +29,23 @@ export const defaultId: TemplateIdFn = (() => {
         let hash = crypto.createHash('sha1');
         hash.update(src, 'utf8');
         // trim to 6 bytes of data (2^48 - 1)
-        return hash.digest('base64').substring(0,8);
+        return hash.digest('base64').substring(0, 8);
       };
 
-      idFn("test");
+      idFn('test');
 
       return idFn;
-    } catch (e) {
-    }
+    } catch (e) {}
   }
 
-  return function idFn() { return null; };
+  return function idFn() {
+    return null;
+  };
 })();
 
 const defaultOptions: PrecompileOptions = {
   id: defaultId,
-  meta: {}
+  meta: {},
 };
 
 /*
@@ -58,7 +63,10 @@ const defaultOptions: PrecompileOptions = {
  * @return {string} a template javascript string
  */
 export function precompile(string: string, options?: PrecompileOptions): TemplateJavascript;
-export function precompile(string: string, options: PrecompileOptions = defaultOptions): TemplateJavascript {
+export function precompile(
+  string: string,
+  options: PrecompileOptions = defaultOptions
+): TemplateJavascript {
   let ast = preprocess(string, options);
   let { meta } = options;
   let { block } = TemplateCompiler.compile(ast);
@@ -67,7 +75,7 @@ export function precompile(string: string, options: PrecompileOptions = defaultO
   let templateJSONObject: SerializedTemplateWithLazyBlock<TemplateMeta> = {
     id: idFn(JSON.stringify(meta) + blockJSON),
     block: blockJSON,
-    meta: meta as TemplateMeta
+    meta: meta as TemplateMeta,
   };
 
   // JSON is javascript

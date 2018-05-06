@@ -1,9 +1,9 @@
 import { IteratorResult, RenderResult, VM } from './vm';
-import { RuntimeProgram } from "./vm/append";
+import { RuntimeProgram } from './vm/append';
 import { ElementBuilder } from './vm/element-builder';
 import { DynamicScope, Environment } from './environment';
-import { PathReference } from "@glimmer/reference";
-import { Opaque } from "@glimmer/interfaces";
+import { PathReference } from '@glimmer/reference';
+import { Opaque } from '@glimmer/interfaces';
 
 export interface TemplateIterator {
   next(): IteratorResult<RenderResult>;

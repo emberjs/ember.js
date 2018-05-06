@@ -1,29 +1,19 @@
-import {
-  Meta,
-  InnerReferenceFactory,
-  PropertyReference
-} from '@glimmer/object-reference';
+import { Meta, InnerReferenceFactory, PropertyReference } from '@glimmer/object-reference';
 import { Dict, dict, assign, initializeGuid } from '@glimmer/util';
-import {
-  Mixin,
-  extend as extendClass,
-  toMixin,
-  relinkSubclasses,
-  wrapMethod
-} from './mixin';
+import { Mixin, extend as extendClass, toMixin, relinkSubclasses, wrapMethod } from './mixin';
 
 const { isArray } = Array;
 
 import { ROOT } from './utils';
-import { Option } from "@glimmer/interfaces";
+import { Option } from '@glimmer/interfaces';
 import { bump } from '@glimmer/reference';
 
 export const EMPTY_CACHE = function EMPTY_CACHE() {};
 
-const CLASS_META = "df8be4c8-4e89-44e2-a8f9-550c8dacdca7";
+const CLASS_META = 'df8be4c8-4e89-44e2-a8f9-550c8dacdca7';
 
 export interface ObjectWithMixins {
-  "df8be4c8-4e89-44e2-a8f9-550c8dacdca7": ClassMeta;
+  'df8be4c8-4e89-44e2-a8f9-550c8dacdca7': ClassMeta;
   _meta: Meta;
 }
 
@@ -32,7 +22,7 @@ export interface InstanceWithMixins {
 }
 
 export interface GlimmerObjectFactory<T> {
-  new<U>(attrs?: U): GlimmerObject & T & U;
+  new <U>(attrs?: U): GlimmerObject & T & U;
   extend(): GlimmerObjectFactory<Object>;
   extend<T>(extension: T): GlimmerObjectFactory<T>;
   extend(...extensions: Object[]): GlimmerObjectFactory<Object>;
@@ -41,7 +31,7 @@ export interface GlimmerObjectFactory<T> {
   reopenClass<U>(extensions: U): void;
   metaForProperty(property: string): Object;
   eachComputedProperty(callback: (s: string, o: Object) => void): void;
-  "df8be4c8-4e89-44e2-a8f9-550c8dacdca7": InstanceMeta;
+  'df8be4c8-4e89-44e2-a8f9-550c8dacdca7': InstanceMeta;
 }
 
 export function turbocharge<T>(obj: T): T {
@@ -52,7 +42,7 @@ export function turbocharge<T>(obj: T): T {
 
 abstract class SealedMeta extends Meta {
   addReferenceTypeFor(..._args: any[]): InnerReferenceFactory<any> {
-    throw new Error("Cannot modify reference types on a sealed meta");
+    throw new Error('Cannot modify reference types on a sealed meta');
   }
 }
 
@@ -78,7 +68,8 @@ export class ClassMeta {
 
   static for(object: ObjectWithMixins | InstanceWithMixins): Option<ClassMeta> {
     if (CLASS_META in object) return (object as ObjectWithMixins)[CLASS_META];
-    else if (object.constructor) return (object as InstanceWithMixins).constructor[CLASS_META] || null;
+    else if (object.constructor)
+      return (object as InstanceWithMixins).constructor[CLASS_META] || null;
     else return null;
   }
 
@@ -170,7 +161,7 @@ export class ClassMeta {
 
   hasConcatenatedProperty(property: string): boolean {
     if (!this.hasConcatenatedProperties) return false;
-    return property as string in this.concatenatedProperties;
+    return (property as string) in this.concatenatedProperties;
   }
 
   getConcatenatedProperty(property: string): any[] {
@@ -184,7 +175,7 @@ export class ClassMeta {
   addConcatenatedProperty(property: string, value: any) {
     this.hasConcatenatedProperties = true;
 
-    if (property as string in this.concatenatedProperties) {
+    if ((property as string) in this.concatenatedProperties) {
       let val = this.concatenatedProperties[property].concat(value);
       this.concatenatedProperties[property] = val;
     } else {
@@ -194,7 +185,7 @@ export class ClassMeta {
 
   hasMergedProperty(property: string): boolean {
     if (!this.hasMergedProperties) return false;
-    return property as string in this.mergedProperties;
+    return (property as string) in this.mergedProperties;
   }
 
   getMergedProperty(property: string): Object {
@@ -209,11 +200,18 @@ export class ClassMeta {
     this.hasMergedProperties = true;
 
     if (isArray(value)) {
-      throw new Error(`You passed in \`${JSON.stringify(value)}\` as the value for \`foo\` but \`foo\` cannot be an Array`);
+      throw new Error(
+        `You passed in \`${JSON.stringify(
+          value
+        )}\` as the value for \`foo\` but \`foo\` cannot be an Array`
+      );
     }
 
-    if (property as string in this.mergedProperties && this.mergedProperties[property] && value) {
-      this.mergedProperties[property] = mergeMergedProperties(value, this.mergedProperties[property]);
+    if ((property as string) in this.mergedProperties && this.mergedProperties[property] && value) {
+      this.mergedProperties[property] = mergeMergedProperties(
+        value,
+        this.mergedProperties[property]
+      );
     } else {
       value = value === null ? value : value || {};
       this.mergedProperties[property] = value;
@@ -261,7 +259,9 @@ export class ClassMeta {
   }
 
   seal() {
-    let referenceTypes: Dict<InnerReferenceFactory<any>> = turbocharge(assign({}, this.referenceTypes));
+    let referenceTypes: Dict<InnerReferenceFactory<any>> = turbocharge(
+      assign({}, this.referenceTypes)
+    );
     turbocharge(this.concatenatedProperties);
     turbocharge(this.mergedProperties);
 
@@ -316,7 +316,7 @@ function mergeMergedProperties(attrs: Object, parent: Object) {
 }
 
 export class InstanceMeta extends ClassMeta {
-  public "df8be4c8-4e89-44e2-a8f9-550c8dacdca7": ClassMeta = ClassMeta.fromParent(null);
+  public 'df8be4c8-4e89-44e2-a8f9-550c8dacdca7': ClassMeta = ClassMeta.fromParent(null);
 
   static fromParent(parent: Option<InstanceMeta>): InstanceMeta {
     return super.fromParent(parent) as InstanceMeta;
@@ -334,7 +334,7 @@ export class InstanceMeta extends ClassMeta {
 }
 
 export default class GlimmerObject {
-  static "df8be4c8-4e89-44e2-a8f9-550c8dacdca7": InstanceMeta = InstanceMeta.fromParent(null);
+  static 'df8be4c8-4e89-44e2-a8f9-550c8dacdca7': InstanceMeta = InstanceMeta.fromParent(null);
   static isClass = true;
 
   static extend(): GlimmerObjectFactory<any> & typeof GlimmerObject;
@@ -363,7 +363,10 @@ export default class GlimmerObject {
 
   static metaForProperty(property: string): Object {
     let value = this[CLASS_META].metadataForProperty(property);
-    if (!value) throw new Error(`metaForProperty() could not find a computed property with key '${property}'.`);
+    if (!value)
+      throw new Error(
+        `metaForProperty() could not find a computed property with key '${property}'.`
+      );
     return value;
   }
 

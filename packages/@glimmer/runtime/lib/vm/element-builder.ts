@@ -2,7 +2,15 @@ import { clear, Cursor, DestroyableBounds, single, Bounds, bounds } from '../bou
 
 import { DOMChanges, DOMTreeConstruction } from '../dom/helper';
 
-import { Option, Destroyable, Stack, LinkedList, LinkedListNode, assert, expect } from '@glimmer/util';
+import {
+  Option,
+  Destroyable,
+  Stack,
+  LinkedList,
+  LinkedListNode,
+  assert,
+  expect,
+} from '@glimmer/util';
 
 import { Environment } from '../environment';
 
@@ -10,7 +18,7 @@ import { VersionedReference } from '@glimmer/reference';
 
 import { DynamicAttribute } from './attributes/dynamic';
 
-import { Opaque, Simple } from "@glimmer/interfaces";
+import { Opaque, Simple } from '@glimmer/interfaces';
 
 export interface FirstNode {
   firstNode(): Option<Simple.Node>;
@@ -21,7 +29,7 @@ export interface LastNode {
 }
 
 class First {
-  constructor(private node: Simple.Node) { }
+  constructor(private node: Simple.Node) {}
 
   firstNode(): Simple.Node {
     return this.node;
@@ -29,7 +37,7 @@ class First {
 }
 
 class Last {
-  constructor(private node: Simple.Node) { }
+  constructor(private node: Simple.Node) {}
 
   lastNode(): Simple.Node {
     return this.node;
@@ -37,7 +45,12 @@ class Last {
 }
 
 export interface ElementOperations {
-  setAttribute(name: string, value: VersionedReference<Opaque>, trusting: boolean, namespace: Option<string>): void;
+  setAttribute(
+    name: string,
+    value: VersionedReference<Opaque>,
+    trusting: boolean,
+    namespace: Option<string>
+  ): void;
 }
 
 export class Fragment implements Bounds {
@@ -75,7 +88,12 @@ export interface DOMStack {
   appendDynamicNode(value: Simple.Node): void;
 
   setStaticAttribute(name: string, value: string, namespace: Option<string>): void;
-  setDynamicAttribute(name: string, value: Opaque, isTrusting: boolean, namespace: Option<string>): DynamicAttribute;
+  setDynamicAttribute(
+    name: string,
+    value: Opaque,
+    isTrusting: boolean,
+    namespace: Option<string>
+  ): DynamicAttribute;
   closeElement(): void;
 }
 
@@ -157,11 +175,14 @@ export class NewElementBuilder implements ElementBuilder {
   }
 
   expectConstructing(method: string): Simple.Element {
-    return expect(this.constructing, `${method} should only be called while constructing an element`);
+    return expect(
+      this.constructing,
+      `${method} should only be called while constructing an element`
+    );
   }
 
   block(): Tracker {
-    return expect(this.blockStack.current, "Expected a current block tracker");
+    return expect(this.blockStack.current, 'Expected a current block tracker');
   }
 
   popElement() {
@@ -200,7 +221,7 @@ export class NewElementBuilder implements ElementBuilder {
   popBlock(): Tracker {
     this.block().finalize(this);
     this.__closeBlock();
-    return expect(this.blockStack.pop(), "Expected popBlock to return a block");
+    return expect(this.blockStack.pop(), 'Expected popBlock to return a block');
   }
 
   __openBlock(): void {}
@@ -220,7 +241,10 @@ export class NewElementBuilder implements ElementBuilder {
 
   flushElement() {
     let parent = this.element;
-    let element = expect(this.constructing, `flushElement should only be called when constructing an element`);
+    let element = expect(
+      this.constructing,
+      `flushElement should only be called when constructing an element`
+    );
 
     this.__flushElement(parent, element);
 
@@ -240,7 +264,11 @@ export class NewElementBuilder implements ElementBuilder {
     this.popElement();
   }
 
-  pushRemoteElement(element: Simple.Element, guid: string, nextSibling: Option<Simple.Node> = null) {
+  pushRemoteElement(
+    element: Simple.Element,
+    guid: string,
+    nextSibling: Option<Simple.Node> = null
+  ) {
     this.__pushRemoteElement(element, guid, nextSibling);
   }
 
@@ -367,7 +395,12 @@ export class NewElementBuilder implements ElementBuilder {
     this.__setAttribute(name, value, namespace);
   }
 
-  setDynamicAttribute(name: string, value: Opaque, trusting: boolean, namespace: Option<string>): DynamicAttribute {
+  setDynamicAttribute(
+    name: string,
+    value: Opaque,
+    trusting: boolean,
+    namespace: Option<string>
+  ): DynamicAttribute {
     let element = this.constructing!;
     let attribute = this.env.attributeFor(element, name, trusting, namespace);
     attribute.set(this, value, this.env);
@@ -390,13 +423,13 @@ export class SimpleBlockTracker implements Tracker {
   protected destroyables: Option<Destroyable[]> = null;
   protected nesting = 0;
 
-  constructor(private parent: Simple.Element){}
+  constructor(private parent: Simple.Element) {}
 
   destroy() {
     let { destroyables } = this;
 
     if (destroyables && destroyables.length) {
-      for (let i=0; i<destroyables.length; i++) {
+      for (let i = 0; i < destroyables.length; i++) {
         destroyables[i].destroy();
       }
     }
@@ -472,7 +505,7 @@ export class UpdatableBlockTracker extends SimpleBlockTracker implements Updatab
     let { destroyables } = this;
 
     if (destroyables && destroyables.length) {
-      for (let i=0; i<destroyables.length; i++) {
+      for (let i = 0; i < destroyables.length; i++) {
         env.didDestroy(destroyables[i]);
       }
     }
@@ -489,7 +522,10 @@ export class UpdatableBlockTracker extends SimpleBlockTracker implements Updatab
 }
 
 class BlockListTracker implements Tracker {
-  constructor(private parent: Simple.Element, private boundList: LinkedList<LinkedListNode & Bounds & Destroyable>) {
+  constructor(
+    private parent: Simple.Element,
+    private boundList: LinkedList<LinkedListNode & Bounds & Destroyable>
+  ) {
     this.parent = parent;
     this.boundList = boundList;
   }
@@ -524,14 +560,11 @@ class BlockListTracker implements Tracker {
     assert(false, 'Cannot create a new node directly inside a block list');
   }
 
-  didAppendBounds(_bounds: Bounds) {
-  }
+  didAppendBounds(_bounds: Bounds) {}
 
-  newDestroyable(_d: Destroyable) {
-  }
+  newDestroyable(_d: Destroyable) {}
 
-  finalize(_stack: ElementBuilder) {
-  }
+  finalize(_stack: ElementBuilder) {}
 }
 
 export function clientBuilder(env: Environment, cursor: Cursor): ElementBuilder {

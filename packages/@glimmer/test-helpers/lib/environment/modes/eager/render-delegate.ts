@@ -9,7 +9,7 @@ import {
   clientBuilder,
   ElementBuilder,
   Cursor,
-  renderMain
+  renderMain,
 } from '@glimmer/runtime';
 import { DebugConstants, BundleCompiler, ModuleLocatorMap } from '@glimmer/bundle-compiler';
 import { Opaque, assert, Dict, assign, expect, Option } from '@glimmer/util';
@@ -24,8 +24,16 @@ import TestMacros from '../../macros';
 import { UserHelper, HelperReference } from '../../helper';
 
 import { BasicComponent, BasicComponentManager, BASIC_CAPABILITIES } from '../../components/basic';
-import { EmberishCurlyComponent, EmberishCurlyComponentManager, EMBERISH_CURLY_CAPABILITIES } from '../../components/emberish-curly';
-import { EmberishGlimmerComponent, EmberishGlimmerComponentManager, EMBERISH_GLIMMER_CAPABILITIES } from '../../components/emberish-glimmer';
+import {
+  EmberishCurlyComponent,
+  EmberishCurlyComponentManager,
+  EMBERISH_CURLY_CAPABILITIES,
+} from '../../components/emberish-curly';
+import {
+  EmberishGlimmerComponent,
+  EmberishGlimmerComponentManager,
+  EMBERISH_GLIMMER_CAPABILITIES,
+} from '../../components/emberish-glimmer';
 
 import EagerTestEnvironment from './environment';
 import EagerRuntimeResolver from './runtime-resolver';
@@ -34,7 +42,7 @@ import { Modules } from './modules';
 import { TestDynamicScope } from '../../../environment';
 import { NodeEnv } from '../ssr/environment';
 import { TestComponentDefinitionState, locatorFor } from '../../component-definition';
-import { WrappedBuilder } from "@glimmer/opcode-compiler";
+import { WrappedBuilder } from '@glimmer/opcode-compiler';
 
 export type RenderDelegateComponentDefinition = ComponentDefinition<TestComponentDefinitionState>;
 
@@ -45,7 +53,7 @@ const COMPONENT_CLASSES: Entries<Opaque> = {
   Glimmer: EmberishGlimmerComponent,
   Dynamic: EmberishCurlyComponent,
   Curly: EmberishCurlyComponent,
-  Fragment: null
+  Fragment: null,
 };
 
 const COMPONENT_MANAGERS: Entries<ComponentManager<Opaque, Opaque>> = {
@@ -53,7 +61,7 @@ const COMPONENT_MANAGERS: Entries<ComponentManager<Opaque, Opaque>> = {
   Glimmer: new EmberishGlimmerComponentManager(),
   Dynamic: new EmberishCurlyComponentManager(),
   Curly: new EmberishCurlyComponentManager(),
-  Fragment: null
+  Fragment: null,
 };
 
 const COMPONENT_CAPABILITIES: Entries<ComponentCapabilities> = {
@@ -61,7 +69,7 @@ const COMPONENT_CAPABILITIES: Entries<ComponentCapabilities> = {
   Glimmer: EMBERISH_GLIMMER_CAPABILITIES,
   Dynamic: EMBERISH_CURLY_CAPABILITIES,
   Curly: EMBERISH_CURLY_CAPABILITIES,
-  Fragment: null
+  Fragment: null,
 };
 
 export default class EagerRenderDelegate implements RenderDelegate {
@@ -74,7 +82,7 @@ export default class EagerRenderDelegate implements RenderDelegate {
 
   constructor(env: Environment) {
     this.env = env || new EagerTestEnvironment();
-    this.registerInternalHelper("-get-dynamic-var", getDynamicVar);
+    this.registerInternalHelper('-get-dynamic-var', getDynamicVar);
   }
 
   private registerInternalHelper(name: string, helper: GlimmerHelper): GlimmerHelper {
@@ -94,7 +102,13 @@ export default class EagerRenderDelegate implements RenderDelegate {
     return this.env.getAppendOperations().createElement('div') as HTMLElement;
   }
 
-  registerComponent(type: ComponentKind, testType: ComponentKind, name: string, template: string, Class?: Opaque): void {
+  registerComponent(
+    type: ComponentKind,
+    testType: ComponentKind,
+    name: string,
+    template: string,
+    Class?: Opaque
+  ): void {
     let module = `ui/components/${name}`;
 
     let ComponentClass = Class || COMPONENT_CLASSES[type];
@@ -116,12 +130,12 @@ export default class EagerRenderDelegate implements RenderDelegate {
       ComponentClass,
       locator: locatorFor({ module, name: 'default' }),
       // Populated by the Bundle Compiler in eager mode
-      layout: null
+      layout: null,
     };
 
     this.components[module] = {
       manager,
-      state
+      state,
     };
   }
 
@@ -146,7 +160,10 @@ export default class EagerRenderDelegate implements RenderDelegate {
 
     let { components, modules, compileTimeModules } = this;
     Object.keys(components).forEach(key => {
-      assert(key.indexOf('ui/components') !== -1, `Expected component key to start with ui/components, got ${key}.`);
+      assert(
+        key.indexOf('ui/components') !== -1,
+        `Expected component key to start with ui/components, got ${key}.`
+      );
 
       let { state, manager } = components[key];
 
@@ -155,19 +172,22 @@ export default class EagerRenderDelegate implements RenderDelegate {
       let block;
       let symbolTable;
 
-      if (state.type === "Curly" || state.type === "Dynamic") {
+      if (state.type === 'Curly' || state.type === 'Dynamic') {
         let block = bundleCompiler.preprocess(state.template!);
         let parsedLayout = { block, referrer: locator.meta, asPartial: false };
         let wrapped = new WrappedBuilder(bundleCompiler.compiler, parsedLayout);
         bundleCompiler.addCompilableTemplate(locator, wrapped);
 
         compileTimeModules.register(key, 'other', {
-          default: wrapped.symbolTable
+          default: wrapped.symbolTable,
         });
 
         symbolTable = wrapped.symbolTable;
       } else {
-        block = bundleCompiler.add(locator, expect(state.template, 'expected component definition state to have template'));
+        block = bundleCompiler.add(
+          locator,
+          expect(state.template, 'expected component definition state to have template')
+        );
         symbolTable = {
           hasEval: block.hasEval,
           symbols: block.symbols,
@@ -176,7 +196,7 @@ export default class EagerRenderDelegate implements RenderDelegate {
         this.symbolTables.set(locator, symbolTable);
 
         compileTimeModules.register(key, 'other', {
-          default: symbolTable
+          default: symbolTable,
         });
       }
 
@@ -184,15 +204,15 @@ export default class EagerRenderDelegate implements RenderDelegate {
         modules.register(key, 'component', {
           default: {
             state: assign({}, state, { symbolTable }),
-            manager
-          }
+            manager,
+          },
         });
       } else {
         modules.register(key, 'component', {
           default: {
             state,
-            manager
-          }
+            manager,
+          },
         });
       }
     });

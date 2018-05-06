@@ -63,7 +63,7 @@ class Computed implements Descriptor {
   configurable: boolean;
 
   private accessor: ComputedDescriptor;
-  "5d90f84f-908e-4a42-9749-3d0f523c262c" = true;
+  '5d90f84f-908e-4a42-9749-3d0f523c262c' = true;
 
   constructor(accessor: ComputedDescriptor) {
     this.accessor = accessor;
@@ -74,7 +74,11 @@ class Computed implements Descriptor {
   }
 }
 
-function wrapAccessor(home: Object, accessorName: string, _desc: ComputedDescriptor): PropertyDescriptor {
+function wrapAccessor(
+  home: Object,
+  accessorName: string,
+  _desc: ComputedDescriptor
+): PropertyDescriptor {
   let superDesc = getPropertyDescriptor(home, accessorName);
 
   let originalGet: ComputedGetCallback;
@@ -88,7 +92,9 @@ function wrapAccessor(home: Object, accessorName: string, _desc: ComputedDescrip
   let get = _desc.get;
 
   if (get && get.length > 0) {
-    originalGet = function(this: any) { return (get as any).call(this, accessorName); };
+    originalGet = function(this: any) {
+      return (get as any).call(this, accessorName);
+    };
   } else {
     originalGet = _desc.get as ComputedGetCallback;
   }
@@ -179,7 +185,9 @@ function getPropertyDescriptor(subject: any, name: string) {
 }
 
 export function computed(desc: ComputedDescriptor): ComputedBlueprint;
-export function computed(getter: ComputedGetCallback | LegacyComputedGetCallback): ComputedBlueprint;
+export function computed(
+  getter: ComputedGetCallback | LegacyComputedGetCallback
+): ComputedBlueprint;
 export function computed(...args: any[]): ComputedBlueprint;
 
 export function computed(...args: any[]) {
@@ -188,15 +196,13 @@ export function computed(...args: any[]) {
 
   if (typeof last === 'function') {
     return new ComputedBlueprint({
-      get: last as ComputedGetCallback | LegacyComputedGetCallback
+      get: last as ComputedGetCallback | LegacyComputedGetCallback,
     }).property(...deps);
   } else if (typeof last === 'object') {
     return new ComputedBlueprint(last as ComputedDescriptor).property(...deps);
   } else {
-    throw new TypeError("computed expects a function or an object as last argument");
+    throw new TypeError('computed expects a function or an object as last argument');
   }
 }
 
-export function observer(..._args: any[]) {
-
-}
+export function observer(..._args: any[]) {}

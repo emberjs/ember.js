@@ -21,7 +21,7 @@ export interface CompilerOps<Variable> {
   modifier: string;
   append: boolean;
   block: [string, number, Option<number>];
-  get: [Variable, string[]];      // path
+  get: [Variable, string[]]; // path
   literal: string | boolean | number | null | undefined;
   helper: string;
   unknown: string;
@@ -43,8 +43,12 @@ export interface TemplateCompilerOps extends CompilerOps<string | 0> {
 
 export type OpName = keyof CompilerOps<Opaque>;
 
-export type Processor<InOps extends CompilerOps<Opaque>, OutVariable, OutOps extends CompilerOps<OutVariable>> = {
-  [P in keyof InOps & keyof OutOps]: (operand: InOps[P]) => void | Op<OutVariable, OutOps, OpName>;
+export type Processor<
+  InOps extends CompilerOps<Opaque>,
+  OutVariable,
+  OutOps extends CompilerOps<OutVariable>
+> = {
+  [P in keyof InOps & keyof OutOps]: (operand: InOps[P]) => void | Op<OutVariable, OutOps, OpName>
 };
 
 export type Op<V, O extends CompilerOps<V>, K extends keyof O = keyof O> = {

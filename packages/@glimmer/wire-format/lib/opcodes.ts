@@ -32,5 +32,5 @@ export enum Opcodes {
   Undefined,
   Helper,
   Concat,
-  ClientSideExpression
+  ClientSideExpression,
 }

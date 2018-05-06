@@ -1,4 +1,13 @@
-import { Simple, Dict, Opaque, Option, RuntimeResolver, Unique, ProgramSymbolTable, ComponentCapabilities } from '@glimmer/interfaces';
+import {
+  Simple,
+  Dict,
+  Opaque,
+  Option,
+  RuntimeResolver,
+  Unique,
+  ProgramSymbolTable,
+  ComponentCapabilities,
+} from '@glimmer/interfaces';
 import { Tag, VersionedPathReference } from '@glimmer/reference';
 import { Destroyable } from '@glimmer/util';
 import Bounds from '../bounds';
@@ -21,7 +30,10 @@ export interface ComponentDefinition {
   manager: InternalComponentManager;
 }
 
-export interface PublicComponentDefinition<ComponentDefinitionState = Opaque, Manager = ComponentManager<Opaque, ComponentDefinitionState>> {
+export interface PublicComponentDefinition<
+  ComponentDefinitionState = Opaque,
+  Manager = ComponentManager<Opaque, ComponentDefinitionState>
+> {
   state: ComponentDefinitionState;
   manager: Manager;
 }
@@ -38,7 +50,14 @@ export interface ComponentManager<ComponentInstanceState, ComponentDefinitionSta
   // Then, the component manager is asked to create a bucket of state for
   // the supplied arguments. From the perspective of Glimmer, this is
   // an opaque token, but in practice it is probably a component object.
-  create(env: Environment, state: ComponentDefinitionState, args: Option<IArguments>, dynamicScope: Option<DynamicScope>, caller: Option<VersionedPathReference<Opaque>>, hasDefaultBlock: boolean): ComponentInstanceState;
+  create(
+    env: Environment,
+    state: ComponentDefinitionState,
+    args: Option<IArguments>,
+    dynamicScope: Option<DynamicScope>,
+    caller: Option<VersionedPathReference<Opaque>>,
+    hasDefaultBlock: boolean
+  ): ComponentInstanceState;
 
   // Next, Glimmer asks the manager to create a reference for the `self`
   // it should use in the layout.
@@ -88,15 +107,22 @@ export interface WithDynamicTagName<Component> extends ComponentManager<Componen
   getTagName(component: Component): Option<string>;
 }
 
-export interface WithStaticLayout<ComponentInstanceState, ComponentDefinitionState, Locator, R extends RuntimeResolver<Locator>> extends ComponentManager<ComponentInstanceState, ComponentDefinitionState> {
+export interface WithStaticLayout<
+  ComponentInstanceState,
+  ComponentDefinitionState,
+  Locator,
+  R extends RuntimeResolver<Locator>
+> extends ComponentManager<ComponentInstanceState, ComponentDefinitionState> {
   getLayout(state: ComponentDefinitionState, resolver: R): Invocation;
 }
 
-export interface WithAttributeHook<Component, Definition> extends ComponentManager<Component, Definition> {
+export interface WithAttributeHook<Component, Definition>
+  extends ComponentManager<Component, Definition> {
   didSplatAttributes(component: Component, element: Component, operations: ElementOperations): void;
 }
 
-export interface WithElementHook<Component> extends ComponentManager<Component, ComponentDefinitionState> {
+export interface WithElementHook<Component>
+  extends ComponentManager<Component, ComponentDefinitionState> {
   // The `didCreateElement` hook is run for non-tagless components after the
   // element as been created, but before it has been appended ("flushed") to
   // the DOM. This hook allows the manager to save off the element, as well as
@@ -104,15 +130,26 @@ export interface WithElementHook<Component> extends ComponentManager<Component, 
   //
   // Hosts should use `didCreate`, which runs asynchronously after the rendering
   // process, to provide hooks for user code.
-  didCreateElement(component: Component, element: Simple.Element, operations: ElementOperations): void;
+  didCreateElement(
+    component: Component,
+    element: Simple.Element,
+    operations: ElementOperations
+  ): void;
 }
 
 /** @internal */
-export function hasStaticLayout<D extends ComponentDefinitionState, I extends ComponentInstanceState>(state: D, manager: ComponentManager<I, D>): manager is WithStaticLayout<I, D, Opaque, RuntimeResolver<Opaque>> {
+export function hasStaticLayout<
+  D extends ComponentDefinitionState,
+  I extends ComponentInstanceState
+>(
+  state: D,
+  manager: ComponentManager<I, D>
+): manager is WithStaticLayout<I, D, Opaque, RuntimeResolver<Opaque>> {
   return manager.getCapabilities(state).dynamicLayout === false;
 }
 
-export interface WithDynamicLayout<Component, Locator, R extends RuntimeResolver<Locator>> extends ComponentManager<Component, Opaque> {
+export interface WithDynamicLayout<Component, Locator, R extends RuntimeResolver<Locator>>
+  extends ComponentManager<Component, Opaque> {
   // Return the compiled layout to use for this component. This is called
   // *after* the component instance has been created, because you might
   // want to return a different layout per-instance for optimization reasons
@@ -121,7 +158,13 @@ export interface WithDynamicLayout<Component, Locator, R extends RuntimeResolver
 }
 
 /** @internal */
-export function hasDynamicLayout<D extends ComponentDefinitionState, I extends ComponentInstanceState>(state: D, manager: ComponentManager<I, D>): manager is WithDynamicLayout<I, Opaque, RuntimeResolver<Opaque>> {
+export function hasDynamicLayout<
+  D extends ComponentDefinitionState,
+  I extends ComponentInstanceState
+>(
+  state: D,
+  manager: ComponentManager<I, D>
+): manager is WithDynamicLayout<I, Opaque, RuntimeResolver<Opaque>> {
   return manager.getCapabilities(state).dynamicLayout === true;
 }
 
@@ -135,7 +178,7 @@ export const DEFAULT_CAPABILITIES: ComponentCapabilities = {
   dynamicScope: true,
   createCaller: false,
   updateHook: true,
-  createInstance: true
+  createInstance: true,
 };
 
 export const MINIMAL_CAPABILITIES: ComponentCapabilities = {
@@ -148,9 +191,12 @@ export const MINIMAL_CAPABILITIES: ComponentCapabilities = {
   dynamicScope: false,
   createCaller: false,
   updateHook: false,
-  createInstance: false
+  createInstance: false,
 };
 
 export type BrandedComponentDefinition = CurriedComponentDefinition;
 export type InternalComponent = ComponentInstanceState;
-export type InternalComponentManager = ComponentManager<ComponentInstanceState, ComponentDefinitionState>;
+export type InternalComponentManager = ComponentManager<
+  ComponentInstanceState,
+  ComponentDefinitionState
+>;

@@ -2,9 +2,23 @@ import { OpcodeBuilder, StdOpcodeBuilder } from './opcode-builder';
 import { Macros } from './syntax';
 import { compile } from './compile';
 import { debugSlice } from './debug';
-import { Compiler, Option, CompilableBlock, STDLib, CompileTimeConstants, CompileTimeLookup, CompileTimeProgram, LayoutWithContext, Opaque, CompilerBuffer, ResolvedLayout, MaybeResolvedLayout, CompilableProgram } from "@glimmer/interfaces";
-import { Statements, Core, Expression, Statement } from "@glimmer/wire-format";
-import { DEBUG } from "@glimmer/local-debug-flags";
+import {
+  Compiler,
+  Option,
+  CompilableBlock,
+  STDLib,
+  CompileTimeConstants,
+  CompileTimeLookup,
+  CompileTimeProgram,
+  LayoutWithContext,
+  Opaque,
+  CompilerBuffer,
+  ResolvedLayout,
+  MaybeResolvedLayout,
+  CompilableProgram,
+} from '@glimmer/interfaces';
+import { Statements, Core, Expression, Statement } from '@glimmer/wire-format';
+import { DEBUG } from '@glimmer/local-debug-flags';
 
 class StdLib {
   static compile(compiler: Compiler): StdLib {
@@ -19,15 +33,22 @@ class StdLib {
     return StdOpcodeBuilder.build(compiler, callback);
   }
 
-  constructor(public main: number, private trustingGuardedAppend: number, private cautiousGuardedAppend: number) {}
+  constructor(
+    public main: number,
+    private trustingGuardedAppend: number,
+    private cautiousGuardedAppend: number
+  ) {}
 
   getAppend(trusting: boolean) {
     return trusting ? this.trustingGuardedAppend : this.cautiousGuardedAppend;
   }
-
 }
 
-export abstract class AbstractCompiler<Locator, Builder extends OpcodeBuilder<Locator>, Program extends CompileTimeProgram = CompileTimeProgram> implements Compiler<Builder> {
+export abstract class AbstractCompiler<
+  Locator,
+  Builder extends OpcodeBuilder<Locator>,
+  Program extends CompileTimeProgram = CompileTimeProgram
+> implements Compiler<Builder> {
   stdLib: STDLib;
 
   constructor(
@@ -51,7 +72,14 @@ export abstract class AbstractCompiler<Locator, Builder extends OpcodeBuilder<Lo
     return inlines.compile(sexp, builder);
   }
 
-  compileBlock(name: string, params: Core.Params, hash: Core.Hash, template: Option<CompilableBlock>, inverse: Option<CompilableBlock>, builder: Builder): void {
+  compileBlock(
+    name: string,
+    params: Core.Params,
+    hash: Core.Hash,
+    template: Option<CompilableBlock>,
+    inverse: Option<CompilableBlock>,
+    builder: Builder
+  ): void {
     let { blocks } = this.macros;
     blocks.compile<Locator>(name, params, hash, template, inverse, builder);
   }
@@ -89,7 +117,6 @@ export abstract class AbstractCompiler<Locator, Builder extends OpcodeBuilder<Lo
     if (handle === null) return { handle: null, capabilities: null, compilable: null };
 
     return this.resolveLayoutForHandle(handle);
-
   }
 
   resolveLayoutForHandle(handle: number): ResolvedLayout {
@@ -105,7 +132,7 @@ export abstract class AbstractCompiler<Locator, Builder extends OpcodeBuilder<Lo
     return {
       handle,
       capabilities,
-      compilable
+      compilable,
     };
   }
 

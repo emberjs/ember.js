@@ -29,10 +29,12 @@ export const BASIC_CAPABILITIES: ComponentCapabilities = {
   dynamicScope: false,
   createCaller: false,
   updateHook: false,
-  createInstance: true
+  createInstance: true,
 };
 
-export class BasicComponentManager implements WithStaticLayout<BasicComponent, TestComponentDefinitionState, Opaque, LazyRuntimeResolver> {
+export class BasicComponentManager
+  implements
+    WithStaticLayout<BasicComponent, TestComponentDefinitionState, Opaque, LazyRuntimeResolver> {
   getCapabilities(state: TestComponentDefinitionState) {
     return state.capabilities;
   }
@@ -46,7 +48,10 @@ export class BasicComponentManager implements WithStaticLayout<BasicComponent, T
     return new klass();
   }
 
-  getLayout(state: TestComponentDefinitionState, resolver: EagerRuntimeResolver | LazyRuntimeResolver): Invocation {
+  getLayout(
+    state: TestComponentDefinitionState,
+    resolver: EagerRuntimeResolver | LazyRuntimeResolver
+  ): Invocation {
     let { name } = state;
 
     if (resolver instanceof LazyRuntimeResolver) {
@@ -55,7 +60,7 @@ export class BasicComponentManager implements WithStaticLayout<BasicComponent, T
         let layout = template.create(resolver.compiler).asLayout();
         return {
           handle: layout.compile(),
-          symbolTable: layout.symbolTable
+          symbolTable: layout.symbolTable,
         };
       };
 
@@ -67,7 +72,10 @@ export class BasicComponentManager implements WithStaticLayout<BasicComponent, T
       // mode, we need to exchange the module locator for the handle to the
       // compiled layout (which was provided at bundle compilation time and
       // stashed in the component definition state).
-      let locator = expect(state.locator, 'component definition state should include module locator');
+      let locator = expect(
+        state.locator,
+        'component definition state should include module locator'
+      );
       return resolver.getInvocation({ locator });
     }
   }
@@ -88,13 +96,13 @@ export class BasicComponentManager implements WithStaticLayout<BasicComponent, T
     component.bounds = bounds;
   }
 
-  didCreate(): void { }
+  didCreate(): void {}
 
-  update(): void { }
+  update(): void {}
 
-  didUpdateLayout(): void { }
+  didUpdateLayout(): void {}
 
-  didUpdate(): void { }
+  didUpdate(): void {}
 
   getDestructor(): null {
     return null;

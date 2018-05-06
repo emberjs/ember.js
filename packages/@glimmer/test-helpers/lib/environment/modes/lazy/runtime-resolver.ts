@@ -28,7 +28,11 @@ export default class LazyRuntimeResolver implements RuntimeResolver<TestMeta> {
     }
   }
 
-  compileTemplate(sourceHandle: number, templateName: string, create: (source: string, options: LazyCompiler<TestMeta>) => Invocation): Invocation {
+  compileTemplate(
+    sourceHandle: number,
+    templateName: string,
+    create: (source: string, options: LazyCompiler<TestMeta>) => Invocation
+  ): Invocation {
     let invocationHandle = this.lookup('template', templateName);
 
     if (invocationHandle) {
