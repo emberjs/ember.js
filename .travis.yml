@@ -1,9 +1,7 @@
 language: node_js
-sudo: required
 dist: trusty
-
 node_js:
-  - "6"
+  - "10"
 
 addons:
   firefox: "latest"
@@ -86,7 +84,9 @@ jobs:
       - EMBER_ENV=production
     - env: TEST_SUITE=old-jquery-and-extend-prototypes
     - env: TEST_SUITE=node
+      node_js: "6"
     - env: TEST_SUITE=blueprints
+      node_js: "6"
     - env: TEST_SUITE=travis-browsers
     - env:
       - TEST_SUITE=each-package-tests

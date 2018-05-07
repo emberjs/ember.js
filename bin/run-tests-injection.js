@@ -1,6 +1,7 @@
 /* eslint-env browser */
 /* eslint-disable no-console */
 /* globals QUnit */
+'use strict';
 document.addEventListener('DOMContentLoaded', function() {
   var testsTotal = 0;
   var testsPassed = 0;
