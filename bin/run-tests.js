@@ -3,7 +3,6 @@
 'use strict';
 
 var execa = require('execa');
-var RSVP = require('rsvp');
 var execFile = require('child_process').execFile;
 var chalk = require('chalk');
 var runInSequence = require('../lib/run-in-sequence');
@@ -32,7 +31,7 @@ server.listen(PORT);
 var browserPromise;
 
 function run(queryString) {
-  return new RSVP.Promise(function(resolve, reject) {
+  return new Promise(function(resolve, reject) {
     var url = 'http://localhost:' + PORT + '/tests/?' + queryString;
     runInBrowser(url, 3, resolve, reject);
   });
@@ -44,7 +43,9 @@ function runInBrowser(url, retries, resolve, reject) {
   console.log('Running Chrome headless: ' + url);
 
   if (!browserPromise) {
-    browserPromise = puppeteer.launch();
+    browserPromise = puppeteer.launch({
+      args: ['--js-flags="--allow-natives-syntax --expose-gc"'],
+    });
   }
 
   browserPromise.then(function(browser) {
@@ -53,9 +54,9 @@ function runInBrowser(url, retries, resolve, reject) {
       var crashed;
 
       page.on('console', function(msg) {
-        console.log(msg.text);
+        console.log(msg.text());
 
-        result.output.push(msg.text);
+        result.output.push(msg.text());
       });
 
       page.on('error', function(err) {
@@ -271,7 +272,7 @@ function generateExtendPrototypeTests() {
 }
 
 function runChecker(bin, args) {
-  return new RSVP.Promise(function(resolve) {
+  return new Promise(function(resolve) {
     execFile(bin, args, {}, function(error, stdout, stderr) {
       // I'm buffering instead of inheriting these so that each
       // checker doesn't interleave its output
@@ -288,7 +289,7 @@ function codeQualityChecks() {
     runChecker('node', [require.resolve('tslint/bin/tslint'), '-p', 'tsconfig.json']),
     runChecker('node', [require.resolve('eslint/bin/eslint'), '.']),
   ];
-  return RSVP.Promise.all(checkers).then(function(results) {
+  return Promise.all(checkers).then(function(results) {
     results.forEach(result => {
       if (result.ok) {
         console.log(result.name + ': ' + chalk.green('OK'));
