@@ -32,6 +32,12 @@
 - [#16462](https://github.com/emberjs/ember.js/pull/16462) [CLEANUP] Remove deprecated `MODEL_FACTORY_INJECTIONS`
 - [emberjs/rfcs#286](https://github.com/emberjs/rfcs/blob/master/text/0286-block-let-template-helper.md) [FEATURE] Enabled block `let` handlebars helper by default.
 
+### v3.1.2 (May 7, 2018)
+- [#16600](https://github.com/emberjs/ember.js/pull/16600) [BUGFIX] Fix SimpleHelper memory leak
+- [#16605](https://github.com/emberjs/ember.js/pull/16605) [BUGFIX] Use resetCache on container destroy.
+- [182fc3](https://github.com/emberjs/ember.js/commit/182fc315664e8b4847f03133cc01e38767cad41e) [BUGFIX] Update glimmer-vm to ensure arguments are properly garbage collected.
+- [#16281](https://github.com/emberjs/ember.js/pull/16281) [BUGFIX] Ensure warning from `{{#link-to` RE: loading state does not throw an assertion.
+
 ### v3.1.1 (April 23, 2018)
 - [#16559](https://github.com/emberjs/ember.js/pull/16559) [BUGFIX] Fix property normalization, Update glimmer-vm to 0.34.0
 - [#16493](https://github.com/emberjs/ember.js/pull/16493) [BUGFIX] Ensure proxies have access to `getOwner(this)`.
