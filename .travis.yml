@@ -1,9 +1,7 @@
 language: node_js
-sudo: required
 dist: trusty
-
 node_js:
-  - "6"
+  - "10"
 
 addons:
   firefox: "latest"
@@ -30,9 +28,6 @@ before_install:
 install:
 - |
     yarn install
-
-after_success:
-  - "./bin/publish_builds"
 
 branches:
   only:
@@ -76,31 +71,34 @@ jobs:
       env: TEST_SUITE=each-package-tests
 
     - env: TEST_SUITE=code-quality
+      script:
+        # avoiding `yarn test` here because pretest does a build, which isn't needed
+        - node bin/run-tests.js
 
     - stage: additional tests
 
       env: TEST_SUITE=browserstack
-    - env: TEST_SUITE=each-package-tests
     - env:
       - TEST_SUITE=built-tests
       - EMBER_ENV=production
     - env: TEST_SUITE=old-jquery-and-extend-prototypes
     - env: TEST_SUITE=node
+      node_js: "6"
     - env: TEST_SUITE=blueprints
+      node_js: "6"
     - env: TEST_SUITE=travis-browsers
     - env:
       - TEST_SUITE=each-package-tests
       - BUILD_TYPE=alpha
 
     - stage: deploy
-
-    - env:
+      env:
       - BUILD_TYPE=canary
       - PUBLISH=true
       script:
         - "./bin/publish_builds"
 
-      env:
+    - env:
       - BUILD_TYPE=alpha
       - PUBLISH=true
       script:

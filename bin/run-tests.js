@@ -1,197 +1,50 @@
-/* globals QUnit */
 /* eslint-disable no-console */
 'use strict';
 
-var execa = require('execa');
-var RSVP = require('rsvp');
-var execFile = require('child_process').execFile;
-var chalk = require('chalk');
-var runInSequence = require('../lib/run-in-sequence');
-var path = require('path');
+const execa = require('execa');
+const execFile = require('child_process').execFile;
+const chalk = require('chalk');
+const runInSequence = require('../lib/run-in-sequence');
+const path = require('path');
 
-var finalhandler = require('finalhandler');
-var http = require('http');
-var serveStatic = require('serve-static');
-var puppeteer = require('puppeteer');
+const finalhandler = require('finalhandler');
+const http = require('http');
+const serveStatic = require('serve-static');
 const fs = require('fs');
 
 // Serve up public/ftp folder.
-var serve = serveStatic('./dist/', { index: ['index.html', 'index.htm'] });
+const serve = serveStatic('./dist/', { index: ['index.html', 'index.htm'] });
 
 // Create server.
-var server = http.createServer(function(req, res) {
-  var done = finalhandler(req, res);
+const server = http.createServer(function(req, res) {
+  let done = finalhandler(req, res);
   serve(req, res, done);
 });
 
-var PORT = 13141;
+const PORT = 13141;
 // Listen.
 server.listen(PORT);
 
 // Cache the Chrome browser instance when launched for new pages.
-var browserPromise;
+let browserRunner;
 
-function run(queryString) {
-  return new RSVP.Promise(function(resolve, reject) {
-    var url = 'http://localhost:' + PORT + '/tests/?' + queryString;
-    runInBrowser(url, 3, resolve, reject);
-  });
+function getBrowserRunner() {
+  if (browserRunner === undefined) {
+    // requires new node
+    let BroswerRunner = require('./run-tests-browser-runner');
+    browserRunner = new BroswerRunner();
+  }
+  return browserRunner;
 }
 
-function runInBrowser(url, retries, resolve, reject) {
-  var result = { output: [], errors: [], code: null };
+function run(queryString) {
+  var url = 'http://localhost:' + PORT + '/tests/?' + queryString;
+  return runInBrowser(url, 3);
+}
 
+function runInBrowser(url, attempts) {
   console.log('Running Chrome headless: ' + url);
-
-  if (!browserPromise) {
-    browserPromise = puppeteer.launch();
-  }
-
-  browserPromise.then(function(browser) {
-    browser.newPage().then(function(page) {
-      /* globals window */
-      var crashed;
-
-      page.on('console', function(msg) {
-        console.log(msg.text);
-
-        result.output.push(msg.text);
-      });
-
-      page.on('error', function(err) {
-        var string = err.toString();
-
-        if (string.indexOf('Chrome headless has crashed.') > -1) {
-          crashed = true;
-        }
-
-        result.errors.push(string);
-        console.error(chalk.red(string));
-      });
-
-      var addLogging = function() {
-        window.document.addEventListener('DOMContentLoaded', function() {
-          var testsTotal = 0;
-          var testsPassed = 0;
-          var testsFailed = 0;
-          var currentTestAssertions = [];
-
-          QUnit.log(function(details) {
-            var response;
-
-            // Ignore passing assertions
-            if (details.result) {
-              return;
-            }
-
-            response = details.message || '';
-
-            if (typeof details.expected !== 'undefined') {
-              if (response) {
-                response += ', ';
-              }
-
-              response += 'expected: ' + details.expected + ', but was: ' + details.actual;
-            }
-
-            if (details.source) {
-              response += '\n' + details.source;
-            }
-
-            currentTestAssertions.push('Failed assertion: ' + response);
-          });
-
-          QUnit.testDone(function(result) {
-            var i,
-              len,
-              name = '';
-
-            if (result.module) {
-              name += result.module + ': ';
-            }
-            name += result.name;
-
-            testsTotal++;
-
-            if (result.failed) {
-              testsFailed++;
-              console.log('\n' + 'Test failed: ' + name);
-
-              for (i = 0, len = currentTestAssertions.length; i < len; i++) {
-                console.log('    ' + currentTestAssertions[i]);
-              }
-            } else {
-              testsPassed++;
-            }
-
-            currentTestAssertions.length = 0;
-          });
-
-          QUnit.done(function(result) {
-            console.log(
-              '\n' +
-                'Took ' +
-                result.runtime +
-                'ms to run ' +
-                testsTotal +
-                ' tests. ' +
-                testsPassed +
-                ' passed, ' +
-                testsFailed +
-                ' failed.'
-            );
-
-            window.callPhantom({
-              name: 'QUnit.done',
-              data: result,
-            });
-          });
-        });
-      };
-
-      return page
-        .exposeFunction('callPhantom', function(message) {
-          page.close();
-
-          if (message && message.name === 'QUnit.done') {
-            result = message.data;
-            var failed = !result || !result.total || result.failed;
-
-            if (!result.total) {
-              console.error('No tests were executed. Are you loading tests asynchronously?');
-            }
-
-            var code = failed ? 1 : 0;
-            result.code = code;
-
-            if (!crashed && code === 0) {
-              resolve(result);
-            } else if (crashed) {
-              console.log(chalk.red('Browser crashed with exit code ' + code));
-
-              if (retries > 1) {
-                console.log(chalk.yellow('Retrying... ¯\\_(ツ)_/¯'));
-                runInBrowser(url, retries - 1, resolve, reject);
-              } else {
-                console.log(chalk.red('Giving up! (╯°□°)╯︵ ┻━┻'));
-                console.log(
-                  chalk.yellow('This might be a known issue with Chrome headless, skipping for now')
-                );
-                resolve(result);
-              }
-            } else {
-              reject(result);
-            }
-          }
-        })
-        .then(function() {
-          return page.evaluateOnNewDocument(addLogging);
-        })
-        .then(function() {
-          return page.goto(url, { timeout: 900 });
-        });
-    });
-  });
+  return getBrowserRunner().run(url, attempts);
 }
 
 var testFunctions = [];
@@ -271,7 +124,7 @@ function generateExtendPrototypeTests() {
 }
 
 function runChecker(bin, args) {
-  return new RSVP.Promise(function(resolve) {
+  return new Promise(function(resolve) {
     execFile(bin, args, {}, function(error, stdout, stderr) {
       // I'm buffering instead of inheriting these so that each
       // checker doesn't interleave its output
@@ -288,7 +141,7 @@ function codeQualityChecks() {
     runChecker('node', [require.resolve('tslint/bin/tslint'), '-p', 'tsconfig.json']),
     runChecker('node', [require.resolve('eslint/bin/eslint'), '.']),
   ];
-  return RSVP.Promise.all(checkers).then(function(results) {
+  return Promise.all(checkers).then(function(results) {
     results.forEach(result => {
       if (result.ok) {
         console.log(result.name + ': ' + chalk.green('OK'));
@@ -308,13 +161,20 @@ function runAndExit() {
       console.log(chalk.green('Passed!'));
       process.exit(0);
     })
-    .catch(function() {
+    .catch(function(err) {
+      console.error(chalk.red(err.toString()));
       console.error(chalk.red('Failed!'));
       process.exit(1);
     });
 }
 
+let p = process.env.PACKAGE || 'ember';
 switch (process.env.TEST_SUITE) {
+  case 'package':
+    console.log(`suite: package ${p}`);
+    generateTestsFor(p);
+    runAndExit();
+    break;
   case 'built-tests':
     console.log('suite: built-tests');
     generateBuiltTests();
