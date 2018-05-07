@@ -74,6 +74,9 @@ jobs:
       env: TEST_SUITE=each-package-tests
 
     - env: TEST_SUITE=code-quality
+      script:
+        # avoiding `yarn test` here because pretest does a build, which isn't needed
+        - node bin/run-tests.js
 
     - stage: additional tests
 
