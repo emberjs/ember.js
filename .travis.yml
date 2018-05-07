@@ -29,9 +29,6 @@ install:
 - |
     yarn install
 
-after_success:
-  - "./bin/publish_builds"
-
 branches:
   only:
     - master
