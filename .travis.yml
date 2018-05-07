@@ -93,14 +93,13 @@ jobs:
       - BUILD_TYPE=alpha
 
     - stage: deploy
-
-    - env:
+      env:
       - BUILD_TYPE=canary
       - PUBLISH=true
       script:
         - "./bin/publish_builds"
 
-      env:
+    - env:
       - BUILD_TYPE=alpha
       - PUBLISH=true
       script:
