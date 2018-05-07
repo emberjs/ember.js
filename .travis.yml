@@ -78,7 +78,6 @@ jobs:
     - stage: additional tests
 
       env: TEST_SUITE=browserstack
-    - env: TEST_SUITE=each-package-tests
     - env:
       - TEST_SUITE=built-tests
       - EMBER_ENV=production
