@@ -128,7 +128,9 @@ let Helper = FrameworkObject.extend({
   */
 });
 
-Helper.isHelperFactory = true;
+Helper.reopenClass({
+  isHelperFactory: true,
+});
 
 class Wrapper implements HelperFactory<SimpleHelper> {
   isHelperFactory: true = true;
