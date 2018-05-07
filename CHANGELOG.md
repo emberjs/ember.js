@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### v3.2.0-beta.4 (May 7, 2018)
+- [#16597](https://github.com/emberjs/ember.js/pull/16597) [BUGFIX] Ensure `Ember.run.cancelTimers` is present.
+- [#16605](https://github.com/emberjs/ember.js/pull/16605) [BUGFIX] Use resetCache on container destroy
+- [#16615](https://github.com/emberjs/ember.js/pull/16615) [BUGFIX] Fix NAMESPACES_BY_ID leaks
+
 ### v3.2.0-beta.3 (April 23, 2018)
 - [#16539](https://github.com/emberjs/ember.js/pull/16539) [BUGFIX] Ember is already registered by the libraries registry already.
 - [#16559](https://github.com/emberjs/ember.js/pull/16559) [BUGFIX] Fix property normalization, Update glimmer-vm to 0.34.0
