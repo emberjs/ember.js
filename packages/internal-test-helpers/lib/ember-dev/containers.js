@@ -6,6 +6,10 @@ function ContainersAssert(env) {
 
 const { _leakTracking: containerLeakTracking } = Container;
 
+const LEAKS = [];
+
+let hasLeakModule = false;
+
 ContainersAssert.prototype = {
   reset: function() {},
   inject: function() {},
@@ -15,15 +19,24 @@ ContainersAssert.prototype = {
     let { testName, testId, module: { name: moduleName }, finish: originalFinish } = config.current;
     config.current.finish = function() {
       originalFinish.call(this);
-      originalFinish = undefined;
-      config.queue.unshift(function() {
+      config.queue.unshift(() => {
         if (containerLeakTracking.hasContainers()) {
           containerLeakTracking.reset();
-          // eslint-disable-next-line no-console
-          console.assert(
-            false,
-            `Leaked container after test ${moduleName}: ${testName} testId=${testId}`
-          );
+          LEAKS.push(`${moduleName}: ${testName} testId=${testId}`);
+          if (!hasLeakModule) {
+            hasLeakModule = true;
+            QUnit.module('Leaked Container', () => {
+              QUnit.test(
+                'Leaked Container',
+                Object.assign(
+                  assert => {
+                    assert.deepEqual(LEAKS, []);
+                  },
+                  { validTest: true }
+                )
+              );
+            });
+          }
         }
       });
     };

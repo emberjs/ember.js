@@ -63,7 +63,10 @@ module.exports = class BroswerRunner {
   }
 
   async newBrowser() {
-    let browser = await puppeteer.launch({ dumpio: true });
+    let browser = await puppeteer.launch({
+      dumpio: true,
+      args: ['--js-flags=--allow-natives-syntax --expose-gc'],
+    });
     return browser;
   }
 
