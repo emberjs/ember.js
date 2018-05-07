@@ -14,6 +14,7 @@ export default class ApplicationTestCase extends AbstractApplicationTestCase {
 
   get applicationOptions() {
     return assign(super.applicationOptions, {
+      name: 'TestApp',
       autoboot: false,
       Resolver: DefaultResolver,
     });

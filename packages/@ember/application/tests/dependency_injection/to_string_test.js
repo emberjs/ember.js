@@ -23,14 +23,18 @@ moduleFor(
 
     ['@test factories'](assert) {
       let PostFactory = this.applicationInstance.factoryFor('model:post').class;
-      assert.equal(PostFactory.toString(), '.Post', 'expecting the model to be post');
+      assert.equal(PostFactory.toString(), 'TestApp.Post', 'expecting the model to be post');
     }
 
     ['@test instances'](assert) {
       let post = this.applicationInstance.lookup('model:post');
       let guid = guidFor(post);
 
-      assert.equal(post.toString(), '<.Post:' + guid + '>', 'expecting the model to be post');
+      assert.equal(
+        post.toString(),
+        '<TestApp.Post:' + guid + '>',
+        'expecting the model to be post'
+      );
     }
   }
 );
