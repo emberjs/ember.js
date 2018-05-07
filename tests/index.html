@@ -192,6 +192,9 @@
         });
 
         QUnit.testDone(function(results) {
+          // release the test callback (polyfill for https://github.com/qunitjs/qunit/pull/1279)
+          QUnit.config.current.callback = undefined;
+
           var oldFixture = document.getElementById('qunit-fixture');
           var parent = oldFixture.parentElement;
           var newFixture = document.createElement('div');
@@ -205,6 +208,11 @@
           } else {
             testsPassed++;
           }
+        });
+
+        QUnit.moduleDone(function() {
+          // release the module hooks (polyfill for https://github.com/qunitjs/qunit/pull/1279)
+          QUnit.config.current.module.hooks = {};
         });
 
         QUnit.done(function(result) {
