@@ -24,9 +24,10 @@ export function normalizeProperty(element: Simple.Element, slotName: string) {
     }
   }
 
-  if (type === 'prop' &&
-      (normalized.toLowerCase() === 'style' ||
-       preferAttr(element.tagName, normalized))) {
+  if (
+    type === 'prop' &&
+    (normalized.toLowerCase() === 'style' || preferAttr(element.tagName, normalized))
+  ) {
     type = 'attr';
   }
 
@@ -45,7 +46,6 @@ export function normalizePropertyValue(value: Opaque): Opaque {
 // * browser bug
 // * strange spec outlier
 const ATTR_OVERRIDES = {
-
   INPUT: {
     form: true,
     // Chrome 46.0.2464.0: 'autocorrect' in document.createElement('input') === false
@@ -54,22 +54,22 @@ const ATTR_OVERRIDES = {
     autocorrect: true,
     // Chrome 54.0.2840.98: 'list' in document.createElement('input') === true
     // Safari 9.1.3: 'list' in document.createElement('input') === false
-    list: true
+    list: true,
   },
 
   // element.form is actually a legitimate readOnly property, that is to be
   // mutated, but must be mutated by setAttribute...
-  SELECT:   { form: true },
-  OPTION:   { form: true },
+  SELECT: { form: true },
+  OPTION: { form: true },
   TEXTAREA: { form: true },
-  LABEL:    { form: true },
+  LABEL: { form: true },
   FIELDSET: { form: true },
-  LEGEND:   { form: true },
-  OBJECT:   { form: true },
-  BUTTON:   { form: true }
+  LEGEND: { form: true },
+  OBJECT: { form: true },
+  BUTTON: { form: true },
 };
 
 function preferAttr(tagName: string, propName: string) {
   let tag = ATTR_OVERRIDES[tagName.toUpperCase()];
-  return tag && tag[propName.toLowerCase()] || false;
+  return (tag && tag[propName.toLowerCase()]) || false;
 }

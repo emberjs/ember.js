@@ -1,4 +1,12 @@
-import { Opaque, Option, Dict, BlockSymbolTable, ProgramSymbolTable, Simple, Maybe } from "@glimmer/interfaces";
+import {
+  Opaque,
+  Option,
+  Dict,
+  BlockSymbolTable,
+  ProgramSymbolTable,
+  Simple,
+  Maybe,
+} from '@glimmer/interfaces';
 
 export interface Checker<T> {
   type: T;
@@ -47,11 +55,13 @@ class PrimitiveChecker implements Checker<Primitive> {
   type: Primitive;
 
   validate(value: Opaque): value is Primitive {
-    return typeof value !== 'string'
-      || typeof value === 'number'
-      || typeof value === 'string'
-      || value === undefined
-      || value === null;
+    return (
+      typeof value !== 'string' ||
+      typeof value === 'number' ||
+      typeof value === 'string' ||
+      value === undefined ||
+      value === null
+    );
   }
 
   expected(): string {
@@ -180,7 +190,9 @@ class SafeStringChecker implements Checker<SafeString> {
   type: SafeString;
 
   validate(value: Opaque): value is SafeString {
-    return typeof value === 'object' && value !== null && typeof (value as any).toHTML === 'function';
+    return (
+      typeof value === 'object' && value !== null && typeof (value as any).toHTML === 'function'
+    );
   }
 
   expected(): string {
@@ -200,7 +212,10 @@ export function CheckMaybe<T>(checker: Checker<T>): Checker<Maybe<T>> {
   return new OptionChecker(checker, undefined);
 }
 
-export function CheckInterface<I extends { [P in keyof O]: O[P]['type'] }, O extends Dict<Checker<Opaque>>>(obj: O): Checker<I> {
+export function CheckInterface<
+  I extends { [P in keyof O]: O[P]['type'] },
+  O extends Dict<Checker<Opaque>>
+>(obj: O): Checker<I> {
   return new PropertyChecker(obj);
 }
 
@@ -227,7 +242,9 @@ export function expectStackChange(stack: { sp: number }, expected: number, name:
 
   if (actual === expected) return;
 
-  throw new Error(`Expected stack to change by ${expected}, but it changed by ${actual} in ${name}`);
+  throw new Error(
+    `Expected stack to change by ${expected}, but it changed by ${actual} in ${name}`
+  );
 }
 
 export const CheckPrimitive: Checker<Primitive> = new PrimitiveChecker();
@@ -247,17 +264,27 @@ export function CheckValue<T>(value: T, desc = String(value)): Checker<T> {
   return new ExactValueChecker(value, desc);
 }
 
-export const CheckBlockSymbolTable: Checker<BlockSymbolTable> =
-  CheckInterface({ parameters: CheckArray(CheckNumber) });
+export const CheckBlockSymbolTable: Checker<BlockSymbolTable> = CheckInterface({
+  parameters: CheckArray(CheckNumber),
+});
 
-export const CheckProgramSymbolTable: Checker<ProgramSymbolTable> =
-  CheckInterface({ hasEval: CheckBoolean, symbols: CheckArray(CheckString) });
+export const CheckProgramSymbolTable: Checker<ProgramSymbolTable> = CheckInterface({
+  hasEval: CheckBoolean,
+  symbols: CheckArray(CheckString),
+});
 
-export const CheckElement: Checker<Simple.Element> =
-  CheckInterface({ nodeType: CheckValue(1), tagName: CheckString, nextSibling: CheckOpaque });
+export const CheckElement: Checker<Simple.Element> = CheckInterface({
+  nodeType: CheckValue(1),
+  tagName: CheckString,
+  nextSibling: CheckOpaque,
+});
 
-export const CheckDocumentFragment: Checker<Simple.DocumentFragment> =
-  CheckInterface({ nodeType: CheckValue(11), nextSibling: CheckOpaque });
+export const CheckDocumentFragment: Checker<Simple.DocumentFragment> = CheckInterface({
+  nodeType: CheckValue(11),
+  nextSibling: CheckOpaque,
+});
 
-export const CheckNode: Checker<Simple.Node> =
-  CheckInterface({ nodeType: CheckNumber, nextSibling: CheckOpaque });
+export const CheckNode: Checker<Simple.Node> = CheckInterface({
+  nodeType: CheckNumber,
+  nextSibling: CheckOpaque,
+});

@@ -2,7 +2,7 @@ export {
   default as BundleCompiler,
   BundleCompilerOptions,
   BundleCompileOptions,
-  BundleCompilationResult
+  BundleCompilationResult,
 } from './lib/bundle-compiler';
 
 export { default as CompilerDelegate } from './lib/delegate';

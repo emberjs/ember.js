@@ -1,5 +1,10 @@
 {
+  "extends": [
+    "tslint-config-prettier",
+    "tslint-plugin-prettier"
+  ],
   "rules": {
+    "prettier": true,
     "curly": false,
     "no-var-keyword": true,
     "indent": [true, "spaces"],

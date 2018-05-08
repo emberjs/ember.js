@@ -17,25 +17,42 @@ export default Bounds;
 export interface DestroyableBounds extends Bounds, Destroyable {}
 
 export class ConcreteBounds implements Bounds {
-  constructor(public parentNode: Simple.Element, private first: Option<Simple.Node>, private last: Option<Simple.Node>) {}
+  constructor(
+    public parentNode: Simple.Element,
+    private first: Option<Simple.Node>,
+    private last: Option<Simple.Node>
+  ) {}
 
-  parentElement() { return this.parentNode; }
-  firstNode() { return this.first; }
-  lastNode() { return this.last; }
+  parentElement() {
+    return this.parentNode;
+  }
+  firstNode() {
+    return this.first;
+  }
+  lastNode() {
+    return this.last;
+  }
 }
 
 export class SingleNodeBounds implements Bounds {
+  constructor(private parentNode: Simple.Element, private node: Simple.Node) {}
 
-  constructor(private parentNode: Simple.Element,
-              private node: Simple.Node) {
+  parentElement() {
+    return this.parentNode;
   }
-
-  parentElement() { return this.parentNode; }
-  firstNode() { return this.node; }
-  lastNode() { return this.node; }
+  firstNode() {
+    return this.node;
+  }
+  lastNode() {
+    return this.node;
+  }
 }
 
-export function bounds(parent: Simple.Element, first: Simple.Node, last: Simple.Node): ConcreteBounds {
+export function bounds(
+  parent: Simple.Element,
+  first: Simple.Node,
+  last: Simple.Node
+): ConcreteBounds {
   return new ConcreteBounds(parent, first, last);
 }
 

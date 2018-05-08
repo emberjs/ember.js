@@ -1,8 +1,13 @@
 import { LazyOpcodeBuilder } from './opcode-builder';
 import { Macros } from './syntax';
 import { AbstractCompiler } from './compiler';
-import { RuntimeResolver, Compiler, CompileTimeLookup, LayoutWithContext } from "@glimmer/interfaces";
-import { Program, LazyConstants } from "@glimmer/program";
+import {
+  RuntimeResolver,
+  Compiler,
+  CompileTimeLookup,
+  LayoutWithContext,
+} from '@glimmer/interfaces';
+import { Program, LazyConstants } from '@glimmer/program';
 
 export interface LazyCompilerOptions<Locator> {
   lookup: CompileTimeLookup<Locator>;
@@ -11,11 +16,16 @@ export interface LazyCompilerOptions<Locator> {
   macros: Macros;
 }
 
-export class LazyCompiler<Locator> extends AbstractCompiler<Locator, LazyOpcodeBuilder<Locator>> implements Compiler<LazyOpcodeBuilder<Locator>> {
+export class LazyCompiler<Locator> extends AbstractCompiler<Locator, LazyOpcodeBuilder<Locator>>
+  implements Compiler<LazyOpcodeBuilder<Locator>> {
   program: Program<Locator>;
 
   // FIXME: turn to static method
-  constructor(lookup: CompileTimeLookup<Locator>, resolver: RuntimeResolver<Locator>, macros: Macros) {
+  constructor(
+    lookup: CompileTimeLookup<Locator>,
+    resolver: RuntimeResolver<Locator>,
+    macros: Macros
+  ) {
     let constants = new LazyConstants(resolver);
     let program = new Program<Locator>(constants);
 

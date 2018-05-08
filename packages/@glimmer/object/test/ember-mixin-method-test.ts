@@ -9,8 +9,12 @@ QUnit.test('defining simple methods', assert => {
   let props: any;
 
   props = {
-    publicMethod() { return 'publicMethod'; },
-    _privateMethod() { return 'privateMethod'; }
+    publicMethod() {
+      return 'publicMethod';
+    },
+    _privateMethod() {
+      return 'privateMethod';
+    },
   };
 
   MixinA = Mixin.create(props);
@@ -27,19 +31,27 @@ QUnit.test('overriding public methods', assert => {
   let obj: any;
 
   MixinA = Mixin.create({
-    publicMethod() { return 'A'; }
+    publicMethod() {
+      return 'A';
+    },
   });
 
   MixinB = Mixin.create(MixinA, {
-    publicMethod(this: any) { return this._super.apply(this, arguments) + 'B'; }
+    publicMethod(this: any) {
+      return this._super.apply(this, arguments) + 'B';
+    },
   });
 
   MixinD = Mixin.create(MixinA, {
-    publicMethod(this: any) { return this._super.apply(this, arguments) + 'D'; }
+    publicMethod(this: any) {
+      return this._super.apply(this, arguments) + 'D';
+    },
   });
 
   MixinF = Mixin.create({
-    publicMethod(this: any) { return this._super.apply(this, arguments) + 'F'; }
+    publicMethod(this: any) {
+      return this._super.apply(this, arguments) + 'F';
+    },
   });
 
   obj = {};
@@ -55,7 +67,11 @@ QUnit.test('overriding public methods', assert => {
   MixinF.apply(obj);
   assert.equal(obj.publicMethod(), 'AF', 'should define super for A and F');
 
-  obj = { publicMethod() { return 'obj'; } };
+  obj = {
+    publicMethod() {
+      return 'obj';
+    },
+  };
   MixinF.apply(obj);
   assert.equal(obj.publicMethod(), 'objF', 'should define super for F');
 });
@@ -63,14 +79,16 @@ QUnit.test('overriding public methods', assert => {
 QUnit.test('overriding inherited objects', assert => {
   let cnt = 0;
   let MixinA = Mixin.create({
-    foo() { cnt++; }
+    foo() {
+      cnt++;
+    },
   });
 
   let MixinB = Mixin.create({
     foo(this: any) {
       this._super.apply(this, arguments);
       cnt++;
-    }
+    },
   });
 
   let objA = {};
@@ -91,19 +109,27 @@ QUnit.test('overriding inherited objects', assert => {
 QUnit.test('Including the same mixin more than once will only run once', assert => {
   let cnt = 0;
   let MixinA = Mixin.create({
-    foo() { cnt++; }
+    foo() {
+      cnt++;
+    },
   });
 
   let MixinB = Mixin.create(MixinA, {
-    foo(this: any) { this._super.apply(this, arguments); }
+    foo(this: any) {
+      this._super.apply(this, arguments);
+    },
   });
 
   let MixinC = Mixin.create(MixinA, {
-    foo(this: any) { this._super.apply(this, arguments); }
+    foo(this: any) {
+      this._super.apply(this, arguments);
+    },
   });
 
   let MixinD = Mixin.create(MixinB, MixinC, MixinA, {
-    foo(this: any) { this._super.apply(this, arguments); }
+    foo(this: any) {
+      this._super.apply(this, arguments);
+    },
   });
 
   let obj = {};
@@ -120,7 +146,7 @@ QUnit.test('_super from a single mixin with no superclass does not error', asser
   let MixinA = Mixin.create({
     foo(this: any) {
       this._super.apply(this, arguments);
-    }
+    },
   });
 
   let obj = {};
@@ -130,29 +156,34 @@ QUnit.test('_super from a single mixin with no superclass does not error', asser
   assert.ok(true);
 });
 
-QUnit.test('_super from a first-of-two mixins with no superclass function does not error', assert => {
-  // _super was previously calling itself in the second assertion.
-  // Use remaining count of calls to ensure it doesn't loop indefinitely.
-  let remaining = 3;
-  let MixinA = Mixin.create({
-    foo(this: any) {
-      if (remaining-- > 0) {
+QUnit.test(
+  '_super from a first-of-two mixins with no superclass function does not error',
+  assert => {
+    // _super was previously calling itself in the second assertion.
+    // Use remaining count of calls to ensure it doesn't loop indefinitely.
+    let remaining = 3;
+    let MixinA = Mixin.create({
+      foo(this: any) {
+        if (remaining-- > 0) {
+          this._super.apply(this, arguments);
+        }
+      },
+    });
+
+    let MixinB = Mixin.create({
+      foo(this: any) {
         this._super.apply(this, arguments);
-      }
-    }
-  });
+      },
+    });
 
-  let MixinB = Mixin.create({
-    foo(this: any) { this._super.apply(this, arguments); }
-  });
+    let obj = {};
+    MixinA.apply(obj);
+    MixinB.apply(obj);
 
-  let obj = {};
-  MixinA.apply(obj);
-  MixinB.apply(obj);
-
-  obj['foo']();
-  assert.ok(true);
-});
+    obj['foo']();
+    assert.ok(true);
+  }
+);
 
 // ..........................................................
 // CONFLICTS
@@ -162,7 +193,9 @@ QUnit.module('Mixin.create - Method Conflicts');
 
 QUnit.test('overriding toString', assert => {
   let MixinA = Mixin.create({
-    toString() { return 'FOO'; }
+    toString() {
+      return 'FOO';
+    },
   });
 
   let obj = {};
@@ -170,7 +203,11 @@ QUnit.test('overriding toString', assert => {
   assert.equal(obj.toString(), 'FOO', 'should override toString w/o error');
 
   obj = {};
-  mixin(obj, { toString() { return 'FOO'; } });
+  mixin(obj, {
+    toString() {
+      return 'FOO';
+    },
+  });
   assert.equal(obj.toString(), 'FOO', 'should override toString w/o error');
 });
 
@@ -180,31 +217,36 @@ QUnit.test('overriding toString', assert => {
 
 QUnit.module('Mixin.create - Method Regressions (BUGS)');
 
-QUnit.test('applying several mixins at once with sup already defined causes infinite loop', assert => {
-  let cnt = 0;
-  let MixinA = Mixin.create({
-    foo() { cnt++; }
-  });
+QUnit.test(
+  'applying several mixins at once with sup already defined causes infinite loop',
+  assert => {
+    let cnt = 0;
+    let MixinA = Mixin.create({
+      foo() {
+        cnt++;
+      },
+    });
 
-  let MixinB = Mixin.create({
-    foo(this: any) {
-      this._super.apply(this, arguments);
-      cnt++;
-    }
-  });
+    let MixinB = Mixin.create({
+      foo(this: any) {
+        this._super.apply(this, arguments);
+        cnt++;
+      },
+    });
 
-  let MixinC = Mixin.create({
-    foo(this: any) {
-      this._super.apply(this, arguments);
-      cnt++;
-    }
-  });
+    let MixinC = Mixin.create({
+      foo(this: any) {
+        this._super.apply(this, arguments);
+        cnt++;
+      },
+    });
 
-  let obj = {};
-  mixin(obj, MixinA); // sup already exists
-  mixin(obj, MixinB, MixinC); // must be more than one mixin
+    let obj = {};
+    mixin(obj, MixinA); // sup already exists
+    mixin(obj, MixinB, MixinC); // must be more than one mixin
 
-  cnt = 0;
-  obj['foo']();
-  assert.equal(cnt, 3, 'should invoke all 3 methods');
-});
+    cnt = 0;
+    obj['foo']();
+    assert.equal(cnt, 3, 'should invoke all 3 methods');
+  }
+);

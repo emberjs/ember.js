@@ -1,8 +1,8 @@
-import { precompile as rawPrecompile, PrecompileOptions } from "@glimmer/compiler";
-import { Opaque, Option } from "@glimmer/interfaces";
-import { Environment } from "@glimmer/runtime";
+import { precompile as rawPrecompile, PrecompileOptions } from '@glimmer/compiler';
+import { Opaque, Option } from '@glimmer/interfaces';
+import { Environment } from '@glimmer/runtime';
 import * as WireFormat from '@glimmer/wire-format';
-import { tokenize } from "simple-html-tokenizer";
+import { tokenize } from 'simple-html-tokenizer';
 
 // For Phantom
 function toObject(val: Opaque) {
@@ -62,7 +62,10 @@ export interface TestCompileOptions extends PrecompileOptions {
   env: Environment;
 }
 
-export function precompile(string: string, options?: TestCompileOptions): WireFormat.SerializedTemplate<WireFormat.TemplateMeta> {
+export function precompile(
+  string: string,
+  options?: TestCompileOptions
+): WireFormat.SerializedTemplate<WireFormat.TemplateMeta> {
   let wrapper = JSON.parse(rawPrecompile(string, options));
   wrapper.block = JSON.parse(wrapper.block);
   return wrapper as WireFormat.SerializedTemplate<WireFormat.TemplateMeta>;
@@ -74,7 +77,7 @@ export function equalInnerHTML(fragment: { innerHTML: string }, html: string, me
     result: actualHTML === html,
     actual: actualHTML,
     expected: html,
-    message: message || `unexpected innerHTML`
+    message: message || `unexpected innerHTML`,
   });
 }
 
@@ -89,7 +92,7 @@ export function equalHTML(node: Node | Node[], html: string) {
     fragment = node as Node;
   }
 
-  let div = document.createElement("div");
+  let div = document.createElement('div');
   div.appendChild(fragment.cloneNode(true));
 
   equalInnerHTML(div, html);
@@ -98,18 +101,22 @@ export function equalHTML(node: Node | Node[], html: string) {
 function generateTokens(divOrHTML: Element | string) {
   let div;
   if (typeof divOrHTML === 'string') {
-    div = document.createElement("div");
+    div = document.createElement('div');
     div.innerHTML = divOrHTML;
   } else {
     div = divOrHTML;
   }
 
   const tokens = tokenize(div.innerHTML, {});
-  tokens.forEach((token) => {
-    if (token.type === "StartTag" && token.attributes) {
+  tokens.forEach(token => {
+    if (token.type === 'StartTag' && token.attributes) {
       token.attributes.sort((a, b) => {
-        if (a[0] > b[0]) { return 1; }
-        if (a[0] < b[0]) { return -1; }
+        if (a[0] > b[0]) {
+          return 1;
+        }
+        if (a[0] < b[0]) {
+          return -1;
+        }
         return 0;
       });
     }
@@ -122,7 +129,11 @@ declare const QUnit: QUnit & {
   equiv(a: any, b: any): boolean;
 };
 
-export function equalTokens(testFragment: HTMLElement | string, testHTML: HTMLElement | string, message: Option<string> = null) {
+export function equalTokens(
+  testFragment: HTMLElement | string,
+  testHTML: HTMLElement | string,
+  message: Option<string> = null
+) {
   let fragTokens = generateTokens(testFragment);
   let htmlTokens = generateTokens(testHTML);
 
@@ -133,13 +144,17 @@ export function equalTokens(testFragment: HTMLElement | string, testHTML: HTMLEl
   let equiv = QUnit.equiv(fragTokens.tokens, htmlTokens.tokens);
 
   if (equiv && fragTokens.html !== htmlTokens.html) {
-    QUnit.assert.deepEqual(fragTokens.tokens, htmlTokens.tokens, message || 'expected tokens to match');
+    QUnit.assert.deepEqual(
+      fragTokens.tokens,
+      htmlTokens.tokens,
+      message || 'expected tokens to match'
+    );
   } else {
     QUnit.assert.pushResult({
       result: QUnit.equiv(fragTokens.tokens, htmlTokens.tokens),
       actual: fragTokens.html,
       expected: htmlTokens.html,
-      message: message || 'expected tokens to match'
+      message: message || 'expected tokens to match',
     });
   }
 
@@ -168,7 +183,7 @@ export function equalSnapshots(a: Node[], b: Node[]) {
 }
 
 // detect side-effects of cloning svg elements in IE9-11
-let ieSVGInnerHTML = (function () {
+let ieSVGInnerHTML = (function() {
   if (typeof document === 'undefined' || !document.createElementNS) {
     return false;
   }
@@ -196,8 +211,7 @@ export function normalizeInnerHTML(actualHTML: string) {
 let isCheckedInputHTML: (element: Element) => void;
 
 if (typeof document === 'undefined') {
-  isCheckedInputHTML = function() {
-  };
+  isCheckedInputHTML = function() {};
 } else {
   // detect weird IE8 checked element string
   let checkedInput = document.createElement('input');
@@ -212,7 +226,10 @@ if (typeof document === 'undefined') {
 export { isCheckedInputHTML };
 
 // check which property has the node's text content
-let textProperty = typeof document === 'object' && document.createElement('div').textContent === undefined ? 'innerText' : 'textContent';
+let textProperty =
+  typeof document === 'object' && document.createElement('div').textContent === undefined
+    ? 'innerText'
+    : 'textContent';
 export function getTextContent(el: Node) {
   // textNode
   if (el.nodeType === 3) {
@@ -224,20 +241,35 @@ export function getTextContent(el: Node) {
 
 export function strip(strings: TemplateStringsArray, ...args: string[]) {
   if (typeof strings === 'object') {
-    return strings.map((str: string, i: number) => {
-      return `${str.split('\n').map(s => s.trim()).join('')}${args[i] ? args[i] : ''}`;
-    }).join('');
+    return strings
+      .map((str: string, i: number) => {
+        return `${str
+          .split('\n')
+          .map(s => s.trim())
+          .join('')}${args[i] ? args[i] : ''}`;
+      })
+      .join('');
   } else {
-    return strings[0].split('\n').map((s: string) => s.trim()).join(' ');
+    return strings[0]
+      .split('\n')
+      .map((s: string) => s.trim())
+      .join(' ');
   }
 }
 
 export function stripTight(strings: TemplateStringsArray) {
-  return strings[0].split('\n').map(s => s.trim()).join('');
+  return strings[0]
+    .split('\n')
+    .map(s => s.trim())
+    .join('');
 }
 
 export function trimLines(strings: TemplateStringsArray) {
-  return strings[0].trim().split('\n').map(s => s.trim()).join('\n');
+  return strings[0]
+    .trim()
+    .split('\n')
+    .map(s => s.trim())
+    .join('\n');
 }
 
 export function assertIsElement(node: Node | null): node is Element {
@@ -246,26 +278,33 @@ export function assertIsElement(node: Node | null): node is Element {
     result: nodeType === 1,
     expected: 1,
     actual: nodeType,
-    message: 'expected node to be an element'
+    message: 'expected node to be an element',
   });
   return nodeType === 1;
 }
 
-export function assertNodeTagName<T extends keyof ElementTagNameMap, U extends ElementTagNameMap[T]>(node: Node | null, tagName: T): node is U {
+export function assertNodeTagName<
+  T extends keyof ElementTagNameMap,
+  U extends ElementTagNameMap[T]
+>(node: Node | null, tagName: T): node is U {
   if (assertIsElement(node)) {
     const nodeTagName = node.tagName.toLowerCase();
     QUnit.assert.pushResult({
       result: nodeTagName === tagName,
       expected: tagName,
       actual: nodeTagName,
-      message: `expected tagName to be ${tagName} but was ${nodeTagName}`
+      message: `expected tagName to be ${tagName} but was ${nodeTagName}`,
     });
     return nodeTagName === tagName;
   }
   return false;
 }
 
-export function assertNodeProperty<T extends keyof HTMLElementTagNameMap, P extends keyof ElementTagNameMap[T], V extends HTMLElementTagNameMap[T][P]>(node: Node | null, tagName: T, prop: P, value: V) {
+export function assertNodeProperty<
+  T extends keyof HTMLElementTagNameMap,
+  P extends keyof ElementTagNameMap[T],
+  V extends HTMLElementTagNameMap[T][P]
+>(node: Node | null, tagName: T, prop: P, value: V) {
   if (assertNodeTagName(node, tagName)) {
     QUnit.assert.strictEqual(node[prop], value);
   }

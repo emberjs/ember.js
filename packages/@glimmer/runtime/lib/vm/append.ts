@@ -1,27 +1,35 @@
 import { Register } from '@glimmer/vm';
 import { Scope, DynamicScope, Environment } from '../environment';
 import { ElementBuilder } from './element-builder';
-import { Option, Destroyable, Stack, LinkedList, ListSlice, Opaque, expect, assert } from '@glimmer/util';
-import { ReferenceIterator, PathReference, VersionedPathReference, combineSlice } from '@glimmer/reference';
+import {
+  Option,
+  Destroyable,
+  Stack,
+  LinkedList,
+  ListSlice,
+  Opaque,
+  expect,
+  assert,
+} from '@glimmer/util';
+import {
+  ReferenceIterator,
+  PathReference,
+  VersionedPathReference,
+  combineSlice,
+} from '@glimmer/reference';
 import { LabelOpcode, JumpIfNotModifiedOpcode, DidModifyOpcode } from '../compiled/opcodes/vm';
 import LowLevelVM, { Program } from './low-level';
 import { VMState, ListBlockOpcode, TryOpcode, BlockOpcode, Runtime } from './update';
 import RenderResult from './render-result';
 import EvaluationStack from './stack';
-import { Arguments } from "./arguments";
+import { Arguments } from './arguments';
 
-import {
-  APPEND_OPCODES,
-  UpdatingOpcode,
-  DebugState
-} from '../opcodes';
+import { APPEND_OPCODES, UpdatingOpcode, DebugState } from '../opcodes';
 
-import {
-  UNDEFINED_REFERENCE
-} from '../references';
+import { UNDEFINED_REFERENCE } from '../references';
 
-import { Heap, Opcode } from "@glimmer/program";
-import { RuntimeResolver } from "@glimmer/interfaces";
+import { Heap, Opcode } from '@glimmer/program';
+import { RuntimeResolver } from '@glimmer/interfaces';
 import { DEBUG } from '@glimmer/local-debug-flags';
 
 export interface PublicVM {
@@ -31,13 +39,15 @@ export interface PublicVM {
   newDestroyable(d: Destroyable): void;
 }
 
-export type IteratorResult<T> = {
-  done: false;
-  value: null;
-} | {
-  done: true;
-  value: T;
-};
+export type IteratorResult<T> =
+  | {
+      done: false;
+      value: null;
+    }
+  | {
+      done: true;
+      value: T;
+    };
 
 export interface Constants<T> {
   resolver: RuntimeResolver<T>;
@@ -196,18 +206,25 @@ export default class VM<T> implements PublicVM {
     return vm;
   }
 
-  static empty<T>(
-    program: RuntimeProgram<T>,
-    env: Environment,
-    elementStack: ElementBuilder
-  ) {
+  static empty<T>(program: RuntimeProgram<T>, env: Environment, elementStack: ElementBuilder) {
     let dynamicScope: DynamicScope = {
-      get() { return UNDEFINED_REFERENCE; },
-      set() { return UNDEFINED_REFERENCE; },
-      child() { return dynamicScope; }
+      get() {
+        return UNDEFINED_REFERENCE;
+      },
+      set() {
+        return UNDEFINED_REFERENCE;
+      },
+      child() {
+        return dynamicScope;
+      },
     };
 
-    let vm = new VM({ program, env }, Scope.root(UNDEFINED_REFERENCE, 0), dynamicScope, elementStack);
+    let vm = new VM(
+      { program, env },
+      Scope.root(UNDEFINED_REFERENCE, 0),
+      dynamicScope,
+      elementStack
+    );
     vm.updatingOpcodeStack.push(new LinkedList<UpdatingOpcode>());
     return vm;
   }
@@ -220,7 +237,7 @@ export default class VM<T> implements PublicVM {
     private runtime: Runtime,
     scope: Scope,
     dynamicScope: DynamicScope,
-    private elementStack: ElementBuilder,
+    private elementStack: ElementBuilder
   ) {
     this.heap = this.program.heap;
     this.constants = this.program.constants;
@@ -235,7 +252,7 @@ export default class VM<T> implements PublicVM {
 
       debugAfter: (opcode: Opcode, state: DebugState): void => {
         APPEND_OPCODES.debugAfter(this, opcode, opcode.type, state);
-      }
+      },
     });
   }
 
@@ -251,7 +268,7 @@ export default class VM<T> implements PublicVM {
     return {
       dynamicScope: this.dynamicScope(),
       scope: this.scope(),
-      stack: this.stack.capture(args)
+      stack: this.stack.capture(args),
     };
   }
 
@@ -267,7 +284,7 @@ export default class VM<T> implements PublicVM {
     //        DidModify
     // END:   Noop
 
-    let END = new LabelOpcode("END");
+    let END = new LabelOpcode('END');
 
     let opcodes = this.updating();
     let marker = this.cacheGroups.pop();
@@ -288,7 +305,13 @@ export default class VM<T> implements PublicVM {
     let state = this.capture(args);
     let tracker = this.elements().pushUpdatableBlock();
 
-    let tryOpcode = new TryOpcode(this.heap.gethandle(this.pc), state, this.runtime, tracker, updating);
+    let tryOpcode = new TryOpcode(
+      this.heap.gethandle(this.pc),
+      state,
+      this.runtime,
+      tracker,
+      updating
+    );
 
     this.didEnter(tryOpcode);
   }
@@ -305,7 +328,13 @@ export default class VM<T> implements PublicVM {
     // this.ip = end + 4;
     // this.frames.push(ip);
 
-    return new TryOpcode(this.heap.gethandle(this.pc), state, this.runtime, tracker, new LinkedList<UpdatingOpcode>());
+    return new TryOpcode(
+      this.heap.gethandle(this.pc),
+      state,
+      this.runtime,
+      tracker,
+      new LinkedList<UpdatingOpcode>()
+    );
   }
 
   enterItem(key: string, opcode: TryOpcode) {
@@ -320,7 +349,7 @@ export default class VM<T> implements PublicVM {
     let tracker = this.elements().pushBlockList(updating);
     let artifacts = this.stack.peek<ReferenceIterator>().artifacts;
 
-    let addr = (this.pc + relativeStart) - this.currentOpSize;
+    let addr = this.pc + relativeStart - this.currentOpSize;
     let start = this.heap.gethandle(addr);
 
     let opcode = new ListBlockOpcode(start, state, this.runtime, tracker, updating, artifacts);
@@ -358,7 +387,10 @@ export default class VM<T> implements PublicVM {
   }
 
   updating(): LinkedList<UpdatingOpcode> {
-    return expect(this.updatingOpcodeStack.current, 'expected updating opcode on the updating opcode stack');
+    return expect(
+      this.updatingOpcodeStack.current,
+      'expected updating opcode on the updating opcode stack'
+    );
   }
 
   elements(): ElementBuilder {
@@ -370,7 +402,10 @@ export default class VM<T> implements PublicVM {
   }
 
   dynamicScope(): DynamicScope {
-    return expect(this.dynamicScopeStack.current, 'expected dynamic scope on the dynamic scope stack');
+    return expect(
+      this.dynamicScopeStack.current,
+      'expected dynamic scope on the dynamic scope stack'
+    );
   }
 
   pushChildScope() {
@@ -455,7 +490,7 @@ export default class VM<T> implements PublicVM {
           program,
           expect(updatingOpcodeStack.pop(), 'there should be a final updating opcode stack'),
           elementStack.popBlock()
-        )
+        ),
       };
     }
     return result;
@@ -464,7 +499,7 @@ export default class VM<T> implements PublicVM {
   bindDynamicScope(names: number[]) {
     let scope = this.dynamicScope();
 
-    for(let i=names.length - 1; i>=0; i--) {
+    for (let i = names.length - 1; i >= 0; i--) {
       let name = this.constants.getString(names[i]);
       scope.set(name, this.stack.pop<VersionedPathReference<Opaque>>());
     }

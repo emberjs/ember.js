@@ -8,13 +8,13 @@ export enum ConstructionOperation {
   SetAttribute,
   AppendText,
   AppendComment,
-  AppendHTML
+  AppendHTML,
 }
 
 type OpSize = 0 | 1 | 2 | 3;
 
 function withSize(opcode: ConstructionOperation, size: number): number {
-  return opcode << 3 | size;
+  return (opcode << 3) | size;
 }
 
 function sizeof(opcode: number): OpSize {
@@ -25,7 +25,7 @@ function opcodeof(opcode: number): ConstructionOperation {
   return opcode >> 3;
 }
 
-export const HTML = "http://www.w3.org/1999/xhtml";
+export const HTML = 'http://www.w3.org/1999/xhtml';
 
 export class Constants {
   private strings: string[] = [];
@@ -52,10 +52,10 @@ export class OperationsBuilder {
 
   constructor(private ops: number[], private constants: Constants = new Constants()) {}
 
-  finish(): { ops: ReadonlyArray<number>, constants: ReadonlyArray<string> } {
+  finish(): { ops: ReadonlyArray<number>; constants: ReadonlyArray<string> } {
     return {
       ops: this.ops,
-      constants: this.constants.all()
+      constants: this.constants.all(),
     };
   }
 
@@ -126,7 +126,7 @@ export function run(opcodes: ReadonlyArray<number>, options: RunOptions) {
     ...options,
     elements: [options.parent],
     constructing: null,
-    tokens
+    tokens,
   };
 
   while (offset < end) {
@@ -172,7 +172,7 @@ const ConstructionOperations: ConstructionFunction[] = [
   },
 
   /* (CloseElement) */
-  (state) => {
+  state => {
     if (state.constructing) flush(state);
     state.elements.pop();
     state.parent = state.elements[state.elements.length - 1];
@@ -182,20 +182,21 @@ const ConstructionOperations: ConstructionFunction[] = [
   (state, name, value, namespace) => {
     let { constants, constructing } = state;
 
-    assert(constructing !== null, 'SetAttribute can only be invoked when an element is being constructed');
+    assert(
+      constructing !== null,
+      'SetAttribute can only be invoked when an element is being constructed'
+    );
 
-    constructing!.setAttributeNS(constants[namespace] as Simple.Namespace, constants[name], constants[value]);
+    constructing!.setAttributeNS(
+      constants[namespace] as Simple.Namespace,
+      constants[name],
+      constants[value]
+    );
   },
 
   /* (AppendText text) */
   (state, text) => {
-    let {
-      constants,
-      document,
-      parent,
-      nextSibling,
-      constructing
-    } = state;
+    let { constants, document, parent, nextSibling, constructing } = state;
 
     let parentElement = constructing ? flush(state) : parent;
     let textNode = document.createTextNode(constants[text]);
@@ -215,7 +216,7 @@ const ConstructionOperations: ConstructionFunction[] = [
   /* (AppendHTML text) */
   (_state, _text) => {
     throw new Error('unimplemented');
-  }
+  },
 ];
 
 function flush(state: ConstructionState): Simple.Element {

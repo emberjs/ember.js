@@ -6,29 +6,29 @@ import { mixin } from './support';
 import { Mixin } from '@glimmer/object';
 
 let PrivateProperty = Mixin.create({
-  _foo: '_FOO'
+  _foo: '_FOO',
 });
 
 let PublicProperty = Mixin.create({
-  foo: 'FOO'
+  foo: 'FOO',
 });
 
 let PrivateMethod = Mixin.create({
-  _fooMethod() {}
+  _fooMethod() {},
 });
 
 let PublicMethod = Mixin.create({
-  fooMethod() {}
+  fooMethod() {},
 });
 
 let BarProperties = Mixin.create({
   _bar: '_BAR',
-  bar: 'bar'
+  bar: 'bar',
 });
 
 let BarMethods = Mixin.create({
   _barMethod() {},
-  barMethod() {}
+  barMethod() {},
 });
 
 let Combined = Mixin.create(BarProperties, BarMethods);
@@ -39,12 +39,21 @@ QUnit.module('Mixin.mixins (introspection)', {
   beforeEach() {
     obj = {};
     mixin(obj, PrivateProperty, PublicProperty, PrivateMethod, PublicMethod, Combined);
-  }
+  },
 });
 
 QUnit.test('Ember.mixins()', assert => {
-  assert.deepEqual(Mixin.mixins(obj),
-    [PrivateProperty, PublicProperty, PrivateMethod, PublicMethod, BarProperties, BarMethods, Combined],
+  assert.deepEqual(
+    Mixin.mixins(obj),
+    [
+      PrivateProperty,
+      PublicProperty,
+      PrivateMethod,
+      PublicMethod,
+      BarProperties,
+      BarMethods,
+      Combined,
+    ],
     'should return included mixins'
   );
 });

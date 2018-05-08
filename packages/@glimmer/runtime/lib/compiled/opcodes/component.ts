@@ -6,7 +6,7 @@ import {
   ComponentInstanceState,
   ComponentDefinitionState,
   Recast,
-  RuntimeResolver
+  RuntimeResolver,
 } from '@glimmer/interfaces';
 import {
   CONSTANT_TAG,
@@ -14,7 +14,7 @@ import {
   VersionedReference,
   isConst,
   isConstTag,
-  VersionedPathReference
+  VersionedPathReference,
 } from '@glimmer/reference';
 import {
   check,
@@ -23,7 +23,7 @@ import {
   CheckFunction,
   CheckInterface,
   CheckProgramSymbolTable,
-  CheckHandle
+  CheckHandle,
 } from '@glimmer/debug';
 
 import Bounds from '../../bounds';
@@ -34,7 +34,7 @@ import { Arguments, IArguments, BlockArguments } from '../../vm/arguments';
 import { IsCurriedComponentDefinitionReference, ContentTypeReference } from './content';
 import { UpdateDynamicAttributeOpcode } from './dom';
 import { Component } from '../../internal-interfaces';
-import { resolveComponent } from "../../component/resolve";
+import { resolveComponent } from '../../component/resolve';
 import {
   WithDynamicTagName,
   WithElementHook,
@@ -42,22 +42,27 @@ import {
   InternalComponentManager,
   Invocation,
   WithDynamicLayout,
-  WithStaticLayout
+  WithStaticLayout,
 } from '../../component/interfaces';
 import {
   CurriedComponentDefinition,
-  isCurriedComponentDefinition
+  isCurriedComponentDefinition,
 } from '../../component/curried-component';
 import CurryComponentReference from '../../references/curry-component';
 import ClassListReference from '../../references/class-list';
-import { capabilityFlagsFrom, Capability, hasCapability, CapabilityFlags } from '../../capabilities';
+import {
+  capabilityFlagsFrom,
+  Capability,
+  hasCapability,
+  CapabilityFlags,
+} from '../../capabilities';
 import {
   CheckReference,
   CheckArguments,
   CheckCapturedArguments,
   CheckPathReference,
   CheckComponentInstance,
-  CheckFinishedComponentInstance
+  CheckFinishedComponentInstance,
 } from './-debug-strip';
 
 /**
@@ -146,7 +151,7 @@ APPEND_OPCODES.add(Op.PushComponentDefinition, (vm, { op1: handle }) => {
     state: null,
     handle: null,
     table: null,
-    lookup: null
+    lookup: null,
   };
 
   vm.stack.push(instance);
@@ -164,7 +169,9 @@ APPEND_OPCODES.add(Op.ResolveDynamicComponent, (vm, { op1: _meta }) => {
   let definition: ComponentDefinition | CurriedComponentDefinition;
 
   if (typeof component === 'string') {
-    let { constants: { resolver } } = vm;
+    let {
+      constants: { resolver },
+    } = vm;
     let resolvedDefinition = resolveComponent(resolver, component, meta);
 
     definition = expect(resolvedDefinition, `Could not find a component named "${component}"`);
@@ -178,7 +185,7 @@ APPEND_OPCODES.add(Op.ResolveDynamicComponent, (vm, { op1: _meta }) => {
   expectStackChange(vm.stack, 0, 'ResolveDynamicComponent');
 });
 
-APPEND_OPCODES.add(Op.PushDynamicComponentInstance, (vm) => {
+APPEND_OPCODES.add(Op.PushDynamicComponentInstance, vm => {
   let { stack } = vm;
   let definition = stack.pop<ComponentDefinition>();
 
@@ -250,7 +257,10 @@ APPEND_OPCODES.add(Op.PrepareArgs, (vm, { op1: _state }) => {
   let { definition } = instance;
 
   if (isCurriedComponentDefinition(definition)) {
-    assert(!definition.manager, "If the component definition was curried, we don't yet have a manager");
+    assert(
+      !definition.manager,
+      "If the component definition was curried, we don't yet have a manager"
+    );
     definition = resolveCurriedComponentDefinition(instance, definition, args);
   }
 
@@ -293,12 +303,16 @@ APPEND_OPCODES.add(Op.PrepareArgs, (vm, { op1: _state }) => {
   stack.push(args);
 });
 
-function resolveCurriedComponentDefinition(instance: ComponentInstance, definition: CurriedComponentDefinition, args: Arguments): ComponentDefinition {
-  let unwrappedDefinition = instance.definition = definition.unwrap(args);
+function resolveCurriedComponentDefinition(
+  instance: ComponentInstance,
+  definition: CurriedComponentDefinition,
+  args: Arguments
+): ComponentDefinition {
+  let unwrappedDefinition = (instance.definition = definition.unwrap(args));
   let { manager, state } = unwrappedDefinition;
 
-  assert(instance.manager === null, "component instance manager should not be populated yet");
-  assert(instance.capabilities === null, "component instance manager should not be populated yet");
+  assert(instance.manager === null, 'component instance manager should not be populated yet');
+  assert(instance.capabilities === null, 'component instance manager should not be populated yet');
 
   instance.manager = manager;
   instance.capabilities = capabilityFlagsFrom(manager.getCapabilities(state));
@@ -310,7 +324,9 @@ APPEND_OPCODES.add(Op.CreateComponent, (vm, { op1: flags, op2: _state }) => {
   let instance = vm.fetchValue<PopulatedComponentInstance>(_state);
   let { definition, manager } = instance;
 
-  let capabilities = instance.capabilities = capabilityFlagsFrom(manager.getCapabilities(definition.state));
+  let capabilities = (instance.capabilities = capabilityFlagsFrom(
+    manager.getCapabilities(definition.state)
+  ));
 
   let dynamicScope: Option<DynamicScope> = null;
   if (hasCapability(capabilities, Capability.DynamicScope)) {
@@ -365,7 +381,12 @@ APPEND_OPCODES.add(Op.ComponentAttr, (vm, { op1: _name, op2: trusting, op3: _nam
   let reference = check(vm.stack.pop(), CheckReference);
   let namespace = _namespace ? vm.constants.getString(_namespace) : null;
 
-  check(vm.fetchValue(Register.t0), CheckInstanceof(ComponentElementOperations)).setAttribute(name, reference, !!trusting, namespace);
+  check(vm.fetchValue(Register.t0), CheckInstanceof(ComponentElementOperations)).setAttribute(
+    name,
+    reference,
+    !!trusting,
+    namespace
+  );
 });
 
 interface DeferredAttribute {
@@ -378,7 +399,12 @@ export class ComponentElementOperations {
   private attributes = dict<DeferredAttribute>();
   private classes: VersionedReference<Opaque>[] = [];
 
-  setAttribute(name: string, value: VersionedReference<Opaque>, trusting: boolean, namespace: Option<string>) {
+  setAttribute(
+    name: string,
+    value: VersionedReference<Opaque>,
+    trusting: boolean,
+    namespace: Option<string>
+  ) {
     let deferred = { value, namespace, trusting };
 
     if (name === 'class') {
@@ -401,7 +427,9 @@ export class ComponentElementOperations {
         continue;
       }
 
-      let attribute = vm.elements().setDynamicAttribute(name, reference.value(), trusting, namespace);
+      let attribute = vm
+        .elements()
+        .setDynamicAttribute(name, reference.value(), trusting, namespace);
 
       if (!isConst(reference)) {
         vm.updateWith(new UpdateDynamicAttributeOpcode(reference, attribute));
@@ -412,7 +440,9 @@ export class ComponentElementOperations {
       let type = this.attributes.type;
       let { value: reference, namespace, trusting } = type;
 
-      let attribute = vm.elements().setDynamicAttribute('type', reference.value(), trusting, namespace);
+      let attribute = vm
+        .elements()
+        .setDynamicAttribute('type', reference.value(), trusting, namespace);
 
       if (!isConst(reference)) {
         vm.updateWith(new UpdateDynamicAttributeOpcode(reference, attribute));
@@ -428,7 +458,11 @@ APPEND_OPCODES.add(Op.DidCreateElement, (vm, { op1: _state }) => {
   let operations = check(vm.fetchValue(Register.t0), CheckInstanceof(ComponentElementOperations));
 
   let action = 'DidCreateElementOpcode#evaluate';
-  (manager as WithElementHook<Component>).didCreateElement(state, vm.elements().expectConstructing(action), operations);
+  (manager as WithElementHook<Component>).didCreateElement(
+    state,
+    vm.elements().expectConstructing(action),
+    operations
+  );
 });
 
 APPEND_OPCODES.add(Op.GetComponentSelf, (vm, { op1: _state }) => {
@@ -442,19 +476,24 @@ APPEND_OPCODES.add(Op.GetComponentTagName, (vm, { op1: _state }) => {
   let { definition, state } = check(vm.fetchValue(_state), CheckComponentInstance);
   let { manager } = definition;
 
-  vm.stack.push((manager as Recast<InternalComponentManager, WithDynamicTagName<Component>>).getTagName(state));
+  vm.stack.push(
+    (manager as Recast<InternalComponentManager, WithDynamicTagName<Component>>).getTagName(state)
+  );
 });
 
 // Dynamic Invocation Only
 APPEND_OPCODES.add(Op.GetComponentLayout, (vm, { op1: _state }) => {
   let instance = check(vm.fetchValue(_state), CheckComponentInstance);
   let { manager, definition } = instance;
-  let { constants: { resolver }, stack } = vm;
+  let {
+    constants: { resolver },
+    stack,
+  } = vm;
 
   let { state: instanceState, capabilities } = instance;
   let { state: definitionState } = definition;
 
-  let invoke: { handle: number, symbolTable: ProgramSymbolTable };
+  let invoke: { handle: number; symbolTable: ProgramSymbolTable };
 
   if (hasStaticLayout(capabilities, manager)) {
     invoke = manager.getLayout(definitionState, resolver);
@@ -468,11 +507,22 @@ APPEND_OPCODES.add(Op.GetComponentLayout, (vm, { op1: _state }) => {
   stack.push(invoke.handle);
 });
 
-function hasStaticLayout(capabilities: CapabilityFlags, _manager: InternalComponentManager): _manager is WithStaticLayout<ComponentInstanceState, ComponentDefinitionState, Opaque, RuntimeResolver<Opaque>> {
+function hasStaticLayout(
+  capabilities: CapabilityFlags,
+  _manager: InternalComponentManager
+): _manager is WithStaticLayout<
+  ComponentInstanceState,
+  ComponentDefinitionState,
+  Opaque,
+  RuntimeResolver<Opaque>
+> {
   return hasCapability(capabilities, Capability.DynamicLayout) === false;
 }
 
-function hasDynamicLayout(capabilities: CapabilityFlags, _manager: InternalComponentManager): _manager is WithDynamicLayout<ComponentInstanceState, Opaque, RuntimeResolver<Opaque>> {
+function hasDynamicLayout(
+  capabilities: CapabilityFlags,
+  _manager: InternalComponentManager
+): _manager is WithDynamicLayout<ComponentInstanceState, Opaque, RuntimeResolver<Opaque>> {
   return hasCapability(capabilities, Capability.DynamicLayout) === true;
 }
 
@@ -490,7 +540,7 @@ APPEND_OPCODES.add(Op.Main, (vm, { op1: register }) => {
     state: null,
     handle: invocation.handle as Recast<number, VMHandle>,
     table: invocation.symbolTable,
-    lookup: null
+    lookup: null,
   };
 
   vm.loadValue(register, state);
@@ -518,7 +568,7 @@ APPEND_OPCODES.add(Op.SetupForEval, (vm, { op1: _state }) => {
   let state = check(vm.fetchValue(_state), CheckFinishedComponentInstance);
 
   if (state.table.hasEval) {
-    let lookup = state.lookup = dict<ScopeSlot>();
+    let lookup = (state.lookup = dict<ScopeSlot>());
     vm.scope().bindEvalScope(lookup);
   }
 });
@@ -530,7 +580,7 @@ APPEND_OPCODES.add(Op.SetNamedVariables, (vm, { op1: _state }) => {
   let args = check(vm.stack.peek(), CheckArguments);
   let callerNames = args.named.atNames;
 
-  for (let i=callerNames.length - 1; i>=0; i--) {
+  for (let i = callerNames.length - 1; i >= 0; i--) {
     let atName = callerNames[i];
     let symbol = state.table.symbols.indexOf(callerNames[i]);
     let value = args.named.get(atName, false);
@@ -540,7 +590,13 @@ APPEND_OPCODES.add(Op.SetNamedVariables, (vm, { op1: _state }) => {
   }
 });
 
-function bindBlock(symbolName: string, blockName: string, state: ComponentInstance, blocks: BlockArguments, vm: VM<Opaque>) {
+function bindBlock(
+  symbolName: string,
+  blockName: string,
+  state: ComponentInstance,
+  blocks: BlockArguments,
+  vm: VM<Opaque>
+) {
   let symbol = state.table.symbols.indexOf(symbolName);
 
   let block = blocks.get(blockName);
@@ -550,7 +606,7 @@ function bindBlock(symbolName: string, blockName: string, state: ComponentInstan
   }
 
   if (state.lookup) state.lookup[symbolName] = block;
-};
+}
 
 APPEND_OPCODES.add(Op.SetBlocks, (vm, { op1: _state }) => {
   let state = check(vm.fetchValue(_state), CheckFinishedComponentInstance);
@@ -592,7 +648,7 @@ export class UpdateComponentOpcode extends UpdatingOpcode {
     public tag: Tag,
     private component: Component,
     private manager: InternalComponentManager,
-    private dynamicScope: Option<DynamicScope>,
+    private dynamicScope: Option<DynamicScope>
   ) {
     super();
   }
@@ -611,7 +667,7 @@ export class DidUpdateLayoutOpcode extends UpdatingOpcode {
   constructor(
     private manager: InternalComponentManager,
     private component: Component,
-    private bounds: Bounds,
+    private bounds: Bounds
   ) {
     super();
   }

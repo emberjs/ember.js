@@ -1,32 +1,37 @@
-
-import { CompileTimeProgram, Recast, VMHandle, RuntimeResolver, CompileTimeHeap } from "@glimmer/interfaces";
-import { DEBUG } from "@glimmer/local-debug-flags";
+import {
+  CompileTimeProgram,
+  Recast,
+  VMHandle,
+  RuntimeResolver,
+  CompileTimeHeap,
+} from '@glimmer/interfaces';
+import { DEBUG } from '@glimmer/local-debug-flags';
 import { Constants, WriteOnlyConstants, RuntimeConstants, ConstantPool } from './constants';
 import { Opcode } from './opcode';
-import { assert } from "@glimmer/util";
+import { assert } from '@glimmer/util';
 
 const enum TableSlotState {
   Allocated,
   Freed,
   Purged,
-  Pointer
+  Pointer,
 }
 
 const enum Size {
   ENTRY_SIZE = 2,
   INFO_OFFSET = 1,
-  MAX_SIZE   = 0b1111111111111111,
-  SIZE_MASK  = 0b00000000000000001111111111111111,
+  MAX_SIZE = 0b1111111111111111,
+  SIZE_MASK = 0b00000000000000001111111111111111,
   SCOPE_MASK = 0b00111111111111110000000000000000,
   STATE_MASK = 0b11000000000000000000000000000000,
 }
 
 function encodeTableInfo(size: number, scopeSize: number, state: number) {
-  return size | (scopeSize << 16) | state << 30;
+  return size | (scopeSize << 16) | (state << 30);
 }
 
 function changeState(info: number, newState: number) {
-  return info | newState << 30;
+  return info | (newState << 30);
 }
 
 export interface SerializedHeap {
@@ -152,7 +157,10 @@ export class Heap implements CompileTimeHeap {
 
   free(handle: VMHandle): void {
     let info = this.table[(handle as Recast<VMHandle, number>) + Size.INFO_OFFSET];
-    this.table[(handle as Recast<VMHandle, number>) + Size.INFO_OFFSET] = changeState(info, TableSlotState.Freed);
+    this.table[(handle as Recast<VMHandle, number>) + Size.INFO_OFFSET] = changeState(
+      info,
+      TableSlotState.Freed
+    );
   }
 
   /**
@@ -164,13 +172,17 @@ export class Heap implements CompileTimeHeap {
    */
   compact(): void {
     let compactedSize = 0;
-    let { table, table: { length }, heap } = this;
+    let {
+      table,
+      table: { length },
+      heap,
+    } = this;
 
-    for (let i=0; i<length; i+=Size.ENTRY_SIZE) {
+    for (let i = 0; i < length; i += Size.ENTRY_SIZE) {
       let offset = table[i];
       let info = table[i + Size.INFO_OFFSET];
       let size = info & Size.SIZE_MASK;
-      let state = info & Size.STATE_MASK >> 30;
+      let state = info & (Size.STATE_MASK >> 30);
 
       if (state === TableSlotState.Purged) {
         continue;
@@ -181,7 +193,7 @@ export class Heap implements CompileTimeHeap {
         table[i + Size.INFO_OFFSET] = changeState(info, TableSlotState.Purged);
         compactedSize += size;
       } else if (state === TableSlotState.Allocated) {
-        for (let j=offset; j<=i+size; j++) {
+        for (let j = offset; j <= i + size; j++) {
           heap[j - compactedSize] = heap[j];
         }
 
@@ -207,7 +219,10 @@ export class Heap implements CompileTimeHeap {
     for (let i = 0; i < placeholders.length; i++) {
       let [address, getValue] = placeholders[i];
 
-      assert(this.getbyaddr(address) === Size.MAX_SIZE, `expected to find a placeholder value at ${address}`);
+      assert(
+        this.getbyaddr(address) === Size.MAX_SIZE,
+        `expected to find a placeholder value at ${address}`
+      );
       this.setbyaddr(address, getValue());
     }
   }
@@ -220,7 +235,7 @@ export class Heap implements CompileTimeHeap {
     return {
       handle: this.handle,
       table: this.table,
-      buffer: buffer as ArrayBuffer
+      buffer: buffer as ArrayBuffer,
     };
   }
 }
@@ -230,7 +245,10 @@ export class WriteOnlyProgram implements CompileTimeProgram {
 
   private _opcode: Opcode;
 
-  constructor(public constants: WriteOnlyConstants = new WriteOnlyConstants(), public heap = new Heap()) {
+  constructor(
+    public constants: WriteOnlyConstants = new WriteOnlyConstants(),
+    public heap = new Heap()
+  ) {
     this._opcode = new Opcode(this.heap);
   }
 
@@ -243,7 +261,11 @@ export class WriteOnlyProgram implements CompileTimeProgram {
 export class RuntimeProgram<Locator> {
   [key: number]: never;
 
-  static hydrate<Locator>(rawHeap: SerializedHeap, pool: ConstantPool, resolver: RuntimeResolver<Locator>) {
+  static hydrate<Locator>(
+    rawHeap: SerializedHeap,
+    pool: ConstantPool,
+    resolver: RuntimeResolver<Locator>
+  ) {
     let heap = new Heap(rawHeap);
     let constants = new RuntimeConstants(resolver, pool);
 
@@ -274,7 +296,7 @@ function slice(arr: Uint16Array, start: number, end: number): Uint16Array {
   let ret = new Uint16Array(end);
 
   for (; start < end; start++) {
-    ret[start]  = arr[start];
+    ret[start] = arr[start];
   }
 
   return ret;

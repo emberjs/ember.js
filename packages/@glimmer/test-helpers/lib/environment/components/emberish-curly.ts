@@ -1,8 +1,26 @@
-import { Option, Opaque, ProgramSymbolTable, ComponentCapabilities, ModuleLocator } from '@glimmer/interfaces';
+import {
+  Option,
+  Opaque,
+  ProgramSymbolTable,
+  ComponentCapabilities,
+  ModuleLocator,
+} from '@glimmer/interfaces';
 import GlimmerObject from '@glimmer/object';
 import { Tag, combine, PathReference, TagWrapper, DirtyableTag } from '@glimmer/reference';
 import { EMPTY_ARRAY, assign, Destroyable, expect } from '@glimmer/util';
-import { Environment, Arguments, WithDynamicTagName, PreparedArguments, WithDynamicLayout, PrimitiveReference, ElementOperations, Bounds, CapturedNamedArguments, DynamicScope, Invocation } from '@glimmer/runtime';
+import {
+  Environment,
+  Arguments,
+  WithDynamicTagName,
+  PreparedArguments,
+  WithDynamicLayout,
+  PrimitiveReference,
+  ElementOperations,
+  Bounds,
+  CapturedNamedArguments,
+  DynamicScope,
+  Invocation,
+} from '@glimmer/runtime';
 import { UpdatableReference } from '@glimmer/object-reference';
 
 import { Attrs, createTemplate, AttrsDiff } from '../shared';
@@ -14,7 +32,7 @@ export class EmberishCurlyComponent extends GlimmerObject {
   public static positionalParams: string[] | string = [];
 
   public dirtinessTag: TagWrapper<DirtyableTag> = DirtyableTag.create();
-  public layout: { name: string, handle: number };
+  public layout: { name: string; handle: number };
   public name: string;
   public tagName: Option<string> = null;
   public attributeBindings: Option<string[]> = null;
@@ -32,22 +50,22 @@ export class EmberishCurlyComponent extends GlimmerObject {
     this.dirtinessTag.inner.dirty();
   }
 
-  didInitAttrs(_options: { attrs: Attrs }) { }
-  didUpdateAttrs(_diff: AttrsDiff) { }
-  didReceiveAttrs(_diff: AttrsDiff) { }
-  willInsertElement() { }
-  willUpdate() { }
-  willRender() { }
-  didInsertElement() { }
-  didUpdate() { }
-  didRender() { }
+  didInitAttrs(_options: { attrs: Attrs }) {}
+  didUpdateAttrs(_diff: AttrsDiff) {}
+  didReceiveAttrs(_diff: AttrsDiff) {}
+  willInsertElement() {}
+  willUpdate() {}
+  willRender() {}
+  didInsertElement() {}
+  didUpdate() {}
+  didRender() {}
 }
 
 export const BaseEmberishCurlyComponent = EmberishCurlyComponent.extend() as typeof EmberishCurlyComponent;
 
 export interface EmberishCurlyComponentFactory {
   positionalParams: Option<string | string[]>;
-  create(options: { attrs: Attrs, targetObject: any }): EmberishCurlyComponent;
+  create(options: { attrs: Attrs; targetObject: any }): EmberishCurlyComponent;
 }
 
 export const CURLY_CAPABILITIES: ComponentCapabilities = {
@@ -60,13 +78,13 @@ export const CURLY_CAPABILITIES: ComponentCapabilities = {
   dynamicScope: true,
   createCaller: true,
   updateHook: true,
-  createInstance: true
+  createInstance: true,
 };
 
 export const EMBERISH_CURLY_CAPABILITIES: ComponentCapabilities = {
   ...CURLY_CAPABILITIES,
   dynamicLayout: false,
-  attributeHook: false
+  attributeHook: false,
 };
 
 export interface EmberishCurlyComponentDefinitionState {
@@ -77,19 +95,22 @@ export interface EmberishCurlyComponentDefinitionState {
   symbolTable?: ProgramSymbolTable;
 }
 
-export class EmberishCurlyComponentManager implements
-  WithDynamicTagName<EmberishCurlyComponent>,
-  WithDynamicLayout<EmberishCurlyComponent, Locator, LazyRuntimeResolver> {
-
+export class EmberishCurlyComponentManager
+  implements
+    WithDynamicTagName<EmberishCurlyComponent>,
+    WithDynamicLayout<EmberishCurlyComponent, Locator, LazyRuntimeResolver> {
   getCapabilities(state: TestComponentDefinitionState) {
     return state.capabilities;
   }
 
-  getLayout(state: EmberishCurlyComponentDefinitionState, resolver: EagerRuntimeResolver): Invocation {
+  getLayout(
+    state: EmberishCurlyComponentDefinitionState,
+    resolver: EagerRuntimeResolver
+  ): Invocation {
     let handle = resolver.getVMHandle(expect(state.locator, 'expected locator'));
     return {
       handle,
-      symbolTable: state.symbolTable! as ProgramSymbolTable
+      symbolTable: state.symbolTable! as ProgramSymbolTable,
     };
   }
 
@@ -110,12 +131,15 @@ export class EmberishCurlyComponentManager implements
       let builder = template.asWrappedLayout();
       return {
         handle: builder.compile(),
-        symbolTable: builder.symbolTable
+        symbolTable: builder.symbolTable,
       };
     });
   }
 
-  prepareArgs(state: EmberishCurlyComponentDefinitionState, args: Arguments): Option<PreparedArguments> {
+  prepareArgs(
+    state: EmberishCurlyComponentDefinitionState,
+    args: Arguments
+  ): Option<PreparedArguments> {
     const { positionalParams } = state.ComponentClass || BaseEmberishCurlyComponent;
 
     if (typeof positionalParams === 'string') {
@@ -123,7 +147,9 @@ export class EmberishCurlyComponentManager implements
         if (args.positional.length === 0) {
           return null;
         } else {
-          throw new Error(`You cannot specify positional parameters and the hash argument \`${positionalParams}\`.`);
+          throw new Error(
+            `You cannot specify positional parameters and the hash argument \`${positionalParams}\`.`
+          );
         }
       }
 
@@ -135,11 +161,13 @@ export class EmberishCurlyComponentManager implements
       let named = Object.assign({}, args.named.capture().map);
       let count = Math.min(positionalParams.length, args.positional.length);
 
-      for (let i=0; i<count; i++) {
+      for (let i = 0; i < count; i++) {
         let name = positionalParams[i];
 
         if (named[name]) {
-          throw new Error(`You cannot specify both a positional param (at position ${i}) and the hash argument \`${name}\`.`);
+          throw new Error(
+            `You cannot specify both a positional param (at position ${i}) and the hash argument \`${name}\`.`
+          );
         }
 
         named[name] = args.positional.at(i);
@@ -151,12 +179,26 @@ export class EmberishCurlyComponentManager implements
     }
   }
 
-  create(_environment: Environment, state: EmberishCurlyComponentDefinitionState, _args: Arguments, dynamicScope: DynamicScope, callerSelf: PathReference<Opaque>, hasDefaultBlock: boolean): EmberishCurlyComponent {
+  create(
+    _environment: Environment,
+    state: EmberishCurlyComponentDefinitionState,
+    _args: Arguments,
+    dynamicScope: DynamicScope,
+    callerSelf: PathReference<Opaque>,
+    hasDefaultBlock: boolean
+  ): EmberishCurlyComponent {
     let klass = state.ComponentClass || BaseEmberishCurlyComponent;
     let self = callerSelf.value();
     let args = _args.named.capture();
     let attrs = args.value();
-    let merged = assign({}, attrs, { attrs }, { args }, { targetObject: self }, { HAS_BLOCK: hasDefaultBlock });
+    let merged = assign(
+      {},
+      attrs,
+      { attrs },
+      { args },
+      { targetObject: self },
+      { HAS_BLOCK: hasDefaultBlock }
+    );
     let component = klass.create(merged);
 
     component.name = state.name;
@@ -166,7 +208,9 @@ export class EmberishCurlyComponentManager implements
       component.layout = { name: component.name, handle: state.layout };
     }
 
-    let dyn: Option<string[]> = state.ComponentClass ? state.ComponentClass['fromDynamicScope'] : null;
+    let dyn: Option<string[]> = state.ComponentClass
+      ? state.ComponentClass['fromDynamicScope']
+      : null;
 
     if (dyn) {
       for (let i = 0; i < dyn.length; i++) {
@@ -201,10 +245,19 @@ export class EmberishCurlyComponentManager implements
     }
   }
 
-  didCreateElement(component: EmberishCurlyComponent, element: Element, operations: ElementOperations): void {
+  didCreateElement(
+    component: EmberishCurlyComponent,
+    element: Element,
+    operations: ElementOperations
+  ): void {
     component.element = element;
 
-    operations.setAttribute('id', PrimitiveReference.create(`ember${component._guid}`), false, null);
+    operations.setAttribute(
+      'id',
+      PrimitiveReference.create(`ember${component._guid}`),
+      false,
+      null
+    );
     operations.setAttribute('class', PrimitiveReference.create('ember-view'), false, null);
 
     let bindings = component.attributeBindings;
@@ -241,7 +294,7 @@ export class EmberishCurlyComponentManager implements
     component.willRender();
   }
 
-  didUpdateLayout(): void { }
+  didUpdateLayout(): void {}
 
   didUpdate(component: EmberishCurlyComponent): void {
     component.didUpdate();
@@ -252,7 +305,7 @@ export class EmberishCurlyComponentManager implements
     return {
       destroy() {
         component.destroy();
-      }
+      },
     };
   }
 }

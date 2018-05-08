@@ -1,12 +1,15 @@
-import { CompilableProgram, Template, Opaque, Option, LayoutWithContext } from '@glimmer/interfaces';
-import { assign } from '@glimmer/util';
 import {
-  SerializedTemplateBlock,
-  SerializedTemplateWithLazyBlock
-} from '@glimmer/wire-format';
+  CompilableProgram,
+  Template,
+  Opaque,
+  Option,
+  LayoutWithContext,
+} from '@glimmer/interfaces';
+import { assign } from '@glimmer/util';
+import { SerializedTemplateBlock, SerializedTemplateWithLazyBlock } from '@glimmer/wire-format';
 import { CompilableProgram as CompilableProgramInstance } from './compilable-template';
-import { WrappedBuilder } from "./wrapped-component";
-import { LazyCompiler } from "@glimmer/opcode-compiler";
+import { WrappedBuilder } from './wrapped-component';
+import { LazyCompiler } from '@glimmer/opcode-compiler';
 
 export interface TemplateFactory<Locator> {
   /**
@@ -44,9 +47,17 @@ let clientId = 0;
  * that handles lazy parsing the template and to create per env singletons
  * of the template.
  */
-export default function templateFactory<Locator>(serializedTemplate: SerializedTemplateWithLazyBlock<Locator>): TemplateFactory<Locator>;
-export default function templateFactory<Locator, U>(serializedTemplate: SerializedTemplateWithLazyBlock<Locator>): TemplateFactory<Locator & U>;
-export default function templateFactory({ id: templateId, meta, block }: SerializedTemplateWithLazyBlock<any>): TemplateFactory<{}> {
+export default function templateFactory<Locator>(
+  serializedTemplate: SerializedTemplateWithLazyBlock<Locator>
+): TemplateFactory<Locator>;
+export default function templateFactory<Locator, U>(
+  serializedTemplate: SerializedTemplateWithLazyBlock<Locator>
+): TemplateFactory<Locator & U>;
+export default function templateFactory({
+  id: templateId,
+  meta,
+  block,
+}: SerializedTemplateWithLazyBlock<any>): TemplateFactory<{}> {
   let parsedBlock: SerializedTemplateBlock;
   let id = templateId || `client-${clientId++}`;
   let create = (compiler: LazyCompiler<Opaque>, envMeta?: {}) => {
@@ -54,7 +65,7 @@ export default function templateFactory({ id: templateId, meta, block }: Seriali
     if (!parsedBlock) {
       parsedBlock = JSON.parse(block);
     }
-    return new TemplateImpl(compiler, { id, block: parsedBlock, referrer: newMeta, });
+    return new TemplateImpl(compiler, { id, block: parsedBlock, referrer: newMeta });
   };
   return { id, meta, create };
 }
@@ -68,7 +79,10 @@ class TemplateImpl<Locator = Opaque> implements Template<Locator> {
   public id: string;
   public referrer: Locator;
 
-  constructor(private compiler: LazyCompiler<Locator>, private parsedLayout: Pick<LayoutWithContext<Locator>, 'id' | 'block' | 'referrer'>) {
+  constructor(
+    private compiler: LazyCompiler<Locator>,
+    private parsedLayout: Pick<LayoutWithContext<Locator>, 'id' | 'block' | 'referrer'>
+  ) {
     let { block } = parsedLayout;
     this.symbols = block.symbols;
     this.hasEval = block.hasEval;
@@ -78,16 +92,25 @@ class TemplateImpl<Locator = Opaque> implements Template<Locator> {
 
   asLayout(): CompilableProgram {
     if (this.layout) return this.layout;
-    return this.layout = new CompilableProgramInstance(this.compiler, { ...this.parsedLayout, asPartial: false });
+    return (this.layout = new CompilableProgramInstance(this.compiler, {
+      ...this.parsedLayout,
+      asPartial: false,
+    }));
   }
 
   asPartial(): CompilableProgram {
     if (this.partial) return this.partial;
-    return this.layout = new CompilableProgramInstance(this.compiler, { ...this.parsedLayout, asPartial: true });
+    return (this.layout = new CompilableProgramInstance(this.compiler, {
+      ...this.parsedLayout,
+      asPartial: true,
+    }));
   }
 
   asWrappedLayout(): CompilableProgram {
     if (this.wrappedLayout) return this.wrappedLayout;
-    return this.wrappedLayout = new WrappedBuilder(this.compiler, { ...this.parsedLayout, asPartial: false });
+    return (this.wrappedLayout = new WrappedBuilder(this.compiler, {
+      ...this.parsedLayout,
+      asPartial: false,
+    }));
   }
 }

@@ -2,13 +2,17 @@ import { VersionedPathReference } from '@glimmer/reference';
 import { Op } from '@glimmer/vm';
 import { APPEND_OPCODES } from '../../opcodes';
 import { PartialDefinition } from '@glimmer/opcode-compiler';
-import { assert, Dict } from "@glimmer/util";
+import { assert, Dict } from '@glimmer/util';
 import { check } from '@glimmer/debug';
-import { Opaque } from "@glimmer/interfaces";
+import { Opaque } from '@glimmer/interfaces';
 import { CheckReference } from './-debug-strip';
 
 APPEND_OPCODES.add(Op.InvokePartial, (vm, { op1: _meta, op2: _symbols, op3: _evalInfo }) => {
-  let { constants, constants: { resolver }, stack } = vm;
+  let {
+    constants,
+    constants: { resolver },
+    stack,
+  } = vm;
 
   let name = check(stack.pop(), CheckReference).value();
   assert(typeof name === 'string', `Could not find a partial named "${String(name)}"`);
@@ -39,7 +43,7 @@ APPEND_OPCODES.add(Op.InvokePartial, (vm, { op1: _meta, op2: _symbols, op3: _eva
     for (let i = 0; i < evalInfo.length; i++) {
       let slot = evalInfo[i];
       let name = outerSymbols[slot - 1];
-      let ref  = outerScope.getSymbol(slot);
+      let ref = outerScope.getSymbol(slot);
       locals[name] = ref;
     }
 

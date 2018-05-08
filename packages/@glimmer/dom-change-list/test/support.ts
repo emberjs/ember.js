@@ -1,10 +1,9 @@
+import { Simple, Option, NodeTokens } from '@glimmer/interfaces';
+import * as SimpleDOM from 'simple-dom';
+import { DOMTreeConstruction, TreeBuilder } from '@glimmer/dom-change-list';
 
-import { Simple, Option, NodeTokens } from "@glimmer/interfaces";
-import * as SimpleDOM from "simple-dom";
-import { DOMTreeConstruction, TreeBuilder } from "@glimmer/dom-change-list";
-
-export const SVG: Simple.Namespace = "http://www.w3.org/2000/svg";
-export const XLINK: Simple.Namespace = "http://www.w3.org/1999/xlink";
+export const SVG: Simple.Namespace = 'http://www.w3.org/2000/svg';
+export const XLINK: Simple.Namespace = 'http://www.w3.org/1999/xlink';
 
 export function toHTML(parent: Simple.Element | Simple.DocumentFragment) {
   let serializer = new SimpleDOM.HTMLSerializer(SimpleDOM.voidMap);
@@ -36,9 +35,13 @@ class NamespacedHTMLSerializer extends SimpleDOM.HTMLSerializer {
   }
 
   attr(original: Simple.Attribute): string {
-    let attr: { name: string, value: Option<string>, specified: boolean };
+    let attr: { name: string; value: Option<string>; specified: boolean };
     if (original.namespaceURI === XLINK) {
-      attr = { name: `xlink:${original.name}`, value: original.value, specified: original.specified };
+      attr = {
+        name: `xlink:${original.name}`,
+        value: original.value,
+        specified: original.specified,
+      };
     } else {
       attr = original;
     }
@@ -85,14 +88,14 @@ export class Builder {
     this.expected[token] = { type: 'comment', value: text };
   }
 
-  reify(tokens: NodeTokens): { actual: ExpectedToken[], expected: ExpectedToken[] } {
+  reify(tokens: NodeTokens): { actual: ExpectedToken[]; expected: ExpectedToken[] } {
     let actual: ExpectedToken[] = [];
     let { expected } = this;
 
-    for (let i=0; i<expected.length; i++) {
+    for (let i = 0; i < expected.length; i++) {
       let reified = tokens.reify(i);
 
-      switch(reified.nodeType) {
+      switch (reified.nodeType) {
         case 1:
           actual.push({ type: 'element', value: reified['tagName'] });
           break;

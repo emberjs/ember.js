@@ -3,7 +3,7 @@ import { assert, dict, unwrap, EMPTY_ARRAY } from '@glimmer/util';
 import { Register } from '@glimmer/vm';
 import * as WireFormat from '@glimmer/wire-format';
 import * as ClientSide from './client-side';
-import OpcodeBuilder from "./opcode-builder";
+import OpcodeBuilder from './opcode-builder';
 
 import Ops = WireFormat.Ops;
 import S = WireFormat.Statements;
@@ -11,7 +11,10 @@ import E = WireFormat.Expressions;
 import C = WireFormat.Core;
 
 export type TupleSyntax = WireFormat.Statement | WireFormat.TupleExpression;
-export type CompilerFunction<T extends TupleSyntax> = ((sexp: T, builder: OpcodeBuilder<Opaque>) => void);
+export type CompilerFunction<T extends TupleSyntax> = ((
+  sexp: T,
+  builder: OpcodeBuilder<Opaque>
+) => void);
 
 export const ATTRS_BLOCK = '&attrs';
 
@@ -21,7 +24,10 @@ export class Compilers<Syntax extends TupleSyntax> {
 
   constructor(private offset = 0) {}
 
-  add<T extends Syntax>(name: number, func: (sexp: T, builder: OpcodeBuilder<Opaque>) => void): void {
+  add<T extends Syntax>(
+    name: number,
+    func: (sexp: T, builder: OpcodeBuilder<Opaque>) => void
+  ): void {
     this.funcs.push(func);
     this.names[name] = this.funcs.length - 1;
   }
@@ -30,7 +36,10 @@ export class Compilers<Syntax extends TupleSyntax> {
     let name: number = sexp[this.offset];
     let index = this.names[name];
     let func = this.funcs[index];
-    assert(!!func, `expected an implementation for ${this.offset === 0 ? Ops[sexp[0]] : ClientSide.Ops[sexp[1]]}`);
+    assert(
+      !!func,
+      `expected an implementation for ${this.offset === 0 ? Ops[sexp[0]] : ClientSide.Ops[sexp[1]]}`
+    );
     func(sexp, builder);
   }
 }
@@ -42,7 +51,7 @@ export function statementCompiler(): Compilers<WireFormat.Statement> {
     return _statementCompiler;
   }
 
-  const STATEMENTS = _statementCompiler = new Compilers<WireFormat.Statement>();
+  const STATEMENTS = (_statementCompiler = new Compilers<WireFormat.Statement>());
 
   STATEMENTS.add(Ops.Text, (sexp: S.Text, builder) => {
     builder.text(sexp[1]);
@@ -69,7 +78,9 @@ export function statementCompiler(): Compilers<WireFormat.Statement> {
     if (handle !== null) {
       builder.modifier(handle, params, hash);
     } else {
-      throw new Error(`Compile Error ${name} is not a modifier: Helpers may not be used in the element form.`);
+      throw new Error(
+        `Compile Error ${name} is not a modifier: Helpers may not be used in the element form.`
+      );
     }
   });
 
@@ -103,18 +114,25 @@ export function statementCompiler(): Compilers<WireFormat.Statement> {
     let { handle, capabilities, compilable } = builder.compiler.resolveLayoutForTag(tag, referrer);
 
     if (handle !== null && capabilities !== null) {
-
       let attrs: WireFormat.Statement[] = [
         [Ops.ClientSideStatement, ClientSide.Ops.SetComponentAttrs, true],
         ..._attrs,
-        [Ops.ClientSideStatement, ClientSide.Ops.SetComponentAttrs, false]
+        [Ops.ClientSideStatement, ClientSide.Ops.SetComponentAttrs, false],
       ];
       let attrsBlock = builder.inlineBlock({ statements: attrs, parameters: EMPTY_ARRAY });
       let child = builder.template(block);
 
       if (compilable) {
         builder.pushComponentDefinition(handle);
-        builder.invokeStaticComponent(capabilities, compilable, attrsBlock, null, args, false, child && child);
+        builder.invokeStaticComponent(
+          capabilities,
+          compilable,
+          attrsBlock,
+          null,
+          args,
+          false,
+          child && child
+        );
       } else {
         builder.pushComponentDefinition(handle);
         builder.invokeComponent(capabilities, attrsBlock, null, args, false, child && child);
@@ -140,7 +158,7 @@ export function statementCompiler(): Compilers<WireFormat.Statement> {
         builder.invokePartial(referrer, builder.evalSymbols()!, evalInfo);
         builder.popScope();
         builder.popFrame(); // FIXME: WAT
-      }
+      },
     });
   });
 
@@ -191,32 +209,48 @@ export function statementCompiler(): Compilers<WireFormat.Statement> {
 
   const CLIENT_SIDE = new Compilers<ClientSide.ClientSideStatement>(1);
 
-  CLIENT_SIDE.add(ClientSide.Ops.OpenComponentElement, (sexp: ClientSide.OpenComponentElement, builder: OpcodeBuilder) => {
-    builder.putComponentOperations();
-    builder.openPrimitiveElement(sexp[2]);
-  });
+  CLIENT_SIDE.add(
+    ClientSide.Ops.OpenComponentElement,
+    (sexp: ClientSide.OpenComponentElement, builder: OpcodeBuilder) => {
+      builder.putComponentOperations();
+      builder.openPrimitiveElement(sexp[2]);
+    }
+  );
 
-  CLIENT_SIDE.add(ClientSide.Ops.DidCreateElement, (_sexp: ClientSide.DidCreateElement, builder: OpcodeBuilder) => {
-    builder.didCreateElement(Register.s0);
-  });
+  CLIENT_SIDE.add(
+    ClientSide.Ops.DidCreateElement,
+    (_sexp: ClientSide.DidCreateElement, builder: OpcodeBuilder) => {
+      builder.didCreateElement(Register.s0);
+    }
+  );
 
-  CLIENT_SIDE.add(ClientSide.Ops.SetComponentAttrs, (sexp: ClientSide.SetComponentAttrs, builder: OpcodeBuilder) => {
-    builder.setComponentAttrs(sexp[2]);
-  });
+  CLIENT_SIDE.add(
+    ClientSide.Ops.SetComponentAttrs,
+    (sexp: ClientSide.SetComponentAttrs, builder: OpcodeBuilder) => {
+      builder.setComponentAttrs(sexp[2]);
+    }
+  );
 
   CLIENT_SIDE.add(ClientSide.Ops.Debugger, () => {
     // tslint:disable-next-line:no-debugger
     debugger;
   });
 
-  CLIENT_SIDE.add(ClientSide.Ops.DidRenderLayout, (_sexp: ClientSide.DidRenderLayout, builder: OpcodeBuilder) => {
-    builder.didRenderLayout(Register.s0);
-  });
+  CLIENT_SIDE.add(
+    ClientSide.Ops.DidRenderLayout,
+    (_sexp: ClientSide.DidRenderLayout, builder: OpcodeBuilder) => {
+      builder.didRenderLayout(Register.s0);
+    }
+  );
 
   return STATEMENTS;
 }
 
-function dynamicAttr<Locator>(sexp: S.DynamicAttr | S.TrustingAttr, trusting: boolean, builder: OpcodeBuilder<Locator>) {
+function dynamicAttr<Locator>(
+  sexp: S.DynamicAttr | S.TrustingAttr,
+  trusting: boolean,
+  builder: OpcodeBuilder<Locator>
+) {
   let [, name, value, namespace] = sexp;
 
   builder.expr(value);
@@ -235,10 +269,14 @@ export function expressionCompiler() {
     return _expressionCompiler;
   }
 
-  const EXPRESSIONS = _expressionCompiler = new Compilers<WireFormat.TupleExpression>();
+  const EXPRESSIONS = (_expressionCompiler = new Compilers<WireFormat.TupleExpression>());
 
   EXPRESSIONS.add(Ops.Unknown, (sexp: E.Unknown, builder) => {
-    let { compiler, referrer, containingLayout: { asPartial } } = builder;
+    let {
+      compiler,
+      referrer,
+      containingLayout: { asPartial },
+    } = builder;
     let name = sexp[1];
 
     let handle = compiler.resolveHelper(name, referrer);
@@ -303,7 +341,7 @@ export function expressionCompiler() {
       builder.getVariable(0);
     }
 
-    for(let i = 0; i < path.length; i++) {
+    for (let i = 0; i < path.length; i++) {
       builder.getProperty(path[i]);
     }
   });
@@ -334,8 +372,21 @@ export class Macros {
   }
 }
 
-export type BlockMacro<Locator> = (params: C.Params, hash: C.Hash, template: Option<CompilableBlock>, inverse: Option<CompilableBlock>, builder: OpcodeBuilder<Locator>) => void;
-export type MissingBlockMacro<Locator> = (name: string, params: C.Params, hash: C.Hash, template: Option<CompilableBlock>, inverse: Option<CompilableBlock>, builder: OpcodeBuilder<Locator>) => void;
+export type BlockMacro<Locator> = (
+  params: C.Params,
+  hash: C.Hash,
+  template: Option<CompilableBlock>,
+  inverse: Option<CompilableBlock>,
+  builder: OpcodeBuilder<Locator>
+) => void;
+export type MissingBlockMacro<Locator> = (
+  name: string,
+  params: C.Params,
+  hash: C.Hash,
+  template: Option<CompilableBlock>,
+  inverse: Option<CompilableBlock>,
+  builder: OpcodeBuilder<Locator>
+) => void;
 
 export class Blocks {
   private names = dict<number>();
@@ -351,7 +402,14 @@ export class Blocks {
     this.missing = func;
   }
 
-  compile<Locator>(name: string, params: C.Params, hash: C.Hash, template: Option<CompilableBlock>, inverse: Option<CompilableBlock>, builder: OpcodeBuilder<Locator>): void {
+  compile<Locator>(
+    name: string,
+    params: C.Params,
+    hash: C.Hash,
+    template: Option<CompilableBlock>,
+    inverse: Option<CompilableBlock>,
+    builder: OpcodeBuilder<Locator>
+  ): void {
     let index = this.names[name];
 
     if (index === undefined) {
@@ -367,7 +425,12 @@ export class Blocks {
 }
 
 export type AppendSyntax = S.Append;
-export type AppendMacro<Locator> = (name: string, params: Option<C.Params>, hash: Option<C.Hash>, builder: OpcodeBuilder<Locator>) => ['expr', WireFormat.Expression] | true | false;
+export type AppendMacro<Locator> = (
+  name: string,
+  params: Option<C.Params>,
+  hash: Option<C.Hash>,
+  builder: OpcodeBuilder<Locator>
+) => ['expr', WireFormat.Expression] | true | false;
 
 export class Inlines {
   private names = dict<number>();
@@ -383,7 +446,10 @@ export class Inlines {
     this.missing = func;
   }
 
-  compile<Locator>(sexp: AppendSyntax, builder: OpcodeBuilder<Locator>): ['expr', WireFormat.Expression] | true {
+  compile<Locator>(
+    sexp: AppendSyntax,
+    builder: OpcodeBuilder<Locator>
+  ): ['expr', WireFormat.Expression] | true {
     let value = sexp[1];
 
     // TODO: Fix this so that expression macros can return
@@ -423,7 +489,10 @@ export class Inlines {
   }
 }
 
-export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines = new Inlines()): { blocks: Blocks, inlines: Inlines } {
+export function populateBuiltins(
+  blocks: Blocks = new Blocks(),
+  inlines: Inlines = new Inlines()
+): { blocks: Blocks; inlines: Inlines } {
   blocks.add('if', (params, _hash, template, inverse, builder) => {
     //        PutArgs
     //        Test(Environment)
@@ -456,7 +525,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
         if (inverse) {
           builder.invokeStaticBlock(inverse);
         }
-      }
+      },
     });
   });
 
@@ -492,7 +561,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
 
       ifFalse() {
         builder.invokeStaticBlock(unwrap(template));
-      }
+      },
     });
   });
 
@@ -529,7 +598,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
         if (inverse) {
           builder.invokeStaticBlock(inverse);
         }
-      }
+      },
     });
   });
 
@@ -600,7 +669,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
         if (inverse) {
           builder.invokeStaticBlock(inverse);
         }
-      }
+      },
     });
   });
 
@@ -611,7 +680,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
 
     builder.replayableIf({
       args() {
-        let [ keys, values ] = hash!;
+        let [keys, values] = hash!;
 
         for (let i = 0; i < keys.length; i++) {
           let key = keys[i];
@@ -633,7 +702,7 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
         builder.pushRemoteElement();
         builder.invokeStaticBlock(unwrap(template));
         builder.popRemoteElement();
-      }
+      },
     });
   });
 
@@ -666,9 +735,12 @@ export function populateBuiltins(blocks: Blocks = new Blocks(), inlines: Inlines
   });
 
   inlines.add('component', (_name, _params, hash, builder) => {
-    assert(_params && _params.length, 'SYNTAX ERROR: component helper requires at least one argument');
+    assert(
+      _params && _params.length,
+      'SYNTAX ERROR: component helper requires at least one argument'
+    );
 
-    let tag =_params && _params[0];
+    let tag = _params && _params[0];
     if (typeof tag === 'string') {
       let returned = builder.staticComponentHelper(tag as string, hash, null);
       if (returned) return true;

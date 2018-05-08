@@ -29,7 +29,6 @@ function testOptions(options: NodeEnvironmentOptions) {
   }
 
   return { appendOperations, updateOperations, document };
-
 }
 
 export class NodeEnv extends LazyTestEnvironment {

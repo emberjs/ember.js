@@ -16,7 +16,11 @@ export type SVG_NAMESPACE = typeof SVG_NAMESPACE;
 //           approach is used. A pre/post SVG tag is added to the string, then
 //           that whole string is added to a div. The created nodes are plucked
 //           out and applied to the target location on DOM.
-export function applySVGInnerHTMLFix(document: Option<Document>, DOMClass: typeof DOMOperations, svgNamespace: SVG_NAMESPACE): typeof DOMOperations {
+export function applySVGInnerHTMLFix(
+  document: Option<Document>,
+  DOMClass: typeof DOMOperations,
+  svgNamespace: SVG_NAMESPACE
+): typeof DOMOperations {
   if (!document) return DOMClass;
 
   if (!shouldApplyFix(document, svgNamespace)) {

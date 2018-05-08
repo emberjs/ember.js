@@ -1,11 +1,24 @@
-
-import { OpaqueIterator, IterationItem, AbstractIterable, Tag, Reference } from "@glimmer/reference";
-import { Opaque, Option } from "@glimmer/interfaces";
-import { UpdatableReference } from "@glimmer/object-reference";
+import {
+  OpaqueIterator,
+  IterationItem,
+  AbstractIterable,
+  Tag,
+  Reference,
+} from '@glimmer/reference';
+import { Opaque, Option } from '@glimmer/interfaces';
+import { UpdatableReference } from '@glimmer/object-reference';
 
 export type KeyFor<T> = (item: Opaque, index: T) => string;
 
-export class Iterable implements AbstractIterable<Opaque, Opaque, IterationItem<Opaque, Opaque>, UpdatableReference<Opaque>, UpdatableReference<Opaque>> {
+export class Iterable
+  implements
+    AbstractIterable<
+      Opaque,
+      Opaque,
+      IterationItem<Opaque, Opaque>,
+      UpdatableReference<Opaque>,
+      UpdatableReference<Opaque>
+    > {
   public tag: Tag;
   private ref: Reference<Opaque>;
   private keyFor: KeyFor<Opaque>;

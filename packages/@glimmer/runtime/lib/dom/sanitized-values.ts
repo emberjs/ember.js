@@ -3,35 +3,15 @@ import { normalizeStringValue, isSafeString } from '../dom/normalize';
 import { Environment } from '../environment';
 import { Simple } from '@glimmer/interfaces';
 
-const badProtocols = [
-  'javascript:',
-  'vbscript:'
-];
+const badProtocols = ['javascript:', 'vbscript:'];
 
-const badTags = [
-  'A',
-  'BODY',
-  'LINK',
-  'IMG',
-  'IFRAME',
-  'BASE',
-  'FORM'
-];
+const badTags = ['A', 'BODY', 'LINK', 'IMG', 'IFRAME', 'BASE', 'FORM'];
 
-const badTagsForDataURI = [
-  'EMBED'
-];
+const badTagsForDataURI = ['EMBED'];
 
-const badAttributes = [
-  'href',
-  'src',
-  'background',
-  'action'
-];
+const badAttributes = ['href', 'src', 'background', 'action'];
 
-const badAttributesForDataURI = [
-  'src'
-];
+const badAttributesForDataURI = ['src'];
 
 function has(array: Array<string>, item: string): boolean {
   return array.indexOf(item) !== -1;
@@ -50,7 +30,12 @@ export function requiresSanitization(tagName: string, attribute: string): boolea
   return checkURI(tagName, attribute) || checkDataURI(tagName, attribute);
 }
 
-export function sanitizeAttributeValue(env: Environment, element: Simple.Element, attribute: string, value: Opaque): Opaque {
+export function sanitizeAttributeValue(
+  env: Environment,
+  element: Simple.Element,
+  attribute: string,
+  value: Opaque
+): Opaque {
   let tagName: Option<string> = null;
 
   if (value === null || value === undefined) {

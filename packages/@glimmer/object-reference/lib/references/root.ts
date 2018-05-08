@@ -12,7 +12,9 @@ export default class RootReference<T> implements IRootReference<T>, IPathReferen
     this.object = object;
   }
 
-  value(): T { return this.object; }
+  value(): T {
+    return this.object;
+  }
 
   update(object: T) {
     this.object = object;
@@ -21,13 +23,13 @@ export default class RootReference<T> implements IRootReference<T>, IPathReferen
 
   get<U>(prop: string): IPathReference<U> {
     let chains = this.chains;
-    if (prop as string in chains) return chains[prop];
+    if ((prop as string) in chains) return chains[prop];
     return (chains[prop] = new PathReference(this, prop));
   }
 
   chainFor<U>(prop: string): Option<IPathReference<U>> {
     let chains = this.chains;
-    if (prop as string in chains) return chains[prop];
+    if ((prop as string) in chains) return chains[prop];
     return null;
   }
 
@@ -36,7 +38,10 @@ export default class RootReference<T> implements IRootReference<T>, IPathReferen
   }
 
   referenceFromParts(parts: string[]): IPathReference<Opaque> {
-    return parts.reduce((ref, part) => ref.get(part) as IPathReference<Opaque>, this as IPathReference<Opaque>);
+    return parts.reduce(
+      (ref, part) => ref.get(part) as IPathReference<Opaque>,
+      this as IPathReference<Opaque>
+    );
   }
 
   label() {

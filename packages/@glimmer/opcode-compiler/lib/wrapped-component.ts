@@ -6,13 +6,10 @@ import {
   LayoutWithContext,
   Compiler,
   Option,
-  Recast
+  Recast,
 } from '@glimmer/interfaces';
 
-import {
-  ComponentArgs,
-  ComponentBuilder as IComponentBuilder
-} from './interfaces';
+import { ComponentArgs, ComponentBuilder as IComponentBuilder } from './interfaces';
 
 import { debug, AnyAbstractCompiler } from './compiler';
 import { CompilableBlock as CompilableBlockInstance } from './compilable-template';
@@ -34,7 +31,7 @@ export class WrappedBuilder<Locator> implements CompilableProgram {
 
     this.symbolTable = {
       hasEval: block.hasEval,
-      symbols: block.symbols.concat([ATTRS_BLOCK])
+      symbols: block.symbols.concat([ATTRS_BLOCK]),
     };
   }
 
@@ -105,13 +102,7 @@ export class WrappedBuilder<Locator> implements CompilableProgram {
     let handle = b.commit();
 
     if (DEBUG) {
-      debug(
-        compiler as Recast<
-          Compiler<OpcodeBuilder<Locator>>,
-          AnyAbstractCompiler
-        >,
-        handle
-      );
+      debug(compiler as Recast<Compiler<OpcodeBuilder<Locator>>, AnyAbstractCompiler>, handle);
     }
 
     return (this.compiled = handle);
@@ -125,9 +116,9 @@ function blockFor<Locator>(
   return new CompilableBlockInstance(compiler, {
     block: {
       statements: layout.block.statements,
-      parameters: EMPTY_ARRAY
+      parameters: EMPTY_ARRAY,
     },
-    containingLayout: layout
+    containingLayout: layout,
   });
 }
 
@@ -139,10 +130,7 @@ export class ComponentBuilder<Locator> implements IComponentBuilder {
     let { builder } = this;
 
     if (handle !== null) {
-      let {
-        capabilities,
-        compilable
-      } = builder.compiler.resolveLayoutForHandle(handle);
+      let { capabilities, compilable } = builder.compiler.resolveLayoutForHandle(handle);
 
       if (compilable) {
         builder.pushComponentDefinition(handle);
@@ -158,15 +146,7 @@ export class ComponentBuilder<Locator> implements IComponentBuilder {
         );
       } else {
         builder.pushComponentDefinition(handle);
-        builder.invokeComponent(
-          capabilities,
-          null,
-          params,
-          hash,
-          false,
-          _default,
-          inverse
-        );
+        builder.invokeComponent(capabilities, null, params, hash, false, _default, inverse);
       }
     }
   }

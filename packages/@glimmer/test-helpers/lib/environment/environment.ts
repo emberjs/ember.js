@@ -1,4 +1,10 @@
-import { Environment, DOMTreeConstruction, IDOMChanges, PrimitiveReference, ConditionalReference } from '@glimmer/runtime';
+import {
+  Environment,
+  DOMTreeConstruction,
+  IDOMChanges,
+  PrimitiveReference,
+  ConditionalReference,
+} from '@glimmer/runtime';
 import { dict } from '@glimmer/util';
 import { Dict, RuntimeResolver, Opaque, VMHandle } from '@glimmer/interfaces';
 import { Program } from '@glimmer/program';
@@ -19,7 +25,7 @@ export default abstract class TestEnvironment<Locator> extends Environment {
 
   protocolForURL(url: string): string {
     if (typeof window === 'undefined') {
-      let match =  /^([a-z][a-z0-9.+-]*:)?(\/\/)?([\S\s]*)/i.exec(url);
+      let match = /^([a-z][a-z0-9.+-]*:)?(\/\/)?([\S\s]*)/i.exec(url);
       return match && match[1] ? match[1].toLowerCase() : '';
     }
 

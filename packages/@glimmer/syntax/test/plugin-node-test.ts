@@ -4,7 +4,7 @@ import {
   Walker,
   AST,
   ASTPluginEnvironment,
-  ASTPluginBuilder
+  ASTPluginBuilder,
 } from '@glimmer/syntax';
 
 const { test } = QUnit;
@@ -22,11 +22,11 @@ test('function based AST plugins can be provided to the compiler', assert => {
           visitor: {
             Program() {
               assert.ok(true, 'transform was called!');
-            }
-          }
-        })
-      ]
-    }
+            },
+          },
+        }),
+      ],
+    },
   });
 });
 
@@ -40,9 +40,9 @@ test('plugins are provided the syntax package', assert => {
           assert.equal(syntax.Walker, Walker);
 
           return { name: 'plugin-a', visitor: {} };
-        }
-      ]
-    }
+        },
+      ],
+    },
   });
 });
 
@@ -60,8 +60,8 @@ test('can support the legacy AST transform API via ASTPlugin', assert => {
               plugin.syntax = env.syntax;
 
               return plugin.transform(node);
-            }
-          }
+            },
+          },
         };
       };
     } else {
@@ -80,8 +80,8 @@ test('can support the legacy AST transform API via ASTPlugin', assert => {
 
   preprocess('<div></div>', {
     plugins: {
-      ast: [ ensurePlugin(Plugin) ]
-    }
+      ast: [ensurePlugin(Plugin)],
+    },
   });
 });
 
@@ -94,8 +94,8 @@ test('AST plugins can be chained', assert => {
       visitor: {
         Program(program: AST.Program) {
           program['isFromFirstPlugin'] = true;
-        }
-      }
+        },
+      },
     };
   };
 
@@ -104,11 +104,15 @@ test('AST plugins can be chained', assert => {
       name: 'second',
       visitor: {
         Program(node: AST.Program) {
-          assert.equal(node['isFromFirstPlugin'], true, 'AST from first plugin is passed to second');
+          assert.equal(
+            node['isFromFirstPlugin'],
+            true,
+            'AST from first plugin is passed to second'
+          );
 
           node['isFromSecondPlugin'] = true;
-        }
-      }
+        },
+      },
     };
   };
 
@@ -117,18 +121,22 @@ test('AST plugins can be chained', assert => {
       name: 'third',
       visitor: {
         Program(node: AST.Program) {
-          assert.equal(node['isFromSecondPlugin'], true, 'AST from second plugin is passed to third');
+          assert.equal(
+            node['isFromSecondPlugin'],
+            true,
+            'AST from second plugin is passed to third'
+          );
 
           node['isFromThirdPlugin'] = true;
-        }
-      }
+        },
+      },
     };
   };
 
   let ast = preprocess('<div></div>', {
     plugins: {
-      ast: [first, second, third]
-    }
+      ast: [first, second, third],
+    },
   });
 
   assert.equal(ast['isFromThirdPlugin'], true, 'return value from last AST transform is used');

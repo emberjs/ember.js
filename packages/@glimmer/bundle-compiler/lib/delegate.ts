@@ -1,4 +1,4 @@
-import { ComponentCapabilities, ModuleLocator } from "@glimmer/interfaces";
+import { ComponentCapabilities, ModuleLocator } from '@glimmer/interfaces';
 
 /**
  * A CompilerDelegate helps the BundleCompiler map external references it finds
@@ -34,10 +34,7 @@ export default interface BundleCompilerDelegate<Locator> {
    * scope, return `false`. Note that returning `false` will cause the
    * compilation process to fail.
    */
-  hasComponentInScope(
-    componentName: string,
-    referrer: Locator
-  ): boolean;
+  hasComponentInScope(componentName: string, referrer: Locator): boolean;
 
   /**
    * If the delegate returns `true` from `hasComponentInScope()`, the compiler
@@ -46,19 +43,14 @@ export default interface BundleCompilerDelegate<Locator> {
    * locations, the compiler avoids having to compile the same component
    * multiple times if invoked from different templates.
    */
-  resolveComponent(
-    componentName: string,
-    referrer: Locator
-  ): ModuleLocator;
+  resolveComponent(componentName: string, referrer: Locator): ModuleLocator;
 
   /**
    * The compiler calls this hook with the return value of `resolveComponent`,
    * and it should return the required capabilities for the given component via
    * a ComponentCapabilities descriptor.
    */
-  getComponentCapabilities(
-    locator: Locator
-  ): ComponentCapabilities;
+  getComponentCapabilities(locator: Locator): ComponentCapabilities;
 
   /**
    * During compilation, the compiler will ask the delegate about each possible
@@ -124,8 +116,5 @@ export default interface BundleCompilerDelegate<Locator> {
    * will next ask the delegate to provide a module locator corresponding to the
    * partial template.
    */
-  resolvePartial(
-    partialName: string,
-    referrer: Locator
-  ): ModuleLocator;
-};
+  resolvePartial(partialName: string, referrer: Locator): ModuleLocator;
+}

@@ -78,7 +78,7 @@ export class BlockSymbolTable extends SymbolTable {
   }
 
   has(name: string): boolean {
-    return (this.symbols.indexOf(name) !== -1) || this.parent.has(name);
+    return this.symbols.indexOf(name) !== -1 || this.parent.has(name);
   }
 
   get(name: string): number {
@@ -88,7 +88,7 @@ export class BlockSymbolTable extends SymbolTable {
 
   getLocalsMap(): Dict<number> {
     let dict = this.parent.getLocalsMap();
-    this.symbols.forEach(symbol => dict[symbol] = this.get(symbol));
+    this.symbols.forEach(symbol => (dict[symbol] = this.get(symbol)));
     return dict;
   }
 
@@ -178,14 +178,17 @@ export namespace Action {
   export type StartBlock = ['startBlock', [AST.Program, number, number[]]];
   export type EndBlock = ['endBlock', [AST.Program, number]];
   export type Block = ['block', [AST.BlockStatement, number, number]];
-  export type Mustache = ['mustache', [AST.MustacheStatement | AST.PartialStatement, number, number]];
+  export type Mustache = [
+    'mustache',
+    [AST.MustacheStatement | AST.PartialStatement, number, number]
+  ];
   export type OpenElement = ['openElement', [AST.ElementNode, number, number, number, number[]]];
   export type CloseElement = ['closeElement', [AST.ElementNode, number, number]];
   export type Text = ['text', [AST.TextNode, number, number]];
   export type Comment = ['comment', [AST.CommentStatement, number, number]];
 
   export type Action =
-      StartProgram
+    | StartProgram
     | EndProgram
     | StartBlock
     | EndBlock
@@ -194,8 +197,7 @@ export namespace Action {
     | OpenElement
     | CloseElement
     | Text
-    | Comment
-    ;
+    | Comment;
 }
 
 export type Action = Action.Action;
@@ -245,16 +247,18 @@ export default class TemplateVisitor {
       this.visit(program.body[i]);
     }
 
-    programFrame.actions.push([startType, [
-      program, programFrame.childTemplateCount,
-      programFrame.blankChildTextNodes.reverse()
-    ]] as Action);
+    programFrame.actions.push([
+      startType,
+      [program, programFrame.childTemplateCount, programFrame.blankChildTextNodes.reverse()],
+    ] as Action);
     this.popFrame();
 
     this.programDepth--;
 
     // Push the completed template into the global actions list
-    if (parentFrame) { parentFrame.childTemplateCount++; }
+    if (parentFrame) {
+      parentFrame.childTemplateCount++;
+    }
     this.actions.push(...programFrame.actions.reverse());
   }
 
@@ -272,7 +276,7 @@ export default class TemplateVisitor {
     let actionArgs: [AST.ElementNode, number, number] = [
       element,
       parentFrame.childIndex!,
-      parentFrame.childCount!
+      parentFrame.childCount!,
     ];
 
     elementFrame.actions.push(['closeElement', actionArgs]);
@@ -286,13 +290,18 @@ export default class TemplateVisitor {
       this.visit(element.children[i]);
     }
 
-    let open = ['openElement', [...actionArgs, elementFrame.mustacheCount, elementFrame.blankChildTextNodes.reverse()]] as Action.OpenElement;
+    let open = [
+      'openElement',
+      [...actionArgs, elementFrame.mustacheCount, elementFrame.blankChildTextNodes.reverse()],
+    ] as Action.OpenElement;
     elementFrame.actions.push(open);
 
     this.popFrame();
 
     // Propagate the element's frame state to the parent frame
-    if (elementFrame.mustacheCount > 0) { parentFrame.mustacheCount++; }
+    if (elementFrame.mustacheCount > 0) {
+      parentFrame.mustacheCount++;
+    }
     parentFrame.childTemplateCount += elementFrame.childTemplateCount;
     parentFrame.actions.push(...elementFrame.actions);
   }
@@ -301,7 +310,7 @@ export default class TemplateVisitor {
     if (attr.value.type !== 'TextNode') {
       this.currentFrame.mustacheCount++;
     }
-  };
+  }
 
   TextNode(text: AST.TextNode) {
     let frame = this.currentFrame;
@@ -309,7 +318,7 @@ export default class TemplateVisitor {
       frame.blankChildTextNodes!.push(domIndexOf(frame.children!, text));
     }
     frame.actions.push(['text', [text, frame.childIndex, frame.childCount]] as Action);
-  };
+  }
 
   BlockStatement(node: AST.BlockStatement) {
     let frame = this.currentFrame;
@@ -317,35 +326,39 @@ export default class TemplateVisitor {
     frame.mustacheCount++;
     frame.actions.push(['block', [node, frame.childIndex, frame.childCount]] as Action);
 
-    if (node.inverse) { this.visit(node.inverse); }
-    if (node.program) { this.visit(node.program); }
-  };
+    if (node.inverse) {
+      this.visit(node.inverse);
+    }
+    if (node.program) {
+      this.visit(node.program);
+    }
+  }
 
   PartialStatement(node: AST.PartialStatement) {
     let frame = this.currentFrame;
     frame.mustacheCount++;
     frame.actions.push(['mustache', [node, frame.childIndex, frame.childCount]] as Action);
-  };
+  }
 
   CommentStatement(text: AST.CommentStatement) {
     let frame = this.currentFrame;
     frame.actions.push(['comment', [text, frame.childIndex, frame.childCount]] as Action);
-  };
+  }
 
   MustacheCommentStatement() {
     // Intentional empty: Handlebars comments should not affect output.
-  };
+  }
 
   MustacheStatement(mustache: AST.MustacheStatement) {
     let frame = this.currentFrame;
     frame.mustacheCount++;
     frame.actions.push(['mustache', [mustache, frame.childIndex, frame.childCount]] as Action);
-  };
+  }
 
   // Frame helpers
 
   private get currentFrame(): Frame {
-    return expect(this.getCurrentFrame(), "Expected a current frame");
+    return expect(this.getCurrentFrame(), 'Expected a current frame');
   }
 
   private getCurrentFrame(): Option<Frame> {

@@ -1,4 +1,4 @@
-import { Simple, Option, Opaque } from "@glimmer/interfaces";
+import { Simple, Option, Opaque } from '@glimmer/interfaces';
 import Environment from '../../environment';
 import { ElementBuilder } from '../element-builder';
 import { sanitizeAttributeValue, requiresSanitization } from '../../dom/sanitized-values';
@@ -7,7 +7,11 @@ import { SVG_NAMESPACE } from '../../dom/helper';
 import { Attribute, AttributeOperation } from './index';
 import { normalizeStringValue } from '../../dom/normalize';
 
-export function dynamicAttribute(element: Simple.Element, attr: string, namespace: Option<string>): DynamicAttribute {
+export function dynamicAttribute(
+  element: Simple.Element,
+  attr: string,
+  namespace: Option<string>
+): DynamicAttribute {
   let { tagName, namespaceURI } = element;
   let attribute = { element, name: attr, namespace };
 
@@ -22,10 +26,13 @@ export function dynamicAttribute(element: Simple.Element, attr: string, namespac
   } else {
     return buildDynamicProperty(tagName, normalized, attribute);
   }
-
 }
 
-function buildDynamicAttribute(tagName: string, name: string, attribute: Attribute): DynamicAttribute {
+function buildDynamicAttribute(
+  tagName: string,
+  name: string,
+  attribute: Attribute
+): DynamicAttribute {
   if (requiresSanitization(tagName, name)) {
     return new SafeDynamicAttribute(attribute);
   } else {
@@ -33,7 +40,11 @@ function buildDynamicAttribute(tagName: string, name: string, attribute: Attribu
   }
 }
 
-function buildDynamicProperty(tagName: string, name: string, attribute: Attribute): DynamicAttribute {
+function buildDynamicProperty(
+  tagName: string,
+  name: string,
+  attribute: Attribute
+): DynamicAttribute {
   if (requiresSanitization(tagName, name)) {
     return new SafeDynamicProperty(name, attribute);
   }
@@ -101,7 +112,6 @@ export class DefaultDynamicProperty extends DynamicAttribute {
         this.removeAttribute();
       }
     }
-
   }
 
   protected removeAttribute() {
@@ -187,7 +197,12 @@ function isUserInputValue(tagName: string, attribute: string) {
 }
 
 function normalizeValue(value: Opaque): Option<string> {
-  if (value === false || value === undefined || value === null || typeof value.toString === 'undefined') {
+  if (
+    value === false ||
+    value === undefined ||
+    value === null ||
+    typeof value.toString === 'undefined'
+  ) {
     return null;
   }
   if (value === true) {

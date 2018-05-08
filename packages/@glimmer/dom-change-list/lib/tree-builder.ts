@@ -17,12 +17,52 @@ const SVG_INTEGRATION_POINTS = { foreignObject: 1, desc: 1, title: 1 };
 // http://www.w3.org/TR/html/syntax.html#parsing-main-inforeign
 export const BLACKLIST_TABLE = Object.create(null);
 
-([
-  "b", "big", "blockquote", "body", "br", "center", "code", "dd", "div", "dl", "dt", "em", "embed",
-  "h1", "h2", "h3", "h4", "h5", "h6", "head", "hr", "i", "img", "li", "listing", "main", "meta", "nobr",
-  "ol", "p", "pre", "ruby", "s", "small", "span", "strong", "strike", "sub", "sup", "table", "tt", "u",
-  "ul", "var"
-]).forEach(tag => BLACKLIST_TABLE[tag] = 1);
+[
+  'b',
+  'big',
+  'blockquote',
+  'body',
+  'br',
+  'center',
+  'code',
+  'dd',
+  'div',
+  'dl',
+  'dt',
+  'em',
+  'embed',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
+  'head',
+  'hr',
+  'i',
+  'img',
+  'li',
+  'listing',
+  'main',
+  'meta',
+  'nobr',
+  'ol',
+  'p',
+  'pre',
+  'ruby',
+  's',
+  'small',
+  'span',
+  'strong',
+  'strike',
+  'sub',
+  'sup',
+  'table',
+  'tt',
+  'u',
+  'ul',
+  'var',
+].forEach(tag => (BLACKLIST_TABLE[tag] = 1));
 
 interface Context {
   tag: string;
@@ -57,7 +97,11 @@ export class TreeBuilder {
         throw new Error(`Cannot create a ${tag} inside an SVG context`);
       }
 
-      this.contexts.push({ tag, namespaceURI: SVG_NAMESPACE, isIntegration: !!SVG_INTEGRATION_POINTS[tag] });
+      this.contexts.push({
+        tag,
+        namespaceURI: SVG_NAMESPACE,
+        isIntegration: !!SVG_INTEGRATION_POINTS[tag],
+      });
       return this.dom.openElement(tag, SVG_NAMESPACE);
     }
 

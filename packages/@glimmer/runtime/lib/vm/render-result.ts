@@ -4,7 +4,7 @@ import { DestroyableBounds, clear } from '../bounds';
 import UpdatingVM, { ExceptionHandler } from './update';
 import { UpdatingOpcode } from '../opcodes';
 import { Simple, Opaque } from '@glimmer/interfaces';
-import { RuntimeProgram } from "./append";
+import { RuntimeProgram } from './append';
 
 export default class RenderResult<T = Opaque> implements DestroyableBounds, ExceptionHandler {
   constructor(
@@ -33,7 +33,7 @@ export default class RenderResult<T = Opaque> implements DestroyableBounds, Exce
   }
 
   handleException() {
-    throw "this should never happen";
+    throw 'this should never happen';
   }
 
   destroy() {

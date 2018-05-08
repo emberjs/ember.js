@@ -43,7 +43,7 @@ export class DOMTreeConstruction {
       document: owner,
       parent,
       nextSibling: null,
-      constants: constants
+      constants: constants,
     });
   }
 }

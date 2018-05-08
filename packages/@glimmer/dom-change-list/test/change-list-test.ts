@@ -1,15 +1,13 @@
-import {
-  DOMTreeConstruction, NodeTokens
-} from '@glimmer/dom-change-list';
+import { DOMTreeConstruction, NodeTokens } from '@glimmer/dom-change-list';
 
-import * as SimpleDOM from "simple-dom";
-import { Simple } from "@glimmer/interfaces";
+import * as SimpleDOM from 'simple-dom';
+import { Simple } from '@glimmer/interfaces';
 
 import { TestCase, module, test } from './test-case';
 import { Builder as TestBuilder, toHTML, toHTMLNS } from './support';
 
-const SVG: Simple.Namespace = "http://www.w3.org/2000/svg";
-const XLINK: Simple.Namespace = "http://www.w3.org/1999/xlink";
+const SVG: Simple.Namespace = 'http://www.w3.org/2000/svg';
+const XLINK: Simple.Namespace = 'http://www.w3.org/1999/xlink';
 
 @module('[dom-change-list] DOMTreeConstruction')
 export class ChangeListTest extends TestCase {
@@ -25,17 +23,20 @@ export class ChangeListTest extends TestCase {
     this.tree = new Builder(this.construction);
   }
 
-  @test "appendText"() {
+  @test
+  appendText() {
     this.tree.appendText('hello world');
     this.shouldEqual('hello world');
   }
 
-  @test "appendComent"() {
+  @test
+  appendComent() {
     this.tree.appendComment('hello world');
     this.shouldEqual('<!--hello world-->');
   }
 
-  @test "openElement and closeElement"() {
+  @test
+  'openElement and closeElement'() {
     let { tree } = this;
 
     tree.openElement('span');
@@ -48,7 +49,8 @@ export class ChangeListTest extends TestCase {
     this.shouldEqual('<span>hello world</span><span><!--hello world--></span>');
   }
 
-  @test "setAttribute"() {
+  @test
+  setAttribute() {
     let { tree } = this;
 
     tree.openElement('span');
@@ -58,7 +60,8 @@ export class ChangeListTest extends TestCase {
     this.shouldEqual(`<span class="chad"></span>`);
   }
 
-  @test "nested elements"() {
+  @test
+  'nested elements'() {
     let { tree } = this;
 
     tree.openElement('p');
@@ -73,7 +76,8 @@ export class ChangeListTest extends TestCase {
     this.shouldEqual(`<p class="chad">hi chad<i> - </i>it works!</p>`);
   }
 
-  @test "namespaced elements"() {
+  @test
+  'namespaced elements'() {
     let { tree } = this;
 
     tree.openElement('svg', SVG);
@@ -82,7 +86,8 @@ export class ChangeListTest extends TestCase {
     this.shouldEqualNS('<svg:svg></svg:svg>');
   }
 
-  @test "namespaced attributes"() {
+  @test
+  'namespaced attributes'() {
     let { tree } = this;
 
     tree.openElement('svg', SVG);

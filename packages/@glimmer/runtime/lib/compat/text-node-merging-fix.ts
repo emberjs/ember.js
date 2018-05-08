@@ -14,7 +14,10 @@ import { Option } from '@glimmer/util';
 //           Note that this fix must only apply to the previous text node, as
 //           the base implementation of `insertHTMLBefore` already handles
 //           following text nodes correctly.
-export function applyTextNodeMergingFix(document: Option<Document>, DOMClass: typeof DOMOperations): typeof DOMOperations {
+export function applyTextNodeMergingFix(
+  document: Option<Document>,
+  DOMClass: typeof DOMOperations
+): typeof DOMOperations {
   if (!document) return DOMClass;
 
   if (!shouldApplyFix(document)) {

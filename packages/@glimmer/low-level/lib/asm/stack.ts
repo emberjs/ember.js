@@ -50,11 +50,11 @@ export class Stack {
 }
 
 export const enum PrimitiveType {
-  NUMBER          = 0b000,
-  FLOAT           = 0b001,
-  STRING          = 0b010,
+  NUMBER = 0b000,
+  FLOAT = 0b001,
+  STRING = 0b010,
   BOOLEAN_OR_VOID = 0b011,
-  NEGATIVE        = 0b100
+  NEGATIVE = 0b100,
 }
 
 function decodeSmi(smi: number): number {
@@ -70,8 +70,8 @@ function decodeSmi(smi: number): number {
 
 function encodeSmi(primitive: number) {
   if (primitive < 0) {
-    return Math.abs(primitive) << 3 | PrimitiveType.NEGATIVE;
+    return (Math.abs(primitive) << 3) | PrimitiveType.NEGATIVE;
   } else {
-    return primitive << 3 | PrimitiveType.NUMBER;
+    return (primitive << 3) | PrimitiveType.NUMBER;
   }
 }

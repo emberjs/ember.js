@@ -14,6 +14,6 @@ export function expect<T>(val: Maybe<T>, message: string): T {
   return val as T;
 }
 
-export function unreachable(message = "unreachable"): Error {
+export function unreachable(message = 'unreachable'): Error {
   return new Error(message);
 }

@@ -1,10 +1,10 @@
-import { CompilerDelegate }  from '@glimmer/bundle-compiler';
+import { CompilerDelegate } from '@glimmer/bundle-compiler';
 import { Dict } from '@glimmer/util';
 import { ComponentCapabilities, ModuleLocator } from '@glimmer/interfaces';
 
 import { Modules } from './modules';
 import { ComponentDefinition } from '@glimmer/runtime';
-import { TestComponentDefinitionState } from "@glimmer/test-helpers";
+import { TestComponentDefinitionState } from '@glimmer/test-helpers';
 
 import { Locator } from '../../components';
 
@@ -13,7 +13,7 @@ export type ComponentDefinitionWithCapabilities = ComponentDefinition<TestCompon
 export default class EagerCompilerDelegate implements CompilerDelegate<Locator> {
   constructor(
     private components: Dict<ComponentDefinitionWithCapabilities>,
-    private modules: Modules,
+    private modules: Modules
   ) {}
 
   hasComponentInScope(componentName: string, referrer: Locator): boolean {
@@ -22,7 +22,10 @@ export default class EagerCompilerDelegate implements CompilerDelegate<Locator> 
   }
 
   resolveComponent(componentName: string, referrer: Locator): ModuleLocator {
-    return { module: this.modules.resolve(componentName, referrer, 'ui/components')!, name: 'default' };
+    return {
+      module: this.modules.resolve(componentName, referrer, 'ui/components')!,
+      name: 'default',
+    };
   }
 
   getComponentCapabilities(meta: Locator): ComponentCapabilities {
@@ -44,7 +47,7 @@ export default class EagerCompilerDelegate implements CompilerDelegate<Locator> 
   }
 
   resolveModifier(_modifierName: string, _referrer: Locator): ModuleLocator {
-    throw new Error("Method not implemented.");
+    throw new Error('Method not implemented.');
   }
 
   hasPartialInScope(_partialName: string, _referrer: Locator): boolean {
@@ -52,6 +55,6 @@ export default class EagerCompilerDelegate implements CompilerDelegate<Locator> 
   }
 
   resolvePartial(_partialName: string, _referrer: Locator): ModuleLocator {
-    throw new Error("Method not implemented.");
+    throw new Error('Method not implemented.');
   }
 }

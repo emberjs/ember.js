@@ -69,7 +69,7 @@ export default interface ComponentCapabilities {
 
   /**
    * Whether the component needs an additional dynamic scope frame.
-  */
+   */
   dynamicScope: boolean;
 
   /**
