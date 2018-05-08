@@ -109,6 +109,7 @@ function makeCtor(base) {
                 property === 'didAddListener' ||
                 property === 'didRemoveListener' ||
                 property === 'isDescriptor' ||
+                property === '_onLookup' ||
                 property in target
               ) {
                 return Reflect.get(target, property, receiver);
