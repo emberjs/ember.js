@@ -1,9 +1,9 @@
-import { Heap, Opcode } from "@glimmer/program";
-import { Option, Opaque } from "@glimmer/interfaces";
-import { APPEND_OPCODES } from "../opcodes";
+import { Heap, Opcode } from '@glimmer/program';
+import { Option, Opaque } from '@glimmer/interfaces';
+import { APPEND_OPCODES } from '../opcodes';
 import VM from './append';
-import { DEVMODE } from "@glimmer/local-debug-flags";
-import { Op } from "@glimmer/vm";
+import { DEVMODE } from '@glimmer/local-debug-flags';
+import { Op } from '@glimmer/vm';
 
 export interface Stack {
   sp: number;
@@ -62,7 +62,7 @@ export default class LowLevelVM {
 
   // Jump to an address in `program`
   goto(offset: number) {
-    let addr = (this.pc + offset) - this.currentOpSize;
+    let addr = this.pc + offset - this.currentOpSize;
     this.pc = addr;
   }
 
@@ -74,7 +74,7 @@ export default class LowLevelVM {
 
   // Put a specific `program` address in $ra
   returnTo(offset: number) {
-    let addr = (this.pc + offset) - this.currentOpSize;
+    let addr = this.pc + offset - this.currentOpSize;
     this.ra = addr;
   }
 
@@ -96,7 +96,7 @@ export default class LowLevelVM {
     // in a jump because we have have already incremented the
     // program counter to the next instruction prior to executing.
     let { size } = this.program.opcode(pc);
-    let operationSize = this.currentOpSize = size;
+    let operationSize = (this.currentOpSize = size);
     this.pc += operationSize;
 
     return program.opcode(pc);
@@ -104,7 +104,9 @@ export default class LowLevelVM {
 
   evaluateOuter(opcode: Opcode, vm: VM<Opaque>) {
     if (DEVMODE) {
-      let { externs: { debugBefore, debugAfter } } = this;
+      let {
+        externs: { debugBefore, debugAfter },
+      } = this;
       let state = debugBefore(opcode);
       this.evaluateInner(opcode, vm);
       debugAfter(opcode, state);

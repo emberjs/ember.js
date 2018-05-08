@@ -1,5 +1,5 @@
 import { Heap } from './program';
-import { OpcodeSize } from "@glimmer/encoder";
+import { OpcodeSize } from '@glimmer/encoder';
 
 export class Opcode {
   public offset = 0;
@@ -16,7 +16,7 @@ export class Opcode {
   }
 
   get type() {
-    return (this.heap.getbyaddr(this.offset) & OpcodeSize.TYPE_MASK);
+    return this.heap.getbyaddr(this.offset) & OpcodeSize.TYPE_MASK;
   }
 
   get op1() {

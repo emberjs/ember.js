@@ -1,4 +1,4 @@
-import { preprocess as parse, Walker } from "@glimmer/syntax";
+import { preprocess as parse, Walker } from '@glimmer/syntax';
 
 function compareWalkedNodes(html: string, expected: string[]) {
   let ast = parse(html);
@@ -15,11 +15,7 @@ function compareWalkedNodes(html: string, expected: string[]) {
 QUnit.module('[glimmer-syntax] (Legacy) Traversal - Walker');
 
 QUnit.test('walks elements', function() {
-  compareWalkedNodes('<div><li></li></div>', [
-    'Program',
-    'ElementNode',
-    'ElementNode'
-  ]);
+  compareWalkedNodes('<div><li></li></div>', ['Program', 'ElementNode', 'ElementNode']);
 });
 
 QUnit.test('walks blocks', function() {
@@ -27,6 +23,6 @@ QUnit.test('walks blocks', function() {
     'Program',
     'BlockStatement',
     'Program',
-    'ElementNode'
+    'ElementNode',
   ]);
 });

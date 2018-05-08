@@ -1,8 +1,13 @@
 import CompilerDelegate from './delegate';
 import ExternalModuleTable from './external-module-table';
 import BundleCompiler from './bundle-compiler';
-import { ComponentCapabilities, CompilableProgram, CompileTimeLookup, ModuleLocator } from "@glimmer/interfaces";
-import { expect, Option } from "@glimmer/util";
+import {
+  ComponentCapabilities,
+  CompilableProgram,
+  CompileTimeLookup,
+  ModuleLocator,
+} from '@glimmer/interfaces';
+import { expect, Option } from '@glimmer/util';
 
 /**
  * The BundleCompilerResolver resolves references to objects inside a template into
@@ -20,7 +25,10 @@ import { expect, Option } from "@glimmer/util";
 export default class BundleCompilerLookup<Locator> implements CompileTimeLookup<Locator> {
   private table = new ExternalModuleTable();
 
-  constructor(private delegate: CompilerDelegate<Locator>, private compiler: BundleCompiler<Locator>) { }
+  constructor(
+    private delegate: CompilerDelegate<Locator>,
+    private compiler: BundleCompiler<Locator>
+  ) {}
 
   getTable(): ExternalModuleTable {
     return this.table;
@@ -41,13 +49,22 @@ export default class BundleCompilerLookup<Locator> implements CompileTimeLookup<
   }
 
   getCapabilities(handle: number): ComponentCapabilities {
-    let locator = expect(this.table.byHandle.get(handle), `BUG: Shouldn't call getCapabilities if a handle has no associated locator`);
-    let meta = expect(this.compiler.meta.get(locator), `could not find template metadata for module ${locator.module}`);
+    let locator = expect(
+      this.table.byHandle.get(handle),
+      `BUG: Shouldn't call getCapabilities if a handle has no associated locator`
+    );
+    let meta = expect(
+      this.compiler.meta.get(locator),
+      `could not find template metadata for module ${locator.module}`
+    );
     return this.delegate.getComponentCapabilities(meta);
   }
 
   getLayout(handle: number): Option<CompilableProgram> {
-    let locator = expect(this.table.byHandle.get(handle), `BUG: Shouldn't call getLayout if a handle has no associated locator`);
+    let locator = expect(
+      this.table.byHandle.get(handle),
+      `BUG: Shouldn't call getLayout if a handle has no associated locator`
+    );
     return this.compiler.compilableTemplates.get(locator) || null;
   }
 
@@ -79,10 +96,10 @@ export default class BundleCompilerLookup<Locator> implements CompileTimeLookup<
   }
 
   lookupComponent(_name: string, _meta: Locator): Option<number> {
-    throw new Error("Method not implemented.");
+    throw new Error('Method not implemented.');
   }
 
   lookupPartial(_name: string, _meta: Locator): Option<number> {
-    throw new Error("Method not implemented.");
+    throw new Error('Method not implemented.');
   }
 }

@@ -1,11 +1,20 @@
 import { Reference, Tag, isConst } from '@glimmer/reference';
 import { Op } from '@glimmer/vm';
-import { check, CheckString, CheckSafeString, CheckNode, CheckDocumentFragment } from '@glimmer/debug';
+import {
+  check,
+  CheckString,
+  CheckSafeString,
+  CheckNode,
+  CheckDocumentFragment,
+} from '@glimmer/debug';
 import { Opaque } from '@glimmer/util';
 
 import { APPEND_OPCODES } from '../../opcodes';
 import { ConditionalReference } from '../../references';
-import { isCurriedComponentDefinition, isComponentDefinition } from '../../component/curried-component';
+import {
+  isCurriedComponentDefinition,
+  isComponentDefinition,
+} from '../../component/curried-component';
 import { CheckPathReference } from './-debug-strip';
 import { isEmpty, isSafeString, isFragment, isNode, shouldCoerce } from '../../dom/normalize';
 import DynamicTextContent from '../../vm/content/text';
@@ -27,7 +36,7 @@ export const enum ContentType {
   SafeString,
   Fragment,
   Node,
-  Other
+  Other,
 }
 
 export class ContentTypeReference implements Reference<ContentType> {

@@ -1,9 +1,17 @@
-import { Option, Dict, Slice as ListSlice, initializeGuid, fillNulls, unreachable, assert } from '@glimmer/util';
+import {
+  Option,
+  Dict,
+  Slice as ListSlice,
+  initializeGuid,
+  fillNulls,
+  unreachable,
+  assert,
+} from '@glimmer/util';
 import { recordStackSize } from '@glimmer/debug';
 import { Op } from '@glimmer/vm';
 import { Tag } from '@glimmer/reference';
-import { METADATA } from "@glimmer/vm";
-import { Opcode, Opaque } from "@glimmer/interfaces";
+import { METADATA } from '@glimmer/vm';
+import { Opcode, Opaque } from '@glimmer/interfaces';
 import { LowLevelVM, VM, UpdatingVM } from './vm';
 import { DEBUG, DEVMODE } from '@glimmer/local-debug-flags';
 // these import bindings will be stripped from build
@@ -25,9 +33,11 @@ export type Operand3 = number;
 export type Syscall = (vm: VM<Opaque>, opcode: Opcode) => void;
 export type MachineOpcode = (vm: LowLevelVM, opcode: Opcode) => void;
 
-export type Evaluate = { syscall: true, evaluate: Syscall } | { syscall: false, evaluate: MachineOpcode };
+export type Evaluate =
+  | { syscall: true; evaluate: Syscall }
+  | { syscall: false; evaluate: MachineOpcode };
 
-export type DebugState = { sp: number, state: Opaque };
+export type DebugState = { sp: number; state: Opaque };
 
 export class AppendOpcodes {
   private evaluateOpcode: Evaluate[] = fillNulls<Evaluate>(Op.Size).slice();
@@ -42,13 +52,20 @@ export class AppendOpcodes {
     if (DEBUG) {
       let pos = vm['pc'] - opcode.size;
       /* tslint:disable */
-      let [name, params] = debug(pos, vm.constants, opcode.type, opcode.op1, opcode.op2, opcode.op3);
+      let [name, params] = debug(
+        pos,
+        vm.constants,
+        opcode.type,
+        opcode.op1,
+        opcode.op2,
+        opcode.op3
+      );
       // console.log(`${typePos(vm['pc'])}.`);
       console.log(`${pos}. ${logOpcode(name, params)}`);
 
       let debugParams = [];
       for (let prop in params) {
-        debugParams.push(prop, "=", params[prop]);
+        debugParams.push(prop, '=', params[prop]);
       }
 
       console.log(...debugParams);
@@ -90,22 +107,59 @@ export class AppendOpcodes {
 
     if (DEBUG) {
       let actualChange = vm.stack.sp - sp!;
-      if (metadata && metadata.check && typeof expectedChange! === 'number' && expectedChange! !== actualChange) {
+      if (
+        metadata &&
+        metadata.check &&
+        typeof expectedChange! === 'number' &&
+        expectedChange! !== actualChange
+      ) {
         let pos = vm['pc'] + opcode.size;
-        let [name, params] = debug(pos, vm.constants, opcode.type, opcode.op1, opcode.op2, opcode.op3);
+        let [name, params] = debug(
+          pos,
+          vm.constants,
+          opcode.type,
+          opcode.op1,
+          opcode.op2,
+          opcode.op3
+        );
 
-        throw new Error(`Error in ${name}:\n\n${pos}. ${logOpcode(name, params)}\n\nStack changed by ${actualChange}, expected ${expectedChange!}`);
+        throw new Error(
+          `Error in ${name}:\n\n${pos}. ${logOpcode(
+            name,
+            params
+          )}\n\nStack changed by ${actualChange}, expected ${expectedChange!}`
+        );
       }
 
       /* tslint:disable */
-      console.log('%c -> pc: %d, ra: %d, fp: %d, sp: %d, s0: %O, s1: %O, t0: %O, t1: %O, v0: %O', 'color: orange', vm['pc'], vm['ra'], vm.stack['fp'], vm.stack['sp'], vm['s0'], vm['s1'], vm['t0'], vm['t1'], vm['v0']);
+      console.log(
+        '%c -> pc: %d, ra: %d, fp: %d, sp: %d, s0: %O, s1: %O, t0: %O, t1: %O, v0: %O',
+        'color: orange',
+        vm['pc'],
+        vm['ra'],
+        vm.stack['fp'],
+        vm.stack['sp'],
+        vm['s0'],
+        vm['s1'],
+        vm['t0'],
+        vm['t1'],
+        vm['v0']
+      );
       console.log('%c -> eval stack', 'color: red', vm.stack.toArray());
       if (vm['scopeStack'].current === null) {
-        console.log('%c -> scope', 'color: green', "null");
+        console.log('%c -> scope', 'color: green', 'null');
       } else {
-        console.log('%c -> scope', 'color: green', vm.scope()['slots'].map(s => s && s['value'] ? s['value']() : s));
+        console.log(
+          '%c -> scope',
+          'color: green',
+          vm.scope()['slots'].map(s => (s && s['value'] ? s['value']() : s))
+        );
       }
-      console.log('%c -> elements', 'color: blue', vm.elements()['cursorStack']['stack'].map((c: any) => c.element));
+      console.log(
+        '%c -> elements',
+        'color: blue',
+        vm.elements()['cursorStack']['stack'].map((c: any) => c.element)
+      );
       /* tslint:enable */
     }
   }
@@ -114,10 +168,20 @@ export class AppendOpcodes {
     let operation = this.evaluateOpcode[type];
 
     if (operation.syscall) {
-      assert(!opcode.isMachine, `BUG: Mismatch between operation.syscall (${operation.syscall}) and opcode.isMachine (${opcode.isMachine}) for ${opcode.type}`);
+      assert(
+        !opcode.isMachine,
+        `BUG: Mismatch between operation.syscall (${operation.syscall}) and opcode.isMachine (${
+          opcode.isMachine
+        }) for ${opcode.type}`
+      );
       operation.evaluate(vm, opcode);
     } else {
-      assert(opcode.isMachine, `BUG: Mismatch between operation.syscall (${operation.syscall}) and opcode.isMachine (${opcode.isMachine}) for ${opcode.type}`);
+      assert(
+        opcode.isMachine,
+        `BUG: Mismatch between operation.syscall (${operation.syscall}) and opcode.isMachine (${
+          opcode.isMachine
+        }) for ${opcode.type}`
+      );
       operation.evaluate(vm.inner, opcode);
     }
   }

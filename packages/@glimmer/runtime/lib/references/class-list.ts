@@ -1,4 +1,3 @@
-
 import { Reference, Tag, combineTagged } from '@glimmer/reference';
 import { Option, Opaque } from '@glimmer/util';
 
@@ -16,7 +15,7 @@ export default class ClassListReference implements Reference<Option<string>> {
     let ret: string[] = [];
     let { list } = this;
 
-    for (let i=0; i<list.length; i++) {
+    for (let i = 0; i < list.length; i++) {
       let value = normalizeStringValue(list[i].value());
       if (value) ret.push(value);
     }

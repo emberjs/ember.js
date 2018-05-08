@@ -1,5 +1,5 @@
-import { assert } from "@glimmer/util";
-import { Stack, DictSet, Option, expect } from "@glimmer/util";
+import { assert } from '@glimmer/util';
+import { Stack, DictSet, Option, expect } from '@glimmer/util';
 import { AST } from '@glimmer/syntax';
 import { BlockSymbolTable, ProgramSymbolTable } from './template-visitor';
 
@@ -15,9 +15,9 @@ import {
   isModifier,
   isFlushElement,
   isArgument,
-  isAttribute
+  isAttribute,
 } from '@glimmer/wire-format';
-import { Processor, CompilerOps, OpName, Op } from "./compiler-ops";
+import { Processor, CompilerOps, OpName, Op } from './compiler-ops';
 
 export type str = string;
 export type Params = Core.Params;
@@ -43,13 +43,13 @@ export class InlineBlock extends Block {
   toJSON(): SerializedInlineBlock {
     return {
       statements: this.statements,
-      parameters: this.table.slots
+      parameters: this.table.slots,
     };
   }
 }
 
 export class TemplateBlock extends Block {
-  public type = "template";
+  public type = 'template';
   public yields = new DictSet<string>();
   public named = new DictSet<string>();
   public blocks: SerializedInlineBlock[] = [];
@@ -67,7 +67,7 @@ export class TemplateBlock extends Block {
     return {
       symbols: this.symbolTable.symbols,
       statements: this.statements,
-      hasEval: this.hasEval
+      hasEval: this.hasEval,
     };
   }
 }
@@ -110,8 +110,8 @@ export class ComponentBlock extends Block {
       [keys, values],
       {
         statements: this.statements,
-        parameters: this.table.slots
-      }
+        parameters: this.table.slots,
+      },
     ];
   }
 }
@@ -129,9 +129,14 @@ export class Template {
 }
 
 export type InVariable = number;
-export type InOp<K extends keyof CompilerOps<InVariable> = OpName> = Op<InVariable, CompilerOps<InVariable>, K>;
+export type InOp<K extends keyof CompilerOps<InVariable> = OpName> = Op<
+  InVariable,
+  CompilerOps<InVariable>,
+  K
+>;
 
-export default class JavaScriptCompiler implements Processor<CompilerOps<number>, void, CompilerOps<void>> {
+export default class JavaScriptCompiler
+  implements Processor<CompilerOps<number>, void, CompilerOps<void>> {
   static process(opcodes: InOp[], symbols: ProgramSymbolTable): Template {
     let compiler = new JavaScriptCompiler(opcodes, symbols);
     return compiler.process();
@@ -156,7 +161,9 @@ export default class JavaScriptCompiler implements Processor<CompilerOps<number>
       let opcode = op[0];
       let arg = op[1];
 
-      if (!this[opcode]) { throw new Error(`unimplemented ${opcode} on JavaScriptCompiler`); }
+      if (!this[opcode]) {
+        throw new Error(`unimplemented ${opcode} on JavaScriptCompiler`);
+      }
       (this[opcode] as any)(arg);
     });
 
@@ -180,9 +187,7 @@ export default class JavaScriptCompiler implements Processor<CompilerOps<number>
     this.blocks.push(this.template.block);
   }
 
-  endProgram() {
-
-  }
+  endProgram() {}
 
   /// Statements
 
@@ -210,8 +215,14 @@ export default class JavaScriptCompiler implements Processor<CompilerOps<number>
     let hash = this.popValue<Hash>();
 
     let blocks = this.template.block.blocks;
-    assert(typeof template !== 'number' || blocks[template] !== null, 'missing block in the compiler');
-    assert(typeof inverse !== 'number' || blocks[inverse] !== null, 'missing block in the compiler');
+    assert(
+      typeof template !== 'number' || blocks[template] !== null,
+      'missing block in the compiler'
+    );
+    assert(
+      typeof inverse !== 'number' || blocks[inverse] !== null,
+      'missing block in the compiler'
+    );
 
     this.push([Ops.Block, name, params, hash, blocks[template], blocks[inverse]]);
   }
@@ -222,7 +233,9 @@ export default class JavaScriptCompiler implements Processor<CompilerOps<number>
     if (isComponent(tag)) {
       throw new Error(`Compile Error: ...attributes can only be used in an element`);
     } else if (element.blockParams.length > 0) {
-      throw new Error(`Compile Error: <${element.tag}> is not a component and doesn't support block parameters`);
+      throw new Error(
+        `Compile Error: <${element.tag}> is not a component and doesn't support block parameters`
+      );
     } else {
       this.push([Ops.OpenSplattedElement, tag]);
     }
@@ -234,7 +247,9 @@ export default class JavaScriptCompiler implements Processor<CompilerOps<number>
     if (isComponent(tag)) {
       this.startComponent(element);
     } else if (element.blockParams.length > 0) {
-      throw new Error(`Compile Error: <${element.tag}> is not a component and doesn't support block parameters`);
+      throw new Error(
+        `Compile Error: <${element.tag}> is not a component and doesn't support block parameters`
+      );
     } else {
       this.push([Ops.OpenElement, tag]);
     }
@@ -350,7 +365,10 @@ export default class JavaScriptCompiler implements Processor<CompilerOps<number>
 
   endComponent(): [Statements.Attribute[], Core.Hash, Option<SerializedInlineBlock>] {
     let component = this.blocks.pop();
-    assert(component instanceof ComponentBlock, "Compiler bug: endComponent() should end a component");
+    assert(
+      component instanceof ComponentBlock,
+      'Compiler bug: endComponent() should end a component'
+    );
     return (component as ComponentBlock).toJSON();
   }
 
@@ -365,7 +383,10 @@ export default class JavaScriptCompiler implements Processor<CompilerOps<number>
   }
 
   prepareObject(size: number) {
-    assert(this.values.length >= size, `Expected ${size} values on the stack, found ${this.values.length}`);
+    assert(
+      this.values.length >= size,
+      `Expected ${size} values on the stack, found ${this.values.length}`
+    );
 
     let keys: string[] = new Array(size);
     let values: Expression[] = new Array(size);
@@ -393,7 +414,7 @@ export default class JavaScriptCompiler implements Processor<CompilerOps<number>
   }
 
   popValue<T extends StackValue>(): T {
-    assert(this.values.length, "No expression found on stack");
+    assert(this.values.length, 'No expression found on stack');
     return this.values.pop() as T;
   }
 }

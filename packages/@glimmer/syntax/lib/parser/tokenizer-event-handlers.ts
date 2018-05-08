@@ -1,22 +1,23 @@
-import b, { SYNTHETIC } from "../builders";
-import { appendChild, parseElementBlockParams } from "../utils";
+import b, { SYNTHETIC } from '../builders';
+import { appendChild, parseElementBlockParams } from '../utils';
 import { HandlebarsNodeVisitors } from './handlebars-node-visitors';
-import * as AST from "../types/nodes";
+import * as AST from '../types/nodes';
 import SyntaxError from '../errors/syntax-error';
-import { Tag } from "../parser";
-import builders from "../builders";
-import traverse, { NodeVisitor } from "../traversal/traverse";
-import print from "../generation/print";
-import Walker from "../traversal/walker";
-import * as handlebars from "handlebars";
+import { Tag } from '../parser';
+import builders from '../builders';
+import traverse, { NodeVisitor } from '../traversal/traverse';
+import print from '../generation/print';
+import Walker from '../traversal/walker';
+import * as handlebars from 'handlebars';
 import { assign } from '@glimmer/util';
 
 const voidMap: {
-  [tagName: string]: boolean
+  [tagName: string]: boolean;
 } = Object.create(null);
 
-let voidTagNames = "area base br col command embed hr img input keygen link meta param source track wbr";
-voidTagNames.split(" ").forEach(tagName => {
+let voidTagNames =
+  'area base br col command embed hr img input keygen link meta param source track wbr';
+voidTagNames.split(' ').forEach(tagName => {
   voidMap[tagName] = true;
 });
 
@@ -31,11 +32,11 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
   // Comment
 
   beginComment() {
-    this.currentNode = b.comment("");
+    this.currentNode = b.comment('');
     this.currentNode.loc = {
       source: null,
       start: b.pos(this.tagOpenLine, this.tagOpenColumn),
-      end: null as any as AST.Position
+      end: (null as any) as AST.Position,
     };
   }
 
@@ -56,7 +57,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
     this.currentNode.loc = {
       source: null,
       start: b.pos(this.tokenizer.line, this.tokenizer.column),
-      end: null as any as AST.Position
+      end: (null as any) as AST.Position,
     };
   }
 
@@ -80,24 +81,24 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
   beginStartTag() {
     this.currentNode = {
       type: 'StartTag',
-      name: "",
+      name: '',
       attributes: [],
       modifiers: [],
       comments: [],
       selfClosing: false,
-      loc: SYNTHETIC
+      loc: SYNTHETIC,
     };
   }
 
   beginEndTag() {
     this.currentNode = {
       type: 'EndTag',
-      name: "",
+      name: '',
       attributes: [],
       modifiers: [],
       comments: [],
       selfClosing: false,
-      loc: SYNTHETIC
+      loc: SYNTHETIC,
     };
   }
 
@@ -156,21 +157,21 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
   beginAttribute() {
     let tag = this.currentTag;
     if (tag.type === 'EndTag') {
-       throw new SyntaxError(
+      throw new SyntaxError(
         `Invalid end tag: closing tag must not have attributes, ` +
-        `in \`${tag.name}\` (on line ${this.tokenizer.line}).`,
+          `in \`${tag.name}\` (on line ${this.tokenizer.line}).`,
         tag.loc
       );
     }
 
     this.currentAttribute = {
-      name: "",
+      name: '',
       parts: [],
       isQuoted: false,
       isDynamic: false,
       start: b.pos(this.tokenizer.line, this.tokenizer.column),
       valueStartLine: 0,
-      valueStartColumn: 0
+      valueStartColumn: 0,
     };
   }
 
@@ -197,8 +198,10 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
     } else {
       // initially assume the text node is a single char
       let loc = b.loc(
-        this.tokenizer.line, this.tokenizer.column,
-        this.tokenizer.line, this.tokenizer.column
+        this.tokenizer.line,
+        this.tokenizer.column,
+        this.tokenizer.line,
+        this.tokenizer.column
       );
 
       // correct for `\n` as first char
@@ -215,14 +218,13 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
   finishAttributeValue() {
     let { name, parts, isQuoted, isDynamic, valueStartLine, valueStartColumn } = this.currentAttr;
     let value = assembleAttributeValue(parts, isQuoted, isDynamic, this.tokenizer.line);
-    value.loc = b.loc(
-      valueStartLine, valueStartColumn,
-      this.tokenizer.line, this.tokenizer.column
-    );
+    value.loc = b.loc(valueStartLine, valueStartColumn, this.tokenizer.line, this.tokenizer.column);
 
     let loc = b.loc(
-      this.currentAttr.start.line, this.currentAttr.start.column,
-      this.tokenizer.line, this.tokenizer.column
+      this.currentAttr.start.line,
+      this.currentAttr.start.column,
+      this.tokenizer.line,
+      this.tokenizer.column
     );
 
     let attribute = b.attr(name, value, loc);
@@ -231,28 +233,41 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
   }
 
   reportSyntaxError(message: string) {
-    throw new SyntaxError(`Syntax error at line ${this.tokenizer.line} col ${this.tokenizer.column}: ${message}`, b.loc(this.tokenizer.line, this.tokenizer.column));
+    throw new SyntaxError(
+      `Syntax error at line ${this.tokenizer.line} col ${this.tokenizer.column}: ${message}`,
+      b.loc(this.tokenizer.line, this.tokenizer.column)
+    );
   }
-};
+}
 
-function assembleAttributeValue(parts: (AST.MustacheStatement | AST.TextNode)[], isQuoted: boolean, isDynamic: boolean, line: number) {
+function assembleAttributeValue(
+  parts: (AST.MustacheStatement | AST.TextNode)[],
+  isQuoted: boolean,
+  isDynamic: boolean,
+  line: number
+) {
   if (isDynamic) {
     if (isQuoted) {
       return assembleConcatenatedValue(parts);
     } else {
-      if (parts.length === 1 || (parts.length === 2 && parts[1].type === 'TextNode' && (parts[1] as AST.TextNode).chars === '/')) {
+      if (
+        parts.length === 1 ||
+        (parts.length === 2 &&
+          parts[1].type === 'TextNode' &&
+          (parts[1] as AST.TextNode).chars === '/')
+      ) {
         return parts[0];
       } else {
         throw new SyntaxError(
           `An unquoted attribute value must be a string or a mustache, ` +
-          `preceeded by whitespace or a '=' character, and ` +
-          `followed by whitespace, a '>' character, or '/>' (on line ${line})`,
+            `preceeded by whitespace or a '=' character, and ` +
+            `followed by whitespace, a '>' character, or '/>' (on line ${line})`,
           b.loc(line, 0)
         );
       }
     }
   } else {
-    return parts.length > 0 ? parts[0] : b.text("");
+    return parts.length > 0 ? parts[0] : b.text('');
   }
 }
 
@@ -261,33 +276,48 @@ function assembleConcatenatedValue(parts: (AST.MustacheStatement | AST.TextNode)
     let part: AST.BaseNode = parts[i];
 
     if (part.type !== 'MustacheStatement' && part.type !== 'TextNode') {
-      throw new SyntaxError("Unsupported node in quoted attribute value: " + part['type'], part.loc);
+      throw new SyntaxError(
+        'Unsupported node in quoted attribute value: ' + part['type'],
+        part.loc
+      );
     }
   }
 
   return b.concat(parts);
 }
 
-function validateEndTag(tag: Tag<'StartTag' | 'EndTag'>, element: AST.ElementNode, selfClosing: boolean) {
+function validateEndTag(
+  tag: Tag<'StartTag' | 'EndTag'>,
+  element: AST.ElementNode,
+  selfClosing: boolean
+) {
   let error;
 
   if (voidMap[tag.name] && !selfClosing) {
     // EngTag is also called by StartTag for void and self-closing tags (i.e.
     // <input> or <br />, so we need to check for that here. Otherwise, we would
     // throw an error for those cases.
-    error = "Invalid end tag " + formatEndTagInfo(tag) + " (void elements cannot have end tags).";
+    error = 'Invalid end tag ' + formatEndTagInfo(tag) + ' (void elements cannot have end tags).';
   } else if (element.tag === undefined) {
-    error = "Closing tag " + formatEndTagInfo(tag) + " without an open tag.";
+    error = 'Closing tag ' + formatEndTagInfo(tag) + ' without an open tag.';
   } else if (element.tag !== tag.name) {
-    error = "Closing tag " + formatEndTagInfo(tag) + " did not match last open tag `" + element.tag + "` (on line " +
-            element.loc.start.line + ").";
+    error =
+      'Closing tag ' +
+      formatEndTagInfo(tag) +
+      ' did not match last open tag `' +
+      element.tag +
+      '` (on line ' +
+      element.loc.start.line +
+      ').';
   }
 
-  if (error) { throw new SyntaxError(error, element.loc); }
+  if (error) {
+    throw new SyntaxError(error, element.loc);
+  }
 }
 
 function formatEndTagInfo(tag: Tag<'StartTag' | 'EndTag'>) {
-  return "`" + tag.name + "` (on line " + tag.loc.end.line + ")";
+  return '`' + tag.name + '` (on line ' + tag.loc.end.line + ')';
 }
 
 /**
@@ -327,11 +357,11 @@ const syntax: Syntax = {
   builders,
   print,
   traverse,
-  Walker
+  Walker,
 };
 
 export function preprocess(html: string, options?: PreprocessOptions): AST.Program {
-  let ast = (typeof html === 'object') ? html : handlebars.parse(html);
+  let ast = typeof html === 'object' ? html : handlebars.parse(html);
   let program = new TokenizerEventHandlers(html).acceptNode(ast);
 
   if (options && options.plugins && options.plugins.ast) {

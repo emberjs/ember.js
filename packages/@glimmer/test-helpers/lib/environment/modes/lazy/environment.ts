@@ -1,4 +1,11 @@
-import { Option, Maybe, Simple, CompilableProgram, ComponentCapabilities, AnnotatedModuleLocator } from "@glimmer/interfaces";
+import {
+  Option,
+  Maybe,
+  Simple,
+  CompilableProgram,
+  ComponentCapabilities,
+  AnnotatedModuleLocator,
+} from '@glimmer/interfaces';
 import {
   Helper as GlimmerHelper,
   DOMTreeConstruction,
@@ -16,13 +23,13 @@ import {
   renderMain,
   DynamicScope,
   ElementBuilder,
-  TemplateIterator
-} from "@glimmer/runtime";
-import { Template } from "@glimmer/interfaces";
-import { templateFactory, PartialDefinition, LazyCompiler } from "@glimmer/opcode-compiler";
-import { precompile } from "@glimmer/compiler";
-import { Program } from "@glimmer/program";
-import { TestDynamicScope } from "../../../environment";
+  TemplateIterator,
+} from '@glimmer/runtime';
+import { Template } from '@glimmer/interfaces';
+import { templateFactory, PartialDefinition, LazyCompiler } from '@glimmer/opcode-compiler';
+import { precompile } from '@glimmer/compiler';
+import { Program } from '@glimmer/program';
+import { TestDynamicScope } from '../../../environment';
 import TestEnvironment from '../../environment';
 import { ComponentKind } from '../../../render-test';
 
@@ -44,15 +51,15 @@ import {
   StaticTaglessComponentManager,
   STATIC_TAGLESS_CAPABILITIES,
   TestComponentDefinitionState,
-  locatorFor
+  locatorFor,
 } from '../../components';
 
 import { UserHelper, HelperReference } from '../../helper';
 import { InertModifierManager } from '../../modifier';
 import TestMacros from '../../macros';
-import { Opaque } from "@glimmer/util";
-import { PathReference } from "@glimmer/reference";
-import { TemplateMeta } from "@glimmer/wire-format";
+import { Opaque } from '@glimmer/util';
+import { PathReference } from '@glimmer/reference';
+import { TemplateMeta } from '@glimmer/wire-format';
 
 const BASIC_COMPONENT_MANAGER = new BasicComponentManager();
 const EMBERISH_CURLY_COMPONENT_MANAGER = new EmberishCurlyComponentManager();
@@ -76,10 +83,13 @@ export interface TestMeta extends TemplateMeta {
 export const DEFAULT_TEST_META = Object.freeze({
   version: 1,
   lang: 'en',
-  moduleName: 'index'
+  moduleName: 'index',
 });
 
-export type TestCompilationOptions = CompilationOptions<AnnotatedModuleLocator, LazyRuntimeResolver>;
+export type TestCompilationOptions = CompilationOptions<
+  AnnotatedModuleLocator,
+  LazyRuntimeResolver
+>;
 
 export default class LazyTestEnvironment extends TestEnvironment<TestMeta> {
   public resolver = new LazyRuntimeResolver();
@@ -100,43 +110,74 @@ export default class LazyTestEnvironment extends TestEnvironment<TestMeta> {
 
     // recursive field, so "unsafely" set one half late (but before the resolver is actually used)
     this.resolver['compiler'] = this.compiler;
-    this.registerHelper("if", ([cond, yes, no]) => cond ? yes : no);
-    this.registerHelper("unless", ([cond, yes, no]) => cond ? no : yes);
-    this.registerInternalHelper("-get-dynamic-var", getDynamicVar);
-    this.registerModifier("action", new InertModifierManager());
+    this.registerHelper('if', ([cond, yes, no]) => (cond ? yes : no));
+    this.registerHelper('unless', ([cond, yes, no]) => (cond ? no : yes));
+    this.registerInternalHelper('-get-dynamic-var', getDynamicVar);
+    this.registerModifier('action', new InertModifierManager());
 
-    this.registerInternalHelper("hash", (_vm: VM, args: Arguments) => args.capture().named);
+    this.registerInternalHelper('hash', (_vm: VM, args: Arguments) => args.capture().named);
   }
 
-  renderMain<T>(template: Template<T>, self: PathReference<Opaque>, builder: ElementBuilder, dynamicScope: DynamicScope = new TestDynamicScope()): TemplateIterator {
+  renderMain<T>(
+    template: Template<T>,
+    self: PathReference<Opaque>,
+    builder: ElementBuilder,
+    dynamicScope: DynamicScope = new TestDynamicScope()
+  ): TemplateIterator {
     let layout = template.asLayout();
     let handle = layout.compile();
     // TODO, figure out runtime program stuff
     return renderMain(this.program, this, self, dynamicScope, builder, handle);
   }
 
-  registerTemplate(name: string, source: string): { name: string, handle: number } {
-    return { name, handle: this.resolver.register("template-source", name, source) };
+  registerTemplate(name: string, source: string): { name: string; handle: number } {
+    return { name, handle: this.resolver.register('template-source', name, source) };
   }
 
-  registerBasicComponent(name: string, Component: BasicComponentFactory, layoutSource: string): void {
+  registerBasicComponent(
+    name: string,
+    Component: BasicComponentFactory,
+    layoutSource: string
+  ): void {
     if (name.indexOf('-') !== -1) {
-      throw new Error("DEPRECATED: dasherized components");
+      throw new Error('DEPRECATED: dasherized components');
     }
 
     let { handle } = this.registerTemplate(name, layoutSource);
 
-    this.registerComponent(name, 'Basic', BASIC_COMPONENT_MANAGER, handle, Component, BASIC_CAPABILITIES);
+    this.registerComponent(
+      name,
+      'Basic',
+      BASIC_COMPONENT_MANAGER,
+      handle,
+      Component,
+      BASIC_CAPABILITIES
+    );
   }
 
-  registerStaticTaglessComponent(name: string, Component: BasicComponentFactory, layoutSource: string): void {
+  registerStaticTaglessComponent(
+    name: string,
+    Component: BasicComponentFactory,
+    layoutSource: string
+  ): void {
     let { handle } = this.registerTemplate(name, layoutSource);
 
-    this.registerComponent(name, 'Fragment', STATIC_TAGLESS_COMPONENT_MANAGER, handle, Component, STATIC_TAGLESS_CAPABILITIES);
+    this.registerComponent(
+      name,
+      'Fragment',
+      STATIC_TAGLESS_COMPONENT_MANAGER,
+      handle,
+      Component,
+      STATIC_TAGLESS_CAPABILITIES
+    );
   }
 
-  registerEmberishCurlyComponent(name: string, Component: Option<EmberishCurlyComponentFactory>, layoutSource: Option<string>): void {
-    let layout: Option<{ name: string, handle: number }> = null;
+  registerEmberishCurlyComponent(
+    name: string,
+    Component: Option<EmberishCurlyComponentFactory>,
+    layoutSource: Option<string>
+  ): void {
+    let layout: Option<{ name: string; handle: number }> = null;
 
     if (layoutSource !== null) {
       layout = this.registerTemplate(name, layoutSource);
@@ -145,19 +186,37 @@ export default class LazyTestEnvironment extends TestEnvironment<TestMeta> {
     let handle = layout ? layout.handle : null;
     let ComponentClass = Component || EmberishCurlyComponent;
 
-    this.registerComponent(name, 'Curly', EMBERISH_CURLY_COMPONENT_MANAGER, handle, ComponentClass, CURLY_CAPABILITIES);
+    this.registerComponent(
+      name,
+      'Curly',
+      EMBERISH_CURLY_COMPONENT_MANAGER,
+      handle,
+      ComponentClass,
+      CURLY_CAPABILITIES
+    );
   }
 
-  registerEmberishGlimmerComponent(name: string, Component: Option<EmberishGlimmerComponentFactory>, layoutSource: string): void {
+  registerEmberishGlimmerComponent(
+    name: string,
+    Component: Option<EmberishGlimmerComponentFactory>,
+    layoutSource: string
+  ): void {
     if (name.indexOf('-') !== -1) {
-      throw new Error("DEPRECATED: dasherized components");
+      throw new Error('DEPRECATED: dasherized components');
     }
 
     let { handle } = this.registerTemplate(name, layoutSource);
 
     let ComponentClass = Component || EmberishGlimmerComponent;
 
-    this.registerComponent(name, 'Glimmer', EMBERISH_GLIMMER_COMPONENT_MANAGER, handle, ComponentClass, EMBERISH_GLIMMER_CAPABILITIES);
+    this.registerComponent(
+      name,
+      'Glimmer',
+      EMBERISH_GLIMMER_COMPONENT_MANAGER,
+      handle,
+      ComponentClass,
+      EMBERISH_GLIMMER_CAPABILITIES
+    );
   }
 
   registerHelper(name: string, helper: UserHelper): GlimmerHelper {
@@ -209,22 +268,29 @@ export default class LazyTestEnvironment extends TestEnvironment<TestMeta> {
   preprocess(template: string, meta?: TestMeta): Template<TestMeta> {
     let wrapper = JSON.parse(precompile(template));
     let factory = templateFactory(wrapper);
-    return factory.create(this.compiler, (meta || DEFAULT_TEST_META));
+    return factory.create(this.compiler, meta || DEFAULT_TEST_META);
   }
 
-  private registerComponent(name: string, type: ComponentKind, manager: ComponentManager<Opaque, Opaque>, layout: Option<number>, ComponentClass: Opaque, capabilities: ComponentCapabilities) {
+  private registerComponent(
+    name: string,
+    type: ComponentKind,
+    manager: ComponentManager<Opaque, Opaque>,
+    layout: Option<number>,
+    ComponentClass: Opaque,
+    capabilities: ComponentCapabilities
+  ) {
     let state: TestComponentDefinitionState = {
       name,
       type,
       layout,
       locator: locatorFor({ module: name, name: 'default' }),
       capabilities,
-      ComponentClass
+      ComponentClass,
     };
 
     let definition = {
       state,
-      manager
+      manager,
     };
 
     this.resolver.register('component', name, definition);

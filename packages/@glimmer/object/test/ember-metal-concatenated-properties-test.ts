@@ -6,11 +6,11 @@ QUnit.module('Mixin.concatenatedProperties');
 QUnit.test('defining concatenated properties should concat future version', assert => {
   let MixinA = Mixin.create({
     concatenatedProperties: ['foo'],
-    foo: ['a', 'b', 'c']
+    foo: ['a', 'b', 'c'],
   });
 
   let MixinB = Mixin.create({
-    foo: ['d', 'e', 'f']
+    foo: ['d', 'e', 'f'],
   });
 
   let obj = mixin({}, MixinA, MixinB);
@@ -19,11 +19,11 @@ QUnit.test('defining concatenated properties should concat future version', asse
 
 QUnit.test('defining concatenated properties should concat future version', assert => {
   let MixinA = Mixin.create({
-    concatenatedProperties: null
+    concatenatedProperties: null,
   });
 
   let MixinB = Mixin.create({
-    concatenatedProperties: null
+    concatenatedProperties: null,
   });
 
   let obj = mixin({}, MixinA, MixinB);
@@ -34,21 +34,25 @@ QUnit.test('defining concatenated properties should concat future version', asse
 QUnit.test('concatenatedProperties should be concatenated', assert => {
   let MixinA = Mixin.create({
     concatenatedProperties: ['foo'],
-    foo: ['a', 'b', 'c']
+    foo: ['a', 'b', 'c'],
   });
 
   let MixinB = Mixin.create({
     concatenatedProperties: 'bar',
     foo: ['d', 'e', 'f'],
-    bar: [1, 2, 3]
+    bar: [1, 2, 3],
   });
 
   let MixinC = Mixin.create({
-    bar: [4, 5, 6]
+    bar: [4, 5, 6],
   });
 
   let obj = mixin({}, MixinA, MixinB, MixinC);
-  assert.deepEqual(get(obj, 'concatenatedProperties'), ['foo', 'bar'], 'get concatenatedProperties');
+  assert.deepEqual(
+    get(obj, 'concatenatedProperties'),
+    ['foo', 'bar'],
+    'get concatenatedProperties'
+  );
   assert.deepEqual(get(obj, 'foo'), ['a', 'b', 'c', 'd', 'e', 'f'], 'get foo');
   assert.deepEqual(get(obj, 'bar'), [1, 2, 3, 4, 5, 6], 'get bar');
 });
@@ -56,11 +60,11 @@ QUnit.test('concatenatedProperties should be concatenated', assert => {
 QUnit.test('adding a prop that is not an array should make array', assert => {
   let MixinA = Mixin.create({
     concatenatedProperties: ['foo'],
-    foo: [1, 2, 3]
+    foo: [1, 2, 3],
   });
 
   let MixinB = Mixin.create({
-    foo: 4
+    foo: 4,
   });
 
   let obj = mixin({}, MixinA, MixinB);
@@ -70,7 +74,7 @@ QUnit.test('adding a prop that is not an array should make array', assert => {
 QUnit.test('adding a prop that is not an array should make array', assert => {
   let MixinA = Mixin.create({
     concatenatedProperties: ['foo'],
-    foo: 'bar'
+    foo: 'bar',
   });
 
   let obj = mixin({}, MixinA);

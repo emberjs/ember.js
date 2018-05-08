@@ -20,7 +20,6 @@ export class ListNode<T> implements LinkedListNode {
 type trust = any;
 
 export class LinkedList<T extends LinkedListNode> implements Slice<T> {
-
   private _head: Option<T>;
   private _tail: Option<T>;
 

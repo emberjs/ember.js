@@ -2,16 +2,14 @@ import visitorKeys from '../types/visitor-keys';
 import {
   cannotRemoveNode,
   cannotReplaceNode,
-  cannotReplaceOrRemoveInKeyHandlerYet
+  cannotReplaceOrRemoveInKeyHandlerYet,
 } from './errors';
 import * as nodes from '../types/nodes';
-import { Option } from "@glimmer/interfaces";
+import { Option } from '@glimmer/interfaces';
 
 export type NodeHandler<T extends nodes.Node> = NodeHandlerFunction<T> | EnterExitNodeHandler<T>;
 
-export type SpecificNodeVisitor = {
-  [P in keyof nodes.Nodes]?: NodeHandler<nodes.Nodes[P]>;
-};
+export type SpecificNodeVisitor = { [P in keyof nodes.Nodes]?: NodeHandler<nodes.Nodes[P]> };
 
 export interface NodeVisitor extends SpecificNodeVisitor {
   All?: NodeHandler<nodes.Node>;
@@ -60,9 +58,16 @@ function visitNode(visitor: NodeVisitor, node: nodes.Node): any {
   return result;
 }
 
-function visitKey(visitor: NodeVisitor, handler: EnterExitNodeHandler<nodes.Node>, node: nodes.Node & TraversedNode, key: string) {
+function visitKey(
+  visitor: NodeVisitor,
+  handler: EnterExitNodeHandler<nodes.Node>,
+  node: nodes.Node & TraversedNode,
+  key: string
+) {
   let value = node[key];
-  if (!value) { return; }
+  if (!value) {
+    return;
+  }
 
   let keyHandler = handler && (handler.keys[key] || handler.keys.All);
   let result;
@@ -153,28 +158,28 @@ export function normalizeVisitor(visitor: NodeVisitor) {
           let keyHandler = keys[key];
           if (typeof keyHandler === 'object') {
             normalizedKeys[key] = {
-              enter: (typeof keyHandler.enter === 'function') ? keyHandler.enter : null,
-              exit: (typeof keyHandler.exit === 'function') ? keyHandler.exit : null
+              enter: typeof keyHandler.enter === 'function' ? keyHandler.enter : null,
+              exit: typeof keyHandler.exit === 'function' ? keyHandler.exit : null,
             };
           } else if (typeof keyHandler === 'function') {
             normalizedKeys[key] = {
               enter: keyHandler,
-              exit: null
+              exit: null,
             };
           }
         }
       }
 
       normalizedVisitor[type] = {
-        enter: (typeof handler.enter === 'function') ? handler.enter : null,
-        exit: (typeof handler.exit === 'function') ? handler.exit : null,
-        keys: normalizedKeys
+        enter: typeof handler.enter === 'function' ? handler.enter : null,
+        exit: typeof handler.exit === 'function' ? handler.exit : null,
+        keys: normalizedKeys,
       };
     } else if (typeof handler === 'function') {
       normalizedVisitor[type] = {
         enter: handler,
         exit: null,
-        keys: normalizedKeys
+        keys: normalizedKeys,
       };
     }
   }

@@ -1,11 +1,11 @@
-import { Op } from "./opcodes";
-import { Option, Opaque, Opcode } from "@glimmer/interfaces";
-import { fillNulls } from "@glimmer/util";
+import { Op } from './opcodes';
+import { Option, Opaque, Opcode } from '@glimmer/interfaces';
+import { fillNulls } from '@glimmer/util';
 
 export interface VM {
   stack: {
-    sp: number,
-    fp: number,
+    sp: number;
+    fp: number;
     peek(count?: number): Opaque;
   };
 }
@@ -13,11 +13,13 @@ export interface VM {
 export type OperandSize = 0 | 1 | 2 | 3;
 
 // TODO fix any for constants
-export type DebugStackChangeFunction<State> = (({ opcode, constants, state }: { opcode: Opcode, constants: any, state: State }) => number);
+export type DebugStackChangeFunction<State> = ((
+  { opcode, constants, state }: { opcode: Opcode; constants: any; state: State }
+) => number);
 export type DebugBeforeFunction = (opcode: Opcode, vm: VM) => Opaque;
 
 export type OperandType =
-    'handle'
+  | 'handle'
   | 'i32'
   | 'to'
   | 'str'
@@ -31,8 +33,7 @@ export type OperandType =
   | 'block'
   | 'register'
   | 'serializable'
-  | 'lazy-constant'
-  ;
+  | 'lazy-constant';
 
 export interface Operand {
   type: OperandType;
@@ -119,7 +120,10 @@ export interface NormalizedMetadata {
 
 export const METADATA: Option<NormalizedMetadata>[] = fillNulls(Op.Size);
 
-export function OPCODE_METADATA<State, Name extends Op = Op>(name: Name, metadata: DebugMetadata<State>): void {
+export function OPCODE_METADATA<State, Name extends Op = Op>(
+  name: Name,
+  metadata: DebugMetadata<State>
+): void {
   if (METADATA[name as number]) {
     throw new Error('BUG: Appended Opcode Metadata twice');
   }
@@ -153,7 +157,7 @@ export function OPCODE_METADATA<State, Name extends Op = Op>(name: Name, metadat
     ops,
     before,
     stackChange,
-    operands
+    operands,
   };
 
   METADATA[name as number] = normalized;
@@ -170,15 +174,15 @@ OPCODE_METADATA(Op.BindDynamicScope, {
     let size = constants.getArray(_names).length;
 
     return -size;
-  }
+  },
 });
 
 OPCODE_METADATA(Op.PushDynamicScope, {
-  name: 'PushDynamicScope'
+  name: 'PushDynamicScope',
 });
 
 OPCODE_METADATA(Op.PopDynamicScope, {
-  name: 'PopDynamicScope'
+  name: 'PopDynamicScope',
 });
 
 /// VM ///
@@ -187,102 +191,102 @@ OPCODE_METADATA(Op.PushSymbolTable, {
   name: 'PushSymbolTable',
   ops: [SymbolTable('table')],
   operands: 1,
-  stackChange: 1
+  stackChange: 1,
 });
 
 OPCODE_METADATA(Op.PushBlockScope, {
   name: 'PushBlockScope',
-  stackChange: 1
+  stackChange: 1,
 });
 
 OPCODE_METADATA(Op.CompileBlock, {
-  name: 'CompileBlock'
+  name: 'CompileBlock',
 });
 
 OPCODE_METADATA(Op.InvokeVirtual, {
   name: 'InvokeVirtual',
-  stackChange: -1
+  stackChange: -1,
 });
 
 OPCODE_METADATA(Op.InvokeStatic, {
   name: 'InvokeStatic',
   ops: [Handle('handle')],
-  operands: 1
+  operands: 1,
 });
 
 OPCODE_METADATA(Op.InvokeYield, {
   name: 'InvokeYield',
-  stackChange: -2
+  stackChange: -2,
 });
 
 OPCODE_METADATA(Op.Jump, {
   name: 'Jump',
   ops: [TO('to')],
-  operands: 1
+  operands: 1,
 });
 
 OPCODE_METADATA(Op.JumpIf, {
   name: 'JumpIf',
   ops: [TO('to')],
   operands: 1,
-  stackChange: -1
+  stackChange: -1,
 });
 
 OPCODE_METADATA(Op.JumpUnless, {
   name: 'JumpUnless',
   ops: [TO('to')],
   operands: 1,
-  stackChange: -1
+  stackChange: -1,
 });
 
 OPCODE_METADATA(Op.JumpEq, {
   name: 'JumpEq',
   ops: [TO('to'), I32('comparison')],
-  operands: 2
+  operands: 2,
 });
 
 OPCODE_METADATA(Op.AssertSame, {
-  name: 'AssertSame'
+  name: 'AssertSame',
 });
 
 OPCODE_METADATA(Op.PushFrame, {
   name: 'PushFrame',
-  stackChange: 2
+  stackChange: 2,
 });
 
 OPCODE_METADATA(Op.PopFrame, {
   name: 'PopFrame',
 
-  before(_opcode: Opcode, vm: VM): { sp: number, fp: number } {
+  before(_opcode: Opcode, vm: VM): { sp: number; fp: number } {
     return { sp: vm.stack.sp, fp: vm.stack.fp };
   },
 
-  stackChange({ state }: { state: { sp: number, fp: number } }) {
+  stackChange({ state }: { state: { sp: number; fp: number } }) {
     return state.fp - state.sp - 1;
-  }
+  },
 });
 
 OPCODE_METADATA(Op.PushSmallFrame, {
   name: 'PushSmallFrame',
-  stackChange: 1
+  stackChange: 1,
 });
 
 OPCODE_METADATA(Op.PopSmallFrame, {
   name: 'PopFrame',
 
-  before(_opcode: Opcode, vm: VM): { sp: number, fp: number } {
+  before(_opcode: Opcode, vm: VM): { sp: number; fp: number } {
     return { sp: vm.stack.sp, fp: vm.stack.fp };
   },
 
-  stackChange({ state }: { state: { sp: number, fp: number } }) {
+  stackChange({ state }: { state: { sp: number; fp: number } }) {
     return state.fp - state.sp;
-  }
+  },
 });
 
 OPCODE_METADATA(Op.Enter, {
   name: 'Enter',
   ops: [I32('args')],
-  operands: 1
+  operands: 1,
 });
 
 OPCODE_METADATA(Op.Exit, {
@@ -290,7 +294,7 @@ OPCODE_METADATA(Op.Exit, {
 });
 
 OPCODE_METADATA(Op.ToBoolean, {
-  name: 'ToBoolean'
+  name: 'ToBoolean',
 });
 
 /// PRELUDE & EXIT ///
@@ -298,45 +302,45 @@ OPCODE_METADATA(Op.ToBoolean, {
 OPCODE_METADATA(Op.RootScope, {
   name: 'RootScope',
   ops: [I32('symbols'), Bool('bindCallerScope')],
-  operands: 2
+  operands: 2,
 });
 
 OPCODE_METADATA(Op.VirtualRootScope, {
-  name: 'VirtualRootScope'
+  name: 'VirtualRootScope',
 });
 
 OPCODE_METADATA(Op.ChildScope, {
-  name: 'ChildScope'
+  name: 'ChildScope',
 });
 
 OPCODE_METADATA(Op.PopScope, {
-  name: 'PopScope'
+  name: 'PopScope',
 });
 
 OPCODE_METADATA(Op.Return, {
-  name: 'Return'
+  name: 'Return',
 });
 
 OPCODE_METADATA(Op.ReturnTo, {
   name: 'ReturnTo',
   ops: [TO('offset')],
-  operands: 1
+  operands: 1,
 });
 
 /// COMPONENTS ///
 
 OPCODE_METADATA(Op.IsComponent, {
-  name: 'IsComponent'
+  name: 'IsComponent',
 });
 
 OPCODE_METADATA(Op.ContentType, {
   name: 'ContentType',
-  stackChange: 1
+  stackChange: 1,
 });
 
 OPCODE_METADATA(Op.CurryComponent, {
   name: 'CurryComponent',
-  stackChange: -2
+  stackChange: -2,
 });
 
 OPCODE_METADATA(Op.PushComponentDefinition, {
@@ -347,117 +351,117 @@ OPCODE_METADATA(Op.PushComponentDefinition, {
 });
 
 OPCODE_METADATA(Op.PushCurriedComponent, {
-  name: 'PushCurriedComponent'
+  name: 'PushCurriedComponent',
 });
 
 OPCODE_METADATA(Op.PushArgs, {
   name: 'PushArgs',
   ops: [StrArray('names'), I32('positionals'), Bool('synthetic')],
   operands: 3,
-  stackChange: 1
+  stackChange: 1,
 });
 
 OPCODE_METADATA(Op.PushEmptyArgs, {
   name: 'PushEmptyArgs',
-  stackChange: 1
+  stackChange: 1,
 });
 
 OPCODE_METADATA(Op.PrepareArgs, {
   name: 'PrepareArgs',
   ops: [Register('state')],
-  skipCheck: true
+  skipCheck: true,
 });
 
 OPCODE_METADATA(Op.CaptureArgs, {
-  name: 'CaptureArgs'
+  name: 'CaptureArgs',
 });
 
 OPCODE_METADATA(Op.CreateComponent, {
   name: 'CreateComponent',
   ops: [I32('flags'), Register('state')],
-  operands: 2
+  operands: 2,
 });
 
 OPCODE_METADATA(Op.RegisterComponentDestructor, {
   name: 'RegisterComponentDestructor',
   ops: [Register('state')],
-  operands: 1
+  operands: 1,
 });
 
 OPCODE_METADATA(Op.PutComponentOperations, {
-  name: 'PutComponentOperations'
+  name: 'PutComponentOperations',
 });
 
 OPCODE_METADATA(Op.GetComponentSelf, {
   name: 'GetComponentSelf',
   ops: [Register('state')],
   operands: 1,
-  stackChange: 1
+  stackChange: 1,
 });
 
 OPCODE_METADATA(Op.GetComponentTagName, {
   name: 'GetComponentTagName',
   ops: [Register('state')],
   operands: 1,
-  stackChange: 1
+  stackChange: 1,
 });
 
 OPCODE_METADATA(Op.GetComponentLayout, {
   name: 'GetComponentLayout',
   ops: [Register('state')],
   operands: 1,
-  stackChange: 2
+  stackChange: 2,
 });
 
 OPCODE_METADATA(Op.SetupForEval, {
   name: 'SetupForEval',
   ops: [Register('state')],
-  operands: 1
+  operands: 1,
 });
 
 OPCODE_METADATA(Op.BindEvalScope, {
   name: 'BindEvalScope',
   ops: [Register('state')],
-  operands: 1
+  operands: 1,
 });
 
 OPCODE_METADATA(Op.InvokeComponentLayout, {
   name: 'InvokeComponentLayout',
-  stackChange: -2
+  stackChange: -2,
 });
 
 OPCODE_METADATA(Op.PopulateLayout, {
   name: 'PopulateLayout',
   ops: [Register('state')],
   operands: 1,
-  stackChange: -2
+  stackChange: -2,
 });
 
 OPCODE_METADATA(Op.Main, {
   name: 'Main',
   ops: [Register('state')],
   operands: 1,
-  stackChange: -2
+  stackChange: -2,
 });
 
 OPCODE_METADATA(Op.BeginComponentTransaction, {
-  name: 'BeginComponentTransaction'
+  name: 'BeginComponentTransaction',
 });
 
 OPCODE_METADATA(Op.CommitComponentTransaction, {
-  name: 'CommitComponentTransaction'
+  name: 'CommitComponentTransaction',
 });
 
 OPCODE_METADATA(Op.DidCreateElement, {
   name: 'DidCreateElement',
   ops: [Register('state')],
-  operands: 1
+  operands: 1,
 });
 
 OPCODE_METADATA(Op.DidRenderLayout, {
   name: 'DidRenderLayout',
   ops: [Register('state')],
-  operands: 1
+  operands: 1,
 });
 
 /// DEBUGGER ///
@@ -465,7 +469,7 @@ OPCODE_METADATA(Op.DidRenderLayout, {
 OPCODE_METADATA(Op.Debugger, {
   name: 'Debugger',
   ops: [StrArray('symbols'), NumArray('evalInfo')],
-  operands: 2
+  operands: 2,
 });
 
 //// DOM ///
@@ -473,98 +477,98 @@ OPCODE_METADATA(Op.Debugger, {
 OPCODE_METADATA(Op.Text, {
   name: 'Text',
   ops: [Str('text')],
-  operands: 1
+  operands: 1,
 });
 
 OPCODE_METADATA(Op.Comment, {
   name: 'Comment',
   ops: [Str('comment')],
-  operands: 1
+  operands: 1,
 });
 
 OPCODE_METADATA(Op.AppendHTML, {
   name: 'AppendHTML',
-  stackChange: -1
+  stackChange: -1,
 });
 
 OPCODE_METADATA(Op.AppendSafeHTML, {
   name: 'AppendSafeHTML',
-  stackChange: -1
+  stackChange: -1,
 });
 
 OPCODE_METADATA(Op.AppendDocumentFragment, {
   name: 'AppendDocumentFragment',
-  stackChange: -1
+  stackChange: -1,
 });
 
 OPCODE_METADATA(Op.AppendNode, {
   name: 'AppendNode',
-  stackChange: -1
+  stackChange: -1,
 });
 
 OPCODE_METADATA(Op.AppendText, {
   name: 'AppendText',
-  stackChange: -1
+  stackChange: -1,
 });
 
 OPCODE_METADATA(Op.ResolveDynamicComponent, {
   name: 'ResolveDynamicComponent',
   ops: [Serializable('meta')],
-  operands: 1
+  operands: 1,
 });
 
 OPCODE_METADATA(Op.PushDynamicComponentInstance, {
-  name: 'PushDynamicComponentInstance'
+  name: 'PushDynamicComponentInstance',
 });
 
 OPCODE_METADATA(Op.OpenElement, {
   name: 'OpenElement',
   ops: [Str('tag')],
-  operands: 1
+  operands: 1,
 });
 
 OPCODE_METADATA(Op.OpenDynamicElement, {
   name: 'OpenDynamicElement',
-  stackChange: -1
+  stackChange: -1,
 });
 
 OPCODE_METADATA(Op.StaticAttr, {
   name: 'StaticAttr',
   ops: [Str('name'), Str('value'), OptionStr('namespace')],
-  operands: 3
+  operands: 3,
 });
 
 OPCODE_METADATA(Op.DynamicAttr, {
   name: 'DynamicAttr',
   ops: [Str('name'), Bool('trusting'), OptionStr('namespace')],
   operands: 3,
-  stackChange: -1
+  stackChange: -1,
 });
 
 OPCODE_METADATA(Op.ComponentAttr, {
   name: 'ComponentAttr',
   ops: [Str('name'), Bool('trusting'), OptionStr('namespace')],
   operands: 3,
-  stackChange: -1
+  stackChange: -1,
 });
 
 OPCODE_METADATA(Op.FlushElement, {
-  name: 'FlushElement'
+  name: 'FlushElement',
 });
 
 OPCODE_METADATA(Op.CloseElement, {
-  name: 'CloseElement'
+  name: 'CloseElement',
 });
 
 /// WORMHOLE ///
 
 OPCODE_METADATA(Op.PushRemoteElement, {
   name: 'PushRemoteElement',
-  stackChange: -3
+  stackChange: -3,
 });
 
 OPCODE_METADATA(Op.PopRemoteElement, {
-  name: 'PopRemoteElement'
+  name: 'PopRemoteElement',
 });
 
 /// MODIFIER ///
@@ -573,7 +577,7 @@ OPCODE_METADATA(Op.Modifier, {
   name: 'Modifier',
   ops: [Handle('helper')],
   operands: 1,
-  stackChange: -1
+  stackChange: -1,
 });
 
 /// VM ///
@@ -582,30 +586,30 @@ OPCODE_METADATA(Op.Constant, {
   name: 'Constant',
   ops: [LazyConstant('value')],
   operands: 1,
-  stackChange: 1
+  stackChange: 1,
 });
 
 OPCODE_METADATA(Op.Primitive, {
   name: 'Primitive',
   ops: [Primitive('primitive')],
   operands: 1,
-  stackChange: 1
+  stackChange: 1,
 });
 
 OPCODE_METADATA(Op.PrimitiveReference, {
-  name: 'PrimitiveReference'
+  name: 'PrimitiveReference',
 });
 
 OPCODE_METADATA(Op.ReifyU32, {
   name: 'ReifyU32',
-  stackChange: 1
+  stackChange: 1,
 });
 
 OPCODE_METADATA(Op.Dup, {
   name: 'Dup',
   ops: [Register('register'), I32('offset')],
   operands: 2,
-  stackChange: 1
+  stackChange: 1,
 });
 
 OPCODE_METADATA(Op.Pop, {
@@ -614,21 +618,21 @@ OPCODE_METADATA(Op.Pop, {
   operands: 1,
   stackChange({ opcode: { op1: count } }) {
     return -count;
-  }
+  },
 });
 
 OPCODE_METADATA(Op.Load, {
   name: 'Load',
   ops: [Register('register')],
   operands: 1,
-  stackChange: -1
+  stackChange: -1,
 });
 
 OPCODE_METADATA(Op.Fetch, {
   name: 'Fetch',
   ops: [Register('register')],
   operands: 1,
-  stackChange: 1
+  stackChange: 1,
 });
 
 /// EXPRESSIONS ///
@@ -637,66 +641,66 @@ OPCODE_METADATA(Op.Helper, {
   name: 'Helper',
   ops: [Handle('helper')],
   operands: 1,
-  stackChange: -1
+  stackChange: -1,
 });
 
 OPCODE_METADATA(Op.SetNamedVariables, {
   name: 'SetNamedVariables',
   ops: [Register('register')],
-  operands: 1
+  operands: 1,
 });
 
 OPCODE_METADATA(Op.SetBlocks, {
   name: 'SetBlocks',
   ops: [Register('register')],
-  operands: 1
+  operands: 1,
 });
 
 OPCODE_METADATA(Op.SetVariable, {
   name: 'SetVariable',
   ops: [ScopeSymbol('symbol')],
   operands: 1,
-  stackChange: -1
+  stackChange: -1,
 });
 
 OPCODE_METADATA(Op.SetBlock, {
   name: 'SetBlock',
   ops: [ScopeSymbol('symbol')],
   operands: 1,
-  stackChange: -3
+  stackChange: -3,
 });
 
 OPCODE_METADATA(Op.GetVariable, {
   name: 'GetVariable',
   ops: [ScopeSymbol('symbol')],
   operands: 1,
-  stackChange: 1
+  stackChange: 1,
 });
 
 OPCODE_METADATA(Op.GetProperty, {
   name: 'GetProperty',
   ops: [Str('key')],
-  operands: 1
+  operands: 1,
 });
 
 OPCODE_METADATA(Op.GetBlock, {
   name: 'GetBlock',
   ops: [ScopeBlock('block')],
   operands: 1,
-  stackChange: 3
+  stackChange: 3,
 });
 
 OPCODE_METADATA(Op.HasBlock, {
   name: 'HasBlock',
   ops: [ScopeBlock('block')],
   operands: 1,
-  stackChange: 1
+  stackChange: 1,
 });
 
 OPCODE_METADATA(Op.HasBlockParams, {
   name: 'HasBlockParams',
   ops: [ScopeBlock('block')],
-  stackChange: -2
+  stackChange: -2,
 });
 
 OPCODE_METADATA(Op.Concat, {
@@ -706,7 +710,7 @@ OPCODE_METADATA(Op.Concat, {
 
   stackChange({ opcode }) {
     return -opcode.op1 + 1;
-  }
+  },
 });
 
 /// LIST ///
@@ -714,21 +718,21 @@ OPCODE_METADATA(Op.Concat, {
 OPCODE_METADATA(Op.EnterList, {
   name: 'EnterList',
   ops: [I32('start')],
-  operands: 1
+  operands: 1,
 });
 
 OPCODE_METADATA(Op.ExitList, {
-  name: 'ExitList'
+  name: 'ExitList',
 });
 
 OPCODE_METADATA(Op.PutIterator, {
-  name: 'PutIterator'
+  name: 'PutIterator',
 });
 
 OPCODE_METADATA(Op.Iterate, {
   name: 'Iterate',
   ops: [I32('end')],
-  skipCheck: true
+  skipCheck: true,
 });
 
 /// PARTIAL ///
@@ -737,11 +741,11 @@ OPCODE_METADATA(Op.InvokePartial, {
   name: 'InvokePartial',
   ops: [Serializable('meta'), StrArray('symbols'), NumArray('evalInfo')],
   operands: 3,
-  stackChange: 1
+  stackChange: 1,
 });
 
 OPCODE_METADATA(Op.ResolveMaybeLocal, {
   name: 'ResolveMaybeLocal',
   operands: 1,
-  stackChange: 1
+  stackChange: 1,
 });

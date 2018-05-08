@@ -1,15 +1,18 @@
-
 import { Reference, PathReference, Tag } from '@glimmer/reference';
 import { Option, Opaque } from '@glimmer/util';
 import { RuntimeResolver } from '@glimmer/interfaces';
 
 import { ICapturedArguments } from '../vm/arguments';
 import { ComponentDefinition } from '../component/interfaces';
-import { CurriedComponentDefinition, isCurriedComponentDefinition } from '../component/curried-component';
+import {
+  CurriedComponentDefinition,
+  isCurriedComponentDefinition,
+} from '../component/curried-component';
 import { resolveComponent } from '../component/resolve';
 import { UNDEFINED_REFERENCE } from '../references';
 
-export default class CurryComponentReference<Locator> implements PathReference<Option<CurriedComponentDefinition>> {
+export default class CurryComponentReference<Locator>
+  implements PathReference<Option<CurriedComponentDefinition>> {
   public tag: Tag;
   private lastValue: Opaque;
   private lastDefinition: Option<CurriedComponentDefinition>;
@@ -55,7 +58,9 @@ export default class CurryComponentReference<Locator> implements PathReference<O
     return UNDEFINED_REFERENCE;
   }
 
-  private curry(definition: Option<CurriedComponentDefinition | ComponentDefinition>): Option<CurriedComponentDefinition> {
+  private curry(
+    definition: Option<CurriedComponentDefinition | ComponentDefinition>
+  ): Option<CurriedComponentDefinition> {
     let { args } = this;
 
     if (!args && isCurriedComponentDefinition(definition)) {

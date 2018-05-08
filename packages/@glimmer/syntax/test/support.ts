@@ -23,7 +23,11 @@ function normalizeNode(obj: AST.Node | Array<AST.Node>): AST.Node | Array<AST.No
   }
 }
 
-export function astEqual(actual: any | null | undefined, expected: any | null | undefined, message?: string) {
+export function astEqual(
+  actual: any | null | undefined,
+  expected: any | null | undefined,
+  message?: string
+) {
   if (typeof actual === 'string') {
     actual = parse(actual);
   }

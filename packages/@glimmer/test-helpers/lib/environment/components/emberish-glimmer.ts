@@ -1,16 +1,26 @@
-import { CapturedNamedArguments, ComponentManager, WithStaticLayout, Environment, Arguments, PrimitiveReference, ElementOperations, Bounds, Invocation } from "@glimmer/runtime";
-import { Opaque, Option, ComponentCapabilities } from "@glimmer/interfaces";
-import { PathReference, Tag, combine, TagWrapper, DirtyableTag } from "@glimmer/reference";
-import { UpdatableReference } from "@glimmer/object-reference";
-import GlimmerObject from "@glimmer/object";
-import { Destroyable } from "@glimmer/util";
+import {
+  CapturedNamedArguments,
+  ComponentManager,
+  WithStaticLayout,
+  Environment,
+  Arguments,
+  PrimitiveReference,
+  ElementOperations,
+  Bounds,
+  Invocation,
+} from '@glimmer/runtime';
+import { Opaque, Option, ComponentCapabilities } from '@glimmer/interfaces';
+import { PathReference, Tag, combine, TagWrapper, DirtyableTag } from '@glimmer/reference';
+import { UpdatableReference } from '@glimmer/object-reference';
+import GlimmerObject from '@glimmer/object';
+import { Destroyable } from '@glimmer/util';
 
 import { Attrs, AttrsDiff, createTemplate } from '../shared';
 import { BASIC_CAPABILITIES } from './basic';
 import { TestComponentDefinitionState } from '../components';
 import LazyRuntimeResolver from '../modes/lazy/runtime-resolver';
 import EagerRuntimeResolver from '../modes/eager/runtime-resolver';
-import { } from "@glimmer/bundle-compiler";
+import {} from '@glimmer/bundle-compiler';
 
 export const EMBERISH_GLIMMER_CAPABILITIES = {
   ...BASIC_CAPABILITIES,
@@ -18,7 +28,7 @@ export const EMBERISH_GLIMMER_CAPABILITIES = {
   createArgs: true,
   attributeHook: true,
   updateHook: true,
-  createInstance: true
+  createInstance: true,
 };
 
 export interface EmberishGlimmerComponentState {
@@ -27,9 +37,14 @@ export interface EmberishGlimmerComponentState {
 }
 
 export class EmberishGlimmerComponentManager
-  implements ComponentManager<EmberishGlimmerComponentState, TestComponentDefinitionState>,
-             WithStaticLayout<EmberishGlimmerComponentState, TestComponentDefinitionState, Opaque, LazyRuntimeResolver> {
-
+  implements
+    ComponentManager<EmberishGlimmerComponentState, TestComponentDefinitionState>,
+    WithStaticLayout<
+      EmberishGlimmerComponentState,
+      TestComponentDefinitionState,
+      Opaque,
+      LazyRuntimeResolver
+    > {
   getCapabilities(state: TestComponentDefinitionState): ComponentCapabilities {
     return state.capabilities;
   }
@@ -38,7 +53,14 @@ export class EmberishGlimmerComponentManager
     return null;
   }
 
-  create(_environment: Environment, definition: TestComponentDefinitionState, _args: Arguments, _dynamicScope: any, _callerSelf: PathReference<Opaque>, _hasDefaultBlock: boolean): EmberishGlimmerComponentState {
+  create(
+    _environment: Environment,
+    definition: TestComponentDefinitionState,
+    _args: Arguments,
+    _dynamicScope: any,
+    _callerSelf: PathReference<Opaque>,
+    _hasDefaultBlock: boolean
+  ): EmberishGlimmerComponentState {
     let args = _args.named.capture();
     let klass = definition.ComponentClass || BaseEmberishGlimmerComponent;
     let attrs = args.value();
@@ -56,7 +78,10 @@ export class EmberishGlimmerComponentManager
     return combine([tag, dirtinessTag]);
   }
 
-  getLayout(state: TestComponentDefinitionState, resolver: LazyRuntimeResolver | EagerRuntimeResolver): Invocation {
+  getLayout(
+    state: TestComponentDefinitionState,
+    resolver: LazyRuntimeResolver | EagerRuntimeResolver
+  ): Invocation {
     let { name, locator } = state;
     if (resolver instanceof LazyRuntimeResolver) {
       let compile = (source: string) => {
@@ -65,7 +90,7 @@ export class EmberishGlimmerComponentManager
 
         return {
           handle: layout.compile(),
-          symbolTable: layout.symbolTable
+          symbolTable: layout.symbolTable,
         };
       };
 
@@ -81,9 +106,18 @@ export class EmberishGlimmerComponentManager
     return new UpdatableReference(component);
   }
 
-  didCreateElement({ component }: EmberishGlimmerComponentState, element: Element, operations: ElementOperations): void {
+  didCreateElement(
+    { component }: EmberishGlimmerComponentState,
+    element: Element,
+    operations: ElementOperations
+  ): void {
     component.element = element;
-    operations.setAttribute('id', PrimitiveReference.create(`ember${component._guid}`), false, null);
+    operations.setAttribute(
+      'id',
+      PrimitiveReference.create(`ember${component._guid}`),
+      false,
+      null
+    );
     operations.setAttribute('class', PrimitiveReference.create('ember-view'), false, null);
   }
 
@@ -107,7 +141,7 @@ export class EmberishGlimmerComponentManager
     component.willRender();
   }
 
-  didUpdateLayout(): void { }
+  didUpdateLayout(): void {}
 
   didUpdate({ component }: EmberishGlimmerComponentState): void {
     component.didUpdate();
@@ -118,7 +152,7 @@ export class EmberishGlimmerComponentManager
     return {
       destroy() {
         component.destroy();
-      }
+      },
     };
   }
 }
@@ -138,15 +172,15 @@ export class EmberishGlimmerComponent extends GlimmerObject {
     this.dirtinessTag.inner.dirty();
   }
 
-  didInitAttrs(_options: { attrs: Attrs }) { }
-  didUpdateAttrs(_diff: AttrsDiff) { }
-  didReceiveAttrs(_diff: AttrsDiff) { }
-  willInsertElement() { }
-  willUpdate() { }
-  willRender() { }
-  didInsertElement() { }
-  didUpdate() { }
-  didRender() { }
+  didInitAttrs(_options: { attrs: Attrs }) {}
+  didUpdateAttrs(_diff: AttrsDiff) {}
+  didReceiveAttrs(_diff: AttrsDiff) {}
+  willInsertElement() {}
+  willUpdate() {}
+  willRender() {}
+  didInsertElement() {}
+  didUpdate() {}
+  didRender() {}
 }
 
 export interface EmberishGlimmerComponentFactory {

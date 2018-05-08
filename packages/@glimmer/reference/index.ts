@@ -1,21 +1,14 @@
-export {
-  Reference as BasicReference,
-  PathReference as BasicPathReference
-} from './lib/reference';
+export { Reference as BasicReference, PathReference as BasicPathReference } from './lib/reference';
 
-export {
-  ConstReference
-} from './lib/const';
+export { ConstReference } from './lib/const';
 
-export {
-  ListItem
-} from './lib/iterable';
+export { ListItem } from './lib/iterable';
 
 export * from './lib/validators';
 
 export {
   VersionedReference as Reference,
-  VersionedPathReference as PathReference
+  VersionedPathReference as PathReference,
 } from './lib/validators';
 
 export {
@@ -29,5 +22,5 @@ export {
   IterationArtifacts,
   ReferenceIterator,
   IteratorSynchronizer,
-  IteratorSynchronizerDelegate
+  IteratorSynchronizerDelegate,
 } from './lib/iterable';

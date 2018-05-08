@@ -21,7 +21,12 @@ export const PLACEHOLDER_HANDLE = -1;
 
 export type Primitive = undefined | null | boolean | number | string;
 
-export type ComponentArgs = [Core.Params, Core.Hash, Option<CompilableBlock>, Option<CompilableBlock>];
+export type ComponentArgs = [
+  Core.Params,
+  Core.Hash,
+  Option<CompilableBlock>,
+  Option<CompilableBlock>
+];
 
 export interface ComponentBuilder {
   static(definition: number, args: ComponentArgs): void;

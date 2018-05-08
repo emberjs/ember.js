@@ -2,14 +2,15 @@ import { RenderTest, test } from '../render-test';
 
 export class YieldSuite extends RenderTest {
   @test
-  'yield'() {
+  yield() {
     this.render(
       {
-        layout: '{{#if @predicate}}Yes:{{yield @someValue}}{{else}}No:{{yield to="inverse"}}{{/if}}',
+        layout:
+          '{{#if @predicate}}Yes:{{yield @someValue}}{{else}}No:{{yield to="inverse"}}{{/if}}',
         args: { predicate: 'activated', someValue: '42' },
         blockParams: ['result'],
         template: 'Hello{{result}}{{outer}}',
-        inverse: 'Goodbye{{outer}}'
+        inverse: 'Goodbye{{outer}}',
       },
       { activated: true, outer: 'outer' }
     );
@@ -19,18 +20,19 @@ export class YieldSuite extends RenderTest {
   }
 
   @test({
-    skip: 'glimmer'
+    skip: 'glimmer',
   })
   'yield to inverse'() {
     this.render(
       {
-        layout: '{{#if @predicate}}Yes:{{yield @someValue}}{{else}}No:{{yield to="inverse"}}{{/if}}',
+        layout:
+          '{{#if @predicate}}Yes:{{yield @someValue}}{{else}}No:{{yield to="inverse"}}{{/if}}',
         args: { predicate: 'activated', someValue: '42' },
         blockParams: ['result'],
         template: 'Hello{{result}}{{outer}}',
-        inverse: 'Goodbye{{outer}}'
+        inverse: 'Goodbye{{outer}}',
       },
-      { activated: false, outer: "outer" }
+      { activated: false, outer: 'outer' }
     );
 
     this.assertComponent('No:Goodbyeouter');
@@ -40,7 +42,7 @@ export class YieldSuite extends RenderTest {
   @test
   'yielding to an non-existent block'() {
     this.render({
-      layout: 'Before-{{yield}}-After'
+      layout: 'Before-{{yield}}-After',
     });
 
     this.assertComponent('Before--After');
@@ -52,7 +54,7 @@ export class YieldSuite extends RenderTest {
     this.render({
       layout: `{{yield "foo"}}-{{yield ""}}`,
       blockParams: ['yielded'],
-      template: '{{yielded}}-{{yielded.length}}'
+      template: '{{yielded}}-{{yielded.length}}',
     });
 
     this.assertComponent(`foo-3--0`);
@@ -60,14 +62,14 @@ export class YieldSuite extends RenderTest {
   }
 
   @test({
-    skip: 'glimmer'
+    skip: 'glimmer',
   })
   'use a non-existent block param'() {
     this.render({
       layout: '{{yield someValue}}',
       args: { someValue: '42' },
       blockParams: ['val1', 'val2'],
-      template: '{{val1}} - {{val2}}'
+      template: '{{val1}} - {{val2}}',
     });
 
     this.assertComponent('42 - ');
@@ -86,32 +88,37 @@ export class YieldSuite extends RenderTest {
   }
 
   @test
-  "yielding primatives"() {
+  'yielding primatives'() {
     [
       {
         value: 'true',
-        output: 'true'
-      }, {
+        output: 'true',
+      },
+      {
         value: 'false',
-        output: 'false'
-      }, {
+        output: 'false',
+      },
+      {
         value: 'null',
-        output: ''
-      }, {
+        output: '',
+      },
+      {
         value: 'undefined',
-        output: ''
-      }, {
+        output: '',
+      },
+      {
         value: '1',
-        output: '1'
-      }, {
+        output: '1',
+      },
+      {
         value: '"foo"',
-        output: 'foo'
-      }
+        output: 'foo',
+      },
     ].forEach(({ value, output }) => {
       this.render({
         layout: `{{yield ${value}}}`,
         blockParams: ['yielded'],
-        template: '{{yielded}}-{{yielded.foo.bar}}'
+        template: '{{yielded}}-{{yielded.foo.bar}}',
       });
 
       this.assertComponent(`${output}-`);
@@ -122,12 +129,15 @@ export class YieldSuite extends RenderTest {
   }
 
   @test
-  "yield inside a conditional on the component"() {
-    this.render({
-      layout: 'In layout -- {{#if @predicate}}{{yield}}{{/if}}',
-      template: 'In template',
-      args: { predicate: 'predicate' }
-    }, { predicate: true });
+  'yield inside a conditional on the component'() {
+    this.render(
+      {
+        layout: 'In layout -- {{#if @predicate}}{{yield}}{{/if}}',
+        template: 'In template',
+        args: { predicate: 'predicate' },
+      },
+      { predicate: true }
+    );
 
     this.assertComponent('In layout -- In template', {});
     this.assertStableRerender();

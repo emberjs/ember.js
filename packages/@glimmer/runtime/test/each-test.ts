@@ -1,6 +1,3 @@
-import {
-  EachSuite,
-  module
-} from "@glimmer/test-helpers";
+import { EachSuite, module } from '@glimmer/test-helpers';
 
-module("#in-element Test", EachSuite);
+module('#in-element Test', EachSuite);

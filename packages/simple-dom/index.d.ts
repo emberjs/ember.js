@@ -2,7 +2,7 @@ import { Simple } from '@glimmer/interfaces';
 import { Dict } from '@glimmer/util';
 
 interface DocumentConstructor {
-  new(): Document;
+  new (): Document;
 }
 
 export interface Document extends Simple.Document {
@@ -12,7 +12,7 @@ export interface Document extends Simple.Document {
 export const voidMap: Dict<boolean>;
 
 interface HTMLSerializerConstructor {
-  new(voidMap: Dict<Boolean>): HTMLSerializer;
+  new (voidMap: Dict<Boolean>): HTMLSerializer;
 }
 
 export interface HTMLSerializer {

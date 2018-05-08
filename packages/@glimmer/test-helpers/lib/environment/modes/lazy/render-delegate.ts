@@ -6,13 +6,18 @@ import { UpdatableReference } from '@glimmer/object-reference';
 import LazyTestEnvironment from './environment';
 import { UserHelper } from '../../helper';
 import RenderDelegate from '../../../render-delegate';
-import { ComponentTypes, ComponentKind, registerComponent, renderTemplate } from '../../../render-test';
+import {
+  ComponentTypes,
+  ComponentKind,
+  registerComponent,
+  renderTemplate,
+} from '../../../render-test';
 import { PathReference } from '@glimmer/reference';
 
 declare const module: any;
 
 export default class LazyRenderDelegate implements RenderDelegate {
-  constructor(protected env: LazyTestEnvironment = new LazyTestEnvironment()) { }
+  constructor(protected env: LazyTestEnvironment = new LazyTestEnvironment()) {}
 
   resetEnv() {
     this.env = new LazyTestEnvironment();
@@ -26,7 +31,13 @@ export default class LazyRenderDelegate implements RenderDelegate {
     return document.getElementById('qunit-fixture')!;
   }
 
-  registerComponent<K extends ComponentKind, L extends ComponentKind>(type: K, _testType: L, name: string, layout: string, Class?: ComponentTypes[K]) {
+  registerComponent<K extends ComponentKind, L extends ComponentKind>(
+    type: K,
+    _testType: L,
+    name: string,
+    layout: string,
+    Class?: ComponentTypes[K]
+  ) {
     registerComponent(this.env, type, name, layout, Class);
   }
 
@@ -45,7 +56,8 @@ export default class LazyRenderDelegate implements RenderDelegate {
   renderTemplate(template: string, context: Dict<Opaque>, element: Simple.Element): RenderResult {
     let { env } = this;
     let cursor = { element, nextSibling: null };
-    return renderTemplate(template,
+    return renderTemplate(
+      template,
       env,
       this.getSelf(context),
       this.getElementBuilder(env, cursor)

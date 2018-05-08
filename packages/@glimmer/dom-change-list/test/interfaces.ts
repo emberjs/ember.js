@@ -191,12 +191,7 @@ export interface QUnitAssert {
    *
    * @param assertionResult The assertion result
    */
-  pushResult(assertResult: {
-      result: boolean;
-      actual: any;
-      expected: any;
-      message: string;
-  }): void;
+  pushResult(assertResult: { result: boolean; actual: any; expected: any; message: string }): void;
 
   /**
    * A strict type and value comparison.
@@ -229,11 +224,9 @@ export interface QUnitAssert {
    */
   throws(block: () => void, expected?: any, message?: any): void;
   raises(block: () => void, expected?: any, message?: any): void;
-
 }
 
 export interface QUnitHooks {
-
   /**
    * Runs after the last test. If additional tests are defined after the
    * module's queue has emptied, it will not run this hook again.
@@ -277,5 +270,4 @@ export interface NestedHooks {
    * Runs before each test.
    */
   beforeEach: (fn: (assert: QUnitAssert) => void) => void;
-
 }

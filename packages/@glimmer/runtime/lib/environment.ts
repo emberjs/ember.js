@@ -1,25 +1,16 @@
 import { Reference, PathReference, OpaqueIterable } from '@glimmer/reference';
 import { Macros, OpcodeBuilderConstructor } from '@glimmer/opcode-compiler';
 import { Simple, RuntimeResolver, CompilableBlock, BlockSymbolTable } from '@glimmer/interfaces';
-import { Program } from "@glimmer/program";
-import {
-  Dict,
-  Option,
-  Destroyable,
-  Opaque,
-  assert,
-  expect
-} from '@glimmer/util';
+import { Program } from '@glimmer/program';
+import { Dict, Option, Destroyable, Opaque, assert, expect } from '@glimmer/util';
 
 import { DOMChanges, DOMTreeConstruction } from './dom/helper';
 import { PublicVM } from './vm/append';
 import { IArguments } from './vm/arguments';
 import { UNDEFINED_REFERENCE, ConditionalReference } from './references';
 import { DynamicAttribute, dynamicAttribute } from './vm/attributes/dynamic';
-import {
-  ModifierManager, Modifier
-} from './modifier/interfaces';
-import { Component, ComponentManager } from "./internal-interfaces";
+import { ModifierManager, Modifier } from './modifier/interfaces';
+import { Component, ComponentManager } from './internal-interfaces';
 
 export type ScopeBlock = [number | CompilableBlock, Scope, BlockSymbolTable];
 export type BlockValue = ScopeBlock[0 | 1 | 2];
@@ -59,8 +50,8 @@ export class Scope {
     // named arguments and blocks passed to a layout that uses eval
     private evalScope: Option<Dict<ScopeSlot>>,
     // locals in scope when the partial was invoked
-    private partialMap: Option<Dict<PathReference<Opaque>>>) {
-  }
+    private partialMap: Option<Dict<PathReference<Opaque>>>
+  ) {}
 
   init({ self }: { self: PathReference<Opaque> }): this {
     this.slots[0] = self;
@@ -77,7 +68,7 @@ export class Scope {
 
   getBlock(symbol: number): Option<ScopeBlock> {
     let block = this.get(symbol);
-    return block === UNDEFINED_REFERENCE ? null : block as ScopeBlock;
+    return block === UNDEFINED_REFERENCE ? null : (block as ScopeBlock);
   }
 
   getEvalScope(): Option<Dict<ScopeSlot>> {
@@ -179,7 +170,7 @@ class Transaction {
   commit() {
     let { createdComponents, createdManagers } = this;
 
-    for (let i=0; i<createdComponents.length; i++) {
+    for (let i = 0; i < createdComponents.length; i++) {
       let component = createdComponents[i];
       let manager = createdManagers[i];
       manager.didCreate(component);
@@ -187,7 +178,7 @@ class Transaction {
 
     let { updatedComponents, updatedManagers } = this;
 
-    for (let i=0; i<updatedComponents.length; i++) {
+    for (let i = 0; i < updatedComponents.length; i++) {
       let component = updatedComponents[i];
       let manager = updatedManagers[i];
       manager.didUpdate(component);
@@ -195,7 +186,7 @@ class Transaction {
 
     let { destructors } = this;
 
-    for (let i=0; i<destructors.length; i++) {
+    for (let i = 0; i < destructors.length; i++) {
       destructors[i].destroy();
     }
 
@@ -246,11 +237,18 @@ export abstract class Environment {
   abstract iterableFor(reference: Reference, key: Opaque): OpaqueIterable;
   abstract protocolForURL(s: string): string;
 
-  getAppendOperations(): DOMTreeConstruction { return this.appendOperations; }
-  getDOM(): DOMChanges { return this.updateOperations; }
+  getAppendOperations(): DOMTreeConstruction {
+    return this.appendOperations;
+  }
+  getDOM(): DOMChanges {
+    return this.updateOperations;
+  }
 
   begin() {
-    assert(!this._transaction, 'A glimmer transaction was begun, but one already exists. You may have a nested transaction, possibly caused by an earlier runtime exception while rendering. Please check your console for the stack trace of any prior exceptions.');
+    assert(
+      !this._transaction,
+      'A glimmer transaction was begun, but one already exists. You may have a nested transaction, possibly caused by an earlier runtime exception while rendering. Please check your console for the stack trace of any prior exceptions.'
+    );
     this._transaction = new Transaction();
   }
 
@@ -284,7 +282,12 @@ export abstract class Environment {
     transaction.commit();
   }
 
-  attributeFor(element: Simple.Element, attr: string, _isTrusting: boolean, namespace: Option<string> = null): DynamicAttribute {
+  attributeFor(
+    element: Simple.Element,
+    attr: string,
+    _isTrusting: boolean,
+    namespace: Option<string> = null
+  ): DynamicAttribute {
     return dynamicAttribute(element, attr, namespace);
   }
 }

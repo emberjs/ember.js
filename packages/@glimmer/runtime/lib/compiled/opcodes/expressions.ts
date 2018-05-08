@@ -6,10 +6,22 @@ import { APPEND_OPCODES } from '../../opcodes';
 import { FALSE_REFERENCE, TRUE_REFERENCE } from '../../references';
 import { PublicVM } from '../../vm';
 import { ConcatReference } from '../expressions/concat';
-import { assert } from "@glimmer/util";
-import { check, CheckFunction, CheckOption, CheckHandle, CheckBlockSymbolTable, CheckOr } from '@glimmer/debug';
+import { assert } from '@glimmer/util';
+import {
+  check,
+  CheckFunction,
+  CheckOption,
+  CheckHandle,
+  CheckBlockSymbolTable,
+  CheckOr,
+} from '@glimmer/debug';
 import { stackAssert } from './assert';
-import { CheckArguments, CheckPathReference, CheckCompilableBlock, CheckScope } from './-debug-strip';
+import {
+  CheckArguments,
+  CheckPathReference,
+  CheckCompilableBlock,
+  CheckScope,
+} from './-debug-strip';
 
 export type FunctionExpression<T> = (vm: PublicVM) => VersionedPathReference<T>;
 
@@ -84,7 +96,7 @@ APPEND_OPCODES.add(Op.HasBlock, (vm, { op1: _block }) => {
   vm.stack.push(hasBlock ? TRUE_REFERENCE : FALSE_REFERENCE);
 });
 
-APPEND_OPCODES.add(Op.HasBlockParams, (vm) => {
+APPEND_OPCODES.add(Op.HasBlockParams, vm => {
   // FIXME(mmun): should only need to push the symbol table
   let block = vm.stack.pop();
   let scope = vm.stack.pop();
@@ -92,7 +104,10 @@ APPEND_OPCODES.add(Op.HasBlockParams, (vm) => {
   check(scope, CheckOption(CheckScope));
   let table = check(vm.stack.pop(), CheckOption(CheckBlockSymbolTable));
 
-  assert(table === null || (table && typeof table === 'object' && Array.isArray(table.parameters)), stackAssert('Option<BlockSymbolTable>', table));
+  assert(
+    table === null || (table && typeof table === 'object' && Array.isArray(table.parameters)),
+    stackAssert('Option<BlockSymbolTable>', table)
+  );
 
   let hasBlockParams = table && table.parameters.length;
   vm.stack.push(hasBlockParams ? TRUE_REFERENCE : FALSE_REFERENCE);

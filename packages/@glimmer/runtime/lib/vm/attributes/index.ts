@@ -1,4 +1,4 @@
-import { Simple, Option, Opaque } from "@glimmer/interfaces";
+import { Simple, Option, Opaque } from '@glimmer/interfaces';
 import { ElementBuilder } from '../element-builder';
 import { Environment } from '../../environment';
 

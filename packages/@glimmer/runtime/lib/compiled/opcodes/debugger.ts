@@ -38,7 +38,7 @@ class ScopeInspector {
     for (let i = 0; i < evalInfo.length; i++) {
       let slot = evalInfo[i];
       let name = symbols[slot - 1];
-      let ref  = scope.getSymbol(slot);
+      let ref = scope.getSymbol(slot);
       this.locals[name] = ref;
     }
   }

@@ -473,11 +473,11 @@ export const enum Op {
   CloseElement,
 
   /// MODIFIER
-  Modifier,                  // (ConstantString, ConstantOther<ModifierManager>, ConstantExpression)
+  Modifier, // (ConstantString, ConstantOther<ModifierManager>, ConstantExpression)
 
   /// WORMHOLE
-  PushRemoteElement,         // ()
-  PopRemoteElement,          // ()
+  PushRemoteElement, // ()
+  PopRemoteElement, // ()
 
   /// DYNAMIC SCOPE
 
@@ -494,8 +494,8 @@ export const enum Op {
    */
   BindDynamicScope,
 
-  PushDynamicScope,          // ()
-  PopDynamicScope,           // ()
+  PushDynamicScope, // ()
+  PopDynamicScope, // ()
 
   /// VM
 
@@ -1148,5 +1148,5 @@ export const enum Op {
   Debugger,
 
   /** The size of the opcode list */
-  Size
+  Size,
 }

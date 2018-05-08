@@ -4,23 +4,23 @@ import GlimmerObject, {
   GlimmerObjectFactory,
   ClassMeta,
   InstanceMeta,
-  turbocharge
+  turbocharge,
 } from './object';
 
 import { ROOT } from './utils';
 
 const { isArray } = Array;
 
-export const DESCRIPTOR = "5d90f84f-908e-4a42-9749-3d0f523c262c";
-export const BLUEPRINT  = "8d97cf5f-db9e-48d8-a6b2-7a75b7170805";
+export const DESCRIPTOR = '5d90f84f-908e-4a42-9749-3d0f523c262c';
+export const BLUEPRINT = '8d97cf5f-db9e-48d8-a6b2-7a75b7170805';
 
 export abstract class Descriptor {
-  "5d90f84f-908e-4a42-9749-3d0f523c262c" = true;
+  '5d90f84f-908e-4a42-9749-3d0f523c262c' = true;
   abstract define(prototype: Object, key: string, home: Object): void;
 }
 
 export abstract class Blueprint {
-  "8d97cf5f-db9e-48d8-a6b2-7a75b7170805" = true;
+  '8d97cf5f-db9e-48d8-a6b2-7a75b7170805' = true;
   abstract descriptor(target: Object, key: string, classMeta: ClassMeta): Descriptor;
 }
 
@@ -124,7 +124,7 @@ export class Mixin {
             obj[key] = value;
             break;
           }
-          /* falls through */
+        /* falls through */
         default:
           obj[key] = new DataBlueprint({ value });
       }
@@ -137,7 +137,7 @@ export class Mixin {
   }
 
   apply(target: any) {
-    let meta: ClassMeta = target[CLASS_META] = target[CLASS_META] || new ClassMeta();
+    let meta: ClassMeta = (target[CLASS_META] = target[CLASS_META] || new ClassMeta());
     this.dependencies.forEach(m => m.apply(target));
     this.mergeProperties(target, target, meta);
     meta.addMixin(this);
@@ -172,7 +172,10 @@ export class Mixin {
     this.mergedProperties.forEach(k => meta.addMergedProperty(k, parent[k]));
     this.concatenatedProperties.forEach(k => meta.addConcatenatedProperty(k, []));
 
-    new ValueDescriptor({ value: meta.getConcatenatedProperties() }).define(target, 'concatenatedProperties');
+    new ValueDescriptor({ value: meta.getConcatenatedProperties() }).define(
+      target,
+      'concatenatedProperties'
+    );
     new ValueDescriptor({ value: meta.getMergedProperties() }).define(target, 'mergedProperties');
 
     Object.keys(this.extensions).forEach(key => {
@@ -187,7 +190,10 @@ export class Mixin {
 
 export type Extension = Mixin | Extensions;
 
-export function extend<T extends GlimmerObject>(Parent: GlimmerObjectFactory<T>, ...extensions: Extension[]): GlimmerObjectFactory<any> {
+export function extend<T extends GlimmerObject>(
+  Parent: GlimmerObjectFactory<T>,
+  ...extensions: Extension[]
+): GlimmerObjectFactory<any> {
   let Super = Parent as typeof GlimmerObject;
 
   let Subclass = class extends Super {};
@@ -225,7 +231,12 @@ class ValueDescriptor extends Descriptor {
   public writable: boolean;
   public value: any;
 
-  constructor({ enumerable=true, configurable=true, writable=true, value }: PropertyDescriptor) {
+  constructor({
+    enumerable = true,
+    configurable = true,
+    writable = true,
+    value,
+  }: PropertyDescriptor) {
     super();
     this.enumerable = enumerable;
     this.configurable = configurable;
@@ -238,7 +249,7 @@ class ValueDescriptor extends Descriptor {
       enumerable: this.enumerable,
       configurable: this.configurable,
       writable: this.writable,
-      value: this.value
+      value: this.value,
     });
   }
 }
@@ -249,7 +260,12 @@ export class DataBlueprint extends Blueprint {
   public value: any;
   public writable: boolean;
 
-  constructor({ enumerable=true, configurable=true, writable=true, value }: PropertyDescriptor) {
+  constructor({
+    enumerable = true,
+    configurable = true,
+    writable = true,
+    value,
+  }: PropertyDescriptor) {
     super();
     this.enumerable = enumerable;
     this.configurable = configurable;
@@ -278,7 +294,12 @@ export abstract class AccessorBlueprint extends Blueprint {
   get: () => any;
   set: (value: any) => void;
 
-  constructor({ enumerable=true, configurable=true, get, set }: PropertyDescriptor & { get: any, set: any }) {
+  constructor({
+    enumerable = true,
+    configurable = true,
+    get,
+    set,
+  }: PropertyDescriptor & { get: any; set: any }) {
     super();
     this.enumerable = enumerable;
     this.configurable = configurable;
@@ -291,7 +312,7 @@ export abstract class AccessorBlueprint extends Blueprint {
       enumerable: this.enumerable,
       configurable: this.configurable,
       get: this.get,
-      set: this.set
+      set: this.set,
     });
   }
 }
@@ -311,7 +332,7 @@ class MethodBlueprint extends DataBlueprint {
 }
 
 export function wrapMethod(home: Object, methodName: string, original: (...args: any[]) => any) {
-  if (!(methodName as string in home)) return maybeWrap(original);
+  if (!((methodName as string) in home)) return maybeWrap(original);
 
   let superMethod = home[methodName];
 

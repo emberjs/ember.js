@@ -1,7 +1,6 @@
-
-import { Opaque, Dict } from "@glimmer/interfaces";
-import { PathReference, Tag, Reference, CURRENT_TAG } from "@glimmer/reference";
-import { CapturedArguments, Arguments } from "@glimmer/runtime";
+import { Opaque, Dict } from '@glimmer/interfaces';
+import { PathReference, Tag, Reference, CURRENT_TAG } from '@glimmer/reference';
+import { CapturedArguments, Arguments } from '@glimmer/runtime';
 
 export type UserHelper = (args: ReadonlyArray<Opaque>, named: Dict<Opaque>) => Opaque;
 

@@ -27,7 +27,7 @@ export interface Program extends Node {
   blockParams: string[];
 }
 
-export interface Statement extends Node { }
+export interface Statement extends Node {}
 
 export interface MustacheStatement extends Statement {
   path: PathExpression | Literal;
@@ -37,7 +37,7 @@ export interface MustacheStatement extends Statement {
   strip: StripFlags;
 }
 
-export interface Decorator extends MustacheStatement { }
+export interface Decorator extends MustacheStatement {}
 
 export interface BlockStatement extends Statement {
   path: PathExpression;
@@ -50,7 +50,7 @@ export interface BlockStatement extends Statement {
   closeStrip: StripFlags;
 }
 
-export interface DecoratorBlock extends BlockStatement { }
+export interface DecoratorBlock extends BlockStatement {}
 
 export interface PartialStatement extends Statement {
   name: PathExpression | SubExpression;
@@ -79,7 +79,7 @@ export interface CommentStatement extends Statement {
   strip: StripFlags;
 }
 
-export interface Expression extends Node { }
+export interface Expression extends Node {}
 
 export interface SubExpression extends Expression {
   path: PathExpression;
@@ -94,7 +94,7 @@ export interface PathExpression extends Expression {
   original: string;
 }
 
-export interface Literal extends Expression { }
+export interface Literal extends Expression {}
 
 export interface StringLiteral extends Literal {
   value: string;
@@ -111,9 +111,9 @@ export interface NumberLiteral extends Literal {
   original: number;
 }
 
-export interface UndefinedLiteral extends Literal { }
+export interface UndefinedLiteral extends Literal {}
 
-export interface NullLiteral extends Literal { }
+export interface NullLiteral extends Literal {}
 
 export interface Hash extends Node {
   pairs: HashPair[];

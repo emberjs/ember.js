@@ -1,4 +1,4 @@
-import { ComponentCapabilities } from "@glimmer/interfaces";
+import { ComponentCapabilities } from '@glimmer/interfaces';
 import { Invocation } from '@glimmer/runtime';
 import { Option } from '@glimmer/util';
 
@@ -17,7 +17,7 @@ export const STATIC_TAGLESS_CAPABILITIES = {
   dynamicScope: false,
   updateHook: false,
   createCaller: false,
-  createInstance: false
+  createInstance: false,
 };
 
 export class StaticTaglessComponentManager extends BasicComponentManager {
@@ -36,7 +36,7 @@ export class StaticTaglessComponentManager extends BasicComponentManager {
 
       return {
         handle: layout.compile(),
-        symbolTable: layout.symbolTable
+        symbolTable: layout.symbolTable,
       };
     });
   }

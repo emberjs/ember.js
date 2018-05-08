@@ -4,5 +4,5 @@ import { CompilationOptions as ICompilationOptions } from './environment';
 export {
   InternalComponent as Component,
   ComponentDefinitionState,
-  InternalComponentManager as ComponentManager
+  InternalComponentManager as ComponentManager,
 } from './component/interfaces';

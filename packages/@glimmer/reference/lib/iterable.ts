@@ -12,7 +12,13 @@ export interface AbstractIterator<T, U, V extends IterationItem<T, U>> {
   next(): Option<V>;
 }
 
-export interface AbstractIterable<T, U, ItemType extends IterationItem<T, U>, ValueReferenceType extends PathReference<T>, MemoReferenceType extends PathReference<U>> {
+export interface AbstractIterable<
+  T,
+  U,
+  ItemType extends IterationItem<T, U>,
+  ValueReferenceType extends PathReference<T>,
+  MemoReferenceType extends PathReference<U>
+> {
   tag: Tag;
   iterate(): AbstractIterator<T, U, ItemType>;
 
@@ -24,13 +30,28 @@ export interface AbstractIterable<T, U, ItemType extends IterationItem<T, U>, Va
 }
 
 export type Iterator<T, U> = AbstractIterator<T, U, IterationItem<T, U>>;
-export type Iterable<T, U> = AbstractIterable<T, U, IterationItem<T, U>, PathReference<T>, PathReference<U>>;
+export type Iterable<T, U> = AbstractIterable<
+  T,
+  U,
+  IterationItem<T, U>,
+  PathReference<T>,
+  PathReference<U>
+>;
 
 export type OpaqueIterationItem = IterationItem<Opaque, Opaque>;
 export type OpaqueIterator = AbstractIterator<Opaque, Opaque, OpaqueIterationItem>;
 export type OpaquePathReference = PathReference<Opaque>;
-export type OpaqueIterable = AbstractIterable<Opaque, Opaque, OpaqueIterationItem, OpaquePathReference, OpaquePathReference>;
-export type OpaquePathReferenceIterationItem = IterationItem<OpaquePathReference, OpaquePathReference>;
+export type OpaqueIterable = AbstractIterable<
+  Opaque,
+  Opaque,
+  OpaqueIterationItem,
+  OpaquePathReference,
+  OpaquePathReference
+>;
+export type OpaquePathReferenceIterationItem = IterationItem<
+  OpaquePathReference,
+  OpaquePathReference
+>;
 
 export class ListItem extends ListNode<OpaquePathReference> implements OpaqueIterationItem {
   public key: string;
@@ -76,7 +97,7 @@ export class IterationArtifacts {
   }
 
   isEmpty(): boolean {
-    let iterator = this.iterator = this.iterable.iterate();
+    let iterator = (this.iterator = this.iterable.iterate());
     return iterator.isEmpty();
   }
 
@@ -109,7 +130,7 @@ export class IterationArtifacts {
 
   append(item: OpaqueIterationItem): ListItem {
     let { map, list, iterable } = this;
-    let node = map[item.key] = new ListItem(iterable, item);
+    let node = (map[item.key] = new ListItem(iterable, item));
 
     list.append(node);
     return node;
@@ -118,7 +139,7 @@ export class IterationArtifacts {
   insertBefore(item: OpaqueIterationItem, reference: Option<ListItem>): ListItem {
     let { map, list, iterable } = this;
 
-    let node = map[item.key] = new ListItem(iterable, item);
+    let node = (map[item.key] = new ListItem(iterable, item));
     node.retained = true;
     list.insertBefore(node, reference);
     return node;
@@ -174,8 +195,18 @@ export class ReferenceIterator {
 
 export interface IteratorSynchronizerDelegate {
   retain(key: string, item: PathReference<Opaque>, memo: PathReference<Opaque>): void;
-  insert(key: string, item: PathReference<Opaque>, memo: PathReference<Opaque>, before: Option<string>): void;
-  move(key: string, item: PathReference<Opaque>, memo: PathReference<Opaque>, before: Option<string>): void;
+  insert(
+    key: string,
+    item: PathReference<Opaque>,
+    memo: PathReference<Opaque>,
+    before: Option<string>
+  ): void;
+  move(
+    key: string,
+    item: PathReference<Opaque>,
+    memo: PathReference<Opaque>,
+    before: Option<string>
+  ): void;
   delete(key: string): void;
   done(): void;
 }
@@ -188,7 +219,7 @@ export interface IteratorSynchronizerOptions {
 enum Phase {
   Append,
   Prune,
-  Done
+  Done,
 }
 
 export class IteratorSynchronizer {
@@ -209,9 +240,15 @@ export class IteratorSynchronizer {
 
     while (true) {
       switch (phase) {
-        case Phase.Append: phase = this.nextAppend(); break;
-        case Phase.Prune: phase = this.nextPrune(); break;
-        case Phase.Done: this.nextDone(); return;
+        case Phase.Append:
+          phase = this.nextAppend();
+          break;
+        case Phase.Prune:
+          phase = this.nextPrune();
+          break;
+        case Phase.Done:
+          this.nextDone();
+          return;
       }
     }
   }

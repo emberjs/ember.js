@@ -1,20 +1,13 @@
 import {
   // VM
   DynamicScope,
-} from "@glimmer/runtime";
+} from '@glimmer/runtime';
 
-import {
-  Dict,
-  Opaque,
-  assign,
-  dict
-} from '@glimmer/util';
+import { Dict, Opaque, assign, dict } from '@glimmer/util';
 
-import {
-  PathReference
-} from "@glimmer/reference";
+import { PathReference } from '@glimmer/reference';
 
-import { Unique } from "@glimmer/interfaces";
+import { Unique } from '@glimmer/interfaces';
 
 export type _ = Unique<any>;
 
@@ -34,7 +27,7 @@ export class TestDynamicScope implements DynamicScope {
   }
 
   set(key: string, reference: PathReference<Opaque>) {
-    return this.bucket[key] = reference;
+    return (this.bucket[key] = reference);
   }
 
   child(): TestDynamicScope {
@@ -55,7 +48,7 @@ export function inspectHooks<T>(ComponentClass: T): T {
         willRender: 0,
         didInsertElement: 0,
         didUpdate: 0,
-        didRender: 0
+        didRender: 0,
       };
     },
 
@@ -102,17 +95,22 @@ export function inspectHooks<T>(ComponentClass: T): T {
     didRender(this: any) {
       this._super(...arguments);
       this.hooks['didRender']++;
-    }
+    },
   });
 }
 
-export function equalsElement(element: Element | null, tagName: string, attributes: Object, content: string) {
+export function equalsElement(
+  element: Element | null,
+  tagName: string,
+  attributes: Object,
+  content: string
+) {
   if (element === null) {
     QUnit.assert.pushResult({
       result: false,
       actual: element,
       expected: true,
-      message: `failed - expected element to not be null`
+      message: `failed - expected element to not be null`,
     });
     return;
   }
@@ -121,7 +119,7 @@ export function equalsElement(element: Element | null, tagName: string, attribut
     result: element.tagName === tagName.toUpperCase(),
     actual: element.tagName.toLowerCase(),
     expected: tagName,
-    message: `expect tagName to be ${tagName}`
+    message: `expect tagName to be ${tagName}`,
   });
 
   let expectedAttrs: Dict<Matcher> = dict<Matcher>();
@@ -131,14 +129,15 @@ export function equalsElement(element: Element | null, tagName: string, attribut
     expectedCount++;
     let expected = attributes[prop];
 
-    let matcher: Matcher = typeof expected === 'object' && MATCHER in expected ? expected : equalsAttr(expected);
+    let matcher: Matcher =
+      typeof expected === 'object' && MATCHER in expected ? expected : equalsAttr(expected);
     expectedAttrs[prop] = matcher;
 
     QUnit.assert.pushResult({
       result: expectedAttrs[prop].match(element && element.getAttribute(prop)),
       actual: matcher.fail(element && element.getAttribute(prop)),
       expected: matcher.fail(element && element.getAttribute(prop)),
-      message: `Expected element's ${prop} attribute ${matcher.expected()}`
+      message: `Expected element's ${prop} attribute ${matcher.expected()}`,
     });
   }
 
@@ -150,18 +149,18 @@ export function equalsElement(element: Element | null, tagName: string, attribut
   }
 
   if (!(element instanceof HTMLElement)) {
-        QUnit.assert.pushResult({
-          result: element instanceof HTMLElement,
-          actual: null,
-          expected: null,
-          message: "Element must be an HTML Element, not an SVG Element"
-        });
+    QUnit.assert.pushResult({
+      result: element instanceof HTMLElement,
+      actual: null,
+      expected: null,
+      message: 'Element must be an HTML Element, not an SVG Element',
+    });
   } else {
     QUnit.assert.pushResult({
       result: element.attributes.length === expectedCount,
       actual: element.attributes.length,
       expected: expectedCount,
-      message: `Expected ${expectedCount} attributes; got ${element.outerHTML}`
+      message: `Expected ${expectedCount} attributes; got ${element.outerHTML}`,
     });
 
     if (content !== null) {
@@ -169,24 +168,24 @@ export function equalsElement(element: Element | null, tagName: string, attribut
         result: element.innerHTML === content,
         actual: element.innerHTML,
         expected: content,
-        message: `The element had '${content}' as its content`
+        message: `The element had '${content}' as its content`,
       });
     }
   }
 }
 
 interface Matcher {
-  "3d4ef194-13be-4ccf-8dc7-862eea02c93e": boolean;
+  '3d4ef194-13be-4ccf-8dc7-862eea02c93e': boolean;
   match(actual: any): boolean;
   fail(actual: any): string;
   expected(): string;
 }
 
-export const MATCHER = "3d4ef194-13be-4ccf-8dc7-862eea02c93e";
+export const MATCHER = '3d4ef194-13be-4ccf-8dc7-862eea02c93e';
 
 export function equalsAttr(expected: any) {
   return {
-    "3d4ef194-13be-4ccf-8dc7-862eea02c93e": true,
+    '3d4ef194-13be-4ccf-8dc7-862eea02c93e': true,
     match(actual: any) {
       return expected === actual;
     },
@@ -197,13 +196,13 @@ export function equalsAttr(expected: any) {
 
     fail(actual: any) {
       return `${actual} did not equal ${expected}`;
-    }
+    },
   };
 }
 
 export function equals<T>(expected: T) {
   return {
-    "3d4ef194-13be-4ccf-8dc7-862eea02c93e": true,
+    '3d4ef194-13be-4ccf-8dc7-862eea02c93e': true,
     match(actual: T) {
       return expected === actual;
     },
@@ -214,13 +213,13 @@ export function equals<T>(expected: T) {
 
     fail(actual: T) {
       return `${actual} did not equal ${expected}`;
-    }
+    },
   };
 }
 
 export function regex(r: RegExp) {
   return {
-    "3d4ef194-13be-4ccf-8dc7-862eea02c93e": true,
+    '3d4ef194-13be-4ccf-8dc7-862eea02c93e': true,
     match(v: string) {
       return r.test(v);
     },
@@ -229,21 +228,31 @@ export function regex(r: RegExp) {
     },
     fail(actual: string) {
       return `${actual} did not match ${r}`;
-    }
+    },
   };
 }
 
 export function classes(expected: string) {
   return {
-    "3d4ef194-13be-4ccf-8dc7-862eea02c93e": true,
+    '3d4ef194-13be-4ccf-8dc7-862eea02c93e': true,
     match(actual: string) {
-      return actual && (expected.split(' ').sort().join(' ') === actual.split(' ').sort().join(' '));
+      return (
+        actual &&
+        expected
+          .split(' ')
+          .sort()
+          .join(' ') ===
+          actual
+            .split(' ')
+            .sort()
+            .join(' ')
+      );
     },
     expected() {
       return `to include '${expected}'`;
     },
     fail(actual: string) {
       return `'${actual}'' did not match '${expected}'`;
-    }
+    },
   };
 }

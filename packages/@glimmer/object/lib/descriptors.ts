@@ -18,7 +18,7 @@ class AliasMethodDescriptor extends Descriptor {
       configurable: true,
       get(this: typeof target) {
         return this[name];
-      }
+      },
     });
   }
 }

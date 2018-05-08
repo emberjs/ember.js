@@ -16,14 +16,19 @@ export class PropertyReference<T> implements Reference<T> {
     this.property = property;
   }
 
-  value() { return this.object[this.property]; }
+  value() {
+    return this.object[this.property];
+  }
 
   label() {
     return '[reference Property]';
   }
 }
 
-export function ComputedReferenceBlueprint<T>(_property: any, dependencies: any): InnerReferenceFactory<T> {
+export function ComputedReferenceBlueprint<T>(
+  _property: any,
+  dependencies: any
+): InnerReferenceFactory<T> {
   return class ComputedReference<T> implements Reference<T> {
     private object: any;
     private property: string;

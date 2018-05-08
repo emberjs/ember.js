@@ -1,9 +1,12 @@
 const HAS_SUPER_PATTERN = /\.(_super|call\(this|apply\(this)/;
 
-export const checkHasSuper = (function () {
-  let sourceAvailable = (function(this: any) {
-    return this;
-  }).toString().indexOf('return this') > -1;
+export const checkHasSuper = (function() {
+  let sourceAvailable =
+    function(this: any) {
+      return this;
+    }
+      .toString()
+      .indexOf('return this') > -1;
 
   if (sourceAvailable) {
     return function checkHasSuper(func: Function) {
@@ -14,7 +17,7 @@ export const checkHasSuper = (function () {
   return function checkHasSuper() {
     return true;
   };
-}());
+})();
 
 export function ROOT(..._args: any[]) {}
 (ROOT as any).__hasSuper = false;
