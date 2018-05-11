@@ -1,8 +1,23 @@
 import DebugAssert from './debug';
-import { callWithStub } from './utils';
+import { callWithStub, DebugEnv, Message } from './utils';
+
+type ExpectNoWarningFunc = (func?: (() => void) | undefined) => void;
+type ExpectWarningFunc = (
+  func: (() => void) | undefined | Message,
+  expectedMessage: Message
+) => void;
+type IgnoreWarningFunc = (func: () => void) => void;
+
+declare global {
+  interface Window {
+    expectNoWarning: ExpectNoWarningFunc | null;
+    expectWarning: ExpectWarningFunc | null;
+    ignoreWarning: IgnoreWarningFunc | null;
+  }
+}
 
 class WarningAssert extends DebugAssert {
-  constructor(env) {
+  constructor(env: DebugEnv) {
     super('warn', env);
   }
 
@@ -17,9 +32,9 @@ class WarningAssert extends DebugAssert {
     // expectNoWarning();
     // Ember.warn("Oh snap, didn't expect that");
     //
-    let expectNoWarning = func => {
+    let expectNoWarning: ExpectNoWarningFunc = func => {
       if (typeof func !== 'function') {
-        func = null;
+        func = undefined;
       }
 
       this.runExpectation(func, tracker => {
@@ -43,13 +58,16 @@ class WarningAssert extends DebugAssert {
     // expectWarning(/* optionalStringOrRegex */);
     // Ember.warn("Times definitely be changin'");
     //
-    let expectWarning = (fn, message) => {
-      if (typeof fn !== 'function') {
-        message = fn;
-        fn = null;
+    let expectWarning: ExpectWarningFunc = (func, message) => {
+      let actualFunc: (() => void) | undefined;
+      if (typeof func !== 'function') {
+        message = func as Message;
+        actualFunc = undefined;
+      } else {
+        actualFunc = func;
       }
 
-      this.runExpectation(fn, tracker => {
+      this.runExpectation(actualFunc, tracker => {
         if (tracker.isExpectingNoCalls()) {
           throw new Error('expectWarning was called after expectNoWarning was called!');
         }
@@ -58,7 +76,7 @@ class WarningAssert extends DebugAssert {
       });
     };
 
-    let ignoreWarning = func => {
+    let ignoreWarning: IgnoreWarningFunc = func => {
       callWithStub(this.env, 'warn', func);
     };
 

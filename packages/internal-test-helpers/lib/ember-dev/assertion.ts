@@ -1,4 +1,14 @@
-import { callWithStub, checkTest } from './utils';
+import { callWithStub, checkTest, DebugEnv, Message } from './utils';
+
+type ExpectAssertionFunc = (func: () => void, expectedMessage: Message) => void;
+type IgnoreAssertionFunc = (func: () => void) => void;
+
+declare global {
+  interface Window {
+    expectAssertion: ExpectAssertionFunc | null;
+    ignoreAssertion: IgnoreAssertionFunc | null;
+  }
+}
 
 const BREAK = {};
 
@@ -19,16 +29,18 @@ const BREAK = {};
   In particular, this prevents `Ember.assert` from throw errors that would
   disrupt the control flow.
 */
-export default function AssertionAssert(env) {
-  this.env = env;
-}
+export default class AssertionAssert {
+  private env: DebugEnv;
 
-AssertionAssert.prototype = {
-  reset() {},
-  assert() {},
+  constructor(env: DebugEnv) {
+    this.env = env;
+  }
+
+  reset() {}
+  assert() {}
 
   inject() {
-    let expectAssertion = (func, expectedMessage) => {
+    let expectAssertion: ExpectAssertionFunc = (func: () => void, expectedMessage: Message) => {
       let { assert } = QUnit.config.current;
 
       if (this.env.runningProdBuild) {
@@ -36,8 +48,8 @@ AssertionAssert.prototype = {
         return;
       }
 
-      let sawCall;
-      let actualMessage;
+      let sawCall = false;
+      let actualMessage: string | undefined = undefined;
 
       // The try-catch statement is used to "exit" `func` as soon as
       // the first useful assertion has been produced.
@@ -59,21 +71,26 @@ AssertionAssert.prototype = {
       check(assert, sawCall, actualMessage, expectedMessage);
     };
 
-    let ignoreAssertion = func => {
+    let ignoreAssertion: IgnoreAssertionFunc = func => {
       callWithStub(this.env, 'assert', func);
     };
 
     window.expectAssertion = expectAssertion;
     window.ignoreAssertion = ignoreAssertion;
-  },
+  }
 
   restore() {
     window.expectAssertion = null;
     window.ignoreAssertion = null;
-  },
-};
+  }
+}
 
-function check(assert, sawCall, actualMessage, expectedMessage) {
+function check(
+  assert: Assert,
+  sawCall: boolean,
+  actualMessage: string | undefined,
+  expectedMessage: string | RegExp
+) {
   // Run assertions in an order that is useful when debugging a test failure.
   if (!sawCall) {
     assert.ok(false, `Expected Ember.assert to be called (Not called with any value).`);

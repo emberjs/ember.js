@@ -74,6 +74,7 @@
     "@glimmer/program": "^0.34.2",
     "@glimmer/reference": "^0.34.2",
     "@glimmer/runtime": "^0.34.2",
+    "@types/qunit": "^2.5.0",
     "@types/rsvp": "^4.0.1",
     "amd-name-resolver": "^1.2.0",
     "auto-dist-tag": "^0.1.5",

@@ -1,15 +1,28 @@
-import { checkTest } from './utils';
+import { checkTest, DebugEnv, DebugFunction, DebugFunctionOptions } from './utils';
 
-var MethodCallTracker = function(env, methodName) {
-  this._env = env;
-  this._methodName = methodName;
-  this._isExpectingNoCalls = false;
-  this._expectedMessages = [];
-  this._expectedOptionLists = [];
-  this._actuals = [];
-};
+type Actual = [string, boolean, DebugFunctionOptions];
+type Message = string | RegExp;
+type OptionList = ReadonlyArray<string> | undefined;
 
-MethodCallTracker.prototype = {
+export default class MethodCallTracker {
+  private _env: DebugEnv;
+  private _methodName: string;
+  private _isExpectingNoCalls: boolean;
+  private _expectedMessages: Message[];
+  private _expectedOptionLists: OptionList[];
+  private _actuals: Actual[];
+  private _originalMethod: DebugFunction | undefined;
+
+  constructor(env: DebugEnv, methodName: string) {
+    this._env = env;
+    this._methodName = methodName;
+    this._isExpectingNoCalls = false;
+    this._expectedMessages = [];
+    this._expectedOptionLists = [];
+    this._actuals = [];
+    this._originalMethod = undefined;
+  }
+
   stubMethod() {
     if (this._originalMethod) {
       // Method is already stubbed
@@ -26,32 +39,32 @@ MethodCallTracker.prototype = {
 
       this._actuals.push([message, resultOfTest, options]);
     });
-  },
+  }
 
   restoreMethod() {
     if (this._originalMethod) {
       this._env.setDebugFunction(this._methodName, this._originalMethod);
     }
-  },
+  }
 
-  expectCall(message, options) {
+  expectCall(message: Message, options?: OptionList) {
     this.stubMethod();
     this._expectedMessages.push(message || /.*/);
     this._expectedOptionLists.push(options);
-  },
+  }
 
   expectNoCalls() {
     this.stubMethod();
     this._isExpectingNoCalls = true;
-  },
+  }
 
   isExpectingNoCalls() {
     return this._isExpectingNoCalls;
-  },
+  }
 
   isExpectingCalls() {
     return !this._isExpectingNoCalls && this._expectedMessages.length;
-  },
+  }
 
   assert() {
     let { assert } = QUnit.config.current;
@@ -86,22 +99,16 @@ MethodCallTracker.prototype = {
       return;
     }
 
-    let expectedMessage,
-      expectedOptionList,
-      actual,
-      match,
-      matchesMessage,
-      matchesOptionList,
-      expectedOptionsMessage,
-      actualOptionsMessage;
+    let actual: Actual | undefined;
+    let match: Actual | undefined = undefined;
 
     for (o = 0; o < expectedMessages.length; o++) {
-      expectedMessage = expectedMessages[o];
-      expectedOptionList = expectedOptionLists[o];
+      const expectedMessage = expectedMessages[o];
+      const expectedOptionList = expectedOptionLists[o];
 
       for (i = 0; i < actuals.length; i++) {
-        matchesMessage = false;
-        matchesOptionList = false;
+        let matchesMessage = false;
+        let matchesOptionList = false;
         actual = actuals[i];
 
         if (actual[1] === true) {
@@ -131,12 +138,13 @@ MethodCallTracker.prototype = {
         }
       }
 
-      expectedOptionsMessage = expectedOptionList
+      const expectedOptionsMessage = expectedOptionList
         ? `and options: { ${expectedOptionList.join(', ')} }`
         : 'and no options';
-      actualOptionsMessage = actual[2]
-        ? `and options: { ${Object.keys(actual[2]).join(', ')} }`
-        : 'and no options';
+      const actualOptionsMessage =
+        actual && actual[2]
+          ? `and options: { ${Object.keys(actual[2]).join(', ')} }`
+          : 'and no options';
 
       if (!actual) {
         assert.ok(
@@ -166,7 +174,5 @@ MethodCallTracker.prototype = {
         );
       }
     }
-  },
-};
-
-export default MethodCallTracker;
+  }
+}
