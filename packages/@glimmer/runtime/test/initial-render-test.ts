@@ -1,4 +1,4 @@
-import { Opaque, Dict, Option } from "@glimmer/interfaces";
+import { Opaque, Dict, Option } from '@glimmer/interfaces';
 import { SafeString } from '@glimmer/runtime';
 import {
   module,
@@ -90,29 +90,34 @@ class Rehydration extends AbstractRehydrationTests {
     this.assertStableNodes();
   }
 
-  @test "handles non-empty trusted content (triple-curlies)"() {
+  @test
+  'handles non-empty trusted content (triple-curlies)'() {
     let template = '<div>{{{value}}}</div>';
-    let obj: { value: string } = { value: "foo" };
+    let obj: { value: string } = { value: 'foo' };
     this.renderServerSide(template, obj);
     console.log('this server output: ' + this.serverOutput);
     this.renderClientSide(template, obj);
     this.assertHTML('<div>foo</div>');
   }
 
-  @test "handles empty trusted content (triple-curlies)"() {
+  @test
+  'handles empty trusted content (triple-curlies)'() {
     let template = '<div>{{{value}}}</div>';
-    let obj: { value: string } = { value: "" };
+    let obj: { value: string } = { value: '' };
     this.renderServerSide(template, obj);
     console.log('this server output: ' + this.serverOutput);
     this.renderClientSide(template, obj);
     this.assertHTML('<div></div>');
   }
 
-  @test "handles empty trusted content (html safe string)"() {
+  @test
+  'handles empty trusted content (html safe string)'() {
     let template = '<div>{{value}}</div>';
 
     let safeString: SafeString = {
-      toHTML() { return ''; },
+      toHTML() {
+        return '';
+      },
     };
     let obj = { value: safeString };
 
@@ -121,7 +126,8 @@ class Rehydration extends AbstractRehydrationTests {
     this.assertHTML('<div></div>');
   }
 
-  @test "table with omitted tbody"() {
+  @test
+  'table with omitted tbody'() {
     let template = '<table><tr><td>standards</td></tr></table>';
     this.renderServerSide(template, {});
     this.assertServerOutput('<table><tbody><tr><td>standards</td></tr></tbody></table>');
