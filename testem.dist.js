@@ -66,12 +66,12 @@ module.exports = {
     },
     BS_Safari_Current: {
       exe: "node_modules/.bin/browserstack-launch",
-      args: ["--os", "OS X", "--osv", "High Sierra", "--b", "safari", "--bv", "11", "-t", "1200", "--u", "<url>"],
+      args: ["--os", "OS X", "--osv", "High Sierra", "--b", "safari", "--bv", "latest", "-t", "1200", "--u", "<url>"],
       protocol: "browser"
     },
     BS_Safari_Last: {
       exe: "node_modules/.bin/browserstack-launch",
-      args: ["--os", "OS X", "--osv", "Sierra", "--b", "safari", "--bv", "10.1", "-t", "1200", "--u", "<url>"],
+      args: ["--os", "OS X", "--osv", "Sierra", "--b", "safari", "--bv", "latest", "-t", "1200", "--u", "<url>"],
       protocol: "browser"
     },
     BS_MS_Edge: {
