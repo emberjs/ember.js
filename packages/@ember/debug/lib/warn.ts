@@ -1,13 +1,21 @@
 import { DEBUG } from '@glimmer/env';
 import { ENV } from 'ember-environment';
 
-import deprecate from './deprecate';
 import { assert } from '../index';
-import { registerHandler as genericRegisterHandler, invoke } from './handlers';
+import deprecate from './deprecate';
+import { HandlerCallback, invoke, registerHandler as genericRegisterHandler } from './handlers';
 
-let registerHandler = () => {};
-let warn = () => {};
-let missingOptionsDeprecation, missingOptionsIdDeprecation;
+export interface WarnOptions {
+  id: string;
+}
+
+export type RegisterHandlerFunc = (handler: HandlerCallback) => void;
+export type WarnFunc = (message: string, test?: boolean, options?: WarnOptions) => void;
+
+let registerHandler: RegisterHandlerFunc = () => {};
+let warn: WarnFunc = () => {};
+let missingOptionsDeprecation: string;
+let missingOptionsIdDeprecation: string;
 
 /**
 @module @ember/debug
@@ -90,8 +98,8 @@ if (DEBUG) {
     }
 
     if (ENV._ENABLE_WARN_OPTIONS_SUPPORT !== true) {
-      assert(missingOptionsDeprecation, options);
-      assert(missingOptionsIdDeprecation, options && options.id);
+      assert(missingOptionsDeprecation, !!options);
+      assert(missingOptionsIdDeprecation, !!(options && options.id));
     }
 
     if (!options && ENV._ENABLE_WARN_OPTIONS_SUPPORT === true) {
