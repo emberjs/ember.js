@@ -836,11 +836,17 @@ function propertySort(itemsKey, sortPropertiesKey) {
 
       let itemsKeyIsAtThis = itemsKey === '@this';
       let normalizedSortProperties = normalizeSortProperties(sortProperties);
-      activeObservers = normalizedSortProperties.map(([prop]) => {
-        let path = itemsKeyIsAtThis ? `@each.${prop}` : `${itemsKey}.@each.${prop}`;
+      if (normalizedSortProperties.length === 0) {
+        let path = itemsKeyIsAtThis ? `[]` : `${itemsKey}.[]`;
         addObserver(this, path, sortPropertyDidChange);
-        return [this, path, sortPropertyDidChange];
-      });
+        activeObservers = [[this, path, sortPropertyDidChange]];
+      } else {
+        activeObservers = normalizedSortProperties.map(([prop]) => {
+          let path = itemsKeyIsAtThis ? `@each.${prop}` : `${itemsKey}.@each.${prop}`;
+          addObserver(this, path, sortPropertyDidChange);
+          return [this, path, sortPropertyDidChange];
+        });
+      }
 
       activeObserversMap.set(this, activeObservers);
 
