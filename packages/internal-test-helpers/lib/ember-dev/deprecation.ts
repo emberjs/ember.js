@@ -1,8 +1,23 @@
 import DebugAssert from './debug';
-import { callWithStub } from './utils';
+import { callWithStub, DebugEnv, Message } from './utils';
+
+type ExpectNoDeprecationFunc = (func?: () => void) => void;
+type ExpectDeprecationFunc = (
+  func: () => void | undefined | Message,
+  expectedMessage: Message
+) => void;
+type IgnoreDeprecationFunc = (func: () => void) => void;
+
+declare global {
+  interface Window {
+    expectNoDeprecation: ExpectNoDeprecationFunc | null;
+    expectDeprecation: ExpectDeprecationFunc | null;
+    ignoreDeprecation: IgnoreDeprecationFunc | null;
+  }
+}
 
 class DeprecationAssert extends DebugAssert {
-  constructor(env) {
+  constructor(env: DebugEnv) {
     super('deprecate', env);
   }
 
@@ -17,9 +32,9 @@ class DeprecationAssert extends DebugAssert {
     // expectNoDeprecation();
     // Ember.deprecate("Old And Busted");
     //
-    let expectNoDeprecation = func => {
+    let expectNoDeprecation: ExpectNoDeprecationFunc = func => {
       if (typeof func !== 'function') {
-        func = null;
+        func = undefined;
       }
 
       this.runExpectation(func, tracker => {
@@ -43,13 +58,16 @@ class DeprecationAssert extends DebugAssert {
     // expectDeprecation(/* optionalStringOrRegex */);
     // Ember.deprecate("Old And Busted");
     //
-    let expectDeprecation = (func, message) => {
+    let expectDeprecation: ExpectDeprecationFunc = (func, message) => {
+      let actualFunc: (() => void) | undefined;
       if (typeof func !== 'function') {
-        message = func;
-        func = null;
+        message = func as Message;
+        actualFunc = undefined;
+      } else {
+        actualFunc = func;
       }
 
-      this.runExpectation(func, tracker => {
+      this.runExpectation(actualFunc, tracker => {
         if (tracker.isExpectingNoCalls()) {
           throw new Error('expectDeprecation was called after expectNoDeprecation was called!');
         }
@@ -58,7 +76,7 @@ class DeprecationAssert extends DebugAssert {
       });
     };
 
-    let ignoreDeprecation = func => {
+    let ignoreDeprecation: IgnoreDeprecationFunc = func => {
       callWithStub(this.env, 'deprecate', func);
     };
 

@@ -116,6 +116,10 @@
   version "9.6.0"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-9.6.0.tgz#d3480ee666df9784b1001a1872a2f6ccefb6c2d7"
 
+"@types/qunit@^2.5.0":
+  version "2.5.0"
+  resolved "https://registry.yarnpkg.com/@types/qunit/-/qunit-2.5.0.tgz#fab886ca4160ba8bf299b146a8f54ee3057c8e32"
+
 "@types/rsvp@^4.0.1":
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/@types/rsvp/-/rsvp-4.0.1.tgz#82956bc8d0a8151ec3b7e9cae64fd06808a1c714"
