@@ -1,57 +1,104 @@
+import EmberError from '@ember/error';
 import { DEBUG } from '@glimmer/env';
 import { isChrome, isFirefox } from 'ember-browser-environment';
+import _deprecate, { DeprecateFunc, DeprecationOptions } from './lib/deprecate';
 import { isTesting } from './lib/testing';
-import EmberError from '@ember/error';
-import _deprecate from './lib/deprecate';
-import _warn from './lib/warn';
+import _warn, { WarnFunc } from './lib/warn';
 
 export { registerHandler as registerWarnHandler } from './lib/warn';
 export { registerHandler as registerDeprecationHandler } from './lib/deprecate';
 export { isTesting, setTesting } from './lib/testing';
 
+export type DebugFunctionType =
+  | 'assert'
+  | 'info'
+  | 'warn'
+  | 'debug'
+  | 'deprecate'
+  | 'debugSeal'
+  | 'debugFreeze'
+  | 'runInDebug'
+  | 'deprecateFunc';
+
+export type AssertFunc = (desc: string, test?: boolean) => void;
+export type DebugFunc = (message: string) => void;
+export type DebugSealFunc = (obj: object) => void;
+export type DebugFreezeFunc = (obj: object) => void;
+export type InfoFunc = () => void;
+export type RunInDebugFunc = (func: () => void) => void;
+export type DeprecateFuncFunc = (
+  message: string,
+  options: DeprecationOptions,
+  func: Function
+) => Function;
+
+export type GetDebugFunction = {
+  (type: 'assert'): AssertFunc;
+  (type: 'info'): InfoFunc;
+  (type: 'warn'): WarnFunc;
+  (type: 'debug'): DebugFunc;
+  (type: 'debugSeal'): DebugSealFunc;
+  (type: 'debugFreeze'): DebugFreezeFunc;
+  (type: 'deprecateFunc'): DeprecateFuncFunc;
+  (type: 'deprecate'): DeprecateFunc;
+  (type: 'runInDebug'): RunInDebugFunc;
+};
+
+export type SetDebugFunction = {
+  (type: 'assert', func: AssertFunc): AssertFunc;
+  (type: 'info', func: InfoFunc): InfoFunc;
+  (type: 'warn', func: WarnFunc): WarnFunc;
+  (type: 'debug', func: DebugFunc): DebugFunc;
+  (type: 'debugSeal', func: DebugSealFunc): DebugSealFunc;
+  (type: 'debugFreeze', func: DebugFreezeFunc): DebugFreezeFunc;
+  (type: 'deprecateFunc', func: DeprecateFuncFunc): DeprecateFuncFunc;
+  (type: 'deprecate', func: DeprecateFunc): DeprecateFunc;
+  (type: 'runInDebug', func: RunInDebugFunc): RunInDebugFunc;
+};
+
 // These are the default production build versions:
 const noop = () => {};
 
-let assert = noop;
-let info = noop;
-let warn = noop;
-let debug = noop;
-let deprecate = noop;
-let debugSeal = noop;
-let debugFreeze = noop;
-let runInDebug = noop;
-let setDebugFunction = noop;
-let getDebugFunction = noop;
+let assert: AssertFunc = noop;
+let info: InfoFunc = noop;
+let warn: WarnFunc = noop;
+let debug: DebugFunc = noop;
+let deprecate: DeprecateFunc = noop;
+let debugSeal: DebugSealFunc = noop;
+let debugFreeze: DebugFreezeFunc = noop;
+let runInDebug: RunInDebugFunc = noop;
+let setDebugFunction: SetDebugFunction = noop as any;
+let getDebugFunction: GetDebugFunction = noop as any;
 
-let deprecateFunc = function() {
+let deprecateFunc: DeprecateFuncFunc = function() {
   return arguments[arguments.length - 1];
 };
 
 if (DEBUG) {
-  setDebugFunction = function(type, callback) {
+  setDebugFunction = function(type: DebugFunctionType, callback: Function) {
     switch (type) {
       case 'assert':
-        return (assert = callback);
+        return (assert = callback as AssertFunc);
       case 'info':
-        return (info = callback);
+        return (info = callback as InfoFunc);
       case 'warn':
-        return (warn = callback);
+        return (warn = callback as WarnFunc);
       case 'debug':
-        return (debug = callback);
+        return (debug = callback as DebugFunc);
       case 'deprecate':
-        return (deprecate = callback);
+        return (deprecate = callback as DeprecateFunc);
       case 'debugSeal':
-        return (debugSeal = callback);
+        return (debugSeal = callback as DebugSealFunc);
       case 'debugFreeze':
-        return (debugFreeze = callback);
+        return (debugFreeze = callback as DebugFreezeFunc);
       case 'runInDebug':
-        return (runInDebug = callback);
+        return (runInDebug = callback as RunInDebugFunc);
       case 'deprecateFunc':
-        return (deprecateFunc = callback);
+        return (deprecateFunc = callback as DeprecateFuncFunc);
     }
-  };
+  } as any;
 
-  getDebugFunction = function(type) {
+  getDebugFunction = function(type: DebugFunctionType) {
     switch (type) {
       case 'assert':
         return assert;
@@ -72,7 +119,7 @@ if (DEBUG) {
       case 'deprecateFunc':
         return deprecateFunc;
     }
-  };
+  } as any;
 }
 
 /**
@@ -193,16 +240,16 @@ if (DEBUG) {
     @return {Function} A new function that wraps the original function with a deprecation warning
     @private
   */
-  setDebugFunction('deprecateFunc', function deprecateFunc(...args) {
+  setDebugFunction('deprecateFunc', function deprecateFunc(...args: any[]) {
     if (args.length === 3) {
-      let [message, options, func] = args;
-      return function() {
+      let [message, options, func] = args as [string, DeprecationOptions, () => any];
+      return function(this: any) {
         deprecate(message, false, options);
         return func.apply(this, arguments);
       };
     } else {
       let [message, func] = args;
-      return function() {
+      return function(this: any) {
         deprecate(message);
         return func.apply(this, arguments);
       };

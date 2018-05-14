@@ -2,7 +2,22 @@ import { DEBUG } from '@glimmer/env';
 import { ENV } from 'ember-environment';
 
 import { assert } from '../index';
-import { registerHandler as genericRegisterHandler, invoke } from './handlers';
+import { HandlerCallback, invoke, registerHandler as genericRegisterHandler } from './handlers';
+
+declare global {
+  const __fail__: {
+    fail(): void;
+  };
+}
+
+export interface DeprecationOptions {
+  id: string;
+  until: string;
+  url?: string;
+}
+
+export type DeprecateFunc = (message: string, test?: boolean, options?: DeprecationOptions) => void;
+
 /**
  @module @ember/debug
  @public
@@ -45,18 +60,18 @@ import { registerHandler as genericRegisterHandler, invoke } from './handlers';
   @param handler {Function} A function to handle deprecation calls.
   @since 2.1.0
 */
-let registerHandler = () => {};
-let missingOptionsDeprecation,
-  missingOptionsIdDeprecation,
-  missingOptionsUntilDeprecation,
-  deprecate;
+let registerHandler: (handler: HandlerCallback) => void = () => {};
+let missingOptionsDeprecation: string;
+let missingOptionsIdDeprecation: string;
+let missingOptionsUntilDeprecation: string;
+let deprecate: DeprecateFunc = () => {};
 
 if (DEBUG) {
-  registerHandler = function registerHandler(handler) {
+  registerHandler = function registerHandler(handler: HandlerCallback) {
     genericRegisterHandler('deprecate', handler);
   };
 
-  let formatMessage = function formatMessage(_message, options) {
+  let formatMessage = function formatMessage(_message: string, options?: DeprecationOptions) {
     let message = _message;
 
     if (options && options.id) {
@@ -75,14 +90,14 @@ if (DEBUG) {
     console.warn(`DEPRECATION: ${updatedMessage}`); // eslint-disable-line no-console
   });
 
-  let captureErrorForStack;
+  let captureErrorForStack: () => Error;
 
   if (new Error().stack) {
     captureErrorForStack = () => new Error();
   } else {
     captureErrorForStack = () => {
       try {
-        __fail__.fail(); // eslint-disable-line
+        __fail__.fail();
       } catch (e) {
         return e;
       }
@@ -119,7 +134,7 @@ if (DEBUG) {
 
       console.warn(`DEPRECATION: ${updatedMessage}${stackStr}`); // eslint-disable-line no-console
     } else {
-      next(...arguments);
+      next(message, options);
     }
   });
 
@@ -129,7 +144,7 @@ if (DEBUG) {
 
       throw new Error(updatedMessage);
     } else {
-      next(...arguments);
+      next(message, options);
     }
   });
 
@@ -169,9 +184,9 @@ if (DEBUG) {
   */
   deprecate = function deprecate(message, test, options) {
     if (ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT !== true) {
-      assert(missingOptionsDeprecation, options && (options.id || options.until));
-      assert(missingOptionsIdDeprecation, options.id);
-      assert(missingOptionsUntilDeprecation, options.until);
+      assert(missingOptionsDeprecation, !!(options && (options.id || options.until)));
+      assert(missingOptionsIdDeprecation, !!options!.id);
+      assert(missingOptionsUntilDeprecation, !!options!.until);
     }
 
     if (
@@ -194,14 +209,14 @@ if (DEBUG) {
     }
 
     if (options && !options.until && ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT === true) {
-      deprecate(missingOptionsUntilDeprecation, options && options.until, {
+      deprecate(missingOptionsUntilDeprecation, !!(options && options.until), {
         id: 'ember-debug.deprecate-until-missing',
         until: '3.0.0',
         url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options',
       });
     }
 
-    invoke('deprecate', ...arguments);
+    invoke('deprecate', message, test, options);
   };
 }
 

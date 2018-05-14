@@ -1,14 +1,14 @@
 /**
  @module @ember/error
 */
-function ExtendBuiltin(klass) {
-  function ExtendableBuiltin() {
+function ExtendBuiltin(klass: any): typeof Error {
+  function ExtendableBuiltin(this: any) {
     klass.apply(this, arguments);
   }
 
   ExtendableBuiltin.prototype = Object.create(klass.prototype);
   ExtendableBuiltin.prototype.constructor = ExtendableBuiltin;
-  return ExtendableBuiltin;
+  return ExtendableBuiltin as typeof Error;
 }
 
 /**
@@ -20,7 +20,13 @@ function ExtendBuiltin(klass) {
   @public
 */
 export default class EmberError extends ExtendBuiltin(Error) {
-  constructor(message) {
+  description: string;
+  fileName: string;
+  lineNumber: number;
+  number: number;
+  code: string;
+
+  constructor(message: string) {
     super();
 
     if (!(this instanceof EmberError)) {
