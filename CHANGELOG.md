@@ -1,5 +1,8 @@
 # Ember Changelog
 
+### v3.2.0-beta.5 (May 14, 2018)
+- [#16613](https://github.com/emberjs/ember.js/pull/16613) [BUGFIX] Prevent errors in ember-engines + 3.1 + proxies.
+
 ### v3.2.0-beta.4 (May 7, 2018)
 - [#16597](https://github.com/emberjs/ember.js/pull/16597) [BUGFIX] Ensure `Ember.run.cancelTimers` is present.
 - [#16605](https://github.com/emberjs/ember.js/pull/16605) [BUGFIX] Use resetCache on container destroy
