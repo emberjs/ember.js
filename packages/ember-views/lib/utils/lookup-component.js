@@ -8,18 +8,19 @@ function lookupModuleUnificationComponentPair(componentLookup, owner, name, opti
   let globalLayout = componentLookup.layoutFor(name, owner);
 
   // TODO: we shouldn't have to recheck fallback, we should have a lookup that doesn't fallback
-  if (localComponent !== undefined) {
-    if (globalComponent !== undefined && globalComponent.class === localComponent.class) {
-      localComponent = undefined;
-    }
+  if (
+    localComponent !== undefined &&
+    globalComponent !== undefined &&
+    globalComponent.class === localComponent.class
+  ) {
+    localComponent = undefined;
   }
-  if (localLayout !== undefined) {
-    if (
-      globalLayout !== undefined &&
-      localLayout.referrer.moduleName !== globalLayout.referrer.moduleName
-    ) {
-      localLayout = undefined;
-    }
+  if (
+    localLayout !== undefined &&
+    globalLayout !== undefined &&
+    localLayout.referrer.moduleName === globalLayout.referrer.moduleName
+  ) {
+    localLayout = undefined;
   }
 
   if (localLayout !== undefined || localComponent !== undefined) {
