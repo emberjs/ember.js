@@ -1,4 +1,4 @@
-import { privatize as P } from 'container';
+import { privatize as P, Registry } from 'container';
 import { hasDOM } from 'ember-browser-environment';
 import { ENV } from 'ember-environment';
 import Component from './component';
@@ -22,12 +22,6 @@ import ComponentTemplate from './templates/component';
 import OutletTemplate from './templates/outlet';
 import RootTemplate from './templates/root';
 import OutletView from './views/outlet';
-
-interface Registry {
-  injection(name: string, name2: string, name3: string): void;
-  register(name: string, value: any): void;
-  optionsForType(type: string, options: any): void;
-}
 
 export function setupApplicationRegistry(registry: Registry) {
   registry.injection(

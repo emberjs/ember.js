@@ -231,7 +231,7 @@ export default class Registry implements IRegistry {
    @param {Function} factory
    @param {Object} options
    */
-  register(fullName: string, factory: Function, options: object = {}): void {
+  register<T, C>(fullName: string, factory: Factory<T, C>, options: object = {}): void {
     assert('fullName must be a proper full name', this.isValidFullName(fullName));
     assert(`Attempting to register an unknown factory: '${fullName}'`, factory !== undefined);
 
@@ -842,10 +842,10 @@ function has(
   return registry.resolve(fullName, { source, namespace }) !== undefined;
 }
 
-const privateNames = dictionary(null);
+const privateNames: { [key: string]: string } = dictionary(null);
 const privateSuffix = `${Math.random()}${Date.now()}`.replace('.', '');
 
-export function privatize([fullName]: [string]) {
+export function privatize([fullName]: TemplateStringsArray): string {
   let name = privateNames[fullName];
   if (name) {
     return name;

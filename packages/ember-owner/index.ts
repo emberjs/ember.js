@@ -9,10 +9,14 @@ export interface LookupOptions {
   namespace?: string;
 }
 
-export interface Factory<T, C> {
-  class: C;
-  fullName: string;
-  normalizedName: string;
+export interface FactoryClass {
+  positionalParams?: string | string[] | undefined | null;
+}
+
+export interface Factory<T, C extends FactoryClass | object> {
+  class?: C;
+  fullName?: string;
+  normalizedName?: string;
   create(props?: { [prop: string]: any }): T;
 }
 

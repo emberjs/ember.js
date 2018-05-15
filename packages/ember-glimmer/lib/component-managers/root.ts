@@ -3,6 +3,7 @@ import { DEBUG } from '@glimmer/env';
 import { ComponentCapabilities } from '@glimmer/interfaces';
 import { Arguments, ComponentDefinition } from '@glimmer/runtime';
 import { FACTORY_FOR } from 'container';
+import { Factory } from 'ember-owner';
 import { DIRTY_TAG } from '../component';
 import Environment from '../environment';
 import { DynamicScope } from '../renderer';
@@ -92,9 +93,9 @@ export class RootComponentDefinition implements ComponentDefinition {
     this.manager = manager;
     let factory = FACTORY_FOR.get(component);
     this.state = {
-      name: factory.fullName.slice(10),
+      name: factory!.fullName.slice(10),
       capabilities: ROOT_CAPABILITIES,
-      ComponentClass: factory,
+      ComponentClass: factory as Factory<any, any>,
       handle: null,
     };
   }
