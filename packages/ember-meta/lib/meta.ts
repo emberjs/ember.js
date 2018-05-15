@@ -4,78 +4,6 @@ import { Tag } from '@glimmer/reference';
 import { ENV } from 'ember-environment';
 import { lookupDescriptor, symbol, toString } from 'ember-utils';
 
-// TODO move chains into ember-meta
-function removeChainWatcher(obj: object, keyName: string, node: any, meta: Meta) {
-  meta.readableChainWatchers().remove(keyName, node);
-  unwatchKey(obj, keyName, meta);
-}
-
-// TODO move unwatch key into meta
-function unwatchKey(obj: object, keyName: string, meta: Meta) {
-  // do nothing of this object has already been destroyed
-  if (meta.isSourceDestroyed()) {
-    return;
-  }
-
-  let count = meta.peekWatching(keyName);
-  if (count === 1) {
-    meta.writeWatching(keyName, 0);
-
-    let possibleDesc = descriptorFor(obj, keyName, meta);
-    let isDescriptor = possibleDesc !== undefined;
-
-    if (isDescriptor && possibleDesc.didUnwatch) {
-      possibleDesc.didUnwatch(obj, keyName, meta);
-    }
-
-    if (typeof (obj as any).didUnwatchProperty === 'function') {
-      (obj as any).didUnwatchProperty(keyName);
-    }
-
-    if (DEBUG) {
-      // It is true, the following code looks quite WAT. But have no fear, It
-      // exists purely to improve development ergonomics and is removed from
-      // ember.min.js and ember.prod.js builds.
-      //
-      // Some further context: Once a property is watched by ember, bypassing `set`
-      // for mutation, will bypass observation. This code exists to assert when
-      // that occurs, and attempt to provide more helpful feedback. The alternative
-      // is tricky to debug partially observable properties.
-      if (!isDescriptor && keyName in obj) {
-        let maybeMandatoryDescriptor = lookupDescriptor(obj, keyName);
-
-        // TODO extract function isMandatorySetter
-        // likely should just make mandatory setter inert instead of uninstalling and reinstalling
-        if (
-          maybeMandatoryDescriptor!.set &&
-          (maybeMandatoryDescriptor!.set! as any).isMandatorySetter
-        ) {
-          if (
-            maybeMandatoryDescriptor!.get &&
-            (maybeMandatoryDescriptor!.get! as any).isInheritingGetter
-          ) {
-            let possibleValue = meta.readInheritedValue('values', keyName);
-            if (possibleValue === UNDEFINED) {
-              delete obj[keyName];
-              return;
-            }
-          }
-
-          Object.defineProperty(obj, keyName, {
-            configurable: true,
-            enumerable: Object.prototype.propertyIsEnumerable.call(obj, keyName),
-            writable: true,
-            value: meta.peekValues(keyName),
-          });
-          meta.deleteFromValues(keyName);
-        }
-      }
-    }
-  } else if (count > 1) {
-    meta.writeWatching(keyName, count - 1);
-  }
-}
-
 export interface MetaCounters {
   peekCalls: number;
   peekPrototypeWalks: number;
@@ -107,8 +35,6 @@ export const UNDEFINED = symbol('undefined');
 const SOURCE_DESTROYING = 1 << 1;
 const SOURCE_DESTROYED = 1 << 2;
 const META_DESTROYED = 1 << 3;
-
-const NODE_STACK: any[] = [];
 
 export class Meta {
   _descriptors: any | undefined;
@@ -176,44 +102,13 @@ export class Meta {
     if (this.isMetaDestroyed()) {
       return;
     }
+    this.setMetaDestroyed();
 
     // remove chainWatchers to remove circular references that would prevent GC
-    let nodes, key, nodeObject;
-    let node = this.readableChains();
-    if (node !== undefined) {
-      NODE_STACK.push(node);
-      // process tree
-      while (NODE_STACK.length > 0) {
-        node = NODE_STACK.pop();
-        // push children
-        nodes = node._chains;
-        if (nodes !== undefined) {
-          for (key in nodes) {
-            if (nodes[key] !== undefined) {
-              NODE_STACK.push(nodes[key]);
-            }
-          }
-        }
-
-        // remove chainWatcher in node object
-        if (node._isWatching) {
-          nodeObject = node._object;
-          if (nodeObject !== undefined) {
-            let foreignMeta = peekMeta(nodeObject);
-            // avoid cleaning up chain watchers when both current and
-            // foreign objects are being destroyed
-            // if both are being destroyed manual cleanup is not needed
-            // as they will be GC'ed and no non-destroyed references will
-            // be remaining
-            if (foreignMeta && !foreignMeta.isSourceDestroying()) {
-              removeChainWatcher(nodeObject, node._key, node, foreignMeta);
-            }
-          }
-        }
-      }
+    let chains = this.readableChains();
+    if (chains !== undefined) {
+      chains.destroy();
     }
-
-    this.setMetaDestroyed();
   }
 
   isSourceDestroying() {

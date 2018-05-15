@@ -1,14 +1,11 @@
 export default function lookupDescriptor(obj: object, keyName: string) {
-  let current = obj;
-  while (current) {
+  let current: object | null = obj;
+  do {
     let descriptor = Object.getOwnPropertyDescriptor(current, keyName);
-
-    if (descriptor) {
+    if (descriptor !== undefined) {
       return descriptor;
     }
-
     current = Object.getPrototypeOf(current);
-  }
-
+  } while (current !== null);
   return null;
 }
