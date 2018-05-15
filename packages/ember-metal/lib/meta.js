@@ -693,7 +693,17 @@ export function descriptorFor(obj, keyName, _meta) {
   let meta = _meta === undefined ? peekMeta(obj) : _meta;
 
   if (meta !== undefined) {
-    return meta.peekDescriptors(keyName);
+    let descriptor = meta.peekDescriptors(keyName);
+
+    if (descriptor === undefined && keyName in obj) {
+      // #GH16427 in case defined without `defineProperty`
+      let possibleDesc = obj[keyName];
+      if (isDescriptor(possibleDesc) && 'didChange' in possibleDesc) {
+        descriptor = possibleDesc;
+      }
+    }
+
+    return descriptor;
   }
 }
 
