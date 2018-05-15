@@ -15,7 +15,7 @@ import {
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { ENV } from 'ember-environment';
-import { descriptorFor, meta as metaFor, peekMeta } from './meta';
+import { descriptorFor, meta as metaFor, peekMeta } from 'ember-meta';
 import expandProperties from './expand_properties';
 import { Descriptor, defineProperty } from './properties';
 import { ComputedProperty } from './computed';

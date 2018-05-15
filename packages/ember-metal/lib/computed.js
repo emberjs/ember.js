@@ -2,7 +2,7 @@ import { inspect } from 'ember-utils';
 import { assert, warn } from '@ember/debug';
 import EmberError from '@ember/error';
 import { set } from './property_set';
-import { meta as metaFor, peekMeta } from './meta';
+import { meta as metaFor, peekMeta } from 'ember-meta';
 import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import expandProperties from './expand_properties';
 import { Descriptor, defineProperty } from './properties';

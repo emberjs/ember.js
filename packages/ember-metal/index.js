@@ -8,7 +8,7 @@ export {
 } from './lib/computed';
 export { default as alias } from './lib/alias';
 export { deprecateProperty } from './lib/deprecate_property';
-export { descriptorFor, meta, peekMeta, deleteMeta } from './lib/meta';
+export { descriptorFor, meta, peekMeta, deleteMeta } from 'ember-meta';
 export { PROXY_CONTENT, _getPath, get, getWithDefault } from './lib/property_get';
 export { set, trySet } from './lib/property_set';
 export {

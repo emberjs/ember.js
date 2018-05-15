@@ -1,6 +1,6 @@
 import { lookupDescriptor } from 'ember-utils';
 import { DEBUG } from '@glimmer/env';
-import { descriptorFor, isDescriptor, meta as metaFor, peekMeta, UNDEFINED } from './meta';
+import { descriptorFor, isDescriptor, meta as metaFor, peekMeta, UNDEFINED } from 'ember-meta';
 import {
   MANDATORY_SETTER_FUNCTION,
   DEFAULT_GETTER_FUNCTION,

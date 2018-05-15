@@ -4,7 +4,7 @@
 import { ENV } from 'ember-environment';
 import { assert, deprecate } from '@ember/debug';
 import { setListeners } from 'ember-utils';
-import { meta as metaFor, peekMeta } from './meta';
+import { meta as metaFor, peekMeta } from 'ember-meta';
 
 /*
   The event system uses a series of nested hashes to store listeners on an

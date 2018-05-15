@@ -5,7 +5,7 @@ import { get } from './property_get';
 import { set } from './property_set';
 import { Descriptor, defineProperty } from './properties';
 import { ComputedProperty, getCacheFor } from './computed';
-import { meta as metaFor } from './meta';
+import { meta as metaFor } from 'ember-meta';
 import { addDependentKeys, removeDependentKeys } from './dependent_keys';
 
 const CONSUMED = {};

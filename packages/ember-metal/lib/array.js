@@ -1,6 +1,6 @@
 import { notifyPropertyChange } from './property_events';
 import { eachProxyArrayDidChange, eachProxyArrayWillChange } from './each_proxy';
-import { peekMeta } from './meta';
+import { peekMeta } from 'ember-meta';
 import { sendEvent, removeListener, addListener } from './events';
 import { peekCacheFor } from './computed';
 import { get } from './property_get';

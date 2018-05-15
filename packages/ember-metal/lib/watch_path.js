@@ -1,4 +1,4 @@
-import { meta as metaFor, peekMeta } from './meta';
+import { meta as metaFor, peekMeta } from 'ember-meta';
 import { makeChainNode } from './chains';
 
 export function watchPath(obj, keyPath, meta) {
