@@ -3,6 +3,8 @@
 */
 
 export interface LookupOptions {
+  singleton?: boolean;
+  instantiate?: boolean;
   source?: string;
   namespace?: string;
 }

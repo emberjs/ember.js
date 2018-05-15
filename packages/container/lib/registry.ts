@@ -1,9 +1,84 @@
-import { assign } from '@ember/polyfills';
-import { dictionary, intern } from 'ember-utils';
 import { assert, deprecate } from '@ember/debug';
-import Container from './container';
+import { assign } from '@ember/polyfills';
 import { DEBUG } from '@glimmer/env';
 import { ENV } from 'ember-environment';
+import { Factory, LookupOptions } from 'ember-owner';
+import { dictionary, intern } from 'ember-utils';
+import Container, { ContainerOptions, LazyInjection } from './container';
+
+interface HasOptions {
+  source?: string;
+  namespace?: string;
+}
+
+export interface Injection {
+  namespace?: string;
+  property: string;
+  source?: string;
+  specifier: string;
+}
+
+export type ResolveOptions = {
+  specifier?: string;
+  source?: string | undefined;
+  namespace?: string | undefined;
+};
+
+export interface TypeOptions {
+  instantiate?: boolean;
+  singleton?: boolean;
+}
+
+export interface KnownForTypeResult {
+  [fullName: string]: boolean;
+}
+
+export interface IRegistry {
+  describe(fullName: string): string;
+  expandLocalLookup(fullName: string, options: LookupOptions): string;
+  getInjections(fullName: string): Injection[];
+  getOption<K extends keyof TypeOptions>(
+    fullName: string,
+    optionName: K
+  ): TypeOptions[K] | undefined;
+  getOptions(fullName: string): TypeOptions;
+  getOptionsForType(type: string): TypeOptions;
+  getTypeInjections(type: string): Injection[];
+  knownForType(type: string): KnownForTypeResult;
+  makeToString<T, C>(factory: Factory<T, C>, fullName: string): string;
+  normalizeFullName(fullName: string): string;
+  resolve<T, C>(fullName: string, options?: ResolveOptions): Factory<T, C> | undefined;
+}
+
+export type NotResolver = {
+  expandLocalLookup: never;
+  knownForType: never;
+  lookupDescription: never;
+  makeToString: never;
+  normalize: never;
+  resolve: never;
+};
+
+export type Resolve = <T, C>(name: string) => Factory<T, C> | undefined;
+
+export interface Resolver {
+  expandLocalLookup?: (
+    normalizedName: string,
+    normalizedSource: string,
+    namespace?: string | undefined
+  ) => string;
+  knownForType?: (type: string) => KnownForTypeResult;
+  lookupDescription?: (fullName: string) => string;
+  makeToString?: <T, C>(factory: Factory<T, C>, fullName: string) => string;
+  normalize?: (fullName: string) => string;
+  resolve: Resolve;
+}
+
+export interface RegistryOptions {
+  fallback?: IRegistry;
+  registrations?: { [key: string]: object };
+  resolver?: Resolver | (Resolve & NotResolver);
+}
 
 const VALID_FULL_NAME_REGEXP = /^[^:]+:[^:]+$/;
 const missingResolverFunctionsDeprecation =
@@ -22,8 +97,20 @@ const missingResolverFunctionsDeprecation =
  @class Registry
  @since 1.11.0
 */
-export default class Registry {
-  constructor(options = {}) {
+export default class Registry implements IRegistry {
+  readonly _failSet: Set<string>;
+  resolver: Resolver | (Resolve & NotResolver) | null;
+  readonly fallback: IRegistry | null;
+  readonly registrations: { [key: string]: object };
+  readonly _injections: { [key: string]: Injection[] };
+  _localLookupCache: { [key: string]: object };
+  readonly _normalizeCache: { [key: string]: string };
+  readonly _options: { [key: string]: TypeOptions };
+  readonly _resolveCache: { [key: string]: object };
+  readonly _typeInjections: { [key: string]: Injection[] };
+  readonly _typeOptions: { [key: string]: TypeOptions };
+
+  constructor(options: RegistryOptions = {}) {
     this.fallback = options.fallback || null;
     this.resolver = options.resolver || null;
 
@@ -121,7 +208,7 @@ export default class Registry {
    @param {Object} options
    @return {Container} created container
    */
-  container(options) {
+  container(options?: ContainerOptions) {
     return new Container(this, options);
   }
 
@@ -144,7 +231,7 @@ export default class Registry {
    @param {Function} factory
    @param {Object} options
    */
-  register(fullName, factory, options = {}) {
+  register(fullName: string, factory: Function, options: object = {}): void {
     assert('fullName must be a proper full name', this.isValidFullName(fullName));
     assert(`Attempting to register an unknown factory: '${fullName}'`, factory !== undefined);
 
@@ -176,7 +263,7 @@ export default class Registry {
    @method unregister
    @param {String} fullName
    */
-  unregister(fullName) {
+  unregister(fullName: string): void {
     assert('fullName must be a proper full name', this.isValidFullName(fullName));
 
     let normalizedName = this.normalize(fullName);
@@ -224,10 +311,10 @@ export default class Registry {
    @param {String} [options.source] the fullname of the request source (used for local lookups)
    @return {Function} fullName's factory
    */
-  resolve(fullName, options) {
-    let factory = resolve(this, this.normalize(fullName), options);
+  resolve<T, C>(fullName: string, options?: ResolveOptions): Factory<T, C> | undefined {
+    let factory = resolve<T, C>(this, this.normalize(fullName), options);
     if (factory === undefined && this.fallback !== null) {
-      factory = this.fallback.resolve(...arguments);
+      factory = (this.fallback as any).resolve(...arguments);
     }
     return factory;
   }
@@ -245,7 +332,7 @@ export default class Registry {
    @param {String} fullName
    @return {string} described fullName
    */
-  describe(fullName) {
+  describe(fullName: string): string {
     if (this.resolver !== null && this.resolver.lookupDescription) {
       return this.resolver.lookupDescription(fullName);
     } else if (this.fallback !== null) {
@@ -263,7 +350,7 @@ export default class Registry {
    @param {String} fullName
    @return {string} normalized fullName
    */
-  normalizeFullName(fullName) {
+  normalizeFullName(fullName: string): string {
     if (this.resolver !== null && this.resolver.normalize) {
       return this.resolver.normalize(fullName);
     } else if (this.fallback !== null) {
@@ -281,7 +368,7 @@ export default class Registry {
    @param {String} fullName
    @return {string} normalized fullName
    */
-  normalize(fullName) {
+  normalize(fullName: string): string {
     return (
       this._normalizeCache[fullName] ||
       (this._normalizeCache[fullName] = this.normalizeFullName(fullName))
@@ -296,7 +383,7 @@ export default class Registry {
    @param {string} fullName
    @return {function} toString function
    */
-  makeToString(factory, fullName) {
+  makeToString<T, C>(factory: Factory<T, C>, fullName: string): string {
     if (this.resolver !== null && this.resolver.makeToString) {
       return this.resolver.makeToString(factory, fullName);
     } else if (this.fallback !== null) {
@@ -317,7 +404,7 @@ export default class Registry {
    @param {String} [options.source] the fullname of the request source (used for local lookups)
    @return {Boolean}
    */
-  has(fullName, options) {
+  has(fullName: string, options?: HasOptions) {
     if (!this.isValidFullName(fullName)) {
       return false;
     }
@@ -357,11 +444,11 @@ export default class Registry {
    @param {String} type
    @param {Object} options
    */
-  optionsForType(type, options) {
+  optionsForType(type: string, options: TypeOptions) {
     this._typeOptions[type] = options;
   }
 
-  getOptionsForType(type) {
+  getOptionsForType(type: string): TypeOptions {
     let optionsForType = this._typeOptions[type];
     if (optionsForType === undefined && this.fallback !== null) {
       optionsForType = this.fallback.getOptionsForType(type);
@@ -375,12 +462,12 @@ export default class Registry {
    @param {String} fullName
    @param {Object} options
    */
-  options(fullName, options) {
+  options(fullName: string, options: TypeOptions) {
     let normalizedName = this.normalize(fullName);
     this._options[normalizedName] = options;
   }
 
-  getOptions(fullName) {
+  getOptions(fullName: string): TypeOptions {
     let normalizedName = this.normalize(fullName);
     let options = this._options[normalizedName];
 
@@ -390,7 +477,10 @@ export default class Registry {
     return options;
   }
 
-  getOption(fullName, optionName) {
+  getOption<K extends keyof TypeOptions>(
+    fullName: string,
+    optionName: K
+  ): TypeOptions[K] | undefined {
     let options = this._options[fullName];
 
     if (options !== undefined && options[optionName] !== undefined) {
@@ -405,6 +495,7 @@ export default class Registry {
     } else if (this.fallback !== null) {
       return this.fallback.getOption(fullName, optionName);
     }
+    return undefined;
   }
 
   /**
@@ -443,7 +534,7 @@ export default class Registry {
    @param {String} property
    @param {String} fullName
    */
-  typeInjection(type, property, fullName) {
+  typeInjection(type: string, property: string, fullName: string): void {
     assert('fullName must be a proper full name', this.isValidFullName(fullName));
 
     let fullNameType = fullName.split(':')[0];
@@ -500,7 +591,7 @@ export default class Registry {
    @param {String} property
    @param {String} injectionName
    */
-  injection(fullName, property, injectionName) {
+  injection(fullName: string, property: string, injectionName: string) {
     assert(
       `Invalid injectionName, expected: 'type:name' got: ${injectionName}`,
       this.isValidFullName(injectionName)
@@ -525,7 +616,7 @@ export default class Registry {
    @method knownForType
    @param {String} type the type to iterate over
   */
-  knownForType(type) {
+  knownForType(type: string): KnownForTypeResult {
     let localKnown = dictionary(null);
     let registeredNames = Object.keys(this.registrations);
     for (let index = 0; index < registeredNames.length; index++) {
@@ -549,11 +640,11 @@ export default class Registry {
     return assign({}, fallbackKnown, localKnown, resolverKnown);
   }
 
-  isValidFullName(fullName) {
+  isValidFullName(fullName: string): boolean {
     return VALID_FULL_NAME_REGEXP.test(fullName);
   }
 
-  getInjections(fullName) {
+  getInjections(fullName: string) {
     let injections = this._injections[fullName];
     if (this.fallback !== null) {
       let fallbackInjections = this.fallback.getInjections(fullName);
@@ -567,7 +658,7 @@ export default class Registry {
     return injections;
   }
 
-  getTypeInjections(type) {
+  getTypeInjections(type: string): Injection[] {
     let injections = this._typeInjections[type];
     if (this.fallback !== null) {
       let fallbackInjections = this.fallback.getTypeInjections(type);
@@ -599,7 +690,7 @@ export default class Registry {
    @param {String} [options.source] the fullname of the request source (used for local lookups)
    @return {String} fullName
    */
-  expandLocalLookup(fullName, options) {
+  expandLocalLookup(fullName: string, options: LookupOptions) {
     if (this.resolver !== null && this.resolver.expandLocalLookup) {
       assert('fullName must be a proper full name', this.isValidFullName(fullName));
       assert(
@@ -608,7 +699,7 @@ export default class Registry {
       );
 
       let normalizedFullName = this.normalize(fullName);
-      let normalizedSource = this.normalize(options.source);
+      let normalizedSource = this.normalize(options.source!);
 
       return expandLocalLookup(this, normalizedFullName, normalizedSource, options.namespace);
     } else if (this.fallback !== null) {
@@ -619,18 +710,24 @@ export default class Registry {
   }
 }
 
-function deprecateResolverFunction(registry) {
+function deprecateResolverFunction(registry: Registry): void {
   deprecate(missingResolverFunctionsDeprecation, false, {
     id: 'ember-application.registry-resolver-as-function',
     until: '3.0.0',
     url: 'https://emberjs.com/deprecations/v2.x#toc_registry-resolver-as-function',
   });
-  registry.resolver = { resolve: registry.resolver };
+  registry.resolver = { resolve: registry.resolver as Resolve };
+}
+
+export declare class DebugRegistry extends Registry {
+  normalizeInjectionsHash(hash: { [key: string]: LazyInjection }): Injection[];
+  validateInjections(injections: Injection[]): void;
 }
 
 if (DEBUG) {
-  Registry.prototype.normalizeInjectionsHash = function(hash) {
-    let injections = [];
+  const proto = Registry.prototype as DebugRegistry;
+  proto.normalizeInjectionsHash = function(hash: { [key: string]: LazyInjection }) {
+    let injections: Injection[] = [];
 
     for (let key in hash) {
       if (hash.hasOwnProperty(key)) {
@@ -652,7 +749,7 @@ if (DEBUG) {
     return injections;
   };
 
-  Registry.prototype.validateInjections = function(injections) {
+  proto.validateInjections = function(injections: Injection[]) {
     if (!injections) {
       return;
     }
@@ -668,7 +765,12 @@ if (DEBUG) {
   };
 }
 
-function expandLocalLookup(registry, normalizedName, normalizedSource, namespace) {
+function expandLocalLookup(
+  registry: Registry,
+  normalizedName: string,
+  normalizedSource: string,
+  namespace: string | undefined
+) {
   let cache = registry._localLookupCache;
   let normalizedNameCache = cache[normalizedName];
 
@@ -684,17 +786,21 @@ function expandLocalLookup(registry, normalizedName, normalizedSource, namespace
     return cached;
   }
 
-  let expanded = registry.resolver.expandLocalLookup(normalizedName, normalizedSource, namespace);
+  let expanded = registry.resolver!.expandLocalLookup!(normalizedName, normalizedSource, namespace);
 
   return (normalizedNameCache[cacheKey] = expanded);
 }
 
-function resolve(registry, _normalizedName, options) {
+function resolve<T, C>(
+  registry: Registry,
+  _normalizedName: string,
+  options?: ResolveOptions
+): Factory<T, C> | undefined {
   let normalizedName = _normalizedName;
   // when `source` is provided expand normalizedName
   // and source into the full normalizedName
   if (options !== undefined && (options.source || options.namespace)) {
-    normalizedName = registry.expandLocalLookup(_normalizedName, options);
+    normalizedName = registry.expandLocalLookup(_normalizedName, options as LookupOptions);
     if (!normalizedName) {
       return;
     }
@@ -702,20 +808,20 @@ function resolve(registry, _normalizedName, options) {
 
   let cached = registry._resolveCache[normalizedName];
   if (cached !== undefined) {
-    return cached;
+    return cached as Factory<T, C>;
   }
   if (registry._failSet.has(normalizedName)) {
     return;
   }
 
-  let resolved;
+  let resolved: Factory<T, C> | undefined;
 
   if (registry.resolver) {
-    resolved = registry.resolver.resolve(normalizedName);
+    resolved = registry.resolver.resolve<T, C>(normalizedName);
   }
 
   if (resolved === undefined) {
-    resolved = registry.registrations[normalizedName];
+    resolved = registry.registrations[normalizedName] as Factory<T, C> | undefined;
   }
 
   if (resolved === undefined) {
@@ -727,14 +833,19 @@ function resolve(registry, _normalizedName, options) {
   return resolved;
 }
 
-function has(registry, fullName, source, namespace) {
+function has(
+  registry: Registry,
+  fullName: string,
+  source: string | undefined,
+  namespace: string | undefined
+) {
   return registry.resolve(fullName, { source, namespace }) !== undefined;
 }
 
 const privateNames = dictionary(null);
 const privateSuffix = `${Math.random()}${Date.now()}`.replace('.', '');
 
-export function privatize([fullName]) {
+export function privatize([fullName]: [string]) {
   let name = privateNames[fullName];
   if (name) {
     return name;
