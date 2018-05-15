@@ -1,8 +1,8 @@
-import { get } from './property_get';
 import { descriptorFor, meta as metaFor, peekMeta } from 'ember-meta';
-import { watchKey, unwatchKey } from './watch_key';
 import { getCachedValueFor } from './computed';
 import { eachProxyFor } from './each_proxy';
+import { get } from './property_get';
+import { unwatchKey, watchKey } from './watch_key';
 
 function isObject(obj) {
   return typeof obj === 'object' && obj !== null;
@@ -119,7 +119,12 @@ function removeChainWatcher(obj, keyName, node, _meta) {
 
   let meta = _meta === undefined ? peekMeta(obj) : _meta;
 
-  if (meta === undefined || meta.readableChainWatchers() === undefined) {
+  if (
+    meta === undefined ||
+    meta.isSourceDestroying() ||
+    meta.isMetaDestroyed() ||
+    meta.readableChainWatchers() === undefined
+  ) {
     return;
   }
 
@@ -129,6 +134,34 @@ function removeChainWatcher(obj, keyName, node, _meta) {
   meta.readableChainWatchers().remove(keyName, node);
 
   unwatchKey(obj, keyName, meta);
+}
+
+const NODE_STACK = [];
+function destroyRoot(root) {
+  pushChildren(root);
+  while (NODE_STACK.length > 0) {
+    let node = NODE_STACK.pop();
+    pushChildren(node);
+    destroyOne(node);
+  }
+}
+
+function destroyOne(node) {
+  if (node._isWatching) {
+    removeChainWatcher(node._object, node._key, node);
+    node._isWatching = false;
+  }
+}
+
+function pushChildren(node) {
+  let nodes = node._chains;
+  if (nodes !== undefined) {
+    for (let key in nodes) {
+      if (nodes[key] !== undefined) {
+        NODE_STACK.push(nodes[key]);
+      }
+    }
+  }
 }
 
 // A ChainNode watches a single key on an object. If you provide a starting
@@ -146,23 +179,21 @@ class ChainNode {
     this._value = value;
     this._paths = undefined;
 
-    // _watching is true when calling get(this._parent, this._key) will
-    // return the value of this node.
-    //
     // It is false for the root of a chain (because we have no parent)
-    // and for global paths (because the parent node is the object with
-    // the observer on it)
-    let isWatching = (this._isWatching = value === undefined);
+    let isWatching = parent !== null;
+    let object;
     if (isWatching) {
-      let obj = parent.value();
-
-      if (!isObject(obj)) {
-        return;
+      let parentValue = parent.value();
+      if (isObject(parentValue)) {
+        object = parentValue;
       }
+    }
 
-      this._object = obj;
+    this._isWatching = isWatching;
+    this._object = object;
 
-      addChainWatcher(this._object, this._key, this);
+    if (isWatching && object !== undefined) {
+      addChainWatcher(object, key, this);
     }
   }
 
@@ -175,9 +206,11 @@ class ChainNode {
   }
 
   destroy() {
-    if (this._isWatching) {
-      removeChainWatcher(this._object, this._key, this);
-      this._isWatching = false; // so future calls do nothing
+    // check if root
+    if (this._parent === null) {
+      destroyRoot(this);
+    } else {
+      destroyOne(this);
     }
   }
 
