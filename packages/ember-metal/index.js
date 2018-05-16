@@ -1,11 +1,5 @@
-export {
-  default as computed,
-  getCacheFor,
-  getCachedValueFor,
-  peekCacheFor,
-  ComputedProperty,
-  _globalsComputed,
-} from './lib/computed';
+export { default as computed, ComputedProperty, _globalsComputed } from './lib/computed';
+export { getCacheFor, getCachedValueFor, peekCacheFor } from './lib/computed_cache';
 export { default as alias } from './lib/alias';
 export { deprecateProperty } from './lib/deprecate_property';
 export { descriptorFor, meta, peekMeta, deleteMeta } from 'ember-meta';
@@ -17,10 +11,10 @@ export {
   replaceInNativeArray,
   addArrayObserver,
   removeArrayObserver,
-  arrayContentWillChange,
-  arrayContentDidChange,
 } from './lib/array';
-export { eachProxyFor, eachProxyArrayWillChange, eachProxyArrayDidChange } from './lib/each_proxy';
+export { arrayContentWillChange, arrayContentDidChange } from './lib/array_events';
+export { eachProxyFor } from './lib/each_proxy';
+export { eachProxyArrayWillChange, eachProxyArrayDidChange } from './lib/each_proxy_events';
 export { addListener, hasListeners, on, removeListener, sendEvent } from './lib/events';
 
 export { default as isNone } from './lib/is_none';

@@ -1,14 +1,10 @@
 import { watch, unwatch } from './watching';
 import { addListener, removeListener } from './events';
+import changeEvent from './change_event';
+
 /**
 @module @ember/object
 */
-
-const AFTER_OBSERVERS = ':change';
-
-export function changeEvent(keyName) {
-  return keyName + AFTER_OBSERVERS;
-}
 
 /**
   @method addObserver

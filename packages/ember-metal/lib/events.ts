@@ -1,10 +1,10 @@
 /**
 @module @ember/object
 */
-import { ENV } from 'ember-environment';
 import { assert, deprecate } from '@ember/debug';
+import { ENV } from 'ember-environment';
+import { Meta, meta as metaFor, peekMeta } from 'ember-meta';
 import { setListeners } from 'ember-utils';
-import { meta as metaFor, peekMeta } from 'ember-meta';
 
 /*
   The event system uses a series of nested hashes to store listeners on an
@@ -37,7 +37,13 @@ import { meta as metaFor, peekMeta } from 'ember-meta';
   @param {Boolean} once A flag whether a function should only be called once
   @public
 */
-export function addListener(obj, eventName, target, method, once) {
+export function addListener(
+  obj: object,
+  eventName: string,
+  target: object | Function | null,
+  method?: Function | string,
+  once?: boolean
+) {
   assert('You must pass at least an object and event name to addListener', !!obj && !!eventName);
 
   if (ENV._ENABLE_DID_INIT_ATTRS_SUPPORT === true) {
@@ -62,7 +68,7 @@ export function addListener(obj, eventName, target, method, once) {
     target = null;
   }
 
-  metaFor(obj).addToListeners(eventName, target, method, once);
+  metaFor(obj).addToListeners(eventName, target, method!, once === true);
 }
 
 /**
@@ -79,7 +85,12 @@ export function addListener(obj, eventName, target, method, once) {
   @param {Function|String} method A function or the name of a function to be called on `target`
   @public
 */
-export function removeListener(obj, eventName, target, method) {
+export function removeListener(
+  obj: object,
+  eventName: string,
+  target: object | null,
+  method?: Function | string
+) {
   assert('You must pass at least an object and event name to removeListener', !!obj && !!eventName);
 
   if (!method && 'function' === typeof target) {
@@ -87,7 +98,7 @@ export function removeListener(obj, eventName, target, method) {
     target = null;
   }
 
-  metaFor(obj).removeFromListeners(eventName, target, method);
+  metaFor(obj).removeFromListeners(eventName, target, method!);
 }
 
 /**
@@ -102,12 +113,16 @@ export function removeListener(obj, eventName, target, method) {
   @param obj
   @param {String} eventName
   @param {Array} params Optional parameters for each listener.
-  @param {Array} actions Optional array of actions (listeners).
-  @param {Meta}  meta Optional meta to lookup listeners
   @return true
   @public
 */
-export function sendEvent(obj, eventName, params, actions, _meta) {
+export function sendEvent(
+  obj: object,
+  eventName: string,
+  params: any[],
+  actions?: any[],
+  _meta?: Meta
+) {
   if (actions === undefined) {
     let meta = _meta === undefined ? peekMeta(obj) : _meta;
     actions = typeof meta === 'object' && meta !== null && meta.matchingListeners(eventName);
@@ -119,9 +134,9 @@ export function sendEvent(obj, eventName, params, actions, _meta) {
 
   for (let i = actions.length - 3; i >= 0; i -= 3) {
     // looping in reverse for once listeners
-    let target = actions[i];
-    let method = actions[i + 1];
-    let once = actions[i + 2];
+    let target = actions[i] as any | null;
+    let method = actions[i + 1] as string | Function;
+    let once = actions[i + 2] as boolean;
 
     if (!method) {
       continue;
@@ -133,7 +148,7 @@ export function sendEvent(obj, eventName, params, actions, _meta) {
       target = obj;
     }
     if ('string' === typeof method) {
-      method = target[method];
+      method = target[method] as Function;
     }
 
     method.apply(target, params);
@@ -149,7 +164,7 @@ export function sendEvent(obj, eventName, params, actions, _meta) {
   @param obj
   @param {String} eventName
 */
-export function hasListeners(obj, eventName) {
+export function hasListeners(obj: object, eventName: string) {
   let meta = peekMeta(obj);
   if (meta === undefined) {
     return false;
@@ -161,7 +176,6 @@ export function hasListeners(obj, eventName) {
 /**
   Define a property as a function that should be executed when
   a specified event or events are triggered.
-
 
   ``` javascript
   import EmberObject from '@ember/object';
@@ -187,14 +201,14 @@ export function hasListeners(obj, eventName) {
   @return func
   @public
 */
-export function on(...args) {
-  let func = args.pop();
-  let events = args;
+export function on(...args: Array<string | Function>) {
+  let func = args.pop() as Function;
+  let events = args as string[];
 
   assert('on expects function as last argument', typeof func === 'function');
   assert(
     'on called without valid event names',
-    events.length > 0 && events.every(p => typeof p === 'string' && p.length)
+    events.length > 0 && events.every(p => typeof p === 'string' && p.length > 0)
   );
 
   setListeners(func, events);

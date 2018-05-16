@@ -3,8 +3,7 @@ import { notifyPropertyChange } from './property_events';
 import { addObserver, removeObserver } from './observer';
 import { meta, peekMeta } from 'ember-meta';
 import { objectAt } from './array';
-
-const EACH_PROXIES = new WeakMap();
+import { EACH_PROXIES } from './each_proxy_events';
 
 export function eachProxyFor(array) {
   let eachProxy = EACH_PROXIES.get(array);
@@ -13,20 +12,6 @@ export function eachProxyFor(array) {
     EACH_PROXIES.set(array, eachProxy);
   }
   return eachProxy;
-}
-
-export function eachProxyArrayWillChange(array, idx, removedCnt, addedCnt) {
-  let eachProxy = EACH_PROXIES.get(array);
-  if (eachProxy !== undefined) {
-    eachProxy.arrayWillChange(array, idx, removedCnt, addedCnt);
-  }
-}
-
-export function eachProxyArrayDidChange(array, idx, removedCnt, addedCnt) {
-  let eachProxy = EACH_PROXIES.get(array);
-  if (eachProxy !== undefined) {
-    eachProxy.arrayDidChange(array, idx, removedCnt, addedCnt);
-  }
 }
 
 class EachProxy {
