@@ -699,7 +699,7 @@ let ClassMixinProps = {
     });
 
     const SingingMixin = Mixin.create({
-      sing(thing){
+      sing(thing) {
         alert(`${this.get('name')} sings: la la la ${thing}`);
       }
     });
