@@ -10,16 +10,16 @@ import { getString } from './lib/string_registry';
 
 const STRING_DASHERIZE_REGEXP = /[ _]/g;
 
-const STRING_DASHERIZE_CACHE = new Cache(1000, key =>
+const STRING_DASHERIZE_CACHE = new Cache<string, string>(1000, key =>
   decamelize(key).replace(STRING_DASHERIZE_REGEXP, '-')
 );
 
 const STRING_CAMELIZE_REGEXP_1 = /(\-|\_|\.|\s)+(.)?/g;
 const STRING_CAMELIZE_REGEXP_2 = /(^|\/)([A-Z])/g;
 
-const CAMELIZE_CACHE = new Cache(1000, key =>
+const CAMELIZE_CACHE = new Cache<string, string>(1000, key =>
   key
-    .replace(STRING_CAMELIZE_REGEXP_1, (match, separator, chr) => (chr ? chr.toUpperCase() : ''))
+    .replace(STRING_CAMELIZE_REGEXP_1, (_match, _separator, chr) => (chr ? chr.toUpperCase() : ''))
     .replace(STRING_CAMELIZE_REGEXP_2, (match /*, separator, chr */) => match.toLowerCase())
 );
 
@@ -27,9 +27,10 @@ const STRING_CLASSIFY_REGEXP_1 = /^(\-|_)+(.)?/;
 const STRING_CLASSIFY_REGEXP_2 = /(.)(\-|\_|\.|\s)+(.)?/g;
 const STRING_CLASSIFY_REGEXP_3 = /(^|\/|\.)([a-z])/g;
 
-const CLASSIFY_CACHE = new Cache(1000, str => {
-  let replace1 = (match, separator, chr) => (chr ? `_${chr.toUpperCase()}` : '');
-  let replace2 = (match, initialChar, separator, chr) =>
+const CLASSIFY_CACHE = new Cache<string, string>(1000, str => {
+  let replace1 = (_match: string, _separator: string, chr: string) =>
+    chr ? `_${chr.toUpperCase()}` : '';
+  let replace2 = (_match: string, initialChar: string, _separator: string, chr: string) =>
     initialChar + (chr ? chr.toUpperCase() : '');
   let parts = str.split('/');
   for (let i = 0; i < parts.length; i++) {
@@ -45,7 +46,7 @@ const CLASSIFY_CACHE = new Cache(1000, str => {
 const STRING_UNDERSCORE_REGEXP_1 = /([a-z\d])([A-Z]+)/g;
 const STRING_UNDERSCORE_REGEXP_2 = /\-|\s+/g;
 
-const UNDERSCORE_CACHE = new Cache(1000, str =>
+const UNDERSCORE_CACHE = new Cache<string, string>(1000, str =>
   str
     .replace(STRING_UNDERSCORE_REGEXP_1, '$1_$2')
     .replace(STRING_UNDERSCORE_REGEXP_2, '_')
@@ -54,13 +55,13 @@ const UNDERSCORE_CACHE = new Cache(1000, str =>
 
 const STRING_CAPITALIZE_REGEXP = /(^|\/)([a-z\u00C0-\u024F])/g;
 
-const CAPITALIZE_CACHE = new Cache(1000, str =>
+const CAPITALIZE_CACHE = new Cache<string, string>(1000, str =>
   str.replace(STRING_CAPITALIZE_REGEXP, (match /*, separator, chr */) => match.toUpperCase())
 );
 
 const STRING_DECAMELIZE_REGEXP = /([a-z\d])([A-Z])/g;
 
-const DECAMELIZE_CACHE = new Cache(1000, str =>
+const DECAMELIZE_CACHE = new Cache<string, string>(1000, str =>
   str.replace(STRING_DECAMELIZE_REGEXP, '$1_$2').toLowerCase()
 );
 
@@ -73,10 +74,10 @@ const DECAMELIZE_CACHE = new Cache(1000, str =>
   @public
 */
 
-function _fmt(str, formats) {
+function _fmt(str: string, formats: any[]) {
   // first, replace any ORDERED replacements.
   let idx = 0; // the current index for non-numerical replacements
-  return str.replace(/%@([0-9]+)?/g, (s, argIndex) => {
+  return str.replace(/%@([0-9]+)?/g, (_s: string, argIndex: string) => {
     let i = argIndex ? parseInt(argIndex, 10) - 1 : idx++;
     let r = i < formats.length ? formats[i] : undefined;
     return typeof r === 'string' ? r : r === null ? '(null)' : r === undefined ? '' : '' + r;
@@ -109,7 +110,7 @@ function _fmt(str, formats) {
   @return {String} formatted string
   @public
 */
-export function loc(str, formats) {
+export function loc(str: string, formats: any[]): string {
   if (!Array.isArray(formats) || arguments.length > 2) {
     formats = Array.prototype.slice.call(arguments, 1);
   }
@@ -140,7 +141,7 @@ export function loc(str, formats) {
   @return {Array} array containing the split strings
   @public
 */
-export function w(str) {
+export function w(str: string): string[] {
   return str.split(/\s+/);
 }
 
@@ -159,7 +160,7 @@ export function w(str) {
   @return {String} the decamelized string.
   @public
 */
-export function decamelize(str) {
+export function decamelize(str: string): string {
   return DECAMELIZE_CACHE.get(str);
 }
 
@@ -179,7 +180,7 @@ export function decamelize(str) {
   @return {String} the dasherized string.
   @public
 */
-export function dasherize(str) {
+export function dasherize(str: string): string {
   return STRING_DASHERIZE_CACHE.get(str);
 }
 
@@ -200,7 +201,7 @@ export function dasherize(str) {
   @return {String} the camelized string.
   @public
 */
-export function camelize(str) {
+export function camelize(str: string): string {
   return CAMELIZE_CACHE.get(str);
 }
 
@@ -220,7 +221,7 @@ export function camelize(str) {
   @return {String} the classified string
   @public
 */
-export function classify(str) {
+export function classify(str: string): string {
   return CLASSIFY_CACHE.get(str);
 }
 
@@ -241,7 +242,7 @@ export function classify(str) {
   @return {String} the underscored string.
   @public
 */
-export function underscore(str) {
+export function underscore(str: string): string {
   return UNDERSCORE_CACHE.get(str);
 }
 
@@ -261,7 +262,7 @@ export function underscore(str) {
   @return {String} The capitalized string.
   @public
 */
-export function capitalize(str) {
+export function capitalize(str: string): string {
   return CAPITALIZE_CACHE.get(str);
 }
 
@@ -296,7 +297,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       configurable: true,
       enumerable: false,
       writeable: true,
-      value: function(...args) {
+      value: function(this: string, ...args: any[]) {
         return loc(this, args);
       },
     },
