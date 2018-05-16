@@ -157,7 +157,7 @@ export default class CurlyComponentManager
   }
 
   prepareArgs(state: DefinitionState, args: Arguments): Option<PreparedArguments> {
-    const { positionalParams } = state.ComponentClass.class;
+    const { positionalParams } = state.ComponentClass.class!;
 
     // early exits
     if (

@@ -1,23 +1,36 @@
-/* globals Proxy */
-import { assert } from '@ember/debug';
 import { EMBER_MODULE_UNIFICATION } from '@ember/canary-features';
-import { DEBUG } from '@glimmer/env';
-import { OWNER, setOwner } from 'ember-owner';
+import { assert } from '@ember/debug';
 import { assign } from '@ember/polyfills';
+import { DEBUG } from '@glimmer/env';
+import { Factory, LookupOptions, Owner, OWNER, setOwner } from 'ember-owner';
 import { dictionary, HAS_NATIVE_PROXY } from 'ember-utils';
+import Registry, { DebugRegistry, Injection } from './registry';
 
-let leakTracking, containers;
+declare global {
+  export function gc(): void;
+}
+
+interface LeakTracking {
+  hasContainers(): boolean;
+  reset(): void;
+}
+
+interface CacheMember {
+  destroy?: () => void;
+}
+
+let leakTracking: LeakTracking;
+let containers: WeakSet<Container>;
 if (DEBUG) {
   // requires v8
   // chrome --js-flags="--allow-natives-syntax --expose-gc"
   // node --allow-natives-syntax --expose-gc
   try {
-    /* globals gc, WeakSet */
     if (typeof gc === 'function') {
       leakTracking = (() => {
         // avoid syntax errors when --allow-natives-syntax not present
         let GetWeakSetValues = new Function('weakSet', 'return %GetWeakSetValues(weakSet, 0)');
-        containers = new WeakSet();
+        containers = new WeakSet<Container>();
         return {
           hasContainers() {
             gc();
@@ -37,6 +50,13 @@ if (DEBUG) {
   }
 }
 
+export interface ContainerOptions {
+  owner?: Owner;
+  cache?: { [key: string]: CacheMember };
+  factoryManagerCache?: { [key: string]: FactoryManager<any, any> };
+  validationCache?: { [key: string]: boolean };
+}
+
 /**
  A container used to instantiate and cache objects.
 
@@ -51,8 +71,17 @@ if (DEBUG) {
  @class Container
  */
 export default class Container {
-  constructor(registry, options = {}) {
-    this.registry = registry;
+  static _leakTracking: LeakTracking;
+
+  readonly owner: Owner | null;
+  readonly registry: Registry & DebugRegistry;
+  cache: { [key: string]: CacheMember };
+  factoryManagerCache!: { [key: string]: FactoryManager<any, any> };
+  readonly validationCache!: { [key: string]: boolean };
+  isDestroyed: boolean;
+
+  constructor(registry: Registry, options: ContainerOptions = {}) {
+    this.registry = registry as Registry & DebugRegistry;
     this.owner = options.owner || null;
     this.cache = dictionary(options.cache || null);
     this.factoryManagerCache = dictionary(options.factoryManagerCache || null);
@@ -117,7 +146,7 @@ export default class Container {
    @param {String} [options.source] The fullname of the request source (used for local lookup)
    @return {any}
    */
-  lookup(fullName, options) {
+  lookup(fullName: string, options: LookupOptions): any {
     assert('expected container not to be destroyed', !this.isDestroyed);
     assert('fullName must be a proper full name', this.registry.isValidFullName(fullName));
     return lookup(this, this.registry.normalize(fullName), options);
@@ -129,7 +158,7 @@ export default class Container {
     @private
    @method destroy
    */
-  destroy() {
+  destroy(): void {
     resetCache(this);
     this.isDestroyed = true;
   }
@@ -141,7 +170,7 @@ export default class Container {
    @method reset
    @param {String} fullName optional key to reset; if missing, resets everything
   */
-  reset(fullName) {
+  reset(fullName: string) {
     if (this.isDestroyed) return;
     if (fullName === undefined) {
       resetCache(this);
@@ -173,7 +202,7 @@ export default class Container {
    @param {String} [options.source] The fullname of the request source (used for local lookup)
    @return {any}
    */
-  factoryFor(fullName, options = {}) {
+  factoryFor<T, C>(fullName: string, options: LookupOptions = {}): Factory<T, C> | undefined {
     assert('expected container not to be destroyed', !this.isDestroyed);
     let normalizedName = this.registry.normalize(fullName);
 
@@ -190,22 +219,22 @@ export default class Container {
       }
     }
 
-    return factoryFor(this, normalizedName, fullName);
+    return factoryFor<T, C>(this, normalizedName, fullName) as Factory<T, C> | undefined;
   }
 }
 
 if (DEBUG) {
-  Container._leakTracking = leakTracking;
+  Container._leakTracking = leakTracking!;
 }
 
 /*
  * Wrap a factory manager in a proxy which will not permit properties to be
  * set on the manager.
  */
-function wrapManagerInDeprecationProxy(manager) {
+function wrapManagerInDeprecationProxy<T, C>(manager: FactoryManager<T, C>) {
   if (HAS_NATIVE_PROXY) {
     let validator = {
-      set(obj, prop) {
+      set(_obj: T, prop: keyof T) {
         throw new Error(
           `You attempted to set "${prop}" on a factory manager created by container#factoryFor. A factory manager is a read-only construct.`
         );
@@ -218,27 +247,27 @@ function wrapManagerInDeprecationProxy(manager) {
     let m = manager;
     let proxiedManager = {
       class: m.class,
-      create(props) {
+      create(props?: { [prop: string]: any }) {
         return m.create(props);
       },
     };
 
-    let proxy = new Proxy(proxiedManager, validator);
+    let proxy = new Proxy(proxiedManager, validator as any);
     FACTORY_FOR.set(proxy, manager);
   }
 
   return manager;
 }
 
-function isSingleton(container, fullName) {
+function isSingleton(container: Container, fullName: string) {
   return container.registry.getOption(fullName, 'singleton') !== false;
 }
 
-function isInstantiatable(container, fullName) {
+function isInstantiatable(container: Container, fullName: string) {
   return container.registry.getOption(fullName, 'instantiate') !== false;
 }
 
-function lookup(container, fullName, options = {}) {
+function lookup(container: Container, fullName: string, options: LookupOptions = {}) {
   assert(
     'EMBER_MODULE_UNIFICATION must be enabled to pass a namespace option to lookup',
     EMBER_MODULE_UNIFICATION || !options.namespace
@@ -263,14 +292,14 @@ function lookup(container, fullName, options = {}) {
   return instantiateFactory(container, normalizedName, fullName, options);
 }
 
-function factoryFor(container, normalizedName, fullName) {
+function factoryFor<T, C>(container: Container, normalizedName: string, fullName: string) {
   let cached = container.factoryManagerCache[normalizedName];
 
   if (cached !== undefined) {
     return cached;
   }
 
-  let factory = container.registry.resolve(normalizedName);
+  let factory = container.registry.resolve(normalizedName) as DebugFactory<T, C> | undefined;
 
   if (factory === undefined) {
     return;
@@ -290,7 +319,16 @@ function factoryFor(container, normalizedName, fullName) {
   return manager;
 }
 
-function isSingletonClass(container, fullName, { instantiate, singleton }) {
+interface FactoryOptions {
+  instantiate?: boolean;
+  singleton?: boolean;
+}
+
+function isSingletonClass(
+  container: Container,
+  fullName: string,
+  { instantiate, singleton }: FactoryOptions
+) {
   return (
     singleton !== false &&
     !instantiate &&
@@ -299,7 +337,11 @@ function isSingletonClass(container, fullName, { instantiate, singleton }) {
   );
 }
 
-function isSingletonInstance(container, fullName, { instantiate, singleton }) {
+function isSingletonInstance(
+  container: Container,
+  fullName: string,
+  { instantiate, singleton }: FactoryOptions
+) {
   return (
     singleton !== false &&
     instantiate !== false &&
@@ -308,7 +350,11 @@ function isSingletonInstance(container, fullName, { instantiate, singleton }) {
   );
 }
 
-function isFactoryClass(container, fullname, { instantiate, singleton }) {
+function isFactoryClass(
+  container: Container,
+  fullname: string,
+  { instantiate, singleton }: FactoryOptions
+) {
   return (
     instantiate === false &&
     (singleton === false || !isSingleton(container, fullname)) &&
@@ -316,7 +362,11 @@ function isFactoryClass(container, fullname, { instantiate, singleton }) {
   );
 }
 
-function isFactoryInstance(container, fullName, { instantiate, singleton }) {
+function isFactoryInstance(
+  container: Container,
+  fullName: string,
+  { instantiate, singleton }: FactoryOptions
+) {
   return (
     instantiate !== false &&
     (singleton !== false || isSingleton(container, fullName)) &&
@@ -324,7 +374,12 @@ function isFactoryInstance(container, fullName, { instantiate, singleton }) {
   );
 }
 
-function instantiateFactory(container, normalizedName, fullName, options) {
+function instantiateFactory(
+  container: Container,
+  normalizedName: string,
+  fullName: string,
+  options: FactoryOptions
+) {
   let factoryManager = factoryFor(container, normalizedName, fullName);
 
   if (factoryManager === undefined) {
@@ -353,7 +408,16 @@ function instantiateFactory(container, normalizedName, fullName, options) {
   throw new Error('Could not create factory');
 }
 
-function processInjections(container, injections, result) {
+interface BuildInjectionsResult {
+  injections: { [key: string]: object } | undefined;
+  isDynamic: boolean;
+}
+
+function processInjections(
+  container: Container,
+  injections: Injection[],
+  result: BuildInjectionsResult
+) {
   if (DEBUG) {
     container.registry.validateInjections(injections);
   }
@@ -378,10 +442,14 @@ function processInjections(container, injections, result) {
   }
 }
 
-function buildInjections(container, typeInjections, injections) {
-  let result = {
+function buildInjections(
+  container: Container,
+  typeInjections: Injection[],
+  injections: Injection[]
+): BuildInjectionsResult {
+  let result: BuildInjectionsResult = {
     injections: undefined,
-    isDyanmic: false,
+    isDynamic: false,
   };
 
   if (typeInjections !== undefined) {
@@ -395,7 +463,7 @@ function buildInjections(container, typeInjections, injections) {
   return result;
 }
 
-function injectionsFor(container, fullName) {
+function injectionsFor(container: Container, fullName: string) {
   let registry = container.registry;
   let [type] = fullName.split(':');
 
@@ -405,7 +473,7 @@ function injectionsFor(container, fullName) {
   return buildInjections(container, typeInjections, injections);
 }
 
-function destroyDestroyables(container) {
+function destroyDestroyables(container: Container): void {
   let cache = container.cache;
   let keys = Object.keys(cache);
 
@@ -419,13 +487,13 @@ function destroyDestroyables(container) {
   }
 }
 
-function resetCache(container) {
+function resetCache(container: Container) {
   destroyDestroyables(container);
   container.cache = dictionary(null);
   container.factoryManagerCache = dictionary(null);
 }
 
-function resetMember(container, fullName) {
+function resetMember(container: Container, fullName: string) {
   let member = container.cache[fullName];
 
   delete container.factoryManagerCache[fullName];
@@ -439,12 +507,37 @@ function resetMember(container, fullName) {
   }
 }
 
-export const FACTORY_FOR = new WeakMap();
-class FactoryManager {
-  constructor(container, factory, fullName, normalizedName) {
+export interface LazyInjection {
+  namespace: string | undefined;
+  source: string | undefined;
+  specifier: string;
+}
+
+declare interface DebugFactory<T, C> extends Factory<T, C> {
+  _onLookup?: (fullName: string) => void;
+  _initFactory?: (factoryManager: FactoryManager<T, C>) => void;
+  _lazyInjections(): { [key: string]: LazyInjection };
+}
+
+export const FACTORY_FOR = new WeakMap<any, FactoryManager<any, any>>();
+class FactoryManager<T, C> {
+  readonly container: Container;
+  readonly owner: Owner | null;
+  readonly class: Factory<T, C> & DebugFactory<T, C>;
+  readonly fullName: string;
+  readonly normalizedName: string;
+  private madeToString: string | undefined;
+  injections: { [key: string]: object } | undefined;
+
+  constructor(
+    container: Container,
+    factory: Factory<T, C>,
+    fullName: string,
+    normalizedName: string
+  ) {
     this.container = container;
     this.owner = container.owner;
-    this.class = factory;
+    this.class = factory as Factory<T, C> & DebugFactory<T, C>;
     this.fullName = fullName;
     this.normalizedName = normalizedName;
     this.madeToString = undefined;
@@ -452,7 +545,7 @@ class FactoryManager {
     FACTORY_FOR.set(this, this);
   }
 
-  toString() {
+  toString(): string {
     if (this.madeToString === undefined) {
       this.madeToString = this.container.registry.makeToString(this.class, this.fullName);
     }
@@ -460,7 +553,7 @@ class FactoryManager {
     return this.madeToString;
   }
 
-  create(options) {
+  create(options?: { [prop: string]: any }) {
     let injectionsCache = this.injections;
     if (injectionsCache === undefined) {
       let { injections, isDynamic } = injectionsFor(this.container, this.normalizedName);
@@ -517,7 +610,7 @@ class FactoryManager {
         // avoid mutating `props` here since they are the cached injections
         props = assign({}, props);
       }
-      setOwner(props, this.owner);
+      setOwner(props, this.owner!);
     }
 
     let instance = this.class.create(props);
