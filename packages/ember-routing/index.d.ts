@@ -37,7 +37,7 @@ export const HistoryLocation: {
   replaceURL(path: string): void;
   getState(): any;
   pushState(path: string): void;
-  replaceState(paht: string): void;
+  replaceState(path: string): void;
   onUpdateURL(callback: ()=>any): void;
   formatURL(url: string): string;
   willDestroy(): void;
