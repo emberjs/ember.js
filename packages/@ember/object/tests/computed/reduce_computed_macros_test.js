@@ -1297,6 +1297,56 @@ moduleFor(
       );
     }
 
+    ['@test array should update if items to be sorted is replaced when sort properties array is empty'](
+      assert
+    ) {
+      var o = EmberObject.extend({
+        sortedItems: sort('items', 'itemSorting'),
+      }).create({
+        itemSorting: emberA([]),
+        items: emberA([6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5]),
+      });
+
+      assert.deepEqual(
+        o.get('sortedItems'),
+        [6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5],
+        'array is not changed'
+      );
+
+      set(o, 'items', emberA([5, 6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4]));
+
+      assert.deepEqual(
+        o.get('sortedItems'),
+        [5, 6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4],
+        'array was updated'
+      );
+    }
+
+    ['@test array should update if items to be sorted is mutated when sort properties array is empty'](
+      assert
+    ) {
+      var o = EmberObject.extend({
+        sortedItems: sort('items', 'itemSorting'),
+      }).create({
+        itemSorting: emberA([]),
+        items: emberA([6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5]),
+      });
+
+      assert.deepEqual(
+        o.get('sortedItems'),
+        [6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5],
+        'array is not changed'
+      );
+
+      o.get('items').pushObject(12);
+
+      assert.deepEqual(
+        o.get('sortedItems'),
+        [6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5, 12],
+        'array was updated'
+      );
+    }
+
     ['@test array observers do not leak'](assert) {
       let daria = { name: 'Daria' };
       let jane = { name: 'Jane' };
