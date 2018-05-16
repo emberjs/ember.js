@@ -496,7 +496,12 @@ export class Meta {
     }
   }
 
-  addToListeners(eventName: string, target: object, method: Function | string, once: boolean) {
+  addToListeners(
+    eventName: string,
+    target: object | null,
+    method: Function | string,
+    once: boolean
+  ) {
     if (this._listeners === undefined) {
       this._listeners = [];
     }

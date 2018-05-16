@@ -4,7 +4,8 @@ import EmberError from '@ember/error';
 import { get } from './property_get';
 import { set } from './property_set';
 import { Descriptor, defineProperty } from './properties';
-import { ComputedProperty, getCacheFor } from './computed';
+import { ComputedProperty } from './computed';
+import { getCacheFor } from './computed_cache';
 import { meta as metaFor } from 'ember-meta';
 import { addDependentKeys, removeDependentKeys } from './dependent_keys';
 

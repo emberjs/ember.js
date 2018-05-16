@@ -1,5 +1,5 @@
 import { descriptorFor, meta as metaFor, peekMeta } from 'ember-meta';
-import { getCachedValueFor } from './computed';
+import { getCachedValueFor } from './computed_cache';
 import { eachProxyFor } from './each_proxy';
 import { get } from './property_get';
 import { unwatchKey, watchKey } from './watch_key';

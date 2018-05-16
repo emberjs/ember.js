@@ -6,7 +6,7 @@ import ObserverSet from './observer_set';
 import { DEBUG } from '@glimmer/env';
 import { deprecate } from '@ember/debug';
 import { assertNotRendered } from './transaction';
-import { changeEvent } from './observer';
+import changeEvent from './change_event';
 
 /**
  @module ember
