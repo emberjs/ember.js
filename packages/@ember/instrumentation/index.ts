@@ -1,8 +1,35 @@
 /* eslint no-console:off */
 /* global console */
 
-import { ENV } from 'ember-environment';
 import { EMBER_IMPROVED_INSTRUMENTATION } from '@ember/canary-features';
+import { ENV } from 'ember-environment';
+
+export interface Listener<T> {
+  before: (name: string, timestamp: number, payload: object) => T;
+  after: (name: string, timestamp: number, payload: object, beforeValue: T) => void;
+}
+
+export interface Subscriber<T> {
+  pattern: string;
+  regex: RegExp;
+  object: Listener<T>;
+}
+
+export interface PayloadWithException {
+  exception?: any;
+}
+
+export interface StructuredProfilePayload {
+  object: string | object;
+}
+
+interface MaybePerf {
+  now?: () => number;
+  mozNow?: () => number;
+  webkitNow?: () => number;
+  msNow?: () => number;
+  oNow?: () => number;
+}
 
 /**
 @module @ember/instrumentation
@@ -59,11 +86,11 @@ import { EMBER_IMPROVED_INSTRUMENTATION } from '@ember/canary-features';
   @static
   @private
 */
-export let subscribers = [];
-let cache = {};
+export let subscribers: Subscriber<any>[] = [];
+let cache: { [key: string]: Listener<any>[] } = {};
 
-function populateListeners(name) {
-  let listeners = [];
+function populateListeners(name: string) {
+  let listeners: Listener<any>[] = [];
   let subscriber;
 
   for (let i = 0; i < subscribers.length; i++) {
@@ -77,8 +104,8 @@ function populateListeners(name) {
   return listeners;
 }
 
-const time = (() => {
-  let perf = 'undefined' !== typeof window ? window.performance || {} : {};
+const time = ((): (() => number) => {
+  let perf: MaybePerf = 'undefined' !== typeof window ? window.performance || {} : {};
   let fn = perf.now || perf.mozNow || perf.webkitNow || perf.msNow || perf.oNow;
   // fn.bind will be available in all the browsers that support the advanced window.performance... ;-)
   return fn
@@ -95,21 +122,39 @@ const time = (() => {
   @for @ember/instrumentation
   @static
   @param {String} [name] Namespaced event name.
-  @param {Object} _payload
+  @param {Object} payload
   @param {Function} callback Function that you're instrumenting.
   @param {Object} binding Context that instrument function is called with.
   @private
 */
-export function instrument(name, _payload, callback, binding) {
-  if (arguments.length <= 3 && typeof _payload === 'function') {
-    binding = callback;
-    callback = _payload;
-    _payload = undefined;
+export function instrument<T extends object>(name: string, callback: () => T, binding: object): T;
+export function instrument<TPayload extends object>(
+  name: string,
+  payload: object,
+  callback: () => TPayload,
+  binding: object
+): TPayload;
+export function instrument<TPayload extends object>(
+  name: string,
+  p1: (() => TPayload) | TPayload,
+  p2: TPayload | (() => TPayload),
+  p3?: object
+): TPayload {
+  let payload: TPayload;
+  let callback: () => TPayload;
+  let binding: object;
+  if (arguments.length <= 3 && typeof p1 === 'function') {
+    payload = {} as TPayload;
+    callback = p1;
+    binding = p2;
+  } else {
+    payload = (p1 || {}) as TPayload;
+    callback = p2 as () => TPayload;
+    binding = p3 as TPayload;
   }
   if (subscribers.length === 0) {
     return callback.call(binding);
   }
-  let payload = _payload || {};
   let finalizer = _instrumentStart(name, () => payload);
 
   if (finalizer) {
@@ -119,20 +164,26 @@ export function instrument(name, _payload, callback, binding) {
   }
 }
 
-let flaggedInstrument;
+let flaggedInstrument: <T, TPayload>(name: string, payload: TPayload, callback: () => T) => T;
 if (EMBER_IMPROVED_INSTRUMENTATION) {
-  flaggedInstrument = instrument;
+  flaggedInstrument = instrument as typeof flaggedInstrument;
 } else {
-  flaggedInstrument = (name, payload, callback) => callback();
+  flaggedInstrument = <T, TPayload>(_name: string, _payload: TPayload, callback: () => T) =>
+    callback();
 }
 export { flaggedInstrument };
 
-function withFinalizer(callback, finalizer, payload, binding) {
-  let result;
+function withFinalizer<T extends object>(
+  callback: () => T,
+  finalizer: () => void,
+  payload: T,
+  binding: object
+): T & PayloadWithException {
+  let result: T;
   try {
     result = callback.call(binding);
   } catch (e) {
-    payload.exception = e;
+    (payload as PayloadWithException).exception = e;
     result = payload;
   } finally {
     finalizer();
@@ -143,7 +194,17 @@ function withFinalizer(callback, finalizer, payload, binding) {
 function NOOP() {}
 
 // private for now
-export function _instrumentStart(name, _payload, _payloadParam) {
+export function _instrumentStart<TPayloadParam>(
+  name: string,
+  _payload: (_payloadParam: TPayloadParam) => object,
+  _payloadParam: TPayloadParam
+): () => void;
+export function _instrumentStart<TPayloadParam>(name: string, _payload: () => object): () => void;
+export function _instrumentStart<TPayloadParam>(
+  name: string,
+  _payload: (_payloadParam: TPayloadParam) => object,
+  _payloadParam?: TPayloadParam
+): () => void {
   if (subscribers.length === 0) {
     return NOOP;
   }
@@ -158,25 +219,27 @@ export function _instrumentStart(name, _payload, _payloadParam) {
     return NOOP;
   }
 
-  let payload = _payload(_payloadParam);
+  let payload = _payload(_payloadParam!);
 
   let STRUCTURED_PROFILE = ENV.STRUCTURED_PROFILE;
-  let timeName;
+  let timeName: string;
   if (STRUCTURED_PROFILE) {
-    timeName = `${name}: ${payload.object}`;
+    timeName = `${name}: ${(payload as StructuredProfilePayload).object}`;
     console.time(timeName);
   }
 
   let beforeValues = new Array(listeners.length);
-  let i, listener;
+  let i: number;
+  let listener: Listener<any>;
   let timestamp = time();
   for (i = 0; i < listeners.length; i++) {
     listener = listeners[i];
     beforeValues[i] = listener.before(name, timestamp, payload);
   }
 
-  return function _instrumentEnd() {
-    let i, listener;
+  return function _instrumentEnd(): void {
+    let i: number;
+    let listener: Listener<any>;
     let timestamp = time();
     for (i = 0; i < listeners.length; i++) {
       listener = listeners[i];
@@ -204,21 +267,21 @@ export function _instrumentStart(name, _payload, _payloadParam) {
   @return {Subscriber}
   @private
 */
-export function subscribe(pattern, object) {
+export function subscribe<T>(pattern: string, object: Listener<T>): Subscriber<T> {
   let paths = pattern.split('.');
   let path;
-  let regex = [];
+  let regexes: string[] = [];
 
   for (let i = 0; i < paths.length; i++) {
     path = paths[i];
     if (path === '*') {
-      regex.push('[^\\.]*');
+      regexes.push('[^\\.]*');
     } else {
-      regex.push(path);
+      regexes.push(path);
     }
   }
 
-  regex = regex.join('\\.');
+  let regex = regexes.join('\\.');
   regex = `${regex}(\\..*)?`;
 
   let subscriber = {
@@ -243,8 +306,8 @@ export function subscribe(pattern, object) {
   @param {Object} [subscriber]
   @private
 */
-export function unsubscribe(subscriber) {
-  let index;
+export function unsubscribe(subscriber: Subscriber<any>): void {
+  let index = 0;
 
   for (let i = 0; i < subscribers.length; i++) {
     if (subscribers[i] === subscriber) {
@@ -264,7 +327,7 @@ export function unsubscribe(subscriber) {
   @static
   @private
 */
-export function reset() {
+export function reset(): void {
   subscribers.length = 0;
   cache = {};
 }
