@@ -65,6 +65,8 @@ export const ENV = {
 
   RAISE_ON_DEPRECATION: false,
 
+  STRUCTURED_PROFILE: false,
+
   /**
     Whether to insert a `<div class="ember-view" />` wrapper around the
     application template. See RFC #280.
