@@ -104,7 +104,7 @@
     "broccoli-rollup": "^2.1.0",
     "broccoli-source": "^1.1.0",
     "broccoli-string-replace": "^0.1.2",
-    "broccoli-typescript-compiler": "^2.2.0",
+    "broccoli-typescript-compiler": "^2.3.0",
     "broccoli-uglify-js": "^0.2.0",
     "broccoli-uglify-sourcemap": "^2.0.2",
     "common-tags": "^1.7.2",
