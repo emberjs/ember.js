@@ -3,4 +3,3 @@ node-tests/fixtures/**/*.js
 docs/
 dist/
 tmp/
-**/*.ts

@@ -6,7 +6,7 @@ export {
   helper,
   Component,
   LinkComponent,
-  InteractiveRender,
+  InteractiveRenderer,
   InertRenderer,
   htmlSafe,
   SafeString,
