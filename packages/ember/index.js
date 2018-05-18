@@ -106,6 +106,7 @@ import {
   TextArea,
   isSerializationFirstNode,
 } from 'ember-glimmer';
+// eslint-disable-next-line import/no-unresolved
 import VERSION from './version';
 import * as views from 'ember-views';
 import * as routing from 'ember-routing';

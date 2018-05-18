@@ -1,14 +1,17 @@
+const path = require('path');
+
 module.exports = {
   root: true,
   extends: [
     'eslint:recommended',
     'prettier',
+    'plugin:import/errors',
   ],
   plugins: [
     'ember-internal',
     'prettier',
+    'import',
   ],
-
   rules: {
     'semi': 'error',
     'no-unused-vars': 'error',
@@ -16,7 +19,37 @@ module.exports = {
     'prettier/prettier': 'error',
   },
 
+  settings: {
+    'import/core-modules': [
+      'require',
+      'backburner',
+      'router',
+      'ember/version',
+      'node-module',
+    ],
+    'import/parsers': {
+      'typescript-eslint-parser': ['.ts'],
+    },
+    'import/resolver': {
+      node: {
+        extensions: [ '.js', '.ts' ],
+        paths: [
+          path.resolve('./packages/'),
+        ]
+      }
+    }
+  },
+
   overrides: [
+    {
+      files: [ '**/*.ts' ],
+
+      parser: 'typescript-eslint-parser',
+
+      parserOptions: {
+        sourceType: 'module',
+      }
+    },
     {
       files: [ 'packages/**/*.js' ],
 
