@@ -897,6 +897,15 @@ const LinkComponent = EmberComponent.extend({
       this.set('models', []);
     }
   },
+
+  handleEvent() {
+    let propagate = this._super(...arguments);
+
+    if (this.bubbles === false) {
+      return this.bubbles;
+    }
+    return propagate;
+  },
 });
 
 LinkComponent.toString = () => '@ember/routing/link-component';
