@@ -3,10 +3,10 @@
 */
 
 import { combine, CONSTANT_TAG, DirtyableTag, UpdatableTag } from '@glimmer/reference';
+import { meta } from 'ember-meta';
 import {
   get,
   set,
-  meta,
   addObserver,
   removeObserver,
   notifyPropertyChange,

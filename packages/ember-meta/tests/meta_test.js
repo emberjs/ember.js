@@ -1,5 +1,5 @@
+import { AbstractTestCase, moduleFor } from 'internal-test-helpers';
 import { meta } from '..';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
   'Ember.meta',
