@@ -6,7 +6,9 @@ const emberNew = blueprintHelpers.emberNew;
 const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
 const setupPodConfig = blueprintHelpers.setupPodConfig;
 
+const expectError = require('../helpers/expect-error');
 const chai = require('ember-cli-blueprint-test-helpers/chai');
+const fs = require('fs-extra');
 const expect = chai.expect;
 
 describe('Blueprint: controller', function() {
@@ -154,6 +156,120 @@ describe('Blueprint: controller', function() {
         expect(_file('app/controllers/foo/bar.js')).to.not.exist;
 
         expect(_file('tests/unit/controllers/foo/bar-test.js')).to.not.exist;
+      });
+    });
+  });
+
+  describe('in app - module unification', function() {
+    beforeEach(function() {
+      return emberNew().then(() => fs.ensureDirSync('src'));
+    });
+
+    it('controller foo', function() {
+      return emberGenerateDestroy(['controller', 'foo'], _file => {
+        expect(_file('src/ui/routes/foo/controller.js'))
+          .to.contain("import Controller from '@ember/controller';")
+          .to.contain('export default Controller.extend({\n});');
+
+        expect(_file('src/ui/routes/foo/controller-test.js'))
+          .to.contain("import { moduleFor, test } from 'ember-qunit';")
+          .to.contain("moduleFor('controller:foo'");
+      });
+    });
+
+    it('controller foo/bar', function() {
+      return emberGenerateDestroy(['controller', 'foo/bar'], _file => {
+        expect(_file('src/ui/routes/foo/bar/controller.js'))
+          .to.contain("import Controller from '@ember/controller';")
+          .to.contain('export default Controller.extend({\n});');
+
+        expect(_file('src/ui/routes/foo/bar/controller-test.js'))
+          .to.contain("import { moduleFor, test } from 'ember-qunit';")
+          .to.contain("moduleFor('controller:foo/bar'");
+      });
+    });
+
+    describe('with podModulePrefix', function() {
+      beforeEach(function() {
+        setupPodConfig({ podModulePrefix: true });
+      });
+
+      it('controller foo --pod podModulePrefix', function() {
+        return expectError(
+          emberGenerateDestroy(['controller', 'foo', '--pod']),
+          "Pods aren't supported within a module unification app"
+        );
+      });
+    });
+  });
+
+  describe('in addon - module unification', function() {
+    beforeEach(function() {
+      return emberNew({ target: 'addon' }).then(() => fs.ensureDirSync('src'));
+    });
+
+    it('controller foo', function() {
+      return emberGenerateDestroy(['controller', 'foo'], _file => {
+        expect(_file('src/ui/routes/foo/controller.js'))
+          .to.contain("import Controller from '@ember/controller';")
+          .to.contain('export default Controller.extend({\n});');
+
+        expect(_file('src/ui/routes/foo/controller-test.js'))
+          .to.contain("import { moduleFor, test } from 'ember-qunit';")
+          .to.contain("moduleFor('controller:foo'");
+
+        expect(_file('app/controllers/foo.js')).to.not.exist;
+      });
+    });
+
+    it('controller foo/bar', function() {
+      return emberGenerateDestroy(['controller', 'foo/bar'], _file => {
+        expect(_file('src/ui/routes/foo/bar/controller.js'))
+          .to.contain("import Controller from '@ember/controller';")
+          .to.contain('export default Controller.extend({\n});');
+
+        expect(_file('src/ui/routes/foo/bar/controller-test.js'))
+          .to.contain("import { moduleFor, test } from 'ember-qunit';")
+          .to.contain("moduleFor('controller:foo/bar'");
+
+        expect(_file('app/controllers/foo/bar.js')).to.not.exist;
+      });
+    });
+
+    it('controller foo --dummy', function() {
+      return emberGenerateDestroy(['controller', 'foo', '--dummy'], _file => {
+        expect(_file('tests/dummy/src/ui/routes/foo/controller.js'))
+          .to.contain("import Controller from '@ember/controller';")
+          .to.contain('export default Controller.extend({\n});');
+
+        expect(_file('src/ui/routes/foo/controller.js')).to.not.exist;
+
+        expect(_file('src/ui/routes/foo/controller-test.js')).to.not.exist;
+      });
+    });
+
+    it('controller foo/bar --dummy', function() {
+      return emberGenerateDestroy(['controller', 'foo/bar', '--dummy'], _file => {
+        expect(_file('tests/dummy/src/ui/routes/foo/bar/controller.js'))
+          .to.contain("import Controller from '@ember/controller';")
+          .to.contain('export default Controller.extend({\n});');
+
+        expect(_file('src/ui/routes/foo/bar/controller.js')).to.not.exist;
+
+        expect(_file('src/ui/routes/foo/bar/controller-test.js')).to.not.exist;
+      });
+    });
+
+    describe('with podModulePrefix', function() {
+      beforeEach(function() {
+        setupPodConfig({ podModulePrefix: true });
+      });
+
+      it('controller foo --pod podModulePrefix', function() {
+        return expectError(
+          emberGenerateDestroy(['controller', 'foo', '--pod']),
+          "Pods aren't supported within a module unification app"
+        );
       });
     });
   });
