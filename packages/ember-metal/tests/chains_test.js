@@ -6,12 +6,11 @@ import {
   defineProperty,
   computed,
   notifyPropertyChange,
-  peekMeta,
-  meta,
   watch,
   unwatch,
   watcherCount,
 } from '..';
+import { meta, peekMeta } from 'ember-meta';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(

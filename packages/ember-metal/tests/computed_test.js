@@ -9,8 +9,8 @@ import {
   set,
   isWatching,
   addObserver,
-  meta as metaFor,
 } from '..';
+import { meta as metaFor } from 'ember-meta';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 let obj, count;

@@ -2,7 +2,6 @@ export { default as computed, ComputedProperty, _globalsComputed } from './lib/c
 export { getCacheFor, getCachedValueFor, peekCacheFor } from './lib/computed_cache';
 export { default as alias } from './lib/alias';
 export { deprecateProperty } from './lib/deprecate_property';
-export { descriptorFor, meta, peekMeta, deleteMeta } from 'ember-meta';
 export { PROXY_CONTENT, _getPath, get, getWithDefault } from './lib/property_get';
 export { set, trySet } from './lib/property_set';
 export {

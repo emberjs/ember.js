@@ -3,12 +3,12 @@ import {
   defineProperty,
   get,
   set,
-  meta,
   isWatching,
   addObserver,
   removeObserver,
   tagFor,
 } from '..';
+import { meta } from 'ember-meta';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 let obj, count;

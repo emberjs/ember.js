@@ -13,18 +13,15 @@ import {
   isInternalSymbol,
 } from 'ember-utils';
 import { schedule } from '@ember/runloop';
+import { descriptorFor, meta, peekMeta, deleteMeta } from 'ember-meta';
 import {
   PROXY_CONTENT,
-  descriptorFor,
-  meta,
-  peekMeta,
   finishChains,
   sendEvent,
   Mixin,
   defineProperty,
   ComputedProperty,
   InjectedProperty,
-  deleteMeta,
   descriptor,
   classToString,
 } from 'ember-metal';
