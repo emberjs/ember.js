@@ -5,9 +5,11 @@ const setupTestHooks = blueprintHelpers.setupTestHooks;
 const emberNew = blueprintHelpers.emberNew;
 const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
 const setupPodConfig = blueprintHelpers.setupPodConfig;
+const expectError = require('../helpers/expect-error');
 
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
+const fs = require('fs-extra');
 
 describe('Blueprint: template', function() {
   setupTestHooks(this);
@@ -113,6 +115,67 @@ describe('Blueprint: template', function() {
     it('template foo/bar --in-repo-addon=my-addon', function() {
       return emberGenerateDestroy(['template', 'foo/bar', '--in-repo-addon=my-addon'], _file => {
         expect(_file('lib/my-addon/addon/templates/foo/bar.hbs')).to.equal('');
+      });
+    });
+  });
+
+  describe('in app - module unification', function() {
+    beforeEach(function() {
+      return emberNew().then(() => fs.ensureDirSync('src'));
+    });
+
+    it('template foo', function() {
+      return emberGenerateDestroy(['template', 'foo'], _file => {
+        expect(_file('src/ui/routes/foo/template.hbs')).to.equal('');
+      });
+    });
+
+    it('template foo/bar', function() {
+      return emberGenerateDestroy(['template', 'foo/bar'], _file => {
+        expect(_file('src/ui/routes/foo/bar/template.hbs')).to.equal('');
+      });
+    });
+  });
+
+  describe('with usePods - module unification', function() {
+    beforeEach(function() {
+      return emberNew().then(() => fs.ensureDirSync('src'));
+    });
+
+    it('shows an error', function() {
+      return expectError(
+        emberGenerateDestroy(['template', 'foo', '--pod']),
+        "Pods aren't supported within a module unification app"
+      );
+    });
+  });
+
+  describe('in addon - module unification', function() {
+    beforeEach(function() {
+      return emberNew({ target: 'addon' }).then(() => fs.ensureDirSync('src'));
+    });
+
+    it('template foo', function() {
+      return emberGenerateDestroy(['template', 'foo'], _file => {
+        expect(_file('src/ui/routes/foo/template.hbs')).to.equal('');
+      });
+    });
+
+    it('template foo/bar', function() {
+      return emberGenerateDestroy(['template', 'foo/bar'], _file => {
+        expect(_file('src/ui/routes/foo/bar/template.hbs')).to.equal('');
+      });
+    });
+
+    it('template foo --dummy', function() {
+      return emberGenerateDestroy(['template', 'foo', '--dummy'], _file => {
+        expect(_file('tests/dummy/src/ui/routes/foo/template.hbs')).to.equal('');
+      });
+    });
+
+    it('template foo/bar --dummy', function() {
+      return emberGenerateDestroy(['template', 'foo/bar', '--dummy'], _file => {
+        expect(_file('tests/dummy/src/ui/routes/foo/bar/template.hbs')).to.equal('');
       });
     });
   });
