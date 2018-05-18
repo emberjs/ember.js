@@ -95,56 +95,51 @@ export function get(obj, keyName) {
   let isFunction = type === 'function';
   let isObjectLike = isObject || isFunction;
 
-  let descriptor;
+  if (!isObjectLike) {
+    return obj[keyName];
+  }
+
+  if (EMBER_METAL_TRACKED_PROPERTIES) {
+    let tracker = getCurrentTracker();
+    if (tracker) tracker.add(tagForProperty(obj, keyName));
+  }
+
+  let descriptor = descriptorFor(obj, keyName);
   let value;
-
-  if (isObjectLike) {
-    if (EMBER_METAL_TRACKED_PROPERTIES) {
-      let tracker = getCurrentTracker();
-      if (tracker) tracker.add(tagForProperty(obj, keyName));
+  if (descriptor === undefined) {
+    if (DEBUG && HAS_NATIVE_PROXY) {
+      value = getPossibleMandatoryProxyValue(obj, keyName);
+    } else {
+      value = obj[keyName];
     }
 
-    descriptor = descriptorFor(obj, keyName);
-
-    if (descriptor === undefined) {
-      if (DEBUG && HAS_NATIVE_PROXY) {
-        value = getPossibleMandatoryProxyValue(obj, keyName);
-      } else {
-        value = obj[keyName];
-      }
-
-      if (isDescriptor(value)) {
-        deprecate(
-          `[DEPRECATED] computed property '${keyName}' was not set on object '${obj &&
-            obj.toString &&
-            obj.toString()}' via 'defineProperty'`,
-          false,
-          {
-            id: 'ember-meta.descriptor-on-object',
-            until: '3.5.0',
-            url:
-              'https://emberjs.com/deprecations/v3.x#toc_use-defineProperty-to-define-computed-properties',
-          }
-        );
-        descriptor = value;
-      }
+    if (isDescriptor(value)) {
+      deprecate(
+        `[DEPRECATED] computed property '${keyName}' was not set on object '${obj &&
+          obj.toString &&
+          obj.toString()}' via 'defineProperty'`,
+        false,
+        {
+          id: 'ember-meta.descriptor-on-object',
+          until: '3.5.0',
+          url:
+            'https://emberjs.com/deprecations/v3.x#toc_use-defineProperty-to-define-computed-properties',
+        }
+      );
+      descriptor = value;
     }
-
-    if (descriptor !== undefined) {
-      return descriptor.get(obj, keyName);
-    }
-  } else {
-    value = obj[keyName];
   }
 
-  if (value === undefined) {
+  if (descriptor !== undefined) {
+    value = descriptor.get(obj, keyName);
+  } else if (value === undefined) {
     if (isPath(keyName)) {
-      return _getPath(obj, keyName);
-    }
-    if (isObject && !(keyName in obj) && typeof obj.unknownProperty === 'function') {
-      return obj.unknownProperty(keyName);
+      value = _getPath(obj, keyName);
+    } else if (isObject && !(keyName in obj) && typeof obj.unknownProperty === 'function') {
+      value = obj.unknownProperty(keyName);
     }
   }
+
   return value;
 }
 
