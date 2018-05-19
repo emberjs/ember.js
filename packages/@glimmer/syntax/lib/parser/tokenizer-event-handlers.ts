@@ -11,7 +11,7 @@ import Walker from '../traversal/walker';
 import * as handlebars from 'handlebars';
 import { assign } from '@glimmer/util';
 
-const voidMap: {
+export const voidMap: {
   [tagName: string]: boolean;
 } = Object.create(null);
 
@@ -120,10 +120,9 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
   }
 
   finishStartTag() {
-    let { name, attributes, modifiers, comments } = this.currentStartTag;
-
+    let { name, attributes, modifiers, comments, selfClosing } = this.currentStartTag;
     let loc = b.loc(this.tagOpenLine, this.tagOpenColumn);
-    let element = b.element(name, attributes, modifiers, [], comments, loc);
+    let element = b.element({ name, selfClosing }, attributes, modifiers, [], comments, loc);
     this.elementStack.push(element);
   }
 
