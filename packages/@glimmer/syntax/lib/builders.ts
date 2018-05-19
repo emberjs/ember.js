@@ -4,6 +4,7 @@ import { Option } from '@glimmer/interfaces';
 // Statements
 
 export type BuilderPath = string | AST.PathExpression;
+export type TagDescriptor = string | { name: string; selfClosing: boolean };
 
 function buildMustache(
   path: BuilderPath | AST.Literal,
@@ -111,14 +112,14 @@ function buildConcat(
 // Nodes
 
 function buildElement(
-  tag: string,
+  tag: TagDescriptor,
   attributes?: AST.AttrNode[],
   modifiers?: AST.ElementModifierStatement[],
   children?: AST.Statement[],
   loc?: AST.SourceLocation
 ): AST.ElementNode;
 function buildElement(
-  tag: string,
+  tag: TagDescriptor,
   attributes?: AST.AttrNode[],
   modifiers?: AST.ElementModifierStatement[],
   children?: AST.Statement[],
@@ -127,7 +128,7 @@ function buildElement(
 ): AST.ElementNode;
 
 function buildElement(
-  tag: string,
+  tag: TagDescriptor,
   attributes?: AST.AttrNode[],
   modifiers?: AST.ElementModifierStatement[],
   children?: AST.Statement[],
@@ -140,9 +141,17 @@ function buildElement(
     comments = [];
   }
 
+  // this is used for backwards compat, prior to `selfClosing` being part of the ElementNode AST
+  let selfClosing = false;
+  if (typeof tag === 'object') {
+    selfClosing = tag.selfClosing;
+    tag = tag.name;
+  }
+
   return {
     type: 'ElementNode',
     tag: tag || '',
+    selfClosing: selfClosing,
     attributes: attributes || [],
     blockParams: [],
     modifiers: modifiers || [],
