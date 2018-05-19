@@ -802,8 +802,13 @@ export function descriptorFor(obj: object, keyName: string, _meta?: Meta) {
   @private
 */
 export function isDescriptor(possibleDesc: any | undefined | null): boolean {
-  // TODO make this return possibleDesc is Descriptor
-  return possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
+  // TODO make this return `possibleDesc is Descriptor`
+  return (
+    possibleDesc !== undefined &&
+    possibleDesc !== null &&
+    typeof possibleDesc === 'object' &&
+    possibleDesc.isDescriptor === true
+  );
 }
 
 export { counters };
