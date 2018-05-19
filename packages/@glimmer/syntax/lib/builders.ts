@@ -176,7 +176,7 @@ function buildText(chars?: string, loc?: AST.SourceLocation): AST.TextNode {
 // Expressions
 
 function buildSexpr(
-  path: AST.PathExpression,
+  path: BuilderPath,
   params?: AST.Expression[],
   hash?: AST.Hash,
   loc?: AST.SourceLocation
