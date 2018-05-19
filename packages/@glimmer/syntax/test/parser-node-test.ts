@@ -13,7 +13,7 @@ test('a simple piece of content', function() {
 
 test('self-closed element', function() {
   let t = '<g />';
-  astEqual(t, b.program([b.element('g')]));
+  astEqual(t, b.program([b.element({ name: 'g', selfClosing: true })]));
 });
 
 test('elements can have empty attributes', function() {

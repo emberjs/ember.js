@@ -108,3 +108,11 @@ test('Handlebars comment: in ElementNode children', function() {
 test('Handlebars in handlebar comment', function() {
   printEqual('{{!-- {{foo-bar}} --}}');
 });
+
+test('Void elements', function() {
+  printEqual('<br>');
+});
+
+test('Void elements self closing', function() {
+  printEqual('<br />');
+});
