@@ -96,6 +96,7 @@ export interface MustacheCommentStatement extends BaseNode {
 export interface ElementNode extends BaseNode {
   type: 'ElementNode';
   tag: string;
+  selfClosing: boolean;
   attributes: AttrNode[];
   blockParams: string[];
   modifiers: ElementModifierStatement[];

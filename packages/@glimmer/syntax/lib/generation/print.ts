@@ -1,5 +1,6 @@
 import { Option } from '@glimmer/interfaces';
 import * as HBS from '../types/nodes';
+import { voidMap } from '../parser/tokenizer-event-handlers';
 
 function unreachable(): never {
   throw new Error('unreachable');
@@ -33,9 +34,18 @@ export default function build(ast: HBS.Node): string {
       if (ast.comments.length) {
         output.push(' ', buildEach(ast.comments).join(' '));
       }
-      output.push('>');
-      output.push.apply(output, buildEach(ast.children));
-      output.push('</', ast.tag, '>');
+
+      if (voidMap[ast.tag]) {
+        if (ast.selfClosing) {
+          output.push(' /');
+        }
+
+        output.push('>');
+      } else {
+        output.push('>');
+        output.push.apply(output, buildEach(ast.children));
+        output.push('</', ast.tag, '>');
+      }
       break;
     case 'AttrNode':
       output.push(ast.name, '=');
