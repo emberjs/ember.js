@@ -6,7 +6,17 @@ export const PROPERTY_DID_CHANGE: symbol;
 
 export function setHasViews(fn: () => boolean): null;
 
-export function runInTransaction(context: any, methodName: string): any;
+export type MethodKey<T> = { [K in keyof T]: T[K] extends (() => void) ? K : never }[keyof T];
+export type RunInTransactionFunc = <T extends object, K extends MethodKey<T>>(
+  context: T,
+  methodName: K
+) => boolean;
+export type DidRenderFunc = (object: any, key: string, reference: any) => void;
+export type AssertNotRenderedFunc = (obj: object, keyName: string) => void;
+
+export const runInTransaction: RunInTransactionFunc;
+export const didRender: DidRenderFunc;
+export const assertNotRendered: AssertNotRenderedFunc;
 
 export function get(obj: any, keyName: string): any;
 
@@ -20,8 +30,6 @@ export function set(
 export function objectAt(arr: any, i: number): any;
 
 export function computed(...args: Array<any>): any;
-
-export function didRender(object: any, key: string, reference: any): boolean;
 
 export function isNone(obj: any): boolean;
 
