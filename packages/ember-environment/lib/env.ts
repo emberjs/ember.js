@@ -151,14 +151,15 @@ export const ENV = {
 
   let { EXTEND_PROTOTYPES } = EmberENV;
   if (EXTEND_PROTOTYPES !== undefined) {
-    if (typeof EXTEND_PROTOTYPES === 'object' && EXTEND_PROTOTYPES === null) {
+    if (typeof EXTEND_PROTOTYPES === 'object' && EXTEND_PROTOTYPES !== null) {
       ENV.EXTEND_PROTOTYPES.String = EXTEND_PROTOTYPES.String !== false;
       ENV.EXTEND_PROTOTYPES.Function = EXTEND_PROTOTYPES.Function !== false;
       ENV.EXTEND_PROTOTYPES.Array = EXTEND_PROTOTYPES.Array !== false;
     } else {
-      ENV.EXTEND_PROTOTYPES.String = EXTEND_PROTOTYPES !== false;
-      ENV.EXTEND_PROTOTYPES.Function = EXTEND_PROTOTYPES !== false;
-      ENV.EXTEND_PROTOTYPES.Array = EXTEND_PROTOTYPES !== false;
+      let isEnabled = EXTEND_PROTOTYPES !== false;
+      ENV.EXTEND_PROTOTYPES.String = isEnabled;
+      ENV.EXTEND_PROTOTYPES.Function = isEnabled;
+      ENV.EXTEND_PROTOTYPES.Array = isEnabled;
     }
   }
 
