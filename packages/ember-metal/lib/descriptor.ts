@@ -1,6 +1,6 @@
 import { Descriptor as EmberDescriptor } from './properties';
 
-export default function descriptor(desc) {
+export default function descriptor(desc: PropertyDescriptor) {
   return new Descriptor(desc);
 }
 
@@ -13,21 +13,24 @@ export default function descriptor(desc) {
   @private
 */
 class Descriptor extends EmberDescriptor {
-  constructor(desc) {
+  desc: PropertyDescriptor;
+  enumerable: boolean;
+
+  constructor(desc: PropertyDescriptor) {
     super();
     this.desc = desc;
-    this.enumerable = desc.enumerable;
+    this.enumerable = desc.enumerable !== false;
   }
 
-  setup(obj, key) {
+  setup(obj: object, key: string) {
     Object.defineProperty(obj, key, this.desc);
   }
 
-  get(obj, key) {
+  get(obj: object, key: string): any | null | undefined {
     return obj[key];
   }
 
-  set(obj, key, value) {
+  set(obj: object, key: string, value: any | null | undefined) {
     return (obj[key] = value);
   }
 
