@@ -1,0 +1,1 @@
+export const PROPERTY_BASED_DESCRIPTORS = '3.2.0';
