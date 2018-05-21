@@ -12,7 +12,7 @@ import {
 import { assert } from '@ember/debug';
 import EmberError from '@ember/error';
 import { Registry, privatize as P } from 'container';
-import { getEngineParent, setEngineParent } from '@ember/engine';
+import { getEngineParent, setEngineParent } from './lib/engine-parent';
 
 /**
   The `EngineInstance` encapsulates all of the stateful aspects of a

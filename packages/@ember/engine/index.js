@@ -1,6 +1,9 @@
 /**
 @module @ember/engine
 */
+
+export { getEngineParent, setEngineParent } from './lib/engine-parent';
+
 import { canInvoke } from 'ember-utils';
 import Controller from '@ember/controller';
 import { Namespace, RegistryProxyMixin } from 'ember-runtime';
@@ -14,35 +17,7 @@ import { RoutingService } from 'ember-routing';
 import { ContainerDebugAdapter } from 'ember-extension-support';
 import { ComponentLookup } from 'ember-views';
 import { setupEngineRegistry } from 'ember-glimmer';
-import { symbol } from 'ember-utils';
 
-const ENGINE_PARENT = symbol('ENGINE_PARENT');
-
-/**
-  `getEngineParent` retrieves an engine instance's parent instance.
-
-  @method getEngineParent
-  @param {EngineInstance} engine An engine instance.
-  @return {EngineInstance} The parent engine instance.
-  @for @ember/engine
-  @static
-  @private
-*/
-export function getEngineParent(engine) {
-  return engine[ENGINE_PARENT];
-}
-
-/**
-  `setEngineParent` sets an engine instance's parent instance.
-
-  @method setEngineParent
-  @param {EngineInstance} engine An engine instance.
-  @param {EngineInstance} parent The parent engine instance.
-  @private
-*/
-export function setEngineParent(engine, parent) {
-  engine[ENGINE_PARENT] = parent;
-}
 function props(obj) {
   let properties = [];
 
