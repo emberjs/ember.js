@@ -6,7 +6,7 @@ export const PROPERTY_DID_CHANGE: symbol;
 
 export function setHasViews(fn: () => boolean): null;
 
-export function runInTransaction(context: any, methodName: string): any;
+export { default as runInTransaction, didRender, assertNotRendered } from './lib/transaction';
 
 export function get(obj: any, keyName: string): any;
 
@@ -20,8 +20,6 @@ export function set(
 export function objectAt(arr: any, i: number): any;
 
 export function computed(...args: Array<any>): any;
-
-export function didRender(object: any, key: string, reference: any): boolean;
 
 export function isNone(obj: any): boolean;
 

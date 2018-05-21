@@ -1,7 +1,27 @@
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 
-let runInTransaction, didRender, assertNotRendered;
+export interface DebugStack {
+  peek(): string | void;
+}
+
+export interface DebugContext {
+  env: {
+    debugStack: DebugStack;
+  };
+}
+
+export type MethodKey<T> = { [K in keyof T]: T[K] extends (() => void) ? K : never }[keyof T];
+export type RunInTransactionFunc = <T extends object, K extends MethodKey<T>>(
+  context: T,
+  methodName: K
+) => boolean;
+export type DidRenderFunc = (object: any, key: string, reference: any) => void;
+export type AssertNotRenderedFunc = (obj: object, keyName: string) => void;
+
+let runInTransaction: RunInTransactionFunc;
+let didRender: DidRenderFunc;
+let assertNotRendered: AssertNotRenderedFunc;
 
 // detect-backtracking-rerender by default is debug build only
 if (DEBUG) {
@@ -16,6 +36,12 @@ if (DEBUG) {
   // release everything via normal weakmap semantics by just derefencing the weakmap
 
   class TransactionRunner {
+    transactionId: number;
+    inTransaction: boolean;
+    shouldReflush: boolean;
+    weakMap: WeakMap<object, any>;
+    debugStack: DebugStack | undefined;
+
     constructor() {
       this.transactionId = 0;
       this.inTransaction = false;
@@ -27,38 +53,38 @@ if (DEBUG) {
       }
     }
 
-    runInTransaction(context, methodName) {
+    runInTransaction<T extends object, K extends MethodKey<T>>(context: T, methodName: K): boolean {
       this.before(context);
       try {
-        context[methodName]();
+        (context[methodName] as any)();
       } finally {
         this.after();
       }
       return this.shouldReflush;
     }
 
-    didRender(object, key, reference) {
+    didRender(object: object, key: string, reference: any) {
       if (!this.inTransaction) {
         return;
       }
       if (DEBUG) {
         this.setKey(object, key, {
           lastRef: reference,
-          lastRenderedIn: this.debugStack.peek(),
+          lastRenderedIn: this.debugStack!.peek(),
         });
       } else {
         this.setKey(object, key, this.transactionId);
       }
     }
 
-    assertNotRendered(object, key) {
+    assertNotRendered(object: object, key: string): void {
       if (!this.inTransaction) {
         return;
       }
       if (this.hasRendered(object, key)) {
         if (DEBUG) {
           let { lastRef, lastRenderedIn } = this.getKey(object, key);
-          let currentlyIn = this.debugStack.peek();
+          let currentlyIn = this.debugStack!.peek();
 
           let parts = [];
           let label;
@@ -84,7 +110,7 @@ if (DEBUG) {
       }
     }
 
-    hasRendered(object, key) {
+    hasRendered(object: object, key: string): boolean {
       if (!this.inTransaction) {
         return false;
       }
@@ -94,11 +120,11 @@ if (DEBUG) {
       return this.getKey(object, key) === this.transactionId;
     }
 
-    before(context) {
+    before(context: object) {
       this.inTransaction = true;
       this.shouldReflush = false;
       if (DEBUG) {
-        this.debugStack = context.env.debugStack;
+        this.debugStack = (context as DebugContext).env.debugStack;
       }
     }
 
@@ -111,13 +137,13 @@ if (DEBUG) {
       this.clearObjectMap();
     }
 
-    createMap(object) {
+    createMap(object: object) {
       let map = Object.create(null);
       this.weakMap.set(object, map);
       return map;
     }
 
-    getOrCreateMap(object) {
+    getOrCreateMap(object: object) {
       let map = this.weakMap.get(object);
       if (map === undefined) {
         map = this.createMap(object);
@@ -125,12 +151,12 @@ if (DEBUG) {
       return map;
     }
 
-    setKey(object, key, value) {
+    setKey(object: object, key: string, value: any) {
       let map = this.getOrCreateMap(object);
       map[key] = value;
     }
 
-    getKey(object, key) {
+    getKey(object: object, key: string) {
       let map = this.weakMap.get(object);
       if (map !== undefined) {
         return map[key];
@@ -149,8 +175,8 @@ if (DEBUG) {
   assertNotRendered = runner.assertNotRendered.bind(runner);
 } else {
   // in production do nothing to detect reflushes
-  runInTransaction = (context, methodName) => {
-    context[methodName]();
+  runInTransaction = <T extends object, K extends MethodKey<T>>(context: T, methodName: K) => {
+    (context[methodName] as any)();
     return false;
   };
 }

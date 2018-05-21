@@ -1525,9 +1525,9 @@ broccoli-string-replace@^0.1.2:
     broccoli-persistent-filter "^1.1.5"
     minimatch "^3.0.3"
 
-broccoli-typescript-compiler@^2.2.0:
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/broccoli-typescript-compiler/-/broccoli-typescript-compiler-2.2.0.tgz#7842f6a20ac802c1d0ac7f89963a251580d0612c"
+broccoli-typescript-compiler@^2.3.0:
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/broccoli-typescript-compiler/-/broccoli-typescript-compiler-2.3.0.tgz#7922a553b55055138ae0d8b76abec0580d254dd0"
   dependencies:
     array-binsearch "^1.0.1"
     broccoli-funnel "^2.0.1"
@@ -1536,7 +1536,7 @@ broccoli-typescript-compiler@^2.2.0:
     fs-tree-diff "^0.5.7"
     heimdalljs "0.3.3"
     md5-hex "^2.0.0"
-    typescript "~2.7.1"
+    typescript "~2.8.3"
     walk-sync "^0.3.2"
 
 broccoli-uglify-js@^0.2.0:
@@ -7341,16 +7341,16 @@ typedarray@^0.0.6:
   version "0.0.6"
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
 
-typescript-eslint-parser@^14.0.0:
-  version "14.0.0"
-  resolved "https://registry.yarnpkg.com/typescript-eslint-parser/-/typescript-eslint-parser-14.0.0.tgz#c90a8f541c1d96e5c55e2807c61d154e788520f9"
+typescript-eslint-parser@^15.0.0:
+  version "15.0.0"
+  resolved "https://registry.yarnpkg.com/typescript-eslint-parser/-/typescript-eslint-parser-15.0.0.tgz#882fd3d7aabffbab0a7f98d2a59fb9a989c2b37f"
   dependencies:
     lodash.unescape "4.0.1"
     semver "5.5.0"
 
-typescript@~2.7.1:
-  version "2.7.2"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-2.7.2.tgz#2d615a1ef4aee4f574425cdff7026edf81919836"
+typescript@~2.8.3:
+  version "2.8.3"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-2.8.3.tgz#5d817f9b6f31bb871835f4edf0089f21abe6c170"
 
 uc.micro@^1.0.0, uc.micro@^1.0.1, uc.micro@^1.0.3:
   version "1.0.3"
