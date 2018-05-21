@@ -1,4 +1,4 @@
-import { typeOf } from './utils';
+import { typeOf } from './type-of';
 import Comparable from './mixins/comparable';
 
 const TYPE_ORDER = {

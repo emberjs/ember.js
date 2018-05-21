@@ -11,6 +11,8 @@ export {
   A,
   MutableArray,
   removeAt,
+  uniqBy,
+  isArray,
 } from './lib/mixins/array';
 export { default as Comparable } from './lib/mixins/comparable';
 export { default as Namespace } from './lib/system/namespace';
@@ -28,6 +30,6 @@ export { default as Evented } from './lib/mixins/evented';
 export { default as PromiseProxyMixin } from './lib/mixins/promise_proxy';
 
 export { default as RSVP, onerrorDefault } from './lib/ext/rsvp'; // just for side effect of extending Ember.RSVP
-export { isArray, typeOf, uniqBy } from './lib/utils';
+export { typeOf } from './lib/type-of';
 
 import './lib/ext/function'; // just for side effect of extending Function.prototype

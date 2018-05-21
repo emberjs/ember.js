@@ -1,9 +1,4 @@
-import { DEBUG } from '@glimmer/env';
-import { PROXY_CONTENT, get } from 'ember-metal';
-import { HAS_NATIVE_PROXY } from 'ember-utils';
-import EmberArray, { A } from './mixins/array';
 import EmberObject from './system/object';
-import { assert } from '@ember/debug';
 
 // ........................................
 // TYPING & ARRAY MESSAGING
@@ -21,66 +16,7 @@ const TYPE_MAP = {
 };
 
 const { toString } = Object.prototype;
-/**
- @module @ember/array
-*/
-/**
-  Returns true if the passed object is an array or Array-like.
 
-  Objects are considered Array-like if any of the following are true:
-
-    - the object is a native Array
-    - the object has an objectAt property
-    - the object is an Object, and has a length property
-
-  Unlike `typeOf` this method returns true even if the passed object is
-  not formally an array but appears to be array-like (i.e. implements `Array`)
-
-  ```javascript
-  import { isArray } from '@ember/array';
-  import ArrayProxy from '@ember/array/proxy';
-
-  isArray();                                      // false
-  isArray([]);                                    // true
-  isArray(ArrayProxy.create({ content: [] }));    // true
-  ```
-
-  @method isArray
-  @static
-  @for @ember/array
-  @param {Object} obj The object to test
-  @return {Boolean} true if the passed object is an array or Array-like
-  @public
-*/
-export function isArray(_obj) {
-  let obj = _obj;
-  if (DEBUG && HAS_NATIVE_PROXY && typeof _obj === 'object' && _obj !== null) {
-    let possibleProxyContent = _obj[PROXY_CONTENT];
-    if (possibleProxyContent !== undefined) {
-      obj = possibleProxyContent;
-    }
-  }
-
-  if (!obj || obj.setInterval) {
-    return false;
-  }
-  if (Array.isArray(obj)) {
-    return true;
-  }
-  if (EmberArray.detect(obj)) {
-    return true;
-  }
-
-  let type = typeOf(obj);
-  if ('array' === type) {
-    return true;
-  }
-  let length = obj.length;
-  if (typeof length === 'number' && length === length && 'object' === type) {
-    return true;
-  }
-  return false;
-}
 /**
  @module @ember/utils
 */
@@ -166,26 +102,6 @@ export function typeOf(item) {
       ret = 'date';
     }
   }
-
-  return ret;
-}
-
-const identityFunction = item => item;
-
-export function uniqBy(array, key = identityFunction) {
-  assert(`first argument passed to \`uniqBy\` should be array`, isArray(array));
-
-  let ret = A();
-  let seen = new Set();
-  let getter = typeof key === 'function' ? key : item => get(item, key);
-
-  array.forEach(item => {
-    let val = getter(item);
-    if (!seen.has(val)) {
-      seen.add(val);
-      ret.push(item);
-    }
-  });
 
   return ret;
 }

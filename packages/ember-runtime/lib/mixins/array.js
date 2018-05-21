@@ -2,6 +2,9 @@
 @module @ember/array
 */
 
+import { DEBUG } from '@glimmer/env';
+import { HAS_NATIVE_PROXY } from 'ember-utils';
+import { PROXY_CONTENT } from 'ember-metal';
 import { symbol, toString } from 'ember-utils';
 import {
   get,
@@ -29,13 +32,33 @@ import Copyable from '../mixins/copyable';
 import copy from '../copy';
 import EmberError from '@ember/error';
 import MutableEnumerable from './mutable_enumerable';
-import { uniqBy } from '../utils';
+import { typeOf } from '../type-of';
 
 const EMPTY_ARRAY = Object.freeze([]);
 const EMBER_ARRAY = symbol('EMBER_ARRAY');
 
 export function isEmberArray(obj) {
   return obj && obj[EMBER_ARRAY];
+}
+
+const identityFunction = item => item;
+
+export function uniqBy(array, key = identityFunction) {
+  assert(`first argument passed to \`uniqBy\` should be array`, isArray(array));
+
+  let ret = A();
+  let seen = new Set();
+  let getter = typeof key === 'function' ? key : item => get(item, key);
+
+  array.forEach(item => {
+    let val = getter(item);
+    if (!seen.has(val)) {
+      seen.add(val);
+      ret.push(item);
+    }
+  });
+
+  return ret;
 }
 
 function iter(key, value) {
@@ -81,6 +104,64 @@ function indexOf(array, val, startAt = 0, withNaNCheck) {
   // SameValueZero comparison (NaN !== NaN)
   let predicate = withNaNCheck && val !== val ? item => item !== item : item => item === val;
   return findIndex(array, predicate, startAt);
+}
+
+/**
+  Returns true if the passed object is an array or Array-like.
+
+  Objects are considered Array-like if any of the following are true:
+
+    - the object is a native Array
+    - the object has an objectAt property
+    - the object is an Object, and has a length property
+
+  Unlike `typeOf` this method returns true even if the passed object is
+  not formally an array but appears to be array-like (i.e. implements `Array`)
+
+  ```javascript
+  import { isArray } from '@ember/array';
+  import ArrayProxy from '@ember/array/proxy';
+
+  isArray();                                      // false
+  isArray([]);                                    // true
+  isArray(ArrayProxy.create({ content: [] }));    // true
+  ```
+
+  @method isArray
+  @static
+  @for @ember/array
+  @param {Object} obj The object to test
+  @return {Boolean} true if the passed object is an array or Array-like
+  @public
+*/
+export function isArray(_obj) {
+  let obj = _obj;
+  if (DEBUG && HAS_NATIVE_PROXY && typeof _obj === 'object' && _obj !== null) {
+    let possibleProxyContent = _obj[PROXY_CONTENT];
+    if (possibleProxyContent !== undefined) {
+      obj = possibleProxyContent;
+    }
+  }
+
+  if (!obj || obj.setInterval) {
+    return false;
+  }
+  if (Array.isArray(obj)) {
+    return true;
+  }
+  if (ArrayMixin.detect(obj)) {
+    return true;
+  }
+
+  let type = typeOf(obj);
+  if ('array' === type) {
+    return true;
+  }
+  let length = obj.length;
+  if (typeof length === 'number' && length === length && 'object' === type) {
+    return true;
+  }
+  return false;
 }
 
 // ..........................................................

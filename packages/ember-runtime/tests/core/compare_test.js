@@ -1,4 +1,4 @@
-import { typeOf } from '../../lib/utils';
+import { typeOf } from '../../lib/type-of';
 import EmberObject from '../../lib/system/object';
 import compare from '../../lib/compare';
 import Comparable from '../../lib/mixins/comparable';
