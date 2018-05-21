@@ -9,7 +9,7 @@ import { assert, isTesting } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { bind, join, once, run, schedule } from '@ember/runloop';
 import { libraries, processAllNamespaces, setNamespaceSearchDisabled } from 'ember-metal';
-import { _loaded, runLoadHooks } from '@ember/application';
+import { _loaded, runLoadHooks } from './lazy_load';
 import { RSVP } from 'ember-runtime';
 import { EventDispatcher, jQuery, jQueryDisabled } from 'ember-views';
 import {
@@ -21,7 +21,7 @@ import {
   NoneLocation,
   BucketCache,
 } from 'ember-routing';
-import ApplicationInstance from '@ember/application/instance';
+import ApplicationInstance from '../instance';
 import Engine from '@ember/engine';
 import { privatize as P } from 'container';
 import { setupApplicationRegistry } from 'ember-glimmer';

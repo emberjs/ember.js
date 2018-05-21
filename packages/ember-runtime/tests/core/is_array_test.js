@@ -1,5 +1,4 @@
-import { isArray } from '../../lib/utils';
-import { A as emberA } from '../../lib/mixins/array';
+import { A as emberA, isArray } from '../../lib/mixins/array';
 import ArrayProxy from '../../lib/system/array_proxy';
 import EmberObject from '../../lib/system/object';
 import { window } from 'ember-browser-environment';

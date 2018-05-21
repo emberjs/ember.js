@@ -11,9 +11,8 @@ import {
   addArrayObserver,
   removeArrayObserver,
 } from 'ember-metal';
-import { isArray } from '../utils';
 import EmberObject from './object';
-import { MutableArray } from '../mixins/array';
+import { isArray, MutableArray } from '../mixins/array';
 import { assert } from '@ember/debug';
 
 const ARRAY_OBSERVER_MAPPING = {
