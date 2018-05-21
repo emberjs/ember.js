@@ -5,6 +5,7 @@ const path = require('path');
 const chalk = require('chalk');
 const stringUtil = require('ember-cli-string-utils');
 const EmberRouterGenerator = require('ember-router-generator');
+const isModuleUnificationProject = require('../module-unification').isModuleUnificationProject;
 
 module.exports = {
   description: 'Generates a route and a template, and registers the route with the router.',
@@ -27,47 +28,73 @@ module.exports = {
   ],
 
   fileMapTokens: function() {
-    return {
-      __name__: function(options) {
-        if (options.pod) {
+    if (isModuleUnificationProject(this.project)) {
+      return {
+        __root__(options) {
+          if (options.pod) {
+            throw "Pods aren't supported within a module unification app";
+          }
+          if (options.inDummy) {
+            return path.join('tests', 'dummy', 'src');
+          }
+          return 'src';
+        },
+        __path__(options) {
+          return path.join('ui', 'routes', options.dasherizedModuleName);
+        },
+        __name__() {
           return 'route';
-        }
-        return options.locals.moduleName;
-      },
-      __path__: function(options) {
-        if (options.pod) {
-          return path.join(options.podPath, options.locals.moduleName);
-        }
-        return 'routes';
-      },
-      __templatepath__: function(options) {
-        if (options.pod) {
-          return path.join(options.podPath, options.locals.moduleName);
-        }
-        return 'templates';
-      },
-      __templatename__: function(options) {
-        if (options.pod) {
+        },
+        __templatepath__(options) {
+          return path.join('ui', 'routes', options.dasherizedModuleName);
+        },
+        __templatename__() {
           return 'template';
-        }
-        return options.locals.moduleName;
-      },
-      __root__: function(options) {
-        if (options.inRepoAddon) {
-          return path.join('lib', options.inRepoAddon, 'addon');
-        }
+        },
+      };
+    } else {
+      return {
+        __name__(options) {
+          if (options.pod) {
+            return 'route';
+          }
+          return options.locals.moduleName;
+        },
+        __path__(options) {
+          if (options.pod) {
+            return path.join(options.podPath, options.locals.moduleName);
+          }
+          return 'routes';
+        },
+        __templatepath__(options) {
+          if (options.pod) {
+            return path.join(options.podPath, options.locals.moduleName);
+          }
+          return 'templates';
+        },
+        __templatename__(options) {
+          if (options.pod) {
+            return 'template';
+          }
+          return options.locals.moduleName;
+        },
+        __root__(options) {
+          if (options.inRepoAddon) {
+            return path.join('lib', options.inRepoAddon, 'addon');
+          }
 
-        if (options.inDummy) {
-          return path.join('tests', 'dummy', 'app');
-        }
+          if (options.inDummy) {
+            return path.join('tests', 'dummy', 'app');
+          }
 
-        if (options.inAddon) {
-          return 'addon';
-        }
+          if (options.inAddon) {
+            return 'addon';
+          }
 
-        return 'app';
-      },
-    };
+          return 'app';
+        },
+      };
+    }
   },
 
   locals: function(options) {
@@ -132,11 +159,12 @@ function updateRouter(action, options) {
 
 function findRouter(options) {
   let routerPathParts = [options.project.root];
+  let root = isModuleUnificationProject(options.project) ? 'src' : 'app';
 
   if (options.dummy && options.project.isEmberCLIAddon()) {
-    routerPathParts = routerPathParts.concat(['tests', 'dummy', 'app', 'router.js']);
+    routerPathParts = routerPathParts.concat(['tests', 'dummy', root, 'router.js']);
   } else {
-    routerPathParts = routerPathParts.concat(['app', 'router.js']);
+    routerPathParts = routerPathParts.concat([root, 'router.js']);
   }
 
   return routerPathParts;
