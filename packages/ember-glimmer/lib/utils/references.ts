@@ -324,7 +324,7 @@ export class ConditionalReference extends GlimmerConditionalReference
   toBool(predicate: Opaque) {
     if (isProxy(predicate)) {
       this.objectTag.inner.update(tagForProperty(predicate, 'isTruthy'));
-      return get(predicate, 'isTruthy');
+      return get(predicate as object, 'isTruthy');
     } else {
       this.objectTag.inner.update(tagFor(predicate));
       return emberToBool(predicate);
@@ -436,7 +436,7 @@ export class UnboundReference<T> extends ConstReference<T> {
   }
 
   get(key: string) {
-    return valueToRef(get(this.inner, key), false);
+    return valueToRef(get(this.inner as any, key), false);
   }
 }
 

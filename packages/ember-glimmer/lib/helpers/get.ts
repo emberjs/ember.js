@@ -131,6 +131,6 @@ class GetHelperReference extends CachedReference {
   }
 
   [UPDATE](value: any) {
-    set(this.sourceReference.value(), this.pathReference.value(), value);
+    set(this.sourceReference.value() as any, this.pathReference.value(), value);
   }
 }

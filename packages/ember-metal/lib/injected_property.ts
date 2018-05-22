@@ -1,8 +1,12 @@
-import { getOwner } from 'ember-owner';
-import { assert } from '@ember/debug';
-import { ComputedProperty } from './computed';
-import { descriptorFor } from 'ember-meta';
 import { EMBER_MODULE_UNIFICATION } from '@ember/canary-features';
+import { assert } from '@ember/debug';
+import { descriptorFor } from 'ember-meta';
+import { getOwner } from 'ember-owner';
+import { ComputedProperty } from './computed';
+
+export interface InjectedPropertyOptions {
+  source: string;
+}
 
 /**
  @module ember
@@ -21,7 +25,12 @@ import { EMBER_MODULE_UNIFICATION } from '@ember/canary-features';
   @private
 */
 export default class InjectedProperty extends ComputedProperty {
-  constructor(type, name, options) {
+  readonly type: string;
+  readonly name: string;
+  readonly source: string | undefined;
+  readonly namespace: string | undefined;
+
+  constructor(type: string, name: string, options?: InjectedPropertyOptions) {
     super(injectedPropertyGet);
 
     this.type = type;
@@ -45,7 +54,7 @@ export default class InjectedProperty extends ComputedProperty {
   }
 }
 
-function injectedPropertyGet(keyName) {
+function injectedPropertyGet(this: any, keyName: string): any {
   let desc = descriptorFor(this, keyName);
   let owner = getOwner(this) || this.container; // fallback to `container` for backwards compat
 
@@ -55,7 +64,7 @@ function injectedPropertyGet(keyName) {
   );
   assert(
     `Attempting to lookup an injected property on an object without a container, ensure that the object was instantiated via a container.`,
-    owner
+    !!owner
   );
 
   let specifier = `${desc.type}:${desc.name || keyName}`;

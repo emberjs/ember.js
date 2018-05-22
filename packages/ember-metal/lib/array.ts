@@ -9,7 +9,7 @@ interface ObjectHasArrayObservers {
   hasArrayObservers?: boolean;
 }
 
-interface EmberArray<T> extends ObjectHasArrayObservers {
+export interface EmberArray<T> extends ObjectHasArrayObservers {
   length: number;
   objectAt(index: number): T | undefined;
   replace(start: number, deleteCount: number, items: T[]): void;

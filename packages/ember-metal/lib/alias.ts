@@ -1,28 +1,35 @@
-import { inspect } from 'ember-utils';
 import { assert } from '@ember/debug';
 import EmberError from '@ember/error';
-import { get } from './property_get';
-import { set } from './property_set';
-import { Descriptor, defineProperty } from './properties';
+import { Meta, meta as metaFor } from 'ember-meta';
+import { inspect } from 'ember-utils';
 import { ComputedProperty } from './computed';
 import { getCacheFor } from './computed_cache';
-import { meta as metaFor } from 'ember-meta';
-import { addDependentKeys, removeDependentKeys } from './dependent_keys';
+import {
+  addDependentKeys,
+  DescriptorWithDependentKeys,
+  removeDependentKeys,
+} from './dependent_keys';
+import { defineProperty, Descriptor } from './properties';
+import { get } from './property_get';
+import { set } from './property_set';
 
 const CONSUMED = {};
 
-export default function alias(altKey) {
+export default function alias(altKey: string): AliasedProperty {
   return new AliasedProperty(altKey);
 }
 
-export class AliasedProperty extends Descriptor {
-  constructor(altKey) {
+export class AliasedProperty extends Descriptor implements DescriptorWithDependentKeys {
+  readonly _dependentKeys: string[];
+  readonly altKey: string;
+
+  constructor(altKey: string) {
     super();
     this.altKey = altKey;
     this._dependentKeys = [altKey];
   }
 
-  setup(obj, keyName) {
+  setup(obj: object, keyName: string): void {
     assert(`Setting alias '${keyName}' on self`, this.altKey !== keyName);
     let meta = metaFor(obj);
     if (meta.peekWatching(keyName)) {
@@ -30,21 +37,21 @@ export class AliasedProperty extends Descriptor {
     }
   }
 
-  teardown(obj, keyName, meta) {
+  teardown(obj: object, keyName: string, meta: Meta): void {
     if (meta.peekWatching(keyName)) {
       removeDependentKeys(this, obj, keyName, meta);
     }
   }
 
-  willWatch(obj, keyName, meta) {
+  willWatch(obj: object, keyName: string, meta: Meta): void {
     addDependentKeys(this, obj, keyName, meta);
   }
 
-  didUnwatch(obj, keyName, meta) {
+  didUnwatch(obj: object, keyName: string, meta: Meta) {
     removeDependentKeys(this, obj, keyName, meta);
   }
 
-  get(obj, keyName) {
+  get(obj: object, keyName: string) {
     let ret = get(obj, this.altKey);
     let cache = getCacheFor(obj);
     if (cache.get(keyName) !== CONSUMED) {
@@ -55,7 +62,7 @@ export class AliasedProperty extends Descriptor {
     return ret;
   }
 
-  set(obj, keyName, value) {
+  set(obj: object, _keyName: string, value: any) {
     return set(obj, this.altKey, value);
   }
 
@@ -70,16 +77,16 @@ export class AliasedProperty extends Descriptor {
   }
 }
 
-function AliasedProperty_readOnlySet(obj, keyName) {
+function AliasedProperty_readOnlySet(obj: object, keyName: string): never {
   // eslint-disable-line no-unused-vars
   throw new EmberError(`Cannot set read-only property '${keyName}' on object: ${inspect(obj)}`);
 }
 
-function AliasedProperty_oneWaySet(obj, keyName, value) {
+function AliasedProperty_oneWaySet(obj: object, keyName: string, value: any): any {
   defineProperty(obj, keyName, null);
   return set(obj, keyName, value);
 }
 
 // Backwards compatibility with Ember Data.
-AliasedProperty.prototype._meta = undefined;
-AliasedProperty.prototype.meta = ComputedProperty.prototype.meta;
+(AliasedProperty.prototype as any)._meta = undefined;
+(AliasedProperty.prototype as any).meta = ComputedProperty.prototype.meta;

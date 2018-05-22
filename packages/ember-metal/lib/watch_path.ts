@@ -1,7 +1,7 @@
-import { meta as metaFor, peekMeta } from 'ember-meta';
+import { Meta, meta as metaFor, peekMeta } from 'ember-meta';
 import { makeChainNode } from './chains';
 
-export function watchPath(obj, keyPath, meta) {
+export function watchPath(obj: any, keyPath: string, meta?: Meta): void {
   let m = meta === undefined ? metaFor(obj) : meta;
   let counter = m.peekWatching(keyPath) || 0;
 
@@ -12,7 +12,7 @@ export function watchPath(obj, keyPath, meta) {
   }
 }
 
-export function unwatchPath(obj, keyPath, meta) {
+export function unwatchPath(obj: any, keyPath: string, meta?: Meta): void {
   let m = meta === undefined ? peekMeta(obj) : meta;
   if (m === undefined) {
     return;

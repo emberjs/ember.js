@@ -36,7 +36,7 @@ export abstract class Descriptor {
 
   setup?(obj: object, keyName: string): void;
 
-  abstract teardown(obj: object, keyName: string): void;
+  abstract teardown(obj: object, keyName: string, meta: Meta): void;
   abstract get(obj: object, keyName: string): any | null | undefined;
   abstract set(obj: object, keyName: string, value: any | null | undefined): any | null | undefined;
 
@@ -156,7 +156,7 @@ export function defineProperty(
   obj: object,
   keyName: string,
   desc: Descriptor | undefined | null,
-  data: any | undefined | null,
+  data?: any | undefined | null,
   meta?: Meta
 ) {
   if (meta === undefined) {

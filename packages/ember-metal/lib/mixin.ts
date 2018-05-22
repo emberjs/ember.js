@@ -1,32 +1,32 @@
 /**
 @module @ember/object
 */
-import { assign } from '@ember/polyfills';
-import {
-  guidFor,
-  ROOT,
-  wrap,
-  makeArray,
-  NAME_KEY,
-  getObservers,
-  getListeners,
-  setObservers,
-} from 'ember-utils';
 import { assert } from '@ember/debug';
+import { assign } from '@ember/polyfills';
 import { DEBUG } from '@glimmer/env';
 import { ENV } from 'ember-environment';
-import { descriptorFor, meta as metaFor, peekMeta } from 'ember-meta';
-import expandProperties from './expand_properties';
-import { Descriptor, defineProperty } from './properties';
-import { ComputedProperty } from './computed';
-import { addObserver, removeObserver } from './observer';
+import { descriptorFor, Meta, meta as metaFor, peekMeta } from 'ember-meta';
+import {
+  getListeners,
+  getObservers,
+  guidFor,
+  makeArray,
+  NAME_KEY,
+  ROOT,
+  setObservers,
+  wrap,
+} from 'ember-utils';
+import { ComputedProperty, ComputedPropertyGetter, ComputedPropertySetter } from './computed';
 import { addListener, removeListener } from './events';
-import { setUnprocessedMixins, classToString } from './namespace_search';
+import expandProperties from './expand_properties';
+import { classToString, setUnprocessedMixins } from './namespace_search';
+import { addObserver, removeObserver } from './observer';
+import { defineProperty, Descriptor } from './properties';
 
 const a_concat = Array.prototype.concat;
 const { isArray } = Array;
 
-function isMethod(obj) {
+function isMethod(obj: any) {
   return (
     'function' === typeof obj &&
     obj.isMethod !== false &&
@@ -39,21 +39,26 @@ function isMethod(obj) {
   );
 }
 
-const CONTINUE = {};
+const CONTINUE: MixinLike = {};
 
-function mixinProperties(mixinsMeta, mixin) {
+function mixinProperties<T extends MixinLike>(mixinsMeta: Meta, mixin: T): MixinLike {
   if (mixin instanceof Mixin) {
     if (mixinsMeta.hasMixin(mixin)) {
       return CONTINUE;
     }
     mixinsMeta.addMixin(mixin);
-    return mixin.properties;
+    return mixin.properties!;
   } else {
     return mixin; // apply anonymous mixin properties
   }
 }
 
-function concatenatedMixinProperties(concatProp, props, values, base) {
+function concatenatedMixinProperties(
+  concatProp: string,
+  props: { [key: string]: any },
+  values: { [key: string]: any },
+  base: { [key: string]: any }
+) {
   // reset before adding each new mixin to pickup concats from previous
   let concats = values[concatProp] || base[concatProp];
   if (props[concatProp]) {
@@ -62,7 +67,14 @@ function concatenatedMixinProperties(concatProp, props, values, base) {
   return concats;
 }
 
-function giveDescriptorSuper(meta, key, property, values, descs, base) {
+function giveDescriptorSuper(
+  meta: Meta,
+  key: string,
+  property: ComputedProperty,
+  values: { [key: string]: any },
+  descs: { [key: string]: any },
+  base: object
+): ComputedProperty {
   let superProperty;
 
   // Computed properties override methods, and do not call super to them
@@ -85,10 +97,10 @@ function giveDescriptorSuper(meta, key, property, values, descs, base) {
   // to clone the computed property so that other mixins do not receive
   // the wrapped version.
   property = Object.create(property);
-  property._getter = wrap(property._getter, superProperty._getter);
+  property._getter = wrap(property._getter, superProperty._getter) as ComputedPropertyGetter;
   if (superProperty._setter) {
     if (property._setter) {
-      property._setter = wrap(property._setter, superProperty._setter);
+      property._setter = wrap(property._setter, superProperty._setter) as ComputedPropertySetter;
     } else {
       property._setter = superProperty._setter;
     }
@@ -97,7 +109,13 @@ function giveDescriptorSuper(meta, key, property, values, descs, base) {
   return property;
 }
 
-function giveMethodSuper(obj, key, method, values, descs) {
+function giveMethodSuper(
+  obj: object,
+  key: string,
+  method: Function,
+  values: { [key: string]: any },
+  descs: { [key: string]: any }
+) {
   // Methods overwrite computed properties, and do not call super to them.
   if (descs[key] !== undefined) {
     return method;
@@ -120,7 +138,12 @@ function giveMethodSuper(obj, key, method, values, descs) {
   return method;
 }
 
-function applyConcatenatedProperties(obj, key, value, values) {
+function applyConcatenatedProperties(
+  obj: any,
+  key: string,
+  value: any,
+  values: { [key: string]: any }
+) {
   let baseValue = values[key] || obj[key];
   let ret = makeArray(baseValue).concat(makeArray(value));
 
@@ -136,7 +159,12 @@ function applyConcatenatedProperties(obj, key, value, values) {
   return ret;
 }
 
-function applyMergedProperties(obj, key, value, values) {
+function applyMergedProperties(
+  obj: { [key: string]: any },
+  key: string,
+  value: { [key: string]: any },
+  values: { [key: string]: any }
+): { [key: string]: any } {
   let baseValue = values[key] || obj[key];
 
   assert(
@@ -175,12 +203,21 @@ function applyMergedProperties(obj, key, value, values) {
   return newBase;
 }
 
-function addNormalizedProperty(base, key, value, meta, descs, values, concats, mergings) {
+function addNormalizedProperty(
+  base: any,
+  key: string,
+  value: Descriptor | any,
+  meta: Meta,
+  descs: { [key: string]: any },
+  values: { [key: string]: any },
+  concats?: string[],
+  mergings?: string[]
+): void {
   if (value instanceof Descriptor) {
     // Wrap descriptor function to implement
     // _super() if needed
-    if (value._getter) {
-      value = giveDescriptorSuper(meta, key, value, values, descs, base);
+    if ((value as ComputedProperty)._getter) {
+      value = giveDescriptorSuper(meta, key, value as ComputedProperty, values, descs, base);
     }
 
     descs[key] = value;
@@ -203,10 +240,21 @@ function addNormalizedProperty(base, key, value, meta, descs, values, concats, m
   }
 }
 
-function mergeMixins(mixins, meta, descs, values, base, keys) {
+interface HasWillMergeMixin {
+  willMergeMixin?: (props: MixinLike) => void;
+}
+
+function mergeMixins(
+  mixins: MixinLike[],
+  meta: Meta,
+  descs: { [key: string]: object },
+  values: { [key: string]: object },
+  base: { [key: string]: object },
+  keys: string[]
+): void {
   let currentMixin, props, key, concats, mergings;
 
-  function removeKeys(keyName) {
+  function removeKeys(keyName: string) {
     delete descs[keyName];
     delete values[keyName];
   }
@@ -227,8 +275,8 @@ function mergeMixins(mixins, meta, descs, values, base, keys) {
 
     if (props) {
       // remove willMergeMixin after 3.4 as it was used for _actions
-      if (base.willMergeMixin) {
-        base.willMergeMixin(props);
+      if ((base as HasWillMergeMixin).willMergeMixin) {
+        (base as HasWillMergeMixin).willMergeMixin!(props);
       }
       concats = concatenatedMixinProperties('concatenatedProperties', props, values, base);
       mergings = concatenatedMixinProperties('mergedProperties', props, values, base);
@@ -254,7 +302,12 @@ function mergeMixins(mixins, meta, descs, values, base, keys) {
   }
 }
 
-function followAlias(obj, desc, descs, values) {
+function followAlias(
+  obj: object,
+  desc: any,
+  descs: { [key: string]: any },
+  values: { [key: string]: any }
+) {
   let altKey = desc.methodName;
   let value;
   let possibleDesc;
@@ -272,7 +325,17 @@ function followAlias(obj, desc, descs, values) {
   return { desc, value };
 }
 
-function updateObserversAndListeners(obj, key, paths, updateMethod) {
+function updateObserversAndListeners(
+  obj: object,
+  key: string,
+  paths: string[] | undefined,
+  updateMethod: (
+    obj: object,
+    path: string,
+    target: object | Function | null,
+    method: string
+  ) => void
+) {
   if (paths) {
     for (let i = 0; i < paths.length; i++) {
       updateMethod(obj, paths[i], null, key);
@@ -280,7 +343,12 @@ function updateObserversAndListeners(obj, key, paths, updateMethod) {
   }
 }
 
-function replaceObserversAndListeners(obj, key, prev, next) {
+function replaceObserversAndListeners(
+  obj: object,
+  key: string,
+  prev: Function | null,
+  next: Function | null
+): void {
   if (typeof prev === 'function') {
     updateObserversAndListeners(obj, key, getObservers(prev), removeObserver);
     updateObserversAndListeners(obj, key, getListeners(prev), removeListener);
@@ -292,14 +360,14 @@ function replaceObserversAndListeners(obj, key, prev, next) {
   }
 }
 
-function applyMixin(obj, mixins, partial) {
+function applyMixin(obj: { [key: string]: any }, mixins: Mixin[], partial: boolean) {
   let descs = {};
   let values = {};
   let meta = metaFor(obj);
-  let keys = [];
+  let keys: string[] = [];
   let key, value, desc;
 
-  obj._super = ROOT;
+  (obj as any)._super = ROOT;
 
   // Go through all mixins and hashes passed in, and:
   //
@@ -346,7 +414,7 @@ function applyMixin(obj, mixins, partial) {
     defineProperty(obj, key, desc, value, meta);
   }
 
-  if (ENV._ENABLE_BINDING_SUPPORT && !partial && typeof Mixin.finishProtype === 'function') {
+  if (ENV._ENABLE_BINDING_SUPPORT && !partial && typeof Mixin.finishPartial === 'function') {
     Mixin.finishPartial(obj, meta);
   }
 
@@ -360,7 +428,7 @@ function applyMixin(obj, mixins, partial) {
   @return obj
   @private
 */
-export function mixin(obj, ...args) {
+export function mixin(obj: object, ...args: any[]) {
   applyMixin(obj, args, false);
   return obj;
 }
@@ -448,7 +516,12 @@ export function mixin(obj, ...args) {
   @public
 */
 export default class Mixin {
-  constructor(mixins, properties) {
+  mixins: Mixin[] | undefined;
+  properties: { [key: string]: any } | undefined;
+  ownerConstructor: any;
+  _without: any[] | undefined;
+
+  constructor(mixins: Mixin[] | undefined, properties?: { [key: string]: any }) {
     this.properties = properties;
     this.mixins = buildMixinsArray(mixins);
     this.ownerConstructor = undefined;
@@ -469,10 +542,10 @@ export default class Mixin {
   }
 
   static _apply() {
-    return applyMixin(...arguments);
+    return (applyMixin as any)(...arguments);
   }
 
-  static applyPartial(obj, ...args) {
+  static applyPartial(obj: any, ...args: any[]) {
     return applyMixin(obj, args, true);
   }
 
@@ -483,7 +556,7 @@ export default class Mixin {
     @param arguments*
     @public
   */
-  static create(...args) {
+  static create(...args: any[]): Mixin {
     // ES6TODO: this relies on a global state?
     setUnprocessedMixins();
     let M = this;
@@ -492,14 +565,14 @@ export default class Mixin {
 
   // returns the mixins currently applied to the specified object
   // TODO: Make `mixin`
-  static mixins(obj) {
+  static mixins(obj: object): Mixin[] {
     let meta = peekMeta(obj);
-    let ret = [];
+    let ret: Mixin[] = [];
     if (meta === undefined) {
       return ret;
     }
 
-    meta.forEachMixins(currentMixin => {
+    meta.forEachMixins((currentMixin: Mixin) => {
       // skip primitive mixins since these are always anonymous
       if (!currentMixin.properties) {
         ret.push(currentMixin);
@@ -514,7 +587,7 @@ export default class Mixin {
     @param arguments*
     @private
   */
-  reopen(...args) {
+  reopen(...args: any[]) {
     if (args.length === 0) {
       return;
     }
@@ -527,7 +600,7 @@ export default class Mixin {
       this.mixins = [];
     }
 
-    this.mixins = this.mixins.concat(buildMixinsArray(args));
+    this.mixins = this.mixins.concat(buildMixinsArray(args) as Mixin[]);
     return this;
   }
 
@@ -537,11 +610,11 @@ export default class Mixin {
     @return applied object
     @private
   */
-  apply(obj) {
+  apply(obj: object) {
     return applyMixin(obj, [this], false);
   }
 
-  applyPartial(obj) {
+  applyPartial(obj: object) {
     return applyMixin(obj, [this], true);
   }
 
@@ -551,7 +624,7 @@ export default class Mixin {
     @return {Boolean}
     @private
   */
-  detect(obj) {
+  detect(obj: any): boolean {
     if (typeof obj !== 'object' || obj === null) {
       return false;
     }
@@ -565,7 +638,7 @@ export default class Mixin {
     return meta.hasMixin(this);
   }
 
-  without(...args) {
+  without(...args: any[]) {
     let ret = new Mixin([this]);
     ret._without = args;
     return ret;
@@ -578,16 +651,19 @@ export default class Mixin {
   toString() {
     return '(unknown mixin)';
   }
+
+  static finishPartial: ((obj: any, meta: Meta) => void) | null;
+  static detectBinding: ((key: string) => void) | null;
 }
 
-function buildMixinsArray(mixins) {
-  let length = mixins && mixins.length;
-  let m;
+function buildMixinsArray(mixins: MixinLike[] | undefined): Mixin[] | undefined {
+  let length = (mixins && mixins.length) || 0;
+  let m: Mixin[] | undefined = undefined;
 
   if (length > 0) {
     m = new Array(length);
     for (let i = 0; i < length; i++) {
-      let x = mixins[i];
+      let x = mixins![i];
       assert(
         `Expected hash or Mixin instance, got ${Object.prototype.toString.call(x)}`,
         typeof x === 'object' &&
@@ -606,6 +682,8 @@ function buildMixinsArray(mixins) {
   return m;
 }
 
+type MixinLike = Mixin | { [key: string]: any };
+
 if (ENV._ENABLE_BINDING_SUPPORT) {
   // slotting this so that the legacy addon can add the function here
   // without triggering an error due to the Object.seal done below
@@ -620,7 +698,7 @@ if (DEBUG) {
   Object.seal(Mixin.prototype);
 }
 
-function _detect(curMixin, targetMixin, seen = new Set()) {
+function _detect(curMixin: Mixin, targetMixin: Mixin, seen = new Set()): boolean {
   if (seen.has(curMixin)) {
     return false;
   }
@@ -637,7 +715,7 @@ function _detect(curMixin, targetMixin, seen = new Set()) {
   return false;
 }
 
-function _keys(mixin, ret = new Set(), seen = new Set()) {
+function _keys(mixin: Mixin, ret = new Set(), seen = new Set()) {
   if (seen.has(mixin)) {
     return;
   }
@@ -649,16 +727,28 @@ function _keys(mixin, ret = new Set(), seen = new Set()) {
       ret.add(props[i]);
     }
   } else if (mixin.mixins) {
-    mixin.mixins.forEach(x => _keys(x, ret, seen));
+    mixin.mixins.forEach((x: any) => _keys(x, ret, seen));
   }
 
   return ret;
 }
 
 class Alias extends Descriptor {
-  constructor(methodName) {
+  methodName: string;
+
+  constructor(methodName: string) {
     super();
     this.methodName = methodName;
+  }
+
+  teardown(_obj: object, _keyName: string, _meta: Meta): void {
+    throw new Error('Method not implemented.');
+  }
+  get(_obj: object, _keyName: string) {
+    throw new Error('Method not implemented.');
+  }
+  set(_obj: object, _keyName: string, _value: any) {
+    throw new Error('Method not implemented.');
   }
 }
 
@@ -691,7 +781,7 @@ class Alias extends Descriptor {
   @param {String} methodName name of the method to alias
   @public
 */
-export function aliasMethod(methodName) {
+export function aliasMethod(methodName: string): Alias {
   return new Alias(methodName);
 }
 
@@ -724,24 +814,24 @@ export function aliasMethod(methodName) {
   @public
   @static
 */
-export function observer(...args) {
+export function observer(...args: (string | Function)[]) {
   let func = args.pop();
   let _paths = args;
 
   assert('observer called without a function', typeof func === 'function');
   assert(
     'observer called without valid path',
-    _paths.length > 0 && _paths.every(p => typeof p === 'string' && p.length)
+    _paths.length > 0 && _paths.every(p => typeof p === 'string' && !!p.length)
   );
 
-  let paths = [];
-  let addWatchedProperty = path => paths.push(path);
+  let paths: string[] = [];
+  let addWatchedProperty = (path: string) => paths.push(path);
 
   for (let i = 0; i < _paths.length; ++i) {
-    expandProperties(_paths[i], addWatchedProperty);
+    expandProperties(_paths[i] as string, addWatchedProperty);
   }
 
-  setObservers(func, paths);
+  setObservers(func as Function, paths);
   return func;
 }
 
