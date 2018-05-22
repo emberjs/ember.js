@@ -273,12 +273,9 @@ class ChainNode {
       chains = this._chains;
     }
 
-    let maybeNode: ChainNode | undefined = chains[key];
-    let node: ChainNode;
-    if (maybeNode === undefined) {
+    let node = chains[key];
+    if (node === undefined) {
       node = chains[key] = new ChainNode(this, key, undefined);
-    } else {
-      node = maybeNode;
     }
 
     node.count++; // count chains...
