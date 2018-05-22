@@ -16,12 +16,15 @@ import { sendEvent } from './events';
   @class ObserverSet
 */
 export default class ObserverSet {
+  added: Map<object, Set<string>>;
+  queue: any[];
+
   constructor() {
     this.added = new Map();
     this.queue = [];
   }
 
-  add(object, key, event) {
+  add(object: object, key: string, event: string) {
     let keys = this.added.get(object);
     if (keys === undefined) {
       keys = new Set();
@@ -42,8 +45,8 @@ export default class ObserverSet {
 
     for (let i = 0; i < queue.length; i += 3) {
       let object = queue[i];
-      let key = queue[i + 1];
-      let event = queue[i + 2];
+      let key = queue[i + 1] as string;
+      let event = queue[i + 2] as string;
 
       if (object.isDestroying || object.isDestroyed) {
         continue;

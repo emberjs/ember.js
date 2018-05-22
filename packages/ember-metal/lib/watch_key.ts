@@ -1,15 +1,22 @@
-import { lookupDescriptor } from 'ember-utils';
 import { DEBUG } from '@glimmer/env';
-import { descriptorFor, isDescriptor, meta as metaFor, peekMeta, UNDEFINED } from 'ember-meta';
 import {
-  MANDATORY_SETTER_FUNCTION,
+  descriptorFor,
+  isDescriptor,
+  Meta,
+  meta as metaFor,
+  peekMeta,
+  UNDEFINED,
+} from 'ember-meta';
+import { lookupDescriptor } from 'ember-utils';
+import {
   DEFAULT_GETTER_FUNCTION,
   INHERITING_GETTER_FUNCTION,
+  MANDATORY_SETTER_FUNCTION,
 } from './properties';
 
-let handleMandatorySetter;
+let handleMandatorySetter: (meta: Meta, obj: object, keyName: string) => void;
 
-export function watchKey(obj, keyName, _meta) {
+export function watchKey(obj: object, keyName: string, _meta?: Meta) {
   let meta = _meta === undefined ? metaFor(obj) : _meta;
   let count = meta.peekWatching(keyName) || 0;
   meta.writeWatching(keyName, count + 1);
@@ -22,8 +29,8 @@ export function watchKey(obj, keyName, _meta) {
       possibleDesc.willWatch(obj, keyName, meta);
     }
 
-    if (typeof obj.willWatchProperty === 'function') {
-      obj.willWatchProperty(keyName);
+    if (typeof (obj as any).willWatchProperty === 'function') {
+      (obj as any).willWatchProperty(keyName);
     }
 
     if (DEBUG) {
@@ -34,8 +41,9 @@ export function watchKey(obj, keyName, _meta) {
 }
 
 if (DEBUG) {
-  let hasOwnProperty = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
-  let propertyIsEnumerable = (obj, key) => Object.prototype.propertyIsEnumerable.call(obj, key);
+  let hasOwnProperty = (obj: object, key: string) => Object.prototype.hasOwnProperty.call(obj, key);
+  let propertyIsEnumerable = (obj: object, key: string) =>
+    Object.prototype.propertyIsEnumerable.call(obj, key);
 
   // Future traveler, although this code looks scary. It merely exists in
   // development to aid in development asertions. Production builds of
@@ -43,13 +51,13 @@ if (DEBUG) {
   handleMandatorySetter = function handleMandatorySetter(m, obj, keyName) {
     let descriptor = lookupDescriptor(obj, keyName);
     let hasDescriptor = descriptor !== null;
-    let possibleDesc = hasDescriptor && descriptor.value;
+    let possibleDesc = hasDescriptor && descriptor!.value;
     if (isDescriptor(possibleDesc)) {
       return;
     }
-    let configurable = hasDescriptor ? descriptor.configurable : true;
-    let isWritable = hasDescriptor ? descriptor.writable : true;
-    let hasValue = hasDescriptor ? 'value' in descriptor : true;
+    let configurable = hasDescriptor ? descriptor!.configurable : true;
+    let isWritable = hasDescriptor ? descriptor!.writable : true;
+    let hasValue = hasDescriptor ? 'value' in descriptor! : true;
 
     // this x in Y deopts, so keeping it in this function is better;
     if (configurable && isWritable && hasValue && keyName in obj) {
@@ -57,7 +65,7 @@ if (DEBUG) {
         configurable: true,
         set: MANDATORY_SETTER_FUNCTION(keyName),
         enumerable: propertyIsEnumerable(obj, keyName),
-        get: undefined,
+        get: (undefined as any) as (() => any | undefined | null),
       };
 
       if (hasOwnProperty(obj, keyName)) {
@@ -72,7 +80,7 @@ if (DEBUG) {
   };
 }
 
-export function unwatchKey(obj, keyName, _meta) {
+export function unwatchKey(obj: object, keyName: string, _meta?: Meta) {
   let meta = _meta === undefined ? peekMeta(obj) : _meta;
 
   // do nothing of this object has already been destroyed
@@ -91,8 +99,8 @@ export function unwatchKey(obj, keyName, _meta) {
       possibleDesc.didUnwatch(obj, keyName, meta);
     }
 
-    if (typeof obj.didUnwatchProperty === 'function') {
-      obj.didUnwatchProperty(keyName);
+    if (typeof (obj as any).didUnwatchProperty === 'function') {
+      (obj as any).didUnwatchProperty(keyName);
     }
 
     if (DEBUG) {
@@ -107,8 +115,14 @@ export function unwatchKey(obj, keyName, _meta) {
       if (!isDescriptor && keyName in obj) {
         let maybeMandatoryDescriptor = lookupDescriptor(obj, keyName);
 
-        if (maybeMandatoryDescriptor.set && maybeMandatoryDescriptor.set.isMandatorySetter) {
-          if (maybeMandatoryDescriptor.get && maybeMandatoryDescriptor.get.isInheritingGetter) {
+        if (
+          maybeMandatoryDescriptor!.set &&
+          (maybeMandatoryDescriptor!.set as any).isMandatorySetter
+        ) {
+          if (
+            maybeMandatoryDescriptor!.get &&
+            (maybeMandatoryDescriptor!.get as any).isInheritingGetter
+          ) {
             let possibleValue = meta.readInheritedValue('values', keyName);
             if (possibleValue === UNDEFINED) {
               delete obj[keyName];
