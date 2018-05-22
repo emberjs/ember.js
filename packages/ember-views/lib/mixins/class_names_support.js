@@ -79,6 +79,18 @@ export default Mixin.create({
     });
     ```
 
+    If you would like to specify a class that should only be added when the
+    property is false, you can declare a binding like this:
+
+    ```javascript
+    // Applies the 'disabled' class to the view element
+    import Component from '@ember/component';
+    Component.extend({
+      classNameBindings: ['isEnabled::disabled'],
+      isEnabled: false
+    });
+    ```
+
     This list of properties is inherited from the component's superclasses as well.
 
     @property classNameBindings
