@@ -8,7 +8,7 @@ import { DEBUG } from '@glimmer/env';
 import { isConst, VersionedPathReference } from '@glimmer/reference';
 import { Arguments, VM } from '@glimmer/runtime';
 import { Opaque } from '@glimmer/util';
-import { get, isNone } from 'ember-metal';
+import { get } from 'ember-metal';
 import { ACTION, INVOKE, UnboundReference } from '../utils/references';
 
 /**
@@ -365,7 +365,10 @@ function makeClosureAction(
   let self: any;
   let fn: any;
 
-  assert(`Action passed is null or undefined in (action) from ${target}.`, !isNone(action));
+  assert(
+    `Action passed is null or undefined in (action) from ${target}.`,
+    action !== undefined && action !== null
+  );
 
   if (typeof action[INVOKE] === 'function') {
     self = action;

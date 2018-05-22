@@ -5,7 +5,7 @@ import { getOwner } from 'ember-owner';
 
 import { assign } from '@ember/polyfills';
 import { assert } from '@ember/debug';
-import { get, set, isNone } from 'ember-metal';
+import { get, set } from 'ember-metal';
 import { Object as EmberObject } from 'ember-runtime';
 import jQuery from './jquery';
 import ActionManager from './action_manager';
@@ -135,14 +135,14 @@ export default EmberObject.extend({
     @param addedEvents {Object}
   */
   setup(addedEvents, _rootElement) {
-    let event, rootElement;
     let events = (this._finalEvents = assign({}, get(this, 'events'), addedEvents));
 
-    if (!isNone(_rootElement)) {
+    if (_rootElement !== undefined && _rootElement !== null) {
       set(this, 'rootElement', _rootElement);
     }
 
     let rootElementSelector = get(this, 'rootElement');
+    let rootElement;
     if (HAS_JQUERY) {
       rootElement = jQuery(rootElementSelector);
       assert(
@@ -211,7 +211,7 @@ export default EmberObject.extend({
 
     let viewRegistry = this._getViewRegistry();
 
-    for (event in events) {
+    for (let event in events) {
       if (events.hasOwnProperty(event)) {
         this.setupHandler(rootElement, event, events[event], viewRegistry);
       }

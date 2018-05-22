@@ -1,4 +1,3 @@
-import isNone from './is_none';
 import { get } from './property_get';
 /**
  @module @ember/utils
@@ -37,7 +36,7 @@ import { get } from './property_get';
   @public
 */
 export default function isEmpty(obj: any): boolean {
-  let none = isNone(obj);
+  let none = obj === null || obj === undefined;
   if (none) {
     return none;
   }
