@@ -1,5 +1,5 @@
-import { getName, setName } from 'ember-utils';
 import { context } from 'ember-environment';
+import { getName, setName } from 'ember-utils';
 
 // TODO, this only depends on context, otherwise it could be in utils
 // move into its own package
@@ -24,16 +24,21 @@ const flags = {
 
 let unprocessedMixins = false;
 
-export const NAMESPACES = [];
-export const NAMESPACES_BY_ID = Object.create(null);
+export interface Namespace {
+  isNamespace: true;
+  destroy(): void;
+}
 
-export function addNamespace(namespace) {
+export const NAMESPACES: Namespace[] = [];
+export const NAMESPACES_BY_ID: { [name: string]: Namespace } = Object.create(null);
+
+export function addNamespace(namespace: Namespace): void {
   flags.unprocessedNamespaces = true;
   NAMESPACES.push(namespace);
 }
 
-export function removeNamespace(namespace) {
-  let name = getName(namespace);
+export function removeNamespace(namespace: Namespace): void {
+  let name = getName(namespace) as string;
   delete NAMESPACES_BY_ID[name];
   NAMESPACES.splice(NAMESPACES.indexOf(namespace), 1);
   if (name in context.lookup && namespace === context.lookup[name]) {
@@ -41,7 +46,7 @@ export function removeNamespace(namespace) {
   }
 }
 
-export function findNamespaces() {
+export function findNamespaces(): void {
   if (!flags.unprocessedNamespaces) {
     return;
   }
@@ -60,14 +65,14 @@ export function findNamespaces() {
   }
 }
 
-export function findNamespace(name) {
+export function findNamespace(name: string): Namespace | undefined {
   if (!searchDisabled) {
     processAllNamespaces();
   }
   return NAMESPACES_BY_ID[name];
 }
 
-export function processNamespace(namespace) {
+export function processNamespace(namespace: Namespace): void {
   _processNamespace([namespace.toString()], namespace, new Set());
 }
 
@@ -89,7 +94,7 @@ export function processAllNamespaces() {
   }
 }
 
-export function classToString() {
+export function classToString(this: object): string {
   let name = getName(this);
   if (name !== void 0) {
     return name;
@@ -99,19 +104,19 @@ export function classToString() {
   return name;
 }
 
-export function isSearchDisabled() {
+export function isSearchDisabled(): boolean {
   return searchDisabled;
 }
 
-export function setSearchDisabled(flag) {
+export function setSearchDisabled(flag: boolean): void {
   searchDisabled = !!flag;
 }
 
-export function setUnprocessedMixins() {
+export function setUnprocessedMixins(): void {
   unprocessedMixins = true;
 }
 
-function _processNamespace(paths, root, seen) {
+function _processNamespace(paths: string[], root: Namespace, seen: Set<Namespace>) {
   let idx = paths.length;
 
   let id = paths.join('.');
@@ -152,18 +157,18 @@ function _processNamespace(paths, root, seen) {
   paths.length = idx; // cut out last item
 }
 
-function isUppercase(code) {
+function isUppercase(code: number): boolean {
   return (
     code >= 65 && code <= 90 // A
   ); // Z
 }
 
-function tryIsNamespace(lookup, prop) {
+function tryIsNamespace(lookup: { [k: string]: any }, prop: string): Namespace | void {
   try {
     let obj = lookup[prop];
     return (
       ((obj !== null && typeof obj === 'object') || typeof obj === 'function') &&
-      obj.isNamespace &&
+      (obj as any).isNamespace &&
       obj
     );
   } catch (e) {
@@ -171,7 +176,7 @@ function tryIsNamespace(lookup, prop) {
   }
 }
 
-function calculateToString(target) {
+function calculateToString(target: object): string {
   let str;
 
   if (!searchDisabled) {

@@ -31,7 +31,7 @@ import { get } from './property_get';
   @return {Object}
   @public
 */
-export default function getProperties(obj) {
+export default function getProperties(obj: object): object {
   let ret = {};
   let propertyNames = arguments;
   let i = 1;

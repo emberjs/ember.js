@@ -1,5 +1,5 @@
-import { get } from './property_get';
 import isNone from './is_none';
+import { get } from './property_get';
 /**
  @module @ember/utils
 */
@@ -36,7 +36,7 @@ import isNone from './is_none';
   @return {Boolean}
   @public
 */
-export default function isEmpty(obj) {
+export default function isEmpty(obj: any): boolean {
   let none = isNone(obj);
   if (none) {
     return none;

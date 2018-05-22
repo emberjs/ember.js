@@ -22,6 +22,6 @@
   @return {Boolean}
   @public
 */
-export default function isNone(obj) {
+export default function isNone(obj: any): boolean {
   return obj === null || obj === undefined;
 }

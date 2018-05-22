@@ -11,10 +11,20 @@ import { lookupDescriptor } from 'ember-utils';
 import {
   DEFAULT_GETTER_FUNCTION,
   INHERITING_GETTER_FUNCTION,
+  InheritingGetterFunction,
   MANDATORY_SETTER_FUNCTION,
+  MandatorySetterFunction,
 } from './properties';
 
 let handleMandatorySetter: (meta: Meta, obj: object, keyName: string) => void;
+
+interface MaybeHasWillWatchProperty {
+  willWatchProperty?: (keyName: string) => void;
+}
+
+interface MaybeHasDidUnwatchProperty {
+  didUnwatchProperty?: (keyName: string) => void;
+}
 
 export function watchKey(obj: object, keyName: string, _meta?: Meta) {
   let meta = _meta === undefined ? metaFor(obj) : _meta;
@@ -29,8 +39,8 @@ export function watchKey(obj: object, keyName: string, _meta?: Meta) {
       possibleDesc.willWatch(obj, keyName, meta);
     }
 
-    if (typeof (obj as any).willWatchProperty === 'function') {
-      (obj as any).willWatchProperty(keyName);
+    if (typeof (obj as MaybeHasWillWatchProperty).willWatchProperty === 'function') {
+      (obj as MaybeHasWillWatchProperty).willWatchProperty!(keyName);
     }
 
     if (DEBUG) {
@@ -99,8 +109,8 @@ export function unwatchKey(obj: object, keyName: string, _meta?: Meta) {
       possibleDesc.didUnwatch(obj, keyName, meta);
     }
 
-    if (typeof (obj as any).didUnwatchProperty === 'function') {
-      (obj as any).didUnwatchProperty(keyName);
+    if (typeof (obj as MaybeHasDidUnwatchProperty).didUnwatchProperty === 'function') {
+      (obj as MaybeHasDidUnwatchProperty).didUnwatchProperty!(keyName);
     }
 
     if (DEBUG) {
@@ -116,12 +126,13 @@ export function unwatchKey(obj: object, keyName: string, _meta?: Meta) {
         let maybeMandatoryDescriptor = lookupDescriptor(obj, keyName);
 
         if (
-          maybeMandatoryDescriptor!.set &&
-          (maybeMandatoryDescriptor!.set as any).isMandatorySetter
+          maybeMandatoryDescriptor &&
+          maybeMandatoryDescriptor.set &&
+          (maybeMandatoryDescriptor.set as MandatorySetterFunction).isMandatorySetter
         ) {
           if (
-            maybeMandatoryDescriptor!.get &&
-            (maybeMandatoryDescriptor!.get as any).isInheritingGetter
+            maybeMandatoryDescriptor.get &&
+            (maybeMandatoryDescriptor.get as InheritingGetterFunction).isInheritingGetter
           ) {
             let possibleValue = meta.readInheritedValue('values', keyName);
             if (possibleValue === UNDEFINED) {

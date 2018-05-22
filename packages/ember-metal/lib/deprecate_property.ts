@@ -3,6 +3,7 @@
 */
 
 import { deprecate } from '@ember/debug';
+import { DeprecationOptions } from '@ember/debug/lib/deprecate';
 import { get } from './property_get';
 import { set } from './property_set';
 
@@ -18,7 +19,12 @@ import { set } from './property_set';
   @since 1.7.0
 */
 
-export function deprecateProperty(object, deprecatedKey, newKey, options) {
+export function deprecateProperty(
+  object: object,
+  deprecatedKey: string,
+  newKey: string,
+  options?: DeprecationOptions
+) {
   function _deprecate() {
     deprecate(
       `Usage of \`${deprecatedKey}\` is deprecated, use \`${newKey}\` instead.`,

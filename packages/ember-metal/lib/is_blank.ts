@@ -29,6 +29,6 @@ import isEmpty from './is_empty';
   @since 1.5.0
   @public
 */
-export default function isBlank(obj) {
+export default function isBlank(obj: any): boolean {
   return isEmpty(obj) || (typeof obj === 'string' && /\S/.test(obj) === false);
 }

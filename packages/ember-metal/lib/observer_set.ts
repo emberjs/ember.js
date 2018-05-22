@@ -17,7 +17,7 @@ import { sendEvent } from './events';
 */
 export default class ObserverSet {
   added: Map<object, Set<string>>;
-  queue: any[];
+  queue: (object | string)[];
 
   constructor() {
     this.added = new Map();
@@ -44,15 +44,20 @@ export default class ObserverSet {
     this.queue = [];
 
     for (let i = 0; i < queue.length; i += 3) {
-      let object = queue[i];
+      let object = queue[i] as object;
       let key = queue[i + 1] as string;
       let event = queue[i + 2] as string;
 
-      if (object.isDestroying || object.isDestroyed) {
+      if ((object as ExtendedObject).isDestroying || (object as ExtendedObject).isDestroyed) {
         continue;
       }
 
       sendEvent(object, event, [object, key]);
     }
   }
+}
+
+interface ExtendedObject {
+  isDestroying?: boolean;
+  isDestroyed?: boolean;
 }

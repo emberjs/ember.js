@@ -33,6 +33,6 @@ import isBlank from './is_blank';
   @since 1.8.0
   @public
 */
-export default function isPresent(obj) {
+export default function isPresent(obj: object): any {
   return !isBlank(obj);
 }
