@@ -74,8 +74,7 @@ class ChainWatchers {
     }
 
     let affected: (any | string)[] | undefined = undefined;
-
-    if (callback) {
+    if (callback !== undefined) {
       affected = [];
     }
 
@@ -181,20 +180,13 @@ class ChainNode {
     this.content = value;
 
     // It is false for the root of a chain (because we have no parent)
-    let isWatching = parent !== null;
-    let object;
+    let isWatching = (this.isWatching = parent !== null);
     if (isWatching) {
       let parentValue = parent!.value();
       if (isObject(parentValue)) {
-        object = parentValue;
+        this.object = parentValue;
+        addChainWatcher(parentValue, key, this);
       }
-    }
-
-    this.isWatching = isWatching;
-    this.object = object;
-
-    if (isWatching && object !== undefined) {
-      addChainWatcher(object, key, this);
     }
   }
 
@@ -256,16 +248,14 @@ class ChainNode {
   }
 
   chain(key: string, tails: string[]): void {
-    let chains: { [key: string]: ChainNode | undefined };
-    if (this.chains === undefined) {
+    let chains = this.chains;
+    if (chains === undefined) {
       chains = this.chains = Object.create(null);
-    } else {
-      chains = this.chains;
     }
 
-    let node = chains[key];
+    let node = chains![key];
     if (node === undefined) {
-      node = chains[key] = new ChainNode(this, key, undefined);
+      node = chains![key] = new ChainNode(this, key, undefined);
     }
 
     node.count++; // count chains...
@@ -322,7 +312,7 @@ class ChainNode {
       }
     }
 
-    if (affected && this.parent) {
+    if (affected !== undefined && this.parent !== null) {
       this.parent.populateAffected(this.key, 1, affected);
     }
   }
@@ -332,7 +322,7 @@ class ChainNode {
       path = `${this.key}.${path}`;
     }
 
-    if (this.parent) {
+    if (this.parent !== null) {
       this.parent.populateAffected(path, depth + 1, affected);
     } else if (depth > 1) {
       affected.push(this.value(), path);
