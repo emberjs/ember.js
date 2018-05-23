@@ -39,7 +39,9 @@ function isMethod(obj: any) {
   );
 }
 
-const CONTINUE: MixinLike = {};
+type MixinLike = Mixin | { [key: string]: any };
+
+const CONTINUE: MixinLike = Object.freeze({});
 
 function mixinProperties<T extends MixinLike>(mixinsMeta: Meta, mixin: T): MixinLike {
   if (mixin instanceof Mixin) {
@@ -681,8 +683,6 @@ function buildMixinsArray(mixins: MixinLike[] | undefined): Mixin[] | undefined 
 
   return m;
 }
-
-type MixinLike = Mixin | { [key: string]: any };
 
 if (ENV._ENABLE_BINDING_SUPPORT) {
   // slotting this so that the legacy addon can add the function here

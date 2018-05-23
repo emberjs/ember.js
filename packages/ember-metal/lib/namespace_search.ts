@@ -1,5 +1,5 @@
 import { context } from 'ember-environment';
-import { getName, setName } from 'ember-utils';
+import { getName, isObject, setName } from 'ember-utils';
 
 // TODO, this only depends on context, otherwise it could be in utils
 // move into its own package
@@ -29,18 +29,18 @@ export interface Namespace {
   destroy(): void;
 }
 
-export const NAMESPACES: Namespace[] = [];
-export const NAMESPACES_BY_ID: { [name: string]: Namespace } = Object.create(null);
+export const NAMESPACES: Set<Namespace> = new Set();
+export const NAMESPACES_BY_ID: Map<string, Namespace> = new Map();
 
 export function addNamespace(namespace: Namespace): void {
   flags.unprocessedNamespaces = true;
-  NAMESPACES.push(namespace);
+  NAMESPACES.add(namespace);
 }
 
 export function removeNamespace(namespace: Namespace): void {
   let name = getName(namespace) as string;
-  delete NAMESPACES_BY_ID[name];
-  NAMESPACES.splice(NAMESPACES.indexOf(namespace), 1);
+  NAMESPACES_BY_ID.delete(name);
+  NAMESPACES.delete(namespace);
   if (name in context.lookup && namespace === context.lookup[name]) {
     context.lookup[name] = undefined;
   }
@@ -59,7 +59,7 @@ export function findNamespaces(): void {
       continue;
     }
     let obj = tryIsNamespace(lookup, key);
-    if (obj) {
+    if (obj !== undefined) {
       setName(obj, key);
     }
   }
@@ -69,7 +69,7 @@ export function findNamespace(name: string): Namespace | undefined {
   if (!searchDisabled) {
     processAllNamespaces();
   }
-  return NAMESPACES_BY_ID[name];
+  return NAMESPACES_BY_ID.get(name);
 }
 
 export function processNamespace(namespace: Namespace): void {
@@ -84,19 +84,14 @@ export function processAllNamespaces() {
   }
 
   if (unprocessedNamespaces || unprocessedMixins) {
-    let namespaces = NAMESPACES;
-
-    for (let i = 0; i < namespaces.length; i++) {
-      processNamespace(namespaces[i]);
-    }
-
+    NAMESPACES.forEach(namespace => processNamespace(namespace));
     unprocessedMixins = false;
   }
 }
 
 export function classToString(this: object): string {
   let name = getName(this);
-  if (name !== void 0) {
+  if (name !== undefined) {
     return name;
   }
   name = calculateToString(this);
@@ -121,7 +116,7 @@ function _processNamespace(paths: string[], root: Namespace, seen: Set<Namespace
 
   let id = paths.join('.');
 
-  NAMESPACES_BY_ID[id] = root;
+  NAMESPACES_BY_ID.set(id, root);
   setName(root, id);
 
   // Loop over all of the keys in the namespace, looking for classes
@@ -138,16 +133,17 @@ function _processNamespace(paths: string[], root: Namespace, seen: Set<Namespace
     // `['Ember', 'View']`.
     paths[idx] = key;
 
+    if (!obj) {
+      continue;
+    }
+
     // If we have found an unprocessed class
-    if (obj && obj.toString === classToString && getName(obj) === void 0) {
+    if (obj.toString === classToString && getName(obj) === undefined) {
       // Replace the class' `toString` with the dot-separated path
       setName(obj, paths.join('.'));
       // Support nested namespaces
-    } else if (obj && obj.isNamespace) {
+    } else if (obj.isNamespace && !seen.has(obj)) {
       // Skip aliased namespaces
-      if (seen.has(obj)) {
-        continue;
-      }
       seen.add(obj);
       // Process the child namespace
       _processNamespace(paths, obj, seen);
@@ -165,12 +161,10 @@ function isUppercase(code: number): boolean {
 
 function tryIsNamespace(lookup: { [k: string]: any }, prop: string): Namespace | void {
   try {
-    let obj = lookup[prop];
-    return (
-      ((obj !== null && typeof obj === 'object') || typeof obj === 'function') &&
-      (obj as any).isNamespace &&
-      obj
-    );
+    let obj = lookup[prop] as Namespace;
+    if (isObject(obj) && obj.isNamespace) {
+      return obj;
+    }
   } catch (e) {
     // continue
   }
@@ -183,9 +177,10 @@ function calculateToString(target: object): string {
     processAllNamespaces();
 
     str = getName(target);
-    if (str !== void 0) {
+    if (str !== undefined) {
       return str;
     }
+
     let superclass = target;
     do {
       superclass = Object.getPrototypeOf(superclass);
@@ -193,11 +188,11 @@ function calculateToString(target: object): string {
         break;
       }
       str = getName(target);
-      if (str !== void 0) {
+      if (str !== undefined) {
         str = `(subclass of ${str})`;
         break;
       }
-    } while (str === void 0);
+    } while (str === undefined);
   }
   return str || '(unknown)';
 }
