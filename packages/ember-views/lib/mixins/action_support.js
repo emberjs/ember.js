@@ -2,7 +2,7 @@
  @module ember
 */
 import { inspect } from 'ember-utils';
-import { Mixin, get, isNone } from 'ember-metal';
+import { Mixin, get } from 'ember-metal';
 import { assert } from '@ember/debug';
 import { MUTABLE_CELL } from '../compat/attrs';
 
@@ -13,7 +13,10 @@ function validateAction(component, actionName) {
 
   assert(
     `The default action was triggered on the component ${component.toString()}, but the action name (${actionName}) was not a string.`,
-    isNone(actionName) || typeof actionName === 'string' || typeof actionName === 'function'
+    actionName === null ||
+      actionName === undefined ||
+      typeof actionName === 'string' ||
+      typeof actionName === 'function'
   );
   return actionName;
 }
