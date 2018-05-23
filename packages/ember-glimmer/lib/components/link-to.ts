@@ -520,7 +520,7 @@ const LinkComponent = EmberComponent.extend({
     },
 
     set(_key: string, value: any): boolean {
-      this._isDisabled = value;
+      (this as any)._isDisabled = value;
 
       return value ? get(this, 'disabledClass') : false;
     },

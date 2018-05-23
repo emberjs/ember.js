@@ -1,6 +1,6 @@
-import { watch, unwatch } from './watching';
-import { addListener, removeListener } from './events';
 import changeEvent from './change_event';
+import { addListener, removeListener } from './events';
+import { unwatch, watch } from './watching';
 
 /**
 @module @ember/object
@@ -16,7 +16,12 @@ import changeEvent from './change_event';
   @param {Function|String} [method]
   @public
 */
-export function addObserver(obj, path, target, method) {
+export function addObserver(
+  obj: any,
+  path: string,
+  target: object | Function | null,
+  method: string | Function | undefined
+): void {
   addListener(obj, changeEvent(path), target, method);
   watch(obj, path);
 }
@@ -31,7 +36,12 @@ export function addObserver(obj, path, target, method) {
   @param {Function|String} [method]
   @public
 */
-export function removeObserver(obj, path, target, method) {
+export function removeObserver(
+  obj: any,
+  path: string,
+  target: object | Function | null,
+  method: string | Function | undefined
+): void {
   unwatch(obj, path);
   removeListener(obj, changeEvent(path), target, method);
 }

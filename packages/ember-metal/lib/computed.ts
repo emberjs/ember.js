@@ -1,22 +1,40 @@
-import { inspect } from 'ember-utils';
+import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { assert, warn } from '@ember/debug';
 import EmberError from '@ember/error';
-import { set } from './property_set';
 import { meta as metaFor, peekMeta } from 'ember-meta';
-import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
-import expandProperties from './expand_properties';
-import { Descriptor, defineProperty } from './properties';
-import { notifyPropertyChange } from './property_events';
-import { addDependentKeys, removeDependentKeys } from './dependent_keys';
-import { getCurrentTracker, setCurrentTracker } from './tracked';
-import { tagForProperty, update } from './tags';
+import { inspect } from 'ember-utils';
 import {
-  getCacheFor,
   getCachedValueFor,
+  getCacheFor,
   getLastRevisionFor,
   peekCacheFor,
   setLastRevisionFor,
 } from './computed_cache';
+import {
+  addDependentKeys,
+  DescriptorWithDependentKeys,
+  removeDependentKeys,
+} from './dependent_keys';
+import expandProperties from './expand_properties';
+import { defineProperty, Descriptor } from './properties';
+import { notifyPropertyChange } from './property_events';
+import { set } from './property_set';
+import { tagForProperty, update } from './tags';
+import { getCurrentTracker, setCurrentTracker } from './tracked';
+
+export type ComputedPropertyGetter = (keyName: string) => any;
+export type ComputedPropertySetter = (leyName: string, value: any) => any;
+
+export interface ComputedPropertyGetterAndSetter {
+  get?: ComputedPropertyGetter;
+  set?: ComputedPropertySetter;
+}
+export type ComputedPropertyConfig = ComputedPropertyGetter | ComputedPropertyGetterAndSetter;
+
+export interface ComputedPropertyOptions {
+  dependentKeys?: string[];
+  readOnly?: boolean;
+}
 
 /**
 @module @ember/object
@@ -135,27 +153,37 @@ function noop() {}
   @class ComputedProperty
   @public
 */
-class ComputedProperty extends Descriptor {
-  constructor(config, opts) {
+class ComputedProperty extends Descriptor implements DescriptorWithDependentKeys {
+  private _meta: any | undefined;
+  private _volatile: boolean;
+  private _readOnly: boolean;
+  private _suspended: any;
+  _getter: ComputedPropertyGetter;
+  _setter?: ComputedPropertySetter;
+  _auto?: boolean;
+  _dependentKeys: string[] | undefined;
+
+  constructor(config: ComputedPropertyConfig, opts?: ComputedPropertyOptions) {
     super();
     let hasGetterOnly = typeof config === 'function';
     if (hasGetterOnly) {
-      this._getter = config;
+      this._getter = config as ComputedPropertyGetter;
     } else {
+      const objectConfig = config as ComputedPropertyGetterAndSetter;
       assert(
         'computed expects a function or an object as last argument.',
-        typeof config === 'object' && !Array.isArray(config)
+        typeof objectConfig === 'object' && !Array.isArray(objectConfig)
       );
       assert(
         'Config object passed to computed can only contain `get` and `set` keys.',
-        Object.keys(config).every(key => key === 'get' || key === 'set')
+        Object.keys(objectConfig).every(key => key === 'get' || key === 'set')
       );
       assert(
         'Computed properties must receive a getter or a setter, you passed none.',
-        !!config.get || !!config.set
+        !!objectConfig.get || !!objectConfig.set
       );
-      this._getter = config.get || noop;
-      this._setter = config.set;
+      this._getter = objectConfig.get || noop;
+      this._setter = objectConfig.set;
     }
 
     this._suspended = undefined;
@@ -167,7 +195,7 @@ class ComputedProperty extends Descriptor {
     }
 
     this._dependentKeys = opts && opts.dependentKeys;
-    this._readOnly = opts && hasGetterOnly && opts.readOnly === true;
+    this._readOnly = !!opts && hasGetterOnly && opts.readOnly === true;
   }
 
   /**
@@ -195,7 +223,7 @@ class ComputedProperty extends Descriptor {
     @chainable
     @public
   */
-  volatile() {
+  volatile(): ComputedProperty {
     this._volatile = true;
     return this;
   }
@@ -223,7 +251,7 @@ class ComputedProperty extends Descriptor {
     @chainable
     @public
   */
-  readOnly() {
+  readOnly(): ComputedProperty {
     this._readOnly = true;
     assert(
       'Computed properties that define a setter using the new syntax cannot be read-only',
@@ -262,10 +290,10 @@ class ComputedProperty extends Descriptor {
     @chainable
     @public
   */
-  property() {
-    let args = [];
+  property(...passedArgs: string[]): ComputedProperty {
+    let args: string[] = [];
 
-    function addArg(property) {
+    function addArg(property: string) {
       warn(
         `Dependent keys containing @each only work one level deep. ` +
           `You used the key "${property}" which is invalid. ` +
@@ -276,8 +304,8 @@ class ComputedProperty extends Descriptor {
       args.push(property);
     }
 
-    for (let i = 0; i < arguments.length; i++) {
-      expandProperties(arguments[i], addArg);
+    for (let i = 0; i < passedArgs.length; i++) {
+      expandProperties(passedArgs[i], addArg);
     }
 
     this._dependentKeys = args;
@@ -312,7 +340,7 @@ class ComputedProperty extends Descriptor {
     @chainable
     @public
   */
-  meta(meta) {
+  meta(meta?: any): any | undefined {
     if (arguments.length === 0) {
       return this._meta || {};
     } else {
@@ -322,7 +350,7 @@ class ComputedProperty extends Descriptor {
   }
 
   // invalidate cache when CP key changes
-  didChange(obj, keyName) {
+  didChange(obj: object, keyName: string) {
     // _suspended is set via a CP.set to ensure we don't clear
     // the cached value set by the setter
     if (this._volatile || this._suspended === obj) {
@@ -341,7 +369,7 @@ class ComputedProperty extends Descriptor {
     }
   }
 
-  get(obj, keyName) {
+  get(obj: object, keyName: string) {
     if (this._volatile) {
       return this._getter.call(obj, keyName);
     }
@@ -370,8 +398,8 @@ class ComputedProperty extends Descriptor {
       }
     }
 
-    let parent;
-    let tracker;
+    let parent: any;
+    let tracker: any;
 
     if (EMBER_METAL_TRACKED_PROPERTIES) {
       parent = getCurrentTracker();
@@ -381,12 +409,12 @@ class ComputedProperty extends Descriptor {
     let ret = this._getter.call(obj, keyName);
 
     if (EMBER_METAL_TRACKED_PROPERTIES) {
-      setCurrentTracker(parent);
-      let tag = tracker.combine();
+      setCurrentTracker(parent!);
+      let tag = tracker!.combine();
       if (parent) parent.add(tag);
 
-      update(propertyTag, tag);
-      setLastRevisionFor(obj, keyName, propertyTag.value());
+      update(propertyTag as any, tag);
+      setLastRevisionFor(obj, keyName, (propertyTag as any).value());
     }
 
     cache.set(keyName, ret);
@@ -401,7 +429,7 @@ class ComputedProperty extends Descriptor {
     return ret;
   }
 
-  set(obj, keyName, value) {
+  set(obj: object, keyName: string, value: any): any {
     if (this._readOnly) {
       this._throwReadOnlyError(obj, keyName);
     }
@@ -417,22 +445,22 @@ class ComputedProperty extends Descriptor {
     return this.setWithSuspend(obj, keyName, value);
   }
 
-  _throwReadOnlyError(obj, keyName) {
+  _throwReadOnlyError(obj: object, keyName: string): never {
     throw new EmberError(`Cannot set read-only property "${keyName}" on object: ${inspect(obj)}`);
   }
 
-  clobberSet(obj, keyName, value) {
+  clobberSet(obj: object, keyName: string, value: any): any {
     let cachedValue = getCachedValueFor(obj, keyName);
     defineProperty(obj, keyName, null, cachedValue);
     set(obj, keyName, value);
     return value;
   }
 
-  volatileSet(obj, keyName, value) {
-    return this._setter.call(obj, keyName, value);
+  volatileSet(obj: object, keyName: string, value: any): any {
+    return this._setter!.call(obj, keyName, value);
   }
 
-  setWithSuspend(obj, keyName, value) {
+  setWithSuspend(obj: object, keyName: string, value: any): any {
     let oldSuspended = this._suspended;
     this._suspended = obj;
     try {
@@ -442,12 +470,12 @@ class ComputedProperty extends Descriptor {
     }
   }
 
-  _set(obj, keyName, value) {
+  _set(obj: object, keyName: string, value: any) {
     let cache = getCacheFor(obj);
     let hadCachedValue = cache.has(keyName);
     let cachedValue = cache.get(keyName);
 
-    let ret = this._setter.call(obj, keyName, value, cachedValue);
+    let ret = this._setter!.call(obj, keyName, value, cachedValue);
 
     // allows setter to return the same value that is cached already
     if (hadCachedValue && cachedValue === ret) {
@@ -472,7 +500,7 @@ class ComputedProperty extends Descriptor {
   }
 
   /* called before property is overridden */
-  teardown(obj, keyName, meta) {
+  teardown(obj: object, keyName: string, meta?: any): void {
     if (this._volatile) {
       return;
     }
@@ -481,6 +509,8 @@ class ComputedProperty extends Descriptor {
       removeDependentKeys(this, obj, keyName, meta);
     }
   }
+
+  auto!: () => ComputedProperty;
 }
 
 if (EMBER_METAL_TRACKED_PROPERTIES) {
@@ -578,13 +608,13 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
   @return {ComputedProperty} property descriptor instance
   @public
 */
-export default function computed(...args) {
+export default function computed(...args: (string | ComputedPropertyConfig)[]): ComputedProperty {
   let func = args.pop();
 
-  let cp = new ComputedProperty(func);
+  let cp = new ComputedProperty(func as ComputedPropertyConfig);
 
   if (args.length > 0) {
-    cp.property(...args);
+    cp.property(...(args as string[]));
   }
 
   return cp;

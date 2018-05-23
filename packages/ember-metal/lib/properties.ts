@@ -7,6 +7,14 @@ import { DEBUG } from '@glimmer/env';
 import { descriptorFor, Meta, meta as metaFor, peekMeta, UNDEFINED } from 'ember-meta';
 import { overrideChains } from './property_events';
 
+export type MandatorySetterFunction = ((this: object, value: any) => void) & {
+  isMandatorySetter: true;
+};
+export type DefaultGetterFunction = (this: object) => void;
+export type InheritingGetterFunction = ((this: object) => void) & {
+  isInheritingGetter: true;
+};
+
 // ..........................................................
 // DESCRIPTOR
 //
@@ -28,7 +36,7 @@ export abstract class Descriptor {
 
   setup?(obj: object, keyName: string): void;
 
-  abstract teardown(obj: object, keyName: string): void;
+  abstract teardown(obj: object, keyName: string, meta: Meta): void;
   abstract get(obj: object, keyName: string): any | null | undefined;
   abstract set(obj: object, keyName: string, value: any | null | undefined): any | null | undefined;
 
@@ -38,12 +46,16 @@ export abstract class Descriptor {
   didChange?(obj: object, keyName: string): void;
 }
 
+interface ExtendedObject {
+  didDefineProperty?: (obj: object, keyName: string, value: any) => void;
+}
+
 // ..........................................................
 // DEFINING PROPERTIES API
 //
 
-export function MANDATORY_SETTER_FUNCTION(name: string) {
-  function SETTER_FUNCTION(this: any, value: any | undefined | null) {
+export function MANDATORY_SETTER_FUNCTION(name: string): MandatorySetterFunction {
+  function SETTER_FUNCTION(this: object, value: any | undefined | null) {
     let m = peekMeta(this);
     if (!m.isInitialized(this)) {
       m.writeValues(name, value);
@@ -54,10 +66,10 @@ export function MANDATORY_SETTER_FUNCTION(name: string) {
       );
     }
   }
-  return Object.assign(SETTER_FUNCTION, { isMandatorySetter: true });
+  return Object.assign(SETTER_FUNCTION as MandatorySetterFunction, { isMandatorySetter: true });
 }
 
-export function DEFAULT_GETTER_FUNCTION(name: string) {
+export function DEFAULT_GETTER_FUNCTION(name: string): DefaultGetterFunction {
   return function GETTER_FUNCTION(this: any) {
     let meta = peekMeta(this);
     if (meta !== undefined) {
@@ -66,7 +78,7 @@ export function DEFAULT_GETTER_FUNCTION(name: string) {
   };
 }
 
-export function INHERITING_GETTER_FUNCTION(name: string) {
+export function INHERITING_GETTER_FUNCTION(name: string): InheritingGetterFunction {
   function IGETTER_FUNCTION(this: any) {
     let meta = peekMeta(this);
     let val;
@@ -82,13 +94,13 @@ export function INHERITING_GETTER_FUNCTION(name: string) {
     }
   }
 
-  return Object.assign(IGETTER_FUNCTION, {
+  return Object.assign(IGETTER_FUNCTION as InheritingGetterFunction, {
     isInheritingGetter: true,
   });
 }
 
 function DESCRIPTOR_GETTER_FUNCTION(name: string, descriptor: Descriptor) {
-  return function CPGETTER_FUNCTION(this: any) {
+  return function CPGETTER_FUNCTION(this: object) {
     return descriptor.get(this, name);
   };
 }
@@ -144,7 +156,7 @@ export function defineProperty(
   obj: object,
   keyName: string,
   desc: Descriptor | undefined | null,
-  data: any | undefined | null,
+  data?: any | undefined | null,
   meta?: Meta
 ) {
   if (meta === undefined) {
@@ -228,7 +240,7 @@ export function defineProperty(
 
   // The `value` passed to the `didDefineProperty` hook is
   // either the descriptor or data, whichever was passed.
-  if (typeof (obj as any).didDefineProperty === 'function') {
-    (obj as any).didDefineProperty(obj, keyName, value);
+  if (typeof (obj as ExtendedObject).didDefineProperty === 'function') {
+    (obj as ExtendedObject).didDefineProperty!(obj, keyName, value);
   }
 }

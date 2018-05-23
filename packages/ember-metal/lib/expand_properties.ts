@@ -36,7 +36,10 @@ const END_WITH_EACH_REGEX = /\.@each$/;
   @param {Function} callback The callback to invoke.  It is invoked once per
   expansion, and is passed the expansion.
 */
-export default function expandProperties(pattern, callback) {
+export default function expandProperties(
+  pattern: string,
+  callback: (expansion: string) => void
+): void {
   assert(
     `A computed property key must be a string, you passed ${typeof pattern} ${pattern}`,
     typeof pattern === 'string'
@@ -59,7 +62,12 @@ export default function expandProperties(pattern, callback) {
   }
 }
 
-function dive(prefix, pattern, start, callback) {
+function dive(
+  prefix: string,
+  pattern: string,
+  start: number,
+  callback: (expansion: string) => void
+) {
   let end = pattern.indexOf('}'),
     i = 0,
     newStart,

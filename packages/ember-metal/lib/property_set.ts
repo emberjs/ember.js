@@ -1,12 +1,25 @@
-import { HAS_NATIVE_PROXY, toString } from 'ember-utils';
+import { assert, deprecate } from '@ember/debug';
 import EmberError from '@ember/error';
 import { DEBUG } from '@glimmer/env';
-import { assert, deprecate } from '@ember/debug';
-import { getPossibleMandatoryProxyValue, _getPath as getPath } from './property_get';
-import { notifyPropertyChange } from './property_events';
-
+import { descriptorFor, isDescriptor, Meta, meta, peekMeta } from 'ember-meta';
+import { HAS_NATIVE_PROXY, toString } from 'ember-utils';
 import { isPath } from './path_cache';
-import { meta, peekMeta, descriptorFor, isDescriptor } from 'ember-meta';
+import { Descriptor, MandatorySetterFunction } from './properties';
+import { notifyPropertyChange } from './property_events';
+import { _getPath as getPath, getPossibleMandatoryProxyValue } from './property_get';
+
+interface ExtendedObject {
+  isDestroyed?: boolean;
+  setUnknownProperty?: (keyName: string, value: any) => any;
+}
+
+let setWithMandatorySetter: <T extends object, K extends keyof T>(
+  meta: Meta,
+  obj: T,
+  keyName: K,
+  value: T[K]
+) => void;
+let makeEnumerable: (obj: object, keyName: string) => void;
 
 /**
  @module @ember/object
@@ -33,7 +46,7 @@ import { meta, peekMeta, descriptorFor, isDescriptor } from 'ember-meta';
   @return {Object} the passed value.
   @public
 */
-export function set(obj, keyName, value, tolerant) {
+export function set(obj: object, keyName: string, value: any, tolerant?: boolean): any | void {
   assert(
     `Set must be called with three or four arguments; an object, a property key, a value and tolerant true/false`,
     arguments.length === 3 || arguments.length === 4
@@ -51,7 +64,7 @@ export function set(obj, keyName, value, tolerant) {
     typeof keyName !== 'string' || keyName.lastIndexOf('this.', 0) !== 0
   );
 
-  if (obj.isDestroyed) {
+  if ((obj as ExtendedObject).isDestroyed) {
     assert(
       `calling set on destroyed object: ${toString(obj)}.${keyName} = ${toString(value)}`,
       tolerant
@@ -71,7 +84,7 @@ export function set(obj, keyName, value, tolerant) {
     return value;
   }
 
-  let currentValue;
+  let currentValue: any;
   if (DEBUG && HAS_NATIVE_PROXY) {
     currentValue = getPossibleMandatoryProxyValue(obj, keyName);
   } else {
@@ -93,21 +106,23 @@ export function set(obj, keyName, value, tolerant) {
       }
     );
 
+    let cv: Descriptor = currentValue;
+
     Object.defineProperty(obj, keyName, {
       configurable: true,
-      enumerable: currentValue.enumerable === false,
+      enumerable: cv.enumerable === false,
       get() {
-        return currentValue.get(this, keyName);
+        return cv.get(this, keyName);
       },
     });
 
-    meta(obj).writeDescriptors(keyName, currentValue);
+    meta(obj).writeDescriptors(keyName, cv);
 
-    if (typeof currentValue.setup === 'function') {
-      currentValue.setup(obj, keyName);
+    if (typeof cv.setup === 'function') {
+      cv.setup(obj, keyName);
     }
 
-    currentValue.set(obj, keyName, value);
+    cv.set(obj, keyName, value);
     return value;
   }
 
@@ -115,15 +130,15 @@ export function set(obj, keyName, value, tolerant) {
     currentValue === undefined &&
     'object' === typeof obj &&
     !(keyName in obj) &&
-    typeof obj.setUnknownProperty === 'function'
+    typeof (obj as ExtendedObject).setUnknownProperty === 'function'
   ) {
     /* unknown property */
-    obj.setUnknownProperty(keyName, value);
+    (obj as ExtendedObject).setUnknownProperty!(keyName, value);
   } else {
     let meta = peekMeta(obj);
 
     if (DEBUG) {
-      setWithMandatorySetter(meta, obj, keyName, value);
+      setWithMandatorySetter<any, any>(meta, obj, keyName, value);
     } else {
       obj[keyName] = value;
     }
@@ -137,7 +152,7 @@ export function set(obj, keyName, value, tolerant) {
 }
 
 if (DEBUG) {
-  var setWithMandatorySetter = (meta, obj, keyName, value) => {
+  setWithMandatorySetter = (meta, obj, keyName, value) => {
     if (meta !== undefined && meta.peekWatching(keyName) > 0) {
       makeEnumerable(obj, keyName);
       meta.writeValue(obj, keyName, value);
@@ -146,28 +161,28 @@ if (DEBUG) {
     }
   };
 
-  var makeEnumerable = (obj, key) => {
+  makeEnumerable = (obj: object, key: string) => {
     let desc = Object.getOwnPropertyDescriptor(obj, key);
 
-    if (desc && desc.set && desc.set.isMandatorySetter) {
+    if (desc && desc.set && (desc.set as MandatorySetterFunction).isMandatorySetter) {
       desc.enumerable = true;
       Object.defineProperty(obj, key, desc);
     }
   };
 }
 
-function setPath(root, path, value, tolerant) {
+function setPath(root: object, path: string, value: any, tolerant?: boolean) {
   let parts = path.split('.');
   let keyName = parts.pop();
 
-  assert('Property set failed: You passed an empty path', keyName.trim().length > 0);
+  assert('Property set failed: You passed an empty path', keyName!.trim().length > 0);
 
   let newPath = parts.join('.');
 
   let newRoot = getPath(root, newPath);
 
   if (newRoot) {
-    return set(newRoot, keyName, value);
+    return set(newRoot, keyName!, value);
   } else if (!tolerant) {
     throw new EmberError(
       `Property set failed: object in path "${newPath}" could not be found or was destroyed.`
@@ -197,6 +212,6 @@ function setPath(root, path, value, tolerant) {
   @param {Object} value The value to set
   @public
 */
-export function trySet(root, path, value) {
+export function trySet(root: object, path: string, value: any): any {
   return set(root, path, value, true);
 }

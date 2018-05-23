@@ -1,10 +1,10 @@
 /**
 @module ember
 */
-import { watchKey, unwatchKey } from './watch_key';
-import { watchPath, unwatchPath } from './watch_path';
+import { Meta, peekMeta } from 'ember-meta';
 import { isPath } from './path_cache';
-import { peekMeta } from 'ember-meta';
+import { unwatchKey, watchKey } from './watch_key';
+import { unwatchPath, watchPath } from './watch_path';
 
 /**
   Starts watching a property on an object. Whenever the property changes,
@@ -19,7 +19,7 @@ import { peekMeta } from 'ember-meta';
   @param {String} keyPath
   @param {Object} meta
 */
-export function watch(obj, keyPath, meta) {
+export function watch(obj: any, keyPath: string, meta?: Meta): void {
   if (isPath(keyPath)) {
     watchPath(obj, keyPath, meta);
   } else {
@@ -27,11 +27,11 @@ export function watch(obj, keyPath, meta) {
   }
 }
 
-export function isWatching(obj, key) {
+export function isWatching(obj: any, key: string): boolean {
   return watcherCount(obj, key) > 0;
 }
 
-export function watcherCount(obj, key) {
+export function watcherCount(obj: any, key: string): number {
   let meta = peekMeta(obj);
   return (meta !== undefined && meta.peekWatching(key)) || 0;
 }
@@ -48,7 +48,7 @@ export function watcherCount(obj, key) {
   @param {Object} meta
 */
 
-export function unwatch(obj, keyPath, meta) {
+export function unwatch(obj: object, keyPath: string, meta?: Meta): void {
   if (isPath(keyPath)) {
     unwatchPath(obj, keyPath, meta);
   } else {

@@ -1,12 +1,12 @@
-import { symbol } from 'ember-utils';
-import { descriptorFor, peekMeta } from 'ember-meta';
-import { sendEvent } from './events';
-import { markObjectAsDirty } from './tags';
-import ObserverSet from './observer_set';
-import { DEBUG } from '@glimmer/env';
 import { deprecate } from '@ember/debug';
-import { assertNotRendered } from './transaction';
+import { DEBUG } from '@glimmer/env';
+import { descriptorFor, Meta, peekMeta } from 'ember-meta';
+import { symbol } from 'ember-utils';
 import changeEvent from './change_event';
+import { sendEvent } from './events';
+import ObserverSet from './observer_set';
+import { markObjectAsDirty } from './tags';
+import { assertNotRendered } from './transaction';
 
 /**
  @module ember
@@ -45,7 +45,7 @@ function propertyWillChange() {
   @for Ember
   @private
 */
-function propertyDidChange(obj, keyName, _meta) {
+function propertyDidChange(obj: object, keyName: string, _meta: Meta) {
   deprecate(
     `'propertyDidChange' is deprecated in favor of 'notifyPropertyChange'. It is safe to change this call to 'notifyPropertyChange'.`,
     false,
@@ -76,7 +76,7 @@ function propertyDidChange(obj, keyName, _meta) {
   @return {void}
   @private
 */
-function notifyPropertyChange(obj, keyName, _meta) {
+function notifyPropertyChange(obj: object, keyName: string, _meta?: Meta): void {
   let meta = _meta === undefined ? peekMeta(obj) : _meta;
   let hasMeta = meta !== undefined;
 
@@ -108,15 +108,15 @@ function notifyPropertyChange(obj, keyName, _meta) {
   }
 
   if (DEBUG) {
-    assertNotRendered(obj, keyName, meta);
+    assertNotRendered(obj, keyName);
   }
 }
 
-const SEEN_MAP = new Map();
+const SEEN_MAP = new Map<object, Set<string>>();
 let IS_TOP_SEEN_MAP = true;
 
 // called whenever a property has just changed to update dependent keys
-function dependentKeysDidChange(obj, depKey, meta) {
+function dependentKeysDidChange(obj: object, depKey: string, meta: Meta) {
   if (meta.isSourceDestroying() || !meta.hasDeps(depKey)) {
     return;
   }
@@ -135,7 +135,13 @@ function dependentKeysDidChange(obj, depKey, meta) {
   }
 }
 
-function iterDeps(method, obj, depKey, seen, meta) {
+function iterDeps(
+  method: (obj: object, key: string, meta: Meta) => void,
+  obj: object,
+  depKey: string,
+  seen: Map<object, Set<string>>,
+  meta: Meta
+) {
   let current = seen.get(obj);
 
   if (current === undefined) {
@@ -148,7 +154,7 @@ function iterDeps(method, obj, depKey, seen, meta) {
   }
 
   let possibleDesc;
-  meta.forEachInDeps(depKey, (key, value) => {
+  meta.forEachInDeps(depKey, (key: string, value: any) => {
     if (!value) {
       return;
     }
@@ -163,14 +169,14 @@ function iterDeps(method, obj, depKey, seen, meta) {
   });
 }
 
-function chainsDidChange(obj, keyName, meta) {
+function chainsDidChange(_obj: object, keyName: string, meta: Meta) {
   let chainWatchers = meta.readableChainWatchers();
   if (chainWatchers !== undefined) {
     chainWatchers.notify(keyName, true, notifyPropertyChange);
   }
 }
 
-function overrideChains(obj, keyName, meta) {
+function overrideChains(_obj: object, keyName: string, meta: Meta) {
   let chainWatchers = meta.readableChainWatchers();
   if (chainWatchers !== undefined) {
     chainWatchers.revalidate(keyName);
@@ -212,7 +218,7 @@ function endPropertyChanges() {
   @param {Function} callback
   @private
 */
-function changeProperties(callback) {
+function changeProperties(callback: () => void): void {
   beginPropertyChanges();
   try {
     callback();
@@ -221,7 +227,7 @@ function changeProperties(callback) {
   }
 }
 
-function notifyObservers(obj, keyName, meta) {
+function notifyObservers(obj: object, keyName: string, meta: Meta) {
   if (meta.isSourceDestroying()) {
     return;
   }

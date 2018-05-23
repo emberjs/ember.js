@@ -3,6 +3,7 @@ interface IBackburner {
   on(...args: any[]): void;
   scheduleOnce(...args: any[]): void;
   schedule(queueName: string, target: Object | null, method: Function | string): void;
+  ensureInstance(): void;
 }
 
 export function run(...args: any[]): any;

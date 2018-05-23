@@ -113,7 +113,7 @@ class EmberArrayIterator extends BoundedIterator {
   }
 
   valueFor(position: number): Opaque {
-    return objectAt(this.array, position);
+    return objectAt(this.array as any, position);
   }
 }
 
@@ -445,7 +445,7 @@ function Identity(value: Opaque): string {
 }
 
 function KeyPath(keyPath: string): KeyFor {
-  return (value: Opaque) => String(get(value, keyPath));
+  return (value: Opaque) => String(get(value as any, keyPath));
 }
 
 function Unique(func: KeyFor): KeyFor {

@@ -1,10 +1,20 @@
-import { watch, unwatch } from './watching';
+import { Meta } from 'ember-meta';
+import { unwatch, watch } from './watching';
+
+export interface DescriptorWithDependentKeys {
+  _dependentKeys?: string[];
+}
 
 // ..........................................................
 // DEPENDENT KEYS
 //
 
-export function addDependentKeys(desc, obj, keyName, meta) {
+export function addDependentKeys(
+  desc: DescriptorWithDependentKeys,
+  obj: object,
+  keyName: string,
+  meta: Meta
+): void {
   // the descriptor has a list of dependent keys, so
   // add all of its dependent keys.
   let depKeys = desc._dependentKeys;
@@ -21,7 +31,12 @@ export function addDependentKeys(desc, obj, keyName, meta) {
   }
 }
 
-export function removeDependentKeys(desc, obj, keyName, meta) {
+export function removeDependentKeys(
+  desc: DescriptorWithDependentKeys,
+  obj: object,
+  keyName: string,
+  meta: Meta
+): void {
   // the descriptor has a list of dependent keys, so
   // remove all of its dependent keys.
   let depKeys = desc._dependentKeys;

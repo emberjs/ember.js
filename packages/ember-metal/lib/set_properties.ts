@@ -27,7 +27,10 @@ import { set } from './property_set';
   @return properties
   @public
 */
-export default function setProperties(obj, properties) {
+export default function setProperties<TProperties extends { [key: string]: any }>(
+  obj: object,
+  properties: TProperties
+): TProperties {
   if (properties === null || typeof properties !== 'object') {
     return properties;
   }
