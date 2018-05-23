@@ -170,7 +170,7 @@ moduleFor(
       watch(objA, 'b.foo');
 
       let meta_objB = meta(objB);
-      let chainNode = meta(objA).readableChains()._chains.b._chains.foo;
+      let chainNode = meta(objA).readableChains().chains.b.chains.foo;
 
       assert.equal(meta_objB.peekWatching('foo'), 1, 'should be watching foo');
       assert.equal(
