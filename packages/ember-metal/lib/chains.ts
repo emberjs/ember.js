@@ -14,14 +14,10 @@ function isVolatile(obj: any, keyName: string, meta?: Meta): boolean {
 }
 
 class ChainWatchers {
-  chains: { [key: string]: ChainNode[] };
-
-  constructor() {
-    // chain nodes that reference a key in this obj by key
-    // we only create ChainWatchers when we are going to add them
-    // so create this upfront
-    this.chains = Object.create(null);
-  }
+  // chain nodes that reference a key in this obj by key
+  // we only create ChainWatchers when we are going to add them
+  // so create this upfront
+  chains: { [key: string]: ChainNode[] } = Object.create(null);
 
   add(key: string, node: ChainNode): void {
     let nodes = this.chains[key];
@@ -149,14 +145,14 @@ function destroyRoot(root: ChainNode) {
 }
 
 function destroyOne(node: ChainNode) {
-  if (node._isWatching) {
-    removeChainWatcher(node._object!, node._key, node);
-    node._isWatching = false;
+  if (node.isWatching) {
+    removeChainWatcher(node.object!, node.key, node);
+    node.isWatching = false;
   }
 }
 
 function pushChildren(node: ChainNode) {
-  let nodes = node._chains;
+  let nodes = node.chains;
   if (nodes !== undefined) {
     for (let key in nodes) {
       if (nodes[key] !== undefined) {
@@ -170,25 +166,19 @@ function pushChildren(node: ChainNode) {
 // value for the key then the node won't actually watch it. For a root node
 // pass null for parent and key and object for value.
 class ChainNode {
-  private readonly _parent: ChainNode | null;
-  private _paths: { [key: string]: number } | undefined;
-  private _value: any;
-  readonly _key: string;
-  _isWatching: boolean;
-  _chains: { [key: string]: ChainNode | undefined } | undefined;
-  _object: object | undefined;
-  count: number;
+  private readonly parent: ChainNode | null;
+  private paths: { [key: string]: number } | undefined = undefined;
+  private content: any;
+  readonly key: string;
+  isWatching = false;
+  chains: { [key: string]: ChainNode | undefined } | undefined = undefined;
+  object: object | undefined = undefined;
+  count = 0;
 
   constructor(parent: ChainNode | null, key: string, value: any) {
-    this._parent = parent;
-    this._key = key;
-
-    this._chains = undefined;
-    this._object = undefined;
-    this.count = 0;
-
-    this._value = value;
-    this._paths = undefined;
+    this.parent = parent;
+    this.key = key;
+    this.content = value;
 
     // It is false for the root of a chain (because we have no parent)
     let isWatching = parent !== null;
@@ -200,8 +190,8 @@ class ChainNode {
       }
     }
 
-    this._isWatching = isWatching;
-    this._object = object;
+    this.isWatching = isWatching;
+    this.object = object;
 
     if (isWatching && object !== undefined) {
       addChainWatcher(object, key, this);
@@ -209,16 +199,16 @@ class ChainNode {
   }
 
   value(): any {
-    if (this._value === undefined && this._isWatching) {
-      let obj = this._parent!.value();
-      this._value = lazyGet(obj, this._key);
+    if (this.content === undefined && this.isWatching) {
+      let obj = this.parent!.value();
+      this.content = lazyGet(obj, this.key);
     }
-    return this._value;
+    return this.content;
   }
 
   destroy(): void {
     // check if root
-    if (this._parent === null) {
+    if (this.parent === null) {
       destroyRoot(this);
     } else {
       destroyOne(this);
@@ -228,7 +218,7 @@ class ChainNode {
   // copies a top level object only
   copy(obj: any) {
     let ret = makeChainNode(obj);
-    let paths = this._paths;
+    let paths = this.paths;
     if (paths !== undefined) {
       let path;
       for (path in paths) {
@@ -243,7 +233,7 @@ class ChainNode {
   // called on the root node of a chain to setup watchers on the specified
   // path.
   add(path: string): void {
-    let paths = this._paths || (this._paths = {});
+    let paths = this.paths || (this.paths = {});
     paths[path] = (paths[path] || 0) + 1;
 
     let tails = path.split('.');
@@ -253,7 +243,7 @@ class ChainNode {
   // called on the root node of a chain to teardown watcher on the specified
   // path
   remove(path: string): void {
-    let paths = this._paths;
+    let paths = this.paths;
     if (paths === undefined) {
       return;
     }
@@ -267,10 +257,10 @@ class ChainNode {
 
   chain(key: string, tails: string[]): void {
     let chains: { [key: string]: ChainNode | undefined };
-    if (this._chains === undefined) {
-      chains = this._chains = Object.create(null);
+    if (this.chains === undefined) {
+      chains = this.chains = Object.create(null);
     } else {
-      chains = this._chains;
+      chains = this.chains;
     }
 
     let node = chains[key];
@@ -287,7 +277,7 @@ class ChainNode {
   }
 
   unchain(key: string, tails: string[]): void {
-    let chains = this._chains!;
+    let chains = this.chains!;
     let node = chains[key]!;
 
     // unchain rest of path first...
@@ -298,30 +288,30 @@ class ChainNode {
     // delete node if needed.
     node.count--;
     if (node.count <= 0) {
-      chains[node._key] = undefined;
+      chains[node.key] = undefined;
       node.destroy();
     }
   }
 
   notify(revalidate: boolean, affected?: (any | string)[]): void {
-    if (revalidate && this._isWatching) {
-      let parentValue = this._parent!.value();
+    if (revalidate && this.isWatching) {
+      let parentValue = this.parent!.value();
 
-      if (parentValue !== this._object) {
-        removeChainWatcher(this._object!, this._key, this);
+      if (parentValue !== this.object) {
+        removeChainWatcher(this.object!, this.key, this);
 
         if (isObject(parentValue)) {
-          this._object = parentValue;
-          addChainWatcher(parentValue, this._key, this);
+          this.object = parentValue;
+          addChainWatcher(parentValue, this.key, this);
         } else {
-          this._object = undefined;
+          this.object = undefined;
         }
       }
-      this._value = undefined;
+      this.content = undefined;
     }
 
     // then notify chains...
-    let chains = this._chains;
+    let chains = this.chains;
     if (chains !== undefined) {
       let node;
       for (let key in chains) {
@@ -332,18 +322,18 @@ class ChainNode {
       }
     }
 
-    if (affected && this._parent) {
-      this._parent.populateAffected(this._key, 1, affected);
+    if (affected && this.parent) {
+      this.parent.populateAffected(this.key, 1, affected);
     }
   }
 
   populateAffected(path: string, depth: number, affected: (any | string)[]) {
-    if (this._key) {
-      path = `${this._key}.${path}`;
+    if (this.key) {
+      path = `${this.key}.${path}`;
     }
 
-    if (this._parent) {
-      this._parent.populateAffected(path, depth + 1, affected);
+    if (this.parent) {
+      this.parent.populateAffected(path, depth + 1, affected);
     } else if (depth > 1) {
       affected.push(this.value(), path);
     }
