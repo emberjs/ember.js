@@ -1,4 +1,5 @@
 import { assert, deprecate } from '@ember/debug';
+import { PROPERTY_BASED_DESCRIPTORS } from '@ember/deprecated-features';
 import EmberError from '@ember/error';
 import { DEBUG } from '@glimmer/env';
 import { descriptorFor, isDescriptor, Meta, meta, peekMeta } from 'ember-meta';
@@ -91,8 +92,7 @@ export function set(obj: object, keyName: string, value: any, tolerant?: boolean
     currentValue = obj[keyName];
   }
 
-  // TODO turn if block into a sveltable deprecated block
-  if (isDescriptor(currentValue)) {
+  if (PROPERTY_BASED_DESCRIPTORS && isDescriptor(currentValue)) {
     deprecate(
       `[DEPRECATED] computed property '${keyName}' was not set on object '${toString(
         obj

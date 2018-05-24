@@ -3,6 +3,7 @@
 */
 import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { assert, deprecate } from '@ember/debug';
+import { PROPERTY_BASED_DESCRIPTORS } from '@ember/deprecated-features';
 import { DEBUG } from '@glimmer/env';
 import { descriptorFor, isDescriptor, meta } from 'ember-meta';
 import { HAS_NATIVE_PROXY, symbol, toString } from 'ember-utils';
@@ -123,8 +124,7 @@ export function get(obj: object, keyName: string): any {
       value = obj[keyName];
     }
 
-    // TODO turn if block into a sveltable deprecated block
-    if (isDescriptor(value)) {
+    if (PROPERTY_BASED_DESCRIPTORS && isDescriptor(value)) {
       deprecate(
         `[DEPRECATED] computed property '${keyName}' was not set on object '${toString(
           obj
