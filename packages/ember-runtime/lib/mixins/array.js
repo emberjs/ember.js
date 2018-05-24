@@ -1642,9 +1642,6 @@ let NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
     return this;
   },
 
-  indexOf: Array.prototype.indexOf,
-  lastIndexOf: Array.prototype.lastIndexOf,
-
   copy(deep) {
     if (deep) {
       return this.map(item => copy(item, true));
