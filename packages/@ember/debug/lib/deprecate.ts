@@ -1,3 +1,8 @@
+import {
+  DEPRECATE_ID_MISSING,
+  DEPRECATE_OPTIONS_MISSING,
+  DEPRECATE_UNTIL_MISSING,
+} from '@ember/deprecated-features';
 import { DEBUG } from '@glimmer/env';
 import { ENV } from 'ember-environment';
 
@@ -190,6 +195,7 @@ if (DEBUG) {
     }
 
     if (
+      DEPRECATE_OPTIONS_MISSING &&
       (!options || (!options.id && !options.until)) &&
       ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT === true
     ) {
@@ -200,7 +206,12 @@ if (DEBUG) {
       });
     }
 
-    if (options && !options.id && ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT === true) {
+    if (
+      DEPRECATE_ID_MISSING &&
+      options &&
+      !options.id &&
+      ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT === true
+    ) {
       deprecate(missingOptionsIdDeprecation, false, {
         id: 'ember-debug.deprecate-id-missing',
         until: '3.0.0',
@@ -208,7 +219,12 @@ if (DEBUG) {
       });
     }
 
-    if (options && !options.until && ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT === true) {
+    if (
+      DEPRECATE_UNTIL_MISSING &&
+      options &&
+      !options.until &&
+      ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT === true
+    ) {
       deprecate(missingOptionsUntilDeprecation, !!(options && options.until), {
         id: 'ember-debug.deprecate-until-missing',
         until: '3.0.0',
