@@ -125,6 +125,7 @@ import Map from '@ember/map';
 import MapWithDefault from '@ember/map/with-default';
 import OrderedSet from '@ember/map/lib/ordered-set';
 import { assign, merge } from '@ember/polyfills';
+import { EMBER_EXTEND_PROTOTYPES } from '@ember/deprecated-features';
 
 // ****ember-environment****
 
@@ -146,21 +147,23 @@ Object.defineProperty(Ember, 'lookup', {
   enumerable: false,
 });
 
-Object.defineProperty(Ember, 'EXTEND_PROTOTYPES', {
-  enumerable: false,
-  get() {
-    deprecate(
-      'Accessing Ember.EXTEND_PROTOTYPES is deprecated, please migrate to Ember.ENV.EXTEND_PROTOTYPES',
-      false,
-      {
-        id: 'ember-env.old-extend-prototypes',
-        until: '4.0.0',
-      }
-    );
+if (EMBER_EXTEND_PROTOTYPES) {
+  Object.defineProperty(Ember, 'EXTEND_PROTOTYPES', {
+    enumerable: false,
+    get() {
+      deprecate(
+        'Accessing Ember.EXTEND_PROTOTYPES is deprecated, please migrate to Ember.ENV.EXTEND_PROTOTYPES',
+        false,
+        {
+          id: 'ember-env.old-extend-prototypes',
+          until: '4.0.0',
+        }
+      );
 
-    return ENV.EXTEND_PROTOTYPES;
-  },
-});
+      return ENV.EXTEND_PROTOTYPES;
+    },
+  });
+}
 
 // ****@ember/application****
 Ember.getOwner = getOwner;
