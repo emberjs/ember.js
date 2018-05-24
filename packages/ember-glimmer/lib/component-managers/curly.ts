@@ -1,4 +1,5 @@
 import { assert, deprecate } from '@ember/debug';
+import { POSITIONAL_PARAM_CONFLICT } from '@ember/deprecated-features';
 import { _instrumentStart } from '@ember/instrumentation';
 import { assign } from '@ember/polyfills';
 import { DEBUG } from '@glimmer/env';
@@ -181,17 +182,19 @@ export default class CurlyComponentManager
       const count = Math.min(positionalParams.length, args.positional.length);
       named = {};
       assign(named, args.named.capture().map);
-      for (let i = 0; i < count; i++) {
-        const name = positionalParams[i];
-        deprecate(
-          `You cannot specify both a positional param (at position ${i}) and the hash argument \`${name}\`.`,
-          !args.named.has(name),
-          {
-            id: 'ember-glimmer.positional-param-conflict',
-            until: '3.5.0',
-          }
-        );
-        named[name] = args.positional.at(i);
+      if (POSITIONAL_PARAM_CONFLICT) {
+        for (let i = 0; i < count; i++) {
+          const name = positionalParams[i];
+          deprecate(
+            `You cannot specify both a positional param (at position ${i}) and the hash argument \`${name}\`.`,
+            !args.named.has(name),
+            {
+              id: 'ember-glimmer.positional-param-conflict',
+              until: '3.5.0',
+            }
+          );
+          named[name] = args.positional.at(i);
+        }
       }
     } else {
       return null;
