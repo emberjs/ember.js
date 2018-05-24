@@ -1,1 +1,1 @@
-export const PROPERTY_BASED_DESCRIPTORS = '3.2.0';
+export const PROPERTY_BASED_DESCRIPTORS = !!'3.2.0';
