@@ -5,6 +5,7 @@
 import { context } from 'ember-environment';
 import { get, Mixin, computed, descriptor } from 'ember-metal';
 import { assert, deprecate } from '@ember/debug';
+import { TARGET_OBJECT } from '@ember/deprecated-features';
 /**
 `Ember.TargetActionSupport` is a mixin that can be included in a class
 to add a `triggerAction` method with semantics similar to the Handlebars
@@ -19,22 +20,24 @@ doing more complex event handling in Components.
 */
 export default Mixin.create({
   target: null,
-  targetObject: descriptor({
-    configurable: true,
-    enumerable: false,
-    get() {
-      let message = `${this} Usage of \`targetObject\` is deprecated. Please use \`target\` instead.`;
-      let options = { id: 'ember-runtime.using-targetObject', until: '3.5.0' };
-      deprecate(message, false, options);
-      return this._targetObject;
-    },
-    set(value) {
-      let message = `${this} Usage of \`targetObject\` is deprecated. Please use \`target\` instead.`;
-      let options = { id: 'ember-runtime.using-targetObject', until: '3.5.0' };
-      deprecate(message, false, options);
-      this._targetObject = value;
-    },
-  }),
+  targetObject: TARGET_OBJECT
+    ? descriptor({
+        configurable: true,
+        enumerable: false,
+        get() {
+          let message = `${this} Usage of \`targetObject\` is deprecated. Please use \`target\` instead.`;
+          let options = { id: 'ember-runtime.using-targetObject', until: '3.5.0' };
+          deprecate(message, false, options);
+          return this._targetObject;
+        },
+        set(value) {
+          let message = `${this} Usage of \`targetObject\` is deprecated. Please use \`target\` instead.`;
+          let options = { id: 'ember-runtime.using-targetObject', until: '3.5.0' };
+          deprecate(message, false, options);
+          this._targetObject = value;
+        },
+      })
+    : undefined,
   action: null,
   actionContext: null,
 
@@ -161,7 +164,7 @@ function getTarget(instance) {
   }
 
   // if _targetObject use it
-  if (instance._targetObject) {
+  if (TARGET_OBJECT && instance._targetObject) {
     return instance._targetObject;
   }
 
