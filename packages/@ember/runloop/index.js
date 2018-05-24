@@ -2,6 +2,7 @@ import { assert, deprecate, isTesting } from '@ember/debug';
 import { onErrorTarget } from 'ember-error-handling';
 import { beginPropertyChanges, endPropertyChanges } from 'ember-metal';
 import Backburner from 'backburner';
+import { RUN_SYNC } from '@ember/deprecated-features';
 
 let currentRunLoop = null;
 export function getCurrentRunLoop() {
@@ -30,7 +31,6 @@ export const _rsvpErrorQueue = `${Math.random()}${Date.now()}`.replace('.', '');
   @private
 */
 export const queues = [
-  'sync',
   'actions',
 
   // used in router transitions to prevent unnecessary loading state entry
@@ -46,17 +46,24 @@ export const queues = [
   _rsvpErrorQueue,
 ];
 
-export const backburner = new Backburner(queues, {
-  sync: {
-    before: beginPropertyChanges,
-    after: endPropertyChanges,
-  },
+let backburnerOptions = {
   defaultQueue: 'actions',
   onBegin,
   onEnd,
   onErrorTarget,
   onErrorMethod: 'onerror',
-});
+};
+
+if (RUN_SYNC) {
+  queues.unshift('sync');
+
+  backburnerOptions.sync = {
+    before: beginPropertyChanges,
+    after: endPropertyChanges,
+  };
+}
+
+export const backburner = new Backburner(queues, backburnerOptions);
 
 /**
  @module @ember/runloop
