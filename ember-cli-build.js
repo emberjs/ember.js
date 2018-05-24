@@ -182,6 +182,7 @@ module.exports = function() {
           '@ember/canary-features/**',
           '@ember/debug/index.js',
           '@ember/debug/lib/**',
+          '@ember/deprecated-features/**',
           '@ember/error/index.js',
           '@ember/polyfills/index.js',
           '@ember/polyfills/lib/**',
