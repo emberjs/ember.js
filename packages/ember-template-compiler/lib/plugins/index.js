@@ -17,6 +17,8 @@ import AssertInputHelperWithoutBlock from './assert-input-helper-without-block';
 import TransformInElement from './transform-in-element';
 import AssertIfHelperWithoutArguments from './assert-if-helper-without-arguments';
 
+import { RENDER_HELPER } from '@ember/deprecated-features';
+
 const transforms = [
   TransformDotComponentInvocation,
   TransformOldBindingSyntax,
@@ -25,8 +27,6 @@ const transforms = [
   TransformInlineLinkTo,
   TransformOldClassBindingSyntax,
   TransformQuotedBindingsIntoJustBindings,
-  DeprecateRenderModel,
-  DeprecateRender,
   AssertReservedNamedArguments,
   TransformActionSyntax,
   TransformInputTypeSyntax,
@@ -37,5 +37,10 @@ const transforms = [
   TransformInElement,
   AssertIfHelperWithoutArguments,
 ];
+
+if (RENDER_HELPER) {
+  transforms.push(DeprecateRenderModel);
+  transforms.push(DeprecateRender);
+}
 
 export default Object.freeze(transforms);
