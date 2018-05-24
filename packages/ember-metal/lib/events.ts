@@ -2,6 +2,7 @@
 @module @ember/object
 */
 import { assert, deprecate } from '@ember/debug';
+import { DID_INIT_ATTRS } from '@ember/deprecated-features';
 import { ENV } from 'ember-environment';
 import { Meta, meta as metaFor, peekMeta } from 'ember-meta';
 import { setListeners } from 'ember-utils';
@@ -46,7 +47,7 @@ export function addListener(
 ) {
   assert('You must pass at least an object and event name to addListener', !!obj && !!eventName);
 
-  if (ENV._ENABLE_DID_INIT_ATTRS_SUPPORT === true) {
+  if (DID_INIT_ATTRS && ENV._ENABLE_DID_INIT_ATTRS_SUPPORT === true) {
     deprecate(
       `didInitAttrs called in ${obj && obj.toString && obj.toString()}.`,
       eventName !== 'didInitAttrs',

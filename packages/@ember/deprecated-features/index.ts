@@ -7,3 +7,4 @@ export const RUN_SYNC = !!'3.0.0-beta.4';
 export const REGISTRY_RESOLVER_AS_FUNCTION = !!'2.3.0-beta.3';
 export const LOGGER = !!'3.2.0-beta.1';
 export const POSITIONAL_PARAM_CONFLICT = !!'3.1.0-beta.1';
+export const DID_INIT_ATTRS = !!'2.6.0-beta.1';
