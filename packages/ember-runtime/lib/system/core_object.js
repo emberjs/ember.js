@@ -3,6 +3,7 @@
 */
 
 import { FACTORY_FOR } from 'container';
+import { BINDING_SUPPORT } from '@ember/deprecated-features';
 import { assign } from '@ember/polyfills';
 import {
   guidFor,
@@ -151,7 +152,7 @@ function makeCtor(base) {
             let keyName = keyNames[i];
             let value = properties[keyName];
 
-            if (ENV._ENABLE_BINDING_SUPPORT && Mixin.detectBinding(keyName)) {
+            if (BINDING_SUPPORT && ENV._ENABLE_BINDING_SUPPORT && Mixin.detectBinding(keyName)) {
               m.writeBindings(keyName, value);
             }
 
@@ -204,7 +205,7 @@ function makeCtor(base) {
           }
         }
 
-        if (ENV._ENABLE_BINDING_SUPPORT) {
+        if (BINDING_SUPPORT && ENV._ENABLE_BINDING_SUPPORT) {
           Mixin.finishPartial(self, m);
         }
 

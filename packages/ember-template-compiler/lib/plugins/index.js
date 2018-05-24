@@ -17,11 +17,10 @@ import AssertInputHelperWithoutBlock from './assert-input-helper-without-block';
 import TransformInElement from './transform-in-element';
 import AssertIfHelperWithoutArguments from './assert-if-helper-without-arguments';
 
-import { RENDER_HELPER } from '@ember/deprecated-features';
+import { BINDING_SUPPORT, RENDER_HELPER } from '@ember/deprecated-features';
 
 const transforms = [
   TransformDotComponentInvocation,
-  TransformOldBindingSyntax,
   TransformAngleBracketComponents,
   TransformTopLevelComponents,
   TransformInlineLinkTo,
@@ -41,6 +40,10 @@ const transforms = [
 if (RENDER_HELPER) {
   transforms.push(DeprecateRenderModel);
   transforms.push(DeprecateRender);
+}
+
+if (BINDING_SUPPORT) {
+  transforms.push(TransformOldBindingSyntax);
 }
 
 export default Object.freeze(transforms);

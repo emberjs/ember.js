@@ -1,4 +1,5 @@
 import { assert } from '@ember/debug';
+import { BINDING_SUPPORT } from '@ember/deprecated-features';
 import { DEBUG } from '@glimmer/env';
 import { Tag } from '@glimmer/reference';
 import { ENV } from 'ember-environment';
@@ -64,7 +65,7 @@ export class Meta {
     this._descriptors = undefined;
     this._watching = undefined;
     this._mixins = undefined;
-    if (ENV._ENABLE_BINDING_SUPPORT) {
+    if (BINDING_SUPPORT && ENV._ENABLE_BINDING_SUPPORT) {
       this._bindings = undefined;
     }
     this._deps = undefined;
@@ -390,67 +391,75 @@ export class Meta {
   }
 
   writeBindings(subkey: string, value: any) {
-    assert(
-      'Cannot invoke `meta.writeBindings` when EmberENV._ENABLE_BINDING_SUPPORT is not set',
-      ENV._ENABLE_BINDING_SUPPORT
-    );
-    assert(
-      this.isMetaDestroyed()
-        ? `Cannot add a binding for \`${subkey}\` on \`${toString(
-            this.source
-          )}\` after it has been destroyed.`
-        : '',
-      !this.isMetaDestroyed()
-    );
+    if (BINDING_SUPPORT) {
+      assert(
+        'Cannot invoke `meta.writeBindings` when EmberENV._ENABLE_BINDING_SUPPORT is not set',
+        ENV._ENABLE_BINDING_SUPPORT
+      );
+      assert(
+        this.isMetaDestroyed()
+          ? `Cannot add a binding for \`${subkey}\` on \`${toString(
+              this.source
+            )}\` after it has been destroyed.`
+          : '',
+        !this.isMetaDestroyed()
+      );
 
-    let map = this._getOrCreateOwnMap('_bindings');
-    map[subkey] = value;
+      let map = this._getOrCreateOwnMap('_bindings');
+      map[subkey] = value;
+    }
   }
 
   peekBindings(subkey: string) {
-    assert(
-      'Cannot invoke `meta.peekBindings` when EmberENV._ENABLE_BINDING_SUPPORT is not set',
-      ENV._ENABLE_BINDING_SUPPORT
-    );
-    return this._findInherited('_bindings', subkey);
+    if (BINDING_SUPPORT) {
+      assert(
+        'Cannot invoke `meta.peekBindings` when EmberENV._ENABLE_BINDING_SUPPORT is not set',
+        ENV._ENABLE_BINDING_SUPPORT
+      );
+      return this._findInherited('_bindings', subkey);
+    }
   }
 
   forEachBindings(fn: Function) {
-    assert(
-      'Cannot invoke `meta.forEachBindings` when EmberENV._ENABLE_BINDING_SUPPORT is not set',
-      ENV._ENABLE_BINDING_SUPPORT
-    );
+    if (BINDING_SUPPORT) {
+      assert(
+        'Cannot invoke `meta.forEachBindings` when EmberENV._ENABLE_BINDING_SUPPORT is not set',
+        ENV._ENABLE_BINDING_SUPPORT
+      );
 
-    let pointer: Meta | undefined = this;
-    let seen: { [key: string]: any } | undefined;
-    while (pointer !== undefined) {
-      let map = pointer._bindings;
-      if (map !== undefined) {
-        for (let key in map) {
-          // cleanup typing
-          seen = seen === undefined ? Object.create(null) : seen;
-          if (seen![key] === undefined) {
-            seen![key] = true;
-            fn(key, map[key]);
+      let pointer: Meta | undefined = this;
+      let seen: { [key: string]: any } | undefined;
+      while (pointer !== undefined) {
+        let map = pointer._bindings;
+        if (map !== undefined) {
+          for (let key in map) {
+            // cleanup typing
+            seen = seen === undefined ? Object.create(null) : seen;
+            if (seen![key] === undefined) {
+              seen![key] = true;
+              fn(key, map[key]);
+            }
           }
         }
+        pointer = pointer.parent;
       }
-      pointer = pointer.parent;
     }
   }
 
   clearBindings() {
-    assert(
-      'Cannot invoke `meta.clearBindings` when EmberENV._ENABLE_BINDING_SUPPORT is not set',
-      ENV._ENABLE_BINDING_SUPPORT
-    );
-    assert(
-      this.isMetaDestroyed()
-        ? `Cannot clear bindings on \`${toString(this.source)}\` after it has been destroyed.`
-        : '',
-      !this.isMetaDestroyed()
-    );
-    this._bindings = undefined;
+    if (BINDING_SUPPORT) {
+      assert(
+        'Cannot invoke `meta.clearBindings` when EmberENV._ENABLE_BINDING_SUPPORT is not set',
+        ENV._ENABLE_BINDING_SUPPORT
+      );
+      assert(
+        this.isMetaDestroyed()
+          ? `Cannot clear bindings on \`${toString(this.source)}\` after it has been destroyed.`
+          : '',
+        !this.isMetaDestroyed()
+      );
+      this._bindings = undefined;
+    }
   }
 
   writeDescriptors(subkey: string, value: any) {
