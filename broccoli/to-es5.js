@@ -15,6 +15,9 @@ module.exports = function toES5(tree, _options) {
     },
     _options
   );
+
+  let isDebug = options.environment !== 'production';
+
   options.moduleIds = true;
   options.resolveModuleSource = resolveModuleSource;
   options.sourceMap = true;
@@ -26,29 +29,28 @@ module.exports = function toES5(tree, _options) {
         debugTools: {
           source: '@ember/debug',
           assertPredicateIndex: 1,
-        },
-        envFlags: {
-          source: '@glimmer/env',
-          flags: { DEBUG: options.environment !== 'production' },
-        },
-        features: {
-          name: 'ember',
-          source: '@ember/canary-features',
-          flags: Object.assign(
-            // explicit list of additional exports within @ember/canary-features
-            // without adding this (with a null value) an error is thrown during
-            // the feature replacement process (e.g. XYZ is not a supported flag)
-            {
-              FEATURES: null,
-              DEFAULT_FEATURES: null,
-              isEnabled: null,
-            },
-            FEATURES
-          ),
+          isDebug,
         },
         externalizeHelpers: {
           module: true,
         },
+        flags: [
+          { source: '@glimmer/env', flags: { DEBUG: isDebug } },
+          {
+            source: '@ember/canary-features',
+            flags: Object.assign(
+              // explicit list of additional exports within @ember/canary-features
+              // without adding this (with a null value) an error is thrown during
+              // the feature replacement process (e.g. XYZ is not a supported flag)
+              {
+                FEATURES: null,
+                DEFAULT_FEATURES: null,
+                isEnabled: null,
+              },
+              FEATURES
+            ),
+          },
+        ],
       },
     ],
     ['transform-es2015-template-literals', { loose: true }],
