@@ -125,7 +125,7 @@ import Map from '@ember/map';
 import MapWithDefault from '@ember/map/with-default';
 import OrderedSet from '@ember/map/lib/ordered-set';
 import { assign, merge } from '@ember/polyfills';
-import { EMBER_EXTEND_PROTOTYPES } from '@ember/deprecated-features';
+import { LOGGER, EMBER_EXTEND_PROTOTYPES } from '@ember/deprecated-features';
 
 // ****ember-environment****
 
@@ -355,7 +355,9 @@ Object.defineProperty(Ember, 'testing', {
 Ember._Backburner = Backburner;
 
 // ****ember-console****
-Ember.Logger = Logger;
+if (LOGGER) {
+  Ember.Logger = Logger;
+}
 
 // ****ember-runtime****
 Ember.A = A;
