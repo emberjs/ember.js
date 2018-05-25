@@ -77,7 +77,7 @@ export class SymbolAllocator
     this.symbolStack.pop();
   }
 
-  attrSplat(_op: null): OutOp<'attrSplat'> {
+  attrSplat(_op: Option<InVariable>): OutOp<'attrSplat'> {
     return ['attrSplat', this.symbols.allocateBlock('attrs')];
   }
 
@@ -127,7 +127,7 @@ export class SymbolAllocator
     return ['yield', this.symbols.allocateBlock(op)];
   }
 
-  debugger(_op: null): OutOp<'debugger'> {
+  debugger(_op: Option<InVariable[]>): OutOp<'debugger'> {
     return ['debugger', this.symbols.getEvalInfo()];
   }
 
@@ -147,7 +147,7 @@ export class SymbolAllocator
     return ['hasBlockParams', this.symbols.allocateBlock(op)];
   }
 
-  partial(_op: null): OutOp<'partial'> {
+  partial(_op: Option<InVariable[]>): OutOp<'partial'> {
     return ['partial', this.symbols.getEvalInfo()];
   }
 
