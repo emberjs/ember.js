@@ -210,7 +210,7 @@ export default class JavaScriptCompiler
     this.push([Ops.Modifier, name, params, hash]);
   }
 
-  block([name, template, inverse]: [string, number, number]) {
+  block([name, template, inverse]: [string, number, Option<number>]) {
     let params = this.popValue<Params>();
     let hash = this.popValue<Hash>();
 
@@ -224,7 +224,7 @@ export default class JavaScriptCompiler
       'missing block in the compiler'
     );
 
-    this.push([Ops.Block, name, params, hash, blocks[template], blocks[inverse]]);
+    this.push([Ops.Block, name, params, hash, blocks[template], blocks[inverse!]]);
   }
 
   openSplattedElement(element: AST.ElementNode) {
@@ -270,19 +270,19 @@ export default class JavaScriptCompiler
     }
   }
 
-  staticAttr([name, namespace]: [string, string]) {
+  staticAttr([name, namespace]: [string, Option<string>]) {
     let value = this.popValue<Expression>();
     this.push([Ops.StaticAttr, name, value, namespace]);
   }
 
-  dynamicAttr([name, namespace]: [string, string]) {
+  dynamicAttr([name, namespace]: [string, Option<string>]) {
     let value = this.popValue<Expression>();
     this.push([Ops.DynamicAttr, name, value, namespace]);
   }
 
-  trustingAttr([name, namespace]: [string, string]) {
+  trustingAttr([name, namespace]: [string, Option<string>]) {
     let value = this.popValue<Expression>();
-    this.push([Ops.TrustingAttr, name, value, namespace]);
+    this.push([Ops.TrustingAttr, name, value, namespace!]);
   }
 
   staticArg(name: str) {
@@ -300,12 +300,12 @@ export default class JavaScriptCompiler
     this.push([Ops.Yield, to, params]);
   }
 
-  attrSplat(to: number) {
-    this.push([Ops.AttrSplat, to]);
+  attrSplat(to: Option<number>) {
+    this.push([Ops.AttrSplat, to!]);
   }
 
-  debugger(evalInfo: Core.EvalInfo) {
-    this.push([Ops.Debugger, evalInfo]);
+  debugger(evalInfo: Option<Core.EvalInfo>) {
+    this.push([Ops.Debugger, evalInfo!]);
     this.template.block.hasEval = true;
   }
 
@@ -317,9 +317,9 @@ export default class JavaScriptCompiler
     this.pushValue<Expressions.HasBlockParams>([Ops.HasBlockParams, name]);
   }
 
-  partial(evalInfo: Core.EvalInfo) {
+  partial(evalInfo: Option<Core.EvalInfo>) {
     let params = this.popValue<Params>();
-    this.push([Ops.Partial, params[0], evalInfo]);
+    this.push([Ops.Partial, params[0], evalInfo!]);
     this.template.block.hasEval = true;
   }
 
