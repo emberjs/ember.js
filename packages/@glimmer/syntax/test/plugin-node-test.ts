@@ -70,7 +70,7 @@ test('can support the legacy AST transform API via ASTPlugin', assert => {
   }
 
   class Plugin {
-    syntax: Syntax;
+    syntax!: Syntax;
 
     transform(program: AST.Program): AST.Program {
       assert.ok(true, 'transform was called!');
