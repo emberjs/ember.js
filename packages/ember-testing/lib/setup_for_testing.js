@@ -1,7 +1,7 @@
 /* global self */
 
 import { setTesting } from '@ember/debug';
-import { jQuery } from 'ember-views';
+import { jQuery, jQueryDisabled } from 'ember-views';
 import { getAdapter, setAdapter } from './test/adapter';
 import {
   incrementPendingRequests,
@@ -32,7 +32,7 @@ export default function setupForTesting() {
     setAdapter(typeof self.QUnit === 'undefined' ? new Adapter() : new QUnitAdapter());
   }
 
-  if (jQuery) {
+  if (!jQueryDisabled) {
     jQuery(document).off('ajaxSend', incrementPendingRequests);
     jQuery(document).off('ajaxComplete', decrementPendingRequests);
 
