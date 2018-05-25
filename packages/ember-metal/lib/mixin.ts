@@ -2,6 +2,7 @@
 @module @ember/object
 */
 import { assert } from '@ember/debug';
+import { BINDING_SUPPORT } from '@ember/deprecated-features';
 import { assign } from '@ember/polyfills';
 import { DEBUG } from '@glimmer/env';
 import { ENV } from 'ember-environment';
@@ -404,6 +405,7 @@ function applyMixin(obj: { [key: string]: any }, mixins: Mixin[], partial: boole
     }
 
     if (
+      BINDING_SUPPORT &&
       ENV._ENABLE_BINDING_SUPPORT &&
       typeof Mixin.detectBinding === 'function' &&
       Mixin.detectBinding(key)
@@ -414,7 +416,12 @@ function applyMixin(obj: { [key: string]: any }, mixins: Mixin[], partial: boole
     defineProperty(obj, key, desc, value, meta);
   }
 
-  if (ENV._ENABLE_BINDING_SUPPORT && !partial && typeof Mixin.finishPartial === 'function') {
+  if (
+    BINDING_SUPPORT &&
+    ENV._ENABLE_BINDING_SUPPORT &&
+    !partial &&
+    typeof Mixin.finishPartial === 'function'
+  ) {
     Mixin.finishPartial(obj, meta);
   }
 
@@ -684,7 +691,7 @@ function buildMixinsArray(mixins: MixinLike[] | undefined): Mixin[] | undefined 
 
 type MixinLike = Mixin | { [key: string]: any };
 
-if (ENV._ENABLE_BINDING_SUPPORT) {
+if (BINDING_SUPPORT && ENV._ENABLE_BINDING_SUPPORT) {
   // slotting this so that the legacy addon can add the function here
   // without triggering an error due to the Object.seal done below
   Mixin.finishPartial = null;

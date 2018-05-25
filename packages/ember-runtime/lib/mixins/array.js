@@ -2,6 +2,7 @@
 @module @ember/array
 */
 
+import { ARRAY_AT_EACH } from '@ember/deprecated-features';
 import { DEBUG } from '@glimmer/env';
 import { HAS_NATIVE_PROXY } from 'ember-utils';
 import { PROXY_CONTENT } from 'ember-metal';
@@ -1153,17 +1154,20 @@ const ArrayMixin = Mixin.create(Enumerable, {
     ```
 
     @property @each
+    @deprecated
     @public
   */
-  '@each': computed(function() {
-    deprecate(`Getting the '@each' property on object ${toString(this)} is deprecated`, false, {
-      id: 'ember-metal.getting-each',
-      until: '3.5.0',
-      url: 'https://emberjs.com/deprecations/v3.x#toc_getting-the-each-property',
-    });
+  '@each': ARRAY_AT_EACH
+    ? computed(function() {
+        deprecate(`Getting the '@each' property on object ${toString(this)} is deprecated`, false, {
+          id: 'ember-metal.getting-each',
+          until: '3.5.0',
+          url: 'https://emberjs.com/deprecations/v3.x#toc_getting-the-each-property',
+        });
 
-    return eachProxyFor(this);
-  }).readOnly(),
+        return eachProxyFor(this);
+      }).readOnly()
+    : undefined,
 });
 
 const OUT_OF_RANGE_EXCEPTION = 'Index out of range';

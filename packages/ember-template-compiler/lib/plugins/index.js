@@ -18,16 +18,15 @@ import TransformInElement from './transform-in-element';
 import AssertIfHelperWithoutArguments from './assert-if-helper-without-arguments';
 import AssertSplattributeExpressions from './assert-splattribute-expression';
 
+import { BINDING_SUPPORT, RENDER_HELPER } from '@ember/deprecated-features';
+
 const transforms = [
   TransformDotComponentInvocation,
-  TransformOldBindingSyntax,
   TransformAngleBracketComponents,
   TransformTopLevelComponents,
   TransformInlineLinkTo,
   TransformOldClassBindingSyntax,
   TransformQuotedBindingsIntoJustBindings,
-  DeprecateRenderModel,
-  DeprecateRender,
   AssertReservedNamedArguments,
   TransformActionSyntax,
   TransformInputTypeSyntax,
@@ -39,5 +38,14 @@ const transforms = [
   AssertIfHelperWithoutArguments,
   AssertSplattributeExpressions,
 ];
+
+if (RENDER_HELPER) {
+  transforms.push(DeprecateRenderModel);
+  transforms.push(DeprecateRender);
+}
+
+if (BINDING_SUPPORT) {
+  transforms.push(TransformOldBindingSyntax);
+}
 
 export default Object.freeze(transforms);

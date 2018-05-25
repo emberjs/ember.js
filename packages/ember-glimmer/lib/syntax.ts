@@ -1,5 +1,6 @@
 import { EMBER_TEMPLATE_BLOCK_LET_HELPER } from '@ember/canary-features';
 import { assert } from '@ember/debug';
+import { RENDER_HELPER } from '@ember/deprecated-features';
 import { CompilableBlock } from '@glimmer/interfaces';
 import { Macros, OpcodeBuilder } from '@glimmer/opcode-compiler';
 import { Option } from '@glimmer/util';
@@ -97,7 +98,9 @@ export function registerMacros(macro: any) {
 export function populateMacros(macros: Macros) {
   let { inlines, blocks } = macros;
   inlines.add('outlet', outletMacro);
-  inlines.add('render', renderMacro);
+  if (RENDER_HELPER) {
+    inlines.add('render', renderMacro);
+  }
   inlines.add('mount', mountMacro);
   inlines.add('input', inputMacro);
   inlines.add('textarea', textAreaMacro);

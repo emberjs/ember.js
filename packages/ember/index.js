@@ -125,6 +125,12 @@ import Map from '@ember/map';
 import MapWithDefault from '@ember/map/with-default';
 import OrderedSet from '@ember/map/lib/ordered-set';
 import { assign, merge } from '@ember/polyfills';
+import {
+  PROPERTY_WILL_CHANGE,
+  PROPERTY_DID_CHANGE,
+  LOGGER,
+  EMBER_EXTEND_PROTOTYPES,
+} from '@ember/deprecated-features';
 
 // ****ember-environment****
 
@@ -146,21 +152,23 @@ Object.defineProperty(Ember, 'lookup', {
   enumerable: false,
 });
 
-Object.defineProperty(Ember, 'EXTEND_PROTOTYPES', {
-  enumerable: false,
-  get() {
-    deprecate(
-      'Accessing Ember.EXTEND_PROTOTYPES is deprecated, please migrate to Ember.ENV.EXTEND_PROTOTYPES',
-      false,
-      {
-        id: 'ember-env.old-extend-prototypes',
-        until: '4.0.0',
-      }
-    );
+if (EMBER_EXTEND_PROTOTYPES) {
+  Object.defineProperty(Ember, 'EXTEND_PROTOTYPES', {
+    enumerable: false,
+    get() {
+      deprecate(
+        'Accessing Ember.EXTEND_PROTOTYPES is deprecated, please migrate to Ember.ENV.EXTEND_PROTOTYPES',
+        false,
+        {
+          id: 'ember-env.old-extend-prototypes',
+          until: '4.0.0',
+        }
+      );
 
-    return ENV.EXTEND_PROTOTYPES;
-  },
-});
+      return ENV.EXTEND_PROTOTYPES;
+    },
+  });
+}
 
 // ****@ember/application****
 Ember.getOwner = getOwner;
@@ -280,8 +288,12 @@ Ember.isNone = metal.isNone;
 Ember.isEmpty = metal.isEmpty;
 Ember.isBlank = metal.isBlank;
 Ember.isPresent = metal.isPresent;
-Ember.propertyWillChange = metal.propertyWillChange;
-Ember.propertyDidChange = metal.propertyDidChange;
+if (PROPERTY_WILL_CHANGE) {
+  Ember.propertyWillChange = metal.propertyWillChange;
+}
+if (PROPERTY_DID_CHANGE) {
+  Ember.propertyDidChange = metal.propertyDidChange;
+}
 Ember.notifyPropertyChange = metal.notifyPropertyChange;
 Ember.overrideChains = metal.overrideChains;
 Ember.beginPropertyChanges = metal.beginPropertyChanges;
@@ -352,7 +364,9 @@ Object.defineProperty(Ember, 'testing', {
 Ember._Backburner = Backburner;
 
 // ****ember-console****
-Ember.Logger = Logger;
+if (LOGGER) {
+  Ember.Logger = Logger;
+}
 
 // ****ember-runtime****
 Ember.A = A;

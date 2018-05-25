@@ -1,5 +1,6 @@
 import { EMBER_MODULE_UNIFICATION, GLIMMER_CUSTOM_COMPONENT_MANAGER } from '@ember/canary-features';
 import { assert } from '@ember/debug';
+import { RENDER_HELPER } from '@ember/deprecated-features';
 import { _instrumentStart } from '@ember/instrumentation';
 import {
   ComponentDefinition,
@@ -75,8 +76,11 @@ const BUILTINS_HELPERS = {
   '-get-dynamic-var': getDynamicVar,
   '-mount': mountHelper,
   '-outlet': outletHelper,
-  '-render': renderHelper,
 };
+
+if (RENDER_HELPER) {
+  BUILTINS_HELPERS['-render'] = renderHelper;
+}
 
 const BUILTIN_MODIFIERS = {
   action: new ActionModifierManager(),

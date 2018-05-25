@@ -1,3 +1,4 @@
+import { ROUTER_ROUTER } from '@ember/deprecated-features';
 import { getOwner } from 'ember-owner';
 import { assign } from '@ember/polyfills';
 import { once } from '@ember/runloop';
@@ -110,18 +111,20 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
   */
   queryParams: {},
 
-  router: computed('_router', function() {
-    deprecate(
-      'Route#router is an intimate API that has been renamed to Route#_router. However you might want to consider using the router service',
-      false,
-      {
-        id: 'ember-routing.route-router',
-        until: '3.5.0',
-        url: 'https://emberjs.com/deprecations/v3.x#toc_ember-routing-route-router',
-      }
-    );
-    return this._router;
-  }),
+  router: ROUTER_ROUTER
+    ? computed('_router', function() {
+        deprecate(
+          'Route#router is an intimate API that has been renamed to Route#_router. However you might want to consider using the router service',
+          false,
+          {
+            id: 'ember-routing.route-router',
+            until: '3.5.0',
+            url: 'https://emberjs.com/deprecations/v3.x#toc_ember-routing-route-router',
+          }
+        );
+        return this._router;
+      })
+    : undefined,
 
   /**
     The name of the route, dot-delimited.

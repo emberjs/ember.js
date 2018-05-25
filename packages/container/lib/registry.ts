@@ -1,4 +1,5 @@
 import { assert, deprecate } from '@ember/debug';
+import { REGISTRY_RESOLVER_AS_FUNCTION } from '@ember/deprecated-features';
 import { assign } from '@ember/polyfills';
 import { DEBUG } from '@glimmer/env';
 import { ENV } from 'ember-environment';
@@ -118,8 +119,17 @@ export default class Registry implements IRegistry {
       assert(missingResolverFunctionsDeprecation, typeof this.resolver !== 'function');
     }
 
-    if (typeof this.resolver === 'function' && ENV._ENABLE_RESOLVER_FUNCTION_SUPPORT === true) {
-      deprecateResolverFunction(this);
+    if (
+      REGISTRY_RESOLVER_AS_FUNCTION &&
+      typeof this.resolver === 'function' &&
+      ENV._ENABLE_RESOLVER_FUNCTION_SUPPORT === true
+    ) {
+      deprecate(missingResolverFunctionsDeprecation, false, {
+        id: 'ember-application.registry-resolver-as-function',
+        until: '3.0.0',
+        url: 'https://emberjs.com/deprecations/v2.x#toc_registry-resolver-as-function',
+      });
+      this.resolver = { resolve: this.resolver as Resolve };
     }
 
     this.registrations = dictionary(options.registrations || null);
@@ -708,15 +718,6 @@ export default class Registry implements IRegistry {
       return null;
     }
   }
-}
-
-function deprecateResolverFunction(registry: Registry): void {
-  deprecate(missingResolverFunctionsDeprecation, false, {
-    id: 'ember-application.registry-resolver-as-function',
-    until: '3.0.0',
-    url: 'https://emberjs.com/deprecations/v2.x#toc_registry-resolver-as-function',
-  });
-  registry.resolver = { resolve: registry.resolver as Resolve };
 }
 
 export declare class DebugRegistry extends Registry {
