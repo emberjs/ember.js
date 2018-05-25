@@ -560,6 +560,224 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
           content: 'hello',
         });
       }
+
+      '@test includes invocation specified attributes in `...attributes` slot in tagless component ("splattributes")'() {
+        this.registerComponent('foo-bar', {
+          ComponentClass: Component.extend({ tagName: '' }),
+          template: '<div ...attributes>hello</div>',
+        });
+
+        this.render('<FooBar data-foo={{foo}} data-bar={{bar}} />', { foo: 'foo', bar: 'bar' });
+
+        this.assertElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { 'data-foo': 'foo', 'data-bar': 'bar' },
+          content: 'hello',
+        });
+
+        this.runTask(() => this.rerender());
+
+        this.assertElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { 'data-foo': 'foo', 'data-bar': 'bar' },
+          content: 'hello',
+        });
+
+        this.runTask(() => {
+          set(this.context, 'foo', 'FOO');
+          set(this.context, 'bar', undefined);
+        });
+
+        this.assertElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { 'data-foo': 'FOO' },
+          content: 'hello',
+        });
+
+        this.runTask(() => {
+          set(this.context, 'foo', 'foo');
+          set(this.context, 'bar', 'bar');
+        });
+
+        this.assertElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { 'data-foo': 'foo', 'data-bar': 'bar' },
+          content: 'hello',
+        });
+      }
+
+      '@test merges attributes with `...attributes` in tagless component ("splattributes")'() {
+        let instance;
+        this.registerComponent('foo-bar', {
+          ComponentClass: Component.extend({
+            tagName: '',
+            init() {
+              instance = this;
+              this._super(...arguments);
+              this.localProp = 'qux';
+            },
+          }),
+          template: '<div data-derp={{localProp}} ...attributes>hello</div>',
+        });
+
+        this.render('<FooBar data-foo={{foo}} data-bar={{bar}} />', { foo: 'foo', bar: 'bar' });
+
+        this.assertElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { 'data-derp': 'qux', 'data-foo': 'foo', 'data-bar': 'bar' },
+          content: 'hello',
+        });
+
+        this.runTask(() => this.rerender());
+
+        this.assertElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { 'data-derp': 'qux', 'data-foo': 'foo', 'data-bar': 'bar' },
+          content: 'hello',
+        });
+
+        this.runTask(() => {
+          set(this.context, 'foo', 'FOO');
+          set(this.context, 'bar', undefined);
+          set(instance, 'localProp', 'QUZ');
+        });
+
+        this.assertElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { 'data-derp': 'QUZ', 'data-foo': 'FOO' },
+          content: 'hello',
+        });
+
+        this.runTask(() => {
+          set(this.context, 'foo', 'foo');
+          set(this.context, 'bar', 'bar');
+          set(instance, 'localProp', 'qux');
+        });
+
+        this.assertElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { 'data-derp': 'qux', 'data-foo': 'foo', 'data-bar': 'bar' },
+          content: 'hello',
+        });
+      }
+
+      '@test merges class attribute with `...attributes` in tagless component ("splattributes")'() {
+        let instance;
+        this.registerComponent('foo-bar', {
+          ComponentClass: Component.extend({
+            tagName: '',
+            init() {
+              instance = this;
+              this._super(...arguments);
+              this.localProp = 'qux';
+            },
+          }),
+          template: '<div class={{localProp}} ...attributes>hello</div>',
+        });
+
+        this.render('<FooBar class={{bar}} />', { bar: 'bar' });
+
+        this.assertElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { class: classes('qux bar') },
+          content: 'hello',
+        });
+
+        this.runTask(() => this.rerender());
+
+        this.assertElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { class: classes('qux bar') },
+          content: 'hello',
+        });
+
+        this.runTask(() => {
+          set(this.context, 'bar', undefined);
+          set(instance, 'localProp', 'QUZ');
+        });
+
+        this.assertElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { class: classes('QUZ') },
+          content: 'hello',
+        });
+
+        this.runTask(() => {
+          set(this.context, 'bar', 'bar');
+          set(instance, 'localProp', 'qux');
+        });
+
+        this.assertElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { class: classes('qux bar') },
+          content: 'hello',
+        });
+      }
+
+      '@test can include `...attributes` in multiple elements in tagless component ("splattributes")'() {
+        this.registerComponent('foo-bar', {
+          ComponentClass: Component.extend({ tagName: '' }),
+          template: '<div ...attributes>hello</div><p ...attributes>world</p>',
+        });
+
+        this.render('<FooBar data-foo={{foo}} data-bar={{bar}} />', { foo: 'foo', bar: 'bar' });
+
+        this.assertElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { 'data-foo': 'foo', 'data-bar': 'bar' },
+          content: 'hello',
+        });
+        this.assertElement(this.nthChild(1), {
+          tagName: 'p',
+          attrs: { 'data-foo': 'foo', 'data-bar': 'bar' },
+          content: 'world',
+        });
+
+        this.runTask(() => this.rerender());
+
+        this.assertElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { 'data-foo': 'foo', 'data-bar': 'bar' },
+          content: 'hello',
+        });
+        this.assertElement(this.nthChild(1), {
+          tagName: 'p',
+          attrs: { 'data-foo': 'foo', 'data-bar': 'bar' },
+          content: 'world',
+        });
+
+        this.runTask(() => {
+          set(this.context, 'foo', 'FOO');
+          set(this.context, 'bar', undefined);
+        });
+
+        this.assertElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { 'data-foo': 'FOO' },
+          content: 'hello',
+        });
+        this.assertElement(this.nthChild(1), {
+          tagName: 'p',
+          attrs: { 'data-foo': 'FOO' },
+          content: 'world',
+        });
+
+        this.runTask(() => {
+          set(this.context, 'foo', 'foo');
+          set(this.context, 'bar', 'bar');
+        });
+
+        this.assertElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { 'data-foo': 'foo', 'data-bar': 'bar' },
+          content: 'hello',
+        });
+        this.assertElement(this.nthChild(1), {
+          tagName: 'p',
+          attrs: { 'data-foo': 'foo', 'data-bar': 'bar' },
+          content: 'world',
+        });
+      }
     }
   );
 }

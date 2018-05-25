@@ -145,10 +145,12 @@ export default class CurlyComponentManager
   }
 
   getTagName(state: ComponentStateBucket): Option<string> {
-    const { component } = state;
-    if (component.tagName === '') {
+    const { component, hasWrappedElement } = state;
+
+    if (!hasWrappedElement) {
       return null;
     }
+
     return (component && component.tagName) || 'div';
   }
 
@@ -273,8 +275,10 @@ export default class CurlyComponentManager
 
     component.trigger('didReceiveAttrs');
 
+    let hasWrappedElement = component.tagName !== '';
+
     // We usually do this in the `didCreateElement`, but that hook doesn't fire for tagless components
-    if (component.tagName === '') {
+    if (!hasWrappedElement) {
       if (environment.isInteractive) {
         component.trigger('willRender');
       }
@@ -288,7 +292,13 @@ export default class CurlyComponentManager
 
     // Track additional lifecycle metadata about this component in a state bucket.
     // Essentially we're saving off all the state we'll need in the future.
-    let bucket = new ComponentStateBucket(environment, component, capturedArgs, finalizer);
+    let bucket = new ComponentStateBucket(
+      environment,
+      component,
+      capturedArgs,
+      finalizer,
+      hasWrappedElement
+    );
 
     if (args.named.has('class')) {
       bucket.classRef = args.named.get('class');
@@ -298,7 +308,7 @@ export default class CurlyComponentManager
       processComponentInitializationAssertions(component, props);
     }
 
-    if (environment.isInteractive && component.tagName !== '') {
+    if (environment.isInteractive && hasWrappedElement) {
       component.trigger('willRender');
     }
 
@@ -310,51 +320,60 @@ export default class CurlyComponentManager
   }
 
   didCreateElement(
-    { component, classRef, environment }: ComponentStateBucket,
+    { hasWrappedElement, component, classRef, environment }: ComponentStateBucket,
     element: HTMLElement,
     operations: ElementOperations
   ): void {
-    setViewElement(component, element);
+    // TODO: EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION update glimmer-vm to _not_
+    // call `didCreateElement` for each `...attributes`
+    if (hasWrappedElement) {
+      setViewElement(component, element);
 
-    let { attributeBindings, classNames, classNameBindings } = component;
+      let { attributeBindings, classNames, classNameBindings } = component;
 
-    operations.setAttribute('id', PrimitiveReference.create(guidFor(component)), false, null);
+      operations.setAttribute('id', PrimitiveReference.create(guidFor(component)), false, null);
 
-    if (attributeBindings && attributeBindings.length) {
-      applyAttributeBindings(element, attributeBindings, component, operations);
-    } else {
-      if (component.elementId) {
-        operations.setAttribute('id', PrimitiveReference.create(component.elementId), false, null);
+      if (attributeBindings && attributeBindings.length) {
+        applyAttributeBindings(element, attributeBindings, component, operations);
+      } else {
+        if (component.elementId) {
+          operations.setAttribute(
+            'id',
+            PrimitiveReference.create(component.elementId),
+            false,
+            null
+          );
+        }
+        IsVisibleBinding.install(element, component, operations);
       }
-      IsVisibleBinding.install(element, component, operations);
-    }
 
-    if (classRef) {
-      const ref = new SimpleClassNameBindingReference(classRef, classRef['_propertyKey']);
-      operations.setAttribute('class', ref, false, null);
-    }
+      if (classRef) {
+        const ref = new SimpleClassNameBindingReference(classRef, classRef['_propertyKey']);
+        operations.setAttribute('class', ref, false, null);
+      }
 
-    if (classNames && classNames.length) {
-      classNames.forEach((name: string) => {
-        operations.setAttribute('class', PrimitiveReference.create(name), false, null);
-      });
-    }
+      if (classNames && classNames.length) {
+        classNames.forEach((name: string) => {
+          operations.setAttribute('class', PrimitiveReference.create(name), false, null);
+        });
+      }
 
-    if (classNameBindings && classNameBindings.length) {
-      classNameBindings.forEach((binding: string) => {
-        ClassNameBinding.install(element, component, binding, operations);
-      });
-    }
-    operations.setAttribute('class', PrimitiveReference.create('ember-view'), false, null);
+      if (classNameBindings && classNameBindings.length) {
+        classNameBindings.forEach((binding: string) => {
+          ClassNameBinding.install(element, component, binding, operations);
+        });
+      }
+      operations.setAttribute('class', PrimitiveReference.create('ember-view'), false, null);
 
-    if ('ariaRole' in component) {
-      operations.setAttribute('role', referenceForKey(component, 'ariaRole'), false, null);
-    }
+      if ('ariaRole' in component) {
+        operations.setAttribute('role', referenceForKey(component, 'ariaRole'), false, null);
+      }
 
-    component._transitionTo('hasElement');
+      component._transitionTo('hasElement');
 
-    if (environment.isInteractive) {
-      component.trigger('willInsertElement');
+      if (environment.isInteractive) {
+        component.trigger('willInsertElement');
+      }
     }
   }
 

@@ -41,7 +41,8 @@ export default class ComponentStateBucket {
     public environment: Environment,
     public component: Component,
     public args: CapturedNamedArguments | null,
-    public finalizer: Finalizer
+    public finalizer: Finalizer,
+    public hasWrappedElement: boolean
   ) {
     this.classRef = null;
     this.argsRevision = args === null ? 0 : args.tag.value();
