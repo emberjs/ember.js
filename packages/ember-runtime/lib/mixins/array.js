@@ -28,7 +28,6 @@ import Enumerable from './enumerable';
 import compare from '../compare';
 import { ENV } from 'ember-environment';
 import Observable from '../mixins/observable';
-import Copyable from '../mixins/copyable';
 import copy from '../copy';
 import EmberError from '@ember/error';
 import MutableEnumerable from './mutable_enumerable';
@@ -1628,7 +1627,7 @@ const MutableArray = Mixin.create(ArrayMixin, MutableEnumerable, {
   @uses Ember.Copyable
   @public
 */
-let NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
+let NativeArray = Mixin.create(MutableArray, Observable, {
   objectAt(idx) {
     return this[idx];
   },
@@ -1643,6 +1642,11 @@ let NativeArray = Mixin.create(MutableArray, Observable, Copyable, {
   },
 
   copy(deep) {
+    deprecate(`Using \`NativeArray#copy\` is deprecated`, false, {
+      id: 'ember-runtime.using-array-copy',
+      until: '3.5.0',
+    });
+
     if (deep) {
       return this.map(item => copy(item, true));
     }

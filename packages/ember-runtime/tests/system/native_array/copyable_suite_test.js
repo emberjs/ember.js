@@ -6,8 +6,11 @@ moduleFor(
   class extends AbstractTestCase {
     ['@test deep copy is respected'](assert) {
       let array = emberA([{ id: 1 }, { id: 2 }, { id: 3 }]);
+      let copiedArray;
 
-      let copiedArray = array.copy(true);
+      expectDeprecation(() => {
+        copiedArray = array.copy(true);
+      }, `Using \`NativeArray#copy\` is deprecated`);
 
       assert.deepEqual(copiedArray, array, 'copied array is equivalent');
       assert.ok(copiedArray[0] !== array[0], 'objects inside should be unique');
