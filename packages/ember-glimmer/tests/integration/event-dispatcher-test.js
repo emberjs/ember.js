@@ -6,6 +6,10 @@ import {
   reset as instrumentationReset,
 } from '@ember/instrumentation';
 import { EMBER_IMPROVED_INSTRUMENTATION } from '@ember/canary-features';
+import { jQueryDisabled, jQuery } from 'ember-views';
+import { ENV } from 'ember-environment';
+import { HAS_NATIVE_PROXY } from 'ember-utils';
+import { DEBUG } from '@glimmer/env';
 
 let canDataTransfer = !!document.createEvent('HTMLEvents').dataTransfer;
 
@@ -296,6 +300,163 @@ if (canDataTransfer) {
 
         fireNativeWithDataTransfer(this.$('div')[0], 'drop', 'success');
         assert.equal(receivedEvent.dataTransfer, 'success');
+      }
+    }
+  );
+}
+
+if (jQueryDisabled) {
+  moduleFor(
+    'EventDispatcher#native-events',
+    class extends RenderingTest {
+      ['@test native events are passed when jQuery is not present'](assert) {
+        let receivedEvent;
+
+        this.registerComponent('x-foo', {
+          ComponentClass: Component.extend({
+            click(event) {
+              receivedEvent = event;
+            },
+          }),
+          template: `<button id="foo">bar</button>`,
+        });
+
+        this.render(`{{x-foo}}`);
+
+        this.runTask(() => this.$('#foo').click());
+        assert.ok(receivedEvent, 'click event was triggered');
+        assert.notOk(receivedEvent.originalEvent, 'event is not a jQuery.Event');
+      }
+    }
+  );
+} else {
+  moduleFor(
+    'EventDispatcher#jquery-events',
+    class extends RenderingTest {
+      beforeEach() {
+        this.jqueryIntegration = ENV._JQUERY_INTEGRATION;
+      }
+
+      afterEach() {
+        ENV._JQUERY_INTEGRATION = this.jqueryIntegration;
+      }
+
+      ['@test jQuery events are passed when jQuery is present'](assert) {
+        let receivedEvent;
+
+        this.registerComponent('x-foo', {
+          ComponentClass: Component.extend({
+            click(event) {
+              receivedEvent = event;
+            },
+          }),
+          template: `<button id="foo">bar</button>`,
+        });
+
+        this.render(`{{x-foo}}`);
+
+        this.runTask(() => this.$('#foo').click());
+        assert.ok(receivedEvent, 'click event was triggered');
+        assert.ok(receivedEvent instanceof jQuery.Event, 'event is a jQuery.Event');
+      }
+
+      [`@${HAS_NATIVE_PROXY ? 'test' : 'skip'} accessing jQuery.Event#originalEvent is deprecated`](
+        assert
+      ) {
+        let receivedEvent;
+
+        this.registerComponent('x-foo', {
+          ComponentClass: Component.extend({
+            click(event) {
+              receivedEvent = event;
+            },
+          }),
+          template: `<button id="foo">bar</button>`,
+        });
+
+        this.render(`{{x-foo}}`);
+
+        this.runTask(() => this.$('#foo').click());
+        expectDeprecation(() => {
+          let { originalEvent } = receivedEvent;
+          assert.ok(originalEvent, 'jQuery event has originalEvent property');
+          assert.equal(originalEvent.type, 'click', 'properties of originalEvent are available');
+        }, 'Accessing jQuery.Event specific properties is deprecated. Either use the ember-jquery-legacy addon to normalize events to native events, or explicitly opt into jQuery integration using @ember/optional-features.');
+      }
+
+      ['@test other jQuery.Event properties do not trigger deprecation'](assert) {
+        let receivedEvent;
+
+        this.registerComponent('x-foo', {
+          ComponentClass: Component.extend({
+            click(event) {
+              receivedEvent = event;
+            },
+          }),
+          template: `<button id="foo">bar</button>`,
+        });
+
+        this.render(`{{x-foo}}`);
+
+        this.runTask(() => this.$('#foo').click());
+        expectNoDeprecation(() => {
+          receivedEvent.stopPropagation();
+          receivedEvent.stopImmediatePropagation();
+          receivedEvent.preventDefault();
+          assert.ok(receivedEvent.bubbles, 'properties of jQuery event are available');
+          assert.equal(receivedEvent.type, 'click', 'properties of jQuery event are available');
+        });
+      }
+
+      ['@test accessing jQuery.Event#originalEvent does not trigger deprecations when jquery integration is explicitly enabled'](
+        assert
+      ) {
+        let receivedEvent;
+        ENV._JQUERY_INTEGRATION = true;
+
+        this.registerComponent('x-foo', {
+          ComponentClass: Component.extend({
+            click(event) {
+              receivedEvent = event;
+            },
+          }),
+          template: `<button id="foo">bar</button>`,
+        });
+
+        this.render(`{{x-foo}}`);
+
+        this.runTask(() => this.$('#foo').click());
+        expectNoDeprecation(() => {
+          let { originalEvent } = receivedEvent;
+          assert.ok(originalEvent, 'jQuery event has originalEvent property');
+          assert.equal(originalEvent.type, 'click', 'properties of originalEvent are available');
+        });
+      }
+
+      [`@${
+        HAS_NATIVE_PROXY && DEBUG ? 'test' : 'skip'
+      } accessing jQuery.Event#__originalEvent does not trigger deprecations to support ember-jquery-legacy`](
+        assert
+      ) {
+        let receivedEvent;
+
+        this.registerComponent('x-foo', {
+          ComponentClass: Component.extend({
+            click(event) {
+              receivedEvent = event;
+            },
+          }),
+          template: `<button id="foo">bar</button>`,
+        });
+
+        this.render(`{{x-foo}}`);
+
+        this.runTask(() => this.$('#foo').click());
+        expectNoDeprecation(() => {
+          let { __originalEvent: originalEvent } = receivedEvent;
+          assert.ok(originalEvent, 'jQuery event has __originalEvent property');
+          assert.equal(originalEvent.type, 'click', 'properties of __originalEvent are available');
+        });
       }
     }
   );
