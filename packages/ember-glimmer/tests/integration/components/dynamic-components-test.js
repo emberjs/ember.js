@@ -1,3 +1,4 @@
+import { EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION } from '@ember/canary-features';
 import { set, computed } from 'ember-metal';
 import { jQueryDisabled } from 'ember-views';
 import { Component } from '../../utils/helpers';
@@ -579,7 +580,12 @@ moduleFor(
       this.assertText('[Robert - Robert][Jacquie - Jacquie]');
     }
 
-    ['@test dashless components should not be found']() {
+    ['@test dashless components should not be found'](assert) {
+      if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
+        assert.ok(true, 'test is not applicable');
+        return;
+      }
+
       this.registerComponent('dashless2', { template: 'Do not render me!' });
 
       expectAssertion(() => {
