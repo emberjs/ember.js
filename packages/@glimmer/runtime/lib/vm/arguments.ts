@@ -321,7 +321,7 @@ export class NamedArguments implements INamedArguments {
   public base = 0;
   public length = 0;
 
-  private stack: EvaluationStack;
+  private stack!: EvaluationStack;
 
   private _references: Option<VersionedPathReference<Opaque>[]> = null;
 
@@ -515,7 +515,7 @@ export class CapturedNamedArguments implements ICapturedNamedArguments {
 }
 
 export class BlockArguments implements IBlockArguments {
-  private stack: EvaluationStack;
+  private stack!: EvaluationStack;
   private internalValues: Option<number[]> = null;
 
   public internalTag: Option<Tag> = null;

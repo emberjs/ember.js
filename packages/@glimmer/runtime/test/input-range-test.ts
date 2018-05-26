@@ -53,7 +53,7 @@ abstract class RangeTests extends AttributesTests {
 }
 
 class TemplateRangeTests extends RangeTests {
-  attrs: string;
+  attrs!: string;
 
   renderRange(value: number) {
     this.render(`<input ${this.attrs} />`, {
@@ -83,8 +83,8 @@ class EmberInputRangeComponent extends EmberishCurlyComponent {
 }
 
 abstract class EmberComponentRangeTests extends RangeTests {
-  env: TestEnvironment;
-  view: EmberishRootView;
+  env!: TestEnvironment;
+  view!: EmberishRootView;
 
   setup() {
     this.env = new TestEnvironment();
@@ -126,7 +126,7 @@ module(
 );
 
 class BasicComponentImplicitAttributesRangeTest extends RangeTests {
-  attrs: string;
+  attrs!: string;
 
   renderRange(value: number): void {
     this.registerComponent('Glimmer', 'RangeInput', '<input ...attributes/>');

@@ -20,12 +20,12 @@ import { assert } from './support';
 import { bump } from '@glimmer/reference';
 
 export class EmberishRootView extends EmberObject {
-  public element: Element;
+  public element!: Element;
 
   protected template: Template;
-  protected result: RenderResult;
+  protected result!: RenderResult;
 
-  private parent: Element;
+  private parent!: Element;
 
   constructor(protected env: TestEnvironment, template: string, context?: Object) {
     super(context);
