@@ -109,16 +109,16 @@ export interface DebugMetadata<State = undefined> {
   skipCheck?: true;
 }
 
-export interface NormalizedMetadata {
+export interface NormalizedMetadata<State = undefined> {
   name: string;
   before: Option<DebugBeforeFunction>;
-  stackChange: DebugStackChangeFunction<Opaque>;
+  stackChange: DebugStackChangeFunction<State>;
   operands: OperandSize;
   ops: Operand[];
   check: boolean;
 }
 
-export const METADATA: Option<NormalizedMetadata>[] = fillNulls(Op.Size);
+export const METADATA: Option<NormalizedMetadata<any>>[] = fillNulls(Op.Size);
 
 export function OPCODE_METADATA<State, Name extends Op = Op>(
   name: Name,
@@ -151,7 +151,7 @@ export function OPCODE_METADATA<State, Name extends Op = Op>(
   let operands = metadata.operands === undefined ? 0 : metadata.operands;
   let ops = metadata.ops === undefined ? [] : metadata.ops;
 
-  let normalized: NormalizedMetadata = {
+  let normalized: NormalizedMetadata<State> = {
     name: metadata.name,
     check: metadata.skipCheck ? false : true,
     ops,
