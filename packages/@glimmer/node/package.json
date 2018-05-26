@@ -8,7 +8,7 @@
     "simple-dom": "^0.3.0"
   },
   "devDependencies": {
-    "typescript": "^2.2.0",
+    "typescript": "^2.8.3",
     "@types/qunit": "^2.0.31",
     "@glimmer/compiler": "^0.34.6"
   }
