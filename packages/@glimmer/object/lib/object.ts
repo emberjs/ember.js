@@ -139,7 +139,7 @@ export class ClassMeta {
     this.subclasses.push(constructor);
   }
 
-  getSubclasses(): Function[] {
+  getSubclasses(): GlimmerObjectFactory<any>[] {
     return this.subclasses;
   }
 
@@ -381,7 +381,7 @@ export default class GlimmerObject {
 
   _super = ROOT;
   _meta = null;
-  _guid: number;
+  _guid!: number; // Set by initializeGuid(this) in constructor
 
   init() {}
 
