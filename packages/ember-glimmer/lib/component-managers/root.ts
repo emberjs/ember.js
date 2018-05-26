@@ -48,8 +48,10 @@ class RootComponentManager extends CurlyComponentManager {
 
     dynamicScope.view = component;
 
+    let hasWrappedElement = component.tagName !== '';
+
     // We usually do this in the `didCreateElement`, but that hook doesn't fire for tagless components
-    if (component.tagName === '') {
+    if (!hasWrappedElement) {
       if (environment.isInteractive) {
         component.trigger('willRender');
       }
@@ -65,7 +67,7 @@ class RootComponentManager extends CurlyComponentManager {
       processComponentInitializationAssertions(component, {});
     }
 
-    return new ComponentStateBucket(environment, component, null, finalizer);
+    return new ComponentStateBucket(environment, component, null, finalizer, hasWrappedElement);
   }
 }
 
