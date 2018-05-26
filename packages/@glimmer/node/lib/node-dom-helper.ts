@@ -3,7 +3,7 @@ import { DOMTreeConstruction, Bounds, ConcreteBounds } from '@glimmer/runtime';
 import { Simple } from '@glimmer/interfaces';
 
 export default class NodeDOMTreeConstruction extends DOMTreeConstruction {
-  protected document: SimpleDOM.Document;
+  protected document!: SimpleDOM.Document; // Hides property on base class
   constructor(doc: Simple.Document) {
     super(doc);
   }
