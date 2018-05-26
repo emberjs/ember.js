@@ -10,6 +10,7 @@ import { Object as EmberObject } from 'ember-runtime';
 import jQuery from './jquery';
 import ActionManager from './action_manager';
 import fallbackViewRegistry from '../compat/fallback-view-registry';
+import addJQueryEventDeprecation from './jquery_event_deprecation';
 
 const HAS_JQUERY = jQuery !== undefined;
 const ROOT_ELEMENT_CLASS = 'ember-application';
@@ -244,7 +245,7 @@ export default EmberObject.extend({
         let result = true;
 
         if (view) {
-          result = view.handleEvent(eventName, evt);
+          result = view.handleEvent(eventName, addJQueryEventDeprecation(evt));
         }
 
         return result;
@@ -253,6 +254,8 @@ export default EmberObject.extend({
       rootElement.on(`${event}.ember`, '[data-ember-action]', evt => {
         let attributes = evt.currentTarget.attributes;
         let handledActions = [];
+
+        evt = addJQueryEventDeprecation(evt);
 
         for (let i = 0; i < attributes.length; i++) {
           let attr = attributes.item(i);
