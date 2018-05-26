@@ -550,7 +550,13 @@ moduleFor(
       number = 42;
       string = 'foo';
 
-      map = OrderedSet.create();
+      expectDeprecation(
+        () => {
+          map = OrderedSet.create();
+        },
+        'Use of @ember/OrderedSet is deprecated. Please use native `Map` instead',
+        { id: 'ember-map-deprecation', until: '3.5.0' }
+      );
     }
 
     ['@test add returns the set'](assert) {
