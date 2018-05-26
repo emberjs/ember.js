@@ -5,7 +5,7 @@ import { compile } from 'ember-template-compiler';
 import { ENV } from 'ember-environment';
 import { Route, NoneLocation, HistoryLocation } from 'ember-routing';
 import Controller from '@ember/controller';
-import { Object as EmberObject, A as emberA, copy } from 'ember-runtime';
+import { Object as EmberObject, A as emberA } from 'ember-runtime';
 import { moduleFor, ApplicationTestCase, runDestroy } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
 import { Mixin, computed, set, addObserver, observer } from 'ember-metal';
@@ -1035,8 +1035,11 @@ moduleFor(
         actions: {
           showStuff(obj) {
             assert.ok(this instanceof HomeRoute, 'the handler is an App.HomeRoute');
-            // Using Ember.copy removes any private Ember vars which older IE would be confused by
-            assert.deepEqual(copy(obj, true), { name: 'Tom Dale' }, 'the context is correct');
+            assert.deepEqual(
+              Object.assign({}, obj),
+              { name: 'Tom Dale' },
+              'the context is correct'
+            );
             done();
           },
         },
@@ -1070,8 +1073,11 @@ moduleFor(
         actions: {
           showStuff(obj) {
             assert.ok(this instanceof RootRoute, 'the handler is an App.HomeRoute');
-            // Using Ember.copy removes any private Ember vars which older IE would be confused by
-            assert.deepEqual(copy(obj, true), { name: 'Tom Dale' }, 'the context is correct');
+            assert.deepEqual(
+              Object.assign({}, obj),
+              { name: 'Tom Dale' },
+              'the context is correct'
+            );
             done();
           },
         },
@@ -1210,10 +1216,13 @@ moduleFor(
         actions: {
           showStuff(obj1, obj2) {
             assert.ok(this instanceof RootRoute, 'the handler is an App.HomeRoute');
-            // Using Ember.copy removes any private Ember vars which older IE would be confused by
-            assert.deepEqual(copy(obj1, true), { name: 'Tilde' }, 'the first context is correct');
             assert.deepEqual(
-              copy(obj2, true),
+              Object.assign({}, obj1),
+              { name: 'Tilde' },
+              'the first context is correct'
+            );
+            assert.deepEqual(
+              Object.assign({}, obj2),
               { name: 'Tom Dale' },
               'the second context is correct'
             );

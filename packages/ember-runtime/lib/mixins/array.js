@@ -1628,7 +1628,6 @@ const MutableArray = Mixin.create(ArrayMixin, MutableEnumerable, {
   @class Ember.NativeArray
   @uses MutableArray
   @uses Observable
-  @uses Ember.Copyable
   @public
 */
 let NativeArray = Mixin.create(MutableArray, Observable, {

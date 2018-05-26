@@ -6,14 +6,7 @@ import { get, set, getProperties, setProperties, computed, isEmpty } from 'ember
 import { assert, deprecate, info, isTesting } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { classify } from '@ember/string';
-import {
-  typeOf,
-  copy,
-  Object as EmberObject,
-  A as emberA,
-  Evented,
-  ActionHandler,
-} from 'ember-runtime';
+import { typeOf, Object as EmberObject, A as emberA, Evented, ActionHandler } from 'ember-runtime';
 import generateController from './generate_controller';
 import {
   stashParamNames,
@@ -1593,7 +1586,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
 
     if (!name) {
       if (sawParams) {
-        return copy(params);
+        return Object.assign({}, params);
       } else {
         if (transition.resolveIndex < 1) {
           return;
