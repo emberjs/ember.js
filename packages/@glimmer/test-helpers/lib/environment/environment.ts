@@ -51,7 +51,7 @@ export default abstract class TestEnvironment<Locator> extends Environment {
 
     switch (keyPath) {
       case '@index':
-        keyFor = (_, index: number) => String(index);
+        keyFor = (_, index: Opaque) => String(index);
         break;
       case '@primitive':
         keyFor = (item: Opaque) => String(item);

@@ -159,9 +159,9 @@ export class EmberishGlimmerComponentManager
 
 export class EmberishGlimmerComponent extends GlimmerObject {
   public dirtinessTag: TagWrapper<DirtyableTag> = DirtyableTag.create();
-  public attrs: Attrs;
-  public element: Element;
-  public bounds: Bounds;
+  public attrs!: Attrs;
+  public element!: Element;
+  public bounds!: Bounds;
   public parentView: Option<EmberishGlimmerComponent> = null;
 
   static create(args: { attrs: Attrs }): EmberishGlimmerComponent {

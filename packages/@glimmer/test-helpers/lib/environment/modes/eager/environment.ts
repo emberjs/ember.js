@@ -6,8 +6,8 @@ import { DOMTreeConstruction, DOMChanges } from '@glimmer/runtime';
 import TestEnvironment, { TestEnvironmentOptions } from '../../environment';
 
 export default class EagerTestEnvironment extends TestEnvironment<Opaque> {
-  protected program: Program<Opaque>;
-  protected resolver: RuntimeResolver<Opaque>;
+  protected program!: Program<Opaque>;
+  protected resolver!: RuntimeResolver<Opaque>;
 
   constructor(options?: TestEnvironmentOptions) {
     if (!options) {

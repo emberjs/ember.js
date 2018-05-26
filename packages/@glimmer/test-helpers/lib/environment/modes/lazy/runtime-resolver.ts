@@ -10,7 +10,7 @@ export default class LazyRuntimeResolver implements RuntimeResolver<TestMeta> {
   private handleLookup: TypedRegistry<Opaque>[] = [];
   private registry = new Registry();
 
-  public compiler: LazyCompiler<TestMeta>;
+  public compiler!: LazyCompiler<TestMeta>;
 
   register<K extends LookupType>(type: K, name: string, value: Lookup[K]): number {
     let registry = this.registry[type];
