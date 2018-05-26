@@ -27,10 +27,16 @@ moduleFor(
     }
 
     ['@test isEmpty Map'](assert) {
-      let map = new Map();
-      assert.equal(true, isEmpty(map), 'Empty map is empty');
-      map.set('foo', 'bar');
-      assert.equal(false, isEmpty(map), 'Map is not empty');
+      expectDeprecation(
+        () => {
+          let map = new Map();
+          assert.equal(true, isEmpty(map), 'Empty map is empty');
+          map.set('foo', 'bar');
+          assert.equal(false, isEmpty(map), 'Map is not empty');
+        },
+        'Use of @ember/Map is deprecated. Please use native `Map` instead',
+        { id: 'ember-map-deprecation', until: '3.5.0' }
+      );
     }
 
     ['@test isEmpty Ember.OrderedSet'](assert) {

@@ -1,4 +1,4 @@
-import { assert } from '@ember/debug';
+import { assert, deprecate } from '@ember/debug';
 import { guidFor } from 'ember-utils';
 import OrderedSet from './lib/ordered-set';
 import { copyMap } from './lib/utils';
@@ -44,9 +44,15 @@ import { copyMap } from './lib/utils';
   @class Map
   @private
   @constructor
+  @deprecated use native `Map` instead.
 */
 class Map {
   constructor() {
+    deprecate('Use of @ember/Map is deprecated. Please use native `Map` instead', false, {
+      id: 'ember-map-deprecation',
+      until: '3.5.0',
+    });
+
     this._keys = new OrderedSet();
     this._values = Object.create(null);
     this.size = 0;
