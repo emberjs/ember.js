@@ -6,13 +6,7 @@ import { get, set, getProperties, setProperties, computed, isEmpty } from 'ember
 import { assert, deprecate, info, isTesting } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { classify } from '@ember/string';
-import {
-  typeOf,
-  Object as EmberObject,
-  A as emberA,
-  Evented,
-  ActionHandler,
-} from 'ember-runtime';
+import { typeOf, Object as EmberObject, A as emberA, Evented, ActionHandler } from 'ember-runtime';
 import generateController from './generate_controller';
 import {
   stashParamNames,

@@ -1035,7 +1035,11 @@ moduleFor(
         actions: {
           showStuff(obj) {
             assert.ok(this instanceof HomeRoute, 'the handler is an App.HomeRoute');
-            assert.deepEqual(Object.assign({}, obj), { name: 'Tom Dale' }, 'the context is correct');
+            assert.deepEqual(
+              Object.assign({}, obj),
+              { name: 'Tom Dale' },
+              'the context is correct'
+            );
             done();
           },
         },
@@ -1069,7 +1073,11 @@ moduleFor(
         actions: {
           showStuff(obj) {
             assert.ok(this instanceof RootRoute, 'the handler is an App.HomeRoute');
-            assert.deepEqual(Object.assign({}, obj), { name: 'Tom Dale' }, 'the context is correct');
+            assert.deepEqual(
+              Object.assign({}, obj),
+              { name: 'Tom Dale' },
+              'the context is correct'
+            );
             done();
           },
         },
@@ -1209,9 +1217,10 @@ moduleFor(
           showStuff(obj1, obj2) {
             assert.ok(this instanceof RootRoute, 'the handler is an App.HomeRoute');
             assert.deepEqual(
-              Object.assign({}, obj1), 
-              { name: 'Tilde' }, 
-              'the first context is correct');
+              Object.assign({}, obj1),
+              { name: 'Tilde' },
+              'the first context is correct'
+            );
             assert.deepEqual(
               Object.assign({}, obj2),
               { name: 'Tom Dale' },
