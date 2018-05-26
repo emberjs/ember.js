@@ -16,7 +16,6 @@ import {
 import {
   CompilableProgram as CompilableProgramInstance,
   Macros,
-  OpcodeBuilderConstructor,
   EagerOpcodeBuilder,
   AbstractCompiler,
 } from '@glimmer/opcode-compiler';
@@ -110,9 +109,8 @@ export default class BundleCompiler<Locator> {
 
   protected delegate: BundleCompilerDelegate<Locator>;
   protected macros: Macros;
-  protected Builder: OpcodeBuilderConstructor;
   protected plugins: ASTPluginBuilder[];
-  protected resolver: BundleCompilerLookup<Locator>;
+  protected resolver!: BundleCompilerLookup<Locator>; // Set by compilerResolver()
 
   constructor(delegate: BundleCompilerDelegate<Locator>, options: BundleCompilerOptions = {}) {
     this.delegate = delegate;

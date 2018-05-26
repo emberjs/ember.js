@@ -80,7 +80,7 @@ export default class EagerRenderDelegate implements RenderDelegate {
   protected symbolTables = new ModuleLocatorMap<ProgramSymbolTable, ModuleLocator>();
   public constants!: DebugConstants;
 
-  constructor(env: Environment) {
+  constructor(env?: Environment) {
     this.env = env || new EagerTestEnvironment();
     this.registerInternalHelper('-get-dynamic-var', getDynamicVar);
   }
