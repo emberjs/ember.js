@@ -1408,7 +1408,7 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
 export default OpcodeBuilder;
 
 export class LazyOpcodeBuilder<Locator> extends OpcodeBuilder<Locator> {
-  public constants: CompileTimeLazyConstants;
+  public constants!: CompileTimeLazyConstants; // Hides property on base class
 
   pushBlock(block: Option<CompilableBlock>): void {
     if (block) {

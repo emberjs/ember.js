@@ -18,7 +18,7 @@ export interface LazyCompilerOptions<Locator> {
 
 export class LazyCompiler<Locator> extends AbstractCompiler<Locator, LazyOpcodeBuilder<Locator>>
   implements Compiler<LazyOpcodeBuilder<Locator>> {
-  program: Program<Locator>;
+  program!: Program<Locator>; // Hides property on base class
 
   // FIXME: turn to static method
   constructor(

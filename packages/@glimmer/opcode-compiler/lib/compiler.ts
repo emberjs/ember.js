@@ -49,7 +49,7 @@ export abstract class AbstractCompiler<
   Builder extends OpcodeBuilder<Locator>,
   Program extends CompileTimeProgram = CompileTimeProgram
 > implements Compiler<Builder> {
-  stdLib: STDLib;
+  stdLib!: STDLib; // Set by this.initialize() in constructor
 
   constructor(
     public readonly macros: Macros,

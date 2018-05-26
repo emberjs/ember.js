@@ -24,11 +24,8 @@ export class Compilers<Syntax extends TupleSyntax> {
 
   constructor(private offset = 0) {}
 
-  add<T extends Syntax>(
-    name: number,
-    func: (sexp: T, builder: OpcodeBuilder<Opaque>) => void
-  ): void {
-    this.funcs.push(func);
+  add<T extends Syntax>(name: number, func: CompilerFunction<T>): void {
+    this.funcs.push(func as CompilerFunction<Syntax>);
     this.names[name] = this.funcs.length - 1;
   }
 
@@ -391,15 +388,15 @@ export type MissingBlockMacro<Locator> = (
 export class Blocks {
   private names = dict<number>();
   private funcs: BlockMacro<Opaque>[] = [];
-  private missing: MissingBlockMacro<Opaque>;
+  private missing: MissingBlockMacro<Opaque> | undefined;
 
   add<Locator>(name: string, func: BlockMacro<Locator>) {
-    this.funcs.push(func);
+    this.funcs.push(func as BlockMacro<Opaque>);
     this.names[name] = this.funcs.length - 1;
   }
 
   addMissing<Locator>(func: MissingBlockMacro<Locator>) {
-    this.missing = func;
+    this.missing = func as MissingBlockMacro<Opaque>;
   }
 
   compile<Locator>(
@@ -414,7 +411,7 @@ export class Blocks {
 
     if (index === undefined) {
       assert(!!this.missing, `${name} not found, and no catch-all block handler was registered`);
-      let func = this.missing;
+      let func = this.missing!;
       let handled = func(name, params, hash, template, inverse, builder);
       assert(!!handled, `${name} not found, and the catch-all block handler didn't handle it`);
     } else {
@@ -435,15 +432,15 @@ export type AppendMacro<Locator> = (
 export class Inlines {
   private names = dict<number>();
   private funcs: AppendMacro<Opaque>[] = [];
-  private missing: AppendMacro<Opaque>;
+  private missing: AppendMacro<Opaque> | undefined;
 
   add<Locator>(name: string, func: AppendMacro<Locator>) {
-    this.funcs.push(func);
+    this.funcs.push(func as AppendMacro<Opaque>);
     this.names[name] = this.funcs.length - 1;
   }
 
   addMissing<Locator>(func: AppendMacro<Locator>) {
-    this.missing = func;
+    this.missing = func as AppendMacro<Opaque>;
   }
 
   compile<Locator>(
