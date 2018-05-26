@@ -8,11 +8,12 @@ import { XLINK, Builder as TestBuilder, toHTML, toHTMLNS } from './support';
 
 @module('[dom-change-list] TreeBuilder')
 export class ChangeListTest extends TestCase {
-  protected document: Simple.Document;
-  protected parent: Simple.Element | Simple.DocumentFragment;
-  protected tree: Builder;
-  protected builder: TreeBuilder;
-  protected construction: DOMTreeConstruction;
+  // These definitely assigned properties are set in before()
+  protected document!: Simple.Document;
+  protected parent!: Simple.Element | Simple.DocumentFragment;
+  protected tree!: Builder;
+  protected builder!: TreeBuilder;
+  protected construction!: DOMTreeConstruction;
 
   before() {
     this.document = new SimpleDOM.Document();
@@ -122,7 +123,7 @@ export class ChangeListTest extends TestCase {
 }
 
 export class Builder extends TestBuilder {
-  protected tree: TreeBuilder;
+  protected tree!: TreeBuilder; // Hides property in base class
 
   openElement(tag: string) {
     let token = this.tree.openElement(tag);

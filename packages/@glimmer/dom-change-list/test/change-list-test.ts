@@ -11,10 +11,11 @@ const XLINK: Simple.Namespace = 'http://www.w3.org/1999/xlink';
 
 @module('[dom-change-list] DOMTreeConstruction')
 export class ChangeListTest extends TestCase {
-  protected document: Simple.Document;
-  protected parent: Simple.Element | Simple.DocumentFragment;
-  protected tree: Builder;
-  protected construction: DOMTreeConstruction;
+  // These definitely assigned properties are set in before()
+  protected document!: Simple.Document;
+  protected parent!: Simple.Element | Simple.DocumentFragment;
+  protected tree!: Builder;
+  protected construction!: DOMTreeConstruction;
 
   before() {
     this.document = new SimpleDOM.Document();
@@ -123,7 +124,7 @@ export class ChangeListTest extends TestCase {
 }
 
 export class Builder extends TestBuilder {
-  protected tree: DOMTreeConstruction;
+  protected tree!: DOMTreeConstruction; // Hides property in base class
 
   openElement(tag: string, namespace?: Simple.Namespace) {
     let token = this.tree.openElement(tag, namespace);
