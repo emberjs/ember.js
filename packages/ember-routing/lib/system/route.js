@@ -8,7 +8,6 @@ import { DEBUG } from '@glimmer/env';
 import { classify } from '@ember/string';
 import {
   typeOf,
-  copy,
   Object as EmberObject,
   A as emberA,
   Evented,
@@ -1593,7 +1592,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
 
     if (!name) {
       if (sawParams) {
-        return copy(params);
+        return Object.assign({}, params);
       } else {
         if (transition.resolveIndex < 1) {
           return;

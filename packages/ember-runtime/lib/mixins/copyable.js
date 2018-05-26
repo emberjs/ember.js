@@ -15,6 +15,7 @@ import { Mixin } from 'ember-metal';
   @class Copyable
   @namespace Ember
   @since Ember 0.9
+  @deprecated Use 'ember-copy' addon instead
   @private
 */
 export default Mixin.create({

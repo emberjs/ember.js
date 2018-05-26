@@ -6,14 +6,19 @@ moduleFor(
   class extends AbstractTestCase {
     ['@test Ember.copy null'](assert) {
       let obj = { field: null };
-
-      assert.equal(copy(obj, true).field, null, 'null should still be null');
+      let copied = null;
+      expectDeprecation(() => {
+        copied = copy(obj, true);
+      }, 'Use ember-copy addon instead of copy method and Copyable mixin.');
+      assert.equal(copied.field, null, 'null should still be null');
     }
 
     ['@test Ember.copy date'](assert) {
       let date = new Date(2014, 7, 22);
-      let dateCopy = copy(date);
-
+      let dateCopy = null;
+      expectDeprecation(() => {
+        dateCopy = copy(date);
+      }, 'Use ember-copy addon instead of copy method and Copyable mixin.');
       assert.equal(date.getTime(), dateCopy.getTime(), 'dates should be equivalent');
     }
 
@@ -21,13 +26,20 @@ moduleFor(
       let obj = Object.create(null);
 
       obj.foo = 'bar';
+      let copied = null;
+      expectDeprecation(() => {
+        copied = copy(obj);
+      }, 'Use ember-copy addon instead of copy method and Copyable mixin.');
 
-      assert.equal(copy(obj).foo, 'bar', 'bar should still be bar');
+      assert.equal(copied.foo, 'bar', 'bar should still be bar');
     }
 
     ['@test Ember.copy Array'](assert) {
       let array = [1, null, new Date(2015, 9, 9), 'four'];
-      let arrayCopy = copy(array);
+      let arrayCopy = null;
+      expectDeprecation(() => {
+        arrayCopy = copy(array);
+      }, 'Use ember-copy addon instead of copy method and Copyable mixin.');
 
       assert.deepEqual(array, arrayCopy, 'array content cloned successfully in new array');
     }
