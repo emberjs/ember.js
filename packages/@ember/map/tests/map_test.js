@@ -17,7 +17,13 @@ function testMap(nameAndFunc) {
         number = 42;
         string = 'foo';
 
-        map = nameAndFunc[1].create();
+        expectDeprecation(
+          () => {
+            map = nameAndFunc[1].create();
+          },
+          'Use of @ember/Map is deprecated. Please use native `Map` instead',
+          { id: 'ember-map-deprecation', until: '3.5.0' }
+        );
       }
 
       ['@test set'](assert) {
@@ -104,7 +110,14 @@ function testMap(nameAndFunc) {
         map.set(number, 'winning');
         map.set(string, 'winning');
 
-        let map2 = map.copy();
+        let map2;
+        expectDeprecation(
+          () => {
+            map2 = map.copy();
+          },
+          'Use of @ember/Map is deprecated. Please use native `Map` instead',
+          { id: 'ember-map-deprecation', until: '3.5.0' }
+        );
 
         map2.set(object, 'losing');
         map2.set(number, 'losing');
@@ -120,7 +133,14 @@ function testMap(nameAndFunc) {
         map.set(number, 'winning');
         map.set(string, 'winning');
 
-        let map2 = map.copy();
+        let map2;
+        expectDeprecation(
+          () => {
+            map2 = map.copy();
+          },
+          'Use of @ember/Map is deprecated. Please use native `Map` instead',
+          { id: 'ember-map-deprecation', until: '3.5.0' }
+        );
 
         map2.delete(object);
         map2.delete(number);
@@ -148,8 +168,14 @@ function testMap(nameAndFunc) {
         assert.equal(map.size, 2);
 
         //Check copy
-        let copy = map.copy();
-        assert.equal(copy.size, 2);
+        expectDeprecation(
+          () => {
+            let copy = map.copy();
+            assert.equal(copy.size, 2);
+          },
+          'Use of @ember/Map is deprecated. Please use native `Map` instead',
+          { id: 'ember-map-deprecation', until: '3.5.0' }
+        );
 
         //Remove a key twice
         map.delete(number);
@@ -428,11 +454,18 @@ moduleFor(
   'MapWithDefault - default values',
   class extends AbstractTestCase {
     ['@test Retrieving a value that has not been set returns and sets a default value'](assert) {
-      let map = MapWithDefault.create({
-        defaultValue(key) {
-          return [key];
+      let map;
+      expectDeprecation(
+        () => {
+          map = MapWithDefault.create({
+            defaultValue(key) {
+              return [key];
+            },
+          });
         },
-      });
+        'Use of @ember/Map is deprecated. Please use native `Map` instead',
+        { id: 'ember-map-deprecation', until: '3.5.0' }
+      );
 
       let value = map.get('ohai');
       assert.deepEqual(value, ['ohai']);
@@ -441,30 +474,56 @@ moduleFor(
     }
 
     ['@test Map.prototype.constructor'](assert) {
-      let map = new Map();
-      assert.equal(map.constructor, Map);
+      expectDeprecation(
+        () => {
+          let map = new Map();
+          assert.equal(map.constructor, Map);
+        },
+        'Use of @ember/Map is deprecated. Please use native `Map` instead',
+        { id: 'ember-map-deprecation', until: '3.5.0' }
+      );
     }
 
     ['@test MapWithDefault.prototype.constructor'](assert) {
-      let map = new MapWithDefault({
-        defaultValue(key) {
-          return key;
+      expectDeprecation(
+        () => {
+          let map = new MapWithDefault({
+            defaultValue(key) {
+              return key;
+            },
+          });
+          assert.equal(map.constructor, MapWithDefault);
         },
-      });
-      assert.equal(map.constructor, MapWithDefault);
+        'Use of @ember/Map is deprecated. Please use native `Map` instead',
+        { id: 'ember-map-deprecation', until: '3.5.0' }
+      );
     }
 
     ['@test Copying a MapWithDefault copies the default value'](assert) {
-      let map = MapWithDefault.create({
-        defaultValue(key) {
-          return [key];
+      let map;
+      expectDeprecation(
+        () => {
+          map = MapWithDefault.create({
+            defaultValue(key) {
+              return [key];
+            },
+          });
         },
-      });
+        'Use of @ember/Map is deprecated. Please use native `Map` instead',
+        { id: 'ember-map-deprecation', until: '3.5.0' }
+      );
 
       map.set('ohai', 1);
       map.get('bai');
 
-      let map2 = map.copy();
+      let map2;
+      expectDeprecation(
+        () => {
+          map2 = map.copy();
+        },
+        'Use of @ember/Map is deprecated. Please use native `Map` instead',
+        { id: 'ember-map-deprecation', until: '3.5.0' }
+      );
 
       assert.equal(map2.get('ohai'), 1);
       assert.deepEqual(map2.get('bai'), ['bai']);
@@ -491,7 +550,13 @@ moduleFor(
       number = 42;
       string = 'foo';
 
-      map = OrderedSet.create();
+      expectDeprecation(
+        () => {
+          map = OrderedSet.create();
+        },
+        'Use of @ember/OrderedSet is deprecated. Please use native `Map` instead',
+        { id: 'ember-map-deprecation', until: '3.5.0' }
+      );
     }
 
     ['@test add returns the set'](assert) {

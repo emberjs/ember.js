@@ -1,3 +1,4 @@
+import { deprecate } from '@ember/debug';
 import Map from './index';
 import { copyMap } from './lib/utils';
 
@@ -11,6 +12,15 @@ import { copyMap } from './lib/utils';
 */
 export default class MapWithDefault extends Map {
   constructor(options) {
+    deprecate(
+      'Use of @ember/MapWithDefault is deprecated. Please use native `Map` instead',
+      false,
+      {
+        id: 'ember-map-deprecation',
+        until: '3.5.0',
+      }
+    );
+
     super();
     this.defaultValue = options.defaultValue;
   }

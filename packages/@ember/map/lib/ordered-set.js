@@ -1,4 +1,4 @@
-import { assert } from '@ember/debug';
+import { assert, deprecate } from '@ember/debug';
 import { guidFor } from 'ember-utils';
 import { copyNull } from './utils';
 
@@ -14,6 +14,11 @@ import { copyNull } from './utils';
 */
 export default class OrderedSet {
   constructor() {
+    deprecate('Use of @ember/OrderedSet is deprecated. Please use native `Map` instead', false, {
+      id: 'ember-map-deprecation',
+      until: '3.5.0',
+    });
+
     this.clear();
   }
 
