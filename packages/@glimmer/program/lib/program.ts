@@ -285,7 +285,7 @@ export class RuntimeProgram<Locator> {
 }
 
 export class Program<Locator> extends WriteOnlyProgram {
-  public constants: Constants<Locator>;
+  public constants!: Constants<Locator>;
 }
 
 function slice(arr: Uint16Array, start: number, end: number): Uint16Array {
