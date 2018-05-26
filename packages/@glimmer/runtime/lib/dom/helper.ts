@@ -91,7 +91,7 @@ export function moveNodesBefore(
 }
 
 export class DOMOperations {
-  protected uselessElement: HTMLElement;
+  protected uselessElement!: HTMLElement; // Set by this.setupUselessElement() in constructor
 
   constructor(protected document: Simple.Document) {
     this.setupUselessElement();

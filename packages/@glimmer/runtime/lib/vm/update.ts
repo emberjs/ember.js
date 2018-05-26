@@ -154,7 +154,7 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
 
   private _tag: TagWrapper<UpdatableTag>;
 
-  protected bounds: UpdatableTracker;
+  protected bounds!: UpdatableTracker; // Hides property on base class
 
   constructor(
     start: number,
