@@ -11,8 +11,8 @@ import EagerRuntimeResolver from '../modes/eager/runtime-resolver';
 import { TestComponentDefinitionState } from '../components';
 
 export class BasicComponent {
-  public element: Element;
-  public bounds: Bounds;
+  public element!: Element;
+  public bounds!: Bounds;
 }
 
 export interface BasicComponentFactory {

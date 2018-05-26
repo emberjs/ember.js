@@ -50,7 +50,7 @@ const COMMENT_NODE = 8; //  Node.COMMENT_NODE
 
 export class VersionedObject implements Tagged {
   public tag: TagWrapper<DirtyableTag>;
-  public value: Object;
+  public value!: Object;
 
   constructor(value: Object) {
     this.tag = DirtyableTag.create();
@@ -128,7 +128,7 @@ export class RenderTest {
   protected context: Dict<Opaque> = dict<Opaque>();
   protected renderResult: Option<RenderResult> = null;
   protected helpers = dict<UserHelper>();
-  protected testType: ComponentKind;
+  protected testType!: ComponentKind;
   protected snapshot: NodesSnapshot = [];
 
   constructor(protected delegate: RenderDelegate) {
@@ -573,13 +573,11 @@ export interface RehydrationStats {
 }
 
 export class RehydrationDelegate implements RenderDelegate {
-  serialized: string;
-
   protected env: never;
 
   public clientEnv: LazyTestEnvironment;
   public serverEnv: LazyTestEnvironment;
-  public rehydrationStats: RehydrationStats;
+  public rehydrationStats!: RehydrationStats;
   constructor() {
     this.clientEnv = new LazyTestEnvironment();
 
@@ -777,8 +775,11 @@ export function test(...args: any[]) {
   return descriptor;
 }
 
-export interface RenderDelegateConstructor<Delegate extends RenderDelegate> {
-  new (env?: Environment): Delegate;
+export interface RenderDelegateConstructor<
+  Delegate extends RenderDelegate,
+  TEnvironment extends Environment
+> {
+  new (env?: TEnvironment): Delegate;
 }
 
 export interface RenderTestConstructor<D extends RenderDelegate, T> {
@@ -793,14 +794,14 @@ export function module<T>(
   return rawModule(name, klass, LazyRenderDelegate, options);
 }
 
-export function rawModule<D extends RenderDelegate, T>(
+export function rawModule<D extends RenderDelegate, T, E extends Environment>(
   name: string,
   klass: RenderTestConstructor<D, T>,
-  Delegate: RenderDelegateConstructor<D>,
+  Delegate: RenderDelegateConstructor<D, E>,
   options = { componentModule: false }
 ): void {
   if (options.componentModule) {
-    if (shouldRunTest<D>(Delegate)) {
+    if (shouldRunTest<D, E>(Delegate)) {
       componentModule(name, (klass as any) as RenderTestConstructor<D, RenderTest>, Delegate);
     }
   } else {
@@ -809,7 +810,7 @@ export function rawModule<D extends RenderDelegate, T>(
     for (let prop in klass.prototype) {
       const test = klass.prototype[prop];
 
-      if (isTestFunction(test) && shouldRunTest<D>(Delegate)) {
+      if (isTestFunction(test) && shouldRunTest<D, E>(Delegate)) {
         QUnit.test(prop, assert => test.call(new klass(new Delegate()), assert));
       }
     }
@@ -824,10 +825,10 @@ interface ComponentTests {
   fragment: Function[];
 }
 
-function componentModule<D extends RenderDelegate, T extends RenderTest>(
+function componentModule<D extends RenderDelegate, T extends RenderTest, E extends Environment>(
   name: string,
   klass: RenderTestConstructor<D, T>,
-  Delegate: RenderDelegateConstructor<D>
+  Delegate: RenderDelegateConstructor<D, E>
 ) {
   let tests: ComponentTests = {
     glimmer: [],
@@ -1024,7 +1025,9 @@ export function assertEmberishElement(...args: any[]): void {
 
 const HAS_TYPED_ARRAYS = typeof Uint16Array !== 'undefined';
 
-function shouldRunTest<T extends RenderDelegate>(Delegate: RenderDelegateConstructor<T>) {
+function shouldRunTest<T extends RenderDelegate, E extends Environment>(
+  Delegate: RenderDelegateConstructor<T, E>
+) {
   let isEagerDelegate = Delegate['isEager'];
 
   if (HAS_TYPED_ARRAYS) {

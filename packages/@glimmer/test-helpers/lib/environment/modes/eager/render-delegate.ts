@@ -78,7 +78,7 @@ export default class EagerRenderDelegate implements RenderDelegate {
   protected compileTimeModules = new Modules();
   protected components: Dict<ComponentDefinition<TestComponentDefinitionState>> = {};
   protected symbolTables = new ModuleLocatorMap<ProgramSymbolTable, ModuleLocator>();
-  public constants: DebugConstants;
+  public constants!: DebugConstants;
 
   constructor(env: Environment) {
     this.env = env || new EagerTestEnvironment();
