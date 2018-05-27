@@ -158,7 +158,7 @@ function transpileCommonJS(pkgName, esVersion, tree) {
         envFlags: {
           source: '@glimmer/local-debug-flags',
           flags: {
-            DEVMODE: false,
+            DEVMODE: process.env.EMBER_ENV !== 'production',
             DEBUG: false
           }
         },
