@@ -15,14 +15,10 @@
 
     // Enhance Strictness
     "strict": true,
-    "noImplicitAny": true,
     "suppressImplicitAnyIndexErrors": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "allowUnreachableCode": false,
-    "strictNullChecks": true,
     "noImplicitReturns": true,
-    "noImplicitThis": true,
 
     "newLine": "LF",
     "noEmit": true,
