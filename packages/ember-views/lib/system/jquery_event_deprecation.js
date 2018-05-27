@@ -1,6 +1,6 @@
 /* global Proxy */
 import { deprecate } from '@ember/debug';
-import { ENV } from 'ember-environment';
+import { global } from 'ember-environment';
 import { HAS_NATIVE_PROXY } from 'ember-utils';
 import { DEBUG } from '@glimmer/env';
 
@@ -20,7 +20,16 @@ export default function addJQueryEventDeprecation(jqEvent) {
         case 'originalEvent':
           deprecate(
             'Accessing jQuery.Event specific properties is deprecated. Either use the ember-jquery-legacy addon to normalize events to native events, or explicitly opt into jQuery integration using @ember/optional-features.',
-            ENV._JQUERY_INTEGRATION === true,
+            (EmberENV => {
+              // this deprecation is intentionally checking `global.EmberENV` /
+              // `global.ENV` so that we can ensure we _only_ deprecate in the
+              // case where jQuery integration is enabled implicitly (e.g.
+              // "defaulted" to enabled) as opposed to when the user explicitly
+              // opts in to using jQuery
+              if (typeof EmberENV !== 'object' || EmberENV === null) return false;
+
+              return EmberENV._JQUERY_INTEGRATION === true;
+            })(global.EmberENV || global.ENV),
             {
               id: 'ember-views.event-dispatcher.jquery-event',
               until: '4.0.0',
