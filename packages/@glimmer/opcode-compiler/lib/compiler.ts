@@ -147,10 +147,10 @@ export abstract class AbstractCompiler<
   abstract builderFor(containingLayout: LayoutWithContext<Opaque>): Builder;
 }
 
-export let debug: (compiler: AnyAbstractCompiler, handle: number) => void;
+export let debugCompiler: (compiler: AnyAbstractCompiler, handle: number) => void;
 
 if (DEBUG) {
-  debug = (compiler: AnyAbstractCompiler, handle: number) => {
+  debugCompiler = (compiler: AnyAbstractCompiler, handle: number) => {
     let { heap } = compiler['program'];
     let start = heap.getaddr(handle);
     let end = start + heap.sizeof(handle);

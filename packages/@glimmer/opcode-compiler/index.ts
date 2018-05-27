@@ -2,9 +2,9 @@ export * from './lib/interfaces';
 
 export { ATTRS_BLOCK, CompileOptions, Macros } from './lib/syntax';
 
-export * from './lib/lazy';
-export * from './lib/compile';
-export * from './lib/compiler';
+export { LazyCompilerOptions, LazyCompiler } from './lib/lazy';
+export { compile } from './lib/compile';
+export { AbstractCompiler, AnyAbstractCompiler, debugCompiler } from './lib/compiler';
 
 export { CompilableBlock, CompilableProgram } from './lib/compilable-template';
 
