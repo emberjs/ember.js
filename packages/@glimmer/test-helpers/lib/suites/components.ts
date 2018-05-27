@@ -163,4 +163,96 @@ export class BasicComponents extends RenderTest {
     this.assertHTML("<div color='red'>left - hello! yield me</div>");
     this.assertStableNodes();
   }
+
+  @test({
+    kind: 'basic',
+  })
+  'rwjblue invoking dynamic component (named arg) via angle brackets'() {
+    this.registerComponent('Glimmer', 'Foo', 'hello world!');
+    this.render({
+      layout: '<@foo />',
+      args: {
+        foo: 'component "Foo"',
+      },
+    });
+
+    this.assertHTML(`<div>hello world!</div>`);
+    this.assertStableRerender();
+  }
+
+  @test({
+    kind: 'basic',
+  })
+  'rwjblue invoking dynamic component (named arg) via angle brackets supports attributes'() {
+    this.registerComponent('Glimmer', 'Foo', '<div ...attributes>hello world!</div>');
+    this.render({
+      layout: '<@foo data-test="foo"/>',
+      args: {
+        foo: 'component "Foo"',
+      },
+    });
+
+    this.assertHTML(`<div><div data-test="foo">hello world!</div></div>`);
+    this.assertStableRerender();
+  }
+
+  @test({
+    kind: 'basic',
+  })
+  'rwjblue invoking dynamic component (named arg) via angle brackets supports args'() {
+    this.registerComponent('Glimmer', 'Foo', 'hello {{@name}}!');
+    this.render({
+      layout: '<@foo @name="world" />',
+      args: {
+        foo: 'component "Foo"',
+      },
+    });
+
+    this.assertHTML(`<div>hello world!</div>`);
+    this.assertStableRerender();
+  }
+
+  @test({
+    kind: 'basic',
+  })
+  'rwjblue invoking dynamic component (local) via angle brackets'() {
+    this.registerComponent('Glimmer', 'Foo', 'hello world!');
+    this.render(`{{#with (component 'Foo') as |Other|}}<Other />{{/with}}`);
+
+    this.assertHTML(`hello world!`);
+    this.assertStableRerender();
+  }
+
+  @test({
+    kind: 'basic',
+  })
+  'rwjblue invoking dynamic component (local) via angle brackets (ill-advised "htmlish element name" but supported)'() {
+    this.registerComponent('Glimmer', 'Foo', 'hello world!');
+    this.render(`{{#with (component 'Foo') as |div|}}<div />{{/with}}`);
+
+    this.assertHTML(`hello world!`);
+    this.assertStableRerender();
+  }
+
+  @test({
+    kind: 'basic',
+  })
+  'rwjblue invoking dynamic component (local) via angle brackets supports attributes'() {
+    this.registerComponent('Glimmer', 'Foo', '<div ...attributes>hello world!</div>');
+    this.render(`{{#with (component 'Foo') as |Other|}}<Other data-test="foo" />{{/with}}`);
+
+    this.assertHTML(`<div data-test="foo">hello world!</div>`);
+    this.assertStableRerender();
+  }
+
+  @test({
+    kind: 'basic',
+  })
+  'rwjblue invoking dynamic component (local) via angle brackets supports args'() {
+    this.registerComponent('Glimmer', 'Foo', 'hello {{@name}}!');
+    this.render(`{{#with (component 'Foo') as |Other|}}<Other @name="world" />{{/with}}`);
+
+    this.assertHTML(`hello world!`);
+    this.assertStableRerender();
+  }
 }

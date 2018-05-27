@@ -425,5 +425,5 @@ export default class JavaScriptCompiler
 function isComponent(tag: string): boolean {
   let open = tag.charAt(0);
 
-  return open === open.toUpperCase();
+  return open === open.toUpperCase() || open === '@';
 }
