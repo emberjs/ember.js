@@ -1,3 +1,6 @@
+import { AST, ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
+import { Builders } from '../types';
+
 /**
  @module ember
 */
@@ -23,26 +26,26 @@
   @class TransformActionSyntax
 */
 
-export default function transformActionSyntax({ syntax }) {
+export default function transformActionSyntax({ syntax }: ASTPluginEnvironment): ASTPlugin {
   let { builders: b } = syntax;
 
   return {
     name: 'transform-action-syntax',
 
     visitor: {
-      ElementModifierStatement(node) {
+      ElementModifierStatement(node: AST.ElementModifierStatement) {
         if (isAction(node)) {
           insertThisAsFirstParam(node, b);
         }
       },
 
-      MustacheStatement(node) {
+      MustacheStatement(node: AST.MustacheStatement) {
         if (isAction(node)) {
           insertThisAsFirstParam(node, b);
         }
       },
 
-      SubExpression(node) {
+      SubExpression(node: AST.SubExpression) {
         if (isAction(node)) {
           insertThisAsFirstParam(node, b);
         }
@@ -51,10 +54,13 @@ export default function transformActionSyntax({ syntax }) {
   };
 }
 
-function isAction(node) {
+function isAction(node: AST.ElementModifierStatement | AST.MustacheStatement | AST.SubExpression) {
   return node.path.original === 'action';
 }
 
-function insertThisAsFirstParam(node, builders) {
+function insertThisAsFirstParam(
+  node: AST.ElementModifierStatement | AST.MustacheStatement | AST.SubExpression,
+  builders: Builders
+) {
   node.params.unshift(builders.path('this'));
 }

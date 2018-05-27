@@ -1,3 +1,5 @@
+import { AST, ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
+
 /**
  @module ember
 */
@@ -22,17 +24,17 @@
   @class TransformAttrsToProps
 */
 
-export default function transformAttrsIntoArgs(env) {
+export default function transformAttrsIntoArgs(env: ASTPluginEnvironment): ASTPlugin {
   let { builders: b } = env.syntax;
 
-  let stack = [[]];
+  let stack: string[][] = [[]];
 
   return {
     name: 'transform-attrs-into-args',
 
     visitor: {
       Program: {
-        enter(node) {
+        enter(node: AST.Program) {
           let parent = stack[stack.length - 1];
           stack.push(parent.concat(node.blockParams));
         },
@@ -41,7 +43,7 @@ export default function transformAttrsIntoArgs(env) {
         },
       },
 
-      PathExpression(node) {
+      PathExpression(node: AST.PathExpression): AST.Node | void {
         if (isAttrs(node, stack[stack.length - 1])) {
           let path = b.path(node.original.substr(6));
           path.original = `@${path.original}`;
@@ -53,7 +55,7 @@ export default function transformAttrsIntoArgs(env) {
   };
 }
 
-function isAttrs(node, symbols) {
+function isAttrs(node: AST.PathExpression, symbols: string[]) {
   let name = node.parts[0];
 
   if (symbols.indexOf(name) !== -1) {

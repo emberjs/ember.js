@@ -2,8 +2,8 @@
 @module ember
 */
 
-import compileOptions from './compile-options';
 import { precompile as glimmerPrecompile } from '@glimmer/compiler';
+import compileOptions, { CompileOptions } from './compile-options';
 
 /**
   Uses HTMLBars `compile` function to process a string into a compiled template string.
@@ -15,6 +15,6 @@ import { precompile as glimmerPrecompile } from '@glimmer/compiler';
   @method precompile
   @param {String} templateString This is the string to be compiled by HTMLBars.
 */
-export default function precompile(templateString, options) {
+export default function precompile(templateString: string, options: CompileOptions): string {
   return glimmerPrecompile(templateString, compileOptions(options));
 }

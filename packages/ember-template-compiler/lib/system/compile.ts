@@ -2,8 +2,10 @@
 @module ember
 */
 import require, { has } from 'require';
+import { CompileOptions } from './compile-options';
 import precompile from './precompile';
-let template;
+
+let template: (templateJS: () => string) => string;
 
 /**
   Uses HTMLBars `compile` function to process a string into a compiled template.
@@ -15,8 +17,9 @@ let template;
   @param {String} templateString This is the string to be compiled by HTMLBars.
   @param {Object} options This is an options hash to augment the compiler options.
 */
-export default function compile(templateString, options) {
+export default function compile(templateString: string, options: CompileOptions) {
   if (!template && has('ember-glimmer')) {
+    // tslint:disable-next-line:no-require-imports
     template = require('ember-glimmer').template;
   }
 

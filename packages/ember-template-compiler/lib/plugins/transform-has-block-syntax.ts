@@ -1,3 +1,4 @@
+import { AST, ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
 /**
  @module ember
 */
@@ -24,30 +25,30 @@ const TRANSFORMATIONS = {
   hasBlockParams: 'has-block-params',
 };
 
-export default function transformHasBlockSyntax(env) {
+export default function transformHasBlockSyntax(env: ASTPluginEnvironment): ASTPlugin {
   let { builders: b } = env.syntax;
 
   return {
     name: 'transform-has-block-syntax',
 
     visitor: {
-      PathExpression(node) {
+      PathExpression(node: AST.PathExpression): AST.Node | void {
         if (TRANSFORMATIONS[node.original]) {
           return b.sexpr(b.path(TRANSFORMATIONS[node.original]));
         }
       },
-      MustacheStatement(node) {
-        if (TRANSFORMATIONS[node.path.original]) {
+      MustacheStatement(node: AST.MustacheStatement): AST.Node | void {
+        if (typeof node.path.original === 'string' && TRANSFORMATIONS[node.path.original]) {
           return b.mustache(
             b.path(TRANSFORMATIONS[node.path.original]),
             node.params,
             node.hash,
-            null,
+            undefined,
             node.loc
           );
         }
       },
-      SubExpression(node) {
+      SubExpression(node: AST.SubExpression): AST.Node | void {
         if (TRANSFORMATIONS[node.path.original]) {
           return b.sexpr(b.path(TRANSFORMATIONS[node.path.original]), node.params, node.hash);
         }

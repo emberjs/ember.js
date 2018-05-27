@@ -4,6 +4,12 @@
 
 import compile from './compile';
 
+export interface BootstrapOptions {
+  context?: NodeSelector;
+  hasTemplate(templateName: string): boolean;
+  setTemplate(templateName: string, template: string): void;
+}
+
 /**
   Find templates stored in the head tag as script tags and make them available
   to `Ember.CoreView` in the global `Ember.TEMPLATES` object.
@@ -17,7 +23,7 @@ import compile from './compile';
   @static
   @param ctx
 */
-function bootstrap({ context, hasTemplate, setTemplate }) {
+function bootstrap({ context, hasTemplate, setTemplate }: BootstrapOptions) {
   if (!context) {
     context = document;
   }
@@ -49,7 +55,7 @@ function bootstrap({ context, hasTemplate, setTemplate }) {
     setTemplate(templateName, template);
 
     // Remove script tag from DOM.
-    script.parentNode.removeChild(script);
+    script.parentNode!.removeChild(script);
   }
 }
 

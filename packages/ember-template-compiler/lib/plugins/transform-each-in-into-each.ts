@@ -1,3 +1,5 @@
+import { AST, ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
+
 /**
  @module ember
 */
@@ -18,14 +20,14 @@
   @private
   @class TransformHasBlockSyntax
 */
-export default function transformEachInIntoEach(env) {
+export default function transformEachInIntoEach(env: ASTPluginEnvironment): ASTPlugin {
   let { builders: b } = env.syntax;
 
   return {
     name: 'transform-each-in-into-each',
 
     visitor: {
-      BlockStatement(node) {
+      BlockStatement(node: AST.BlockStatement): AST.Node | void {
         if (node.path.original === 'each-in') {
           node.params[0] = b.sexpr(b.path('-each-in'), [node.params[0]]);
 
@@ -38,8 +40,8 @@ export default function transformEachInIntoEach(env) {
             // pick a name that won't parse so it won't shadow any real variables
             blockParams = ['( unused value )', blockParams[0]];
           } else {
-            let key = blockParams.shift();
-            let value = blockParams.shift();
+            let key = blockParams.shift()!;
+            let value = blockParams.shift()!;
             blockParams = [value, key, ...blockParams];
           }
 

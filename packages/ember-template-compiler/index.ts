@@ -1,8 +1,9 @@
 import { FEATURES } from '@ember/canary-features';
-import { ENV, context } from 'ember-environment';
+import { context, ENV } from 'ember-environment';
 import VERSION from 'ember/version';
 
-export const _Ember = (typeof context.imports.Ember === 'object' && context.imports.Ember) || {};
+export const _Ember =
+  (typeof (context.imports as any).Ember === 'object' && (context.imports as any).Ember) || {};
 
 // private API used by ember-cli-htmlbars to setup ENV and FEATURES
 if (!_Ember.ENV) {

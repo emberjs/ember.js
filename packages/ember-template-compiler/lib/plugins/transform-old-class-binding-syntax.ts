@@ -1,25 +1,28 @@
-export default function transformOldClassBindingSyntax(env) {
+import { AST, ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
+import { Builders } from '../types';
+
+export default function transformOldClassBindingSyntax(env: ASTPluginEnvironment): ASTPlugin {
   let b = env.syntax.builders;
 
   return {
     name: 'transform-old-class-binding-syntax',
 
     visitor: {
-      MustacheStatement(node) {
+      MustacheStatement(node: AST.MustacheStatement) {
         process(b, node);
       },
 
-      BlockStatement(node) {
+      BlockStatement(node: AST.BlockStatement) {
         process(b, node);
       },
     },
   };
 }
 
-function process(b, node) {
-  let allOfTheMicrosyntaxes = [];
-  let allOfTheMicrosyntaxIndexes = [];
-  let classPair;
+function process(b: Builders, node: AST.BlockStatement | AST.MustacheStatement) {
+  let allOfTheMicrosyntaxes: AST.HashPair[] = [];
+  let allOfTheMicrosyntaxIndexes: number[] = [];
+  let classPair: AST.HashPair | undefined;
 
   each(node.hash.pairs, (pair, index) => {
     let { key } = pair;
@@ -36,13 +39,13 @@ function process(b, node) {
     return;
   }
 
-  let classValue = [];
+  let classValue: AST.Expression[] = [];
 
   if (classPair) {
     classValue.push(classPair.value);
     classValue.push(b.string(' '));
   } else {
-    classPair = b.pair('class', null);
+    classPair = b.pair('class', null as any);
     node.hash.pairs.push(classPair);
   }
 
@@ -51,7 +54,7 @@ function process(b, node) {
   });
 
   each(allOfTheMicrosyntaxes, ({ value }) => {
-    let sexprs = [];
+    let sexprs: AST.Expression[] = [];
     // TODO: add helpful deprecation when both `classNames` and `classNameBindings` can
     // be removed.
 
@@ -68,7 +71,7 @@ function process(b, node) {
   classPair.value = b.sexpr(b.path('concat'), classValue, hash);
 }
 
-function buildSexprs(microsyntax, sexprs, b) {
+function buildSexprs(microsyntax: string[][], sexprs: AST.Expression[], b: Builders) {
   for (let i = 0; i < microsyntax.length; i++) {
     let [propName, activeClass, inactiveClass] = microsyntax[i];
     let sexpr;
@@ -77,7 +80,7 @@ function buildSexprs(microsyntax, sexprs, b) {
     if (propName === '') {
       sexpr = b.string(activeClass);
     } else {
-      let params = [b.path(propName)];
+      let params: AST.Expression[] = [b.path(propName)];
 
       if (activeClass || activeClass === '') {
         params.push(b.string(activeClass));
@@ -108,18 +111,19 @@ function buildSexprs(microsyntax, sexprs, b) {
   }
 }
 
-function each(list, callback) {
+function each<T>(list: T[], callback: (t: T, i: number) => void) {
   for (let i = 0; i < list.length; i++) {
     callback(list[i], i);
   }
 }
 
-function parseMicrosyntax(string) {
+function parseMicrosyntax(string: string): string[][] {
   let segments = string.split(' ');
+  let ret: string[][] = [];
 
   for (let i = 0; i < segments.length; i++) {
-    segments[i] = segments[i].split(':');
+    ret[i] = segments[i].split(':');
   }
 
-  return segments;
+  return ret;
 }

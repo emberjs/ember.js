@@ -1,4 +1,5 @@
 import { assert } from '@ember/debug';
+import { AST, ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
 import calculateLocationDisplay from '../system/calculate-location-display';
 
 /**
@@ -15,7 +16,6 @@ import calculateLocationDisplay from '../system/calculate-location-display';
   the wild that we need to transform `{{-in-element` into `{{in-element` during
   template transpilation, but since RFC#287 is not landed and enabled by default we _also_ need
   to prevent folks from starting to use `{{in-element` "for realz".
-
 
   Tranforms:
 
@@ -44,7 +44,7 @@ import calculateLocationDisplay from '../system/calculate-location-display';
   @private
   @class TransformHasBlockSyntax
 */
-export default function transformInElement(env) {
+export default function transformInElement(env: ASTPluginEnvironment): ASTPlugin {
   let { moduleName } = env.meta;
   let { builders: b } = env.syntax;
   let cursorCount = 0;
@@ -53,7 +53,7 @@ export default function transformInElement(env) {
     name: 'transform-in-element',
 
     visitor: {
-      BlockStatement(node) {
+      BlockStatement(node: AST.BlockStatement) {
         if (node.path.original === 'in-element') {
           assert(assertMessage(moduleName, node));
         } else if (node.path.original === '-in-element') {
@@ -85,7 +85,7 @@ export default function transformInElement(env) {
   };
 }
 
-function assertMessage(moduleName, node) {
+function assertMessage(moduleName: string, node: AST.BlockStatement) {
   let sourceInformation = calculateLocationDisplay(moduleName, node.loc);
 
   return `The {{in-element}} helper cannot be used. ${sourceInformation}`;

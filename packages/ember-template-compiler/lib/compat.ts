@@ -1,8 +1,8 @@
-import precompile from './system/precompile';
 import compile from './system/compile';
 import { registerPlugin } from './system/compile-options';
+import precompile from './system/precompile';
 
-export default function setupGlobal(Ember) {
+export default function setupGlobal(Ember: any) {
   let EmberHandlebars = Ember.Handlebars;
   if (!EmberHandlebars) {
     Ember.Handlebars = EmberHandlebars = {};

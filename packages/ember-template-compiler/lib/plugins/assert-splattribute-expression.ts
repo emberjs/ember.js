@@ -1,8 +1,9 @@
-import { assert } from '@ember/debug';
-import calculateLocationDisplay from '../system/calculate-location-display';
 import { EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION } from '@ember/canary-features';
+import { assert } from '@ember/debug';
+import { ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
+import calculateLocationDisplay from '../system/calculate-location-display';
 
-export default function assertSplattributeExpressions(env) {
+export default function assertSplattributeExpressions(env: ASTPluginEnvironment): ASTPlugin {
   let { moduleName } = env.meta;
 
   return {
