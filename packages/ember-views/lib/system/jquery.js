@@ -1,13 +1,14 @@
 import { context } from 'ember-environment';
 import { hasDOM } from 'ember-browser-environment';
+import { ENV } from 'ember-environment';
 
 let jQuery;
-export let jQueryDisabled = false;
+export let jQueryDisabled = ENV._JQUERY_INTEGRATION === false;
 
 if (hasDOM) {
   jQuery = context.imports.jQuery;
 
-  if (jQuery) {
+  if (!jQueryDisabled && jQuery) {
     if (jQuery.event.addProp) {
       jQuery.event.addProp('dataTransfer');
     } else {
@@ -25,4 +26,4 @@ if (hasDOM) {
   }
 }
 
-export default jQuery;
+export default (jQueryDisabled ? undefined : jQuery);

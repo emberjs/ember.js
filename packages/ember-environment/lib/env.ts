@@ -97,6 +97,20 @@ export const ENV = {
   */
   _TEMPLATE_ONLY_GLIMMER_COMPONENTS: false,
 
+  /**
+    Whether the app is using jQuery. See RFC #294.
+
+    This is not intended to be set directly, as the implementation may change in
+    the future. Use `@ember/optional-features` instead.
+
+    @property _JQUERY_INTEGRATION
+    @for EmberENV
+    @type Boolean
+    @default true
+    @private
+  */
+  _JQUERY_INTEGRATION: true,
+
   // the following for addon support
   _ENABLE_EMBER_K_SUPPORT: false,
   _ENABLE_SAFE_STRING_SUPPORT: false,

@@ -5,7 +5,7 @@ import { libraries } from 'ember-metal';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 import Application from '..';
 import { Router, NoneLocation, Route as EmberRoute } from 'ember-routing';
-import { jQuery } from 'ember-views';
+import { jQueryDisabled, jQuery } from 'ember-views';
 import { _loaded } from '@ember/application';
 import Controller from '@ember/controller';
 import { Object as EmberObject } from 'ember-runtime';
@@ -369,11 +369,11 @@ moduleFor(
       this.runTask(() => this.createApplication());
 
       assert.equal(messages[1], 'Ember  : ' + VERSION);
-      if (jQuery) {
+      if (jQueryDisabled) {
+        assert.equal(messages[2], 'my-lib : ' + '2.0.0a');
+      } else {
         assert.equal(messages[2], 'jQuery : ' + jQuery().jquery);
         assert.equal(messages[3], 'my-lib : ' + '2.0.0a');
-      } else {
-        assert.equal(messages[2], 'my-lib : ' + '2.0.0a');
       }
 
       libraries.deRegister('my-lib');

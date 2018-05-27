@@ -2,6 +2,7 @@ import Ember from '../index';
 import { FEATURES } from '@ember/canary-features';
 import { confirmExport } from 'internal-test-helpers';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { jQueryDisabled } from '../../ember-views';
 
 moduleFor(
   'ember reexports',
@@ -168,7 +169,7 @@ let allExports = [
   ['Logger', 'ember-console', 'default'],
 
   // ember-views
-  ['$', 'ember-views', 'jQuery'],
+  !jQueryDisabled && ['$', 'ember-views', 'jQuery'],
   ['ViewUtils.isSimpleClick', 'ember-views', 'isSimpleClick'],
   ['ViewUtils.getViewElement', 'ember-views', 'getViewElement'],
   ['ViewUtils.getViewBounds', 'ember-views', 'getViewBounds'],
@@ -302,4 +303,4 @@ let allExports = [
   // ember-extension-support
   ['DataAdapter', 'ember-extension-support'],
   ['ContainerDebugAdapter', 'ember-extension-support'],
-];
+].filter(Boolean);

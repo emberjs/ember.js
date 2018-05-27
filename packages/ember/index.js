@@ -561,7 +561,9 @@ Object.defineProperty(Ember, 'TEMPLATES', {
 Ember.VERSION = VERSION;
 
 // ****ember-views****
-Ember.$ = views.jQuery;
+if (!views.jQueryDisabled) {
+  Ember.$ = views.jQuery;
+}
 Ember.ViewUtils = {
   isSimpleClick: views.isSimpleClick,
   getViewElement: views.getViewElement,

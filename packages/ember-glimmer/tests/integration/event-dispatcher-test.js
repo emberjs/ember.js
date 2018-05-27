@@ -7,7 +7,6 @@ import {
 } from '@ember/instrumentation';
 import { EMBER_IMPROVED_INSTRUMENTATION } from '@ember/canary-features';
 import { jQueryDisabled, jQuery } from 'ember-views';
-import { ENV } from 'ember-environment';
 import { HAS_NATIVE_PROXY } from 'ember-utils';
 import { DEBUG } from '@glimmer/env';
 
@@ -334,11 +333,11 @@ if (jQueryDisabled) {
     'EventDispatcher#jquery-events',
     class extends RenderingTest {
       beforeEach() {
-        this.jqueryIntegration = ENV._JQUERY_INTEGRATION;
+        this.jqueryIntegration = window.ENV._JQUERY_INTEGRATION;
       }
 
       afterEach() {
-        ENV._JQUERY_INTEGRATION = this.jqueryIntegration;
+        window.ENV._JQUERY_INTEGRATION = this.jqueryIntegration;
       }
 
       ['@test jQuery events are passed when jQuery is present'](assert) {
@@ -412,7 +411,7 @@ if (jQueryDisabled) {
         assert
       ) {
         let receivedEvent;
-        ENV._JQUERY_INTEGRATION = true;
+        window.ENV._JQUERY_INTEGRATION = true;
 
         this.registerComponent('x-foo', {
           ComponentClass: Component.extend({
