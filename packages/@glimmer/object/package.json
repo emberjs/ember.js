@@ -4,6 +4,7 @@
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/object",
   "dependencies": {
     "@glimmer/object-reference": "^0.34.6",
+    "@glimmer/reference": "^0.34.6",
     "@glimmer/util": "^0.34.6"
   },
   "devDependencies": {
