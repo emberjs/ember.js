@@ -11,7 +11,7 @@ import {
 
 import { ComponentArgs, ComponentBuilder as IComponentBuilder } from './interfaces';
 
-import { debug, AnyAbstractCompiler } from './compiler';
+import { debugCompiler, AnyAbstractCompiler } from './compiler';
 import { CompilableBlock as CompilableBlockInstance } from './compilable-template';
 import { OpcodeBuilder } from './opcode-builder';
 import { ATTRS_BLOCK } from './syntax';
@@ -102,7 +102,10 @@ export class WrappedBuilder<Locator> implements CompilableProgram {
     let handle = b.commit();
 
     if (DEBUG) {
-      debug(compiler as Recast<Compiler<OpcodeBuilder<Locator>>, AnyAbstractCompiler>, handle);
+      debugCompiler(
+        compiler as Recast<Compiler<OpcodeBuilder<Locator>>, AnyAbstractCompiler>,
+        handle
+      );
     }
 
     return (this.compiled = handle);
