@@ -42,6 +42,7 @@ export {
   default as TestEnvironment,
 } from './lib/environment/modes/lazy/environment';
 export {
+  AbstractNodeTest,
   NodeLazyRenderDelegate,
   NodeEagerRenderDelegate,
 } from './lib/environment/modes/ssr/environment';

@@ -1,5 +1,5 @@
 import { statementCompiler } from './syntax';
-import { debug, AnyAbstractCompiler } from './compiler';
+import { debugCompiler, AnyAbstractCompiler } from './compiler';
 import { OpcodeBuilder } from './opcode-builder';
 import { Statement } from '@glimmer/wire-format';
 import { Compiler, Recast } from '@glimmer/interfaces';
@@ -19,7 +19,10 @@ export function compile<Locator>(
   let handle = builder.commit();
 
   if (DEBUG) {
-    debug(compiler as Recast<Compiler<OpcodeBuilder<Locator>>, AnyAbstractCompiler>, handle);
+    debugCompiler(
+      compiler as Recast<Compiler<OpcodeBuilder<Locator>>, AnyAbstractCompiler>,
+      handle
+    );
   }
 
   return handle;

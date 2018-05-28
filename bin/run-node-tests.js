@@ -8,6 +8,16 @@ const EMBER_BIN = 'ember';
 const QUNIT_BIN = 'qunit';
 const NODE_TEST_GLOB = '@glimmer/{node,bundle-compiler}/test/**/*node-test.js';
 
+// With the TAP reporter, testem swallows any errors generated while running
+// this script that are not in TAP format and does not treat non-zero exit codes
+// as a test failure. This handler ensures that any non-zero exits emit a
+// TAP-compatible bail out message.
+process.on('exit', (code) => {
+  if (code !== 0) {
+    console.log('Bail out! Non-zero exit code ' + code);
+  }
+});
+
 // When running inside `ember test`, we already have a build we can use.
 if ('EMBER_CLI_TEST_OUTPUT' in process.env) {
   process.chdir(process.env.EMBER_CLI_TEST_OUTPUT);
