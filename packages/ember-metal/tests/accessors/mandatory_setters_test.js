@@ -1,4 +1,4 @@
-import { DEBUG } from '@glimmer/env';
+import { DEBUG } from 'ember-env-flags';
 import { get, set, watch, unwatch, meta as metaFor } from '../..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 

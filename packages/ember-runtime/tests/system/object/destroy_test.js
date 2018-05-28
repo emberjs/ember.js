@@ -8,7 +8,7 @@ import {
   peekMeta,
 } from 'ember-metal';
 import EmberObject from '../../../lib/system/object';
-import { DEBUG } from '@glimmer/env';
+import { DEBUG } from 'ember-env-flags';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(

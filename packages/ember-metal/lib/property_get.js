@@ -1,7 +1,7 @@
 /**
 @module @ember/object
 */
-import { DEBUG } from '@glimmer/env';
+import { DEBUG } from 'ember-env-flags';
 import { assert, deprecate } from 'ember-debug';
 import { HAS_NATIVE_PROXY, symbol, toString } from 'ember-utils';
 import { EMBER_METAL_TRACKED_PROPERTIES } from 'ember/features';

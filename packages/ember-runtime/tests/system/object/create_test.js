@@ -1,6 +1,6 @@
 import { getOwner, setOwner } from 'ember-utils';
 import { computed, Mixin, observer } from 'ember-metal';
-import { DEBUG } from '@glimmer/env';
+import { DEBUG } from 'ember-env-flags';
 import EmberObject from '../../../lib/system/object';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 

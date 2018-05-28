@@ -1,5 +1,5 @@
 import { lookupDescriptor } from 'ember-utils';
-import { DEBUG } from '@glimmer/env';
+import { DEBUG } from 'ember-env-flags';
 import { descriptorFor, isDescriptor, meta as metaFor, peekMeta, UNDEFINED } from './meta';
 import {
   MANDATORY_SETTER_FUNCTION,

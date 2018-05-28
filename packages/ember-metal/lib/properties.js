@@ -3,7 +3,7 @@
 */
 
 import { assert } from 'ember-debug';
-import { DEBUG } from '@glimmer/env';
+import { DEBUG } from 'ember-env-flags';
 import { descriptorFor, meta as metaFor, peekMeta, UNDEFINED } from './meta';
 import { overrideChains } from './property_events';
 
