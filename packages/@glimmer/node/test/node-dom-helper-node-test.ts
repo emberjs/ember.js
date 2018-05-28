@@ -3,17 +3,17 @@ import {
   test,
   rawModule,
   NodeLazyRenderDelegate,
-  SSRSuite,
   NodeEagerRenderDelegate,
   SSRComponentSuite,
   blockStack,
   strip,
+  AbstractNodeTest,
 } from '@glimmer/test-helpers';
 import { NodeDOMTreeConstruction, serializeBuilder } from '..';
 import { precompile } from '@glimmer/compiler';
 import { Environment, Cursor } from '@glimmer/runtime';
 
-class DOMHelperTests extends SSRSuite {
+class DOMHelperTests extends AbstractNodeTest {
   @test
   'can instantiate NodeDOMTreeConstruction without a document'() {
     // this emulates what happens in Ember when using `App.visit('/', { shouldRender: false });`
@@ -80,8 +80,9 @@ class SerializedDOMHelperTests extends DOMHelperTests {
 
   @test
   'Null literals do not have representation in DOM'() {
+    let b = blockStack();
     this.render('{{null}}');
-    this.assertHTML('<!--% %-->');
+    this.assertHTML(strip`${b(1)}<!--% %-->${b(1)}`);
   }
 
   @test
