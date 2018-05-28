@@ -78,7 +78,7 @@ export class ComponentBlock extends Block {
   private inParams = true;
   public positionals: number[] = [];
 
-  constructor(private table: BlockSymbolTable) {
+  constructor(private table: BlockSymbolTable, private selfClosing: boolean) {
     super();
   }
 
@@ -104,15 +104,14 @@ export class ComponentBlock extends Block {
     let args = this.arguments;
     let keys = args.map(arg => arg[1]);
     let values = args.map(arg => arg[2]);
+    let block = this.selfClosing
+      ? null
+      : {
+          statements: this.statements,
+          parameters: this.table.slots,
+        };
 
-    return [
-      this.attributes,
-      [keys, values],
-      {
-        statements: this.statements,
-        parameters: this.table.slots,
-      },
-    ];
+    return [this.attributes, [keys, values], block];
   }
 }
 
@@ -359,7 +358,7 @@ export default class JavaScriptCompiler
   /// Stack Management Opcodes
 
   startComponent(element: AST.ElementNode) {
-    let component = new ComponentBlock(element['symbols']);
+    let component = new ComponentBlock(element['symbols'], element.selfClosing);
     this.blocks.push(component);
   }
 
