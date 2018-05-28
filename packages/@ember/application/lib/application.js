@@ -915,7 +915,7 @@ const Application = Engine.extend({
       // Start the app at the special demo URL
       App.visit('/demo', options);
     });
-    ````
+    ```
 
     Or perhaps you might want to boot two instances of your app on the same
     page for a split-screen multiplayer experience:
