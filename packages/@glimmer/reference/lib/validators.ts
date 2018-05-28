@@ -55,8 +55,8 @@ export type Tag = TagWrapper<RevisionTag | null>;
 
 function register(Type: { create(...args: any[]): Tag; id: number }) {
   let type = VALUE.length;
-  VALUE.push((tag: RevisionTag) => tag.value());
-  VALIDATE.push((tag: RevisionTag, snapshot: Revision) => tag.validate(snapshot));
+  VALUE.push((tag: Option<RevisionTag>) => tag!.value());
+  VALIDATE.push((tag: Option<RevisionTag>, snapshot: Revision) => tag!.validate(snapshot));
   Type.id = type;
 }
 

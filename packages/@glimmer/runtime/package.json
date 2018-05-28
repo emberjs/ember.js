@@ -19,6 +19,6 @@
     "@glimmer/opcode-compiler": "^0.34.6",
     "@glimmer/debug": "^0.34.6",
     "@types/qunit": "^2.0.31",
-    "typescript": "^2.2.0"
+    "typescript": "^2.8.3"
   }
 }

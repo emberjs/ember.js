@@ -19,7 +19,7 @@ const NOOP_DESTROY = { destroy() {} };
 
 class ConstPath implements IPathReference<any> {
   private parent: any;
-  private property: string;
+  private property!: string; // TODO: is this meant to be set from the constructor?
   public tag = CURRENT_TAG;
 
   constructor(parent: any, _property: string) {
@@ -118,9 +118,9 @@ class Meta implements IMeta, HasGuid {
 
   private object: any;
   private RootReferenceFactory: RootReferenceFactory<any>;
-  private rootCache: IRootReference<any>;
+  private rootCache!: IRootReference<any>; // set by root()
   private references: Option<Dict<DictSet<IPathReference<any> & HasGuid>>> = null;
-  public _guid: number;
+  public _guid!: number; // set by ensureGuid()
   protected slots: Option<Dict<any>> = null;
   protected referenceTypes: Option<Dict<InnerReferenceFactory<any>>> = null;
   protected propertyMetadata: Option<Dict<any>> = null;

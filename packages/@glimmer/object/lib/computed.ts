@@ -67,6 +67,8 @@ class Computed implements Descriptor {
 
   constructor(accessor: ComputedDescriptor) {
     this.accessor = accessor;
+    this.enumerable = false;
+    this.configurable = false;
   }
 
   define(prototype: Object, key: string, home: Object) {

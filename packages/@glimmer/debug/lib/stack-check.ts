@@ -17,7 +17,7 @@ export interface Checker<T> {
 
 export function wrap<T>(checker: () => Checker<T>): Checker<T> {
   class Wrapped {
-    type: T;
+    type!: T;
 
     validate(value: Opaque): value is T {
       return checker().validate(value);
@@ -36,7 +36,7 @@ export interface Constructor<T> extends Function {
 }
 
 class TypeofChecker<T> implements Checker<T> {
-  type: T;
+  type!: T;
 
   constructor(private expectedType: string) {}
 
@@ -70,7 +70,7 @@ class PrimitiveChecker implements Checker<Primitive> {
 }
 
 class InstanceofChecker<T> implements Checker<T> {
-  type: T;
+  type!: T;
 
   constructor(private Class: Constructor<T>) {}
 
@@ -84,7 +84,7 @@ class InstanceofChecker<T> implements Checker<T> {
 }
 
 class OptionChecker<T> implements Checker<Option<T>> {
-  type: Option<T>;
+  type!: Option<T>;
 
   constructor(private checker: Checker<T>, private emptyValue: null | undefined) {}
 
@@ -99,7 +99,7 @@ class OptionChecker<T> implements Checker<Option<T>> {
 }
 
 class OrChecker<T, U> implements Checker<T | U> {
-  type: T | U;
+  type!: T | U;
 
   constructor(private left: Checker<T>, private right: Checker<U>) {}
 
@@ -113,7 +113,7 @@ class OrChecker<T, U> implements Checker<T | U> {
 }
 
 class ExactValueChecker<T> implements Checker<T> {
-  type: T;
+  type!: T;
 
   constructor(private value: T, private desc: string) {}
 
@@ -127,7 +127,7 @@ class ExactValueChecker<T> implements Checker<T> {
 }
 
 class PropertyChecker<T> implements Checker<T> {
-  type: T;
+  type!: T;
 
   constructor(private checkers: Dict<Checker<Opaque>>) {}
 
@@ -154,7 +154,7 @@ class PropertyChecker<T> implements Checker<T> {
 }
 
 class ArrayChecker<T> implements Checker<T[]> {
-  type: T[];
+  type!: T[];
 
   constructor(private checker: Checker<T>) {}
 
@@ -187,7 +187,7 @@ export interface SafeString {
 }
 
 class SafeStringChecker implements Checker<SafeString> {
-  type: SafeString;
+  type!: SafeString;
 
   validate(value: Opaque): value is SafeString {
     return (

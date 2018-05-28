@@ -32,15 +32,15 @@ export class EmberishCurlyComponent extends GlimmerObject {
   public static positionalParams: string[] | string = [];
 
   public dirtinessTag: TagWrapper<DirtyableTag> = DirtyableTag.create();
-  public layout: { name: string; handle: number };
-  public name: string;
+  public layout!: { name: string; handle: number };
+  public name!: string;
   public tagName: Option<string> = null;
   public attributeBindings: Option<string[]> = null;
-  public attrs: Attrs;
-  public element: Element;
-  public bounds: Bounds;
+  public attrs!: Attrs;
+  public element!: Element;
+  public bounds!: Bounds;
   public parentView: Option<EmberishCurlyComponent> = null;
-  public args: CapturedNamedArguments;
+  public args!: CapturedNamedArguments;
 
   static create(args: { attrs: Attrs }): EmberishCurlyComponent {
     return super.create(args) as EmberishCurlyComponent;

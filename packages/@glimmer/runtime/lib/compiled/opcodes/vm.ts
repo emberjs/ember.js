@@ -35,8 +35,8 @@ APPEND_OPCODES.add(Op.PushDynamicScope, vm => vm.pushDynamicScope());
 
 APPEND_OPCODES.add(Op.PopDynamicScope, vm => vm.popDynamicScope());
 
-APPEND_OPCODES.add(Op.Constant, (vm: VM<Opaque> & { constants: LazyConstants }, { op1: other }) => {
-  vm.stack.push(vm.constants.getOther(other));
+APPEND_OPCODES.add(Op.Constant, (vm: VM<Opaque>, { op1: other }) => {
+  vm.stack.push((vm.constants as LazyConstants).getOther(other));
 });
 
 APPEND_OPCODES.add(Op.Primitive, (vm, { op1: primitive }) => {
@@ -301,7 +301,7 @@ export class LabelOpcode implements UpdatingOpcode {
   public tag: Tag = CONSTANT_TAG;
   public type = 'label';
   public label: Option<string> = null;
-  public _guid: number;
+  public _guid!: number; // Set by initializeGuid() in the constructor
 
   prev: any = null;
   next: any = null;

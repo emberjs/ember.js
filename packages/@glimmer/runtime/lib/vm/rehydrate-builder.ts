@@ -28,7 +28,7 @@ export class RehydratingCursor extends Cursor {
 
 export class RehydrateBuilder extends NewElementBuilder implements ElementBuilder {
   private unmatchedAttributes: Option<Simple.Attribute[]> = null;
-  protected cursorStack: Stack<RehydratingCursor>;
+  protected cursorStack!: Stack<RehydratingCursor>; // Hides property on base class
   private blockDepth = 0;
 
   // private candidate: Option<Simple.Node> = null;

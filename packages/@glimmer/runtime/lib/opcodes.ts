@@ -190,8 +190,8 @@ export class AppendOpcodes {
 export const APPEND_OPCODES = new AppendOpcodes();
 
 export abstract class AbstractOpcode {
-  public type: string;
-  public _guid: number;
+  public abstract type: string;
+  public _guid!: number; // Set by initializeGuid() in the constructor
 
   constructor() {
     initializeGuid(this);

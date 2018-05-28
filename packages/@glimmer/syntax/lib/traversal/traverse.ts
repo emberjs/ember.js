@@ -5,7 +5,6 @@ import {
   cannotReplaceOrRemoveInKeyHandlerYet,
 } from './errors';
 import * as nodes from '../types/nodes';
-import { Option } from '@glimmer/interfaces';
 
 export type NodeHandler<T extends nodes.Node> = NodeHandlerFunction<T> | EnterExitNodeHandler<T>;
 
@@ -26,7 +25,7 @@ export interface EnterExitNodeHandler<T extends nodes.Node> {
 }
 
 function visitNode(visitor: NodeVisitor, node: nodes.Node): any {
-  let handler: Option<NodeHandler<nodes.Node>> = visitor[node.type] || visitor.All || null;
+  let handler = visitor[node.type] || visitor.All || null;
   let result;
 
   if (handler && handler['enter']) {

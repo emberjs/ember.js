@@ -29,8 +29,8 @@ class RenderTests extends InitialRenderSuite {
 
 class AbstractRehydrationTests extends InitialRenderSuite {
   name = 'rehydration';
-  protected delegate: RehydrationDelegate;
-  protected serverOutput: Option<string>;
+  protected delegate!: RehydrationDelegate;
+  protected serverOutput!: Option<string>;
 
   renderServerSide(
     template: string | ComponentBlueprint,
@@ -799,7 +799,7 @@ class RehydratingComponents extends AbstractRehydrationTests {
           {{/if}}
         {{/each}}
       </ul>`;
-    this.registerHelper('even', (params: number[]) => params[0] % 2 === 0);
+    this.registerHelper('even', (params: ReadonlyArray<Opaque>) => (params[0] as number) % 2 === 0);
     let template = '{{#if (even i)}}<FooBar @count={{i}} />{{/if}}';
     this.registerComponent('Fragment', 'FooBar', '<li>{{@count}}</li>');
     let blockParams = ['i'];
@@ -896,7 +896,7 @@ class RehydratingComponents extends AbstractRehydrationTests {
           {{/if}}
         {{/each}}
       </ul>`;
-    this.registerHelper('even', (params: number[]) => params[0] % 2 === 0);
+    this.registerHelper('even', (params: ReadonlyArray<Opaque>) => (params[0] as number) % 2 === 0);
     let template = '{{#if (even i)}}<FooBar @count={{i}} />{{/if}}';
     this.registerComponent('Fragment', 'FooBar', '<li>{{@count}}</li>');
     let blockParams = ['i'];
@@ -1002,7 +1002,7 @@ class RehydratingComponents extends AbstractRehydrationTests {
         {{/each}}
       </ul>
     `;
-    this.registerHelper('even', (params: number[]) => params[0] % 2 === 0);
+    this.registerHelper('even', (params: ReadonlyArray<Opaque>) => (params[0] as number) % 2 === 0);
     let template = '{{#if (even i)}}<FooBar @count={{i}} />{{/if}}';
     this.registerComponent('Fragment', 'FooBar', '<li>{{@count}}</li>');
     let blockParams = ['i'];
