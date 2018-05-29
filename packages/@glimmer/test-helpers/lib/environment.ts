@@ -103,7 +103,7 @@ export function equalsElement(
   element: Element | null,
   tagName: string,
   attributes: Object,
-  content: string
+  content: string | null
 ) {
   if (element === null) {
     QUnit.assert.pushResult({

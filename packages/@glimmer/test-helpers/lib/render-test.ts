@@ -506,7 +506,15 @@ export class RenderTest {
 
   protected assertComponent(content: string, attrs: Object = {}) {
     let element = this.element.firstChild as HTMLDivElement;
-    assertEmberishElement(element, 'div', attrs, content);
+
+    switch (this.testType) {
+      case 'Glimmer':
+        assertElement(element, 'div', attrs, content);
+        break;
+      default:
+        assertEmberishElement(element, 'div', attrs, content);
+    }
+
     this.takeSnapshot();
   }
 
@@ -992,6 +1000,29 @@ export function content(list: Content[]): string {
   return out.join('');
 }
 
+/**
+  Accomodates the various signatures of `assertEmberishElement` and `assertElement`, which can be any of:
+
+  - element, tagName, attrs, contents
+  - element, tagName, contents
+  - element, tagName, attrs
+  - element, tagName
+
+  TODO: future refactorings should clean up this interface (likely just making all callers pass a POJO)
+*/
+export function processAssertElementArgs(args: any[]): [Element, string, any, string | null] {
+  let element = args[0];
+
+  if (args.length === 3) {
+    if (typeof args[2] === 'string') return [element, args[1], {}, args[2]];
+    else return [element, args[1], args[2], null];
+  } else if (args.length === 2) {
+    return [element, args[1], {}, null];
+  } else {
+    return [args[0], args[1], args[2], args[3]];
+  }
+}
+
 export function assertEmberishElement(
   element: HTMLElement,
   tagName: string,
@@ -1006,21 +1037,26 @@ export function assertEmberishElement(
 ): void;
 export function assertEmberishElement(element: HTMLElement, tagName: string): void;
 export function assertEmberishElement(...args: any[]): void {
-  let element = args[0];
-  let tagName, attrs, contents;
-
-  if (args.length === 3) {
-    if (typeof args[1] === 'string') [tagName, attrs, contents] = [args[1], {}, args[2]];
-    else [tagName, attrs, contents] = [args[1], args[2], null];
-  } else if (args.length === 2) {
-    [tagName, attrs, contents] = [args[1], {}, null];
-  } else {
-    [element, tagName, attrs, contents] = args;
-  }
+  let [element, tagName, attrs, contents] = processAssertElementArgs(args);
 
   let fullAttrs = assign({ class: classes('ember-view'), id: regex(/^ember\d*$/) }, attrs);
 
   equalsElement(element, tagName, fullAttrs, contents);
+}
+
+export function assertElement(
+  element: HTMLElement,
+  tagName: string,
+  attrs: Object,
+  contents: string
+): void;
+export function assertElement(element: HTMLElement, tagName: string, attrs: Object): void;
+export function assertElement(element: HTMLElement, tagName: string, contents: string): void;
+export function assertElement(element: HTMLElement, tagName: string): void;
+export function assertElement(...args: any[]): void {
+  let [element, tagName, attrs, contents] = processAssertElementArgs(args);
+
+  equalsElement(element, tagName, attrs, contents);
 }
 
 const HAS_TYPED_ARRAYS = typeof Uint16Array !== 'undefined';

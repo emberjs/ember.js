@@ -12,6 +12,7 @@ import {
   stripTight,
   TestEnvironment,
   TestModifierManager,
+  assertElement,
 } from '@glimmer/test-helpers';
 import { assign } from '@glimmer/util';
 import { Template } from '@glimmer/interfaces';
@@ -1227,19 +1228,15 @@ QUnit.test('component helper: currying works inline', () => {
 
 module('Emberish Component - ids');
 
-QUnit.test('emberish component should have unique IDs', assert => {
+QUnit.test('emberish curly component should have unique IDs', assert => {
   env.registerEmberishCurlyComponent('x-curly', null, '');
-  env.registerEmberishGlimmerComponent('XGlimmer', null, '<div ...attributes />');
 
   appendViewFor(
     stripTight`
       <div>
         {{x-curly}}
         {{x-curly}}
-        <XGlimmer />
-        <XGlimmer />
         {{x-curly}}
-        <XGlimmer />
       </div>`
   );
 
@@ -1261,24 +1258,6 @@ QUnit.test('emberish component should have unique IDs', assert => {
     { id: regex(/^ember\d*$/), class: 'ember-view' },
     ''
   );
-  equalsElement(
-    view.element.childNodes[3] as Element,
-    'div',
-    { id: regex(/^ember\d*$/), class: 'ember-view' },
-    ''
-  );
-  equalsElement(
-    view.element.childNodes[4] as Element,
-    'div',
-    { id: regex(/^ember\d*$/), class: 'ember-view' },
-    ''
-  );
-  equalsElement(
-    view.element.childNodes[5] as Element,
-    'div',
-    { id: regex(/^ember\d*$/), class: 'ember-view' },
-    ''
-  );
 
   let IDs = {};
 
@@ -1289,11 +1268,8 @@ QUnit.test('emberish component should have unique IDs', assert => {
   markAsSeen(view.element.childNodes[0] as Element);
   markAsSeen(view.element.childNodes[1] as Element);
   markAsSeen(view.element.childNodes[2] as Element);
-  markAsSeen(view.element.childNodes[3] as Element);
-  markAsSeen(view.element.childNodes[4] as Element);
-  markAsSeen(view.element.childNodes[5] as Element);
 
-  assert.equal(Object.keys(IDs).length, 6, 'Expected the components to each have a unique IDs');
+  assert.equal(Object.keys(IDs).length, 3, 'Expected the components to each have a unique IDs');
 
   for (let id in IDs) {
     assert.equal(IDs[id], 1, `Expected ID ${id} to be unique`);
@@ -1326,22 +1302,12 @@ styles.forEach(style => {
     appendViewFor('<NonBlock />');
 
     let node = view.element.firstChild;
-    equalsElement(
-      view.element,
-      style.tagName,
-      { class: 'ember-view', id: regex(/^ember\d*$/) },
-      'In layout'
-    );
+    equalsElement(view.element, style.tagName, {}, 'In layout');
 
     rerender();
 
     assert.strictEqual(node, view.element.firstChild, 'The inner element has not changed');
-    equalsElement(
-      view.element,
-      style.tagName,
-      { class: 'ember-view', id: regex(/^ember\d*$/) },
-      'In layout'
-    );
+    equalsElement(view.element, style.tagName, {}, 'In layout');
   });
 
   style.test(`NonBlock with attributes replaced with ${style.name}`, function() {
@@ -1354,12 +1320,7 @@ styles.forEach(style => {
     appendViewFor('<NonBlock @stability={{stability}} />', { stability: 'stability' });
 
     let node = view.element;
-    equalsElement(
-      node,
-      style.tagName,
-      { such: 'stability', class: 'ember-view', id: regex(/^ember\d*$/) },
-      'In layout'
-    );
+    equalsElement(node, style.tagName, { such: 'stability' }, 'In layout');
 
     set(view, 'stability', 'changed!!!');
     rerender();
@@ -1369,12 +1330,7 @@ styles.forEach(style => {
       view.element.firstElementChild,
       'The inner element has not changed'
     );
-    equalsElement(
-      node,
-      style.tagName,
-      { such: 'changed!!!', class: 'ember-view', id: regex(/^ember\d*$/) },
-      'In layout'
-    );
+    equalsElement(node, style.tagName, { such: 'changed!!!' }, 'In layout');
   });
 });
 
@@ -1383,12 +1339,7 @@ QUnit.test(`Ensure components can be invoked`, function() {
   env.registerEmberishGlimmerComponent('Inner', null, `<div ...attributes>hi!</div>`);
 
   appendViewFor('<Outer />');
-  equalsElement(
-    view.element,
-    'div',
-    { class: classes('ember-view'), id: regex(/^ember\d*$/) },
-    'hi!'
-  );
+  equalsElement(view.element, 'div', {}, 'hi!');
 });
 
 QUnit.test(`Glimmer component with element modifier`, function(assert) {
@@ -1672,12 +1623,12 @@ QUnit.test('Glimmer component hooks', assert => {
   assertFired(instance, 'didInsertElement');
   assertFired(instance, 'didRender');
 
-  assertEmberishElement('div', 'In layout - someProp: wycats');
+  assertElement(view.element as HTMLElement, 'div', 'In layout - someProp: wycats');
 
   set(view, 'someProp', 'tomdale');
   rerender();
 
-  assertEmberishElement('div', 'In layout - someProp: tomdale');
+  assertElement(view.element as HTMLElement, 'div', 'In layout - someProp: tomdale');
 
   assertFired(instance, 'didReceiveAttrs', 2);
   assertFired(instance, 'willUpdate');
@@ -1687,7 +1638,7 @@ QUnit.test('Glimmer component hooks', assert => {
 
   rerender();
 
-  assertEmberishElement('div', 'In layout - someProp: tomdale');
+  assertElement(view.element as HTMLElement, 'div', 'In layout - someProp: tomdale');
 
   assertFired(instance, 'didReceiveAttrs', 3);
   assertFired(instance, 'willUpdate', 2);
@@ -1724,11 +1675,11 @@ QUnit.test('Glimmer component hooks (force recompute)', assert => {
   assertFired(instance, 'didInsertElement', 1);
   assertFired(instance, 'didRender', 1);
 
-  assertEmberishElement('div', 'In layout - someProp: wycats');
+  assertElement(view.element as HTMLElement, 'div', 'In layout - someProp: wycats');
 
   rerender();
 
-  assertEmberishElement('div', 'In layout - someProp: wycats');
+  assertElement(view.element as HTMLElement, 'div', 'In layout - someProp: wycats');
 
   assertFired(instance, 'didReceiveAttrs', 1);
   assertFired(instance, 'willRender', 1);
@@ -1737,7 +1688,7 @@ QUnit.test('Glimmer component hooks (force recompute)', assert => {
   instance.recompute();
   rerender();
 
-  assertEmberishElement('div', 'In layout - someProp: wycats');
+  assertElement(view.element as HTMLElement, 'div', 'In layout - someProp: wycats');
 
   assertFired(instance, 'didReceiveAttrs', 2);
   assertFired(instance, 'willUpdate', 1);
@@ -2291,7 +2242,7 @@ QUnit.test('it works for unwrapped components', function(assert) {
   env.registerEmberishGlimmerComponent(
     'FooBar',
     FooBar,
-    '<!-- ohhh --><span ...attributes>foo bar!</span>'
+    '<!-- ohhh --><span id="ralph-the-wrench" ...attributes>foo bar!</span>'
   );
 
   appendViewFor('zomg <FooBar /> wow');
@@ -2302,9 +2253,11 @@ QUnit.test('it works for unwrapped components', function(assert) {
     return;
   }
 
-  assertEmberishElement('span', {}, 'foo bar!');
+  assertElement(view.element as HTMLElement, 'span', { id: 'ralph-the-wrench' }, 'foo bar!');
+
+  let ralphy = document.getElementById('ralph-the-wrench')!;
 
   assert.equal(instance.bounds.parentElement(), document.querySelector('#qunit-fixture'));
-  assert.equal(instance.bounds.firstNode(), instance.element.previousSibling);
-  assert.equal(instance.bounds.lastNode(), instance.element);
+  assert.equal(instance.bounds.firstNode(), ralphy.previousSibling);
+  assert.equal(instance.bounds.lastNode(), ralphy);
 });
