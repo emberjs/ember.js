@@ -169,7 +169,6 @@ export function statementCompiler(): Compilers<WireFormat.Statement> {
     let [, to] = sexp;
 
     builder.yield(to, []);
-    builder.didCreateElement(Register.s0);
     builder.setComponentAttrs(false);
   });
 
