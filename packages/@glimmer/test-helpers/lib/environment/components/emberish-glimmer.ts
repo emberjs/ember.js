@@ -4,8 +4,6 @@ import {
   WithStaticLayout,
   Environment,
   Arguments,
-  PrimitiveReference,
-  ElementOperations,
   Bounds,
   Invocation,
 } from '@glimmer/runtime';
@@ -106,20 +104,7 @@ export class EmberishGlimmerComponentManager
     return new UpdatableReference(component);
   }
 
-  didCreateElement(
-    { component }: EmberishGlimmerComponentState,
-    element: Element,
-    operations: ElementOperations
-  ): void {
-    component.element = element;
-    operations.setAttribute(
-      'id',
-      PrimitiveReference.create(`ember${component._guid}`),
-      false,
-      null
-    );
-    operations.setAttribute('class', PrimitiveReference.create('ember-view'), false, null);
-  }
+  didCreateElement(): void {}
 
   didRenderLayout({ component }: EmberishGlimmerComponentState, bounds: Bounds): void {
     component.bounds = bounds;
