@@ -1,4 +1,4 @@
-import { RenderTest, test, assertEmberishElement } from '../render-test';
+import { RenderTest, test, assertElement } from '../render-test';
 import { classes } from '../environment';
 import { EmberishGlimmerComponent } from '../environment/components/emberish-glimmer';
 import { strip } from '../helpers';
@@ -82,19 +82,9 @@ export class EmberishComponentTests extends RenderTest {
     `,
       { components: [{ name: 'Foo', child: 'Bar', mount: el, data: { wat: 'Wat' } }] }
     );
-    assertEmberishElement(
-      el.firstChild as HTMLElement,
-      'div',
-      { 'data-bar': 'Bar' },
-      'Hello World'
-    );
+    assertElement(el.firstChild as HTMLElement, 'div', { 'data-bar': 'Bar' }, 'Hello World');
     this.rerender({ components: [{ name: 'Foo', child: 'Bar', mount: el, data: { wat: 'Wat' } }] });
-    assertEmberishElement(
-      el.firstChild as HTMLElement,
-      'div',
-      { 'data-bar': 'Bar' },
-      'Hello World'
-    );
+    assertElement(el.firstChild as HTMLElement, 'div', { 'data-bar': 'Bar' }, 'Hello World');
   }
 
   @test({ kind: 'glimmer' })

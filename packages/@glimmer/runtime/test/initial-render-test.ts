@@ -18,6 +18,7 @@ import {
   ComponentBlueprint,
   GLIMMER_TEST_COMPONENT,
   assertEmberishElement,
+  assertElement,
   assertSerializedInElement,
 } from '@glimmer/test-helpers';
 import { expect } from '@glimmer/util';
@@ -503,10 +504,15 @@ class RehydratingComponents extends AbstractRehydrationTests {
   }
 
   assertServerComponent(html: string, attrs: Object = {}) {
-    if (this.testType === 'Dynamic') {
-      assertEmberishElement(this.element.childNodes[3] as HTMLElement, 'div', attrs, html);
+    // the Dynamic test type is using {{component 'foo'}} style invocation
+    // and therefore an extra node is added delineating the block start
+    let elementIndex = this.testType === 'Dynamic' ? 3 : 2;
+    let element = this.element.childNodes[elementIndex] as HTMLElement;
+
+    if (this.testType === 'Glimmer') {
+      assertElement(element, 'div', attrs, html);
     } else {
-      assertEmberishElement(this.element.childNodes[2] as HTMLElement, 'div', attrs, html);
+      assertEmberishElement(element, 'div', attrs, html);
     }
   }
 
