@@ -496,7 +496,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
         this.assertStableRerender();
       }
 
-      '@skip has-block'() {
+      '@test has-block'() {
         this.registerComponent('check-block', {
           template: strip`
         {{#if (has-block)}}
