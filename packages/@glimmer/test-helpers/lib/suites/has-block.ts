@@ -220,4 +220,43 @@ export class HasBlockSuite extends RenderTest {
     this.assertComponent('<button data-has-block="is-false"></button>');
     this.assertStableRerender();
   }
+
+  @test
+  'self closing angle bracket invocation (subexpr, default)'() {
+    this.registerComponent(
+      'Glimmer',
+      'TestComponent',
+      `<div ...attributes>{{#if (has-block)}}Yes{{else}}No{{/if}}</div>`
+    );
+    this.render(`<TestComponent />`);
+
+    this.assertComponent('No');
+    this.assertStableRerender();
+  }
+
+  @test
+  'self closing angle bracket invocation (subexpr, inverse)'() {
+    this.registerComponent(
+      'Glimmer',
+      'TestComponent',
+      `<div ...attributes>{{#if (has-block 'inverse')}}Yes{{else}}No{{/if}}</div>`
+    );
+    this.render(`<TestComponent />`);
+
+    this.assertComponent('No');
+    this.assertStableRerender();
+  }
+
+  @test
+  'self closing angle bracket invocation (concatted attr, default)'() {
+    this.registerComponent(
+      'Glimmer',
+      'TestComponent',
+      `<div data-has-block="{{has-block}}" ...attributes></div>`
+    );
+    this.render(`<TestComponent />`);
+
+    this.assertComponent('', { 'data-has-block': 'false' });
+    this.assertStableRerender();
+  }
 }

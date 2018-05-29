@@ -189,9 +189,9 @@ QUnit.test('static partial with has-block in basic component', () => {
     root,
     strip`
     <p>true-false</p>
-    <p>true-false</p>
+    <p>false-false</p>
     <p>true-false-true-false</p>
-    <p>true-false-true-false</p>
+    <p>false-false-false-false</p>
   `
   );
 
