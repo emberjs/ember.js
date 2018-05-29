@@ -513,13 +513,13 @@ export interface LazyInjection {
   specifier: string;
 }
 
-declare interface DebugFactory<T, C> extends Factory<T, C> {
+export declare interface DebugFactory<T, C> extends Factory<T, C> {
   _onLookup?: (fullName: string) => void;
   _initFactory?: (factoryManager: FactoryManager<T, C>) => void;
-  _lazyInjections(): { [key: string]: LazyInjection };
+  _lazyInjections?: () => { [key: string]: LazyInjection };
 }
 
-export const FACTORY_FOR = new WeakMap<any, FactoryManager<any, any>>();
+export const FACTORY_FOR = new WeakMap<any, Factory<any, any>>();
 class FactoryManager<T, C> {
   readonly container: Container;
   readonly owner: Owner | null;

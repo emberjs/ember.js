@@ -154,10 +154,10 @@ function noop() {}
   @public
 */
 class ComputedProperty extends Descriptor implements DescriptorWithDependentKeys {
-  private _meta: any | undefined;
   private _volatile: boolean;
   private _readOnly: boolean;
   private _suspended: any;
+  _meta: any | undefined;
   _getter: ComputedPropertyGetter;
   _setter?: ComputedPropertySetter;
   _auto?: boolean;

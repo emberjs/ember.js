@@ -548,7 +548,7 @@ export default class Mixin {
     }
   }
 
-  static _apply() {
+  static _apply(..._args: any[]) {
     return (applyMixin as any)(...arguments);
   }
 

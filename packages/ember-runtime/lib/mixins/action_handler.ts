@@ -2,8 +2,8 @@
 @module ember
 */
 
-import { Mixin, get } from 'ember-metal';
 import { assert } from '@ember/debug';
+import { get, Mixin } from 'ember-metal';
 
 /**
   `Ember.ActionHandler` is available on some familiar classes including
@@ -196,7 +196,7 @@ const ActionHandler = Mixin.create({
     @param {*} context a context to send with the action
     @public
   */
-  send(actionName, ...args) {
+  send(actionName: string, ...args: any[]) {
     assert(
       `Attempted to call .send() with the action '${actionName}' on the destroyed object '${this}'.`,
       !this.isDestroying && !this.isDestroyed

@@ -2,72 +2,106 @@
   @module @ember/object
 */
 
-import { FACTORY_FOR } from 'container';
+import { assert } from '@ember/debug';
 import { BINDING_SUPPORT } from '@ember/deprecated-features';
 import { assign } from '@ember/polyfills';
+import { schedule } from '@ember/runloop';
+import { DEBUG } from '@glimmer/env';
+import { FACTORY_FOR } from 'container';
+import { DebugFactory, LazyInjection } from 'container/lib/container';
+import { ENV } from 'ember-environment';
+import { deleteMeta, descriptorFor, meta, Meta, peekMeta } from 'ember-meta';
 import {
-  guidFor,
+  classToString,
+  ComputedProperty,
+  defineProperty,
+  descriptor,
+  Descriptor,
+  finishChains,
+  InjectedProperty,
+  Mixin,
+  PROXY_CONTENT,
+  sendEvent,
+} from 'ember-metal';
+import { Factory } from 'ember-owner';
+import {
   getName,
-  setName,
-  makeArray,
+  guidFor,
   HAS_NATIVE_PROXY,
   isInternalSymbol,
+  makeArray,
+  setName,
 } from 'ember-utils';
-import { schedule } from '@ember/runloop';
-import { descriptorFor, meta, peekMeta, deleteMeta } from 'ember-meta';
-import {
-  PROXY_CONTENT,
-  finishChains,
-  sendEvent,
-  Mixin,
-  defineProperty,
-  ComputedProperty,
-  InjectedProperty,
-  descriptor,
-  classToString,
-} from 'ember-metal';
 import ActionHandler from '../mixins/action_handler';
-import { assert } from '@ember/debug';
-import { DEBUG } from '@glimmer/env';
-import { ENV } from 'ember-environment';
 
 const applyMixin = Mixin._apply;
 const reopen = Mixin.prototype.reopen;
 
-function makeCtor(base) {
+interface CoreObjectPrototype {
+  reopen(...args: any[]): KoreObject & CoreObjectPrototype;
+  init(...args: any[]): void;
+  concatenatedProperties?: string[] | null;
+  mergedProperties?: string[] | null;
+  isDestroyed: Descriptor;
+  isDestroying: Descriptor;
+  destroy(): (KoreObject & CoreObjectPrototype) | void;
+  willDestroy(): void;
+  _scheduledDestroy(m: Meta): void;
+  toString(): string;
+  toStringExtension?: () => string;
+}
+
+declare class KoreObject {
+  unknownProperty?: () => any;
+  setUnknownProperty?: (keyName: string, value: any) => void;
+  static superclass?: typeof KoreObject;
+  static __super__?: object | null;
+  static prototype: object;
+  static proto: () => object;
+  static willReopen: () => void;
+  static PrototypeMixin: Mixin;
+  static ClassMixin: Mixin;
+}
+
+type ClassProperties = {
+  [key: string]: any;
+};
+type BaseClassCtor = new (properties: ClassProperties) => KoreObject;
+
+function makeCtor(base?: BaseClassCtor): typeof KoreObject {
   // Note: avoid accessing any properties on the object since it makes the
   // method a lot faster. This is glue code so we want it to be as fast as
   // possible.
 
   let wasApplied = false;
-  let Class;
+  let Class: typeof KoreObject;
 
   if (base) {
     Class = class extends base {
-      constructor(properties) {
+      constructor(properties: ClassProperties) {
         if (!wasApplied) {
-          Class.proto(); // prepare prototype...
+          Class.proto!(); // prepare prototype...
         }
 
         super(properties);
       }
-    };
+    } as any;
   } else {
-    let initFactory;
+    let initFactory: Factory<any, any> | undefined;
     Class = class {
-      constructor(properties) {
+      constructor(properties: ClassProperties) {
         if (!wasApplied) {
-          Class.proto(); // prepare prototype...
+          Class.proto!(); // prepare prototype...
         }
 
-        let self = this;
+        let self = (this as any) as KoreObject & CoreObjectPrototype;
 
         if (initFactory !== void 0) {
           FACTORY_FOR.set(this, initFactory);
           initFactory = void 0;
         }
 
-        let beforeInitCalled; // only used in debug builds to enable the proxy trap
+        let beforeInitCalled: boolean | undefined; // only used in debug builds to enable the proxy trap
 
         // using DEBUG here to avoid the extraneous variable when not needed
         if (DEBUG) {
@@ -75,7 +109,7 @@ function makeCtor(base) {
         }
 
         if (DEBUG && HAS_NATIVE_PROXY && typeof self.unknownProperty === 'function') {
-          let messageFor = (obj, property) => {
+          let messageFor = (obj: any, property: string) => {
             return (
               `You attempted to access the \`${String(property)}\` property (of ${obj}).\n` +
               `Since Ember 3.1, this is usually fine as you no longer need to use \`.get()\`\n` +
@@ -90,14 +124,14 @@ function makeCtor(base) {
           };
 
           /* globals Proxy Reflect */
-          self = new Proxy(this, {
+          self = new Proxy((this as any) as KoreObject & CoreObjectPrototype, {
             get(target, property, receiver) {
               if (property === PROXY_CONTENT) {
                 return target;
               } else if (
                 beforeInitCalled ||
                 typeof property === 'symbol' ||
-                isInternalSymbol(property) ||
+                isInternalSymbol(property as string) ||
                 property === 'toJSON' ||
                 property === 'toString' ||
                 property === 'toStringExtension' ||
@@ -113,15 +147,18 @@ function makeCtor(base) {
                 return Reflect.get(target, property, receiver);
               }
 
-              let value = target.unknownProperty.call(receiver, property);
+              let value = target.unknownProperty!.call(receiver, property);
 
               if (typeof value !== 'function') {
-                assert(messageFor(receiver, property), value === undefined || value === null);
+                assert(
+                  messageFor(receiver, property as string),
+                  value === undefined || value === null
+                );
               }
             },
           });
 
-          FACTORY_FOR.set(self, FACTORY_FOR.get(this));
+          FACTORY_FOR.set(self, FACTORY_FOR.get(this)!);
         }
 
         let m = meta(self);
@@ -143,8 +180,13 @@ function makeCtor(base) {
           let concatenatedProperties = self.concatenatedProperties;
           let mergedProperties = self.mergedProperties;
           let hasConcatenatedProps =
-            concatenatedProperties !== undefined && concatenatedProperties.length > 0;
-          let hasMergedProps = mergedProperties !== undefined && mergedProperties.length > 0;
+            concatenatedProperties !== undefined &&
+            concatenatedProperties !== null &&
+            concatenatedProperties.length > 0;
+          let hasMergedProps =
+            mergedProperties !== undefined &&
+            mergedProperties !== null &&
+            mergedProperties.length > 0;
 
           let keyNames = Object.keys(properties);
 
@@ -152,7 +194,7 @@ function makeCtor(base) {
             let keyName = keyNames[i];
             let value = properties[keyName];
 
-            if (BINDING_SUPPORT && ENV._ENABLE_BINDING_SUPPORT && Mixin.detectBinding(keyName)) {
+            if (BINDING_SUPPORT && ENV._ENABLE_BINDING_SUPPORT && Mixin.detectBinding!(keyName)) {
               m.writeBindings(keyName, value);
             }
 
@@ -178,7 +220,7 @@ function makeCtor(base) {
             if (!isDescriptor) {
               let baseValue = self[keyName];
 
-              if (hasConcatenatedProps && concatenatedProperties.indexOf(keyName) > -1) {
+              if (hasConcatenatedProps && concatenatedProperties!.indexOf(keyName) > -1) {
                 if (baseValue) {
                   value = makeArray(baseValue).concat(value);
                 } else {
@@ -186,7 +228,7 @@ function makeCtor(base) {
                 }
               }
 
-              if (hasMergedProps && mergedProperties.indexOf(keyName) > -1) {
+              if (hasMergedProps && mergedProperties!.indexOf(keyName) > -1) {
                 value = assign({}, baseValue, value);
               }
             }
@@ -206,7 +248,7 @@ function makeCtor(base) {
         }
 
         if (BINDING_SUPPORT && ENV._ENABLE_BINDING_SUPPORT) {
-          Mixin.finishPartial(self, m);
+          Mixin.finishPartial!(self, m);
         }
 
         // using DEBUG here to avoid the extraneous variable when not needed
@@ -217,18 +259,18 @@ function makeCtor(base) {
 
         m.proto = proto;
         finishChains(m);
-        sendEvent(self, 'init', undefined, undefined, undefined, m);
+        sendEvent(self, 'init', undefined, undefined, m);
 
         // only return when in debug builds and `self` is the proxy created above
-        if (DEBUG && self !== this) {
+        if (DEBUG && self !== (this as any)) {
           return self;
         }
       }
 
-      static _initFactory(factory) {
+      static _initFactory(factory: Factory<any, any>) {
         initFactory = factory;
       }
-    };
+    } as any;
   }
 
   Class.willReopen = function() {
@@ -247,7 +289,7 @@ function makeCtor(base) {
 
     if (!wasApplied) {
       wasApplied = true;
-      Class.PrototypeMixin.applyPartial(Class.prototype);
+      Class.PrototypeMixin!.applyPartial(Class.prototype);
     }
 
     // Native classes will call the nearest superclass's proto function,
@@ -295,13 +337,13 @@ const IS_DESTROYING = descriptor({
   @class CoreObject
   @public
 */
-let CoreObject = makeCtor();
+let CoreObject: typeof KoreObject = makeCtor();
 CoreObject.prototype.toString = classToString;
 CoreObject.toString = classToString;
 setName(CoreObject, 'Ember.CoreObject');
 
-CoreObject.PrototypeMixin = Mixin.create({
-  reopen(...args) {
+const protoTypeMixinArgs: CoreObjectPrototype = {
+  reopen(...args: any[]): KoreObject & CoreObjectPrototype {
     applyMixin(this, args, true);
     return this;
   },
@@ -528,7 +570,7 @@ CoreObject.PrototypeMixin = Mixin.create({
     @return {EmberObject} receiver
     @public
   */
-  destroy() {
+  destroy(): (KoreObject & CoreObjectPrototype) | void {
     let m = peekMeta(this);
     if (m.isSourceDestroying()) {
       return;
@@ -557,7 +599,7 @@ CoreObject.PrototypeMixin = Mixin.create({
     @private
     @method _scheduledDestroy
   */
-  _scheduledDestroy(m) {
+  _scheduledDestroy(m: Meta): void {
     if (m.isSourceDestroyed()) {
       return;
     }
@@ -604,9 +646,9 @@ CoreObject.PrototypeMixin = Mixin.create({
     @return {String} string representation
     @public
   */
-  toString() {
+  toString(): string {
     let hasToStringExtension = typeof this.toStringExtension === 'function';
-    let extension = hasToStringExtension ? `:${this.toStringExtension()}` : '';
+    let extension = hasToStringExtension ? `:${this.toStringExtension!()}` : '';
 
     let ret = `<${getName(this) || FACTORY_FOR.get(this) || this.constructor.toString()}:${guidFor(
       this
@@ -614,13 +656,34 @@ CoreObject.PrototypeMixin = Mixin.create({
 
     return ret;
   },
-});
+};
+CoreObject.PrototypeMixin = Mixin.create(protoTypeMixinArgs);
 
 CoreObject.PrototypeMixin.ownerConstructor = CoreObject;
 
 CoreObject.__super__ = null;
 
-let ClassMixinProps = {
+interface ClassMixinProps extends DebugFactory<any, any> {
+  isClass: boolean;
+  isMethod: boolean;
+  extend(this: BaseClassCtor & typeof KoreObject): typeof KoreObject;
+  reopen(this: typeof KoreObject): typeof KoreObject;
+  reopenClass(this: typeof KoreObject): typeof KoreObject;
+  detect(obj: any): boolean;
+  detectInstance(this: Function, obj: any): boolean;
+  metaForProperty(this: typeof KoreObject, key: string): Meta;
+  eachComputedProperty(
+    this: typeof KoreObject,
+    callback: EachComputedPropertyCallback,
+    binding?: object
+  ): void;
+
+  _onLookup?: (fullName: string) => void;
+  _initFactory?: <T, C>(factory: Factory<T, C>) => void;
+  _lazyInjections?: () => { [key: string]: LazyInjection };
+}
+
+let ClassMixinProps: ClassMixinProps = {
   isClass: true,
 
   isMethod: false,
@@ -718,7 +781,7 @@ let ClassMixinProps = {
     @param {Object} [arguments]* Object containing values to use within the new class
     @public
   */
-  extend() {
+  extend(this: BaseClassCtor & typeof KoreObject): typeof KoreObject {
     let Class = makeCtor(this);
 
     Class.ClassMixin = Mixin.create(this.ClassMixin);
@@ -780,8 +843,8 @@ let ClassMixinProps = {
     @param [arguments]*
     @public
   */
-  create(props, extra) {
-    let C = this;
+  create(props?: { [prop: string]: any }, extra?: any) {
+    let C = this as any;
 
     if (extra === undefined) {
       return new C(props);
@@ -824,7 +887,7 @@ let ClassMixinProps = {
     @static
     @public
   */
-  reopen() {
+  reopen(this: typeof KoreObject): typeof KoreObject {
     this.willReopen();
     reopen.apply(this.PrototypeMixin, arguments);
     return this;
@@ -891,13 +954,13 @@ let ClassMixinProps = {
     @static
     @public
   */
-  reopenClass() {
+  reopenClass(this: typeof KoreObject): typeof KoreObject {
     reopen.apply(this.ClassMixin, arguments);
     applyMixin(this, arguments, false);
     return this;
   },
 
-  detect(obj) {
+  detect(obj: any): boolean {
     if ('function' !== typeof obj) {
       return false;
     }
@@ -910,7 +973,7 @@ let ClassMixinProps = {
     return false;
   },
 
-  detectInstance(obj) {
+  detectInstance(this: Function, obj: any): boolean {
     return obj instanceof this;
   },
 
@@ -945,7 +1008,7 @@ let ClassMixinProps = {
     @param key {String} property name
     @private
   */
-  metaForProperty(key) {
+  metaForProperty(this: typeof KoreObject, key: string): Meta {
     let proto = this.proto(); // ensure prototype is initialized
     let possibleDesc = descriptorFor(proto, key);
 
@@ -967,24 +1030,33 @@ let ClassMixinProps = {
     @param {Object} binding
     @private
   */
-  eachComputedProperty(callback, binding = this) {
+  eachComputedProperty(
+    this: typeof KoreObject,
+    callback: EachComputedPropertyCallback,
+    binding = this
+  ): void {
     this.proto(); // ensure prototype is initialized
     let empty = {};
 
-    meta(this.prototype).forEachDescriptors((name, descriptor) => {
+    meta(this.prototype).forEachDescriptors((name: string, descriptor: Descriptor) => {
       if (descriptor.enumerable) {
-        let meta = descriptor._meta || empty;
+        let meta = (descriptor as ComputedProperty)._meta || empty;
         callback.call(binding, name, meta);
       }
     });
   },
 };
 
-function flattenProps(...props) {
+type EachComputedPropertyCallback = (obj: KoreObject) => void;
+
+function flattenProps(this: CoreObjectPrototype, ...props: any[]) {
   let { concatenatedProperties, mergedProperties } = this;
   let hasConcatenatedProps =
-    concatenatedProperties !== undefined && concatenatedProperties.length > 0;
-  let hasMergedProps = mergedProperties !== undefined && mergedProperties.length > 0;
+    concatenatedProperties !== undefined &&
+    concatenatedProperties !== null &&
+    concatenatedProperties.length > 0;
+  let hasMergedProps =
+    mergedProperties !== undefined && mergedProperties !== null && mergedProperties.length > 0;
 
   let initProperties = {};
 
@@ -1003,7 +1075,7 @@ function flattenProps(...props) {
       let keyName = keyNames[j];
       let value = properties[keyName];
 
-      if (hasConcatenatedProps && concatenatedProperties.indexOf(keyName) > -1) {
+      if (hasConcatenatedProps && concatenatedProperties!.indexOf(keyName) > -1) {
         let baseValue = initProperties[keyName];
 
         if (baseValue) {
@@ -1013,7 +1085,7 @@ function flattenProps(...props) {
         }
       }
 
-      if (hasMergedProps && mergedProperties.indexOf(keyName) > -1) {
+      if (hasMergedProps && mergedProperties!.indexOf(keyName) > -1) {
         let baseValue = initProperties[keyName];
 
         value = assign({}, baseValue, value);
@@ -1033,7 +1105,10 @@ if (DEBUG) {
     @private
     @method _onLookup
   */
-  ClassMixinProps._onLookup = function injectedPropertyAssertion(debugContainerKey) {
+  ClassMixinProps._onLookup = function injectedPropertyAssertion(
+    this: typeof KoreObject,
+    debugContainerKey
+  ) {
     let [type] = debugContainerKey.split(':');
     let proto = this.proto();
 
@@ -1056,7 +1131,7 @@ if (DEBUG) {
     @return {Object} Hash of all lazy injected property keys to container names
     @private
   */
-  ClassMixinProps._lazyInjections = function() {
+  ClassMixinProps._lazyInjections = function(this: typeof KoreObject) {
     let injections = {};
     let proto = this.proto();
     let key;
