@@ -163,8 +163,7 @@ export function defineProperty(
     meta = metaFor(obj);
   }
 
-  let watchEntry = meta.peekWatching(keyName);
-  let watching = watchEntry !== undefined && watchEntry > 0;
+  let watching = meta.peekWatching(keyName) > 0;
   let previousDesc = descriptorFor(obj, keyName, meta);
   let wasDescriptor = previousDesc !== undefined;
 
