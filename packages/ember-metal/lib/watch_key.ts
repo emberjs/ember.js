@@ -28,7 +28,7 @@ interface MaybeHasDidUnwatchProperty {
 
 export function watchKey(obj: object, keyName: string, _meta?: Meta) {
   let meta = _meta === undefined ? metaFor(obj) : _meta;
-  let count = meta.peekWatching(keyName) || 0;
+  let count = meta.peekWatching(keyName);
   meta.writeWatching(keyName, count + 1);
 
   if (count === 0) {

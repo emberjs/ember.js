@@ -189,7 +189,7 @@ export class Meta {
 
   // Implements a member that provides a lazily created map of maps,
   // with inheritance at both levels.
-  writeDeps(subkey: string, itemkey: string, value: any) {
+  writeDeps(subkey: string, itemkey: string, count: number) {
     assert(
       this.isMetaDestroyed()
         ? `Cannot modify dependent keys for \`${itemkey}\` on \`${toString(
@@ -204,10 +204,10 @@ export class Meta {
     if (innerMap === undefined) {
       innerMap = outerMap[subkey] = Object.create(null);
     }
-    innerMap[itemkey] = value;
+    innerMap[itemkey] = count;
   }
 
-  peekDeps(subkey: string, itemkey: string) {
+  peekDeps(subkey: string, itemkey: string): number {
     let pointer: Meta | undefined = this;
     while (pointer !== undefined) {
       let map = pointer._deps;
@@ -222,6 +222,8 @@ export class Meta {
       }
       pointer = pointer.parent;
     }
+
+    return 0;
   }
 
   hasDeps(subkey: string) {
@@ -350,8 +352,9 @@ export class Meta {
     map[subkey] = value;
   }
 
-  peekWatching(subkey: string) {
-    return this._findInherited('_watching', subkey);
+  peekWatching(subkey: string): number {
+    let count = this._findInherited('_watching', subkey);
+    return count === undefined ? 0 : count;
   }
 
   addMixin(mixin: any) {

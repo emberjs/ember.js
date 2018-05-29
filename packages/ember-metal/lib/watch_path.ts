@@ -3,7 +3,7 @@ import { makeChainNode } from './chains';
 
 export function watchPath(obj: any, keyPath: string, meta?: Meta): void {
   let m = meta === undefined ? metaFor(obj) : meta;
-  let counter = m.peekWatching(keyPath) || 0;
+  let counter = m.peekWatching(keyPath);
 
   m.writeWatching(keyPath, counter + 1);
   if (counter === 0) {

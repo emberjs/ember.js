@@ -13,7 +13,7 @@ import { defineProperty, Descriptor } from './properties';
 import { get } from './property_get';
 import { set } from './property_set';
 
-const CONSUMED = {};
+const CONSUMED = Object.freeze({});
 
 export default function alias(altKey: string): AliasedProperty {
   return new AliasedProperty(altKey);
@@ -32,13 +32,13 @@ export class AliasedProperty extends Descriptor implements DescriptorWithDepende
   setup(obj: object, keyName: string): void {
     assert(`Setting alias '${keyName}' on self`, this.altKey !== keyName);
     let meta = metaFor(obj);
-    if (meta.peekWatching(keyName)) {
+    if (meta.peekWatching(keyName) > 0) {
       addDependentKeys(this, obj, keyName, meta);
     }
   }
 
   teardown(obj: object, keyName: string, meta: Meta): void {
-    if (meta.peekWatching(keyName)) {
+    if (meta.peekWatching(keyName) > 0) {
       removeDependentKeys(this, obj, keyName, meta);
     }
   }

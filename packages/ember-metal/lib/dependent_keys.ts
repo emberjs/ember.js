@@ -25,7 +25,7 @@ export function addDependentKeys(
   for (let idx = 0; idx < depKeys.length; idx++) {
     let depKey = depKeys[idx];
     // Increment the number of times depKey depends on keyName.
-    meta.writeDeps(depKey, keyName, (meta.peekDeps(depKey, keyName) || 0) + 1);
+    meta.writeDeps(depKey, keyName, meta.peekDeps(depKey, keyName) + 1);
     // Watch the depKey
     watch(obj, depKey, meta);
   }
@@ -47,7 +47,7 @@ export function removeDependentKeys(
   for (let idx = 0; idx < depKeys.length; idx++) {
     let depKey = depKeys[idx];
     // Decrement the number of times depKey depends on keyName.
-    meta.writeDeps(depKey, keyName, (meta.peekDeps(depKey, keyName) || 0) - 1);
+    meta.writeDeps(depKey, keyName, meta.peekDeps(depKey, keyName) - 1);
     // Unwatch the depKey
     unwatch(obj, depKey, meta);
   }
