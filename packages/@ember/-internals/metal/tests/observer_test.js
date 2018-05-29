@@ -12,9 +12,11 @@ import {
   beginPropertyChanges,
   endPropertyChanges,
   changeProperties,
+  on,
   get,
   set,
 } from '..';
+import { Object as EmberObject } from '@ember/-internals/runtime';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 function K() {}
@@ -194,6 +196,41 @@ moduleFor(
 
       set(obj, 'baz', 'baz');
       assert.equal(count, 2, 'observer not invoked on unspecified property');
+    }
+
+    ['@test using same function for `on event` and `observer` works'](assert) {
+      let call1 = 0;
+      let call2 = 0;
+      let call3 = 0;
+
+      function func1() {
+        call1++;
+      }
+
+      function func2() {
+        call2++;
+      }
+
+      function func3() {
+        call3++;
+      }
+
+      let obj = EmberObject.extend({
+        onInit1: on('init', func1),
+        onObserve1: observer('prop', func1),
+        onObserve2: observer('prop', func2),
+        obObserver3: on('init', observer('prop', func3)),
+      }).create();
+
+      assert.equal(call1, 1);
+      assert.equal(call2, 0);
+      assert.equal(call3, 1);
+
+      set(obj, 'prop', 123);
+
+      assert.equal(call1, 2);
+      assert.equal(call2, 1);
+      assert.equal(call3, 2);
     }
 
     ['@test observers watching multiple properties via brace expansion should fire when dependent properties change'](

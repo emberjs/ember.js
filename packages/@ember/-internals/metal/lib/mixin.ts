@@ -250,7 +250,7 @@ function mergeMixins(
   descs: { [key: string]: object },
   values: { [key: string]: object },
   base: { [key: string]: object },
-  keys: string[]
+  keys: Set<string>
 ): void {
   let currentMixin, props, key, concats, mergings;
 
@@ -285,7 +285,7 @@ function mergeMixins(
         if (!props.hasOwnProperty(key)) {
           continue;
         }
-        keys.push(key);
+        keys.add(key);
         addNormalizedProperty(base, key, props[key], meta, descs, values, concats, mergings);
       }
 
@@ -346,7 +346,7 @@ function updateObserversAndListeners(
     method: string
   ) => void
 ) {
-  if (paths) {
+  if (paths !== undefined) {
     for (let i = 0; i < paths.length; i++) {
       updateMethod(obj, paths[i], null, key);
     }
@@ -357,14 +357,16 @@ function replaceObserversAndListeners(
   obj: object,
   key: string,
   prev: Function | null,
-  next: Function | null
+  next: Function | null,
+  seen: Set<Function>
 ): void {
   if (typeof prev === 'function') {
     updateObserversAndListeners(obj, key, getObservers(prev), removeObserver);
     updateObserversAndListeners(obj, key, getListeners(prev), removeListener);
   }
 
-  if (typeof next === 'function') {
+  if (typeof next === 'function' && !seen.has(next)) {
+    seen.add(next);
     updateObserversAndListeners(obj, key, getObservers(next), addObserver);
     updateObserversAndListeners(obj, key, getListeners(next), addListener);
   }
@@ -374,8 +376,7 @@ export function applyMixin(obj: { [key: string]: any }, mixins: Mixin[]) {
   let descs = {};
   let values = {};
   let meta = metaFor(obj);
-  let keys: string[] = [];
-  let key, value, desc;
+  let keys: Set<string> = new Set();
 
   (obj as any)._super = ROOT;
 
@@ -388,14 +389,15 @@ export function applyMixin(obj: { [key: string]: any }, mixins: Mixin[]) {
   // * Copying `toString` in broken browsers
   mergeMixins(mixins, meta, descs, values, obj, keys);
 
-  for (let i = 0; i < keys.length; i++) {
-    key = keys[i];
-    if (key === 'constructor' || !values.hasOwnProperty(key)) {
-      continue;
+  let seenFunctions: Set<Function> = new Set();
+  keys.delete('constructor');
+  keys.forEach(function(key) {
+    if (!values.hasOwnProperty(key)) {
+      return;
     }
 
-    desc = descs[key];
-    value = values[key];
+    let desc = descs[key];
+    let value = values[key];
 
     if (ALIAS_METHOD) {
       while (value && value instanceof AliasImpl) {
@@ -406,17 +408,17 @@ export function applyMixin(obj: { [key: string]: any }, mixins: Mixin[]) {
     }
 
     if (desc === undefined && value === undefined) {
-      continue;
+      return;
     }
 
-    if (descriptorFor(obj, key) !== undefined) {
-      replaceObserversAndListeners(obj, key, null, value);
+    if (descriptorFor(obj, key) === undefined) {
+      replaceObserversAndListeners(obj, key, obj[key], value, seenFunctions);
     } else {
-      replaceObserversAndListeners(obj, key, obj[key], value);
+      replaceObserversAndListeners(obj, key, null, value, seenFunctions);
     }
 
     defineProperty(obj, key, desc, value, meta);
-  }
+  });
 
   return obj;
 }
