@@ -3,6 +3,7 @@ import bootstrap from './bootstrap';
 
 // Globals mode template compiler
 if (has('@ember/application') && has('ember-browser-environment') && has('ember-glimmer')) {
+  // tslint:disable:no-require-imports
   let emberEnv = require('ember-browser-environment');
   let emberGlimmer = require('ember-glimmer');
   let emberApp = require('@ember/application');

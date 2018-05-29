@@ -1,3 +1,6 @@
+import { AST, ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
+import { Builders } from '../types';
+
 /**
  @module ember
 */
@@ -23,14 +26,14 @@
   @class TransformInputTypeSyntax
 */
 
-export default function transformInputTypeSyntax(env) {
+export default function transformInputTypeSyntax(env: ASTPluginEnvironment): ASTPlugin {
   let b = env.syntax.builders;
 
   return {
     name: 'transform-input-type-syntax',
 
     visitor: {
-      MustacheStatement(node) {
+      MustacheStatement(node: AST.MustacheStatement) {
         if (isInput(node)) {
           insertTypeHelperParameter(node, b);
         }
@@ -39,11 +42,11 @@ export default function transformInputTypeSyntax(env) {
   };
 }
 
-function isInput(node) {
+function isInput(node: AST.MustacheStatement) {
   return node.path.original === 'input';
 }
 
-function insertTypeHelperParameter(node, builders) {
+function insertTypeHelperParameter(node: AST.MustacheStatement, builders: Builders) {
   let pairs = node.hash.pairs;
   let pair = null;
   for (let i = 0; i < pairs.length; i++) {
@@ -53,6 +56,6 @@ function insertTypeHelperParameter(node, builders) {
     }
   }
   if (pair && pair.value.type !== 'StringLiteral') {
-    node.params.unshift(builders.sexpr('-input-type', [pair.value], null, pair.loc));
+    node.params.unshift(builders.sexpr('-input-type', [pair.value], undefined, pair.loc));
   }
 }

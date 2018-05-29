@@ -1,26 +1,29 @@
-import TransformOldBindingSyntax from './transform-old-binding-syntax';
-import TransformAngleBracketComponents from './transform-angle-bracket-components';
-import TransformTopLevelComponents from './transform-top-level-components';
-import TransformInlineLinkTo from './transform-inline-link-to';
-import TransformOldClassBindingSyntax from './transform-old-class-binding-syntax';
-import TransformQuotedBindingsIntoJustBindings from './transform-quoted-bindings-into-just-bindings';
-import DeprecateRenderModel from './deprecate-render-model';
-import DeprecateRender from './deprecate-render';
+import AssertIfHelperWithoutArguments from './assert-if-helper-without-arguments';
+import AssertInputHelperWithoutBlock from './assert-input-helper-without-block';
 import AssertReservedNamedArguments from './assert-reserved-named-arguments';
+import AssertSplattributeExpressions from './assert-splattribute-expression';
+import DeprecateRender from './deprecate-render';
+import DeprecateRenderModel from './deprecate-render-model';
 import TransformActionSyntax from './transform-action-syntax';
-import TransformInputTypeSyntax from './transform-input-type-syntax';
+import TransformAngleBracketComponents from './transform-angle-bracket-components';
 import TransformAttrsIntoArgs from './transform-attrs-into-args';
+import TransformDotComponentInvocation from './transform-dot-component-invocation';
 import TransformEachInIntoEach from './transform-each-in-into-each';
 import TransformHasBlockSyntax from './transform-has-block-syntax';
-import TransformDotComponentInvocation from './transform-dot-component-invocation';
-import AssertInputHelperWithoutBlock from './assert-input-helper-without-block';
 import TransformInElement from './transform-in-element';
-import AssertIfHelperWithoutArguments from './assert-if-helper-without-arguments';
-import AssertSplattributeExpressions from './assert-splattribute-expression';
+import TransformInlineLinkTo from './transform-inline-link-to';
+import TransformInputTypeSyntax from './transform-input-type-syntax';
+import TransformOldBindingSyntax from './transform-old-binding-syntax';
+import TransformOldClassBindingSyntax from './transform-old-class-binding-syntax';
+import TransformQuotedBindingsIntoJustBindings from './transform-quoted-bindings-into-just-bindings';
+import TransformTopLevelComponents from './transform-top-level-components';
 
 import { BINDING_SUPPORT, RENDER_HELPER } from '@ember/deprecated-features';
+import { ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
 
-const transforms = [
+export type APluginFunc = (env: ASTPluginEnvironment) => ASTPlugin | undefined;
+
+const transforms: Array<APluginFunc> = [
   TransformDotComponentInvocation,
   TransformAngleBracketComponents,
   TransformTopLevelComponents,

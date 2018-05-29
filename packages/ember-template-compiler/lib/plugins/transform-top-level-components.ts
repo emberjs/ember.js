@@ -1,10 +1,12 @@
-export default function transformTopLevelComponent(/* env */) {
+import { AST, ASTPlugin } from '@glimmer/syntax';
+
+export default function transformTopLevelComponent(/* env */): ASTPlugin {
   return {
     name: 'transform-top-level-component',
 
     visitor: {
-      Program(node) {
-        hasSingleComponentNode(node, component => {
+      Program(node: AST.Program) {
+        hasSingleComponentNode(node, (component: any) => {
           component.tag = `@${component.tag}`;
           component.isStatic = true;
         });
@@ -13,7 +15,10 @@ export default function transformTopLevelComponent(/* env */) {
   };
 }
 
-function hasSingleComponentNode(program, componentCallback) {
+function hasSingleComponentNode(
+  program: AST.Program,
+  componentCallback: (component: any) => void
+): boolean | void {
   let { loc, body } = program;
   if (!loc || loc.start.line !== 1 || loc.start.column !== 0) {
     return;
@@ -35,7 +40,7 @@ function hasSingleComponentNode(program, componentCallback) {
       return false;
     }
 
-    if (curr.type === 'ComponentNode' || curr.type === 'ElementNode') {
+    if (curr.type === ('ComponentNode' as any) || curr.type === 'ElementNode') {
       lastComponentNode = curr;
     }
   }
@@ -44,7 +49,7 @@ function hasSingleComponentNode(program, componentCallback) {
     return;
   }
 
-  if (lastComponentNode.type === 'ComponentNode') {
+  if (lastComponentNode.type === ('ComponentNode' as any)) {
     componentCallback(lastComponentNode);
   }
 }

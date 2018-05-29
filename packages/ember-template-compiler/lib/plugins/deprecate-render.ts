@@ -1,15 +1,16 @@
 import { deprecate } from '@ember/debug';
 import { RENDER_HELPER } from '@ember/deprecated-features';
+import { AST, ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
 import calculateLocationDisplay from '../system/calculate-location-display';
 
 // Remove after 3.4 once _ENABLE_RENDER_SUPPORT flag is no longer needed.
-export default function deprecateRender(env) {
+export default function deprecateRender(env: ASTPluginEnvironment): ASTPlugin | undefined {
   if (RENDER_HELPER) {
     let { moduleName } = env.meta;
 
-    let deprecationMessage = node => {
+    let deprecationMessage = (node: AST.MustacheStatement) => {
       let sourceInformation = calculateLocationDisplay(moduleName, node.loc);
-      let componentName = node.params[0].original;
+      let componentName = (node.params[0] as AST.PathExpression).original;
       let original = `{{render "${componentName}"}}`;
       let preferred = `{{${componentName}}}`;
 
@@ -23,7 +24,7 @@ export default function deprecateRender(env) {
       name: 'deprecate-render',
 
       visitor: {
-        MustacheStatement(node) {
+        MustacheStatement(node: AST.MustacheStatement) {
           if (node.path.original !== 'render') {
             return;
           }
@@ -46,4 +47,5 @@ export default function deprecateRender(env) {
       },
     };
   }
+  return undefined;
 }

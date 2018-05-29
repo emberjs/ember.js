@@ -1,9 +1,24 @@
 import { assign } from '@ember/polyfills';
-import PLUGINS from '../plugins/index';
+import { PrecompileOptions } from '@glimmer/compiler';
+import { AST, ASTPlugin, ASTPluginEnvironment, Syntax } from '@glimmer/syntax';
+import PLUGINS, { APluginFunc } from '../plugins/index';
 
-let USER_PLUGINS = [];
+type PluginFunc = APluginFunc & {
+  __raw?: LegacyPluginClass | undefined;
+};
+let USER_PLUGINS: PluginFunc[] = [];
 
-export default function compileOptions(_options) {
+interface Plugins {
+  ast: PluginFunc[];
+}
+
+export interface CompileOptions {
+  meta?: any;
+  moduleName?: string | undefined;
+  plugins?: Plugins | undefined;
+}
+
+export default function compileOptions(_options: Partial<CompileOptions>): PrecompileOptions {
   let options = assign({ meta: {} }, _options);
 
   // move `moduleName` into `meta` property
@@ -18,7 +33,7 @@ export default function compileOptions(_options) {
     let potententialPugins = [...USER_PLUGINS, ...PLUGINS];
     let providedPlugins = options.plugins.ast.map(plugin => wrapLegacyPluginIfNeeded(plugin));
     let pluginsToAdd = potententialPugins.filter(plugin => {
-      return options.plugins.ast.indexOf(plugin) === -1;
+      return options.plugins!.ast.indexOf(plugin) === -1;
     });
     options.plugins.ast = providedPlugins.concat(pluginsToAdd);
   }
@@ -26,20 +41,26 @@ export default function compileOptions(_options) {
   return options;
 }
 
-function wrapLegacyPluginIfNeeded(_plugin) {
+interface LegacyPlugin {
+  transform(node: AST.Program): AST.Node;
+  syntax: Syntax;
+}
+type LegacyPluginClass = new (env: ASTPluginEnvironment) => LegacyPlugin;
+
+function wrapLegacyPluginIfNeeded(_plugin: PluginFunc | LegacyPluginClass): PluginFunc {
   let plugin = _plugin;
   if (_plugin.prototype && _plugin.prototype.transform) {
-    plugin = env => {
+    const pluginFunc: PluginFunc = (env: ASTPluginEnvironment): ASTPlugin => {
       let pluginInstantiated = false;
 
       return {
         name: _plugin.constructor && _plugin.constructor.name,
 
         visitor: {
-          Program(node) {
+          Program(node: AST.Program): AST.Node | void {
             if (!pluginInstantiated) {
               pluginInstantiated = true;
-              let plugin = new _plugin(env);
+              let plugin = new (_plugin as LegacyPluginClass)(env);
 
               plugin.syntax = env.syntax;
 
@@ -50,13 +71,14 @@ function wrapLegacyPluginIfNeeded(_plugin) {
       };
     };
 
-    plugin.__raw = _plugin;
+    pluginFunc.__raw = _plugin as LegacyPluginClass;
+    plugin = pluginFunc;
   }
 
-  return plugin;
+  return plugin as PluginFunc;
 }
 
-export function registerPlugin(type, _plugin) {
+export function registerPlugin(type: string, _plugin: PluginFunc | LegacyPluginClass) {
   if (type !== 'ast') {
     throw new Error(
       `Attempting to register ${_plugin} as "${type}" which is not a valid Glimmer plugin type.`
@@ -75,7 +97,7 @@ export function registerPlugin(type, _plugin) {
   USER_PLUGINS = [plugin, ...USER_PLUGINS];
 }
 
-export function unregisterPlugin(type, PluginClass) {
+export function unregisterPlugin(type: string, PluginClass: PluginFunc | LegacyPluginClass) {
   if (type !== 'ast') {
     throw new Error(
       `Attempting to unregister ${PluginClass} as "${type}" which is not a valid Glimmer plugin type.`

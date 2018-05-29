@@ -1,22 +1,24 @@
-export default function transformQuotedBindingsIntoJustBindings(/* env */) {
+import { AST, ASTPlugin } from '@glimmer/syntax';
+
+export default function transformQuotedBindingsIntoJustBindings(/* env */): ASTPlugin {
   return {
     name: 'transform-quoted-bindings-into-just-bindings',
 
     visitor: {
-      ElementNode(node) {
+      ElementNode(node: AST.ElementNode) {
         let styleAttr = getStyleAttr(node);
 
         if (!validStyleAttr(styleAttr)) {
           return;
         }
 
-        styleAttr.value = styleAttr.value.parts[0];
+        styleAttr!.value = (styleAttr!.value as AST.ConcatStatement).parts[0];
       },
     },
   };
 }
 
-function validStyleAttr(attr) {
+function validStyleAttr(attr: AST.AttrNode | undefined) {
   if (!attr) {
     return false;
   }
@@ -32,7 +34,7 @@ function validStyleAttr(attr) {
   return onlyPart.type === 'MustacheStatement';
 }
 
-function getStyleAttr(node) {
+function getStyleAttr(node: AST.ElementNode): AST.AttrNode | undefined {
   let attributes = node.attributes;
 
   for (let i = 0; i < attributes.length; i++) {
@@ -40,4 +42,5 @@ function getStyleAttr(node) {
       return attributes[i];
     }
   }
+  return undefined;
 }
