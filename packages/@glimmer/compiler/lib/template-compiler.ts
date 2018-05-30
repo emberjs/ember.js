@@ -82,7 +82,11 @@ export default class TemplateCompiler {
     }
 
     if (isDynamicComponent(action)) {
-      let [head, ...rest] = action.tag.split('.');
+      let head: string | 0, rest: string[];
+      [head, ...rest] = action.tag.split('.');
+      if (head === 'this') {
+        head = 0;
+      }
       this.opcode(['get', [head, rest]]);
       this.opcode(['openComponent', action], action);
     } else if (isComponent(action)) {
