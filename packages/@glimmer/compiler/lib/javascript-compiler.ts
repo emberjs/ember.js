@@ -262,14 +262,15 @@ export default class JavaScriptCompiler
   }
 
   closeComponent(element: AST.ElementNode) {
-    //endComponent(): [Statements.Attribute[], Core.Hash, Option<SerializedInlineBlock>] {
-    let component = this.blocks.pop();
-    assert(
-      component instanceof ComponentBlock,
-      'Compiler bug: endComponent() should end a component'
-    );
-    let [attrs, args, block] = (component as ComponentBlock).toJSON();
+    let [attrs, args, block] = this.endComponent();
+
     this.push([Ops.Component, element.tag, attrs, args, block]);
+  }
+
+  closeDynamicComponent(_element: AST.ElementNode) {
+    let [attrs, args, block] = this.endComponent();
+
+    this.push([Ops.DynamicComponent, this.popValue<Expression>(), attrs, args, block]);
   }
 
   closeElement(_element: AST.ElementNode) {
@@ -392,6 +393,16 @@ export default class JavaScriptCompiler
   }
 
   /// Utilities
+
+  endComponent(): [Statements.Attribute[], Core.Hash, Option<SerializedInlineBlock>] {
+    let component = this.blocks.pop();
+    assert(
+      component instanceof ComponentBlock,
+      'Compiler bug: endComponent() should end a component'
+    );
+
+    return (component as ComponentBlock).toJSON();
+  }
 
   push(args: Statement) {
     while (args[args.length - 1] === null) {

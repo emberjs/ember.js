@@ -81,9 +81,11 @@ export default class TemplateCompiler {
       }
     }
 
-    if (isComponent(action)) {
-      //let [head, ...rest] = action.tag;
-      //this.opcode(['get', [head, rest]]);
+    if (isDynamicComponent(action)) {
+      let [head, ...rest] = action.tag.split('.');
+      this.opcode(['get', [head, rest]]);
+      this.opcode(['openComponent', action], action);
+    } else if (isComponent(action)) {
       this.opcode(['openComponent', action], action);
     } else if (hasSplat) {
       this.opcode(['openSplattedElement', action], action);
@@ -112,7 +114,9 @@ export default class TemplateCompiler {
   }
 
   closeElement([action]: [AST.ElementNode]) {
-    if (isComponent(action)) {
+    if (isDynamicComponent(action)) {
+      this.opcode(['closeDynamicComponent', action], action);
+    } else if (isComponent(action)) {
       this.opcode(['closeComponent', action], action);
     } else {
       this.opcode(['closeElement', action], action);

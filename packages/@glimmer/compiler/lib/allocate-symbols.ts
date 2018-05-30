@@ -81,6 +81,10 @@ export class SymbolAllocator
     this.symbolStack.pop();
   }
 
+  closeDynamicComponent(_op: AST.ElementNode) {
+    this.symbolStack.pop();
+  }
+
   attrSplat(_op: Option<InVariable>): OutOp<'attrSplat'> {
     return ['attrSplat', this.symbols.allocateBlock('attrs')];
   }
