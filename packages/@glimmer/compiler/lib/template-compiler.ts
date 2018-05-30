@@ -81,7 +81,11 @@ export default class TemplateCompiler {
       }
     }
 
-    if (hasSplat) {
+    if (isComponent(action)) {
+      //let [head, ...rest] = action.tag;
+      //this.opcode(['get', [head, rest]]);
+      this.opcode(['openComponent', action], action);
+    } else if (hasSplat) {
       this.opcode(['openSplattedElement', action], action);
     } else {
       this.opcode(['openElement', action], action);
@@ -108,7 +112,11 @@ export default class TemplateCompiler {
   }
 
   closeElement([action]: [AST.ElementNode]) {
-    this.opcode(['closeElement', action], action);
+    if (isComponent(action)) {
+      this.opcode(['closeComponent', action], action);
+    } else {
+      this.opcode(['closeElement', action], action);
+    }
   }
 
   attribute([action]: [AST.AttrNode]) {
@@ -441,6 +449,24 @@ function isBuiltInHelper(path: AST.PathExpression) {
 
 function isArg(path: AST.PathExpression): boolean {
   return !!path['data'];
+}
+
+function isDynamicComponent(element: AST.ElementNode): boolean {
+  let open = element.tag.charAt(0);
+
+  let isNamedArgument = open === '@';
+  let isLocal = element['symbols'].has(element.tag);
+  let isPath = element.tag.indexOf('.') > -1;
+
+  return isLocal || isNamedArgument || isPath;
+}
+
+function isComponent(element: AST.ElementNode): boolean {
+  let open = element.tag.charAt(0);
+
+  let isUpperCase = open === open.toUpperCase() && open !== open.toLowerCase();
+
+  return isUpperCase || isDynamicComponent(element);
 }
 
 function assertIsSimplePath(path: AST.PathExpression, loc: AST.SourceLocation, context: string) {

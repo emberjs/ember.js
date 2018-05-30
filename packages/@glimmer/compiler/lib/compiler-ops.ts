@@ -9,9 +9,11 @@ export interface CompilerOps<Variable> {
   text: string;
   comment: string;
   openElement: AST.ElementNode;
+  openComponent: AST.ElementNode;
   openSplattedElement: AST.ElementNode;
   flushElement: AST.ElementNode;
   closeElement: AST.ElementNode;
+  closeComponent: AST.ElementNode;
   staticArg: string;
   dynamicArg: string;
   attrSplat: Option<Variable>;
