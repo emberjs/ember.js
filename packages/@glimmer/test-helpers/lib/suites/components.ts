@@ -390,5 +390,146 @@ export class BasicComponents extends RenderTest {
       `<div data-test1="outer" data-test2="static">[local static outer] - template</div>`
     );
   }
+
+  @test({
+    kind: 'basic',
+  })
+  'rwjblue invoking dynamic component (path) via angle brackets'() {
+    class TestHarness extends EmberishGlimmerComponent {
+      public Foo: any;
+
+      constructor(args: any) {
+        super();
+        this.Foo = args.attrs.Foo;
+      }
+    }
+    this.registerComponent('Glimmer', 'TestHarness', '<this.Foo />', TestHarness);
+    this.registerComponent('Glimmer', 'Foo', 'hello world!');
+
+    this.render('<TestHarness @Foo={{component "Foo"}} />');
+
+    this.assertHTML(`hello world!`);
+    this.assertStableRerender();
+  }
+
+  @test({
+    kind: 'basic',
+  })
+  'rwjblue invoking dynamic component (path) via angle brackets supports attributes'() {
+    class TestHarness extends EmberishGlimmerComponent {
+      public Foo: any;
+
+      constructor(args: any) {
+        super();
+        this.Foo = args.attrs.Foo;
+      }
+    }
+    this.registerComponent('Glimmer', 'TestHarness', '<this.Foo data-test="foo"/>', TestHarness);
+    this.registerComponent('Glimmer', 'Foo', '<div ...attributes>hello world!</div>');
+    this.render('<TestHarness @Foo={{component "Foo"}} />');
+
+    this.assertHTML(`<div data-test="foo">hello world!</div>`);
+    this.assertStableRerender();
+  }
+
+  @test({
+    kind: 'basic',
+  })
+  'rwjblue invoking dynamic component (path) via angle brackets supports args'() {
+    class TestHarness extends EmberishGlimmerComponent {
+      public Foo: any;
+
+      constructor(args: any) {
+        super();
+        this.Foo = args.attrs.Foo;
+      }
+    }
+    this.registerComponent('Glimmer', 'TestHarness', '<this.Foo @name="world"/>', TestHarness);
+    this.registerComponent('Glimmer', 'Foo', 'hello {{@name}}!');
+    this.render('<TestHarness @Foo={{component "Foo"}} />');
+
+    this.assertHTML(`hello world!`);
+    this.assertStableRerender();
+  }
+
+  @test({
+    kind: 'basic',
+  })
+  'rwjblue invoking dynamic component (path) via angle brackets supports passing a block'() {
+    class TestHarness extends EmberishGlimmerComponent {
+      public Foo: any;
+
+      constructor(args: any) {
+        super();
+        this.Foo = args.attrs.Foo;
+      }
+    }
+    this.registerComponent('Glimmer', 'TestHarness', '<this.Foo>world</this.Foo>', TestHarness);
+    this.registerComponent('Glimmer', 'Foo', 'hello {{yield}}!');
+    this.render('<TestHarness @Foo={{component "Foo"}} />');
+
+    this.assertHTML(`hello world!`);
+    this.assertStableRerender();
+  }
+
+  @test({
+    kind: 'basic',
+  })
+  'rwjblue invoking dynamic component (path) via angle brackets supports args, attributes, and blocks'() {
+    let instance: Foo;
+    class TestHarness extends EmberishGlimmerComponent {
+      public Foo: any;
+
+      constructor(args: any) {
+        super();
+        this.Foo = args.attrs.Foo;
+      }
+    }
+    class Foo extends EmberishGlimmerComponent {
+      public localProperty: string;
+
+      constructor() {
+        super();
+        instance = this;
+        this.localProperty = 'local';
+      }
+    }
+    this.registerComponent(
+      'Glimmer',
+      'TestHarness',
+      '<this.Foo @staticNamedArg="static" data-test1={{@outer}} data-test2="static" @dynamicNamedArg={{@outer}}>template</this.Foo>',
+      TestHarness
+    );
+    this.registerComponent(
+      'Glimmer',
+      'Foo',
+      '<div ...attributes>[{{localProperty}} {{@staticNamedArg}} {{@dynamicNamedArg}}] - {{yield}}</div>',
+      Foo
+    );
+    this.render('<TestHarness @outer={{outer}} @Foo={{component "Foo"}} />', { outer: 'outer' });
+
+    this.assertHTML(
+      `<div data-test1="outer" data-test2="static">[local static outer] - template</div>`
+    );
+    this.assertStableRerender();
+
+    this.rerender({ outer: 'OUTER' });
+    this.assertHTML(
+      `<div data-test1="OUTER" data-test2="static">[local static OUTER] - template</div>`
+    );
+
+    instance!.localProperty = 'LOCAL';
+    instance!.recompute();
+    this.rerender();
+    this.assertHTML(
+      `<div data-test1="OUTER" data-test2="static">[LOCAL static OUTER] - template</div>`
+    );
+
+    instance!.localProperty = 'local';
+    instance!.recompute();
+    this.rerender({ outer: 'outer' });
+    this.assertHTML(
+      `<div data-test1="outer" data-test2="static">[local static outer] - template</div>`
+    );
   }
 }
