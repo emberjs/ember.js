@@ -1,4 +1,5 @@
 import { RenderTest, test } from '../render-test';
+import { stripTight, EmberishGlimmerComponent } from '../../index';
 
 export class FragmentComponents extends RenderTest {
   @test({
@@ -215,6 +216,63 @@ export class BasicComponents extends RenderTest {
   @test({
     kind: 'basic',
   })
+  'rwjblue invoking dynamic component (named arg) via angle brackets supports args and attributes'() {
+    let instance: Foo;
+    class Foo extends EmberishGlimmerComponent {
+      public localProperty: string;
+
+      constructor() {
+        super();
+        instance = this;
+        this.localProperty = 'local';
+      }
+    }
+    this.registerComponent(
+      'Glimmer',
+      'Foo',
+      '<div ...attributes>[{{localProperty}} {{@staticNamedArg}} {{@dynamicNamedArg}}]</div>',
+      Foo
+    );
+
+    this.render(
+      {
+        layout: stripTight`<@foo @staticNamedArg="static" data-test1={{@outerArg}} data-test2="static" @dynamicNamedArg={{@outerArg}} />`,
+        args: {
+          foo: 'component "Foo"',
+          outerArg: 'outer',
+        },
+      },
+      { outer: 'outer' }
+    );
+
+    this.assertHTML(
+      `<div><div data-test1="outer" data-test2="static">[local static outer]</div></div>`
+    );
+    this.assertStableRerender();
+
+    this.rerender({ outer: 'OUTER' });
+    this.assertHTML(
+      `<div><div data-test1="OUTER" data-test2="static">[local static OUTER]</div></div>`
+    );
+
+    instance!.localProperty = 'LOCAL';
+    instance!.recompute();
+    this.rerender();
+    this.assertHTML(
+      `<div><div data-test1="OUTER" data-test2="static">[LOCAL static OUTER]</div></div>`
+    );
+
+    instance!.localProperty = 'local';
+    instance!.recompute();
+    this.rerender({ outer: 'outer' });
+    this.assertHTML(
+      `<div><div data-test1="outer" data-test2="static">[local static outer]</div></div>`
+    );
+  }
+
+  @test({
+    kind: 'basic',
+  })
   'rwjblue invoking dynamic component (local) via angle brackets'() {
     this.registerComponent('Glimmer', 'Foo', 'hello world!');
     this.render(`{{#with (component 'Foo') as |Other|}}<Other />{{/with}}`);
@@ -254,5 +312,47 @@ export class BasicComponents extends RenderTest {
 
     this.assertHTML(`hello world!`);
     this.assertStableRerender();
+  }
+
+  @test({
+    kind: 'basic',
+  })
+  'rwjblue invoking dynamic component (local) via angle brackets supports args and attributes'() {
+    let instance: Foo;
+    class Foo extends EmberishGlimmerComponent {
+      public localProperty: string;
+
+      constructor() {
+        super();
+        instance = this;
+        this.localProperty = 'local';
+      }
+    }
+    this.registerComponent(
+      'Glimmer',
+      'Foo',
+      '<div ...attributes>[{{localProperty}} {{@staticNamedArg}} {{@dynamicNamedArg}}]</div>',
+      Foo
+    );
+    this.render(
+      `{{#with (component 'Foo') as |Other|}}<Other @staticNamedArg="static" data-test1={{outer}} data-test2="static" @dynamicNamedArg={{outer}} />{{/with}}`,
+      { outer: 'outer' }
+    );
+
+    this.assertHTML(`<div data-test1="outer" data-test2="static">[local static outer]</div>`);
+    this.assertStableRerender();
+
+    this.rerender({ outer: 'OUTER' });
+    this.assertHTML(`<div data-test1="OUTER" data-test2="static">[local static OUTER]</div>`);
+
+    instance!.localProperty = 'LOCAL';
+    instance!.recompute();
+    this.rerender();
+    this.assertHTML(`<div data-test1="OUTER" data-test2="static">[LOCAL static OUTER]</div>`);
+
+    instance!.localProperty = 'local';
+    instance!.recompute();
+    this.rerender({ outer: 'outer' });
+    this.assertHTML(`<div data-test1="outer" data-test2="static">[local static outer]</div>`);
   }
 }
