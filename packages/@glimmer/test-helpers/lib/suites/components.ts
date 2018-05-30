@@ -532,4 +532,14 @@ export class BasicComponents extends RenderTest {
       `<div data-test1="outer" data-test2="static">[local static outer] - template</div>`
     );
   }
+
+  @test({ kind: 'glimmer' })
+  'angle bracket invocation can pass forward ...attributes to a nested component'() {
+    this.registerComponent('Glimmer', 'Qux', '<div data-from-qux ...attributes></div>');
+    this.registerComponent('Glimmer', 'Bar', '<Qux data-from-bar ...attributes />');
+    this.registerComponent('Glimmer', 'Foo', '<Bar data-from-foo ...attributes />');
+
+    this.render('<Foo data-from-top />');
+    this.assertHTML('<div data-from-qux data-from-bar data-from-foo data-from-top></div>');
+  }
 }

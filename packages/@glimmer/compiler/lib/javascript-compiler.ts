@@ -16,6 +16,7 @@ import {
   isFlushElement,
   isArgument,
   isAttribute,
+  isAttrSplat,
 } from '@glimmer/wire-format';
 import { Processor, CompilerOps, OpName, Op } from './compiler-ops';
 
@@ -91,6 +92,8 @@ export class ComponentBlock extends Block {
       } else if (isArgument(statement)) {
         this.arguments.push(statement);
       } else if (isAttribute(statement)) {
+        this.attributes.push(statement);
+      } else if (isAttrSplat(statement)) {
         this.attributes.push(statement);
       } else {
         throw new Error('Compile Error: only parameters allowed before flush-element');
