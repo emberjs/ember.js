@@ -221,7 +221,7 @@ export class HasBlockSuite extends RenderTest {
     this.assertStableRerender();
   }
 
-  @test
+  @test({ kind: 'glimmer' })
   'self closing angle bracket invocation (subexpr, default)'() {
     this.registerComponent(
       'Glimmer',
@@ -234,7 +234,7 @@ export class HasBlockSuite extends RenderTest {
     this.assertStableRerender();
   }
 
-  @test
+  @test({ kind: 'glimmer' })
   'self closing angle bracket invocation (subexpr, inverse)'() {
     this.registerComponent(
       'Glimmer',
@@ -247,7 +247,7 @@ export class HasBlockSuite extends RenderTest {
     this.assertStableRerender();
   }
 
-  @test
+  @test({ kind: 'glimmer' })
   'self closing angle bracket invocation (concatted attr, default)'() {
     this.registerComponent(
       'Glimmer',
