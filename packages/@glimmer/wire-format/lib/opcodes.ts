@@ -6,6 +6,7 @@ export enum Opcodes {
   Modifier,
   Block,
   Component,
+  DynamicComponent,
   OpenElement,
   OpenSplattedElement,
   FlushElement,

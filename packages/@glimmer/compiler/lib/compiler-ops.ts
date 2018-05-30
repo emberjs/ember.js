@@ -14,6 +14,7 @@ export interface CompilerOps<Variable> {
   flushElement: AST.ElementNode;
   closeElement: AST.ElementNode;
   closeComponent: AST.ElementNode;
+  closeDynamicComponent: AST.ElementNode;
   staticArg: string;
   dynamicArg: string;
   attrSplat: Option<Variable>;
