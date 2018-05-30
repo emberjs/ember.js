@@ -226,6 +226,11 @@ export default class JavaScriptCompiler
     this.push([Ops.Block, name, params, hash, blocks[template], blocks[inverse!]]);
   }
 
+  openComponent(element: AST.ElementNode) {
+    let component = new ComponentBlock(element['symbols'], element.selfClosing);
+    this.blocks.push(component);
+  }
+
   openSplattedElement(element: AST.ElementNode) {
     let tag = element.tag;
 
@@ -243,9 +248,7 @@ export default class JavaScriptCompiler
   openElement(element: AST.ElementNode) {
     let tag = element.tag;
 
-    if (isComponent(tag)) {
-      this.startComponent(element);
-    } else if (element.blockParams.length > 0) {
+    if (element.blockParams.length > 0) {
       throw new Error(
         `Compile Error: <${element.tag}> is not a component and doesn't support block parameters`
       );
@@ -258,15 +261,19 @@ export default class JavaScriptCompiler
     this.push([Ops.FlushElement]);
   }
 
-  closeElement(element: AST.ElementNode) {
-    let tag = element.tag;
+  closeComponent(element: AST.ElementNode) {
+    //endComponent(): [Statements.Attribute[], Core.Hash, Option<SerializedInlineBlock>] {
+    let component = this.blocks.pop();
+    assert(
+      component instanceof ComponentBlock,
+      'Compiler bug: endComponent() should end a component'
+    );
+    let [attrs, args, block] = (component as ComponentBlock).toJSON();
+    this.push([Ops.Component, element.tag, attrs, args, block]);
+  }
 
-    if (isComponent(tag)) {
-      let [attrs, args, block] = this.endComponent();
-      this.push([Ops.Component, tag, attrs, args, block]);
-    } else {
-      this.push([Ops.CloseElement]);
-    }
+  closeElement(_element: AST.ElementNode) {
+    this.push([Ops.CloseElement]);
   }
 
   staticAttr([name, namespace]: [string, Option<string>]) {
@@ -356,20 +363,6 @@ export default class JavaScriptCompiler
   }
 
   /// Stack Management Opcodes
-
-  startComponent(element: AST.ElementNode) {
-    let component = new ComponentBlock(element['symbols'], element.selfClosing);
-    this.blocks.push(component);
-  }
-
-  endComponent(): [Statements.Attribute[], Core.Hash, Option<SerializedInlineBlock>] {
-    let component = this.blocks.pop();
-    assert(
-      component instanceof ComponentBlock,
-      'Compiler bug: endComponent() should end a component'
-    );
-    return (component as ComponentBlock).toJSON();
-  }
 
   prepareArray(size: number) {
     let values: Expression[] = [];

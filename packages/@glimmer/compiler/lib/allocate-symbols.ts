@@ -77,6 +77,10 @@ export class SymbolAllocator
     this.symbolStack.pop();
   }
 
+  closeComponent(_op: AST.ElementNode) {
+    this.symbolStack.pop();
+  }
+
   attrSplat(_op: Option<InVariable>): OutOp<'attrSplat'> {
     return ['attrSplat', this.symbols.allocateBlock('attrs')];
   }
@@ -153,6 +157,7 @@ export class SymbolAllocator
 
   text(_op: string) {}
   comment(_op: string) {}
+  openComponent(_op: AST.ElementNode) {}
   openElement(_op: AST.ElementNode) {}
   openSplattedElement(_op: AST.ElementNode) {}
   staticArg(_op: string) {}
