@@ -234,9 +234,7 @@ export default class JavaScriptCompiler
   openSplattedElement(element: AST.ElementNode) {
     let tag = element.tag;
 
-    if (isComponent(tag)) {
-      throw new Error(`Compile Error: ...attributes can only be used in an element`);
-    } else if (element.blockParams.length > 0) {
+    if (element.blockParams.length > 0) {
       throw new Error(
         `Compile Error: <${element.tag}> is not a component and doesn't support block parameters`
       );
@@ -420,10 +418,4 @@ export default class JavaScriptCompiler
     assert(this.values.length, 'No expression found on stack');
     return this.values.pop() as T;
   }
-}
-
-function isComponent(tag: string): boolean {
-  let open = tag.charAt(0);
-
-  return open === open.toUpperCase() || open === '@';
 }
