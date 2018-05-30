@@ -216,6 +216,22 @@ export class BasicComponents extends RenderTest {
   @test({
     kind: 'basic',
   })
+  'rwjblue invoking dynamic component (named arg) via angle brackets supports passing a block'() {
+    this.registerComponent('Glimmer', 'Foo', 'hello {{yield}}!');
+    this.render({
+      layout: '<@foo>world</@foo>',
+      args: {
+        foo: 'component "Foo"',
+      },
+    });
+
+    this.assertHTML(`<div>hello world!</div>`);
+    this.assertStableRerender();
+  }
+
+  @test({
+    kind: 'basic',
+  })
   'rwjblue invoking dynamic component (named arg) via angle brackets supports args and attributes'() {
     let instance: Foo;
     class Foo extends EmberishGlimmerComponent {
@@ -317,7 +333,18 @@ export class BasicComponents extends RenderTest {
   @test({
     kind: 'basic',
   })
-  'rwjblue invoking dynamic component (local) via angle brackets supports args and attributes'() {
+  'rwjblue invoking dynamic component (local) via angle brackets supports passing a block'() {
+    this.registerComponent('Glimmer', 'Foo', 'hello {{yield}}!');
+    this.render(`{{#with (component 'Foo') as |Other|}}<Other>world</Other>{{/with}}`);
+
+    this.assertHTML(`hello world!`);
+    this.assertStableRerender();
+  }
+
+  @test({
+    kind: 'basic',
+  })
+  'rwjblue invoking dynamic component (local) via angle brackets supports args, attributes, and blocks'() {
     let instance: Foo;
     class Foo extends EmberishGlimmerComponent {
       public localProperty: string;
@@ -331,28 +358,37 @@ export class BasicComponents extends RenderTest {
     this.registerComponent(
       'Glimmer',
       'Foo',
-      '<div ...attributes>[{{localProperty}} {{@staticNamedArg}} {{@dynamicNamedArg}}]</div>',
+      '<div ...attributes>[{{localProperty}} {{@staticNamedArg}} {{@dynamicNamedArg}}] - {{yield}}</div>',
       Foo
     );
     this.render(
-      `{{#with (component 'Foo') as |Other|}}<Other @staticNamedArg="static" data-test1={{outer}} data-test2="static" @dynamicNamedArg={{outer}} />{{/with}}`,
+      `{{#with (component 'Foo') as |Other|}}<Other @staticNamedArg="static" data-test1={{outer}} data-test2="static" @dynamicNamedArg={{outer}}>template</Other>{{/with}}`,
       { outer: 'outer' }
     );
 
-    this.assertHTML(`<div data-test1="outer" data-test2="static">[local static outer]</div>`);
+    this.assertHTML(
+      `<div data-test1="outer" data-test2="static">[local static outer] - template</div>`
+    );
     this.assertStableRerender();
 
     this.rerender({ outer: 'OUTER' });
-    this.assertHTML(`<div data-test1="OUTER" data-test2="static">[local static OUTER]</div>`);
+    this.assertHTML(
+      `<div data-test1="OUTER" data-test2="static">[local static OUTER] - template</div>`
+    );
 
     instance!.localProperty = 'LOCAL';
     instance!.recompute();
     this.rerender();
-    this.assertHTML(`<div data-test1="OUTER" data-test2="static">[LOCAL static OUTER]</div>`);
+    this.assertHTML(
+      `<div data-test1="OUTER" data-test2="static">[LOCAL static OUTER] - template</div>`
+    );
 
     instance!.localProperty = 'local';
     instance!.recompute();
     this.rerender({ outer: 'outer' });
-    this.assertHTML(`<div data-test1="outer" data-test2="static">[local static outer]</div>`);
+    this.assertHTML(
+      `<div data-test1="outer" data-test2="static">[local static outer] - template</div>`
+    );
+  }
   }
 }
