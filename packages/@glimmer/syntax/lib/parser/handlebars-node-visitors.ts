@@ -113,10 +113,16 @@ export abstract class HandlebarsNodeVisitors extends Parser {
 
     switch (tokenizer.state) {
       // Tag helpers
+      case TokenizerState.tagOpen:
       case TokenizerState.tagName:
-        addElementModifier(this.currentStartTag, mustache);
-        tokenizer.transitionTo(TokenizerState.beforeAttributeName);
-        break;
+        throw new SyntaxError(
+          `Cannot use mustaches in an elements tagname: \`${this.sourceForNode(
+            rawMustache,
+            rawMustache.path
+          )}\` at L${loc.start.line}:C${loc.start.column}`,
+          mustache.loc
+        );
+
       case TokenizerState.beforeAttributeName:
         addElementModifier(this.currentStartTag, mustache);
         break;

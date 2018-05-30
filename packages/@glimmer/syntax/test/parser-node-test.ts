@@ -248,11 +248,6 @@ test('Element modifiers', function() {
   );
 });
 
-test('Tokenizer: MustacheStatement encountered in tagName state', function() {
-  let t = '<input{{bar}}>';
-  astEqual(t, b.program([b.element('input', [], [b.elementModifier(b.path('bar'))])]));
-});
-
 test('Tokenizer: MustacheStatement encountered in beforeAttributeName state', function() {
   let t = '<input {{bar}}>';
   astEqual(t, b.program([b.element('input', [], [b.elementModifier(b.path('bar'))])]));
@@ -480,4 +475,14 @@ test('Handlebars decorator block should error', function(assert) {
   assert.throws(() => {
     parse('{{#* foo}}{{/foo}}');
   }, new Error(`Handlebars decorator blocks are not supported: "{{#* foo" at L1:C0`));
+});
+
+test('disallowed mustaches in the tagName space', function(assert) {
+  assert.throws(() => {
+    parse('<{{"asdf"}}></{{"asdf"}}>');
+  }, /Cannot use mustaches in an elements tagname: `{{"asdf"` at L1:C1/);
+
+  assert.throws(() => {
+    parse('<input{{bar}}>');
+  }, /Cannot use mustaches in an elements tagname: `{{bar` at L1:C6/);
 });
