@@ -883,7 +883,8 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
 
   dynamicComponent(
     definition: WireFormat.Expression,
-    /* TODO: attrs: Option<RawInlineBlock>, */ params: Option<WireFormat.Core.Params>,
+    attrs: Option<CompilableBlock>,
+    params: Option<WireFormat.Core.Params>,
     hash: WireFormat.Core.Hash,
     synthetic: boolean,
     block: Option<CompilableBlock>,
@@ -903,7 +904,7 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
 
         this.pushDynamicComponentInstance();
 
-        this.invokeComponent(true, null, params, hash, synthetic, block, inverse);
+        this.invokeComponent(true, attrs, params, hash, synthetic, block, inverse);
 
         this.label('ELSE');
       },

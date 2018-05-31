@@ -1,6 +1,11 @@
 import { AST } from '@glimmer/syntax';
 import { Option, Opaque } from '@glimmer/interfaces';
 
+/**
+  - 0 - represents `this`
+  - string - represents any other path
+ */
+export type PathHead = string | 0;
 export interface CompilerOps<Variable> {
   startProgram: AST.Program;
   endProgram: null;
@@ -9,9 +14,12 @@ export interface CompilerOps<Variable> {
   text: string;
   comment: string;
   openElement: AST.ElementNode;
+  openComponent: AST.ElementNode;
   openSplattedElement: AST.ElementNode;
   flushElement: AST.ElementNode;
   closeElement: AST.ElementNode;
+  closeComponent: AST.ElementNode;
+  closeDynamicComponent: AST.ElementNode;
   staticArg: string;
   dynamicArg: string;
   attrSplat: Option<Variable>;
@@ -37,8 +45,8 @@ export interface CompilerOps<Variable> {
   concat: null;
 }
 
-export interface TemplateCompilerOps extends CompilerOps<string | 0> {
-  maybeGet: [string | 0, string[]]; // {{path}}, might be helper
+export interface TemplateCompilerOps extends CompilerOps<PathHead> {
+  maybeGet: [PathHead, string[]]; // {{path}}, might be helper
 }
 
 export type OpName = keyof CompilerOps<Opaque>;

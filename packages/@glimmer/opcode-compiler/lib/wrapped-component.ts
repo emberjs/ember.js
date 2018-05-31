@@ -52,6 +52,7 @@ export class WrappedBuilder<Locator> implements CompilableProgram {
     //        PutValue(TagExpr)
     //        Test
     //        JumpUnless(BODY)
+    //        PutComponentOperations
     //        OpenDynamicPrimitiveElement
     //        DidCreateElement
     //        ...attr statements...
