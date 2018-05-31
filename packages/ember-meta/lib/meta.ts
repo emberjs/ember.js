@@ -154,7 +154,7 @@ export class Meta {
     return this[key] || (this[key] = new Set());
   }
 
-  _getInherited(key: string) {
+  _findInherited1(key: string): any | undefined {
     let pointer: Meta | null = this;
     while (pointer !== null) {
       let map = pointer[key];
@@ -165,7 +165,7 @@ export class Meta {
     }
   }
 
-  _findInherited(key: string, subkey: string): any | undefined {
+  _findInherited2(key: string, subkey: string): any | undefined {
     let pointer: Meta | null = this;
     while (pointer !== null) {
       let map = pointer[key];
@@ -173,6 +173,23 @@ export class Meta {
         let value = map[subkey];
         if (value !== undefined) {
           return value;
+        }
+      }
+      pointer = pointer.parent;
+    }
+  }
+
+  _findInherited3(key: string, subkey: string, subsubkey: string): any | undefined {
+    let pointer: Meta | null = this;
+    while (pointer !== null) {
+      let map = pointer[key];
+      if (map !== undefined) {
+        let submap = map[subkey];
+        if (submap !== undefined) {
+          let value = submap[subsubkey];
+          if (value !== undefined) {
+            return value;
+          }
         }
       }
       pointer = pointer.parent;
@@ -212,34 +229,13 @@ export class Meta {
   }
 
   peekDeps(subkey: string, itemkey: string): number {
-    let pointer: Meta | null = this;
-    while (pointer !== null) {
-      let map = pointer._deps;
-      if (map !== undefined) {
-        let value = map[subkey];
-        if (value !== undefined) {
-          let itemvalue = value[itemkey];
-          if (itemvalue !== undefined) {
-            return itemvalue;
-          }
-        }
-      }
-      pointer = pointer.parent;
-    }
-
-    return 0;
+    let val = this._findInherited3('_deps', subkey, itemkey);
+    return val === undefined ? 0 : val;
   }
 
-  hasDeps(subkey: string) {
-    let pointer: Meta | null = this;
-    while (pointer !== null) {
-      let deps = pointer._deps;
-      if (deps !== undefined && deps[subkey] !== undefined) {
-        return true;
-      }
-      pointer = pointer.parent;
-    }
-    return false;
+  hasDeps(subkey: string): boolean {
+    let val = this._findInherited2('_deps', subkey);
+    return val !== undefined;
   }
 
   forEachInDeps(subkey: string, fn: Function) {
@@ -338,7 +334,7 @@ export class Meta {
   }
 
   readableChains() {
-    return this._getInherited('_chains');
+    return this._findInherited1('_chains');
   }
 
   writeWatching(subkey: string, value: any) {
@@ -355,7 +351,7 @@ export class Meta {
   }
 
   peekWatching(subkey: string): number {
-    let count = this._findInherited('_watching', subkey);
+    let count = this._findInherited2('_watching', subkey);
     return count === undefined ? 0 : count;
   }
 
@@ -409,7 +405,7 @@ export class Meta {
   }
 
   peekDescriptors(subkey: string) {
-    let possibleDesc = this._findInherited('_descriptors', subkey);
+    let possibleDesc = this._findInherited2('_descriptors', subkey);
     return possibleDesc === UNDEFINED ? undefined : possibleDesc;
   }
 
@@ -551,7 +547,7 @@ if (BINDING_SUPPORT && ENV._ENABLE_BINDING_SUPPORT) {
   };
 
   Meta.prototype.peekBindings = function(subkey: string) {
-    return this._findInherited('_bindings', subkey);
+    return this._findInherited2('_bindings', subkey);
   };
 
   Meta.prototype.forEachBindings = function(fn: Function) {
@@ -600,7 +596,7 @@ if (DEBUG) {
   };
 
   Meta.prototype.peekValues = function(subkey: string) {
-    return this._findInherited('_values', subkey);
+    return this._findInherited2('_values', subkey);
   };
 
   Meta.prototype.deleteFromValues = function(subkey: string) {
