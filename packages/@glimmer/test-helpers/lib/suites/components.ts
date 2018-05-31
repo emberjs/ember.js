@@ -166,7 +166,7 @@ export class BasicComponents extends RenderTest {
   }
 
   @test({
-    kind: 'basic',
+    kind: 'glimmer',
   })
   'invoking dynamic component (named arg) via angle brackets'() {
     this.registerComponent('Glimmer', 'Foo', 'hello world!');
@@ -182,7 +182,7 @@ export class BasicComponents extends RenderTest {
   }
 
   @test({
-    kind: 'basic',
+    kind: 'glimmer',
   })
   'invoking dynamic component (named arg) via angle brackets supports attributes'() {
     this.registerComponent('Glimmer', 'Foo', '<div ...attributes>hello world!</div>');
@@ -198,7 +198,7 @@ export class BasicComponents extends RenderTest {
   }
 
   @test({
-    kind: 'basic',
+    kind: 'glimmer',
   })
   'invoking dynamic component (named arg) via angle brackets supports args'() {
     this.registerComponent('Glimmer', 'Foo', 'hello {{@name}}!');
@@ -214,7 +214,7 @@ export class BasicComponents extends RenderTest {
   }
 
   @test({
-    kind: 'basic',
+    kind: 'glimmer',
   })
   'invoking dynamic component (named arg) via angle brackets supports passing a block'() {
     this.registerComponent('Glimmer', 'Foo', 'hello {{yield}}!');
@@ -230,7 +230,7 @@ export class BasicComponents extends RenderTest {
   }
 
   @test({
-    kind: 'basic',
+    kind: 'glimmer',
   })
   'invoking dynamic component (named arg) via angle brackets supports args and attributes'() {
     let instance: Foo;
@@ -287,7 +287,7 @@ export class BasicComponents extends RenderTest {
   }
 
   @test({
-    kind: 'basic',
+    kind: 'glimmer',
   })
   'invoking dynamic component (local) via angle brackets'() {
     this.registerComponent('Glimmer', 'Foo', 'hello world!');
@@ -298,7 +298,7 @@ export class BasicComponents extends RenderTest {
   }
 
   @test({
-    kind: 'basic',
+    kind: 'glimmer',
   })
   'invoking dynamic component (local) via angle brackets (ill-advised "htmlish element name" but supported)'() {
     this.registerComponent('Glimmer', 'Foo', 'hello world!');
@@ -309,7 +309,7 @@ export class BasicComponents extends RenderTest {
   }
 
   @test({
-    kind: 'basic',
+    kind: 'glimmer',
   })
   'invoking dynamic component (local) via angle brackets supports attributes'() {
     this.registerComponent('Glimmer', 'Foo', '<div ...attributes>hello world!</div>');
@@ -320,7 +320,7 @@ export class BasicComponents extends RenderTest {
   }
 
   @test({
-    kind: 'basic',
+    kind: 'glimmer',
   })
   'invoking dynamic component (local) via angle brackets supports args'() {
     this.registerComponent('Glimmer', 'Foo', 'hello {{@name}}!');
@@ -331,7 +331,7 @@ export class BasicComponents extends RenderTest {
   }
 
   @test({
-    kind: 'basic',
+    kind: 'glimmer',
   })
   'invoking dynamic component (local) via angle brackets supports passing a block'() {
     this.registerComponent('Glimmer', 'Foo', 'hello {{yield}}!');
@@ -342,7 +342,7 @@ export class BasicComponents extends RenderTest {
   }
 
   @test({
-    kind: 'basic',
+    kind: 'glimmer',
   })
   'invoking dynamic component (local) via angle brackets supports args, attributes, and blocks'() {
     let instance: Foo;
@@ -392,7 +392,7 @@ export class BasicComponents extends RenderTest {
   }
 
   @test({
-    kind: 'basic',
+    kind: 'glimmer',
   })
   'invoking dynamic component (path) via angle brackets'() {
     class TestHarness extends EmberishGlimmerComponent {
@@ -413,7 +413,7 @@ export class BasicComponents extends RenderTest {
   }
 
   @test({
-    kind: 'basic',
+    kind: 'glimmer',
   })
   'invoking dynamic component (path) via angle brackets supports attributes'() {
     class TestHarness extends EmberishGlimmerComponent {
@@ -433,7 +433,7 @@ export class BasicComponents extends RenderTest {
   }
 
   @test({
-    kind: 'basic',
+    kind: 'glimmer',
   })
   'invoking dynamic component (path) via angle brackets supports args'() {
     class TestHarness extends EmberishGlimmerComponent {
@@ -453,7 +453,7 @@ export class BasicComponents extends RenderTest {
   }
 
   @test({
-    kind: 'basic',
+    kind: 'glimmer',
   })
   'invoking dynamic component (path) via angle brackets supports passing a block'() {
     class TestHarness extends EmberishGlimmerComponent {
@@ -473,7 +473,7 @@ export class BasicComponents extends RenderTest {
   }
 
   @test({
-    kind: 'basic',
+    kind: 'glimmer',
   })
   'invoking dynamic component (path) via angle brackets supports args, attributes, and blocks'() {
     let instance: Foo;
