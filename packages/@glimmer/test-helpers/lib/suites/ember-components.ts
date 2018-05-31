@@ -1,7 +1,7 @@
-import { RenderTest, test, assertElement } from '../render-test';
+import { RenderTest, test, assertElement, assertEmberishElement } from '../render-test';
 import { classes } from '../environment';
-import { EmberishGlimmerComponent } from '../environment/components/emberish-glimmer';
-import { strip } from '../helpers';
+import { strip, equalTokens } from '../helpers';
+import { EmberishGlimmerComponent, EmberishCurlyComponent } from '../../index';
 
 export class EmberishComponentTests extends RenderTest {
   @test({ kind: 'glimmer' })
@@ -237,6 +237,63 @@ export class EmberishComponentTests extends RenderTest {
     );
 
     this.assertComponent('Here!', { id: '"aria-test"', role: '"main"' });
+    this.assertStableRerender();
+  }
+
+  @test({ kind: 'curly' })
+  'invoking wrapped layout via angle brackets applies ...attributes'() {
+    this.registerComponent('Curly', 'FooBar', 'Hello world!');
+
+    this.render(`<FooBar data-foo="bar" />`);
+
+    this.assertComponent('Hello world!', { 'data-foo': 'bar' });
+    this.assertStableRerender();
+  }
+
+  @test({ kind: 'curly' })
+  'invoking wrapped layout via angle brackets - invocation attributes clobber internal attributes'() {
+    class FooBar extends EmberishCurlyComponent {
+      constructor() {
+        super(...arguments);
+        this.attributeBindings = ['data-foo'];
+        this['data-foo'] = 'inner';
+      }
+    }
+    this.registerComponent('Curly', 'FooBar', 'Hello world!', FooBar);
+
+    this.render(`<FooBar data-foo="outer" />`);
+
+    this.assertComponent('Hello world!', { 'data-foo': 'outer' });
+    this.assertStableRerender();
+  }
+
+  @test({ kind: 'curly' })
+  'invoking wrapped layout via angle brackets - invocation attributes merges classes'() {
+    class FooBar extends EmberishCurlyComponent {
+      constructor() {
+        super(...arguments);
+        this.attributeBindings = ['class'];
+        this['class'] = 'inner';
+      }
+    }
+    this.registerComponent('Curly', 'FooBar', 'Hello world!', FooBar);
+
+    this.render(`<FooBar class="outer" />`);
+
+    this.assertComponent('Hello world!', { class: classes('ember-view inner outer') });
+    this.assertStableRerender();
+  }
+
+  @test({ kind: 'curly' })
+  'invoking wrapped layout via angle brackets also applies explicit ...attributes'() {
+    this.registerComponent('Curly', 'FooBar', '<h1 ...attributes>Hello world!</h1>');
+
+    this.render(`<FooBar data-foo="bar" />`);
+
+    let wrapperElement = this.element.firstChild as HTMLElement;
+    assertEmberishElement(wrapperElement, 'div', { 'data-foo': 'bar' });
+    equalTokens(wrapperElement.innerHTML, '<h1 data-foo="bar">Hello world!</h1>');
+
     this.assertStableRerender();
   }
 }

@@ -997,7 +997,7 @@ export const enum Op {
   GetComponentSelf,
 
   /**
-   * Operation: Push the component's `self` onto the stack.
+   * Operation: Push the component's `tagName` onto the stack.
    *
    * Format:
    *   (GetComponentTagName state:register)
