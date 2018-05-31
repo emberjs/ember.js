@@ -17,6 +17,7 @@ ControllerMixin.reopen({
     By default, Ember coerces query parameter values using `toggleProperty`.
     This behavior may lead to unexpected results.
     Available queryParam types: `boolean`, `number`, `array`
+    If query param type not specified, it will be `string`.
     To explicitly configure a query parameter property so it coerces as expected, you must define a type property:
     ```javascript
       queryParams: [{
