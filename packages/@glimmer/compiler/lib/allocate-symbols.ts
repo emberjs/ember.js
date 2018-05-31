@@ -1,10 +1,10 @@
-import { CompilerOps, Processor, Op, OpName, TemplateCompilerOps } from './compiler-ops';
+import { CompilerOps, Processor, Op, OpName, TemplateCompilerOps, PathHead } from './compiler-ops';
 import { AST } from '@glimmer/syntax';
 import { Option, Opaque } from '@glimmer/interfaces';
 import { Stack, expect } from '@glimmer/util';
 import { SymbolTable } from './template-visitor';
 
-export type InVariable = 0 | string;
+export type InVariable = PathHead;
 export type OutVariable = number;
 
 export type OutOp<K extends keyof CompilerOps<OutVariable> = OpName> = Op<
@@ -13,7 +13,7 @@ export type OutOp<K extends keyof CompilerOps<OutVariable> = OpName> = Op<
   K
 >;
 export type InOp<K extends keyof TemplateCompilerOps = keyof TemplateCompilerOps> = Op<
-  0 | string,
+  PathHead,
   TemplateCompilerOps,
   K
 >;
@@ -74,6 +74,14 @@ export class SymbolAllocator
   }
 
   closeElement(_op: AST.ElementNode) {
+    this.symbolStack.pop();
+  }
+
+  closeComponent(_op: AST.ElementNode) {
+    this.symbolStack.pop();
+  }
+
+  closeDynamicComponent(_op: AST.ElementNode) {
     this.symbolStack.pop();
   }
 
@@ -153,6 +161,7 @@ export class SymbolAllocator
 
   text(_op: string) {}
   comment(_op: string) {}
+  openComponent(_op: AST.ElementNode) {}
   openElement(_op: AST.ElementNode) {}
   openSplattedElement(_op: AST.ElementNode) {}
   staticArg(_op: string) {}

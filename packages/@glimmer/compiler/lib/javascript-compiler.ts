@@ -16,6 +16,7 @@ import {
   isFlushElement,
   isArgument,
   isAttribute,
+  isAttrSplat,
 } from '@glimmer/wire-format';
 import { Processor, CompilerOps, OpName, Op } from './compiler-ops';
 
@@ -91,6 +92,8 @@ export class ComponentBlock extends Block {
       } else if (isArgument(statement)) {
         this.arguments.push(statement);
       } else if (isAttribute(statement)) {
+        this.attributes.push(statement);
+      } else if (isAttrSplat(statement)) {
         this.attributes.push(statement);
       } else {
         throw new Error('Compile Error: only parameters allowed before flush-element');
@@ -226,12 +229,15 @@ export default class JavaScriptCompiler
     this.push([Ops.Block, name, params, hash, blocks[template], blocks[inverse!]]);
   }
 
+  openComponent(element: AST.ElementNode) {
+    let component = new ComponentBlock(element['symbols'], element.selfClosing);
+    this.blocks.push(component);
+  }
+
   openSplattedElement(element: AST.ElementNode) {
     let tag = element.tag;
 
-    if (isComponent(tag)) {
-      throw new Error(`Compile Error: ...attributes can only be used in an element`);
-    } else if (element.blockParams.length > 0) {
+    if (element.blockParams.length > 0) {
       throw new Error(
         `Compile Error: <${element.tag}> is not a component and doesn't support block parameters`
       );
@@ -243,9 +249,7 @@ export default class JavaScriptCompiler
   openElement(element: AST.ElementNode) {
     let tag = element.tag;
 
-    if (isComponent(tag)) {
-      this.startComponent(element);
-    } else if (element.blockParams.length > 0) {
+    if (element.blockParams.length > 0) {
       throw new Error(
         `Compile Error: <${element.tag}> is not a component and doesn't support block parameters`
       );
@@ -258,15 +262,20 @@ export default class JavaScriptCompiler
     this.push([Ops.FlushElement]);
   }
 
-  closeElement(element: AST.ElementNode) {
-    let tag = element.tag;
+  closeComponent(element: AST.ElementNode) {
+    let [attrs, args, block] = this.endComponent();
 
-    if (isComponent(tag)) {
-      let [attrs, args, block] = this.endComponent();
-      this.push([Ops.Component, tag, attrs, args, block]);
-    } else {
-      this.push([Ops.CloseElement]);
-    }
+    this.push([Ops.Component, element.tag, attrs, args, block]);
+  }
+
+  closeDynamicComponent(_element: AST.ElementNode) {
+    let [attrs, args, block] = this.endComponent();
+
+    this.push([Ops.DynamicComponent, this.popValue<Expression>(), attrs, args, block]);
+  }
+
+  closeElement(_element: AST.ElementNode) {
+    this.push([Ops.CloseElement]);
   }
 
   staticAttr([name, namespace]: [string, Option<string>]) {
@@ -357,20 +366,6 @@ export default class JavaScriptCompiler
 
   /// Stack Management Opcodes
 
-  startComponent(element: AST.ElementNode) {
-    let component = new ComponentBlock(element['symbols'], element.selfClosing);
-    this.blocks.push(component);
-  }
-
-  endComponent(): [Statements.Attribute[], Core.Hash, Option<SerializedInlineBlock>] {
-    let component = this.blocks.pop();
-    assert(
-      component instanceof ComponentBlock,
-      'Compiler bug: endComponent() should end a component'
-    );
-    return (component as ComponentBlock).toJSON();
-  }
-
   prepareArray(size: number) {
     let values: Expression[] = [];
 
@@ -400,6 +395,16 @@ export default class JavaScriptCompiler
 
   /// Utilities
 
+  endComponent(): [Statements.Attribute[], Core.Hash, Option<SerializedInlineBlock>] {
+    let component = this.blocks.pop();
+    assert(
+      component instanceof ComponentBlock,
+      'Compiler bug: endComponent() should end a component'
+    );
+
+    return (component as ComponentBlock).toJSON();
+  }
+
   push(args: Statement) {
     while (args[args.length - 1] === null) {
       args.pop();
@@ -416,10 +421,4 @@ export default class JavaScriptCompiler
     assert(this.values.length, 'No expression found on stack');
     return this.values.pop() as T;
   }
-}
-
-function isComponent(tag: string): boolean {
-  let open = tag.charAt(0);
-
-  return open === open.toUpperCase();
 }

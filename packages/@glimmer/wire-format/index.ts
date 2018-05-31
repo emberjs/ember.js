@@ -45,7 +45,6 @@ export namespace Expressions {
   export type MaybeLocal = [Opcodes.MaybeLocal, Path];
 
   export type Value = str | number | boolean | null;
-
   export type HasBlock = [Opcodes.HasBlock, YieldTo];
   export type HasBlockParams = [Opcodes.HasBlockParams, YieldTo];
   export type Undefined = [Opcodes.Undefined];
@@ -106,6 +105,13 @@ export namespace Statements {
     Hash,
     Option<SerializedInlineBlock>
   ];
+  export type DynamicComponent = [
+    Opcodes.DynamicComponent,
+    Expression,
+    Attribute[],
+    Hash,
+    Option<SerializedInlineBlock>
+  ];
   export type OpenElement = [Opcodes.OpenElement, str];
   export type SplatElement = [Opcodes.OpenSplattedElement, str];
   export type FlushElement = [Opcodes.FlushElement];
@@ -130,6 +136,7 @@ export namespace Statements {
     | Modifier
     | Block
     | Component
+    | DynamicComponent
     | OpenElement
     | SplatElement
     | FlushElement
@@ -214,6 +221,7 @@ export type TemplateJavascript = string;
 // Statements
 export const isModifier = is<Statements.Modifier>(Opcodes.Modifier);
 export const isFlushElement = is<Statements.FlushElement>(Opcodes.FlushElement);
+export const isAttrSplat = is<Statements.AttrSplat>(Opcodes.AttrSplat);
 
 export function isAttribute(val: Statement): val is Statements.Attribute {
   return (

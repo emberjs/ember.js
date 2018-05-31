@@ -104,6 +104,21 @@ export function statementCompiler(): Compilers<WireFormat.Statement> {
     builder.openPrimitiveElement(sexp[1]);
   });
 
+  STATEMENTS.add(Ops.DynamicComponent, (sexp: S.DynamicComponent, builder) => {
+    let [, definition, attrs, args, template] = sexp;
+
+    let block = builder.template(template);
+    let attrsBlock =
+      attrs.length > 0
+        ? builder.inlineBlock({
+            statements: attrs,
+            parameters: EMPTY_ARRAY,
+          })
+        : null;
+
+    builder.dynamicComponent(definition, attrsBlock, null, args, false, block, null);
+  });
+
   STATEMENTS.add(Ops.Component, (sexp: S.Component, builder) => {
     let [, tag, _attrs, args, block] = sexp;
     let { referrer } = builder;
@@ -727,7 +742,7 @@ export function populateBuiltins(
     }
 
     let [definition, ...params] = _params!;
-    builder.dynamicComponent(definition, params, hash, true, template, inverse);
+    builder.dynamicComponent(definition, null, params, hash, true, template, inverse);
   });
 
   inlines.add('component', (_name, _params, hash, builder) => {
@@ -743,7 +758,7 @@ export function populateBuiltins(
     }
 
     let [definition, ...params] = _params!;
-    builder.dynamicComponent(definition, params, hash, true, null, null);
+    builder.dynamicComponent(definition, null, params, hash, true, null, null);
 
     return true;
   });
