@@ -22,6 +22,7 @@ import { EMPTY_ARRAY } from '@glimmer/util';
 export class WrappedBuilder<Locator> implements CompilableProgram {
   public symbolTable: ProgramSymbolTable;
   private compiled: Option<number> = null;
+  private attrsBlockNumber: number;
 
   constructor(
     private compiler: Compiler<OpcodeBuilder<Locator>>,
@@ -29,9 +30,19 @@ export class WrappedBuilder<Locator> implements CompilableProgram {
   ) {
     let { block } = layout;
 
+    let symbols = block.symbols.slice();
+
+    // ensure ATTRS_BLOCK is always included (only once) in the list of symbols
+    let attrsBlockIndex = symbols.indexOf(ATTRS_BLOCK);
+    if (attrsBlockIndex === -1) {
+      this.attrsBlockNumber = symbols.push(ATTRS_BLOCK);
+    } else {
+      this.attrsBlockNumber = attrsBlockIndex + 1;
+    }
+
     this.symbolTable = {
       hasEval: block.hasEval,
-      symbols: block.symbols.concat([ATTRS_BLOCK]),
+      symbols,
     };
   }
 
@@ -81,9 +92,12 @@ export class WrappedBuilder<Locator> implements CompilableProgram {
     b.jumpUnless('BODY');
 
     b.fetch(Register.s1);
+    b.setComponentAttrs(true);
     b.putComponentOperations();
     b.openDynamicElement();
     b.didCreateElement(Register.s0);
+    b.yield(this.attrsBlockNumber, []);
+    b.setComponentAttrs(false);
     b.flushElement();
 
     b.label('BODY');
