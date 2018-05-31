@@ -5,6 +5,7 @@ import { AST, isLiteral, SyntaxError } from '@glimmer/syntax';
 import { getAttrNamespace } from './utils';
 import { Opaque } from '@glimmer/interfaces';
 import { SymbolAllocator, InOp as SymbolInOp, OutOp as SymbolOutOp } from './allocate-symbols';
+import { PathHead } from './compiler-ops';
 
 export interface CompileOptions {
   meta: Opaque;
@@ -82,7 +83,7 @@ export default class TemplateCompiler {
     }
 
     if (isDynamicComponent(action)) {
-      let head: string | 0, rest: string[];
+      let head: PathHead, rest: string[];
       [head, ...rest] = action.tag.split('.');
       if (head === 'this') {
         head = 0;
