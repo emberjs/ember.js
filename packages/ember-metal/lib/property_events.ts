@@ -164,11 +164,7 @@ function iterDeps(
   }
 
   let possibleDesc;
-  meta.forEachInDeps(depKey, (key: string, value: any) => {
-    if (!value) {
-      return;
-    }
-
+  meta.forEachInDeps(depKey, (key: string) => {
     possibleDesc = descriptorFor(obj, key, meta);
 
     if (possibleDesc !== undefined && possibleDesc._suspended === obj) {

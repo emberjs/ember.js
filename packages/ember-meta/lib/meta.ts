@@ -183,10 +183,8 @@ export class Meta {
     let pointer: Meta | null = this;
     while (pointer !== null) {
       let set = pointer[key];
-      if (set !== undefined) {
-        if (set.has(value)) {
-          return true;
-        }
+      if (set !== undefined && set.has(value)) {
+        return true;
       }
       pointer = pointer.parent;
     }
@@ -245,15 +243,11 @@ export class Meta {
   }
 
   forEachInDeps(subkey: string, fn: Function) {
-    return this._forEachIn('_deps', subkey, fn);
-  }
-
-  _forEachIn(key: string, subkey: string, fn: Function) {
     let pointer: Meta | null = this;
     let seen: Set<any> | undefined;
     let calls: any[] | undefined;
     while (pointer !== null) {
-      let map = pointer[key];
+      let map = pointer._deps;
       if (map !== undefined) {
         let innerMap = map[subkey];
         if (innerMap !== undefined) {
@@ -261,8 +255,10 @@ export class Meta {
             seen = seen === undefined ? new Set() : seen;
             if (!seen.has(innerKey)) {
               seen.add(innerKey);
-              calls = calls || [];
-              calls.push(innerKey, innerMap[innerKey]);
+              if (innerMap[innerKey] > 0) {
+                calls = calls || [];
+                calls.push(innerKey);
+              }
             }
           }
         }
@@ -271,8 +267,8 @@ export class Meta {
     }
 
     if (calls !== undefined) {
-      for (let i = 0; i < calls.length; i += 2) {
-        fn(calls[i], calls[i + 1]);
+      for (let i = 0; i < calls.length; i++) {
+        fn(calls[i]);
       }
     }
   }
