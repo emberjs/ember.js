@@ -169,7 +169,6 @@ export function defineProperty(
 
   if (wasDescriptor) {
     previousDesc.teardown(obj, keyName, meta);
-
     meta.removeDescriptors(keyName);
   }
 

@@ -197,7 +197,7 @@ function makeCtor(base) {
               self.setUnknownProperty(keyName, value);
             } else {
               if (DEBUG) {
-                defineProperty(self, keyName, null, value); // setup mandatory setter
+                defineProperty(self, keyName, null, value, m); // setup mandatory setter
               } else {
                 self[keyName] = value;
               }
