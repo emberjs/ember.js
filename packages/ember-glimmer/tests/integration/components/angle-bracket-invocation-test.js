@@ -465,20 +465,20 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
       '@test positional parameters are not allowed'() {
         this.registerComponent('sample-component', {
           ComponentClass: Component.extend().reopenClass({
-            positionalParams: ['name', 'age'],
+            positionalParams: ['first', 'second'],
           }),
-          template: '{{name}}{{age}}',
+          template: '{{first}}{{second}}',
         });
 
         // this is somewhat silly as the browser "corrects" for these as
         // attribute names, but regardless the thing we care about here is that
         // they are **not** used as positional params
-        this.render('<SampleComponent Quint 4 />');
+        this.render('<SampleComponent one two />');
 
         this.assertText('');
       }
 
-      '@skip can invoke curried components with capitalized block param names'() {
+      '@test can invoke curried components with capitalized block param names'() {
         this.registerComponent('foo-bar', { template: 'hello' });
 
         this.render(strip`
@@ -492,6 +492,34 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
         this.runTask(() => this.rerender());
 
         this.assertComponentElement(this.firstChild, { content: 'hello' });
+
+        this.assertStableRerender();
+      }
+
+      '@test can invoke curried components with named args'() {
+        this.registerComponent('foo-bar', { template: 'hello' });
+        this.registerComponent('test-harness', { template: '<@foo />' });
+        this.render(strip`{{test-harness foo=(component 'foo-bar')}}`);
+
+        this.assertComponentElement(this.firstChild.firstChild, { content: 'hello' });
+
+        this.runTask(() => this.rerender());
+
+        this.assertComponentElement(this.firstChild.firstChild, { content: 'hello' });
+
+        this.assertStableRerender();
+      }
+
+      '@test can invoke curried components with a path'() {
+        this.registerComponent('foo-bar', { template: 'hello' });
+        this.registerComponent('test-harness', { template: '<this.foo />' });
+        this.render(strip`{{test-harness foo=(component 'foo-bar')}}`);
+
+        this.assertComponentElement(this.firstChild.firstChild, { content: 'hello' });
+
+        this.runTask(() => this.rerender());
+
+        this.assertComponentElement(this.firstChild.firstChild, { content: 'hello' });
 
         this.assertStableRerender();
       }
@@ -516,7 +544,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
         this.assertStableRerender();
       }
 
-      '@skip includes invocation specified attributes in root element ("splattributes")'() {
+      '@test includes invocation specified attributes in root element ("splattributes")'() {
         this.registerComponent('foo-bar', {
           ComponentClass: Component.extend(),
           template: 'hello',

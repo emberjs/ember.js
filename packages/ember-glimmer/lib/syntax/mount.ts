@@ -88,7 +88,7 @@ export function mountMacro(
   }
 
   let expr: WireFormat.Expressions.Helper = [WireFormat.Ops.Helper, '-mount', params || [], hash];
-  builder.dynamicComponent(expr, [], null, false, null, null);
+  builder.dynamicComponent(expr, null, [], null, false, null, null);
   return true;
 }
 
