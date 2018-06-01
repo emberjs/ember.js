@@ -1,6 +1,6 @@
 import Map from '..';
 import MapWithDefault from '../with-default';
-import OrderedSet from '../lib/ordered-set';
+import OrderedSet, { __OrderedSet__ } from '../lib/ordered-set';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 let object, number, string, map, variety;
@@ -563,6 +563,16 @@ moduleFor(
       let obj = {};
       assert.equal(map.add(obj), map);
       assert.equal(map.add(obj), map, 'when it is already in the set');
+    }
+  }
+);
+
+moduleFor(
+  '__OrderedSet__',
+  class extends AbstractTestCase {
+    ['@test private __OrderedSet__ can be created without deprecation']() {
+      expectNoDeprecation();
+      __OrderedSet__.create();
     }
   }
 );
