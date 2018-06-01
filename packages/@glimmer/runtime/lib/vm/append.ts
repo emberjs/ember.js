@@ -206,7 +206,12 @@ export default class VM<T> implements PublicVM {
     return vm;
   }
 
-  static empty<T>(program: RuntimeProgram<T>, env: Environment, elementStack: ElementBuilder) {
+  static empty<T>(
+    program: RuntimeProgram<T>,
+    env: Environment,
+    elementStack: ElementBuilder,
+    handle: number
+  ) {
     let dynamicScope: DynamicScope = {
       get() {
         return UNDEFINED_REFERENCE;
@@ -226,6 +231,7 @@ export default class VM<T> implements PublicVM {
       elementStack
     );
     vm.updatingOpcodeStack.push(new LinkedList<UpdatingOpcode>());
+    vm.pc = vm.heap.getaddr(handle);
     return vm;
   }
 
