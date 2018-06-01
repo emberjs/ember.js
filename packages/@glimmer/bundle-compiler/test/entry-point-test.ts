@@ -9,6 +9,7 @@ import {
   MINIMAL_CAPABILITIES,
   UNDEFINED_REFERENCE,
   PrimitiveReference,
+  renderComponent,
 } from '@glimmer/runtime';
 import { CONSTANT_TAG, VersionedPathReference, Tag } from '@glimmer/reference';
 import { Destroyable } from '@glimmer/util';
@@ -128,9 +129,11 @@ export class EntryPointTest {
 
     env.begin();
 
-    let vm = LowLevelVM.empty(program, env, builder);
-
     let title = table.vmHandleByModuleLocator.get(titleLocator);
+
+    let iterator = renderComponent(program, env, builder, title!, {
+      title: PrimitiveReference.create('hello renderComponent')
+    });
 
     vm.pushFrame();
 
