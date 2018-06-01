@@ -12,16 +12,17 @@ import { copyNull } from './utils';
   @constructor
   @private
 */
-export default class OrderedSet {
-  constructor() {
-    deprecate('Use of @ember/OrderedSet is deprecated. Please use native `Map` instead', false, {
-      id: 'ember-map-deprecation',
-      until: '3.5.0',
-    });
 
+/**
+ * This is exported so it can be used by the OrderedSet library.
+ * This is private do not use it.
+ @private
+ */
+
+export class __OrderedSet__ {
+  constructor() {
     this.clear();
   }
-
   /**
     @method create
     @static
@@ -164,5 +165,15 @@ export default class OrderedSet {
     set.size = this.size;
 
     return set;
+  }
+}
+
+export default class OrderedSet extends __OrderedSet__ {
+  constructor() {
+    super();
+    deprecate('Use of @ember/OrderedSet is deprecated. Please use native `Map` instead', false, {
+      id: 'ember-map-deprecation',
+      until: '3.5.0',
+    });
   }
 }

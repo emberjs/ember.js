@@ -123,7 +123,7 @@ import Engine from '@ember/engine';
 import EngineInstance from '@ember/engine/instance';
 import Map from '@ember/map';
 import MapWithDefault from '@ember/map/with-default';
-import OrderedSet from '@ember/map/lib/ordered-set';
+import OrderedSet, { __OrderedSet__ } from '@ember/map/lib/ordered-set';
 import { assign, merge } from '@ember/polyfills';
 import {
   PROPERTY_WILL_CHANGE,
@@ -183,6 +183,7 @@ Ember.EngineInstance = EngineInstance;
 
 // ****@ember/map****
 Ember.OrderedSet = OrderedSet;
+Ember.__OrderedSet__ = __OrderedSet__;
 Ember.Map = Map;
 Ember.MapWithDefault = MapWithDefault;
 
