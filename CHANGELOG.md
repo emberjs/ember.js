@@ -1,14 +1,11 @@
 # Ember Changelog
 
-### v3.2.0-beta.5 (May 14, 2018)
-- [#16613](https://github.com/emberjs/ember.js/pull/16613) [BUGFIX] Prevent errors in ember-engines + 3.1 + proxies.
+### v3.2.0 (May 31, 2018)
 
-### v3.2.0-beta.4 (May 7, 2018)
+- [#16613](https://github.com/emberjs/ember.js/pull/16613) [BUGFIX] Prevent errors in ember-engines + 3.1 + proxies.
 - [#16597](https://github.com/emberjs/ember.js/pull/16597) [BUGFIX] Ensure `Ember.run.cancelTimers` is present.
 - [#16605](https://github.com/emberjs/ember.js/pull/16605) [BUGFIX] Use resetCache on container destroy
 - [#16615](https://github.com/emberjs/ember.js/pull/16615) [BUGFIX] Fix NAMESPACES_BY_ID leaks
-
-### v3.2.0-beta.3 (April 23, 2018)
 - [#16539](https://github.com/emberjs/ember.js/pull/16539) [BUGFIX] Ember is already registered by the libraries registry already.
 - [#16559](https://github.com/emberjs/ember.js/pull/16559) [BUGFIX] Fix property normalization, Update glimmer-vm to 0.34.0
 - [#16563](https://github.com/emberjs/ember.js/pull/16563) [BUGFIX] Ensure `ariaRole` can be initially false.
@@ -18,9 +15,6 @@
 - [#16560](https://github.com/emberjs/ember.js/pull/16560) [BUGFIX] avoid strict assertion when object proxy calls thru for function
 - [#16564](https://github.com/emberjs/ember.js/pull/16564) [BUGFIX] Ensure Ember.isArray does not trigger proxy assertion.
 - [#16572](https://github.com/emberjs/ember.js/pull/16572) [BUGFIX] Fix curly component class reference setup
-
-### v3.2.0-beta.2 (April 16, 2018)
-
 - [#16493](https://github.com/emberjs/ember.js/pull/16493) [BUGFIX] Ensure proxies have access to `getOwner(this)`.
 - [#16494](https://github.com/emberjs/ember.js/pull/16494) [BUGFIX] Adjust assertion to allow for either undefined or null
 - [#16499](https://github.com/emberjs/ember.js/pull/16499) [BUGFIX] Object to string serialization
@@ -28,9 +22,6 @@
 - [#16520](https://github.com/emberjs/ember.js/pull/16520) [BUGFIX] Adds options checking ability to debug/deprecation test helpers
 - [#16526](https://github.com/emberjs/ember.js/pull/16526) [BUGFIX] Ensure setting a `NAME_KEY` does not error.
 - [#16527](https://github.com/emberjs/ember.js/pull/16527) [BUGFIX] Update glimmer-vm to 0.33.5.
-
-### v3.2.0-beta.1 (April 10, 2018)
-
 - [#16250](https://github.com/emberjs/ember.js/pull/16250) [DEPRECATION] Deprecation of `Ember.Logger`
 - [#16436](https://github.com/emberjs/ember.js/pull/16436) [BUGFIX] Refactor `CoreObject` to leverage native JS semantics.
 - [#16382](https://github.com/emberjs/ember.js/pull/16382) Upgrade `backburner.js` to 2.2.2.
