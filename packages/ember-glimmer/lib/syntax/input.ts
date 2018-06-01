@@ -176,7 +176,7 @@ export function inputMacro(
         // there is an AST plugin that converts this to an expression
         // it really should just compile in the component call too.
         let inputTypeExpr = params[0] as WireFormat.Expression;
-        builder.dynamicComponent(inputTypeExpr, params.slice(1), hash, true, null, null);
+        builder.dynamicComponent(inputTypeExpr, null, params.slice(1), hash, true, null, null);
         return true;
       }
       if (typeArg === 'checkbox') {

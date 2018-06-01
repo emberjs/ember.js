@@ -184,7 +184,7 @@ if (RENDER_HELPER) {
         params || [],
         hash,
       ];
-      builder.dynamicComponent(expr, null, null, false, null, null);
+      builder.dynamicComponent(expr, null, null, null, false, null, null);
       return true;
     }
     return false;
