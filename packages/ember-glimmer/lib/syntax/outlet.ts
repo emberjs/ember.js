@@ -31,8 +31,6 @@ import { OutletReference, OutletState } from '../utils/outlet';
   {{my-footer}}
   ```
 
-  See [templates guide](https://guides.emberjs.com/release/templates/the-application-template/) for
-  additional information on using `{{outlet}}` in `application.hbs`.
   You may also specify a name for the `{{outlet}}`, which is useful when using more than one
   `{{outlet}}` in a template:
 
