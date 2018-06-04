@@ -1231,6 +1231,51 @@ moduleFor(
       });
     }
 
+    ['@test The fullfiled model is still available when aborting the transition in `afterModel`'](
+      assert
+    ) {
+      assert.expect(2);
+
+      this.router.map(function () {
+        this.route('users');
+        this.route('index');
+      });
+
+      this.add(
+        'route:users',
+        Route.extend({
+          model() {
+            return { id: 1 };
+          },
+
+          afterModel(model, transition) {
+            this._super(...arguments);
+
+            assert.ok(model.id === 1, '`model` is available before aborting the transition');
+            transition.abort();
+            this.intermediateTransitionTo('index');
+          },
+        })
+      );
+
+      this.add(
+        'route:index',
+        Route.extend({
+          setupController() {
+            this._super(...arguments);
+
+            let usersModel = this.modelFor('users');
+            assert.ok(
+              usersModel && usersModel.id === 1,
+              '`model` is available after aborting the transition'
+            );
+          },
+        })
+      );
+
+      return this.visit('/users');
+    }
+
     async ['@test `didTransition` event fires on the router'](assert) {
       assert.expect(3);
 
