@@ -41,6 +41,7 @@ export class Modules {
 
   resolve(name: string, referrer: Locator, defaultRoot?: string): Option<string> {
     let local =
+      referrer &&
       referrer.locator.module &&
       referrer.locator.module.replace(/^((.*)\/)?([^\/]*)$/, `$1${name}`);
     if (local && this.registry[local]) {
