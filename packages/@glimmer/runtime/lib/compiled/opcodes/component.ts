@@ -495,9 +495,9 @@ APPEND_OPCODES.add(Op.GetComponentLayout, (vm, { op1: _state }) => {
 
   let invoke: { handle: number; symbolTable: ProgramSymbolTable };
 
-  if (hasStaticLayout(capabilities, manager)) {
+  if (hasStaticLayoutCapability(capabilities, manager)) {
     invoke = manager.getLayout(definitionState, resolver);
-  } else if (hasDynamicLayout(capabilities, manager)) {
+  } else if (hasDynamicLayoutCapability(capabilities, manager)) {
     invoke = manager.getDynamicLayout(instanceState, resolver);
   } else {
     throw unreachable();
@@ -507,7 +507,7 @@ APPEND_OPCODES.add(Op.GetComponentLayout, (vm, { op1: _state }) => {
   stack.push(invoke.handle);
 });
 
-function hasStaticLayout(
+export function hasStaticLayoutCapability(
   capabilities: CapabilityFlags,
   _manager: InternalComponentManager
 ): _manager is WithStaticLayout<
@@ -519,7 +519,7 @@ function hasStaticLayout(
   return hasCapability(capabilities, Capability.DynamicLayout) === false;
 }
 
-function hasDynamicLayout(
+export function hasDynamicLayoutCapability(
   capabilities: CapabilityFlags,
   _manager: InternalComponentManager
 ): _manager is WithDynamicLayout<ComponentInstanceState, Opaque, RuntimeResolver<Opaque>> {
