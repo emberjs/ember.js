@@ -536,6 +536,23 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
         this.assertStableRerender();
       }
 
+      '@test can not invoke curried components with an implicit `this` path'(assert) {
+        assert.expect(0);
+        this.registerComponent('foo-bar', {
+          template: 'hello',
+          ComponentClass: Component.extend({
+            init() {
+              this._super(...arguments);
+              assert.ok(false, 'should not have instantiated');
+            },
+          }),
+        });
+        this.registerComponent('test-harness', {
+          template: '<foo.bar />',
+        });
+        this.render(strip`{{test-harness foo=(hash bar=(component 'foo-bar'))}}`);
+      }
+
       '@test has-block'() {
         this.registerComponent('check-block', {
           template: strip`
