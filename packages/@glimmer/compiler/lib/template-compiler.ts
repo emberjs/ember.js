@@ -9,6 +9,7 @@ import { PathHead } from './compiler-ops';
 
 export interface CompileOptions {
   meta: Opaque;
+  customizeComponentName?(tag: string): string;
 }
 
 function isTrustedValue(value: any) {
@@ -18,7 +19,7 @@ function isTrustedValue(value: any) {
 export const THIS = 0;
 
 export default class TemplateCompiler {
-  static compile(ast: AST.Program): Template {
+  static compile(ast: AST.Program, options?: CompileOptions): Template {
     let templateVisitor = new TemplateVisitor();
     templateVisitor.visit(ast);
 
@@ -26,7 +27,7 @@ export default class TemplateCompiler {
     let opcodes: SymbolInOp[] = compiler.process(templateVisitor.actions);
     let symbols: SymbolOutOp[] = new SymbolAllocator(opcodes).process();
 
-    return JavaScriptCompiler.process(symbols, ast['symbols']);
+    return JavaScriptCompiler.process(symbols, ast['symbols'], options);
   }
 
   private templateId = 0;

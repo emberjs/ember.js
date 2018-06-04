@@ -2,7 +2,7 @@ import { assert } from '@glimmer/util';
 import { Stack, DictSet, Option, expect } from '@glimmer/util';
 import { AST } from '@glimmer/syntax';
 import { BlockSymbolTable, ProgramSymbolTable } from './template-visitor';
-
+import { CompileOptions } from './template-compiler';
 import {
   SerializedInlineBlock,
   SerializedTemplateBlock,
@@ -79,7 +79,7 @@ export class ComponentBlock extends Block {
   private inParams = true;
   public positionals: number[] = [];
 
-  constructor(private table: BlockSymbolTable, private selfClosing: boolean) {
+  constructor(private tag: string, private table: BlockSymbolTable, private selfClosing: boolean) {
     super();
   }
 
@@ -103,7 +103,7 @@ export class ComponentBlock extends Block {
     }
   }
 
-  toJSON(): [Statements.Attribute[], Core.Hash, Option<SerializedInlineBlock>] {
+  toJSON(): [string, Statements.Attribute[], Core.Hash, Option<SerializedInlineBlock>] {
     let args = this.arguments;
     let keys = args.map(arg => arg[1]);
     let values = args.map(arg => arg[2]);
@@ -114,7 +114,7 @@ export class ComponentBlock extends Block {
           parameters: this.table.slots,
         };
 
-    return [this.attributes, [keys, values], block];
+    return [this.tag, this.attributes, [keys, values], block];
   }
 }
 
@@ -139,8 +139,8 @@ export type InOp<K extends keyof CompilerOps<InVariable> = OpName> = Op<
 
 export default class JavaScriptCompiler
   implements Processor<CompilerOps<number>, void, CompilerOps<void>> {
-  static process(opcodes: InOp[], symbols: ProgramSymbolTable): Template {
-    let compiler = new JavaScriptCompiler(opcodes, symbols);
+  static process(opcodes: InOp[], symbols: ProgramSymbolTable, options?: CompileOptions): Template {
+    let compiler = new JavaScriptCompiler(opcodes, symbols, options);
     return compiler.process();
   }
 
@@ -148,10 +148,12 @@ export default class JavaScriptCompiler
   private blocks = new Stack<Block>();
   private opcodes: InOp[];
   private values: StackValue[] = [];
+  private options: CompileOptions | undefined;
 
-  constructor(opcodes: InOp[], symbols: ProgramSymbolTable) {
+  constructor(opcodes: InOp[], symbols: ProgramSymbolTable, options?: CompileOptions) {
     this.opcodes = opcodes;
     this.template = new Template(symbols);
+    this.options = options;
   }
 
   get currentBlock(): Block {
@@ -230,7 +232,11 @@ export default class JavaScriptCompiler
   }
 
   openComponent(element: AST.ElementNode) {
-    let component = new ComponentBlock(element['symbols'], element.selfClosing);
+    let tag =
+      this.options && this.options.customizeComponentName
+        ? this.options.customizeComponentName(element.tag)
+        : element.tag;
+    let component = new ComponentBlock(tag, element['symbols'], element.selfClosing);
     this.blocks.push(component);
   }
 
@@ -262,14 +268,14 @@ export default class JavaScriptCompiler
     this.push([Ops.FlushElement]);
   }
 
-  closeComponent(element: AST.ElementNode) {
-    let [attrs, args, block] = this.endComponent();
+  closeComponent(_element: AST.ElementNode) {
+    let [tag, attrs, args, block] = this.endComponent();
 
-    this.push([Ops.Component, element.tag, attrs, args, block]);
+    this.push([Ops.Component, tag, attrs, args, block]);
   }
 
   closeDynamicComponent(_element: AST.ElementNode) {
-    let [attrs, args, block] = this.endComponent();
+    let [, attrs, args, block] = this.endComponent();
 
     this.push([Ops.DynamicComponent, this.popValue<Expression>(), attrs, args, block]);
   }
@@ -395,7 +401,7 @@ export default class JavaScriptCompiler
 
   /// Utilities
 
-  endComponent(): [Statements.Attribute[], Core.Hash, Option<SerializedInlineBlock>] {
+  endComponent(): [string, Statements.Attribute[], Core.Hash, Option<SerializedInlineBlock>] {
     let component = this.blocks.pop();
     assert(
       component instanceof ComponentBlock,

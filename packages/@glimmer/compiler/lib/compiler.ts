@@ -69,7 +69,7 @@ export function precompile(
 ): TemplateJavascript {
   let ast = preprocess(string, options);
   let { meta } = options;
-  let { block } = TemplateCompiler.compile(ast);
+  let { block } = TemplateCompiler.compile(ast, options);
   let idFn = options.id || defaultId;
   let blockJSON = JSON.stringify(block.toJSON());
   let templateJSONObject: SerializedTemplateWithLazyBlock<TemplateMeta> = {
