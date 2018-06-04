@@ -1,6 +1,7 @@
 import { assign } from '@ember/polyfills';
 import { PrecompileOptions } from '@glimmer/compiler';
 import { AST, ASTPlugin, ASTPluginEnvironment, Syntax } from '@glimmer/syntax';
+import { Cache } from 'ember-utils';
 import PLUGINS, { APluginFunc } from '../plugins/index';
 
 type PluginFunc = APluginFunc & {
@@ -18,8 +19,24 @@ export interface CompileOptions {
   plugins?: Plugins | undefined;
 }
 
+/*
+  This diverges from `Ember.String.dasherize` so that`<XFoo />` can resolve to `x-foo`.
+  `Ember.String.dasherize` would resolve it to `xfoo`..
+*/
+const SIMPLE_DASHERIZE_REGEXP = /[A-Z]/g;
+const COMPONENT_NAME_SIMPLE_DASHERIZE_CACHE = new Cache<string, string>(1000, key =>
+  key.replace(
+    SIMPLE_DASHERIZE_REGEXP,
+    (char, index) => (index !== 0 ? '-' : '') + char.toLowerCase()
+  )
+);
+
 export default function compileOptions(_options: Partial<CompileOptions>): PrecompileOptions {
-  let options = assign({ meta: {} }, _options);
+  let options = assign({ meta: {} }, _options, {
+    customizeComponentName(tagname: string): string {
+      return COMPONENT_NAME_SIMPLE_DASHERIZE_CACHE.get(tagname);
+    },
+  });
 
   // move `moduleName` into `meta` property
   if (options.moduleName) {

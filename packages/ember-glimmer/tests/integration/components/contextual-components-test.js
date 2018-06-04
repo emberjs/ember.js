@@ -1,4 +1,3 @@
-import { EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION } from '@ember/canary-features';
 import { assign } from '@ember/polyfills';
 import { Component } from '../../utils/helpers';
 import { applyMixins, strip } from '../../utils/abstract-test-case';
@@ -1378,23 +1377,15 @@ moduleFor(
     }
 
     ['@test GH#14632 give useful warning when calling contextual components with input as a name']() {
-      let expectedMessage = EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION
-        ? "You cannot use 'input' as a component name. Component names must contain a hyphen or start with a capital letter."
-        : "You cannot use 'input' as a component name. Component names must contain a hyphen.";
-
       expectAssertion(() => {
         this.render('{{component (component "input" type="text")}}');
-      }, expectedMessage);
+      }, 'You cannot use `input` as a component name.');
     }
 
     ['@test GH#14632 give useful warning when calling contextual components with textarea as a name']() {
-      let expectedMessage = EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION
-        ? "You cannot use 'textarea' as a component name. Component names must contain a hyphen or start with a capital letter."
-        : "You cannot use 'textarea' as a component name. Component names must contain a hyphen.";
-
       expectAssertion(() => {
         this.render('{{component (component "textarea" type="text")}}');
-      }, expectedMessage);
+      }, 'You cannot use `textarea` as a component name.');
     }
   }
 );
