@@ -124,6 +124,7 @@ function buildElement(
   modifiers?: AST.ElementModifierStatement[],
   children?: AST.Statement[],
   comments?: AST.MustacheCommentStatement[],
+  blockParams?: string[],
   loc?: AST.SourceLocation
 ): AST.ElementNode;
 
@@ -132,13 +133,26 @@ function buildElement(
   attributes?: AST.AttrNode[],
   modifiers?: AST.ElementModifierStatement[],
   children?: AST.Statement[],
-  comments?: AST.MustacheCommentStatement[] | AST.SourceLocation,
+  comments?: AST.MustacheCommentStatement[] | AST.SourceLocation | string[],
+  blockParams?: string[],
   loc?: AST.SourceLocation
 ): AST.ElementNode {
-  // this is used for backwards compat prior to `comments` being added to the AST
-  if (!Array.isArray(comments)) {
+  // this is used for backwards compat prior to `blockParams` being added to the AST
+  if (Array.isArray(comments)) {
+    if (isBlockParms(comments)) {
+      blockParams = comments;
+      comments = [];
+    } else if (isLoc(blockParams)) {
+      loc = blockParams;
+      blockParams = [];
+    }
+  } else if (isLoc(comments)) {
+    // this is used for backwards compat prior to `comments` being added to the AST
     loc = comments;
     comments = [];
+  } else if (isLoc(blockParams)) {
+    loc = blockParams;
+    blockParams = [];
   }
 
   // this is used for backwards compat, prior to `selfClosing` being part of the ElementNode AST
@@ -153,9 +167,9 @@ function buildElement(
     tag: tag || '',
     selfClosing: selfClosing,
     attributes: attributes || [],
-    blockParams: [],
+    blockParams: blockParams || [],
     modifiers: modifiers || [],
-    comments: comments || [],
+    comments: (comments as AST.MustacheCommentStatement[]) || [],
     children: children || [],
     loc: buildLoc(loc || null),
   };
@@ -312,6 +326,16 @@ function buildLoc(...args: any[]): AST.SourceLocation {
       end: buildPosition(endLine, endColumn),
     };
   }
+}
+
+function isBlockParms(arr: string[] | AST.MustacheCommentStatement[]): arr is string[] {
+  return arr[0] === 'string';
+}
+
+function isLoc(
+  item: string[] | AST.SourceLocation | AST.MustacheCommentStatement[] | undefined
+): item is AST.SourceLocation {
+  return !Array.isArray(item);
 }
 
 export default {
