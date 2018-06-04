@@ -464,19 +464,21 @@ function isArg(path: AST.PathExpression): boolean {
 function isDynamicComponent(element: AST.ElementNode): boolean {
   let open = element.tag.charAt(0);
 
+  let [maybeLocal] = element.tag.split('.');
   let isNamedArgument = open === '@';
-  let isLocal = element['symbols'].has(element.tag);
-  let isPath = element.tag.indexOf('.') > -1;
+  let isLocal = element['symbols'].has(maybeLocal);
+  let isThisPath = element.tag.indexOf('this.') === 0;
 
-  return isLocal || isNamedArgument || isPath;
+  return isLocal || isNamedArgument || isThisPath;
 }
 
 function isComponent(element: AST.ElementNode): boolean {
   let open = element.tag.charAt(0);
+  let isPath = element.tag.indexOf('.') > -1;
 
   let isUpperCase = open === open.toUpperCase() && open !== open.toLowerCase();
 
-  return isUpperCase || isDynamicComponent(element);
+  return (isUpperCase && !isPath) || isDynamicComponent(element);
 }
 
 function assertIsSimplePath(path: AST.PathExpression, loc: AST.SourceLocation, context: string) {
