@@ -35,6 +35,10 @@ export default function build(ast: HBS.Node): string {
         output.push(' ', buildEach(ast.comments).join(' '));
       }
 
+      if (ast.blockParams.length) {
+        output.push(' ', 'as', ' ', `|${ast.blockParams.join(' ')}|`);
+      }
+
       if (voidMap[ast.tag]) {
         if (ast.selfClosing) {
           output.push(' /');
@@ -48,11 +52,16 @@ export default function build(ast: HBS.Node): string {
       }
       break;
     case 'AttrNode':
-      output.push(ast.name, '=');
       const value = build(ast.value);
       if (ast.value.type === 'TextNode') {
-        output.push('"', value, '"');
+        if (ast.value.chars !== '') {
+          output.push(ast.name, '=');
+          output.push('"', value, '"');
+        } else {
+          output.push(ast.name);
+        }
       } else {
+        output.push(ast.name, '=');
         output.push(value);
       }
       break;
