@@ -1,9 +1,9 @@
 {
   "name": "@glimmer/interfaces",
-  "version": "0.35.0",
+  "version": "0.35.1",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/interfaces",
   "dependencies": {
-    "@glimmer/wire-format": "^0.35.0"
+    "@glimmer/wire-format": "^0.35.1"
   },
   "devDependencies": {
     "typescript": "^2.8.3"
