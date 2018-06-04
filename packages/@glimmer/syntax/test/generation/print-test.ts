@@ -116,3 +116,11 @@ test('Void elements', function() {
 test('Void elements self closing', function() {
   printEqual('<br />');
 });
+
+test('Block params', function() {
+  printEqual('<Foo as |bar|>{{bar}}</Foo>');
+});
+
+test('Attributes without value', function() {
+  printEqual('<input disabled />');
+});
