@@ -223,10 +223,10 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
         });
 
         this.render(strip`
-      <FooBar @class="bar baz" />
-      <FooBar @classNames="bar baz" />
-      <FooBar />
-    `);
+          <FooBar @class="bar baz" />
+          <FooBar @classNames="bar baz" />
+          <FooBar />
+        `);
 
         this.assertComponentElement(this.nthChild(0), {
           tagName: 'div',
@@ -494,10 +494,10 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
         this.registerComponent('foo-bar', { template: 'hello' });
 
         this.render(strip`
-        {{#with (component 'foo-bar') as |Other|}}
-          <Other />
-        {{/with}}
-      `);
+          {{#with (component 'foo-bar') as |Other|}}
+            <Other />
+          {{/with}}
+        `);
 
         this.assertComponentElement(this.firstChild, { content: 'hello' });
 
@@ -539,16 +539,16 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
       '@test has-block'() {
         this.registerComponent('check-block', {
           template: strip`
-        {{#if (has-block)}}
-          Yes
-        {{else}}
-          No
-        {{/if}}`,
+            {{#if (has-block)}}
+              Yes
+            {{else}}
+              No
+            {{/if}}`,
         });
 
         this.render(strip`
-      <CheckBlock />
-      <CheckBlock></CheckBlock>`);
+          <CheckBlock />
+          <CheckBlock></CheckBlock>`);
 
         this.assertComponentElement(this.firstChild, { content: 'No' });
         this.assertComponentElement(this.nthChild(1), { content: 'Yes' });
