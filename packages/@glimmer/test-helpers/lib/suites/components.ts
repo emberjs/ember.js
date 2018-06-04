@@ -184,6 +184,23 @@ export class BasicComponents extends RenderTest {
   @test({
     kind: 'glimmer',
   })
+  'invoking dynamic component (named arg path) via angle brackets'() {
+    this.registerHelper('hash', (_positional, named) => named);
+    this.registerComponent('Glimmer', 'Foo', 'hello world!');
+    this.render({
+      layout: '<@stuff.Foo />',
+      args: {
+        stuff: 'hash Foo=(component "Foo")',
+      },
+    });
+
+    this.assertHTML(`<div>hello world!</div>`);
+    this.assertStableRerender();
+  }
+
+  @test({
+    kind: 'glimmer',
+  })
   'invoking dynamic component (named arg) via angle brackets supports attributes'() {
     this.registerComponent('Glimmer', 'Foo', '<div ...attributes>hello world!</div>');
     this.render({
@@ -292,6 +309,18 @@ export class BasicComponents extends RenderTest {
   'invoking dynamic component (local) via angle brackets'() {
     this.registerComponent('Glimmer', 'Foo', 'hello world!');
     this.render(`{{#with (component 'Foo') as |Other|}}<Other />{{/with}}`);
+
+    this.assertHTML(`hello world!`);
+    this.assertStableRerender();
+  }
+
+  @test({
+    kind: 'glimmer',
+  })
+  'invoking dynamic component (local path) via angle brackets'() {
+    this.registerHelper('hash', (_positional, named) => named);
+    this.registerComponent('Glimmer', 'Foo', 'hello world!');
+    this.render(`{{#with (hash Foo=(component 'Foo')) as |Other|}}<Other.Foo />{{/with}}`);
 
     this.assertHTML(`hello world!`);
     this.assertStableRerender();
@@ -409,6 +438,37 @@ export class BasicComponents extends RenderTest {
     this.render('<TestHarness @Foo={{component "Foo"}} />');
 
     this.assertHTML(`hello world!`);
+    this.assertStableRerender();
+  }
+
+  @test({
+    kind: 'glimmer',
+  })
+  'invoking dynamic component (path) via angle brackets does not support implicit `this` fallback'() {
+    class TestHarness extends EmberishGlimmerComponent {
+      public stuff: any;
+
+      constructor(args: any) {
+        super();
+        this.stuff = {
+          Foo: args.attrs.Foo,
+        };
+      }
+    }
+    this.registerComponent('Glimmer', 'TestHarness', '<stuff.Foo />', TestHarness);
+    this.registerComponent(
+      'Glimmer',
+      'Foo',
+      'hello world!',
+      class extends EmberishGlimmerComponent {
+        constructor() {
+          super(...arguments);
+          throw new Error('Should not have instantiated Foo component.');
+        }
+      }
+    );
+
+    this.render('<TestHarness @Foo={{component "Foo"}} />');
     this.assertStableRerender();
   }
 
