@@ -111,8 +111,7 @@ const ApplicationInstance = EngineInstance.extend({
     }
 
     if (options.location) {
-      let router = get(this, 'router');
-      set(router, 'location', options.location);
+      set(this.router, 'location', options.location);
     }
 
     this.application.runInstanceInitializers(this);
@@ -159,8 +158,7 @@ const ApplicationInstance = EngineInstance.extend({
     @private
   */
   startRouting() {
-    let router = get(this, 'router');
-    router.startRouting();
+    this.router.startRouting();
     this._didSetupRouter = true;
   },
 
@@ -179,8 +177,7 @@ const ApplicationInstance = EngineInstance.extend({
     }
     this._didSetupRouter = true;
 
-    let router = get(this, 'router');
-    router.setupRouter();
+    this.router.setupRouter();
   },
 
   /**
@@ -191,10 +188,8 @@ const ApplicationInstance = EngineInstance.extend({
     @private
   */
   handleURL(url) {
-    let router = get(this, 'router');
-
     this.setupRouter();
-    return router.handleURL(url);
+    return this.router.handleURL(url);
   },
 
   /**
@@ -220,7 +215,7 @@ const ApplicationInstance = EngineInstance.extend({
     @return {String} the current URL
   */
   getURL() {
-    return get(this, 'router.url');
+    return this.router.url;
   },
 
   // `instance.visit(url)` should eventually replace `instance.handleURL()`;
@@ -241,7 +236,7 @@ const ApplicationInstance = EngineInstance.extend({
 
     let bootOptions = this.__container__.lookup('-environment:main');
 
-    let router = get(this, 'router');
+    let router = this.router;
 
     let handleTransitionResolve = () => {
       if (!bootOptions.options.shouldRender) {
