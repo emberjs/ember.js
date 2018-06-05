@@ -9,6 +9,18 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
   moduleFor(
     'AngleBracket Invocation',
     class extends RenderingTest {
+      '@test it can resolve <XBlah /> to x-outer'() {
+        this.registerComponent('x-blah', { template: 'hello' });
+
+        this.render('<XBlah />');
+
+        this.assertComponentElement(this.firstChild, { content: 'hello' });
+
+        this.runTask(() => this.rerender());
+
+        this.assertComponentElement(this.firstChild, { content: 'hello' });
+      }
+
       '@test it can render a basic template only component'() {
         this.registerComponent('foo-bar', { template: 'hello' });
 
@@ -211,10 +223,10 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
         });
 
         this.render(strip`
-      <FooBar @class="bar baz" />
-      <FooBar @classNames="bar baz" />
-      <FooBar />
-    `);
+          <FooBar @class="bar baz" />
+          <FooBar @classNames="bar baz" />
+          <FooBar />
+        `);
 
         this.assertComponentElement(this.nthChild(0), {
           tagName: 'div',
@@ -482,10 +494,10 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
         this.registerComponent('foo-bar', { template: 'hello' });
 
         this.render(strip`
-        {{#with (component 'foo-bar') as |Other|}}
-          <Other />
-        {{/with}}
-      `);
+          {{#with (component 'foo-bar') as |Other|}}
+            <Other />
+          {{/with}}
+        `);
 
         this.assertComponentElement(this.firstChild, { content: 'hello' });
 
@@ -524,19 +536,36 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
         this.assertStableRerender();
       }
 
+      '@test can not invoke curried components with an implicit `this` path'(assert) {
+        assert.expect(0);
+        this.registerComponent('foo-bar', {
+          template: 'hello',
+          ComponentClass: Component.extend({
+            init() {
+              this._super(...arguments);
+              assert.ok(false, 'should not have instantiated');
+            },
+          }),
+        });
+        this.registerComponent('test-harness', {
+          template: '<foo.bar />',
+        });
+        this.render(strip`{{test-harness foo=(hash bar=(component 'foo-bar'))}}`);
+      }
+
       '@test has-block'() {
         this.registerComponent('check-block', {
           template: strip`
-        {{#if (has-block)}}
-          Yes
-        {{else}}
-          No
-        {{/if}}`,
+            {{#if (has-block)}}
+              Yes
+            {{else}}
+              No
+            {{/if}}`,
         });
 
         this.render(strip`
-      <CheckBlock />
-      <CheckBlock></CheckBlock>`);
+          <CheckBlock />
+          <CheckBlock></CheckBlock>`);
 
         this.assertComponentElement(this.firstChild, { content: 'No' });
         this.assertComponentElement(this.nthChild(1), { content: 'Yes' });

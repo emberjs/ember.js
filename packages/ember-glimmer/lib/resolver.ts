@@ -124,6 +124,9 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
    * Called while executing Append Op.PushDynamicComponentManager if string
    */
   lookupComponentDefinition(name: string, meta: OwnedTemplateMeta): Option<ComponentDefinition> {
+    assert('You cannot use `textarea` as a component name.', name !== 'textarea');
+    assert('You cannot use `input` as a component name.', name !== 'input');
+
     let handle = this.lookupComponentHandle(name, meta);
     if (handle === null) {
       assert(
