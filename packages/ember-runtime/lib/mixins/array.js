@@ -4,9 +4,8 @@
 
 import { ARRAY_AT_EACH } from '@ember/deprecated-features';
 import { DEBUG } from '@glimmer/env';
-import { HAS_NATIVE_PROXY } from 'ember-utils';
 import { PROXY_CONTENT } from 'ember-metal';
-import { symbol, toString } from 'ember-utils';
+import { symbol, toString, HAS_NATIVE_PROXY } from 'ember-utils';
 import {
   get,
   set,
@@ -146,10 +145,7 @@ export function isArray(_obj) {
   if (!obj || obj.setInterval) {
     return false;
   }
-  if (Array.isArray(obj)) {
-    return true;
-  }
-  if (ArrayMixin.detect(obj)) {
+  if (Array.isArray(obj) || ArrayMixin.detect(obj)) {
     return true;
   }
 
@@ -1172,15 +1168,10 @@ const ArrayMixin = Mixin.create(Enumerable, {
 
 const OUT_OF_RANGE_EXCEPTION = 'Index out of range';
 
-export function removeAt(array, start, len) {
+export function removeAt(array, start, len = 1) {
   if ('number' === typeof start) {
     if (start < 0 || start >= array.length) {
       throw new EmberError(OUT_OF_RANGE_EXCEPTION);
-    }
-
-    // fast case
-    if (len === undefined) {
-      len = 1;
     }
 
     array.replace(start, len, EMPTY_ARRAY);
