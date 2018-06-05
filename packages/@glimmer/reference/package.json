@@ -1,10 +1,10 @@
 {
   "name": "@glimmer/reference",
-  "version": "0.35.2",
+  "version": "0.35.3",
   "description": "Objects used to track values and their dirtiness in Glimmer",
   "license": "MIT",
   "dependencies": {
-    "@glimmer/util": "^0.35.2"
+    "@glimmer/util": "^0.35.3"
   },
   "devDependencies": {
     "typescript": "^2.8.3"
