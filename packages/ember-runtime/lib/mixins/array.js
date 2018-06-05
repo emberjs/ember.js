@@ -932,17 +932,16 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @method reduce
     @param {Function} callback The callback to execute
     @param {Object} initialValue Initial value for the reduce
-    @param {String} reducerProperty internal use only.
     @return {Object} The reduced value.
     @public
   */
-  reduce(callback, initialValue, reducerProperty) {
+  reduce(callback, initialValue) {
     assert('`reduce` expects a function as first argument.', typeof callback === 'function');
 
     let ret = initialValue;
 
     this.forEach(function(item, i) {
-      ret = callback(ret, item, i, this, reducerProperty);
+      ret = callback(ret, item, i, this);
     }, this);
 
     return ret;
@@ -960,7 +959,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   invoke(methodName, ...args) {
-    return this.map((item) => tryInvoke(item, methodName, args));
+    return this.map(item => tryInvoke(item, methodName, args));
   },
 
   /**
