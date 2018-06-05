@@ -5,7 +5,7 @@
 import { ARRAY_AT_EACH } from '@ember/deprecated-features';
 import { DEBUG } from '@glimmer/env';
 import { PROXY_CONTENT } from 'ember-metal';
-import { symbol, toString, HAS_NATIVE_PROXY } from 'ember-utils';
+import { symbol, toString, HAS_NATIVE_PROXY, tryInvoke } from 'ember-utils';
 import {
   get,
   set,
@@ -782,7 +782,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   findBy() {
-    return this.find(iter(...arguments));
+    return find(this, iter(...arguments));
   },
 
   /**
@@ -841,7 +841,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   isEvery() {
-    return this.every(iter(...arguments));
+    return every(this, iter(...arguments));
   },
 
   /**
@@ -899,7 +899,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   isAny() {
-    return this.any(iter(...arguments));
+    return any(this, iter(...arguments));
   },
 
   /**
@@ -960,17 +960,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   invoke(methodName, ...args) {
-    let ret = A();
-
-    this.forEach((x, idx) => {
-      let method = x && x[methodName];
-
-      if ('function' === typeof method) {
-        ret[idx] = args.length ? method.apply(x, args) : x[methodName]();
-      }
-    }, this);
-
-    return ret;
+    return this.map((item) => tryInvoke(item, methodName, args));
   },
 
   /**
