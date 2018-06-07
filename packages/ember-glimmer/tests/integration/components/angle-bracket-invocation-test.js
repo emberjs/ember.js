@@ -9,10 +9,22 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
   moduleFor(
     'AngleBracket Invocation',
     class extends RenderingTest {
-      '@test it can resolve <XBlah /> to x-outer'() {
+      '@test it can resolve <XBlah /> to x-blah'() {
         this.registerComponent('x-blah', { template: 'hello' });
 
         this.render('<XBlah />');
+
+        this.assertComponentElement(this.firstChild, { content: 'hello' });
+
+        this.runTask(() => this.rerender());
+
+        this.assertComponentElement(this.firstChild, { content: 'hello' });
+      }
+
+      '@test it can resolve <X-Blah /> to x-blah'() {
+        this.registerComponent('x-blah', { template: 'hello' });
+
+        this.render('<X-Blah />');
 
         this.assertComponentElement(this.firstChild, { content: 'hello' });
 
