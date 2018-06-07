@@ -1,8 +1,8 @@
 import { assign } from '@ember/polyfills';
 import { PrecompileOptions } from '@glimmer/compiler';
 import { AST, ASTPlugin, ASTPluginEnvironment, Syntax } from '@glimmer/syntax';
-import { Cache } from 'ember-utils';
 import PLUGINS, { APluginFunc } from '../plugins/index';
+import COMPONENT_NAME_SIMPLE_DASHERIZE_CACHE from './dasherize-component-name';
 
 type PluginFunc = APluginFunc & {
   __raw?: LegacyPluginClass | undefined;
@@ -18,18 +18,6 @@ export interface CompileOptions {
   moduleName?: string | undefined;
   plugins?: Plugins | undefined;
 }
-
-/*
-  This diverges from `Ember.String.dasherize` so that`<XFoo />` can resolve to `x-foo`.
-  `Ember.String.dasherize` would resolve it to `xfoo`..
-*/
-const SIMPLE_DASHERIZE_REGEXP = /[A-Z]/g;
-const COMPONENT_NAME_SIMPLE_DASHERIZE_CACHE = new Cache<string, string>(1000, key =>
-  key.replace(
-    SIMPLE_DASHERIZE_REGEXP,
-    (char, index) => (index !== 0 ? '-' : '') + char.toLowerCase()
-  )
-);
 
 export default function compileOptions(_options: Partial<CompileOptions>): PrecompileOptions {
   let options = assign({ meta: {} }, _options, {
