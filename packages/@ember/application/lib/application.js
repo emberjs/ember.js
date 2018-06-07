@@ -378,7 +378,7 @@ const Application = Engine.extend({
     // the Application's own `boot` method.
     this._readinessDeferrals = 1;
     this._booted = false;
-    this._applicationInstances = [];
+    this._applicationInstances = new Set();
 
     this.autoboot = this._globalsMode = !!this.autoboot;
 
@@ -412,7 +412,7 @@ const Application = Engine.extend({
     @method _watchInstance
   */
   _watchInstance(instance) {
-    this._applicationInstances.push(instance);
+    this._applicationInstances.add(instance);
   },
 
   /**
@@ -423,10 +423,7 @@ const Application = Engine.extend({
     @method _unwatchInstance
   */
   _unwatchInstance(instance) {
-    let index = this._applicationInstances.indexOf(instance);
-    if (index > -1) {
-      this._applicationInstances.splice(index, 1);
-    }
+    return this._applicationInstances.delete(instance);
   },
 
   /**
@@ -843,9 +840,9 @@ const Application = Engine.extend({
       _loaded.application = undefined;
     }
 
-    if (this._applicationInstances.length) {
+    if (this._applicationInstances.size) {
       this._applicationInstances.forEach(i => i.destroy());
-      this._applicationInstances.length = 0;
+      this._applicationInstances.clear();
     }
   },
 
