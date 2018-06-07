@@ -99,7 +99,6 @@ let allExports = [
   ['meta', 'ember-meta'],
   ['get', 'ember-metal'],
   ['set', 'ember-metal'],
-  ['_getPath', 'ember-metal'],
   ['getWithDefault', 'ember-metal'],
   ['trySet', 'ember-metal'],
   ['_Cache', 'ember-utils', 'Cache'],

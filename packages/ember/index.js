@@ -275,7 +275,6 @@ Ember.cacheFor = metal.getCachedValueFor;
 Ember.meta = meta;
 Ember.get = metal.get;
 Ember.getWithDefault = metal.getWithDefault;
-Ember._getPath = metal._getPath;
 Ember.set = metal.set;
 Ember.trySet = metal.trySet;
 Ember.FEATURES = assign({ isEnabled }, FEATURES);

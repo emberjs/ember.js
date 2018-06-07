@@ -4,10 +4,9 @@ import EmberError from '@ember/error';
 import { DEBUG } from '@glimmer/env';
 import { descriptorFor, isDescriptor, Meta, meta, peekMeta } from 'ember-meta';
 import { HAS_NATIVE_PROXY, toString } from 'ember-utils';
-import { isPath } from './path_cache';
 import { Descriptor, MandatorySetterFunction } from './properties';
 import { notifyPropertyChange } from './property_events';
-import { _getPath as getPath, getPossibleMandatoryProxyValue } from './property_get';
+import { getPath, getPossibleMandatoryProxyValue } from './property_get';
 
 interface ExtendedObject {
   isDestroyed?: boolean;
@@ -73,10 +72,11 @@ export function set(obj: object, keyName: string, value: any, tolerant?: boolean
     return;
   }
 
-  if (isPath(keyName)) {
-    return setPath(obj, keyName, value, tolerant);
-  }
+  let isPath = typeof keyName === 'string' && keyName.indexOf('.') !== -1;
+  return isPath ? setPath(obj, keyName, value, tolerant) : setKey(obj, keyName, value);
+}
 
+function setKey(obj: object, keyName: string, value: any): any {
   let possibleDesc = descriptorFor(obj, keyName);
 
   if (possibleDesc !== undefined) {
@@ -151,6 +151,25 @@ export function set(obj: object, keyName: string, value: any, tolerant?: boolean
   return value;
 }
 
+function setPath(root: object, path: string, value: any, tolerant?: boolean) {
+  let parts = path.split('.');
+  let keyName = parts.pop();
+
+  assert('Property set failed: You passed an empty path', keyName!.trim().length > 0);
+
+  let newPath = parts.join('.');
+
+  let newRoot = getPath(root, newPath);
+
+  if (newRoot) {
+    return setKey(newRoot, keyName!, value);
+  } else if (!tolerant) {
+    throw new EmberError(
+      `Property set failed: object in path "${newPath}" could not be found or was destroyed.`
+    );
+  }
+}
+
 if (DEBUG) {
   setWithMandatorySetter = (meta, obj, keyName, value) => {
     if (meta !== undefined && meta.peekWatching(keyName) > 0) {
@@ -169,25 +188,6 @@ if (DEBUG) {
       Object.defineProperty(obj, key, desc);
     }
   };
-}
-
-function setPath(root: object, path: string, value: any, tolerant?: boolean) {
-  let parts = path.split('.');
-  let keyName = parts.pop();
-
-  assert('Property set failed: You passed an empty path', keyName!.trim().length > 0);
-
-  let newPath = parts.join('.');
-
-  let newRoot = getPath(root, newPath);
-
-  if (newRoot) {
-    return set(newRoot, keyName!, value);
-  } else if (!tolerant) {
-    throw new EmberError(
-      `Property set failed: object in path "${newPath}" could not be found or was destroyed.`
-    );
-  }
 }
 
 /**

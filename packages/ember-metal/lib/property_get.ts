@@ -7,7 +7,6 @@ import { PROPERTY_BASED_DESCRIPTORS } from '@ember/deprecated-features';
 import { DEBUG } from '@glimmer/env';
 import { descriptorFor, isDescriptor, meta } from 'ember-meta';
 import { HAS_NATIVE_PROXY, symbol, toString } from 'ember-utils';
-import { isPath } from './path_cache';
 import { tagForProperty } from './tags';
 import { getCurrentTracker } from './tracked';
 
@@ -92,82 +91,82 @@ export function get(obj: object, keyName: string): any {
   );
   assert('Cannot call `get` with an empty string', keyName !== '');
 
+  let isPath = typeof keyName === 'string' && keyName.indexOf('.') !== -1;
+  return isPath ? getPath(obj, keyName) : getKey(obj, keyName);
+}
+
+function getKey(obj: object, keyName: string): any {
   let type = typeof obj;
 
   let isObject = type === 'object';
   let isFunction = type === 'function';
   let isObjectLike = isObject || isFunction;
 
-  let descriptor;
+  if (!isObjectLike) {
+    return obj[keyName];
+  }
+
+  if (EMBER_METAL_TRACKED_PROPERTIES) {
+    let tracker = getCurrentTracker();
+    if (tracker) tracker.add(tagForProperty(obj, keyName));
+  }
+
+  let descriptor = descriptorFor(obj, keyName);
+  if (descriptor !== undefined) {
+    return descriptor.get(obj, keyName);
+  }
+
   let value: any;
-
-  if (isObjectLike) {
-    if (EMBER_METAL_TRACKED_PROPERTIES) {
-      let tracker = getCurrentTracker();
-      if (tracker) tracker.add(tagForProperty(obj, keyName));
-    }
-
-    descriptor = descriptorFor(obj, keyName);
-    if (descriptor !== undefined) {
-      return descriptor.get(obj, keyName);
-    }
-
-    if (DEBUG && HAS_NATIVE_PROXY) {
-      value = getPossibleMandatoryProxyValue(obj, keyName);
-    } else {
-      value = obj[keyName];
-    }
-
-    if (PROPERTY_BASED_DESCRIPTORS && isDescriptor(value)) {
-      deprecate(
-        `[DEPRECATED] computed property '${keyName}' was not set on object '${toString(
-          obj
-        )}' via 'defineProperty'`,
-        false,
-        {
-          id: 'ember-meta.descriptor-on-object',
-          until: '3.5.0',
-          url:
-            'https://emberjs.com/deprecations/v3.x#toc_use-defineProperty-to-define-computed-properties',
-        }
-      );
-
-      Object.defineProperty(obj, keyName, {
-        configurable: true,
-        enumerable: value.enumerable === false,
-        get() {
-          return value.get(this, keyName);
-        },
-      });
-
-      meta(obj).writeDescriptors(keyName, value);
-
-      if (typeof value.setup === 'function') {
-        value.setup(obj, keyName);
-      }
-
-      return value.get(obj, keyName);
-    }
+  if (DEBUG && HAS_NATIVE_PROXY) {
+    value = getPossibleMandatoryProxyValue(obj, keyName);
   } else {
     value = obj[keyName];
   }
 
-  if (value === undefined) {
-    if (isPath(keyName)) {
-      return _getPath(obj, keyName);
+  if (PROPERTY_BASED_DESCRIPTORS && isDescriptor(value)) {
+    deprecate(
+      `[DEPRECATED] computed property '${keyName}' was not set on object '${toString(
+        obj
+      )}' via 'defineProperty'`,
+      false,
+      {
+        id: 'ember-meta.descriptor-on-object',
+        until: '3.5.0',
+        url:
+          'https://emberjs.com/deprecations/v3.x#toc_use-defineProperty-to-define-computed-properties',
+      }
+    );
+
+    Object.defineProperty(obj, keyName, {
+      configurable: true,
+      enumerable: value.enumerable === false,
+      get() {
+        return value.get(this, keyName);
+      },
+    });
+
+    meta(obj).writeDescriptors(keyName, value);
+
+    if (typeof value.setup === 'function') {
+      value.setup(obj, keyName);
     }
-    if (
-      isObject &&
-      !(keyName in obj) &&
-      typeof (obj as MaybeHasUnknownProperty).unknownProperty === 'function'
-    ) {
-      return (obj as MaybeHasUnknownProperty).unknownProperty!(keyName);
-    }
+
+    return value.get(obj, keyName);
   }
+
+  if (
+    value === undefined &&
+    isObject &&
+    !(keyName in obj) &&
+    typeof (obj as MaybeHasUnknownProperty).unknownProperty === 'function'
+  ) {
+    return (obj as MaybeHasUnknownProperty).unknownProperty!(keyName);
+  }
+
   return value;
 }
 
-export function _getPath<T extends object>(root: T, path: string): any {
+export function getPath<T extends object>(root: T, path: string): any {
   let obj: any = root;
   let parts = path.split('.');
 

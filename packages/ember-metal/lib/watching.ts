@@ -2,9 +2,12 @@
 @module ember
 */
 import { Meta, peekMeta } from 'ember-meta';
-import { isPath } from './path_cache';
 import { unwatchKey, watchKey } from './watch_key';
 import { unwatchPath, watchPath } from './watch_path';
+
+function isPath(path: string): boolean {
+  return typeof path === 'string' && path.indexOf('.') !== -1;
+}
 
 /**
   Starts watching a property on an object. Whenever the property changes,
