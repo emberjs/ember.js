@@ -35,6 +35,19 @@ moduleFor(
       });
     }
 
+    ['@test [GH#16642] better error when using a colon in a route name']() {
+      expectAssertion(() => {
+        Router = EmberRouter.extend();
+
+        Router.map(function() {
+          this.route('resource/:id');
+        });
+
+        let router = Router.create();
+        router._initRouterJs();
+      }, "'resource/:id' is not a valid route name. It cannot contain a ':'. You may want to use the 'path' option instead.");
+    }
+
     ['@test should retain resource namespace if nested with routes'](assert) {
       Router = Router.map(function() {
         this.route('bleep', function() {
