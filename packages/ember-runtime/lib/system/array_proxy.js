@@ -5,7 +5,7 @@
 import {
   get,
   objectAt,
-  computed,
+  descriptor,
   alias,
   PROPERTY_DID_CHANGE,
   addArrayObserver,
@@ -194,16 +194,23 @@ export default EmberObject.extend(MutableArray, {
     return this._objects[idx];
   },
 
-  // Overriding length is not supported.
-  length: computed(function() {
-    if (this._lengthDirty) {
-      let arrangedContent = get(this, 'arrangedContent');
-      this._length = arrangedContent ? get(arrangedContent, 'length') : 0;
-      this._lengthDirty = false;
-    }
+  length: descriptor({
+    configurable: false,
+    enumerable: true,
+    set() {
+      assert('Cannot set `length`', false);
+    },
 
-    return this._length;
-  }).volatile(),
+    get() {
+      if (this._lengthDirty) {
+        let arrangedContent = get(this, 'arrangedContent');
+        this._length = arrangedContent ? get(arrangedContent, 'length') : 0;
+        this._lengthDirty = false;
+      }
+
+      return this._length;
+    },
+  }),
 
   [PROPERTY_DID_CHANGE](key) {
     if (key === 'arrangedContent') {
