@@ -1,4 +1,4 @@
-import { computed, defineProperty, deprecateProperty } from '..';
+import { computed, defineProperty, deprecateProperty, descriptor } from '..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
@@ -68,6 +68,29 @@ moduleFor(
       };
 
       defineProperty(obj, 'answer', descriptor);
+    }
+
+    ['@test descriptor with configurable: false works correctly'](assert) {
+      let obj = {};
+
+      defineProperty(
+        obj,
+        'foo',
+        descriptor({
+          configurable: false,
+          get() {
+            return 'FOO';
+          },
+        })
+      );
+
+      assert.equal(obj.foo, 'FOO');
+
+      expectAssertion(() => {
+        defineProperty(obj, 'foo', { value: 123, configurable: true });
+      }, `cannot redefine property \`foo\`, it is not configurable`);
+
+      assert.equal(obj.foo, 'FOO');
     }
   }
 );

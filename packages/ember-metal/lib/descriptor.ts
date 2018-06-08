@@ -15,11 +15,13 @@ export default function descriptor(desc: PropertyDescriptor) {
 class Descriptor extends EmberDescriptor {
   desc: PropertyDescriptor;
   enumerable: boolean;
+  configurable: boolean;
 
   constructor(desc: PropertyDescriptor) {
     super();
     this.desc = desc;
     this.enumerable = desc.enumerable !== false;
+    this.configurable = desc.configurable !== false;
   }
 
   setup(obj: object, key: string) {

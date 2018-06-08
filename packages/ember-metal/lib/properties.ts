@@ -168,6 +168,10 @@ export function defineProperty(
   let wasDescriptor = previousDesc !== undefined;
 
   if (wasDescriptor) {
+    assert(
+      `cannot redefine property \`${keyName}\`, it is not configurable`,
+      previousDesc.configurable !== false
+    );
     previousDesc.teardown(obj, keyName, meta);
     meta.removeDescriptors(keyName);
   }
