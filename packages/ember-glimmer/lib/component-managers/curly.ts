@@ -90,7 +90,8 @@ function applyAttributeBindings(
   }
 
   if (seen.indexOf('id') === -1) {
-    operations.setAttribute('id', PrimitiveReference.create(component.elementId), true, null);
+    let id = component.elementId ? component.elementId : guidFor(component);
+    operations.setAttribute('id', PrimitiveReference.create(id), false, null);
   }
 
   if (seen.indexOf('style') === -1) {
@@ -331,14 +332,11 @@ export default class CurlyComponentManager
 
     let { attributeBindings, classNames, classNameBindings } = component;
 
-    operations.setAttribute('id', PrimitiveReference.create(guidFor(component)), false, null);
-
     if (attributeBindings && attributeBindings.length) {
       applyAttributeBindings(element, attributeBindings, component, operations);
     } else {
-      if (component.elementId) {
-        operations.setAttribute('id', PrimitiveReference.create(component.elementId), false, null);
-      }
+      let id = component.elementId ? component.elementId : guidFor(component);
+      operations.setAttribute('id', PrimitiveReference.create(id), false, null);
       IsVisibleBinding.install(element, component, operations);
     }
 
