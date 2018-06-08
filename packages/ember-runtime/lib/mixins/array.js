@@ -4,9 +4,8 @@
 
 import { ARRAY_AT_EACH } from '@ember/deprecated-features';
 import { DEBUG } from '@glimmer/env';
-import { HAS_NATIVE_PROXY } from 'ember-utils';
 import { PROXY_CONTENT } from 'ember-metal';
-import { symbol, toString } from 'ember-utils';
+import { symbol, toString, HAS_NATIVE_PROXY, tryInvoke } from 'ember-utils';
 import {
   get,
   set,
@@ -146,10 +145,7 @@ export function isArray(_obj) {
   if (!obj || obj.setInterval) {
     return false;
   }
-  if (Array.isArray(obj)) {
-    return true;
-  }
-  if (ArrayMixin.detect(obj)) {
+  if (Array.isArray(obj) || ArrayMixin.detect(obj)) {
     return true;
   }
 
@@ -786,7 +782,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   findBy() {
-    return this.find(iter(...arguments));
+    return find(this, iter(...arguments));
   },
 
   /**
@@ -845,7 +841,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   isEvery() {
-    return this.every(iter(...arguments));
+    return every(this, iter(...arguments));
   },
 
   /**
@@ -903,7 +899,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   isAny() {
-    return this.any(iter(...arguments));
+    return any(this, iter(...arguments));
   },
 
   /**
@@ -936,17 +932,16 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @method reduce
     @param {Function} callback The callback to execute
     @param {Object} initialValue Initial value for the reduce
-    @param {String} reducerProperty internal use only.
     @return {Object} The reduced value.
     @public
   */
-  reduce(callback, initialValue, reducerProperty) {
+  reduce(callback, initialValue) {
     assert('`reduce` expects a function as first argument.', typeof callback === 'function');
 
     let ret = initialValue;
 
     this.forEach(function(item, i) {
-      ret = callback(ret, item, i, this, reducerProperty);
+      ret = callback(ret, item, i, this);
     }, this);
 
     return ret;
@@ -964,17 +959,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   invoke(methodName, ...args) {
-    let ret = A();
-
-    this.forEach((x, idx) => {
-      let method = x && x[methodName];
-
-      if ('function' === typeof method) {
-        ret[idx] = args.length ? method.apply(x, args) : x[methodName]();
-      }
-    }, this);
-
-    return ret;
+    return this.map(item => tryInvoke(item, methodName, args));
   },
 
   /**
@@ -1172,15 +1157,10 @@ const ArrayMixin = Mixin.create(Enumerable, {
 
 const OUT_OF_RANGE_EXCEPTION = 'Index out of range';
 
-export function removeAt(array, start, len) {
+export function removeAt(array, start, len = 1) {
   if ('number' === typeof start) {
     if (start < 0 || start >= array.length) {
       throw new EmberError(OUT_OF_RANGE_EXCEPTION);
-    }
-
-    // fast case
-    if (len === undefined) {
-      len = 1;
     }
 
     array.replace(start, len, EMPTY_ARRAY);
