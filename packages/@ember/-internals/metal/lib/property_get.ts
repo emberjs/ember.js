@@ -2,9 +2,9 @@
 @module @ember/object
 */
 import { descriptorFor } from '@ember/-internals/meta';
-import { HAS_NATIVE_PROXY, symbol } from '@ember/-internals/utils';
+import { HAS_NATIVE_PROXY, symbol, toString } from '@ember/-internals/utils';
 import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
-import { assert } from '@ember/debug';
+import { assert, warn } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { isPath } from './path_cache';
 import { tagForProperty } from './tags';
@@ -26,12 +26,14 @@ if (DEBUG && HAS_NATIVE_PROXY) {
   };
 }
 
-interface MaybeHasUnknownProperty {
-  unknownProperty?: (keyName: string) => any;
+let TOLERATE_DESTROYED: boolean;
+if (DEBUG) {
+  TOLERATE_DESTROYED = false;
 }
 
-interface MaybeHasIsDestroyed {
+interface ExtendedObject {
   isDestroyed?: boolean;
+  unknownProperty?: (keyName: string) => any;
 }
 
 // ..........................................................
@@ -90,6 +92,20 @@ export function get(obj: object, keyName: string): any {
     typeof keyName !== 'string' || keyName.lastIndexOf('this.', 0) !== 0
   );
 
+  if (DEBUG && !TOLERATE_DESTROYED) {
+    let objString: string;
+    TOLERATE_DESTROYED = true;
+    objString = toString(obj);
+    TOLERATE_DESTROYED = false;
+    warn(
+      `calling \`get\` on destroyed object: ${objString}.${keyName}`,
+      !(obj as ExtendedObject).isDestroyed ||
+        keyName === 'isDestroyed' ||
+        keyName === 'isDestroying',
+      { id: 'calling-get-on-destroyed' }
+    );
+  }
+
   let type = typeof obj;
 
   let isObject = type === 'object';
@@ -125,9 +141,9 @@ export function get(obj: object, keyName: string): any {
     if (
       isObject &&
       !(keyName in obj) &&
-      typeof (obj as MaybeHasUnknownProperty).unknownProperty === 'function'
+      typeof (obj as ExtendedObject).unknownProperty === 'function'
     ) {
-      return (obj as MaybeHasUnknownProperty).unknownProperty!(keyName);
+      return (obj as ExtendedObject).unknownProperty!(keyName);
     }
   }
   return value;
@@ -138,7 +154,7 @@ export function _getPath<T extends object>(root: T, path: string): any {
   let parts = path.split('.');
 
   for (let i = 0; i < parts.length; i++) {
-    if (obj === undefined || obj === null || (obj as MaybeHasIsDestroyed).isDestroyed) {
+    if (obj === undefined || obj === null) {
       return undefined;
     }
 

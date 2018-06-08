@@ -105,7 +105,7 @@ moduleFor(
 
       expectAssertion(
         () => set(obj, 'favoriteFood', 'hot dogs'),
-        'calling set on destroyed object: [object Object].favoriteFood = hot dogs'
+        'calling `set` on destroyed object: [object Object].favoriteFood = hot dogs'
       );
     }
 

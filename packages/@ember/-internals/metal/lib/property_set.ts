@@ -66,7 +66,7 @@ export function set(obj: object, keyName: string, value: any, tolerant?: boolean
 
   if ((obj as ExtendedObject).isDestroyed) {
     assert(
-      `calling set on destroyed object: ${toString(obj)}.${keyName} = ${toString(value)}`,
+      `calling \`set\` on destroyed object: ${toString(obj)}.${keyName} = ${toString(value)}`,
       tolerant
     );
     return;

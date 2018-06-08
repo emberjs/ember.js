@@ -1,4 +1,3 @@
-import { get } from './property_get';
 /**
  @module @ember/utils
 */
@@ -48,7 +47,7 @@ export default function isEmpty(obj: any): boolean {
   let objectType = typeof obj;
 
   if (objectType === 'object') {
-    let size = get(obj, 'size');
+    let size = obj.size;
     if (typeof size === 'number') {
       return !size;
     }
@@ -59,7 +58,7 @@ export default function isEmpty(obj: any): boolean {
   }
 
   if (objectType === 'object') {
-    let length = get(obj, 'length');
+    let length = obj.length;
     if (typeof length === 'number') {
       return !length;
     }

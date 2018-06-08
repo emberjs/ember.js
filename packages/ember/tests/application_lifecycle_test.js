@@ -63,8 +63,13 @@ moduleFor(
 
       this.application.reset();
 
-      assert.equal(indexController.get('selectedMenuItem'), null);
-      assert.equal(applicationController.get('selectedMenuItem'), null);
+      expectWarning(() => {
+        assert.equal(indexController.get('selectedMenuItem'), undefined);
+      }, `calling \`get\` on destroyed object: ${indexController}.selectedMenuItem`);
+
+      expectWarning(() => {
+        assert.equal(applicationController.get('selectedMenuItem'), undefined);
+      }, `calling \`get\` on destroyed object: ${applicationController}.selectedMenuItem`);
     }
 
     [`@test Destroying the application resets the router before the appInstance is destroyed`](
@@ -78,8 +83,12 @@ moduleFor(
         this.application.destroy();
       });
 
-      assert.equal(indexController.get('selectedMenuItem'), null);
-      assert.equal(applicationController.get('selectedMenuItem'), null);
+      expectWarning(() => {
+        assert.equal(indexController.get('selectedMenuItem'), undefined);
+      }, `calling \`get\` on destroyed object: ${indexController}.selectedMenuItem`);
+      expectWarning(() => {
+        assert.equal(applicationController.get('selectedMenuItem'), undefined);
+      }, `calling \`get\` on destroyed object: ${applicationController}.selectedMenuItem`);
     }
   }
 );

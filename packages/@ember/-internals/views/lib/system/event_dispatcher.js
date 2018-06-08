@@ -424,6 +424,10 @@ export default EmberObject.extend({
   },
 
   destroy() {
+    if (this.isDestroyed) {
+      return;
+    }
+
     let rootElementSelector = get(this, 'rootElement');
     let rootElement;
     if (rootElementSelector.nodeType) {
