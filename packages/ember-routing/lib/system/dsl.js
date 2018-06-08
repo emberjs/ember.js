@@ -30,6 +30,11 @@ class DSL {
       })()
     );
 
+    assert(
+      `'${name}' is not a valid route name. It cannot contain a ':'. You may want to use the 'path' option instead.`,
+      name.indexOf(':') === -1
+    );
+
     if (this.enableLoadingSubstates) {
       createRoute(this, `${name}_loading`, {
         resetNamespace: options.resetNamespace,
