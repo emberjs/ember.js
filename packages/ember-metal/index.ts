@@ -41,7 +41,7 @@ export { default as setProperties } from './lib/set_properties';
 export { default as expandProperties } from './lib/expand_properties';
 
 export { addObserver, removeObserver } from './lib/observer';
-export { Mixin, aliasMethod, mixin, observer } from './lib/mixin';
+export { Mixin, aliasMethod, mixin, observer, applyMixin } from './lib/mixin';
 export { default as InjectedProperty } from './lib/injected_property';
 export { setHasViews, tagForProperty, tagFor, markObjectAsDirty } from './lib/tags';
 export { default as runInTransaction, didRender, assertNotRendered } from './lib/transaction';

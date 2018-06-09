@@ -361,7 +361,7 @@ function replaceObserversAndListeners(
   }
 }
 
-function applyMixin(obj: { [key: string]: any }, mixins: Mixin[], partial: boolean) {
+export function applyMixin(obj: { [key: string]: any }, mixins: Mixin[], partial: boolean) {
   let descs = {};
   let values = {};
   let meta = metaFor(obj);
@@ -546,14 +546,6 @@ export default class Mixin {
       guidFor(this);
       Object.seal(this);
     }
-  }
-
-  static _apply() {
-    return (applyMixin as any)(...arguments);
-  }
-
-  static applyPartial(obj: any, ...args: any[]) {
-    return applyMixin(obj, args, true);
   }
 
   /**
