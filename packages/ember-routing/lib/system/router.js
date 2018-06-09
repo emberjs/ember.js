@@ -27,7 +27,7 @@ const { slice } = Array.prototype;
 
 /**
   The `EmberRouter` class manages the application state and URLs. Refer to
-  the [routing guide](https://emberjs.com/guides/routing/) for documentation.
+  the [routing guide](https://guides.emberjs.com/release/routing/) for documentation.
 
   @class EmberRouter
   @extends EmberObject
@@ -1419,7 +1419,7 @@ EmberRouter.reopenClass({
     ```
 
     For more detailed documentation and examples please see
-    [the guides](https://emberjs.com/guides/routing/defining-your-routes/).
+    [the guides](https://guides.emberjs.com/release/routing/defining-your-routes/).
 
     @method map
     @param callback

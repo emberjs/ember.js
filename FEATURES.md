@@ -1,6 +1,6 @@
 ## About Features
 
-Please read the [Feature Flag Guide](https://emberjs.com/guides/configuring-ember/feature-flags/)
+Please read the [Feature Flag Guide](https://guides.emberjs.com/release/configuring-ember/feature-flags/)
 for a detailed explanation.
 
 ## Feature Flags

@@ -144,7 +144,7 @@ let librariesRegistered = false;
 
   To learn more about the events Ember components use, see
 
-  [components/handling-events](https://guides.emberjs.com/current/components/handling-events/#toc_event-names).
+  [components/handling-events](https://guides.emberjs.com/release/components/handling-events/#toc_event-names).
 
   ### Initializers
 

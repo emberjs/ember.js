@@ -590,7 +590,7 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
 
   _Note: This is the preferred way to define computed properties when writing third-party
   libraries that depend on or use Ember, since there is no guarantee that the user
-  will have [prototype Extensions](https://emberjs.com/guides/configuring-ember/disabling-prototype-extensions/) enabled._
+  will have [prototype Extensions](https://guides.emberjs.com/release/configuring-ember/disabling-prototype-extensions/) enabled._
 
   The alternative syntax, with prototype extensions, might look like:
 
