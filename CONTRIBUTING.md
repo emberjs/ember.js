@@ -164,7 +164,7 @@ to know that you have a clean slate: `yarn install && yarn test`.
 3. Add a test for your change. Only refactoring and documentation changes
 require no new tests. If you are adding functionality or fixing a bug, we need
 a test! If your change is a new feature, please
-[wrap it in a feature flag](https://emberjs.com/guides/contributing/adding-new-features/).
+[wrap it in a feature flag](https://guides.emberjs.com/release/contributing/adding-new-features/).
 
 4. Make sure to check out the
    [JavaScript Style Guide](https://github.com/emberjs/ember.js/blob/master/STYLEGUIDE.md) and
