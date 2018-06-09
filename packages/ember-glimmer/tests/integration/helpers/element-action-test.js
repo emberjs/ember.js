@@ -1440,7 +1440,9 @@ moduleFor(
       let InnerComponent = Component.extend({
         click() {
           innerClickCalled = true;
-          this.sendAction();
+          expectDeprecation(() => {
+            this.sendAction();
+          }, /You called (.*).sendAction\((.*)\) but Component#sendAction is deprecated. Please use closure actions instead./);
         },
       });
 

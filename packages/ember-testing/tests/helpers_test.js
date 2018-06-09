@@ -753,8 +753,8 @@ if (!jQueryDisabled) {
         let wasFocused = false;
 
         this.add(
-          'route:application',
-          Route.extend({
+          'controller:index',
+          Controller.extend({
             actions: {
               wasFocused() {
                 wasFocused = true;
@@ -767,7 +767,7 @@ if (!jQueryDisabled) {
           'index',
           `
         <div id="parent">
-          {{input type="text" id="first" focus-in="wasFocused"}}
+          {{input type="text" id="first" focus-in=(action "wasFocused")}}
         </div>'
       `
         );
