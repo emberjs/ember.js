@@ -20,6 +20,7 @@ import {
   finishChains,
   sendEvent,
   Mixin,
+  applyMixin,
   defineProperty,
   ComputedProperty,
   InjectedProperty,
@@ -31,7 +32,6 @@ import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { ENV } from 'ember-environment';
 
-const applyMixin = Mixin._apply;
 const reopen = Mixin.prototype.reopen;
 
 function makeCtor(base) {
