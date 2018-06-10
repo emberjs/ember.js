@@ -36,5 +36,24 @@ moduleFor(
 
       asyncFunction(bind(asyncCallback, asyncCallback, 1));
     }
+
+    ['@test [GH#16652] bind throws an error if callback is undefined']() {
+      let assertBindThrows = (msg, ...args) => {
+        expectAssertion(
+          function() {
+            bind(...args);
+          },
+          /could not find a suitable method to bind/,
+          msg
+        );
+      };
+      assertBindThrows('without arguments');
+      assertBindThrows('with one arguments that is not a function', 'myMethod');
+      assertBindThrows(
+        'if second parameter is not a function and not a property in first parameter',
+        Object.create(null),
+        'myMethod'
+      );
+    }
   }
 );
