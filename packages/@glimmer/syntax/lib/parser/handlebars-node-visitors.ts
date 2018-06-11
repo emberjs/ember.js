@@ -84,7 +84,7 @@ export abstract class HandlebarsNodeVisitors extends Parser {
   MustacheStatement(rawMustache: HandlebarsAST.MustacheStatement) {
     let { tokenizer } = this;
 
-    if (tokenizer['state'] === 'comment') {
+    if (tokenizer.state === 'comment') {
       this.appendToCommentData(this.sourceForNode(rawMustache));
       return;
     }
