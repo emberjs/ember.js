@@ -187,7 +187,7 @@ export function defineProperty(
   let value;
   if (desc instanceof Descriptor) {
     value = desc;
-
+    enumerable = desc.enumerable !== false;
     Object.defineProperty(obj, keyName, {
       configurable: true,
       enumerable,
