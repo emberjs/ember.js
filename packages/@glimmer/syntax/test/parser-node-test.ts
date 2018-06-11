@@ -115,10 +115,10 @@ test('Handlebars embedded in an attribute (unquoted)', function() {
 
 test('Handlebars embedded in an attribute of a self-closing tag (unqouted)', function() {
   let t = '<input value={{foo}}/>';
-  astEqual(
-    t,
-    b.program([b.element('input', [b.attr('value', b.mustache(b.path('foo')))], [], [])])
-  );
+
+  let element = b.element('input', [b.attr('value', b.mustache(b.path('foo')))], [], []);
+  element.selfClosing = true;
+  astEqual(t, b.program([element]));
 });
 
 test('Handlebars embedded in an attribute (sexprs)', function() {
@@ -485,4 +485,11 @@ test('disallowed mustaches in the tagName space', function(assert) {
   assert.throws(() => {
     parse('<input{{bar}}>');
   }, /Cannot use mustaches in an elements tagname: `{{bar` at L1:C6/);
+});
+
+test('mustache immediately followed by self closing tag does not error', function() {
+  let ast = parse('<FooBar data-foo={{blah}}/>');
+  let element = b.element('FooBar', [b.attr('data-foo', b.mustache('blah'))]);
+  element.selfClosing = true;
+  astEqual(ast, b.program([element]));
 });
