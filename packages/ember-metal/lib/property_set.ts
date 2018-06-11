@@ -118,9 +118,7 @@ export function set(obj: object, keyName: string, value: any, tolerant?: boolean
 
     meta(obj).writeDescriptors(keyName, cv);
 
-    if (typeof cv.setup === 'function') {
-      cv.setup(obj, keyName);
-    }
+    cv.setup(obj, keyName);
 
     cv.set(obj, keyName, value);
     return value;

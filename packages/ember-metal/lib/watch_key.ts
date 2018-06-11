@@ -35,7 +35,7 @@ export function watchKey(obj: object, keyName: string, _meta?: Meta) {
     // activate watching first time
     let possibleDesc = descriptorFor(obj, keyName, meta);
 
-    if (possibleDesc !== undefined && possibleDesc.willWatch) {
+    if (possibleDesc !== undefined && possibleDesc.willWatch !== undefined) {
       possibleDesc.willWatch(obj, keyName, meta);
     }
 
@@ -105,7 +105,7 @@ export function unwatchKey(obj: object, keyName: string, _meta?: Meta) {
     let possibleDesc = descriptorFor(obj, keyName, meta);
     let isDescriptor = possibleDesc !== undefined;
 
-    if (isDescriptor && possibleDesc.didUnwatch) {
+    if (isDescriptor && possibleDesc.didUnwatch !== undefined) {
       possibleDesc.didUnwatch(obj, keyName, meta);
     }
 
