@@ -1,6 +1,6 @@
 {
   "name": "@glimmer/low-level",
-  "version": "0.35.3",
+  "version": "0.35.4",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/low-level",
   "devDependencies": {
     "typescript": "^2.8.3"
