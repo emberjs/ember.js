@@ -1,7 +1,7 @@
-import { Descriptor as EmberDescriptor } from './properties';
+import { Descriptor } from './properties';
 
 export default function descriptor(desc: PropertyDescriptor) {
-  return new Descriptor(desc);
+  return new NativeDescriptor(desc);
 }
 
 /**
@@ -9,17 +9,17 @@ export default function descriptor(desc: PropertyDescriptor) {
   this at all, however, the way we currently flatten/merge our mixins require
   a special value to denote a descriptor.
 
-  @class Descriptor
+  @class NativeDescriptor
   @private
 */
-class Descriptor extends EmberDescriptor {
+class NativeDescriptor extends Descriptor {
   desc: PropertyDescriptor;
-  enumerable: boolean;
 
   constructor(desc: PropertyDescriptor) {
     super();
     this.desc = desc;
     this.enumerable = desc.enumerable !== false;
+    this.configurable = desc.configurable !== false;
   }
 
   setup(obj: object, key: string) {

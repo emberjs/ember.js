@@ -131,14 +131,6 @@ export function get(obj: object, keyName: string): any {
         }
       );
 
-      Object.defineProperty(obj, keyName, {
-        configurable: true,
-        enumerable: value.enumerable === false,
-        get() {
-          return value.get(this, keyName);
-        },
-      });
-
       meta(obj).writeDescriptors(keyName, value);
 
       value.setup(obj, keyName);

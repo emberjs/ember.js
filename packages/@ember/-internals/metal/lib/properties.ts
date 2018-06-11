@@ -27,14 +27,18 @@ export type InheritingGetterFunction = ((this: object) => void) & {
   @private
 */
 export abstract class Descriptor {
-  isDescriptor: boolean;
-  enumerable: boolean;
-  constructor() {
-    this.isDescriptor = true;
-    this.enumerable = true;
+  isDescriptor = true;
+  enumerable = true;
+  configurable = true;
+
+  setup(obj: object, keyName: string): void {
+    Object.defineProperty(obj, keyName, {
+      enumerable: this.enumerable,
+      configurable: this.configurable,
+      get: DESCRIPTOR_GETTER_FUNCTION(keyName, this),
+    });
   }
 
-  setup(_obj: object, _keyName: string): void {}
   teardown(_obj: object, _keyName: string, _meta: Meta): void {}
 
   abstract get(obj: object, keyName: string): any | null | undefined;
@@ -188,16 +192,8 @@ export function defineProperty(
   let value;
   if (desc instanceof Descriptor) {
     value = desc;
-
-    Object.defineProperty(obj, keyName, {
-      configurable: true,
-      enumerable,
-      get: DESCRIPTOR_GETTER_FUNCTION(keyName, value),
-    });
-
-    meta.writeDescriptors(keyName, value);
-
     desc.setup(obj, keyName);
+    meta.writeDescriptors(keyName, value);
   } else if (desc === undefined || desc === null) {
     value = data;
 
