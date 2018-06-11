@@ -1,5 +1,11 @@
 # Ember Changelog
 
+### v3.3.0-beta.2 (June 11, 2018)
+- [#16709](https://github.com/emberjs/ember.js/pull/16709) [BUGFIX] Avoid ordered set deprecation in @ember/ordered-set addon
+- [#16715](https://github.com/emberjs/ember.js/pull/16715) [BUGFIX] Update glimmer-vm to 0.35.3
+- [#16729](https://github.com/emberjs/ember.js/pull/16729) [BUGFIX] Throw error if run.bind receives no method
+- [#16731](https://github.com/emberjs/ember.js/pull/16731) [BUGFIX] Better error when a route name is not valid
+
 ### v3.3.0-beta.1 (May 31, 2018)
 
 - [#16687](https://github.com/emberjs/ember.js/pull/16687) [FEATURE] Implement optional jQuery integration (see [emberjs/rfcs#294](https://github.com/emberjs/rfcs/blob/master/text/0294-optional-jquery.md) for more details).
