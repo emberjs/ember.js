@@ -6801,9 +6801,9 @@ simple-fmt@~0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/simple-fmt/-/simple-fmt-0.1.0.tgz#191bf566a59e6530482cb25ab53b4a8dc85c3a6b"
 
-simple-html-tokenizer@^0.5.3:
-  version "0.5.3"
-  resolved "https://registry.yarnpkg.com/simple-html-tokenizer/-/simple-html-tokenizer-0.5.3.tgz#c1c246a53ccf1cd65fb2fa970967145b47602ce4"
+simple-html-tokenizer@^0.5.5:
+  version "0.5.5"
+  resolved "https://registry.yarnpkg.com/simple-html-tokenizer/-/simple-html-tokenizer-0.5.5.tgz#110e63f2fe095e1f21f2f07e8c259a5ab6d6bebb"
 
 simple-is@~0.2.0:
   version "0.2.0"
