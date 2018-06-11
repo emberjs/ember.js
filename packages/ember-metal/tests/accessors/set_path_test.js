@@ -77,8 +77,7 @@ moduleFor(
     // DEPRECATED
     //
     ['@test [obj, bla.bla] gives a proper exception message'](assert) {
-      let exceptionMessage =
-        'Property set failed: object in path "bla" could not be found or was destroyed.';
+      let exceptionMessage = 'Property set failed: object in path "bla" could not be found.';
       try {
         set(obj, 'bla.bla', 'BAM');
       } catch (ex) {
