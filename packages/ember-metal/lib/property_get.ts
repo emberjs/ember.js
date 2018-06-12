@@ -142,9 +142,7 @@ export function get(obj: object, keyName: string): any {
 
       meta(obj).writeDescriptors(keyName, value);
 
-      if (typeof value.setup === 'function') {
-        value.setup(obj, keyName);
-      }
+      value.setup(obj, keyName);
 
       return value.get(obj, keyName);
     }

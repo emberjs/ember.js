@@ -34,9 +34,9 @@ export abstract class Descriptor {
     this.enumerable = true;
   }
 
-  setup?(obj: object, keyName: string): void;
+  setup(_obj: object, _keyName: string): void {}
+  teardown(_obj: object, _keyName: string, _meta: Meta): void {}
 
-  abstract teardown(obj: object, keyName: string, meta: Meta): void;
   abstract get(obj: object, keyName: string): any | null | undefined;
   abstract set(obj: object, keyName: string, value: any | null | undefined): any | null | undefined;
 
@@ -196,9 +196,7 @@ export function defineProperty(
 
     meta.writeDescriptors(keyName, value);
 
-    if (typeof desc.setup === 'function') {
-      desc.setup(obj, keyName);
-    }
+    desc.setup(obj, keyName);
   } else if (desc === undefined || desc === null) {
     value = data;
 

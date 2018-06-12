@@ -33,6 +33,4 @@ class Descriptor extends EmberDescriptor {
   set(obj: object, key: string, value: any | null | undefined) {
     return (obj[key] = value);
   }
-
-  teardown() {}
 }
