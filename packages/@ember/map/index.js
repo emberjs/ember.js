@@ -2,13 +2,17 @@ import { assert, deprecate } from '@ember/debug';
 import { guidFor } from 'ember-utils';
 import OrderedSet from './lib/ordered-set';
 import { copyMap } from './lib/utils';
+import { MAP } from '@ember/deprecated-features';
 
 /**
 @module @ember/map
 @private
 */
 
-/*
+let Map;
+
+if (MAP) {
+  /*
   JavaScript (before ES6) does not have a Map implementation. Objects,
   which are often used as dictionaries, may only have Strings as keys.
 
@@ -26,7 +30,7 @@ import { copyMap } from './lib/utils';
   `EmberMap.create()` for symmetry with other Ember classes.
 */
 
-/**
+  /**
   A Map stores values indexed by keys. Unlike JavaScript's
   default Objects, the keys of a Map can be any JavaScript
   object.
@@ -46,29 +50,29 @@ import { copyMap } from './lib/utils';
   @constructor
   @deprecated use native `Map` instead.
 */
-class Map {
-  constructor() {
-    deprecate('Use of @ember/Map is deprecated. Please use native `Map` instead', false, {
-      id: 'ember-map-deprecation',
-      until: '3.5.0',
-    });
+  Map = class Map {
+    constructor() {
+      deprecate('Use of @ember/Map is deprecated. Please use native `Map` instead', false, {
+        id: 'ember-map-deprecation',
+        until: '3.5.0',
+      });
 
-    this._keys = new OrderedSet();
-    this._values = Object.create(null);
-    this.size = 0;
-  }
+      this._keys = new OrderedSet();
+      this._values = Object.create(null);
+      this.size = 0;
+    }
 
-  /**
+    /**
     @method create
     @static
     @private
   */
-  static create() {
-    let Constructor = this;
-    return new Constructor();
-  }
+    static create() {
+      let Constructor = this;
+      return new Constructor();
+    }
 
-  /**
+    /**
     Retrieve the value associated with a given key.
 
     @method get
@@ -76,18 +80,18 @@ class Map {
     @return {*} the value associated with the key, or `undefined`
     @private
   */
-  get(key) {
-    if (this.size === 0) {
-      return;
+    get(key) {
+      if (this.size === 0) {
+        return;
+      }
+
+      let values = this._values;
+      let guid = guidFor(key);
+
+      return values[guid];
     }
 
-    let values = this._values;
-    let guid = guidFor(key);
-
-    return values[guid];
-  }
-
-  /**
+    /**
     Adds a value to the map. If a value for the given key has already been
     provided, the new value will replace the old value.
 
@@ -97,24 +101,24 @@ class Map {
     @return {Map}
     @private
   */
-  set(key, value) {
-    let keys = this._keys;
-    let values = this._values;
-    let guid = guidFor(key);
+    set(key, value) {
+      let keys = this._keys;
+      let values = this._values;
+      let guid = guidFor(key);
 
-    // ensure we don't store -0
-    let k = key === -0 ? 0 : key; // eslint-disable-line no-compare-neg-zero
+      // ensure we don't store -0
+      let k = key === -0 ? 0 : key; // eslint-disable-line no-compare-neg-zero
 
-    keys.add(k, guid);
+      keys.add(k, guid);
 
-    values[guid] = value;
+      values[guid] = value;
 
-    this.size = keys.size;
+      this.size = keys.size;
 
-    return this;
-  }
+      return this;
+    }
 
-  /**
+    /**
     Removes a value from the map for an associated key.
 
     @since 1.8.0
@@ -123,26 +127,26 @@ class Map {
     @return {Boolean} true if an item was removed, false otherwise
     @private
   */
-  delete(key) {
-    if (this.size === 0) {
-      return false;
-    }
-    // don't use ES6 "delete" because it will be annoying
-    // to use in browsers that are not ES6 friendly;
-    let keys = this._keys;
-    let values = this._values;
-    let guid = guidFor(key);
+    delete(key) {
+      if (this.size === 0) {
+        return false;
+      }
+      // don't use ES6 "delete" because it will be annoying
+      // to use in browsers that are not ES6 friendly;
+      let keys = this._keys;
+      let values = this._values;
+      let guid = guidFor(key);
 
-    if (keys.delete(key, guid)) {
-      delete values[guid];
-      this.size = keys.size;
-      return true;
-    } else {
-      return false;
+      if (keys.delete(key, guid)) {
+        delete values[guid];
+        this.size = keys.size;
+        return true;
+      } else {
+        return false;
+      }
     }
-  }
 
-  /**
+    /**
     Check whether a key is present.
 
     @method has
@@ -150,11 +154,11 @@ class Map {
     @return {Boolean} true if the item was present, false otherwise
     @private
   */
-  has(key) {
-    return this._keys.has(key);
-  }
+    has(key) {
+      return this._keys.has(key);
+    }
 
-  /**
+    /**
     Iterate over all the keys and values. Calls the function once
     for each key, passing in value, key, and the map being iterated over,
     in that order.
@@ -167,47 +171,48 @@ class Map {
       callback. By default, `this` is the map.
     @private
   */
-  forEach(callback /*, ...thisArg*/) {
-    assert(
-      `${Object.prototype.toString.call(callback)} is not a function`,
-      typeof callback === 'function'
-    );
+    forEach(callback /*, ...thisArg*/) {
+      assert(
+        `${Object.prototype.toString.call(callback)} is not a function`,
+        typeof callback === 'function'
+      );
 
-    if (this.size === 0) {
-      return;
+      if (this.size === 0) {
+        return;
+      }
+
+      let map = this;
+      let cb, thisArg;
+
+      if (arguments.length === 2) {
+        thisArg = arguments[1];
+        cb = key => callback.call(thisArg, map.get(key), key, map);
+      } else {
+        cb = key => callback(map.get(key), key, map);
+      }
+
+      this._keys.forEach(cb);
     }
 
-    let map = this;
-    let cb, thisArg;
-
-    if (arguments.length === 2) {
-      thisArg = arguments[1];
-      cb = key => callback.call(thisArg, map.get(key), key, map);
-    } else {
-      cb = key => callback(map.get(key), key, map);
-    }
-
-    this._keys.forEach(cb);
-  }
-
-  /**
+    /**
     @method clear
     @private
   */
-  clear() {
-    this._keys.clear();
-    this._values = Object.create(null);
-    this.size = 0;
-  }
+    clear() {
+      this._keys.clear();
+      this._values = Object.create(null);
+      this.size = 0;
+    }
 
-  /**
+    /**
     @method copy
     @return {Map}
     @private
   */
-  copy() {
-    return copyMap(this, new Map());
-  }
+    copy() {
+      return copyMap(this, new Map());
+    }
+  };
 }
 
 export default Map;
