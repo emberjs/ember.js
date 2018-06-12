@@ -1,32 +1,115 @@
-import { ComponentCapabilities, Opaque, Option } from '@glimmer/interfaces';
+import { assert } from '@ember/debug';
+import {
+  ComponentCapabilities,
+  Dict,
+  Opaque,
+  Option,
+  ProgramSymbolTable,
+} from '@glimmer/interfaces';
 import { PathReference, Tag } from '@glimmer/reference';
-import { Arguments, Bounds, CapturedNamedArguments, PrimitiveReference } from '@glimmer/runtime';
+import {
+  Arguments,
+  CapturedArguments,
+  ComponentDefinition,
+  Invocation,
+  PrimitiveReference,
+  WithStaticLayout,
+} from '@glimmer/runtime';
 import { Destroyable } from '@glimmer/util';
-
-import { addChildView } from 'ember-views';
+import { Factory } from 'ember-owner';
+import { OwnedTemplateMeta } from 'ember-views';
 
 import Environment from '../environment';
-import { DynamicScope, Renderer } from '../renderer';
+import RuntimeResolver from '../resolver';
+import { OwnedTemplate } from '../template';
 import { RootReference } from '../utils/references';
 import AbstractComponentManager from './abstract';
-import DefinitionState from './definition-state';
 
-export interface CustomComponentManagerDelegate<T> {
-  version: 'string';
-  create(options: { ComponentClass: T; args: {} }): T;
-  getContext(instance: T): Opaque;
-  update(instance: T, args: {}): void;
-  destroy?(instance: T): void;
-  didCreate?(instance: T): void;
-  didUpdate?(instance: T): void;
-  getView?(instance: T): any;
+const CAPABILITIES = {
+  dynamicLayout: false,
+  dynamicTag: false,
+  prepareArgs: false,
+  createArgs: true,
+  attributeHook: false,
+  elementHook: false,
+  createCaller: false,
+  dynamicScope: true,
+  updateHook: true,
+  createInstance: true,
+};
+
+export interface OptionalCapabilities {
+  asyncLifecycleCallbacks?: boolean;
+  destructor?: boolean;
 }
 
-export interface ComponentArguments<T = {}> {
+export function capabilities(managerAPI: '3.4', options: OptionalCapabilities = {}): Capabilities {
+  assert('Invalid component manager compatibility specified', managerAPI === '3.4');
+
+  return {
+    asyncLifeCycleCallbacks: !!options.asyncLifecycleCallbacks,
+    destructor: !!options.destructor,
+  };
+}
+
+export interface DefinitionState<ComponentInstance> {
+  name: string;
+  ComponentClass: Factory<ComponentInstance>;
+  symbolTable: ProgramSymbolTable;
+  template?: any;
+}
+
+export interface Capabilities {
+  asyncLifeCycleCallbacks: boolean;
+  destructor: boolean;
+}
+
+export interface CustomComponentManagerArgs {
+  named: Dict<Opaque>;
   positional: Opaque[];
-  named: T;
 }
 
+export interface ManagerDelegate<ComponentInstance> {
+  capabilities: Capabilities;
+  createComponent(factory: Opaque, args: CustomComponentManagerArgs): ComponentInstance;
+  updateComponent(instance: ComponentInstance, args: CustomComponentManagerArgs): void;
+  getContext(instance: ComponentInstance): Opaque;
+}
+
+export function hasAsyncLifeCycleCallbacks<ComponentInstance>(
+  delegate: ManagerDelegate<ComponentInstance>
+): delegate is ManagerDelegateWithAsyncLifeCycleCallbacks<ComponentInstance> {
+  return delegate.capabilities.asyncLifeCycleCallbacks;
+}
+
+export interface ManagerDelegateWithAsyncLifeCycleCallbacks<ComponentInstance>
+  extends ManagerDelegate<ComponentInstance> {
+  didCreateComponent(instance: ComponentInstance): void;
+  didUpdateComponent(instance: ComponentInstance): void;
+}
+
+export function hasDestructors<ComponentInstance>(
+  delegate: ManagerDelegate<ComponentInstance>
+): delegate is ManagerDelegateWithDestructors<ComponentInstance> {
+  return delegate.capabilities.destructor;
+}
+
+export interface ManagerDelegateWithDestructors<ComponentInstance>
+  extends ManagerDelegate<ComponentInstance> {
+  destroyComponent(instance: ComponentInstance): void;
+}
+
+export interface ComponentArguments {
+  positional: Opaque[];
+  named: Dict<Opaque>;
+}
+
+function valueForCapturedArgs(args: CapturedArguments): CustomComponentManagerArgs {
+  return {
+    named: args.named.value(),
+    positional: args.positional.value(),
+  };
+}
 /**
   The CustomComponentManager allows addons to provide custom component
   implementations that integrate seamlessly into Ember. This is accomplished
@@ -52,125 +135,135 @@ export interface ComponentArguments<T = {}> {
   * `update()` - invoked when the arguments passed to a component change
   * `getContext()` - returns the object that should be
 */
-export default class CustomComponentManager<T> extends AbstractComponentManager<
-  CustomComponentState<T> | null,
-  DefinitionState
-> {
-  constructor(private delegate: CustomComponentManagerDelegate<T>) {
-    super();
-  }
-
+export default class CustomComponentManager<ComponentInstance>
+  extends AbstractComponentManager<
+    CustomComponentState<ComponentInstance>,
+    DefinitionState<ComponentInstance>
+  >
+  implements
+    WithStaticLayout<
+      CustomComponentState<ComponentInstance>,
+      DefinitionState<ComponentInstance>,
+      OwnedTemplateMeta,
+      RuntimeResolver
+    > {
   create(
     _env: Environment,
-    definition: DefinitionState,
-    args: Arguments,
-    dynamicScope: DynamicScope
-  ): CustomComponentState<T> {
-    const { delegate } = this;
-    const capturedArgs = args.named.capture();
+    definition: CustomComponentDefinitionState<ComponentInstance>,
+    args: Arguments
+  ): CustomComponentState<ComponentInstance> {
+    const { delegate } = definition;
+    const capturedArgs = args.capture();
 
-    const component = delegate.create({
-      args: capturedArgs.value(),
-      ComponentClass: (definition.ComponentClass as any) as T,
-    });
-
-    const { view: parentView } = dynamicScope;
-
-    if (parentView !== null && parentView !== undefined) {
-      addChildView(parentView, component);
-    }
-
-    dynamicScope.view = component;
+    let invocationArgs = valueForCapturedArgs(capturedArgs);
+    const component = delegate.createComponent(definition.ComponentClass, invocationArgs);
 
     return new CustomComponentState(delegate, component, capturedArgs);
   }
 
-  update({ component, args }: CustomComponentState<T>) {
-    this.delegate.update(component, args.value());
+  update({ delegate, component, args }: CustomComponentState<ComponentInstance>) {
+    delegate.updateComponent(component, valueForCapturedArgs(args));
   }
 
-  didUpdate({ component }: CustomComponentState<T>) {
-    if (typeof this.delegate.didUpdate === 'function') {
-      this.delegate.didUpdate(component);
+  didCreate({ delegate, component }: CustomComponentState<ComponentInstance>) {
+    if (hasAsyncLifeCycleCallbacks(delegate)) {
+      delegate.didCreateComponent(component);
     }
   }
 
-  getContext(component: T) {
-    this.delegate.getContext(component);
+  didUpdate({ delegate, component }: CustomComponentState<ComponentInstance>) {
+    if (hasAsyncLifeCycleCallbacks(delegate)) {
+      delegate.didUpdateComponent(component);
+    }
   }
 
-  getLayout(state: DefinitionState) {
-    return {
-      handle: state.template.asLayout().compile(),
-      symbolTable: state.symbolTable,
-    };
+  getContext({ delegate, component }: CustomComponentState<ComponentInstance>) {
+    delegate.getContext(component);
   }
 
   getSelf({
+    delegate,
     component,
-  }: CustomComponentState<T>): PrimitiveReference<null> | PathReference<Opaque> {
-    const context = this.delegate.getContext(component);
+  }: CustomComponentState<ComponentInstance>): PrimitiveReference<null> | PathReference<Opaque> {
+    const context = delegate.getContext(component);
+
     return new RootReference(context);
   }
 
-  getDestructor(state: CustomComponentState<T>): Option<Destroyable> {
-    return state;
+  getDestructor(state: CustomComponentState<ComponentInstance>): Option<Destroyable> {
+    if (hasDestructors(state.delegate)) {
+      return state;
+    } else {
+      return null;
+    }
   }
 
-  getCapabilities(_state: DefinitionState): ComponentCapabilities {
-    return {
-      dynamicLayout: false,
-      dynamicTag: false,
-      prepareArgs: false,
-      createArgs: true,
-      attributeHook: false,
-      elementHook: false,
-      createCaller: false,
-      dynamicScope: true,
-      updateHook: true,
-      createInstance: true,
-    };
+  getCapabilities(): ComponentCapabilities {
+    return CAPABILITIES;
   }
 
-  getTag({ args }: CustomComponentState<T>): Tag {
+  getTag({ args }: CustomComponentState<ComponentInstance>): Tag {
     return args.tag;
   }
 
-  didRenderLayout({ component }: CustomComponentState<T>, _bounds: Bounds) {
-    const renderer = getRenderer(component);
-    renderer.register(component);
-    if (typeof this.delegate.didCreate === 'function') {
-      this.delegate.didCreate(component);
-    }
+  didRenderLayout() {}
+
+  getLayout(state: DefinitionState<ComponentInstance>): Invocation {
+    return {
+      handle: state.template.asLayout().compile(),
+      symbolTable: state.symbolTable!,
+    };
   }
 }
+const CUSTOM_COMPONENT_MANAGER = new CustomComponentManager();
 
 /**
  * Stores internal state about a component instance after it's been created.
  */
-export class CustomComponentState<T> {
+export class CustomComponentState<ComponentInstance> {
   constructor(
-    public delegate: CustomComponentManagerDelegate<T>,
-    public component: T,
-    public args: CapturedNamedArguments
+    public delegate: ManagerDelegate<ComponentInstance>,
+    public component: ComponentInstance,
+    public args: CapturedArguments
   ) {}
 
   destroy() {
     const { delegate, component } = this;
 
-    let renderer = getRenderer(component);
-    renderer.unregister(component);
-
-    if (delegate.destroy) {
-      delegate.destroy(component);
+    if (hasDestructors(delegate)) {
+      delegate.destroyComponent(component);
     }
   }
 }
 
-function getRenderer(component: {}): Renderer {
-  let renderer = component['renderer'];
-  if (!renderer) {
-    throw new Error(`missing renderer for component ${component}`);
+export interface CustomComponentDefinitionState<ComponentInstance>
+  extends DefinitionState<ComponentInstance> {
+  delegate: ManagerDelegate<ComponentInstance>;
+}
+
+export class CustomManagerDefinition<ComponentInstance> implements ComponentDefinition {
+  public state: CustomComponentDefinitionState<ComponentInstance>;
+  public symbolTable: ProgramSymbolTable;
+  public manager: CustomComponentManager<
+    ComponentInstance
+  > = CUSTOM_COMPONENT_MANAGER as CustomComponentManager<ComponentInstance>;
+
+  constructor(
+    public name: string,
+    public ComponentClass: Factory<ComponentInstance>,
+    public delegate: ManagerDelegate<ComponentInstance>,
+    public template: OwnedTemplate
+  ) {
+    const layout = template.asLayout();
+    const symbolTable = layout.symbolTable;
+    this.symbolTable = symbolTable;
+
+    this.state = {
+      name,
+      ComponentClass,
+      template,
+      symbolTable,
+      delegate,
+    };
   }
-  return renderer as Renderer;
 }

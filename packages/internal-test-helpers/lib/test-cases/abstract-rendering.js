@@ -170,6 +170,11 @@ export default class AbstractRenderingTestCase extends AbstractTestCase {
     }
   }
 
+  registerComponentManager(name, manager) {
+    let owner = this.env.owner || this.owner;
+    owner.register(`component-manager:${name}`, manager);
+  }
+
   registerTemplate(name, template) {
     let { owner } = this;
     if (typeof template === 'string') {

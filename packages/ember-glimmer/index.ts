@@ -301,6 +301,6 @@ export { UpdatableReference, INVOKE } from './lib/utils/references';
 export { default as iterableFor } from './lib/utils/iterable';
 export { default as DebugStack } from './lib/utils/debug-stack';
 export { default as OutletView } from './lib/views/outlet';
-export { default as CustomComponentManager } from './lib/component-managers/custom';
-export { COMPONENT_MANAGER, componentManager } from './lib/utils/custom-component-manager';
+export { capabilities } from './lib/component-managers/custom';
+export { setComponentManager, getComponentManager } from './lib/utils/custom-component-manager';
 export { isSerializationFirstNode } from './lib/utils/serialization-first-node-helpers';

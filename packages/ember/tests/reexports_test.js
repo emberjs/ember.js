@@ -195,7 +195,8 @@ let allExports = [
   ['HTMLBars.template', 'ember-glimmer', 'template'],
   ['Handlebars.Utils.escapeExpression', 'ember-glimmer', 'escapeExpression'],
   ['String.htmlSafe', 'ember-glimmer', 'htmlSafe'],
-  ['_setComponentManager', 'ember-glimmer', 'componentManager'],
+  ['_setComponentManager', 'ember-glimmer', 'setComponentManager'],
+  ['_componentManagerCapabilities', 'ember-glimmer', 'capabilities'],
 
   // ember-runtime
   ['A', 'ember-runtime'],
