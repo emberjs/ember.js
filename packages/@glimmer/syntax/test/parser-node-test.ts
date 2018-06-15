@@ -493,3 +493,9 @@ test('mustache immediately followed by self closing tag does not error', functio
   element.selfClosing = true;
   astEqual(ast, b.program([element]));
 });
+
+test('path expression with "dangling dot" throws error', function(assert) {
+  assert.throws(() => {
+    parse('{{if foo. bar baz}}');
+  }, /'\.' is not a supported path in Glimmer; check for a path with a trailing '\.' at L1:C8/);
+});
