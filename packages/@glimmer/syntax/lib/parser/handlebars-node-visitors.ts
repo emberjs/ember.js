@@ -285,6 +285,12 @@ export abstract class HandlebarsNodeVisitors extends Parser {
         );
       }
       parts = [path.parts.join('/')];
+    } else if (original === '.') {
+      let locationInfo = `L${loc.start.line}:C${loc.start.column}`;
+      throw new SyntaxError(
+        `'.' is not a supported path in Glimmer; check for a path with a trailing '.' at ${locationInfo}.`,
+        path.loc
+      );
     } else {
       parts = path.parts;
     }
