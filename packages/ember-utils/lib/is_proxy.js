@@ -1,11 +1,17 @@
+import { isObject } from './spec';
 import WeakSet from './weak_set';
 
 const PROXIES = new WeakSet();
 
 export function isProxy(object) {
-  return PROXIES.has(object);
+  if (isObject(object)) {
+    return PROXIES.has(object);
+  }
+  return false;
 }
 
 export function setProxy(object) {
-  return PROXIES.add(object);
+  if (isObject(object)) {
+    PROXIES.add(object);
+  }
 }
