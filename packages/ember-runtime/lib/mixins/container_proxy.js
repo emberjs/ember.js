@@ -1,10 +1,7 @@
 /**
 @module ember
 */
-import {
-  Mixin,
-  run
-} from 'ember-metal';
+import { Mixin, run, schedule } from 'ember-metal';
 
 /**
   ContainerProxyMixin is used to provide public access to specific
@@ -118,7 +115,7 @@ let containerProxyMixin = {
     this._super(...arguments);
 
     if (this.__container__) {
-      run(this.__container__, 'destroy');
+      schedule('destroy', this.__container__, 'destroy');
     }
   },
 
