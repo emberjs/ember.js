@@ -161,6 +161,27 @@ moduleFor(
       runDestroy(owner);
     }
 
+    ["@test modelFor doesn't require the routerMicrolib"](assert) {
+      let route = EmberRoute.create({
+        _router: { _routerMicrolib: null },
+      });
+
+      let owner = buildOwner();
+      setOwner(route, owner);
+
+      let foo = { name: 'foo' };
+
+      let FooRoute = EmberRoute.extend({
+        currentModel: foo,
+      });
+
+      owner.register('route:foo', FooRoute);
+
+      assert.strictEqual(route.modelFor('foo'), foo);
+
+      runDestroy(owner);
+    }
+
     ['@test .send just calls an action if the router is absent'](assert) {
       assert.expect(7);
       let route = EmberRoute.extend({
