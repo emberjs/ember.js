@@ -25,14 +25,17 @@ moduleFor(
       assert.equal(result[OWNER], this.instance, 'returns an object with the OWNER symbol');
     }
 
-    ["@test actions queue completes before destruction"](assert) {
+    ['@test actions queue completes before destruction'](assert) {
       assert.expect(1);
 
-      this.registry.register('service:auth', EmberObject.extend({
-        willDestroy() {
-          assert.ok(getOwner(this).lookup('service:auth'), 'can still lookup');
-        }
-      }));
+      this.registry.register(
+        'service:auth',
+        EmberObject.extend({
+          willDestroy() {
+            assert.ok(getOwner(this).lookup('service:auth'), 'can still lookup');
+          },
+        })
+      );
 
       let service = this.instance.lookup('service:auth');
 
