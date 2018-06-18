@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.3.0-beta.3 (June 18, 2018)
+- [#16743](https://github.com/emberjs/ember.js/pull/16743) [BUGFIX] Update glimmer-vm to 0.35.4.
+- [#16750](https://github.com/emberjs/ember.js/pull/16750) [BUGFIX] Bring back isObject guard for ember-utils/is_proxy
+
 ### v3.3.0-beta.2 (June 11, 2018)
 - [#16709](https://github.com/emberjs/ember.js/pull/16709) [BUGFIX] Avoid ordered set deprecation in @ember/ordered-set addon
 - [#16715](https://github.com/emberjs/ember.js/pull/16715) [BUGFIX] Update glimmer-vm to 0.35.3
