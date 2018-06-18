@@ -72,6 +72,27 @@ module.exports = {
       ],
       protocol: 'browser',
     },
+    /* Chrome 41 for Googlebot as outlined by:
+     * https://developers.google.com/search/docs/guides/rendering
+     */
+    BS_Chrome_Googlebot: {
+      exe: 'node_modules/.bin/browserstack-launch',
+      args: [
+        '--os',
+        'Windows',
+        '--osv',
+        '10',
+        '--b',
+        'chrome',
+        '--bv',
+        '41.0',
+        '-t',
+        '1200',
+        '--u',
+        '<url>',
+      ],
+      protocol: 'browser',
+    },
     BS_Firefox_Current: {
       exe: 'node_modules/.bin/browserstack-launch',
       args: [
