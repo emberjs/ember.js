@@ -727,7 +727,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
 
     @method rejectBy
     @param {String} key the property to test
-    @param {String} [value] optional value to test against.
+    @param {*} [value] optional value to test against.
     @return {Array} rejected array
     @public
   */
