@@ -1,4 +1,4 @@
-import { run } from '@ember/runloop';
+import { schedule } from '@ember/runloop';
 /**
 @module ember
 */
@@ -101,7 +101,7 @@ let containerProxyMixin = {
     this._super(...arguments);
 
     if (this.__container__) {
-      run(this.__container__, 'destroy');
+      schedule('destroy', this.__container__, 'destroy');
     }
   },
 
