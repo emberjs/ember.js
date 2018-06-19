@@ -16,11 +16,12 @@ import {
   ICapturedArguments,
   CapturedPositionalArguments,
   CapturedNamedArguments,
+  ICapturedArgumentsValue,
 } from '../../vm/arguments';
 import { ComponentInstance } from './component';
 import { ComponentManager } from '../../internal-interfaces';
 import { Scope } from '../../environment';
-import { CompilableBlock } from '@glimmer/interfaces';
+import { CompilableBlock, Opaque } from '@glimmer/interfaces';
 
 export const CheckTag: Checker<Tag> = CheckInstanceof(TagWrapper);
 
@@ -35,12 +36,25 @@ export const CheckReference: Checker<Reference> = CheckInterface({
   value: CheckFunction,
 });
 
+class CheckCapturedArgumentsValue implements Checker<() => ICapturedArgumentsValue> {
+  type!: () => ICapturedArgumentsValue;
+
+  validate(value: Opaque): value is () => ICapturedArgumentsValue {
+    return typeof value === 'function';
+  }
+
+  expected(): string {
+    return `SafeString`;
+  }
+}
+
 export const CheckArguments = wrap(() => CheckInstanceof(Arguments));
 export const CheckCapturedArguments: Checker<ICapturedArguments> = CheckInterface({
   tag: CheckTag,
   length: CheckNumber,
   positional: CheckInstanceof(CapturedPositionalArguments),
   named: CheckInstanceof(CapturedNamedArguments),
+  value: new CheckCapturedArgumentsValue(),
 });
 
 export const CheckScope = wrap(() => CheckInstanceof(Scope));
