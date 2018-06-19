@@ -93,7 +93,8 @@ import {
 import {
   Checkbox,
   Component,
-  componentManager,
+  setComponentManager,
+  capabilities,
   escapeExpression,
   getTemplates,
   Helper,
@@ -516,7 +517,8 @@ Ember.Checkbox = Checkbox;
 Ember.TextField = TextField;
 Ember.TextArea = TextArea;
 Ember.LinkComponent = LinkComponent;
-Ember._setComponentManager = componentManager;
+Ember._setComponentManager = setComponentManager;
+Ember._componentManagerCapabilities = capabilities;
 Ember.Handlebars = {
   template,
   Utils: {

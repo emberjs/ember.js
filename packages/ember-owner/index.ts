@@ -13,7 +13,7 @@ export interface FactoryClass {
   positionalParams?: string | string[] | undefined | null;
 }
 
-export interface Factory<T, C extends FactoryClass | object> {
+export interface Factory<T, C extends FactoryClass | object = FactoryClass> {
   class?: C;
   fullName?: string;
   normalizedName?: string;
