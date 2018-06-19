@@ -117,7 +117,7 @@ class CoreObject {
         },
       });
 
-      FACTORY_FOR.set(self, FACTORY_FOR.get(this));
+      FACTORY_FOR.set(self, initFactory);
     }
 
     let m = meta(self);

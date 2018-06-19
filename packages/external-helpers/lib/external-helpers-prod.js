@@ -1,5 +1,11 @@
+const create = Object.create;
+const setPrototypeOf = Object.setPrototypeOf;
+const defineProperty = Object.defineProperty;
+
+export function classCallCheck() {}
+
 export function inherits(subClass, superClass) {
-  subClass.prototype = Object.create(superClass && superClass.prototype, {
+  subClass.prototype = create(superClass === null ? null : superClass.prototype, {
     constructor: {
       value: subClass,
       enumerable: false,
@@ -7,11 +13,7 @@ export function inherits(subClass, superClass) {
       configurable: true,
     },
   });
-
-  if (superClass)
-    Object.setPrototypeOf
-      ? Object.setPrototypeOf(subClass, superClass)
-      : defaults(subClass, superClass);
+  if (superClass !== null) setPrototypeOf(subClass, superClass);
 }
 
 export function taggedTemplateLiteralLoose(strings, raw) {
@@ -25,30 +27,16 @@ function defineProperties(target, props) {
     descriptor.enumerable = descriptor.enumerable || false;
     descriptor.configurable = true;
     if ('value' in descriptor) descriptor.writable = true;
-    Object.defineProperty(target, descriptor.key, descriptor);
+    defineProperty(target, descriptor.key, descriptor);
   }
 }
 
 export function createClass(Constructor, protoProps, staticProps) {
-  if (protoProps) defineProperties(Constructor.prototype, protoProps);
-  if (staticProps) defineProperties(Constructor, staticProps);
+  if (protoProps !== undefined) defineProperties(Constructor.prototype, protoProps);
+  if (staticProps !== undefined) defineProperties(Constructor, staticProps);
   return Constructor;
 }
 
-export function defaults(obj, defaults) {
-  var keys = Object.getOwnPropertyNames(defaults);
-  for (var i = 0; i < keys.length; i++) {
-    var key = keys[i];
-    var value = Object.getOwnPropertyDescriptor(defaults, key);
-    if (value && value.configurable && obj[key] === undefined) {
-      Object.defineProperty(obj, key, value);
-    }
-  }
-  return obj;
+export function possibleConstructorReturn(self, call) {
+  return (call !== null && typeof call === 'object') || typeof call === 'function' ? call : self;
 }
-
-export const possibleConstructorReturn = function(self, call) {
-  return call && (typeof call === 'object' || typeof call === 'function') ? call : self;
-};
-
-export const slice = Array.prototype.slice;
