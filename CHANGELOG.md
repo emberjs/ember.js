@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.2.1 (June 19, 2018)
+
+- [#16750](https://github.com/emberjs/ember.js/pull/16750) [BUGFIX] Bring back isObject guard for ember-utils/is_proxy
+
 ### v3.2.0 (May 31, 2018)
 
 - [#16613](https://github.com/emberjs/ember.js/pull/16613) [BUGFIX] Prevent errors in ember-engines + 3.1 + proxies.
