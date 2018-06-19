@@ -97,7 +97,21 @@ export const Resolver = EmberObject.extend({
   @public
 */
 
-const DefaultResolver = EmberObject.extend({
+class DefaultResolver extends EmberObject {
+  constructor(props) {
+    if (props == null) {
+      throw new Error('create missing props');
+    }
+    super(props);
+  }
+
+  static create(props) {
+    if (props == null) {
+      throw new Error('static create missing props');
+    }
+    return super.create(props);
+  }
+
   /**
     This will be set to the Application instance when it is
     created.
@@ -105,11 +119,13 @@ const DefaultResolver = EmberObject.extend({
     @property namespace
     @public
   */
-  namespace: null,
 
   init() {
+    if (this.namespace == null) {
+      throw new Error('init missing namespace');
+    }
     this._parseNameCache = dictionary(null);
-  },
+  }
 
   normalize(fullName) {
     let [type, name] = fullName.split(':');
@@ -128,7 +144,7 @@ const DefaultResolver = EmberObject.extend({
     } else {
       return fullName;
     }
-  },
+  }
 
   /**
     This method is called via the container's resolver method.
@@ -162,7 +178,7 @@ const DefaultResolver = EmberObject.extend({
     }
 
     return resolved;
-  },
+  }
 
   /**
     Convert the string name of the form 'type:name' to
@@ -178,7 +194,7 @@ const DefaultResolver = EmberObject.extend({
     return (
       this._parseNameCache[fullName] || (this._parseNameCache[fullName] = this._parseName(fullName))
     );
-  },
+  }
 
   _parseName(fullName) {
     let [type, fullNameWithoutType] = fullName.split(':');
@@ -216,7 +232,7 @@ const DefaultResolver = EmberObject.extend({
       root,
       resolveMethodName: `resolve${resolveMethodName}`,
     };
-  },
+  }
 
   /**
     Returns a human-readable description for a fullName. Used by the
@@ -243,11 +259,11 @@ const DefaultResolver = EmberObject.extend({
     }
 
     return description;
-  },
+  }
 
   makeToString(factory) {
     return factory.toString();
-  },
+  }
 
   /**
     Given a parseName object (output from `parseName`), apply
@@ -264,7 +280,7 @@ const DefaultResolver = EmberObject.extend({
     } else {
       parsedName.name = parsedName.name.replace(/\./g, '_');
     }
-  },
+  }
   /**
     Look up the template in Ember.TEMPLATES
 
@@ -277,7 +293,7 @@ const DefaultResolver = EmberObject.extend({
     let templateName = parsedName.fullNameWithoutType.replace(/\./g, '/');
 
     return getTemplate(templateName) || getTemplate(decamelize(templateName));
-  },
+  }
 
   /**
     Lookup the view using `resolveOther`
@@ -290,7 +306,7 @@ const DefaultResolver = EmberObject.extend({
   resolveView(parsedName) {
     this.useRouterNaming(parsedName);
     return this.resolveOther(parsedName);
-  },
+  }
 
   /**
     Lookup the controller using `resolveOther`
@@ -303,7 +319,7 @@ const DefaultResolver = EmberObject.extend({
   resolveController(parsedName) {
     this.useRouterNaming(parsedName);
     return this.resolveOther(parsedName);
-  },
+  }
   /**
     Lookup the route using `resolveOther`
 
@@ -315,7 +331,7 @@ const DefaultResolver = EmberObject.extend({
   resolveRoute(parsedName) {
     this.useRouterNaming(parsedName);
     return this.resolveOther(parsedName);
-  },
+  }
 
   /**
     Lookup the model on the Application namespace
@@ -330,7 +346,7 @@ const DefaultResolver = EmberObject.extend({
     let factory = get(parsedName.root, className);
 
     return factory;
-  },
+  }
   /**
     Look up the specified object (from parsedName) on the appropriate
     namespace (usually on the Application)
@@ -342,7 +358,7 @@ const DefaultResolver = EmberObject.extend({
   */
   resolveHelper(parsedName) {
     return this.resolveOther(parsedName);
-  },
+  }
   /**
     Look up the specified object (from parsedName) on the appropriate
     namespace (usually on the Application)
@@ -356,12 +372,12 @@ const DefaultResolver = EmberObject.extend({
     let className = classify(parsedName.name) + classify(parsedName.type);
     let factory = get(parsedName.root, className);
     return factory;
-  },
+  }
 
   resolveMain(parsedName) {
     let className = classify(parsedName.type);
     return get(parsedName.root, className);
-  },
+  }
 
   /**
     Used to iterate all items of a given type.
@@ -388,7 +404,7 @@ const DefaultResolver = EmberObject.extend({
     }
 
     return known;
-  },
+  }
 
   /**
     Converts provided name from the backing namespace into a container lookup name.
@@ -409,30 +425,28 @@ const DefaultResolver = EmberObject.extend({
     let dasherizedName = dasherize(namePrefix);
 
     return `${type}:${dasherizedName}`;
-  },
-});
+  }
+}
 
 export default DefaultResolver;
 
 if (DEBUG) {
-  DefaultResolver.reopen({
-    /**
+  /**
       @method _logLookup
       @param {Boolean} found
       @param {Object} parsedName
       @private
     */
-    _logLookup(found, parsedName) {
-      let symbol = found ? '[✓]' : '[ ]';
+  DefaultResolver.prototype._logLookup = function(found, parsedName) {
+    let symbol = found ? '[✓]' : '[ ]';
 
-      let padding;
-      if (parsedName.fullName.length > 60) {
-        padding = '.';
-      } else {
-        padding = new Array(60 - parsedName.fullName.length).join('.');
-      }
+    let padding;
+    if (parsedName.fullName.length > 60) {
+      padding = '.';
+    } else {
+      padding = new Array(60 - parsedName.fullName.length).join('.');
+    }
 
-      info(symbol, parsedName.fullName, padding, this.lookupDescription(parsedName.fullName));
-    },
-  });
+    info(symbol, parsedName.fullName, padding, this.lookupDescription(parsedName.fullName));
+  };
 }
