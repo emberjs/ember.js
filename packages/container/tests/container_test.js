@@ -681,6 +681,7 @@ moduleFor(
 
       this.runTask(() => {
         container.destroy();
+        container.finalizeDestroy();
       });
 
       expectAssertion(() => {
@@ -698,6 +699,7 @@ moduleFor(
 
       this.runTask(() => {
         container.destroy();
+        container.finalizeDestroy();
       });
 
       expectAssertion(() => {
