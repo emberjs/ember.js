@@ -55,6 +55,7 @@ export default class Container {
     this.cache = dictionary(options.cache || null);
     this.factoryManagerCache = dictionary(options.factoryManagerCache || null);
     this.isDestroyed = false;
+    this.isDestroying = false;
 
     if (DEBUG) {
       this.validationCache = dictionary(options.validationCache || null);
@@ -127,6 +128,11 @@ export default class Container {
    @method destroy
    */
   destroy() {
+    destroyDestroyables(this);
+    this.isDestroying = true;
+  }
+
+  finalizeDestroy() {
     resetCache(this);
     this.isDestroyed = true;
   }
@@ -141,6 +147,7 @@ export default class Container {
   reset(fullName) {
     if (this.isDestroyed) return;
     if (fullName === undefined) {
+      destroyDestroyables(this);
       resetCache(this);
     } else {
       resetMember(this, this.registry.normalize(fullName));
@@ -416,7 +423,6 @@ function destroyDestroyables(container) {
 }
 
 function resetCache(container) {
-  destroyDestroyables(container);
   container.cache = dictionary(null);
   container.factoryManagerCache = dictionary(null);
 }

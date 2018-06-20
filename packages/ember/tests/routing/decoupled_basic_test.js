@@ -3521,7 +3521,7 @@ moduleFor(
       );
       console.error = () => {};
 
-      this.visit('/').then(() => {
+      return this.visit('/').then(() => {
         let rootElement = document.querySelector('#qunit-fixture');
         assert.equal(
           rootElement.querySelectorAll('#error').length,
