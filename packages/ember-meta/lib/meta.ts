@@ -83,7 +83,7 @@ export class Meta {
 
     // when meta(obj).proto === obj, the object is intended to be only a
     // prototype and doesn't need to actually be observable itself
-    this.proto = undefined;
+    this.proto = obj.constructor === undefined ? undefined : obj.constructor.prototype;
 
     // The next meta in our inheritance chain. We (will) track this
     // explicitly instead of using prototypical inheritance because we

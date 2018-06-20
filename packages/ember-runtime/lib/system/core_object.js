@@ -928,7 +928,6 @@ class CoreObject {
       if (parent) {
         parent.proto();
       }
-      meta(p).proto = p;
       this.PrototypeMixin.apply(p);
     }
     return p;
