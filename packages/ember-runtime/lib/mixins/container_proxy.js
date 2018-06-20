@@ -1,7 +1,7 @@
 /**
 @module ember
 */
-import { Mixin, run, schedule } from 'ember-metal';
+import { Mixin, run } from 'ember-metal';
 
 /**
   ContainerProxyMixin is used to provide public access to specific
@@ -108,18 +108,20 @@ let containerProxyMixin = {
     });
   },
 
-  /**
-   @private
-   */
-  willDestroy() {
-    this._super(...arguments);
+  destroy() {
+    let container = this.__container__;
 
-    if (this.__container__) {
-      schedule('destroy', this.__container__, 'destroy');
+    if (container) {
+      run.join(() => {
+        container.destroy();
+        run.schedule('destroy', container, 'finalizeDestroy');
+      });
     }
+
+    this._super();
   },
 
-/**
+  /**
  Given a fullName return a factory manager.
 
   This method returns a manager which can be used for introspection of the
