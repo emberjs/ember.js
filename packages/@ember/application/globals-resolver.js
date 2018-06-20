@@ -11,23 +11,6 @@ import validateType from './lib/validate-type';
 import { getTemplate } from 'ember-glimmer';
 import { DEBUG } from '@glimmer/env';
 
-export const Resolver = EmberObject.extend({
-  /*
-    This will be set to the Application instance when it is
-    created.
-
-    @property namespace
-  */
-  namespace: null,
-  normalize: null, // required
-  resolve: null, // required
-  parseName: null, // required
-  lookupDescription: null, // required
-  makeToString: null, // required
-  resolveOther: null, // required
-  _logLookup: null, // required
-});
-
 /**
   The DefaultResolver defines the default lookup rules to resolve
   container lookups before consulting the container for registered
