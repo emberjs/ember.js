@@ -1,4 +1,4 @@
-import { schedule } from '@ember/runloop';
+import { schedule, join } from '@ember/runloop';
 /**
 @module ember
 */
@@ -94,15 +94,17 @@ let containerProxyMixin = {
     return this.__container__.lookup(fullName, options);
   },
 
-  /**
-   @private
-   */
-  willDestroy() {
-    this._super(...arguments);
+  destroy() {
+    let container = this.__container__;
 
-    if (this.__container__) {
-      schedule('destroy', this.__container__, 'destroy');
+    if (container) {
+      join(() => {
+        container.destroy();
+        schedule('destroy', container, 'finalizeDestroy');
+      });
     }
+
+    this._super();
   },
 
   /**
