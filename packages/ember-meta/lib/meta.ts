@@ -64,6 +64,7 @@ export class Meta {
       counters!.metaInstantiated++;
       this._values = undefined;
     }
+    this._parent = undefined;
     this._descriptors = undefined;
     this._watching = undefined;
     this._mixins = undefined;
