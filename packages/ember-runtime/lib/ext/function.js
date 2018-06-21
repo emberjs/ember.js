@@ -4,7 +4,6 @@
 
 import { ENV } from 'ember-environment';
 import { on, computed, observer } from 'ember-metal';
-import { assert } from '@ember/debug';
 
 if (ENV.EXTEND_PROTOTYPES.Function) {
   Object.defineProperties(Function.prototype, {

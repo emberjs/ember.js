@@ -5,6 +5,8 @@ import { Tag } from '@glimmer/reference';
 import { ENV } from 'ember-environment';
 import { lookupDescriptor, symbol, toString } from 'ember-utils';
 
+const objectPrototype = Object.prototype;
+
 export interface MetaCounters {
   peekCalls: number;
   peekPrototypeWalks: number;
@@ -93,7 +95,7 @@ export class Meta {
     let parent = this._parent;
     if (parent === undefined) {
       let proto = getPrototypeOf(this.source);
-      this._parent = parent = proto === null ? null : meta(proto);
+      this._parent = parent = proto === null || proto === objectPrototype ? null : meta(proto);
     }
     return parent;
   }
