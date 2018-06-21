@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.2.2 (June 21, 2018)
+
+- [#16754](https://github.com/emberjs/ember.js/pull/16754) [BUGFIX] Fix container destroy timing
+
 ### v3.2.1 (June 19, 2018)
 
 - [#16750](https://github.com/emberjs/ember.js/pull/16750) [BUGFIX] Bring back isObject guard for ember-utils/is_proxy
