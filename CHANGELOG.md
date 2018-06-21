@@ -17,6 +17,9 @@
 - [#16691](https://github.com/emberjs/ember.js/pull/16691) [DEPRECATION] [emberjs/rfcs#237](https://github.com/emberjs/rfcs/pull/237) Implement `Ember.Map`, `Ember.MapWithDefault`, and `Ember.OrderedSet` deprecation.
 - [#16692](https://github.com/emberjs/ember.js/pull/16692) [DEPRECATION] [emberjs/rfcs#322](https://github.com/emberjs/rfcs/pull/322) Implement `Ember.copy`/`Ember.Copyable` deprecation.
 
+### v3.2.2 (June 21, 2018)
+
+- [#16754](https://github.com/emberjs/ember.js/pull/16754) [BUGFIX] Fix container destroy timing
 
 ### v3.2.1 (June 19, 2018)
 
