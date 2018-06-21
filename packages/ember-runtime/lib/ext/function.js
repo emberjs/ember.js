@@ -118,29 +118,6 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
       },
     },
 
-    _observesImmediately: {
-      configurable: true,
-      enumerable: false,
-      writable: true,
-      value: function() {
-        assert(
-          'Immediate observers must observe internal properties only, ' +
-            'not properties on other objects.',
-          function checkIsInternalProperty() {
-            for (let i = 0; i < arguments.length; i++) {
-              if (arguments[i].indexOf('.') !== -1) {
-                return false;
-              }
-            }
-            return true;
-          }
-        );
-
-        // observes handles property expansion
-        return this.observes(...arguments);
-      },
-    },
-
     /**
       The `on` extension of Javascript's Function prototype is available
       when `EmberENV.EXTEND_PROTOTYPES` or `EmberENV.EXTEND_PROTOTYPES.Function` is
