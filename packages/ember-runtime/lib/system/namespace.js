@@ -201,6 +201,8 @@ function classToString() {
   return (this[NAME_KEY] = calculateToString(this));
 }
 
+EmberObject.toString = classToString;
+
 function processAllNamespaces() {
   let unprocessedNamespaces = !Namespace.PROCESSED;
   let unprocessedMixins = hasUnprocessedMixins();

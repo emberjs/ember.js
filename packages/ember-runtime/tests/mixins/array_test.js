@@ -21,12 +21,15 @@ import { A as emberA } from '../../system/native_array';
   Implement a basic fake mutable array.  This validates that any non-native
   enumerable can impl this API.
 */
-const TestArray = EmberObject.extend(EmberArray, {
-  _content: null,
-
-  init(ary = []) {
-    this._content = ary;
-  },
+class TestArray extends EmberObject.extend(EmberArray) {
+  constructor(arr) {
+    let props;
+    if (!Array.isArray(arr) && arr !== undefined) {
+      props = arr;
+    }
+    super(props);
+    this._content = Array.isArray(arr) ? arr : [];
+  }
 
   // some methods to modify the array so we can test changes.  Note that
   // arrays can be modified even if they don't implement MutableArray.  The
@@ -36,22 +39,22 @@ const TestArray = EmberObject.extend(EmberArray, {
     arrayContentWillChange(this, idx, 0, 1);
     this._content.push(obj);
     arrayContentDidChange(this, idx, 0, 1);
-  },
+  }
 
   removeFirst() {
     arrayContentWillChange(this, 0, 1, 0);
     this._content.shift();
     arrayContentDidChange(this, 0, 1, 0);
-  },
+  }
 
   objectAt(idx) {
     return this._content[idx];
-  },
+  }
 
-  length: computed(function() {
+  get length() {
     return this._content.length;
-  })
-});
+  }
+}
 
 
 ArrayTests.extend({

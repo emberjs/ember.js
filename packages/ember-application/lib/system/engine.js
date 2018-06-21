@@ -455,7 +455,7 @@ Engine.reopenClass({
   @return {*} the resolved value for a given lookup
 */
 function resolverFor(namespace) {
-  let ResolverClass = namespace.get('Resolver') || DefaultResolver;
+  let ResolverClass = get(namespace, 'Resolver') || DefaultResolver;
 
   return ResolverClass.create({
     namespace
