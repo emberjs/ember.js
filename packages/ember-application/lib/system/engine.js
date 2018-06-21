@@ -448,11 +448,9 @@ Engine.reopenClass({
   @return {*} the resolved value for a given lookup
 */
 function resolverFor(namespace) {
-  let ResolverClass = namespace.get('Resolver') || DefaultResolver;
-
-  return ResolverClass.create({
-    namespace,
-  });
+  let ResolverClass = get(namespace, 'Resolver') || DefaultResolver;
+  let props = { namespace };
+  return ResolverClass.create(props);
 }
 
 function buildInitializerMethod(bucketName, humanName) {
