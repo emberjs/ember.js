@@ -4,7 +4,6 @@
 
 import { ENV } from 'ember-environment';
 import { on, computed, observer } from 'ember-metal';
-import { assert } from '@ember/debug';
 
 if (ENV.EXTEND_PROTOTYPES.Function) {
   Object.defineProperties(Function.prototype, {
@@ -115,29 +114,6 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
       writable: true,
       value: function() {
         return observer(...arguments, this);
-      },
-    },
-
-    _observesImmediately: {
-      configurable: true,
-      enumerable: false,
-      writable: true,
-      value: function() {
-        assert(
-          'Immediate observers must observe internal properties only, ' +
-            'not properties on other objects.',
-          function checkIsInternalProperty() {
-            for (let i = 0; i < arguments.length; i++) {
-              if (arguments[i].indexOf('.') !== -1) {
-                return false;
-              }
-            }
-            return true;
-          }
-        );
-
-        // observes handles property expansion
-        return this.observes(...arguments);
       },
     },
 
