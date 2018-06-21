@@ -21,7 +21,7 @@ export const protoMethods = {
     if (this._listenersFinalized) { return; }
     if (this._listeners === undefined) { this._listeners = []; }
     let pointer = this.parent;
-    while (pointer !== undefined) {
+    while (pointer !== null) {
       let listeners = pointer._listeners;
       if (listeners !== undefined) {
         this._listeners = this._listeners.concat(listeners);
@@ -34,7 +34,7 @@ export const protoMethods = {
 
   removeFromListeners(eventName, target, method, didRemove) {
     let pointer = this;
-    while (pointer !== undefined) {
+    while (pointer !== null) {
       let listeners = pointer._listeners;
       if (listeners !== undefined) {
         for (let index = listeners.length - 4; index >= 0; index -= 4) {
@@ -63,7 +63,7 @@ export const protoMethods = {
   matchingListeners(eventName) {
     let pointer = this;
     let result;
-    while (pointer !== undefined) {
+    while (pointer !== null) {
       let listeners = pointer._listeners;
       if (listeners !== undefined) {
         for (let index = 0; index < listeners.length; index += 4) {

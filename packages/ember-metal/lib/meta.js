@@ -12,6 +12,8 @@ import {
 } from './chains';
 import { ENV } from 'ember-environment';
 
+const objectPrototype = Object.prototype;
+
 let counters;
 if (DEBUG) {
   counters = {
@@ -40,7 +42,7 @@ const IS_PROXY = 1 << 4;
 const NODE_STACK = [];
 
 export class Meta {
-  constructor(obj, parentMeta) {
+  constructor(obj) {
     if (DEBUG) {
       counters.metaInstantiated++;
     }
@@ -70,16 +72,22 @@ export class Meta {
 
     // when meta(obj).proto === obj, the object is intended to be only a
     // prototype and doesn't need to actually be observable itself
-    this.proto = undefined;
+    this.proto = obj.constructor === undefined ? undefined : obj.constructor.prototype;
 
-    // The next meta in our inheritance chain. We (will) track this
-    // explicitly instead of using prototypical inheritance because we
-    // have detailed knowledge of how each property should really be
-    // inherited, and we can optimize it much better than JS runtimes.
-    this.parent = parentMeta;
+    this._parent = undefined;
 
     this._listeners = undefined;
     this._listenersFinalized = false;
+  }
+
+  get parent() {
+    let parent = this._parent;
+    if (parent === undefined) {
+      let proto = getPrototypeOf(this.source);
+      this._parent = parent =
+        proto === null || proto === objectPrototype ? null : meta(proto);
+    }
+    return parent;
   }
 
   isInitialized(obj) {
@@ -166,7 +174,7 @@ export class Meta {
 
   _getInherited(key) {
     let pointer = this;
-    while (pointer !== undefined) {
+    while (pointer !== null) {
       let map = pointer[key];
       if (map !== undefined) {
         return map;
@@ -177,7 +185,7 @@ export class Meta {
 
   _findInherited(key, subkey) {
     let pointer = this;
-    while (pointer !== undefined) {
+    while (pointer !== null) {
       let map = pointer[key];
       if (map !== undefined) {
         let value = map[subkey];
@@ -192,7 +200,7 @@ export class Meta {
   // Implements a member that provides a lazily created map of maps,
   // with inheritance at both levels.
   writeDeps(subkey, itemkey, value) {
-    assert(`Cannot modify dependent keys for \`${itemkey}\` on \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
+    assert(this.isMetaDestroyed() && `Cannot modify dependent keys for \`${itemkey}\` on \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
 
     let outerMap = this._getOrCreateOwnMap('_deps');
     let innerMap = outerMap[subkey];
@@ -204,7 +212,7 @@ export class Meta {
 
   peekDeps(subkey, itemkey) {
     let pointer = this;
-    while (pointer !== undefined) {
+    while (pointer !== null) {
       let map = pointer._deps;
       if (map !== undefined) {
         let value = map[subkey];
@@ -221,7 +229,7 @@ export class Meta {
 
   hasDeps(subkey) {
     let pointer = this;
-    while (pointer !== undefined) {
+    while (pointer !== null) {
       let deps = pointer._deps;
       if (deps !== undefined && deps[subkey] !== undefined) {
         return true;
@@ -239,7 +247,7 @@ export class Meta {
     let pointer = this;
     let seen;
     let calls;
-    while (pointer !== undefined) {
+    while (pointer !== null) {
       let map = pointer[key];
       if (map !== undefined) {
         let innerMap = map[subkey];
@@ -268,7 +276,7 @@ export class Meta {
   readableTags() { return this._tags; }
 
   writableTag(create) {
-    assert(`Cannot create a new tag for \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
+    assert(this.isMetaDestroyed() && `Cannot create a new tag for \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
     let ret = this._tag;
     if (ret === undefined) {
       ret = this._tag = create(this.source);
@@ -281,7 +289,7 @@ export class Meta {
   }
 
   writableChainWatchers(create) {
-    assert(`Cannot create a new chain watcher for \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
+    assert(this.isMetaDestroyed() && `Cannot create a new chain watcher for \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
     let ret = this._chainWatchers;
     if (ret === undefined) {
       ret = this._chainWatchers = create(this.source);
@@ -294,10 +302,10 @@ export class Meta {
   }
 
   writableChains(create) {
-    assert(`Cannot create a new chains for \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
+    assert(this.isMetaDestroyed() && `Cannot create a new chains for \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
     let ret = this._chains;
     if (ret === undefined) {
-      if (this.parent === undefined) {
+      if (this.parent === null) {
         ret = create(this.source);
       } else {
         ret = this.parent.writableChains(create).copy(this.source);
@@ -312,7 +320,7 @@ export class Meta {
   }
 
   writeWatching(subkey, value) {
-    assert(`Cannot update watchers for \`${subkey}\` on \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
+    assert(this.isMetaDestroyed() && `Cannot update watchers for \`${subkey}\` on \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
     let map = this._getOrCreateOwnMap('_watching');
     map[subkey] = value;
   }
@@ -322,7 +330,7 @@ export class Meta {
   }
 
   writeMixins(subkey, value) {
-    assert(`Cannot add mixins for \`${subkey}\` on \`${toString(this.source)}\` call writeMixins after it has been destroyed.`, !this.isMetaDestroyed());
+    assert(this.isMetaDestroyed() && `Cannot add mixins for \`${subkey}\` on \`${toString(this.source)}\` call writeMixins after it has been destroyed.`, !this.isMetaDestroyed());
     let map = this._getOrCreateOwnMap('_mixins');
     map[subkey] = value;
   }
@@ -334,7 +342,7 @@ export class Meta {
   forEachMixins(fn) {
     let pointer = this;
     let seen;
-    while (pointer !== undefined) {
+    while (pointer !== null) {
       let map = pointer._mixins;
       if (map !== undefined) {
         for (let key in map) {
@@ -351,7 +359,7 @@ export class Meta {
 
   writeBindings(subkey, value) {
     assert('Cannot invoke `meta.writeBindings` when EmberENV._ENABLE_BINDING_SUPPORT is not set', ENV._ENABLE_BINDING_SUPPORT);
-    assert(`Cannot add a binding for \`${subkey}\` on \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
+    assert(this.isMetaDestroyed() && `Cannot add a binding for \`${subkey}\` on \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
 
     let map = this._getOrCreateOwnMap('_bindings');
     map[subkey] = value;
@@ -367,7 +375,7 @@ export class Meta {
 
     let pointer = this;
     let seen;
-    while (pointer !== undefined) {
+    while (pointer !== null) {
       let map = pointer._bindings;
       if (map !== undefined) {
         for (let key in map) {
@@ -384,12 +392,12 @@ export class Meta {
 
   clearBindings() {
     assert('Cannot invoke `meta.clearBindings` when EmberENV._ENABLE_BINDING_SUPPORT is not set', ENV._ENABLE_BINDING_SUPPORT);
-    assert(`Cannot clear bindings on \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
+    assert(this.isMetaDestroyed() && `Cannot clear bindings on \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
     this._bindings = undefined;
   }
 
   writeValues(subkey, value) {
-    assert(`Cannot set the value of \`${subkey}\` on \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
+    assert(this.isMetaDestroyed() && `Cannot set the value of \`${subkey}\` on \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
 
     let map = this._getOrCreateOwnMap('_values');
     map[subkey] = value;
@@ -414,7 +422,7 @@ if (MANDATORY_SETTER) {
 
     let pointer = this;
 
-    while (pointer !== undefined) {
+    while (pointer !== null) {
       let map = pointer[internalKey];
       if (map !== undefined) {
         let value = map[subkey];
@@ -442,7 +450,7 @@ if (MANDATORY_SETTER) {
 
 if (EMBER_METAL_ES5_GETTERS) {
   Meta.prototype.writeDescriptors = function(subkey, value) {
-    assert(`Cannot update descriptors for \`${subkey}\` on \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
+    assert(this.isMetaDestroyed() && `Cannot update descriptors for \`${subkey}\` on \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
     let map = this._getOrCreateOwnMap('_descriptors');
     map[subkey] = value;
   };
@@ -548,17 +556,13 @@ export function meta(obj) {
   }
 
   let maybeMeta = peekMeta(obj);
-  let parent;
 
   // remove this code, in-favor of explicit parent
-  if (maybeMeta !== undefined) {
-    if (maybeMeta.source === obj) {
-      return maybeMeta;
-    }
-    parent = maybeMeta;
+  if (maybeMeta !== undefined && maybeMeta.source === obj) {
+    return maybeMeta;
   }
 
-  let newMeta = new Meta(obj, parent);
+  let newMeta = new Meta(obj);
   setMeta(obj, newMeta);
   return newMeta;
 }

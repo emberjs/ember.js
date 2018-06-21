@@ -15,10 +15,6 @@ QUnit.module('system/object/toString', {
   }
 });
 
-QUnit.test('NAME_KEY slot is present on Class', function(assert) {
-  assert.ok(EmberObject.extend().hasOwnProperty(NAME_KEY), 'Ember Class\'s have a NAME_KEY slot');
-});
-
 QUnit.test('toString() returns the same value if called twice', function(assert) {
   let Foo = Namespace.create();
   Foo.toString = function() { return 'Foo'; };

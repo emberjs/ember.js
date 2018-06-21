@@ -242,7 +242,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
 
     expectAssertion(() => {
       this.render('{{foo-bar}}');
-    }, /You cannot use a computed property for the component's `tagName` \(<\(.+>\)\./);
+    }, /You cannot use a computed property for the component's `tagName` \(<.+>\)\./);
   }
 
   ['@test class is applied before didInsertElement'](assert) {
@@ -2280,7 +2280,7 @@ moduleFor('Components test: curly components', class extends RenderingTest {
     assert.equal(this.$('#inner-value').text(), '1', 'initial render of inner');
     assert.equal(this.$('#middle-value').text(), '', 'initial render of middle (observers do not run during init)');
 
-    let expectedBacktrackingMessage = /modified "value" twice on <\(.+> in a single render\. It was rendered in "component:x-middle" and modified in "component:x-inner"/;
+    let expectedBacktrackingMessage = /modified "value" twice on <[^>]+> in a single render\. It was rendered in "component:x-middle" and modified in "component:x-inner"/;
 
     expectAssertion(() => {
       this.runTask(() => outer.set('value', 2));
