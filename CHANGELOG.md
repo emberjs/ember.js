@@ -62,6 +62,9 @@
 - [#16399](https://github.com/emberjs/ember.js/pull/16399) [BUGFIX] `{{#each-in}}` now correctly handles `key="@index"` (using the index/position). The new `key="@key"` option uses the item's key.
 - [emberjs/rfcs#286](https://github.com/emberjs/rfcs/blob/master/text/0286-block-let-template-helper.md) [FEATURE] Enabled block `let` handlebars helper by default.
 
+### v3.1.3 (June 21, 2018)
+- [#16754](https://github.com/emberjs/ember.js/pull/16754) [BUGFIX] Fix container destroy timing
+
 ### v3.1.2 (May 7, 2018)
 - [#16600](https://github.com/emberjs/ember.js/pull/16600) [BUGFIX] Fix SimpleHelper memory leak
 - [#16605](https://github.com/emberjs/ember.js/pull/16605) [BUGFIX] Use resetCache on container destroy.
