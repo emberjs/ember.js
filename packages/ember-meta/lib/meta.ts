@@ -5,6 +5,8 @@ import { Tag } from '@glimmer/reference';
 import { ENV } from 'ember-environment';
 import { lookupDescriptor, symbol, toString } from 'ember-utils';
 
+const objectPrototype = Object.prototype;
+
 export interface MetaCounters {
   peekCalls: number;
   peekPrototypeWalks: number;
@@ -49,7 +51,7 @@ export class Meta {
   _flags: number;
   source: object;
   proto: object | undefined;
-  parent: Meta | undefined;
+  _parent: Meta | undefined | null;
   _listeners: any | undefined;
   _listenersFinalized: boolean;
 
@@ -57,7 +59,7 @@ export class Meta {
   _values: any | undefined;
   _bindings: any | undefined;
 
-  constructor(obj: object, parentMeta: Meta | undefined) {
+  constructor(obj: object) {
     if (DEBUG) {
       counters!.metaInstantiated++;
       this._values = undefined;
@@ -83,16 +85,19 @@ export class Meta {
 
     // when meta(obj).proto === obj, the object is intended to be only a
     // prototype and doesn't need to actually be observable itself
-    this.proto = undefined;
-
-    // The next meta in our inheritance chain. We (will) track this
-    // explicitly instead of using prototypical inheritance because we
-    // have detailed knowledge of how each property should really be
-    // inherited, and we can optimize it much better than JS runtimes.
-    this.parent = parentMeta;
+    this.proto = obj.constructor === undefined ? undefined : obj.constructor.prototype;
 
     this._listeners = undefined;
     this._listenersFinalized = false;
+  }
+
+  get parent() {
+    let parent = this._parent;
+    if (parent === undefined) {
+      let proto = getPrototypeOf(this.source);
+      this._parent = parent = proto === null || proto === objectPrototype ? null : meta(proto);
+    }
+    return parent;
   }
 
   isInitialized(obj: object) {
@@ -149,8 +154,8 @@ export class Meta {
   }
 
   _getInherited(key: string) {
-    let pointer: Meta | undefined = this;
-    while (pointer !== undefined) {
+    let pointer: Meta | null = this;
+    while (pointer !== null) {
       let map = pointer[key];
       if (map !== undefined) {
         return map;
@@ -160,8 +165,8 @@ export class Meta {
   }
 
   _findInherited(key: string, subkey: string): any | undefined {
-    let pointer: Meta | undefined = this;
-    while (pointer !== undefined) {
+    let pointer: Meta | null = this;
+    while (pointer !== null) {
       let map = pointer[key];
       if (map !== undefined) {
         let value = map[subkey];
@@ -174,8 +179,8 @@ export class Meta {
   }
 
   _hasInInheritedSet(key: string, value: any) {
-    let pointer: Meta | undefined = this;
-    while (pointer !== undefined) {
+    let pointer: Meta | null = this;
+    while (pointer !== null) {
       let set = pointer[key];
       if (set !== undefined) {
         if (set.has(value)) {
@@ -208,8 +213,8 @@ export class Meta {
   }
 
   peekDeps(subkey: string, itemkey: string): number {
-    let pointer: Meta | undefined = this;
-    while (pointer !== undefined) {
+    let pointer: Meta | null = this;
+    while (pointer !== null) {
       let map = pointer._deps;
       if (map !== undefined) {
         let value = map[subkey];
@@ -227,8 +232,8 @@ export class Meta {
   }
 
   hasDeps(subkey: string) {
-    let pointer: Meta | undefined = this;
-    while (pointer !== undefined) {
+    let pointer: Meta | null = this;
+    while (pointer !== null) {
       let deps = pointer._deps;
       if (deps !== undefined && deps[subkey] !== undefined) {
         return true;
@@ -243,10 +248,10 @@ export class Meta {
   }
 
   _forEachIn(key: string, subkey: string, fn: Function) {
-    let pointer: Meta | undefined = this;
+    let pointer: Meta | null = this;
     let seen: Set<any> | undefined;
     let calls: any[] | undefined;
-    while (pointer !== undefined) {
+    while (pointer !== null) {
       let map = pointer[key];
       if (map !== undefined) {
         let innerMap = map[subkey];
@@ -325,7 +330,7 @@ export class Meta {
     );
     let ret = this._chains;
     if (ret === undefined) {
-      if (this.parent === undefined) {
+      if (this.parent === null) {
         ret = create(this.source);
       } else {
         ret = this.parent.writableChains(create).copy(this.source);
@@ -375,9 +380,9 @@ export class Meta {
   }
 
   forEachMixins(fn: Function) {
-    let pointer: Meta | undefined = this;
+    let pointer: Meta | null = this;
     let seen: Set<any> | undefined;
-    while (pointer !== undefined) {
+    while (pointer !== null) {
       let set = pointer._mixins;
       if (set !== undefined) {
         seen = seen === undefined ? new Set() : seen;
@@ -416,9 +421,9 @@ export class Meta {
   }
 
   forEachDescriptors(fn: Function) {
-    let pointer: Meta | undefined = this;
+    let pointer: Meta | null = this;
     let seen: Set<any> | undefined;
-    while (pointer !== undefined) {
+    while (pointer !== null) {
       let map = pointer._descriptors;
       if (map !== undefined) {
         for (let key in map) {
@@ -456,7 +461,7 @@ export class Meta {
       this._listeners = [];
     }
     let pointer = this.parent;
-    while (pointer !== undefined) {
+    while (pointer !== null) {
       let listeners = pointer._listeners;
       if (listeners !== undefined) {
         this._listeners = this._listeners.concat(listeners);
@@ -470,8 +475,8 @@ export class Meta {
   }
 
   removeFromListeners(eventName: string, target: any, method: Function | string): void {
-    let pointer: Meta | undefined = this;
-    while (pointer !== undefined) {
+    let pointer: Meta | null = this;
+    while (pointer !== null) {
       let listeners = pointer._listeners;
       if (listeners !== undefined) {
         for (let index = listeners.length - 4; index >= 0; index -= 4) {
@@ -499,10 +504,10 @@ export class Meta {
   }
 
   matchingListeners(eventName: string) {
-    let pointer: Meta | undefined = this;
+    let pointer: Meta | null = this;
     // fix type
     let result: any[] | undefined;
-    while (pointer !== undefined) {
+    while (pointer !== null) {
       let listeners = pointer._listeners;
       if (listeners !== undefined) {
         for (let index = 0; index < listeners.length; index += 4) {
@@ -553,9 +558,9 @@ if (BINDING_SUPPORT && ENV._ENABLE_BINDING_SUPPORT) {
   };
 
   Meta.prototype.forEachBindings = function(fn: Function) {
-    let pointer: Meta | undefined = this;
+    let pointer: Meta | null = this;
     let seen: { [key: string]: any } | undefined;
-    while (pointer !== undefined) {
+    while (pointer !== null) {
       let map = pointer._bindings;
       if (map !== undefined) {
         for (let key in map) {
@@ -608,9 +613,9 @@ if (DEBUG) {
   Meta.prototype.readInheritedValue = function(key, subkey) {
     let internalKey = `_${key}`;
 
-    let pointer: Meta | undefined = this;
+    let pointer: Meta | null = this;
 
-    while (pointer !== undefined) {
+    while (pointer !== null) {
       let map = pointer[internalKey];
       if (map !== undefined) {
         let value = map[subkey];
@@ -743,17 +748,13 @@ export const meta: {
   }
 
   let maybeMeta = peekMeta(obj);
-  let parent;
 
   // remove this code, in-favor of explicit parent
-  if (maybeMeta !== undefined) {
-    if (maybeMeta.source === obj) {
-      return maybeMeta;
-    }
-    parent = maybeMeta;
+  if (maybeMeta !== undefined && maybeMeta.source === obj) {
+    return maybeMeta;
   }
 
-  let newMeta = new Meta(obj, parent);
+  let newMeta = new Meta(obj);
   setMeta(obj, newMeta);
   return newMeta;
 };

@@ -4,6 +4,16 @@ import ApplicationInstance from '@ember/application/instance';
 import Application from '@ember/application';
 import { RegistryProxyMixin, ContainerProxyMixin, Object as EmberObject } from 'ember-runtime';
 
+class ResolverWrapper {
+  constructor(resolver) {
+    this.resolver = resolver;
+  }
+
+  create() {
+    return this.resolver;
+  }
+}
+
 export default function buildOwner(options = {}) {
   let ownerOptions = options.ownerOptions || {};
   let resolver = options.resolver;
@@ -11,12 +21,8 @@ export default function buildOwner(options = {}) {
 
   let Owner = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixin);
 
-  let namespace = EmberObject.create({
-    Resolver: {
-      create() {
-        return resolver;
-      },
-    },
+  let namespace = new EmberObject({
+    Resolver: new ResolverWrapper(resolver),
   });
 
   let fallbackRegistry = Application.buildRegistry(namespace);
