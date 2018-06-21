@@ -38,61 +38,46 @@ const SOURCE_DESTROYED = 1 << 2;
 const META_DESTROYED = 1 << 3;
 
 export class Meta {
-  _descriptors: any | undefined;
-  _watching: any | undefined;
-  _mixins: any | undefined;
-  _deps: any | undefined;
-  _chainWatchers: any | undefined;
-  _chains: any | undefined;
-  _tag: Tag | undefined;
-  _tags: any | undefined;
-  _flags: number;
-  source: object;
-  proto: object | undefined;
-  parent: Meta | undefined;
-  _listeners: any | undefined;
-  _listenersFinalized: boolean;
-
+  private descriptors: any | undefined = undefined;
+  private watching: any | undefined = undefined;
+  private mixins: any | undefined = undefined;
+  private deps: any | undefined = undefined;
+  private chainWatchers: any | undefined = undefined;
+  private chains: any | undefined = undefined;
+  private tag: Tag | undefined = undefined;
+  private tags: any | undefined = undefined;
+  //initial value for all flags right now is false
+  // see FLAGS const for detailed list of flags used
+  private flags = 0;
+  private listeners: any | undefined = undefined;
+  private listenersFinalized = false;
   // DEBUG
-  _values: any | undefined;
-  _bindings: any | undefined;
+  private values: any | undefined;
+  private bindings: any | undefined;
+
+  source: object;
+  // when meta(obj).proto === obj, the object is intended to be only a
+  // prototype and doesn't need to actually be observable itself
+  proto: object | undefined = undefined;
+  parent: Meta | undefined;
 
   constructor(obj: object, parentMeta: Meta | undefined) {
     if (DEBUG) {
       counters!.metaInstantiated++;
-      this._values = undefined;
+      this.values = undefined;
     }
-    this._descriptors = undefined;
-    this._watching = undefined;
-    this._mixins = undefined;
     if (BINDING_SUPPORT && ENV._ENABLE_BINDING_SUPPORT) {
-      this._bindings = undefined;
+      this.bindings = undefined;
     }
-    this._deps = undefined;
-    this._chainWatchers = undefined;
-    this._chains = undefined;
-    this._tag = undefined;
-    this._tags = undefined;
-
-    // initial value for all flags right now is false
-    // see FLAGS const for detailed list of flags used
-    this._flags = 0;
 
     // used only internally
     this.source = obj;
-
-    // when meta(obj).proto === obj, the object is intended to be only a
-    // prototype and doesn't need to actually be observable itself
-    this.proto = undefined;
 
     // The next meta in our inheritance chain. We (will) track this
     // explicitly instead of using prototypical inheritance because we
     // have detailed knowledge of how each property should really be
     // inherited, and we can optimize it much better than JS runtimes.
     this.parent = parentMeta;
-
-    this._listeners = undefined;
-    this._listenersFinalized = false;
   }
 
   isInitialized(obj: object) {
@@ -113,42 +98,42 @@ export class Meta {
   }
 
   isSourceDestroying() {
-    return this._hasFlag(SOURCE_DESTROYING);
+    return this.hasFlag(SOURCE_DESTROYING);
   }
 
   setSourceDestroying() {
-    this._flags |= SOURCE_DESTROYING;
+    this.flags |= SOURCE_DESTROYING;
   }
 
   isSourceDestroyed() {
-    return this._hasFlag(SOURCE_DESTROYED);
+    return this.hasFlag(SOURCE_DESTROYED);
   }
 
   setSourceDestroyed() {
-    this._flags |= SOURCE_DESTROYED;
+    this.flags |= SOURCE_DESTROYED;
   }
 
   isMetaDestroyed() {
-    return this._hasFlag(META_DESTROYED);
+    return this.hasFlag(META_DESTROYED);
   }
 
   setMetaDestroyed() {
-    this._flags |= META_DESTROYED;
+    this.flags |= META_DESTROYED;
   }
 
-  _hasFlag(flag: number) {
-    return (this._flags & flag) === flag;
+  private hasFlag(flag: number) {
+    return (this.flags & flag) === flag;
   }
 
-  _getOrCreateOwnMap(key: string) {
+  private getOrCreateOwnMap(key: string) {
     return this[key] || (this[key] = Object.create(null));
   }
 
-  _getOrCreateOwnSet(key: string) {
+  private getOrCreateOwnSet(key: string) {
     return this[key] || (this[key] = new Set());
   }
 
-  _getInherited(key: string) {
+  private getInherited(key: string) {
     let pointer: Meta | undefined = this;
     while (pointer !== undefined) {
       let map = pointer[key];
@@ -159,7 +144,7 @@ export class Meta {
     }
   }
 
-  _findInherited(key: string, subkey: string): any | undefined {
+  private findInherited(key: string, subkey: string): any | undefined {
     let pointer: Meta | undefined = this;
     while (pointer !== undefined) {
       let map = pointer[key];
@@ -173,14 +158,12 @@ export class Meta {
     }
   }
 
-  _hasInInheritedSet(key: string, value: any) {
+  private hasInInheritedSet(key: string, value: any) {
     let pointer: Meta | undefined = this;
     while (pointer !== undefined) {
       let set = pointer[key];
-      if (set !== undefined) {
-        if (set.has(value)) {
-          return true;
-        }
+      if (set !== undefined && set.has(value)) {
+        return true;
       }
       pointer = pointer.parent;
     }
@@ -199,7 +182,7 @@ export class Meta {
       !this.isMetaDestroyed()
     );
 
-    let outerMap = this._getOrCreateOwnMap('_deps');
+    let outerMap = this.getOrCreateOwnMap('deps');
     let innerMap = outerMap[subkey];
     if (innerMap === undefined) {
       innerMap = outerMap[subkey] = Object.create(null);
@@ -210,7 +193,7 @@ export class Meta {
   peekDeps(subkey: string, itemkey: string): number {
     let pointer: Meta | undefined = this;
     while (pointer !== undefined) {
-      let map = pointer._deps;
+      let map = pointer.deps;
       if (map !== undefined) {
         let value = map[subkey];
         if (value !== undefined) {
@@ -229,7 +212,7 @@ export class Meta {
   hasDeps(subkey: string) {
     let pointer: Meta | undefined = this;
     while (pointer !== undefined) {
-      let deps = pointer._deps;
+      let deps = pointer.deps;
       if (deps !== undefined && deps[subkey] !== undefined) {
         return true;
       }
@@ -239,10 +222,10 @@ export class Meta {
   }
 
   forEachInDeps(subkey: string, fn: Function) {
-    return this._forEachIn('_deps', subkey, fn);
+    return this.forEachIn('deps', subkey, fn);
   }
 
-  _forEachIn(key: string, subkey: string, fn: Function) {
+  private forEachIn(key: string, subkey: string, fn: Function) {
     let pointer: Meta | undefined = this;
     let seen: Set<any> | undefined;
     let calls: any[] | undefined;
@@ -272,10 +255,11 @@ export class Meta {
   }
 
   writableTags() {
-    return this._getOrCreateOwnMap('_tags');
+    return this.getOrCreateOwnMap('tags');
   }
+
   readableTags() {
-    return this._tags;
+    return this.tags;
   }
 
   writableTag(create: (obj: object) => Tag) {
@@ -285,15 +269,15 @@ export class Meta {
         : '',
       !this.isMetaDestroyed()
     );
-    let ret = this._tag;
+    let ret = this.tag;
     if (ret === undefined) {
-      ret = this._tag = create(this.source);
+      ret = this.tag = create(this.source);
     }
     return ret;
   }
 
   readableTag() {
-    return this._tag;
+    return this.tag;
   }
 
   writableChainWatchers(create: (source: object) => any) {
@@ -305,15 +289,15 @@ export class Meta {
         : '',
       !this.isMetaDestroyed()
     );
-    let ret = this._chainWatchers;
+    let ret = this.chainWatchers;
     if (ret === undefined) {
-      ret = this._chainWatchers = create(this.source);
+      ret = this.chainWatchers = create(this.source);
     }
     return ret;
   }
 
   readableChainWatchers() {
-    return this._chainWatchers;
+    return this.chainWatchers;
   }
 
   writableChains(create: (source: object) => any) {
@@ -323,20 +307,20 @@ export class Meta {
         : '',
       !this.isMetaDestroyed()
     );
-    let ret = this._chains;
+    let ret = this.chains;
     if (ret === undefined) {
       if (this.parent === undefined) {
         ret = create(this.source);
       } else {
         ret = this.parent.writableChains(create).copy(this.source);
       }
-      this._chains = ret;
+      this.chains = ret;
     }
     return ret;
   }
 
   readableChains() {
-    return this._getInherited('_chains');
+    return this.getInherited('chains');
   }
 
   writeWatching(subkey: string, value: any) {
@@ -348,12 +332,12 @@ export class Meta {
         : '',
       !this.isMetaDestroyed()
     );
-    let map = this._getOrCreateOwnMap('_watching');
+    let map = this.getOrCreateOwnMap('watching');
     map[subkey] = value;
   }
 
   peekWatching(subkey: string): number {
-    let count = this._findInherited('_watching', subkey);
+    let count = this.findInherited('watching', subkey);
     return count === undefined ? 0 : count;
   }
 
@@ -366,19 +350,19 @@ export class Meta {
         : '',
       !this.isMetaDestroyed()
     );
-    let set = this._getOrCreateOwnSet('_mixins');
+    let set = this.getOrCreateOwnSet('mixins');
     set.add(mixin);
   }
 
   hasMixin(mixin: any) {
-    return this._hasInInheritedSet('_mixins', mixin);
+    return this.hasInInheritedSet('mixins', mixin);
   }
 
   forEachMixins(fn: Function) {
     let pointer: Meta | undefined = this;
     let seen: Set<any> | undefined;
     while (pointer !== undefined) {
-      let set = pointer._mixins;
+      let set = pointer.mixins;
       if (set !== undefined) {
         seen = seen === undefined ? new Set() : seen;
         // TODO cleanup typing here
@@ -402,12 +386,12 @@ export class Meta {
         : '',
       !this.isMetaDestroyed()
     );
-    let map = this._getOrCreateOwnMap('_descriptors');
+    let map = this.getOrCreateOwnMap('descriptors');
     map[subkey] = value;
   }
 
   peekDescriptors(subkey: string) {
-    let possibleDesc = this._findInherited('_descriptors', subkey);
+    let possibleDesc = this.findInherited('descriptors', subkey);
     return possibleDesc === UNDEFINED ? undefined : possibleDesc;
   }
 
@@ -419,7 +403,7 @@ export class Meta {
     let pointer: Meta | undefined = this;
     let seen: Set<any> | undefined;
     while (pointer !== undefined) {
-      let map = pointer._descriptors;
+      let map = pointer.descriptors;
       if (map !== undefined) {
         for (let key in map) {
           seen = seen === undefined ? new Set() : seen;
@@ -442,37 +426,37 @@ export class Meta {
     method: Function | string,
     once: boolean
   ) {
-    if (this._listeners === undefined) {
-      this._listeners = [];
+    if (this.listeners === undefined) {
+      this.listeners = [];
     }
-    this._listeners.push(eventName, target, method, once);
+    this.listeners.push(eventName, target, method, once);
   }
 
-  _finalizeListeners() {
-    if (this._listenersFinalized) {
+  private finalizeListeners() {
+    if (this.listenersFinalized) {
       return;
     }
-    if (this._listeners === undefined) {
-      this._listeners = [];
+    if (this.listeners === undefined) {
+      this.listeners = [];
     }
     let pointer = this.parent;
     while (pointer !== undefined) {
-      let listeners = pointer._listeners;
+      let listeners = pointer.listeners;
       if (listeners !== undefined) {
-        this._listeners = this._listeners.concat(listeners);
+        this.listeners = this.listeners.concat(listeners);
       }
-      if (pointer._listenersFinalized) {
+      if (pointer.listenersFinalized) {
         break;
       }
       pointer = pointer.parent;
     }
-    this._listenersFinalized = true;
+    this.listenersFinalized = true;
   }
 
   removeFromListeners(eventName: string, target: any, method: Function | string): void {
     let pointer: Meta | undefined = this;
     while (pointer !== undefined) {
-      let listeners = pointer._listeners;
+      let listeners = pointer.listeners;
       if (listeners !== undefined) {
         for (let index = listeners.length - 4; index >= 0; index -= 4) {
           if (
@@ -485,13 +469,13 @@ export class Meta {
               // we are trying to remove an inherited listener, so we do
               // just-in-time copying to detach our own listeners from
               // our inheritance chain.
-              this._finalizeListeners();
+              this.finalizeListeners();
               return this.removeFromListeners(eventName, target, method);
             }
           }
         }
       }
-      if (pointer._listenersFinalized) {
+      if (pointer.listenersFinalized) {
         break;
       }
       pointer = pointer.parent;
@@ -503,7 +487,7 @@ export class Meta {
     // fix type
     let result: any[] | undefined;
     while (pointer !== undefined) {
-      let listeners = pointer._listeners;
+      let listeners = pointer.listeners;
       if (listeners !== undefined) {
         for (let index = 0; index < listeners.length; index += 4) {
           if (listeners[index] === eventName) {
@@ -512,7 +496,7 @@ export class Meta {
           }
         }
       }
-      if (pointer._listenersFinalized) {
+      if (pointer.listenersFinalized) {
         break;
       }
       pointer = pointer.parent;
@@ -544,19 +528,19 @@ if (BINDING_SUPPORT && ENV._ENABLE_BINDING_SUPPORT) {
       !this.isMetaDestroyed()
     );
 
-    let map = this._getOrCreateOwnMap('_bindings');
+    let map = this.getOrCreateOwnMap('bindings');
     map[subkey] = value;
   };
 
   Meta.prototype.peekBindings = function(subkey: string) {
-    return this._findInherited('_bindings', subkey);
+    return this.findInherited('bindings', subkey);
   };
 
   Meta.prototype.forEachBindings = function(fn: Function) {
     let pointer: Meta | undefined = this;
     let seen: { [key: string]: any } | undefined;
     while (pointer !== undefined) {
-      let map = pointer._bindings;
+      let map = pointer.bindings;
       if (map !== undefined) {
         for (let key in map) {
           // cleanup typing
@@ -578,7 +562,7 @@ if (BINDING_SUPPORT && ENV._ENABLE_BINDING_SUPPORT) {
         : '',
       !this.isMetaDestroyed()
     );
-    this._bindings = undefined;
+    this.bindings = undefined;
   };
 }
 
@@ -593,25 +577,23 @@ if (DEBUG) {
       !this.isMetaDestroyed()
     );
 
-    let map = this._getOrCreateOwnMap('_values');
+    let map = this.getOrCreateOwnMap('values');
     map[subkey] = value;
   };
 
   Meta.prototype.peekValues = function(subkey: string) {
-    return this._findInherited('_values', subkey);
+    return this.findInherited('values', subkey);
   };
 
   Meta.prototype.deleteFromValues = function(subkey: string) {
-    delete this._getOrCreateOwnMap('_values')[subkey];
+    delete this.getOrCreateOwnMap('values')[subkey];
   };
 
   Meta.prototype.readInheritedValue = function(key, subkey) {
-    let internalKey = `_${key}`;
-
     let pointer: Meta | undefined = this;
 
     while (pointer !== undefined) {
-      let map = pointer[internalKey];
+      let map = pointer[key];
       if (map !== undefined) {
         let value = map[subkey];
         if (value !== undefined || subkey in map) {
