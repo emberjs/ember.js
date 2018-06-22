@@ -131,7 +131,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @since 1.0.0
     @public
   */
-  
+
   /**
     The name of the route, dot-delimited, including the engine prefix
     if applicable.
