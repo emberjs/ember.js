@@ -7,6 +7,13 @@ import Controller from '@ember/controller';
 import { Object as EmberObject } from 'ember-runtime';
 import { Route } from 'ember-routing';
 
+function expectSendActionDeprecation(fn) {
+  expectDeprecation(
+    fn,
+    /You called (.*).sendAction\((.*)\) but Component#sendAction is deprecated. Please use closure actions instead./
+  );
+}
+
 moduleFor(
   'Components test: sendAction',
   class extends RenderingTest {
@@ -61,7 +68,9 @@ moduleFor(
     ['@test Calling sendAction on a component without an action defined does nothing']() {
       this.renderDelegate();
 
-      this.runTask(() => this.delegate.sendAction());
+      expectSendActionDeprecation(() => {
+        this.runTask(() => this.delegate.sendAction());
+      });
 
       this.assertSendCount(0);
     }
@@ -69,9 +78,11 @@ moduleFor(
     ['@test Calling sendAction on a component with an action defined calls send on the controller']() {
       this.renderDelegate();
 
-      this.runTask(() => {
-        set(this.delegate, 'action', 'addItem');
-        this.delegate.sendAction();
+      expectSendActionDeprecation(() => {
+        this.runTask(() => {
+          set(this.delegate, 'action', 'addItem');
+          this.delegate.sendAction();
+        });
       });
 
       this.assertSendCount(1);
@@ -79,27 +90,30 @@ moduleFor(
     }
 
     ['@test Calling sendAction on a component with a function calls the function']() {
-      this.assert.expect(1);
+      this.assert.expect(2);
 
       this.renderDelegate();
 
-      this.runTask(() => {
-        set(this.delegate, 'action', () => this.assert.ok(true, 'function is called'));
-        this.delegate.sendAction();
+      expectSendActionDeprecation(() => {
+        this.runTask(() => {
+          set(this.delegate, 'action', () => this.assert.ok(true, 'function is called'));
+          this.delegate.sendAction();
+        });
       });
     }
 
     ['@test Calling sendAction on a component with a function calls the function with arguments']() {
-      this.assert.expect(1);
+      this.assert.expect(2);
       let argument = {};
 
       this.renderDelegate();
-
-      this.runTask(() => {
-        set(this.delegate, 'action', actualArgument => {
-          this.assert.deepEqual(argument, actualArgument, 'argument is passed');
+      expectSendActionDeprecation(() => {
+        this.runTask(() => {
+          set(this.delegate, 'action', actualArgument => {
+            this.assert.deepEqual(argument, actualArgument, 'argument is passed');
+          });
+          this.delegate.sendAction('action', argument);
         });
-        this.delegate.sendAction('action', argument);
       });
     }
 
@@ -109,16 +123,19 @@ moduleFor(
         playing: null,
       });
 
-      this.runTask(() => this.delegate.sendAction());
+      expectSendActionDeprecation(() => {
+        this.runTask(() => this.delegate.sendAction());
+      });
 
       this.assertSendCount(0);
 
       this.runTask(() => {
         set(this.context, 'playing', 'didStartPlaying');
       });
-
-      this.runTask(() => {
-        this.delegate.sendAction('playing');
+      expectSendActionDeprecation(() => {
+        this.runTask(() => {
+          this.delegate.sendAction('playing');
+        });
       });
 
       this.assertSendCount(1);
@@ -130,12 +147,16 @@ moduleFor(
         playing: null,
       });
 
-      this.runTask(() => this.delegate.sendAction('playing'));
+      expectSendActionDeprecation(() => {
+        this.runTask(() => this.delegate.sendAction('playing'));
+      });
 
       this.assertSendCount(0);
 
       this.runTask(() => this.delegate.attrs.playing.update('didStartPlaying'));
-      this.runTask(() => this.delegate.sendAction('playing'));
+      expectSendActionDeprecation(() => {
+        this.runTask(() => this.delegate.sendAction('playing'));
+      });
 
       this.assertSendCount(1);
       this.assertNamedSendCount('didStartPlaying', 1);
@@ -145,23 +166,28 @@ moduleFor(
       this.renderDelegate();
 
       let component = this.delegate;
-
-      this.runTask(() => {
-        set(this.delegate, 'playing', 'didStartPlaying');
-        component.sendAction('playing');
+      expectSendActionDeprecation(() => {
+        this.runTask(() => {
+          set(this.delegate, 'playing', 'didStartPlaying');
+          component.sendAction('playing');
+        });
       });
 
       this.assertSendCount(1);
       this.assertNamedSendCount('didStartPlaying', 1);
 
-      this.runTask(() => component.sendAction('playing'));
+      expectSendActionDeprecation(() => {
+        this.runTask(() => component.sendAction('playing'));
+      });
 
       this.assertSendCount(2);
       this.assertNamedSendCount('didStartPlaying', 2);
 
-      this.runTask(() => {
-        set(component, 'action', 'didDoSomeBusiness');
-        component.sendAction();
+      expectSendActionDeprecation(() => {
+        this.runTask(() => {
+          set(component, 'action', 'didDoSomeBusiness');
+          component.sendAction();
+        });
       });
 
       this.assertSendCount(3);
@@ -175,9 +201,12 @@ moduleFor(
         set(this.delegate, 'action', {});
         set(this.delegate, 'playing', {});
       });
-
-      expectAssertion(() => this.delegate.sendAction());
-      expectAssertion(() => this.delegate.sendAction('playing'));
+      expectSendActionDeprecation(() => {
+        expectAssertion(() => this.delegate.sendAction());
+      });
+      expectSendActionDeprecation(() => {
+        expectAssertion(() => this.delegate.sendAction('playing'));
+      });
     }
 
     ['@test Calling sendAction on a component with contexts']() {
@@ -187,17 +216,21 @@ moduleFor(
       let firstContext = { song: 'She Broke My Ember' };
       let secondContext = { song: 'My Achey Breaky Ember' };
 
-      this.runTask(() => {
-        set(this.delegate, 'playing', 'didStartPlaying');
-        this.delegate.sendAction('playing', testContext);
+      expectSendActionDeprecation(() => {
+        this.runTask(() => {
+          set(this.delegate, 'playing', 'didStartPlaying');
+          this.delegate.sendAction('playing', testContext);
+        });
       });
 
       this.assertSendCount(1);
       this.assertNamedSendCount('didStartPlaying', 1);
       this.assertSentWithArgs([testContext], 'context was sent with the action');
 
-      this.runTask(() => {
-        this.delegate.sendAction('playing', firstContext, secondContext);
+      expectSendActionDeprecation(() => {
+        this.runTask(() => {
+          this.delegate.sendAction('playing', firstContext, secondContext);
+        });
       });
 
       this.assertSendCount(2);
@@ -262,8 +295,9 @@ moduleFor(
       });
 
       this.renderDelegate();
-
-      this.runTask(() => innerChild.sendAction('bar', 'something special'));
+      expectSendActionDeprecation(() => {
+        this.runTask(() => innerChild.sendAction('bar', 'something special'));
+      });
     }
 
     ['@test asserts if called on a destroyed component']() {
@@ -303,7 +337,7 @@ moduleFor(
     ["@test sendAction should trigger an action on the parent component's controller if it exists"](
       assert
     ) {
-      assert.expect(15);
+      assert.expect(20);
 
       let component;
 
@@ -402,34 +436,46 @@ moduleFor(
       this.addTemplate('c.e', '{{foo-bar val=".e" poke="poke"}}');
 
       return this.visit('/a')
-        .then(() => component.sendAction('poke', 'top'))
+        .then(() => {
+          expectSendActionDeprecation(() => component.sendAction('poke', 'top'));
+        })
         .then(() => {
           this.assertText('a');
           return this.visit('/b');
         })
-        .then(() => component.sendAction('poke', 'top no controller'))
+        .then(() => {
+          expectSendActionDeprecation(() => component.sendAction('poke', 'top no controller'));
+        })
         .then(() => {
           this.assertText('b');
           return this.visit('/c');
         })
-        .then(() => component.sendAction('poke', 'top with nested no controller'))
+        .then(() => {
+          expectSendActionDeprecation(() => {
+            component.sendAction('poke', 'top with nested no controller');
+          });
+        })
         .then(() => {
           this.assertText('c');
           return this.visit('/c/d');
         })
-        .then(() => component.sendAction('poke', 'nested'))
+        .then(() => {
+          expectSendActionDeprecation(() => component.sendAction('poke', 'nested'));
+        })
         .then(() => {
           this.assertText('c.d');
           return this.visit('/c/e');
         })
-        .then(() => component.sendAction('poke', 'nested no controller'))
+        .then(() => {
+          expectSendActionDeprecation(() => component.sendAction('poke', 'nested no controller'));
+        })
         .then(() => this.assertText('c.e'));
     }
 
     ["@test sendAction should not trigger an action in an outlet's controller if a parent component handles it"](
       assert
     ) {
-      assert.expect(1);
+      assert.expect(2);
 
       let component;
 
@@ -463,7 +509,9 @@ moduleFor(
         })
       );
 
-      return this.visit('/').then(() => component.sendAction('poke'));
+      return this.visit('/').then(() => {
+        expectSendActionDeprecation(() => component.sendAction('poke'));
+      });
     }
   }
 );
@@ -472,7 +520,7 @@ moduleFor(
   'Components test: sendAction of a closure action',
   class extends RenderingTest {
     ['@test action should be called'](assert) {
-      assert.expect(1);
+      assert.expect(2);
       let component;
 
       this.registerComponent('inner-component', {
@@ -495,8 +543,9 @@ moduleFor(
       });
 
       this.render('{{outer-component}}');
-
-      this.runTask(() => component.sendAction('submitAction'));
+      expectSendActionDeprecation(() => {
+        this.runTask(() => component.sendAction('submitAction'));
+      });
     }
 
     ['@test contexts passed to sendAction are appended to the bound arguments on a closure action']() {
@@ -531,8 +580,9 @@ moduleFor(
       });
 
       this.render('{{outer-component}}');
-
-      this.runTask(() => innerComponent.sendAction('innerSubmit', fourth));
+      expectSendActionDeprecation(() => {
+        this.runTask(() => innerComponent.sendAction('innerSubmit', fourth));
+      });
 
       this.assert.deepEqual(
         actualArgs,

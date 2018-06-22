@@ -435,7 +435,11 @@ moduleFor(
           classNames: 'inner-component',
           didInsertElement() {
             // trigger action on click in absence of app's EventDispatcher
-            let sendAction = (this.eventHandler = () => this.sendAction('somethingClicked'));
+            let sendAction = (this.eventHandler = () => {
+              if (this.somethingClicked) {
+                this.somethingClicked();
+              }
+            });
             this.element.addEventListener('click', sendAction);
           },
           willDestroyElement() {
@@ -447,7 +451,7 @@ moduleFor(
       let actionTriggered = 0;
       this.registerComponent('outer-component', {
         template:
-          '{{#component componentName somethingClicked="mappedAction"}}arepas!{{/component}}',
+          '{{#component componentName somethingClicked=(action "mappedAction")}}arepas!{{/component}}',
         ComponentClass: Component.extend({
           classNames: 'outer-component',
           componentName: 'inner-component',

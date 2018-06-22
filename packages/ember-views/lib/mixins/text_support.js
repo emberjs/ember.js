@@ -4,6 +4,8 @@
 
 import { get, set, Mixin } from 'ember-metal';
 import { TargetActionSupport } from 'ember-runtime';
+import { deprecate } from '@ember/debug';
+import { SEND_ACTION } from '@ember/deprecated-features';
 
 const KEY_EVENTS = {
   13: 'insertNewline',
@@ -88,7 +90,7 @@ const KEY_EVENTS = {
   +--------------------+----------------+
   | new line inserted  | insert-newline |
   |                    |                |
-  | enter key pressed  | insert-newline |
+  | enter key pressed  | enter          |
   |                    |                |
   | cancel key pressed | escape-press   |
   |                    |                |
@@ -279,8 +281,7 @@ export default Mixin.create(TargetActionSupport, {
   */
   keyUp(event) {
     this.interpretKeyEvents(event);
-
-    this.sendAction('key-up', get(this, 'value'), event);
+    sendAction('key-up', this, event);
   },
 
   /**
@@ -297,7 +298,7 @@ export default Mixin.create(TargetActionSupport, {
     @private
   */
   keyDown(event) {
-    this.sendAction('key-down', get(this, 'value'), event);
+    sendAction('key-down', this, event);
   },
 });
 
@@ -305,12 +306,28 @@ export default Mixin.create(TargetActionSupport, {
 // sendAction semantics for TextField are different from
 // the component semantics so this method normalizes them.
 function sendAction(eventName, view, event) {
-  let action = get(view, `attrs.${eventName}`) || get(view, eventName);
+  let actionName = get(view, `attrs.${eventName}`) || get(view, eventName);
   let value = get(view, 'value');
 
-  view.sendAction(eventName, value);
+  if (SEND_ACTION && typeof actionName === 'string') {
+    deprecate(
+      `Passing actions to components as strings (like {{input ${eventName}="${actionName}"}}) is deprecated. Please use closure actions instead ({{input ${eventName}=(action "${actionName}")}})`,
+      false,
+      {
+        id: 'ember-component.send-action',
+        until: '4.0.0',
+        url: 'https://emberjs.com/deprecations/v3.x#toc_ember-component-send-action',
+      }
+    );
+    view.triggerAction({
+      action: actionName,
+      actionContext: [value],
+    });
+  } else if (typeof actionName === 'function') {
+    actionName(value);
+  }
 
-  if (action && !get(view, 'bubbles')) {
+  if (actionName && !get(view, 'bubbles')) {
     event.stopPropagation();
   }
 }

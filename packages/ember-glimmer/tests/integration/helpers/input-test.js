@@ -271,10 +271,30 @@ moduleFor(
       // this.assertSelectionRange(8, 8); //NOTE: this fails in IE, the range is 0 -> 0 (TEST_SUITE=sauce)
     }
 
-    ['@test sends an action with `{{input enter="foo"}}` when <enter> is pressed'](assert) {
-      assert.expect(1);
+    ['@test [DEPRECATED] sends an action with `{{input enter="foo"}}` when <enter> is pressed'](
+      assert
+    ) {
+      assert.expect(3);
 
-      this.render(`{{input enter='foo'}}`, {
+      expectDeprecation(() => {
+        this.render(`{{input enter='foo'}}`, {
+          actions: {
+            foo() {
+              assert.ok(true, 'action was triggered');
+            },
+          },
+        });
+      }, 'Please refactor `{{input enter="foo"}}` to `{{input enter=(action "foo")}}. (\'-top-level\' @ L1:C0) ');
+      expectDeprecation(() => {
+        this.triggerEvent('keyup', { keyCode: 13 });
+      }, 'Passing actions to components as strings (like {{input enter="foo"}}) is deprecated. Please use closure actions instead ({{input enter=(action "foo")}})');
+    }
+
+    ['@test sends an action with `{{input enter=(action "foo")}}` when <enter> is pressed'](
+      assert
+    ) {
+      assert.expect(1);
+      this.render(`{{input enter=(action 'foo')}}`, {
         actions: {
           foo() {
             assert.ok(true, 'action was triggered');
@@ -287,10 +307,30 @@ moduleFor(
       });
     }
 
-    ['@test sends an action with `{{input key-press="foo"}}` is pressed'](assert) {
+    ['@test [DEPRECATED] sends an action with `{{input key-press="foo"}}` is pressed'](assert) {
+      assert.expect(3);
+
+      expectDeprecation(() => {
+        this.render(`{{input value=value key-press='foo'}}`, {
+          value: 'initial',
+
+          actions: {
+            foo() {
+              assert.ok(true, 'action was triggered');
+            },
+          },
+        });
+      }, 'Please refactor `{{input key-press="foo"}}` to `{{input key-press=(action "foo")}}. (\'-top-level\' @ L1:C0) ');
+
+      expectDeprecation(() => {
+        this.triggerEvent('keypress', { keyCode: 65 });
+      }, 'Passing actions to components as strings (like {{input key-press="foo"}}) is deprecated. Please use closure actions instead ({{input key-press=(action "foo")}})');
+    }
+
+    ['@test sends an action with `{{input key-press=(action "foo")}}` is pressed'](assert) {
       assert.expect(1);
 
-      this.render(`{{input value=value key-press='foo'}}`, {
+      this.render(`{{input value=value key-press=(action 'foo')}}`, {
         value: 'initial',
 
         actions: {
@@ -300,9 +340,7 @@ moduleFor(
         },
       });
 
-      this.triggerEvent('keypress', {
-        keyCode: 65,
-      });
+      this.triggerEvent('keypress', { keyCode: 65 });
     }
 
     ['@test sends an action to the parent level when `bubbles=true` is provided'](assert) {
@@ -326,7 +364,7 @@ moduleFor(
     ['@test triggers `focus-in` when focused'](assert) {
       let wasFocused = false;
 
-      this.render(`{{input focus-in='foo'}}`, {
+      this.render(`{{input focus-in=(action 'foo')}}`, {
         actions: {
           foo() {
             wasFocused = true;
@@ -344,7 +382,7 @@ moduleFor(
     ['@test sends `insert-newline` when <enter> is pressed'](assert) {
       assert.expect(1);
 
-      this.render(`{{input insert-newline='foo'}}`, {
+      this.render(`{{input insert-newline=(action 'foo')}}`, {
         actions: {
           foo() {
             assert.ok(true, 'action was triggered');
@@ -357,26 +395,32 @@ moduleFor(
       });
     }
 
-    ['@test sends an action with `{{input escape-press="foo"}}` when <escape> is pressed'](assert) {
-      assert.expect(1);
+    ['@test [DEPRECATED] sends an action with `{{input escape-press="foo"}}` when <escape> is pressed'](
+      assert
+    ) {
+      assert.expect(3);
 
-      this.render(`{{input escape-press='foo'}}`, {
-        actions: {
-          foo() {
-            assert.ok(true, 'action was triggered');
+      expectDeprecation(() => {
+        this.render(`{{input escape-press='foo'}}`, {
+          actions: {
+            foo() {
+              assert.ok(true, 'action was triggered');
+            },
           },
-        },
-      });
+        });
+      }, 'Please refactor `{{input escape-press="foo"}}` to `{{input escape-press=(action "foo")}}. (\'-top-level\' @ L1:C0) ');
 
-      this.triggerEvent('keyup', {
-        keyCode: 27,
-      });
+      expectDeprecation(() => {
+        this.triggerEvent('keyup', { keyCode: 27 });
+      }, 'Passing actions to components as strings (like {{input escape-press="foo"}}) is deprecated. Please use closure actions instead ({{input escape-press=(action "foo")}})');
     }
 
-    ['@test sends an action with `{{input key-down="foo"}}` when a key is pressed'](assert) {
+    ['@test sends an action with `{{input escape-press=(action "foo")}}` when <escape> is pressed'](
+      assert
+    ) {
       assert.expect(1);
 
-      this.render(`{{input key-down='foo'}}`, {
+      this.render(`{{input escape-press=(action 'foo')}}`, {
         actions: {
           foo() {
             assert.ok(true, 'action was triggered');
@@ -384,15 +428,35 @@ moduleFor(
         },
       });
 
-      this.triggerEvent('keydown', {
-        keyCode: 65,
-      });
+      this.triggerEvent('keyup', { keyCode: 27 });
     }
 
-    ['@test sends an action with `{{input key-up="foo"}}` when a key is pressed'](assert) {
+    ['@test [DEPRECATED] sends an action with `{{input key-down="foo"}}` when a key is pressed'](
+      assert
+    ) {
+      assert.expect(3);
+
+      expectDeprecation(() => {
+        this.render(`{{input key-down='foo'}}`, {
+          actions: {
+            foo() {
+              assert.ok(true, 'action was triggered');
+            },
+          },
+        });
+      }, 'Please refactor `{{input key-down="foo"}}` to `{{input key-down=(action "foo")}}. (\'-top-level\' @ L1:C0) ');
+
+      expectDeprecation(() => {
+        this.triggerEvent('keydown', { keyCode: 65 });
+      }, 'Passing actions to components as strings (like {{input key-down="foo"}}) is deprecated. Please use closure actions instead ({{input key-down=(action "foo")}})');
+    }
+
+    ['@test sends an action with `{{input key-down=(action "foo")}}` when a key is pressed'](
+      assert
+    ) {
       assert.expect(1);
 
-      this.render(`{{input key-up='foo'}}`, {
+      this.render(`{{input key-down=(action 'foo')}}`, {
         actions: {
           foo() {
             assert.ok(true, 'action was triggered');
@@ -400,9 +464,42 @@ moduleFor(
         },
       });
 
-      this.triggerEvent('keyup', {
-        keyCode: 65,
+      this.triggerEvent('keydown', { keyCode: 65 });
+    }
+
+    ['@test [DEPRECATED] sends an action with `{{input key-up="foo"}}` when a key is pressed'](
+      assert
+    ) {
+      assert.expect(3);
+
+      expectDeprecation(() => {
+        this.render(`{{input key-up='foo'}}`, {
+          actions: {
+            foo() {
+              assert.ok(true, 'action was triggered');
+            },
+          },
+        });
+      }, 'Please refactor `{{input key-up="foo"}}` to `{{input key-up=(action "foo")}}. (\'-top-level\' @ L1:C0) ');
+
+      expectDeprecation(() => {
+        this.triggerEvent('keyup', { keyCode: 65 });
+      }, 'Passing actions to components as strings (like {{input key-up="foo"}}) is deprecated. Please use closure actions instead ({{input key-up=(action "foo")}})');
+    }
+
+    ['@test [DEPRECATED] sends an action with `{{input key-up=(action "foo")}}` when a key is pressed'](
+      assert
+    ) {
+      assert.expect(1);
+
+      this.render(`{{input key-up=(action 'foo')}}`, {
+        actions: {
+          foo() {
+            assert.ok(true, 'action was triggered');
+          },
+        },
       });
+      this.triggerEvent('keyup', { keyCode: 65 });
     }
 
     ['@test GH#14727 can render a file input after having had render an input of other type']() {
