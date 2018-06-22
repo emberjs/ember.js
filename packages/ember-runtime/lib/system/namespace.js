@@ -33,12 +33,10 @@ import EmberObject from './object';
   @extends EmberObject
   @public
 */
-const Namespace = EmberObject.extend({
-  isNamespace: true,
-
+export default class Namespace extends EmberObject {
   init() {
     addNamespace(this);
-  },
+  }
 
   toString() {
     let name = get(this, 'name') || get(this, 'modulePrefix');
@@ -52,23 +50,20 @@ const Namespace = EmberObject.extend({
       setName(this, name);
     }
     return name;
-  },
+  }
 
   nameClasses() {
     processNamespace(this);
-  },
+  }
 
   destroy() {
     removeNamespace(this);
-    this._super(...arguments);
-  },
-});
+    super.destroy();
+  }
+}
 
-Namespace.reopenClass({
-  NAMESPACES,
-  NAMESPACES_BY_ID,
-  processAll: processAllNamespaces,
-  byName: findNamespace,
-});
-
-export default Namespace;
+Namespace.prototype.isNamespace = true;
+Namespace.NAMESPACES = NAMESPACES;
+Namespace.NAMESPACES_BY_ID = NAMESPACES_BY_ID;
+Namespace.processAll = processAllNamespaces;
+Namespace.byName = findNamespace;

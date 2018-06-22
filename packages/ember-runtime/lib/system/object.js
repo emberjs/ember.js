@@ -5,7 +5,7 @@
 import { FACTORY_FOR } from 'container';
 import { OWNER } from 'ember-owner';
 import { symbol, setName } from 'ember-utils';
-import { on, descriptor } from 'ember-metal';
+import { addListener } from 'ember-metal';
 import CoreObject from './core_object';
 import Observable from '../mixins/observable';
 import { assert } from '@ember/debug';
@@ -23,37 +23,31 @@ let OVERRIDE_OWNER = symbol('OVERRIDE_OWNER');
   @uses Observable
   @public
 */
-const EmberObject = CoreObject.extend(Observable, {
-  _debugContainerKey: descriptor({
-    enumerable: false,
-    get() {
-      let factory = FACTORY_FOR.get(this);
+export default class EmberObject extends CoreObject {
+  get _debugContainerKey() {
+    let factory = FACTORY_FOR.get(this);
+    return factory !== undefined && factory.fullName;
+  }
 
-      return factory !== undefined && factory.fullName;
-    },
-  }),
+  get [OWNER]() {
+    if (this[OVERRIDE_OWNER]) {
+      return this[OVERRIDE_OWNER];
+    }
 
-  [OWNER]: descriptor({
-    enumerable: false,
-    get() {
-      if (this[OVERRIDE_OWNER]) {
-        return this[OVERRIDE_OWNER];
-      }
+    let factory = FACTORY_FOR.get(this);
+    return factory !== undefined && factory.owner;
+  }
 
-      let factory = FACTORY_FOR.get(this);
-
-      return factory !== undefined && factory.owner;
-    },
-
-    // we need a setter here largely to support
-    // folks calling `owner.ownerInjection()` API
-    set(value) {
-      this[OVERRIDE_OWNER] = value;
-    },
-  }),
-});
+  // we need a setter here largely to support
+  // folks calling `owner.ownerInjection()` API
+  set [OWNER](value) {
+    this[OVERRIDE_OWNER] = value;
+  }
+}
 
 setName(EmberObject, 'Ember.Object');
+
+Observable.apply(EmberObject.prototype);
 
 export let FrameworkObject = EmberObject;
 
@@ -61,19 +55,19 @@ if (DEBUG) {
   let INIT_WAS_CALLED = symbol('INIT_WAS_CALLED');
   let ASSERT_INIT_WAS_CALLED = symbol('ASSERT_INIT_WAS_CALLED');
 
-  FrameworkObject = EmberObject.extend({
+  FrameworkObject = class FrameworkObject extends EmberObject {
     init() {
-      this._super(...arguments);
+      super.init(...arguments);
       this[INIT_WAS_CALLED] = true;
-    },
+    }
 
-    [ASSERT_INIT_WAS_CALLED]: on('init', function() {
+    [ASSERT_INIT_WAS_CALLED]() {
       assert(
         `You must call \`this._super(...arguments);\` when overriding \`init\` on a framework object. Please update ${this} to call \`this._super(...arguments);\` from \`init\`.`,
         this[INIT_WAS_CALLED]
       );
-    }),
-  });
-}
+    }
+  };
 
-export default EmberObject;
+  addListener(FrameworkObject.prototype, 'init', null, ASSERT_INIT_WAS_CALLED);
+}
