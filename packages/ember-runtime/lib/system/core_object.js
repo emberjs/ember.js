@@ -39,7 +39,6 @@ const wasApplied = new WeakSet();
 const factoryMap = new WeakMap();
 
 const prototypeMixinMap = new WeakMap();
-const classMixinMap = new WeakMap();
 
 /**
   @class CoreObject
@@ -806,7 +805,6 @@ class CoreObject {
     @public
   */
   static reopenClass() {
-    reopen.apply(this.ClassMixin, arguments);
     applyMixin(this, arguments, false);
     return this;
   }
@@ -893,22 +891,10 @@ class CoreObject {
     });
   }
 
-  static get ClassMixin() {
-    let classMixin = classMixinMap.get(this);
-    if (classMixin === undefined) {
-      let s = this.superclass;
-      classMixin = s === undefined ? Mixin.create() : Mixin.create(s.ClassMixin);
-      classMixin.ownerConstructor = this;
-      classMixinMap.set(this, classMixin);
-    }
-    return classMixin;
-  }
-
   static get PrototypeMixin() {
     let prototypeMixin = prototypeMixinMap.get(this);
     if (prototypeMixin === undefined) {
-      let s = this.superclass;
-      prototypeMixin = s === undefined ? Mixin.create() : Mixin.create(s.PrototypeMixin);
+      prototypeMixin = Mixin.create();
       prototypeMixin.ownerConstructor = this;
       prototypeMixinMap.set(this, prototypeMixin);
     }
@@ -934,13 +920,8 @@ class CoreObject {
   }
 }
 
-// CoreObject.prototype.concatenatedProperties = null;
-// CoreObject.prototype.mergedProperties = null;
-
 CoreObject.toString = classToString;
 setName(CoreObject, 'Ember.CoreObject');
-
-CoreObject.PrototypeMixin.ownerConstructor = CoreObject;
 
 CoreObject.isClass = true;
 CoreObject.isMethod = false;
