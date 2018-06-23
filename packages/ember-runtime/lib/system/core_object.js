@@ -914,7 +914,10 @@ class CoreObject {
       if (parent) {
         parent.proto();
       }
-      this.PrototypeMixin.apply(p);
+
+      if (prototypeMixinMap.has(this)) {
+        this.PrototypeMixin.apply(p);
+      }
     }
     return p;
   }
