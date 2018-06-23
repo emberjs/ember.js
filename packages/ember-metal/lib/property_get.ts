@@ -5,9 +5,10 @@ import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { assert, deprecate } from '@ember/debug';
 import { PROPERTY_BASED_DESCRIPTORS } from '@ember/deprecated-features';
 import { DEBUG } from '@glimmer/env';
-import { descriptorFor, isDescriptor, meta } from 'ember-meta';
+import { descriptorFor, isDescriptor } from 'ember-meta';
 import { HAS_NATIVE_PROXY, symbol, toString } from 'ember-utils';
 import { isPath } from './path_cache';
+import { defineProperty } from './properties';
 import { tagForProperty } from './tags';
 import { getCurrentTracker } from './tracked';
 
@@ -132,18 +133,7 @@ export function get(obj: object, keyName: string): any {
         }
       );
 
-      Object.defineProperty(obj, keyName, {
-        configurable: true,
-        enumerable: value.enumerable === false,
-        get() {
-          return value.get(this, keyName);
-        },
-      });
-
-      meta(obj).writeDescriptors(keyName, value);
-
-      value.setup(obj, keyName);
-
+      defineProperty(obj, keyName, value);
       return value.get(obj, keyName);
     }
   } else {

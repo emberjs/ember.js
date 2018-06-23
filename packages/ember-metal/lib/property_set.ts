@@ -2,10 +2,10 @@ import { assert, deprecate } from '@ember/debug';
 import { PROPERTY_BASED_DESCRIPTORS } from '@ember/deprecated-features';
 import EmberError from '@ember/error';
 import { DEBUG } from '@glimmer/env';
-import { descriptorFor, isDescriptor, Meta, meta, peekMeta } from 'ember-meta';
+import { descriptorFor, isDescriptor, Meta, peekMeta } from 'ember-meta';
 import { HAS_NATIVE_PROXY, toString } from 'ember-utils';
 import { isPath } from './path_cache';
-import { Descriptor, MandatorySetterFunction } from './properties';
+import { defineProperty, MandatorySetterFunction } from './properties';
 import { notifyPropertyChange } from './property_events';
 import { _getPath as getPath, getPossibleMandatoryProxyValue } from './property_get';
 
@@ -106,21 +106,8 @@ export function set(obj: object, keyName: string, value: any, tolerant?: boolean
       }
     );
 
-    let cv: Descriptor = currentValue;
-
-    Object.defineProperty(obj, keyName, {
-      configurable: true,
-      enumerable: cv.enumerable === false,
-      get() {
-        return cv.get(this, keyName);
-      },
-    });
-
-    meta(obj).writeDescriptors(keyName, cv);
-
-    cv.setup(obj, keyName);
-
-    cv.set(obj, keyName, value);
+    defineProperty(obj, keyName, value);
+    currentValue.set(obj, keyName, value);
     return value;
   }
 
