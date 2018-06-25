@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.3.0-beta.4 (June 25, 2018)
+- [#16754](https://github.com/emberjs/ember.js/pull/16754) [BUGFIX] Fix container destroy timing
+- [#16767](https://github.com/emberjs/ember.js/pull/16767) [BUGFIX] Ensure meta._parent is initialized
+
 ### v3.3.0-beta.3 (June 18, 2018)
 - [#16743](https://github.com/emberjs/ember.js/pull/16743) [BUGFIX] Update glimmer-vm to 0.35.4.
 - [#16750](https://github.com/emberjs/ember.js/pull/16750) [BUGFIX] Bring back isObject guard for ember-utils/is_proxy
