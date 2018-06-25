@@ -739,7 +739,13 @@ class CoreObject {
     let p = this.prototype;
     if (wasApplied.has(p)) {
       wasApplied.delete(p);
-      prototypeMixinMap.set(this, Mixin.create(this.PrototypeMixin));
+
+      // If the base mixin already exists and was applied, create a new mixin to
+      // make sure that it gets properly applied. Reusing the same mixin after
+      // the first `proto` call will cause it to get skipped.
+      if (prototypeMixinMap.has(this)) {
+        prototypeMixinMap.set(this, Mixin.create(this.PrototypeMixin));
+      }
     }
   }
 
@@ -914,7 +920,12 @@ class CoreObject {
       if (parent) {
         parent.proto();
       }
-      this.PrototypeMixin.apply(p);
+
+      // If the prototype mixin exists, apply it. In the case of native classes,
+      // it will not exist (unless the class has been reopened).
+      if (prototypeMixinMap.has(this)) {
+        this.PrototypeMixin.apply(p);
+      }
     }
     return p;
   }
