@@ -38,7 +38,9 @@ branches:
   only:
     - master
     - beta
-    - stable
+    - release
+    # release branches
+    - /^(?:release|lts)-\d+-\d+$/
     # npm version tags
     - /^v\d+\.\d+\.\d+/
 
