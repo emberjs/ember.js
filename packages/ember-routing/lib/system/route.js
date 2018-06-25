@@ -133,6 +133,20 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
   */
 
   /**
+    The name of the route, dot-delimited, including the engine prefix
+    if applicable.
+
+    For example, a route found at `addon/routes/posts/post.js` within an
+    engine named `admin` will have a `fullRouteName` of `admin.posts.post`.
+
+    @property fullRouteName
+    @for Route
+    @type String
+    @since 2.10.0
+    @public
+  */
+
+  /**
     Sets the name for this route, including a fully resolved name for routes
     inside engines.
 
