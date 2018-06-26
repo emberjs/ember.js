@@ -118,7 +118,12 @@ module.exports = function() {
   // Bundling
   let emberTestsBundle = new MergeTrees([
     new Funnel(packagesES5, {
-      include: ['internal-test-helpers/**', '*/tests/**', 'license.js'],
+      include: [
+        'internal-test-helpers/**',
+        '*/*/tests/**' /* scoped packages */,
+        '*/tests/**' /* packages */,
+        'license.js',
+      ],
     }),
     loader,
     license,
@@ -133,7 +138,12 @@ module.exports = function() {
 
   let emberDebugBundle = new MergeTrees([
     new Funnel(packagesES5, {
-      exclude: ['*/tests/**', 'ember-template-compiler/**', 'internal-test-helpers/**'],
+      exclude: [
+        '*/*/tests/**' /* scoped packages */,
+        '*/tests/**' /* packages */,
+        'ember-template-compiler/**',
+        'internal-test-helpers/**',
+      ],
     }),
     dependenciesES5,
     loader,
@@ -208,7 +218,8 @@ module.exports = function() {
     let emberProdBundle = new MergeTrees([
       new Funnel(prodPackagesES5, {
         exclude: [
-          '*/tests/**',
+          '*/*/tests/**' /* scoped packages */,
+          '*/tests/**' /* packages */,
           'ember-template-compiler/**',
           'ember-testing/**',
           'internal-test-helpers/**',
@@ -235,7 +246,12 @@ module.exports = function() {
 
     let emberTestsBundle = new MergeTrees([
       new Funnel(prodPackagesES5, {
-        include: ['internal-test-helpers/**', '*/tests/**', 'license.js'],
+        include: [
+          'internal-test-helpers/**',
+          '*/*/tests/**' /* scoped packages */,
+          '*/tests/**' /* packages */,
+          'license.js',
+        ],
       }),
       loader,
       license,
