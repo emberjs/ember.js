@@ -208,7 +208,6 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @property {Number} length
     @public
   */
-  length: null,
 
   /**
     Returns the object at the given `index`. If the given `index` is negative
@@ -234,13 +233,6 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @return {*} item at index or undefined
     @public
   */
-  objectAt(idx) {
-    if (idx < 0 || idx >= this.length) {
-      return undefined;
-    }
-
-    return get(this, idx);
-  },
 
   /**
     This returns the objects at the specified indexes, using `objectAt`.
@@ -1207,7 +1199,6 @@ const MutableArray = Mixin.create(ArrayMixin, MutableEnumerable, {
       inserted into the array at *idx*
     @public
   */
-  replace: null,
 
   /**
     Remove all elements from the array. This is useful if you

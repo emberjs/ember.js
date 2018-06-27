@@ -77,5 +77,5 @@ import _ProxyMixin from '../mixins/-proxy';
   @uses Ember.ProxyMixin
   @public
 */
-
-export default FrameworkObject.extend(_ProxyMixin);
+export default class ObjectProxy extends FrameworkObject {}
+ObjectProxy.PrototypeMixin.reopen(_ProxyMixin);
