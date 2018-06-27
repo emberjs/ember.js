@@ -9,6 +9,7 @@ import {
   PROPERTY_DID_CHANGE,
   addArrayObserver,
   removeArrayObserver,
+  replace,
 } from 'ember-metal';
 import EmberObject from './object';
 import { isArray, MutableArray } from '../mixins/array';
@@ -191,6 +192,28 @@ export default class ArrayProxy extends EmberObject {
     }
 
     return this._length;
+  }
+
+  set length(value) {
+    let length = this.length;
+    let removedCount = length - value;
+    let added;
+
+    if (removedCount === 0) {
+      return;
+    } else if (removedCount < 0) {
+      added = new Array(-removedCount);
+      removedCount = 0;
+    }
+
+    let content = get(this, 'content');
+    if (content) {
+      replace(content, value, removedCount, added);
+
+      this._lengthDirty = true;
+      this._objectsDirtyIndex = 0;
+      this._objects = null;
+    }
   }
 
   [PROPERTY_DID_CHANGE](key) {
