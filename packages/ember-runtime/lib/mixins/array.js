@@ -951,7 +951,11 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   invoke(methodName, ...args) {
-    return this.map(item => tryInvoke(item, methodName, args));
+    let ret = A();
+
+    this.forEach(item => ret.push(tryInvoke(item, methodName, args)));
+
+    return ret;
   },
 
   /**
