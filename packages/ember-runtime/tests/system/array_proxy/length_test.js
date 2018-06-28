@@ -78,6 +78,24 @@ moduleFor(
       assert.deepEqual(obj.content, null, 'content was updated');
     }
 
+    '@test accessing length after content set to null in willDestroy'(assert) {
+      let obj = ArrayProxy.extend({
+        willDestroy() {
+          this.set('content', null);
+          this._super(...arguments);
+        },
+      }).create({
+        content: ['foo', 'bar'],
+      });
+
+      assert.equal(obj.length, 2, 'precond');
+
+      this.runTask(() => obj.destroy());
+
+      assert.equal(obj.length, 0, 'length is 0 without content');
+      assert.deepEqual(obj.content, null, 'content was updated');
+    }
+
     '@test setting length to 0'(assert) {
       let obj = ArrayProxy.create({ content: ['foo', 'bar'] });
 
