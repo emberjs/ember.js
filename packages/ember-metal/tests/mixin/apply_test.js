@@ -1,4 +1,4 @@
-import { get, Mixin, mixin } from '../..';
+import { get, Mixin, mixin, descriptor } from '../..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 function K() {}
@@ -13,6 +13,45 @@ moduleFor(
 
       assert.equal(get(obj, 'foo'), 'FOO', 'should apply foo');
       assert.equal(get(obj, 'baz'), K, 'should apply foo');
+    }
+
+    ['@test descriptor with configurable:false works correctly'](assert) {
+      let MixinA = Mixin.create({
+        foo: null,
+      });
+
+      let MixinB = Mixin.create({
+        foo: descriptor({
+          configurable: false,
+          get() {
+            return 'FOO';
+          },
+        }),
+      });
+
+      let obj = {};
+      mixin(obj, MixinA, MixinB);
+
+      assert.equal(get(obj, 'foo'), 'FOO', 'should apply foo');
+
+      let MixinOne = Mixin.create({
+        foo: descriptor({
+          configurable: false,
+          get() {
+            return 'FOO';
+          },
+        }),
+      });
+
+      let MixinTwo = Mixin.create({
+        foo: null,
+      });
+
+      let myObj = {};
+
+      expectAssertion(() => {
+        mixin(myObj, MixinOne, MixinTwo);
+      }, `cannot redefine property \`foo\`, it is not configurable`);
     }
 
     ['@test applying anonymous properties'](assert) {

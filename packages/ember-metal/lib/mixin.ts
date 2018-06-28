@@ -214,13 +214,18 @@ function addNormalizedProperty(
   concats?: string[],
   mergings?: string[]
 ): void {
+  let previousDesc = descs[key];
+  assert(
+    `cannot redefine property \`${key}\`, it is not configurable`,
+    !(previousDesc !== undefined && previousDesc.configurable === false)
+  );
+
   if (value instanceof Descriptor) {
     // Wrap descriptor function to implement
     // _super() if needed
     if ((value as ComputedProperty)._getter) {
       value = giveDescriptorSuper(meta, key, value as ComputedProperty, values, descs, base);
     }
-
     descs[key] = value;
     values[key] = undefined;
   } else {
@@ -251,7 +256,7 @@ function mergeMixins(
   descs: { [key: string]: object },
   values: { [key: string]: object },
   base: { [key: string]: object },
-  keys: string[]
+  keys: Set<string>
 ): void {
   let currentMixin, props, key, concats, mergings;
 
@@ -286,7 +291,7 @@ function mergeMixins(
         if (!props.hasOwnProperty(key)) {
           continue;
         }
-        keys.push(key);
+        keys.add(key);
         addNormalizedProperty(base, key, props[key], meta, descs, values, concats, mergings);
       }
 
@@ -365,8 +370,8 @@ export function applyMixin(obj: { [key: string]: any }, mixins: Mixin[], partial
   let descs = {};
   let values = {};
   let meta = metaFor(obj);
-  let keys: string[] = [];
-  let key, value, desc;
+  let keys: Set<string> = new Set();
+  let value, desc;
 
   (obj as any)._super = ROOT;
 
@@ -379,10 +384,9 @@ export function applyMixin(obj: { [key: string]: any }, mixins: Mixin[], partial
   // * Copying `toString` in broken browsers
   mergeMixins(mixins, meta, descs, values, obj, keys);
 
-  for (let i = 0; i < keys.length; i++) {
-    key = keys[i];
+  keys.forEach(key => {
     if (key === 'constructor' || !values.hasOwnProperty(key)) {
-      continue;
+      return;
     }
 
     desc = descs[key];
@@ -395,7 +399,7 @@ export function applyMixin(obj: { [key: string]: any }, mixins: Mixin[], partial
     }
 
     if (desc === undefined && value === undefined) {
-      continue;
+      return;
     }
 
     if (descriptorFor(obj, key) !== undefined) {
@@ -414,7 +418,7 @@ export function applyMixin(obj: { [key: string]: any }, mixins: Mixin[], partial
     }
 
     defineProperty(obj, key, desc, value, meta);
-  }
+  });
 
   if (
     BINDING_SUPPORT &&
