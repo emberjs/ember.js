@@ -210,9 +210,7 @@ export default class ArrayProxy extends EmberObject {
     if (content) {
       replace(content, value, removedCount, added);
 
-      this._lengthDirty = true;
-      this._objectsDirtyIndex = 0;
-      this._objects = null;
+      this._invalidate();
     }
   }
 
@@ -225,11 +223,12 @@ export default class ArrayProxy extends EmberObject {
       this._removeArrangedContentArrayObsever();
       this.arrayContentWillChange(0, oldLength, newLength);
 
-      this._objectsDirtyIndex = 0;
-      this._lengthDirty = true;
+      this._invalidate();
 
       this.arrayContentDidChange(0, oldLength, newLength);
       this._addArrangedContentArrayObsever();
+    } else if (key === 'content') {
+      this._invalidate();
     }
   }
 
@@ -276,6 +275,11 @@ export default class ArrayProxy extends EmberObject {
     this._lengthDirty = true;
 
     this.arrayContentDidChange(idx, removedCnt, addedCnt);
+  }
+
+  _invalidate() {
+    this._objectsDirtyIndex = 0;
+    this._lengthDirty = true;
   }
 }
 
