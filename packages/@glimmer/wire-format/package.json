@@ -1,11 +1,11 @@
 {
   "name": "@glimmer/wire-format",
-  "version": "0.35.5",
+  "version": "0.35.7",
   "description": "",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/wire-format",
   "license": "MIT",
   "dependencies": {
-    "@glimmer/util": "^0.35.5"
+    "@glimmer/util": "^0.35.7"
   },
   "devDependencies": {
     "typescript": "^2.8.3"
