@@ -1,24 +1,24 @@
 {
   "name": "@glimmer/runtime",
-  "version": "0.35.5",
+  "version": "0.35.7",
   "description": "Minimal runtime needed to render Glimmer templates",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/runtime",
   "license": "MIT",
   "dependencies": {
-    "@glimmer/low-level": "^0.35.5",
-    "@glimmer/util": "^0.35.5",
-    "@glimmer/reference": "^0.35.5",
-    "@glimmer/wire-format": "^0.35.5",
-    "@glimmer/interfaces": "^0.35.5",
-    "@glimmer/program": "^0.35.5",
-    "@glimmer/vm": "^0.35.5"
+    "@glimmer/low-level": "^0.35.7",
+    "@glimmer/util": "^0.35.7",
+    "@glimmer/reference": "^0.35.7",
+    "@glimmer/wire-format": "^0.35.7",
+    "@glimmer/interfaces": "^0.35.7",
+    "@glimmer/program": "^0.35.7",
+    "@glimmer/vm": "^0.35.7"
   },
   "devDependencies": {
-    "@glimmer/local-debug-flags": "^0.35.5",
-    "@glimmer/object": "^0.35.5",
-    "@glimmer/object-reference": "^0.35.5",
-    "@glimmer/opcode-compiler": "^0.35.5",
-    "@glimmer/debug": "^0.35.5",
+    "@glimmer/local-debug-flags": "^0.35.7",
+    "@glimmer/object": "^0.35.7",
+    "@glimmer/object-reference": "^0.35.7",
+    "@glimmer/opcode-compiler": "^0.35.7",
+    "@glimmer/debug": "^0.35.7",
     "@types/qunit": "^2.0.31",
     "typescript": "^2.8.3"
   }
