@@ -1,6 +1,7 @@
 import { Option } from '@glimmer/interfaces';
 import * as HBS from '../types/nodes';
 import { voidMap } from '../parser/tokenizer-event-handlers';
+import { escapeText, escapeAttrValue } from './util';
 
 function unreachable(): never {
   throw new Error('unreachable');
@@ -52,24 +53,24 @@ export default function build(ast: HBS.Node): string {
       }
       break;
     case 'AttrNode':
-      const value = build(ast.value);
       if (ast.value.type === 'TextNode') {
         if (ast.value.chars !== '') {
           output.push(ast.name, '=');
-          output.push('"', value, '"');
+          output.push('"', escapeAttrValue(ast.value.chars), '"');
         } else {
           output.push(ast.name);
         }
       } else {
         output.push(ast.name, '=');
-        output.push(value);
+        // ast.value is mustache or concat
+        output.push(build(ast.value));
       }
       break;
     case 'ConcatStatement':
       output.push('"');
-      ast.parts.forEach((node: any) => {
-        if (node.type === 'StringLiteral') {
-          output.push(node.original);
+      ast.parts.forEach((node: HBS.TextNode | HBS.MustacheStatement) => {
+        if (node.type === 'TextNode') {
+          output.push(escapeAttrValue(node.chars));
         } else {
           output.push(build(node));
         }
@@ -77,7 +78,7 @@ export default function build(ast: HBS.Node): string {
       output.push('"');
       break;
     case 'TextNode':
-      output.push(ast.chars);
+      output.push(escapeText(ast.chars));
       break;
     case 'MustacheStatement':
       {

@@ -24,6 +24,14 @@ test('ElementNode: attributes', function() {
   printEqual('<h1 class="foo" id="title"></h1>');
 });
 
+test('ElementNode: attributes escaping', function() {
+  printEqual('<h1 class="foo" id="title" data-a="&quot;Foo&nbsp;&amp;&nbsp;Bar&quot;"></h1>');
+});
+
+test('TextNode: chars escape', assert => {
+  assert.equal(printTransform('&lt; &amp; &nbsp; &gt; &copy;2018'), '&lt; &amp; &nbsp; &gt; ©2018');
+});
+
 test('TextNode: chars', function() {
   printEqual('<h1>Test</h1>');
 });
@@ -54,6 +62,10 @@ test('MustacheStatement: as element attribute with path', function() {
 
 test('ConcatStatement: in element attribute string', function() {
   printEqual('<h1 class="{{if active "active" "inactive"}} foo">Test</h1>');
+});
+
+test('ConcatStatement: in element attribute string escaping', function() {
+  printEqual('<h1 class="< &nbsp; {{if x "&" "<"}} &amp; &quot;">Test</h1>');
 });
 
 test('ElementModifierStatement', function() {
