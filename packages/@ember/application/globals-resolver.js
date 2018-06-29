@@ -81,17 +81,10 @@ import { DEBUG } from '@glimmer/env';
 */
 
 class DefaultResolver extends EmberObject {
-  constructor(props) {
-    if (props == null) {
-      throw new Error('create missing props');
-    }
-    super(props);
-  }
-
   static create(props) {
-    if (props == null) {
-      throw new Error('static create missing props');
-    }
+    // DO NOT REMOVE even though this doesn't do anything
+    // This is required for a FireFox 60+ JIT bug with our tests.
+    // without it, create(props) in our tests would lose props on a deopt.
     return super.create(props);
   }
 
@@ -104,9 +97,6 @@ class DefaultResolver extends EmberObject {
   */
 
   init() {
-    if (this.namespace == null) {
-      throw new Error('init missing namespace');
-    }
     this._parseNameCache = dictionary(null);
   }
 
