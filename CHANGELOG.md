@@ -1,5 +1,8 @@
 # Ember Changelog
 
+### v3.3.0-beta.5 (July 2, 2018)
+- [#16781](https://github.com/emberjs/ember.js/pull/16781) [BUGFIX] Ensure tests from @ember/* are excluded from debug/prod builds.
+
 ### v3.3.0-beta.4 (June 25, 2018)
 - [#16754](https://github.com/emberjs/ember.js/pull/16754) [BUGFIX] Fix container destroy timing
 - [#16767](https://github.com/emberjs/ember.js/pull/16767) [BUGFIX] Ensure meta._parent is initialized
