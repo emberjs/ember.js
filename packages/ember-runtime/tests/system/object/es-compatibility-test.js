@@ -257,7 +257,7 @@ moduleFor(
       MyObject.create();
       assert.deepEqual(
         calls,
-        ['before constructor', 'init', 'after constructor'],
+        ['before constructor', 'after constructor', 'init'],
         'constructor then init called (create)'
       );
 
@@ -274,7 +274,7 @@ moduleFor(
         bar: 789,
       });
 
-      assert.equal(obj.foo, 123, 'sets class fields on instance correctly');
+      assert.equal(obj.foo, 456, 'sets class fields on instance correctly');
       assert.equal(obj.bar, 789, 'sets passed in properties on instance correctly');
     }
 
@@ -388,13 +388,6 @@ moduleFor(
       });
 
       class D extends C {
-        constructor(props) {
-          if (props.last === undefined) {
-            props.last = 'Jackson';
-          }
-          super(props);
-        }
-
         init() {
           calls.push('D init before super.init');
           super.init(...arguments);
@@ -422,7 +415,7 @@ moduleFor(
       assert.deepEqual(changes, [], 'full has not changed');
       assert.deepEqual(events, [], 'onSomeEvent has not been triggered');
 
-      let d = D.create({ first: 'Robert' });
+      let d = D.create({ first: 'Robert', last: 'Jackson' });
 
       assert.deepEqual(calls, [
         'D init before super.init',

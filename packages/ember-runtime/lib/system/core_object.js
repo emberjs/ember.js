@@ -27,7 +27,7 @@ import {
   classToString,
 } from 'ember-metal';
 import ActionHandler from '../mixins/action_handler';
-import { assert } from '@ember/debug';
+import { assert, deprecate } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 
 const reopen = Mixin.prototype.reopen;
@@ -37,6 +37,103 @@ const wasApplied = new WeakSet();
 const factoryMap = new WeakMap();
 
 const prototypeMixinMap = new WeakMap();
+
+const DELAY_INIT = Object.freeze({});
+
+let initCalled; // only used in debug builds to enable the proxy trap
+
+// using DEBUG here to avoid the extraneous variable when not needed
+if (DEBUG) {
+  initCalled = new WeakSet();
+}
+
+function initialize(obj, properties) {
+  let m = meta(obj);
+
+  if (properties !== undefined) {
+    assert(
+      'EmberObject.create only accepts objects.',
+      typeof properties === 'object' && properties !== null
+    );
+
+    assert(
+      'EmberObject.create no longer supports mixing in other ' +
+        'definitions, use .extend & .create separately instead.',
+      !(properties instanceof Mixin)
+    );
+
+    let concatenatedProperties = obj.concatenatedProperties;
+    let mergedProperties = obj.mergedProperties;
+    let hasConcatenatedProps =
+      concatenatedProperties !== undefined && concatenatedProperties.length > 0;
+    let hasMergedProps = mergedProperties !== undefined && mergedProperties.length > 0;
+
+    let keyNames = Object.keys(properties);
+
+    for (let i = 0; i < keyNames.length; i++) {
+      let keyName = keyNames[i];
+      let value = properties[keyName];
+
+      assert(
+        'EmberObject.create no longer supports defining computed ' +
+          'properties. Define computed properties using extend() or reopen() ' +
+          'before calling create().',
+        !(value instanceof ComputedProperty)
+      );
+      assert(
+        'EmberObject.create no longer supports defining methods that call _super.',
+        !(typeof value === 'function' && value.toString().indexOf('._super') !== -1)
+      );
+      assert(
+        '`actions` must be provided at extend time, not at create time, ' +
+          'when Ember.ActionHandler is used (i.e. views, controllers & routes).',
+        !(keyName === 'actions' && ActionHandler.detect(obj))
+      );
+
+      let possibleDesc = descriptorFor(obj, keyName, m);
+      let isDescriptor = possibleDesc !== undefined;
+
+      if (!isDescriptor) {
+        let baseValue = obj[keyName];
+
+        if (hasConcatenatedProps && concatenatedProperties.indexOf(keyName) > -1) {
+          if (baseValue) {
+            value = makeArray(baseValue).concat(value);
+          } else {
+            value = makeArray(value);
+          }
+        }
+
+        if (hasMergedProps && mergedProperties.indexOf(keyName) > -1) {
+          value = assign({}, baseValue, value);
+        }
+      }
+
+      if (isDescriptor) {
+        possibleDesc.set(obj, keyName, value);
+      } else if (typeof obj.setUnknownProperty === 'function' && !(keyName in obj)) {
+        obj.setUnknownProperty(keyName, value);
+      } else {
+        if (DEBUG) {
+          defineProperty(obj, keyName, null, value, m); // setup mandatory setter
+        } else {
+          obj[keyName] = value;
+        }
+      }
+    }
+  }
+
+  // using DEBUG here to avoid the extraneous variable when not needed
+  if (DEBUG) {
+    initCalled.add(obj);
+  }
+  obj.init(properties);
+
+  // re-enable chains
+  m.proto = obj.constructor.prototype;
+  finishChains(m);
+  sendEvent(obj, 'init', undefined, undefined, undefined, m);
+}
 
 /**
   @class CoreObject
@@ -60,13 +157,6 @@ class CoreObject {
 
     let self = this;
 
-    let beforeInitCalled; // only used in debug builds to enable the proxy trap
-
-    // using DEBUG here to avoid the extraneous variable when not needed
-    if (DEBUG) {
-      beforeInitCalled = true;
-    }
-
     if (DEBUG && HAS_NATIVE_PROXY && typeof self.unknownProperty === 'function') {
       let messageFor = (obj, property) => {
         return (
@@ -88,7 +178,8 @@ class CoreObject {
           if (property === PROXY_CONTENT) {
             return target;
           } else if (
-            beforeInitCalled ||
+            // init called will be set on the proxy, not the target, so get with the receiver
+            !initCalled.has(receiver) ||
             typeof property === 'symbol' ||
             isInternalSymbol(property) ||
             property === 'toJSON' ||
@@ -117,92 +208,22 @@ class CoreObject {
       FACTORY_FOR.set(self, initFactory);
     }
 
+    // disable chains
     let m = meta(self);
-    let proto = m.proto;
     m.proto = self;
 
-    if (properties !== undefined) {
-      assert(
-        'EmberObject.create only accepts objects.',
-        typeof properties === 'object' && properties !== null
+    if (properties !== DELAY_INIT) {
+      deprecate(
+        'using `new` with EmberObject has been deprecated. Please use `create` instead, or consider using native classes without extending from EmberObject.',
+        false,
+        {
+          id: 'object.new-constructor',
+          until: '3.9.0',
+        }
       );
 
-      assert(
-        'EmberObject.create no longer supports mixing in other ' +
-          'definitions, use .extend & .create separately instead.',
-        !(properties instanceof Mixin)
-      );
-
-      let concatenatedProperties = self.concatenatedProperties;
-      let mergedProperties = self.mergedProperties;
-      let hasConcatenatedProps =
-        concatenatedProperties !== undefined && concatenatedProperties.length > 0;
-      let hasMergedProps = mergedProperties !== undefined && mergedProperties.length > 0;
-
-      let keyNames = Object.keys(properties);
-
-      for (let i = 0; i < keyNames.length; i++) {
-        let keyName = keyNames[i];
-        let value = properties[keyName];
-
-        assert(
-          'EmberObject.create no longer supports defining computed ' +
-            'properties. Define computed properties using extend() or reopen() ' +
-            'before calling create().',
-          !(value instanceof ComputedProperty)
-        );
-        assert(
-          'EmberObject.create no longer supports defining methods that call _super.',
-          !(typeof value === 'function' && value.toString().indexOf('._super') !== -1)
-        );
-        assert(
-          '`actions` must be provided at extend time, not at create time, ' +
-            'when Ember.ActionHandler is used (i.e. views, controllers & routes).',
-          !(keyName === 'actions' && ActionHandler.detect(this))
-        );
-
-        let possibleDesc = descriptorFor(self, keyName, m);
-        let isDescriptor = possibleDesc !== undefined;
-
-        if (!isDescriptor) {
-          let baseValue = self[keyName];
-
-          if (hasConcatenatedProps && concatenatedProperties.indexOf(keyName) > -1) {
-            if (baseValue) {
-              value = makeArray(baseValue).concat(value);
-            } else {
-              value = makeArray(value);
-            }
-          }
-
-          if (hasMergedProps && mergedProperties.indexOf(keyName) > -1) {
-            value = assign({}, baseValue, value);
-          }
-        }
-
-        if (isDescriptor) {
-          possibleDesc.set(self, keyName, value);
-        } else if (typeof self.setUnknownProperty === 'function' && !(keyName in self)) {
-          self.setUnknownProperty(keyName, value);
-        } else {
-          if (DEBUG) {
-            defineProperty(self, keyName, null, value, m); // setup mandatory setter
-          } else {
-            self[keyName] = value;
-          }
-        }
-      }
+      initialize(self, properties);
     }
-
-    // using DEBUG here to avoid the extraneous variable when not needed
-    if (DEBUG) {
-      beforeInitCalled = false;
-    }
-    self.init(...arguments);
-
-    m.proto = proto;
-    finishChains(m);
-    sendEvent(self, 'init', undefined, undefined, undefined, m);
 
     // only return when in debug builds and `self` is the proxy created above
     if (DEBUG && self !== this) {
@@ -677,12 +698,15 @@ class CoreObject {
   */
   static create(props, extra) {
     let C = this;
+    let instance = new C(DELAY_INIT);
 
     if (extra === undefined) {
-      return new C(props);
+      initialize(instance, props);
     } else {
-      return new C(flattenProps.apply(this, arguments));
+      initialize(instance, flattenProps.apply(this, arguments));
     }
+
+    return instance;
   }
 
   /**
