@@ -14,8 +14,8 @@ moduleFor(
         bar: 'BAR',
       });
 
-      assert.equal(new Subclass().foo(), 'FOO', 'Adds method');
-      assert.equal(get(new Subclass(), 'bar'), 'BAR', 'Adds property');
+      assert.equal(Subclass.create().foo(), 'FOO', 'Adds method');
+      assert.equal(get(Subclass.create(), 'bar'), 'BAR', 'Adds property');
     }
 
     ['@test reopened properties inherited by subclasses'](assert) {
@@ -29,8 +29,8 @@ moduleFor(
         bar: 'BAR',
       });
 
-      assert.equal(new SubSub().foo(), 'FOO', 'Adds method');
-      assert.equal(get(new SubSub(), 'bar'), 'BAR', 'Adds property');
+      assert.equal(SubSub.create().foo(), 'FOO', 'Adds method');
+      assert.equal(get(SubSub.create(), 'bar'), 'BAR', 'Adds property');
     }
 
     ['@test allows reopening already instantiated classes'](assert) {

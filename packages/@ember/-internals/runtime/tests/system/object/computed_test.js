@@ -31,7 +31,7 @@ moduleFor(
         }),
       });
 
-      testWithDefault(assert, 'FOO', new MyClass(), 'foo');
+      testWithDefault(assert, 'FOO', MyClass.create(), 'foo');
     }
 
     ['@test computed property on subclass'](assert) {
@@ -47,7 +47,7 @@ moduleFor(
         }),
       });
 
-      testWithDefault(assert, 'BAR', new Subclass(), 'foo');
+      testWithDefault(assert, 'BAR', Subclass.create(), 'foo');
     }
 
     ['@test replacing computed property with regular val'](assert) {
@@ -61,7 +61,7 @@ moduleFor(
         foo: 'BAR',
       });
 
-      testWithDefault(assert, 'BAR', new Subclass(), 'foo');
+      testWithDefault(assert, 'BAR', Subclass.create(), 'foo');
     }
 
     ['@test complex depndent keys'](assert) {
@@ -83,8 +83,8 @@ moduleFor(
         count: 20,
       });
 
-      let obj1 = new MyClass();
-      let obj2 = new Subclass();
+      let obj1 = MyClass.create();
+      let obj2 = Subclass.create();
 
       testWithDefault(assert, 'BIFF 1', obj1, 'foo');
       testWithDefault(assert, 'BIFF 21', obj2, 'foo');
@@ -129,7 +129,7 @@ moduleFor(
         }).property('bar2.baz'),
       });
 
-      let obj2 = new Subclass();
+      let obj2 = Subclass.create();
 
       testWithDefault(assert, 'BIFF2 1', obj2, 'foo');
 
