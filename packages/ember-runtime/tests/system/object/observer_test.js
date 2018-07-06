@@ -15,7 +15,7 @@ moduleFor(
         }),
       });
 
-      let obj = new MyClass();
+      let obj = MyClass.create();
       assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
       set(obj, 'bar', 'BAZ');
@@ -37,7 +37,7 @@ moduleFor(
         }),
       });
 
-      let obj = new Subclass();
+      let obj = Subclass.create();
       assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
 
       set(obj, 'bar', 'BAZ');
@@ -200,7 +200,7 @@ moduleFor(
         },
       });
 
-      let parent = new ParentClass();
+      let parent = ParentClass.create();
 
       assert.equal(changed, false, 'precond');
 

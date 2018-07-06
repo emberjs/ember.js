@@ -9,7 +9,7 @@ moduleFor(
   class extends AbstractTestCase {
     constructor() {
       super();
-      adapter = new Adapter();
+      adapter = Adapter.create();
     }
 
     teardown() {
