@@ -34,7 +34,7 @@ moduleFor(
     }
 
     ['@test toString should be not be added as a property when calling toString()'](assert) {
-      let obj = new CoreObject({
+      let obj = CoreObject.create({
         firstName: 'Foo',
         lastName: 'Bar',
       });
@@ -54,7 +54,7 @@ moduleFor(
         },
       }).create();
 
-      let obj = new CoreObject({
+      let obj = CoreObject.create({
         someProxyishThing,
       });
 
