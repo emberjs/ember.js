@@ -8,14 +8,14 @@ moduleFor(
     ['@test Basic extend'](assert) {
       let SomeClass = EmberObject.extend({ foo: 'BAR' });
       assert.ok(SomeClass.isClass, 'A class has isClass of true');
-      let obj = new SomeClass();
+      let obj = SomeClass.create();
       assert.equal(obj.foo, 'BAR');
     }
 
     ['@test Sub-subclass'](assert) {
       let SomeClass = EmberObject.extend({ foo: 'BAR' });
       let AnotherClass = SomeClass.extend({ bar: 'FOO' });
-      let obj = new AnotherClass();
+      let obj = AnotherClass.create();
       assert.equal(obj.foo, 'BAR');
       assert.equal(obj.bar, 'FOO');
     }
@@ -49,7 +49,7 @@ moduleFor(
         },
       });
 
-      let obj = new FinalClass();
+      let obj = FinalClass.create();
       obj.foo();
       obj.bar();
       assert.equal(obj.fooCnt, 2, 'should invoke both');
@@ -76,9 +76,9 @@ moduleFor(
       });
       let AnotherClass = SomeClass.extend({ things: 'bar' });
       let YetAnotherClass = SomeClass.extend({ things: 'baz' });
-      let some = new SomeClass();
-      let another = new AnotherClass();
-      let yetAnother = new YetAnotherClass();
+      let some = SomeClass.create();
+      let another = AnotherClass.create();
+      let yetAnother = YetAnotherClass.create();
       assert.deepEqual(some.get('things'), ['foo'], 'base class should have just its value');
       assert.deepEqual(
         another.get('things'),
@@ -102,9 +102,9 @@ moduleFor(
       AnotherClass.reopenClass({ things: 'bar' });
       let YetAnotherClass = SomeClass.extend();
       YetAnotherClass.reopenClass({ things: 'baz' });
-      let some = new SomeClass();
-      let another = new AnotherClass();
-      let yetAnother = new YetAnotherClass();
+      let some = SomeClass.create();
+      let another = AnotherClass.create();
+      let yetAnother = YetAnotherClass.create();
       assert.deepEqual(
         get(some.constructor, 'things'),
         ['foo'],

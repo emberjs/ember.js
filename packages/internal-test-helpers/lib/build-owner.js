@@ -21,7 +21,7 @@ export default function buildOwner(options = {}) {
 
   let Owner = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixin);
 
-  let namespace = new EmberObject({
+  let namespace = EmberObject.create({
     Resolver: new ResolverWrapper(resolver),
   });
 

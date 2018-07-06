@@ -6,35 +6,31 @@ import { moduleFor, AbstractTestCase, buildOwner } from 'internal-test-helpers';
 moduleFor(
   'Ember.CoreObject',
   class extends AbstractTestCase {
-    ['@test works with new (one arg)'](assert) {
-      let obj = new CoreObject({
-        firstName: 'Stef',
-        lastName: 'Penner',
-      });
-
-      assert.equal(obj.firstName, 'Stef');
-      assert.equal(obj.lastName, 'Penner');
-    }
-
-    ['@test works with new (> 1 arg)'](assert) {
-      let obj = new CoreObject(
-        {
+    ['@test throws deprecation with new (one arg)']() {
+      expectDeprecation(() => {
+        new CoreObject({
           firstName: 'Stef',
           lastName: 'Penner',
-        },
-        {
-          other: 'name',
-        }
-      );
+        });
+      }, /using `new` with EmberObject has been deprecated/);
+    }
 
-      assert.equal(obj.firstName, 'Stef');
-      assert.equal(obj.lastName, 'Penner');
-
-      assert.equal(obj.other, undefined); // doesn't support multiple pojo' to the constructor
+    ['@test throws deprecation with new (> 1 arg)']() {
+      expectDeprecation(() => {
+        new CoreObject(
+          {
+            firstName: 'Stef',
+            lastName: 'Penner',
+          },
+          {
+            other: 'name',
+          }
+        );
+      }, /using `new` with EmberObject has been deprecated/);
     }
 
     ['@test toString should be not be added as a property when calling toString()'](assert) {
-      let obj = new CoreObject({
+      let obj = CoreObject.create({
         firstName: 'Foo',
         lastName: 'Bar',
       });
@@ -54,7 +50,7 @@ moduleFor(
         },
       }).create();
 
-      let obj = new CoreObject({
+      let obj = CoreObject.create({
         someProxyishThing,
       });
 
