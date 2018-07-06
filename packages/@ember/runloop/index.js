@@ -1,4 +1,4 @@
-import { assert, deprecate, isTesting } from '@ember/debug';
+import { assert, deprecate } from '@ember/debug';
 import { onErrorTarget } from 'ember-error-handling';
 import { beginPropertyChanges, endPropertyChanges } from 'ember-metal';
 import Backburner from 'backburner';
@@ -325,11 +325,6 @@ export function end() {
   @public
 */
 export function schedule(queue /*, target, method */) {
-  assert(
-    `You have turned on testing mode, which disabled the run-loop's autorun. ` +
-      `You will need to wrap any code with asynchronous side-effects in a run`,
-    currentRunLoop || !isTesting()
-  );
   deprecate(`Scheduling into the '${queue}' run loop queue is deprecated.`, queue !== 'sync', {
     id: 'ember-metal.run.sync',
     until: '3.5.0',
@@ -398,11 +393,6 @@ export function later(/*target, method*/) {
   @public
 */
 export function once(...args) {
-  assert(
-    `You have turned on testing mode, which disabled the run-loop's autorun. ` +
-      `You will need to wrap any code with asynchronous side-effects in a run`,
-    currentRunLoop || !isTesting()
-  );
   args.unshift('actions');
   return backburner.scheduleOnce(...args);
 }
@@ -480,11 +470,6 @@ export function once(...args) {
   @public
 */
 export function scheduleOnce(queue /*, target, method*/) {
-  assert(
-    `You have turned on testing mode, which disabled the run-loop's autorun. ` +
-      `You will need to wrap any code with asynchronous side-effects in a run`,
-    currentRunLoop || !isTesting()
-  );
   deprecate(`Scheduling into the '${queue}' run loop queue is deprecated.`, queue !== 'sync', {
     id: 'ember-metal.run.sync',
     until: '3.5.0',

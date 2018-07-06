@@ -82,18 +82,5 @@ moduleFor(
 
       assert.deepEqual(order, ['sync', 'actions', 'sync', 'actions', 'destroy']);
     }
-
-    ['@test makes sure it does not trigger an autorun during testing']() {
-      expectAssertion(
-        () => schedule('actions', () => {}),
-        /wrap any code with asynchronous side-effects in a run/
-      );
-
-      // make sure not just the first violation is asserted.
-      expectAssertion(
-        () => schedule('actions', () => {}),
-        /wrap any code with asynchronous side-effects in a run/
-      );
-    }
   }
 );
