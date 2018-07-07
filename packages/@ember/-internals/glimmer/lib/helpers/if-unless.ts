@@ -188,7 +188,7 @@ export function inlineIf(_vm: VM, { positional }: Arguments) {
 
   ```handlebars
   {{! If greetings are found, the text below will not render.}}
-  {{#unless greeting}}
+  {{#unless greetings}}
     No greetings were found. Why not set one?
   {{/unless}}
   ```
