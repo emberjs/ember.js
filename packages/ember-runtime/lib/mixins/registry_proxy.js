@@ -92,7 +92,7 @@ export default Mixin.create({
 
     @method register
     @param  fullName {String} type:name (e.g., 'model:user')
-    @param  factory {Function} (e.g., App.Person)
+    @param  factory {any} (e.g., App.Person)
     @param  options {Object} (optional) disable instantiation or singleton usage
     @public
    */
