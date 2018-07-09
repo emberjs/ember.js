@@ -143,6 +143,7 @@ function DESCRIPTOR_GETTER_FUNCTION(name: string, descriptor: Descriptor) {
 
   @private
   @method defineProperty
+  @static
   @for @ember/object
   @param {Object} obj the object to define this property on. This may be a prototype.
   @param {String} keyName the name of the property
