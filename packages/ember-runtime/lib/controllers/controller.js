@@ -18,14 +18,6 @@ const Controller = EmberObject.extend(Mixin);
 
 deprecateUnderscoreActions(Controller);
 
-function controllerInjectionHelper(factory) {
-  assert(
-    'Defining an injected controller property on a ' +
-    'non-controller is not allowed.',
-    Mixin.detect(factory.PrototypeMixin)
-  );
-}
-
 /**
   Creates a property that lazily looks up another controller in the container.
   Can only be used when defining another controller.
@@ -55,6 +47,6 @@ function controllerInjectionHelper(factory) {
   @return {Ember.InjectedProperty} injection descriptor instance
   @public
 */
-createInjectionHelper('controller', controllerInjectionHelper);
+createInjectionHelper('controller');
 
 export default Controller;

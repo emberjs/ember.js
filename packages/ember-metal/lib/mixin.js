@@ -286,6 +286,7 @@ function connectBindings(obj, meta) {
 }
 
 function finishPartial(obj, meta) {
+
   connectBindings(obj, meta === undefined ? metaFor(obj) : meta);
   return obj;
 }

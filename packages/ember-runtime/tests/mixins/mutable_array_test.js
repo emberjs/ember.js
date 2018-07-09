@@ -16,8 +16,8 @@ const TestMutableArray = EmberObject.extend(MutableArray, {
 
   _content: null,
 
-  init(ary = []) {
-    this._content = emberA(ary);
+  init() {
+    this._content = this._content || [];
   },
 
   replace(idx, amt, objects) {
@@ -55,7 +55,7 @@ MutableArrayTests.extend({
 
   newObject(ary) {
     ary = ary ? ary.slice() : this.newFixture(3);
-    return new TestMutableArray(ary);
+    return TestMutableArray.create({ _content: ary });
   },
 
   // allows for testing of the basic enumerable after an internal mutation

@@ -12,6 +12,9 @@ import {
   removeChainWatcher
 } from './chains';
 
+const getPrototypeOf = Object.getPrototypeOf;
+const objectPrototype = Object.prototype;
+
 let counters;
 if (DEBUG) {
   counters = {
@@ -41,11 +44,12 @@ const META_FIELD = '__ember_meta__';
 const NODE_STACK = [];
 
 export class Meta {
-  constructor(obj, parentMeta) {
+  constructor(obj) {
     if (DEBUG) {
       counters.metaInstantiated++;
     }
 
+    this._parent = undefined;
     this._cache = undefined;
     this._weak = undefined;
     this._watching = undefined;
@@ -68,17 +72,20 @@ export class Meta {
 
     // when meta(obj).proto === obj, the object is intended to be only a
     // prototype and doesn't need to actually be observable itself
-    this.proto = undefined;
-
-    // The next meta in our inheritance chain. We (will) track this
-    // explicitly instead of using prototypical inheritance because we
-    // have detailed knowledge of how each property should really be
-    // inherited, and we can optimize it much better than JS runtimes.
-    this.parent = parentMeta;
+    this.proto = obj.constructor === undefined ? undefined : obj.constructor.prototype;
 
     this._listeners = undefined;
     this._listenersFinalized = false;
     this._suspendedListeners = undefined;
+  }
+
+  get parent() {
+    let parent = this._parent;
+    if (parent === undefined) {
+      let proto = getPrototypeOf(this.source);
+      this._parent = parent = proto === null || proto === objectPrototype ? null : meta(proto);
+    }
+    return parent;
   }
 
   isInitialized(obj) {
@@ -165,7 +172,7 @@ export class Meta {
 
   _getInherited(key) {
     let pointer = this;
-    while (pointer !== undefined) {
+    while (pointer !== null) {
       let map = pointer[key];
       if (map !== undefined) {
         return map;
@@ -176,7 +183,7 @@ export class Meta {
 
   _findInherited(key, subkey) {
     let pointer = this;
-    while (pointer !== undefined) {
+    while (pointer !== null) {
       let map = pointer[key];
       if (map !== undefined) {
         let value = map[subkey];
@@ -191,7 +198,7 @@ export class Meta {
   // Implements a member that provides a lazily created map of maps,
   // with inheritance at both levels.
   writeDeps(subkey, itemkey, value) {
-    assert(`Cannot modify dependent keys for \`${itemkey}\` on \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
+    assert(this.isMetaDestroyed() && `Cannot modify dependent keys for \`${itemkey}\` on \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
 
     let outerMap = this._getOrCreateOwnMap('_deps');
     let innerMap = outerMap[subkey];
@@ -203,7 +210,7 @@ export class Meta {
 
   peekDeps(subkey, itemkey) {
     let pointer = this;
-    while (pointer !== undefined) {
+    while (pointer !== null) {
       let map = pointer._deps;
       if (map !== undefined) {
         let value = map[subkey];
@@ -220,7 +227,7 @@ export class Meta {
 
   hasDeps(subkey) {
     let pointer = this;
-    while (pointer !== undefined) {
+    while (pointer !== null) {
       let deps = pointer._deps;
       if (deps !== undefined && deps[subkey] !== undefined) {
         return true;
@@ -238,7 +245,7 @@ export class Meta {
     let pointer = this;
     let seen;
     let calls;
-    while (pointer !== undefined) {
+    while (pointer !== null) {
       let map = pointer[key];
       if (map !== undefined) {
         let innerMap = map[subkey];
@@ -281,7 +288,7 @@ export class Meta {
   readableTags() { return this._tags; }
 
   writableTag(create) {
-    assert(`Cannot create a new tag for \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
+    assert(this.isMetaDestroyed() && `Cannot create a new tag for \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
     let ret = this._tag;
     if (ret === undefined) {
       ret = this._tag = create(this.source);
@@ -294,7 +301,7 @@ export class Meta {
   }
 
   writableChainWatchers(create) {
-    assert(`Cannot create a new chain watcher for \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
+    assert(this.isMetaDestroyed() && `Cannot create a new chain watcher for \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
     let ret = this._chainWatchers;
     if (ret === undefined) {
       ret = this._chainWatchers = create(this.source);
@@ -307,10 +314,10 @@ export class Meta {
   }
 
   writableChains(create) {
-    assert(`Cannot create a new chains for \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
+    assert(this.isMetaDestroyed() && `Cannot create a new chains for \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
     let ret = this._chains;
     if (ret === undefined) {
-      if (this.parent === undefined) {
+      if (this.parent === null) {
         ret = create(this.source);
       } else {
         ret = this.parent.writableChains(create).copy(this.source);
@@ -325,7 +332,7 @@ export class Meta {
   }
 
   writeWatching(subkey, value) {
-    assert(`Cannot update watchers for \`${subkey}\` on \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
+    assert(this.isMetaDestroyed() && `Cannot update watchers for \`${subkey}\` on \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
     let map = this._getOrCreateOwnMap('_watching');
     map[subkey] = value;
   }
@@ -335,7 +342,7 @@ export class Meta {
   }
 
   writeMixins(subkey, value) {
-    assert(`Cannot add mixins for \`${subkey}\` on \`${toString(this.source)}\` call writeMixins after it has been destroyed.`, !this.isMetaDestroyed());
+    assert(this.isMetaDestroyed() && `Cannot add mixins for \`${subkey}\` on \`${toString(this.source)}\` call writeMixins after it has been destroyed.`, !this.isMetaDestroyed());
     let map = this._getOrCreateOwnMap('_mixins');
     map[subkey] = value;
   }
@@ -347,7 +354,7 @@ export class Meta {
   forEachMixins(fn) {
     let pointer = this;
     let seen;
-    while (pointer !== undefined) {
+    while (pointer !== null) {
       let map = pointer._mixins;
       if (map !== undefined) {
         for (let key in map) {
@@ -363,7 +370,7 @@ export class Meta {
   }
 
   writeBindings(subkey, value) {
-    assert(`Cannot add a binding for \`${subkey}\` on \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
+    assert(this.isMetaDestroyed() && `Cannot add a binding for \`${subkey}\` on \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
 
     let map = this._getOrCreateOwnMap('_bindings');
     map[subkey] = value;
@@ -376,7 +383,7 @@ export class Meta {
   forEachBindings(fn) {
     let pointer = this;
     let seen;
-    while (pointer !== undefined) {
+    while (pointer !== null) {
       let map = pointer._bindings;
       if (map !== undefined) {
         for (let key in map) {
@@ -392,12 +399,12 @@ export class Meta {
   }
 
   clearBindings() {
-    assert(`Cannot clear bindings on \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
+    assert(this.isMetaDestroyed() && `Cannot clear bindings on \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
     this._bindings = undefined;
   }
 
   writeValues(subkey, value) {
-    assert(`Cannot set the value of \`${subkey}\` on \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
+    assert(this.isMetaDestroyed() && `Cannot set the value of \`${subkey}\` on \`${toString(this.source)}\` after it has been destroyed.`, !this.isMetaDestroyed());
 
     let map = this._getOrCreateOwnMap('_values');
     map[subkey] = value;
@@ -434,7 +441,7 @@ if (MANDATORY_SETTER) {
 
     let pointer = this;
 
-    while (pointer !== undefined) {
+    while (pointer !== null) {
       let map = pointer[internalKey];
       if (map !== undefined) {
         let value = map[subkey];
@@ -464,7 +471,6 @@ let setMeta, peekMeta;
 
 // choose the one appropriate for given platform
 if (HAS_NATIVE_WEAKMAP) {
-  let getPrototypeOf = Object.getPrototypeOf;
   let metaStore = new WeakMap();
 
   setMeta = function WeakMap_setMeta(obj, meta) {
@@ -477,7 +483,7 @@ if (HAS_NATIVE_WEAKMAP) {
   peekMeta = function WeakMap_peekParentMeta(obj) {
     let pointer = obj;
     let meta;
-    while (pointer !== undefined && pointer !== null) {
+    while (pointer !== null && pointer !== null) {
       meta = metaStore.get(pointer);
       // jshint loopfunc:true
       if (DEBUG) {
@@ -554,17 +560,13 @@ export function meta(obj) {
   }
 
   let maybeMeta = peekMeta(obj);
-  let parent;
 
   // remove this code, in-favor of explicit parent
-  if (maybeMeta !== undefined) {
-    if (maybeMeta.source === obj) {
-      return maybeMeta;
-    }
-    parent = maybeMeta;
+  if (maybeMeta !== undefined && maybeMeta.source === obj) {
+    return maybeMeta;
   }
 
-  let newMeta = new Meta(obj, parent);
+  let newMeta = new Meta(obj);
   setMeta(obj, newMeta);
   return newMeta;
 }

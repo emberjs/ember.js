@@ -166,7 +166,7 @@ if (!EmberDev.runningProdBuild) {
       owner.register('foo:main', AnObject);
 
       owner.lookup('foo:main');
-    }, /Defining an injected controller property on a non-controller is not allowed./);
+    }, /Defining `foo` as an injected controller property on a non-controller \(`foo:main`\) is not allowed./);
   });
 }
 
