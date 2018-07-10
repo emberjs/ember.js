@@ -38,7 +38,7 @@
       "protocol": "tap"
     }
   },
-  "launch_in_dev": ["PhantomJS"],
+  "launch_in_dev": [],
   "launch_in_ci": [
     "SL_Safari_Current",
     "SL_MS_Edge",
