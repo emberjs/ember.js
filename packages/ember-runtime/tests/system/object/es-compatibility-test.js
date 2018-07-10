@@ -40,25 +40,6 @@ moduleFor(
         'passed-property',
         'passed property available on instance (create)'
       );
-      calls = [];
-      myObject = new MyObject({ passedProperty: 'passed-property' });
-
-      assert.deepEqual(calls, ['constructor', 'init'], 'constructor then init called (new)');
-      assert.equal(
-        myObject.postInitProperty,
-        'post-init-property',
-        'constructor property available on instance (new)'
-      );
-      assert.equal(
-        myObject.initProperty,
-        'init-property',
-        'init property available on instance (new)'
-      );
-      assert.equal(
-        myObject.passedProperty,
-        'passed-property',
-        'passed property available on instance (new)'
-      );
     }
 
     ['@test normal method super'](assert) {
@@ -109,7 +90,7 @@ moduleFor(
 
       [Foo, Bar, Baz, Qux, Quux, Corge].forEach((Class, index) => {
         calls = [];
-        new Class().method();
+        Class.create().method();
 
         assert.deepEqual(
           calls,
@@ -192,7 +173,7 @@ moduleFor(
 
       class MyObject extends EmberObject.extend(Mixin1, Mixin2) {}
 
-      let myObject = new MyObject();
+      let myObject = MyObject.create();
       assert.equal(myObject.property1, 'data-1', 'includes the first mixin');
       assert.equal(myObject.property2, 'data-2', 'includes the second mixin');
     }
@@ -200,14 +181,10 @@ moduleFor(
     ['@test using instanceof'](assert) {
       class MyObject extends EmberObject {}
 
-      let myObject1 = MyObject.create();
-      let myObject2 = new MyObject();
+      let myObject = MyObject.create();
 
-      assert.ok(myObject1 instanceof MyObject);
-      assert.ok(myObject1 instanceof EmberObject);
-
-      assert.ok(myObject2 instanceof MyObject);
-      assert.ok(myObject2 instanceof EmberObject);
+      assert.ok(myObject instanceof MyObject);
+      assert.ok(myObject instanceof EmberObject);
     }
 
     ['@test extending an ES subclass of EmberObject'](assert) {
@@ -229,10 +206,6 @@ moduleFor(
 
       MyObject.create();
       assert.deepEqual(calls, ['constructor', 'init'], 'constructor then init called (create)');
-
-      calls = [];
-      new MyObject();
-      assert.deepEqual(calls, ['constructor', 'init'], 'constructor then init called (new)');
     }
 
     ['@test calling extend on an ES subclass of EmberObject'](assert) {
@@ -257,16 +230,8 @@ moduleFor(
       MyObject.create();
       assert.deepEqual(
         calls,
-        ['before constructor', 'init', 'after constructor'],
+        ['before constructor', 'after constructor', 'init'],
         'constructor then init called (create)'
-      );
-
-      calls = [];
-      new MyObject();
-      assert.deepEqual(
-        calls,
-        ['before constructor', 'init', 'after constructor'],
-        'constructor then init called (new)'
       );
 
       let obj = MyObject.create({
@@ -274,7 +239,7 @@ moduleFor(
         bar: 789,
       });
 
-      assert.equal(obj.foo, 123, 'sets class fields on instance correctly');
+      assert.equal(obj.foo, 456, 'sets class fields on instance correctly');
       assert.equal(obj.bar, 789, 'sets passed in properties on instance correctly');
     }
 
@@ -388,13 +353,6 @@ moduleFor(
       });
 
       class D extends C {
-        constructor(props) {
-          if (props.last === undefined) {
-            props.last = 'Jackson';
-          }
-          super(props);
-        }
-
         init() {
           calls.push('D init before super.init');
           super.init(...arguments);
@@ -422,7 +380,7 @@ moduleFor(
       assert.deepEqual(changes, [], 'full has not changed');
       assert.deepEqual(events, [], 'onSomeEvent has not been triggered');
 
-      let d = D.create({ first: 'Robert' });
+      let d = D.create({ first: 'Robert', last: 'Jackson' });
 
       assert.deepEqual(calls, [
         'D init before super.init',

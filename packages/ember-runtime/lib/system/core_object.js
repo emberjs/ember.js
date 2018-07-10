@@ -47,8 +47,99 @@ const wasApplied = new WeakMap();
 const factoryMap = new WeakMap();
 
 const NAME_KEY_MAP = new WeakMap();
+const GUID_KEY_MAP = new WeakMap();
 
 const prototypeMixinMap = new WeakMap();
+
+const DELAY_INIT = Object.freeze({});
+
+function initialize(obj, properties) {
+  let m = meta(obj);
+
+  if (properties) {
+    assert(
+      'Ember.Object.create only accepts objects.',
+      typeof properties === 'object' && properties !== null
+    );
+
+    assert(
+      'Ember.Object.create no longer supports mixing in other ' +
+        'definitions, use .extend & .create separately instead.',
+      !(properties instanceof Mixin)
+    );
+
+    let concatenatedProperties = obj.concatenatedProperties;
+    let mergedProperties = obj.mergedProperties;
+    let hasConcatenatedProps =
+      concatenatedProperties !== undefined && concatenatedProperties.length > 0;
+    let hasMergedProps = mergedProperties !== undefined && mergedProperties.length > 0;
+
+    let keyNames = Object.keys(properties);
+
+    for (let i = 0; i < keyNames.length; i++) {
+      let keyName = keyNames[i];
+      let value = properties[keyName];
+
+      if (detectBinding(keyName)) {
+        m.writeBindings(keyName, value);
+      }
+
+      assert(
+        'Ember.Object.create no longer supports defining computed ' +
+          'properties. Define computed properties using extend() or reopen() ' +
+          'before calling create().',
+        !(value instanceof ComputedProperty)
+      );
+      assert(
+        'Ember.Object.create no longer supports defining methods that call _super.',
+        !(typeof value === 'function' && value.toString().indexOf('._super') !== -1)
+      );
+      assert(
+        '`actions` must be provided at extend time, not at create time, ' +
+          'when Ember.ActionHandler is used (i.e. views, controllers & routes).',
+        !(keyName === 'actions' && ActionHandler.detect(obj))
+      );
+
+      let baseValue = obj[keyName];
+      let isDescriptor = baseValue !== null && typeof baseValue === 'object' && baseValue.isDescriptor;
+
+      if (hasConcatenatedProps && concatenatedProperties.indexOf(keyName) > -1) {
+        if (baseValue) {
+          value = makeArray(baseValue).concat(value);
+        } else {
+          value = makeArray(value);
+        }
+      }
+
+      if (hasMergedProps && mergedProperties.indexOf(keyName) > -1) {
+        value = assign({}, baseValue, value);
+      }
+
+      if (isDescriptor) {
+        baseValue.set(obj, keyName, value);
+      } else if (typeof obj.setUnknownProperty === 'function' && !(keyName in obj)) {
+        obj.setUnknownProperty(keyName, value);
+      } else {
+        if (MANDATORY_SETTER) {
+          defineProperty(obj, keyName, null, value, m); // setup mandatory setter
+        } else {
+          obj[keyName] = value;
+        }
+      }
+    }
+  }
+
+  finishPartial(obj, m);
+
+  obj.init(properties);
+
+  obj[POST_INIT]();
+
+  // re-enable chains
+  m.proto = obj.constructor.prototype;
+  finishChains(m);
+  sendEvent(obj, 'init', undefined, undefined, undefined, m);
+}
 
 /**
   @class CoreObject
@@ -69,96 +160,25 @@ class CoreObject {
     // prepare prototype...
     this.constructor.proto();
 
+    // disable chains
     this.__defineNonEnumerable(GUID_KEY_PROPERTY);
     let m = meta(this);
-    let proto = m.proto;
     m.proto = this;
     m.factory = initFactory;
 
-    assert(
-      'Ember.Object.create only accepts objects.',
-      typeof properties === 'object' || properties === undefined
-    );
+    if (properties !== DELAY_INIT) {
+      // deprecate(
+      //   'using `new` with Ember.Object has been deprecated. Please use `create` instead.',
+      //   false,
+      //   {
+      //     id: 'object.new-constructor',
+      //     until: '3.5.0',
+      //   }
+      // );
 
-    assert(
-      'Ember.Object.create no longer supports mixing in other ' +
-      'definitions, use .extend & .create separately instead.',
-      !(properties instanceof Mixin)
-    );
-
-    if (properties !== undefined && properties !== null && typeof properties === 'object') {
-      let keyNames = Object.keys(properties);
-
-      let concatenatedProperties = this.concatenatedProperties;
-      let mergedProperties = this.mergedProperties;
-      let hasConcatenatedProps =
-      concatenatedProperties !== undefined && concatenatedProperties.length > 0;
-      let hasMergedProps = mergedProperties !== undefined && mergedProperties.length > 0;
-
-      for (let j = 0; j < keyNames.length; j++) {
-        let keyName = keyNames[j];
-        let value = properties[keyName];
-
-        if (detectBinding(keyName)) {
-          m.writeBindings(keyName, value);
-        }
-
-        assert(
-          'Ember.Object.create no longer supports defining computed ' +
-          'properties. Define computed properties using extend() or reopen() ' +
-          'before calling create().',
-          !(value instanceof ComputedProperty)
-        );
-        assert(
-          'Ember.Object.create no longer supports defining methods that call _super.',
-          !(typeof value === 'function' && value.toString().indexOf('._super') !== -1)
-        );
-        assert(
-          '`actions` must be provided at extend time, not at create time, ' +
-          'when ActionHandler is used (i.e. views, controllers & routes).',
-          !((keyName === 'actions') && ActionHandler.detect(this))
-        );
-
-        let baseValue = this[keyName];
-        let isDescriptor = baseValue !== null && typeof baseValue === 'object' && baseValue.isDescriptor;
-
-        if (hasConcatenatedProps && concatenatedProperties.indexOf(keyName) > -1) {
-          if (baseValue) {
-            value = makeArray(baseValue).concat(value);
-          } else {
-            value = makeArray(value);
-          }
-        }
-
-        if (hasMergedProps && mergedProperties.indexOf(keyName) > -1) {
-          value = assign({}, baseValue, value);
-        }
-
-        if (isDescriptor) {
-          baseValue.set(this, keyName, value);
-        } else if (typeof this.setUnknownProperty === 'function' && !(keyName in this)) {
-          this.setUnknownProperty(keyName, value);
-        } else {
-          if (MANDATORY_SETTER) {
-            defineProperty(this, keyName, null, value); // setup mandatory setter
-          } else {
-            this[keyName] = value;
-          }
-        }
-      }
+      initialize(this, properties);
     }
-
-    finishPartial(this, m);
-
-    this.init(...arguments);
-
-    this[POST_INIT]();
-
-    m.proto = proto;
-    finishChains(m);
-    sendEvent(this, 'init', undefined, undefined, undefined, m);
   }
-
 
   reopen(...args) {
     applyMixin(this, args, true);
@@ -647,12 +667,15 @@ class CoreObject {
   */
   static create(props, extra) {
     let C = this;
+    let instance = new C(DELAY_INIT);
 
     if (extra === undefined) {
-      return new C(props);
+      initialize(instance, props);
     } else {
-      return new C(flattenProps.apply(this, arguments));
+      initialize(instance, flattenProps.apply(this, arguments));
     }
+
+    return instance;
   }
 
   /**
