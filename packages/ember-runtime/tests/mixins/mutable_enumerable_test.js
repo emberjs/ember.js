@@ -10,6 +10,7 @@ import { computed, get } from 'ember-metal';
 const TestMutableEnumerable = EmberObject.extend(MutableEnumerable, {
   _content: null,
 
+
   addObject(obj) {
     if (this._content.indexOf(obj) >= 0) {
       return this;
@@ -32,8 +33,8 @@ const TestMutableEnumerable = EmberObject.extend(MutableEnumerable, {
     return this;
   },
 
-  init(ary) {
-    this._content = ary || [];
+  init() {
+    this._content = this._content || [];
   },
 
   nextObject(idx) {
@@ -55,7 +56,7 @@ MutableEnumerableTests.extend({
 
   newObject(ary) {
     ary = ary ? ary.slice() : this.newFixture(3);
-    return new TestMutableEnumerable(ary);
+    return TestMutableEnumerable.create({ _content: ary });
   },
 
   // allows for testing of the basic enumerable after an internal mutation

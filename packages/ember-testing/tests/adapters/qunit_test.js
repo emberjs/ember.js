@@ -5,7 +5,7 @@ var adapter;
 
 QUnit.module('ember-testing QUnitAdapter', {
   setup() {
-    adapter = new QUnitAdapter();
+    adapter = QUnitAdapter.create();
   },
   teardown() {
     run(adapter, adapter.destroy);

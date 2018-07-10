@@ -31,7 +31,7 @@ import {
 } from 'ember-metal';
 import ActionHandler from '../mixins/action_handler';
 import { validatePropertyInjections } from '../inject';
-import { assert, Error as EmberError } from 'ember-debug';
+import { assert, deprecate, Error as EmberError } from 'ember-debug';
 import { DEBUG } from 'ember-env-flags';
 import { MANDATORY_SETTER } from 'ember/features';
 
@@ -167,14 +167,14 @@ class CoreObject {
     m.factory = initFactory;
 
     if (properties !== DELAY_INIT) {
-      // deprecate(
-      //   'using `new` with Ember.Object has been deprecated. Please use `create` instead.',
-      //   false,
-      //   {
-      //     id: 'object.new-constructor',
-      //     until: '3.5.0',
-      //   }
-      // );
+      deprecate(
+        'using `new` with Ember.Object has been deprecated. Please use `create` instead.',
+        false,
+        {
+          id: 'object.new-constructor',
+          until: '3.5.0',
+        }
+      );
 
       initialize(this, properties);
     }

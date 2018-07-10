@@ -18,8 +18,8 @@ function K() { return this; }
 const TestEnumerable = EmberObject.extend(Enumerable, {
   _content: null,
 
-  init(ary = []) {
-    this._content = ary;
+  init() {
+    this._content = this._content || [];
   },
 
   addObject(obj) {
@@ -51,7 +51,7 @@ EnumerableTests.extend({
 
   newObject(ary) {
     ary = ary ? ary.slice() : this.newFixture(3);
-    return new TestEnumerable(ary);
+    return TestEnumerable.create({ _content: ary });
   },
 
   // allows for testing of the basic enumerable after an internal mutation
