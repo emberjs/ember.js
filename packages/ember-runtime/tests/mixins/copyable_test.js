@@ -28,7 +28,7 @@ const CopyableObject = EmberObject.extend(Copyable, {
   },
 
   copy() {
-    let ret = new CopyableObject();
+    let ret = CopyableObject.create();
     set(ret, 'id', get(this, 'id'));
     return ret;
   }
@@ -39,7 +39,7 @@ CopyableTests.extend({
   name: 'Copyable Basic Test',
 
   newObject() {
-    return new CopyableObject();
+    return CopyableObject.create();
   },
 
   isEqual(a, b) {

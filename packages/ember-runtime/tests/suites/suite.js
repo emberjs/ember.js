@@ -57,7 +57,7 @@ Suite.reopenClass({
 
   run() {
     let C = this;
-    return new C().run();
+    return C.create().run();
   },
 
   module(desc, opts) {

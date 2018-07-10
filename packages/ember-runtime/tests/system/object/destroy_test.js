@@ -123,13 +123,13 @@ QUnit.test('destroyed objects should not see each others changes during teardown
     })
   });
 
-  objs.a = new A();
+  objs.a = A.create();
 
-  objs.b = new B();
+  objs.b = B.create();
 
-  objs.c = new C();
+  objs.c = C.create();
 
-  new LongLivedObject();
+  LongLivedObject.create();
 
   run(() => {
     let keys = Object.keys(objs);

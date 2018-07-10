@@ -4,31 +4,30 @@ import { set, observer } from 'ember-metal';
 QUnit.module('Ember.CoreObject');
 
 QUnit.test('works with new (one arg)', function() {
-  let obj = new CoreObject({
-    firstName: 'Stef',
-    lastName: 'Penner'
-  });
-
-  equal(obj.firstName, 'Stef');
-  equal(obj.lastName, 'Penner');
+  expectDeprecation(() => {
+    let obj = new CoreObject({
+      firstName: 'Stef',
+      lastName: 'Penner'
+    });
+  }, /using `new` with Ember.Object has been deprecated/);
 });
 
 QUnit.test('works with new (> 1 arg)', function() {
-  let obj = new CoreObject({
-    firstName: 'Stef',
-    lastName: 'Penner'
-  }, {
-    other: 'name'
-  });
-
-  equal(obj.firstName, 'Stef');
-  equal(obj.lastName, 'Penner');
-
-  equal(obj.other, undefined); // doesn't support multiple pojo' to the constructor
+  expectDeprecation(() => {
+    new CoreObject(
+      {
+        firstName: 'Stef',
+        lastName: 'Penner',
+      },
+      {
+        other: 'name',
+      }
+    );
+  }, /using `new` with Ember.Object has been deprecated/);
 });
 
 QUnit.test('toString should be not be added as a property when calling toString()', function() {
-  let obj = new CoreObject({
+  let obj = CoreObject.create({
     firstName: 'Foo',
     lastName: 'Bar'
   });

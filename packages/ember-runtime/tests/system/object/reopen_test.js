@@ -10,8 +10,8 @@ QUnit.test('adds new properties to subclass instance', function() {
     bar: 'BAR'
   });
 
-  equal(new Subclass().foo(), 'FOO', 'Adds method');
-  equal(get(new Subclass(), 'bar'), 'BAR', 'Adds property');
+  equal(Subclass.create().foo(), 'FOO', 'Adds method');
+  equal(get(Subclass.create(), 'bar'), 'BAR', 'Adds property');
 });
 
 QUnit.test('reopened properties inherited by subclasses', function() {
@@ -23,8 +23,8 @@ QUnit.test('reopened properties inherited by subclasses', function() {
     bar: 'BAR'
   });
 
-  equal(new SubSub().foo(), 'FOO', 'Adds method');
-  equal(get(new SubSub(), 'bar'), 'BAR', 'Adds property');
+  equal(SubSub.create().foo(), 'FOO', 'Adds method');
+  equal(get(SubSub.create(), 'bar'), 'BAR', 'Adds property');
 });
 
 QUnit.test('allows reopening already instantiated classes', function() {
