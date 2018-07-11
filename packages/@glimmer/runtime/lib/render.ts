@@ -43,7 +43,7 @@ export function renderComponent<T>(
   builder: ElementBuilder,
   main: number,
   name: string,
-  args: RenderComponentArgs
+  args: RenderComponentArgs = {}
 ): TemplateIterator {
   const vm = VM.empty(program, env, builder, main);
   const { resolver } = vm.constants;
@@ -75,9 +75,11 @@ export function renderComponent<T>(
   vm.pushFrame();
 
   // Push blocks on to the stack, three stack values per block
-  for (let i = 0; i <= 3 * blockNames.length; i++) {
+  for (let i = 0; i < 3 * blockNames.length; i++) {
     vm.stack.push(null);
   }
+
+  vm.stack.push(null);
 
   // For each argument, push its backing reference on to the stack
   argList.forEach(([, reference]) => {
