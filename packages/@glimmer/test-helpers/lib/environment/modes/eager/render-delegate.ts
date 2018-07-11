@@ -12,7 +12,12 @@ import {
   renderMain,
   renderComponent,
 } from '@glimmer/runtime';
-import { DebugConstants, BundleCompiler, ModuleLocatorMap } from '@glimmer/bundle-compiler';
+import {
+  DebugConstants,
+  BundleCompiler,
+  ModuleLocatorMap,
+  BundleCompilationResult,
+} from '@glimmer/bundle-compiler';
 import { Opaque, assert, Dict, assign, expect, Option } from '@glimmer/util';
 import { WriteOnlyProgram, RuntimeProgram, RuntimeConstants, Heap } from '@glimmer/program';
 import { ProgramSymbolTable, ComponentCapabilities, ModuleLocator } from '@glimmer/interfaces';
@@ -49,8 +54,8 @@ import {
   TestModifierConstructor,
   TestModifierManager,
 } from '../../modifier';
-
 import { PathReference } from '@glimmer/reference';
+import { Locator } from '../../components';
 
 export type RenderDelegateComponentDefinition = ComponentDefinition<TestComponentDefinitionState>;
 
@@ -162,172 +167,127 @@ export default class EagerRenderDelegate implements RenderDelegate {
     this.modules.register(name, 'modifier', { default: { manager, state } });
   }
 
+  private addRegisteredComponents(bundleCompiler: BundleCompiler<Locator>): void {
+    let { components, modules, compileTimeModules } = this;
+    Object.keys(components).forEach(key => {
+      assert(
+        key.indexOf('ui/components') !== -1,
+        `Expected component key to start with ui/components, got ${key}.`
+      );
+
+      let { state, manager } = components[key];
+
+      let locator = locatorFor({ module: key, name: 'default' });
+
+      let block;
+      let symbolTable;
+
+      if (state.type === 'Curly' || state.type === 'Dynamic') {
+        let block = bundleCompiler.preprocess(state.template!);
+        let parsedLayout = { block, referrer: locator.meta, asPartial: false };
+        let wrapped = new WrappedBuilder(bundleCompiler.compiler, parsedLayout);
+        bundleCompiler.addCompilableTemplate(locator, wrapped);
+
+        compileTimeModules.register(key, 'other', {
+          default: wrapped.symbolTable,
+        });
+
+        symbolTable = wrapped.symbolTable;
+      } else {
+        block = bundleCompiler.add(
+          locator,
+          expect(state.template, 'expected component definition state to have template')
+        );
+        symbolTable = {
+          hasEval: block.hasEval,
+          symbols: block.symbols,
+        };
+
+        this.symbolTables.set(locator, symbolTable);
+
+        compileTimeModules.register(key, 'other', {
+          default: symbolTable,
+        });
+      }
+
+      if (state.hasSymbolTable) {
+        modules.register(key, 'component', {
+          default: {
+            state: assign({}, state, { symbolTable }),
+            manager,
+          },
+        });
+      } else {
+        modules.register(key, 'component', {
+          default: {
+            state,
+            manager,
+          },
+        });
+      }
+    });
+  }
+
+  private getBundleCompiler(): BundleCompiler<Locator> {
+    let macros = new TestMacros();
+    let delegate: EagerCompilerDelegate = new EagerCompilerDelegate(this.components, this.modules);
+    this.constants = new DebugConstants();
+    let program = new WriteOnlyProgram(this.constants);
+    return new BundleCompiler(delegate, { macros, program });
+  }
+
+  private getRuntimeProgram({
+    table,
+    pool,
+    heap,
+  }: BundleCompilationResult): RuntimeProgram<Locator> {
+    let resolver = new EagerRuntimeResolver(table, this.modules, this.symbolTables);
+    let runtimeHeap = new Heap(heap);
+    let runtimeProgram = new RuntimeProgram(new RuntimeConstants(resolver, pool), runtimeHeap);
+    return runtimeProgram;
+  }
+
   renderComponent(
     name: string,
     args: Dict<PathReference<Opaque>>,
     element: HTMLElement
   ): RenderResult {
-    let macros = new TestMacros();
-    let delegate: EagerCompilerDelegate = new EagerCompilerDelegate(this.components, this.modules);
-    this.constants = new DebugConstants();
-    let program = new WriteOnlyProgram(this.constants);
-    let bundleCompiler = new BundleCompiler(delegate, { macros, program });
-
-    let { components, modules, compileTimeModules } = this;
-    Object.keys(components).forEach(key => {
-      assert(
-        key.indexOf('ui/components') !== -1,
-        `Expected component key to start with ui/components, got ${key}.`
-      );
-
-      let { state, manager } = components[key];
-
-      let locator = locatorFor({ module: key, name: 'default' });
-
-      let block;
-      let symbolTable;
-
-      if (state.type === 'Curly' || state.type === 'Dynamic') {
-        let block = bundleCompiler.preprocess(state.template!);
-        let parsedLayout = { block, referrer: locator.meta, asPartial: false };
-        let wrapped = new WrappedBuilder(bundleCompiler.compiler, parsedLayout);
-        bundleCompiler.addCompilableTemplate(locator, wrapped);
-
-        compileTimeModules.register(key, 'other', {
-          default: wrapped.symbolTable,
-        });
-
-        symbolTable = wrapped.symbolTable;
-      } else {
-        block = bundleCompiler.add(
-          locator,
-          expect(state.template, 'expected component definition state to have template')
-        );
-        symbolTable = {
-          hasEval: block.hasEval,
-          symbols: block.symbols,
-        };
-
-        this.symbolTables.set(locator, symbolTable);
-
-        compileTimeModules.register(key, 'other', {
-          default: symbolTable,
-        });
-      }
-
-      if (state.hasSymbolTable) {
-        modules.register(key, 'component', {
-          default: {
-            state: assign({}, state, { symbolTable }),
-            manager,
-          },
-        });
-      } else {
-        modules.register(key, 'component', {
-          default: {
-            state,
-            manager,
-          },
-        });
-      }
-    });
-
-    let { main, heap, pool, table } = bundleCompiler.compile();
-
+    let bundleCompiler = this.getBundleCompiler();
+    this.addRegisteredComponents(bundleCompiler);
+    let compilationResult = bundleCompiler.compile();
     let { env } = this;
 
     let cursor = { element, nextSibling: null };
     let builder = this.getElementBuilder(env, cursor);
-    let resolver = new EagerRuntimeResolver(table, this.modules, this.symbolTables);
-    let runtimeHeap = new Heap(heap);
-    let runtimeProgram = new RuntimeProgram(new RuntimeConstants(resolver, pool), runtimeHeap);
-
-    let iterator = renderComponent(runtimeProgram, env, builder, main, name, args);
+    let runtimeProgram = this.getRuntimeProgram(compilationResult);
+    let iterator = renderComponent(
+      runtimeProgram,
+      env,
+      builder,
+      compilationResult.main,
+      name,
+      args
+    );
 
     return renderSync(env, iterator);
   }
 
   renderTemplate(template: string, context: Dict<Opaque>, element: HTMLElement): RenderResult {
-    let macros = new TestMacros();
-    let delegate: EagerCompilerDelegate = new EagerCompilerDelegate(this.components, this.modules);
-    this.constants = new DebugConstants();
-    let program = new WriteOnlyProgram(this.constants);
-    let bundleCompiler = new BundleCompiler(delegate, { macros, program });
-
+    let bundleCompiler = this.getBundleCompiler();
     let locator = locatorFor({ module: 'ui/components/main', name: 'default' });
     bundleCompiler.add(locator, template);
+    this.addRegisteredComponents(bundleCompiler);
 
-    let { components, modules, compileTimeModules } = this;
-    Object.keys(components).forEach(key => {
-      assert(
-        key.indexOf('ui/components') !== -1,
-        `Expected component key to start with ui/components, got ${key}.`
-      );
+    let compilationResult = bundleCompiler.compile();
 
-      let { state, manager } = components[key];
-
-      let locator = locatorFor({ module: key, name: 'default' });
-
-      let block;
-      let symbolTable;
-
-      if (state.type === 'Curly' || state.type === 'Dynamic') {
-        let block = bundleCompiler.preprocess(state.template!);
-        let parsedLayout = { block, referrer: locator.meta, asPartial: false };
-        let wrapped = new WrappedBuilder(bundleCompiler.compiler, parsedLayout);
-        bundleCompiler.addCompilableTemplate(locator, wrapped);
-
-        compileTimeModules.register(key, 'other', {
-          default: wrapped.symbolTable,
-        });
-
-        symbolTable = wrapped.symbolTable;
-      } else {
-        block = bundleCompiler.add(
-          locator,
-          expect(state.template, 'expected component definition state to have template')
-        );
-        symbolTable = {
-          hasEval: block.hasEval,
-          symbols: block.symbols,
-        };
-
-        this.symbolTables.set(locator, symbolTable);
-
-        compileTimeModules.register(key, 'other', {
-          default: symbolTable,
-        });
-      }
-
-      if (state.hasSymbolTable) {
-        modules.register(key, 'component', {
-          default: {
-            state: assign({}, state, { symbolTable }),
-            manager,
-          },
-        });
-      } else {
-        modules.register(key, 'component', {
-          default: {
-            state,
-            manager,
-          },
-        });
-      }
-    });
-
-    let { heap, pool, table } = bundleCompiler.compile();
-
-    let handle = table.vmHandleByModuleLocator.get(locator)!;
+    let handle = compilationResult.table.vmHandleByModuleLocator.get(locator)!;
     let { env } = this;
 
     let cursor = { element, nextSibling: null };
     let builder = this.getElementBuilder(env, cursor);
     let self = this.getSelf(context);
     let dynamicScope = new TestDynamicScope();
-    let resolver = new EagerRuntimeResolver(table, this.modules, this.symbolTables);
-    let runtimeHeap = new Heap(heap);
-    let runtimeProgram = new RuntimeProgram(new RuntimeConstants(resolver, pool), runtimeHeap);
+    let runtimeProgram = this.getRuntimeProgram(compilationResult);
 
     let iterator = renderMain(runtimeProgram, env, self, dynamicScope, builder, handle);
 
