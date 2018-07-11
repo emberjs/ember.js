@@ -2,7 +2,7 @@ import { combine, CONSTANT_TAG, Tag } from '@glimmer/reference';
 import { dirty, tagFor, tagForProperty, update } from './tags';
 
 type Option<T> = T | null;
-type unknown = null | undefined | void | {};
+type unusable = null | undefined | void | {};
 
 /**
   An object that that tracks @tracked properties that were consumed.
@@ -162,7 +162,7 @@ function descriptorForAccessor(
     return ret;
   }
 
-  function setter(this: unknown) {
+  function setter(this: unusable) {
     dirty(tagForProperty(this, key));
     set.apply(this, arguments);
   }
