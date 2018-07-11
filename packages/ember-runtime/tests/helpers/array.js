@@ -81,12 +81,12 @@ const ArrayTestsObserverClass = EmberObject.extend({
   },
 
   arrayWillChange() {
-    QUnit.config.current.assert.equal(this._before, null, 'should only call once');
+    this.assert.equal(this._before, null, 'should only call once');
     this._before = Array.prototype.slice.call(arguments);
   },
 
   arrayDidChange() {
-    QUnit.config.current.assert.equal(this._after, null, 'should only call once');
+    this.assert.equal(this._after, null, 'should only call once');
     this._after = Array.prototype.slice.call(arguments);
   },
 
@@ -112,6 +112,10 @@ const ArrayTestsObserverClass = EmberObject.extend({
 });
 
 class AbstractArrayHelper {
+  beforeEach(assert) {
+    this.assert = assert;
+  }
+
   newObject(ary) {
     return ary ? ary.slice() : newFixture(3);
   }
@@ -121,7 +125,9 @@ class AbstractArrayHelper {
   }
 
   newObserver() {
-    let ret = ArrayTestsObserverClass.create();
+    let ret = ArrayTestsObserverClass.create({
+      assert: this.assert,
+    });
 
     if (arguments.length > 0) {
       ret.observe.apply(ret, arguments);
