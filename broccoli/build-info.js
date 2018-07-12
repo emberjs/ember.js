@@ -1,7 +1,7 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
-const getGitInfo = require('git-repo-info');
+const gitRepoInfo = require('git-repo-info');
 const semver = require('semver');
 
 const NON_SEMVER_IDENTIFIER = /[^0-9A-Za-z-]/g;
@@ -19,7 +19,7 @@ function buildInfo(options) {
   }
   let root = (options && options.root) || path.resolve(__dirname, '..');
   let packageVersion = (options && options.packageVersion) || readPackageVersion(root);
-  let gitInfo = (options && options.gitInfo) || getGitInfo(root);
+  let gitInfo = (options && options.gitInfo) || buildGitInfo(root);
   let buildInfo = buildFromParts(packageVersion, gitInfo);
   if (!options) {
     cached = buildInfo;
@@ -27,7 +27,18 @@ function buildInfo(options) {
   return buildInfo;
 }
 
-module.exports = buildInfo;
+/**
+ * @param {string} root
+ * @returns {GitInfo}
+ */
+function buildGitInfo(root) {
+  let info = gitRepoInfo(root);
+  return {
+    sha: process.env.TRAVIS_COMMIT || info.sha,
+    branch: process.env.TRAVIS_BRANCH || info.branch,
+    tag: process.env.TRAVIS_TAG || info.tag,
+  };
+}
 
 /**
  * @typedef {Object} GitInfo
@@ -62,19 +73,16 @@ module.exports = buildInfo;
  * @returns {BuildInfo}
  */
 function buildFromParts(packageVersion, gitInfo) {
-  let sha = gitInfo.sha;
-  let shortSha = sha.slice(0, 8);
-  let branch = gitInfo.branch;
-  let tag = gitInfo.tag;
+  // Travis builds are always detached
+  let { tag, branch, sha } = gitInfo;
 
+  let tagVersion = parseTagVersion(tag);
+  let shortSha = sha.slice(0, 8);
   let channel =
     branch === 'master'
       ? process.env.BUILD_TYPE === 'alpha' ? 'alpha' : 'canary'
       : branch && escapeSemVerIdentifier(branch);
-
-  let tagVersion = parseTagVersion(tag);
-
-  let version = tagVersion || buildVersion(packageVersion, channel, shortSha);
+  let version = tagVersion || buildVersion(packageVersion, shortSha, channel);
 
   return {
     tag,
@@ -119,17 +127,17 @@ function escapeSemVerIdentifier(txt) {
 
 /**
  * @param {string} packageVersion
+ * @param {string} sha
  * @param {string=} channel
- * @param {string} shortSha
  */
-function buildVersion(packageVersion, channel, shortSha) {
+function buildVersion(packageVersion, sha, channel) {
   let base = semver.parse(packageVersion);
   let major = base.major;
   let minor = base.minor;
   let patch = base.patch;
   let suffix = '';
   suffix += toSuffix('-', base.prerelease, channel);
-  suffix += toSuffix('+', base.build, shortSha);
+  suffix += toSuffix('+', base.build, sha);
   return `${major}.${minor}.${patch}${suffix}`;
 }
 
@@ -147,3 +155,8 @@ function toSuffix(delim, identifiers, identifier) {
   }
   return '';
 }
+
+module.exports.buildInfo = buildInfo;
+module.exports.buildFromParts = buildFromParts;
+module.exports.buildVersion = buildVersion;
+module.exports.parseTagVersion = parseTagVersion;
