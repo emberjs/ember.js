@@ -262,21 +262,16 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
 
   private _lookupPartial(name: string, meta: OwnedTemplateMeta): PartialDefinition {
     const template = lookupPartial(name, meta.owner);
-    const partial = new PartialDefinition(name, lookupPartial(name, meta.owner));
 
     if (template) {
-      return partial;
+      return new PartialDefinition(name, template);
     } else {
       throw new Error(`${name} is not a partial`);
     }
   }
 
   private _lookupModifier(name: string) {
-    let modifier = this.builtInModifiers[name];
-    if (modifier !== undefined) {
-      return modifier;
-    }
-    return null;
+    return this.builtInModifiers[name];
   }
 
   private _parseNameForNamespace(_name: string) {
