@@ -4,7 +4,7 @@
 const fs = require('fs');
 const path = require('path');
 const execa = require('execa');
-const VERSION = require('../broccoli/version').VERSION;
+const buildInfo = require('../broccoli/build-info').buildInfo();
 
 function exec(command, args) {
   // eslint-disable-next-line
@@ -23,9 +23,11 @@ function updatePackageJSONVersion() {
 
   let pkgContents = fs.readFileSync(packageJSONPath, { encoding: 'utf-8' });
   let pkg = JSON.parse(pkgContents);
+  if (!pkg._originalVersion) {
+    pkg._originalVersion = pkg.version;
+  }
   pkg._versionPreviouslyCalculated = true;
-  pkg._originalVersion = pkg.version;
-  pkg.version = VERSION;
+  pkg.version = buildInfo.version;
   fs.writeFileSync(packageJSONPath, JSON.stringify(pkg, null, 2), {
     encoding: 'utf-8',
   });
@@ -44,7 +46,7 @@ function updateDocumentationVersion() {
 
   let contents = fs.readFileSync(docsPath, { encoding: 'utf-8' });
   let docs = JSON.parse(contents);
-  docs.project.version = VERSION;
+  docs.project.version = buildInfo.version;
   fs.writeFileSync(docsPath, JSON.stringify(docs, null, 2), {
     encoding: 'utf-8',
   });
@@ -69,10 +71,10 @@ Promise.resolve()
   .then(() => {
     // generate build-metadata.json
     const metadata = {
-      version: VERSION,
-      buildType: process.env.BUILD_TYPE,
-      SHA: process.env.TRAVIS_COMMIT,
-      assetPath: `/${process.env.BUILD_TYPE}/shas/${process.env.TRAVIS_COMMIT}.tgz`,
+      version: buildInfo.version,
+      buildType: buildInfo.channel,
+      SHA: buildInfo.sha,
+      assetPath: `/${buildInfo.channel}/shas/${buildInfo.sha}.tgz`,
     };
     fs.writeFileSync('build-metadata.json', JSON.stringify(metadata, null, 2), {
       encoding: 'utf-8',
