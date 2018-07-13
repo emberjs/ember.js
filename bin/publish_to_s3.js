@@ -1,6 +1,6 @@
 'use strict';
 
-const buildInfo = require('../broccoli/build-info')();
+const buildInfo = require('../broccoli/build-info').buildInfo();
 
 // To invoke this from the commandline you need the following to env vars to exist:
 //
