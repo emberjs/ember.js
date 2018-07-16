@@ -93,7 +93,6 @@ jobs:
 
     - stage: deploy
       env:
-      - BUILD_TYPE=beta
       - PUBLISH=true
       script:
         - "./bin/publish_builds"
