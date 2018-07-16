@@ -89,19 +89,9 @@ jobs:
     - env: TEST_SUITE=blueprints
       node_js: "6"
     - env: TEST_SUITE=travis-browsers
-    - env:
-      - TEST_SUITE=each-package-tests
-      - BUILD_TYPE=alpha
 
     - stage: deploy
       env:
-      - BUILD_TYPE=canary
-      - PUBLISH=true
-      script:
-        - "./bin/publish_builds"
-
-    - env:
-      - BUILD_TYPE=alpha
       - PUBLISH=true
       script:
         - "./bin/publish_builds"
