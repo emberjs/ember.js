@@ -1,5 +1,17 @@
 # Ember Changelog
 
+### v3.4.0-beta.1 (July 16, 2018)
+
+- [#16773](https://github.com/emberjs/ember.js/pull/16773) [FEATURE] Custom component manager (see [emberjs/rfcs#213](https://github.com/emberjs/rfcs/blob/master/text/0213-custom-components.md) for more details)
+- [#16708](https://github.com/emberjs/ember.js/pull/16708) [FEATURE] Angle bracket component invocation (see [emberjs/rfcs#311](https://github.com/emberjs/rfcs/blob/master/text/0311-angle-bracket-invocation.md) for more details)
+- [#16744](https://github.com/emberjs/ember.js/pull/16744) [DEPRECATION] Deprecate `component#sendAction` (see [emberjs/rfcs#335](https://github.com/emberjs/rfcs/blob/master/text/0335-deprecate-send-action.md) for more details)
+- [#16720](https://github.com/emberjs/ember.js/pull/16720) Upgrade `backburner.js` to 2.3.0
+- [#16783](https://github.com/emberjs/ember.js/pull/16783) [BUGFIX] Allow setting length on ArrayProxy.
+- [#16785](https://github.com/emberjs/ember.js/pull/16785) [BUGFIX] Ensure `ArrayMixin#invoke` returns an Ember.A.
+- [#16784](https://github.com/emberjs/ember.js/pull/16784) [BUGFIX] Setting ArrayProxy#content in willDestroy resets length.
+- [#16794](https://github.com/emberjs/ember.js/pull/16794) [BUGFIX] Fix instance-initializer-test blueprint for new QUnit testing API ([emberjs/rfcs#232](https://github.com/emberjs/rfcs/pull/232))
+- [#16797](https://github.com/emberjs/ember.js/pull/16797) [BUGFIX] Drop autorun assertion
+
 ### v3.3.0 (July 16, 2018) 
 
 - [#16687](https://github.com/emberjs/ember.js/pull/16687) [FEATURE] Implement optional jQuery integration (see [emberjs/rfcs#294](https://github.com/emberjs/rfcs/blob/master/text/0294-optional-jquery.md) for more details).
