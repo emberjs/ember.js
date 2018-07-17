@@ -897,7 +897,7 @@ class EmberRouter extends EmberObject {
   _serializeQueryParam(value: unknown, type: string) {
     if (value === null || value === undefined) {
       return value;
-    } else if (type === 'array') {
+    } else if (type === 'array' || type === 'object') {
       return JSON.stringify(value);
     }
 
