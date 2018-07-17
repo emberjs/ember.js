@@ -21,11 +21,11 @@ let templates = [
   '<Foo />',
   '<Foo as |bar|>{{bar}}</Foo>',
 
-  '<input disabled />',
-
   // void elements
   '<br>',
   '<br />',
+  '<input disabled>',
+  '<input disabled />',
 
   // comments
   '<!-- foo -->',
