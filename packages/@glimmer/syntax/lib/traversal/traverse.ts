@@ -4,32 +4,58 @@ import {
   cannotReplaceNode,
   cannotReplaceOrRemoveInKeyHandlerYet,
 } from './errors';
-import * as nodes from '../types/nodes';
+import { Node, NodeType, ParentNode, ChildKey } from '../types/nodes';
+import { NodeVisitor, NodeFunction, NodeHandler, KeyFunction, KeyHandler } from '../types/visitor';
 
-export type NodeHandler<T extends nodes.Node> = NodeHandlerFunction<T> | EnterExitNodeHandler<T>;
-
-export type SpecificNodeVisitor = { [P in keyof nodes.Nodes]?: NodeHandler<nodes.Nodes[P]> };
-
-export interface NodeVisitor extends SpecificNodeVisitor {
-  All?: NodeHandler<nodes.Node>;
+function getEnterFunction(handler: KeyHandler): KeyFunction | undefined;
+function getEnterFunction(handler: NodeHandler): NodeFunction | undefined;
+function getEnterFunction(
+  handler: NodeHandler | KeyHandler
+): NodeFunction | KeyFunction | undefined {
+  return typeof handler === 'function' ? handler : handler.enter;
 }
 
-export interface NodeHandlerFunction<T extends nodes.Node> {
-  (this: null, node: T): any | null | undefined;
+function getExitFunction(handler: KeyHandler): KeyFunction | undefined;
+function getExitFunction(handler: NodeHandler): NodeFunction | undefined;
+function getExitFunction(
+  handler: NodeHandler | KeyHandler
+): NodeFunction | KeyFunction | undefined {
+  return typeof handler !== 'function' ? handler.exit : undefined;
 }
 
-export interface EnterExitNodeHandler<T extends nodes.Node> {
-  enter?: NodeHandlerFunction<T>;
-  exit?: NodeHandlerFunction<T>;
-  keys?: any;
+function getKeyHandler(handler: NodeHandler, key: ChildKey): KeyHandler | undefined {
+  let keyVisitor = typeof handler !== 'function' ? handler.keys : undefined;
+  if (keyVisitor === undefined) return;
+  let keyHandler = keyVisitor[key];
+  if (keyHandler !== undefined) {
+    // widen specific key to all keys
+    return keyHandler as KeyHandler;
+  }
+  return keyVisitor.All;
 }
 
-function visitNode(visitor: NodeVisitor, node: nodes.Node): any {
-  let handler = visitor[node.type] || visitor.All || null;
-  let result;
+function getNodeHandler(visitor: NodeVisitor, nodeType: NodeType): NodeHandler | undefined {
+  let handler = visitor[nodeType];
+  if (handler !== undefined) {
+    // widen specific Node to all nodes
+    return handler as NodeHandler;
+  }
+  return visitor.All;
+}
 
-  if (handler && handler['enter']) {
-    result = handler['enter'].call(null, node);
+function visitNode(visitor: NodeVisitor, node: Node): Node | Node[] | undefined | null | void {
+  let handler = getNodeHandler(visitor, node.type);
+  let enter: NodeFunction | undefined;
+  let exit: NodeFunction | undefined;
+
+  if (handler !== undefined) {
+    enter = getEnterFunction(handler);
+    exit = getExitFunction(handler);
+  }
+
+  let result: Node | Node[] | undefined | null | void;
+  if (enter !== undefined) {
+    result = enter(node);
   }
 
   if (result !== undefined && result !== null) {
@@ -46,11 +72,12 @@ function visitNode(visitor: NodeVisitor, node: nodes.Node): any {
     let keys = visitorKeys[node.type];
 
     for (let i = 0; i < keys.length; i++) {
-      visitKey(visitor, handler as any, node as any, keys[i]);
+      // we know if it has child keys we can widen to a ParentNode
+      visitKey(visitor, handler, node as ParentNode, keys[i]);
     }
 
-    if (handler && handler['exit']) {
-      result = handler['exit'].call(null, node);
+    if (exit !== undefined) {
+      result = exit(node);
     }
   }
 
@@ -59,21 +86,28 @@ function visitNode(visitor: NodeVisitor, node: nodes.Node): any {
 
 function visitKey(
   visitor: NodeVisitor,
-  handler: EnterExitNodeHandler<nodes.Node>,
-  node: nodes.Node & TraversedNode,
-  key: string
+  handler: NodeHandler | undefined,
+  node: ParentNode,
+  key: ChildKey
 ) {
-  let value = node[key];
+  let value = node[key] as Node | Node[] | null | undefined;
   if (!value) {
     return;
   }
 
-  let keyHandler = handler && (handler.keys[key] || handler.keys.All);
-  let result;
+  let keyEnter: KeyFunction | undefined;
+  let keyExit: KeyFunction | undefined;
 
-  if (keyHandler && keyHandler.enter) {
-    result = keyHandler.enter.call(null, node, key);
-    if (result !== undefined) {
+  if (handler !== undefined) {
+    let keyHandler = getKeyHandler(handler, key);
+    if (keyHandler !== undefined) {
+      keyEnter = getEnterFunction(keyHandler);
+      keyExit = getExitFunction(keyHandler);
+    }
+  }
+
+  if (keyEnter !== undefined) {
+    if (keyEnter(node, key) !== undefined) {
       throw cannotReplaceOrRemoveInKeyHandlerYet(node, key);
     }
   }
@@ -87,15 +121,14 @@ function visitKey(
     }
   }
 
-  if (keyHandler && keyHandler.exit) {
-    result = keyHandler.exit.call(null, node, key);
-    if (result !== undefined) {
+  if (keyExit !== undefined) {
+    if (keyExit(node, key) !== undefined) {
       throw cannotReplaceOrRemoveInKeyHandlerYet(node, key);
     }
   }
 }
 
-function visitArray(visitor: NodeVisitor, array: nodes.Node[]) {
+function visitArray(visitor: NodeVisitor, array: Node[]) {
   for (let i = 0; i < array.length; i++) {
     let result = visitNode(visitor, array[i]);
     if (result !== undefined) {
@@ -104,11 +137,7 @@ function visitArray(visitor: NodeVisitor, array: nodes.Node[]) {
   }
 }
 
-export interface TraversedNode {
-  [key: string]: nodes.Node;
-}
-
-function assignKey(node: TraversedNode & nodes.Node, key: string, result: nodes.Node) {
+function assignKey(node: Node, key: ChildKey, result: Node | Node[] | null) {
   if (result === null) {
     throw cannotRemoveNode(node[key], node, key);
   } else if (Array.isArray(result)) {
@@ -126,7 +155,7 @@ function assignKey(node: TraversedNode & nodes.Node, key: string, result: nodes.
   }
 }
 
-function spliceArray<T>(array: T[], index: number, result: T[]) {
+function spliceArray(array: Node[], index: number, result: Node | Node[] | null) {
   if (result === null) {
     array.splice(index, 1);
     return 0;
@@ -139,49 +168,6 @@ function spliceArray<T>(array: T[], index: number, result: T[]) {
   }
 }
 
-export default function traverse(node: nodes.Node, visitor: NodeVisitor) {
-  visitNode(normalizeVisitor(visitor), node);
-}
-
-export function normalizeVisitor(visitor: NodeVisitor) {
-  let normalizedVisitor = {};
-
-  for (let type in visitor) {
-    let handler = visitor[type] || visitor.All;
-    let normalizedKeys = {};
-
-    if (typeof handler === 'object') {
-      let keys = handler.keys;
-      if (keys) {
-        for (let key in keys) {
-          let keyHandler = keys[key];
-          if (typeof keyHandler === 'object') {
-            normalizedKeys[key] = {
-              enter: typeof keyHandler.enter === 'function' ? keyHandler.enter : null,
-              exit: typeof keyHandler.exit === 'function' ? keyHandler.exit : null,
-            };
-          } else if (typeof keyHandler === 'function') {
-            normalizedKeys[key] = {
-              enter: keyHandler,
-              exit: null,
-            };
-          }
-        }
-      }
-
-      normalizedVisitor[type] = {
-        enter: typeof handler.enter === 'function' ? handler.enter : null,
-        exit: typeof handler.exit === 'function' ? handler.exit : null,
-        keys: normalizedKeys,
-      };
-    } else if (typeof handler === 'function') {
-      normalizedVisitor[type] = {
-        enter: handler,
-        exit: null,
-        keys: normalizedKeys,
-      };
-    }
-  }
-
-  return normalizedVisitor;
+export default function traverse(node: Node, visitor: NodeVisitor) {
+  visitNode(visitor, node);
 }

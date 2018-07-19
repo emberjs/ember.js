@@ -40,6 +40,7 @@ export interface MustacheStatement extends Statement {
 export interface Decorator extends MustacheStatement {}
 
 export interface BlockStatement extends Statement {
+  chained: boolean;
   path: PathExpression;
   params: Expression[];
   hash: Hash;
