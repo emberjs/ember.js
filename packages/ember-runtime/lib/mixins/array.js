@@ -1501,11 +1501,11 @@ const MutableArray = Mixin.create(ArrayMixin, MutableEnumerable, {
     @public
   */
   removeObjects(objects) {
-    beginPropertyChanges(this);
+    beginPropertyChanges();
     for (let i = objects.length - 1; i >= 0; i--) {
       this.removeObject(objects[i]);
     }
-    endPropertyChanges(this);
+    endPropertyChanges();
     return this;
   },
 
@@ -1544,9 +1544,9 @@ const MutableArray = Mixin.create(ArrayMixin, MutableEnumerable, {
     @public
   */
   addObjects(objects) {
-    beginPropertyChanges(this);
+    beginPropertyChanges();
     objects.forEach(obj => this.addObject(obj));
-    endPropertyChanges(this);
+    endPropertyChanges();
     return this;
   },
 });

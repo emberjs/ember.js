@@ -304,10 +304,10 @@ moduleFor(
         fooCount++;
       });
 
-      beginPropertyChanges(obj);
+      beginPropertyChanges();
       set(obj, 'foo', 'BIFF');
       set(obj, 'foo', 'BAZ');
-      endPropertyChanges(obj);
+      endPropertyChanges();
 
       assert.equal(fooCount, 1, 'foo should have fired once');
     }
