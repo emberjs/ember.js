@@ -144,7 +144,7 @@ AutoLocation.reopen({
     @property location
     @default environment.location
   */
-  location: location,
+  location,
 
   /**
     @private
@@ -156,7 +156,7 @@ AutoLocation.reopen({
     @property history
     @default environment.history
   */
-  history: history,
+  history,
 
   /**
    @private
@@ -179,7 +179,7 @@ AutoLocation.reopen({
     @property userAgent
     @default environment.history
   */
-  userAgent: userAgent,
+  userAgent,
 
   /**
     @private
