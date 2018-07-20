@@ -19,7 +19,8 @@
       "packages/ember-testing/lib",
       "packages/ember-extension-support/lib",
       "packages/container/lib",
-      "node_modules/rsvp/lib"
+      "node_modules/rsvp/lib",
+      "packages/@ember"
     ],
     "exclude": "vendor",
     "outdir":   "docs",

@@ -4,9 +4,7 @@ import Copyable from './mixins/copyable';
 
 /**
  @module @ember/object
- @private
- @deprecated Use 'ember-copy' addon instead
- */
+*/
 function _copy(obj, deep, seen, copies) {
   // primitive data types are immutable, just return them.
   if (typeof obj !== 'object' || obj === null) {
@@ -80,6 +78,7 @@ function _copy(obj, deep, seen, copies) {
   is simply returned.
 
   @method copy
+  @deprecated Use 'ember-copy' addon instead
   @static
   @for @ember/object/internals
   @param {Object} obj The object to clone
