@@ -3,6 +3,7 @@ import { ENV } from 'ember-environment';
 
 /**
  @module ember/canary-features
+ @private
 */
 
 export const DEFAULT_FEATURES = {
