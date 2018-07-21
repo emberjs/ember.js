@@ -96,7 +96,6 @@ class Rehydration extends AbstractRehydrationTests {
     let template = '<div>{{{value}}}</div>';
     let obj: { value: string } = { value: 'foo' };
     this.renderServerSide(template, obj);
-    console.log('this server output: ' + this.serverOutput);
     this.renderClientSide(template, obj);
     this.assertHTML('<div>foo</div>');
   }
@@ -106,7 +105,6 @@ class Rehydration extends AbstractRehydrationTests {
     let template = '<div>{{{value}}}</div>';
     let obj: { value: string } = { value: '' };
     this.renderServerSide(template, obj);
-    console.log('this server output: ' + this.serverOutput);
     this.renderClientSide(template, obj);
     this.assertHTML('<div></div>');
   }
