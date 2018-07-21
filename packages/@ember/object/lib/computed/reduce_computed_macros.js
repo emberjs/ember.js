@@ -575,33 +575,37 @@ export let union = uniq;
   @public
 */
 export function intersect(...args) {
-  return multiArrayMacro(args, function(dependentKeys) {
-    let arrays = dependentKeys.map(dependentKey => {
-      let array = get(this, dependentKey);
-      return isArray(array) ? array : [];
-    });
+  return multiArrayMacro(
+    args,
+    function(dependentKeys) {
+      let arrays = dependentKeys.map(dependentKey => {
+        let array = get(this, dependentKey);
+        return isArray(array) ? array : [];
+      });
 
-    let results = arrays.pop().filter(candidate => {
-      for (let i = 0; i < arrays.length; i++) {
-        let found = false;
-        let array = arrays[i];
-        for (let j = 0; j < array.length; j++) {
-          if (array[j] === candidate) {
-            found = true;
-            break;
+      let results = arrays.pop().filter(candidate => {
+        for (let i = 0; i < arrays.length; i++) {
+          let found = false;
+          let array = arrays[i];
+          for (let j = 0; j < array.length; j++) {
+            if (array[j] === candidate) {
+              found = true;
+              break;
+            }
+          }
+
+          if (found === false) {
+            return false;
           }
         }
 
-        if (found === false) {
-          return false;
-        }
-      }
+        return true;
+      });
 
-      return true;
-    }, 'intersect');
-
-    return emberA(results);
-  });
+      return emberA(results);
+    },
+    'intersect'
+  );
 }
 
 /**
