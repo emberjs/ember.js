@@ -1,4 +1,6 @@
-import { assert } from '@ember/debug';
+import { HAS_NATIVE_PROXY } from '@ember/-internals/utils';
+import { assert, deprecate } from '@ember/debug';
+import { DEBUG } from '@glimmer/env';
 
 export interface EmberLocation {
   implementation: string;
@@ -74,7 +76,7 @@ export type UpdateCallback = (url: string) => void;
   @class Location
   @private
 */
-export default {
+const Location = {
   /**
    This is deprecated in favor of using the container to lookup the location
    implementation as desired.
@@ -96,7 +98,12 @@ export default {
     need.
     @private
   */
-  create(options: { implementation: string }) {
+  create(options: { implementation: string }): EmberLocation {
+    deprecate(
+      `\`Location.create\` is deprecated, use the \`container\` to register and lookup the location implementation that you need`,
+      false,
+      { id: 'ember-routing.location-create', until: '3.9.0' }
+    );
     let implementation = options && options.implementation;
     assert("Location.create: you must specify a 'implementation' option", Boolean(implementation));
 
@@ -109,5 +116,43 @@ export default {
     return implementationClass.create(...arguments);
   },
 
-  implementations: {}
+  _implementations: {},
 };
+
+if (DEBUG && HAS_NATIVE_PROXY) {
+  /* globals Proxy Reflect */
+  Location._implementations = new Proxy(
+    {},
+    {
+      set() {
+        deprecate(
+          `\`Location.implementations\` is deprecated, use the \`container\` to register and lookup the location implementation that you need`,
+          false,
+          { id: 'ember-routing.location-create', until: '3.9.0' }
+        );
+        return Reflect.set(...arguments);
+      },
+    }
+  );
+}
+
+Object.defineProperty(Location, 'implementations', {
+  set: function(val) {
+    deprecate(
+      `\`Location.implementations\` is deprecated, use the \`container\` to register and lookup the location implementation that you need`,
+      false,
+      { id: 'ember-routing.location-create', until: '3.9.0' }
+    );
+    this._implementations = val;
+  },
+  get: function() {
+    deprecate(
+      `\`Location.implementations\` is deprecated, use the \`container\` to register and lookup the location implementation that you need`,
+      false,
+      { id: 'ember-routing.location-create', until: '3.9.0' }
+    );
+    return this._implementations;
+  },
+});
+
+export default Location;

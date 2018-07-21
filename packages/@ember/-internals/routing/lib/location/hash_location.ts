@@ -1,6 +1,6 @@
 import { get, set } from '@ember/-internals/metal';
-import { bind } from '@ember/runloop';
 import { Object as EmberObject } from '@ember/-internals/runtime';
+import { bind } from '@ember/runloop';
 import { EmberLocation, UpdateCallback } from './api';
 import { getHash } from './util';
 
@@ -55,7 +55,7 @@ export default class HashLocation extends EmberObject implements EmberLocation {
   */
   getHash() {
     return getHash(this.location);
-  },
+  }
 
   /**
     Returns the normalized URL, constructed from `location.hash`.
