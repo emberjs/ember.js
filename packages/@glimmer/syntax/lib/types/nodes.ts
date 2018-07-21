@@ -76,13 +76,6 @@ export interface PartialStatement extends BaseNode {
   strip: StripFlags;
 }
 
-export function isCall(node: any): node is Call {
-  return (
-    node.type === 'SubExpression' ||
-    (node.type === 'MustacheStatement' && node.path.type === 'PathExpression')
-  );
-}
-
 export interface CommentStatement extends BaseNode {
   type: 'CommentStatement';
   value: string;
@@ -174,10 +167,6 @@ export interface NullLiteral extends BaseNode {
   original: null;
 }
 
-export function isLiteral(input: Node | string): input is Literal {
-  return !!(typeof input === 'object' && input.type.match(/Literal$/));
-}
-
 export interface Hash extends BaseNode {
   type: 'Hash';
   pairs: HashPair[];
@@ -194,29 +183,70 @@ export interface StripFlags {
   close: boolean;
 }
 
-export type NodeType = keyof Nodes;
-
-export type Node = Nodes[NodeType];
-
 export interface Nodes {
-  Program: Program;
-  ElementNode: ElementNode;
-  AttrNode: AttrNode;
-  TextNode: TextNode;
-  MustacheStatement: MustacheStatement;
-  BlockStatement: BlockStatement;
-  PartialStatement: PartialStatement;
-  ConcatStatement: ConcatStatement;
-  MustacheCommentStatement: MustacheCommentStatement;
-  ElementModifierStatement: ElementModifierStatement;
   CommentStatement: CommentStatement;
+  MustacheCommentStatement: MustacheCommentStatement;
+  TextNode: TextNode;
   PathExpression: PathExpression;
-  SubExpression: SubExpression;
-  Hash: Hash;
-  HashPair: HashPair;
   StringLiteral: StringLiteral;
   BooleanLiteral: BooleanLiteral;
   NumberLiteral: NumberLiteral;
-  UndefinedLiteral: UndefinedLiteral;
   NullLiteral: NullLiteral;
+  UndefinedLiteral: UndefinedLiteral;
+  Program: Program;
+  MustacheStatement: MustacheStatement;
+  BlockStatement: BlockStatement;
+  ElementModifierStatement: ElementModifierStatement;
+  PartialStatement: PartialStatement;
+  ElementNode: ElementNode;
+  AttrNode: AttrNode;
+  ConcatStatement: ConcatStatement;
+  SubExpression: SubExpression;
+  Hash: Hash;
+  HashPair: HashPair;
 }
+
+export interface VisitorKeysMap {
+  Program: ['body'];
+  MustacheStatement: ['path', 'params', 'hash'];
+  BlockStatement: ['path', 'params', 'hash', 'program', 'inverse'];
+  ElementModifierStatement: ['path', 'params', 'hash'];
+  PartialStatement: ['name', 'params', 'hash'];
+  CommentStatement: never[];
+  MustacheCommentStatement: never[];
+  ElementNode: ['attributes', 'modifiers', 'children', 'comments'];
+  AttrNode: ['value'];
+  TextNode: never[];
+  ConcatStatement: ['parts'];
+  SubExpression: ['path', 'params', 'hash'];
+  PathExpression: never[];
+  StringLiteral: never[];
+  BooleanLiteral: never[];
+  NumberLiteral: never[];
+  NullLiteral: never[];
+  UndefinedLiteral: never[];
+  Hash: ['pairs'];
+  HashPair: ['value'];
+}
+
+export type NodeType = keyof Nodes;
+export type Node = Nodes[NodeType];
+
+// VisitorKeysMap drives ParentNode and LeafNode typing
+export type ValuesOfType<T, U> = { [K in keyof T]: T[K] extends U ? T[K] : never }[keyof T];
+export type ChildKeyByNodeType = { [T in NodeType]: ValuesOfType<VisitorKeysMap[T], string> };
+
+export type ChildKeyToNodeType<K extends ChildKey = ChildKey, T extends NodeType = NodeType> = {
+  [P in T]: Extract<ChildKeyByNodeType[P], K> extends never ? never : P
+}[T];
+
+export type NodeTypeByChildKey = { [K in ChildKey]: ChildKeyToNodeType<K> };
+export type NodeByChildKey = { [K in ChildKey]: Nodes[NodeTypeByChildKey[K]] };
+
+export type ChildKey = ChildKeyByNodeType[NodeType];
+
+export type ParentNodeType = NodeTypeByChildKey[ChildKey];
+export type ParentNode = Nodes[ParentNodeType];
+
+export type LeafNodeType = Exclude<NodeType, ParentNodeType>;
+export type LeafNode = Nodes[LeafNodeType];

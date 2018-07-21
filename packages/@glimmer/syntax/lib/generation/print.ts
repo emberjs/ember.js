@@ -1,6 +1,7 @@
 import { Option } from '@glimmer/interfaces';
 import * as HBS from '../types/nodes';
 import { voidMap } from '../parser/tokenizer-event-handlers';
+import { isLiteral } from '../utils';
 import { escapeText, escapeAttrValue } from './util';
 
 function unreachable(): never {
@@ -204,7 +205,7 @@ function pathParams(ast: HBS.Node): string {
     case 'SubExpression':
     case 'ElementModifierStatement':
     case 'BlockStatement':
-      if (HBS.isLiteral(ast.path)) {
+      if (isLiteral(ast.path)) {
         return String(ast.path.value);
       }
 
