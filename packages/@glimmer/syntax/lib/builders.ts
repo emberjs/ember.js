@@ -13,7 +13,7 @@ function buildMustache(
   raw?: boolean,
   loc?: AST.SourceLocation
 ): AST.MustacheStatement {
-  if (!AST.isLiteral(path)) {
+  if (typeof path === 'string') {
     path = buildPath(path);
   }
 
