@@ -189,8 +189,19 @@ const EmberRouter = EmberObject.extend(Evented, {
     @private
   */
   _isLoading: computed(function() {
+    return !!this._activeTransition;
+  }),
+
+  /**
+    The active transition
+  
+    @method _activeTransition
+    @return {Transition} Return router's active Transition object
+    @private
+  */
+  _activeTransition: computed(function() {
     if (this._routerMicrolib) {
-      return !!this._routerMicrolib.activeTransition;
+      return this._routerMicrolib.activeTransition;
     }
   }),
 
@@ -795,13 +806,13 @@ const EmberRouter = EmberObject.extend(Evented, {
   _processActiveTransitionQueryParams(targetRouteName, models, queryParams, _queryParams) {
     // merge in any queryParams from the active transition which could include
     // queryParams from the url on initial load.
-    if (!this._routerMicrolib.activeTransition) {
+    if (!this._activeTransition) {
       return;
     }
 
     let unchangedQPs = {};
     let qpUpdates = this._qpUpdates || {};
-    let params = this._routerMicrolib.activeTransition.queryParams;
+    let params = this._activeTransition.queryParams;
     for (let key in params) {
       if (!qpUpdates[key]) {
         unchangedQPs[key] = params[key];
@@ -1034,16 +1045,12 @@ const EmberRouter = EmberObject.extend(Evented, {
   targetState: null,
 
   _handleSlowTransition(transition, originRoute) {
-    if (!this._routerMicrolib.activeTransition) {
+    if (!this._activeTransition) {
       // Don't fire an event if we've since moved on from
       // the transition that put us in a loading state.
       return;
     }
-    let targetState = new RouterState(
-      this,
-      this._routerMicrolib,
-      this._routerMicrolib.activeTransition.state
-    );
+    let targetState = new RouterState(this, this._routerMicrolib, this._activeTransition.state);
     this.set('targetState', targetState);
 
     transition.trigger(true, 'loading', transition, originRoute);

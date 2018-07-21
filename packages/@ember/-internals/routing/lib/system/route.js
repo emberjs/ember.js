@@ -417,7 +417,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
       return {};
     }
 
-    let transition = this._router._routerMicrolib.activeTransition;
+    let transition = this._router._activeTransition;
     let state = transition ? transition.state : this._router._routerMicrolib.state;
 
     let fullName = route.fullRouteName;
@@ -1934,10 +1934,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
   modelFor(_name) {
     let name;
     let owner = getOwner(this);
-    let transition =
-      this._router && this._router._routerMicrolib
-        ? this._router._routerMicrolib.activeTransition
-        : undefined;
+    let transition = this._router ? this._router._activeTransition : null;
 
     // Only change the route name when there is an active transition.
     // Otherwise, use the passed in route name.
