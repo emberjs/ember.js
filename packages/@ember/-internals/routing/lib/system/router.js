@@ -104,6 +104,7 @@ const EmberRouter = EmberObject.extend(Evented, {
       replaceURL,
     }));
 
+    this._isSetup = true;
     routerMicrolib._triggerWillChangeContext = K;
     routerMicrolib._triggerWillLeave = K;
 

@@ -1934,7 +1934,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
   modelFor(_name) {
     let name;
     let owner = getOwner(this);
-    let transition = this._router ? this._router._activeTransition : null;
+    let transition = this._router && this._router._isSetup ? this._router._activeTransition : null;
 
     // Only change the route name when there is an active transition.
     // Otherwise, use the passed in route name.
