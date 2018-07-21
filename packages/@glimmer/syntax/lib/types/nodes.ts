@@ -76,13 +76,6 @@ export interface PartialStatement extends BaseNode {
   strip: StripFlags;
 }
 
-export function isCall(node: any): node is Call {
-  return (
-    node.type === 'SubExpression' ||
-    (node.type === 'MustacheStatement' && node.path.type === 'PathExpression')
-  );
-}
-
 export interface CommentStatement extends BaseNode {
   type: 'CommentStatement';
   value: string;
@@ -172,10 +165,6 @@ export interface NullLiteral extends BaseNode {
   type: 'NullLiteral';
   value: null;
   original: null;
-}
-
-export function isLiteral(input: Node | string): input is Literal {
-  return !!(typeof input === 'object' && input.type.match(/Literal$/));
 }
 
 export interface Hash extends BaseNode {
