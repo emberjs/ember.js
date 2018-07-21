@@ -188,7 +188,7 @@ const EmberRouter = EmberObject.extend(Evented, {
     @return {Boolean} The loading state
     @private
   */
-  _isLoading: computed(function() {
+  _isLoading: computed('_activeTransition', function() {
     return !!this._activeTransition;
   }),
 
