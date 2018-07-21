@@ -181,6 +181,19 @@ const EmberRouter = EmberObject.extend(Evented, {
     return get(this, 'location').getURL();
   }),
 
+  /**
+    Tell us if the router is currently loading.
+    
+    @method _isLoading
+    @return {Boolean} The loading state
+    @private
+  */
+  _isLoading: computed(function() {
+    if (this._routerMicrolib) {
+      return !!this._routerMicrolib.activeTransition;
+    }
+  }),
+
   _hasModuleBasedResolver() {
     let owner = getOwner(this);
     if (!owner) {
