@@ -12,6 +12,10 @@
 - [#16794](https://github.com/emberjs/ember.js/pull/16794) [BUGFIX] Fix instance-initializer-test blueprint for new QUnit testing API ([emberjs/rfcs#232](https://github.com/emberjs/rfcs/pull/232))
 - [#16797](https://github.com/emberjs/ember.js/pull/16797) [BUGFIX] Drop autorun assertion
 
+### v3.3.1 (July 23, 2018)
+
+- [#16836](https://github.com/emberjs/ember.js/pull/16836/commits) [DOC] Fix Broken 3.3 API Documentation
+
 ### v3.3.0 (July 16, 2018) 
 
 - [#16687](https://github.com/emberjs/ember.js/pull/16687) [FEATURE] Implement optional jQuery integration (see [emberjs/rfcs#294](https://github.com/emberjs/rfcs/blob/master/text/0294-optional-jquery.md) for more details).
@@ -62,6 +66,8 @@
 - [#16382](https://github.com/emberjs/ember.js/pull/16382) Upgrade `backburner.js` to 2.2.2.
 - [#16387](https://github.com/emberjs/ember.js/pull/16387) [BUGFIX] Add an assertion that actions cannot be sent from a destroyed/destroying object.
 - [#16386](https://github.com/emberjs/ember.js/pull/16386) [BUGFIX] Add an assertion if you attempt a `transitionTo` when the app is destroyed.
+- [#16433](https://github.com/emberjs/ember.js/pull/16433) [CLEANUP] Remove `content` alias.
+- [#16462](https://github.com/emberjs/ember.js/pull/16462) [CLEANUP] Remove deprecated `MODEL_FACTORY_INJECTIONS`.
 - [#16399](https://github.com/emberjs/ember.js/pull/16399) [BUGFIX] `{{#each}}` and `{{#each-in}}` now support objects implementing the native iteration protocol, including `Map` and `Set`.
 - [#16399](https://github.com/emberjs/ember.js/pull/16399) [BUGFIX] `{{#each-in}}` now correctly handles `key="@index"` (using the index/position). The new `key="@key"` option uses the item's key.
 - [#16433](https://github.com/emberjs/ember.js/pull/16433) [CLEANUP] Remove `content` alias.
