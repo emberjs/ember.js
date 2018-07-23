@@ -101,7 +101,7 @@ describe('Blueprint: mixin-test', function() {
 
     it('mixin-test foo', function() {
       return emberGenerateDestroy(['mixin-test', 'foo'], _file => {
-        expect(_file('tests/unit/mixins/foo-test.js')).to.equal(fixture('mixin-test/addon.js'));
+        expect(_file('tests/unit/mixins/foo-test.js')).to.equal(fixture('mixin-test/dummy.js'));
       });
     });
   });
@@ -113,7 +113,7 @@ describe('Blueprint: mixin-test', function() {
 
     it('mixin-test foo', function() {
       return emberGenerateDestroy(['mixin-test', 'foo'], _file => {
-        expect(_file('src/mixins/foo-test.js')).to.equal(fixture('mixin-test/addon.js'));
+        expect(_file('src/mixins/foo-test.js')).to.equal(fixture('mixin-test/dummy.js'));
       });
     });
   });
