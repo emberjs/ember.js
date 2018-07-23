@@ -612,7 +612,7 @@ const Application = Engine.extend({
     is disabled, this is automatically called when the first application instance is
     created via `visit`.
 
-    @private
+    @public
     @method boot
     @return {Promise<Application,Error>}
   */

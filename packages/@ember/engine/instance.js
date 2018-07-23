@@ -66,7 +66,7 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
 
     See the documentation on `BootOptions` for the options it takes.
 
-    @private
+    @public
     @method boot
     @param options {Object}
     @return {Promise<EngineInstance,Error>}
