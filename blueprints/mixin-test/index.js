@@ -1,5 +1,7 @@
 'use strict';
 
+const stringUtils = require('ember-cli-string-utils');
+
 const path = require('path');
 
 const useTestFrameworkDetector = require('../test-framework-detector');
@@ -35,8 +37,13 @@ module.exports = useTestFrameworkDetector({
   },
 
   locals: function(options) {
+    let projectName = options.inRepoAddon ? options.inRepoAddon : options.project.name();
+    let dasherizedModulePrefix = options.inRepoAddon
+      ? projectName
+      : stringUtils.dasherize(options.project.config().modulePrefix);
     return {
-      projectName: options.inRepoAddon ? options.inRepoAddon : options.project.name(),
+      dasherizedModulePrefix,
+      projectName,
       friendlyTestName: ['Unit', 'Mixin', options.entity.name].join(' | '),
     };
   },

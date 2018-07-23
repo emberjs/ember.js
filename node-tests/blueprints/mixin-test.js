@@ -175,7 +175,7 @@ describe('Blueprint: mixin', function() {
           .to.contain('export default Mixin.create({\n});');
 
         expect(_file('tests/unit/mixins/foo-test.js')).to.contain(
-          "import FooMixin from 'my-addon/mixins/foo';"
+          "import FooMixin from 'dummy/mixins/foo';"
         );
 
         expect(_file('app/mixins/foo.js')).to.not.exist;
@@ -189,7 +189,7 @@ describe('Blueprint: mixin', function() {
           .to.contain('export default Mixin.create({\n});');
 
         expect(_file('tests/unit/mixins/foo/bar-test.js')).to.contain(
-          "import FooBarMixin from 'my-addon/mixins/foo/bar';"
+          "import FooBarMixin from 'dummy/mixins/foo/bar';"
         );
 
         expect(_file('app/mixins/foo/bar.js')).to.not.exist;
@@ -203,7 +203,7 @@ describe('Blueprint: mixin', function() {
           .to.contain('export default Mixin.create({\n});');
 
         expect(_file('tests/unit/mixins/foo/bar/baz-test.js')).to.contain(
-          "import FooBarBazMixin from 'my-addon/mixins/foo/bar/baz';"
+          "import FooBarBazMixin from 'dummy/mixins/foo/bar/baz';"
         );
 
         expect(_file('app/mixins/foo/bar/baz.js')).to.not.exist;
@@ -223,7 +223,7 @@ describe('Blueprint: mixin', function() {
           .to.contain('export default Mixin.create({\n});');
 
         expect(_file('src/mixins/foo-test.js')).to.contain(
-          "import FooMixin from 'my-addon/mixins/foo';"
+          "import FooMixin from 'dummy/mixins/foo';"
         );
       });
     });
@@ -235,7 +235,7 @@ describe('Blueprint: mixin', function() {
           .to.contain('export default Mixin.create({\n});');
 
         expect(_file('src/mixins/foo/bar-test.js')).to.contain(
-          "import FooBarMixin from 'my-addon/mixins/foo/bar';"
+          "import FooBarMixin from 'dummy/mixins/foo/bar';"
         );
       });
     });
@@ -247,7 +247,7 @@ describe('Blueprint: mixin', function() {
           .to.contain('export default Mixin.create({\n});');
 
         expect(_file('src/mixins/foo/bar/baz-test.js')).to.contain(
-          "import FooBarBazMixin from 'my-addon/mixins/foo/bar/baz';"
+          "import FooBarBazMixin from 'dummy/mixins/foo/bar/baz';"
         );
       });
     });

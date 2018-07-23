@@ -1,5 +1,5 @@
 import EmberObject from '@ember/object';
-import <%= classifiedModuleName %>Mixin from '<%= projectName %>/mixins/<%= dasherizedModuleName %>';
+import <%= classifiedModuleName %>Mixin from '<%= dasherizedModulePrefix %>/mixins/<%= dasherizedModuleName %>';
 import { module, test } from 'qunit';
 
 module('<%= friendlyTestName %>');
