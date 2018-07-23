@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.3.1 (July 23, 2018)
+
+- [#16836](https://github.com/emberjs/ember.js/pull/16836/commits) [DOC] Fix Broken 3.3 API Documentation
+
 ### v3.3.0 (July 16, 2018) 
 
 - [#16687](https://github.com/emberjs/ember.js/pull/16687) [FEATURE] Implement optional jQuery integration (see [emberjs/rfcs#294](https://github.com/emberjs/rfcs/blob/master/text/0294-optional-jquery.md) for more details).
