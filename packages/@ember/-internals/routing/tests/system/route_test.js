@@ -424,12 +424,11 @@ moduleFor(
       let postsModel = { id: '2' };
 
       let router = {
-        _routerMicrolib: {
-          activeTransition: {
-            resolvedModels: {
-              'foo.bar': applicationModel,
-              'foo.bar.posts': postsModel,
-            },
+        _isSetup: true,
+        _activeTransition: {
+          resolvedModels: {
+            'foo.bar': applicationModel,
+            'foo.bar.posts': postsModel,
           },
         },
       };

@@ -184,27 +184,25 @@ const EmberRouter = EmberObject.extend(Evented, {
 
   /**
     Tell us if the router is currently loading.
-    
-    @method _isLoading
-    @return {Boolean} The loading state
+    @property _isLoading
+    @type {Boolean}
     @private
   */
-  get _isLoading() {
+  _isLoading: computed(function() {
     return !!this._activeTransition;
-  },
+  }).volatile(),
 
   /**
     The active transition
-  
-    @method _activeTransition
-    @return {Transition} Return router's active Transition object
+    @property _activeTransition
+    @type {Transition}
     @private
   */
-  get _activeTransition() {
+  _activeTransition: computed(function() {
     if (this._routerMicrolib) {
       return this._routerMicrolib.activeTransition;
     }
-  },
+  }).volatile(),
 
   _hasModuleBasedResolver() {
     let owner = getOwner(this);
