@@ -490,7 +490,22 @@ const EmberRouter = EmberObject.extend(Evented, {
     @since 1.7.0
   */
   isActiveIntent(routeName, models, queryParams) {
-    return this.currentState.isActiveIntent(routeName, models, queryParams);
+    return this._isActiveIntent(routeName, models, queryParams, this.currentState);
+  },
+
+  /**
+    Check if the intent is active for a given state and related arguments.
+    Use `isActiveIntent` if checking against the current state.
+
+    @method _isActiveIntent
+    @param {*} routeName 
+    @param {*} models 
+    @param {*} queryParams 
+    @param {*} state 
+    @private
+  */
+  _isActiveIntent(routeName, models, queryParams, state) {
+    return this._routerMicrolib.isActiveIntent(routeName, models, queryParams, state);
   },
 
   send() {
@@ -1049,7 +1064,7 @@ const EmberRouter = EmberObject.extend(Evented, {
       // the transition that put us in a loading state.
       return;
     }
-    let targetState = new RouterState(this, this._routerMicrolib, this._activeTransition.state);
+    let targetState = new RouterState(this, this._activeTransition.state);
     this.set('targetState', targetState);
 
     transition.trigger(true, 'loading', transition, originRoute);
@@ -1489,7 +1504,7 @@ EmberRouter.reopenClass({
 });
 
 function didBeginTransition(transition, router) {
-  let routerState = new RouterState(router, router._routerMicrolib, transition.state);
+  let routerState = new RouterState(router, transition.state);
 
   if (!router.currentState) {
     router.set('currentState', routerState);

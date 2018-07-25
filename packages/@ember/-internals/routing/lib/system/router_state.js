@@ -2,15 +2,14 @@ import { assign } from '@ember/polyfills';
 import { shallowEqual } from '../utils';
 
 export default class RouterState {
-  constructor(emberRouter = null, routerJs = null, routerJsState = null) {
+  constructor(emberRouter = null, routerJsState = null) {
     this.emberRouter = emberRouter;
-    this.routerJs = routerJs;
     this.routerJsState = routerJsState;
   }
 
   isActiveIntent(routeName, models, queryParams, queryParamsMustMatch) {
     let state = this.routerJsState;
-    if (!this.routerJs.isActiveIntent(routeName, models, null, state)) {
+    if (!this.emberRouter._isActiveIntent(routeName, models, null, state)) {
       return false;
     }
 
