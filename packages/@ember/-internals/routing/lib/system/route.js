@@ -1320,7 +1320,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
       }'.`,
       !this.isDestroying && !this.isDestroyed
     );
-    if ((this._router && this._router._routerMicrolib) || !isTesting()) {
+    if ((this._router && this._router._isSetup) || !isTesting()) {
       this._router.send(...args);
     } else {
       let name = args.shift();

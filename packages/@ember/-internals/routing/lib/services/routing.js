@@ -48,7 +48,7 @@ export default Service.extend({
   generateURL(routeName, models, queryParams) {
     let router = get(this, 'router');
     // return early when the router microlib is not present, which is the case for {{link-to}} in integration tests
-    if (!router._routerMicrolib) {
+    if (!router._isSetup) {
       return;
     }
 
