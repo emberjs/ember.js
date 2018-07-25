@@ -219,9 +219,10 @@ const RouterService = Service.extend({
    */
   isActive(...args) {
     let { routeName, models, queryParams } = extractRouteArgs(args);
+    let router = this._router;
     let routerMicrolib = this._router._routerMicrolib;
 
-    if (!routerMicrolib.isActiveIntent(routeName, models, null)) {
+    if (!router._isActiveIntent(routeName, models, null)) {
       return false;
     }
     let hasQueryParams = Object.keys(queryParams).length > 0;
