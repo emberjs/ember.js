@@ -5,7 +5,7 @@ class PushObjectsTests extends AbstractTestCase {
   '@test should raise exception if not Ember.Enumerable is passed to pushObjects'() {
     let obj = this.newObject([]);
 
-    this.assert.throws(() => obj.pushObjects('string'));
+    expectAssertion(() => obj.pushObjects('string'));
   }
 }
 
