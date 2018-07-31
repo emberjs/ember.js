@@ -156,7 +156,7 @@ export default class CustomComponentManager<ComponentInstance>
     const capturedArgs = args.capture();
 
     let invocationArgs = valueForCapturedArgs(capturedArgs);
-    const component = delegate.createComponent(definition.ComponentClass, invocationArgs);
+    const component = delegate.createComponent(definition.ComponentClass.class, invocationArgs);
 
     return new CustomComponentState(delegate, component, capturedArgs);
   }
