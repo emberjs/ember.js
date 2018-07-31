@@ -130,9 +130,8 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
           EmberObject.extend({
             capabilities: capabilities('3.4'),
 
-            createComponent(factory, args) {
-              let Klass = factory.class;
-              return new Klass(args);
+            createComponent(Factory, args) {
+              return new Factory(args);
             },
 
             updateComponent() {},
