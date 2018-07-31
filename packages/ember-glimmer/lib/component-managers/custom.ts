@@ -9,6 +9,7 @@ import {
 import { PathReference, Tag } from '@glimmer/reference';
 import {
   Arguments,
+  Bounds as VMBounds,
   CapturedArguments,
   ComponentDefinition,
   Invocation,
@@ -52,6 +53,18 @@ export function capabilities(managerAPI: '3.4', options: OptionalCapabilities = 
   };
 }
 
+class Bounds {
+  constructor(private _bounds: VMBounds) {}
+
+  get firstNode(): Node {
+    return this._bounds.firstNode() as Node;
+  }
+
+  get lastNode(): Node {
+    return this._bounds.lastNode() as Node;
+  }
+}
+
 export interface DefinitionState<ComponentInstance> {
   name: string;
   ComponentClass: Factory<ComponentInstance>;
@@ -71,6 +84,7 @@ export interface CustomComponentManagerArgs {
 
 export interface ManagerDelegate<ComponentInstance> {
   capabilities: Capabilities;
+  didRenderLayout(instance: ComponentInstance, bounds: Bounds): void;
   createComponent(factory: Opaque, args: CustomComponentManagerArgs): ComponentInstance;
   updateComponent(instance: ComponentInstance, args: CustomComponentManagerArgs): void;
   getContext(instance: ComponentInstance): Opaque;
@@ -206,7 +220,9 @@ export default class CustomComponentManager<ComponentInstance>
     return args.tag;
   }
 
-  didRenderLayout() {}
+  didRenderLayout(state: CustomComponentState<ComponentInstance>, bounds: VMBounds) {
+    state.delegate.didRenderLayout(state.component, new Bounds(bounds));
+  }
 
   getLayout(state: DefinitionState<ComponentInstance>): Invocation {
     return {

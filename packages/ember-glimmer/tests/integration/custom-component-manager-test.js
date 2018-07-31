@@ -21,6 +21,12 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
             return factory.create({ args });
           },
 
+          didRenderLayout(component, bounds) {
+            assert.step('didRenderLayout');
+            component.bounds = bounds;
+            component.didInsertElement && component.didInsertElement();
+          },
+
           updateComponent(component, args) {
             set(component, 'args', args);
           },
@@ -59,6 +65,11 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
             return component;
           },
 
+          didRenderLayout(component, bounds) {
+            assert.step('didRenderLayout');
+            component.bounds = bounds;
+          },
+
           didCreateComponent(component) {
             assert.step('didCreateComponent');
             component.didRender();
@@ -94,6 +105,88 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
         this.assertHTML(`<p>hello world</p>`);
       }
 
+      ['@test it gets the component bounds']() {
+        let self = this;
+        let ComponentClass = setComponentManager(
+          'basic',
+          EmberObject.extend({
+            greeting: 'hello',
+            didInsertElement() {
+              self.assert.ok(true, 'Called the didInsertElement hook');
+              self.assert.ok(this.bounds);
+              self.assert.ok(this.bounds.firstNode);
+              self.assert.ok(this.bounds.lastNode);
+              self.assert.equal(this.bounds.firstNode, this.bounds.lastNode);
+            },
+          })
+        );
+
+        this.registerComponent('foo-bar', {
+          template: `<p>{{greeting}} world</p>`,
+          ComponentClass,
+        });
+
+        this.render('{{foo-bar}}');
+
+        this.assertHTML(`<p>hello world</p>`);
+      }
+
+      ['@test firstChild and lastChild of bounds can be different']() {
+        let self = this;
+        let ComponentClass = setComponentManager(
+          'basic',
+          EmberObject.extend({
+            greeting: 'hello',
+            didInsertElement() {
+              self.assert.equal(this.bounds.firstNode.tagName.toLowerCase(), 'h1');
+              self.assert.equal(this.bounds.lastNode.tagName.toLowerCase(), 'h2');
+            },
+          })
+        );
+
+        this.registerComponent('foo-bar', {
+          template: `<h1>Hello!</h1><h2>How are you doing?</h2>`,
+          ComponentClass,
+        });
+
+        this.render('{{foo-bar}}');
+
+        this.assertHTML(`<h1>Hello!</h1><h2>How are you doing?</h2>`);
+      }
+
+      ['@test bounds is subject to change']() {
+        let component;
+        let ComponentClass = setComponentManager(
+          'basic',
+          EmberObject.extend({
+            greeting: 'hello',
+            didInsertElement() {
+              component = this;
+            },
+          })
+        );
+
+        this.registerComponent('foo-bar', {
+          template: `{{#if @bar}}<h1>Hello!</h1>{{/if}}<h2>How are you doing?</h2>`,
+          ComponentClass,
+        });
+
+        this.render('{{foo-bar bar=bar}}', { bar: true });
+
+        this.assertHTML(`<h1>Hello!</h1><h2>How are you doing?</h2>`);
+
+        this.assert.equal(component.bounds.firstNode.tagName.toLowerCase(), 'h1');
+        this.assert.equal(component.bounds.lastNode.tagName.toLowerCase(), 'h2');
+
+        this.runTask(() => set(this.context, 'bar', false));
+
+        this.rerender();
+
+        this.assert.equal(component.bounds.firstNode.nodeType, 8);
+        this.assert.equal(component.bounds.lastNode.tagName.toLowerCase(), 'h2');
+        this.assertHTML(`<!----><h2>How are you doing?</h2>`);
+      }
+
       ['@test it can have no template context']() {
         this.registerComponentManager(
           'pseudo-template-only',
@@ -103,6 +196,8 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
             createComponent() {
               return null;
             },
+
+            didRenderLayout() {},
 
             updateComponent() {},
 
@@ -134,6 +229,8 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
               let Klass = factory.class;
               return new Klass(args);
             },
+
+            didRenderLayout() {},
 
             updateComponent() {},
 
@@ -196,6 +293,8 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
             createComponent(factory) {
               return factory.create();
             },
+
+            didRenderLayout() {},
 
             getContext() {
               return customContext;
@@ -296,6 +395,8 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
               return component;
             },
 
+            didRenderLayout() {},
+
             updateComponent() {},
 
             destroyComponent(component) {
@@ -349,6 +450,8 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
               assert.step('updateComponent');
               set(component, 'args', args);
             },
+
+            didRenderLayout() {},
 
             destroyComponent(component) {
               assert.step('destroyComponent');
@@ -498,7 +601,12 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
           this.render('<FooBar data-test={{value}} />', { value: 'foo' });
 
           this.assertHTML(`<p data-test="foo">Hello world!</p>`);
-          assert.verifySteps(['createComponent', 'getContext', 'didCreateComponent']);
+          assert.verifySteps([
+            'createComponent',
+            'getContext',
+            'didRenderLayout',
+            'didCreateComponent',
+          ]);
 
           this.runTask(() => this.context.set('value', 'bar'));
           assert.verifySteps(['didUpdateComponent']);
