@@ -1194,6 +1194,8 @@ const MutableArray = Mixin.create(ArrayMixin, MutableEnumerable, {
     You should replace amt objects started at idx with the objects in the
     passed array. You should also call `this.arrayContentDidChange()`
 
+    Note that this method is expected to validate the type(s) of objects that it expects.
+
     @method replace
     @param {Number} idx Starting index in the array to replace. If
       idx >= length, then append to the end of the array.
@@ -1318,9 +1320,6 @@ const MutableArray = Mixin.create(ArrayMixin, MutableEnumerable, {
     @public
   */
   pushObjects(objects) {
-    if (!Array.isArray(objects)) {
-      throw new TypeError('Must pass Enumerable to MutableArray#pushObjects');
-    }
     this.replace(this.length, 0, objects);
     return this;
   },

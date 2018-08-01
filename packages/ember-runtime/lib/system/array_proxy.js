@@ -133,6 +133,8 @@ export default class ArrayProxy extends EmberObject {
     return objectAt(get(this, 'arrangedContent'), idx);
   }
 
+  // See additional docs for `replace` from `MutableArray`:
+  // https://www.emberjs.com/api/ember/3.3/classes/MutableArray/methods/replace?anchor=replace
   replace(idx, amt, objects) {
     assert(
       'Mutating an arranged ArrayProxy is not allowed',
