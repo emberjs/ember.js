@@ -5,6 +5,7 @@ import {
   finishChains,
   defineProperty,
   computed,
+  alias,
   notifyPropertyChange,
   watch,
   unwatch,
@@ -151,6 +152,56 @@ moduleFor(
       assert.equal(watcherCount(obj.a, 'b'), 0);
       assert.equal(watcherCount(obj.a, 'b.c'), 0);
       assert.equal(watcherCount(obj.a.b, 'c'), 0);
+    }
+
+    ['@test writable chains is not defined more than once'](assert) {
+      assert.expect(0);
+      function didChange() {}
+
+      let obj = {
+        foo: {
+          bar: {
+            baz: {
+              value: 123,
+            },
+          },
+        },
+      };
+
+      // Setup object like a constructor, which delays initializing values in chains
+      let parentMeta = meta(obj);
+      parentMeta.proto = obj;
+
+      // Define a standard computed property, which will eventually setup dependencies
+      defineProperty(
+        obj,
+        'bar',
+        computed('foo.bar', {
+          get() {
+            return this.foo.bar;
+          },
+        })
+      );
+
+      // Define some aliases, which will proxy chains along
+      defineProperty(obj, 'baz', alias('bar.baz'));
+      defineProperty(obj, 'value', alias('baz.value'));
+
+      // Define an observer, which will eagerly attempt to setup chains and watch
+      // their values. This follows the aliases eagerly, and forces the first
+      // computed to actually set up its values/dependencies for chains. If
+      // writableChains was not already defined, this results in multiple root
+      // chain nodes being defined on the same object meta.
+      addObserver(obj, 'value', null, didChange);
+
+      let childObj = Object.create(obj);
+
+      let childMeta = meta(childObj);
+
+      finishChains(childMeta);
+
+      // If we can unwatch the root computed, then chains was not overwritten
+      unwatch(childObj, 'foo.bar');
     }
   }
 );
