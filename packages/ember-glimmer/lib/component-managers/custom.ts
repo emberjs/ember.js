@@ -1,3 +1,4 @@
+import { GLIMMER_COMPONENT_MANAGER_BOUNDS } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import {
   ComponentCapabilities,
@@ -84,10 +85,11 @@ export interface CustomComponentManagerArgs {
 
 export interface ManagerDelegate<ComponentInstance> {
   capabilities: Capabilities;
-  didRenderLayout(instance: ComponentInstance, bounds: Bounds): void;
+  didRenderLayout(state: CustomComponentState<ComponentInstance>, bounds: Bounds): void;
   createComponent(factory: Opaque, args: CustomComponentManagerArgs): ComponentInstance;
   updateComponent(instance: ComponentInstance, args: CustomComponentManagerArgs): void;
   getContext(instance: ComponentInstance): Opaque;
+  willDestroyComponent(state: CustomComponentState<ComponentInstance>): void;
 }
 
 export function hasAsyncLifeCycleCallbacks<ComponentInstance>(
@@ -221,7 +223,9 @@ export default class CustomComponentManager<ComponentInstance>
   }
 
   didRenderLayout(state: CustomComponentState<ComponentInstance>, bounds: VMBounds) {
-    state.delegate.didRenderLayout(state.component, new Bounds(bounds));
+    if (GLIMMER_COMPONENT_MANAGER_BOUNDS) {
+      state.delegate.didRenderLayout(state, new Bounds(bounds));
+    }
   }
 
   getLayout(state: DefinitionState<ComponentInstance>): Invocation {
@@ -246,6 +250,9 @@ export class CustomComponentState<ComponentInstance> {
   destroy() {
     const { delegate, component } = this;
 
+    if (GLIMMER_COMPONENT_MANAGER_BOUNDS) {
+      delegate.willDestroyComponent(this);
+    }
     if (hasDestructors(delegate)) {
       delegate.destroyComponent(component);
     }
