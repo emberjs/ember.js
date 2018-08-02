@@ -21,7 +21,7 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
             return factory.create({ args });
           },
 
-          didRenderLayout(component, bounds) {
+          didRenderLayout({ component }, bounds) {
             assert.step('didRenderLayout');
             component.bounds = bounds;
             component.didInsertElement && component.didInsertElement();
@@ -67,7 +67,7 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
             return component;
           },
 
-          didRenderLayout(component, bounds) {
+          didRenderLayout({ component }, bounds) {
             assert.step('didRenderLayout');
             component.bounds = bounds;
           },
