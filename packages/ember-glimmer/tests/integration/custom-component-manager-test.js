@@ -60,6 +60,8 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
             component.destroy();
           },
 
+          willDestroyComponent() {},
+
           getContext(component) {
             assert.step('getContext');
             return component;
@@ -399,6 +401,10 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
 
             updateComponent() {},
 
+            willDestroyComponent() {
+              assert.step('willDestroyComponent');
+            },
+
             destroyComponent(component) {
               assert.step('destroyComponent');
               component.destroy();
@@ -430,7 +436,12 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
 
         this.assertText('');
 
-        assert.verifySteps(['createComponent', 'destroyComponent', 'component.destroy()']);
+        assert.verifySteps([
+          'createComponent',
+          'willDestroyComponent',
+          'destroyComponent',
+          'component.destroy()',
+        ]);
       }
 
       ['@test it can opt-in to running async lifecycle hooks'](assert) {
