@@ -61,6 +61,11 @@ export default Mixin.create({
     m.writableTag(() => combine([DirtyableTag.create(), UpdatableTag.create(CONSTANT_TAG)]));
   },
 
+  destroy() {
+    this._super(...arguments);
+    this.set('content', null);
+  },
+
   isTruthy: computed('content', function() {
     return !!get(this, 'content');
   }),
