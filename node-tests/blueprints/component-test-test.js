@@ -133,6 +133,32 @@ describe('Blueprint: component-test', function() {
         });
       });
     });
+
+    describe('with ember-mocha@0.14.0', function() {
+      beforeEach(function() {
+        modifyPackages([
+          { name: 'ember-cli-qunit', delete: true },
+          { name: 'ember-mocha', dev: true },
+        ]);
+        generateFakePackageManifest('ember-mocha', '0.14.0');
+      });
+
+      it('component-test x-foo', function() {
+        return emberGenerateDestroy(['component-test', 'x-foo'], _file => {
+          expect(_file('tests/integration/components/x-foo-test.js')).to.equal(
+            fixture('component-test/mocha-rfc232.js')
+          );
+        });
+      });
+
+      it('component-test x-foo --unit', function() {
+        return emberGenerateDestroy(['component-test', 'x-foo', '--unit'], _file => {
+          expect(_file('tests/unit/components/x-foo-test.js')).to.equal(
+            fixture('component-test/mocha-rfc232-unit.js')
+          );
+        });
+      });
+    });
   });
 
   describe('in app - module unification', function() {
@@ -236,6 +262,31 @@ describe('Blueprint: component-test', function() {
         return emberGenerateDestroy(['component-test', 'x-foo'], _file => {
           expect(_file('src/ui/components/x-foo/component-test.js')).to.equal(
             fixture('component-test/mocha-0.12.js')
+          );
+        });
+      });
+
+      it('component-test x-foo --unit', function() {
+        return expectError(
+          emberGenerate(['component-test', 'x-foo', '--unit']),
+          "The --unit flag isn't supported within a module unification app"
+        );
+      });
+    });
+
+    describe('with ember-mocha@0.14.0', function() {
+      beforeEach(function() {
+        modifyPackages([
+          { name: 'ember-cli-qunit', delete: true },
+          { name: 'ember-mocha', dev: true },
+        ]);
+        generateFakePackageManifest('ember-mocha', '0.14.0');
+      });
+
+      it('component-test x-foo', function() {
+        return emberGenerateDestroy(['component-test', 'x-foo'], _file => {
+          expect(_file('src/ui/components/x-foo/component-test.js')).to.equal(
+            fixture('component-test/mocha-rfc232.js')
           );
         });
       });
