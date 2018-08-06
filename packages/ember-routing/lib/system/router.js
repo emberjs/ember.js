@@ -856,14 +856,14 @@ const EmberRouter = EmberObject.extend(Evented, {
     let handlerInfoLength = handlerInfos.length;
     let leafRouteName = handlerInfos[handlerInfoLength - 1].name;
     let cached = this._qpCache[leafRouteName];
-    if (cached) {
+    if (cached !== undefined) {
       return cached;
     }
 
     let shouldCache = true;
-    let qpsByUrlKey = {};
     let map = {};
     let qps = [];
+    let qpsByUrlKey = DEBUG ? {} : null;
 
     for (let i = 0; i < handlerInfoLength; ++i) {
       let qpMeta = this._getQPMeta(handlerInfos[i]);
@@ -876,24 +876,25 @@ const EmberRouter = EmberObject.extend(Evented, {
       // Loop over each QP to make sure we don't have any collisions by urlKey
       for (let i = 0; i < qpMeta.qps.length; i++) {
         let qp = qpMeta.qps[i];
-        let urlKey = qp.urlKey;
-        let qpOther = qpsByUrlKey[urlKey];
 
-        if (qpOther && qpOther.controllerName !== qp.controllerName) {
-          let otherQP = qpsByUrlKey[urlKey];
-          assert(
-            `You're not allowed to have more than one controller property map to the same query param key, but both \`${
-              otherQP.scopedPropertyName
-            }\` and \`${
-              qp.scopedPropertyName
-            }\` map to \`${urlKey}\`. You can fix this by mapping one of the controller properties to a different query param key via the \`as\` config option, e.g. \`${
-              otherQP.prop
-            }: { as: \'other-${otherQP.prop}\' }\``,
-            false
-          );
+        if (DEBUG) {
+          let { urlKey } = qp;
+          let qpOther = qpsByUrlKey[urlKey];
+          if (qpOther && qpOther.controllerName !== qp.controllerName) {
+            assert(
+              `You're not allowed to have more than one controller property map to the same query param key, but both \`${
+                qpOther.scopedPropertyName
+              }\` and \`${
+                qp.scopedPropertyName
+              }\` map to \`${urlKey}\`. You can fix this by mapping one of the controller properties to a different query param key via the \`as\` config option, e.g. \`${
+                qpOther.prop
+              }: { as: \'other-${qpOther.prop}\' }\``,
+              false
+            );
+          }
+          qpsByUrlKey[urlKey] = qp;
         }
 
-        qpsByUrlKey[urlKey] = qp;
         qps.push(qp);
       }
 
