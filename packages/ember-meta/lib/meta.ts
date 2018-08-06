@@ -323,12 +323,12 @@ export class Meta {
     );
     let ret = this._chains;
     if (ret === undefined) {
-      if (this.parent === null) {
-        ret = create(this.source);
-      } else {
-        ret = this.parent.writableChains(create).copy(this.source);
+      this._chains = ret = create(this.source);
+
+      if (this.parent !== null) {
+        let parentChains = this.parent.writableChains(create);
+        parentChains.copyTo(ret);
       }
-      this._chains = ret;
     }
     return ret;
   }

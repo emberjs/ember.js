@@ -208,18 +208,16 @@ class ChainNode {
   }
 
   // copies a top level object only
-  copy(obj: any) {
-    let ret = makeChainNode(obj);
+  copyTo(target: ChainNode) {
     let paths = this.paths;
     if (paths !== undefined) {
       let path;
       for (path in paths) {
         if (paths[path] > 0) {
-          ret.add(path);
+          target.add(path);
         }
       }
     }
-    return ret;
   }
 
   // called on the root node of a chain to setup watchers on the specified
