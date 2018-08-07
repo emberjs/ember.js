@@ -43,12 +43,14 @@ const CAPABILITIES = {
 export interface OptionalCapabilities {
   asyncLifecycleCallbacks?: boolean;
   destructor?: boolean;
+  bounds?: boolean;
 }
 
 export function capabilities(managerAPI: '3.4', options: OptionalCapabilities = {}): Capabilities {
   assert('Invalid component manager compatibility specified', managerAPI === '3.4');
 
   return {
+    bounds: !!options.bounds,
     asyncLifeCycleCallbacks: !!options.asyncLifecycleCallbacks,
     destructor: !!options.destructor,
   };
@@ -64,6 +66,10 @@ class Bounds {
   get lastNode(): Node {
     return this._bounds.lastNode() as Node;
   }
+
+  get parentElement(): Element {
+    return this._bounds.parentElement() as Element;
+  }
 }
 
 export interface DefinitionState<ComponentInstance> {
@@ -76,6 +82,7 @@ export interface DefinitionState<ComponentInstance> {
 export interface Capabilities {
   asyncLifeCycleCallbacks: boolean;
   destructor: boolean;
+  bounds: boolean;
 }
 
 export interface CustomComponentManagerArgs {
@@ -85,11 +92,11 @@ export interface CustomComponentManagerArgs {
 
 export interface ManagerDelegate<ComponentInstance> {
   capabilities: Capabilities;
-  didRenderLayout(state: CustomComponentState<ComponentInstance>, bounds: Bounds): void;
+  didCreateBounds(state: CustomComponentState<ComponentInstance>, bounds: Bounds): void;
   createComponent(factory: Opaque, args: CustomComponentManagerArgs): ComponentInstance;
   updateComponent(instance: ComponentInstance, args: CustomComponentManagerArgs): void;
   getContext(instance: ComponentInstance): Opaque;
-  willDestroyComponent(state: CustomComponentState<ComponentInstance>): void;
+  willDestroyBounds(state: CustomComponentState<ComponentInstance>): void;
 }
 
 export function hasAsyncLifeCycleCallbacks<ComponentInstance>(
@@ -108,6 +115,10 @@ export function hasDestructors<ComponentInstance>(
   delegate: ManagerDelegate<ComponentInstance>
 ): delegate is ManagerDelegateWithDestructors<ComponentInstance> {
   return delegate.capabilities.destructor;
+}
+
+export function hasBounds<ComponentInstance>(delegate: ManagerDelegate<ComponentInstance>) {
+  return delegate.capabilities.bounds;
 }
 
 export interface ManagerDelegateWithDestructors<ComponentInstance>
@@ -223,8 +234,8 @@ export default class CustomComponentManager<ComponentInstance>
   }
 
   didRenderLayout(state: CustomComponentState<ComponentInstance>, bounds: VMBounds) {
-    if (GLIMMER_COMPONENT_MANAGER_BOUNDS) {
-      state.delegate.didRenderLayout(state, new Bounds(bounds));
+    if (GLIMMER_COMPONENT_MANAGER_BOUNDS && hasBounds(state.delegate)) {
+      state.delegate.didCreateBounds(state, new Bounds(bounds));
     }
   }
 
@@ -250,10 +261,10 @@ export class CustomComponentState<ComponentInstance> {
   destroy() {
     const { delegate, component } = this;
 
-    if (GLIMMER_COMPONENT_MANAGER_BOUNDS) {
-      delegate.willDestroyComponent(this);
-    }
     if (hasDestructors(delegate)) {
+      if (GLIMMER_COMPONENT_MANAGER_BOUNDS && hasBounds(delegate)) {
+        delegate.willDestroyBounds(this);
+      }
       delegate.destroyComponent(component);
     }
   }
