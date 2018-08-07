@@ -57,6 +57,20 @@ moduleFor(
       assert.equal(get(arr, 1), 'second');
     }
 
+    ['@test should retrieve an empty string key on an object'](assert) {
+      let obj = { '': 'empty-string' };
+
+      assert.equal(get(obj, ''), 'empty-string');
+    }
+
+    ['@test should return undefined when passed an empty string if that key does not exist on an object'](
+      assert
+    ) {
+      let obj = { tomster: true };
+
+      assert.equal(get(obj, ''), undefined);
+    }
+
     ['@test should not access a property more than once'](assert) {
       let count = 0;
       let obj = {
@@ -158,7 +172,6 @@ moduleFor(
         () => get(obj, false),
         /The key provided to get must be a string or number, you passed false/
       );
-      expectAssertion(() => get(obj, ''), /Cannot call `get` with an empty string/);
     }
 
     // ..........................................................

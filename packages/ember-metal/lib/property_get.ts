@@ -96,7 +96,6 @@ export function get(obj: object, keyName: string): any {
     `'this' in paths is not supported`,
     typeof keyName !== 'string' || keyName.lastIndexOf('this.', 0) !== 0
   );
-  assert('Cannot call `get` with an empty string', keyName !== '');
 
   let type = typeof obj;
 
