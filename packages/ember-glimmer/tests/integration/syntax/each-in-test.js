@@ -281,6 +281,22 @@ class EachInTest extends AbstractEachInTest {
 
     this.assertText('Empty!');
   }
+
+  [`@test it can render items with a key of empty string`]() {
+    this.makeHash({ '': 'empty-string', a: 'a' });
+
+    this.render(
+      `<ul>{{#each-in hash as |key value|}}<li>{{key}}: {{value}}</li>{{else}}Empty!{{/each-in}}</ul>`
+    );
+
+    this.assertText(': empty-stringa: a');
+
+    this.assertStableRerender();
+
+    this.clear();
+
+    this.assertText('Empty!');
+  }
 }
 
 moduleFor(
