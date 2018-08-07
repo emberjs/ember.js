@@ -15,14 +15,16 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
       this.registerComponentManager(
         'basic',
         EmberObject.extend({
-          capabilities: capabilities('3.4'),
+          capabilities: capabilities('3.4', {
+            bounds: true,
+          }),
 
           createComponent(factory, args) {
             return factory.create({ args });
           },
 
-          didRenderLayout({ component }, bounds) {
-            assert.step('didRenderLayout');
+          didCreateBounds({ component }, bounds) {
+            assert.step('didCreateBounds');
             component.bounds = bounds;
             component.didInsertElement && component.didInsertElement();
           },
@@ -43,6 +45,7 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
           capabilities: capabilities('3.4', {
             destructor: true,
             asyncLifecycleCallbacks: true,
+            bounds: true,
           }),
 
           createComponent(factory, args) {
@@ -60,15 +63,15 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
             component.destroy();
           },
 
-          willDestroyComponent() {},
+          willDestroyBounds() {},
 
           getContext(component) {
             assert.step('getContext');
             return component;
           },
 
-          didRenderLayout({ component }, bounds) {
-            assert.step('didRenderLayout');
+          didCreateBounds({ component }, bounds) {
+            assert.step('didCreateBounds');
             component.bounds = bounds;
           },
 
@@ -199,7 +202,7 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
               return null;
             },
 
-            didRenderLayout() {},
+            didCreateBounds() {},
 
             updateComponent() {},
 
@@ -232,7 +235,7 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
               return new Klass(args);
             },
 
-            didRenderLayout() {},
+            didCreateBounds() {},
 
             updateComponent() {},
 
@@ -296,7 +299,7 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
               return factory.create();
             },
 
-            didRenderLayout() {},
+            didCreateBounds() {},
 
             getContext() {
               return customContext;
@@ -386,6 +389,7 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
           EmberObject.extend({
             capabilities: capabilities('3.4', {
               destructor: true,
+              bounds: true,
             }),
 
             createComponent(factory) {
@@ -397,12 +401,12 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
               return component;
             },
 
-            didRenderLayout() {},
+            didCreateBounds() {},
 
             updateComponent() {},
 
-            willDestroyComponent() {
-              assert.step('willDestroyComponent');
+            willDestroyBounds() {
+              assert.step('willDestroyBounds');
             },
 
             destroyComponent(component) {
@@ -438,7 +442,7 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
 
         assert.verifySteps([
           'createComponent',
-          'willDestroyComponent',
+          'willDestroyBounds',
           'destroyComponent',
           'component.destroy()',
         ]);
@@ -450,6 +454,7 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
           EmberObject.extend({
             capabilities: capabilities('3.4', {
               asyncLifecycleCallbacks: true,
+              bounds: true,
             }),
 
             createComponent(factory, args) {
@@ -462,7 +467,7 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
               set(component, 'args', args);
             },
 
-            didRenderLayout() {},
+            didCreateBounds() {},
 
             destroyComponent(component) {
               assert.step('destroyComponent');
@@ -615,7 +620,7 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
           assert.verifySteps([
             'createComponent',
             'getContext',
-            'didRenderLayout',
+            'didCreateBounds',
             'didCreateComponent',
           ]);
 
