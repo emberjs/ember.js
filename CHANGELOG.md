@@ -60,6 +60,11 @@
 - [#16399](https://github.com/emberjs/ember.js/pull/16399) [BUGFIX] `{{#each-in}}` now correctly handles `key="@index"` (using the index/position). The new `key="@key"` option uses the item's key.
 - [emberjs/rfcs#286](https://github.com/emberjs/rfcs/blob/master/text/0286-block-let-template-helper.md) [FEATURE] Enabled block `let` handlebars helper by default.
 
+### v3.1.4 (August 07, 2018)
+
+- [#16565](https://github.com/emberjs/ember.js/pull/16565) Fix template / component caching during rendering.
+- [#16853](https://github.com/emberjs/ember.js/pull/16853) [BUGFIX beta] Allow ArrayProxy#pushObjects to accept ArrayProxy again
+
 ### v3.1.3 (June 21, 2018)
 - [#16754](https://github.com/emberjs/ember.js/pull/16754) [BUGFIX] Fix container destroy timing
 
