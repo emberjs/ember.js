@@ -34,10 +34,24 @@ if (DEBUG) {
 
 export const UNDEFINED = symbol('undefined');
 
+function ALL() {}
+
 // FLAGS
-const SOURCE_DESTROYING = 1 << 1;
-const SOURCE_DESTROYED = 1 << 2;
-const META_DESTROYED = 1 << 3;
+const enum MetaFlags {
+  NONE = 0,
+  SOURCE_DESTROYING = 1 << 0,
+  SOURCE_DESTROYED = 1 << 1,
+  META_DESTROYED = 1 << 2,
+}
+
+const enum ListenerFlags {
+  NONE = 0,
+  REMOVE = 1 << 0,
+  ONCE = 1 << 1,
+}
+
+type Listeners = Array<string | object | null | Function | ListenerFlags>;
+type PublicListeners = Array<string | object | null | Function | boolean>;
 
 export class Meta {
   _descriptors: any | undefined;
@@ -48,12 +62,11 @@ export class Meta {
   _chains: any | undefined;
   _tag: Tag | undefined;
   _tags: any | undefined;
-  _flags: number;
+  _flags: MetaFlags;
   source: object;
   proto: object | undefined;
   _parent: Meta | undefined | null;
-  _listeners: any | undefined;
-  _listenersFinalized: boolean;
+  private _listeners: Listeners | undefined;
 
   // DEBUG
   _values: any | undefined;
@@ -79,7 +92,7 @@ export class Meta {
 
     // initial value for all flags right now is false
     // see FLAGS const for detailed list of flags used
-    this._flags = 0;
+    this._flags = MetaFlags.NONE;
 
     // used only internally
     this.source = obj;
@@ -89,7 +102,6 @@ export class Meta {
     this.proto = obj.constructor === undefined ? undefined : obj.constructor.prototype;
 
     this._listeners = undefined;
-    this._listenersFinalized = false;
   }
 
   get parent() {
@@ -119,27 +131,27 @@ export class Meta {
   }
 
   isSourceDestroying() {
-    return this._hasFlag(SOURCE_DESTROYING);
+    return this._hasFlag(MetaFlags.SOURCE_DESTROYING);
   }
 
   setSourceDestroying() {
-    this._flags |= SOURCE_DESTROYING;
+    this._flags |= MetaFlags.SOURCE_DESTROYING;
   }
 
   isSourceDestroyed() {
-    return this._hasFlag(SOURCE_DESTROYED);
+    return this._hasFlag(MetaFlags.SOURCE_DESTROYED);
   }
 
   setSourceDestroyed() {
-    this._flags |= SOURCE_DESTROYED;
+    this._flags |= MetaFlags.SOURCE_DESTROYED;
   }
 
   isMetaDestroyed() {
-    return this._hasFlag(META_DESTROYED);
+    return this._hasFlag(MetaFlags.META_DESTROYED);
   }
 
   setMetaDestroyed() {
-    this._flags |= META_DESTROYED;
+    this._flags |= MetaFlags.META_DESTROYED;
   }
 
   _hasFlag(flag: number) {
@@ -440,82 +452,65 @@ export class Meta {
     method: Function | string,
     once: boolean
   ) {
-    if (this._listeners === undefined) {
-      this._listeners = [];
-    }
-    this._listeners.push(eventName, target, method, once);
+    this._addToListeners(eventName, target, method, once ? ListenerFlags.ONCE : ListenerFlags.NONE);
   }
 
-  _finalizeListeners() {
-    if (this._listenersFinalized) {
-      return;
+  private _addToListeners(
+    eventName: string,
+    target: object | null,
+    method: Function | string,
+    flags: ListenerFlags
+  ) {
+    let { _listeners: listeners } = this;
+    if (listeners === undefined) {
+      listeners = this._listeners = [];
     }
-    if (this._listeners === undefined) {
-      this._listeners = [];
-    }
-    let pointer = this.parent;
-    while (pointer !== null) {
-      let listeners = pointer._listeners;
-      if (listeners !== undefined) {
-        this._listeners = this._listeners.concat(listeners);
-      }
-      if (pointer._listenersFinalized) {
-        break;
-      }
-      pointer = pointer.parent;
-    }
-    this._listenersFinalized = true;
+    listeners.push(eventName, target, method, flags);
   }
 
-  removeFromListeners(eventName: string, target: any, method: Function | string): void {
-    let pointer: Meta | null = this;
-    while (pointer !== null) {
-      let listeners = pointer._listeners;
-      if (listeners !== undefined) {
-        for (let index = listeners.length - 4; index >= 0; index -= 4) {
-          if (
-            listeners[index] === eventName &&
-            (!method || (listeners[index + 1] === target && listeners[index + 2] === method))
-          ) {
-            if (pointer === this) {
-              listeners.splice(index, 4); // we are modifying our own list, so we edit directly
-            } else {
-              // we are trying to remove an inherited listener, so we do
-              // just-in-time copying to detach our own listeners from
-              // our inheritance chain.
-              this._finalizeListeners();
-              return this.removeFromListeners(eventName, target, method);
+  removeFromListeners(eventName: string, target: any, method?: Function | string): void {
+    this._addToListeners(
+      eventName,
+      target,
+      method === undefined ? ALL : method,
+      ListenerFlags.REMOVE
+    );
+  }
+
+  matchingListeners(eventName: string): PublicListeners | undefined {
+    let { parent } = this;
+    let result = parent === null ? undefined : parent.matchingListeners(eventName);
+    let { _listeners: listeners } = this;
+
+    if (listeners !== undefined) {
+      for (let index = 0; index < listeners.length; index += 4) {
+        if (listeners[index] === eventName) {
+          let target = listeners[index + 1] as object | null;
+          let method = listeners[index + 2] as Function | string;
+          let flags = listeners[index + 3] as ListenerFlags;
+          if ((flags & ListenerFlags.REMOVE) === ListenerFlags.REMOVE) {
+            if (result !== undefined) {
+              if (method === ALL) {
+                result = undefined;
+              } else {
+                removeListener(result, target, method);
+              }
             }
+          } else {
+            if (result === undefined) {
+              result = [] as PublicListeners;
+            }
+            pushUniqueListener(
+              result,
+              target,
+              method,
+              (flags & ListenerFlags.ONCE) === ListenerFlags.ONCE
+            );
           }
         }
       }
-      if (pointer._listenersFinalized) {
-        break;
-      }
-      pointer = pointer.parent;
     }
-  }
-
-  matchingListeners(eventName: string) {
-    let pointer: Meta | null = this;
-    // fix type
-    let result: any[] | undefined;
-    while (pointer !== null) {
-      let listeners = pointer._listeners;
-      if (listeners !== undefined) {
-        for (let index = 0; index < listeners.length; index += 4) {
-          if (listeners[index] === eventName) {
-            result = result || [];
-            pushUniqueListener(result, listeners, index);
-          }
-        }
-      }
-      if (pointer._listenersFinalized) {
-        break;
-      }
-      pointer = pointer.parent;
-    }
-    return result;
+    return result !== undefined && result.length === 0 ? undefined : result;
   }
 }
 
@@ -811,13 +806,29 @@ export { counters };
  allocations, without even bothering to do deduplication -- we can
  save that for dispatch time, if an event actually happens.
  */
-function pushUniqueListener(destination: any[], source: any[], index: number) {
-  let target = source[index + 1];
-  let method = source[index + 2];
-  for (let destinationIndex = 0; destinationIndex < destination.length; destinationIndex += 3) {
-    if (destination[destinationIndex] === target && destination[destinationIndex + 1] === method) {
+function pushUniqueListener(
+  destination: PublicListeners,
+  target: object | null,
+  method: Function | string,
+  once: boolean
+) {
+  for (let index = 0; index < destination.length; index += 3) {
+    if (destination[index] === target && destination[index + 1] === method) {
       return;
     }
   }
-  destination.push(target, method, source[index + 3]);
+  destination.push(target, method, once);
+}
+
+function removeListener(
+  destination: PublicListeners,
+  target: object | null,
+  method: Function | string
+) {
+  for (let index = 0; index < destination.length; index += 3) {
+    if (destination[index] === target && destination[index + 1] === method) {
+      destination.splice(index, 3);
+      break;
+    }
+  }
 }
