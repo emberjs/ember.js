@@ -321,12 +321,13 @@ export class Meta {
         : '',
       !this.isMetaDestroyed()
     );
-    let ret = this._chains;
+    let { _chains: ret } = this;
     if (ret === undefined) {
       this._chains = ret = create(this.source);
 
-      if (this.parent !== null) {
-        let parentChains = this.parent.writableChains(create);
+      let { parent } = this;
+      if (parent !== null) {
+        let parentChains = parent.writableChains(create);
         parentChains.copyTo(ret);
       }
     }
