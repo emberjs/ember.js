@@ -15,6 +15,11 @@ import addJQueryEventDeprecation from './jquery_event_deprecation';
 const ROOT_ELEMENT_CLASS = 'ember-application';
 const ROOT_ELEMENT_SELECTOR = `.${ROOT_ELEMENT_CLASS}`;
 
+const EVENT_MAP = {
+  mouseenter: 'mouseover',
+  mouseleave: 'mouseout',
+};
+
 /**
   `Ember.EventDispatcher` handles delegating browser events to their
   corresponding `Ember.Views.` For example, when you click on a view,
@@ -290,27 +295,86 @@ export default EmberObject.extend({
         }
       };
 
-      let handleEvent = (this._eventHandlers[event] = event => {
-        let target = event.target;
+      // Special handling of events that don't bubble (event delegation does not work).
+      // Mimics the way this is handled in jQuery,
+      // see https://github.com/jquery/jquery/blob/899c56f6ada26821e8af12d9f35fa039100e838e/src/event.js#L666-L700
+      if (EVENT_MAP[event] !== undefined) {
+        let mappedEventType = EVENT_MAP[event];
+        let origEventType = event;
 
-        do {
-          if (viewRegistry[target.id]) {
-            if (viewHandler(target, event) === false) {
-              event.preventDefault();
-              event.stopPropagation();
+        let createFakeEvent = (eventType, event) => {
+          let fakeEvent = document.createEvent('MouseEvent');
+          fakeEvent.initMouseEvent(
+            eventType,
+            false,
+            false,
+            event.view,
+            event.detail,
+            event.screenX,
+            event.screenY,
+            event.clientX,
+            event.clientY,
+            event.ctrlKey,
+            event.altKey,
+            event.shiftKey,
+            event.metaKey,
+            event.button,
+            event.relatedTarget
+          );
+
+          // fake event.target as we don't dispatch the event
+          Object.defineProperty(fakeEvent, 'target', { value: event.target, enumerable: true });
+
+          return fakeEvent;
+        };
+
+        let handleMappedEvent = (this._eventHandlers[mappedEventType] = event => {
+          let target = event.target;
+          let related = event.relatedTarget;
+
+          do {
+            // For mouseenter/leave call the handler if related is outside the target.
+            // No relatedTarget if the mouse left/entered the browser window
+            if (viewRegistry[target.id]) {
+              if (!related || (related !== target && !target.contains(related))) {
+                viewHandler(target, createFakeEvent(origEventType, event));
+              }
+              break;
+            } else if (target.hasAttribute('data-ember-action')) {
+              if (!related || (related !== target && !target.contains(related))) {
+                actionHandler(target, createFakeEvent(origEventType, event));
+              }
               break;
             }
-          } else if (target.hasAttribute('data-ember-action')) {
-            if (actionHandler(target, event) === false) {
-              break;
+
+            target = target.parentNode;
+          } while (target && target.nodeType === 1);
+        });
+
+        rootElement.addEventListener(mappedEventType, handleMappedEvent);
+      } else {
+        let handleEvent = (this._eventHandlers[event] = event => {
+          let target = event.target;
+
+          do {
+            if (viewRegistry[target.id]) {
+              if (viewHandler(target, event) === false) {
+                event.preventDefault();
+                event.stopPropagation();
+                break;
+              }
+            } else if (target.hasAttribute('data-ember-action')) {
+              if (actionHandler(target, event) === false) {
+                break;
+              }
             }
-          }
 
-          target = target.parentNode;
-        } while (target && target.nodeType === 1);
-      });
+            target = target.parentNode;
+          } while (target && target.nodeType === 1);
+        });
 
-      rootElement.addEventListener(event, handleEvent);
+        rootElement.addEventListener(event, handleEvent);
+      }
     } else {
       rootElement.on(`${event}.ember`, '.ember-view', function(evt) {
         let view = viewRegistry[this.id];
