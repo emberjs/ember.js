@@ -17,7 +17,7 @@ moduleFor(
     }
 
     ['@test should fail when using a reserved route name'](assert) {
-      let reservedNames = ['basic', 'object', 'application'];
+      let reservedNames = ['basic', 'application'];
 
       assert.expect(reservedNames.length);
 

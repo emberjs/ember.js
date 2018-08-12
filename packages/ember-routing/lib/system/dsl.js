@@ -26,7 +26,7 @@ class DSL {
           return true;
         }
 
-        return ['basic', 'object', 'application'].indexOf(name) === -1;
+        return ['basic', 'application'].indexOf(name) === -1;
       })()
     );
 
