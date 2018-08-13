@@ -3,8 +3,30 @@ import { readOnly } from '@ember/object/computed';
 import { shallowEqual, resemblesURL, extractRouteArgs } from '../utils';
 
 /**
-   The Router service is the public API that provides component/view layer
-   access to the router.
+   The Router service is the public API that provides access to the router.
+
+   The immediate benefit of the Router service is that you can inject it into components, 
+   giving them a friendly way to initiate transitions and ask questions about the current 
+   global router state.
+
+   In this example, the Router service is injected into a component to initiate a transaction 
+   to a dedicated route:
+   ```javascript
+   import Component from '@ember/component';
+   import { inject as service } from '@ember/service';
+
+   export default Component.extend({
+     router: service(),
+
+     actions: {
+       next() {
+         this.get('router').transitionTo('other.route');
+       }
+     }
+   });
+   ```
+
+   Like any service, it can also be injected into helpers, routes, etc.
 
    @public
    @class RouterService
