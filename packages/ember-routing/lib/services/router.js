@@ -3,8 +3,32 @@ import { readOnly } from '@ember/object/computed';
 import { shallowEqual, resemblesURL, extractRouteArgs } from '../utils';
 
 /**
-   The Router service is the public API that provides component/view layer
-   access to the router.
+   The Router service provides access to the router.
+   
+   It can be used to check the current route, initiate route transitions, and more.
+   
+   For example, it can be used to transition to a dedicated route if the 
+   application goes offline. Note that this is a boiled down example, 
+   in your app you should remove the event listener on service teardown.
+   
+   ```js
+   // app/services/network-connection.js
+   
+   import Service, { inject as service } from '@ember/service';
+
+   export default Service.extend({
+     router: service(),
+     
+     init() {
+       this._super();
+       
+       window.addEventListener('offline', () => {
+         this.get('router').transitionTo('offline');
+       });
+     },
+     
+   });
+   ```
 
    @public
    @class RouterService
