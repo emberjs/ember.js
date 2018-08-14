@@ -394,7 +394,7 @@ const Application = Engine.extend({
   /**
     Create an ApplicationInstance for this application.
 
-    @private
+    @public
     @method buildInstance
     @return {ApplicationInstance} the application instance
   */
