@@ -38,7 +38,7 @@ export const BOUNDS = symbol('BOUNDS');
 
   The easiest way to create a `Component` is via
   a template. If you name a template
-  `app/components/my-foo.hbs`, you will be able to use
+  `app/templates/components/my-foo.hbs`, you will be able to use
   `{{my-foo}}` in other templates, which will make
   an instance of the isolated component.
 
