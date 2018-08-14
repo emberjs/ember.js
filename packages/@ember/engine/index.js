@@ -75,7 +75,7 @@ const Engine = Namespace.extend(RegistryProxyMixin, {
   /**
     Create an EngineInstance for this engine.
 
-    @private
+    @public
     @method buildInstance
     @return {EngineInstance} the engine instance
   */
