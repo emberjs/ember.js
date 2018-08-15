@@ -96,11 +96,14 @@ class Tracker {
 
   @param dependencies Optional dependents to be tracked.
  */
-export function tracked(
-  _target: object,
-  key: string,
-  descriptor: PropertyDescriptor
-): PropertyDescriptor {
+export function tracked(...dependencies: string[]): MethodDecorator;
+export function tracked(target: any, key: any): any;
+export function tracked(target: any, key: any, descriptor: PropertyDescriptor): PropertyDescriptor;
+export function tracked(...dependencies: any[]): any {
+  let [, key, descriptor] = dependencies;
+
+  if (!descriptor) return;
+
   if ('value' in descriptor) {
     return descriptorForDataProperty(key, descriptor);
   } else {
