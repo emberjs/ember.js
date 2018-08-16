@@ -15,7 +15,7 @@
   });
   ```
 
-  ```app/components/person-profile.hbs
+  ```app/templates/components/person-profile.hbs
   {{name}}
   <div>{{name}}</div>
   <span data-name={{name}}></span>
