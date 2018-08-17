@@ -1,4 +1,10 @@
-import { Mixin, addListener, removeListener, hasListeners, sendEvent } from '@ember/-internals/metal';
+import {
+  Mixin,
+  addListener,
+  removeListener,
+  hasListeners,
+  sendEvent,
+} from '@ember/-internals/metal';
 
 /**
 @module @ember/object

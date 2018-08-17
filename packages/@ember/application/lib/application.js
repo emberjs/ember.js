@@ -8,7 +8,11 @@ import { hasDOM } from '@ember/-internals/browser-environment';
 import { assert, isTesting } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { bind, join, once, run, schedule } from '@ember/runloop';
-import { libraries, processAllNamespaces, setNamespaceSearchDisabled } from '@ember/-internals/metal';
+import {
+  libraries,
+  processAllNamespaces,
+  setNamespaceSearchDisabled,
+} from '@ember/-internals/metal';
 import { _loaded, runLoadHooks } from './lazy_load';
 import { RSVP } from 'ember-runtime';
 import { EventDispatcher, jQuery, jQueryDisabled } from '@ember/-internals/views';

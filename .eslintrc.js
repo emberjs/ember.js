@@ -86,6 +86,7 @@ module.exports = {
       files: [
         'packages/*/tests/**/*.js',
         'packages/@ember/*/tests/**/*.js',
+        'packages/@ember/-internals/*/tests/**/*.js',
         'packages/internal-test-helpers/**/*.js',
       ],
       env: {

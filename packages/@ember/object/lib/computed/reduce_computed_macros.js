@@ -2,7 +2,13 @@
 @module @ember/object
 */
 import { assert } from '@ember/debug';
-import { get, ComputedProperty, addObserver, removeObserver, getProperties } from '@ember/-internals/metal';
+import {
+  get,
+  ComputedProperty,
+  addObserver,
+  removeObserver,
+  getProperties,
+} from '@ember/-internals/metal';
 import { compare, isArray, A as emberA, uniqBy as uniqByArray } from 'ember-runtime';
 
 function reduceMacro(dependentKey, callback, initialValue, name) {

@@ -1,4 +1,12 @@
-import { alias, computed, set, get, getWithDefault, observer, defineProperty } from '@ember/-internals/metal';
+import {
+  alias,
+  computed,
+  set,
+  get,
+  getWithDefault,
+  observer,
+  defineProperty,
+} from '@ember/-internals/metal';
 import { oneWay as reads } from '@ember/object/computed';
 import EmberObject from '../../../lib/system/object';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';

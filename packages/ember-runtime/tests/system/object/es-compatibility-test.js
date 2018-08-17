@@ -1,5 +1,12 @@
 import EmberObject from '../../../lib/system/object';
-import { Mixin, defineProperty, computed, addObserver, addListener, sendEvent } from '@ember/-internals/metal';
+import {
+  Mixin,
+  defineProperty,
+  computed,
+  addObserver,
+  addListener,
+  sendEvent,
+} from '@ember/-internals/metal';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
