@@ -1,7 +1,7 @@
 import { get, set, notifyPropertyChange } from '@ember/-internals/metal';
 import { applyMixins, strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
-import { A as emberA, ArrayProxy, RSVP } from 'ember-runtime';
+import { A as emberA, ArrayProxy, RSVP } from '@ember/-internals/runtime';
 import { Component } from '../../utils/helpers';
 import { HAS_NATIVE_SYMBOL } from '@ember/-internals/utils';
 

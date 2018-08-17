@@ -5,7 +5,7 @@ import { compile } from 'ember-template-compiler';
 import { ENV } from '@ember/-internals/environment';
 import { Route, NoneLocation, HistoryLocation } from 'ember-routing';
 import Controller from '@ember/controller';
-import { Object as EmberObject, A as emberA } from 'ember-runtime';
+import { Object as EmberObject, A as emberA } from '@ember/-internals/runtime';
 import { moduleFor, ApplicationTestCase, runDestroy } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
 import { Mixin, computed, set, addObserver, observer } from '@ember/-internals/metal';

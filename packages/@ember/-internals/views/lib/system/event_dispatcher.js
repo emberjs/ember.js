@@ -6,7 +6,7 @@ import { getOwner } from '@ember/-internals/owner';
 import { assign } from '@ember/polyfills';
 import { assert } from '@ember/debug';
 import { get, set } from '@ember/-internals/metal';
-import { Object as EmberObject } from 'ember-runtime';
+import { Object as EmberObject } from '@ember/-internals/runtime';
 import jQuery, { jQueryDisabled } from './jquery';
 import ActionManager from './action_manager';
 import fallbackViewRegistry from '../compat/fallback-view-registry';

@@ -4,7 +4,7 @@ import { strip } from '../../utils/abstract-test-case';
 import { set, Mixin } from '@ember/-internals/metal';
 import { Component } from '../../utils/helpers';
 import Controller from '@ember/controller';
-import { Object as EmberObject } from 'ember-runtime';
+import { Object as EmberObject } from '@ember/-internals/runtime';
 import { Route } from 'ember-routing';
 
 function expectSendActionDeprecation(fn) {

@@ -8,7 +8,7 @@ import {
   A as emberA,
   ArrayProxy,
   removeAt,
-} from 'ember-runtime';
+} from '@ember/-internals/runtime';
 import { Component } from './helpers';
 
 class AbstractConditionalsTest extends RenderingTest {

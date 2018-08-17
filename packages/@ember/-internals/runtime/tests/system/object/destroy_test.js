@@ -12,7 +12,7 @@ import { DEBUG } from '@glimmer/env';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
-  'ember-runtime/system/object/destroy_test',
+  '@ember/-internals/runtime/system/object/destroy_test',
   class extends AbstractTestCase {
     ['@test should schedule objects to be destroyed at the end of the run loop'](assert) {
       let obj = EmberObject.create();

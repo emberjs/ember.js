@@ -9,7 +9,7 @@ import {
   removeObserver,
   getProperties,
 } from '@ember/-internals/metal';
-import { compare, isArray, A as emberA, uniqBy as uniqByArray } from 'ember-runtime';
+import { compare, isArray, A as emberA, uniqBy as uniqByArray } from '@ember/-internals/runtime';
 
 function reduceMacro(dependentKey, callback, initialValue, name) {
   assert(

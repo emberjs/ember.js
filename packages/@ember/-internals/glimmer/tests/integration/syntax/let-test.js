@@ -1,5 +1,5 @@
 import { get, set } from '@ember/-internals/metal';
-import { A as emberA, ObjectProxy, removeAt } from 'ember-runtime';
+import { A as emberA, ObjectProxy, removeAt } from '@ember/-internals/runtime';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { strip } from '../../utils/abstract-test-case';
 import { EMBER_TEMPLATE_BLOCK_LET_HELPER } from '@ember/canary-features';

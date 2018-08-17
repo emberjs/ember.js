@@ -8,7 +8,7 @@ import {
 } from '@ember/instrumentation';
 import { EMBER_IMPROVED_INSTRUMENTATION } from '@ember/canary-features';
 
-import { Object as EmberObject, A as emberA } from 'ember-runtime';
+import { Object as EmberObject, A as emberA } from '@ember/-internals/runtime';
 
 import { ActionManager } from '@ember/-internals/views';
 

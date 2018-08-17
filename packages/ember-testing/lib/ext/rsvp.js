@@ -1,4 +1,4 @@
-import { RSVP } from 'ember-runtime';
+import { RSVP } from '@ember/-internals/runtime';
 import { backburner } from '@ember/runloop';
 import { isTesting } from '@ember/debug';
 import { asyncStart, asyncEnd } from '../test/adapter';

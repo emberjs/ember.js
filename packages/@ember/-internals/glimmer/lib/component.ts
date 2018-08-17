@@ -1,5 +1,6 @@
 import { get, PROPERTY_DID_CHANGE } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
+import { TargetActionSupport } from '@ember/-internals/runtime';
 import { symbol } from '@ember/-internals/utils';
 import {
   ActionSupport,
@@ -13,7 +14,6 @@ import {
 import { assert } from '@ember/debug';
 import { DirtyableTag } from '@glimmer/reference';
 import { normalizeProperty, SVG_NAMESPACE } from '@glimmer/runtime';
-import { TargetActionSupport } from 'ember-runtime';
 
 import { RootReference, UPDATE } from './utils/references';
 

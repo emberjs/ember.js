@@ -3,10 +3,10 @@
 */
 
 import { Factory } from '@ember/-internals/owner';
+import { FrameworkObject } from '@ember/-internals/runtime';
 import { symbol } from '@ember/-internals/utils';
 import { Dict, Opaque } from '@glimmer/interfaces';
 import { DirtyableTag } from '@glimmer/reference';
-import { FrameworkObject } from 'ember-runtime';
 
 export const RECOMPUTE_TAG = symbol('RECOMPUTE_TAG');
 

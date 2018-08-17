@@ -1,6 +1,6 @@
 import { get, set } from '@ember/-internals/metal';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
-import { Object as EmberObject, ObjectProxy } from 'ember-runtime';
+import { Object as EmberObject, ObjectProxy } from '@ember/-internals/runtime';
 import { strip } from '../../utils/abstract-test-case';
 import { HAS_NATIVE_SYMBOL } from '@ember/-internals/utils';
 import { applyMixins } from '../../utils/abstract-test-case';

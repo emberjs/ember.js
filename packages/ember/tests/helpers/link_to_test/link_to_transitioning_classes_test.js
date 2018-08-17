@@ -1,4 +1,4 @@
-import { RSVP } from 'ember-runtime';
+import { RSVP } from '@ember/-internals/runtime';
 import { Route } from 'ember-routing';
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 

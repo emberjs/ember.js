@@ -4,7 +4,7 @@ import { moduleFor, DefaultResolverApplicationTestCase } from 'internal-test-hel
 import { context } from '@ember/-internals/environment';
 import Controller from '@ember/controller';
 import Service from '@ember/service';
-import { Object as EmberObject, Namespace } from 'ember-runtime';
+import { Object as EmberObject, Namespace } from '@ember/-internals/runtime';
 import { Route } from 'ember-routing';
 import { Component, Helper, helper as makeHelper } from '@ember/-internals/glimmer';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';

@@ -2,7 +2,7 @@
 @module ember
 */
 import { checkWaiters } from '../test/waiters';
-import { RSVP } from 'ember-runtime';
+import { RSVP } from '@ember/-internals/runtime';
 import { getCurrentRunLoop, hasScheduledTimers, run } from '@ember/runloop';
 import { pendingRequests } from '../test/pending_requests';
 

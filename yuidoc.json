@@ -9,8 +9,6 @@
       "packages/ember-utils/lib",
       "packages/ember-console/lib",
       "packages/ember-debug/lib",
-      "packages/ember-runtime/lib",
-      "packages/ember-views/lib",
       "packages/ember-routing/lib",
       "packages/ember-routing-views/lib",
       "packages/ember-application/lib",

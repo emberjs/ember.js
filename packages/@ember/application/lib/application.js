@@ -14,7 +14,7 @@ import {
   setNamespaceSearchDisabled,
 } from '@ember/-internals/metal';
 import { _loaded, runLoadHooks } from './lazy_load';
-import { RSVP } from 'ember-runtime';
+import { RSVP } from '@ember/-internals/runtime';
 import { EventDispatcher, jQuery, jQueryDisabled } from '@ember/-internals/views';
 import {
   Route,

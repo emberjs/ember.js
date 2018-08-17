@@ -1,6 +1,6 @@
 import { context } from '@ember/-internals/environment';
 import { run } from '@ember/runloop';
-import { Object as EmberObject } from 'ember-runtime';
+import { Object as EmberObject } from '@ember/-internals/runtime';
 import EmberApplication from '@ember/application';
 import { moduleFor, AbstractTestCase as TestCase } from 'internal-test-helpers';
 

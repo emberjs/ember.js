@@ -3,7 +3,7 @@
 */
 
 import { get, set, Mixin } from '@ember/-internals/metal';
-import { TargetActionSupport } from 'ember-runtime';
+import { TargetActionSupport } from '@ember/-internals/runtime';
 import { deprecate } from '@ember/debug';
 import { SEND_ACTION } from '@ember/deprecated-features';
 

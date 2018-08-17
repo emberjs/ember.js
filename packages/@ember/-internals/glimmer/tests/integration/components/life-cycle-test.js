@@ -1,6 +1,6 @@
 import { schedule } from '@ember/runloop';
 import { set, setProperties } from '@ember/-internals/metal';
-import { A as emberA } from 'ember-runtime';
+import { A as emberA } from '@ember/-internals/runtime';
 import { Component } from '../../utils/helpers';
 import { strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';

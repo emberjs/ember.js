@@ -1,7 +1,7 @@
 import { moduleFor, AutobootApplicationTestCase } from 'internal-test-helpers';
 import Test from '../lib/test';
 
-import { A as emberA } from 'ember-runtime';
+import { A as emberA } from '@ember/-internals/runtime';
 import { Route } from 'ember-routing';
 import { jQueryDisabled } from '@ember/-internals/views';
 

@@ -1,4 +1,4 @@
-import { Object as EmberObject } from 'ember-runtime';
+import { Object as EmberObject } from '@ember/-internals/runtime';
 import ControllerMixin from './lib/controller_mixin';
 import { InjectedProperty } from '@ember/-internals/metal';
 

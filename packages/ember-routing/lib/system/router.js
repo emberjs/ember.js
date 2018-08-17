@@ -4,7 +4,7 @@ import { cancel, once, run, scheduleOnce, schedule } from '@ember/runloop';
 import { get, set, defineProperty, computed } from '@ember/-internals/metal';
 import EmberError from '@ember/error';
 import { assert, deprecate, info } from '@ember/debug';
-import { Object as EmberObject, Evented, typeOf, A as emberA } from 'ember-runtime';
+import { Object as EmberObject, Evented, typeOf, A as emberA } from '@ember/-internals/runtime';
 import { defaultSerialize, hasDefaultSerialize } from './route';
 import EmberRouterDSL from './dsl';
 import EmberLocation from '../location/api';

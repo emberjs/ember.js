@@ -6,7 +6,7 @@ import { run, schedule } from '@ember/runloop';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
-  'ember-runtime/mixins/container_proxy',
+  '@ember/-internals/runtime/mixins/container_proxy',
   class extends AbstractTestCase {
     beforeEach() {
       this.Owner = EmberObject.extend(ContainerProxy);

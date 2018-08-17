@@ -4,7 +4,7 @@ import ApplicationInstance from '@ember/application/instance';
 import { run } from '@ember/runloop';
 import { privatize as P } from 'container';
 import { factory } from 'internal-test-helpers';
-import { Object as EmberObject } from 'ember-runtime';
+import { Object as EmberObject } from '@ember/-internals/runtime';
 import { moduleFor, AbstractTestCase as TestCase } from 'internal-test-helpers';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 

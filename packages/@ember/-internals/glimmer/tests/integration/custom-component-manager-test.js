@@ -1,5 +1,5 @@
 import { moduleFor, RenderingTest } from '../utils/test-case';
-import { Object as EmberObject } from 'ember-runtime';
+import { Object as EmberObject } from '@ember/-internals/runtime';
 import { set, setProperties, computed } from '@ember/-internals/metal';
 import {
   GLIMMER_CUSTOM_COMPONENT_MANAGER,

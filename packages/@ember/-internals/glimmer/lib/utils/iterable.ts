@@ -1,4 +1,5 @@
 import { get, objectAt, tagFor, tagForProperty } from '@ember/-internals/metal';
+import { _contentFor, isEmberArray } from '@ember/-internals/runtime';
 import { guidFor, HAS_NATIVE_SYMBOL, isProxy } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import {
@@ -12,7 +13,6 @@ import {
   VersionedReference,
 } from '@glimmer/reference';
 import { Opaque, Option } from '@glimmer/util';
-import { _contentFor, isEmberArray } from 'ember-runtime';
 import { isEachIn } from '../helpers/each-in';
 import { UpdatableReference } from './references';
 

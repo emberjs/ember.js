@@ -1,6 +1,6 @@
 import { EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION } from '@ember/canary-features';
 import { assert } from '@ember/debug';
-import { Object as EmberObject } from 'ember-runtime';
+import { Object as EmberObject } from '@ember/-internals/runtime';
 
 export default EmberObject.extend({
   componentFor(name, owner, options) {

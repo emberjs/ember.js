@@ -1,5 +1,5 @@
+import { isArray } from '@ember/-internals/runtime';
 import { Opaque } from '@glimmer/interfaces';
-import { isArray } from 'ember-runtime';
 
 export default function toBool(predicate: Opaque): boolean {
   if (isArray(predicate)) {

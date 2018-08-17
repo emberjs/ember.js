@@ -89,7 +89,7 @@ import {
   CoreObject,
   NativeArray,
   A,
-} from 'ember-runtime';
+} from '@ember/-internals/runtime';
 import {
   Checkbox,
   Component,
@@ -370,7 +370,7 @@ if (LOGGER) {
   Ember.Logger = Logger;
 }
 
-// ****ember-runtime****
+// ****@ember/-internals/runtime****
 Ember.A = A;
 Ember.String = {
   loc,
