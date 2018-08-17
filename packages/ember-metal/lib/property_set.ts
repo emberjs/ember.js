@@ -1,9 +1,9 @@
+import { HAS_NATIVE_PROXY, toString } from '@ember/-internals/utils';
 import { assert, deprecate } from '@ember/debug';
 import { PROPERTY_BASED_DESCRIPTORS } from '@ember/deprecated-features';
 import EmberError from '@ember/error';
 import { DEBUG } from '@glimmer/env';
 import { descriptorFor, isDescriptor, Meta, meta, peekMeta } from 'ember-meta';
-import { HAS_NATIVE_PROXY, toString } from 'ember-utils';
 import { isPath } from './path_cache';
 import { Descriptor, MandatorySetterFunction } from './properties';
 import { notifyPropertyChange } from './property_events';

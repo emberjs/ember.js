@@ -1,3 +1,4 @@
+import { isProxy, symbol } from '@ember/-internals/utils';
 import { DEBUG } from '@glimmer/env';
 import { Opaque } from '@glimmer/interfaces';
 import {
@@ -21,7 +22,6 @@ import {
 } from '@glimmer/runtime';
 import { Option } from '@glimmer/util';
 import { didRender, get, set, tagFor, tagForProperty, watchKey } from 'ember-metal';
-import { isProxy, symbol } from 'ember-utils';
 import { HelperFunction, HelperInstance, RECOMPUTE_TAG } from '../helper';
 import emberToBool from './to-bool';
 

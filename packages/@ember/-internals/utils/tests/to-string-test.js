@@ -2,7 +2,7 @@ import { toString } from '..';
 import { moduleFor, AbstractTestCase as TestCase } from 'internal-test-helpers';
 
 moduleFor(
-  'ember-utils toString',
+  '@ember/-internals/utils toString',
   class extends TestCase {
     [`@test toString uses an object's toString method when available`](assert) {
       let obj = {

@@ -1,9 +1,9 @@
 /**
 @module ember
 */
+import { symbol } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { Arguments, VM } from '@glimmer/runtime';
-import { symbol } from 'ember-utils';
 import { INVOKE, UPDATE } from '../utils/references';
 
 /**

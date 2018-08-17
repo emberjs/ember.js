@@ -1,12 +1,6 @@
 /**
 @module @ember/object
 */
-import { assert } from '@ember/debug';
-import { BINDING_SUPPORT } from '@ember/deprecated-features';
-import { assign } from '@ember/polyfills';
-import { DEBUG } from '@glimmer/env';
-import { ENV } from 'ember-environment';
-import { descriptorFor, Meta, meta as metaFor, peekMeta } from 'ember-meta';
 import {
   getListeners,
   getObservers,
@@ -16,7 +10,13 @@ import {
   ROOT,
   setObservers,
   wrap,
-} from 'ember-utils';
+} from '@ember/-internals/utils';
+import { assert } from '@ember/debug';
+import { BINDING_SUPPORT } from '@ember/deprecated-features';
+import { assign } from '@ember/polyfills';
+import { DEBUG } from '@glimmer/env';
+import { ENV } from 'ember-environment';
+import { descriptorFor, Meta, meta as metaFor, peekMeta } from 'ember-meta';
 import { ComputedProperty, ComputedPropertyGetter, ComputedPropertySetter } from './computed';
 import { addListener, removeListener } from './events';
 import expandProperties from './expand_properties';

@@ -2,7 +2,7 @@
 @module @ember/engine
 */
 
-import { guidFor } from 'ember-utils';
+import { guidFor } from '@ember/-internals/utils';
 import {
   Object as EmberObject,
   ContainerProxyMixin,

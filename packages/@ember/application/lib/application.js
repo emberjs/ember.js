@@ -2,7 +2,7 @@
 @module @ember/application
 */
 
-import { dictionary } from 'ember-utils';
+import { dictionary } from '@ember/-internals/utils';
 import { ENV } from 'ember-environment';
 import { hasDOM } from 'ember-browser-environment';
 import { assert, isTesting } from '@ember/debug';

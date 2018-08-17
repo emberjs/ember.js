@@ -1,7 +1,7 @@
 /**
  @module ember
 */
-import { inspect } from 'ember-utils';
+import { inspect } from '@ember/-internals/utils';
 import { Mixin, get } from 'ember-metal';
 import { assert, deprecate } from '@ember/debug';
 import { MUTABLE_CELL } from '../compat/attrs';

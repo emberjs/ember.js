@@ -1,3 +1,4 @@
+import { symbol } from '@ember/-internals/utils';
 import { deprecate } from '@ember/debug';
 import {
   PROPERTY_DID_CHANGE as ENABLE_PROPERTY_DID_CHANGE,
@@ -5,7 +6,6 @@ import {
 } from '@ember/deprecated-features';
 import { DEBUG } from '@glimmer/env';
 import { descriptorFor, Meta, peekMeta } from 'ember-meta';
-import { symbol } from 'ember-utils';
 import changeEvent from './change_event';
 import { sendEvent } from './events';
 import ObserverSet from './observer_set';

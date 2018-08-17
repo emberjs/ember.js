@@ -1,10 +1,10 @@
+import { dictionary, intern } from '@ember/-internals/utils';
 import { assert, deprecate } from '@ember/debug';
 import { REGISTRY_RESOLVER_AS_FUNCTION } from '@ember/deprecated-features';
 import { assign } from '@ember/polyfills';
 import { DEBUG } from '@glimmer/env';
 import { ENV } from 'ember-environment';
 import { Factory, LookupOptions } from 'ember-owner';
-import { dictionary, intern } from 'ember-utils';
 import Container, { ContainerOptions, LazyInjection } from './container';
 
 interface HasOptions {

@@ -7,7 +7,7 @@ import {
 } from '@ember/instrumentation';
 import { EMBER_IMPROVED_INSTRUMENTATION } from '@ember/canary-features';
 import { jQueryDisabled, jQuery } from 'ember-views';
-import { HAS_NATIVE_PROXY } from 'ember-utils';
+import { HAS_NATIVE_PROXY } from '@ember/-internals/utils';
 import { DEBUG } from '@glimmer/env';
 
 let canDataTransfer = !!document.createEvent('HTMLEvents').dataTransfer;

@@ -98,8 +98,8 @@ module.exports = function() {
         'ember-glimmer/lib/**',
         'ember-metal/index.js',
         'ember-metal/lib/**',
-        'ember-utils/index.js',
-        'ember-utils/lib/**',
+        '@ember/-internals/utils/index.js',
+        '@ember/-internals/utils/lib/**',
       ],
     }),
     rollupPackage(packagesES, 'container'),
@@ -107,7 +107,7 @@ module.exports = function() {
     rollupPackage(packagesES, 'ember-browser-environment'),
     rollupPackage(packagesES, 'ember-glimmer'),
     rollupPackage(packagesES, 'ember-metal'),
-    rollupPackage(packagesES, 'ember-utils'),
+    rollupPackage(packagesES, '@ember/-internals/utils'),
   ]);
 
   // ES5
@@ -189,6 +189,7 @@ module.exports = function() {
     return new MergeTrees([
       new Funnel(packagesES5, {
         include: [
+          '@ember/-internals/utils.js',
           '@ember/canary-features/**',
           '@ember/debug/index.js',
           '@ember/debug/lib/**',
@@ -200,7 +201,6 @@ module.exports = function() {
           'ember-environment.js',
           'ember-browser-environment.js',
           'ember-template-compiler/**',
-          'ember-utils.js',
         ],
       }),
       bootstrapModule('ember-template-compiler', 'umd'),

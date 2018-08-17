@@ -1,4 +1,4 @@
-import { guidFor } from 'ember-utils';
+import { guidFor } from '@ember/-internals/utils';
 import { descriptorFor } from 'ember-meta';
 import { descriptor, Mixin } from 'ember-metal';
 import { assert } from '@ember/debug';

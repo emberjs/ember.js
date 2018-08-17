@@ -1,12 +1,12 @@
 /**
 @module @ember/object
 */
+import { HAS_NATIVE_PROXY, symbol, toString } from '@ember/-internals/utils';
 import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { assert, deprecate } from '@ember/debug';
 import { PROPERTY_BASED_DESCRIPTORS } from '@ember/deprecated-features';
 import { DEBUG } from '@glimmer/env';
 import { descriptorFor, isDescriptor, meta } from 'ember-meta';
-import { HAS_NATIVE_PROXY, symbol, toString } from 'ember-utils';
 import { isPath } from './path_cache';
 import { tagForProperty } from './tags';
 import { getCurrentTracker } from './tracked';

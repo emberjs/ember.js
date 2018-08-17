@@ -2,11 +2,11 @@
 @module @ember/component
 */
 
+import { symbol } from '@ember/-internals/utils';
 import { Dict, Opaque } from '@glimmer/interfaces';
 import { DirtyableTag } from '@glimmer/reference';
 import { Factory } from 'ember-owner';
 import { FrameworkObject } from 'ember-runtime';
-import { symbol } from 'ember-utils';
 
 export const RECOMPUTE_TAG = symbol('RECOMPUTE_TAG');
 

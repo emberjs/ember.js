@@ -2,7 +2,7 @@
 @module @ember/application
 */
 
-import { dictionary } from 'ember-utils';
+import { dictionary } from '@ember/-internals/utils';
 import { get, findNamespace } from 'ember-metal';
 import { assert, info } from '@ember/debug';
 import { capitalize, classify, dasherize, decamelize } from '@ember/string';

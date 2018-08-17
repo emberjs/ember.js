@@ -1,3 +1,4 @@
+import { uuid } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { join } from '@ember/runloop';
@@ -11,7 +12,6 @@ import {
   ModifierManager,
 } from '@glimmer/runtime';
 import { Destroyable } from '@glimmer/util';
-import { uuid } from 'ember-utils';
 import { ActionManager, isSimpleClick } from 'ember-views';
 import { INVOKE } from '../utils/references';
 

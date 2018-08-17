@@ -29,7 +29,7 @@ export interface Owner {
   hasRegistration(name: string, options?: LookupOptions): boolean;
 }
 
-import { symbol } from 'ember-utils';
+import { symbol } from '@ember/-internals/utils';
 
 export const OWNER = symbol('OWNER');
 

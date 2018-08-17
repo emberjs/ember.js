@@ -1,3 +1,4 @@
+import { lookupDescriptor } from '@ember/-internals/utils';
 import { DEBUG } from '@glimmer/env';
 import {
   descriptorFor,
@@ -7,7 +8,6 @@ import {
   peekMeta,
   UNDEFINED,
 } from 'ember-meta';
-import { lookupDescriptor } from 'ember-utils';
 import {
   DEFAULT_GETTER_FUNCTION,
   INHERITING_GETTER_FUNCTION,

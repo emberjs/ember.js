@@ -2,7 +2,7 @@
 // as well as methods vs props.  We are just keeping these for testing; the
 // current impl doesn't care about the differences as much...
 
-import { guidFor, NAME_KEY } from 'ember-utils';
+import { guidFor, NAME_KEY } from '@ember/-internals/utils';
 import { mixin, Mixin } from '../..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 

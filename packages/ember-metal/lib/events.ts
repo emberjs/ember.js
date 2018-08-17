@@ -1,11 +1,11 @@
 /**
 @module @ember/object
 */
+import { setListeners } from '@ember/-internals/utils';
 import { assert, deprecate } from '@ember/debug';
 import { DID_INIT_ATTRS } from '@ember/deprecated-features';
 import { ENV } from 'ember-environment';
 import { Meta, meta as metaFor, peekMeta } from 'ember-meta';
-import { setListeners } from 'ember-utils';
 
 /*
   The event system uses a series of nested hashes to store listeners on an

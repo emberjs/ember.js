@@ -1,3 +1,4 @@
+import { guidFor } from '@ember/-internals/utils';
 import { assert, deprecate } from '@ember/debug';
 import { POSITIONAL_PARAM_CONFLICT } from '@ember/deprecated-features';
 import { _instrumentStart } from '@ember/instrumentation';
@@ -28,7 +29,6 @@ import { privatize as P } from 'container';
 import { ENV } from 'ember-environment';
 import { get } from 'ember-metal';
 import { getOwner } from 'ember-owner';
-import { guidFor } from 'ember-utils';
 import { addChildView, OwnedTemplateMeta, setViewElement } from 'ember-views';
 import { BOUNDS, DIRTY_TAG, HAS_BLOCK, IS_DISPATCHING_ATTRS, ROOT_REF } from '../component';
 import Environment from '../environment';

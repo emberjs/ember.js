@@ -1,10 +1,10 @@
 /**
 @module ember
 */
+import { symbol } from '@ember/-internals/utils';
 import { Tag, VersionedPathReference } from '@glimmer/reference';
 import { Arguments, VM } from '@glimmer/runtime';
 import { Opaque } from '@glimmer/util';
-import { symbol } from 'ember-utils';
 
 /**
   The `{{#each}}` helper loops over elements in a collection. It is an extension

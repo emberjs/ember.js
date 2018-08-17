@@ -1,5 +1,5 @@
 import { run } from '@ember/runloop';
-import { guidFor, setName } from 'ember-utils';
+import { guidFor, setName } from '@ember/-internals/utils';
 import { context } from 'ember-environment';
 import EmberObject from '../../../lib/system/object';
 import Namespace from '../../../lib/system/namespace';

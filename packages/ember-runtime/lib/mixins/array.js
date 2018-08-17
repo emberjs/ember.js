@@ -5,7 +5,7 @@
 import { ARRAY_AT_EACH } from '@ember/deprecated-features';
 import { DEBUG } from '@glimmer/env';
 import { PROXY_CONTENT } from 'ember-metal';
-import { symbol, toString, HAS_NATIVE_PROXY, tryInvoke } from 'ember-utils';
+import { symbol, toString, HAS_NATIVE_PROXY, tryInvoke } from '@ember/-internals/utils';
 import {
   get,
   set,

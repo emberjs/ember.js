@@ -1,9 +1,9 @@
+import { lookupDescriptor, symbol, toString } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { BINDING_SUPPORT } from '@ember/deprecated-features';
 import { DEBUG } from '@glimmer/env';
 import { Tag } from '@glimmer/reference';
 import { ENV } from 'ember-environment';
-import { lookupDescriptor, symbol, toString } from 'ember-utils';
 
 const objectPrototype = Object.prototype;
 

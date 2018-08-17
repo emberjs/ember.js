@@ -4,7 +4,7 @@
 
 export { getEngineParent, setEngineParent } from './lib/engine-parent';
 
-import { canInvoke } from 'ember-utils';
+import { canInvoke } from '@ember/-internals/utils';
 import Controller from '@ember/controller';
 import { Namespace, RegistryProxyMixin } from 'ember-runtime';
 import { Registry, privatize as P } from 'container';

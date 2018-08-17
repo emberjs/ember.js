@@ -13,7 +13,7 @@ import {
   HAS_NATIVE_PROXY,
   WeakSet,
   isInternalSymbol,
-} from 'ember-utils';
+} from '@ember/-internals/utils';
 import { schedule } from '@ember/runloop';
 import { descriptorFor, meta, peekMeta, deleteMeta } from 'ember-meta';
 import {

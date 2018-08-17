@@ -1,3 +1,4 @@
+import { guidFor, HAS_NATIVE_SYMBOL, isProxy } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import {
   AbstractIterable,
@@ -12,7 +13,6 @@ import {
 import { Opaque, Option } from '@glimmer/util';
 import { get, objectAt, tagFor, tagForProperty } from 'ember-metal';
 import { _contentFor, isEmberArray } from 'ember-runtime';
-import { guidFor, HAS_NATIVE_SYMBOL, isProxy } from 'ember-utils';
 import { isEachIn } from '../helpers/each-in';
 import { UpdatableReference } from './references';
 

@@ -6,7 +6,7 @@ import { strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { getViewId, getViewElement, jQueryDisabled } from 'ember-views';
 import { classes } from '../../utils/test-helpers';
-import { tryInvoke } from 'ember-utils';
+import { tryInvoke } from '@ember/-internals/utils';
 import { runAppend } from 'internal-test-helpers';
 
 class LifeCycleHooksTest extends RenderingTest {

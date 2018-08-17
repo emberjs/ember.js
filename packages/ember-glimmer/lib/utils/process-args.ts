@@ -1,5 +1,5 @@
+import { symbol } from '@ember/-internals/utils';
 import { CapturedNamedArguments } from '@glimmer/runtime';
-import { symbol } from 'ember-utils';
 import { MUTABLE_CELL } from 'ember-views';
 import { ARGS } from '../component';
 import { ACTION, UPDATE } from './references';

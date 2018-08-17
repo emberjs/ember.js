@@ -51,20 +51,21 @@ let allExports = [
   ['ENV', 'ember-environment', { get: 'getENV' }],
   ['lookup', 'ember-environment', { get: 'getLookup', set: 'setLookup' }],
 
-  // ember-utils
   ['getOwner', '@ember/application', 'getOwner'],
   ['setOwner', '@ember/application', 'setOwner'],
   ['assign', '@ember/polyfills'],
-  ['GUID_KEY', 'ember-utils'],
-  ['uuid', 'ember-utils'],
-  ['generateGuid', 'ember-utils'],
-  ['guidFor', 'ember-utils'],
-  ['inspect', 'ember-utils'],
-  ['makeArray', 'ember-utils'],
-  ['canInvoke', 'ember-utils'],
-  ['tryInvoke', 'ember-utils'],
-  ['wrap', 'ember-utils'],
-  ['NAME_KEY', 'ember-utils'],
+
+  // @ember/-internals/utils
+  ['GUID_KEY', '@ember/-internals/utils'],
+  ['uuid', '@ember/-internals/utils'],
+  ['generateGuid', '@ember/-internals/utils'],
+  ['guidFor', '@ember/-internals/utils'],
+  ['inspect', '@ember/-internals/utils'],
+  ['makeArray', '@ember/-internals/utils'],
+  ['canInvoke', '@ember/-internals/utils'],
+  ['tryInvoke', '@ember/-internals/utils'],
+  ['wrap', '@ember/-internals/utils'],
+  ['NAME_KEY', '@ember/-internals/utils'],
 
   // container
   ['Registry', 'container', 'Registry'],
@@ -102,7 +103,7 @@ let allExports = [
   ['_getPath', 'ember-metal'],
   ['getWithDefault', 'ember-metal'],
   ['trySet', 'ember-metal'],
-  ['_Cache', 'ember-utils', 'Cache'],
+  ['_Cache', '@ember/-internals/utils', 'Cache'],
   ['on', 'ember-metal'],
   ['addListener', 'ember-metal'],
   ['removeListener', 'ember-metal'],

@@ -1,5 +1,5 @@
+import { getName, setName } from '@ember/-internals/utils';
 import { context } from 'ember-environment';
-import { getName, setName } from 'ember-utils';
 
 // TODO, this only depends on context, otherwise it could be in utils
 // move into its own package

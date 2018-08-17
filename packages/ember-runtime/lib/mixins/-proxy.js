@@ -15,7 +15,7 @@ import {
   tagFor,
   computed,
 } from 'ember-metal';
-import { setProxy } from 'ember-utils';
+import { setProxy } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 
 function contentPropertyDidChange(content, contentKey) {

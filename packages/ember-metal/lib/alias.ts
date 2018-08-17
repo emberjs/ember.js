@@ -1,7 +1,7 @@
+import { inspect } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import EmberError from '@ember/error';
 import { Meta, meta as metaFor } from 'ember-meta';
-import { inspect } from 'ember-utils';
 import { ComputedProperty } from './computed';
 import { getCacheFor } from './computed_cache';
 import {
