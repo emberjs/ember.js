@@ -26,7 +26,7 @@ import {
 import { assert, deprecate } from '@ember/debug';
 import Enumerable from './enumerable';
 import compare from '../compare';
-import { ENV } from 'ember-environment';
+import { ENV } from '@ember/-internals/environment';
 import Observable from '../mixins/observable';
 import copy from '../copy';
 import EmberError from '@ember/error';

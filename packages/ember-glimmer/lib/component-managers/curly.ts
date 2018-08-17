@@ -1,3 +1,4 @@
+import { ENV } from '@ember/-internals/environment';
 import { guidFor } from '@ember/-internals/utils';
 import { assert, deprecate } from '@ember/debug';
 import { POSITIONAL_PARAM_CONFLICT } from '@ember/deprecated-features';
@@ -26,7 +27,6 @@ import {
 } from '@glimmer/runtime';
 import { Destroyable, EMPTY_ARRAY } from '@glimmer/util';
 import { privatize as P } from 'container';
-import { ENV } from 'ember-environment';
 import { get } from 'ember-metal';
 import { getOwner } from 'ember-owner';
 import { addChildView, OwnedTemplateMeta, setViewElement } from 'ember-views';

@@ -1,4 +1,4 @@
-import { ENV } from 'ember-environment';
+import { ENV } from '@ember/-internals/environment';
 import Controller from '@ember/controller';
 import { moduleFor, ApplicationTest } from '../../utils/test-case';
 import { strip } from '../../utils/abstract-test-case';

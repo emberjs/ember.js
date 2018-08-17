@@ -2,7 +2,7 @@
 @module ember
 */
 
-import { ENV } from 'ember-environment';
+import { ENV } from '@ember/-internals/environment';
 import { on, computed, observer } from 'ember-metal';
 
 if (ENV.EXTEND_PROTOTYPES.Function) {

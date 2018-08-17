@@ -1,6 +1,6 @@
 /*globals EmberDev */
 import VERSION from 'ember/version';
-import { ENV, context } from 'ember-environment';
+import { ENV, context } from '@ember/-internals/environment';
 import { libraries } from 'ember-metal';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 import Application from '..';

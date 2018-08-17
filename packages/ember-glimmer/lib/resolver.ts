@@ -1,3 +1,4 @@
+import { ENV } from '@ember/-internals/environment';
 import { EMBER_MODULE_UNIFICATION, GLIMMER_CUSTOM_COMPONENT_MANAGER } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { RENDER_HELPER } from '@ember/deprecated-features';
@@ -11,7 +12,6 @@ import {
 import { LazyCompiler, Macros, PartialDefinition } from '@glimmer/opcode-compiler';
 import { getDynamicVar, Helper, ModifierManager } from '@glimmer/runtime';
 import { privatize as P } from 'container';
-import { ENV } from 'ember-environment';
 import { LookupOptions, Owner, setOwner } from 'ember-owner';
 import { lookupComponent, lookupPartial, OwnedTemplateMeta } from 'ember-views';
 import CompileTimeLookup from './compile-time-lookup';

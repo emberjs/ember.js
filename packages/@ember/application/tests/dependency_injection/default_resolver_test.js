@@ -1,7 +1,7 @@
 /* globals EmberDev */
 import { moduleFor, DefaultResolverApplicationTestCase } from 'internal-test-helpers';
 
-import { context } from 'ember-environment';
+import { context } from '@ember/-internals/environment';
 import Controller from '@ember/controller';
 import Service from '@ember/service';
 import { Object as EmberObject, Namespace } from 'ember-runtime';

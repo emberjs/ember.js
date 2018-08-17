@@ -1,6 +1,6 @@
 import require, { has } from 'require';
 
-import { getENV, getLookup, setLookup, ENV, context } from 'ember-environment';
+import { getENV, getLookup, setLookup, ENV, context } from '@ember/-internals/environment';
 import { IS_NODE, module } from 'node-module';
 import * as utils from '@ember/-internals/utils';
 import { Registry, Container } from 'container';
@@ -133,7 +133,7 @@ import {
   EMBER_EXTEND_PROTOTYPES,
 } from '@ember/deprecated-features';
 
-// ****ember-environment****
+// ****@ember/-internals/environment****
 
 const Ember = (typeof context.imports.Ember === 'object' && context.imports.Ember) || {};
 

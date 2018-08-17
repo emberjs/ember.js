@@ -3,7 +3,7 @@ import Controller from '@ember/controller';
 import { Component } from 'ember-glimmer';
 import { compile } from 'ember-template-compiler';
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
-import { ENV } from 'ember-environment';
+import { ENV } from '@ember/-internals/environment';
 
 moduleFor(
   'Application Lifecycle - Component Registration',

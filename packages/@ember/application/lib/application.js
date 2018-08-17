@@ -3,7 +3,7 @@
 */
 
 import { dictionary } from '@ember/-internals/utils';
-import { ENV } from 'ember-environment';
+import { ENV } from '@ember/-internals/environment';
 import { hasDOM } from 'ember-browser-environment';
 import { assert, isTesting } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';

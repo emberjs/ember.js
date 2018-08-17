@@ -1,10 +1,10 @@
+import { ENV } from '@ember/-internals/environment';
 import {
   DEPRECATE_ID_MISSING,
   DEPRECATE_OPTIONS_MISSING,
   DEPRECATE_UNTIL_MISSING,
 } from '@ember/deprecated-features';
 import { DEBUG } from '@glimmer/env';
-import { ENV } from 'ember-environment';
 
 import { assert } from '../index';
 import { HandlerCallback, invoke, registerHandler as genericRegisterHandler } from './handlers';

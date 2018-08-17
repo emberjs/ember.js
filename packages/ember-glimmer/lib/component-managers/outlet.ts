@@ -1,3 +1,4 @@
+import { ENV } from '@ember/-internals/environment';
 import { guidFor } from '@ember/-internals/utils';
 import { _instrumentStart } from '@ember/instrumentation';
 import { assign } from '@ember/polyfills';
@@ -15,7 +16,6 @@ import {
   WithStaticLayout,
 } from '@glimmer/runtime';
 import { Destroyable } from '@glimmer/util';
-import { ENV } from 'ember-environment';
 import { OwnedTemplateMeta } from 'ember-views';
 import { DynamicScope } from '../renderer';
 import RuntimeResolver from '../resolver';

@@ -90,8 +90,8 @@ module.exports = function() {
       exclude: [
         'container/index.js',
         'container/lib/**',
-        'ember-environment/index.js',
-        'ember-environment/lib/**',
+        '@ember/-internals/environment/index.js',
+        '@ember/-internals/environment/lib/**',
         'ember-browser-environment/index.js',
         'ember-browser-environment/lib/**',
         'ember-glimmer/index.js',
@@ -103,7 +103,7 @@ module.exports = function() {
       ],
     }),
     rollupPackage(packagesES, 'container'),
-    rollupPackage(packagesES, 'ember-environment'),
+    rollupPackage(packagesES, '@ember/-internals/environment'),
     rollupPackage(packagesES, 'ember-browser-environment'),
     rollupPackage(packagesES, 'ember-glimmer'),
     rollupPackage(packagesES, 'ember-metal'),
@@ -190,6 +190,7 @@ module.exports = function() {
       new Funnel(packagesES5, {
         include: [
           '@ember/-internals/utils.js',
+          '@ember/-internals/environment.js',
           '@ember/canary-features/**',
           '@ember/debug/index.js',
           '@ember/debug/lib/**',
@@ -198,7 +199,6 @@ module.exports = function() {
           '@ember/polyfills/index.js',
           '@ember/polyfills/lib/**',
           'ember/version.js',
-          'ember-environment.js',
           'ember-browser-environment.js',
           'ember-template-compiler/**',
         ],

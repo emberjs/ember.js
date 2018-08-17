@@ -1,4 +1,4 @@
-import { context } from 'ember-environment';
+import { context } from '@ember/-internals/environment';
 import { run } from '@ember/runloop';
 import Engine from '@ember/engine';
 import { Object as EmberObject } from 'ember-runtime';

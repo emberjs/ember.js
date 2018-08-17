@@ -2,7 +2,7 @@
 @module ember
 */
 
-import { context } from 'ember-environment';
+import { context } from '@ember/-internals/environment';
 import { get, Mixin, computed, descriptor } from 'ember-metal';
 import { assert, deprecate } from '@ember/debug';
 import { TARGET_OBJECT } from '@ember/deprecated-features';

@@ -5,7 +5,7 @@ import { set, get, observer, on, computed } from 'ember-metal';
 import Service, { inject as injectService } from '@ember/service';
 import { Object as EmberObject, A as emberA } from 'ember-runtime';
 import { jQueryDisabled } from 'ember-views';
-import { ENV } from 'ember-environment';
+import { ENV } from '@ember/-internals/environment';
 import { Component, compile, htmlSafe } from '../../utils/helpers';
 import { strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';

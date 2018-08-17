@@ -2,7 +2,7 @@
 import { getOwner } from 'ember-owner';
 import RSVP from 'rsvp';
 import { compile } from 'ember-template-compiler';
-import { ENV } from 'ember-environment';
+import { ENV } from '@ember/-internals/environment';
 import { Route, NoneLocation, HistoryLocation } from 'ember-routing';
 import Controller from '@ember/controller';
 import { Object as EmberObject, A as emberA } from 'ember-runtime';

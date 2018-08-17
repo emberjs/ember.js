@@ -1,6 +1,6 @@
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { classes } from '../../utils/test-helpers';
-import { ENV } from 'ember-environment';
+import { ENV } from '@ember/-internals/environment';
 
 class TemplateOnlyComponentsTest extends RenderingTest {
   registerComponent(name, template) {

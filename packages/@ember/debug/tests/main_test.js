@@ -1,4 +1,4 @@
-import { ENV } from 'ember-environment';
+import { ENV } from '@ember/-internals/environment';
 import { Object as EmberObject } from 'ember-runtime';
 import { HANDLERS } from '../lib/handlers';
 import {

@@ -1,4 +1,4 @@
-import { context } from 'ember-environment';
+import { context } from '@ember/-internals/environment';
 import { run } from '@ember/runloop';
 import { get, computed, observer } from 'ember-metal';
 import { w } from '@ember/string';

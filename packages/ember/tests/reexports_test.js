@@ -47,9 +47,9 @@ moduleFor(
 );
 
 let allExports = [
-  // ember-environment
-  ['ENV', 'ember-environment', { get: 'getENV' }],
-  ['lookup', 'ember-environment', { get: 'getLookup', set: 'setLookup' }],
+  // @ember/-internals/environment
+  ['ENV', '@ember/-internals/environment', { get: 'getENV' }],
+  ['lookup', '@ember/-internals/environment', { get: 'getLookup', set: 'setLookup' }],
 
   ['getOwner', '@ember/application', 'getOwner'],
   ['setOwner', '@ember/application', 'setOwner'],

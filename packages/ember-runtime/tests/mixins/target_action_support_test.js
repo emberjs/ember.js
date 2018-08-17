@@ -1,4 +1,4 @@
-import { context } from 'ember-environment';
+import { context } from '@ember/-internals/environment';
 import EmberObject from '../../lib/system/object';
 import TargetActionSupport from '../../lib/mixins/target_action_support';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';

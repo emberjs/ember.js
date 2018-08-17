@@ -30,7 +30,7 @@ import {
 import ActionHandler from '../mixins/action_handler';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { ENV } from 'ember-environment';
+import { ENV } from '@ember/-internals/environment';
 
 const reopen = Mixin.prototype.reopen;
 

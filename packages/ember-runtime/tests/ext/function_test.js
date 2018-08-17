@@ -1,4 +1,4 @@
-import { ENV } from 'ember-environment';
+import { ENV } from '@ember/-internals/environment';
 import { Mixin, mixin, get, set } from 'ember-metal';
 import EmberObject from '../../lib/system/object';
 import Evented from '../../lib/mixins/evented';

@@ -1,6 +1,6 @@
 import { run } from '@ember/runloop';
 import { guidFor, setName } from '@ember/-internals/utils';
-import { context } from 'ember-environment';
+import { context } from '@ember/-internals/environment';
 import EmberObject from '../../../lib/system/object';
 import Namespace from '../../../lib/system/namespace';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';

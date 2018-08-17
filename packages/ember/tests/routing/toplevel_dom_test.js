@@ -1,4 +1,4 @@
-import { ENV } from 'ember-environment';
+import { ENV } from '@ember/-internals/environment';
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 
 moduleFor(

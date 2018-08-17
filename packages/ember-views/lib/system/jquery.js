@@ -1,6 +1,6 @@
-import { context } from 'ember-environment';
+import { context } from '@ember/-internals/environment';
 import { hasDOM } from 'ember-browser-environment';
-import { ENV } from 'ember-environment';
+import { ENV } from '@ember/-internals/environment';
 
 let jQuery;
 export let jQueryDisabled = ENV._JQUERY_INTEGRATION === false;

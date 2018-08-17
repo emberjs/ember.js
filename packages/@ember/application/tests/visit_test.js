@@ -8,7 +8,7 @@ import Engine from '@ember/engine';
 import { Route } from 'ember-routing';
 import { Component, helper, isSerializationFirstNode } from 'ember-glimmer';
 import { compile } from 'ember-template-compiler';
-import { ENV } from 'ember-environment';
+import { ENV } from '@ember/-internals/environment';
 
 function expectAsyncError() {
   RSVP.off('error');
