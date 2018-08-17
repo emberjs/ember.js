@@ -1,5 +1,5 @@
 import { moduleFor, RenderingTest } from '../../utils/test-case';
-import { Checkbox, Component, LinkComponent, TextArea, TextField } from 'ember-glimmer';
+import { Checkbox, Component, LinkComponent, TextArea, TextField } from '@ember/-internals/glimmer';
 
 moduleFor(
   'built-in component toString',

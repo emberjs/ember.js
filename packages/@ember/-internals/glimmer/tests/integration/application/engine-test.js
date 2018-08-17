@@ -3,7 +3,7 @@ import { strip } from '../../utils/abstract-test-case';
 import { compile } from '../../utils/helpers';
 import Controller from '@ember/controller';
 import { RSVP } from 'ember-runtime';
-import { Component } from 'ember-glimmer';
+import { Component } from '@ember/-internals/glimmer';
 import Engine from '@ember/engine';
 import { Route } from 'ember-routing';
 import { next } from '@ember/runloop';

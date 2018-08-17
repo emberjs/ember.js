@@ -12,4 +12,4 @@ export {
   SafeString,
   DOMChanges,
   isHTMLSafe,
-} from 'ember-glimmer';
+} from '@ember/-internals/glimmer';

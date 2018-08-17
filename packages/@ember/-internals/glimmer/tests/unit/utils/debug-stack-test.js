@@ -1,4 +1,4 @@
-import { DebugStack } from 'ember-glimmer';
+import { DebugStack } from '@ember/-internals/glimmer';
 import { DEBUG } from '@glimmer/env';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 

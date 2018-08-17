@@ -1,6 +1,6 @@
 import Controller from '@ember/controller';
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
-import { Component } from 'ember-glimmer';
+import { Component } from '@ember/-internals/glimmer';
 
 /*
  In Ember 1.x, controllers subtly affect things like template scope

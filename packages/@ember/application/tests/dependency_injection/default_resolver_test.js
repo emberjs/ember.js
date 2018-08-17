@@ -6,7 +6,7 @@ import Controller from '@ember/controller';
 import Service from '@ember/service';
 import { Object as EmberObject, Namespace } from 'ember-runtime';
 import { Route } from 'ember-routing';
-import { Component, Helper, helper as makeHelper } from 'ember-glimmer';
+import { Component, Helper, helper as makeHelper } from '@ember/-internals/glimmer';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 
 moduleFor(

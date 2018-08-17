@@ -4,7 +4,7 @@ import { Route } from 'ember-routing';
 import Controller from '@ember/controller';
 import { RSVP } from 'ember-runtime';
 import { later } from '@ember/runloop';
-import { Component } from 'ember-glimmer';
+import { Component } from '@ember/-internals/glimmer';
 import { jQueryDisabled, jQuery } from '@ember/-internals/views';
 
 import Test from '../lib/test';

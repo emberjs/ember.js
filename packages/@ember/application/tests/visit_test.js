@@ -6,7 +6,7 @@ import Application from '@ember/application';
 import ApplicationInstance from '@ember/application/instance';
 import Engine from '@ember/engine';
 import { Route } from 'ember-routing';
-import { Component, helper, isSerializationFirstNode } from 'ember-glimmer';
+import { Component, helper, isSerializationFirstNode } from '@ember/-internals/glimmer';
 import { compile } from 'ember-template-compiler';
 import { ENV } from '@ember/-internals/environment';
 

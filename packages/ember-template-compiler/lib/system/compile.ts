@@ -18,9 +18,9 @@ let template: (templateJS: () => string) => string;
   @param {Object} options This is an options hash to augment the compiler options.
 */
 export default function compile(templateString: string, options: CompileOptions) {
-  if (!template && has('ember-glimmer')) {
+  if (!template && has('@ember/-internals/glimmer')) {
     // tslint:disable-next-line:no-require-imports
-    template = require('ember-glimmer').template;
+    template = require('@ember/-internals/glimmer').template;
   }
 
   if (!template) {

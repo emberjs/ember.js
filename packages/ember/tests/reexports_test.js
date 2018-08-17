@@ -21,7 +21,7 @@ moduleFor(
     }
 
     ['@test Ember.String.isHTMLSafe exports correctly'](assert) {
-      confirmExport(Ember, assert, 'String.isHTMLSafe', 'ember-glimmer', 'isHTMLSafe');
+      confirmExport(Ember, assert, 'String.isHTMLSafe', '@ember/-internals/glimmer', 'isHTMLSafe');
     }
 
     ['@test Ember.EXTEND_PROTOTYPES is present (but deprecated)'](assert) {
@@ -178,26 +178,26 @@ let allExports = [
   ['ViewUtils.getViewBoundingClientRect', '@ember/-internals/views', 'getViewBoundingClientRect'],
   ['ViewUtils.getRootViews', '@ember/-internals/views', 'getRootViews'],
   ['ViewUtils.getChildViews', '@ember/-internals/views', 'getChildViews'],
-  ['ViewUtils.isSerializationFirstNode', 'ember-glimmer', 'isSerializationFirstNode'],
+  ['ViewUtils.isSerializationFirstNode', '@ember/-internals/glimmer', 'isSerializationFirstNode'],
   ['TextSupport', '@ember/-internals/views'],
   ['ComponentLookup', '@ember/-internals/views'],
   ['EventDispatcher', '@ember/-internals/views'],
 
-  // ember-glimmer
-  ['Component', 'ember-glimmer', 'Component'],
-  ['Helper', 'ember-glimmer', 'Helper'],
-  ['Helper.helper', 'ember-glimmer', 'helper'],
-  ['Checkbox', 'ember-glimmer', 'Checkbox'],
-  ['LinkComponent', 'ember-glimmer', 'LinkComponent'],
-  ['TextArea', 'ember-glimmer', 'TextArea'],
-  ['TextField', 'ember-glimmer', 'TextField'],
-  ['TEMPLATES', 'ember-glimmer', { get: 'getTemplates', set: 'setTemplates' }],
-  ['Handlebars.template', 'ember-glimmer', 'template'],
-  ['HTMLBars.template', 'ember-glimmer', 'template'],
-  ['Handlebars.Utils.escapeExpression', 'ember-glimmer', 'escapeExpression'],
-  ['String.htmlSafe', 'ember-glimmer', 'htmlSafe'],
-  ['_setComponentManager', 'ember-glimmer', 'setComponentManager'],
-  ['_componentManagerCapabilities', 'ember-glimmer', 'capabilities'],
+  // @ember/-internals/glimmer
+  ['Component', '@ember/-internals/glimmer', 'Component'],
+  ['Helper', '@ember/-internals/glimmer', 'Helper'],
+  ['Helper.helper', '@ember/-internals/glimmer', 'helper'],
+  ['Checkbox', '@ember/-internals/glimmer', 'Checkbox'],
+  ['LinkComponent', '@ember/-internals/glimmer', 'LinkComponent'],
+  ['TextArea', '@ember/-internals/glimmer', 'TextArea'],
+  ['TextField', '@ember/-internals/glimmer', 'TextField'],
+  ['TEMPLATES', '@ember/-internals/glimmer', { get: 'getTemplates', set: 'setTemplates' }],
+  ['Handlebars.template', '@ember/-internals/glimmer', 'template'],
+  ['HTMLBars.template', '@ember/-internals/glimmer', 'template'],
+  ['Handlebars.Utils.escapeExpression', '@ember/-internals/glimmer', 'escapeExpression'],
+  ['String.htmlSafe', '@ember/-internals/glimmer', 'htmlSafe'],
+  ['_setComponentManager', '@ember/-internals/glimmer', 'setComponentManager'],
+  ['_componentManagerCapabilities', '@ember/-internals/glimmer', 'capabilities'],
 
   // ember-runtime
   ['A', 'ember-runtime'],

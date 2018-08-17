@@ -107,7 +107,7 @@ import {
   TextField,
   TextArea,
   isSerializationFirstNode,
-} from 'ember-glimmer';
+} from '@ember/-internals/glimmer';
 // eslint-disable-next-line import/no-unresolved
 import VERSION from './version';
 import * as views from '@ember/-internals/views';
@@ -509,7 +509,7 @@ Object.defineProperty(Ember, 'BOOTED', {
   set: metal.setNamespaceSearchDisabled,
 });
 
-// ****ember-glimmer****
+// ****@ember/-internals/glimmer****
 Ember.Component = Component;
 Helper.helper = helper;
 Ember.Helper = Helper;

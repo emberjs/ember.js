@@ -10,7 +10,7 @@ import { moduleFor, ApplicationTestCase, runDestroy } from 'internal-test-helper
 import { run } from '@ember/runloop';
 import { Mixin, computed, set, addObserver, observer } from '@ember/-internals/metal';
 import { getTextOf } from 'internal-test-helpers';
-import { Component } from 'ember-glimmer';
+import { Component } from '@ember/-internals/glimmer';
 import Engine from '@ember/engine';
 import { Transition } from 'router';
 

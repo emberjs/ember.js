@@ -1,7 +1,7 @@
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { equalTokens } from '../../utils/test-helpers';
 import { strip } from '../../utils/abstract-test-case';
-import { Component } from 'ember-glimmer';
+import { Component } from '@ember/-internals/glimmer';
 import { set } from '@ember/-internals/metal';
 
 moduleFor(

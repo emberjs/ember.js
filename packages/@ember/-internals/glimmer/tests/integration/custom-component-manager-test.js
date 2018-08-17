@@ -5,7 +5,7 @@ import {
   GLIMMER_CUSTOM_COMPONENT_MANAGER,
   EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION,
 } from '@ember/canary-features';
-import { setComponentManager, capabilities } from 'ember-glimmer';
+import { setComponentManager, capabilities } from '@ember/-internals/glimmer';
 
 if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
   class ComponentManagerTest extends RenderingTest {

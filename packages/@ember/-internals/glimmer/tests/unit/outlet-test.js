@@ -1,4 +1,4 @@
-import { OutletView } from 'ember-glimmer';
+import { OutletView } from '@ember/-internals/glimmer';
 import { run, schedule } from '@ember/runloop';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 

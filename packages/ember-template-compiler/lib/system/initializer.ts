@@ -5,11 +5,11 @@ import bootstrap from './bootstrap';
 if (
   has('@ember/application') &&
   has('@ember/-internals/browser-environment') &&
-  has('ember-glimmer')
+  has('@ember/-internals/glimmer')
 ) {
   // tslint:disable:no-require-imports
   let emberEnv = require('@ember/-internals/browser-environment');
-  let emberGlimmer = require('ember-glimmer');
+  let emberGlimmer = require('@ember/-internals/glimmer');
   let emberApp = require('@ember/application');
   let Application = emberApp.default;
   let { hasTemplate, setTemplate } = emberGlimmer;

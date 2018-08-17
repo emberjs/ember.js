@@ -3,7 +3,7 @@ import Controller from '@ember/controller';
 import { moduleFor, ApplicationTest } from '../../utils/test-case';
 import { strip } from '../../utils/abstract-test-case';
 import { Route } from 'ember-routing';
-import { Component } from 'ember-glimmer';
+import { Component } from '@ember/-internals/glimmer';
 
 moduleFor(
   'Application test: rendering',

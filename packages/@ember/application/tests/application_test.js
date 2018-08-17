@@ -9,7 +9,7 @@ import { jQueryDisabled, jQuery } from '@ember/-internals/views';
 import { _loaded } from '@ember/application';
 import Controller from '@ember/controller';
 import { Object as EmberObject } from 'ember-runtime';
-import { setTemplates } from 'ember-glimmer';
+import { setTemplates } from '@ember/-internals/glimmer';
 import { privatize as P } from 'container';
 import { assign } from '@ember/polyfills';
 import {

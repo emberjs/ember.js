@@ -1,6 +1,6 @@
 import Application from '@ember/application';
 import Controller from '@ember/controller';
-import { Component } from 'ember-glimmer';
+import { Component } from '@ember/-internals/glimmer';
 import { compile } from 'ember-template-compiler';
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 import { ENV } from '@ember/-internals/environment';

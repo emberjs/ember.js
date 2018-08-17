@@ -28,7 +28,7 @@ import {
 import ApplicationInstance from '../instance';
 import Engine from '@ember/engine';
 import { privatize as P } from 'container';
-import { setupApplicationRegistry } from 'ember-glimmer';
+import { setupApplicationRegistry } from '@ember/-internals/glimmer';
 import { RouterService } from 'ember-routing';
 import { EMBER_ROUTING_ROUTER_SERVICE } from '@ember/canary-features';
 

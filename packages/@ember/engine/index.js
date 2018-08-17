@@ -16,7 +16,7 @@ import EngineInstance from '@ember/engine/instance';
 import { RoutingService } from 'ember-routing';
 import { ContainerDebugAdapter } from 'ember-extension-support';
 import { ComponentLookup } from '@ember/-internals/views';
-import { setupEngineRegistry } from 'ember-glimmer';
+import { setupEngineRegistry } from '@ember/-internals/glimmer';
 
 function props(obj) {
   let properties = [];
