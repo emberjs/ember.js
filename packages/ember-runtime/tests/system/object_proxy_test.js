@@ -1,5 +1,5 @@
 import { DEBUG } from '@glimmer/env';
-import { addObserver, computed, get, set, isWatching, removeObserver } from 'ember-metal';
+import { addObserver, computed, get, set, isWatching, removeObserver } from '@ember/-internals/metal';
 import { HAS_NATIVE_PROXY } from '@ember/-internals/utils';
 import ObjectProxy from '../../lib/system/object_proxy';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';

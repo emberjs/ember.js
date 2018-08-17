@@ -1,7 +1,7 @@
 /**
 @module ember
 */
-import { get } from 'ember-metal';
+import { get } from '@ember/-internals/metal';
 import { assert } from '@ember/debug';
 import { jQueryDisabled } from 'ember-views';
 

@@ -1,7 +1,7 @@
 import { assign } from '@ember/polyfills';
 import { applyMixins } from './abstract-test-case';
 import { RenderingTest } from './test-case';
-import { get, set } from 'ember-metal';
+import { get, set } from '@ember/-internals/metal';
 import {
   Object as EmberObject,
   ObjectProxy,

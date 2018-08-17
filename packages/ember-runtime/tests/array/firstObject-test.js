@@ -1,4 +1,4 @@
-import { get, set } from 'ember-metal';
+import { get, set } from '@ember/-internals/metal';
 import { AbstractTestCase } from 'internal-test-helpers';
 import { runArrayTests } from '../helpers/array';
 

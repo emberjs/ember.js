@@ -10,7 +10,7 @@ import {
   setProperties,
   computed,
   isEmpty,
-} from 'ember-metal';
+} from '@ember/-internals/metal';
 import { assert, deprecate, info, isTesting } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { classify } from '@ember/string';

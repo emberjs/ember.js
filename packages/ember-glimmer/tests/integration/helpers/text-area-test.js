@@ -1,5 +1,5 @@
 import { assign } from '@ember/polyfills';
-import { set } from 'ember-metal';
+import { set } from '@ember/-internals/metal';
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { classes } from '../../utils/test-helpers';
 import { applyMixins } from '../../utils/abstract-test-case';

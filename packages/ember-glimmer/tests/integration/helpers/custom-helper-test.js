@@ -1,7 +1,7 @@
 /* globals EmberDev */
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { runDestroy } from 'internal-test-helpers';
-import { set } from 'ember-metal';
+import { set } from '@ember/-internals/metal';
 
 moduleFor(
   'Helpers test: custom helpers',

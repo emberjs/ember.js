@@ -18,7 +18,7 @@ import {
   addObserver,
   removeObserver,
   getCachedValueFor,
-} from 'ember-metal';
+} from '@ember/-internals/metal';
 import { assert } from '@ember/debug';
 
 /**

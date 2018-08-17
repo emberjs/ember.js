@@ -1,4 +1,5 @@
 import { ENV } from '@ember/-internals/environment';
+import { get } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
 import { assert, deprecate } from '@ember/debug';
@@ -28,7 +29,6 @@ import {
 } from '@glimmer/runtime';
 import { Destroyable, EMPTY_ARRAY } from '@glimmer/util';
 import { privatize as P } from 'container';
-import { get } from 'ember-metal';
 import { addChildView, OwnedTemplateMeta, setViewElement } from 'ember-views';
 import { BOUNDS, DIRTY_TAG, HAS_BLOCK, IS_DISPATCHING_ATTRS, ROOT_REF } from '../component';
 import Environment from '../environment';

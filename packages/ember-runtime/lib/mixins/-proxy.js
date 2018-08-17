@@ -14,7 +14,7 @@ import {
   Mixin,
   tagFor,
   computed,
-} from 'ember-metal';
+} from '@ember/-internals/metal';
 import { setProxy } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 

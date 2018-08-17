@@ -1,4 +1,4 @@
-import { get, setProperties, computed, Mixin } from 'ember-metal';
+import { get, setProperties, computed, Mixin } from '@ember/-internals/metal';
 import EmberError from '@ember/error';
 
 /**

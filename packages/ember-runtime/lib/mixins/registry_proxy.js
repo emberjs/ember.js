@@ -3,7 +3,7 @@
 */
 
 import { assert } from '@ember/debug';
-import { Mixin } from 'ember-metal';
+import { Mixin } from '@ember/-internals/metal';
 
 /**
   RegistryProxyMixin is used to provide public access to specific

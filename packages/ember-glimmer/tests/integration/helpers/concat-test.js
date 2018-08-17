@@ -1,5 +1,5 @@
 import { RenderingTest, moduleFor } from '../../utils/test-case';
-import { set } from 'ember-metal';
+import { set } from '@ember/-internals/metal';
 
 moduleFor(
   'Helpers test: {{concat}}',

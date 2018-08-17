@@ -1,5 +1,5 @@
 import { AbstractTestCase } from 'internal-test-helpers';
-import { get } from 'ember-metal';
+import { get } from '@ember/-internals/metal';
 import { runArrayTests, newFixture } from '../helpers/array';
 
 class UnshiftObjectTests extends AbstractTestCase {

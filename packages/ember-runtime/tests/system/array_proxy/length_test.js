@@ -1,10 +1,10 @@
 import ArrayProxy from '../../../lib/system/array_proxy';
 import EmberObject from '../../../lib/system/object';
-import { observer } from 'ember-metal';
+import { observer } from '@ember/-internals/metal';
 import { oneWay as reads, not } from '@ember/object/computed';
 import { A as a } from '../../../lib/mixins/array';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
-import { set, get } from 'ember-metal';
+import { set, get } from '@ember/-internals/metal';
 
 moduleFor(
   'Ember.ArrayProxy - content change (length)',

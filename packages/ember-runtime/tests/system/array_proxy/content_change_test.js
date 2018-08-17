@@ -1,5 +1,5 @@
 import { run } from '@ember/runloop';
-import { set, changeProperties } from 'ember-metal';
+import { set, changeProperties } from '@ember/-internals/metal';
 import ArrayProxy from '../../../lib/system/array_proxy';
 import { A as emberA } from '../../../lib/mixins/array';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';

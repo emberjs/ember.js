@@ -1,7 +1,7 @@
 import { run } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 /* globals EmberDev */
-import { set, get, observer, on, computed } from 'ember-metal';
+import { set, get, observer, on, computed } from '@ember/-internals/metal';
 import Service, { inject as injectService } from '@ember/service';
 import { Object as EmberObject, A as emberA } from 'ember-runtime';
 import { jQueryDisabled } from 'ember-views';

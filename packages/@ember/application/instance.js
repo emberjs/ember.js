@@ -3,7 +3,7 @@
 */
 
 import { assign } from '@ember/polyfills';
-import { get, set, computed } from 'ember-metal';
+import { get, set, computed } from '@ember/-internals/metal';
 import * as environment from '@ember/-internals/browser-environment';
 import { jQuery } from 'ember-views';
 import EngineInstance from '@ember/engine/instance';

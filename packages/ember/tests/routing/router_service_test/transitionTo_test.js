@@ -3,7 +3,7 @@ import { Component } from 'ember-glimmer';
 import { Route, NoneLocation } from 'ember-routing';
 import Controller from '@ember/controller';
 import { run } from '@ember/runloop';
-import { get } from 'ember-metal';
+import { get } from '@ember/-internals/metal';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
 import { Transition } from 'router';
 

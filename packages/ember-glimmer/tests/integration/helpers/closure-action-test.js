@@ -3,7 +3,7 @@ import {
   unsubscribe as instrumentationUnsubscribe,
 } from '@ember/instrumentation';
 import { getCurrentRunLoop } from '@ember/runloop';
-import { set, computed } from 'ember-metal';
+import { set, computed } from '@ember/-internals/metal';
 import { EMBER_IMPROVED_INSTRUMENTATION } from '@ember/canary-features';
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { strip } from '../../utils/abstract-test-case';

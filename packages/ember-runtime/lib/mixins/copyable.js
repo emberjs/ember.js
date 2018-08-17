@@ -2,7 +2,7 @@
 @module ember
 */
 
-import { Mixin } from 'ember-metal';
+import { Mixin } from '@ember/-internals/metal';
 
 /**
   Implements some standard methods for copying an object. Add this mixin to

@@ -1,5 +1,5 @@
 import { moduleFor, RenderingTest } from '../../utils/test-case';
-import { set } from 'ember-metal';
+import { set } from '@ember/-internals/metal';
 
 moduleFor(
   'Components test: web component fallback',

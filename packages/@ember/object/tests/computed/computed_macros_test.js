@@ -1,4 +1,4 @@
-import { get, set, computed, alias, defineProperty } from 'ember-metal';
+import { get, set, computed, alias, defineProperty } from '@ember/-internals/metal';
 import {
   empty,
   notEmpty,

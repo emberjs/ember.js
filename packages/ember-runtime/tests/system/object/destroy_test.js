@@ -1,5 +1,5 @@
 import { run } from '@ember/runloop';
-import { observer, get, set, beginPropertyChanges, endPropertyChanges } from 'ember-metal';
+import { observer, get, set, beginPropertyChanges, endPropertyChanges } from '@ember/-internals/metal';
 import { peekMeta } from 'ember-meta';
 import EmberObject from '../../../lib/system/object';
 import { DEBUG } from '@glimmer/env';

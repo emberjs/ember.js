@@ -10,7 +10,7 @@ import { Namespace, RegistryProxyMixin } from 'ember-runtime';
 import { Registry, privatize as P } from 'container';
 import DAG from 'dag-map';
 import { assert } from '@ember/debug';
-import { get, set } from 'ember-metal';
+import { get, set } from '@ember/-internals/metal';
 import DefaultResolver from '@ember/application/globals-resolver';
 import EngineInstance from '@ember/engine/instance';
 import { RoutingService } from 'ember-routing';

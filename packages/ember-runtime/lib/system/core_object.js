@@ -26,7 +26,7 @@ import {
   ComputedProperty,
   InjectedProperty,
   classToString,
-} from 'ember-metal';
+} from '@ember/-internals/metal';
 import ActionHandler from '../mixins/action_handler';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';

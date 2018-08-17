@@ -1,6 +1,6 @@
 import { getOwner } from '@ember/-internals/owner';
 import { scheduleOnce } from '@ember/runloop';
-import { get, objectAt, addArrayObserver, removeArrayObserver } from 'ember-metal';
+import { get, objectAt, addArrayObserver, removeArrayObserver } from '@ember/-internals/metal';
 import { dasherize } from '@ember/string';
 import { Namespace, Object as EmberObject, A as emberA } from 'ember-runtime';
 

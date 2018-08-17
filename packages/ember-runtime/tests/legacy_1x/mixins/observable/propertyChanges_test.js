@@ -19,7 +19,7 @@
 
 import EmberObject from '../../../../lib/system/object';
 import Observable from '../../../../lib/mixins/observable';
-import { computed, observer } from 'ember-metal';
+import { computed, observer } from '@ember/-internals/metal';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 const ObservableObject = EmberObject.extend(Observable);

@@ -1,4 +1,4 @@
-import { get } from 'ember-metal';
+import { get } from '@ember/-internals/metal';
 import { AbstractTestCase } from 'internal-test-helpers';
 import { runArrayTests, newFixture, newObjectsFixture } from '../helpers/array';
 import { A as emberA } from '../../lib/mixins/array';

@@ -9,7 +9,7 @@ import {
   removeArrayObserver,
   arrayContentWillChange,
   arrayContentDidChange,
-} from 'ember-metal';
+} from '@ember/-internals/metal';
 import EmberObject from '../../lib/system/object';
 import Copyable from '../../lib/mixins/copyable';
 import { moduleFor } from 'internal-test-helpers';

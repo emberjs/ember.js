@@ -1,7 +1,7 @@
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { Component } from '../../utils/helpers';
 import { classes } from '../../utils/test-helpers';
-import { set, computed } from 'ember-metal';
+import { set, computed } from '@ember/-internals/metal';
 import { strip } from '../../utils/abstract-test-case';
 
 moduleFor(

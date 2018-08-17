@@ -150,7 +150,7 @@ let classes = [
 
 classes.forEach(TestClass => {
   moduleFor(
-    TestClass.module('ember-metal/descriptor'),
+    TestClass.module('@ember/-internals/metal/descriptor'),
     class extends AbstractTestCase {
       ['@test defining a configurable property'](assert) {
         let factory = new TestClass(assert);

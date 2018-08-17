@@ -3,7 +3,7 @@
 */
 
 import { dictionary } from '@ember/-internals/utils';
-import { get, findNamespace } from 'ember-metal';
+import { get, findNamespace } from '@ember/-internals/metal';
 import { assert, info } from '@ember/debug';
 import { capitalize, classify, dasherize, decamelize } from '@ember/string';
 import { Object as EmberObject } from 'ember-runtime';

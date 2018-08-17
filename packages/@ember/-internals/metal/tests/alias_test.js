@@ -18,7 +18,7 @@ function incrementCount() {
 }
 
 moduleFor(
-  'ember-metal/alias',
+  '@ember/-internals/metal/alias',
   class extends AbstractTestCase {
     beforeEach() {
       obj = { foo: { faz: 'FOO' } };

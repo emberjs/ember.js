@@ -1,5 +1,5 @@
 import { Object as EmberObject } from 'ember-runtime';
-import { InjectedProperty } from 'ember-metal';
+import { InjectedProperty } from '@ember/-internals/metal';
 
 /**
  @module @ember/service

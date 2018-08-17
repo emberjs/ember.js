@@ -2,7 +2,7 @@
 @module ember
 */
 
-import { get, set, Mixin } from 'ember-metal';
+import { get, set, Mixin } from '@ember/-internals/metal';
 import { TargetActionSupport } from 'ember-runtime';
 import { deprecate } from '@ember/debug';
 import { SEND_ACTION } from '@ember/deprecated-features';

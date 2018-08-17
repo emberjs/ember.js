@@ -1,5 +1,5 @@
 import { assign } from '@ember/polyfills';
-import { addObserver } from 'ember-metal';
+import { addObserver } from '@ember/-internals/metal';
 import EmberError from '@ember/error';
 import { DEBUG } from '@glimmer/env';
 

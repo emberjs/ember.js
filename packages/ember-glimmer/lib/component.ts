@@ -1,9 +1,9 @@
+import { get, PROPERTY_DID_CHANGE } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
 import { symbol } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DirtyableTag } from '@glimmer/reference';
 import { normalizeProperty, SVG_NAMESPACE } from '@glimmer/runtime';
-import { get, PROPERTY_DID_CHANGE } from 'ember-metal';
 import { TargetActionSupport } from 'ember-runtime';
 import {
   ActionSupport,

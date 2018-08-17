@@ -1,6 +1,6 @@
 import { EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION } from '@ember/canary-features';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
-import { set } from 'ember-metal';
+import { set } from '@ember/-internals/metal';
 import { Component } from '../../utils/helpers';
 import { strip } from '../../utils/abstract-test-case';
 import { classes } from '../../utils/test-helpers';

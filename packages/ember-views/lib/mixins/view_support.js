@@ -1,6 +1,6 @@
 import { guidFor } from '@ember/-internals/utils';
 import { descriptorFor } from 'ember-meta';
-import { descriptor, Mixin } from 'ember-metal';
+import { descriptor, Mixin } from '@ember/-internals/metal';
 import { assert } from '@ember/debug';
 import { hasDOM } from '@ember/-internals/browser-environment';
 import { matches } from '../system/utils';

@@ -1,5 +1,5 @@
 import { ENV } from '@ember/-internals/environment';
-import { Mixin, mixin, get, set } from 'ember-metal';
+import { Mixin, mixin, get, set } from '@ember/-internals/metal';
 import EmberObject from '../../lib/system/object';
 import Evented from '../../lib/mixins/evented';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';

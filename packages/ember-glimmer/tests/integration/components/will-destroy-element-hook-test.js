@@ -1,4 +1,4 @@
-import { set } from 'ember-metal';
+import { set } from '@ember/-internals/metal';
 import { Component } from '../../utils/helpers';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 

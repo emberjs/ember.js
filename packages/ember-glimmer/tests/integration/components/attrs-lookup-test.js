@@ -1,6 +1,6 @@
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { Component, htmlSafe } from '../../utils/helpers';
-import { set, computed } from 'ember-metal';
+import { set, computed } from '@ember/-internals/metal';
 import { styles } from '../../utils/test-helpers';
 
 moduleFor(

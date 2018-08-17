@@ -1,6 +1,6 @@
 import { context } from '@ember/-internals/environment';
 import { run } from '@ember/runloop';
-import { get, setNamespaceSearchDisabled } from 'ember-metal';
+import { get, setNamespaceSearchDisabled } from '@ember/-internals/metal';
 import { guidFor } from '@ember/-internals/utils';
 import EmberObject from '../../../lib/system/object';
 import Namespace from '../../../lib/system/namespace';

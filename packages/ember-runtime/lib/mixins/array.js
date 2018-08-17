@@ -4,7 +4,7 @@
 
 import { ARRAY_AT_EACH } from '@ember/deprecated-features';
 import { DEBUG } from '@glimmer/env';
-import { PROXY_CONTENT } from 'ember-metal';
+import { PROXY_CONTENT } from '@ember/-internals/metal';
 import { symbol, toString, HAS_NATIVE_PROXY, tryInvoke } from '@ember/-internals/utils';
 import {
   get,
@@ -22,7 +22,7 @@ import {
   removeArrayObserver,
   arrayContentWillChange,
   arrayContentDidChange,
-} from 'ember-metal';
+} from '@ember/-internals/metal';
 import { assert, deprecate } from '@ember/debug';
 import Enumerable from './enumerable';
 import compare from '../compare';

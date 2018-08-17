@@ -1,5 +1,5 @@
 import { run } from '@ember/runloop';
-import { get, set, addObserver, removeObserver } from 'ember-metal';
+import { get, set, addObserver, removeObserver } from '@ember/-internals/metal';
 import { Object as EmberObject, A as emberA } from 'ember-runtime';
 import EmberDataAdapter from '../lib/data_adapter';
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';

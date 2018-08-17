@@ -1,7 +1,7 @@
 /**
 @module ember
 */
-import { Mixin } from 'ember-metal';
+import { Mixin } from '@ember/-internals/metal';
 
 export default Mixin.create({
   _transitionTo(state) {

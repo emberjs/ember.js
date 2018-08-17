@@ -2,7 +2,7 @@ import { schedule, join } from '@ember/runloop';
 /**
 @module ember
 */
-import { Mixin } from 'ember-metal';
+import { Mixin } from '@ember/-internals/metal';
 
 /**
   ContainerProxyMixin is used to provide public access to specific

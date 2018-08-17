@@ -5,7 +5,7 @@
 import { assign } from '@ember/polyfills';
 import Service from '@ember/service';
 import { readOnly } from '@ember/object/computed';
-import { get } from 'ember-metal';
+import { get } from '@ember/-internals/metal';
 
 /**
   The Routing service is used by LinkComponent, and provides facilities for

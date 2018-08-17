@@ -1,5 +1,5 @@
 import Enumerable from './enumerable';
-import { Mixin } from 'ember-metal';
+import { Mixin } from '@ember/-internals/metal';
 
 /**
 @module ember

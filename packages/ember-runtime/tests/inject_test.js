@@ -1,4 +1,4 @@
-import { InjectedProperty } from 'ember-metal';
+import { InjectedProperty } from '@ember/-internals/metal';
 import { DEBUG } from '@glimmer/env';
 import EmberObject from '../lib/system/object';
 import { buildOwner } from 'internal-test-helpers';

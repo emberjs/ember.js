@@ -1,6 +1,6 @@
 import { assert, deprecate } from '@ember/debug';
 import { onErrorTarget } from 'ember-error-handling';
-import { beginPropertyChanges, endPropertyChanges } from 'ember-metal';
+import { beginPropertyChanges, endPropertyChanges } from '@ember/-internals/metal';
 import Backburner from 'backburner';
 import { RUN_SYNC } from '@ember/deprecated-features';
 

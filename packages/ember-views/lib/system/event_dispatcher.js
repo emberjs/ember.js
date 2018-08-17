@@ -5,7 +5,7 @@ import { getOwner } from '@ember/-internals/owner';
 
 import { assign } from '@ember/polyfills';
 import { assert } from '@ember/debug';
-import { get, set } from 'ember-metal';
+import { get, set } from '@ember/-internals/metal';
 import { Object as EmberObject } from 'ember-runtime';
 import jQuery, { jQueryDisabled } from './jquery';
 import ActionManager from './action_manager';

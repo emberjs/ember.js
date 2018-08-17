@@ -9,7 +9,6 @@
       "packages/ember-utils/lib",
       "packages/ember-console/lib",
       "packages/ember-debug/lib",
-      "packages/ember-metal/lib",
       "packages/ember-runtime/lib",
       "packages/ember-views/lib",
       "packages/ember-glimmer/lib",

@@ -1,4 +1,4 @@
-import { get, set, notifyPropertyChange } from 'ember-metal';
+import { get, set, notifyPropertyChange } from '@ember/-internals/metal';
 import { applyMixins, strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { A as emberA, ArrayProxy, RSVP } from 'ember-runtime';

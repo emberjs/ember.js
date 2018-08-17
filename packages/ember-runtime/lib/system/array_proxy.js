@@ -10,7 +10,7 @@ import {
   addArrayObserver,
   removeArrayObserver,
   replace,
-} from 'ember-metal';
+} from '@ember/-internals/metal';
 import EmberObject from './object';
 import { isArray, MutableArray } from '../mixins/array';
 import { assert } from '@ember/debug';

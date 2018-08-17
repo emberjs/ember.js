@@ -1,6 +1,6 @@
 import { RenderingTest, moduleFor } from '../utils/test-case';
 import { Component } from '../utils/helpers';
-import { set } from 'ember-metal';
+import { set } from '@ember/-internals/metal';
 import { runDestroy, runAppend } from 'internal-test-helpers';
 
 moduleFor(

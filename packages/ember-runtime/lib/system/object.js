@@ -5,7 +5,7 @@
 import { FACTORY_FOR } from 'container';
 import { OWNER } from '@ember/-internals/owner';
 import { symbol, setName } from '@ember/-internals/utils';
-import { addListener } from 'ember-metal';
+import { addListener } from '@ember/-internals/metal';
 import CoreObject from './core_object';
 import Observable from '../mixins/observable';
 import { assert } from '@ember/debug';

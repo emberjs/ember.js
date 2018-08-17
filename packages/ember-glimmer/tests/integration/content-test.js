@@ -1,7 +1,7 @@
 /* globals EmberDev */
 import { RenderingTest, moduleFor } from '../utils/test-case';
 import { applyMixins } from '../utils/abstract-test-case';
-import { set, computed } from 'ember-metal';
+import { set, computed } from '@ember/-internals/metal';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 import { readOnly } from '@ember/object/computed';
 import { Object as EmberObject, ObjectProxy } from 'ember-runtime';

@@ -1,5 +1,5 @@
 import { run } from '@ember/runloop';
-import { get } from 'ember-metal';
+import { get } from '@ember/-internals/metal';
 import Controller from '@ember/controller';
 import { Router } from 'ember-routing';
 import { moduleFor, AutobootApplicationTestCase } from 'internal-test-helpers';

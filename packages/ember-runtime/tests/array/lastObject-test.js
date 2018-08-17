@@ -1,6 +1,6 @@
 import { AbstractTestCase } from 'internal-test-helpers';
 import { runArrayTests } from '../helpers/array';
-import { get, set } from 'ember-metal';
+import { get, set } from '@ember/-internals/metal';
 
 class LastObjectTests extends AbstractTestCase {
   '@test returns last item in enumerable'() {

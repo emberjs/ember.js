@@ -2,7 +2,7 @@
 @module ember
 */
 
-import { Mixin, get } from 'ember-metal';
+import { Mixin, get } from '@ember/-internals/metal';
 import { assert } from '@ember/debug';
 
 /**

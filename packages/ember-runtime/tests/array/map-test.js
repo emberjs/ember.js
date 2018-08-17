@@ -1,7 +1,7 @@
 import { guidFor } from '@ember/-internals/utils';
 import { AbstractTestCase } from 'internal-test-helpers';
 import { runArrayTests } from '../helpers/array';
-import { get } from 'ember-metal';
+import { get } from '@ember/-internals/metal';
 
 const mapFunc = item => (item ? item.toString() : null);
 

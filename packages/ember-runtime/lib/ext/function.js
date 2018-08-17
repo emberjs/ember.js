@@ -3,7 +3,7 @@
 */
 
 import { ENV } from '@ember/-internals/environment';
-import { on, computed, observer } from 'ember-metal';
+import { on, computed, observer } from '@ember/-internals/metal';
 
 if (ENV.EXTEND_PROTOTYPES.Function) {
   Object.defineProperties(Function.prototype, {

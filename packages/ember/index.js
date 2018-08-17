@@ -6,7 +6,7 @@ import * as utils from '@ember/-internals/utils';
 import { Registry, Container } from 'container';
 import * as instrumentation from '@ember/instrumentation';
 import { deleteMeta, meta } from 'ember-meta';
-import * as metal from 'ember-metal';
+import * as metal from '@ember/-internals/metal';
 import { FEATURES, isEnabled } from '@ember/canary-features';
 import * as EmberDebug from '@ember/debug';
 import { assert, deprecate } from '@ember/debug';
@@ -264,7 +264,7 @@ Object.defineProperty(Ember.run, 'currentRunLoop', {
   enumerable: false,
 });
 
-// ****ember-metal****
+// ****@ember/-internals/metal****
 
 // Using _globalsComputed here so that mutating the function is only available
 // in globals builds

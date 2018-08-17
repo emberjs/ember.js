@@ -1,4 +1,4 @@
-import { get, set } from 'ember-metal';
+import { get, set } from '@ember/-internals/metal';
 import EmberComponent from '../component';
 import layout from '../templates/empty';
 

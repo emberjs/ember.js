@@ -1,4 +1,4 @@
-import { get, set } from 'ember-metal';
+import { get, set } from '@ember/-internals/metal';
 
 import { Object as EmberObject } from 'ember-runtime';
 import EmberLocation from './api';

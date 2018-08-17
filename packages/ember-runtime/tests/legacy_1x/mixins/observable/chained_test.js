@@ -1,5 +1,5 @@
 import { run } from '@ember/runloop';
-import { get, set, addObserver } from 'ember-metal';
+import { get, set, addObserver } from '@ember/-internals/metal';
 import EmberObject from '../../../../lib/system/object';
 import { A as emberA } from '../../../../lib/mixins/array';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';

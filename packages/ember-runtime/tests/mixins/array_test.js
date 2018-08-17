@@ -9,7 +9,7 @@ import {
   removeArrayObserver,
   arrayContentDidChange,
   arrayContentWillChange,
-} from 'ember-metal';
+} from '@ember/-internals/metal';
 import EmberObject from '../../lib/system/object';
 import EmberArray from '../../lib/mixins/array';
 import { A as emberA } from '../../lib/mixins/array';

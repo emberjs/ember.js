@@ -1,3 +1,4 @@
+import { set } from '@ember/-internals/metal';
 import { Opaque } from '@glimmer/interfaces';
 import {
   combine,
@@ -10,7 +11,6 @@ import {
   VersionedPathReference,
 } from '@glimmer/reference';
 import { Arguments, NULL_REFERENCE, VM } from '@glimmer/runtime';
-import { set } from 'ember-metal';
 import { CachedReference, referenceFromParts, UPDATE } from '../utils/references';
 
 /**

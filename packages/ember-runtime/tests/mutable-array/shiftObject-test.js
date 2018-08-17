@@ -1,6 +1,6 @@
 import { AbstractTestCase } from 'internal-test-helpers';
 import { runArrayTests, newFixture } from '../helpers/array';
-import { get } from 'ember-metal';
+import { get } from '@ember/-internals/metal';
 
 class ShiftObjectTests extends AbstractTestCase {
   '@test [].shiftObject() => [] + returns undefined + NO notify'() {

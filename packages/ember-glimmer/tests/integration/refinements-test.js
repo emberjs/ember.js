@@ -1,6 +1,6 @@
 import { RenderingTest, moduleFor } from '../utils/test-case';
 import { strip } from '../utils/abstract-test-case';
-import { set } from 'ember-metal';
+import { set } from '@ember/-internals/metal';
 
 moduleFor(
   'syntax refinements',

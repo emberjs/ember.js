@@ -1,6 +1,6 @@
 import { moduleFor, RenderingTest } from '../utils/test-case';
 import { Object as EmberObject } from 'ember-runtime';
-import { set, setProperties, computed } from 'ember-metal';
+import { set, setProperties, computed } from '@ember/-internals/metal';
 import {
   GLIMMER_CUSTOM_COMPONENT_MANAGER,
   EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION,
