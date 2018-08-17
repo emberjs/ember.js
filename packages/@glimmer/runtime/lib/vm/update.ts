@@ -215,7 +215,7 @@ class ListRevalidationDelegate implements IteratorSynchronizerDelegate {
     let nextSibling: Option<Simple.Node> = null;
     let reference: Option<BlockOpcode> = null;
 
-    if (before) {
+    if (typeof before === 'string') {
       reference = map[before];
       nextSibling = reference['bounds'].firstNode();
     } else {
@@ -247,7 +247,7 @@ class ListRevalidationDelegate implements IteratorSynchronizerDelegate {
     let entry = map[key];
     let reference = map[before] || null;
 
-    if (before) {
+    if (typeof before === 'string') {
       moveBounds(entry, reference.firstNode());
     } else {
       moveBounds(entry, this.marker);
