@@ -1,7 +1,6 @@
 /* globals module, URL */
 
 import { hasDOM } from '@ember/-internals/browser-environment';
-import { IS_NODE, require } from 'node-module';
 import Environment from './environment';
 
 let nodeURL: any;
@@ -24,7 +23,7 @@ export default function installProtocolForURL(environment: Environment) {
     // URL globally provided, likely from FastBoot's sandbox
     nodeURL = URL;
     environment.protocolForURL = nodeProtocolForURL;
-  } else if (IS_NODE) {
+  } else if (typeof require === 'function') {
     // Otherwise, we need to fall back to our own URL parsing.
     // Global `require` is shadowed by Ember's loader so we have to use the fully
     // qualified `module.require`.
