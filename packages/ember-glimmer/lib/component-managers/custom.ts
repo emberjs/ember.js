@@ -1,4 +1,5 @@
 import { Factory } from '@ember/-internals/owner';
+import { OwnedTemplateMeta } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import {
   ComponentCapabilities,
@@ -17,7 +18,6 @@ import {
   WithStaticLayout,
 } from '@glimmer/runtime';
 import { Destroyable } from '@glimmer/util';
-import { OwnedTemplateMeta } from 'ember-views';
 
 import Environment from '../environment';
 import RuntimeResolver from '../resolver';

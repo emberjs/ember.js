@@ -110,7 +110,7 @@ import {
 } from 'ember-glimmer';
 // eslint-disable-next-line import/no-unresolved
 import VERSION from './version';
-import * as views from 'ember-views';
+import * as views from '@ember/-internals/views';
 import * as routing from 'ember-routing';
 import * as extensionSupport from 'ember-extension-support';
 import EmberError from '@ember/error';
@@ -563,7 +563,7 @@ Object.defineProperty(Ember, 'TEMPLATES', {
 */
 Ember.VERSION = VERSION;
 
-// ****ember-views****
+// ****@ember/-internals/views****
 if (!views.jQueryDisabled) {
   Ember.$ = views.jQuery;
 }

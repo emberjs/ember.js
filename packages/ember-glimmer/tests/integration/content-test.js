@@ -6,7 +6,7 @@ import { getDebugFunction, setDebugFunction } from '@ember/debug';
 import { readOnly } from '@ember/object/computed';
 import { Object as EmberObject, ObjectProxy } from 'ember-runtime';
 import { classes } from '../utils/test-helpers';
-import { constructStyleDeprecationMessage } from 'ember-views';
+import { constructStyleDeprecationMessage } from '@ember/-internals/views';
 import { Component, SafeString, htmlSafe } from '../utils/helpers';
 
 moduleFor(

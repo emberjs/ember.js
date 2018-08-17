@@ -1,7 +1,7 @@
+import { OwnedTemplateMeta } from '@ember/-internals/views';
 import { CompilableBlock, Option } from '@glimmer/interfaces';
 import { OpcodeBuilder } from '@glimmer/opcode-compiler';
 import * as WireFormat from '@glimmer/wire-format';
-import { OwnedTemplateMeta } from 'ember-views';
 
 /**
 @module ember

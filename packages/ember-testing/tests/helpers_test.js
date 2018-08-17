@@ -5,7 +5,7 @@ import Controller from '@ember/controller';
 import { RSVP } from 'ember-runtime';
 import { later } from '@ember/runloop';
 import { Component } from 'ember-glimmer';
-import { jQueryDisabled, jQuery } from 'ember-views';
+import { jQueryDisabled, jQuery } from '@ember/-internals/views';
 
 import Test from '../lib/test';
 import setupForTesting from '../lib/setup_for_testing';

@@ -1,3 +1,4 @@
+import { OwnedTemplateMeta } from '@ember/-internals/views';
 import { Option } from '@glimmer/interfaces';
 import { OpcodeBuilder } from '@glimmer/opcode-compiler';
 import { ConstReference, Reference, Tag, VersionedPathReference } from '@glimmer/reference';
@@ -9,7 +10,6 @@ import {
   VM,
 } from '@glimmer/runtime';
 import * as WireFormat from '@glimmer/wire-format';
-import { OwnedTemplateMeta } from 'ember-views';
 import { OutletComponentDefinition, OutletDefinitionState } from '../component-managers/outlet';
 import { DynamicScope } from '../renderer';
 import { OutletReference, OutletState } from '../utils/outlet';

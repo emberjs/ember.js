@@ -3,7 +3,7 @@ import Test from '../lib/test';
 
 import { A as emberA } from 'ember-runtime';
 import { Route } from 'ember-routing';
-import { jQueryDisabled } from 'ember-views';
+import { jQueryDisabled } from '@ember/-internals/views';
 
 moduleFor(
   'ember-testing Integration tests of acceptance',

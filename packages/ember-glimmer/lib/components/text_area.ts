@@ -1,7 +1,7 @@
 /**
 @module @ember/component
 */
-import { TextSupport } from 'ember-views';
+import { TextSupport } from '@ember/-internals/views';
 import Component from '../component';
 import layout from '../templates/empty';
 

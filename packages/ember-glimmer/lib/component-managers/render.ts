@@ -4,9 +4,9 @@ import { CONSTANT_TAG, Tag, VersionedPathReference } from '@glimmer/reference';
 import { Arguments, ComponentDefinition, Invocation, WithStaticLayout } from '@glimmer/runtime';
 
 import { Owner } from '@ember/-internals/owner';
+import { OwnedTemplateMeta } from '@ember/-internals/views';
 import { DEBUG } from '@glimmer/env';
 import { generateController, generateControllerFactory } from 'ember-routing';
-import { OwnedTemplateMeta } from 'ember-views';
 import Environment from '../environment';
 import { DynamicScope } from '../renderer';
 import { OwnedTemplate } from '../template';

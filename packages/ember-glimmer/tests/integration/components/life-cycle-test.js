@@ -4,7 +4,7 @@ import { A as emberA } from 'ember-runtime';
 import { Component } from '../../utils/helpers';
 import { strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
-import { getViewId, getViewElement, jQueryDisabled } from 'ember-views';
+import { getViewId, getViewElement, jQueryDisabled } from '@ember/-internals/views';
 import { classes } from '../../utils/test-helpers';
 import { tryInvoke } from '@ember/-internals/utils';
 import { runAppend } from 'internal-test-helpers';

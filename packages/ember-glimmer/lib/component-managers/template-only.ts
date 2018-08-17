@@ -1,3 +1,4 @@
+import { OwnedTemplateMeta } from '@ember/-internals/views';
 import { ComponentCapabilities } from '@glimmer/interfaces';
 import { CONSTANT_TAG } from '@glimmer/reference';
 import {
@@ -6,7 +7,6 @@ import {
   NULL_REFERENCE,
   WithStaticLayout,
 } from '@glimmer/runtime';
-import { OwnedTemplateMeta } from 'ember-views';
 import RuntimeResolver from '../resolver';
 import { OwnedTemplate } from '../template';
 import AbstractManager from './abstract';

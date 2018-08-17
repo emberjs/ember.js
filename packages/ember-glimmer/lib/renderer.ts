@@ -1,4 +1,10 @@
 import { runInTransaction, setHasViews } from '@ember/-internals/metal';
+import {
+  fallbackViewRegistry,
+  getViewElement,
+  getViewId,
+  setViewElement,
+} from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { backburner, getCurrentRunLoop } from '@ember/runloop';
 import { Simple } from '@glimmer/interfaces';
@@ -16,7 +22,6 @@ import {
   UNDEFINED_REFERENCE,
 } from '@glimmer/runtime';
 import { Opaque } from '@glimmer/util';
-import { fallbackViewRegistry, getViewElement, getViewId, setViewElement } from 'ember-views';
 import RSVP from 'rsvp';
 import { BOUNDS } from './component';
 import { createRootOutlet } from './component-managers/outlet';

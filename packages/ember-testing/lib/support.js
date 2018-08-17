@@ -1,5 +1,5 @@
 import { warn } from '@ember/debug';
-import { jQuery, jQueryDisabled } from 'ember-views';
+import { jQuery, jQueryDisabled } from '@ember/-internals/views';
 
 import { hasDOM } from '@ember/-internals/browser-environment';
 

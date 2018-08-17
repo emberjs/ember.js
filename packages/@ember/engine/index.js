@@ -15,7 +15,7 @@ import DefaultResolver from '@ember/application/globals-resolver';
 import EngineInstance from '@ember/engine/instance';
 import { RoutingService } from 'ember-routing';
 import { ContainerDebugAdapter } from 'ember-extension-support';
-import { ComponentLookup } from 'ember-views';
+import { ComponentLookup } from '@ember/-internals/views';
 import { setupEngineRegistry } from 'ember-glimmer';
 
 function props(obj) {

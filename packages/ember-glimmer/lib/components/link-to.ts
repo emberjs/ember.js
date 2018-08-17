@@ -297,11 +297,11 @@
 */
 
 import { computed, get } from '@ember/-internals/metal';
+import { isSimpleClick } from '@ember/-internals/views';
 import { assert, warn } from '@ember/debug';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { inject as injectService } from '@ember/service';
 import { DEBUG } from '@glimmer/env';
-import { isSimpleClick } from 'ember-views';
 import EmberComponent, { HAS_BLOCK } from '../component';
 import layout from '../templates/link-to';
 

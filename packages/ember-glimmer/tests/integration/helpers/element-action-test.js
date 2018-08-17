@@ -10,7 +10,7 @@ import { EMBER_IMPROVED_INSTRUMENTATION } from '@ember/canary-features';
 
 import { Object as EmberObject, A as emberA } from 'ember-runtime';
 
-import { ActionManager } from 'ember-views';
+import { ActionManager } from '@ember/-internals/views';
 
 function getActionAttributes(element) {
   let attributes = element.attributes;

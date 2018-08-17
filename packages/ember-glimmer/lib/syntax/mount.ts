@@ -1,6 +1,7 @@
 /**
 @module ember
 */
+import { OwnedTemplateMeta } from '@ember/-internals/views';
 import { EMBER_ENGINES_MOUNT_PARAMS } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { Opaque, Option } from '@glimmer/interfaces';
@@ -14,7 +15,6 @@ import {
   VM,
 } from '@glimmer/runtime';
 import * as WireFormat from '@glimmer/wire-format';
-import { OwnedTemplateMeta } from 'ember-views';
 import { MountDefinition } from '../component-managers/mount';
 import Environment from '../environment';
 

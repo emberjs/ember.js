@@ -3,7 +3,7 @@
 */
 import { hasDOM } from '@ember/-internals/browser-environment';
 import { computed } from '@ember/-internals/metal';
-import { TextSupport } from 'ember-views';
+import { TextSupport } from '@ember/-internals/views';
 import Component from '../component';
 import layout from '../templates/empty';
 

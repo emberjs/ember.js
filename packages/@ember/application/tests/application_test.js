@@ -5,7 +5,7 @@ import { libraries } from '@ember/-internals/metal';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 import Application from '..';
 import { Router, NoneLocation, Route as EmberRoute } from 'ember-routing';
-import { jQueryDisabled, jQuery } from 'ember-views';
+import { jQueryDisabled, jQuery } from '@ember/-internals/views';
 import { _loaded } from '@ember/application';
 import Controller from '@ember/controller';
 import { Object as EmberObject } from 'ember-runtime';

@@ -1,3 +1,4 @@
+import { OwnedTemplateMeta } from '@ember/-internals/views';
 import {
   CompilableTemplate,
   CompileTimeLookup as ICompileTimeLookup,
@@ -6,7 +7,6 @@ import {
   ProgramSymbolTable,
 } from '@glimmer/interfaces';
 import { ComponentDefinition, ComponentManager, WithStaticLayout } from '@glimmer/runtime';
-import { OwnedTemplateMeta } from 'ember-views';
 import RuntimeResolver from './resolver';
 
 interface StaticComponentManager<DefinitionState>

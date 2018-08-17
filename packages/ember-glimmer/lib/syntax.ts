@@ -1,3 +1,4 @@
+import { OwnedTemplateMeta } from '@ember/-internals/views';
 import { EMBER_TEMPLATE_BLOCK_LET_HELPER } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { RENDER_HELPER } from '@ember/deprecated-features';
@@ -5,7 +6,6 @@ import { CompilableBlock } from '@glimmer/interfaces';
 import { Macros, OpcodeBuilder } from '@glimmer/opcode-compiler';
 import { Option } from '@glimmer/util';
 import { Core } from '@glimmer/wire-format';
-import { OwnedTemplateMeta } from 'ember-views';
 import CompileTimeLookup from './compile-time-lookup';
 import { textAreaMacro } from './syntax/-text-area';
 import { inputMacro } from './syntax/input';

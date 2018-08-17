@@ -6,7 +6,7 @@ import {
   reset as instrumentationReset,
 } from '@ember/instrumentation';
 import { EMBER_IMPROVED_INSTRUMENTATION } from '@ember/canary-features';
-import { jQueryDisabled, jQuery } from 'ember-views';
+import { jQueryDisabled, jQuery } from '@ember/-internals/views';
 import { HAS_NATIVE_PROXY } from '@ember/-internals/utils';
 import { DEBUG } from '@glimmer/env';
 

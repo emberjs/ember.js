@@ -5,7 +5,7 @@ import {
   getViewBounds,
   getViewClientRects,
   getViewBoundingClientRect,
-} from 'ember-views';
+} from '@ember/-internals/views';
 import { moduleFor, ApplicationTest, RenderingTest } from '../../utils/test-case';
 import { Component } from '../../utils/helpers';
 

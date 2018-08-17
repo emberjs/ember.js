@@ -1,4 +1,5 @@
 import { uuid } from '@ember/-internals/utils';
+import { ActionManager, isSimpleClick } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { join } from '@ember/runloop';
@@ -12,7 +13,6 @@ import {
   ModifierManager,
 } from '@glimmer/runtime';
 import { Destroyable } from '@glimmer/util';
-import { ActionManager, isSimpleClick } from 'ember-views';
 import { INVOKE } from '../utils/references';
 
 const MODIFIERS = ['alt', 'shift', 'meta', 'ctrl'];

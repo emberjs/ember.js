@@ -5,6 +5,7 @@
 // Remove after 3.4 once _ENABLE_RENDER_SUPPORT flag is no longer needed.
 
 import { ENV } from '@ember/-internals/environment';
+import { OwnedTemplateMeta } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { RENDER_HELPER } from '@ember/deprecated-features';
 import { Option } from '@glimmer/interfaces';
@@ -12,7 +13,6 @@ import { OpcodeBuilder } from '@glimmer/opcode-compiler';
 import { isConst, VersionedPathReference } from '@glimmer/reference';
 import { Arguments, CurriedComponentDefinition, curry, VM } from '@glimmer/runtime';
 import * as WireFormat from '@glimmer/wire-format';
-import { OwnedTemplateMeta } from 'ember-views';
 import {
   NON_SINGLETON_RENDER_MANAGER,
   RenderDefinition,

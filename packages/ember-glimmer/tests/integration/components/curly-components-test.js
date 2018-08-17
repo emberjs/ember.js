@@ -4,7 +4,7 @@ import { DEBUG } from '@glimmer/env';
 import { set, get, observer, on, computed } from '@ember/-internals/metal';
 import Service, { inject as injectService } from '@ember/service';
 import { Object as EmberObject, A as emberA } from 'ember-runtime';
-import { jQueryDisabled } from 'ember-views';
+import { jQueryDisabled } from '@ember/-internals/views';
 import { ENV } from '@ember/-internals/environment';
 import { Component, compile, htmlSafe } from '../../utils/helpers';
 import { strip } from '../../utils/abstract-test-case';

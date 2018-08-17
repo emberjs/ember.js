@@ -2,7 +2,7 @@ import Ember from '../index';
 import { FEATURES } from '@ember/canary-features';
 import { confirmExport } from 'internal-test-helpers';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
-import { jQueryDisabled } from '../../ember-views';
+import { jQueryDisabled } from '@ember/-internals/views';
 
 moduleFor(
   'ember reexports',
@@ -169,19 +169,19 @@ let allExports = [
   // ember-console
   ['Logger', 'ember-console', 'default'],
 
-  // ember-views
-  !jQueryDisabled && ['$', 'ember-views', 'jQuery'],
-  ['ViewUtils.isSimpleClick', 'ember-views', 'isSimpleClick'],
-  ['ViewUtils.getViewElement', 'ember-views', 'getViewElement'],
-  ['ViewUtils.getViewBounds', 'ember-views', 'getViewBounds'],
-  ['ViewUtils.getViewClientRects', 'ember-views', 'getViewClientRects'],
-  ['ViewUtils.getViewBoundingClientRect', 'ember-views', 'getViewBoundingClientRect'],
-  ['ViewUtils.getRootViews', 'ember-views', 'getRootViews'],
-  ['ViewUtils.getChildViews', 'ember-views', 'getChildViews'],
+  // @ember/-internals/views
+  !jQueryDisabled && ['$', '@ember/-internals/views', 'jQuery'],
+  ['ViewUtils.isSimpleClick', '@ember/-internals/views', 'isSimpleClick'],
+  ['ViewUtils.getViewElement', '@ember/-internals/views', 'getViewElement'],
+  ['ViewUtils.getViewBounds', '@ember/-internals/views', 'getViewBounds'],
+  ['ViewUtils.getViewClientRects', '@ember/-internals/views', 'getViewClientRects'],
+  ['ViewUtils.getViewBoundingClientRect', '@ember/-internals/views', 'getViewBoundingClientRect'],
+  ['ViewUtils.getRootViews', '@ember/-internals/views', 'getRootViews'],
+  ['ViewUtils.getChildViews', '@ember/-internals/views', 'getChildViews'],
   ['ViewUtils.isSerializationFirstNode', 'ember-glimmer', 'isSerializationFirstNode'],
-  ['TextSupport', 'ember-views'],
-  ['ComponentLookup', 'ember-views'],
-  ['EventDispatcher', 'ember-views'],
+  ['TextSupport', '@ember/-internals/views'],
+  ['ComponentLookup', '@ember/-internals/views'],
+  ['EventDispatcher', '@ember/-internals/views'],
 
   // ember-glimmer
   ['Component', 'ember-glimmer', 'Component'],
