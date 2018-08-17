@@ -1,5 +1,5 @@
 import { context } from '@ember/-internals/environment';
-import { hasDOM } from 'ember-browser-environment';
+import { hasDOM } from '@ember/-internals/browser-environment';
 import { ENV } from '@ember/-internals/environment';
 
 let jQuery;

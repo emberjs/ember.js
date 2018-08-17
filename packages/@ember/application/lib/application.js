@@ -4,7 +4,7 @@
 
 import { dictionary } from '@ember/-internals/utils';
 import { ENV } from '@ember/-internals/environment';
-import { hasDOM } from 'ember-browser-environment';
+import { hasDOM } from '@ember/-internals/browser-environment';
 import { assert, isTesting } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { bind, join, once, run, schedule } from '@ember/runloop';

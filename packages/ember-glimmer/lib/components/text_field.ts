@@ -1,7 +1,7 @@
 /**
 @module @ember/component
 */
-import { hasDOM } from 'ember-browser-environment';
+import { hasDOM } from '@ember/-internals/browser-environment';
 import { computed } from 'ember-metal';
 import { TextSupport } from 'ember-views';
 import Component from '../component';

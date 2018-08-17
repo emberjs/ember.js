@@ -1,4 +1,4 @@
-import { isChrome, isFirefox } from 'ember-browser-environment';
+import { isChrome, isFirefox } from '@ember/-internals/browser-environment';
 import { checkHasSuper } from '..';
 import { moduleFor, AbstractTestCase as TestCase } from 'internal-test-helpers';
 

@@ -1,5 +1,5 @@
 import { assert } from '@ember/debug';
-import { location } from 'ember-browser-environment';
+import { location } from '@ember/-internals/browser-environment';
 import { getHash } from './util';
 
 /**

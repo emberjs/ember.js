@@ -1,7 +1,7 @@
 import { A as emberA, isArray } from '../../lib/mixins/array';
 import ArrayProxy from '../../lib/system/array_proxy';
 import EmberObject from '../../lib/system/object';
-import { window } from 'ember-browser-environment';
+import { window } from '@ember/-internals/browser-environment';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 const global = this;

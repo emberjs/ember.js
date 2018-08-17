@@ -3,7 +3,7 @@ import { tryInvoke } from '@ember/-internals/utils';
 import { get, set } from 'ember-metal';
 import { assert } from '@ember/debug';
 import { Object as EmberObject } from 'ember-runtime';
-import { location, history, window, userAgent } from 'ember-browser-environment';
+import { location, history, window, userAgent } from '@ember/-internals/browser-environment';
 
 import {
   supportsHashChange,

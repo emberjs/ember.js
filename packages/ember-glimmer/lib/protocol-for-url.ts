@@ -1,6 +1,6 @@
 /* globals module, URL */
 
-import { hasDOM } from 'ember-browser-environment';
+import { hasDOM } from '@ember/-internals/browser-environment';
 import { IS_NODE, require } from 'node-module';
 import Environment from './environment';
 

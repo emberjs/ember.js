@@ -1,6 +1,6 @@
 import { OWNER } from '@ember/-internals/owner';
 import { assign } from '@ember/polyfills';
-import { window } from 'ember-browser-environment';
+import { window } from '@ember/-internals/browser-environment';
 import { run } from '@ember/runloop';
 import { get } from 'ember-metal';
 import AutoLocation from '../../lib/location/auto_location';
