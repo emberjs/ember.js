@@ -2183,6 +2183,30 @@ module('[glimmer-runtime] Updating', hooks => {
     "<ul>{{#each list key='key' as |item|}}<li class='{{item.class}}'>{{item.name}}</li>{{/each}}</ul>"
   );
 
+  test('The each helper with empty string items', assert => {
+    let template = compile(
+      `<ul>{{#each list key='@identity' as |item|}}<li>{{item}}</li>{{/each}}</ul>`
+    );
+
+    let object = { list: [''] };
+    render(template, object);
+
+    let lastNode = root.querySelector('li:last-child');
+
+    equalTokens(root, '<ul><li></li></ul>', 'Initial render');
+
+    object = { list: ['first!', ''] };
+    rerender(object);
+
+    equalTokens(root, '<ul><li>first!</li><li></li></ul>', 'After prepending list item');
+
+    assert.strictEqual(
+      root.querySelector('li:last-child'),
+      lastNode,
+      'The last node has not changed after prepending to list'
+    );
+  });
+
   test('The each helper with inverse', assert => {
     let object = { list: [] as any[] };
     let template = compile(
