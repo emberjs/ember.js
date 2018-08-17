@@ -3,8 +3,8 @@ import { ComponentCapabilities } from '@glimmer/interfaces';
 import { CONSTANT_TAG, Tag, VersionedPathReference } from '@glimmer/reference';
 import { Arguments, ComponentDefinition, Invocation, WithStaticLayout } from '@glimmer/runtime';
 
+import { Owner } from '@ember/-internals/owner';
 import { DEBUG } from '@glimmer/env';
-import { Owner } from 'ember-owner';
 import { generateController, generateControllerFactory } from 'ember-routing';
 import { OwnedTemplateMeta } from 'ember-views';
 import Environment from '../environment';

@@ -1,4 +1,4 @@
-import { OWNER } from 'ember-owner';
+import { OWNER } from '@ember/-internals/owner';
 import { assign } from '@ember/polyfills';
 import { EMBER_MODULE_UNIFICATION } from '@ember/canary-features';
 import { Registry } from '..';

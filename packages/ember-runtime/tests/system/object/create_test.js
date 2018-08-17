@@ -1,4 +1,4 @@
-import { getOwner, setOwner } from 'ember-owner';
+import { getOwner, setOwner } from '@ember/-internals/owner';
 import { computed, Mixin, observer } from 'ember-metal';
 import { DEBUG } from '@glimmer/env';
 import EmberObject from '../../../lib/system/object';

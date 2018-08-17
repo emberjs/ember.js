@@ -1,6 +1,6 @@
+import { Factory } from '@ember/-internals/owner';
 import { ComponentCapabilities, ProgramSymbolTable, VMHandle } from '@glimmer/interfaces';
 import { Option } from '@glimmer/util';
-import { Factory } from 'ember-owner';
 import { Component } from '../utils/curly-component-state-bucket';
 
 export default interface DefinitionState {

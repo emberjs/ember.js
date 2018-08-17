@@ -1,1 +1,1 @@
-export { getOwner, setOwner } from 'ember-owner';
+export { getOwner, setOwner } from '@ember/-internals/owner';

@@ -1,4 +1,4 @@
-import { OWNER } from 'ember-owner';
+import { OWNER } from '@ember/-internals/owner';
 import { assign } from '@ember/polyfills';
 import { window } from 'ember-browser-environment';
 import { run } from '@ember/runloop';

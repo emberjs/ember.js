@@ -1,4 +1,4 @@
-import { getOwner } from 'ember-owner';
+import { getOwner } from '@ember/-internals/owner';
 import { tryInvoke } from '@ember/-internals/utils';
 import { get, set } from 'ember-metal';
 import { assert } from '@ember/debug';

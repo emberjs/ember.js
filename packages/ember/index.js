@@ -116,7 +116,7 @@ import * as extensionSupport from 'ember-extension-support';
 import EmberError from '@ember/error';
 import * as runloop from '@ember/runloop';
 import { getOnerror, setOnerror } from 'ember-error-handling';
-import { getOwner, setOwner } from 'ember-owner';
+import { getOwner, setOwner } from '@ember/-internals/owner';
 import Application, { onLoad, runLoadHooks } from '@ember/application';
 import Resolver from '@ember/application/globals-resolver';
 import ApplicationInstance from '@ember/application/instance';

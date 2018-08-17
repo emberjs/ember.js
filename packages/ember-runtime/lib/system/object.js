@@ -3,7 +3,7 @@
 */
 
 import { FACTORY_FOR } from 'container';
-import { OWNER } from 'ember-owner';
+import { OWNER } from '@ember/-internals/owner';
 import { symbol, setName } from '@ember/-internals/utils';
 import { addListener } from 'ember-metal';
 import CoreObject from './core_object';

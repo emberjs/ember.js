@@ -1,5 +1,5 @@
 import { ROUTER_ROUTER } from '@ember/deprecated-features';
-import { getOwner } from 'ember-owner';
+import { getOwner } from '@ember/-internals/owner';
 import { assign } from '@ember/polyfills';
 import { once } from '@ember/runloop';
 import {

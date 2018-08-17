@@ -1,9 +1,9 @@
+import { Factory, LookupOptions, Owner, OWNER, setOwner } from '@ember/-internals/owner';
 import { dictionary, HAS_NATIVE_PROXY } from '@ember/-internals/utils';
 import { EMBER_MODULE_UNIFICATION } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { assign } from '@ember/polyfills';
 import { DEBUG } from '@glimmer/env';
-import { Factory, LookupOptions, Owner, OWNER, setOwner } from 'ember-owner';
 import Registry, { DebugRegistry, Injection } from './registry';
 
 declare global {
