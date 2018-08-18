@@ -14,8 +14,6 @@
   "files": [
     "build-metadata.json",
     "blueprints",
-    "dist/ember-runtime.js",
-    "dist/ember-runtime.map",
     "dist/ember-template-compiler.js",
     "dist/ember-template-compiler.map",
     "dist/ember-testing.js",
