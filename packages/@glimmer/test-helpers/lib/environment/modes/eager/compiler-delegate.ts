@@ -42,12 +42,16 @@ export default class EagerCompilerDelegate implements CompilerDelegate<Locator> 
     return { module: path!, name: 'default' };
   }
 
-  hasModifierInScope(_modifierName: string, _referrer: Locator): boolean {
-    return false;
+  hasModifierInScope(modifierName: string, _referrer: Locator): boolean {
+    let modifier = this.modules.get(modifierName);
+    return modifier !== undefined && modifier.type === 'modifier';
   }
 
-  resolveModifier(_modifierName: string, _referrer: Locator): ModuleLocator {
-    throw new Error('Method not implemented.');
+  resolveModifier(modifierName: string, referrer: Locator): ModuleLocator {
+    return {
+      module: this.modules.resolve(modifierName, referrer, 'ui/components')!,
+      name: 'default',
+    };
   }
 
   hasPartialInScope(_partialName: string, _referrer: Locator): boolean {

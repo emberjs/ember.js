@@ -11,7 +11,6 @@ import {
   regex,
   stripTight,
   TestEnvironment,
-  TestModifierManager,
   assertElement,
 } from '@glimmer/test-helpers';
 import { assign } from '@glimmer/util';
@@ -1357,7 +1356,7 @@ QUnit.test(`Glimmer component with element modifier`, function(assert) {
 QUnit.test('Custom element with element modifier', function(assert) {
   assert.expect(0);
 
-  env.registerModifier('foo', new TestModifierManager());
+  env.registerModifier('foo');
 
   appendViewFor('<some-custom-element {{foo "foo"}}></some-custom-element>');
 });

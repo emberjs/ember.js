@@ -5,12 +5,25 @@ import {
   Arguments,
   DynamicScope,
 } from '@glimmer/runtime';
-import { Opaque, Option } from '@glimmer/interfaces';
+import { Option, Simple } from '@glimmer/interfaces';
 import { Tag, CONSTANT_TAG } from '@glimmer/reference';
 import { Destroyable } from '@glimmer/util';
 
-export class InertModifierManager implements ModifierManager<Opaque> {
-  create() {}
+export class InertModifierStateBucket {}
+
+export class InertModifierDefinitionState {}
+
+export class InertModifierManager
+  implements ModifierManager<InertModifierStateBucket, InertModifierDefinitionState> {
+  create(
+    _element: Element,
+    _state: InertModifierDefinitionState,
+    _args: Arguments,
+    _dynamicScope: DynamicScope,
+    _dom: any
+  ) {
+    return new InertModifierStateBucket();
+  }
 
   getTag(): Tag {
     return CONSTANT_TAG;
@@ -25,42 +38,78 @@ export class InertModifierManager implements ModifierManager<Opaque> {
   }
 }
 
-export class TestModifier {
-  constructor(public element: Element, public args: CapturedArguments, public dom: IDOMChanges) {}
+export class TestModifierDefinitionState {
+  instance?: TestModifierInstance;
+  constructor(Klass?: TestModifierConstructor) {
+    if (Klass) {
+      this.instance = new Klass();
+    }
+  }
 }
 
-export class TestModifierManager implements ModifierManager<TestModifier> {
+export class TestModifier {
+  constructor(
+    public element: Element,
+    public state: TestModifierDefinitionState,
+    public args: CapturedArguments,
+    public dom: IDOMChanges
+  ) {}
+}
+
+export interface TestModifierConstructor {
+  new (): TestModifierInstance;
+}
+
+export interface TestModifierInstance {
+  element?: Simple.Element;
+  didInsertElement(): void;
+  didUpdate(): void;
+  willDestroyElement(): void;
+}
+
+export class TestModifierManager
+  implements ModifierManager<TestModifier, TestModifierDefinitionState> {
   public installedElements: Element[] = [];
   public updatedElements: Element[] = [];
   public destroyedModifiers: TestModifier[] = [];
 
   create(
     element: Element,
+    state: TestModifierDefinitionState,
     args: Arguments,
     _dynamicScope: DynamicScope,
     dom: IDOMChanges
-  ): TestModifier {
-    return new TestModifier(element, args.capture(), dom);
+  ) {
+    return new TestModifier(element, state, args.capture(), dom);
   }
 
   getTag({ args: { tag } }: TestModifier): Tag {
     return tag;
   }
 
-  install({ element, args, dom }: TestModifier) {
+  install({ element, args, dom, state }: TestModifier) {
     this.installedElements.push(element);
 
     let param = args.positional.at(0).value();
     dom.setAttribute(element, 'data-modifier', `installed - ${param}`);
 
+    if (state.instance && state.instance.didInsertElement) {
+      state.instance.element = element;
+      state.instance.didInsertElement();
+    }
+
     return;
   }
 
-  update({ element, args, dom }: TestModifier) {
+  update({ element, args, dom, state }: TestModifier) {
     this.updatedElements.push(element);
 
     let param = args.positional.at(0).value();
     dom.setAttribute(element, 'data-modifier', `updated - ${param}`);
+
+    if (state.instance && state.instance.didUpdate) {
+      state.instance.didUpdate();
+    }
 
     return;
   }
@@ -69,7 +118,10 @@ export class TestModifierManager implements ModifierManager<TestModifier> {
     return {
       destroy: () => {
         this.destroyedModifiers.push(modifier);
-        let { element, dom } = modifier;
+        let { element, dom, state } = modifier;
+        if (state.instance && state.instance.didUpdate) {
+          state.instance.willDestroyElement();
+        }
         dom.removeAttribute(element, 'data-modifier');
       },
     };

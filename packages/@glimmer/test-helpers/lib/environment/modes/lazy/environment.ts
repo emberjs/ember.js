@@ -24,6 +24,7 @@ import {
   DynamicScope,
   ElementBuilder,
   TemplateIterator,
+  ModifierDefinition,
 } from '@glimmer/runtime';
 import { Template } from '@glimmer/interfaces';
 import { templateFactory, PartialDefinition, LazyCompiler } from '@glimmer/opcode-compiler';
@@ -55,7 +56,13 @@ import {
 } from '../../components';
 
 import { UserHelper, HelperReference } from '../../helper';
-import { InertModifierManager } from '../../modifier';
+import {
+  InertModifierManager,
+  TestModifierManager,
+  TestModifierDefinitionState,
+  InertModifierDefinitionState,
+  TestModifierConstructor,
+} from '../../modifier';
 import TestMacros from '../../macros';
 import { Opaque } from '@glimmer/util';
 import { PathReference } from '@glimmer/reference';
@@ -110,10 +117,12 @@ export default class LazyTestEnvironment extends TestEnvironment<TestMeta> {
 
     // recursive field, so "unsafely" set one half late (but before the resolver is actually used)
     this.resolver['compiler'] = this.compiler;
+    let manager = new InertModifierManager();
+    let state = new InertModifierDefinitionState();
     this.registerHelper('if', ([cond, yes, no]) => (cond ? yes : no));
     this.registerHelper('unless', ([cond, yes, no]) => (cond ? no : yes));
     this.registerInternalHelper('-get-dynamic-var', getDynamicVar);
-    this.registerModifier('action', new InertModifierManager());
+    this.registerInternalModifier('action', manager, state);
 
     this.registerInternalHelper('hash', (_vm: VM, args: Arguments) => args.capture().named);
   }
@@ -230,9 +239,15 @@ export default class LazyTestEnvironment extends TestEnvironment<TestMeta> {
     return helper;
   }
 
-  registerModifier(name: string, modifier: ModifierManager<any>): ModifierManager {
-    this.resolver.register('modifier', name, modifier);
-    return modifier;
+  registerInternalModifier(name: string, manager: ModifierManager<Opaque, Opaque>, state: Opaque) {
+    this.resolver.register('modifier', name, { manager, state });
+  }
+
+  registerModifier(name: string, ModifierClass?: TestModifierConstructor) {
+    let state = new TestModifierDefinitionState(ModifierClass);
+    let manager = new TestModifierManager();
+    this.resolver.register('modifier', name, { manager, state });
+    return { manager, state };
   }
 
   registerPartial(name: string, source: string): PartialDefinition {
@@ -260,9 +275,9 @@ export default class LazyTestEnvironment extends TestEnvironment<TestMeta> {
     return curry(spec);
   }
 
-  resolveModifier(modifierName: string): Option<ModifierManager> {
+  resolveModifier(modifierName: string): Option<ModifierDefinition> {
     let handle = this.resolver.lookupModifier(modifierName);
-    return handle === null ? null : this.resolver.resolve<ModifierManager>(handle);
+    return handle === null ? null : this.resolver.resolve<ModifierDefinition>(handle);
   }
 
   preprocess(template: string, meta?: TestMeta): Template<TestMeta> {

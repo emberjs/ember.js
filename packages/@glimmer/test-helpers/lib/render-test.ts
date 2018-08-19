@@ -32,6 +32,7 @@ import {
 } from './environment/components';
 import RenderDelegate from './render-delegate';
 import { debugRehydration } from './environment/modes/rehydration/debug-builder';
+import { TestModifierConstructor } from './environment/modifier';
 
 export const OPEN: { marker: 'open-block' } = { marker: 'open-block' };
 export const CLOSE: { marker: 'close-block' } = { marker: 'close-block' };
@@ -137,6 +138,10 @@ export class RenderTest {
 
   registerHelper(name: string, helper: UserHelper) {
     this.delegate.registerHelper(name, helper);
+  }
+
+  registerModifier(name: string, ModifierClass: TestModifierConstructor) {
+    this.delegate.registerModifier(name, ModifierClass);
   }
 
   registerComponent<K extends ComponentKind>(
@@ -669,6 +674,11 @@ export class RehydrationDelegate implements RenderDelegate {
   registerHelper(name: string, helper: UserHelper): void {
     this.clientEnv.registerHelper(name, helper);
     this.serverEnv.registerHelper(name, helper);
+  }
+
+  registerModifier(name: string, ModifierClass: TestModifierConstructor): void {
+    this.clientEnv.registerModifier(name, ModifierClass);
+    this.serverEnv.registerModifier(name, ModifierClass);
   }
 }
 

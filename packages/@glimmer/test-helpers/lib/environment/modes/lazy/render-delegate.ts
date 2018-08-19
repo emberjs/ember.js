@@ -13,6 +13,7 @@ import {
   renderTemplate,
 } from '../../../render-test';
 import { PathReference } from '@glimmer/reference';
+import { TestModifierConstructor } from '../../modifier';
 
 declare const module: any;
 
@@ -39,6 +40,10 @@ export default class LazyRenderDelegate implements RenderDelegate {
     Class?: ComponentTypes[K]
   ) {
     registerComponent(this.env, type, name, layout, Class);
+  }
+
+  registerModifier(name: string, ModifierClass: TestModifierConstructor): void {
+    this.env.registerModifier(name, ModifierClass);
   }
 
   registerHelper(name: string, helper: UserHelper): void {
