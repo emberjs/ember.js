@@ -9,8 +9,7 @@ import { PublicVM } from './vm/append';
 import { IArguments } from './vm/arguments';
 import { UNDEFINED_REFERENCE, ConditionalReference } from './references';
 import { DynamicAttribute, dynamicAttribute } from './vm/attributes/dynamic';
-import { ModifierManager, Modifier } from './modifier/interfaces';
-import { Component, ComponentManager } from './internal-interfaces';
+import { Component, ComponentManager, ModifierManager, Modifier } from './internal-interfaces';
 
 export type ScopeBlock = [number | CompilableBlock, Scope, BlockSymbolTable];
 export type BlockValue = ScopeBlock[0 | 1 | 2];

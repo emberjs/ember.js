@@ -12,7 +12,6 @@ import {
   assertNodeTagName,
   BasicComponent,
   TestEnvironment,
-  TestModifierManager,
   equalTokens,
   stripTight,
   trimLines,
@@ -3161,8 +3160,7 @@ QUnit.module('Updating Element Modifiers', hooks => {
   hooks.beforeEach(() => commonSetup());
 
   test('Updating a element modifier', assert => {
-    let manager = new TestModifierManager();
-    env.registerModifier('foo', manager);
+    let { manager } = env.registerModifier('foo');
 
     let template = compile('<div><div {{foo bar baz=fizz}}></div></div>');
     let input = {
@@ -3212,8 +3210,7 @@ QUnit.module('Updating Element Modifiers', hooks => {
   });
 
   test("Const input doesn't trigger update in a element modifier", assert => {
-    let manager = new TestModifierManager();
-    env.registerModifier('foo', manager);
+    let { manager } = env.registerModifier('foo');
 
     let template = compile('<div><div {{foo "bar"}}></div></div>');
     let input = {};
@@ -3241,8 +3238,7 @@ QUnit.module('Updating Element Modifiers', hooks => {
   });
 
   test('Destructor is triggered on element modifiers', assert => {
-    let manager = new TestModifierManager();
-    env.registerModifier('foo', manager);
+    let { manager } = env.registerModifier('foo');
 
     let template = compile('{{#if bar}}<div {{foo bar}}></div>{{else}}<div></div>{{/if}}');
     let input = {

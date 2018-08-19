@@ -19,7 +19,11 @@ import {
 } from '@glimmer/debug';
 import { Simple } from '@glimmer/interfaces';
 import { Op, Register } from '@glimmer/vm';
-import { Modifier, ModifierManager } from '../../modifier/interfaces';
+import {
+  ModifierDefinition,
+  InternalModifierManager,
+  ModifierInstanceState,
+} from '../../modifier/interfaces';
 import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
 import { UpdatingVM } from '../../vm';
 import { Assert } from './vm';
@@ -97,13 +101,14 @@ APPEND_OPCODES.add(Op.CloseElement, vm => {
 });
 
 APPEND_OPCODES.add(Op.Modifier, (vm, { op1: handle }) => {
-  let manager = vm.constants.resolveHandle<ModifierManager>(handle);
+  let { manager, state } = vm.constants.resolveHandle<ModifierDefinition>(handle);
   let stack = vm.stack;
   let args = check(stack.pop(), CheckArguments);
   let { constructing: element, updateOperations } = vm.elements();
   let dynamicScope = vm.dynamicScope();
   let modifier = manager.create(
     element as Simple.FIX_REIFICATION<Element>,
+    state,
     args,
     dynamicScope,
     updateOperations
@@ -127,7 +132,11 @@ export class UpdateModifierOpcode extends UpdatingOpcode {
   public type = 'update-modifier';
   private lastUpdated: Revision;
 
-  constructor(public tag: Tag, private manager: ModifierManager, private modifier: Modifier) {
+  constructor(
+    public tag: Tag,
+    private manager: InternalModifierManager,
+    private modifier: ModifierInstanceState
+  ) {
     super();
     this.lastUpdated = tag.value();
   }

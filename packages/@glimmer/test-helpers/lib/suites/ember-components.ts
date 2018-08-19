@@ -116,6 +116,38 @@ export class EmberishComponentTests extends RenderTest {
   }
 
   @test
+  'Element modifier with hooks'(assert: Assert) {
+    assert.expect(4);
+
+    this.registerModifier(
+      'foo',
+      class {
+        element?: Element;
+        didInsertElement() {
+          assert.ok(this.element);
+          assert.equal(this.element!.getAttribute('data-ok'), 'true');
+        }
+
+        didUpdate() {
+          assert.ok(true);
+        }
+
+        willDestroyElement() {
+          assert.ok(true);
+        }
+      }
+    );
+
+    this.render('{{#if ok}}<div data-ok=true {{foo bar}}></div>{{/if}}', {
+      bar: 'bar',
+      ok: true,
+    });
+
+    this.rerender({ bar: 'foo' });
+    this.rerender({ ok: false });
+  }
+
+  @test
   'non-block without properties'() {
     this.render({
       layout: 'In layout',
