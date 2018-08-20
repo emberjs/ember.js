@@ -8,17 +8,17 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
     '@tracked get validation',
     class extends AbstractTestCase {
       [`@test validators for tracked getters with dependencies should invalidate when the dependencies invalidate`](
-        assert
+        assert: Assert
       ) {
         class Tracked {
-          @tracked first: string;
-          @tracked last: string;
+          @tracked first?: string = undefined;
+          @tracked last?: string = undefined;
           constructor(first: string, last: string) {
             this.first = first;
             this.last = last;
           }
 
-          @tracked(['first', 'last'])
+          @tracked
           get full() {
             return `${this.first} ${this.last}`;
           }
@@ -37,6 +37,7 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
         assert.equal(tag.validate(snapshot), true);
 
         obj.first = 'Thomas';
+
         assert.equal(tag.validate(snapshot), false);
 
         assert.equal(obj.full, 'Thomas Dale');
@@ -46,7 +47,7 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
       }
 
       [`@test interaction with Ember object model (tracked property depending on Ember property)`](
-        assert
+        assert: Assert
       ) {
         interface NameInterface {
           first: string;
@@ -58,7 +59,7 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
             this.name = name;
           }
 
-          @tracked('name')
+          @tracked
           get full() {
             return `${get(this.name, 'first')} ${get(this.name, 'last')}`;
           }
@@ -88,7 +89,7 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
       }
 
       [`@test interaction with Ember object model (Ember computed property depending on tracked property)`](
-        assert
+        assert: Assert
       ) {
         class EmberObject {
           name: Name;
@@ -142,10 +143,11 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
       }
 
       ['@test interaction with the Ember object model (paths going through tracked properties)'](
-        assert
+        assert: Assert
       ) {
         class EmberObject {
-          constructor(contact) {
+          contact: Contact;
+          constructor(contact: Contact) {
             this.contact = contact;
           }
         }
@@ -160,15 +162,16 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
         );
 
         class Contact {
-          constructor(name) {
+          @tracked name?: EmberName = undefined;
+          constructor(name: EmberName) {
             this.name = name;
           }
         }
 
-        track(Contact, ['name']);
-
         class EmberName {
-          constructor(first, last) {
+          first: string;
+          last: string;
+          constructor(first: string, last: string) {
             this.first = first;
             this.last = last;
           }
@@ -207,31 +210,4 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
       }
     }
   );
-}
-
-function track(Class, properties, accessors = {}) {
-  let proto = Class.prototype;
-
-  properties.forEach(prop => defineData(proto, prop));
-
-  let keys = Object.getOwnPropertyNames(accessors);
-
-  keys.forEach(key => defineAccessor(proto, key, Object.getOwnPropertyDescriptor(accessors, key)));
-}
-
-function defineData(prototype, property) {
-  Object.defineProperty(
-    prototype,
-    property,
-    tracked(prototype, property, {
-      enumerable: true,
-      configurable: true,
-      writable: true,
-      value: undefined,
-    })
-  );
-}
-
-function defineAccessor(prototype, property, descriptor) {
-  Object.defineProperty(prototype, property, tracked(prototype, property, descriptor));
 }

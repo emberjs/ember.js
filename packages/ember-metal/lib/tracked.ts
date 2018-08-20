@@ -102,9 +102,7 @@ export function tracked(target: any, key: any, descriptor: PropertyDescriptor): 
 export function tracked(...dependencies: any[]): any {
   let [, key, descriptor] = dependencies;
 
-  if (!descriptor) return;
-
-  if ('value' in descriptor) {
+  if (descriptor === undefined || 'initializer' in descriptor) {
     return descriptorForDataProperty(key, descriptor);
   } else {
     return descriptorForAccessor(key, descriptor);
