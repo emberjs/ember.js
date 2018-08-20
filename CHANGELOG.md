@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### v3.3.2 (August 20, 2018)
+
+- [#16853](https://github.com/emberjs/ember.js/pull/16853) [BUGFIX] Allow ArrayProxy#pushObjects to accept ArrayProxy again
+- [#16870](https://github.com/emberjs/ember.js/pull/16870) [BUGFIX] Enable @ember/object#get to be called with an empty string
+
 ### v3.3.1 (July 23, 2018)
 
 - [#16836](https://github.com/emberjs/ember.js/pull/16836/commits) [DOC] Fix Broken 3.3 API Documentation
@@ -63,7 +68,7 @@
 ### v3.1.4 (August 07, 2018)
 
 - [#16565](https://github.com/emberjs/ember.js/pull/16565) Fix template / component caching during rendering.
-- [#16853](https://github.com/emberjs/ember.js/pull/16853) [BUGFIX beta] Allow ArrayProxy#pushObjects to accept ArrayProxy again
+- [#16853](https://github.com/emberjs/ember.js/pull/16853) [BUGFIX] Allow ArrayProxy#pushObjects to accept ArrayProxy again
 
 ### v3.1.3 (June 21, 2018)
 - [#16754](https://github.com/emberjs/ember.js/pull/16754) [BUGFIX] Fix container destroy timing
