@@ -1,29 +1,28 @@
-import { computed, defineProperty, get, set, tracked } from '../..';
-
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
-import { tagForProperty } from '../..';
+import { computed, defineProperty, get, set, tagForProperty, tracked } from '../..';
 
 import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
+import { AbstractTestCase, moduleFor } from 'internal-test-helpers';
 
 if (EMBER_METAL_TRACKED_PROPERTIES) {
   moduleFor(
-    'tracked get validation',
+    '@tracked get validation',
     class extends AbstractTestCase {
       [`@test validators for tracked getters with dependencies should invalidate when the dependencies invalidate`](
         assert
       ) {
         class Tracked {
-          constructor(first, last) {
+          @tracked first: string;
+          @tracked last: string;
+          constructor(first: string, last: string) {
             this.first = first;
             this.last = last;
           }
-        }
 
-        track(Tracked, ['first', 'last'], {
+          @tracked(['first', 'last'])
           get full() {
             return `${this.first} ${this.last}`;
-          },
-        });
+          }
+        }
 
         let obj = new Tracked('Tom', 'Dale');
 
@@ -49,17 +48,21 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
       [`@test interaction with Ember object model (tracked property depending on Ember property)`](
         assert
       ) {
+        interface NameInterface {
+          first: string;
+          last: string;
+        }
         class Tracked {
-          constructor(name) {
+          @tracked name: NameInterface;
+          constructor(name: NameInterface) {
             this.name = name;
           }
-        }
 
-        track(Tracked, ['name'], {
+          @tracked('name')
           get full() {
             return `${get(this.name, 'first')} ${get(this.name, 'last')}`;
-          },
-        });
+          }
+        }
 
         let tom = { first: 'Tom', last: 'Dale' };
 
@@ -88,7 +91,8 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
         assert
       ) {
         class EmberObject {
-          constructor(name) {
+          name: Name;
+          constructor(name: Name) {
             this.name = name;
           }
         }
@@ -103,13 +107,13 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
         );
 
         class Name {
-          constructor(first, last) {
+          @tracked first: string;
+          @tracked last: string;
+          constructor(first: string, last: string) {
             this.first = first;
             this.last = last;
           }
         }
-
-        track(Name, ['first', 'last']);
 
         let tom = new Name('Tom', 'Dale');
         let obj = new EmberObject(tom);
@@ -134,7 +138,7 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
         assert.equal(get(obj, 'full'), 'Thomas Dale');
         snapshot = tag.value();
 
-        // assert.equal(tag.validate(snapshot), true);
+        assert.equal(tag.validate(snapshot), true);
       }
 
       ['@test interaction with the Ember object model (paths going through tracked properties)'](
