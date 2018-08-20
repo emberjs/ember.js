@@ -32,16 +32,18 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
         setHasViews(() => false);
       }
 
-      ['@test should set arbitrary properties on an object'](assert) {
+      ['@test should set arbitrary properties on an object'](assert: Assert) {
         let obj = createObj();
 
-        let newObj = new class {
+        class Obj {
           @tracked undefinedValue = 'emberjs';
 
           constructor() {
             this.undefinedValue = 'emberjs';
           }
-        }();
+        }
+
+        let newObj = new Obj();
 
         for (let key in obj) {
           assert.equal(set(newObj, key, obj[key]), obj[key], 'should return value');
@@ -49,13 +51,15 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
         }
       }
 
-      ['@test should set a number key on an object'](assert) {
-        let obj = new class {
+      ['@test should set a number key on an object'](assert: Assert) {
+        class Obj {
           @tracked 1 = 'original';
           constructor() {
             this[1] = 'original';
           }
-        }();
+        }
+
+        let obj = new Obj();
 
         set(obj, '1', 'first');
         assert.equal(obj[1], 'first');

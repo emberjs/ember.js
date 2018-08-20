@@ -7,7 +7,7 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
   moduleFor(
     '@tracked getters',
     class extends AbstractTestCase {
-      ['@test works without get'](assert) {
+      ['@test works without get'](assert: Assert) {
         let count = 0;
 
         class Count {
@@ -24,7 +24,7 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
         assert.equal(count, 1, 'should have invoked computed property');
       }
 
-      ['@test defining computed property should invoke property on get'](assert) {
+      ['@test defining computed property should invoke property on get'](assert: Assert) {
         let count = 0;
 
         class Count {
@@ -41,10 +41,10 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
         assert.equal(count, 1, 'should have invoked computed property');
       }
 
-      ['@test defining computed property should invoke property on set'](assert) {
+      ['@test defining computed property should invoke property on set'](assert: Assert) {
         let count = 0;
 
-        let obj = new class {
+        class Foo {
           __foo = '';
 
           @tracked
@@ -56,7 +56,9 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
             count++;
             this.__foo = `computed ${value}`;
           }
-        }();
+        }
+
+        let obj = new Foo();
 
         assert.equal(set(obj, 'foo', 'bar'), 'bar', 'should return set value');
         assert.equal(count, 1, 'should have invoked computed property');

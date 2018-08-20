@@ -91,10 +91,12 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
       [`@test interaction with Ember object model (Ember computed property depending on tracked property)`](
         assert: Assert
       ) {
+        let self: EmberObject;
         class EmberObject {
           name: Name;
           constructor(name: Name) {
             this.name = name;
+            self = this;
           }
         }
 
@@ -102,7 +104,7 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
           EmberObject.prototype,
           'full',
           computed('name', function() {
-            let name = get(this, 'name');
+            let name = get(self, 'name');
             return `${name.first} ${name.last}`;
           })
         );
@@ -145,10 +147,12 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
       ['@test interaction with the Ember object model (paths going through tracked properties)'](
         assert: Assert
       ) {
+        let self: EmberObject;
         class EmberObject {
           contact: Contact;
           constructor(contact: Contact) {
             this.contact = contact;
+            self = this;
           }
         }
 
@@ -156,7 +160,7 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
           EmberObject.prototype,
           'full',
           computed('contact.name.first', 'contact.name.last', function() {
-            let contact = get(this, 'contact');
+            let contact = get(self, 'contact');
             return `${get(contact.name, 'first')} ${get(contact.name, 'last')}`;
           })
         );

@@ -43,7 +43,7 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
 
         let obj = new Obj();
 
-        this.assert.equal(get(obj, 1), 'first');
+        this.assert.equal(get(obj, '1'), 'first');
       }
 
       '@test should retrieve an empty key on an object'() {
@@ -112,7 +112,7 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
         let obj = createObj();
 
         for (let key in obj) {
-          this.assert.equal(getWithDefault(obj, key, 'fail'), obj[key], key);
+          this.assert.equal(getWithDefault(obj, key as any, 'fail'), obj[key], key);
         }
 
         class Obj {
@@ -130,7 +130,7 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
           'explicit undefined retrieves the default'
         );
         this.assert.equal(
-          getWithDefault(obj2, 'not-present', 'default'),
+          getWithDefault(obj2, 'not-present' as any, 'default'),
           'default',
           'non-present key retrieves the default'
         );
