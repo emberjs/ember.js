@@ -15,7 +15,7 @@ if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$PUBLISH" == "true" ]; then
   #### NPM PUBLISHING
   if [[ "$TRAVIS_TAG" =~ ^v[0-9.]+ ]]; then
     echo -e "CURRENT_TAG: ${TRAVIS_TAG}\n"
-    echo $NPM_AUTH_TOKEN > ~/.npmrc
+    echo "//registry.npmjs.org/:_authToken=${NPM_AUTH_TOKEN}"> ~/.npmrc
 
     NPM_USER=`npm whoami`
     echo -e "Publishing to npm as $NPM_USER...\n"
