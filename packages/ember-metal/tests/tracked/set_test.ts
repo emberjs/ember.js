@@ -1,31 +1,47 @@
-import { get, set, setHasViews } from '../..';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
-
-import { createTracked } from './support';
+import { AbstractTestCase, moduleFor } from 'internal-test-helpers';
+import { get, set, setHasViews, tracked } from '../..';
 
 import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 
 if (EMBER_METAL_TRACKED_PROPERTIES) {
+  const createObj = () => {
+    class Obj {
+      @tracked string = 'string';
+      @tracked number = 23;
+      @tracked boolTrue = true;
+      @tracked boolFalse = false;
+      @tracked nullValue = null;
+      @tracked undefinedValue = undefined;
+      constructor() {
+        this.string = 'string';
+        this.number = 23;
+        this.boolTrue = true;
+        this.boolFalse = false;
+        this.nullValue = null;
+        this.undefinedValue = undefined;
+      }
+    }
+
+    return new Obj();
+  };
+
   moduleFor(
-    'tracked set',
+    '@tracked set',
     class extends AbstractTestCase {
       teardown() {
         setHasViews(() => false);
       }
 
       ['@test should set arbitrary properties on an object'](assert) {
-        let obj = createTracked({
-          string: 'string',
-          number: 23,
-          boolTrue: true,
-          boolFalse: false,
-          nullValue: null,
-          undefinedValue: undefined,
-        });
+        let obj = createObj();
 
-        let newObj = createTracked({
-          undefinedValue: 'emberjs',
-        });
+        let newObj = new class {
+          @tracked undefinedValue = 'emberjs';
+
+          constructor() {
+            this.undefinedValue = 'emberjs';
+          }
+        }();
 
         for (let key in obj) {
           assert.equal(set(newObj, key, obj[key]), obj[key], 'should return value');
@@ -34,9 +50,14 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
       }
 
       ['@test should set a number key on an object'](assert) {
-        let obj = createTracked({ 1: 'original' });
+        let obj = new class {
+          @tracked 1 = 'original';
+          constructor() {
+            this[1] = 'original';
+          }
+        }();
 
-        set(obj, 1, 'first');
+        set(obj, '1', 'first');
         assert.equal(obj[1], 'first');
       }
     }
