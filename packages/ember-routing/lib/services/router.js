@@ -9,7 +9,7 @@ import { shallowEqual, resemblesURL, extractRouteArgs } from '../utils';
    giving them a friendly way to initiate transitions and ask questions about the current 
    global router state.
 
-   In this example, the Router service is injected into a component to initiate a transaction 
+   In this example, the Router service is injected into a component to initiate a transition 
    to a dedicated route:
    ```javascript
    import Component from '@ember/component';
