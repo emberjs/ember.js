@@ -302,7 +302,7 @@ let allExports = [
   ['Resolver', '@ember/application/globals-resolver', 'default'],
   ['DefaultResolver', '@ember/application/globals-resolver', 'default'],
 
-  // ember-extension-support
-  ['DataAdapter', 'ember-extension-support'],
-  ['ContainerDebugAdapter', 'ember-extension-support'],
+  // @ember/-internals/extension-support
+  ['DataAdapter', '@ember/-internals/extension-support'],
+  ['ContainerDebugAdapter', '@ember/-internals/extension-support'],
 ].filter(Boolean);

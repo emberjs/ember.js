@@ -112,7 +112,7 @@ import {
 import VERSION from './version';
 import * as views from '@ember/-internals/views';
 import * as routing from 'ember-routing';
-import * as extensionSupport from 'ember-extension-support';
+import * as extensionSupport from '@ember/-internals/extension-support';
 import EmberError from '@ember/error';
 import * as runloop from '@ember/runloop';
 import { getOnerror, setOnerror } from '@ember/-internals/error-handling';
