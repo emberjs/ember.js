@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### v3.4.0-beta.3 (August 21, 2018)
+
+- [#16870](https://github.com/emberjs/ember.js/pull/16870) [BUGFIX] Enable @ember/object#get to be called with an empty string
+- [#16603](https://github.com/emberjs/ember.js/pull/16603) [BUGFIX] Support mouseEnter/Leave events w/o jQuery
+
 ### v3.4.0-beta.2 (August 06, 2018)
 
 - [#16857](https://github.com/emberjs/ember.js/pull/16857) [BUGFIX] Prevents the recursive redefinition of root chains
