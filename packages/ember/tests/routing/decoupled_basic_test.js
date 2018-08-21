@@ -3,7 +3,7 @@ import { getOwner } from '@ember/-internals/owner';
 import RSVP from 'rsvp';
 import { compile } from 'ember-template-compiler';
 import { ENV } from '@ember/-internals/environment';
-import { Route, NoneLocation, HistoryLocation } from 'ember-routing';
+import { Route, NoneLocation, HistoryLocation } from '@ember/-internals/routing';
 import Controller from '@ember/controller';
 import { Object as EmberObject, A as emberA } from '@ember/-internals/runtime';
 import { moduleFor, ApplicationTestCase, runDestroy } from 'internal-test-helpers';

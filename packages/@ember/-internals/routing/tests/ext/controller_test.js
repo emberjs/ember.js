@@ -3,7 +3,7 @@ import Controller from '@ember/controller';
 import { buildOwner, moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
-  'ember-routing/ext/controller',
+  '@ember/-internals/routing/ext/controller',
   class extends AbstractTestCase {
     ["@test transitionToRoute considers an engine's mountPoint"](assert) {
       let router = {

@@ -5,7 +5,7 @@ import Controller from '@ember/controller';
 import { RSVP } from '@ember/-internals/runtime';
 import { Component } from '@ember/-internals/glimmer';
 import Engine from '@ember/engine';
-import { Route } from 'ember-routing';
+import { Route } from '@ember/-internals/routing';
 import { next } from '@ember/runloop';
 
 moduleFor(

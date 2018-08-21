@@ -1,4 +1,4 @@
-import { Route, NoneLocation } from 'ember-routing';
+import { Route, NoneLocation } from '@ember/-internals/routing';
 import { set } from '@ember/-internals/metal';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
 

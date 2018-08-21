@@ -1,4 +1,4 @@
-import { Route } from 'ember-routing';
+import { Route } from '@ember/-internals/routing';
 import { computed } from '@ember/-internals/metal';
 import { Object as EmberObject, A as emberA } from '@ember/-internals/runtime';
 

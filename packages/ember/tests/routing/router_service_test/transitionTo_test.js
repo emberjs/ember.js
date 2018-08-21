@@ -1,6 +1,6 @@
 import { inject as injectService } from '@ember/service';
 import { Component } from '@ember/-internals/glimmer';
-import { Route, NoneLocation } from 'ember-routing';
+import { Route, NoneLocation } from '@ember/-internals/routing';
 import Controller from '@ember/controller';
 import { run } from '@ember/runloop';
 import { get } from '@ember/-internals/metal';

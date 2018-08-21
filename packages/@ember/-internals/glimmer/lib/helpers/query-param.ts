@@ -1,10 +1,10 @@
 /**
 @module ember
 */
+import { QueryParams } from '@ember/-internals/routing';
 import { assert } from '@ember/debug';
 import { assign } from '@ember/polyfills';
 import { Arguments, CapturedArguments, VM } from '@glimmer/runtime';
-import { QueryParams } from 'ember-routing';
 import { InternalHelperReference } from '../utils/references';
 
 /**

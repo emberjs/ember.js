@@ -1,5 +1,5 @@
 import { Registry } from 'container';
-import { Router } from 'ember-routing';
+import { Router } from '@ember/-internals/routing';
 import ApplicationInstance from '@ember/application/instance';
 import Application from '@ember/application';
 import {

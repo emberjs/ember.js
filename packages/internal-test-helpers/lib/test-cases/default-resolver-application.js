@@ -3,7 +3,7 @@ import DefaultResolver from '@ember/application/globals-resolver';
 import Application from '@ember/application';
 import { setTemplates, setTemplate } from '@ember/-internals/glimmer';
 import { assign } from '@ember/polyfills';
-import { Router } from 'ember-routing';
+import { Router } from '@ember/-internals/routing';
 
 export default class ApplicationTestCase extends AbstractApplicationTestCase {
   createApplication() {

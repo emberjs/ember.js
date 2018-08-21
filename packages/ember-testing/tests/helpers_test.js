@@ -1,6 +1,6 @@
 import { moduleFor, AutobootApplicationTestCase, isIE11 } from 'internal-test-helpers';
 
-import { Route } from 'ember-routing';
+import { Route } from '@ember/-internals/routing';
 import Controller from '@ember/controller';
 import { RSVP } from '@ember/-internals/runtime';
 import { later } from '@ember/runloop';

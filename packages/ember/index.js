@@ -111,7 +111,7 @@ import {
 // eslint-disable-next-line import/no-unresolved
 import VERSION from './version';
 import * as views from '@ember/-internals/views';
-import * as routing from 'ember-routing';
+import * as routing from '@ember/-internals/routing';
 import * as extensionSupport from '@ember/-internals/extension-support';
 import EmberError from '@ember/error';
 import * as runloop from '@ember/runloop';
@@ -581,7 +581,7 @@ Ember.TextSupport = views.TextSupport;
 Ember.ComponentLookup = views.ComponentLookup;
 Ember.EventDispatcher = views.EventDispatcher;
 
-// ****ember-routing****
+// ****@ember/-internals/routing****
 Ember.Location = routing.Location;
 Ember.AutoLocation = routing.AutoLocation;
 Ember.HashLocation = routing.HashLocation;

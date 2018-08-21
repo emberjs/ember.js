@@ -281,18 +281,18 @@ let allExports = [
   ['computed.intersect', '@ember/object/computed', 'intersect'],
   ['computed.collect', '@ember/object/computed', 'collect'],
 
-  // ember-routing
-  ['Location', 'ember-routing'],
-  ['AutoLocation', 'ember-routing'],
-  ['HashLocation', 'ember-routing'],
-  ['HistoryLocation', 'ember-routing'],
-  ['NoneLocation', 'ember-routing'],
-  ['controllerFor', 'ember-routing'],
-  ['generateControllerFactory', 'ember-routing'],
-  ['generateController', 'ember-routing'],
-  ['RouterDSL', 'ember-routing'],
-  ['Router', 'ember-routing'],
-  ['Route', 'ember-routing'],
+  // @ember/-internals/routing
+  ['Location', '@ember/-internals/routing'],
+  ['AutoLocation', '@ember/-internals/routing'],
+  ['HashLocation', '@ember/-internals/routing'],
+  ['HistoryLocation', '@ember/-internals/routing'],
+  ['NoneLocation', '@ember/-internals/routing'],
+  ['controllerFor', '@ember/-internals/routing'],
+  ['generateControllerFactory', '@ember/-internals/routing'],
+  ['generateController', '@ember/-internals/routing'],
+  ['RouterDSL', '@ember/-internals/routing'],
+  ['Router', '@ember/-internals/routing'],
+  ['Route', '@ember/-internals/routing'],
 
   // ember-application
   ['Application', '@ember/application', 'default'],

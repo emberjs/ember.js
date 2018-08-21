@@ -1,6 +1,6 @@
 import Controller from '@ember/controller';
 import { capitalize } from '@ember/string';
-import { Route } from 'ember-routing';
+import { Route } from '@ember/-internals/routing';
 import { get } from '@ember/-internals/metal';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
 

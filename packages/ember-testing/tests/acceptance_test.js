@@ -3,7 +3,7 @@ import { moduleFor, AutobootApplicationTestCase } from 'internal-test-helpers';
 import { later } from '@ember/runloop';
 import Test from '../lib/test';
 import QUnitAdapter from '../lib/adapters/qunit';
-import { Route } from 'ember-routing';
+import { Route } from '@ember/-internals/routing';
 import { RSVP } from '@ember/-internals/runtime';
 import { jQueryDisabled } from '@ember/-internals/views';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';

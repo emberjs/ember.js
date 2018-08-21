@@ -5,7 +5,7 @@ import { set, Mixin } from '@ember/-internals/metal';
 import { Component } from '../../utils/helpers';
 import Controller from '@ember/controller';
 import { Object as EmberObject } from '@ember/-internals/runtime';
-import { Route } from 'ember-routing';
+import { Route } from '@ember/-internals/routing';
 
 function expectSendActionDeprecation(fn) {
   expectDeprecation(

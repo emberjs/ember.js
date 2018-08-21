@@ -4,7 +4,7 @@ import { RSVP, Object as EmberObject, A as emberA } from '@ember/-internals/runt
 import { run } from '@ember/runloop';
 import { peekMeta } from '@ember/-internals/meta';
 import { get, computed } from '@ember/-internals/metal';
-import { Route } from 'ember-routing';
+import { Route } from '@ember/-internals/routing';
 
 import { QueryParamTestCase, moduleFor, getTextOf } from 'internal-test-helpers';
 

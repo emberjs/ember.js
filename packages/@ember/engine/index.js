@@ -13,7 +13,7 @@ import { assert } from '@ember/debug';
 import { get, set } from '@ember/-internals/metal';
 import DefaultResolver from '@ember/application/globals-resolver';
 import EngineInstance from '@ember/engine/instance';
-import { RoutingService } from 'ember-routing';
+import { RoutingService } from '@ember/-internals/routing';
 import { ContainerDebugAdapter } from '@ember/-internals/extension-support';
 import { ComponentLookup } from '@ember/-internals/views';
 import { setupEngineRegistry } from '@ember/-internals/glimmer';

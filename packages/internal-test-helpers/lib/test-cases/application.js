@@ -1,6 +1,6 @@
 import TestResolverApplicationTestCase from './test-resolver-application';
 import Application from '@ember/application';
-import { Router } from 'ember-routing';
+import { Router } from '@ember/-internals/routing';
 import { assign } from '@ember/polyfills';
 
 export default class ApplicationTestCase extends TestResolverApplicationTestCase {

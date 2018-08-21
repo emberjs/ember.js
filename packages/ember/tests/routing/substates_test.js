@@ -1,5 +1,5 @@
 import { RSVP } from '@ember/-internals/runtime';
-import { Route } from 'ember-routing';
+import { Route } from '@ember/-internals/routing';
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 
 let counter;

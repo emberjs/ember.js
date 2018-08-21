@@ -24,12 +24,12 @@ import {
   AutoLocation,
   NoneLocation,
   BucketCache,
-} from 'ember-routing';
+} from '@ember/-internals/routing';
 import ApplicationInstance from '../instance';
 import Engine from '@ember/engine';
 import { privatize as P } from 'container';
 import { setupApplicationRegistry } from '@ember/-internals/glimmer';
-import { RouterService } from 'ember-routing';
+import { RouterService } from '@ember/-internals/routing';
 import { EMBER_ROUTING_ROUTER_SERVICE } from '@ember/canary-features';
 
 let librariesRegistered = false;

@@ -1,7 +1,7 @@
 import { inject as injectService } from '@ember/service';
 import { readOnly } from '@ember/object/computed';
 import { Component } from '@ember/-internals/glimmer';
-import { Route } from 'ember-routing';
+import { Route } from '@ember/-internals/routing';
 import { get } from '@ember/-internals/metal';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
 

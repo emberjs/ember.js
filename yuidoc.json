@@ -8,8 +8,6 @@
       "packages/ember/lib",
       "packages/ember-utils/lib",
       "packages/ember-debug/lib",
-      "packages/ember-routing/lib",
-      "packages/ember-routing-views/lib",
       "packages/ember-application/lib",
       "packages/ember-testing/lib",
       "packages/container/lib",
