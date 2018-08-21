@@ -1,5 +1,5 @@
 import { next, run } from '@ember/runloop';
-import { setOnerror } from 'ember-error-handling';
+import { setOnerror } from '@ember/-internals/error-handling';
 import Test from '../lib/test';
 import Adapter from '../lib/adapters/adapter';
 import QUnitAdapter from '../lib/adapters/qunit';
