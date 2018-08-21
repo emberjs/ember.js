@@ -7,7 +7,7 @@ export { getEngineParent, setEngineParent } from './lib/engine-parent';
 import { canInvoke } from '@ember/-internals/utils';
 import Controller from '@ember/controller';
 import { Namespace, RegistryProxyMixin } from '@ember/-internals/runtime';
-import { Registry, privatize as P } from 'container';
+import { Registry, privatize as P } from '@ember/-internals/container';
 import DAG from 'dag-map';
 import { assert } from '@ember/debug';
 import { get, set } from '@ember/-internals/metal';

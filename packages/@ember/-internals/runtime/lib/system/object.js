@@ -2,7 +2,7 @@
 @module @ember/object
 */
 
-import { FACTORY_FOR } from 'container';
+import { FACTORY_FOR } from '@ember/-internals/container';
 import { OWNER } from '@ember/-internals/owner';
 import { symbol, setName } from '@ember/-internals/utils';
 import { addListener } from '@ember/-internals/metal';

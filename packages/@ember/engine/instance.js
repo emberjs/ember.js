@@ -11,7 +11,7 @@ import {
 } from '@ember/-internals/runtime';
 import { assert } from '@ember/debug';
 import EmberError from '@ember/error';
-import { Registry, privatize as P } from 'container';
+import { Registry, privatize as P } from '@ember/-internals/container';
 import { getEngineParent, setEngineParent } from './lib/engine-parent';
 
 /**

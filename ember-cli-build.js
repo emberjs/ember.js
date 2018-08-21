@@ -90,6 +90,8 @@ module.exports = function() {
       exclude: [
         '@ember/-internals/browser-environment/index.js',
         '@ember/-internals/browser-environment/lib/**',
+        '@ember/-internals/container/index.js',
+        '@ember/-internals/container/lib/**',
         '@ember/-internals/environment/index.js',
         '@ember/-internals/environment/lib/**',
         '@ember/-internals/glimmer/index.js',
@@ -98,8 +100,6 @@ module.exports = function() {
         '@ember/-internals/metal/lib/**',
         '@ember/-internals/utils/index.js',
         '@ember/-internals/utils/lib/**',
-        'container/index.js',
-        'container/lib/**',
       ],
     }),
     rollupPackage(packagesES, '@ember/-internals/browser-environment'),
@@ -107,7 +107,7 @@ module.exports = function() {
     rollupPackage(packagesES, '@ember/-internals/glimmer'),
     rollupPackage(packagesES, '@ember/-internals/metal'),
     rollupPackage(packagesES, '@ember/-internals/utils'),
-    rollupPackage(packagesES, 'container'),
+    rollupPackage(packagesES, '@ember/-internals/container'),
   ]);
 
   // ES5

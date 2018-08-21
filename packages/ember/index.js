@@ -3,7 +3,7 @@ import require, { has } from 'require';
 import { getENV, getLookup, setLookup, ENV, context } from '@ember/-internals/environment';
 import { IS_NODE, module } from 'node-module';
 import * as utils from '@ember/-internals/utils';
-import { Registry, Container } from 'container';
+import { Registry, Container } from '@ember/-internals/container';
 import * as instrumentation from '@ember/instrumentation';
 import { deleteMeta, meta } from '@ember/-internals/meta';
 import * as metal from '@ember/-internals/metal';
@@ -205,7 +205,7 @@ Ember.uuid = utils.uuid;
 Ember.NAME_KEY = utils.NAME_KEY;
 Ember._Cache = utils.Cache;
 
-// ****container****
+// ****@ember/-internals/container****
 Ember.Container = Container;
 Ember.Registry = Registry;
 

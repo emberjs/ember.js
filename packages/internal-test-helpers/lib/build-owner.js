@@ -1,4 +1,4 @@
-import { Registry } from 'container';
+import { Registry } from '@ember/-internals/container';
 import { Router } from '@ember/-internals/routing';
 import ApplicationInstance from '@ember/application/instance';
 import Application from '@ember/application';

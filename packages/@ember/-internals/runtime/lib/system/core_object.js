@@ -2,7 +2,7 @@
   @module @ember/object
 */
 
-import { FACTORY_FOR } from 'container';
+import { FACTORY_FOR } from '@ember/-internals/container';
 import { BINDING_SUPPORT } from '@ember/deprecated-features';
 import { assign } from '@ember/polyfills';
 import {

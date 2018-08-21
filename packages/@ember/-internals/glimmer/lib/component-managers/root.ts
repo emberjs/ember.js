@@ -1,9 +1,9 @@
+import { FACTORY_FOR } from '@ember/-internals/container';
 import { Factory } from '@ember/-internals/owner';
 import { _instrumentStart } from '@ember/instrumentation';
 import { DEBUG } from '@glimmer/env';
 import { ComponentCapabilities } from '@glimmer/interfaces';
 import { Arguments, ComponentDefinition } from '@glimmer/runtime';
-import { FACTORY_FOR } from 'container';
 import { DIRTY_TAG } from '../component';
 import Environment from '../environment';
 import { DynamicScope } from '../renderer';

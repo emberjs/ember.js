@@ -10,7 +10,7 @@ import { _loaded } from '@ember/application';
 import Controller from '@ember/controller';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import { setTemplates } from '@ember/-internals/glimmer';
-import { privatize as P } from 'container';
+import { privatize as P } from '@ember/-internals/container';
 import { assign } from '@ember/polyfills';
 import {
   moduleFor,

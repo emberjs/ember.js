@@ -67,9 +67,9 @@ let allExports = [
   ['wrap', '@ember/-internals/utils'],
   ['NAME_KEY', '@ember/-internals/utils'],
 
-  // container
-  ['Registry', 'container', 'Registry'],
-  ['Container', 'container', 'Container'],
+  // @ember/-internals/container
+  ['Registry', '@ember/-internals/container', 'Registry'],
+  ['Container', '@ember/-internals/container', 'Container'],
 
   // @ember/debug
   ['deprecateFunc', '@ember/debug'],

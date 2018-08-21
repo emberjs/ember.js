@@ -1,3 +1,4 @@
+import { privatize as P } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
 import { LookupOptions, Owner, setOwner } from '@ember/-internals/owner';
 import { lookupComponent, lookupPartial, OwnedTemplateMeta } from '@ember/-internals/views';
@@ -13,7 +14,6 @@ import {
 } from '@glimmer/interfaces';
 import { LazyCompiler, Macros, PartialDefinition } from '@glimmer/opcode-compiler';
 import { getDynamicVar, Helper, ModifierManager } from '@glimmer/runtime';
-import { privatize as P } from 'container';
 import CompileTimeLookup from './compile-time-lookup';
 import { CurlyComponentDefinition } from './component-managers/curly';
 import { CustomManagerDefinition, ManagerDelegate } from './component-managers/custom';

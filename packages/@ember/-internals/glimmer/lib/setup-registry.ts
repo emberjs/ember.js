@@ -1,6 +1,6 @@
 import { hasDOM } from '@ember/-internals/browser-environment';
+import { privatize as P, Registry } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
-import { privatize as P, Registry } from 'container';
 import Component from './component';
 import Checkbox from './components/checkbox';
 import LinkToComponent from './components/link-to';
