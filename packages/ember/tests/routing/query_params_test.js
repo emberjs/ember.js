@@ -2,7 +2,7 @@ import Controller from '@ember/controller';
 import { dasherize } from '@ember/string';
 import { RSVP, Object as EmberObject, A as emberA } from '@ember/-internals/runtime';
 import { run } from '@ember/runloop';
-import { peekMeta } from 'ember-meta';
+import { peekMeta } from '@ember/-internals/meta';
 import { get, computed } from '@ember/-internals/metal';
 import { Route } from 'ember-routing';
 

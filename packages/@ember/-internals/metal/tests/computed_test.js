@@ -11,7 +11,7 @@ import {
   addObserver,
   notifyPropertyChange,
 } from '..';
-import { meta as metaFor } from 'ember-meta';
+import { meta as metaFor } from '@ember/-internals/meta';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 let obj, count;

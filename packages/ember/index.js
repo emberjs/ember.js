@@ -5,7 +5,7 @@ import { IS_NODE, module } from 'node-module';
 import * as utils from '@ember/-internals/utils';
 import { Registry, Container } from 'container';
 import * as instrumentation from '@ember/instrumentation';
-import { deleteMeta, meta } from 'ember-meta';
+import { deleteMeta, meta } from '@ember/-internals/meta';
 import * as metal from '@ember/-internals/metal';
 import { FEATURES, isEnabled } from '@ember/canary-features';
 import * as EmberDebug from '@ember/debug';

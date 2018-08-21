@@ -1,4 +1,4 @@
-import { peekMeta } from 'ember-meta';
+import { peekMeta } from '@ember/-internals/meta';
 import { peekCacheFor } from './computed_cache';
 import { eachProxyArrayDidChange, eachProxyArrayWillChange } from './each_proxy_events';
 import { sendEvent } from './events';

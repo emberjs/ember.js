@@ -1,6 +1,6 @@
 import { context } from '@ember/-internals/environment';
 import { set, get, computed, defineProperty, addListener, watch, unwatch } from '../..';
-import { deleteMeta, meta } from 'ember-meta';
+import { deleteMeta, meta } from '@ember/-internals/meta';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 let didCount, didKeys, originalLookup;

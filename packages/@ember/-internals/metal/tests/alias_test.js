@@ -8,7 +8,7 @@ import {
   removeObserver,
   tagFor,
 } from '..';
-import { meta } from 'ember-meta';
+import { meta } from '@ember/-internals/meta';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 let obj, count;

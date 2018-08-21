@@ -3,7 +3,7 @@
 */
 
 import { combine, CONSTANT_TAG, DirtyableTag, UpdatableTag } from '@glimmer/reference';
-import { meta } from 'ember-meta';
+import { meta } from '@ember/-internals/meta';
 import {
   get,
   set,

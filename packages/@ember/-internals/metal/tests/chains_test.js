@@ -12,7 +12,7 @@ import {
   unwatch,
   watcherCount,
 } from '..';
-import { meta, peekMeta } from 'ember-meta';
+import { meta, peekMeta } from '@ember/-internals/meta';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(

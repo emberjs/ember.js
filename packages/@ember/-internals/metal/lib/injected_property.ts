@@ -1,7 +1,7 @@
+import { descriptorFor } from '@ember/-internals/meta';
 import { getOwner } from '@ember/-internals/owner';
 import { EMBER_MODULE_UNIFICATION } from '@ember/canary-features';
 import { assert } from '@ember/debug';
-import { descriptorFor } from 'ember-meta';
 import { ComputedProperty } from './computed';
 
 export interface InjectedPropertyOptions {

@@ -1,4 +1,4 @@
-import { Meta } from 'ember-meta';
+import { Meta } from '@ember/-internals/meta';
 import { unwatch, watch } from './watching';
 
 export interface DescriptorWithDependentKeys {

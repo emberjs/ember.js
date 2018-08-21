@@ -1,4 +1,4 @@
-import { descriptorFor, Meta, meta as metaFor, peekMeta } from 'ember-meta';
+import { descriptorFor, Meta, meta as metaFor, peekMeta } from '@ember/-internals/meta';
 import { getCachedValueFor } from './computed_cache';
 import { eachProxyFor } from './each_proxy';
 import { get } from './property_get';

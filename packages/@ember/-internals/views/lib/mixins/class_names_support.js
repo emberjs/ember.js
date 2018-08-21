@@ -1,7 +1,7 @@
 /**
 @module ember
 */
-import { descriptorFor } from 'ember-meta';
+import { descriptorFor } from '@ember/-internals/meta';
 import { Mixin } from '@ember/-internals/metal';
 import { assert } from '@ember/debug';
 

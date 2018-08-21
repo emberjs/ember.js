@@ -2,9 +2,9 @@
 @module @ember/object
 */
 
+import { descriptorFor, Meta, meta as metaFor, peekMeta, UNDEFINED } from '@ember/-internals/meta';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { descriptorFor, Meta, meta as metaFor, peekMeta, UNDEFINED } from 'ember-meta';
 import { overrideChains } from './property_events';
 
 export type MandatorySetterFunction = ((this: object, value: any) => void) & {

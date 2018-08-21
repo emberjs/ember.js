@@ -2,6 +2,7 @@
 @module @ember/object
 */
 import { ENV } from '@ember/-internals/environment';
+import { descriptorFor, Meta, meta as metaFor, peekMeta } from '@ember/-internals/meta';
 import {
   getListeners,
   getObservers,
@@ -16,7 +17,6 @@ import { assert } from '@ember/debug';
 import { BINDING_SUPPORT } from '@ember/deprecated-features';
 import { assign } from '@ember/polyfills';
 import { DEBUG } from '@glimmer/env';
-import { descriptorFor, Meta, meta as metaFor, peekMeta } from 'ember-meta';
 import { ComputedProperty, ComputedPropertyGetter, ComputedPropertySetter } from './computed';
 import { addListener, removeListener } from './events';
 import expandProperties from './expand_properties';

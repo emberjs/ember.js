@@ -1,8 +1,8 @@
+import { Meta, meta as metaFor } from '@ember/-internals/meta';
 import { isProxy } from '@ember/-internals/utils';
 import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { backburner } from '@ember/runloop';
 import { combine, CONSTANT_TAG, DirtyableTag, Tag, UpdatableTag } from '@glimmer/reference';
-import { Meta, meta as metaFor } from 'ember-meta';
 
 let hasViews: () => boolean = () => false;
 

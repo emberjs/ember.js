@@ -1,12 +1,12 @@
 /**
 @module @ember/object
 */
+import { descriptorFor, isDescriptor, meta } from '@ember/-internals/meta';
 import { HAS_NATIVE_PROXY, symbol, toString } from '@ember/-internals/utils';
 import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { assert, deprecate } from '@ember/debug';
 import { PROPERTY_BASED_DESCRIPTORS } from '@ember/deprecated-features';
 import { DEBUG } from '@glimmer/env';
-import { descriptorFor, isDescriptor, meta } from 'ember-meta';
 import { isPath } from './path_cache';
 import { tagForProperty } from './tags';
 import { getCurrentTracker } from './tracked';
@@ -124,7 +124,7 @@ export function get(obj: object, keyName: string): any {
         )}' via 'defineProperty'`,
         false,
         {
-          id: 'ember-meta.descriptor-on-object',
+          id: '@ember/-internals/meta.descriptor-on-object',
           until: '3.5.0',
           url:
             'https://emberjs.com/deprecations/v3.x#toc_use-defineProperty-to-define-computed-properties',

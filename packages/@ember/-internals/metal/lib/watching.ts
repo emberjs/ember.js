@@ -1,7 +1,7 @@
 /**
 @module ember
 */
-import { Meta, peekMeta } from 'ember-meta';
+import { Meta, peekMeta } from '@ember/-internals/meta';
 import { isPath } from './path_cache';
 import { unwatchKey, watchKey } from './watch_key';
 import { unwatchPath, watchPath } from './watch_path';

@@ -1,9 +1,9 @@
+import { descriptorFor, isDescriptor, Meta, meta, peekMeta } from '@ember/-internals/meta';
 import { HAS_NATIVE_PROXY, toString } from '@ember/-internals/utils';
 import { assert, deprecate } from '@ember/debug';
 import { PROPERTY_BASED_DESCRIPTORS } from '@ember/deprecated-features';
 import EmberError from '@ember/error';
 import { DEBUG } from '@glimmer/env';
-import { descriptorFor, isDescriptor, Meta, meta, peekMeta } from 'ember-meta';
 import { isPath } from './path_cache';
 import { Descriptor, MandatorySetterFunction } from './properties';
 import { notifyPropertyChange } from './property_events';
@@ -99,7 +99,7 @@ export function set(obj: object, keyName: string, value: any, tolerant?: boolean
       )}' via 'defineProperty'`,
       false,
       {
-        id: 'ember-meta.descriptor-on-object',
+        id: '@ember/-internals/meta.descriptor-on-object',
         until: '3.5.0',
         url:
           'https://emberjs.com/deprecations/v3.x#toc_use-defineProperty-to-define-computed-properties',

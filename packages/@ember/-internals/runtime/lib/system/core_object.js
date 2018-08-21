@@ -15,7 +15,7 @@ import {
   isInternalSymbol,
 } from '@ember/-internals/utils';
 import { schedule } from '@ember/runloop';
-import { descriptorFor, meta, peekMeta, deleteMeta } from 'ember-meta';
+import { descriptorFor, meta, peekMeta, deleteMeta } from '@ember/-internals/meta';
 import {
   PROXY_CONTENT,
   finishChains,

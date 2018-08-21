@@ -6,7 +6,7 @@ import {
   beginPropertyChanges,
   endPropertyChanges,
 } from '@ember/-internals/metal';
-import { peekMeta } from 'ember-meta';
+import { peekMeta } from '@ember/-internals/meta';
 import EmberObject from '../../../lib/system/object';
 import { DEBUG } from '@glimmer/env';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';

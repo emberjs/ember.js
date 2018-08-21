@@ -1,4 +1,4 @@
-import { peekMeta } from 'ember-meta';
+import { peekMeta } from '@ember/-internals/meta';
 import { get, addObserver, defineProperty, watcherCount, computed } from '@ember/-internals/metal';
 import ArrayProxy from '../../../lib/system/array_proxy';
 import { A } from '../../../lib/mixins/array';

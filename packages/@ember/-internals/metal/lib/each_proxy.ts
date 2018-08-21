@@ -1,5 +1,5 @@
+import { meta, peekMeta } from '@ember/-internals/meta';
 import { assert } from '@ember/debug';
-import { meta, peekMeta } from 'ember-meta';
 import { EmberArray, objectAt } from './array';
 import { EACH_PROXIES } from './each_proxy_events';
 import { addObserver, removeObserver } from './observer';

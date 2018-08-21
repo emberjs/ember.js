@@ -1,8 +1,8 @@
+import { meta as metaFor, peekMeta } from '@ember/-internals/meta';
 import { inspect } from '@ember/-internals/utils';
 import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { assert, warn } from '@ember/debug';
 import EmberError from '@ember/error';
-import { meta as metaFor, peekMeta } from 'ember-meta';
 import {
   getCachedValueFor,
   getCacheFor,
