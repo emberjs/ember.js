@@ -166,8 +166,8 @@ let allExports = [
   ['mixin', '@ember/-internals/metal'],
   ['Mixin', '@ember/-internals/metal'],
 
-  // ember-console
-  ['Logger', 'ember-console', 'default'],
+  // @ember/-internals/console
+  ['Logger', '@ember/-internals/console', 'default'],
 
   // @ember/-internals/views
   !jQueryDisabled && ['$', '@ember/-internals/views', 'jQuery'],

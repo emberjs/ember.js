@@ -7,7 +7,6 @@
     "paths": [
       "packages/ember/lib",
       "packages/ember-utils/lib",
-      "packages/ember-console/lib",
       "packages/ember-debug/lib",
       "packages/ember-routing/lib",
       "packages/ember-routing-views/lib",

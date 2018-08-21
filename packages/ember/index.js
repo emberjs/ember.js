@@ -11,7 +11,7 @@ import { FEATURES, isEnabled } from '@ember/canary-features';
 import * as EmberDebug from '@ember/debug';
 import { assert, deprecate } from '@ember/debug';
 import Backburner from 'backburner';
-import Logger from 'ember-console';
+import Logger from '@ember/-internals/console';
 import Controller, { inject as injectController } from '@ember/controller';
 import ControllerMixin from '@ember/controller/lib/controller_mixin';
 import {
@@ -365,7 +365,7 @@ Object.defineProperty(Ember, 'testing', {
 
 Ember._Backburner = Backburner;
 
-// ****ember-console****
+// ****@ember/-internals/console****
 if (LOGGER) {
   Ember.Logger = Logger;
 }
