@@ -1,4 +1,8 @@
-import { EMBER_MODULE_UNIFICATION, GLIMMER_CUSTOM_COMPONENT_MANAGER } from '@ember/canary-features';
+import {
+  EMBER_ELEMENT_MODIFIERS,
+  EMBER_MODULE_UNIFICATION,
+  GLIMMER_CUSTOM_COMPONENT_MANAGER,
+} from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { RENDER_HELPER } from '@ember/deprecated-features';
 import { _instrumentStart } from '@ember/instrumentation';
@@ -9,7 +13,7 @@ import {
   RuntimeResolver as IRuntimeResolver,
 } from '@glimmer/interfaces';
 import { LazyCompiler, Macros, PartialDefinition } from '@glimmer/opcode-compiler';
-import { getDynamicVar, Helper, ModifierManager } from '@glimmer/runtime';
+import { getDynamicVar, Helper, ModifierDefinition } from '@glimmer/runtime';
 import { privatize as P } from 'container';
 import { ENV } from 'ember-environment';
 import { LookupOptions, Owner, setOwner } from 'ember-owner';
@@ -34,7 +38,9 @@ import { default as mut } from './helpers/mut';
 import { default as queryParams } from './helpers/query-param';
 import { default as readonly } from './helpers/readonly';
 import { default as unbound } from './helpers/unbound';
+import { isModifier } from './modifier';
 import ActionModifierManager from './modifiers/action';
+import { ModifierDefinitonState, PUBLIC_MODIFIER_MANAGER } from './modifiers/manager';
 import { populateMacros } from './syntax';
 import { mountHelper } from './syntax/mount';
 import { outletHelper } from './syntax/outlet';
@@ -81,7 +87,7 @@ if (RENDER_HELPER) {
 }
 
 const BUILTIN_MODIFIERS = {
-  action: new ActionModifierManager(),
+  action: { manager: new ActionModifierManager(), state: null },
 };
 
 export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMeta> {
@@ -97,7 +103,7 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
   } = BUILTINS_HELPERS;
 
   private builtInModifiers: {
-    [name: string]: ModifierManager<Opaque>;
+    [name: string]: ModifierDefinition;
   } = BUILTIN_MODIFIERS;
 
   // supports directly imported late bound layouts on component.prototype.layout
@@ -173,8 +179,8 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
   /**
    * Called by CompileTimeLookup compiling the
    */
-  lookupModifier(name: string, _meta: OwnedTemplateMeta): Option<number> {
-    return this.handle(this._lookupModifier(name));
+  lookupModifier(name: string, meta: OwnedTemplateMeta): Option<number> {
+    return this.handle(this._lookupModifier(name, meta));
   }
 
   /**
@@ -270,8 +276,37 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
     }
   }
 
-  private _lookupModifier(name: string) {
-    return this.builtInModifiers[name];
+  private _lookupModifier(_name: string, meta: OwnedTemplateMeta) {
+    let builtIn = this.builtInModifiers[_name];
+
+    if (EMBER_ELEMENT_MODIFIERS) {
+      if (builtIn !== undefined) {
+        return builtIn;
+      }
+
+      const { owner, moduleName } = meta;
+
+      let name = _name;
+      let namespace = undefined;
+      if (EMBER_MODULE_UNIFICATION) {
+        const parsed = this._parseNameForNamespace(_name);
+        name = parsed.name;
+        namespace = parsed.namespace;
+      }
+
+      const options: LookupOptions = makeOptions(moduleName, namespace);
+      const factory =
+        owner.factoryFor(`modifier:${name}`, options) || owner.factoryFor(`modifier:${name}`);
+
+      if (!isModifier(factory)) {
+        assert(`Could not find modifier '${name}' which was used in ${moduleName}.`, false);
+        return;
+      }
+
+      return { manager: PUBLIC_MODIFIER_MANAGER, state: new ModifierDefinitonState(factory) };
+    }
+
+    return builtIn;
   }
 
   private _parseNameForNamespace(_name: string) {

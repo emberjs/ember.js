@@ -1,7 +1,7 @@
 import { assert } from '@ember/debug';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { join } from '@ember/runloop';
-import { Simple } from '@glimmer/interfaces';
+import { Opaque, Simple } from '@glimmer/interfaces';
 import { RevisionTag, TagWrapper } from '@glimmer/reference';
 import {
   Arguments,
@@ -186,8 +186,14 @@ export class ActionState {
 }
 
 // implements ModifierManager<Action>
-export default class ActionModifierManager implements ModifierManager<ActionState> {
-  create(element: Simple.Element, args: Arguments, _dynamicScope: DynamicScope, dom: any) {
+export default class ActionModifierManager implements ModifierManager<ActionState, Opaque> {
+  create(
+    element: Simple.Element,
+    _state: Opaque,
+    args: Arguments,
+    _dynamicScope: DynamicScope,
+    dom: any
+  ) {
     let { named, positional, tag } = args.capture();
     let implicitTarget;
     let actionName;

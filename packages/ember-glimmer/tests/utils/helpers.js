@@ -12,4 +12,5 @@ export {
   SafeString,
   DOMChanges,
   isHTMLSafe,
+  Modifier,
 } from 'ember-glimmer';

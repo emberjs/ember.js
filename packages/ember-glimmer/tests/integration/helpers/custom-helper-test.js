@@ -1,4 +1,5 @@
 /* globals EmberDev */
+import { EMBER_ELEMENT_MODIFIERS } from '@ember/canary-features';
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { runDestroy } from 'internal-test-helpers';
 import { set } from 'ember-metal';
@@ -400,9 +401,15 @@ moduleFor(
     ['@test simple helper not usable within element']() {
       this.registerHelper('some-helper', () => {});
 
-      this.assert.throws(() => {
-        this.render(`<div {{some-helper}}></div>`);
-      }, /Compile Error some-helper is not a modifier: Helpers may not be used in the element form/);
+      if (EMBER_ELEMENT_MODIFIERS) {
+        expectAssertion(() => {
+          this.render(`<div {{some-helper}}></div>`);
+        }, /Could not find modifier 'some-helper' which was used in -top-level./);
+      } else {
+        this.assert.throws(() => {
+          this.render(`<div {{some-helper}}></div>`);
+        }, /Compile Error some-helper is not a modifier: Helpers may not be used in the element form/);
+      }
     }
 
     ['@test class-based helper not usable within element']() {
@@ -410,9 +417,15 @@ moduleFor(
         compute() {},
       });
 
-      this.assert.throws(() => {
-        this.render(`<div {{some-helper}}></div>`);
-      }, /Compile Error some-helper is not a modifier: Helpers may not be used in the element form/);
+      if (EMBER_ELEMENT_MODIFIERS) {
+        expectAssertion(() => {
+          this.render(`<div {{some-helper}}></div>`);
+        }, /Could not find modifier 'some-helper' which was used in -top-level./);
+      } else {
+        this.assert.throws(() => {
+          this.render(`<div {{some-helper}}></div>`);
+        }, /Compile Error some-helper is not a modifier: Helpers may not be used in the element form/);
+      }
     }
 
     ['@test class-based helper is torn down'](assert) {
