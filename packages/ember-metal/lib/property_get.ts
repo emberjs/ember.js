@@ -197,7 +197,7 @@ export function _getPath<T extends object>(root: T, path: string): any {
   @return {Object} The property value or the defaultValue.
   @public
 */
-export function getWithDefault<T extends object, K extends keyof T>(
+export function getWithDefault<T extends object, K extends Extract<keyof T, string>>(
   root: T,
   key: K,
   defaultValue: T[K]
