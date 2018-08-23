@@ -14,7 +14,7 @@ interface ExtendedObject {
   setUnknownProperty?: (keyName: string, value: any) => any;
 }
 
-let setWithMandatorySetter: <T extends object, K extends keyof T>(
+let setWithMandatorySetter: <T extends object, K extends Extract<keyof T, string>>(
   meta: Meta,
   obj: T,
   keyName: K,
