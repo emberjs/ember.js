@@ -120,6 +120,7 @@ module.exports = function() {
     new Funnel(packagesES5, {
       include: [
         'internal-test-helpers/**',
+        '@ember/-internals/*/tests/**' /* internal packages */,
         '*/*/tests/**' /* scoped packages */,
         '*/tests/**' /* packages */,
         'license.js',
@@ -139,6 +140,7 @@ module.exports = function() {
   let emberDebugBundle = new MergeTrees([
     new Funnel(packagesES5, {
       exclude: [
+        '@ember/-internals/*/tests/**' /* internal packages */,
         '*/*/tests/**' /* scoped packages */,
         '*/tests/**' /* packages */,
         'ember-template-compiler/**',
@@ -218,6 +220,7 @@ module.exports = function() {
     let emberProdBundle = new MergeTrees([
       new Funnel(prodPackagesES5, {
         exclude: [
+          '@ember/-internals/*/tests/**' /* internal packages */,
           '*/*/tests/**' /* scoped packages */,
           '*/tests/**' /* packages */,
           'ember-template-compiler/**',
