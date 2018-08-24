@@ -414,9 +414,9 @@ const ArrayMixin = Mixin.create(Enumerable, {
     Adds an array observer to the receiving array. The array observer object
     normally must implement two methods:
 
-    * `arrayWillChange(observedObj, start, removeCount, addCount)` - This method will be
+    * `willChange(observedObj, start, removeCount, addCount)` - This method will be
       called just before the array is modified.
-    * `arrayDidChange(observedObj, start, removeCount, addCount)` - This method will be
+    * `didChange(observedObj, start, removeCount, addCount)` - This method will be
       called just after the array is modified.
 
     Both callbacks will be passed the observed object, starting index of the
