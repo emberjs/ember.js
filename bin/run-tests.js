@@ -140,6 +140,7 @@ function codeQualityChecks() {
     runChecker('node', [require.resolve('typescript/bin/tsc'), '--noEmit']),
     runChecker('node', [require.resolve('tslint/bin/tslint'), '-p', 'tsconfig.json']),
     runChecker('node', [require.resolve('eslint/bin/eslint'), '.']),
+    runChecker('node', [require.resolve('qunit/bin/qunit'), 'tests/docs/coverage-test.js']),
   ];
   return Promise.all(checkers).then(function(results) {
     results.forEach(result => {

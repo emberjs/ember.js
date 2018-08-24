@@ -111,6 +111,7 @@ module.exports = {
         'tests/node/**/*.js',
         'blueprints/**/*.js',
         'bin/**/*.js',
+        'tests/docs/*.js',
         'config/**/*.js',
         'lib/**/*.js',
         'server/**/*.js',
