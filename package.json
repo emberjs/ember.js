@@ -46,7 +46,7 @@
     "test:node": "qunit tests/**/*-test.js",
     "test:browserstack": "node bin/run-browserstack-tests.js",
     "test:testem": "testem -f testem.dist.js",
-    "test:docs": "qunit bin/yuidoc-tests.js"
+    "test:docs": "ember ember-cli-yuidoc qunit bin/yuidoc-tests.js"
   },
   "dependencies": {
     "broccoli-funnel": "^2.0.1",

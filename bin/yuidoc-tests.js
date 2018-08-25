@@ -10,7 +10,7 @@ const docData = JSON.parse(fs.readFileSync('./docs/data.json', 'utf8'));
 const expectedCounts = [
   {
     category: 'files',
-    count: 180,
+    count: 178,
   },
   {
     category: 'modules',
@@ -18,11 +18,11 @@ const expectedCounts = [
   },
   {
     category: 'classes',
-    count: 109,
+    count: 101,
   },
   {
     category: 'classitems',
-    count: 811,
+    count: 781,
   },
 ];
 
@@ -42,7 +42,7 @@ const failedTestMessage = function(expectedCount, actualCount, category) {
 };
 
 expectedCounts.forEach(function(expected) {
-  QUnit.test(expected.category, function(assert) {
+  QUnit.test(expected.category + ' docs', function(assert) {
     const docsToCount = docData[expected.category];
     const actualCount = Object.keys(docsToCount).length;
     let message = failedTestMessage(expected.count, actualCount, expected.category);
