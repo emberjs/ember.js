@@ -157,7 +157,10 @@ module.exports = {
       },
     },
     {
-      files: [ 'tests/node/**/*.js' ],
+      files: [
+        'tests/node/**/*.js',
+        'bin/yuidoc-tests.js'
+      ],
 
       env: {
         qunit: true
