@@ -26,7 +26,7 @@ QUnit.module('Docs coverage', function(hooks) {
       let missing = setDifference(expectedItems, docsItems);
       assert.emptySet(
         missing,
-        'If you really intended to remove these from the API docs, update tests/docs/expected.js to match.'
+        'If you have added new features, please update tests/docs/expected.js and confirm that any public properties are marked both @public and @static to be included in the Ember API Docs viewer.'
       );
     });
 
@@ -34,7 +34,7 @@ QUnit.module('Docs coverage', function(hooks) {
       let extraneous = setDifference(docsItems, expectedItems);
       assert.emptySet(
         extraneous,
-        'If you really intended to add these to the API docs, update tests/docs/expected.js to match.'
+        'If you intentionally removed a public API method, please udpate tests/docs/expected.js. Otherwise, documentation is missing, incorrectly formatted, or in a directory that is not watched by yuidoc. All files containing documentation must have a yuidoc class declaration.'
       );
     });
   });

@@ -45,8 +45,7 @@
     "test:blueprints-debugger": "node --inspect-brk node-tests/nodetest-runner.js",
     "test:node": "qunit tests/**/*-test.js",
     "test:browserstack": "node bin/run-browserstack-tests.js",
-    "test:testem": "testem -f testem.dist.js",
-    "test:docs": "ember ember-cli-yuidoc && qunit bin/yuidoc-tests.js"
+    "test:testem": "testem -f testem.dist.js"
   },
   "dependencies": {
     "broccoli-funnel": "^2.0.1",
