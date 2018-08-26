@@ -80,6 +80,24 @@ describe('Blueprint: service-test', function() {
       });
     });
 
+    describe('with ember-mocha@0.14.0', function() {
+      beforeEach(function() {
+        modifyPackages([
+          { name: 'ember-cli-qunit', delete: true },
+          { name: 'ember-mocha', dev: true },
+        ]);
+        generateFakePackageManifest('ember-mocha', '0.14.0');
+      });
+
+      it('service-test foo', function() {
+        return emberGenerateDestroy(['service-test', 'foo'], _file => {
+          expect(_file('tests/unit/services/foo-test.js')).to.equal(
+            fixture('service-test/mocha-rfc232.js')
+          );
+        });
+      });
+    });
+
     describe('with ember-cli-qunit@4.2.0', function() {
       beforeEach(function() {
         generateFakePackageManifest('ember-cli-qunit', '4.2.0');
