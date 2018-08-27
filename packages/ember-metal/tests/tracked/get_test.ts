@@ -10,13 +10,6 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
       @tracked boolTrue = true;
       @tracked boolFalse = false;
       @tracked nullValue = null;
-      constructor() {
-        this.string = 'string';
-        this.number = 23;
-        this.boolTrue = true;
-        this.boolFalse = false;
-        this.nullValue = null;
-      }
     }
 
     return new Obj();
@@ -36,9 +29,6 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
       '@test should retrieve a number key on an object'() {
         class Obj {
           @tracked 1 = 'first';
-          constructor() {
-            this[1] = 'first';
-          }
         }
 
         let obj = new Obj();
@@ -49,9 +39,6 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
       '@test should retrieve an empty key on an object'() {
         class Obj {
           @tracked '' = 'empty';
-          constructor() {
-            this[''] = 'empty';
-          }
         }
 
         let obj = new Obj();
@@ -62,23 +49,14 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
       '@test should get a @tracked path'() {
         class Key {
           @tracked value = 'value';
-          constructor() {
-            this.value = 'value';
-          }
         }
 
         class Path {
           @tracked key = new Key();
-          constructor() {
-            this.key = new Key();
-          }
         }
 
         class Obj {
           @tracked path = new Path();
-          constructor() {
-            this.path = new Path();
-          }
         }
 
         let obj = new Obj();
@@ -117,9 +95,6 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
 
         class Obj {
           @tracked undef: string | undefined = undefined;
-          constructor() {
-            this.undef = undefined;
-          }
         }
 
         let obj2 = new Obj();
