@@ -91,20 +91,18 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
       [`@test interaction with Ember object model (Ember computed property depending on tracked property)`](
         assert: Assert
       ) {
-        let self: EmberObject;
         class EmberObject {
           name: Name;
           constructor(name: Name) {
             this.name = name;
-            self = this;
           }
         }
 
         defineProperty(
           EmberObject.prototype,
           'full',
-          computed('name', function() {
-            let name = get(self, 'name');
+          computed('name', function(this: EmberObject) {
+            let name = get(this, 'name');
             return `${name.first} ${name.last}`;
           })
         );

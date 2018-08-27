@@ -12,14 +12,6 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
       @tracked boolFalse = false;
       @tracked nullValue = null;
       @tracked undefinedValue = undefined;
-      constructor() {
-        this.string = 'string';
-        this.number = 23;
-        this.boolTrue = true;
-        this.boolFalse = false;
-        this.nullValue = null;
-        this.undefinedValue = undefined;
-      }
     }
 
     return new Obj();
@@ -28,19 +20,11 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
   moduleFor(
     '@tracked set',
     class extends AbstractTestCase {
-      teardown() {
-        setHasViews(() => false);
-      }
-
       ['@test should set arbitrary properties on an object'](assert: Assert) {
         let obj = createObj();
 
         class Obj {
           @tracked undefinedValue = 'emberjs';
-
-          constructor() {
-            this.undefinedValue = 'emberjs';
-          }
         }
 
         let newObj = new Obj();
@@ -54,9 +38,6 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
       ['@test should set a number key on an object'](assert: Assert) {
         class Obj {
           @tracked 1 = 'original';
-          constructor() {
-            this[1] = 'original';
-          }
         }
 
         let obj = new Obj();
