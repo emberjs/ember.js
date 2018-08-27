@@ -1,5 +1,5 @@
 import { AbstractTestCase, moduleFor } from 'internal-test-helpers';
-import { get, set, setHasViews, tracked } from '../..';
+import { get, set, tracked } from '../..';
 
 import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 
