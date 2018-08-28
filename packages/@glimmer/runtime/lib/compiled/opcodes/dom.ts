@@ -104,7 +104,7 @@ APPEND_OPCODES.add(Op.Modifier, (vm, { op1: handle }) => {
   let { manager, state } = vm.constants.resolveHandle<ModifierDefinition>(handle);
   let stack = vm.stack;
   let args = check(stack.pop(), CheckArguments);
-  let { constructing: element, updateOperations } = vm.elements();
+  let { element, updateOperations } = vm.elements();
   let dynamicScope = vm.dynamicScope();
   let modifier = manager.create(
     element as Simple.FIX_REIFICATION<Element>,
