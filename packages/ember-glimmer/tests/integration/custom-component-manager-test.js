@@ -15,10 +15,18 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
       this.registerComponentManager(
         'basic',
         EmberObject.extend({
-          capabilities: capabilities('3.4'),
+          capabilities: capabilities('3.4', {
+            bounds: true,
+          }),
 
           createComponent(factory, args) {
             return factory.create({ args });
+          },
+
+          didCreateBounds({ component }, bounds) {
+            assert.step('didCreateBounds');
+            component.bounds = bounds;
+            component.didInsertElement && component.didInsertElement();
           },
 
           updateComponent(component, args) {
@@ -37,6 +45,7 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
           capabilities: capabilities('3.4', {
             destructor: true,
             asyncLifecycleCallbacks: true,
+            bounds: true,
           }),
 
           createComponent(factory, args) {
@@ -54,9 +63,16 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
             component.destroy();
           },
 
+          willDestroyBounds() {},
+
           getContext(component) {
             assert.step('getContext');
             return component;
+          },
+
+          didCreateBounds({ component }, bounds) {
+            assert.step('didCreateBounds');
+            component.bounds = bounds;
           },
 
           didCreateComponent(component) {
@@ -94,6 +110,88 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
         this.assertHTML(`<p>hello world</p>`);
       }
 
+      ['@test it gets the component bounds']() {
+        let self = this;
+        let ComponentClass = setComponentManager(
+          'basic',
+          EmberObject.extend({
+            greeting: 'hello',
+            didInsertElement() {
+              self.assert.ok(true, 'Called the didInsertElement hook');
+              self.assert.ok(this.bounds);
+              self.assert.ok(this.bounds.firstNode);
+              self.assert.ok(this.bounds.lastNode);
+              self.assert.equal(this.bounds.firstNode, this.bounds.lastNode);
+            },
+          })
+        );
+
+        this.registerComponent('foo-bar', {
+          template: `<p>{{greeting}} world</p>`,
+          ComponentClass,
+        });
+
+        this.render('{{foo-bar}}');
+
+        this.assertHTML(`<p>hello world</p>`);
+      }
+
+      ['@test firstChild and lastChild of bounds can be different']() {
+        let self = this;
+        let ComponentClass = setComponentManager(
+          'basic',
+          EmberObject.extend({
+            greeting: 'hello',
+            didInsertElement() {
+              self.assert.equal(this.bounds.firstNode.tagName.toLowerCase(), 'h1');
+              self.assert.equal(this.bounds.lastNode.tagName.toLowerCase(), 'h2');
+            },
+          })
+        );
+
+        this.registerComponent('foo-bar', {
+          template: `<h1>Hello!</h1><h2>How are you doing?</h2>`,
+          ComponentClass,
+        });
+
+        this.render('{{foo-bar}}');
+
+        this.assertHTML(`<h1>Hello!</h1><h2>How are you doing?</h2>`);
+      }
+
+      ['@test bounds is subject to change']() {
+        let component;
+        let ComponentClass = setComponentManager(
+          'basic',
+          EmberObject.extend({
+            greeting: 'hello',
+            didInsertElement() {
+              component = this;
+            },
+          })
+        );
+
+        this.registerComponent('foo-bar', {
+          template: `{{#if @bar}}<h1>Hello!</h1>{{/if}}<h2>How are you doing?</h2>`,
+          ComponentClass,
+        });
+
+        this.render('{{foo-bar bar=bar}}', { bar: true });
+
+        this.assertHTML(`<h1>Hello!</h1><h2>How are you doing?</h2>`);
+
+        this.assert.equal(component.bounds.firstNode.tagName.toLowerCase(), 'h1');
+        this.assert.equal(component.bounds.lastNode.tagName.toLowerCase(), 'h2');
+
+        this.runTask(() => set(this.context, 'bar', false));
+
+        this.rerender();
+
+        this.assert.equal(component.bounds.firstNode.nodeType, 8);
+        this.assert.equal(component.bounds.lastNode.tagName.toLowerCase(), 'h2');
+        this.assertHTML(`<!----><h2>How are you doing?</h2>`);
+      }
+
       ['@test it can have no template context']() {
         this.registerComponentManager(
           'pseudo-template-only',
@@ -103,6 +201,8 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
             createComponent() {
               return null;
             },
+
+            didCreateBounds() {},
 
             updateComponent() {},
 
@@ -133,6 +233,8 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
             createComponent(Factory, args) {
               return new Factory(args);
             },
+
+            didCreateBounds() {},
 
             updateComponent() {},
 
@@ -195,6 +297,8 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
             createComponent(factory) {
               return factory.create();
             },
+
+            didCreateBounds() {},
 
             getContext() {
               return customContext;
@@ -284,6 +388,7 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
           EmberObject.extend({
             capabilities: capabilities('3.4', {
               destructor: true,
+              bounds: true,
             }),
 
             createComponent(factory) {
@@ -295,7 +400,13 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
               return component;
             },
 
+            didCreateBounds() {},
+
             updateComponent() {},
+
+            willDestroyBounds() {
+              assert.step('willDestroyBounds');
+            },
 
             destroyComponent(component) {
               assert.step('destroyComponent');
@@ -328,7 +439,12 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
 
         this.assertText('');
 
-        assert.verifySteps(['createComponent', 'destroyComponent', 'component.destroy()']);
+        assert.verifySteps([
+          'createComponent',
+          'willDestroyBounds',
+          'destroyComponent',
+          'component.destroy()',
+        ]);
       }
 
       ['@test it can opt-in to running async lifecycle hooks'](assert) {
@@ -337,6 +453,7 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
           EmberObject.extend({
             capabilities: capabilities('3.4', {
               asyncLifecycleCallbacks: true,
+              bounds: true,
             }),
 
             createComponent(factory, args) {
@@ -348,6 +465,8 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
               assert.step('updateComponent');
               set(component, 'args', args);
             },
+
+            didCreateBounds() {},
 
             destroyComponent(component) {
               assert.step('destroyComponent');
@@ -497,7 +616,12 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
           this.render('<FooBar data-test={{value}} />', { value: 'foo' });
 
           this.assertHTML(`<p data-test="foo">Hello world!</p>`);
-          assert.verifySteps(['createComponent', 'getContext', 'didCreateComponent']);
+          assert.verifySteps([
+            'createComponent',
+            'getContext',
+            'didCreateBounds',
+            'didCreateComponent',
+          ]);
 
           this.runTask(() => this.context.set('value', 'bar'));
           assert.verifySteps(['didUpdateComponent']);

@@ -1,3 +1,4 @@
+import { GLIMMER_COMPONENT_MANAGER_BOUNDS } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import {
   ComponentCapabilities,
@@ -9,6 +10,7 @@ import {
 import { PathReference, Tag } from '@glimmer/reference';
 import {
   Arguments,
+  Bounds as VMBounds,
   CapturedArguments,
   ComponentDefinition,
   Invocation,
@@ -41,15 +43,33 @@ const CAPABILITIES = {
 export interface OptionalCapabilities {
   asyncLifecycleCallbacks?: boolean;
   destructor?: boolean;
+  bounds?: boolean;
 }
 
 export function capabilities(managerAPI: '3.4', options: OptionalCapabilities = {}): Capabilities {
   assert('Invalid component manager compatibility specified', managerAPI === '3.4');
 
   return {
+    bounds: !!options.bounds,
     asyncLifeCycleCallbacks: !!options.asyncLifecycleCallbacks,
     destructor: !!options.destructor,
   };
+}
+
+class Bounds {
+  constructor(private _bounds: VMBounds) {}
+
+  get firstNode(): Node {
+    return this._bounds.firstNode() as Node;
+  }
+
+  get lastNode(): Node {
+    return this._bounds.lastNode() as Node;
+  }
+
+  get parentElement(): Element {
+    return this._bounds.parentElement() as Element;
+  }
 }
 
 export interface DefinitionState<ComponentInstance> {
@@ -62,6 +82,7 @@ export interface DefinitionState<ComponentInstance> {
 export interface Capabilities {
   asyncLifeCycleCallbacks: boolean;
   destructor: boolean;
+  bounds: boolean;
 }
 
 export interface CustomComponentManagerArgs {
@@ -71,9 +92,11 @@ export interface CustomComponentManagerArgs {
 
 export interface ManagerDelegate<ComponentInstance> {
   capabilities: Capabilities;
+  didCreateBounds(state: CustomComponentState<ComponentInstance>, bounds: Bounds): void;
   createComponent(factory: Opaque, args: CustomComponentManagerArgs): ComponentInstance;
   updateComponent(instance: ComponentInstance, args: CustomComponentManagerArgs): void;
   getContext(instance: ComponentInstance): Opaque;
+  willDestroyBounds(state: CustomComponentState<ComponentInstance>): void;
 }
 
 export function hasAsyncLifeCycleCallbacks<ComponentInstance>(
@@ -92,6 +115,10 @@ export function hasDestructors<ComponentInstance>(
   delegate: ManagerDelegate<ComponentInstance>
 ): delegate is ManagerDelegateWithDestructors<ComponentInstance> {
   return delegate.capabilities.destructor;
+}
+
+export function hasBounds<ComponentInstance>(delegate: ManagerDelegate<ComponentInstance>) {
+  return delegate.capabilities.bounds;
 }
 
 export interface ManagerDelegateWithDestructors<ComponentInstance>
@@ -206,7 +233,11 @@ export default class CustomComponentManager<ComponentInstance>
     return args.tag;
   }
 
-  didRenderLayout() {}
+  didRenderLayout(state: CustomComponentState<ComponentInstance>, bounds: VMBounds) {
+    if (GLIMMER_COMPONENT_MANAGER_BOUNDS && hasBounds(state.delegate)) {
+      state.delegate.didCreateBounds(state, new Bounds(bounds));
+    }
+  }
 
   getLayout(state: DefinitionState<ComponentInstance>): Invocation {
     return {
@@ -231,6 +262,9 @@ export class CustomComponentState<ComponentInstance> {
     const { delegate, component } = this;
 
     if (hasDestructors(delegate)) {
+      if (GLIMMER_COMPONENT_MANAGER_BOUNDS && hasBounds(delegate)) {
+        delegate.willDestroyBounds(this);
+      }
       delegate.destroyComponent(component);
     }
   }
