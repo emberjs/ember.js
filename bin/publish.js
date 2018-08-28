@@ -138,17 +138,21 @@ function confirmPublish() {
       return;
     }
 
-    packages.filter(pkg => !pkg.private).forEach(package => {
-      execWithSideEffects(`npm publish --tag ${distTag} --access public`, {
-        cwd: package.absolutePath
+    cli.question(chalk.green('\nPlease provide OTP token '), token => {
+      let otp = token.trim();
+
+      packages.filter(pkg => !pkg.private).forEach(package => {
+        execWithSideEffects(`npm publish --tag ${distTag} --access public --otp ${otp}`, {
+          cwd: package.absolutePath
+        });
       });
+
+      execWithSideEffects(`git push origin master --tags`);
+
+      console.log(chalk.green(`\nv${newVersion} deployed!`));
+      console.log(chalk.green('Done.'));
+      cli.close();
     });
-
-    execWithSideEffects(`git push origin master --tags`);
-
-    console.log(chalk.green(`\nv${newVersion} deployed!`));
-    console.log(chalk.green('Done.'));
-    cli.close();
   });
 }
 
