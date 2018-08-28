@@ -2,7 +2,15 @@ import { ROUTER_ROUTER } from '@ember/deprecated-features';
 import { getOwner } from 'ember-owner';
 import { assign } from '@ember/polyfills';
 import { once } from '@ember/runloop';
-import { get, set, getProperties, setProperties, computed, isEmpty } from 'ember-metal';
+import {
+  get,
+  set,
+  getProperties,
+  getWithDefault,
+  setProperties,
+  computed,
+  isEmpty,
+} from 'ember-metal';
 import { assert, deprecate, info, isTesting } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { classify } from '@ember/string';
@@ -1338,7 +1346,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     // Assign the route's controller so that it can more easily be
     // referenced in action handlers. Side effects. Side effects everywhere.
     if (!this.controller) {
-      let propNames = get(this, '_qp.propertyNames');
+      let propNames = getWithDefault(this, '_qp.propertyNames', []);
       addQueryParamsObservers(controller, propNames);
       this.controller = controller;
     }
@@ -1923,11 +1931,11 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     let transition =
       this._router && this._router._routerMicrolib
         ? this._router._routerMicrolib.activeTransition
-        : null;
+        : undefined;
 
     // Only change the route name when there is an active transition.
     // Otherwise, use the passed in route name.
-    if (owner.routable && transition !== null) {
+    if (owner.routable && transition !== undefined) {
       name = getEngineRouteName(owner, _name);
     } else {
       name = _name;
@@ -1936,7 +1944,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     let route = owner.lookup(`route:${name}`);
     // If we are mid-transition, we want to try and look up
     // resolved parent contexts on the current transitionEvent.
-    if (transition !== null) {
+    if (transition !== undefined && transition !== null) {
       let modelLookupName = (route && route.routeName) || name;
       if (transition.resolvedModels.hasOwnProperty(modelLookupName)) {
         return transition.resolvedModels[modelLookupName];
