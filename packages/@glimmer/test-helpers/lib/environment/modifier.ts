@@ -7,7 +7,7 @@ import {
 } from '@glimmer/runtime';
 import { Option, Simple } from '@glimmer/interfaces';
 import { Tag, CONSTANT_TAG } from '@glimmer/reference';
-import { Destroyable } from '@glimmer/util';
+import { Destroyable, Opaque, Dict } from '@glimmer/util';
 
 export class InertModifierStateBucket {}
 
@@ -62,8 +62,8 @@ export interface TestModifierConstructor {
 
 export interface TestModifierInstance {
   element?: Simple.Element;
-  didInsertElement(): void;
-  didUpdate(): void;
+  didInsertElement(_params: Opaque[], _hash: Dict<Opaque>): void;
+  didUpdate(_params: Opaque[], _hash: Dict<Opaque>): void;
   willDestroyElement(): void;
 }
 
@@ -89,13 +89,13 @@ export class TestModifierManager
 
   install({ element, args, dom, state }: TestModifier) {
     this.installedElements.push(element);
-
-    let param = args.positional.at(0).value();
+    let firstParam = args.positional.at(0);
+    let param = firstParam !== undefined && firstParam.value();
     dom.setAttribute(element, 'data-modifier', `installed - ${param}`);
 
     if (state.instance && state.instance.didInsertElement) {
       state.instance.element = element;
-      state.instance.didInsertElement();
+      state.instance.didInsertElement(args.positional.value(), args.named.value());
     }
 
     return;
@@ -103,12 +103,12 @@ export class TestModifierManager
 
   update({ element, args, dom, state }: TestModifier) {
     this.updatedElements.push(element);
-
-    let param = args.positional.at(0).value();
+    let firstParam = args.positional.at(0);
+    let param = firstParam !== undefined && firstParam.value();
     dom.setAttribute(element, 'data-modifier', `updated - ${param}`);
 
     if (state.instance && state.instance.didUpdate) {
-      state.instance.didUpdate();
+      state.instance.didUpdate(args.positional.value(), args.named.value());
     }
 
     return;
@@ -119,7 +119,7 @@ export class TestModifierManager
       destroy: () => {
         this.destroyedModifiers.push(modifier);
         let { element, dom, state } = modifier;
-        if (state.instance && state.instance.didUpdate) {
+        if (state.instance && state.instance.willDestroyElement) {
           state.instance.willDestroyElement();
         }
         dom.removeAttribute(element, 'data-modifier');

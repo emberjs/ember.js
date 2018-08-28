@@ -113,9 +113,6 @@ export default class TemplateCompiler {
       this.attribute([typeAttr]);
     }
 
-    for (let i = 0; i < action.modifiers.length; i++) {
-      this.modifier([action.modifiers[i]]);
-    }
     this.opcode(['flushElement', action], null);
   }
 
@@ -124,6 +121,11 @@ export default class TemplateCompiler {
       this.opcode(['closeDynamicComponent', action], action);
     } else if (isComponent(action)) {
       this.opcode(['closeComponent', action], action);
+    } else if (action.modifiers.length > 0) {
+      for (let i = 0; i < action.modifiers.length; i++) {
+        this.modifier([action.modifiers[i]]);
+      }
+      this.opcode(['closeElement', action], action);
     } else {
       this.opcode(['closeElement', action], action);
     }
