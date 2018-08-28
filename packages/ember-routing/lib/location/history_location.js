@@ -82,6 +82,9 @@ export default EmberObject.extend({
 
     let state = this.getState();
     let path = this.formatURL(this.getURL());
+
+    path = `${window.location.origin}${path}}`;
+
     if (state && state.path === path) {
       // preserve existing state
       // used for webkit workaround, since there will be no initial popstate event
@@ -139,7 +142,7 @@ export default EmberObject.extend({
   */
   setURL(path) {
     let state = this.getState();
-    path = this.formatURL(path);
+    path = `${window.location.origin}${this.formatURL(path)}`;
 
     if (!state || state.path !== path) {
       this.pushState(path);
@@ -156,7 +159,7 @@ export default EmberObject.extend({
   */
   replaceURL(path) {
     let state = this.getState();
-    path = this.formatURL(path);
+    path = `${window.location.origin}${this.formatURL(path)}`;
 
     if (!state || state.path !== path) {
       this.replaceState(path);
