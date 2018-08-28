@@ -43,6 +43,11 @@ import { TestDynamicScope } from '../../../environment';
 import { NodeEnv } from '../ssr/environment';
 import { TestComponentDefinitionState, locatorFor } from '../../component-definition';
 import { WrappedBuilder } from '@glimmer/opcode-compiler';
+import {
+  TestModifierDefinitionState,
+  TestModifierConstructor,
+  TestModifierManager,
+} from '../../modifier';
 
 export type RenderDelegateComponentDefinition = ComponentDefinition<TestComponentDefinitionState>;
 
@@ -146,6 +151,12 @@ export default class EagerRenderDelegate implements RenderDelegate {
   registerHelper(name: string, helper: UserHelper): void {
     let glimmerHelper: GlimmerHelper = (_vm, args) => new HelperReference(helper, args);
     this.modules.register(name, 'helper', { default: glimmerHelper });
+  }
+
+  registerModifier(name: string, ModifierClass: TestModifierConstructor): void {
+    let state = new TestModifierDefinitionState(ModifierClass);
+    let manager = new TestModifierManager();
+    this.modules.register(name, 'modifier', { default: { manager, state } });
   }
 
   renderTemplate(template: string, context: Dict<Opaque>, element: HTMLElement): RenderResult {
