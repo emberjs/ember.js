@@ -1,6 +1,12 @@
 # Ember Changelog
 
+### v3.5.0-beta.1 (August 28, 2018)
+
+- [#16877](https://github.com/emberjs/ember.js/pull/16877) [CLEANUP] Allow routes to be named "array" and "object"
+- [#16907](https://github.com/emberjs/ember.js/pull/16907) Upgrade to TypeScript 3.0
+
 ### v3.4.0 (August 27, 2018)
+
 - [#16603](https://github.com/emberjs/ember.js/pull/16603) [BUGFIX] Support mouseEnter/Leave events w/o jQuery
 - [#16857](https://github.com/emberjs/ember.js/pull/16857) [BUGFIX] Prevents the recursive redefinition of root chains
 - [#16854](https://github.com/emberjs/ember.js/pull/16854) [BUGFIX] Don't thread FactoryManager through createComponent
