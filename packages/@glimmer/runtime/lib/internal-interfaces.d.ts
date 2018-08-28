@@ -6,3 +6,8 @@ export {
   ComponentDefinitionState,
   InternalComponentManager as ComponentManager,
 } from './component/interfaces';
+
+export {
+  InternalModifierManager as ModifierManager,
+  ModifierInstanceState as Modifier,
+} from './modifier/interfaces';

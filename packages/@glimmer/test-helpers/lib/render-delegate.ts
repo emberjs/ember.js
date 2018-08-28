@@ -17,6 +17,7 @@ export default interface RenderDelegate {
     Class?: ComponentTypes[K]
   ): void;
   registerHelper(name: string, helper: UserHelper): void;
+  registerModifier(name: string, klass: Opaque): void;
   renderTemplate(
     template: string,
     context: Dict<Opaque>,

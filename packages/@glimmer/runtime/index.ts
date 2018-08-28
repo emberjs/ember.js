@@ -66,7 +66,10 @@ export {
   curry,
 } from './lib/component/curried-component';
 
-export { ModifierManager, Modifier } from './lib/modifier/interfaces';
+export {
+  PublicModifierDefinition as ModifierDefinition,
+  ModifierManager,
+} from './lib/modifier/interfaces';
 
 export {
   default as DOMChanges,
