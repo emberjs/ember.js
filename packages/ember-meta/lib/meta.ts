@@ -44,14 +44,37 @@ const enum MetaFlags {
   META_DESTROYED = 1 << 2,
 }
 
-const enum ListenerFlags {
-  NONE = 0,
-  REMOVE = 1 << 0,
-  ONCE = 1 << 1,
+export const enum ListenerKind {
+  ADD = 0,
+  ONCE = 1,
+  REMOVE = 2,
+  REMOVE_ALL = 3,
 }
 
-type Listeners = Array<string | object | null | Function | ListenerFlags>;
-type PublicListeners = Array<string | object | null | Function | boolean>;
+interface RemoveAllListener {
+  event: string;
+  target: null;
+  method: null;
+  kind: ListenerKind.REMOVE_ALL;
+}
+
+interface StringListener {
+  event: string;
+  target: null;
+  method: string;
+  kind: ListenerKind.ADD | ListenerKind.ONCE | ListenerKind.REMOVE;
+}
+
+interface FunctionListener {
+  event: string;
+  target: object | null;
+  method: Function;
+  kind: ListenerKind.ADD | ListenerKind.ONCE | ListenerKind.REMOVE;
+}
+
+type Listener = RemoveAllListener | StringListener | FunctionListener;
+
+let currentListenerVersion = 1;
 
 export class Meta {
   _descriptors: any | undefined;
@@ -66,7 +89,10 @@ export class Meta {
   source: object;
   proto: object | undefined;
   _parent: Meta | undefined | null;
-  private _listeners: Listeners | undefined;
+
+  _listeners: Listener[] | undefined;
+  _inheritedEnd = 0;
+  _inheritedVersion = 0;
 
   // DEBUG
   _values: any | undefined;
@@ -452,29 +478,104 @@ export class Meta {
     method: Function | string,
     once: boolean
   ) {
-    this._addToListeners(eventName, target, method, once ? ListenerFlags.ONCE : ListenerFlags.NONE);
+    this.pushListener(eventName, target, method, once ? ListenerKind.ONCE : ListenerKind.ADD);
   }
 
-  private _addToListeners(
-    eventName: string,
+  removeFromListeners(eventName: string, target: object | null, method: Function | string): void {
+    this.pushListener(eventName, target, method, ListenerKind.REMOVE);
+  }
+
+  removeAllListeners(event: string) {
+    let listeners = this.writableListeners();
+    let inheritedEnd = this._inheritedEnd;
+    // remove all listeners of event name
+    // adjusting the inheritedEnd if listener is below it
+    for (let i = listeners.length - 1; i >= 0; i--) {
+      let listener = listeners[i];
+      if (listener.event === event) {
+        listeners.splice(i, 1);
+        if (i < inheritedEnd) {
+          inheritedEnd--;
+        }
+      }
+    }
+    this._inheritedEnd = inheritedEnd;
+    // we put remove alls at start because rare and easy to check there
+    listeners.splice(inheritedEnd, 0, {
+      event,
+      target: null,
+      method: null,
+      kind: ListenerKind.REMOVE_ALL,
+    });
+  }
+
+  private pushListener(
+    event: string,
     target: object | null,
     method: Function | string,
-    flags: ListenerFlags
-  ) {
-    let { _listeners: listeners } = this;
-    if (listeners === undefined) {
-      listeners = this._listeners = [];
+    kind: ListenerKind.ADD | ListenerKind.ONCE | ListenerKind.REMOVE
+  ): void {
+    let listeners = this.writableListeners();
+
+    let i = indexOfListener(listeners, event, target, method!);
+
+    // remove if found listener was inherited
+    if (i !== -1 && i < this._inheritedEnd) {
+      listeners.splice(i, 1);
+      this._inheritedEnd--;
+      i = -1;
     }
-    listeners.push(eventName, target, method, flags);
+
+    // if not found, push
+    if (i === -1) {
+      listeners.push({
+        event,
+        target,
+        method,
+        kind,
+      } as Listener);
+    } else {
+      // update own listener
+      listeners[i].kind = kind;
+    }
   }
 
-  removeFromListeners(eventName: string, target: any, method?: Function | string): void {
-    this._addToListeners(
-      eventName,
-      target,
-      method === undefined ? ALL : method,
-      ListenerFlags.REMOVE
-    );
+  // check if we our meta is owned by a prototype
+  // if so, our listeners are inheritable so check if we have
+  // cached our flattened listeners, if so then clear the inherited listeners
+  // and bump the global version count
+  private writableListeners(): Listener[] {
+    let listeners = this._listeners;
+
+    if (listeners === undefined) {
+      listeners = this._listeners = [] as Listener[];
+    }
+
+    if (this.source === this.proto && this._inheritedVersion > 0) {
+      this._inheritedVersion = 0;
+      if (this._inheritedEnd > 0) {
+        listeners.splice(0, this._inheritedEnd);
+        this._inheritedEnd = 0;
+      }
+      currentListenerVersion++;
+    }
+
+    return listeners;
+  }
+
+  protected flattenedListeners(): Listener[] | undefined {
+    if (this._inheritedVersion < currentListenerVersion) {
+      // compute
+      let parent = this.parent;
+      if (parent !== null) {
+        let parentListeners = parent.flattenedListeners();
+        if (parentListeners !== undefined) {
+          let listeners = this._listeners;
+        }
+      }
+      this._inheritedVersion = currentListenerVersion;
+    }
+    return this._listeners;
   }
 
   matchingListeners(eventName: string): PublicListeners | undefined {
@@ -487,8 +588,8 @@ export class Meta {
         if (listeners[index] === eventName) {
           let target = listeners[index + 1] as object | null;
           let method = listeners[index + 2] as Function | string;
-          let flags = listeners[index + 3] as ListenerFlags;
-          if ((flags & ListenerFlags.REMOVE) === ListenerFlags.REMOVE) {
+          let flags = listeners[index + 3] as ListenerKind;
+          if ((flags & ListenerKind.REMOVE) === ListenerKind.REMOVE) {
             if (result !== undefined) {
               if (method === ALL) {
                 result = undefined;
@@ -504,7 +605,7 @@ export class Meta {
               result,
               target,
               method,
-              (flags & ListenerFlags.ONCE) === ListenerFlags.ONCE
+              (flags & ListenerKind.ONCE) === ListenerKind.ONCE
             );
           }
         }
@@ -654,23 +755,29 @@ export function peekMeta(obj: object) {
     `Cannot call \`peekMeta\` on ${typeof obj}`,
     typeof obj === 'object' || typeof obj === 'function'
   );
-
-  let pointer = obj;
-  let meta;
+  if (DEBUG) {
+    counters!.peekCalls++;
+  }
+  let meta = metaStore.get(obj);
+  if (meta !== undefined) {
+    return meta;
+  }
+  if (DEBUG) {
+    counters!.peekPrototypeWalks++;
+  }
+  let pointer = getPrototypeOf(obj);
   while (pointer !== undefined && pointer !== null) {
     meta = metaStore.get(pointer);
-    // jshint loopfunc:true
-    if (DEBUG) {
-      counters!.peekCalls++;
-    }
+
     if (meta !== undefined) {
-      return meta;
+      // if meta is set as a prototype method
+      // set it here if it was accessed as a prototype
+      if (meta.proto !== pointer) {
+        meta.proto = pointer;
+      }
     }
 
     pointer = getPrototypeOf(pointer);
-    if (DEBUG) {
-      counters!.peekPrototypeWalks++;
-    }
   }
 }
 
@@ -795,40 +902,17 @@ export function isDescriptor(possibleDesc: any | undefined | null): boolean {
 
 export { counters };
 
-/*
- When we render a rich template hierarchy, the set of events that
- *might* happen tends to be much larger than the set of events that
- actually happen. This implies that we should make listener creation &
- destruction cheap, even at the cost of making event dispatch more
- expensive.
-
- Thus we store a new listener with a single push and no new
- allocations, without even bothering to do deduplication -- we can
- save that for dispatch time, if an event actually happens.
- */
-function pushUniqueListener(
-  destination: PublicListeners,
-  target: object | null,
-  method: Function | string,
-  once: boolean
-) {
-  for (let index = 0; index < destination.length; index += 3) {
-    if (destination[index] === target && destination[index + 1] === method) {
-      return;
-    }
-  }
-  destination.push(target, method, once);
-}
-
-function removeListener(
-  destination: PublicListeners,
+function indexOfListener(
+  listeners: Listener[],
+  event: string,
   target: object | null,
   method: Function | string
 ) {
-  for (let index = 0; index < destination.length; index += 3) {
-    if (destination[index] === target && destination[index + 1] === method) {
-      destination.splice(index, 3);
-      break;
+  for (let i = listeners.length - 1; i >= 0; i--) {
+    let listener = listeners[i];
+    if (listener.event === event && listener.target === target && listener.method === method) {
+      return i;
     }
   }
+  return -1;
 }
