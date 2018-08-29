@@ -130,7 +130,7 @@ function initialize(obj, properties) {
   obj.init(properties);
 
   // re-enable chains
-  m.proto = obj.constructor.prototype;
+  m.unsetInitializing();
   finishChains(m);
   sendEvent(obj, 'init', undefined, undefined, undefined, m);
 }
@@ -210,7 +210,7 @@ class CoreObject {
 
     // disable chains
     let m = meta(self);
-    m.proto = self;
+    m.setInitializing();
 
     if (properties !== DELAY_INIT) {
       deprecate(

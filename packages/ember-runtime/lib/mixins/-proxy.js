@@ -90,9 +90,9 @@ export default Mixin.create({
   setUnknownProperty(key, value) {
     let m = meta(this);
 
-    if (m.proto === this) {
-      // if marked as prototype then just defineProperty
-      // rather than delegate
+    if (m.isInitializing() || m.isPrototypeMeta(this)) {
+      // if marked as prototype or object is initializing then just
+      // defineProperty rather than delegate
       defineProperty(this, key, null, value);
       return value;
     }

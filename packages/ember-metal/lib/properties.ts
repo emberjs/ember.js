@@ -57,7 +57,7 @@ interface ExtendedObject {
 export function MANDATORY_SETTER_FUNCTION(name: string): MandatorySetterFunction {
   function SETTER_FUNCTION(this: object, value: any | undefined | null) {
     let m = peekMeta(this);
-    if (!m.isInitialized(this)) {
+    if (m.isInitializing() || m.isPrototypeMeta(this)) {
       m.writeValues(name, value);
     } else {
       assert(
