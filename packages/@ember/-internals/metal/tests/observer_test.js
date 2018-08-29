@@ -360,7 +360,7 @@ moduleFor(
 
       obj2.count = 0;
       set(obj, 'foo', 'baz');
-      assert.equal(obj.count, 1, 'should have invoked observer on parent');
+      assert.equal(obj.count, 0, 'should not have invoked observer on parent');
       assert.equal(obj2.count, 0, 'should not have invoked observer on inherited');
     }
 

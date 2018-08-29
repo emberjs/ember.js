@@ -90,7 +90,7 @@ function notifyPropertyChange(obj: object, keyName: string, _meta?: Meta): void 
   let meta = _meta === undefined ? peekMeta(obj) : _meta;
   let hasMeta = meta !== undefined;
 
-  if (hasMeta && !meta.isInitialized(obj)) {
+  if (hasMeta && (meta.isInitializing() || meta.isPrototypeMeta(obj))) {
     return;
   }
 
