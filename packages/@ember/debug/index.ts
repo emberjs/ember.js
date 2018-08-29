@@ -1,6 +1,6 @@
+import { isChrome, isFirefox } from '@ember/-internals/browser-environment';
 import EmberError from '@ember/error';
 import { DEBUG } from '@glimmer/env';
-import { isChrome, isFirefox } from 'ember-browser-environment';
 import _deprecate, { DeprecateFunc, DeprecationOptions } from './lib/deprecate';
 import { isTesting } from './lib/testing';
 import _warn, { WarnFunc } from './lib/warn';

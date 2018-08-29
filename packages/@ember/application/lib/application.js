@@ -2,16 +2,20 @@
 @module @ember/application
 */
 
-import { dictionary } from 'ember-utils';
-import { ENV } from 'ember-environment';
-import { hasDOM } from 'ember-browser-environment';
+import { dictionary } from '@ember/-internals/utils';
+import { ENV } from '@ember/-internals/environment';
+import { hasDOM } from '@ember/-internals/browser-environment';
 import { assert, isTesting } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { bind, join, once, run, schedule } from '@ember/runloop';
-import { libraries, processAllNamespaces, setNamespaceSearchDisabled } from 'ember-metal';
+import {
+  libraries,
+  processAllNamespaces,
+  setNamespaceSearchDisabled,
+} from '@ember/-internals/metal';
 import { _loaded, runLoadHooks } from './lazy_load';
-import { RSVP } from 'ember-runtime';
-import { EventDispatcher, jQuery, jQueryDisabled } from 'ember-views';
+import { RSVP } from '@ember/-internals/runtime';
+import { EventDispatcher, jQuery, jQueryDisabled } from '@ember/-internals/views';
 import {
   Route,
   Router,
@@ -20,12 +24,12 @@ import {
   AutoLocation,
   NoneLocation,
   BucketCache,
-} from 'ember-routing';
+} from '@ember/-internals/routing';
 import ApplicationInstance from '../instance';
 import Engine from '@ember/engine';
-import { privatize as P } from 'container';
-import { setupApplicationRegistry } from 'ember-glimmer';
-import { RouterService } from 'ember-routing';
+import { privatize as P } from '@ember/-internals/container';
+import { setupApplicationRegistry } from '@ember/-internals/glimmer';
+import { RouterService } from '@ember/-internals/routing';
 import { EMBER_ROUTING_ROUTER_SERVICE } from '@ember/canary-features';
 
 let librariesRegistered = false;

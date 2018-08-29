@@ -1,8 +1,12 @@
-import { Registry } from 'container';
-import { Router } from 'ember-routing';
+import { Registry } from '@ember/-internals/container';
+import { Router } from '@ember/-internals/routing';
 import ApplicationInstance from '@ember/application/instance';
 import Application from '@ember/application';
-import { RegistryProxyMixin, ContainerProxyMixin, Object as EmberObject } from 'ember-runtime';
+import {
+  RegistryProxyMixin,
+  ContainerProxyMixin,
+  Object as EmberObject,
+} from '@ember/-internals/runtime';
 
 class ResolverWrapper {
   constructor(resolver) {

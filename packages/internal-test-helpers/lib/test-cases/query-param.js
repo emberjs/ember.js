@@ -1,5 +1,5 @@
 import Controller from '@ember/controller';
-import { NoneLocation } from 'ember-routing';
+import { NoneLocation } from '@ember/-internals/routing';
 import { run } from '@ember/runloop';
 
 import ApplicationTestCase from './application';

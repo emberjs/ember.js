@@ -1,4 +1,4 @@
-import { ENV } from 'ember-environment';
+import { ENV } from '@ember/-internals/environment';
 import { loc } from '@ember/string';
 import { setStrings, getStrings } from '@ember/string/lib/string_registry';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';

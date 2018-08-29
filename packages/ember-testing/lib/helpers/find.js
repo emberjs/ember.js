@@ -1,9 +1,9 @@
 /**
 @module ember
 */
-import { get } from 'ember-metal';
+import { get } from '@ember/-internals/metal';
 import { assert } from '@ember/debug';
-import { jQueryDisabled } from 'ember-views';
+import { jQueryDisabled } from '@ember/-internals/views';
 
 /**
   Finds an element in the context of the app's container element. A simple alias

@@ -1,4 +1,4 @@
-import { Container } from 'container';
+import { Container } from '@ember/-internals/container';
 
 function ContainersAssert(env) {
   this.env = env;

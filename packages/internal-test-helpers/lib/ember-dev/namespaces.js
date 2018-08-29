@@ -1,5 +1,5 @@
 import { run } from '@ember/runloop';
-import { NAMESPACES, NAMESPACES_BY_ID } from 'ember-metal';
+import { NAMESPACES, NAMESPACES_BY_ID } from '@ember/-internals/metal';
 
 function NamespacesAssert(env) {
   this.env = env;

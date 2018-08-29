@@ -101,6 +101,6 @@ function svelte(infile, outfile) {
 }
 
 if (process.env.SVELTE_TEST) {
-  svelte('dist/es/ember-metal/lib/property_get.js', 'property_get.svelte.js');
-  svelte('dist/es/ember-metal/lib/property_set.js', 'property_set.svelte.js');
+  svelte('dist/es/@ember/-internals/metal/lib/property_get.js', 'property_get.svelte.js');
+  svelte('dist/es/@ember/-internals/metal/lib/property_set.js', 'property_set.svelte.js');
 }

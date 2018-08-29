@@ -1,16 +1,16 @@
 /* eslint-disable no-console */
-import { getOwner } from 'ember-owner';
+import { getOwner } from '@ember/-internals/owner';
 import RSVP from 'rsvp';
 import { compile } from 'ember-template-compiler';
-import { ENV } from 'ember-environment';
-import { Route, NoneLocation, HistoryLocation } from 'ember-routing';
+import { ENV } from '@ember/-internals/environment';
+import { Route, NoneLocation, HistoryLocation } from '@ember/-internals/routing';
 import Controller from '@ember/controller';
-import { Object as EmberObject, A as emberA } from 'ember-runtime';
+import { Object as EmberObject, A as emberA } from '@ember/-internals/runtime';
 import { moduleFor, ApplicationTestCase, runDestroy } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
-import { Mixin, computed, set, addObserver, observer } from 'ember-metal';
+import { Mixin, computed, set, addObserver, observer } from '@ember/-internals/metal';
 import { getTextOf } from 'internal-test-helpers';
-import { Component } from 'ember-glimmer';
+import { Component } from '@ember/-internals/glimmer';
 import Engine from '@ember/engine';
 import { Transition } from 'router';
 

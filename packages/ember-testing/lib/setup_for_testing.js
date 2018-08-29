@@ -1,7 +1,7 @@
 /* global self */
 
 import { setTesting } from '@ember/debug';
-import { jQuery, jQueryDisabled } from 'ember-views';
+import { jQuery, jQueryDisabled } from '@ember/-internals/views';
 import { getAdapter, setAdapter } from './test/adapter';
 import {
   incrementPendingRequests,

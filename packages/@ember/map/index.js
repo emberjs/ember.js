@@ -1,5 +1,5 @@
 import { assert, deprecate } from '@ember/debug';
-import { guidFor } from 'ember-utils';
+import { guidFor } from '@ember/-internals/utils';
 import OrderedSet from './lib/ordered-set';
 import { copyMap } from './lib/utils';
 import { MAP } from '@ember/deprecated-features';

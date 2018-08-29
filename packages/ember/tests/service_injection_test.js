@@ -1,9 +1,9 @@
-import { getOwner } from 'ember-owner';
+import { getOwner } from '@ember/-internals/owner';
 import Controller from '@ember/controller';
 import Service, { inject as injectService } from '@ember/service';
-import { _ProxyMixin } from 'ember-runtime';
+import { _ProxyMixin } from '@ember/-internals/runtime';
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
-import { computed } from 'ember-metal';
+import { computed } from '@ember/-internals/metal';
 import { EMBER_MODULE_UNIFICATION } from '@ember/canary-features';
 
 moduleFor(
