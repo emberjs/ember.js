@@ -12,7 +12,6 @@ import {
   Expression,
   Expressions,
   Ops,
-  isModifier,
   isFlushElement,
   isArgument,
   isAttribute,
@@ -85,9 +84,7 @@ export class ComponentBlock extends Block {
 
   push(statement: Statement) {
     if (this.inParams) {
-      if (isModifier(statement)) {
-        throw new Error('Compile Error: Element modifiers are not allowed in components');
-      } else if (isFlushElement(statement)) {
+      if (isFlushElement(statement)) {
         this.inParams = false;
       } else if (isArgument(statement)) {
         this.arguments.push(statement);
@@ -269,6 +266,9 @@ export default class JavaScriptCompiler
   }
 
   closeComponent(_element: AST.ElementNode) {
+    if (_element.modifiers.length > 0) {
+      throw new Error('Compile Error: Element modifiers are not allowed in components');
+    }
     let [tag, attrs, args, block] = this.endComponent();
 
     this.push([Ops.Component, tag, attrs, args, block]);

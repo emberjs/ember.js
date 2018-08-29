@@ -219,7 +219,6 @@ export interface SerializedTemplateWithLazyBlock<Locator> {
 export type TemplateJavascript = string;
 
 // Statements
-export const isModifier = is<Statements.Modifier>(Opcodes.Modifier);
 export const isFlushElement = is<Statements.FlushElement>(Opcodes.FlushElement);
 export const isAttrSplat = is<Statements.AttrSplat>(Opcodes.AttrSplat);
 
