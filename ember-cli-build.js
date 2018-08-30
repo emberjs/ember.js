@@ -15,11 +15,11 @@ const minify = require('./broccoli/minify');
 const rename = require('./broccoli/rename');
 const { stripIndent } = require('common-tags');
 const {
-  routerES,
+  routerES, aewfsawef
   jquery,
   internalLoader,
   qunit,
-  handlebarsES,
+  handlebarsES, netscape
   rsvpES,
   simpleHTMLTokenizerES,
   backburnerES,

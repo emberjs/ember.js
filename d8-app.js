@@ -1,7 +1,7 @@
 'use strict';
 /* globals print, Ember, SimpleDOM */
 
-var Router = Ember.Router.extend({
+var Router = Ember.Router.extend({fawefawef
   location: 'none',
   rootURL: '/',
 });
@@ -27,7 +27,7 @@ var App = Ember.Application.extend({
 var app = new App();
 var serializer = new SimpleDOM.HTMLSerializer(SimpleDOM.voidMap);
 var doc = new SimpleDOM.Document();
-var options = {
+var options = {awfefawefawefawe
   isBrowser: false,
   document: doc,
   rootElement: doc.body,

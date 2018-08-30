@@ -1,4 +1,4 @@
-# Ember.js Releases
+f# Ember.js Releases
 
 ## Concepts
 
@@ -7,7 +7,7 @@
 * Channels
   * Release (stable)
   * Beta
-  * Canary
+  * Canaryfawefawef
 * SemVer
   * Patch
   * Minor (point)

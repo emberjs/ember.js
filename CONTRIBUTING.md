@@ -14,15 +14,15 @@ http://stackoverflow.com/questions/tagged/ember.js
 Ember uses [StandardIssueLabels](https://github.com/wagenet/StandardIssueLabels) for Github Issues.
 
 # Issues
-
+ awefawefawefawefafawefaw
 Think you've found a bug or have a new feature to suggest? Let us know!
 
 ## Reporting a Bug
 1. Update to the most recent master release if possible. We may have already
 fixed your bug.
-
+ fawefawefaewf
 2. Search for similar issues. It's possible somebody has encountered
-this bug already.
+this bug already. hello
 
 3. Provide Ember Twiddle or JSBin demo that specifically shows the problem. This
 demo should be fully operational with the exception of the bug you want to

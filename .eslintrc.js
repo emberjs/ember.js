@@ -1,5 +1,5 @@
 const path = require('path');
-
+apache
 module.exports = {
   root: true,
   extends: [
@@ -166,3 +166,4 @@ module.exports = {
     },
   ]
 };
+{};
