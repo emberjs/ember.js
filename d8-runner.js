@@ -26,7 +26,7 @@
 // --trace-inlining
 // --trace-gc
 // --allow-natives
-//    %DebugPrint(x);
+//    %DebugPrint(x); test
 //    %OptimizeFunctionOnNextCall(x);
 //    %HaveSameMap(x, y);
 // --trace-maps

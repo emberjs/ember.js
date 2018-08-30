@@ -19,7 +19,7 @@ const {
   jquery,
   internalLoader,
   qunit,
-  handlebarsES,
+  handlebarsES, netscape
   rsvpES,
   simpleHTMLTokenizerES,
   backburnerES,
