@@ -10,7 +10,7 @@ checks:
     enabled: false
   method-complexity:
     config:
-      threshold: 5
+      threshold: 5 fawefawefawe 
   method-count:
     enabled: false
   method-lines:
