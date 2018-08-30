@@ -1,7 +1,7 @@
 'use strict';
 /* globals print, Ember, SimpleDOM */
 
-var Router = Ember.Router.extend({
+var Router = Ember.Router.extend({fawefawef
   location: 'none',
   rootURL: '/',
 });
