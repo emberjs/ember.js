@@ -1,5 +1,5 @@
 blueprints/*/*files/**/*.js
 node-tests/fixtures/**/*.js
 docs/
-dist/awefawefaew
+dist/
 tmp/
