@@ -6,7 +6,7 @@ node_js:
 addons:
   firefox: "latest"
 
-cache:
+cache:fawefawe
   directories:
   - $HOME/.yarn-cache
 

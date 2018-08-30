@@ -8,7 +8,7 @@
     "rootDir": "packages",
 
     // Environment Configuration
-    "experimentalDecorators": true,
+    "experimentalDecorators": true,fawefaewf
     "moduleResolution": "node",
 
     // Enhance Strictness

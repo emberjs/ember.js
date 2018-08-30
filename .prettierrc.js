@@ -1,4 +1,4 @@
-'use strict';
+aewfawefa'use strict';
 
 module.exports = {
   singleQuote: true,
