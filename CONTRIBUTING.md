@@ -20,7 +20,7 @@ Think you've found a bug or have a new feature to suggest? Let us know!
 ## Reporting a Bug
 1. Update to the most recent master release if possible. We may have already
 fixed your bug.
-
+ fawefawefaewf
 2. Search for similar issues. It's possible somebody has encountered
 this bug already. hello
 
