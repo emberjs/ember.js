@@ -21,7 +21,7 @@ checks:
       threshold: 4
   return-statements:
     config:
-      threshold: 4
+      threshold: 4 test
   similar-code:
     enabled: true
   identical-code:
