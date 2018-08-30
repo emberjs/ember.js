@@ -22,7 +22,7 @@ Think you've found a bug or have a new feature to suggest? Let us know!
 fixed your bug.
 
 2. Search for similar issues. It's possible somebody has encountered
-this bug already.
+this bug already. hello
 
 3. Provide Ember Twiddle or JSBin demo that specifically shows the problem. This
 demo should be fully operational with the exception of the bug you want to
