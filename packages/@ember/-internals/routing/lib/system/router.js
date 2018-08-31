@@ -120,10 +120,8 @@ const EmberRouter = EmberObject.extend(Evented, {
       }
     );
 
-    if (DEBUG) {
-      if (get(this, 'namespace.LOG_TRANSITIONS_INTERNAL')) {
-        routerMicrolib.log = console.log.bind(console); // eslint-disable-line no-console
-      }
+    if (DEBUG && get(this, 'namespace.LOG_TRANSITIONS_INTERNAL')) {
+      routerMicrolib.log = console.log.bind(console); // eslint-disable-line no-console
     }
 
     routerMicrolib.map(dsl.generate());
@@ -936,11 +934,9 @@ const EmberRouter = EmberObject.extend(Evented, {
           (qp.scopedPropertyName in queryParams && qp.scopedPropertyName) ||
           (qp.urlKey in queryParams && qp.urlKey);
 
-        if (presentProp) {
-          if (presentProp !== qp.scopedPropertyName) {
-            queryParams[qp.scopedPropertyName] = queryParams[presentProp];
-            delete queryParams[presentProp];
-          }
+        if (presentProp && presentProp !== qp.scopedPropertyName) {
+          queryParams[qp.scopedPropertyName] = queryParams[presentProp];
+          delete queryParams[presentProp];
         }
       }
     }
