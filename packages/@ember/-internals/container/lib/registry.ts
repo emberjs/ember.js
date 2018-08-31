@@ -1,8 +1,6 @@
-import { ENV } from '@ember/-internals/environment';
 import { Factory, LookupOptions } from '@ember/-internals/owner';
 import { dictionary, intern } from '@ember/-internals/utils';
-import { assert, deprecate } from '@ember/debug';
-import { REGISTRY_RESOLVER_AS_FUNCTION } from '@ember/deprecated-features';
+import { assert } from '@ember/debug';
 import { assign } from '@ember/polyfills';
 import { DEBUG } from '@glimmer/env';
 import Container, { ContainerOptions, LazyInjection } from './container';
@@ -82,8 +80,6 @@ export interface RegistryOptions {
 }
 
 const VALID_FULL_NAME_REGEXP = /^[^:]+:[^:]+$/;
-const missingResolverFunctionsDeprecation =
-  'Passing a `resolver` function into a Registry is deprecated. Please pass in a Resolver object with a `resolve` method.';
 
 /**
  A registry used to store factory and option information keyed
@@ -114,23 +110,6 @@ export default class Registry implements IRegistry {
   constructor(options: RegistryOptions = {}) {
     this.fallback = options.fallback || null;
     this.resolver = options.resolver || null;
-
-    if (ENV._ENABLE_RESOLVER_FUNCTION_SUPPORT !== true) {
-      assert(missingResolverFunctionsDeprecation, typeof this.resolver !== 'function');
-    }
-
-    if (
-      REGISTRY_RESOLVER_AS_FUNCTION &&
-      typeof this.resolver === 'function' &&
-      ENV._ENABLE_RESOLVER_FUNCTION_SUPPORT === true
-    ) {
-      deprecate(missingResolverFunctionsDeprecation, false, {
-        id: 'ember-application.registry-resolver-as-function',
-        until: '3.0.0',
-        url: 'https://emberjs.com/deprecations/v2.x#toc_registry-resolver-as-function',
-      });
-      this.resolver = { resolve: this.resolver as Resolve };
-    }
 
     this.registrations = dictionary(options.registrations || null);
 

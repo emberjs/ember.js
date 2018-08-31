@@ -6,22 +6,10 @@ import {
   ModuleBasedTestResolver,
 } from 'internal-test-helpers';
 import { EMBER_MODULE_UNIFICATION } from '@ember/canary-features';
-import { ENV } from '@ember/-internals/environment';
 
 moduleFor(
   'Registry',
   class extends AbstractTestCase {
-    constructor() {
-      super();
-
-      this.originalResolverFunctionSupport = ENV._ENABLE_RESOLVER_FUNCTION_SUPPORT;
-      ENV._ENABLE_RESOLVER_FUNCTION_SUPPORT = true;
-    }
-
-    teardown() {
-      ENV._ENABLE_RESOLVER_FUNCTION_SUPPORT = this.originalResolverFunctionSupport;
-    }
-
     ['@test A registered factory is returned from resolve'](assert) {
       let registry = new Registry();
       let PostController = factory();
@@ -593,46 +581,6 @@ moduleFor(
         'foo:yorp': true,
         'foo:bar-baz': true,
       });
-    }
-
-    ['@test A registry created with `resolver` function instead of an object throws deprecation'](
-      assert
-    ) {
-      assert.expect(2);
-
-      ENV._ENABLE_RESOLVER_FUNCTION_SUPPORT = true;
-
-      let registry;
-
-      expectDeprecation(() => {
-        registry = new Registry({
-          resolver(fullName) {
-            return `${fullName}-resolved`;
-          },
-        });
-      }, 'Passing a `resolver` function into a Registry is deprecated. Please pass in a Resolver object with a `resolve` method.');
-
-      assert.equal(
-        registry.resolve('foo:bar'),
-        'foo:bar-resolved',
-        '`resolve` still calls the deprecated function'
-      );
-    }
-
-    ['@test A registry created with `resolver` function instead of an object throws assertion'](
-      assert
-    ) {
-      assert.expect(1);
-
-      ENV._ENABLE_RESOLVER_FUNCTION_SUPPORT = false;
-
-      expectAssertion(() => {
-        new Registry({
-          resolver(fullName) {
-            return `${fullName}-resolved`;
-          },
-        });
-      }, /Passing a \`resolver\` function into a Registry is deprecated\. Please pass in a Resolver object with a \`resolve\` method\./);
     }
 
     ['@test resolver.expandLocalLookup is not required'](assert) {
