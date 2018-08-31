@@ -3,7 +3,6 @@
 */
 
 import { FACTORY_FOR } from 'container';
-import { BINDING_SUPPORT } from '@ember/deprecated-features';
 import { assign } from '@ember/polyfills';
 import {
   guidFor,
@@ -30,7 +29,6 @@ import {
 import ActionHandler from '../mixins/action_handler';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { ENV } from 'ember-environment';
 
 const reopen = Mixin.prototype.reopen;
 
@@ -147,10 +145,6 @@ class CoreObject {
         let keyName = keyNames[i];
         let value = properties[keyName];
 
-        if (BINDING_SUPPORT && ENV._ENABLE_BINDING_SUPPORT && Mixin.detectBinding(keyName)) {
-          m.writeBindings(keyName, value);
-        }
-
         assert(
           'EmberObject.create no longer supports defining computed ' +
             'properties. Define computed properties using extend() or reopen() ' +
@@ -200,10 +194,6 @@ class CoreObject {
       }
     }
 
-    if (BINDING_SUPPORT && ENV._ENABLE_BINDING_SUPPORT) {
-      Mixin.finishPartial(self, m);
-    }
-
     // using DEBUG here to avoid the extraneous variable when not needed
     if (DEBUG) {
       beforeInitCalled = false;
@@ -221,7 +211,7 @@ class CoreObject {
   }
 
   reopen(...args) {
-    applyMixin(this, args, true);
+    applyMixin(this, args);
     return this;
   }
 
@@ -811,7 +801,7 @@ class CoreObject {
     @public
   */
   static reopenClass() {
-    applyMixin(this, arguments, false);
+    applyMixin(this, arguments);
     return this;
   }
 

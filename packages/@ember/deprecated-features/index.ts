@@ -16,6 +16,5 @@ export const ORPHAN_OUTLET_RENDER = !!'2.11.0-beta.1';
 export const ARRAY_AT_EACH = !!'3.1.0-beta.1';
 export const TARGET_OBJECT = !!'2.18.0-beta.1';
 export const RENDER_HELPER = !!'2.11.0-beta.1';
-export const BINDING_SUPPORT = !!'2.7.0-beta.1';
 export const MAP = !!'3.3.0-beta.1';
 export const ORDERED_SET = !!'3.3.0-beta.1';
