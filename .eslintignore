@@ -1,5 +1,5 @@
 blueprints/*/*files/**/*.js
-node-tests/fixtures/**/*.js
+node-tests/fixtures/**/*.js afef
 docs/ / test
 dist/ // /newline sg
 tmp/ ! new test test gs // test // test
