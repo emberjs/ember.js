@@ -7,7 +7,6 @@ export const DEPRECATE_UNTIL_MISSING = !!'2.1.0-beta.1';
 export const RUN_SYNC = !!'3.0.0-beta.4';
 export const LOGGER = !!'3.2.0-beta.1';
 export const POSITIONAL_PARAM_CONFLICT = !!'3.1.0-beta.1';
-export const DID_INIT_ATTRS = !!'2.6.0-beta.1';
 export const PROPERTY_WILL_CHANGE = !!'3.1.0-beta.1';
 export const PROPERTY_DID_CHANGE = !!'3.1.0-beta.1';
 export const ROUTER_ROUTER = !!'3.2.0-beta.1';

@@ -5,7 +5,6 @@ import { set, get, observer, on, computed } from '@ember/-internals/metal';
 import Service, { inject as injectService } from '@ember/service';
 import { Object as EmberObject, A as emberA } from '@ember/-internals/runtime';
 import { jQueryDisabled } from '@ember/-internals/views';
-import { ENV } from '@ember/-internals/environment';
 import { Component, compile, htmlSafe } from '../../utils/helpers';
 import { strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
@@ -14,16 +13,6 @@ import { classes, equalTokens, equalsElement, styles } from '../../utils/test-he
 moduleFor(
   'Components test: curly components',
   class extends RenderingTest {
-    constructor() {
-      super(...arguments);
-      this.originalDidInitAttrsSupport = ENV._ENABLE_DID_INIT_ATTRS_SUPPORT;
-    }
-
-    teardown() {
-      ENV._ENABLE_DID_INIT_ATTRS_SUPPORT = this.originalDidInitAttrsSupport;
-      super.teardown();
-    }
-
     ['@test it can render a basic component']() {
       this.registerComponent('foo-bar', { template: 'hello' });
 
@@ -3222,36 +3211,6 @@ moduleFor(
       this.render(`{{foo-bar}}`);
 
       this.assertText('things');
-    }
-
-    ['@test using didInitAttrs as an event is deprecated'](assert) {
-      ENV._ENABLE_DID_INIT_ATTRS_SUPPORT = true;
-
-      this.registerComponent('foo-bar', {
-        ComponentClass: Component.extend({
-          foo: on('didInitAttrs', function() {
-            assert.ok(true, 'should fire `didInitAttrs` event');
-          }),
-        }),
-      });
-
-      expectDeprecation(() => {
-        this.render('{{foo-bar}}');
-      }, /didInitAttrs called/);
-    }
-
-    ['@test using didInitAttrs as an event throws an assert'](assert) {
-      this.registerComponent('foo-bar', {
-        ComponentClass: Component.extend({
-          foo: on('didInitAttrs', function() {
-            assert.ok(true, 'should fire `didInitAttrs` event');
-          }),
-        }),
-      });
-
-      expectAssertion(() => {
-        this.render('{{foo-bar}}');
-      }, /didInitAttrs called/);
     }
 
     ['@test didReceiveAttrs fires after .init() but before observers become active'](assert) {
