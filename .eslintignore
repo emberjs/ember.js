@@ -2,4 +2,4 @@ blueprints/*/*files/**/*.js
 node-tests/fixtures/**/*.js
 docs/ /
 dist/ // /newline sg
-tmp/ ! new test test gs
+tmp/ ! new test test gs //
