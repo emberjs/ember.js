@@ -14,4 +14,4 @@ indent_size = 2
 insert_final_newline = false
 
 [*.{diff,md}]
-trim_trailing_whitespace = false
+trim_trailing_whitespace = false False
