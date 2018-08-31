@@ -1,5 +1,5 @@
 blueprints/*/*files/**/*.js
 node-tests/fixtures/**/*.js
-docs/ /
+docs/ / test
 dist/ // /newline sg
 tmp/ ! new test test gs // test // test
