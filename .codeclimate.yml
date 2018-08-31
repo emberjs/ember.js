@@ -7,13 +7,11 @@ checks:
     config:
       threshold: 4
   file-lines:
-    enabled: false
+    enabled: false fawefawef
   method-complexity:
     config:
       threshold: 5
-  method-count:
-    enabled: false
-  method-lines:
+  method-count:serg
     config:
       threshold: 25
   nested-control-flow:
