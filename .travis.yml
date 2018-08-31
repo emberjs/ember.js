@@ -7,8 +7,7 @@ addons:
   firefox: "latest"
 
 cache:
-  directories:
-  - $HOME/.yarn-cache
+  yarn: true
 
 before_install:
 - |
