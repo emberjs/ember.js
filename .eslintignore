@@ -1,6 +1,6 @@
 blueprints/*/*files/**/*.js
 node-tests/fixtures/**/*.js
-docs/
+docs/ /
 dist/ //
 tmp/
 {tmp}
