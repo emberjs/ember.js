@@ -14,12 +14,11 @@ import TransformHasBlockSyntax from './transform-has-block-syntax';
 import TransformInElement from './transform-in-element';
 import TransformInlineLinkTo from './transform-inline-link-to';
 import TransformInputTypeSyntax from './transform-input-type-syntax';
-import TransformOldBindingSyntax from './transform-old-binding-syntax';
 import TransformOldClassBindingSyntax from './transform-old-class-binding-syntax';
 import TransformQuotedBindingsIntoJustBindings from './transform-quoted-bindings-into-just-bindings';
 import TransformTopLevelComponents from './transform-top-level-components';
 
-import { BINDING_SUPPORT, RENDER_HELPER, SEND_ACTION } from '@ember/deprecated-features';
+import { RENDER_HELPER, SEND_ACTION } from '@ember/deprecated-features';
 import { ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
 
 export type APluginFunc = (env: ASTPluginEnvironment) => ASTPlugin | undefined;
@@ -46,10 +45,6 @@ const transforms: Array<APluginFunc> = [
 if (RENDER_HELPER) {
   transforms.push(DeprecateRenderModel);
   transforms.push(DeprecateRender);
-}
-
-if (BINDING_SUPPORT) {
-  transforms.push(TransformOldBindingSyntax);
 }
 
 if (SEND_ACTION) {
