@@ -1,7 +1,6 @@
 /**
 @module @ember/object
 */
-import { ENV } from '@ember/-internals/environment';
 import { descriptorFor, Meta, meta as metaFor, peekMeta } from '@ember/-internals/meta';
 import {
   getListeners,
@@ -14,7 +13,6 @@ import {
   wrap,
 } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
-import { BINDING_SUPPORT } from '@ember/deprecated-features';
 import { assign } from '@ember/polyfills';
 import { DEBUG } from '@glimmer/env';
 import { ComputedProperty, ComputedPropertyGetter, ComputedPropertySetter } from './computed';
@@ -361,7 +359,7 @@ function replaceObserversAndListeners(
   }
 }
 
-export function applyMixin(obj: { [key: string]: any }, mixins: Mixin[], partial: boolean) {
+export function applyMixin(obj: { [key: string]: any }, mixins: Mixin[]) {
   let descs = {};
   let values = {};
   let meta = metaFor(obj);
@@ -404,25 +402,7 @@ export function applyMixin(obj: { [key: string]: any }, mixins: Mixin[], partial
       replaceObserversAndListeners(obj, key, obj[key], value);
     }
 
-    if (
-      BINDING_SUPPORT &&
-      ENV._ENABLE_BINDING_SUPPORT &&
-      typeof Mixin.detectBinding === 'function' &&
-      Mixin.detectBinding(key)
-    ) {
-      meta.writeBindings(key, value);
-    }
-
     defineProperty(obj, key, desc, value, meta);
-  }
-
-  if (
-    BINDING_SUPPORT &&
-    ENV._ENABLE_BINDING_SUPPORT &&
-    !partial &&
-    typeof Mixin.finishPartial === 'function'
-  ) {
-    Mixin.finishPartial(obj, meta);
   }
 
   return obj;
@@ -436,7 +416,7 @@ export function applyMixin(obj: { [key: string]: any }, mixins: Mixin[], partial
   @private
 */
 export function mixin(obj: object, ...args: any[]) {
-  applyMixin(obj, args, false);
+  applyMixin(obj, args);
   return obj;
 }
 
@@ -610,11 +590,11 @@ export default class Mixin {
     @private
   */
   apply(obj: object) {
-    return applyMixin(obj, [this], false);
+    return applyMixin(obj, [this]);
   }
 
   applyPartial(obj: object) {
-    return applyMixin(obj, [this], true);
+    return applyMixin(obj, [this]);
   }
 
   /**
@@ -650,9 +630,6 @@ export default class Mixin {
   toString() {
     return '(unknown mixin)';
   }
-
-  static finishPartial: ((obj: any, meta: Meta) => void) | null;
-  static detectBinding: ((key: string) => void) | null;
 }
 
 function buildMixinsArray(mixins: MixinLike[] | undefined): Mixin[] | undefined {
@@ -682,13 +659,6 @@ function buildMixinsArray(mixins: MixinLike[] | undefined): Mixin[] | undefined 
 }
 
 type MixinLike = Mixin | { [key: string]: any };
-
-if (BINDING_SUPPORT && ENV._ENABLE_BINDING_SUPPORT) {
-  // slotting this so that the legacy addon can add the function here
-  // without triggering an error due to the Object.seal done below
-  Mixin.finishPartial = null;
-  Mixin.detectBinding = null;
-}
 
 Mixin.prototype.toString = classToString;
 

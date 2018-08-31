@@ -1,7 +1,5 @@
-import { ENV } from '@ember/-internals/environment';
 import { lookupDescriptor, symbol, toString } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
-import { BINDING_SUPPORT } from '@ember/deprecated-features';
 import { DEBUG } from '@glimmer/env';
 import { Tag } from '@glimmer/reference';
 
@@ -68,9 +66,6 @@ export class Meta {
     this._descriptors = undefined;
     this._watching = undefined;
     this._mixins = undefined;
-    if (BINDING_SUPPORT && ENV._ENABLE_BINDING_SUPPORT) {
-      this._bindings = undefined;
-    }
     this._deps = undefined;
     this._chainWatchers = undefined;
     this._chains = undefined;
@@ -530,55 +525,6 @@ export interface Meta {
   peekBindings(subkey: string): void;
   forEachBindings(fn: Function): void;
   clearBindings(): void;
-}
-
-if (BINDING_SUPPORT && ENV._ENABLE_BINDING_SUPPORT) {
-  Meta.prototype.writeBindings = function(subkey: string, value: any) {
-    assert(
-      this.isMetaDestroyed()
-        ? `Cannot add a binding for \`${subkey}\` on \`${toString(
-            this.source
-          )}\` after it has been destroyed.`
-        : '',
-      !this.isMetaDestroyed()
-    );
-
-    let map = this._getOrCreateOwnMap('_bindings');
-    map[subkey] = value;
-  };
-
-  Meta.prototype.peekBindings = function(subkey: string) {
-    return this._findInherited2('_bindings', subkey);
-  };
-
-  Meta.prototype.forEachBindings = function(fn: Function) {
-    let pointer: Meta | null = this;
-    let seen: { [key: string]: any } | undefined;
-    while (pointer !== null) {
-      let map = pointer._bindings;
-      if (map !== undefined) {
-        for (let key in map) {
-          // cleanup typing
-          seen = seen === undefined ? Object.create(null) : seen;
-          if (seen![key] === undefined) {
-            seen![key] = true;
-            fn(key, map[key]);
-          }
-        }
-      }
-      pointer = pointer.parent;
-    }
-  };
-
-  Meta.prototype.clearBindings = function() {
-    assert(
-      this.isMetaDestroyed()
-        ? `Cannot clear bindings on \`${toString(this.source)}\` after it has been destroyed.`
-        : '',
-      !this.isMetaDestroyed()
-    );
-    this._bindings = undefined;
-  };
 }
 
 if (DEBUG) {
