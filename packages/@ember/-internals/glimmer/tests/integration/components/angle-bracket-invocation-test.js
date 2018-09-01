@@ -783,6 +783,44 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
         });
       }
 
+      '@test merges class attribute with `...attributes` in yielded contextual component ("splattributes")'() {
+        this.registerComponent('foo-bar', {
+          ComponentClass: Component.extend({ tagName: '' }),
+          template: '{{yield (hash baz=(component "foo-bar/baz"))}}',
+        });
+        this.registerComponent('foo-bar/baz', {
+          ComponentClass: Component.extend({ tagName: '' }),
+          template: '<div class="default-class" ...attributes>hello</div>',
+        });
+
+        this.render('<FooBar as |fb|><fb.baz class="custom-class" title="foo"></fb.baz></FooBar>');
+
+        this.assertElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { class: classes('default-class custom-class'), title: 'foo' },
+          content: 'hello',
+        });
+      }
+
+      '@test the attributes passed on invocation trump over the default ones on elements with `...attributes` in yielded contextual component ("splattributes")'() {
+        this.registerComponent('foo-bar', {
+          ComponentClass: Component.extend({ tagName: '' }),
+          template: '{{yield (hash baz=(component "foo-bar/baz"))}}',
+        });
+        this.registerComponent('foo-bar/baz', {
+          ComponentClass: Component.extend({ tagName: '' }),
+          template: '<div title="bar" ...attributes>hello</div>',
+        });
+
+        this.render('<FooBar as |fb|><fb.baz title="foo"></fb.baz></FooBar>');
+
+        this.assertElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { title: 'foo' },
+          content: 'hello',
+        });
+      }
+
       '@test can include `...attributes` in multiple elements in tagless component ("splattributes")'() {
         this.registerComponent('foo-bar', {
           ComponentClass: Component.extend({ tagName: '' }),
