@@ -8,9 +8,7 @@ import { generateController, generateControllerFactory } from '@ember/-internals
 import { OwnedTemplateMeta } from '@ember/-internals/views';
 import { DEBUG } from '@glimmer/env';
 import Environment from '../environment';
-import { DynamicScope } from '../renderer';
 import { OwnedTemplate } from '../template';
-import { OrphanedOutletReference } from '../utils/outlet';
 import { RootReference } from '../utils/references';
 import AbstractManager from './abstract';
 
@@ -40,17 +38,12 @@ if (RENDER_HELPER) {
     create(
       env: Environment,
       definition: RenderDefinitionState,
-      args: Arguments,
-      dynamicScope: DynamicScope
+      args: Arguments
     ): T {
       let { name } = definition;
 
       if (DEBUG) {
         this._pushToDebugStack(`controller:${name} (with the render helper)`, env);
-      }
-
-      if (dynamicScope.rootOutletState) {
-        dynamicScope.outletState = new OrphanedOutletReference(dynamicScope.rootOutletState, name);
       }
 
       return this.createRenderState(args, env.owner, name);
