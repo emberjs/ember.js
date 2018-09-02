@@ -22,7 +22,6 @@ let originalEnvValue;
 let originalDeprecateHandler;
 let originalWarnHandler;
 let originalWarnOptions;
-let originalDeprecationOptions;
 const originalConsoleWarn = console.warn; // eslint-disable-line no-console
 const noop = function() {};
 
@@ -36,10 +35,8 @@ moduleFor(
       originalDeprecateHandler = HANDLERS.deprecate;
       originalWarnHandler = HANDLERS.warn;
       originalWarnOptions = ENV._ENABLE_WARN_OPTIONS_SUPPORT;
-      originalDeprecationOptions = ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT;
 
       ENV.RAISE_ON_DEPRECATION = true;
-      ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT = true;
     }
 
     teardown() {
@@ -48,7 +45,6 @@ moduleFor(
 
       ENV.RAISE_ON_DEPRECATION = originalEnvValue;
       ENV._ENABLE_WARN_OPTIONS_SUPPORT = originalWarnOptions;
-      ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT = originalDeprecationOptions;
     }
 
     afterEach() {
@@ -243,24 +239,8 @@ moduleFor(
       });
     }
 
-    ['@test deprecate without options triggers a deprecation'](assert) {
-      assert.expect(4);
-
-      registerHandler(function(message) {
-        if (message === missingOptionsDeprecation) {
-          assert.ok(true, 'proper deprecation is triggered when options is missing');
-        } else if (message === 'foo') {
-          assert.ok(true, 'original deprecation is still triggered');
-        }
-      });
-
-      deprecate('foo');
-      deprecate('foo', false, {});
-    }
-
     ['@test deprecate without options triggers an assertion'](assert) {
       assert.expect(2);
-      ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT = false;
 
       assert.throws(
         () => deprecate('foo'),
@@ -275,23 +255,8 @@ moduleFor(
       );
     }
 
-    ['@test deprecate without options.id triggers a deprecation'](assert) {
-      assert.expect(2);
-
-      registerHandler(function(message) {
-        if (message === missingOptionsIdDeprecation) {
-          assert.ok(true, 'proper deprecation is triggered when options.id is missing');
-        } else if (message === 'foo') {
-          assert.ok(true, 'original deprecation is still triggered');
-        }
-      });
-
-      deprecate('foo', false, { until: 'forever' });
-    }
-
     ['@test deprecate without options.id triggers an assertion'](assert) {
       assert.expect(1);
-      ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT = false;
 
       assert.throws(
         () => deprecate('foo', false, { until: 'forever' }),
@@ -300,23 +265,8 @@ moduleFor(
       );
     }
 
-    ['@test deprecate without options.until triggers a deprecation'](assert) {
-      assert.expect(2);
-
-      registerHandler(function(message) {
-        if (message === missingOptionsUntilDeprecation) {
-          assert.ok(true, 'proper deprecation is triggered when options.until is missing');
-        } else if (message === 'foo') {
-          assert.ok(true, 'original deprecation is still triggered');
-        }
-      });
-
-      deprecate('foo', false, { id: 'test' });
-    }
-
     ['@test deprecate without options.until triggers an assertion'](assert) {
       assert.expect(1);
-      ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT = false;
 
       assert.throws(
         () => deprecate('foo', false, { id: 'test' }),
