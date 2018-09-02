@@ -866,14 +866,6 @@ moduleFor(
       });
     }
 
-    ['@test it should not allow attributeBindings to be set']() {
-      this.registerComponent('foo-bar', { template: 'hello' });
-
-      expectAssertion(() => {
-        this.render('{{foo-bar attributeBindings="one two"}}');
-      }, /Setting 'attributeBindings' via template helpers is not allowed/);
-    }
-
     ['@test asserts if an attributeBinding is setup on class']() {
       let FooBarComponent = Component.extend({
         attributeBindings: ['class'],
