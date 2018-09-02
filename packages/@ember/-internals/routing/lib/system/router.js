@@ -1,9 +1,9 @@
 import { getOwner } from '@ember/-internals/owner';
 import { assign } from '@ember/polyfills';
-import { cancel, once, run, scheduleOnce, schedule } from '@ember/runloop';
+import { cancel, once, run, scheduleOnce } from '@ember/runloop';
 import { get, set, defineProperty, computed } from '@ember/-internals/metal';
 import EmberError from '@ember/error';
-import { assert, deprecate, info } from '@ember/debug';
+import { assert, info } from '@ember/debug';
 import { Object as EmberObject, Evented, typeOf, A as emberA } from '@ember/-internals/runtime';
 import { defaultSerialize, hasDefaultSerialize } from './route';
 import EmberRouterDSL from './dsl';

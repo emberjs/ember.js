@@ -4,7 +4,6 @@ import { LookupOptions, Owner, setOwner } from '@ember/-internals/owner';
 import { lookupComponent, lookupPartial, OwnedTemplateMeta } from '@ember/-internals/views';
 import { EMBER_MODULE_UNIFICATION, GLIMMER_CUSTOM_COMPONENT_MANAGER } from '@ember/canary-features';
 import { assert } from '@ember/debug';
-import { RENDER_HELPER } from '@ember/deprecated-features';
 import { _instrumentStart } from '@ember/instrumentation';
 import {
   ComponentDefinition,
@@ -38,7 +37,6 @@ import ActionModifierManager from './modifiers/action';
 import { populateMacros } from './syntax';
 import { mountHelper } from './syntax/mount';
 import { outletHelper } from './syntax/outlet';
-import { renderHelper } from './syntax/render';
 import { Factory as TemplateFactory, Injections, OwnedTemplate } from './template';
 import { getComponentManager } from './utils/custom-component-manager';
 import { ClassBasedHelperReference, SimpleHelperReference } from './utils/references';
@@ -75,10 +73,6 @@ const BUILTINS_HELPERS = {
   '-mount': mountHelper,
   '-outlet': outletHelper,
 };
-
-if (RENDER_HELPER) {
-  BUILTINS_HELPERS['-render'] = renderHelper;
-}
 
 const BUILTIN_MODIFIERS = {
   action: new ActionModifierManager(),

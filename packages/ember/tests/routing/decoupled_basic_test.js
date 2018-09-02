@@ -2,7 +2,6 @@
 import { getOwner } from '@ember/-internals/owner';
 import RSVP from 'rsvp';
 import { compile } from 'ember-template-compiler';
-import { ENV } from '@ember/-internals/environment';
 import { Route, NoneLocation, HistoryLocation } from '@ember/-internals/routing';
 import Controller from '@ember/controller';
 import { Object as EmberObject, A as emberA } from '@ember/-internals/runtime';
@@ -14,7 +13,6 @@ import { Component } from '@ember/-internals/glimmer';
 import Engine from '@ember/engine';
 import { Transition } from 'router';
 
-let originalRenderSupport;
 let originalConsoleError;
 
 moduleFor(
@@ -29,14 +27,12 @@ moduleFor(
       this.router.map(function() {
         this.route('home', { path: '/' });
       });
-      originalRenderSupport = ENV._ENABLE_RENDER_SUPPORT;
-      ENV._ENABLE_RENDER_SUPPORT = true;
+
       originalConsoleError = console.error;
     }
 
     teardown() {
       super.teardown();
-      ENV._ENABLE_RENDER_SUPPORT = originalRenderSupport;
       console.error = originalConsoleError;
     }
 

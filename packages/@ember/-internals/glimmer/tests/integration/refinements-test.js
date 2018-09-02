@@ -16,12 +16,6 @@ moduleFor(
 
       ---
 
-      {{#with var as |render|}}
-        {{render}}
-      {{/with}}
-
-      ---
-
       {{#with var as |outlet|}}
         {{outlet}}
       {{/with}}
@@ -58,17 +52,15 @@ moduleFor(
         { var: 'var' }
       );
 
-      this.assertText('var---var---var---var---var---var---var---var');
+      this.assertText('var---var---var---var---var---var---var');
 
       this.runTask(() => set(this.context, 'var', 'RARRR!!!'));
 
-      this.assertText(
-        'RARRR!!!---RARRR!!!---RARRR!!!---RARRR!!!---RARRR!!!---RARRR!!!---RARRR!!!---RARRR!!!'
-      );
+      this.assertText('RARRR!!!---RARRR!!!---RARRR!!!---RARRR!!!---RARRR!!!---RARRR!!!---RARRR!!!');
 
       this.runTask(() => set(this.context, 'var', 'var'));
 
-      this.assertText('var---var---var---var---var---var---var---var');
+      this.assertText('var---var---var---var---var---var---var');
     }
   }
 );
