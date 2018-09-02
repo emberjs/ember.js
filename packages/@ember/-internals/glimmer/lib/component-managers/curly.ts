@@ -1,5 +1,4 @@
 import { privatize as P } from '@ember/-internals/container';
-import { ENV } from '@ember/-internals/environment';
 import { get } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
@@ -269,10 +268,6 @@ export default class CurlyComponentManager
     // component's childViews array.
     if (parentView !== null && parentView !== undefined) {
       addChildView(parentView, component);
-    }
-
-    if (ENV._ENABLE_DID_INIT_ATTRS_SUPPORT === true) {
-      component.trigger('didInitAttrs');
     }
 
     component.trigger('didReceiveAttrs');
