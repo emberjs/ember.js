@@ -1,8 +1,6 @@
-import { ENV } from '@ember/-internals/environment';
 import { DEBUG } from '@glimmer/env';
 
 import { assert } from '../index';
-import deprecate from './deprecate';
 import { HandlerCallback, invoke, registerHandler as genericRegisterHandler } from './handlers';
 
 export interface WarnOptions {
@@ -97,26 +95,8 @@ if (DEBUG) {
       test = false;
     }
 
-    if (ENV._ENABLE_WARN_OPTIONS_SUPPORT !== true) {
-      assert(missingOptionsDeprecation, !!options);
-      assert(missingOptionsIdDeprecation, !!(options && options.id));
-    }
-
-    if (!options && ENV._ENABLE_WARN_OPTIONS_SUPPORT === true) {
-      deprecate(missingOptionsDeprecation, false, {
-        id: 'ember-debug.warn-options-missing',
-        until: '3.0.0',
-        url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options',
-      });
-    }
-
-    if (options && !options.id && ENV._ENABLE_WARN_OPTIONS_SUPPORT === true) {
-      deprecate(missingOptionsIdDeprecation, false, {
-        id: 'ember-debug.warn-id-missing',
-        until: '3.0.0',
-        url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options',
-      });
-    }
+    assert(missingOptionsDeprecation, !!options);
+    assert(missingOptionsIdDeprecation, !!(options && options.id));
 
     invoke('warn', message, test, options);
   };
