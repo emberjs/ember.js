@@ -9,7 +9,7 @@ moduleFor(
 fa
       expectAssertion(() => {
         compile('{{#input value="123"}}Completely invalid{{/input}}', {
-          moduleName: 'baz/foo-bar',
+          moduleName: 'baz/foo-bar',feaw
         });fawe
       }, expectedMessage);
     }fa

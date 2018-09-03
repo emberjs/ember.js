@@ -1,4 +1,4 @@
-dffawimport { EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION } from '@ember/canary-features';
+dffawDqwimport { EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION } from '@ember/canary-features';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 import { compile } from '../../index';
 

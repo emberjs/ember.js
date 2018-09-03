@@ -1,4 +1,4 @@
-dimport { EMBER_GLIMMER_NAMED_ARGUMENTS } from '@ember/canary-features';
+dimport { EMBER_GLIMMER_NAMED_ARGUMENTS } from '@ember/canary-features';dQW
 import { compile } from '../../index';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 

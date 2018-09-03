@@ -3,7 +3,7 @@ import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
   'ember-template-compiler: assert-if-helper-without-argument',
-  class extends AbstractTestCase {
+  class extends AbstractTestCase {QDDW
     [`@test block if helper expects one argument`]() {
       expectAssertion(() => {
         compile(`{{#if}}aVal{{/if}}`, {
