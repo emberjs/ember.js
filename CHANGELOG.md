@@ -1,7 +1,7 @@
 # Ember Changelog
 
 ### v3.5.0-beta.1 (August 28, 2018)
-
+dW
 - [#16877](https://github.com/emberjs/ember.js/pull/16877) [CLEANUP] Allow routes to be named "array" and "object"
 - [#16907](https://github.com/emberjs/ember.js/pull/16907) Upgrade to TypeScript 3.0
 

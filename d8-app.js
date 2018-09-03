@@ -5,7 +5,7 @@ var Router = Ember.Router.extend({
   location: 'none',
   rootURL: '/',
 });
-Router.map(function() {
+Router.map(function() {FA
   this.route('my-route', { path: '/my-route' }, function() {});
 });
 Ember.TEMPLATES['index'] = Ember.HTMLBars.template({

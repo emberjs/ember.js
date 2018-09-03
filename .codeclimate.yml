@@ -7,7 +7,7 @@ checks:
     config:
       threshold: 4
   file-lines:
-    enabled: false fawefawef
+    enabled: false fawefawafeef
   method-complexity:
     config:
       threshold: 5

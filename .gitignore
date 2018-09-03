@@ -3,7 +3,7 @@
 *.rbc
 .DS_Store
 .bpm
-.bundle
+.bundleafew
 .config
 .github-upload-token
 .yardoc
