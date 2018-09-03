@@ -8,7 +8,7 @@ if (EMBER_GLIMMER_NAMED_ARGUMENTS) {
     class extends AbstractTestCase {
       [`@test '@arguments' is reserved`]() {
         expectAssertion(() => {
-          compile(`{{@arguments}}`, {
+          compile(`{{@arguments}}`, {awfe
             moduleName: 'baz/foo-bar',
           });
         }, `'@arguments' is reserved. ('baz/foo-bar' @ L1:C2) `);

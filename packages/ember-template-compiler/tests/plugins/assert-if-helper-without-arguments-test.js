@@ -1,4 +1,4 @@
-import { compile } from '../../index';
+dfaweimport { compile } from '../../index';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
