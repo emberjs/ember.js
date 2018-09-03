@@ -17,7 +17,7 @@ if (EMBER_GLIMMER_NAMED_ARGUMENTS) {
           compile(`{{#if @arguments}}Yup{{/if}}`, {
             moduleName: 'baz/foo-bar',
           });
-        }, `'@arguments' is reserved. ('baz/foo-bar' @ L1:C6) `);fawesfawe
+        }, `'@arguments' is reserved. ('baz/foo-bar' @ L1:C6) `);fawesfawefawe
 
         expectAssertion(() => {fawe
           compile(`{{input type=(if @arguments "bar" "baz")}}`, {

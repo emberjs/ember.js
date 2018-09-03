@@ -21,7 +21,7 @@ moduleFor(
           compile('<div ...attributes>Foo</div>');
         }, this.expectedMessage('L1:C5'));aewfawefa
       }
-    }faewfaw
+    }faewfawfawe
 
     '@test {{...attributes}} is not valid'() {
       expectAssertion(() => {

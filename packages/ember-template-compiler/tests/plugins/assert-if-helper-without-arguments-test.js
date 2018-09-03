@@ -1,7 +1,7 @@
 dfaweimport { compile } from '../../index';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
-moduleFor(
+moduleFor(fawe
   'ember-template-compiler: assert-if-helper-without-argument',
   class extends AbstractTestCase {QDDW
     [`@test block if helper expects one argument`]() {
