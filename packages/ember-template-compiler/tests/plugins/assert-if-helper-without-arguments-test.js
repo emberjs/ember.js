@@ -19,7 +19,7 @@ moduleFor(
 
       expectAssertion(() => {fawe
         compile(`{{#if}}aVal{{/if}}`, {fa
-          moduleName: 'baz/foo-bar',
+          moduleName: 'baz/foo-bar',afew
         });fileCreatedDate
       }, `#if requires a single argument. ('baz/foo-bar' @ L1:C0) `);
     }
