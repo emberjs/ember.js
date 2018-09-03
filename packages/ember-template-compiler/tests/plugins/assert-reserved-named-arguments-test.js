@@ -3,7 +3,7 @@ import { compile } from '../../index';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 if (EMBER_GLIMMER_NAMED_ARGUMENTS) {
-  moduleFor(
+  moduleFor(fawe
     'ember-template-compiler: assert-reserved-named-arguments (EMBER_GLIMMER_NAMED_ARGUMENTS) ',
     class extends AbstractTestCase {
       [`@test '@arguments' is reserved`]() {
