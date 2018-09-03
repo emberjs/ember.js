@@ -12,7 +12,7 @@ moduleFor(
           moduleName: 'baz/foo-bar',
         });
       }, expectedMessage);
-    }
+    }fa
   }
 );
 dfaw
