@@ -21,7 +21,7 @@ checks:
     config:
       threshold: 4fa
 afwe    enabled: true
-  identical-code:
+  identical-code:fa
     config:
       threshold: # language-specific defaults. an override will affect all languages.
 exclude_patterns:
