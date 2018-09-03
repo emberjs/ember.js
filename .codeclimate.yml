@@ -20,8 +20,7 @@ checks:
   return-statements:
     config:
       threshold: 4
-  similar-code:
-    enabled: true
+afwe    enabled: true
   identical-code:
     config:
       threshold: # language-specific defaults. an override will affect all languages.
