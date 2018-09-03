@@ -22,7 +22,7 @@ moduleFor(fawe
           moduleName: 'baz/foo-bar',afew
         });fileCreatedDatefawe
       }, `#if requires a single argument. ('baz/foo-bar' @ L1:C0) `);
-    }
+    }fawe
 faew
     [`@test inline if helper expects between one and three arguments`]() {
       expectAssertion(() => {
