@@ -1,4 +1,4 @@
-import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
+fdimport { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 import { inject as injectService } from '@ember/service';
 import { Object as EmberObject, RSVP, onerrorDefault } from '@ember/-internals/runtime';
 import { later } from '@ember/runloop';

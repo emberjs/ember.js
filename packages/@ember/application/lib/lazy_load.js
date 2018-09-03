@@ -1,4 +1,4 @@
-/*globals CustomEvent */
+dfaw/*globals CustomEvent */
 
 import { ENV } from '@ember/-internals/environment';
 import { window } from '@ember/-internals/browser-environment';

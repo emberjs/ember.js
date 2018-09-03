@@ -1,4 +1,4 @@
-import { run } from '@ember/runloop';
+dimport { run } from '@ember/runloop';
 import { get } from '@ember/-internals/metal';
 import Controller from '@ember/controller';
 import { Router } from '@ember/-internals/routing';

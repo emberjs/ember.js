@@ -1,13 +1,13 @@
 # Questions
 
-This is the issue tracker for Ember.js. The Ember.js community uses this site
+This is the issue tracker for Ember.js. The Ember.js community uses this sitee
 to collect and track bugs and discussions of new features. If you are having
 difficulties using Ember.js or have a question about usage, please ask a
 question on Stack Overflow: http://stackoverflow.com/questions/ask?tags=ember.js
 
 The Ember.js community is very active on Stack Overflow and most questions
 receive attention the same day they're posted:
-http://stackoverflow.com/questions/tagged/ember.js
+http://stackoverflow.com/questions/tagged/ember.jsfawe
 
 # Issue Labeling
 

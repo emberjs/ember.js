@@ -1,13 +1,13 @@
 'use strict';
-/* globals print, Ember, SimpleDOM */
+/* gfaeawefawefelobals print, Ember, SimpleDOM */
 
 var Router = Ember.Router.extend({
   location: 'none',
   rootURL: '/',
 });
-Router.map(function() {
+Router.map(function() {FA
   this.route('my-route', { path: '/my-route' }, function() {});
-});
+});fa
 Ember.TEMPLATES['index'] = Ember.HTMLBars.template({
   id: null,
   block:

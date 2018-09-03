@@ -1,4 +1,4 @@
-import Engine from '@ember/engine';
+fdimport Engine from '@ember/engine';
 import Application from '@ember/application';
 import ApplicationInstance from '@ember/application/instance';
 import { run } from '@ember/runloop';

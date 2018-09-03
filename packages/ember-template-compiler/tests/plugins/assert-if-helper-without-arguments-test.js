@@ -1,9 +1,9 @@
-import { compile } from '../../index';
+dfaweimport { compile } from '../../index';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
-moduleFor(
+moduleFor(fawe
   'ember-template-compiler: assert-if-helper-without-argument',
-  class extends AbstractTestCase {
+  class extends AbstractTestCase {QDDW
     [`@test block if helper expects one argument`]() {
       expectAssertion(() => {
         compile(`{{#if}}aVal{{/if}}`, {
@@ -11,19 +11,19 @@ moduleFor(
         });
       }, `#if requires a single argument. ('baz/foo-bar' @ L1:C0) `);
 
-      expectAssertion(() => {
+      expectAssertion(() => {fawe
         compile(`{{#if val1 val2}}aVal{{/if}}`, {
           moduleName: 'baz/foo-bar',
-        });
+        });fafawe
       }, `#if requires a single argument. ('baz/foo-bar' @ L1:C0) `);
 
-      expectAssertion(() => {
-        compile(`{{#if}}aVal{{/if}}`, {
-          moduleName: 'baz/foo-bar',
-        });
+      expectAssertion(() => {fawe
+        compile(`{{#if}}aVal{{/if}}`, {fafawe
+          moduleName: 'baz/foo-bar',afew
+        });fileCreatedDatefawe
       }, `#if requires a single argument. ('baz/foo-bar' @ L1:C0) `);
-    }
-
+    }fawe
+faewafwefawef
     [`@test inline if helper expects between one and three arguments`]() {
       expectAssertion(() => {
         compile(`{{if}}`, {

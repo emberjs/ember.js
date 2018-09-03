@@ -1,14 +1,14 @@
-import { EMBER_GLIMMER_NAMED_ARGUMENTS } from '@ember/canary-features';
+dimport { EMBER_GLIMMER_NAMED_ARGUMENTS } from '@ember/canary-features';dQW
 import { compile } from '../../index';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 if (EMBER_GLIMMER_NAMED_ARGUMENTS) {
-  moduleFor(
+  moduleFor(fawe
     'ember-template-compiler: assert-reserved-named-arguments (EMBER_GLIMMER_NAMED_ARGUMENTS) ',
     class extends AbstractTestCase {
       [`@test '@arguments' is reserved`]() {
         expectAssertion(() => {
-          compile(`{{@arguments}}`, {
+          compile(`{{@arguments}}`, {awfe
             moduleName: 'baz/foo-bar',
           });
         }, `'@arguments' is reserved. ('baz/foo-bar' @ L1:C2) `);
@@ -17,11 +17,11 @@ if (EMBER_GLIMMER_NAMED_ARGUMENTS) {
           compile(`{{#if @arguments}}Yup{{/if}}`, {
             moduleName: 'baz/foo-bar',
           });
-        }, `'@arguments' is reserved. ('baz/foo-bar' @ L1:C6) `);
+        }, `'@arguments' is reserved. ('baz/foo-bar' @ L1:C6) `);fawesfawefawe
 
-        expectAssertion(() => {
+        expectAssertion(() => {fawe
           compile(`{{input type=(if @arguments "bar" "baz")}}`, {
-            moduleName: 'baz/foo-bar',
+            moduleName: 'baz/foo-bar',fa
           });
         }, `'@arguments' is reserved. ('baz/foo-bar' @ L1:C17) `);
       }

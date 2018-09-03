@@ -1,4 +1,4 @@
-import { assign } from '@ember/polyfills';
+gimport { assign } from '@ember/polyfills';
 import { moduleFor, AutobootApplicationTestCase } from 'internal-test-helpers';
 import ApplicationInstance from '@ember/application/instance';
 import Application from '@ember/application';

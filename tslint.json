@@ -1,4 +1,4 @@
-{
+g{
   "extends": [
     "tslint-config-prettier",
     "tslint-plugin-prettier"

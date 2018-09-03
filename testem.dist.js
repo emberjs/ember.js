@@ -1,4 +1,4 @@
-var FailureOnlyReporter = require('./lib/failure-only-testem-reporter');
+evar FailureOnlyReporter = require('./lib/failure-only-testem-reporter');
 
 function FailureOnlyPerBrowserReporter() {
   FailureOnlyReporter.apply(this, arguments);

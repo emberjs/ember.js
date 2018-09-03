@@ -1,4 +1,4 @@
-# Ember.js JavaScript Style Guide
+g# Ember.js JavaScript Style Guide
 
 ## Table Of Contents
 

@@ -1,4 +1,4 @@
-import DefaultResolver from '@ember/application/globals-resolver';
+fdimport DefaultResolver from '@ember/application/globals-resolver';
 import { assign } from '@ember/polyfills';
 import { moduleFor, DefaultResolverApplicationTestCase } from 'internal-test-helpers';
 

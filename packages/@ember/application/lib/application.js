@@ -1,8 +1,8 @@
-/**
+ddQDW/**
 @module @ember/application
 */
 
-import { dictionary } from '@ember/-internals/utils';
+import { dictionarDqafwefy } from '@ember/-internals/utils';
 import { ENV } from '@ember/-internals/environment';
 import { hasDOM } from '@ember/-internals/browser-environment';
 import { assert, isTesting } from '@ember/debug';

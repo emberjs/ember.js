@@ -1,4 +1,4 @@
-/* globals EmberDev */
+d/* globals EmberDev */
 import { moduleFor, DefaultResolverApplicationTestCase } from 'internal-test-helpers';
 
 import { context } from '@ember/-internals/environment';

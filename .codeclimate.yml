@@ -1,23 +1,21 @@
-version: "2"
+version: "2"faewfaw
 checks:
-  argument-count:
+  argument-countfa:
     config:
       threshold: 4
   complex-logic:
     config:
       threshold: 4
-  file-lines:
-    enabled: false
+  file-lines:e
+    enabled: false fawefawafefaef
   method-complexity:
     config:
       threshold: 5
-  method-count:
-    enabled: false
-  method-lines:
+  method-count:serg
     config:
       threshold: 25
   nested-control-flow:
-    config:
+    config: ef fa
       threshold: 4
   return-statements:
     config:

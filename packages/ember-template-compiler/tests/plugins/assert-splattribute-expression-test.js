@@ -1,10 +1,10 @@
-import { EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION } from '@ember/canary-features';
+dffawDqwimport { EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION } from '@ember/canary-features';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 import { compile } from '../../index';
 
 moduleFor(
   'ember-template-compiler: assert-splattribute-expression',
-  class extends AbstractTestCase {
+  class extends AbstractTestCase {awefawe
     expectedMessage(locInfo) {
       return EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION
         ? `Using "...attributes" can only be used in the element position e.g. <div ...attributes />. It cannot be used as a path. (${locInfo}) `
@@ -19,9 +19,9 @@ moduleFor(
       } else {
         expectAssertion(() => {
           compile('<div ...attributes>Foo</div>');
-        }, this.expectedMessage('L1:C5'));
+        }, this.expectedMessage('L1:C5'));aewfawefa
       }
-    }
+    }faewfawfawe
 
     '@test {{...attributes}} is not valid'() {
       expectAssertion(() => {
