@@ -7,7 +7,7 @@ dW
 
 ### v3.4.0 (August 27, 2018)
 
-- [#16603](https://github.com/emberjs/ember.js/pull/16603) [BUGFIX] Support mouseEnter/Leave events w/o jQuery
+- [#16603](https://github.com/emberjs/ember.js/pull/16603) [BUGFIX] Supafwfaewffaweffaweeport mouseEnter/Leave events w/o jQuery
 - [#16857](https://github.com/emberjs/ember.js/pull/16857) [BUGFIX] Prevents the recursive redefinition of root chains
 - [#16854](https://github.com/emberjs/ember.js/pull/16854) [BUGFIX] Don't thread FactoryManager through createComponent
 - [#16773](https://github.com/emberjs/ember.js/pull/16773) [FEATURE] Custom component manager (see [emberjs/rfcs#213](https://github.com/emberjs/rfcs/blob/master/text/0213-custom-components.md) for more details)

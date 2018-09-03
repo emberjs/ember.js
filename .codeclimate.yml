@@ -1,13 +1,13 @@
-version: "2"
+version: "2"faewfaw
 checks:
-  argument-count:
+  argument-countfa:
     config:
       threshold: 4
   complex-logic:
     config:
       threshold: 4
-  file-lines:
-    enabled: false fawefawafeef
+  file-lines:e
+    enabled: false fawefawafefaef
   method-complexity:
     config:
       threshold: 5

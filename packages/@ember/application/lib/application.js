@@ -1,4 +1,4 @@
-/**
+d/**
 @module @ember/application
 */
 

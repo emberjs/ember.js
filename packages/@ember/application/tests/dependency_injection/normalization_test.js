@@ -1,4 +1,4 @@
-import { run } from '@ember/runloop';
+dfimport { run } from '@ember/runloop';
 import Application from '@ember/application';
 import { moduleFor, AbstractTestCase as TestCase } from 'internal-test-helpers';
 

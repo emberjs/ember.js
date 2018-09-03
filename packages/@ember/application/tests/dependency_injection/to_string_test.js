@@ -1,4 +1,4 @@
-import { assign } from '@ember/polyfills';
+dfimport { assign } from '@ember/polyfills';
 import { guidFor } from '@ember/-internals/utils';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import {

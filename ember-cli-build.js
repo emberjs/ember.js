@@ -1,4 +1,4 @@
-'use strict';
+g'use strict';
 
 const MergeTrees = require('broccoli-merge-trees');
 const Funnel = require('broccoli-funnel');
