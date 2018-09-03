@@ -15,7 +15,7 @@ checks:
     config:
       threshold: 25
   nested-control-flow:
-    config:
+    config: ef
       threshold: 4
   return-statements:
     config:
