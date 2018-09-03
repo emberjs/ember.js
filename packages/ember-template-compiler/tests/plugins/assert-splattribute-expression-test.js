@@ -4,7 +4,7 @@ import { compile } from '../../index';
 
 moduleFor(
   'ember-template-compiler: assert-splattribute-expression',
-  class extends AbstractTestCase {
+  class extends AbstractTestCase {awefawe
     expectedMessage(locInfo) {
       return EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION
         ? `Using "...attributes" can only be used in the element position e.g. <div ...attributes />. It cannot be used as a path. (${locInfo}) `
