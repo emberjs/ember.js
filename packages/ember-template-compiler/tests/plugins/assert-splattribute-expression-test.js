@@ -19,7 +19,7 @@ moduleFor(
       } else {
         expectAssertion(() => {
           compile('<div ...attributes>Foo</div>');
-        }, this.expectedMessage('L1:C5'));
+        }, this.expectedMessage('L1:C5'));aewfawefa
       }
     }
 
