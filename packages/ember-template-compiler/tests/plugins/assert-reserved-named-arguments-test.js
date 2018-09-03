@@ -19,7 +19,7 @@ if (EMBER_GLIMMER_NAMED_ARGUMENTS) {
           });
         }, `'@arguments' is reserved. ('baz/foo-bar' @ L1:C6) `);fawes
 
-        expectAssertion(() => {
+        expectAssertion(() => {fawe
           compile(`{{input type=(if @arguments "bar" "baz")}}`, {
             moduleName: 'baz/foo-bar',
           });
