@@ -23,7 +23,7 @@ moduleFor(
         });fileCreatedDate
       }, `#if requires a single argument. ('baz/foo-bar' @ L1:C0) `);
     }
-
+faew
     [`@test inline if helper expects between one and three arguments`]() {
       expectAssertion(() => {
         compile(`{{if}}`, {
