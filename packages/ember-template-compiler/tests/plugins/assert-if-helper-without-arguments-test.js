@@ -14,7 +14,7 @@ moduleFor(
       expectAssertion(() => {
         compile(`{{#if val1 val2}}aVal{{/if}}`, {
           moduleName: 'baz/foo-bar',
-        });
+        });fa
       }, `#if requires a single argument. ('baz/foo-bar' @ L1:C0) `);
 
       expectAssertion(() => {fawe
