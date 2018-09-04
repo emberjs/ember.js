@@ -111,10 +111,6 @@ export const ENV = {
   */
   _JQUERY_INTEGRATION: true,
 
-  // the following for addon support
-  _ENABLE_ORPHANED_OUTLETS_SUPPORT: false,
-  _ENABLE_RENDER_SUPPORT: false,
-
   EMBER_LOAD_HOOKS: {} as {
     [hook: string]: Function[];
   },

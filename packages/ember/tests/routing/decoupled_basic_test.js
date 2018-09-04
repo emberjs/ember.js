@@ -2,7 +2,6 @@
 import { getOwner } from '@ember/-internals/owner';
 import RSVP from 'rsvp';
 import { compile } from 'ember-template-compiler';
-import { ENV } from '@ember/-internals/environment';
 import { Route, NoneLocation, HistoryLocation } from '@ember/-internals/routing';
 import Controller from '@ember/controller';
 import { Object as EmberObject, A as emberA } from '@ember/-internals/runtime';
@@ -14,7 +13,6 @@ import { Component } from '@ember/-internals/glimmer';
 import Engine from '@ember/engine';
 import { Transition } from 'router';
 
-let originalRenderSupport;
 let originalConsoleError;
 
 moduleFor(
@@ -29,14 +27,12 @@ moduleFor(
       this.router.map(function() {
         this.route('home', { path: '/' });
       });
-      originalRenderSupport = ENV._ENABLE_RENDER_SUPPORT;
-      ENV._ENABLE_RENDER_SUPPORT = true;
+
       originalConsoleError = console.error;
     }
 
     teardown() {
       super.teardown();
-      ENV._ENABLE_RENDER_SUPPORT = originalRenderSupport;
       console.error = originalConsoleError;
     }
 
@@ -2521,30 +2517,6 @@ moduleFor(
         });
     }
 
-    ['@test Route will assert if you try to explicitly render {into: ...} a missing template']() {
-      expectDeprecation(
-        /Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./
-      );
-
-      this.router.map(function() {
-        this.route('home', { path: '/' });
-      });
-
-      this.add(
-        'route:home',
-        Route.extend({
-          renderTemplate() {
-            this.render({ into: 'nonexistent' });
-          },
-        })
-      );
-
-      expectAssertion(
-        () => this.visit('/'),
-        "You attempted to render into 'nonexistent' but it was not found"
-      );
-    }
-
     ['@test Route supports clearing outlet explicitly'](assert) {
       this.addTemplate('application', "{{outlet}}{{outlet 'modal'}}");
       this.addTemplate('posts', '{{outlet}}');
@@ -3970,264 +3942,6 @@ moduleFor(
         assert.equal(rootElement.textContent.trim(), 'hilayer');
         run(router, 'send', 'close');
         assert.equal(rootElement.textContent.trim(), 'hi');
-      });
-    }
-
-    ['@test Can this.render({into:...}) the render helper'](assert) {
-      expectDeprecation(
-        /Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./
-      );
-
-      expectDeprecation(() => {
-        this.addTemplate('application', '{{render "sidebar"}}');
-      }, /Please refactor [\w\{\}"` ]+ to a component/);
-      this.router.map(function() {
-        this.route('index', { path: '/' });
-      });
-      this.addTemplate('sidebar', '<div class="sidebar">{{outlet}}</div>');
-      this.addTemplate('index', 'other');
-      this.addTemplate('bar', 'bar');
-
-      this.add(
-        'route:index',
-        Route.extend({
-          renderTemplate() {
-            this.render({ into: 'sidebar' });
-          },
-          actions: {
-            changeToBar() {
-              this.disconnectOutlet({
-                parentView: 'sidebar',
-                outlet: 'main',
-              });
-              this.render('bar', { into: 'sidebar' });
-            },
-          },
-        })
-      );
-
-      return this.visit('/').then(() => {
-        let rootElement = document.getElementById('qunit-fixture');
-        let router = this.applicationInstance.lookup('router:main');
-        assert.equal(getTextOf(rootElement.querySelector('.sidebar')), 'other');
-        run(router, 'send', 'changeToBar');
-        assert.equal(getTextOf(rootElement.querySelector('.sidebar')), 'bar');
-      });
-    }
-
-    ['@test Can disconnect from the render helper'](assert) {
-      expectDeprecation(
-        /Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./
-      );
-
-      expectDeprecation(() => {
-        this.addTemplate('application', '{{render "sidebar"}}');
-      }, /Please refactor [\w\{\}"` ]+ to a component/);
-      this.router.map(function() {
-        this.route('index', { path: '/' });
-      });
-      this.addTemplate('sidebar', '<div class="sidebar">{{outlet}}</div>');
-      this.addTemplate('index', 'other');
-
-      this.add(
-        'route:index',
-        Route.extend({
-          renderTemplate() {
-            this.render({ into: 'sidebar' });
-          },
-          actions: {
-            disconnect: function() {
-              this.disconnectOutlet({
-                parentView: 'sidebar',
-                outlet: 'main',
-              });
-            },
-          },
-        })
-      );
-
-      return this.visit('/').then(() => {
-        let rootElement = document.getElementById('qunit-fixture');
-        let router = this.applicationInstance.lookup('router:main');
-        assert.equal(getTextOf(rootElement.querySelector('.sidebar')), 'other');
-        run(router, 'send', 'disconnect');
-        assert.equal(getTextOf(rootElement.querySelector('.sidebar')), '');
-      });
-    }
-
-    ["@test Can this.render({into:...}) the render helper's children"](assert) {
-      expectDeprecation(
-        /Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./
-      );
-
-      expectDeprecation(() => {
-        this.addTemplate('application', '{{render "sidebar"}}');
-      }, /Please refactor [\w\{\}"` ]+ to a component/);
-
-      this.addTemplate('sidebar', '<div class="sidebar">{{outlet}}</div>');
-      this.addTemplate('index', '<div class="index">{{outlet}}</div>');
-      this.addTemplate('other', 'other');
-      this.addTemplate('bar', 'bar');
-      this.router.map(function() {
-        this.route('index', { path: '/' });
-      });
-      this.add(
-        'route:index',
-        Route.extend({
-          renderTemplate() {
-            this.render({ into: 'sidebar' });
-            this.render('other', { into: 'index' });
-          },
-          actions: {
-            changeToBar() {
-              this.disconnectOutlet({
-                parentView: 'index',
-                outlet: 'main',
-              });
-              this.render('bar', { into: 'index' });
-            },
-          },
-        })
-      );
-
-      return this.visit('/').then(() => {
-        let rootElement = document.getElementById('qunit-fixture');
-        let router = this.applicationInstance.lookup('router:main');
-        assert.equal(getTextOf(rootElement.querySelector('.sidebar .index')), 'other');
-        run(router, 'send', 'changeToBar');
-        assert.equal(getTextOf(rootElement.querySelector('.sidebar .index')), 'bar');
-      });
-    }
-
-    ["@test Can disconnect from the render helper's children"](assert) {
-      expectDeprecation(
-        /Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./
-      );
-
-      expectDeprecation(() => {
-        this.addTemplate('application', '{{render "sidebar"}}');
-      }, /Please refactor [\w\{\}"` ]+ to a component/);
-      this.router.map(function() {
-        this.route('index', { path: '/' });
-      });
-      this.addTemplate('sidebar', '<div class="sidebar">{{outlet}}</div>');
-      this.addTemplate('index', '<div class="index">{{outlet}}</div>');
-      this.addTemplate('other', 'other');
-
-      this.add(
-        'route:index',
-        Route.extend({
-          renderTemplate() {
-            this.render({ into: 'sidebar' });
-            this.render('other', { into: 'index' });
-          },
-          actions: {
-            disconnect() {
-              this.disconnectOutlet({
-                parentView: 'index',
-                outlet: 'main',
-              });
-            },
-          },
-        })
-      );
-
-      return this.visit('/').then(() => {
-        let rootElement = document.getElementById('qunit-fixture');
-        let router = this.applicationInstance.lookup('router:main');
-        assert.equal(getTextOf(rootElement.querySelector('.sidebar .index')), 'other');
-        run(router, 'send', 'disconnect');
-        assert.equal(getTextOf(rootElement.querySelector('.sidebar .index')), '');
-      });
-    }
-
-    ['@test Can this.render({into:...}) nested render helpers'](assert) {
-      expectDeprecation(
-        /Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./
-      );
-
-      expectDeprecation(() => {
-        this.addTemplate('application', '{{render "sidebar"}}');
-      }, /Please refactor [\w\{\}"` ]+ to a component/);
-
-      expectDeprecation(() => {
-        this.addTemplate('sidebar', '<div class="sidebar">{{render "cart"}}</div>');
-      }, /Please refactor [\w\{\}"` ]+ to a component/);
-      this.router.map(function() {
-        this.route('index', { path: '/' });
-      });
-      this.addTemplate('cart', '<div class="cart">{{outlet}}</div>');
-      this.addTemplate('index', 'other');
-      this.addTemplate('baz', 'baz');
-
-      this.add(
-        'route:index',
-        Route.extend({
-          renderTemplate() {
-            this.render({ into: 'cart' });
-          },
-          actions: {
-            changeToBaz() {
-              this.disconnectOutlet({
-                parentView: 'cart',
-                outlet: 'main',
-              });
-              this.render('baz', { into: 'cart' });
-            },
-          },
-        })
-      );
-
-      return this.visit('/').then(() => {
-        let rootElement = document.getElementById('qunit-fixture');
-        let router = this.applicationInstance.lookup('router:main');
-        assert.equal(getTextOf(rootElement.querySelector('.cart')), 'other');
-        run(router, 'send', 'changeToBaz');
-        assert.equal(getTextOf(rootElement.querySelector('.cart')), 'baz');
-      });
-    }
-
-    ['@test Can disconnect from nested render helpers'](assert) {
-      expectDeprecation(
-        /Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./
-      );
-
-      expectDeprecation(() => {
-        this.addTemplate('application', '{{render "sidebar"}}');
-      }, /Please refactor [\w\{\}"` ]+ to a component/);
-
-      expectDeprecation(() => {
-        this.addTemplate('sidebar', '<div class="sidebar">{{render "cart"}}</div>');
-      }, /Please refactor [\w\{\}"` ]+ to a component/);
-      this.router.map(function() {
-        this.route('index', { path: '/' });
-      });
-      this.addTemplate('cart', '<div class="cart">{{outlet}}</div>');
-      this.addTemplate('index', 'other');
-
-      this.add(
-        'route:index',
-        Route.extend({
-          renderTemplate() {
-            this.render({ into: 'cart' });
-          },
-          actions: {
-            disconnect() {
-              this.disconnectOutlet({
-                parentView: 'cart',
-                outlet: 'main',
-              });
-            },
-          },
-        })
-      );
-
-      return this.visit('/').then(() => {
-        let rootElement = document.getElementById('qunit-fixture');
-        let router = this.applicationInstance.lookup('router:main');
-        assert.equal(getTextOf(rootElement.querySelector('.cart')), 'other');
-        run(router, 'send', 'disconnect');
-        assert.equal(getTextOf(rootElement.querySelector('.cart')), '');
       });
     }
 

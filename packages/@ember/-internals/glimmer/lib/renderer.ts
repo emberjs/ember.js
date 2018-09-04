@@ -38,12 +38,11 @@ export type IBuilder = (env: Environment, cursor: Cursor) => ElementBuilder;
 export class DynamicScope implements GlimmerDynamicScope {
   constructor(
     public view: Component | {} | null,
-    public outletState: VersionedPathReference<OutletState | undefined>,
-    public rootOutletState?: VersionedPathReference<OutletState | undefined>
+    public outletState: VersionedPathReference<OutletState | undefined>
   ) {}
 
   child() {
-    return new DynamicScope(this.view, this.outletState, this.rootOutletState);
+    return new DynamicScope(this.view, this.outletState);
   }
 
   get(key: 'outletState'): VersionedPathReference<OutletState | undefined> {
