@@ -110,6 +110,32 @@ describe('Blueprint: controller-test', function() {
         });
       });
     });
+
+    describe('with ember-mocha@0.14.0', function() {
+      beforeEach(function() {
+        modifyPackages([
+          { name: 'ember-cli-qunit', delete: true },
+          { name: 'ember-mocha', dev: true },
+        ]);
+        generateFakePackageManifest('ember-mocha', '0.14.0');
+      });
+
+      it('controller-test foo', function() {
+        return emberGenerateDestroy(['controller-test', 'foo'], _file => {
+          expect(_file('tests/unit/controllers/foo-test.js')).to.equal(
+            fixture('controller-test/mocha-rfc232.js')
+          );
+        });
+      });
+
+      it('controller-test foo/bar', function() {
+        return emberGenerateDestroy(['controller-test', 'foo/bar'], _file => {
+          expect(_file('tests/unit/controllers/foo/bar-test.js')).to.equal(
+            fixture('controller-test/mocha-rfc232-nested.js')
+          );
+        });
+      });
+    });
   });
 
   describe('in app - module unification', function() {
@@ -202,6 +228,32 @@ describe('Blueprint: controller-test', function() {
         return emberGenerateDestroy(['controller-test', 'foo/bar'], _file => {
           expect(_file('src/ui/routes/foo/bar/controller-test.js')).to.equal(
             fixture('controller-test/mocha-0.12-nested.js')
+          );
+        });
+      });
+    });
+
+    describe('with ember-mocha@0.14.0', function() {
+      beforeEach(function() {
+        modifyPackages([
+          { name: 'ember-cli-qunit', delete: true },
+          { name: 'ember-mocha', dev: true },
+        ]);
+        generateFakePackageManifest('ember-mocha', '0.14.0');
+      });
+
+      it('controller-test foo', function() {
+        return emberGenerateDestroy(['controller-test', 'foo'], _file => {
+          expect(_file('src/ui/routes/foo/controller-test.js')).to.equal(
+            fixture('controller-test/mocha-rfc232.js')
+          );
+        });
+      });
+
+      it('controller-test foo/bar', function() {
+        return emberGenerateDestroy(['controller-test', 'foo/bar'], _file => {
+          expect(_file('src/ui/routes/foo/bar/controller-test.js')).to.equal(
+            fixture('controller-test/mocha-rfc232-nested.js')
           );
         });
       });
