@@ -22,6 +22,4 @@ export function getComponentManager(obj: any): string | undefined {
 
     pointer = getPrototypeOf(pointer);
   }
-
-  return;
 }
