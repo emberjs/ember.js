@@ -337,44 +337,39 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
 
     let finalizer = _instrumentStart('render.getComponentDefinition', instrumentationPayload, name);
 
-    if (layout && !component && ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
-      let definition = new TemplateOnlyComponentDefinition(layout);
-      finalizer();
-      this.componentDefinitionCache.set(key, definition);
-      return definition;
+    let definition;
+    if (layout !== undefined && component === undefined && ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
+      definition = new TemplateOnlyComponentDefinition(layout);
     }
 
-    if (GLIMMER_CUSTOM_COMPONENT_MANAGER && component && component.class) {
+    if (
+      GLIMMER_CUSTOM_COMPONENT_MANAGER &&
+      component !== undefined &&
+      component.class !== undefined
+    ) {
       let managerFactory = getComponentManager<ManagerDelegate<Opaque>>(component.class);
       if (managerFactory) {
         let delegate = managerFactory(meta.owner);
-
-        let definition = new CustomManagerDefinition(
+        definition = new CustomManagerDefinition(
           name,
           component,
           delegate,
           layout || meta.owner.lookup<OwnedTemplate>(P`template:components/-default`)
         );
-        finalizer();
-        this.componentDefinitionCache.set(key, definition);
-        return definition;
       }
     }
 
-    let definition =
-      layout || component
-        ? new CurlyComponentDefinition(
-            name,
-            component || meta.owner.factoryFor(P`component:-default`),
-            null,
-            layout! // TODO fix type
-          )
-        : null;
+    if (definition === undefined) {
+      definition = new CurlyComponentDefinition(
+        name,
+        component || meta.owner.factoryFor(P`component:-default`),
+        null,
+        layout! // TODO fix type
+      );
+    }
 
     finalizer();
-
     this.componentDefinitionCache.set(key, definition);
-
     return definition;
   }
 
