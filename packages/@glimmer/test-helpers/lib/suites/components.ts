@@ -201,6 +201,64 @@ export class BasicComponents extends RenderTest {
   @test({
     kind: 'glimmer',
   })
+  'invoking curried component with attributes via angle brackets (invocation attributes clobber)'() {
+    this.registerHelper('hash', (_positional, named) => named);
+    this.registerComponent(
+      'Glimmer',
+      'Foo',
+      '<p data-foo="default" ...attributes>hello world!</p>'
+    );
+    this.render({
+      layout: '<@stuff.Foo data-foo="invocation" />',
+      args: {
+        stuff: 'hash Foo=(component "Foo")',
+      },
+    });
+
+    this.assertHTML(`<div><p data-foo="invocation">hello world!</p></div>`);
+    this.assertStableRerender();
+  }
+
+  @test({
+    kind: 'glimmer',
+  })
+  'invoking curried component with attributes via angle brackets (invocation classes merge)'() {
+    this.registerHelper('hash', (_positional, named) => named);
+    this.registerComponent('Glimmer', 'Foo', '<p class="default" ...attributes>hello world!</p>');
+    this.render({
+      layout: '<@stuff.Foo class="invocation" />',
+      args: {
+        stuff: 'hash Foo=(component "Foo")',
+      },
+    });
+
+    this.assertHTML(`<div><p class="default invocation">hello world!</p></div>`);
+    this.assertStableRerender();
+  }
+
+  @test({
+    kind: 'glimmer',
+  })
+  'invoking dynamic component (named arg) via angle brackets supports attributes (invocation attributes clobber)'() {
+    this.registerComponent(
+      'Glimmer',
+      'Foo',
+      '<div data-test="default" ...attributes>hello world!</div>'
+    );
+    this.render({
+      layout: '<@foo data-test="foo"/>',
+      args: {
+        foo: 'component "Foo"',
+      },
+    });
+
+    this.assertHTML(`<div><div data-test="foo">hello world!</div></div>`);
+    this.assertStableRerender();
+  }
+
+  @test({
+    kind: 'glimmer',
+  })
   'invoking dynamic component (named arg) via angle brackets supports attributes'() {
     this.registerComponent('Glimmer', 'Foo', '<div ...attributes>hello world!</div>');
     this.render({
