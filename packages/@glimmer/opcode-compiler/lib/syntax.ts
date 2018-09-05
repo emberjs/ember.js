@@ -106,15 +106,18 @@ export function statementCompiler(): Compilers<WireFormat.Statement> {
 
   STATEMENTS.add(Ops.DynamicComponent, (sexp: S.DynamicComponent, builder) => {
     let [, definition, attrs, args, template] = sexp;
-
     let block = builder.template(template);
-    let attrsBlock =
-      attrs.length > 0
-        ? builder.inlineBlock({
-            statements: attrs,
-            parameters: EMPTY_ARRAY,
-          })
-        : null;
+
+    let attrsBlock = null;
+    if (attrs.length > 0) {
+      let wrappedAttrs: WireFormat.Statement[] = [
+        [Ops.ClientSideStatement, ClientSide.Ops.SetComponentAttrs, true],
+        ...attrs,
+        [Ops.ClientSideStatement, ClientSide.Ops.SetComponentAttrs, false],
+      ];
+
+      attrsBlock = builder.inlineBlock({ statements: wrappedAttrs, parameters: EMPTY_ARRAY });
+    }
 
     builder.dynamicComponent(definition, attrsBlock, null, args, false, block, null);
   });
