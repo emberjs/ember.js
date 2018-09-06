@@ -12,7 +12,7 @@ import { Mixin, computed, set, addObserver, observer } from '@ember/-internals/m
 import { getTextOf } from 'internal-test-helpers';
 import { Component } from '@ember/-internals/glimmer';
 import Engine from '@ember/engine';
-import { Transition } from 'router';
+import { Transition } from 'router_js';
 
 let originalRenderSupport;
 let originalConsoleError;

@@ -17,7 +17,7 @@ import { ORPHAN_OUTLET_RENDER } from '@ember/deprecated-features';
 @module @ember/routing
 */
 
-import Router from 'router';
+import Router from 'router_js';
 
 function K() {
   return this;
@@ -498,10 +498,10 @@ const EmberRouter = EmberObject.extend(Evented, {
     Use `isActiveIntent` if checking against the current state.
 
     @method _isActiveIntent
-    @param {*} routeName 
-    @param {*} models 
-    @param {*} queryParams 
-    @param {*} state 
+    @param {*} routeName
+    @param {*} models
+    @param {*} queryParams
+    @param {*} state
     @private
   */
   _isActiveIntent(routeName, models, queryParams, state) {

@@ -25,7 +25,7 @@ module.exports.routerES = function _routerES() {
       external: ['route-recognizer', 'rsvp'],
       input: 'index.js',
       output: {
-        file: 'router.js',
+        file: 'router_js.js',
         format: 'es',
       },
     },
