@@ -1,7 +1,8 @@
 import { get, set } from '@ember/-internals/metal';
 
 import { Object as EmberObject } from '@ember/-internals/runtime';
-import EmberLocation from './api';
+import { EmberLocation, UpdateCallback } from './api';
+import { getHash } from './util';
 
 /**
 @module @ember/routing
@@ -11,7 +12,7 @@ let popstateFired = false;
 
 function _uuid() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    var r, v;
+    let r, v;
     r = (Math.random() * 16) | 0;
     v = c === 'x' ? r : (r & 3) | 8;
     return v.toString(16);
@@ -48,14 +49,33 @@ function _uuid() {
   @extends EmberObject
   @protected
 */
-export default EmberObject.extend({
-  implementation: 'history',
+export default class HistoryLocation extends EmberObject implements EmberLocation {
+  implementation = 'history';
+
+  /**
+    Will be pre-pended to path upon state change
+
+    @property rootURL
+    @default '/'
+    @private
+  */
+  rootURL = '/';
+  /**
+    @private
+
+    Returns normalized location.hash
+
+    @method getHash
+  */
+  getHash() {
+    return getHash(get(this, 'location'));
+  }
 
   init() {
     this._super(...arguments);
 
     let base = document.querySelector('base');
-    let baseURL = '';
+    let baseURL: string | null = '';
     if (base) {
       baseURL = base.getAttribute('href');
     }
@@ -64,7 +84,7 @@ export default EmberObject.extend({
     set(this, 'location', get(this, 'location') || window.location);
 
     this._popstateHandler = undefined;
-  },
+  }
 
   /**
     Used to set state on first call to setURL
@@ -89,16 +109,7 @@ export default EmberObject.extend({
     } else {
       this.replaceState(path);
     }
-  },
-
-  /**
-    Will be pre-pended to path upon state change
-
-    @property rootURL
-    @default '/'
-    @private
-  */
-  rootURL: '/',
+  }
 
   /**
     Returns the current `location.pathname` without `rootURL` or `baseURL`
@@ -128,7 +139,7 @@ export default EmberObject.extend({
     url += search + this.getHash();
 
     return url;
-  },
+  }
 
   /**
     Uses `history.pushState` to update the url without a page reload.
@@ -137,14 +148,14 @@ export default EmberObject.extend({
     @method setURL
     @param path {String}
   */
-  setURL(path) {
+  setURL(path: string) {
     let state = this.getState();
     path = this.formatURL(path);
 
     if (!state || state.path !== path) {
       this.pushState(path);
     }
-  },
+  }
 
   /**
     Uses `history.replaceState` to update the url without a page reload
@@ -154,14 +165,14 @@ export default EmberObject.extend({
     @method replaceURL
     @param path {String}
   */
-  replaceURL(path) {
+  replaceURL(path: string) {
     let state = this.getState();
     path = this.formatURL(path);
 
     if (!state || state.path !== path) {
       this.replaceState(path);
     }
-  },
+  }
 
   /**
     Get the current `history.state`. Checks for if a polyfill is
@@ -183,7 +194,7 @@ export default EmberObject.extend({
     }
 
     return this._historyState;
-  },
+  }
 
   /**
    Pushes a new state.
@@ -192,7 +203,7 @@ export default EmberObject.extend({
    @method pushState
    @param path {String}
   */
-  pushState(path) {
+  pushState(path: string) {
     let state = { path, uuid: _uuid() };
 
     get(this, 'history').pushState(state, null, path);
@@ -201,7 +212,7 @@ export default EmberObject.extend({
 
     // used for webkit workaround
     this._previousURL = this.getURL();
-  },
+  }
 
   /**
    Replaces the current state.
@@ -210,7 +221,7 @@ export default EmberObject.extend({
    @method replaceState
    @param path {String}
   */
-  replaceState(path) {
+  replaceState(path: string) {
     let state = { path, uuid: _uuid() };
 
     get(this, 'history').replaceState(state, null, path);
@@ -219,7 +230,7 @@ export default EmberObject.extend({
 
     // used for webkit workaround
     this._previousURL = this.getURL();
-  },
+  }
 
   /**
     Register a callback to be invoked whenever the browser
@@ -229,7 +240,7 @@ export default EmberObject.extend({
     @method onUpdateURL
     @param callback {Function}
   */
-  onUpdateURL(callback) {
+  onUpdateURL(callback: UpdateCallback) {
     this._removeEventListener();
 
     this._popstateHandler = () => {
@@ -244,7 +255,7 @@ export default EmberObject.extend({
     };
 
     window.addEventListener('popstate', this._popstateHandler);
-  },
+  }
 
   /**
     Used when using `{{action}}` helper.  The url is always appended to the rootURL.
@@ -254,7 +265,7 @@ export default EmberObject.extend({
     @param url {String}
     @return formatted url {String}
   */
-  formatURL(url) {
+  formatURL(url: string) {
     let rootURL = get(this, 'rootURL');
     let baseURL = get(this, 'baseURL');
 
@@ -269,7 +280,7 @@ export default EmberObject.extend({
     }
 
     return baseURL + rootURL + url;
-  },
+  }
 
   /**
     Cleans up the HistoryLocation event listener.
@@ -279,20 +290,11 @@ export default EmberObject.extend({
   */
   willDestroy() {
     this._removeEventListener();
-  },
-
-  /**
-    @private
-
-    Returns normalized location.hash
-
-    @method getHash
-  */
-  getHash: EmberLocation._getHash,
+  }
 
   _removeEventListener() {
     if (this._popstateHandler) {
       window.removeEventListener('popstate', this._popstateHandler);
     }
-  },
-});
+  }
+}

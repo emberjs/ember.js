@@ -156,7 +156,7 @@ function DESCRIPTOR_GETTER_FUNCTION(name: string, descriptor: Descriptor) {
 export function defineProperty(
   obj: object,
   keyName: string,
-  desc: Descriptor | undefined | null,
+  desc?: Descriptor | undefined | null,
   data?: any | undefined | null,
   meta?: Meta
 ) {

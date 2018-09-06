@@ -3,7 +3,7 @@
 
   Returns the current `location.pathname`, normalized for IE inconsistencies.
 */
-export function getPath(location) {
+export function getPath(location: Location) {
   let pathname = location.pathname;
   // Various versions of IE/Opera don't always return a leading slash
   if (pathname[0] !== '/') {
@@ -18,36 +18,28 @@ export function getPath(location) {
 
   Returns the current `location.search`.
 */
-export function getQuery(location) {
+export function getQuery(location: Location) {
   return location.search;
 }
 
 /**
   @private
 
-  Returns the current `location.hash` by parsing location.href since browsers
-  inconsistently URL-decode `location.hash`.
-
-  Should be passed the browser's `location` object as the first argument.
-
-  https://bugzilla.mozilla.org/show_bug.cgi?id=483304
+  Returns the hash or empty string
 */
-export function getHash(location) {
-  let href = location.href;
-  let hashIndex = href.indexOf('#');
-
-  if (hashIndex === -1) {
-    return '';
-  } else {
-    return href.substr(hashIndex);
+export function getHash(location: Location) {
+  if (location.hash !== undefined) {
+    return location.hash.substr(0);
   }
+
+  return '';
 }
 
-export function getFullPath(location) {
+export function getFullPath(location: Location) {
   return getPath(location) + getQuery(location) + getHash(location);
 }
 
-export function getOrigin(location) {
+export function getOrigin(location: Location) {
   let origin = location.origin;
 
   // Older browsers, especially IE, don't have origin
@@ -71,8 +63,8 @@ export function getOrigin(location) {
   @private
   @function supportsHashChange
 */
-export function supportsHashChange(documentMode, global) {
-  return 'onhashchange' in global && (documentMode === undefined || documentMode > 7);
+export function supportsHashChange(documentMode: number | undefined, global: Window | null) {
+  return global && 'onhashchange' in global && (documentMode === undefined || documentMode > 7);
 }
 
 /*
@@ -83,7 +75,7 @@ export function supportsHashChange(documentMode, global) {
   @private
   @function supportsHistory
 */
-export function supportsHistory(userAgent, history) {
+export function supportsHistory(userAgent: string, history: History) {
   // Boosted from Modernizr: https://github.com/Modernizr/Modernizr/blob/master/feature-detects/history.js
   // The stock browser on Android 2.2 & 2.3, and 4.0.x returns positive on history support
   // Unfortunately support is really buggy and there is no clean way to detect
@@ -109,6 +101,6 @@ export function supportsHistory(userAgent, history) {
 
   @private
 */
-export function replacePath(location, path) {
+export function replacePath(location: Location, path: string) {
   location.replace(getOrigin(location) + path);
 }

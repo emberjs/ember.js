@@ -20,19 +20,12 @@ moduleFor(
           this._handlerPromises = Object.create(null);
         },
 
-        _getQPMeta(handlerInfo) {
-          let handler = this._seenHandlers[handlerInfo.name];
-          if (handler) {
-            return get(handler, '_qp');
-          }
-        },
+        setupRouter() {
+          this._super(...arguments);
+          let { _handlerPromises: handlerPromises, _seenHandlers: seenHandlers } = this;
+          let getHandler = this._routerMicrolib.__proto__.getHandler;
 
-        _getHandlerFunction() {
-          let getHandler = this._super(...arguments);
-          let handlerPromises = this._handlerPromises;
-          let seenHandlers = this._seenHandlers;
-
-          return routeName => {
+          this._routerMicrolib.__proto__.getHandler = function(routeName) {
             fetchedHandlers.push(routeName);
 
             // Cache the returns so we don't have more than one Promise for a
@@ -50,6 +43,13 @@ moduleFor(
               }))
             );
           };
+        },
+
+        _getQPMeta(handlerInfo) {
+          let handler = this._seenHandlers[handlerInfo.name];
+          if (handler) {
+            return get(handler, '_qp');
+          }
         },
       };
     }

@@ -1,18 +1,48 @@
-import { assign } from '@ember/polyfills';
+import { Factory } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
+import { assign } from '@ember/polyfills';
+import { MatchCallback } from 'route-recognizer';
+import { EngineInfo, EngineRouteInfo } from './engines';
 
 let uuid = 0;
 
+interface DSLOptions {
+  enableLoadingSubstates: boolean;
+  overrideNameAssertion?: boolean;
+  engineInfo?: EngineInfo;
+  addRouteForEngine(name: string, routeOptions: EngineRouteInfo): void;
+  resolveRouteMap(name: string): Factory<any, any>;
+  path?: string;
+}
+
+interface RouteOptions {
+  path?: string;
+  resetNamespace?: boolean;
+  serialize?: any;
+  overrideNameAssertion?: boolean;
+}
+
+interface MountOptions {
+  path?: string;
+  as?: string;
+  resetNamespace?: boolean;
+}
+
 class DSL {
-  constructor(name, options) {
+  parent: string | null;
+  matches: any[];
+  enableLoadingSubstates: boolean;
+  explicitIndex = false;
+  options: DSLOptions;
+
+  constructor(name: string | null = null, options: DSLOptions) {
     this.parent = name;
-    this.enableLoadingSubstates = options && options.enableLoadingSubstates;
+    this.enableLoadingSubstates = !!(options && options.enableLoadingSubstates);
     this.matches = [];
-    this.explicitIndex = undefined;
     this.options = options;
   }
 
-  route(name, options = {}, callback) {
+  route(name: string, options: any = {}, callback?: MatchCallback) {
     let dummyErrorRoute = `/_unused_dummy_error_path_route_${name}/:error`;
     if (arguments.length === 2 && typeof options === 'function') {
       callback = options;
@@ -22,7 +52,7 @@ class DSL {
     assert(
       `'${name}' cannot be used as a route name.`,
       (() => {
-        if (options.overrideNameAssertion === true) {
+        if (options!.overrideNameAssertion === true) {
           return true;
         }
 
@@ -60,12 +90,12 @@ class DSL {
     }
   }
 
-  push(url, name, callback, serialize) {
+  push(url: string, name: string, callback?: MatchCallback, serialize?: any) {
     let parts = name.split('.');
 
     if (this.options.engineInfo) {
       let localFullName = name.slice(this.options.engineInfo.fullName.length + 1);
-      let routeInfo = assign({ localFullName }, this.options.engineInfo);
+      let routeInfo: EngineRouteInfo = assign({ localFullName }, this.options.engineInfo);
 
       if (serialize) {
         routeInfo.serializeMethod = serialize;
@@ -85,7 +115,7 @@ class DSL {
     this.matches.push(url, name, callback);
   }
 
-  generate() {
+  generate(): MatchCallback {
     let dslMatches = this.matches;
 
     if (!this.explicitIndex) {
@@ -99,7 +129,7 @@ class DSL {
     };
   }
 
-  mount(_name, options = {}) {
+  mount(_name: string, options: MountOptions = {}) {
     let engineRouteMap = this.options.resolveRouteMap(_name);
     let name = _name;
 
@@ -109,7 +139,7 @@ class DSL {
 
     let fullName = getFullName(this, name, options.resetNamespace);
 
-    let engineInfo = {
+    let engineInfo: EngineInfo = {
       name: _name,
       instanceId: uuid++,
       mountPoint: fullName,
@@ -179,11 +209,11 @@ class DSL {
 
 export default DSL;
 
-function canNest(dsl) {
+function canNest(dsl: DSL) {
   return dsl.parent !== 'application';
 }
 
-function getFullName(dsl, name, resetNamespace) {
+function getFullName(dsl: DSL, name: string, resetNamespace?: boolean) {
   if (canNest(dsl) && resetNamespace !== true) {
     return `${dsl.parent}.${name}`;
   } else {
@@ -191,7 +221,7 @@ function getFullName(dsl, name, resetNamespace) {
   }
 }
 
-function createRoute(dsl, name, options = {}, callback) {
+function createRoute(dsl: DSL, name: string, options: RouteOptions = {}, callback?: MatchCallback) {
   let fullName = getFullName(dsl, name, options.resetNamespace);
 
   if (typeof options.path !== 'string') {
@@ -200,9 +230,3 @@ function createRoute(dsl, name, options = {}, callback) {
 
   dsl.push(options.path, fullName, callback, options.serialize);
 }
-
-DSL.map = callback => {
-  let dsl = new DSL();
-  callback.call(dsl);
-  return dsl;
-};

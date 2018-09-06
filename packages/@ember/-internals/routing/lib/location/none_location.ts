@@ -1,6 +1,7 @@
 import { get, set } from '@ember/-internals/metal';
-import { assert } from '@ember/debug';
 import { Object as EmberObject } from '@ember/-internals/runtime';
+import { assert } from '@ember/debug';
+import { EmberLocation, UpdateCallback } from './api';
 
 /**
 @module @ember/routing
@@ -20,9 +21,9 @@ import { Object as EmberObject } from '@ember/-internals/runtime';
   @extends EmberObject
   @protected
 */
-export default EmberObject.extend({
-  implementation: 'none',
-  path: '',
+export default class NoneLocation extends EmberObject implements EmberLocation {
+  updateCallback!: UpdateCallback;
+  implementation = 'none';
 
   detect() {
     let rootURL = this.rootURL;
@@ -31,16 +32,7 @@ export default EmberObject.extend({
       'rootURL must end with a trailing forward slash e.g. "/app/"',
       rootURL.charAt(rootURL.length - 1) === '/'
     );
-  },
-
-  /**
-    Will be pre-pended to path.
-
-    @private
-    @property rootURL
-    @default '/'
-  */
-  rootURL: '/',
+  }
 
   /**
     Returns the current path without `rootURL`.
@@ -58,7 +50,7 @@ export default EmberObject.extend({
 
     // remove rootURL from url
     return path.replace(new RegExp(`^${rootURL}(?=/|$)`), '');
-  },
+  }
 
   /**
     Set the path and remembers what was set. Using this method
@@ -68,9 +60,9 @@ export default EmberObject.extend({
     @method setURL
     @param path {String}
   */
-  setURL(path) {
+  setURL(path: string) {
     set(this, 'path', path);
-  },
+  }
 
   /**
     Register a callback to be invoked when the path changes. These
@@ -81,9 +73,9 @@ export default EmberObject.extend({
     @method onUpdateURL
     @param callback {Function}
   */
-  onUpdateURL(callback) {
+  onUpdateURL(callback: (url: string) => void) {
     this.updateCallback = callback;
-  },
+  }
 
   /**
     Sets the path and calls the `updateURL` callback.
@@ -92,10 +84,10 @@ export default EmberObject.extend({
     @method handleURL
     @param url {String}
   */
-  handleURL(url) {
+  handleURL(url: string) {
     set(this, 'path', url);
     this.updateCallback(url);
-  },
+  }
 
   /**
     Given a URL, formats it to be placed into the page as part
@@ -109,7 +101,7 @@ export default EmberObject.extend({
     @param url {String}
     @return {String} url
   */
-  formatURL(url) {
+  formatURL(url: string) {
     let rootURL = get(this, 'rootURL');
 
     if (url !== '') {
@@ -118,5 +110,18 @@ export default EmberObject.extend({
     }
 
     return rootURL + url;
-  },
+  }
+}
+
+NoneLocation.reopen({
+  path: '',
+
+  /**
+    Will be pre-pended to path.
+
+    @private
+    @property rootURL
+    @default '/'
+  */
+  rootURL: '/',
 });

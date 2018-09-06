@@ -1,7 +1,19 @@
-import { assert } from '@ember/debug';
 import { location } from '@ember/-internals/browser-environment';
-import { getHash } from './util';
+import { assert } from '@ember/debug';
 
+export interface EmberLocation {
+  implementation: string;
+  cancelRouterSetup?: boolean;
+  getURL(): string;
+  setURL(url: string): void;
+  replaceURL?(url: string): void;
+  onUpdateURL(callback: UpdateCallback): void;
+  formatURL(url: string): string;
+  detect?(): void;
+  initState?(): void;
+}
+
+export type UpdateCallback = (url: string) => void;
 /**
 @module @ember/routing
 */
@@ -19,7 +31,6 @@ import { getHash } from './util';
   See [HistoryLocation](/api/ember/release/classes/HistoryLocation).
   See [NoneLocation](/api/ember/release/classes/NoneLocation).
   See [AutoLocation](/api/ember/release/classes/AutoLocation).
-
 
   ## Location API
 
@@ -86,7 +97,7 @@ export default {
     need.
     @private
   */
-  create(options) {
+  create(options: { implementation: string }) {
     let implementation = options && options.implementation;
     assert("Location.create: you must specify a 'implementation' option", !!implementation);
 
@@ -101,18 +112,4 @@ export default {
 
   implementations: {},
   _location: location,
-
-  /**
-    Returns the current `location.hash` by parsing location.href since browsers
-    inconsistently URL-decode `location.hash`.
-
-    https://bugzilla.mozilla.org/show_bug.cgi?id=483304
-
-    @private
-    @method getHash
-    @since 1.4.0
-  */
-  _getHash() {
-    return getHash(this.location);
-  },
 };

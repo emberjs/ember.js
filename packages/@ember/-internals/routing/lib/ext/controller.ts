@@ -56,7 +56,6 @@ ControllerMixin.reopen({
    when any of the query params declared in `Controller#queryParams` property
    are changed.
 
-
    When invoked this method uses the currently active query param update delegate
    (see `Controller.prototype._qpDelegate` for details) and invokes it with
    the QP key/value being changed.
@@ -64,7 +63,7 @@ ControllerMixin.reopen({
     @method _qpChanged
     @private
   */
-  _qpChanged(controller, _prop) {
+  _qpChanged(controller: any, _prop: string) {
     let prop = _prop.substr(0, _prop.length - 3);
 
     let delegate = controller._qpDelegate;
@@ -146,7 +145,7 @@ ControllerMixin.reopen({
     @method transitionToRoute
     @public
   */
-  transitionToRoute(...args) {
+  transitionToRoute(...args: any[]) {
     // target may be either another controller or a router
     let target = get(this, 'target');
     let method = target.transitionToRoute || target.transitionTo;
@@ -211,7 +210,7 @@ ControllerMixin.reopen({
     @method replaceRoute
     @public
   */
-  replaceRoute(...args) {
+  replaceRoute(...args: string[]) {
     // target may be either another controller or a router
     let target = get(this, 'target');
     let method = target.replaceRoute || target.replaceWith;

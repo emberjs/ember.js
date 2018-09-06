@@ -851,7 +851,6 @@ const LinkComponent = EmberComponent.extend({
 
   didReceiveAttrs() {
     let queryParams;
-
     let params = get(this, 'params');
 
     if (params) {

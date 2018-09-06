@@ -163,7 +163,7 @@ moduleFor(
       createLocation(
         {
           _location: {
-            href: '/#/foo/bar',
+            hash: '#/foo/bar',
           },
           lastSetURL: '/foo/bar',
         },
