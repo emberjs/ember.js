@@ -2,105 +2,105 @@
 # yarn lockfile v1
 
 
-"@glimmer/compiler@^0.35.4":
-  version "0.35.4"
-  resolved "https://registry.yarnpkg.com/@glimmer/compiler/-/compiler-0.35.4.tgz#2f542dfe05b444bd5f53175b7f353531daa218e7"
+"@glimmer/compiler@^0.35.8":
+  version "0.35.8"
+  resolved "https://registry.yarnpkg.com/@glimmer/compiler/-/compiler-0.35.8.tgz#1096f8d1abfbe2101c454bce476a6e829a3776a9"
   dependencies:
-    "@glimmer/interfaces" "^0.35.4"
-    "@glimmer/syntax" "^0.35.4"
-    "@glimmer/util" "^0.35.4"
-    "@glimmer/wire-format" "^0.35.4"
+    "@glimmer/interfaces" "^0.35.8"
+    "@glimmer/syntax" "^0.35.8"
+    "@glimmer/util" "^0.35.8"
+    "@glimmer/wire-format" "^0.35.8"
 
-"@glimmer/encoder@^0.35.4":
-  version "0.35.4"
-  resolved "https://registry.yarnpkg.com/@glimmer/encoder/-/encoder-0.35.4.tgz#8523f5f862dfe81ef9c39fee759f062dfe73604c"
+"@glimmer/encoder@^0.35.8":
+  version "0.35.8"
+  resolved "https://registry.yarnpkg.com/@glimmer/encoder/-/encoder-0.35.8.tgz#ce57a9d60e49e2faef987c6cb22c31fb78bb0a48"
 
 "@glimmer/env@^0.1.7":
   version "0.1.7"
   resolved "https://registry.yarnpkg.com/@glimmer/env/-/env-0.1.7.tgz#fd2d2b55a9029c6b37a6c935e8c8871ae70dfa07"
 
-"@glimmer/interfaces@^0.35.4":
-  version "0.35.4"
-  resolved "https://registry.yarnpkg.com/@glimmer/interfaces/-/interfaces-0.35.4.tgz#98ee7d81a663bb095155bf078b67a9bfbfd2a0ef"
+"@glimmer/interfaces@^0.35.8":
+  version "0.35.8"
+  resolved "https://registry.yarnpkg.com/@glimmer/interfaces/-/interfaces-0.35.8.tgz#bd82fcb0a77959b17d5adeaf561fea9dfb3b9a9a"
   dependencies:
-    "@glimmer/wire-format" "^0.35.4"
+    "@glimmer/wire-format" "^0.35.8"
 
-"@glimmer/low-level@^0.35.4":
-  version "0.35.4"
-  resolved "https://registry.yarnpkg.com/@glimmer/low-level/-/low-level-0.35.4.tgz#ae68811b8533a4d3a80c2c049265439fd5786a7f"
+"@glimmer/low-level@^0.35.8":
+  version "0.35.8"
+  resolved "https://registry.yarnpkg.com/@glimmer/low-level/-/low-level-0.35.8.tgz#0c16ed531a8d14b57a86862768f10072de876dfe"
 
-"@glimmer/node@^0.35.4":
-  version "0.35.4"
-  resolved "https://registry.yarnpkg.com/@glimmer/node/-/node-0.35.4.tgz#6101e2b9f953f44584927907b760aec2e1f5cbda"
+"@glimmer/node@^0.35.8":
+  version "0.35.8"
+  resolved "https://registry.yarnpkg.com/@glimmer/node/-/node-0.35.8.tgz#7ab3fbc114cf1a7b3d0c60db936c80c8b60c0af3"
   dependencies:
-    "@glimmer/interfaces" "^0.35.4"
-    "@glimmer/runtime" "^0.35.4"
+    "@glimmer/interfaces" "^0.35.8"
+    "@glimmer/runtime" "^0.35.8"
     simple-dom "^0.3.0"
 
-"@glimmer/opcode-compiler@^0.35.4":
-  version "0.35.4"
-  resolved "https://registry.yarnpkg.com/@glimmer/opcode-compiler/-/opcode-compiler-0.35.4.tgz#184d76e9fc87d10b06dc5862c20fb3ca995653fb"
+"@glimmer/opcode-compiler@^0.35.8":
+  version "0.35.8"
+  resolved "https://registry.yarnpkg.com/@glimmer/opcode-compiler/-/opcode-compiler-0.35.8.tgz#85728a11d33d66c5cc06b8a4cb8a61771e6dc1db"
   dependencies:
-    "@glimmer/encoder" "^0.35.4"
-    "@glimmer/interfaces" "^0.35.4"
-    "@glimmer/program" "^0.35.4"
-    "@glimmer/reference" "^0.35.4"
-    "@glimmer/util" "^0.35.4"
-    "@glimmer/vm" "^0.35.4"
-    "@glimmer/wire-format" "^0.35.4"
+    "@glimmer/encoder" "^0.35.8"
+    "@glimmer/interfaces" "^0.35.8"
+    "@glimmer/program" "^0.35.8"
+    "@glimmer/reference" "^0.35.8"
+    "@glimmer/util" "^0.35.8"
+    "@glimmer/vm" "^0.35.8"
+    "@glimmer/wire-format" "^0.35.8"
 
-"@glimmer/program@^0.35.4":
-  version "0.35.4"
-  resolved "https://registry.yarnpkg.com/@glimmer/program/-/program-0.35.4.tgz#ffdbe806fc310efa4d0370ab783ee0bd44207ca1"
+"@glimmer/program@^0.35.8":
+  version "0.35.8"
+  resolved "https://registry.yarnpkg.com/@glimmer/program/-/program-0.35.8.tgz#3dbf9b85a9c1b12fdaaf9fc2036c280e16df395f"
   dependencies:
-    "@glimmer/encoder" "^0.35.4"
-    "@glimmer/interfaces" "^0.35.4"
-    "@glimmer/util" "^0.35.4"
+    "@glimmer/encoder" "^0.35.8"
+    "@glimmer/interfaces" "^0.35.8"
+    "@glimmer/util" "^0.35.8"
 
-"@glimmer/reference@^0.35.4":
-  version "0.35.4"
-  resolved "https://registry.yarnpkg.com/@glimmer/reference/-/reference-0.35.4.tgz#1d5c8baa65be68d735d4384d0e8f8bf24761e5cb"
+"@glimmer/reference@^0.35.8":
+  version "0.35.8"
+  resolved "https://registry.yarnpkg.com/@glimmer/reference/-/reference-0.35.8.tgz#95283835698bc7ee5fef6208b9dc66c2bbad8a71"
   dependencies:
-    "@glimmer/util" "^0.35.4"
+    "@glimmer/util" "^0.35.8"
 
-"@glimmer/runtime@^0.35.4":
-  version "0.35.4"
-  resolved "https://registry.yarnpkg.com/@glimmer/runtime/-/runtime-0.35.4.tgz#4eb352f2a9b25e30e8067da2da0c59d04c1b7cda"
+"@glimmer/runtime@^0.35.8":
+  version "0.35.8"
+  resolved "https://registry.yarnpkg.com/@glimmer/runtime/-/runtime-0.35.8.tgz#4aaabe3682b01c77f47b95768b74d70d9e64d2a6"
   dependencies:
-    "@glimmer/interfaces" "^0.35.4"
-    "@glimmer/low-level" "^0.35.4"
-    "@glimmer/program" "^0.35.4"
-    "@glimmer/reference" "^0.35.4"
-    "@glimmer/util" "^0.35.4"
-    "@glimmer/vm" "^0.35.4"
-    "@glimmer/wire-format" "^0.35.4"
+    "@glimmer/interfaces" "^0.35.8"
+    "@glimmer/low-level" "^0.35.8"
+    "@glimmer/program" "^0.35.8"
+    "@glimmer/reference" "^0.35.8"
+    "@glimmer/util" "^0.35.8"
+    "@glimmer/vm" "^0.35.8"
+    "@glimmer/wire-format" "^0.35.8"
 
-"@glimmer/syntax@^0.35.4":
-  version "0.35.4"
-  resolved "https://registry.yarnpkg.com/@glimmer/syntax/-/syntax-0.35.4.tgz#d5f092ddacc1f5086de754d2b9880a96e8c59dcc"
+"@glimmer/syntax@^0.35.8":
+  version "0.35.8"
+  resolved "https://registry.yarnpkg.com/@glimmer/syntax/-/syntax-0.35.8.tgz#52fa3075514851f5ffc2ea629d35716c9eebb7f2"
   dependencies:
-    "@glimmer/interfaces" "^0.35.4"
-    "@glimmer/util" "^0.35.4"
+    "@glimmer/interfaces" "^0.35.8"
+    "@glimmer/util" "^0.35.8"
     handlebars "^4.0.6"
     simple-html-tokenizer "^0.5.5"
 
-"@glimmer/util@^0.35.4":
-  version "0.35.4"
-  resolved "https://registry.yarnpkg.com/@glimmer/util/-/util-0.35.4.tgz#7dc99e25c63443c7ae74a2895ca4a52fdee78477"
+"@glimmer/util@^0.35.8":
+  version "0.35.8"
+  resolved "https://registry.yarnpkg.com/@glimmer/util/-/util-0.35.8.tgz#ec2d7aa4897b77ba96275bb2ea803c6c6dcf0eef"
 
-"@glimmer/vm@^0.35.4":
-  version "0.35.4"
-  resolved "https://registry.yarnpkg.com/@glimmer/vm/-/vm-0.35.4.tgz#cd2a34c76231dd4ff10ec9965391e1cf53499e2d"
+"@glimmer/vm@^0.35.8":
+  version "0.35.8"
+  resolved "https://registry.yarnpkg.com/@glimmer/vm/-/vm-0.35.8.tgz#2db9a0f7cb94340640253da339f91b09546179c3"
   dependencies:
-    "@glimmer/interfaces" "^0.35.4"
-    "@glimmer/program" "^0.35.4"
-    "@glimmer/util" "^0.35.4"
+    "@glimmer/interfaces" "^0.35.8"
+    "@glimmer/program" "^0.35.8"
+    "@glimmer/util" "^0.35.8"
 
-"@glimmer/wire-format@^0.35.4":
-  version "0.35.4"
-  resolved "https://registry.yarnpkg.com/@glimmer/wire-format/-/wire-format-0.35.4.tgz#f718b96cb61f43ce95d7dfae6ee511be90a1f8cb"
+"@glimmer/wire-format@^0.35.8":
+  version "0.35.8"
+  resolved "https://registry.yarnpkg.com/@glimmer/wire-format/-/wire-format-0.35.8.tgz#61f58bce456f7c9aca0d338c31b91aa74b911911"
   dependencies:
-    "@glimmer/util" "^0.35.4"
+    "@glimmer/util" "^0.35.8"
 
 "@types/acorn@^4.0.3":
   version "4.0.3"
