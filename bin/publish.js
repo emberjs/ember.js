@@ -6,7 +6,7 @@ const execSync = require('child_process').execSync;
 const chalk = require('chalk');
 const readline = require('readline');
 const semver = require('semver');
-
+const autoDistTag = require('auto-dist-tag');
 const Project = require('../build/utils/project');
 
 const DIST_PATH = path.resolve(__dirname, '../dist');
@@ -34,7 +34,6 @@ let packages = Project.from(DIST_PATH)
 
 let packageNames = packages.map(package => package.name);
 let newVersion;
-let distTag;
 
 // Begin interactive CLI
 printExistingVersions();
@@ -148,10 +147,7 @@ function publishPackage(distTag, otp, cwd) {
 }
 
 async function confirmPublish() {
-  distTag = process.env.DIST_TAG || (semver.prerelease(newVersion) ? 'next' : 'latest');
-
   console.log(chalk.blue("Version"), newVersion);
-  console.log(chalk.blue("Dist Tag"), distTag);
 
   let answer = await question(chalk.bgRed.white.bold("Are you sure? [Y/N]") + " ");
 
@@ -164,10 +160,11 @@ async function confirmPublish() {
 
   let publicPackages = packages.filter(pkg => !pkg.private);
   for (let package of publicPackages) {
+    let distTag = await autoDistTag(package.absolutePath);
+
     try {
       publishPackage(distTag, otp, package.absolutePath);
     } catch(e) {
-      debugger
       // the token is outdated, we need another one
       if (e.message.includes('E401')) {
         otp = await getOTPToken();
