@@ -13,16 +13,16 @@ import isBlank from './is_blank';
   isPresent('  ');            // false
   isPresent('\n\t');          // false
   isPresent([]);              // false
-  isPresent({ length: 0 })    // false
+  isPresent({ length: 0 });   // false
   isPresent(false);           // true
   isPresent(true);            // true
   isPresent('string');        // true
   isPresent(0);               // true
-  isPresent(function() {})    // true
+  isPresent(function() {});   // true
   isPresent({});              // true
   isPresent(false);           // true
   isPresent('\n\t Hello');    // true
-  isPresent([1,2,3]);         // true
+  isPresent([1, 2, 3]);       // true
   ```
 
   @method isPresent
