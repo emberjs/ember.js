@@ -135,6 +135,18 @@ function gitCommitAndTag() {
   execWithSideEffects(`git tag "v${newVersion}"`);
 }
 
+async function getOTPToken() {
+  let token = await question(chalk.green('\nPlease provide OTP token '));
+
+  return token.trim();
+}
+
+function publishPackage(distTag, otp, cwd) {
+  execWithSideEffects(`npm publish --tag ${distTag} --access public --otp ${otp}`, {
+    cwd
+  });
+}
+
 async function confirmPublish() {
   distTag = process.env.DIST_TAG || (semver.prerelease(newVersion) ? 'next' : 'latest');
 
@@ -148,14 +160,24 @@ async function confirmPublish() {
     return;
   }
 
-  let token = await question(chalk.green('\nPlease provide OTP token '));
-  let otp = token.trim();
+  let otp = await getOTPToken();
 
-  packages.filter(pkg => !pkg.private).forEach(package => {
-    execWithSideEffects(`npm publish --tag ${distTag} --access public --otp ${otp}`, {
-      cwd: package.absolutePath
-    });
-  });
+  let publicPackages = packages.filter(pkg => !pkg.private);
+  for (let package of publicPackages) {
+    try {
+      publishPackage(distTag, otp, package.absolutePath);
+    } catch(e) {
+      debugger
+      // the token is outdated, we need another one
+      if (e.message.includes('E401')) {
+        otp = await getOTPToken();
+
+        publishPackage(distTag, otp, package.absolutePath);
+      } else {
+        throw e;
+      }
+    }
+  }
 
   execWithSideEffects(`git push origin master --tags`);
 
