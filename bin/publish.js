@@ -38,30 +38,40 @@ let distTag;
 
 // Begin interactive CLI
 printExistingVersions();
-promptForVersion();
+promptForVersion()
+  .finally(() => cli.close())
+  .catch(reason => {
+    console.error(reason);
+    process.exit(1);
+  });
+
+function question(prompt) {
+  return new Promise(resolve => {
+    cli.question(prompt, resolve);
+  });
+}
 
 function printExistingVersions() {
   let packageVersions = packages.map(package => [package.name, package.version]);
   printPadded(packageVersions);
 }
 
-function promptForVersion() {
+async function promptForVersion() {
   let defaultVersion = generateDefaultVersion();
 
-  cli.question(chalk.green(`\nNew version to publish? [${defaultVersion}] `), version => {
-    version = version.trim();
-    if (version === '') {
-      version = defaultVersion;
-    }
+  let version = await question(chalk.green(`\nNew version to publish? [${defaultVersion}] `));
+  version = version.trim();
+  if (version === '') {
+    version = defaultVersion;
+  }
 
-    validateNewVersion(version);
-    console.log(chalk.green(`Publishing v${version}...`));
+  await validateNewVersion(version);
+  console.log(chalk.green(`Publishing v${version}...`));
 
-    newVersion = version;
-    applyNewVersion();
-    gitCommitAndTag();
-    confirmPublish();
-  });
+  newVersion = version;
+  await applyNewVersion();
+  await gitCommitAndTag();
+  await confirmPublish();
 }
 
 function generateDefaultVersion() {
@@ -125,35 +135,32 @@ function gitCommitAndTag() {
   execWithSideEffects(`git tag "v${newVersion}"`);
 }
 
-function confirmPublish() {
-  distTag = semver.prerelease(newVersion) ? 'next' : 'latest';
+async function confirmPublish() {
+  distTag = process.env.DIST_TAG || (semver.prerelease(newVersion) ? 'next' : 'latest');
 
   console.log(chalk.blue("Version"), newVersion);
   console.log(chalk.blue("Dist Tag"), distTag);
 
-  cli.question(chalk.bgRed.white.bold("Are you sure? [Y/N]") + " ", answer => {
-    if (answer !== 'y' && answer !== 'Y') {
-      console.log(chalk.red("Aborting"));
-      cli.close();
-      return;
-    }
+  let answer = await question(chalk.bgRed.white.bold("Are you sure? [Y/N]") + " ");
 
-    cli.question(chalk.green('\nPlease provide OTP token '), token => {
-      let otp = token.trim();
+  if (answer !== 'y' && answer !== 'Y') {
+    console.log(chalk.red("Aborting"));
+    return;
+  }
 
-      packages.filter(pkg => !pkg.private).forEach(package => {
-        execWithSideEffects(`npm publish --tag ${distTag} --access public --otp ${otp}`, {
-          cwd: package.absolutePath
-        });
-      });
+  let token = await question(chalk.green('\nPlease provide OTP token '));
+  let otp = token.trim();
 
-      execWithSideEffects(`git push origin master --tags`);
-
-      console.log(chalk.green(`\nv${newVersion} deployed!`));
-      console.log(chalk.green('Done.'));
-      cli.close();
+  packages.filter(pkg => !pkg.private).forEach(package => {
+    execWithSideEffects(`npm publish --tag ${distTag} --access public --otp ${otp}`, {
+      cwd: package.absolutePath
     });
   });
+
+  execWithSideEffects(`git push origin master --tags`);
+
+  console.log(chalk.green(`\nv${newVersion} deployed!`));
+  console.log(chalk.green('Done.'));
 }
 
 function fatalError(message) {
