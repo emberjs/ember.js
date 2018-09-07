@@ -6,7 +6,7 @@ const execSync = require('child_process').execSync;
 const chalk = require('chalk');
 const readline = require('readline');
 const semver = require('semver');
-
+const autoDistTag = require('auto-dist-tag');
 const Project = require('../build/utils/project');
 
 const DIST_PATH = path.resolve(__dirname, '../dist');
@@ -34,34 +34,43 @@ let packages = Project.from(DIST_PATH)
 
 let packageNames = packages.map(package => package.name);
 let newVersion;
-let distTag;
 
 // Begin interactive CLI
 printExistingVersions();
-promptForVersion();
+promptForVersion()
+  .finally(() => cli.close())
+  .catch(reason => {
+    console.error(reason);
+    process.exit(1);
+  });
+
+function question(prompt) {
+  return new Promise(resolve => {
+    cli.question(prompt, resolve);
+  });
+}
 
 function printExistingVersions() {
   let packageVersions = packages.map(package => [package.name, package.version]);
   printPadded(packageVersions);
 }
 
-function promptForVersion() {
+async function promptForVersion() {
   let defaultVersion = generateDefaultVersion();
 
-  cli.question(chalk.green(`\nNew version to publish? [${defaultVersion}] `), version => {
-    version = version.trim();
-    if (version === '') {
-      version = defaultVersion;
-    }
+  let version = await question(chalk.green(`\nNew version to publish? [${defaultVersion}] `));
+  version = version.trim();
+  if (version === '') {
+    version = defaultVersion;
+  }
 
-    validateNewVersion(version);
-    console.log(chalk.green(`Publishing v${version}...`));
+  await validateNewVersion(version);
+  console.log(chalk.green(`Publishing v${version}...`));
 
-    newVersion = version;
-    applyNewVersion();
-    gitCommitAndTag();
-    confirmPublish();
-  });
+  newVersion = version;
+  await applyNewVersion();
+  await gitCommitAndTag();
+  await confirmPublish();
 }
 
 function generateDefaultVersion() {
@@ -125,35 +134,52 @@ function gitCommitAndTag() {
   execWithSideEffects(`git tag "v${newVersion}"`);
 }
 
-function confirmPublish() {
-  distTag = semver.prerelease(newVersion) ? 'next' : 'latest';
+async function getOTPToken() {
+  let token = await question(chalk.green('\nPlease provide OTP token '));
 
-  console.log(chalk.blue("Version"), newVersion);
-  console.log(chalk.blue("Dist Tag"), distTag);
+  return token.trim();
+}
 
-  cli.question(chalk.bgRed.white.bold("Are you sure? [Y/N]") + " ", answer => {
-    if (answer !== 'y' && answer !== 'Y') {
-      console.log(chalk.red("Aborting"));
-      cli.close();
-      return;
-    }
-
-    cli.question(chalk.green('\nPlease provide OTP token '), token => {
-      let otp = token.trim();
-
-      packages.filter(pkg => !pkg.private).forEach(package => {
-        execWithSideEffects(`npm publish --tag ${distTag} --access public --otp ${otp}`, {
-          cwd: package.absolutePath
-        });
-      });
-
-      execWithSideEffects(`git push origin master --tags`);
-
-      console.log(chalk.green(`\nv${newVersion} deployed!`));
-      console.log(chalk.green('Done.'));
-      cli.close();
-    });
+function publishPackage(distTag, otp, cwd) {
+  execWithSideEffects(`npm publish --tag ${distTag} --access public --otp ${otp}`, {
+    cwd
   });
+}
+
+async function confirmPublish() {
+  console.log(chalk.blue("Version"), newVersion);
+
+  let answer = await question(chalk.bgRed.white.bold("Are you sure? [Y/N]") + " ");
+
+  if (answer !== 'y' && answer !== 'Y') {
+    console.log(chalk.red("Aborting"));
+    return;
+  }
+
+  let otp = await getOTPToken();
+
+  let publicPackages = packages.filter(pkg => !pkg.private);
+  for (let package of publicPackages) {
+    let distTag = await autoDistTag(package.absolutePath);
+
+    try {
+      publishPackage(distTag, otp, package.absolutePath);
+    } catch(e) {
+      // the token is outdated, we need another one
+      if (e.message.includes('E401')) {
+        otp = await getOTPToken();
+
+        publishPackage(distTag, otp, package.absolutePath);
+      } else {
+        throw e;
+      }
+    }
+  }
+
+  execWithSideEffects(`git push origin master --tags`);
+
+  console.log(chalk.green(`\nv${newVersion} deployed!`));
+  console.log(chalk.green('Done.'));
 }
 
 function fatalError(message) {
