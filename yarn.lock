@@ -143,10 +143,9 @@
   resolved "https://registry.yarnpkg.com/@types/qunit/-/qunit-2.5.0.tgz#fab886ca4160ba8bf299b146a8f54ee3057c8e32"
   integrity sha512-thhSizaUp9hPZjV3HaMtzRFwGANxLnqsjgdotXFtfVCCUfY4jgbzFRVKYrqsOExkk3OImgMWKk3opx2vethVbw==
 
-"@types/rsvp@^4.0.1":
-  version "4.0.1"
-  resolved "https://registry.yarnpkg.com/@types/rsvp/-/rsvp-4.0.1.tgz#82956bc8d0a8151ec3b7e9cae64fd06808a1c714"
-  integrity sha512-eYg/Voyrfw7QSryAUF4CVrYLHENWPinzCODgbbcD/7GLOa7xWK7O2avFq1zB5XJSO/Pfq45V3vDplpZ2NM0iIg==
+"@types/rsvp@^4.0.2":
+  version "4.0.2"
+  resolved "https://registry.yarnpkg.com/@types/rsvp/-/rsvp-4.0.2.tgz#bf9f72eaa6771292638a85bb8ce1db97e754b371"
 
 abbrev@1:
   version "1.1.1"
@@ -7407,10 +7406,9 @@ rsvp@^4.7.0:
   resolved "https://registry.yarnpkg.com/rsvp/-/rsvp-4.7.0.tgz#dc1b0b1a536f7dec9d2be45e0a12ad4197c9fd96"
   integrity sha1-3BsLGlNvfeydK+ReChKtQZfJ/ZY=
 
-rsvp@^4.8.2:
-  version "4.8.2"
-  resolved "https://registry.yarnpkg.com/rsvp/-/rsvp-4.8.2.tgz#9d5647108735784eb13418cdddb56f75b919d722"
-  integrity sha512-8CU1Wjxvzt6bt8zln+hCjyieneU9s0LRW+lPRsjyVCY8Vm1kTbK7btBIrCGg6yY9U4undLDm/b1hKEEi1tLypg==
+rsvp@^4.8.3:
+  version "4.8.3"
+  resolved "https://registry.yarnpkg.com/rsvp/-/rsvp-4.8.3.tgz#25d4b9fdd0f95e216eb5884d9b3767d3fbfbe2cd"
 
 rsvp@~3.0.6:
   version "3.0.21"
