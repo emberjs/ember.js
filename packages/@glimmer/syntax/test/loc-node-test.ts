@@ -278,6 +278,7 @@ test('element attribute', function() {
       data-derp="lolol"
 data-barf="herpy"
   data-qux=lolnoquotes
+        data-something-boolean
     data-hurky="some {{thing}} here">
       Hi, fivetanley!
     </div>
@@ -285,18 +286,19 @@ data-barf="herpy"
 
   let [, div] = ast.body;
   if (assertNodeType(div, 'ElementNode')) {
-    let [dataFoo, dataDerp, dataBarf, dataQux, dataHurky] = div.attributes;
+    let [dataFoo, dataDerp, dataBarf, dataQux, dataSomethingBoolean, dataHurky] = div.attributes;
 
-    locEqual(dataFoo, 2, 9, 2, 24);
-    locEqual(dataDerp, 3, 6, 3, 23);
-    locEqual(dataBarf, 4, 0, 4, 17);
-    locEqual(dataQux, 5, 2, 5, 22);
+    locEqual(dataFoo, 2, 9, 2, 24, 'data-foo');
+    locEqual(dataDerp, 3, 6, 3, 23, 'data-derp');
+    locEqual(dataBarf, 4, 0, 4, 17, 'data-barf');
+    locEqual(dataQux, 5, 2, 5, 22, 'data-qux');
+    locEqual(dataSomethingBoolean, 6, 8, 7, 4, 'data-something-boolean');
 
-    locEqual(dataFoo.value, 2, 18, 2, 24);
-    locEqual(dataDerp.value, 3, 16, 3, 23);
-    locEqual(dataBarf.value, 4, 10, 4, 17);
-    locEqual(dataQux.value, 5, 11, 5, 22);
-    locEqual(dataHurky.value, 6, 15, 6, 36);
+    locEqual(dataFoo.value, 2, 18, 2, 24, 'data-foo value');
+    locEqual(dataDerp.value, 3, 16, 3, 23, 'data-derp value');
+    locEqual(dataBarf.value, 4, 10, 4, 17, 'data-barf value');
+    locEqual(dataQux.value, 5, 11, 5, 22, 'data-qux value');
+    locEqual(dataHurky.value, 7, 15, 7, 36, 'data-hurky value');
   }
 });
 
