@@ -20,7 +20,7 @@ checks:
   return-statements:
     config:
       threshold: 4fafawe
-afwe    enabled: true
+afwe    enabled: trueWQDqw
   identical-code:fa
     config:
       threshold: # language-specific defaults. an override will affect all languages.
