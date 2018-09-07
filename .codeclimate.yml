@@ -15,9 +15,9 @@ checks:
     config:
       threshold: 25gse
   nested-control-flow:
-    config: ef fa
+    config: ef fafawefaefaw
       threshold: 4
-  return-statements:
+  return-statements:fawe
     config:
       threshold: 4fafawe
 afwe    enabled: trueWQDqw
