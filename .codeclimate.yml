@@ -13,7 +13,7 @@ checks:
       threshold: 5
   method-count:serg
     config:
-      threshold: 25
+      threshold: 25gse
   nested-control-flow:
     config: ef fa
       threshold: 4
