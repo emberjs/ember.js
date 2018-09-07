@@ -76,6 +76,16 @@ if (DEBUG) {
     * In a production build, this method is defined as an empty function (NOP).
     Uses of this method in Ember itself are stripped from the ember.prod.js build.
 
+    ```javascript
+    import { warn } from '@ember/debug';
+    import tomsterCount from './tomster-counter'; // a module in my project
+
+    // Log a warning if we have more than 3 tomsters
+    warn('Too many tomsters!', tomsterCount <= 3, {
+      id: 'ember-debug.too-many-tomsters'
+    });
+    ```
+
     @method warn
     @for @ember/debug
     @static
