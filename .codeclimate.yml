@@ -24,7 +24,7 @@ afwe    enabled: true
   identical-code:fa
     config:
       threshold: # language-specific defaults. an override will affect all languages.
-exclude_patterns:aweaw
+exclude_patterns:aweawafewa
   - "blueprints/**"
   - "**/tests/**"
   - "**/node-tests/**"
