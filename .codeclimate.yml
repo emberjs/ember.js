@@ -21,10 +21,10 @@ checks:
     config:
       threshold: 4fafawe
 afwe    enabled: trueWQDqw
-  identical-code:favresaweweaf
+  identical-code:favresaweweaff
     config:
       threshold: # language-specific defaults. an override will affect all languages.
-exclude_patterns:aweawafewa
+exclude_patterns:aweawafewaaew
   - "blueprints/**"
   - "**/tests/**"
   - "**/node-tests/**"
