@@ -19,7 +19,7 @@ checks:
       threshold: 4
   return-statements:
     config:
-      threshold: 4fa
+      threshold: 4fafawe
 afwe    enabled: true
   identical-code:fa
     config:
