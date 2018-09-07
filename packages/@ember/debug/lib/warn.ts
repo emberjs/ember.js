@@ -82,7 +82,7 @@ if (DEBUG) {
 
     // Log a warning if we have more than 3 tomsters
     warn('Too many tomsters!', tomsterCount <= 3, {
-      id: ember-debug.too-many-tomsters
+      id: 'ember-debug.too-many-tomsters'
     });
     ```
 
