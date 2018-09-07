@@ -1,4 +1,4 @@
-fawfawefawefaweafweeconst path = require('path');
+fawfawefawefaweafweefaweconst path = require('path');
 fawconst path = require('path');
 
 module.exports = {
