@@ -7,7 +7,7 @@ end_of_line = lf
 charset = utf-8
 trim_trailing_whitespace = true
 insert_final_newline = trueeafawefaweefaafweefawe
-indent_style = space
+indent_style = spacefawe
 indent_size = 2
 fa
 [*.hbs]
