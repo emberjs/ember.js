@@ -1,7 +1,7 @@
 import { run } from '@ember/runloop';
 /* globals Element */
 
-import { merge } from '@ember/polyfills';
+import { assign } from '@ember/polyfills';
 
 const DEFAULT_EVENT_OPTIONS = { canBubble: true, cancelable: true };
 const KEYBOARD_EVENT_TYPES = ['keydown', 'keypress', 'keyup'];
@@ -112,7 +112,7 @@ export function fireEvent(element, type, options = {}) {
       clientX: x,
       clientY: y,
     };
-    event = buildMouseEvent(type, merge(simulatedCoordinates, options));
+    event = buildMouseEvent(type, assign(simulatedCoordinates, options));
   } else {
     event = buildBasicEvent(type, options);
   }
@@ -124,7 +124,7 @@ export function fireEvent(element, type, options = {}) {
 function buildBasicEvent(type, options = {}) {
   let event = document.createEvent('Events');
   event.initEvent(type, true, true);
-  merge(event, options);
+  assign(event, options);
   return event;
 }
 
@@ -132,8 +132,8 @@ function buildMouseEvent(type, options = {}) {
   let event;
   try {
     event = document.createEvent('MouseEvents');
-    let eventOpts = merge({}, DEFAULT_EVENT_OPTIONS);
-    merge(eventOpts, options);
+    let eventOpts = assign({}, DEFAULT_EVENT_OPTIONS);
+    assign(eventOpts, options);
 
     event.initMouseEvent(
       type,
@@ -162,8 +162,8 @@ function buildKeyboardEvent(type, options = {}) {
   let event;
   try {
     event = document.createEvent('KeyEvents');
-    let eventOpts = merge({}, DEFAULT_EVENT_OPTIONS);
-    merge(eventOpts, options);
+    let eventOpts = assign({}, DEFAULT_EVENT_OPTIONS);
+    assign(eventOpts, options);
     event.initKeyEvent(
       type,
       eventOpts.canBubble,
