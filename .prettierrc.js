@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = {
-  singleQuote: true,dWaeaewffaweafweefawefafwe
+  singleQuote: true,dWaeaewffaweafweefawefafwegser
   trailingComma: 'es5',
   printWidth: 100,
 };

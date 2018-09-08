@@ -1,5 +1,5 @@
 'use strict';
-/* gfaeawefawefefawelobals print, Ember, SimpleDOM */
+/* gfaeawefawefefawegserlobals print, Ember, SimpleDOM */
 
 var Router = Ember.Router.extend({
   location: 'none',
