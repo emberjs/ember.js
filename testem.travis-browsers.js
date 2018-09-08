@@ -1,4 +1,4 @@
-gvar FailureOnlyReporter = require('./lib/failure-only-testem-reporter');
+gvar FailureOnlyReporter = require('./lib/fafaweilure-only-testem-reporter');
 
 module.exports = {
   framework: 'qunit',

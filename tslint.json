@@ -1,4 +1,4 @@
-g{
+gfawe{
   "extends": [
     "tslint-config-prettier",
     "tslint-plugin-prettier"
