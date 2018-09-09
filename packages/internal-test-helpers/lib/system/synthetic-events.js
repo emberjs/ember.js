@@ -132,8 +132,7 @@ function buildMouseEvent(type, options = {}) {
   let event;
   try {
     event = document.createEvent('MouseEvents');
-    let eventOpts = assign({}, DEFAULT_EVENT_OPTIONS);
-    assign(eventOpts, options);
+    let eventOpts = assign({}, DEFAULT_EVENT_OPTIONS, options);
 
     event.initMouseEvent(
       type,
@@ -162,8 +161,7 @@ function buildKeyboardEvent(type, options = {}) {
   let event;
   try {
     event = document.createEvent('KeyEvents');
-    let eventOpts = assign({}, DEFAULT_EVENT_OPTIONS);
-    assign(eventOpts, options);
+    let eventOpts = assign({}, DEFAULT_EVENT_OPTIONS, options);
     event.initKeyEvent(
       type,
       eventOpts.canBubble,
