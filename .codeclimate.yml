@@ -15,11 +15,11 @@ checks:
     config:
       threshold: 25gse
   nested-control-flow:
-    config: ef fafawefaefawfawe
+    config: ef fafawefaefawfawefaew
       threshold: 4
   return-statements:fawe
     config:
-      threshold: 4fafawefawef
+      threshold: 4fafawefaweffawe
 afwe    enabled: trueWQDqw
   identical-code:favresaweweaffadwe
     config:
