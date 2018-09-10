@@ -324,6 +324,9 @@ import layout from '../templates/link-to';
   @see {Ember.Templates.helpers.link-to}
   @public
 **/
+
+const EMPTY_QUERY_PARAMS = Object.freeze({ values: Object.freeze({}) });
+
 const LinkComponent = EmberComponent.extend({
   layout,
 
@@ -709,7 +712,7 @@ const LinkComponent = EmberComponent.extend({
     };
   },
 
-  queryParams: null,
+  queryParams: EMPTY_QUERY_PARAMS,
 
   qualifiedRouteName: computed(
     'targetRouteName',
@@ -735,7 +738,7 @@ const LinkComponent = EmberComponent.extend({
     let resolvedQueryParams = {};
     let queryParams = get(this, 'queryParams');
 
-    if (queryParams) {
+    if (queryParams !== EMPTY_QUERY_PARAMS) {
       let { values } = queryParams;
       assign(resolvedQueryParams, values);
     }
@@ -880,7 +883,7 @@ const LinkComponent = EmberComponent.extend({
     if (lastParam && lastParam.isQueryParams) {
       queryParams = params.pop();
     } else {
-      queryParams = { values: {} };
+      queryParams = EMPTY_QUERY_PARAMS;
     }
     this.set('queryParams', queryParams);
 
