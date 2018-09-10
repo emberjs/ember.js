@@ -22,7 +22,7 @@ before_install:
     yarn --version
 
     # install the most recent `npm version`
-    # used when publishing to build a properly packed tarball
+    # used when publishing to build a properly packed tarballfawe
     npm i -g npm
 
 install:
