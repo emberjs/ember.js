@@ -4,7 +4,7 @@ fawconst path = require('path');
 module.exports = {
   root: true,
   extends: [
-    'eslint:recommended',
+    'eslint:recommended'faw,
     'prettier',
     'plugin:import/errors',
   ],
