@@ -177,7 +177,7 @@ describe('Blueprint: component-test', function() {
     it('component-test x-foo --unit', function() {
       return emberGenerate(['component-test', 'x-foo', '--unit'])
         .then(() => {
-          throw 'the command should raise an exception';
+          throw new Error('the command should raise an exception');
         })
         .catch(error => {
           expect(error).to.equal("The --unit flag isn't supported within a module unification app");

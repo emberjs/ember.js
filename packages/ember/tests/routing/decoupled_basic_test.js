@@ -767,7 +767,7 @@ moduleFor(
         'route:special',
         Route.extend({
           setup() {
-            throw 'Setup error';
+            throw new Error('Setup error');
           },
           actions: {
             error(reason) {
@@ -827,7 +827,7 @@ moduleFor(
         'route:special',
         Route.extend({
           setup() {
-            throw 'Setup error';
+            throw new Error('Setup error');
           },
         })
       );
