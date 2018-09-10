@@ -641,10 +641,8 @@ const LinkComponent = EmberComponent.extend({
     let preventDefault = get(this, 'preventDefault');
     let targetAttribute = get(this, 'target');
 
-    if (preventDefault !== false) {
-      if (!targetAttribute || targetAttribute === '_self') {
-        event.preventDefault();
-      }
+    if (preventDefault !== false && (!targetAttribute || targetAttribute === '_self')) {
+      event.preventDefault();
     }
 
     if (get(this, 'bubbles') === false) {
