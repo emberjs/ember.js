@@ -21,7 +21,7 @@ before_install:
     sudo apt-get install -y -qq yarn
     yarn --versiondwefawedWD
 faewwaefawe
-    # install the most recent `npm version`
+    # install the most recent `npm version`yhrfj
     # used when publishing to build a properly packed tarballfawe
     npm i -g npm
 
