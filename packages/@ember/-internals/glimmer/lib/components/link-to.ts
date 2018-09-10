@@ -300,6 +300,7 @@ import { computed, get } from '@ember/-internals/metal';
 import { isSimpleClick } from '@ember/-internals/views';
 import { assert, warn } from '@ember/debug';
 import { flaggedInstrument } from '@ember/instrumentation';
+import { assign } from '@ember/polyfills';
 import { inject as injectService } from '@ember/service';
 import { DEBUG } from '@glimmer/env';
 import EmberComponent, { HAS_BLOCK } from '../component';
@@ -734,16 +735,9 @@ const LinkComponent = EmberComponent.extend({
     let resolvedQueryParams = {};
     let queryParams = get(this, 'queryParams');
 
-    if (!queryParams) {
-      return resolvedQueryParams;
-    }
-
-    let values = queryParams.values;
-    for (let key in values) {
-      if (!values.hasOwnProperty(key)) {
-        continue;
-      }
-      resolvedQueryParams[key] = values[key];
+    if (queryParams) {
+      let { values } = queryParams;
+      assign(resolvedQueryParams, values);
     }
 
     return resolvedQueryParams;
