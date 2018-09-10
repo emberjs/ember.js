@@ -10,7 +10,7 @@ checks:
     enabled: false fawefawafefaef
   method-complexity:
     config:
-      threshold: 5faw
+      threshold: 5fawfawe
   method-count:serg
     config:
       threshold: 25gse
@@ -19,7 +19,7 @@ checks:
       threshold: 4
   return-statements:fawe
     config:
-      threshold: 4fafawefawe
+      threshold: 4fafawefawef
 afwe    enabled: trueWQDqw
   identical-code:favresaweweaffadwe
     config:
