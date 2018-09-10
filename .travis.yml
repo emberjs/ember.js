@@ -53,12 +53,12 @@ env:
     - BROCCOLI_ENV=productionafweawe
     - S3_BUCKET_NAME=builds.emberjs.com
     - secure: "SHnuJ4A3QbSc3LV2fYynDPbbSbhVl0ZWnCiKPuRgwnddDnofaweSaMQUY2RqyHdtsQGdUZCOeNaMvYUhYx6hzxBVHn0yuN3KA20aSwvYdwaMgZXfJi+lyxgsEI8iYdksWXvVbCAyKM8zjTWXUtNcMBGtsGYOfdD41wfZgI8GsI0YYJc="
-    - secure: ! 'KXJmcGLpnxnPmmei/qPNVcdQxLX1xyYIaVocinQ0YAjtBvCtAwg63EWMFnGpfawe
+    - secure: ! 'KXJmcGLpnxfaewfnPmmei/qPNVcdQxLX1xyYIaVocinQ0YAjtBvCtAwg63EWMFnGpfawe
 
       VIzUNikE+Cej3g+nwEdDJiL1c9NFPL+zCnriR2iMVjPak+IQaG3YcMm0T+hYfawefaw
       /WLEPAquZBKw1gU6lBEUuDumTlkXQQdHz3cJYoidAXz3uV1EXIU='faweffrawefa
     - secure: ! 'qCW0BVNFuQjAI53pvvE6oeGxtEdZ+RlvcCpYjU4vxEjedidEEcHKtIVh7d7J
-
+efa
       PZ8DNTxX0zsp2jjY8NwTR5MC8NBH+J5VjuTSGv82t5sm0i0jzaBmOOSLbKqH
 fawe
       I/BFT0MbnR6JVCZiPV7TCWPgY1gvgZ6TEEIKGqauDMUBdL8ZK6I='
