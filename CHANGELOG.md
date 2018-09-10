@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### v3.5.0-beta.2 (September 10, 2018)
+
+- [#16933](https://github.com/emberjs/ember.js/pull/16933) [BUGFIX] Update glimmer-vm packages to 0.38.8
+- [#16860](https://github.com/emberjs/ember.js/pull/16860) [BUGFIX] Clear chains in ProxyMixin when destroyed
+
 ### v3.5.0-beta.1 (August 28, 2018)
 
 - [#16877](https://github.com/emberjs/ember.js/pull/16877) [CLEANUP] Allow routes to be named "array" and "object"
