@@ -827,19 +827,6 @@ const LinkComponent = EmberComponent.extend({
     return true;
   }),
 
-  _getModels(params: any[]) {
-    let modelCount = params.length - 1;
-    let models = new Array(modelCount);
-
-    for (let i = 0; i < modelCount; i++) {
-      let value = params[i + 1];
-
-      models[i] = value;
-    }
-
-    return models;
-  },
-
   /**
     The default href value to use while a link-to is loading.
     Only applies when tagName is 'a'
@@ -891,11 +878,8 @@ const LinkComponent = EmberComponent.extend({
     this.set('queryParams', queryParams);
 
     // 4. Any remaining indices (excepting `targetRouteName` at 0) are `models`.
-    if (params.length > 1) {
-      this.set('models', this._getModels(params));
-    } else {
-      this.set('models', []);
-    }
+    params.shift();
+    this.set('models', params);
   },
 });
 
