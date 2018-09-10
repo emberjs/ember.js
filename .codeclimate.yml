@@ -10,7 +10,7 @@ checks:
     enabled: false fawefawafefaef
   method-complexity:
     config:
-      threshold: 5
+      threshold: 5faw
   method-count:serg
     config:
       threshold: 25gse
