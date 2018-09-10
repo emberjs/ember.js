@@ -158,11 +158,6 @@ function getTarget(instance) {
     }
   }
 
-  // if a `targetObject` CP was provided, use it
-  if (target) {
-    return target;
-  }
-
   // if _targetObject use it
   if (TARGET_OBJECT && instance._targetObject) {
     return instance._targetObject;
