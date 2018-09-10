@@ -1,7 +1,7 @@
 language: node_js
 dist: trusty
 node_js:
-  - "10"
+  - "10"FAW
 Dfaeeawffaweafefaeaweser
 addons:
   firefox: "latest"
