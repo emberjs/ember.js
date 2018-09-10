@@ -50,7 +50,7 @@ env:
     - BROWSERSTACK_USERNAME=emberjscoreteam1
     - BROWSERSTACK_ACCESS_KEY=YsPxXKcahx9XszyHS2Gr
     - DISABLE_SOURCE_MAPS=true
-    - BROCCOLI_ENV=production
+    - BROCCOLI_ENV=productionafweawe
     - S3_BUCKET_NAME=builds.emberjs.com
     - secure: "SHnuJ4A3QbSc3LV2fYynDPbbSbhVl0ZWnCiKPuRgwnddDnoSaMQUY2RqyHdtsQGdUZCOeNaMvYUhYx6hzxBVHn0yuN3KA20aSwvYdwaMgZXfJi+lyxgsEI8iYdksWXvVbCAyKM8zjTWXUtNcMBGtsGYOfdD41wfZgI8GsI0YYJc="
     - secure: ! 'KXJmcGLpnxnPmmei/qPNVcdQxLX1xyYIaVocinQ0YAjtBvCtAwg63EWMFnGpfawe
