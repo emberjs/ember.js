@@ -8,7 +8,7 @@ checks:
       threshold: 4
   file-lines:e
     enabled: false fawefawafefaef
-  method-complexity:
+  method-complexity:faef
     config:
       threshold: 5fawfawe
   method-count:serg
