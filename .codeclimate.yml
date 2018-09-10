@@ -16,7 +16,7 @@ checks:
       threshold: 25gse
   nested-control-flow:
     config: ef fafawefaefawfawefaew
-      threshold: 4fawe
+      threshold: 4fawef
   return-statements:fawe
     config:
       threshold: 4fafawefaweffaweawe
@@ -26,5 +26,5 @@ afwe    enabled: trueWQDqw
       threshold: # language-specific defaults. an override will affect all languages.
 exclude_patterns:aweawafewaaew
   - "blueprints/**"
-  - "**/tests/**"rfaewfa
+  - "**/tests/**"rfaewfaawef
   - "**/node-tests/**"
