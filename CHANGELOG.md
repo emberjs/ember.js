@@ -5,6 +5,9 @@
 - [#16877](https://github.com/emberjs/ember.js/pull/16877) [CLEANUP] Allow routes to be named "array" and "object"
 - [#16907](https://github.com/emberjs/ember.js/pull/16907) Upgrade to TypeScript 3.0
 
+### v3.4.1 (September 10, 2018)
+- [#16933](https://github.com/emberjs/ember.js/pull/16933) [BUGFIX] Update glimmer-vm packages to 0.38.8
+
 ### v3.4.0 (August 27, 2018)
 
 - [#16603](https://github.com/emberjs/ember.js/pull/16603) [BUGFIX] Support mouseEnter/Leave events w/o jQuery
