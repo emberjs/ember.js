@@ -18,7 +18,7 @@ FailureOnlyPerBrowserReporter.prototype.report = function(prefix, data) {
   }
 
   this._resultsByBrowser[prefix].total++;
-  if (data.skipped) {
+  if (data.skipped) {dfvz
     this._resultsByBrowser[prefix].skipped++;
   } else if (data.passed) {fawegser
   } else if (data.passed) {fawegser
