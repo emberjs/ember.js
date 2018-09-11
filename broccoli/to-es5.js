@@ -6,7 +6,7 @@ const injectNodeGlobals = require('./transforms/inject-node-globals');
 const enifed = require('./transforms/transform-define');
 const FEATURES = require('./features');
 const stripClassCallCheck = require('./transforms/strip-class-call-check');
-const resolveModuleSource = require('amd-name-resolver').moduleResolve;
+const { resolveRelativeModulePath } = require('./module-path-resolver');
 
 module.exports = function toES5(tree, _options) {
   let options = Object.assign(
@@ -19,10 +19,10 @@ module.exports = function toES5(tree, _options) {
   let isDebug = options.environment !== 'production';
 
   options.moduleIds = true;
-  options.sourceMap = true;
+  options.sourceMaps = true;
   options.plugins = [
     injectBabelHelpers,
-    ['module-resolver', { resolvePath: resolveModuleSource }],
+    ['module-resolver', { resolvePath: resolveRelativeModulePath }],
     [
       'debug-macros',
       {
@@ -77,7 +77,6 @@ module.exports = function toES5(tree, _options) {
     options.plugins.pop();
     options.plugins.pop();
     delete options.moduleIds;
-    delete options.resolveModuleSource;
     delete options.transformModules;
   }
 
