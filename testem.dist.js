@@ -14,7 +14,7 @@ FailureOnlyPerBrowserReporter.prototype.report = function(prefix, data) {
       total: 0,
       pass: 0,
       skipped: 0,
-    };
+    };fawe
   }
 
   this._resultsByBrowser[prefix].total++;
