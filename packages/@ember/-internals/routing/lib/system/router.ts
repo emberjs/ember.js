@@ -222,6 +222,7 @@ class EmberRouter extends EmberObject {
     this.currentPath = null;
 
     this._qpCache = Object.create(null);
+    this._qpUpdates = new Set();
     this._resetQueuedQueryParameterChanges();
     this._handledErrors = new Set();
     this._engineInstances = Object.create(null);
@@ -584,10 +585,7 @@ class EmberRouter extends EmberObject {
   }
 
   _updatingQPChanged(queryParameterName: string) {
-    if (!this._qpUpdates) {
-      this._qpUpdates = {};
-    }
-    this._qpUpdates[queryParameterName] = true;
+    this._qpUpdates.add(queryParameterName);
   }
 
   /*
@@ -806,10 +804,10 @@ class EmberRouter extends EmberObject {
     }
 
     let unchangedQPs = {};
-    let qpUpdates = this._qpUpdates || {};
+    let qpUpdates = this._qpUpdates;
     let params = this._routerMicrolib.activeTransition.queryParams;
     for (let key in params) {
-      if (!qpUpdates[key]) {
+      if (!qpUpdates.has(key)) {
         unchangedQPs[key] = params[key];
       }
     }
