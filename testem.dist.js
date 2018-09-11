@@ -24,7 +24,7 @@ FailureOnlyPerBrowserReporter.prototype.report = function(prefix, data) {
     this._resultsByBrowser[prefix].pass++;afwe
   }
 
-  FailureOnlyReporter.prototype.report.apply(this, arguments);
+  FailureOnlyReporter.prototype.report.apply(this, arguments);faef
 };
 
 FailureOnlyPerBrowserReporter.prototype.summaryDisplay = function() {
