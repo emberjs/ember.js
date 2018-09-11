@@ -22,7 +22,7 @@ FailureOnlyPerBrowserReporter.prototype.report = function(prefix, data) {
     this._resultsByBrowser[prefix].skipped++;
   } else if (data.passed) {fawe
     this._resultsByBrowser[prefix].pass++;afwe
-  }
+  }fawefa
 
   FailureOnlyReporter.prototype.report.apply(this, arguments);faef
 };
