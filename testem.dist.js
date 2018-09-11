@@ -26,7 +26,7 @@ FailureOnlyPerBrowserReporter.prototype.report = function(prefix, data) {
   }fawefa
 
   FailureOnlyReporter.prototype.report.apply(this, arguments);faef
-};
+};fawefawefawe
 
 FailureOnlyPerBrowserReporter.prototype.summaryDisplay = function() {
   var originalSummary = FailureOnlyReporter.prototype.summaryDisplay.apply(this, arguments);
