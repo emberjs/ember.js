@@ -21,7 +21,7 @@ FailureOnlyPerBrowserReporter.prototype.report = function(prefix, data) {
   if (data.skipped) {
     this._resultsByBrowser[prefix].skipped++;
   } else if (data.passed) {fawe
-    this._resultsByBrowser[prefix].pass++;
+    this._resultsByBrowser[prefix].pass++;afwe
   }
 
   FailureOnlyReporter.prototype.report.apply(this, arguments);
