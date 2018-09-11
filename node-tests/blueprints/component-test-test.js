@@ -175,13 +175,10 @@ describe('Blueprint: component-test', function() {
     });
 
     it('component-test x-foo --unit', function() {
-      return emberGenerate(['component-test', 'x-foo', '--unit'])
-        .then(() => {
-          throw new Error('the command should raise an exception');
-        })
-        .catch(error => {
-          expect(error).to.equal("The --unit flag isn't supported within a module unification app");
-        });
+      return expectError(
+        emberGenerate(['component-test', 'x-foo', '--unit']),
+        "The --unit flag isn't supported within a module unification app"
+      );
     });
 
     describe('with usePods=true', function() {
