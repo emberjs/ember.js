@@ -72,7 +72,7 @@ moduleFor(
           assert.ok(false, 'expected handleURLing: `' + path + '` to fail');
         })
         .catch(reason => {
-          assert.equal(reason, expectedReason);
+          assert.equal(reason.message, expectedReason);
         });
     }
 
@@ -767,12 +767,12 @@ moduleFor(
         'route:special',
         Route.extend({
           setup() {
-            throw 'Setup error';
+            throw new Error('Setup error');
           },
           actions: {
             error(reason) {
               assert.equal(
-                reason,
+                reason.message,
                 'Setup error',
                 'SpecialRoute#error received the error thrown from setup'
               );
@@ -813,7 +813,7 @@ moduleFor(
           actions: {
             error(reason) {
               assert.equal(
-                reason,
+                reason.message,
                 'Setup error',
                 'error was correctly passed to custom ApplicationRoute handler'
               );
@@ -827,7 +827,7 @@ moduleFor(
         'route:special',
         Route.extend({
           setup() {
-            throw 'Setup error';
+            throw new Error('Setup error');
           },
         })
       );

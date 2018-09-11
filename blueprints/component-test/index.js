@@ -39,14 +39,14 @@ module.exports = useTestFrameworkDetector({
         },
         __testType__(options) {
           if (options.locals.testType === 'unit') {
-            throw "The --unit flag isn't supported within a module unification app";
+            throw new Error("The --unit flag isn't supported within a module unification app");
           }
 
           return '';
         },
         __path__(options) {
           if (options.pod) {
-            throw "Pods aren't supported within a module unification app";
+            throw new Error("Pods aren't supported within a module unification app");
           }
           return path.join('ui', 'components', options.dasherizedModuleName);
         },

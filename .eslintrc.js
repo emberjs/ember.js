@@ -15,6 +15,7 @@ module.exports = {
   rules: {
     'semi': 'error',
     'no-unused-vars': 'error',
+    'no-throw-literal': 'error',
     'no-useless-escape': 'off', // TODO: bring this back
     'prettier/prettier': 'error',
   },
@@ -79,6 +80,7 @@ module.exports = {
 
         'semi': 'error',
         'no-unused-vars': 'error',
+        'no-throw-literal': 'error',
         'comma-dangle': 'off',
       },
     },
@@ -134,6 +136,7 @@ module.exports = {
       rules: Object.assign({}, require('eslint-plugin-node').configs.recommended.rules, {
         // add your custom rules and overrides for node files here
         'no-process-exit': 'off',
+        'no-throw-literal': 'error'
       }),
     },
     {
