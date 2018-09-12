@@ -878,11 +878,10 @@ class Route extends EmberObject implements IRoute {
     @method setup
   */
   setup(context: {}, transition: Transition) {
-    let controller: any;
-
     let controllerName = this.controllerName || this.routeName;
     let definedController = this.controllerFor(controllerName, true);
 
+    let controller: any;
     if (definedController) {
       controller = definedController;
     } else {
@@ -1874,8 +1873,7 @@ function getQueryParamsFor(route: Route, state: TransitionState<Route>) {
   let params = (state['queryParamsFor'][name] = {});
 
   // Copy over all the query params for this route/controller into params hash.
-  let qpMeta = get(route, '_qp');
-  let qps = qpMeta.qps;
+  let qps = get(route, '_qp.qps');
   for (let i = 0; i < qps.length; ++i) {
     // Put deserialized qp on params hash.
     let qp = qps[i];
@@ -2237,9 +2235,7 @@ Route.reopen(ActionHandler, Evented, {
       let urlKey = desc.as || this.serializeQueryParamKey(propName);
       let defaultValue = get(controller, propName);
 
-      if (Array.isArray(defaultValue)) {
-        defaultValue = emberA(defaultValue.slice());
-      }
+      defaultValue = copyDefaultValue(defaultValue);
 
       let type = desc.type || typeOf(defaultValue);
 
