@@ -3,7 +3,7 @@ import { inspect } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import EmberError from '@ember/error';
 import { ComputedProperty } from './computed';
-import { getCacheFor } from './computed_cache';
+import { getCachedValueFor, getCacheFor } from './computed_cache';
 import {
   addDependentKeys,
   DescriptorWithDependentKeys,
@@ -33,33 +33,44 @@ export class AliasedProperty extends Descriptor implements DescriptorWithDepende
     assert(`Setting alias '${keyName}' on self`, this.altKey !== keyName);
     let meta = metaFor(obj);
     if (meta.peekWatching(keyName) > 0) {
-      addDependentKeys(this, obj, keyName, meta);
+      this.consume(obj, keyName, meta);
     }
   }
 
   teardown(obj: object, keyName: string, meta: Meta): void {
-    if (meta.peekWatching(keyName) > 0) {
-      removeDependentKeys(this, obj, keyName, meta);
-    }
+    this.unconsume(obj, keyName, meta);
   }
 
   willWatch(obj: object, keyName: string, meta: Meta): void {
-    addDependentKeys(this, obj, keyName, meta);
+    this.consume(obj, keyName, meta);
   }
 
   didUnwatch(obj: object, keyName: string, meta: Meta) {
-    removeDependentKeys(this, obj, keyName, meta);
+    this.unconsume(obj, keyName, meta);
   }
 
   get(obj: object, keyName: string) {
     let ret = get(obj, this.altKey);
+    this.consume(obj, keyName, metaFor(obj));
+    return ret;
+  }
+
+  unconsume(obj: object, keyName: string, meta: Meta) {
+    let wasConsumed = getCachedValueFor(obj, keyName) === CONSUMED;
+    if (wasConsumed || meta.peekWatching(keyName) > 0) {
+      removeDependentKeys(this, obj, keyName, meta);
+    }
+    if (wasConsumed) {
+      getCacheFor(obj).delete(keyName);
+    }
+  }
+
+  consume(obj: object, keyName: string, meta: Meta) {
     let cache = getCacheFor(obj);
     if (cache.get(keyName) !== CONSUMED) {
-      let meta = metaFor(obj);
       cache.set(keyName, CONSUMED);
       addDependentKeys(this, obj, keyName, meta);
     }
-    return ret;
   }
 
   set(obj: object, _keyName: string, value: any) {

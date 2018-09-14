@@ -116,5 +116,52 @@ moduleFor(
         "Setting alias 'bar' on self"
       );
     }
+
+    ['@test destroyed alias does not disturb watch count'](assert) {
+      defineProperty(obj, 'bar', alias('foo.faz'));
+
+      assert.equal(get(obj, 'bar'), 'FOO');
+      assert.ok(isWatching(obj, 'foo.faz'));
+
+      defineProperty(obj, 'bar', null);
+
+      assert.notOk(isWatching(obj, 'foo.faz'));
+    }
+
+    ['@test setting on oneWay alias does not disturb watch count'](assert) {
+      defineProperty(obj, 'bar', alias('foo.faz').oneWay());
+
+      assert.equal(get(obj, 'bar'), 'FOO');
+      assert.ok(isWatching(obj, 'foo.faz'));
+
+      set(obj, 'bar', null);
+
+      assert.notOk(isWatching(obj, 'foo.faz'));
+    }
+
+    ['@test redefined alias with observer does not disturb watch count'](assert) {
+      defineProperty(obj, 'bar', alias('foo.faz').oneWay());
+
+      assert.equal(get(obj, 'bar'), 'FOO');
+      assert.ok(isWatching(obj, 'foo.faz'));
+
+      addObserver(obj, 'bar', incrementCount);
+
+      assert.equal(count, 0);
+
+      set(obj, 'bar', null);
+
+      assert.equal(count, 1);
+      assert.notOk(isWatching(obj, 'foo.faz'));
+
+      defineProperty(obj, 'bar', alias('foo.faz'));
+
+      assert.equal(count, 1);
+      assert.ok(isWatching(obj, 'foo.faz'));
+
+      set(obj, 'foo.faz', 'great');
+
+      assert.equal(count, 2);
+    }
   }
 );
