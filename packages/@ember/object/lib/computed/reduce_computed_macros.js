@@ -832,12 +832,12 @@ function propertySort(itemsKey, sortPropertiesKey) {
       let activeObserversMap = cp._activeObserverMap || (cp._activeObserverMap = new WeakMap());
       let activeObservers = activeObserversMap.get(this);
 
-      if (activeObservers !== undefined) {
-        activeObservers.forEach(args => removeObserver(...args));
-      }
-
       function sortPropertyDidChange() {
         this.notifyPropertyChange(key);
+      }
+
+      if (activeObservers !== undefined) {
+        activeObservers.forEach(path => removeObserver(this, path, sortPropertyDidChange));
       }
 
       let itemsKeyIsAtThis = itemsKey === '@this';
@@ -845,12 +845,12 @@ function propertySort(itemsKey, sortPropertiesKey) {
       if (normalizedSortProperties.length === 0) {
         let path = itemsKeyIsAtThis ? `[]` : `${itemsKey}.[]`;
         addObserver(this, path, sortPropertyDidChange);
-        activeObservers = [[this, path, sortPropertyDidChange]];
+        activeObservers = [path];
       } else {
         activeObservers = normalizedSortProperties.map(([prop]) => {
           let path = itemsKeyIsAtThis ? `@each.${prop}` : `${itemsKey}.@each.${prop}`;
           addObserver(this, path, sortPropertyDidChange);
-          return [this, path, sortPropertyDidChange];
+          return path;
         });
       }
 
