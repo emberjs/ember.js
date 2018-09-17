@@ -79,6 +79,9 @@
 
 /**
  @module ember
+ */
+
+/**
  @class Ember.Templates.helpers
  @public
  */
