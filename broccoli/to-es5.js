@@ -62,7 +62,7 @@ module.exports = function toES5(tree, _options) {
     ['@babel/transform-computed-properties', { loose: true }],
     ['@babel/transform-shorthand-properties'],
     ['@babel/transform-block-scoping', { throwIfClosureRequired: true }],
-    ['@babel/transform-classes', { loose: true }],
+    ['@babel/transform-classes', { loose: false }],
     ['@babel/transform-proto-to-assign'],
     injectNodeGlobals,
     ['@babel/transform-modules-amd', { noInterop: true, strict: true }],
