@@ -55,6 +55,7 @@ module.exports = function toES5(tree, _options) {
       },
     ],
     ['@babel/transform-template-literals', { loose: true }],
+    ['@babel/transform-literals'],
     ['@babel/transform-arrow-functions'],
     ['@babel/transform-destructuring', { loose: true }],
     ['@babel/transform-spread', { loose: true }],
