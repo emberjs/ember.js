@@ -1,9 +1,10 @@
 import { DEBUG } from '@glimmer/env';
 
-const create = Object.create;
 const setPrototypeOf = Object.setPrototypeOf;
-const defineProperty = Object.defineProperty;
 
+/*
+  Adds `DEBUG` guard to error being thrown
+*/
 export function classCallCheck(instance, Constructor) {
   if (DEBUG && !(instance instanceof Constructor)) {
     throw new TypeError('Cannot call a class as a function');
@@ -28,29 +29,51 @@ export function inherits(subClass, superClass) {
 }
 
 export function taggedTemplateLiteralLoose(strings, raw) {
+  if (!raw) {
+    raw = strings.slice(0);
+  }
   strings.raw = raw;
   return strings;
 }
 
-function defineProperties(target, props) {
+function _defineProperties(target, props) {
   for (var i = 0; i < props.length; i++) {
     var descriptor = props[i];
     descriptor.enumerable = descriptor.enumerable || false;
     descriptor.configurable = true;
     if ('value' in descriptor) descriptor.writable = true;
-    defineProperty(target, descriptor.key, descriptor);
+    Object.defineProperty(target, descriptor.key, descriptor);
   }
 }
 
+/*
+  Differs from default implementation by avoiding boolean coercion of
+  `protoProps` and `staticProps`.
+*/
 export function createClass(Constructor, protoProps, staticProps) {
-  if (protoProps !== undefined) defineProperties(Constructor.prototype, protoProps);
-  if (staticProps !== undefined) defineProperties(Constructor, staticProps);
+  if (protoProps !== null && protoProps !== undefined) {
+    _defineProperties(Constructor.prototype, protoProps);
+  }
+
+  if (staticProps !== null && staticProps !== undefined) {
+    _defineProperties(Constructor, staticProps);
+  }
   return Constructor;
 }
 
-export const possibleConstructorReturn = function(self, call) {
-  if (DEBUG && !self) {
-    throw new ReferenceError(`this hasn't been initialized - super() hasn't been called`);
+export function assertThisInitialized(self) {
+  if (DEBUG && self === void 0) {
+    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
   }
-  return (call !== null && typeof call === 'object') || typeof call === 'function' ? call : self;
-};
+  return self;
+}
+
+/*
+  Adds `DEBUG` guard to error being thrown, and avoids boolean coercion of `call`.
+*/
+export function possibleConstructorReturn(self, call) {
+  if ((typeof call === 'object' && call !== null) || typeof call === 'function') {
+    return call;
+  }
+  return assertThisInitialized(self);
+}
