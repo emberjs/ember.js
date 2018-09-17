@@ -108,14 +108,6 @@ export function set(obj: object, keyName: string, value: any, tolerant?: boolean
 
     let cv: Descriptor = currentValue;
 
-    Object.defineProperty(obj, keyName, {
-      configurable: true,
-      enumerable: cv.enumerable === false,
-      get() {
-        return cv.get(this, keyName);
-      },
-    });
-
     meta(obj).writeDescriptors(keyName, cv);
 
     cv.setup(obj, keyName);
