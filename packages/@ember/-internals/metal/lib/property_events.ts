@@ -84,7 +84,7 @@ if (ENABLE_PROPERTY_DID_CHANGE) {
   @param {String} keyName The property key (or path) that will change.
   @param {Meta} meta The objects meta.
   @return {void}
-  @private
+  @public
 */
 function notifyPropertyChange(obj: object, keyName: string, _meta?: Meta): void {
   let meta = _meta === undefined ? peekMeta(obj) : _meta;
