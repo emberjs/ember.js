@@ -23,5 +23,5 @@ Object.keys(module.exports).forEach(key => {
     requireFile: __filename,
     useMethod: key,
   };
-  module.exports[key].baseDir = () => require.resolve('../package');
+  module.exports[key].baseDir = () => path.dirname(require.resolve('amd-name-resolver/package'));
 });
