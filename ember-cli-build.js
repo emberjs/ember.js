@@ -3,7 +3,6 @@
 const MergeTrees = require('broccoli-merge-trees');
 const Funnel = require('broccoli-funnel');
 const Rollup = require('broccoli-rollup');
-const babelHelpers = require('./broccoli/babel-helpers');
 const bootstrapModule = require('./broccoli/bootstrap-modules');
 const concatBundle = require('./broccoli/concat-bundle');
 const concat = require('broccoli-concat');
@@ -80,10 +79,6 @@ module.exports = function() {
     }
   );
 
-  let babelDebugHelpersES5 = toES5(babelHelpers('debug'), {
-    annotation: 'babel helpers debug',
-  });
-
   // Rollup
   let packagesESRollup = new MergeTrees([
     new Funnel(packagesES, {
@@ -129,7 +124,6 @@ module.exports = function() {
     loader,
     license,
     nodeModule,
-    babelDebugHelpersES5,
   ]);
 
   emberTestsBundle = concatBundle(emberTestsBundle, {
@@ -152,7 +146,6 @@ module.exports = function() {
     license,
     nodeModule,
     bootstrapModule('ember'),
-    babelDebugHelpersES5,
   ]);
 
   emberDebugBundle = concatBundle(emberDebugBundle, {
@@ -171,7 +164,6 @@ module.exports = function() {
     }),
     loader,
     license,
-    babelDebugHelpersES5,
     nodeModule,
   ]);
 
@@ -213,9 +205,6 @@ module.exports = function() {
 
   if (ENV === 'production') {
     let prodPackagesES5 = stripForProd(toES5(packagesESRollup, { environment: 'production' }));
-    let babelProdHelpersES5 = toES5(babelHelpers('prod'), {
-      environment: 'production',
-    });
 
     let emberProdBundle = new MergeTrees([
       new Funnel(prodPackagesES5, {
@@ -233,7 +222,6 @@ module.exports = function() {
       license,
       nodeModule,
       bootstrapModule('ember'),
-      babelProdHelpersES5,
     ]);
 
     emberProdBundle = concatBundle(emberProdBundle, {
@@ -259,7 +247,6 @@ module.exports = function() {
       loader,
       license,
       nodeModule,
-      babelProdHelpersES5,
     ]);
 
     emberTestsBundle = concatBundle(emberTestsBundle, {
@@ -276,7 +263,6 @@ module.exports = function() {
       stripForProd(templateCompilerDependenciesES5),
       loader,
       license,
-      babelProdHelpersES5,
       nodeModule,
     ]);
 
@@ -290,7 +276,6 @@ module.exports = function() {
       templateCompilerDependenciesES5,
       loader,
       license,
-      babelDebugHelpersES5,
       nodeModule,
     ]);
 

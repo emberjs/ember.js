@@ -9,7 +9,7 @@ function injectBabelHelpers() {
         if (name === 'extends') {
           return addNamed(file.path, 'assign', '@ember/polyfills');
         }
-        return addNamed(file.path, name, 'ember-babel');
+        return addNamed(file.path, name, '@ember/-internals/babel-helpers');
       });
     },
   };
