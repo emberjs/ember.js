@@ -27,6 +27,25 @@
     semver "^5.4.1"
     source-map "^0.5.0"
 
+"@babel/core@^7.0.1":
+  version "7.0.1"
+  resolved "https://registry.yarnpkg.com/@babel/core/-/core-7.0.1.tgz#406658caed0e9686fa4feb5c2f3cefb6161c0f41"
+  dependencies:
+    "@babel/code-frame" "^7.0.0"
+    "@babel/generator" "^7.0.0"
+    "@babel/helpers" "^7.0.0"
+    "@babel/parser" "^7.0.0"
+    "@babel/template" "^7.0.0"
+    "@babel/traverse" "^7.0.0"
+    "@babel/types" "^7.0.0"
+    convert-source-map "^1.1.0"
+    debug "^3.1.0"
+    json5 "^0.5.0"
+    lodash "^4.17.10"
+    resolve "^1.3.2"
+    semver "^5.4.1"
+    source-map "^0.5.0"
+
 "@babel/generator@^7.0.0":
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/@babel/generator/-/generator-7.0.0.tgz#1efd58bffa951dc846449e58ce3a1d7f02d393aa"
@@ -954,9 +973,9 @@ babel-plugin-minify-dead-code-elimination@^0.3.0:
     babel-helper-remove-or-void "^0.3.0"
     lodash.some "^4.6.0"
 
-babel-plugin-module-resolver@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/babel-plugin-module-resolver/-/babel-plugin-module-resolver-3.0.0.tgz#a2fe5b97f7b809a8bbac18beada0a94d45987c63"
+babel-plugin-module-resolver@^3.1.1:
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/babel-plugin-module-resolver/-/babel-plugin-module-resolver-3.1.1.tgz#881cf67e3d4b8400d5eaaefc1be44d2dc1fe404f"
   dependencies:
     find-babel-config "^1.1.0"
     glob "^7.1.2"
@@ -1558,6 +1577,23 @@ broccoli-concat@^3.2.2:
     lodash.uniq "^4.2.0"
     walk-sync "^0.3.1"
 
+broccoli-concat@^3.7.1:
+  version "3.7.1"
+  resolved "https://registry.yarnpkg.com/broccoli-concat/-/broccoli-concat-3.7.1.tgz#22ba97420b33f5254549adc5bc41163f97bd1793"
+  dependencies:
+    broccoli-debug "^0.6.4"
+    broccoli-kitchen-sink-helpers "^0.3.1"
+    broccoli-plugin "^1.3.0"
+    ensure-posix-path "^1.0.2"
+    fast-sourcemap-concat "^1.4.0"
+    find-index "^1.1.0"
+    fs-extra "^4.0.3"
+    fs-tree-diff "^0.5.7"
+    lodash.merge "^4.3.1"
+    lodash.omit "^4.1.0"
+    lodash.uniq "^4.2.0"
+    walk-sync "^0.3.2"
+
 broccoli-config-loader@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/broccoli-config-loader/-/broccoli-config-loader-1.0.1.tgz#d10aaf8ebc0cb45c1da5baa82720e1d88d28c80a"
@@ -1584,16 +1620,12 @@ broccoli-debug@^0.6.1, broccoli-debug@^0.6.2, broccoli-debug@^0.6.3, broccoli-de
     symlink-or-copy "^1.1.8"
     tree-sync "^1.2.2"
 
-broccoli-file-creator@^1.1.1:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/broccoli-file-creator/-/broccoli-file-creator-1.1.1.tgz#1b35b67d215abdfadd8d49eeb69493c39e6c3450"
+broccoli-file-creator@^2.1.1:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/broccoli-file-creator/-/broccoli-file-creator-2.1.1.tgz#7351dd2496c762cfce7736ce9b49e3fce0c7b7db"
   dependencies:
-    broccoli-kitchen-sink-helpers "~0.2.0"
     broccoli-plugin "^1.1.0"
-    broccoli-writer "~0.1.1"
     mkdirp "^0.5.1"
-    rsvp "~3.0.6"
-    symlink-or-copy "^1.0.1"
 
 broccoli-filter@^0.1.6:
   version "0.1.14"
@@ -1649,7 +1681,7 @@ broccoli-funnel@^2.0.0, broccoli-funnel@^2.0.1:
     symlink-or-copy "^1.0.0"
     walk-sync "^0.3.1"
 
-broccoli-kitchen-sink-helpers@^0.2.5, broccoli-kitchen-sink-helpers@^0.2.6, broccoli-kitchen-sink-helpers@~0.2.0:
+broccoli-kitchen-sink-helpers@^0.2.5, broccoli-kitchen-sink-helpers@^0.2.6:
   version "0.2.9"
   resolved "https://registry.yarnpkg.com/broccoli-kitchen-sink-helpers/-/broccoli-kitchen-sink-helpers-0.2.9.tgz#a5e0986ed8d76fb5984b68c3f0450d3a96e36ecc"
   dependencies:
@@ -1683,7 +1715,7 @@ broccoli-merge-trees@^2.0.0:
     broccoli-plugin "^1.3.0"
     merge-trees "^1.0.1"
 
-broccoli-merge-trees@^3.0.0:
+broccoli-merge-trees@^3.0.0, broccoli-merge-trees@^3.0.1:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/broccoli-merge-trees/-/broccoli-merge-trees-3.0.1.tgz#545dfe9f695cec43372b3ee7e63c7203713ea554"
   dependencies:
@@ -1732,6 +1764,24 @@ broccoli-persistent-filter@^1.1.5, broccoli-persistent-filter@^1.1.6, broccoli-p
     symlink-or-copy "^1.0.1"
     walk-sync "^0.3.1"
 
+broccoli-persistent-filter@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/broccoli-persistent-filter/-/broccoli-persistent-filter-2.0.0.tgz#6b0de3c5f6d282a9f23bf57dc5b1b7f2eb9a560e"
+  dependencies:
+    async-disk-cache "^1.2.1"
+    async-promise-queue "^1.0.3"
+    broccoli-plugin "^1.0.0"
+    fs-tree-diff "^0.5.2"
+    hash-for-dep "^1.0.2"
+    heimdalljs "^0.2.1"
+    heimdalljs-logger "^0.1.7"
+    mkdirp "^0.5.1"
+    promise-map-series "^0.2.1"
+    rimraf "^2.6.1"
+    rsvp "^4.7.0"
+    symlink-or-copy "^1.0.1"
+    walk-sync "^0.3.1"
+
 broccoli-plugin@1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/broccoli-plugin/-/broccoli-plugin-1.1.0.tgz#73e2cfa05f8ea1e3fc1420c40c3d9e7dc724bf02"
@@ -1759,9 +1809,9 @@ broccoli-plugin@^1.3.1:
     rimraf "^2.3.4"
     symlink-or-copy "^1.1.8"
 
-broccoli-rollup@^2.1.0:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/broccoli-rollup/-/broccoli-rollup-2.1.0.tgz#94d703625c24dbad2e57789508f63ccfcbb13c00"
+broccoli-rollup@^2.1.1:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/broccoli-rollup/-/broccoli-rollup-2.1.1.tgz#0b77dc4b7560a53e998ea85f3b56772612d4988d"
   dependencies:
     "@types/node" "^9.6.0"
     amd-name-resolver "^1.2.0"
@@ -1831,9 +1881,9 @@ broccoli-uglify-js@^0.2.0:
     broccoli-filter "^0.1.6"
     uglify-js "~2.6.2"
 
-broccoli-uglify-sourcemap@^2.0.2:
-  version "2.1.1"
-  resolved "https://registry.yarnpkg.com/broccoli-uglify-sourcemap/-/broccoli-uglify-sourcemap-2.1.1.tgz#33005537e18a322a181a5aea3e46d145b3355630"
+broccoli-uglify-sourcemap@^2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/broccoli-uglify-sourcemap/-/broccoli-uglify-sourcemap-2.2.0.tgz#2ff49389bdf342a550c3596750ba2dde95a8f7d4"
   dependencies:
     async-promise-queue "^1.0.4"
     broccoli-plugin "^1.2.1"
@@ -1843,11 +1893,11 @@ broccoli-uglify-sourcemap@^2.0.2:
     mkdirp "^0.5.0"
     source-map-url "^0.4.0"
     symlink-or-copy "^1.0.1"
-    uglify-es "^3.1.3"
+    terser "^3.7.5"
     walk-sync "^0.3.2"
     workerpool "^2.3.0"
 
-broccoli-writer@^0.1.1, broccoli-writer@~0.1.1:
+broccoli-writer@^0.1.1:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/broccoli-writer/-/broccoli-writer-0.1.1.tgz#d4d71aa8f2afbc67a3866b91a2da79084b96ab2d"
   dependencies:
@@ -2286,9 +2336,13 @@ commander@2.9.0:
   dependencies:
     graceful-readlink ">= 1.0.0"
 
-commander@^2.12.1, commander@~2.13.0:
+commander@^2.12.1:
   version "2.13.0"
   resolved "https://registry.yarnpkg.com/commander/-/commander-2.13.0.tgz#6964bca67685df7c1f1430c584f07d7597885b9c"
+
+commander@~2.17.1:
+  version "2.17.1"
+  resolved "https://registry.yarnpkg.com/commander/-/commander-2.17.1.tgz#bd77ab7de6de94205ceacc72f1716d29f20a77bf"
 
 common-tags@^1.7.2:
   version "1.7.2"
@@ -3544,6 +3598,19 @@ fast-sourcemap-concat@^1.0.1:
     source-map "^0.4.2"
     source-map-url "^0.3.0"
     sourcemap-validator "^1.0.5"
+
+fast-sourcemap-concat@^1.4.0:
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/fast-sourcemap-concat/-/fast-sourcemap-concat-1.4.0.tgz#122c330d4a2afaff16ad143bc9674b87cd76c8ad"
+  dependencies:
+    chalk "^2.0.0"
+    fs-extra "^5.0.0"
+    heimdalljs-logger "^0.1.9"
+    memory-streams "^0.1.3"
+    mkdirp "^0.5.0"
+    source-map "^0.4.2"
+    source-map-url "^0.3.0"
+    sourcemap-validator "^1.1.0"
 
 faye-websocket@~0.10.0:
   version "0.10.0"
@@ -5202,6 +5269,10 @@ lodash.merge@^4.3.0, lodash.merge@^4.6.0:
   version "4.6.0"
   resolved "https://registry.yarnpkg.com/lodash.merge/-/lodash.merge-4.6.0.tgz#69884ba144ac33fe699737a6086deffadd0f89c5"
 
+lodash.merge@^4.3.1:
+  version "4.6.1"
+  resolved "https://registry.yarnpkg.com/lodash.merge/-/lodash.merge-4.6.1.tgz#adc25d9cb99b9391c59624f379fbba60d7111d54"
+
 lodash.noop@~2.3.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/lodash.noop/-/lodash.noop-2.3.0.tgz#3059d628d51bbf937cd2a0b6fc3a7f212a669c2c"
@@ -5427,6 +5498,12 @@ mem@^1.1.0:
 memory-streams@^0.1.0:
   version "0.1.2"
   resolved "https://registry.yarnpkg.com/memory-streams/-/memory-streams-0.1.2.tgz#273ff777ab60fec599b116355255282cca2c50c2"
+  dependencies:
+    readable-stream "~1.0.2"
+
+memory-streams@^0.1.3:
+  version "0.1.3"
+  resolved "https://registry.yarnpkg.com/memory-streams/-/memory-streams-0.1.3.tgz#d9b0017b4b87f1d92f55f2745c9caacb1dc93ceb"
   dependencies:
     readable-stream "~1.0.2"
 
@@ -6726,10 +6803,6 @@ rsvp@^4.8.3:
   version "4.8.4"
   resolved "https://registry.yarnpkg.com/rsvp/-/rsvp-4.8.4.tgz#b50e6b34583f3dd89329a2f23a8a2be072845911"
 
-rsvp@~3.0.6:
-  version "3.0.21"
-  resolved "https://registry.yarnpkg.com/rsvp/-/rsvp-3.0.21.tgz#49c588fe18ef293bcd0ab9f4e6756e6ac433359f"
-
 rsvp@~3.2.1:
   version "3.2.1"
   resolved "https://registry.yarnpkg.com/rsvp/-/rsvp-3.2.1.tgz#07cb4a5df25add9e826ebc67dcc9fd89db27d84a"
@@ -7106,6 +7179,13 @@ source-map-support@^0.4.15:
   dependencies:
     source-map "^0.5.6"
 
+source-map-support@~0.5.6:
+  version "0.5.9"
+  resolved "https://registry.yarnpkg.com/source-map-support/-/source-map-support-0.5.9.tgz#41bc953b2534267ea2d605bccfa7bfa3111ced5f"
+  dependencies:
+    buffer-from "^1.0.0"
+    source-map "^0.6.0"
+
 source-map-url@^0.3.0:
   version "0.3.0"
   resolved "https://registry.yarnpkg.com/source-map-url/-/source-map-url-0.3.0.tgz#7ecaf13b57bcd09da8a40c5d269db33799d4aaf9"
@@ -7124,15 +7204,15 @@ source-map@^0.5.0, source-map@^0.5.6, source-map@~0.5.0, source-map@~0.5.1:
   version "0.5.7"
   resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.5.7.tgz#8a039d2d1021d22d1ea14c80d8ea468ba2ef3fcc"
 
+source-map@^0.6.0, source-map@~0.6.1:
+  version "0.6.1"
+  resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.6.1.tgz#74722af32e9614e9c287a8d0bbde48b5e2f1a263"
+
 source-map@~0.1.x:
   version "0.1.43"
   resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.1.43.tgz#c24bc146ca517c1471f5dacbe2571b2b7f9e3346"
   dependencies:
     amdefine ">=0.0.4"
-
-source-map@~0.6.1:
-  version "0.6.1"
-  resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.6.1.tgz#74722af32e9614e9c287a8d0bbde48b5e2f1a263"
 
 sourcemap-codec@^1.4.1:
   version "1.4.1"
@@ -7141,6 +7221,15 @@ sourcemap-codec@^1.4.1:
 sourcemap-validator@^1.0.5:
   version "1.0.6"
   resolved "https://registry.yarnpkg.com/sourcemap-validator/-/sourcemap-validator-1.0.6.tgz#abd2f1ecdae6a3c46c2c96c5f256705b2147c9c0"
+  dependencies:
+    jsesc "~0.3.x"
+    lodash.foreach "~2.3.x"
+    lodash.template "~2.3.x"
+    source-map "~0.1.x"
+
+sourcemap-validator@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/sourcemap-validator/-/sourcemap-validator-1.1.0.tgz#00454547d1682186e1498a7208e022e8dfa8738f"
   dependencies:
     jsesc "~0.3.x"
     lodash.foreach "~2.3.x"
@@ -7410,6 +7499,14 @@ temp@0.8.3:
   dependencies:
     os-tmpdir "^1.0.0"
     rimraf "~2.2.6"
+
+terser@^3.7.5:
+  version "3.8.2"
+  resolved "https://registry.yarnpkg.com/terser/-/terser-3.8.2.tgz#48b880f949f8d038aca4dfd00a37c53d96ecf9fb"
+  dependencies:
+    commander "~2.17.1"
+    source-map "~0.6.1"
+    source-map-support "~0.5.6"
 
 testdouble@^3.2.6:
   version "3.3.1"
@@ -7708,13 +7805,6 @@ typescript@~3.0.1:
 uc.micro@^1.0.0, uc.micro@^1.0.1, uc.micro@^1.0.3:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/uc.micro/-/uc.micro-1.0.3.tgz#7ed50d5e0f9a9fb0a573379259f2a77458d50192"
-
-uglify-es@^3.1.3:
-  version "3.3.9"
-  resolved "https://registry.yarnpkg.com/uglify-es/-/uglify-es-3.3.9.tgz#0c1c4f0700bed8dbc124cdb304d2592ca203e677"
-  dependencies:
-    commander "~2.13.0"
-    source-map "~0.6.1"
 
 uglify-js@^2.6:
   version "2.8.29"
