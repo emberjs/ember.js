@@ -15,9 +15,10 @@ module.exports = function processModulesOnly(tree, annotation) {
       ['@babel/transform-modules-amd', { noInterop: true, strict: true }],
       enifed,
     ],
-    moduleIds: true,
+    moduleId: true,
     annotation,
-    sourceMaps: true,
+    inputSourceMap: false,
+    sourceMaps: 'inline',
   };
 
   return new Babel(tree, options);

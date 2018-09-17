@@ -18,8 +18,9 @@ module.exports = function toES5(tree, _options) {
 
   let isDebug = options.environment !== 'production';
 
-  options.moduleIds = true;
-  options.sourceMaps = true;
+  options.moduleId = true;
+  options.inputSourceMap = false;
+  options.sourceMaps = 'inline';
   options.plugins = [
     injectBabelHelpers,
     ['module-resolver', { resolvePath: resolveRelativeModulePath }],
