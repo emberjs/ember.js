@@ -11,21 +11,27 @@ export function classCallCheck(instance, Constructor) {
   }
 }
 
-export function inherits(subClass, superClass) {
+/*
+  Overrides default `inheritsLoose` to _also_ call `Object.setPrototypeOf`.
+  This is needed so that we can use `loose` option with the
+  `@babel/plugin-transform-classes` (because we want simple assignment to the
+  prototype whereever possible) but also keep our constructor based prototypal
+  inheritance working properly
+*/
+export function inheritsLoose(subClass, superClass) {
   if (DEBUG && typeof superClass !== 'function' && superClass !== null) {
-    throw new TypeError(
-      'Super expression must either be null or a function, not ' + typeof superClass
-    );
+    throw new TypeError('Super expression must either be null or a function');
   }
-  subClass.prototype = create(superClass === null ? null : superClass.prototype, {
+  subClass.prototype = Object.create(superClass === null ? null : superClass.prototype, {
     constructor: {
       value: subClass,
-      enumerable: false,
       writable: true,
       configurable: true,
     },
   });
-  if (superClass !== null) setPrototypeOf(subClass, superClass);
+  if (superClass !== null) {
+    setPrototypeOf(subClass, superClass);
+  }
 }
 
 export function taggedTemplateLiteralLoose(strings, raw) {
