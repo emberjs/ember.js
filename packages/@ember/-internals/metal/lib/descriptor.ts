@@ -1,3 +1,4 @@
+import { Meta } from '@ember/-internals/meta';
 import { Descriptor } from './properties';
 
 export default function descriptor(desc: PropertyDescriptor) {
@@ -22,8 +23,9 @@ class NativeDescriptor extends Descriptor {
     this.configurable = desc.configurable !== false;
   }
 
-  setup(obj: object, key: string) {
+  setup(obj: object, key: string, meta: Meta) {
     Object.defineProperty(obj, key, this.desc);
+    meta.writeDescriptors(key, this);
   }
 
   get(obj: object, key: string): any | null | undefined {
