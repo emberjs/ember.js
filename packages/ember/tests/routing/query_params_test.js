@@ -1575,5 +1575,55 @@ moduleFor(
         assert.equal(get(controller, 'foo'), '999');
       });
     }
+
+    ['@test Route queryparams correctly normalized'](assert) {
+      assert.expect(2);
+
+      this.router.map(function() {
+        this.route('constructor');
+      });
+
+      this.add(
+        'route:constructor',
+        Route.extend({
+          queryParams: {
+            foo: 'bar',
+            bar: 'boom',
+          },
+        })
+      );
+
+      return this.visit('/').then(() => {
+        this.transitionTo('constructor', { queryParams: { foo: '321' } });
+        this.assertCurrentPath('/constructor?bar=321');
+        this.transitionTo('constructor', { queryParams: { foo: '321', bar: 'apple' } });
+        this.assertCurrentPath('/constructor?bar=321&boom=apple');
+      });
+    }
+
+    ['@test Controller queryparams correctly normalized'](assert) {
+      assert.expect(2);
+
+      this.router.map(function() {
+        this.route('constructor');
+      });
+
+      this.add(
+        'controller:constructor',
+        Controller.extend({
+          queryParams: {
+            foo: 'bar',
+            bar: 'boom',
+          },
+        })
+      );
+
+      return this.visit('/').then(() => {
+        this.transitionTo('constructor', { queryParams: { foo: '321' } });
+        this.assertCurrentPath('/constructor?bar=321');
+        this.transitionTo('constructor', { queryParams: { foo: '321', bar: 'apple' } });
+        this.assertCurrentPath('/constructor?bar=321&boom=apple');
+      });
+    }
   }
 );

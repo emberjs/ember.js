@@ -134,14 +134,21 @@ export function calculateCacheKey(prefix, parts = [], values) {
       }
     ]
 
+  Object
+    queryParams: { foo: 'foo', bar: 'bar' }
+
   This helper normalizes all three possible styles into the
   'Array of fully defined objects' style.
 */
-export function normalizeControllerQueryParams(queryParams) {
+export function normalizeQueryParamConfig(queryParams) {
   let qpMap = {};
 
-  for (let i = 0; i < queryParams.length; ++i) {
-    accumulateQueryParamDescriptors(queryParams[i], qpMap);
+  if (Array.isArray(queryParams)) {
+    for (let i = 0; i < queryParams.length; ++i) {
+      accumulateQueryParamDescriptors(queryParams[i], qpMap);
+    }
+  } else if (typeof queryParams === 'object' && queryParams !== null) {
+    accumulateQueryParamDescriptors(queryParams, qpMap);
   }
 
   return qpMap;
@@ -152,7 +159,7 @@ function accumulateQueryParamDescriptors(_desc, accum) {
   let tmp;
   if (typeof desc === 'string') {
     tmp = {};
-    tmp[desc] = { as: null };
+    tmp[desc] = {};
     desc = tmp;
   }
 
@@ -166,7 +173,7 @@ function accumulateQueryParamDescriptors(_desc, accum) {
       singleDesc = { as: singleDesc };
     }
 
-    tmp = accum[key] || { as: null, scope: 'model' };
+    tmp = accum[key] || { scope: 'model' };
     assign(tmp, singleDesc);
 
     accum[key] = tmp;

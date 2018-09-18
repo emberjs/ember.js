@@ -24,7 +24,7 @@ import {
 import generateController from './generate_controller';
 import {
   stashParamNames,
-  normalizeControllerQueryParams,
+  normalizeQueryParamConfig,
   calculateCacheKey,
   prefixRouteNameArg,
 } from '../utils';
@@ -179,41 +179,25 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
     @property _qp
   */
   _qp: computed(function() {
-    let combinedQueryParameterConfiguration;
-
     let controllerName = this.controllerName || this.routeName;
     let owner = getOwner(this);
     let controller = owner.lookup(`controller:${controllerName}`);
-    let queryParameterConfiguraton = get(this, 'queryParams');
-    let hasRouterDefinedQueryParams = Object.keys(queryParameterConfiguraton).length > 0;
 
-    if (controller) {
-      // the developer has authored a controller class in their application for
-      // this route find its query params and normalize their object shape them
-      // merge in the query params for the route. As a mergedProperty,
-      // Route#queryParams is always at least `{}`
-
-      let controllerDefinedQueryParameterConfiguration = get(controller, 'queryParams') || {};
-      let normalizedControllerQueryParameterConfiguration = normalizeControllerQueryParams(
-        controllerDefinedQueryParameterConfiguration
-      );
-      combinedQueryParameterConfiguration = mergeEachQueryParams(
-        normalizedControllerQueryParameterConfiguration,
-        queryParameterConfiguraton
-      );
-    } else if (hasRouterDefinedQueryParams) {
-      // the developer has not defined a controller but *has* supplied route query params.
-      // Generate a class for them so we can later insert default values
-      controller = generateController(owner, controllerName);
-      combinedQueryParameterConfiguration = queryParameterConfiguraton;
-    }
+    let controllerQueryParamConfig = normalizeQueryParamConfig(
+      controller ? get(controller, 'queryParams') : undefined
+    );
+    let routeQueryParamConfig = normalizeQueryParamConfig(get(this, 'queryParams'));
+    let combinedQueryParamConfig = mergeEachQueryParams(
+      controllerQueryParamConfig,
+      routeQueryParamConfig
+    );
 
     let qps = [];
     let map = {};
     let propertyNames = [];
 
-    for (let propName in combinedQueryParameterConfiguration) {
-      if (!combinedQueryParameterConfiguration.hasOwnProperty(propName)) {
+    for (let propName in combinedQueryParamConfig) {
+      if (!combinedQueryParamConfig.hasOwnProperty(propName)) {
         continue;
       }
 
@@ -224,7 +208,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
         continue;
       }
 
-      let desc = combinedQueryParameterConfiguration[propName];
+      let desc = combinedQueryParamConfig[propName];
       let scope = desc.scope || 'model';
       let parts;
 
@@ -233,7 +217,7 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
       }
 
       let urlKey = desc.as || this.serializeQueryParamKey(propName);
-      let defaultValue = get(controller, propName);
+      let defaultValue = controller ? get(controller, propName) : undefined;
 
       if (Array.isArray(defaultValue)) {
         defaultValue = emberA(defaultValue.slice());
@@ -244,8 +228,8 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
       let defaultValueSerialized = this.serializeQueryParam(defaultValue, urlKey, type);
       let scopedPropertyName = `${controllerName}:${propName}`;
       let qp = {
-        undecoratedDefaultValue: get(controller, propName),
         defaultValue,
+        undecoratedDefaultValue: controller ? get(controller, propName) : undefined,
         serializedDefaultValue: defaultValueSerialized,
         serializedValue: defaultValueSerialized,
 
@@ -1886,7 +1870,6 @@ let Route = EmberObject.extend(ActionHandler, Evented, {
   */
   generateController(name) {
     let owner = getOwner(this);
-
     return generateController(owner, name);
   },
 
@@ -2438,30 +2421,25 @@ function mergeEachQueryParams(controllerQP, routeQP) {
 
   // first loop over all controller qps, merging them with any matching route qps
   // into a new empty object to avoid mutating.
-  for (let cqpName in controllerQP) {
-    if (!controllerQP.hasOwnProperty(cqpName)) {
+  for (let key in controllerQP) {
+    if (!controllerQP.hasOwnProperty(key)) {
       continue;
     }
 
-    let newControllerParameterConfiguration = {};
-    assign(newControllerParameterConfiguration, controllerQP[cqpName], routeQP[cqpName]);
-
-    qps[cqpName] = newControllerParameterConfiguration;
+    qps[key] = assign({}, controllerQP[key], routeQP[key]);
 
     // allows us to skip this QP when we check route QPs.
-    keysAlreadyMergedOrSkippable[cqpName] = true;
+    keysAlreadyMergedOrSkippable[key] = true;
   }
 
   // loop over all route qps, skipping those that were merged in the first pass
   // because they also appear in controller qps
-  for (let rqpName in routeQP) {
-    if (!routeQP.hasOwnProperty(rqpName) || keysAlreadyMergedOrSkippable[rqpName]) {
+  for (let key in routeQP) {
+    if (!routeQP.hasOwnProperty(key) || keysAlreadyMergedOrSkippable[key]) {
       continue;
     }
 
-    let newRouteParameterConfiguration = {};
-    assign(newRouteParameterConfiguration, routeQP[rqpName], controllerQP[rqpName]);
-    qps[rqpName] = newRouteParameterConfiguration;
+    qps[key] = assign({}, routeQP[key]);
   }
 
   return qps;
