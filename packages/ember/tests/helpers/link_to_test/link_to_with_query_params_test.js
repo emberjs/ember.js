@@ -605,6 +605,49 @@ moduleFor(
         });
     }
 
+    ['@test link-to with dynamic segment and loading route regression test'](assert) {
+      this.router.map(function() {
+        this.route('foo', { path: ':foo' }, function() {
+          this.route('bar', function() {
+            this.route('baz');
+          });
+        });
+      });
+
+      this.addTemplate(
+        'foo.bar',
+        `
+      {{link-to 'Baz' 'foo.bar.baz' id='baz-link'}}
+    `
+      );
+
+      this.addTemplate('foo.bar.loading', 'Loading');
+
+      this.add(
+        'controller:foo.bar',
+        Controller.extend({
+          queryParams: ['qux'],
+          qux: null,
+        })
+      );
+
+      this.add(
+        'route:foo.bar.baz',
+        Route.extend({
+          model() {
+            return new RSVP.Promise(resolve => {
+              setTimeout(resolve, 1);
+            });
+          },
+        })
+      );
+
+      return this.visit('/foo/bar/baz?qux=abc').then(() => {
+        let bazLink = this.$('#baz-link');
+        assert.equal(bazLink.attr('href'), '/foo/bar/baz?qux=abc');
+      });
+    }
+
     ['@test link-to default query params while in active transition regression test'](assert) {
       this.router.map(function() {
         this.route('foos');
