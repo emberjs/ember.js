@@ -260,34 +260,205 @@ moduleFor(
         .then(() => {
           assert.equal(this.routerService.get('currentURL'), '/child?sort=ASC');
         });
-    }
+      }
 
-    ['@test RouterService#transitionTo passing only queryParams works'](assert) {
-      assert.expect(2);
+      ['@test RouterService#transitionTo with basic query params does not remove query param defaults'](
+        assert
+      ) {
+        assert.expect(1);
 
-      this.add(
-        'controller:parent.child',
-        Controller.extend({
-          queryParams: ['sort'],
-        })
-      );
+        this.add(
+          'controller:parent.child',
+          Controller.extend({
+            queryParams: ['sort'],
+            sort: 'ASC',
+          })
+        );
 
-      let queryParams = this.buildQueryParams({ sort: 'DESC' });
+        let queryParams = this.buildQueryParams({ sort: 'ASC' });
 
-      return this.visit('/')
-        .then(() => {
-          return this.routerService.transitionTo('parent.child');
-        })
-        .then(() => {
-          assert.equal(this.routerService.get('currentURL'), '/child');
-        })
-        .then(() => {
-          return this.routerService.transitionTo(queryParams);
-        })
-        .then(() => {
-          assert.equal(this.routerService.get('currentURL'), '/child?sort=DESC');
-        });
-    }
+        return this.visit('/')
+          .then(() => {
+            return this.routerService.transitionTo('parent.child', queryParams);
+          })
+          .then(() => {
+            assert.equal(this.routerService.get('currentURL'), '/child?sort=ASC');
+          });
+      }
+
+      ['@test RouterService#transitionTo passing only queryParams works'](assert) {
+        assert.expect(2);
+
+        this.add(
+          'controller:parent.child',
+          Controller.extend({
+            queryParams: ['sort'],
+          })
+        );
+
+        let queryParams = this.buildQueryParams({ sort: 'DESC' });
+
+        return this.visit('/')
+          .then(() => {
+            return this.routerService.transitionTo('parent.child');
+          })
+          .then(() => {
+            assert.equal(this.routerService.get('currentURL'), '/child');
+          })
+          .then(() => {
+            return this.routerService.transitionTo(queryParams);
+          })
+          .then(() => {
+            assert.equal(this.routerService.get('currentURL'), '/child?sort=DESC');
+          });
+      }
+
+      ['@test RouterService#transitionTo with unspecified query params'](assert) {
+        assert.expect(1);
+
+        this.add(
+          'controller:parent.child',
+          Controller.extend({
+            queryParams: ['sort', 'page', 'category', 'extra'],
+            sort: 'ASC',
+            page: null,
+            category: undefined,
+          })
+        );
+
+        let queryParams = this.buildQueryParams({ sort: 'ASC' });
+
+        return this.visit('/')
+          .then(() => {
+            return this.routerService.transitionTo('parent.child', queryParams);
+          })
+          .then(() => {
+            assert.equal(this.routerService.get('currentURL'), '/child?sort=ASC');
+          });
+      }
+
+      ['@test RouterService#transitionTo with queryParams shared across routes using controllerName and no params passed'](
+        assert
+      ) {
+        this.add(
+          'controller:parent',
+          Controller.extend({
+            queryParams: ['foo'],
+          })
+        );
+
+        this.add(
+          'route:parent.child',
+          Route.extend({
+            controllerName: 'parent',
+          })
+        );
+
+        return this.visit('/')
+          .then(() => {
+            return this.routerService.transitionTo('parent.child');
+          })
+          .then(() => {
+            assert.equal(this.routerService.get('currentURL'), '/child');
+          });
+      }
+
+      ['@test RouterService#transitionTo with queryParams shared across routes using controllerName and some params passed'](
+        assert
+      ) {
+        this.add(
+          'controller:parent',
+          Controller.extend({
+            queryParams: ['foo', 'bar'],
+          })
+        );
+
+        this.add(
+          'route:parent.child',
+          Route.extend({
+            controllerName: 'parent',
+          })
+        );
+
+        return this.visit('/')
+          .then(() => {
+            return this.routerService.transitionTo('parent.child', {
+              queryParams: { foo: '123' },
+            });
+          })
+          .then(() => {
+            assert.equal(this.routerService.get('currentURL'), '/child?foo=123');
+          });
+      }
+
+      ['@test RouterService#transitionTo with queryParams shared across routes using controllerName and all params passed'](
+        assert
+      ) {
+        this.add(
+          'controller:parent',
+          Controller.extend({
+            queryParams: ['foo', 'bar'],
+          })
+        );
+
+        this.add(
+          'route:parent.child',
+          Route.extend({
+            controllerName: 'parent',
+          })
+        );
+
+        return this.visit('/')
+          .then(() => {
+            return this.routerService.transitionTo('parent.child', {
+              queryParams: { foo: '123', bar: '456' },
+            });
+          })
+          .then(() => {
+            assert.equal(this.routerService.get('currentURL'), '/child?foo=123&bar=456');
+          });
+      }
+
+      ['@test RouterService#transitionTo with aliased query params uses the original provided key'](
+        assert
+      ) {
+        assert.expect(1);
+
+        this.add(
+          'controller:parent.child',
+          Controller.extend({
+            queryParams: {
+              cont_sort: 'url_sort',
+            },
+            cont_sort: 'ASC',
+          })
+        );
+
+        let queryParams = this.buildQueryParams({ url_sort: 'ASC' });
+
+        return this.visit('/')
+          .then(() => {
+            return this.routerService.transitionTo('parent.child', queryParams);
+          })
+          .then(() => {
+            assert.equal(this.routerService.get('currentURL'), '/child?url_sort=ASC');
+          });
+      }
+
+      ['@test RouterService#transitionTo with aliased query params uses the original provided key when controller property name'](
+        assert
+      ) {
+        assert.expect(1);
+
+        this.add(
+          'controller:parent.child',
+          Controller.extend({
+            queryParams: {
+              cont_sort: 'url_sort',
+            },
+            cont_sort: 'ASC',
+          })
+        );
 
     ['@test RouterService#transitionTo with unspecified query params'](assert) {
       assert.expect(1);
