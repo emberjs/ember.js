@@ -2,7 +2,7 @@
   "compilerOptions": {
     // Compilation Configuration
     "target": "es2017",
-    "sourceMap": true,
+    "sourceMap": false,
     "outDir": "dist",
     "baseUrl": "packages",
     "rootDir": "packages",

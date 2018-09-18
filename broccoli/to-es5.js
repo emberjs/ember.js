@@ -19,7 +19,7 @@ module.exports = function toES5(tree, _options) {
   let isDebug = options.environment !== 'production';
 
   options.moduleId = true;
-  options.inputSourceMap = false;
+  options.inputSourceMap = true;
   options.sourceMaps = 'inline';
   options.plugins = [
     injectBabelHelpers,

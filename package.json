@@ -145,6 +145,7 @@
     "semver": "^5.5.0",
     "serve-static": "^1.12.2",
     "simple-dom": "^0.3.0",
+    "sourcemap-validator": "^1.1.0",
     "testem": "^1.18.4",
     "tslint": "^5.9.1",
     "tslint-config-prettier": "^1.10.0",

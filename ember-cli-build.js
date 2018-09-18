@@ -347,6 +347,7 @@ function rollupPackage(packagesES, name) {
         return true;
       },
       output: {
+        sourcemap: 'inline',
         file: `${name}.js`,
         format: 'es',
         exports: 'named',

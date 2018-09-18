@@ -25,6 +25,7 @@ module.exports.routerES = function _routerES() {
       external: ['route-recognizer', 'rsvp'],
       input: 'index.js',
       output: {
+        sourcemap: 'inline',
         file: 'router.js',
         format: 'es',
       },
@@ -111,6 +112,7 @@ module.exports.handlebarsES = function _handlebars() {
     rollup: {
       input: 'handlebars/compiler/base.js',
       output: {
+        sourcemap: false,
         file: 'handlebars.js',
         format: 'es',
         exports: 'named',
@@ -145,6 +147,7 @@ module.exports.rsvpES = function _rsvpES() {
     rollup: {
       input: 'rsvp.js',
       output: {
+        sourcemap: 'inline',
         file: 'rsvp.js',
         format: 'es',
         exports: 'named',
@@ -196,6 +199,7 @@ module.exports.simpleHTMLTokenizerES = function _simpleHTMLTokenizerES() {
     rollup: {
       input: moduleInfo.base,
       output: {
+        sourcemap: 'inline',
         file: 'simple-html-tokenizer.js',
         format: 'es',
         exports: 'named',
@@ -215,6 +219,7 @@ function rollupGlimmerPackage(pkg) {
         input: pkg.module.base,
         external: pkg.dependencies,
         output: {
+          sourcemap: 'inline',
           file: name + '.js',
           format: 'es',
         },
