@@ -1015,10 +1015,14 @@ const ArrayMixin = Mixin.create(Enumerable, {
   },
 
   /**
-    Converts the array into an array and sorts by the keys
-    specified in the argument.
+    Sorts the array by the keys specified in the argument.
 
     You may provide multiple arguments to sort by multiple properties.
+
+    ```javascript
+   let colors = [{name: 'red'}, {name: 'green'}, {name: 'blue'}];
+   colors.sortBy('name'); // [{name: 'blue'}, {name: 'green'}, {name: 'red'}]
+    ```
 
     @method sortBy
     @param {String} property name(s) to sort on
