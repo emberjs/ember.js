@@ -1,18 +1,19 @@
-import { getOwner } from '@ember/-internals/owner';
-import { tryInvoke } from '@ember/-internals/utils';
+import { history, location, userAgent, window } from '@ember/-internals/browser-environment';
 import { get, set } from '@ember/-internals/metal';
-import { assert } from '@ember/debug';
+import { getOwner } from '@ember/-internals/owner';
 import { Object as EmberObject } from '@ember/-internals/runtime';
-import { location, history, window, userAgent } from '@ember/-internals/browser-environment';
+import { tryInvoke } from '@ember/-internals/utils';
+import { assert } from '@ember/debug';
 
+import { EmberLocation, UpdateCallback } from './api';
 import {
+  getFullPath,
+  getHash,
+  getPath,
+  getQuery,
+  replacePath,
   supportsHashChange,
   supportsHistory,
-  getPath,
-  getHash,
-  getQuery,
-  getFullPath,
-  replacePath,
 } from './util';
 
 /**
@@ -62,7 +63,78 @@ import {
   @static
   @protected
 */
-export default EmberObject.extend({
+export default class AutoLocation extends EmberObject implements EmberLocation {
+  cancelRouterSetup?: boolean | undefined;
+  getURL!: () => string;
+  setURL!: (url: string) => void;
+  onUpdateURL!: (callback: UpdateCallback) => void;
+  formatURL!: (url: string) => string;
+
+  implementation = 'auto';
+  /**
+   Called by the router to instruct the location to do any feature detection
+   necessary. In the case of AutoLocation, we detect whether to use history
+   or hash concrete implementations.
+
+   @private
+  */
+  detect() {
+    let rootURL = this.rootURL;
+
+    assert(
+      'rootURL must end with a trailing forward slash e.g. "/app/"',
+      rootURL.charAt(rootURL.length - 1) === '/'
+    );
+
+    let implementation = detectImplementation({
+      location: this.location,
+      history: this.history,
+      userAgent: this.userAgent,
+      rootURL,
+      documentMode: this.documentMode,
+      global: this.global,
+    });
+
+    if (implementation === false) {
+      set(this, 'cancelRouterSetup', true);
+      implementation = 'none';
+    }
+
+    let concrete = getOwner(this).lookup(`location:${implementation}`);
+    set(concrete, 'rootURL', rootURL);
+
+    assert(`Could not find location '${implementation}'.`, !!concrete);
+
+    set(this, 'concreteImplementation', concrete);
+  }
+
+  willDestroy() {
+    let concreteImplementation = get(this, 'concreteImplementation');
+
+    if (concreteImplementation) {
+      concreteImplementation.destroy();
+    }
+  }
+}
+
+AutoLocation.reopen({
+  /**
+    @private
+
+    Will be pre-pended to path upon state change.
+
+    @since 1.5.1
+    @property rootURL
+    @default '/'
+  */
+  rootURL: '/',
+  initState: delegateToConcreteImplementation('initState'),
+  getURL: delegateToConcreteImplementation('getURL'),
+  setURL: delegateToConcreteImplementation('setURL'),
+  replaceURL: delegateToConcreteImplementation('replaceURL'),
+  onUpdateURL: delegateToConcreteImplementation('onUpdateURL'),
+  formatURL: delegateToConcreteImplementation('formatURL'),
+
   /**
     @private
 
@@ -120,73 +192,10 @@ export default EmberObject.extend({
     @default false
   */
   cancelRouterSetup: false,
-
-  /**
-    @private
-
-    Will be pre-pended to path upon state change.
-
-    @since 1.5.1
-    @property rootURL
-    @default '/'
-  */
-  rootURL: '/',
-
-  /**
-   Called by the router to instruct the location to do any feature detection
-   necessary. In the case of AutoLocation, we detect whether to use history
-   or hash concrete implementations.
-
-   @private
-  */
-  detect() {
-    let rootURL = this.rootURL;
-
-    assert(
-      'rootURL must end with a trailing forward slash e.g. "/app/"',
-      rootURL.charAt(rootURL.length - 1) === '/'
-    );
-
-    let implementation = detectImplementation({
-      location: this.location,
-      history: this.history,
-      userAgent: this.userAgent,
-      rootURL,
-      documentMode: this.documentMode,
-      global: this.global,
-    });
-
-    if (implementation === false) {
-      set(this, 'cancelRouterSetup', true);
-      implementation = 'none';
-    }
-
-    let concrete = getOwner(this).lookup(`location:${implementation}`);
-    set(concrete, 'rootURL', rootURL);
-
-    assert(`Could not find location '${implementation}'.`, !!concrete);
-
-    set(this, 'concreteImplementation', concrete);
-  },
-
-  initState: delegateToConcreteImplementation('initState'),
-  getURL: delegateToConcreteImplementation('getURL'),
-  setURL: delegateToConcreteImplementation('setURL'),
-  replaceURL: delegateToConcreteImplementation('replaceURL'),
-  onUpdateURL: delegateToConcreteImplementation('onUpdateURL'),
-  formatURL: delegateToConcreteImplementation('formatURL'),
-
-  willDestroy() {
-    let concreteImplementation = get(this, 'concreteImplementation');
-
-    if (concreteImplementation) {
-      concreteImplementation.destroy();
-    }
-  },
 });
 
-function delegateToConcreteImplementation(methodName) {
-  return function(...args) {
+function delegateToConcreteImplementation(methodName: string) {
+  return function(this: AutoLocation, ...args: any[]) {
     let concreteImplementation = get(this, 'concreteImplementation');
     assert(
       "AutoLocation's detect() method should be called before calling any other hooks.",
@@ -210,29 +219,38 @@ function delegateToConcreteImplementation(methodName) {
 
 */
 
-function detectImplementation(options) {
+interface DetectionOptions {
+  location: Location | null;
+  history: History | null;
+  userAgent: string;
+  rootURL: string;
+  documentMode: number | undefined;
+  global: Window | null;
+}
+
+function detectImplementation(options: DetectionOptions) {
   let { location, userAgent, history, documentMode, global, rootURL } = options;
 
   let implementation = 'none';
   let cancelRouterSetup = false;
-  let currentPath = getFullPath(location);
+  let currentPath = getFullPath(location!);
 
-  if (supportsHistory(userAgent, history)) {
-    let historyPath = getHistoryPath(rootURL, location);
+  if (supportsHistory(userAgent, history!)) {
+    let historyPath = getHistoryPath(rootURL, location!);
 
     // If the browser supports history and we have a history path, we can use
     // the history location with no redirects.
     if (currentPath === historyPath) {
       implementation = 'history';
     } else if (currentPath.substr(0, 2) === '/#') {
-      history.replaceState({ path: historyPath }, null, historyPath);
+      history!.replaceState({ path: historyPath }, undefined, historyPath);
       implementation = 'history';
     } else {
       cancelRouterSetup = true;
-      replacePath(location, historyPath);
+      replacePath(location!, historyPath);
     }
   } else if (supportsHashChange(documentMode, global)) {
-    let hashPath = getHashPath(rootURL, location);
+    let hashPath = getHashPath(rootURL, location!);
 
     // Be sure we're using a hashed path, otherwise let's switch over it to so
     // we start off clean and consistent. We'll count an index path with no
@@ -243,7 +261,7 @@ function detectImplementation(options) {
       // Our URL isn't in the expected hash-supported format, so we want to
       // cancel the router setup and replace the URL to start off clean
       cancelRouterSetup = true;
-      replacePath(location, hashPath);
+      replacePath(location!, hashPath);
     }
   }
 
@@ -261,7 +279,7 @@ function detectImplementation(options) {
   browsers. This may very well differ from the real current path (e.g. if it
   starts off as a hashed URL)
 */
-export function getHistoryPath(rootURL, location) {
+export function getHistoryPath(rootURL: string, location: Location) {
   let path = getPath(location);
   let hash = getHash(location);
   let query = getQuery(location);
@@ -282,7 +300,7 @@ export function getHistoryPath(rootURL, location) {
     // If the path already has a trailing slash, remove the one
     // from the hashed route so we don't double up.
     if (path.charAt(path.length - 1) === '/') {
-      routeHash = routeHash.substr(1);
+      routeHash = routeHash!.substr(1);
     }
 
     // This is the "expected" final order
@@ -306,7 +324,7 @@ export function getHistoryPath(rootURL, location) {
 
   @method _getHashPath
 */
-export function getHashPath(rootURL, location) {
+export function getHashPath(rootURL: string, location: Location) {
   let path = rootURL;
   let historyPath = getHistoryPath(rootURL, location);
   let routePath = historyPath.substr(rootURL.length);

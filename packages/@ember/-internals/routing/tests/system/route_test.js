@@ -200,9 +200,9 @@ moduleFor(
         },
       }).create();
 
-      assert.equal(true, route.send('returnsTrue', 1, 2));
-      assert.equal(false, route.send('returnsFalse'));
-      assert.equal(undefined, route.send('nonexistent', 1, 2, 3));
+      assert.equal(route.send('returnsTrue', 1, 2), true);
+      assert.equal(route.send('returnsFalse'), false);
+      assert.equal(route.send('nonexistent', 1, 2, 3), undefined);
 
       runDestroy(route);
     }

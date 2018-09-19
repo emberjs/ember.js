@@ -11,6 +11,7 @@ export default class QueryParamTestCase extends ApplicationTestCase {
     let testCase = this;
     testCase.expectedPushURL = null;
     testCase.expectedReplaceURL = null;
+
     this.add(
       'location:test',
       NoneLocation.extend({

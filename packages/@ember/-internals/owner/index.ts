@@ -20,13 +20,21 @@ export interface Factory<T, C extends FactoryClass | object = FactoryClass> {
   create(props?: { [prop: string]: any }): T;
 }
 
+export interface EngineInstanceOptions {
+  mountPoint: string;
+  routable: boolean;
+}
+
 export interface Owner {
   lookup<T>(fullName: string, options?: LookupOptions): T;
   lookup(fullName: string, options?: LookupOptions): any;
   factoryFor<T, C>(fullName: string, options?: LookupOptions): Factory<T, C> | undefined;
   factoryFor(fullName: string, options?: LookupOptions): Factory<any, any> | undefined;
-  buildChildEngineInstance<T>(name: string): T;
+  buildChildEngineInstance<T>(name: string, options?: EngineInstanceOptions): T;
+  register<T, C>(fullName: string, factory: Factory<T, C>, options?: object): void;
   hasRegistration(name: string, options?: LookupOptions): boolean;
+  mountPoint?: string;
+  routable?: boolean;
 }
 
 import { symbol } from '@ember/-internals/utils';

@@ -30,7 +30,7 @@ function queryParams({ positional, named }: CapturedArguments) {
     positional.value().length === 0
   );
 
-  return new QueryParams(assign({}, named.value()));
+  return new QueryParams(assign({}, named.value() as any));
 }
 
 export default function(_vm: VM, args: Arguments) {

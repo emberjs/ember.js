@@ -1,8 +1,9 @@
-import { bind } from '@ember/runloop';
 import { get, set } from '@ember/-internals/metal';
+import { bind } from '@ember/runloop';
 
 import { Object as EmberObject } from '@ember/-internals/runtime';
-import EmberLocation from './api';
+import { EmberLocation, UpdateCallback } from './api';
+import { getHash } from './util';
 
 /**
 @module @ember/routing
@@ -36,14 +37,14 @@ import EmberLocation from './api';
   @extends EmberObject
   @protected
 */
-export default EmberObject.extend({
-  implementation: 'hash',
+export default class HashLocation extends EmberObject implements EmberLocation {
+  implementation = 'hash';
 
   init() {
     set(this, 'location', get(this, '_location') || window.location);
 
     this._hashchangeHandler = undefined;
-  },
+  }
 
   /**
     @private
@@ -53,7 +54,9 @@ export default EmberObject.extend({
     @since 1.5.1
     @method getHash
   */
-  getHash: EmberLocation._getHash,
+  getHash() {
+    return getHash(get(this, 'location'));
+  }
 
   /**
     Returns the normalized URL, constructed from `location.hash`.
@@ -83,7 +86,7 @@ export default EmberObject.extend({
     }
 
     return outPath;
-  },
+  }
 
   /**
     Set the `location.hash` and remembers what was set. This prevents
@@ -94,10 +97,10 @@ export default EmberObject.extend({
     @method setURL
     @param path {String}
   */
-  setURL(path) {
+  setURL(path: string) {
     get(this, 'location').hash = path;
     set(this, 'lastSetURL', path);
-  },
+  }
 
   /**
     Uses location.replace to update the url without a page reload
@@ -107,10 +110,10 @@ export default EmberObject.extend({
     @method replaceURL
     @param path {String}
   */
-  replaceURL(path) {
+  replaceURL(path: string) {
     get(this, 'location').replace(`#${path}`);
     set(this, 'lastSetURL', path);
-  },
+  }
 
   /**
     Register a callback to be invoked when the hash changes. These
@@ -121,10 +124,9 @@ export default EmberObject.extend({
     @method onUpdateURL
     @param callback {Function}
   */
-  onUpdateURL(callback) {
+  onUpdateURL(callback: UpdateCallback) {
     this._removeEventListener();
-
-    this._hashchangeHandler = bind(this, function() {
+    this._hashchangeHandler = bind(this, function(this: HashLocation) {
       let path = this.getURL();
       if (get(this, 'lastSetURL') === path) {
         return;
@@ -136,7 +138,7 @@ export default EmberObject.extend({
     });
 
     window.addEventListener('hashchange', this._hashchangeHandler);
-  },
+  }
 
   /**
     Given a URL, formats it to be placed into the page as part
@@ -149,9 +151,9 @@ export default EmberObject.extend({
     @method formatURL
     @param url {String}
   */
-  formatURL(url) {
+  formatURL(url: string) {
     return `#${url}`;
-  },
+  }
 
   /**
     Cleans up the HashLocation event listener.
@@ -161,11 +163,11 @@ export default EmberObject.extend({
   */
   willDestroy() {
     this._removeEventListener();
-  },
+  }
 
   _removeEventListener() {
     if (this._hashchangeHandler) {
       window.removeEventListener('hashchange', this._hashchangeHandler);
     }
-  },
-});
+  }
+}

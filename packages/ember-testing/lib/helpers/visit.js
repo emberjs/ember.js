@@ -31,9 +31,9 @@ export default function visit(app, url) {
   });
 
   if (app._readinessDeferrals > 0) {
-    router['initialURL'] = url;
+    router.initialURL = url;
     run(app, 'advanceReadiness');
-    delete router['initialURL'];
+    delete router.initialURL;
   } else {
     shouldHandleURL = true;
   }

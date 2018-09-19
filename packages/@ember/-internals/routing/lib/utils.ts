@@ -1,11 +1,14 @@
-import { getOwner } from '@ember/-internals/owner';
-import { assign } from '@ember/polyfills';
 import { get } from '@ember/-internals/metal';
+import { getOwner } from '@ember/-internals/owner';
 import EmberError from '@ember/error';
+import { assign } from '@ember/polyfills';
+import HandlerInfo from 'router_js/dist/cjs/handler-info';
+import Route from './system/route';
+import Router, { QueryParam } from './system/router';
 
 const ALL_PERIODS_REGEX = /\./g;
 
-export function extractRouteArgs(args) {
+export function extractRouteArgs(args: any[]) {
   args = args.slice();
   let possibleQueryParams = args[args.length - 1];
 
@@ -21,15 +24,15 @@ export function extractRouteArgs(args) {
   return { routeName, models: args, queryParams };
 }
 
-export function getActiveTargetName(router) {
+export function getActiveTargetName(router: Router) {
   let handlerInfos = router.activeTransition
-    ? router.activeTransition.state.handlerInfos
-    : router.state.handlerInfos;
+    ? router.activeTransition.state!.handlerInfos
+    : router.state!.handlerInfos;
   return handlerInfos[handlerInfos.length - 1].name;
 }
 
-export function stashParamNames(router, handlerInfos) {
-  if (handlerInfos._namesStashed) {
+export function stashParamNames(router: Router, handlerInfos: HandlerInfo[]) {
+  if (handlerInfos['_namesStashed']) {
     return;
   }
 
@@ -49,16 +52,16 @@ export function stashParamNames(router, handlerInfos) {
       dynamicParent = handlerInfo;
     }
 
-    handlerInfo._names = names;
+    handlerInfo['_names'] = names;
 
-    let route = handlerInfo.handler;
+    let route = handlerInfo.handler as any;
     route._stashNames(handlerInfo, dynamicParent);
   }
 
-  handlerInfos._namesStashed = true;
+  handlerInfos['_namesStashed'] = true;
 }
 
-function _calculateCacheValuePrefix(prefix, part) {
+function _calculateCacheValuePrefix(prefix: string, part: string) {
   // calculates the dot separated sections from prefix that are also
   // at the start of part - which gives us the route name
 
@@ -85,7 +88,7 @@ function _calculateCacheValuePrefix(prefix, part) {
 /*
   Stolen from Controller
 */
-export function calculateCacheKey(prefix, parts = [], values) {
+export function calculateCacheKey(prefix: string, parts: string[] = [], values: {}) {
   let suffixes = '';
   for (let i = 0; i < parts.length; ++i) {
     let part = parts[i];
@@ -137,7 +140,7 @@ export function calculateCacheKey(prefix, parts = [], values) {
   This helper normalizes all three possible styles into the
   'Array of fully defined objects' style.
 */
-export function normalizeControllerQueryParams(queryParams) {
+export function normalizeControllerQueryParams(queryParams: QueryParam[]) {
   let qpMap = {};
 
   for (let i = 0; i < queryParams.length; ++i) {
@@ -147,9 +150,9 @@ export function normalizeControllerQueryParams(queryParams) {
   return qpMap;
 }
 
-function accumulateQueryParamDescriptors(_desc, accum) {
-  let desc = _desc;
-  let tmp;
+function accumulateQueryParamDescriptors(_desc: QueryParam, accum: {}) {
+  let desc: {} = _desc;
+  let tmp: {};
   if (typeof desc === 'string') {
     tmp = {};
     tmp[desc] = { as: null };
@@ -178,7 +181,7 @@ function accumulateQueryParamDescriptors(_desc, accum) {
 
   @private
 */
-export function resemblesURL(str) {
+export function resemblesURL(str: string) {
   return typeof str === 'string' && (str === '' || str[0] === '/');
 }
 
@@ -187,7 +190,7 @@ export function resemblesURL(str) {
 
   @private
 */
-export function prefixRouteNameArg(route, args) {
+export function prefixRouteNameArg(route: Route, args: any[]) {
   let routeName = args[0];
   let owner = getOwner(route);
   let prefix = owner.mountPoint;
@@ -207,7 +210,7 @@ export function prefixRouteNameArg(route, args) {
   return args;
 }
 
-export function shallowEqual(a, b) {
+export function shallowEqual(a: {}, b: {}) {
   let k;
   let aCount = 0;
   let bCount = 0;

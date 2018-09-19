@@ -6,15 +6,16 @@
   @class BucketCache
 */
 export default class BucketCache {
+  cache: Map<string, Map<string, any>>;
   constructor() {
     this.cache = new Map();
   }
 
-  has(bucketKey) {
+  has(bucketKey: string) {
     return this.cache.has(bucketKey);
   }
 
-  stash(bucketKey, key, value) {
+  stash(bucketKey: string, key: string, value: any) {
     let bucket = this.cache.get(bucketKey);
 
     if (bucket === undefined) {
@@ -25,12 +26,12 @@ export default class BucketCache {
     bucket.set(key, value);
   }
 
-  lookup(bucketKey, prop, defaultValue) {
+  lookup(bucketKey: string, prop: string, defaultValue: any) {
     if (!this.has(bucketKey)) {
       return defaultValue;
     }
 
-    let bucket = this.cache.get(bucketKey);
+    let bucket = this.cache.get(bucketKey)!;
     if (bucket.has(prop)) {
       return bucket.get(prop);
     } else {

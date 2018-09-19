@@ -4,6 +4,7 @@ import { CONSTANT_TAG, Tag, VersionedPathReference } from '@glimmer/reference';
 import { ComponentDefinition, Invocation, WithDynamicLayout } from '@glimmer/runtime';
 import { Destroyable, Opaque, Option } from '@glimmer/util';
 
+import { Owner } from '@ember/-internals/owner';
 import { generateControllerFactory } from '@ember/-internals/routing';
 import { OwnedTemplateMeta } from '@ember/-internals/views';
 import { EMBER_ENGINES_MOUNT_PARAMS } from '@ember/canary-features';
@@ -14,15 +15,13 @@ import { RootReference } from '../utils/references';
 import AbstractManager from './abstract';
 
 // TODO: remove these stubbed interfaces when better typing is in place
-interface Engine {
+interface EngineInstance extends Owner {
   boot(): void;
   destroy(): void;
-  lookup(name: string): any;
-  factoryFor(name: string): any;
 }
 
 interface EngineState {
-  engine: Engine;
+  engine: EngineInstance;
   controller: any;
   self: RootReference<any>;
   tag: Tag;
@@ -78,7 +77,7 @@ class MountManager
     // we should resolve the engine app template in the helper
     // it also should use the owner that looked up the mount helper.
 
-    let engine = environment.owner.buildChildEngineInstance<Engine>(state.name);
+    let engine = environment.owner.buildChildEngineInstance<EngineInstance>(state.name);
 
     engine.boot();
 

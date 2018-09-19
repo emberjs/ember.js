@@ -31,12 +31,12 @@ import { get } from './property_get';
   @return {Object}
   @public
 */
-export default function getProperties(obj: object): object {
+export default function getProperties(obj: object, keys?: string[]): object {
   let ret = {};
   let propertyNames = arguments;
   let i = 1;
 
-  if (arguments.length === 2 && Array.isArray(arguments[1])) {
+  if (arguments.length === 2 && Array.isArray(keys)) {
     i = 0;
     propertyNames = arguments[1];
   }
