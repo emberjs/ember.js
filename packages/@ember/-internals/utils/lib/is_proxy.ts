@@ -1,5 +1,5 @@
+import { _WeakSet as WeakSet } from '@ember/polyfills';
 import { isObject } from './spec';
-import WeakSet from './weak_set';
 
 const PROXIES = new WeakSet();
 

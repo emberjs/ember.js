@@ -3,14 +3,13 @@
 */
 
 import { FACTORY_FOR } from '@ember/-internals/container';
-import { assign } from '@ember/polyfills';
+import { assign, _WeakSet as WeakSet } from '@ember/polyfills';
 import {
   guidFor,
   getName,
   setName,
   makeArray,
   HAS_NATIVE_PROXY,
-  WeakSet,
   isInternalSymbol,
 } from '@ember/-internals/utils';
 import { schedule } from '@ember/runloop';
