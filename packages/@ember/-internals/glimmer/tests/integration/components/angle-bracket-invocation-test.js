@@ -376,6 +376,21 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
         this.assertText('Hola');
       }
 
+      '@test arguments set in context should take precedence over helpers with same name'(assert) {
+        this.registerHelper('baz', () => { assert.ok(false, 'custom baz helper should not be called'); });
+
+        this.registerComponent('foo-bar', { template: '{{@foo}}' });
+
+        // this.render('{{foo-bar foo=baz}}', { baz: 'Hi' }); // This works
+        this.render('<FooBar @foo={{baz}} />', { baz: 'Hi' });
+
+        this.assertText('Hi');
+
+        this.runTask(() => this.context.set('baz', 'Hello'));
+
+        this.assertText('Hello');
+      }
+
       '@test it reflects named arguments as properties'() {
         this.registerComponent('foo-bar', {
           template: '{{foo}}',
