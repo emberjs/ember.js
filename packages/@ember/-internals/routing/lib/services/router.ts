@@ -42,6 +42,10 @@ export default class RouterService extends Service {
 
      See [transitionTo](/api/ember/release/classes/Route/methods/transitionTo?anchor=transitionTo) for more info.
 
+     Calling `transitionTo` from the Router service will cause default query parameter values to be included in the URL.
+     This behavior is different from calling `transitionTo` on a route or `transitionToRoute` on a controller.
+     See the [Router Service RFC](https://github.com/emberjs/rfcs/blob/master/text/0095-router-service.md#query-parameter-semantics) for more info.
+
      @method transitionTo
      @category ember-routing-router-service
      @param {String} routeNameOrUrl the name of the route or a URL
@@ -71,6 +75,10 @@ export default class RouterService extends Service {
      The route may be either a single route or route path:
 
      See [replaceWith](/api/ember/release/classes/Route/methods/replaceWith?anchor=replaceWith) for more info.
+
+     Calling `replaceWith` from the Router service will cause default query parameter values to be included in the URL.
+     This behavior is different from calling `replaceWith` on a route.
+     See the [Router Service RFC](https://github.com/emberjs/rfcs/blob/master/text/0095-router-service.md#query-parameter-semantics) for more info.
 
      @method replaceWith
      @category ember-routing-router-service
