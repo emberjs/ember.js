@@ -1,6 +1,6 @@
 import { isTesting, setTesting } from '@ember/debug';
 import { later, run } from '@ember/runloop';
-import { getOnerror, setOnerror } from 'ember-error-handling';
+import { getOnerror, setOnerror } from '@ember/-internals/error-handling';
 import RSVP from 'rsvp';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 

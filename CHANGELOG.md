@@ -1,7 +1,23 @@
 # Ember Changelog
 
-### v3.4.0-beta.1 (July 16, 2018)
+### v3.5.0-beta.2 (September 10, 2018)
 
+- [#16933](https://github.com/emberjs/ember.js/pull/16933) [BUGFIX] Update glimmer-vm packages to 0.38.8
+- [#16860](https://github.com/emberjs/ember.js/pull/16860) [BUGFIX] Clear chains in ProxyMixin when destroyed
+
+### v3.5.0-beta.1 (August 28, 2018)
+
+- [#16877](https://github.com/emberjs/ember.js/pull/16877) [CLEANUP] Allow routes to be named "array" and "object"
+- [#16907](https://github.com/emberjs/ember.js/pull/16907) Upgrade to TypeScript 3.0
+
+### v3.4.1 (September 10, 2018)
+- [#16933](https://github.com/emberjs/ember.js/pull/16933) [BUGFIX] Update glimmer-vm packages to 0.38.8
+
+### v3.4.0 (August 27, 2018)
+
+- [#16603](https://github.com/emberjs/ember.js/pull/16603) [BUGFIX] Support mouseEnter/Leave events w/o jQuery
+- [#16857](https://github.com/emberjs/ember.js/pull/16857) [BUGFIX] Prevents the recursive redefinition of root chains
+- [#16854](https://github.com/emberjs/ember.js/pull/16854) [BUGFIX] Don't thread FactoryManager through createComponent
 - [#16773](https://github.com/emberjs/ember.js/pull/16773) [FEATURE] Custom component manager (see [emberjs/rfcs#213](https://github.com/emberjs/rfcs/blob/master/text/0213-custom-components.md) for more details)
 - [#16708](https://github.com/emberjs/ember.js/pull/16708) [FEATURE] Angle bracket component invocation (see [emberjs/rfcs#311](https://github.com/emberjs/rfcs/blob/master/text/0311-angle-bracket-invocation.md) for more details)
 - [#16744](https://github.com/emberjs/ember.js/pull/16744) [DEPRECATION] Deprecate `component#sendAction` (see [emberjs/rfcs#335](https://github.com/emberjs/rfcs/blob/master/text/0335-deprecate-send-action.md) for more details)
@@ -11,6 +27,15 @@
 - [#16784](https://github.com/emberjs/ember.js/pull/16784) [BUGFIX] Setting ArrayProxy#content in willDestroy resets length.
 - [#16794](https://github.com/emberjs/ember.js/pull/16794) [BUGFIX] Fix instance-initializer-test blueprint for new QUnit testing API ([emberjs/rfcs#232](https://github.com/emberjs/rfcs/pull/232))
 - [#16797](https://github.com/emberjs/ember.js/pull/16797) [BUGFIX] Drop autorun assertion
+
+### v3.3.2 (August 20, 2018)
+
+- [#16853](https://github.com/emberjs/ember.js/pull/16853) [BUGFIX] Allow ArrayProxy#pushObjects to accept ArrayProxy again
+- [#16870](https://github.com/emberjs/ember.js/pull/16870) [BUGFIX] Enable @ember/object#get to be called with an empty string
+
+### v3.3.1 (July 23, 2018)
+
+- [#16836](https://github.com/emberjs/ember.js/pull/16836/commits) [DOC] Fix Broken 3.3 API Documentation
 
 ### v3.3.0 (July 16, 2018) 
 
@@ -67,6 +92,11 @@
 - [#16433](https://github.com/emberjs/ember.js/pull/16433) [CLEANUP] Remove `content` alias.
 - [#16462](https://github.com/emberjs/ember.js/pull/16462) [CLEANUP] Remove deprecated `MODEL_FACTORY_INJECTIONS`.
 - [emberjs/rfcs#286](https://github.com/emberjs/rfcs/blob/master/text/0286-block-let-template-helper.md) [FEATURE] Enabled block `let` handlebars helper by default.
+
+### v3.1.4 (August 07, 2018)
+
+- [#16565](https://github.com/emberjs/ember.js/pull/16565) Fix template / component caching during rendering.
+- [#16853](https://github.com/emberjs/ember.js/pull/16853) [BUGFIX] Allow ArrayProxy#pushObjects to accept ArrayProxy again
 
 ### v3.1.3 (June 21, 2018)
 - [#16754](https://github.com/emberjs/ember.js/pull/16754) [BUGFIX] Fix container destroy timing

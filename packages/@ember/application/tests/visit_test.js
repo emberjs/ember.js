@@ -1,14 +1,14 @@
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 import { inject as injectService } from '@ember/service';
-import { Object as EmberObject, RSVP, onerrorDefault } from 'ember-runtime';
+import { Object as EmberObject, RSVP, onerrorDefault } from '@ember/-internals/runtime';
 import { later } from '@ember/runloop';
 import Application from '@ember/application';
 import ApplicationInstance from '@ember/application/instance';
 import Engine from '@ember/engine';
-import { Route } from 'ember-routing';
-import { Component, helper, isSerializationFirstNode } from 'ember-glimmer';
+import { Route } from '@ember/-internals/routing';
+import { Component, helper, isSerializationFirstNode } from '@ember/-internals/glimmer';
 import { compile } from 'ember-template-compiler';
-import { ENV } from 'ember-environment';
+import { ENV } from '@ember/-internals/environment';
 
 function expectAsyncError() {
   RSVP.off('error');

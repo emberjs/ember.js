@@ -1,5 +1,5 @@
-import { Route, NoneLocation } from 'ember-routing';
-import { set } from 'ember-metal';
+import { Route, NoneLocation } from '@ember/-internals/routing';
+import { set } from '@ember/-internals/metal';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
 
 import { EMBER_ROUTING_ROUTER_SERVICE } from '@ember/canary-features';

@@ -27,5 +27,5 @@ export {
   ModuleBasedResolver as ModuleBasedTestResolver,
 } from './lib/test-resolver';
 
-export { isIE11 } from './lib/browser-detect';
+export { isIE11, isEdge } from './lib/browser-detect';
 export { verifyInjection, verifyRegistration } from './lib/registry-check';

@@ -1,11 +1,11 @@
 import { next, run } from '@ember/runloop';
-import { setOnerror } from 'ember-error-handling';
+import { setOnerror } from '@ember/-internals/error-handling';
 import Test from '../lib/test';
 import Adapter from '../lib/adapters/adapter';
 import QUnitAdapter from '../lib/adapters/qunit';
 import EmberApplication from '@ember/application';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
-import { RSVP } from 'ember-runtime';
+import { RSVP } from '@ember/-internals/runtime';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 
 const originalDebug = getDebugFunction('debug');

@@ -1,8 +1,9 @@
+import { ENV } from '@ember/-internals/environment';
 import { assign } from '@ember/polyfills';
-import { ENV } from 'ember-environment';
 
 /**
  @module ember/canary-features
+ @private
 */
 
 export const DEFAULT_FEATURES = {

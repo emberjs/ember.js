@@ -1,5 +1,5 @@
 import Controller from '@ember/controller';
-import { Component } from 'ember-glimmer';
+import { Component } from '@ember/-internals/glimmer';
 import { moduleFor, ApplicationTestCase, getTextOf } from 'internal-test-helpers';
 
 moduleFor(

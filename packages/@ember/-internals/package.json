@@ -1,0 +1,5 @@
+{
+  "name": "@ember/-internals",
+  "version": "0.0.0",
+  "description": "Internal APIs shared by Ember packages. Warning: this package does not follow SemVer and is subject to break at any time!"
+}

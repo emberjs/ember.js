@@ -109,6 +109,32 @@ describe('Blueprint: helper-test', function() {
         });
       });
     });
+
+    describe('with ember-mocha@0.14.0', function() {
+      beforeEach(function() {
+        modifyPackages([
+          { name: 'ember-cli-qunit', delete: true },
+          { name: 'ember-mocha', dev: true },
+        ]);
+        generateFakePackageManifest('ember-mocha', '0.14.0');
+      });
+
+      it('helper-test foo/bar-baz for mocha', function() {
+        return emberGenerateDestroy(['helper-test', 'foo/bar-baz'], _file => {
+          expect(_file('tests/integration/helpers/foo/bar-baz-test.js')).to.equal(
+            fixture('helper-test/mocha-rfc232.js')
+          );
+        });
+      });
+
+      it('helper-test foo/bar-baz for mocha --unit', function() {
+        return emberGenerateDestroy(['helper-test', 'foo/bar-baz', '--unit'], _file => {
+          expect(_file('tests/unit/helpers/foo/bar-baz-test.js')).to.equal(
+            fixture('helper-test/mocha-rfc232-unit.js')
+          );
+        });
+      });
+    });
   });
 
   describe('in addon', function() {

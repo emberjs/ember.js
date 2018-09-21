@@ -1,11 +1,11 @@
 import { inject as injectService } from '@ember/service';
-import { Component } from 'ember-glimmer';
-import { Route, NoneLocation } from 'ember-routing';
+import { Component } from '@ember/-internals/glimmer';
+import { Route, NoneLocation } from '@ember/-internals/routing';
 import Controller from '@ember/controller';
 import { run } from '@ember/runloop';
-import { get } from 'ember-metal';
+import { get } from '@ember/-internals/metal';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
-import { Transition } from 'router';
+import { Transition } from 'router_js';
 
 import { EMBER_ROUTING_ROUTER_SERVICE } from '@ember/canary-features';
 

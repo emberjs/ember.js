@@ -1,5 +1,5 @@
-import { ENV } from 'ember-environment';
-import { Object as EmberObject } from 'ember-runtime';
+import { ENV } from '@ember/-internals/environment';
+import { Object as EmberObject } from '@ember/-internals/runtime';
 import { HANDLERS } from '../lib/handlers';
 import {
   registerHandler,
@@ -21,8 +21,7 @@ import { moduleFor, AbstractTestCase as TestCase } from 'internal-test-helpers';
 let originalEnvValue;
 let originalDeprecateHandler;
 let originalWarnHandler;
-let originalWarnOptions;
-let originalDeprecationOptions;
+
 const originalConsoleWarn = console.warn; // eslint-disable-line no-console
 const noop = function() {};
 
@@ -35,11 +34,8 @@ moduleFor(
       originalEnvValue = ENV.RAISE_ON_DEPRECATION;
       originalDeprecateHandler = HANDLERS.deprecate;
       originalWarnHandler = HANDLERS.warn;
-      originalWarnOptions = ENV._ENABLE_WARN_OPTIONS_SUPPORT;
-      originalDeprecationOptions = ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT;
 
       ENV.RAISE_ON_DEPRECATION = true;
-      ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT = true;
     }
 
     teardown() {
@@ -47,8 +43,6 @@ moduleFor(
       HANDLERS.warn = originalWarnHandler;
 
       ENV.RAISE_ON_DEPRECATION = originalEnvValue;
-      ENV._ENABLE_WARN_OPTIONS_SUPPORT = originalWarnOptions;
-      ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT = originalDeprecationOptions;
     }
 
     afterEach() {
@@ -243,24 +237,8 @@ moduleFor(
       });
     }
 
-    ['@test deprecate without options triggers a deprecation'](assert) {
-      assert.expect(4);
-
-      registerHandler(function(message) {
-        if (message === missingOptionsDeprecation) {
-          assert.ok(true, 'proper deprecation is triggered when options is missing');
-        } else if (message === 'foo') {
-          assert.ok(true, 'original deprecation is still triggered');
-        }
-      });
-
-      deprecate('foo');
-      deprecate('foo', false, {});
-    }
-
     ['@test deprecate without options triggers an assertion'](assert) {
       assert.expect(2);
-      ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT = false;
 
       assert.throws(
         () => deprecate('foo'),
@@ -275,23 +253,8 @@ moduleFor(
       );
     }
 
-    ['@test deprecate without options.id triggers a deprecation'](assert) {
-      assert.expect(2);
-
-      registerHandler(function(message) {
-        if (message === missingOptionsIdDeprecation) {
-          assert.ok(true, 'proper deprecation is triggered when options.id is missing');
-        } else if (message === 'foo') {
-          assert.ok(true, 'original deprecation is still triggered');
-        }
-      });
-
-      deprecate('foo', false, { until: 'forever' });
-    }
-
     ['@test deprecate without options.id triggers an assertion'](assert) {
       assert.expect(1);
-      ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT = false;
 
       assert.throws(
         () => deprecate('foo', false, { until: 'forever' }),
@@ -300,49 +263,14 @@ moduleFor(
       );
     }
 
-    ['@test deprecate without options.until triggers a deprecation'](assert) {
-      assert.expect(2);
-
-      registerHandler(function(message) {
-        if (message === missingOptionsUntilDeprecation) {
-          assert.ok(true, 'proper deprecation is triggered when options.until is missing');
-        } else if (message === 'foo') {
-          assert.ok(true, 'original deprecation is still triggered');
-        }
-      });
-
-      deprecate('foo', false, { id: 'test' });
-    }
-
     ['@test deprecate without options.until triggers an assertion'](assert) {
       assert.expect(1);
-      ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT = false;
 
       assert.throws(
         () => deprecate('foo', false, { id: 'test' }),
         new RegExp(missingOptionsUntilDeprecation),
         'proper assertion is triggered when options.until is missing'
       );
-    }
-
-    ['@test warn without options triggers a deprecation'](assert) {
-      assert.expect(2);
-
-      ENV._ENABLE_WARN_OPTIONS_SUPPORT = true;
-
-      registerHandler(function(message) {
-        assert.equal(
-          message,
-          missingWarnOptionsDeprecation,
-          'deprecation is triggered when options is missing'
-        );
-      });
-
-      registerWarnHandler(function(message) {
-        assert.equal(message, 'foo', 'original warning is triggered');
-      });
-
-      warn('foo');
     }
 
     ['@test warn without options triggers an assert'](assert) {
@@ -355,26 +283,6 @@ moduleFor(
       );
     }
 
-    ['@test warn without options.id triggers a deprecation'](assert) {
-      assert.expect(2);
-
-      ENV._ENABLE_WARN_OPTIONS_SUPPORT = true;
-
-      registerHandler(function(message) {
-        assert.equal(
-          message,
-          missingWarnOptionsIdDeprecation,
-          'deprecation is triggered when options is missing'
-        );
-      });
-
-      registerWarnHandler(function(message) {
-        assert.equal(message, 'foo', 'original warning is triggered');
-      });
-
-      warn('foo', false, {});
-    }
-
     ['@test warn without options.id triggers an assertion'](assert) {
       assert.expect(1);
 
@@ -385,26 +293,6 @@ moduleFor(
       );
     }
 
-    ['@test warn without options.id nor test triggers a deprecation'](assert) {
-      assert.expect(2);
-
-      ENV._ENABLE_WARN_OPTIONS_SUPPORT = true;
-
-      registerHandler(function(message) {
-        assert.equal(
-          message,
-          missingWarnOptionsIdDeprecation,
-          'deprecation is triggered when options is missing'
-        );
-      });
-
-      registerWarnHandler(function(message) {
-        assert.equal(message, 'foo', 'original warning is triggered');
-      });
-
-      warn('foo', {});
-    }
-
     ['@test warn without options.id nor test triggers an assertion'](assert) {
       assert.expect(1);
 
@@ -413,22 +301,6 @@ moduleFor(
         new RegExp(missingWarnOptionsIdDeprecation),
         'deprecation is triggered when options is missing'
       );
-    }
-
-    ['@test warn without test but with options does not trigger a deprecation'](assert) {
-      assert.expect(1);
-
-      ENV._ENABLE_WARN_OPTIONS_SUPPORT = true;
-
-      registerHandler(function(message) {
-        assert.ok(false, `there should be no deprecation ${message}`);
-      });
-
-      registerWarnHandler(function(message) {
-        assert.equal(message, 'foo', 'warning was triggered');
-      });
-
-      warn('foo', { id: 'ember-debug.do-not-raise' });
     }
 
     ['@test warn without test but with options does not trigger an assertion'](assert) {

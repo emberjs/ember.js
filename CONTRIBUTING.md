@@ -124,9 +124,7 @@ Pull requests should pass the Ember.js unit tests. Do the following to run these
 `PACKAGE_NAME` with the name of the package you want to test. For
 example:
 
-  * [Ember.js Runtime](http://localhost:4200/tests/index.html?package=ember-runtime)
-  * [Ember.js Views](http://localhost:4200/tests/index.html?package=ember-views)
-  * [Ember.js Glimmer](http://localhost:4200/tests/index.html?package=ember-glimmer)
+  * [Ember.js Internals](http://localhost:4200/tests/index.html?package=@ember/-internals)
 
 To test multiple packages, you can separate them with commas.
 

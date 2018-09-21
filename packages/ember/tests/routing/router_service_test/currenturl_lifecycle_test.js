@@ -1,8 +1,8 @@
 import { inject as injectService } from '@ember/service';
 import { readOnly } from '@ember/object/computed';
-import { Component } from 'ember-glimmer';
-import { Route } from 'ember-routing';
-import { get } from 'ember-metal';
+import { Component } from '@ember/-internals/glimmer';
+import { Route } from '@ember/-internals/routing';
+import { get } from '@ember/-internals/metal';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
 
 import { EMBER_ROUTING_ROUTER_SERVICE } from '@ember/canary-features';

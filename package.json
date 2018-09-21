@@ -1,6 +1,6 @@
 {
   "name": "ember-source",
-  "version": "3.5.0",
+  "version": "3.6.0",
   "description": "A JavaScript framework for creating ambitious web applications",
   "keywords": [
     "ember-addon"
@@ -14,8 +14,6 @@
   "files": [
     "build-metadata.json",
     "blueprints",
-    "dist/ember-runtime.js",
-    "dist/ember-runtime.map",
     "dist/ember-template-compiler.js",
     "dist/ember-template-compiler.map",
     "dist/ember-testing.js",
@@ -66,14 +64,14 @@
     "resolve": "^1.6.0"
   },
   "devDependencies": {
-    "@glimmer/compiler": "^0.35.4",
+    "@glimmer/compiler": "^0.35.8",
     "@glimmer/env": "^0.1.7",
-    "@glimmer/interfaces": "^0.35.4",
-    "@glimmer/node": "^0.35.4",
-    "@glimmer/opcode-compiler": "^0.35.4",
-    "@glimmer/program": "^0.35.4",
-    "@glimmer/reference": "^0.35.4",
-    "@glimmer/runtime": "^0.35.4",
+    "@glimmer/interfaces": "^0.35.8",
+    "@glimmer/node": "^0.35.8",
+    "@glimmer/opcode-compiler": "^0.35.8",
+    "@glimmer/program": "^0.35.8",
+    "@glimmer/reference": "^0.35.8",
+    "@glimmer/runtime": "^0.35.8",
     "@types/qunit": "^2.5.0",
     "@types/rsvp": "^4.0.1",
     "amd-name-resolver": "^1.2.0",
@@ -101,10 +99,11 @@
     "broccoli-debug": "^0.6.4",
     "broccoli-file-creator": "^1.1.1",
     "broccoli-persistent-filter": "^1.4.3",
+    "broccoli-plugin": "^1.3.1",
     "broccoli-rollup": "^2.1.0",
     "broccoli-source": "^1.1.0",
     "broccoli-string-replace": "^0.1.2",
-    "broccoli-typescript-compiler": "^2.3.0",
+    "broccoli-typescript-compiler": "^4.0.1",
     "broccoli-uglify-js": "^0.2.0",
     "broccoli-uglify-sourcemap": "^2.0.2",
     "common-tags": "^1.7.2",
@@ -131,12 +130,13 @@
     "glob": "^7.1.2",
     "html-differ": "^1.3.4",
     "lodash.uniq": "^4.5.0",
+    "mkdirp": "^0.5.1",
     "mocha": "^5.0.0",
     "prettier": "1.11.1",
     "puppeteer": "^1.3.0",
     "qunit": "^2.5.0",
-    "route-recognizer": "^0.3.3",
-    "router_js": "2.0.0-beta.4",
+    "route-recognizer": "^0.3.4",
+    "router_js": "^4.0.3",
     "rsvp": "^4.8.2",
     "semver": "^5.5.0",
     "serve-static": "^1.12.2",
@@ -145,7 +145,7 @@
     "tslint": "^5.9.1",
     "tslint-config-prettier": "^1.10.0",
     "tslint-plugin-prettier": "^1.3.0",
-    "typescript-eslint-parser": "^15.0.0"
+    "typescript-eslint-parser": "^18.0.0"
   },
   "engines": {
     "node": "^4.5 || 6.* || >= 8.*"

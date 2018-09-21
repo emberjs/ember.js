@@ -3,7 +3,7 @@
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 
 import Controller from '@ember/controller';
-import { Route } from 'ember-routing';
+import { Route } from '@ember/-internals/routing';
 import { assign } from '@ember/polyfills';
 
 class LoggingApplicationTestCase extends ApplicationTestCase {
