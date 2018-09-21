@@ -1,7 +1,6 @@
 /**
 @module @ember/array
 */
-
 import { ARRAY_AT_EACH } from '@ember/deprecated-features';
 import { DEBUG } from '@glimmer/env';
 import { PROXY_CONTENT } from '@ember/-internals/metal';
@@ -11,6 +10,7 @@ import {
   set,
   objectAt,
   replaceInNativeArray,
+  replace,
   computed,
   aliasMethod,
   Mixin,
@@ -29,7 +29,6 @@ import compare from '../compare';
 import { ENV } from '@ember/-internals/environment';
 import Observable from '../mixins/observable';
 import copy from '../copy';
-import EmberError from '@ember/error';
 import MutableEnumerable from './mutable_enumerable';
 import { typeOf } from '../type-of';
 
@@ -103,6 +102,18 @@ function indexOf(array, val, startAt = 0, withNaNCheck) {
   // SameValueZero comparison (NaN !== NaN)
   let predicate = withNaNCheck && val !== val ? item => item !== item : item => item === val;
   return findIndex(array, predicate, startAt);
+}
+
+export function removeAt(array, index, len = 1) {
+  assert(`\`removeAt\` index provided is out of range`, index > -1 && index < array.length);
+  replace(array, index, len, EMPTY_ARRAY);
+  return array;
+}
+
+function insertAt(array, index, item) {
+  assert(`\`insertAt\` index provided is out of range`, index > -1 && index <= array.length);
+  replace(array, index, 0, [item]);
+  return item;
 }
 
 /**
@@ -1155,20 +1166,6 @@ const ArrayMixin = Mixin.create(Enumerable, {
     : undefined,
 });
 
-const OUT_OF_RANGE_EXCEPTION = 'Index out of range';
-
-export function removeAt(array, start, len = 1) {
-  if ('number' === typeof start) {
-    if (start < 0 || start >= array.length) {
-      throw new EmberError(OUT_OF_RANGE_EXCEPTION);
-    }
-
-    array.replace(start, len, EMPTY_ARRAY);
-  }
-
-  return array;
-}
-
 /**
   This mixin defines the API for modifying array-like objects. These methods
   can be applied only to a collection that keeps its items in an ordered set.
@@ -1254,11 +1251,7 @@ const MutableArray = Mixin.create(ArrayMixin, MutableEnumerable, {
     @public
   */
   insertAt(idx, object) {
-    if (idx > this.length) {
-      throw new EmberError(OUT_OF_RANGE_EXCEPTION);
-    }
-
-    this.replace(idx, 0, [object]);
+    insertAt(this, idx, object);
     return this;
   },
 
@@ -1267,7 +1260,7 @@ const MutableArray = Mixin.create(ArrayMixin, MutableEnumerable, {
     method. You can pass either a single index, or a start and a length.
 
     If you pass a start and length that is beyond the
-    length this method will throw an `OUT_OF_RANGE_EXCEPTION`.
+    length this method will throw an assertion.
 
     ```javascript
     let colors = ['red', 'green', 'blue', 'yellow', 'orange'];
@@ -1304,8 +1297,7 @@ const MutableArray = Mixin.create(ArrayMixin, MutableEnumerable, {
     @public
   */
   pushObject(obj) {
-    this.insertAt(this.length, obj);
-    return obj;
+    return insertAt(this, this.length, obj);
   },
 
   /**
@@ -1396,8 +1388,7 @@ const MutableArray = Mixin.create(ArrayMixin, MutableEnumerable, {
     @public
   */
   unshiftObject(obj) {
-    this.insertAt(0, obj);
-    return obj;
+    return insertAt(this, 0, obj);
   },
 
   /**
