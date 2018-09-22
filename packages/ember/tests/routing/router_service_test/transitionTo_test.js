@@ -5,7 +5,7 @@ import Controller from '@ember/controller';
 import { run } from '@ember/runloop';
 import { get } from '@ember/-internals/metal';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
-import { Transition } from 'router_js';
+import { InternalTransition as Transition } from 'router_js';
 
 import { EMBER_ROUTING_ROUTER_SERVICE } from '@ember/canary-features';
 

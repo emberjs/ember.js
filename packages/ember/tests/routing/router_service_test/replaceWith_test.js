@@ -1,6 +1,6 @@
 import { NoneLocation } from '@ember/-internals/routing';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
-import { Transition } from 'router_js';
+import { InternalTransition as Transition } from 'router_js';
 import Controller from '@ember/controller';
 
 import { EMBER_ROUTING_ROUTER_SERVICE } from '@ember/canary-features';

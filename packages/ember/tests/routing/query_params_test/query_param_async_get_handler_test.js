@@ -23,9 +23,9 @@ moduleFor(
         setupRouter() {
           this._super(...arguments);
           let { _handlerPromises: handlerPromises, _seenHandlers: seenHandlers } = this;
-          let getHandler = this._routerMicrolib.getHandler;
+          let getRoute = this._routerMicrolib.getRoute;
 
-          this._routerMicrolib.getHandler = function(routeName) {
+          this._routerMicrolib.getRoute = function(routeName) {
             fetchedHandlers.push(routeName);
 
             // Cache the returns so we don't have more than one Promise for a
@@ -34,7 +34,7 @@ moduleFor(
               handlerPromises[routeName] ||
               (handlerPromises[routeName] = new RSVP.Promise(resolve => {
                 setTimeout(() => {
-                  let handler = getHandler(routeName);
+                  let handler = getRoute(routeName);
 
                   seenHandlers[routeName] = handler;
 

@@ -2,9 +2,9 @@ import { get } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
 import EmberError from '@ember/error';
 import { assign } from '@ember/polyfills';
-import HandlerInfo from 'router_js/dist/cjs/handler-info';
+import Router from 'router_js';
 import Route from './system/route';
-import Router, { QueryParam } from './system/router';
+import EmberRouter, { PrivateRouteInfo, QueryParam } from './system/router';
 
 const ALL_PERIODS_REGEX = /\./g;
 
@@ -24,15 +24,15 @@ export function extractRouteArgs(args: any[]) {
   return { routeName, models: args, queryParams };
 }
 
-export function getActiveTargetName(router: Router) {
-  let handlerInfos = router.activeTransition
-    ? router.activeTransition.state!.handlerInfos
-    : router.state!.handlerInfos;
-  return handlerInfos[handlerInfos.length - 1].name;
+export function getActiveTargetName(router: Router<Route>) {
+  let routeInfos = router.activeTransition
+    ? router.activeTransition.state!.routeInfos
+    : router.state!.routeInfos;
+  return routeInfos[routeInfos.length - 1].name;
 }
 
-export function stashParamNames(router: Router, handlerInfos: HandlerInfo[]) {
-  if (handlerInfos['_namesStashed']) {
+export function stashParamNames(router: EmberRouter, routeInfos: PrivateRouteInfo[]) {
+  if (routeInfos['_namesStashed']) {
     return;
   }
 
@@ -40,12 +40,12 @@ export function stashParamNames(router: Router, handlerInfos: HandlerInfo[]) {
   // keeps separate a handlerInfo's list of parameter names depending
   // on whether a URL transition or named transition is happening.
   // Hopefully we can remove this in the future.
-  let targetRouteName = handlerInfos[handlerInfos.length - 1].name;
+  let targetRouteName = routeInfos[routeInfos.length - 1].name;
   let recogHandlers = router._routerMicrolib.recognizer.handlersFor(targetRouteName);
-  let dynamicParent = null;
+  let dynamicParent: PrivateRouteInfo;
 
-  for (let i = 0; i < handlerInfos.length; ++i) {
-    let handlerInfo = handlerInfos[i];
+  for (let i = 0; i < routeInfos.length; ++i) {
+    let handlerInfo = routeInfos[i];
     let names = recogHandlers[i].names;
 
     if (names.length) {
@@ -54,11 +54,11 @@ export function stashParamNames(router: Router, handlerInfos: HandlerInfo[]) {
 
     handlerInfo['_names'] = names;
 
-    let route = handlerInfo.handler as any;
-    route._stashNames(handlerInfo, dynamicParent);
+    let route = handlerInfo.route!;
+    route._stashNames(handlerInfo, dynamicParent!);
   }
 
-  handlerInfos['_namesStashed'] = true;
+  routeInfos['_namesStashed'] = true;
 }
 
 function _calculateCacheValuePrefix(prefix: string, part: string) {

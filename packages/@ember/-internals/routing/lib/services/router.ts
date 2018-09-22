@@ -65,7 +65,7 @@ export default class RouterService extends Service {
     let { routeName, models, queryParams } = extractRouteArgs(args);
 
     let transition = this._router._doTransition(routeName, models, queryParams, true);
-    transition._keepDefaultQueryParamValues = true;
+    transition['_keepDefaultQueryParamValues'] = true;
 
     return transition;
   }
@@ -108,8 +108,8 @@ export default class RouterService extends Service {
      @return {String} the string representing the generated URL
      @public
    */
-  urlFor(/* routeName, ...models, options */) {
-    return this._router.generate(...arguments);
+  urlFor(routeName: string, ...args: any[]) {
+    return this._router.generate(routeName, ...args);
   }
 
   /**
@@ -129,7 +129,7 @@ export default class RouterService extends Service {
     let { routeName, models, queryParams } = extractRouteArgs(args);
     let routerMicrolib = this._router._routerMicrolib;
 
-    if (!routerMicrolib.isActiveIntent(routeName, models, null)) {
+    if (!routerMicrolib.isActiveIntent(routeName, models)) {
       return false;
     }
     let hasQueryParams = Object.keys(queryParams).length > 0;
@@ -141,7 +141,7 @@ export default class RouterService extends Service {
         queryParams,
         true /* fromRouterService */
       );
-      return shallowEqual(queryParams, routerMicrolib.state.queryParams);
+      return shallowEqual(queryParams, routerMicrolib.state!.queryParams);
     }
 
     return true;
