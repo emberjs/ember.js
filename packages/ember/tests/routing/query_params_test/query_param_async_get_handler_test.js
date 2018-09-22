@@ -23,9 +23,9 @@ moduleFor(
         setupRouter() {
           this._super(...arguments);
           let { _handlerPromises: handlerPromises, _seenHandlers: seenHandlers } = this;
-          let getHandler = this._routerMicrolib.__proto__.getHandler;
+          let getHandler = this._routerMicrolib.getHandler;
 
-          this._routerMicrolib.__proto__.getHandler = function(routeName) {
+          this._routerMicrolib.getHandler = function(routeName) {
             fetchedHandlers.push(routeName);
 
             // Cache the returns so we don't have more than one Promise for a
