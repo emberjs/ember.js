@@ -1,4 +1,4 @@
-import WeakSet from './weak_set';
+import { _WeakSet as WeakSet } from '@ember/polyfills';
 const { toString: objectToString } = Object.prototype;
 const { toString: functionToString } = Function.prototype;
 const { isArray } = Array;
