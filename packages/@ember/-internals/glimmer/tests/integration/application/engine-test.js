@@ -19,12 +19,14 @@ moduleFor(
         // internally. Specifically, it returns a promise when transitioning _into_
         // the first engine route, but returns the synchronously available handler
         // _after_ the engine has been resolved.
-        _getHandlerFunction() {
-          let syncHandler = this._super(...arguments);
+        setupRouter() {
+          this._super(...arguments);
+          let syncHandler = this._routerMicrolib.getHandler;
+
           this._enginePromises = Object.create(null);
           this._resolvedEngines = Object.create(null);
 
-          return name => {
+          this._routerMicrolib.getHandler = name => {
             let engineInfo = this._engineInfoByRoute[name];
             if (!engineInfo) {
               return syncHandler(name);
