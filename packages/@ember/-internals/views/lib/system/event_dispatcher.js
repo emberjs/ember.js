@@ -1,8 +1,4 @@
 import { getOwner } from '@ember/-internals/owner';
-/**
-@module ember
-*/
-
 import { assign } from '@ember/polyfills';
 import { assert } from '@ember/debug';
 import { get, set } from '@ember/-internals/metal';
@@ -11,6 +7,10 @@ import jQuery, { jQueryDisabled } from './jquery';
 import ActionManager from './action_manager';
 import fallbackViewRegistry from '../compat/fallback-view-registry';
 import addJQueryEventDeprecation from './jquery_event_deprecation';
+
+/**
+@module ember
+*/
 
 const ROOT_ELEMENT_CLASS = 'ember-application';
 const ROOT_ELEMENT_SELECTOR = `.${ROOT_ELEMENT_CLASS}`;
@@ -332,23 +332,22 @@ export default EmberObject.extend({
           let target = event.target;
           let related = event.relatedTarget;
 
-          do {
-            // For mouseenter/leave call the handler if related is outside the target.
-            // No relatedTarget if the mouse left/entered the browser window
+          while (
+            target &&
+            target.nodeType === 1 &&
+            (!related || (related !== target && !target.contains(related)))
+          ) {
+            // mouseEnter/Leave don't bubble, so there is no logic to prevent it as with other events
             if (viewRegistry[target.id]) {
-              if (!related || (related !== target && !target.contains(related))) {
-                viewHandler(target, createFakeEvent(origEventType, event));
-              }
-              break;
+              viewHandler(target, createFakeEvent(origEventType, event));
             } else if (target.hasAttribute('data-ember-action')) {
-              if (!related || (related !== target && !target.contains(related))) {
-                actionHandler(target, createFakeEvent(origEventType, event));
-              }
-              break;
+              actionHandler(target, createFakeEvent(origEventType, event));
             }
 
+            // separate mouseEnter/Leave events are dispatched for each listening element
+            // until the element (related) has been reached that the pointing device exited from/to
             target = target.parentNode;
-          } while (target && target.nodeType === 1);
+          }
         });
 
         rootElement.addEventListener(mappedEventType, handleMappedEvent);

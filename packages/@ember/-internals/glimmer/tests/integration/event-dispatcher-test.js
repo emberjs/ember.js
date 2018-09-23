@@ -167,34 +167,129 @@ moduleFor(
 
       let parent = this.element;
       let outer = this.$('#outer')[0];
+      let inner = this.$('#inner')[0];
 
       // mouse moves over #outer
       this.runTask(() => {
-        this.$('#outer').trigger('mouseenter', { canBubble: false, relatedTarget: parent });
-        this.$('#outer').trigger('mouseover', { relatedTarget: parent });
+        this.$(outer).trigger('mouseenter', { canBubble: false, relatedTarget: parent });
+        this.$(outer).trigger('mouseover', { relatedTarget: parent });
+        this.$(parent).trigger('mouseout', { relatedTarget: outer });
       });
       assert.equal(receivedEnterEvents.length, 1, 'mouseenter event was triggered');
       assert.strictEqual(receivedEnterEvents[0].target, outer);
 
       // mouse moves over #inner
       this.runTask(() => {
-        this.$('#inner').trigger('mouseover', { relatedTarget: outer });
+        this.$(inner).trigger('mouseover', { relatedTarget: outer });
+        this.$(outer).trigger('mouseout', { relatedTarget: inner });
       });
       assert.equal(receivedEnterEvents.length, 1, 'mouseenter event was not triggered again');
 
       // mouse moves out of #inner
       this.runTask(() => {
-        this.$('#inner').trigger('mouseout', { relatedTarget: outer });
+        this.$(inner).trigger('mouseout', { relatedTarget: outer });
+        this.$(outer).trigger('mouseover', { relatedTarget: inner });
       });
       assert.equal(receivedLeaveEvents.length, 0, 'mouseleave event was not triggered');
 
       // mouse moves out of #outer
       this.runTask(() => {
-        this.$('#outer').trigger('mouseleave', { canBubble: false, relatedTarget: parent });
-        this.$('#outer').trigger('mouseout', { relatedTarget: parent });
+        this.$(outer).trigger('mouseleave', { canBubble: false, relatedTarget: parent });
+        this.$(outer).trigger('mouseout', { relatedTarget: parent });
+        this.$(parent).trigger('mouseover', { relatedTarget: outer });
       });
       assert.equal(receivedLeaveEvents.length, 1, 'mouseleave event was triggered');
       assert.strictEqual(receivedLeaveEvents[0].target, outer);
+    }
+
+    ['@test delegated event listeners work for mouseEnter/Leave with skipped events'](assert) {
+      let receivedEnterEvents = [];
+      let receivedLeaveEvents = [];
+
+      this.registerComponent('x-foo', {
+        ComponentClass: Component.extend({
+          mouseEnter(event) {
+            receivedEnterEvents.push(event);
+          },
+          mouseLeave(event) {
+            receivedLeaveEvents.push(event);
+          },
+        }),
+        template: `<div id="inner"></div>`,
+      });
+
+      this.render(`{{x-foo id="outer"}}`);
+
+      let parent = this.element;
+      let outer = this.$('#outer')[0];
+      let inner = this.$('#inner')[0];
+
+      // we replicate fast mouse movement, where mouseover is fired directly in #inner, skipping #outer
+      this.runTask(() => {
+        this.$(outer).trigger('mouseenter', { canBubble: false, relatedTarget: parent });
+        this.$(inner).trigger('mouseover', { relatedTarget: parent });
+        this.$(parent).trigger('mouseout', { relatedTarget: inner });
+      });
+      assert.equal(receivedEnterEvents.length, 1, 'mouseenter event was triggered');
+      assert.strictEqual(receivedEnterEvents[0].target, inner);
+
+      // mouse moves out of #outer
+      this.runTask(() => {
+        this.$(outer).trigger('mouseleave', { canBubble: false, relatedTarget: parent });
+        this.$(inner).trigger('mouseout', { relatedTarget: parent });
+        this.$(parent).trigger('mouseover', { relatedTarget: inner });
+      });
+      assert.equal(receivedLeaveEvents.length, 1, 'mouseleave event was triggered');
+      assert.strictEqual(receivedLeaveEvents[0].target, inner);
+    }
+
+    ['@test delegated event listeners work for mouseEnter/Leave with skipped events and subcomponent'](
+      assert
+    ) {
+      let receivedEnterEvents = [];
+      let receivedLeaveEvents = [];
+
+      this.registerComponent('x-outer', {
+        ComponentClass: Component.extend({
+          mouseEnter(event) {
+            receivedEnterEvents.push(event);
+          },
+          mouseLeave(event) {
+            receivedLeaveEvents.push(event);
+          },
+        }),
+        template: `{{yield}}`,
+      });
+
+      this.registerComponent('x-inner', {
+        ComponentClass: Component.extend(),
+        template: ``,
+      });
+
+      this.render(`{{#x-outer id="outer"}}{{x-inner id="inner"}}{{/x-outer}}`);
+
+      let parent = this.element;
+      let outer = this.$('#outer')[0];
+      let inner = this.$('#inner')[0];
+
+      // we replicate fast mouse movement, where mouseover is fired directly in #inner, skipping #outer
+      this.runTask(() => {
+        this.$(outer).trigger('mouseenter', { canBubble: false, relatedTarget: parent });
+        this.$(inner).trigger('mouseover', { relatedTarget: parent });
+        this.$(parent).trigger('mouseout', { relatedTarget: inner });
+      });
+      assert.equal(receivedEnterEvents.length, 1, 'mouseenter event was triggered');
+      assert.strictEqual(receivedEnterEvents[0].target, inner);
+
+      // mouse moves out of #inner
+      this.runTask(() => {
+        this.$(outer).trigger('mouseleave', { canBubble: false, relatedTarget: parent });
+        this.$(inner).trigger('mouseout', { relatedTarget: parent });
+        this.$(parent).trigger('mouseover', { relatedTarget: inner });
+      });
+
+      assert.equal(receivedLeaveEvents.length, 1, 'mouseleave event was triggered');
+      assert.strictEqual(receivedLeaveEvents[0].target, inner);
     }
   }
 );
