@@ -1,9 +1,10 @@
 import { ENV } from '@ember/-internals/environment';
 import Controller from '@ember/controller';
+import Service, { inject as injectService } from '@ember/service';
 import { moduleFor, ApplicationTest } from '../../utils/test-case';
 import { strip } from '../../utils/abstract-test-case';
 import { Route } from '@ember/-internals/routing';
-import { Component } from '@ember/-internals/glimmer';
+import { Component, Helper } from '@ember/-internals/glimmer';
 
 moduleFor(
   'Application test: rendering',
@@ -11,11 +12,13 @@ moduleFor(
     constructor() {
       super(...arguments);
       this._APPLICATION_TEMPLATE_WRAPPER = ENV._APPLICATION_TEMPLATE_WRAPPER;
+      this._TEMPLATE_ONLY_GLIMMER_COMPONENTS = ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS;
     }
 
     teardown() {
       super.teardown();
       ENV._APPLICATION_TEMPLATE_WRAPPER = this._APPLICATION_TEMPLATE_WRAPPER;
+      ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = this._TEMPLATE_ONLY_GLIMMER_COMPONENTS;
     }
 
     ['@test it can render the application template with a wrapper']() {
@@ -501,6 +504,174 @@ moduleFor(
         expectAssertion(() => {
           this.visit('/routeWithError');
         }, expectedBacktrackingMessage);
+      });
+    }
+
+    ['@test hot reload (without component class)']() {
+      ENV._APPLICATION_TEMPLATE_WRAPPER = false;
+      ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = true;
+
+      let invalidate;
+
+      this.add(
+        'service:component-template-revisions',
+        Service.extend({
+          init() {
+            this._super(...arguments);
+            this.revisions = {};
+            this.listeners = [];
+
+            invalidate = componentName => {
+              let revision = this.revisions[componentName];
+
+              if (revision === undefined) {
+                revision = 0;
+              }
+
+              this.revisions[componentName] = ++revision;
+
+              this.listeners.forEach(callback => callback());
+            };
+          },
+
+          listen(callback) {
+            this.listeners.push(callback);
+          },
+
+          revisionFor(componentName) {
+            return this.revisions[componentName];
+          },
+        })
+      );
+
+      this.add(
+        'helper:revisioned-component-name',
+        Helper.extend({
+          revision: injectService('component-template-revisions'),
+
+          init() {
+            this._super(...arguments);
+            this.revision.listen(() => this.recompute());
+          },
+
+          compute([name]) {
+            let revision = this.revision.revisionFor(name);
+
+            if (revision === undefined) {
+              return name;
+            } else {
+              return `${name}--hot-reload-${revision}`;
+            }
+          },
+        })
+      );
+
+      this.addTemplate('application', `{{component (revisioned-component-name "foo-bar")}}`);
+
+      this.addComponent('foo-bar', {
+        ComponentClass: null,
+        template: '<h1>foo-bar</h1>',
+      });
+
+      return this.visit('/').then(() => {
+        this.assertInnerHTML('<h1>foo-bar</h1>');
+
+        this.runTask(() => {
+          this.addComponent('foo-bar--hot-reload-1', {
+            ComponentClass:
+              this.applicationInstance.resolveRegistration('component:foo-bar') || null,
+            template: '<h1>foo-bar (revision 1)</h1>',
+          });
+
+          invalidate('foo-bar');
+        });
+
+        this.assertInnerHTML('<h1>foo-bar (revision 1)</h1>');
+      });
+    }
+
+    ['@test hot reload (with component class)']() {
+      ENV._APPLICATION_TEMPLATE_WRAPPER = false;
+
+      let invalidate;
+
+      this.add(
+        'service:component-template-revisions',
+        Service.extend({
+          init() {
+            this._super(...arguments);
+            this.revisions = {};
+            this.listeners = [];
+
+            invalidate = componentName => {
+              let revision = this.revisions[componentName];
+
+              if (revision === undefined) {
+                revision = 0;
+              }
+
+              this.revisions[componentName] = ++revision;
+
+              this.listeners.forEach(callback => callback());
+            };
+          },
+
+          listen(callback) {
+            this.listeners.push(callback);
+          },
+
+          revisionFor(componentName) {
+            return this.revisions[componentName];
+          },
+        })
+      );
+
+      this.add(
+        'helper:revisioned-component-name',
+        Helper.extend({
+          revision: injectService('component-template-revisions'),
+
+          init() {
+            this._super(...arguments);
+            this.revision.listen(() => this.recompute());
+          },
+
+          compute([name]) {
+            let revision = this.revision.revisionFor(name);
+
+            if (revision === undefined) {
+              return name;
+            } else {
+              return `${name}--hot-reload-${revision}`;
+            }
+          },
+        })
+      );
+
+      this.addTemplate('application', `{{component (revisioned-component-name "foo-bar")}}`);
+
+      this.addComponent('foo-bar', {
+        ComponentClass: Component.extend({
+          tagName: '',
+          name: 'foo-bar',
+        }),
+        template: '<h1>{{this.name}}</h1>',
+      });
+
+      return this.visit('/').then(() => {
+        this.assertInnerHTML('<h1>foo-bar</h1>');
+
+        this.runTask(() => {
+          this.addComponent('foo-bar--hot-reload-1', {
+            ComponentClass:
+              this.applicationInstance.resolveRegistration('component:foo-bar') || null,
+            template: '<h1>{{this.name}} (revision 1)</h1>',
+          });
+
+          invalidate('foo-bar');
+        });
+
+        this.assertInnerHTML('<h1>foo-bar (revision 1)</h1>');
       });
     }
   }
