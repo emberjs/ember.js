@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### v3.5.0-beta.3 (September 24, 2018)
+
+- [#16978](https://github.com/emberjs/ember.js/pull/16978) [BUGFIX] Properly teardown alias
+- [#16999](https://github.com/emberjs/ember.js/pull/16999) [BUGFIX] Fix mouseEnter/Leave event delegation w/o jQuery
+
 ### v3.5.0-beta.2 (September 10, 2018)
 
 - [#16933](https://github.com/emberjs/ember.js/pull/16933) [BUGFIX] Update glimmer-vm packages to 0.38.8
