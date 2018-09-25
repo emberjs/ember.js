@@ -10,7 +10,13 @@
 - [#16877](https://github.com/emberjs/ember.js/pull/16877) [CLEANUP] Allow routes to be named "array" and "object"
 - [#16907](https://github.com/emberjs/ember.js/pull/16907) Upgrade to TypeScript 3.0
 
+### v3.4.2 (September 24, 2018)
+
+- [#16860](https://github.com/emberjs/ember.js/pull/16860) [BUGFIX] Clear chains in ProxyMixin when destroyed
+- [#16999](https://github.com/emberjs/ember.js/pull/16999) [BUGFIX] Fix mouseEnter/Leave event delegation without jQuery
+
 ### v3.4.1 (September 10, 2018)
+
 - [#16933](https://github.com/emberjs/ember.js/pull/16933) [BUGFIX] Update glimmer-vm packages to 0.38.8
 
 ### v3.4.0 (August 27, 2018)
