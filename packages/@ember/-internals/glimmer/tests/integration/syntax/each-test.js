@@ -2,9 +2,8 @@ import { get, set, notifyPropertyChange } from '@ember/-internals/metal';
 import { applyMixins, strip } from '../../utils/abstract-test-case';
 import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { A as emberA, ArrayProxy, RSVP } from '@ember/-internals/runtime';
-import { Component } from '../../utils/helpers';
+import { Component, htmlSafe } from '../../utils/helpers';
 import { HAS_NATIVE_SYMBOL } from '@ember/-internals/utils';
-
 import {
   TogglingSyntaxConditionalsTest,
   TruthyGenerator,
@@ -825,6 +824,32 @@ class EachTest extends AbstractEachTest {
     this.replaceList([]);
 
     this.assertText('');
+  }
+
+  ['@test empty trusted content clears properly [GH#16314]']() {
+    this.makeList(['hello']);
+
+    this.render(`before {{#each list as |value|}}{{{value}}}{{/each}} after`);
+
+    this.assertText('before hello after');
+
+    this.assertStableRerender();
+
+    this.runTask(() => this.pushObjects([null, ' world']));
+
+    this.assertText('before hello world after');
+
+    this.runTask(() => this.replace(1, 2, [undefined, ' world!']));
+
+    this.assertText('before hello world! after');
+
+    this.runTask(() => this.replace(1, 2, [htmlSafe(''), ' world!!']));
+
+    this.assertText('before hello world!! after');
+
+    this.replaceList(['hello']);
+
+    this.assertText('before hello after');
   }
 
   /* multi each */

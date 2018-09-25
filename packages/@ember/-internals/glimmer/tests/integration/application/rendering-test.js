@@ -503,5 +503,28 @@ moduleFor(
         }, expectedBacktrackingMessage);
       });
     }
+
+    ['@test route templates with {{{undefined}}} [GH#14924] [GH#16172]']() {
+      this.router.map(function() {
+        this.route('first');
+        this.route('second');
+      });
+
+      this.addTemplate('first', 'first');
+      this.addTemplate('second', '{{{undefined}}}second');
+
+      return this.visit('/first')
+        .then(() => {
+          this.assertText('first');
+          return this.visit('/second');
+        })
+        .then(() => {
+          this.assertText('second');
+          return this.visit('/first');
+        })
+        .then(() => {
+          this.assertText('first');
+        });
+    }
   }
 );
