@@ -9,7 +9,8 @@
       "packages/ember-debug/lib",
       "packages/ember-testing/lib",
       "node_modules/rsvp/lib",
-      "packages/@ember"
+      "packages/@ember",
+      "packages/@ember/-internals"
     ],
     "exclude": "vendor",
     "outdir":   "docs",
