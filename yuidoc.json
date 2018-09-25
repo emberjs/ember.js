@@ -20,7 +20,8 @@
       "packages/ember-extension-support/lib",
       "packages/container/lib",
       "node_modules/rsvp/lib",
-      "packages/@ember"
+      "packages/@ember",
+      "packages/@ember/-internals"
     ],
     "exclude": "vendor",
     "outdir":   "docs",
