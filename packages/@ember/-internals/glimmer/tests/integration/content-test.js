@@ -702,6 +702,22 @@ moduleFor(
       this.assertTextNode(this.firstChild, content);
       // this.takeSnapshot();
     }
+
+    ['@test it can render empty safe strings [GH#16314]']() {
+      this.render('before {{value}} after', { value: htmlSafe('hello') });
+
+      this.assertHTML('before hello after');
+
+      this.assertStableRerender();
+
+      this.runTask(() => set(this.context, 'value', htmlSafe('')));
+
+      this.assertHTML('before  after');
+
+      this.runTask(() => set(this.context, 'value', htmlSafe('hello')));
+
+      this.assertHTML('before hello after');
+    }
   }
 );
 
@@ -847,6 +863,14 @@ moduleFor(
       this.assertContent('before hello after');
 
       this.runTask(() => set(this.context, 'value', ''));
+
+      this.assertContent('before  after');
+
+      this.runTask(() => set(this.context, 'value', 'hello'));
+
+      this.assertContent('before hello after');
+
+      this.runTask(() => set(this.context, 'value', htmlSafe('')));
 
       this.assertContent('before  after');
 
