@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.4.3 (September 25, 2018)
+
+- [#17003](https://github.com/emberjs/ember.js/pull/17003) [BUGFIX] Fix rendering of empty content with `{{{...}}}` and `htmlSafe`
+
 ### v3.4.2 (September 24, 2018)
 
 - [#16860](https://github.com/emberjs/ember.js/pull/16860) [BUGFIX] Clear chains in ProxyMixin when destroyed
@@ -33,7 +37,7 @@
 
 - [#16836](https://github.com/emberjs/ember.js/pull/16836/commits) [DOC] Fix Broken 3.3 API Documentation
 
-### v3.3.0 (July 16, 2018) 
+### v3.3.0 (July 16, 2018)
 
 - [#16687](https://github.com/emberjs/ember.js/pull/16687) [FEATURE] Implement optional jQuery integration (see [emberjs/rfcs#294](https://github.com/emberjs/rfcs/blob/master/text/0294-optional-jquery.md) for more details).
 - [#16690](https://github.com/emberjs/ember.js/pull/16690) [DEPRECATION] [emberjs/rfcs#294](emberjs/rfcs#294) Deprecate accessing `jQuery.Event#originalEvent`.
