@@ -720,61 +720,66 @@ module('[glimmer-runtime] Updating', hooks => {
     },
     {
       name: 'triple curlies',
-      template: '<div>{{{value}}}</div>',
+      template: '<div>before {{{value}}} after</div>',
       values: [
         {
           input: 'hello',
-          expected: '<div>hello</div>',
+          expected: '<div>before hello after</div>',
           description: 'plain string',
         },
         {
           input: '<b>hello</b>',
-          expected: '<div><b>hello</b></div>',
+          expected: '<div>before <b>hello</b> after</div>',
           description: 'string containing HTML',
         },
         {
           input: null,
-          expected: '<div></div>',
+          expected: '<div>before <!---> after</div>',
           description: 'null literal',
         },
         {
           input: undefined,
-          expected: '<div></div>',
+          expected: '<div>before <!---> after</div>',
           description: 'undefined literal',
         },
         {
+          input: ' ',
+          expected: '<div>before   after</div>',
+          description: 'blank string',
+        },
+        {
           input: makeSafeString('<b>hello</b>'),
-          expected: '<div><b>hello</b></div>',
+          expected: '<div>before <b>hello</b> after</div>',
           description: 'safe string containing HTML',
         },
         {
           input: makeElement('p', 'hello'),
-          expected: '<div><p>hello</p></div>',
+          expected: '<div>before <p>hello</p> after</div>',
           description: 'DOM node containing and element with text',
         },
         {
           input: makeFragment([makeElement('p', 'one'), makeElement('p', 'two')]),
-          expected: '<div><p>one</p><p>two</p></div>',
+          expected: '<div>before <p>one</p><p>two</p> after</div>',
           description: 'DOM fragment containing multiple nodes',
         },
         {
           input: 'not modified',
-          expected: '<div>not modified</div>',
+          expected: '<div>before not modified after</div>',
           description: 'plain string (not modified, first render)',
         },
         {
           input: 'not modified',
-          expected: '<div>not modified</div>',
+          expected: '<div>before not modified after</div>',
           description: 'plain string (not modified, second render)',
         },
         {
           input: 0,
-          expected: '<div>0</div>',
+          expected: '<div>before 0 after</div>',
           description: 'number literal (0)',
         },
         {
           input: true,
-          expected: '<div>true</div>',
+          expected: '<div>before true after</div>',
           description: 'boolean literal (true)',
         },
         {
@@ -783,8 +788,13 @@ module('[glimmer-runtime] Updating', hooks => {
               return 'I am an Object';
             },
           },
-          expected: '<div>I am an Object</div>',
+          expected: '<div>before I am an Object after</div>',
           description: 'object with a toString function',
+        },
+        {
+          input: 'hello',
+          expected: '<div>before hello after</div>',
+          description: 'reset',
         },
       ],
     },
@@ -869,11 +879,11 @@ module('[glimmer-runtime] Updating', hooks => {
 
     render(template, input);
 
-    equalTokens(root, '<div></div>', 'Initial render');
+    equalTokens(root, '<div><!----></div>', 'Initial render');
 
     rerender();
 
-    equalTokens(root, '<div></div>', 'no change');
+    equalTokens(root, '<div><!----></div>', 'no change');
 
     input.value = '<b>Bold and spicy</b>';
     rerender();
@@ -883,7 +893,7 @@ module('[glimmer-runtime] Updating', hooks => {
     input.value = '';
     rerender();
 
-    equalTokens(root, '<div></div>', 'back to empty string');
+    equalTokens(root, '<div><!----></div>', 'back to empty string');
   });
 
   class ValueReference<T> extends ConstReference<T> {

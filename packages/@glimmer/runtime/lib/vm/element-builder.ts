@@ -482,7 +482,7 @@ export class SimpleBlockTracker implements Tracker {
   }
 
   finalize(stack: ElementBuilder) {
-    if (!this.first) {
+    if (this.first === null) {
       stack.appendComment('');
     }
   }

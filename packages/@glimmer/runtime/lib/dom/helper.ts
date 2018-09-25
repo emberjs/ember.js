@@ -210,22 +210,15 @@ export function insertHTMLBefore(
   useless: HTMLElement,
   _parent: Simple.Element,
   _nextSibling: Option<Simple.Node>,
-  html: string
+  _html: string
 ): Bounds {
-  // tslint:disable-line
-  // TypeScript vendored an old version of the DOM spec where `insertAdjacentHTML`
-  // only exists on `HTMLElement` but not on `Element`. We actually work with the
-  // newer version of the DOM API here (and monkey-patch this method in `./compat`
-  // when we detect older browsers). This is a hack to work around this limitation.
-  let parent = _parent as HTMLElement;
-  let nextSibling = _nextSibling as Node;
+  let parent = _parent as Element;
+  let nextSibling = _nextSibling as Option<Node>;
 
   let prev = nextSibling ? nextSibling.previousSibling : parent.lastChild;
   let last: Simple.Node | null;
 
-  if (html === null || html === '') {
-    return new ConcreteBounds(parent, null, null);
-  }
+  let html = _html || '<!---->';
 
   if (nextSibling === null) {
     parent.insertAdjacentHTML('beforeend', html);
