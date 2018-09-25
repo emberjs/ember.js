@@ -712,7 +712,7 @@ moduleFor(
 
       this.runTask(() => set(this.context, 'value', htmlSafe('')));
 
-      this.assertHTML('before  after');
+      this.assertHTML('before <!----> after');
 
       this.runTask(() => set(this.context, 'value', htmlSafe('hello')));
 
@@ -848,7 +848,7 @@ moduleFor(
 
       this.runTask(() => set(this.context, 'value', undefined));
 
-      this.assertContent('before  after');
+      this.assertContent('before <!----> after');
 
       this.runTask(() => set(this.context, 'value', 'hello'));
 
@@ -856,7 +856,7 @@ moduleFor(
 
       this.runTask(() => set(this.context, 'value', null));
 
-      this.assertContent('before  after');
+      this.assertContent('before <!----> after');
 
       this.runTask(() => set(this.context, 'value', 'hello'));
 
@@ -864,7 +864,7 @@ moduleFor(
 
       this.runTask(() => set(this.context, 'value', ''));
 
-      this.assertContent('before  after');
+      this.assertContent('before <!----> after');
 
       this.runTask(() => set(this.context, 'value', 'hello'));
 
@@ -872,7 +872,7 @@ moduleFor(
 
       this.runTask(() => set(this.context, 'value', htmlSafe('')));
 
-      this.assertContent('before  after');
+      this.assertContent('before <!----> after');
 
       this.runTask(() => set(this.context, 'value', 'hello'));
 
