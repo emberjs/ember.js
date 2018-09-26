@@ -650,61 +650,81 @@ module('[glimmer-runtime] Updating', hooks => {
   [
     {
       name: 'double curlies',
-      template: '<div>{{value}}</div>',
+      template: '<div>before {{value}} after</div>',
       values: [
         {
           input: 'hello',
-          expected: '<div>hello</div>',
+          expected: '<div>before hello after</div>',
           description: 'plain string',
         },
         {
           input: '<b>hello</b>',
-          expected: '<div>&lt;b&gt;hello&lt;/b&gt;</div>',
+          expected: '<div>before &lt;b&gt;hello&lt;/b&gt; after</div>',
           description: 'string containing HTML',
         },
         {
           input: null,
-          expected: '<div></div>',
+          expected: '<div>before  after</div>',
           description: 'null literal',
         },
         {
           input: undefined,
-          expected: '<div></div>',
+          expected: '<div>before  after</div>',
           description: 'undefined literal',
         },
         {
+          input: '',
+          expected: '<div>before  after</div>',
+          description: 'empty string',
+        },
+        {
+          input: ' ',
+          expected: '<div>before   after</div>',
+          description: 'blank string',
+        },
+        {
           input: makeSafeString('<b>hello</b>'),
-          expected: '<div><b>hello</b></div>',
+          expected: '<div>before <b>hello</b> after</div>',
           description: 'safe string containing HTML',
         },
         {
+          input: makeSafeString(''),
+          expected: '<div>before <!----> after</div>',
+          description: 'empty safe string',
+        },
+        {
+          input: makeSafeString(' '),
+          expected: '<div>before   after</div>',
+          description: 'blank safe string',
+        },
+        {
           input: makeElement('p', 'hello'),
-          expected: '<div><p>hello</p></div>',
+          expected: '<div>before <p>hello</p> after</div>',
           description: 'DOM node containing an element with text',
         },
         {
           input: makeFragment([makeElement('p', 'one'), makeElement('p', 'two')]),
-          expected: '<div><p>one</p><p>two</p></div>',
+          expected: '<div>before <p>one</p><p>two</p> after</div>',
           description: 'DOM fragment containing multiple nodes',
         },
         {
           input: 'not modified',
-          expected: '<div>not modified</div>',
+          expected: '<div>before not modified after</div>',
           description: 'plain string (not modified, first render)',
         },
         {
           input: 'not modified',
-          expected: '<div>not modified</div>',
+          expected: '<div>before not modified after</div>',
           description: 'plain string (not modified, second render)',
         },
         {
           input: 0,
-          expected: '<div>0</div>',
+          expected: '<div>before 0 after</div>',
           description: 'number literal (0)',
         },
         {
           input: true,
-          expected: '<div>true</div>',
+          expected: '<div>before true after</div>',
           description: 'boolean literal (true)',
         },
         {
@@ -713,8 +733,13 @@ module('[glimmer-runtime] Updating', hooks => {
               return 'I am an Object';
             },
           },
-          expected: '<div>I am an Object</div>',
+          expected: '<div>before I am an Object after</div>',
           description: 'object with a toString function',
+        },
+        {
+          input: 'hello',
+          expected: '<div>before hello after</div>',
+          description: 'reset',
         },
       ],
     },
@@ -743,6 +768,11 @@ module('[glimmer-runtime] Updating', hooks => {
           description: 'undefined literal',
         },
         {
+          input: '',
+          expected: '<div>before <!---> after</div>',
+          description: 'empty string',
+        },
+        {
           input: ' ',
           expected: '<div>before   after</div>',
           description: 'blank string',
@@ -751,6 +781,16 @@ module('[glimmer-runtime] Updating', hooks => {
           input: makeSafeString('<b>hello</b>'),
           expected: '<div>before <b>hello</b> after</div>',
           description: 'safe string containing HTML',
+        },
+        {
+          input: makeSafeString(''),
+          expected: '<div>before <!----> after</div>',
+          description: 'empty safe string',
+        },
+        {
+          input: makeSafeString(' '),
+          expected: '<div>before   after</div>',
+          description: 'blank safe string',
         },
         {
           input: makeElement('p', 'hello'),
