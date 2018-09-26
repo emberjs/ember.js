@@ -15,7 +15,7 @@ moduleFor(
       delete QUnit.start;
       delete QUnit.stop;
 
-      adapter = new QUnitAdapter();
+      adapter = QUnitAdapter.create();
     }
 
     teardown() {
