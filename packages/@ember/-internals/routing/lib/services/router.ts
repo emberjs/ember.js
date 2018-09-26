@@ -59,7 +59,7 @@ export default class RouterService extends Service {
    */
   transitionTo(...args: string[]) {
     let transition;
-    let didNotComplete = false;
+    let didComplete = false;
 
     try {
       if (resemblesURL(args[0])) {
@@ -70,9 +70,9 @@ export default class RouterService extends Service {
         let transition = this._router._doTransition(routeName, models, queryParams, true);
         transition._keepDefaultQueryParamValues = true;
       }
-      didNotComplete = true;
+      didComplete = true;
     } finally {
-      if (didNotComplete) {
+      if (didComplete !== true) {
         transition.isAborted = false;
       }
     }
