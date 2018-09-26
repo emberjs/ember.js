@@ -33,10 +33,6 @@ export function applyTextNodeMergingFix(
     }
 
     insertHTMLBefore(parent: HTMLElement, nextSibling: Node, html: string): Bounds {
-      if (html === null) {
-        return super.insertHTMLBefore(parent, nextSibling, html);
-      }
-
       let didSetUselessComment = false;
 
       let nextPrevious = nextSibling ? nextSibling.previousSibling : parent.lastChild;

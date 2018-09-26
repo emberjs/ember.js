@@ -31,10 +31,6 @@ export function applySVGInnerHTMLFix(
 
   return class DOMChangesWithSVGInnerHTMLFix extends DOMClass {
     insertHTMLBefore(parent: HTMLElement, nextSibling: Node, html: string): Bounds {
-      if (html === null || html === '') {
-        return super.insertHTMLBefore(parent, nextSibling, html);
-      }
-
       if (parent.namespaceURI !== svgNamespace) {
         return super.insertHTMLBefore(parent, nextSibling, html);
       }
@@ -45,13 +41,29 @@ export function applySVGInnerHTMLFix(
 }
 
 function fixSVG(parent: Element, div: HTMLElement, html: string, reference: Node): Bounds {
-  // IE, Edge: also do not correctly support using `innerHTML` on SVG
-  // namespaced elements. So here a wrapper is used.
-  let wrappedHtml = '<svg>' + html + '</svg>';
+  let source: Node;
 
-  div.innerHTML = wrappedHtml;
+  // This is important, because decendants of the <foreignObject> integration
+  // point are parsed in the HTML namespace
+  if (parent.tagName.toUpperCase() === 'FOREIGNOBJECT') {
+    // IE, Edge: also do not correctly support using `innerHTML` on SVG
+    // namespaced elements. So here a wrapper is used.
+    let wrappedHtml = '<svg><foreignObject>' + (html || '<!---->') + '</foreignObject></svg>';
 
-  let [first, last] = moveNodesBefore(div.firstChild as Node, parent, reference);
+    div.innerHTML = wrappedHtml;
+
+    source = div.firstChild!.firstChild!;
+  } else {
+    // IE, Edge: also do not correctly support using `innerHTML` on SVG
+    // namespaced elements. So here a wrapper is used.
+    let wrappedHtml = '<svg>' + (html || '<!---->') + '</svg>';
+
+    div.innerHTML = wrappedHtml;
+
+    source = div.firstChild!;
+  }
+
+  let [first, last] = moveNodesBefore(source, parent, reference);
   return new ConcreteBounds(parent, first, last);
 }
 
