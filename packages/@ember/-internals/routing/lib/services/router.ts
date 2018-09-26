@@ -63,7 +63,7 @@ export default class RouterService extends Service {
 
     try {
       if (resemblesURL(args[0])) {
-        transition this._router._doURLTransition('transitionTo', args[0]);
+        transition = this._router._doURLTransition('transitionTo', args[0]);
       } else {
         let { routeName, models, queryParams } = extractRouteArgs(args);
   
