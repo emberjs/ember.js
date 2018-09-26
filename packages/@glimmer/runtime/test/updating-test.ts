@@ -641,220 +641,330 @@ module('[glimmer-runtime] Updating', hooks => {
     return el;
   }
 
+  function makeSVGElement(tag: string, content: string) {
+    let el = document.createElementNS(SVG_NAMESPACE, tag);
+    el.appendChild(document.createTextNode(content));
+    return el;
+  }
+
   function makeFragment(nodes: Node[]) {
     let frag = document.createDocumentFragment();
     nodes.forEach(node => frag.appendChild(node));
     return frag;
   }
 
-  [
-    {
-      name: 'double curlies',
-      template: '<div>before {{value}} after</div>',
-      values: [
-        {
-          input: 'hello',
-          expected: '<div>before hello after</div>',
-          description: 'plain string',
-        },
-        {
-          input: '<b>hello</b>',
-          expected: '<div>before &lt;b&gt;hello&lt;/b&gt; after</div>',
-          description: 'string containing HTML',
-        },
-        {
-          input: null,
-          expected: '<div>before  after</div>',
-          description: 'null literal',
-        },
-        {
-          input: undefined,
-          expected: '<div>before  after</div>',
-          description: 'undefined literal',
-        },
-        {
-          input: '',
-          expected: '<div>before  after</div>',
-          description: 'empty string',
-        },
-        {
-          input: ' ',
-          expected: '<div>before   after</div>',
-          description: 'blank string',
-        },
-        {
-          input: makeSafeString('<b>hello</b>'),
-          expected: '<div>before <b>hello</b> after</div>',
-          description: 'safe string containing HTML',
-        },
-        {
-          input: makeSafeString(''),
-          expected: '<div>before <!----> after</div>',
-          description: 'empty safe string',
-        },
-        {
-          input: makeSafeString(' '),
-          expected: '<div>before   after</div>',
-          description: 'blank safe string',
-        },
-        {
-          input: makeElement('p', 'hello'),
-          expected: '<div>before <p>hello</p> after</div>',
-          description: 'DOM node containing an element with text',
-        },
-        {
-          input: makeFragment([makeElement('p', 'one'), makeElement('p', 'two')]),
-          expected: '<div>before <p>one</p><p>two</p> after</div>',
-          description: 'DOM fragment containing multiple nodes',
-        },
-        {
-          input: 'not modified',
-          expected: '<div>before not modified after</div>',
-          description: 'plain string (not modified, first render)',
-        },
-        {
-          input: 'not modified',
-          expected: '<div>before not modified after</div>',
-          description: 'plain string (not modified, second render)',
-        },
-        {
-          input: 0,
-          expected: '<div>before 0 after</div>',
-          description: 'number literal (0)',
-        },
-        {
-          input: true,
-          expected: '<div>before true after</div>',
-          description: 'boolean literal (true)',
-        },
-        {
-          input: {
-            toString() {
-              return 'I am an Object';
-            },
-          },
-          expected: '<div>before I am an Object after</div>',
-          description: 'object with a toString function',
-        },
-        {
-          input: 'hello',
-          expected: '<div>before hello after</div>',
-          description: 'reset',
-        },
-      ],
-    },
-    {
-      name: 'triple curlies',
-      template: '<div>before {{{value}}} after</div>',
-      values: [
-        {
-          input: 'hello',
-          expected: '<div>before hello after</div>',
-          description: 'plain string',
-        },
-        {
-          input: '<b>hello</b>',
-          expected: '<div>before <b>hello</b> after</div>',
-          description: 'string containing HTML',
-        },
-        {
-          input: null,
-          expected: '<div>before <!---> after</div>',
-          description: 'null literal',
-        },
-        {
-          input: undefined,
-          expected: '<div>before <!---> after</div>',
-          description: 'undefined literal',
-        },
-        {
-          input: '',
-          expected: '<div>before <!---> after</div>',
-          description: 'empty string',
-        },
-        {
-          input: ' ',
-          expected: '<div>before   after</div>',
-          description: 'blank string',
-        },
-        {
-          input: makeSafeString('<b>hello</b>'),
-          expected: '<div>before <b>hello</b> after</div>',
-          description: 'safe string containing HTML',
-        },
-        {
-          input: makeSafeString(''),
-          expected: '<div>before <!----> after</div>',
-          description: 'empty safe string',
-        },
-        {
-          input: makeSafeString(' '),
-          expected: '<div>before   after</div>',
-          description: 'blank safe string',
-        },
-        {
-          input: makeElement('p', 'hello'),
-          expected: '<div>before <p>hello</p> after</div>',
-          description: 'DOM node containing and element with text',
-        },
-        {
-          input: makeFragment([makeElement('p', 'one'), makeElement('p', 'two')]),
-          expected: '<div>before <p>one</p><p>two</p> after</div>',
-          description: 'DOM fragment containing multiple nodes',
-        },
-        {
-          input: 'not modified',
-          expected: '<div>before not modified after</div>',
-          description: 'plain string (not modified, first render)',
-        },
-        {
-          input: 'not modified',
-          expected: '<div>before not modified after</div>',
-          description: 'plain string (not modified, second render)',
-        },
-        {
-          input: 0,
-          expected: '<div>before 0 after</div>',
-          description: 'number literal (0)',
-        },
-        {
-          input: true,
-          expected: '<div>before true after</div>',
-          description: 'boolean literal (true)',
-        },
-        {
-          input: {
-            toString() {
-              return 'I am an Object';
-            },
-          },
-          expected: '<div>before I am an Object after</div>',
-          description: 'object with a toString function',
-        },
-        {
-          input: 'hello',
-          expected: '<div>before hello after</div>',
-          description: 'reset',
-        },
-      ],
-    },
-  ].forEach(config => {
-    test(`updating ${config.name} produces expected result`, () => {
-      let template = compile(config.template);
-      let context = {
-        value: undefined as undefined | null | { toString(): string },
-      };
-      config.values.forEach((testCase, index) => {
-        context.value = testCase.input;
-        if (index === 0) {
-          render(template, context);
-          equalTokens(root, testCase.expected, `expected initial render (${testCase.description})`);
-        } else {
-          rerender();
-          equalTokens(root, testCase.expected, `expected updated render (${testCase.description})`);
-        }
+  interface ContentTestCase {
+    name: string;
+    template: string;
+    values: Array<{
+      input: Opaque | ((isHTML: boolean) => Opaque);
+      expected: string | ((isHTML: boolean) => string);
+      description: string;
+    }>;
+  }
+
+  function generateContentTestCase(tc: ContentTestCase): void {
+    [
+      {
+        name: 'HTML context, as the only child',
+        isHTML: true,
+        before: '<div>',
+        after: '</div>',
+      },
+      {
+        name: 'HTML context, as a sibling to adjecent text nodes',
+        isHTML: true,
+        before: '<div>before',
+        after: 'after</div>',
+      },
+      {
+        name: 'HTML context, as a sibling to adjecent elements',
+        isHTML: true,
+        before: '<div><b>before</b>',
+        after: '<b>after</b></div>',
+      },
+      {
+        name: 'SVG foreignObject context, as the only child',
+        isHTML: true,
+        before: '<svg><foreignObject>',
+        after: '</foreignObject></svg>',
+      },
+      {
+        name: 'SVG foreignObject context, as a sibling to adjecent text nodes',
+        isHTML: true,
+        before: '<svg><foreignObject>before',
+        after: 'after</foreignObject></svg>',
+      },
+      {
+        name: 'SVG foreignObject context, as a sibling to adjecent elements',
+        isHTML: true,
+        before: '<svg><foreignObject><b>before</b>',
+        after: '<b>after</b></foreignObject></svg>',
+      },
+      {
+        name: 'SVG context, as the only child',
+        isHTML: false,
+        before: '<svg><text>',
+        after: '</text></svg>',
+      },
+      {
+        name: 'SVG context, as a sibling to adjecent text nodes',
+        isHTML: false,
+        before: '<svg><text>before',
+        after: 'after</text></svg>',
+      },
+      {
+        name: 'SVG context, as a sibling to adjecent elements',
+        isHTML: false,
+        before: '<svg><text><text>before</text>',
+        after: '<text>after</text></text></svg>',
+      },
+    ].forEach(wrapper => {
+      test(`updating ${tc.name} produces expected result in ${wrapper.name}`, () => {
+        let template = compile(wrapper.before + tc.template + wrapper.after);
+        let context = {
+          value: undefined as Opaque,
+        };
+        tc.values.forEach(({ input: _input, expected: _expected, description }, index) => {
+          let input: Opaque;
+          let expected: string;
+
+          if (typeof _input === 'function') {
+            input = _input(wrapper.isHTML);
+          } else {
+            input = _input;
+          }
+
+          if (typeof _expected === 'function') {
+            expected = _expected(wrapper.isHTML);
+          } else {
+            expected = _expected;
+          }
+
+          context.value = input;
+
+          if (index === 0) {
+            render(template, context);
+            equalTokens(
+              root,
+              wrapper.before + expected + wrapper.after,
+              `expected initial render (${description})`
+            );
+          } else {
+            rerender();
+            equalTokens(
+              root,
+              wrapper.before + expected + wrapper.after,
+              `expected updated render (${description})`
+            );
+          }
+        });
       });
     });
+  }
+
+  generateContentTestCase({
+    name: 'double curlies',
+    template: '{{value}}',
+    values: [
+      {
+        input: 'hello',
+        expected: 'hello',
+        description: 'plain string',
+      },
+      {
+        input: '<b>hello</b>',
+        expected: '&lt;b&gt;hello&lt;/b&gt;',
+        description: 'string containing HTML',
+      },
+      {
+        input: null,
+        expected: '',
+        description: 'null literal',
+      },
+      {
+        input: undefined,
+        expected: '',
+        description: 'undefined literal',
+      },
+      {
+        input: '',
+        expected: '',
+        description: 'empty string',
+      },
+      {
+        input: ' ',
+        expected: ' ',
+        description: 'blank string',
+      },
+      {
+        input: isHTML => makeSafeString(isHTML ? '<b>hello</b>' : '<text>hello</text>'),
+        expected: isHTML => (isHTML ? '<b>hello</b>' : '<text>hello</text>'),
+        description: 'safe string containing HTML',
+      },
+      {
+        input: makeSafeString(''),
+        expected: '<!---->',
+        description: 'empty safe string',
+      },
+      {
+        input: makeSafeString(' '),
+        expected: ' ',
+        description: 'blank safe string',
+      },
+      {
+        input: isHTML => (isHTML ? makeElement('p', 'hello') : makeSVGElement('text', 'hello')),
+        expected: isHTML => (isHTML ? '<p>hello</p>' : '<text>hello</text>'),
+        description: 'DOM node containing an element with text',
+      },
+      {
+        input: isHTML => {
+          if (isHTML) {
+            return makeFragment([makeElement('p', 'one'), makeElement('p', 'two')]);
+          } else {
+            return makeFragment([makeSVGElement('text', 'one'), makeSVGElement('text', 'two')]);
+          }
+        },
+        expected: isHTML => (isHTML ? '<p>one</p><p>two</p>' : '<text>one</text><text>two</text>'),
+        description: 'DOM fragment containing multiple nodes',
+      },
+      {
+        input: 'not modified',
+        expected: 'not modified',
+        description: 'plain string (not modified, first render)',
+      },
+      {
+        input: 'not modified',
+        expected: 'not modified',
+        description: 'plain string (not modified, second render)',
+      },
+      {
+        input: 0,
+        expected: '0',
+        description: 'number literal (0)',
+      },
+      {
+        input: true,
+        expected: 'true',
+        description: 'boolean literal (true)',
+      },
+      {
+        input: {
+          toString() {
+            return 'I am an Object';
+          },
+        },
+        expected: 'I am an Object',
+        description: 'object with a toString function',
+      },
+      {
+        input: 'hello',
+        expected: 'hello',
+        description: 'reset',
+      },
+    ],
+  });
+
+  generateContentTestCase({
+    name: 'triple curlies',
+    template: '{{{value}}}',
+    values: [
+      {
+        input: 'hello',
+        expected: 'hello',
+        description: 'plain string',
+      },
+      {
+        input: isHTML => (isHTML ? '<b>hello</b>' : '<text>hello</text>'),
+        expected: isHTML => (isHTML ? '<b>hello</b>' : '<text>hello</text>'),
+        description: 'string containing HTML',
+      },
+      {
+        input: null,
+        expected: '<!--->',
+        description: 'null literal',
+      },
+      {
+        input: undefined,
+        expected: '<!--->',
+        description: 'undefined literal',
+      },
+      {
+        input: '',
+        expected: '<!--->',
+        description: 'empty string',
+      },
+      {
+        input: ' ',
+        expected: ' ',
+        description: 'blank string',
+      },
+      {
+        input: isHTML => makeSafeString(isHTML ? '<b>hello</b>' : '<text>hello</text>'),
+        expected: isHTML => (isHTML ? '<b>hello</b>' : '<text>hello</text>'),
+        description: 'safe string containing HTML',
+      },
+      {
+        input: makeSafeString(''),
+        expected: '<!---->',
+        description: 'empty safe string',
+      },
+      {
+        input: makeSafeString(' '),
+        expected: ' ',
+        description: 'blank safe string',
+      },
+      {
+        input: isHTML => (isHTML ? makeElement('p', 'hello') : makeSVGElement('text', 'hello')),
+        expected: isHTML => (isHTML ? '<p>hello</p>' : '<text>hello</text>'),
+        description: 'DOM node containing an element with text',
+      },
+      {
+        input: isHTML => {
+          if (isHTML) {
+            return makeFragment([makeElement('p', 'one'), makeElement('p', 'two')]);
+          } else {
+            return makeFragment([makeSVGElement('text', 'one'), makeSVGElement('text', 'two')]);
+          }
+        },
+        expected: isHTML => (isHTML ? '<p>one</p><p>two</p>' : '<text>one</text><text>two</text>'),
+        description: 'DOM fragment containing multiple nodes',
+      },
+      {
+        input: 'not modified',
+        expected: 'not modified',
+        description: 'plain string (not modified, first render)',
+      },
+      {
+        input: 'not modified',
+        expected: 'not modified',
+        description: 'plain string (not modified, second render)',
+      },
+      {
+        input: 0,
+        expected: '0',
+        description: 'number literal (0)',
+      },
+      {
+        input: true,
+        expected: 'true',
+        description: 'boolean literal (true)',
+      },
+      {
+        input: {
+          toString() {
+            return 'I am an Object';
+          },
+        },
+        expected: 'I am an Object',
+        description: 'object with a toString function',
+      },
+      {
+        input: 'hello',
+        expected: 'hello',
+        description: 'reset',
+      },
+    ],
   });
 
   test('updating a triple curly with a safe and unsafe string', assert => {
