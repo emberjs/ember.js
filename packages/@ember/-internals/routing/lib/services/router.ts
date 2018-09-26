@@ -60,6 +60,7 @@ export default class RouterService extends Service {
   transitionTo(...args: string[]) {
     let transition;
     let didComplete = false;
+    // Playing with an idea, not 100% sure where this type of solution should actually go
     let activeTransition = /* grab the active transition */
 
     try {
