@@ -219,6 +219,7 @@ class CoreObject {
         {
           id: 'object.new-constructor',
           until: '3.9.0',
+          url: 'https://emberjs.com/deprecations/v3.x#toc_object-new-constructor',
         }
       );
 
