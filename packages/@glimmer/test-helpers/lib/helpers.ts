@@ -2,7 +2,7 @@ import { precompile as rawPrecompile, PrecompileOptions } from '@glimmer/compile
 import { Opaque, Option } from '@glimmer/interfaces';
 import { Environment } from '@glimmer/runtime';
 import * as WireFormat from '@glimmer/wire-format';
-import { tokenize } from 'simple-html-tokenizer';
+import { EndTag, Token, tokenize } from 'simple-html-tokenizer';
 
 // For Phantom
 function toObject(val: Opaque) {
@@ -98,7 +98,7 @@ export function equalHTML(node: Node | Node[], html: string) {
   equalInnerHTML(div, html);
 }
 
-function generateTokens(divOrHTML: Element | string) {
+function generateTokens(divOrHTML: Element | string): { tokens: Token[]; html: string } {
   let div;
   if (typeof divOrHTML === 'string') {
     div = document.createElement('div');
@@ -107,22 +107,37 @@ function generateTokens(divOrHTML: Element | string) {
     div = divOrHTML;
   }
 
-  const tokens = tokenize(div.innerHTML, {});
-  tokens.forEach(token => {
-    if (token.type === 'StartTag' && token.attributes) {
-      token.attributes.sort((a, b) => {
-        if (a[0] > b[0]) {
-          return 1;
-        }
-        if (a[0] < b[0]) {
-          return -1;
-        }
-        return 0;
-      });
-    }
-  });
+  let tokens = tokenize(div.innerHTML, {});
 
-  return { tokens: tokens, html: div.innerHTML };
+  tokens = tokens.reduce((tokens, token) => {
+    if (token.type === 'StartTag') {
+      if (token.attributes) {
+        token.attributes.sort((a, b) => {
+          if (a[0] > b[0]) {
+            return 1;
+          }
+          if (a[0] < b[0]) {
+            return -1;
+          }
+          return 0;
+        });
+      }
+
+      if (token.selfClosing) {
+        token.selfClosing = false;
+        tokens.push(token);
+        tokens.push({ type: 'EndTag', tagName: token.tagName } as EndTag);
+      } else {
+        tokens.push(token);
+      }
+    } else {
+      tokens.push(token);
+    }
+
+    return tokens;
+  }, new Array<Token>());
+
+  return { tokens, html: div.innerHTML };
 }
 
 declare const QUnit: QUnit & {
