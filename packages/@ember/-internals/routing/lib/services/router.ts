@@ -58,14 +58,24 @@ export default class RouterService extends Service {
      @public
    */
   transitionTo(...args: string[]) {
-    if (resemblesURL(args[0])) {
-      return this._router._doURLTransition('transitionTo', args[0]);
+    let transition;
+    let didNotComplete = false;
+
+    try {
+      if (resemblesURL(args[0])) {
+        transition this._router._doURLTransition('transitionTo', args[0]);
+      } else {
+        let { routeName, models, queryParams } = extractRouteArgs(args);
+  
+        let transition = this._router._doTransition(routeName, models, queryParams, true);
+        transition._keepDefaultQueryParamValues = true;
+      }
+      didNotComplete = true;
+    } finally {
+      if (didNotComplete) {
+        transition.isAborted = false;
+      }
     }
-
-    let { routeName, models, queryParams } = extractRouteArgs(args);
-
-    let transition = this._router._doTransition(routeName, models, queryParams, true);
-    transition._keepDefaultQueryParamValues = true;
 
     return transition;
   }
