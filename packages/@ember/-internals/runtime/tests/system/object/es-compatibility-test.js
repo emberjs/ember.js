@@ -194,6 +194,15 @@ moduleFor(
       assert.ok(myObject instanceof EmberObject);
     }
 
+    ['@test using Ember.Object#detect'](assert) {
+      let Parent = EmberObject.extend();
+      class Child extends Parent {}
+      let Grandchild = Child.extend();
+
+      assert.ok(Parent.detect(Child), 'Parent.detect(Child)');
+      assert.ok(Child.detect(Grandchild), 'Child.detect(Grandchild)');
+    }
+
     ['@test extending an ES subclass of EmberObject'](assert) {
       let calls = [];
 
