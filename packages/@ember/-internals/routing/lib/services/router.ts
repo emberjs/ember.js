@@ -73,6 +73,7 @@ export default class RouterService extends Service {
       didComplete = true;
     } finally {
       if (didComplete !== true) {
+        // actually the routes active transition prior to starting this transitionTo
         transition.isAborted = false;
       }
     }
