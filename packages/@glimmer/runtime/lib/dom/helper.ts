@@ -77,17 +77,17 @@ export function isWhitespace(string: string) {
 export function moveNodesBefore(
   source: Simple.Node,
   target: Simple.Element,
-  nextSibling: Simple.Node
-) {
+  nextSibling: Option<Simple.Node>
+): Bounds {
   let first = source.firstChild;
-  let last: Simple.Node | null = null;
+  let last: Option<Simple.Node> = null;
   let current = first;
   while (current) {
     last = current;
     current = current.nextSibling;
     target.insertBefore(last, nextSibling);
   }
-  return [first, last];
+  return new ConcreteBounds(target, first, last);
 }
 
 export class DOMOperations {
@@ -134,10 +134,44 @@ export class DOMOperations {
 
   insertHTMLBefore(
     _parent: Simple.Element,
-    nextSibling: Option<Simple.Node>,
+    _nextSibling: Option<Simple.Node>,
     html: string
   ): Bounds {
-    return insertHTMLBefore(this.uselessElement, _parent, nextSibling, html);
+    if (html === '') {
+      let comment = this.createComment('');
+      _parent.insertBefore(comment, _nextSibling);
+      return new ConcreteBounds(_parent, comment, comment);
+    }
+
+    // TODO why are these casts okay???
+    let parent = _parent as Element;
+    let nextSibling = _nextSibling as Option<Node>;
+
+    let prev = nextSibling ? nextSibling.previousSibling : parent.lastChild;
+    let last: Option<Simple.Node>;
+
+    if (nextSibling === null) {
+      parent.insertAdjacentHTML('beforeend', html);
+      last = parent.lastChild;
+    } else if (nextSibling instanceof HTMLElement) {
+      nextSibling.insertAdjacentHTML('beforebegin', html);
+      last = nextSibling.previousSibling;
+    } else {
+      // Non-element nodes do not support insertAdjacentHTML, so add an
+      // element and call it on that element. Then remove the element.
+      //
+      // This also protects Edge, IE and Firefox w/o the inspector open
+      // from merging adjacent text nodes. See ./compat/text-node-merging-fix.ts
+      let { uselessElement } = this;
+
+      parent.insertBefore(uselessElement, nextSibling);
+      uselessElement.insertAdjacentHTML('beforebegin', html);
+      last = uselessElement.previousSibling;
+      parent.removeChild(uselessElement);
+    }
+
+    let first = prev ? prev.nextSibling : parent.firstChild;
+    return new ConcreteBounds(parent, first, last);
   }
 
   createTextNode(text: string): Simple.Text {
@@ -203,43 +237,6 @@ export class DOMChanges extends DOMOperations {
   insertAfter(element: Simple.Element, node: Simple.Node, reference: Simple.Node) {
     this.insertBefore(element, node, reference.nextSibling);
   }
-}
-
-export function insertHTMLBefore(
-  this: void,
-  useless: HTMLElement,
-  _parent: Simple.Element,
-  _nextSibling: Option<Simple.Node>,
-  _html: string
-): Bounds {
-  let parent = _parent as Element;
-  let nextSibling = _nextSibling as Option<Node>;
-
-  let prev = nextSibling ? nextSibling.previousSibling : parent.lastChild;
-  let last: Simple.Node | null;
-
-  let html = _html || '<!---->';
-
-  if (nextSibling === null) {
-    parent.insertAdjacentHTML('beforeend', html);
-    last = parent.lastChild;
-  } else if (nextSibling instanceof HTMLElement) {
-    nextSibling.insertAdjacentHTML('beforebegin', html);
-    last = nextSibling.previousSibling;
-  } else {
-    // Non-element nodes do not support insertAdjacentHTML, so add an
-    // element and call it on that element. Then remove the element.
-    //
-    // This also protects Edge, IE and Firefox w/o the inspector open
-    // from merging adjacent text nodes. See ./compat/text-node-merging-fix.ts
-    parent.insertBefore(useless, nextSibling);
-    useless.insertAdjacentHTML('beforebegin', html);
-    last = useless.previousSibling;
-    parent.removeChild(useless);
-  }
-
-  let first = prev ? prev.nextSibling : parent.firstChild;
-  return new ConcreteBounds(parent, first, last);
 }
 
 let helper = DOMChanges;
