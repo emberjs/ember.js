@@ -2,7 +2,7 @@
 
 ### v3.6.0-beta.1 (Unreleased)
 
-- [#17003](https://github.com/emberjs/ember.js/pull/17003) [BUGFIX] Fix rendering of empty content with `{{{...}}}` and `htmlSafe`
+- [#17003](https://github.com/emberjs/ember.js/pull/17003) / [#17013](https://github.com/emberjs/ember.js/pull/17013) [BUGFIX] Fix rendering of empty content with `{{{...}}}` and `htmlSafe`
 
 ### v3.5.0-beta.3 (September 24, 2018)
 
@@ -19,9 +19,13 @@
 - [#16877](https://github.com/emberjs/ember.js/pull/16877) [CLEANUP] Allow routes to be named "array" and "object"
 - [#16907](https://github.com/emberjs/ember.js/pull/16907) Upgrade to TypeScript 3.0
 
+### v3.4.4 (September 27, 2018)
+
+- [#17013](https://github.com/emberjs/ember.js/pull/17013) [BUGFIX] Fix rendering of empty content with `{{{...}}}` or `{{...}}` with `htmlSafe('')` in IE11
+
 ### v3.4.3 (September 25, 2018)
 
-- [#17003](https://github.com/emberjs/ember.js/pull/17003) [BUGFIX] Fix rendering of empty content with `{{{...}}}` and `htmlSafe`
+- [#17003](https://github.com/emberjs/ember.js/pull/17003) [BUGFIX] Fix rendering of empty content with `{{{...}}}` or `{{...}}` with `htmlSafe('')`
 
 ### v3.4.2 (September 24, 2018)
 
