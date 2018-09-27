@@ -1,8 +1,12 @@
 # Ember Changelog
 
+### v3.4.4 (September 27, 2018)
+
+- [#17012](https://github.com/emberjs/ember.js/pull/17012) [BUGFIX] Fix rendering of empty content with `{{{...}}}` or `{{...}}` with `htmlSafe('')` in IE11
+
 ### v3.4.3 (September 25, 2018)
 
-- [#17003](https://github.com/emberjs/ember.js/pull/17003) [BUGFIX] Fix rendering of empty content with `{{{...}}}` and `htmlSafe`
+- [#17003](https://github.com/emberjs/ember.js/pull/17003) [BUGFIX] Fix rendering of empty content with `{{{...}}}` or `{{...}}` with `htmlSafe('')`
 
 ### v3.4.2 (September 24, 2018)
 
