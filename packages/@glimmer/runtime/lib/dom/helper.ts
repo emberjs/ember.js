@@ -3,7 +3,7 @@ import { applySVGInnerHTMLFix } from '../compat/svg-inner-html-fix';
 import { applyTextNodeMergingFix } from '../compat/text-node-merging-fix';
 import { Simple } from '@glimmer/interfaces';
 
-import { Option } from '@glimmer/util';
+import { Option, expect } from '@glimmer/util';
 
 export const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 
@@ -79,14 +79,19 @@ export function moveNodesBefore(
   target: Simple.Element,
   nextSibling: Option<Simple.Node>
 ): Bounds {
-  let first = source.firstChild;
-  let last: Option<Simple.Node> = null;
-  let current = first;
+  let first = expect(source.firstChild, 'source is empty');
+  let last: Simple.Node = first;
+  let current: Option<Simple.Node> = first;
+
   while (current) {
+    let next: Option<Simple.Node> = current.nextSibling;
+
+    target.insertBefore(current, nextSibling);
+
     last = current;
-    current = current.nextSibling;
-    target.insertBefore(last, nextSibling);
+    current = next;
   }
+
   return new ConcreteBounds(target, first, last);
 }
 
@@ -148,14 +153,14 @@ export class DOMOperations {
     let nextSibling = _nextSibling as Option<Node>;
 
     let prev = nextSibling ? nextSibling.previousSibling : parent.lastChild;
-    let last: Option<Simple.Node>;
+    let last: Simple.Node;
 
     if (nextSibling === null) {
       parent.insertAdjacentHTML('beforeend', html);
-      last = parent.lastChild;
+      last = expect(parent.lastChild, 'bug in insertAdjacentHTML?');
     } else if (nextSibling instanceof HTMLElement) {
       nextSibling.insertAdjacentHTML('beforebegin', html);
-      last = nextSibling.previousSibling;
+      last = expect(nextSibling.previousSibling, 'bug in insertAdjacentHTML?');
     } else {
       // Non-element nodes do not support insertAdjacentHTML, so add an
       // element and call it on that element. Then remove the element.
@@ -166,11 +171,11 @@ export class DOMOperations {
 
       parent.insertBefore(uselessElement, nextSibling);
       uselessElement.insertAdjacentHTML('beforebegin', html);
-      last = uselessElement.previousSibling;
+      last = expect(uselessElement.previousSibling, 'bug in insertAdjacentHTML?');
       parent.removeChild(uselessElement);
     }
 
-    let first = prev ? prev.nextSibling : parent.firstChild;
+    let first = expect(prev ? prev.nextSibling : parent.firstChild, 'bug in insertAdjacentHTML?');
     return new ConcreteBounds(parent, first, last);
   }
 
