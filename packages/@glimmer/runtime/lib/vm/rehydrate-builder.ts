@@ -1,7 +1,7 @@
 import { NewElementBuilder, ElementBuilder, RemoteBlockTracker } from './element-builder';
 
 import { Environment } from '../environment';
-import Bounds, { bounds, Cursor } from '../bounds';
+import Bounds, { Cursor, ConcreteBounds } from '../bounds';
 import { Simple, Option } from '@glimmer/interfaces';
 import {
   expect,
@@ -195,7 +195,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
       let first = candidateBounds.firstNode()!;
       let last = candidateBounds.lastNode()!;
 
-      let newBounds = bounds(this.element, first.nextSibling!, last.previousSibling!);
+      let newBounds = new ConcreteBounds(this.element, first.nextSibling!, last.previousSibling!);
 
       let possibleEmptyMarker = this.remove(first);
       this.remove(last);
@@ -232,7 +232,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
         last = expect(last.nextSibling, `BUG: serialization markers must be paired`);
       }
 
-      return bounds(this.element, first, last);
+      return new ConcreteBounds(this.element, first, last);
     } else {
       return null;
     }

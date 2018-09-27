@@ -1,4 +1,11 @@
-import { clear, Cursor, DestroyableBounds, single, Bounds, bounds } from '../bounds';
+import {
+  Bounds,
+  Cursor,
+  DestroyableBounds,
+  ConcreteBounds,
+  SingleNodeBounds,
+  clear,
+} from '../bounds';
 
 import { DOMChanges, DOMTreeConstruction } from '../dom/helper';
 
@@ -21,11 +28,11 @@ import { DynamicAttribute } from './attributes/dynamic';
 import { Opaque, Simple } from '@glimmer/interfaces';
 
 export interface FirstNode {
-  firstNode(): Option<Simple.Node>;
+  firstNode(): Simple.Node;
 }
 
 export interface LastNode {
-  lastNode(): Option<Simple.Node>;
+  lastNode(): Simple.Node;
 }
 
 class First {
@@ -64,11 +71,11 @@ export class Fragment implements Bounds {
     return this.bounds.parentElement();
   }
 
-  firstNode(): Option<Simple.Node> {
+  firstNode(): Simple.Node {
     return this.bounds.firstNode();
   }
 
-  lastNode(): Option<Simple.Node> {
+  lastNode(): Simple.Node {
     return this.bounds.lastNode();
   }
 }
@@ -330,11 +337,11 @@ export class NewElementBuilder implements ElementBuilder {
     let first = fragment.firstChild;
 
     if (first) {
-      let ret = bounds(this.element, first, fragment.lastChild!);
+      let ret = new ConcreteBounds(this.element, first, fragment.lastChild!);
       this.dom.insertBefore(this.element, fragment, this.nextSibling);
       return ret;
     } else {
-      return single(this.element, this.__appendComment(''));
+      return new SingleNodeBounds(this.element, this.__appendComment(''));
     }
   }
 
@@ -360,7 +367,7 @@ export class NewElementBuilder implements ElementBuilder {
 
   appendDynamicNode(value: Simple.Node): void {
     let node = this.__appendNode(value);
-    let bounds = single(this.element, node);
+    let bounds = new SingleNodeBounds(this.element, node);
     this.didAppendBounds(bounds);
   }
 
@@ -439,12 +446,22 @@ export class SimpleBlockTracker implements Tracker {
     return this.parent;
   }
 
-  firstNode(): Option<Simple.Node> {
-    return this.first && this.first.firstNode();
+  firstNode(): Simple.Node {
+    let first = expect(
+      this.first,
+      'cannot call `firstNode()` while `SimpleBlockTracker` is still initializing'
+    );
+
+    return first.firstNode();
   }
 
-  lastNode(): Option<Simple.Node> {
-    return this.last && this.last.lastNode();
+  lastNode(): Simple.Node {
+    let last = expect(
+      this.last,
+      'cannot call `lastNode()` while `SimpleBlockTracker` is still initializing'
+    );
+
+    return last.lastNode();
   }
 
   openElement(element: Simple.Element) {
@@ -538,14 +555,22 @@ class BlockListTracker implements Tracker {
     return this.parent;
   }
 
-  firstNode(): Option<Simple.Node> {
-    let head = this.boundList.head();
-    return head && head.firstNode();
+  firstNode(): Simple.Node {
+    let head = expect(
+      this.boundList.head(),
+      'cannot call `firstNode()` while `BlockListTracker` is still initializing'
+    );
+
+    return head.firstNode();
   }
 
-  lastNode(): Option<Simple.Node> {
-    let tail = this.boundList.tail();
-    return tail && tail.lastNode();
+  lastNode(): Simple.Node {
+    let tail = expect(
+      this.boundList.tail(),
+      'cannot call `lastNode()` while `BlockListTracker` is still initializing'
+    );
+
+    return tail.lastNode();
   }
 
   openElement(_element: Simple.Element) {
@@ -564,7 +589,9 @@ class BlockListTracker implements Tracker {
 
   newDestroyable(_d: Destroyable) {}
 
-  finalize(_stack: ElementBuilder) {}
+  finalize(_stack: ElementBuilder) {
+    assert(this.boundList.head() !== null, 'boundsList cannot be empty');
+  }
 }
 
 export function clientBuilder(env: Environment, cursor: Cursor): ElementBuilder {
