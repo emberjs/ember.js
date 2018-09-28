@@ -2444,7 +2444,7 @@ Route.reopen(ActionHandler, Evented, {
         // param URL key corresponds to a QP property on
         // this controller.
         let value, svalue;
-        if (changes && qp.urlKey in changes) {
+        if (changes.has(qp.urlKey)) {
           // Value updated in/before setupController
           value = get(controller, qp.prop);
           svalue = route.serializeQueryParam(value, qp.urlKey, qp.type);
@@ -2503,7 +2503,7 @@ Route.reopen(ActionHandler, Evented, {
         finalizedController._qpDelegate = get(routeQpMeta, 'states.active');
       });
 
-      router._qpUpdates = null;
+      router._qpUpdates.clear();
       return;
     },
   },
