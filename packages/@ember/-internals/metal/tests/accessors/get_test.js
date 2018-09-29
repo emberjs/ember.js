@@ -1,6 +1,6 @@
 import { ENV } from '@ember/-internals/environment';
 import { Object as EmberObject } from '@ember/-internals/runtime';
-import { get, getWithDefault, Mixin, observer, computed } from '../..';
+import { get, getWithDefault, Mixin, observer } from '../..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
 
@@ -26,24 +26,6 @@ moduleFor(
         }
         assert.equal(get(obj, key), obj[key], key);
       }
-    }
-
-    ['@test implicitly computing the values of descriptors on properties is deprecated'](assert) {
-      let cp = computed(() => 'value');
-      let obj = {
-        cp,
-        toString() {
-          return 'myobject';
-        },
-      };
-
-      let result;
-
-      expectDeprecation(() => {
-        result = get(obj, 'cp');
-      }, /\[DEPRECATED\] computed property 'cp' was not set on object 'myobject' via 'defineProperty'/);
-
-      assert.equal(result, 'value', 'descriptor');
     }
 
     ['@test should retrieve a number key on an object'](assert) {

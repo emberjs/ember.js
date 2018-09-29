@@ -1,11 +1,10 @@
 /**
 @module @ember/object
 */
-import { descriptorFor, isDescriptor, meta } from '@ember/-internals/meta';
-import { HAS_NATIVE_PROXY, symbol, toString } from '@ember/-internals/utils';
+import { descriptorFor } from '@ember/-internals/meta';
+import { HAS_NATIVE_PROXY, symbol } from '@ember/-internals/utils';
 import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
-import { assert, deprecate } from '@ember/debug';
-import { PROPERTY_BASED_DESCRIPTORS } from '@ember/deprecated-features';
+import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { isPath } from './path_cache';
 import { tagForProperty } from './tags';
@@ -115,27 +114,6 @@ export function get(obj: object, keyName: string): any {
       value = getPossibleMandatoryProxyValue(obj, keyName);
     } else {
       value = obj[keyName];
-    }
-
-    if (PROPERTY_BASED_DESCRIPTORS && isDescriptor(value)) {
-      deprecate(
-        `[DEPRECATED] computed property '${keyName}' was not set on object '${toString(
-          obj
-        )}' via 'defineProperty'`,
-        false,
-        {
-          id: '@ember/-internals/meta.descriptor-on-object',
-          until: '3.5.0',
-          url:
-            'https://emberjs.com/deprecations/v3.x#toc_use-defineProperty-to-define-computed-properties',
-        }
-      );
-
-      meta(obj).writeDescriptors(keyName, value);
-
-      value.setup(obj, keyName);
-
-      return value.get(obj, keyName);
     }
   } else {
     value = obj[keyName];
