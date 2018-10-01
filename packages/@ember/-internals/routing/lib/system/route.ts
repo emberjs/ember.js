@@ -332,7 +332,7 @@ class Route extends EmberObject implements IRoute {
     @method _reset
     @since 1.7.0
   */
-  reset(isExiting: boolean, transition: Transition) {
+  _internalReset(isExiting: boolean, transition: Transition) {
     let controller = this.controller;
     controller._qpDelegate = get(this, '_qp.states.inactive');
 

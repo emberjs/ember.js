@@ -6405,9 +6405,9 @@ route-recognizer@^0.3.4:
   version "0.3.4"
   resolved "https://registry.yarnpkg.com/route-recognizer/-/route-recognizer-0.3.4.tgz#39ab1ffbce1c59e6d2bdca416f0932611e4f3ca3"
 
-router_js@^5.0.1:
-  version "5.0.1"
-  resolved "https://registry.yarnpkg.com/router_js/-/router_js-5.0.1.tgz#5c5ed5d306f71019b39128cabdbfbb5f09d10bc5"
+router_js@^5.0.3:
+  version "5.0.3"
+  resolved "https://registry.yarnpkg.com/router_js/-/router_js-5.0.3.tgz#38dda09088f9b2bc764ada05eaab628d829f1c17"
   dependencies:
     "@types/node" "^10.5.5"
 

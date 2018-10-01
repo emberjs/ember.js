@@ -1,6 +1,7 @@
 import { computed, defineProperty, get, set } from '@ember/-internals/metal';
 import { getOwner, Owner } from '@ember/-internals/owner';
 import { A as emberA, Evented, Object as EmberObject, typeOf } from '@ember/-internals/runtime';
+import { EMBER_ROUTING_ROUTER_SERVICE } from '@ember/canary-features';
 import { assert, deprecate, info } from '@ember/debug';
 import { HANDLER_INFOS } from '@ember/deprecated-features';
 import EmberError from '@ember/error';
@@ -28,82 +29,93 @@ import { EngineRouteInfo } from './engines';
 if (HANDLER_INFOS) {
   Object.defineProperty(InternalRouteInfo.prototype, 'handler', {
     get() {
-      deprecate(
-        'You attempted to read "handlerInfo.handler" which is a private API that will be removed.',
-        false,
-        {
-          id: 'remove-handler-infos',
-          until: '3.9.0',
-        }
-      );
+      if (EMBER_ROUTING_ROUTER_SERVICE) {
+        deprecate(
+          'You attempted to read "handlerInfo.handler" which is a private API that will be removed.',
+          false,
+          {
+            id: 'remove-handler-infos',
+            until: '3.9.0',
+          }
+        );
+      }
       return this.route;
     },
 
     set(value: string) {
-      deprecate(
-        'You attempted to set "handlerInfo.handler" which is a private API that will be removed.',
-        false,
-        {
-          id: 'remove-handler-infos',
-          until: '3.9.0',
-        }
-      );
+      if (EMBER_ROUTING_ROUTER_SERVICE) {
+        deprecate(
+          'You attempted to set "handlerInfo.handler" which is a private API that will be removed.',
+          false,
+          {
+            id: 'remove-handler-infos',
+            until: '3.9.0',
+          }
+        );
+      }
       this.route = value;
     },
   });
 
   Object.defineProperty(InternalTransition.prototype, 'handlerInfos', {
     get() {
-      deprecate(
-        'You attempted to use "transition.handlerInfos" which is a private API that will be removed.',
-        false,
-        {
-          id: 'remove-handler-infos',
-          until: '3.9.0',
-        }
-      );
+      if (EMBER_ROUTING_ROUTER_SERVICE) {
+        deprecate(
+          'You attempted to use "transition.handlerInfos" which is a private API that will be removed.',
+          false,
+          {
+            id: 'remove-handler-infos',
+            until: '3.9.0',
+          }
+        );
+      }
       return this.routeInfos;
     },
   });
 
   Object.defineProperty(TransitionState.prototype, 'handlerInfos', {
     get() {
-      deprecate(
-        'You attempted to use "transition.state.handlerInfos" which is a private API that will be removed.',
-        false,
-        {
-          id: 'remove-handler-infos',
-          until: '3.9.0',
-        }
-      );
-
+      if (EMBER_ROUTING_ROUTER_SERVICE) {
+        deprecate(
+          'You attempted to use "transition.state.handlerInfos" which is a private API that will be removed.',
+          false,
+          {
+            id: 'remove-handler-infos',
+            until: '3.9.0',
+          }
+        );
+      }
       return this.routeInfos;
     },
   });
 
   Object.defineProperty(Router.prototype, 'currentHandlerInfos', {
     get() {
+      if (EMBER_ROUTING_ROUTER_SERVICE) {
+        deprecate(
+          'You attempted to use "_routerMicrolib.currentHandlerInfos" which is a private API that will be removed.',
+          false,
+          {
+            id: 'remove-handler-infos',
+            until: '3.9.0',
+          }
+        );
+      }
+      return this.currentRouteInfos;
+    },
+  });
+
+  Router.prototype['getHandler'] = function(name: string) {
+    if (EMBER_ROUTING_ROUTER_SERVICE) {
       deprecate(
-        'You attempted to use "_routerMicrolib.currentHandlerInfos" which is a private API that will be removed.',
+        'You attempted to use "_routerMicrolib.getHandler" which is a private API that will be removed.',
         false,
         {
           id: 'remove-handler-infos',
           until: '3.9.0',
         }
       );
-      return this.currentRouteInfos;
-    },
-  });
-
-  Router.prototype['getHandler'] = function(name: string) {
-    deprecate(
-      'You attempted to use "_routerMicrolib.getHandler" which is a private API that will be removed.',
-      false,
-      {
-        id: 'remove-handler-infos',
-        until: '3.9.0',
-      }
-    );
+    }
     return this.getRoute(name);
   };
 }
