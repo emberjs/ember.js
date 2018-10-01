@@ -366,7 +366,7 @@ moduleFor(
         _deserializeQueryParams() {},
         _routerMicrolib: {
           state: {
-            handlerInfos: [{ name: 'posts' }],
+            routeInfos: [{ name: 'posts' }],
             params: {
               'foo.bar': { a: 'b' },
               'foo.bar.posts': { c: 'd' },

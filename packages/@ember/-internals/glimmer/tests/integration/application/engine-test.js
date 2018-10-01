@@ -14,27 +14,21 @@ moduleFor(
     get routerOptions() {
       return {
         location: 'none',
-
-        // This creates a handler function similar to what is in use by ember-engines
-        // internally. Specifically, it returns a promise when transitioning _into_
-        // the first engine route, but returns the synchronously available handler
-        // _after_ the engine has been resolved.
         setupRouter() {
           this._super(...arguments);
-          let syncHandler = this._routerMicrolib.getHandler;
-
+          let getRoute = this._routerMicrolib.getRoute;
           this._enginePromises = Object.create(null);
           this._resolvedEngines = Object.create(null);
 
-          this._routerMicrolib.getHandler = name => {
+          this._routerMicrolib.getRoute = name => {
             let engineInfo = this._engineInfoByRoute[name];
             if (!engineInfo) {
-              return syncHandler(name);
+              return getRoute(name);
             }
 
             let engineName = engineInfo.name;
             if (this._resolvedEngines[engineName]) {
-              return syncHandler(name);
+              return getRoute(name);
             }
 
             let enginePromise = this._enginePromises[engineName];
@@ -50,7 +44,7 @@ moduleFor(
               this._enginePromises[engineName] = enginePromise;
             }
 
-            return enginePromise.then(() => syncHandler(name));
+            return enginePromise.then(() => getRoute(name));
           };
         },
       };

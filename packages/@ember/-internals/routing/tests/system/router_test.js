@@ -118,12 +118,12 @@ moduleFor(
       createRouter();
 
       function routePath() {
-        let handlerInfos = Array.prototype.slice.call(arguments).map(function(s) {
+        let routeInfos = Array.prototype.slice.call(arguments).map(function(s) {
           return { name: s };
         });
-        handlerInfos.unshift({ name: 'ignored' });
+        routeInfos.unshift({ name: 'ignored' });
 
-        return Router._routePath(handlerInfos);
+        return Router._routePath(routeInfos);
       }
 
       assert.equal(routePath('foo'), 'foo');
@@ -207,10 +207,10 @@ moduleFor(
     ['@test Router#triggerEvent allows actions to bubble when returning true'](assert) {
       assert.expect(2);
 
-      let handlerInfos = [
+      let routeInfos = [
         {
           name: 'application',
-          handler: {
+          route: {
             actions: {
               loading() {
                 assert.ok(false, 'loading not handled by application route');
@@ -220,7 +220,7 @@ moduleFor(
         },
         {
           name: 'about',
-          handler: {
+          route: {
             actions: {
               loading() {
                 assert.ok(true, 'loading handled by about route');
@@ -231,7 +231,7 @@ moduleFor(
         },
         {
           name: 'about.me',
-          handler: {
+          route: {
             actions: {
               loading() {
                 assert.ok(true, 'loading handled by about.me route');
@@ -242,16 +242,16 @@ moduleFor(
         },
       ];
 
-      triggerEvent(handlerInfos, false, ['loading']);
+      triggerEvent(routeInfos, false, ['loading']);
     }
 
     ['@test Router#triggerEvent ignores handlers that have not loaded yet'](assert) {
       assert.expect(1);
 
-      let handlerInfos = [
+      let routeInfos = [
         {
           name: 'about',
-          handler: {
+          route: {
             actions: {
               loading() {
                 assert.ok(true, 'loading handled by about route');
@@ -261,11 +261,11 @@ moduleFor(
         },
         {
           name: 'about.me',
-          handler: undefined,
+          route: undefined,
         },
       ];
 
-      triggerEvent(handlerInfos, false, ['loading']);
+      triggerEvent(routeInfos, false, ['loading']);
     }
 
     ['@test transitionTo should throw an error when called after owner is destroyed']() {

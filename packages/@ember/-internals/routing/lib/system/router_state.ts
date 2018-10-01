@@ -1,13 +1,18 @@
 import { assign } from '@ember/polyfills';
-import Router from 'router_js';
+import Router, { TransitionState } from 'router_js';
 import { shallowEqual } from '../utils';
+import Route from './route';
 import EmberRouter, { QueryParam } from './router';
 
 export default class RouterState {
-  router: Router;
+  router: Router<Route>;
   emberRouter: EmberRouter;
-  routerJsState: null | any;
-  constructor(emberRouter: EmberRouter, router: Router, routerJsState: null | any) {
+  routerJsState: TransitionState<Route>;
+  constructor(
+    emberRouter: EmberRouter,
+    router: Router<Route>,
+    routerJsState: TransitionState<Route>
+  ) {
     this.emberRouter = emberRouter;
     this.router = router;
     this.routerJsState = routerJsState;

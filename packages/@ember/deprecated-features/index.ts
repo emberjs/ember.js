@@ -12,3 +12,4 @@ export const TARGET_OBJECT = !!'2.18.0-beta.1';
 export const MAP = !!'3.3.0-beta.1';
 export const ORDERED_SET = !!'3.3.0-beta.1';
 export const MERGE = !!'3.6.0-beta.1';
+export const HANDLER_INFOS = !!'3.9.0';

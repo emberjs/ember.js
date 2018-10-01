@@ -14,8 +14,7 @@ import { once } from '@ember/runloop';
 import { classify } from '@ember/string';
 import { DEBUG } from '@glimmer/env';
 import { TemplateFactory } from '@glimmer/opcode-compiler';
-import { Transition, TransitionState } from 'router_js';
-import HandlerInfo from 'router_js/dist/cjs/handler-info';
+import { InternalRouteInfo, Route as IRoute, Transition, TransitionState } from 'router_js';
 import {
   calculateCacheKey,
   normalizeControllerQueryParams,
@@ -65,7 +64,9 @@ export function hasDefaultSerialize(route: Route) {
   @public
 */
 
-class Route extends EmberObject {
+class Route extends EmberObject implements IRoute {
+  routeName!: string;
+  context: {} = {};
   serialize!: (model: {}, params: string[]) => object | undefined;
 
   _router!: EmberRouter;
@@ -115,22 +116,22 @@ class Route extends EmberObject {
 
     @method _stashNames
   */
-  _stashNames(handlerInfo: HandlerInfo, dynamicParent: HandlerInfo) {
+  _stashNames(routeInfo: InternalRouteInfo<this>, dynamicParent: InternalRouteInfo<this>) {
     if (this._names) {
       return;
     }
-    let names = (this._names = handlerInfo['_names']);
+    let names = (this._names = routeInfo['_names']);
 
     if (!names.length) {
-      handlerInfo = dynamicParent;
-      names = (handlerInfo && handlerInfo['_names']) || [];
+      routeInfo = dynamicParent;
+      names = (routeInfo && routeInfo['_names']) || [];
     }
 
     let qps = get(this, '_qp.qps');
 
     let namePaths = new Array(names.length);
     for (let a = 0; a < names.length; ++a) {
-      namePaths[a] = `${handlerInfo.name}.${names[a]}`;
+      namePaths[a] = `${routeInfo.name}.${names[a]}`;
     }
 
     for (let i = 0; i < qps.length; ++i) {
@@ -220,8 +221,8 @@ class Route extends EmberObject {
     let state = transition ? transition.state : this._router._routerMicrolib.state;
 
     let fullName = route.fullRouteName;
-    let params = assign({}, state.params[fullName]);
-    let queryParams = getQueryParamsFor(route, state);
+    let params = assign({}, state!.params[fullName]);
+    let queryParams = getQueryParamsFor(route, state!);
 
     return Object.keys(queryParams).reduce((params, key) => {
       assert(
@@ -331,7 +332,7 @@ class Route extends EmberObject {
     @method _reset
     @since 1.7.0
   */
-  _reset(isExiting: boolean, transition: Transition) {
+  _internalReset(isExiting: boolean, transition: Transition) {
     let controller = this.controller;
     controller._qpDelegate = get(this, '_qp.states.inactive');
 
@@ -786,7 +787,8 @@ class Route extends EmberObject {
     @public
    */
   intermediateTransitionTo(...args: any[]) {
-    this._router.intermediateTransitionTo(...prefixRouteNameArg(this, args));
+    let [name, ...preparedArgs] = prefixRouteNameArg(this, args);
+    this._router.intermediateTransitionTo(name, ...preparedArgs);
   }
 
   /**
@@ -896,7 +898,7 @@ class Route extends EmberObject {
 
     if (transition) {
       // Update the model dep values used to calculate cache keys.
-      stashParamNames(this._router, transition.state!.handlerInfos);
+      stashParamNames(this._router, transition.state!.routeInfos);
 
       let cache = this._bucketCache;
       let params = transition.params;
@@ -1149,7 +1151,7 @@ class Route extends EmberObject {
         if (transition.resolveIndex < 1) {
           return;
         }
-        return transition.state!.handlerInfos[transition.resolveIndex - 1].context;
+        return transition.state!.routeInfos[transition.resolveIndex - 1].context;
       }
     }
 
@@ -1391,8 +1393,8 @@ class Route extends EmberObject {
     // resolved parent contexts on the current transitionEvent.
     if (transition !== undefined && transition !== null) {
       let modelLookupName = (route && route.routeName) || name;
-      if (transition.resolvedModels.hasOwnProperty(modelLookupName)) {
-        return transition.resolvedModels[modelLookupName];
+      if (transition.resolvedModels.hasOwnProperty(modelLookupName!)) {
+        return transition.resolvedModels[modelLookupName!];
       }
     }
 
@@ -1659,13 +1661,13 @@ class Route extends EmberObject {
 
     outletName = outletName || 'main';
     this._disconnectOutlet(outletName, parentView);
-    let handlerInfos = this._router._routerMicrolib.currentHandlerInfos;
-    for (let i = 0; i < handlerInfos.length; i++) {
+    let routeInfos = this._router._routerMicrolib.currentRouteInfos!;
+    for (let i = 0; i < routeInfos.length; i++) {
       // This non-local state munging is sadly necessary to maintain
       // backward compatibility with our existing semantics, which allow
       // any route to disconnectOutlet things originally rendered by any
       // other route. This should all get cut in 2.0.
-      handlerInfos[i].handler._disconnectOutlet(outletName, parentView);
+      routeInfos[i].route!._disconnectOutlet(outletName, parentView);
     }
   }
 
@@ -1718,20 +1720,20 @@ Route.reopenClass({
 });
 
 function parentRoute(route: Route) {
-  let handlerInfo = handlerInfoFor(route, route._router._routerMicrolib.state.handlerInfos, -1);
-  return handlerInfo && handlerInfo.handler;
+  let routeInfo = routeInfoFor(route, route._router._routerMicrolib.state!.routeInfos, -1);
+  return routeInfo && routeInfo.route;
 }
 
-function handlerInfoFor(route: Route, handlerInfos: HandlerInfo[], offset = 0) {
-  if (!handlerInfos) {
+function routeInfoFor(route: Route, routeInfos: InternalRouteInfo<Route>[], offset = 0) {
+  if (!routeInfos) {
     return;
   }
 
   let current: any;
-  for (let i = 0; i < handlerInfos.length; i++) {
-    current = handlerInfos[i].handler;
+  for (let i = 0; i < routeInfos.length; i++) {
+    current = routeInfos[i].route;
     if (current === route) {
-      return handlerInfos[i + offset];
+      return routeInfos[i + offset];
     }
   }
 
@@ -1836,7 +1838,7 @@ interface PartialRenderOptions {
   model?: {};
 }
 
-function getFullQueryParams(router: EmberRouter, state: TransitionState) {
+function getFullQueryParams(router: EmberRouter, state: TransitionState<Route>) {
   if (state['fullQueryParams']) {
     return state['fullQueryParams'];
   }
@@ -1844,11 +1846,11 @@ function getFullQueryParams(router: EmberRouter, state: TransitionState) {
   state['fullQueryParams'] = {};
   assign(state['fullQueryParams'], state.queryParams);
 
-  router._deserializeQueryParams(state.handlerInfos, state['fullQueryParams'] as QueryParam);
+  router._deserializeQueryParams(state.routeInfos, state['fullQueryParams'] as QueryParam);
   return state['fullQueryParams'];
 }
 
-function getQueryParamsFor(route: Route, state: TransitionState) {
+function getQueryParamsFor(route: Route, state: TransitionState<Route>) {
   state['queryParamsFor'] = state['queryParamsFor'] || {};
   let name = route.fullRouteName;
 
@@ -2426,13 +2428,13 @@ Route.reopen(ActionHandler, Evented, {
         return;
       }
 
-      let handlerInfos = transition.state!.handlerInfos;
+      let routeInfos = transition.state!.routeInfos;
       let router = this._router;
-      let qpMeta = router._queryParamsFor(handlerInfos);
+      let qpMeta = router._queryParamsFor(routeInfos);
       let changes = router._qpUpdates;
       let replaceUrl;
 
-      stashParamNames(router, handlerInfos);
+      stashParamNames(router, routeInfos);
 
       for (let i = 0; i < qpMeta.qps.length; ++i) {
         let qp = qpMeta.qps[i];
