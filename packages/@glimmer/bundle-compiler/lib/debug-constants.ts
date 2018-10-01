@@ -1,6 +1,10 @@
 import { WriteOnlyConstants } from '@glimmer/program';
 
 export default class DebugConstants extends WriteOnlyConstants {
+  getNumber(value: number): number {
+    return this.numbers[value];
+  }
+
   getString(value: number): string {
     return this.strings[value];
   }
