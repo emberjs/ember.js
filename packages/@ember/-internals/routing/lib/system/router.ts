@@ -3,7 +3,7 @@ import { getOwner, Owner } from '@ember/-internals/owner';
 import { A as emberA, Evented, Object as EmberObject, typeOf } from '@ember/-internals/runtime';
 import { EMBER_ROUTING_ROUTER_SERVICE } from '@ember/canary-features';
 import { assert, deprecate, info } from '@ember/debug';
-import { HANDLER_INFOS } from '@ember/deprecated-features';
+import { HANDLER_INFOS, ROUTER_EVENTS } from '@ember/deprecated-features';
 import EmberError from '@ember/error';
 import { assign } from '@ember/polyfills';
 import { cancel, once, run, scheduleOnce } from '@ember/runloop';
@@ -21,7 +21,9 @@ import { MatchCallback } from 'route-recognizer';
 import Router, {
   InternalRouteInfo,
   InternalTransition,
+  logAbort,
   Transition,
+  TransitionError,
   TransitionState,
 } from 'router_js';
 import { EngineRouteInfo } from './engines';
@@ -255,6 +257,43 @@ class EmberRouter extends EmberObject {
         args: unknown[]
       ) {
         return triggerEvent.bind(router)(routeInfos, ignoreFailure, name, args);
+      }
+
+      routeWillChange(transition: Transition) {
+        if (EMBER_ROUTING_ROUTER_SERVICE) {
+          router.trigger('routeWillChange', transition);
+        }
+      }
+
+      routeDidChange(transition: Transition) {
+        if (EMBER_ROUTING_ROUTER_SERVICE) {
+          router.trigger('routeDidChange', transition);
+        }
+      }
+
+      transitionDidError(error: TransitionError, transition: Transition) {
+        if (error.wasAborted || transition.isAborted) {
+          // If the error was a transition erorr or the transition aborted
+          // log the abort.
+          return logAbort(transition);
+        } else {
+          // Otherwise trigger the "error" event to attempt an intermediate
+          // transition into an error substate
+          transition.trigger(false, 'error', error.error, transition, error.route);
+          if (router._isErrorHandled(error.error)) {
+            // If we handled the error with a substate just roll the state back on
+            // the transition and send the "routeDidChange" event for landing on
+            // the error substate and return the error.
+            transition.rollback();
+            this.routeDidChange(transition);
+            return error.error;
+          } else {
+            // If it was not handled, abort the transition completely and return
+            // the error.
+            transition.abort();
+            return error.error;
+          }
+        }
       }
 
       _triggerWillChangeContext() {
@@ -1449,7 +1488,7 @@ export function triggerEvent(
   routeInfos: PrivateRouteInfo[],
   ignoreFailure: boolean,
   name: string,
-  args: unknown[]
+  args: any[]
 ) {
   if (!routeInfos) {
     if (ignoreFailure) {
@@ -1793,4 +1832,37 @@ EmberRouter.reopen(Evented, {
   }),
 });
 
+if (EMBER_ROUTING_ROUTER_SERVICE) {
+  if (ROUTER_EVENTS) {
+    EmberRouter.reopen({
+      on(name: string) {
+        this._super(...arguments);
+        let hasDidTransition = name === 'didTransition';
+        let hasWillTransition = name === 'willTransition';
+
+        if (hasDidTransition) {
+          deprecate(
+            'You attempted to listen to the "didTransition" event which is deprecated. Please inject the router service and listen to the "routeDidChange" event.',
+            false,
+            {
+              id: 'deprecate-router-events',
+              until: '3.9.0',
+            }
+          );
+        }
+
+        if (hasWillTransition) {
+          deprecate(
+            'You attempted to listen to the "willTransition" event which is deprecated. Please inject the router service and listen to the "routeWillChange" event.',
+            false,
+            {
+              id: 'deprecate-router-events',
+              until: '3.9.0',
+            }
+          );
+        }
+      },
+    });
+  }
+}
 export default EmberRouter;

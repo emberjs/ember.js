@@ -1,5 +1,7 @@
+import { Evented } from '@ember/-internals/runtime';
 import { readOnly } from '@ember/object/computed';
 import Service from '@ember/service';
+import { Transition } from 'router_js';
 import EmberRouter from '../system/router';
 import { extractRouteArgs, resemblesURL, shallowEqual } from '../utils';
 
@@ -148,7 +150,17 @@ export default class RouterService extends Service {
   }
 }
 
-RouterService.reopen({
+RouterService.reopen(Evented, {
+  init() {
+    this._super(...arguments);
+    this._router.on('routeWillChange', (transition: Transition) => {
+      this.trigger('routeWillChange', transition);
+    });
+
+    this._router.on('routeDidChange', (transition: Transition) => {
+      this.trigger('routeDidChange', transition);
+    });
+  },
   /**
      Name of the current route.
 

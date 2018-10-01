@@ -329,7 +329,7 @@ class Route extends EmberObject implements IRoute {
   /**
     @private
 
-    @method _reset
+    @method _internalReset
     @since 1.7.0
   */
   _internalReset(isExiting: boolean, transition: Transition) {
