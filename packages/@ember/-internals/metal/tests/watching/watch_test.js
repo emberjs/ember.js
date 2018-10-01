@@ -89,9 +89,9 @@ moduleFor(
       watch(obj, 'foo');
       assert.equal(get(obj, 'foo'), 'baz', 'should have original prop');
 
-      set(obj, 'foo', 'bar');
-      set(objB, 'foo', 'baz');
-      assert.equal(didCount, 2, 'should have invoked didCount once only');
+      set(objB, 'foo', 'bar');
+      set(obj, 'foo', 'baz');
+      assert.equal(didCount, 1, 'should have invoked didCount once only');
     }
 
     ['@test watching an object THEN defining it should work also'](assert) {

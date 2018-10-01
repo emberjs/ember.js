@@ -33,9 +33,13 @@ if (DEBUG) {
 export const UNDEFINED = symbol('undefined');
 
 // FLAGS
-const SOURCE_DESTROYING = 1 << 1;
-const SOURCE_DESTROYED = 1 << 2;
-const META_DESTROYED = 1 << 3;
+const enum MetaFlags {
+  NONE = 0,
+  SOURCE_DESTROYING = 1 << 0,
+  SOURCE_DESTROYED = 1 << 1,
+  META_DESTROYED = 1 << 2,
+  INITIALIZING = 1 << 3,
+}
 
 export class Meta {
   _descriptors: any | undefined;
@@ -46,7 +50,7 @@ export class Meta {
   _chains: any | undefined;
   _tag: Tag | undefined;
   _tags: any | undefined;
-  _flags: number;
+  _flags: MetaFlags;
   source: object;
   proto: object | undefined;
   _parent: Meta | undefined | null;
@@ -74,13 +78,10 @@ export class Meta {
 
     // initial value for all flags right now is false
     // see FLAGS const for detailed list of flags used
-    this._flags = 0;
+    this._flags = MetaFlags.NONE;
 
     // used only internally
     this.source = obj;
-
-    // when meta(obj).proto === obj, the object is intended to be only a
-    // prototype and doesn't need to actually be observable itself
     this.proto = obj.constructor === undefined ? undefined : obj.constructor.prototype;
 
     this._listeners = undefined;
@@ -96,8 +97,20 @@ export class Meta {
     return parent;
   }
 
-  isInitialized(obj: object) {
-    return this.proto !== obj;
+  setInitializing() {
+    this._flags |= MetaFlags.INITIALIZING;
+  }
+
+  unsetInitializing() {
+    this._flags ^= MetaFlags.INITIALIZING;
+  }
+
+  isInitializing() {
+    return this._hasFlag(MetaFlags.INITIALIZING);
+  }
+
+  isPrototypeMeta(obj: object) {
+    return this.proto === this.source && this.source === obj;
   }
 
   destroy() {
@@ -114,27 +127,27 @@ export class Meta {
   }
 
   isSourceDestroying() {
-    return this._hasFlag(SOURCE_DESTROYING);
+    return this._hasFlag(MetaFlags.SOURCE_DESTROYING);
   }
 
   setSourceDestroying() {
-    this._flags |= SOURCE_DESTROYING;
+    this._flags |= MetaFlags.SOURCE_DESTROYING;
   }
 
   isSourceDestroyed() {
-    return this._hasFlag(SOURCE_DESTROYED);
+    return this._hasFlag(MetaFlags.SOURCE_DESTROYED);
   }
 
   setSourceDestroyed() {
-    this._flags |= SOURCE_DESTROYED;
+    this._flags |= MetaFlags.SOURCE_DESTROYED;
   }
 
   isMetaDestroyed() {
-    return this._hasFlag(META_DESTROYED);
+    return this._hasFlag(MetaFlags.META_DESTROYED);
   }
 
   setMetaDestroyed() {
-    this._flags |= META_DESTROYED;
+    this._flags |= MetaFlags.META_DESTROYED;
   }
 
   _hasFlag(flag: number) {
@@ -607,22 +620,36 @@ export function peekMeta(obj: object) {
     typeof obj === 'object' || typeof obj === 'function'
   );
 
-  let pointer = obj;
-  let meta;
+  if (DEBUG) {
+    counters!.peekCalls++;
+  }
+
+  let meta = metaStore.get(obj);
+
+  if (meta !== undefined) {
+    return meta;
+  }
+
+  let pointer = getPrototypeOf(obj);
+
   while (pointer !== undefined && pointer !== null) {
-    meta = metaStore.get(pointer);
-    // jshint loopfunc:true
     if (DEBUG) {
-      counters!.peekCalls++;
+      counters!.peekPrototypeWalks++;
     }
+
+    meta = metaStore.get(pointer);
+
     if (meta !== undefined) {
+      if (meta.proto !== pointer) {
+        // The meta was a prototype meta which was not marked as initializing.
+        // This can happen when a prototype chain was created manually via
+        // Object.create() and the source object does not have a constructor.
+        meta.proto = pointer;
+      }
       return meta;
     }
 
     pointer = getPrototypeOf(pointer);
-    if (DEBUG) {
-      counters!.peekPrototypeWalks++;
-    }
   }
 }
 
