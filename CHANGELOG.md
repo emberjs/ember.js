@@ -1,6 +1,6 @@
 # Ember Changelog
 
-### v3.5.0-beta.4 (Unreleased)
+### v3.5.0-beta.4 (October 1, 2018)
 
 - [#17003](https://github.com/emberjs/ember.js/pull/17003) / [#17013](https://github.com/emberjs/ember.js/pull/17013) [BUGFIX] Fix rendering of empty content with `{{{...}}}` or `{{...}}` with `htmlSafe('')`
 
