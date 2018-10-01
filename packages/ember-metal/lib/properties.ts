@@ -141,7 +141,7 @@ function DESCRIPTOR_GETTER_FUNCTION(name: string, descriptor: Descriptor) {
   }));
   ```
 
-  @private
+  @public
   @method defineProperty
   @static
   @for @ember/object
