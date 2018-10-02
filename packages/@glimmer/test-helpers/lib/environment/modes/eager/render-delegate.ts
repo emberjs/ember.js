@@ -10,8 +10,14 @@ import {
   ElementBuilder,
   Cursor,
   renderMain,
+  renderComponent,
 } from '@glimmer/runtime';
-import { DebugConstants, BundleCompiler, ModuleLocatorMap } from '@glimmer/bundle-compiler';
+import {
+  DebugConstants,
+  BundleCompiler,
+  ModuleLocatorMap,
+  BundleCompilationResult,
+} from '@glimmer/bundle-compiler';
 import { Opaque, assert, Dict, assign, expect, Option } from '@glimmer/util';
 import { WriteOnlyProgram, RuntimeProgram, RuntimeConstants, Heap } from '@glimmer/program';
 import { ProgramSymbolTable, ComponentCapabilities, ModuleLocator } from '@glimmer/interfaces';
@@ -48,6 +54,8 @@ import {
   TestModifierConstructor,
   TestModifierManager,
 } from '../../modifier';
+import { PathReference } from '@glimmer/reference';
+import { Locator } from '../../components';
 
 export type RenderDelegateComponentDefinition = ComponentDefinition<TestComponentDefinitionState>;
 
@@ -159,16 +167,7 @@ export default class EagerRenderDelegate implements RenderDelegate {
     this.modules.register(name, 'modifier', { default: { manager, state } });
   }
 
-  renderTemplate(template: string, context: Dict<Opaque>, element: HTMLElement): RenderResult {
-    let macros = new TestMacros();
-    let delegate: EagerCompilerDelegate = new EagerCompilerDelegate(this.components, this.modules);
-    this.constants = new DebugConstants();
-    let program = new WriteOnlyProgram(this.constants);
-    let bundleCompiler = new BundleCompiler(delegate, { macros, program });
-
-    let locator = locatorFor({ module: 'ui/components/main', name: 'default' });
-    bundleCompiler.add(locator, template);
-
+  private addRegisteredComponents(bundleCompiler: BundleCompiler<Locator>): void {
     let { components, modules, compileTimeModules } = this;
     Object.keys(components).forEach(key => {
       assert(
@@ -227,19 +226,68 @@ export default class EagerRenderDelegate implements RenderDelegate {
         });
       }
     });
+  }
 
-    let { heap, pool, table } = bundleCompiler.compile();
+  private getBundleCompiler(): BundleCompiler<Locator> {
+    let macros = new TestMacros();
+    let delegate: EagerCompilerDelegate = new EagerCompilerDelegate(this.components, this.modules);
+    this.constants = new DebugConstants();
+    let program = new WriteOnlyProgram(this.constants);
+    return new BundleCompiler(delegate, { macros, program });
+  }
 
-    let handle = table.vmHandleByModuleLocator.get(locator)!;
+  private getRuntimeProgram({
+    table,
+    pool,
+    heap,
+  }: BundleCompilationResult): RuntimeProgram<Locator> {
+    let resolver = new EagerRuntimeResolver(table, this.modules, this.symbolTables);
+    let runtimeHeap = new Heap(heap);
+    let runtimeProgram = new RuntimeProgram(new RuntimeConstants(resolver, pool), runtimeHeap);
+    return runtimeProgram;
+  }
+
+  renderComponent(
+    name: string,
+    args: Dict<PathReference<Opaque>>,
+    element: HTMLElement
+  ): RenderResult {
+    let bundleCompiler = this.getBundleCompiler();
+    this.addRegisteredComponents(bundleCompiler);
+    let compilationResult = bundleCompiler.compile();
+    let { env } = this;
+
+    let cursor = { element, nextSibling: null };
+    let builder = this.getElementBuilder(env, cursor);
+    let runtimeProgram = this.getRuntimeProgram(compilationResult);
+    let iterator = renderComponent(
+      runtimeProgram,
+      env,
+      builder,
+      compilationResult.main,
+      name,
+      args
+    );
+
+    return renderSync(env, iterator);
+  }
+
+  renderTemplate(template: string, context: Dict<Opaque>, element: HTMLElement): RenderResult {
+    let bundleCompiler = this.getBundleCompiler();
+    let locator = locatorFor({ module: 'ui/components/main', name: 'default' });
+    bundleCompiler.add(locator, template);
+    this.addRegisteredComponents(bundleCompiler);
+
+    let compilationResult = bundleCompiler.compile();
+
+    let handle = compilationResult.table.vmHandleByModuleLocator.get(locator)!;
     let { env } = this;
 
     let cursor = { element, nextSibling: null };
     let builder = this.getElementBuilder(env, cursor);
     let self = this.getSelf(context);
     let dynamicScope = new TestDynamicScope();
-    let resolver = new EagerRuntimeResolver(table, this.modules, this.symbolTables);
-    let runtimeHeap = new Heap(heap);
-    let runtimeProgram = new RuntimeProgram(new RuntimeConstants(resolver, pool), runtimeHeap);
+    let runtimeProgram = this.getRuntimeProgram(compilationResult);
 
     let iterator = renderMain(runtimeProgram, env, self, dynamicScope, builder, handle);
 
