@@ -38,6 +38,79 @@ import { extractRouteArgs, resemblesURL, shallowEqual } from '../utils';
 export default class RouterService extends Service {
   _router!: EmberRouter;
 
+  init() {
+    this._super(...arguments);
+    this._router.on('routeWillChange', (transition: Transition) => {
+      this.trigger('routeWillChange', transition);
+    });
+
+    this._router.on('routeDidChange', (transition: Transition) => {
+      this.trigger('routeDidChange', transition);
+    });
+  }
+
+  /**
+    The `routeWillChange` event is fired at the beginning of any
+    attempted transition with a `Transition` object as the sole
+    argument. This action can be used for aborting, redirecting,
+    or decorating the transition from the currently active routes.
+
+    A good example is preventing navigation when a form is
+    half-filled out:
+
+    ```app/routes/contact-form.js
+    import {inject as service} from '@ember/service';
+
+    export default Route.extend({
+      router: service('router'),
+      init() {
+        this._super(...arguments);
+        this.router.on('routeWillUpdate', (transition) => {
+          if (!transition.to.find(route => route.name === this.routeName)) {
+            alert("Please save or cancel your changes.");
+            transition.abort();
+          }
+        })
+      }
+    });
+    ```
+
+  The `routeWillChange` event fires whenever a new route is chosen as the desired target of a transition. This includes `transitionTo`, `replaceWith`, all redirection for any reason including error handling, and abort. Aborting implies changing the desired target back to where you already were. Once a transition has completed, `routeDidChange` fires.
+
+    @event routeWillChange
+    @param {Transition} transition
+    @public
+  */
+
+  /**
+    The `routeDidChange` event only fires once a transition has settled.
+    This includes aborts and error substates. Like the `routeWillChange` event
+    it recieves a Transition as the sole argument.
+
+    A good example is sending some analytics when the route has transitioned:
+
+    ```app/routes/contact-form.js
+    import {inject as service} from '@ember/service';
+
+    export default Route.extend({
+      router: service('router'),
+      init() {
+        this._super(...arguments);
+        this.router.on('routeDidUpdate', (transition) => {
+          ga.send('pageView', {
+            current: transition.to.name,
+            from: transition.from.name
+          });
+        })
+      }
+    });
+    ```
+
+    @event routeDidChange
+    @param {Transition} transition
+    @public
+  */
+
   /**
      Transition the application into another route. The route may
      be either a single route or route path:
@@ -151,16 +224,6 @@ export default class RouterService extends Service {
 }
 
 RouterService.reopen(Evented, {
-  init() {
-    this._super(...arguments);
-    this._router.on('routeWillChange', (transition: Transition) => {
-      this.trigger('routeWillChange', transition);
-    });
-
-    this._router.on('routeDidChange', (transition: Transition) => {
-      this.trigger('routeDidChange', transition);
-    });
-  },
   /**
      Name of the current route.
 

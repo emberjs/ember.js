@@ -11,7 +11,12 @@ import { DEBUG } from '@glimmer/env';
 import EmberLocation, { EmberLocation as IEmberLocation } from '../location/api';
 import { calculateCacheKey, extractRouteArgs, getActiveTargetName, resemblesURL } from '../utils';
 import EmberRouterDSL from './dsl';
-import Route, { defaultSerialize, hasDefaultSerialize, RenderOptions } from './route';
+import Route, {
+  defaultSerialize,
+  hasDefaultSerialize,
+  RenderOptions,
+  ROUTER_EVENT_DEPRECATIONS,
+} from './route';
 import RouterState from './router_state';
 /**
 @module @ember/routing
@@ -27,6 +32,46 @@ import Router, {
   TransitionState,
 } from 'router_js';
 import { EngineRouteInfo } from './engines';
+
+function defaultDidTransition(this: EmberRouter, infos: PrivateRouteInfo[]) {
+  updatePaths(this);
+
+  this._cancelSlowTransitionTimer();
+
+  this.notifyPropertyChange('url');
+  this.set('currentState', this.targetState);
+
+  // Put this in the runloop so url will be accurate. Seems
+  // less surprising than didTransition being out of sync.
+  once(this, this.trigger, 'didTransition');
+
+  if (DEBUG) {
+    if (get(this, 'namespace').LOG_TRANSITIONS) {
+      // eslint-disable-next-line no-console
+      console.log(`Transitioned into '${EmberRouter._routePath(infos)}'`);
+    }
+  }
+}
+
+function defaultWillTransition(
+  this: EmberRouter,
+  oldInfos: PrivateRouteInfo[],
+  newInfos: PrivateRouteInfo[],
+  transition: Transition
+) {
+  once(this, this.trigger, 'willTransition', transition);
+
+  if (DEBUG) {
+    if (get(this, 'namespace').LOG_TRANSITIONS) {
+      // eslint-disable-next-line no-console
+      console.log(
+        `Preparing to transition from '${EmberRouter._routePath(
+          oldInfos
+        )}' to '${EmberRouter._routePath(newInfos)}'`
+      );
+    }
+  }
+}
 
 if (HANDLER_INFOS) {
   Object.defineProperty(InternalRouteInfo.prototype, 'handler', {
@@ -239,6 +284,18 @@ class EmberRouter extends EmberObject {
       }
 
       didTransition(infos: PrivateRouteInfo[]) {
+        if (EMBER_ROUTING_ROUTER_SERVICE && ROUTER_EVENTS) {
+          if (router.didTransition !== defaultDidTransition) {
+            deprecate(
+              'You attempted to override the "didTransition" method which is deprecated. Please inject the router service and listen to the "routeDidChange" event.',
+              false,
+              {
+                id: 'deprecate-router-events',
+                until: '4.0.0',
+              }
+            );
+          }
+        }
         router.didTransition(infos);
       }
 
@@ -247,6 +304,18 @@ class EmberRouter extends EmberObject {
         newInfos: PrivateRouteInfo[],
         transition: Transition
       ) {
+        if (EMBER_ROUTING_ROUTER_SERVICE && ROUTER_EVENTS) {
+          if (router.willTransition !== defaultWillTransition) {
+            deprecate(
+              'You attempted to override the "willTransition" method which is deprecated. Please inject the router service and listen to the "routeWillChange" event.',
+              false,
+              {
+                id: 'deprecate-router-events',
+                until: '4.0.0',
+              }
+            );
+          }
+        }
         router.willTransition(oldInfos, newInfos, transition);
       }
 
@@ -438,57 +507,6 @@ class EmberRouter extends EmberObject {
     return true;
   }
 
-  /**
-    Handles updating the paths and notifying any listeners of the URL
-    change.
-
-    Triggers the router level `didTransition` hook.
-
-    For example, to notify google analytics when the route changes,
-    you could use this hook.  (Note: requires also including GA scripts, etc.)
-
-    ```javascript
-    import config from './config/environment';
-    import EmberRouter from '@ember/routing/router';
-
-    let Router = EmberRouter.extend({
-      location: config.locationType,
-
-      didTransition: function() {
-        this._super(...arguments);
-
-        return ga('send', 'pageview', {
-          'page': this.get('url'),
-          'title': this.get('url')
-        });
-      }
-    });
-    ```
-
-    @method didTransition
-    @public
-    @since 1.2.0
-  */
-  didTransition(infos: PrivateRouteInfo[]) {
-    updatePaths(this);
-
-    this._cancelSlowTransitionTimer();
-
-    this.notifyPropertyChange('url');
-    this.set('currentState', this.targetState);
-
-    // Put this in the runloop so url will be accurate. Seems
-    // less surprising than didTransition being out of sync.
-    once(this, this.trigger, 'didTransition');
-
-    if (DEBUG) {
-      if (get(this, 'namespace').LOG_TRANSITIONS) {
-        // eslint-disable-next-line no-console
-        console.log(`Transitioned into '${EmberRouter._routePath(infos)}'`);
-      }
-    }
-  }
-
   _setOutlets() {
     // This is triggered async during Route#willDestroy.
     // If the router is also being destroyed we do not want to
@@ -544,35 +562,6 @@ class EmberRouter extends EmberObject {
       instance.didCreateRootView(this._toplevelView);
     } else {
       this._toplevelView.setOutletState(liveRoutes);
-    }
-  }
-
-  /**
-    Handles notifying any listeners of an impending URL
-    change.
-
-    Triggers the router level `willTransition` hook.
-
-    @method willTransition
-    @public
-    @since 1.11.0
-  */
-  willTransition(
-    oldInfos: PrivateRouteInfo[],
-    newInfos: PrivateRouteInfo[],
-    transition: Transition
-  ) {
-    once(this, this.trigger, 'willTransition', transition);
-
-    if (DEBUG) {
-      if (get(this, 'namespace').LOG_TRANSITIONS) {
-        // eslint-disable-next-line no-console
-        console.log(
-          `Preparing to transition from '${EmberRouter._routePath(
-            oldInfos
-          )}' to '${EmberRouter._routePath(newInfos)}'`
-        );
-      }
     }
   }
 
@@ -1790,6 +1779,50 @@ function representEmptyRoute(
 
 EmberRouter.reopen(Evented, {
   /**
+    Handles updating the paths and notifying any listeners of the URL
+    change.
+
+    Triggers the router level `didTransition` hook.
+
+    For example, to notify google analytics when the route changes,
+    you could use this hook.  (Note: requires also including GA scripts, etc.)
+
+    ```javascript
+    import config from './config/environment';
+    import EmberRouter from '@ember/routing/router';
+
+    let Router = EmberRouter.extend({
+      location: config.locationType,
+
+      didTransition: function() {
+        this._super(...arguments);
+
+        return ga('send', 'pageview', {
+          'page': this.get('url'),
+          'title': this.get('url')
+        });
+      }
+    });
+    ```
+
+    @method didTransition
+    @public
+    @since 1.2.0
+  */
+  didTransition: defaultDidTransition,
+
+  /**
+    Handles notifying any listeners of an impending URL
+    change.
+
+    Triggers the router level `willTransition` hook.
+
+    @method willTransition
+    @public
+    @since 1.11.0
+  */
+  willTransition: defaultWillTransition,
+  /**
    Represents the URL of the root of the application, often '/'. This prefix is
    assumed on all routes defined on this router.
 
@@ -1832,37 +1865,7 @@ EmberRouter.reopen(Evented, {
   }),
 });
 
-if (EMBER_ROUTING_ROUTER_SERVICE) {
-  if (ROUTER_EVENTS) {
-    EmberRouter.reopen({
-      on(name: string) {
-        this._super(...arguments);
-        let hasDidTransition = name === 'didTransition';
-        let hasWillTransition = name === 'willTransition';
-
-        if (hasDidTransition) {
-          deprecate(
-            'You attempted to listen to the "didTransition" event which is deprecated. Please inject the router service and listen to the "routeDidChange" event.',
-            false,
-            {
-              id: 'deprecate-router-events',
-              until: '3.9.0',
-            }
-          );
-        }
-
-        if (hasWillTransition) {
-          deprecate(
-            'You attempted to listen to the "willTransition" event which is deprecated. Please inject the router service and listen to the "routeWillChange" event.',
-            false,
-            {
-              id: 'deprecate-router-events',
-              until: '3.9.0',
-            }
-          );
-        }
-      },
-    });
-  }
+if (EMBER_ROUTING_ROUTER_SERVICE && ROUTER_EVENTS) {
+  EmberRouter.reopen(ROUTER_EVENT_DEPRECATIONS);
 }
 export default EmberRouter;

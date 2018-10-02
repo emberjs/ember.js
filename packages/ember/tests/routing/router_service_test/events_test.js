@@ -635,7 +635,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
   moduleFor(
     'Router Service - deprecated events',
     class extends RouterTestCase {
-      '@test willTransition is deprecated'() {
+      '@test willTransition events are deprecated'() {
         return this.visit('/').then(() => {
           expectDeprecation(() => {
             this.routerService['_router'].on('willTransition', () => {});
@@ -643,7 +643,52 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
         });
       }
 
-      '@test didTransition is deprecated'() {
+      '@test willTransition events are deprecated on routes'() {
+        this.add(
+          'route:application',
+          Route.extend({
+            init() {
+              this._super(...arguments);
+              this.on('willTransition', () => {});
+            },
+          })
+        );
+        expectDeprecation(() => {
+          return this.visit('/');
+        }, 'You attempted to listen to the "willTransition" event which is deprecated. Please inject the router service and listen to the "routeWillChange" event.');
+      }
+
+      '@test didTransition events are deprecated on routes'() {
+        this.add(
+          'route:application',
+          Route.extend({
+            init() {
+              this._super(...arguments);
+              this.on('didTransition', () => {});
+            },
+          })
+        );
+        expectDeprecation(() => {
+          return this.visit('/');
+        }, 'You attempted to listen to the "didTransition" event which is deprecated. Please inject the router service and listen to the "routeDidChange" event.');
+      }
+
+      '@test other events are not deprecated on routes'() {
+        this.add(
+          'route:application',
+          Route.extend({
+            init() {
+              this._super(...arguments);
+              this.on('fixx', () => {});
+            },
+          })
+        );
+        expectNoDeprecation(() => {
+          return this.visit('/');
+        });
+      }
+
+      '@test didTransition events are deprecated'() {
         return this.visit('/').then(() => {
           expectDeprecation(() => {
             this.routerService['_router'].on('didTransition', () => {});
@@ -657,6 +702,45 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
             this.routerService['_router'].on('wat', () => {});
           });
         });
+      }
+    }
+  );
+
+  moduleFor(
+    'Router Service: deprecated willTransition hook',
+    class extends RouterTestCase {
+      get routerOptions() {
+        return {
+          willTransition() {
+            this._super(...arguments);
+            // Overrides
+          },
+        };
+      }
+
+      '@test willTransition hook is deprecated'() {
+        expectDeprecation(() => {
+          return this.visit('/');
+        }, 'You attempted to override the "willTransition" method which is deprecated. Please inject the router service and listen to the "routeWillChange" event.');
+      }
+    }
+  );
+  moduleFor(
+    'Router Service: deprecated didTransition hook',
+    class extends RouterTestCase {
+      get routerOptions() {
+        return {
+          didTransition() {
+            this._super(...arguments);
+            // Overrides
+          },
+        };
+      }
+
+      '@test didTransition hook is deprecated'() {
+        expectDeprecation(() => {
+          return this.visit('/');
+        }, 'You attempted to override the "didTransition" method which is deprecated. Please inject the router service and listen to the "routeDidChange" event.');
       }
     }
   );
