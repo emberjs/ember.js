@@ -174,6 +174,7 @@ function decodePrimitive(primitive: number, constants: DebugConstants): Primitiv
           return undefined;
       }
     case PrimitiveType.NEGATIVE:
+    case PrimitiveType.BIG_NUM:
       return constants.getNumber(value);
     default:
       throw unreachable();
