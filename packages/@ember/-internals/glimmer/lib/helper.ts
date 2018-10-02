@@ -72,7 +72,7 @@ export function isSimpleHelper(helper: SimpleHelper | HelperInstance): helper is
   Each time the input to a helper changes, the `compute` function will be
   called again.
 
-  As instances, these helpers also have access to the container an will accept
+  As instances, these helpers also have access to the container and will accept
   injected dependencies.
 
   Additionally, class helpers can call `recompute` to force a new computation.
