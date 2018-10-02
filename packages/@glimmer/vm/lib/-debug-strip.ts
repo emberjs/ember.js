@@ -427,7 +427,8 @@ OPCODE_METADATA(Op.BindEvalScope, {
 
 OPCODE_METADATA(Op.InvokeComponentLayout, {
   name: 'InvokeComponentLayout',
-  stackChange: -2,
+  ops: [Register('state')],
+  stackChange: 0,
 });
 
 OPCODE_METADATA(Op.PopulateLayout, {
