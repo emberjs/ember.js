@@ -1,5 +1,6 @@
 import { Evented } from '@ember/-internals/runtime';
 import { EMBER_ROUTING_ROUTER_SERVICE } from '@ember/canary-features';
+import { assert } from '@ember/debug';
 import { readOnly } from '@ember/object/computed';
 import Service from '@ember/service';
 import { Transition } from 'router_js';
@@ -261,6 +262,46 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
         this.trigger('routeDidChange', transition);
       });
     },
+
+    /**
+     Takes a string URL and returns a `RouteInfo` for the leafmost route represented
+     by the URL. Returns `null` if the URL is not recognized. This method expects to
+     receive the actual URL as seen by the browser including the app's `rootURL`.
+
+      @method recognize
+      @param {String} url
+      @category ember-routing-router-service
+      @public
+    */
+    recognize(url: string) {
+      assert(
+        `You must pass a url that begins with the application's rootURL "${this.rootURL}"`,
+        url.indexOf(this.rootURL) === 0
+      );
+      let internalURL = cleanURL(url, this.rootURL);
+      return this._router._routerMicrolib.recognize(internalURL);
+    },
+
+    /**
+      Takes a string URL and returns a promise that resolves to a
+      `RouteInfoWithAttributes` for the leafmost route represented by the URL.
+      The promise rejects if the URL is not recognized or an unhandled exception
+      is encountered. This method expects to receive the actual URL as seen by
+      the browser including the app's `rootURL`.
+
+        @method recognizeAndLoad
+        @param {String} url
+        @category ember-routing-router-service
+        @public
+     */
+    recognizeAndLoad(url: string) {
+      assert(
+        `You must pass a url that begins with the application's rootURL "${this.rootURL}"`,
+        url.indexOf(this.rootURL) === 0
+      );
+      let internalURL = cleanURL(url, this.rootURL);
+      return this._router._routerMicrolib.recognizeAndLoad(internalURL);
+    },
     /**
       The `routeWillChange` event is fired at the beginning of any
       attempted transition with a `Transition` object as the sole
@@ -287,11 +328,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
       });
       ```
 
-    The `routeWillChange` event fires whenever a new route is chosen
-    as the desired target of a transition. This includes `transitionTo`,
-    `replaceWith`, all redirection for any reason including error handling,
-    and abort. Aborting implies changing the desired target back to where
-    you already were. Once a transition has completed, `routeDidChange` fires.
+    The `routeWillChange` event fires whenever a new route is chosen as the desired target of a transition. This includes `transitionTo`, `replaceWith`, all redirection for any reason including error handling, and abort. Aborting implies changing the desired target back to where you already were. Once a transition has completed, `routeDidChange` fires.
 
       @event routeWillChange
       @param {Transition} transition
@@ -329,4 +366,12 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
       @public
     */
   });
+
+  function cleanURL(url: string, rootURL: string) {
+    if (rootURL === '/') {
+      return url;
+    }
+
+    return url.substr(rootURL.length, url.length);
+  }
 }

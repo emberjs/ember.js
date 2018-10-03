@@ -1169,6 +1169,9 @@ class Route extends EmberObject implements IRoute {
     Router.js hook.
    */
   deserialize(_params: {}, transition: Transition) {
+    if (EMBER_ROUTING_ROUTER_SERVICE) {
+      return this.model(this._paramsFor(this.routeName, _params), transition);
+    }
     return this.model(this.paramsFor(this.routeName), transition);
   }
 
@@ -2544,7 +2547,16 @@ if (EMBER_ROUTING_ROUTER_SERVICE && ROUTER_EVENTS) {
     },
   };
 
-  Route.reopen(ROUTER_EVENT_DEPRECATIONS);
+  Route.reopen(ROUTER_EVENT_DEPRECATIONS, {
+    _paramsFor(routeName: string, params: {}) {
+      let transition = this._router._routerMicrolib.activeTransition;
+      if (transition !== undefined) {
+        return this.paramsFor(routeName);
+      }
+
+      return params;
+    },
+  });
 }
 
 export default Route;
