@@ -2204,10 +2204,6 @@ Route.reopen(ActionHandler, Evented, {
     let propertyNames = [];
 
     for (let propName in combinedQueryParameterConfiguration) {
-      if (!combinedQueryParameterConfiguration.hasOwnProperty(propName)) {
-        continue;
-      }
-
       // to support the dubious feature of using unknownProperty
       // on queryParams configuration
       if (propName === 'unknownProperty' || propName === '_super') {

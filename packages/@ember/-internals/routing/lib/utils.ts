@@ -160,10 +160,6 @@ function accumulateQueryParamDescriptors(_desc: QueryParam, accum: {}) {
   }
 
   for (let key in desc) {
-    if (!desc.hasOwnProperty(key)) {
-      return;
-    }
-
     let singleDesc = desc[key];
     if (typeof singleDesc === 'string') {
       singleDesc = { as: singleDesc };
