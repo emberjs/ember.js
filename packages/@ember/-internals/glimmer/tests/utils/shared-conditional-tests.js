@@ -399,12 +399,10 @@ const IfUnlessWithTestCases = [
     ObjectProxy.create({ content: true }),
     Object,
     function() {},
-    /*jshint -W053 */
     new String('hello'),
     new String(''),
     new Boolean(true),
     new Boolean(false),
-    /*jshint +W053 */
     new Date(),
   ]),
 
@@ -437,12 +435,10 @@ const IfUnlessWithTestCases = [
     EmberObject.create({ foo: 'bar' }),
     ObjectProxy.create({ content: true }),
     ObjectProxy.create({ content: undefined }),
-    /*jshint -W053 */
     new String('hello'),
     new String(''),
     new Boolean(true),
     new Boolean(false),
-    /*jshint +W053 */
     new Date(),
     false,
     null,
