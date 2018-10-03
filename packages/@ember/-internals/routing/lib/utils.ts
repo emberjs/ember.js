@@ -2,7 +2,7 @@ import { get } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
 import EmberError from '@ember/error';
 import { assign } from '@ember/polyfills';
-import Router from 'router_js';
+import Router, { STATE_SYMBOL } from 'router_js';
 import Route from './system/route';
 import EmberRouter, { PrivateRouteInfo, QueryParam } from './system/router';
 
@@ -26,7 +26,7 @@ export function extractRouteArgs(args: any[]) {
 
 export function getActiveTargetName(router: Router<Route>) {
   let routeInfos = router.activeTransition
-    ? router.activeTransition.state!.routeInfos
+    ? router.activeTransition[STATE_SYMBOL]!.routeInfos
     : router.state!.routeInfos;
   return routeInfos[routeInfos.length - 1].name;
 }

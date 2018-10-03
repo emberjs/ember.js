@@ -15,7 +15,14 @@ import { once } from '@ember/runloop';
 import { classify } from '@ember/string';
 import { DEBUG } from '@glimmer/env';
 import { TemplateFactory } from '@glimmer/opcode-compiler';
-import { InternalRouteInfo, Route as IRoute, Transition, TransitionState } from 'router_js';
+import {
+  InternalRouteInfo,
+  PARAMS_SYMBOL,
+  Route as IRoute,
+  STATE_SYMBOL,
+  Transition,
+  TransitionState,
+} from 'router_js';
 import {
   calculateCacheKey,
   normalizeControllerQueryParams,
@@ -219,7 +226,7 @@ class Route extends EmberObject implements IRoute {
     }
 
     let transition = this._router._routerMicrolib.activeTransition;
-    let state = transition ? transition.state : this._router._routerMicrolib.state;
+    let state = transition ? transition[STATE_SYMBOL] : this._router._routerMicrolib.state;
 
     let fullName = route.fullRouteName;
     let params = assign({}, state!.params[fullName]);
@@ -899,10 +906,10 @@ class Route extends EmberObject implements IRoute {
 
     if (transition) {
       // Update the model dep values used to calculate cache keys.
-      stashParamNames(this._router, transition.state!.routeInfos);
+      stashParamNames(this._router, transition[STATE_SYMBOL]!.routeInfos);
 
       let cache = this._bucketCache;
-      let params = transition.params;
+      let params = transition[PARAMS_SYMBOL];
       let allParams = queryParams.propertyNames;
 
       allParams.forEach((prop: string) => {
@@ -914,7 +921,7 @@ class Route extends EmberObject implements IRoute {
         set(controller, prop, value);
       });
 
-      let qpValues = getQueryParamsFor(this, transition.state!);
+      let qpValues = getQueryParamsFor(this, transition[STATE_SYMBOL]!);
       setProperties(controller, qpValues);
     }
 
@@ -1152,7 +1159,7 @@ class Route extends EmberObject implements IRoute {
         if (transition.resolveIndex < 1) {
           return;
         }
-        return transition.state!.routeInfos[transition.resolveIndex - 1].context;
+        return transition[STATE_SYMBOL]!.routeInfos[transition.resolveIndex - 1].context;
       }
     }
 
@@ -2432,7 +2439,7 @@ Route.reopen(ActionHandler, Evented, {
         return;
       }
 
-      let routeInfos = transition.state!.routeInfos;
+      let routeInfos = transition[STATE_SYMBOL]!.routeInfos;
       let router = this._router;
       let qpMeta = router._queryParamsFor(routeInfos);
       let changes = router._qpUpdates;

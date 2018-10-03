@@ -3,7 +3,7 @@ import { getOwner, Owner } from '@ember/-internals/owner';
 import { A as emberA, Evented, Object as EmberObject, typeOf } from '@ember/-internals/runtime';
 import { EMBER_ROUTING_ROUTER_SERVICE } from '@ember/canary-features';
 import { assert, deprecate, info } from '@ember/debug';
-import { HANDLER_INFOS, ROUTER_EVENTS } from '@ember/deprecated-features';
+import { HANDLER_INFOS, ROUTER_EVENTS, TRANSITION_STATE } from '@ember/deprecated-features';
 import EmberError from '@ember/error';
 import { assign } from '@ember/polyfills';
 import { cancel, once, run, scheduleOnce } from '@ember/runloop';
@@ -27,6 +27,9 @@ import Router, {
   InternalRouteInfo,
   InternalTransition,
   logAbort,
+  PARAMS_SYMBOL,
+  QUERY_PARAMS_SYMBOL,
+  STATE_SYMBOL,
   Transition,
   TransitionError,
   TransitionState,
@@ -71,6 +74,56 @@ function defaultWillTransition(
       );
     }
   }
+}
+
+if (TRANSITION_STATE) {
+  Object.defineProperty(InternalTransition.prototype, 'state', {
+    get() {
+      if (EMBER_ROUTING_ROUTER_SERVICE) {
+        deprecate(
+          'You attempted to read "transition.state" which is a private API. You should read the `RouteInfo` object on "transition.to" or "transition.from" which has the public state on it.',
+          false,
+          {
+            id: 'transition-state',
+            until: '3.9.0',
+          }
+        );
+      }
+      return this[STATE_SYMBOL];
+    },
+  });
+
+  Object.defineProperty(InternalTransition.prototype, 'queryParams', {
+    get() {
+      if (EMBER_ROUTING_ROUTER_SERVICE) {
+        deprecate(
+          'You attempted to read "transition.queryParams" which is a private API. You should read the `RouteInfo` object on "transition.to" or "transition.from" which has the queryParams on it.',
+          false,
+          {
+            id: 'transition-state',
+            until: '3.9.0',
+          }
+        );
+      }
+      return this[QUERY_PARAMS_SYMBOL];
+    },
+  });
+
+  Object.defineProperty(InternalTransition.prototype, 'params', {
+    get() {
+      if (EMBER_ROUTING_ROUTER_SERVICE) {
+        deprecate(
+          'You attempted to read "transition.params" which is a private API. You should read the `RouteInfo` object on "transition.to" or "transition.from" which has the params on it.',
+          false,
+          {
+            id: 'transition-state',
+            until: '3.9.0',
+          }
+        );
+      }
+      return this[PARAMS_SYMBOL];
+    },
+  });
 }
 
 if (HANDLER_INFOS) {
@@ -944,7 +997,7 @@ class EmberRouter extends EmberObject {
 
     let unchangedQPs = {};
     let qpUpdates = this._qpUpdates;
-    let params = this._routerMicrolib.activeTransition.queryParams;
+    let params = this._routerMicrolib.activeTransition[QUERY_PARAMS_SYMBOL];
     for (let key in params) {
       if (!qpUpdates.has(key)) {
         unchangedQPs[key] = params[key];
@@ -1203,7 +1256,7 @@ class EmberRouter extends EmberObject {
     let targetState = new RouterState(
       this,
       this._routerMicrolib,
-      this._routerMicrolib.activeTransition.state!
+      this._routerMicrolib.activeTransition[STATE_SYMBOL]!
     );
     this.set('targetState', targetState);
 
@@ -1668,7 +1721,7 @@ EmberRouter.reopenClass({
 });
 
 function didBeginTransition(transition: Transition, router: EmberRouter) {
-  let routerState = new RouterState(router, router._routerMicrolib, transition.state!);
+  let routerState = new RouterState(router, router._routerMicrolib, transition[STATE_SYMBOL]!);
 
   if (!router.currentState) {
     router.set('currentState', routerState);
