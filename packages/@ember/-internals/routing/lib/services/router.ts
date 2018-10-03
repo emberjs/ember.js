@@ -33,7 +33,6 @@ import { extractRouteArgs, resemblesURL, shallowEqual } from '../utils';
 
    @public
    @class RouterService
-   @category ember-routing-router-service
  */
 export default class RouterService extends Service {
   _router!: EmberRouter;
@@ -49,7 +48,6 @@ export default class RouterService extends Service {
      See the [Router Service RFC](https://github.com/emberjs/rfcs/blob/master/text/0095-router-service.md#query-parameter-semantics) for more info.
 
      @method transitionTo
-     @category ember-routing-router-service
      @param {String} routeNameOrUrl the name of the route or a URL
      @param {...Object} models the model(s) or identifier(s) to be used while
        transitioning to the route.
@@ -83,7 +81,6 @@ export default class RouterService extends Service {
      See the [Router Service RFC](https://github.com/emberjs/rfcs/blob/master/text/0095-router-service.md#query-parameter-semantics) for more info.
 
      @method replaceWith
-     @category ember-routing-router-service
      @param {String} routeNameOrUrl the name of the route or a URL
      @param {...Object} models the model(s) or identifier(s) to be used while
        transitioning to the route.
@@ -101,7 +98,6 @@ export default class RouterService extends Service {
      Generate a URL based on the supplied route name.
 
      @method urlFor
-     @category ember-routing-router-service
      @param {String} routeName the name of the route
      @param {...Object} models the model(s) or identifier(s) to be used while
        transitioning to the route.
@@ -118,7 +114,6 @@ export default class RouterService extends Service {
      Determines whether a route is active.
 
      @method isActive
-     @category ember-routing-router-service
      @param {String} routeName the name of the route
      @param {...Object} models the model(s) or identifier(s) to be used while
        transitioning to the route.
@@ -266,67 +261,72 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
         this.trigger('routeDidChange', transition);
       });
     },
-    // Uncomment this when we go the feature
-    //   /**
-    //   The `routeWillChange` event is fired at the beginning of any
-    //   attempted transition with a `Transition` object as the sole
-    //   argument. This action can be used for aborting, redirecting,
-    //   or decorating the transition from the currently active routes.
+    /**
+      The `routeWillChange` event is fired at the beginning of any
+      attempted transition with a `Transition` object as the sole
+      argument. This action can be used for aborting, redirecting,
+      or decorating the transition from the currently active routes.
 
-    //   A good example is preventing navigation when a form is
-    //   half-filled out:
+      A good example is preventing navigation when a form is
+      half-filled out:
 
-    //   ```app/routes/contact-form.js
-    //   import {inject as service} from '@ember/service';
+      ```app/routes/contact-form.js
+      import {inject as service} from '@ember/service';
 
-    //   export default Route.extend({
-    //     router: service('router'),
-    //     init() {
-    //       this._super(...arguments);
-    //       this.router.on('routeWillUpdate', (transition) => {
-    //         if (!transition.to.find(route => route.name === this.routeName)) {
-    //           alert("Please save or cancel your changes.");
-    //           transition.abort();
-    //         }
-    //       })
-    //     }
-    //   });
-    //   ```
+      export default Route.extend({
+        router: service('router'),
+        init() {
+          this._super(...arguments);
+          this.router.on('routeWillUpdate', (transition) => {
+            if (!transition.to.find(route => route.name === this.routeName)) {
+              alert("Please save or cancel your changes.");
+              transition.abort();
+            }
+          })
+        }
+      });
+      ```
 
-    // The `routeWillChange` event fires whenever a new route is chosen as the desired target of a transition. This includes `transitionTo`, `replaceWith`, all redirection for any reason including error handling, and abort. Aborting implies changing the desired target back to where you already were. Once a transition has completed, `routeDidChange` fires.
+    The `routeWillChange` event fires whenever a new route is chosen
+    as the desired target of a transition. This includes `transitionTo`,
+    `replaceWith`, all redirection for any reason including error handling,
+    and abort. Aborting implies changing the desired target back to where
+    you already were. Once a transition has completed, `routeDidChange` fires.
 
-    //   @event routeWillChange
-    //   @param {Transition} transition
-    //   @public
-    // */
+      @event routeWillChange
+      @param {Transition} transition
+      @category ember-routing-router-service
+      @public
+    */
 
-    //   /**
-    //   The `routeDidChange` event only fires once a transition has settled.
-    //   This includes aborts and error substates. Like the `routeWillChange` event
-    //   it recieves a Transition as the sole argument.
+    /**
+      The `routeDidChange` event only fires once a transition has settled.
+      This includes aborts and error substates. Like the `routeWillChange` event
+      it recieves a Transition as the sole argument.
 
-    //   A good example is sending some analytics when the route has transitioned:
+      A good example is sending some analytics when the route has transitioned:
 
-    //   ```app/routes/contact-form.js
-    //   import {inject as service} from '@ember/service';
+      ```app/routes/contact-form.js
+      import {inject as service} from '@ember/service';
 
-    //   export default Route.extend({
-    //     router: service('router'),
-    //     init() {
-    //       this._super(...arguments);
-    //       this.router.on('routeDidUpdate', (transition) => {
-    //         ga.send('pageView', {
-    //           current: transition.to.name,
-    //           from: transition.from.name
-    //         });
-    //       })
-    //     }
-    //   });
-    //   ```
+      export default Route.extend({
+        router: service('router'),
+        init() {
+          this._super(...arguments);
+          this.router.on('routeDidUpdate', (transition) => {
+            ga.send('pageView', {
+              current: transition.to.name,
+              from: transition.from.name
+            });
+          })
+        }
+      });
+      ```
 
-    //   @event routeDidChange
-    //   @param {Transition} transition
-    //   @public
-    // */
+      @event routeDidChange
+      @param {Transition} transition
+      @category ember-routing-router-service
+      @public
+    */
   });
 }
