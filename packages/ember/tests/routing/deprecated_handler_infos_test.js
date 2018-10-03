@@ -60,9 +60,11 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
 
       '@test handlerInfos are deprecated and associated private apis'(assert) {
         let done = assert.async();
-        return this.visit('/parent').then(() => {
-          done();
-        });
+        expectDeprecation(() => {
+          return this.visit('/parent').then(() => {
+            done();
+          });
+        }, /You attempted to override the \"(willTransition|didTransition)\" method which is deprecated. Please inject the router service and listen to the \"(routeWillChange|routeDidChange)\" event\./);
       }
     }
   );

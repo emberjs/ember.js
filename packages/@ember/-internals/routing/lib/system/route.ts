@@ -7,8 +7,9 @@ import {
   Object as EmberObject,
   typeOf,
 } from '@ember/-internals/runtime';
+import { EMBER_ROUTING_ROUTER_SERVICE } from '@ember/canary-features';
 import { assert, deprecate, info, isTesting } from '@ember/debug';
-import { ROUTER_ROUTER } from '@ember/deprecated-features';
+import { ROUTER_EVENTS, ROUTER_ROUTER } from '@ember/deprecated-features';
 import { assign } from '@ember/polyfills';
 import { once } from '@ember/runloop';
 import { classify } from '@ember/string';
@@ -329,8 +330,8 @@ class Route extends EmberObject implements IRoute {
   /**
     @private
 
-    @method _reset
-    @since 1.7.0
+    @method _internalReset
+    @since 3.6.0
   */
   _internalReset(isExiting: boolean, transition: Transition) {
     let controller = this.controller;
@@ -2510,5 +2511,40 @@ Route.reopen(ActionHandler, Evented, {
     },
   },
 });
+
+export let ROUTER_EVENT_DEPRECATIONS: any;
+if (EMBER_ROUTING_ROUTER_SERVICE && ROUTER_EVENTS) {
+  ROUTER_EVENT_DEPRECATIONS = {
+    on(name: string) {
+      this._super(...arguments);
+      let hasDidTransition = name === 'didTransition';
+      let hasWillTransition = name === 'willTransition';
+
+      if (hasDidTransition) {
+        deprecate(
+          'You attempted to listen to the "didTransition" event which is deprecated. Please inject the router service and listen to the "routeDidChange" event.',
+          false,
+          {
+            id: 'deprecate-router-events',
+            until: '4.0.0',
+          }
+        );
+      }
+
+      if (hasWillTransition) {
+        deprecate(
+          'You attempted to listen to the "willTransition" event which is deprecated. Please inject the router service and listen to the "routeWillChange" event.',
+          false,
+          {
+            id: 'deprecate-router-events',
+            until: '4.0.0',
+          }
+        );
+      }
+    },
+  };
+
+  Route.reopen(ROUTER_EVENT_DEPRECATIONS);
+}
 
 export default Route;

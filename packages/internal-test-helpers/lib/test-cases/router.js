@@ -11,6 +11,9 @@ export default class RouterTestCase extends ApplicationTestCase {
         this.route('brother');
       });
       this.route('dynamic', { path: '/dynamic/:dynamic_id' });
+      this.route('dynamicWithChild', { path: '/dynamic-with-child/:dynamic_id' }, function() {
+        this.route('child', { path: '/:child_id' });
+      });
     });
   }
 
