@@ -12,6 +12,7 @@ import { getTextOf } from 'internal-test-helpers';
 import { Component } from '@ember/-internals/glimmer';
 import Engine from '@ember/engine';
 import { InternalTransition as Transition } from 'router_js';
+import { EMBER_ROUTING_ROUTER_SERVICE } from '@ember/canary-features';
 
 let originalConsoleError;
 
@@ -2750,20 +2751,35 @@ moduleFor(
     ['@test Router `willTransition` hook passes in cancellable transition'](assert) {
       // Should hit willTransition 3 times, once for the initial route, and then 2 more times
       // for the two handleURL calls below
-      assert.expect(5);
+      if (EMBER_ROUTING_ROUTER_SERVICE) {
+        assert.expect(7);
+
+        this.router.reopen({
+          init() {
+            this._super(...arguments);
+            this.on('routeWillChange', transition => {
+              assert.ok(true, 'routeWillChange was called');
+              if (transition.intent && transition.intent.url !== '/') {
+                transition.abort();
+              }
+            });
+          },
+        });
+      } else {
+        assert.expect(5);
+        this.router.reopen({
+          willTransition(_, _2, transition) {
+            assert.ok(true, 'willTransition was called');
+            if (transition.intent.url !== '/') {
+              transition.abort();
+            }
+          },
+        });
+      }
 
       this.router.map(function() {
         this.route('nork');
         this.route('about');
-      });
-
-      this.router.reopen({
-        willTransition(_, _2, transition) {
-          assert.ok(true, 'willTransition was called');
-          if (transition.intent.url !== '/') {
-            transition.abort();
-          }
-        },
       });
 
       this.add(
@@ -2922,13 +2938,17 @@ moduleFor(
       this.router.map(function() {
         this.route('nork');
       });
-
-      this.router.reopen({
-        didTransition() {
-          this._super(...arguments);
-          assert.ok(true, 'reopened didTransition was called');
-        },
-      });
+      if (EMBER_ROUTING_ROUTER_SERVICE) {
+        assert.ok(true, 'no longer a valid test');
+        return;
+      } else {
+        this.router.reopen({
+          didTransition() {
+            this._super(...arguments);
+            assert.ok(true, 'reopened didTransition was called');
+          },
+        });
+      }
 
       return this.visit('/');
     }

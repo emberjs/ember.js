@@ -30,7 +30,6 @@ import Engine from '@ember/engine';
 import { privatize as P } from '@ember/-internals/container';
 import { setupApplicationRegistry } from '@ember/-internals/glimmer';
 import { RouterService } from '@ember/-internals/routing';
-import { EMBER_ROUTING_ROUTER_SERVICE } from '@ember/canary-features';
 
 let librariesRegistered = false;
 
@@ -1124,10 +1123,8 @@ function commonSetupRegistry(registry) {
     },
   });
 
-  if (EMBER_ROUTING_ROUTER_SERVICE) {
-    registry.register('service:router', RouterService);
-    registry.injection('service:router', '_router', 'router:main');
-  }
+  registry.register('service:router', RouterService);
+  registry.injection('service:router', '_router', 'router:main');
 }
 
 function registerLibraries() {
