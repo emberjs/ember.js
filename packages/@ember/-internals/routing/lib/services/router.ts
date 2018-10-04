@@ -264,6 +264,19 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
     },
 
     /**
+     A RouteInfo that represents the current leaf route.
+     It is guaranteed to change whenever a route transition
+     happens (even when that transition only changes parameters
+    and doesn't change the active route)
+
+     @property currentRoute
+     @type RouteInfo
+     @category ember-routing-router-service
+     @public
+   */
+    currentRoute: readOnly('_router.currentRoute'),
+
+    /**
      Takes a string URL and returns a `RouteInfo` for the leafmost route represented
      by the URL. Returns `null` if the URL is not recognized. This method expects to
      receive the actual URL as seen by the browser including the app's `rootURL`.
