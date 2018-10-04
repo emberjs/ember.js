@@ -146,7 +146,7 @@ export default class RouterService extends Service {
   }
 }
 
-RouterService.reopen(Evented, {
+RouterService.reopen({
   /**
      Name of the current route.
 

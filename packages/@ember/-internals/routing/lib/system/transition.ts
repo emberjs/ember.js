@@ -11,7 +11,7 @@
   @param {Object} intent
   @param {Object} state
   @param {Object} error
-  @private
+  @public
 */
 
 /**
@@ -138,6 +138,28 @@
   @param {String} name the name of the event to fire
   @public
 */
+
+/**
+ * This property is a `RouteInfo` object that represents
+ * where the router is transitioning to. It's important
+ * to note that a `RouteInfo` is a linked list and this
+ * property is simply represents leafmost route.
+ * @property {RouteInfo} to
+ * @public
+ * @category ember-routing-router-service
+ */
+
+/**
+ * This property is a `RouteInfo` object that represents
+ * where transition originated from. It's important
+ * to note that a `RouteInfo` is a linked list and this
+ * property is simply represents head node of the list.
+ * In the case of an initial render, from will be set to
+ * `null`.
+ * @property {RouteInfo} from
+ * @public
+ * @category ember-routing-router-service
+ */
 
 /**
   Transitions are aborted and their promises rejected
