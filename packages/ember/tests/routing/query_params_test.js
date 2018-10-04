@@ -5,6 +5,7 @@ import { run } from '@ember/runloop';
 import { peekMeta } from '@ember/-internals/meta';
 import { get, computed } from '@ember/-internals/metal';
 import { Route } from '@ember/-internals/routing';
+import { PARAMS_SYMBOL } from 'router_js';
 
 import { QueryParamTestCase, moduleFor, getTextOf } from 'internal-test-helpers';
 
@@ -1332,7 +1333,7 @@ moduleFor(
         'route:other',
         Route.extend({
           model(p, trans) {
-            let m = peekMeta(trans.params.application);
+            let m = peekMeta(trans[PARAMS_SYMBOL].application);
             assert.ok(m === undefined, "A meta object isn't constructed for this params POJO");
           },
         })
