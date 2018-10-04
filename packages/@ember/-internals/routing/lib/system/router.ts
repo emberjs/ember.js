@@ -389,6 +389,7 @@ class EmberRouter extends EmberObject {
 
       routeDidChange(transition: Transition) {
         if (EMBER_ROUTING_ROUTER_SERVICE) {
+          router.set('currentRoute', transition.to);
           router.trigger('routeDidChange', transition);
         }
       }
@@ -488,6 +489,10 @@ class EmberRouter extends EmberObject {
     this.currentURL = null;
     this.currentRouteName = null;
     this.currentPath = null;
+
+    if (EMBER_ROUTING_ROUTER_SERVICE) {
+      this.currentRoute = null;
+    }
 
     this._qpCache = Object.create(null);
     this._qpUpdates = new Set();
