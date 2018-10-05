@@ -10,19 +10,25 @@
   @class RouteInfoWithAttributes
   @category ember-routing-router-service
   @public
+*/
 
+/**
   The dot-separated, fully-qualified name of the
   route, like "people.index".
   @property {String} name
   @category ember-routing-router-service
   @public
+*/
 
+/**
   The final segment of the fully-qualified name of
   the route, like "index"
   @property {String} localName
   @category ember-routing-router-service
   @public
+*/
 
+/**
   The values of the route's parametes. These are the
   same params that are recieved as arguments to the
   route's model hook. Contains only the parameters
@@ -31,7 +37,9 @@
   @property {Object} params
   @category ember-routing-router-service
   @public
+*/
 
+/**
   The ordered list of the names of the params
   required for this route. It will contain the same
   strings as Object.keys(params), but here the order
@@ -40,25 +48,33 @@
   @property {Array} paramNames
   @category ember-routing-router-service
   @public
+*/
 
+/**
   The values of any queryParams on this route.
   @property {Object} queryParams
   @category ember-routing-router-service
   @public
+*/
 
+/**
   This is the resolved return value from the
   route's model hook.
   @property {Object|Array|String} attributes
   @category ember-routing-router-service
   @public
+*/
 
+/**
   A reference to the parent route's RouteInfo.
   This can be used to traverse upward to the topmost
   `RouteInfo`.
   @property {RouteInfo|null} parent
   @category ember-routing-router-service
   @public
+*/
 
+/**
   A reference to the child route's RouteInfo.
   This can be used to traverse downward to the
   leafmost `RouteInfo`.
@@ -110,19 +126,25 @@
   @class RouteInfo
   @category ember-routing-router-service
   @public
+*/
 
+/**
   The dot-separated, fully-qualified name of the
   route, like "people.index".
   @property {String} name
   @category ember-routing-router-service
   @public
+*/
 
+/**
   The final segment of the fully-qualified name of
   the route, like "index"
   @property {String} localName
   @category ember-routing-router-service
   @public
+*/
 
+/**
   The values of the route's parametes. These are the
   same params that are recieved as arguments to the
   route's model hook. Contains only the parameters
@@ -131,7 +153,9 @@
   @property {Object} params
   @category ember-routing-router-service
   @public
+*/
 
+/**
   The ordered list of the names of the params
   required for this route. It will contain the same
   strings as Object.keys(params), but here the order
@@ -140,19 +164,25 @@
   @property {Array} paramNames
   @category ember-routing-router-service
   @public
+*/
 
+/**
   The values of any queryParams on this route.
   @property {Object} queryParams
   @category ember-routing-router-service
   @public
+*/
 
+/**
   A reference to the parent route's RouteInfo.
   This can be used to traverse upward to the topmost
   `RouteInfo`.
   @property {RouteInfo|null} parent
   @category ember-routing-router-service
   @public
+*/
 
+/**
   A reference to the child route's RouteInfo.
   This can be used to traverse downward to the
   leafmost `RouteInfo`.
