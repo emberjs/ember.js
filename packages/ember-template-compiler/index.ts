@@ -1,5 +1,5 @@
+import { context, ENV } from '@ember/-internals/environment';
 import { FEATURES } from '@ember/canary-features';
-import { context, ENV } from 'ember-environment';
 import VERSION from 'ember/version';
 
 export const _Ember =

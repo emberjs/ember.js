@@ -7,7 +7,7 @@ import {
   isNone,
   alias,
   expandProperties,
-} from 'ember-metal';
+} from '@ember/-internals/metal';
 import { assert, deprecate } from '@ember/debug';
 
 /**

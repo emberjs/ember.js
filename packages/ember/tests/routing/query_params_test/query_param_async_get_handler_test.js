@@ -1,6 +1,6 @@
-import { get } from 'ember-metal';
-import { RSVP } from 'ember-runtime';
-import { Route } from 'ember-routing';
+import { get } from '@ember/-internals/metal';
+import { RSVP } from '@ember/-internals/runtime';
+import { Route } from '@ember/-internals/routing';
 
 import { QueryParamTestCase, moduleFor } from 'internal-test-helpers';
 
@@ -20,19 +20,12 @@ moduleFor(
           this._handlerPromises = Object.create(null);
         },
 
-        _getQPMeta(handlerInfo) {
-          let handler = this._seenHandlers[handlerInfo.name];
-          if (handler) {
-            return get(handler, '_qp');
-          }
-        },
+        setupRouter() {
+          this._super(...arguments);
+          let { _handlerPromises: handlerPromises, _seenHandlers: seenHandlers } = this;
+          let getRoute = this._routerMicrolib.getRoute;
 
-        _getHandlerFunction() {
-          let getHandler = this._super(...arguments);
-          let handlerPromises = this._handlerPromises;
-          let seenHandlers = this._seenHandlers;
-
-          return routeName => {
+          this._routerMicrolib.getRoute = function(routeName) {
             fetchedHandlers.push(routeName);
 
             // Cache the returns so we don't have more than one Promise for a
@@ -41,7 +34,7 @@ moduleFor(
               handlerPromises[routeName] ||
               (handlerPromises[routeName] = new RSVP.Promise(resolve => {
                 setTimeout(() => {
-                  let handler = getHandler(routeName);
+                  let handler = getRoute(routeName);
 
                   seenHandlers[routeName] = handler;
 
@@ -50,6 +43,13 @@ moduleFor(
               }))
             );
           };
+        },
+
+        _getQPMeta(handlerInfo) {
+          let handler = this._seenHandlers[handlerInfo.name];
+          if (handler) {
+            return get(handler, '_qp');
+          }
         },
       };
     }

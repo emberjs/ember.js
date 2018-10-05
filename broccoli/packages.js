@@ -5,12 +5,13 @@ const path = require('path');
 const Rollup = require('broccoli-rollup');
 const Funnel = require('broccoli-funnel');
 const MergeTrees = require('broccoli-merge-trees');
-const typescript = require('broccoli-typescript-compiler').typescript;
+const typescript = require('broccoli-typescript-compiler').default;
 const BroccoliDebug = require('broccoli-debug');
 const findLib = require('./find-lib');
 const findPackage = require('./find-package');
 const funnelLib = require('./funnel-lib');
 const { VERSION } = require('./version');
+const PackageJSONWriter = require('./package-json-writer');
 const WriteFile = require('broccoli-file-creator');
 const StringReplace = require('broccoli-string-replace');
 const GlimmerTemplatePrecompiler = require('./glimmer-template-compiler');
@@ -24,7 +25,7 @@ module.exports.routerES = function _routerES() {
       external: ['route-recognizer', 'rsvp'],
       input: 'index.js',
       output: {
-        file: 'router.js',
+        file: 'router_js.js',
         format: 'es',
       },
     },
@@ -93,6 +94,13 @@ module.exports.getPackagesES = function getPackagesES() {
   let mergedFinalOutput = new MergeTrees([nonTypeScriptContents, debuggedCompiledTypescript], {
     overwrite: true,
   });
+
+  let packageJSON = debugTree(
+    new PackageJSONWriter(mergedFinalOutput),
+    `get-packages-es:package-json`
+  );
+
+  mergedFinalOutput = new MergeTrees([mergedFinalOutput, packageJSON], { overwrite: true });
 
   return debugTree(mergedFinalOutput, `get-packages-es:output`);
 };

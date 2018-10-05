@@ -1,7 +1,7 @@
 /**
 @module @ember/engine
 */
-import { symbol } from 'ember-utils';
+import { symbol } from '@ember/-internals/utils';
 
 const ENGINE_PARENT = symbol('ENGINE_PARENT');
 

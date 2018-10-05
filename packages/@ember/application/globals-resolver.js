@@ -2,13 +2,13 @@
 @module @ember/application
 */
 
-import { dictionary } from 'ember-utils';
-import { get, findNamespace } from 'ember-metal';
+import { dictionary } from '@ember/-internals/utils';
+import { get, findNamespace } from '@ember/-internals/metal';
 import { assert, info } from '@ember/debug';
 import { capitalize, classify, dasherize, decamelize } from '@ember/string';
-import { Object as EmberObject } from 'ember-runtime';
+import { Object as EmberObject } from '@ember/-internals/runtime';
 import validateType from './lib/validate-type';
-import { getTemplate } from 'ember-glimmer';
+import { getTemplate } from '@ember/-internals/glimmer';
 import { DEBUG } from '@glimmer/env';
 
 /**

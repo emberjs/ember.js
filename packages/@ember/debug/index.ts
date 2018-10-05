@@ -1,6 +1,6 @@
+import { isChrome, isFirefox } from '@ember/-internals/browser-environment';
 import EmberError from '@ember/error';
 import { DEBUG } from '@glimmer/env';
-import { isChrome, isFirefox } from 'ember-browser-environment';
 import _deprecate, { DeprecateFunc, DeprecationOptions } from './lib/deprecate';
 import { isTesting } from './lib/testing';
 import _warn, { WarnFunc } from './lib/warn';
@@ -24,7 +24,7 @@ export type AssertFunc = (desc: string, test?: boolean) => void;
 export type DebugFunc = (message: string) => void;
 export type DebugSealFunc = (obj: object) => void;
 export type DebugFreezeFunc = (obj: object) => void;
-export type InfoFunc = () => void;
+export type InfoFunc = (message: string, options: object) => void;
 export type RunInDebugFunc = (func: () => void) => void;
 export type DeprecateFuncFunc = (
   message: string,

@@ -3,9 +3,9 @@ import { moduleFor, AutobootApplicationTestCase } from 'internal-test-helpers';
 import { later } from '@ember/runloop';
 import Test from '../lib/test';
 import QUnitAdapter from '../lib/adapters/qunit';
-import { Route } from 'ember-routing';
-import { RSVP } from 'ember-runtime';
-import { jQueryDisabled } from 'ember-views';
+import { Route } from '@ember/-internals/routing';
+import { RSVP } from '@ember/-internals/runtime';
+import { jQueryDisabled } from '@ember/-internals/views';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 
 const originalDebug = getDebugFunction('debug');

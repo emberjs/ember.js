@@ -1,7 +1,7 @@
 /**
 @module ember
 */
-import { RSVP } from 'ember-runtime';
+import { RSVP } from '@ember/-internals/runtime';
 import { assert, info } from '@ember/debug';
 
 let resume;

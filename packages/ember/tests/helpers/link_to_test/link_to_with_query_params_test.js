@@ -1,6 +1,6 @@
 import Controller from '@ember/controller';
-import { RSVP } from 'ember-runtime';
-import { Route } from 'ember-routing';
+import { RSVP } from '@ember/-internals/runtime';
+import { Route } from '@ember/-internals/routing';
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 
 moduleFor(

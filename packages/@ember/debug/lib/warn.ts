@@ -1,8 +1,6 @@
 import { DEBUG } from '@glimmer/env';
-import { ENV } from 'ember-environment';
 
 import { assert } from '../index';
-import deprecate from './deprecate';
 import { HandlerCallback, invoke, registerHandler as genericRegisterHandler } from './handlers';
 
 export interface WarnOptions {
@@ -78,6 +76,16 @@ if (DEBUG) {
     * In a production build, this method is defined as an empty function (NOP).
     Uses of this method in Ember itself are stripped from the ember.prod.js build.
 
+    ```javascript
+    import { warn } from '@ember/debug';
+    import tomsterCount from './tomster-counter'; // a module in my project
+
+    // Log a warning if we have more than 3 tomsters
+    warn('Too many tomsters!', tomsterCount <= 3, {
+      id: 'ember-debug.too-many-tomsters'
+    });
+    ```
+
     @method warn
     @for @ember/debug
     @static
@@ -97,26 +105,8 @@ if (DEBUG) {
       test = false;
     }
 
-    if (ENV._ENABLE_WARN_OPTIONS_SUPPORT !== true) {
-      assert(missingOptionsDeprecation, !!options);
-      assert(missingOptionsIdDeprecation, !!(options && options.id));
-    }
-
-    if (!options && ENV._ENABLE_WARN_OPTIONS_SUPPORT === true) {
-      deprecate(missingOptionsDeprecation, false, {
-        id: 'ember-debug.warn-options-missing',
-        until: '3.0.0',
-        url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options',
-      });
-    }
-
-    if (options && !options.id && ENV._ENABLE_WARN_OPTIONS_SUPPORT === true) {
-      deprecate(missingOptionsIdDeprecation, false, {
-        id: 'ember-debug.warn-id-missing',
-        until: '3.0.0',
-        url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options',
-      });
-    }
+    assert(missingOptionsDeprecation, !!options);
+    assert(missingOptionsIdDeprecation, !!(options && options.id));
 
     invoke('warn', message, test, options);
   };

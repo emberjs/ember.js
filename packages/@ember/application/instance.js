@@ -3,11 +3,11 @@
 */
 
 import { assign } from '@ember/polyfills';
-import { get, set, computed } from 'ember-metal';
-import * as environment from 'ember-browser-environment';
-import { jQuery } from 'ember-views';
+import { get, set, computed } from '@ember/-internals/metal';
+import * as environment from '@ember/-internals/browser-environment';
+import { jQuery } from '@ember/-internals/views';
 import EngineInstance from '@ember/engine/instance';
-import { renderSettled } from 'ember-glimmer';
+import { renderSettled } from '@ember/-internals/glimmer';
 
 /**
   The `ApplicationInstance` encapsulates all of the stateful aspects of a

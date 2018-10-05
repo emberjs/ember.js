@@ -1,10 +1,5 @@
-import {
-  DEPRECATE_ID_MISSING,
-  DEPRECATE_OPTIONS_MISSING,
-  DEPRECATE_UNTIL_MISSING,
-} from '@ember/deprecated-features';
+import { ENV } from '@ember/-internals/environment';
 import { DEBUG } from '@glimmer/env';
-import { ENV } from 'ember-environment';
 
 import { assert } from '../index';
 import { HandlerCallback, invoke, registerHandler as genericRegisterHandler } from './handlers';
@@ -188,49 +183,9 @@ if (DEBUG) {
     @since 1.0.0
   */
   deprecate = function deprecate(message, test, options) {
-    if (ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT !== true) {
-      assert(missingOptionsDeprecation, !!(options && (options.id || options.until)));
-      assert(missingOptionsIdDeprecation, !!options!.id);
-      assert(missingOptionsUntilDeprecation, !!options!.until);
-    }
-
-    if (
-      DEPRECATE_OPTIONS_MISSING &&
-      (!options || (!options.id && !options.until)) &&
-      ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT === true
-    ) {
-      deprecate(missingOptionsDeprecation, false, {
-        id: 'ember-debug.deprecate-options-missing',
-        until: '3.0.0',
-        url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options',
-      });
-    }
-
-    if (
-      DEPRECATE_ID_MISSING &&
-      options &&
-      !options.id &&
-      ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT === true
-    ) {
-      deprecate(missingOptionsIdDeprecation, false, {
-        id: 'ember-debug.deprecate-id-missing',
-        until: '3.0.0',
-        url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options',
-      });
-    }
-
-    if (
-      DEPRECATE_UNTIL_MISSING &&
-      options &&
-      !options.until &&
-      ENV._ENABLE_DEPRECATION_OPTIONS_SUPPORT === true
-    ) {
-      deprecate(missingOptionsUntilDeprecation, !!(options && options.until), {
-        id: 'ember-debug.deprecate-until-missing',
-        until: '3.0.0',
-        url: 'https://emberjs.com/deprecations/v2.x/#toc_ember-debug-function-options',
-      });
-    }
+    assert(missingOptionsDeprecation, !!(options && (options.id || options.until)));
+    assert(missingOptionsIdDeprecation, !!options!.id);
+    assert(missingOptionsUntilDeprecation, !!options!.until);
 
     invoke('deprecate', message, test, options);
   };

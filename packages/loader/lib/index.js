@@ -1,7 +1,7 @@
 /*globals process */
 var enifed, requireModule, Ember;
 
-// Used in ember-environment/lib/global.js
+// Used in @ember/-internals/environment/lib/global.js
 mainContext = this; // eslint-disable-line no-undef
 
 (function() {

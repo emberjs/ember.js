@@ -1,7 +1,7 @@
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 import Controller from '@ember/controller';
 import Service, { inject as injectService } from '@ember/service';
-import { Helper, helper } from 'ember-glimmer';
+import { Helper, helper } from '@ember/-internals/glimmer';
 
 moduleFor(
   'Application Lifecycle - Helper Registration',

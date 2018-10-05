@@ -1,5 +1,5 @@
 import AbstractRenderingTestCase from './abstract-rendering';
-import { privatize as P } from 'container';
+import { privatize as P } from '@ember/-internals/container';
 
 export default class RenderingTestCase extends AbstractRenderingTestCase {
   constructor() {

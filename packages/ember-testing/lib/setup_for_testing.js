@@ -1,7 +1,7 @@
 /* global self */
 
 import { setTesting } from '@ember/debug';
-import { jQuery, jQueryDisabled } from 'ember-views';
+import { jQuery, jQueryDisabled } from '@ember/-internals/views';
 import { getAdapter, setAdapter } from './test/adapter';
 import {
   incrementPendingRequests,
@@ -29,7 +29,7 @@ export default function setupForTesting() {
   let adapter = getAdapter();
   // if adapter is not manually set default to QUnit
   if (!adapter) {
-    setAdapter(typeof self.QUnit === 'undefined' ? new Adapter() : new QUnitAdapter());
+    setAdapter(typeof self.QUnit === 'undefined' ? Adapter.create() : QUnitAdapter.create());
   }
 
   if (!jQueryDisabled) {

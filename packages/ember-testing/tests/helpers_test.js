@@ -1,11 +1,11 @@
 import { moduleFor, AutobootApplicationTestCase, isIE11 } from 'internal-test-helpers';
 
-import { Route } from 'ember-routing';
+import { Route } from '@ember/-internals/routing';
 import Controller from '@ember/controller';
-import { RSVP } from 'ember-runtime';
+import { RSVP } from '@ember/-internals/runtime';
 import { later } from '@ember/runloop';
-import { Component } from 'ember-glimmer';
-import { jQueryDisabled, jQuery } from 'ember-views';
+import { Component } from '@ember/-internals/glimmer';
+import { jQueryDisabled, jQuery } from '@ember/-internals/views';
 
 import Test from '../lib/test';
 import setupForTesting from '../lib/setup_for_testing';

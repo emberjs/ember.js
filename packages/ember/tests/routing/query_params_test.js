@@ -1,10 +1,11 @@
 import Controller from '@ember/controller';
 import { dasherize } from '@ember/string';
-import { RSVP, Object as EmberObject, A as emberA } from 'ember-runtime';
+import { RSVP, Object as EmberObject, A as emberA } from '@ember/-internals/runtime';
 import { run } from '@ember/runloop';
-import { peekMeta } from 'ember-meta';
-import { get, computed } from 'ember-metal';
-import { Route } from 'ember-routing';
+import { peekMeta } from '@ember/-internals/meta';
+import { get, computed } from '@ember/-internals/metal';
+import { Route } from '@ember/-internals/routing';
+import { PARAMS_SYMBOL } from 'router_js';
 
 import { QueryParamTestCase, moduleFor, getTextOf } from 'internal-test-helpers';
 
@@ -1332,7 +1333,7 @@ moduleFor(
         'route:other',
         Route.extend({
           model(p, trans) {
-            let m = peekMeta(trans.params.application);
+            let m = peekMeta(trans[PARAMS_SYMBOL].application);
             assert.ok(m === undefined, "A meta object isn't constructed for this params POJO");
           },
         })

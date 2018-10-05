@@ -1,15 +1,16 @@
+import { ENV } from '@ember/-internals/environment';
 import { assign } from '@ember/polyfills';
-import { ENV } from 'ember-environment';
 
 /**
  @module ember/canary-features
+ @private
 */
 
 export const DEFAULT_FEATURES = {
   EMBER_LIBRARIES_ISREGISTERED: null,
   EMBER_IMPROVED_INSTRUMENTATION: null,
   EMBER_GLIMMER_NAMED_ARGUMENTS: true,
-  EMBER_ROUTING_ROUTER_SERVICE: true,
+  EMBER_ROUTING_ROUTER_SERVICE: null,
   EMBER_ENGINES_MOUNT_PARAMS: true,
   EMBER_MODULE_UNIFICATION: null,
   GLIMMER_CUSTOM_COMPONENT_MANAGER: true,

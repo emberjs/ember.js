@@ -1,3 +1,5 @@
+import { deprecate } from '@ember/debug';
+
 /**
  @module @ember/polyfills
 */
@@ -25,6 +27,12 @@ export default function merge<T, U>(original: T, updates: U): T & U;
   @public
 */
 export default function merge(original: object, updates: object) {
+  deprecate('Use of `merge` has been deprecated. Please use `assign` instead.', false, {
+    id: 'ember-polyfills.deprecate-merge',
+    until: '4.0.0',
+    url: 'https://emberjs.com/deprecations/v3.x/#toc_ember-polyfills-deprecate-merge',
+  });
+
   if (updates === null || typeof updates !== 'object') {
     return original;
   }

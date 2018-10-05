@@ -88,26 +88,26 @@ module.exports = function() {
   let packagesESRollup = new MergeTrees([
     new Funnel(packagesES, {
       exclude: [
-        'container/index.js',
-        'container/lib/**',
-        'ember-environment/index.js',
-        'ember-environment/lib/**',
-        'ember-browser-environment/index.js',
-        'ember-browser-environment/lib/**',
-        'ember-glimmer/index.js',
-        'ember-glimmer/lib/**',
-        'ember-metal/index.js',
-        'ember-metal/lib/**',
-        'ember-utils/index.js',
-        'ember-utils/lib/**',
+        '@ember/-internals/browser-environment/index.js',
+        '@ember/-internals/browser-environment/lib/**',
+        '@ember/-internals/container/index.js',
+        '@ember/-internals/container/lib/**',
+        '@ember/-internals/environment/index.js',
+        '@ember/-internals/environment/lib/**',
+        '@ember/-internals/glimmer/index.js',
+        '@ember/-internals/glimmer/lib/**',
+        '@ember/-internals/metal/index.js',
+        '@ember/-internals/metal/lib/**',
+        '@ember/-internals/utils/index.js',
+        '@ember/-internals/utils/lib/**',
       ],
     }),
-    rollupPackage(packagesES, 'container'),
-    rollupPackage(packagesES, 'ember-environment'),
-    rollupPackage(packagesES, 'ember-browser-environment'),
-    rollupPackage(packagesES, 'ember-glimmer'),
-    rollupPackage(packagesES, 'ember-metal'),
-    rollupPackage(packagesES, 'ember-utils'),
+    rollupPackage(packagesES, '@ember/-internals/browser-environment'),
+    rollupPackage(packagesES, '@ember/-internals/environment'),
+    rollupPackage(packagesES, '@ember/-internals/glimmer'),
+    rollupPackage(packagesES, '@ember/-internals/metal'),
+    rollupPackage(packagesES, '@ember/-internals/utils'),
+    rollupPackage(packagesES, '@ember/-internals/container'),
   ]);
 
   // ES5
@@ -120,6 +120,7 @@ module.exports = function() {
     new Funnel(packagesES5, {
       include: [
         'internal-test-helpers/**',
+        '@ember/-internals/*/tests/**' /* internal packages */,
         '*/*/tests/**' /* scoped packages */,
         '*/tests/**' /* packages */,
         'license.js',
@@ -139,6 +140,7 @@ module.exports = function() {
   let emberDebugBundle = new MergeTrees([
     new Funnel(packagesES5, {
       exclude: [
+        '@ember/-internals/*/tests/**' /* internal packages */,
         '*/*/tests/**' /* scoped packages */,
         '*/tests/**' /* packages */,
         'ember-template-compiler/**',
@@ -189,6 +191,9 @@ module.exports = function() {
     return new MergeTrees([
       new Funnel(packagesES5, {
         include: [
+          '@ember/-internals/utils.js',
+          '@ember/-internals/environment.js',
+          '@ember/-internals/browser-environment.js',
           '@ember/canary-features/**',
           '@ember/debug/index.js',
           '@ember/debug/lib/**',
@@ -197,10 +202,7 @@ module.exports = function() {
           '@ember/polyfills/index.js',
           '@ember/polyfills/lib/**',
           'ember/version.js',
-          'ember-environment.js',
-          'ember-browser-environment.js',
           'ember-template-compiler/**',
-          'ember-utils.js',
         ],
       }),
       bootstrapModule('ember-template-compiler', 'umd'),
@@ -218,6 +220,7 @@ module.exports = function() {
     let emberProdBundle = new MergeTrees([
       new Funnel(prodPackagesES5, {
         exclude: [
+          '@ember/-internals/*/tests/**' /* internal packages */,
           '*/*/tests/**' /* scoped packages */,
           '*/tests/**' /* packages */,
           'ember-template-compiler/**',
