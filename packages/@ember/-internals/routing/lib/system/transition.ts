@@ -6,11 +6,6 @@
   be `retry()`d later.
 
   @class Transition
-  @constructor
-  @param {Object} router
-  @param {Object} intent
-  @param {Object} state
-  @param {Object} error
   @public
 */
 
