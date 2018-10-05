@@ -5,7 +5,7 @@
   previous one is still underway. An aborted transition can also
   be `retry()`d later.
 
-  @interface Transition
+  @class Transition
   @public
 */
 
