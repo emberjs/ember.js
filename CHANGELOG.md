@@ -21,7 +21,7 @@
 
 ### v3.4.5 (October 4, 2018)
 
-- [#17029](https://github.com/emberjs/ember.js/pull/17029) [BUGFIX] Update backburner.js to 2.3.1.
+- [#17029](https://github.com/emberjs/ember.js/pull/17029) [BUGFIX] Update backburner.js to 2.4.0.
 
 ### v3.4.4 (September 27, 2018)
 
