@@ -86,6 +86,7 @@ if (TRANSITION_STATE) {
           {
             id: 'transition-state',
             until: '3.9.0',
+            url: 'https://emberjs.com/deprecations/v3.x#toc_transition-state',
           }
         );
       }
@@ -102,6 +103,7 @@ if (TRANSITION_STATE) {
           {
             id: 'transition-state',
             until: '3.9.0',
+            url: 'https://emberjs.com/deprecations/v3.x#toc_transition-state',
           }
         );
       }
@@ -118,6 +120,7 @@ if (TRANSITION_STATE) {
           {
             id: 'transition-state',
             until: '3.9.0',
+            url: 'https://emberjs.com/deprecations/v3.x#toc_transition-state',
           }
         );
       }
@@ -136,6 +139,7 @@ if (HANDLER_INFOS) {
           {
             id: 'remove-handler-infos',
             until: '3.9.0',
+            url: 'https://emberjs.com/deprecations/v3.x#toc_remove-handler-infos',
           }
         );
       }
@@ -150,6 +154,7 @@ if (HANDLER_INFOS) {
           {
             id: 'remove-handler-infos',
             until: '3.9.0',
+            url: 'https://emberjs.com/deprecations/v3.x#toc_remove-handler-infos',
           }
         );
       }
@@ -166,6 +171,7 @@ if (HANDLER_INFOS) {
           {
             id: 'remove-handler-infos',
             until: '3.9.0',
+            url: 'https://emberjs.com/deprecations/v3.x#toc_remove-handler-infos',
           }
         );
       }
@@ -182,6 +188,7 @@ if (HANDLER_INFOS) {
           {
             id: 'remove-handler-infos',
             until: '3.9.0',
+            url: 'https://emberjs.com/deprecations/v3.x#toc_remove-handler-infos',
           }
         );
       }
@@ -198,6 +205,7 @@ if (HANDLER_INFOS) {
           {
             id: 'remove-handler-infos',
             until: '3.9.0',
+            url: 'https://emberjs.com/deprecations/v3.x#toc_remove-handler-infos',
           }
         );
       }
@@ -213,6 +221,7 @@ if (HANDLER_INFOS) {
         {
           id: 'remove-handler-infos',
           until: '3.9.0',
+          url: 'https://emberjs.com/deprecations/v3.x#toc_remove-handler-infos',
         }
       );
     }
@@ -345,6 +354,7 @@ class EmberRouter extends EmberObject {
               {
                 id: 'deprecate-router-events',
                 until: '4.0.0',
+                url: 'https://emberjs.com/deprecations/v3.x#toc_deprecate-router-events',
               }
             );
           }
@@ -365,6 +375,7 @@ class EmberRouter extends EmberObject {
               {
                 id: 'deprecate-router-events',
                 until: '4.0.0',
+                url: 'https://emberjs.com/deprecations/v3.x#toc_deprecate-router-events',
               }
             );
           }
