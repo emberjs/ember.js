@@ -1,11 +1,10 @@
-import { descriptorFor, isDescriptor, Meta, meta, peekMeta } from '@ember/-internals/meta';
+import { descriptorFor, Meta, peekMeta } from '@ember/-internals/meta';
 import { HAS_NATIVE_PROXY, toString } from '@ember/-internals/utils';
-import { assert, deprecate } from '@ember/debug';
-import { PROPERTY_BASED_DESCRIPTORS } from '@ember/deprecated-features';
+import { assert } from '@ember/debug';
 import EmberError from '@ember/error';
 import { DEBUG } from '@glimmer/env';
 import { isPath } from './path_cache';
-import { Descriptor, MandatorySetterFunction } from './properties';
+import { MandatorySetterFunction } from './properties';
 import { notifyPropertyChange } from './property_events';
 import { _getPath as getPath, getPossibleMandatoryProxyValue } from './property_get';
 
@@ -90,30 +89,6 @@ export function set(obj: object, keyName: string, value: any, tolerant?: boolean
     currentValue = getPossibleMandatoryProxyValue(obj, keyName);
   } else {
     currentValue = obj[keyName];
-  }
-
-  if (PROPERTY_BASED_DESCRIPTORS && isDescriptor(currentValue)) {
-    deprecate(
-      `[DEPRECATED] computed property '${keyName}' was not set on object '${toString(
-        obj
-      )}' via 'defineProperty'`,
-      false,
-      {
-        id: '@ember/-internals/meta.descriptor-on-object',
-        until: '3.5.0',
-        url:
-          'https://emberjs.com/deprecations/v3.x#toc_use-defineProperty-to-define-computed-properties',
-      }
-    );
-
-    let cv: Descriptor = currentValue;
-
-    meta(obj).writeDescriptors(keyName, cv);
-
-    cv.setup(obj, keyName);
-
-    cv.set(obj, keyName, value);
-    return value;
   }
 
   if (
