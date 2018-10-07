@@ -12,7 +12,7 @@ import {
   RuntimeResolver as IRuntimeResolver,
 } from '@glimmer/interfaces';
 import { LazyCompiler, Macros, PartialDefinition } from '@glimmer/opcode-compiler';
-import { getDynamicVar, Helper, ModifierManager } from '@glimmer/runtime';
+import { getDynamicVar, Helper, ModifierDefinition } from '@glimmer/runtime';
 import CompileTimeLookup from './compile-time-lookup';
 import { CurlyComponentDefinition } from './component-managers/curly';
 import { CustomManagerDefinition, ManagerDelegate } from './component-managers/custom';
@@ -75,7 +75,7 @@ const BUILTINS_HELPERS = {
 };
 
 const BUILTIN_MODIFIERS = {
-  action: new ActionModifierManager(),
+  action: { manager: new ActionModifierManager(), state: null },
 };
 
 export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMeta> {
@@ -91,7 +91,7 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
   } = BUILTINS_HELPERS;
 
   private builtInModifiers: {
-    [name: string]: ModifierManager<Opaque>;
+    [name: string]: ModifierDefinition;
   } = BUILTIN_MODIFIERS;
 
   // supports directly imported late bound layouts on component.prototype.layout
