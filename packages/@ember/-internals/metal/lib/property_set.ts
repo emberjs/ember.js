@@ -76,11 +76,11 @@ export function set(obj: object, keyName: string, value: any, tolerant?: boolean
     return setPath(obj, keyName, value, tolerant);
   }
 
-  let possibleDesc = descriptorFor(obj, keyName);
+  let meta = peekMeta(obj);
+  let descriptor = descriptorFor(obj, keyName, meta);
 
-  if (possibleDesc !== undefined) {
-    /* computed property */
-    possibleDesc.set(obj, keyName, value);
+  if (descriptor !== undefined) {
+    descriptor.set(obj, keyName, value);
     return value;
   }
 
@@ -100,8 +100,6 @@ export function set(obj: object, keyName: string, value: any, tolerant?: boolean
     /* unknown property */
     (obj as ExtendedObject).setUnknownProperty!(keyName, value);
   } else {
-    let meta = peekMeta(obj);
-
     if (DEBUG) {
       setWithMandatorySetter<any, any>(meta, obj, keyName, value);
     } else {
