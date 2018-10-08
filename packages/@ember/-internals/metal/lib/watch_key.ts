@@ -94,7 +94,7 @@ export function unwatchKey(obj: object, keyName: string, _meta?: Meta) {
   let meta = _meta === undefined ? peekMeta(obj) : _meta;
 
   // do nothing of this object has already been destroyed
-  if (meta === undefined || meta.isSourceDestroyed()) {
+  if (meta === null || meta.isSourceDestroyed()) {
     return;
   }
 

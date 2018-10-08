@@ -86,7 +86,7 @@ export function INHERITING_GETTER_FUNCTION(name: string): InheritingGetterFuncti
   function IGETTER_FUNCTION(this: any) {
     let meta = peekMeta(this);
     let val;
-    if (meta !== undefined) {
+    if (meta !== null) {
       val = meta.readInheritedValue('values', name);
     }
 
