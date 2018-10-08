@@ -148,7 +148,7 @@ export function sendEvent(
 */
 export function hasListeners(obj: object, eventName: string) {
   let meta = peekMeta(obj);
-  if (meta === undefined) {
+  if (meta === null) {
     return false;
   }
   let matched = meta.matchingListeners(eventName);

@@ -117,7 +117,7 @@ function removeChainWatcher(obj: object, keyName: string, node: ChainNode, _meta
   let meta = _meta === undefined ? peekMeta(obj) : _meta;
 
   if (
-    meta === undefined ||
+    meta === null ||
     meta.isSourceDestroying() ||
     meta.isMetaDestroyed() ||
     meta.readableChainWatchers() === undefined
@@ -336,7 +336,7 @@ function lazyGet(obj: object, key: string): any {
   let meta = peekMeta(obj);
 
   // check if object meant only to be a prototype
-  if (meta !== undefined && meta.proto === obj) {
+  if (meta !== null && meta.proto === obj) {
     return;
   }
 

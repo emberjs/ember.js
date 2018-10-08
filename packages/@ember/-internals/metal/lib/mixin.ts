@@ -547,7 +547,7 @@ export default class Mixin {
   static mixins(obj: object): Mixin[] {
     let meta = peekMeta(obj);
     let ret: Mixin[] = [];
-    if (meta === undefined) {
+    if (meta === null) {
       return ret;
     }
 
@@ -611,7 +611,7 @@ export default class Mixin {
       return _detect(obj, this);
     }
     let meta = peekMeta(obj);
-    if (meta === undefined) {
+    if (meta === null) {
       return false;
     }
     return meta.hasMixin(this);
