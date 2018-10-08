@@ -508,6 +508,7 @@ class ComputedProperty extends Descriptor implements DescriptorWithDependentKeys
     if (cache !== undefined && cache.delete(keyName)) {
       removeDependentKeys(this, obj, keyName, meta);
     }
+    super.teardown(obj, keyName, meta);
   }
 
   auto!: () => ComputedProperty;

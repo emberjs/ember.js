@@ -31,15 +31,18 @@ export abstract class Descriptor {
   enumerable = true;
   configurable = true;
 
-  setup(obj: object, keyName: string): void {
+  setup(obj: object, keyName: string, meta: Meta): void {
     Object.defineProperty(obj, keyName, {
       enumerable: this.enumerable,
       configurable: this.configurable,
       get: DESCRIPTOR_GETTER_FUNCTION(keyName, this),
     });
+    meta.writeDescriptors(keyName, this);
   }
 
-  teardown(_obj: object, _keyName: string, _meta: Meta): void {}
+  teardown(_obj: object, keyName: string, meta: Meta): void {
+    meta.removeDescriptors(keyName);
+  }
 
   abstract get(obj: object, keyName: string): any | null | undefined;
   abstract set(obj: object, keyName: string, value: any | null | undefined): any | null | undefined;
@@ -174,7 +177,6 @@ export function defineProperty(
 
   if (wasDescriptor) {
     previousDesc.teardown(obj, keyName, meta);
-    meta.removeDescriptors(keyName);
   }
 
   // used to track if the the property being defined be enumerable
@@ -192,8 +194,7 @@ export function defineProperty(
   let value;
   if (desc instanceof Descriptor) {
     value = desc;
-    desc.setup(obj, keyName);
-    meta.writeDescriptors(keyName, value);
+    desc.setup(obj, keyName, meta);
   } else if (desc === undefined || desc === null) {
     value = data;
 

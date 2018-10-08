@@ -29,10 +29,9 @@ export class AliasedProperty extends Descriptor implements DescriptorWithDepende
     this._dependentKeys = [altKey];
   }
 
-  setup(obj: object, keyName: string): void {
+  setup(obj: object, keyName: string, meta: Meta): void {
     assert(`Setting alias '${keyName}' on self`, this.altKey !== keyName);
-    super.setup(obj, keyName);
-    let meta = metaFor(obj);
+    super.setup(obj, keyName, meta);
     if (meta.peekWatching(keyName) > 0) {
       this.consume(obj, keyName, meta);
     }
@@ -40,6 +39,7 @@ export class AliasedProperty extends Descriptor implements DescriptorWithDepende
 
   teardown(obj: object, keyName: string, meta: Meta): void {
     this.unconsume(obj, keyName, meta);
+    super.teardown(obj, keyName, meta);
   }
 
   willWatch(obj: object, keyName: string, meta: Meta): void {
