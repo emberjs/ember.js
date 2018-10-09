@@ -1,5 +1,13 @@
 # Ember Changelog
 
+### v3.6.0-beta.1 (October 8, 2018)
+
+- [#16956](https://github.com/emberjs/ember.js/pull/16956) [DEPRECATION] Deprecate Ember.merge
+- [#16795](https://github.com/emberjs/ember.js/pull/16795) [FEATURE] Native Class Constructor Update (see [emberjs/rfcs#337](https://github.com/emberjs/rfcs/blob/master/text/0337-native-class-constructor-update.md)
+- [#16865](https://github.com/emberjs/ember.js/pull/16865) / [#16899](https://github.com/emberjs/ember.js/pull/16899) / [#16914](https://github.com/emberjs/ember.js/pull/16914) / [#16897](https://github.com/emberjs/ember.js/pull/16897) / [#16913](https://github.com/emberjs/ember.js/pull/16913) / [#16894](https://github.com/emberjs/ember.js/pull/16894) / [#16896](https://github.com/emberjs/ember.js/pull/16896) [BUGFIX] Support RFC 232 and RFC 268 style tests with Mocha blueprints  
+- [#17025](https://github.com/emberjs/ember.js/pull/17025) / [#17034](https://github.com/emberjs/ember.js/pull/17034) / [#17036](https://github.com/emberjs/ember.js/pull/17036) / [#17038](https://github.com/emberjs/ember.js/pull/17038) / [#17040](https://github.com/emberjs/ember.js/pull/17040) / [#17041](https://github.com/emberjs/ember.js/pull/17041) / [#17061](https://github.com/emberjs/ember.js/pull/17061) [FEATURE] Final stage of the router service RFC (see [emberjs/rfcs#95](https://github.com/emberjs/rfcs/blob/master/text/0095-router-service.md)
+- [#17051](https://github.com/emberjs/ember.js/pull/17051) Update glimmer-vm packages to 0.36.4
+
 ### v3.5.0 (October 8, 2018)
 
 - [#16978](https://github.com/emberjs/ember.js/pull/16978) [BUGFIX] Properly teardown alias
@@ -24,7 +32,7 @@
 
 ### v3.4.1 (September 10, 2018)
 
-- [#16933](https://github.com/emberjs/ember.js/pull/16933) [BUGFIX] Update glimmer-vm packages to 0.38.8
+- [#16933](https://github.com/emberjs/ember.js/pull/16933) [BUGFIX] Update glimmer-vm packages to 0.35.8
 
 ### v3.4.0 (August 27, 2018)
 
