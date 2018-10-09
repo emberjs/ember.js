@@ -1,23 +1,9 @@
 # Ember Changelog
 
-### v3.5.0-beta.4 (October 1, 2018)
-
-- [#17003](https://github.com/emberjs/ember.js/pull/17003) / [#17013](https://github.com/emberjs/ember.js/pull/17013) [BUGFIX] Fix rendering of empty content with `{{{...}}}` or `{{...}}` with `htmlSafe('')`
-
-### v3.5.0-beta.3 (September 24, 2018)
+### v3.5.0 (October 8, 2018)
 
 - [#16978](https://github.com/emberjs/ember.js/pull/16978) [BUGFIX] Properly teardown alias
-- [#16999](https://github.com/emberjs/ember.js/pull/16999) [BUGFIX] Fix mouseEnter/Leave event delegation w/o jQuery
-
-### v3.5.0-beta.2 (September 10, 2018)
-
-- [#16933](https://github.com/emberjs/ember.js/pull/16933) [BUGFIX] Update glimmer-vm packages to 0.38.8
-- [#16860](https://github.com/emberjs/ember.js/pull/16860) [BUGFIX] Clear chains in ProxyMixin when destroyed
-
-### v3.5.0-beta.1 (August 28, 2018)
-
 - [#16877](https://github.com/emberjs/ember.js/pull/16877) [CLEANUP] Allow routes to be named "array" and "object"
-- [#16907](https://github.com/emberjs/ember.js/pull/16907) Upgrade to TypeScript 3.0
 
 ### v3.4.5 (October 4, 2018)
 
