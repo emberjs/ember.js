@@ -321,10 +321,10 @@ function sendAction(eventName, view, event) {
     );
     view.triggerAction({
       action: actionName,
-      actionContext: [value],
+      actionContext: [value, event],
     });
   } else if (typeof actionName === 'function') {
-    actionName(value);
+    actionName(value, event);
   }
 
   if (actionName && !get(view, 'bubbles')) {
