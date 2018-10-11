@@ -1,5 +1,5 @@
 import { lookupDescriptor, symbol, toString } from '@ember/-internals/utils';
-import { assert } from '@ember/debug';
+import { assert, deprecate } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { Tag } from '@glimmer/reference';
 
@@ -509,6 +509,16 @@ export class Meta {
   }
 
   removeAllListeners(event: string) {
+    deprecate(
+      'The remove all functionality of removeListener and removeObserver has been deprecated. Remove each listener/observer individually instead.',
+      false,
+      {
+        id: 'events.remove-all-listeners',
+        until: '3.9.0',
+        url: 'https://emberjs.com/deprecations/v3.x#toc_events-remove-all-listeners',
+      }
+    );
+
     if (DEBUG) {
       counters!.removeAllListenersCalls++;
     }
@@ -553,8 +563,34 @@ export class Meta {
       i = -1;
     }
 
-    // if not found, push
+    // if not found, push. Note that we must always push if a listener is not
+    // found, even in the case of a function listener remove, because we may be
+    // attempting to add or remove listeners _before_ flattening has occured.
     if (i === -1) {
+      deprecate(
+        'Adding function listeners to prototypes has been deprecated. Convert the listener to a string listener, or add it to the instance instead.',
+        !(this.isPrototypeMeta(this.source) && typeof method === 'function'),
+        {
+          id: 'events.inherited-function-listeners',
+          until: '3.9.0',
+          url: 'https://emberjs.com/deprecations/v3.x#toc_events-inherited-function-listeners',
+        }
+      );
+
+      deprecate(
+        'You attempted to remove a function listener which did not exist on the instance, which means it was an inherited prototype listener, or you attempted to remove it before it was added. Prototype function listeners have been deprecated, and attempting to remove a non-existent function listener this will error in the future.',
+        !(
+          !this.isPrototypeMeta(this.source) &&
+          typeof method === 'function' &&
+          kind === ListenerKind.REMOVE
+        ),
+        {
+          id: 'events.inherited-function-listeners',
+          until: '3.9.0',
+          url: 'https://emberjs.com/deprecations/v3.x#toc_events-inherited-function-listeners',
+        }
+      );
+
       listeners.push({
         event,
         target,
@@ -567,9 +603,9 @@ export class Meta {
       // remove it, we want to splice it out entirely so we don't hold onto a
       // reference.
       if (
-        typeof method === 'function' &&
         kind === ListenerKind.REMOVE &&
-        listener.kind !== ListenerKind.REMOVE
+        listener.kind !== ListenerKind.REMOVE &&
+        typeof method === 'function'
       ) {
         listeners.splice(i, 1);
       } else {
@@ -631,6 +667,13 @@ export class Meta {
   }
 
   private flattenedListeners(): Listener[] | undefined {
+    // If this instance doesn't have any of its own listeners (writableListeners
+    // has never been called) then we don't need to do any flattening, return
+    // the parent's listeners instead.
+    if (this._listeners === undefined) {
+      return this.parent !== null ? this.parent.flattenedListeners() : undefined;
+    }
+
     if (this._shouldFlatten()) {
       let parent = this.parent;
 
