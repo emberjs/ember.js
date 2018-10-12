@@ -96,7 +96,7 @@ export function moveNodesBefore(
 }
 
 export class DOMOperations {
-  protected uselessElement!: HTMLElement; // Set by this.setupUselessElement() in constructor
+  protected uselessElement!: Simple.Element; // Set by this.setupUselessElement() in constructor
 
   constructor(protected document: Simple.Document) {
     this.setupUselessElement();
@@ -137,20 +137,12 @@ export class DOMOperations {
     parent.insertBefore(node, reference);
   }
 
-  insertHTMLBefore(
-    _parent: Simple.Element,
-    _nextSibling: Option<Simple.Node>,
-    html: string
-  ): Bounds {
+  insertHTMLBefore(parent: Simple.Element, nextSibling: Option<Simple.Node>, html: string): Bounds {
     if (html === '') {
       let comment = this.createComment('');
-      _parent.insertBefore(comment, _nextSibling);
-      return new ConcreteBounds(_parent, comment, comment);
+      parent.insertBefore(comment, nextSibling);
+      return new ConcreteBounds(parent, comment, comment);
     }
-
-    // TODO why are these casts okay???
-    let parent = _parent as Element;
-    let nextSibling = _nextSibling as Option<Node>;
 
     let prev = nextSibling ? nextSibling.previousSibling : parent.lastChild;
     let last: Simple.Node;

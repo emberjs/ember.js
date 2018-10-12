@@ -83,4 +83,5 @@ export interface Element extends Node {
   removeAttributeNS(namespaceURI: string, name: string): void;
   setAttribute(name: string, value: string): void;
   setAttributeNS(namespaceURI: string, qualifiedName: string, value: string): void;
+  insertAdjacentHTML(position: 'beforebegin' | 'beforeend', html: string): void;
 }
