@@ -44,13 +44,17 @@ export function applySVGInnerHTMLFix(
         return super.insertHTMLBefore(parent, nextSibling, html);
       }
 
-      // TODO: why are these casts okay???
-      return fixSVG(parent as Element, div, html, nextSibling as Option<Node>);
+      return fixSVG(parent, div, html, nextSibling);
     }
   };
 }
 
-function fixSVG(parent: Element, div: HTMLElement, html: string, reference: Option<Node>): Bounds {
+function fixSVG(
+  parent: Simple.Element,
+  div: HTMLElement,
+  html: string,
+  reference: Option<Simple.Node>
+): Bounds {
   assert(html !== '', 'html cannot be empty');
 
   let source: Node;
