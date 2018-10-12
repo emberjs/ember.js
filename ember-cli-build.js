@@ -281,6 +281,12 @@ module.exports = function() {
     trees.push(emberTemplateCompilerBundle);
   }
 
+  let emberTestsEmptyTestem = new Funnel('tests', {
+    files: ['testem.js'],
+    destDir: '',
+    annotation: 'tests/testem.js',
+  });
+
   return new MergeTrees([
     new Funnel(es, { destDir: 'es' }),
     pkgAndTestESBundleDebug,
@@ -288,6 +294,7 @@ module.exports = function() {
     emberTestsBundle,
     emberDebugBundle,
     emberTestingBundle,
+    emberTestsEmptyTestem,
     nodeTests(),
 
     // test harness
