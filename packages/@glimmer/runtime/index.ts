@@ -1,6 +1,6 @@
 import './lib/bootstrap';
 
-export { renderMain, renderComponent, TemplateIterator } from './lib/render';
+export { renderMain, renderComponent, TemplateIterator, RenderComponentArgs } from './lib/render';
 
 export {
   NULL_REFERENCE,
