@@ -3,6 +3,7 @@ import { set } from '@ember/-internals/metal';
 import { Component } from '../../utils/helpers';
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { runDestroy } from 'internal-test-helpers';
+import { jQuery } from '@ember/-internals/views';
 
 class InputRenderingTest extends RenderingTest {
   $input() {
@@ -274,13 +275,14 @@ moduleFor(
     ['@test [DEPRECATED] sends an action with `{{input enter="foo"}}` when <enter> is pressed'](
       assert
     ) {
-      assert.expect(3);
+      assert.expect(4);
 
       expectDeprecation(() => {
         this.render(`{{input enter='foo'}}`, {
           actions: {
-            foo() {
+            foo(value, event) {
               assert.ok(true, 'action was triggered');
+              assert.ok(event instanceof jQuery.Event, 'jQuery event was passed.');
             },
           },
         });
@@ -293,11 +295,12 @@ moduleFor(
     ['@test sends an action with `{{input enter=(action "foo")}}` when <enter> is pressed'](
       assert
     ) {
-      assert.expect(1);
+      assert.expect(2);
       this.render(`{{input enter=(action 'foo')}}`, {
         actions: {
-          foo() {
+          foo(value, event) {
             assert.ok(true, 'action was triggered');
+            assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
           },
         },
       });
@@ -308,15 +311,16 @@ moduleFor(
     }
 
     ['@test [DEPRECATED] sends an action with `{{input key-press="foo"}}` is pressed'](assert) {
-      assert.expect(3);
+      assert.expect(4);
 
       expectDeprecation(() => {
         this.render(`{{input value=value key-press='foo'}}`, {
           value: 'initial',
 
           actions: {
-            foo() {
+            foo(value, event) {
               assert.ok(true, 'action was triggered');
+              assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
             },
           },
         });
@@ -328,14 +332,15 @@ moduleFor(
     }
 
     ['@test sends an action with `{{input key-press=(action "foo")}}` is pressed'](assert) {
-      assert.expect(1);
+      assert.expect(2);
 
       this.render(`{{input value=value key-press=(action 'foo')}}`, {
         value: 'initial',
 
         actions: {
-          foo() {
+          foo(value, event) {
             assert.ok(true, 'action was triggered');
+            assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
           },
         },
       });
@@ -380,12 +385,13 @@ moduleFor(
     }
 
     ['@test sends `insert-newline` when <enter> is pressed'](assert) {
-      assert.expect(1);
+      assert.expect(2);
 
       this.render(`{{input insert-newline=(action 'foo')}}`, {
         actions: {
-          foo() {
+          foo(value, event) {
             assert.ok(true, 'action was triggered');
+            assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
           },
         },
       });
@@ -398,13 +404,14 @@ moduleFor(
     ['@test [DEPRECATED] sends an action with `{{input escape-press="foo"}}` when <escape> is pressed'](
       assert
     ) {
-      assert.expect(3);
+      assert.expect(4);
 
       expectDeprecation(() => {
         this.render(`{{input escape-press='foo'}}`, {
           actions: {
-            foo() {
+            foo(value, event) {
               assert.ok(true, 'action was triggered');
+              assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
             },
           },
         });
@@ -418,12 +425,13 @@ moduleFor(
     ['@test sends an action with `{{input escape-press=(action "foo")}}` when <escape> is pressed'](
       assert
     ) {
-      assert.expect(1);
+      assert.expect(2);
 
       this.render(`{{input escape-press=(action 'foo')}}`, {
         actions: {
-          foo() {
+          foo(value, event) {
             assert.ok(true, 'action was triggered');
+            assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
           },
         },
       });
@@ -434,13 +442,14 @@ moduleFor(
     ['@test [DEPRECATED] sends an action with `{{input key-down="foo"}}` when a key is pressed'](
       assert
     ) {
-      assert.expect(3);
+      assert.expect(4);
 
       expectDeprecation(() => {
         this.render(`{{input key-down='foo'}}`, {
           actions: {
-            foo() {
+            foo(value, event) {
               assert.ok(true, 'action was triggered');
+              assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
             },
           },
         });
@@ -454,12 +463,13 @@ moduleFor(
     ['@test sends an action with `{{input key-down=(action "foo")}}` when a key is pressed'](
       assert
     ) {
-      assert.expect(1);
+      assert.expect(2);
 
       this.render(`{{input key-down=(action 'foo')}}`, {
         actions: {
-          foo() {
+          foo(value, event) {
             assert.ok(true, 'action was triggered');
+            assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
           },
         },
       });
@@ -470,13 +480,14 @@ moduleFor(
     ['@test [DEPRECATED] sends an action with `{{input key-up="foo"}}` when a key is pressed'](
       assert
     ) {
-      assert.expect(3);
+      assert.expect(4);
 
       expectDeprecation(() => {
         this.render(`{{input key-up='foo'}}`, {
           actions: {
-            foo() {
+            foo(value, event) {
               assert.ok(true, 'action was triggered');
+              assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
             },
           },
         });
@@ -490,12 +501,13 @@ moduleFor(
     ['@test [DEPRECATED] sends an action with `{{input key-up=(action "foo")}}` when a key is pressed'](
       assert
     ) {
-      assert.expect(1);
+      assert.expect(2);
 
       this.render(`{{input key-up=(action 'foo')}}`, {
         actions: {
-          foo() {
+          foo(value, event) {
             assert.ok(true, 'action was triggered');
+            assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
           },
         },
       });
