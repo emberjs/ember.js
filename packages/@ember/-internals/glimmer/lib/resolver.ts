@@ -23,6 +23,7 @@ import { default as htmlSafeHelper } from './helpers/-html-safe';
 import { default as inputTypeHelper } from './helpers/-input-type';
 import { default as normalizeClassHelper } from './helpers/-normalize-class';
 import { default as action } from './helpers/action';
+import { default as array } from './helpers/array';
 import { default as concat } from './helpers/concat';
 import { default as eachIn } from './helpers/each-in';
 import { default as get } from './helpers/get';
@@ -58,6 +59,7 @@ const BUILTINS_HELPERS = {
   concat,
   get,
   hash,
+  array,
   log,
   mut,
   'query-params': queryParams,
