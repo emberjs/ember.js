@@ -26,13 +26,15 @@ moduleFor(
     }
 
     ['@test listeners should be inherited'](assert) {
-      let obj = {};
       let count = 0;
-      let F = function() {
-        count++;
+
+      let obj = {
+        func() {
+          count++;
+        },
       };
 
-      addListener(obj, 'event!', F);
+      addListener(obj, 'event!', null, 'func');
 
       let obj2 = Object.create(obj);
 
@@ -41,7 +43,7 @@ moduleFor(
       sendEvent(obj2, 'event!');
       assert.equal(count, 1, 'received event');
 
-      removeListener(obj2, 'event!', F);
+      removeListener(obj2, 'event!', null, 'func');
 
       count = 0;
       sendEvent(obj2, 'event!');
@@ -52,13 +54,15 @@ moduleFor(
     }
 
     ['@test adding a listener more than once should only invoke once'](assert) {
-      let obj = {};
       let count = 0;
-      function F() {
-        count++;
-      }
-      addListener(obj, 'event!', F);
-      addListener(obj, 'event!', F);
+      let obj = {
+        func() {
+          count++;
+        },
+      };
+
+      addListener(obj, 'event!', null, 'func');
+      addListener(obj, 'event!', null, 'func');
 
       sendEvent(obj, 'event!');
       assert.equal(count, 1, 'should only invoke once');
@@ -135,19 +139,21 @@ moduleFor(
     }
 
     ['@test calling removeListener without method should remove all listeners'](assert) {
-      let obj = {};
-      function F() {}
-      function F2() {}
+      expectDeprecation(() => {
+        let obj = {};
+        function F() {}
+        function F2() {}
 
-      assert.equal(hasListeners(obj, 'event!'), false, 'no listeners at first');
+        assert.equal(hasListeners(obj, 'event!'), false, 'no listeners at first');
 
-      addListener(obj, 'event!', F);
-      addListener(obj, 'event!', F2);
+        addListener(obj, 'event!', F);
+        addListener(obj, 'event!', F2);
 
-      assert.equal(hasListeners(obj, 'event!'), true, 'has listeners');
-      removeListener(obj, 'event!');
+        assert.equal(hasListeners(obj, 'event!'), true, 'has listeners');
+        removeListener(obj, 'event!');
 
-      assert.equal(hasListeners(obj, 'event!'), false, 'has no more listeners');
+        assert.equal(hasListeners(obj, 'event!'), false, 'has no more listeners');
+      }, /The remove all functionality of removeListener and removeObserver has been deprecated/);
     }
 
     ['@test a listener can be added as part of a mixin'](assert) {

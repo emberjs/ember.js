@@ -61,13 +61,14 @@ moduleFor(
     redefining the alias on the instance to another property dependent on same key
     does not call the observer twice`](assert) {
       let obj1 = Object.create(null);
+      obj1.incrementCount = incrementCount;
 
       meta(obj1).proto = obj1;
 
       defineProperty(obj1, 'foo', null, null);
       defineProperty(obj1, 'bar', alias('foo'));
       defineProperty(obj1, 'baz', alias('foo'));
-      addObserver(obj1, 'baz', incrementCount);
+      addObserver(obj1, 'baz', null, 'incrementCount');
 
       let obj2 = Object.create(obj1);
       defineProperty(obj2, 'baz', alias('bar')); // override baz
@@ -75,7 +76,7 @@ moduleFor(
       set(obj2, 'foo', 'FOO');
       assert.equal(count, 1);
 
-      removeObserver(obj2, 'baz', incrementCount);
+      removeObserver(obj2, 'baz', null, 'incrementCount');
 
       set(obj2, 'foo', 'OOF');
       assert.equal(count, 1);

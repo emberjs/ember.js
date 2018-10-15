@@ -362,13 +362,13 @@ moduleFor(
     ['@test should be able to render an unbound helper invocation for helpers with dependent keys']() {
       this.registerHelper('capitalizeName', {
         destroy() {
-          this.removeObserver('value.firstName');
+          this.removeObserver('value.firstName', this, this.recompute);
           this._super(...arguments);
         },
 
         compute([value]) {
           if (this.get('value')) {
-            this.removeObserver('value.firstName');
+            this.removeObserver('value.firstName', this, this.recompute);
           }
           this.set('value', value);
           this.addObserver('value.firstName', this, this.recompute);
@@ -382,8 +382,8 @@ moduleFor(
           this._super(...arguments);
         },
         teardown() {
-          this.removeObserver('value.firstName');
-          this.removeObserver('value.lastName');
+          this.removeObserver('value.firstName', this, this.recompute);
+          this.removeObserver('value.lastName', this, this.recompute);
         },
         compute([value]) {
           if (this.get('value')) {
@@ -478,13 +478,13 @@ moduleFor(
     ['@test should be able to render an unbound helper invocation with bound hash options']() {
       this.registerHelper('capitalizeName', {
         destroy() {
-          this.removeObserver('value.firstName');
+          this.removeObserver('value.firstName', this, this.recompute);
           this._super(...arguments);
         },
 
         compute([value]) {
           if (this.get('value')) {
-            this.removeObserver('value.firstName');
+            this.removeObserver('value.firstName', this, this.recompute);
           }
           this.set('value', value);
           this.addObserver('value.firstName', this, this.recompute);
@@ -498,8 +498,8 @@ moduleFor(
           this._super(...arguments);
         },
         teardown() {
-          this.removeObserver('value.firstName');
-          this.removeObserver('value.lastName');
+          this.removeObserver('value.firstName', this, this.recompute);
+          this.removeObserver('value.lastName', this, this.recompute);
         },
         compute([value]) {
           if (this.get('value')) {
