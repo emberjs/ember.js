@@ -12,12 +12,11 @@ import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 function testObserver(assert, setup, teardown, key = 'key') {
   let obj = {};
-  function fn() {}
 
   assert.equal(isWatching(obj, key), false, 'precond - isWatching is false by default');
-  setup(obj, key, fn);
+  setup(obj, key, 'fn');
   assert.equal(isWatching(obj, key), true, 'isWatching is true when observers are added');
-  teardown(obj, key, fn);
+  teardown(obj, key, 'fn');
   assert.equal(isWatching(obj, key), false, 'isWatching is false after observers are removed');
 }
 
@@ -29,7 +28,7 @@ moduleFor(
         assert,
         (obj, key, fn) => {
           Mixin.create({
-            didChange: observer(key, fn),
+            [fn]: observer(key, function() {}),
           }).apply(obj);
         },
         (obj, key, fn) => removeObserver(obj, key, obj, fn)
@@ -62,10 +61,10 @@ moduleFor(
       testObserver(
         assert,
         (obj, key, fn) => {
-          defineProperty(obj, 'computed', computed(fn).property(key));
-          get(obj, 'computed');
+          defineProperty(obj, fn, computed(function() {}).property(key));
+          get(obj, fn);
         },
-        obj => defineProperty(obj, 'computed', null)
+        (obj, key, fn) => defineProperty(obj, fn, null)
       );
     }
 
@@ -73,10 +72,10 @@ moduleFor(
       testObserver(
         assert,
         (obj, key, fn) => {
-          defineProperty(obj, 'computed', computed(fn).property(key + '.bar'));
-          get(obj, 'computed');
+          defineProperty(obj, fn, computed(function() {}).property(key + '.bar'));
+          get(obj, fn);
         },
-        obj => defineProperty(obj, 'computed', null)
+        (obj, key, fn) => defineProperty(obj, fn, null)
       );
     }
 

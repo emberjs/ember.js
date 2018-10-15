@@ -914,6 +914,7 @@ moduleFor(
       let yetAnotherBeer = new Beer();
       addObserver(yetAnotherBeer, 'type', K);
       set(yetAnotherBeer, 'type', 'ale');
+      addObserver(beer, 'type', K);
       removeObserver(beer, 'type', K);
       assert.deepEqual(
         Object.keys(yetAnotherBeer),
@@ -923,6 +924,7 @@ moduleFor(
 
       let itsMyLastBeer = new Beer();
       set(itsMyLastBeer, 'type', 'ale');
+      addObserver(beer, 'type', K);
       removeObserver(beer, 'type', K);
       assert.deepEqual(Object.keys(itsMyLastBeer), ['type'], 'set -> removeObserver');
     }
@@ -945,6 +947,7 @@ moduleFor(
       let yetAnotherBeer = new Beer();
       addObserver(yetAnotherBeer, 'type', K);
       set(yetAnotherBeer, 'type', 'ale');
+      addObserver(beer, 'type', K);
       removeObserver(beer, 'type', K);
       assert.deepEqual(
         Object.keys(yetAnotherBeer),
@@ -954,6 +957,7 @@ moduleFor(
 
       let itsMyLastBeer = new Beer();
       set(itsMyLastBeer, 'type', 'ale');
+      addObserver(beer, 'type', K);
       removeObserver(beer, 'type', K);
       assert.deepEqual(Object.keys(itsMyLastBeer), ['type'], 'set -> removeObserver');
     }

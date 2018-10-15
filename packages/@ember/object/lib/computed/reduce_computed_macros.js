@@ -865,6 +865,7 @@ function propertySort(itemsKey, sortPropertiesKey) {
   );
 
   cp._activeObserverMap = undefined;
+  cp._sortPropertyDidChangeMap = undefined;
 
   return cp;
 }
