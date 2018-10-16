@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.36.5 (2018-10-16)
+
+#### :rocket: Enhancement
+* `@glimmer/runtime`
+  * [#858](https://github.com/glimmerjs/glimmer-vm/pull/858) Export RenderComponentArgs. ([@chiragpat](https://github.com/chiragpat))
+* `@glimmer/bundle-compiler`, `@glimmer/runtime`, `@glimmer/test-helpers`
+  * [#850](https://github.com/glimmerjs/glimmer-vm/pull/850) Exposing a primitive renderComponent API. ([@chiragpat](https://github.com/chiragpat))
+
+#### :bug: Bug Fix
+* `@glimmer/bundle-compiler`, `@glimmer/opcode-compiler`, `@glimmer/vm`
+  * [#857](https://github.com/glimmerjs/glimmer-vm/pull/857) Fix debug issues reported in glimmerjs/glimmer-vm#846. ([@chiragpat](https://github.com/chiragpat))
+
+#### Committers: 1
+- Chirag Patel ([chiragpat](https://github.com/chiragpat))
+
 ## v031.0 (2018-02-08)
 
 #### :boom: Breaking Change
