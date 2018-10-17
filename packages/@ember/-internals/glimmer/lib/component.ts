@@ -454,7 +454,15 @@ export const BOUNDS = symbol('BOUNDS');
     });
   ```
 
-  The above will result in the following HTML output:
+  If you call the `person-profile` component like so:
+
+  ```
+  {{#person-profile}}
+    <h2>Chief Basket Weaver</h2>
+    <h3>Fisherman Industries</h3>
+  {{/person-profile}}
+
+  It will result in the following HTML output:
 
   ```html
     <h1>Person's Title</h1>
