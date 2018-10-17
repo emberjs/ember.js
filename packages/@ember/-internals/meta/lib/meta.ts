@@ -12,10 +12,14 @@ export interface MetaCounters {
   deleteCalls: number;
   metaCalls: number;
   metaInstantiated: number;
+  matchingListenersCalls: number;
   addToListenersCalls: number;
   removeFromListenersCalls: number;
   removeAllListenersCalls: number;
   listenersInherited: number;
+  listenersFlattened: number;
+  parentListenersUsed: number;
+  flattenedListenersCalls: number;
   reopensAfterFlatten: number;
 }
 
@@ -28,10 +32,14 @@ if (DEBUG) {
     deleteCalls: 0,
     metaCalls: 0,
     metaInstantiated: 0,
+    matchingListenersCalls: 0,
     addToListenersCalls: 0,
     removeFromListenersCalls: 0,
     removeAllListenersCalls: 0,
     listenersInherited: 0,
+    listenersFlattened: 0,
+    parentListenersUsed: 0,
+    flattenedListenersCalls: 0,
     reopensAfterFlatten: 0,
   };
 }
@@ -99,7 +107,7 @@ export class Meta {
 
   _listeners: Listener[] | undefined;
   _listenersVersion = 1;
-  _inheritedEnd = 0;
+  _inheritedEnd = -1;
   _flattenedVersion = 0;
 
   // DEBUG
@@ -615,6 +623,32 @@ export class Meta {
     }
   }
 
+  private writableListeners(): Listener[] {
+    // Check if we need to invalidate and reflatten. We need to do this if we
+    // have already flattened (flattened version is the current version) and
+    // we are either writing to a prototype meta OR we have never inherited, and
+    // may have cached the parent's listeners.
+    if (
+      this._flattenedVersion === currentListenerVersion &&
+      (this.source === this.proto || this._inheritedEnd === -1)
+    ) {
+      if (DEBUG) {
+        counters!.reopensAfterFlatten++;
+      }
+
+      currentListenerVersion++;
+    }
+
+    // Inherited end has not been set, then we have never created our own
+    // listeners, but may have cached the parent's
+    if (this._inheritedEnd === -1) {
+      this._inheritedEnd = 0;
+      this._listeners = [];
+    }
+
+    return this._listeners!;
+  }
+
   /**
     Flattening is based on a global revision counter. If the revision has
     bumped it means that somewhere in a class inheritance chain something has
@@ -628,53 +662,16 @@ export class Meta {
     This is a very rare occurence, so while the counter is global it shouldn't
     be updated very often in practice.
   */
-  private _shouldFlatten() {
-    return this._flattenedVersion < currentListenerVersion;
-  }
-
-  private _isFlattened() {
-    // A meta is flattened _only_ if the saved version is equal to the current
-    // version. Otherwise, it will flatten again the next time
-    // `flattenedListeners` is called, so there is no reason to bump the global
-    // version again.
-    return this._flattenedVersion === currentListenerVersion;
-  }
-
-  private _setFlattened() {
-    this._flattenedVersion = currentListenerVersion;
-  }
-
-  private writableListeners(): Listener[] {
-    let listeners = this._listeners;
-
-    if (listeners === undefined) {
-      listeners = this._listeners = [] as Listener[];
+  private flattenedListeners(): Listener[] | undefined {
+    if (DEBUG) {
+      counters!.flattenedListenersCalls++;
     }
 
-    // Check if the meta is owned by a prototype. If so, our listeners are
-    // inheritable so check the meta has been flattened. If it has, children
-    // have inherited its listeners, so bump the global version counter to
-    // invalidate.
-    if (this.source === this.proto && this._isFlattened()) {
+    if (this._flattenedVersion < currentListenerVersion) {
       if (DEBUG) {
-        counters!.reopensAfterFlatten++;
+        counters!.listenersFlattened++;
       }
 
-      currentListenerVersion++;
-    }
-
-    return listeners;
-  }
-
-  private flattenedListeners(): Listener[] | undefined {
-    // If this instance doesn't have any of its own listeners (writableListeners
-    // has never been called) then we don't need to do any flattening, return
-    // the parent's listeners instead.
-    if (this._listeners === undefined) {
-      return this.parent !== null ? this.parent.flattenedListeners() : undefined;
-    }
-
-    if (this._shouldFlatten()) {
       let parent = this.parent;
 
       if (parent !== null) {
@@ -682,39 +679,46 @@ export class Meta {
         let parentListeners = parent.flattenedListeners();
 
         if (parentListeners !== undefined) {
-          let listeners = this._listeners;
+          if (this._listeners === undefined) {
+            // If this instance doesn't have any of its own listeners (writableListeners
+            // has never been called) then we don't need to do any flattening, return
+            // the parent's listeners instead.
+            if (DEBUG) {
+              counters!.parentListenersUsed++;
+            }
 
-          if (listeners === undefined) {
-            listeners = this._listeners = [] as Listener[];
-          }
+            this._listeners = parentListeners;
+          } else {
+            let listeners = this._listeners;
 
-          if (this._inheritedEnd > 0) {
-            listeners.splice(0, this._inheritedEnd);
-            this._inheritedEnd = 0;
-          }
+            if (this._inheritedEnd > 0) {
+              listeners.splice(0, this._inheritedEnd);
+              this._inheritedEnd = 0;
+            }
 
-          for (let i = 0; i < parentListeners.length; i++) {
-            let listener = parentListeners[i];
-            let index = indexOfListener(
-              listeners,
-              listener.event,
-              listener.target,
-              listener.method
-            );
+            for (let i = 0; i < parentListeners.length; i++) {
+              let listener = parentListeners[i];
+              let index = indexOfListener(
+                listeners,
+                listener.event,
+                listener.target,
+                listener.method
+              );
 
-            if (index === -1) {
-              if (DEBUG) {
-                counters!.listenersInherited++;
+              if (index === -1) {
+                if (DEBUG) {
+                  counters!.listenersInherited++;
+                }
+
+                listeners.unshift(listener);
+                this._inheritedEnd++;
               }
-
-              listeners.unshift(listener);
-              this._inheritedEnd++;
             }
           }
         }
       }
 
-      this._setFlattened();
+      this._flattenedVersion = currentListenerVersion;
     }
 
     return this._listeners;
@@ -722,10 +726,13 @@ export class Meta {
 
   matchingListeners(eventName: string): (string | boolean | object | null)[] | undefined | void {
     let listeners = this.flattenedListeners();
+    let result;
+
+    if (DEBUG) {
+      counters!.matchingListenersCalls++;
+    }
 
     if (listeners !== undefined) {
-      let result = [];
-
       for (let index = 0; index < listeners.length; index++) {
         let listener = listeners[index];
 
@@ -735,12 +742,18 @@ export class Meta {
           listener.event === eventName &&
           (listener.kind === ListenerKind.ADD || listener.kind === ListenerKind.ONCE)
         ) {
+          if (result === undefined) {
+            // we create this array only after we've found a listener that
+            // matches to avoid allocations when no matches are found.
+            result = [] as any[];
+          }
+
           result.push(listener.target!, listener.method, listener.kind === ListenerKind.ONCE);
         }
       }
-
-      return result.length === 0 ? undefined : result;
     }
+
+    return result;
   }
 }
 
