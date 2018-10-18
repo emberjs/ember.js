@@ -93,7 +93,7 @@
     "babel-plugin-transform-es2015-template-literals": "^6.22.0",
     "babel-plugin-transform-object-assign": "^6.22.0",
     "babel-template": "^6.26.0",
-    "backburner.js": "^2.4.0",
+    "backburner.js": "^2.4.1",
     "broccoli-babel-transpiler": "^6.1.4",
     "broccoli-concat": "^3.2.2",
     "broccoli-debug": "^0.6.4",
