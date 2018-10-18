@@ -13,6 +13,8 @@ import {
   SymbolTable,
   Compiler,
   LayoutWithContext,
+  NamedBlocks as INamedBlocks,
+  NamedBlocks,
 } from '@glimmer/interfaces';
 import { dict, EMPTY_ARRAY, expect, Stack, unreachable } from '@glimmer/util';
 import { Op, Register } from '@glimmer/vm';
@@ -32,6 +34,7 @@ import {
 import { ComponentBuilder } from './wrapped-component';
 import { InstructionEncoder, Operand, OpcodeSize } from '@glimmer/encoder';
 import { ContentType } from '../../runtime/lib/compiled/opcodes/content';
+import { NamedBlocksImpl, EMPTY_BLOCKS } from './utils';
 
 export type Label = string;
 
@@ -57,12 +60,6 @@ class Labels {
       encoder.patch(at, address);
     }
   }
-}
-
-export interface Blocks {
-  main: Option<CompilableBlock>;
-  else: Option<CompilableBlock>;
-  attrs: Option<CompilableBlock>;
 }
 
 export interface OpcodeBuilderConstructor {
@@ -336,10 +333,9 @@ export class StdOpcodeBuilder {
     name: string,
     params: WireFormat.Core.Params,
     hash: WireFormat.Core.Hash,
-    template: Option<CompilableBlock>,
-    inverse: Option<CompilableBlock>
+    blocks: NamedBlocks
   ): void {
-    this.compiler.compileBlock(name, params, hash, template, inverse, this);
+    this.compiler.compileBlock(name, params, hash, blocks, this);
   }
 
   label(name: string) {
@@ -690,7 +686,7 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
     let referrer = this.containingLayout.referrer;
 
     this.pushFrame();
-    this.compileArgs(params, hash, null, synthetic);
+    this.compileArgs(params, hash, EMPTY_BLOCKS, synthetic);
     this.push(Op.CaptureArgs);
     this.expr(definition);
     this.push(Op.CurryComponent, this.constants.serializable(referrer));
@@ -707,32 +703,39 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
     }
   }
 
-  invokeComponent(
-    capabilities: ComponentCapabilities | true,
-    attrs: Option<CompilableBlock>,
-    params: Option<WireFormat.Core.Params>,
-    hash: WireFormat.Core.Hash,
-    synthetic: boolean,
-    block: Option<CompilableBlock>,
-    inverse: Option<CompilableBlock> = null,
-    layout?: CompilableProgram
-  ) {
+  invokeComponent({
+    capabilities,
+    attrs,
+    params,
+    hash,
+    synthetic,
+    blocks: namedBlocks,
+    layout,
+  }: {
+    capabilities: ComponentCapabilities | true;
+    attrs: Option<CompilableBlock>;
+    params: Option<WireFormat.Core.Params>;
+    hash: WireFormat.Core.Hash;
+    synthetic: boolean;
+    blocks: INamedBlocks;
+    layout?: CompilableProgram;
+  }) {
     this.fetch(Register.s0);
     this.dup(Register.sp, 1);
     this.load(Register.s0);
 
     this.pushFrame();
 
-    let bindableBlocks = !!(block || inverse || attrs);
+    let bindableBlocks = !!namedBlocks;
     let bindableAtNames =
       capabilities === true || capabilities.prepareArgs || !!(hash && hash[0].length !== 0);
 
-    let blocks = { main: block, else: inverse, attrs };
+    let blocks = namedBlocks.with('attrs', attrs);
 
     this.compileArgs(params, hash, blocks, synthetic);
     this.prepareArgs(Register.s0);
 
-    this.invokePreparedComponent(block !== null, bindableBlocks, bindableAtNames, () => {
+    this.invokePreparedComponent(blocks.has('default'), bindableBlocks, bindableAtNames, () => {
       if (layout) {
         this.pushSymbolTable(layout.symbolTable);
         this.pushLayout(layout);
@@ -747,22 +750,29 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
     this.load(Register.s0);
   }
 
-  invokeStaticComponent(
-    capabilities: ComponentCapabilities,
-    layout: CompilableProgram,
-    attrs: Option<CompilableBlock>,
-    params: Option<WireFormat.Core.Params>,
-    hash: WireFormat.Core.Hash,
-    synthetic: boolean,
-    block: Option<CompilableBlock>,
-    inverse: Option<CompilableBlock> = null
-  ) {
+  invokeStaticComponent({
+    capabilities,
+    layout,
+    attrs,
+    params,
+    hash,
+    synthetic,
+    blocks,
+  }: {
+    capabilities: ComponentCapabilities;
+    layout: CompilableProgram;
+    attrs: Option<CompilableBlock>;
+    params: Option<WireFormat.Core.Params>;
+    hash: WireFormat.Core.Hash;
+    synthetic: boolean;
+    blocks: INamedBlocks;
+  }) {
     let { symbolTable } = layout;
 
     let bailOut = symbolTable.hasEval || capabilities.prepareArgs;
 
     if (bailOut) {
-      this.invokeComponent(capabilities, attrs, params, hash, synthetic, block, inverse, layout);
+      this.invokeComponent({ capabilities, attrs, params, hash, synthetic, blocks, layout });
       return;
     }
 
@@ -774,7 +784,7 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
 
     if (capabilities.createArgs) {
       this.pushFrame();
-      this.compileArgs(null, hash, null, synthetic);
+      this.compileArgs(null, hash, EMPTY_BLOCKS, synthetic);
     }
 
     this.beginComponentTransaction();
@@ -784,7 +794,7 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
     }
 
     if (capabilities.createInstance) {
-      this.createComponent(Register.s0, block !== null);
+      this.createComponent(Register.s0, blocks.has('default'));
     }
 
     if (capabilities.createArgs) {
@@ -808,9 +818,9 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
           let callerBlock: Option<CompilableBlock> = null;
 
           if (symbol === '&default') {
-            callerBlock = block;
-          } else if (symbol === '&inverse') {
-            callerBlock = inverse;
+            callerBlock = blocks.get('default');
+          } else if (symbol === '&else') {
+            callerBlock = blocks.get('else');
           } else if (symbol === ATTRS_BLOCK) {
             callerBlock = attrs;
           } else {
@@ -850,7 +860,7 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
       }
     }
 
-    this.pushRootScope(symbols.length + 1, !!(block || inverse || attrs));
+    this.pushRootScope(symbols.length + 1, Object.keys(blocks).length > 0);
 
     for (let i = bindings.length - 1; i >= 0; i--) {
       let { symbol, isBlock } = bindings[i];
@@ -881,15 +891,21 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
     this.load(Register.s0);
   }
 
-  dynamicComponent(
-    definition: WireFormat.Expression,
-    attrs: Option<CompilableBlock>,
-    params: Option<WireFormat.Core.Params>,
-    hash: WireFormat.Core.Hash,
-    synthetic: boolean,
-    block: Option<CompilableBlock>,
-    inverse: Option<CompilableBlock> = null
-  ) {
+  dynamicComponent({
+    definition,
+    attrs,
+    params,
+    hash,
+    synthetic,
+    blocks,
+  }: {
+    definition: WireFormat.Expression;
+    attrs: Option<CompilableBlock>;
+    params: Option<WireFormat.Core.Params>;
+    hash: WireFormat.Core.Hash;
+    synthetic: boolean;
+    blocks: INamedBlocks;
+  }) {
     this.replayable({
       args: () => {
         this.expr(definition);
@@ -904,7 +920,7 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
 
         this.pushDynamicComponentInstance();
 
-        this.invokeComponent(true, attrs, params, hash, synthetic, block, inverse);
+        this.invokeComponent({ capabilities: true, attrs, params, hash, synthetic, blocks });
 
         this.label('ELSE');
       },
@@ -912,7 +928,7 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
   }
 
   yield(to: number, params: Option<WireFormat.Core.Params>) {
-    this.compileArgs(params, null, null, false);
+    this.compileArgs(params, null, EMPTY_BLOCKS, false);
     this.getBlock(to);
     this.resolveBlock();
     this.invokeYield();
@@ -1066,15 +1082,16 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
         }
 
         this.pushComponentDefinition(handle);
-        this.invokeStaticComponent(
+        this.invokeStaticComponent({
           capabilities,
-          compilable,
-          null,
-          null,
+          layout: compilable,
+          attrs: null,
+          params: null,
           hash,
-          false,
-          template && template
-        );
+          synthetic: false,
+          blocks: NamedBlocksImpl.from('default', template),
+        });
+
         return true;
       }
     }
@@ -1118,7 +1135,7 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
     hash: Option<WireFormat.Core.Hash>
   ) {
     this.pushFrame();
-    this.compileArgs(params, hash, null, true);
+    this.compileArgs(params, hash, EMPTY_BLOCKS, true);
     this.push(Op.Modifier, this.constants.handle(locator));
     this.popFrame();
   }
@@ -1170,7 +1187,7 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
     hash: Option<WireFormat.Core.Hash>
   ) {
     this.pushFrame();
-    this.compileArgs(params, hash, null, true);
+    this.compileArgs(params, hash, EMPTY_BLOCKS, true);
     this.push(Op.Helper, this.constants.handle(helper));
     this.popFrame();
     this.fetch(Register.v0);
@@ -1367,13 +1384,13 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
   compileArgs(
     params: Option<WireFormat.Core.Params>,
     hash: Option<WireFormat.Core.Hash>,
-    blocks: Option<Blocks>,
+    blocks: INamedBlocks,
     synthetic: boolean
   ): void {
-    if (blocks) {
-      this.pushYieldableBlock(blocks.main);
-      this.pushYieldableBlock(blocks.else);
-      this.pushYieldableBlock(blocks.attrs);
+    if (blocks.hasAny) {
+      this.pushYieldableBlock(blocks.get('default'));
+      this.pushYieldableBlock(blocks.get('else'));
+      this.pushYieldableBlock(blocks.get('attrs'));
     }
 
     let count = this.compileParams(params);
@@ -1399,10 +1416,16 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
     this.pushArgs(names, flags);
   }
 
+  template(block: WireFormat.SerializedInlineBlock): CompilableBlock;
+  template(block: Option<WireFormat.SerializedInlineBlock>): Option<CompilableBlock>;
   template(block: Option<WireFormat.SerializedInlineBlock>): Option<CompilableBlock> {
     if (!block) return null;
 
     return this.inlineBlock(block);
+  }
+
+  templates(blocks: WireFormat.Core.Blocks): INamedBlocks {
+    return NamedBlocksImpl.fromWireFormat(blocks, block => this.template(block));
   }
 }
 

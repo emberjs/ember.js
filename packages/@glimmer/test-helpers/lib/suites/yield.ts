@@ -10,7 +10,7 @@ export class YieldSuite extends RenderTest {
         args: { predicate: 'activated', someValue: '42' },
         blockParams: ['result'],
         template: 'Hello{{result}}{{outer}}',
-        inverse: 'Goodbye{{outer}}',
+        else: 'Goodbye{{outer}}',
       },
       { activated: true, outer: 'outer' }
     );
@@ -22,7 +22,7 @@ export class YieldSuite extends RenderTest {
   @test({
     skip: 'glimmer',
   })
-  'yield to inverse'() {
+  [`yield to "inverse"`]() {
     this.render(
       {
         layout:
@@ -30,7 +30,26 @@ export class YieldSuite extends RenderTest {
         args: { predicate: 'activated', someValue: '42' },
         blockParams: ['result'],
         template: 'Hello{{result}}{{outer}}',
-        inverse: 'Goodbye{{outer}}',
+        else: 'Goodbye{{outer}}',
+      },
+      { activated: false, outer: 'outer' }
+    );
+
+    this.assertComponent('No:Goodbyeouter');
+    this.assertStableRerender();
+  }
+
+  @test({
+    skip: 'glimmer',
+  })
+  [`yield to "else"`]() {
+    this.render(
+      {
+        layout: '{{#if @predicate}}Yes:{{yield @someValue}}{{else}}No:{{yield to="else"}}{{/if}}',
+        args: { predicate: 'activated', someValue: '42' },
+        blockParams: ['result'],
+        template: 'Hello{{result}}{{outer}}',
+        else: 'Goodbye{{outer}}',
       },
       { activated: false, outer: 'outer' }
     );

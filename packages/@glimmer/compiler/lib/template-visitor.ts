@@ -57,6 +57,10 @@ export class ProgramSymbolTable extends SymbolTable {
   }
 
   allocateBlock(name: string): number {
+    if (name === 'inverse') {
+      name = 'else';
+    }
+
     let block = this.blocks[name];
 
     if (!block) {

@@ -5,7 +5,6 @@ import { debugSlice } from './debug';
 import {
   Compiler,
   Option,
-  CompilableBlock,
   STDLib,
   CompileTimeConstants,
   CompileTimeLookup,
@@ -16,6 +15,7 @@ import {
   ResolvedLayout,
   MaybeResolvedLayout,
   CompilableProgram,
+  NamedBlocks as INamedBlocks,
 } from '@glimmer/interfaces';
 import { Statements, Core, Expression, Statement } from '@glimmer/wire-format';
 import { DEBUG } from '@glimmer/local-debug-flags';
@@ -76,12 +76,10 @@ export abstract class AbstractCompiler<
     name: string,
     params: Core.Params,
     hash: Core.Hash,
-    template: Option<CompilableBlock>,
-    inverse: Option<CompilableBlock>,
+    blocks: INamedBlocks,
     builder: Builder
   ): void {
-    let { blocks } = this.macros;
-    blocks.compile<Locator>(name, params, hash, template, inverse, builder);
+    this.macros.blocks.compile<Locator>(name, params, hash, blocks, builder);
   }
 
   add(statements: Statement[], containingLayout: LayoutWithContext<Locator>): number {

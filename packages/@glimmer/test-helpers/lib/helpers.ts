@@ -178,7 +178,7 @@ export function equalTokens(
 
 export function generateSnapshot(element: Element) {
   let snapshot: Node[] = [];
-  let node = element.firstChild;
+  let node: Option<Node> = element.firstChild;
 
   while (node) {
     if (!isMarker(node)) {
@@ -255,21 +255,14 @@ export function getTextContent(el: Node) {
 }
 
 export function strip(strings: TemplateStringsArray, ...args: string[]) {
-  if (typeof strings === 'object') {
-    return strings
-      .map((str: string, i: number) => {
-        return `${str
-          .split('\n')
-          .map(s => s.trim())
-          .join('')}${args[i] ? args[i] : ''}`;
-      })
-      .join('');
-  } else {
-    return strings[0]
-      .split('\n')
-      .map((s: string) => s.trim())
-      .join(' ');
-  }
+  return strings
+    .map((str: string, i: number) => {
+      return `${str
+        .split('\n')
+        .map(s => s.trim())
+        .join('')}${args[i] ? args[i] : ''}`;
+    })
+    .join('');
 }
 
 export function stripTight(strings: TemplateStringsArray) {
@@ -298,19 +291,26 @@ export function assertIsElement(node: Node | null): node is Element {
   return nodeType === 1;
 }
 
+// TODO: Consider removing this
+interface CompatibleTagNameMap extends ElementTagNameMap {
+  foreignobject: SVGForeignObjectElement;
+}
+
 export function assertNodeTagName<
-  T extends keyof ElementTagNameMap,
-  U extends ElementTagNameMap[T]
+  T extends keyof CompatibleTagNameMap,
+  U extends CompatibleTagNameMap[T]
 >(node: Node | null, tagName: T): node is U {
   if (assertIsElement(node)) {
-    const nodeTagName = node.tagName.toLowerCase();
+    const normalizedNodeTagName = node.tagName.toLowerCase();
+    const nodeTagName = node.tagName;
+
     QUnit.assert.pushResult({
-      result: nodeTagName === tagName,
+      result: normalizedNodeTagName === tagName || nodeTagName === tagName,
       expected: tagName,
       actual: nodeTagName,
       message: `expected tagName to be ${tagName} but was ${nodeTagName}`,
     });
-    return nodeTagName === tagName;
+    return nodeTagName === tagName || normalizedNodeTagName === tagName;
   }
   return false;
 }

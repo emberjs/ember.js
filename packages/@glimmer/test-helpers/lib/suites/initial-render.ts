@@ -630,6 +630,7 @@ export class InitialRenderSuite extends RenderTest {
       this.assert.equal(svg.namespaceURI, SVG_NAMESPACE);
 
       let foreignObject = svg.firstChild;
+
       if (assertNodeTagName(foreignObject, 'foreignobject')) {
         this.assert.equal(
           foreignObject.namespaceURI,
@@ -1217,7 +1218,7 @@ export class InitialRenderSuite extends RenderTest {
 
   @test
   'A block helper can have an else block'() {
-    this.render('{{#render-inverse}}Nope{{else}}<div id="test">123</div>{{/render-inverse}}');
+    this.render('{{#render-else}}Nope{{else}}<div id="test">123</div>{{/render-else}}');
     this.assertHTML('<div id="test">123</div>');
     this.assertStableRerender();
   }

@@ -1,4 +1,4 @@
-import { CompilableBlock, Option, Opaque, Compiler } from '@glimmer/interfaces';
+import { Option, Opaque, Compiler, NamedBlocks as INamedBlocks } from '@glimmer/interfaces';
 import { assert, dict, unwrap, EMPTY_ARRAY } from '@glimmer/util';
 import { Register } from '@glimmer/vm';
 import * as WireFormat from '@glimmer/wire-format';
@@ -9,6 +9,7 @@ import Ops = WireFormat.Ops;
 import S = WireFormat.Statements;
 import E = WireFormat.Expressions;
 import C = WireFormat.Core;
+import { NamedBlocksImpl, EMPTY_BLOCKS } from './utils';
 
 export type TupleSyntax = WireFormat.Statement | WireFormat.TupleExpression;
 export type CompilerFunction<T extends TupleSyntax> = ((
@@ -119,11 +120,19 @@ export function statementCompiler(): Compilers<WireFormat.Statement> {
       attrsBlock = builder.inlineBlock({ statements: wrappedAttrs, parameters: EMPTY_ARRAY });
     }
 
-    builder.dynamicComponent(definition, attrsBlock, null, args, false, block, null);
+    builder.dynamicComponent({
+      definition,
+      attrs: attrsBlock,
+      params: null,
+      hash: args,
+      synthetic: false,
+      blocks: NamedBlocksImpl.from('default', block),
+    });
   });
 
   STATEMENTS.add(Ops.Component, (sexp: S.Component, builder) => {
-    let [, tag, _attrs, args, block] = sexp;
+    let [, tag, _attrs, args, blocks] = sexp;
+    let named = new WireFormat.NamedBlocks(blocks);
     let { referrer } = builder;
 
     let { handle, capabilities, compilable } = builder.compiler.resolveLayoutForTag(tag, referrer);
@@ -135,22 +144,29 @@ export function statementCompiler(): Compilers<WireFormat.Statement> {
         [Ops.ClientSideStatement, ClientSide.Ops.SetComponentAttrs, false],
       ];
       let attrsBlock = builder.inlineBlock({ statements: attrs, parameters: EMPTY_ARRAY });
-      let child = builder.template(block);
+      let child = builder.template(named.default);
 
       if (compilable) {
         builder.pushComponentDefinition(handle);
-        builder.invokeStaticComponent(
+        builder.invokeStaticComponent({
           capabilities,
-          compilable,
-          attrsBlock,
-          null,
-          args,
-          false,
-          child && child
-        );
+          layout: compilable,
+          attrs: attrsBlock,
+          params: null,
+          hash: args,
+          synthetic: false,
+          blocks: NamedBlocksImpl.from('default', child),
+        });
       } else {
         builder.pushComponentDefinition(handle);
-        builder.invokeComponent(capabilities, attrsBlock, null, args, false, child && child);
+        builder.invokeComponent({
+          capabilities,
+          attrs: attrsBlock,
+          params: null,
+          hash: args,
+          synthetic: false,
+          blocks: NamedBlocksImpl.from('default', child),
+        });
       }
     } else {
       throw new Error(`Compile Error: Cannot find component ${tag}`);
@@ -211,14 +227,9 @@ export function statementCompiler(): Compilers<WireFormat.Statement> {
   });
 
   STATEMENTS.add(Ops.Block, (sexp: S.Block, builder) => {
-    let [, name, params, hash, _template, _inverse] = sexp;
-    let template = builder.template(_template);
-    let inverse = builder.template(_inverse);
+    let [, name, params, hash, named] = sexp;
 
-    let templateBlock = template && template;
-    let inverseBlock = inverse && inverse;
-
-    builder.compileBlock(name, params, hash, templateBlock, inverseBlock);
+    builder.compileBlock(name, params, hash, builder.templates(named));
   });
 
   const CLIENT_SIDE = new Compilers<ClientSide.ClientSideStatement>(1);
@@ -389,18 +400,16 @@ export class Macros {
 export type BlockMacro<Locator> = (
   params: C.Params,
   hash: C.Hash,
-  template: Option<CompilableBlock>,
-  inverse: Option<CompilableBlock>,
+  blocks: INamedBlocks,
   builder: OpcodeBuilder<Locator>
 ) => void;
 export type MissingBlockMacro<Locator> = (
   name: string,
   params: C.Params,
   hash: C.Hash,
-  template: Option<CompilableBlock>,
-  inverse: Option<CompilableBlock>,
+  blocks: INamedBlocks,
   builder: OpcodeBuilder<Locator>
-) => void;
+) => boolean | void;
 
 export class Blocks {
   private names = dict<number>();
@@ -420,8 +429,7 @@ export class Blocks {
     name: string,
     params: C.Params,
     hash: C.Hash,
-    template: Option<CompilableBlock>,
-    inverse: Option<CompilableBlock>,
+    blocks: INamedBlocks,
     builder: OpcodeBuilder<Locator>
   ): void {
     let index = this.names[name];
@@ -429,11 +437,11 @@ export class Blocks {
     if (index === undefined) {
       assert(!!this.missing, `${name} not found, and no catch-all block handler was registered`);
       let func = this.missing!;
-      let handled = func(name, params, hash, template, inverse, builder);
+      let handled = func(name, params, hash, blocks, builder);
       assert(!!handled, `${name} not found, and the catch-all block handler didn't handle it`);
     } else {
       let func = this.funcs[index];
-      func(params, hash, template, inverse, builder);
+      func(params, hash, blocks, builder);
     }
   }
 }
@@ -507,7 +515,7 @@ export function populateBuiltins(
   blocks: Blocks = new Blocks(),
   inlines: Inlines = new Inlines()
 ): { blocks: Blocks; inlines: Inlines } {
-  blocks.add('if', (params, _hash, template, inverse, builder) => {
+  blocks.add('if', (params, _hash, blocks, builder) => {
     //        PutArgs
     //        Test(Environment)
     //        Enter(BEGIN, END)
@@ -516,7 +524,7 @@ export function populateBuiltins(
     //        Evaluate(default)
     //        Jump(END)
     // ELSE:  Noop
-    //        Evalulate(inverse)
+    //        Evalulate(else)
     // END:   Noop
     //        Exit
 
@@ -532,18 +540,18 @@ export function populateBuiltins(
       },
 
       ifTrue() {
-        builder.invokeStaticBlock(unwrap(template));
+        builder.invokeStaticBlock(unwrap(blocks.get('default')));
       },
 
       ifFalse() {
-        if (inverse) {
-          builder.invokeStaticBlock(inverse);
+        if (blocks.has('else')) {
+          builder.invokeStaticBlock(blocks.get('else')!);
         }
       },
     });
   });
 
-  blocks.add('unless', (params, _hash, template, inverse, builder) => {
+  blocks.add('unless', (params, _hash, blocks, builder) => {
     //        PutArgs
     //        Test(Environment)
     //        Enter(BEGIN, END)
@@ -552,7 +560,7 @@ export function populateBuiltins(
     //        Evaluate(default)
     //        Jump(END)
     // ELSE:  Noop
-    //        Evalulate(inverse)
+    //        Evalulate(else)
     // END:   Noop
     //        Exit
 
@@ -568,18 +576,18 @@ export function populateBuiltins(
       },
 
       ifTrue() {
-        if (inverse) {
-          builder.invokeStaticBlock(inverse);
+        if (blocks.has('else')) {
+          builder.invokeStaticBlock(blocks.get('else')!);
         }
       },
 
       ifFalse() {
-        builder.invokeStaticBlock(unwrap(template));
+        builder.invokeStaticBlock(unwrap(blocks.get('default')));
       },
     });
   });
 
-  blocks.add('with', (params, _hash, template, inverse, builder) => {
+  blocks.add('with', (params, _hash, blocks, builder) => {
     //        PutArgs
     //        Test(Environment)
     //        Enter(BEGIN, END)
@@ -588,7 +596,7 @@ export function populateBuiltins(
     //        Evaluate(default)
     //        Jump(END)
     // ELSE:  Noop
-    //        Evalulate(inverse)
+    //        Evalulate(else)
     // END:   Noop
     //        Exit
 
@@ -605,18 +613,18 @@ export function populateBuiltins(
       },
 
       ifTrue() {
-        builder.invokeStaticBlock(unwrap(template), 1);
+        builder.invokeStaticBlock(unwrap(blocks.get('default')), 1);
       },
 
       ifFalse() {
-        if (inverse) {
-          builder.invokeStaticBlock(inverse);
+        if (blocks.has('else')) {
+          builder.invokeStaticBlock(blocks.get('else')!);
         }
       },
     });
   });
 
-  blocks.add('each', (params, hash, template, inverse, builder) => {
+  blocks.add('each', (params, hash, blocks, builder) => {
     //         Enter(BEGIN, END)
     // BEGIN:  Noop
     //         PutArgs
@@ -636,7 +644,7 @@ export function populateBuiltins(
     //         ExitList
     //         Jump(END)
     // ELSE:   Noop
-    //         Evalulate(inverse)
+    //         Evalulate(else)
     // END:    Noop
     //         Exit
 
@@ -669,7 +677,7 @@ export function populateBuiltins(
         builder.iterate('BREAK');
 
         builder.label('BODY');
-        builder.invokeStaticBlock(unwrap(template), 2);
+        builder.invokeStaticBlock(unwrap(blocks.get('default')), 2);
         builder.pop(2);
         builder.jump('FINALLY');
 
@@ -680,14 +688,14 @@ export function populateBuiltins(
         builder.jump('FINALLY');
         builder.label('ELSE');
 
-        if (inverse) {
-          builder.invokeStaticBlock(inverse);
+        if (blocks.has('else')) {
+          builder.invokeStaticBlock(blocks.get('else')!);
         }
       },
     });
   });
 
-  blocks.add('in-element', (params, hash, template, _inverse, builder) => {
+  blocks.add('in-element', (params, hash, blocks, builder) => {
     if (!params || params.length !== 1) {
       throw new Error(`SYNTAX ERROR: #in-element requires a single argument`);
     }
@@ -714,13 +722,13 @@ export function populateBuiltins(
 
       ifTrue() {
         builder.pushRemoteElement();
-        builder.invokeStaticBlock(unwrap(template));
+        builder.invokeStaticBlock(unwrap(blocks.get('default')));
         builder.popRemoteElement();
       },
     });
   });
 
-  blocks.add('-with-dynamic-vars', (_params, hash, template, _inverse, builder) => {
+  blocks.add('-with-dynamic-vars', (_params, hash, blocks, builder) => {
     if (hash) {
       let [names, expressions] = hash;
 
@@ -728,24 +736,28 @@ export function populateBuiltins(
 
       builder.pushDynamicScope();
       builder.bindDynamicScope(names);
-      builder.invokeStaticBlock(unwrap(template));
+      builder.invokeStaticBlock(unwrap(blocks.get('default')));
       builder.popDynamicScope();
     } else {
-      builder.invokeStaticBlock(unwrap(template));
+      builder.invokeStaticBlock(unwrap(blocks.get('default')));
     }
   });
 
-  blocks.add('component', (_params, hash, template, inverse, builder) => {
+  blocks.add('component', (_params, hash, blocks, builder) => {
     assert(_params && _params.length, 'SYNTAX ERROR: #component requires at least one argument');
 
     let tag = _params[0];
     if (typeof tag === 'string') {
-      let returned = builder.staticComponentHelper(_params[0] as string, hash, template);
+      let returned = builder.staticComponentHelper(
+        _params[0] as string,
+        hash,
+        blocks.get('default')
+      );
       if (returned) return;
     }
 
     let [definition, ...params] = _params!;
-    builder.dynamicComponent(definition, null, params, hash, true, template, inverse);
+    builder.dynamicComponent({ definition, attrs: null, params, hash, synthetic: true, blocks });
   });
 
   inlines.add('component', (_name, _params, hash, builder) => {
@@ -761,7 +773,14 @@ export function populateBuiltins(
     }
 
     let [definition, ...params] = _params!;
-    builder.dynamicComponent(definition, null, params, hash, true, null, null);
+    builder.dynamicComponent({
+      definition,
+      attrs: null,
+      params,
+      hash,
+      synthetic: true,
+      blocks: EMPTY_BLOCKS,
+    });
 
     return true;
   });

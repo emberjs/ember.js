@@ -663,6 +663,10 @@ module('[glimmer-runtime] Updating', hooks => {
     }>;
   }
 
+  function isInputFunction(value: any): value is (isHTML: boolean) => Opaque {
+    return typeof value === 'function';
+  }
+
   function generateContentTestCase(tc: ContentTestCase): void {
     [
       {
@@ -729,7 +733,7 @@ module('[glimmer-runtime] Updating', hooks => {
           let input: Opaque;
           let expected: string;
 
-          if (typeof _input === 'function') {
+          if (isInputFunction(_input)) {
             input = _input(wrapper.isHTML);
           } else {
             input = _input;
@@ -1438,7 +1442,7 @@ module('[glimmer-runtime] Updating', hooks => {
     equalTokens(root, '<div><p>Nothing</p></div>');
   });
 
-  test('a simple implementation of a dirtying rerender without inverse', () => {
+  test('a simple implementation of a dirtying rerender without else', () => {
     let object = { condition: true, value: 'hello world' };
     let template = compile('<div>{{#if condition}}<p>{{value}}</p>{{/if}}</div>');
     render(template, object);
@@ -1460,7 +1464,7 @@ module('[glimmer-runtime] Updating', hooks => {
     );
   });
 
-  test('The unless helper without inverse', function() {
+  test('The unless helper without else', function() {
     let object: any = { condition: true, value: 'hello world' };
     let template = compile('<div>{{#unless condition}}<p>{{value}}</p>{{/unless}}</div>');
     render(template, object);
@@ -1479,7 +1483,7 @@ module('[glimmer-runtime] Updating', hooks => {
     equalTokens(root, '<div><!----></div>', 'If the condition is true, the morph unpopulated');
   });
 
-  test('The unless helper with inverse', function() {
+  test('The unless helper with else', function() {
     let object: any = { condition: true, value: 'hello world' };
     let template = compile(
       '<div>{{#unless condition}}<p>{{value}}</p>{{else}}<p>Nothing</p>{{/unless}}</div>'
@@ -1498,7 +1502,7 @@ module('[glimmer-runtime] Updating', hooks => {
     );
     object.condition = true;
     rerender();
-    equalTokens(root, '<div><p>Nothing</p></div>', 'If the condition is true, the inverse renders');
+    equalTokens(root, '<div><p>Nothing</p></div>', 'If the condition is true, the else renders');
   });
 
   test('The unless helper should consider an empty array falsy', function() {
@@ -1513,7 +1517,7 @@ module('[glimmer-runtime] Updating', hooks => {
 
     object.condition.push(1);
     rerender();
-    equalTokens(root, '<div><p>Nothing</p></div>', 'If the condition is true, the inverse renders');
+    equalTokens(root, '<div><p>Nothing</p></div>', 'If the condition is true, the else renders');
 
     object.condition.pop();
     rerender();
@@ -2366,7 +2370,7 @@ module('[glimmer-runtime] Updating', hooks => {
     );
   });
 
-  test('The each helper with inverse', assert => {
+  test('The each helper with else', assert => {
     let object = { list: [] as any[] };
     let template = compile(
       `<ul>{{#each list key='name' as |item|}}<li class="{{item.class}}">{{item.name}}</li>{{else}}<li class="none">none</li>{{/each}}</ul>`

@@ -23,3 +23,5 @@ export { default as templateFactory, TemplateFactory } from './lib/template';
 export { debug, debugSlice, logOpcode } from './lib/debug';
 
 export { WrappedBuilder } from './lib/wrapped-component';
+
+export { EMPTY_BLOCKS } from './lib/utils';

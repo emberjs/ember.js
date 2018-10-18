@@ -32,7 +32,7 @@ function buildBlock(
   params: Option<AST.Expression[]>,
   hash: Option<AST.Hash>,
   program: AST.Program,
-  inverse?: Option<AST.Program>,
+  elseBlock?: Option<AST.Program>,
   loc?: AST.SourceLocation
 ): AST.BlockStatement {
   return {
@@ -41,7 +41,7 @@ function buildBlock(
     params: params || [],
     hash: hash || buildHash([]),
     program: program || null,
-    inverse: inverse || null,
+    inverse: elseBlock || null,
     loc: buildLoc(loc || null),
   };
 }

@@ -212,19 +212,19 @@ export interface VisitorKeysMap {
   BlockStatement: ['path', 'params', 'hash', 'program', 'inverse'];
   ElementModifierStatement: ['path', 'params', 'hash'];
   PartialStatement: ['name', 'params', 'hash'];
-  CommentStatement: never[];
-  MustacheCommentStatement: never[];
+  CommentStatement: [];
+  MustacheCommentStatement: [];
   ElementNode: ['attributes', 'modifiers', 'children', 'comments'];
   AttrNode: ['value'];
-  TextNode: never[];
+  TextNode: [];
   ConcatStatement: ['parts'];
   SubExpression: ['path', 'params', 'hash'];
-  PathExpression: never[];
-  StringLiteral: never[];
-  BooleanLiteral: never[];
-  NumberLiteral: never[];
-  NullLiteral: never[];
-  UndefinedLiteral: never[];
+  PathExpression: [];
+  StringLiteral: [];
+  BooleanLiteral: [];
+  NumberLiteral: [];
+  NullLiteral: [];
+  UndefinedLiteral: [];
   Hash: ['pairs'];
   HashPair: ['value'];
 }
@@ -234,7 +234,8 @@ export type Node = Nodes[NodeType];
 
 // VisitorKeysMap drives ParentNode and LeafNode typing
 export type ValuesOfType<T, U> = { [K in keyof T]: T[K] extends U ? T[K] : never }[keyof T];
-export type ChildKeyByNodeType = { [T in NodeType]: ValuesOfType<VisitorKeysMap[T], string> };
+export type ChildKeyByNodeType = { [T in NodeType]: ExtractElements<VisitorKeysMap[T]> };
+export type ExtractElements<T> = T extends (infer U)[] ? U : never;
 
 export type ChildKeyToNodeType<K extends ChildKey = ChildKey, T extends NodeType = NodeType> = {
   [P in T]: Extract<ChildKeyByNodeType[P], K> extends never ? never : P

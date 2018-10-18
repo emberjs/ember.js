@@ -1,5 +1,6 @@
 import { Dict, Option, Opaque } from '@glimmer/util';
 import { Opcodes } from './lib/opcodes';
+import { Maybe } from '@glimmer/interfaces';
 
 export { Opcodes as Ops } from './lib/opcodes';
 
@@ -26,6 +27,7 @@ export namespace Core {
   export type Path = str[];
   export type Params = Expression[];
   export type Hash = Option<[str[], Expression[]]>;
+  export type Blocks = Option<[str[], SerializedInlineBlock[]]>;
   export type Args = [Params, Hash];
   export type EvalInfo = number[];
 }
@@ -84,27 +86,15 @@ export namespace Statements {
   export type Expression = Expressions.Expression;
   export type Params = Core.Params;
   export type Hash = Core.Hash;
+  export type Blocks = Core.Blocks;
   export type Path = Core.Path;
 
   export type Text = [Opcodes.Text, str];
   export type Append = [Opcodes.Append, Expression, boolean];
   export type Comment = [Opcodes.Comment, str];
   export type Modifier = [Opcodes.Modifier, str, Params, Hash];
-  export type Block = [
-    Opcodes.Block,
-    str,
-    Params,
-    Hash,
-    Option<SerializedInlineBlock>,
-    Option<SerializedInlineBlock>
-  ];
-  export type Component = [
-    Opcodes.Component,
-    str,
-    Attribute[],
-    Hash,
-    Option<SerializedInlineBlock>
-  ];
+  export type Block = [Opcodes.Block, str, Params, Hash, Blocks];
+  export type Component = [Opcodes.Component, str, Attribute[], Hash, Blocks];
   export type DynamicComponent = [
     Opcodes.DynamicComponent,
     Expression,
@@ -237,3 +227,37 @@ export function isArgument(val: Statement): val is Statements.Argument {
 // Expressions
 export const isGet = is<Expressions.Get>(Opcodes.Get);
 export const isMaybeLocal = is<Expressions.MaybeLocal>(Opcodes.MaybeLocal);
+
+export class NamedBlocks {
+  // TODO: Where does the undefined come from?
+  constructor(private blocks: Maybe<Core.Blocks>) {}
+
+  get default(): Option<SerializedInlineBlock> {
+    return this.getBlock('default');
+  }
+
+  get else(): Option<SerializedInlineBlock> {
+    return this.getBlock('else');
+  }
+
+  forEach(callback: (key: string, value: SerializedInlineBlock) => void): void {
+    let { blocks } = this;
+    if (blocks === null || blocks === undefined) return;
+
+    let [keys, values] = blocks;
+
+    for (let i = 0; i < keys.length; i++) {
+      callback(keys[i], values[i]);
+    }
+  }
+
+  getBlock(name: string): Option<SerializedInlineBlock> {
+    if (this.blocks === null || this.blocks === undefined) return null;
+
+    let index = this.blocks[0].indexOf(name);
+
+    if (index === -1) return null;
+
+    return this.blocks[1][index];
+  }
+}
