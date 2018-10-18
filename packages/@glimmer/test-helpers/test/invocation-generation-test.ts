@@ -176,7 +176,7 @@ QUnit.test('Can build curly invocation with block params', assert => {
   );
 });
 
-QUnit.test('Can build curly invocation with inverse', assert => {
+QUnit.test('Can build curly invocation with else', assert => {
   renderTests['testType'] = 'Curly';
   let invocation = renderTests.buildComponent({
     name: 'lol-wat',
@@ -184,12 +184,12 @@ QUnit.test('Can build curly invocation with inverse', assert => {
     template: 'World',
     args: { foo: 'bar', baz: 1, bar: null, 'data-foo': '"bar"', id: '"wat"' },
     blockParams: ['a b c'],
-    inverse: 'INVERSE',
+    else: 'ELSE',
   });
 
   assert.equal(
     invocation,
-    `{{#lol-wat foo=bar baz=1 bar=null data-foo="bar" id="wat" as |a b c|}}World{{else}}INVERSE{{/lol-wat}}`
+    `{{#lol-wat foo=bar baz=1 bar=null data-foo="bar" id="wat" as |a b c|}}World{{else}}ELSE{{/lol-wat}}`
   );
 });
 
@@ -257,7 +257,7 @@ QUnit.test('Can build dynamic invocation with block params', assert => {
   );
 });
 
-QUnit.test('Can build dynamic invocation with inverse', assert => {
+QUnit.test('Can build dynamic invocation with else', assert => {
   renderTests['testType'] = 'Dynamic';
   let invocation = renderTests.buildComponent({
     name: 'lol-wat',
@@ -265,12 +265,12 @@ QUnit.test('Can build dynamic invocation with inverse', assert => {
     template: 'World',
     args: { foo: 'bar', baz: 1, bar: null, 'data-foo': '"bar"', id: '"wat"' },
     blockParams: ['a b c'],
-    inverse: 'INVERSE',
+    else: 'ELSE',
   });
 
   assert.equal(
     invocation,
-    `{{#component componentName foo=bar baz=1 bar=null data-foo="bar" id="wat" as |a b c|}}World{{else}}INVERSE{{/component}}`
+    `{{#component componentName foo=bar baz=1 bar=null data-foo="bar" id="wat" as |a b c|}}World{{else}}ELSE{{/component}}`
   );
 });
 

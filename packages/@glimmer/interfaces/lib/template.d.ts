@@ -77,6 +77,13 @@ export type MaybeResolvedLayout =
     }
   | ResolvedLayout;
 
+export interface NamedBlocks {
+  get(name: string): Option<CompilableBlock>;
+  has(name: string): boolean;
+  with(name: string, block: Option<CompilableBlock>): NamedBlocks;
+  hasAny: boolean;
+}
+
 export interface Compiler<Builder = Opaque> {
   stdLib: STDLib;
   constants: CompileTimeConstants;
@@ -94,8 +101,7 @@ export interface Compiler<Builder = Opaque> {
     name: string,
     params: Core.Params,
     hash: Core.Hash,
-    template: Option<CompilableBlock>,
-    inverse: Option<CompilableBlock>,
+    blocks: NamedBlocks,
     builder: Builder
   ): void;
   builderFor(containingLayout: LayoutWithContext): Builder;

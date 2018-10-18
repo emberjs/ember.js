@@ -78,7 +78,7 @@ export type ComponentKind = 'Glimmer' | 'Curly' | 'Dynamic' | 'Basic' | 'Fragmen
 export interface ComponentBlueprint {
   layout: string;
   tag?: string;
-  inverse?: string;
+  else?: string;
   template?: string;
   name?: string;
   args?: Object;
@@ -214,8 +214,8 @@ export class RenderTest {
     return `${blockParams.length > 0 ? ` as |${blockParams.join(' ')}|` : ''}`;
   }
 
-  private buildInverse(inverse: string | undefined): string {
-    return `${inverse ? `{{else}}${inverse}` : ''}`;
+  private buildElse(elseBlock: string | undefined): string {
+    return `${elseBlock ? `{{else}}${elseBlock}` : ''}`;
   }
 
   private buildAttributes(attrs: Object = {}): string {
@@ -291,13 +291,13 @@ export class RenderTest {
     name: string,
     template: string,
     blockParams: string[],
-    inverse?: string
+    elseBlock?: string
   ): string {
     let block: string[] = [];
     block.push(this.buildBlockParams(blockParams));
     block.push('}}');
     block.push(template);
-    block.push(this.buildInverse(inverse));
+    block.push(this.buildElse(elseBlock));
     block.push(`{{/${name}}}`);
     return block.join('');
   }
@@ -308,7 +308,7 @@ export class RenderTest {
       layout,
       template,
       attributes,
-      inverse,
+      else: elseBlock,
       name = CURLY_TEST_COMPONENT,
       blockParams = [],
     } = blueprint;
@@ -333,7 +333,7 @@ export class RenderTest {
     }
 
     if (template) {
-      invocation.push(this.buildCurlyBlockTemplate(name, template, blockParams, inverse));
+      invocation.push(this.buildCurlyBlockTemplate(name, template, blockParams, elseBlock));
     } else {
       invocation.push('}}');
     }
@@ -373,7 +373,7 @@ export class RenderTest {
       layout,
       template,
       attributes,
-      inverse,
+      else: elseBlock,
       name = GLIMMER_TEST_COMPONENT,
       blockParams = [],
     } = blueprint;
@@ -397,7 +397,7 @@ export class RenderTest {
     }
 
     if (template) {
-      invocation.push(this.buildCurlyBlockTemplate('component', template, blockParams, inverse));
+      invocation.push(this.buildCurlyBlockTemplate('component', template, blockParams, elseBlock));
     } else {
       invocation.push('}}');
     }
@@ -467,7 +467,7 @@ export class RenderTest {
   protected takeSnapshot() {
     let snapshot: (Node | 'up' | 'down')[] = (this.snapshot = []);
 
-    let node = this.element.firstChild;
+    let node: Option<Node> = this.element.firstChild;
     let upped = false;
 
     while (node && node !== this.element) {

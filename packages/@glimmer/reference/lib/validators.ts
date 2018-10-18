@@ -184,7 +184,7 @@ export abstract class CachedTag extends RevisionTag {
       this.lastValue = lastValue = this.compute();
     }
 
-    return this.lastValue as Revision;
+    return lastValue as Revision;
   }
 
   protected invalidate() {

@@ -144,7 +144,7 @@ export class ComponentBuilder<Locator> implements IComponentBuilder {
   constructor(private builder: OpcodeBuilder<Locator>) {}
 
   static(handle: number, args: ComponentArgs) {
-    let [params, hash, _default, inverse] = args;
+    let [params, hash, blocks] = args;
     let { builder } = this;
 
     if (handle !== null) {
@@ -152,19 +152,25 @@ export class ComponentBuilder<Locator> implements IComponentBuilder {
 
       if (compilable) {
         builder.pushComponentDefinition(handle);
-        builder.invokeStaticComponent(
+        builder.invokeStaticComponent({
           capabilities,
-          compilable,
-          null,
+          layout: compilable,
+          attrs: null,
           params,
           hash,
-          false,
-          _default,
-          inverse
-        );
+          synthetic: false,
+          blocks,
+        });
       } else {
         builder.pushComponentDefinition(handle);
-        builder.invokeComponent(capabilities, null, params, hash, false, _default, inverse);
+        builder.invokeComponent({
+          capabilities,
+          attrs: null,
+          params,
+          hash,
+          synthetic: false,
+          blocks,
+        });
       }
     }
   }

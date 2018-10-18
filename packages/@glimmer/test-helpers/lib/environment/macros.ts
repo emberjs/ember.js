@@ -1,6 +1,7 @@
 import { Macros } from '@glimmer/opcode-compiler';
 import { Option } from '@glimmer/interfaces';
 import * as WireFormat from '@glimmer/wire-format';
+import { EMPTY_BLOCKS } from '@glimmer/opcode-compiler';
 
 export default class TestMacros extends Macros {
   constructor() {
@@ -8,15 +9,15 @@ export default class TestMacros extends Macros {
 
     let { blocks, inlines } = this;
 
-    blocks.add('identity', (_params, _hash, template, _inverse, builder) => {
-      builder.invokeStaticBlock(template!);
+    blocks.add('identity', (_params, _hash, blocks, builder) => {
+      builder.invokeStaticBlock(blocks.get('default')!);
     });
 
-    blocks.add('render-inverse', (_params, _hash, _template, inverse, builder) => {
-      builder.invokeStaticBlock(inverse!);
+    blocks.add('render-else', (_params, _hash, blocks, builder) => {
+      builder.invokeStaticBlock(blocks.get('else')!);
     });
 
-    blocks.addMissing((name, params, hash, template, inverse, builder) => {
+    blocks.addMissing((name, params, hash, blocks, builder) => {
       if (!params) {
         params = [];
       }
@@ -24,7 +25,7 @@ export default class TestMacros extends Macros {
       let { handle } = builder.compiler.resolveLayoutForTag(name, builder.referrer);
 
       if (handle !== null) {
-        builder.component.static(handle, [params, hashToArgs(hash), template, inverse]);
+        builder.component.static(handle, [params, hashToArgs(hash), blocks]);
         return true;
       }
 
@@ -35,7 +36,7 @@ export default class TestMacros extends Macros {
       let { handle } = builder.compiler.resolveLayoutForTag(name, builder.referrer);
 
       if (handle !== null) {
-        builder.component.static(handle, [params!, hashToArgs(hash), null, null]);
+        builder.component.static(handle, [params!, hashToArgs(hash), EMPTY_BLOCKS]);
         return true;
       }
 

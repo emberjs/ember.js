@@ -2,11 +2,11 @@ import { RenderTest, test } from '../render-test';
 
 export class HasBlockParamsHelperSuite extends RenderTest {
   @test({ kind: 'curly' })
-  'parameterized has-block-params (subexpr, inverse) when inverse supplied without block params'() {
+  'parameterized has-block-params (subexpr, else) when else supplied without block params'() {
     this.render({
       layout: '{{#if (has-block-params "inverse")}}Yes{{else}}No{{/if}}',
       template: 'block here',
-      inverse: 'inverse here',
+      else: 'else here',
     });
 
     this.assertComponent('No');
@@ -14,7 +14,7 @@ export class HasBlockParamsHelperSuite extends RenderTest {
   }
 
   @test({ kind: 'curly' })
-  'parameterized has-block-params (subexpr, inverse) when inverse not supplied'() {
+  'parameterized has-block-params (subexpr, else) when else not supplied'() {
     this.render({
       layout: '{{#if (has-block-params "inverse")}}Yes{{else}}No{{/if}}',
       template: 'block here',
@@ -58,11 +58,11 @@ export class HasBlockParamsHelperSuite extends RenderTest {
   }
 
   @test({ kind: 'curly' })
-  'parameterized has-block-params (content, inverse) when inverse supplied without block params'() {
+  'parameterized has-block-params (content, else) when else supplied without block params'() {
     this.render({
       layout: '{{has-block-params "inverse"}}',
       template: 'block here',
-      inverse: 'inverse here',
+      else: 'else here',
     });
 
     this.assertComponent('false');
@@ -70,7 +70,7 @@ export class HasBlockParamsHelperSuite extends RenderTest {
   }
 
   @test({ kind: 'curly' })
-  'parameterized has-block-params (content, inverse) when inverse not supplied'() {
+  'parameterized has-block-params (content, else) when else not supplied'() {
     this.render({
       layout: '{{has-block-params "inverse"}}',
       template: 'block here',
@@ -115,11 +115,11 @@ export class HasBlockParamsHelperSuite extends RenderTest {
   }
 
   @test({ kind: 'curly' })
-  'parameterized has-block-params (prop, inverse) when inverse supplied without block params'() {
+  'parameterized has-block-params (prop, else) when else supplied without block params'() {
     this.render({
       layout: '<button name={{has-block-params "inverse"}}></button>',
       template: 'block here',
-      inverse: 'inverse here',
+      else: 'else here',
     });
 
     this.assertComponent('<button name="false"></button>');
@@ -127,7 +127,7 @@ export class HasBlockParamsHelperSuite extends RenderTest {
   }
 
   @test({ kind: 'curly' })
-  'parameterized has-block-params (prop, inverse) when inverse not supplied'() {
+  'parameterized has-block-params (prop, else) when else not supplied'() {
     this.render({
       layout: '<button name={{has-block-params "inverse"}}></button>',
       template: 'block here',
@@ -171,11 +171,11 @@ export class HasBlockParamsHelperSuite extends RenderTest {
   }
 
   @test({ kind: 'curly' })
-  'parameterized has-block-params (attr, inverse) when inverse supplied without block params'() {
+  'parameterized has-block-params (attr, else) when else supplied without block params'() {
     this.render({
       layout: '<button data-has-block-params="{{has-block-params "inverse"}}"></button>',
       template: 'block here',
-      inverse: 'inverse here',
+      else: 'else here',
     });
 
     this.assertComponent('<button data-has-block-params="false"></button>');
@@ -183,11 +183,11 @@ export class HasBlockParamsHelperSuite extends RenderTest {
   }
 
   @test({ kind: 'curly' })
-  'parameterized has-block-params (attr, inverse) when inverse not supplied'() {
+  'parameterized has-block-params (attr, else) when else not supplied'() {
     this.render({
       layout: '<button data-has-block-params="{{has-block-params "inverse"}}"></button>',
       template: 'block here',
-      inverse: 'inverse here',
+      else: 'else here',
     });
 
     this.assertComponent('<button data-has-block-params="false"></button>');
@@ -229,11 +229,11 @@ export class HasBlockParamsHelperSuite extends RenderTest {
   }
 
   @test({ kind: 'curly' })
-  'parameterized has-block-params (concatted attr, inverse) when inverse supplied without block params'() {
+  'parameterized has-block-params (concatted attr, else) when else supplied without block params'() {
     this.render({
       layout: '<button data-has-block-params="is-{{has-block-params "inverse"}}"></button>',
       template: 'block here',
-      inverse: 'inverse here',
+      else: 'else here',
     });
 
     this.assertComponent('<button data-has-block-params="is-false"></button>');
@@ -241,7 +241,7 @@ export class HasBlockParamsHelperSuite extends RenderTest {
   }
 
   @test({ kind: 'curly' })
-  'parameterized has-block-params (concatted attr, inverse) when inverse not supplied'() {
+  'parameterized has-block-params (concatted attr, else) when else not supplied'() {
     this.render({
       layout: '<button data-has-block-params="is-{{has-block-params "inverse"}}"></button>',
       template: 'block here',

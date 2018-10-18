@@ -959,7 +959,7 @@ export const enum Op {
    *   Flags:
    *
    *   * 0b001: Has a default block
-   *   * 0b010: Has an inverse block
+   *   * 0b010: Has an else block
    */
   CreateComponent,
 

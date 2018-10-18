@@ -225,7 +225,17 @@ export default class JavaScriptCompiler
       'missing block in the compiler'
     );
 
-    this.push([Ops.Block, name, params, hash, blocks[template], blocks[inverse!]]);
+    let namedBlocks: Option<Core.Blocks>;
+
+    if (template === null && inverse === null) {
+      namedBlocks = null;
+    } else if (inverse === null) {
+      namedBlocks = [['default'], [blocks[template]]];
+    } else {
+      namedBlocks = [['default', 'else'], [blocks[template], blocks[inverse]]];
+    }
+
+    this.push([Ops.Block, name, params, hash, namedBlocks]);
   }
 
   openComponent(element: AST.ElementNode) {
@@ -270,8 +280,9 @@ export default class JavaScriptCompiler
       throw new Error('Compile Error: Element modifiers are not allowed in components');
     }
     let [tag, attrs, args, block] = this.endComponent();
+    let named: Option<Core.Blocks> = block ? [['default'], [block]] : null;
 
-    this.push([Ops.Component, tag, attrs, args, block]);
+    this.push([Ops.Component, tag, attrs, args, named]);
   }
 
   closeDynamicComponent(_element: AST.ElementNode) {

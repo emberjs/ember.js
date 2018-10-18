@@ -2,11 +2,11 @@ import { RenderTest, test } from '../render-test';
 
 export class HasBlockSuite extends RenderTest {
   @test({ kind: 'curly' })
-  'parameterized has-block (subexpr, inverse) when inverse supplied'() {
+  'parameterized has-block (subexpr, else) when else supplied'() {
     this.render({
       layout: '{{#if (has-block "inverse")}}Yes{{else}}No{{/if}}',
       template: 'block here',
-      inverse: 'inverse here',
+      else: 'else here',
     });
 
     this.assertComponent('Yes');
@@ -14,7 +14,7 @@ export class HasBlockSuite extends RenderTest {
   }
 
   @test
-  'parameterized has-block (subexpr, inverse) when inverse not supplied'() {
+  'parameterized has-block (subexpr, else) when else not supplied'() {
     this.render({
       layout: '{{#if (has-block "inverse")}}Yes{{else}}No{{/if}}',
       template: 'block here',
@@ -46,11 +46,11 @@ export class HasBlockSuite extends RenderTest {
   }
 
   @test({ kind: 'curly' })
-  'parameterized has-block (content, inverse) when inverse supplied'() {
+  'parameterized has-block (content, else) when else supplied'() {
     this.render({
       layout: '{{has-block "inverse"}}',
       template: 'block here',
-      inverse: 'inverse here',
+      else: 'else here',
     });
 
     this.assertComponent('true');
@@ -58,7 +58,7 @@ export class HasBlockSuite extends RenderTest {
   }
 
   @test
-  'parameterized has-block (content, inverse) when inverse not supplied'() {
+  'parameterized has-block (content, else) when else not supplied'() {
     this.render({
       layout: '{{has-block "inverse"}}',
       template: 'block here',
@@ -90,11 +90,11 @@ export class HasBlockSuite extends RenderTest {
   }
 
   @test({ kind: 'curly' })
-  'parameterized has-block (prop, inverse) when inverse supplied'() {
+  'parameterized has-block (prop, else) when else supplied'() {
     this.render({
       layout: '<button name={{has-block "inverse"}}></button>',
       template: 'block here',
-      inverse: 'inverse here',
+      else: 'else here',
     });
 
     this.assertComponent('<button name="true"></button>');
@@ -102,7 +102,7 @@ export class HasBlockSuite extends RenderTest {
   }
 
   @test
-  'parameterized has-block (prop, inverse) when inverse not supplied'() {
+  'parameterized has-block (prop, else) when else not supplied'() {
     this.render({
       layout: '<button name={{has-block "inverse"}}></button>',
       template: 'block here',
@@ -134,11 +134,11 @@ export class HasBlockSuite extends RenderTest {
   }
 
   @test({ kind: 'curly' })
-  'parameterized has-block (attr, inverse) when inverse supplied'() {
+  'parameterized has-block (attr, else) when else supplied'() {
     this.render({
       layout: '<button data-has-block="{{has-block "inverse"}}"></button>',
       template: 'block here',
-      inverse: 'inverse here',
+      else: 'else here',
     });
 
     this.assertComponent('<button data-has-block="true"></button>');
@@ -146,7 +146,7 @@ export class HasBlockSuite extends RenderTest {
   }
 
   @test
-  'parameterized has-block (attr, inverse) when inverse not supplied'() {
+  'parameterized has-block (attr, else) when else not supplied'() {
     this.render({
       layout: '<button data-has-block="{{has-block "inverse"}}"></button>',
       template: 'block here',
@@ -178,11 +178,11 @@ export class HasBlockSuite extends RenderTest {
   }
 
   @test({ kind: 'curly' })
-  'parameterized has-block (concatted attr, inverse) when inverse supplied'() {
+  'parameterized has-block (concatted attr, else) when else supplied'() {
     this.render({
       layout: '<button data-has-block="is-{{has-block "inverse"}}"></button>',
       template: 'block here',
-      inverse: 'inverse here',
+      else: 'else here',
     });
 
     this.assertComponent('<button data-has-block="is-true"></button>');
@@ -190,7 +190,7 @@ export class HasBlockSuite extends RenderTest {
   }
 
   @test
-  'parameterized has-block (concatted attr, inverse) when inverse not supplied'() {
+  'parameterized has-block (concatted attr, else) when else not supplied'() {
     this.render({
       layout: '<button data-has-block="is-{{has-block "inverse"}}"></button>',
       template: 'block here',
@@ -235,7 +235,7 @@ export class HasBlockSuite extends RenderTest {
   }
 
   @test({ kind: 'glimmer' })
-  'self closing angle bracket invocation (subexpr, inverse)'() {
+  'self closing angle bracket invocation (subexpr, else)'() {
     this.registerComponent(
       'Glimmer',
       'TestComponent',

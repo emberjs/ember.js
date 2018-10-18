@@ -202,7 +202,7 @@ APPEND_OPCODES.add(Op.PushDynamicComponentInstance, vm => {
   expectStackChange(vm.stack, 0, 'PushDynamicComponentInstance');
 });
 
-APPEND_OPCODES.add(Op.PushCurriedComponent, (vm, { op1: _meta }) => {
+APPEND_OPCODES.add(Op.PushCurriedComponent, vm => {
   let stack = vm.stack;
 
   let component = check(stack.pop(), CheckPathReference).value();
@@ -613,7 +613,7 @@ APPEND_OPCODES.add(Op.SetBlocks, (vm, { op1: _state }) => {
   let { blocks } = check(vm.stack.peek(), CheckArguments);
 
   bindBlock('&attrs', 'attrs', state, blocks, vm);
-  bindBlock('&inverse', 'else', state, blocks, vm);
+  bindBlock('&else', 'else', state, blocks, vm);
   bindBlock('&default', 'main', state, blocks, vm);
 });
 

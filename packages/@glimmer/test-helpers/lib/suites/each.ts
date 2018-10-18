@@ -171,7 +171,7 @@ export class EachSuite extends RenderTest {
   }
 
   @test
-  'inverse template is displayed with context'() {
+  'else template is displayed with context'() {
     let list: string[] = [];
 
     this.render(
