@@ -1,4 +1,3 @@
-/*jshint multistr:true*/
 var appModule = require('./helpers/app-module');
 var assertHTMLMatches = require('./helpers/assert-html-matches');
 

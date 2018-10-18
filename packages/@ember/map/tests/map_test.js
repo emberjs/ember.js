@@ -385,7 +385,6 @@ function testMap(nameAndFunc) {
       }
 
       ['@test NaN Boxed'](assert) {
-        //jshint -W053
         let boxed = new Number(NaN);
         assert.equal(map.has(boxed), false);
 

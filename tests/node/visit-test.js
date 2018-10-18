@@ -138,7 +138,6 @@ QUnit.test('FastBoot: attributes are sanitized', function(assert) {
   this.template('application', '<a href={{test}}></a>');
 
   this.controller('application', {
-    /*jshint scripturl:true*/
     test: 'javascript:alert("hello")',
   });
 

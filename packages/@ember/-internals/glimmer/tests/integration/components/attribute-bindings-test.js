@@ -882,8 +882,6 @@ moduleFor(
     }
 
     ['@test blacklists href bindings based on protocol']() {
-      /* jshint scripturl:true */
-
       let FooBarComponent = Component.extend({
         tagName: 'a',
         attributeBindings: ['href'],

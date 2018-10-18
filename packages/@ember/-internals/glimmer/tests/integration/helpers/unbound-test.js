@@ -103,15 +103,15 @@ moduleFor(
       let unsafeUrls = emberA([
         {
           name: 'Bob',
-          url: 'javascript:bob-is-cool', // jshint ignore:line
+          url: 'javascript:bob-is-cool',
         },
         {
           name: 'James',
-          url: 'vbscript:james-is-cool', // jshint ignore:line
+          url: 'vbscript:james-is-cool',
         },
         {
           name: 'Richard',
-          url: 'javascript:richard-is-cool', // jshint ignore:line
+          url: 'javascript:richard-is-cool',
         },
       ]);
 
