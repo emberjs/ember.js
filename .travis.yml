@@ -83,7 +83,9 @@ jobs:
       - TEST_SUITE=built-tests
       - EMBER_ENV=production
     - env: TEST_SUITE=old-jquery-and-extend-prototypes
-    - env: TEST_SUITE=node
+    - env:
+      - TEST_SUITE=node
+      - EMBER_ENV=production
       node_js: "6"
     - env: TEST_SUITE=blueprints
       node_js: "6"
