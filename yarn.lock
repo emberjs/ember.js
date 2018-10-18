@@ -1169,10 +1169,10 @@ backbone@^1.1.2:
   dependencies:
     underscore ">=1.8.3"
 
-backburner.js@^2.4.0:
-  version "2.4.0"
-  resolved "https://registry.yarnpkg.com/backburner.js/-/backburner.js-2.4.0.tgz#77252984c5ac0139103023fadc1085b768e8155f"
-  integrity sha512-B9f7QmTOO1ZN8IL0d39Gm4xOL3tg/RumYC+jMSNQDAsxvfHaQZEwI5teFUyZuPptGNdeCtT5z6TsPXp2eWy2og==
+backburner.js@^2.4.1:
+  version "2.4.1"
+  resolved "https://registry.yarnpkg.com/backburner.js/-/backburner.js-2.4.1.tgz#c9f62fa3323bee21e63a3fbdd4035eb85aa3baa3"
+  integrity sha512-GwdB7cB3LL5GbR2BWTwVYnHjd5GeFW0DKo4ZsTI19Ku1jdmUHBH0Dj0l+UWqQuswscWOiO9c/S6kxvJ9mUynWA==
 
 backo2@1.0.2:
   version "1.0.2"
