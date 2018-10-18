@@ -87,7 +87,11 @@ module.exports.getPackagesES = function getPackagesES() {
     include: ['**/*.ts'],
   });
 
-  let typescriptCompiled = typescript(debugTree(typescriptContents, `get-packages-es:ts:input`));
+  let typescriptCompiled = typescript(debugTree(typescriptContents, `get-packages-es:ts:input`), {
+    compilerOptions: {
+      sourceMap: false,
+    },
+  });
 
   let debuggedCompiledTypescript = debugTree(typescriptCompiled, `get-packages-es:ts:output`);
 
