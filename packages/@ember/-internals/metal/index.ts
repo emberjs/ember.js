@@ -26,8 +26,6 @@ export {
   endPropertyChanges,
   notifyPropertyChange,
   overrideChains,
-  propertyDidChange,
-  propertyWillChange,
   PROPERTY_DID_CHANGE,
 } from './lib/property_events';
 export { defineProperty, Descriptor } from './lib/properties';

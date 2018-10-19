@@ -131,8 +131,6 @@ let allExports = [
   ['run.throttle', '@ember/runloop', 'throttle'],
   ['run.currentRunLoop', '@ember/runloop', { get: 'getCurrentRunLoop' }],
   ['run.cancelTimers', '@ember/runloop', 'cancelTimers'],
-  ['propertyWillChange', '@ember/-internals/metal'],
-  ['propertyDidChange', '@ember/-internals/metal'],
   ['notifyPropertyChange', '@ember/-internals/metal'],
   ['overrideChains', '@ember/-internals/metal'],
   ['beginPropertyChanges', '@ember/-internals/metal'],

@@ -1,10 +1,5 @@
 import { descriptorFor, Meta, peekMeta } from '@ember/-internals/meta';
 import { symbol } from '@ember/-internals/utils';
-import { deprecate } from '@ember/debug';
-import {
-  PROPERTY_DID_CHANGE as ENABLE_PROPERTY_DID_CHANGE,
-  PROPERTY_WILL_CHANGE as ENABLE_PROPERTY_WILL_CHANGE,
-} from '@ember/deprecated-features';
 import { DEBUG } from '@glimmer/env';
 import changeEvent from './change_event';
 import { sendEvent } from './events';
@@ -21,54 +16,6 @@ export const PROPERTY_DID_CHANGE = symbol('PROPERTY_DID_CHANGE');
 
 const observerSet = new ObserverSet();
 let deferred = 0;
-
-// ..........................................................
-// PROPERTY CHANGES
-//
-
-/**
-  @method propertyWillChange
-  @for Ember
-  @private
-*/
-let propertyWillChange;
-if (ENABLE_PROPERTY_WILL_CHANGE) {
-  propertyWillChange = function propertyWillChange() {
-    deprecate(
-      `'propertyWillChange' is deprecated and has no effect. It is safe to remove this call.`,
-      false,
-      {
-        id: 'ember-metal.deprecate-propertyWillChange',
-        until: '3.5.0',
-        url:
-          'https://emberjs.com/deprecations/v3.x/#toc_use-notifypropertychange-instead-of-propertywillchange-and-propertydidchange',
-      }
-    );
-  };
-}
-
-/**
-  @method propertyDidChange
-  @for Ember
-  @private
-*/
-let propertyDidChange;
-if (ENABLE_PROPERTY_DID_CHANGE) {
-  propertyDidChange = function propertyDidChange(obj: object, keyName: string, _meta: Meta) {
-    deprecate(
-      `'propertyDidChange' is deprecated in favor of 'notifyPropertyChange'. It is safe to change this call to 'notifyPropertyChange'.`,
-      false,
-      {
-        id: 'ember-metal.deprecate-propertyDidChange',
-        until: '3.5.0',
-        url:
-          'https://emberjs.com/deprecations/v3.x/#toc_use-notifypropertychange-instead-of-propertywillchange-and-propertydidchange',
-      }
-    );
-
-    notifyPropertyChange(obj, keyName, _meta);
-  };
-}
 
 /**
   This function is called just after an object property has changed.
@@ -247,8 +194,6 @@ function notifyObservers(obj: object, keyName: string, meta: Meta) {
 }
 
 export {
-  propertyWillChange,
-  propertyDidChange,
   notifyPropertyChange,
   overrideChains,
   beginPropertyChanges,

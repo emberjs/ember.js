@@ -117,21 +117,5 @@ moduleFor(
       obj.incrementProperty('age');
       assert.equal(25, obj.get('age'));
     }
-
-    ['@test propertyWillChange triggers a deprecation warning']() {
-      let obj = EmberObject.create();
-
-      expectDeprecation(() => {
-        obj.propertyWillChange('foo');
-      }, /'propertyWillChange' is deprecated and has no effect. It is safe to remove this call./);
-    }
-
-    ['@test propertyDidChange triggers a deprecation warning']() {
-      let obj = EmberObject.create();
-
-      expectDeprecation(() => {
-        obj.propertyDidChange('foo');
-      }, /'propertyDidChange' is deprecated in favor of 'notifyPropertyChange'. It is safe to change this call to 'notifyPropertyChange'./);
-    }
   }
 );
