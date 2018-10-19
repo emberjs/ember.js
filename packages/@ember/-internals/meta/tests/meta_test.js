@@ -33,49 +33,6 @@ moduleFor(
       }
     }
 
-    ['@test meta.listeners basics'](assert) {
-      let t = {};
-      let m = meta({});
-      m.addToListeners('hello', t, 'm', 0);
-      let matching = m.matchingListeners('hello');
-      assert.equal(matching.length, 3);
-      assert.equal(matching[0], t);
-      m.removeFromListeners('hello', t, 'm');
-      matching = m.matchingListeners('hello');
-      assert.equal(matching, undefined);
-    }
-
-    ['@test meta.listeners inheritance'](assert) {
-      let target = {};
-      let parent = {};
-      let parentMeta = meta(parent);
-      parentMeta.addToListeners('hello', target, 'm', 0);
-
-      let child = Object.create(parent);
-      let m = meta(child);
-
-      let matching = m.matchingListeners('hello');
-      assert.equal(matching.length, 3);
-      assert.equal(matching[0], target);
-      assert.equal(matching[1], 'm');
-      assert.equal(matching[2], 0);
-      m.removeFromListeners('hello', target, 'm');
-      matching = m.matchingListeners('hello');
-      assert.equal(matching, undefined);
-      matching = parentMeta.matchingListeners('hello');
-      assert.equal(matching.length, 3);
-    }
-
-    ['@test meta.listeners deduplication'](assert) {
-      let t = {};
-      let m = meta({});
-      m.addToListeners('hello', t, 'm', 0);
-      m.addToListeners('hello', t, 'm', 0);
-      let matching = m.matchingListeners('hello');
-      assert.equal(matching.length, 3);
-      assert.equal(matching[0], t);
-    }
-
     ['@test meta.writeWatching issues useful error after destroy']() {
       let target = {
         toString() {

@@ -832,9 +832,16 @@ function propertySort(itemsKey, sortPropertiesKey) {
       let activeObserversMap = cp._activeObserverMap || (cp._activeObserverMap = new WeakMap());
       let activeObservers = activeObserversMap.get(this);
 
-      function sortPropertyDidChange() {
-        this.notifyPropertyChange(key);
+      let sortPropertyDidChangeMap =
+        cp._sortPropertyDidChangeMap || (cp._sortPropertyDidChangeMap = new WeakMap());
+
+      if (!sortPropertyDidChangeMap.has(this)) {
+        sortPropertyDidChangeMap.set(this, function() {
+          this.notifyPropertyChange(key);
+        });
       }
+
+      let sortPropertyDidChange = sortPropertyDidChangeMap.get(this);
 
       if (activeObservers !== undefined) {
         activeObservers.forEach(path => removeObserver(this, path, sortPropertyDidChange));
@@ -871,6 +878,7 @@ function propertySort(itemsKey, sortPropertiesKey) {
   );
 
   cp._activeObserverMap = undefined;
+  cp._sortPropertyDidChangeMap = undefined;
 
   return cp;
 }

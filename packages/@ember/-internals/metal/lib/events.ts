@@ -80,7 +80,13 @@ export function removeListener(
     target = null;
   }
 
-  metaFor(obj).removeFromListeners(eventName, target, method!);
+  let m = metaFor(obj);
+
+  if (method === undefined) {
+    m.removeAllListeners(eventName);
+  } else {
+    m.removeFromListeners(eventName, target, method);
+  }
 }
 
 /**
