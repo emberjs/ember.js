@@ -5,6 +5,7 @@ import { lookupComponent, lookupPartial, OwnedTemplateMeta } from '@ember/-inter
 import { EMBER_MODULE_UNIFICATION, GLIMMER_CUSTOM_COMPONENT_MANAGER } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { _instrumentStart } from '@ember/instrumentation';
+import { DEBUG } from '@glimmer/env';
 import {
   ComponentDefinition,
   Opaque,
@@ -18,6 +19,7 @@ import { CurlyComponentDefinition } from './component-managers/curly';
 import { CustomManagerDefinition, ManagerDelegate } from './component-managers/custom';
 import { TemplateOnlyComponentDefinition } from './component-managers/template-only';
 import { isHelperFactory, isSimpleHelper } from './helper';
+import { default as componentAssertionHelper } from './helpers/-assert-implicit-component-helper-argument';
 import { default as classHelper } from './helpers/-class';
 import { default as htmlSafeHelper } from './helpers/-html-safe';
 import { default as inputTypeHelper } from './helpers/-input-type';
@@ -75,6 +77,10 @@ const BUILTINS_HELPERS = {
   '-mount': mountHelper,
   '-outlet': outletHelper,
 };
+
+if (DEBUG) {
+  BUILTINS_HELPERS['-assert-implicit-component-helper-argument'] = componentAssertionHelper;
+}
 
 const BUILTIN_MODIFIERS = {
   action: { manager: new ActionModifierManager(), state: null },

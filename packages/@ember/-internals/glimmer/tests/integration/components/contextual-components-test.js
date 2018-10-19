@@ -1387,6 +1387,98 @@ moduleFor(
         this.render('{{component (component "textarea" type="text")}}');
       }, 'You cannot use `textarea` as a component name.');
     }
+
+    ['@test GH#17121 local variable should win over helper (without arguments)']() {
+      this.registerHelper('foo', () => 'foo helper');
+
+      this.registerComponent('foo-bar', { template: 'foo-bar component' });
+
+      this.render(strip`
+        {{#let (component 'foo-bar') as |foo|}}
+          {{foo}}
+        {{/let}}
+      `);
+
+      this.assertText('foo-bar component');
+
+      this.assertStableRerender();
+    }
+
+    ['@test GH#17121 local variable should win over helper (with arguments)']() {
+      this.registerHelper('foo', params => `foo helper: ${params.join(' ')}`);
+
+      this.registerComponent('foo-bar', {
+        ComponentClass: Component.extend().reopenClass({
+          positionalParams: 'params',
+        }),
+        template: 'foo-bar component:{{#each params as |param|}} {{param}}{{/each}}',
+      });
+
+      this.render(strip`
+        {{#let (component 'foo-bar') as |foo|}}
+          {{foo 1 2 3}}
+        {{/let}}
+      `);
+
+      this.assertText('foo-bar component: 1 2 3');
+
+      this.assertStableRerender();
+    }
+
+    ['@test GH#17121 implicit component invocations should not perform string lookup'](assert) {
+      this.registerComponent('foo-bar', { template: 'foo-bar component' });
+
+      assert.throws(
+        () =>
+          this.render(strip`
+          {{#let 'foo-bar' as |foo|}}
+            {{foo 1 2 3}}
+          {{/let}}
+        `),
+        new TypeError(
+          "expected `foo` to be a contextual component but found a string. Did you mean `(component foo)`? ('-top-level' @ L1:C29) "
+        )
+      );
+    }
+
+    ['@test RFC#311 invoking named args (without arguments)']() {
+      this.registerComponent('x-outer', { template: '{{@inner}}' });
+      this.registerComponent('x-inner', { template: 'inner' });
+
+      this.render('{{x-outer inner=(component "x-inner")}}');
+
+      this.assertText('inner');
+
+      this.assertStableRerender();
+    }
+
+    ['@test RFC#311 invoking named args (with arguments)']() {
+      this.registerComponent('x-outer', { template: '{{@inner 1 2 3}}' });
+
+      this.registerComponent('x-inner', {
+        ComponentClass: Component.extend().reopenClass({
+          positionalParams: 'params',
+        }),
+        template: 'inner:{{#each params as |param|}} {{param}}{{/each}}',
+      });
+
+      this.render('{{x-outer inner=(component "x-inner")}}');
+
+      this.assertText('inner: 1 2 3');
+
+      this.assertStableRerender();
+    }
+
+    ['@test RFC#311 invoking named args (with a block)']() {
+      this.registerComponent('x-outer', { template: '{{#@inner}}outer{{/@inner}}' });
+      this.registerComponent('x-inner', { template: 'inner {{yield}}' });
+
+      this.render('{{x-outer inner=(component "x-inner")}}');
+
+      this.assertText('inner outer');
+
+      this.assertStableRerender();
+    }
   }
 );
 
