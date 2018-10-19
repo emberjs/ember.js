@@ -11,8 +11,6 @@ import {
   Mixin,
   hasListeners,
   beginPropertyChanges,
-  propertyWillChange,
-  propertyDidChange,
   notifyPropertyChange,
   endPropertyChanges,
   addObserver,
@@ -264,24 +262,6 @@ export default Mixin.create({
   */
   endPropertyChanges() {
     endPropertyChanges();
-    return this;
-  },
-
-  /**
-    @method propertyWillChange
-    @private
-  */
-  propertyWillChange(keyName) {
-    propertyWillChange(this, keyName);
-    return this;
-  },
-
-  /**
-    @method propertyDidChange
-    @private
-  */
-  propertyDidChange(keyName) {
-    propertyDidChange(this, keyName);
     return this;
   },
 

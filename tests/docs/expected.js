@@ -401,8 +401,6 @@ module.exports = {
     'positionalParams',
     'promise',
     'property',
-    'propertyDidChange',
-    'propertyWillChange',
     'pushObject',
     'pushObjects',
     'pushState',

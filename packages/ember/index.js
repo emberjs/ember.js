@@ -126,12 +126,7 @@ import Map from '@ember/map';
 import MapWithDefault from '@ember/map/with-default';
 import OrderedSet, { __OrderedSet__ } from '@ember/map/lib/ordered-set';
 import { assign, merge } from '@ember/polyfills';
-import {
-  PROPERTY_WILL_CHANGE,
-  PROPERTY_DID_CHANGE,
-  LOGGER,
-  EMBER_EXTEND_PROTOTYPES,
-} from '@ember/deprecated-features';
+import { LOGGER, EMBER_EXTEND_PROTOTYPES } from '@ember/deprecated-features';
 
 // ****@ember/-internals/environment****
 
@@ -290,12 +285,6 @@ Ember.isNone = metal.isNone;
 Ember.isEmpty = metal.isEmpty;
 Ember.isBlank = metal.isBlank;
 Ember.isPresent = metal.isPresent;
-if (PROPERTY_WILL_CHANGE) {
-  Ember.propertyWillChange = metal.propertyWillChange;
-}
-if (PROPERTY_DID_CHANGE) {
-  Ember.propertyDidChange = metal.propertyDidChange;
-}
 Ember.notifyPropertyChange = metal.notifyPropertyChange;
 Ember.overrideChains = metal.overrideChains;
 Ember.beginPropertyChanges = metal.beginPropertyChanges;
