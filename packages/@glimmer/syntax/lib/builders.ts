@@ -1,5 +1,5 @@
 import * as AST from './types/nodes';
-import { Option } from '@glimmer/interfaces';
+import { Option, Dict } from '@glimmer/interfaces';
 
 // Statements
 
@@ -112,56 +112,204 @@ function buildConcat(
 // Nodes
 
 export type ElementArgs =
-  | ['attrs', ...AST.AttrNode[]]
-  | ['modifiers', ...AST.ElementModifierStatement[]]
+  | ['attrs', ...AttrSexp[]]
+  | ['modifiers', ...ModifierSexp[]]
   | ['body', ...AST.Statement[]]
-  | ['comments', ...AST.MustacheCommentStatement[]]
-  | ['comments', AST.SourceLocation]
-  | ['comments', ...string[]]
+  | ['comments', ...ElementComment[]]
   | ['as', ...string[]]
   | ['loc', AST.SourceLocation];
 
-export type ElementComment = AST.MustacheCommentStatement[] | AST.SourceLocation | string[];
+export type PathSexp = string | ['path', string, LocSexp?];
 
-function process(args: ElementArgs[]) : BuildElementOptions {
-  for (let arg of args) {
-    switch (arg[0]) {
-      case 'attrs':
-        arg;
-        break;
-      case 'modifiers':
-        break;
-      case 'body':
-        break;
-      case 'comments':
-        arg
-        break;
-      case 'as':
-        break;
-      case 'loc':
-        break;
+export type ModifierSexp =
+  | string
+  | [PathSexp, LocSexp?]
+  | [PathSexp, AST.Expression[], LocSexp?]
+  | [PathSexp, AST.Expression[], Dict<AST.Expression>, LocSexp?];
+
+export type AttrSexp =
+  | [string, AST.AttrNode['value'] | string, LocSexp?];
+
+export type LocSexp = ['loc', AST.SourceLocation];
+
+export type ElementComment = AST.MustacheCommentStatement | AST.SourceLocation | string;
+
+export type SexpValue = string | AST.Expression[] | Dict<AST.Expression> | LocSexp | PathSexp | undefined;
+
+export function isLocSexp(value: SexpValue): value is LocSexp {
+  return Array.isArray(value) && value.length === 2 && value[0] === 'loc';
+}
+
+export function isParamsSexp(value: SexpValue): value is AST.Expression[] {
+  return Array.isArray(value) && !isLocSexp(value);
+}
+
+export function isHashSexp(value: SexpValue): value is Dict<AST.Expression> {
+  if (typeof value === 'object' && value && !Array.isArray(value)) {
+    expectType<Dict<AST.Expression>>(value);
+    return true;
+  } else {
+    return false;
+  }
+}
+
+function expectType<T>(_input: T): void {
+  return;
+}
+
+export function normalizeModifier(sexp: ModifierSexp): AST.ElementModifierStatement {
+  if (typeof sexp === 'string') {
+    return buildElementModifier(sexp);
+  }
+
+  let path: AST.PathExpression = normalizePath(sexp[0]);
+  let params: AST.Expression[] | undefined;
+  let hash: AST.Hash | undefined;
+  let loc: AST.SourceLocation | null = null;
+
+  let parts = sexp.slice(1);
+  let next = parts.shift();
+
+  // tslint:disable-next-line:label-position
+  process: {
+    if (isParamsSexp(next)) {
+      params = next as AST.Expression[];
+    } else {
+      break process;
+    }
+
+    next = parts.shift();
+
+    if (isHashSexp(next)) {
+      hash = normalizeHash(next as Dict<AST.Expression>);
+    } else {
+      break process;
     }
   }
+
+  if (isLocSexp(next)) {
+    loc = next[1];
+  }
+
+  return buildElementModifier(path, params, hash, loc);
+}
+
+export function normalizeAttr(sexp: AttrSexp): AST.AttrNode {
+  let name = sexp[0];
+  let value;
+
+  if (typeof sexp[1] === 'string') {
+    value = buildText(sexp[1]);
+  } else {
+    value = sexp[1];
+  }
+
+  let loc = sexp[2] ? sexp[2][1] : undefined;
+
+  return buildAttr(name, value, loc);
+}
+
+export function normalizeHash(hash: Dict<AST.Expression>, loc?: AST.SourceLocation): AST.Hash {
+  let pairs: AST.HashPair[] = [];
+
+  Object.keys(hash).forEach(key => {
+    pairs.push(buildPair(key, hash[key]));
+  });
+
+  return buildHash(pairs, loc);
+}
+
+export function normalizePath(path: PathSexp): AST.PathExpression {
+  if (typeof path === 'string') {
+    return buildPath(path);
+  } else {
+    return buildPath(path[1], path[2] && path[2][1]);
+  }
+}
+
+export function normalizeElementOptions(...args: ElementArgs[]): BuildElementOptions {
+  let out: BuildElementOptions = {};
+
+  for (let arg of args) {
+    switch (arg[0]) {
+      case 'attrs': {
+        let [, ...rest] = arg;
+        out.attrs = rest.map(normalizeAttr);
+        break;
+      }
+      case 'modifiers': {
+        let [, ...rest] = arg;
+        out.modifiers = rest.map(normalizeModifier);
+        break;
+      }
+      case 'body': {
+        let [, ...rest] = arg;
+        out.children = rest;
+        break;
+      }
+      case 'comments': {
+        let [, ...rest] = arg;
+
+        out.comments = rest;
+        break;
+      }
+      case 'as': {
+        let [, ...rest] = arg;
+        out.blockParams = rest;
+        break;
+      }
+      case 'loc': {
+        let [, rest] = arg;
+        out.loc = rest;
+        break;
+      }
+    }
+  }
+
+  return out;
 }
 
 export interface BuildElementOptions {
   attrs?: AST.AttrNode[];
   modifiers?: AST.ElementModifierStatement[];
   children?: AST.Statement[];
-  comments?: AST.MustacheCommentStatement[] | AST.SourceLocation | string[];
+  comments?: ElementComment[];
   blockParams?: string[];
   loc?: AST.SourceLocation;
 }
 
 function buildElement(
   tag: TagDescriptor,
-  { attrs, modifiers, children, comments, blockParams, loc }: BuildElementOptions = {}
+  options?: BuildElementOptions
+): AST.ElementNode;
+function buildElement(
+  tag: TagDescriptor,
+  ...options: ElementArgs[]
+): AST.ElementNode;
+function buildElement(
+  tag: TagDescriptor,
+  options?: BuildElementOptions | ElementArgs,
+  ...rest: ElementArgs[]
 ): AST.ElementNode {
+  let normalized: BuildElementOptions;
+  if (Array.isArray(options)) {
+    normalized = normalizeElementOptions(options, ...rest);
+  } else {
+    normalized = options || {};
+  }
+
+  let { attrs, blockParams, modifiers, comments, children, loc } = normalized;
+
   // this is used for backwards compat, prior to `selfClosing` being part of the ElementNode AST
   let selfClosing = false;
   if (typeof tag === 'object') {
     selfClosing = tag.selfClosing;
     tag = tag.name;
+  } else {
+    if (tag.slice(-1) === "/") {
+      tag = tag.slice(0, -1);
+      selfClosing = true;
+    }
   }
 
   return {
