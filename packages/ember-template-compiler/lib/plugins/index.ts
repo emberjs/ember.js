@@ -1,5 +1,6 @@
 import AssertIfHelperWithoutArguments from './assert-if-helper-without-arguments';
 import AssertInputHelperWithoutBlock from './assert-input-helper-without-block';
+import AssertLocalVariableShadowingHelperInvocation from './assert-local-variable-shadowing-helper-invocation';
 import AssertReservedNamedArguments from './assert-reserved-named-arguments';
 import AssertSplattributeExpressions from './assert-splattribute-expression';
 import DeprecateSendAction from './deprecate-send-action';
@@ -34,6 +35,7 @@ const transforms: Array<APluginFunc> = [
   TransformAttrsIntoArgs,
   TransformEachInIntoEach,
   TransformHasBlockSyntax,
+  AssertLocalVariableShadowingHelperInvocation,
   AssertInputHelperWithoutBlock,
   TransformInElement,
   AssertIfHelperWithoutArguments,
