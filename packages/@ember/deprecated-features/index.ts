@@ -6,7 +6,6 @@ export const PROPERTY_WILL_CHANGE = !!'3.1.0-beta.1';
 export const PROPERTY_DID_CHANGE = !!'3.1.0-beta.1';
 export const ROUTER_ROUTER = !!'3.2.0-beta.1';
 export const ARRAY_AT_EACH = !!'3.1.0-beta.1';
-export const TARGET_OBJECT = !!'2.18.0-beta.1';
 export const MAP = !!'3.3.0-beta.1';
 export const ORDERED_SET = !!'3.3.0-beta.1';
 export const MERGE = !!'3.6.0-beta.1';

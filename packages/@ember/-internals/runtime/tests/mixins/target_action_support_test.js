@@ -95,32 +95,6 @@ moduleFor(
       assert.ok(true === obj.triggerAction(), 'a valid target and action were specified');
     }
 
-    ['@test it should raise a deprecation warning when targetObject is specified and used'](
-      assert
-    ) {
-      assert.expect(4);
-      let obj;
-      expectDeprecation(() => {
-        obj = EmberObject.extend(TargetActionSupport).create({
-          action: 'anEvent',
-          actionContext: {},
-          targetObject: EmberObject.create({
-            anEvent(ctx) {
-              assert.ok(
-                obj.actionContext === ctx,
-                'anEvent method was called with the expected context'
-              );
-            },
-          }),
-        });
-      }, /Usage of `targetObject` is deprecated. Please use `target` instead./);
-      assert.ok(true === obj.triggerAction(), 'a valid targetObject and action were specified');
-      expectDeprecation(
-        () => obj.get('targetObject'),
-        /Usage of `targetObject` is deprecated. Please use `target` instead./
-      );
-    }
-
     ['@test it should find an actionContext specified as a property path'](assert) {
       assert.expect(2);
 
