@@ -14,7 +14,7 @@ test('a simple piece of content', function() {
 
 test('self-closed element', function() {
   let t = '<g />';
-  astEqual(t, b.program([b.element({ name: 'g', selfClosing: true })]));
+  astEqual(t, b.program([b.element('g/')]));
 });
 
 test('elements can have empty attributes', function() {
@@ -43,12 +43,12 @@ test('svg content', function() {
 
 test('html content with html content inline', function() {
   let t = '<div><p></p></div>';
-  astEqual(t, b.program([b.element('div', { children: [b.element('p')] })]));
+  astEqual(t, b.program([b.element('div', ['body', b.element('p')])]));
 });
 
 test('html content with svg content inline', function() {
   let t = '<div><svg></svg></div>';
-  astEqual(t, b.program([b.element('div', { children: [b.element('svg')] })]));
+  astEqual(t, b.program([b.element('div', ['body', b.element('svg')])]));
 });
 
 let integrationPoints = ['foreignObject', 'desc', 'title'];
@@ -58,9 +58,7 @@ function buildIntegrationPointTest(integrationPoint: string) {
     astEqual(
       t,
       b.program([
-        b.element('svg', {
-          children: [b.element(integrationPoint, { children: [b.element('div')] })],
-        }),
+        b.element('svg', ['body', b.element(integrationPoint, ['body', b.element('div')])]),
       ])
     );
   };
@@ -76,11 +74,7 @@ test('a piece of content with HTML', function() {
   let t = 'some <div>content</div> done';
   astEqual(
     t,
-    b.program([
-      b.text('some '),
-      b.element('div', { children: [b.text('content')] }),
-      b.text(' done'),
-    ])
+    b.program([b.text('some '), b.element('div', ['body', b.text('content')]), b.text(' done')])
   );
 });
 
@@ -90,7 +84,7 @@ test('a piece of Handlebars with HTML', function() {
     t,
     b.program([
       b.text('some '),
-      b.element('div', { children: [b.mustache(b.path('content'))] }),
+      b.element('div', ['body', b.mustache(b.path('content'))]),
       b.text(' done'),
     ])
   );
@@ -102,10 +96,11 @@ test('Handlebars embedded in an attribute (quoted)', function() {
     t,
     b.program([
       b.text('some '),
-      b.element('div', {
-        attrs: [b.attr('class', b.concat([b.mustache('foo')]))],
-        children: [b.text('content')],
-      }),
+      b.element(
+        'div',
+        ['attrs', ['class', b.concat([b.mustache('foo')])]],
+        ['body', b.text('content')]
+      ),
       b.text(' done'),
     ])
   );
@@ -117,10 +112,11 @@ test('Handlebars embedded in an attribute (unquoted)', function() {
     t,
     b.program([
       b.text('some '),
-      b.element('div', {
-        attrs: [b.attr('class', b.mustache(b.path('foo')))],
-        children: [b.text('content')],
-      }),
+      b.element(
+        'div',
+        ['attrs', ['class', b.mustache(b.path('foo'))]],
+        ['body', b.text('content')]
+      ),
       b.text(' done'),
     ])
   );
@@ -129,12 +125,7 @@ test('Handlebars embedded in an attribute (unquoted)', function() {
 test('Handlebars embedded in an attribute of a self-closing tag (unqouted)', function() {
   let t = '<input value={{foo}}/>';
 
-  let element = b.element(
-    { name: 'input', selfClosing: true },
-    {
-      attrs: [b.attr('value', b.mustache(b.path('foo')))],
-    }
-  );
+  let element = b.element('input/', ['attrs', ['value', b.mustache(b.path('foo'))]]);
   astEqual(t, b.program([element]));
 });
 
@@ -144,15 +135,17 @@ test('Handlebars embedded in an attribute (sexprs)', function() {
     t,
     b.program([
       b.text('some '),
-      b.element('div', {
-        attrs: [
-          b.attr(
+      b.element(
+        'div',
+        [
+          'attrs',
+          [
             'class',
-            b.concat([b.mustache(b.path('foo'), [b.sexpr(b.path('foo'), [b.string('abc')])])])
-          ),
+            b.concat([b.mustache(b.path('foo'), [b.sexpr(b.path('foo'), [b.string('abc')])])]),
+          ],
         ],
-        children: [b.text('content')],
-      }),
+        ['body', b.text('content')]
+      ),
       b.text(' done'),
     ])
   );
@@ -164,10 +157,11 @@ test('Handlebars embedded in an attribute with other content surrounding it', fu
     t,
     b.program([
       b.text('some '),
-      b.element('a', {
-        attrs: [b.attr('href', b.concat([b.text('http://'), b.mustache('link'), b.text('/')]))],
-        children: [b.text('content')],
-      }),
+      b.element(
+        'a',
+        ['attrs', ['href', b.concat([b.text('http://'), b.mustache('link'), b.text('/')])]],
+        ['body', b.text('content')]
+      ),
       b.text(' done'),
     ])
   );
@@ -185,9 +179,11 @@ test('A more complete embedding example', function() {
       b.text(' '),
       b.mustache(b.path('some'), [b.string('content')]),
       b.text(' '),
-      b.element('div', {
-        attrs: [
-          b.attr(
+      b.element(
+        'div',
+        [
+          'attrs',
+          [
             'class',
             b.concat([
               b.mustache('foo'),
@@ -197,11 +193,11 @@ test('A more complete embedding example', function() {
                 [b.path('isEnabled')],
                 b.hash([b.pair('truthy', b.string('enabled'))])
               ),
-            ])
-          ),
+            ]),
+          ],
         ],
-        children: [b.mustache(b.path('content'))],
-      }),
+        ['body', b.mustache(b.path('content'))]
+      ),
       b.text(' '),
       b.mustache(b.path('more'), [b.string('embed')]),
     ])
@@ -217,7 +213,7 @@ test('Simple embedded block helpers', function() {
         b.path('if'),
         [b.path('foo')],
         b.hash(),
-        b.program([b.element('div', { children: [b.mustache(b.path('content'))] })])
+        b.program([b.element('div', ['body', b.mustache(b.path('content'))])])
       ),
     ])
   );
@@ -229,16 +225,16 @@ test('Involved block helper', function() {
   astEqual(
     t,
     b.program([
-      b.element('p', { children: [b.text('hi')] }),
+      b.element('p', ['body', b.text('hi')]),
       b.text(' content '),
       b.block(
         b.path('testing'),
         [b.path('shouldRender')],
         b.hash(),
-        b.program([b.element('p', { children: [b.text('Appears!')] })])
+        b.program([b.element('p', ['body', b.text('Appears!')])])
       ),
       b.text(' more '),
-      b.element('em', { children: [b.text('content')] }),
+      b.element('em', ['body', b.text('content')]),
       b.text(' here'),
     ])
   );
@@ -249,70 +245,39 @@ test('Element modifiers', function() {
   astEqual(
     t,
     b.program([
-      b.element('p', {
-        attrs: [b.attr('class', b.text('bar'))],
-        modifiers: [b.elementModifier(b.path('action'), [b.string('boom')])],
-        children: [b.text('Some content')],
-      }),
+      b.element(
+        'p',
+        ['attrs', ['class', 'bar']],
+        ['modifiers', ['action', [b.string('boom')]]],
+        ['body', b.text('Some content')]
+      ),
     ])
   );
 });
 
 test('Tokenizer: MustacheStatement encountered in beforeAttributeName state', function() {
   let t = '<input {{bar}}>';
-  astEqual(t, b.program([b.element('input', { modifiers: [b.elementModifier(b.path('bar'))] })]));
+  astEqual(t, b.program([b.element('input', ['modifiers', 'bar'])]));
 });
 
 test('Tokenizer: MustacheStatement encountered in attributeName state', function() {
   let t = '<input foo{{bar}}>';
-  astEqual(
-    t,
-    b.program([
-      b.element('input', {
-        attrs: [b.attr('foo', b.text(''))],
-        modifiers: [b.elementModifier(b.path('bar'))],
-      }),
-    ])
-  );
+  astEqual(t, b.program([b.element('input', ['attrs', ['foo', '']], ['modifiers', ['bar']])]));
 });
 
 test('Tokenizer: MustacheStatement encountered in afterAttributeName state', function() {
   let t = '<input foo {{bar}}>';
-  astEqual(
-    t,
-    b.program([
-      b.element('input', {
-        attrs: [b.attr('foo', b.text(''))],
-        modifiers: [b.elementModifier(b.path('bar'))],
-      }),
-    ])
-  );
+  astEqual(t, b.program([b.element('input', ['attrs', ['foo', '']], ['modifiers', 'bar'])]));
 });
 
 test('Tokenizer: MustacheStatement encountered in afterAttributeValue state', function() {
   let t = '<input foo=1 {{bar}}>';
-  astEqual(
-    t,
-    b.program([
-      b.element('input', {
-        attrs: [b.attr('foo', b.text('1'))],
-        modifiers: [b.elementModifier(b.path('bar'))],
-      }),
-    ])
-  );
+  astEqual(t, b.program([b.element('input', ['attrs', ['foo', '1']], ['modifiers', ['bar']])]));
 });
 
 test('Tokenizer: MustacheStatement encountered in afterAttributeValueQuoted state', function() {
   let t = "<input foo='1'{{bar}}>";
-  astEqual(
-    t,
-    b.program([
-      b.element('input', {
-        attrs: [b.attr('foo', b.text('1'))],
-        modifiers: [b.elementModifier(b.path('bar'))],
-      }),
-    ])
-  );
+  astEqual(t, b.program([b.element('input', ['attrs', ['foo', '1']], ['modifiers', 'bar'])]));
 });
 
 test('Stripping - mustaches', function() {
@@ -373,7 +338,7 @@ test('Stripping - removes unnecessary text nodes', function() {
         b.path('each'),
         [],
         b.hash(),
-        b.program([b.element('li', { children: [b.text(' foo ')] })]),
+        b.program([b.element('li', ['body', b.text(' foo ')])]),
         null
       ),
     ])
@@ -429,10 +394,11 @@ test('a Handlebars comment in proper element space', function() {
     t,
     b.program([
       b.text('before '),
-      b.element('div', {
-        attrs: [b.attr('data-foo', b.text('bar'))],
-        comments: [b.mustacheComment(' some comment '), b.mustacheComment(' other comment ')],
-      }),
+      b.element(
+        'div',
+        ['attrs', ['data-foo', b.text('bar')]],
+        ['comments', b.mustacheComment(' some comment '), b.mustacheComment(' other comment ')]
+      ),
       b.text(' after'),
     ])
   );
@@ -512,8 +478,7 @@ test('disallowed mustaches in the tagName space', function(assert) {
 
 test('mustache immediately followed by self closing tag does not error', function() {
   let ast = parse('<FooBar data-foo={{blah}}/>');
-  let element = b.element('FooBar', { attrs: [b.attr('data-foo', b.mustache('blah'))] });
-  element.selfClosing = true;
+  let element = b.element('FooBar/', ['attrs', ['data-foo', b.mustache('blah')]]);
   astEqual(ast, b.program([element]));
 });
 
@@ -532,15 +497,15 @@ test('named blocks', () => {
     </Tab>
   `);
 
-  let element = b.element('Tab', {
-    children: [
-      b.element(':header', { children: [b.text(`It's a header!`)] }),
-      b.element(':body', {
-        children: [b.element('div', { children: [b.mustache('contents')] })],
-        blockParams: ['contents'],
-      }),
-    ],
-  });
+  let element = b.element('Tab', [
+    'body',
+    b.element(':header', ['body', b.text(`It's a header!`)]),
+    b.element(
+      ':body',
+      ['body', b.element('div', ['body', b.mustache('contents')])],
+      ['as', 'contents']
+    ),
+  ]);
   astEqual(ast, b.program([element]));
 });
 
