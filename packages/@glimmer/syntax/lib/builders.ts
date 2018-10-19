@@ -111,50 +111,52 @@ function buildConcat(
 
 // Nodes
 
-function buildElement(
-  tag: TagDescriptor,
-  attributes?: AST.AttrNode[],
-  modifiers?: AST.ElementModifierStatement[],
-  children?: AST.Statement[],
-  loc?: AST.SourceLocation
-): AST.ElementNode;
-function buildElement(
-  tag: TagDescriptor,
-  attributes?: AST.AttrNode[],
-  modifiers?: AST.ElementModifierStatement[],
-  children?: AST.Statement[],
-  comments?: AST.MustacheCommentStatement[],
-  blockParams?: string[],
-  loc?: AST.SourceLocation
-): AST.ElementNode;
+export type ElementArgs =
+  | ['attrs', ...AST.AttrNode[]]
+  | ['modifiers', ...AST.ElementModifierStatement[]]
+  | ['body', ...AST.Statement[]]
+  | ['comments', ...AST.MustacheCommentStatement[]]
+  | ['comments', AST.SourceLocation]
+  | ['comments', ...string[]]
+  | ['as', ...string[]]
+  | ['loc', AST.SourceLocation];
 
-function buildElement(
-  tag: TagDescriptor,
-  attributes?: AST.AttrNode[],
-  modifiers?: AST.ElementModifierStatement[],
-  children?: AST.Statement[],
-  comments?: AST.MustacheCommentStatement[] | AST.SourceLocation | string[],
-  blockParams?: string[],
-  loc?: AST.SourceLocation
-): AST.ElementNode {
-  // this is used for backwards compat prior to `blockParams` being added to the AST
-  if (Array.isArray(comments)) {
-    if (isBlockParms(comments)) {
-      blockParams = comments;
-      comments = [];
-    } else if (isLoc(blockParams)) {
-      loc = blockParams;
-      blockParams = [];
+export type ElementComment = AST.MustacheCommentStatement[] | AST.SourceLocation | string[];
+
+function process(args: ElementArgs[]) : BuildElementOptions {
+  for (let arg of args) {
+    switch (arg[0]) {
+      case 'attrs':
+        arg;
+        break;
+      case 'modifiers':
+        break;
+      case 'body':
+        break;
+      case 'comments':
+        arg
+        break;
+      case 'as':
+        break;
+      case 'loc':
+        break;
     }
-  } else if (isLoc(comments)) {
-    // this is used for backwards compat prior to `comments` being added to the AST
-    loc = comments;
-    comments = [];
-  } else if (isLoc(blockParams)) {
-    loc = blockParams;
-    blockParams = [];
   }
+}
 
+export interface BuildElementOptions {
+  attrs?: AST.AttrNode[];
+  modifiers?: AST.ElementModifierStatement[];
+  children?: AST.Statement[];
+  comments?: AST.MustacheCommentStatement[] | AST.SourceLocation | string[];
+  blockParams?: string[];
+  loc?: AST.SourceLocation;
+}
+
+function buildElement(
+  tag: TagDescriptor,
+  { attrs, modifiers, children, comments, blockParams, loc }: BuildElementOptions = {}
+): AST.ElementNode {
   // this is used for backwards compat, prior to `selfClosing` being part of the ElementNode AST
   let selfClosing = false;
   if (typeof tag === 'object') {
@@ -166,7 +168,7 @@ function buildElement(
     type: 'ElementNode',
     tag: tag || '',
     selfClosing: selfClosing,
-    attributes: attributes || [],
+    attributes: attrs || [],
     blockParams: blockParams || [],
     modifiers: modifiers || [],
     comments: (comments as AST.MustacheCommentStatement[]) || [],
@@ -326,16 +328,6 @@ function buildLoc(...args: any[]): AST.SourceLocation {
       end: buildPosition(endLine, endColumn),
     };
   }
-}
-
-function isBlockParms(arr: string[] | AST.MustacheCommentStatement[]): arr is string[] {
-  return arr[0] === 'string';
-}
-
-function isLoc(
-  item: string[] | AST.SourceLocation | AST.MustacheCommentStatement[] | undefined
-): item is AST.SourceLocation {
-  return !Array.isArray(item);
 }
 
 export default {
