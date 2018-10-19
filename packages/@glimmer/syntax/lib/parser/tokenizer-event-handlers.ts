@@ -121,9 +121,9 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
   }
 
   finishStartTag() {
-    let { name, attributes, modifiers, comments, selfClosing } = this.currentStartTag;
+    let { name, attributes: attrs, modifiers, comments, selfClosing } = this.currentStartTag;
     let loc = b.loc(this.tagOpenLine, this.tagOpenColumn);
-    let element = b.element({ name, selfClosing }, attributes, modifiers, [], comments, [], loc);
+    let element = b.element({ name, selfClosing }, { attrs, modifiers, comments, loc });
     this.elementStack.push(element);
   }
 
