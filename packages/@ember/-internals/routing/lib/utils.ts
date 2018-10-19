@@ -37,7 +37,7 @@ export function stashParamNames(router: EmberRouter, routeInfos: PrivateRouteInf
   }
 
   // This helper exists because router.js/route-recognizer.js awkwardly
-  // keeps separate a handlerInfo's list of parameter names depending
+  // keeps separate a routeInfo's list of parameter names depending
   // on whether a URL transition or named transition is happening.
   // Hopefully we can remove this in the future.
   let targetRouteName = routeInfos[routeInfos.length - 1].name;
@@ -45,17 +45,17 @@ export function stashParamNames(router: EmberRouter, routeInfos: PrivateRouteInf
   let dynamicParent: PrivateRouteInfo;
 
   for (let i = 0; i < routeInfos.length; ++i) {
-    let handlerInfo = routeInfos[i];
+    let routeInfo = routeInfos[i];
     let names = recogHandlers[i].names;
 
     if (names.length) {
-      dynamicParent = handlerInfo;
+      dynamicParent = routeInfo;
     }
 
-    handlerInfo['_names'] = names;
+    routeInfo['_names'] = names;
 
-    let route = handlerInfo.route!;
-    route._stashNames(handlerInfo, dynamicParent!);
+    let route = routeInfo.route!;
+    route._stashNames(routeInfo, dynamicParent!);
   }
 
   routeInfos['_namesStashed'] = true;

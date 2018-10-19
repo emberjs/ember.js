@@ -1061,11 +1061,11 @@ class EmberRouter extends EmberObject {
 
     @private
     @method _getQPMeta
-    @param {RouteInfo} handlerInfo
+    @param {RouteInfo} routeInfo
     @return {Object}
   */
-  _getQPMeta(handlerInfo: PrivateRouteInfo) {
-    let route = handlerInfo.route;
+  _getQPMeta(routeInfo: PrivateRouteInfo) {
+    let route = routeInfo.route;
     return route && get(route, '_qp');
   }
 
@@ -1079,8 +1079,8 @@ class EmberRouter extends EmberObject {
     @return {Object}
    */
   _queryParamsFor(routeInfos: PrivateRouteInfo[]) {
-    let handlerInfoLength = routeInfos.length;
-    let leafRouteName = routeInfos[handlerInfoLength - 1].name;
+    let routeInfoLength = routeInfos.length;
+    let leafRouteName = routeInfos[routeInfoLength - 1].name;
     let cached = this._qpCache[leafRouteName];
     if (cached !== undefined) {
       return cached;
@@ -1095,7 +1095,7 @@ class EmberRouter extends EmberObject {
     let urlKey;
     let qpOther;
 
-    for (let i = 0; i < handlerInfoLength; ++i) {
+    for (let i = 0; i < routeInfoLength; ++i) {
       qpMeta = this._getQPMeta(routeInfos[i]);
 
       if (!qpMeta) {
@@ -1350,19 +1350,19 @@ class EmberRouter extends EmberObject {
 
   @private
   @param {Route} originRoute
-  @param {Array<HandlerInfo>} routeInfos
+  @param {Array<RouteInfo>} routeInfos
   @param {Function} callback
   @return {Void}
  */
 function forEachRouteAbove(
   routeInfos: PrivateRouteInfo[],
-  callback: (route: Route, handlerInfo: PrivateRouteInfo) => boolean
+  callback: (route: Route, routeInfo: PrivateRouteInfo) => boolean
 ) {
   for (let i = routeInfos.length - 1; i >= 0; --i) {
-    let handlerInfo = routeInfos[i];
-    let route = handlerInfo.route;
+    let routeInfo = routeInfos[i];
+    let route = routeInfo.route;
 
-    // handlerInfo.handler being `undefined` generally means either:
+    // routeInfo.handler being `undefined` generally means either:
     //
     // 1. an error occurred during creation of the route in question
     // 2. the route is across an async boundary (e.g. within an engine)
@@ -1373,7 +1373,7 @@ function forEachRouteAbove(
       continue;
     }
 
-    if (callback(route, handlerInfo) !== true) {
+    if (callback(route, routeInfo) !== true) {
       return;
     }
   }
@@ -1395,12 +1395,12 @@ let defaultActionHandlers = {
   error(routeInfos: PrivateRouteInfo[], error: Error, transition: Transition) {
     let router: any = this;
 
-    let handlerInfoWithError = routeInfos[routeInfos.length - 1];
+    let routeInfoWithError = routeInfos[routeInfos.length - 1];
 
     forEachRouteAbove(routeInfos, (route: Route, routeInfo: PrivateRouteInfo) => {
-      // We don't check the leaf most handlerInfo since that would
+      // We don't check the leaf most routeInfo since that would
       // technically be below where we're at in the route hierarchy.
-      if (routeInfo !== handlerInfoWithError) {
+      if (routeInfo !== routeInfoWithError) {
         // Check for the existence of an 'error' route.
         let errorRouteName = findRouteStateName(route, 'error');
         if (errorRouteName) {
@@ -1428,12 +1428,12 @@ let defaultActionHandlers = {
   loading(routeInfos: PrivateRouteInfo[], transition: Transition) {
     let router: any = this;
 
-    let handlerInfoWithSlowLoading = routeInfos[routeInfos.length - 1];
+    let routeInfoWithSlowLoading = routeInfos[routeInfos.length - 1];
 
-    forEachRouteAbove(routeInfos, (route: Route, handlerInfo: PrivateRouteInfo) => {
-      // We don't check the leaf most handlerInfo since that would
+    forEachRouteAbove(routeInfos, (route: Route, routeInfo: PrivateRouteInfo) => {
+      // We don't check the leaf most routeInfos since that would
       // technically be below where we're at in the route hierarchy.
-      if (handlerInfo !== handlerInfoWithSlowLoading) {
+      if (routeInfo !== routeInfoWithSlowLoading) {
         // Check for the existence of a 'loading' route.
         let loadingRouteName = findRouteStateName(route, 'loading');
         if (loadingRouteName) {
@@ -1558,11 +1558,11 @@ export function triggerEvent(
   }
 
   let eventWasHandled = false;
-  let handlerInfo, handler, actionHandler;
+  let routeInfo, handler, actionHandler;
 
   for (let i = routeInfos.length - 1; i >= 0; i--) {
-    handlerInfo = routeInfos[i];
-    handler = handlerInfo.route;
+    routeInfo = routeInfos[i];
+    handler = routeInfo.route;
     actionHandler = handler && handler.actions && handler.actions[name];
     if (actionHandler) {
       if (actionHandler.apply(handler, args) === true) {
@@ -1599,13 +1599,13 @@ function calculatePostTransitionState(
   let { routeInfos, params } = state;
 
   for (let i = 0; i < routeInfos.length; ++i) {
-    let handlerInfo = routeInfos[i];
+    let routeInfo = routeInfos[i];
 
-    // If the handlerInfo is not resolved, we serialize the context into params
-    if (!handlerInfo.isResolved) {
-      params[handlerInfo.name] = handlerInfo.serialize(handlerInfo.context);
+    // If the routeInfo is not resolved, we serialize the context into params
+    if (!routeInfo.isResolved) {
+      params[routeInfo.name] = routeInfo.serialize(routeInfo.context);
     } else {
-      params[handlerInfo.name] = handlerInfo.params;
+      params[routeInfo.name] = routeInfo.params;
     }
   }
   return state;

@@ -45,8 +45,8 @@ moduleFor(
           };
         },
 
-        _getQPMeta(handlerInfo) {
-          let handler = this._seenHandlers[handlerInfo.name];
+        _getQPMeta(routeInfo) {
+          let handler = this._seenHandlers[routeInfo.name];
           if (handler) {
             return get(handler, '_qp');
           }

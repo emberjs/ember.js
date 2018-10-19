@@ -96,11 +96,11 @@ RoutingService.reopen({
   currentPath: readOnly('router.currentPath'),
 });
 
-function numberOfContextsAcceptedByHandler(handler: any, handlerInfos: any[]) {
+function numberOfContextsAcceptedByHandler(handlerName: string, handlerInfos: any[]) {
   let req = 0;
   for (let i = 0; i < handlerInfos.length; i++) {
     req += handlerInfos[i].names.length;
-    if (handlerInfos[i].handler === handler) {
+    if (handlerInfos[i].handler === handlerName) {
       break;
     }
   }
