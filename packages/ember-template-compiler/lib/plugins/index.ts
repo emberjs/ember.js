@@ -7,7 +7,7 @@ import DeprecateSendAction from './deprecate-send-action';
 import TransformActionSyntax from './transform-action-syntax';
 import TransformAngleBracketComponents from './transform-angle-bracket-components';
 import TransformAttrsIntoArgs from './transform-attrs-into-args';
-import TransformDotComponentInvocation from './transform-dot-component-invocation';
+import TransformComponentInvocation from './transform-component-invocation';
 import TransformEachInIntoEach from './transform-each-in-into-each';
 import TransformHasBlockSyntax from './transform-has-block-syntax';
 import TransformInElement from './transform-in-element';
@@ -23,7 +23,7 @@ import { ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
 export type APluginFunc = (env: ASTPluginEnvironment) => ASTPlugin | undefined;
 
 const transforms: Array<APluginFunc> = [
-  TransformDotComponentInvocation,
+  TransformComponentInvocation,
   TransformAngleBracketComponents,
   TransformTopLevelComponents,
   TransformInlineLinkTo,
