@@ -38,6 +38,16 @@ export default function assertLocalVariableShadowingHelperInvocation(
           !isLocalVariable(node.path, locals)
         );
       },
+
+      ElementModifierStatement(node: AST.ElementModifierStatement) {
+        // The ElementNode get visited first, but modifiers are more of a sibling
+        // than a child in the lexical scope (we aren't evaluated in its "block")
+        // so any locals introduced by the last element doesn't count
+        assert(
+          `${messageFor(node)} ${calculateLocationDisplay(moduleName, node.loc)}`,
+          !isLocalVariable(node.path, locals.slice(0, -1))
+        );
+      },
     },
   };
 }
@@ -50,7 +60,14 @@ function hasLocalVariable(name: string, locals: string[][]): boolean {
   return locals.some(names => names.indexOf(name) !== -1);
 }
 
-function messageFor(node: AST.SubExpression): string {
+function messageFor(node: AST.SubExpression | AST.ElementModifierStatement): string {
+  let type = isSubExpression(node) ? 'helper' : 'modifier';
   let name = node.path.parts[0];
-  return `Cannot invoke the \`${name}\` helper because it was shadowed by a local variable (i.e. a block param) with the same name. Please rename the local variable to resolve the conflict.`;
+  return `Cannot invoke the \`${name}\` ${type} because it was shadowed by a local variable (i.e. a block param) with the same name. Please rename the local variable to resolve the conflict.`;
+}
+
+function isSubExpression(
+  node: AST.SubExpression | AST.ElementModifierStatement
+): node is AST.SubExpression {
+  return node.type === 'SubExpression';
 }
