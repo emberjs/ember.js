@@ -69,6 +69,14 @@ export class SymbolAllocator
     this.symbolStack.pop();
   }
 
+  openNamedBlock(op: AST.ElementNode) {
+    this.symbolStack.push(op['symbols']);
+  }
+
+  closeNamedBlock(_op: AST.ElementNode) {
+    this.symbolStack.pop();
+  }
+
   flushElement(op: AST.ElementNode) {
     this.symbolStack.push(op['symbols']);
   }

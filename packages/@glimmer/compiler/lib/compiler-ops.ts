@@ -15,10 +15,12 @@ export interface CompilerOps<Variable> {
   comment: string;
   openElement: AST.ElementNode;
   openComponent: AST.ElementNode;
+  openNamedBlock: AST.ElementNode;
   openSplattedElement: AST.ElementNode;
   flushElement: AST.ElementNode;
   closeElement: AST.ElementNode;
   closeComponent: AST.ElementNode;
+  closeNamedBlock: AST.ElementNode;
   closeDynamicComponent: AST.ElementNode;
   staticArg: string;
   dynamicArg: string;

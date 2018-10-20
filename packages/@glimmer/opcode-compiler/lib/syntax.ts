@@ -106,8 +106,7 @@ export function statementCompiler(): Compilers<WireFormat.Statement> {
   });
 
   STATEMENTS.add(Ops.DynamicComponent, (sexp: S.DynamicComponent, builder) => {
-    let [, definition, attrs, args, template] = sexp;
-    let block = builder.template(template);
+    let [, definition, attrs, args, blocks] = sexp;
 
     let attrsBlock = null;
     if (attrs.length > 0) {
@@ -126,13 +125,12 @@ export function statementCompiler(): Compilers<WireFormat.Statement> {
       params: null,
       hash: args,
       synthetic: false,
-      blocks: NamedBlocksImpl.from('default', block),
+      blocks: builder.templates(blocks),
     });
   });
 
   STATEMENTS.add(Ops.Component, (sexp: S.Component, builder) => {
     let [, tag, _attrs, args, blocks] = sexp;
-    let named = new WireFormat.NamedBlocks(blocks);
     let { referrer } = builder;
 
     let { handle, capabilities, compilable } = builder.compiler.resolveLayoutForTag(tag, referrer);
@@ -144,7 +142,6 @@ export function statementCompiler(): Compilers<WireFormat.Statement> {
         [Ops.ClientSideStatement, ClientSide.Ops.SetComponentAttrs, false],
       ];
       let attrsBlock = builder.inlineBlock({ statements: attrs, parameters: EMPTY_ARRAY });
-      let child = builder.template(named.default);
 
       if (compilable) {
         builder.pushComponentDefinition(handle);
@@ -155,7 +152,7 @@ export function statementCompiler(): Compilers<WireFormat.Statement> {
           params: null,
           hash: args,
           synthetic: false,
-          blocks: NamedBlocksImpl.from('default', child),
+          blocks: builder.templates(blocks),
         });
       } else {
         builder.pushComponentDefinition(handle);
@@ -165,7 +162,7 @@ export function statementCompiler(): Compilers<WireFormat.Statement> {
           params: null,
           hash: args,
           synthetic: false,
-          blocks: NamedBlocksImpl.from('default', child),
+          blocks: builder.templates(blocks),
         });
       }
     } else {

@@ -113,6 +113,60 @@ export class BasicComponents extends RenderTest {
   @test({
     kind: 'basic',
   })
+  'creating a new component passing named blocks'() {
+    this.render(
+      {
+        name: 'MyComponent',
+        layout: '{{@arg1}}{{yield to="hello"}}',
+        template: '<:hello>world!</:hello>',
+        args: { arg1: "'hello - '" },
+        attributes: { color: '{{color}}' },
+      },
+      { color: 'red' }
+    );
+
+    this.assertHTML("<div color='red'>hello - world!</div>");
+    this.assertStableRerender();
+
+    this.rerender({ color: 'green' });
+    this.assertHTML("<div color='green'>hello - world!</div>");
+    this.assertStableNodes();
+
+    this.rerender({ color: 'red' });
+    this.assertHTML("<div color='red'>hello - world!</div>");
+    this.assertStableNodes();
+  }
+
+  @test({
+    kind: 'basic',
+  })
+  'creating a new component passing named blocks that take block params'() {
+    this.render(
+      {
+        name: 'MyComponent',
+        layout: '{{@arg1}}{{yield "!" to="hello"}}',
+        template: '<:hello as |punc|>world{{punc}}</:hello>',
+        args: { arg1: "'hello - '" },
+        attributes: { color: '{{color}}' },
+      },
+      { color: 'red' }
+    );
+
+    this.assertHTML("<div color='red'>hello - world!</div>");
+    this.assertStableRerender();
+
+    this.rerender({ color: 'green' });
+    this.assertHTML("<div color='green'>hello - world!</div>");
+    this.assertStableNodes();
+
+    this.rerender({ color: 'red' });
+    this.assertHTML("<div color='red'>hello - world!</div>");
+    this.assertStableNodes();
+  }
+
+  @test({
+    kind: 'basic',
+  })
   'creating a new component passing dynamic args'() {
     this.render(
       {
