@@ -48,6 +48,12 @@ export class InlineBlock extends Block {
   }
 }
 
+export class NamedBlock extends InlineBlock {
+  constructor(public name: string, table: BlockSymbolTable) {
+    super(table);
+  }
+}
+
 export class TemplateBlock extends Block {
   public type = 'template';
   public yields = new DictSet<string>();
@@ -77,6 +83,7 @@ export class ComponentBlock extends Block {
   public arguments: Statements.Argument[] = [];
   private inParams = true;
   public positionals: number[] = [];
+  public blocks: Array<[string, SerializedInlineBlock]> = [];
 
   constructor(private tag: string, private table: BlockSymbolTable, private selfClosing: boolean) {
     super();
@@ -100,18 +107,42 @@ export class ComponentBlock extends Block {
     }
   }
 
-  toJSON(): [string, Statements.Attribute[], Core.Hash, Option<SerializedInlineBlock>] {
+  pushBlock(name: string, block: SerializedInlineBlock) {
+    this.blocks.push([name, block]);
+  }
+
+  toJSON(): [string, Statements.Attribute[], Core.Hash, Core.Blocks] {
+    let blocks: Core.Blocks;
+
     let args = this.arguments;
     let keys = args.map(arg => arg[1]);
     let values = args.map(arg => arg[2]);
-    let block = this.selfClosing
-      ? null
-      : {
-          statements: this.statements,
-          parameters: this.table.slots,
-        };
 
-    return [this.tag, this.attributes, [keys, values], block];
+    if (this.selfClosing) {
+      blocks = null;
+    } else if (this.blocks.length > 0) {
+      let keys: string[] = [];
+      let values: SerializedInlineBlock[] = [];
+
+      for (let i = 0; i < this.blocks.length; i++) {
+        let [key, value] = this.blocks[i];
+        keys.push(key.slice(1));
+        values.push(value);
+      }
+      blocks = [keys, values];
+    } else {
+      blocks = [
+        ['default'],
+        [
+          {
+            statements: this.statements,
+            parameters: this.table.slots,
+          },
+        ],
+      ];
+    }
+
+    return [this.tag, this.attributes, [keys, values], blocks];
   }
 }
 
@@ -157,6 +188,16 @@ export default class JavaScriptCompiler
     return expect(this.blocks.current, 'Expected a block on the stack');
   }
 
+  get currentComponent(): ComponentBlock {
+    let block = this.currentBlock;
+
+    if (block instanceof ComponentBlock) {
+      return block;
+    } else {
+      throw new Error(`Expected ComponentBlock on stack, found ${block.constructor.name}`);
+    }
+  }
+
   process(): Template {
     this.opcodes.forEach(op => {
       let opcode = op[0];
@@ -174,14 +215,12 @@ export default class JavaScriptCompiler
   /// Nesting
 
   startBlock(program: AST.Program) {
-    let block: Block = new InlineBlock(program['symbols']);
-    this.blocks.push(block);
+    this.startInlineBlock(program['symbols']);
   }
 
   endBlock() {
-    let { template, blocks } = this;
-    let block = blocks.pop() as InlineBlock;
-    template.block.blocks.push(block.toJSON());
+    let block = this.endInlineBlock();
+    this.template.block.blocks.push(block);
   }
 
   startProgram() {
@@ -247,6 +286,11 @@ export default class JavaScriptCompiler
     this.blocks.push(component);
   }
 
+  openNamedBlock(element: AST.ElementNode) {
+    let block: Block = new NamedBlock(element.tag, element['symbols']);
+    this.blocks.push(block);
+  }
+
   openSplattedElement(element: AST.ElementNode) {
     let tag = element.tag;
 
@@ -279,10 +323,17 @@ export default class JavaScriptCompiler
     if (_element.modifiers.length > 0) {
       throw new Error('Compile Error: Element modifiers are not allowed in components');
     }
-    let [tag, attrs, args, block] = this.endComponent();
-    let named: Option<Core.Blocks> = block ? [['default'], [block]] : null;
 
-    this.push([Ops.Component, tag, attrs, args, named]);
+    let [tag, attrs, args, blocks] = this.endComponent();
+
+    this.push([Ops.Component, tag, attrs, args, blocks]);
+  }
+
+  closeNamedBlock(_element: AST.ElementNode) {
+    let { blocks } = this;
+    let block = expect(blocks.pop(), `Expected a named block on the stack`) as NamedBlock;
+
+    this.currentComponent.pushBlock(block.name, block.toJSON());
   }
 
   closeDynamicComponent(_element: AST.ElementNode) {
@@ -412,7 +463,7 @@ export default class JavaScriptCompiler
 
   /// Utilities
 
-  endComponent(): [string, Statements.Attribute[], Core.Hash, Option<SerializedInlineBlock>] {
+  endComponent(): [string, Statements.Attribute[], Core.Hash, Core.Blocks] {
     let component = this.blocks.pop();
     assert(
       component instanceof ComponentBlock,
@@ -420,6 +471,17 @@ export default class JavaScriptCompiler
     );
 
     return (component as ComponentBlock).toJSON();
+  }
+
+  startInlineBlock(symbols: BlockSymbolTable) {
+    let block: Block = new InlineBlock(symbols);
+    this.blocks.push(block);
+  }
+
+  endInlineBlock(): SerializedInlineBlock {
+    let { blocks } = this;
+    let block = blocks.pop() as InlineBlock;
+    return block.toJSON();
   }
 
   push(args: Statement) {

@@ -16,7 +16,7 @@ import {
   NamedBlocks as INamedBlocks,
   NamedBlocks,
 } from '@glimmer/interfaces';
-import { dict, EMPTY_ARRAY, expect, Stack, unreachable } from '@glimmer/util';
+import { dict, EMPTY_ARRAY, expect, Stack } from '@glimmer/util';
 import { Op, Register } from '@glimmer/vm';
 import * as WireFormat from '@glimmer/wire-format';
 import { SerializedInlineBlock } from '@glimmer/wire-format';
@@ -815,16 +815,12 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
 
       switch (symbol.charAt(0)) {
         case '&':
-          let callerBlock: Option<CompilableBlock> = null;
+          let callerBlock;
 
-          if (symbol === '&default') {
-            callerBlock = blocks.get('default');
-          } else if (symbol === '&else') {
-            callerBlock = blocks.get('else');
-          } else if (symbol === ATTRS_BLOCK) {
+          if (symbol === ATTRS_BLOCK) {
             callerBlock = attrs;
           } else {
-            throw unreachable();
+            callerBlock = blocks.get(symbol.slice(1));
           }
 
           if (callerBlock) {

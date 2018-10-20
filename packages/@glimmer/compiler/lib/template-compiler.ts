@@ -91,6 +91,8 @@ export default class TemplateCompiler {
       }
       this.opcode(['get', [head, rest]]);
       this.opcode(['openComponent', action], action);
+    } else if (isNamedBlock(action)) {
+      this.opcode(['openNamedBlock', action], action);
     } else if (isComponent(action)) {
       this.opcode(['openComponent', action], action);
     } else if (hasSplat) {
@@ -99,26 +101,31 @@ export default class TemplateCompiler {
       this.opcode(['openElement', action], action);
     }
 
-    let typeAttr: Option<AST.AttrNode> = null;
-    let attrs = action.attributes;
-    for (let i = 0; i < attrs.length; i++) {
-      if (attrs[i].name === 'type') {
-        typeAttr = attrs[i];
-        continue;
+    if (!isNamedBlock(action)) {
+      // TODO: Assert no attributes
+      let typeAttr: Option<AST.AttrNode> = null;
+      let attrs = action.attributes;
+      for (let i = 0; i < attrs.length; i++) {
+        if (attrs[i].name === 'type') {
+          typeAttr = attrs[i];
+          continue;
+        }
+        this.attribute([attrs[i]]);
       }
-      this.attribute([attrs[i]]);
-    }
 
-    if (typeAttr) {
-      this.attribute([typeAttr]);
-    }
+      if (typeAttr) {
+        this.attribute([typeAttr]);
+      }
 
-    this.opcode(['flushElement', action], null);
+      this.opcode(['flushElement', action], null);
+    }
   }
 
   closeElement([action]: [AST.ElementNode]) {
     if (isDynamicComponent(action)) {
       this.opcode(['closeDynamicComponent', action], action);
+    } else if (isNamedBlock(action)) {
+      this.opcode(['closeNamedBlock', action]);
     } else if (isComponent(action)) {
       this.opcode(['closeComponent', action], action);
     } else if (action.modifiers.length > 0) {
@@ -481,6 +488,12 @@ function isComponent(element: AST.ElementNode): boolean {
   let isUpperCase = open === open.toUpperCase() && open !== open.toLowerCase();
 
   return (isUpperCase && !isPath) || isDynamicComponent(element);
+}
+
+function isNamedBlock(element: AST.ElementNode): boolean {
+  let open = element.tag.charAt(0);
+
+  return open === ':';
 }
 
 function assertIsSimplePath(path: AST.PathExpression, loc: AST.SourceLocation, context: string) {

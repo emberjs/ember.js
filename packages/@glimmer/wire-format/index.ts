@@ -95,13 +95,7 @@ export namespace Statements {
   export type Modifier = [Opcodes.Modifier, str, Params, Hash];
   export type Block = [Opcodes.Block, str, Params, Hash, Blocks];
   export type Component = [Opcodes.Component, str, Attribute[], Hash, Blocks];
-  export type DynamicComponent = [
-    Opcodes.DynamicComponent,
-    Expression,
-    Attribute[],
-    Hash,
-    Option<SerializedInlineBlock>
-  ];
+  export type DynamicComponent = [Opcodes.DynamicComponent, Expression, Attribute[], Hash, Blocks];
   export type OpenElement = [Opcodes.OpenElement, str];
   export type SplatElement = [Opcodes.OpenSplattedElement, str];
   export type FlushElement = [Opcodes.FlushElement];
