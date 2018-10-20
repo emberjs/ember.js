@@ -224,5 +224,118 @@ moduleFor(
         { moduleName: 'baz/foo-bar' }
       );
     }
+
+    [`@test block statements shadowing modifier invocations`]() {
+      expectAssertion(() => {
+        compile(
+          `
+          {{#let foo as |foo|}}
+            <div {{foo}} />
+          {{/let}}`,
+          { moduleName: 'baz/foo-bar' }
+        );
+      }, `Cannot invoke the \`foo\` modifier because it was shadowed by a local variable (i.e. a block param) with the same name. Please rename the local variable to resolve the conflict. ('baz/foo-bar' @ L3:C17) `);
+
+      expectAssertion(() => {
+        compile(
+          `
+          {{#let foo as |foo|}}
+            <div {{foo bar baz}} />
+          {{/let}}`,
+          { moduleName: 'baz/foo-bar' }
+        );
+      }, `Cannot invoke the \`foo\` modifier because it was shadowed by a local variable (i.e. a block param) with the same name. Please rename the local variable to resolve the conflict. ('baz/foo-bar' @ L3:C17) `);
+
+      // Not shadowed
+
+      compile(
+        `
+        {{#let foo as |foo|}}{{/let}}
+        <div {{foo}} />
+        <div {{foo bar baz}} />`,
+        { moduleName: 'baz/foo-bar' }
+      );
+    }
+
+    [`@test element nodes shadowing modifier invocations`]() {
+      expectAssertion(() => {
+        compile(
+          `
+          <Foo as |foo|>
+            <div {{foo}} />
+          </Foo>`,
+          { moduleName: 'baz/foo-bar' }
+        );
+      }, `Cannot invoke the \`foo\` modifier because it was shadowed by a local variable (i.e. a block param) with the same name. Please rename the local variable to resolve the conflict. ('baz/foo-bar' @ L3:C17) `);
+
+      expectAssertion(() => {
+        compile(
+          `
+          <Foo as |foo|>
+            <div {{foo bar baz}} />
+          </Foo>`,
+          { moduleName: 'baz/foo-bar' }
+        );
+      }, `Cannot invoke the \`foo\` modifier because it was shadowed by a local variable (i.e. a block param) with the same name. Please rename the local variable to resolve the conflict. ('baz/foo-bar' @ L3:C17) `);
+
+      // Not shadowed
+
+      compile(
+        `
+        <Foo as |foo|></Foo>
+        <div {{foo}} />
+        <div {{foo bar baz}} />`,
+        { moduleName: 'baz/foo-bar' }
+      );
+    }
+
+    [`@test deeply nested modifier invocations`]() {
+      expectAssertion(() => {
+        compile(
+          `
+          {{#let foo as |foo|}}
+            <FooBar as |bar|>
+              {{#each items as |baz|}}
+                <div {{foo}} />
+              {{/each}}
+            </FooBar>
+          {{/let}}`,
+          { moduleName: 'baz/foo-bar' }
+        );
+      }, `Cannot invoke the \`foo\` modifier because it was shadowed by a local variable (i.e. a block param) with the same name. Please rename the local variable to resolve the conflict. ('baz/foo-bar' @ L5:C21) `);
+
+      expectAssertion(() => {
+        compile(
+          `
+          {{#let foo as |foo|}}
+            <FooBar as |bar|>
+              {{#each items as |baz|}}
+                <div {{foo bar baz}} />
+              {{/each}}
+            </FooBar>
+          {{/let}}`,
+          { moduleName: 'baz/foo-bar' }
+        );
+      }, `Cannot invoke the \`foo\` modifier because it was shadowed by a local variable (i.e. a block param) with the same name. Please rename the local variable to resolve the conflict. ('baz/foo-bar' @ L5:C21) `);
+
+      // Not shadowed
+
+      compile(
+        `
+        {{#let foo as |foo|}}
+          <FooBar as |bar|>
+            {{#each items as |baz|}}
+            {{/each}}
+            <div {{baz}} />
+            <div {{baz bat}} />
+          </FooBar>
+          <div {{bar}} />
+          <div {{bar baz bat}} />
+        {{/let}}
+        <div {{foo}} />
+        <div {{foo bar baz bat}} />`,
+        { moduleName: 'baz/foo-bar' }
+      );
+    }
   }
 );
