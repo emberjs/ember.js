@@ -24,7 +24,7 @@ export default class ObserverSet {
     this.queue = [];
   }
 
-  add(object: object, key: string, event: string) {
+  add(object: object, key: string, event: string): void {
     let keys = this.added.get(object);
     if (keys === undefined) {
       keys = new Set();
@@ -37,7 +37,7 @@ export default class ObserverSet {
     }
   }
 
-  flush() {
+  flush(): void {
     // The queue is saved off to support nested flushes.
     let queue = this.queue;
     this.added.clear();

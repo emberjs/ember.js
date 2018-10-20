@@ -42,7 +42,7 @@ export function addListener(
   target: object | Function | null,
   method?: Function | string,
   once?: boolean
-) {
+): void {
   assert('You must pass at least an object and event name to addListener', !!obj && !!eventName);
 
   if (!method && 'function' === typeof target) {
@@ -72,7 +72,7 @@ export function removeListener(
   eventName: string,
   target: object | null,
   method?: Function | string
-) {
+): void {
   assert('You must pass at least an object and event name to removeListener', !!obj && !!eventName);
 
   if (!method && 'function' === typeof target) {
@@ -101,7 +101,7 @@ export function removeListener(
   @param obj
   @param {String} eventName
   @param {Array} params Optional parameters for each listener.
-  @return true
+  @return {Boolean} if the event was delivered to one or more actions
   @public
 */
 export function sendEvent(
@@ -110,7 +110,7 @@ export function sendEvent(
   params: any[],
   actions?: any[],
   _meta?: Meta
-) {
+): boolean {
   if (actions === undefined) {
     let meta = _meta === undefined ? peekMeta(obj) : _meta;
     actions = typeof meta === 'object' && meta !== null && meta.matchingListeners(eventName);
@@ -151,8 +151,9 @@ export function sendEvent(
   @for @ember/object/events
   @param obj
   @param {String} eventName
+  @return {Boolean} if `obj` has listeners for event `eventName`
 */
-export function hasListeners(obj: object, eventName: string) {
+export function hasListeners(obj: object, eventName: string): boolean {
   let meta = peekMeta(obj);
   if (meta === undefined) {
     return false;
@@ -186,10 +187,10 @@ export function hasListeners(obj: object, eventName: string) {
   @for @ember/object/evented
   @param {String} eventNames*
   @param {Function} func
-  @return func
+  @return {Function} the listener function, passed as last argument to on(...)
   @public
 */
-export function on(...args: Array<string | Function>) {
+export function on(...args: Array<string | Function>): Function {
   let func = args.pop() as Function;
   let events = args as string[];
 

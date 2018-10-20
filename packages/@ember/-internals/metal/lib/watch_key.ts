@@ -26,7 +26,7 @@ interface MaybeHasDidUnwatchProperty {
   didUnwatchProperty?: (keyName: string) => void;
 }
 
-export function watchKey(obj: object, keyName: string, _meta?: Meta) {
+export function watchKey(obj: object, keyName: string, _meta?: Meta): void {
   let meta = _meta === undefined ? metaFor(obj) : _meta;
   let count = meta.peekWatching(keyName);
   meta.writeWatching(keyName, count + 1);
@@ -58,7 +58,7 @@ if (DEBUG) {
   // Future traveler, although this code looks scary. It merely exists in
   // development to aid in development asertions. Production builds of
   // ember strip this entire block out
-  handleMandatorySetter = function handleMandatorySetter(m, obj, keyName) {
+  handleMandatorySetter = function handleMandatorySetter(m, obj, keyName): void {
     let descriptor = lookupDescriptor(obj, keyName);
     let hasDescriptor = descriptor !== null;
     let possibleDesc = hasDescriptor && descriptor!.value;
@@ -90,7 +90,7 @@ if (DEBUG) {
   };
 }
 
-export function unwatchKey(obj: object, keyName: string, _meta?: Meta) {
+export function unwatchKey(obj: object, keyName: string, _meta?: Meta): void {
   let meta = _meta === undefined ? peekMeta(obj) : _meta;
 
   // do nothing of this object has already been destroyed

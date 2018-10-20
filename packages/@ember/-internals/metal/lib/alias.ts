@@ -46,17 +46,17 @@ export class AliasedProperty extends Descriptor implements DescriptorWithDepende
     this.consume(obj, keyName, meta);
   }
 
-  didUnwatch(obj: object, keyName: string, meta: Meta) {
+  didUnwatch(obj: object, keyName: string, meta: Meta): void {
     this.unconsume(obj, keyName, meta);
   }
 
-  get(obj: object, keyName: string) {
+  get(obj: object, keyName: string): any {
     let ret = get(obj, this.altKey);
     this.consume(obj, keyName, metaFor(obj));
     return ret;
   }
 
-  unconsume(obj: object, keyName: string, meta: Meta) {
+  unconsume(obj: object, keyName: string, meta: Meta): void {
     let wasConsumed = getCachedValueFor(obj, keyName) === CONSUMED;
     if (wasConsumed || meta.peekWatching(keyName) > 0) {
       removeDependentKeys(this, obj, keyName, meta);
@@ -66,7 +66,7 @@ export class AliasedProperty extends Descriptor implements DescriptorWithDepende
     }
   }
 
-  consume(obj: object, keyName: string, meta: Meta) {
+  consume(obj: object, keyName: string, meta: Meta): void {
     let cache = getCacheFor(obj);
     if (cache.get(keyName) !== CONSUMED) {
       cache.set(keyName, CONSUMED);
@@ -74,16 +74,16 @@ export class AliasedProperty extends Descriptor implements DescriptorWithDepende
     }
   }
 
-  set(obj: object, _keyName: string, value: any) {
+  set(obj: object, _keyName: string, value: any): any {
     return set(obj, this.altKey, value);
   }
 
-  readOnly() {
+  readOnly(): this {
     this.set = AliasedProperty_readOnlySet;
     return this;
   }
 
-  oneWay() {
+  oneWay(): this {
     this.set = AliasedProperty_oneWaySet;
     return this;
   }

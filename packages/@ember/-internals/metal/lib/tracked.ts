@@ -13,12 +13,12 @@ class Tracker {
   private tags = new Set<Tag>();
   private last: Option<Tag> = null;
 
-  add(tag: Tag) {
+  add(tag: Tag): void {
     this.tags.add(tag);
     this.last = tag;
   }
 
-  get size() {
+  get size(): number {
     return this.tags.size;
   }
 
@@ -145,7 +145,7 @@ function descriptorForAccessor(
   let get = descriptor.get as Function;
   let set = descriptor.set as Function;
 
-  function getter(this: any) {
+  function getter(this: any): any {
     // Swap the parent tracker for a new tracker
     let old = CURRENT_TRACKER;
     let tracker = (CURRENT_TRACKER = new Tracker());
@@ -167,7 +167,7 @@ function descriptorForAccessor(
     return ret;
   }
 
-  function setter(this: unusable) {
+  function setter(this: unusable): void {
     dirty(tagForProperty(this, key));
     set.apply(this, arguments);
   }
@@ -194,14 +194,17 @@ export type Key = string;
   from it.
  */
 
-function descriptorForDataProperty(key: string, descriptor: PropertyDescriptor) {
+function descriptorForDataProperty(
+  key: string,
+  descriptor: PropertyDescriptor
+): PropertyDescriptor {
   let shadowKey = Symbol(key);
 
   return {
     enumerable: true,
     configurable: true,
 
-    get() {
+    get(): any {
       if (CURRENT_TRACKER) CURRENT_TRACKER.add(tagForProperty(this, key));
 
       if (!(shadowKey in this)) {
@@ -211,7 +214,7 @@ function descriptorForDataProperty(key: string, descriptor: PropertyDescriptor) 
       return this[shadowKey];
     },
 
-    set(newValue: any) {
+    set(newValue: any): void {
       tagFor(this).inner!['dirty']();
       dirty(tagForProperty(this, key));
       this[shadowKey] = newValue;
@@ -224,9 +227,9 @@ export interface Interceptors {
   [key: string]: boolean;
 }
 
-let propertyDidChange = function() {};
+let propertyDidChange = function(): void {};
 
-export function setPropertyDidChange(cb: () => void) {
+export function setPropertyDidChange(cb: () => void): void {
   propertyDidChange = cb;
 }
 

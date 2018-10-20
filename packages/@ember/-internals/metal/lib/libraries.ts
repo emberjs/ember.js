@@ -82,7 +82,7 @@ if (EMBER_LIBRARIES_ISREGISTERED) {
 }
 
 if (DEBUG) {
-  Libraries.prototype.logVersions = function(this: Libraries) {
+  Libraries.prototype.logVersions = function(): void {
     let libs = this._registry;
     let nameLengths = libs.map(item => get(item, 'name.length'));
     let maxNameLength = Math.max.apply(null, nameLengths);

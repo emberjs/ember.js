@@ -13,7 +13,7 @@ let searchDisabled = false;
 const flags = {
   _set: 0,
   _unprocessedNamespaces: false,
-  get unprocessedNamespaces() {
+  get unprocessedNamespaces(): boolean {
     return this._unprocessedNamespaces;
   },
   set unprocessedNamespaces(v) {
@@ -76,7 +76,7 @@ export function processNamespace(namespace: Namespace): void {
   _processNamespace([namespace.toString()], namespace, new Set());
 }
 
-export function processAllNamespaces() {
+export function processAllNamespaces(): void {
   let unprocessedNamespaces = flags.unprocessedNamespaces;
   if (unprocessedNamespaces) {
     findNamespaces();
@@ -116,7 +116,7 @@ export function setUnprocessedMixins(): void {
   unprocessedMixins = true;
 }
 
-function _processNamespace(paths: string[], root: Namespace, seen: Set<Namespace>) {
+function _processNamespace(paths: string[], root: Namespace, seen: Set<Namespace>): void {
   let idx = paths.length;
 
   let id = paths.join('.');
