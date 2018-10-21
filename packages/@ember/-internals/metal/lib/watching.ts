@@ -33,7 +33,7 @@ export function isWatching(obj: any, key: string): boolean {
 
 export function watcherCount(obj: any, key: string): number {
   let meta = peekMeta(obj);
-  return (meta !== undefined && meta.peekWatching(key)) || 0;
+  return (meta !== null && meta.peekWatching(key)) || 0;
 }
 
 /**

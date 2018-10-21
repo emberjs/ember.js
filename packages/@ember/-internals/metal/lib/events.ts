@@ -115,11 +115,11 @@ export function sendEvent(
   eventName: string,
   params: any[],
   actions?: any[],
-  _meta?: Meta
-): boolean {
+  _meta?: Meta | null
+) {
   if (actions === undefined) {
     let meta = _meta === undefined ? peekMeta(obj) : _meta;
-    actions = typeof meta === 'object' && meta !== null && meta.matchingListeners(eventName);
+    actions = (typeof meta === 'object' && meta !== null) ? meta.matchingListeners(eventName) : undefined;
   }
 
   if (actions === undefined || actions.length === 0) {
@@ -161,7 +161,7 @@ export function sendEvent(
 */
 export function hasListeners(obj: object, eventName: string): boolean {
   let meta = peekMeta(obj);
-  if (meta === undefined) {
+  if (meta === null) {
     return false;
   }
   let matched = meta.matchingListeners(eventName);

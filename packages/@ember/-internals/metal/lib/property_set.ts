@@ -14,7 +14,7 @@ interface ExtendedObject {
 }
 
 let setWithMandatorySetter: <T extends object, K extends Extract<keyof T, string>>(
-  meta: Meta,
+  meta: Meta | null,
   obj: T,
   keyName: K,
   value: T[K]
@@ -116,7 +116,7 @@ export function set(obj: object, keyName: string, value: any, tolerant?: boolean
 
 if (DEBUG) {
   setWithMandatorySetter = (meta, obj, keyName, value) => {
-    if (meta !== undefined && meta.peekWatching(keyName) > 0) {
+    if (meta !== null && meta.peekWatching(keyName) > 0) {
       makeEnumerable(obj, keyName);
       meta.writeValue(obj, keyName, value);
     } else {

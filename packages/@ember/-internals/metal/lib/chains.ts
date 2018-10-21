@@ -8,7 +8,7 @@ function isObject(obj: any): obj is object {
   return typeof obj === 'object' && obj !== null;
 }
 
-function isVolatile(obj: any, keyName: string, meta?: Meta): boolean {
+function isVolatile(obj: any, keyName: string, meta?: Meta | null): boolean {
   let desc = descriptorFor(obj, keyName, meta);
   return !(desc !== undefined && desc._volatile === false);
 }
@@ -117,7 +117,7 @@ function removeChainWatcher(obj: object, keyName: string, node: ChainNode, _meta
   let meta = _meta === undefined ? peekMeta(obj) : _meta;
 
   if (
-    meta === undefined ||
+    meta === null ||
     meta.isSourceDestroying() ||
     meta.isMetaDestroyed() ||
     meta.readableChainWatchers() === undefined
@@ -336,7 +336,7 @@ function lazyGet(obj: object, key: string): any {
   let meta = peekMeta(obj);
 
   // check if object meant only to be a prototype
-  if (meta !== undefined && meta.proto === obj) {
+  if (meta !== null && meta.proto === obj) {
     return;
   }
 

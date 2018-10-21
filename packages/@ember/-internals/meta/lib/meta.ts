@@ -845,7 +845,7 @@ export function setMeta(obj: object, meta: Meta) {
   metaStore.set(obj, meta);
 }
 
-export function peekMeta(obj: object) {
+export function peekMeta(obj: object) : Meta | null {
   assert('Cannot call `peekMeta` on null', obj !== null);
   assert('Cannot call `peekMeta` on undefined', obj !== undefined);
   assert(
@@ -884,6 +884,8 @@ export function peekMeta(obj: object) {
 
     pointer = getPrototypeOf(pointer);
   }
+
+  return null;
 }
 
 /**
@@ -909,7 +911,7 @@ export function deleteMeta(obj: object) {
   }
 
   let meta = peekMeta(obj);
-  if (meta !== undefined) {
+  if (meta !== null) {
     meta.destroy();
   }
 }
@@ -950,7 +952,7 @@ export const meta: {
   let maybeMeta = peekMeta(obj);
 
   // remove this code, in-favor of explicit parent
-  if (maybeMeta !== undefined && maybeMeta.source === obj) {
+  if (maybeMeta !== null && maybeMeta.source === obj) {
     return maybeMeta;
   }
 
@@ -972,7 +974,7 @@ if (DEBUG) {
   @return {Descriptor}
   @private
 */
-export function descriptorFor(obj: object, keyName: string, _meta?: Meta) {
+export function descriptorFor(obj: object, keyName: string, _meta?: Meta | null) {
   assert('Cannot call `descriptorFor` on null', obj !== null);
   assert('Cannot call `descriptorFor` on undefined', obj !== undefined);
   assert(
@@ -982,7 +984,7 @@ export function descriptorFor(obj: object, keyName: string, _meta?: Meta) {
 
   let meta = _meta === undefined ? peekMeta(obj) : _meta;
 
-  if (meta !== undefined) {
+  if (meta !== null) {
     return meta.peekDescriptors(keyName);
   }
 }

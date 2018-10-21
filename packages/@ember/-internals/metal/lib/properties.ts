@@ -63,7 +63,7 @@ interface ExtendedObject {
 
 export function MANDATORY_SETTER_FUNCTION(name: string): MandatorySetterFunction {
   function SETTER_FUNCTION(this: object, value: any | undefined | null): void {
-    let m = peekMeta(this);
+    let m = peekMeta(this)!;
     if (m.isInitializing() || m.isPrototypeMeta(this)) {
       m.writeValues(name, value);
     } else {
@@ -79,7 +79,7 @@ export function MANDATORY_SETTER_FUNCTION(name: string): MandatorySetterFunction
 export function DEFAULT_GETTER_FUNCTION(name: string): DefaultGetterFunction {
   return function GETTER_FUNCTION(this: any): void {
     let meta = peekMeta(this);
-    if (meta !== undefined) {
+    if (meta !== null) {
       return meta.peekValues(name);
     }
   };
@@ -89,7 +89,7 @@ export function INHERITING_GETTER_FUNCTION(name: string): InheritingGetterFuncti
   function IGETTER_FUNCTION(this: any): void {
     let meta = peekMeta(this);
     let val;
-    if (meta !== undefined) {
+    if (meta !== null) {
       val = meta.readInheritedValue('values', name);
       if (val === UNDEFINED) {
         let proto = Object.getPrototypeOf(this);

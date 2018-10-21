@@ -1334,7 +1334,7 @@ moduleFor(
         Route.extend({
           model(p, trans) {
             let m = peekMeta(trans[PARAMS_SYMBOL].application);
-            assert.ok(m === undefined, "A meta object isn't constructed for this params POJO");
+            assert.ok(m === null, "A meta object isn't constructed for this params POJO");
           },
         })
       );
