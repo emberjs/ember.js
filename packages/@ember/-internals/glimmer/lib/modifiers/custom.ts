@@ -1,7 +1,8 @@
 import { Factory } from '@ember/-internals/owner';
-import { Dict, Opaque } from '@glimmer/interfaces';
+import { Opaque } from '@glimmer/interfaces';
 import { Tag } from '@glimmer/reference';
 import { Arguments, CapturedArguments, ModifierManager } from '@glimmer/runtime';
+import { ManagerArgs, valueForCapturedArgs } from '../utils/managers';
 
 export interface CustomModifierDefinitionState<ModifierInstance> {
   ModifierClass: Factory<ModifierInstance>;
@@ -9,8 +10,10 @@ export interface CustomModifierDefinitionState<ModifierInstance> {
   delegate: ModifierManagerDelegate<ModifierInstance>;
 }
 
+export interface Capabilities {}
+
 // Currently there are no capabilities for modifiers
-export function capabilities() {
+export function capabilities(_managerAPI: string, _optionalFeatures?: {}): Capabilities {
   return {};
 }
 
@@ -19,7 +22,7 @@ export class CustomModifierDefinition<ModifierInstance> {
   public manager = CUSTOM_MODIFIER_MANAGER;
   constructor(
     public name: string,
-    ModifierClass: Factory<ModifierInstance>,
+    public ModifierClass: Factory<ModifierInstance>,
     public delegate: ModifierManagerDelegate<ModifierInstance>
   ) {
     this.state = {
@@ -45,27 +48,12 @@ export class CustomModifierState<ModifierInstance> {
   }
 }
 
-export interface CustomModifierManagerArgs {
-  named: Dict<Opaque>;
-  positional: Opaque[];
-}
-
 export interface ModifierManagerDelegate<ModifierInstance> {
-  createModifier(factory: Opaque, args: CustomModifierManagerArgs): ModifierInstance;
-  installModifier(
-    instance: ModifierInstance,
-    element: Element,
-    args: CustomModifierManagerArgs
-  ): void;
-  updateModifier(instance: ModifierInstance, args: CustomModifierManagerArgs): void;
-  destroyModifier(instance: ModifierInstance, args: CustomModifierManagerArgs): void;
-}
-
-function valueForCapturedArgs(args: CapturedArguments): CustomModifierManagerArgs {
-  return {
-    named: args.named.value(),
-    positional: args.positional.value(),
-  };
+  capabilities: Capabilities;
+  createModifier(factory: Opaque, args: ManagerArgs): ModifierInstance;
+  installModifier(instance: ModifierInstance, element: Element, args: ManagerArgs): void;
+  updateModifier(instance: ModifierInstance, args: ManagerArgs): void;
+  destroyModifier(instance: ModifierInstance, args: ManagerArgs): void;
 }
 
 class CustomModifierManager<ModifierInstance>

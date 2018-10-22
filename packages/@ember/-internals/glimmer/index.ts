@@ -307,4 +307,5 @@ export { default as OutletView } from './lib/views/outlet';
 export { capabilities } from './lib/component-managers/custom';
 export { setComponentManager, getComponentManager } from './lib/utils/custom-component-manager';
 export { setModifierManager, getModifierManager } from './lib/utils/custom-modifier-manager';
+export { capabilities as modifierCapabilties } from './lib/modifiers/custom';
 export { isSerializationFirstNode } from './lib/utils/serialization-first-node-helpers';

@@ -1,27 +1,24 @@
+import { Owner } from '@ember/-internals/owner';
 import { GLIMMER_CUSTOM_COMPONENT_MANAGER } from '@ember/canary-features';
+import { Opaque } from '@glimmer/interfaces';
+import { getManager, ManagerFactory, setManager } from './managers';
 
-const getPrototypeOf = Object.getPrototypeOf;
-const MANAGERS: WeakMap<any, string> = new WeakMap();
-
-export function setComponentManager(managerId: string, obj: any) {
-  MANAGERS.set(obj, managerId);
-
-  return obj;
+export function setComponentManager(stringOrFunction: string | ManagerFactory<Opaque>, obj: any) {
+  let factory;
+  if (typeof stringOrFunction === 'string') {
+    factory = function(owner: Owner) {
+      return owner.lookup(`component-manager:${stringOrFunction}`);
+    };
+  } else {
+    factory = stringOrFunction;
+  }
+  return setManager(factory, obj);
 }
 
-export function getComponentManager(obj: any): string | undefined {
+export function getComponentManager<T>(obj: any): undefined | ManagerFactory<T> {
   if (!GLIMMER_CUSTOM_COMPONENT_MANAGER) {
     return;
   }
 
-  let pointer = obj;
-  while (pointer !== undefined && pointer !== null) {
-    if (MANAGERS.has(pointer)) {
-      return MANAGERS.get(pointer);
-    }
-
-    pointer = getPrototypeOf(pointer);
-  }
-
-  return;
+  return getManager(obj);
 }

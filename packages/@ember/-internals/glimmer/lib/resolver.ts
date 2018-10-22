@@ -41,7 +41,7 @@ import { default as queryParams } from './helpers/query-param';
 import { default as readonly } from './helpers/readonly';
 import { default as unbound } from './helpers/unbound';
 import ActionModifierManager from './modifiers/action';
-import { CustomModifierDefinition } from './modifiers/custom';
+import { CustomModifierDefinition, ModifierManagerDelegate } from './modifiers/custom';
 import { populateMacros } from './syntax';
 import { mountHelper } from './syntax/mount';
 import { outletHelper } from './syntax/outlet';
@@ -285,14 +285,7 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
       let { owner } = meta;
       let modifier = owner.factoryFor(`modifier:${name}`);
       if (modifier !== undefined) {
-        let managerFactory = getModifierManager(modifier.class);
-        assert(
-          `Could not find custom modifier manager for '${name}' which was specified by ${
-            modifier.class
-          }`,
-          !!managerFactory
-        );
-
+        let managerFactory = getModifierManager<ModifierManagerDelegate<Opaque>>(modifier.class);
         let manager = managerFactory!(owner);
 
         return new CustomModifierDefinition(name, modifier, manager);
@@ -352,20 +345,14 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
     }
 
     if (GLIMMER_CUSTOM_COMPONENT_MANAGER && component && component.class) {
-      let managerId = getComponentManager(component.class);
-      if (managerId) {
-        let manager = this._lookupComponentManager(meta.owner, managerId);
-        assert(
-          `Could not find custom component manager '${managerId}' which was specified by ${
-            component.class
-          }`,
-          !!manager
-        );
+      let managerFactory = getComponentManager<ManagerDelegate<Opaque>>(component.class);
+      if (managerFactory) {
+        let delegate = managerFactory(meta.owner);
 
         let definition = new CustomManagerDefinition(
           name,
           component,
-          manager,
+          delegate,
           layout || meta.owner.lookup<OwnedTemplate>(P`template:components/-default`)
         );
         finalizer();

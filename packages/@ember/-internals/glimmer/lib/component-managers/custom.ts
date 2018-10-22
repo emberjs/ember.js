@@ -22,6 +22,7 @@ import { Destroyable } from '@glimmer/util';
 import Environment from '../environment';
 import RuntimeResolver from '../resolver';
 import { OwnedTemplate } from '../template';
+import { ManagerArgs, valueForCapturedArgs } from '../utils/managers';
 import { RootReference } from '../utils/references';
 import AbstractComponentManager from './abstract';
 
@@ -64,15 +65,10 @@ export interface Capabilities {
   destructor: boolean;
 }
 
-export interface CustomComponentManagerArgs {
-  named: Dict<Opaque>;
-  positional: Opaque[];
-}
-
 export interface ManagerDelegate<ComponentInstance> {
   capabilities: Capabilities;
-  createComponent(factory: Opaque, args: CustomComponentManagerArgs): ComponentInstance;
-  updateComponent(instance: ComponentInstance, args: CustomComponentManagerArgs): void;
+  createComponent(factory: Opaque, args: ManagerArgs): ComponentInstance;
+  updateComponent(instance: ComponentInstance, args: ManagerArgs): void;
   getContext(instance: ComponentInstance): Opaque;
 }
 
@@ -104,12 +100,6 @@ export interface ComponentArguments {
   named: Dict<Opaque>;
 }
 
-function valueForCapturedArgs(args: CapturedArguments): CustomComponentManagerArgs {
-  return {
-    named: args.named.value(),
-    positional: args.positional.value(),
-  };
-}
 /**
   The CustomComponentManager allows addons to provide custom component
   implementations that integrate seamlessly into Ember. This is accomplished
