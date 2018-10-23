@@ -8,28 +8,27 @@ import {
 import { setComponentManager, capabilities } from '@ember/-internals/glimmer';
 
 if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
+  let BasicComponentManager = EmberObject.extend({
+    capabilities: capabilities('3.4'),
+
+    createComponent(factory, args) {
+      return factory.create({ args });
+    },
+
+    updateComponent(component, args) {
+      set(component, 'args', args);
+    },
+
+    getContext(component) {
+      return component;
+    },
+  });
+
   class ComponentManagerTest extends RenderingTest {
     constructor(assert) {
       super(...arguments);
 
-      this.registerComponentManager(
-        'basic',
-        EmberObject.extend({
-          capabilities: capabilities('3.4'),
-
-          createComponent(factory, args) {
-            return factory.create({ args });
-          },
-
-          updateComponent(component, args) {
-            set(component, 'args', args);
-          },
-
-          getContext(component) {
-            return component;
-          },
-        })
-      );
+      this.registerComponentManager('basic', BasicComponentManager);
 
       this.registerComponentManager(
         'instrumented-full',
@@ -79,6 +78,24 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
       ['@test it can render a basic component with custom component manager']() {
         let ComponentClass = setComponentManager(
           'basic',
+          EmberObject.extend({
+            greeting: 'hello',
+          })
+        );
+
+        this.registerComponent('foo-bar', {
+          template: `<p>{{greeting}} world</p>`,
+          ComponentClass,
+        });
+
+        this.render('{{foo-bar}}');
+
+        this.assertHTML(`<p>hello world</p>`);
+      }
+
+      ['@test it can render a basic component with custom component manager with a factory']() {
+        let ComponentClass = setComponentManager(
+          () => BasicComponentManager.create(),
           EmberObject.extend({
             greeting: 'hello',
           })
