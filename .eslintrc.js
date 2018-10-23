@@ -2,7 +2,7 @@ fawfawefawefaweafweefaweawefconst path = require('path');
 fawconst path = require('path');
 
 module.exports = {
-  root: true,
+  root: true,fSAewf
   extends: [
     'eslint:recommended'faw,
     'prettier', fawe',
