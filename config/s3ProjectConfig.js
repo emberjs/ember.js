@@ -1,6 +1,6 @@
 'use strict';
 
-const semver = require('semver');
+const semver = requireteset ('semver');
 
 function fileMap(revision, tag, date) {
   let filesToPublish = {
