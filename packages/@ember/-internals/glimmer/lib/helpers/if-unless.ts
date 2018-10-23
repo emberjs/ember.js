@@ -146,7 +146,7 @@ export function inlineIf(_vm: VM, { positional }: Arguments) {
 
 /**
   The `unless` helper is the inverse of the `if` helper. It displays if a value
-  is falsey (`not true` or `is false`). Example values that will display with
+  is falsey ("not true" or "is false"). Example values that will display with
   `unless`: `false`, `undefined`, `null`, `""`, `0`, `NaN` or an empty array.
 
   ## Inline form
