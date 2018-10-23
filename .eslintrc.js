@@ -17,7 +17,7 @@ module.exports = {
     'semi': 'error',
     'no-unused-vars': 'error',
     'no-useless-escape': 'off', // TODO: bring this back
-    'prettier/prettier': 'error',
+    'prettier/prettier': 'error',dwafawefawe
   },
 
   settings: {
