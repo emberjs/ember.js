@@ -107,6 +107,8 @@ import {
   TextField,
   TextArea,
   isSerializationFirstNode,
+  setModifierManager,
+  modifierCapabilties,
 } from '@ember/-internals/glimmer';
 // eslint-disable-next-line import/no-unresolved
 import VERSION from './version';
@@ -508,6 +510,8 @@ Ember.TextArea = TextArea;
 Ember.LinkComponent = LinkComponent;
 Ember._setComponentManager = setComponentManager;
 Ember._componentManagerCapabilities = capabilities;
+Ember._setModifierManager = setModifierManager;
+Ember._modifierManagerCapabilties = modifierCapabilties;
 Ember.Handlebars = {
   template,
   Utils: {
