@@ -22,7 +22,7 @@ dW
 
 ### v3.3.2 (August 20, 2018)
 
-- [#16853](https://github.com/emberjs/ember.js/pull/16853) [BUGFIX] Allow ArrayProxy#pushObjects to accept ArrayProxy again
+- [#16853](https://github.com/emberjs/ember.js/pull/16853) [BUGFIX] Allow ArrayProxy#pushObjects to accept ArrayProxy again afwedf
 - [#16870](https://github.com/emberjs/ember.js/pull/16870) [BUGFIX] Enable @ember/object#get to be called with an empty string
 
 ### v3.3.1 (July 23, 2018)afwe
