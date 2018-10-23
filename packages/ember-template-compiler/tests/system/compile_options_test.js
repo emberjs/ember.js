@@ -28,7 +28,7 @@ moduleFor(
 );
 
 let customTransformCounter = 0;
-class CustomTransform {
+class LegacyCustomTransform {
   constructor(options) {
     customTransformCounter++;
     this.options = options;
@@ -56,6 +56,26 @@ class CustomTransform {
   }
 }
 
+function customTransform() {
+  customTransformCounter++;
+
+  return {
+    name: 'remove-data-test',
+
+    visitor: {
+      ElementNode(node) {
+        for (var i = 0; i < node.attributes.length; i++) {
+          let attribute = node.attributes[i];
+
+          if (attribute.name === 'data-test') {
+            node.attributes.splice(i, 1);
+          }
+        }
+      },
+    },
+  };
+}
+
 class CustomPluginsTests extends RenderingTestCase {
   afterEach() {
     customTransformCounter = 0;
@@ -78,24 +98,61 @@ class CustomPluginsTests extends RenderingTestCase {
 }
 
 moduleFor(
-  'ember-template-compiler: registerPlugin with a custom plugins',
+  'ember-template-compiler: registerPlugin with a custom plugins in legacy format',
   class extends CustomPluginsTests {
     beforeEach() {
-      registerPlugin('ast', CustomTransform);
+      registerPlugin('ast', LegacyCustomTransform);
     }
 
     afterEach() {
-      unregisterPlugin('ast', CustomTransform);
+      unregisterPlugin('ast', LegacyCustomTransform);
       return super.afterEach();
     }
 
     ['@test custom registered plugins are deduplicated'](assert) {
-      registerPlugin('ast', CustomTransform);
+      registerPlugin('ast', LegacyCustomTransform);
       this.registerTemplate(
         'application',
         '<div data-test="foo" data-blah="derp" class="hahaha"></div>'
       );
       assert.equal(customTransformCounter, 1, 'transform should only be instantiated once');
+    }
+  }
+);
+
+moduleFor(
+  'ember-template-compiler: registerPlugin with a custom plugins',
+  class extends CustomPluginsTests {
+    beforeEach() {
+      registerPlugin('ast', customTransform);
+    }
+
+    afterEach() {
+      unregisterPlugin('ast', customTransform);
+      return super.afterEach();
+    }
+
+    ['@test custom registered plugins are deduplicated'](assert) {
+      registerPlugin('ast', customTransform);
+      this.registerTemplate(
+        'application',
+        '<div data-test="foo" data-blah="derp" class="hahaha"></div>'
+      );
+      assert.equal(customTransformCounter, 1, 'transform should only be instantiated once');
+    }
+  }
+);
+
+moduleFor(
+  'ember-template-compiler: custom plugins in legacy format passed to compile',
+  class extends RenderingTestCase {
+    // override so that we can provide custom AST plugins to compile
+    compile(templateString) {
+      return compile(templateString, {
+        plugins: {
+          ast: [LegacyCustomTransform],
+        },
+      });
     }
   }
 );
@@ -107,7 +164,7 @@ moduleFor(
     compile(templateString) {
       return compile(templateString, {
         plugins: {
-          ast: [CustomTransform],
+          ast: [customTransform],
         },
       });
     }
