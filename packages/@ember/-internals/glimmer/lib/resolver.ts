@@ -2,7 +2,11 @@ import { privatize as P } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
 import { LookupOptions, Owner, setOwner } from '@ember/-internals/owner';
 import { lookupComponent, lookupPartial, OwnedTemplateMeta } from '@ember/-internals/views';
-import { EMBER_MODULE_UNIFICATION, GLIMMER_CUSTOM_COMPONENT_MANAGER } from '@ember/canary-features';
+import {
+  EMBER_MODULE_UNIFICATION,
+  GLIMMER_CUSTOM_COMPONENT_MANAGER,
+  GLIMMER_MODIFIER_MANAGER,
+} from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { _instrumentStart } from '@ember/instrumentation';
 import { DEBUG } from '@glimmer/env';
@@ -37,11 +41,13 @@ import { default as queryParams } from './helpers/query-param';
 import { default as readonly } from './helpers/readonly';
 import { default as unbound } from './helpers/unbound';
 import ActionModifierManager from './modifiers/action';
+import { CustomModifierDefinition, ModifierManagerDelegate } from './modifiers/custom';
 import { populateMacros } from './syntax';
 import { mountHelper } from './syntax/mount';
 import { outletHelper } from './syntax/outlet';
 import { Factory as TemplateFactory, Injections, OwnedTemplate } from './template';
 import { getComponentManager } from './utils/custom-component-manager';
+import { getModifierManager } from './utils/custom-modifier-manager';
 import { ClassBasedHelperReference, SimpleHelperReference } from './utils/references';
 
 function instrumentationPayload(name: string) {
@@ -175,8 +181,8 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
   /**
    * Called by CompileTimeLookup compiling the
    */
-  lookupModifier(name: string, _meta: OwnedTemplateMeta): Option<number> {
-    return this.handle(this._lookupModifier(name));
+  lookupModifier(name: string, meta: OwnedTemplateMeta): Option<number> {
+    return this.handle(this._lookupModifier(name, meta));
   }
 
   /**
@@ -272,8 +278,21 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
     }
   }
 
-  private _lookupModifier(name: string) {
-    return this.builtInModifiers[name];
+  private _lookupModifier(name: string, meta: OwnedTemplateMeta) {
+    let builtin = this.builtInModifiers[name];
+
+    if (GLIMMER_MODIFIER_MANAGER && builtin === undefined) {
+      let { owner } = meta;
+      let modifier = owner.factoryFor(`modifier:${name}`);
+      if (modifier !== undefined) {
+        let managerFactory = getModifierManager<ModifierManagerDelegate<Opaque>>(modifier.class);
+        let manager = managerFactory!(owner);
+
+        return new CustomModifierDefinition(name, modifier, manager);
+      }
+    }
+
+    return builtin;
   }
 
   private _parseNameForNamespace(_name: string) {
@@ -326,20 +345,14 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
     }
 
     if (GLIMMER_CUSTOM_COMPONENT_MANAGER && component && component.class) {
-      let managerId = getComponentManager(component.class);
-      if (managerId) {
-        let manager = this._lookupComponentManager(meta.owner, managerId);
-        assert(
-          `Could not find custom component manager '${managerId}' which was specified by ${
-            component.class
-          }`,
-          !!manager
-        );
+      let managerFactory = getComponentManager<ManagerDelegate<Opaque>>(component.class);
+      if (managerFactory) {
+        let delegate = managerFactory(meta.owner);
 
         let definition = new CustomManagerDefinition(
           name,
           component,
-          manager,
+          delegate,
           layout || meta.owner.lookup<OwnedTemplate>(P`template:components/-default`)
         );
         finalizer();

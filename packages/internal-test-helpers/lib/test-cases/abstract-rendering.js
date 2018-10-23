@@ -170,6 +170,12 @@ export default class AbstractRenderingTestCase extends AbstractTestCase {
     }
   }
 
+  registerModifier(name, ModifierClass) {
+    let { owner } = this;
+
+    owner.register(`modifier:${name}`, ModifierClass);
+  }
+
   registerComponentManager(name, manager) {
     let owner = this.env.owner || this.owner;
     owner.register(`component-manager:${name}`, manager);
