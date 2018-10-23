@@ -630,6 +630,40 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
         });
       }
 
+      '@test attributes without values passed at invocation are included in `...attributes` ("splattributes")'() {
+        this.registerComponent('foo-bar', {
+          ComponentClass: Component.extend({ tagName: '' }),
+          template: '<div ...attributes>hello</div>',
+        });
+
+        this.render('<FooBar data-bar />');
+
+        this.assertElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { 'data-bar': '' },
+          content: 'hello',
+        });
+
+        this.assertStableRerender();
+      }
+
+      '@test attributes without values at definition are included in `...attributes` ("splattributes")'() {
+        this.registerComponent('foo-bar', {
+          ComponentClass: Component.extend({ tagName: '' }),
+          template: '<div data-bar ...attributes>hello</div>',
+        });
+
+        this.render('<FooBar />');
+
+        this.assertElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { 'data-bar': '' },
+          content: 'hello',
+        });
+
+        this.assertStableRerender();
+      }
+
       '@test includes invocation specified attributes in `...attributes` slot in tagless component ("splattributes")'() {
         this.registerComponent('foo-bar', {
           ComponentClass: Component.extend({ tagName: '' }),
