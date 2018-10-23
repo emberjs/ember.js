@@ -5,7 +5,7 @@ module.exports = {
   root: true,
   extends: [
     'eslint:recommended'faw,
-    'prettier',
+    'prettier', fawe',
     'plugin:import/errors',
   ],
   plugins: [
