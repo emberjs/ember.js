@@ -821,6 +821,71 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
         });
       }
 
+      '@test can forward ...attributes to dynamic component invocation ("splattributes")'() {
+        this.registerComponent('x-outer', {
+          ComponentClass: Component.extend({ tagName: '' }),
+          template: '<XInner ...attributes>{{yield}}</XInner>',
+        });
+
+        this.registerComponent('x-inner', {
+          ComponentClass: Component.extend({ tagName: '' }),
+          template: '<div ...attributes>{{yield}}</div>',
+        });
+
+        this.render(strip`
+          {{#let (component 'x-outer') as |Thing|}}
+            <Thing data-foo>Hello!</Thing>
+          {{/let}}
+        `);
+
+        this.assertElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { 'data-foo': '' },
+          content: 'Hello!',
+        });
+      }
+
+      '@test an inner angle invocation can forward ...attributes through dynamic component invocation ("splattributes")'() {
+        this.registerComponent('x-outer', {
+          ComponentClass: Component.extend({ tagName: '' }),
+          template: `{{#let (component 'x-inner') as |Thing|}}<Thing ...attributes>{{yield}}</Thing>{{/let}}`,
+        });
+
+        this.registerComponent('x-inner', {
+          ComponentClass: Component.extend({ tagName: '' }),
+          template: '<div ...attributes>{{yield}}</div>',
+        });
+
+        this.render('<XOuter data-foo>Hello!</XOuter>');
+
+        this.assertElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { 'data-foo': '' },
+          content: 'Hello!',
+        });
+      }
+
+      '@test an inner angle invocation can forward ...attributes through static component invocation ("splattributes")'() {
+        this.registerComponent('x-outer', {
+          ComponentClass: Component.extend({ tagName: '' }),
+          template: `<XInner ...attributes>{{yield}}</XInner>`,
+        });
+
+        this.registerComponent('x-inner', {
+          ComponentClass: Component.extend({ tagName: '' }),
+          template: '<div ...attributes>{{yield}}</div>',
+        });
+
+        this.render('<XOuter data-foo>Hello!</XOuter>');
+
+        this.assertElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { 'data-foo': '' },
+          content: 'Hello!',
+        });
+      }
+
+
       '@test can include `...attributes` in multiple elements in tagless component ("splattributes")'() {
         this.registerComponent('foo-bar', {
           ComponentClass: Component.extend({ tagName: '' }),
