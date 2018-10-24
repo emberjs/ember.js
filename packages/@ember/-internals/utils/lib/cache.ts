@@ -8,11 +8,11 @@ export default class Cache<T, V> {
   }
 
   get(key: T): V {
-    let value = this.store.get(key);
+    let value;
     if (this.store.has(key)) {
       this.hits++;
 
-      return this.store.get(key);
+      value = this.store.get(key);
     } else {
       this.misses++;
       value = this.set(key, this.func(key));
