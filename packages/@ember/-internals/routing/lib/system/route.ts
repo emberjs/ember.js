@@ -9,7 +9,7 @@ import {
 } from '@ember/-internals/runtime';
 import { EMBER_ROUTING_ROUTER_SERVICE } from '@ember/canary-features';
 import { assert, deprecate, info, isTesting } from '@ember/debug';
-import { ROUTER_EVENTS, ROUTER_ROUTER } from '@ember/deprecated-features';
+import { ROUTER_EVENTS } from '@ember/deprecated-features';
 import { assign } from '@ember/polyfills';
 import { once } from '@ember/runloop';
 import { classify } from '@ember/string';
@@ -2161,20 +2161,6 @@ Route.reopen(ActionHandler, Evented, {
     };
   }),
 
-  router: ROUTER_ROUTER
-    ? computed('_router', function(this: Route) {
-        deprecate(
-          'Route#router is an intimate API that has been renamed to Route#_router. However you might want to consider using the router service',
-          false,
-          {
-            id: 'ember-routing.route-router',
-            until: '3.5.0',
-            url: 'https://emberjs.com/deprecations/v3.x#toc_ember-routing-route-router',
-          }
-        );
-        return this._router;
-      })
-    : undefined,
   /**
       @private
 

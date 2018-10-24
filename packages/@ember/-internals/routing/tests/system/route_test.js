@@ -575,13 +575,5 @@ moduleFor(
         'passes query param only transitions through'
       );
     }
-
-    ['@test `router` is a deprecated one-way alias to `_router`'](assert) {
-      let router = {};
-      let route = EmberRoute.create({ _router: router });
-      expectDeprecation(function() {
-        return assert.equal(route.router, router);
-      }, 'Route#router is an intimate API that has been renamed to Route#_router. However you might want to consider using the router service');
-    }
   }
 );
