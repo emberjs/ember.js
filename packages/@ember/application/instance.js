@@ -144,6 +144,7 @@ const ApplicationInstance = EngineInstance.extend({
     socket rather than appending to DOM.
 
     @param view {Ember.View} the root-most view
+    @deprecated
     @private
   */
   didCreateRootView(view) {
