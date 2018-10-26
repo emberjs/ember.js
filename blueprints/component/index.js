@@ -3,13 +3,12 @@
 const path = require('path');
 const stringUtil = require('ember-cli-string-utils');
 const pathUtil = require('ember-cli-path-utils');
-const validComponentName = require('ember-cli-valid-component-name');
 const getPathOption = require('ember-cli-get-component-path-option');
 const normalizeEntityName = require('ember-cli-normalize-entity-name');
 const isModuleUnificationProject = require('../module-unification').isModuleUnificationProject;
 
 module.exports = {
-  description: 'Generates a component. Name must contain a hyphen.',
+  description: 'Generates a component.',
 
   availableOptions: [
     {
@@ -72,9 +71,7 @@ module.exports = {
   },
 
   normalizeEntityName: function(entityName) {
-    entityName = normalizeEntityName(entityName);
-
-    return validComponentName(entityName);
+    return normalizeEntityName(entityName);
   },
 
   locals: function(options) {
