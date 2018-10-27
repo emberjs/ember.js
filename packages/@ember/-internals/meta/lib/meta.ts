@@ -92,7 +92,7 @@ type Listener = RemoveAllListener | StringListener | FunctionListener;
 let currentListenerVersion = 1;
 
 export class Meta {
-  _descriptors: any | undefined;
+  _descriptors: Map<string, any> | undefined;
   _watching: any | undefined;
   _mixins: any | undefined;
   _deps: any | undefined;
@@ -250,6 +250,20 @@ export class Meta {
           if (value !== undefined) {
             return value;
           }
+        }
+      }
+      pointer = pointer.parent;
+    }
+  }
+
+  _findInheritedMap(key: string, subkey: string): any | undefined {
+    let pointer: Meta | null = this;
+    while (pointer !== null) {
+      let map : Map<string, any> = pointer[key];
+      if (map !== undefined) {
+        let value = map.get(subkey);
+        if (value !== undefined) {
+          return value;
         }
       }
       pointer = pointer.parent;
@@ -461,12 +475,12 @@ export class Meta {
         : '',
       !this.isMetaDestroyed()
     );
-    let map = this._getOrCreateOwnMap('_descriptors');
-    map[subkey] = value;
+    let map = this._descriptors || (this._descriptors = new Map());
+    map.set(subkey, value);
   }
 
   peekDescriptors(subkey: string) {
-    let possibleDesc = this._findInherited2('_descriptors', subkey);
+    let possibleDesc = this._findInheritedMap('_descriptors', subkey);
     return possibleDesc === UNDEFINED ? undefined : possibleDesc;
   }
 
@@ -480,16 +494,15 @@ export class Meta {
     while (pointer !== null) {
       let map = pointer._descriptors;
       if (map !== undefined) {
-        for (let key in map) {
+        map.forEach((value, key) => {
           seen = seen === undefined ? new Set() : seen;
           if (!seen.has(key)) {
             seen.add(key);
-            let value = map[key];
             if (value !== UNDEFINED) {
               fn(key, value);
             }
           }
-        }
+        });
       }
       pointer = pointer.parent;
     }
