@@ -133,9 +133,9 @@ export function get(obj: object, keyName: string): any {
   return value;
 }
 
-export function _getPath<T extends object>(root: T, path: string): any {
+export function _getPath<T extends object>(root: T, path: string | string[]): any {
   let obj: any = root;
-  let parts = path.split('.');
+  let parts = typeof path === 'string' ? path.split('.') : path;
 
   for (let i = 0; i < parts.length; i++) {
     if (obj === undefined || obj === null || (obj as MaybeHasIsDestroyed).isDestroyed) {
