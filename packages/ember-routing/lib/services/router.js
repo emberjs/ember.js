@@ -14,7 +14,7 @@ const RouterService = Service.extend({
   /**
      Name of the current route.
 
-     This property represent the logical name of the route,
+     This property represents the logical name of the route,
      which is comma separated.
      For the following router:
 
