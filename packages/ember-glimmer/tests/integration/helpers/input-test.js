@@ -1,9 +1,13 @@
+/* globals Event */
+
 import { assign } from '@ember/polyfills';
 import { set } from 'ember-metal';
 import { Component } from '../../utils/helpers';
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { runDestroy } from 'internal-test-helpers';
 import { jQuery } from 'ember-views';
+
+const ExpectedEvent = jQuery !== undefined ? jQuery.Event : Event;
 
 class InputRenderingTest extends RenderingTest {
   $input() {
@@ -282,7 +286,7 @@ moduleFor(
           actions: {
             foo(value, event) {
               assert.ok(true, 'action was triggered');
-              assert.ok(event instanceof jQuery.Event, 'jQuery event was passed.');
+              assert.ok(event instanceof ExpectedEvent, 'event was passed.');
             },
           },
         });
@@ -300,7 +304,7 @@ moduleFor(
         actions: {
           foo(value, event) {
             assert.ok(true, 'action was triggered');
-            assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+            assert.ok(event instanceof ExpectedEvent, 'event was passed');
           },
         },
       });
@@ -320,7 +324,7 @@ moduleFor(
           actions: {
             foo(value, event) {
               assert.ok(true, 'action was triggered');
-              assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+              assert.ok(event instanceof ExpectedEvent, 'event was passed');
             },
           },
         });
@@ -340,7 +344,7 @@ moduleFor(
         actions: {
           foo(value, event) {
             assert.ok(true, 'action was triggered');
-            assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+            assert.ok(event instanceof ExpectedEvent, 'event was passed');
           },
         },
       });
@@ -391,7 +395,7 @@ moduleFor(
         actions: {
           foo(value, event) {
             assert.ok(true, 'action was triggered');
-            assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+            assert.ok(event instanceof ExpectedEvent, 'event was passed');
           },
         },
       });
@@ -411,7 +415,7 @@ moduleFor(
           actions: {
             foo(value, event) {
               assert.ok(true, 'action was triggered');
-              assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+              assert.ok(event instanceof ExpectedEvent, 'event was passed');
             },
           },
         });
@@ -431,7 +435,7 @@ moduleFor(
         actions: {
           foo(value, event) {
             assert.ok(true, 'action was triggered');
-            assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+            assert.ok(event instanceof ExpectedEvent, 'event was passed');
           },
         },
       });
@@ -449,7 +453,7 @@ moduleFor(
           actions: {
             foo(value, event) {
               assert.ok(true, 'action was triggered');
-              assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+              assert.ok(event instanceof ExpectedEvent, 'event was passed');
             },
           },
         });
@@ -469,7 +473,7 @@ moduleFor(
         actions: {
           foo(value, event) {
             assert.ok(true, 'action was triggered');
-            assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+            assert.ok(event instanceof ExpectedEvent, 'event was passed');
           },
         },
       });
@@ -487,7 +491,7 @@ moduleFor(
           actions: {
             foo(value, event) {
               assert.ok(true, 'action was triggered');
-              assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+              assert.ok(event instanceof ExpectedEvent, 'event was passed');
             },
           },
         });
@@ -507,7 +511,7 @@ moduleFor(
         actions: {
           foo(value, event) {
             assert.ok(true, 'action was triggered');
-            assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+            assert.ok(event instanceof ExpectedEvent, 'event was passed');
           },
         },
       });
