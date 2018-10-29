@@ -1,5 +1,12 @@
 # Ember Changelog
 
+### v3.5.1 (October 29, 2018)
+
+- [#17028](https://github.com/emberjs/ember.js/pull/17028) Mark `defineProperty` as public (yet low level) API.
+- [#17115](https://github.com/emberjs/ember.js/pull/17115) [BUGFIX] Pass the event parameter to sendAction
+- [#17128](https://github.com/emberjs/ember.js/pull/17128) [BUGFIX] Fix sourcemaping issues due to multiple sourcemap directives.
+- [#17130](https://github.com/emberjs/ember.js/pull/17130) [BUGFIX] Ensure that timers scheduled after a system sleep are fired properly.
+
 ### v3.5.0 (October 8, 2018)
 
 - [#16978](https://github.com/emberjs/ember.js/pull/16978) [BUGFIX] Properly teardown alias
