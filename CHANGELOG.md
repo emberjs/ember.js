@@ -1,5 +1,11 @@
 # Ember Changelog
 
+### v3.4.6 (October 29, 2018)
+
+- [#17115](https://github.com/emberjs/ember.js/pull/17115) [BUGFIX] Ensure `{{input` continues to pass the event to the actions that it fires.
+- [#17128](https://github.com/emberjs/ember.js/pull/17128) [BUGFIX] Fix invalid sourcemap declarations.
+- [#17130](https://github.com/emberjs/ember.js/pull/17130) [BUGFIX] Ensure that timers scheduled after a system sleep are fired properly.
+
 ### v3.4.5 (October 4, 2018)
 
 - [#17029](https://github.com/emberjs/ember.js/pull/17029) [BUGFIX] Update backburner.js to 2.3.1.
