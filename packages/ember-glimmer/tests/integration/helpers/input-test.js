@@ -3,7 +3,7 @@ import { set } from 'ember-metal';
 import { Component } from '../../utils/helpers';
 import { RenderingTest, moduleFor } from '../../utils/test-case';
 import { runDestroy } from 'internal-test-helpers';
-import { jQuery } from '@ember/-internals/views';
+import { jQuery } from 'ember-views';
 
 class InputRenderingTest extends RenderingTest {
   $input() {
