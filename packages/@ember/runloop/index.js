@@ -1,6 +1,8 @@
-import { assert } from '@ember/debug';
+import { assert, deprecate } from '@ember/debug';
 import { onErrorTarget } from '@ember/-internals/error-handling';
+import { beginPropertyChanges, endPropertyChanges } from '@ember/-internals/metal';
 import Backburner from 'backburner';
+import { RUN_SYNC } from '@ember/deprecated-features';
 
 let currentRunLoop = null;
 export function getCurrentRunLoop() {
@@ -51,6 +53,15 @@ let backburnerOptions = {
   onErrorTarget,
   onErrorMethod: 'onerror',
 };
+
+if (RUN_SYNC) {
+  queues.unshift('sync');
+
+  backburnerOptions.sync = {
+    before: beginPropertyChanges,
+    after: endPropertyChanges,
+  };
+}
 
 export const backburner = new Backburner(queues, backburnerOptions);
 
@@ -313,7 +324,12 @@ export function end() {
   @return {*} Timer information for use in canceling, see `cancel`.
   @public
 */
-export function schedule(/*queue, target, method */) {
+export function schedule(queue /*, target, method */) {
+  deprecate(`Scheduling into the '${queue}' run loop queue is deprecated.`, queue !== 'sync', {
+    id: 'ember-metal.run.sync',
+    until: '3.5.0',
+  });
+
   return backburner.schedule(...arguments);
 }
 
@@ -453,7 +469,11 @@ export function once(...args) {
   @return {Object} Timer information for use in canceling, see `cancel`.
   @public
 */
-export function scheduleOnce(/*queue, target, method*/) {
+export function scheduleOnce(queue /*, target, method*/) {
+  deprecate(`Scheduling into the '${queue}' run loop queue is deprecated.`, queue !== 'sync', {
+    id: 'ember-metal.run.sync',
+    until: '3.5.0',
+  });
   return backburner.scheduleOnce(...arguments);
 }
 
