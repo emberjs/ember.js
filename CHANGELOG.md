@@ -8,10 +8,23 @@
 - [#17025](https://github.com/emberjs/ember.js/pull/17025) / [#17034](https://github.com/emberjs/ember.js/pull/17034) / [#17036](https://github.com/emberjs/ember.js/pull/17036) / [#17038](https://github.com/emberjs/ember.js/pull/17038) / [#17040](https://github.com/emberjs/ember.js/pull/17040) / [#17041](https://github.com/emberjs/ember.js/pull/17041) / [#17061](https://github.com/emberjs/ember.js/pull/17061) [FEATURE] Final stage of the router service RFC (see [emberjs/rfcs#95](https://github.com/emberjs/rfcs/blob/master/text/0095-router-service.md)
 - [#17051](https://github.com/emberjs/ember.js/pull/17051) Update glimmer-vm packages to 0.36.4
 
+### v3.5.1 (October 29, 2018)
+
+- [#17028](https://github.com/emberjs/ember.js/pull/17028) Mark `defineProperty` as public (yet low level) API.
+- [#17115](https://github.com/emberjs/ember.js/pull/17115) [BUGFIX] Pass the event parameter to sendAction
+- [#17128](https://github.com/emberjs/ember.js/pull/17128) [BUGFIX] Fix sourcemaping issues due to multiple sourcemap directives.
+- [#17130](https://github.com/emberjs/ember.js/pull/17130) [BUGFIX] Ensure that timers scheduled after a system sleep are fired properly.
+
 ### v3.5.0 (October 8, 2018)
 
 - [#16978](https://github.com/emberjs/ember.js/pull/16978) [BUGFIX] Properly teardown alias
 - [#16877](https://github.com/emberjs/ember.js/pull/16877) [CLEANUP] Allow routes to be named "array" and "object"
+
+### v3.4.6 (October 29, 2018)
+
+- [#17115](https://github.com/emberjs/ember.js/pull/17115) [BUGFIX] Ensure `{{input` continues to pass the event to the actions that it fires.
+- [#17128](https://github.com/emberjs/ember.js/pull/17128) [BUGFIX] Fix invalid sourcemap declarations.
+- [#17130](https://github.com/emberjs/ember.js/pull/17130) [BUGFIX] Ensure that timers scheduled after a system sleep are fired properly.
 
 ### v3.4.5 (October 4, 2018)
 
