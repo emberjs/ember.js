@@ -1,6 +1,6 @@
 # Ember Changelog
 
-### v3.6.0-beta.2 (October 27, 2018)
+### v3.6.0-beta.2 (October 29, 2018)
 
 - [#17130](https://github.com/emberjs/ember.js/pull/17130) [BUGFIX] Ensure that timers scheduled after a system sleep are fired properly.
 - [#17137](https://github.com/emberjs/ember.js/pull/17137) [BUGFIX] Assert when local variables shadow modifier invocations
