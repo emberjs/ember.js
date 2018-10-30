@@ -919,6 +919,41 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
           content: 'world',
         });
       }
+
+      '@test can yield content to contextual components invoked with angle-bracket components that receives splattributes'() {
+        this.registerComponent('foo-bar/inner', {
+          ComponentClass: Component.extend({ tagName: '' }),
+          template: '<h1 ...attributes>{{yield}}</h1>',
+        });
+        this.registerComponent('foo-bar', {
+          ComponentClass: Component.extend({ tagName: '' }),
+          // If <Inner> doesn't receive splattributes this test passes
+          template: strip`
+            {{#let (component "foo-bar/inner") as |Inner|}}
+              <Inner ...attributes>{{yield}}</Inner>
+              <h2>Inside the let</h2>
+            {{/let}}
+            <h3>Outside the let</h3>
+          `,
+        });
+
+        this.render('<FooBar>Yielded content</FooBar>');
+        this.assertElement(this.firstChild, {
+          tagName: 'h1',
+          attrs: {},
+          content: 'Yielded content',
+        });
+        this.assertElement(this.nthChild(1), {
+          tagName: 'h2',
+          attrs: {},
+          content: 'Inside the let',
+        });
+        this.assertElement(this.nthChild(2), {
+          tagName: 'h3',
+          attrs: {},
+          content: 'Outside the let',
+        });
+      }
     }
   );
 }
