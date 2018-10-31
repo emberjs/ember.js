@@ -1571,6 +1571,24 @@ moduleFor(
         ]
       );
     }
+
+    ['@test lifecycle hooks exist on the base class'](assert) {
+      // Make sure we get the finalized component prototype
+      let prototype = Component.proto();
+
+      assert.equal(typeof prototype.didDestroyElement, 'function', 'didDestroyElement exists');
+      assert.equal(typeof prototype.didInsertElement, 'function', 'didInsertElement exists');
+      assert.equal(typeof prototype.didReceiveAttrs, 'function', 'didReceiveAttrs exists');
+      assert.equal(typeof prototype.didRender, 'function', 'didRender exists');
+      assert.equal(typeof prototype.didUpdate, 'function', 'didUpdate exists');
+      assert.equal(typeof prototype.didUpdateAttrs, 'function', 'didUpdateAttrs exists');
+      assert.equal(typeof prototype.willClearRender, 'function', 'willClearRender exists');
+      assert.equal(typeof prototype.willDestroy, 'function', 'willDestroy exists');
+      assert.equal(typeof prototype.willDestroyElement, 'function', 'willDestroyElement exists');
+      assert.equal(typeof prototype.willInsertElement, 'function', 'willInsertElement exists');
+      assert.equal(typeof prototype.willRender, 'function', 'willRender exists');
+      assert.equal(typeof prototype.willUpdate, 'function', 'willUpdate exists');
+    }
   }
 );
 
