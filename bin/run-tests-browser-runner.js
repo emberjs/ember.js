@@ -4,7 +4,7 @@ const puppeteer = require('puppeteer');
 const chalk = require('chalk');
 const fs = require('fs');
 
-module.exports = class BroswerRunner {
+module.exports = class BrowserRunner {
   constructor() {
     this.resolveTest = undefined;
     this.rejectTest = undefined;

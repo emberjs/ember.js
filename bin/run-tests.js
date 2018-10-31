@@ -31,8 +31,8 @@ let browserRunner;
 function getBrowserRunner() {
   if (browserRunner === undefined) {
     // requires new node
-    let BroswerRunner = require('./run-tests-browser-runner');
-    browserRunner = new BroswerRunner();
+    let BrowserRunner = require('./run-tests-browser-runner');
+    browserRunner = new BrowserRunner();
   }
   return browserRunner;
 }
