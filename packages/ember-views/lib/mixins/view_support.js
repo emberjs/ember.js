@@ -370,6 +370,14 @@ export default Mixin.create({
   willDestroyElement: K,
 
   /**
+    Called after the element of the view is destroyed.
+
+    @event willDestroyElement
+    @public
+  */
+  didDestroyElement: K,
+
+  /**
     Called when the parentView property has changed.
 
     @event parentViewDidChange
