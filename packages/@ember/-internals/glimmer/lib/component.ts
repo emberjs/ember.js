@@ -751,6 +751,7 @@ const Component = CoreView.extend(
      @public
      @since 1.13.0
      */
+    didReceiveAttrs() {},
 
     /**
      Called when the attributes passed into the component have been updated.
@@ -769,6 +770,7 @@ const Component = CoreView.extend(
      @public
      @since 1.13.0
      */
+    didRender() {},
 
     /**
      Called after a component has been rendered, both on initial render and
@@ -785,6 +787,7 @@ const Component = CoreView.extend(
      @public
      @since 1.13.0
      */
+    willRender() {},
 
     /**
      Called before a component has been rendered, both on initial render and
@@ -801,6 +804,7 @@ const Component = CoreView.extend(
      @public
      @since 1.13.0
      */
+    didUpdateAttrs() {},
 
     /**
      Called when the attributes passed into the component have been changed.
@@ -817,6 +821,7 @@ const Component = CoreView.extend(
      @public
      @since 1.13.0
      */
+    willUpdate() {},
 
     /**
      Called when the component is about to update and rerender itself.
@@ -833,6 +838,7 @@ const Component = CoreView.extend(
      @public
      @since 1.13.0
      */
+    didUpdate() {},
 
     /**
      Called when the component has updated and rerendered itself.
