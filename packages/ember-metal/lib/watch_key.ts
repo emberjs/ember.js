@@ -1,4 +1,5 @@
 import { DEBUG } from '@glimmer/env';
+import { ENV } from 'ember-environment';
 import {
   descriptorFor,
   isDescriptor,
@@ -43,14 +44,14 @@ export function watchKey(obj: object, keyName: string, _meta?: Meta) {
       (obj as MaybeHasWillWatchProperty).willWatchProperty!(keyName);
     }
 
-    if (DEBUG) {
+    if (DEBUG && ENV.MANDATORY_SETTERS) {
       // NOTE: this is dropped for prod + minified builds
       handleMandatorySetter(meta, obj, keyName);
     }
   }
 }
 
-if (DEBUG) {
+if (DEBUG && ENV.MANDATORY_SETTERS) {
   let hasOwnProperty = (obj: object, key: string) => Object.prototype.hasOwnProperty.call(obj, key);
   let propertyIsEnumerable = (obj: object, key: string) =>
     Object.prototype.propertyIsEnumerable.call(obj, key);
@@ -113,7 +114,7 @@ export function unwatchKey(obj: object, keyName: string, _meta?: Meta) {
       (obj as MaybeHasDidUnwatchProperty).didUnwatchProperty!(keyName);
     }
 
-    if (DEBUG) {
+    if (DEBUG && ENV.MANDATORY_SETTERS) {
       // It is true, the following code looks quite WAT. But have no fear, It
       // exists purely to improve development ergonomics and is removed from
       // ember.min.js and ember.prod.js builds.

@@ -3,6 +3,7 @@ import { computed, Mixin, observer } from 'ember-metal';
 import { DEBUG } from '@glimmer/env';
 import EmberObject from '../../../lib/system/object';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { ENV } from 'ember-environment';
 
 moduleFor(
   'EmberObject.create',
@@ -47,6 +48,28 @@ moduleFor(
       } else {
         assert.expect(0);
       }
+    }
+
+    ['@test does not set up mandatory setters when mandatory setters are not enabled'](assert) {
+      let originalEnvValue = ENV.MANDATORY_SETTERS;
+      ENV.MANDATORY_SETTERS = false;
+
+      if (DEBUG) {
+        let MyClass = EmberObject.extend({
+          foo: null,
+          fooDidChange: observer('foo', function() {}),
+        });
+
+        let o = MyClass.create({ foo: 'bar', bar: 'baz' });
+        assert.equal(o.get('foo'), 'bar');
+
+        let descriptor = Object.getOwnPropertyDescriptor(o, 'foo');
+        assert.ok(!descriptor.set, 'Mandatory setter was not setup');
+      } else {
+        assert.expect(0);
+      }
+
+      ENV.MANDATORY_SETTERS = originalEnvValue;
     }
 
     ['@test calls setUnknownProperty if defined'](assert) {

@@ -63,6 +63,19 @@ export const ENV = {
   */
   LOG_VERSION: true,
 
+  /**
+   The `MANDATORY_SETTERS` property, when true, tells Ember
+   that setting observed values needs to be done by Ember.set
+   Added to allow notifyPropertyChange still be used.
+
+   @property MANDATORY_SETTERS
+   @type Boolean
+   @default true
+   @for EmberENV
+   @public
+   */
+  MANDATORY_SETTERS: true,
+
   RAISE_ON_DEPRECATION: false,
 
   STRUCTURED_PROFILE: false,

@@ -4,6 +4,7 @@
 
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
+import { ENV } from 'ember-environment';
 import { descriptorFor, Meta, meta as metaFor, peekMeta, UNDEFINED } from 'ember-meta';
 import { overrideChains } from './property_events';
 
@@ -201,7 +202,7 @@ export function defineProperty(
   } else if (desc === undefined || desc === null) {
     value = data;
 
-    if (DEBUG && watching) {
+    if (DEBUG && ENV.MANDATORY_SETTERS && watching) {
       meta.writeValues(keyName, data);
 
       let defaultDescriptor = {
