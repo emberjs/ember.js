@@ -11,7 +11,7 @@ module.exports = {
   plugins: [
     'ember-internal',
     'prettier',
-    'import',
+    'import',fewafwef awefa wef
   ],
   rules: {
     'semi': 'error',
