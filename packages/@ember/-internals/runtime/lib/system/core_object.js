@@ -135,6 +135,59 @@ function initialize(obj, properties) {
 }
 
 /**
+  `CoreObject` is the base class for all Ember constructs. It establishes a
+  class system based on Ember's Mixin system, and provides the basis for the
+  Ember Object Model. `CoreObject` should generally not be used directly,
+  instead you should use `EmberObject`.
+
+  ## Usage
+
+  You can define a class by extending from `CoreObject` using the `extend`
+  method:
+
+  ```js
+  const Person = CoreObject.extend({
+    name: 'Tomster',
+  });
+  ```
+
+  For detailed usage, see the [Object Model](https://guides.emberjs.com/release/object-model/)
+  section of the guides.
+
+  ## Usage with Native Classes
+
+  Native Javascript `class` syntax can be used to extend from any `CoreObject`
+  based class:
+
+  ```js
+  class Person extends CoreObject {
+    init() {
+      super.init(...arguments);
+      this.name = 'Tomster';
+    }
+  }
+  ```
+
+  Some notes about `class` usage:
+
+  * `new` syntax is not currently supported with classes that extend from
+    `EmberObject`. You must continue to use the `create` method when making new
+    instances of classes, even if they are defined using native class syntax.
+    If you want to use `new` syntax, consider creating classes which do _not_
+    extend from `EmberObject`. Ember features, such as computed properties and
+    decorators, will still work with base-less classes.
+  * Instead of using `this._super()`, you must use standard `super` syntax in
+    native classes. See the [MDN docs on classes](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes#Super_class_calls_with_super)
+    for more details.
+  * Native classes support using [constructors](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes#Constructor)
+    to set up newly-created instances. Ember uses these to, among other things,
+    support features that need to retrieve other entities by name, like Service
+    injection and `getOwner`. To ensure your custom instance setup logic takes
+    place after this important work is done, avoid using the `constructor` in
+    favor of `init`.
+  * Using native classes, and switching back to the old Ember Object model is
+    fully supported.
+
   @class CoreObject
   @public
 */
