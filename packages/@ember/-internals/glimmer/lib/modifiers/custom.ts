@@ -56,6 +56,27 @@ export interface ModifierManagerDelegate<ModifierInstance> {
   destroyModifier(instance: ModifierInstance, args: ManagerArgs): void;
 }
 
+/**
+  The CustomModifierManager allows addons to provide custom modifier
+  implementations that integrate seamlessly into Ember. This is accomplished
+  through a delegate, registered with the custom modifier manager, which
+  implements a set of hooks that determine modifier behavior.
+  To create a custom modifier manager, instantiate a new CustomModifierManager
+  class and pass the delegate as the first argument:
+  ```js
+  let manager = new CustomModifierManager({
+    // ...delegate implementation...
+  });
+  ```
+  ## Delegate Hooks
+  Throughout the lifecycle of a modifier, the modifier manager will invoke
+  delegate hooks that are responsible for surfacing those lifecycle changes to
+  the end developer.
+  * `createModifier()` - invoked when a new instance of a modifier should be created
+  * `installModifier()` - invoked when the modifier is installed on the element
+  * `updateModifier()` - invoked when the arguments passed to a modifier change
+  * `destroyModifier()` - invoked when the modifier is about to be destroyed
+*/
 class CustomModifierManager<ModifierInstance>
   implements
     ModifierManager<
