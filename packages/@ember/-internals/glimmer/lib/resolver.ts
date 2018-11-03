@@ -32,6 +32,7 @@ import { default as action } from './helpers/action';
 import { default as array } from './helpers/array';
 import { default as concat } from './helpers/concat';
 import { default as eq } from './helpers/eq';
+import { default as not } from './helpers/not';
 import { default as eachIn } from './helpers/each-in';
 import { default as get } from './helpers/get';
 import { default as hash } from './helpers/hash';
@@ -72,6 +73,7 @@ const BUILTINS_HELPERS = {
   array,
   log,
   mut,
+  not,
   'query-params': queryParams,
   readonly,
   unbound,
