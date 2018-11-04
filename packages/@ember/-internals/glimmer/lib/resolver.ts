@@ -44,6 +44,7 @@ import { default as log } from './helpers/log';
 import { default as lt } from './helpers/lt';
 import { default as lte } from './helpers/lte';
 import { default as mut } from './helpers/mut';
+import { default as or } from './helpers/or';
 import { default as queryParams } from './helpers/query-param';
 import { default as readonly } from './helpers/readonly';
 import { default as unbound } from './helpers/unbound';
@@ -84,6 +85,7 @@ const BUILTINS_HELPERS = {
   lte,
   mut,
   not,
+  or,
   'query-params': queryParams,
   readonly,
   unbound,
