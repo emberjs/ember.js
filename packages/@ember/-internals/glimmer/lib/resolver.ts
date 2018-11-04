@@ -39,6 +39,7 @@ import { default as get } from './helpers/get';
 import { default as hash } from './helpers/hash';
 import { inlineIf, inlineUnless } from './helpers/if-unless';
 import { default as log } from './helpers/log';
+import { default as lt } from './helpers/lt';
 import { default as mut } from './helpers/mut';
 import { default as queryParams } from './helpers/query-param';
 import { default as readonly } from './helpers/readonly';
@@ -74,6 +75,7 @@ const BUILTINS_HELPERS = {
   hash,
   array,
   log,
+  lt,
   mut,
   not,
   'query-params': queryParams,
