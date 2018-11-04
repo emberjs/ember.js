@@ -29,6 +29,7 @@ import { default as htmlSafeHelper } from './helpers/-html-safe';
 import { default as inputTypeHelper } from './helpers/-input-type';
 import { default as normalizeClassHelper } from './helpers/-normalize-class';
 import { default as action } from './helpers/action';
+import { default as and } from './helpers/and';
 import { default as array } from './helpers/array';
 import { default as concat } from './helpers/concat';
 import { default as eq } from './helpers/eq';
@@ -70,6 +71,7 @@ function makeOptions(moduleName: string, namespace?: string): LookupOptions {
 const BUILTINS_HELPERS = {
   if: inlineIf,
   action,
+  and,
   concat,
   eq,
   get,
