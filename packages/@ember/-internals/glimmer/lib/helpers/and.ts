@@ -22,7 +22,14 @@ import { InternalHelperReference } from '../utils/references';
   @since 2.7.0
 */
 function and({ positional: { references } }: CapturedArguments) {
-  return references.reduce((acc: any, ref) => acc && ref.value(), true);
+  let last: any = true;
+  for (let i = 0; i < references.length; i++) {
+    last = references[i].value();
+    if (!last) {
+      return last;
+    }
+  }
+  return last;
 }
 
 export default function(_vm: VM, args: Arguments) {
