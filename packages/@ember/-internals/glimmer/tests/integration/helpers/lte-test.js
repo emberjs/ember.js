@@ -45,6 +45,14 @@ moduleFor(
       this.runTask(() => set(this.context, 'right', 5));
 
       this.assertText('true');
+
+      this.runTask(() => set(this.context, 'right', null));
+
+      this.assertText('false');
+
+      this.runTask(() => set(this.context, 'left', 0));
+
+      this.assertText('true');
     }
 
     ['@test it can be used as a sub-expression']() {

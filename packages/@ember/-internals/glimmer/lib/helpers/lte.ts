@@ -27,8 +27,11 @@ function lte({ positional: { references } }: CapturedArguments) {
     return false;
   }
   let right = references[1].value();
-  if (right === undefined || right === null) {
+  if (right === undefined) {
     return false;
+  }
+  if (right === null) {
+    return left <= 0;
   }
   return left <= right;
 }
