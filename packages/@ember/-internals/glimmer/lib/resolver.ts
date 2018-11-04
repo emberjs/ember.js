@@ -34,12 +34,14 @@ import { default as concat } from './helpers/concat';
 import { default as eq } from './helpers/eq';
 import { default as not } from './helpers/not';
 import { default as gt } from './helpers/gt';
+import { default as gte } from './helpers/gte';
 import { default as eachIn } from './helpers/each-in';
 import { default as get } from './helpers/get';
 import { default as hash } from './helpers/hash';
 import { inlineIf, inlineUnless } from './helpers/if-unless';
 import { default as log } from './helpers/log';
 import { default as lt } from './helpers/lt';
+import { default as lte } from './helpers/lte';
 import { default as mut } from './helpers/mut';
 import { default as queryParams } from './helpers/query-param';
 import { default as readonly } from './helpers/readonly';
@@ -72,10 +74,12 @@ const BUILTINS_HELPERS = {
   eq,
   get,
   gt,
+  gte,
   hash,
   array,
   log,
   lt,
+  lte,
   mut,
   not,
   'query-params': queryParams,
