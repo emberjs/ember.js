@@ -8,7 +8,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
     'Router Service - events',
     class extends RouterTestCase {
       '@test initial render'(assert) {
-        assert.expect(8);
+        assert.expect(12);
         this.add(
           `route:application`,
           Route.extend({
@@ -24,6 +24,13 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
 
               this.router.on('routeDidChange', transition => {
                 assert.ok(transition);
+                assert.ok(this.router.currentURL, `has URL ${this.router.currentURL}`);
+                assert.equal(this.router.currentURL, '/');
+                assert.ok(
+                  this.router.currentRouteName,
+                  `has route name ${this.router.currentRouteName}`
+                );
+                assert.equal(this.router.currentRouteName, 'parent.index');
                 assert.equal(transition.from, undefined);
                 assert.equal(transition.to.name, 'parent.index');
                 assert.equal(transition.to.localName, 'index');
@@ -35,7 +42,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
       }
 
       '@test subsequent visits'(assert) {
-        assert.expect(20);
+        assert.expect(24);
         let toParent = true;
 
         this.add(
@@ -46,6 +53,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
               this._super(...arguments);
               this.router.on('routeWillChange', transition => {
                 if (toParent) {
+                  assert.equal(this.router.currentURL, null, 'starts as null');
                   assert.equal(transition.from, undefined);
                   assert.equal(transition.to.name, 'parent.child');
                   assert.equal(transition.to.localName, 'child');
@@ -58,6 +66,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
                   assert.equal(transition.to.parent.parent.name, 'application', 'top level');
                   assert.equal(transition.to.parent.parent.parent, null, 'top level');
                 } else {
+                  assert.equal(this.router.currentURL, '/child', 'not changed until transition');
                   assert.notEqual(transition.from, undefined);
                   assert.equal(transition.from.name, 'parent.child');
                   assert.equal(transition.from.localName, 'child');
@@ -68,10 +77,12 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
 
               this.router.on('routeDidChange', transition => {
                 if (toParent) {
+                  assert.equal(this.router.currentURL, '/child');
                   assert.equal(transition.from, undefined);
                   assert.equal(transition.to.name, 'parent.child');
                   assert.equal(transition.to.localName, 'child');
                 } else {
+                  assert.equal(this.router.currentURL, '/sister');
                   assert.notEqual(transition.from, undefined);
                   assert.equal(transition.from.name, 'parent.child');
                   assert.equal(transition.from.localName, 'child');
