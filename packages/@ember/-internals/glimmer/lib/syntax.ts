@@ -1,5 +1,4 @@
 import { OwnedTemplateMeta } from '@ember/-internals/views';
-import { EMBER_TEMPLATE_BLOCK_LET_HELPER } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { CompilableBlock } from '@glimmer/interfaces';
 import { Macros, OpcodeBuilder } from '@glimmer/opcode-compiler';
@@ -100,9 +99,7 @@ export function populateMacros(macros: Macros) {
   inlines.add('input', inputMacro);
   inlines.add('textarea', textAreaMacro);
   inlines.addMissing(refineInlineSyntax);
-  if (EMBER_TEMPLATE_BLOCK_LET_HELPER === true) {
-    blocks.add('let', blockLetMacro);
-  }
+  blocks.add('let', blockLetMacro);
   blocks.addMissing(refineBlockSyntax);
 
   for (let i = 0; i < experimentalMacros.length; i++) {
