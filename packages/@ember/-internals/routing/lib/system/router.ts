@@ -401,7 +401,9 @@ class EmberRouter extends EmberObject {
       routeDidChange(transition: Transition) {
         if (EMBER_ROUTING_ROUTER_SERVICE) {
           router.set('currentRoute', transition.to);
-          router.trigger('routeDidChange', transition);
+          once(() => {
+            router.trigger('routeDidChange', transition);
+          });
         }
       }
 
