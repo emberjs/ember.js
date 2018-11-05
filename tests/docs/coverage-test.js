@@ -34,7 +34,7 @@ QUnit.module('Docs coverage', function(hooks) {
       let extraneous = setDifference(docsItems, expectedItems);
       assert.emptySet(
         extraneous,
-        'If you intentionally removed a public API method, please udpate tests/docs/expected.js. Otherwise, documentation is missing, incorrectly formatted, or in a directory that is not watched by yuidoc. All files containing documentation must have a yuidoc class declaration.'
+        'If you intentionally removed a public API method, please update tests/docs/expected.js. Otherwise, documentation is missing, incorrectly formatted, or in a directory that is not watched by yuidoc. All files containing documentation must have a yuidoc class declaration.'
       );
     });
   });
