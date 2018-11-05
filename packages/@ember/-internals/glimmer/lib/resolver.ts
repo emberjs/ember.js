@@ -34,6 +34,7 @@ import { default as array } from './helpers/array';
 import { default as concat } from './helpers/concat';
 import { default as eq } from './helpers/eq';
 import { default as not } from './helpers/not';
+import { default as notEq } from './helpers/not-eq';
 import { default as gt } from './helpers/gt';
 import { default as gte } from './helpers/gte';
 import { default as eachIn } from './helpers/each-in';
@@ -85,6 +86,7 @@ const BUILTINS_HELPERS = {
   lte,
   mut,
   not,
+  'not-eq': notEq,
   or,
   'query-params': queryParams,
   readonly,
