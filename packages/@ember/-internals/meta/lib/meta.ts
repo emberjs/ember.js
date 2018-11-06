@@ -619,6 +619,10 @@ export class Meta {
       } else {
         // update own listener
         listener.kind = kind;
+
+        // TODO: Remove this when removing REMOVE_ALL, it won't be necessary
+        listener.target = target;
+        listener.method = method;
       }
     }
   }
