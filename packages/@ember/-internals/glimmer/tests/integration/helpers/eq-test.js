@@ -35,7 +35,10 @@ if (EMBER_BASIC_TEMPLATE_HELPERS) {
       }
 
       ['@test it can be used as a sub-expression']() {
-        this.render(`{{if (eq first second) "equal" "different"}}`, { first: 'one', second: 'two' });
+        this.render(`{{if (eq first second) "equal" "different"}}`, {
+          first: 'one',
+          second: 'two',
+        });
 
         this.assertText('different');
 

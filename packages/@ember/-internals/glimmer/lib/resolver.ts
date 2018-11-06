@@ -3,10 +3,10 @@ import { ENV } from '@ember/-internals/environment';
 import { LookupOptions, Owner, setOwner } from '@ember/-internals/owner';
 import { lookupComponent, lookupPartial, OwnedTemplateMeta } from '@ember/-internals/views';
 import {
+  EMBER_BASIC_TEMPLATE_HELPERS,
   EMBER_MODULE_UNIFICATION,
   GLIMMER_CUSTOM_COMPONENT_MANAGER,
   GLIMMER_MODIFIER_MANAGER,
-  EMBER_BASIC_TEMPLATE_HELPERS,
 } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { _instrumentStart } from '@ember/instrumentation';
