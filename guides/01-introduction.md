@@ -2,7 +2,7 @@
 
 1. [Introduction](./01-introduction.md)
 2. [Precompiler Overview](./02-precompiler-overview.md)
-3. [~~Runtime Overview~~](./03-runtime-overview.md)
+3. [Runtime Overview](./03-runtime-overview.md)
 4. [References](./04-references.md)
 5. [Validators](./05-validators.md)
 6. [~~Runtime Compiler~~](./06-runtime-compiler.md)
@@ -14,8 +14,8 @@
 # Introduction
 
 Glimmer is a flexible, low-level rendering pipeline for building a "live" DOM
-from [Handlebars][handlebars] templates that can subsequently be updated cheaply
-when data changes.
+from a superset of the [Handlebars][handlebars] templating language that can
+subsequently be updated cheaply when data changes.
 
 In addition to the basic Handlebars features such as helpers and partials,
 Glimmer also comes with built-in support for a very flexible and powerful
@@ -36,11 +36,11 @@ The code examples in this document are written in [TypeScript][typescript].
 
 ## Architecture
 
-The key insight of Glimmer is that Handlebars is a declarative programming
-language for building and updating DOM. By structuring web UI around Handlebars
-templates as the central abstraction, we can use advanced techniques from
-programming languages and compilers to significantly boost the performance of
-web applications in practice.
+The key insight of Glimmer is that templates represent a declarative programming
+language for building and updating DOM. By structuring web UI around templates
+as the central abstraction, we can use advanced techniques from programming
+languages and compilers to significantly boost the performance of web
+applications in practice.
 
 Because of this, Glimmer's architecture has more in common with compiler
 toolchains like clang/LLVM or javac/JVM than traditional JavaScript libraries.
@@ -53,8 +53,8 @@ At a high level, Glimmer is made up of two parts:
 
 ### Compiler
 
-The compiler is responsible for turning your program's Handlebars templates into
-Glimmer binary bytecode.
+The compiler is responsible for turning your program's templates into Glimmer
+binary bytecode.
 
 Because Glimmer is an optimizing compiler, it must know about all of the
 templates in a program in order to understand how they work together. This is in
