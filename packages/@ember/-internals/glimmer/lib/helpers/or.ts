@@ -19,7 +19,7 @@ import { InternalHelperReference } from '../utils/references';
   @public
   @method or
   @for Ember.Templates.helpers
-  @since 2.7.0
+  @since 3.7.0
 */
 function or({ positional: { references } }: CapturedArguments) {
   let last: any = false;
