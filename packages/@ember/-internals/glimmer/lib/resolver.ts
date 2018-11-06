@@ -6,6 +6,7 @@ import {
   EMBER_MODULE_UNIFICATION,
   GLIMMER_CUSTOM_COMPONENT_MANAGER,
   GLIMMER_MODIFIER_MANAGER,
+  EMBER_BASIC_TEMPLATE_HELPERS,
 } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { _instrumentStart } from '@ember/instrumentation';
@@ -73,21 +74,12 @@ function makeOptions(moduleName: string, namespace?: string): LookupOptions {
 const BUILTINS_HELPERS = {
   if: inlineIf,
   action,
-  and,
   concat,
-  eq,
   get,
-  gt,
-  gte,
   hash,
   array,
   log,
-  lt,
-  lte,
   mut,
-  not,
-  'not-eq': notEq,
-  or,
   'query-params': queryParams,
   readonly,
   unbound,
@@ -101,6 +93,18 @@ const BUILTINS_HELPERS = {
   '-mount': mountHelper,
   '-outlet': outletHelper,
 };
+
+if (EMBER_BASIC_TEMPLATE_HELPERS) {
+  BUILTINS_HELPERS['and'] = and;
+  BUILTINS_HELPERS['eq'] = eq;
+  BUILTINS_HELPERS['gt'] = gt;
+  BUILTINS_HELPERS['gte'] = gte;
+  BUILTINS_HELPERS['lt'] = lt;
+  BUILTINS_HELPERS['lte'] = lte;
+  BUILTINS_HELPERS['not'] = not;
+  BUILTINS_HELPERS['not-eq'] = notEq;
+  BUILTINS_HELPERS['or'] = or;
+}
 
 if (DEBUG) {
   BUILTINS_HELPERS['-assert-implicit-component-helper-argument'] = componentAssertionHelper;

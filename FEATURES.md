@@ -55,3 +55,8 @@ for a detailed explanation.
 * `ember-template-block-let-helper`
 
   Introduce the block form of the `let` helper per [RFC](https://github.com/emberjs/rfcs/blob/78211b11387e7f477264e322687f1ec5ab131361/text/0286-block-let-template-helper.md).
+
+* `ember-basic-template-helpers`
+
+  Introduces several template helpers to perform basic comparisons and boolean operation in templates:
+  `{{eq}}`, `{{not-eq}}`, `{{gt}}`, `{{gte}}`, `{{lt}}`, `{{lte}}`, `{{not}}`, `{{and}}` and `{{or}}`.
