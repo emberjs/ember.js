@@ -41,6 +41,7 @@ branches:
 stages:
   - basic test
   - additional tests
+  - inspector tests
   - name: deploy
     if: type IN (push)
 
