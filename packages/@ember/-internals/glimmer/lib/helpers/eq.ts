@@ -19,7 +19,7 @@ import { InternalHelperReference } from '../utils/references';
   @public
   @method eq
   @for Ember.Templates.helpers
-  @since 2.7.0
+  @since 3.7.0
 */
 function eq({ positional: { references } }: CapturedArguments) {
   return references[0].value() === references[1].value();
