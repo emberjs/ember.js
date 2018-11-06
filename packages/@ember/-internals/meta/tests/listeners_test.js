@@ -155,5 +155,31 @@ moduleFor(
         'one reopen call after mutating parents and flattening out of order'
       );
     }
+
+    ['@test REMOVE_ALL does not interfere with future adds'](assert) {
+      expectDeprecation(() => {
+        let t = {};
+        let m = meta({});
+
+        m.addToListeners('hello', t, 'm', 0);
+        let matching = m.matchingListeners('hello');
+
+        assert.equal(matching.length, 3);
+        assert.equal(matching[0], t);
+
+        // Remove all listeners
+        m.removeAllListeners('hello');
+
+        matching = m.matchingListeners('hello');
+        assert.equal(matching, undefined);
+
+        m.addToListeners('hello', t, 'm', 0);
+        matching = m.matchingListeners('hello');
+
+        // listener was added back successfully
+        assert.equal(matching.length, 3);
+        assert.equal(matching[0], t);
+      });
+    }
   }
 );
