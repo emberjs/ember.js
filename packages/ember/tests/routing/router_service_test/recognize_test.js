@@ -135,6 +135,8 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
         );
         return this.visit('/')
           .then(() => {
+            this.routerService.on('routeWillChange', () => assert.ok(false));
+            this.routerService.on('routeDidChange', () => assert.ok(false));
             return this.routerService.recognizeAndLoad('/child');
           })
           .then(() => {

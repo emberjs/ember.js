@@ -381,7 +381,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
       }
 
       '@test query param transitions'(assert) {
-        assert.expect(9);
+        assert.expect(15);
         let initial = true;
         let addQP = false;
         let removeQP = false;
@@ -396,10 +396,13 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
               this.router.on('routeWillChange', transition => {
                 assert.equal(transition.to.name, 'parent.index');
                 if (initial) {
+                  assert.equal(transition.from, null);
                   assert.deepEqual(transition.to.queryParams, { a: 'true' });
                 } else if (addQP) {
+                  assert.deepEqual(transition.from.queryParams, { a: 'true' });
                   assert.deepEqual(transition.to.queryParams, { a: 'false', b: 'b' });
                 } else if (removeQP) {
+                  assert.deepEqual(transition.from.queryParams, { a: 'false', b: 'b' });
                   assert.deepEqual(transition.to.queryParams, { a: 'false' });
                 } else {
                   assert.ok(false, 'never');
@@ -408,10 +411,13 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
 
               this.router.on('routeDidChange', transition => {
                 if (initial) {
+                  assert.equal(transition.from, null);
                   assert.deepEqual(transition.to.queryParams, { a: 'true' });
                 } else if (addQP) {
+                  assert.deepEqual(transition.from.queryParams, { a: 'true' });
                   assert.deepEqual(transition.to.queryParams, { a: 'false', b: 'b' });
                 } else if (removeQP) {
+                  assert.deepEqual(transition.from.queryParams, { a: 'false', b: 'b' });
                   assert.deepEqual(transition.to.queryParams, { a: 'false' });
                 } else {
                   assert.ok(false, 'never');
