@@ -19,7 +19,7 @@ import { InternalHelperReference } from '../utils/references';
   @public
   @method and
   @for Ember.Templates.helpers
-  @since 2.7.0
+  @since 3.7.0
 */
 function and({ positional: { references } }: CapturedArguments) {
   let last: any = true;
