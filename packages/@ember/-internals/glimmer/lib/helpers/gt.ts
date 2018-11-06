@@ -20,6 +20,7 @@ import { InternalHelperReference } from '../utils/references';
   @method gt
   @for Ember.Templates.helpers
   @since 3.7.0
+  @category ember-basic-template-helpers
 */
 function gt({ positional: { references } }: CapturedArguments) {
   let left = references[0].value();

@@ -20,6 +20,7 @@ import { InternalHelperReference } from '../utils/references';
   @method not
   @for Ember.Templates.helpers
   @since 3.7.0
+  @category ember-basic-template-helpers
 */
 function not({ positional: { references } }: CapturedArguments) {
   return !references[0].value();

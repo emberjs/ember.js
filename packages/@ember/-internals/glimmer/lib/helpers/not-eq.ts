@@ -20,6 +20,7 @@ import { InternalHelperReference } from '../utils/references';
   @method not-eq
   @for Ember.Templates.helpers
   @since 3.7.0
+  @category ember-basic-template-helpers
 */
 function notEq({ positional: { references } }: CapturedArguments) {
   return references[0].value() !== references[1].value();
