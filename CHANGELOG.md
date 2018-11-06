@@ -1,5 +1,11 @@
 # Ember Changelog
 
+### v3.6.0-beta.3 (November 5, 2018)
+
+- [#17169](https://github.com/emberjs/ember.js/pull/17169) [BUGFIX] Add default implementations of Component lifecycle hooks
+- [#17165](https://github.com/emberjs/ember.js/pull/17165) [BUGFIX] Fix RouteInfo.find and transition.froms
+- [#17180](https://github.com/emberjs/ember.js/pull/17180) [BUGFIX] Router Service State should be correct in events
+
 ### v3.6.0-beta.2 (October 29, 2018)
 
 - [#17130](https://github.com/emberjs/ember.js/pull/17130) [BUGFIX] Ensure that timers scheduled after a system sleep are fired properly.
