@@ -179,7 +179,7 @@ module.exports = {
         '-t',
         '1500',
         '--u',
-        '<url>',
+        '<url>&ie=true',
       ],
       protocol: 'browser',
     },

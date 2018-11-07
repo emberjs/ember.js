@@ -1,10 +1,25 @@
+import { DEBUG } from '@glimmer/env';
+
 const create = Object.create;
 const setPrototypeOf = Object.setPrototypeOf;
 const defineProperty = Object.defineProperty;
 
-export function classCallCheck() {}
+export function classCallCheck(instance, Constructor) {
+  if (DEBUG) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError('Cannot call a class as a function');
+    }
+  }
+}
 
 export function inherits(subClass, superClass) {
+  if (DEBUG) {
+    if (typeof superClass !== 'function' && superClass !== null) {
+      throw new TypeError(
+        'Super expression must either be null or a function, not ' + typeof superClass
+      );
+    }
+  }
   subClass.prototype = create(superClass === null ? null : superClass.prototype, {
     constructor: {
       value: subClass,
@@ -37,6 +52,11 @@ export function createClass(Constructor, protoProps, staticProps) {
   return Constructor;
 }
 
-export function possibleConstructorReturn(self, call) {
+export const possibleConstructorReturn = function(self, call) {
+  if (DEBUG) {
+    if (!self) {
+      throw new ReferenceError(`this hasn't been initialized - super() hasn't been called`);
+    }
+  }
   return (call !== null && typeof call === 'object') || typeof call === 'function' ? call : self;
-}
+};

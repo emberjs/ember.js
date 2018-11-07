@@ -10,10 +10,10 @@ const concat = require('broccoli-concat');
 const testIndexHTML = require('./broccoli/test-index-html');
 const toES5 = require('./broccoli/to-es5');
 const toNamedAMD = require('./broccoli/to-named-amd');
-const stripForProd = toES5.stripForProd;
+const stripForProd = require('./broccoli/strip-for-prod');
+const debugMacros = require('./broccoli/debug-macros');
 const minify = require('./broccoli/minify');
 const rename = require('./broccoli/rename');
-const { stripIndent } = require('common-tags');
 const {
   routerES,
   jquery,
@@ -38,7 +38,6 @@ const ENV = process.env.EMBER_ENV || 'development';
 module.exports = function() {
   let loader = internalLoader();
   let nodeModule = nodeModuleUtils();
-  let license = emberLicense();
 
   // generate "loose" ES<latest> modules...
   let dependenciesES = new MergeTrees([
@@ -63,6 +62,9 @@ module.exports = function() {
 
     // packages/** (after typescript compilation)
     getPackagesES(),
+
+    // externalized helpers
+    babelHelpers(),
   ]);
 
   let es = new MergeTrees([packagesES, dependenciesES, templateCompilerDependenciesES], {
@@ -80,12 +82,8 @@ module.exports = function() {
     }
   );
 
-  let babelDebugHelpersES5 = toES5(babelHelpers('debug'), {
-    annotation: 'babel helpers debug',
-  });
-
   // Rollup
-  let packagesESRollup = new MergeTrees([
+  let packagesRollupES = new MergeTrees([
     new Funnel(packagesES, {
       exclude: [
         '@ember/-internals/browser-environment/index.js',
@@ -110,195 +108,19 @@ module.exports = function() {
     rollupPackage(packagesES, '@ember/-internals/container'),
   ]);
 
-  // ES5
-  let packagesES5 = toES5(packagesESRollup);
-  let dependenciesES5 = toES5(dependenciesES);
-  let templateCompilerDependenciesES5 = toES5(templateCompilerDependenciesES);
-
   // Bundling
-  let emberTestsBundle = new MergeTrees([
-    new Funnel(packagesES5, {
-      include: [
-        'internal-test-helpers/**',
-        '@ember/-internals/*/tests/**' /* internal packages */,
-        '*/*/tests/**' /* scoped packages */,
-        '*/tests/**' /* packages */,
-        'license.js',
-      ],
-    }),
-    loader,
-    license,
-    nodeModule,
-    babelDebugHelpersES5,
-  ]);
-
-  emberTestsBundle = concatBundle(emberTestsBundle, {
-    outputFile: 'ember-tests.js',
-    hasBootstrap: false,
-  });
-
-  let emberDebugBundle = new MergeTrees([
-    new Funnel(packagesES5, {
-      exclude: [
-        '@ember/-internals/*/tests/**' /* internal packages */,
-        '*/*/tests/**' /* scoped packages */,
-        '*/tests/**' /* packages */,
-        'ember-template-compiler/**',
-        'internal-test-helpers/**',
-      ],
-    }),
-    dependenciesES5,
-    loader,
-    license,
-    nodeModule,
-    bootstrapModule('ember'),
-    babelDebugHelpersES5,
-  ]);
-
-  emberDebugBundle = concatBundle(emberDebugBundle, {
-    outputFile: 'ember.debug.js',
-  });
-
-  let emberTestingBundle = new MergeTrees([
-    new Funnel(packagesES5, {
-      include: [
-        '@ember/debug/lib/**',
-        '@ember/debug/index.js',
-        'ember-testing/index.js',
-        'ember-testing/lib/**',
-        'license.js',
-      ],
-    }),
-    loader,
-    license,
-    babelDebugHelpersES5,
-    nodeModule,
-  ]);
-
-  emberTestingBundle = concatBundle(emberTestingBundle, {
-    outputFile: 'ember-testing.js',
-    hasBootstrap: false,
-    footer: stripIndent`
-      var testing = requireModule('ember-testing');
-      Ember.Test = testing.Test;
-      Ember.Test.Adapter = testing.Adapter;
-      Ember.Test.QUnitAdapter = testing.QUnitAdapter;
-      Ember.setupForTesting = testing.setupForTesting;
-    `,
-  });
-
-  function templateCompiler() {
-    return new MergeTrees([
-      new Funnel(packagesES5, {
-        include: [
-          '@ember/-internals/utils.js',
-          '@ember/-internals/environment.js',
-          '@ember/-internals/browser-environment.js',
-          '@ember/canary-features/**',
-          '@ember/debug/index.js',
-          '@ember/debug/lib/**',
-          '@ember/deprecated-features/**',
-          '@ember/error/index.js',
-          '@ember/polyfills/index.js',
-          '@ember/polyfills/lib/**',
-          'ember/version.js',
-          'ember-template-compiler/**',
-        ],
-      }),
-      bootstrapModule('ember-template-compiler', 'umd'),
-    ]);
-  }
-
-  let trees = [];
+  let bundleTrees = [
+    buildBundles(packagesRollupES, dependenciesES, templateCompilerDependenciesES),
+  ];
 
   if (ENV === 'production') {
-    let prodPackagesES5 = stripForProd(toES5(packagesESRollup, { environment: 'production' }));
-    let babelProdHelpersES5 = toES5(babelHelpers('prod'), {
-      environment: 'production',
-    });
+    let bundlesES5 = buildBundles(
+      toES5(packagesRollupES),
+      toES5(dependenciesES),
+      toES5(templateCompilerDependenciesES)
+    );
 
-    let emberProdBundle = new MergeTrees([
-      new Funnel(prodPackagesES5, {
-        exclude: [
-          '@ember/-internals/*/tests/**' /* internal packages */,
-          '*/*/tests/**' /* scoped packages */,
-          '*/tests/**' /* packages */,
-          'ember-template-compiler/**',
-          'ember-testing/**',
-          'internal-test-helpers/**',
-        ],
-      }),
-      stripForProd(dependenciesES5),
-      loader,
-      license,
-      nodeModule,
-      bootstrapModule('ember'),
-      babelProdHelpersES5,
-    ]);
-
-    emberProdBundle = concatBundle(emberProdBundle, {
-      outputFile: 'ember.prod.js',
-    });
-    trees.push(emberProdBundle);
-
-    let emberProdMinRename = rename(emberProdBundle, {
-      'ember.prod.js': 'ember.min.js',
-    });
-    let emberMinBundle = minify(emberProdMinRename);
-    trees.push(emberMinBundle);
-
-    let emberTestsBundle = new MergeTrees([
-      new Funnel(prodPackagesES5, {
-        include: [
-          'internal-test-helpers/**',
-          '*/*/tests/**' /* scoped packages */,
-          '*/tests/**' /* packages */,
-          'license.js',
-        ],
-      }),
-      loader,
-      license,
-      nodeModule,
-      babelProdHelpersES5,
-    ]);
-
-    emberTestsBundle = concatBundle(emberTestsBundle, {
-      outputFile: 'ember-tests.prod.js',
-      hasBootstrap: false,
-    });
-    trees.push(emberTestsBundle);
-
-    // Note:
-    // We have to build custom production template compiler
-    // because we strip babel helpers in the prod build
-    let emberTemplateCompilerBundle = new MergeTrees([
-      stripForProd(templateCompiler()),
-      stripForProd(templateCompilerDependenciesES5),
-      loader,
-      license,
-      babelProdHelpersES5,
-      nodeModule,
-    ]);
-
-    emberTemplateCompilerBundle = concatBundle(emberTemplateCompilerBundle, {
-      outputFile: 'ember-template-compiler.js',
-    });
-    trees.push(emberTemplateCompilerBundle);
-  } else {
-    let emberTemplateCompilerBundle = new MergeTrees([
-      templateCompiler(),
-      templateCompilerDependenciesES5,
-      loader,
-      license,
-      babelDebugHelpersES5,
-      nodeModule,
-    ]);
-
-    emberTemplateCompilerBundle = concatBundle(emberTemplateCompilerBundle, {
-      outputFile: 'ember-template-compiler.js',
-    });
-
-    trees.push(emberTemplateCompilerBundle);
+    bundleTrees.push(new Funnel(bundlesES5, { destDir: 'ie' }));
   }
 
   let emberTestsEmptyTestem = new Funnel('tests', {
@@ -309,11 +131,8 @@ module.exports = function() {
 
   return new MergeTrees([
     new Funnel(es, { destDir: 'es' }),
+    ...bundleTrees,
     pkgAndTestESBundleDebug,
-    ...trees,
-    emberTestsBundle,
-    emberDebugBundle,
-    emberTestingBundle,
     emberTestsEmptyTestem,
     nodeTests(),
 
@@ -323,6 +142,144 @@ module.exports = function() {
     qunit(),
   ]);
 };
+
+function buildBundles(packagesES, dependenciesES, templateCompilerDependenciesES) {
+  let packagesDevES = debugMacros(packagesES, 'development');
+  let dependenciesDevES = debugMacros(dependenciesES, 'development');
+  let templateCompilerDependenciesDevES = debugMacros(
+    templateCompilerDependenciesES,
+    'development'
+  );
+
+  let emberDebugFiles = new MergeTrees([
+    new Funnel(packagesDevES, {
+      exclude: [
+        '@ember/-internals/*/tests/**' /* internal packages */,
+        '*/*/tests/**' /* scoped packages */,
+        '*/tests/**' /* packages */,
+        'ember-template-compiler/**',
+        'internal-test-helpers/**',
+      ],
+    }),
+    dependenciesDevES,
+    bootstrapModule('sideeffects', 'ember'),
+  ]);
+
+  let emberTestsFiles = new MergeTrees([
+    new Funnel(packagesDevES, {
+      include: [
+        'internal-test-helpers/**',
+        '@ember/-internals/*/tests/**' /* internal packages */,
+        '*/*/tests/**' /* scoped packages */,
+        '*/tests/**' /* packages */,
+        'license.js',
+      ],
+    }),
+    bootstrapModule('empty'),
+  ]);
+
+  let emberTestingFiles = new MergeTrees([
+    new Funnel(packagesDevES, {
+      include: [
+        '@ember/debug/lib/**',
+        '@ember/debug/index.js',
+        'ember-testing/index.js',
+        'ember-testing/lib/**',
+        'license.js',
+      ],
+    }),
+    bootstrapModule('testing'),
+  ]);
+
+  let templateCompilerFiles = new MergeTrees([
+    new Funnel(packagesDevES, {
+      include: [
+        '@ember/-internals/utils.js',
+        '@ember/-internals/environment.js',
+        '@ember/-internals/browser-environment.js',
+        '@ember/canary-features/**',
+        '@ember/debug/index.js',
+        '@ember/debug/lib/**',
+        '@ember/deprecated-features/**',
+        '@ember/error/index.js',
+        '@ember/polyfills/index.js',
+        '@ember/polyfills/lib/**',
+        'ember/version.js',
+        'ember-template-compiler/**',
+      ],
+    }),
+    templateCompilerDependenciesDevES,
+    bootstrapModule('umd', 'ember-template-compiler'),
+  ]);
+
+  let emberProdFiles, emberTestsProdFiles;
+
+  if (ENV === 'production') {
+    let packagesProdES = stripForProd(debugMacros(packagesES, 'production'));
+    let dependenciesProdES = stripForProd(debugMacros(dependenciesES, 'production'));
+
+    emberProdFiles = new MergeTrees([
+      new Funnel(packagesProdES, {
+        exclude: [
+          '@ember/-internals/*/tests/**' /* internal packages */,
+          '*/*/tests/**' /* scoped packages */,
+          '*/tests/**' /* packages */,
+          'ember-template-compiler/**',
+          'ember-testing/**',
+          'internal-test-helpers/**',
+        ],
+      }),
+      dependenciesProdES,
+      bootstrapModule('sideeffects', 'ember'),
+    ]);
+
+    emberTestsProdFiles = new MergeTrees([
+      new Funnel(packagesProdES, {
+        include: [
+          'internal-test-helpers/**',
+          '*/*/tests/**' /* scoped packages */,
+          '*/tests/**' /* packages */,
+          'license.js',
+        ],
+      }),
+      bootstrapModule('empty'),
+    ]);
+
+    // Note:
+    // We have to build custom production template compiler
+    // because we strip babel helpers in the prod build
+    templateCompilerFiles = stripForProd(templateCompilerFiles);
+  }
+
+  // Files that are prebuilt and should not be AMD transformed
+  let vendor = [internalLoader(), nodeModuleUtils(), emberLicense()];
+
+  let emberProdBundle = emberProdFiles && buildBundle('ember.prod.js', emberProdFiles, vendor);
+  let emberMinBundle =
+    emberProdBundle && minify(rename(emberProdBundle, { 'ember.prod.js': 'ember.min.js' }));
+  let emberProdTestsBundle =
+    emberTestsProdFiles && buildBundle('ember-tests.prod.js', emberTestsProdFiles, vendor);
+
+  return new MergeTrees(
+    [
+      emberProdBundle,
+      emberMinBundle,
+      emberProdTestsBundle,
+      buildBundle('ember.debug.js', emberDebugFiles, vendor),
+      buildBundle('ember-tests.js', emberTestsFiles, vendor),
+      buildBundle('ember-testing.js', emberTestingFiles, vendor),
+      buildBundle('ember-template-compiler.js', templateCompilerFiles, vendor),
+    ].filter(Boolean)
+  );
+}
+
+function buildBundle(name, tree, extras) {
+  let bundleWithExtras = new MergeTrees([toNamedAMD(tree, true), ...extras]);
+
+  return concatBundle(bundleWithExtras, {
+    outputFile: name,
+  });
+}
 
 function glimmerDependenciesES() {
   let glimmerEntries = ['@glimmer/node', '@glimmer/opcode-compiler', '@glimmer/runtime'];
