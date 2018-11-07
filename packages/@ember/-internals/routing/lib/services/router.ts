@@ -3,9 +3,24 @@ import { EMBER_ROUTING_ROUTER_SERVICE } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { readOnly } from '@ember/object/computed';
 import Service from '@ember/service';
+import { DEBUG } from '@glimmer/env';
 import { Transition } from 'router_js';
 import EmberRouter from '../system/router';
 import { extractRouteArgs, resemblesURL, shallowEqual } from '../utils';
+
+let freezeRouteInfo: Function;
+if (DEBUG) {
+  freezeRouteInfo = (transition: Transition) => {
+    if (transition.from !== null && !Object.isFrozen(transition.from)) {
+      Object.freeze(transition.from);
+    }
+
+    if (transition.to !== null && !Object.isFrozen(transition.to)) {
+      Object.freeze(transition.to);
+    }
+  };
+}
+
 /**
    The Router service is the public API that provides access to the router.
 
@@ -255,10 +270,17 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
     init() {
       this._super(...arguments);
       this._router.on('routeWillChange', (transition: Transition) => {
+        if (DEBUG) {
+          freezeRouteInfo(transition);
+        }
         this.trigger('routeWillChange', transition);
       });
 
       this._router.on('routeDidChange', (transition: Transition) => {
+        if (DEBUG) {
+          freezeRouteInfo(transition);
+        }
+
         this.trigger('routeDidChange', transition);
       });
     },
