@@ -88,6 +88,7 @@ function generateBuiltTests() {
   // Container isn't publicly available.
   // ember-testing and @ember/debug are stripped from prod/min.
   var common = 'skipPackage=container,ember-testing,@ember/debug';
+
   testFunctions.push(function() {
     return run(common + '&nolint=true');
   });
@@ -99,6 +100,18 @@ function generateBuiltTests() {
   });
   testFunctions.push(function() {
     return run(common + '&enableoptionalfeatures=true&dist=prod&prod=true');
+  });
+  testFunctions.push(function() {
+    return run(common + '&ie=true&nolint=true');
+  });
+  testFunctions.push(function() {
+    return run(common + '&ie=true&dist=min&prod=true');
+  });
+  testFunctions.push(function() {
+    return run(common + '&ie=true&dist=prod&prod=true');
+  });
+  testFunctions.push(function() {
+    return run(common + '&ie=true&enableoptionalfeatures=true&dist=prod&prod=true');
   });
 }
 

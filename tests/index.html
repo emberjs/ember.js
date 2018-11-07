@@ -74,17 +74,20 @@
 
     <script>
       var dist = QUnit.urlParams.dist;
+      var ie = QUnit.urlParams.ie;
+
+      var relativePath = ie ? '../ie' : '..';
 
       switch (dist) {
         case 'prod':
         case 'min':
-          loadScript('../ember.' + dist + '.js');
+          loadScript(relativePath + '/ember.' + dist + '.js');
           break;
         case 'es':
-          loadScript('../ember-all.debug.js');
+          loadScript(relativePath + '/ember-all.debug.js');
           break;
         default:
-          loadScript('../ember.debug.js');
+          loadScript(relativePath + '/ember.debug.js');
           break;
       }
     </script>
@@ -96,24 +99,30 @@
 
     <script>
       var dist = QUnit.urlParams.dist;
+      var ie = QUnit.urlParams.ie;
+
+      var relativePath = ie ? '../ie' : '..';
 
       if (dist === 'es') {
         // do nothing template compiler already included
       } else {
-        loadScript('../ember-template-compiler.js');
+        loadScript(relativePath + '/ember-template-compiler.js');
       }
     </script>
 
     <script>
       var prod = QUnit.urlParams.prod;
       var dist = QUnit.urlParams.dist;
+      var ie = QUnit.urlParams.ie;
+
+      var relativePath = ie ? '../ie' : '..';
 
       if (dist === 'es') {
         // do nothing, tests are included
       } else if (prod) {
-        loadScript('../ember-tests.prod.js');
+        loadScript(relativePath + '/ember-tests.prod.js');
       } else {
-        loadScript('../ember-tests.js');
+        loadScript(relativePath + '/ember-tests.js');
       }
     </script>
 
