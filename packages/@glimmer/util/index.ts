@@ -1,7 +1,4 @@
-export interface Destroyable {
-  destroy(): void;
-}
-
+export * from './lib/destroy';
 export * from './lib/platform-utils';
 export { default as assert } from './lib/assert';
 

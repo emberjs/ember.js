@@ -1,7 +1,7 @@
-import { Bounds, ConcreteBounds } from '../bounds';
+import { ConcreteBounds } from '../bounds';
 import { applySVGInnerHTMLFix } from '../compat/svg-inner-html-fix';
 import { applyTextNodeMergingFix } from '../compat/text-node-merging-fix';
-import { Simple } from '@glimmer/interfaces';
+import { Simple, Bounds } from '@glimmer/interfaces';
 
 import { Option } from '@glimmer/util';
 
