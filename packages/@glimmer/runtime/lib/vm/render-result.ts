@@ -1,13 +1,12 @@
-import { LinkedList, DESTROY } from '@glimmer/util';
-import Environment from '../environment';
+import { LinkedList, DESTROY, associate } from '@glimmer/util';
+import Environment, { inTransaction } from '../environment';
 import { DestroyableBounds, clear } from '../bounds';
 import UpdatingVM, { ExceptionHandler } from './update';
 import { UpdatingOpcode } from '../opcodes';
 import { Simple, Opaque } from '@glimmer/interfaces';
 import { RuntimeProgram } from './append';
 import { LiveBlock } from './element-builder';
-import { associate } from '../lifetime';
-import { destructor, DROP } from '../lifetime/destructor';
+import { asyncDestroy } from '../lifetime';
 
 export default class RenderResult<T = Opaque> implements DestroyableBounds, ExceptionHandler {
   constructor(
@@ -47,6 +46,6 @@ export default class RenderResult<T = Opaque> implements DestroyableBounds, Exce
 
   // compat, as this is a user-exposed API
   destroy() {
-    destructor(this)[DROP]();
+    inTransaction(this.env, () => asyncDestroy(this, this.env));
   }
 }

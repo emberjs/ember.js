@@ -1,16 +1,7 @@
 import { Register } from '@glimmer/vm';
 import { Scope, DynamicScope, Environment } from '../environment';
-import { ElementBuilder } from './element-builder';
-import {
-  Option,
-  Destroyable,
-  Stack,
-  LinkedList,
-  ListSlice,
-  Opaque,
-  expect,
-  assert,
-} from '@glimmer/util';
+import { ElementBuilder, LiveBlock } from './element-builder';
+import { Option, Stack, LinkedList, ListSlice, Opaque, expect, assert } from '@glimmer/util';
 import {
   ReferenceIterator,
   PathReference,
@@ -36,7 +27,7 @@ export interface PublicVM {
   env: Environment;
   dynamicScope(): DynamicScope;
   getSelf(): PathReference<Opaque>;
-  newDestroyable(d: Destroyable): void;
+  currentBlock(): LiveBlock;
 }
 
 export type IteratorResult<T> =
@@ -81,6 +72,10 @@ export default class VM<T> implements PublicVM {
 
   set stack(value: EvaluationStack) {
     this.inner.stack = value;
+  }
+
+  currentBlock(): LiveBlock {
+    return this.elements().block();
   }
 
   /* Registers */
@@ -309,13 +304,13 @@ export default class VM<T> implements PublicVM {
     let updating = new LinkedList<UpdatingOpcode>();
 
     let state = this.capture(args);
-    let tracker = this.elements().pushUpdatableBlock();
+    let block = this.elements().pushUpdatableBlock();
 
     let tryOpcode = new TryOpcode(
       this.heap.gethandle(this.pc),
       state,
       this.runtime,
-      tracker,
+      block,
       updating
     );
 
@@ -328,7 +323,7 @@ export default class VM<T> implements PublicVM {
     stack.push(memo);
 
     let state = this.capture(2);
-    let tracker = this.elements().pushUpdatableBlock();
+    let block = this.elements().pushUpdatableBlock();
 
     // let ip = this.ip;
     // this.ip = end + 4;
@@ -338,7 +333,7 @@ export default class VM<T> implements PublicVM {
       this.heap.gethandle(this.pc),
       state,
       this.runtime,
-      tracker,
+      block,
       new LinkedList<UpdatingOpcode>()
     );
   }
@@ -352,13 +347,13 @@ export default class VM<T> implements PublicVM {
     let updating = new LinkedList<BlockOpcode>();
 
     let state = this.capture(0);
-    let tracker = this.elements().pushBlockList(updating);
+    let list = this.elements().pushBlockList(updating);
     let artifacts = this.stack.peek<ReferenceIterator>().artifacts;
 
     let addr = this.pc + relativeStart - this.currentOpSize;
     let start = this.heap.gethandle(addr);
 
-    let opcode = new ListBlockOpcode(start, state, this.runtime, tracker, updating, artifacts);
+    let opcode = new ListBlockOpcode(start, state, this.runtime, list, updating, artifacts);
 
     this.listBlockStack.push(opcode);
 
@@ -441,10 +436,6 @@ export default class VM<T> implements PublicVM {
 
   popDynamicScope() {
     this.dynamicScopeStack.pop();
-  }
-
-  newDestroyable(d: Destroyable) {
-    this.elements().didAddDestroyable(d);
   }
 
   /// SCOPE HELPERS

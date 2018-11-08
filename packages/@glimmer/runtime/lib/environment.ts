@@ -2,7 +2,7 @@ import { Reference, PathReference, OpaqueIterable } from '@glimmer/reference';
 import { Macros, OpcodeBuilderConstructor } from '@glimmer/opcode-compiler';
 import { Simple, RuntimeResolver, CompilableBlock, BlockSymbolTable } from '@glimmer/interfaces';
 import { Program } from '@glimmer/program';
-import { Dict, Option, Opaque, assert, expect } from '@glimmer/util';
+import { Dict, Option, Opaque, assert, expect, Destructor, DROP } from '@glimmer/util';
 
 import { DOMChanges, DOMTreeConstruction } from './dom/helper';
 import { PublicVM } from './vm/append';
@@ -10,7 +10,6 @@ import { IArguments } from './vm/arguments';
 import { UNDEFINED_REFERENCE, ConditionalReference } from './references';
 import { DynamicAttribute, dynamicAttribute } from './vm/attributes/dynamic';
 import { Component, ComponentManager, ModifierManager, Modifier } from './internal-interfaces';
-import { Destructor, DROP } from './lifetime/destructor';
 
 export type ScopeBlock = [number | CompilableBlock, Scope, BlockSymbolTable];
 export type BlockValue = ScopeBlock[0 | 1 | 2];
@@ -220,10 +219,12 @@ export interface EnvironmentOptions {
   updateOperations: DOMChanges;
 }
 
+const TRANSACTION = Symbol('TRANSACTION');
+
 export abstract class Environment {
   protected updateOperations: DOMChanges;
   protected appendOperations: DOMTreeConstruction;
-  private _transaction: Option<Transaction> = null;
+  private [TRANSACTION]: Option<Transaction> = null;
 
   constructor({ appendOperations, updateOperations }: EnvironmentOptions) {
     this.appendOperations = appendOperations;
@@ -246,15 +247,15 @@ export abstract class Environment {
 
   begin() {
     assert(
-      !this._transaction,
+      !this[TRANSACTION],
       'A glimmer transaction was begun, but one already exists. You may have a nested transaction, possibly caused by an earlier runtime exception while rendering. Please check your console for the stack trace of any prior exceptions.'
     );
 
-    this._transaction = new Transaction();
+    this[TRANSACTION] = new Transaction();
   }
 
   private get transaction(): Transaction {
-    return expect(this._transaction!, 'must be in a transaction');
+    return expect(this[TRANSACTION]!, 'must be in a transaction');
   }
 
   didCreate(component: Component, manager: ComponentManager) {
@@ -279,7 +280,7 @@ export abstract class Environment {
 
   commit() {
     let transaction = this.transaction;
-    this._transaction = null;
+    this[TRANSACTION] = null;
     transaction.commit();
   }
 
@@ -290,6 +291,19 @@ export abstract class Environment {
     namespace: Option<string> = null
   ): DynamicAttribute {
     return dynamicAttribute(element, attr, namespace);
+  }
+}
+
+export function inTransaction(env: Environment, cb: () => void): void {
+  if (!env[TRANSACTION]) {
+    env.begin();
+    try {
+      cb();
+    } finally {
+      env.commit();
+    }
+  } else {
+    cb();
   }
 }
 

@@ -11,7 +11,6 @@ import { Opaque, Option, ComponentCapabilities } from '@glimmer/interfaces';
 import { PathReference, Tag, combine, TagWrapper, DirtyableTag } from '@glimmer/reference';
 import { UpdatableReference } from '@glimmer/object-reference';
 import GlimmerObject from '@glimmer/object';
-import { Destroyable, DESTROY } from '@glimmer/util';
 
 import { Attrs, AttrsDiff, createTemplate } from '../shared';
 import { BASIC_CAPABILITIES } from './basic';
@@ -19,6 +18,7 @@ import { TestComponentDefinitionState } from '../components';
 import LazyRuntimeResolver from '../modes/lazy/runtime-resolver';
 import EagerRuntimeResolver from '../modes/eager/runtime-resolver';
 import {} from '@glimmer/bundle-compiler';
+import { Destructor, DROP } from '@glimmer/util';
 
 export const EMBERISH_GLIMMER_CAPABILITIES = {
   ...BASIC_CAPABILITIES,
@@ -133,9 +133,9 @@ export class EmberishGlimmerComponentManager
     component.didRender();
   }
 
-  getDestructor({ component }: EmberishGlimmerComponentState): Destroyable {
+  getDestructor({ component }: EmberishGlimmerComponentState): Destructor {
     return {
-      [DESTROY]() {
+      [DROP]() {
         component.destroy();
       },
     };

@@ -1,17 +1,55 @@
 import {
+  isDestroyable,
+  isStringDestroyable,
   Destroyable,
   DESTROY,
   StringDestroyable,
-  isDestroyable,
-  isStringDestroyable,
-} from '@glimmer/util';
-import { destroyAssociated } from './link';
+} from './destroy';
+import { Option } from '@glimmer/interfaces';
 
+export const LINKED: WeakMap<object, Set<Destructor>> = new WeakMap();
 export const DROP = Symbol();
 export const DESTRUCTORS = new WeakMap();
 
 export interface Destructor {
   [DROP](): void;
+}
+
+export function associate(parent: object, child: object) {
+  associateDestructor(parent, destructor(child));
+}
+
+export function associateDestructor(parent: object, child: Destructor): void {
+  let associated = LINKED.get(parent);
+
+  if (!associated) {
+    associated = new Set();
+    LINKED.set(parent, associated);
+  }
+
+  associated.add(child);
+}
+
+export function takeAssociated(parent: object): Option<Set<Destructor>> {
+  let linked = LINKED.get(parent);
+
+  if (linked && linked.size > 0) {
+    LINKED.delete(parent);
+    return linked;
+  } else {
+    return null;
+  }
+}
+
+export function destroyAssociated(parent: object) {
+  let associated = LINKED.get(parent);
+
+  if (associated) {
+    for (let item of associated) {
+      item[DROP]();
+      associated.delete(item);
+    }
+  }
 }
 
 export function destructor(value: object): Destructor {
