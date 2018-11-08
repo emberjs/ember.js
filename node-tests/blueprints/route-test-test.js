@@ -20,9 +20,15 @@ describe('Blueprint: route-test', function() {
       return emberNew();
     });
 
-    it('route-test foo', function() {
-      return emberGenerateDestroy(['route-test', 'foo'], _file => {
-        expect(_file('tests/unit/routes/foo-test.js')).to.equal(fixture('route-test/default.js'));
+    describe('with ember-cli-qunit@4.1.0', function() {
+      beforeEach(function() {
+        generateFakePackageManifest('ember-cli-qunit', '4.1.0');
+      });
+
+      it('route-test foo', function() {
+        return emberGenerateDestroy(['route-test', 'foo'], _file => {
+          expect(_file('tests/unit/routes/foo-test.js')).to.equal(fixture('route-test/default.js'));
+        });
       });
     });
 
@@ -93,7 +99,9 @@ describe('Blueprint: route-test', function() {
 
   describe('in addon', function() {
     beforeEach(function() {
-      return emberNew({ target: 'addon' });
+      return emberNew({ target: 'addon' }).then(() =>
+        generateFakePackageManifest('ember-cli-qunit', '4.1.0')
+      );
     });
 
     it('route-test foo', function() {
