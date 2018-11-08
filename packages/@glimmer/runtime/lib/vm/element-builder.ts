@@ -11,6 +11,11 @@ import {
   assert,
   expect,
   DESTROY,
+  associate,
+  destructor,
+  DROP,
+  Destructor,
+  associateDestructor,
 } from '@glimmer/util';
 
 import { Environment } from '../environment';
@@ -20,9 +25,7 @@ import { VersionedReference } from '@glimmer/reference';
 import { DynamicAttribute } from './attributes/dynamic';
 
 import { Opaque, Simple, Bounds } from '@glimmer/interfaces';
-import { associate } from '../lifetime';
-import { destructor, DROP } from '../lifetime/destructor';
-import { asyncReset } from '../lifetime/link';
+import { asyncReset } from '../lifetime';
 
 export interface FirstNode {
   firstNode(): Simple.Node;
@@ -130,10 +133,9 @@ export interface ElementBuilder extends Cursor, DOMStack, TreeOperations {
 
   pushSimpleBlock(): LiveBlock;
   pushUpdatableBlock(): UpdatableBlock;
-  pushBlockList(list: LinkedList<LinkedListNode & Bounds>): LiveBlock;
+  pushBlockList(list: LinkedList<LinkedListNode & Bounds>): LiveBlockList;
   popBlock(): LiveBlock;
 
-  didAddDestroyable(d: Destroyable): void;
   didAppendBounds(bounds: Bounds): void;
 }
 
@@ -148,17 +150,15 @@ export class NewElementBuilder implements ElementBuilder {
   private blockStack = new Stack<LiveBlock>();
 
   static forInitialRender(env: Environment, cursor: Cursor) {
-    let builder = new this(env, cursor.element, cursor.nextSibling);
-    builder.pushSimpleBlock();
-    return builder;
+    return new this(env, cursor.element, cursor.nextSibling).initialize();
   }
 
-  static resume(env: Environment, tracker: LiveBlock, nextSibling: Option<Simple.Node>) {
-    let parentNode = tracker.parentElement();
+  static resume(env: Environment, block: UpdatableBlock) {
+    let parentNode = block.parentElement();
+    let nextSibling = block.reset(env);
 
-    let stack = new this(env, parentNode, nextSibling);
-    stack.pushSimpleBlock();
-    stack.pushBlockTracker(tracker);
+    let stack = new this(env, parentNode, nextSibling).initialize();
+    stack.pushLiveBlock(block);
 
     return stack;
   }
@@ -169,6 +169,11 @@ export class NewElementBuilder implements ElementBuilder {
     this.env = env;
     this.dom = env.getAppendOperations();
     this.updateOperations = env.getDOM();
+  }
+
+  protected initialize(): this {
+    this.pushSimpleBlock();
+    return this;
   }
 
   debugBlocks(): LiveBlock[] {
@@ -191,7 +196,7 @@ export class NewElementBuilder implements ElementBuilder {
   }
 
   block(): LiveBlock {
-    return expect(this.blockStack.current, 'Expected a current block tracker');
+    return expect(this.blockStack.current, 'Expected a current live block');
   }
 
   popElement() {
@@ -200,31 +205,31 @@ export class NewElementBuilder implements ElementBuilder {
   }
 
   pushSimpleBlock(): LiveBlock {
-    return this.pushBlockTracker(new SimpleLiveBlock(this.element));
+    return this.pushLiveBlock(new SimpleLiveBlock(this.element));
   }
 
   pushUpdatableBlock(): UpdatableBlock {
-    return this.pushBlockTracker(new UpdatableLiveBlock(this.element));
+    return this.pushLiveBlock(new UpdatableBlock(this.element));
   }
 
-  pushBlockList(list: LinkedList<LinkedListNode & Bounds & Destroyable>): LiveBlock {
-    return this.pushBlockTracker(new LiveBlockList(this.element, list));
+  pushBlockList(list: LinkedList<LinkedListNode & LiveBlock>): LiveBlockList {
+    return this.pushLiveBlock(new LiveBlockList(this.element, list));
   }
 
-  protected pushBlockTracker<T extends LiveBlock>(tracker: T, isRemote = false): T {
+  protected pushLiveBlock<T extends LiveBlock>(block: T, isRemote = false): T {
     let current = this.blockStack.current;
 
     if (current !== null) {
-      associate(current, tracker);
+      associate(current, block);
 
       if (!isRemote) {
-        current.didAppendBounds(tracker);
+        current.didAppendBounds(block);
       }
     }
 
     this.__openBlock();
-    this.blockStack.push(tracker);
-    return tracker;
+    this.blockStack.push(block);
+    return block;
   }
 
   popBlock(): LiveBlock {
@@ -283,8 +288,8 @@ export class NewElementBuilder implements ElementBuilder {
 
   __pushRemoteElement(element: Simple.Element, _guid: string, nextSibling: Option<Simple.Node>) {
     this.pushElement(element, nextSibling);
-    let tracker = new RemoteLiveBlock(element);
-    this.pushBlockTracker(tracker, true);
+    let block = new RemoteLiveBlock(element);
+    this.pushLiveBlock(block, true);
   }
 
   popRemoteElement() {
@@ -294,10 +299,6 @@ export class NewElementBuilder implements ElementBuilder {
 
   protected pushElement(element: Simple.Element, nextSibling: Option<Simple.Node>) {
     this.cursorStack.push(new Cursor(element, nextSibling));
-  }
-
-  didAddDestroyable(d: Destroyable) {
-    this.block().newDestroyable(d);
   }
 
   didAppendBounds(bounds: Bounds): Bounds {
@@ -422,8 +423,8 @@ export interface LiveBlock extends Bounds {
   closeElement(): void;
   didAppendNode(node: Simple.Node): void;
   didAppendBounds(bounds: Bounds): void;
-  newDestroyable(d: Destroyable): void;
   finalize(stack: ElementBuilder): void;
+  [DESTROY]?(): void;
 }
 
 export class SimpleLiveBlock implements LiveBlock {
@@ -441,7 +442,7 @@ export class SimpleLiveBlock implements LiveBlock {
   firstNode(): Simple.Node {
     let first = expect(
       this.first,
-      'cannot call `firstNode()` while `SimpleBlockTracker` is still initializing'
+      'cannot call `firstNode()` while `SimpleLiveBlock` is still initializing'
     );
 
     return first.firstNode();
@@ -450,7 +451,7 @@ export class SimpleLiveBlock implements LiveBlock {
   lastNode(): Simple.Node {
     let last = expect(
       this.last,
-      'cannot call `lastNode()` while `SimpleBlockTracker` is still initializing'
+      'cannot call `lastNode()` while `SimpleLiveBlock` is still initializing'
     );
 
     return last.lastNode();
@@ -485,10 +486,6 @@ export class SimpleLiveBlock implements LiveBlock {
     this.last = bounds;
   }
 
-  newDestroyable(d: Destroyable) {
-    associate(this, d);
-  }
-
   finalize(stack: ElementBuilder) {
     if (this.first === null) {
       stack.appendComment('');
@@ -502,11 +499,7 @@ export class RemoteLiveBlock extends SimpleLiveBlock {
   }
 }
 
-export interface UpdatableBlock extends LiveBlock {
-  reset(env: Environment): Option<Simple.Node>;
-}
-
-export class UpdatableLiveBlock extends SimpleLiveBlock implements UpdatableBlock {
+export class UpdatableBlock extends SimpleLiveBlock {
   reset(env: Environment): Option<Simple.Node> {
     asyncReset(this, env);
 
@@ -521,17 +514,27 @@ export class UpdatableLiveBlock extends SimpleLiveBlock implements UpdatableBloc
   }
 }
 
+class ListContentsDestructor implements Destructor {
+  constructor(private inner: LinkedList<LiveBlock & LinkedListNode>) {}
+
+  [DROP]() {
+    this.inner.forEachNode(d => destructor(d)[DROP]());
+  }
+}
+
+// FIXME: All the noops in here indicate a modelling problem
 class LiveBlockList implements LiveBlock {
   constructor(
-    private parent: Simple.Element,
-    private boundList: LinkedList<LinkedListNode & Bounds & Destroyable>
+    private readonly parent: Simple.Element,
+    private readonly boundList: LinkedList<LinkedListNode & LiveBlock>
   ) {
     this.parent = parent;
     this.boundList = boundList;
-  }
 
-  [DESTROY]() {
-    this.boundList.forEachNode(d => destructor(d)[DROP]());
+    // The `boundList` is shared with the rest of the VM, and can be mutated
+    // without our awareness. As a result, when the list is destroyed, figure
+    // out the associated children on the fly and drop them.
+    associateDestructor(this, new ListContentsDestructor(boundList));
   }
 
   parentElement() {
@@ -541,7 +544,7 @@ class LiveBlockList implements LiveBlock {
   firstNode(): Simple.Node {
     let head = expect(
       this.boundList.head(),
-      'cannot call `firstNode()` while `BlockListTracker` is still initializing'
+      'cannot call `firstNode()` while `LiveBlockList` is still initializing'
     );
 
     return head.firstNode();
@@ -550,7 +553,7 @@ class LiveBlockList implements LiveBlock {
   lastNode(): Simple.Node {
     let tail = expect(
       this.boundList.tail(),
-      'cannot call `lastNode()` while `BlockListTracker` is still initializing'
+      'cannot call `lastNode()` while `LiveBlockList` is still initializing'
     );
 
     return tail.lastNode();
@@ -569,8 +572,6 @@ class LiveBlockList implements LiveBlock {
   }
 
   didAppendBounds(_bounds: Bounds) {}
-
-  newDestroyable(_d: Destroyable) {}
 
   finalize(_stack: ElementBuilder) {
     assert(this.boundList.head() !== null, 'boundsList cannot be empty');

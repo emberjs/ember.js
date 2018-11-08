@@ -7,7 +7,7 @@ import {
   isConst,
   isConstTag,
 } from '@glimmer/reference';
-import { Opaque, Option } from '@glimmer/util';
+import { Opaque, Option, associateDestructor } from '@glimmer/util';
 import {
   expectStackChange,
   check,
@@ -118,7 +118,7 @@ APPEND_OPCODES.add(Op.Modifier, (vm, { op1: handle }) => {
   let destructor = manager.getDestructor(modifier);
 
   if (destructor) {
-    vm.newDestroyable(destructor);
+    associateDestructor(vm.currentBlock(), destructor);
   }
 
   let tag = manager.getTag(modifier);

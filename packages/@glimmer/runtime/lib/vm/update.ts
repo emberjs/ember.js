@@ -1,7 +1,7 @@
 import { Scope, DynamicScope, Environment } from '../environment';
 import { clear, move as moveBounds } from '../bounds';
 import { NewElementBuilder, LiveBlock, UpdatableBlock } from './element-builder';
-import { Option, Opaque, Stack, LinkedList, Dict, dict, expect } from '@glimmer/util';
+import { Option, Opaque, Stack, LinkedList, Dict, dict, expect, associate } from '@glimmer/util';
 import {
   PathReference,
   IterationArtifacts,
@@ -24,7 +24,7 @@ import { Simple, Bounds } from '@glimmer/interfaces';
 
 import EvaluationStack from './stack';
 import VM, { RuntimeProgram, Constants } from './append';
-import { associate, asyncDestroy } from '../lifetime';
+import { asyncDestroy } from '../lifetime';
 
 export default class UpdatingVM<T = Opaque> {
   public env: Environment;
@@ -175,7 +175,7 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
 
     children.clear();
 
-    let elementStack = NewElementBuilder.resume(runtime.env, bounds, bounds.reset(runtime.env));
+    let elementStack = NewElementBuilder.resume(runtime.env, bounds);
 
     let vm = VM.resume(state, runtime, elementStack);
 

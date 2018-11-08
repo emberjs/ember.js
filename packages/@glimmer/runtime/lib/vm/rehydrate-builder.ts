@@ -386,8 +386,8 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
       currentCursor!.candidate = candidate;
       this.candidate = this.remove(marker);
 
-      let tracker = new RemoteLiveBlock(element);
-      this.pushBlockTracker(tracker, true);
+      let block = new RemoteLiveBlock(element);
+      this.pushLiveBlock(block, true);
     }
   }
 

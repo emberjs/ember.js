@@ -9,12 +9,12 @@ import {
   ComponentCapabilities,
 } from '@glimmer/interfaces';
 import { Tag, VersionedPathReference } from '@glimmer/reference';
-import { Destroyable } from '@glimmer/util';
 import Bounds from '../bounds';
 import { ElementOperations } from '../vm/element-builder';
 import Environment, { DynamicScope } from '../environment';
 import { IArguments } from '../vm/arguments';
 import { CurriedComponentDefinition } from './curried-component';
+import { Destructor } from '@glimmer/util';
 
 export interface PreparedArguments {
   positional: Array<VersionedPathReference<Opaque>>;
@@ -91,9 +91,9 @@ export interface ComponentManager<ComponentInstanceState, ComponentDefinitionSta
   // the `didUpdate` callbacks on components that changed.
   didUpdate(state: ComponentInstanceState): void;
 
-  // Convert the opaque component into an object that implements Destroyable.
+  // Convert the opaque component into an object that implements Destructor.
   // If it returns null, the component will not be destroyed.
-  getDestructor(state: ComponentInstanceState): Option<Destroyable>;
+  getDestructor(state: ComponentInstanceState): Option<Destructor>;
 }
 
 export interface Invocation {
