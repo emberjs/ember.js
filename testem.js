@@ -8,7 +8,7 @@ let config = {
   "disable_watching": true,
   "launchers": {
     "Node": {
-      "command": "./bin/run-node-tests.js",
+      "exe": "node", args: ["./bin/run-node-tests.js"],
       "protocol": "tap"
      }
   },

@@ -49,7 +49,8 @@ module.exports = {
         if (isScopedPackage(dep)) { mkdirpScope(dep, modulesPath); }
         fs.symlinkSync(
           path.join('../../../../', dep),
-          path.join(modulesPath, dep)
+          path.join(modulesPath, dep),
+          'junction'
         );
       });
     }

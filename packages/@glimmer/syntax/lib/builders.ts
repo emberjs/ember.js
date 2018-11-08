@@ -127,14 +127,19 @@ export type ModifierSexp =
   | [PathSexp, AST.Expression[], LocSexp?]
   | [PathSexp, AST.Expression[], Dict<AST.Expression>, LocSexp?];
 
-export type AttrSexp =
-  | [string, AST.AttrNode['value'] | string, LocSexp?];
+export type AttrSexp = [string, AST.AttrNode['value'] | string, LocSexp?];
 
 export type LocSexp = ['loc', AST.SourceLocation];
 
 export type ElementComment = AST.MustacheCommentStatement | AST.SourceLocation | string;
 
-export type SexpValue = string | AST.Expression[] | Dict<AST.Expression> | LocSexp | PathSexp | undefined;
+export type SexpValue =
+  | string
+  | AST.Expression[]
+  | Dict<AST.Expression>
+  | LocSexp
+  | PathSexp
+  | undefined;
 
 export function isLocSexp(value: SexpValue): value is LocSexp {
   return Array.isArray(value) && value.length === 2 && value[0] === 'loc';
@@ -278,14 +283,8 @@ export interface BuildElementOptions {
   loc?: AST.SourceLocation;
 }
 
-function buildElement(
-  tag: TagDescriptor,
-  options?: BuildElementOptions
-): AST.ElementNode;
-function buildElement(
-  tag: TagDescriptor,
-  ...options: ElementArgs[]
-): AST.ElementNode;
+function buildElement(tag: TagDescriptor, options?: BuildElementOptions): AST.ElementNode;
+function buildElement(tag: TagDescriptor, ...options: ElementArgs[]): AST.ElementNode;
 function buildElement(
   tag: TagDescriptor,
   options?: BuildElementOptions | ElementArgs,
@@ -306,7 +305,7 @@ function buildElement(
     selfClosing = tag.selfClosing;
     tag = tag.name;
   } else {
-    if (tag.slice(-1) === "/") {
+    if (tag.slice(-1) === '/') {
       tag = tag.slice(0, -1);
       selfClosing = true;
     }

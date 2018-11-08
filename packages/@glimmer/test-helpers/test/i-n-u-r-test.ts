@@ -3,6 +3,7 @@ import { LazyRenderDelegate, RenderTest } from '@glimmer/test-helpers';
 QUnit.module('Render Tests: I-N-U-R');
 
 QUnit.test('Can set properties', assert => {
+  // tslint:disable-next-line:no-unused-expression
   new class extends RenderTest {
     constructor(delegate: LazyRenderDelegate) {
       super(delegate);
@@ -17,6 +18,7 @@ QUnit.test('Can take basic snapshots', assert => {
   let text = document.createTextNode('Foo');
   div.appendChild(text);
 
+  // tslint:disable-next-line:no-unused-expression
   new class extends RenderTest {
     element = div;
     constructor(delegate: LazyRenderDelegate) {
@@ -34,6 +36,7 @@ QUnit.test('Can take nested snapshots', assert => {
   p.appendChild(text);
   div.appendChild(p);
 
+  // tslint:disable-next-line:no-unused-expression
   new class extends RenderTest {
     element = div;
     constructor(delegate: LazyRenderDelegate) {
@@ -53,6 +56,7 @@ QUnit.test('Can take nested snapshots of serialized blocks', assert => {
   div.appendChild(text);
   div.appendChild(close);
 
+  // tslint:disable-next-line:no-unused-expression
   new class extends RenderTest {
     element = div;
     constructor(delegate: LazyRenderDelegate) {

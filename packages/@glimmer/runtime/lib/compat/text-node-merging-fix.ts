@@ -1,6 +1,7 @@
 import { DOMOperations } from '../dom/helper';
 import { Bounds } from '@glimmer/interfaces';
 import { Option } from '@glimmer/util';
+import { Simple } from '@glimmer/interfaces';
 
 // Patch:    Adjacent text node merging fix
 // Browsers: IE, Edge, Firefox w/o inspector open
@@ -32,10 +33,19 @@ export function applyTextNodeMergingFix(
       this.uselessComment = document.createComment('');
     }
 
-    insertHTMLBefore(parent: HTMLElement, nextSibling: Node, html: string): Bounds {
+    insertHTMLBefore(
+      parent: Simple.Element,
+      nextSibling: Option<Simple.Node>,
+      html: string
+    ): Bounds {
+      if (html === '') {
+        return super.insertHTMLBefore(parent, nextSibling, html);
+      }
+
       let didSetUselessComment = false;
 
       let nextPrevious = nextSibling ? nextSibling.previousSibling : parent.lastChild;
+
       if (nextPrevious && nextPrevious instanceof Text) {
         didSetUselessComment = true;
         parent.insertBefore(this.uselessComment, nextSibling);
