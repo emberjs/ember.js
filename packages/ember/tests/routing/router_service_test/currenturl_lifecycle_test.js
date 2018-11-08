@@ -4,9 +4,11 @@ import { Component } from '@ember/-internals/glimmer';
 import { Route } from '@ember/-internals/routing';
 import { get } from '@ember/-internals/metal';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
+import { RSVP } from '@ember/-internals/runtime';
+import { EMBER_ROUTING_ROUTER_SERVICE } from '@ember/canary-features';
 
 let results = [];
-let ROUTE_NAMES = ['index', 'child', 'sister', 'brother'];
+let ROUTE_NAMES = ['index', 'child', 'sister', 'brother', 'loading'];
 
 let InstrumentedRoute = Route.extend({
   routerService: injectService('router'),
@@ -19,6 +21,9 @@ let InstrumentedRoute = Route.extend({
   model() {
     let service = get(this, 'routerService');
     results.push([service.get('currentRouteName'), 'model', service.get('currentURL')]);
+    return new RSVP.Promise(resolve => {
+      setTimeout(resolve, 200);
+    });
   },
 
   afterModel() {
@@ -28,7 +33,7 @@ let InstrumentedRoute = Route.extend({
 });
 
 moduleFor(
-  'Router Service - currentURL',
+  'Router Service - currentURL | currentRouteName',
   class extends RouterTestCase {
     constructor() {
       super(...arguments);
@@ -41,12 +46,23 @@ moduleFor(
         this.addTemplate(routeName, '{{current-url}}');
       });
 
+      let CurrenURLComponent = Component.extend({
+        routerService: injectService('router'),
+        currentURL: readOnly('routerService.currentURL'),
+        currentRouteName: readOnly('routerService.currentRouteName'),
+      });
+
+      if (EMBER_ROUTING_ROUTER_SERVICE) {
+        CurrenURLComponent.reopen({
+          currentRoute: readOnly('routerService.currentRoute'),
+        });
+      }
+
       this.addComponent('current-url', {
-        ComponentClass: Component.extend({
-          routerService: injectService('router'),
-          currentURL: readOnly('routerService.currentURL'),
-        }),
-        template: '{{currentURL}}',
+        ComponentClass: CurrenURLComponent,
+        template: EMBER_ROUTING_ROUTER_SERVICE
+          ? '{{currentURL}}-{{currentRouteName}}-{{currentRoute.name}}'
+          : '{{currentURL}}-{{currentRouteName}}',
       });
     }
 
@@ -105,7 +121,7 @@ moduleFor(
           assert.deepEqual(results, [
             [null, 'beforeModel', null],
             [null, 'model', null],
-            [null, 'afterModel', null],
+            ['parent.loading', 'afterModel', '/'],
           ]);
 
           results = [];
@@ -116,7 +132,7 @@ moduleFor(
           assert.deepEqual(results, [
             ['parent.index', 'beforeModel', '/'],
             ['parent.index', 'model', '/'],
-            ['parent.index', 'afterModel', '/'],
+            ['parent.loading', 'afterModel', '/child'],
           ]);
         });
     }
@@ -128,17 +144,29 @@ moduleFor(
 
       return this.visit('/')
         .then(() => {
-          this.assertText('/');
+          let text = '/-parent.index';
+          if (EMBER_ROUTING_ROUTER_SERVICE) {
+            text = '/-parent.index-parent.index';
+          }
+          this.assertText(text);
 
           return this.visit('/child');
         })
         .then(() => {
-          this.assertText('/child');
+          let text = '/child-parent.child';
+          if (EMBER_ROUTING_ROUTER_SERVICE) {
+            text = '/child-parent.child-parent.child';
+          }
+          this.assertText(text);
 
           return this.visit('/');
         })
         .then(() => {
-          this.assertText('/');
+          let text = '/-parent.index';
+          if (EMBER_ROUTING_ROUTER_SERVICE) {
+            text = '/-parent.index-parent.index';
+          }
+          this.assertText(text);
         });
     }
   }
