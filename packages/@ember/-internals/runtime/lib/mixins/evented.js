@@ -94,11 +94,6 @@ export default Mixin.create({
     @public
   */
   one(name, target, method) {
-    if (!method) {
-      method = target;
-      target = null;
-    }
-
     addListener(this, name, target, method, true);
     return this;
   },
