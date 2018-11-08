@@ -225,7 +225,7 @@ APPEND_OPCODES.add(Op.PushArgs, (vm, { op1: _names, op2: flags }) => {
 
   let positionalCount = flags >> 4;
   let synthetic = flags & 0b1000;
-  let blockNames = [];
+  let blockNames: string[] = [];
 
   if (flags & 0b0100) blockNames.push('main');
   if (flags & 0b0010) blockNames.push('else');

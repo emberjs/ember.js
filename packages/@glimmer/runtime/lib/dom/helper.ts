@@ -3,7 +3,7 @@ import { applySVGInnerHTMLFix } from '../compat/svg-inner-html-fix';
 import { applyTextNodeMergingFix } from '../compat/text-node-merging-fix';
 import { Simple, Bounds } from '@glimmer/interfaces';
 
-import { Option } from '@glimmer/util';
+import { Option, expect } from '@glimmer/util';
 
 export const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 
@@ -77,21 +77,26 @@ export function isWhitespace(string: string) {
 export function moveNodesBefore(
   source: Simple.Node,
   target: Simple.Element,
-  nextSibling: Simple.Node
-) {
-  let first = source.firstChild;
-  let last: Simple.Node | null = null;
-  let current = first;
+  nextSibling: Option<Simple.Node>
+): Bounds {
+  let first = expect(source.firstChild, 'source is empty');
+  let last: Simple.Node = first;
+  let current: Option<Simple.Node> = first;
+
   while (current) {
+    let next: Option<Simple.Node> = current.nextSibling;
+
+    target.insertBefore(current, nextSibling);
+
     last = current;
-    current = current.nextSibling;
-    target.insertBefore(last, nextSibling);
+    current = next;
   }
-  return [first, last];
+
+  return new ConcreteBounds(target, first, last);
 }
 
 export class DOMOperations {
-  protected uselessElement!: HTMLElement; // Set by this.setupUselessElement() in constructor
+  protected uselessElement!: Simple.Element; // Set by this.setupUselessElement() in constructor
 
   constructor(protected document: Simple.Document) {
     this.setupUselessElement();
@@ -132,12 +137,38 @@ export class DOMOperations {
     parent.insertBefore(node, reference);
   }
 
-  insertHTMLBefore(
-    _parent: Simple.Element,
-    nextSibling: Option<Simple.Node>,
-    html: string
-  ): Bounds {
-    return insertHTMLBefore(this.uselessElement, _parent, nextSibling, html);
+  insertHTMLBefore(parent: Simple.Element, nextSibling: Option<Simple.Node>, html: string): Bounds {
+    if (html === '') {
+      let comment = this.createComment('');
+      parent.insertBefore(comment, nextSibling);
+      return new ConcreteBounds(parent, comment, comment);
+    }
+
+    let prev = nextSibling ? nextSibling.previousSibling : parent.lastChild;
+    let last: Simple.Node;
+
+    if (nextSibling === null) {
+      parent.insertAdjacentHTML('beforeend', html);
+      last = expect(parent.lastChild, 'bug in insertAdjacentHTML?');
+    } else if (nextSibling instanceof HTMLElement) {
+      nextSibling.insertAdjacentHTML('beforebegin', html);
+      last = expect(nextSibling.previousSibling, 'bug in insertAdjacentHTML?');
+    } else {
+      // Non-element nodes do not support insertAdjacentHTML, so add an
+      // element and call it on that element. Then remove the element.
+      //
+      // This also protects Edge, IE and Firefox w/o the inspector open
+      // from merging adjacent text nodes. See ./compat/text-node-merging-fix.ts
+      let { uselessElement } = this;
+
+      parent.insertBefore(uselessElement, nextSibling);
+      uselessElement.insertAdjacentHTML('beforebegin', html);
+      last = expect(uselessElement.previousSibling, 'bug in insertAdjacentHTML?');
+      parent.removeChild(uselessElement);
+    }
+
+    let first = expect(prev ? prev.nextSibling : parent.firstChild, 'bug in insertAdjacentHTML?');
+    return new ConcreteBounds(parent, first, last);
   }
 
   createTextNode(text: string): Simple.Text {
@@ -203,43 +234,6 @@ export class DOMChanges extends DOMOperations {
   insertAfter(element: Simple.Element, node: Simple.Node, reference: Simple.Node) {
     this.insertBefore(element, node, reference.nextSibling);
   }
-}
-
-export function insertHTMLBefore(
-  this: void,
-  useless: HTMLElement,
-  _parent: Simple.Element,
-  _nextSibling: Option<Simple.Node>,
-  _html: string
-): Bounds {
-  let parent = _parent as Element;
-  let nextSibling = _nextSibling as Option<Node>;
-
-  let prev = nextSibling ? nextSibling.previousSibling : parent.lastChild;
-  let last: Simple.Node | null;
-
-  let html = _html || '<!---->';
-
-  if (nextSibling === null) {
-    parent.insertAdjacentHTML('beforeend', html);
-    last = parent.lastChild;
-  } else if (nextSibling instanceof HTMLElement) {
-    nextSibling.insertAdjacentHTML('beforebegin', html);
-    last = nextSibling.previousSibling;
-  } else {
-    // Non-element nodes do not support insertAdjacentHTML, so add an
-    // element and call it on that element. Then remove the element.
-    //
-    // This also protects Edge, IE and Firefox w/o the inspector open
-    // from merging adjacent text nodes. See ./compat/text-node-merging-fix.ts
-    parent.insertBefore(useless, nextSibling);
-    useless.insertAdjacentHTML('beforebegin', html);
-    last = useless.previousSibling;
-    parent.removeChild(useless);
-  }
-
-  let first = prev ? prev.nextSibling : parent.firstChild;
-  return new ConcreteBounds(parent, first, last);
 }
 
 let helper = DOMChanges;

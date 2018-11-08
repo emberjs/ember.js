@@ -1,4 +1,4 @@
-import { Option, LinkedList, DESTROY } from '@glimmer/util';
+import { LinkedList, DESTROY } from '@glimmer/util';
 import Environment from '../environment';
 import { DestroyableBounds, clear } from '../bounds';
 import UpdatingVM, { ExceptionHandler } from './update';
@@ -29,11 +29,11 @@ export default class RenderResult<T = Opaque> implements DestroyableBounds, Exce
     return this.bounds.parentElement();
   }
 
-  firstNode(): Option<Simple.Node> {
+  firstNode(): Simple.Node {
     return this.bounds.firstNode();
   }
 
-  lastNode(): Option<Simple.Node> {
+  lastNode(): Simple.Node {
     return this.bounds.lastNode();
   }
 

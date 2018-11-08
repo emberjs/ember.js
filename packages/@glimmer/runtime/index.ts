@@ -77,7 +77,6 @@ export {
   DOMChanges as IDOMChanges,
   DOMTreeConstruction,
   isWhitespace,
-  insertHTMLBefore,
 } from './lib/dom/helper';
 export { normalizeProperty } from './lib/dom/props';
 export {

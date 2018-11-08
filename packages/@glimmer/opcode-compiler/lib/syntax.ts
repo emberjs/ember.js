@@ -9,7 +9,7 @@ import Ops = WireFormat.Ops;
 import S = WireFormat.Statements;
 import E = WireFormat.Expressions;
 import C = WireFormat.Core;
-import { NamedBlocksImpl, EMPTY_BLOCKS } from './utils';
+import { EMPTY_BLOCKS } from './utils';
 
 export type TupleSyntax = WireFormat.Statement | WireFormat.TupleExpression;
 export type CompilerFunction<T extends TupleSyntax> = ((

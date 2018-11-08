@@ -1,7 +1,6 @@
-import { ConcreteBounds } from '../bounds';
 import { moveNodesBefore, DOMOperations } from '../dom/helper';
-import { Option, unwrap } from '@glimmer/util';
-import { Bounds } from '@glimmer/interfaces';
+import { Option, unwrap, assert } from '@glimmer/util';
+import { Simple, Bounds } from '@glimmer/interfaces';
 
 export const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 export type SVG_NAMESPACE = typeof SVG_NAMESPACE;
@@ -31,7 +30,15 @@ export function applySVGInnerHTMLFix(
   let div = document.createElement('div');
 
   return class DOMChangesWithSVGInnerHTMLFix extends DOMClass {
-    insertHTMLBefore(parent: HTMLElement, nextSibling: Node, html: string): Bounds {
+    insertHTMLBefore(
+      parent: Simple.Element,
+      nextSibling: Option<Simple.Node>,
+      html: string
+    ): Bounds {
+      if (html === '') {
+        return super.insertHTMLBefore(parent, nextSibling, html);
+      }
+
       if (parent.namespaceURI !== svgNamespace) {
         return super.insertHTMLBefore(parent, nextSibling, html);
       }
@@ -41,7 +48,14 @@ export function applySVGInnerHTMLFix(
   };
 }
 
-function fixSVG(parent: Element, div: HTMLElement, html: string, reference: Node): Bounds {
+function fixSVG(
+  parent: Simple.Element,
+  div: HTMLElement,
+  html: string,
+  reference: Option<Simple.Node>
+): Bounds {
+  assert(html !== '', 'html cannot be empty');
+
   let source: Node;
 
   // This is important, because decendants of the <foreignObject> integration
@@ -49,7 +63,7 @@ function fixSVG(parent: Element, div: HTMLElement, html: string, reference: Node
   if (parent.tagName.toUpperCase() === 'FOREIGNOBJECT') {
     // IE, Edge: also do not correctly support using `innerHTML` on SVG
     // namespaced elements. So here a wrapper is used.
-    let wrappedHtml = '<svg><foreignObject>' + (html || '<!---->') + '</foreignObject></svg>';
+    let wrappedHtml = '<svg><foreignObject>' + html + '</foreignObject></svg>';
 
     div.innerHTML = wrappedHtml;
 
@@ -57,15 +71,14 @@ function fixSVG(parent: Element, div: HTMLElement, html: string, reference: Node
   } else {
     // IE, Edge: also do not correctly support using `innerHTML` on SVG
     // namespaced elements. So here a wrapper is used.
-    let wrappedHtml = '<svg>' + (html || '<!---->') + '</svg>';
+    let wrappedHtml = '<svg>' + html + '</svg>';
 
     div.innerHTML = wrappedHtml;
 
     source = div.firstChild!;
   }
 
-  let [first, last] = moveNodesBefore(source, parent, reference);
-  return new ConcreteBounds(parent, first, last);
+  return moveNodesBefore(source, parent, reference);
 }
 
 function shouldApplyFix(document: Document, svgNamespace: SVG_NAMESPACE) {
