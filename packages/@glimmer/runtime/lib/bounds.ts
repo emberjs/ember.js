@@ -1,12 +1,5 @@
-import { Simple } from '@glimmer/interfaces';
+import { Simple, Bounds } from '@glimmer/interfaces';
 import { Option, Destroyable } from '@glimmer/util';
-
-export interface Bounds {
-  // a method to future-proof for wormholing; may not be needed ultimately
-  parentElement(): Simple.Element;
-  firstNode(): Option<Simple.Node>;
-  lastNode(): Option<Simple.Node>;
-}
 
 export class Cursor {
   constructor(public element: Simple.Element, public nextSibling: Option<Simple.Node>) {}
@@ -14,7 +7,7 @@ export class Cursor {
 
 export default Bounds;
 
-export interface DestroyableBounds extends Bounds, Destroyable {}
+export type DestroyableBounds = Bounds & Destroyable;
 
 export class ConcreteBounds implements Bounds {
   constructor(

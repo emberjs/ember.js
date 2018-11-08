@@ -2,7 +2,7 @@ import { Reference, PathReference, OpaqueIterable } from '@glimmer/reference';
 import { Macros, OpcodeBuilderConstructor } from '@glimmer/opcode-compiler';
 import { Simple, RuntimeResolver, CompilableBlock, BlockSymbolTable } from '@glimmer/interfaces';
 import { Program } from '@glimmer/program';
-import { Dict, Option, Destroyable, Opaque, assert, expect } from '@glimmer/util';
+import { Dict, Option, Opaque, assert, expect } from '@glimmer/util';
 
 import { DOMChanges, DOMTreeConstruction } from './dom/helper';
 import { PublicVM } from './vm/append';
@@ -10,6 +10,7 @@ import { IArguments } from './vm/arguments';
 import { UNDEFINED_REFERENCE, ConditionalReference } from './references';
 import { DynamicAttribute, dynamicAttribute } from './vm/attributes/dynamic';
 import { Component, ComponentManager, ModifierManager, Modifier } from './internal-interfaces';
+import { Destructor, DROP } from './lifetime/destructor';
 
 export type ScopeBlock = [number | CompilableBlock, Scope, BlockSymbolTable];
 export type BlockValue = ScopeBlock[0 | 1 | 2];
@@ -140,7 +141,7 @@ class Transaction {
   public createdManagers: ComponentManager[] = [];
   public updatedComponents: Component[] = [];
   public updatedManagers: ComponentManager[] = [];
-  public destructors: Destroyable[] = [];
+  public destructors: Destructor[] = [];
 
   didCreate(component: Component, manager: ComponentManager) {
     this.createdComponents.push(component);
@@ -162,7 +163,7 @@ class Transaction {
     this.scheduledUpdateModifiers.push(modifier);
   }
 
-  didDestroy(d: Destroyable) {
+  didDestroy(d: Destructor) {
     this.destructors.push(d);
   }
 
@@ -186,7 +187,7 @@ class Transaction {
     let { destructors } = this;
 
     for (let i = 0; i < destructors.length; i++) {
-      destructors[i].destroy();
+      destructors[i][DROP]();
     }
 
     let { scheduledInstallManagers, scheduledInstallModifiers } = this;
@@ -248,6 +249,7 @@ export abstract class Environment {
       !this._transaction,
       'A glimmer transaction was begun, but one already exists. You may have a nested transaction, possibly caused by an earlier runtime exception while rendering. Please check your console for the stack trace of any prior exceptions.'
     );
+
     this._transaction = new Transaction();
   }
 
@@ -271,7 +273,7 @@ export abstract class Environment {
     this.transaction.scheduleUpdateModifier(modifier, manager);
   }
 
-  didDestroy(d: Destroyable) {
+  didDestroy(d: Destructor) {
     this.transaction.didDestroy(d);
   }
 

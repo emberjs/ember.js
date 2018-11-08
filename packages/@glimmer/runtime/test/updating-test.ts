@@ -18,7 +18,7 @@ import {
 } from '@glimmer/test-helpers';
 import { ConstReference, bump } from '@glimmer/reference';
 import { UpdatableReference } from '@glimmer/object-reference';
-import { Opaque } from '@glimmer/util';
+import { DESTROY, Opaque } from '@glimmer/util';
 import { test, module, assert } from './support';
 
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
@@ -1155,7 +1155,7 @@ module('[glimmer-runtime] Updating', hooks => {
   test('helpers can add destroyables', assert => {
     let destroyable = {
       count: 0,
-      destroy(this: { count: number }) {
+      [DESTROY](this: { count: number }) {
         this.count++;
       },
     };
@@ -1278,7 +1278,7 @@ module('[glimmer-runtime] Updating', hooks => {
       didCreate++;
 
       vm.newDestroyable({
-        destroy() {
+        [DESTROY]() {
           didDestroy++;
         },
       });

@@ -193,27 +193,30 @@ export class ReferenceIterator {
   }
 }
 
-export interface IteratorSynchronizerDelegate {
-  retain(key: string, item: PathReference<Opaque>, memo: PathReference<Opaque>): void;
+export interface IteratorSynchronizerDelegate<Env> {
+  retain(env: Env, key: string, item: PathReference<Opaque>, memo: PathReference<Opaque>): void;
   insert(
+    env: Env,
     key: string,
     item: PathReference<Opaque>,
     memo: PathReference<Opaque>,
     before: Option<string>
   ): void;
   move(
+    env: Env,
     key: string,
     item: PathReference<Opaque>,
     memo: PathReference<Opaque>,
     before: Option<string>
   ): void;
-  delete(key: string): void;
-  done(): void;
+  delete(env: Env, key: string): void;
+  done(env: Env): void;
 }
 
-export interface IteratorSynchronizerOptions {
-  target: IteratorSynchronizerDelegate;
+export interface IteratorSynchronizerOptions<Env> {
+  target: IteratorSynchronizerDelegate<Env>;
   artifacts: IterationArtifacts;
+  env: Env;
 }
 
 enum Phase {
@@ -222,17 +225,19 @@ enum Phase {
   Done,
 }
 
-export class IteratorSynchronizer {
-  private target: IteratorSynchronizerDelegate;
+export class IteratorSynchronizer<Env> {
+  private target: IteratorSynchronizerDelegate<Env>;
   private iterator: OpaqueIterator;
   private current: Option<ListItem>;
   private artifacts: IterationArtifacts;
+  private env: Env;
 
-  constructor({ target, artifacts }: IteratorSynchronizerOptions) {
+  constructor({ target, artifacts, env }: IteratorSynchronizerOptions<Env>) {
     this.target = target;
     this.artifacts = artifacts;
     this.iterator = artifacts.iterate();
     this.current = artifacts.head();
+    this.env = env;
   }
 
   sync() {
@@ -297,7 +302,7 @@ export class IteratorSynchronizer {
 
     current.update(item);
     this.current = artifacts.nextNode(current);
-    this.target.retain(item.key, current.value, current.memo);
+    this.target.retain(this.env, item.key, current.value, current.memo);
   }
 
   private nextMove(item: OpaqueIterationItem) {
@@ -309,7 +314,7 @@ export class IteratorSynchronizer {
 
     if (artifacts.wasSeen(item.key)) {
       artifacts.move(found, current);
-      target.move(found.key, found.value, found.memo, current ? current.key : null);
+      target.move(this.env, found.key, found.value, found.memo, current ? current.key : null);
     } else {
       this.advanceToKey(key);
     }
@@ -319,7 +324,7 @@ export class IteratorSynchronizer {
     let { artifacts, target, current } = this;
 
     let node = artifacts.insertBefore(item, current);
-    target.insert(node.key, node.value, node.memo, current ? current.key : null);
+    target.insert(this.env, node.key, node.value, node.memo, current ? current.key : null);
   }
 
   private startPrune(): Phase {
@@ -339,7 +344,7 @@ export class IteratorSynchronizer {
 
     if (node.shouldRemove()) {
       artifacts.remove(node);
-      target.delete(node.key);
+      target.delete(this.env, node.key);
     } else {
       node.reset();
     }
@@ -348,6 +353,6 @@ export class IteratorSynchronizer {
   }
 
   private nextDone() {
-    this.target.done();
+    this.target.done(this.env);
   }
 }
