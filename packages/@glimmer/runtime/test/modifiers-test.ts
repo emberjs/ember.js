@@ -26,16 +26,16 @@ class ModifierTests extends RenderTest {
       class {
         element?: Element;
         didInsertElement() {
-          assert.ok(this.element);
-          assert.equal(this.element!.getAttribute('data-ok'), 'true');
+          assert.ok(this.element, 'didInsertElement');
+          assert.equal(this.element!.getAttribute('data-ok'), 'true', 'didInsertElement');
         }
 
         didUpdate() {
-          assert.ok(true);
+          assert.ok(true, 'didUpdate');
         }
 
         willDestroyElement() {
-          assert.ok(true);
+          assert.ok(true, 'willDestroyElement');
         }
       }
     );

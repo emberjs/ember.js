@@ -1,6 +1,7 @@
-import { Bounds, ConcreteBounds } from '../bounds';
+import { ConcreteBounds } from '../bounds';
 import { moveNodesBefore, DOMOperations } from '../dom/helper';
 import { Option, unwrap } from '@glimmer/util';
+import { Bounds } from '@glimmer/interfaces';
 
 export const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 export type SVG_NAMESPACE = typeof SVG_NAMESPACE;

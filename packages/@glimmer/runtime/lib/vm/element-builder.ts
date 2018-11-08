@@ -1,4 +1,4 @@
-import { clear, Cursor, DestroyableBounds, single, Bounds, bounds } from '../bounds';
+import { clear, Cursor, single, bounds } from '../bounds';
 
 import { DOMChanges, DOMTreeConstruction } from '../dom/helper';
 
@@ -10,6 +10,7 @@ import {
   LinkedListNode,
   assert,
   expect,
+  DESTROY,
 } from '@glimmer/util';
 
 import { Environment } from '../environment';
@@ -18,7 +19,10 @@ import { VersionedReference } from '@glimmer/reference';
 
 import { DynamicAttribute } from './attributes/dynamic';
 
-import { Opaque, Simple } from '@glimmer/interfaces';
+import { Opaque, Simple, Bounds } from '@glimmer/interfaces';
+import { associate } from '../lifetime';
+import { destructor, DROP } from '../lifetime/destructor';
+import { asyncReset } from '../lifetime/link';
 
 export interface FirstNode {
   firstNode(): Option<Simple.Node>;
@@ -121,12 +125,13 @@ export interface ElementBuilder extends Cursor, DOMStack, TreeOperations {
   // TODO: ?
   expectConstructing(method: string): Simple.Element;
 
-  block(): Tracker;
+  block(): LiveBlock;
+  debugBlocks(): LiveBlock[];
 
-  pushSimpleBlock(): Tracker;
-  pushUpdatableBlock(): UpdatableTracker;
-  pushBlockList(list: LinkedList<LinkedListNode & Bounds & Destroyable>): Tracker;
-  popBlock(): Tracker;
+  pushSimpleBlock(): LiveBlock;
+  pushUpdatableBlock(): UpdatableBlock;
+  pushBlockList(list: LinkedList<LinkedListNode & Bounds>): LiveBlock;
+  popBlock(): LiveBlock;
 
   didAddDestroyable(d: Destroyable): void;
   didAppendBounds(bounds: Bounds): void;
@@ -140,7 +145,7 @@ export class NewElementBuilder implements ElementBuilder {
   public env: Environment;
 
   protected cursorStack = new Stack<Cursor>();
-  private blockStack = new Stack<Tracker>();
+  private blockStack = new Stack<LiveBlock>();
 
   static forInitialRender(env: Environment, cursor: Cursor) {
     let builder = new this(env, cursor.element, cursor.nextSibling);
@@ -148,7 +153,7 @@ export class NewElementBuilder implements ElementBuilder {
     return builder;
   }
 
-  static resume(env: Environment, tracker: Tracker, nextSibling: Option<Simple.Node>) {
+  static resume(env: Environment, tracker: LiveBlock, nextSibling: Option<Simple.Node>) {
     let parentNode = tracker.parentElement();
 
     let stack = new this(env, parentNode, nextSibling);
@@ -166,6 +171,10 @@ export class NewElementBuilder implements ElementBuilder {
     this.updateOperations = env.getDOM();
   }
 
+  debugBlocks(): LiveBlock[] {
+    return this.blockStack.toArray();
+  }
+
   get element(): Simple.Element {
     return this.cursorStack.current!.element;
   }
@@ -181,7 +190,7 @@ export class NewElementBuilder implements ElementBuilder {
     );
   }
 
-  block(): Tracker {
+  block(): LiveBlock {
     return expect(this.blockStack.current, 'Expected a current block tracker');
   }
 
@@ -190,23 +199,23 @@ export class NewElementBuilder implements ElementBuilder {
     expect(this.cursorStack.current, "can't pop past the last element");
   }
 
-  pushSimpleBlock(): Tracker {
-    return this.pushBlockTracker(new SimpleBlockTracker(this.element));
+  pushSimpleBlock(): LiveBlock {
+    return this.pushBlockTracker(new SimpleLiveBlock(this.element));
   }
 
-  pushUpdatableBlock(): UpdatableTracker {
-    return this.pushBlockTracker(new UpdatableBlockTracker(this.element));
+  pushUpdatableBlock(): UpdatableBlock {
+    return this.pushBlockTracker(new UpdatableLiveBlock(this.element));
   }
 
-  pushBlockList(list: LinkedList<LinkedListNode & Bounds & Destroyable>): Tracker {
-    return this.pushBlockTracker(new BlockListTracker(this.element, list));
+  pushBlockList(list: LinkedList<LinkedListNode & Bounds & Destroyable>): LiveBlock {
+    return this.pushBlockTracker(new LiveBlockList(this.element, list));
   }
 
-  protected pushBlockTracker<T extends Tracker>(tracker: T, isRemote = false): T {
+  protected pushBlockTracker<T extends LiveBlock>(tracker: T, isRemote = false): T {
     let current = this.blockStack.current;
 
     if (current !== null) {
-      current.newDestroyable(tracker);
+      associate(current, tracker);
 
       if (!isRemote) {
         current.didAppendBounds(tracker);
@@ -218,7 +227,7 @@ export class NewElementBuilder implements ElementBuilder {
     return tracker;
   }
 
-  popBlock(): Tracker {
+  popBlock(): LiveBlock {
     this.block().finalize(this);
     this.__closeBlock();
     return expect(this.blockStack.pop(), 'Expected popBlock to return a block');
@@ -274,7 +283,7 @@ export class NewElementBuilder implements ElementBuilder {
 
   __pushRemoteElement(element: Simple.Element, _guid: string, nextSibling: Option<Simple.Node>) {
     this.pushElement(element, nextSibling);
-    let tracker = new RemoteBlockTracker(element);
+    let tracker = new RemoteLiveBlock(element);
     this.pushBlockTracker(tracker, true);
   }
 
@@ -408,7 +417,7 @@ export class NewElementBuilder implements ElementBuilder {
   }
 }
 
-export interface Tracker extends DestroyableBounds {
+export interface LiveBlock extends Bounds {
   openElement(element: Simple.Element): void;
   closeElement(): void;
   didAppendNode(node: Simple.Node): void;
@@ -417,23 +426,13 @@ export interface Tracker extends DestroyableBounds {
   finalize(stack: ElementBuilder): void;
 }
 
-export class SimpleBlockTracker implements Tracker {
+export class SimpleLiveBlock implements LiveBlock {
   protected first: Option<FirstNode> = null;
   protected last: Option<LastNode> = null;
   protected destroyables: Option<Destroyable[]> = null;
   protected nesting = 0;
 
   constructor(private parent: Simple.Element) {}
-
-  destroy() {
-    let { destroyables } = this;
-
-    if (destroyables && destroyables.length) {
-      for (let i = 0; i < destroyables.length; i++) {
-        destroyables[i].destroy();
-      }
-    }
-  }
 
   parentElement() {
     return this.parent;
@@ -477,8 +476,7 @@ export class SimpleBlockTracker implements Tracker {
   }
 
   newDestroyable(d: Destroyable) {
-    this.destroyables = this.destroyables || [];
-    this.destroyables.push(d);
+    associate(this, d);
   }
 
   finalize(stack: ElementBuilder) {
@@ -488,27 +486,19 @@ export class SimpleBlockTracker implements Tracker {
   }
 }
 
-export class RemoteBlockTracker extends SimpleBlockTracker {
-  destroy() {
-    super.destroy();
-
+export class RemoteLiveBlock extends SimpleLiveBlock {
+  [DESTROY]() {
     clear(this);
   }
 }
 
-export interface UpdatableTracker extends Tracker {
+export interface UpdatableBlock extends LiveBlock {
   reset(env: Environment): Option<Simple.Node>;
 }
 
-export class UpdatableBlockTracker extends SimpleBlockTracker implements UpdatableTracker {
+export class UpdatableLiveBlock extends SimpleLiveBlock implements UpdatableBlock {
   reset(env: Environment): Option<Simple.Node> {
-    let { destroyables } = this;
-
-    if (destroyables && destroyables.length) {
-      for (let i = 0; i < destroyables.length; i++) {
-        env.didDestroy(destroyables[i]);
-      }
-    }
+    asyncReset(this, env);
 
     let nextSibling = clear(this);
 
@@ -521,7 +511,7 @@ export class UpdatableBlockTracker extends SimpleBlockTracker implements Updatab
   }
 }
 
-class BlockListTracker implements Tracker {
+class LiveBlockList implements LiveBlock {
   constructor(
     private parent: Simple.Element,
     private boundList: LinkedList<LinkedListNode & Bounds & Destroyable>
@@ -530,8 +520,8 @@ class BlockListTracker implements Tracker {
     this.boundList = boundList;
   }
 
-  destroy() {
-    this.boundList.forEachNode(node => node.destroy());
+  [DESTROY]() {
+    this.boundList.forEachNode(d => destructor(d)[DROP]());
   }
 
   parentElement() {

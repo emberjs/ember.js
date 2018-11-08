@@ -146,6 +146,7 @@ export class AppendOpcodes {
         vm['v0']
       );
       console.log('%c -> eval stack', 'color: red', vm.stack.toArray());
+      console.log('%c -> block stack', 'color: magenta', vm.elements().debugBlocks());
       if (vm['scopeStack'].current === null) {
         console.log('%c -> scope', 'color: green', 'null');
       } else {

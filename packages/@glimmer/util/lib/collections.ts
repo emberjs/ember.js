@@ -59,4 +59,8 @@ export class Stack<T> {
   isEmpty(): boolean {
     return this.stack.length === 0;
   }
+
+  toArray(): T[] {
+    return this.stack;
+  }
 }

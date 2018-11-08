@@ -18,12 +18,12 @@ import { Opaque, Option, LinkedList, ListNode, dict } from '@glimmer/util';
 
 QUnit.module('Reference iterables');
 
-class Target implements IteratorSynchronizerDelegate {
+class Target implements IteratorSynchronizerDelegate<null> {
   private map = dict<ListNode<BasicReference<Opaque>>>();
   private list = new LinkedList<ListNode<BasicReference<Opaque>>>();
   public tag = CURRENT_TAG;
 
-  retain(key: string, item: BasicReference<Opaque>) {
+  retain(_env: null, key: string, item: BasicReference<Opaque>) {
     if (item !== this.map[key].value) {
       throw new Error('unstable reference');
     }
@@ -36,13 +36,25 @@ class Target implements IteratorSynchronizerDelegate {
     this.list.append(node);
   }
 
-  insert(key: string, item: BasicReference<Opaque>, _: BasicReference<Opaque>, before: string) {
+  insert(
+    _env: null,
+    key: string,
+    item: BasicReference<Opaque>,
+    _: BasicReference<Opaque>,
+    before: string
+  ) {
     let referenceNode = before ? this.map[before] : null;
     let node = (this.map[key] = new ListNode(item));
     this.list.insertBefore(node, referenceNode);
   }
 
-  move(key: string, item: BasicReference<Opaque>, _: BasicReference<Opaque>, before: string) {
+  move(
+    _env: null,
+    key: string,
+    item: BasicReference<Opaque>,
+    _: BasicReference<Opaque>,
+    before: string
+  ) {
     let referenceNode = before ? this.map[before] : null;
     let node = this.map[key];
 
@@ -54,7 +66,7 @@ class Target implements IteratorSynchronizerDelegate {
     this.list.insertBefore(node, referenceNode);
   }
 
-  delete(key: string) {
+  delete(_env: null, key: string) {
     let node = this.map[key];
     delete this.map[key];
     this.list.remove(node);
@@ -165,7 +177,7 @@ function initialize(
 }
 
 function sync(target: Target, artifacts: IterationArtifacts) {
-  let synchronizer = new IteratorSynchronizer({ target, artifacts });
+  let synchronizer = new IteratorSynchronizer({ target, artifacts, env: null });
   synchronizer.sync();
 }
 

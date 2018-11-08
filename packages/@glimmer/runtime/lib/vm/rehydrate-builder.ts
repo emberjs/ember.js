@@ -1,4 +1,4 @@
-import { NewElementBuilder, ElementBuilder, RemoteBlockTracker } from './element-builder';
+import { NewElementBuilder, ElementBuilder, RemoteLiveBlock } from './element-builder';
 
 import { Environment } from '../environment';
 import Bounds, { bounds, Cursor } from '../bounds';
@@ -386,7 +386,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
       currentCursor!.candidate = candidate;
       this.candidate = this.remove(marker);
 
-      let tracker = new RemoteBlockTracker(element);
+      let tracker = new RemoteLiveBlock(element);
       this.pushBlockTracker(tracker, true);
     }
   }

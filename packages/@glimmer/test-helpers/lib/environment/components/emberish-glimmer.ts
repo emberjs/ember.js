@@ -11,7 +11,7 @@ import { Opaque, Option, ComponentCapabilities } from '@glimmer/interfaces';
 import { PathReference, Tag, combine, TagWrapper, DirtyableTag } from '@glimmer/reference';
 import { UpdatableReference } from '@glimmer/object-reference';
 import GlimmerObject from '@glimmer/object';
-import { Destroyable } from '@glimmer/util';
+import { Destroyable, DESTROY } from '@glimmer/util';
 
 import { Attrs, AttrsDiff, createTemplate } from '../shared';
 import { BASIC_CAPABILITIES } from './basic';
@@ -135,7 +135,7 @@ export class EmberishGlimmerComponentManager
 
   getDestructor({ component }: EmberishGlimmerComponentState): Destroyable {
     return {
-      destroy() {
+      [DESTROY]() {
         component.destroy();
       },
     };
