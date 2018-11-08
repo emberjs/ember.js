@@ -1,5 +1,5 @@
-import { Bounds } from '../bounds';
 import { DOMOperations } from '../dom/helper';
+import { Bounds } from '@glimmer/interfaces';
 import { Option } from '@glimmer/util';
 
 // Patch:    Adjacent text node merging fix

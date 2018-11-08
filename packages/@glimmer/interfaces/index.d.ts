@@ -1,6 +1,7 @@
 export * from './lib/core';
 export * from './lib/components';
 export * from './lib/dom/tree-construction';
+export * from './lib/dom/bounds';
 export * from './lib/program';
 export * from './lib/module-locators';
 export * from './lib/tier1/symbol-table';

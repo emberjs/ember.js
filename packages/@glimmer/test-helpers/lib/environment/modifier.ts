@@ -7,7 +7,7 @@ import {
 } from '@glimmer/runtime';
 import { Option, Simple } from '@glimmer/interfaces';
 import { Tag, CONSTANT_TAG } from '@glimmer/reference';
-import { Destroyable, Opaque, Dict } from '@glimmer/util';
+import { Destroyable, Opaque, Dict, DESTROY } from '@glimmer/util';
 
 export class InertModifierStateBucket {}
 
@@ -116,7 +116,7 @@ export class TestModifierManager
 
   getDestructor(modifier: TestModifier): Destroyable {
     return {
-      destroy: () => {
+      [DESTROY]: () => {
         this.destroyedModifiers.push(modifier);
         let { element, dom, state } = modifier;
         if (state.instance && state.instance.willDestroyElement) {

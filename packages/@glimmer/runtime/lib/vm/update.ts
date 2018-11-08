@@ -1,6 +1,6 @@
 import { Scope, DynamicScope, Environment } from '../environment';
-import { DestroyableBounds, clear, move as moveBounds } from '../bounds';
-import { NewElementBuilder, Tracker, UpdatableTracker } from './element-builder';
+import { clear, move as moveBounds } from '../bounds';
+import { NewElementBuilder, LiveBlock, UpdatableBlock } from './element-builder';
 import { Option, Opaque, Stack, LinkedList, Dict, dict, expect } from '@glimmer/util';
 import {
   PathReference,
@@ -20,10 +20,11 @@ import {
 } from '@glimmer/reference';
 import { UpdatingOpcode, UpdatingOpSeq } from '../opcodes';
 import { DOMChanges } from '../dom/helper';
-import { Simple } from '@glimmer/interfaces';
+import { Simple, Bounds } from '@glimmer/interfaces';
 
 import EvaluationStack from './stack';
 import VM, { RuntimeProgram, Constants } from './append';
+import { associate, asyncDestroy } from '../lifetime';
 
 export default class UpdatingVM<T = Opaque> {
   public env: Environment;
@@ -99,25 +100,27 @@ export interface VMState {
   stack: Opaque[];
 }
 
-export abstract class BlockOpcode extends UpdatingOpcode implements DestroyableBounds {
+export abstract class BlockOpcode extends UpdatingOpcode implements Bounds {
   public type = 'block';
   public next = null;
   public prev = null;
   public children: LinkedList<UpdatingOpcode>;
 
-  protected bounds: DestroyableBounds;
+  protected readonly bounds: LiveBlock;
 
   constructor(
     public start: number,
     protected state: VMState,
     protected runtime: Runtime,
-    bounds: DestroyableBounds,
+    bounds: LiveBlock,
     children: LinkedList<UpdatingOpcode>
   ) {
     super();
 
     this.children = children;
     this.bounds = bounds;
+
+    associate(this, bounds);
   }
 
   abstract didInitializeChildren(): void;
@@ -137,14 +140,6 @@ export abstract class BlockOpcode extends UpdatingOpcode implements DestroyableB
   evaluate(vm: UpdatingVM) {
     vm.try(this.children, null);
   }
-
-  destroy() {
-    this.bounds.destroy();
-  }
-
-  didDestroy() {
-    this.runtime.env.didDestroy(this.bounds);
-  }
 }
 
 export class TryOpcode extends BlockOpcode implements ExceptionHandler {
@@ -154,13 +149,13 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
 
   private _tag: TagWrapper<UpdatableTag>;
 
-  protected bounds!: UpdatableTracker; // Hides property on base class
+  protected bounds!: UpdatableBlock; // Hides property on base class
 
   constructor(
     start: number,
     state: VMState,
     runtime: Runtime,
-    bounds: UpdatableTracker,
+    bounds: UpdatableBlock,
     children: LinkedList<UpdatingOpcode>
   ) {
     super(start, state, runtime, bounds, children);
@@ -198,7 +193,7 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
   }
 }
 
-class ListRevalidationDelegate implements IteratorSynchronizerDelegate {
+class ListRevalidationDelegate implements IteratorSynchronizerDelegate<Environment> {
   private map: Dict<BlockOpcode>;
   private updating: LinkedList<UpdatingOpcode>;
 
@@ -210,7 +205,13 @@ class ListRevalidationDelegate implements IteratorSynchronizerDelegate {
     this.updating = opcode['children'];
   }
 
-  insert(key: string, item: PathReference<Opaque>, memo: PathReference<Opaque>, before: string) {
+  insert(
+    _env: Environment,
+    key: string,
+    item: PathReference<Opaque>,
+    memo: PathReference<Opaque>,
+    before: string
+  ) {
     let { map, opcode, updating } = this;
     let nextSibling: Option<Simple.Node> = null;
     let reference: Option<BlockOpcode> = null;
@@ -239,9 +240,20 @@ class ListRevalidationDelegate implements IteratorSynchronizerDelegate {
     this.didInsert = true;
   }
 
-  retain(_key: string, _item: PathReference<Opaque>, _memo: PathReference<Opaque>) {}
+  retain(
+    _env: Environment,
+    _key: string,
+    _item: PathReference<Opaque>,
+    _memo: PathReference<Opaque>
+  ) {}
 
-  move(key: string, _item: PathReference<Opaque>, _memo: PathReference<Opaque>, before: string) {
+  move(
+    _env: Environment,
+    key: string,
+    _item: PathReference<Opaque>,
+    _memo: PathReference<Opaque>,
+    before: string
+  ) {
     let { map, updating } = this;
 
     let entry = map[key];
@@ -257,10 +269,10 @@ class ListRevalidationDelegate implements IteratorSynchronizerDelegate {
     updating.insertBefore(entry, reference);
   }
 
-  delete(key: string) {
+  delete(env: Environment, key: string) {
     let { map } = this;
     let opcode = map[key];
-    opcode.didDestroy();
+    asyncDestroy(opcode, env);
     clear(opcode);
     this.updating.remove(opcode);
     delete map[key];
@@ -286,7 +298,7 @@ export class ListBlockOpcode extends BlockOpcode {
     start: number,
     state: VMState,
     runtime: Runtime,
-    bounds: Tracker,
+    bounds: LiveBlock,
     children: LinkedList<UpdatingOpcode>,
     artifacts: IterationArtifacts
   ) {
@@ -319,7 +331,7 @@ export class ListBlockOpcode extends BlockOpcode {
       );
 
       let target = new ListRevalidationDelegate(this, marker);
-      let synchronizer = new IteratorSynchronizer({ target, artifacts });
+      let synchronizer = new IteratorSynchronizer({ target, artifacts, env: vm.env });
 
       synchronizer.sync();
 

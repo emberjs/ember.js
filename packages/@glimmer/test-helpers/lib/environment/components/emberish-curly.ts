@@ -7,7 +7,7 @@ import {
 } from '@glimmer/interfaces';
 import GlimmerObject from '@glimmer/object';
 import { Tag, combine, PathReference, TagWrapper, DirtyableTag } from '@glimmer/reference';
-import { EMPTY_ARRAY, assign, Destroyable, expect } from '@glimmer/util';
+import { EMPTY_ARRAY, assign, Destroyable, expect, DESTROY } from '@glimmer/util';
 import {
   Environment,
   Arguments,
@@ -303,7 +303,7 @@ export class EmberishCurlyComponentManager
 
   getDestructor(component: EmberishCurlyComponent): Destroyable {
     return {
-      destroy() {
+      [DESTROY]() {
         component.destroy();
       },
     };
