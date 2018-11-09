@@ -2,7 +2,7 @@
   A `RouteInfoWithAttributes` is an object that contains
   metadata, including the resolved value from the routes
   `model` hook. Like `RouteInfo`, a `RouteInfoWithAttributes`
-  represents a specific route with in a Transition.
+  represents a specific route within a Transition.
   It is read-only and internally immutable. It is also not
   observable, because a Transition instance is never
   changed after creation.
@@ -29,8 +29,8 @@
 */
 
 /**
-  The values of the route's parametes. These are the
-  same params that are recieved as arguments to the
+  The values of the route's parameters. These are the
+  same params that are received as arguments to the
   route's model hook. Contains only the parameters
   valid for this route, if any (params for parent or
   child routes are not merged).
@@ -118,7 +118,7 @@
 
 /**
   A RouteInfo is an object that contains metadata
-  about a specific route with in a Transition. It is
+  about a specific route within a Transition. It is
   read-only and internally immutable. It is also not
   observable, because a Transition instance is never
   changed after creation.
@@ -146,7 +146,7 @@
 
 /**
   The values of the route's parametes. These are the
-  same params that are recieved as arguments to the
+  same params that are received as arguments to the
   route's model hook. Contains only the parameters
   valid for this route, if any (params for parent or
   child routes are not merged).
