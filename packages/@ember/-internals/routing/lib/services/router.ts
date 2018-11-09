@@ -289,7 +289,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
      A RouteInfo that represents the current leaf route.
      It is guaranteed to change whenever a route transition
      happens (even when that transition only changes parameters
-    and doesn't change the active route)
+     and doesn't change the active route)
 
      @property currentRoute
      @type RouteInfo
@@ -363,7 +363,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
       });
       ```
 
-    The `routeWillChange` event fires whenever a new route is chosen as the desired target of a transition. This includes `transitionTo`, `replaceWith`, all redirection for any reason including error handling, and abort. Aborting implies changing the desired target back to where you already were. Once a transition has completed, `routeDidChange` fires.
+      The `routeWillChange` event fires whenever a new route is chosen as the desired target of a transition. This includes `transitionTo`, `replaceWith`, all redirection for any reason including error handling, and abort. Aborting implies changing the desired target back to where you already were. Once a transition has completed, `routeDidChange` fires.
 
       @event routeWillChange
       @param {Transition} transition
@@ -374,7 +374,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
     /**
       The `routeDidChange` event only fires once a transition has settled.
       This includes aborts and error substates. Like the `routeWillChange` event
-      it recieves a Transition as the sole argument.
+      it receives a Transition as the sole argument.
 
       A good example is sending some analytics when the route has transitioned:
 
