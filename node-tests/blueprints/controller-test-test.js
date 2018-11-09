@@ -21,19 +21,25 @@ describe('Blueprint: controller-test', function() {
       return emberNew();
     });
 
-    it('controller-test foo', function() {
-      return emberGenerateDestroy(['controller-test', 'foo'], _file => {
-        expect(_file('tests/unit/controllers/foo-test.js')).to.equal(
-          fixture('controller-test/default.js')
-        );
+    describe('with ember-cli-qunit@4.1.0', function() {
+      beforeEach(function() {
+        generateFakePackageManifest('ember-cli-qunit', '4.1.0');
       });
-    });
 
-    it('controller-test foo/bar', function() {
-      return emberGenerateDestroy(['controller-test', 'foo/bar'], _file => {
-        expect(_file('tests/unit/controllers/foo/bar-test.js')).to.equal(
-          fixture('controller-test/default-nested.js')
-        );
+      it('controller-test foo', function() {
+        return emberGenerateDestroy(['controller-test', 'foo'], _file => {
+          expect(_file('tests/unit/controllers/foo-test.js')).to.equal(
+            fixture('controller-test/default.js')
+          );
+        });
+      });
+
+      it('controller-test foo/bar', function() {
+        return emberGenerateDestroy(['controller-test', 'foo/bar'], _file => {
+          expect(_file('tests/unit/controllers/foo/bar-test.js')).to.equal(
+            fixture('controller-test/default-nested.js')
+          );
+        });
       });
     });
 
@@ -143,19 +149,25 @@ describe('Blueprint: controller-test', function() {
       return emberNew().then(() => fs.ensureDirSync('src'));
     });
 
-    it('controller-test foo', function() {
-      return emberGenerateDestroy(['controller-test', 'foo'], _file => {
-        expect(_file('src/ui/routes/foo/controller-test.js')).to.equal(
-          fixture('controller-test/default.js')
-        );
+    describe('with ember-cli-qunit@4.1.0', function() {
+      beforeEach(function() {
+        generateFakePackageManifest('ember-cli-qunit', '4.1.0');
       });
-    });
 
-    it('controller-test foo/bar', function() {
-      return emberGenerateDestroy(['controller-test', 'foo/bar'], _file => {
-        expect(_file('src/ui/routes/foo/bar/controller-test.js')).to.equal(
-          fixture('controller-test/default-nested.js')
-        );
+      it('controller-test foo', function() {
+        return emberGenerateDestroy(['controller-test', 'foo'], _file => {
+          expect(_file('src/ui/routes/foo/controller-test.js')).to.equal(
+            fixture('controller-test/default.js')
+          );
+        });
+      });
+
+      it('controller-test foo/bar', function() {
+        return emberGenerateDestroy(['controller-test', 'foo/bar'], _file => {
+          expect(_file('src/ui/routes/foo/bar/controller-test.js')).to.equal(
+            fixture('controller-test/default-nested.js')
+          );
+        });
       });
     });
 
@@ -262,7 +274,9 @@ describe('Blueprint: controller-test', function() {
 
   describe('in addon', function() {
     beforeEach(function() {
-      return emberNew({ target: 'addon' });
+      return emberNew({ target: 'addon' }).then(() =>
+        generateFakePackageManifest('ember-cli-qunit', '4.1.0')
+      );
     });
 
     it('controller-test foo', function() {
@@ -284,7 +298,9 @@ describe('Blueprint: controller-test', function() {
 
   describe('in addon - module unification', function() {
     beforeEach(function() {
-      return emberNew().then(() => fs.ensureDirSync('src'));
+      return emberNew()
+        .then(() => fs.ensureDirSync('src'))
+        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
     });
 
     it('controller-test foo', function() {
