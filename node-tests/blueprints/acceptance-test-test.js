@@ -20,11 +20,17 @@ describe('Blueprint: acceptance-test', function() {
       return emberNew();
     });
 
-    it('acceptance-test foo', function() {
-      return emberGenerateDestroy(['acceptance-test', 'foo'], _file => {
-        expect(_file('tests/acceptance/foo-test.js')).to.equal(
-          fixture('acceptance-test/default.js')
-        );
+    describe('with ember-cli-qunit@4.1.0', function() {
+      beforeEach(function() {
+        generateFakePackageManifest('ember-cli-qunit', '4.1.0');
+      });
+
+      it('acceptance-test foo', function() {
+        return emberGenerateDestroy(['acceptance-test', 'foo'], _file => {
+          expect(_file('tests/acceptance/foo-test.js')).to.equal(
+            fixture('acceptance-test/default.js')
+          );
+        });
       });
     });
 
@@ -83,23 +89,29 @@ describe('Blueprint: acceptance-test', function() {
       return emberNew({ target: 'addon' });
     });
 
-    it('acceptance-test foo', function() {
-      return emberGenerateDestroy(['acceptance-test', 'foo'], _file => {
-        expect(_file('tests/acceptance/foo-test.js')).to.equal(
-          fixture('acceptance-test/addon-default.js')
-        );
-
-        expect(_file('app/acceptance-tests/foo.js')).to.not.exist;
+    describe('with ember-cli-qunit@4.1.0', function() {
+      beforeEach(function() {
+        generateFakePackageManifest('ember-cli-qunit', '4.1.0');
       });
-    });
 
-    it('acceptance-test foo/bar', function() {
-      return emberGenerateDestroy(['acceptance-test', 'foo/bar'], _file => {
-        expect(_file('tests/acceptance/foo/bar-test.js')).to.equal(
-          fixture('acceptance-test/addon-nested.js')
-        );
+      it('acceptance-test foo', function() {
+        return emberGenerateDestroy(['acceptance-test', 'foo'], _file => {
+          expect(_file('tests/acceptance/foo-test.js')).to.equal(
+            fixture('acceptance-test/addon-default.js')
+          );
 
-        expect(_file('app/acceptance-tests/foo/bar.js')).to.not.exist;
+          expect(_file('app/acceptance-tests/foo.js')).to.not.exist;
+        });
+      });
+
+      it('acceptance-test foo/bar', function() {
+        return emberGenerateDestroy(['acceptance-test', 'foo/bar'], _file => {
+          expect(_file('tests/acceptance/foo/bar-test.js')).to.equal(
+            fixture('acceptance-test/addon-nested.js')
+          );
+
+          expect(_file('app/acceptance-tests/foo/bar.js')).to.not.exist;
+        });
       });
     });
 
