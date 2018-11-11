@@ -259,7 +259,7 @@ export class Meta {
   _findInheritedMap(key: string, subkey: string): any | undefined {
     let pointer: Meta | null = this;
     while (pointer !== null) {
-      let map : Map<string, any> = pointer[key];
+      let map: Map<string, any> = pointer[key];
       if (map !== undefined) {
         let value = map.get(subkey);
         if (value !== undefined) {
@@ -741,7 +741,7 @@ export class Meta {
     return this._listeners;
   }
 
-  matchingListeners(eventName: string): (string | boolean | object | null)[] | undefined | void {
+  matchingListeners(eventName: string): (string | boolean | object | null)[] | undefined {
     let listeners = this.flattenedListeners();
     let result;
 
@@ -858,7 +858,7 @@ export function setMeta(obj: object, meta: Meta) {
   metaStore.set(obj, meta);
 }
 
-export function peekMeta(obj: object) : Meta | null {
+export function peekMeta(obj: object): Meta | null {
   assert('Cannot call `peekMeta` on null', obj !== null);
   assert('Cannot call `peekMeta` on undefined', obj !== undefined);
   assert(

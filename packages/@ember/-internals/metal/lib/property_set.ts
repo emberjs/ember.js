@@ -145,7 +145,9 @@ function setPath(root: object, path: string, value: any, tolerant?: boolean): an
   if (newRoot !== null && newRoot !== undefined) {
     return set(newRoot, keyName, value);
   } else if (!tolerant) {
-    throw new EmberError(`Property set failed: object in path "${parts.join('.')}" could not be found.`);
+    throw new EmberError(
+      `Property set failed: object in path "${parts.join('.')}" could not be found.`
+    );
   }
 }
 
