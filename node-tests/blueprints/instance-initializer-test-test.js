@@ -20,11 +20,17 @@ describe('Blueprint: instance-initializer-test', function() {
       return emberNew();
     });
 
-    it('instance-initializer-test foo', function() {
-      return emberGenerateDestroy(['instance-initializer-test', 'foo'], _file => {
-        expect(_file('tests/unit/instance-initializers/foo-test.js')).to.equal(
-          fixture('instance-initializer-test/default.js')
-        );
+    describe('with ember-cli-qunit@4.1.0', function() {
+      beforeEach(function() {
+        generateFakePackageManifest('ember-cli-qunit', '4.1.0');
+      });
+
+      it('instance-initializer-test foo', function() {
+        return emberGenerateDestroy(['instance-initializer-test', 'foo'], _file => {
+          expect(_file('tests/unit/instance-initializers/foo-test.js')).to.equal(
+            fixture('instance-initializer-test/default.js')
+          );
+        });
       });
     });
 
