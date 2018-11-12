@@ -2,7 +2,7 @@ import { Reference, PathReference, OpaqueIterable } from '@glimmer/reference';
 import { Macros, OpcodeBuilderConstructor } from '@glimmer/opcode-compiler';
 import { Simple, RuntimeResolver, CompilableBlock, BlockSymbolTable } from '@glimmer/interfaces';
 import { Program } from '@glimmer/program';
-import { Dict, Option, Opaque, assert, expect, Destructor, DROP } from '@glimmer/util';
+import { Dict, Option, Opaque, assert, expect, Drop, DROP } from '@glimmer/util';
 
 import { DOMChanges, DOMTreeConstruction } from './dom/helper';
 import { PublicVM } from './vm/append';
@@ -140,7 +140,7 @@ class Transaction {
   public createdManagers: ComponentManager[] = [];
   public updatedComponents: Component[] = [];
   public updatedManagers: ComponentManager[] = [];
-  public destructors: Destructor[] = [];
+  public destructors: Drop[] = [];
 
   didCreate(component: Component, manager: ComponentManager) {
     this.createdComponents.push(component);
@@ -162,7 +162,7 @@ class Transaction {
     this.scheduledUpdateModifiers.push(modifier);
   }
 
-  didDestroy(d: Destructor) {
+  didDestroy(d: Drop) {
     this.destructors.push(d);
   }
 
@@ -274,7 +274,7 @@ export abstract class Environment {
     this.transaction.scheduleUpdateModifier(modifier, manager);
   }
 
-  didDestroy(d: Destructor) {
+  didDestroy(d: Drop) {
     this.transaction.didDestroy(d);
   }
 

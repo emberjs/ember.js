@@ -374,7 +374,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     element: Simple.Element,
     cursorId: string,
     nextSibling: Option<Simple.Node> = null
-  ) {
+  ): Option<RemoteLiveBlock> {
     let marker = this.getMarker(element as HTMLElement, cursorId);
 
     if (marker.parentNode === element) {
@@ -387,8 +387,10 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
       this.candidate = this.remove(marker);
 
       let block = new RemoteLiveBlock(element);
-      this.pushLiveBlock(block, true);
+      return this.pushLiveBlock(block, true);
     }
+
+    return null;
   }
 
   didAppendBounds(bounds: Bounds): Bounds {

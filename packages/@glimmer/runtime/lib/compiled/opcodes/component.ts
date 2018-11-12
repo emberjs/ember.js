@@ -1,14 +1,5 @@
 import { Op, Register } from '@glimmer/vm';
-import {
-  Opaque,
-  Option,
-  Dict,
-  dict,
-  assert,
-  unreachable,
-  expect,
-  associateDestructor,
-} from '@glimmer/util';
+import { Opaque, Option, Dict, dict, assert, unreachable, expect } from '@glimmer/util';
 import {
   VMHandle,
   ProgramSymbolTable,
@@ -370,8 +361,8 @@ APPEND_OPCODES.add(Op.CreateComponent, (vm, { op1: flags, op2: _state }) => {
 APPEND_OPCODES.add(Op.RegisterComponentDestructor, (vm, { op1: _state }) => {
   let { manager, state } = check(vm.fetchValue(_state), CheckComponentInstance);
 
-  let destructor = manager.getDestructor(state);
-  if (destructor) associateDestructor(vm.currentBlock(), destructor);
+  let d = manager.getDestructor(state);
+  if (d) vm.associateDestroyable(d);
 });
 
 APPEND_OPCODES.add(Op.BeginComponentTransaction, vm => {

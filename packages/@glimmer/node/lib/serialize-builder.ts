@@ -7,6 +7,7 @@ import {
 } from '@glimmer/runtime';
 
 import { Simple, Option } from '@glimmer/interfaces';
+import { RemoteLiveBlock } from '@glimmer/runtime/lib/vm/element-builder';
 
 const TEXT_NODE = 3;
 
@@ -100,12 +101,12 @@ class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
     element: Simple.Element,
     cursorId: string,
     nextSibling: Option<Simple.Node> = null
-  ) {
+  ): Option<RemoteLiveBlock> {
     let { dom } = this;
     let script = dom.createElement('script');
     script.setAttribute('glmr', cursorId);
     dom.insertBefore(element, script, nextSibling);
-    super.pushRemoteElement(element, cursorId, nextSibling);
+    return super.pushRemoteElement(element, cursorId, nextSibling);
   }
 }
 

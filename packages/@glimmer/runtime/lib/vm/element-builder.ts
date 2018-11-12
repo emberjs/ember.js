@@ -4,18 +4,13 @@ import { DOMChanges, DOMTreeConstruction } from '../dom/helper';
 
 import {
   Option,
-  Destroyable,
+  SymbolDestroyable,
   Stack,
   LinkedList,
   LinkedListNode,
   assert,
   expect,
   DESTROY,
-  associate,
-  destructor,
-  DROP,
-  Destructor,
-  associateDestructor,
 } from '@glimmer/util';
 
 import { Environment } from '../environment';
@@ -81,7 +76,11 @@ export class Fragment implements Bounds {
 }
 
 export interface DOMStack {
-  pushRemoteElement(element: Simple.Element, guid: string, nextSibling: Option<Simple.Node>): void;
+  pushRemoteElement(
+    element: Simple.Element,
+    guid: string,
+    nextSibling: Option<Simple.Node>
+  ): Option<RemoteLiveBlock>;
   popRemoteElement(): void;
   popElement(): void;
   openElement(tag: string, _operations?: ElementOperations): Simple.Element;
@@ -220,8 +219,6 @@ export class NewElementBuilder implements ElementBuilder {
     let current = this.blockStack.current;
 
     if (current !== null) {
-      associate(current, block);
-
       if (!isRemote) {
         current.didAppendBounds(block);
       }
@@ -282,14 +279,18 @@ export class NewElementBuilder implements ElementBuilder {
     element: Simple.Element,
     guid: string,
     nextSibling: Option<Simple.Node> = null
-  ) {
-    this.__pushRemoteElement(element, guid, nextSibling);
+  ): Option<RemoteLiveBlock> {
+    return this.__pushRemoteElement(element, guid, nextSibling);
   }
 
-  __pushRemoteElement(element: Simple.Element, _guid: string, nextSibling: Option<Simple.Node>) {
+  __pushRemoteElement(
+    element: Simple.Element,
+    _guid: string,
+    nextSibling: Option<Simple.Node>
+  ): Option<RemoteLiveBlock> {
     this.pushElement(element, nextSibling);
     let block = new RemoteLiveBlock(element);
-    this.pushLiveBlock(block, true);
+    return this.pushLiveBlock(block, true);
   }
 
   popRemoteElement() {
@@ -430,7 +431,7 @@ export interface LiveBlock extends Bounds {
 export class SimpleLiveBlock implements LiveBlock {
   protected first: Option<FirstNode> = null;
   protected last: Option<LastNode> = null;
-  protected destroyables: Option<Destroyable[]> = null;
+  protected destroyables: Option<SymbolDestroyable[]> = null;
   protected nesting = 0;
 
   constructor(private parent: Simple.Element) {}
@@ -514,14 +515,6 @@ export class UpdatableBlock extends SimpleLiveBlock {
   }
 }
 
-class ListContentsDestructor implements Destructor {
-  constructor(private inner: LinkedList<LiveBlock & LinkedListNode>) {}
-
-  [DROP]() {
-    this.inner.forEachNode(d => destructor(d)[DROP]());
-  }
-}
-
 // FIXME: All the noops in here indicate a modelling problem
 class LiveBlockList implements LiveBlock {
   constructor(
@@ -530,11 +523,6 @@ class LiveBlockList implements LiveBlock {
   ) {
     this.parent = parent;
     this.boundList = boundList;
-
-    // The `boundList` is shared with the rest of the VM, and can be mutated
-    // without our awareness. As a result, when the list is destroyed, figure
-    // out the associated children on the fly and drop them.
-    associateDestructor(this, new ListContentsDestructor(boundList));
   }
 
   parentElement() {

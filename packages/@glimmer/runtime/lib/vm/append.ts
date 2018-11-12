@@ -1,7 +1,21 @@
 import { Register } from '@glimmer/vm';
 import { Scope, DynamicScope, Environment } from '../environment';
 import { ElementBuilder, LiveBlock } from './element-builder';
-import { Option, Stack, LinkedList, ListSlice, Opaque, expect, assert } from '@glimmer/util';
+import {
+  Option,
+  Stack,
+  LinkedList,
+  ListSlice,
+  Opaque,
+  expect,
+  assert,
+  Drop,
+  associateDestructor,
+  isDrop,
+  destructor,
+  SymbolDestroyable,
+  Destroyable,
+} from '@glimmer/util';
 import {
   ReferenceIterator,
   PathReference,
@@ -27,7 +41,7 @@ export interface PublicVM {
   env: Environment;
   dynamicScope(): DynamicScope;
   getSelf(): PathReference<Opaque>;
-  currentBlock(): LiveBlock;
+  associateDestroyable(child: SymbolDestroyable | Destroyable): void;
 }
 
 export type IteratorResult<T> =
@@ -56,15 +70,17 @@ export interface RuntimeProgram<T> extends Program {
 }
 
 export default class VM<T> implements PublicVM {
-  private dynamicScopeStack = new Stack<DynamicScope>();
-  private scopeStack = new Stack<Scope>();
-  public inner: LowLevelVM;
-  public updatingOpcodeStack = new Stack<LinkedList<UpdatingOpcode>>();
-  public cacheGroups = new Stack<Option<UpdatingOpcode>>();
-  public listBlockStack = new Stack<ListBlockOpcode>();
-  public constants: Constants<T>;
-  public heap: Heap;
-  public args: Arguments;
+  private readonly dynamicScopeStack = new Stack<DynamicScope>();
+  private readonly scopeStack = new Stack<Scope>();
+  readonly inner: LowLevelVM;
+  readonly updatingOpcodeStack = new Stack<LinkedList<UpdatingOpcode>>();
+  readonly destructorStack = new Stack<object>();
+  readonly cacheGroups = new Stack<Option<UpdatingOpcode>>();
+  readonly listBlockStack = new Stack<ListBlockOpcode>();
+  readonly constants: Constants<T>;
+  readonly heap: Heap;
+  readonly args: Arguments;
+  readonly destructor: object;
 
   get stack(): EvaluationStack {
     return this.inner.stack as EvaluationStack;
@@ -197,7 +213,7 @@ export default class VM<T> implements PublicVM {
     let scope = Scope.root(self, scopeSize);
     let vm = new VM({ program, env }, scope, dynamicScope, elementStack);
     vm.pc = vm.heap.getaddr(handle);
-    vm.updatingOpcodeStack.push(new LinkedList<UpdatingOpcode>());
+    vm.pushUpdating();
     return vm;
   }
 
@@ -225,7 +241,7 @@ export default class VM<T> implements PublicVM {
       dynamicScope,
       elementStack
     );
-    vm.updatingOpcodeStack.push(new LinkedList<UpdatingOpcode>());
+    vm.pushUpdating();
     vm.pc = vm.heap.getaddr(handle);
     return vm;
   }
@@ -255,6 +271,9 @@ export default class VM<T> implements PublicVM {
         APPEND_OPCODES.debugAfter(this, opcode, opcode.type, state);
       },
     });
+
+    this.destructor = {};
+    this.destructorStack.push(this.destructor);
   }
 
   get program(): RuntimeProgram<Opaque> {
@@ -361,13 +380,16 @@ export default class VM<T> implements PublicVM {
   }
 
   private didEnter(opcode: BlockOpcode) {
+    this.associateDestructor(destructor(opcode));
+    this.destructorStack.push(opcode);
     this.updateWith(opcode);
-    this.updatingOpcodeStack.push(opcode.children);
+    this.pushUpdating(opcode.children);
   }
 
   exit() {
+    this.destructorStack.pop();
     this.elements().popBlock();
-    this.updatingOpcodeStack.pop();
+    this.popUpdating();
 
     let parent = this.updating().tail() as BlockOpcode;
 
@@ -379,12 +401,34 @@ export default class VM<T> implements PublicVM {
     this.listBlockStack.pop();
   }
 
+  pushUpdating(list = new LinkedList<UpdatingOpcode>()): void {
+    this.updatingOpcodeStack.push(list);
+  }
+
+  popUpdating(): LinkedList<UpdatingOpcode> {
+    return expect(this.updatingOpcodeStack.pop(), "can't pop an empty stack");
+  }
+
   updateWith(opcode: UpdatingOpcode) {
     this.updating().append(opcode);
   }
 
   listBlock(): ListBlockOpcode {
     return expect(this.listBlockStack.current, 'expected a list block');
+  }
+
+  associateDestructor(child: Drop): void {
+    if (!isDrop(child)) return;
+    let parent = expect(this.destructorStack.current, 'Expected destructor parent');
+    associateDestructor(parent, child);
+  }
+
+  associateDestroyable(child: SymbolDestroyable | Destroyable): void {
+    this.associateDestructor(destructor(child));
+  }
+
+  tryUpdating(): Option<LinkedList<UpdatingOpcode>> {
+    return this.updatingOpcodeStack.current;
   }
 
   updating(): LinkedList<UpdatingOpcode> {
@@ -470,7 +514,7 @@ export default class VM<T> implements PublicVM {
   }
 
   next(): IteratorResult<RenderResult> {
-    let { env, program, updatingOpcodeStack, elementStack } = this;
+    let { env, program, elementStack } = this;
     let opcode = this.inner.nextStatement();
     let result: IteratorResult<RenderResult>;
     if (opcode !== null) {
@@ -485,8 +529,9 @@ export default class VM<T> implements PublicVM {
         value: new RenderResult(
           env,
           program,
-          expect(updatingOpcodeStack.pop(), 'there should be a final updating opcode stack'),
-          elementStack.popBlock()
+          this.popUpdating(),
+          elementStack.popBlock(),
+          this.destructor
         ),
       };
     }

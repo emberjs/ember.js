@@ -1,7 +1,7 @@
 import { IArguments } from '../vm/arguments';
 import { DOMChanges } from '../dom/helper';
 import { DynamicScope } from '../environment';
-import { Destructor } from '@glimmer/util';
+import { SymbolDestroyable, Destroyable } from '@glimmer/util';
 import { Opaque, Option, Unique } from '@glimmer/interfaces';
 import { Tag } from '@glimmer/reference';
 
@@ -54,5 +54,5 @@ export interface ModifierManager<ModifierInstanceState, ModifierDefinitionState>
 
   // Convert the opaque token into an object that implements Destroyable.
   // If it returns null, the modifier will not be destroyed.
-  getDestructor(modifier: ModifierInstanceState): Option<Destructor>;
+  getDestructor(modifier: ModifierInstanceState): Option<SymbolDestroyable | Destroyable>;
 }

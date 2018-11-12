@@ -13,9 +13,10 @@ export default class RenderResult<T = Opaque> implements DestroyableBounds, Exce
     public env: Environment,
     private program: RuntimeProgram<T>,
     private updating: LinkedList<UpdatingOpcode>,
-    private bounds: LiveBlock
+    private bounds: LiveBlock,
+    readonly drop: object
   ) {
-    associate(this, bounds);
+    associate(this, drop);
   }
 
   rerender({ alwaysRevalidate = false } = { alwaysRevalidate: false }) {

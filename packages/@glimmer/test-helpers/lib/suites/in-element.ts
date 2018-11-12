@@ -32,19 +32,19 @@ export class InElementSuite extends RenderTest {
     this.render(
       stripTight`
         |{{foo}}|
-        {{#in-element first}}[{{foo}}]{{/in-element}}
-        {{#in-element second}}[{{foo}}]{{/in-element}}
+        {{#in-element first}}[1{{foo}}]{{/in-element}}
+        {{#in-element second}}[2{{foo}}]{{/in-element}}
       `,
       { first, second: null, foo: 'Yippie!' }
     );
 
-    equalsElement(first, 'div', {}, '[Yippie!]');
+    equalsElement(first, 'div', {}, '[1Yippie!]');
     equalsElement(second, 'div', {}, '');
     this.assertHTML('|Yippie!|<!----><!---->');
     this.assertStableRerender();
 
     this.rerender({ foo: 'Double Yips!' });
-    equalsElement(first, 'div', {}, '[Double Yips!]');
+    equalsElement(first, 'div', {}, '[1Double Yips!]');
     equalsElement(second, 'div', {}, '');
     this.assertHTML('|Double Yips!|<!----><!---->');
     this.assertStableNodes();
@@ -57,12 +57,12 @@ export class InElementSuite extends RenderTest {
 
     this.rerender({ second });
     equalsElement(first, 'div', {}, '');
-    equalsElement(second, 'div', {}, '[Double Yips!]');
+    equalsElement(second, 'div', {}, '[2Double Yips!]');
     this.assertHTML('|Double Yips!|<!----><!---->');
     this.assertStableRerender();
 
     this.rerender({ first, second: null, foo: 'Yippie!' });
-    equalsElement(first, 'div', {}, '[Yippie!]');
+    equalsElement(first, 'div', {}, '[1Yippie!]');
     equalsElement(second, 'div', {}, '');
     this.assertHTML('|Yippie!|<!----><!---->');
     this.assertStableRerender();
@@ -187,8 +187,8 @@ export class InElementSuite extends RenderTest {
 
   @test
   "Inside an '{{if}}'"() {
-    let first = document.createElement('div');
-    let second = document.createElement('div');
+    let first = { element: document.createElement('div'), description: 'first' };
+    let second = { element: document.createElement('div'), description: 'second' };
 
     this.render(
       stripTight`
@@ -200,52 +200,52 @@ export class InElementSuite extends RenderTest {
         {{/if}}
       `,
       {
-        first,
-        second,
+        first: first.element,
+        second: second.element,
         showFirst: true,
         showSecond: false,
         foo: 'Yippie!',
       }
     );
 
-    equalsElement(first, 'div', {}, stripTight`[Yippie!]`);
-    equalsElement(second, 'div', {}, stripTight``);
+    equalsElement(first, 'div', {}, '[Yippie!]');
+    equalsElement(second, 'div', {}, '');
     this.assertHTML('<!----><!---->');
     this.assertStableRerender();
 
     this.rerender({ showFirst: false });
-    equalsElement(first, 'div', {}, stripTight``);
-    equalsElement(second, 'div', {}, stripTight``);
+    equalsElement(first, 'div', {}, '');
+    equalsElement(second, 'div', {}, '');
     this.assertHTML('<!----><!---->');
     this.assertStableRerender();
 
     this.rerender({ showSecond: true });
-    equalsElement(first, 'div', {}, stripTight``);
-    equalsElement(second, 'div', {}, stripTight`[Yippie!]`);
+    equalsElement(first, 'div', {}, '');
+    equalsElement(second, 'div', {}, '[Yippie!]');
     this.assertHTML('<!----><!---->');
     this.assertStableRerender();
 
     this.rerender({ foo: 'Double Yips!' });
-    equalsElement(first, 'div', {}, stripTight``);
-    equalsElement(second, 'div', {}, stripTight`[Double Yips!]`);
+    equalsElement(first, 'div', {}, '');
+    equalsElement(second, 'div', {}, '[Double Yips!]');
     this.assertHTML('<!----><!---->');
     this.assertStableRerender();
 
     this.rerender({ showSecond: false });
-    equalsElement(first, 'div', {}, stripTight``);
-    equalsElement(second, 'div', {}, stripTight``);
+    equalsElement(first, 'div', {}, '');
+    equalsElement(second, 'div', {}, '');
     this.assertHTML('<!----><!---->');
     this.assertStableRerender();
 
     this.rerender({ showFirst: true });
-    equalsElement(first, 'div', {}, stripTight`[Double Yips!]`);
-    equalsElement(second, 'div', {}, stripTight``);
+    equalsElement(first, 'div', {}, '[Double Yips!]');
+    equalsElement(second, 'div', {}, '');
     this.assertHTML('<!----><!---->');
     this.assertStableRerender();
 
     this.rerender({ foo: 'Yippie!' });
-    equalsElement(first, 'div', {}, stripTight`[Yippie!]`);
-    equalsElement(second, 'div', {}, stripTight``);
+    equalsElement(first, 'div', {}, '[Yippie!]');
+    equalsElement(second, 'div', {}, '');
     this.assertHTML('<!----><!---->');
     this.assertStableRerender();
   }

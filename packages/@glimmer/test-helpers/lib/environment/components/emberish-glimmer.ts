@@ -18,7 +18,7 @@ import { TestComponentDefinitionState } from '../components';
 import LazyRuntimeResolver from '../modes/lazy/runtime-resolver';
 import EagerRuntimeResolver from '../modes/eager/runtime-resolver';
 import {} from '@glimmer/bundle-compiler';
-import { Destructor, DROP } from '@glimmer/util';
+import { Destroyable } from '@glimmer/util';
 
 export const EMBERISH_GLIMMER_CAPABILITIES = {
   ...BASIC_CAPABILITIES,
@@ -133,9 +133,9 @@ export class EmberishGlimmerComponentManager
     component.didRender();
   }
 
-  getDestructor({ component }: EmberishGlimmerComponentState): Destructor {
+  getDestructor({ component }: EmberishGlimmerComponentState): Destroyable {
     return {
-      [DROP]() {
+      destroy() {
         component.destroy();
       },
     };
