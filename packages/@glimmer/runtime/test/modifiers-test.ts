@@ -1,4 +1,4 @@
-import { RenderTest, module, test } from '@glimmer/test-helpers';
+import { RenderTest, module, test, Count } from '@glimmer/test-helpers';
 import { Opaque, Dict } from '../../util';
 
 class BaseModifier {
@@ -18,23 +18,24 @@ abstract class AbstractDestroyable extends BaseModifier {
 
 class ModifierTests extends RenderTest {
   @test
-  'Element modifier with hooks'(assert: Assert) {
-    assert.expect(4);
-
+  'Element modifier with hooks'(assert: Assert, count: Count) {
     this.registerModifier(
       'foo',
       class {
         element?: Element;
         didInsertElement() {
+          count.expect('didInsertElement');
           assert.ok(this.element, 'didInsertElement');
           assert.equal(this.element!.getAttribute('data-ok'), 'true', 'didInsertElement');
         }
 
         didUpdate() {
+          count.expect('didUpdate');
           assert.ok(true, 'didUpdate');
         }
 
         willDestroyElement() {
+          count.expect('willDestroyElement');
           assert.ok(true, 'willDestroyElement');
         }
       }
@@ -50,20 +51,21 @@ class ModifierTests extends RenderTest {
   }
 
   @test
-  'didUpdate is not called when params are constants'(assert: Assert) {
-    assert.expect(2);
+  'didUpdate is not called when params are constants'(assert: Assert, count: Count) {
     this.registerModifier(
       'foo',
       class {
         element?: Element;
         didInsertElement() {
+          count.expect('didInsertElement');
           assert.ok(true);
         }
         didUpdate() {
+          count.expect('didUpdate', 0);
           assert.ok(false);
         }
         willDestroyElement() {
-          assert.ok(true);
+          count.expect('willDestroyElement');
         }
       }
     );
@@ -198,13 +200,14 @@ class ModifierTests extends RenderTest {
   }
 
   @test
-  'with params'(assert: Assert) {
-    assert.expect(2);
+  'with params'(assert: Assert, count: Count) {
     class Foo extends BaseModifier {
       didInsertElement([bar]: string[]) {
+        count.expect('didInsertElement');
         assert.equal(bar, 'bar');
       }
       didUpdate([foo]: string[]) {
+        count.expect('didUpdate');
         assert.equal(foo, 'foo');
       }
     }
@@ -214,13 +217,14 @@ class ModifierTests extends RenderTest {
   }
 
   @test
-  'with hash'(assert: Assert) {
-    assert.expect(2);
+  'with hash'(assert: Assert, count: Count) {
     class Foo extends BaseModifier {
       didInsertElement(_params: Opaque[], { bar }: Dict<string>) {
+        count.expect('didInsertElement');
         assert.equal(bar, 'bar');
       }
       didUpdate(_params: Opaque[], { bar }: Dict<string>) {
+        count.expect('didUpdate');
         assert.equal(bar, 'foo');
       }
     }
@@ -230,14 +234,15 @@ class ModifierTests extends RenderTest {
   }
 
   @test
-  'with hash and params'(assert: Assert) {
-    assert.expect(4);
+  'with hash and params'(assert: Assert, count: Count) {
     class Foo extends BaseModifier {
       didInsertElement([baz]: string[], { bar }: Dict<string>) {
+        count.expect('didInsertElement');
         assert.equal(bar, 'bar');
         assert.equal(baz, 'baz');
       }
       didUpdate([foo]: string[], { bar }: Dict<string>) {
+        count.expect('didUpdate');
         assert.equal(bar, 'foo');
         assert.equal(foo, 'foo');
       }

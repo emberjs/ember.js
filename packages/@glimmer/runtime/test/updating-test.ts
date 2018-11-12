@@ -18,7 +18,7 @@ import {
 } from '@glimmer/test-helpers';
 import { ConstReference, bump } from '@glimmer/reference';
 import { UpdatableReference } from '@glimmer/object-reference';
-import { DESTROY, Opaque, destructor, associateDestructor } from '@glimmer/util';
+import { Opaque } from '@glimmer/util';
 import { test, module, assert } from './support';
 
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
@@ -1159,13 +1159,13 @@ module('[glimmer-runtime] Updating', hooks => {
   test('helpers can add destroyables', assert => {
     let destroyable = {
       count: 0,
-      [DESTROY](this: { count: number }) {
+      destroy(this: { count: number }) {
         this.count++;
       },
     };
 
     env.registerInternalHelper('destroy-me', (vm: VM) => {
-      associateDestructor(vm.currentBlock(), destructor(destroyable));
+      vm.associateDestroyable(destroyable);
       return PrimitiveReference.create('destroy me!');
     });
 
@@ -1281,14 +1281,11 @@ module('[glimmer-runtime] Updating', hooks => {
     env.registerInternalHelper('stateful-foo', (vm: VM) => {
       didCreate++;
 
-      associateDestructor(
-        vm.currentBlock(),
-        destructor({
-          [DESTROY]() {
-            didDestroy++;
-          },
-        })
-      );
+      vm.associateDestroyable({
+        destroy() {
+          didDestroy++;
+        },
+      });
 
       return (reference = new UpdatableReference(truthyValue));
     });

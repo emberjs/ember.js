@@ -56,6 +56,11 @@ export class Stack<T> {
     return item === undefined ? null : item;
   }
 
+  nth(from: number): Option<T> {
+    let len = this.stack.length;
+    return len < from ? null : this.stack[len - from];
+  }
+
   isEmpty(): boolean {
     return this.stack.length === 0;
   }

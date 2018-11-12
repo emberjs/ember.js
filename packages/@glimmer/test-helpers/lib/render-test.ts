@@ -123,6 +123,20 @@ class SimplePathReference implements PathReference<Opaque> {
 export type IndividualSnapshot = 'up' | 'down' | Node;
 export type NodesSnapshot = IndividualSnapshot[];
 
+export class Count {
+  private expected = dict<number>();
+  private actual = dict<number>();
+
+  expect(name: string, count = 1) {
+    this.expected[name] = count;
+    this.actual[name] = (this.actual[name] || 0) + 1;
+  }
+
+  assert() {
+    QUnit.assert.deepEqual(this.actual, this.expected, 'TODO');
+  }
+}
+
 export class RenderTest {
   protected element: HTMLElement;
   protected assert = QUnit.assert;
@@ -131,6 +145,7 @@ export class RenderTest {
   protected helpers = dict<UserHelper>();
   protected testType!: ComponentKind;
   protected snapshot: NodesSnapshot = [];
+  readonly count = new Count();
 
   constructor(protected delegate: RenderDelegate) {
     this.element = delegate.getInitialElement();
@@ -429,6 +444,7 @@ export class RenderTest {
   }
 
   render(template: string | ComponentBlueprint, properties: Dict<Opaque> = {}): void {
+    QUnit.assert.ok(true, `Rendering ${template} with ${JSON.stringify(properties)}`);
     if (typeof template === 'object') {
       let blueprint = template as ComponentBlueprint;
       template = this.buildComponent(blueprint);
@@ -446,6 +462,7 @@ export class RenderTest {
   }
 
   rerender(properties: Dict<Opaque> = {}): void {
+    QUnit.assert.ok(true, `rerender ${JSON.stringify(properties)}`);
     this.setProperties(properties);
 
     let result = expect(this.renderResult, 'the test should call render() before rerender()');
@@ -800,11 +817,15 @@ export interface RenderDelegateConstructor<
   new (env?: TEnvironment): Delegate;
 }
 
-export interface RenderTestConstructor<D extends RenderDelegate, T> {
+interface IRenderTest {
+  readonly count: Count;
+}
+
+export interface RenderTestConstructor<D extends RenderDelegate, T extends IRenderTest> {
   new (delegate: D): T;
 }
 
-export function module<T>(
+export function module<T extends IRenderTest>(
   name: string,
   klass: RenderTestConstructor<RenderDelegate, T>,
   options = { componentModule: false }
@@ -812,7 +833,7 @@ export function module<T>(
   return rawModule(name, klass, LazyRenderDelegate, options);
 }
 
-export function rawModule<D extends RenderDelegate, T, E extends Environment>(
+export function rawModule<D extends RenderDelegate, T extends IRenderTest, E extends Environment>(
   name: string,
   klass: RenderTestConstructor<D, T>,
   Delegate: RenderDelegateConstructor<D, E>,
@@ -829,7 +850,11 @@ export function rawModule<D extends RenderDelegate, T, E extends Environment>(
       const test = klass.prototype[prop];
 
       if (isTestFunction(test) && shouldRunTest<D, E>(Delegate)) {
-        QUnit.test(prop, assert => test.call(new klass(new Delegate()), assert));
+        QUnit.test(prop, assert => {
+          let instance = new klass(new Delegate());
+          test.call(instance, assert, instance.count);
+          instance.count.assert();
+        });
       }
     }
   }
@@ -843,7 +868,7 @@ interface ComponentTests {
   fragment: Function[];
 }
 
-function componentModule<D extends RenderDelegate, T extends RenderTest, E extends Environment>(
+function componentModule<D extends RenderDelegate, T extends IRenderTest, E extends Environment>(
   name: string,
   klass: RenderTestConstructor<D, T>,
   Delegate: RenderDelegateConstructor<D, E>
@@ -867,7 +892,7 @@ function componentModule<D extends RenderDelegate, T extends RenderTest, E exten
         QUnit.test(`${type.toLowerCase()}: ${prop}`, assert => {
           let instance = new klass(new Delegate());
           instance['testType'] = type;
-          test.call(instance, assert);
+          test.call(instance, assert, instance.count);
         });
       }
     };
@@ -945,7 +970,10 @@ function componentModule<D extends RenderDelegate, T extends RenderTest, E exten
   });
 }
 
-function nestedComponentModules(klass: typeof RenderTest & Function, tests: ComponentTests): void {
+function nestedComponentModules<D extends RenderDelegate, T extends IRenderTest>(
+  klass: RenderTestConstructor<D, T>,
+  tests: ComponentTests
+): void {
   Object.keys(tests).forEach(type => {
     let formattedType = `${type[0].toUpperCase() + type.slice(1)}`;
     QUnit.module(`${formattedType}`, () => {

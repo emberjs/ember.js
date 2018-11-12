@@ -132,6 +132,10 @@ class Meta implements IMeta, HasGuid {
     >;
   }
 
+  toJSON() {
+    return '<META>';
+  }
+
   addReference(property: string, reference: IPathReference<any> & HasGuid) {
     let refs = (this.references =
       this.references || dict<DictSet<IPathReference<any> & HasGuid>>());

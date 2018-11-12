@@ -1,4 +1,4 @@
-import { RenderTest, test, assertElement, assertEmberishElement } from '../render-test';
+import { RenderTest, test, assertElement, assertEmberishElement, Count } from '../render-test';
 import { classes } from '../environment';
 import { strip, equalTokens } from '../helpers';
 import { EmberishGlimmerComponent, EmberishCurlyComponent } from '../../index';
@@ -116,23 +116,24 @@ export class EmberishComponentTests extends RenderTest {
   }
 
   @test
-  'Element modifier with hooks'(assert: Assert) {
-    assert.expect(4);
-
+  'Element modifier with hooks'(assert: Assert, count: Count) {
     this.registerModifier(
       'foo',
       class {
         element?: Element;
         didInsertElement() {
+          count.expect('didInsertElement');
           assert.ok(this.element, 'didInsertElement');
           assert.equal(this.element!.getAttribute('data-ok'), 'true', 'didInsertElement');
         }
 
         didUpdate() {
+          count.expect('didUpdate');
           assert.ok(true, 'didUpdate');
         }
 
         willDestroyElement() {
+          count.expect('willDestroyElement');
           assert.ok(true, 'willDestroyElement');
         }
       }

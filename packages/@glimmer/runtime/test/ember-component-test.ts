@@ -1805,7 +1805,7 @@ QUnit.test('components inside a list are destroyed', function(assert) {
 
   view.rerender({ list: [] });
 
-  assert.deepEqual(destroyed, [4, 5, 3, 2, 1], 'destroy should be called for each item');
+  assert.deepEqual(destroyed, [4, 5, 1, 2, 3], 'destroy should be called for each item');
 });
 
 QUnit.test('components that are "destroyed twice" are destroyed once', function(assert) {

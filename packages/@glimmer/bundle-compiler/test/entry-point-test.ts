@@ -1,7 +1,9 @@
-import { module, test, EagerRenderDelegate } from '@glimmer/test-helpers';
+import { module, test, EagerRenderDelegate, Count } from '@glimmer/test-helpers';
 import { PrimitiveReference } from '@glimmer/runtime';
 
 export class EntryPointTest {
+  readonly count = new Count();
+
   @test
   'an entry point'() {
     let delegate = new EagerRenderDelegate();

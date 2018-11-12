@@ -99,18 +99,37 @@ export function inspectHooks<T>(ComponentClass: T): T {
   });
 }
 
+export interface DebugElement {
+  element: Element | null;
+  description: string;
+}
+
+export type EqualsElement = Element | null | DebugElement;
+
+function extract(element: EqualsElement): DebugElement {
+  if (element === null) {
+    return { element: null, description: 'element' };
+  } else if (element instanceof Element) {
+    return { element, description: 'element' };
+  } else {
+    return element;
+  }
+}
+
 export function equalsElement(
-  element: Element | null,
+  input: EqualsElement,
   tagName: string,
   attributes: Object,
   content: string | null
 ) {
+  let { element, description } = extract(input);
+
   if (element === null) {
     QUnit.assert.pushResult({
       result: false,
       actual: element,
       expected: true,
-      message: `failed - expected element to not be null`,
+      message: `failed - expected ${description} to not be null`,
     });
     return;
   }
@@ -119,7 +138,7 @@ export function equalsElement(
     result: element.tagName === tagName.toUpperCase(),
     actual: element.tagName.toLowerCase(),
     expected: tagName,
-    message: `expect tagName to be ${tagName}`,
+    message: `expect ${description}'s tagName to be ${tagName}`,
   });
 
   let expectedAttrs: Dict<Matcher> = dict<Matcher>();
@@ -137,7 +156,7 @@ export function equalsElement(
       result: expectedAttrs[prop].match(element && element.getAttribute(prop)),
       actual: matcher.fail(element && element.getAttribute(prop)),
       expected: matcher.fail(element && element.getAttribute(prop)),
-      message: `Expected element's ${prop} attribute ${matcher.expected()}`,
+      message: `Expected ${description}'s ${prop} attribute ${matcher.expected()}`,
     });
   }
 
@@ -168,7 +187,7 @@ export function equalsElement(
         result: element.innerHTML === content,
         actual: element.innerHTML,
         expected: content,
-        message: `The element had '${content}' as its content`,
+        message: `${description} had '${content}' as its content`,
       });
     }
   }

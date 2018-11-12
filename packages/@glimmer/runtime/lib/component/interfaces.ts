@@ -14,7 +14,7 @@ import { ElementOperations } from '../vm/element-builder';
 import Environment, { DynamicScope } from '../environment';
 import { IArguments } from '../vm/arguments';
 import { CurriedComponentDefinition } from './curried-component';
-import { Destructor } from '@glimmer/util';
+import { SymbolDestroyable, Destroyable } from '@glimmer/util';
 
 export interface PreparedArguments {
   positional: Array<VersionedPathReference<Opaque>>;
@@ -93,7 +93,7 @@ export interface ComponentManager<ComponentInstanceState, ComponentDefinitionSta
 
   // Convert the opaque component into an object that implements Destructor.
   // If it returns null, the component will not be destroyed.
-  getDestructor(state: ComponentInstanceState): Option<Destructor>;
+  getDestructor(state: ComponentInstanceState): Option<SymbolDestroyable | Destroyable>;
 }
 
 export interface Invocation {

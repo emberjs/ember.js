@@ -7,7 +7,7 @@ import {
   isConst,
   isConstTag,
 } from '@glimmer/reference';
-import { Opaque, Option, associateDestructor } from '@glimmer/util';
+import { Opaque, Option, destructor } from '@glimmer/util';
 import {
   expectStackChange,
   check,
@@ -73,7 +73,8 @@ APPEND_OPCODES.add(Op.PushRemoteElement, vm => {
     vm.updateWith(new Assert(cache));
   }
 
-  vm.elements().pushRemoteElement(element, guid, nextSibling);
+  let block = vm.elements().pushRemoteElement(element, guid, nextSibling);
+  if (block) vm.associateDestructor(destructor(block));
 });
 
 APPEND_OPCODES.add(Op.PopRemoteElement, vm => {
@@ -115,10 +116,10 @@ APPEND_OPCODES.add(Op.Modifier, (vm, { op1: handle }) => {
   );
 
   vm.env.scheduleInstallModifier(modifier, manager);
-  let destructor = manager.getDestructor(modifier);
+  let d = manager.getDestructor(modifier);
 
-  if (destructor) {
-    associateDestructor(vm.currentBlock(), destructor);
+  if (d) {
+    vm.associateDestroyable(d);
   }
 
   let tag = manager.getTag(modifier);

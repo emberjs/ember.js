@@ -24,7 +24,7 @@ import { Simple, Bounds } from '@glimmer/interfaces';
 
 import EvaluationStack from './stack';
 import VM, { RuntimeProgram, Constants } from './append';
-import { asyncDestroy } from '../lifetime';
+import { asyncDestroy, asyncReset } from '../lifetime';
 
 export default class UpdatingVM<T = Opaque> {
   public env: Environment;
@@ -104,7 +104,7 @@ export abstract class BlockOpcode extends UpdatingOpcode implements Bounds {
   public type = 'block';
   public next = null;
   public prev = null;
-  public children: LinkedList<UpdatingOpcode>;
+  readonly children: LinkedList<UpdatingOpcode>;
 
   protected readonly bounds: LiveBlock;
 
@@ -119,8 +119,6 @@ export abstract class BlockOpcode extends UpdatingOpcode implements Bounds {
 
     this.children = children;
     this.bounds = bounds;
-
-    associate(this, bounds);
   }
 
   abstract didInitializeChildren(): void;
@@ -174,6 +172,7 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
     let { state, bounds, children, start, prev, next, runtime } = this;
 
     children.clear();
+    asyncReset(this, runtime.env);
 
     let elementStack = NewElementBuilder.resume(runtime.env, bounds);
 
@@ -181,12 +180,14 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
 
     let updating = new LinkedList<UpdatingOpcode>();
 
-    vm.execute(start, vm => {
+    let result = vm.execute(start, vm => {
       vm.stack = EvaluationStack.restore(state.stack);
-      vm.updatingOpcodeStack.push(updating);
+      vm.pushUpdating(updating);
       vm.updateWith(this);
-      vm.updatingOpcodeStack.push(children);
+      vm.pushUpdating(children);
     });
+
+    associate(this, result.drop);
 
     this.prev = prev;
     this.next = next;
@@ -230,9 +231,9 @@ class ListRevalidationDelegate implements IteratorSynchronizerDelegate<Environme
 
     vm.execute(start, vm => {
       map[key] = tryOpcode = vm.iterate(memo, item);
-      vm.updatingOpcodeStack.push(new LinkedList<UpdatingOpcode>());
+      vm.pushUpdating(new LinkedList<UpdatingOpcode>());
       vm.updateWith(tryOpcode);
-      vm.updatingOpcodeStack.push(tryOpcode.children);
+      vm.pushUpdating(tryOpcode.children);
     });
 
     updating.insertBefore(tryOpcode!, reference);
