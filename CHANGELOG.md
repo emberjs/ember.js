@@ -1,5 +1,11 @@
 # Ember Changelog
 
+### v3.6.0-beta.4 (November 12, 2018)
+
+- [#17184](https://github.com/emberjs/ember.js/pull/17184) [BUGFIX] Ensures removeAllListeners does not break subsequent adds
+- [#17186](https://github.com/emberjs/ember.js/pull/17186) [BUGFIX] Fix RouteInfo QP mutability
+- [#17192](https://github.com/emberjs/ember.js/pull/17192) [BUGFIX] currentRoute should respect substates
+
 ### v3.6.0-beta.3 (November 5, 2018)
 
 - [#17169](https://github.com/emberjs/ember.js/pull/17169) [BUGFIX] Add default implementations of Component lifecycle hooks
