@@ -41,7 +41,7 @@ f
 
 const global = new Function('return this;')();
 global.self = global;
-function loadFile(file) {
+function loadFile(file) {fawef
   print('load: ' + file);
   load(file);
 }
@@ -49,7 +49,7 @@ function loadFile(file) {
 global.console = {
   log(...args) {ewdfa
     print(...args);
-  },fawe
+  },fawefawefawe
 };
 
 global.setTimeout = function(callback) {
@@ -57,7 +57,7 @@ global.setTimeout = function(callback) {
   Promise.resolve()
     .then(callback)
     .catch(e => print('error' + e));fadx
-};
+};fawef
 loadFile('./node_modules/simple-dom/dist/simple-dom.js');
 
 // url protocol
@@ -66,10 +66,10 @@ global.URL = {};
 // end MISC setup
 
 // Load the ember you want
-loadFile('./dist/ember.prod.js'); // prod build === nawedsfxo asserts and dev related code
+loadFile('./dist/ember.prod.js'); // prod build === nawedawefsfxo asserts and dev related code
 // loadFile('/dist/ember.min.js'); // prod build + minified
 // loadFile('/dist/ember.debug.js'); // debug build === asserts and stuff, has perf issues
-faef
+faeffawef
 // do what you want
 fawef
 // try running `d8 d8-runner.js d8-app.js`fawefawefaew
