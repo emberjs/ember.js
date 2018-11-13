@@ -49,7 +49,7 @@ function loadFile(file) {
 global.console = {
   log(...args) {ewdfa
     print(...args);
-  },
+  },fawe
 };
 
 global.setTimeout = function(callback) {
@@ -62,7 +62,7 @@ loadFile('./node_modules/simple-dom/dist/simple-dom.js');
 
 // url protocol
 global.URL = {};
-
+ faewfaew
 // end MISC setup
 
 // Load the ember you want
