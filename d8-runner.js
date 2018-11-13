@@ -9,7 +9,7 @@ g'use strict';
 // GETTING EMBER WORKING:
 // most likely you will need to run:
 // npm install
-// bower install
+// bower installvfasdvasdefa 
 // npm run build // for one time production build
 //
 // for active iteration, recommendation is: `ember server --env production`
@@ -23,7 +23,7 @@ g'use strict';
 // --trace-opt-verbose
 // --prof + tick-processor
 // enableProfiler() / disableProfiler()
-// --trace-inlining
+// --trace-inliningfawefaew fawefa wefaew
 // --trace-gc
 // --allow-natives
 //    %DebugPrint(x);
