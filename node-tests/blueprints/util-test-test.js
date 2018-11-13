@@ -21,9 +21,17 @@ describe('Blueprint: util-test', function() {
       return emberNew();
     });
 
-    it('util-test foo-bar', function() {
-      return emberGenerateDestroy(['util-test', 'foo-bar'], _file => {
-        expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(fixture('util-test/default.js'));
+    describe('with ember-cli-qunit@4.1.0', function() {
+      beforeEach(function() {
+        generateFakePackageManifest('ember-cli-qunit', '4.1.0');
+      });
+
+      it('util-test foo-bar', function() {
+        return emberGenerateDestroy(['util-test', 'foo-bar'], _file => {
+          expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(
+            fixture('util-test/default.js')
+          );
+        });
       });
     });
 
@@ -62,9 +70,15 @@ describe('Blueprint: util-test', function() {
       return emberNew().then(() => fs.ensureDirSync('src'));
     });
 
-    it('util-test foo-bar', function() {
-      return emberGenerateDestroy(['util-test', 'foo-bar'], _file => {
-        expect(_file('src/utils/foo-bar-test.js')).to.equal(fixture('util-test/default.js'));
+    describe('with ember-cli-qunit@4.1.0', function() {
+      beforeEach(function() {
+        generateFakePackageManifest('ember-cli-qunit', '4.1.0');
+      });
+
+      it('util-test foo-bar', function() {
+        return emberGenerateDestroy(['util-test', 'foo-bar'], _file => {
+          expect(_file('src/utils/foo-bar-test.js')).to.equal(fixture('util-test/default.js'));
+        });
       });
     });
 
@@ -101,9 +115,15 @@ describe('Blueprint: util-test', function() {
       return emberNew({ target: 'addon' });
     });
 
-    it('util-test foo-bar', function() {
-      return emberGenerateDestroy(['util-test', 'foo-bar'], _file => {
-        expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(fixture('util-test/dummy.js'));
+    describe('with ember-cli-qunit@4.1.0', function() {
+      beforeEach(function() {
+        generateFakePackageManifest('ember-cli-qunit', '4.1.0');
+      });
+
+      it('util-test foo-bar', function() {
+        return emberGenerateDestroy(['util-test', 'foo-bar'], _file => {
+          expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(fixture('util-test/dummy.js'));
+        });
       });
     });
   });
@@ -113,9 +133,15 @@ describe('Blueprint: util-test', function() {
       return emberNew({ target: 'addon' }).then(() => fs.ensureDirSync('src'));
     });
 
-    it('util-test foo-bar', function() {
-      return emberGenerateDestroy(['util-test', 'foo-bar'], _file => {
-        expect(_file('src/utils/foo-bar-test.js')).to.equal(fixture('util-test/dummy.js'));
+    describe('with ember-cli-qunit@4.1.0', function() {
+      beforeEach(function() {
+        generateFakePackageManifest('ember-cli-qunit', '4.1.0');
+      });
+
+      it('util-test foo-bar', function() {
+        return emberGenerateDestroy(['util-test', 'foo-bar'], _file => {
+          expect(_file('src/utils/foo-bar-test.js')).to.equal(fixture('util-test/dummy.js'));
+        });
       });
     });
   });
