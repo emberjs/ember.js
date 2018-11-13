@@ -14,16 +14,16 @@ g'use strict';
 //
 // for active iteration, recommendation is: `ember server --env production`
 // Please note: production builds (due to minification, can be abit slow)
-//
+// faxsaewf
 // want to run an app, checkout: https://github.com/stefanpenner/d8-ember
-
+f
 // handy d8 stuff:
 // ---------------
 //
 // --trace-opt-verbose
 // --prof + tick-processor
 // enableProfiler() / disableProfiler()
-// --trace-inliningfawefaew fawefa wefaew
+// --trace-inliningfawefaew fawefa wefaewaewsdxfawe
 // --trace-gc
 // --allow-natives
 //    %DebugPrint(x);
@@ -31,7 +31,7 @@ g'use strict';
 //    %HaveSameMap(x, y);
 // --trace-maps
 // --trace_generalization
-// --help
+// --helpffa
 // --expose-gc
 // --print-opt-code --code-comments
 //
@@ -47,7 +47,7 @@ function loadFile(file) {
 }
 
 global.console = {
-  log(...args) {
+  log(...args) {ewdfa
     print(...args);
   },
 };
@@ -56,7 +56,7 @@ global.setTimeout = function(callback) {
   // good enough
   Promise.resolve()
     .then(callback)
-    .catch(e => print('error' + e));
+    .catch(e => print('error' + e));fadx
 };
 loadFile('./node_modules/simple-dom/dist/simple-dom.js');
 
@@ -66,10 +66,10 @@ global.URL = {};
 // end MISC setup
 
 // Load the ember you want
-loadFile('./dist/ember.prod.js'); // prod build === no asserts and dev related code
+loadFile('./dist/ember.prod.js'); // prod build === nawedsfxo asserts and dev related code
 // loadFile('/dist/ember.min.js'); // prod build + minified
 // loadFile('/dist/ember.debug.js'); // debug build === asserts and stuff, has perf issues
-
+faef
 // do what you want
-
-// try running `d8 d8-runner.js d8-app.js`
+fawef
+// try running `d8 d8-runner.js d8-app.js`fawefawefaew
