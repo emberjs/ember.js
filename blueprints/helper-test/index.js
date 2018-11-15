@@ -6,6 +6,8 @@ const isPackageMissing = require('ember-cli-is-package-missing');
 const useTestFrameworkDetector = require('../test-framework-detector');
 const isModuleUnificationProject = require('../module-unification').isModuleUnificationProject;
 
+const path = require('path');
+
 module.exports = useTestFrameworkDetector({
   description: 'Generates a helper integration test or a unit test.',
 
@@ -26,7 +28,15 @@ module.exports = useTestFrameworkDetector({
   fileMapTokens: function() {
     if (isModuleUnificationProject(this.project)) {
       return {
-        __root__() {
+        __root__(options) {
+          if (options.inRepoAddon) {
+            return path.join('packages', options.inRepoAddon, 'src');
+          }
+
+          if (options.inDummy) {
+            throw new Error("The --dummy flag isn't supported within a module unification app");
+          }
+
           return 'src';
         },
         __testType__() {
@@ -55,10 +65,20 @@ module.exports = useTestFrameworkDetector({
     let testType = options.testType || 'integration';
     let testName = testType === 'integration' ? 'Integration' : 'Unit';
     let friendlyTestName = [testName, 'Helper', options.entity.name].join(' | ');
+    let dasherizedModulePrefix;
+
+    if (
+      isModuleUnificationProject(options.project) &&
+      (options.project.isEmberCLIAddon() || options.inRepoAddon)
+    ) {
+      dasherizedModulePrefix = options.inRepoAddon || options.project.name();
+    } else {
+      dasherizedModulePrefix = stringUtils.dasherize(options.project.config().modulePrefix);
+    }
 
     return {
       friendlyTestName: friendlyTestName,
-      dasherizedModulePrefix: stringUtils.dasherize(options.project.config().modulePrefix),
+      dasherizedModulePrefix: dasherizedModulePrefix,
       testType: testType,
     };
   },
