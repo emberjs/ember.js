@@ -4,12 +4,12 @@ const blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
 const setupTestHooks = blueprintHelpers.setupTestHooks;
 const emberNew = blueprintHelpers.emberNew;
 const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
+const emberGenerate = blueprintHelpers.emberGenerate;
 const setupPodConfig = blueprintHelpers.setupPodConfig;
 const expectError = require('../helpers/expect-error');
 
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
-const fs = require('fs-extra');
 
 const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
 const fixture = require('../helpers/fixture');
@@ -26,7 +26,7 @@ describe('Blueprint: util', function() {
       return emberGenerateDestroy(['util', 'foo-bar'], _file => {
         expect(_file('app/utils/foo-bar.js')).to.equal(fixture('util/util.js'));
 
-        expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(fixture('util-test/default.js'));
+        expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(fixture('util-test/rfc232.js'));
       });
     });
 
@@ -35,7 +35,7 @@ describe('Blueprint: util', function() {
         expect(_file('app/utils/foo/bar-baz.js')).to.equal(fixture('util/util-nested.js'));
 
         expect(_file('tests/unit/utils/foo/bar-baz-test.js')).to.equal(
-          fixture('util-test/default-nested.js')
+          fixture('util-test/rfc232-nested.js')
         );
       });
     });
@@ -44,7 +44,7 @@ describe('Blueprint: util', function() {
       return emberGenerateDestroy(['util', 'foo-bar', '--pod'], _file => {
         expect(_file('app/utils/foo-bar.js')).to.equal(fixture('util/util.js'));
 
-        expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(fixture('util-test/default.js'));
+        expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(fixture('util-test/rfc232.js'));
       });
     });
 
@@ -53,7 +53,7 @@ describe('Blueprint: util', function() {
         expect(_file('app/utils/foo/bar-baz.js')).to.equal(fixture('util/util-nested.js'));
 
         expect(_file('tests/unit/utils/foo/bar-baz-test.js')).to.equal(
-          fixture('util-test/default-nested.js')
+          fixture('util-test/rfc232-nested.js')
         );
       });
     });
@@ -68,7 +68,7 @@ describe('Blueprint: util', function() {
           expect(_file('app/utils/foo-bar.js')).to.equal(fixture('util/util.js'));
 
           expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(
-            fixture('util-test/default.js')
+            fixture('util-test/rfc232.js')
           );
         });
       });
@@ -77,32 +77,40 @@ describe('Blueprint: util', function() {
 
   describe('in app - module unification', function() {
     beforeEach(function() {
-      return emberNew()
-        .then(() => fs.ensureDirSync('src'))
-        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
+      return emberNew({ isModuleUnification: true }).then(() =>
+        generateFakePackageManifest('ember-cli-qunit', '4.1.0')
+      );
     });
 
     it('util foo-bar', function() {
-      return emberGenerateDestroy(['util', 'foo-bar'], _file => {
-        expect(_file('src/utils/foo-bar.js')).to.equal(fixture('util/util.js'));
+      return emberGenerateDestroy(
+        ['util', 'foo-bar'],
+        _file => {
+          expect(_file('src/utils/foo-bar.js')).to.equal(fixture('util/util.js'));
 
-        expect(_file('src/utils/foo-bar-test.js')).to.equal(fixture('util-test/default.js'));
-      });
+          expect(_file('src/utils/foo-bar-test.js')).to.equal(fixture('util-test/rfc232.js'));
+        },
+        { isModuleUnification: true }
+      );
     });
 
     it('util foo/bar-baz', function() {
-      return emberGenerateDestroy(['util', 'foo/bar-baz'], _file => {
-        expect(_file('src/utils/foo/bar-baz.js')).to.equal(fixture('util/util-nested.js'));
+      return emberGenerateDestroy(
+        ['util', 'foo/bar-baz'],
+        _file => {
+          expect(_file('src/utils/foo/bar-baz.js')).to.equal(fixture('util/util-nested.js'));
 
-        expect(_file('src/utils/foo/bar-baz-test.js')).to.equal(
-          fixture('util-test/default-nested.js')
-        );
-      });
+          expect(_file('src/utils/foo/bar-baz-test.js')).to.equal(
+            fixture('util-test/rfc232-nested.js')
+          );
+        },
+        { isModuleUnification: true }
+      );
     });
 
     it('util foo-bar --pod', function() {
       return expectError(
-        emberGenerateDestroy(['util', 'foo-bar', '--pod']),
+        emberGenerate(['util', 'foo-bar', '--pod'], { isModuleUnification: true }),
         "Pods aren't supported within a module unification app"
       );
     });
@@ -124,7 +132,7 @@ describe('Blueprint: util', function() {
         );
 
         expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(
-          fixture('util-test/addon-default.js')
+          fixture('util-test/addon-rfc232.js')
         );
       });
     });
@@ -138,7 +146,7 @@ describe('Blueprint: util', function() {
         );
 
         expect(_file('tests/unit/utils/foo/bar-baz-test.js')).to.equal(
-          fixture('util-test/addon-default-nested.js')
+          fixture('util-test/addon-rfc232-nested.js')
         );
       });
     });
@@ -146,31 +154,38 @@ describe('Blueprint: util', function() {
 
   describe('in addon - module unification', function() {
     beforeEach(function() {
-      return emberNew({ target: 'addon' })
-        .then(() => fs.ensureDirSync('src'))
-        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
+      return emberNew({ target: 'addon', isModuleUnification: true }).then(() =>
+        generateFakePackageManifest('ember-cli-qunit', '4.1.0')
+      );
     });
 
     it('util foo-bar', function() {
-      return emberGenerateDestroy(['util', 'foo-bar'], _file => {
-        expect(_file('src/utils/foo-bar.js')).to.equal(fixture('util/util.js'));
+      return emberGenerateDestroy(
+        ['util', 'foo-bar'],
+        _file => {
+          expect(_file('src/utils/foo-bar.js')).to.equal(fixture('util/util.js'));
 
-        expect(_file('src/utils/foo-bar-test.js')).to.equal(fixture('util-test/addon-default.js'));
+          expect(_file('src/utils/foo-bar-test.js')).to.equal(fixture('util-test/dummy.js'));
 
-        expect(_file('app/utils/foo-bar.js')).to.not.exist;
-      });
+          expect(_file('app/utils/foo-bar.js')).to.not.exist;
+        },
+        { isModuleUnification: true }
+      );
     });
-
     it('util foo-bar/baz', function() {
-      return emberGenerateDestroy(['util', 'foo/bar-baz'], _file => {
-        expect(_file('src/utils/foo/bar-baz.js')).to.equal(fixture('util/util-nested.js'));
+      return emberGenerateDestroy(
+        ['util', 'foo/bar-baz'],
+        _file => {
+          expect(_file('src/utils/foo/bar-baz.js')).to.equal(fixture('util/util-nested.js'));
 
-        expect(_file('src/utils/foo/bar-baz-test.js')).to.equal(
-          fixture('util-test/addon-default-nested.js')
-        );
+          expect(_file('src/utils/foo/bar-baz-test.js')).to.equal(
+            fixture('util-test/dummy-nested.js')
+          );
 
-        expect(_file('app/utils/foo/bar-baz.js')).to.not.exist;
-      });
+          expect(_file('app/utils/foo/bar-baz.js')).to.not.exist;
+        },
+        { isModuleUnification: true }
+      );
     });
   });
 
@@ -189,7 +204,7 @@ describe('Blueprint: util', function() {
           "export { default } from 'my-addon/utils/foo-bar';"
         );
 
-        expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(fixture('util-test/default.js'));
+        expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(fixture('util-test/rfc232.js'));
       });
     });
 
@@ -204,7 +219,7 @@ describe('Blueprint: util', function() {
         );
 
         expect(_file('tests/unit/utils/foo/bar-baz-test.js')).to.equal(
-          fixture('util-test/default-nested.js')
+          fixture('util-test/rfc232-nested.js')
         );
       });
     });

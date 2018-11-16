@@ -11,7 +11,6 @@ const expect = chai.expect;
 
 const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
 const fixture = require('../helpers/fixture');
-const fs = require('fs-extra');
 
 describe('Blueprint: initializer-test', function() {
   setupTestHooks(this);
@@ -29,7 +28,7 @@ describe('Blueprint: initializer-test', function() {
       it('initializer-test foo', function() {
         return emberGenerateDestroy(['initializer-test', 'foo'], _file => {
           expect(_file('tests/unit/initializers/foo-test.js')).to.equal(
-            fixture('initializer-test/default.js')
+            fixture('initializer-test/rfc232.js')
           );
         });
       });
@@ -52,7 +51,7 @@ describe('Blueprint: initializer-test', function() {
     describe('with ember-cli-mocha', function() {
       beforeEach(function() {
         modifyPackages([
-          { name: 'ember-cli-qunit', delete: true },
+          { name: 'ember-qunit', delete: true },
           { name: 'ember-cli-mocha', dev: true },
         ]);
       });
@@ -89,7 +88,7 @@ describe('Blueprint: initializer-test', function() {
 
   describe('in app – module unification', function() {
     beforeEach(function() {
-      return emberNew().then(() => fs.ensureDirSync('src'));
+      return emberNew({ isModuleUnification: true });
     });
 
     describe('with ember-cli-qunit@4.1.0', function() {
@@ -98,11 +97,15 @@ describe('Blueprint: initializer-test', function() {
       });
 
       it('initializer-test foo', function() {
-        return emberGenerateDestroy(['initializer-test', 'foo'], _file => {
-          expect(_file('src/init/initializers/foo-test.js')).to.equal(
-            fixture('initializer-test/module-unification/default.js')
-          );
-        });
+        return emberGenerateDestroy(
+          ['initializer-test', 'foo'],
+          _file => {
+            expect(_file('src/init/initializers/foo-test.js')).to.equal(
+              fixture('initializer-test/module-unification/rfc232.js')
+            );
+          },
+          { isModuleUnification: true }
+        );
       });
     });
 
@@ -112,35 +115,43 @@ describe('Blueprint: initializer-test', function() {
       });
 
       it('initializer-test foo', function() {
-        return emberGenerateDestroy(['initializer-test', 'foo'], _file => {
-          expect(_file('src/init/initializers/foo-test.js')).to.equal(
-            fixture('initializer-test/module-unification/rfc232.js')
-          );
-        });
+        return emberGenerateDestroy(
+          ['initializer-test', 'foo'],
+          _file => {
+            expect(_file('src/init/initializers/foo-test.js')).to.equal(
+              fixture('initializer-test/module-unification/rfc232.js')
+            );
+          },
+          { isModuleUnification: true }
+        );
       });
     });
 
     describe('with ember-cli-mocha', function() {
       beforeEach(function() {
         modifyPackages([
-          { name: 'ember-cli-qunit', delete: true },
+          { name: 'ember-qunit', delete: true },
           { name: 'ember-cli-mocha', dev: true },
         ]);
       });
 
       it('initializer-test foo', function() {
-        return emberGenerateDestroy(['initializer-test', 'foo'], _file => {
-          expect(_file('src/init/initializers/foo-test.js')).to.equal(
-            fixture('initializer-test/module-unification/mocha.js')
-          );
-        });
+        return emberGenerateDestroy(
+          ['initializer-test', 'foo'],
+          _file => {
+            expect(_file('src/init/initializers/foo-test.js')).to.equal(
+              fixture('initializer-test/module-unification/mocha.js')
+            );
+          },
+          { isModuleUnification: true }
+        );
       });
     });
   });
 
   describe('in addon - module unification', function() {
     beforeEach(function() {
-      return emberNew({ target: 'addon' }).then(() => fs.ensureDirSync('src'));
+      return emberNew({ target: 'addon', isModuleUnification: true });
     });
 
     describe('with ember-cli-qunit@4.1.0', function() {
@@ -149,19 +160,27 @@ describe('Blueprint: initializer-test', function() {
       });
 
       it('initializer-test foo', function() {
-        return emberGenerateDestroy(['initializer-test', 'foo'], _file => {
-          expect(_file('src/init/initializers/foo-test.js')).to.equal(
-            fixture('initializer-test/module-unification/dummy.js')
-          );
-        });
+        return emberGenerateDestroy(
+          ['initializer-test', 'foo'],
+          _file => {
+            expect(_file('src/init/initializers/foo-test.js')).to.equal(
+              fixture('initializer-test/module-unification/dummy.js')
+            );
+          },
+          { isModuleUnification: true }
+        );
       });
 
       it('initializer-test foo --dummy', function() {
-        return emberGenerateDestroy(['initializer-test', 'foo', '--dummy'], _file => {
-          expect(_file('tests/dummy/src/init/initializers/foo-test.js')).to.equal(
-            fixture('initializer-test/module-unification/dummy.js')
-          );
-        });
+        return emberGenerateDestroy(
+          ['initializer-test', 'foo', '--dummy'],
+          _file => {
+            expect(_file('tests/dummy/src/init/initializers/foo-test.js')).to.equal(
+              fixture('initializer-test/module-unification/dummy.js')
+            );
+          },
+          { isModuleUnification: true }
+        );
       });
     });
   });

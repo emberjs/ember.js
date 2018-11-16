@@ -4,12 +4,12 @@ const blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
 const setupTestHooks = blueprintHelpers.setupTestHooks;
 const emberNew = blueprintHelpers.emberNew;
 const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
+const emberGenerate = blueprintHelpers.emberGenerate;
 const setupPodConfig = blueprintHelpers.setupPodConfig;
 const expectError = require('../helpers/expect-error');
 
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
-const fs = require('fs-extra');
 
 const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
 const fixture = require('../helpers/fixture');
@@ -175,45 +175,53 @@ describe('Blueprint: initializer', function() {
 
   describe('in app – module unification', function() {
     beforeEach(function() {
-      return emberNew()
-        .then(() => fs.ensureDirSync('src'))
-        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
+      return emberNew({ isModuleUnification: true }).then(() =>
+        generateFakePackageManifest('ember-cli-qunit', '4.1.0')
+      );
     });
 
     it('initializer foo', function() {
-      return emberGenerateDestroy(['initializer', 'foo'], _file => {
-        expect(_file('src/init/initializers/foo.js')).to.equal(
-          fixture('initializer/initializer.js')
-        );
+      return emberGenerateDestroy(
+        ['initializer', 'foo'],
+        _file => {
+          expect(_file('src/init/initializers/foo.js')).to.equal(
+            fixture('initializer/initializer.js')
+          );
 
-        expect(_file('src/init/initializers/foo-test.js')).to.contain(
-          "import { initialize } from 'my-app/init/initializers/foo';"
-        );
-      });
+          expect(_file('src/init/initializers/foo-test.js')).to.contain(
+            "import { initialize } from 'my-app/init/initializers/foo';"
+          );
+        },
+        { isModuleUnification: true }
+      );
     });
 
     it('initializer foo/bar', function() {
-      return emberGenerateDestroy(['initializer', 'foo/bar'], _file => {
-        expect(_file('src/init/initializers/foo/bar.js')).to.equal(
-          fixture('initializer/initializer-nested.js')
-        );
+      return emberGenerateDestroy(
+        ['initializer', 'foo/bar'],
+        _file => {
+          expect(_file('src/init/initializers/foo/bar.js')).to.equal(
+            fixture('initializer/initializer-nested.js')
+          );
 
-        expect(_file('src/init/initializers/foo/bar-test.js')).to.contain(
-          "import { initialize } from 'my-app/init/initializers/foo/bar';"
-        );
-      });
+          expect(_file('src/init/initializers/foo/bar-test.js')).to.contain(
+            "import { initialize } from 'my-app/init/initializers/foo/bar';"
+          );
+        },
+        { isModuleUnification: true }
+      );
     });
 
     it('initializer foo --pod', function() {
       return expectError(
-        emberGenerateDestroy(['initializer', 'foo', '--pod']),
+        emberGenerate(['initializer', 'foo', '--pod'], { isModuleUnification: true }),
         'Pods arenʼt supported within a module unification app'
       );
     });
 
     it('initializer foo/bar --pod', function() {
       return expectError(
-        emberGenerateDestroy(['initializer', 'foo/bar', '--pod']),
+        emberGenerate(['initializer', 'foo/bar', '--pod'], { isModuleUnification: true }),
         'Pods arenʼt supported within a module unification app'
       );
     });
@@ -225,14 +233,14 @@ describe('Blueprint: initializer', function() {
 
       it('initializer foo --pod', function() {
         return expectError(
-          emberGenerateDestroy(['initializer', 'foo', '--pod']),
+          emberGenerate(['initializer', 'foo', '--pod'], { isModuleUnification: true }),
           'Pods arenʼt supported within a module unification app'
         );
       });
 
       it('initializer foo/bar --pod', function() {
         return expectError(
-          emberGenerateDestroy(['initializer', 'foo/bar', '--pod']),
+          emberGenerate(['initializer', 'foo/bar', '--pod'], { isModuleUnification: true }),
           'Pods arenʼt supported within a module unification app'
         );
       });
@@ -241,55 +249,71 @@ describe('Blueprint: initializer', function() {
 
   describe('in addon – module unification', function() {
     beforeEach(function() {
-      return emberNew({ target: 'addon' })
-        .then(() => fs.ensureDirSync('src'))
-        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
+      return emberNew({ target: 'addon', isModuleUnification: true }).then(() =>
+        generateFakePackageManifest('ember-cli-qunit', '4.1.0')
+      );
     });
 
     it('initializer foo', function() {
-      return emberGenerateDestroy(['initializer', 'foo'], _file => {
-        expect(_file('src/init/initializers/foo.js')).to.equal(
-          fixture('initializer/initializer.js')
-        );
+      return emberGenerateDestroy(
+        ['initializer', 'foo'],
+        _file => {
+          expect(_file('src/init/initializers/foo.js')).to.equal(
+            fixture('initializer/initializer.js')
+          );
 
-        expect(_file('src/init/initializers/foo-test.js')).to.contain(
-          "import { initialize } from 'dummy/init/initializers/foo';"
-        );
-      });
+          expect(_file('src/init/initializers/foo-test.js')).to.contain(
+            "import { initialize } from 'dummy/init/initializers/foo';"
+          );
+        },
+        { isModuleUnification: true }
+      );
     });
 
     it('initializer foo/bar', function() {
-      return emberGenerateDestroy(['initializer', 'foo/bar'], _file => {
-        expect(_file('src/init/initializers/foo/bar.js')).to.equal(
-          fixture('initializer/initializer-nested.js')
-        );
+      return emberGenerateDestroy(
+        ['initializer', 'foo/bar'],
+        _file => {
+          expect(_file('src/init/initializers/foo/bar.js')).to.equal(
+            fixture('initializer/initializer-nested.js')
+          );
 
-        expect(_file('src/init/initializers/foo/bar-test.js')).to.contain(
-          "import { initialize } from 'dummy/init/initializers/foo/bar';"
-        );
-      });
+          expect(_file('src/init/initializers/foo/bar-test.js')).to.contain(
+            "import { initialize } from 'dummy/init/initializers/foo/bar';"
+          );
+        },
+        { isModuleUnification: true }
+      );
     });
 
     it('initializer foo --dummy', function() {
-      return emberGenerateDestroy(['initializer', 'foo', '--dummy'], _file => {
-        expect(_file('tests/dummy/src/init/initializers/foo.js')).to.equal(
-          fixture('initializer/initializer.js')
-        );
+      return emberGenerateDestroy(
+        ['initializer', 'foo', '--dummy'],
+        _file => {
+          expect(_file('tests/dummy/src/init/initializers/foo.js')).to.equal(
+            fixture('initializer/initializer.js')
+          );
 
-        expect(_file('src/init/initializers/foo.js')).to.not.exist;
-        expect(_file('src/init/initializers/foo-test.js')).to.not.exist;
-      });
+          expect(_file('src/init/initializers/foo.js')).to.not.exist;
+          expect(_file('src/init/initializers/foo-test.js')).to.not.exist;
+        },
+        { isModuleUnification: true }
+      );
     });
 
     it('initializer foo/bar --dummy', function() {
-      return emberGenerateDestroy(['initializer', 'foo/bar', '--dummy'], _file => {
-        expect(_file('tests/dummy/src/init/initializers/foo/bar.js')).to.equal(
-          fixture('initializer/initializer-nested.js')
-        );
+      return emberGenerateDestroy(
+        ['initializer', 'foo/bar', '--dummy'],
+        _file => {
+          expect(_file('tests/dummy/src/init/initializers/foo/bar.js')).to.equal(
+            fixture('initializer/initializer-nested.js')
+          );
 
-        expect(_file('src/init/initializers/foo/bar.js')).to.not.exist;
-        expect(_file('src/init/initializers/foo/bar-test.js')).to.not.exist;
-      });
+          expect(_file('src/init/initializers/foo/bar.js')).to.not.exist;
+          expect(_file('src/init/initializers/foo/bar-test.js')).to.not.exist;
+        },
+        { isModuleUnification: true }
+      );
     });
   });
 });

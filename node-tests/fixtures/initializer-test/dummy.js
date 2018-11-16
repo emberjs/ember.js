@@ -1,26 +1,31 @@
 import Application from '@ember/application';
-import { run } from '@ember/runloop';
 
 import { initialize } from 'dummy/initializers/foo';
 import { module, test } from 'qunit';
+import { setupTest } from 'ember-qunit';
+import { run } from '@ember/runloop';
 
+module('Unit | Initializer | foo', function(hooks) {
+  setupTest(hooks);
 
-module('Unit | Initializer | foo', {
-  beforeEach() {
-    run(() => {
-      this.application = Application.create();
-      this.application.deferReadiness();
+  hooks.beforeEach(function() {
+    this.TestApplication = Application.extend();
+    this.TestApplication.initializer({
+      name: 'initializer under test',
+      initialize
     });
-  },
-  afterEach() {
+
+    this.application = this.TestApplication.create({ autoboot: false });
+  });
+
+  hooks.afterEach(function() {
     run(this.application, 'destroy');
-  }
-});
+  });
 
-// Replace this with your real tests.
-test('it works', function(assert) {
-  initialize(this.application);
+  // Replace this with your real tests.
+  test('it works', async function(assert) {
+    await this.application.boot();
 
-  // you would normally confirm the results of the initializer here
-  assert.ok(true);
+    assert.ok(true);
+  });
 });

@@ -8,7 +8,6 @@ const modifyPackages = blueprintHelpers.modifyPackages;
 
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
-const fs = require('fs-extra');
 
 const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
 const fixture = require('../helpers/fixture');
@@ -29,7 +28,7 @@ describe('Blueprint: util-test', function() {
       it('util-test foo-bar', function() {
         return emberGenerateDestroy(['util-test', 'foo-bar'], _file => {
           expect(_file('tests/unit/utils/foo-bar-test.js')).to.equal(
-            fixture('util-test/default.js')
+            fixture('util-test/rfc232.js')
           );
         });
       });
@@ -52,7 +51,7 @@ describe('Blueprint: util-test', function() {
     describe('with ember-cli-mocha', function() {
       beforeEach(function() {
         modifyPackages([
-          { name: 'ember-cli-qunit', delete: true },
+          { name: 'ember-qunit', delete: true },
           { name: 'ember-cli-mocha', dev: true },
         ]);
       });
@@ -66,10 +65,7 @@ describe('Blueprint: util-test', function() {
 
     describe('with ember-mocha@0.14.0', function() {
       beforeEach(function() {
-        modifyPackages([
-          { name: 'ember-cli-qunit', delete: true },
-          { name: 'ember-mocha', dev: true },
-        ]);
+        modifyPackages([{ name: 'ember-qunit', delete: true }, { name: 'ember-mocha', dev: true }]);
         generateFakePackageManifest('ember-mocha', '0.14.0');
       });
 
@@ -85,7 +81,7 @@ describe('Blueprint: util-test', function() {
 
   describe('in app - module uninification', function() {
     beforeEach(function() {
-      return emberNew().then(() => fs.ensureDirSync('src'));
+      return emberNew({ isModuleUnification: true });
     });
 
     describe('with ember-cli-qunit@4.1.0', function() {
@@ -94,9 +90,13 @@ describe('Blueprint: util-test', function() {
       });
 
       it('util-test foo-bar', function() {
-        return emberGenerateDestroy(['util-test', 'foo-bar'], _file => {
-          expect(_file('src/utils/foo-bar-test.js')).to.equal(fixture('util-test/default.js'));
-        });
+        return emberGenerateDestroy(
+          ['util-test', 'foo-bar'],
+          _file => {
+            expect(_file('src/utils/foo-bar-test.js')).to.equal(fixture('util-test/rfc232.js'));
+          },
+          { isModuleUnification: true }
+        );
       });
     });
 
@@ -106,24 +106,32 @@ describe('Blueprint: util-test', function() {
       });
 
       it('util-test foo-bar', function() {
-        return emberGenerateDestroy(['util-test', 'foo-bar'], _file => {
-          expect(_file('src/utils/foo-bar-test.js')).to.equal(fixture('util-test/rfc232.js'));
-        });
+        return emberGenerateDestroy(
+          ['util-test', 'foo-bar'],
+          _file => {
+            expect(_file('src/utils/foo-bar-test.js')).to.equal(fixture('util-test/rfc232.js'));
+          },
+          { isModuleUnification: true }
+        );
       });
     });
 
     describe('with ember-cli-mocha', function() {
       beforeEach(function() {
         modifyPackages([
-          { name: 'ember-cli-qunit', delete: true },
+          { name: 'ember-qunit', delete: true },
           { name: 'ember-cli-mocha', dev: true },
         ]);
       });
 
       it('util-test foo-bar', function() {
-        return emberGenerateDestroy(['util-test', 'foo-bar'], _file => {
-          expect(_file('src/utils/foo-bar-test.js')).to.equal(fixture('util-test/mocha.js'));
-        });
+        return emberGenerateDestroy(
+          ['util-test', 'foo-bar'],
+          _file => {
+            expect(_file('src/utils/foo-bar-test.js')).to.equal(fixture('util-test/mocha.js'));
+          },
+          { isModuleUnification: true }
+        );
       });
     });
   });
@@ -148,7 +156,7 @@ describe('Blueprint: util-test', function() {
 
   describe('in addon - module unification', function() {
     beforeEach(function() {
-      return emberNew({ target: 'addon' }).then(() => fs.ensureDirSync('src'));
+      return emberNew({ target: 'addon', isModuleUnification: true });
     });
 
     describe('with ember-cli-qunit@4.1.0', function() {
@@ -157,9 +165,13 @@ describe('Blueprint: util-test', function() {
       });
 
       it('util-test foo-bar', function() {
-        return emberGenerateDestroy(['util-test', 'foo-bar'], _file => {
-          expect(_file('src/utils/foo-bar-test.js')).to.equal(fixture('util-test/dummy.js'));
-        });
+        return emberGenerateDestroy(
+          ['util-test', 'foo-bar'],
+          _file => {
+            expect(_file('src/utils/foo-bar-test.js')).to.equal(fixture('util-test/dummy.js'));
+          },
+          { isModuleUnification: true }
+        );
       });
     });
   });

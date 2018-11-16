@@ -4,11 +4,11 @@ const blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
 const setupTestHooks = blueprintHelpers.setupTestHooks;
 const emberNew = blueprintHelpers.emberNew;
 const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
+const emberGenerate = blueprintHelpers.emberGenerate;
 const setupPodConfig = blueprintHelpers.setupPodConfig;
 
 const expectError = require('../helpers/expect-error');
 const chai = require('ember-cli-blueprint-test-helpers/chai');
-const fs = require('fs-extra');
 const expect = chai.expect;
 
 const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
@@ -27,7 +27,7 @@ describe('Blueprint: controller', function() {
         expect(_file('app/controllers/foo.js')).to.equal(fixture('controller/controller.js'));
 
         expect(_file('tests/unit/controllers/foo-test.js')).to.equal(
-          fixture('controller-test/default.js')
+          fixture('controller-test/rfc232.js')
         );
       });
     });
@@ -39,7 +39,7 @@ describe('Blueprint: controller', function() {
         );
 
         expect(_file('tests/unit/controllers/foo/bar-test.js')).to.equal(
-          fixture('controller-test/default-nested.js')
+          fixture('controller-test/rfc232-nested.js')
         );
       });
     });
@@ -49,7 +49,7 @@ describe('Blueprint: controller', function() {
         expect(_file('app/foo/controller.js')).to.equal(fixture('controller/controller.js'));
 
         expect(_file('tests/unit/foo/controller-test.js')).to.equal(
-          fixture('controller-test/default.js')
+          fixture('controller-test/rfc232.js')
         );
       });
     });
@@ -61,7 +61,7 @@ describe('Blueprint: controller', function() {
         );
 
         expect(_file('tests/unit/foo/bar/controller-test.js')).to.equal(
-          fixture('controller-test/default-nested.js')
+          fixture('controller-test/rfc232-nested.js')
         );
       });
     });
@@ -76,7 +76,7 @@ describe('Blueprint: controller', function() {
           expect(_file('app/pods/foo/controller.js')).to.equal(fixture('controller/controller.js'));
 
           expect(_file('tests/unit/pods/foo/controller-test.js')).to.equal(
-            fixture('controller-test/default.js')
+            fixture('controller-test/rfc232.js')
           );
         });
       });
@@ -88,7 +88,7 @@ describe('Blueprint: controller', function() {
           );
 
           expect(_file('tests/unit/pods/foo/bar/controller-test.js')).to.equal(
-            fixture('controller-test/default-nested.js')
+            fixture('controller-test/rfc232-nested.js')
           );
         });
       });
@@ -111,7 +111,7 @@ describe('Blueprint: controller', function() {
         );
 
         expect(_file('tests/unit/controllers/foo-test.js')).to.equal(
-          fixture('controller-test/default.js')
+          fixture('controller-test/rfc232.js')
         );
       });
     });
@@ -127,7 +127,7 @@ describe('Blueprint: controller', function() {
         );
 
         expect(_file('tests/unit/controllers/foo/bar-test.js')).to.equal(
-          fixture('controller-test/default-nested.js')
+          fixture('controller-test/rfc232-nested.js')
         );
       });
     });
@@ -159,33 +159,41 @@ describe('Blueprint: controller', function() {
 
   describe('in app - module unification', function() {
     beforeEach(function() {
-      return emberNew()
-        .then(() => fs.ensureDirSync('src'))
-        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
+      return emberNew({ isModuleUnification: true }).then(() =>
+        generateFakePackageManifest('ember-cli-qunit', '4.1.0')
+      );
     });
 
     it('controller foo', function() {
-      return emberGenerateDestroy(['controller', 'foo'], _file => {
-        expect(_file('src/ui/routes/foo/controller.js')).to.equal(
-          fixture('controller/controller.js')
-        );
+      return emberGenerateDestroy(
+        ['controller', 'foo'],
+        _file => {
+          expect(_file('src/ui/routes/foo/controller.js')).to.equal(
+            fixture('controller/controller.js')
+          );
 
-        expect(_file('src/ui/routes/foo/controller-test.js')).to.equal(
-          fixture('controller-test/default.js')
-        );
-      });
+          expect(_file('src/ui/routes/foo/controller-test.js')).to.equal(
+            fixture('controller-test/rfc232.js')
+          );
+        },
+        { isModuleUnification: true }
+      );
     });
 
     it('controller foo/bar', function() {
-      return emberGenerateDestroy(['controller', 'foo/bar'], _file => {
-        expect(_file('src/ui/routes/foo/bar/controller.js')).to.equal(
-          fixture('controller/controller-nested.js')
-        );
+      return emberGenerateDestroy(
+        ['controller', 'foo/bar'],
+        _file => {
+          expect(_file('src/ui/routes/foo/bar/controller.js')).to.equal(
+            fixture('controller/controller-nested.js')
+          );
 
-        expect(_file('src/ui/routes/foo/bar/controller-test.js')).to.equal(
-          fixture('controller-test/default-nested.js')
-        );
-      });
+          expect(_file('src/ui/routes/foo/bar/controller-test.js')).to.equal(
+            fixture('controller-test/rfc232-nested.js')
+          );
+        },
+        { isModuleUnification: true }
+      );
     });
 
     describe('with podModulePrefix', function() {
@@ -195,7 +203,7 @@ describe('Blueprint: controller', function() {
 
       it('controller foo --pod podModulePrefix', function() {
         return expectError(
-          emberGenerateDestroy(['controller', 'foo', '--pod']),
+          emberGenerate(['controller', 'foo', '--pod'], { isModuleUnification: true }),
           "Pods aren't supported within a module unification app"
         );
       });
@@ -204,61 +212,77 @@ describe('Blueprint: controller', function() {
 
   describe('in addon - module unification', function() {
     beforeEach(function() {
-      return emberNew({ target: 'addon' })
-        .then(() => fs.ensureDirSync('src'))
-        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
+      return emberNew({ target: 'addon', isModuleUnification: true }).then(() =>
+        generateFakePackageManifest('ember-cli-qunit', '4.1.0')
+      );
     });
 
     it('controller foo', function() {
-      return emberGenerateDestroy(['controller', 'foo'], _file => {
-        expect(_file('src/ui/routes/foo/controller.js')).to.equal(
-          fixture('controller/controller.js')
-        );
+      return emberGenerateDestroy(
+        ['controller', 'foo'],
+        _file => {
+          expect(_file('src/ui/routes/foo/controller.js')).to.equal(
+            fixture('controller/controller.js')
+          );
 
-        expect(_file('src/ui/routes/foo/controller-test.js')).to.equal(
-          fixture('controller-test/default.js')
-        );
+          expect(_file('src/ui/routes/foo/controller-test.js')).to.equal(
+            fixture('controller-test/rfc232.js')
+          );
 
-        expect(_file('app/controllers/foo.js')).to.not.exist;
-      });
+          expect(_file('app/controllers/foo.js')).to.not.exist;
+        },
+        { isModuleUnification: true }
+      );
     });
 
     it('controller foo/bar', function() {
-      return emberGenerateDestroy(['controller', 'foo/bar'], _file => {
-        expect(_file('src/ui/routes/foo/bar/controller.js')).to.equal(
-          fixture('controller/controller-nested.js')
-        );
+      return emberGenerateDestroy(
+        ['controller', 'foo/bar'],
+        _file => {
+          expect(_file('src/ui/routes/foo/bar/controller.js')).to.equal(
+            fixture('controller/controller-nested.js')
+          );
 
-        expect(_file('src/ui/routes/foo/bar/controller-test.js')).to.equal(
-          fixture('controller-test/default-nested.js')
-        );
+          expect(_file('src/ui/routes/foo/bar/controller-test.js')).to.equal(
+            fixture('controller-test/rfc232-nested.js')
+          );
 
-        expect(_file('app/controllers/foo/bar.js')).to.not.exist;
-      });
+          expect(_file('app/controllers/foo/bar.js')).to.not.exist;
+        },
+        { isModuleUnification: true }
+      );
     });
 
     it('controller foo --dummy', function() {
-      return emberGenerateDestroy(['controller', 'foo', '--dummy'], _file => {
-        expect(_file('tests/dummy/src/ui/routes/foo/controller.js')).to.equal(
-          fixture('controller/controller.js')
-        );
+      return emberGenerateDestroy(
+        ['controller', 'foo', '--dummy'],
+        _file => {
+          expect(_file('tests/dummy/src/ui/routes/foo/controller.js')).to.equal(
+            fixture('controller/controller.js')
+          );
 
-        expect(_file('src/ui/routes/foo/controller.js')).to.not.exist;
+          expect(_file('src/ui/routes/foo/controller.js')).to.not.exist;
 
-        expect(_file('src/ui/routes/foo/controller-test.js')).to.not.exist;
-      });
+          expect(_file('src/ui/routes/foo/controller-test.js')).to.not.exist;
+        },
+        { isModuleUnification: true }
+      );
     });
 
     it('controller foo/bar --dummy', function() {
-      return emberGenerateDestroy(['controller', 'foo/bar', '--dummy'], _file => {
-        expect(_file('tests/dummy/src/ui/routes/foo/bar/controller.js')).to.equal(
-          fixture('controller/controller-nested.js')
-        );
+      return emberGenerateDestroy(
+        ['controller', 'foo/bar', '--dummy'],
+        _file => {
+          expect(_file('tests/dummy/src/ui/routes/foo/bar/controller.js')).to.equal(
+            fixture('controller/controller-nested.js')
+          );
 
-        expect(_file('src/ui/routes/foo/bar/controller.js')).to.not.exist;
+          expect(_file('src/ui/routes/foo/bar/controller.js')).to.not.exist;
 
-        expect(_file('src/ui/routes/foo/bar/controller-test.js')).to.not.exist;
-      });
+          expect(_file('src/ui/routes/foo/bar/controller-test.js')).to.not.exist;
+        },
+        { isModuleUnification: true }
+      );
     });
 
     describe('with podModulePrefix', function() {
@@ -268,7 +292,7 @@ describe('Blueprint: controller', function() {
 
       it('controller foo --pod podModulePrefix', function() {
         return expectError(
-          emberGenerateDestroy(['controller', 'foo', '--pod']),
+          emberGenerate(['controller', 'foo', '--pod'], { isModuleUnification: true }),
           "Pods aren't supported within a module unification app"
         );
       });
@@ -293,7 +317,7 @@ describe('Blueprint: controller', function() {
         );
 
         expect(_file('tests/unit/controllers/foo-test.js')).to.equal(
-          fixture('controller-test/default.js')
+          fixture('controller-test/rfc232.js')
         );
       });
     });
@@ -309,7 +333,7 @@ describe('Blueprint: controller', function() {
         );
 
         expect(_file('tests/unit/controllers/foo/bar-test.js')).to.equal(
-          fixture('controller-test/default-nested.js')
+          fixture('controller-test/rfc232-nested.js')
         );
       });
     });

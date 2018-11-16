@@ -4,12 +4,12 @@ const blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
 const setupTestHooks = blueprintHelpers.setupTestHooks;
 const emberNew = blueprintHelpers.emberNew;
 const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
+const emberGenerate = blueprintHelpers.emberGenerate;
 const setupPodConfig = blueprintHelpers.setupPodConfig;
 const expectError = require('../helpers/expect-error');
 
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
-const fs = require('fs-extra');
 
 describe('Blueprint: template', function() {
   setupTestHooks(this);
@@ -121,30 +121,38 @@ describe('Blueprint: template', function() {
 
   describe('in app - module unification', function() {
     beforeEach(function() {
-      return emberNew().then(() => fs.ensureDirSync('src'));
+      return emberNew({ isModuleUnification: true });
     });
 
     it('template foo', function() {
-      return emberGenerateDestroy(['template', 'foo'], _file => {
-        expect(_file('src/ui/routes/foo/template.hbs')).to.equal('');
-      });
+      return emberGenerateDestroy(
+        ['template', 'foo'],
+        _file => {
+          expect(_file('src/ui/routes/foo/template.hbs')).to.equal('');
+        },
+        { isModuleUnification: true }
+      );
     });
 
     it('template foo/bar', function() {
-      return emberGenerateDestroy(['template', 'foo/bar'], _file => {
-        expect(_file('src/ui/routes/foo/bar/template.hbs')).to.equal('');
-      });
+      return emberGenerateDestroy(
+        ['template', 'foo/bar'],
+        _file => {
+          expect(_file('src/ui/routes/foo/bar/template.hbs')).to.equal('');
+        },
+        { isModuleUnification: true }
+      );
     });
   });
 
   describe('with usePods - module unification', function() {
     beforeEach(function() {
-      return emberNew().then(() => fs.ensureDirSync('src'));
+      return emberNew({ isModuleUnification: true });
     });
 
     it('shows an error', function() {
       return expectError(
-        emberGenerateDestroy(['template', 'foo', '--pod']),
+        emberGenerate(['template', 'foo', '--pod'], { isModuleUnification: true }),
         "Pods aren't supported within a module unification app"
       );
     });
@@ -152,31 +160,47 @@ describe('Blueprint: template', function() {
 
   describe('in addon - module unification', function() {
     beforeEach(function() {
-      return emberNew({ target: 'addon' }).then(() => fs.ensureDirSync('src'));
+      return emberNew({ target: 'addon', isModuleUnification: true });
     });
 
     it('template foo', function() {
-      return emberGenerateDestroy(['template', 'foo'], _file => {
-        expect(_file('src/ui/routes/foo/template.hbs')).to.equal('');
-      });
+      return emberGenerateDestroy(
+        ['template', 'foo'],
+        _file => {
+          expect(_file('src/ui/routes/foo/template.hbs')).to.equal('');
+        },
+        { isModuleUnification: true }
+      );
     });
 
     it('template foo/bar', function() {
-      return emberGenerateDestroy(['template', 'foo/bar'], _file => {
-        expect(_file('src/ui/routes/foo/bar/template.hbs')).to.equal('');
-      });
+      return emberGenerateDestroy(
+        ['template', 'foo/bar'],
+        _file => {
+          expect(_file('src/ui/routes/foo/bar/template.hbs')).to.equal('');
+        },
+        { isModuleUnification: true }
+      );
     });
 
     it('template foo --dummy', function() {
-      return emberGenerateDestroy(['template', 'foo', '--dummy'], _file => {
-        expect(_file('tests/dummy/src/ui/routes/foo/template.hbs')).to.equal('');
-      });
+      return emberGenerate(
+        ['template', 'foo', '--dummy'],
+        _file => {
+          expect(_file('tests/dummy/src/ui/routes/foo/template.hbs')).to.equal('');
+        },
+        { isModuleUnification: true }
+      );
     });
 
     it('template foo/bar --dummy', function() {
-      return emberGenerateDestroy(['template', 'foo/bar', '--dummy'], _file => {
-        expect(_file('tests/dummy/src/ui/routes/foo/bar/template.hbs')).to.equal('');
-      });
+      return emberGenerate(
+        ['template', 'foo/bar', '--dummy'],
+        _file => {
+          expect(_file('tests/dummy/src/ui/routes/foo/bar/template.hbs')).to.equal('');
+        },
+        { isModuleUnification: true }
+      );
     });
   });
 });

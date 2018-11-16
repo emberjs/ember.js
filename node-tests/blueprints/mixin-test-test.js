@@ -8,7 +8,6 @@ const modifyPackages = blueprintHelpers.modifyPackages;
 
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
-const fs = require('fs-extra');
 
 const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
 const fixture = require('../helpers/fixture');
@@ -23,14 +22,14 @@ describe('Blueprint: mixin-test', function() {
 
     it('mixin-test foo', function() {
       return emberGenerateDestroy(['mixin-test', 'foo'], _file => {
-        expect(_file('tests/unit/mixins/foo-test.js')).to.equal(fixture('mixin-test/default.js'));
+        expect(_file('tests/unit/mixins/foo-test.js')).to.equal(fixture('mixin-test/rfc232.js'));
       });
     });
 
     describe('with ember-cli-mocha', function() {
       beforeEach(function() {
         modifyPackages([
-          { name: 'ember-cli-qunit', delete: true },
+          { name: 'ember-qunit', delete: true },
           { name: 'ember-cli-mocha', dev: true },
         ]);
       });
@@ -44,7 +43,7 @@ describe('Blueprint: mixin-test', function() {
 
     describe('with ember-cli-qunit@4.2.0', function() {
       beforeEach(function() {
-        generateFakePackageManifest('ember-cli-qunit', '4.2.0');
+        generateFakePackageManifest('ember-qunit', '4.2.0');
       });
 
       it('mixin-test foo', function() {
@@ -56,10 +55,7 @@ describe('Blueprint: mixin-test', function() {
 
     describe('with ember-mocha@0.14.0', function() {
       beforeEach(function() {
-        modifyPackages([
-          { name: 'ember-cli-qunit', delete: true },
-          { name: 'ember-mocha', dev: true },
-        ]);
+        modifyPackages([{ name: 'ember-qunit', delete: true }, { name: 'ember-mocha', dev: true }]);
         generateFakePackageManifest('ember-mocha', '0.14.0');
       });
 
@@ -75,27 +71,35 @@ describe('Blueprint: mixin-test', function() {
 
   describe('in app - module unification', function() {
     beforeEach(function() {
-      return emberNew().then(() => fs.ensureDirSync('src'));
+      return emberNew({ isModuleUnification: true });
     });
 
     it('mixin-test foo', function() {
-      return emberGenerateDestroy(['mixin-test', 'foo'], _file => {
-        expect(_file('src/mixins/foo-test.js')).to.equal(fixture('mixin-test/default.js'));
-      });
+      return emberGenerateDestroy(
+        ['mixin-test', 'foo'],
+        _file => {
+          expect(_file('src/mixins/foo-test.js')).to.equal(fixture('mixin-test/rfc232.js'));
+        },
+        { isModuleUnification: true }
+      );
     });
 
     describe('with ember-cli-mocha', function() {
       beforeEach(function() {
         modifyPackages([
-          { name: 'ember-cli-qunit', delete: true },
+          { name: 'ember-qunit', delete: true },
           { name: 'ember-cli-mocha', dev: true },
         ]);
       });
 
       it('mixin-test foo', function() {
-        return emberGenerateDestroy(['mixin-test', 'foo'], _file => {
-          expect(_file('src/mixins/foo-test.js')).to.equal(fixture('mixin-test/mocha.js'));
-        });
+        return emberGenerateDestroy(
+          ['mixin-test', 'foo'],
+          _file => {
+            expect(_file('src/mixins/foo-test.js')).to.equal(fixture('mixin-test/mocha.js'));
+          },
+          { isModuleUnification: true }
+        );
       });
     });
 
@@ -105,9 +109,13 @@ describe('Blueprint: mixin-test', function() {
       });
 
       it('mixin-test foo', function() {
-        return emberGenerateDestroy(['mixin-test', 'foo'], _file => {
-          expect(_file('src/mixins/foo-test.js')).to.equal(fixture('mixin-test/rfc232.js'));
-        });
+        return emberGenerateDestroy(
+          ['mixin-test', 'foo'],
+          _file => {
+            expect(_file('src/mixins/foo-test.js')).to.equal(fixture('mixin-test/rfc232.js'));
+          },
+          { isModuleUnification: true }
+        );
       });
     });
   });
@@ -126,13 +134,17 @@ describe('Blueprint: mixin-test', function() {
 
   describe('in addon - module unification', function() {
     beforeEach(function() {
-      return emberNew({ target: 'addon' }).then(() => fs.ensureDirSync('src'));
+      return emberNew({ target: 'addon', isModuleUnification: true });
     });
 
     it('mixin-test foo', function() {
-      return emberGenerateDestroy(['mixin-test', 'foo'], _file => {
-        expect(_file('src/mixins/foo-test.js')).to.equal(fixture('mixin-test/addon.js'));
-      });
+      return emberGenerateDestroy(
+        ['mixin-test', 'foo'],
+        _file => {
+          expect(_file('src/mixins/foo-test.js')).to.equal(fixture('mixin-test/addon.js'));
+        },
+        { isModuleUnification: true }
+      );
     });
   });
 

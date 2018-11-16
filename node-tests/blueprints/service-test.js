@@ -4,12 +4,12 @@ const blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
 const setupTestHooks = blueprintHelpers.setupTestHooks;
 const emberNew = blueprintHelpers.emberNew;
 const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
+const emberGenerate = blueprintHelpers.emberGenerate;
 const setupPodConfig = blueprintHelpers.setupPodConfig;
 const expectError = require('../helpers/expect-error');
 
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
-const fs = require('fs-extra');
 
 const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
 const fixture = require('../helpers/fixture');
@@ -27,7 +27,7 @@ describe('Blueprint: service', function() {
         expect(_file('app/services/foo.js')).to.equal(fixture('service/service.js'));
 
         expect(_file('tests/unit/services/foo-test.js')).to.equal(
-          fixture('service-test/default.js')
+          fixture('service-test/rfc232.js')
         );
       });
     });
@@ -37,7 +37,7 @@ describe('Blueprint: service', function() {
         expect(_file('app/services/foo/bar.js')).to.equal(fixture('service/service-nested.js'));
 
         expect(_file('tests/unit/services/foo/bar-test.js')).to.equal(
-          fixture('service-test/default-nested.js')
+          fixture('service-test/rfc232-nested.js')
         );
       });
     });
@@ -46,9 +46,7 @@ describe('Blueprint: service', function() {
       return emberGenerateDestroy(['service', 'foo', '--pod'], _file => {
         expect(_file('app/foo/service.js')).to.equal(fixture('service/service.js'));
 
-        expect(_file('tests/unit/foo/service-test.js')).to.equal(
-          fixture('service-test/default.js')
-        );
+        expect(_file('tests/unit/foo/service-test.js')).to.equal(fixture('service-test/rfc232.js'));
       });
     });
 
@@ -57,7 +55,7 @@ describe('Blueprint: service', function() {
         expect(_file('app/foo/bar/service.js')).to.equal(fixture('service/service-nested.js'));
 
         expect(_file('tests/unit/foo/bar/service-test.js')).to.equal(
-          fixture('service-test/default-nested.js')
+          fixture('service-test/rfc232-nested.js')
         );
       });
     });
@@ -72,7 +70,7 @@ describe('Blueprint: service', function() {
           expect(_file('app/pods/foo/service.js')).to.equal(fixture('service/service.js'));
 
           expect(_file('tests/unit/pods/foo/service-test.js')).to.equal(
-            fixture('service-test/default.js')
+            fixture('service-test/rfc232.js')
           );
         });
       });
@@ -84,7 +82,7 @@ describe('Blueprint: service', function() {
           );
 
           expect(_file('tests/unit/pods/foo/bar/service-test.js')).to.equal(
-            fixture('service-test/default-nested.js')
+            fixture('service-test/rfc232-nested.js')
           );
         });
       });
@@ -93,32 +91,40 @@ describe('Blueprint: service', function() {
 
   describe('in app - module unification', function() {
     beforeEach(function() {
-      return emberNew()
-        .then(() => fs.ensureDirSync('src'))
-        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
+      return emberNew({ isModuleUnification: true }).then(() =>
+        generateFakePackageManifest('ember-cli-qunit', '4.1.0')
+      );
     });
 
     it('service foo', function() {
-      return emberGenerateDestroy(['service', 'foo'], _file => {
-        expect(_file('src/services/foo.js')).to.equal(fixture('service/service.js'));
+      return emberGenerateDestroy(
+        ['service', 'foo'],
+        _file => {
+          expect(_file('src/services/foo.js')).to.equal(fixture('service/service.js'));
 
-        expect(_file('src/services/foo-test.js')).to.equal(fixture('service-test/default.js'));
-      });
+          expect(_file('src/services/foo-test.js')).to.equal(fixture('service-test/rfc232.js'));
+        },
+        { isModuleUnification: true }
+      );
     });
 
     it('service foo/bar', function() {
-      return emberGenerateDestroy(['service', 'foo/bar'], _file => {
-        expect(_file('src/services/foo/bar.js')).to.equal(fixture('service/service-nested.js'));
+      return emberGenerateDestroy(
+        ['service', 'foo/bar'],
+        _file => {
+          expect(_file('src/services/foo/bar.js')).to.equal(fixture('service/service-nested.js'));
 
-        expect(_file('src/services/foo/bar-test.js')).to.equal(
-          fixture('service-test/default-nested.js')
-        );
-      });
+          expect(_file('src/services/foo/bar-test.js')).to.equal(
+            fixture('service-test/rfc232-nested.js')
+          );
+        },
+        { isModuleUnification: true }
+      );
     });
 
     it('service foo --pod', function() {
       return expectError(
-        emberGenerateDestroy(['service', 'foo', '--pod']),
+        emberGenerate(['service', 'foo', '--pod'], { isModuleUnification: true }),
         "Pods aren't supported within a module unification app"
       );
     });
@@ -140,7 +146,7 @@ describe('Blueprint: service', function() {
         );
 
         expect(_file('tests/unit/services/foo-test.js')).to.equal(
-          fixture('service-test/default.js')
+          fixture('service-test/rfc232.js')
         );
       });
     });
@@ -154,7 +160,7 @@ describe('Blueprint: service', function() {
         );
 
         expect(_file('tests/unit/services/foo/bar-test.js')).to.equal(
-          fixture('service-test/default-nested.js')
+          fixture('service-test/rfc232-nested.js')
         );
       });
     });
@@ -162,31 +168,39 @@ describe('Blueprint: service', function() {
 
   describe('in addon - module unification', function() {
     beforeEach(function() {
-      return emberNew({ target: 'addon' })
-        .then(() => fs.ensureDirSync('src'))
-        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
+      return emberNew({ target: 'addon', isModuleUnification: true }).then(() =>
+        generateFakePackageManifest('ember-cli-qunit', '4.1.0')
+      );
     });
 
     it('service foo', function() {
-      return emberGenerateDestroy(['service', 'foo'], _file => {
-        expect(_file('src/services/foo.js')).to.equal(fixture('service/service.js'));
+      return emberGenerateDestroy(
+        ['service', 'foo'],
+        _file => {
+          expect(_file('src/services/foo.js')).to.equal(fixture('service/service.js'));
 
-        expect(_file('src/services/foo-test.js')).to.equal(fixture('service-test/default.js'));
+          expect(_file('src/services/foo-test.js')).to.equal(fixture('service-test/rfc232.js'));
 
-        expect(_file('app/services/foo.js')).to.not.exist;
-      });
+          expect(_file('app/services/foo.js')).to.not.exist;
+        },
+        { isModuleUnification: true }
+      );
     });
 
     it('service foo/bar', function() {
-      return emberGenerateDestroy(['service', 'foo/bar'], _file => {
-        expect(_file('src/services/foo/bar.js')).to.equal(fixture('service/service-nested.js'));
+      return emberGenerateDestroy(
+        ['service', 'foo/bar'],
+        _file => {
+          expect(_file('src/services/foo/bar.js')).to.equal(fixture('service/service-nested.js'));
 
-        expect(_file('src/services/foo/bar-test.js')).to.equal(
-          fixture('service-test/default-nested.js')
-        );
+          expect(_file('src/services/foo/bar-test.js')).to.equal(
+            fixture('service-test/rfc232-nested.js')
+          );
 
-        expect(_file('app/services/foo/bar.js')).to.not.exist;
-      });
+          expect(_file('app/services/foo/bar.js')).to.not.exist;
+        },
+        { isModuleUnification: true }
+      );
     });
   });
 
@@ -206,7 +220,7 @@ describe('Blueprint: service', function() {
         );
 
         expect(_file('tests/unit/services/foo-test.js')).to.equal(
-          fixture('service-test/default.js')
+          fixture('service-test/rfc232.js')
         );
       });
     });
@@ -222,7 +236,7 @@ describe('Blueprint: service', function() {
         );
 
         expect(_file('tests/unit/services/foo/bar-test.js')).to.equal(
-          fixture('service-test/default-nested.js')
+          fixture('service-test/rfc232-nested.js')
         );
       });
     });

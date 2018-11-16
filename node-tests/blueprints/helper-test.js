@@ -10,7 +10,6 @@ const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
 
 const fixture = require('../helpers/fixture');
-const fs = require('fs-extra');
 
 describe('Blueprint: helper', function() {
   setupTestHooks(this);
@@ -24,7 +23,7 @@ describe('Blueprint: helper', function() {
       return emberGenerateDestroy(['helper', 'foo/bar-baz'], _file => {
         expect(_file('app/helpers/foo/bar-baz.js')).to.equal(fixture('helper.js'));
         expect(_file('tests/integration/helpers/foo/bar-baz-test.js')).to.equal(
-          fixture('helper-test/integration.js')
+          fixture('helper-test/rfc232.js')
         );
       });
     });
@@ -33,7 +32,7 @@ describe('Blueprint: helper', function() {
       return emberGenerateDestroy(['helper', '--test-type=unit', 'foo/bar-baz'], _file => {
         expect(_file('app/helpers/foo/bar-baz.js')).to.equal(fixture('helper.js'));
         expect(_file('tests/unit/helpers/foo/bar-baz-test.js')).to.equal(
-          fixture('helper-test/unit.js')
+          fixture('helper-test/rfc232-unit.js')
         );
       });
     });
@@ -42,7 +41,7 @@ describe('Blueprint: helper', function() {
       return emberGenerateDestroy(['helper', 'foo/bar-baz', '--pod'], _file => {
         expect(_file('app/helpers/foo/bar-baz.js')).to.equal(fixture('helper.js'));
         expect(_file('tests/integration/helpers/foo/bar-baz-test.js')).to.equal(
-          fixture('helper-test/integration.js')
+          fixture('helper-test/rfc232.js')
         );
       });
     });
@@ -51,7 +50,7 @@ describe('Blueprint: helper', function() {
       return emberGenerateDestroy(['helper', 'foo/bar-baz', '--pod'], _file => {
         expect(_file('app/helpers/foo/bar-baz.js')).to.equal(fixture('helper.js'));
         expect(_file('tests/integration/helpers/foo/bar-baz-test.js')).to.equal(
-          fixture('helper-test/integration.js')
+          fixture('helper-test/rfc232.js')
         );
       });
     });
@@ -65,7 +64,7 @@ describe('Blueprint: helper', function() {
         return emberGenerateDestroy(['helper', 'foo/bar-baz', '--pod'], _file => {
           expect(_file('app/helpers/foo/bar-baz.js')).to.equal(fixture('helper.js'));
           expect(_file('tests/integration/helpers/foo/bar-baz-test.js')).to.equal(
-            fixture('helper-test/integration.js')
+            fixture('helper-test/rfc232.js')
           );
         });
       });
@@ -74,7 +73,7 @@ describe('Blueprint: helper', function() {
         return emberGenerateDestroy(['helper', 'foo/bar-baz', '--pod'], _file => {
           expect(_file('app/helpers/foo/bar-baz.js')).to.equal(fixture('helper.js'));
           expect(_file('tests/integration/helpers/foo/bar-baz-test.js')).to.equal(
-            fixture('helper-test/integration.js')
+            fixture('helper-test/rfc232.js')
           );
         });
       });
@@ -83,25 +82,33 @@ describe('Blueprint: helper', function() {
 
   describe('in app - module unification', function() {
     beforeEach(function() {
-      return emberNew().then(() => fs.ensureDirSync('src'));
+      return emberNew({ isModuleUnification: true });
     });
 
     it('helper foo/bar-baz', function() {
-      return emberGenerateDestroy(['helper', 'foo/bar-baz'], _file => {
-        expect(_file('src/ui/components/foo/bar-baz.js')).to.equal(fixture('helper.js'));
-        expect(_file('src/ui/components/foo/bar-baz-test.js')).to.equal(
-          fixture('helper-test/integration.js')
-        );
-      });
+      return emberGenerateDestroy(
+        ['helper', 'foo/bar-baz'],
+        _file => {
+          expect(_file('src/ui/components/foo/bar-baz.js')).to.equal(fixture('helper.js'));
+          expect(_file('src/ui/components/foo/bar-baz-test.js')).to.equal(
+            fixture('helper-test/rfc232.js')
+          );
+        },
+        { isModuleUnification: true }
+      );
     });
 
     it('helper foo/bar-baz unit', function() {
-      return emberGenerateDestroy(['helper', '--test-type=unit', 'foo/bar-baz'], _file => {
-        expect(_file('src/ui/components/foo/bar-baz.js')).to.equal(fixture('helper.js'));
-        expect(_file('src/ui/components/foo/bar-baz-test.js')).to.equal(
-          fixture('helper-test/unit.js')
-        );
-      });
+      return emberGenerateDestroy(
+        ['helper', '--test-type=unit', 'foo/bar-baz'],
+        _file => {
+          expect(_file('src/ui/components/foo/bar-baz.js')).to.equal(fixture('helper.js'));
+          expect(_file('src/ui/components/foo/bar-baz-test.js')).to.equal(
+            fixture('helper-test/rfc232-unit.js')
+          );
+        },
+        { isModuleUnification: true }
+      );
     });
   });
 
@@ -115,7 +122,7 @@ describe('Blueprint: helper', function() {
         expect(_file('addon/helpers/foo/bar-baz.js')).to.equal(fixture('helper.js'));
         expect(_file('app/helpers/foo/bar-baz.js')).to.equal(fixture('helper-addon.js'));
         expect(_file('tests/integration/helpers/foo/bar-baz-test.js')).to.equal(
-          fixture('helper-test/integration.js')
+          fixture('helper-test/rfc232.js')
         );
       });
     });
@@ -131,25 +138,33 @@ describe('Blueprint: helper', function() {
 
   describe('in addon - module unification', function() {
     beforeEach(function() {
-      return emberNew({ target: 'addon' }).then(() => fs.ensureDirSync('src'));
+      return emberNew({ target: 'addon', isModuleUnification: true });
     });
 
     it('helper foo/bar-baz', function() {
-      return emberGenerateDestroy(['helper', 'foo/bar-baz'], _file => {
-        expect(_file('src/ui/components/foo/bar-baz.js')).to.equal(fixture('helper.js'));
-        expect(_file('src/ui/components/foo/bar-baz-test.js')).to.equal(
-          fixture('helper-test/integration.js')
-        );
-      });
+      return emberGenerateDestroy(
+        ['helper', 'foo/bar-baz'],
+        _file => {
+          expect(_file('src/ui/components/foo/bar-baz.js')).to.equal(fixture('helper.js'));
+          expect(_file('src/ui/components/foo/bar-baz-test.js')).to.equal(
+            fixture('helper-test/rfc232.js')
+          );
+        },
+        { isModuleUnification: true }
+      );
     });
 
     it('helper foo/bar-baz unit', function() {
-      return emberGenerateDestroy(['helper', '--test-type=unit', 'foo/bar-baz'], _file => {
-        expect(_file('src/ui/components/foo/bar-baz.js')).to.equal(fixture('helper.js'));
-        expect(_file('src/ui/components/foo/bar-baz-test.js')).to.equal(
-          fixture('helper-test/module-unification/addon-unit.js')
-        );
-      });
+      return emberGenerateDestroy(
+        ['helper', '--test-type=unit', 'foo/bar-baz'],
+        _file => {
+          expect(_file('src/ui/components/foo/bar-baz.js')).to.equal(fixture('helper.js'));
+          expect(_file('src/ui/components/foo/bar-baz-test.js')).to.equal(
+            fixture('helper-test/module-unification/addon-rfc232-unit.js')
+          );
+        },
+        { isModuleUnification: true }
+      );
     });
   });
 
@@ -165,7 +180,7 @@ describe('Blueprint: helper', function() {
           fixture('helper-addon.js')
         );
         expect(_file('tests/integration/helpers/foo/bar-baz-test.js')).to.equal(
-          fixture('helper-test/integration.js')
+          fixture('helper-test/rfc232.js')
         );
       });
     });
@@ -173,18 +188,22 @@ describe('Blueprint: helper', function() {
 
   describe('in in-repo-addon - module unification', function() {
     beforeEach(function() {
-      return emberNew({ target: 'in-repo-addon' }).then(() => fs.ensureDirSync('src'));
+      return emberNew({ target: 'in-repo-addon', isModuleUnification: true });
     });
 
     it('helper foo/bar-baz --in-repo-addon=my-addon', function() {
-      return emberGenerateDestroy(['helper', 'foo/bar-baz', '--in-repo-addon=my-addon'], _file => {
-        expect(_file('packages/my-addon/src/ui/components/foo/bar-baz.js')).to.equal(
-          fixture('helper.js')
-        );
-        expect(_file('packages/my-addon/src/ui/components/foo/bar-baz-test.js')).to.equal(
-          fixture('helper-test/integration.js')
-        );
-      });
+      return emberGenerateDestroy(
+        ['helper', 'foo/bar-baz', '--in-repo-addon=my-addon'],
+        _file => {
+          expect(_file('packages/my-addon/src/ui/components/foo/bar-baz.js')).to.equal(
+            fixture('helper.js')
+          );
+          expect(_file('packages/my-addon/src/ui/components/foo/bar-baz-test.js')).to.equal(
+            fixture('helper-test/rfc232.js')
+          );
+        },
+        { isModuleUnification: true }
+      );
     });
 
     it('helper foo/bar-baz unit --in-repo-addon=my-addon', function() {
@@ -195,9 +214,10 @@ describe('Blueprint: helper', function() {
             fixture('helper.js')
           );
           expect(_file('packages/my-addon/src/ui/components/foo/bar-baz-test.js')).to.equal(
-            fixture('helper-test/module-unification/addon-unit.js')
+            fixture('helper-test/module-unification/addon-rfc232-unit.js')
           );
-        }
+        },
+        { isModuleUnification: true }
       );
     });
   });

@@ -4,12 +4,12 @@ const blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
 const setupTestHooks = blueprintHelpers.setupTestHooks;
 const emberNew = blueprintHelpers.emberNew;
 const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
+const emberGenerate = blueprintHelpers.emberGenerate;
 const setupPodConfig = blueprintHelpers.setupPodConfig;
 const expectError = require('../helpers/expect-error');
 
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
-const fs = require('fs-extra');
 
 describe('Blueprint: mixin', function() {
   setupTestHooks(this);
@@ -116,48 +116,60 @@ describe('Blueprint: mixin', function() {
 
   describe('in app - module unification', function() {
     beforeEach(function() {
-      return emberNew().then(() => fs.ensureDirSync('src'));
+      return emberNew({ isModuleUnification: true });
     });
 
     it('mixin foo', function() {
-      return emberGenerateDestroy(['mixin', 'foo'], _file => {
-        expect(_file('src/mixins/foo.js'))
-          .to.contain("import Mixin from '@ember/object/mixin';")
-          .to.contain('export default Mixin.create({\n});');
+      return emberGenerateDestroy(
+        ['mixin', 'foo'],
+        _file => {
+          expect(_file('src/mixins/foo.js'))
+            .to.contain("import Mixin from '@ember/object/mixin';")
+            .to.contain('export default Mixin.create({\n});');
 
-        expect(_file('src/mixins/foo-test.js')).to.contain(
-          "import FooMixin from 'my-app/mixins/foo';"
-        );
-      });
+          expect(_file('src/mixins/foo-test.js')).to.contain(
+            "import FooMixin from 'my-app/mixins/foo';"
+          );
+        },
+        { isModuleUnification: true }
+      );
     });
 
     it('mixin foo/bar', function() {
-      return emberGenerateDestroy(['mixin', 'foo/bar'], _file => {
-        expect(_file('src/mixins/foo/bar.js'))
-          .to.contain("import Mixin from '@ember/object/mixin';")
-          .to.contain('export default Mixin.create({\n});');
+      return emberGenerateDestroy(
+        ['mixin', 'foo/bar'],
+        _file => {
+          expect(_file('src/mixins/foo/bar.js'))
+            .to.contain("import Mixin from '@ember/object/mixin';")
+            .to.contain('export default Mixin.create({\n});');
 
-        expect(_file('src/mixins/foo/bar-test.js')).to.contain(
-          "import FooBarMixin from 'my-app/mixins/foo/bar';"
-        );
-      });
+          expect(_file('src/mixins/foo/bar-test.js')).to.contain(
+            "import FooBarMixin from 'my-app/mixins/foo/bar';"
+          );
+        },
+        { isModuleUnification: true }
+      );
     });
 
     it('mixin foo/bar/baz', function() {
-      return emberGenerateDestroy(['mixin', 'foo/bar/baz'], _file => {
-        expect(_file('src/mixins/foo/bar/baz.js'))
-          .to.contain("import Mixin from '@ember/object/mixin';")
-          .to.contain('export default Mixin.create({\n});');
+      return emberGenerateDestroy(
+        ['mixin', 'foo/bar/baz'],
+        _file => {
+          expect(_file('src/mixins/foo/bar/baz.js'))
+            .to.contain("import Mixin from '@ember/object/mixin';")
+            .to.contain('export default Mixin.create({\n});');
 
-        expect(_file('src/mixins/foo/bar/baz-test.js')).to.contain(
-          "import FooBarBazMixin from 'my-app/mixins/foo/bar/baz';"
-        );
-      });
+          expect(_file('src/mixins/foo/bar/baz-test.js')).to.contain(
+            "import FooBarBazMixin from 'my-app/mixins/foo/bar/baz';"
+          );
+        },
+        { isModuleUnification: true }
+      );
     });
 
     it('mixin foo --pod', function() {
       return expectError(
-        emberGenerateDestroy(['service', 'foo', '--pod']),
+        emberGenerate(['service', 'foo', '--pod'], { isModuleUnification: true }),
         "Pods aren't supported within a module unification app"
       );
     });
@@ -213,43 +225,55 @@ describe('Blueprint: mixin', function() {
 
   describe('in addon - module unification', function() {
     beforeEach(function() {
-      return emberNew({ target: 'addon' }).then(() => fs.ensureDirSync('src'));
+      return emberNew({ target: 'addon', isModuleUnification: true });
     });
 
     it('mixin foo', function() {
-      return emberGenerateDestroy(['mixin', 'foo'], _file => {
-        expect(_file('src/mixins/foo.js'))
-          .to.contain("import Mixin from '@ember/object/mixin';")
-          .to.contain('export default Mixin.create({\n});');
+      return emberGenerateDestroy(
+        ['mixin', 'foo'],
+        _file => {
+          expect(_file('src/mixins/foo.js'))
+            .to.contain("import Mixin from '@ember/object/mixin';")
+            .to.contain('export default Mixin.create({\n});');
 
-        expect(_file('src/mixins/foo-test.js')).to.contain(
-          "import FooMixin from 'my-addon/mixins/foo';"
-        );
-      });
+          expect(_file('src/mixins/foo-test.js')).to.contain(
+            "import FooMixin from 'my-addon/mixins/foo';"
+          );
+        },
+        { isModuleUnification: true }
+      );
     });
 
     it('mixin foo/bar', function() {
-      return emberGenerateDestroy(['mixin', 'foo/bar'], _file => {
-        expect(_file('src/mixins/foo/bar.js'))
-          .to.contain("import Mixin from '@ember/object/mixin';")
-          .to.contain('export default Mixin.create({\n});');
+      return emberGenerateDestroy(
+        ['mixin', 'foo/bar'],
+        _file => {
+          expect(_file('src/mixins/foo/bar.js'))
+            .to.contain("import Mixin from '@ember/object/mixin';")
+            .to.contain('export default Mixin.create({\n});');
 
-        expect(_file('src/mixins/foo/bar-test.js')).to.contain(
-          "import FooBarMixin from 'my-addon/mixins/foo/bar';"
-        );
-      });
+          expect(_file('src/mixins/foo/bar-test.js')).to.contain(
+            "import FooBarMixin from 'my-addon/mixins/foo/bar';"
+          );
+        },
+        { isModuleUnification: true }
+      );
     });
 
     it('mixin foo/bar/baz', function() {
-      return emberGenerateDestroy(['mixin', 'foo/bar/baz'], _file => {
-        expect(_file('src/mixins/foo/bar/baz.js'))
-          .to.contain("import Mixin from '@ember/object/mixin';")
-          .to.contain('export default Mixin.create({\n});');
+      return emberGenerateDestroy(
+        ['mixin', 'foo/bar/baz'],
+        _file => {
+          expect(_file('src/mixins/foo/bar/baz.js'))
+            .to.contain("import Mixin from '@ember/object/mixin';")
+            .to.contain('export default Mixin.create({\n});');
 
-        expect(_file('src/mixins/foo/bar/baz-test.js')).to.contain(
-          "import FooBarBazMixin from 'my-addon/mixins/foo/bar/baz';"
-        );
-      });
+          expect(_file('src/mixins/foo/bar/baz-test.js')).to.contain(
+            "import FooBarBazMixin from 'my-addon/mixins/foo/bar/baz';"
+          );
+        },
+        { isModuleUnification: true }
+      );
     });
   });
 

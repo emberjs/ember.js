@@ -8,7 +8,6 @@ const setupPodConfig = blueprintHelpers.setupPodConfig;
 
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
-const fs = require('fs-extra');
 
 const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
 const fixture = require('../helpers/fixture');
@@ -28,7 +27,7 @@ describe('Blueprint: component', function() {
         expect(_file('app/templates/components/foo.hbs')).to.equal('{{yield}}');
 
         expect(_file('tests/integration/components/foo-test.js')).to.equal(
-          fixture('component-test/default-template.js', {
+          fixture('component-test/rfc232-template.js', {
             replace: {
               component: 'foo',
             },
@@ -44,7 +43,7 @@ describe('Blueprint: component', function() {
         expect(_file('app/templates/components/x-foo.hbs')).to.equal('{{yield}}');
 
         expect(_file('tests/integration/components/x-foo-test.js')).to.equal(
-          fixture('component-test/default-template.js', {
+          fixture('component-test/rfc232-template.js', {
             replace: {
               component: 'x-foo',
             },
@@ -62,7 +61,7 @@ describe('Blueprint: component', function() {
         expect(_file('app/templates/components/foo/x-foo.hbs')).to.equal('{{yield}}');
 
         expect(_file('tests/integration/components/foo/x-foo-test.js')).to.equal(
-          fixture('component-test/default-template.js', {
+          fixture('component-test/rfc232-template.js', {
             replace: {
               component: 'foo/x-foo',
             },
@@ -78,7 +77,7 @@ describe('Blueprint: component', function() {
         expect(_file('app/templates/components/x-foo.hbs')).to.equal('{{yield}}');
 
         expect(_file('tests/integration/components/x-foo-test.js')).to.equal(
-          fixture('component-test/default-template.js', {
+          fixture('component-test/rfc232-template.js', {
             replace: {
               component: 'x-foo',
             },
@@ -96,7 +95,7 @@ describe('Blueprint: component', function() {
         expect(_file('app/components/x-foo/template.hbs')).to.equal('{{yield}}');
 
         expect(_file('tests/integration/components/x-foo/component-test.js')).to.equal(
-          fixture('component-test/default-template.js', {
+          fixture('component-test/rfc232-template.js', {
             replace: {
               component: 'x-foo',
             },
@@ -114,7 +113,7 @@ describe('Blueprint: component', function() {
         expect(_file('app/components/foo/x-foo/template.hbs')).to.equal('{{yield}}');
 
         expect(_file('tests/integration/components/foo/x-foo/component-test.js')).to.equal(
-          fixture('component-test/default-template.js', {
+          fixture('component-test/rfc232-template.js', {
             replace: {
               component: 'foo/x-foo',
             },
@@ -132,7 +131,7 @@ describe('Blueprint: component', function() {
         expect(_file('app/foo/x-foo/template.hbs')).to.equal('{{yield}}');
 
         expect(_file('tests/integration/foo/x-foo/component-test.js')).to.equal(
-          fixture('component-test/default-template.js', {
+          fixture('component-test/rfc232-template.js', {
             replace: {
               component: 'x-foo',
               path: 'foo/',
@@ -151,7 +150,7 @@ describe('Blueprint: component', function() {
         expect(_file('app/bar/foo/x-foo/template.hbs')).to.equal('{{yield}}');
 
         expect(_file('tests/integration/bar/foo/x-foo/component-test.js')).to.equal(
-          fixture('component-test/default-template.js', {
+          fixture('component-test/rfc232-template.js', {
             replace: {
               component: 'foo/x-foo',
               path: 'bar/',
@@ -170,7 +169,7 @@ describe('Blueprint: component', function() {
         expect(_file('app/bar/foo/x-foo/template.hbs')).to.equal('{{yield}}');
 
         expect(_file('tests/integration/bar/foo/x-foo/component-test.js')).to.equal(
-          fixture('component-test/default-template.js', {
+          fixture('component-test/rfc232-template.js', {
             replace: {
               component: 'x-foo',
               path: 'bar/foo/',
@@ -191,7 +190,7 @@ describe('Blueprint: component', function() {
           expect(_file('app/bar/baz/foo/x-foo/template.hbs')).to.equal('{{yield}}');
 
           expect(_file('tests/integration/bar/baz/foo/x-foo/component-test.js')).to.equal(
-            fixture('component-test/default-template.js', {
+            fixture('component-test/rfc232-template.js', {
               replace: {
                 component: 'foo/x-foo',
                 path: 'bar/baz/',
@@ -209,7 +208,7 @@ describe('Blueprint: component', function() {
         expect(_file('app/x-foo/template.hbs')).to.equal('{{yield}}');
 
         expect(_file('tests/integration/x-foo/component-test.js')).to.equal(
-          fixture('component-test/default-template.js', {
+          fixture('component-test/rfc232-template.js', {
             replace: {
               component: 'x-foo',
             },
@@ -227,7 +226,7 @@ describe('Blueprint: component', function() {
         expect(_file('app/foo/x-foo/template.hbs')).to.equal('{{yield}}');
 
         expect(_file('tests/integration/foo/x-foo/component-test.js')).to.equal(
-          fixture('component-test/default-template.js', {
+          fixture('component-test/rfc232-template.js', {
             replace: {
               component: 'foo/x-foo',
             },
@@ -250,7 +249,7 @@ describe('Blueprint: component', function() {
           expect(_file('app/pods/components/foo/template.hbs')).to.equal('{{yield}}');
 
           expect(_file('tests/integration/pods/components/foo/component-test.js')).to.equal(
-            fixture('component-test/default-template.js', {
+            fixture('component-test/rfc232-template.js', {
               replace: {
                 component: 'foo',
               },
@@ -268,7 +267,7 @@ describe('Blueprint: component', function() {
           expect(_file('app/pods/components/x-foo/template.hbs')).to.equal('{{yield}}');
 
           expect(_file('tests/integration/pods/components/x-foo/component-test.js')).to.equal(
-            fixture('component-test/default-template.js', {
+            fixture('component-test/rfc232-template.js', {
               replace: {
                 component: 'x-foo',
               },
@@ -286,7 +285,7 @@ describe('Blueprint: component', function() {
           expect(_file('app/pods/components/foo/x-foo/template.hbs')).to.equal('{{yield}}');
 
           expect(_file('tests/integration/pods/components/foo/x-foo/component-test.js')).to.equal(
-            fixture('component-test/default-template.js', {
+            fixture('component-test/rfc232-template.js', {
               replace: {
                 component: 'foo/x-foo',
               },
@@ -304,7 +303,7 @@ describe('Blueprint: component', function() {
           expect(_file('app/pods/foo/x-foo/template.hbs')).to.equal('{{yield}}');
 
           expect(_file('tests/integration/pods/foo/x-foo/component-test.js')).to.equal(
-            fixture('component-test/default-template.js', {
+            fixture('component-test/rfc232-template.js', {
               replace: {
                 component: 'x-foo',
                 path: 'foo/',
@@ -323,7 +322,7 @@ describe('Blueprint: component', function() {
           expect(_file('app/pods/bar/foo/x-foo/template.hbs')).to.equal('{{yield}}');
 
           expect(_file('tests/integration/pods/bar/foo/x-foo/component-test.js')).to.equal(
-            fixture('component-test/default-template.js', {
+            fixture('component-test/rfc232-template.js', {
               replace: {
                 component: 'foo/x-foo',
                 path: 'bar/',
@@ -342,7 +341,7 @@ describe('Blueprint: component', function() {
           expect(_file('app/pods/bar/foo/x-foo/template.hbs')).to.equal('{{yield}}');
 
           expect(_file('tests/integration/pods/bar/foo/x-foo/component-test.js')).to.equal(
-            fixture('component-test/default-template.js', {
+            fixture('component-test/rfc232-template.js', {
               replace: {
                 component: 'x-foo',
                 path: 'bar/foo/',
@@ -363,7 +362,7 @@ describe('Blueprint: component', function() {
             expect(_file('app/pods/bar/baz/foo/x-foo/template.hbs')).to.equal('{{yield}}');
 
             expect(_file('tests/integration/pods/bar/baz/foo/x-foo/component-test.js')).to.equal(
-              fixture('component-test/default-template.js', {
+              fixture('component-test/rfc232-template.js', {
                 replace: {
                   component: 'foo/x-foo',
                   path: 'bar/baz/',
@@ -383,7 +382,7 @@ describe('Blueprint: component', function() {
           expect(_file('app/pods/x-foo/template.hbs')).to.equal('{{yield}}');
 
           expect(_file('tests/integration/pods/x-foo/component-test.js')).to.equal(
-            fixture('component-test/default-template.js', {
+            fixture('component-test/rfc232-template.js', {
               replace: {
                 component: 'x-foo',
               },
@@ -401,7 +400,7 @@ describe('Blueprint: component', function() {
           expect(_file('app/pods/foo/x-foo/template.hbs')).to.equal('{{yield}}');
 
           expect(_file('tests/integration/pods/foo/x-foo/component-test.js')).to.equal(
-            fixture('component-test/default-template.js', {
+            fixture('component-test/rfc232-template.js', {
               replace: {
                 component: 'foo/x-foo',
               },
@@ -411,66 +410,77 @@ describe('Blueprint: component', function() {
       });
     });
   });
-
   describe('in app - module unification', function() {
     beforeEach(function() {
-      return emberNew()
-        .then(() => fs.ensureDirSync('src'))
-        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
+      return emberNew({ isModuleUnification: true }).then(() =>
+        generateFakePackageManifest('ember-cli-qunit', '4.1.0')
+      );
     });
 
     it('component foo', function() {
-      return emberGenerateDestroy(['component', 'foo'], _file => {
-        expect(_file('src/ui/components/foo/component.js')).to.equal(
-          fixture('component/component.js')
-        );
+      return emberGenerateDestroy(
+        ['component', 'foo'],
+        _file => {
+          expect(_file('src/ui/components/foo/component.js')).to.equal(
+            fixture('component/component.js')
+          );
 
-        expect(_file('src/ui/components/foo/template.hbs')).to.equal('{{yield}}');
+          expect(_file('src/ui/components/foo/template.hbs')).to.equal('{{yield}}');
 
-        expect(_file('src/ui/components/foo/component-test.js')).to.equal(
-          fixture('component-test/default-template.js', {
-            replace: {
-              component: 'foo',
-            },
-          })
-        );
-      });
+          expect(_file('src/ui/components/foo/component-test.js')).to.equal(
+            fixture('component-test/rfc232-template.js', {
+              replace: {
+                component: 'foo',
+              },
+            })
+          );
+        },
+        { isModuleUnification: true }
+      );
     });
 
     it('component x-foo', function() {
-      return emberGenerateDestroy(['component', 'x-foo'], _file => {
-        expect(_file('src/ui/components/x-foo/component.js')).to.equal(
-          fixture('component/component-dash.js')
-        );
+      return emberGenerateDestroy(
+        ['component', 'x-foo'],
+        _file => {
+          expect(_file('src/ui/components/x-foo/component.js')).to.equal(
+            fixture('component/component-dash.js')
+          );
 
-        expect(_file('src/ui/components/x-foo/template.hbs')).to.equal('{{yield}}');
+          expect(_file('src/ui/components/x-foo/template.hbs')).to.equal('{{yield}}');
 
-        expect(_file('src/ui/components/x-foo/component-test.js')).to.equal(
-          fixture('component-test/default-template.js', {
-            replace: {
-              component: 'x-foo',
-            },
-          })
-        );
-      });
+          expect(_file('src/ui/components/x-foo/component-test.js')).to.equal(
+            fixture('component-test/rfc232-template.js', {
+              replace: {
+                component: 'x-foo',
+              },
+            })
+          );
+        },
+        { isModuleUnification: true }
+      );
     });
 
     it('component foo/x-foo', function() {
-      return emberGenerateDestroy(['component', 'foo/x-foo'], _file => {
-        expect(_file('src/ui/components/foo/x-foo/component.js')).to.equal(
-          fixture('component/component-nested.js')
-        );
+      return emberGenerateDestroy(
+        ['component', 'foo/x-foo'],
+        _file => {
+          expect(_file('src/ui/components/foo/x-foo/component.js')).to.equal(
+            fixture('component/component-nested.js')
+          );
 
-        expect(_file('src/ui/components/foo/x-foo/template.hbs')).to.equal('{{yield}}');
+          expect(_file('src/ui/components/foo/x-foo/template.hbs')).to.equal('{{yield}}');
 
-        expect(_file('src/ui/components/foo/x-foo/component-test.js')).to.equal(
-          fixture('component-test/default-template.js', {
-            replace: {
-              component: 'foo/x-foo',
-            },
-          })
-        );
-      });
+          expect(_file('src/ui/components/foo/x-foo/component-test.js')).to.equal(
+            fixture('component-test/rfc232-template.js', {
+              replace: {
+                component: 'foo/x-foo',
+              },
+            })
+          );
+        },
+        { isModuleUnification: true }
+      );
     });
   });
 
@@ -492,7 +502,7 @@ describe('Blueprint: component', function() {
         );
 
         expect(_file('tests/integration/components/foo-test.js')).to.equal(
-          fixture('component-test/default-template.js', {
+          fixture('component-test/rfc232-template.js', {
             replace: {
               component: 'foo',
             },
@@ -514,7 +524,7 @@ describe('Blueprint: component', function() {
         );
 
         expect(_file('tests/integration/components/x-foo-test.js')).to.equal(
-          fixture('component-test/default-template.js', {
+          fixture('component-test/rfc232-template.js', {
             replace: {
               component: 'x-foo',
             },
@@ -536,7 +546,7 @@ describe('Blueprint: component', function() {
         );
 
         expect(_file('tests/integration/components/foo/x-foo-test.js')).to.equal(
-          fixture('component-test/default-template.js', {
+          fixture('component-test/rfc232-template.js', {
             replace: {
               component: 'foo/x-foo',
             },
@@ -586,7 +596,7 @@ describe('Blueprint: component', function() {
         );
 
         expect(_file('tests/integration/components/x-foo/component-test.js')).to.equal(
-          fixture('component-test/default-template.js', {
+          fixture('component-test/rfc232-template.js', {
             replace: {
               component: 'x-foo',
             },
@@ -598,94 +608,116 @@ describe('Blueprint: component', function() {
 
   describe('in addon - module unification', function() {
     beforeEach(function() {
-      return emberNew({ target: 'addon' })
-        .then(() => fs.ensureDirSync('src'))
-        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
+      return emberNew({ target: 'addon', isModuleUnification: true }).then(() =>
+        generateFakePackageManifest('ember-cli-qunit', '4.1.0')
+      );
     });
 
     it('component foo', function() {
-      return emberGenerateDestroy(['component', 'foo'], _file => {
-        expect(_file('src/ui/components/foo/component.js')).to.equal(
-          fixture('component/component.js')
-        );
+      return emberGenerateDestroy(
+        ['component', 'foo'],
+        _file => {
+          expect(_file('src/ui/components/foo/component.js')).to.equal(
+            fixture('component/component.js')
+          );
 
-        expect(_file('src/ui/components/foo/template.hbs')).to.equal('{{yield}}');
+          expect(_file('src/ui/components/foo/template.hbs')).to.equal('{{yield}}');
 
-        expect(_file('src/ui/components/foo/component-test.js')).to.equal(
-          fixture('component-test/default-template.js', {
-            replace: {
-              component: 'foo',
-              path: 'my-addon::',
-            },
-          })
-        );
-      });
+          expect(_file('src/ui/components/foo/component-test.js')).to.equal(
+            fixture('component-test/rfc232-template.js', {
+              replace: {
+                component: 'foo',
+                path: 'my-addon::',
+              },
+            })
+          );
+        },
+        { isModuleUnification: true }
+      );
     });
 
     it('component x-foo', function() {
-      return emberGenerateDestroy(['component', 'x-foo'], _file => {
-        expect(_file('src/ui/components/x-foo/component.js')).to.equal(
-          fixture('component/component-dash.js')
-        );
+      return emberGenerateDestroy(
+        ['component', 'x-foo'],
+        _file => {
+          expect(_file('src/ui/components/x-foo/component.js')).to.equal(
+            fixture('component/component-dash.js')
+          );
 
-        expect(_file('src/ui/components/x-foo/template.hbs')).to.equal('{{yield}}');
+          expect(_file('src/ui/components/x-foo/template.hbs')).to.equal('{{yield}}');
 
-        expect(_file('src/ui/components/x-foo/component-test.js')).to.equal(
-          fixture('component-test/default-template.js', {
-            replace: {
-              component: 'x-foo',
-              path: 'my-addon::',
-            },
-          })
-        );
-      });
+          expect(_file('src/ui/components/x-foo/component-test.js')).to.equal(
+            fixture('component-test/rfc232-template.js', {
+              replace: {
+                component: 'x-foo',
+                path: 'my-addon::',
+              },
+            })
+          );
+        },
+        { isModuleUnification: true }
+      );
     });
 
     it('component foo/x-foo', function() {
-      return emberGenerateDestroy(['component', 'foo/x-foo'], _file => {
-        expect(_file('src/ui/components/foo/x-foo/component.js')).to.equal(
-          fixture('component/component-nested.js')
-        );
+      return emberGenerateDestroy(
+        ['component', 'foo/x-foo'],
+        _file => {
+          expect(_file('src/ui/components/foo/x-foo/component.js')).to.equal(
+            fixture('component/component-nested.js')
+          );
 
-        expect(_file('src/ui/components/foo/x-foo/template.hbs')).to.equal('{{yield}}');
+          expect(_file('src/ui/components/foo/x-foo/template.hbs')).to.equal('{{yield}}');
 
-        expect(_file('src/ui/components/foo/x-foo/component-test.js')).to.equal(
-          fixture('component-test/default-template.js', {
-            replace: {
-              component: 'foo/x-foo',
-              path: 'my-addon::',
-            },
-          })
-        );
-      });
+          expect(_file('src/ui/components/foo/x-foo/component-test.js')).to.equal(
+            fixture('component-test/rfc232-template.js', {
+              replace: {
+                component: 'foo/x-foo',
+                path: 'my-addon::',
+              },
+            })
+          );
+        },
+        { isModuleUnification: true }
+      );
     });
 
     it('component x-foo --dummy', function() {
-      return emberGenerateDestroy(['component', 'x-foo', '--dummy'], _file => {
-        expect(_file('tests/dummy/src/ui/components/x-foo/component.js')).to.equal(
-          fixture('component/component-dash.js')
-        );
+      return emberGenerateDestroy(
+        ['component', 'x-foo', '--dummy'],
+        _file => {
+          expect(_file('tests/dummy/src/ui/components/x-foo/component.js')).to.equal(
+            fixture('component/component-dash.js')
+          );
 
-        expect(_file('tests/dummy/src/ui/components/x-foo/template.hbs')).to.equal('{{yield}}');
+          expect(_file('tests/dummy/src/ui/components/x-foo/template.hbs')).to.equal('{{yield}}');
 
-        expect(_file('src/ui/components/x-foo/component.js')).to.not.exist;
+          expect(_file('src/ui/components/x-foo/component.js')).to.not.exist;
 
-        expect(_file('src/ui/components/x-foo/component-test.js')).to.not.exist;
-      });
+          expect(_file('src/ui/components/x-foo/component-test.js')).to.not.exist;
+        },
+        { isModuleUnification: true }
+      );
     });
 
     it('component foo/x-foo --dummy', function() {
-      return emberGenerateDestroy(['component', 'foo/x-foo', '--dummy'], _file => {
-        expect(_file('tests/dummy/src/ui/components/foo/x-foo/component.js')).to.equal(
-          fixture('component/component-nested.js')
-        );
+      return emberGenerateDestroy(
+        ['component', 'foo/x-foo', '--dummy'],
+        _file => {
+          expect(_file('tests/dummy/src/ui/components/foo/x-foo/component.js')).to.equal(
+            fixture('component/component-nested.js')
+          );
 
-        expect(_file('tests/dummy/src/ui/components/foo/x-foo/template.hbs')).to.equal('{{yield}}');
+          expect(_file('tests/dummy/src/ui/components/foo/x-foo/template.hbs')).to.equal(
+            '{{yield}}'
+          );
 
-        expect(_file('src/ui/components/foo/x-foo/component.js')).to.not.exist;
+          expect(_file('src/ui/components/foo/x-foo/component.js')).to.not.exist;
 
-        expect(_file('src/ui/components/foo/x-foo/component-test.js')).to.not.exist;
-      });
+          expect(_file('src/ui/components/foo/x-foo/component-test.js')).to.not.exist;
+        },
+        { isModuleUnification: true }
+      );
     });
   });
 
@@ -709,7 +741,7 @@ describe('Blueprint: component', function() {
         );
 
         expect(_file('tests/integration/components/foo-test.js')).to.equal(
-          fixture('component-test/default-template.js', {
+          fixture('component-test/rfc232-template.js', {
             replace: {
               component: 'foo',
             },
@@ -731,7 +763,7 @@ describe('Blueprint: component', function() {
         );
 
         expect(_file('tests/integration/components/x-foo-test.js')).to.equal(
-          fixture('component-test/default-template.js', {
+          fixture('component-test/rfc232-template.js', {
             replace: {
               component: 'x-foo',
             },
@@ -755,7 +787,7 @@ describe('Blueprint: component', function() {
         );
 
         expect(_file('tests/integration/components/foo/x-foo-test.js')).to.equal(
-          fixture('component-test/default-template.js', {
+          fixture('component-test/rfc232-template.js', {
             replace: {
               component: 'foo/x-foo',
             },
@@ -779,7 +811,7 @@ describe('Blueprint: component', function() {
           );
 
           expect(_file('tests/integration/components/x-foo/component-test.js')).to.equal(
-            fixture('component-test/default-template.js', {
+            fixture('component-test/rfc232-template.js', {
               replace: {
                 component: 'x-foo',
               },
@@ -806,7 +838,7 @@ describe('Blueprint: component', function() {
           );
 
           expect(_file('tests/integration/components/foo/x-foo/component-test.js')).to.equal(
-            fixture('component-test/default-template.js', {
+            fixture('component-test/rfc232-template.js', {
               replace: {
                 component: 'foo/x-foo',
               },
@@ -819,49 +851,59 @@ describe('Blueprint: component', function() {
 
   describe('in in-repo-addon - module unification', function() {
     beforeEach(function() {
-      return emberNew({ target: 'in-repo-addon' })
-        .then(() => fs.ensureDirSync('src'))
-        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
+      return emberNew({ target: 'in-repo-addon', isModuleUnification: true }).then(() =>
+        generateFakePackageManifest('ember-cli-qunit', '4.1.0')
+      );
     });
 
     it('component foo --in-repo-addon=my-addon', function() {
-      return emberGenerateDestroy(['component', 'foo', '--in-repo-addon=my-addon'], _file => {
-        expect(_file('packages/my-addon/src/ui/components/foo/component.js')).to.equal(
-          fixture('component/component.js')
-        );
+      return emberGenerateDestroy(
+        ['component', 'foo', '--in-repo-addon=my-addon'],
+        _file => {
+          expect(_file('packages/my-addon/src/ui/components/foo/component.js')).to.equal(
+            fixture('component/component.js')
+          );
 
-        expect(_file('packages/my-addon/src/ui/components/foo/template.hbs')).to.equal('{{yield}}');
+          expect(_file('packages/my-addon/src/ui/components/foo/template.hbs')).to.equal(
+            '{{yield}}'
+          );
 
-        expect(_file('packages/my-addon/src/ui/components/foo/component-test.js')).to.equal(
-          fixture('component-test/default-template.js', {
-            replace: {
-              component: 'foo',
-              path: 'my-addon::',
-            },
-          })
-        );
-      });
+          expect(_file('packages/my-addon/src/ui/components/foo/component-test.js')).to.equal(
+            fixture('component-test/rfc232-template.js', {
+              replace: {
+                component: 'foo',
+                path: 'my-addon::',
+              },
+            })
+          );
+        },
+        { isModuleUnification: true }
+      );
     });
 
     it('component x-foo --in-repo-addon=my-addon', function() {
-      return emberGenerateDestroy(['component', 'x-foo', '--in-repo-addon=my-addon'], _file => {
-        expect(_file('packages/my-addon/src/ui/components/x-foo/component.js')).to.equal(
-          fixture('component/component-dash.js')
-        );
+      return emberGenerateDestroy(
+        ['component', 'x-foo', '--in-repo-addon=my-addon'],
+        _file => {
+          expect(_file('packages/my-addon/src/ui/components/x-foo/component.js')).to.equal(
+            fixture('component/component-dash.js')
+          );
 
-        expect(_file('packages/my-addon/src/ui/components/x-foo/template.hbs')).to.equal(
-          '{{yield}}'
-        );
+          expect(_file('packages/my-addon/src/ui/components/x-foo/template.hbs')).to.equal(
+            '{{yield}}'
+          );
 
-        expect(_file('packages/my-addon/src/ui/components/x-foo/component-test.js')).to.equal(
-          fixture('component-test/default-template.js', {
-            replace: {
-              component: 'x-foo',
-              path: 'my-addon::',
-            },
-          })
-        );
-      });
+          expect(_file('packages/my-addon/src/ui/components/x-foo/component-test.js')).to.equal(
+            fixture('component-test/rfc232-template.js', {
+              replace: {
+                component: 'x-foo',
+                path: 'my-addon::',
+              },
+            })
+          );
+        },
+        { isModuleUnification: true }
+      );
     });
   });
 });
