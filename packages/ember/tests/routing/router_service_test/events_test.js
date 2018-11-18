@@ -580,7 +580,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
       }
 
       '@test nested params'(assert) {
-        assert.expect(24);
+        assert.expect(30);
         let initial = true;
 
         this.add(
@@ -592,7 +592,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
               } else {
                 assert.deepEqual(params, { dynamic_id: '456' });
               }
-              return params;
+              return params.dynamic_id;
             },
           })
         );
@@ -602,7 +602,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
           Route.extend({
             model(params) {
               assert.deepEqual(params, { child_id: '456' });
-              return params;
+              return params.child_id;
             },
           })
         );
@@ -622,6 +622,8 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
                 if (initial) {
                   assert.deepEqual(transition.to.parent.params, { dynamic_id: '123' });
                 } else {
+                  assert.deepEqual(transition.from.attributes, '456');
+                  assert.deepEqual(transition.from.parent.attributes, '123');
                   assert.deepEqual(transition.to.parent.params, { dynamic_id: '456' });
                 }
               });
@@ -634,6 +636,10 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
                 if (initial) {
                   assert.deepEqual(transition.to.parent.params, { dynamic_id: '123' });
                 } else {
+                  assert.deepEqual(transition.from.attributes, '456');
+                  assert.deepEqual(transition.from.parent.attributes, '123');
+                  assert.deepEqual(transition.to.attributes, '456');
+                  assert.deepEqual(transition.to.parent.attributes, '456');
                   assert.deepEqual(transition.to.parent.params, { dynamic_id: '456' });
                 }
               });
