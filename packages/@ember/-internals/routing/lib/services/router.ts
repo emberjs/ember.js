@@ -289,7 +289,9 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
      A RouteInfo that represents the current leaf route.
      It is guaranteed to change whenever a route transition
      happens (even when that transition only changes parameters
-     and doesn't change the active route)
+     and doesn't change the active route).
+     This property may be observed for changes, as public API.
+     However, its _value_ is private API, and should not be depended on.
 
      @property currentRoute
      @type RouteInfo
