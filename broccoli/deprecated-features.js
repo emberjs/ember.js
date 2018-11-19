@@ -93,10 +93,6 @@ function svelte(infile, outfile) {
     ],
   });
 
-  code = babel.transform(code, {
-    plugins: ['minify-dead-code-elimination'],
-  }).code;
-
   fs.writeFileSync(outfile, code);
 }
 
