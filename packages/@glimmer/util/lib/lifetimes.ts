@@ -16,6 +16,8 @@ export const DESTRUCTORS = new WeakMap();
 
 export interface Drop {
   [DROP](): void;
+
+  // Debug only
   [CHILDREN]: Iterable<Drop>;
 }
 
