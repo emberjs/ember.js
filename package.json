@@ -1,8 +1,7 @@
 {
   "name": "glimmer-engine",
   "version": "0.36.5",
-  "description":
-    "Glimmer compiles Handlebars templates into document fragments rather than string buffers",
+  "description": "Glimmer compiles Handlebars templates into document fragments rather than string buffers",
   "license": "MIT",
   "author": "Tilde, Inc.",
   "private": true,
@@ -28,10 +27,12 @@
     "yarn:unlink": "node bin/yarn-link-all --unlink"
   },
   "ember-addon": {
-    "paths": ["build/symlink-dependencies"]
+    "paths": [
+      "build/symlink-dependencies"
+    ]
   },
   "resolutions": {
-    "typescript": "^3.1.0"
+    "typescript": "~3.1.0"
   },
   "dependencies": {
     "babel-plugin-debug-macros": "^0.1.11",
