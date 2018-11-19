@@ -20,7 +20,7 @@ import { VersionedReference } from '@glimmer/reference';
 import { DynamicAttribute } from './attributes/dynamic';
 
 import { Opaque, Simple, Bounds } from '@glimmer/interfaces';
-import { asyncReset } from '../lifetime';
+import { detachChildren } from '../lifetime';
 
 export interface FirstNode {
   firstNode(): Simple.Node;
@@ -502,9 +502,9 @@ export class RemoteLiveBlock extends SimpleLiveBlock {
 
 export class UpdatableBlock extends SimpleLiveBlock {
   reset(env: Environment): Option<Simple.Node> {
-    asyncReset(this, env);
+    let nextSibling = detachChildren(this, env);
 
-    let nextSibling = clear(this);
+    // let nextSibling = clear(this);
 
     this.first = null;
     this.last = null;

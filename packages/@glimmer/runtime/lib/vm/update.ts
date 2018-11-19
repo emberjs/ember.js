@@ -1,5 +1,5 @@
 import { Scope, DynamicScope, Environment } from '../environment';
-import { clear, move as moveBounds } from '../bounds';
+import { move as moveBounds } from '../bounds';
 import { NewElementBuilder, LiveBlock, UpdatableBlock } from './element-builder';
 import { Option, Opaque, Stack, LinkedList, Dict, dict, expect, associate } from '@glimmer/util';
 import {
@@ -24,7 +24,7 @@ import { Simple, Bounds } from '@glimmer/interfaces';
 
 import EvaluationStack from './stack';
 import VM, { RuntimeProgram, Constants } from './append';
-import { asyncDestroy, asyncReset } from '../lifetime';
+import { asyncReset, detach } from '../lifetime';
 
 export default class UpdatingVM<T = Opaque> {
   public env: Environment;
@@ -271,11 +271,10 @@ class ListRevalidationDelegate implements IteratorSynchronizerDelegate<Environme
   }
 
   delete(env: Environment, key: string) {
-    let { map } = this;
+    let { map, updating } = this;
     let opcode = map[key];
-    asyncDestroy(opcode, env);
-    clear(opcode);
-    this.updating.remove(opcode);
+    detach(opcode, env);
+    updating.remove(opcode);
     delete map[key];
 
     this.didDelete = true;

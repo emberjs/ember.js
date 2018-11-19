@@ -1909,15 +1909,15 @@ QUnit.test('deeply nested destructions', function(assert) {
   assert.deepEqual(
     destroyed,
     [
-      'destroy-me1: 3',
-      'destroy-me2: destroy-me1 - 3',
-      'destroy-me2: root - 3',
-      'destroy-me1: 2',
-      'destroy-me2: destroy-me1 - 2',
-      'destroy-me2: root - 2',
       'destroy-me1: 1',
       'destroy-me2: destroy-me1 - 1',
       'destroy-me2: root - 1',
+      'destroy-me1: 2',
+      'destroy-me2: destroy-me1 - 2',
+      'destroy-me2: root - 2',
+      'destroy-me1: 3',
+      'destroy-me2: destroy-me1 - 3',
+      'destroy-me2: root - 3',
     ],
     'destroy should be called for each item'
   );
