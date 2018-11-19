@@ -574,7 +574,7 @@ export class BlockArguments implements IBlockArguments {
     }
 
     let table = check(stack.get(idx * 3, base), CheckOption(CheckBlockSymbolTable));
-    let scope = check(stack.get(idx * 3 + 1, base), CheckOption(CheckScope)) as Option<Scope>; // FIXME(mmun): shouldn't need to cast this
+    let scope = check(stack.get(idx * 3 + 1, base), CheckOption(CheckScope));
     let handle = check(
       stack.get(idx * 3 + 2, base),
       CheckOption(CheckOr(CheckHandle, CheckCompilableBlock))

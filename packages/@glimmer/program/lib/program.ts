@@ -6,7 +6,13 @@ import {
   CompileTimeHeap,
 } from '@glimmer/interfaces';
 import { DEBUG } from '@glimmer/local-debug-flags';
-import { Constants, WriteOnlyConstants, RuntimeConstants, ConstantPool } from './constants';
+import {
+  Constants,
+  WriteOnlyConstants,
+  RuntimeConstants,
+  ConstantPool,
+  RuntimeConstantsImpl,
+} from './constants';
 import { Opcode } from './opcode';
 import { assert } from '@glimmer/util';
 
@@ -267,7 +273,7 @@ export class RuntimeProgram<Locator> {
     resolver: RuntimeResolver<Locator>
   ) {
     let heap = new Heap(rawHeap);
-    let constants = new RuntimeConstants(resolver, pool);
+    let constants = new RuntimeConstantsImpl(resolver, pool);
 
     return new RuntimeProgram(constants, heap);
   }

@@ -1,4 +1,5 @@
 import { Opaque, Unique } from './core';
+import { Op } from '@glimmer/vm';
 
 export interface Opcode {
   offset: number;
@@ -13,7 +14,7 @@ export interface Opcode {
 export type VMHandle = Unique<'Handle'>;
 
 export interface CompileTimeHeap {
-  push(name: /* TODO: Op */ number, op1?: number, op2?: number, op3?: number): void;
+  push(name: Op, op1?: number, op2?: number, op3?: number): void;
   pushPlaceholder(valueFunc: () => number): void;
   malloc(): number;
   finishMalloc(handle: number, scopeSize: number): void;

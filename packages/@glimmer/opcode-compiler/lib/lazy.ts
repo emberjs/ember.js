@@ -20,16 +20,15 @@ export class LazyCompiler<Locator> extends AbstractCompiler<Locator, LazyOpcodeB
   implements Compiler<LazyOpcodeBuilder<Locator>> {
   program!: Program<Locator>; // Hides property on base class
 
-  // FIXME: turn to static method
-  constructor(
+  static create<Locator>(
     lookup: CompileTimeLookup<Locator>,
     resolver: RuntimeResolver<Locator>,
     macros: Macros
-  ) {
+  ): LazyCompiler<Locator> {
     let constants = new LazyConstants(resolver);
     let program = new Program<Locator>(constants);
 
-    super(macros, program, lookup);
+    return new LazyCompiler(macros, program, lookup);
   }
 
   builderFor(containingLayout: LayoutWithContext<Locator>): LazyOpcodeBuilder<Locator> {

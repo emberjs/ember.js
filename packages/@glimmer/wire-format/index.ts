@@ -1,6 +1,5 @@
 import { Dict, Option, Opaque } from '@glimmer/util';
 import { Opcodes } from './lib/opcodes';
-import { Maybe } from '@glimmer/interfaces';
 
 export { Opcodes as Ops } from './lib/opcodes';
 
@@ -223,8 +222,7 @@ export const isGet = is<Expressions.Get>(Opcodes.Get);
 export const isMaybeLocal = is<Expressions.MaybeLocal>(Opcodes.MaybeLocal);
 
 export class NamedBlocks {
-  // TODO: Where does the undefined come from?
-  constructor(private blocks: Maybe<Core.Blocks>) {}
+  constructor(private blocks: Core.Blocks) {}
 
   get default(): Option<SerializedInlineBlock> {
     return this.getBlock('default');

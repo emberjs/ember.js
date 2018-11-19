@@ -20,7 +20,6 @@ import {
 } from '@glimmer/debug';
 import { stackAssert } from './assert';
 import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
-import { Scope } from '../../environment';
 import { PrimitiveReference } from '../../references';
 import { VM, UpdatingVM } from '../../vm';
 import { Arguments } from '../../vm/arguments';
@@ -133,7 +132,7 @@ APPEND_OPCODES.add(Op.InvokeYield, vm => {
   let { stack } = vm;
 
   let handle = check(stack.pop(), CheckOption(CheckHandle));
-  let scope = check(stack.pop(), CheckOption(CheckScope)) as Option<Scope>; // FIXME(mmun): shouldn't need to cast this
+  let scope = check(stack.pop(), CheckOption(CheckScope));
   let table = check(stack.pop(), CheckOption(CheckBlockSymbolTable));
 
   assert(

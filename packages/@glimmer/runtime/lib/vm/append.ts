@@ -22,6 +22,7 @@ import {
   VersionedPathReference,
   combineSlice,
 } from '@glimmer/reference';
+import { RuntimeConstants } from '@glimmer/program';
 import { LabelOpcode, JumpIfNotModifiedOpcode, DidModifyOpcode } from '../compiled/opcodes/vm';
 import LowLevelVM, { Program } from './low-level';
 import { VMState, ListBlockOpcode, TryOpcode, BlockOpcode, Runtime } from './update';
@@ -34,7 +35,6 @@ import { APPEND_OPCODES, UpdatingOpcode, DebugState } from '../opcodes';
 import { UNDEFINED_REFERENCE } from '../references';
 
 import { Heap, Opcode } from '@glimmer/program';
-import { RuntimeResolver } from '@glimmer/interfaces';
 import { DEBUG } from '@glimmer/local-debug-flags';
 
 export interface PublicVM {
@@ -54,19 +54,9 @@ export type IteratorResult<T> =
       value: T;
     };
 
-export interface Constants<T> {
-  resolver: RuntimeResolver<T>;
-  getNumber(value: number): number;
-  getString(handle: number): string;
-  getStringArray(value: number): string[];
-  getArray(value: number): number[];
-  resolveHandle<T>(index: number): T;
-  getSerializable<T>(s: number): T;
-}
-
-export interface RuntimeProgram<T> extends Program {
+export interface RuntimeProgram<Locator> extends Program {
   heap: Heap;
-  constants: Constants<T>;
+  constants: RuntimeConstants<Locator>;
 }
 
 export default class VM<T> implements PublicVM {
@@ -77,7 +67,7 @@ export default class VM<T> implements PublicVM {
   readonly destructorStack = new Stack<object>();
   readonly cacheGroups = new Stack<Option<UpdatingOpcode>>();
   readonly listBlockStack = new Stack<ListBlockOpcode>();
-  readonly constants: Constants<T>;
+  readonly constants: RuntimeConstants<T>;
   readonly heap: Heap;
   readonly args: Arguments;
   readonly destructor: object;

@@ -1,7 +1,7 @@
 import { Opaque, Option } from '@glimmer/interfaces';
 import { VersionedPathReference } from '@glimmer/reference';
 import { Op, Register } from '@glimmer/vm';
-import { Scope, ScopeBlock } from '../../environment';
+import { ScopeBlock } from '../../environment';
 import { APPEND_OPCODES } from '../../opcodes';
 import { FALSE_REFERENCE, TRUE_REFERENCE } from '../../references';
 import { PublicVM } from '../../vm';
@@ -46,7 +46,7 @@ APPEND_OPCODES.add(Op.SetVariable, (vm, { op1: symbol }) => {
 
 APPEND_OPCODES.add(Op.SetBlock, (vm, { op1: symbol }) => {
   let handle = check(vm.stack.pop(), CheckOr(CheckOption(CheckHandle), CheckCompilableBlock));
-  let scope = check(vm.stack.pop(), CheckScope) as Option<Scope>; // FIXME(mmun): shouldn't need to cast this
+  let scope = check(vm.stack.pop(), CheckScope);
   let table = check(vm.stack.pop(), CheckOption(CheckBlockSymbolTable));
 
   let block: Option<ScopeBlock> = table ? [handle!, scope!, table] : null;

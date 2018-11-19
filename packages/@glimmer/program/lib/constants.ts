@@ -106,7 +106,7 @@ export class WriteOnlyConstants implements CompileTimeConstants {
   }
 }
 
-export class RuntimeConstants<Locator> {
+export class RuntimeConstantsImpl<Locator> implements RuntimeConstants<Locator> {
   protected strings: string[];
   protected arrays: number[][] | EMPTY_ARRAY;
   protected handles: number[];
@@ -161,7 +161,17 @@ export class RuntimeConstants<Locator> {
   }
 }
 
-export class Constants<Locator> extends WriteOnlyConstants {
+export interface RuntimeConstants<Locator> {
+  resolver: RuntimeResolver<Locator>;
+  getNumber(value: number): number;
+  getString(handle: number): string;
+  getStringArray(value: number): string[];
+  getArray(value: number): number[];
+  resolveHandle<T>(index: number): T;
+  getSerializable<T>(s: number): T;
+}
+
+export class Constants<Locator> extends WriteOnlyConstants implements RuntimeConstants<Locator> {
   constructor(public resolver: RuntimeResolver<Locator>, pool?: ConstantPool) {
     super();
 

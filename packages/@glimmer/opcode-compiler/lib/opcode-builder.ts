@@ -679,7 +679,7 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
 
   curryComponent(
     definition: WireFormat.Expression,
-    /* TODO: attrs: Option<RawInlineBlock>, */ params: Option<WireFormat.Core.Params>,
+    params: Option<WireFormat.Core.Params>,
     hash: WireFormat.Core.Hash,
     synthetic: boolean
   ) {

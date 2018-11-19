@@ -23,14 +23,15 @@ import { DOMChanges } from '../dom/helper';
 import { Simple, Bounds } from '@glimmer/interfaces';
 
 import EvaluationStack from './stack';
-import VM, { RuntimeProgram, Constants } from './append';
+import VM, { RuntimeProgram } from './append';
 import { asyncReset, detach } from '../lifetime';
+import { RuntimeConstants } from '@glimmer/program';
 
 export default class UpdatingVM<T = Opaque> {
   public env: Environment;
   public dom: DOMChanges;
   public alwaysRevalidate: boolean;
-  public constants: Constants<T>;
+  public constants: RuntimeConstants<T>;
 
   private frameStack: Stack<UpdatingVMFrame> = new Stack<UpdatingVMFrame>();
 

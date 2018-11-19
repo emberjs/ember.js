@@ -19,7 +19,7 @@ import {
   BundleCompilationResult,
 } from '@glimmer/bundle-compiler';
 import { Opaque, assert, Dict, assign, expect, Option } from '@glimmer/util';
-import { WriteOnlyProgram, RuntimeProgram, RuntimeConstants, Heap } from '@glimmer/program';
+import { WriteOnlyProgram, RuntimeProgram, Heap, RuntimeConstantsImpl } from '@glimmer/program';
 import { ProgramSymbolTable, ComponentCapabilities, ModuleLocator } from '@glimmer/interfaces';
 import { UpdatableReference } from '@glimmer/object-reference';
 
@@ -243,7 +243,7 @@ export default class EagerRenderDelegate implements RenderDelegate {
   }: BundleCompilationResult): RuntimeProgram<Locator> {
     let resolver = new EagerRuntimeResolver(table, this.modules, this.symbolTables);
     let runtimeHeap = new Heap(heap);
-    let runtimeProgram = new RuntimeProgram(new RuntimeConstants(resolver, pool), runtimeHeap);
+    let runtimeProgram = new RuntimeProgram(new RuntimeConstantsImpl(resolver, pool), runtimeHeap);
     return runtimeProgram;
   }
 
