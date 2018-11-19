@@ -107,7 +107,7 @@ export default class LazyTestEnvironment extends TestEnvironment<TestMeta> {
   constructor(options?: TestEnvironmentOptions) {
     super(testOptions(options));
 
-    this.compiler = new LazyCompiler<TestMeta>(
+    this.compiler = LazyCompiler.create<TestMeta>(
       new LazyCompileTimeLookup(this.resolver),
       this.resolver,
       new TestMacros()

@@ -457,10 +457,9 @@ APPEND_OPCODES.add(Op.DidCreateElement, (vm, { op1: _state }) => {
 
   let operations = check(vm.fetchValue(Register.t0), CheckInstanceof(ComponentElementOperations));
 
-  let action = 'DidCreateElementOpcode#evaluate';
   (manager as WithElementHook<Component>).didCreateElement(
     state,
-    vm.elements().expectConstructing(action),
+    expect(vm.elements().constructing, `Expected a constructing elemet in DidCreateOpcode`),
     operations
   );
 });

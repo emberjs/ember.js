@@ -124,9 +124,6 @@ export interface ElementBuilder extends Cursor, DOMStack, TreeOperations {
   element: Simple.Element;
   env: Environment;
 
-  // TODO: ?
-  expectConstructing(method: string): Simple.Element;
-
   block(): LiveBlock;
   debugBlocks(): LiveBlock[];
 
@@ -185,13 +182,6 @@ export class NewElementBuilder implements ElementBuilder {
 
   get nextSibling(): Option<Simple.Node> {
     return this.cursorStack.current!.nextSibling;
-  }
-
-  expectConstructing(method: string): Simple.Element {
-    return expect(
-      this.constructing,
-      `${method} should only be called while constructing an element`
-    );
   }
 
   block(): LiveBlock {

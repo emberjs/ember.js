@@ -10,7 +10,6 @@ import {
   TemplateLocator,
   CompilableProgram,
   CompilableTemplate,
-  CompileTimeLookup,
   LayoutWithContext,
 } from '@glimmer/interfaces';
 import {
@@ -83,6 +82,14 @@ export class EagerCompiler<Locator> extends AbstractCompiler<
   EagerOpcodeBuilder<Locator>,
   WriteOnlyProgram
 > {
+  static create<Locator>(
+    macros: Macros,
+    program: WriteOnlyProgram,
+    resolver: BundleCompilerLookup<Locator>
+  ): EagerCompiler<Locator> {
+    return new EagerCompiler(macros, program, resolver);
+  }
+
   builderFor(containingLayout: LayoutWithContext<Locator>): EagerOpcodeBuilder<Locator> {
     return new EagerOpcodeBuilder(this, containingLayout);
   }
@@ -119,7 +126,7 @@ export default class BundleCompiler<Locator> {
     let program = options.program || new WriteOnlyProgram(new DebugConstants());
     this.plugins = options.plugins || [];
 
-    this.compiler = new EagerCompiler(macros, program, this.compilerResolver());
+    this.compiler = EagerCompiler.create(macros, program, this.compilerResolver());
   }
 
   /**
@@ -187,7 +194,7 @@ export default class BundleCompiler<Locator> {
     return template.toJSON();
   }
 
-  compilerResolver(): CompileTimeLookup<Locator> {
+  compilerResolver(): BundleCompilerLookup<Locator> {
     let resolver = this.resolver;
     if (!resolver) {
       resolver = this.resolver = new BundleCompilerLookup<Locator>(this.delegate, this);

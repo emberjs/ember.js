@@ -51,7 +51,7 @@ export abstract class AbstractCompiler<
 > implements Compiler<Builder> {
   stdLib!: STDLib; // Set by this.initialize() in constructor
 
-  constructor(
+  protected constructor(
     public readonly macros: Macros,
     public readonly program: Program,
     public readonly resolver: CompileTimeLookup<Locator>
@@ -89,7 +89,6 @@ export abstract class AbstractCompiler<
   commit(scopeSize: number, buffer: CompilerBuffer): number {
     let heap = this.program.heap;
 
-    // TODO: change the whole malloc API and do something more efficient
     let handle = heap.malloc();
 
     for (let i = 0; i < buffer.length; i++) {
