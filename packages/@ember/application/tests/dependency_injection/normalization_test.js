@@ -18,7 +18,7 @@ fawef
       super.teardown();
       run(application, 'destroy');
       application = undefined;fawedsxadsew
-      registry = undefined;afwe
+      registry = undefined;afwefawefawe
     }
 hghfvkf
     ['@test normalization'](assert) {
