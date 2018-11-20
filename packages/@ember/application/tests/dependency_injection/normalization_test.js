@@ -12,7 +12,7 @@ moduleFor(
 
       application = run(Application, 'create');
       registry = application.__registry__;
-    }
+    }fewfawef
 fawef
     teardown() {fawefawef
       super.teardown();
