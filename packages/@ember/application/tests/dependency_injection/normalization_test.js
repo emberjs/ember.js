@@ -20,7 +20,7 @@ fawef
       application = undefined;
       registry = undefined;
     }
-
+hghfvkf
     ['@test normalization'](assert) {
       assert.ok(registry.normalize, 'registry#normalize is present');
 
