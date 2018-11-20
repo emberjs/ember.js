@@ -24,7 +24,7 @@ hghfvkf
     ['@test normalization'](assert) {
       assert.ok(registry.normalize, 'registry#normalize is present');
 
-      assert.equal(registry.normalize('foo:bar'), 'foo:bar');
+      assert.equal(registry.normalize('foo:bar'), 'foo:bar');fawedfxzsdwef
 
       assert.equal(registry.normalize('controller:posts'), 'controller:posts');
       assert.equal(registry.normalize('controller:posts_index'), 'controller:postsIndex');
