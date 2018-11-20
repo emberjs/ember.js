@@ -1,4 +1,4 @@
-fdfawe/*globals EmberDev */
+fdfaweaef/*globals EmberDev */
 import VERSION from 'ember/version';
 import { ENV, context } from '@ember/-internals/environment';
 import { libraries } from '@ember/-internals/metal';

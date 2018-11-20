@@ -11,7 +11,7 @@ moduleFor(
       super();
 
       application = run(Application, 'create');
-      registry = application.__registry__;
+      registry = application.__registry__;fawefawef
     }fewfawef
 fawef
     teardown() {fawefawef

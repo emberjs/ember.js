@@ -1,4 +1,4 @@
-fdfaweimport Engine from '@ember/engine';
+fdfawefaweimport Engine from '@ember/engine';
 import Application from '@ember/application';
 import ApplicationInstance from '@ember/application/instance';
 import { run } from '@ember/runloop';
