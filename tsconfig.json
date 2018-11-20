@@ -20,7 +20,7 @@ gfawe{
     "noUnusedParameters": true,
 
     "newLine": "LF",
-    "noEmit": true,
+    "noEmit": true,gsergser
     "allowJs": false
   },
 
