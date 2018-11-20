@@ -30,17 +30,18 @@ import { Assert } from './vm';
 import { DynamicAttribute } from '../../vm/attributes/dynamic';
 import { ComponentElementOperations } from './component';
 import { CheckReference, CheckArguments } from './-debug-strip';
+import { CONSTANTS } from '../../symbols';
 
 APPEND_OPCODES.add(Op.Text, (vm, { op1: text }) => {
-  vm.elements().appendText(vm.constants.getString(text));
+  vm.elements().appendText(vm[CONSTANTS].getString(text));
 });
 
 APPEND_OPCODES.add(Op.Comment, (vm, { op1: text }) => {
-  vm.elements().appendComment(vm.constants.getString(text));
+  vm.elements().appendComment(vm[CONSTANTS].getString(text));
 });
 
 APPEND_OPCODES.add(Op.OpenElement, (vm, { op1: tag }) => {
-  vm.elements().openElement(vm.constants.getString(tag));
+  vm.elements().openElement(vm[CONSTANTS].getString(tag));
 });
 
 APPEND_OPCODES.add(Op.OpenDynamicElement, vm => {
@@ -102,7 +103,7 @@ APPEND_OPCODES.add(Op.CloseElement, vm => {
 });
 
 APPEND_OPCODES.add(Op.Modifier, (vm, { op1: handle }) => {
-  let { manager, state } = vm.constants.resolveHandle<ModifierDefinition>(handle);
+  let { manager, state } = vm[CONSTANTS].resolveHandle<ModifierDefinition>(handle);
   let stack = vm.stack;
   let args = check(stack.pop(), CheckArguments);
   let { element, updateOperations } = vm.elements();
@@ -153,18 +154,18 @@ export class UpdateModifierOpcode extends UpdatingOpcode {
 }
 
 APPEND_OPCODES.add(Op.StaticAttr, (vm, { op1: _name, op2: _value, op3: _namespace }) => {
-  let name = vm.constants.getString(_name);
-  let value = vm.constants.getString(_value);
-  let namespace = _namespace ? vm.constants.getString(_namespace) : null;
+  let name = vm[CONSTANTS].getString(_name);
+  let value = vm[CONSTANTS].getString(_value);
+  let namespace = _namespace ? vm[CONSTANTS].getString(_namespace) : null;
 
   vm.elements().setStaticAttribute(name, value, namespace);
 });
 
 APPEND_OPCODES.add(Op.DynamicAttr, (vm, { op1: _name, op2: trusting, op3: _namespace }) => {
-  let name = vm.constants.getString(_name);
+  let name = vm[CONSTANTS].getString(_name);
   let reference = check(vm.stack.pop(), CheckReference);
   let value = reference.value();
-  let namespace = _namespace ? vm.constants.getString(_namespace) : null;
+  let namespace = _namespace ? vm[CONSTANTS].getString(_namespace) : null;
 
   let attribute = vm.elements().setDynamicAttribute(name, value, !!trusting, namespace);
 

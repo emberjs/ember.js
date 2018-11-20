@@ -6,11 +6,12 @@ import { assert, Dict } from '@glimmer/util';
 import { check } from '@glimmer/debug';
 import { Opaque } from '@glimmer/interfaces';
 import { CheckReference } from './-debug-strip';
+import { CONSTANTS } from '../../symbols';
 
 APPEND_OPCODES.add(Op.InvokePartial, (vm, { op1: _meta, op2: _symbols, op3: _evalInfo }) => {
   let {
-    constants,
-    constants: { resolver },
+    [CONSTANTS]: constants,
+    [CONSTANTS]: { resolver },
     stack,
   } = vm;
 

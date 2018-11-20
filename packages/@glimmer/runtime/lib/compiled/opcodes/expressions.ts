@@ -22,12 +22,13 @@ import {
   CheckCompilableBlock,
   CheckScope,
 } from './-debug-strip';
+import { CONSTANTS } from '../../symbols';
 
 export type FunctionExpression<T> = (vm: PublicVM) => VersionedPathReference<T>;
 
 APPEND_OPCODES.add(Op.Helper, (vm, { op1: handle }) => {
   let stack = vm.stack;
-  let helper = check(vm.constants.resolveHandle(handle), CheckFunction);
+  let helper = check(vm[CONSTANTS].resolveHandle(handle), CheckFunction);
   let args = check(stack.pop(), CheckArguments);
   let value = helper(vm, args);
 
@@ -55,7 +56,7 @@ APPEND_OPCODES.add(Op.SetBlock, (vm, { op1: symbol }) => {
 });
 
 APPEND_OPCODES.add(Op.ResolveMaybeLocal, (vm, { op1: _name }) => {
-  let name = vm.constants.getString(_name);
+  let name = vm[CONSTANTS].getString(_name);
   let locals = vm.scope().getPartialMap()!;
 
   let ref = locals[name];
@@ -71,7 +72,7 @@ APPEND_OPCODES.add(Op.RootScope, (vm, { op1: symbols, op2: bindCallerScope }) =>
 });
 
 APPEND_OPCODES.add(Op.GetProperty, (vm, { op1: _key }) => {
-  let key = vm.constants.getString(_key);
+  let key = vm[CONSTANTS].getString(_key);
   let expr = check(vm.stack.pop(), CheckPathReference);
   vm.stack.push(expr.get(key));
 });

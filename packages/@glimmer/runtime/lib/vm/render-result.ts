@@ -3,15 +3,13 @@ import Environment, { inTransaction } from '../environment';
 import { DestroyableBounds, clear } from '../bounds';
 import UpdatingVM, { ExceptionHandler } from './update';
 import { UpdatingOpcode } from '../opcodes';
-import { Simple, Opaque } from '@glimmer/interfaces';
-import { RuntimeProgram } from './append';
+import { Simple } from '@glimmer/interfaces';
 import { LiveBlock } from './element-builder';
 import { asyncDestroy } from '../lifetime';
 
-export default class RenderResult<T = Opaque> implements DestroyableBounds, ExceptionHandler {
+export default class RenderResult implements DestroyableBounds, ExceptionHandler {
   constructor(
     public env: Environment,
-    private program: RuntimeProgram<T>,
     private updating: LinkedList<UpdatingOpcode>,
     private bounds: LiveBlock,
     readonly drop: object
@@ -20,8 +18,8 @@ export default class RenderResult<T = Opaque> implements DestroyableBounds, Exce
   }
 
   rerender({ alwaysRevalidate = false } = { alwaysRevalidate: false }) {
-    let { env, program, updating } = this;
-    let vm = new UpdatingVM(env, program, { alwaysRevalidate });
+    let { env, updating } = this;
+    let vm = new UpdatingVM(env, { alwaysRevalidate });
     vm.execute(updating, this);
   }
 
