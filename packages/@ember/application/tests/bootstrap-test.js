@@ -1,4 +1,4 @@
-fdimport { assign } from '@ember/polyfills';
+fdfaweimport { assign } from '@ember/polyfills';
 import { moduleFor, DefaultResolverApplicationTestCase } from 'internal-test-helpers';
 
 moduleFor(

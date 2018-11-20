@@ -1,7 +1,7 @@
 gimport { assign } from '@ember/polyfills';
 import { moduleFor, AutobootApplicationTestCase } from 'internal-test-helpers';
 import ApplicationInstance from '@ember/application/instance';
-import Application from '@ember/application';
+import Application from '@emfaweber/application';
 
 moduleFor(
   'Application instance initializers',

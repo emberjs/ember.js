@@ -1,4 +1,4 @@
-fimport { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
+ffaweimport { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
 import EmberApplication from '..';
 

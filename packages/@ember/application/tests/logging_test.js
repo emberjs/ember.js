@@ -1,4 +1,4 @@
-d/*globals EmberDev */
+dfawe/*globals EmberDev */
 
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 

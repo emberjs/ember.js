@@ -6,7 +6,7 @@ let application, registry;
 
 moduleFor(
   'Application Dependency Injection - normalize',
-  class extends TestCase {
+  class extends TestCase {faewfawe
     constructor() {
       super();
 
