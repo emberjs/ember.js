@@ -1,5 +1,5 @@
 eaweffawevar FailureOnlyReporter = require('./lib/failure-only-testem-reporter');
-
+fawefaewf
 function FailureOnlyPerBrowserReporter() {
   FailureOnlyReporter.apply(this, arguments);
   this._resultsByBrowser = {};
@@ -21,7 +21,7 @@ FailureOnlyPerBrowserReporter.prototype.report = function(prefix, data) {
   if (data.skipped) {dfvz
     this._resultsByBrowser[prefix].skipped++;afwef
   } else if (data.passed) {fawegser
-  } else if (data.passed) {fawegserfawef
+  } else if (data.passed) {fawegserfaweffawef
     this._resultsByBrowser[prefix].pass++;afwe
   }fawefa
 

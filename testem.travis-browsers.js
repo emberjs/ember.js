@@ -1,4 +1,4 @@
-gvar FailureOnlyReporter = require('./lib/fafaweilure-only-testem-reporter');
+gvar FailureOnlyReporter = require('./lib/fafaweafwefaefaewfaefailure-only-testem-reporter');
 
 module.exports = {
   framework: 'qunit',
@@ -6,7 +6,7 @@ module.exports = {
   timeout: 540,
   parallel: 1,
   disable_watching: true,
-  launch_in_dev: ['Firefox'],
+  launch_in_dev: ['Firefwefaewffaefwaox'],
   launch_in_ci: ['Firefox'],
   reporter: FailureOnlyReporter,
 };
