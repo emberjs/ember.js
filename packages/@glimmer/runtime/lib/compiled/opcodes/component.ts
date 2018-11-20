@@ -64,6 +64,7 @@ import {
   CheckComponentInstance,
   CheckFinishedComponentInstance,
 } from './-debug-strip';
+import { CONSTANTS, ARGS } from '../../symbols';
 
 /**
  * The VM creates a new ComponentInstance data structure for every component
@@ -129,8 +130,8 @@ APPEND_OPCODES.add(Op.CurryComponent, (vm, { op1: _meta }) => {
   let definition = check(stack.pop(), CheckReference);
   let capturedArgs = check(stack.pop(), CheckCapturedArguments);
 
-  let meta = vm.constants.getSerializable(_meta);
-  let resolver = vm.constants.resolver;
+  let meta = vm[CONSTANTS].getSerializable(_meta);
+  let resolver = vm[CONSTANTS].resolver;
 
   vm.loadValue(Register.v0, new CurryComponentReference(definition, resolver, meta, capturedArgs));
 
@@ -138,7 +139,7 @@ APPEND_OPCODES.add(Op.CurryComponent, (vm, { op1: _meta }) => {
 });
 
 APPEND_OPCODES.add(Op.PushComponentDefinition, (vm, { op1: handle }) => {
-  let definition = vm.constants.resolveHandle<ComponentDefinition>(handle);
+  let definition = vm[CONSTANTS].resolveHandle<ComponentDefinition>(handle);
   assert(!!definition, `Missing component for ${handle}`);
 
   let { manager } = definition;
@@ -162,7 +163,7 @@ APPEND_OPCODES.add(Op.PushComponentDefinition, (vm, { op1: handle }) => {
 APPEND_OPCODES.add(Op.ResolveDynamicComponent, (vm, { op1: _meta }) => {
   let stack = vm.stack;
   let component = check(stack.pop(), CheckPathReference).value();
-  let meta = vm.constants.getSerializable(_meta);
+  let meta = vm[CONSTANTS].getSerializable(_meta);
 
   vm.loadValue(Register.t1, null); // Clear the temp register
 
@@ -170,7 +171,7 @@ APPEND_OPCODES.add(Op.ResolveDynamicComponent, (vm, { op1: _meta }) => {
 
   if (typeof component === 'string') {
     let {
-      constants: { resolver },
+      [CONSTANTS]: { resolver },
     } = vm;
     let resolvedDefinition = resolveComponent(resolver, component, meta);
 
@@ -221,7 +222,7 @@ APPEND_OPCODES.add(Op.PushCurriedComponent, vm => {
 
 APPEND_OPCODES.add(Op.PushArgs, (vm, { op1: _names, op2: flags }) => {
   let stack = vm.stack;
-  let names = vm.constants.getStringArray(_names);
+  let names = vm[CONSTANTS].getStringArray(_names);
 
   let positionalCount = flags >> 4;
   let synthetic = flags & 0b1000;
@@ -231,14 +232,14 @@ APPEND_OPCODES.add(Op.PushArgs, (vm, { op1: _names, op2: flags }) => {
   if (flags & 0b0010) blockNames.push('else');
   if (flags & 0b0001) blockNames.push('attrs');
 
-  vm.args.setup(stack, names, blockNames, positionalCount, !!synthetic);
-  stack.push(vm.args);
+  vm[ARGS].setup(stack, names, blockNames, positionalCount, !!synthetic);
+  stack.push(vm[ARGS]);
 });
 
 APPEND_OPCODES.add(Op.PushEmptyArgs, vm => {
   let { stack } = vm;
 
-  stack.push(vm.args.empty(stack));
+  stack.push(vm[ARGS].empty(stack));
 });
 
 APPEND_OPCODES.add(Op.CaptureArgs, vm => {
@@ -377,9 +378,9 @@ APPEND_OPCODES.add(Op.PutComponentOperations, vm => {
 });
 
 APPEND_OPCODES.add(Op.ComponentAttr, (vm, { op1: _name, op2: trusting, op3: _namespace }) => {
-  let name = vm.constants.getString(_name);
+  let name = vm[CONSTANTS].getString(_name);
   let reference = check(vm.stack.pop(), CheckReference);
-  let namespace = _namespace ? vm.constants.getString(_namespace) : null;
+  let namespace = _namespace ? vm[CONSTANTS].getString(_namespace) : null;
 
   check(vm.fetchValue(Register.t0), CheckInstanceof(ComponentElementOperations)).setAttribute(
     name,
@@ -485,7 +486,7 @@ APPEND_OPCODES.add(Op.GetComponentLayout, (vm, { op1: _state }) => {
   let instance = check(vm.fetchValue(_state), CheckComponentInstance);
   let { manager, definition } = instance;
   let {
-    constants: { resolver },
+    [CONSTANTS]: { resolver },
     stack,
   } = vm;
 

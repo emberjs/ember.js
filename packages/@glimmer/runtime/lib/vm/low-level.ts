@@ -3,7 +3,7 @@ import { Option, Opaque } from '@glimmer/interfaces';
 import { APPEND_OPCODES } from '../opcodes';
 import VM from './append';
 import { DEVMODE } from '@glimmer/local-debug-flags';
-import { Op } from '@glimmer/vm';
+import { Op, Register } from '@glimmer/vm';
 
 export interface Stack {
   sp: number;
@@ -38,6 +38,17 @@ export default class LowLevelVM {
     public ra = -1
   ) {}
 
+  fetchRegister(register: Register): number {
+    switch (register) {
+      case Register.pc:
+        return this.pc;
+      case Register.ra:
+        return this.ra;
+      default:
+        throw new Error(`Invalid low-level register: ${Register[register]}`);
+    }
+  }
+
   // Start a new frame and save $ra and $fp on the stack
   pushFrame() {
     this.stack.pushSmi(this.ra);
@@ -62,8 +73,11 @@ export default class LowLevelVM {
 
   // Jump to an address in `program`
   goto(offset: number) {
-    let addr = this.pc + offset - this.currentOpSize;
-    this.pc = addr;
+    this.pc = this.target(offset);
+  }
+
+  target(offset: number) {
+    return this.pc + offset - this.currentOpSize;
   }
 
   // Save $pc into $ra, then jump to a new address in `program` (jal in MIPS)
@@ -74,8 +88,7 @@ export default class LowLevelVM {
 
   // Put a specific `program` address in $ra
   returnTo(offset: number) {
-    let addr = this.pc + offset - this.currentOpSize;
-    this.ra = addr;
+    this.ra = this.target(offset);
   }
 
   // Return to the `program` address stored in $ra

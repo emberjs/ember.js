@@ -8,6 +8,7 @@ import { resolveComponent } from './component/resolve';
 import { expect } from '@glimmer/util';
 import { capabilityFlagsFrom } from './capabilities';
 import { hasStaticLayoutCapability } from './compiled/opcodes/component';
+import { CONSTANTS, ARGS } from './symbols';
 
 export interface TemplateIterator {
   next(): IteratorResult<RenderResult>;
@@ -46,7 +47,7 @@ export function renderComponent<T>(
   args: RenderComponentArgs = {}
 ): TemplateIterator {
   const vm = VM.empty(program, env, builder, main);
-  const { resolver } = vm.constants;
+  const { resolver } = vm[CONSTANTS];
 
   const definition = expect(
     resolveComponent(resolver, name, null),
@@ -87,11 +88,11 @@ export function renderComponent<T>(
   });
 
   // Configure VM based on blocks and args just pushed on to the stack.
-  vm.args.setup(vm.stack, argNames, blockNames, 0, false);
+  vm[ARGS].setup(vm.stack, argNames, blockNames, 0, false);
 
   // Needed for the Op.Main opcode: arguments, component invocation object, and
   // component definition.
-  vm.stack.push(vm.args);
+  vm.stack.push(vm[ARGS]);
   vm.stack.push(invocation);
   vm.stack.push(definition);
 

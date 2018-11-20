@@ -25,6 +25,7 @@ import { VM, UpdatingVM } from '../../vm';
 import { Arguments } from '../../vm/arguments';
 import { LazyConstants, PrimitiveType } from '@glimmer/program';
 import { CheckReference, CheckScope } from './-debug-strip';
+import { CONSTANTS } from '../../symbols';
 
 APPEND_OPCODES.add(Op.ChildScope, vm => vm.pushChildScope());
 
@@ -35,7 +36,7 @@ APPEND_OPCODES.add(Op.PushDynamicScope, vm => vm.pushDynamicScope());
 APPEND_OPCODES.add(Op.PopDynamicScope, vm => vm.popDynamicScope());
 
 APPEND_OPCODES.add(Op.Constant, (vm: VM<Opaque>, { op1: other }) => {
-  vm.stack.push((vm.constants as LazyConstants).getOther(other));
+  vm.stack.push((vm[CONSTANTS] as LazyConstants).getOther(other));
 });
 
 APPEND_OPCODES.add(Op.Primitive, (vm, { op1: primitive }) => {
@@ -48,19 +49,19 @@ APPEND_OPCODES.add(Op.Primitive, (vm, { op1: primitive }) => {
       stack.push(value);
       break;
     case PrimitiveType.FLOAT:
-      stack.push(vm.constants.getNumber(value));
+      stack.push(vm[CONSTANTS].getNumber(value));
       break;
     case PrimitiveType.STRING:
-      stack.push(vm.constants.getString(value));
+      stack.push(vm[CONSTANTS].getString(value));
       break;
     case PrimitiveType.BOOLEAN_OR_VOID:
       stack.pushEncodedImmediate(primitive);
       break;
     case PrimitiveType.NEGATIVE:
-      stack.push(vm.constants.getNumber(value));
+      stack.push(vm[CONSTANTS].getNumber(value));
       break;
     case PrimitiveType.BIG_NUM:
-      stack.push(vm.constants.getNumber(value));
+      stack.push(vm[CONSTANTS].getNumber(value));
       break;
   }
 });
@@ -93,7 +94,7 @@ APPEND_OPCODES.add(Op.Fetch, (vm, { op1: register }) => {
 });
 
 APPEND_OPCODES.add(Op.BindDynamicScope, (vm, { op1: _names }) => {
-  let names = vm.constants.getArray(_names);
+  let names = vm[CONSTANTS].getArray(_names);
   vm.bindDynamicScope(names);
 });
 
@@ -107,7 +108,7 @@ APPEND_OPCODES.add(Op.Exit, vm => {
 
 APPEND_OPCODES.add(Op.PushSymbolTable, (vm, { op1: _table }) => {
   let stack = vm.stack;
-  stack.push(vm.constants.getSerializable(_table));
+  stack.push(vm[CONSTANTS].getSerializable(_table));
 });
 
 APPEND_OPCODES.add(Op.PushBlockScope, vm => {

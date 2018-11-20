@@ -22,22 +22,18 @@ import { UpdatingOpcode, UpdatingOpSeq } from '../opcodes';
 import { DOMChanges } from '../dom/helper';
 import { Simple, Bounds } from '@glimmer/interfaces';
 
-import EvaluationStack from './stack';
 import VM, { RuntimeProgram } from './append';
 import { asyncReset, detach } from '../lifetime';
-import { RuntimeConstants } from '@glimmer/program';
 
-export default class UpdatingVM<T = Opaque> {
+export default class UpdatingVM {
   public env: Environment;
   public dom: DOMChanges;
   public alwaysRevalidate: boolean;
-  public constants: RuntimeConstants<T>;
 
   private frameStack: Stack<UpdatingVMFrame> = new Stack<UpdatingVMFrame>();
 
-  constructor(env: Environment, program: RuntimeProgram<T>, { alwaysRevalidate = false }) {
+  constructor(env: Environment, { alwaysRevalidate = false }) {
     this.env = env;
-    this.constants = program.constants;
     this.dom = env.getDOM();
     this.alwaysRevalidate = alwaysRevalidate;
   }
@@ -96,6 +92,7 @@ export interface Runtime {
 }
 
 export interface VMState {
+  pc: number;
   scope: Scope;
   dynamicScope: DynamicScope;
   stack: Opaque[];
@@ -110,7 +107,6 @@ export abstract class BlockOpcode extends UpdatingOpcode implements Bounds {
   protected readonly bounds: LiveBlock;
 
   constructor(
-    public start: number,
     protected state: VMState,
     protected runtime: Runtime,
     bounds: LiveBlock,
@@ -151,13 +147,12 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
   protected bounds!: UpdatableBlock; // Hides property on base class
 
   constructor(
-    start: number,
     state: VMState,
     runtime: Runtime,
     bounds: UpdatableBlock,
     children: LinkedList<UpdatingOpcode>
   ) {
-    super(start, state, runtime, bounds, children);
+    super(state, runtime, bounds, children);
     this.tag = this._tag = UpdatableTag.create(CONSTANT_TAG);
   }
 
@@ -170,19 +165,17 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
   }
 
   handleException() {
-    let { state, bounds, children, start, prev, next, runtime } = this;
+    let { state, bounds, children, prev, next, runtime } = this;
 
     children.clear();
     asyncReset(this, runtime.env);
 
     let elementStack = NewElementBuilder.resume(runtime.env, bounds);
-
     let vm = VM.resume(state, runtime, elementStack);
 
     let updating = new LinkedList<UpdatingOpcode>();
 
-    let result = vm.execute(start, vm => {
-      vm.stack = EvaluationStack.restore(state.stack);
+    let result = vm.execute(vm => {
       vm.pushUpdating(updating);
       vm.updateWith(this);
       vm.pushUpdating(children);
@@ -228,9 +221,7 @@ class ListRevalidationDelegate implements IteratorSynchronizerDelegate<Environme
     let vm = opcode.vmForInsertion(nextSibling);
     let tryOpcode: Option<TryOpcode> = null;
 
-    let { start } = opcode;
-
-    vm.execute(start, vm => {
+    vm.execute(vm => {
       map[key] = tryOpcode = vm.iterate(memo, item);
       vm.pushUpdating(new LinkedList<UpdatingOpcode>());
       vm.updateWith(tryOpcode);
@@ -296,14 +287,13 @@ export class ListBlockOpcode extends BlockOpcode {
   private _tag: TagWrapper<UpdatableTag>;
 
   constructor(
-    start: number,
     state: VMState,
     runtime: Runtime,
     bounds: LiveBlock,
     children: LinkedList<UpdatingOpcode>,
     artifacts: IterationArtifacts
   ) {
-    super(start, state, runtime, bounds, children);
+    super(state, runtime, bounds, children);
     this.artifacts = artifacts;
     let _tag = (this._tag = UpdatableTag.create(CONSTANT_TAG));
     this.tag = combine([artifacts.tag, _tag]);

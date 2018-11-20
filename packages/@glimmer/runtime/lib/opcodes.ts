@@ -1,3 +1,5 @@
+import { LowLevelVM, VM, UpdatingVM } from './vm';
+
 import {
   Option,
   Dict,
@@ -12,10 +14,10 @@ import { Op } from '@glimmer/vm';
 import { Tag } from '@glimmer/reference';
 import { METADATA } from '@glimmer/vm';
 import { Opcode, Opaque } from '@glimmer/interfaces';
-import { LowLevelVM, VM, UpdatingVM } from './vm';
 import { DEBUG, DEVMODE } from '@glimmer/local-debug-flags';
 // these import bindings will be stripped from build
 import { debug, logOpcode } from '@glimmer/opcode-compiler';
+import { DESTRUCTOR_STACK, INNER_VM, CONSTANTS } from './symbols';
 
 export interface OpcodeJSON {
   type: number | string;
@@ -50,11 +52,11 @@ export class AppendOpcodes {
 
   debugBefore(vm: VM<Opaque>, opcode: Opcode, type: number): DebugState {
     if (DEBUG) {
-      let pos = vm['pc'] - opcode.size;
+      let pos = vm[INNER_VM].pc - opcode.size;
       /* tslint:disable */
       let [name, params] = debug(
         pos,
-        vm.constants,
+        vm[CONSTANTS],
         opcode.type,
         opcode.op1,
         opcode.op2,
@@ -100,7 +102,7 @@ export class AppendOpcodes {
       if (typeof metadata.stackChange === 'number') {
         expectedChange = metadata.stackChange;
       } else {
-        expectedChange = metadata.stackChange({ opcode, constants: vm.constants, state });
+        expectedChange = metadata.stackChange({ opcode, constants: vm[CONSTANTS], state });
         if (isNaN(expectedChange)) throw unreachable();
       }
     }
@@ -113,10 +115,10 @@ export class AppendOpcodes {
         typeof expectedChange! === 'number' &&
         expectedChange! !== actualChange
       ) {
-        let pos = vm['pc'] + opcode.size;
+        let pos = vm[INNER_VM].pc + opcode.size;
         let [name, params] = debug(
           pos,
-          vm.constants,
+          vm[CONSTANTS],
           opcode.type,
           opcode.op1,
           opcode.op2,
@@ -135,8 +137,8 @@ export class AppendOpcodes {
       console.log(
         '%c -> pc: %d, ra: %d, fp: %d, sp: %d, s0: %O, s1: %O, t0: %O, t1: %O, v0: %O',
         'color: orange',
-        vm['pc'],
-        vm['ra'],
+        vm[INNER_VM]['pc'],
+        vm[INNER_VM]['ra'],
         vm.stack['fp'],
         vm.stack['sp'],
         vm['s0'],
@@ -147,7 +149,7 @@ export class AppendOpcodes {
       );
       console.log('%c -> eval stack', 'color: red', vm.stack.toArray());
       console.log('%c -> block stack', 'color: magenta', vm.elements().debugBlocks());
-      console.log('%c -> destructor stack', 'color: violet', vm.destructorStack.toArray());
+      console.log('%c -> destructor stack', 'color: violet', vm[DESTRUCTOR_STACK].toArray());
       if (vm['scopeStack'].current === null) {
         console.log('%c -> scope', 'color: green', 'null');
       } else {
@@ -184,7 +186,7 @@ export class AppendOpcodes {
           opcode.isMachine
         }) for ${opcode.type}`
       );
-      operation.evaluate(vm.inner, opcode);
+      operation.evaluate(vm[INNER_VM], opcode);
     }
   }
 }
