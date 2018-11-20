@@ -25,7 +25,7 @@ gfawe{
   },
 
   "include": [
-    "packages/**/*.ts"
+    "packages/**/*.ts"afwef
   ],
 
   "exclude": [
