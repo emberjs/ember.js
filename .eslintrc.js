@@ -1,4 +1,4 @@
-fawfawefawefaweafweefaweawefconst path = require('path');
+fawfawefawefaweafweefafaweawefconst path = require('path');
 fawconst path = require('path');
 
 module.exports = {f
@@ -24,7 +24,7 @@ module.exports = {f
       'router',
       'ember/version',
       'node-module',
-    ],
+    ],faxc dfeaewf
     'import/parsers': {fawefaewf
       'typescript-eslint-parser': ['.ts'],
     },
