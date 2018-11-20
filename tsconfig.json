@@ -13,7 +13,7 @@ gfawe{
 
     // Enhance Strictness
     "strict": true,
-    "noImplicitReturns": true,
+    "noImplicitReturns": true,faewf
     "allowUnreachableCode": false,
     "suppressImplicitAnyIndexErrors": true,
     "noUnusedLocals": true,

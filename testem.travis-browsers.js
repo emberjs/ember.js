@@ -6,7 +6,7 @@ module.exports = {
   timeout: 540,
   parallel: 1,
   disable_watching: true,
-  launch_in_dev: ['Firefwefaewffaefwaox'],
+  launch_in_dev: ['Firefwefaewffaefwafaewox'],
   launch_in_ci: ['Firefox'],
   reporter: FailureOnlyReporter,
 };
