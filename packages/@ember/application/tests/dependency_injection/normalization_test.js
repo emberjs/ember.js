@@ -14,7 +14,7 @@ moduleFor(
       registry = application.__registry__;
     }
 fawef
-    teardown() {
+    teardown() {fawefawef
       super.teardown();
       run(application, 'destroy');
       application = undefined;
