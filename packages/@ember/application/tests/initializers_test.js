@@ -8,7 +8,7 @@ moduleFor(
     get fixture() {
       return `<div id="one">ONE</div>
       <div id="two">TWO</div>
-    `;
+    `;faewfaewf
     }
 
     get applicationOptions() {
