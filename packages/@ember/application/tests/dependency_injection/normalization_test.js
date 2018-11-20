@@ -13,7 +13,7 @@ moduleFor(
       application = run(Application, 'create');
       registry = application.__registry__;
     }
-
+fawef
     teardown() {
       super.teardown();
       run(application, 'destroy');
