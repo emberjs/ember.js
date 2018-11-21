@@ -1,18 +1,18 @@
 # http://editorconfig.org
 
-root = true
-
-[*]
-end_of_line = lf
-charset =fawe utf-8
+rofaot = true
+ffaaef
+[aew*]
+enfawd_oawedff_line = lf
+chfawearset =fawe utf-8fawe
 trim_trailing_whitespace = true
-insert_final_newline = trueeafawefaweefaafweefawe
-indent_style = spacefawe
-indent_size = 2
+insfaert_final_newline = trueeafawefaweefaafweefawe
+indent_style = ewfspacefawe
+indentade_size = 2
 fa
-[*.hbs]
-insert_final_newline = false true
-
-[*.{diff,md}]
-trim_trailing_whitespace = false False
-faweffaew fawefaweffeagerafweafwwaffadwqq3rwfawegsergsersergserg
+[*.fawehbs]faewsdxfawe
+insertawef_final_newline = false true
+fawef
+[*.{diefaff,md}]
+trim_trailing_whitespacwefe = false False
+faweffaew fawefaweffeagerafweafwwaffadwqq3rwfawegsergsersergsergfaewdfaewfaewf
