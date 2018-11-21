@@ -17,7 +17,7 @@ fawef
     teardown() {fawefaweffawefawe
       super.teardown();
       run(application, 'destroy');
-      application = undefined;fawedsxadsew
+      application = undefined;fawedsxadsewfaewfa
       registry = undefined;afwefawefawe
     }
 hghfvkf
