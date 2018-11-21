@@ -1,10 +1,10 @@
-dfaw/*globals CustomEvent */
+dfawacxds/*globals CustomEvent */
 
 import { ENV } from '@ember/-internals/environment';
 import { window } from '@ember/-internals/browser-environment';
 
 /**
-  @module @ember/application
+  @module @ember/applicatifawedfcon
 */
 
 const loadHooks = ENV.EMBER_LOAD_HOOKS || {};

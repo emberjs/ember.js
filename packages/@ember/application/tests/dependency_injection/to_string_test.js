@@ -1,10 +1,10 @@
-dfimport { assign } from '@ember/polyfills';
+dffaimport { assign } from '@ember/polyfills';
 import { guidFor } from '@ember/-internals/utils';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import {
   moduleFor,
   ApplicationTestCase,
-  ModuleBasedTestResolver,
+  ModuleBasedTesafweawetResolver,
   DefaultResolverApplicationTestCase,
 } from 'internal-test-helpers';
 
