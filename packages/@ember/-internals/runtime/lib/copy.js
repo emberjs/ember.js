@@ -18,12 +18,17 @@ function _copy(obj, deep, seen, copies) {
     return copies[loc];
   }
 
+  if (deep) {
+    seen.push(obj);
+  }
+
   // IMPORTANT: this specific test will detect a native array only. Any other
   // object will need to implement Copyable.
   if (Array.isArray(obj)) {
     ret = obj.slice();
 
     if (deep) {
+      copies.push(ret);
       loc = ret.length;
 
       while (--loc >= 0) {
@@ -32,8 +37,14 @@ function _copy(obj, deep, seen, copies) {
     }
   } else if (Copyable.detect(obj)) {
     ret = obj.copy(deep, seen, copies);
+    if (deep) {
+      copies.push(ret);
+    }
   } else if (obj instanceof Date) {
     ret = new Date(obj.getTime());
+    if (deep) {
+      copies.push(ret);
+    }
   } else {
     assert(
       'Cannot clone an EmberObject that does not implement Copyable',
@@ -41,6 +52,10 @@ function _copy(obj, deep, seen, copies) {
     );
 
     ret = {};
+    if (deep) {
+      copies.push(ret);
+    }
+
     let key;
     for (key in obj) {
       // support Null prototype
@@ -56,11 +71,6 @@ function _copy(obj, deep, seen, copies) {
 
       ret[key] = deep ? _copy(obj[key], deep, seen, copies) : obj[key];
     }
-  }
-
-  if (deep) {
-    seen.push(obj);
-    copies.push(ret);
   }
 
   return ret;
