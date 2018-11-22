@@ -43,5 +43,22 @@ moduleFor(
 
       assert.deepEqual(array, arrayCopy, 'array content cloned successfully in new array');
     }
+
+    ['@test Ember.copy cycle detection'](assert) {
+      let obj = {
+        foo: {
+          bar: 'bar',
+        },
+      };
+      obj.foo.foo = obj.foo;
+      let cycleCopy = null;
+      expectDeprecation(() => {
+        cycleCopy = copy(obj, true);
+      }, 'Use ember-copy addon instead of copy method and Copyable mixin.');
+
+      assert.equal(cycleCopy.foo.bar, 'bar');
+      assert.notEqual(cycleCopy.foo.foo, obj.foo.foo);
+      assert.strictEqual(cycleCopy.foo.foo, cycleCopy.foo.foo);
+    }
   }
 );
