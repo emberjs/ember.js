@@ -72,11 +72,17 @@ describe('Blueprint: initializer-test', function() {
       return emberNew({ target: 'addon' });
     });
 
-    it('initializer-test foo', function() {
-      return emberGenerateDestroy(['initializer-test', 'foo'], _file => {
-        expect(_file('tests/unit/initializers/foo-test.js')).to.equal(
-          fixture('initializer-test/dummy.js')
-        );
+    describe('with ember-cli-qunit@4.1.0', function() {
+      beforeEach(function() {
+        generateFakePackageManifest('ember-cli-qunit', '4.1.0');
+      });
+
+      it('initializer-test foo', function() {
+        return emberGenerateDestroy(['initializer-test', 'foo'], _file => {
+          expect(_file('tests/unit/initializers/foo-test.js')).to.equal(
+            fixture('initializer-test/dummy.js')
+          );
+        });
       });
     });
   });
