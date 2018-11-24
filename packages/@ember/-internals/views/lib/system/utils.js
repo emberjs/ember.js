@@ -199,3 +199,15 @@ export const elMatches =
 export function matches(el, selector) {
   return elMatches.call(el, selector);
 }
+
+export function contains(a, b) {
+  if (a.contains !== undefined) {
+    return a.contains(b);
+  }
+  while ((b = b.parentNode)) {
+    if (b === a) {
+      return true;
+    }
+  }
+  return false;
+}
