@@ -94,20 +94,34 @@ discussion at [discuss.emberjs.com](https://discuss.emberjs.com)
 
 # Building Ember.js
 
-Building Ember is quite simple.
+Building Ember.js is a quick process:
 
 ```sh
-clone the latest ember.js directory from github
+# clone the latest ember.js directory from github
  - git clone https://github.com/emberjs/ember.js.git
 
-cd to the cloned ember.js directory
+# cd to the cloned ember.js directory
  - cd ember.js
 
-ensure Node.js and yarn are installed
+# ensure Node.js and yarn are installed
 
-follow these commands to build ember.js
+# build ember.js
  - yarn install
- - yarn run build
+ - yarn build
+```
+
+## Using Custom Builds in an Ember CLI App
+While testing custom behavior (maybe that you'd like to write an RFC for...), here's how you'd use a local custom build with an Ember app to test out the custom build:
+
+```sh
+# cd to the directory from Building Ember.js (above)
+cd ember.js
+yarn link
+yarn start
+
+# in a new terminal
+cd ../your-app-directory/
+yarn link ember-source
 ```
 
 # How to Run Unit Tests
