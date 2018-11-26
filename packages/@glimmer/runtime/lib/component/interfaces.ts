@@ -55,7 +55,7 @@ export interface ComponentManager<ComponentInstanceState, ComponentDefinitionSta
     state: ComponentDefinitionState,
     args: Option<IArguments>,
     dynamicScope: Option<DynamicScope>,
-    caller: Option<VersionedPathReference<Opaque>>,
+    caller: Option<VersionedPathReference<unknown>>,
     hasDefaultBlock: boolean
   ): ComponentInstanceState;
 

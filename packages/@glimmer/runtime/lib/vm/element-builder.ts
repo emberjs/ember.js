@@ -484,7 +484,7 @@ export class SimpleLiveBlock implements LiveBlock {
   }
 }
 
-export class RemoteLiveBlock extends SimpleLiveBlock {
+export class RemoteLiveBlock extends SimpleLiveBlock implements SymbolDestroyable {
   [DESTROY]() {
     clear(this);
   }

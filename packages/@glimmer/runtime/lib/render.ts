@@ -1,9 +1,9 @@
-import { IteratorResult, RenderResult, VM } from './vm';
+import { RenderResult, VM } from './vm';
 import { RuntimeProgram } from './vm/append';
 import { ElementBuilder } from './vm/element-builder';
 import { DynamicScope, Environment } from './environment';
 import { PathReference } from '@glimmer/reference';
-import { Opaque, Dict } from '@glimmer/interfaces';
+import { Opaque, Dict, RichIteratorResult } from '@glimmer/interfaces';
 import { resolveComponent } from './component/resolve';
 import { expect } from '@glimmer/util';
 import { capabilityFlagsFrom } from './capabilities';
@@ -11,12 +11,12 @@ import { hasStaticLayoutCapability } from './compiled/opcodes/component';
 import { CONSTANTS, ARGS } from './symbols';
 
 export interface TemplateIterator {
-  next(): IteratorResult<RenderResult>;
+  next(): RichIteratorResult<null, RenderResult>;
 }
 
 class TemplateIteratorImpl<T> implements TemplateIterator {
   constructor(private vm: VM<T>) {}
-  next(): IteratorResult<RenderResult> {
+  next(): RichIteratorResult<null, RenderResult> {
     return this.vm.next();
   }
 }

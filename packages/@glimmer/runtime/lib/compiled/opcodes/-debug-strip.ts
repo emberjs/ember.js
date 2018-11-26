@@ -19,7 +19,7 @@ import {
 } from '../../vm/arguments';
 import { ComponentInstance } from './component';
 import { ComponentManager } from '../../internal-interfaces';
-import { Scope } from '../../environment';
+import { ScopeImpl } from '../../environment';
 import { CompilableBlock } from '@glimmer/interfaces';
 
 export const CheckTag: Checker<Tag> = CheckInstanceof(TagWrapper);
@@ -43,7 +43,7 @@ export const CheckCapturedArguments: Checker<ICapturedArguments> = CheckInterfac
   named: CheckInstanceof(CapturedNamedArguments),
 });
 
-export const CheckScope = wrap(() => CheckInstanceof(Scope));
+export const CheckScope = wrap(() => CheckInstanceof(ScopeImpl));
 
 export const CheckComponentManager: Checker<ComponentManager> = CheckInterface({
   getCapabilities: CheckFunction,

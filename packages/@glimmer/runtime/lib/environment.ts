@@ -11,7 +11,7 @@ import { UNDEFINED_REFERENCE, ConditionalReference } from './references';
 import { DynamicAttribute, dynamicAttribute } from './vm/attributes/dynamic';
 import { Component, ComponentManager, ModifierManager, Modifier } from './internal-interfaces';
 
-export type ScopeBlock = [number | CompilableBlock, Scope, BlockSymbolTable];
+export type ScopeBlock = [number | CompilableBlock, ScopeImpl, BlockSymbolTable];
 export type BlockValue = ScopeBlock[0 | 1 | 2];
 export type ScopeSlot = Option<PathReference<Opaque>> | Option<ScopeBlock>;
 
@@ -21,7 +21,29 @@ export interface DynamicScope {
   child(): DynamicScope;
 }
 
-export class Scope {
+export interface Scope {
+  getSelf(): PathReference<unknown>;
+  getSymbol(symbol: number): PathReference<unknown>;
+  getBlock(symbol: number): Option<ScopeBlock>;
+  getEvalScope(): Option<Dict<ScopeSlot>>;
+  getPartialMap(): Option<Dict<PathReference<unknown>>>;
+  bind(symbol: number, value: ScopeSlot): void;
+  bindSelf(self: PathReference<unknown>): void;
+  bindSymbol(symbol: number, value: PathReference<unknown>): void;
+  bindBlock(symbol: number, value: Option<ScopeBlock>): void;
+  bindEvalScope(map: Option<Dict<ScopeSlot>>): void;
+  bindPartialMap(map: Dict<PathReference<Opaque>>): void;
+  bindCallerScope(scope: Option<Scope>): void;
+  getCallerScope(): Option<Scope>;
+  child(): Scope;
+}
+
+export interface PartialScope extends Scope {
+  bindCallerScope(scope: Option<Scope>): void;
+  bindEvalScope(scope: Option<Dict<ScopeSlot>>): void;
+}
+
+export class ScopeImpl implements PartialScope {
   static root(self: PathReference<Opaque>, size = 0) {
     let refs: PathReference<Opaque>[] = new Array(size + 1);
 
@@ -29,7 +51,7 @@ export class Scope {
       refs[i] = UNDEFINED_REFERENCE;
     }
 
-    return new Scope(refs, null, null, null).init({ self });
+    return new ScopeImpl(refs, null, null, null).init({ self });
   }
 
   static sized(size = 0) {
@@ -39,7 +61,7 @@ export class Scope {
       refs[i] = UNDEFINED_REFERENCE;
     }
 
-    return new Scope(refs, null, null, null);
+    return new ScopeImpl(refs, null, null, null);
   }
 
   constructor(
@@ -102,7 +124,7 @@ export class Scope {
     this.partialMap = map;
   }
 
-  bindCallerScope(scope: Option<Scope>) {
+  bindCallerScope(scope: Option<Scope>): void {
     this.callerScope = scope;
   }
 
@@ -110,8 +132,8 @@ export class Scope {
     return this.callerScope;
   }
 
-  child(): Scope {
-    return new Scope(this.slots.slice(), this.callerScope, this.evalScope, this.partialMap);
+  child(): ScopeImpl {
+    return new ScopeImpl(this.slots.slice(), this.callerScope, this.evalScope, this.partialMap);
   }
 
   private get<T extends ScopeSlot>(index: number): T {

@@ -17,13 +17,7 @@ export {
 
 export { default as getDynamicVar } from './lib/helpers/get-dynamic-var';
 
-export {
-  PublicVM as VM,
-  VM as LowLevelVM,
-  UpdatingVM,
-  RenderResult,
-  IteratorResult,
-} from './lib/vm';
+export { PublicVM as VM, VM as LowLevelVM, UpdatingVM, RenderResult } from './lib/vm';
 
 export { SimpleDynamicAttribute, DynamicAttribute } from './lib/vm/attributes/dynamic';
 
@@ -40,7 +34,7 @@ export {
 export { SafeString } from './lib/upsert';
 
 export {
-  Scope,
+  ScopeImpl,
   default as Environment,
   DefaultEnvironment,
   Helper,

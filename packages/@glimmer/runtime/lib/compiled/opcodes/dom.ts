@@ -7,7 +7,7 @@ import {
   isConst,
   isConstTag,
 } from '@glimmer/reference';
-import { Opaque, Option, destructor } from '@glimmer/util';
+import { Opaque, Option } from '@glimmer/util';
 import {
   expectStackChange,
   check,
@@ -75,7 +75,7 @@ APPEND_OPCODES.add(Op.PushRemoteElement, vm => {
   }
 
   let block = vm.elements().pushRemoteElement(element, guid, nextSibling);
-  if (block) vm.associateDestructor(destructor(block));
+  if (block) vm.associateDestroyable(block);
 });
 
 APPEND_OPCODES.add(Op.PopRemoteElement, vm => {

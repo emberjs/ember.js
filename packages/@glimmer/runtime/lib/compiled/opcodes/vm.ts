@@ -21,7 +21,7 @@ import {
 import { stackAssert } from './assert';
 import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
 import { PrimitiveReference } from '../../references';
-import { VM, UpdatingVM } from '../../vm';
+import { UpdatingVM } from '../../vm';
 import { Arguments } from '../../vm/arguments';
 import { LazyConstants, PrimitiveType } from '@glimmer/program';
 import { CheckReference, CheckScope } from './-debug-strip';
@@ -35,7 +35,7 @@ APPEND_OPCODES.add(Op.PushDynamicScope, vm => vm.pushDynamicScope());
 
 APPEND_OPCODES.add(Op.PopDynamicScope, vm => vm.popDynamicScope());
 
-APPEND_OPCODES.add(Op.Constant, (vm: VM<Opaque>, { op1: other }) => {
+APPEND_OPCODES.add(Op.Constant, (vm, { op1: other }) => {
   vm.stack.push((vm[CONSTANTS] as LazyConstants).getOther(other));
 });
 
