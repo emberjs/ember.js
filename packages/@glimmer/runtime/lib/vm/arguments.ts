@@ -4,7 +4,7 @@ import { combineTagged } from '@glimmer/reference';
 import { Dict, Opaque, Option, unsafe, BlockSymbolTable } from '@glimmer/interfaces';
 import { Tag, VersionedPathReference, CONSTANT_TAG } from '@glimmer/reference';
 import { PrimitiveReference, UNDEFINED_REFERENCE } from '../references';
-import { ScopeBlock, Scope, BlockValue } from '../environment';
+import { ScopeBlock, ScopeImpl, BlockValue } from '../environment';
 import { CheckBlockSymbolTable, check, CheckHandle, CheckOption, CheckOr } from '@glimmer/debug';
 import {
   CheckPathReference,
@@ -606,7 +606,7 @@ class CapturedBlockArguments implements ICapturedBlockArguments {
 
     return [
       this.values[idx * 3 + 2] as number,
-      this.values[idx * 3 + 1] as Scope,
+      this.values[idx * 3 + 1] as ScopeImpl,
       this.values[idx * 3] as BlockSymbolTable,
     ];
   }

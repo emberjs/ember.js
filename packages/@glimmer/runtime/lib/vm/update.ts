@@ -1,4 +1,4 @@
-import { Scope, DynamicScope, Environment } from '../environment';
+import { ScopeImpl, DynamicScope, Environment } from '../environment';
 import { move as moveBounds } from '../bounds';
 import { NewElementBuilder, LiveBlock, UpdatableBlock } from './element-builder';
 import { Option, Opaque, Stack, LinkedList, Dict, dict, expect, associate } from '@glimmer/util';
@@ -93,7 +93,7 @@ export interface Runtime {
 
 export interface VMState {
   pc: number;
-  scope: Scope;
+  scope: ScopeImpl;
   dynamicScope: DynamicScope;
   stack: Opaque[];
 }

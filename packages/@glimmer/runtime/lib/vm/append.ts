@@ -1,5 +1,5 @@
 import { Register } from '@glimmer/vm';
-import { Scope, DynamicScope, Environment } from '../environment';
+import { ScopeImpl, DynamicScope, Environment, Scope, PartialScope } from '../environment';
 import { ElementBuilder, LiveBlock } from './element-builder';
 import {
   Option,
@@ -36,6 +36,7 @@ import { UNDEFINED_REFERENCE } from '../references';
 import { Heap, Opcode } from '@glimmer/program';
 import { DEBUG } from '@glimmer/local-debug-flags';
 import { HEAP, INNER_VM, DESTRUCTOR_STACK, CONSTANTS, ARGS } from '../symbols';
+import { RichIteratorResult } from '@glimmer/interfaces';
 
 /**
  * This is used in the Glimmer Embedding API. In particular, embeddings
@@ -51,19 +52,64 @@ export interface PublicVM {
 }
 
 /**
- * This is needed because the normal IteratorResult in the TypeScript
- * standard library is generic over the value in each tick and not over
- * the return value. It represents a standard ECMAScript IteratorResult.
+ * This interface is used by internal opcodes, and is more stable than
+ * the implementation of the Append VM itself.
  */
-export type IteratorResult<T> =
-  | {
-      done: false;
-      value: null;
-    }
-  | {
-      done: true;
-      value: T;
-    };
+export interface InternalVM {
+  readonly [CONSTANTS]: RuntimeConstants<unknown>;
+
+  readonly env: Environment;
+  readonly stack: EvaluationStack;
+
+  loadValue(register: Register, value: unknown): void;
+
+  fetchValue(register: Register.ra | Register.pc): number;
+  // TODO: Something better than a type assertion?
+  fetchValue<T>(register: Register): T;
+  fetchValue(register: Register): unknown;
+
+  load(register: Register): void;
+  fetch(register: Register): void;
+
+  scope(): ScopeImpl;
+  elements(): ElementBuilder;
+
+  getSelf(): PathReference<unknown>;
+
+  updateWith(opcode: UpdatingOpcode): void;
+
+  associateDestroyable(d: SymbolDestroyable | Destroyable): void;
+
+  beginCacheGroup(): void;
+  commitCacheGroup(): void;
+
+  /// Iteration ///
+
+  enterList(offset: number): void;
+  exitList(): void;
+  iterate(memo: PathReference<unknown>, item: PathReference<unknown>): TryOpcode;
+  enterItem(key: string, opcode: TryOpcode): void;
+
+  // TODO: bindCallerScope can be deleted
+  pushRootScope(size: number, bindCallerScope: boolean): PartialScope;
+  pushChildScope(): void;
+  popScope(): void;
+  pushScope(scope: Scope): void;
+
+  dynamicScope(): DynamicScope;
+  bindDynamicScope(names: number[]): void;
+  pushDynamicScope(): void;
+  popDynamicScope(): void;
+
+  enter(args: number): void;
+  exit(): void;
+
+  goto(pc: number): void;
+  call(handle: number): void;
+  pushFrame(): void;
+
+  referenceForSymbol(symbol: number): PathReference<unknown>;
+}
 
 export interface RuntimeProgram<Locator> extends Program {
   heap: Heap;
@@ -71,14 +117,14 @@ export interface RuntimeProgram<Locator> extends Program {
 }
 
 class Stacks {
-  readonly scope = new Stack<Scope>();
+  readonly scope = new Stack<ScopeImpl>();
   readonly dynamicScope = new Stack<DynamicScope>();
   readonly updating = new Stack<LinkedList<UpdatingOpcode>>();
   readonly cache = new Stack<Option<UpdatingOpcode>>();
   readonly list = new Stack<ListBlockOpcode>();
 }
 
-export default class VM<T> implements PublicVM {
+export default class VM<T> implements PublicVM, InternalVM {
   private stacks = new Stacks();
   private readonly destructor: object;
   readonly [CONSTANTS]: RuntimeConstants<T>;
@@ -135,7 +181,7 @@ export default class VM<T> implements PublicVM {
   }
 
   // Load a value into a register
-  loadValue<T>(register: Register, value: T) {
+  loadValue(register: Register, value: unknown) {
     this[Register[register]] = value;
   }
 
@@ -186,7 +232,7 @@ export default class VM<T> implements PublicVM {
     handle: number
   ) {
     let scopeSize = program.heap.scopesizeof(handle);
-    let scope = Scope.root(self, scopeSize);
+    let scope = ScopeImpl.root(self, scopeSize);
     let vm = new VM(
       { program, env },
       { pc: program.heap.getaddr(handle), scope, dynamicScope, stack: [] },
@@ -218,7 +264,7 @@ export default class VM<T> implements PublicVM {
       { program, env },
       {
         pc: program.heap.getaddr(handle),
-        scope: Scope.root(UNDEFINED_REFERENCE, 0),
+        scope: ScopeImpl.root(UNDEFINED_REFERENCE, 0),
         dynamicScope,
         stack: [],
       },
@@ -418,7 +464,7 @@ export default class VM<T> implements PublicVM {
     return this.elementStack;
   }
 
-  scope(): Scope {
+  scope(): ScopeImpl {
     return expect(this.stacks.scope.current, 'expected scope on the scope stack');
   }
 
@@ -439,14 +485,14 @@ export default class VM<T> implements PublicVM {
     return child;
   }
 
-  pushRootScope(size: number, bindCaller: boolean): Scope {
-    let scope = Scope.sized(size);
+  pushRootScope(size: number, bindCaller: boolean): PartialScope {
+    let scope = ScopeImpl.sized(size);
     if (bindCaller) scope.bindCallerScope(this.scope());
     this.stacks.scope.push(scope);
     return scope;
   }
 
-  pushScope(scope: Scope) {
+  pushScope(scope: ScopeImpl) {
     this.stacks.scope.push(scope);
   }
 
@@ -464,7 +510,7 @@ export default class VM<T> implements PublicVM {
     return this.scope().getSelf();
   }
 
-  referenceForSymbol(symbol: number): PathReference<any> {
+  referenceForSymbol(symbol: number): PathReference<unknown> {
     return this.scope().getSymbol(symbol);
   }
 
@@ -477,7 +523,7 @@ export default class VM<T> implements PublicVM {
 
     if (initialize) initialize(this);
 
-    let result: IteratorResult<RenderResult>;
+    let result: RichIteratorResult<null, RenderResult>;
 
     while (true) {
       result = this.next();
@@ -487,10 +533,10 @@ export default class VM<T> implements PublicVM {
     return result.value;
   }
 
-  next(): IteratorResult<RenderResult> {
+  next(): RichIteratorResult<null, RenderResult> {
     let { env, elementStack } = this;
     let opcode = this[INNER_VM].nextStatement();
-    let result: IteratorResult<RenderResult>;
+    let result: RichIteratorResult<null, RenderResult>;
     if (opcode !== null) {
       this[INNER_VM].evaluateOuter(opcode, this);
       result = { done: false, value: null };

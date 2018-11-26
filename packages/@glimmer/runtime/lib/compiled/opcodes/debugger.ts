@@ -1,17 +1,17 @@
 import { Opaque } from '@glimmer/interfaces';
 import { VersionedPathReference } from '@glimmer/reference';
 import { dict } from '@glimmer/util';
-import { Scope } from '../../environment';
+import { ScopeImpl } from '../../environment';
 import { APPEND_OPCODES } from '../../opcodes';
 import { Op } from '@glimmer/vm';
 import { CONSTANTS } from '../../symbols';
 
-export type DebugGet = ((path: string) => Opaque);
+export type DebugGet = ((path: string) => unknown);
 
-export type DebugCallback = ((context: Opaque, get: DebugGet) => void);
+export type DebugCallback = ((context: unknown, get: DebugGet) => void);
 
 /* tslint:disable */
-function debugCallback(context: Opaque, get: DebugGet): void {
+function debugCallback(context: unknown, get: DebugGet): void {
   console.info('Use `context`, and `get(<path>)` to debug this template.');
 
   // for example...
@@ -35,7 +35,7 @@ export function resetDebuggerCallback() {
 class ScopeInspector {
   private locals = dict<VersionedPathReference<Opaque>>();
 
-  constructor(private scope: Scope, symbols: string[], evalInfo: number[]) {
+  constructor(private scope: ScopeImpl, symbols: string[], evalInfo: number[]) {
     for (let i = 0; i < evalInfo.length; i++) {
       let slot = evalInfo[i];
       let name = symbols[slot - 1];

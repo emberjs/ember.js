@@ -29,7 +29,7 @@ import {
 import Bounds from '../../bounds';
 import { DynamicScope, ScopeSlot } from '../../environment';
 import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
-import { UpdatingVM, VM } from '../../vm';
+import { UpdatingVM } from '../../vm';
 import { Arguments, IArguments, BlockArguments } from '../../vm/arguments';
 import { IsCurriedComponentDefinitionReference, ContentTypeReference } from './content';
 import { UpdateDynamicAttributeOpcode } from './dom';
@@ -65,6 +65,7 @@ import {
   CheckFinishedComponentInstance,
 } from './-debug-strip';
 import { CONSTANTS, ARGS } from '../../symbols';
+import { InternalVM } from '../../vm/append';
 
 /**
  * The VM creates a new ComponentInstance data structure for every component
@@ -341,7 +342,7 @@ APPEND_OPCODES.add(Op.CreateComponent, (vm, { op1: flags, op2: _state }) => {
     args = check(vm.stack.peek(), CheckArguments);
   }
 
-  let self: Option<VersionedPathReference<Opaque>> = null;
+  let self: Option<VersionedPathReference<unknown>> = null;
   if (hasCapability(capabilities, Capability.CreateCaller)) {
     self = vm.getSelf();
   }
@@ -415,7 +416,7 @@ export class ComponentElementOperations {
     this.attributes[name] = deferred;
   }
 
-  flush(vm: VM<Opaque>) {
+  flush(vm: InternalVM) {
     for (let name in this.attributes) {
       let attr = this.attributes[name];
       let { value: reference, namespace, trusting } = attr;
@@ -595,7 +596,7 @@ function bindBlock(
   blockName: string,
   state: ComponentInstance,
   blocks: BlockArguments,
-  vm: VM<Opaque>
+  vm: InternalVM
 ) {
   let symbol = state.table.symbols.indexOf(symbolName);
 

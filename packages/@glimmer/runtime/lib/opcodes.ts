@@ -18,6 +18,7 @@ import { DEBUG, DEVMODE } from '@glimmer/local-debug-flags';
 // these import bindings will be stripped from build
 import { debug, logOpcode } from '@glimmer/opcode-compiler';
 import { DESTRUCTOR_STACK, INNER_VM, CONSTANTS } from './symbols';
+import { InternalVM } from './vm/append';
 
 export interface OpcodeJSON {
   type: number | string;
@@ -32,7 +33,7 @@ export type Operand1 = number;
 export type Operand2 = number;
 export type Operand3 = number;
 
-export type Syscall = (vm: VM<Opaque>, opcode: Opcode) => void;
+export type Syscall = (vm: InternalVM, opcode: Opcode) => void;
 export type MachineOpcode = (vm: LowLevelVM, opcode: Opcode) => void;
 
 export type Evaluate =
