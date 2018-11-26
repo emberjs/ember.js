@@ -1,5 +1,6 @@
 'use strict';
 
+const path = require('path');
 const MergeTrees = require('broccoli-merge-trees');
 const Funnel = require('broccoli-funnel');
 const Rollup = require('broccoli-rollup');
@@ -33,7 +34,10 @@ const {
   buildEmberEnvFlagsES,
   getPackagesES,
 } = require('./broccoli/packages');
+const BroccoliDebug = require('broccoli-debug');
 const ENV = process.env.EMBER_ENV || 'development';
+
+let debugTree = BroccoliDebug.buildDebugCallback('ember-source:ember-cli-build');
 
 module.exports = function() {
   let loader = internalLoader();
@@ -307,7 +311,9 @@ function rollupPackage(packagesES, name) {
     destDir: name,
   });
 
-  return new Rollup(rollupRestrictedInput, {
+  rollupRestrictedInput = debugTree(rollupRestrictedInput, `rollup-package:${name}:input`);
+
+  let output = new Rollup(rollupRestrictedInput, {
     annotation: `rollup ${name}`,
     rollup: {
       input: `${name}/index.js`,
@@ -319,7 +325,7 @@ function rollupPackage(packagesES, name) {
 
         // import is relative initially, then expanded to absolute
         // when resolveId is called. this checks for either...
-        if (importee[0] === '.' || importee[0] === '/') {
+        if (importee[0] === '.' || path.isAbsolute(importee)) {
           return false;
         }
 
@@ -332,4 +338,6 @@ function rollupPackage(packagesES, name) {
       },
     },
   });
+
+  return debugTree(output, `rollup-package:${name}:output`);
 }
