@@ -11,10 +11,14 @@ export { CompilableBlock, CompilableProgram } from './lib/compilable-template';
 export {
   LazyOpcodeBuilder,
   EagerOpcodeBuilder,
-  OpcodeBuilder,
-  OpcodeBuilderConstructor,
+  OpcodeBuilderImpl,
   StdOpcodeBuilder,
 } from './lib/opcode-builder';
+
+export {
+  default as OpcodeBuilder,
+  OpcodeBuilderConstructor,
+} from './lib/opcode-builder-interfaces';
 
 export { PartialDefinition } from './lib/partial-template';
 

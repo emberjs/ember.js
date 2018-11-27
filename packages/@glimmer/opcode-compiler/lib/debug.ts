@@ -5,7 +5,20 @@ import {
   Opaque,
   Recast,
 } from '@glimmer/interfaces';
-import { METADATA, Op, Register } from '@glimmer/vm';
+import {
+  opcodeMetadata,
+  Op,
+  Register,
+  $s0,
+  $s1,
+  $t0,
+  $t1,
+  $v0,
+  $fp,
+  $sp,
+  $pc,
+  $ra,
+} from '@glimmer/vm';
 import { DEBUG } from '@glimmer/local-debug-flags';
 import { unreachable, dict } from '@glimmer/util';
 import { Primitive } from '@glimmer/debug';
@@ -33,11 +46,12 @@ export function debugSlice(program: CompileTimeProgram, start: number, end: numb
 
     let _size = 0;
     for (let i = start; i < end; i = i + _size) {
-      let { type, op1, op2, op3, size } = program.opcode(i);
+      let { type, op1, op2, op3, size, isMachine } = program.opcode(i);
       let [name, params] = debug(
         i,
         constants as Recast<CompileTimeConstants, DebugConstants>,
         type,
+        isMachine,
         op1,
         op2,
         op3
@@ -93,9 +107,10 @@ export function debug(
   pos: number,
   c: DebugConstants,
   op: Op,
+  isMachine: 0 | 1,
   ...operands: number[]
 ): [string, object] {
-  let metadata = METADATA[op];
+  let metadata = opcodeMetadata(op, isMachine);
 
   if (!metadata) {
     throw unreachable(`Missing Opcode Metadata for ${op}`);
@@ -137,7 +152,7 @@ export function debug(
         out[operand.name] = decodePrimitive(op, c);
         break;
       case 'register':
-        out[operand.name] = Register[op];
+        out[operand.name] = decodeRegister(op);
         break;
       case 'serializable':
         out[operand.name] = c.getSerializable(op);
@@ -149,6 +164,29 @@ export function debug(
   });
 
   return [metadata.name, out];
+}
+
+function decodeRegister(register: Register): string {
+  switch (register) {
+    case $pc:
+      return 'pc';
+    case $ra:
+      return 'ra';
+    case $fp:
+      return 'fp';
+    case $sp:
+      return 'sp';
+    case $s0:
+      return 's0';
+    case $s1:
+      return 's1';
+    case $t0:
+      return 't0';
+    case $t1:
+      return 't1';
+    case $v0:
+      return 'v0';
+  }
 }
 
 function decodePrimitive(primitive: number, constants: DebugConstants): Primitive {

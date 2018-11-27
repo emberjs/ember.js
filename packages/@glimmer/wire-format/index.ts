@@ -146,6 +146,9 @@ export type Statement = Statements.Statement;
 export type Attribute = Statements.Attribute;
 export type Parameter = Statements.Parameter;
 
+export type SexpSyntax = Statement | TupleExpression;
+export type Syntax = SexpSyntax | Expressions.Value;
+
 /**
  * A JSON object of static compile time meta for the template.
  */

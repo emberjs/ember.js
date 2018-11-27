@@ -17,3 +17,7 @@ export function expect<T>(val: Maybe<T>, message: string): T {
 export function unreachable(message = 'unreachable'): Error {
   return new Error(message);
 }
+
+export function exhausted(value: never): never {
+  throw new Error(`Exhausted ${value}`);
+}

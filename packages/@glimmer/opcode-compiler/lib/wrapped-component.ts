@@ -1,4 +1,4 @@
-import { Register } from '@glimmer/vm';
+import { Register, $s1, $s0 } from '@glimmer/vm';
 import {
   ProgramSymbolTable,
   CompilableProgram,
@@ -13,7 +13,7 @@ import { ComponentArgs, ComponentBuilder as IComponentBuilder } from './interfac
 
 import { debugCompiler, AnyAbstractCompiler } from './compiler';
 import { CompilableBlock as CompilableBlockInstance } from './compilable-template';
-import { OpcodeBuilder } from './opcode-builder';
+import OpcodeBuilder from './opcode-builder-interfaces';
 import { ATTRS_BLOCK } from './syntax';
 
 import { DEBUG } from '@glimmer/local-debug-flags';
@@ -80,39 +80,37 @@ export class WrappedBuilder<Locator> implements CompilableProgram {
     let { compiler, layout } = this;
     let b = compiler.builderFor(layout);
 
-    b.startLabels();
+    b.labels(() => {
+      b.fetch($s1);
 
-    b.fetch(Register.s1);
+      b.getComponentTagName($s0);
+      b.primitiveReference();
 
-    b.getComponentTagName(Register.s0);
-    b.primitiveReference();
+      b.dup();
+      b.load($s1);
 
-    b.dup();
-    b.load(Register.s1);
+      b.jumpUnless('BODY');
 
-    b.jumpUnless('BODY');
+      b.fetch($s1);
+      b.setComponentAttrs(true);
+      b.putComponentOperations();
+      b.openDynamicElement();
+      b.didCreateElement($s0);
+      b.yield(this.attrsBlockNumber, []);
+      b.setComponentAttrs(false);
+      b.flushElement();
 
-    b.fetch(Register.s1);
-    b.setComponentAttrs(true);
-    b.putComponentOperations();
-    b.openDynamicElement();
-    b.didCreateElement(Register.s0);
-    b.yield(this.attrsBlockNumber, []);
-    b.setComponentAttrs(false);
-    b.flushElement();
+      b.label('BODY');
 
-    b.label('BODY');
+      b.invokeStaticBlock(blockFor(layout, compiler));
 
-    b.invokeStaticBlock(blockFor(layout, compiler));
+      b.fetch($s1);
+      b.jumpUnless('END');
+      b.closeElement();
 
-    b.fetch(Register.s1);
-    b.jumpUnless('END');
-    b.closeElement();
-
-    b.label('END');
-    b.load(Register.s1);
-
-    b.stopLabels();
+      b.label('END');
+      b.load($s1);
+    });
 
     let handle = b.commit();
 
@@ -140,7 +138,7 @@ function blockFor<Locator>(
   });
 }
 
-export class ComponentBuilder<Locator> implements IComponentBuilder {
+export class ComponentBuilderImpl<Locator> implements IComponentBuilder {
   constructor(private builder: OpcodeBuilder<Locator>) {}
 
   static(handle: number, args: ComponentArgs) {

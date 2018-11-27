@@ -1,9 +1,9 @@
 import { Option, Opaque, Compiler, NamedBlocks as INamedBlocks } from '@glimmer/interfaces';
 import { assert, dict, unwrap, EMPTY_ARRAY } from '@glimmer/util';
-import { Register } from '@glimmer/vm';
+import { $fp } from '@glimmer/vm';
 import * as WireFormat from '@glimmer/wire-format';
 import * as ClientSide from './client-side';
-import OpcodeBuilder from './opcode-builder';
+import OpcodeBuilder from './opcode-builder-interfaces';
 
 import Ops = WireFormat.Ops;
 import S = WireFormat.Statements;
@@ -12,10 +12,7 @@ import C = WireFormat.Core;
 import { EMPTY_BLOCKS } from './utils';
 
 export type TupleSyntax = WireFormat.Statement | WireFormat.TupleExpression;
-export type CompilerFunction<T extends TupleSyntax> = ((
-  sexp: T,
-  builder: OpcodeBuilder<Opaque>
-) => void);
+export type CompilerFunction<T extends TupleSyntax> = ((sexp: T, builder: OpcodeBuilder) => void);
 
 export const ATTRS_BLOCK = '&attrs';
 
@@ -30,7 +27,7 @@ export class Compilers<Syntax extends TupleSyntax> {
     this.names[name] = this.funcs.length - 1;
   }
 
-  compile(sexp: Syntax, builder: OpcodeBuilder<Opaque>): void {
+  compile(sexp: Syntax, builder: OpcodeBuilder<unknown>): void {
     let name: number = sexp[this.offset];
     let index = this.names[name];
     let func = this.funcs[index];
@@ -233,22 +230,19 @@ export function statementCompiler(): Compilers<WireFormat.Statement> {
 
   CLIENT_SIDE.add(
     ClientSide.Ops.OpenComponentElement,
-    (sexp: ClientSide.OpenComponentElement, builder: OpcodeBuilder) => {
+    (sexp: ClientSide.OpenComponentElement, builder) => {
       builder.putComponentOperations();
       builder.openPrimitiveElement(sexp[2]);
     }
   );
 
-  CLIENT_SIDE.add(
-    ClientSide.Ops.DidCreateElement,
-    (_sexp: ClientSide.DidCreateElement, builder: OpcodeBuilder) => {
-      builder.didCreateElement(Register.s0);
-    }
-  );
+  CLIENT_SIDE.add(ClientSide.Ops.DidCreateElement, (_sexp, builder) => {
+    builder.didCreateElement(Register.s0);
+  });
 
   CLIENT_SIDE.add(
     ClientSide.Ops.SetComponentAttrs,
-    (sexp: ClientSide.SetComponentAttrs, builder: OpcodeBuilder) => {
+    (sexp: ClientSide.SetComponentAttrs, builder) => {
       builder.setComponentAttrs(sexp[2]);
     }
   );
@@ -258,12 +252,9 @@ export function statementCompiler(): Compilers<WireFormat.Statement> {
     debugger;
   });
 
-  CLIENT_SIDE.add(
-    ClientSide.Ops.DidRenderLayout,
-    (_sexp: ClientSide.DidRenderLayout, builder: OpcodeBuilder) => {
-      builder.didRenderLayout(Register.s0);
-    }
-  );
+  CLIENT_SIDE.add(ClientSide.Ops.DidRenderLayout, (_sexp, builder) => {
+    builder.didRenderLayout();
+  });
 
   return STATEMENTS;
 }
@@ -394,40 +385,41 @@ export class Macros {
   }
 }
 
-export type BlockMacro<Locator> = (
+export type BlockMacro = (
   params: C.Params,
   hash: C.Hash,
   blocks: INamedBlocks,
-  builder: OpcodeBuilder<Locator>
+  builder: OpcodeBuilder<unknown>
 ) => void;
-export type MissingBlockMacro<Locator> = (
+
+export type MissingBlockMacro = (
   name: string,
   params: C.Params,
   hash: C.Hash,
   blocks: INamedBlocks,
-  builder: OpcodeBuilder<Locator>
+  builder: OpcodeBuilder<unknown>
 ) => boolean | void;
 
 export class Blocks {
   private names = dict<number>();
-  private funcs: BlockMacro<Opaque>[] = [];
-  private missing: MissingBlockMacro<Opaque> | undefined;
+  private funcs: BlockMacro[] = [];
+  private missing: MissingBlockMacro | undefined;
 
-  add<Locator>(name: string, func: BlockMacro<Locator>) {
-    this.funcs.push(func as BlockMacro<Opaque>);
+  add(name: string, func: BlockMacro) {
+    this.funcs.push(func as BlockMacro);
     this.names[name] = this.funcs.length - 1;
   }
 
-  addMissing<Locator>(func: MissingBlockMacro<Locator>) {
-    this.missing = func as MissingBlockMacro<Opaque>;
+  addMissing(func: MissingBlockMacro) {
+    this.missing = func as MissingBlockMacro;
   }
 
-  compile<Locator>(
+  compile(
     name: string,
     params: C.Params,
     hash: C.Hash,
     blocks: INamedBlocks,
-    builder: OpcodeBuilder<Locator>
+    builder: OpcodeBuilder
   ): void {
     let index = this.names[name];
 
@@ -663,24 +655,22 @@ export function populateBuiltins(
 
         builder.jumpUnless('ELSE');
 
-        builder.pushFrame();
+        builder.frame(() => {
+          builder.dup($fp, 1);
 
-        builder.dup(Register.fp, 1);
+          builder.returnTo('ITER');
+          builder.list('BODY', () => {
+            builder.label('ITER');
+            builder.iterate('BREAK');
 
-        builder.returnTo('ITER');
-        builder.enterList('BODY');
+            builder.label('BODY');
+            builder.invokeStaticBlock(unwrap(blocks.get('default')), 2);
+            builder.pop(2);
+            builder.jump('FINALLY');
 
-        builder.label('ITER');
-        builder.iterate('BREAK');
-
-        builder.label('BODY');
-        builder.invokeStaticBlock(unwrap(blocks.get('default')), 2);
-        builder.pop(2);
-        builder.jump('FINALLY');
-
-        builder.label('BREAK');
-        builder.exitList();
-        builder.popFrame();
+            builder.label('BREAK');
+          });
+        });
 
         builder.jump('FINALLY');
         builder.label('ELSE');
@@ -718,9 +708,7 @@ export function populateBuiltins(
       },
 
       ifTrue() {
-        builder.pushRemoteElement();
-        builder.invokeStaticBlock(unwrap(blocks.get('default')));
-        builder.popRemoteElement();
+        builder.remoteElement(() => builder.invokeStaticBlock(unwrap(blocks.get('default'))));
       },
     });
   });
@@ -729,12 +717,11 @@ export function populateBuiltins(
     if (hash) {
       let [names, expressions] = hash;
 
-      builder.compileParams(expressions);
+      builder.params(expressions);
 
-      builder.pushDynamicScope();
-      builder.bindDynamicScope(names);
-      builder.invokeStaticBlock(unwrap(blocks.get('default')));
-      builder.popDynamicScope();
+      builder.dynamicScope(names, () => {
+        builder.invokeStaticBlock(unwrap(blocks.get('default')));
+      });
     } else {
       builder.invokeStaticBlock(unwrap(blocks.get('default')));
     }

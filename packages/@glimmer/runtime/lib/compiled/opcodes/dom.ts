@@ -9,16 +9,16 @@ import {
 } from '@glimmer/reference';
 import { Opaque, Option } from '@glimmer/util';
 import {
-  expectStackChange,
   check,
   CheckString,
   CheckElement,
   CheckNode,
   CheckOption,
   CheckInstanceof,
+  CheckNull,
 } from '@glimmer/debug';
 import { Simple } from '@glimmer/interfaces';
-import { Op, Register } from '@glimmer/vm';
+import { Op, $t0 } from '@glimmer/vm';
 import {
   ModifierDefinition,
   InternalModifierManager,
@@ -84,13 +84,13 @@ APPEND_OPCODES.add(Op.PopRemoteElement, vm => {
 
 APPEND_OPCODES.add(Op.FlushElement, vm => {
   let operations = check(
-    vm.fetchValue(Register.t0),
+    vm.fetchValue($t0),
     CheckOption(CheckInstanceof(ComponentElementOperations))
   );
 
   if (operations) {
     operations.flush(vm);
-    vm.loadValue(Register.t0, null);
+    vm.loadValue($t0, null, CheckNull);
   }
 
   vm.elements().flushElement();
@@ -98,8 +98,6 @@ APPEND_OPCODES.add(Op.FlushElement, vm => {
 
 APPEND_OPCODES.add(Op.CloseElement, vm => {
   vm.elements().closeElement();
-
-  expectStackChange(vm.stack, 0, 'CloseElement');
 });
 
 APPEND_OPCODES.add(Op.Modifier, (vm, { op1: handle }) => {

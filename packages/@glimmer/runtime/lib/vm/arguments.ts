@@ -1,4 +1,4 @@
-import EvaluationStack from './stack';
+import { EvaluationStack } from './stack';
 import { dict, EMPTY_ARRAY } from '@glimmer/util';
 import { combineTagged } from '@glimmer/reference';
 import { Dict, Opaque, Option, unsafe, BlockSymbolTable } from '@glimmer/interfaces';
@@ -11,6 +11,8 @@ import {
   CheckCompilableBlock,
   CheckScope,
 } from '../compiled/opcodes/-debug-strip';
+import { REGISTERS } from '../symbols';
+import { $sp } from '@glimmer/vm';
 
 /*
   The calling convention is:
@@ -88,13 +90,13 @@ export interface ICapturedNamedArguments extends VersionedPathReference<Dict<Opa
 }
 
 export class Arguments implements IArguments {
-  private stack: EvaluationStack | null = null;
+  private stack: Option<EvaluationStack> = null;
   public positional = new PositionalArguments();
   public named = new NamedArguments();
   public blocks = new BlockArguments();
 
   empty(stack: EvaluationStack): this {
-    let base = stack.sp + 1;
+    let base = stack[REGISTERS][$sp] + 1;
 
     this.named.empty(stack, base);
     this.positional.empty(stack, base);
@@ -122,7 +124,7 @@ export class Arguments implements IArguments {
 
     let named = this.named;
     let namedCount = names.length;
-    let namedBase = stack.sp - namedCount + 1;
+    let namedBase = stack[REGISTERS][$sp] - namedCount + 1;
 
     named.setup(stack, namedBase, namedCount, names, synthetic);
 
@@ -167,7 +169,7 @@ export class Arguments implements IArguments {
 
       positional.base += offset;
       named.base += offset;
-      stack.sp += offset;
+      stack[REGISTERS][$sp] += offset;
     }
   }
 

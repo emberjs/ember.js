@@ -233,7 +233,7 @@ export interface CompilationOptions<Locator, R extends RuntimeResolver<Locator>>
   resolver: R;
   program: Program<Locator>;
   macros: Macros;
-  Builder: OpcodeBuilderConstructor;
+  Builder: OpcodeBuilderConstructor<Locator>;
 }
 
 export interface EnvironmentOptions {

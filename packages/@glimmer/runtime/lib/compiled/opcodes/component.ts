@@ -1,4 +1,4 @@
-import { Op, Register } from '@glimmer/vm';
+import { Op, $v0, $t1, $t0 } from '@glimmer/vm';
 import { Opaque, Option, Dict, dict, assert, unreachable, expect } from '@glimmer/util';
 import {
   VMHandle,
@@ -18,12 +18,12 @@ import {
 } from '@glimmer/reference';
 import {
   check,
-  expectStackChange,
   CheckInstanceof,
   CheckFunction,
   CheckInterface,
   CheckProgramSymbolTable,
   CheckHandle,
+  CheckNull,
 } from '@glimmer/debug';
 
 import Bounds from '../../bounds';
@@ -40,7 +40,6 @@ import {
   WithElementHook,
   ComponentDefinition,
   InternalComponentManager,
-  Invocation,
   WithDynamicLayout,
   WithStaticLayout,
 } from '../../component/interfaces';
@@ -63,9 +62,14 @@ import {
   CheckPathReference,
   CheckComponentInstance,
   CheckFinishedComponentInstance,
+  CheckCurryComponent,
+  CheckElementOperations,
+  CheckComponentDefinition,
+  CheckInvocation,
 } from './-debug-strip';
 import { CONSTANTS, ARGS } from '../../symbols';
 import { InternalVM } from '../../vm/append';
+import { ElementOperations } from '../../vm/element-builder';
 
 /**
  * The VM creates a new ComponentInstance data structure for every component
@@ -76,7 +80,11 @@ import { InternalVM } from '../../vm/append';
  * instance of a component type. It also contains a pointer back to its
  * component type's ComponentDefinition.
  */
+
+export const COMPONENT_INSTANCE = Symbol('COMPONENT_INSTANCE');
+
 export interface ComponentInstance {
+  [COMPONENT_INSTANCE]: true;
   definition: ComponentDefinition;
   manager: InternalComponentManager;
   capabilities: CapabilityFlags;
@@ -87,6 +95,7 @@ export interface ComponentInstance {
 }
 
 export interface InitialComponentInstance {
+  [COMPONENT_INSTANCE]: true;
   definition: PartialComponentDefinition;
   manager: Option<InternalComponentManager>;
   capabilities: Option<CapabilityFlags>;
@@ -97,6 +106,7 @@ export interface InitialComponentInstance {
 }
 
 export interface PopulatedComponentInstance {
+  [COMPONENT_INSTANCE]: true;
   definition: ComponentDefinition;
   manager: InternalComponentManager;
   capabilities: CapabilityFlags;
@@ -134,7 +144,11 @@ APPEND_OPCODES.add(Op.CurryComponent, (vm, { op1: _meta }) => {
   let meta = vm[CONSTANTS].getSerializable(_meta);
   let resolver = vm[CONSTANTS].resolver;
 
-  vm.loadValue(Register.v0, new CurryComponentReference(definition, resolver, meta, capturedArgs));
+  vm.loadValue(
+    $v0,
+    new CurryComponentReference(definition, resolver, meta, capturedArgs),
+    CheckCurryComponent
+  );
 
   // expectStackChange(vm.stack, -args.length - 1, 'CurryComponent');
 });
@@ -147,6 +161,7 @@ APPEND_OPCODES.add(Op.PushComponentDefinition, (vm, { op1: handle }) => {
   let capabilities = capabilityFlagsFrom(manager.getCapabilities(definition.state));
 
   let instance: InitialComponentInstance = {
+    [COMPONENT_INSTANCE]: true,
     definition,
     manager,
     capabilities,
@@ -157,8 +172,6 @@ APPEND_OPCODES.add(Op.PushComponentDefinition, (vm, { op1: handle }) => {
   };
 
   vm.stack.push(instance);
-
-  expectStackChange(vm.stack, 1, 'PushComponentDefinition');
 });
 
 APPEND_OPCODES.add(Op.ResolveDynamicComponent, (vm, { op1: _meta }) => {
@@ -166,7 +179,7 @@ APPEND_OPCODES.add(Op.ResolveDynamicComponent, (vm, { op1: _meta }) => {
   let component = check(stack.pop(), CheckPathReference).value();
   let meta = vm[CONSTANTS].getSerializable(_meta);
 
-  vm.loadValue(Register.t1, null); // Clear the temp register
+  vm.loadValue($t1, null, CheckNull); // Clear the temp register
 
   let definition: ComponentDefinition | CurriedComponentDefinition;
 
@@ -184,7 +197,6 @@ APPEND_OPCODES.add(Op.ResolveDynamicComponent, (vm, { op1: _meta }) => {
   }
 
   stack.push(definition);
-  expectStackChange(vm.stack, 0, 'ResolveDynamicComponent');
 });
 
 APPEND_OPCODES.add(Op.PushDynamicComponentInstance, vm => {
@@ -201,7 +213,6 @@ APPEND_OPCODES.add(Op.PushDynamicComponentInstance, vm => {
   }
 
   stack.push({ definition, capabilities, manager, state: null, handle: null, table: null });
-  expectStackChange(vm.stack, 0, 'PushDynamicComponentInstance');
 });
 
 APPEND_OPCODES.add(Op.PushCurriedComponent, vm => {
@@ -217,8 +228,6 @@ APPEND_OPCODES.add(Op.PushCurriedComponent, vm => {
   }
 
   stack.push(definition);
-
-  expectStackChange(vm.stack, 0, 'PushCurriedComponent');
 });
 
 APPEND_OPCODES.add(Op.PushArgs, (vm, { op1: _names, op2: flags }) => {
@@ -323,7 +332,7 @@ function resolveCurriedComponentDefinition(
 }
 
 APPEND_OPCODES.add(Op.CreateComponent, (vm, { op1: flags, op2: _state }) => {
-  let instance = vm.fetchValue<PopulatedComponentInstance>(_state);
+  let instance = check(vm.fetchValue(_state), CheckComponentInstance);
   let { definition, manager } = instance;
 
   let capabilities = (instance.capabilities = capabilityFlagsFrom(
@@ -351,7 +360,7 @@ APPEND_OPCODES.add(Op.CreateComponent, (vm, { op1: flags, op2: _state }) => {
 
   // We want to reuse the `state` POJO here, because we know that the opcodes
   // only transition at exactly one place.
-  (instance as Recast<InitialComponentInstance, ComponentInstance>).state = state;
+  instance.state = state;
 
   let tag = manager.getTag(state);
 
@@ -373,9 +382,7 @@ APPEND_OPCODES.add(Op.BeginComponentTransaction, vm => {
 });
 
 APPEND_OPCODES.add(Op.PutComponentOperations, vm => {
-  vm.loadValue(Register.t0, new ComponentElementOperations());
-
-  expectStackChange(vm.stack, 0, 'PutComponentOperations');
+  vm.loadValue($t0, new ComponentElementOperations(), CheckElementOperations);
 });
 
 APPEND_OPCODES.add(Op.ComponentAttr, (vm, { op1: _name, op2: trusting, op3: _namespace }) => {
@@ -383,7 +390,7 @@ APPEND_OPCODES.add(Op.ComponentAttr, (vm, { op1: _name, op2: trusting, op3: _nam
   let reference = check(vm.stack.pop(), CheckReference);
   let namespace = _namespace ? vm[CONSTANTS].getString(_namespace) : null;
 
-  check(vm.fetchValue(Register.t0), CheckInstanceof(ComponentElementOperations)).setAttribute(
+  check(vm.fetchValue($t0), CheckInstanceof(ComponentElementOperations)).setAttribute(
     name,
     reference,
     !!trusting,
@@ -397,7 +404,7 @@ interface DeferredAttribute {
   trusting: boolean;
 }
 
-export class ComponentElementOperations {
+export class ComponentElementOperations implements ElementOperations {
   private attributes = dict<DeferredAttribute>();
   private classes: VersionedReference<Opaque>[] = [];
 
@@ -457,7 +464,7 @@ APPEND_OPCODES.add(Op.DidCreateElement, (vm, { op1: _state }) => {
   let { definition, state } = check(vm.fetchValue(_state), CheckComponentInstance);
   let { manager } = definition;
 
-  let operations = check(vm.fetchValue(Register.t0), CheckInstanceof(ComponentElementOperations));
+  let operations = check(vm.fetchValue($t0), CheckInstanceof(ComponentElementOperations));
 
   (manager as WithElementHook<Component>).didCreateElement(
     state,
@@ -528,13 +535,14 @@ export function hasDynamicLayoutCapability(
 }
 
 APPEND_OPCODES.add(Op.Main, (vm, { op1: register }) => {
-  let definition = vm.stack.pop<ComponentDefinition>();
-  let invocation = vm.stack.pop<Invocation>();
+  let definition = check(vm.stack.pop(), CheckComponentDefinition);
+  let invocation = check(vm.stack.pop(), CheckInvocation);
 
   let { manager } = definition;
   let capabilities = capabilityFlagsFrom(manager.getCapabilities(definition.state));
 
   let state: PopulatedComponentInstance = {
+    [COMPONENT_INSTANCE]: true,
     definition,
     manager,
     capabilities,
@@ -544,7 +552,7 @@ APPEND_OPCODES.add(Op.Main, (vm, { op1: register }) => {
     lookup: null,
   };
 
-  vm.loadValue(register, state);
+  vm.loadValue(register, state, CheckComponentInstance);
 });
 
 APPEND_OPCODES.add(Op.PopulateLayout, (vm, { op1: _state }) => {

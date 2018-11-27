@@ -1,4 +1,17 @@
-import { Register } from '@glimmer/vm';
+import {
+  Register,
+  $pc,
+  MachineRegister,
+  isLowLevelRegister,
+  $sp,
+  $fp,
+  SyscallRegister,
+  $s0,
+  $s1,
+  $t0,
+  $t1,
+  $v0,
+} from '@glimmer/vm';
 import { ScopeImpl, DynamicScope, Environment, Scope, PartialScope } from '../environment';
 import { ElementBuilder, LiveBlock } from './element-builder';
 import {
@@ -23,10 +36,10 @@ import {
 } from '@glimmer/reference';
 import { RuntimeConstants } from '@glimmer/program';
 import { LabelOpcode, JumpIfNotModifiedOpcode, DidModifyOpcode } from '../compiled/opcodes/vm';
-import LowLevelVM, { Program } from './low-level';
+import LowLevelVM, { Program, LowLevelRegisters, initializeRegisters } from './low-level';
 import { VMState, ListBlockOpcode, TryOpcode, BlockOpcode, Runtime } from './update';
 import RenderResult from './render-result';
-import EvaluationStack from './stack';
+import EvaluationStackImpl, { EvaluationStack } from './stack';
 import { Arguments } from './arguments';
 
 import { APPEND_OPCODES, UpdatingOpcode, DebugState } from '../opcodes';
@@ -35,8 +48,9 @@ import { UNDEFINED_REFERENCE } from '../references';
 
 import { Heap, Opcode } from '@glimmer/program';
 import { DEBUG } from '@glimmer/local-debug-flags';
-import { HEAP, INNER_VM, DESTRUCTOR_STACK, CONSTANTS, ARGS } from '../symbols';
+import { HEAP, INNER_VM, DESTRUCTOR_STACK, CONSTANTS, ARGS, REGISTERS, STACKS } from '../symbols';
 import { RichIteratorResult } from '@glimmer/interfaces';
+import { Checker, check, CheckOpaque } from '@glimmer/debug';
 
 /**
  * This is used in the Glimmer Embedding API. In particular, embeddings
@@ -61,9 +75,11 @@ export interface InternalVM {
   readonly env: Environment;
   readonly stack: EvaluationStack;
 
-  loadValue(register: Register, value: unknown): void;
+  loadValue(register: MachineRegister, value: number, assertion: Checker<number>): void;
+  loadValue<T>(register: Register, value: T, assertion: Checker<T>): void;
+  loadValue<T>(register: Register | MachineRegister, value: unknown, assertion: Checker<T>): void;
 
-  fetchValue(register: Register.ra | Register.pc): number;
+  fetchValue(register: MachineRegister.ra | MachineRegister.pc): number;
   // TODO: Something better than a type assertion?
   fetchValue<T>(register: Register): T;
   fetchValue(register: Register): unknown;
@@ -125,16 +141,17 @@ class Stacks {
 }
 
 export default class VM<T> implements PublicVM, InternalVM {
-  private stacks = new Stacks();
+  private [STACKS] = new Stacks();
   private readonly destructor: object;
   readonly [CONSTANTS]: RuntimeConstants<T>;
   readonly [ARGS]: Arguments;
   readonly [HEAP]: Heap;
   readonly [INNER_VM]: LowLevelVM;
+  readonly [REGISTERS]: LowLevelRegisters = initializeRegisters();
   readonly [DESTRUCTOR_STACK] = new Stack<object>();
 
-  get stack(): EvaluationStack {
-    return this[INNER_VM].stack as EvaluationStack;
+  get stack(): EvaluationStackImpl {
+    return this[INNER_VM].stack as EvaluationStackImpl;
   }
 
   currentBlock(): LiveBlock {
@@ -144,45 +161,75 @@ export default class VM<T> implements PublicVM, InternalVM {
   /* Registers */
 
   get pc(): number {
-    return this[INNER_VM].pc;
+    return this[INNER_VM].fetchRegister($pc);
   }
 
-  public s0: any = null;
-  public s1: any = null;
-  public t0: any = null;
-  public t1: any = null;
-  public v0: any = null;
+  public s0: unknown = null;
+  public s1: unknown = null;
+  public t0: unknown = null;
+  public t1: unknown = null;
+  public v0: unknown = null;
 
   // Fetch a value from a register onto the stack
-  fetch(register: Register) {
-    this.stack.push(this[Register[register]]);
+  fetch(register: SyscallRegister): void {
+    this.stack.push(this.fetchValue(register));
   }
 
   // Load a value from the stack into a register
-  load(register: Register) {
-    this[Register[register]] = this.stack.pop();
+  load(register: SyscallRegister) {
+    let value = this.stack.pop();
+
+    this.loadValue(register, value, CheckOpaque);
   }
 
   // Fetch a value from a register
-  fetchValue(register: Register.ra | Register.pc): number;
+  fetchValue(register: MachineRegister): number;
   fetchValue<T>(register: Register): T;
-  fetchValue(register: Register): unknown {
+  fetchValue(register: Register | MachineRegister): unknown {
+    if (isLowLevelRegister(register)) {
+      return this[INNER_VM].fetchRegister(register);
+    }
+
     switch (register) {
-      case Register.pc:
-      case Register.ra:
-        return this[INNER_VM].fetchRegister(register);
-      case Register.sp:
-        return this.stack.sp;
-      case Register.fp:
-        return this.stack.fp;
-      default:
-        return this[Register[register]];
+      case $s0:
+        return this.s0;
+      case $s1:
+        return this.s1;
+      case $t0:
+        return this.t0;
+      case $t1:
+        return this.t1;
+      case $v0:
+        return this.v0;
     }
   }
 
   // Load a value into a register
-  loadValue(register: Register, value: unknown) {
-    this[Register[register]] = value;
+
+  loadValue<T>(register: Register | MachineRegister, value: T, assertion: Checker<T>): void {
+    check(value, assertion);
+
+    if (isLowLevelRegister(register)) {
+      this[INNER_VM].loadRegister(register, (value as any) as number);
+    }
+
+    switch (register) {
+      case $s0:
+        this.s0 = value;
+        break;
+      case $s1:
+        this.s1 = value;
+        break;
+      case $t0:
+        this.t0 = value;
+        break;
+      case $t1:
+        this.t1 = value;
+        break;
+      case $v0:
+        this.v0 = value;
+        break;
+    }
   }
 
   /**
@@ -283,13 +330,16 @@ export default class VM<T> implements PublicVM, InternalVM {
     { pc, scope, dynamicScope, stack }: VMState,
     private readonly elementStack: ElementBuilder
   ) {
-    let evalStack = EvaluationStack.restore(stack);
+    let evalStack = EvaluationStackImpl.restore(stack);
+    evalStack[REGISTERS][$pc] = pc;
+    evalStack[REGISTERS][$sp] = stack.length - 1;
+    evalStack[REGISTERS][$fp] = -1;
 
     this[HEAP] = this.program.heap;
     this[CONSTANTS] = this.program.constants;
     this.elementStack = elementStack;
-    this.stacks.scope.push(scope);
-    this.stacks.dynamicScope.push(dynamicScope);
+    this[STACKS].scope.push(scope);
+    this[STACKS].dynamicScope.push(dynamicScope);
     this[ARGS] = new Arguments();
     this[INNER_VM] = new LowLevelVM(
       evalStack,
@@ -304,7 +354,7 @@ export default class VM<T> implements PublicVM, InternalVM {
           APPEND_OPCODES.debugAfter(this, opcode, opcode.type, state);
         },
       },
-      pc
+      evalStack[REGISTERS]
     );
 
     this.destructor = {};
@@ -319,7 +369,7 @@ export default class VM<T> implements PublicVM, InternalVM {
     return this.runtime.env;
   }
 
-  capture(args: number, pc = this[INNER_VM].pc): VMState {
+  capture(args: number, pc = this[INNER_VM].fetchRegister($pc)): VMState {
     return {
       pc,
       dynamicScope: this.dynamicScope(),
@@ -329,7 +379,7 @@ export default class VM<T> implements PublicVM, InternalVM {
   }
 
   beginCacheGroup() {
-    this.stacks.cache.push(this.updating().tail());
+    this[STACKS].cache.push(this.updating().tail());
   }
 
   commitCacheGroup() {
@@ -343,7 +393,7 @@ export default class VM<T> implements PublicVM, InternalVM {
     let END = new LabelOpcode('END');
 
     let opcodes = this.updating();
-    let marker = this.stacks.cache.pop();
+    let marker = this[STACKS].cache.pop();
     let head = marker ? opcodes.nextNode(marker) : opcodes.head();
     let tail = opcodes.tail();
     let tag = combineSlice(new ListSlice(head, tail));
@@ -396,7 +446,7 @@ export default class VM<T> implements PublicVM, InternalVM {
 
     let opcode = new ListBlockOpcode(state, this.runtime, list, updating, artifacts);
 
-    this.stacks.list.push(opcode);
+    this[STACKS].list.push(opcode);
 
     this.didEnter(opcode);
   }
@@ -420,15 +470,15 @@ export default class VM<T> implements PublicVM, InternalVM {
 
   exitList() {
     this.exit();
-    this.stacks.list.pop();
+    this[STACKS].list.pop();
   }
 
   pushUpdating(list = new LinkedList<UpdatingOpcode>()): void {
-    this.stacks.updating.push(list);
+    this[STACKS].updating.push(list);
   }
 
   popUpdating(): LinkedList<UpdatingOpcode> {
-    return expect(this.stacks.updating.pop(), "can't pop an empty stack");
+    return expect(this[STACKS].updating.pop(), "can't pop an empty stack");
   }
 
   updateWith(opcode: UpdatingOpcode) {
@@ -436,7 +486,7 @@ export default class VM<T> implements PublicVM, InternalVM {
   }
 
   listBlock(): ListBlockOpcode {
-    return expect(this.stacks.list.current, 'expected a list block');
+    return expect(this[STACKS].list.current, 'expected a list block');
   }
 
   associateDestructor(child: Drop): void {
@@ -450,12 +500,12 @@ export default class VM<T> implements PublicVM, InternalVM {
   }
 
   tryUpdating(): Option<LinkedList<UpdatingOpcode>> {
-    return this.stacks.updating.current;
+    return this[STACKS].updating.current;
   }
 
   updating(): LinkedList<UpdatingOpcode> {
     return expect(
-      this.stacks.updating.current,
+      this[STACKS].updating.current,
       'expected updating opcode on the updating opcode stack'
     );
   }
@@ -465,43 +515,43 @@ export default class VM<T> implements PublicVM, InternalVM {
   }
 
   scope(): ScopeImpl {
-    return expect(this.stacks.scope.current, 'expected scope on the scope stack');
+    return expect(this[STACKS].scope.current, 'expected scope on the scope stack');
   }
 
   dynamicScope(): DynamicScope {
     return expect(
-      this.stacks.dynamicScope.current,
+      this[STACKS].dynamicScope.current,
       'expected dynamic scope on the dynamic scope stack'
     );
   }
 
   pushChildScope() {
-    this.stacks.scope.push(this.scope().child());
+    this[STACKS].scope.push(this.scope().child());
   }
 
   pushDynamicScope(): DynamicScope {
     let child = this.dynamicScope().child();
-    this.stacks.dynamicScope.push(child);
+    this[STACKS].dynamicScope.push(child);
     return child;
   }
 
   pushRootScope(size: number, bindCaller: boolean): PartialScope {
     let scope = ScopeImpl.sized(size);
     if (bindCaller) scope.bindCallerScope(this.scope());
-    this.stacks.scope.push(scope);
+    this[STACKS].scope.push(scope);
     return scope;
   }
 
   pushScope(scope: ScopeImpl) {
-    this.stacks.scope.push(scope);
+    this[STACKS].scope.push(scope);
   }
 
   popScope() {
-    this.stacks.scope.pop();
+    this[STACKS].scope.pop();
   }
 
   popDynamicScope() {
-    this.stacks.dynamicScope.pop();
+    this[STACKS].dynamicScope.pop();
   }
 
   /// SCOPE HELPERS
@@ -518,7 +568,7 @@ export default class VM<T> implements PublicVM, InternalVM {
 
   execute(initialize?: (vm: VM<T>) => void): RenderResult {
     if (DEBUG) {
-      console.log(`EXECUTING FROM ${this[INNER_VM].pc}`);
+      console.log(`EXECUTING FROM ${this[INNER_VM].fetchRegister($pc)}`);
     }
 
     if (initialize) initialize(this);

@@ -10,14 +10,14 @@ import {
   assert,
 } from '@glimmer/util';
 import { recordStackSize } from '@glimmer/debug';
-import { Op } from '@glimmer/vm';
+import { Op, $pc, $sp, $ra, $fp } from '@glimmer/vm';
 import { Tag } from '@glimmer/reference';
-import { METADATA } from '@glimmer/vm';
+import { opcodeMetadata } from '@glimmer/vm';
 import { Opcode, Opaque } from '@glimmer/interfaces';
 import { DEBUG, DEVMODE } from '@glimmer/local-debug-flags';
 // these import bindings will be stripped from build
 import { debug, logOpcode } from '@glimmer/opcode-compiler';
-import { DESTRUCTOR_STACK, INNER_VM, CONSTANTS } from './symbols';
+import { DESTRUCTOR_STACK, INNER_VM, CONSTANTS, STACKS, REGISTERS } from './symbols';
 import { InternalVM } from './vm/append';
 
 export interface OpcodeJSON {
@@ -53,12 +53,13 @@ export class AppendOpcodes {
 
   debugBefore(vm: VM<Opaque>, opcode: Opcode, type: number): DebugState {
     if (DEBUG) {
-      let pos = vm[INNER_VM].pc - opcode.size;
+      let pos = vm[INNER_VM].fetchRegister($pc) - opcode.size;
       /* tslint:disable */
       let [name, params] = debug(
         pos,
         vm[CONSTANTS],
         opcode.type,
+        opcode.isMachine,
         opcode.op1,
         opcode.op2,
         opcode.op3
@@ -79,7 +80,7 @@ export class AppendOpcodes {
     let state: Opaque;
 
     if (DEVMODE) {
-      let metadata = METADATA[type];
+      let metadata = opcodeMetadata(type, opcode.isMachine);
 
       if (metadata && metadata.before) {
         state = metadata.before(opcode, vm);
@@ -87,10 +88,10 @@ export class AppendOpcodes {
         state = undefined;
       }
 
-      sp = vm.stack.sp;
+      sp = vm.fetchValue($sp);
     }
 
-    recordStackSize(vm.stack);
+    recordStackSize(vm.fetchValue($sp));
     return { sp: sp!, state };
   }
 
@@ -98,29 +99,30 @@ export class AppendOpcodes {
     let expectedChange: number;
     let { sp, state } = pre;
 
-    let metadata = METADATA[type];
-    if (metadata !== null) {
-      if (typeof metadata.stackChange === 'number') {
-        expectedChange = metadata.stackChange;
+    let meta = opcodeMetadata(type, opcode.isMachine);
+    if (meta !== null) {
+      if (typeof meta.stackChange === 'number') {
+        expectedChange = meta.stackChange;
       } else {
-        expectedChange = metadata.stackChange({ opcode, constants: vm[CONSTANTS], state });
+        expectedChange = meta.stackChange({ opcode, constants: vm[CONSTANTS], state });
         if (isNaN(expectedChange)) throw unreachable();
       }
     }
 
     if (DEBUG) {
-      let actualChange = vm.stack.sp - sp!;
+      let actualChange = vm.fetchValue($sp) - sp!;
       if (
-        metadata &&
-        metadata.check &&
+        meta &&
+        meta.check &&
         typeof expectedChange! === 'number' &&
         expectedChange! !== actualChange
       ) {
-        let pos = vm[INNER_VM].pc + opcode.size;
+        let pos = vm.fetchValue($pc) + opcode.size;
         let [name, params] = debug(
           pos,
           vm[CONSTANTS],
           opcode.type,
+          opcode.isMachine,
           opcode.op1,
           opcode.op2,
           opcode.op3
@@ -138,10 +140,10 @@ export class AppendOpcodes {
       console.log(
         '%c -> pc: %d, ra: %d, fp: %d, sp: %d, s0: %O, s1: %O, t0: %O, t1: %O, v0: %O',
         'color: orange',
-        vm[INNER_VM]['pc'],
-        vm[INNER_VM]['ra'],
-        vm.stack['fp'],
-        vm.stack['sp'],
+        vm[REGISTERS][$pc],
+        vm[REGISTERS][$ra],
+        vm[REGISTERS][$fp],
+        vm[REGISTERS][$sp],
         vm['s0'],
         vm['s1'],
         vm['t0'],
@@ -151,7 +153,7 @@ export class AppendOpcodes {
       console.log('%c -> eval stack', 'color: red', vm.stack.toArray());
       console.log('%c -> block stack', 'color: magenta', vm.elements().debugBlocks());
       console.log('%c -> destructor stack', 'color: violet', vm[DESTRUCTOR_STACK].toArray());
-      if (vm['scopeStack'].current === null) {
+      if (vm[STACKS].scope.current === null) {
         console.log('%c -> scope', 'color: green', 'null');
       } else {
         console.log(

@@ -1,4 +1,4 @@
-import { Op } from '@glimmer/vm';
+import { Op, MachineOp } from '@glimmer/vm';
 import { CompilerBuffer } from '@glimmer/interfaces';
 
 export const enum OpcodeSize {
@@ -17,8 +17,9 @@ export class InstructionEncoder {
   typePos = 0;
   size = 0;
 
-  encode(type: Op, machine: 0 | OpcodeSize.MACHINE_MASK, ...operands: Operand[]): void;
-  encode(type: Op, machine: 0 | OpcodeSize.MACHINE_MASK) {
+  encode(type: MachineOp, machine: OpcodeSize.MACHINE_MASK, ...operands: Operand[]): void;
+  encode(type: Op, machine: 0, ...operands: Operand[]): void;
+  encode(type: Op | MachineOp, machine: 0 | OpcodeSize.MACHINE_MASK) {
     if ((type as number) > OpcodeSize.TYPE_SIZE) {
       throw new Error(`Opcode type over 8-bits. Got ${type}.`);
     }

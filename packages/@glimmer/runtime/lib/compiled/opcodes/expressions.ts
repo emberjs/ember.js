@@ -1,6 +1,6 @@
 import { Opaque, Option } from '@glimmer/interfaces';
 import { VersionedPathReference } from '@glimmer/reference';
-import { Op, Register } from '@glimmer/vm';
+import { Op, $v0 } from '@glimmer/vm';
 import { ScopeBlock } from '../../environment';
 import { APPEND_OPCODES } from '../../opcodes';
 import { FALSE_REFERENCE, TRUE_REFERENCE } from '../../references';
@@ -32,7 +32,7 @@ APPEND_OPCODES.add(Op.Helper, (vm, { op1: handle }) => {
   let args = check(stack.pop(), CheckArguments);
   let value = helper(vm, args);
 
-  vm.loadValue(Register.v0, value);
+  vm.loadValue($v0, value, CheckPathReference);
 });
 
 APPEND_OPCODES.add(Op.GetVariable, (vm, { op1: symbol }) => {
