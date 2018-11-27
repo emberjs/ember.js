@@ -9,6 +9,7 @@ import {
   CheckHandle,
   wrap,
   CheckNumber,
+  CheckBoolean,
 } from '@glimmer/debug';
 import { Tag, TagWrapper, VersionedPathReference, Reference } from '@glimmer/reference';
 import {
@@ -17,10 +18,17 @@ import {
   CapturedPositionalArguments,
   CapturedNamedArguments,
 } from '../../vm/arguments';
-import { ComponentInstance } from './component';
+import { ComponentInstance, COMPONENT_INSTANCE } from './component';
 import { ComponentManager } from '../../internal-interfaces';
 import { ScopeImpl } from '../../environment';
-import { CompilableBlock } from '@glimmer/interfaces';
+import {
+  CompilableBlock,
+  ComponentDefinition,
+  ComponentDefinitionState,
+} from '@glimmer/interfaces';
+import CurryComponentReference from '../../references/curry-component';
+import { ElementOperations } from '../../vm/element-builder';
+import { InternalComponentManager, Invocation } from '../../component/interfaces';
 
 export const CheckTag: Checker<Tag> = CheckInstanceof(TagWrapper);
 
@@ -43,6 +51,8 @@ export const CheckCapturedArguments: Checker<ICapturedArguments> = CheckInterfac
   named: CheckInstanceof(CapturedNamedArguments),
 });
 
+export const CheckCurryComponent = CheckInstanceof(CurryComponentReference);
+
 export const CheckScope = wrap(() => CheckInstanceof(ScopeImpl));
 
 export const CheckComponentManager: Checker<ComponentManager> = CheckInterface({
@@ -50,10 +60,27 @@ export const CheckComponentManager: Checker<ComponentManager> = CheckInterface({
 });
 
 export const CheckComponentInstance: Checker<ComponentInstance> = CheckInterface({
+  [COMPONENT_INSTANCE]: CheckBoolean,
   definition: CheckOpaque,
   state: CheckOpaque,
   handle: CheckOpaque,
   table: CheckOpaque,
+});
+
+export const CheckComponentDefinition: Checker<
+  ComponentDefinition<InternalComponentManager, ComponentDefinitionState>
+> = CheckInterface({
+  state: CheckOpaque,
+  manager: CheckComponentManager,
+});
+
+export const CheckInvocation: Checker<Invocation> = CheckInterface({
+  handle: CheckNumber,
+  symbolTable: CheckProgramSymbolTable,
+});
+
+export const CheckElementOperations: Checker<ElementOperations> = CheckInterface({
+  setAttribute: CheckFunction,
 });
 
 export const CheckFinishedComponentInstance: Checker<ComponentInstance> = CheckInterface({

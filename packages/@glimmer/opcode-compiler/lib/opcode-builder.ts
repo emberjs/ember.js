@@ -17,7 +17,7 @@ import {
   NamedBlocks,
 } from '@glimmer/interfaces';
 import { dict, EMPTY_ARRAY, expect, Stack } from '@glimmer/util';
-import { Op, Register } from '@glimmer/vm';
+import { Op, Register, $sp, $fp, $s0, $v0, MachineRegister, MachineOp } from '@glimmer/vm';
 import * as WireFormat from '@glimmer/wire-format';
 import { SerializedInlineBlock } from '@glimmer/wire-format';
 import { PrimitiveType } from '@glimmer/program';
@@ -31,14 +31,11 @@ import {
   CompilableBlock as CompilableBlockInstance,
 } from './compilable-template';
 
-import { ComponentBuilder } from './wrapped-component';
+import { ComponentBuilderImpl } from './wrapped-component';
 import { InstructionEncoder, Operand, OpcodeSize } from '@glimmer/encoder';
 import { ContentType } from '../../runtime/lib/compiled/opcodes/content';
 import { NamedBlocksImpl, EMPTY_BLOCKS } from './utils';
-
-export type Label = string;
-
-export type When = (match: number, callback: () => void) => void;
+import OpcodeBuilder, { Block, When } from './opcode-builder-interfaces';
 
 class Labels {
   labels = dict<number>();
@@ -62,25 +59,8 @@ class Labels {
   }
 }
 
-export interface OpcodeBuilderConstructor {
-  new <Locator>(compiler: Compiler, containingLayout: LayoutWithContext): OpcodeBuilder<Locator>;
-}
-
-export class StdOpcodeBuilder {
-  static build(compiler: Compiler, callback: (builder: StdOpcodeBuilder) => void): number {
-    let builder = new StdOpcodeBuilder(compiler);
-    callback(builder);
-    return builder.commit();
-  }
-
-  protected encoder = new InstructionEncoder([]);
-
-  public compiler: Compiler<this>;
-  private labelsStack = new Stack<Labels>();
-
-  constructor(compiler: Compiler, protected size = 0) {
-    this.compiler = compiler as Compiler<this>;
-  }
+class Encoder {
+  constructor(private encoder: InstructionEncoder) {}
 
   push(name: Op): void;
   push(name: Op, arg1: Operand): void;
@@ -99,11 +79,11 @@ export class StdOpcodeBuilder {
     }
   }
 
-  pushMachine(name: Op): void;
-  pushMachine(name: Op, arg1: Operand): void;
-  pushMachine(name: Op, arg1: Operand, arg2: Operand): void;
-  pushMachine(name: Op, arg1: Operand, arg2: Operand, arg3: Operand): void;
-  pushMachine(name: Op) {
+  pushMachine(name: MachineOp): void;
+  pushMachine(name: MachineOp, arg1: Operand): void;
+  pushMachine(name: MachineOp, arg1: Operand, arg2: Operand): void;
+  pushMachine(name: MachineOp, arg1: Operand, arg2: Operand, arg3: Operand): void;
+  pushMachine(name: MachineOp) {
     switch (arguments.length) {
       case 1:
         return this.encoder.encode(name, OpcodeSize.MACHINE_MASK);
@@ -121,162 +101,112 @@ export class StdOpcodeBuilder {
         );
     }
   }
+}
+
+export class StdOpcodeBuilder {
+  static build(compiler: Compiler, callback: (builder: StdOpcodeBuilder) => void): number {
+    let builder = new StdOpcodeBuilder(compiler);
+    callback(builder);
+    return builder.commit();
+  }
+
+  protected instructionEncoder = new InstructionEncoder([]);
+  protected encoder = new Encoder(this.instructionEncoder);
+
+  public compiler: Compiler<this>;
+  private labelsStack = new Stack<Labels>();
+
+  constructor(compiler: Compiler, protected size = 0) {
+    this.compiler = compiler as Compiler<this>;
+  }
 
   commit(): number {
-    this.pushMachine(Op.Return);
-    return this.compiler.commit(this.size, this.encoder.buffer);
+    this.encoder.pushMachine(MachineOp.Return);
+    return this.compiler.commit(this.size, this.instructionEncoder.buffer);
   }
 
   reserve(name: Op) {
-    this.encoder.encode(name, 0, -1);
+    this.instructionEncoder.encode(name, 0, -1);
   }
 
   reserveWithOperand(name: Op, operand: number) {
-    this.encoder.encode(name, 0, -1, operand);
+    this.instructionEncoder.encode(name, 0, -1, operand);
   }
 
-  reserveMachine(name: Op) {
-    this.encoder.encode(name, OpcodeSize.MACHINE_MASK, -1);
+  reserveMachine(name: MachineOp) {
+    this.instructionEncoder.encode(name, OpcodeSize.MACHINE_MASK, -1);
   }
 
   ///
 
   main() {
-    this.push(Op.Main, Register.s0);
+    this.encoder.push(Op.Main, $s0);
     this.invokePreparedComponent(false, false, true);
   }
 
-  appendHTML() {
-    this.push(Op.AppendHTML);
-  }
-
-  appendSafeHTML() {
-    this.push(Op.AppendSafeHTML);
-  }
-
-  appendDocumentFragment() {
-    this.push(Op.AppendDocumentFragment);
-  }
-
-  appendNode() {
-    this.push(Op.AppendNode);
-  }
-
-  appendText() {
-    this.push(Op.AppendText);
-  }
-
-  beginComponentTransaction() {
-    this.push(Op.BeginComponentTransaction);
-  }
-
-  commitComponentTransaction() {
-    this.push(Op.CommitComponentTransaction);
-  }
-
-  pushDynamicScope() {
-    this.push(Op.PushDynamicScope);
-  }
-
-  popDynamicScope() {
-    this.push(Op.PopDynamicScope);
-  }
-
-  pushRemoteElement() {
-    this.push(Op.PushRemoteElement);
-  }
-
-  popRemoteElement() {
-    this.push(Op.PopRemoteElement);
+  remoteElement(block: Block): void {
+    this.encoder.push(Op.PushRemoteElement);
+    block();
+    this.encoder.push(Op.PopRemoteElement);
   }
 
   pushRootScope(symbols: number, bindCallerScope: boolean) {
-    this.push(Op.RootScope, symbols, bindCallerScope ? 1 : 0);
-  }
-
-  pushVirtualRootScope(register: Register) {
-    this.push(Op.VirtualRootScope, register);
+    this.encoder.push(Op.RootScope, symbols, bindCallerScope ? 1 : 0);
   }
 
   pushChildScope() {
-    this.push(Op.ChildScope);
+    this.encoder.push(Op.ChildScope);
   }
 
   popScope() {
-    this.push(Op.PopScope);
+    this.encoder.push(Op.PopScope);
   }
 
   prepareArgs(state: Register) {
-    this.push(Op.PrepareArgs, state);
+    this.encoder.push(Op.PrepareArgs, state);
   }
 
   createComponent(state: Register, hasDefault: boolean) {
     let flag = (hasDefault as any) | 0;
-    this.push(Op.CreateComponent, flag, state);
-  }
-
-  registerComponentDestructor(state: Register) {
-    this.push(Op.RegisterComponentDestructor, state);
+    this.encoder.push(Op.CreateComponent, flag, state);
   }
 
   putComponentOperations() {
-    this.push(Op.PutComponentOperations);
-  }
-
-  getComponentSelf(state: Register) {
-    this.push(Op.GetComponentSelf, state);
+    this.encoder.push(Op.PutComponentOperations);
   }
 
   getComponentTagName(state: Register) {
-    this.push(Op.GetComponentTagName, state);
+    this.encoder.push(Op.GetComponentTagName, state);
   }
 
   getComponentLayout(state: Register) {
-    this.push(Op.GetComponentLayout, state);
+    this.encoder.push(Op.GetComponentLayout, state);
   }
 
   setupForEval(state: Register) {
-    this.push(Op.SetupForEval, state);
+    this.encoder.push(Op.SetupForEval, state);
   }
 
   invokeComponentLayout(state: Register) {
-    this.push(Op.InvokeComponentLayout, state);
+    this.encoder.push(Op.InvokeComponentLayout, state);
   }
 
   didCreateElement(state: Register) {
-    this.push(Op.DidCreateElement, state);
+    this.encoder.push(Op.DidCreateElement, state);
   }
 
-  didRenderLayout(state: Register) {
-    this.push(Op.DidRenderLayout, state);
+  didRenderLayout() {
+    this.encoder.push(Op.DidRenderLayout, $s0);
   }
 
-  pushFrame() {
-    this.pushMachine(Op.PushFrame);
-  }
-
-  popFrame() {
-    this.pushMachine(Op.PopFrame);
-  }
-
-  pushSmallFrame() {
-    this.pushMachine(Op.PushSmallFrame);
-  }
-
-  popSmallFrame() {
-    this.pushMachine(Op.PopSmallFrame);
-  }
-
-  invokeVirtual(): void {
-    this.pushMachine(Op.InvokeVirtual);
-  }
-
-  invokeYield(): void {
-    this.push(Op.InvokeYield);
+  frame(block: () => void): void {
+    this.encoder.pushMachine(MachineOp.PushFrame);
+    block();
+    this.encoder.pushMachine(MachineOp.PopFrame);
   }
 
   toBoolean() {
-    this.push(Op.ToBoolean);
+    this.encoder.push(Op.ToBoolean);
   }
 
   invokePreparedComponent(
@@ -285,10 +215,10 @@ export class StdOpcodeBuilder {
     bindableAtNames: boolean,
     populateLayout: Option<() => void> = null
   ) {
-    this.beginComponentTransaction();
-    this.pushDynamicScope();
+    this.encoder.push(Op.BeginComponentTransaction);
+    this.encoder.push(Op.PushDynamicScope);
 
-    this.createComponent(Register.s0, hasBlock);
+    this.createComponent($s0, hasBlock);
 
     // this has to run after createComponent to allow
     // for late-bound layouts, but a caller is free
@@ -296,31 +226,31 @@ export class StdOpcodeBuilder {
     // and do nothing here.
     if (populateLayout) populateLayout();
 
-    this.registerComponentDestructor(Register.s0);
+    this.encoder.push(Op.RegisterComponentDestructor, $s0);
+    this.encoder.push(Op.GetComponentSelf, $s0);
 
-    this.getComponentSelf(Register.s0);
+    this.encoder.push(Op.VirtualRootScope, $s0);
+    this.encoder.push(Op.SetVariable, 0);
 
-    this.pushVirtualRootScope(Register.s0);
-    this.setVariable(0);
-    this.setupForEval(Register.s0);
-    if (bindableAtNames) this.setNamedVariables(Register.s0);
-    if (bindableBlocks) this.setBlocks(Register.s0);
+    this.setupForEval($s0);
+    if (bindableAtNames) this.setNamedVariables($s0);
+    if (bindableBlocks) this.setBlocks($s0);
     this.pop();
-    this.invokeComponentLayout(Register.s0);
-    this.didRenderLayout(Register.s0);
-    this.popFrame();
+    this.invokeComponentLayout($s0);
+    this.didRenderLayout();
+    this.encoder.pushMachine(MachineOp.PopFrame);
 
     this.popScope();
-    this.popDynamicScope();
-    this.commitComponentTransaction();
+    this.encoder.push(Op.PopDynamicScope);
+    this.encoder.push(Op.CommitComponentTransaction);
   }
 
   protected get pos(): number {
-    return this.encoder.typePos;
+    return this.instructionEncoder.typePos;
   }
 
   protected get nextPos(): number {
-    return this.encoder.size;
+    return this.instructionEncoder.size;
   }
 
   ///
@@ -339,171 +269,175 @@ export class StdOpcodeBuilder {
   }
 
   label(name: string) {
-    this.labels.label(name, this.nextPos);
+    this.currentLabels.label(name, this.nextPos);
   }
 
   // helpers
 
-  private get labels(): Labels {
+  private get currentLabels(): Labels {
     return expect(this.labelsStack.current, 'bug: not in a label stack');
   }
 
-  startLabels() {
+  private startLabels() {
     this.labelsStack.push(new Labels());
   }
 
-  stopLabels() {
+  private stopLabels() {
     let label = expect(this.labelsStack.pop(), 'unbalanced push and pop labels');
-    label.patch(this.encoder);
+    label.patch(this.instructionEncoder);
   }
 
   // components
 
   pushCurriedComponent() {
-    this.push(Op.PushCurriedComponent);
+    this.encoder.push(Op.PushCurriedComponent);
   }
 
   pushDynamicComponentInstance() {
-    this.push(Op.PushDynamicComponentInstance);
+    this.encoder.push(Op.PushDynamicComponentInstance);
   }
 
   // dom
 
   openDynamicElement() {
-    this.push(Op.OpenDynamicElement);
+    this.encoder.push(Op.OpenDynamicElement);
   }
 
   flushElement() {
-    this.push(Op.FlushElement);
+    this.encoder.push(Op.FlushElement);
   }
 
   closeElement() {
-    this.push(Op.CloseElement);
+    this.encoder.push(Op.CloseElement);
   }
 
   // lists
 
   putIterator() {
-    this.push(Op.PutIterator);
+    this.encoder.push(Op.PutIterator);
+  }
+
+  list(start: string, block: Block): void {
+    this.enterList(start);
+    block();
+    this.encoder.push(Op.ExitList);
   }
 
   enterList(start: string) {
     this.reserve(Op.EnterList);
-    this.labels.target(this.pos, start);
-  }
-
-  exitList() {
-    this.push(Op.ExitList);
+    this.currentLabels.target(this.pos, start);
   }
 
   iterate(breaks: string) {
     this.reserve(Op.Iterate);
-    this.labels.target(this.pos, breaks);
+    this.currentLabels.target(this.pos, breaks);
   }
 
   // expressions
 
   setNamedVariables(state: Register) {
-    this.push(Op.SetNamedVariables, state);
+    this.encoder.push(Op.SetNamedVariables, state);
   }
 
   setBlocks(state: Register) {
-    this.push(Op.SetBlocks, state);
-  }
-
-  setVariable(symbol: number) {
-    this.push(Op.SetVariable, symbol);
+    this.encoder.push(Op.SetBlocks, state);
   }
 
   setBlock(symbol: number) {
-    this.push(Op.SetBlock, symbol);
+    this.encoder.push(Op.SetBlock, symbol);
   }
 
   getVariable(symbol: number) {
-    this.push(Op.GetVariable, symbol);
+    this.encoder.push(Op.GetVariable, symbol);
   }
 
   getBlock(symbol: number) {
-    this.push(Op.GetBlock, symbol);
+    this.encoder.push(Op.GetBlock, symbol);
   }
 
   hasBlock(symbol: number) {
-    this.push(Op.HasBlock, symbol);
+    this.encoder.push(Op.HasBlock, symbol);
   }
 
   concat(size: number) {
-    this.push(Op.Concat, size);
+    this.encoder.push(Op.Concat, size);
   }
 
   load(register: Register) {
-    this.push(Op.Load, register);
+    this.encoder.push(Op.Load, register);
   }
 
   fetch(register: Register) {
-    this.push(Op.Fetch, register);
+    this.encoder.push(Op.Fetch, register);
   }
 
-  dup(register = Register.sp, offset = 0) {
-    return this.push(Op.Dup, register, offset);
+  dup(register: MachineRegister = $sp, offset = 0) {
+    return this.encoder.push(Op.Dup, register, offset);
   }
 
   pop(count = 1) {
-    return this.push(Op.Pop, count);
+    return this.encoder.push(Op.Pop, count);
   }
 
   // vm
 
   returnTo(label: string) {
-    this.reserveMachine(Op.ReturnTo);
-    this.labels.target(this.pos, label);
+    this.reserveMachine(MachineOp.ReturnTo);
+    this.currentLabels.target(this.pos, label);
   }
 
   primitiveReference() {
-    this.push(Op.PrimitiveReference);
+    this.encoder.push(Op.PrimitiveReference);
   }
 
   reifyU32() {
-    this.push(Op.ReifyU32);
+    this.encoder.push(Op.ReifyU32);
   }
 
   enter(args: number) {
-    this.push(Op.Enter, args);
+    this.encoder.push(Op.Enter, args);
   }
 
   exit() {
-    this.push(Op.Exit);
+    this.encoder.push(Op.Exit);
   }
 
   return() {
-    this.pushMachine(Op.Return);
+    this.encoder.pushMachine(MachineOp.Return);
   }
 
   jump(target: string) {
-    this.reserveMachine(Op.Jump);
-    this.labels.target(this.pos, target);
+    this.reserveMachine(MachineOp.Jump);
+    this.currentLabels.target(this.pos, target);
   }
 
   jumpIf(target: string) {
     this.reserve(Op.JumpIf);
-    this.labels.target(this.pos, target);
+    this.currentLabels.target(this.pos, target);
   }
 
   jumpUnless(target: string) {
     this.reserve(Op.JumpUnless);
-    this.labels.target(this.pos, target);
+    this.currentLabels.target(this.pos, target);
   }
 
   jumpEq(value: number, target: string) {
     this.reserveWithOperand(Op.JumpEq, value);
-    this.labels.target(this.pos, target);
+    this.currentLabels.target(this.pos, target);
   }
 
   assertSame() {
-    this.push(Op.AssertSame);
+    this.encoder.push(Op.AssertSame);
   }
 
   pushEmptyArgs() {
-    this.push(Op.PushEmptyArgs);
+    this.encoder.push(Op.PushEmptyArgs);
+  }
+
+  labels(block: Block): void {
+    this.startLabels();
+    block();
+    this.stopLabels();
   }
 
   switch(_opcode: void, callback: (when: When) => void) {
@@ -524,32 +458,32 @@ export class StdOpcodeBuilder {
     this.assertSame();
     this.reifyU32();
 
-    this.startLabels();
+    this.labels(() => {
+      this.startLabels();
 
-    // First, emit the jump opcodes. We don't need a jump for the last
-    // opcode, since it bleeds directly into its clause.
-    clauses.slice(0, -1).forEach(clause => this.jumpEq(clause.match, clause.label));
+      // First, emit the jump opcodes. We don't need a jump for the last
+      // opcode, since it bleeds directly into its clause.
+      clauses.slice(0, -1).forEach(clause => this.jumpEq(clause.match, clause.label));
 
-    // Enumerate the clauses in reverse order. Earlier matches will
-    // require fewer checks.
-    for (let i = clauses.length - 1; i >= 0; i--) {
-      let clause = clauses[i];
+      // Enumerate the clauses in reverse order. Earlier matches will
+      // require fewer checks.
+      for (let i = clauses.length - 1; i >= 0; i--) {
+        let clause = clauses[i];
 
-      this.label(clause.label);
-      this.pop(2);
+        this.label(clause.label);
+        this.pop(2);
 
-      clause.callback();
+        clause.callback();
 
-      // The first match is special: it is placed directly before the END
-      // label, so no additional jump is needed at the end of it.
-      if (i !== 0) {
-        this.jump('END');
+        // The first match is special: it is placed directly before the END
+        // label, so no additional jump is needed at the end of it.
+        if (i !== 0) {
+          this.jump('END');
+        }
       }
-    }
 
-    this.label('END');
-
-    this.stopLabels();
+      this.label('END');
+    });
 
     this.exit();
   }
@@ -559,9 +493,9 @@ export class StdOpcodeBuilder {
       when(ContentType.String, () => {
         if (trusting) {
           this.assertSame();
-          this.appendHTML();
+          this.encoder.push(Op.AppendHTML);
         } else {
-          this.appendText();
+          this.encoder.push(Op.AppendText);
         }
       });
 
@@ -573,61 +507,60 @@ export class StdOpcodeBuilder {
 
       when(ContentType.SafeString, () => {
         this.assertSame();
-        this.appendSafeHTML();
+        this.encoder.push(Op.AppendSafeHTML);
       });
 
       when(ContentType.Fragment, () => {
         this.assertSame();
-        this.appendDocumentFragment();
+        this.encoder.push(Op.AppendDocumentFragment);
       });
 
       when(ContentType.Node, () => {
         this.assertSame();
-        this.appendNode();
+        this.encoder.push(Op.AppendNode);
       });
     });
   }
 
   populateLayout(state: number) {
-    this.push(Op.PopulateLayout, state);
+    this.encoder.push(Op.PopulateLayout, state);
   }
 
   invokeBareComponent() {
-    this.fetch(Register.s0);
-    this.dup(Register.sp, 1);
-    this.load(Register.s0);
+    this.encoder.push(Op.Fetch, $s0);
+    this.dup($sp, 1);
+    this.encoder.push(Op.Load, $s0);
 
-    this.pushFrame();
+    this.encoder.pushMachine(MachineOp.PushFrame);
     this.pushEmptyArgs();
-    this.prepareArgs(Register.s0);
+    this.prepareArgs($s0);
 
     this.invokePreparedComponent(false, false, true, () => {
-      this.getComponentLayout(Register.s0);
-      this.populateLayout(Register.s0);
+      this.getComponentLayout($s0);
+      this.populateLayout($s0);
     });
 
-    this.load(Register.s0);
+    this.load($s0);
   }
 
   isComponent() {
-    this.push(Op.IsComponent);
+    this.encoder.push(Op.IsComponent);
   }
 
   contentType() {
-    this.push(Op.ContentType);
+    this.encoder.push(Op.ContentType);
   }
 
   pushBlockScope(): void {
-    this.push(Op.PushBlockScope);
+    this.encoder.push(Op.PushBlockScope);
   }
 }
 
-export type VMHandlePlaceholder = [number, () => VMHandle];
-
-export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
+export abstract class OpcodeBuilderImpl<Locator = Opaque> extends StdOpcodeBuilder
+  implements OpcodeBuilder<Locator> {
   public constants: CompileTimeConstants;
   public stdLib: STDLib;
-  public component: ComponentBuilder<Locator> = new ComponentBuilder(this);
+  public component: ComponentBuilderImpl<Locator> = new ComponentBuilderImpl(this);
 
   private expressionCompiler: Compilers<WireFormat.TupleExpression> = expressionCompiler();
   private isComponentAttrs = false;
@@ -664,11 +597,24 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
 
   ///
 
+  popFrame(): void {
+    this.encoder.pushMachine(MachineOp.PopFrame);
+  }
+
   // args
 
   pushArgs(names: string[], flags: number): void {
     let serialized = this.constants.stringArray(names);
-    this.push(Op.PushArgs, serialized, flags);
+    this.encoder.push(Op.PushArgs, serialized, flags);
+  }
+
+  dynamicScope(names: Option<string[]>, block: Block): void {
+    this.encoder.push(Op.PushDynamicScope);
+    if (names && names.length) {
+      this.encoder.push(Op.BindDynamicScope, this.names(names));
+    }
+    block();
+    this.encoder.push(Op.PopDynamicScope);
   }
 
   pushYieldableBlock(block: Option<CompilableBlock>): void {
@@ -685,19 +631,19 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
   ) {
     let referrer = this.containingLayout.referrer;
 
-    this.pushFrame();
+    this.encoder.pushMachine(MachineOp.PushFrame);
     this.compileArgs(params, hash, EMPTY_BLOCKS, synthetic);
-    this.push(Op.CaptureArgs);
+    this.encoder.push(Op.CaptureArgs);
     this.expr(definition);
-    this.push(Op.CurryComponent, this.constants.serializable(referrer));
-    this.popFrame();
-    this.fetch(Register.v0);
+    this.encoder.push(Op.CurryComponent, this.constants.serializable(referrer));
+    this.encoder.pushMachine(MachineOp.PopFrame);
+    this.encoder.push(Op.Fetch, $v0);
   }
 
   pushSymbolTable(table: Option<SymbolTable>): void {
     if (table) {
       let constant = this.constants.serializable(table);
-      this.push(Op.PushSymbolTable, constant);
+      this.encoder.push(Op.PushSymbolTable, constant);
     } else {
       this.primitive(null);
     }
@@ -720,11 +666,11 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
     blocks: INamedBlocks;
     layout?: CompilableProgram;
   }) {
-    this.fetch(Register.s0);
-    this.dup(Register.sp, 1);
-    this.load(Register.s0);
+    this.encoder.push(Op.Fetch, $s0);
+    this.dup($sp, 1);
+    this.encoder.push(Op.Load, $s0);
 
-    this.pushFrame();
+    this.encoder.pushMachine(MachineOp.PushFrame);
 
     let bindableBlocks = !!namedBlocks;
     let bindableAtNames =
@@ -733,7 +679,7 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
     let blocks = namedBlocks.with('attrs', attrs);
 
     this.compileArgs(params, hash, blocks, synthetic);
-    this.prepareArgs(Register.s0);
+    this.prepareArgs($s0);
 
     this.invokePreparedComponent(blocks.has('default'), bindableBlocks, bindableAtNames, () => {
       if (layout) {
@@ -741,13 +687,13 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
         this.pushLayout(layout);
         this.resolveLayout();
       } else {
-        this.getComponentLayout(Register.s0);
+        this.getComponentLayout($s0);
       }
 
-      this.populateLayout(Register.s0);
+      this.populateLayout($s0);
     });
 
-    this.load(Register.s0);
+    this.load($s0);
   }
 
   invokeStaticComponent({
@@ -776,38 +722,37 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
       return;
     }
 
-    this.fetch(Register.s0);
-    this.dup(Register.sp, 1);
-    this.load(Register.s0);
+    this.encoder.push(Op.Fetch, $s0);
+    this.dup($sp, 1);
+    this.encoder.push(Op.Load, $s0);
 
     let { symbols } = symbolTable;
 
     if (capabilities.createArgs) {
-      this.pushFrame();
+      this.encoder.pushMachine(MachineOp.PushFrame);
       this.compileArgs(null, hash, EMPTY_BLOCKS, synthetic);
     }
 
-    this.beginComponentTransaction();
+    this.encoder.push(Op.BeginComponentTransaction);
 
     if (capabilities.dynamicScope) {
-      this.pushDynamicScope();
+      this.encoder.push(Op.PushDynamicScope);
     }
 
     if (capabilities.createInstance) {
-      this.createComponent(Register.s0, blocks.has('default'));
+      this.createComponent($s0, blocks.has('default'));
     }
 
     if (capabilities.createArgs) {
-      this.popFrame();
+      this.encoder.pushMachine(MachineOp.PopFrame);
     }
 
-    this.pushFrame();
-
-    this.registerComponentDestructor(Register.s0);
+    this.encoder.pushMachine(MachineOp.PushFrame);
+    this.encoder.push(Op.RegisterComponentDestructor, $s0);
 
     let bindings: { symbol: number; isBlock: boolean }[] = [];
 
-    this.getComponentSelf(Register.s0);
+    this.encoder.push(Op.GetComponentSelf, $s0);
     bindings.push({ symbol: 0, isBlock: false });
 
     for (let i = 0; i < symbols.length; i++) {
@@ -864,27 +809,27 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
       if (isBlock) {
         this.setBlock(symbol);
       } else {
-        this.setVariable(symbol);
+        this.encoder.push(Op.SetVariable, symbol);
       }
     }
 
     this.invokeStatic(layout);
 
     if (capabilities.createInstance) {
-      this.didRenderLayout(Register.s0);
+      this.didRenderLayout();
     }
 
-    this.popFrame();
+    this.encoder.pushMachine(MachineOp.PopFrame);
 
     this.popScope();
 
     if (capabilities.dynamicScope) {
-      this.popDynamicScope();
+      this.encoder.push(Op.PopDynamicScope);
     }
 
-    this.commitComponentTransaction();
+    this.encoder.push(Op.CommitComponentTransaction);
 
-    this.load(Register.s0);
+    this.load($s0);
   }
 
   dynamicComponent({
@@ -927,19 +872,19 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
     this.compileArgs(params, null, EMPTY_BLOCKS, false);
     this.getBlock(to);
     this.resolveBlock();
-    this.invokeYield();
+    this.encoder.push(Op.InvokeYield);
     this.popScope();
-    this.popFrame();
+    this.encoder.pushMachine(MachineOp.PopFrame);
   }
 
   guardedAppend(expression: WireFormat.Expression, trusting: boolean) {
-    this.pushFrame();
+    this.encoder.pushMachine(MachineOp.PushFrame);
 
     this.expr(expression);
 
-    this.pushMachine(Op.InvokeStatic, this.stdLib.getAppend(trusting));
+    this.encoder.pushMachine(MachineOp.InvokeStatic, this.stdLib.getAppend(trusting));
 
-    this.popFrame();
+    this.encoder.pushMachine(MachineOp.PopFrame);
   }
 
   invokeStaticBlock(block: CompilableBlock, callerCount = 0): void {
@@ -947,26 +892,26 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
     let calleeCount = parameters.length;
     let count = Math.min(callerCount, calleeCount);
 
-    this.pushFrame();
+    this.encoder.pushMachine(MachineOp.PushFrame);
 
     if (count) {
       this.pushChildScope();
 
       for (let i = 0; i < count; i++) {
-        this.dup(Register.fp, callerCount - i);
-        this.setVariable(parameters[i]);
+        this.dup($fp, callerCount - i);
+        this.encoder.push(Op.SetVariable, parameters[i]);
       }
     }
 
     this.pushBlock(block);
     this.resolveBlock();
-    this.invokeVirtual();
+    this.encoder.pushMachine(MachineOp.InvokeVirtual);
 
     if (count) {
       this.popScope();
     }
 
-    this.popFrame();
+    this.encoder.pushMachine(MachineOp.PopFrame);
   }
 
   /// CONVENIENCE
@@ -1033,7 +978,7 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
     }
 
     let immediate = this.sizeImmediate((primitive << 3) | type, primitive);
-    this.push(Op.Primitive, immediate);
+    this.encoder.push(Op.Primitive, immediate);
   }
 
   sizeImmediate(shifted: number, primitive: number) {
@@ -1052,18 +997,18 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
   // components
 
   pushComponentDefinition(handle: number) {
-    this.push(Op.PushComponentDefinition, this.constants.handle(handle));
+    this.encoder.push(Op.PushComponentDefinition, this.constants.handle(handle));
   }
 
   resolveDynamicComponent(referrer: Locator) {
-    this.push(Op.ResolveDynamicComponent, this.constants.serializable(referrer));
+    this.encoder.push(Op.ResolveDynamicComponent, this.constants.serializable(referrer));
   }
 
   staticComponentHelper(
     tag: string,
     hash: WireFormat.Core.Hash,
     template: Option<CompilableBlock>
-  ) {
+  ): boolean {
     let { handle, capabilities, compilable } = this.compiler.resolveLayoutForTag(
       tag,
       this.referrer
@@ -1102,27 +1047,31 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
     let _symbols = this.constants.stringArray(symbols);
     let _evalInfo = this.constants.array(evalInfo);
 
-    this.push(Op.InvokePartial, _meta, _symbols, _evalInfo);
+    this.encoder.push(Op.InvokePartial, _meta, _symbols, _evalInfo);
   }
 
   resolveMaybeLocal(name: string) {
-    this.push(Op.ResolveMaybeLocal, this.string(name));
+    this.encoder.push(Op.ResolveMaybeLocal, this.string(name));
   }
 
   // debugger
 
   debugger(symbols: string[], evalInfo: number[]) {
-    this.push(Op.Debugger, this.constants.stringArray(symbols), this.constants.array(evalInfo));
+    this.encoder.push(
+      Op.Debugger,
+      this.constants.stringArray(symbols),
+      this.constants.array(evalInfo)
+    );
   }
 
   // dom
 
   text(text: string) {
-    this.push(Op.Text, this.constants.string(text));
+    this.encoder.push(Op.Text, this.constants.string(text));
   }
 
   openPrimitiveElement(tag: string) {
-    this.push(Op.OpenElement, this.constants.string(tag));
+    this.encoder.push(Op.OpenElement, this.constants.string(tag));
   }
 
   modifier(
@@ -1130,15 +1079,15 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
     params: Option<WireFormat.Core.Params>,
     hash: Option<WireFormat.Core.Hash>
   ) {
-    this.pushFrame();
+    this.encoder.pushMachine(MachineOp.PushFrame);
     this.compileArgs(params, hash, EMPTY_BLOCKS, true);
-    this.push(Op.Modifier, this.constants.handle(locator));
-    this.popFrame();
+    this.encoder.push(Op.Modifier, this.constants.handle(locator));
+    this.encoder.pushMachine(MachineOp.PopFrame);
   }
 
   comment(_comment: string) {
     let comment = this.constants.string(_comment);
-    this.push(Op.Comment, comment);
+    this.encoder.push(Op.Comment, comment);
   }
 
   dynamicAttr(_name: string, _namespace: Option<string>, trusting: boolean) {
@@ -1146,9 +1095,9 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
     let namespace = _namespace ? this.constants.string(_namespace) : 0;
 
     if (this.isComponentAttrs) {
-      this.push(Op.ComponentAttr, name, trusting === true ? 1 : 0, namespace);
+      this.encoder.push(Op.ComponentAttr, name, trusting === true ? 1 : 0, namespace);
     } else {
-      this.push(Op.DynamicAttr, name, trusting === true ? 1 : 0, namespace);
+      this.encoder.push(Op.DynamicAttr, name, trusting === true ? 1 : 0, namespace);
     }
   }
 
@@ -1158,10 +1107,10 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
 
     if (this.isComponentAttrs) {
       this.pushPrimitiveReference(_value);
-      this.push(Op.ComponentAttr, name, 1, namespace);
+      this.encoder.push(Op.ComponentAttr, name, 1, namespace);
     } else {
       let value = this.constants.string(_value);
-      this.push(Op.StaticAttr, name, value, namespace);
+      this.encoder.push(Op.StaticAttr, name, value, namespace);
     }
   }
 
@@ -1170,11 +1119,11 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
   hasBlockParams(to: number) {
     this.getBlock(to);
     this.resolveBlock();
-    this.push(Op.HasBlockParams);
+    this.encoder.push(Op.HasBlockParams);
   }
 
   getProperty(key: string) {
-    this.push(Op.GetProperty, this.string(key));
+    this.encoder.push(Op.GetProperty, this.string(key));
   }
 
   helper(
@@ -1182,15 +1131,15 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
     params: Option<WireFormat.Core.Params>,
     hash: Option<WireFormat.Core.Hash>
   ) {
-    this.pushFrame();
+    this.encoder.pushMachine(MachineOp.PushFrame);
     this.compileArgs(params, hash, EMPTY_BLOCKS, true);
-    this.push(Op.Helper, this.constants.handle(helper));
-    this.popFrame();
-    this.fetch(Register.v0);
+    this.encoder.push(Op.Helper, this.constants.handle(helper));
+    this.encoder.pushMachine(MachineOp.PopFrame);
+    this.encoder.push(Op.Fetch, $v0);
   }
 
   bindDynamicScope(_names: string[]) {
-    this.push(Op.BindDynamicScope, this.names(_names));
+    this.encoder.push(Op.BindDynamicScope, this.names(_names));
   }
 
   // convenience methods
@@ -1259,53 +1208,53 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
   replayable({ args, body }: { args(): number; body(): void }): void {
     // Start a new label frame, to give END and RETURN
     // a unique meaning.
-    this.startLabels();
-    this.pushFrame();
+    this.labels(() => {
+      this.encoder.pushMachine(MachineOp.PushFrame);
 
-    // If the body invokes a block, its return will return to
-    // END. Otherwise, the return in RETURN will return to END.
-    this.returnTo('ENDINITIAL');
+      // If the body invokes a block, its return will return to
+      // END. Otherwise, the return in RETURN will return to END.
+      this.returnTo('ENDINITIAL');
 
-    // Push the arguments onto the stack. The args() function
-    // tells us how many stack elements to retain for re-execution
-    // when updating.
-    let count = args();
+      // Push the arguments onto the stack. The args() function
+      // tells us how many stack elements to retain for re-execution
+      // when updating.
+      let count = args();
 
-    // Start a new updating closure, remembering `count` elements
-    // from the stack. Everything after this point, and before END,
-    // will execute both initially and to update the block.
-    //
-    // The enter and exit opcodes also track the area of the DOM
-    // associated with this block. If an assertion inside the block
-    // fails (for example, the test value changes from true to false
-    // in an #if), the DOM is cleared and the program is re-executed,
-    // restoring `count` elements to the stack and executing the
-    // instructions between the enter and exit.
-    this.enter(count);
+      // Start a new updating closure, remembering `count` elements
+      // from the stack. Everything after this point, and before END,
+      // will execute both initially and to update the block.
+      //
+      // The enter and exit opcodes also track the area of the DOM
+      // associated with this block. If an assertion inside the block
+      // fails (for example, the test value changes from true to false
+      // in an #if), the DOM is cleared and the program is re-executed,
+      // restoring `count` elements to the stack and executing the
+      // instructions between the enter and exit.
+      this.enter(count);
 
-    // Evaluate the body of the block. The body of the block may
-    // return, which will jump execution to END during initial
-    // execution, and exit the updating routine.
-    body();
+      // Evaluate the body of the block. The body of the block may
+      // return, which will jump execution to END during initial
+      // execution, and exit the updating routine.
+      body();
 
-    // All execution paths in the body should run the FINALLY once
-    // they are done. It is executed both during initial execution
-    // and during updating execution.
-    this.label('FINALLY');
+      // All execution paths in the body should run the FINALLY once
+      // they are done. It is executed both during initial execution
+      // and during updating execution.
+      this.label('FINALLY');
 
-    // Finalize the DOM.
-    this.exit();
+      // Finalize the DOM.
+      this.exit();
 
-    // In initial execution, this is a noop: it returns to the
-    // immediately following opcode. In updating execution, this
-    // exits the updating routine.
-    this.return();
+      // In initial execution, this is a noop: it returns to the
+      // immediately following opcode. In updating execution, this
+      // exits the updating routine.
+      this.return();
 
-    // Cleanup code for the block. Runs on initial execution
-    // but not on updating.
-    this.label('ENDINITIAL');
-    this.popFrame();
-    this.stopLabels();
+      // Cleanup code for the block. Runs on initial execution
+      // but not on updating.
+      this.label('ENDINITIAL');
+      this.encoder.pushMachine(MachineOp.PopFrame);
+    });
   }
 
   /**
@@ -1367,7 +1316,7 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
     return block.hasEval ? block.symbols : null;
   }
 
-  compileParams(params: Option<WireFormat.Core.Params>) {
+  params(params: Option<WireFormat.Core.Params>) {
     if (!params) return 0;
 
     for (let i = 0; i < params.length; i++) {
@@ -1389,7 +1338,7 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
       this.pushYieldableBlock(blocks.get('attrs'));
     }
 
-    let count = this.compileParams(params);
+    let count = this.params(params);
 
     let flags = count << 4;
 
@@ -1425,9 +1374,9 @@ export abstract class OpcodeBuilder<Locator = Opaque> extends StdOpcodeBuilder {
   }
 }
 
-export default OpcodeBuilder;
+export default OpcodeBuilderImpl;
 
-export class LazyOpcodeBuilder<Locator> extends OpcodeBuilder<Locator> {
+export class LazyOpcodeBuilder<Locator> extends OpcodeBuilderImpl<Locator> {
   public constants!: CompileTimeLazyConstants; // Hides property on base class
 
   pushBlock(block: Option<CompilableBlock>): void {
@@ -1439,7 +1388,7 @@ export class LazyOpcodeBuilder<Locator> extends OpcodeBuilder<Locator> {
   }
 
   resolveBlock(): void {
-    this.push(Op.CompileBlock);
+    this.encoder.push(Op.CompileBlock);
   }
 
   pushLayout(layout: Option<CompilableProgram>) {
@@ -1451,17 +1400,17 @@ export class LazyOpcodeBuilder<Locator> extends OpcodeBuilder<Locator> {
   }
 
   resolveLayout(): void {
-    this.push(Op.CompileBlock);
+    this.encoder.push(Op.CompileBlock);
   }
 
   invokeStatic(compilable: CompilableTemplate): void {
     this.pushOther(compilable);
-    this.push(Op.CompileBlock);
-    this.pushMachine(Op.InvokeVirtual);
+    this.encoder.push(Op.CompileBlock);
+    this.encoder.pushMachine(MachineOp.InvokeVirtual);
   }
 
   protected pushOther<T>(value: T) {
-    this.push(Op.Constant, this.other(value));
+    this.encoder.push(Op.Constant, this.other(value));
   }
 
   protected other(value: Opaque): number {
@@ -1469,7 +1418,7 @@ export class LazyOpcodeBuilder<Locator> extends OpcodeBuilder<Locator> {
   }
 }
 
-export class EagerOpcodeBuilder<Locator> extends OpcodeBuilder<Locator> {
+export class EagerOpcodeBuilder<Locator> extends OpcodeBuilderImpl<Locator> {
   pushBlock(block: Option<CompilableBlock>): void {
     let handle = block ? (block.compile() as Recast<VMHandle, number>) : null;
     this.primitive(handle);
@@ -1497,9 +1446,12 @@ export class EagerOpcodeBuilder<Locator> extends OpcodeBuilder<Locator> {
     // function that will produce the correct handle when the heap is
     // serialized.
     if (handle === PLACEHOLDER_HANDLE) {
-      this.pushMachine(Op.InvokeStatic, () => compilable.compile() as Recast<VMHandle, number>);
+      this.encoder.pushMachine(
+        MachineOp.InvokeStatic,
+        () => compilable.compile() as Recast<VMHandle, number>
+      );
     } else {
-      this.pushMachine(Op.InvokeStatic, handle as Recast<VMHandle, number>);
+      this.encoder.pushMachine(MachineOp.InvokeStatic, handle as Recast<VMHandle, number>);
     }
   }
 }

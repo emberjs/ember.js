@@ -52,7 +52,7 @@ class TypeofChecker<T> implements Checker<T> {
 export type Primitive = undefined | null | boolean | number | string;
 
 class PrimitiveChecker implements Checker<Primitive> {
-  type: Primitive;
+  type!: Primitive;
 
   validate(value: Opaque): value is Primitive {
     return (
@@ -66,6 +66,18 @@ class PrimitiveChecker implements Checker<Primitive> {
 
   expected(): string {
     return `a primitive`;
+  }
+}
+
+class NullChecker implements Checker<null> {
+  type!: null;
+
+  validate(value: Opaque): value is null {
+    return value === null;
+  }
+
+  expected(): string {
+    return `null`;
   }
 }
 
@@ -133,6 +145,7 @@ class PropertyChecker<T> implements Checker<T> {
 
   validate(obj: Opaque): obj is T {
     if (obj === null || obj === undefined) return false;
+    if (typeof obj !== 'object') return false;
 
     return Object.keys(this.checkers).every(k => {
       if (!(k in obj)) return false;
@@ -233,8 +246,8 @@ export function check<T>(value: Opaque, checker: Checker<T>): T {
 
 let size = 0;
 
-export function recordStackSize(stack: { sp: number }) {
-  size = stack.sp;
+export function recordStackSize(sp: number) {
+  size = sp;
 }
 
 export function expectStackChange(stack: { sp: number }, expected: number, name: string) {
@@ -253,6 +266,7 @@ export const CheckNumber: Checker<number> = new TypeofChecker<number>('number');
 export const CheckBoolean: Checker<boolean> = new TypeofChecker<boolean>('boolean');
 export const CheckHandle: Checker<number> = CheckNumber;
 export const CheckString: Checker<string> = new TypeofChecker<string>('string');
+export const CheckNull: Checker<null> = new NullChecker();
 export const CheckOpaque: Checker<Opaque> = new OpaqueChecker();
 export const CheckSafeString: Checker<SafeString> = new SafeStringChecker();
 

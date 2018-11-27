@@ -1,11 +1,10 @@
-import { Template } from '@glimmer/interfaces';
+import { Template, RichIteratorResult } from '@glimmer/interfaces';
 import {
   UNDEFINED_REFERENCE,
   RenderResult,
   SafeString,
   PrimitiveReference,
   VM,
-  IteratorResult,
   clientBuilder,
 } from '@glimmer/runtime';
 import {
@@ -57,7 +56,7 @@ function render(template: Template, context = {}) {
 
   let templateIterator = env.renderMain(template, self, clientBuilder(env, cursor));
 
-  let iteratorResult: IteratorResult<RenderResult>;
+  let iteratorResult: RichIteratorResult<null, RenderResult>;
   do {
     iteratorResult = templateIterator.next();
   } while (!iteratorResult.done);

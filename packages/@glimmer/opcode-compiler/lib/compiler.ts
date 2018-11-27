@@ -1,4 +1,4 @@
-import { OpcodeBuilder, StdOpcodeBuilder } from './opcode-builder';
+import { OpcodeBuilderImpl, StdOpcodeBuilder } from './opcode-builder';
 import { Macros } from './syntax';
 import { compile } from './compile';
 import { debugSlice } from './debug';
@@ -46,7 +46,7 @@ class StdLib {
 
 export abstract class AbstractCompiler<
   Locator,
-  Builder extends OpcodeBuilder<Locator>,
+  Builder extends OpcodeBuilderImpl<Locator>,
   Program extends CompileTimeProgram = CompileTimeProgram
 > implements Compiler<Builder> {
   stdLib!: STDLib; // Set by this.initialize() in constructor
@@ -79,7 +79,7 @@ export abstract class AbstractCompiler<
     blocks: INamedBlocks,
     builder: Builder
   ): void {
-    this.macros.blocks.compile<Locator>(name, params, hash, blocks, builder);
+    this.macros.blocks.compile(name, params, hash, blocks, builder);
   }
 
   add(statements: Statement[], containingLayout: LayoutWithContext<Locator>): number {
@@ -156,4 +156,4 @@ if (DEBUG) {
   };
 }
 
-export type AnyAbstractCompiler = AbstractCompiler<Opaque, OpcodeBuilder<Opaque>>;
+export type AnyAbstractCompiler = AbstractCompiler<Opaque, OpcodeBuilderImpl<Opaque>>;

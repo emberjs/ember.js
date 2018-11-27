@@ -17,7 +17,7 @@ export {
 
 export { default as getDynamicVar } from './lib/helpers/get-dynamic-var';
 
-export { PublicVM as VM, VM as LowLevelVM, UpdatingVM, RenderResult } from './lib/vm';
+export { PublicVM as VM, InternalVM, VM as LowLevelVM, UpdatingVM, RenderResult } from './lib/vm';
 
 export { SimpleDynamicAttribute, DynamicAttribute } from './lib/vm/attributes/dynamic';
 
@@ -82,3 +82,9 @@ export {
 export { rehydrationBuilder, RehydrateBuilder } from './lib/vm/rehydrate-builder';
 export { default as Bounds, ConcreteBounds, Cursor } from './lib/bounds';
 export { capabilityFlagsFrom, hasCapability, Capability } from './lib/capabilities';
+
+/**
+ * @deprecated use RichIteratorResult<Tick, Return> or TemplateIterator instead
+ */
+import { RichIteratorResult } from '@glimmer/interfaces';
+export type IteratorResult<T> = RichIteratorResult<null, T>;

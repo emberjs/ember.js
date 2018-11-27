@@ -1,3 +1,99 @@
+export const enum MachineOp {
+  /**
+   * Operation: Push a stack frame
+   *
+   * Format:
+   *   (PushFrame)
+   * Operand Stack:
+   *   ... →
+   *   $ra, $fp
+   */
+  PushFrame,
+
+  /**
+   * Operation: Pop a stack frame
+   *
+   * Format:
+   *   (PushFrame)
+   * Operand Stack:
+   *   $ra, $fp →
+   *   ...
+   */
+  PopFrame,
+
+  /**
+   * Operation: Push a small stack frame
+   *
+   * Format:
+   *   (PushSmallFrame)
+   * Operand Stack:
+   *   ... →
+   *   $fp
+   */
+  PushSmallFrame,
+
+  /**
+   * Operation: Pop a stack frame
+   *
+   * Format:
+   *   (PopSmallFrame)
+   * Operand Stack:
+   *   $fp →
+   *   ...
+   */
+  PopSmallFrame,
+
+  /**
+   * Operation: Evaluate the handle at the top of the stack.
+   * Format:
+   *   (InvokeVirtual)
+   * Operand Stack:
+   *   ..., Handle, →
+   *   ...
+   */
+  InvokeVirtual,
+
+  /**
+   * Operation: Evaluate the handle.
+   * Format:
+   *   (InvokeStatic handle:u32)
+   * Operand Stack:
+   *   ... →
+   *   ...
+   */
+  InvokeStatic,
+
+  /**
+   * Operation: Jump to the specified offset.
+   *
+   * Format:
+   *   (Jump to:u32)
+   * Operand Stack:
+   *   ... →
+   *   ...
+   */
+  Jump,
+
+  /**
+   * Operation: Return to the previous frame.
+   * Format:
+   *   (Return)
+   * Operand Stack:
+   *   ..., address:number →
+   *   ...
+   */
+  Return,
+
+  /**
+   * Operation: Return to a place in the program given an offset
+   * Format:
+   *  (ReturnTo offset:i32)
+   * Operand Stack:
+   *    ... →
+   */
+  ReturnTo,
+}
+
 export const enum Op {
   /*
     Documentation TODO:
@@ -298,25 +394,6 @@ export const enum Op {
    */
   PopScope,
 
-  /**
-   * Operation: Return to the previous frame.
-   * Format:
-   *   (Return)
-   * Operand Stack:
-   *   ..., address:number →
-   *   ...
-   */
-  Return,
-
-  /**
-   * Operation: Return to a place in the program given an offset
-   * Format:
-   *  (ReturnTo offset:i32)
-   * Operand Stack:
-   *    ... →
-   */
-  ReturnTo,
-
   /// HTML
 
   /**
@@ -530,26 +607,6 @@ export const enum Op {
   PushSymbolTable,
 
   /**
-   * Operation: Evaluate the handle at the top of the stack.
-   * Format:
-   *   (InvokeVirtual)
-   * Operand Stack:
-   *   ..., Handle, →
-   *   ...
-   */
-  InvokeVirtual,
-
-  /**
-   * Operation: Evaluate the handle.
-   * Format:
-   *   (InvokeStatic handle:u32)
-   * Operand Stack:
-   *   ... →
-   *   ...
-   */
-  InvokeStatic,
-
-  /**
    * Operation: Yield to a block.
    * Format:
    *   (InvokeYield)
@@ -558,17 +615,6 @@ export const enum Op {
    *   ...
    */
   InvokeYield,
-
-  /**
-   * Operation: Jump to the specified offset.
-   *
-   * Format:
-   *   (Jump to:u32)
-   * Operand Stack:
-   *   ... →
-   *   ...
-   */
-  Jump,
 
   /**
    * Operation:
@@ -622,50 +668,6 @@ export const enum Op {
    *   ..., VersionedPathReference<u32>
    */
   AssertSame,
-
-  /**
-   * Operation: Push a stack frame
-   *
-   * Format:
-   *   (PushFrame)
-   * Operand Stack:
-   *   ... →
-   *   $ra, $fp
-   */
-  PushFrame,
-
-  /**
-   * Operation: Pop a stack frame
-   *
-   * Format:
-   *   (PushFrame)
-   * Operand Stack:
-   *   $ra, $fp →
-   *   ...
-   */
-  PopFrame,
-
-  /**
-   * Operation: Push a small stack frame
-   *
-   * Format:
-   *   (PushSmallFrame)
-   * Operand Stack:
-   *   ... →
-   *   $fp
-   */
-  PushSmallFrame,
-
-  /**
-   * Operation: Pop a stack frame
-   *
-   * Format:
-   *   (PopSmallFrame)
-   * Operand Stack:
-   *   $fp →
-   *   ...
-   */
-  PopSmallFrame,
 
   /**
    * Operation:

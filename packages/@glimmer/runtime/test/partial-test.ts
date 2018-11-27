@@ -1,4 +1,4 @@
-import { RenderResult, IteratorResult, clientBuilder, renderMain } from '@glimmer/runtime';
+import { RenderResult, clientBuilder, renderMain } from '@glimmer/runtime';
 import {
   BasicComponent,
   EmberishCurlyComponent,
@@ -9,7 +9,7 @@ import {
   generateSnapshot,
   strip,
 } from '@glimmer/test-helpers';
-import { Template } from '@glimmer/interfaces';
+import { Template, RichIteratorResult } from '@glimmer/interfaces';
 import { UpdatableReference } from '@glimmer/object-reference';
 import { Opaque } from '@glimmer/util';
 
@@ -44,7 +44,7 @@ function render(template: Template, context = {}) {
     handle
   );
 
-  let iteratorResult: IteratorResult<RenderResult>;
+  let iteratorResult: RichIteratorResult<null, RenderResult>;
   do {
     iteratorResult = templateIterator.next();
   } while (!iteratorResult.done);

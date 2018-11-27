@@ -1,14 +1,14 @@
 import { statementCompiler } from './syntax';
 import { debugCompiler, AnyAbstractCompiler } from './compiler';
-import { OpcodeBuilder } from './opcode-builder';
+import { OpcodeBuilderImpl } from './opcode-builder';
 import { Statement } from '@glimmer/wire-format';
 import { Compiler, Recast } from '@glimmer/interfaces';
 import { DEBUG } from '@glimmer/local-debug-flags';
 
 export function compile<Locator>(
   statements: Statement[],
-  builder: OpcodeBuilder<Locator>,
-  compiler: Compiler<OpcodeBuilder<Locator>>
+  builder: OpcodeBuilderImpl<Locator>,
+  compiler: Compiler<OpcodeBuilderImpl<Locator>>
 ): number {
   let sCompiler = statementCompiler();
 
@@ -20,7 +20,7 @@ export function compile<Locator>(
 
   if (DEBUG) {
     debugCompiler(
-      compiler as Recast<Compiler<OpcodeBuilder<Locator>>, AnyAbstractCompiler>,
+      compiler as Recast<Compiler<OpcodeBuilderImpl<Locator>>, AnyAbstractCompiler>,
       handle
     );
   }
