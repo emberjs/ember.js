@@ -1,4 +1,3 @@
-import * as SimpleDOM from 'simple-dom';
 import {
   Environment,
   ComponentDefinition,
@@ -18,10 +17,18 @@ import {
   ModuleLocatorMap,
   BundleCompilationResult,
 } from '@glimmer/bundle-compiler';
+import { WrappedBuilder } from '@glimmer/opcode-compiler';
 import { Opaque, assert, Dict, assign, expect, Option } from '@glimmer/util';
 import { WriteOnlyProgram, RuntimeProgram, RuntimeConstants, Heap } from '@glimmer/program';
-import { ProgramSymbolTable, ComponentCapabilities, ModuleLocator } from '@glimmer/interfaces';
+import {
+  ProgramSymbolTable,
+  ComponentCapabilities,
+  ModuleLocator,
+  Simple,
+} from '@glimmer/interfaces';
+import { PathReference } from '@glimmer/reference';
 import { UpdatableReference } from '@glimmer/object-reference';
+import createHTMLDocument from '@simple-dom/document';
 
 import RenderDelegate from '../../../render-delegate';
 import EagerCompilerDelegate from './compiler-delegate';
@@ -48,13 +55,11 @@ import { Modules } from './modules';
 import { TestDynamicScope } from '../../../environment';
 import { NodeEnv } from '../ssr/environment';
 import { TestComponentDefinitionState, locatorFor } from '../../component-definition';
-import { WrappedBuilder } from '@glimmer/opcode-compiler';
 import {
   TestModifierDefinitionState,
   TestModifierConstructor,
   TestModifierManager,
 } from '../../modifier';
-import { PathReference } from '@glimmer/reference';
 import { Locator } from '../../components';
 
 export type RenderDelegateComponentDefinition = ComponentDefinition<TestComponentDefinitionState>;
@@ -111,8 +116,8 @@ export default class EagerRenderDelegate implements RenderDelegate {
     this.env = new EagerTestEnvironment();
   }
 
-  getInitialElement(): HTMLElement {
-    return this.env.getAppendOperations().createElement('div') as HTMLElement;
+  getInitialElement(): Simple.Element {
+    return this.env.getAppendOperations().createElement('div');
   }
 
   registerComponent(
@@ -250,7 +255,7 @@ export default class EagerRenderDelegate implements RenderDelegate {
   renderComponent(
     name: string,
     args: Dict<PathReference<Opaque>>,
-    element: HTMLElement
+    element: Simple.Element
   ): RenderResult {
     let bundleCompiler = this.getBundleCompiler();
     this.addRegisteredComponents(bundleCompiler);
@@ -272,7 +277,7 @@ export default class EagerRenderDelegate implements RenderDelegate {
     return renderSync(env, iterator);
   }
 
-  renderTemplate(template: string, context: Dict<Opaque>, element: HTMLElement): RenderResult {
+  renderTemplate(template: string, context: Dict<Opaque>, element: Simple.Element): RenderResult {
     let bundleCompiler = this.getBundleCompiler();
     let locator = locatorFor({ module: 'ui/components/main', name: 'default' });
     bundleCompiler.add(locator, template);
@@ -296,7 +301,7 @@ export default class EagerRenderDelegate implements RenderDelegate {
 }
 
 export class NodeRenderDelegate extends EagerRenderDelegate {
-  constructor(env = new NodeEnv({ document: new SimpleDOM.Document() })) {
+  constructor(env = new NodeEnv({ document: createHTMLDocument() })) {
     super(env);
   }
 }

@@ -7,6 +7,7 @@ import {
   VM,
   IteratorResult,
   clientBuilder,
+  Cursor,
 } from '@glimmer/runtime';
 import {
   assertNodeTagName,
@@ -53,7 +54,7 @@ function assertProperty<T, K extends keyof T, V extends T[K]>(
 function render(template: Template, context = {}) {
   self = new UpdatableReference(context);
   env.begin();
-  let cursor = { element: root, nextSibling: null };
+  let cursor = { element: root, nextSibling: null } as Cursor;
 
   let templateIterator = env.renderMain(template, self, clientBuilder(env, cursor));
 

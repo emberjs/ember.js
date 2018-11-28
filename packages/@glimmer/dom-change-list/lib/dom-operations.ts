@@ -1,5 +1,6 @@
 import { Simple, Option } from '@glimmer/interfaces';
 import { dict, assert } from '@glimmer/util';
+import { Namespace } from '@simple-dom/interface';
 import { NodeToken, NodeTokens } from './node-tokens';
 
 export enum ConstructionOperation {
@@ -25,7 +26,7 @@ function opcodeof(opcode: number): ConstructionOperation {
   return opcode >> 3;
 }
 
-export const HTML = 'http://www.w3.org/1999/xhtml';
+export const HTML = Namespace.HTML;
 
 export class Constants {
   private strings: string[] = [];
@@ -59,7 +60,7 @@ export class OperationsBuilder {
     };
   }
 
-  openElement(name: string, ns: Simple.Namespace = HTML): NodeToken {
+  openElement(name: string, ns: Namespace = HTML): NodeToken {
     let nameConst = this.constants.get(name);
     let nsConst = this.constants.get(ns);
 
@@ -71,7 +72,7 @@ export class OperationsBuilder {
     this.ops.push(withSize(ConstructionOperation.CloseElement, 0));
   }
 
-  setAttribute(name: string, value: string, ns: Simple.Namespace = HTML) {
+  setAttribute(name: string, value: string, ns: Namespace = Namespace.HTML) {
     let nameConst = this.constants.get(name);
     let valueConst = this.constants.get(value);
     let nsConst = this.constants.get(ns);
@@ -166,7 +167,10 @@ const ConstructionOperations: ConstructionFunction[] = [
 
     if (state.constructing) flush(state);
 
-    let el = document.createElementNS(constants[namespace] as Simple.Namespace, constants[tag]);
+    let el = document.createElementNS(
+      constants[namespace] as Simple.ElementNamespace,
+      constants[tag]
+    );
     state.constructing = el;
     state.tokens.register(el);
   },
@@ -188,7 +192,7 @@ const ConstructionOperations: ConstructionFunction[] = [
     );
 
     constructing!.setAttributeNS(
-      constants[namespace] as Simple.Namespace,
+      constants[namespace] as Simple.AttrNamespace,
       constants[name],
       constants[value]
     );

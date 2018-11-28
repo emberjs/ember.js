@@ -4,6 +4,7 @@ import {
   Bounds,
   ConcreteBounds,
   Environment,
+  Cursor,
 } from '@glimmer/runtime';
 
 import { Simple, Option } from '@glimmer/interfaces';
@@ -109,9 +110,6 @@ class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
   }
 }
 
-export function serializeBuilder(
-  env: Environment,
-  cursor: { element: Simple.Element; nextSibling: Option<Simple.Node> }
-): ElementBuilder {
+export function serializeBuilder(env: Environment, cursor: Cursor): ElementBuilder {
   return SerializeBuilder.forInitialRender(env, cursor);
 }

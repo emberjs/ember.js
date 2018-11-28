@@ -318,14 +318,14 @@ function testOptions(options: Maybe<TestEnvironmentOptions>) {
   let appendOperations: Maybe<DOMTreeConstruction> = options && options.appendOperations;
   let updateOperations: Maybe<IDOMChanges> = options && options.updateOperations;
 
-  if (!document) document = window.document;
+  if (!document) document = window.document as Simple.Document;
 
   if (!appendOperations) {
     appendOperations = new DOMTreeConstruction(document);
   }
 
   if (!updateOperations) {
-    updateOperations = new DOMChanges(document as HTMLDocument);
+    updateOperations = new DOMChanges(document);
   }
 
   return { appendOperations, updateOperations };

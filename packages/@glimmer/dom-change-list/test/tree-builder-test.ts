@@ -1,13 +1,13 @@
 import { DOMTreeConstruction, NodeTokens, TreeBuilder } from '@glimmer/dom-change-list';
 
-import * as SimpleDOM from 'simple-dom';
+import createHTMLDocument from '@simple-dom/document';
 import { Simple } from '@glimmer/interfaces';
 
 import { TestCase, module, test } from './test-case';
 import { XLINK, Builder as TestBuilder, toHTML, toHTMLNS } from './support';
 
 @module('[dom-change-list] TreeBuilder')
-export class ChangeListTest extends TestCase {
+export class TreeBuilderTest extends TestCase {
   // These definitely assigned properties are set in before()
   protected document!: Simple.Document;
   protected parent!: Simple.Element | Simple.DocumentFragment;
@@ -16,8 +16,8 @@ export class ChangeListTest extends TestCase {
   protected construction!: DOMTreeConstruction;
 
   before() {
-    this.document = new SimpleDOM.Document();
-    this.parent = document.createElement('div');
+    this.document = createHTMLDocument();
+    this.parent = this.document.createElement('div');
     this.construction = new DOMTreeConstruction();
     this.builder = new TreeBuilder(this.construction);
     this.tree = new Builder(this.builder);
@@ -102,7 +102,7 @@ export class ChangeListTest extends TestCase {
 
   protected append(): NodeTokens {
     this.tree.appendTo(this.parent);
-    return this.construction.appendTo(this.parent, document);
+    return this.construction.appendTo(this.parent, this.document);
   }
 
   protected shouldEqual(expectedHTML: string) {

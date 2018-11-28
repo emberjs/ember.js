@@ -1,4 +1,4 @@
-import { Opaque, Dict, Option } from '@glimmer/interfaces';
+import { Opaque, Dict, Option, Simple } from '@glimmer/interfaces';
 import { SafeString } from '@glimmer/runtime';
 import {
   module,
@@ -20,6 +20,7 @@ import {
   assertEmberishElement,
   assertElement,
   assertSerializedInElement,
+  expectRealHTMLElement,
 } from '@glimmer/test-helpers';
 import { expect } from '@glimmer/util';
 
@@ -36,7 +37,7 @@ class AbstractRehydrationTests extends InitialRenderSuite {
   renderServerSide(
     template: string | ComponentBlueprint,
     context: Dict<Opaque>,
-    element: Element | undefined = undefined
+    element?: Simple.Element
   ): void {
     this.serverOutput = this.delegate.renderServerSide(
       template as string,
@@ -44,7 +45,7 @@ class AbstractRehydrationTests extends InitialRenderSuite {
       () => this.takeSnapshot(),
       element
     );
-    this.element.innerHTML = this.serverOutput;
+    this.browserElement.innerHTML = this.serverOutput;
   }
 
   renderClientSide(template: string | ComponentBlueprint, context: Dict<Opaque>): void {
@@ -73,12 +74,8 @@ class AbstractRehydrationTests extends InitialRenderSuite {
 class Rehydration extends AbstractRehydrationTests {
   @test
   'rehydrates into element with pre-existing content'() {
-    let rootElement = this.delegate.serverEnv
-      .getAppendOperations()
-      .createElement('div') as HTMLDivElement;
-    let extraContent = this.delegate.serverEnv
-      .getAppendOperations()
-      .createElement('noscript') as HTMLElement;
+    let rootElement = this.delegate.serverEnv.getAppendOperations().createElement('div');
+    let extraContent = this.delegate.serverEnv.getAppendOperations().createElement('noscript');
     rootElement.appendChild(extraContent);
 
     let noScriptString = '<noscript></noscript>';
@@ -209,11 +206,11 @@ class Rehydration extends AbstractRehydrationTests {
     let clientNode2 = env.getDOM().createTextNode('goodbye');
     this.rerender({ node: clientNode2 });
     this.assertHTML('<div>goodbye</div>', 'rerender after node update');
-    this.assertStableNodes({ except: clientNode as Text });
+    this.assertStableNodes({ except: clientNode });
 
     this.rerender({ node: clientNode });
     this.assertHTML('<div>hello</div>', 'back to the beginning');
-    this.assertStableNodes({ except: clientNode2 as Text });
+    this.assertStableNodes({ except: clientNode2 });
   }
 
   @test
@@ -235,16 +232,16 @@ class Rehydration extends AbstractRehydrationTests {
     );
 
     env = this.delegate.clientEnv;
-    let clientRemote = (remote = env.getDOM().createElement('remote') as HTMLElement);
-    let host = env.getDOM().createElement('div') as HTMLElement;
+    let clientRemote = (remote = env.getDOM().createElement('remote'));
+    let host = env.getDOM().createElement('div');
     host.appendChild(this.element);
     host.appendChild(clientRemote);
-    clientRemote.innerHTML = serializedRemote;
-    this.element = host.firstChild as HTMLElement;
+    (clientRemote as Element).innerHTML = serializedRemote;
+    this.element = host.firstChild! as Simple.Element;
 
     this.renderClientSide(template, { remote: clientRemote });
     this.assertRehydrationStats({ nodesRemoved: 0 });
-    this.assert.equal(clientRemote.innerHTML, '<inner>Wat Wat</inner>');
+    this.assert.equal((clientRemote as HTMLElement).innerHTML, '<inner>Wat Wat</inner>');
   }
 
   @test
@@ -283,16 +280,16 @@ class Rehydration extends AbstractRehydrationTests {
       'Serilaized nested remote'
     );
     env = this.delegate.clientEnv;
-    let clientRemoteParent = env.getDOM().createElement('remote') as HTMLElement;
-    let clientRemoteChild = env.getDOM().createElement('other') as HTMLElement;
-    let host = env.getDOM().createElement('div') as HTMLElement;
-    host.appendChild(this.element);
+    let clientRemoteParent = expectRealHTMLElement(env.getDOM().createElement('remote'));
+    let clientRemoteChild = expectRealHTMLElement(env.getDOM().createElement('other'));
+    let host = expectRealHTMLElement(env.getDOM().createElement('div'));
+    host.appendChild(this.browserElement);
     host.appendChild(clientRemoteParent);
     host.appendChild(clientRemoteChild);
 
     clientRemoteParent.innerHTML = serializedParentRemote;
     clientRemoteChild.innerHTML = serializedRemoteChild;
-    this.element = host.firstChild as HTMLElement;
+    this.element = (host.firstChild as Element) as Simple.Element;
     this.renderClientSide(template, {
       remoteParent: clientRemoteParent,
       remoteChild: clientRemoteChild,
@@ -729,9 +726,9 @@ class RehydratingComponents extends AbstractRehydrationTests {
     let b = blockStack();
     if (emberishComponent) {
       // injects wrapper elements
-      this.assert.ok(this.element.querySelector('div'));
-      this.assert.ok(this.element.querySelector('.ember-view'));
-      this.assert.equal(this.element.textContent, 'Hello World');
+      this.assert.ok(this.browserElement.querySelector('div'));
+      this.assert.ok(this.browserElement.querySelector('.ember-view'));
+      this.assert.equal(this.browserElement.textContent, 'Hello World');
     } else {
       this.assertServerComponent(`${b(2)}Hello <!--%|%-->World${b(2)}`);
     }
@@ -741,7 +738,7 @@ class RehydratingComponents extends AbstractRehydrationTests {
       template,
     });
     this.assertRehydrationStats({ nodesRemoved: 0 });
-    this.assert.equal(this.element.textContent, 'Hello World');
+    this.assert.equal(this.browserElement.textContent, 'Hello World');
     this.assertStableRerender();
   }
 
@@ -769,9 +766,9 @@ class RehydratingComponents extends AbstractRehydrationTests {
     let b = blockStack();
     if (emberishComponent) {
       // injects wrapper elements
-      this.assert.ok(this.element.querySelector('div'));
-      this.assert.ok(this.element.querySelector('.ember-view'));
-      this.assert.equal(this.element.textContent, 'Hello World');
+      this.assert.ok(this.browserElement.querySelector('div'));
+      this.assert.ok(this.browserElement.querySelector('.ember-view'));
+      this.assert.equal(this.browserElement.textContent, 'Hello World');
     } else {
       this.assertServerComponent(`${b(2)}Hello <!--%|%-->World${b(2)}`);
     }
@@ -787,7 +784,7 @@ class RehydratingComponents extends AbstractRehydrationTests {
       template,
     });
     this.assertRehydrationStats({ nodesRemoved: 0 });
-    this.assert.equal(this.element.textContent, 'Hello Chad');
+    this.assert.equal(this.browserElement.textContent, 'Hello Chad');
     this.assertStableRerender();
   }
 

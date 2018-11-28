@@ -8,7 +8,6 @@ const transpileES6 = require('emberjs-build/lib/utils/transpile-es6');
 const transpileToES5 = require('./transpile-to-es5');
 const handlebarsInlinedTrees = require('./handlebars-inliner');
 const TSLint = require('broccoli-tslinter');
-const Rollup = require('broccoli-rollup');
 const babel = require('broccoli-babel-transpiler');
 
 /**
@@ -92,25 +91,19 @@ function includeVendorDependencies() {
     }
   );
 
-  let simpleDOM = new Rollup('node_modules/simple-dom/lib', {
-    rollup: {
-      input: ['simple-dom.js'],
-      output: {
-        file: 'simple-dom.js',
-        format: 'es'
-      }
-    }
-  });
-
   let transpiled = transpileES6(
-    merge([simpleHTMLTokenizer, handlebarsInlinedTrees.compiler, simpleDOM]),
+    merge([simpleHTMLTokenizer, handlebarsInlinedTrees.compiler]),
     'test-dependencies',
     {
       avoidDefine: false
     }
   );
 
-  return concat(transpiled, {
+  let simpleDOM = funnel('node_modules/@simple-dom', {
+    include: ['*/dist/amd/es5/*.{js,map}']
+  });
+
+  return concat(merge([transpiled, simpleDOM]), {
     inputFiles: ['**/*.js'],
     outputFile: 'assets/vendor.js'
   });

@@ -18,9 +18,11 @@ import { Opaque, Dict, dict, expect } from '@glimmer/util';
 import { NodeDOMTreeConstruction, serializeBuilder } from '@glimmer/node';
 import { Option, Simple } from '@glimmer/interfaces';
 import { UpdatableReference } from '@glimmer/object-reference';
-import * as SimpleDOM from 'simple-dom';
+import createHTMLDocument from '@simple-dom/document';
+import HTMLSerializer from '@simple-dom/serializer';
+import voidMap from '@simple-dom/void-map';
 
-import { assign, equalTokens, normalizeInnerHTML } from './helpers';
+import { assign, equalTokens, normalizeInnerHTML, expectRealHTMLElement } from './helpers';
 import LazyTestEnvironment from './environment/modes/lazy/environment';
 import LazyRenderDelegate from './environment/modes/lazy/render-delegate';
 import { equalsElement, classes, regex } from './environment';
@@ -120,17 +122,31 @@ class SimplePathReference implements PathReference<Opaque> {
   }
 }
 
-export type IndividualSnapshot = 'up' | 'down' | Node;
+export type IndividualSnapshot = 'up' | 'down' | Simple.Node;
 export type NodesSnapshot = IndividualSnapshot[];
 
 export class RenderTest {
-  protected element: HTMLElement;
+  protected element: Simple.Element;
   protected assert = QUnit.assert;
   protected context: Dict<Opaque> = dict<Opaque>();
   protected renderResult: Option<RenderResult> = null;
   protected helpers = dict<UserHelper>();
   protected testType!: ComponentKind;
   protected snapshot: NodesSnapshot = [];
+
+  /**
+   * Used to access the current test's root DOM element, if the test relies on
+   * DOM APIs that are not available in simple-dom. This allows us to more
+   * easily find tests in the test suite that are not environment-agnostic.
+   */
+  protected get browserElement() {
+    if (typeof window === 'undefined' || typeof window.document === 'undefined') {
+      throw new Error(
+        `Cannot access test's element as a browser-native element in non-browser environments.`
+      );
+    }
+    return this.element as HTMLElement;
+  }
 
   constructor(protected delegate: RenderDelegate) {
     this.element = delegate.getInitialElement();
@@ -411,14 +427,14 @@ export class RenderTest {
   }
 
   shouldBeVoid(tagName: string) {
-    this.element.innerHTML = '';
     let html = '<' + tagName + " data-foo='bar'><p>hello</p>";
+    this.browserElement.innerHTML = '';
     this.delegate.renderTemplate(html, this.context, this.element, () => this.takeSnapshot());
 
     let tag = '<' + tagName + ' data-foo="bar">';
     let closing = '</' + tagName + '>';
     let extra = '<p>hello</p>';
-    html = normalizeInnerHTML(this.element.innerHTML);
+    html = normalizeInnerHTML(this.browserElement.innerHTML);
 
     QUnit.assert.pushResult({
       result: html === tag + extra || html === tag + closing + extra,
@@ -464,13 +480,13 @@ export class RenderTest {
     bump();
   }
 
-  protected takeSnapshot() {
-    let snapshot: (Node | 'up' | 'down')[] = (this.snapshot = []);
+  protected takeSnapshot(): IndividualSnapshot[] {
+    let snapshot: (Simple.Node | 'up' | 'down')[] = (this.snapshot = []);
 
-    let node = this.element.firstChild;
+    let node: Option<Simple.Node> = this.element.firstChild;
     let upped = false;
 
-    while (node && node !== this.element) {
+    while (node && node !== this.browserElement) {
       if (upped) {
         if (node.nextSibling) {
           node = node.nextSibling;
@@ -505,7 +521,7 @@ export class RenderTest {
   }
 
   protected assertHTML(html: string, message?: string) {
-    equalTokens(this.element, html, message ? `${html} (${message})` : html);
+    equalTokens(this.browserElement, html, message ? `${html} (${message})` : html);
     this.takeSnapshot();
   }
 
@@ -528,11 +544,11 @@ export class RenderTest {
   }
 
   protected assertStableNodes(
-    { except: _except }: { except: Array<Node> | Node | Node[] } = {
+    { except: _except }: { except: Simple.Node | Simple.Node[] } = {
       except: [],
     }
   ) {
-    let except: Array<Node>;
+    let except: Array<Simple.Node>;
 
     if (Array.isArray(_except)) {
       except = uniq(_except);
@@ -594,7 +610,7 @@ export class RehydrationDelegate implements RenderDelegate {
   constructor() {
     this.clientEnv = new LazyTestEnvironment();
 
-    let doc = new SimpleDOM.Document();
+    let doc = createHTMLDocument();
 
     this.serverEnv = new LazyTestEnvironment({
       document: doc,
@@ -602,8 +618,12 @@ export class RehydrationDelegate implements RenderDelegate {
     });
   }
 
-  getInitialElement(): HTMLElement {
-    return this.clientEnv.getAppendOperations().createElement('div') as HTMLElement;
+  getInitialElement(): Simple.Element {
+    return this.clientEnv.getAppendOperations().createElement('div');
+  }
+
+  get fixtureElement(): HTMLElement {
+    return document.getElementById('qunit-fixture')!;
   }
 
   getElementBuilder(env: Environment, cursor: Cursor): ElementBuilder {
@@ -618,10 +638,9 @@ export class RehydrationDelegate implements RenderDelegate {
     template: string,
     context: Dict<Opaque>,
     takeSnapshot: () => void,
-    element: Element | undefined = undefined
+    element = this.serverEnv.getAppendOperations().createElement('div')
   ): string {
     let env = this.serverEnv;
-    element = element || (env.getAppendOperations().createElement('div') as HTMLDivElement);
     let cursor = { element, nextSibling: null };
     // Emulate server-side render
     renderTemplate(template, env, this.getSelf(context), this.getElementBuilder(env, cursor));
@@ -634,13 +653,13 @@ export class RehydrationDelegate implements RenderDelegate {
     return new UpdatableReference(context);
   }
 
-  serialize(element: Simple.Element) {
-    let serializer = new SimpleDOM.HTMLSerializer(SimpleDOM.voidMap);
+  serialize(element: Element | Simple.Element) {
+    let serializer = new HTMLSerializer(voidMap);
     let serialized = serializer.serializeChildren(element);
     return serialized;
   }
 
-  renderClientSide(template: string, context: Dict<Opaque>, element: HTMLElement): RenderResult {
+  renderClientSide(template: string, context: Dict<Opaque>, element: Simple.Element): RenderResult {
     let env = this.clientEnv;
     // Client-side rehydration
     let cursor = { element, nextSibling: null };
@@ -657,12 +676,13 @@ export class RehydrationDelegate implements RenderDelegate {
   renderTemplate(
     template: string,
     context: Dict<Opaque>,
-    element: HTMLElement,
+    element: Simple.Element,
     snapshot: () => void
   ): RenderResult {
     let serialized = this.renderServerSide(template, context, snapshot);
-    element.innerHTML = serialized;
-    document.getElementById('qunit-fixture')!.appendChild(element);
+    let browserElement = expectRealHTMLElement(element);
+    browserElement.innerHTML = serialized;
+    this.fixtureElement.appendChild(browserElement);
     return this.renderClientSide(template, context, element);
   }
 
@@ -682,7 +702,7 @@ export class RehydrationDelegate implements RenderDelegate {
   }
 }
 
-function normalize(oldSnapshot: NodesSnapshot, newSnapshot: NodesSnapshot, except: Array<Node>) {
+function normalize(oldSnapshot: NodesSnapshot, newSnapshot: NodesSnapshot, except: Simple.Node[]) {
   let oldIterator = new SnapshotIterator(oldSnapshot);
   let newIterator = new SnapshotIterator(newSnapshot);
 
@@ -696,8 +716,8 @@ function normalize(oldSnapshot: NodesSnapshot, newSnapshot: NodesSnapshot, excep
     if (nextOld === null && newIterator.peek() === null) break;
 
     if (
-      (nextOld instanceof Node && except.indexOf(nextOld) > -1) ||
-      (nextNew instanceof Node && except.indexOf(nextNew) > -1)
+      (isNode(nextOld) && except.indexOf(nextOld) > -1) ||
+      (isNode(nextNew) && except.indexOf(nextNew) > -1)
     ) {
       oldIterator.skip();
       newIterator.skip();
@@ -708,6 +728,10 @@ function normalize(oldSnapshot: NodesSnapshot, newSnapshot: NodesSnapshot, excep
   }
 
   return { oldSnapshot: normalizedOld, newSnapshot: normalizedNew };
+}
+
+function isNode(node: Option<{}>): node is Simple.Node {
+  return node !== null && typeof node['nodeType'] !== 'undefined';
 }
 
 class SnapshotIterator {
@@ -757,7 +781,7 @@ function uniq(arr: any[]) {
   }, []);
 }
 
-function isServerMarker(node: Node) {
+function isServerMarker(node: Simple.Node) {
   return node.nodeType === COMMENT_NODE && node.nodeValue!.charAt(0) === '%';
 }
 

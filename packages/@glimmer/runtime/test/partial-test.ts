@@ -1,4 +1,4 @@
-import { RenderResult, IteratorResult, clientBuilder, renderMain } from '@glimmer/runtime';
+import { Cursor, RenderResult, IteratorResult, clientBuilder, renderMain } from '@glimmer/runtime';
 import {
   BasicComponent,
   EmberishCurlyComponent,
@@ -30,7 +30,7 @@ function commonSetup() {
 function render(template: Template, context = {}) {
   self = new UpdatableReference(context);
   env.begin();
-  let cursor = { element: root, nextSibling: null };
+  let cursor = { element: root, nextSibling: null } as Cursor;
 
   let compilable = template.asLayout();
   let handle = compilable.compile();

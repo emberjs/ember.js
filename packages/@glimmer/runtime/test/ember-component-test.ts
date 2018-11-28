@@ -15,7 +15,7 @@ import {
 } from '@glimmer/test-helpers';
 import { assign } from '@glimmer/util';
 import { Template } from '@glimmer/interfaces';
-import { RenderResult, clientBuilder } from '@glimmer/runtime';
+import { RenderResult, clientBuilder, Cursor } from '@glimmer/runtime';
 import { assert } from './support';
 import { bump } from '@glimmer/reference';
 
@@ -35,7 +35,7 @@ export class EmberishRootView extends EmberObject {
   appendTo(selector: string) {
     let element = (this.parent = document.querySelector(selector)!);
     let self = new UpdatableReference(this);
-    let cursor = { element, nextSibling: null };
+    let cursor = { element, nextSibling: null } as Cursor;
 
     let templateIterator = this.env.renderMain(
       this.template,
@@ -803,13 +803,11 @@ QUnit.test('static arbitrary number of positional parameters', function() {
       {{!sample-component "Foo" 4 "Bar" 5 "Baz"}}</div>`
   );
 
-  let first = view.element.firstChild as Element;
+  let first = view.element.firstChild! as Element;
   let second = first.nextSibling as Element;
-  // let third = <Element>second.nextSibling;
 
   assertElementIsEmberishElement(first, 'div', 'Foo4Bar');
   assertElementIsEmberishElement(second, 'div', 'Foo4Bar5Baz');
-  // equalsElement(third, ...emberishElement('div', { id: 'helper' }, 'Foo4Bar5Baz'));
 });
 
 QUnit.test('arbitrary positional parameter conflict with hash parameter is reported', assert => {

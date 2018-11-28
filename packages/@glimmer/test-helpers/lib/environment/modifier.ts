@@ -16,7 +16,7 @@ export class InertModifierDefinitionState {}
 export class InertModifierManager
   implements ModifierManager<InertModifierStateBucket, InertModifierDefinitionState> {
   create(
-    _element: Element,
+    _element: Simple.Element,
     _state: InertModifierDefinitionState,
     _args: Arguments,
     _dynamicScope: DynamicScope,
@@ -49,7 +49,7 @@ export class TestModifierDefinitionState {
 
 export class TestModifier {
   constructor(
-    public element: Element,
+    public element: Simple.Element,
     public state: TestModifierDefinitionState,
     public args: CapturedArguments,
     public dom: IDOMChanges
@@ -69,12 +69,12 @@ export interface TestModifierInstance {
 
 export class TestModifierManager
   implements ModifierManager<TestModifier, TestModifierDefinitionState> {
-  public installedElements: Element[] = [];
-  public updatedElements: Element[] = [];
+  public installedElements: Simple.Element[] = [];
+  public updatedElements: Simple.Element[] = [];
   public destroyedModifiers: TestModifier[] = [];
 
   create(
-    element: Element,
+    element: Simple.Element,
     state: TestModifierDefinitionState,
     args: Arguments,
     _dynamicScope: DynamicScope,

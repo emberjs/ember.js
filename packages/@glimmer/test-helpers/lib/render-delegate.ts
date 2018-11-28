@@ -5,10 +5,11 @@ import { ComponentKind, ComponentTypes } from './render-test';
 import { UserHelper } from './environment/helper';
 import { BasicReference } from '@glimmer/reference';
 import { DebugConstants } from '@glimmer/bundle-compiler';
+import { Simple } from '@glimmer/interfaces';
 
 export default interface RenderDelegate {
   constants?: DebugConstants;
-  getInitialElement(): HTMLElement;
+  getInitialElement(): Simple.Element;
   registerComponent<K extends ComponentKind, L extends ComponentKind>(
     type: K,
     testType: L,
@@ -21,7 +22,7 @@ export default interface RenderDelegate {
   renderTemplate(
     template: string,
     context: Dict<Opaque>,
-    element: HTMLElement,
+    element: Simple.Element,
     snapshot: () => void
   ): RenderResult;
   getElementBuilder(env: Environment, cursor: Cursor): ElementBuilder;
