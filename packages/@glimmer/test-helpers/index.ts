@@ -16,6 +16,7 @@ export {
   trimLines,
   blockStack,
   assertSerializedInElement,
+  expectRealHTMLElement,
 } from './lib/helpers';
 
 export { TestDynamicScope, equalsElement, inspectHooks, regex, classes } from './lib/environment';

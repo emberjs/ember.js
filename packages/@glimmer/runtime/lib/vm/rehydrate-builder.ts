@@ -37,7 +37,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     super(env, parentNode, nextSibling);
     if (nextSibling) throw new Error('Rehydration with nextSibling not supported');
 
-    let node = this.currentCursor!.element.firstChild;
+    let node: Option<Simple.Node> = this.currentCursor!.element.firstChild;
 
     while (node !== null) {
       if (isComment(node) && isSerializationFirstNode(node)) {
@@ -301,7 +301,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     return super.__openElement(tag);
   }
 
-  __setAttribute(name: string, value: string, namespace: Option<string>): void {
+  __setAttribute(name: string, value: string, namespace: Option<Simple.AttrNamespace>): void {
     let unmatched = this.unmatchedAttributes;
 
     if (unmatched) {
@@ -364,7 +364,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
   getMarker(element: HTMLElement, guid: string): Simple.Node {
     let marker = element.querySelector(`script[glmr="${guid}"]`);
     if (marker) {
-      return marker;
+      return marker as Simple.Node;
     }
 
     throw new Error('Cannot find serialized cursor for `in-element`');

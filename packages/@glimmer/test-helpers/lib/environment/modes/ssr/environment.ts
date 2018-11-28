@@ -1,7 +1,9 @@
 import { IDOMChanges, DOMChanges } from '@glimmer/runtime';
 import { Simple, Maybe } from '@glimmer/interfaces';
 import { NodeDOMTreeConstruction } from '@glimmer/node';
-import * as SimpleDOM from 'simple-dom';
+import createHTMLDocument from '@simple-dom/document';
+import HTMLSerializer from '@simple-dom/serializer';
+import voidMap from '@simple-dom/void-map';
 
 import LazyTestEnvironment from '../lazy/environment';
 import LazyRenderDelegate from '../lazy/render-delegate';
@@ -25,7 +27,7 @@ function testOptions(options: NodeEnvironmentOptions) {
   }
 
   if (!updateOperations) {
-    updateOperations = new DOMChanges(document as HTMLDocument);
+    updateOperations = new DOMChanges(document);
   }
 
   return { appendOperations, updateOperations, document };
@@ -41,21 +43,21 @@ export class NodeEnv extends LazyTestEnvironment {
 
 export class NodeLazyRenderDelegate extends LazyRenderDelegate {
   constructor() {
-    super(new NodeEnv({ document: new SimpleDOM.Document() }));
+    super(new NodeEnv({ document: createHTMLDocument() }));
   }
 }
 
 export class NodeEagerRenderDelegate extends EagerRenderDelegate {
   constructor() {
-    super(new NodeEnv({ document: new SimpleDOM.Document() }));
+    super(new NodeEnv({ document: createHTMLDocument() }));
   }
 }
 
 export class AbstractNodeTest extends RenderTest {
-  protected serializer: SimpleDOM.HTMLSerializer;
+  protected serializer: HTMLSerializer;
   constructor(delegate: RenderDelegate) {
     super(delegate);
-    this.serializer = new SimpleDOM.HTMLSerializer(SimpleDOM.voidMap);
+    this.serializer = new HTMLSerializer(voidMap);
   }
 
   assertHTML(html: string) {

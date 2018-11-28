@@ -10,10 +10,10 @@ import { normalizeStringValue } from '../../dom/normalize';
 export function dynamicAttribute(
   element: Simple.Element,
   attr: string,
-  namespace: Option<string>
+  namespace: Option<Simple.AttrNamespace>
 ): DynamicAttribute {
   let { tagName, namespaceURI } = element;
-  let attribute = { element, name: attr, namespace };
+  let attribute: Attribute = { element, name: attr, namespace };
 
   if (namespaceURI === SVG_NAMESPACE) {
     return buildDynamicAttribute(tagName, attr, attribute);

@@ -2,7 +2,7 @@ import { IArguments } from '../vm/arguments';
 import { DOMChanges } from '../dom/helper';
 import { DynamicScope } from '../environment';
 import { Destroyable } from '@glimmer/util';
-import { Opaque, Option, Unique } from '@glimmer/interfaces';
+import { Opaque, Option, Unique, Simple } from '@glimmer/interfaces';
 import { Tag } from '@glimmer/reference';
 
 export type ModifierDefinitionState = Unique<'ModifierDefinitionState'>;
@@ -31,7 +31,7 @@ export type InternalModifierManager = ModifierManager<
 export interface ModifierManager<ModifierInstanceState, ModifierDefinitionState> {
   // Create is meant to only produce the state bucket
   create(
-    element: Element,
+    element: Simple.Element,
     state: ModifierDefinitionState,
     args: IArguments,
     dynamicScope: DynamicScope,

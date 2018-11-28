@@ -1,5 +1,5 @@
 import { precompile as rawPrecompile, PrecompileOptions } from '@glimmer/compiler';
-import { Opaque, Option } from '@glimmer/interfaces';
+import { Opaque, Option, Simple } from '@glimmer/interfaces';
 import { Environment } from '@glimmer/runtime';
 import * as WireFormat from '@glimmer/wire-format';
 import { EndTag, Token, tokenize } from 'simple-html-tokenizer';
@@ -178,7 +178,7 @@ export function equalTokens(
 
 export function generateSnapshot(element: Element) {
   let snapshot: Node[] = [];
-  let node = element.firstChild;
+  let node: Option<Node> = element.firstChild as Node;
 
   while (node) {
     if (!isMarker(node)) {
@@ -255,21 +255,14 @@ export function getTextContent(el: Node) {
 }
 
 export function strip(strings: TemplateStringsArray, ...args: string[]) {
-  if (typeof strings === 'object') {
-    return strings
-      .map((str: string, i: number) => {
-        return `${str
-          .split('\n')
-          .map(s => s.trim())
-          .join('')}${args[i] ? args[i] : ''}`;
-      })
-      .join('');
-  } else {
-    return strings[0]
-      .split('\n')
-      .map((s: string) => s.trim())
-      .join(' ');
-  }
+  return strings
+    .map((str: string, i: number) => {
+      return `${str
+        .split('\n')
+        .map(s => s.trim())
+        .join('')}${args[i] ? args[i] : ''}`;
+    })
+    .join('');
 }
 
 export function stripTight(strings: TemplateStringsArray) {
@@ -287,7 +280,25 @@ export function trimLines(strings: TemplateStringsArray) {
     .join('\n');
 }
 
-export function assertIsElement(node: Node | null): node is Element {
+/*
+ * Returns true if the passed DOM element is a 'real' DOM element, i.e. did not
+ * originate from the simple-dom library. Compares the element's ownerDocument
+ * property to the global document to determine whether the real DOM is
+ * available in this environment and was used to create the element in
+ * question.
+ */
+export function expectRealHTMLElement(element: Simple.Element): HTMLElement {
+  let document = typeof window !== 'undefined' && window.document;
+  if (document && element.ownerDocument === document) {
+    return element as HTMLElement;
+  }
+
+  throw new Error(`Expected element to be a real (non-SimpleDOM) HTML element`);
+}
+
+export function assertIsElement(node: Node): node is Element;
+export function assertIsElement(node: Simple.Node): node is Simple.Element;
+export function assertIsElement(node: any): any {
   let nodeType = node === null ? null : node.nodeType;
   QUnit.assert.pushResult({
     result: nodeType === 1,
@@ -301,7 +312,12 @@ export function assertIsElement(node: Node | null): node is Element {
 export function assertNodeTagName<
   T extends keyof ElementTagNameMap,
   U extends ElementTagNameMap[T]
->(node: Node | null, tagName: T): node is U {
+>(node: Node | null, tagName: T): node is U;
+export function assertNodeTagName<T>(node: Option<Simple.Node>, tagName: T): node is Simple.Element;
+export function assertNodeTagName<
+  T extends keyof ElementTagNameMap,
+  U extends ElementTagNameMap[T]
+>(node: any, tagName: T): node is U {
   if (assertIsElement(node)) {
     const nodeTagName = node.tagName.toLowerCase();
     QUnit.assert.pushResult({

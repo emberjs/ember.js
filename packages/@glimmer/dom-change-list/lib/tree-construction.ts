@@ -1,4 +1,5 @@
 import { Simple } from '@glimmer/interfaces';
+import { Namespace } from '@simple-dom/interface';
 import { NodeToken, NodeTokens } from './node-tokens';
 import { HTML, OperationsBuilder, run } from './dom-operations';
 
@@ -13,7 +14,7 @@ export class DOMTreeConstruction {
     this.builder = new OperationsBuilder(this.ops);
   }
 
-  openElement(name: string, ns: Simple.Namespace = HTML): NodeToken {
+  openElement(name: string, ns: Namespace = HTML): NodeToken {
     this.builder.openElement(name, ns);
     return this.token++;
   }
@@ -32,7 +33,7 @@ export class DOMTreeConstruction {
     return this.token++;
   }
 
-  setAttribute(name: string, value: string, namespace: Simple.Namespace = HTML) {
+  setAttribute(name: string, value: string, namespace: Namespace = HTML) {
     this.builder.setAttribute(name, value, namespace);
   }
 

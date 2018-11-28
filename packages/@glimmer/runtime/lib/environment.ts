@@ -285,7 +285,7 @@ export abstract class Environment {
     element: Simple.Element,
     attr: string,
     _isTrusting: boolean,
-    namespace: Option<string> = null
+    namespace: Option<Simple.AttrNamespace> = null
   ): DynamicAttribute {
     return dynamicAttribute(element, attr, namespace);
   }
@@ -294,9 +294,9 @@ export abstract class Environment {
 export abstract class DefaultEnvironment extends Environment {
   constructor(options?: EnvironmentOptions) {
     if (!options) {
-      let document = window.document;
+      let document = window.document as Simple.Document;
       let appendOperations = new DOMTreeConstruction(document);
-      let updateOperations = new DOMChanges(document as HTMLDocument);
+      let updateOperations = new DOMChanges(document);
       options = { appendOperations, updateOperations };
     }
 

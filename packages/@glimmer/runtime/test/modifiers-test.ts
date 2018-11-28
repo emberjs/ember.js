@@ -1,8 +1,9 @@
 import { RenderTest, module, test } from '@glimmer/test-helpers';
 import { Opaque, Dict } from '../../util';
+import { Simple } from '@glimmer/interfaces';
 
 class BaseModifier {
-  element?: Element;
+  element?: Simple.Element;
   didInsertElement(_params: Opaque[], _hash: Dict<Opaque>) {}
   willDestroyElement() {}
   didUpdate(_params: Opaque[], _hash: Dict<Opaque>) {}
@@ -24,7 +25,7 @@ class ModifierTests extends RenderTest {
     this.registerModifier(
       'foo',
       class {
-        element?: Element;
+        element?: Simple.Element;
         didInsertElement() {
           assert.ok(this.element);
           assert.equal(this.element!.getAttribute('data-ok'), 'true');
@@ -55,7 +56,7 @@ class ModifierTests extends RenderTest {
     this.registerModifier(
       'foo',
       class {
-        element?: Element;
+        element?: Simple.Element;
         didInsertElement() {
           assert.ok(true);
         }
