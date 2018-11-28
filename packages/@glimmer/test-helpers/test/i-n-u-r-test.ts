@@ -1,5 +1,7 @@
 import { LazyRenderDelegate, RenderTest } from '@glimmer/test-helpers';
-import { Simple } from '@glimmer/interfaces';
+import createHTMLDocument from '@simple-dom/document';
+
+const document = createHTMLDocument();
 
 QUnit.module('Render Tests: I-N-U-R');
 
@@ -14,8 +16,8 @@ QUnit.test('Can set properties', assert => {
 });
 
 QUnit.test('Can take basic snapshots', assert => {
-  let div = document.createElement('div') as Simple.Element;
-  let text = document.createTextNode('Foo') as Simple.Text;
+  let div = document.createElement('div');
+  let text = document.createTextNode('Foo');
   div.appendChild(text);
 
   new class extends RenderTest {
@@ -29,9 +31,9 @@ QUnit.test('Can take basic snapshots', assert => {
 });
 
 QUnit.test('Can take nested snapshots', assert => {
-  let div = document.createElement('div') as Simple.Element;
-  let p = document.createElement('p') as Simple.Element;
-  let text = document.createTextNode('Foo') as Simple.Text;
+  let div = document.createElement('div');
+  let p = document.createElement('p');
+  let text = document.createTextNode('Foo');
   p.appendChild(text);
   div.appendChild(p);
 
@@ -46,10 +48,10 @@ QUnit.test('Can take nested snapshots', assert => {
 });
 
 QUnit.test('Can take nested snapshots of serialized blocks', assert => {
-  let div = document.createElement('div') as Simple.Element;
-  let open = document.createComment('<!--%+b:0%-->') as Simple.Comment;
-  let text = document.createTextNode('Foo') as Simple.Text;
-  let close = document.createComment('<!--%-b:0%-->') as Simple.Comment;
+  let div = document.createElement('div');
+  let open = document.createComment('<!--%+b:0%-->');
+  let text = document.createTextNode('Foo');
+  let close = document.createComment('<!--%-b:0%-->');
   div.appendChild(open);
   div.appendChild(text);
   div.appendChild(close);
