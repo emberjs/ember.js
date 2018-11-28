@@ -2128,8 +2128,8 @@ Route.reopen(ActionHandler, Evented, {
 
     `store.find(modelName, findArguments)`
 
-    @method store
-    @param {Object} store
+    @property store
+    @type {Object}
     @private
   */
   store: computed(function(this: Route) {

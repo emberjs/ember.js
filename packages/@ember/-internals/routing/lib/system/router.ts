@@ -1926,11 +1926,10 @@ EmberRouter.reopen(Evented, {
   /**
    Represents the current URL.
 
-   @method url
-   @return {String} The current URL.
+   @property url
+   @type {String}
    @private
  */
-
   url: computed(function(this: Router<Route>) {
     return get(this, 'location').getURL();
   }),
