@@ -1,10 +1,9 @@
 {
   "version": "2.0.0",
-  "command": "npm",
   "tasks": [{
     "label": "vscode-build",
     "type": "shell",
-    "command": "npm",
+    "command": "yarn",
     "args": ["run", "problems"],
     "group": {
       "kind": "build",
