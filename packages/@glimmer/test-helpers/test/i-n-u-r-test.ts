@@ -1,4 +1,7 @@
 import { LazyRenderDelegate, RenderTest } from '@glimmer/test-helpers';
+import createHTMLDocument from '@simple-dom/document';
+
+const document = createHTMLDocument();
 
 QUnit.module('Render Tests: I-N-U-R');
 

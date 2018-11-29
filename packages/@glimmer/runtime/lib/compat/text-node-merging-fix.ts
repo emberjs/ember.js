@@ -26,9 +26,9 @@ export function applyTextNodeMergingFix(
   }
 
   return class DOMChangesWithTextNodeMergingFix extends DOMClass {
-    private uselessComment: Comment;
+    private uselessComment: Simple.Comment;
 
-    constructor(document: Document) {
+    constructor(document: Simple.Document) {
       super(document);
       this.uselessComment = document.createComment('');
     }

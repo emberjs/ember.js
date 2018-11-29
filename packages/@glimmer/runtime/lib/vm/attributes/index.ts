@@ -5,7 +5,7 @@ import { Environment } from '../../environment';
 export interface Attribute {
   element: Simple.Element;
   name: string;
-  namespace: Option<string>;
+  namespace: Option<Simple.AttrNamespace>;
 }
 
 export interface AttributeOperation {

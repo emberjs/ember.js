@@ -2,6 +2,7 @@ import { RenderTest, test, assertElement, assertEmberishElement } from '../rende
 import { classes } from '../environment';
 import { strip, equalTokens } from '../helpers';
 import { EmberishGlimmerComponent, EmberishCurlyComponent } from '../../index';
+import { Simple } from '@glimmer/interfaces';
 
 export class EmberishComponentTests extends RenderTest {
   @test({ kind: 'glimmer' })
@@ -122,7 +123,7 @@ export class EmberishComponentTests extends RenderTest {
     this.registerModifier(
       'foo',
       class {
-        element?: Element;
+        element?: Simple.Element;
         didInsertElement() {
           assert.ok(this.element);
           assert.equal(this.element!.getAttribute('data-ok'), 'true');

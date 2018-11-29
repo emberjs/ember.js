@@ -1,9 +1,8 @@
 import { Bounds } from '../bounds';
-import { moveNodesBefore, DOMOperations } from '../dom/helper';
+import { moveNodesBefore, DOMOperations, SVG_NAMESPACE } from '../dom/helper';
 import { Option, unwrap, assert } from '@glimmer/util';
 import { Simple } from '@glimmer/interfaces';
 
-export const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 export type SVG_NAMESPACE = typeof SVG_NAMESPACE;
 
 // Patch:    insertAdjacentHTML on SVG Fix
@@ -57,7 +56,7 @@ function fixSVG(
 ): Bounds {
   assert(html !== '', 'html cannot be empty');
 
-  let source: Node;
+  let source: Simple.Node;
 
   // This is important, because decendants of the <foreignObject> integration
   // point are parsed in the HTML namespace
@@ -68,7 +67,7 @@ function fixSVG(
 
     div.innerHTML = wrappedHtml;
 
-    source = div.firstChild!.firstChild!;
+    source = div.firstChild!.firstChild! as Simple.Node;
   } else {
     // IE, Edge: also do not correctly support using `innerHTML` on SVG
     // namespaced elements. So here a wrapper is used.
@@ -76,7 +75,7 @@ function fixSVG(
 
     div.innerHTML = wrappedHtml;
 
-    source = div.firstChild!;
+    source = div.firstChild! as Simple.Node;
   }
 
   return moveNodesBefore(source, parent, reference);

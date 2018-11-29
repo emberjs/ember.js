@@ -174,11 +174,11 @@ export class NewElementBuilder implements ElementBuilder {
   }
 
   get element(): Simple.Element {
-    return this.cursorStack.current!.element;
+    return this.cursorStack.current!.element as Simple.Element;
   }
 
   get nextSibling(): Option<Simple.Node> {
-    return this.cursorStack.current!.nextSibling;
+    return this.cursorStack.current!.nextSibling as Option<Simple.Node>;
   }
 
   expectConstructing(method: string): Simple.Element {
@@ -390,7 +390,7 @@ export class NewElementBuilder implements ElementBuilder {
     return node;
   }
 
-  __setAttribute(name: string, value: string, namespace: Option<string>): void {
+  __setAttribute(name: string, value: string, namespace: Option<Simple.AttrNamespace>): void {
     this.dom.setAttribute(this.constructing!, name, value, namespace);
   }
 
@@ -398,7 +398,7 @@ export class NewElementBuilder implements ElementBuilder {
     this.constructing![name] = value;
   }
 
-  setStaticAttribute(name: string, value: string, namespace: Option<string>): void {
+  setStaticAttribute(name: string, value: string, namespace: Option<Simple.AttrNamespace>): void {
     this.__setAttribute(name, value, namespace);
   }
 
@@ -406,7 +406,7 @@ export class NewElementBuilder implements ElementBuilder {
     name: string,
     value: Opaque,
     trusting: boolean,
-    namespace: Option<string>
+    namespace: Option<Simple.AttrNamespace>
   ): DynamicAttribute {
     let element = this.constructing!;
     let attribute = this.env.attributeFor(element, name, trusting, namespace);

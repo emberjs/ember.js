@@ -2,10 +2,11 @@ import { Bounds, ConcreteBounds } from '../bounds';
 import { applySVGInnerHTMLFix } from '../compat/svg-inner-html-fix';
 import { applyTextNodeMergingFix } from '../compat/text-node-merging-fix';
 import { Simple } from '@glimmer/interfaces';
+import { Namespace, InsertPosition } from '@simple-dom/interface';
 
 import { Option, expect } from '@glimmer/util';
 
-export const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
+export const SVG_NAMESPACE = Namespace.SVG;
 
 // http://www.w3.org/TR/html/syntax.html#html-integration-point
 const SVG_INTEGRATION_POINTS = { foreignObject: 1, desc: 1, title: 1 };
@@ -105,7 +106,7 @@ export class DOMOperations {
   // split into seperate method so that NodeDOMTreeConstruction
   // can override it.
   protected setupUselessElement() {
-    this.uselessElement = this.document.createElement('div') as HTMLElement;
+    this.uselessElement = this.document.createElement('div');
   }
 
   createElement(tag: string, context?: Simple.Element): Simple.Element {
@@ -148,10 +149,10 @@ export class DOMOperations {
     let last: Simple.Node;
 
     if (nextSibling === null) {
-      parent.insertAdjacentHTML('beforeend', html);
+      parent.insertAdjacentHTML(InsertPosition.beforeend, html);
       last = expect(parent.lastChild, 'bug in insertAdjacentHTML?');
     } else if (nextSibling instanceof HTMLElement) {
-      nextSibling.insertAdjacentHTML('beforebegin', html);
+      nextSibling.insertAdjacentHTML(InsertPosition.beforebegin, html);
       last = expect(nextSibling.previousSibling, 'bug in insertAdjacentHTML?');
     } else {
       // Non-element nodes do not support insertAdjacentHTML, so add an
@@ -162,7 +163,7 @@ export class DOMOperations {
       let { uselessElement } = this;
 
       parent.insertBefore(uselessElement, nextSibling);
-      uselessElement.insertAdjacentHTML('beforebegin', html);
+      uselessElement.insertAdjacentHTML(InsertPosition.beforebegin, html);
       last = expect(uselessElement.previousSibling, 'bug in insertAdjacentHTML?');
       parent.removeChild(uselessElement);
     }
@@ -182,7 +183,7 @@ export class DOMOperations {
 
 export namespace DOM {
   export class TreeConstruction extends DOMOperations {
-    createElementNS(namespace: Simple.Namespace, tag: string): Simple.Element {
+    createElementNS(namespace: Simple.ElementNamespace, tag: string): Simple.Element {
       return this.document.createElementNS(namespace, tag);
     }
 
@@ -190,7 +191,7 @@ export namespace DOM {
       element: Simple.Element,
       name: string,
       value: string,
-      namespace: Option<string> = null
+      namespace: Option<Simple.AttrNamespace> = null
     ) {
       if (namespace) {
         element.setAttributeNS(namespace, name, value);
@@ -218,7 +219,7 @@ export namespace DOM {
 export class DOMChanges extends DOMOperations {
   protected namespace: Option<string>;
 
-  constructor(protected document: HTMLDocument) {
+  constructor(protected document: Simple.Document) {
     super(document);
     this.namespace = null;
   }
@@ -244,4 +245,3 @@ helper = applySVGInnerHTMLFix(doc, helper, SVG_NAMESPACE) as typeof DOMChanges;
 export default helper;
 export const DOMTreeConstruction = DOM.DOMTreeConstruction;
 export type DOMTreeConstruction = DOM.DOMTreeConstruction;
-export type DOMNamespace = Simple.Namespace;
