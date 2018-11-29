@@ -5,7 +5,6 @@ const injectBabelHelpers = require('./transforms/inject-babel-helpers');
 const injectNodeGlobals = require('./transforms/inject-node-globals');
 const enifed = require('./transforms/transform-define');
 const FEATURES = require('./features');
-const stripClassCallCheck = require('./transforms/strip-class-call-check');
 const { resolveRelativeModulePath } = require('./module-path-resolver');
 
 module.exports = function toES6(tree, _options) {

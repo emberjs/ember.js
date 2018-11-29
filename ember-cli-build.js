@@ -65,9 +65,6 @@ module.exports = function() {
 
     // packages/** (after typescript compilation)
     getPackagesES(),
-
-    // externalized helpers
-    babelHelpers(),
   ]);
 
   let es = new MergeTrees([packagesES, dependenciesES, templateCompilerDependenciesES], {

@@ -5,19 +5,8 @@ const enifed = require('./transforms/transform-define');
 const injectNodeGlobals = require('./transforms/inject-node-globals');
 const { resolveRelativeModulePath } = require('./module-path-resolver');
 
-module.exports = function processModulesOnly(tree, strict = false) {
-  let transformOptions = { noInterop: true };
-
-  // These options need to be exclusive for some reason, even the key existing
-  // on the options hash causes issues.
-  if (strict) {
-    transformOptions.strict = true;
-  } else {
-    transformOptions.loose = true;
-  }
-
+module.exports = function processModulesOnly(tree, annotation) {
   let options = {
-    sourceMap: true,
     plugins: [
       // ensures `@glimmer/compiler` requiring `crypto` works properly
       // in both browser and node-land
