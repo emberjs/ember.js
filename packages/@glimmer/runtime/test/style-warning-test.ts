@@ -6,6 +6,7 @@ import {
   SimpleDynamicAttribute,
   ElementBuilder,
   clientBuilder,
+  Cursor,
 } from '@glimmer/runtime';
 import { UpdatableReference } from '@glimmer/object-reference';
 import { Option, Simple, Opaque, Template } from '@glimmer/interfaces';
@@ -26,7 +27,7 @@ function commonSetup(customEnv = new TestEnvironment()) {
 function render(template: Template, self: any) {
   let result: RenderResult;
   env.begin();
-  let cursor = { element: root, nextSibling: null };
+  let cursor = { element: root, nextSibling: null } as Cursor;
   let templateIterator = env.renderMain(
     template,
     new UpdatableReference(self),
@@ -51,7 +52,7 @@ module(
           element: Simple.Element,
           attr: string,
           isTrusting: boolean,
-          namespace: Option<string>
+          namespace: Option<Simple.AttrNamespace>
         ): DynamicAttribute {
           if (attr === 'style' && !isTrusting) {
             return new StyleAttribute({ element, name, namespace });

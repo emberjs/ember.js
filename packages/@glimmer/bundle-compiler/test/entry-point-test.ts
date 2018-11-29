@@ -7,11 +7,11 @@ export class EntryPointTest {
     let delegate = new EagerRenderDelegate();
     delegate.registerComponent('Basic', 'Basic', 'Title', `<h1>hello {{@title}}</h1>`);
 
-    let element = document.createElement('div');
+    let element = delegate.getInitialElement();
     let title = PrimitiveReference.create('renderComponent');
     delegate.renderComponent('Title', { title }, element);
 
-    QUnit.assert.equal(element.innerHTML, '<h1>hello renderComponent</h1>');
+    QUnit.assert.equal((element as HTMLElement).innerHTML, '<h1>hello renderComponent</h1>');
   }
 
   @test
@@ -19,15 +19,15 @@ export class EntryPointTest {
     let delegate = new EagerRenderDelegate();
     delegate.registerComponent('Basic', 'Basic', 'Title', `<h1>hello {{@title}}</h1>`);
 
-    let element = document.createElement('div');
+    let element = delegate.getInitialElement();
     let title = PrimitiveReference.create('renderComponent');
     delegate.renderComponent('Title', { title }, element);
-    QUnit.assert.equal(element.innerHTML, '<h1>hello renderComponent</h1>');
+    QUnit.assert.equal((element as HTMLElement).innerHTML, '<h1>hello renderComponent</h1>');
 
-    element = document.createElement('div');
+    element = delegate.getInitialElement();
     let newTitle = PrimitiveReference.create('new title');
     delegate.renderComponent('Title', { title: newTitle }, element);
-    QUnit.assert.equal(element.innerHTML, '<h1>hello new title</h1>');
+    QUnit.assert.equal((element as HTMLElement).innerHTML, '<h1>hello new title</h1>');
   }
 
   @test
@@ -36,15 +36,15 @@ export class EntryPointTest {
     delegate.registerComponent('Basic', 'Basic', 'Title', `<h1>hello {{@title}}</h1>`);
     delegate.registerComponent('Basic', 'Basic', 'Body', `<p>body {{@body}}</p>`);
 
-    let element = document.createElement('div');
+    let element = delegate.getInitialElement();
     let title = PrimitiveReference.create('renderComponent');
     delegate.renderComponent('Title', { title }, element);
-    QUnit.assert.equal(element.innerHTML, '<h1>hello renderComponent</h1>');
+    QUnit.assert.equal((element as HTMLElement).innerHTML, '<h1>hello renderComponent</h1>');
 
-    element = document.createElement('div');
+    element = delegate.getInitialElement();
     let body = PrimitiveReference.create('text');
     delegate.renderComponent('Body', { body }, element);
-    QUnit.assert.equal(element.innerHTML, '<p>body text</p>');
+    QUnit.assert.equal((element as HTMLElement).innerHTML, '<p>body text</p>');
   }
 }
 

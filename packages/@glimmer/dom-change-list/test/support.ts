@@ -1,23 +1,25 @@
 import { Simple, Option, NodeTokens } from '@glimmer/interfaces';
-import * as SimpleDOM from 'simple-dom';
+import HTMLSerializer from '@simple-dom/serializer';
+import voidMap from '@simple-dom/void-map';
+import { Namespace } from '@simple-dom/interface';
 import { DOMTreeConstruction, TreeBuilder } from '@glimmer/dom-change-list';
 
-export const SVG: Simple.Namespace = 'http://www.w3.org/2000/svg';
-export const XLINK: Simple.Namespace = 'http://www.w3.org/1999/xlink';
+export const SVG: Namespace = Namespace.SVG;
+export const XLINK: Namespace = Namespace.XLink;
 
 export function toHTML(parent: Simple.Element | Simple.DocumentFragment) {
-  let serializer = new SimpleDOM.HTMLSerializer(SimpleDOM.voidMap);
+  let serializer = new HTMLSerializer(voidMap);
 
   return serializer.serializeChildren(parent);
 }
 
 export function toHTMLNS(parent: Simple.Element | Simple.DocumentFragment) {
-  let serializer = new NamespacedHTMLSerializer(SimpleDOM.voidMap);
+  let serializer = new NamespacedHTMLSerializer(voidMap);
 
   return serializer.serializeChildren(parent);
 }
 
-class NamespacedHTMLSerializer extends SimpleDOM.HTMLSerializer {
+class NamespacedHTMLSerializer extends HTMLSerializer {
   openTag(element: Simple.Element): string {
     if (element.namespaceURI === SVG) {
       return '<svg:' + element.tagName.toLowerCase() + this.attributes(element.attributes) + '>';
@@ -74,7 +76,7 @@ export class Builder {
     this.tree.closeElement();
   }
 
-  setAttribute(name: string, value: string, namespace?: Simple.Namespace) {
+  setAttribute(name: string, value: string, namespace?: Namespace) {
     this.tree.setAttribute(name, value, namespace);
   }
 

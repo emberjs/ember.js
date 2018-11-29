@@ -1,7 +1,8 @@
-import { Dict, Opaque } from '@glimmer/util';
+import { Dict, Opaque, expect } from '@glimmer/util';
 import { Simple } from '@glimmer/interfaces';
 import { RenderResult, clientBuilder, Environment, Cursor, ElementBuilder } from '@glimmer/runtime';
 import { UpdatableReference } from '@glimmer/object-reference';
+import { PathReference } from '@glimmer/reference';
 
 import LazyTestEnvironment from './environment';
 import { UserHelper } from '../../helper';
@@ -12,7 +13,6 @@ import {
   registerComponent,
   renderTemplate,
 } from '../../../render-test';
-import { PathReference } from '@glimmer/reference';
 import { TestModifierConstructor } from '../../modifier';
 
 declare const module: any;
@@ -24,12 +24,17 @@ export default class LazyRenderDelegate implements RenderDelegate {
     this.env = new LazyTestEnvironment();
   }
 
-  getInitialElement(): HTMLElement {
+  getInitialElement(): Simple.Element {
     if (typeof module !== 'undefined' && module.exports) {
-      return this.env.getAppendOperations().createElement('div') as HTMLElement;
+      return this.env.getAppendOperations().createElement('div');
     }
 
-    return document.getElementById('qunit-fixture')!;
+    let fixture = expect(
+      document.getElementById('qunit-fixture'),
+      `expected to find an element with ID 'qunit-fixture' in the DOM`
+    );
+
+    return fixture as Simple.Element;
   }
 
   registerComponent<K extends ComponentKind, L extends ComponentKind>(
@@ -58,9 +63,13 @@ export default class LazyRenderDelegate implements RenderDelegate {
     return new UpdatableReference(context);
   }
 
-  renderTemplate(template: string, context: Dict<Opaque>, element: Simple.Element): RenderResult {
+  renderTemplate(
+    template: string,
+    context: Dict<Opaque>,
+    element: Element | Simple.Element
+  ): RenderResult {
     let { env } = this;
-    let cursor = { element, nextSibling: null };
+    let cursor = { element, nextSibling: null } as Cursor;
     return renderTemplate(
       template,
       env,

@@ -1,7 +1,7 @@
 import { test, RenderTest } from '../render-test';
 import { strip, assertNodeTagName } from '../helpers';
 import { SVG_NAMESPACE } from '@glimmer/runtime';
-import { Opaque } from '@glimmer/interfaces';
+import { Opaque, Simple } from '@glimmer/interfaces';
 
 export class InitialRenderSuite extends RenderTest {
   name = 'BASE';
@@ -480,7 +480,7 @@ export class InitialRenderSuite extends RenderTest {
       }
     );
 
-    let selectNode = this.element.firstElementChild;
+    let selectNode = this.browserElement.firstElementChild;
     this.assert.ok(selectNode, 'rendered select');
     if (selectNode === null) {
       return;
@@ -586,7 +586,7 @@ export class InitialRenderSuite extends RenderTest {
   '<svg> tag with case-sensitive attribute'() {
     this.render('<svg viewBox="0 0 0 0"></svg>');
     this.assertHTML('<svg viewBox="0 0 0 0"></svg>');
-    let svg = this.element.firstChild;
+    let svg = this.element.firstChild!;
     if (assertNodeTagName(svg, 'svg')) {
       this.assert.equal(svg.namespaceURI, SVG_NAMESPACE);
       this.assert.equal(svg.getAttribute('viewBox'), '0 0 0 0');
@@ -624,12 +624,12 @@ export class InitialRenderSuite extends RenderTest {
     this.render('<svg><foreignObject>Hi</foreignObject></svg>');
     this.assertHTML('<svg><foreignObject>Hi</foreignObject></svg>');
 
-    let svg = this.element.firstChild;
+    let svg = this.browserElement.firstChild;
 
     if (assertNodeTagName(svg, 'svg')) {
       this.assert.equal(svg.namespaceURI, SVG_NAMESPACE);
 
-      let foreignObject = svg.firstChild;
+      let foreignObject = svg.firstChild!;
       if (assertNodeTagName(foreignObject, 'foreignobject')) {
         this.assert.equal(
           foreignObject.namespaceURI,
@@ -648,19 +648,19 @@ export class InitialRenderSuite extends RenderTest {
     this.assertHTML('<svg></svg><svg></svg><div></div>');
 
     this.assert.equal(
-      this.element.childNodes[0].namespaceURI,
+      (this.element.childNodes[0] as Simple.Element).namespaceURI,
       SVG_NAMESPACE,
       'creates the first svg element with a namespace'
     );
 
     this.assert.equal(
-      this.element.childNodes[1].namespaceURI,
+      (this.element.childNodes[1] as Simple.Element).namespaceURI,
       SVG_NAMESPACE,
       'creates the second svg element with a namespace'
     );
 
     this.assert.equal(
-      this.element.childNodes[2].namespaceURI,
+      (this.element.childNodes[2] as Simple.Element).namespaceURI,
       XHTML_NAMESPACE,
       'creates the div element without a namespace'
     );

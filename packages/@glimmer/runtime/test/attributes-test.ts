@@ -2,9 +2,19 @@ import { RenderTest, module, test, LazyRenderDelegate, rawModule } from '@glimme
 import { SVG_NAMESPACE, normalizeProperty } from '@glimmer/runtime';
 import { ConstReference, PathReference } from '@glimmer/reference';
 import { Opaque } from '@glimmer/util';
+import { Simple } from '@glimmer/interfaces';
+import { NodeType } from '@simple-dom/interface';
+
+function isElement(node: Simple.Node | Node): node is Simple.Element {
+  return node.nodeType === NodeType.ELEMENT_NODE;
+}
 
 export class AttributesTests extends RenderTest {
-  protected readDOMAttr(attr: string, element = this.element.firstChild as Element) {
+  protected readDOMAttr(attr: string, element: Simple.Node | Node = this.element.firstChild!) {
+    if (!isElement(element)) {
+      throw new Error(`Expected first node of template to be an element, got ${element.nodeName}`);
+    }
+
     let isSVG = element.namespaceURI === SVG_NAMESPACE;
     let { type, normalized } = normalizeProperty(element, attr);
 
@@ -328,8 +338,8 @@ export class AttributesTests extends RenderTest {
       isNotUndefined: 'hello',
     });
 
-    let firstElement = this.element.firstChild as Element;
-    let secondElement = this.element.lastChild as Element;
+    let firstElement = this.browserElement.firstElementChild!;
+    let secondElement = this.browserElement.lastElementChild!;
 
     this.assert.notOk(firstElement.hasAttribute('data-foo'));
     this.assert.ok(secondElement.hasAttribute('data-foo'));
@@ -364,8 +374,8 @@ export class AttributesTests extends RenderTest {
       isNotNull: 'hello',
     });
 
-    let firstElement = this.element.firstChild as Element;
-    let secondElement = this.element.lastChild as Element;
+    let firstElement = this.browserElement.firstElementChild!;
+    let secondElement = this.browserElement.lastElementChild!;
 
     this.assert.notOk(firstElement.hasAttribute('data-foo'));
     this.assert.ok(secondElement.hasAttribute('data-foo'));
@@ -404,8 +414,8 @@ export class AttributesTests extends RenderTest {
       isNotUndefined: 'hello',
     });
 
-    let firstElement = this.element.firstChild as Element;
-    let secondElement = this.element.lastChild as Element;
+    let firstElement = this.browserElement.firstElementChild!;
+    let secondElement = this.browserElement.lastElementChild!;
 
     this.assert.notOk(firstElement.hasAttribute('title'));
     this.assert.equal(this.readDOMAttr('title', secondElement), 'hello');
@@ -441,8 +451,8 @@ export class AttributesTests extends RenderTest {
       isNotNull: 'hello',
     });
 
-    let firstElement = this.element.firstChild as Element;
-    let secondElement = this.element.lastChild as Element;
+    let firstElement = this.browserElement.firstElementChild!;
+    let secondElement = this.browserElement.lastElementChild!;
 
     this.assert.notOk(firstElement.hasAttribute('title'));
     this.assert.equal(this.readDOMAttr('title', secondElement), 'hello');

@@ -1,13 +1,13 @@
 import { DOMTreeConstruction, NodeTokens } from '@glimmer/dom-change-list';
-
-import * as SimpleDOM from 'simple-dom';
 import { Simple } from '@glimmer/interfaces';
+import { Namespace } from '@simple-dom/interface';
+import createHTMLDocument from '@simple-dom/document';
 
 import { TestCase, module, test } from './test-case';
 import { Builder as TestBuilder, toHTML, toHTMLNS } from './support';
 
-const SVG: Simple.Namespace = 'http://www.w3.org/2000/svg';
-const XLINK: Simple.Namespace = 'http://www.w3.org/1999/xlink';
+const SVG: Namespace = Namespace.SVG;
+const XLINK: Namespace = Namespace.XLink;
 
 @module('[dom-change-list] DOMTreeConstruction')
 export class ChangeListTest extends TestCase {
@@ -18,8 +18,8 @@ export class ChangeListTest extends TestCase {
   protected construction!: DOMTreeConstruction;
 
   before() {
-    this.document = new SimpleDOM.Document();
-    this.parent = document.createElement('div');
+    this.document = createHTMLDocument();
+    this.parent = document.createElement('div') as Simple.Element;
     this.construction = new DOMTreeConstruction();
     this.tree = new Builder(this.construction);
   }
@@ -103,7 +103,7 @@ export class ChangeListTest extends TestCase {
 
   protected append(): NodeTokens {
     this.tree.appendTo(this.parent);
-    return this.construction.appendTo(this.parent, document);
+    return this.construction.appendTo(this.parent, document as Simple.Document);
   }
 
   protected shouldEqual(expectedHTML: string) {
@@ -126,7 +126,7 @@ export class ChangeListTest extends TestCase {
 export class Builder extends TestBuilder {
   protected tree!: DOMTreeConstruction; // Hides property in base class
 
-  openElement(tag: string, namespace?: Simple.Namespace) {
+  openElement(tag: string, namespace?: Namespace) {
     let token = this.tree.openElement(tag, namespace);
     this.expected[token] = { type: 'element', value: tag.toUpperCase() };
   }

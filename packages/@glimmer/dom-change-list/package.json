@@ -4,7 +4,8 @@
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/dom-change-list",
   "dependencies": {
     "@glimmer/util": "^0.36.5",
-    "@glimmer/interfaces": "^0.36.5"
+    "@glimmer/interfaces": "^0.36.5",
+    "@simple-dom/interface": "^1.4.0"
   },
   "devDependencies": {
     "typescript": "^2.8.3"

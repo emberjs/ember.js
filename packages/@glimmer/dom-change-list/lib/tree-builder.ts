@@ -1,9 +1,10 @@
 import { Simple, Option, NodeTokens } from '@glimmer/interfaces';
-import { HTML } from './dom-operations';
+import { Namespace } from '@simple-dom/interface';
 import { DOMTreeConstruction } from './tree-construction';
 import { NodeToken } from './node-tokens';
 
-export const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
+export const SVG_NAMESPACE = Namespace.SVG;
+export const HTML_NAMESPACE = Namespace.HTML;
 
 // http://www.w3.org/TR/html/syntax.html#html-integration-point
 const SVG_INTEGRATION_POINTS = { foreignObject: 1, desc: 1, title: 1 };
@@ -66,7 +67,7 @@ export const BLACKLIST_TABLE = Object.create(null);
 
 interface Context {
   tag: string;
-  namespaceURI: Simple.Namespace;
+  namespaceURI: Namespace;
   isIntegration: boolean;
 }
 
@@ -105,7 +106,7 @@ export class TreeBuilder {
       return this.dom.openElement(tag, SVG_NAMESPACE);
     }
 
-    this.contexts.push({ tag, namespaceURI: HTML, isIntegration: false });
+    this.contexts.push({ tag, namespaceURI: HTML_NAMESPACE, isIntegration: false });
     return this.dom.openElement(tag);
   }
 
@@ -113,7 +114,7 @@ export class TreeBuilder {
     this.dom.closeElement();
   }
 
-  setAttribute(name: string, value: string, namespace?: Simple.Namespace) {
+  setAttribute(name: string, value: string, namespace?: Namespace) {
     this.dom.setAttribute(name, value, namespace);
   }
 
@@ -130,7 +131,7 @@ export class TreeBuilder {
     return current && current.tag;
   }
 
-  get currentNamespace(): Option<Simple.Namespace> {
+  get currentNamespace(): Option<Namespace> {
     let current = this.current;
     return current && current.namespaceURI;
   }
