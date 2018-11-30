@@ -20,13 +20,13 @@ describe('Blueprint: helper-addon', function() {
 
     it('helper-addon foo/bar-baz', function() {
       return emberGenerateDestroy(['helper-addon', 'foo/bar-baz'], _file => {
-        expect(_file('app/helpers/foo/bar-baz.js')).to.equal(fixture('helper-addon.js'));
+        expect(_file('app/helpers/foo/bar-baz.js')).to.equal(fixture('helper/helper-addon.js'));
       });
     });
 
     it('helper-addon foo/bar-baz --pod', function() {
       return emberGenerateDestroy(['helper-addon', 'foo/bar-baz', '--pod'], _file => {
-        expect(_file('app/helpers/foo/bar-baz.js')).to.equal(fixture('helper-addon.js'));
+        expect(_file('app/helpers/foo/bar-baz.js')).to.equal(fixture('helper/helper-addon.js'));
       });
     });
   });
