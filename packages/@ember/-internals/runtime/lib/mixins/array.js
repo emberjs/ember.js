@@ -1641,12 +1641,36 @@ let A;
 
 if (ENV.EXTEND_PROTOTYPES.Array) {
   NativeArray.apply(Array.prototype);
-  A = arr => arr || [];
+
+  A = function(arr) {
+    deprecate(
+      '`new A()` has been deprecated, please update to calling A as a function: `A()`',
+      !(this instanceof A),
+      {
+        id: 'array.new-array-wrapper',
+        until: '3.9.0',
+        url: 'https://emberjs.com/deprecations/v3.x#toc_array-new-array-wrapper',
+      }
+    );
+
+    return arr || [];
+  };
 } else {
-  A = arr => {
+  A = function(arr) {
+    deprecate(
+      '`new A()` has been deprecated, please update to calling A as a function: `A()`',
+      !(this instanceof A),
+      {
+        id: 'array.new-array-wrapper',
+        until: '3.9.0',
+        url: 'https://emberjs.com/deprecations/v3.x#toc_array-new-array-wrapper',
+      }
+    );
+
     if (!arr) {
       arr = [];
     }
+
     return ArrayMixin.detect(arr) ? arr : NativeArray.apply(arr);
   };
 }
