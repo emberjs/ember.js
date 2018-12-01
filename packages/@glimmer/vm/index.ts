@@ -2,8 +2,8 @@ export { Op, MachineOp } from './lib/opcodes';
 export {
   MachineRegister,
   SyscallRegister,
-  CallerSavedRegister,
-  CalleeSavedRegister,
+  SavedRegister,
+  TemporaryRegister,
   Register,
   isLowLevelRegister,
   $pc,

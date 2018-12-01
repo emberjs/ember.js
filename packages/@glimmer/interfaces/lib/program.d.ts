@@ -33,11 +33,11 @@ export interface CompileTimeProgram {
   opcode(offset: number): Opcode;
 }
 
-export interface CompileTimeConstants {
+export interface CompileTimeConstants<Locator = unknown> {
   string(value: string): number;
   stringArray(strings: string[]): number;
   array(values: number[]): number;
-  handle(locator: Opaque): number;
+  handle(locator: Locator): number;
   serializable(value: Opaque): number;
   number(value: number): number;
 }

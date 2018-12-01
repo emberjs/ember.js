@@ -3,7 +3,6 @@ import {
   Option,
   Recast,
   VMHandle,
-  ComponentCapabilities,
   CompilableTemplate,
   CompilableBlock,
   CompilableProgram,
@@ -13,16 +12,26 @@ import {
   SymbolTable,
   Compiler,
   LayoutWithContext,
-  NamedBlocks as INamedBlocks,
   NamedBlocks,
 } from '@glimmer/interfaces';
 import { dict, EMPTY_ARRAY, expect, Stack } from '@glimmer/util';
-import { Op, Register, $sp, $fp, $s0, $v0, MachineRegister, MachineOp } from '@glimmer/vm';
+import {
+  Op,
+  Register,
+  $sp,
+  $fp,
+  $s0,
+  $v0,
+  MachineRegister,
+  MachineOp,
+  SavedRegister,
+  $s1,
+} from '@glimmer/vm';
 import * as WireFormat from '@glimmer/wire-format';
-import { SerializedInlineBlock } from '@glimmer/wire-format';
+import { SerializedInlineBlock, Expression } from '@glimmer/wire-format';
 import { PrimitiveType } from '@glimmer/program';
 
-import { Primitive } from './interfaces';
+import { Primitive, ComponentArgs } from './interfaces';
 
 import { ATTRS_BLOCK, Compilers, expressionCompiler } from './syntax';
 
@@ -35,7 +44,24 @@ import { ComponentBuilderImpl } from './wrapped-component';
 import { InstructionEncoder, Operand, OpcodeSize } from '@glimmer/encoder';
 import { ContentType } from '../../runtime/lib/compiled/opcodes/content';
 import { NamedBlocksImpl, EMPTY_BLOCKS } from './utils';
-import OpcodeBuilder, { Block, When } from './opcode-builder-interfaces';
+import OpcodeBuilder, {
+  Block,
+  When,
+  StringOperand,
+  BuilderOperand,
+  BuilderOperands,
+  HandleOperand,
+  StaticComponent,
+  Component,
+  ArrayOperand,
+  StringArrayOperand,
+  CompileBlock,
+  DynamicComponent,
+  CurryComponent,
+  CompileHelper,
+} from './opcode-builder-interfaces';
+import { DEBUG } from '@glimmer/local-debug-flags';
+import { debugCompiler, AnyAbstractCompiler } from './compiler';
 
 class Labels {
   labels = dict<number>();
@@ -59,30 +85,50 @@ class Labels {
   }
 }
 
-class Encoder {
-  constructor(private encoder: InstructionEncoder) {}
+export const constant = {
+  string(value: string): StringOperand {
+    return { type: 'string', value };
+  },
 
-  push(name: Op): void;
-  push(name: Op, arg1: Operand): void;
-  push(name: Op, arg1: Operand, arg2: Operand): void;
-  push(name: Op, arg1: Operand, arg2: Operand, arg3: Operand): void;
-  push(name: Op) {
+  array(value: number[]): ArrayOperand {
+    return { type: 'array', value };
+  },
+
+  stringArray(value: string[]): StringArrayOperand {
+    return { type: 'string-array', value };
+  },
+
+  handle(value: number): HandleOperand {
+    return { type: 'handle', value };
+  },
+};
+
+class Encoder {
+  constructor(private encoder: InstructionEncoder, private constants: CompileTimeConstants) {}
+
+  push(name: Op, ...args: BuilderOperands): void {
     switch (arguments.length) {
       case 1:
         return this.encoder.encode(name, 0);
       case 2:
-        return this.encoder.encode(name, 0, arguments[1]);
+        return this.encoder.encode(name, 0, this.operand(args[0]));
       case 3:
-        return this.encoder.encode(name, 0, arguments[1], arguments[2]);
+        return this.encoder.encode(name, 0, this.operand(args[0]), this.operand(args[1]));
       default:
-        return this.encoder.encode(name, 0, arguments[1], arguments[2], arguments[3]);
+        return this.encoder.encode(
+          name,
+          0,
+          this.operand(args[0]),
+          this.operand(args[1]),
+          this.operand(args[2])
+        );
     }
   }
 
-  pushMachine(name: MachineOp): void;
-  pushMachine(name: MachineOp, arg1: Operand): void;
-  pushMachine(name: MachineOp, arg1: Operand, arg2: Operand): void;
-  pushMachine(name: MachineOp, arg1: Operand, arg2: Operand, arg3: Operand): void;
+  pushMachine(
+    name: MachineOp,
+    ...args: [] | [Operand] | [Operand, Operand] | [Operand, Operand, Operand]
+  ): void;
   pushMachine(name: MachineOp) {
     switch (arguments.length) {
       case 1:
@@ -101,6 +147,23 @@ class Encoder {
         );
     }
   }
+
+  private operand(operand: BuilderOperand): number {
+    if (typeof operand === 'number') {
+      return operand;
+    }
+
+    switch (operand.type) {
+      case 'string':
+        return this.constants.string(operand.value);
+      case 'array':
+        return this.constants.array(operand.value);
+      case 'string-array':
+        return this.constants.stringArray(operand.value);
+      case 'handle':
+        return this.constants.handle(operand.value);
+    }
+  }
 }
 
 export class StdOpcodeBuilder {
@@ -110,14 +173,17 @@ export class StdOpcodeBuilder {
     return builder.commit();
   }
 
+  readonly constants: CompileTimeConstants;
   protected instructionEncoder = new InstructionEncoder([]);
-  protected encoder = new Encoder(this.instructionEncoder);
+  protected encoder: Encoder;
 
   public compiler: Compiler<this>;
   private labelsStack = new Stack<Labels>();
 
   constructor(compiler: Compiler, protected size = 0) {
     this.compiler = compiler as Compiler<this>;
+    this.constants = compiler.constants;
+    this.encoder = new Encoder(this.instructionEncoder, this.constants);
   }
 
   commit(): number {
@@ -255,16 +321,11 @@ export class StdOpcodeBuilder {
 
   ///
 
-  compileInline(sexp: WireFormat.Statements.Append) {
+  compileInline(sexp: WireFormat.Statements.Append): ['expr', Expression] | true {
     return this.compiler.compileInline(sexp, this);
   }
 
-  compileBlock(
-    name: string,
-    params: WireFormat.Core.Params,
-    hash: WireFormat.Core.Hash,
-    blocks: NamedBlocks
-  ): void {
+  compileBlock({ name, params, hash, blocks }: CompileBlock): void {
     this.compiler.compileBlock(name, params, hash, blocks, this);
   }
 
@@ -361,6 +422,12 @@ export class StdOpcodeBuilder {
 
   concat(size: number) {
     this.encoder.push(Op.Concat, size);
+  }
+
+  withSavedRegister(register: SavedRegister, block: Block): void {
+    this.encoder.push(Op.Fetch, register);
+    block();
+    this.encoder.push(Op.Load, register);
   }
 
   load(register: Register) {
@@ -558,7 +625,6 @@ export class StdOpcodeBuilder {
 
 export abstract class OpcodeBuilderImpl<Locator = Opaque> extends StdOpcodeBuilder
   implements OpcodeBuilder<Locator> {
-  public constants: CompileTimeConstants;
   public stdLib: STDLib;
   public component: ComponentBuilderImpl<Locator> = new ComponentBuilderImpl(this);
 
@@ -567,8 +633,11 @@ export abstract class OpcodeBuilderImpl<Locator = Opaque> extends StdOpcodeBuild
 
   constructor(compiler: Compiler, public containingLayout: LayoutWithContext<Locator>) {
     super(compiler, containingLayout ? containingLayout.block.symbols.length : 0);
-    this.constants = compiler.constants;
     this.stdLib = compiler.stdLib;
+  }
+
+  get asPartial(): boolean {
+    return this.containingLayout.asPartial;
   }
 
   abstract pushBlock(block: Option<CompilableBlock>): void;
@@ -593,6 +662,12 @@ export abstract class OpcodeBuilderImpl<Locator = Opaque> extends StdOpcodeBuild
     } else {
       this.pushPrimitiveReference(expression);
     }
+  }
+
+  /// ARBITRARY OPCODES
+
+  push(name: Op, ...args: BuilderOperands): void {
+    this.encoder.push(name, ...args);
   }
 
   ///
@@ -623,12 +698,7 @@ export abstract class OpcodeBuilderImpl<Locator = Opaque> extends StdOpcodeBuild
     this.pushBlock(block);
   }
 
-  curryComponent(
-    definition: WireFormat.Expression,
-    params: Option<WireFormat.Core.Params>,
-    hash: WireFormat.Core.Hash,
-    synthetic: boolean
-  ) {
+  curryComponent({ definition, params, hash, synthetic }: CurryComponent): void {
     let referrer = this.containingLayout.referrer;
 
     this.encoder.pushMachine(MachineOp.PushFrame);
@@ -657,15 +727,7 @@ export abstract class OpcodeBuilderImpl<Locator = Opaque> extends StdOpcodeBuild
     synthetic,
     blocks: namedBlocks,
     layout,
-  }: {
-    capabilities: ComponentCapabilities | true;
-    attrs: Option<CompilableBlock>;
-    params: Option<WireFormat.Core.Params>;
-    hash: WireFormat.Core.Hash;
-    synthetic: boolean;
-    blocks: INamedBlocks;
-    layout?: CompilableProgram;
-  }) {
+  }: Component) {
     this.encoder.push(Op.Fetch, $s0);
     this.dup($sp, 1);
     this.encoder.push(Op.Load, $s0);
@@ -704,15 +766,7 @@ export abstract class OpcodeBuilderImpl<Locator = Opaque> extends StdOpcodeBuild
     hash,
     synthetic,
     blocks,
-  }: {
-    capabilities: ComponentCapabilities;
-    layout: CompilableProgram;
-    attrs: Option<CompilableBlock>;
-    params: Option<WireFormat.Core.Params>;
-    hash: WireFormat.Core.Hash;
-    synthetic: boolean;
-    blocks: INamedBlocks;
-  }) {
+  }: StaticComponent) {
     let { symbolTable } = layout;
 
     let bailOut = symbolTable.hasEval || capabilities.prepareArgs;
@@ -832,21 +886,7 @@ export abstract class OpcodeBuilderImpl<Locator = Opaque> extends StdOpcodeBuild
     this.load($s0);
   }
 
-  dynamicComponent({
-    definition,
-    attrs,
-    params,
-    hash,
-    synthetic,
-    blocks,
-  }: {
-    definition: WireFormat.Expression;
-    attrs: Option<CompilableBlock>;
-    params: Option<WireFormat.Core.Params>;
-    hash: WireFormat.Core.Hash;
-    synthetic: boolean;
-    blocks: INamedBlocks;
-  }) {
+  invokeDynamicComponent({ definition, attrs, params, hash, synthetic, blocks }: DynamicComponent) {
     this.replayable({
       args: () => {
         this.expr(definition);
@@ -877,7 +917,7 @@ export abstract class OpcodeBuilderImpl<Locator = Opaque> extends StdOpcodeBuild
     this.encoder.pushMachine(MachineOp.PopFrame);
   }
 
-  guardedAppend(expression: WireFormat.Expression, trusting: boolean) {
+  guardedAppend(expression: WireFormat.Expression, trusting: boolean): void {
     this.encoder.pushMachine(MachineOp.PushFrame);
 
     this.expr(expression);
@@ -915,6 +955,80 @@ export abstract class OpcodeBuilderImpl<Locator = Opaque> extends StdOpcodeBuild
   }
 
   /// CONVENIENCE
+
+  wrappedComponent(layout: LayoutWithContext<Locator>, attrsBlockNumber: number) {
+    let b = this;
+
+    b.labels(() => {
+      b.withSavedRegister($s1, () => {
+        b.getComponentTagName($s0);
+        b.primitiveReference();
+
+        b.dup();
+      });
+
+      b.jumpUnless('BODY');
+
+      b.fetch($s1);
+      b.setComponentAttrs(true);
+      b.putComponentOperations();
+      b.openDynamicElement();
+      b.didCreateElement($s0);
+      b.yield(attrsBlockNumber, []);
+      b.setComponentAttrs(false);
+      b.flushElement();
+
+      b.label('BODY');
+
+      b.invokeStaticBlock(blockFor(layout, this.compiler));
+
+      b.fetch($s1);
+      b.jumpUnless('END');
+      b.closeElement();
+
+      b.label('END');
+      b.load($s1);
+    });
+
+    let handle = b.commit();
+
+    if (DEBUG) {
+      debugCompiler(this.compiler as Recast<any, AnyAbstractCompiler>, handle);
+    }
+
+    return handle;
+  }
+
+  staticComponent(handle: number, args: ComponentArgs): void {
+    let [params, hash, blocks] = args;
+
+    if (handle !== null) {
+      let { capabilities, compilable } = this.compiler.resolveLayoutForHandle(handle);
+
+      if (compilable) {
+        this.pushComponentDefinition(handle);
+        this.invokeStaticComponent({
+          capabilities,
+          layout: compilable,
+          attrs: null,
+          params,
+          hash,
+          synthetic: false,
+          blocks,
+        });
+      } else {
+        this.pushComponentDefinition(handle);
+        this.invokeComponent({
+          capabilities,
+          attrs: null,
+          params,
+          hash,
+          synthetic: false,
+          blocks,
+        });
+      }
+    }
+  }
 
   // internal helpers
 
@@ -1074,14 +1188,10 @@ export abstract class OpcodeBuilderImpl<Locator = Opaque> extends StdOpcodeBuild
     this.encoder.push(Op.OpenElement, this.constants.string(tag));
   }
 
-  modifier(
-    locator: Locator,
-    params: Option<WireFormat.Core.Params>,
-    hash: Option<WireFormat.Core.Hash>
-  ) {
+  modifier({ handle, params, hash }: CompileHelper) {
     this.encoder.pushMachine(MachineOp.PushFrame);
     this.compileArgs(params, hash, EMPTY_BLOCKS, true);
-    this.encoder.push(Op.Modifier, this.constants.handle(locator));
+    this.encoder.push(Op.Modifier, this.constants.handle(handle));
     this.encoder.pushMachine(MachineOp.PopFrame);
   }
 
@@ -1101,7 +1211,7 @@ export abstract class OpcodeBuilderImpl<Locator = Opaque> extends StdOpcodeBuild
     }
   }
 
-  staticAttr(_name: string, _namespace: Option<string>, _value: string) {
+  staticAttr(_name: string, _namespace: Option<string>, _value: string): void {
     let name = this.constants.string(_name);
     let namespace = _namespace ? this.constants.string(_namespace) : 0;
 
@@ -1126,14 +1236,10 @@ export abstract class OpcodeBuilderImpl<Locator = Opaque> extends StdOpcodeBuild
     this.encoder.push(Op.GetProperty, this.string(key));
   }
 
-  helper(
-    helper: Locator,
-    params: Option<WireFormat.Core.Params>,
-    hash: Option<WireFormat.Core.Hash>
-  ) {
+  helper({ handle, params, hash }: CompileHelper) {
     this.encoder.pushMachine(MachineOp.PushFrame);
     this.compileArgs(params, hash, EMPTY_BLOCKS, true);
-    this.encoder.push(Op.Helper, this.constants.handle(helper));
+    this.encoder.push(Op.Helper, this.constants.handle(handle));
     this.encoder.pushMachine(MachineOp.PopFrame);
     this.encoder.push(Op.Fetch, $v0);
   }
@@ -1308,7 +1414,7 @@ export abstract class OpcodeBuilderImpl<Locator = Opaque> extends StdOpcodeBuild
     });
   }
 
-  evalSymbols(): Option<string[]> {
+  get evalSymbols(): Option<string[]> {
     let {
       containingLayout: { block },
     } = this;
@@ -1329,7 +1435,7 @@ export abstract class OpcodeBuilderImpl<Locator = Opaque> extends StdOpcodeBuild
   compileArgs(
     params: Option<WireFormat.Core.Params>,
     hash: Option<WireFormat.Core.Hash>,
-    blocks: INamedBlocks,
+    blocks: NamedBlocks,
     synthetic: boolean
   ): void {
     if (blocks.hasAny) {
@@ -1369,7 +1475,7 @@ export abstract class OpcodeBuilderImpl<Locator = Opaque> extends StdOpcodeBuild
     return this.inlineBlock(block);
   }
 
-  templates(blocks: WireFormat.Core.Blocks): INamedBlocks {
+  templates(blocks: WireFormat.Core.Blocks): NamedBlocks {
     return NamedBlocksImpl.fromWireFormat(blocks, block => this.template(block));
   }
 }
@@ -1454,4 +1560,17 @@ export class EagerOpcodeBuilder<Locator> extends OpcodeBuilderImpl<Locator> {
       this.encoder.pushMachine(MachineOp.InvokeStatic, handle as Recast<VMHandle, number>);
     }
   }
+}
+
+function blockFor<Locator>(
+  layout: LayoutWithContext,
+  compiler: Compiler<OpcodeBuilder<Locator>>
+): CompilableBlock {
+  return new CompilableBlockInstance(compiler, {
+    block: {
+      statements: layout.block.statements,
+      parameters: EMPTY_ARRAY,
+    },
+    containingLayout: layout,
+  });
 }

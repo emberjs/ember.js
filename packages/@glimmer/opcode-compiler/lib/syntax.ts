@@ -1,6 +1,6 @@
 import { Option, Opaque, Compiler, NamedBlocks as INamedBlocks } from '@glimmer/interfaces';
 import { assert, dict, unwrap, EMPTY_ARRAY } from '@glimmer/util';
-import { $fp } from '@glimmer/vm';
+import { $fp, Op, $s0 } from '@glimmer/vm';
 import * as WireFormat from '@glimmer/wire-format';
 import * as ClientSide from './client-side';
 import OpcodeBuilder from './opcode-builder-interfaces';
@@ -10,6 +10,7 @@ import S = WireFormat.Statements;
 import E = WireFormat.Expressions;
 import C = WireFormat.Core;
 import { EMPTY_BLOCKS } from './utils';
+import { constant } from './opcode-builder';
 
 export type TupleSyntax = WireFormat.Statement | WireFormat.TupleExpression;
 export type CompilerFunction<T extends TupleSyntax> = ((sexp: T, builder: OpcodeBuilder) => void);
@@ -49,19 +50,19 @@ export function statementCompiler(): Compilers<WireFormat.Statement> {
   const STATEMENTS = (_statementCompiler = new Compilers<WireFormat.Statement>());
 
   STATEMENTS.add(Ops.Text, (sexp: S.Text, builder) => {
-    builder.text(sexp[1]);
+    builder.push(Op.Text, constant.string(sexp[1]));
   });
 
   STATEMENTS.add(Ops.Comment, (sexp: S.Comment, builder) => {
-    builder.comment(sexp[1]);
+    builder.push(Op.Comment, constant.string(sexp[1]));
   });
 
   STATEMENTS.add(Ops.CloseElement, (_sexp: S.CloseElement, builder) => {
-    builder.closeElement();
+    builder.push(Op.CloseElement);
   });
 
   STATEMENTS.add(Ops.FlushElement, (_sexp: S.FlushElement, builder) => {
-    builder.flushElement();
+    builder.push(Op.FlushElement);
   });
 
   STATEMENTS.add(Ops.Modifier, (sexp: S.Modifier, builder) => {
@@ -71,7 +72,7 @@ export function statementCompiler(): Compilers<WireFormat.Statement> {
     let handle = builder.compiler.resolveModifier(name, referrer);
 
     if (handle !== null) {
-      builder.modifier(handle, params, hash);
+      builder.modifier({ handle, params, hash });
     } else {
       throw new Error(
         `Compile Error ${name} is not a modifier: Helpers may not be used in the element form.`
@@ -93,13 +94,13 @@ export function statementCompiler(): Compilers<WireFormat.Statement> {
   });
 
   STATEMENTS.add(Ops.OpenElement, (sexp: S.OpenElement, builder) => {
-    builder.openPrimitiveElement(sexp[1]);
+    builder.push(Op.OpenElement, constant.string(sexp[1]));
   });
 
   STATEMENTS.add(Ops.OpenSplattedElement, (sexp: S.SplatElement, builder) => {
     builder.setComponentAttrs(true);
-    builder.putComponentOperations();
-    builder.openPrimitiveElement(sexp[1]);
+    builder.push(Op.PutComponentOperations);
+    builder.push(Op.OpenElement, constant.string(sexp[1]));
   });
 
   STATEMENTS.add(Ops.DynamicComponent, (sexp: S.DynamicComponent, builder) => {
@@ -116,7 +117,7 @@ export function statementCompiler(): Compilers<WireFormat.Statement> {
       attrsBlock = builder.inlineBlock({ statements: wrappedAttrs, parameters: EMPTY_ARRAY });
     }
 
-    builder.dynamicComponent({
+    builder.invokeDynamicComponent({
       definition,
       attrs: attrsBlock,
       params: null,
@@ -141,7 +142,7 @@ export function statementCompiler(): Compilers<WireFormat.Statement> {
       let attrsBlock = builder.inlineBlock({ statements: attrs, parameters: EMPTY_ARRAY });
 
       if (compilable) {
-        builder.pushComponentDefinition(handle);
+        builder.push(Op.PushComponentDefinition, constant.handle(handle));
         builder.invokeStaticComponent({
           capabilities,
           layout: compilable,
@@ -152,7 +153,7 @@ export function statementCompiler(): Compilers<WireFormat.Statement> {
           blocks: builder.templates(blocks),
         });
       } else {
-        builder.pushComponentDefinition(handle);
+        builder.push(Op.PushComponentDefinition, constant.handle(handle));
         builder.invokeComponent({
           capabilities,
           attrs: attrsBlock,
@@ -180,8 +181,8 @@ export function statementCompiler(): Compilers<WireFormat.Statement> {
       },
 
       ifTrue() {
-        builder.invokePartial(referrer, builder.evalSymbols()!, evalInfo);
-        builder.popScope();
+        builder.invokePartial(referrer, builder.evalSymbols!, evalInfo);
+        builder.push(Op.PopScope);
         builder.popFrame(); // FIXME: WAT
       },
     });
@@ -203,7 +204,7 @@ export function statementCompiler(): Compilers<WireFormat.Statement> {
   STATEMENTS.add(Ops.Debugger, (sexp: WireFormat.Statements.Debugger, builder) => {
     let [, evalInfo] = sexp;
 
-    builder.debugger(builder.evalSymbols()!, evalInfo);
+    builder.debugger(builder.evalSymbols!, evalInfo);
   });
 
   STATEMENTS.add(Ops.ClientSideStatement, (sexp: WireFormat.Statements.ClientSide, builder) => {
@@ -223,7 +224,7 @@ export function statementCompiler(): Compilers<WireFormat.Statement> {
   STATEMENTS.add(Ops.Block, (sexp: S.Block, builder) => {
     let [, name, params, hash, named] = sexp;
 
-    builder.compileBlock(name, params, hash, builder.templates(named));
+    builder.compileBlock({ name, params, hash, blocks: builder.templates(named) });
   });
 
   const CLIENT_SIDE = new Compilers<ClientSide.ClientSideStatement>(1);
@@ -231,13 +232,13 @@ export function statementCompiler(): Compilers<WireFormat.Statement> {
   CLIENT_SIDE.add(
     ClientSide.Ops.OpenComponentElement,
     (sexp: ClientSide.OpenComponentElement, builder) => {
-      builder.putComponentOperations();
-      builder.openPrimitiveElement(sexp[2]);
+      builder.push(Op.PutComponentOperations);
+      builder.push(Op.OpenElement, constant.string(sexp[2]));
     }
   );
 
   CLIENT_SIDE.add(ClientSide.Ops.DidCreateElement, (_sexp, builder) => {
-    builder.didCreateElement(Register.s0);
+    builder.push(Op.DidCreateElement, $s0);
   });
 
   CLIENT_SIDE.add(
@@ -253,7 +254,7 @@ export function statementCompiler(): Compilers<WireFormat.Statement> {
   });
 
   CLIENT_SIDE.add(ClientSide.Ops.DidRenderLayout, (_sexp, builder) => {
-    builder.didRenderLayout();
+    builder.push(Op.DidRenderLayout, $s0);
   });
 
   return STATEMENTS;
@@ -285,22 +286,18 @@ export function expressionCompiler() {
   const EXPRESSIONS = (_expressionCompiler = new Compilers<WireFormat.TupleExpression>());
 
   EXPRESSIONS.add(Ops.Unknown, (sexp: E.Unknown, builder) => {
-    let {
-      compiler,
-      referrer,
-      containingLayout: { asPartial },
-    } = builder;
+    let { compiler, referrer, asPartial } = builder;
     let name = sexp[1];
 
     let handle = compiler.resolveHelper(name, referrer);
 
     if (handle !== null) {
-      builder.helper(handle, null, null);
+      builder.helper({ handle, params: null, hash: null });
     } else if (asPartial) {
-      builder.resolveMaybeLocal(name);
+      builder.push(Op.ResolveMaybeLocal, constant.string(name));
     } else {
-      builder.getVariable(0);
-      builder.getProperty(name);
+      builder.push(Op.GetVariable, 0);
+      builder.push(Op.GetProperty, constant.string(name));
     }
   });
 
@@ -309,7 +306,7 @@ export function expressionCompiler() {
     for (let i = 0; i < parts.length; i++) {
       builder.expr(parts[i]);
     }
-    builder.concat(parts.length);
+    builder.push(Op.Concat, parts.length);
   });
 
   EXPRESSIONS.add(Ops.Helper, (sexp: E.Helper, builder) => {
@@ -321,14 +318,14 @@ export function expressionCompiler() {
       assert(params.length, 'SYNTAX ERROR: component helper requires at least one argument');
 
       let [definition, ...restArgs] = params;
-      builder.curryComponent(definition, restArgs, hash, true);
+      builder.curryComponent({ definition, params: restArgs, hash, synthetic: true });
       return;
     }
 
     let handle = compiler.resolveHelper(name, referrer);
 
     if (handle !== null) {
-      builder.helper(handle, params, hash);
+      builder.helper({ handle, params, hash });
     } else {
       throw new Error(`Compile Error: ${name} is not a helper`);
     }
@@ -336,26 +333,26 @@ export function expressionCompiler() {
 
   EXPRESSIONS.add(Ops.Get, (sexp: E.Get, builder) => {
     let [, head, path] = sexp;
-    builder.getVariable(head);
+    builder.push(Op.GetVariable, head);
     for (let i = 0; i < path.length; i++) {
-      builder.getProperty(path[i]);
+      builder.push(Op.GetProperty, constant.string(path[i]));
     }
   });
 
   EXPRESSIONS.add(Ops.MaybeLocal, (sexp: E.MaybeLocal, builder) => {
     let [, path] = sexp;
 
-    if (builder.containingLayout.asPartial) {
+    if (builder.asPartial) {
       let head = path[0];
       path = path.slice(1);
 
-      builder.resolveMaybeLocal(head);
+      builder.push(Op.ResolveMaybeLocal, constant.string(head));
     } else {
-      builder.getVariable(0);
+      builder.push(Op.GetVariable, 0);
     }
 
     for (let i = 0; i < path.length; i++) {
-      builder.getProperty(path[i]);
+      builder.push(Op.GetProperty, constant.string(path[i]));
     }
   });
 
@@ -364,7 +361,7 @@ export function expressionCompiler() {
   });
 
   EXPRESSIONS.add(Ops.HasBlock, (sexp: E.HasBlock, builder) => {
-    builder.hasBlock(sexp[1]);
+    builder.push(Op.HasBlock, sexp[1]);
   });
 
   EXPRESSIONS.add(Ops.HasBlockParams, (sexp: E.HasBlockParams, builder) => {
@@ -741,7 +738,14 @@ export function populateBuiltins(
     }
 
     let [definition, ...params] = _params!;
-    builder.dynamicComponent({ definition, attrs: null, params, hash, synthetic: true, blocks });
+    builder.invokeDynamicComponent({
+      definition,
+      attrs: null,
+      params,
+      hash,
+      synthetic: true,
+      blocks,
+    });
   });
 
   inlines.add('component', (_name, _params, hash, builder) => {
@@ -757,7 +761,7 @@ export function populateBuiltins(
     }
 
     let [definition, ...params] = _params!;
-    builder.dynamicComponent({
+    builder.invokeDynamicComponent({
       definition,
       attrs: null,
       params,

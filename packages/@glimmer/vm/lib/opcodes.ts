@@ -56,7 +56,7 @@ export const enum MachineOp {
   /**
    * Operation: Evaluate the handle.
    * Format:
-   *   (InvokeStatic handle:u32)
+   *   (InvokeStatic handle:Handle)
    * Operand Stack:
    *   ... →
    *   ...
