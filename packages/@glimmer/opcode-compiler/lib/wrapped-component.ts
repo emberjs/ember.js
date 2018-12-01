@@ -1,23 +1,15 @@
-import { Register, $s1, $s0 } from '@glimmer/vm';
 import {
   ProgramSymbolTable,
   CompilableProgram,
-  CompilableBlock,
   LayoutWithContext,
   Compiler,
   Option,
-  Recast,
 } from '@glimmer/interfaces';
 
 import { ComponentArgs, ComponentBuilder as IComponentBuilder } from './interfaces';
 
-import { debugCompiler, AnyAbstractCompiler } from './compiler';
-import { CompilableBlock as CompilableBlockInstance } from './compilable-template';
 import OpcodeBuilder from './opcode-builder-interfaces';
 import { ATTRS_BLOCK } from './syntax';
-
-import { DEBUG } from '@glimmer/local-debug-flags';
-import { EMPTY_ARRAY } from '@glimmer/util';
 
 export class WrappedBuilder<Locator> implements CompilableProgram {
   public symbolTable: ProgramSymbolTable;
@@ -48,128 +40,17 @@ export class WrappedBuilder<Locator> implements CompilableProgram {
 
   compile(): number {
     if (this.compiled !== null) return this.compiled;
-    //========DYNAMIC
-    //        PutValue(TagExpr)
-    //        Test
-    //        JumpUnless(BODY)
-    //        PutComponentOperations
-    //        OpenDynamicPrimitiveElement
-    //        DidCreateElement
-    //        ...attr statements...
-    //        FlushElement
-    // BODY:  Noop
-    //        ...body statements...
-    //        PutValue(TagExpr)
-    //        Test
-    //        JumpUnless(END)
-    //        CloseElement
-    // END:   Noop
-    //        DidRenderLayout
-    //        Exit
-    //
-    //========STATIC
-    //        OpenPrimitiveElementOpcode
-    //        DidCreateElement
-    //        ...attr statements...
-    //        FlushElement
-    //        ...body statements...
-    //        CloseElement
-    //        DidRenderLayout
-    //        Exit
 
-    let { compiler, layout } = this;
-    let b = compiler.builderFor(layout);
+    let builder = this.compiler.builderFor(this.layout);
 
-    b.labels(() => {
-      b.fetch($s1);
-
-      b.getComponentTagName($s0);
-      b.primitiveReference();
-
-      b.dup();
-      b.load($s1);
-
-      b.jumpUnless('BODY');
-
-      b.fetch($s1);
-      b.setComponentAttrs(true);
-      b.putComponentOperations();
-      b.openDynamicElement();
-      b.didCreateElement($s0);
-      b.yield(this.attrsBlockNumber, []);
-      b.setComponentAttrs(false);
-      b.flushElement();
-
-      b.label('BODY');
-
-      b.invokeStaticBlock(blockFor(layout, compiler));
-
-      b.fetch($s1);
-      b.jumpUnless('END');
-      b.closeElement();
-
-      b.label('END');
-      b.load($s1);
-    });
-
-    let handle = b.commit();
-
-    if (DEBUG) {
-      debugCompiler(
-        compiler as Recast<Compiler<OpcodeBuilder<Locator>>, AnyAbstractCompiler>,
-        handle
-      );
-    }
-
-    return (this.compiled = handle);
+    return (this.compiled = builder.wrappedComponent(this.layout, this.attrsBlockNumber));
   }
-}
-
-function blockFor<Locator>(
-  layout: LayoutWithContext,
-  compiler: Compiler<OpcodeBuilder<Locator>>
-): CompilableBlock {
-  return new CompilableBlockInstance(compiler, {
-    block: {
-      statements: layout.block.statements,
-      parameters: EMPTY_ARRAY,
-    },
-    containingLayout: layout,
-  });
 }
 
 export class ComponentBuilderImpl<Locator> implements IComponentBuilder {
   constructor(private builder: OpcodeBuilder<Locator>) {}
 
   static(handle: number, args: ComponentArgs) {
-    let [params, hash, blocks] = args;
-    let { builder } = this;
-
-    if (handle !== null) {
-      let { capabilities, compilable } = builder.compiler.resolveLayoutForHandle(handle);
-
-      if (compilable) {
-        builder.pushComponentDefinition(handle);
-        builder.invokeStaticComponent({
-          capabilities,
-          layout: compilable,
-          attrs: null,
-          params,
-          hash,
-          synthetic: false,
-          blocks,
-        });
-      } else {
-        builder.pushComponentDefinition(handle);
-        builder.invokeComponent({
-          capabilities,
-          attrs: null,
-          params,
-          hash,
-          synthetic: false,
-          blocks,
-        });
-      }
-    }
+    this.builder.staticComponent(handle, args);
   }
 }

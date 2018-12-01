@@ -13,6 +13,8 @@ export interface VM {
 
 export type OperandSize = 0 | 1 | 2 | 3;
 
+export type OperandList = [] | [Operand] | [Operand, Operand] | [Operand, Operand, Operand];
+
 export type DebugStackChangeFunction<State> = ((
   {
     opcode,
@@ -108,8 +110,7 @@ export interface DebugMetadata<State = undefined> {
   name: string;
   before?: (opcode: Opcode, vm: VM) => State;
   stackChange?: DebugStackChangeFunction<State> | number;
-  operands?: OperandSize;
-  ops?: Operand[];
+  ops?: OperandList;
   skipCheck?: true;
 }
 
@@ -117,8 +118,8 @@ export interface NormalizedMetadata<State = undefined> {
   name: string;
   before: Option<DebugBeforeFunction>;
   stackChange: DebugStackChangeFunction<State>;
-  operands: OperandSize;
-  ops: Operand[];
+  ops: OperandList;
+  operands: number;
   check: boolean;
 }
 
@@ -183,8 +184,7 @@ export function OPCODE_METADATA<State, Name extends Op | MachineOp = Op | Machin
     stackChange = () => 0;
   }
 
-  let operands = metadata.operands === undefined ? 0 : metadata.operands;
-  let ops = metadata.ops === undefined ? [] : metadata.ops;
+  let ops: OperandList = metadata.ops === undefined ? [] : metadata.ops;
 
   let normalized: NormalizedMetadata<State> = {
     name: metadata.name,
@@ -192,7 +192,7 @@ export function OPCODE_METADATA<State, Name extends Op | MachineOp = Op | Machin
     ops,
     before,
     stackChange,
-    operands,
+    operands: ops.length,
   };
 
   meta[name as number] = normalized;
@@ -216,7 +216,6 @@ OPCODE_METADATA(
   {
     name: 'InvokeStatic',
     ops: [Handle('handle')],
-    operands: 1,
   },
   MACHINE
 );
@@ -226,7 +225,6 @@ OPCODE_METADATA(
   {
     name: 'Jump',
     ops: [TO('to')],
-    operands: 1,
   },
   MACHINE
 );
@@ -294,7 +292,6 @@ OPCODE_METADATA(
   {
     name: 'ReturnTo',
     ops: [TO('offset')],
-    operands: 1,
   },
   MACHINE
 );
@@ -305,7 +302,7 @@ OPCODE_METADATA(
   Op.BindDynamicScope,
   {
     name: 'BindDynamicScope',
-    operands: 1,
+    ops: [StrArray('names')],
     stackChange({ opcode: { op1: _names }, constants }) {
       let size = constants.getArray(_names).length;
 
@@ -338,7 +335,6 @@ OPCODE_METADATA(
   {
     name: 'PushSymbolTable',
     ops: [SymbolTable('table')],
-    operands: 1,
     stackChange: 1,
   },
   SYSCALL
@@ -375,7 +371,6 @@ OPCODE_METADATA(
   {
     name: 'JumpIf',
     ops: [TO('to')],
-    operands: 1,
     stackChange: -1,
   },
   SYSCALL
@@ -386,7 +381,6 @@ OPCODE_METADATA(
   {
     name: 'JumpUnless',
     ops: [TO('to')],
-    operands: 1,
     stackChange: -1,
   },
   SYSCALL
@@ -397,7 +391,6 @@ OPCODE_METADATA(
   {
     name: 'JumpEq',
     ops: [TO('to'), I32('comparison')],
-    operands: 2,
   },
   SYSCALL
 );
@@ -415,7 +408,6 @@ OPCODE_METADATA(
   {
     name: 'Enter',
     ops: [I32('args')],
-    operands: 1,
   },
   SYSCALL
 );
@@ -443,7 +435,6 @@ OPCODE_METADATA(
   {
     name: 'RootScope',
     ops: [I32('symbols'), Bool('bindCallerScope')],
-    operands: 2,
   },
   SYSCALL
 );
@@ -505,7 +496,6 @@ OPCODE_METADATA(
   {
     name: 'PushComponentDefinition',
     ops: [Handle('definition')],
-    operands: 1,
     stackChange: 1,
   },
   SYSCALL
@@ -524,7 +514,6 @@ OPCODE_METADATA(
   {
     name: 'PushArgs',
     ops: [StrArray('names'), I32('positionals'), Bool('synthetic')],
-    operands: 3,
     stackChange: 1,
   },
   SYSCALL
@@ -562,7 +551,6 @@ OPCODE_METADATA(
   {
     name: 'CreateComponent',
     ops: [I32('flags'), Register('state')],
-    operands: 2,
   },
   SYSCALL
 );
@@ -572,7 +560,6 @@ OPCODE_METADATA(
   {
     name: 'RegisterComponentDestructor',
     ops: [Register('state')],
-    operands: 1,
   },
   SYSCALL
 );
@@ -590,7 +577,6 @@ OPCODE_METADATA(
   {
     name: 'GetComponentSelf',
     ops: [Register('state')],
-    operands: 1,
     stackChange: 1,
   },
   SYSCALL
@@ -601,7 +587,6 @@ OPCODE_METADATA(
   {
     name: 'GetComponentTagName',
     ops: [Register('state')],
-    operands: 1,
     stackChange: 1,
   },
   SYSCALL
@@ -612,7 +597,6 @@ OPCODE_METADATA(
   {
     name: 'GetComponentLayout',
     ops: [Register('state')],
-    operands: 1,
     stackChange: 2,
   },
   SYSCALL
@@ -623,7 +607,6 @@ OPCODE_METADATA(
   {
     name: 'SetupForEval',
     ops: [Register('state')],
-    operands: 1,
   },
   SYSCALL
 );
@@ -633,7 +616,6 @@ OPCODE_METADATA(
   {
     name: 'BindEvalScope',
     ops: [Register('state')],
-    operands: 1,
   },
   SYSCALL
 );
@@ -653,7 +635,6 @@ OPCODE_METADATA(
   {
     name: 'PopulateLayout',
     ops: [Register('state')],
-    operands: 1,
     stackChange: -2,
   },
   SYSCALL
@@ -664,7 +645,6 @@ OPCODE_METADATA(
   {
     name: 'Main',
     ops: [Register('state')],
-    operands: 1,
     stackChange: -2,
   },
   SYSCALL
@@ -691,7 +671,6 @@ OPCODE_METADATA(
   {
     name: 'DidCreateElement',
     ops: [Register('state')],
-    operands: 1,
   },
   SYSCALL
 );
@@ -701,7 +680,6 @@ OPCODE_METADATA(
   {
     name: 'DidRenderLayout',
     ops: [Register('state')],
-    operands: 1,
   },
   SYSCALL
 );
@@ -713,7 +691,6 @@ OPCODE_METADATA(
   {
     name: 'Debugger',
     ops: [StrArray('symbols'), NumArray('evalInfo')],
-    operands: 2,
   },
   SYSCALL
 );
@@ -725,7 +702,6 @@ OPCODE_METADATA(
   {
     name: 'Text',
     ops: [Str('text')],
-    operands: 1,
   },
   SYSCALL
 );
@@ -735,7 +711,6 @@ OPCODE_METADATA(
   {
     name: 'Comment',
     ops: [Str('comment')],
-    operands: 1,
   },
   SYSCALL
 );
@@ -790,7 +765,6 @@ OPCODE_METADATA(
   {
     name: 'ResolveDynamicComponent',
     ops: [Serializable('meta')],
-    operands: 1,
   },
   SYSCALL
 );
@@ -808,7 +782,6 @@ OPCODE_METADATA(
   {
     name: 'OpenElement',
     ops: [Str('tag')],
-    operands: 1,
   },
   SYSCALL
 );
@@ -827,7 +800,6 @@ OPCODE_METADATA(
   {
     name: 'StaticAttr',
     ops: [Str('name'), Str('value'), OptionStr('namespace')],
-    operands: 3,
   },
   SYSCALL
 );
@@ -837,7 +809,6 @@ OPCODE_METADATA(
   {
     name: 'DynamicAttr',
     ops: [Str('name'), Bool('trusting'), OptionStr('namespace')],
-    operands: 3,
     stackChange: -1,
   },
   SYSCALL
@@ -848,7 +819,6 @@ OPCODE_METADATA(
   {
     name: 'ComponentAttr',
     ops: [Str('name'), Bool('trusting'), OptionStr('namespace')],
-    operands: 3,
     stackChange: -1,
   },
   SYSCALL
@@ -896,7 +866,6 @@ OPCODE_METADATA(
   {
     name: 'Modifier',
     ops: [Handle('helper')],
-    operands: 1,
     stackChange: -1,
   },
   SYSCALL
@@ -909,7 +878,6 @@ OPCODE_METADATA(
   {
     name: 'Constant',
     ops: [LazyConstant('value')],
-    operands: 1,
     stackChange: 1,
   },
   SYSCALL
@@ -920,7 +888,6 @@ OPCODE_METADATA(
   {
     name: 'Primitive',
     ops: [Primitive('primitive')],
-    operands: 1,
     stackChange: 1,
   },
   SYSCALL
@@ -948,7 +915,6 @@ OPCODE_METADATA(
   {
     name: 'Dup',
     ops: [Register('register'), I32('offset')],
-    operands: 2,
     stackChange: 1,
   },
   SYSCALL
@@ -959,7 +925,6 @@ OPCODE_METADATA(
   {
     name: 'Pop',
     ops: [I32('count')],
-    operands: 1,
     stackChange({ opcode: { op1: count } }) {
       return -count;
     },
@@ -972,7 +937,6 @@ OPCODE_METADATA(
   {
     name: 'Load',
     ops: [Register('register')],
-    operands: 1,
     stackChange: -1,
   },
   SYSCALL
@@ -983,7 +947,6 @@ OPCODE_METADATA(
   {
     name: 'Fetch',
     ops: [Register('register')],
-    operands: 1,
     stackChange: 1,
   },
   SYSCALL
@@ -996,7 +959,6 @@ OPCODE_METADATA(
   {
     name: 'Helper',
     ops: [Handle('helper')],
-    operands: 1,
     stackChange: -1,
   },
   SYSCALL
@@ -1007,7 +969,6 @@ OPCODE_METADATA(
   {
     name: 'SetNamedVariables',
     ops: [Register('register')],
-    operands: 1,
   },
   SYSCALL
 );
@@ -1017,7 +978,6 @@ OPCODE_METADATA(
   {
     name: 'SetBlocks',
     ops: [Register('register')],
-    operands: 1,
   },
   SYSCALL
 );
@@ -1027,7 +987,6 @@ OPCODE_METADATA(
   {
     name: 'SetVariable',
     ops: [ScopeSymbol('symbol')],
-    operands: 1,
     stackChange: -1,
   },
   SYSCALL
@@ -1038,7 +997,6 @@ OPCODE_METADATA(
   {
     name: 'SetBlock',
     ops: [ScopeSymbol('symbol')],
-    operands: 1,
     stackChange: -3,
   },
   SYSCALL
@@ -1049,7 +1007,6 @@ OPCODE_METADATA(
   {
     name: 'GetVariable',
     ops: [ScopeSymbol('symbol')],
-    operands: 1,
     stackChange: 1,
   },
   SYSCALL
@@ -1060,7 +1017,6 @@ OPCODE_METADATA(
   {
     name: 'GetProperty',
     ops: [Str('key')],
-    operands: 1,
   },
   SYSCALL
 );
@@ -1070,7 +1026,6 @@ OPCODE_METADATA(
   {
     name: 'GetBlock',
     ops: [ScopeBlock('block')],
-    operands: 1,
     stackChange: 3,
   },
   SYSCALL
@@ -1081,7 +1036,6 @@ OPCODE_METADATA(
   {
     name: 'HasBlock',
     ops: [ScopeBlock('block')],
-    operands: 1,
     stackChange: 1,
   },
   SYSCALL
@@ -1102,7 +1056,6 @@ OPCODE_METADATA(
   {
     name: 'Concat',
     ops: [I32('size')],
-    operands: 1,
 
     stackChange({ opcode }) {
       return -opcode.op1 + 1;
@@ -1118,7 +1071,6 @@ OPCODE_METADATA(
   {
     name: 'EnterList',
     ops: [I32('start')],
-    operands: 1,
   },
   SYSCALL
 );
@@ -1156,7 +1108,6 @@ OPCODE_METADATA(
   {
     name: 'InvokePartial',
     ops: [Serializable('meta'), StrArray('symbols'), NumArray('evalInfo')],
-    operands: 3,
     stackChange: 1,
   },
   SYSCALL
@@ -1166,7 +1117,7 @@ OPCODE_METADATA(
   Op.ResolveMaybeLocal,
   {
     name: 'ResolveMaybeLocal',
-    operands: 1,
+    ops: [Str('local')],
     stackChange: 1,
   },
   SYSCALL

@@ -84,7 +84,7 @@ export interface NamedBlocks {
   hasAny: boolean;
 }
 
-export interface Compiler<Builder = Opaque> {
+export interface Compiler<Builder = unknown, Locator = unknown> {
   stdLib: STDLib;
   constants: CompileTimeConstants;
 
@@ -92,7 +92,7 @@ export interface Compiler<Builder = Opaque> {
   commit(size: number, encoder: CompilerBuffer): number;
 
   resolveLayoutForTag(tag: string, referrer: Opaque): MaybeResolvedLayout;
-  resolveLayoutForHandle(handle: number): ResolvedLayout;
+  resolveLayoutForHandle(handle: Locator): ResolvedLayout;
   resolveHelper(name: string, referrer: Opaque): Option<number>;
   resolveModifier(name: string, referrer: Opaque): Option<number>;
 
