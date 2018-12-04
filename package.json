@@ -48,7 +48,7 @@
     "link:glimmer": "node bin/yarn-link-glimmer.js",
     "start": "ember serve",
     "pretest": "ember build",
-    "lint": "TEST_SUITE=code-quality node bin/run-tests.js",
+    "lint": "yarn lint:tsc && yarn lint:tslint && yarn lint:eslint && yarn lint:docs",
     "lint:docs": "qunit tests/docs/coverage-test.js",
     "lint:eslint": "eslint . --cache",
     "lint:tsc": "tsc --noEmit",
