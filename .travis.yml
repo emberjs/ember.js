@@ -71,10 +71,9 @@ jobs:
     - stage: basic test
       env: TEST_SUITE=each-package-tests
 
-    - env: TEST_SUITE=code-quality
+    - name: Linting
       script:
-        # avoiding `yarn test` here because pretest does a build, which isn't needed
-        - node bin/run-tests.js
+        - yarn lint
 
     - stage: additional tests
 
