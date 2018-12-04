@@ -53,7 +53,7 @@
     "lint:eslint": "eslint . --cache",
     "lint:tsc": "tsc --noEmit",
     "lint:tslint": "tslint -p tsconfig.json",
-    "lint:fix": "eslint --fix . && tslint --fix -p tsconfig.json",
+    "lint:fix": "yarn lint:eslint --fix && yarn lint:tslint --fix",
     "test": "node bin/run-tests.js",
     "test:blueprints": "node node-tests/nodetest-runner.js",
     "test:blueprints-debugger": "node --inspect-brk node-tests/nodetest-runner.js",
