@@ -51,7 +51,7 @@
     "lint": "TEST_SUITE=code-quality node bin/run-tests.js",
     "lint:fix": "eslint --fix . && tslint --fix -p tsconfig.json",
     "test": "node bin/run-tests.js",
-    "test:blueprints": "node node-tests/nodetest-runner.js",
+    "test:blueprints": "mocha node-tests/blueprints/**/*-test.js",
     "test:node": "qunit tests/**/*-test.js",
     "test:browserstack": "node bin/run-browserstack-tests.js",
     "test:testem": "testem -f testem.dist.js"
