@@ -1,45 +1,19 @@
+branches:
+  only:
+  - master
+  - beta
+  - release
+  # release branches
+  - /^(?:release|lts)-\d+-\d+$/
+  # npm version tags
+  - /^v\d+\.\d+\.\d+/
+
 language: node_js
 node_js:
   - "10"
 
 addons:
   firefox: "latest"
-
-cache:
-  yarn: true
-
-before_install:
-  - export DISPLAY=:99.0
-  - sh -e /etc/init.d/xvfb start
-
-  - curl -o- -L https://yarnpkg.com/install.sh | bash
-  - export PATH=$HOME/.yarn/bin:$PATH
-
-  # install the most recent `npm version`
-  # used when publishing to build a properly packed tarball
-  - npm i -g npm
-
-install:
-  - yarn install --frozen-lockfile --non-interactive
-
-branches:
-  only:
-    - master
-    - beta
-    - release
-    # release branches
-    - /^(?:release|lts)-\d+-\d+$/
-    # npm version tags
-    - /^v\d+\.\d+\.\d+/
-
-matrix:
-  fast_finish: true
-
-stages:
-  - basic test
-  - additional tests
-  - name: deploy
-    if: type IN (push)
 
 env:
   global:
@@ -59,6 +33,32 @@ env:
 
       I/BFT0MbnR6JVCZiPV7TCWPgY1gvgZ6TEEIKGqauDMUBdL8ZK6I='
     - secure: e0yxVfwVW61d3Mi/QBOsY6Rfd1mZd3VXUd9xNRoz/fkvQJRuVwDe7oG3NOuJ4LZzvMw7BJ+zpDV9D8nKhAyPEEOgpkkMHUB7Ds83pHG4qSMzm4EAwBCadDLXCQirldz8dzN5FAqgGucXoj5fj/p2SKOkO6qWIZveGr8pdBJEG1E=
+
+matrix:
+  fast_finish: true
+
+cache:
+  yarn: true
+
+stages:
+  - basic test
+  - additional tests
+  - name: deploy
+    if: type IN (push)
+
+before_install:
+  - export DISPLAY=:99.0
+  - sh -e /etc/init.d/xvfb start
+
+  - curl -o- -L https://yarnpkg.com/install.sh | bash
+  - export PATH=$HOME/.yarn/bin:$PATH
+
+  # install the most recent `npm version`
+  # used when publishing to build a properly packed tarball
+  - npm i -g npm
+
+install:
+  - yarn install --frozen-lockfile --non-interactive
 
 jobs:
   include:
