@@ -7,6 +7,7 @@ const emberGenerate = blueprintHelpers.emberGenerate;
 const emberDestroy = blueprintHelpers.emberDestroy;
 const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
 const setupPodConfig = blueprintHelpers.setupPodConfig;
+const modifyPackages = blueprintHelpers.modifyPackages;
 
 const expectError = require('../helpers/expect-error');
 const chai = require('ember-cli-blueprint-test-helpers/chai');
@@ -23,7 +24,12 @@ describe('Blueprint: route', function() {
 
   describe('in app', function() {
     beforeEach(function() {
-      return emberNew().then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
+      return emberNew()
+        .then(() => modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]))
+        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
     });
 
     it('route foo', function() {
@@ -212,9 +218,12 @@ describe('Blueprint: route', function() {
 
   describe('in addon', function() {
     beforeEach(function() {
-      return emberNew({ target: 'addon' }).then(() =>
-        generateFakePackageManifest('ember-cli-qunit', '4.1.0')
-      );
+      return emberNew({ target: 'addon' })
+        .then(() => modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]))
+        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
     });
 
     it('route foo', function() {
@@ -323,10 +332,11 @@ describe('Blueprint: route', function() {
 
     beforeEach(function() {
       return emberNew()
-        .then(() => {
-          fs.ensureDirSync('src');
-          fs.writeFileSync('src/router.js', fs.readFileSync('app/router.js'));
-        })
+        .then(() => fs.ensureDirSync('src'))
+        .then(() => modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]))
         .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
     });
 
@@ -483,14 +493,11 @@ describe('Blueprint: route', function() {
 
     beforeEach(function() {
       return emberNew({ target: 'addon' })
-        .then(() => {
-          fs.ensureDirSync('src');
-          fs.ensureDirSync('tests/dummy/src');
-          fs.writeFileSync(
-            'tests/dummy/src/router.js',
-            fs.readFileSync('tests/dummy/app/router.js')
-          );
-        })
+        .then(() => fs.ensureDirSync('src'))
+        .then(() => modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]))
         .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
     });
 
@@ -570,9 +577,12 @@ describe('Blueprint: route', function() {
 
   describe('in in-repo-addon', function() {
     beforeEach(function() {
-      return emberNew({ target: 'in-repo-addon' }).then(() =>
-        generateFakePackageManifest('ember-cli-qunit', '4.1.0')
-      );
+      return emberNew({ target: 'in-repo-addon' })
+        .then(() => modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]))
+        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
     });
 
     it('route foo --in-repo-addon=my-addon', function() {

@@ -24,6 +24,10 @@ describe('Blueprint: acceptance-test', function() {
 
     describe('with ember-cli-qunit@4.1.0', function() {
       beforeEach(function() {
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]);
         generateFakePackageManifest('ember-cli-qunit', '4.1.0');
       });
 
@@ -38,6 +42,10 @@ describe('Blueprint: acceptance-test', function() {
 
     describe('with ember-cli-qunit@4.2.0', function() {
       beforeEach(function() {
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]);
         generateFakePackageManifest('ember-cli-qunit', '4.2.0');
       });
 
@@ -93,6 +101,10 @@ describe('Blueprint: acceptance-test', function() {
 
     describe('with ember-cli-qunit@4.1.0', function() {
       beforeEach(function() {
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]);
         generateFakePackageManifest('ember-cli-qunit', '4.1.0');
       });
 
@@ -119,6 +131,10 @@ describe('Blueprint: acceptance-test', function() {
 
     describe('with ember-cli-qunit@4.2.0', function() {
       beforeEach(function() {
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]);
         generateFakePackageManifest('ember-cli-qunit', '4.2.0');
       });
 
@@ -141,6 +157,10 @@ describe('Blueprint: acceptance-test', function() {
 
     describe('with ember-cli-qunit@4.1.0', function() {
       beforeEach(function() {
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]);
         generateFakePackageManifest('ember-cli-qunit', '4.1.0');
       });
 
@@ -155,6 +175,10 @@ describe('Blueprint: acceptance-test', function() {
 
     describe('with ember-cli-qunit@4.2.0', function() {
       beforeEach(function() {
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]);
         generateFakePackageManifest('ember-cli-qunit', '4.2.0');
       });
 
@@ -212,6 +236,10 @@ describe('Blueprint: acceptance-test', function() {
 
     describe('with ember-cli-qunit@4.1.0', function() {
       beforeEach(function() {
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]);
         generateFakePackageManifest('ember-cli-qunit', '4.1.0');
       });
 
@@ -238,6 +266,10 @@ describe('Blueprint: acceptance-test', function() {
 
     describe('with ember-cli-qunit@4.2.0', function() {
       beforeEach(function() {
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]);
         generateFakePackageManifest('ember-cli-qunit', '4.2.0');
       });
 

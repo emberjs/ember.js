@@ -22,9 +22,19 @@ describe('Blueprint: mixin-test', function() {
       return emberNew();
     });
 
-    it('mixin-test foo', function() {
-      return emberGenerateDestroy(['mixin-test', 'foo'], _file => {
-        expect(_file('tests/unit/mixins/foo-test.js')).to.equal(fixture('mixin-test/default.js'));
+    describe('with ember-cli-qunit@4.1.0', function() {
+      beforeEach(function() {
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]);
+        generateFakePackageManifest('ember-cli-qunit', '4.1.0');
+      });
+
+      it('mixin-test foo', function() {
+        return emberGenerateDestroy(['mixin-test', 'foo'], _file => {
+          expect(_file('tests/unit/mixins/foo-test.js')).to.equal(fixture('mixin-test/default.js'));
+        });
       });
     });
 
@@ -45,6 +55,10 @@ describe('Blueprint: mixin-test', function() {
 
     describe('with ember-cli-qunit@4.2.0', function() {
       beforeEach(function() {
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]);
         generateFakePackageManifest('ember-cli-qunit', '4.2.0');
       });
 
@@ -81,9 +95,19 @@ describe('Blueprint: mixin-test', function() {
       return emberNew().then(() => fs.ensureDirSync('src'));
     });
 
-    it('mixin-test foo', function() {
-      return emberGenerateDestroy(['mixin-test', 'foo'], _file => {
-        expect(_file('src/mixins/foo-test.js')).to.equal(fixture('mixin-test/default.js'));
+    describe('with ember-cli-qunit@4.1.0', function() {
+      beforeEach(function() {
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]);
+        generateFakePackageManifest('ember-cli-qunit', '4.1.0');
+      });
+
+      it('mixin-test foo', function() {
+        return emberGenerateDestroy(['mixin-test', 'foo'], _file => {
+          expect(_file('src/mixins/foo-test.js')).to.equal(fixture('mixin-test/default.js'));
+        });
       });
     });
 
@@ -104,6 +128,10 @@ describe('Blueprint: mixin-test', function() {
 
     describe('with ember-cli-qunit@4.2.0', function() {
       beforeEach(function() {
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]);
         generateFakePackageManifest('ember-cli-qunit', '4.2.0');
       });
 
@@ -117,7 +145,11 @@ describe('Blueprint: mixin-test', function() {
 
   describe('in addon', function() {
     beforeEach(function() {
-      return emberNew({ target: 'addon' });
+      return emberNew({ target: 'addon' })
+        .then(() => modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]));
     });
 
     it('mixin-test foo', function() {
@@ -131,7 +163,12 @@ describe('Blueprint: mixin-test', function() {
     enableModuleUnification();
 
     beforeEach(function() {
-      return emberNew({ target: 'addon' }).then(() => fs.ensureDirSync('src'));
+      return emberNew({ target: 'addon' })
+        .then(() => modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]))
+        .then(() => fs.ensureDirSync('src'));
     });
 
     it('mixin-test foo', function() {
@@ -143,7 +180,11 @@ describe('Blueprint: mixin-test', function() {
 
   describe('in in-repo-addon', function() {
     beforeEach(function() {
-      return emberNew({ target: 'in-repo-addon' });
+      return emberNew({ target: 'in-repo-addon' })
+        .then(() => modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]));
     });
 
     it('mixin-test foo --in-repo-addon=my-addon', function() {

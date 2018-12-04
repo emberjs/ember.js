@@ -24,6 +24,10 @@ describe('Blueprint: controller-test', function() {
 
     describe('with ember-cli-qunit@4.1.0', function() {
       beforeEach(function() {
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]);
         generateFakePackageManifest('ember-cli-qunit', '4.1.0');
       });
 
@@ -46,6 +50,10 @@ describe('Blueprint: controller-test', function() {
 
     describe('with ember-cli-qunit@4.2.0', function() {
       beforeEach(function() {
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]);
         generateFakePackageManifest('ember-cli-qunit', '4.2.0');
       });
 
@@ -154,6 +162,10 @@ describe('Blueprint: controller-test', function() {
 
     describe('with ember-cli-qunit@4.1.0', function() {
       beforeEach(function() {
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]);
         generateFakePackageManifest('ember-cli-qunit', '4.1.0');
       });
 
@@ -176,6 +188,10 @@ describe('Blueprint: controller-test', function() {
 
     describe('with ember-cli-qunit@4.2.0', function() {
       beforeEach(function() {
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]);
         generateFakePackageManifest('ember-cli-qunit', '4.2.0');
       });
 
@@ -277,9 +293,12 @@ describe('Blueprint: controller-test', function() {
 
   describe('in addon', function() {
     beforeEach(function() {
-      return emberNew({ target: 'addon' }).then(() =>
-        generateFakePackageManifest('ember-cli-qunit', '4.1.0')
-      );
+      return emberNew({ target: 'addon' })
+        .then(() => modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]))
+        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
     });
 
     it('controller-test foo', function() {
@@ -305,6 +324,10 @@ describe('Blueprint: controller-test', function() {
     beforeEach(function() {
       return emberNew()
         .then(() => fs.ensureDirSync('src'))
+        .then(() => modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]))
         .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
     });
 
