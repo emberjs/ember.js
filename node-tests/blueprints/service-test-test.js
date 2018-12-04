@@ -37,7 +37,7 @@ describe('Blueprint: service-test', function() {
     describe('with ember-cli-mocha@0.11.0', function() {
       beforeEach(function() {
         modifyPackages([
-          { name: 'ember-cli-qunit', delete: true },
+          { name: 'ember-qunit', delete: true },
           { name: 'ember-cli-mocha', dev: true },
         ]);
         generateFakePackageManifest('ember-cli-mocha', '0.11.0');
@@ -63,7 +63,7 @@ describe('Blueprint: service-test', function() {
     describe('with ember-cli-mocha@0.12.0', function() {
       beforeEach(function() {
         modifyPackages([
-          { name: 'ember-cli-qunit', delete: true },
+          { name: 'ember-qunit', delete: true },
           { name: 'ember-cli-mocha', dev: true },
         ]);
         generateFakePackageManifest('ember-cli-mocha', '0.12.0');
@@ -89,7 +89,7 @@ describe('Blueprint: service-test', function() {
     describe('with ember-mocha@0.14.0', function() {
       beforeEach(function() {
         modifyPackages([
-          { name: 'ember-cli-qunit', delete: true },
+          { name: 'ember-qunit', delete: true },
           { name: 'ember-mocha', dev: true },
         ]);
         generateFakePackageManifest('ember-mocha', '0.14.0');

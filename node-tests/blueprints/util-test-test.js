@@ -52,7 +52,7 @@ describe('Blueprint: util-test', function() {
     describe('with ember-cli-mocha', function() {
       beforeEach(function() {
         modifyPackages([
-          { name: 'ember-cli-qunit', delete: true },
+          { name: 'ember-qunit', delete: true },
           { name: 'ember-cli-mocha', dev: true },
         ]);
       });
@@ -67,7 +67,7 @@ describe('Blueprint: util-test', function() {
     describe('with ember-mocha@0.14.0', function() {
       beforeEach(function() {
         modifyPackages([
-          { name: 'ember-cli-qunit', delete: true },
+          { name: 'ember-qunit', delete: true },
           { name: 'ember-mocha', dev: true },
         ]);
         generateFakePackageManifest('ember-mocha', '0.14.0');
@@ -115,7 +115,7 @@ describe('Blueprint: util-test', function() {
     describe('with ember-cli-mocha', function() {
       beforeEach(function() {
         modifyPackages([
-          { name: 'ember-cli-qunit', delete: true },
+          { name: 'ember-qunit', delete: true },
           { name: 'ember-cli-mocha', dev: true },
         ]);
       });
