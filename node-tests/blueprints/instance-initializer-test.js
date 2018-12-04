@@ -12,6 +12,7 @@ const expect = chai.expect;
 const fs = require('fs-extra');
 
 const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
+const enableModuleUnification = require('../helpers/module-unification').enableModuleUnification;
 const fixture = require('../helpers/fixture');
 
 describe('Blueprint: instance-initializer', function() {
@@ -188,6 +189,8 @@ describe('Blueprint: instance-initializer', function() {
   });
 
   describe('in app - module unification', function() {
+    enableModuleUnification();
+
     beforeEach(function() {
       return emberNew()
         .then(() => fs.ensureDirSync('src'))
@@ -252,7 +255,10 @@ describe('Blueprint: instance-initializer', function() {
       });
     });
   });
+
   describe('in addon - module unification', function() {
+    enableModuleUnification();
+
     beforeEach(function() {
       return emberNew({ target: 'addon' })
         .then(() => fs.ensureDirSync('src'))

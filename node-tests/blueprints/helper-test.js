@@ -10,6 +10,7 @@ const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
 
 const fixture = require('../helpers/fixture');
+const enableModuleUnification = require('../helpers/module-unification').enableModuleUnification;
 const fs = require('fs-extra');
 
 describe('Blueprint: helper', function() {
@@ -82,6 +83,8 @@ describe('Blueprint: helper', function() {
   });
 
   describe('in app - module unification', function() {
+    enableModuleUnification();
+
     beforeEach(function() {
       return emberNew().then(() => fs.ensureDirSync('src'));
     });
@@ -130,6 +133,8 @@ describe('Blueprint: helper', function() {
   });
 
   describe('in addon - module unification', function() {
+    enableModuleUnification();
+
     beforeEach(function() {
       return emberNew({ target: 'addon' }).then(() => fs.ensureDirSync('src'));
     });
@@ -172,6 +177,8 @@ describe('Blueprint: helper', function() {
   });
 
   describe('in in-repo-addon - module unification', function() {
+    enableModuleUnification();
+
     beforeEach(function() {
       return emberNew({ target: 'in-repo-addon' }).then(() => fs.ensureDirSync('src'));
     });

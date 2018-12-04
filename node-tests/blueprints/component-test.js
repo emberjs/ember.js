@@ -11,6 +11,7 @@ const expect = chai.expect;
 const fs = require('fs-extra');
 
 const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
+const enableModuleUnification = require('../helpers/module-unification').enableModuleUnification;
 const fixture = require('../helpers/fixture');
 
 describe('Blueprint: component', function() {
@@ -413,6 +414,8 @@ describe('Blueprint: component', function() {
   });
 
   describe('in app - module unification', function() {
+    enableModuleUnification();
+
     beforeEach(function() {
       return emberNew()
         .then(() => fs.ensureDirSync('src'))
@@ -597,6 +600,8 @@ describe('Blueprint: component', function() {
   });
 
   describe('in addon - module unification', function() {
+    enableModuleUnification();
+
     beforeEach(function() {
       return emberNew({ target: 'addon' })
         .then(() => fs.ensureDirSync('src'))
@@ -818,6 +823,8 @@ describe('Blueprint: component', function() {
   });
 
   describe('in in-repo-addon - module unification', function() {
+    enableModuleUnification();
+
     beforeEach(function() {
       return emberNew({ target: 'in-repo-addon' })
         .then(() => fs.ensureDirSync('src'))

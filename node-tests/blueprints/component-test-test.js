@@ -9,6 +9,7 @@ const emberGenerate = blueprintHelpers.emberGenerate;
 const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
 const modifyPackages = blueprintHelpers.modifyPackages;
 const expectError = require('../helpers/expect-error');
+const enableModuleUnification = require('../helpers/module-unification').enableModuleUnification;
 
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
@@ -168,6 +169,8 @@ describe('Blueprint: component-test', function() {
   });
 
   describe('in app - module unification', function() {
+    enableModuleUnification();
+
     beforeEach(function() {
       return emberNew().then(() => fs.ensureDirSync('src'));
     });

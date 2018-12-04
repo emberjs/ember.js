@@ -11,6 +11,7 @@ const expect = chai.expect;
 const fs = require('fs-extra');
 
 const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
+const enableModuleUnification = require('../helpers/module-unification').enableModuleUnification;
 const fixture = require('../helpers/fixture');
 
 describe('Blueprint: mixin-test', function() {
@@ -74,6 +75,8 @@ describe('Blueprint: mixin-test', function() {
   });
 
   describe('in app - module unification', function() {
+    enableModuleUnification();
+
     beforeEach(function() {
       return emberNew().then(() => fs.ensureDirSync('src'));
     });
@@ -125,6 +128,8 @@ describe('Blueprint: mixin-test', function() {
   });
 
   describe('in addon - module unification', function() {
+    enableModuleUnification();
+
     beforeEach(function() {
       return emberNew({ target: 'addon' }).then(() => fs.ensureDirSync('src'));
     });
