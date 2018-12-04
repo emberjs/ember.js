@@ -1,4 +1,3 @@
-import { DEBUG } from '@glimmer/env';
 import { AST, ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
 import calculateLocationDisplay from '../system/calculate-location-display';
 import { Builders } from '../types';
@@ -205,31 +204,21 @@ function isBlockInvocation(node: AST.BlockStatement, locals: string[][]): boolea
   return isIllegalName(node.path, locals);
 }
 
-let wrapInAssertion: (
-  moduleName: string,
-  node: AST.PathExpression,
-  builder: Builders
-) => AST.Expression;
+function wrapInAssertion(moduleName: string, node: AST.PathExpression, b: Builders) {
+  let error = b.string(
+    `expected \`${
+      node.original
+    }\` to be a contextual component but found a string. Did you mean \`(component ${
+      node.original
+    })\`? ${calculateLocationDisplay(moduleName, node.loc)}`
+  );
 
-if (DEBUG) {
-  wrapInAssertion = (moduleName, node, b) => {
-    let error = b.string(
-      `expected \`${
-        node.original
-      }\` to be a contextual component but found a string. Did you mean \`(component ${
-        node.original
-      })\`? ${calculateLocationDisplay(moduleName, node.loc)}`
-    );
-
-    return b.sexpr(
-      b.path('-assert-implicit-component-helper-argument'),
-      [node, error],
-      b.hash(),
-      node.loc
-    );
-  };
-} else {
-  wrapInAssertion = (_, node) => node;
+  return b.sexpr(
+    b.path('-assert-implicit-component-helper-argument'),
+    [node, error],
+    b.hash(),
+    node.loc
+  );
 }
 
 function wrapInComponent(
