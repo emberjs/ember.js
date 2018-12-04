@@ -178,7 +178,7 @@ module.exports = {
         '-t',
         '1500',
         '--u',
-        '<url>&ie=true',
+        '<url>&legacy=true',
       ],
       protocol: 'browser',
     },
