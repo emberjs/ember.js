@@ -15,7 +15,6 @@ before_install:
 
   - curl -o- -L https://yarnpkg.com/install.sh | bash
   - export PATH=$HOME/.yarn/bin:$PATH
-  - yarn --version
 
   # install the most recent `npm version`
   # used when publishing to build a properly packed tarball
