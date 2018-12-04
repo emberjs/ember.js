@@ -102,16 +102,16 @@ function generateBuiltTests() {
     return run(common + '&enableoptionalfeatures=true&dist=prod&prod=true');
   });
   testFunctions.push(function() {
-    return run(common + '&ie=true&nolint=true');
+    return run(common + '&legacy=true&nolint=true');
   });
   testFunctions.push(function() {
-    return run(common + '&ie=true&dist=min&prod=true');
+    return run(common + '&legacy=true&dist=min&prod=true');
   });
   testFunctions.push(function() {
-    return run(common + '&ie=true&dist=prod&prod=true');
+    return run(common + '&legacy=true&dist=prod&prod=true');
   });
   testFunctions.push(function() {
-    return run(common + '&ie=true&enableoptionalfeatures=true&dist=prod&prod=true');
+    return run(common + '&legacy=true&enableoptionalfeatures=true&dist=prod&prod=true');
   });
 }
 

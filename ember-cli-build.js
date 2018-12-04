@@ -120,7 +120,7 @@ module.exports = function() {
       toES5(templateCompilerDependenciesES)
     );
 
-    bundleTrees.push(new Funnel(bundlesES5, { destDir: 'ie' }));
+    bundleTrees.push(new Funnel(bundlesES5, { destDir: 'legacy' }));
   }
 
   let emberTestsEmptyTestem = new Funnel('tests', {
