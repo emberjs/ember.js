@@ -224,11 +224,6 @@ switch (process.env.TEST_SUITE) {
     );
     break;
   }
-  case 'blueprints':
-    console.log('suite: blueprints');
-    require('../node-tests/nodetest-runner');
-    server.close();
-    break;
   case 'travis-browsers':
     console.log('suite: travis-browsers');
     require('./run-travis-browser-tests');
