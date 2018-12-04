@@ -1,9 +1,9 @@
-var diffOptions = {
+const { HtmlDiffer } = require('html-differ');
+
+const htmlDiffer = new HtmlDiffer({
   ignoreAttributes: ['id'],
   ignoreWhitespaces: true,
-};
-var HtmlDiffer = require('html-differ').HtmlDiffer;
-var htmlDiffer = new HtmlDiffer(diffOptions);
+});
 
 module.exports = {
   /*
