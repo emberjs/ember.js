@@ -86,8 +86,6 @@ jobs:
     - env: TEST_SUITE=blueprints
       node_js: "6"
     - env: TEST_SUITE=travis-browsers
-    - env:
-      - TEST_SUITE=each-package-tests
 
     - stage: deploy
       env:
