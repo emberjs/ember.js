@@ -4,7 +4,7 @@ import { OwnedTemplateMeta } from '@ember/-internals/views';
 import { _instrumentStart } from '@ember/instrumentation';
 import { assign } from '@ember/polyfills';
 import { DEBUG } from '@glimmer/env';
-import { ComponentCapabilities, Option, Unique } from '@glimmer/interfaces';
+import { ComponentCapabilities, Option, Simple, Unique } from '@glimmer/interfaces';
 import { CONSTANT_TAG, Tag, VersionedPathReference } from '@glimmer/reference';
 import {
   Arguments,
@@ -164,7 +164,7 @@ export function createRootOutlet(outletView: OutletView): OutletComponentDefinit
 
       didCreateElement(
         component: OutletInstanceState,
-        element: Element,
+        element: Simple.Element,
         _operations: ElementOperations
       ): void {
         // to add GUID id and class

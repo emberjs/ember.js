@@ -1,5 +1,5 @@
 import { Factory } from '@ember/-internals/owner';
-import { Opaque } from '@glimmer/interfaces';
+import { Opaque, Simple } from '@glimmer/interfaces';
 import { Tag } from '@glimmer/reference';
 import { Arguments, CapturedArguments, ModifierManager } from '@glimmer/runtime';
 import { ManagerArgs, valueForCapturedArgs } from '../utils/managers';
@@ -35,7 +35,7 @@ export class CustomModifierDefinition<ModifierInstance> {
 
 export class CustomModifierState<ModifierInstance> {
   constructor(
-    public element: Element,
+    public element: Simple.Element,
     public delegate: ModifierManagerDelegate<ModifierInstance>,
     public modifier: ModifierInstance,
     public args: CapturedArguments
@@ -51,7 +51,7 @@ export class CustomModifierState<ModifierInstance> {
 export interface ModifierManagerDelegate<ModifierInstance> {
   capabilities: Capabilities;
   createModifier(factory: Opaque, args: ManagerArgs): ModifierInstance;
-  installModifier(instance: ModifierInstance, element: Element, args: ManagerArgs): void;
+  installModifier(instance: ModifierInstance, element: Simple.Element, args: ManagerArgs): void;
   updateModifier(instance: ModifierInstance, args: ManagerArgs): void;
   destroyModifier(instance: ModifierInstance, args: ManagerArgs): void;
 }
@@ -84,7 +84,7 @@ class CustomModifierManager<ModifierInstance>
       CustomModifierDefinitionState<ModifierInstance>
     > {
   create(
-    element: Element,
+    element: Simple.Element,
     definition: CustomModifierDefinitionState<ModifierInstance>,
     args: Arguments
   ) {

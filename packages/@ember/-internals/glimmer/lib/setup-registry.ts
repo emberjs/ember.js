@@ -1,6 +1,7 @@
 import { hasDOM } from '@ember/-internals/browser-environment';
 import { privatize as P, Registry } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
+import { Simple } from '@glimmer/interfaces';
 import Component from './component';
 import Checkbox from './components/checkbox';
 import LinkToComponent from './components/link-to';
@@ -62,13 +63,13 @@ export function setupApplicationRegistry(registry: Registry) {
   }
 
   registry.register('service:-dom-changes', {
-    create({ document }: { document: HTMLDocument }) {
+    create({ document }: { document: Simple.Document }) {
       return new DOMChanges(document);
     },
   });
 
   registry.register('service:-dom-tree-construction', {
-    create({ document }: { document: HTMLDocument }) {
+    create({ document }: { document: Simple.Document }) {
       let Implementation = hasDOM ? DOMTreeConstruction : NodeDOMTreeConstruction;
       return new Implementation(document);
     },

@@ -655,7 +655,7 @@ const Component = CoreView.extend(
      */
     readDOMAttr(name: string) {
       // TODO revisit this
-      let element = getViewElement(this) as HTMLElement;
+      let element = getViewElement(this);
       let isSVG = element.namespaceURI === SVG_NAMESPACE;
       let { type, normalized } = normalizeProperty(element, name);
 

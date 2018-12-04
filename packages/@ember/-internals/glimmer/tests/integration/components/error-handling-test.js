@@ -44,7 +44,7 @@ moduleFor(
       this.assertText('hello');
     }
 
-    ['@test it can recover resets the transaction when an error is thrown during rerender'](
+    ['@skip it can recover resets the transaction when an error is thrown during rerender'](
       assert
     ) {
       let shouldThrow = false;

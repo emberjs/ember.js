@@ -318,7 +318,7 @@ export default class CurlyComponentManager
 
   didCreateElement(
     { component, classRef, environment }: ComponentStateBucket,
-    element: HTMLElement,
+    element: Simple.Element,
     operations: ElementOperations
   ): void {
     setViewElement(component, element);
