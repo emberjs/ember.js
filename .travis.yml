@@ -36,6 +36,9 @@ branches:
     # npm version tags
     - /^v\d+\.\d+\.\d+/
 
+matrix:
+  fast_finish: true
+
 stages:
   - basic test
   - additional tests
@@ -62,10 +65,7 @@ env:
     - secure: e0yxVfwVW61d3Mi/QBOsY6Rfd1mZd3VXUd9xNRoz/fkvQJRuVwDe7oG3NOuJ4LZzvMw7BJ+zpDV9D8nKhAyPEEOgpkkMHUB7Ds83pHG4qSMzm4EAwBCadDLXCQirldz8dzN5FAqgGucXoj5fj/p2SKOkO6qWIZveGr8pdBJEG1E=
 
 jobs:
-  fail_fast: true
-
   include:
-
     - stage: basic test
       env: TEST_SUITE=each-package-tests
 
