@@ -1,5 +1,6 @@
 var appModule = require('./helpers/app-module');
-var assertHTMLMatches = require('./helpers/assert-html-matches');
+
+require('./helpers/assert-html-matches').register();
 
 appModule('App Boot');
 
@@ -29,8 +30,7 @@ QUnit.test('nested {{component}}', function(assert) {
 ');
 
   return this.renderToHTML('/').then(function(html) {
-    assertHTMLMatches(
-      assert,
+    assert.htmlMatches(
       html,
       '<body><div id="EMBER_ID" class="ember-view"><div id="EMBER_ID" class="ember-view"><h1>Hello World</h1><div><div id="EMBER_ID" class="ember-view"><p>The files are *inside* the computer?!</p></div></div></div></div></body>'
     );
@@ -44,8 +44,7 @@ QUnit.test('{{link-to}}', function(assert) {
   });
 
   return this.renderToHTML('/').then(function(html) {
-    assertHTMLMatches(
-      assert,
+    assert.htmlMatches(
       html,
       '<body><div id="EMBER_ID" class="ember-view"><h1><a id="EMBER_ID" href="/photos" class="ember-view">Go to photos</a></h1></div></body>'
     );
@@ -63,8 +62,7 @@ QUnit.test('non-escaped content', function(assert) {
   });
 
   return this.renderToHTML('/').then(function(html) {
-    assertHTMLMatches(
-      assert,
+    assert.htmlMatches(
       html,
       '<body><div id="EMBER_ID" class="ember-view"><h1><b>Hello world</b></h1></div></body>'
     );
@@ -83,8 +81,7 @@ QUnit.test('outlets', function(assert) {
   var promises = [];
   promises.push(
     this.renderToHTML('/').then(function(html) {
-      assertHTMLMatches(
-        assert,
+      assert.htmlMatches(
         html,
         '<body><div id="EMBER_ID" class="ember-view"><p><span>index</span></p></div></body>'
       );
@@ -93,8 +90,7 @@ QUnit.test('outlets', function(assert) {
 
   promises.push(
     this.renderToHTML('/photos').then(function(html) {
-      assertHTMLMatches(
-        assert,
+      assert.htmlMatches(
         html,
         '<body><div id="EMBER_ID" class="ember-view"><p><em>photos</em></p></div></body>'
       );
@@ -136,8 +132,7 @@ QUnit.test('Should not attempt to render element modifiers GH#14220', function(a
   this.template('application', "<div {{action 'foo'}}></div>");
 
   return this.renderToHTML('/').then(function(html) {
-    assertHTMLMatches(
-      assert,
+    assert.htmlMatches(
       html,
       '<body><div id="EMBER_ID" class="ember-view"><div></div></div></body>'
     );

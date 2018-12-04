@@ -5,21 +5,23 @@ var diffOptions = {
 var HtmlDiffer = require('html-differ').HtmlDiffer;
 var htmlDiffer = new HtmlDiffer(diffOptions);
 
-/*
- * This assertion helper tests whether two fragments of Html 'appear'
- * to match. In terms of fragments rendered by Ember, we want to explicitly
- * ignore whitespace and certain attributes values, such as IDs, which Ember
- * auto-generates. Attribute ordering is also ignored.
- */
-function assertHTMLMatches(assert, actual, expected, message) {
-  var isEqual = htmlDiffer.isEqual(actual, expected);
+module.exports = {
+  /*
+   * This assertion helper tests whether two fragments of Html 'appear'
+   * to match. In terms of fragments rendered by Ember, we want to explicitly
+   * ignore whitespace and certain attributes values, such as IDs, which Ember
+   * auto-generates. Attribute ordering is also ignored.
+   */
+  register() {
+    QUnit.assert.htmlMatches = function(actual, expected, message) {
+      var isEqual = htmlDiffer.isEqual(actual, expected);
 
-  assert.pushResult({
-    result: isEqual,
-    actual,
-    expected,
-    message,
-  });
-}
-
-module.exports = assertHTMLMatches;
+      this.pushResult({
+        result: isEqual,
+        actual,
+        expected,
+        message,
+      });
+    };
+  },
+};
