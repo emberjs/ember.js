@@ -1,7 +1,6 @@
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import { Mixin, defineProperty, descriptor } from '..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
-import { isEdge } from 'internal-test-helpers';
 
 let classes = [
   class {
@@ -149,7 +148,7 @@ let classes = [
   },
 ];
 
-classes.forEach((TestClass, testCaseIndex) => {
+classes.forEach(TestClass => {
   moduleFor(
     TestClass.module('@ember/-internals/metal/descriptor'),
     class extends AbstractTestCase {
@@ -183,12 +182,7 @@ classes.forEach((TestClass, testCaseIndex) => {
 
         let source = factory.source();
 
-        if (isEdge && testCaseIndex === 0) {
-          // https://github.com/emberjs/ember.js/pull/16741#issuecomment-420963181
-          assert.equal(delete source.foo, false);
-        } else {
-          assert.throws(() => delete source.foo, TypeError);
-        }
+        assert.throws(() => delete source.foo, TypeError);
 
         assert.throws(
           () =>
