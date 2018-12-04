@@ -13,7 +13,7 @@
 
 # Precompiler Overview
 
-The precompilation step, which generally occurs at build time, takes a template string and turns it into an Intermediate Representation (also known as IR or WireFormat). The Intermediate Representation is a set of structured instructions that could be used directly for rendering, but is more approrpriately further processed into optimized opcodes. The public interface for the precompilation is the `precompile` function from the `@glimmer/compiler` package.
+The precompilation step, which generally occurs at build time, takes a template string and turns it into an Intermediate Representation (also known as IR or WireFormat). The Intermediate Representation is a set of structured instructions that could be used directly for rendering, but is more appropriately further processed into optimized opcodes. The public interface for the precompilation is the `precompile` function from the `@glimmer/compiler` package.
 
 ```js
 import { precompile } from '@glimmer/compiler';
