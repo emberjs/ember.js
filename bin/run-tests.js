@@ -150,10 +150,10 @@ function runChecker(bin, args) {
 
 function codeQualityChecks() {
   var checkers = [
-    runChecker('node', [require.resolve('typescript/bin/tsc'), '--noEmit']),
-    runChecker('node', [require.resolve('tslint/bin/tslint'), '-p', 'tsconfig.json']),
-    runChecker('node', [require.resolve('eslint/bin/eslint'), '.']),
-    runChecker('node', [require.resolve('qunit/bin/qunit'), 'tests/docs/coverage-test.js']),
+    runChecker('yarn', ['lint:tsc']),
+    runChecker('yarn', ['lint:tslint']),
+    runChecker('yarn', ['lint:eslint']),
+    runChecker('yarn', ['lint:docs']),
   ];
   return Promise.all(checkers).then(function(results) {
     results.forEach(result => {
