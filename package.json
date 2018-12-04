@@ -50,7 +50,7 @@
     "pretest": "ember build",
     "lint": "TEST_SUITE=code-quality node bin/run-tests.js",
     "lint:docs": "qunit tests/docs/coverage-test.js",
-    "lint:eslint": "eslint .",
+    "lint:eslint": "eslint . --cache",
     "lint:tsc": "tsc --noEmit",
     "lint:tslint": "tslint -p tsconfig.json",
     "lint:fix": "eslint --fix . && tslint --fix -p tsconfig.json",
