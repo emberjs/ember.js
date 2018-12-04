@@ -1,4 +1,3 @@
-var RSVP = require('rsvp');
 var SimpleDOM = require('simple-dom');
 var appModule = require('./helpers/app-module');
 
@@ -69,7 +68,7 @@ QUnit.test('FastBoot: basic', function(assert) {
 
   var App = this.createApplication();
 
-  return RSVP.all([
+  return Promise.all([
     fastbootVisit(App, '/a').then(
       assertFastbootResult(assert, {
         url: '/a',
@@ -116,7 +115,7 @@ QUnit.test('FastBoot: redirect', function(assert) {
 
   var App = this.createApplication();
 
-  return RSVP.all([
+  return Promise.all([
     fastbootVisit(App, '/a').then(
       assertFastbootResult(assert, {
         url: '/c',
@@ -143,7 +142,7 @@ QUnit.test('FastBoot: attributes are sanitized', function(assert) {
 
   var App = this.createApplication();
 
-  return RSVP.all([
+  return Promise.all([
     fastbootVisit(App, '/').then(
       assertFastbootResult(assert, {
         url: '/',
@@ -177,7 +176,7 @@ QUnit.test('FastBoot: route error', function(assert) {
 
   var App = this.createApplication();
 
-  return RSVP.all([
+  return Promise.all([
     fastbootVisit(App, '/a').then(
       function(instance) {
         assert.ok(false, 'It should not render');
@@ -215,7 +214,7 @@ QUnit.test('FastBoot: route error template', function(assert) {
 
   var App = this.createApplication();
 
-  return RSVP.all([
+  return Promise.all([
     fastbootVisit(App, '/a').then(
       assertFastbootResult(assert, {
         url: '/a',
@@ -234,7 +233,7 @@ QUnit.test('Resource-discovery setup', function(assert) {
 
     fetch: function(url) {
       this.get('requests').push(url);
-      return RSVP.resolve();
+      return Promise.resolve();
     },
   });
 
@@ -318,7 +317,7 @@ QUnit.test('Resource-discovery setup', function(assert) {
     }, handleError(assert));
   }
 
-  return RSVP.all([
+  return Promise.all([
     assertResources('/a', ['/a', '/b', '/c']),
     assertResources('/b', ['/b', '/c']),
     assertResources('/c', ['/c']),
@@ -336,7 +335,7 @@ QUnit.test('FastBoot: tagless components can render', function(assert) {
 
   var App = this.createApplication();
 
-  return RSVP.all([
+  return Promise.all([
     fastbootVisit(App, '/').then(
       assertFastbootResult(assert, {
         url: '/',
