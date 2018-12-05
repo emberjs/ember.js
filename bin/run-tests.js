@@ -2,7 +2,6 @@
 'use strict';
 
 const execa = require('execa');
-const execFile = require('child_process').execFile;
 const chalk = require('chalk');
 const runInSequence = require('../lib/run-in-sequence');
 const path = require('path');
@@ -136,39 +135,6 @@ function generateExtendPrototypeTests() {
   });
 }
 
-function runChecker(bin, args) {
-  return new Promise(function(resolve) {
-    execFile(bin, args, {}, function(error, stdout, stderr) {
-      // I'm buffering instead of inheriting these so that each
-      // checker doesn't interleave its output
-      process.stdout.write(stdout.toString('utf8'));
-      process.stderr.write(stderr.toString('utf8'));
-      resolve({ name: path.basename(args[0]), ok: !error });
-    });
-  });
-}
-
-function codeQualityChecks() {
-  var checkers = [
-    runChecker('node', [require.resolve('typescript/bin/tsc'), '--noEmit']),
-    runChecker('node', [require.resolve('tslint/bin/tslint'), '-p', 'tsconfig.json']),
-    runChecker('node', [require.resolve('eslint/bin/eslint'), '.']),
-    runChecker('node', [require.resolve('qunit/bin/qunit'), 'tests/docs/coverage-test.js']),
-  ];
-  return Promise.all(checkers).then(function(results) {
-    results.forEach(result => {
-      if (result.ok) {
-        console.log(result.name + ': ' + chalk.green('OK'));
-      } else {
-        console.log(result.name + ': ' + chalk.red('Failed'));
-      }
-    });
-    if (!results.every(result => result.ok)) {
-      throw new Error('Some quality checks failed');
-    }
-  });
-}
-
 function runAndExit() {
   runInSequence(testFunctions)
     .then(function() {
@@ -236,10 +202,6 @@ switch (process.env.TEST_SUITE) {
   case 'browserstack':
     console.log('suite: browserstack');
     require('./run-browserstack-tests');
-    break;
-  case 'code-quality':
-    testFunctions.push(codeQualityChecks);
-    runAndExit();
     break;
   default:
     console.log('suite: default (generate each package)');
