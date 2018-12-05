@@ -9,7 +9,6 @@ import {
 } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { _instrumentStart } from '@ember/instrumentation';
-import { DEBUG } from '@glimmer/env';
 import {
   ComponentDefinition,
   Opaque,
@@ -82,11 +81,8 @@ const BUILTINS_HELPERS = {
   '-get-dynamic-var': getDynamicVar,
   '-mount': mountHelper,
   '-outlet': outletHelper,
+  '-assert-implicit-component-helper-argument': componentAssertionHelper,
 };
-
-if (DEBUG) {
-  BUILTINS_HELPERS['-assert-implicit-component-helper-argument'] = componentAssertionHelper;
-}
 
 const BUILTIN_MODIFIERS = {
   action: { manager: new ActionModifierManager(), state: null },
