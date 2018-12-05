@@ -8,7 +8,7 @@
  *
  * Usage:
  *
- * bin/changelog
+ * bin/changelog.js
  */
 
 var RSVP      = require('rsvp');
