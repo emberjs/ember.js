@@ -21,10 +21,12 @@ describe('Blueprint: component', function() {
   describe('in app', function() {
     beforeEach(function() {
       return emberNew()
-        .then(() => modifyPackages([
-          { name: 'ember-qunit', delete: true },
-          { name: 'ember-cli-qunit', dev: true },
-        ]))
+        .then(() =>
+          modifyPackages([
+            { name: 'ember-qunit', delete: true },
+            { name: 'ember-cli-qunit', dev: true },
+          ])
+        )
         .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
     });
 
@@ -425,10 +427,12 @@ describe('Blueprint: component', function() {
     beforeEach(function() {
       return emberNew()
         .then(() => fs.ensureDirSync('src'))
-        .then(() => modifyPackages([
-          { name: 'ember-qunit', delete: true },
-          { name: 'ember-cli-qunit', dev: true },
-        ]))
+        .then(() =>
+          modifyPackages([
+            { name: 'ember-qunit', delete: true },
+            { name: 'ember-cli-qunit', dev: true },
+          ])
+        )
         .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
     });
 
@@ -490,10 +494,12 @@ describe('Blueprint: component', function() {
   describe('in addon', function() {
     beforeEach(function() {
       return emberNew({ target: 'addon' })
-        .then(() => modifyPackages([
-          { name: 'ember-qunit', delete: true },
-          { name: 'ember-cli-qunit', dev: true },
-        ]))
+        .then(() =>
+          modifyPackages([
+            { name: 'ember-qunit', delete: true },
+            { name: 'ember-cli-qunit', dev: true },
+          ])
+        )
         .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
     });
 
@@ -618,10 +624,12 @@ describe('Blueprint: component', function() {
     beforeEach(function() {
       return emberNew({ target: 'addon' })
         .then(() => fs.ensureDirSync('src'))
-        .then(() => modifyPackages([
-          { name: 'ember-qunit', delete: true },
-          { name: 'ember-cli-qunit', dev: true },
-        ]))
+        .then(() =>
+          modifyPackages([
+            { name: 'ember-qunit', delete: true },
+            { name: 'ember-cli-qunit', dev: true },
+          ])
+        )
         .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
     });
 
@@ -714,10 +722,12 @@ describe('Blueprint: component', function() {
   describe('in in-repo-addon', function() {
     beforeEach(function() {
       return emberNew({ target: 'in-repo-addon' })
-        .then(() => modifyPackages([
-          { name: 'ember-qunit', delete: true },
-          { name: 'ember-cli-qunit', dev: true },
-        ]))
+        .then(() =>
+          modifyPackages([
+            { name: 'ember-qunit', delete: true },
+            { name: 'ember-cli-qunit', dev: true },
+          ])
+        )
         .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
     });
 
@@ -848,10 +858,12 @@ describe('Blueprint: component', function() {
     beforeEach(function() {
       return emberNew({ target: 'in-repo-addon' })
         .then(() => fs.ensureDirSync('src'))
-        .then(() => modifyPackages([
-          { name: 'ember-qunit', delete: true },
-          { name: 'ember-cli-qunit', dev: true },
-        ]))
+        .then(() =>
+          modifyPackages([
+            { name: 'ember-qunit', delete: true },
+            { name: 'ember-cli-qunit', dev: true },
+          ])
+        )
         .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
     });
 
