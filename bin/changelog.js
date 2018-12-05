@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+
+/* eslint-disable no-console, node/shebang */
+
 'use strict';
 
 /*
@@ -11,11 +14,11 @@
  * bin/changelog.js
  */
 
-var RSVP      = require('rsvp');
+var RSVP = require('rsvp');
 var GitHubApi = require('github');
-var execSync  = require('child_process').execSync;
+var execSync = require('child_process').execSync;
 
-var github         = new GitHubApi({ version: '3.0.0' });
+var github = new GitHubApi({ version: '3.0.0' });
 var compareCommits = RSVP.denodeify(github.repos.compareCommits);
 var currentVersion = process.env.PRIOR_VERSION;
 var head = process.env.HEAD || execSync('git rev-parse HEAD', { encoding: 'UTF-8' });
@@ -24,13 +27,13 @@ compareCommits({
   user: 'emberjs',
   repo: 'ember.js',
   base: currentVersion,
-  head: head
+  head: head,
 })
-.then(processPages)
-.then(console.log)
-.catch(function(err) {
-  console.error(err);
-});
+  .then(processPages)
+  .then(console.log)
+  .catch(function(err) {
+    console.error(err);
+  });
 
 function getCommitMessage(commitInfo) {
   var message = commitInfo.commit.message;
@@ -41,54 +44,71 @@ function getCommitMessage(commitInfo) {
 
     try {
       // command from http://stackoverflow.com/questions/8475448/find-merge-commit-which-include-a-specific-commit
-      message = execSync('commit=$((git rev-list ' + originalCommit + '..origin/master --ancestry-path | cat -n; git rev-list ' + originalCommit + '..origin/master --first-parent | cat -n) | sort -k2 | uniq -f1 -d | sort -n | tail -1 | cut -f2) && git show --format="%s\n\n%b" $commit', { encoding: 'utf8' });
-    } catch (e) { }
+      message = execSync(
+        'commit=$((git rev-list ' +
+          originalCommit +
+          '..origin/master --ancestry-path | cat -n; git rev-list ' +
+          originalCommit +
+          '..origin/master --first-parent | cat -n) | sort -k2 | uniq -f1 -d | sort -n | tail -1 | cut -f2) && git show --format="%s\n\n%b" $commit',
+        { encoding: 'utf8' }
+      );
+    } catch (e) {
+      // ignored
+    }
   }
 
   return message;
 }
 
 function processPages(res) {
-  var contributions = res.commits.filter(function(commitInfo) {
-    var message = commitInfo.commit.message;
+  var contributions = res.commits
+    .filter(function(commitInfo) {
+      var message = commitInfo.commit.message;
 
-    return message.indexOf('Merge pull request #') > -1 || message.indexOf('cherry picked from') > -1;
-  }).map(function(commitInfo) {
-    var message = getCommitMessage(commitInfo);
-    var match = message.match(/#(\d+) from (.*)\//);
-    var result = {
-      sha: commitInfo.sha
-    };
+      return (
+        message.indexOf('Merge pull request #') > -1 || message.indexOf('cherry picked from') > -1
+      );
+    })
+    .map(function(commitInfo) {
+      var message = getCommitMessage(commitInfo);
+      var match = message.match(/#(\d+) from (.*)\//);
+      var result = {
+        sha: commitInfo.sha,
+      };
 
-    if (match) {
-      var numAndAuthor = match.slice(1, 3);
+      if (match) {
+        var numAndAuthor = match.slice(1, 3);
 
-      result.number = numAndAuthor[0];
-      result.title = message.split('\n\n')[1];
-    } else {
-      result.title = message.split('\n\n')[0];
-    }
+        result.number = numAndAuthor[0];
+        result.title = message.split('\n\n')[1];
+      } else {
+        result.title = message.split('\n\n')[0];
+      }
 
-    return result;
-  }).sort(function(a, b) {
-    return a.number > b.number;
-  }).map(function(pr) {
-    var title  = pr.title;
-    var link;
-    if (pr.number) {
-      link = '[#' + pr.number + ']' + '(https://github.com/emberjs/ember.js/pull/' + pr.number + ')';
-    } else {
-      link = '[' + pr.sha.slice(0, 8) + '](https://github.com/emberjs/ember.js/commit/' + pr.sha + ')';
-    }
+      return result;
+    })
+    .sort(function(a, b) {
+      return a.number > b.number;
+    })
+    .map(function(pr) {
+      var title = pr.title;
+      var link;
+      if (pr.number) {
+        link =
+          '[#' + pr.number + ']' + '(https://github.com/emberjs/ember.js/pull/' + pr.number + ')';
+      } else {
+        link =
+          '[' + pr.sha.slice(0, 8) + '](https://github.com/emberjs/ember.js/commit/' + pr.sha + ')';
+      }
 
-    return '- ' + link + ' ' + title;
-  }).join('\n');
+      return '- ' + link + ' ' + title;
+    })
+    .join('\n');
 
   if (github.hasNextPage(res)) {
-    return github.getNextPage(res)
-      .then(function(nextPage) {
-        contributions += processPages(nextPage);
-      });
+    return github.getNextPage(res).then(function(nextPage) {
+      contributions += processPages(nextPage);
+    });
   } else {
     return RSVP.resolve(contributions);
   }
