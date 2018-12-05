@@ -1,3 +1,7 @@
+import { Option, Dict } from '@glimmer/interfaces';
+import { Token, literal, repeat, token, optional, ToToken, toToken, matchToken } from './token';
+import { any, not, ANY } from './matching';
+
 const tuple = <T extends string[]>(...args: T) => args;
 
 export const OPERAND_TYPES = tuple(
@@ -47,9 +51,18 @@ export interface ParsedRegister {
   readonly name: 'register';
 }
 
+export interface ParsedMnemonic {
+  readonly shorthand: string;
+  readonly machine: boolean;
+}
+
 export interface ParsedOp {
   readonly op: string;
   readonly operands: ReadonlyArray<ParsedOperand>;
+}
+
+export function isParsedOp(input: string | unknown[] | ParsedOp): input is ParsedOp {
+  return !Array.isArray(input) && typeof input !== 'string';
 }
 
 export interface ParsedOperand {
@@ -60,39 +73,255 @@ export interface ParsedOperand {
 export type ParsedType = ParsedAnyType | ParsedReference | ParsedRegister;
 
 export interface Stack {
-  readonly before: ParsedType[];
-  readonly after: ParsedType[];
+  readonly 0: ParsedType[];
+  readonly 1: ParsedType[];
 }
 
 export class OpcodeMetadata {
-  constructor(readonly desc: string, readonly opcode: ParsedOp, readonly stack: Stack) {}
+  constructor(
+    readonly desc: string,
+    readonly mnemonic: ParsedMnemonic,
+    readonly opcode: ParsedOp,
+    readonly stack: Stack
+  ) {}
+
+  get isMachine(): boolean {
+    return this.mnemonic.machine;
+  }
+
+  get name(): string {
+    return this.opcode.op;
+  }
+
+  get short(): string {
+    return this.mnemonic.shorthand;
+  }
+
+  toJSON() {
+    return {
+      desc: this.desc,
+      mnemonic: this.mnemonic,
+      opcode: this.opcode,
+      stack: this.stack,
+    };
+  }
 }
 
 type Check<T> = (v: unknown) => v is T;
 
 export const PREFIX: ParsedType = { type: '...', name: 'prefix' };
 
-export class OpcodeMetadataParser {
+export interface ParsedFile {
+  machine: Dict<OpcodeMetadata>;
+  syscall: Dict<OpcodeMetadata>;
+}
+
+class Parser {
   private pos = 0;
+  private readonly len: number;
 
-  constructor(private input: string) {}
-
-  parse(): OpcodeMetadata {
-    this.expect('Operation:');
-    this.ws();
-
-    let desc = this.readSection('Format:');
-    let op = this.readFormat();
-    let stack = this.readStack();
-
-    return new OpcodeMetadata(desc, op, stack);
+  constructor(private input: string) {
+    this.len = input.length;
   }
 
-  private get rest(): string {
+  protected get current(): number {
+    return this.pos;
+  }
+
+  protected get rest(): string {
     return this.input.slice(this.pos);
   }
 
-  private readSection(until: string) {
+  protected get isEOF(): boolean {
+    return this.len === this.pos;
+  }
+
+  protected slice(from: number, to: number): string {
+    if (to < from) {
+      throw new Error(`Unexpected end ${to} before start ${from}`);
+    }
+    return this.input.slice(from, to);
+  }
+
+  protected sliceN(from: number, size: number): string {
+    return this.input.slice(from, from + size);
+  }
+
+  protected ws() {
+    let matched = this.check(
+      this.rest.match(/\s*/),
+      (m => m !== null) as Check<[string]>,
+      `Expected matched line, found ${JSON.stringify(this.rest)}`
+    );
+
+    this.pos += matched[0].length;
+  }
+
+  protected consume() {
+    this.pos += 1;
+  }
+
+  protected peek(size: number): string {
+    return this.rest.slice(0, size);
+  }
+
+  protected expect(next: string) {
+    let { rest } = this;
+
+    if (rest.startsWith(next)) {
+      this.pos += next.length;
+    } else {
+      throw new Error(`Expected: ${JSON.stringify(next)}, found ${JSON.stringify(rest)}`);
+    }
+  }
+
+  protected expectPeek(next: string) {
+    let { rest } = this;
+
+    if (rest.startsWith(next)) {
+      return;
+    } else {
+      throw new Error(`Expected: ${JSON.stringify(next)}, found ${JSON.stringify(rest)}`);
+    }
+  }
+
+  protected expectToken(next: ToToken): string {
+    let token = toToken(next);
+    let match = matchToken(this.input, this.pos, token);
+
+    if (match === 0) {
+      throw new Error(`Expected token ${token.describe()}. rest=${JSON.stringify(this.rest)}`);
+    } else {
+      // TODO: Add captures to tokens
+      let result = this.sliceN(this.pos, match).replace(/^\*?/, '');
+      this.pos += match;
+      return result;
+    }
+  }
+
+  protected consumeStringUntil(trail: ToToken, orEOF = true): string {
+    let pre = this.current;
+    this.consumeUntil(trail, orEOF);
+    return this.slice(pre, this.current);
+  }
+
+  protected consumeUntil(trail: ToToken, orEOF = true): number {
+    let result = this.scan(toToken(trail));
+
+    if (result.eof && orEOF) {
+      this.pos += result.prefix;
+      return result.prefix;
+    } else if (result.eof) {
+      throw new Error(`Expected ${trail}, but found EOF first. rest=${JSON.stringify(this.rest)}`);
+    } else {
+      this.pos += result.prefix;
+      return result.prefix;
+    }
+  }
+
+  protected scan(
+    token: Token
+  ): { prefix: number; match: number; eof: false } | { prefix: number; eof: true } {
+    let current = this.pos;
+
+    while (true) {
+      let match = matchToken(this.input, current, token);
+
+      if (current === this.len) {
+        return { prefix: current - this.pos, eof: true };
+      }
+
+      if (match) {
+        return { prefix: current - this.pos, match, eof: false };
+      } else {
+        current += 1;
+      }
+    }
+  }
+
+  protected consumeLine(): string {
+    let matched = this.check(
+      this.rest.match(/(.*)(\n|$)/),
+      (m => m !== null) as Check<[string, string]>,
+      `Expected matched line, found ${JSON.stringify(this.rest)}`
+    );
+
+    this.pos += matched[0].length;
+
+    return matched[1];
+  }
+
+  protected check<T>(v: unknown, pred: Check<T>, message: string): T {
+    if (pred(v)) {
+      return v;
+    } else {
+      throw new Error(`Expectation Failure: ${message}`);
+    }
+  }
+
+  protected maybe(next: string): Option<string> {
+    let { rest } = this;
+
+    if (rest.startsWith(next)) {
+      this.pos += next.length;
+      return next;
+    } else {
+      return null;
+    }
+  }
+}
+
+export default class WholeOpcodeMetadataParser extends Parser {
+  parse(): ParsedFile {
+    let machine = {};
+    let syscall = {};
+
+    while (true) {
+      let opcode = this.parseOpcode();
+
+      if (opcode === null) {
+        return { machine, syscall };
+      } else if (opcode.isMachine) {
+        machine[opcode.short] = opcode;
+      } else {
+        syscall[opcode.short] = opcode;
+      }
+    }
+  }
+
+  parseOpcode(): Option<OpcodeMetadata> {
+    this.ws();
+
+    if (this.isEOF) {
+      return null;
+    }
+
+    let pre = this.current;
+    this.expect('#');
+    this.consumeUntil(literal('#'));
+    let prefix = this.slice(pre, this.current);
+
+    return new OpcodeMetadataParser(prefix).parse();
+  }
+}
+
+const IDENT = token(any('A..Z', 'a..z'), repeat(any('A..Z', 'a..z', '0..9')));
+
+export class OpcodeMetadataParser extends Parser {
+  parse(): OpcodeMetadata {
+    let mnemonic = this.readHeader();
+    let op = this.readFormat();
+    this.expect('Operation:');
+    this.ws();
+    let desc = this.readSectionUntil('Operand Stack:');
+    this.ws();
+
+    let stack = this.readStack();
+
+    return new OpcodeMetadata(desc, mnemonic, op, stack);
+  }
+
+  private readSectionUntil(until: string) {
     let out = [];
 
     while (this.peek(until.length) !== until) {
@@ -102,14 +331,29 @@ export class OpcodeMetadataParser {
     return out.join(' ').trim();
   }
 
+  private readHeader(): ParsedMnemonic {
+    this.expect('#');
+    this.ws();
+
+    let machine = false;
+
+    if (this.peek(1) === '*') {
+      machine = true;
+      this.consume();
+    }
+
+    let shorthand = this.consumeLine().trim();
+    this.ws();
+
+    return { shorthand, machine };
+  }
+
   private readFormat(): ParsedOp {
     this.expect('Format:');
-    this.consumeLine();
-
     this.ws();
 
     this.expect('(');
-    let op = this.expectMatch(/^(\w+)/);
+    let op = this.expectToken(token(optional('*'), IDENT));
 
     this.ws();
 
@@ -126,9 +370,11 @@ export class OpcodeMetadataParser {
   }
 
   readOperand(): ParsedOperand {
-    let name = this.expectMatch(/^([A-Za-z0-9\-]+)/);
+    let name = this.expectToken(IDENT);
     this.expect(':');
-    let type = parseOperandType(this.expectMatch(/^([^\s\)]*)/));
+    let possibleType = this.expectToken(repeat(not(any(',', ')'))));
+    let type = parseOperandType(possibleType); //(/^([^\s\),]*)/));
+    this.maybe(',');
     this.ws();
 
     return { name, type };
@@ -140,71 +386,15 @@ export class OpcodeMetadataParser {
 
     this.ws();
 
-    let before = parseStackList(this.expectMatch(/^(.*)→/));
-    this.expect('\n');
+    let before = parseStackList(this.consumeStringUntil('→'));
+    this.expect('→\n');
     let after = parseStackList(this.consumeLine());
 
-    return { before, after };
-  }
-
-  private peek(size: number): string {
-    return this.rest.slice(0, size);
-  }
-
-  private expect(next: string) {
-    let { rest } = this;
-
-    if (rest.startsWith(next)) {
-      this.pos += next.length;
-    } else {
-      throw new Error(`Expected: ${next}, found ${JSON.stringify(rest)}`);
-    }
-  }
-
-  private expectMatch(next: RegExp): string {
-    let matched = this.check(
-      this.rest.match(next),
-      ((m: any) => m && m[0] && m[1]) as Check<[string, string]>,
-      `Expected matched ${next}, found ${JSON.stringify(this.rest)}`
-    );
-
-    this.pos += matched[0].length;
-
-    return matched[1];
-  }
-
-  private ws() {
-    let matched = this.check(
-      this.rest.match(/\s*/),
-      (m => m !== null) as Check<[string]>,
-      `Expected matched line, found ${JSON.stringify(this.rest)}`
-    );
-
-    this.pos += matched[0].length;
-  }
-
-  private consumeLine(): string {
-    let matched = this.check(
-      this.rest.match(/(.*)(\n|$)/),
-      (m => m !== null) as Check<[string, string]>,
-      `Expected matched line, found ${JSON.stringify(this.rest)}`
-    );
-
-    this.pos += matched[0].length;
-
-    return matched[1];
-  }
-
-  private check<T>(v: unknown, pred: Check<T>, message: string): T {
-    if (pred(v)) {
-      return v;
-    } else {
-      throw new Error(`Expectation Failure: ${message}`);
-    }
+    return [before, after];
   }
 }
 
-function parseOperandType(type: string): OperandType {
+export function parseOperandType(type: string): OperandType {
   if (isOperandType(type)) {
     return type;
   } else {

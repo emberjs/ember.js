@@ -1,0 +1,4 @@
+- XY?load - load an X from location Y onto the stack
+- XY?bindZ - bind an X from location Y into a variable representing Z
+- Xput - put an x into register
+- apnd_XX - perform an operation that affects the in-progress DOM tree

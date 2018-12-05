@@ -13,7 +13,8 @@ export interface VM {
 
 export type OperandSize = 0 | 1 | 2 | 3;
 
-export type OperandList = [] | [Operand] | [Operand, Operand] | [Operand, Operand, Operand];
+export type OperandList = ([] | [Operand] | [Operand, Operand] | [Operand, Operand, Operand]) &
+  Operand[];
 
 export type DebugStackChangeFunction<State> = ((
   {

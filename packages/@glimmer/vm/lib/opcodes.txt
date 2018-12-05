@@ -1,0 +1,882 @@
+# *pushf
+
+Format: (*PushFrame)
+Operation: Push a stack frame
+Operand Stack:
+  ... →
+  ..., $ra, $fp
+
+# *popf
+
+Format: (*PopFrame)
+Operation: Pop a stack frame
+Operand Stack:
+  ..., $ra, $fp →
+  ...
+
+# *vcall
+
+Format: (*InvokeVirtual)
+Operation: Evaluate the handle at the top of the stack.
+Operand Stack:
+  ..., Handle, →
+  ...
+
+# *scall
+
+Format: (*InvokeStatic handle:Handle)
+Operation: Evaluate the handle.
+Operand Stack:
+  ... →
+  ...
+
+# *goto
+
+Format: (*Jump to:u32)
+Operation: Jump to the specified offset.
+Operand Stack:
+  ... →
+  ...
+
+# *ret
+
+Format: (*Return)
+Operation: Return to the previous frame.
+Operand Stack:
+  ..., address:number →
+  ...
+
+# *setra
+
+Format: (*ReturnTo offset:i32)
+Operation: Return to a place in the program given an offset
+Operand Stack:
+  ... →
+  ...
+
+# ncall
+
+Format: (Helper helper:#Function)
+Operation: Evaluate a Helper.
+Operand Stack:
+  ..., [VersionedPathReference ...], Arguments →
+  ..., VersionedPathReference
+
+# vsargs
+
+Format: (SetNamedVariables register:u32)
+Operation:
+  Bind the named arguments in the Arguments to the symbols
+  specified by the symbol table in the component state at register.
+Operand Stack:
+  ..., Arguments →
+  ...
+
+# vbblocks
+
+Format: (SetBlocks register:u32)
+Operation:
+  Bind the blocks in the Arguments to the symbols specified by the
+  symbol table in the component state at register.
+Operand Stack:
+  ..., Arguments →
+  ...
+
+# sbvar
+
+Format: (SetVariable symbol:u32)
+Operation:
+  Bind the variable represented by a symbol from
+  the value at the top of the stack.
+Operand Stack:
+  ..., VersionedPathReference →
+  ...
+
+# sbblock
+
+Format: (SetBlock symbol:u32)
+Operation:
+  Bind the block at the top of the stack.
+Operand Stack:
+  ..., SymbolTable, Handle →
+  ...
+
+# symload
+
+Format: (PushSymbol symbol:u32)
+Operation:
+  Push the contents of the variable represented by
+  a symbol (a positional or named argument) onto
+  the stack.
+Operand Stack:
+  ... →
+  ..., VersionedPathReference
+
+# getprop
+
+Format: (GetProperty property:#string)
+Operation:
+  Pop a VersionedPathReference from the top of the
+  stack, and push a VersionedPathReference constructed
+  by `.get(property)`.
+Operand Stack:
+  ..., VersionedPathReference →
+  ..., VersionedPathReference
+
+# blockload
+
+Format: (GetBlock block:u32)
+Operation: Push the specified bound block onto the stack.
+Operand Stack:
+  ... →
+  ..., InlineBlock
+
+# hasblockload
+
+Format: (HasBlock block:u32)
+Operation:
+  Push TRUE onto the stack if the specified block
+  is bound and FALSE if it is not.
+Operand Stack:
+  ... →
+  ..., boolean
+
+# hasparamsload
+
+Format: (HasBlockParams block:u32)
+Operation:
+  Push TRUE onto the stack if the specified block
+  is bound *and* has at least one specified formal
+  parameter, and FALSE otherwise.
+Operand Stack:
+  ... →
+  ..., VersionedPathReference (boolean)
+
+# concat
+
+Format:
+  (Concat count:u32)
+Operation:
+  Pop count `VersionedPathReference`s off the stack and
+  construct a new ConcatReference from them (in reverse
+  order).
+Operand Stack:
+  ..., VersionedPathReference, [VersionedPathReference ...] →
+  ..., ConcatReference
+
+# rconstload
+
+Format: (PushConstant constant:#Object)
+Operation:
+  Push an Object constant onto the stack that is not
+  a JavaScript primitive.
+Operand Stack:
+  ... →
+  ..., Opaque
+
+# pconstload
+
+Format: (PushPrimitive constant:#Primitive)
+Operation:
+  Wrap a JavaScript primitive in a reference and push it
+  onto the stack.
+Operand Stack:
+  ... →
+  ..., Primitive
+Description:
+  The two high bits of the constant reference describe
+  the kind of primitive:
+
+  00: number
+  01: string
+  10: true | false | null | undefined
+
+# ptoref
+
+Format: (PrimitiveReference)
+Operation: Convert the top of the stack into a primitive reference.
+Operand Stack:
+  ..., Primitive →
+  ..., VersionedPathReference<Primitive>
+
+# reifyload
+
+Format: (ReifyU32)
+Operation: Convert the top of the stack into a number.
+Operand Stack:
+  ..., VersionedPathReference<u32> →
+  ..., VersionedPathReference<u32>, u32
+
+# dup
+
+Format: (Dup register:u32, offset:u32)
+Operation: Duplicate and push item from an offset in the stack.
+Operand Stack:
+  ..., Opaque →
+  ..., Opaque, Opaque
+
+# pop
+
+Format: (Pop)
+Operation: Pop N items off the stack and throw away the value.
+Operand Stack:
+  ..., Opaque, Opaque →
+  ...
+
+# put
+
+Operation: Load a value into a register
+Format:
+  (Load register:u32)
+Operand Stack:
+  ..., Opaque →
+  ...
+
+# regload
+
+Operation: Fetch a value from a register
+Format:
+  (Fetch register:u32)
+Operand Stack:
+  ... →
+  ..., Opaque
+
+# rscopepush
+
+Format: (RootScope symbols:u32 bindCallerScope:bool)
+Operation: Push a new root scope onto the scope stack.
+Operand Stack:
+  ... →
+  ...
+Description:
+  A root scope has no parent scope, and therefore inherits no lexical
+  variables. If `bindCallerScope` is `true`, the current scope remembers
+  the caller scope (for yielding blocks).
+
+# vrscopepush
+
+Format:
+  (VirtualRootScope register:u32)
+Operation: Push a new root scope onto the scope stack.
+Operand Stack:
+  ... →
+  ...
+Description:
+  The symbol count is determined by the component state in
+  the specified register.
+
+# cscopepush
+
+Format: (ChildScope)
+Operation: Push a new child scope onto the scope stack.
+Operand Stack:
+  ... →
+  ...
+Description:
+  A child scope inherits from the current parent scope, and therefore
+  shares its lexical variables.
+
+# scopepop
+
+Format: (PopScope)
+Operation: Pop the current scope from the scope stack.
+Operand Stack:
+  ... →
+  ...
+
+# apnd_text
+
+Format: (Text contents:#string)
+Operation: Append a Text node with value `contents`
+Operand Stack:
+  ... →
+  ...
+
+# apdn_comment
+
+Format: (Comment contents:#string)
+Operation: Append a Comment node with value `contents`
+Operand Stack:
+  ... →
+  ...
+
+# apnd_html
+
+Format: (AppendHTML)
+Operation: Append content as HTML.
+Operand Stack:
+  ..., VersionedPathReference<string> →
+  ...
+
+# apnd_shtml
+
+Format: (AppendSafeHTML)
+Operation: Append SafeHTML as HTML.
+Operand Stack:
+  ..., VersionedPathReference<SafeHTML> →
+  ...
+
+# apnd_frag
+
+Format: (AppendFragment)
+Operation: Append DocumentFragment.
+Operand Stack:
+  ..., VersionedPathReference<DocumentFragment> →
+  ...
+
+# apnd_node
+
+Format: (AppendFragment)
+Operation: Append Node.
+Operand Stack:
+  ..., VersionedPathReference<Node> →
+  ...
+
+# apnd_text
+
+Format: (AppendText)
+Operation: Append content as text.
+Operand Stack:
+  ..., VersionedPathReference<string> →
+  ...
+
+# apnd_tag
+
+Format: (OpenElement tag:#string)
+Operation: Open a new Element named `tag`.
+Operand Stack:
+  ... →
+  ...
+
+# apnd_dyntag
+
+Format: (OpenDynamicElement)
+Operation:
+  Open a new Element with a name on the stack and with special
+  operations provided on the stack.
+Operand Stack:
+  ..., string, ElementOperations →
+  ...
+
+# apnd_remotetag
+
+Format: (PushRemoteElement)
+Operation:
+  Open a new remote element
+Operand Stack:
+  ..., Reference<string>, Reference<Node>, Reference<Element> →
+  ...
+
+# apnd_attr
+
+Format: (StaticAttr name:#string value:#string namespace:Option<#string>)
+Operation: Add an attribute to the current Element.
+Operand Stack:
+  ... →
+  ...
+
+# apnd_dynattr
+
+Format: (DynamicAttr name:#string trusting:boolean namespace:Option<#string>)
+Operation:
+  Add an attribute to the current element using the value
+  at the top of the stack.
+Operand Stack:
+  ..., VersionedPathReference →
+  ...
+Description:
+  If `trusting` is false, the host may sanitize the attribute
+  based upon known risks.
+
+# apnd_cattr
+
+Format: (ComponentAttr name:#string trusting:boolean namespace:Option<#string>)
+Operation:
+  Add an attribute to the current element using the value
+  at the top of the stack.
+Operand Stack:
+  ..., VersionedPathReference →
+  ...
+
+# apnd_flushtag
+
+Operation: Finish setting attributes on the current element.
+
+Format: (FlushElement)
+Operand Stack:
+  ... →
+  ...
+
+# apnd_closetag
+
+Format: (CloseElement)
+Operation: Close the current element.
+Operand Stack:
+  ... →
+  ...
+
+# apnd_closeremotetag
+
+Format: (PopRemoteElement)
+Operation: Close the current remote element
+Operand Stack:
+  ... →
+  ...
+
+# apnd_modifier
+
+Format: (Modifier helper:handle)
+Operation: Execute the modifier represented by the handle
+Operand Stack:
+  ..., Arguments →
+  ...
+
+# setdynscope
+
+Format: (BindDynamicScope names:#Array<#string>)
+Operation: Bind stack values as dynamic variables.
+Operand Stack:
+  ..., VersionedPathReference, [VersionedPathReference ...] →
+  ...
+Description:
+  This is used to expose `-with-dynamic-vars`, and is a
+  niche feature.
+
+# dynscopepush
+
+Format: (PushDynamicScope)
+Operation: Push a dynamic scope frame
+
+# dynscopepop
+
+Format: (PopDynamicScope)
+Operation: Pop a dynamic scope frame
+
+# cmpblock
+
+Format: (CompileBlock)
+Operation: Compile the InlineBlock at the top of the stack.
+Operand Stack:
+  ..., CompilableBlock →
+  ..., Handle
+
+# scopeload
+
+Operation: Push a scope onto the stack.
+Format:
+  (PushBlockScope #Scope)
+Operand Stack:
+  ..., →
+  ..., Scope
+
+# dsymload
+
+Format: (PushSymbolTable #SymbolTable)
+Operation: Push a symbol table onto the stack.
+Operand Stack:
+  ..., →
+  ..., SymbolTable
+
+# invokeyield
+
+Format: (InvokeYield)
+Operation: Yield to a block.
+Operand Stack:
+  ..., [VersionedPathReference ...], Arguments, SymbolTable, Handle →
+  ...
+
+# iftrue
+
+Format: (JumpIf to:u32)
+Operation:
+  Jump to the specified offset if the value at
+  the top of the stack is true.
+Operand Stack:
+  ..., VersionedPathReference →
+  ...
+
+# iffalse
+
+Format: (JumpUnless to:u32)
+Operation:
+  Jump to the specified offset if the value at
+  the top of the stack is false.
+Operand Stack:
+  ..., VersionedPathReference →
+  ...
+
+# ifeq
+
+Format: (JumpEq to:i32 comparison:i32)
+Operation:
+  Jump to the specified offset if the value at
+  the top of the stack is the same as the
+  comparison.
+Operand Stack:
+  ..., u32 →
+  ..., u32
+
+# assert_eq
+
+Format: (AssertSame)
+Operation:
+  Validate that the value at the top of the stack
+  hasn't changed.
+Operand Stack:
+  ..., VersionedPathReference<u32> →
+  ..., VersionedPathReference<u32>
+
+Operation:
+  Start tracking a new output block that could change
+  if one of its inputs changes.
+
+# blk_start
+
+Format: (Enter args:u32)
+Operand Stack:
+  ... →
+  ...
+Description:
+  Soon after this opcode, one of Jump, JumpIf,
+  JumpUnless, or JumpEq will produce an updating
+  assertion. If that assertion fails, the appending
+  VM will be re-entered, and the instructions from `from`
+  to `to` will be executed.
+
+  TODO: Save and restore.
+
+# blk_end
+
+Operation:
+  Finish tracking the current block.
+
+Format:
+  (Exit)
+Operand Stack:
+  ... →
+  ...
+Description:
+  This finalizes the validators that the updating
+  block must check to determine whether it's safe to
+  skip running the contents.
+
+# anytobool
+
+Format: (ToBoolean)
+Operation: Convert the top of the stack into a boolean reference.
+Operand Stack:
+  ..., VersionedPathReference<Opaque> →
+  ..., VersionedPathReference<bool>
+
+# list_start
+
+Format: (EnterList address:u32)
+Operation: Enter a list.
+Operand Stack:
+  ..., Iterator →
+  ...
+
+# list_end
+
+Format: (ExitList)
+Operation: Exit the current list.
+Operand Stack:
+  ... →
+  ...
+
+# toiter
+
+Format: (PutIterator)
+Operation:
+  Convert an operand and key into an iterator and
+  presence reference.
+Operand Stack:
+  ..., key:string, list:VersionedPathReference →
+  ..., iterator:ReferenceIterator, present:PresenceReference
+
+# iter
+
+Format: (Iterate end:u32)
+Operation:
+  Set up the stack for iterating for a given key,
+  or jump to `end` if there is nothing left to
+  iterate.
+Operand Stack:
+  Form 1: (something to iterate)
+  ... →
+  ..., VersionedPathReference, VersionedPathReference, string
+  Form 2: (nothing left to iterate)
+  ... →
+  ...
+Description:
+  In Form 1, the stack will have (in reverse order):
+
+  - the key, as a string
+  - the current iterated value
+  - the memoized iterated value
+
+# main
+
+Format: (Main state:register)
+Operation: Test whether a reference contains a component definition.
+Operand Stack:
+  ..., Invocation, ComponentDefinition →
+  ...
+
+# iscomponent
+
+Format: (IsComponent)
+Operation: Test whether a reference contains a component definition.
+Operand Stack:
+  ..., VersionedPathReference<Opaque> →
+  ..., VersionedPathReference<boolean>
+
+# ctload
+
+Operation: Push the content type onto the stack.
+
+Format: (ContentType)
+Operand Stack:
+  ..., VersionedPathReference<Opaque> →
+  ..., VersionedPathReference<Opaque>, VersionedPathReference<ContentType>
+
+# curry
+
+Format: (CurryComponent templateMeta:#Locator)
+Operation: Curry a component definition for a later invocation.
+Operand Stack:
+  ..., VersionedPathReference, [VersionedPathReference ...], Arguments →
+  ..., { VersionedPathReference, Locator, CapturedArguments }
+
+# cmload
+
+Format: (PushComponentManager #ComponentSpec)
+Operation: Push an appropriate component manager onto the stack.
+Operand Stack:
+  ... →
+  ..., { ComponentDefinition, ComponentManager }
+
+# dciload
+
+Format: (PushDynamicComponentInstance)
+Operation:
+  Pushes the ComponentInstance onto the stack that is
+  used during the invoke.
+Operand Stack:
+  ..., ComponentDefinition →
+  ..., { ComponentDefinition, manager: null, layout: null, state: null, handle: null, table: null }
+
+Operation:
+  Pushes a curried component definition on to the stack
+
+# curriedload
+
+Format: (PushCurriedComponent)
+Operand Stack:
+  ..., VersionedPathReference<Opaque> →
+  ..., ComponentDefinition
+
+# cdload
+
+Format: (ResolveDynamicComponent templateMeta:#Locator)
+Operation:
+  Push a resolved component definition onto the stack
+Operand Stack:
+  ..., VersionedPathReference<Opaque> →
+  ..., ComponentDefinition
+
+# argsload
+
+Format: (PushArgs names:#Array<#string> positionalCount:u32 synthetic:#boolean)
+Operation: Push a user representation of args onto the stack.
+Operand Stack:
+  ..., [VersionedPathReference ...]  →
+  ..., [VersionedPathReference ...], Arguments
+Description:
+  This arguments object is only necessary when calling into
+  user-specified hooks. It is meant to be implemented as a
+  transient proxy that reads into the stack as needed.
+  Holding onto the Arguments after the call has completed is
+  illegal.
+
+# emptyargsload
+
+Format: (EmptyArgs)
+Operation: Push empty args onto the stack
+OperandStack:
+  ... →
+  ..., Arguments
+
+# argspop
+
+Format: (PopArgs)
+Operation: Pops Arguments from the stack and clears the next N args.
+Operand Stack:
+  ..., [VersionedPathReference ...], Arguments  →
+  ...
+Description:
+  The arguments object contains the information of how many user
+  supplied args the component was invoked with. To clear them from
+  the stack we must pop it from the stack and call `clear` on it
+  to remove the argument values from the stack.
+
+# argsprep
+
+Format: (PrepareArgs state:register)
+Operation: ...
+Operand Stack:
+  ... →
+  ...
+
+# argscapture
+
+Format: (CaptureArgs)
+Operation: Replaces Arguments on the stack with CapturedArguments
+Operand Stack:
+  ..., Arguments  →
+  ..., CapturedArguments
+Description:
+  The Arguments object is mutated in place because it is usually
+  consumed immediately after being pushed on to the stack. In
+  some situations, such as with curried components, information
+  about more than one Argument may need to exist on the stack at
+  once. In those cases, the CaptureArgs instruction pops an
+  Arguments object off the stack and replaces it with the
+  immutable CapturedArgs snapshot.
+
+# comp_create
+
+Format: (CreateComponent flags:u32 state:register)
+Operation: Create the component and push it onto the stack.
+Operand Stack:
+  ... →
+  ...
+Description:
+  Flags:
+
+  * 0b001: Has a default block
+  * 0b010: Has an else block
+
+# comp_dest
+
+Format: (RegisterComponentDestructor state:register)
+Operation: Register a destructor for the current component
+Operand Stack:
+  ... →
+  ...
+
+# comp_elops
+
+Format: (PutComponentOperations)
+Operation: Push a new ElementOperations for the current component.
+Operand Stack:
+  ... →
+  ...
+
+# comp_selfload
+
+Format: (GetComponentSelf state:register)
+Operation: Push the component's `self` onto the stack.
+Operand Stack:
+  ... →
+  ..., VersionedPathReference
+
+# comp_tagload
+
+Format: (GetComponentTagName state:register)
+Operation: Push the component's `tagName` onto the stack.
+Operand Stack:
+  ... →
+  ..., Option<string>
+
+# comp_layoutload
+
+Format: (GetComponentLayout state:register)
+Operation: Get the component layout from the manager.
+Operand Stack:
+  ... →
+  ..., ProgramSymbolTable, Handle
+
+# eval_setup
+
+Format: (SetupForEval state:register)
+Operation: Populate the eval lookup if necessary.
+Operand Stack:
+  ... →
+  ...
+
+# comp_layoutput
+
+Format: (PopulateLayout state:register)
+Operation:
+  Populate the state register with the layout currently
+  on the stack.
+Operand Stack:
+  ..., ProgramSymbolTable, Handle →
+  ...
+
+# comp_invokelayout
+
+Format: (InvokeComponentLayout state:register)
+Operation: Invoke the layout returned by the manager.
+Operand Stack:
+  ... →
+  ...
+
+# comp_begin
+
+Format: (BeginComponentTransaction)
+Operation: Begin a new cache group
+Operand Stack:
+  ..., ComponentManager<T>, T →
+  ..., ComponentManager<T>, T
+
+# comp_commit
+
+Format: (CommitComponentTransaction)
+Operation: Commit the current cache group
+Operand Stack:
+  ... →
+  ...
+
+# comp_created
+
+Format: (DidCreateElement state:register)
+Operation: Invoke didCreateElement on the current component manager
+Operand Stack:
+  ... →
+  ...
+
+# comp_rendered
+
+Format: (DidRenderLayout state:register)
+Operation: Invoke didRenderLayout on the current component manager
+Operand Stack:
+  ..., →
+  ...
+
+# invokepartial
+
+Format: (InvokePartial templateMeta:#Locator symbols:#Array<#string> evalInfo:#Array<number>)
+Operation: Lookup and invoke a partial template.
+Operand Stack:
+  ..., VersionedPathReference<string> →
+  ...
+
+# eval_varload
+
+Format: (ResolveMaybeLocal local:#string)
+Operation:
+  Resolve {{foo}} inside a partial, which could be either a self-lookup
+  or a local variable that is in-scope for the caller.
+Operand Stack:
+  ... →
+  ..., VersionedPathReference
+
+# debugger
+
+Format: (Debugger symbols:#Array<string> evalInfo:#Array<number>)
+Operation: Activate the debugger
+Operand Stack:
+  ... →
+  ...
