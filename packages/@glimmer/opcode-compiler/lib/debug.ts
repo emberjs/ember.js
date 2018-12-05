@@ -118,7 +118,7 @@ export function debug(
 
   let out = dict<Opaque>();
 
-  metadata.ops.forEach((operand, index) => {
+  metadata.ops.forEach((operand, index: number) => {
     let op = operands[index];
 
     switch (operand.type) {
