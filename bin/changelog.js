@@ -14,14 +14,15 @@
  * bin/changelog.js
  */
 
-var RSVP = require('rsvp');
-var GitHubApi = require('github');
-var execSync = require('child_process').execSync;
+const RSVP = require('rsvp');
+const GitHubApi = require('github');
+const execSync = require('child_process').execSync;
 
-var github = new GitHubApi({ version: '3.0.0' });
-var compareCommits = RSVP.denodeify(github.repos.compareCommits);
-var currentVersion = process.env.PRIOR_VERSION;
-var head = process.env.HEAD || execSync('git rev-parse HEAD', { encoding: 'UTF-8' });
+const github = new GitHubApi({ version: '3.0.0' });
+const compareCommits = RSVP.denodeify(github.repos.compareCommits);
+
+const currentVersion = process.env.PRIOR_VERSION;
+const head = process.env.HEAD || execSync('git rev-parse HEAD', { encoding: 'UTF-8' });
 
 compareCommits({
   user: 'emberjs',
@@ -36,11 +37,11 @@ compareCommits({
   });
 
 function getCommitMessage(commitInfo) {
-  var message = commitInfo.commit.message;
+  let message = commitInfo.commit.message;
 
   if (message.indexOf('cherry picked from commit') > -1) {
-    var cherryPickRegex = /cherry picked from commit ([a-z0-9]+)/;
-    var originalCommit = cherryPickRegex.exec(message)[1];
+    let cherryPickRegex = /cherry picked from commit ([a-z0-9]+)/;
+    let originalCommit = cherryPickRegex.exec(message)[1];
 
     try {
       // command from http://stackoverflow.com/questions/8475448/find-merge-commit-which-include-a-specific-commit
@@ -61,23 +62,23 @@ function getCommitMessage(commitInfo) {
 }
 
 function processPages(res) {
-  var contributions = res.commits
+  let contributions = res.commits
     .filter(function(commitInfo) {
-      var message = commitInfo.commit.message;
+      let message = commitInfo.commit.message;
 
       return (
         message.indexOf('Merge pull request #') > -1 || message.indexOf('cherry picked from') > -1
       );
     })
     .map(function(commitInfo) {
-      var message = getCommitMessage(commitInfo);
-      var match = message.match(/#(\d+) from (.*)\//);
-      var result = {
+      let message = getCommitMessage(commitInfo);
+      let match = message.match(/#(\d+) from (.*)\//);
+      let result = {
         sha: commitInfo.sha,
       };
 
       if (match) {
-        var numAndAuthor = match.slice(1, 3);
+        let numAndAuthor = match.slice(1, 3);
 
         result.number = numAndAuthor[0];
         result.title = message.split('\n\n')[1];
@@ -91,8 +92,8 @@ function processPages(res) {
       return a.number > b.number;
     })
     .map(function(pr) {
-      var title = pr.title;
-      var link;
+      let title = pr.title;
+      let link;
       if (pr.number) {
         link =
           '[#' + pr.number + ']' + '(https://github.com/emberjs/ember.js/pull/' + pr.number + ')';
