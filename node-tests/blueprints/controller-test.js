@@ -5,6 +5,7 @@ const setupTestHooks = blueprintHelpers.setupTestHooks;
 const emberNew = blueprintHelpers.emberNew;
 const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
 const setupPodConfig = blueprintHelpers.setupPodConfig;
+const modifyPackages = blueprintHelpers.modifyPackages;
 
 const expectError = require('../helpers/expect-error');
 const chai = require('ember-cli-blueprint-test-helpers/chai');
@@ -12,6 +13,7 @@ const fs = require('fs-extra');
 const expect = chai.expect;
 
 const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
+const enableModuleUnification = require('../helpers/module-unification').enableModuleUnification;
 const fixture = require('../helpers/fixture');
 
 describe('Blueprint: controller', function() {
@@ -19,7 +21,14 @@ describe('Blueprint: controller', function() {
 
   describe('in app', function() {
     beforeEach(function() {
-      return emberNew().then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
+      return emberNew()
+        .then(() =>
+          modifyPackages([
+            { name: 'ember-qunit', delete: true },
+            { name: 'ember-cli-qunit', dev: true },
+          ])
+        )
+        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
     });
 
     it('controller foo', function() {
@@ -97,9 +106,14 @@ describe('Blueprint: controller', function() {
 
   describe('in addon', function() {
     beforeEach(function() {
-      return emberNew({ target: 'addon' }).then(() =>
-        generateFakePackageManifest('ember-cli-qunit', '4.1.0')
-      );
+      return emberNew({ target: 'addon' })
+        .then(() =>
+          modifyPackages([
+            { name: 'ember-qunit', delete: true },
+            { name: 'ember-cli-qunit', dev: true },
+          ])
+        )
+        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
     });
 
     it('controller foo', function() {
@@ -158,9 +172,17 @@ describe('Blueprint: controller', function() {
   });
 
   describe('in app - module unification', function() {
+    enableModuleUnification();
+
     beforeEach(function() {
       return emberNew()
         .then(() => fs.ensureDirSync('src'))
+        .then(() =>
+          modifyPackages([
+            { name: 'ember-qunit', delete: true },
+            { name: 'ember-cli-qunit', dev: true },
+          ])
+        )
         .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
     });
 
@@ -203,9 +225,17 @@ describe('Blueprint: controller', function() {
   });
 
   describe('in addon - module unification', function() {
+    enableModuleUnification();
+
     beforeEach(function() {
       return emberNew({ target: 'addon' })
         .then(() => fs.ensureDirSync('src'))
+        .then(() =>
+          modifyPackages([
+            { name: 'ember-qunit', delete: true },
+            { name: 'ember-cli-qunit', dev: true },
+          ])
+        )
         .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
     });
 
@@ -277,9 +307,14 @@ describe('Blueprint: controller', function() {
 
   describe('in in-repo-addon', function() {
     beforeEach(function() {
-      return emberNew({ target: 'in-repo-addon' }).then(() =>
-        generateFakePackageManifest('ember-cli-qunit', '4.1.0')
-      );
+      return emberNew({ target: 'in-repo-addon' })
+        .then(() =>
+          modifyPackages([
+            { name: 'ember-qunit', delete: true },
+            { name: 'ember-cli-qunit', dev: true },
+          ])
+        )
+        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
     });
 
     it('controller foo --in-repo-addon=my-addon', function() {

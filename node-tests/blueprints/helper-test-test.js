@@ -10,6 +10,7 @@ const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
 
 const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
+const enableModuleUnification = require('../helpers/module-unification').enableModuleUnification;
 const fixture = require('../helpers/fixture');
 const fs = require('fs-extra');
 
@@ -21,24 +22,38 @@ describe('Blueprint: helper-test', function() {
       return emberNew();
     });
 
-    it('helper-test foo/bar-baz', function() {
-      return emberGenerateDestroy(['helper-test', 'foo/bar-baz'], _file => {
-        expect(_file('tests/integration/helpers/foo/bar-baz-test.js')).to.equal(
-          fixture('helper-test/integration.js')
-        );
+    describe('with ember-cli-qunit@4.1.0', function() {
+      beforeEach(function() {
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]);
+        generateFakePackageManifest('ember-cli-qunit', '4.1.0');
       });
-    });
 
-    it('helper-test foo/bar-baz --integration', function() {
-      return emberGenerateDestroy(['helper-test', 'foo/bar-baz', '--integration'], _file => {
-        expect(_file('tests/integration/helpers/foo/bar-baz-test.js')).to.equal(
-          fixture('helper-test/integration.js')
-        );
+      it('helper-test foo/bar-baz', function() {
+        return emberGenerateDestroy(['helper-test', 'foo/bar-baz'], _file => {
+          expect(_file('tests/integration/helpers/foo/bar-baz-test.js')).to.equal(
+            fixture('helper-test/integration.js')
+          );
+        });
+      });
+
+      it('helper-test foo/bar-baz --integration', function() {
+        return emberGenerateDestroy(['helper-test', 'foo/bar-baz', '--integration'], _file => {
+          expect(_file('tests/integration/helpers/foo/bar-baz-test.js')).to.equal(
+            fixture('helper-test/integration.js')
+          );
+        });
       });
     });
 
     describe('with ember-cli-qunit@4.2.0', function() {
       beforeEach(function() {
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]);
         generateFakePackageManifest('ember-cli-qunit', '4.2.0');
       });
 
@@ -62,7 +77,7 @@ describe('Blueprint: helper-test', function() {
     describe('with ember-cli-mocha@0.11.0', function() {
       beforeEach(function() {
         modifyPackages([
-          { name: 'ember-cli-qunit', delete: true },
+          { name: 'ember-qunit', delete: true },
           { name: 'ember-cli-mocha', dev: true },
         ]);
         generateFakePackageManifest('ember-cli-mocha', '0.11.0');
@@ -88,7 +103,7 @@ describe('Blueprint: helper-test', function() {
     describe('with ember-cli-mocha@0.12.0', function() {
       beforeEach(function() {
         modifyPackages([
-          { name: 'ember-cli-qunit', delete: true },
+          { name: 'ember-qunit', delete: true },
           { name: 'ember-cli-mocha', dev: true },
         ]);
         generateFakePackageManifest('ember-cli-mocha', '0.12.0');
@@ -113,10 +128,7 @@ describe('Blueprint: helper-test', function() {
 
     describe('with ember-mocha@0.14.0', function() {
       beforeEach(function() {
-        modifyPackages([
-          { name: 'ember-cli-qunit', delete: true },
-          { name: 'ember-mocha', dev: true },
-        ]);
+        modifyPackages([{ name: 'ember-qunit', delete: true }, { name: 'ember-mocha', dev: true }]);
         generateFakePackageManifest('ember-mocha', '0.14.0');
       });
 
@@ -139,28 +151,44 @@ describe('Blueprint: helper-test', function() {
   });
 
   describe('in app - module unification', function() {
+    enableModuleUnification();
+
     beforeEach(function() {
       return emberNew().then(() => fs.ensureDirSync('src'));
     });
 
-    it('helper-test foo/bar-baz', function() {
-      return emberGenerateDestroy(['helper-test', 'foo/bar-baz'], _file => {
-        expect(_file('src/ui/components/foo/bar-baz-test.js')).to.equal(
-          fixture('helper-test/integration.js')
-        );
+    describe('with ember-cli-qunit@4.1.0', function() {
+      beforeEach(function() {
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]);
+        generateFakePackageManifest('ember-cli-qunit', '4.1.0');
       });
-    });
 
-    it('helper-test foo/bar-baz --integration', function() {
-      return emberGenerateDestroy(['helper-test', 'foo/bar-baz', '--integration'], _file => {
-        expect(_file('src/ui/components/foo/bar-baz-test.js')).to.equal(
-          fixture('helper-test/integration.js')
-        );
+      it('helper-test foo/bar-baz', function() {
+        return emberGenerateDestroy(['helper-test', 'foo/bar-baz'], _file => {
+          expect(_file('src/ui/components/foo/bar-baz-test.js')).to.equal(
+            fixture('helper-test/integration.js')
+          );
+        });
+      });
+
+      it('helper-test foo/bar-baz --integration', function() {
+        return emberGenerateDestroy(['helper-test', 'foo/bar-baz', '--integration'], _file => {
+          expect(_file('src/ui/components/foo/bar-baz-test.js')).to.equal(
+            fixture('helper-test/integration.js')
+          );
+        });
       });
     });
 
     describe('with ember-cli-qunit@4.2.0', function() {
       beforeEach(function() {
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]);
         generateFakePackageManifest('ember-cli-qunit', '4.2.0');
       });
 
@@ -184,7 +212,7 @@ describe('Blueprint: helper-test', function() {
     describe('with ember-cli-mocha@0.11.0', function() {
       beforeEach(function() {
         modifyPackages([
-          { name: 'ember-cli-qunit', delete: true },
+          { name: 'ember-qunit', delete: true },
           { name: 'ember-cli-mocha', dev: true },
         ]);
         generateFakePackageManifest('ember-cli-mocha', '0.11.0');
@@ -210,7 +238,7 @@ describe('Blueprint: helper-test', function() {
     describe('with ember-cli-mocha@0.12.0', function() {
       beforeEach(function() {
         modifyPackages([
-          { name: 'ember-cli-qunit', delete: true },
+          { name: 'ember-qunit', delete: true },
           { name: 'ember-cli-mocha', dev: true },
         ]);
         generateFakePackageManifest('ember-cli-mocha', '0.12.0');
@@ -234,10 +262,7 @@ describe('Blueprint: helper-test', function() {
     });
     describe('with ember-mocha@0.14.0', function() {
       beforeEach(function() {
-        modifyPackages([
-          { name: 'ember-cli-qunit', delete: true },
-          { name: 'ember-mocha', dev: true },
-        ]);
+        modifyPackages([{ name: 'ember-qunit', delete: true }, { name: 'ember-mocha', dev: true }]);
         generateFakePackageManifest('ember-mocha', '0.14.0');
       });
 
@@ -261,7 +286,12 @@ describe('Blueprint: helper-test', function() {
 
   describe('in addon', function() {
     beforeEach(function() {
-      return emberNew({ target: 'addon' });
+      return emberNew({ target: 'addon' }).then(() =>
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ])
+      );
     });
 
     it('helper-test foo/bar-baz', function() {
@@ -274,8 +304,17 @@ describe('Blueprint: helper-test', function() {
   });
 
   describe('in addon - module unification', function() {
+    enableModuleUnification();
+
     beforeEach(function() {
-      return emberNew({ target: 'addon' }).then(() => fs.ensureDirSync('src'));
+      return emberNew({ target: 'addon' })
+        .then(() =>
+          modifyPackages([
+            { name: 'ember-qunit', delete: true },
+            { name: 'ember-cli-qunit', dev: true },
+          ])
+        )
+        .then(() => fs.ensureDirSync('src'));
     });
 
     it('helper-test foo/bar-baz', function() {
