@@ -115,6 +115,7 @@ module.exports = {
         'config/**/*.js',
         'lib/**/*.js',
         'server/**/*.js',
+        'testem.js',
         'testem.travis-browsers.js',
         'testem.dist.js',
         'd8-runner.js',
