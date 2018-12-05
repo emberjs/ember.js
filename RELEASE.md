@@ -20,7 +20,7 @@
 1. Check out `beta` branch and `git pull`
 1. Make sure any master commits that are conceptually `[{BUGFIX,DOC} {beta,release}]` are cherry-picked.
 1. `git push origin beta`, and `let travisBranch = kick off a travis build`
-1. `PRIOR_VERSION=v2.5.0-beta.1 ./bin/changelog | uniq | pbcopy`
+1. `PRIOR_VERSION=v2.5.0-beta.1 ./bin/changelog.js | uniq | pbcopy`
 1. Open `CHANGELOG.md`, paste in the results of the previous script, and clean it up for human-readability.
     1. e.g. [BUGFIX beta] -> [BUGFIX], [DEPRECATE beta] -> [DEPRECATE], ...
     1. Revert [BUGFIX ...] -> [BUGFIX] Revert ...
@@ -74,7 +74,7 @@ Starting point: [https://gist.github.com/rwjblue/fb945e55c70d698d4074](https://g
 ### Build Changelog
 
 1. Push `beta` branch to get Travis to run
-1. Run `PRIOR_VERSION=<tag> ./bin/changelog | uniq | pbcopy`
+1. Run `PRIOR_VERSION=<tag> ./bin/changelog.js | uniq | pbcopy`
 1. Clean up commits in CHANGELOG
     1. e.g. [BUGFIX beta] -> [BUGFIX], [DEPRECATE beta] -> [DEPRECATE], ...
     1. Remove `[DOC]` changes (who cares)
@@ -138,7 +138,7 @@ end
 
 ### Changelog
 
-1. `PRIOR_VERSION=v2.4.0-beta.1^ HEAD=master ./bin/changelog | uniq | pbcopy`
+1. `PRIOR_VERSION=v2.4.0-beta.1^ HEAD=master ./bin/changelog.js | uniq | pbcopy`
 1. Clean up changelog. Make sure the changelog from the stable release you just did is included.
 
 #### Tag & Release
