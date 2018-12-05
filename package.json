@@ -55,8 +55,7 @@
     "lint:tslint": "tslint -p tsconfig.json",
     "lint:fix": "yarn lint:eslint --fix && yarn lint:tslint --fix",
     "test": "node bin/run-tests.js",
-    "test:blueprints": "node node-tests/nodetest-runner.js",
-    "test:blueprints-debugger": "node --inspect-brk node-tests/nodetest-runner.js",
+    "test:blueprints": "mocha node-tests/blueprints/**/*-test.js",
     "test:node": "qunit tests/**/*-test.js",
     "test:browserstack": "node bin/run-browserstack-tests.js",
     "test:testem": "testem -f testem.dist.js"
