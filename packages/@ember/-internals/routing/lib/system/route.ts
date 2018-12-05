@@ -7,7 +7,10 @@ import {
   Object as EmberObject,
   typeOf,
 } from '@ember/-internals/runtime';
-import { EMBER_ROUTING_ROUTER_SERVICE } from '@ember/canary-features';
+import {
+  EMBER_ROUTING_BUILD_ROUTEINFO_METADATA,
+  EMBER_ROUTING_ROUTER_SERVICE,
+} from '@ember/canary-features';
 import { assert, deprecate, info, isTesting } from '@ember/debug';
 import { ROUTER_EVENTS } from '@ember/deprecated-features';
 import { assign } from '@ember/polyfills';
@@ -2551,6 +2554,12 @@ if (EMBER_ROUTING_ROUTER_SERVICE && ROUTER_EVENTS) {
 
       return params;
     },
+  });
+}
+
+if (EMBER_ROUTING_BUILD_ROUTEINFO_METADATA) {
+  Route.reopen({
+    buildRouteInfoMetadata() {},
   });
 }
 
