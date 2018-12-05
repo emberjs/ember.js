@@ -1,4 +1,4 @@
-var FailureOnlyReporter = require('./lib/failure-only-testem-reporter');
+const FailureOnlyReporter = require('./lib/failure-only-testem-reporter');
 
 class FailureOnlyPerBrowserReporter extends FailureOnlyReporter {
   constructor(...args) {
@@ -26,11 +26,11 @@ class FailureOnlyPerBrowserReporter extends FailureOnlyReporter {
   }
 
   summaryDisplay() {
-    var originalSummary = super.summaryDisplay();
-    var lines = [];
-    var resultsByBrowser = this._resultsByBrowser;
+    let originalSummary = super.summaryDisplay();
+    let lines = [];
+    let resultsByBrowser = this._resultsByBrowser;
     Object.keys(resultsByBrowser).forEach(function(browser) {
-      var results = resultsByBrowser[browser];
+      let results = resultsByBrowser[browser];
 
       lines.push('#');
       lines.push('# Browser: ' + browser);

@@ -1,4 +1,4 @@
-var FailureOnlyReporter = require('./lib/failure-only-testem-reporter');
+const FailureOnlyReporter = require('./lib/failure-only-testem-reporter');
 
 module.exports = {
   framework: 'qunit',
