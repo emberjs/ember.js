@@ -32,9 +32,7 @@ compareCommits({
 })
   .then(processPages)
   .then(console.log)
-  .catch(function(err) {
-    console.error(err);
-  });
+  .catch(err => console.error(err));
 
 function getCommitMessage(commitInfo) {
   let message = commitInfo.commit.message;
@@ -63,14 +61,14 @@ function getCommitMessage(commitInfo) {
 
 function processPages(res) {
   let contributions = res.commits
-    .filter(function(commitInfo) {
+    .filter(commitInfo => {
       let message = commitInfo.commit.message;
 
       return (
         message.indexOf('Merge pull request #') > -1 || message.indexOf('cherry picked from') > -1
       );
     })
-    .map(function(commitInfo) {
+    .map(commitInfo => {
       let message = getCommitMessage(commitInfo);
       let match = message.match(/#(\d+) from (.*)\//);
       let result = {
@@ -88,10 +86,8 @@ function processPages(res) {
 
       return result;
     })
-    .sort(function(a, b) {
-      return a.number > b.number;
-    })
-    .map(function(pr) {
+    .sort((a, b) => a.number > b.number)
+    .map(pr => {
       let title = pr.title;
       let link;
       if (pr.number) {
@@ -107,7 +103,7 @@ function processPages(res) {
     .join('\n');
 
   if (github.hasNextPage(res)) {
-    return github.getNextPage(res).then(function(nextPage) {
+    return github.getNextPage(res).then(nextPage => {
       contributions += processPages(nextPage);
     });
   } else {
