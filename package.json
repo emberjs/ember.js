@@ -108,7 +108,7 @@
     "babel-template": "^6.26.0",
     "backburner.js": "^2.4.1",
     "broccoli-babel-transpiler": "^6.5.1",
-    "broccoli-concat": "^3.2.2",
+    "broccoli-concat": "^3.7.3",
     "broccoli-debug": "^0.6.4",
     "broccoli-file-creator": "^1.1.1",
     "broccoli-persistent-filter": "^1.4.3",
