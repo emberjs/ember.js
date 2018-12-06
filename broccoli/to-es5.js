@@ -6,7 +6,7 @@ const injectBabelHelpers = require('./transforms/inject-babel-helpers');
 module.exports = function toES6(tree, _options) {
   let options = Object.assign({}, _options);
 
-  options.sourceMap = true;
+  options.sourceMaps = true;
   options.plugins = [
     injectBabelHelpers,
     ['transform-es2015-template-literals', { loose: true }],
