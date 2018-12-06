@@ -21,7 +21,7 @@ module.exports = function processModulesOnly(tree, strict = false) {
       // in both browser and node-land
       injectNodeGlobals,
       ['module-resolver', { resolvePath: resolveRelativeModulePath }],
-      ['transform-es2015-modules-amd', transformOptions],
+      ['@babel/transform-modules-amd', transformOptions],
       enifed,
     ],
     moduleIds: true,
