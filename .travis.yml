@@ -72,7 +72,7 @@ jobs:
     - stage: additional tests
       name: Browserstack Tests (Safari, Edge, IE11)
       script:
-        - EMBER_ENV=production yarn ember build
+        - yarn ember build -prod
         - yarn test:browserstack
 
     - env:
@@ -82,7 +82,7 @@ jobs:
     - name: Node.js Tests
       node_js: "6"
       script:
-        - EMBER_ENV=production yarn ember build
+        - yarn ember build -prod
         - yarn test:node
 
     - name: Blueprint Tests
