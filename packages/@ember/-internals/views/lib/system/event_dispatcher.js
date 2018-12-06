@@ -7,6 +7,7 @@ import jQuery, { jQueryDisabled } from './jquery';
 import ActionManager from './action_manager';
 import fallbackViewRegistry from '../compat/fallback-view-registry';
 import addJQueryEventDeprecation from './jquery_event_deprecation';
+import { contains } from './utils';
 
 /**
 @module ember
@@ -335,7 +336,7 @@ export default EmberObject.extend({
           while (
             target &&
             target.nodeType === 1 &&
-            (!related || (related !== target && !target.contains(related)))
+            (related === null || (related !== target && !contains(target, related)))
           ) {
             // mouseEnter/Leave don't bubble, so there is no logic to prevent it as with other events
             if (viewRegistry[target.id]) {
