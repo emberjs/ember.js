@@ -2,8 +2,14 @@ import { ENV } from '@ember/-internals/environment';
 import { assign } from '@ember/polyfills';
 
 /**
- @module ember/canary-features
- @private
+  Set `EmberENV.FEATURES` in your application's `config/environment.js` file
+  to enable canary features in your application.
+
+  See the [feature flag guide](https://guides.emberjs.com/release/configuring-ember/feature-flags/)
+  for more details.
+
+  @module @ember/canary-features
+  @public
 */
 
 export const DEFAULT_FEATURES = {
@@ -23,11 +29,7 @@ export const DEFAULT_FEATURES = {
   The hash of enabled Canary features. Add to this, any canary features
   before creating your application.
 
-  Alternatively (and recommended), you can also define `EmberENV.FEATURES`
-  if you need to enable features flagged at runtime.
-
   @class FEATURES
-  @namespace Ember
   @static
   @since 1.1.0
   @public
@@ -46,7 +48,6 @@ export const FEATURES = assign(DEFAULT_FEATURES, ENV.FEATURES);
   @method isEnabled
   @param {String} feature The feature to check
   @return {Boolean}
-  @for Ember.FEATURES
   @since 1.1.0
   @public
 */
