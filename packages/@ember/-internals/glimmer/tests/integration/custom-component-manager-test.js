@@ -498,8 +498,47 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
         }
 
         ['@test updating attributes triggers didUpdateComponent'](assert) {
+          this.registerComponentManager(
+            'test',
+            EmberObject.extend({
+              capabilities: capabilities('3.4', {
+                destructor: true,
+                asyncLifecycleCallbacks: true,
+              }),
+
+              createComponent(factory, args) {
+                assert.step('createComponent');
+                return factory.create({ args });
+              },
+
+              updateComponent(component, args) {
+                assert.step('updateComponent');
+                set(component, 'args', args);
+              },
+
+              destroyComponent(component) {
+                component.destroy();
+              },
+
+              getContext(component) {
+                assert.step('getContext');
+                return component;
+              },
+
+              didCreateComponent(component) {
+                assert.step('didCreateComponent');
+                component.didRender();
+              },
+
+              didUpdateComponent(component) {
+                assert.step('didUpdateComponent');
+                component.didUpdate();
+              },
+            })
+          );
+
           let ComponentClass = setComponentManager(
-            'instrumented-full',
+            'test',
             EmberObject.extend({
               didRender() {},
               didUpdate() {},

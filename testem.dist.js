@@ -50,6 +50,7 @@ module.exports = {
   timeout: 1200,
   reporter: FailureOnlyPerBrowserReporter,
   browser_start_timeout: 2000,
+  browser_disconnect_timeout: 120,
   parallel: 4,
   disable_watching: true,
   launchers: {
