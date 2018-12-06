@@ -20,11 +20,11 @@ module.exports = function processModulesOnly(tree, strict = false) {
       // ensures `@glimmer/compiler` requiring `crypto` works properly
       // in both browser and node-land
       injectNodeGlobals,
+      ['module-resolver', { resolvePath: resolveModuleSource }],
       ['transform-es2015-modules-amd', transformOptions],
       enifed,
     ],
     moduleIds: true,
-    resolveModuleSource,
   };
 
   return new Babel(tree, options);
