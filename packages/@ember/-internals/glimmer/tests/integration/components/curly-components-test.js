@@ -3279,6 +3279,24 @@ moduleFor(
       this.runTask(() => set(this.context, 'foo', 5));
     }
 
+    ['@test properties can be updated in `didReceiveAttrs`']() {
+      this.registerComponent('foo-bar', {
+        ComponentClass: Component.extend({
+          didReceiveAttrs() {
+            this._super();
+
+            this.set('name', 'Updated');
+          },
+        }),
+
+        template: 'name: {{name}}',
+      });
+
+      this.render(`{{foo-bar name=name}}`, { name: 'Provided' });
+
+      this.assertText('name: Updated');
+    }
+
     ['@test returning `true` from an action does not bubble if `target` is not specified (GH#14275)'](
       assert
     ) {
