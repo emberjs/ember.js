@@ -13,8 +13,6 @@ const toES5 = require('./broccoli/to-es5');
 const toNamedAMD = require('./broccoli/to-named-amd');
 const stripForProd = require('./broccoli/strip-for-prod');
 const debugMacros = require('./broccoli/debug-macros');
-const minify = require('./broccoli/minify');
-const rename = require('./broccoli/rename');
 const {
   routerES,
   jquery,
@@ -259,15 +257,12 @@ function buildBundles(packagesES, dependenciesES, templateCompilerDependenciesES
   let vendor = [internalLoader(), nodeModuleUtils(), emberLicense()];
 
   let emberProdBundle = emberProdFiles && buildBundle('ember.prod.js', emberProdFiles, vendor);
-  let emberMinBundle =
-    emberProdBundle && minify(rename(emberProdBundle, { 'ember.prod.js': 'ember.min.js' }));
   let emberProdTestsBundle =
     emberTestsProdFiles && buildBundle('ember-tests.prod.js', emberTestsProdFiles, vendor);
 
   return new MergeTrees(
     [
       emberProdBundle,
-      emberMinBundle,
       emberProdTestsBundle,
       buildBundle('ember.debug.js', emberDebugFiles, vendor),
       buildBundle('ember-tests.js', emberTestsFiles, vendor),

@@ -116,7 +116,7 @@ export function unwatchKey(obj: object, keyName: string, _meta?: Meta) {
     if (DEBUG) {
       // It is true, the following code looks quite WAT. But have no fear, It
       // exists purely to improve development ergonomics and is removed from
-      // ember.min.js and ember.prod.js builds.
+      // ember.prod.js builds.
       //
       // Some further context: Once a property is watched by ember, bypassing `set`
       // for mutation, will bypass observation. This code exists to assert when

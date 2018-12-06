@@ -67,7 +67,6 @@ global.URL = {};
 
 // Load the ember you want
 loadFile('./dist/ember.prod.js'); // prod build === no asserts and dev related code
-// loadFile('/dist/ember.min.js'); // prod build + minified
 // loadFile('/dist/ember.debug.js'); // debug build === asserts and stuff, has perf issues
 
 // do what you want

@@ -1,7 +1,7 @@
 var fs = require('fs');
 
 QUnit.module('sourcemap validation', function() {
-  var assets = ['ember.debug', 'ember.prod', 'ember.min'];
+  var assets = ['ember.debug', 'ember.prod'];
 
   assets.forEach(asset => {
     QUnit.test(`${asset} has only a single sourcemaps comment`, function(assert) {

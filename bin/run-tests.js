@@ -91,9 +91,6 @@ function generateBuiltTests() {
     return run(common + '&nolint=true');
   });
   testFunctions.push(function() {
-    return run(common + '&dist=min&prod=true');
-  });
-  testFunctions.push(function() {
     return run(common + '&dist=prod&prod=true');
   });
   testFunctions.push(function() {
@@ -101,9 +98,6 @@ function generateBuiltTests() {
   });
   testFunctions.push(function() {
     return run(common + '&legacy=true&nolint=true');
-  });
-  testFunctions.push(function() {
-    return run(common + '&legacy=true&dist=min&prod=true');
   });
   testFunctions.push(function() {
     return run(common + '&legacy=true&dist=prod&prod=true');
