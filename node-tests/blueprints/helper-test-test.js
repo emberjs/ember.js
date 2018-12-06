@@ -260,6 +260,7 @@ describe('Blueprint: helper-test', function() {
         });
       });
     });
+
     describe('with ember-mocha@0.14.0', function() {
       beforeEach(function() {
         modifyPackages([{ name: 'ember-qunit', delete: true }, { name: 'ember-mocha', dev: true }]);
@@ -286,12 +287,13 @@ describe('Blueprint: helper-test', function() {
 
   describe('in addon', function() {
     beforeEach(function() {
-      return emberNew({ target: 'addon' }).then(() =>
+      return emberNew({ target: 'addon' }).then(() => {
         modifyPackages([
           { name: 'ember-qunit', delete: true },
           { name: 'ember-cli-qunit', dev: true },
-        ])
-      );
+        ]);
+        generateFakePackageManifest('ember-cli-qunit', '4.1.0');
+      });
     });
 
     it('helper-test foo/bar-baz', function() {
@@ -308,12 +310,13 @@ describe('Blueprint: helper-test', function() {
 
     beforeEach(function() {
       return emberNew({ target: 'addon' })
-        .then(() =>
+        .then(() => {
           modifyPackages([
             { name: 'ember-qunit', delete: true },
             { name: 'ember-cli-qunit', dev: true },
-          ])
-        )
+          ]);
+          generateFakePackageManifest('ember-cli-qunit', '4.1.0');
+        })
         .then(() => fs.ensureDirSync('src'));
     });
 
