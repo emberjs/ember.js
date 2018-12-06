@@ -67,8 +67,8 @@ mainContext = this; // eslint-disable-line no-undef
   }
 
   if (typeof Ember.__loader === 'undefined') {
-    var registry = {};
-    var seen = {};
+    var registry = Object.create(null);
+    var seen = Object.create(null);
 
     enifed = function(name, deps, callback) {
       var value = {};
