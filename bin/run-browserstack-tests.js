@@ -33,39 +33,41 @@ function run(command, _args) {
   });
 }
 
-RSVP.resolve()
-  .then(function() {
-    return run('./node_modules/.bin/ember', ['browserstack:connect']);
-  })
-  .then(function() {
-    // Calling testem directly here instead of `ember test` so that
-    // we do not have to do a double build (by the time this is run
-    // we have already ran `ember build`).
-    return run('./node_modules/.bin/testem', [
-      'ci',
-      '-f',
-      'testem.dist.js',
-      '--host',
-      '127.0.0.1',
-      '--port',
-      '7774',
-    ]);
-  })
-  .finally(function() {
-    var promise = RSVP.resolve();
-    if (process.env.TRAVIS_JOB_NUMBER) {
-      promise = run('./node_modules/.bin/ember', ['browserstack:results']);
-    }
-    return promise.then(function() {
-      return run('./node_modules/.bin/ember', ['browserstack:disconnect']);
+(function() {
+  RSVP.resolve()
+    .then(function() {
+      return run('./node_modules/.bin/ember', ['browserstack:connect']);
+    })
+    .then(function() {
+      // Calling testem directly here instead of `ember test` so that
+      // we do not have to do a double build (by the time this is run
+      // we have already ran `ember build`).
+      return run('./node_modules/.bin/testem', [
+        'ci',
+        '-f',
+        'testem.dist.js',
+        '--host',
+        '127.0.0.1',
+        '--port',
+        '7774',
+      ]);
+    })
+    .finally(function() {
+      var promise = RSVP.resolve();
+      if (process.env.TRAVIS_JOB_NUMBER) {
+        promise = run('./node_modules/.bin/ember', ['browserstack:results']);
+      }
+      return promise.then(function() {
+        return run('./node_modules/.bin/ember', ['browserstack:disconnect']);
+      });
+    })
+    .catch(function(error) {
+      console.log('error');
+      console.log(error);
+      process.exit(1);
+    })
+    .then(function() {
+      console.log('success');
+      process.exit(0);
     });
-  })
-  .catch(function(error) {
-    console.log('error');
-    console.log(error);
-    process.exit(1);
-  })
-  .then(function() {
-    console.log('success');
-    process.exit(0);
-  });
+})();
