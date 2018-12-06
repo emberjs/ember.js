@@ -1,5 +1,5 @@
 const Babel = require('broccoli-babel-transpiler');
-const resolveModuleSource = require('amd-name-resolver').moduleResolve;
+const { resolveRelativeModulePath } = require('ember-cli-babel/lib/relative-module-paths');
 const enifed = require('./transforms/transform-define');
 const injectNodeGlobals = require('./transforms/inject-node-globals');
 
@@ -20,7 +20,7 @@ module.exports = function processModulesOnly(tree, strict = false) {
       // ensures `@glimmer/compiler` requiring `crypto` works properly
       // in both browser and node-land
       injectNodeGlobals,
-      ['module-resolver', { resolvePath: resolveModuleSource }],
+      ['module-resolver', { resolvePath: resolveRelativeModulePath }],
       ['transform-es2015-modules-amd', transformOptions],
       enifed,
     ],
