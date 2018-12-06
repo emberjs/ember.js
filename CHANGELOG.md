@@ -1,34 +1,26 @@
 # Ember Changelog
 
-### v3.6.0-beta.4 (November 12, 2018)
+### v3.6.0 (December 6, 2018)
 
+- [#17025](https://github.com/emberjs/ember.js/pull/17025) / [#17034](https://github.com/emberjs/ember.js/pull/17034) / [#17036](https://github.com/emberjs/ember.js/pull/17036) / [#17038](https://github.com/emberjs/ember.js/pull/17038) / [#17040](https://github.com/emberjs/ember.js/pull/17040) / [#17041](https://github.com/emberjs/ember.js/pull/17041) / [#17061](https://github.com/emberjs/ember.js/pull/17061) [FEATURE] Final stage of the router service RFC (see [emberjs/rfcs#95](https://github.com/emberjs/rfcs/blob/master/text/0095-router-service.md)
+- [#16795](https://github.com/emberjs/ember.js/pull/16795) [FEATURE] Native Class Constructor Update (see [emberjs/rfcs#337](https://github.com/emberjs/rfcs/blob/master/text/0337-native-class-constructor-update.md)
+- [#17188](https://github.com/emberjs/ember.js/pull/17188) / [#17246](https://github.com/emberjs/ember.js/pull/17246) [BUGFIX] Adds a second dist build which targets IE and early Android versions. Enables avoiding errors when using native classes without transpilation. 
+- [#17238](https://github.com/emberjs/ember.js/pull/17238) [DEPRECATION] Deprecate calling `A` as a constructor
+- [#16956](https://github.com/emberjs/ember.js/pull/16956) [DEPRECATION] Deprecate Ember.merge
+- [#17220](https://github.com/emberjs/ember.js/pull/17220) [BUGFIX] Fix cycle detection in Ember.copy
+- [#17227](https://github.com/emberjs/ember.js/pull/17227) [BUGFIX] Fix mouseEnter/Leave event delegation w/o jQuery for SVG & IE11
+- [#17233](https://github.com/emberjs/ember.js/pull/17233) [BUGFIX] Reverts EmberError to be a standard function
+- [#17251](https://github.com/emberjs/ember.js/pull/17251) [BUGFIX] Prevent errors with debug compiled templates in prod.
+- [#17241](https://github.com/emberjs/ember.js/pull/17241) [BUGFIX] Fix line endings of component blueprint on Windows
+- [#17271](https://github.com/emberjs/ember.js/pull/17271) [BUGFIX] Update backburner.js to 2.4.2.
 - [#17184](https://github.com/emberjs/ember.js/pull/17184) [BUGFIX] Ensures removeAllListeners does not break subsequent adds
-- [#17186](https://github.com/emberjs/ember.js/pull/17186) [BUGFIX] Fix RouteInfo QP mutability
-- [#17192](https://github.com/emberjs/ember.js/pull/17192) [BUGFIX] currentRoute should respect substates
-
-### v3.6.0-beta.3 (November 5, 2018)
-
 - [#17169](https://github.com/emberjs/ember.js/pull/17169) [BUGFIX] Add default implementations of Component lifecycle hooks
-- [#17165](https://github.com/emberjs/ember.js/pull/17165) [BUGFIX] Fix RouteInfo.find and transition.froms
-- [#17180](https://github.com/emberjs/ember.js/pull/17180) [BUGFIX] Router Service State should be correct in events
-
-### v3.6.0-beta.2 (October 29, 2018)
-
-- [#17130](https://github.com/emberjs/ember.js/pull/17130) [BUGFIX] Ensure that timers scheduled after a system sleep are fired properly.
 - [#17137](https://github.com/emberjs/ember.js/pull/17137) [BUGFIX] Assert when local variables shadow modifier invocations
 - [#17132](https://github.com/emberjs/ember.js/pull/17132) [BUGFIX] Assert when local variables shadow helper invocations
 - [#17135](https://github.com/emberjs/ember.js/pull/17135) [BUGFIX] Ensure local variables win over helper invocations
-- [#16923](https://github.com/emberjs/ember.js/pull/16923) [BUGFIX] ES6 classes on/removeListener and observes/removeObserver interop v2
-- [#17128](https://github.com/emberjs/ember.js/pull/17128) [BUGFIX] Fix sourcemaping issues due to multiple sourcemap directives.
-- [#17115](https://github.com/emberjs/ember.js/pull/17115) [BUGFIX] Pass the event parameter to sendAction
+- [#16923](https://github.com/emberjs/ember.js/pull/16923) [BUGFIX] ES6 classes on/removeListener and observes/removeObserver interop
 - [#17153](https://github.com/emberjs/ember.js/pull/17153) [BUGFIX] Blueprints can generate components with a single word name
-
-### v3.6.0-beta.1 (October 8, 2018)
-
-- [#16956](https://github.com/emberjs/ember.js/pull/16956) [DEPRECATION] Deprecate Ember.merge
-- [#16795](https://github.com/emberjs/ember.js/pull/16795) [FEATURE] Native Class Constructor Update (see [emberjs/rfcs#337](https://github.com/emberjs/rfcs/blob/master/text/0337-native-class-constructor-update.md)
 - [#16865](https://github.com/emberjs/ember.js/pull/16865) / [#16899](https://github.com/emberjs/ember.js/pull/16899) / [#16914](https://github.com/emberjs/ember.js/pull/16914) / [#16897](https://github.com/emberjs/ember.js/pull/16897) / [#16913](https://github.com/emberjs/ember.js/pull/16913) / [#16894](https://github.com/emberjs/ember.js/pull/16894) / [#16896](https://github.com/emberjs/ember.js/pull/16896) [BUGFIX] Support RFC 232 and RFC 268 style tests with Mocha blueprints
-- [#17025](https://github.com/emberjs/ember.js/pull/17025) / [#17034](https://github.com/emberjs/ember.js/pull/17034) / [#17036](https://github.com/emberjs/ember.js/pull/17036) / [#17038](https://github.com/emberjs/ember.js/pull/17038) / [#17040](https://github.com/emberjs/ember.js/pull/17040) / [#17041](https://github.com/emberjs/ember.js/pull/17041) / [#17061](https://github.com/emberjs/ember.js/pull/17061) [FEATURE] Final stage of the router service RFC (see [emberjs/rfcs#95](https://github.com/emberjs/rfcs/blob/master/text/0095-router-service.md)
 - [#17051](https://github.com/emberjs/ember.js/pull/17051) Update glimmer-vm packages to 0.36.4
 
 ### v3.5.1 (October 29, 2018)
