@@ -1,71 +1,39 @@
-/* eslint-disable no-console */
+/* eslint-disable no-console, node/no-unsupported-features */
 
-var RSVP = require('rsvp');
-var spawn = require('child_process').spawn;
+const execa = require('execa');
+const chalk = require('chalk');
 
-function run(command, _args) {
-  var args = _args || [];
+function run(command, args = []) {
+  console.log(chalk.dim('$ ' + command + ' ' + args.join(' ')));
 
-  return new RSVP.Promise(function(resolve, reject) {
-    console.log('Running: ' + command + ' ' + args.join(' '));
+  let p = execa(command, args);
+  p.stdout.pipe(process.stdout);
+  p.stderr.pipe(process.stderr);
 
-    var child = spawn(command, args);
-
-    child.stdout.on('data', function(data) {
-      console.log(data.toString());
-    });
-
-    child.stderr.on('data', function(data) {
-      console.error(data.toString());
-    });
-
-    child.on('error', function(err) {
-      reject(err);
-    });
-
-    child.on('exit', function(code) {
-      if (code === 0) {
-        resolve();
-      } else {
-        reject(code);
-      }
-    });
-  });
+  return p;
 }
 
-RSVP.resolve()
-  .then(function() {
-    return run('./node_modules/.bin/ember', ['browserstack:connect']);
-  })
-  .then(function() {
-    // Calling testem directly here instead of `ember test` so that
-    // we do not have to do a double build (by the time this is run
-    // we have already ran `ember build`).
-    return run('./node_modules/.bin/testem', [
-      'ci',
-      '-f',
-      'testem.dist.js',
-      '--host',
-      '127.0.0.1',
-      '--port',
-      '7774',
-    ]);
-  })
-  .finally(function() {
-    var promise = RSVP.resolve();
-    if (process.env.TRAVIS_JOB_NUMBER) {
-      promise = run('./node_modules/.bin/ember', ['browserstack:results']);
+(async function() {
+  await run('ember', ['browserstack:connect']);
+
+  try {
+    try {
+      // Calling testem directly here instead of `ember test` so that
+      // we do not have to do a double build (by the time this is run
+      // we have already ran `ember build`).
+      await run('testem', ['ci', '-f', 'testem.dist.js', '--host', '127.0.0.1', '--port', '7774']);
+
+      console.log('success');
+      process.exit(0);
+    } finally {
+      if (process.env.TRAVIS_JOB_NUMBER) {
+        await run('ember', ['browserstack:results']);
+      }
+      await run('ember', ['browserstack:disconnect']);
     }
-    return promise.then(function() {
-      return run('./node_modules/.bin/ember', ['browserstack:disconnect']);
-    });
-  })
-  .catch(function(error) {
+  } catch (error) {
     console.log('error');
     console.log(error);
     process.exit(1);
-  })
-  .then(function() {
-    console.log('success');
-    process.exit(0);
-  });
+  }
+})();

@@ -177,10 +177,6 @@ switch (process.env.TEST_SUITE) {
     console.log('suite: travis-browsers');
     require('./run-travis-browser-tests');
     break;
-  case 'browserstack':
-    console.log('suite: browserstack');
-    require('./run-browserstack-tests');
-    break;
   default:
     console.log('suite: default (generate each package)');
     generateEachPackageTests();
