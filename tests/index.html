@@ -74,9 +74,9 @@
 
     <script>
       var dist = QUnit.urlParams.dist;
-      var ie = QUnit.urlParams.ie;
+      var legacy = QUnit.urlParams.legacy;
 
-      var relativePath = ie ? '../ie' : '..';
+      var relativePath = legacy ? '../legacy' : '..';
 
       switch (dist) {
         case 'prod':
@@ -99,9 +99,9 @@
 
     <script>
       var dist = QUnit.urlParams.dist;
-      var ie = QUnit.urlParams.ie;
+      var legacy = QUnit.urlParams.legacy;
 
-      var relativePath = ie ? '../ie' : '..';
+      var relativePath = legacy ? '../legacy' : '..';
 
       if (dist === 'es') {
         // do nothing template compiler already included
@@ -113,9 +113,9 @@
     <script>
       var prod = QUnit.urlParams.prod;
       var dist = QUnit.urlParams.dist;
-      var ie = QUnit.urlParams.ie;
+      var legacy = QUnit.urlParams.legacy;
 
-      var relativePath = ie ? '../ie' : '..';
+      var relativePath = legacy ? '../legacy' : '..';
 
       if (dist === 'es') {
         // do nothing, tests are included
