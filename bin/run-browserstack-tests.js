@@ -1,7 +1,7 @@
 /* eslint-disable no-console, node/no-unsupported-features */
 
-var execa = require('execa');
-var chalk = require('chalk');
+const execa = require('execa');
+const chalk = require('chalk');
 
 function run(command, args = []) {
   console.log(chalk.dim('$ ' + command + ' ' + args.join(' ')));
