@@ -8,7 +8,6 @@ const modifyPackages = blueprintHelpers.modifyPackages;
 
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
-const fs = require('fs-extra');
 
 const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
 const enableModuleUnification = require('../helpers/module-unification').enableModuleUnification;
@@ -93,7 +92,7 @@ describe('Blueprint: util-test', function() {
     enableModuleUnification();
 
     beforeEach(function() {
-      return emberNew().then(() => fs.ensureDirSync('src'));
+      return emberNew();
     });
 
     describe('with ember-cli-qunit@4.1.0', function() {
@@ -170,7 +169,7 @@ describe('Blueprint: util-test', function() {
     enableModuleUnification();
 
     beforeEach(function() {
-      return emberNew({ target: 'addon' }).then(() => fs.ensureDirSync('src'));
+      return emberNew({ target: 'addon' });
     });
 
     describe('with ember-cli-qunit@4.1.0', function() {

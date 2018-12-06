@@ -177,7 +177,7 @@ describe('Blueprint: component-test', function() {
     enableModuleUnification();
 
     beforeEach(function() {
-      return emberNew().then(() => fs.ensureDirSync('src'));
+      return emberNew();
     });
 
     describe('with ember-cli-qunit@4.1.0', function() {

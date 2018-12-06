@@ -8,7 +8,6 @@ const modifyPackages = blueprintHelpers.modifyPackages;
 
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
-const fs = require('fs-extra');
 
 const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
 const enableModuleUnification = require('../helpers/module-unification').enableModuleUnification;
@@ -89,7 +88,7 @@ describe('Blueprint: mixin-test', function() {
     enableModuleUnification();
 
     beforeEach(function() {
-      return emberNew().then(() => fs.ensureDirSync('src'));
+      return emberNew();
     });
 
     describe('with ember-cli-qunit@4.1.0', function() {
@@ -161,14 +160,12 @@ describe('Blueprint: mixin-test', function() {
     enableModuleUnification();
 
     beforeEach(function() {
-      return emberNew({ target: 'addon' })
-        .then(() =>
-          modifyPackages([
-            { name: 'ember-qunit', delete: true },
-            { name: 'ember-cli-qunit', dev: true },
-          ])
-        )
-        .then(() => fs.ensureDirSync('src'));
+      return emberNew({ target: 'addon' }).then(() =>
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ])
+      );
     });
 
     it('mixin-test foo', function() {

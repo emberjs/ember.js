@@ -336,7 +336,6 @@ describe('Blueprint: route', function() {
 
     beforeEach(function() {
       return emberNew()
-        .then(() => fs.ensureDirSync('src'))
         .then(() =>
           modifyPackages([
             { name: 'ember-qunit', delete: true },
@@ -499,7 +498,6 @@ describe('Blueprint: route', function() {
 
     beforeEach(function() {
       return emberNew({ target: 'addon' })
-        .then(() => fs.ensureDirSync('src'))
         .then(() =>
           modifyPackages([
             { name: 'ember-qunit', delete: true },

@@ -13,7 +13,6 @@ const expect = chai.expect;
 const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
 const fixture = require('../helpers/fixture');
 const enableModuleUnification = require('../helpers/module-unification').enableModuleUnification;
-const fs = require('fs-extra');
 
 describe('Blueprint: helper', function() {
   setupTestHooks(this);
@@ -94,15 +93,13 @@ describe('Blueprint: helper', function() {
     enableModuleUnification();
 
     beforeEach(function() {
-      return emberNew()
-        .then(() => fs.ensureDirSync('src'))
-        .then(() => {
-          modifyPackages([
-            { name: 'ember-qunit', delete: true },
-            { name: 'ember-cli-qunit', dev: true },
-          ]);
-          generateFakePackageManifest('ember-cli-qunit', '4.1.0');
-        });
+      return emberNew().then(() => {
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]);
+        generateFakePackageManifest('ember-cli-qunit', '4.1.0');
+      });
     });
 
     it('helper foo/bar-baz', function() {
@@ -160,15 +157,13 @@ describe('Blueprint: helper', function() {
     enableModuleUnification();
 
     beforeEach(function() {
-      return emberNew({ target: 'addon' })
-        .then(() => fs.ensureDirSync('src'))
-        .then(() => {
-          modifyPackages([
-            { name: 'ember-qunit', delete: true },
-            { name: 'ember-cli-qunit', dev: true },
-          ]);
-          generateFakePackageManifest('ember-cli-qunit', '4.1.0');
-        });
+      return emberNew({ target: 'addon' }).then(() => {
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]);
+        generateFakePackageManifest('ember-cli-qunit', '4.1.0');
+      });
     });
 
     it('helper foo/bar-baz', function() {
@@ -220,15 +215,13 @@ describe('Blueprint: helper', function() {
     enableModuleUnification();
 
     beforeEach(function() {
-      return emberNew({ target: 'in-repo-addon' })
-        .then(() => fs.ensureDirSync('src'))
-        .then(() => {
-          modifyPackages([
-            { name: 'ember-qunit', delete: true },
-            { name: 'ember-cli-qunit', dev: true },
-          ]);
-          generateFakePackageManifest('ember-cli-qunit', '4.1.0');
-        });
+      return emberNew({ target: 'in-repo-addon' }).then(() => {
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]);
+        generateFakePackageManifest('ember-cli-qunit', '4.1.0');
+      });
     });
 
     it('helper foo/bar-baz --in-repo-addon=my-addon', function() {
