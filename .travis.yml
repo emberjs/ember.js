@@ -70,10 +70,11 @@ jobs:
         - yarn lint
 
     - stage: additional tests
+      name: Browserstack Tests (Safari, Edge, IE11)
+      script:
+        - EMBER_ENV=production yarn ember build
+        - yarn test:browserstack
 
-      env:
-      - TEST_SUITE=browserstack
-      - EMBER_ENV=production
     - env:
       - TEST_SUITE=built-tests
       - EMBER_ENV=production
