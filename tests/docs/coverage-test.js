@@ -1,8 +1,6 @@
 /* eslint-disable no-console */
 'use strict';
 
-const QUnit = require('qunit');
-const test = QUnit.test;
 const path = require('path');
 
 QUnit.module('Docs coverage', function(hooks) {
@@ -22,7 +20,7 @@ QUnit.module('Docs coverage', function(hooks) {
       expectedItems = new Set(expected.classitems);
     });
 
-    test('No missing classitems', function(assert) {
+    QUnit.test('No missing classitems', function(assert) {
       let missing = setDifference(expectedItems, docsItems);
       assert.emptySet(
         missing,
@@ -30,7 +28,7 @@ QUnit.module('Docs coverage', function(hooks) {
       );
     });
 
-    test('No extraneous classitems', function(assert) {
+    QUnit.test('No extraneous classitems', function(assert) {
       let extraneous = setDifference(docsItems, expectedItems);
       assert.emptySet(
         extraneous,

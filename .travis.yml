@@ -78,10 +78,11 @@ jobs:
       - TEST_SUITE=built-tests
       - EMBER_ENV=production
     - env: TEST_SUITE=old-jquery-and-extend-prototypes
-    - env:
-      - TEST_SUITE=node
-      - EMBER_ENV=production
+    - name: Node.js Tests
       node_js: "6"
+      script:
+        - EMBER_ENV=production yarn ember build
+        - yarn test:node
 
     - name: Blueprint Tests
       node_js: "6"

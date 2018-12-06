@@ -18,42 +18,40 @@ function clearEmber() {
   delete require.cache[templateCompilerPath + '.js'];
 }
 
-module.exports = function(moduleName) {
-  QUnit.module(moduleName, {
-    beforeEach: function() {
-      var precompile = require(templateCompilerPath).precompile;
-      this.compile = function compile(templateString, options) {
-        var templateSpec = precompile(templateString, options);
-        var template = new Function('return ' + templateSpec)();
+module.exports = function(hooks) {
+  hooks.beforeEach(function() {
+    var precompile = require(templateCompilerPath).precompile;
+    this.compile = function compile(templateString, options) {
+      var templateSpec = precompile(templateString, options);
+      var template = new Function('return ' + templateSpec)();
 
-        return this.Ember.HTMLBars.template(template);
-      };
+      return this.Ember.HTMLBars.template(template);
+    };
 
-      var Ember = (this.Ember = require(emberPath));
+    var Ember = (this.Ember = require(emberPath));
 
-      Ember.testing = true;
-      this.run = Ember.run;
+    Ember.testing = true;
+    this.run = Ember.run;
 
-      setupComponentTest.call(this);
-    },
+    setupComponentTest.call(this);
+  });
 
-    afterEach: function() {
-      var module = this;
+  hooks.afterEach(function() {
+    var module = this;
 
-      if (this.component) {
-        this.run(function() {
-          module.component.destroy();
-        });
+    if (this.component) {
+      this.run(function() {
+        module.component.destroy();
+      });
 
-        this.component = null;
-      }
+      this.component = null;
+    }
 
-      this.run(this.owner, 'destroy');
-      this.owner = null;
-      this.Ember = null;
+    this.run(this.owner, 'destroy');
+    this.owner = null;
+    this.Ember = null;
 
-      clearEmber();
-    },
+    clearEmber();
   });
 };
 

@@ -163,7 +163,10 @@ module.exports = {
       },
     },
     {
-      files: [ 'tests/node/**/*.js' ],
+      files: [
+        'tests/docs/**/*.js',
+        'tests/node/**/*.js',
+      ],
 
       env: {
         qunit: true

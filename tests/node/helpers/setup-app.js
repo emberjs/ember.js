@@ -58,46 +58,44 @@ var SimpleDOM = require('simple-dom');
  *     });
 */
 
-module.exports = function(moduleName) {
-  QUnit.module(moduleName, {
-    beforeEach: function() {
-      var Ember = (this.Ember = require(emberPath));
+module.exports = function(hooks) {
+  hooks.beforeEach(function() {
+    var Ember = (this.Ember = require(emberPath));
 
-      Ember.testing = true;
+    Ember.testing = true;
 
-      var precompile = require(templateCompilerPath).precompile;
-      this.compile = function(templateString, options) {
-        var templateSpec = precompile(templateString, options);
-        var template = new Function('return ' + templateSpec)();
+    var precompile = require(templateCompilerPath).precompile;
+    this.compile = function(templateString, options) {
+      var templateSpec = precompile(templateString, options);
+      var template = new Function('return ' + templateSpec)();
 
-        return Ember.HTMLBars.template(template);
-      };
+      return Ember.HTMLBars.template(template);
+    };
 
-      this.run = Ember.run;
-      this.all = Ember.RSVP.all;
+    this.run = Ember.run;
+    this.all = Ember.RSVP.all;
 
-      this.visit = visit;
-      this.createApplication = createApplication;
-      this.register = register;
-      this.template = registerTemplate;
-      this.component = registerComponent;
-      this.controller = registerController;
-      this.route = registerRoute;
-      this.service = registerService;
-      this.routes = registerRoutes;
-      this.registry = {};
-      this.renderToHTML = renderToHTML;
-    },
+    this.visit = visit;
+    this.createApplication = createApplication;
+    this.register = register;
+    this.template = registerTemplate;
+    this.component = registerComponent;
+    this.controller = registerController;
+    this.route = registerRoute;
+    this.service = registerService;
+    this.routes = registerRoutes;
+    this.registry = {};
+    this.renderToHTML = renderToHTML;
+  });
 
-    afterEach: function() {
-      this.run(this.app, 'destroy');
+  hooks.afterEach(function() {
+    this.run(this.app, 'destroy');
 
-      delete global.Ember;
+    delete global.Ember;
 
-      // clear the previously cached version of this module
-      delete require.cache[emberPath + '.js'];
-      delete require.cache[templateCompilerPath + '.js'];
-    },
+    // clear the previously cached version of this module
+    delete require.cache[emberPath + '.js'];
+    delete require.cache[templateCompilerPath + '.js'];
   });
 };
 

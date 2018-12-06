@@ -1,7 +1,6 @@
 /* eslint-disable no-console */
 'use strict';
 
-const execa = require('execa');
 const chalk = require('chalk');
 const runInSequence = require('../lib/run-in-sequence');
 const path = require('path');
@@ -174,22 +173,6 @@ switch (process.env.TEST_SUITE) {
     generateEachPackageTests();
     runAndExit();
     break;
-  case 'node': {
-    console.log('suite: node');
-    let stream = execa('yarn', ['test:node']);
-    stream.stdout.pipe(process.stdout);
-    stream.then(
-      function() {
-        console.log(chalk.green('Passed!'));
-        process.exit(0);
-      },
-      function() {
-        console.error(chalk.red('Failed!'));
-        process.exit(1);
-      }
-    );
-    break;
-  }
   case 'travis-browsers':
     console.log('suite: travis-browsers');
     require('./run-travis-browser-tests');
