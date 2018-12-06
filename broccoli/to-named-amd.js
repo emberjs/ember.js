@@ -1,5 +1,8 @@
 const Babel = require('broccoli-babel-transpiler');
-const { resolveRelativeModulePath } = require('ember-cli-babel/lib/relative-module-paths');
+const {
+  resolveRelativeModulePath,
+  getRelativeModulePath,
+} = require('ember-cli-babel/lib/relative-module-paths');
 const enifed = require('./transforms/transform-define');
 const injectNodeGlobals = require('./transforms/inject-node-globals');
 
@@ -25,6 +28,7 @@ module.exports = function processModulesOnly(tree, strict = false) {
       enifed,
     ],
     moduleIds: true,
+    getModuleId: getRelativeModulePath,
   };
 
   return new Babel(tree, options);
