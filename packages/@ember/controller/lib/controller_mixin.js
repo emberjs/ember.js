@@ -2,6 +2,10 @@ import { Mixin } from '@ember/-internals/metal';
 import { ActionHandler } from '@ember/-internals/runtime';
 
 /**
+@module ember
+*/
+
+/**
   @class ControllerMixin
   @namespace Ember
   @uses Ember.ActionHandler
