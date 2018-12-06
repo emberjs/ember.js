@@ -1,3 +1,5 @@
+/* eslint-disable node/no-unsupported-features */
+
 const FailureOnlyReporter = require('./lib/failure-only-testem-reporter');
 
 class FailureOnlyPerBrowserReporter extends FailureOnlyReporter {
