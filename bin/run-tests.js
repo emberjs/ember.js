@@ -115,10 +115,10 @@ function generateBuiltTests() {
 
 function generateOldJQueryTests() {
   testFunctions.push(function() {
-    return run('jquery=1.8.3&nolint=true');
+    return run('jquery=1.10.2&nolint=true');
   });
   testFunctions.push(function() {
-    return run('jquery=1.10.2&nolint=true');
+    return run('jquery=1.12.4&nolint=true');
   });
   testFunctions.push(function() {
     return run('jquery=2.2.4&nolint=true');
