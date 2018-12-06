@@ -1,9 +1,10 @@
 /* eslint-disable no-console, node/no-unsupported-features */
 
 var execa = require('execa');
+var chalk = require('chalk');
 
 function run(command, args = []) {
-  console.log('Running: ' + command + ' ' + args.join(' '));
+  console.log(chalk.dim('$ ' + command + ' ' + args.join(' ')));
 
   let p = execa(command, args);
   p.stdout.pipe(process.stdout);
