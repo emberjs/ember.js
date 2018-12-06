@@ -87,7 +87,7 @@
     "@glimmer/runtime": "^0.36.4",
     "@types/qunit": "^2.5.0",
     "@types/rsvp": "^4.0.1",
-    "amd-name-resolver": "^1.2.0",
+    "amd-name-resolver": "^1.2.1",
     "auto-dist-tag": "^1.0.0",
     "aws-sdk": "^2.46.0",
     "babel-plugin-check-es2015-constants": "^6.22.0",
