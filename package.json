@@ -91,7 +91,7 @@
     "auto-dist-tag": "^1.0.0",
     "aws-sdk": "^2.46.0",
     "babel-plugin-check-es2015-constants": "^6.22.0",
-    "babel-plugin-debug-macros": "^0.2.0-beta.6",
+    "babel-plugin-debug-macros": "^0.2.0",
     "babel-plugin-filter-imports": "1.1.2",
     "babel-plugin-transform-es2015-arrow-functions": "^6.22.0",
     "babel-plugin-transform-es2015-block-scoping": "^6.26.0",
