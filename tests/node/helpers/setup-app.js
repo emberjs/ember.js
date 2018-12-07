@@ -56,7 +56,7 @@ var SimpleDOM = require('simple-dom');
  *     return this.renderToHTML('/'photos).then(function(html) {
  *       assert.ok(html.matches('<h1>Hello world</h1>'));
  *     });
-*/
+ */
 
 module.exports = function(hooks) {
   hooks.beforeEach(function() {

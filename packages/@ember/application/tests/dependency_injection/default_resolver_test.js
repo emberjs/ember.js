@@ -22,9 +22,9 @@ moduleFor(
     }
 
     /*
-   * This first batch of tests are integration tests against the public
-   * applicationInstance API.
-   */
+     * This first batch of tests are integration tests against the public
+     * applicationInstance API.
+     */
 
     [`@test the default resolver looks up templates in Ember.TEMPLATES`](assert) {
       let fooTemplate = this.addTemplate('foo', `foo template`);
@@ -161,8 +161,8 @@ moduleFor(
     }
 
     /*
-   * The following are integration tests against the private registry API.
-   */
+     * The following are integration tests against the private registry API.
+     */
 
     [`@test lookup description`](assert) {
       this.application.toString = () => 'App';

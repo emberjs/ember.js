@@ -13,4 +13,4 @@ export default interface DefinitionState {
   handle: Option<VMHandle>;
   symbolTable?: ProgramSymbolTable;
   template?: any;
-};
+}

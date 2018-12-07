@@ -204,15 +204,15 @@ if (EMBER_MODULE_UNIFICATION) {
       }
 
       /*
-     * This test demonstrates a failure in the caching system of ember's
-     * container around singletons and and local lookup. The local lookup
-     * is cached and the global injection is then looked up incorrectly.
-     *
-     * The paractical rules of Ember's module unification config are such
-     * that services cannot be locally looked up, thus this case is really
-     * just a demonstration of what could go wrong if we permit arbitrary
-     * configuration (such as a singleton type that has local lookup).
-     */
+       * This test demonstrates a failure in the caching system of ember's
+       * container around singletons and and local lookup. The local lookup
+       * is cached and the global injection is then looked up incorrectly.
+       *
+       * The paractical rules of Ember's module unification config are such
+       * that services cannot be locally looked up, thus this case is really
+       * just a demonstration of what could go wrong if we permit arbitrary
+       * configuration (such as a singleton type that has local lookup).
+       */
       ['@test Services can be injected with same name, one with source one without, and share an instance'](
         assert
       ) {

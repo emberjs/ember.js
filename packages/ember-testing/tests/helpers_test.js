@@ -260,7 +260,9 @@ if (!jQueryDisabled) {
         registerWaiter(waiter);
         registerWaiter(otherWaiter);
 
-        let { application: { testHelpers } } = this;
+        let {
+          application: { testHelpers },
+        } = this;
         return testHelpers
           .wait()
           .then(() => {
@@ -305,7 +307,9 @@ if (!jQueryDisabled) {
 
         let promiseObjectValue = {};
         let objectValue = {};
-        let { application: { testHelpers } } = this;
+        let {
+          application: { testHelpers },
+        } = this;
         return testHelpers
           .wait('text')
           .then(val => {
@@ -388,7 +392,9 @@ if (!jQueryDisabled) {
         });
 
         let events;
-        let { application: { testHelpers } } = this;
+        let {
+          application: { testHelpers },
+        } = this;
         return testHelpers
           .wait()
           .then(() => {
@@ -472,7 +478,11 @@ if (!jQueryDisabled) {
         });
 
         let events;
-        let { application: { testHelpers: { wait, click } } } = this;
+        let {
+          application: {
+            testHelpers: { wait, click },
+          },
+        } = this;
         return wait()
           .then(() => {
             events = [];
@@ -511,7 +521,11 @@ if (!jQueryDisabled) {
           this.application.advanceReadiness();
         });
 
-        let { application: { testHelpers: { wait, triggerEvent } } } = this;
+        let {
+          application: {
+            testHelpers: { wait, triggerEvent },
+          },
+        } = this;
         return wait()
           .then(() => {
             return triggerEvent('.index-wrapper', 'mouseenter');
@@ -564,7 +578,11 @@ if (!jQueryDisabled) {
         registerWaiter(obj, obj.ready);
         registerWaiter(otherWaiter);
 
-        let { application: { testHelpers: { wait } } } = this;
+        let {
+          application: {
+            testHelpers: { wait },
+          },
+        } = this;
         return wait()
           .then(() => {
             assert.equal(obj.ready(), true, 'should not resolve until our waiter is ready');
@@ -616,7 +634,11 @@ if (!jQueryDisabled) {
           this.application.advanceReadiness();
         });
 
-        let { application: { testHelpers: { wait, triggerEvent } } } = this;
+        let {
+          application: {
+            testHelpers: { wait, triggerEvent },
+          },
+        } = this;
         return wait()
           .then(() => {
             return triggerEvent('.input', 'keydown', { keyCode: 13 });
@@ -665,7 +687,11 @@ if (!jQueryDisabled) {
           this.application.advanceReadiness();
         });
 
-        let { application: { testHelpers: { wait, triggerEvent } } } = this;
+        let {
+          application: {
+            testHelpers: { wait, triggerEvent },
+          },
+        } = this;
         return wait()
           .then(() => {
             return triggerEvent('.input', '#limited', 'blur');
@@ -707,7 +733,11 @@ if (!jQueryDisabled) {
           this.application.advanceReadiness();
         });
 
-        let { application: { testHelpers: { wait, triggerEvent } } } = this;
+        let {
+          application: {
+            testHelpers: { wait, triggerEvent },
+          },
+        } = this;
         return wait()
           .then(() => {
             return triggerEvent('#foo', 'blur');
@@ -739,7 +769,11 @@ if (!jQueryDisabled) {
           this.application.advanceReadiness();
         });
 
-        let { application: { testHelpers: { visit, fillIn, andThen, find } } } = this;
+        let {
+          application: {
+            testHelpers: { visit, fillIn, andThen, find },
+          },
+        } = this;
         visit('/');
         fillIn('.current', '#parent', 'current value');
 
@@ -776,7 +810,11 @@ if (!jQueryDisabled) {
           this.application.advanceReadiness();
         });
 
-        let { application: { testHelpers: { visit, fillIn, andThen, find, wait } } } = this;
+        let {
+          application: {
+            testHelpers: { visit, fillIn, andThen, find, wait },
+          },
+        } = this;
         visit('/');
         fillIn('#first', 'current value');
         andThen(() => {
@@ -819,7 +857,11 @@ if (!jQueryDisabled) {
           this.application.advanceReadiness();
         });
 
-        let { application: { testHelpers: { visit, fillIn, andThen, wait } } } = this;
+        let {
+          application: {
+            testHelpers: { visit, fillIn, andThen, wait },
+          },
+        } = this;
 
         visit('/');
         fillIn('#first', 'current value');
@@ -847,7 +889,11 @@ if (!jQueryDisabled) {
           this.application.advanceReadiness();
         });
 
-        let { application: { testHelpers: { visit, fillIn, find, andThen, wait } } } = this;
+        let {
+          application: {
+            testHelpers: { visit, fillIn, find, andThen, wait },
+          },
+        } = this;
 
         visit('/');
         fillIn('input.in-test', 'new value');
@@ -892,7 +938,11 @@ if (!jQueryDisabled) {
           this.application.advanceReadiness();
         });
 
-        let { application: { testHelpers: { wait, triggerEvent } } } = this;
+        let {
+          application: {
+            testHelpers: { wait, triggerEvent },
+          },
+        } = this;
         return wait()
           .then(() => {
             return triggerEvent('.input', '#limited', 'keydown', {
@@ -948,7 +998,11 @@ if (!jQueryDisabled) {
         // overwrite info to supress the console output (see https://github.com/emberjs/ember.js/issues/16391)
         setDebugFunction('info', noop);
 
-        let { application: { testHelpers: { pauseTest, resumeTest } } } = this;
+        let {
+          application: {
+            testHelpers: { pauseTest, resumeTest },
+          },
+        } = this;
 
         later(() => resumeTest(), 20);
         return pauseTest().then(() => {
@@ -990,7 +1044,9 @@ if (!jQueryDisabled) {
       [`@test currentRouteName for '/'`](assert) {
         assert.expect(3);
 
-        let { application: { testHelpers } } = this;
+        let {
+          application: { testHelpers },
+        } = this;
         return testHelpers.visit('/').then(() => {
           assert.equal(testHelpers.currentRouteName(), 'index', `should equal 'index'.`);
           assert.equal(testHelpers.currentPath(), 'index', `should equal 'index'.`);
@@ -1001,7 +1057,9 @@ if (!jQueryDisabled) {
       [`@test currentRouteName for '/posts'`](assert) {
         assert.expect(3);
 
-        let { application: { testHelpers } } = this;
+        let {
+          application: { testHelpers },
+        } = this;
         return testHelpers.visit('/posts').then(() => {
           assert.equal(
             testHelpers.currentRouteName(),
@@ -1016,7 +1074,9 @@ if (!jQueryDisabled) {
       [`@test currentRouteName for '/posts/new'`](assert) {
         assert.expect(3);
 
-        let { application: { testHelpers } } = this;
+        let {
+          application: { testHelpers },
+        } = this;
         return testHelpers.visit('/posts/new').then(() => {
           assert.equal(testHelpers.currentRouteName(), 'posts.new', `should equal 'posts.new'.`);
           assert.equal(testHelpers.currentPath(), 'posts.new', `should equal 'posts.new'.`);
@@ -1027,7 +1087,9 @@ if (!jQueryDisabled) {
       [`@test currentRouteName for '/posts/edit'`](assert) {
         assert.expect(3);
 
-        let { application: { testHelpers } } = this;
+        let {
+          application: { testHelpers },
+        } = this;
         return testHelpers.visit('/posts/edit').then(() => {
           assert.equal(testHelpers.currentRouteName(), 'edit', `should equal 'edit'.`);
           assert.equal(testHelpers.currentPath(), 'posts.edit', `should equal 'posts.edit'.`);
@@ -1117,10 +1179,10 @@ if (!jQueryDisabled) {
           let resolveLater = () =>
             new RSVP.Promise(resolve => {
               /*
-          * The wait() helper has a 10ms tick. We should resolve() after
-          * at least one tick to test whether wait() held off while the
-          * async router was still loading. 20ms should be enough.
-          */
+               * The wait() helper has a 10ms tick. We should resolve() after
+               * at least one tick to test whether wait() held off while the
+               * async router was still loading. 20ms should be enough.
+               */
               later(resolve, { firstName: 'Tom' }, 20);
             });
 
@@ -1154,7 +1216,9 @@ if (!jQueryDisabled) {
       [`@test currentRouteName for '/user'`](assert) {
         assert.expect(4);
 
-        let { application: { testHelpers } } = this;
+        let {
+          application: { testHelpers },
+        } = this;
         return testHelpers.visit('/user').then(() => {
           assert.equal(testHelpers.currentRouteName(), 'user.index', `should equal 'user.index'.`);
           assert.equal(testHelpers.currentPath(), 'user.index', `should equal 'user.index'.`);
@@ -1167,7 +1231,9 @@ if (!jQueryDisabled) {
       [`@test currentRouteName for '/user/profile'`](assert) {
         assert.expect(4);
 
-        let { application: { testHelpers } } = this;
+        let {
+          application: { testHelpers },
+        } = this;
         return testHelpers.visit('/user/profile').then(() => {
           assert.equal(testHelpers.currentRouteName(), 'user.edit', `should equal 'user.edit'.`);
           assert.equal(testHelpers.currentPath(), 'user.edit', `should equal 'user.edit'.`);

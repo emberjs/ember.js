@@ -80,7 +80,9 @@ function buildFromParts(packageVersion, gitInfo) {
   let shortSha = sha.slice(0, 8);
   let channel =
     branch === 'master'
-      ? process.env.BUILD_TYPE === 'alpha' ? 'alpha' : 'canary'
+      ? process.env.BUILD_TYPE === 'alpha'
+        ? 'alpha'
+        : 'canary'
       : branch && escapeSemVerIdentifier(branch);
   let version = tagVersion || buildVersion(packageVersion, shortSha, channel);
 
