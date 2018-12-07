@@ -301,18 +301,18 @@ function mergeMixins(
   }
 }
 
-function followAlias(
+function followMethodAlias(
   obj: object,
-  desc: any,
+  _desc: Alias,
   descs: { [key: string]: any },
   values: { [key: string]: any }
 ) {
-  let altKey = desc.methodName;
-  let value;
+  let altKey = _desc.methodName;
   let possibleDesc;
-  if (descs[altKey] || values[altKey]) {
-    value = values[altKey];
-    desc = descs[altKey];
+  let desc = descs[altKey];
+  let value = values[altKey];
+
+  if (desc !== undefined || value !== undefined) {
   } else if ((possibleDesc = descriptorFor(obj, altKey)) !== undefined) {
     desc = possibleDesc;
     value = undefined;
@@ -387,7 +387,7 @@ export function applyMixin(obj: { [key: string]: any }, mixins: Mixin[]) {
     value = values[key];
 
     while (desc && desc instanceof Alias) {
-      let followed = followAlias(obj, desc, descs, values);
+      let followed = followMethodAlias(obj, desc, descs, values);
       desc = followed.desc;
       value = followed.value;
     }
