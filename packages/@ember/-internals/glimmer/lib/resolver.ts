@@ -3,6 +3,7 @@ import { ENV } from '@ember/-internals/environment';
 import { LookupOptions, Owner, setOwner } from '@ember/-internals/owner';
 import { lookupComponent, lookupPartial, OwnedTemplateMeta } from '@ember/-internals/views';
 import {
+  EMBER_GLIMMER_ARRAY_HELPER,
   EMBER_MODULE_UNIFICATION,
   GLIMMER_CUSTOM_COMPONENT_MANAGER,
   GLIMMER_MODIFIER_MANAGER,
@@ -66,7 +67,6 @@ const BUILTINS_HELPERS = {
   concat,
   get,
   hash,
-  array,
   log,
   mut,
   'query-params': queryParams,
@@ -83,6 +83,10 @@ const BUILTINS_HELPERS = {
   '-outlet': outletHelper,
   '-assert-implicit-component-helper-argument': componentAssertionHelper,
 };
+
+if (EMBER_GLIMMER_ARRAY_HELPER) {
+  BUILTINS_HELPERS['array'] = array;
+}
 
 const BUILTIN_MODIFIERS = {
   action: { manager: new ActionModifierManager(), state: null },
