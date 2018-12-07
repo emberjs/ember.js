@@ -11,6 +11,7 @@ operand-stack = [
 
 format = "PopFrame"
 operation = "Pop a stack frame"
+skip = true
 operand-stack = [
   ["$ra", "$fp"],
   []
@@ -39,10 +40,7 @@ operation = "Jump to the specified offset."
 
 format ="Return"
 operation = "Return to the previous frame."
-operand-stack = [
-  ["number"],
-  []
-]
+skip = true
 
 [machine.setra]
 
@@ -608,7 +606,7 @@ operand-stack = [
 [syscall.iter]
 
 format = ["Iterate", "end:u32"]
-check = false
+skip = true
 operation = """
 Set up the stack for iterating for a given key,
 or jump to `end` if there is nothing left to

@@ -39,7 +39,7 @@ export interface Program {
 
 export interface Externs {
   debugBefore(opcode: Opcode): Opaque;
-  debugAfter(opcode: Opcode, state: Opaque): void;
+  debugAfter(state: Opaque): void;
 }
 
 export default class LowLevelVM {
@@ -136,7 +136,7 @@ export default class LowLevelVM {
       } = this;
       let state = debugBefore(opcode);
       this.evaluateInner(opcode, vm);
-      debugAfter(opcode, state);
+      debugAfter(state);
     } else {
       this.evaluateInner(opcode, vm);
     }
@@ -156,10 +156,6 @@ export default class LowLevelVM {
         return this.pushFrame();
       case MachineOp.PopFrame:
         return this.popFrame();
-      case MachineOp.PushSmallFrame:
-        return this.pushSmallFrame();
-      case MachineOp.PopSmallFrame:
-        return this.popSmallFrame();
       case MachineOp.InvokeStatic:
         return this.call(opcode.op1);
       case MachineOp.InvokeVirtual:

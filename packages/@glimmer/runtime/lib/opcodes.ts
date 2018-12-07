@@ -1,14 +1,6 @@
 import { LowLevelVM, VM, UpdatingVM } from './vm';
 
-import {
-  Option,
-  Dict,
-  Slice as ListSlice,
-  initializeGuid,
-  fillNulls,
-  unreachable,
-  assert,
-} from '@glimmer/util';
+import { Option, Dict, Slice as ListSlice, initializeGuid, fillNulls, assert } from '@glimmer/util';
 import { recordStackSize } from '@glimmer/debug';
 import { Op, $pc, $sp, $ra, $fp } from '@glimmer/vm';
 import { Tag } from '@glimmer/reference';
@@ -40,7 +32,16 @@ export type Evaluate =
   | { syscall: true; evaluate: Syscall }
   | { syscall: false; evaluate: MachineOpcode };
 
-export type DebugState = { sp: number; state: Opaque };
+export type DebugState = {
+  pc: number;
+  sp: number;
+  type: number;
+  isMachine: 0 | 1;
+  size: number;
+  params?: object;
+  name?: string;
+  state: Opaque;
+};
 
 export class AppendOpcodes {
   private evaluateOpcode: Evaluate[] = fillNulls<Evaluate>(Op.Size).slice();
@@ -52,10 +53,13 @@ export class AppendOpcodes {
   }
 
   debugBefore(vm: VM<Opaque>, opcode: Opcode, type: number): DebugState {
+    let params: object | undefined = undefined;
+    let opName: string | undefined = undefined;
+
     if (DEBUG) {
       let pos = vm[INNER_VM].fetchRegister($pc) - opcode.size;
       /* tslint:disable */
-      let [name, params] = debug(
+      [opName, params] = debug(
         pos,
         vm[CONSTANTS],
         opcode.type,
@@ -92,47 +96,36 @@ export class AppendOpcodes {
     }
 
     recordStackSize(vm.fetchValue($sp));
-    return { sp: sp!, state };
+    return {
+      sp: sp!,
+      pc: vm.fetchValue($pc),
+      name: opName,
+      params,
+      type: opcode.type,
+      isMachine: opcode.isMachine,
+      size: opcode.size,
+      state,
+    };
   }
 
-  debugAfter(vm: VM<Opaque>, opcode: Opcode, type: number, pre: DebugState) {
-    let expectedChange: number;
-    let { sp, state } = pre;
+  debugAfter(vm: VM<Opaque>, pre: DebugState) {
+    let { sp, type, isMachine, pc } = pre;
 
-    let meta = opcodeMetadata(type, opcode.isMachine);
-    if (meta !== null) {
-      if (typeof meta.stackChange === 'number') {
-        expectedChange = meta.stackChange;
-      } else {
-        expectedChange = meta.stackChange({ opcode, constants: vm[CONSTANTS], state });
-        if (isNaN(expectedChange)) throw unreachable();
-      }
-    }
+    let meta = opcodeMetadata(type, isMachine);
 
     if (DEBUG) {
       let actualChange = vm.fetchValue($sp) - sp!;
       if (
         meta &&
         meta.check &&
-        typeof expectedChange! === 'number' &&
-        expectedChange! !== actualChange
+        typeof meta.stackChange! === 'number' &&
+        meta.stackChange! !== actualChange
       ) {
-        let pos = vm.fetchValue($pc) + opcode.size;
-        let [name, params] = debug(
-          pos,
-          vm[CONSTANTS],
-          opcode.type,
-          opcode.isMachine,
-          opcode.op1,
-          opcode.op2,
-          opcode.op3
-        );
-
         throw new Error(
-          `Error in ${name}:\n\n${pos}. ${logOpcode(
-            name,
-            params
-          )}\n\nStack changed by ${actualChange}, expected ${expectedChange!}`
+          `Error in ${pre.name}:\n\n${pc}. ${logOpcode(
+            pre.name!,
+            pre.params!
+          )}\n\nStack changed by ${actualChange}, expected ${meta.stackChange!}`
         );
       }
 

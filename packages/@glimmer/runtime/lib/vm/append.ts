@@ -350,8 +350,8 @@ export default class VM<T> implements PublicVM, InternalVM {
           return APPEND_OPCODES.debugBefore(this, opcode, opcode.type);
         },
 
-        debugAfter: (opcode: Opcode, state: DebugState): void => {
-          APPEND_OPCODES.debugAfter(this, opcode, opcode.type, state);
+        debugAfter: (state: DebugState): void => {
+          APPEND_OPCODES.debugAfter(this, state);
         },
       },
       evalStack[REGISTERS]
