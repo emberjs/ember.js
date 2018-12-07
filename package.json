@@ -144,7 +144,7 @@
     "lodash.uniq": "^4.5.0",
     "mkdirp": "^0.5.1",
     "mocha": "^5.0.0",
-    "prettier": "1.11.1",
+    "prettier": "1.15.3",
     "puppeteer": "^1.3.0",
     "qunit": "^2.8.0",
     "route-recognizer": "^0.3.4",
