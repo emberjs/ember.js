@@ -15,7 +15,7 @@ module.exports = function processModulesOnly(tree, strict = false) {
   }
 
   let options = {
-    sourceMap: true,
+    sourceMaps: true,
     plugins: [
       // ensures `@glimmer/compiler` requiring `crypto` works properly
       // in both browser and node-land
