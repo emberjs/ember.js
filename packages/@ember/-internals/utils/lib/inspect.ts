@@ -53,7 +53,9 @@ function inspectValue(value: any | null | undefined, depth: number, seen?: WeakS
       return value.toString();
     case 'function':
       return value.toString === functionToString
-        ? value.name ? `[Function:${value.name}]` : `[Function]`
+        ? value.name
+          ? `[Function:${value.name}]`
+          : `[Function]`
         : value.toString();
     case 'string':
       return stringify(value);

@@ -203,8 +203,8 @@ moduleFor(
           assert.ok(instanceBooted === 1, 'an instance should be booted');
 
           /*
-       * Destroy the instance.
-       */
+           * Destroy the instance.
+           */
           return this.runTask(() => {
             this.applicationInstance.destroy();
             this.applicationInstance = null;
@@ -212,9 +212,9 @@ moduleFor(
         })
         .then(() => {
           /*
-       * Visit on the application a second time. The application should remain
-       * booted, but a new instance will be created.
-       */
+           * Visit on the application a second time. The application should remain
+           * booted, but a new instance will be created.
+           */
           return this.application.visit('/').then(instance => {
             this.applicationInstance = instance;
           });
@@ -293,9 +293,9 @@ moduleFor(
       );
 
       /*
-     * First call to `visit` is `this.application.visit` and returns the
-     * applicationInstance.
-     */
+       * First call to `visit` is `this.application.visit` and returns the
+       * applicationInstance.
+       */
       return this.visit('/a').then(instance => {
         assert.ok(
           instance instanceof ApplicationInstance,

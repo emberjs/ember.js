@@ -12,7 +12,12 @@ ContainersAssert.prototype = {
   assert: function() {
     if (containerLeakTracking === undefined) return;
     let { config } = QUnit;
-    let { testName, testId, module: { name: moduleName }, finish: originalFinish } = config.current;
+    let {
+      testName,
+      testId,
+      module: { name: moduleName },
+      finish: originalFinish,
+    } = config.current;
     config.current.finish = function() {
       originalFinish.call(this);
       originalFinish = undefined;

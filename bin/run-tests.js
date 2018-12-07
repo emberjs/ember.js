@@ -76,8 +76,7 @@ function generateTestsFor(packageName) {
 function generateEachPackageTests() {
   fs.readdirSync('packages/@ember').forEach(e => generateTestsFor(`@ember/${e}`));
 
-  fs
-    .readdirSync('packages')
+  fs.readdirSync('packages')
     .filter(e => e !== '@ember')
     .forEach(generateTestsFor);
 }
