@@ -246,8 +246,8 @@ export default class CurlyComponentManager
     props[HAS_BLOCK] = hasBlock;
 
     // Save the current `this` context of the template as the component's
-    // `_targetObject`, so bubbled actions are routed to the right place.
-    props._targetObject = callerSelfRef.value();
+    // `_target`, so bubbled actions are routed to the right place.
+    props._target = callerSelfRef.value();
 
     // static layout asserts CurriedDefinition
     if (state.template) {
