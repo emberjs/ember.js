@@ -35,6 +35,10 @@
 - [#16978](https://github.com/emberjs/ember.js/pull/16978) [BUGFIX] Properly teardown alias
 - [#16877](https://github.com/emberjs/ember.js/pull/16877) [CLEANUP] Allow routes to be named "array" and "object"
 
+### v3.4.7 (December 7, 2018)
+
+- #17271 [BUGFIX] Update `backburner.js` to 2.4.2.
+
 ### v3.4.6 (October 29, 2018)
 
 - [#17115](https://github.com/emberjs/ember.js/pull/17115) [BUGFIX] Ensure `{{input` continues to pass the event to the actions that it fires.
