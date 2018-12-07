@@ -9,6 +9,8 @@ module.exports = function toES6(tree, _options) {
   options.sourceMaps = true;
   options.plugins = [
     injectBabelHelpers,
+    ['@babel/plugin-proposal-decorators', { decoratorsBeforeExport: true, legacy: false }],
+    ['@babel/plugin-proposal-class-properties'],
     ['@babel/transform-template-literals', { loose: true }],
     ['@babel/transform-literals'],
     ['@babel/transform-arrow-functions'],

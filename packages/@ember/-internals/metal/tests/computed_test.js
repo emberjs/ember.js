@@ -988,3 +988,25 @@ moduleFor(
     }
   }
 );
+
+moduleFor(
+  'computed - decorators',
+  class extends AbstractTestCase {
+    ['@test this should not work, but should demonstrate that the decorator support is incorrect']() {
+      // https://tc39.github.io/proposal-decorators/
+      function myDecorator(elementDescriptor) {
+        return elementDescriptor;
+      }
+      class TestingDecorators {
+        @myDecorator
+        get myProperty() {
+          return 'hi';
+        }
+      }
+
+      const myObject = new TestingDecorators();
+
+      console.log(myObject.myProperty);
+    }
+  }
+);
