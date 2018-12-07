@@ -127,7 +127,7 @@
     "ember-cli-yuidoc": "^0.8.8",
     "ember-publisher": "0.0.7",
     "eslint": "^5.9.0",
-    "eslint-config-prettier": "^2.9.0",
+    "eslint-config-prettier": "^3.3.0",
     "eslint-import-resolver-node": "^0.3.2",
     "eslint-plugin-ember-internal": "^1.1.1",
     "eslint-plugin-import": "^2.12.0",
