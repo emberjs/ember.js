@@ -46,7 +46,7 @@ let makeEnumerable: (obj: object, keyName: string) => void;
   @return {Object} the passed value.
   @public
 */
-export function set(obj: object, keyName: string, value: any, tolerant?: boolean): any | void {
+export function set(obj: object, keyName: string, value: any, tolerant?: boolean): any {
   assert(
     `Set must be called with three or four arguments; an object, a property key, a value and tolerant true/false`,
     arguments.length === 3 || arguments.length === 4

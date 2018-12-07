@@ -42,7 +42,7 @@ export interface ComputedPropertyOptions {
 
 const DEEP_EACH_REGEX = /\.@each\.[^.]+\./;
 
-function noop() {}
+function noop(): void {}
 
 /**
   A computed property transforms an object literal with object's accessor function(s) into a property.
@@ -293,7 +293,7 @@ class ComputedProperty extends Descriptor implements DescriptorWithDependentKeys
   property(...passedArgs: string[]): ComputedProperty {
     let args: string[] = [];
 
-    function addArg(property: string) {
+    function addArg(property: string): void {
       warn(
         `Dependent keys containing @each only work one level deep. ` +
           `You used the key "${property}" which is invalid. ` +
@@ -340,7 +340,7 @@ class ComputedProperty extends Descriptor implements DescriptorWithDependentKeys
     @chainable
     @public
   */
-  meta(meta?: any): any | undefined {
+  meta(meta?: any): any {
     if (arguments.length === 0) {
       return this._meta || {};
     } else {
@@ -350,7 +350,7 @@ class ComputedProperty extends Descriptor implements DescriptorWithDependentKeys
   }
 
   // invalidate cache when CP key changes
-  didChange(obj: object, keyName: string) {
+  didChange(obj: object, keyName: string): void {
     // _suspended is set via a CP.set to ensure we don't clear
     // the cached value set by the setter
     if (this._volatile || this._suspended === obj) {
@@ -369,7 +369,7 @@ class ComputedProperty extends Descriptor implements DescriptorWithDependentKeys
     }
   }
 
-  get(obj: object, keyName: string) {
+  get(obj: object, keyName: string): any {
     if (this._volatile) {
       return this._getter.call(obj, keyName);
     }
@@ -470,7 +470,7 @@ class ComputedProperty extends Descriptor implements DescriptorWithDependentKeys
     }
   }
 
-  _set(obj: object, keyName: string, value: any) {
+  _set(obj: object, keyName: string, value: any): any {
     let cache = getCacheFor(obj);
     let hadCachedValue = cache.has(keyName);
     let cachedValue = cache.get(keyName);
@@ -515,7 +515,7 @@ class ComputedProperty extends Descriptor implements DescriptorWithDependentKeys
 }
 
 if (EMBER_METAL_TRACKED_PROPERTIES) {
-  ComputedProperty.prototype.auto = function() {
+  ComputedProperty.prototype.auto = function(): ComputedProperty {
     this._auto = true;
     return this;
   };

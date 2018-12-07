@@ -2,7 +2,14 @@ import { Meta, meta as metaFor } from '@ember/-internals/meta';
 import { isProxy } from '@ember/-internals/utils';
 import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { backburner } from '@ember/runloop';
-import { combine, CONSTANT_TAG, DirtyableTag, Tag, UpdatableTag } from '@glimmer/reference';
+import {
+  combine,
+  CONSTANT_TAG,
+  DirtyableTag,
+  Tag,
+  TagWrapper,
+  UpdatableTag,
+} from '@glimmer/reference';
 
 let hasViews: () => boolean = () => false;
 
@@ -10,7 +17,7 @@ export function setHasViews(fn: () => boolean): void {
   hasViews = fn;
 }
 
-function makeTag() {
+function makeTag(): TagWrapper<DirtyableTag> {
   return DirtyableTag.create();
 }
 
@@ -87,7 +94,7 @@ export function markObjectAsDirty(obj: object, propertyKey: string, meta: Meta):
   }
 }
 
-function ensureRunloop() {
+function ensureRunloop(): void {
   if (hasViews()) {
     backburner.ensureInstance();
   }

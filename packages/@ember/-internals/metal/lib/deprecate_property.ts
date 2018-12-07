@@ -24,8 +24,8 @@ export function deprecateProperty(
   deprecatedKey: string,
   newKey: string,
   options?: DeprecationOptions
-) {
-  function _deprecate() {
+): void {
+  function _deprecate(): void {
     deprecate(
       `Usage of \`${deprecatedKey}\` is deprecated, use \`${newKey}\` instead.`,
       false,
@@ -36,11 +36,11 @@ export function deprecateProperty(
   Object.defineProperty(object, deprecatedKey, {
     configurable: true,
     enumerable: false,
-    set(value) {
+    set(value): any {
       _deprecate();
       set(this, newKey, value);
     },
-    get() {
+    get(): any {
       _deprecate();
       return get(this, newKey);
     },

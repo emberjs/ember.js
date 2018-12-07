@@ -63,7 +63,7 @@ if (DEBUG) {
       return this.shouldReflush;
     }
 
-    didRender(object: object, key: string, reference: any) {
+    didRender(object: object, key: string, reference: any): void {
       if (!this.inTransaction) {
         return;
       }
@@ -120,7 +120,7 @@ if (DEBUG) {
       return this.getKey(object, key) === this.transactionId;
     }
 
-    before(context: object) {
+    before(context: object): void {
       this.inTransaction = true;
       this.shouldReflush = false;
       if (DEBUG) {
@@ -128,7 +128,7 @@ if (DEBUG) {
       }
     }
 
-    after() {
+    after(): void {
       this.transactionId++;
       this.inTransaction = false;
       if (DEBUG) {
@@ -137,13 +137,13 @@ if (DEBUG) {
       this.clearObjectMap();
     }
 
-    createMap(object: object) {
+    createMap(object: object): object {
       let map = Object.create(null);
       this.weakMap.set(object, map);
       return map;
     }
 
-    getOrCreateMap(object: object) {
+    getOrCreateMap(object: object): object {
       let map = this.weakMap.get(object);
       if (map === undefined) {
         map = this.createMap(object);
@@ -151,19 +151,19 @@ if (DEBUG) {
       return map;
     }
 
-    setKey(object: object, key: string, value: any) {
+    setKey(object: object, key: string, value: any): void {
       let map = this.getOrCreateMap(object);
       map[key] = value;
     }
 
-    getKey(object: object, key: string) {
+    getKey(object: object, key: string): any {
       let map = this.weakMap.get(object);
       if (map !== undefined) {
         return map[key];
       }
     }
 
-    clearObjectMap() {
+    clearObjectMap(): void {
       this.weakMap = new WeakMap();
     }
   }

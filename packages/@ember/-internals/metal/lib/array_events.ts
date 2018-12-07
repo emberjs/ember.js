@@ -4,12 +4,12 @@ import { eachProxyArrayDidChange, eachProxyArrayWillChange } from './each_proxy_
 import { sendEvent } from './events';
 import { notifyPropertyChange } from './property_events';
 
-export function arrayContentWillChange(
-  array: object,
+export function arrayContentWillChange<T extends object>(
+  array: T,
   startIdx: number,
   removeAmt: number,
   addAmt: number
-) {
+): T {
   // if no args are passed assume everything changes
   if (startIdx === undefined) {
     startIdx = 0;
@@ -31,12 +31,12 @@ export function arrayContentWillChange(
   return array;
 }
 
-export function arrayContentDidChange(
-  array: { length: number },
+export function arrayContentDidChange<T extends { length: number }>(
+  array: T,
   startIdx: number,
   removeAmt: number,
   addAmt: number
-) {
+): T {
   // if no args are passed assume everything changes
   if (startIdx === undefined) {
     startIdx = 0;

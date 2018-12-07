@@ -73,7 +73,7 @@ const SEEN_MAP = new Map<object, Set<string>>();
 let IS_TOP_SEEN_MAP = true;
 
 // called whenever a property has just changed to update dependent keys
-function dependentKeysDidChange(obj: object, depKey: string, meta: Meta) {
+function dependentKeysDidChange(obj: object, depKey: string, meta: Meta): void {
   if (meta.isSourceDestroying() || !meta.hasDeps(depKey)) {
     return;
   }
@@ -98,7 +98,7 @@ function iterDeps(
   depKey: string,
   seen: Map<object, Set<string>>,
   meta: Meta
-) {
+): void {
   let current = seen.get(obj);
 
   if (current === undefined) {
@@ -122,14 +122,14 @@ function iterDeps(
   });
 }
 
-function chainsDidChange(_obj: object, keyName: string, meta: Meta) {
+function chainsDidChange(_obj: object, keyName: string, meta: Meta): void {
   let chainWatchers = meta.readableChainWatchers();
   if (chainWatchers !== undefined) {
     chainWatchers.notify(keyName, true, notifyPropertyChange);
   }
 }
 
-function overrideChains(_obj: object, keyName: string, meta: Meta) {
+function overrideChains(_obj: object, keyName: string, meta: Meta): void {
   let chainWatchers = meta.readableChainWatchers();
   if (chainWatchers !== undefined) {
     chainWatchers.revalidate(keyName);
@@ -141,7 +141,7 @@ function overrideChains(_obj: object, keyName: string, meta: Meta) {
   @chainable
   @private
 */
-function beginPropertyChanges() {
+function beginPropertyChanges(): void {
   deferred++;
 }
 
@@ -149,7 +149,7 @@ function beginPropertyChanges() {
   @method endPropertyChanges
   @private
 */
-function endPropertyChanges() {
+function endPropertyChanges(): void {
   deferred--;
   if (deferred <= 0) {
     observerSet.flush();
@@ -180,7 +180,7 @@ function changeProperties(callback: () => void): void {
   }
 }
 
-function notifyObservers(obj: object, keyName: string, meta: Meta) {
+function notifyObservers(obj: object, keyName: string, meta: Meta): void {
   if (meta.isSourceDestroying()) {
     return;
   }

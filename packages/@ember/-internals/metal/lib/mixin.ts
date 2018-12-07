@@ -25,7 +25,7 @@ import { defineProperty, Descriptor } from './properties';
 const a_concat = Array.prototype.concat;
 const { isArray } = Array;
 
-function isMethod(obj: any) {
+function isMethod(obj: any): boolean {
   return (
     'function' === typeof obj &&
     obj.isMethod !== false &&

@@ -62,7 +62,7 @@ interface ExtendedObject {
 //
 
 export function MANDATORY_SETTER_FUNCTION(name: string): MandatorySetterFunction {
-  function SETTER_FUNCTION(this: object, value: any | undefined | null) {
+  function SETTER_FUNCTION(this: object, value: any | undefined | null): void {
     let m = peekMeta(this);
     if (m.isInitializing() || m.isPrototypeMeta(this)) {
       m.writeValues(name, value);
@@ -77,7 +77,7 @@ export function MANDATORY_SETTER_FUNCTION(name: string): MandatorySetterFunction
 }
 
 export function DEFAULT_GETTER_FUNCTION(name: string): DefaultGetterFunction {
-  return function GETTER_FUNCTION(this: any) {
+  return function GETTER_FUNCTION(this: any): void {
     let meta = peekMeta(this);
     if (meta !== undefined) {
       return meta.peekValues(name);
@@ -86,7 +86,7 @@ export function DEFAULT_GETTER_FUNCTION(name: string): DefaultGetterFunction {
 }
 
 export function INHERITING_GETTER_FUNCTION(name: string): InheritingGetterFunction {
-  function IGETTER_FUNCTION(this: any) {
+  function IGETTER_FUNCTION(this: any): void {
     let meta = peekMeta(this);
     let val;
     if (meta !== undefined) {
@@ -106,8 +106,8 @@ export function INHERITING_GETTER_FUNCTION(name: string): InheritingGetterFuncti
   });
 }
 
-function DESCRIPTOR_GETTER_FUNCTION(name: string, descriptor: Descriptor) {
-  return function CPGETTER_FUNCTION(this: object) {
+function DESCRIPTOR_GETTER_FUNCTION(name: string, descriptor: Descriptor): () => any {
+  return function CPGETTER_FUNCTION(this: object): any {
     return descriptor.get(this, name);
   };
 }
@@ -166,7 +166,7 @@ export function defineProperty(
   desc?: Descriptor | undefined | null,
   data?: any | undefined | null,
   meta?: Meta
-) {
+): void {
   if (meta === undefined) {
     meta = metaFor(obj);
   }

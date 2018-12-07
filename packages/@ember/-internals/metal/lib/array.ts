@@ -29,7 +29,7 @@ export function replace<T>(
   start: number,
   deleteCount: number,
   items = EMPTY_ARRAY
-) {
+): void {
   if (Array.isArray(array)) {
     replaceInNativeArray(array, start, deleteCount, items);
   } else {
@@ -46,7 +46,7 @@ export function replaceInNativeArray<T>(
   start: number,
   deleteCount: number,
   items: ReadonlyArray<T>
-) {
+): void {
   arrayContentWillChange(array, start, deleteCount, items.length);
 
   if (items.length <= CHUNK_SIZE) {
@@ -81,7 +81,7 @@ function arrayObserversHelper(
   opts: ArrayObserverOptions | undefined,
   operation: Operation,
   notify: boolean
-) {
+): ObjectHasArrayObservers {
   let willChange = (opts && opts.willChange) || 'arrayWillChange';
   let didChange = (opts && opts.didChange) || 'arrayDidChange';
   let hasObservers = get(obj, 'hasArrayObservers');
@@ -100,7 +100,7 @@ export function addArrayObserver<T>(
   array: EmberArray<T>,
   target: any,
   opts?: ArrayObserverOptions | undefined
-) {
+): ObjectHasArrayObservers {
   return arrayObserversHelper(array, target, opts, addListener, false);
 }
 
@@ -108,6 +108,6 @@ export function removeArrayObserver<T>(
   array: EmberArray<T>,
   target: any,
   opts?: ArrayObserverOptions | undefined
-) {
+): ObjectHasArrayObservers {
   return arrayObserversHelper(array, target, opts, removeListener, true);
 }

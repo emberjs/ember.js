@@ -67,7 +67,7 @@ function dive(
   pattern: string,
   start: number,
   callback: (expansion: string) => void
-) {
+): void {
   let end = pattern.indexOf('}'),
     i = 0,
     newStart,

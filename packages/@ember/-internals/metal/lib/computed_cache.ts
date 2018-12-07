@@ -19,13 +19,13 @@ const COMPUTED_PROPERTY_LAST_REVISION = EMBER_METAL_TRACKED_PROPERTIES
   @return {Object} the cached value
   @public
 */
-export function getCacheFor(obj: object) {
+export function getCacheFor(obj: object): Map<string, any> {
   let cache = COMPUTED_PROPERTY_CACHED_VALUES.get(obj);
   if (cache === undefined) {
-    cache = new Map();
+    cache = new Map<string, any>();
 
     if (EMBER_METAL_TRACKED_PROPERTIES) {
-      COMPUTED_PROPERTY_LAST_REVISION!.set(obj, new Map());
+      COMPUTED_PROPERTY_LAST_REVISION!.set(obj, new Map<string, any>());
     }
 
     COMPUTED_PROPERTY_CACHED_VALUES.set(obj, cache);
@@ -33,7 +33,7 @@ export function getCacheFor(obj: object) {
   return cache;
 }
 
-export function getCachedValueFor(obj: object, key: string) {
+export function getCachedValueFor(obj: object, key: string): any {
   let cache = COMPUTED_PROPERTY_CACHED_VALUES.get(obj);
   if (cache !== undefined) {
     return cache.get(key);
@@ -60,6 +60,6 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
   };
 }
 
-export function peekCacheFor(obj: object) {
+export function peekCacheFor(obj: object): any {
   return COMPUTED_PROPERTY_CACHED_VALUES.get(obj);
 }

@@ -4,7 +4,7 @@ import { eachProxyFor } from './each_proxy';
 import { get } from './property_get';
 import { unwatchKey, watchKey } from './watch_key';
 
-function isObject(obj: any): boolean {
+function isObject(obj: any): obj is object {
   return typeof obj === 'object' && obj !== null;
 }
 
@@ -134,7 +134,7 @@ function removeChainWatcher(obj: object, keyName: string, node: ChainNode, _meta
 }
 
 const NODE_STACK: ChainNode[] = [];
-function destroyRoot(root: ChainNode) {
+function destroyRoot(root: ChainNode): void {
   pushChildren(root);
   while (NODE_STACK.length > 0) {
     let node = NODE_STACK.pop()!;
@@ -143,14 +143,14 @@ function destroyRoot(root: ChainNode) {
   }
 }
 
-function destroyOne(node: ChainNode) {
+function destroyOne(node: ChainNode): void {
   if (node.isWatching) {
     removeChainWatcher(node.object!, node.key, node);
     node.isWatching = false;
   }
 }
 
-function pushChildren(node: ChainNode) {
+function pushChildren(node: ChainNode): void {
   let nodes = node.chains;
   if (nodes !== undefined) {
     for (let key in nodes) {
@@ -208,7 +208,7 @@ class ChainNode {
   }
 
   // copies a top level object only
-  copyTo(target: ChainNode) {
+  copyTo(target: ChainNode): void {
     let paths = this.paths;
     if (paths !== undefined) {
       let path;
@@ -315,7 +315,7 @@ class ChainNode {
     }
   }
 
-  populateAffected(path: string, depth: number, affected: (any | string)[]) {
+  populateAffected(path: string, depth: number, affected: (any | string)[]): void {
     if (this.key) {
       path = `${this.key}.${path}`;
     }

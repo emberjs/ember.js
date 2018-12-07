@@ -28,7 +28,11 @@ class EachProxy<T> {
   // ARRAY CHANGES
   // Invokes whenever the content array itself changes.
 
-  arrayWillChange(content: T[] | EmberArray<T>, idx: number, removedCnt: number /*, addedCnt */) {
+  arrayWillChange(
+    content: T[] | EmberArray<T>,
+    idx: number,
+    removedCnt: number /*, addedCnt */
+  ): void {
     // eslint-disable-line no-unused-vars
     let keys = this._keys;
     if (!keys) {
@@ -42,7 +46,12 @@ class EachProxy<T> {
     }
   }
 
-  arrayDidChange(content: T[] | EmberArray<T>, idx: number, _removedCnt: number, addedCnt: number) {
+  arrayDidChange(
+    content: T[] | EmberArray<T>,
+    idx: number,
+    _removedCnt: number,
+    addedCnt: number
+  ): void {
     let keys = this._keys;
     if (!keys) {
       return;
@@ -111,7 +120,7 @@ function addObserverForContentKey<T>(
   proxy: object | Function,
   idx: number,
   loc: number
-) {
+): void {
   while (--loc >= idx) {
     let item = objectAt(content, loc);
     if (item) {
