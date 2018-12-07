@@ -117,7 +117,9 @@ if (DEBUG) {
       ['@test watched ES5 setter should not be smashed by mandatory setter'](assert) {
         let value;
         let obj = {
-          get foo() {},
+          get foo() {
+            return value;
+          },
           set foo(_value) {
             value = _value;
           },

@@ -923,7 +923,7 @@ class CoreObject {
 
   static get superclass() {
     let c = Object.getPrototypeOf(this);
-    if (c !== Function.prototype) return c;
+    return c !== Function.prototype ? c : undefined;
   }
 
   static proto() {
