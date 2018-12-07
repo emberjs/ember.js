@@ -42,6 +42,7 @@ export type OperandList = ([] | [Operand] | [Operand, Operand] | [Operand, Opera
 export interface NormalizedMetadata {
   name: string;
   mnemonic: string;
+  before: null;
   stackChange: Option<number>;
   ops: OperandList;
   operands: number;
@@ -80,6 +81,7 @@ export function normalize(input: RawOperandMetadata): NormalizedMetadata {
   return {
     name,
     mnemonic: input.name,
+    before: null,
     stackChange: stackChange(input['operand-stack']),
     ops,
     operands: ops.length,
@@ -157,4 +159,25 @@ export function buildEnum(name: string, parsed: Dict<NormalizedMetadata>): strin
   e.push('}');
 
   return e.join('\n');
+}
+
+export const META_KIND = tuple('METADATA', 'MACHINE_METADATA');
+export type META_KIND = (typeof META_KIND)[number];
+
+export function buildSingleMeta(
+  kind: META_KIND,
+  all: Dict<NormalizedMetadata>,
+  key: keyof typeof all
+): string {
+  return `${kind}[MachineOp.${all[key].name}] = ${JSON.stringify(all[key], null, 2)}`;
+}
+
+export function buildMetas(kind: META_KIND, all: Dict<NormalizedMetadata>): string {
+  let out = [];
+
+  for (let key of Object.keys(all)) {
+    out.push(buildSingleMeta(kind, all, key));
+  }
+
+  return out.join('\n\n');
 }

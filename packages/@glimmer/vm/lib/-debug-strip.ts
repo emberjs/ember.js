@@ -2,7 +2,7 @@ import { Op, MachineOp } from './opcodes';
 import { Option, Opaque, Opcode } from '@glimmer/interfaces';
 import { fillNulls } from '@glimmer/util';
 import { RuntimeConstants } from '@glimmer/program';
-import { MachineRegister, $fp, $sp } from './registers';
+import { MachineRegister } from './registers';
 
 export interface VM {
   fetchValue(register: MachineRegister): number;
@@ -28,6 +28,7 @@ export type DebugBeforeFunction = (opcode: Opcode, vm: VM) => Opaque;
 export type OperandType =
   | 'handle'
   | 'i32'
+  | 'u32'
   | 'to'
   | 'str'
   | 'option-str'
@@ -110,27 +111,24 @@ function LazyConstant(name: string): Operand {
 export interface DebugMetadata<State = undefined> {
   name: string;
   before?: (opcode: Opcode, vm: VM) => State;
-  stackChange?: DebugStackChangeFunction<State> | number;
+  stackChange?: number;
   ops?: OperandList;
   skipCheck?: true;
 }
 
-export interface NormalizedMetadata<State = undefined> {
+export interface NormalizedMetadata {
   name: string;
   before: Option<DebugBeforeFunction>;
-  stackChange: DebugStackChangeFunction<State>;
+  stackChange: number;
   ops: OperandList;
   operands: number;
   check: boolean;
 }
 
-const METADATA: Option<NormalizedMetadata<any>>[] = fillNulls(Op.Size);
-const MACHINE_METADATA: Option<NormalizedMetadata<any>>[] = fillNulls(Op.Size);
+const METADATA: Option<NormalizedMetadata>[] = fillNulls(Op.Size);
+const MACHINE_METADATA: Option<NormalizedMetadata>[] = fillNulls(Op.Size);
 
-export function opcodeMetadata(
-  op: MachineOp | Op,
-  isMachine: 0 | 1
-): Option<NormalizedMetadata<any>> {
+export function opcodeMetadata(op: MachineOp | Op, isMachine: 0 | 1): Option<NormalizedMetadata> {
   let value = isMachine ? MACHINE_METADATA[op] : METADATA[op];
 
   return value || null;
@@ -141,7 +139,6 @@ enum OpcodeKind {
   Syscall,
 }
 
-const MACHINE = OpcodeKind.Machine;
 const SYSCALL = OpcodeKind.Syscall;
 
 export function OPCODE_METADATA<State>(
@@ -174,20 +171,20 @@ export function OPCODE_METADATA<State, Name extends Op | MachineOp = Op | Machin
     before = null;
   }
 
-  let stackChange: DebugStackChangeFunction<State>;
+  let stackChange: number;
   const providedStackChange = metadata.stackChange;
 
-  if (typeof providedStackChange === 'function') {
+  if (typeof providedStackChange === 'number') {
     stackChange = providedStackChange;
-  } else if (typeof providedStackChange === 'number') {
-    stackChange = () => providedStackChange;
+  } else if (providedStackChange === undefined) {
+    stackChange = 0;
   } else {
-    stackChange = () => 0;
+    throw new Error(`Unexpected stackChange: ${String(providedStackChange)}`);
   }
 
   let ops: OperandList = metadata.ops === undefined ? [] : metadata.ops;
 
-  let normalized: NormalizedMetadata<State> = {
+  let normalized: NormalizedMetadata = {
     name: metadata.name,
     check: metadata.skipCheck ? false : true,
     ops,
@@ -202,75 +199,152 @@ export function OPCODE_METADATA<State, Name extends Op | MachineOp = Op | Machin
 /// helpers ///
 
 /// MACHINE ///
+MACHINE_METADATA[MachineOp.PushFrame] = {
+  name: 'PushFrame',
+  before: null,
+  stackChange: 2,
+  ops: [],
+  operands: 0,
+  check: true,
+};
 
-OPCODE_METADATA(
-  MachineOp.InvokeVirtual,
-  {
-    name: 'InvokeVirtual',
-    stackChange: -1,
-  },
-  MACHINE
-);
+MACHINE_METADATA[MachineOp.PopFrame] = {
+  name: 'PopFrame',
+  before: null,
+  stackChange: -2,
+  ops: [],
+  operands: 0,
+  check: false,
+};
 
-OPCODE_METADATA(
-  MachineOp.InvokeStatic,
-  {
-    name: 'InvokeStatic',
-    ops: [Handle('handle')],
-  },
-  MACHINE
-);
+MACHINE_METADATA[MachineOp.InvokeVirtual] = {
+  name: 'InvokeVirtual',
+  before: null,
+  stackChange: -1,
+  ops: [],
+  operands: 0,
+  check: true,
+};
 
-OPCODE_METADATA(
-  MachineOp.Jump,
-  {
-    name: 'Jump',
-    ops: [TO('to')],
-  },
-  MACHINE
-);
-
-OPCODE_METADATA(
-  MachineOp.PushFrame,
-  {
-    name: 'PushFrame',
-    stackChange: 2,
-  },
-  MACHINE
-);
-
-OPCODE_METADATA(
-  MachineOp.PopFrame,
-  {
-    name: 'PopFrame',
-
-    before(_opcode: Opcode, vm: VM): { sp: number; fp: number } {
-      return { sp: vm.fetchValue($sp), fp: vm.fetchValue($fp) };
+MACHINE_METADATA[MachineOp.InvokeStatic] = {
+  name: 'InvokeStatic',
+  before: null,
+  stackChange: 0,
+  ops: [
+    {
+      name: 'handle',
+      type: 'handle',
     },
+  ],
+  operands: 1,
+  check: true,
+};
 
-    stackChange({ state }: { state: { sp: number; fp: number } }) {
-      return state.fp - state.sp - 1;
+MACHINE_METADATA[MachineOp.Jump] = {
+  name: 'Jump',
+  before: null,
+  stackChange: 0,
+  ops: [
+    {
+      name: 'to',
+      type: 'u32',
     },
-  },
-  MACHINE
-);
+  ],
+  operands: 1,
+  check: true,
+};
 
-OPCODE_METADATA(
-  MachineOp.Return,
-  {
-    name: 'Return',
-  },
-  MACHINE
-);
+MACHINE_METADATA[MachineOp.Return] = {
+  name: 'Return',
+  before: null,
+  stackChange: 0,
+  ops: [],
+  operands: 0,
+  check: false,
+};
 
-OPCODE_METADATA(
-  MachineOp.ReturnTo,
-  {
-    name: 'ReturnTo',
-    ops: [TO('offset')],
-  },
-  MACHINE
-);
+MACHINE_METADATA[MachineOp.ReturnTo] = {
+  name: 'ReturnTo',
+  before: null,
+  stackChange: 0,
+  ops: [
+    {
+      name: 'offset',
+      type: 'i32',
+    },
+  ],
+  operands: 1,
+  check: true,
+};
+
+// OPCODE_METADATA(
+//   MachineOp.InvokeVirtual,
+//   {
+//     name: 'InvokeVirtual',
+//     stackChange: -1,
+//   },
+//   MACHINE
+// );
+
+// OPCODE_METADATA(
+//   MachineOp.InvokeStatic,
+//   {
+//     name: 'InvokeStatic',
+//     ops: [Handle('handle')],
+//   },
+//   MACHINE
+// );
+
+// OPCODE_METADATA(
+//   MachineOp.Jump,
+//   {
+//     name: 'Jump',
+//     ops: [TO('to')],
+//   },
+//   MACHINE
+// );
+
+// OPCODE_METADATA(
+//   MachineOp.PushFrame,
+//   {
+//     name: 'PushFrame',
+//     stackChange: 2,
+//   },
+//   MACHINE
+// );
+
+// OPCODE_METADATA(
+//   MachineOp.PopFrame,
+//   {
+//     name: 'PopFrame',
+
+//     before(_opcode: Opcode, vm: VM): { sp: number; fp: number } {
+//       return { sp: vm.fetchValue($sp), fp: vm.fetchValue($fp) };
+//     },
+
+//     stackChange({ state }: { state: { sp: number; fp: number } }) {
+//       return state.fp - state.sp - 1;
+//     },
+//   },
+//   MACHINE
+// );
+
+// OPCODE_METADATA(
+//   MachineOp.Return,
+//   {
+//     name: 'Return',
+//   },
+//   MACHINE
+// );
+
+// OPCODE_METADATA(
+//   MachineOp.ReturnTo,
+//   {
+//     name: 'ReturnTo',
+//     ops: [TO('offset')],
+//   },
+//   MACHINE
+// );
 
 /// DYNAMIC SCOPE ///
 
@@ -279,11 +353,7 @@ OPCODE_METADATA(
   {
     name: 'BindDynamicScope',
     ops: [StrArray('names')],
-    stackChange({ opcode: { op1: _names }, constants }) {
-      let size = constants.getArray(_names).length;
-
-      return -size;
-    },
+    skipCheck: true,
   },
   SYSCALL
 );
@@ -901,9 +971,7 @@ OPCODE_METADATA(
   {
     name: 'Pop',
     ops: [I32('count')],
-    stackChange({ opcode: { op1: count } }) {
-      return -count;
-    },
+    skipCheck: true,
   },
   SYSCALL
 );
@@ -1032,10 +1100,7 @@ OPCODE_METADATA(
   {
     name: 'Concat',
     ops: [I32('size')],
-
-    stackChange({ opcode }) {
-      return -opcode.op1 + 1;
-    },
+    skipCheck: true,
   },
   SYSCALL
 );
