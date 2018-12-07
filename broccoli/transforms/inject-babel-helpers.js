@@ -1,13 +1,15 @@
 'use strict';
 
+const { addNamed } = require('@babel/helper-module-imports');
+
 function injectBabelHelpers() {
   return {
     pre(file) {
       file.set('helperGenerator', function(name) {
         if (name === 'extends') {
-          return file.addImport('@ember/polyfills', 'assign', name);
+          return addNamed(file.path, 'assign', '@ember/polyfills');
         }
-        return file.addImport('ember-babel', name, name);
+        return addNamed(file.path, name, 'ember-babel');
       });
     },
   };
