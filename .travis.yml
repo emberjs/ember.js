@@ -97,9 +97,3 @@ jobs:
       - PUBLISH=true
       script:
         - "./bin/publish_builds"
-
-    - env:
-      - BUILD_TYPE=alpha
-      - PUBLISH=true
-      script:
-        - "./bin/publish_builds"
