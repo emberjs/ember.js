@@ -77,7 +77,7 @@
     "resolve": "^1.6.0"
   },
   "devDependencies": {
-    "@glimmer/compiler": "^0.36.4",
+    "@glimmer/compiler": "^0.37.0",
     "@glimmer/env": "^0.1.7",
     "@glimmer/interfaces": "^0.36.4",
     "@glimmer/node": "^0.36.4",
