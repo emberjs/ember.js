@@ -81,7 +81,8 @@
     "tslint": "^5.11.0",
     "tslint-config-prettier": "^1.15.0",
     "tslint-plugin-prettier": "^2.0.1",
-    "typescript": "^3.1.0"
+    "typescript": "^3.1.0",
+    "toml": "^2.3.3"
   },
   "changelog": {
     "repo": "glimmerjs/glimmer-vm",

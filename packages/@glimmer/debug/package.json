@@ -8,6 +8,7 @@
   },
   "devDependencies": {
     "@types/qunit": "^2.0.31",
-    "typescript": "^2.8.3"
+    "typescript": "^2.8.3",
+    "toml": "^2.3.3"
   }
 }

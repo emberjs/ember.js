@@ -24,7 +24,7 @@ Operand Stack:
 
 # *scall
 
-Format: (*InvokeStatic handle:Handle)
+Format: (*InvokeStatic handle:handle)
 Operation: Evaluate the handle.
 Operand Stack:
   ... →
@@ -56,7 +56,7 @@ Operand Stack:
 
 # ncall
 
-Format: (Helper helper:#Function)
+Format: (Helper helper:handle)
 Operation: Evaluate a Helper.
 Operand Stack:
   ..., [VersionedPathReference ...], Arguments →
@@ -114,7 +114,7 @@ Operand Stack:
 
 # getprop
 
-Format: (GetProperty property:#string)
+Format: (GetProperty property:str)
 Operation:
   Pop a VersionedPathReference from the top of the
   stack, and push a VersionedPathReference constructed
@@ -166,7 +166,7 @@ Operand Stack:
 
 # rconstload
 
-Format: (PushConstant constant:#Object)
+Format: (PushConstant constant:unknown)
 Operation:
   Push an Object constant onto the stack that is not
   a JavaScript primitive.
@@ -176,7 +176,7 @@ Operand Stack:
 
 # pconstload
 
-Format: (PushPrimitive constant:#Primitive)
+Format: (PushPrimitive constant:primitive)
 Operation:
   Wrap a JavaScript primitive in a reference and push it
   onto the stack.
@@ -225,25 +225,23 @@ Operand Stack:
 
 # put
 
+Format: (Load register:u32)
 Operation: Load a value into a register
-Format:
-  (Load register:u32)
 Operand Stack:
   ..., Opaque →
   ...
 
 # regload
 
+Format: (Fetch register:u32)
 Operation: Fetch a value from a register
-Format:
-  (Fetch register:u32)
 Operand Stack:
   ... →
   ..., Opaque
 
 # rscopepush
 
-Format: (RootScope symbols:u32 bindCallerScope:bool)
+Format: (RootScope symbols:u32, bindCallerScope:bool)
 Operation: Push a new root scope onto the scope stack.
 Operand Stack:
   ... →
@@ -286,7 +284,7 @@ Operand Stack:
 
 # apnd_text
 
-Format: (Text contents:#string)
+Format: (Text contents:str)
 Operation: Append a Text node with value `contents`
 Operand Stack:
   ... →
@@ -294,7 +292,7 @@ Operand Stack:
 
 # apdn_comment
 
-Format: (Comment contents:#string)
+Format: (Comment contents:str)
 Operation: Append a Comment node with value `contents`
 Operand Stack:
   ... →
@@ -342,7 +340,7 @@ Operand Stack:
 
 # apnd_tag
 
-Format: (OpenElement tag:#string)
+Format: (OpenElement tag:str)
 Operation: Open a new Element named `tag`.
 Operand Stack:
   ... →
@@ -369,7 +367,7 @@ Operand Stack:
 
 # apnd_attr
 
-Format: (StaticAttr name:#string value:#string namespace:Option<#string>)
+Format: (StaticAttr name:str, value:str, namespace:option-str)
 Operation: Add an attribute to the current Element.
 Operand Stack:
   ... →
@@ -377,7 +375,7 @@ Operand Stack:
 
 # apnd_dynattr
 
-Format: (DynamicAttr name:#string trusting:boolean namespace:Option<#string>)
+Format: (DynamicAttr name:str, trusting:bool, namespace:option-str)
 Operation:
   Add an attribute to the current element using the value
   at the top of the stack.
@@ -390,7 +388,7 @@ Description:
 
 # apnd_cattr
 
-Format: (ComponentAttr name:#string trusting:boolean namespace:Option<#string>)
+Format: (ComponentAttr name:str, trusting:bool, namespace:option-str)
 Operation:
   Add an attribute to the current element using the value
   at the top of the stack.
@@ -400,9 +398,8 @@ Operand Stack:
 
 # apnd_flushtag
 
-Operation: Finish setting attributes on the current element.
-
 Format: (FlushElement)
+Operation: Finish setting attributes on the current element.
 Operand Stack:
   ... →
   ...
@@ -433,7 +430,7 @@ Operand Stack:
 
 # setdynscope
 
-Format: (BindDynamicScope names:#Array<#string>)
+Format: (BindDynamicScope names:str-array)
 Operation: Bind stack values as dynamic variables.
 Operand Stack:
   ..., VersionedPathReference, [VersionedPathReference ...] →
@@ -591,7 +588,7 @@ Operation:
   Convert an operand and key into an iterator and
   presence reference.
 Operand Stack:
-  ..., key:string, list:VersionedPathReference →
+  ..., key:str, list:VersionedPathReference →
   ..., iterator:ReferenceIterator, present:PresenceReference
 
 # iter
@@ -642,7 +639,7 @@ Operand Stack:
 
 # curry
 
-Format: (CurryComponent templateMeta:#Locator)
+Format: (CurryComponent templateMeta:Locator)
 Operation: Curry a component definition for a later invocation.
 Operand Stack:
   ..., VersionedPathReference, [VersionedPathReference ...], Arguments →
@@ -678,7 +675,7 @@ Operand Stack:
 
 # cdload
 
-Format: (ResolveDynamicComponent templateMeta:#Locator)
+Format: (ResolveDynamicComponent templateMeta:Locator)
 Operation:
   Push a resolved component definition onto the stack
 Operand Stack:
@@ -687,7 +684,7 @@ Operand Stack:
 
 # argsload
 
-Format: (PushArgs names:#Array<#string> positionalCount:u32 synthetic:#boolean)
+Format: (PushArgs names:Array<string> positionalCount:u32 synthetic:boolean)
 Operation: Push a user representation of args onto the stack.
 Operand Stack:
   ..., [VersionedPathReference ...]  →
@@ -857,7 +854,7 @@ Operand Stack:
 
 # invokepartial
 
-Format: (InvokePartial templateMeta:#Locator symbols:#Array<#string> evalInfo:#Array<number>)
+Format: (InvokePartial templateMeta:Locator symbols:Array<string> evalInfo:Array<number>)
 Operation: Lookup and invoke a partial template.
 Operand Stack:
   ..., VersionedPathReference<string> →
@@ -865,7 +862,7 @@ Operand Stack:
 
 # eval_varload
 
-Format: (ResolveMaybeLocal local:#string)
+Format: (ResolveMaybeLocal local:str)
 Operation:
   Resolve {{foo}} inside a partial, which could be either a self-lookup
   or a local variable that is in-scope for the caller.
@@ -875,7 +872,7 @@ Operand Stack:
 
 # debugger
 
-Format: (Debugger symbols:#Array<string> evalInfo:#Array<number>)
+Format: (Debugger symbols:Array<string> evalInfo:Array<number>)
 Operation: Activate the debugger
 Operand Stack:
   ... →
