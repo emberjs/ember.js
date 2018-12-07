@@ -256,31 +256,6 @@ OPCODE_METADATA(
 );
 
 OPCODE_METADATA(
-  MachineOp.PushSmallFrame,
-  {
-    name: 'PushSmallFrame',
-    stackChange: 1,
-  },
-  MACHINE
-);
-
-OPCODE_METADATA(
-  MachineOp.PopSmallFrame,
-  {
-    name: 'PopFrame',
-
-    before(_opcode: Opcode, vm: VM): { sp: number; fp: number } {
-      return { sp: vm.fetchValue($sp), fp: vm.fetchValue($fp) };
-    },
-
-    stackChange({ state }: { state: { sp: number; fp: number } }) {
-      return state.fp - state.sp;
-    },
-  },
-  MACHINE
-);
-
-OPCODE_METADATA(
   MachineOp.Return,
   {
     name: 'Return',
