@@ -156,7 +156,7 @@
     "testem": "^2.14.0",
     "tslint": "^5.9.1",
     "tslint-config-prettier": "^1.10.0",
-    "tslint-plugin-prettier": "^1.3.0",
+    "tslint-plugin-prettier": "^2.0.1",
     "typescript-eslint-parser": "^18.0.0"
   },
   "engines": {
