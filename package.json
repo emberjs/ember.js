@@ -82,7 +82,7 @@
     "@glimmer/interfaces": "^0.36.4",
     "@glimmer/node": "^0.36.4",
     "@glimmer/opcode-compiler": "^0.36.4",
-    "@glimmer/program": "^0.36.4",
+    "@glimmer/program": "^0.37.0",
     "@glimmer/reference": "^0.36.4",
     "@glimmer/runtime": "^0.36.4",
     "@types/qunit": "^2.5.0",
