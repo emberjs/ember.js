@@ -151,8 +151,6 @@
         QUnit.config.urlConfig.push({ id: 'enableoptionalfeatures', label: "Enable Opt Features"});
         // Handle extending prototypes
         QUnit.config.urlConfig.push({ id: 'extendprototypes', label: 'Extend Prototypes'});
-        // Enable/disable livereload
-        QUnit.config.urlConfig.push({ id: 'livereload', label: 'Live Reload'});
 
         QUnit.config.urlConfig.push('forceskip');
 
@@ -200,18 +198,6 @@
         if (moduleName.match(skipPackageRegexp)) { continue; }
 
         if (moduleName.match(/[_-]test$/)) { Ember.__loader.require(moduleName); }
-      }
-    </script>
-
-    <script>
-      if (QUnit.urlParams.livereload) {
-        (function() {
-          var src = (location.protocol || 'http:') + '//' + (location.hostname || 'localhost') + ':' + (parseInt(location.port, 10) + 31529) + '/livereload.js?snipver=1';
-          var script    = document.createElement('script');
-          script.type   = 'text/javascript';
-          script.src    = src;
-          document.getElementsByTagName('head')[0].appendChild(script);
-        }());
       }
     </script>
 
