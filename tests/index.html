@@ -39,18 +39,6 @@
       (function() {
         window.ENV = window.ENV || {};
 
-        window.printTestCounts = function() {
-          var passing = $("li[id^='qunit-'].pass").length;
-          var failing = $("li[id^='qunit-'].fail").length;
-          var total = passing + failing;
-
-          console.table([{ passing: passing, failing: failing, total: total }], ["passing", "failing", "total"]);
-        }
-
-        window.findPassingSkippedTests = function() {
-          console.log($("li[id^='qunit-'].pass:contains(SKIPPED)").map(function() { return $("strong", this).text() }).toArray().join("\n"));
-        };
-
         // Test for "hooks in ENV.EMBER_LOAD_HOOKS['hookName'] get executed"
         ENV.EMBER_LOAD_HOOKS = ENV.EMBER_LOAD_HOOKS || {};
         ENV.EMBER_LOAD_HOOKS.__before_ember_test_hook__ = ENV.EMBER_LOAD_HOOKS.__before_ember_test_hook__ || [];
