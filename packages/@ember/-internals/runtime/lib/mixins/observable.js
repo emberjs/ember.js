@@ -304,19 +304,19 @@ export default Mixin.create({
         function on)
       - the name of the function to invoke on the target object
         (as a string).
-        
+
     ```app/components/my-component.js
     import Component from '@ember/component';
 
     export default Component.extend({
       init() {
         this._super(...arguments);
-        
+
         // the following are equivalent:
-        
+
         // using three arguments
         this.addObserver('foo', this, 'fooDidChange');
-        
+
         // using two arguments
         this.addObserver('foo', (...args) => {
           this.fooDidChange(...args);
@@ -328,7 +328,7 @@ export default Mixin.create({
       }
     });
     ```
-    
+
     ### Observer Methods
 
     Observer methods have the following signature:
