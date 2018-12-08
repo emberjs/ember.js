@@ -96,7 +96,6 @@ export function get(obj: object, keyName: string): any {
   let isFunction = type === 'function';
   let isObjectLike = isObject || isFunction;
 
-  let descriptor;
   let value: any;
 
   if (isObjectLike) {
@@ -105,7 +104,7 @@ export function get(obj: object, keyName: string): any {
       if (tracker) tracker.add(tagForProperty(obj, keyName));
     }
 
-    descriptor = descriptorFor(obj, keyName);
+    let descriptor = descriptorFor(obj, keyName);
     if (descriptor !== undefined) {
       return descriptor.get(obj, keyName);
     }
