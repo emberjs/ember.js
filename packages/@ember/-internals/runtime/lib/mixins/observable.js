@@ -293,6 +293,42 @@ export default Mixin.create({
     value is set, regardless of whether it has actually changed. Your
     observer should be prepared to handle that.
 
+    There are two common invocation patterns for `.addObserver()`:
+    
+    - Passing two arguments:
+      - the name of the property to observe (as a string)
+      - the function to invoke (an actual function)
+    - Passing three arguments:
+      - the name of the property to observe (as a string)
+      - the target object (will be used to look up and invoke a
+        function on)
+      - the name of the function to invoke on the target object
+        (as a string).
+        
+    ```app/components/my-component.js
+    import Component from '@ember/component';
+
+    export default Component.extend({
+      init() {
+        this._super(...arguments);
+        
+        // the following are equivalent:
+        
+        // using three arguments
+        this.addObserver('foo', this, 'fooDidChange');
+        
+        // using two arguments
+        this.addObserver('foo', (...args) => {
+          this.fooDidChange(...args);
+        });
+      },
+
+      fooDidChange() {
+        // your custom logic code
+      }
+    });
+    ```
+    
     ### Observer Methods
 
     Observer methods have the following signature:
