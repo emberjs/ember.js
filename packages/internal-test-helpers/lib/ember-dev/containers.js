@@ -1,15 +1,17 @@
 import { Container } from '@ember/-internals/container';
 
-function ContainersAssert(env) {
-  this.env = env;
-}
-
 const { _leakTracking: containerLeakTracking } = Container;
 
-ContainersAssert.prototype = {
-  reset: function() {},
-  inject: function() {},
-  assert: function() {
+export default class ContainersAssert {
+  constructor(env) {
+    this.env = env;
+  }
+
+  reset() {}
+
+  inject() {}
+
+  assert() {
     if (containerLeakTracking === undefined) return;
     let { config } = QUnit;
     let {
@@ -32,8 +34,7 @@ ContainersAssert.prototype = {
         }
       });
     };
-  },
-  restore: function() {},
-};
+  }
 
-export default ContainersAssert;
+  restore() {}
+}
