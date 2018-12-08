@@ -1,13 +1,15 @@
 import { cancelTimers, end, getCurrentRunLoop, hasScheduledTimers } from '@ember/runloop';
 
-function RunLoopAssertion(env) {
-  this.env = env;
-}
+export default class RunLoopAssertion {
+  constructor(env) {
+    this.env = env;
+  }
 
-RunLoopAssertion.prototype = {
-  reset: function() {},
-  inject: function() {},
-  assert: function() {
+  reset() {}
+
+  inject() {}
+
+  assert() {
     let { assert } = QUnit.config.current;
 
     if (getCurrentRunLoop()) {
@@ -21,8 +23,7 @@ RunLoopAssertion.prototype = {
       assert.ok(false, 'Ember run should not have scheduled timers at end of test');
       cancelTimers();
     }
-  },
-  restore: function() {},
-};
+  }
 
-export default RunLoopAssertion;
+  restore() {}
+}
