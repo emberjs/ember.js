@@ -52,7 +52,6 @@ export interface NormalizedMetadata {
 export type Stack = [string[], string[]];
 
 export interface RawOperandMetadata {
-  name: string;
   kind: 'machine' | 'syscall';
   format: RawOperandFormat;
   skip?: true;
@@ -63,7 +62,7 @@ export interface RawOperandMetadata {
 
 export type RawOperandFormat = string | string[];
 
-export function normalize(input: RawOperandMetadata): NormalizedMetadata {
+export function normalize(key: string, input: RawOperandMetadata): NormalizedMetadata {
   let name;
 
   if (input.format === undefined) {
@@ -80,7 +79,7 @@ export function normalize(input: RawOperandMetadata): NormalizedMetadata {
 
   return {
     name,
-    mnemonic: input.name,
+    mnemonic: key,
     before: null,
     stackChange: stackChange(input['operand-stack']),
     ops,
@@ -142,7 +141,7 @@ export function normalizeParsed(parsed: Dict<RawOperandMetadata>): Dict<Normaliz
   let out = {};
 
   for (let key of Object.keys(parsed)) {
-    out[key] = normalize(parsed[key]);
+    out[key] = normalize(key, parsed[key]);
   }
 
   return out;
@@ -169,7 +168,8 @@ export function buildSingleMeta(
   all: Dict<NormalizedMetadata>,
   key: keyof typeof all
 ): string {
-  return `${kind}[MachineOp.${all[key].name}] = ${JSON.stringify(all[key], null, 2)}`;
+  let e = kind === 'MACHINE_METADATA' ? 'MachineOp' : 'Op';
+  return `${kind}[${e}.${all[key].name}] = ${JSON.stringify(all[key], null, 2)}`;
 }
 
 export function buildMetas(kind: META_KIND, all: Dict<NormalizedMetadata>): string {

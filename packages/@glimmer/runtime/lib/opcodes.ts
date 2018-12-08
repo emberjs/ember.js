@@ -52,7 +52,7 @@ export class AppendOpcodes {
     this.evaluateOpcode[name as number] = { syscall: kind === 'syscall', evaluate } as Evaluate;
   }
 
-  debugBefore(vm: VM<Opaque>, opcode: Opcode, type: number): DebugState {
+  debugBefore(vm: VM<Opaque>, opcode: Opcode): DebugState {
     let params: object | undefined = undefined;
     let opName: string | undefined = undefined;
 
@@ -81,17 +81,8 @@ export class AppendOpcodes {
     }
 
     let sp: number;
-    let state: Opaque;
 
     if (DEVMODE) {
-      let metadata = opcodeMetadata(type, opcode.isMachine);
-
-      if (metadata && metadata.before) {
-        state = metadata.before(opcode, vm);
-      } else {
-        state = undefined;
-      }
-
       sp = vm.fetchValue($sp);
     }
 
@@ -104,7 +95,7 @@ export class AppendOpcodes {
       type: opcode.type,
       isMachine: opcode.isMachine,
       size: opcode.size,
-      state,
+      state: undefined,
     };
   }
 

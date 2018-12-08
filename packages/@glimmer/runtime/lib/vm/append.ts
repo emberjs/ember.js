@@ -347,7 +347,7 @@ export default class VM<T> implements PublicVM, InternalVM {
       runtime.program,
       {
         debugBefore: (opcode: Opcode): DebugState => {
-          return APPEND_OPCODES.debugBefore(this, opcode, opcode.type);
+          return APPEND_OPCODES.debugBefore(this, opcode);
         },
 
         debugAfter: (state: DebugState): void => {
