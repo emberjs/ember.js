@@ -368,7 +368,7 @@ class BootOptions {
     /**
       Run in a full browser environment.
 
-      When this flag is set to `true`, it will disable most browser-specific
+      When this flag is set to `false`, it will disable most browser-specific
       and interactive features. Specifically:
 
       * It does not use `jQuery` to append the root view; the `rootElement`
@@ -404,7 +404,7 @@ class BootOptions {
     /**
       Disable rendering completely.
 
-      When this flag is set to `true`, it will disable the entire rendering
+      When this flag is set to `false`, it will disable the entire rendering
       pipeline. Essentially, this puts the app into "routing-only" mode. No
       templates will be rendered, and no Components will be created.
 
