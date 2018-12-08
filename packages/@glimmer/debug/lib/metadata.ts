@@ -169,7 +169,30 @@ export function buildSingleMeta(
   key: keyof typeof all
 ): string {
   let e = kind === 'MACHINE_METADATA' ? 'MachineOp' : 'Op';
-  return `${kind}[${e}.${all[key].name}] = ${JSON.stringify(all[key], null, 2)}`;
+  return `${kind}[${e}.${all[key].name}] = ${stringify(all[key], 0)};`;
+}
+
+function stringify(o: unknown, pad: number): string {
+  if (typeof o !== 'object' || o === null) {
+    if (typeof o === 'string') {
+      return `'${o}'`;
+    }
+    return JSON.stringify(o);
+  }
+
+  if (Array.isArray(o)) {
+    return `[${o.map(v => stringify(v, pad)).join(', ')}]`;
+  }
+
+  let out = ['{'];
+
+  for (let key of Object.keys(o)) {
+    out.push(`${' '.repeat(pad + 2)}${key}: ${stringify(o[key], pad + 2)},`);
+  }
+
+  out.push(`${' '.repeat(pad)}}`);
+
+  return out.join('\n');
 }
 
 export function buildMetas(kind: META_KIND, all: Dict<NormalizedMetadata>): string {
