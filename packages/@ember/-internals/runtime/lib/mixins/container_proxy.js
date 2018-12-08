@@ -140,6 +140,10 @@ let containerProxyMixin = {
   // initial properties.
   ```
 
+  Any instances created via the factory's `.create()` method *must* be destroyed
+  manually by the caller of `.create()`. Typically, this is done during the creating
+  objects own `destroy` or `willDestroy` methods.
+
   @public
   @method factoryFor
   @param {String} fullName
