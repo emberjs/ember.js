@@ -87,7 +87,7 @@ function generateBuiltTests() {
   var common = 'skipPackage=container,ember-testing,@ember/debug';
 
   testFunctions.push(function() {
-    return run(common + '&nolint=true');
+    return run(common);
   });
   testFunctions.push(function() {
     return run(common + '&dist=min&prod=true');
@@ -99,7 +99,7 @@ function generateBuiltTests() {
     return run(common + '&enableoptionalfeatures=true&dist=prod&prod=true');
   });
   testFunctions.push(function() {
-    return run(common + '&legacy=true&nolint=true');
+    return run(common + '&legacy=true');
   });
   testFunctions.push(function() {
     return run(common + '&legacy=true&dist=min&prod=true');
@@ -114,22 +114,22 @@ function generateBuiltTests() {
 
 function generateOldJQueryTests() {
   testFunctions.push(function() {
-    return run('jquery=1.10.2&nolint=true');
+    return run('jquery=1.10.2');
   });
   testFunctions.push(function() {
-    return run('jquery=1.12.4&nolint=true');
+    return run('jquery=1.12.4');
   });
   testFunctions.push(function() {
-    return run('jquery=2.2.4&nolint=true');
+    return run('jquery=2.2.4');
   });
 }
 
 function generateExtendPrototypeTests() {
   testFunctions.push(function() {
-    return run('extendprototypes=true&nolint=true');
+    return run('extendprototypes=true');
   });
   testFunctions.push(function() {
-    return run('extendprototypes=true&nolint=true&enableoptionalfeatures=true');
+    return run('extendprototypes=true&enableoptionalfeatures=true');
   });
 }
 
