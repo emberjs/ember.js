@@ -182,28 +182,7 @@
           }
         });
 
-        // work around https://github.com/qunitjs/qunit/issues/1224
-        QUnit.testStart(function() {
-          var existingFixture = document.getElementById('qunit-fixture');
-
-          // create a new pristine fixture element
-          var newFixture = document.createElement('div');
-          newFixture.setAttribute('id', 'qunit-fixture');
-
-          // replace the old (possibly mutated fixture) with the new pristine one
-          existingFixture.parentNode.replaceChild(newFixture, existingFixture);
-        });
-
         QUnit.testDone(function(results) {
-          // release the test callback (polyfill for https://github.com/qunitjs/qunit/pull/1279)
-          QUnit.config.current.callback = undefined;
-
-          var oldFixture = document.getElementById('qunit-fixture');
-          var parent = oldFixture.parentElement;
-          var newFixture = document.createElement('div');
-          newFixture.id = 'qunit-fixture';
-          parent.replaceChild(newFixture, oldFixture);
-
           testsTotal++;
 
           if (results.failed) {
@@ -211,11 +190,6 @@
           } else {
             testsPassed++;
           }
-        });
-
-        QUnit.moduleDone(function() {
-          // release the module hooks (polyfill for https://github.com/qunitjs/qunit/pull/1279)
-          QUnit.config.current.module.hooks = {};
         });
 
         QUnit.done(function(result) {
