@@ -54,22 +54,14 @@ function generateTestsFor(packageName) {
     return;
   }
 
-  testFunctions.push(function() {
-    return run('package=' + packageName);
-  });
-  testFunctions.push(function() {
-    return run('package=' + packageName + '&dist=es');
-  });
-  testFunctions.push(function() {
-    return run('package=' + packageName + '&enableoptionalfeatures=true');
-  });
+  testFunctions.push(() => run('package=' + packageName));
+  testFunctions.push(() => run('package=' + packageName + '&dist=es'));
+  testFunctions.push(() => run('package=' + packageName + '&enableoptionalfeatures=true'));
 
   // TODO: this should ultimately be deleted (when all packages can run with and
   // without jQuery)
   if (packageName !== 'ember') {
-    testFunctions.push(function() {
-      return run('package=' + packageName + '&jquery=none');
-    });
+    testFunctions.push(() => run('package=' + packageName + '&jquery=none'));
   }
 }
 
@@ -86,51 +78,27 @@ function generateBuiltTests() {
   // ember-testing and @ember/debug are stripped from prod/min.
   var common = 'skipPackage=container,ember-testing,@ember/debug';
 
-  testFunctions.push(function() {
-    return run(common);
-  });
-  testFunctions.push(function() {
-    return run(common + '&dist=min&prod=true');
-  });
-  testFunctions.push(function() {
-    return run(common + '&dist=prod&prod=true');
-  });
-  testFunctions.push(function() {
-    return run(common + '&enableoptionalfeatures=true&dist=prod&prod=true');
-  });
-  testFunctions.push(function() {
-    return run(common + '&legacy=true');
-  });
-  testFunctions.push(function() {
-    return run(common + '&legacy=true&dist=min&prod=true');
-  });
-  testFunctions.push(function() {
-    return run(common + '&legacy=true&dist=prod&prod=true');
-  });
-  testFunctions.push(function() {
-    return run(common + '&legacy=true&enableoptionalfeatures=true&dist=prod&prod=true');
-  });
+  testFunctions.push(() => run(common));
+  testFunctions.push(() => run(common + '&dist=min&prod=true'));
+  testFunctions.push(() => run(common + '&dist=prod&prod=true'));
+  testFunctions.push(() => run(common + '&enableoptionalfeatures=true&dist=prod&prod=true'));
+  testFunctions.push(() => run(common + '&legacy=true'));
+  testFunctions.push(() => run(common + '&legacy=true&dist=min&prod=true'));
+  testFunctions.push(() => run(common + '&legacy=true&dist=prod&prod=true'));
+  testFunctions.push(() =>
+    run(common + '&legacy=true&enableoptionalfeatures=true&dist=prod&prod=true')
+  );
 }
 
 function generateOldJQueryTests() {
-  testFunctions.push(function() {
-    return run('jquery=1.10.2');
-  });
-  testFunctions.push(function() {
-    return run('jquery=1.12.4');
-  });
-  testFunctions.push(function() {
-    return run('jquery=2.2.4');
-  });
+  testFunctions.push(() => run('jquery=1.10.2'));
+  testFunctions.push(() => run('jquery=1.12.4'));
+  testFunctions.push(() => run('jquery=2.2.4'));
 }
 
 function generateExtendPrototypeTests() {
-  testFunctions.push(function() {
-    return run('extendprototypes=true');
-  });
-  testFunctions.push(function() {
-    return run('extendprototypes=true&enableoptionalfeatures=true');
-  });
+  testFunctions.push(() => run('extendprototypes=true'));
+  testFunctions.push(() => run('extendprototypes=true&enableoptionalfeatures=true'));
 }
 
 function runAndExit() {
