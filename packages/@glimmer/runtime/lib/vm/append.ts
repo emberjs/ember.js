@@ -71,6 +71,7 @@ export interface PublicVM {
  */
 export interface InternalVM {
   readonly [CONSTANTS]: RuntimeConstants<unknown>;
+  readonly [ARGS]: Arguments;
 
   readonly env: Environment;
   readonly stack: EvaluationStack;
@@ -141,14 +142,14 @@ class Stacks {
 }
 
 export default class VM<T> implements PublicVM, InternalVM {
-  private [STACKS] = new Stacks();
+  private readonly [STACKS] = new Stacks();
+  private readonly [HEAP]: Heap;
   private readonly destructor: object;
+  private readonly [DESTRUCTOR_STACK] = new Stack<object>();
   readonly [CONSTANTS]: RuntimeConstants<T>;
   readonly [ARGS]: Arguments;
-  readonly [HEAP]: Heap;
   readonly [INNER_VM]: LowLevelVM;
   readonly [REGISTERS]: LowLevelRegisters = initializeRegisters();
-  readonly [DESTRUCTOR_STACK] = new Stack<object>();
 
   get stack(): EvaluationStackImpl {
     return this[INNER_VM].stack as EvaluationStackImpl;
@@ -383,13 +384,6 @@ export default class VM<T> implements PublicVM, InternalVM {
   }
 
   commitCacheGroup() {
-    //        JumpIfNotModified(END)
-    //        (head)
-    //        (....)
-    //        (tail)
-    //        DidModify
-    // END:   Noop
-
     let END = new LabelOpcode('END');
 
     let opcodes = this.updating();
