@@ -2317,10 +2317,10 @@ broccoli-string-replace@^0.1.2:
     broccoli-persistent-filter "^1.1.5"
     minimatch "^3.0.3"
 
-broccoli-typescript-compiler@^4.0.1:
-  version "4.0.1"
-  resolved "https://registry.yarnpkg.com/broccoli-typescript-compiler/-/broccoli-typescript-compiler-4.0.1.tgz#7a03e003b3032acf9a2feaae973ae2e257393d04"
-  integrity sha512-3psnblHnaMTfh3sE9lkLTKs8XjK563vbKMh/1mslmabqt9wuAOfTMUNEMbmGCofVoMUd9C/ydrmN5eZ6mJUNpQ==
+broccoli-typescript-compiler@^4.1.0:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/broccoli-typescript-compiler/-/broccoli-typescript-compiler-4.1.0.tgz#8511b73a7b019f6b6267679df64e211ca65ba036"
+  integrity sha512-pz+hQMlfwvklezPB1K4COYdf5SIQX6Dl4bdLX/R0uTNEJAwVa3Is/4YSXXm2L+LQdfMCZSXzqjbC5AGgvdbB6A==
   dependencies:
     broccoli-funnel "^2.0.1"
     broccoli-merge-trees "^3.0.0"
@@ -2328,7 +2328,7 @@ broccoli-typescript-compiler@^4.0.1:
     fs-tree-diff "^0.5.7"
     heimdalljs "0.3.3"
     md5-hex "^2.0.0"
-    typescript "~3.0.1"
+    typescript "~3.2.1"
     walk-sync "^0.3.2"
 
 broccoli-uglify-sourcemap@^2.2.0:
@@ -9539,10 +9539,10 @@ typescript-eslint-parser@^18.0.0:
     lodash.unescape "4.0.1"
     semver "5.5.0"
 
-typescript@~3.0.1:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.0.1.tgz#43738f29585d3a87575520a4b93ab6026ef11fdb"
-  integrity sha512-zQIMOmC+372pC/CCVLqnQ0zSBiY7HHodU7mpQdjiZddek4GMj31I3dUJ7gAs9o65X7mnRma6OokOkc6f9jjfBg==
+typescript@~3.2.1:
+  version "3.2.2"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.2.2.tgz#fe8101c46aa123f8353523ebdcf5730c2ae493e5"
+  integrity sha512-VCj5UiSyHBjwfYacmDuc/NOk4QQixbE+Wn7MFJuS0nRuPQbof132Pw4u53dm264O8LPc2MVsc7RJNml5szurkg==
 
 uc.micro@^1.0.0, uc.micro@^1.0.1, uc.micro@^1.0.3:
   version "1.0.3"
