@@ -136,7 +136,6 @@
         var setupQUnit = window.Ember.__loader.require('internal-test-helpers/lib/ember-dev/setup-qunit')['default'];
         var debugModule = window.Ember.__loader.require('@ember/debug');
         var testHelpers = new EmberDevTestHelperAssert({
-          Ember: window.Ember,
           runningProdBuild: EmberDev.runningProdBuild,
           getDebugFunction: debugModule.getDebugFunction,
           setDebugFunction: debugModule.setDebugFunction
