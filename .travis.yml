@@ -90,7 +90,9 @@ jobs:
       script:
         - yarn test:blueprints
 
-    - env: TEST_SUITE=travis-browsers
+    - name: Browser Tests (Firefox)
+      script:
+        - yarn ember test -c testem.travis-browsers.js
 
     - stage: deploy
       env:
