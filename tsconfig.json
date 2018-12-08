@@ -5,8 +5,9 @@
     "inlineSources": true,
     "inlineSourceMap": true,
     "declaration": true,
+    "declarationMap": true,
     "outDir": "dist",
-    "baseUrl" : "packages",
+    "baseUrl": "packages",
     "rootDir": "packages",
 
     // Environment Configuration
@@ -27,9 +28,7 @@
       "*": ["*"]
     }
   },
-  "include": [
-    "packages/**/*.ts"
-  ],
+  "include": ["packages/**/*.ts"],
   "exclude": [
     "dist",
     "demos",

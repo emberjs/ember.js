@@ -63,10 +63,6 @@ operation = """
 Bind the named arguments in the Arguments to the symbols
 specified by the symbol table in the component state at register.
 """
-operand-stack = [
-  ["Arguments"],
-  []
-]
 
 [syscall.vbblocks]
 
@@ -75,10 +71,6 @@ operation = """
 Bind the blocks in the Arguments to the symbols specified by the
 symbol table in the component state at register.
 """
-operand-stack = [
-  ["Arguments"],
-  []
-]
 
 [syscall.sbvar]
 
@@ -97,7 +89,7 @@ operand-stack = [
 format = ["SetBlock", "symbol:u32"]
 operation = "Bind the block at the top of the stack."
 operand-stack = [
-  ["SymbolTable", "Handle"],
+  ["symbol-table", "scope", "handle"],
   []
 ]
 
@@ -132,8 +124,9 @@ format = ["GetBlock", "block:u32"]
 operation = "Push the specified bound block onto the stack."
 operand-stack = [
   [],
-  ["InlineBlock"]
+  ["symbol-table", "scope", "handle"]
 ]
+notes = "TODO: The three elements on the stack can be null"
 
 [syscall.hasblockload]
 
@@ -156,7 +149,7 @@ is bound *and* has at least one specified formal
 parameter, and FALSE otherwise.
 """
 operand-stack = [
-  [],
+  ["symbol-table", "scope", "block"],
   ["Reference"]
 ]
 
@@ -235,12 +228,9 @@ operand-stack = [
 
 [syscall.pop]
 
-format = "Pop"
+format = ["Pop", "count:u32"]
 operation = "Pop N items off the stack and throw away the value."
-operand-stack = [
-  ["unknown", "unknown"],
-  []
-]
+skip = true
 
 [syscall.put]
 
@@ -357,11 +347,10 @@ operation = "Open a new Element named `tag`."
 
 format = "OpenDynamicElement"
 operation = """
-Open a new Element with a name on the stack and with special
-operations provided on the stack.
+Open a new Element with a name on the stack.
 """
 operand-stack = [
-  ["string", "ElementOperations"],
+  ["string"],
   []
 ]
 
@@ -581,10 +570,6 @@ operand-stack = [
 
 format = ["EnterList", "address:u32"]
 operation = "Enter a list."
-operand-stack = [
-  ["Iterator"],
-  []
-]
 
 [syscall.list_end]
 
@@ -747,6 +732,7 @@ to remove the argument values from the stack.
 
 format = ["PrepareArgs", "state:register"]
 operation = "..."
+skip = true
 
 [syscall.argscapture]
 
@@ -871,7 +857,7 @@ format = ["InvokePartial", "templateMeta:locator", "symbols:str-array", "evalInf
 operation = "Lookup and invoke a partial template."
 operand-stack = [
   ["Reference"],
-  []
+  ["$ra", "$fp"]
 ]
 
 [syscall.eval_varload]
