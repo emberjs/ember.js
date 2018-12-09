@@ -1,7 +1,6 @@
 const FailureOnlyPerBrowserReporter = require('./lib/testem/failure-only-per-browser-reporter');
 
 module.exports = {
-  framework: 'qunit',
   test_page: 'dist/tests/index.html?hidepassed&hideskipped&timeout=60000',
   timeout: 1200,
   reporter: FailureOnlyPerBrowserReporter,
