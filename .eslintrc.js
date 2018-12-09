@@ -15,7 +15,6 @@ module.exports = {
     'qunit',
   ],
   rules: {
-    'semi': 'error',
     'no-unused-vars': 'error',
     'no-throw-literal': 'error',
     'no-useless-escape': 'off', // TODO: bring this back
@@ -53,6 +52,19 @@ module.exports = {
 
       parserOptions: {
         sourceType: 'module',
+      },
+
+      rules: {
+        // the TypeScript compiler already takes care of this and
+        // leaving it enabled results in false positives for interface imports
+        'no-unused-vars': 'off',
+        'no-undef': 'off',
+
+        'no-inner-declarations': 'off',
+
+        'import/export': 'off',
+        'import/named': 'off',
+        'import/no-unresolved': 'off',
       }
     },
     {
@@ -81,19 +93,14 @@ module.exports = {
       rules: {
         'ember-internal/require-yuidoc-access': 'error',
         'ember-internal/no-const-outside-module-scope': 'error',
-
-        'semi': 'error',
-        'no-unused-vars': 'error',
-        'no-throw-literal': 'error',
-        'comma-dangle': 'off',
       },
     },
     {
       files: [
-        'packages/*/tests/**/*.js',
-        'packages/@ember/*/tests/**/*.js',
-        'packages/@ember/-internals/*/tests/**/*.js',
-        'packages/internal-test-helpers/**/*.js',
+        'packages/*/tests/**/*.[jt]s',
+        'packages/@ember/*/tests/**/*.[jt]s',
+        'packages/@ember/-internals/*/tests/**/*.[jt]s',
+        'packages/internal-test-helpers/**/*.[jt]s',
       ],
       env: {
         qunit: true,

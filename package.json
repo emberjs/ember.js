@@ -50,7 +50,7 @@
     "pretest": "ember build",
     "lint": "yarn lint:tsc && yarn lint:tslint && yarn lint:eslint && yarn lint:docs",
     "lint:docs": "qunit tests/docs/coverage-test.js",
-    "lint:eslint": "eslint . --cache",
+    "lint:eslint": "eslint . --cache --ext=js,ts",
     "lint:tsc": "tsc --noEmit",
     "lint:tslint": "tslint -p tsconfig.json",
     "lint:fix": "yarn lint:eslint --fix && yarn lint:tslint --fix",
@@ -155,8 +155,6 @@
     "simple-dom": "^0.3.0",
     "testem": "^2.14.0",
     "tslint": "^5.9.1",
-    "tslint-config-prettier": "^1.17.0",
-    "tslint-plugin-prettier": "^2.0.1",
     "typescript-eslint-parser": "^18.0.0"
   },
   "engines": {
