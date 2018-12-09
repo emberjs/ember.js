@@ -62,6 +62,18 @@ export default function setupQUnit({ runningProdBuild }: { runningProdBuild: boo
     setDebugFunction,
   });
 
+  function setupAssert(hooks: NestedHooks) {
+    hooks.beforeEach(function() {
+      assertion.reset();
+      assertion.inject();
+    });
+
+    hooks.afterEach(function() {
+      assertion.assert();
+      assertion.restore();
+    });
+  }
+
   let originalModule = QUnit.module;
 
   QUnit.module = function(name: string, _options: any) {
@@ -69,15 +81,7 @@ export default function setupQUnit({ runningProdBuild }: { runningProdBuild: boo
       let callback = _options;
 
       return originalModule(name, function(hooks) {
-        hooks.beforeEach(function() {
-          assertion.reset();
-          assertion.inject();
-        });
-
-        hooks.afterEach(function() {
-          assertion.assert();
-          assertion.restore();
-        });
+        setupAssert(hooks);
 
         callback(hooks);
       });
@@ -91,11 +95,10 @@ export default function setupQUnit({ runningProdBuild }: { runningProdBuild: boo
     delete options.teardown;
 
     let hooks = new HooksCompat();
+    setupAssert(hooks);
+
     options.beforeEach = function() {
       hooks.runBeforeEach(QUnit.config.current.assert);
-
-      assertion.reset();
-      assertion.inject();
 
       return originalSetup.apply(this, arguments);
     };
@@ -104,9 +107,6 @@ export default function setupQUnit({ runningProdBuild }: { runningProdBuild: boo
       let result = originalTeardown.apply(this, arguments);
 
       hooks.runAfterEach(QUnit.config.current.assert);
-
-      assertion.assert();
-      assertion.restore();
 
       return result;
     };
