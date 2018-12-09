@@ -15,7 +15,6 @@ module.exports = {
     'qunit',
   ],
   rules: {
-    'semi': 'error',
     'no-unused-vars': 'error',
     'no-throw-literal': 'error',
     'no-useless-escape': 'off', // TODO: bring this back
@@ -82,7 +81,6 @@ module.exports = {
         'ember-internal/require-yuidoc-access': 'error',
         'ember-internal/no-const-outside-module-scope': 'error',
 
-        'semi': 'error',
         'no-unused-vars': 'error',
         'no-throw-literal': 'error',
         'comma-dangle': 'off',
