@@ -132,15 +132,8 @@
         window.EmberDev = window.EmberDev || {};
         EmberDev.runningProdBuild = !!QUnit.urlParams.prod;
 
-        var EmberDevTestHelperAssert = window.Ember.__loader.require('internal-test-helpers/lib/ember-dev/index')['default'];
         var setupQUnit = window.Ember.__loader.require('internal-test-helpers/lib/ember-dev/setup-qunit')['default'];
-        var debugModule = window.Ember.__loader.require('@ember/debug');
-        var testHelpers = new EmberDevTestHelperAssert({
-          runningProdBuild: EmberDev.runningProdBuild,
-          getDebugFunction: debugModule.getDebugFunction,
-          setDebugFunction: debugModule.setDebugFunction
-        });
-        setupQUnit(testHelpers);
+        setupQUnit({ runningProdBuild: EmberDev.runningProdBuild });
 
         // Tests should time out after 15 seconds
         QUnit.config.testTimeout = QUnit.urlParams.timeout ? parseInt(QUnit.urlParams.timeout, 10) : 15000;

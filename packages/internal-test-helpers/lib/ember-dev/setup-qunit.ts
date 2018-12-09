@@ -1,3 +1,8 @@
+import { getDebugFunction, setDebugFunction } from '@ember/debug';
+
+// @ts-ignore
+import EmberDevTestHelperAssert from './index';
+
 export interface Assertion {
   reset(): void;
   inject(): void;
@@ -5,7 +10,13 @@ export interface Assertion {
   restore(): void;
 }
 
-export default function setupQUnit(assertion: Assertion) {
+export default function setupQUnit({ runningProdBuild }: { runningProdBuild: boolean }) {
+  let assertion = new EmberDevTestHelperAssert({
+    runningProdBuild,
+    getDebugFunction,
+    setDebugFunction,
+  });
+
   let originalModule = QUnit.module;
 
   QUnit.module = function(name: string, _options: any) {
