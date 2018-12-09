@@ -313,6 +313,7 @@ function followMethodAlias(
   let value = values[altKey];
 
   if (desc !== undefined || value !== undefined) {
+    // do nothing
   } else if ((possibleDesc = descriptorFor(obj, altKey)) !== undefined) {
     desc = possibleDesc;
     value = undefined;

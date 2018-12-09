@@ -1,1 +1,1 @@
-declare module "internal-test-helpers";
+declare module 'internal-test-helpers';
