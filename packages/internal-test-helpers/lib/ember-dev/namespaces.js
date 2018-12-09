@@ -1,16 +1,8 @@
 import { run } from '@ember/runloop';
 import { NAMESPACES, NAMESPACES_BY_ID } from '@ember/-internals/metal';
 
-export default class NamespacesAssert {
-  constructor(env) {
-    this.env = env;
-  }
-
-  reset() {}
-
-  inject() {}
-
-  assert() {
+export function setupNamespacesCheck(hooks) {
+  hooks.afterEach(function() {
     let { assert } = QUnit.config.current;
 
     if (NAMESPACES.length > 0) {
@@ -29,7 +21,5 @@ export default class NamespacesAssert {
         delete NAMESPACES_BY_ID[keys[i]];
       }
     }
-  }
-
-  restore() {}
+  });
 }

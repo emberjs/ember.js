@@ -4,6 +4,8 @@ import { getDebugFunction, setDebugFunction } from '@ember/debug';
 import { setupContainersCheck } from './containers';
 // @ts-ignore
 import EmberDevTestHelperAssert from './index';
+// @ts-ignore
+import { setupNamespacesCheck } from './namespaces';
 
 export interface Assertion {
   reset(): void;
@@ -66,6 +68,7 @@ export default function setupQUnit({ runningProdBuild }: { runningProdBuild: boo
 
   function setupAssert(hooks: NestedHooks) {
     setupContainersCheck(hooks);
+    setupNamespacesCheck(hooks);
 
     hooks.beforeEach(function() {
       assertion.reset();
