@@ -20,8 +20,12 @@ module('ember-template-compiler.js', {
 });
 
 test('can be required', function(assert) {
-  assert.ok(typeof templateCompiler.precompile === 'function', 'precompile function is present');
-  assert.ok(typeof templateCompiler.compile === 'function', 'compile function is present');
+  assert.strictEqual(
+    typeof templateCompiler.precompile,
+    'function',
+    'precompile function is present'
+  );
+  assert.strictEqual(typeof templateCompiler.compile, 'function', 'compile function is present');
 });
 
 test('can access _Ember.ENV (private API used by ember-cli-htmlbars)', function(assert) {
