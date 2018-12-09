@@ -1703,7 +1703,7 @@ EmberRouter.reopenClass({
   },
 
   _routePath(routeInfos: PrivateRouteInfo[]) {
-    let path = [];
+    let path: Array<String> = [];
 
     // We have to handle coalescing resource names that
     // are prefixed with their parent's names, e.g.
