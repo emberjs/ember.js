@@ -1,5 +1,6 @@
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 
+import { setupAssertionHelpers } from './assertion';
 // @ts-ignore
 import { setupContainersCheck } from './containers';
 import HooksCompat from './hooks-compat';
@@ -9,18 +10,22 @@ import EmberDevTestHelperAssert from './index';
 import { setupNamespacesCheck } from './namespaces';
 // @ts-ignore
 import { setupRunLoopCheck } from './run-loop';
+import { DebugEnv } from './utils';
 
 export default function setupQUnit({ runningProdBuild }: { runningProdBuild: boolean }) {
-  let assertion = new EmberDevTestHelperAssert({
+  let env = {
     runningProdBuild,
     getDebugFunction,
     setDebugFunction,
-  });
+  } as DebugEnv;
+
+  let assertion = new EmberDevTestHelperAssert(env);
 
   function setupAssert(hooks: NestedHooks) {
     setupContainersCheck(hooks);
     setupNamespacesCheck(hooks);
     setupRunLoopCheck(hooks);
+    setupAssertionHelpers(hooks, env);
 
     hooks.beforeEach(function() {
       assertion.reset();

@@ -1,13 +1,8 @@
 import DeprecationAssert from './deprecation';
 import WarningAssert from './warning';
-import AssertionAssert from './assertion';
 
 import { buildCompositeAssert } from './utils';
 
-var EmberDevTestHelperAssert = buildCompositeAssert([
-  DeprecationAssert,
-  WarningAssert,
-  AssertionAssert,
-]);
+var EmberDevTestHelperAssert = buildCompositeAssert([DeprecationAssert, WarningAssert]);
 
 export default EmberDevTestHelperAssert;
