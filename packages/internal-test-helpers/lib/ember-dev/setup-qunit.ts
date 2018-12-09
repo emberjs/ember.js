@@ -10,13 +10,6 @@ import { setupNamespacesCheck } from './namespaces';
 // @ts-ignore
 import { setupRunLoopCheck } from './run-loop';
 
-export interface Assertion {
-  reset(): void;
-  inject(): void;
-  assert(): void;
-  restore(): void;
-}
-
 export default function setupQUnit({ runningProdBuild }: { runningProdBuild: boolean }) {
   let assertion = new EmberDevTestHelperAssert({
     runningProdBuild,
