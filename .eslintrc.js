@@ -117,7 +117,7 @@ module.exports = {
         'server/**/*.js',
         'testem.js',
         'testem.travis-browsers.js',
-        'testem.dist.js',
+        'testem.browserstack.js',
         'd8-runner.js',
         'broccoli/**/*.js',
         'ember-cli-build.js',

@@ -21,7 +21,15 @@ function run(command, args = []) {
       // Calling testem directly here instead of `ember test` so that
       // we do not have to do a double build (by the time this is run
       // we have already ran `ember build`).
-      await run('testem', ['ci', '-f', 'testem.dist.js', '--host', '127.0.0.1', '--port', '7774']);
+      await run('testem', [
+        'ci',
+        '-f',
+        'testem.browserstack.js',
+        '--host',
+        '127.0.0.1',
+        '--port',
+        '7774',
+      ]);
 
       console.log('success');
       process.exit(0);

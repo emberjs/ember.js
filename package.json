@@ -57,8 +57,7 @@
     "test": "node bin/run-tests.js",
     "test:blueprints": "mocha node-tests/blueprints/**/*-test.js",
     "test:node": "qunit tests/node/**/*-test.js",
-    "test:browserstack": "node bin/run-browserstack-tests.js",
-    "test:testem": "testem -f testem.dist.js"
+    "test:browserstack": "node bin/run-browserstack-tests.js"
   },
   "dependencies": {
     "broccoli-funnel": "^2.0.1",

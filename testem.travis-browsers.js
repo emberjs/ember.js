@@ -1,7 +1,6 @@
-const FailureOnlyReporter = require('./lib/failure-only-testem-reporter');
+const FailureOnlyReporter = require('./lib/testem/failure-only-reporter');
 
 module.exports = {
-  framework: 'qunit',
   test_page: 'tests/index.html?hidepassed&hideskipped&timeout=60000',
   browser_disconnect_timeout: 120,
   timeout: 540,
