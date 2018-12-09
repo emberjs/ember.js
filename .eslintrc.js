@@ -101,10 +101,10 @@ module.exports = {
     },
     {
       files: [
-        'packages/*/tests/**/*.js',
-        'packages/@ember/*/tests/**/*.js',
-        'packages/@ember/-internals/*/tests/**/*.js',
-        'packages/internal-test-helpers/**/*.js',
+        'packages/*/tests/**/*.[jt]s',
+        'packages/@ember/*/tests/**/*.[jt]s',
+        'packages/@ember/-internals/*/tests/**/*.[jt]s',
+        'packages/internal-test-helpers/**/*.[jt]s',
       ],
       env: {
         qunit: true,
