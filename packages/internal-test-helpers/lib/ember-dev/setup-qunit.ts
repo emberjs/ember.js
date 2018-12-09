@@ -1,20 +1,56 @@
-export interface Assertion {
-  reset(): void;
-  inject(): void;
-  assert(): void;
-  restore(): void;
-}
+import { getDebugFunction, setDebugFunction } from '@ember/debug';
 
-export default function setupQUnit(assertion: Assertion, _qunitGlobal: QUnit) {
-  let qunitGlobal = QUnit;
+import { setupAssertionHelpers } from './assertion';
+// @ts-ignore
+import { setupContainersCheck } from './containers';
+import HooksCompat from './hooks-compat';
+// @ts-ignore
+import EmberDevTestHelperAssert from './index';
+// @ts-ignore
+import { setupNamespacesCheck } from './namespaces';
+// @ts-ignore
+import { setupRunLoopCheck } from './run-loop';
+import { DebugEnv } from './utils';
 
-  if (_qunitGlobal) {
-    qunitGlobal = _qunitGlobal;
+export default function setupQUnit({ runningProdBuild }: { runningProdBuild: boolean }) {
+  let env = {
+    runningProdBuild,
+    getDebugFunction,
+    setDebugFunction,
+  } as DebugEnv;
+
+  let assertion = new EmberDevTestHelperAssert(env);
+
+  function setupAssert(hooks: NestedHooks) {
+    setupContainersCheck(hooks);
+    setupNamespacesCheck(hooks);
+    setupRunLoopCheck(hooks);
+    setupAssertionHelpers(hooks, env);
+
+    hooks.beforeEach(function() {
+      assertion.reset();
+      assertion.inject();
+    });
+
+    hooks.afterEach(function() {
+      assertion.assert();
+      assertion.restore();
+    });
   }
 
-  let originalModule = qunitGlobal.module;
+  let originalModule = QUnit.module;
 
-  qunitGlobal.module = function(name: string, _options: any) {
+  QUnit.module = function(name: string, _options: any) {
+    if (typeof _options === 'function') {
+      let callback = _options;
+
+      return originalModule(name, function(hooks) {
+        setupAssert(hooks);
+
+        callback(hooks);
+      });
+    }
+
     let options = _options || {};
     let originalSetup = options.setup || options.beforeEach || function() {};
     let originalTeardown = options.teardown || options.afterEach || function() {};
@@ -22,9 +58,11 @@ export default function setupQUnit(assertion: Assertion, _qunitGlobal: QUnit) {
     delete options.setup;
     delete options.teardown;
 
+    let hooks = new HooksCompat();
+    setupAssert(hooks);
+
     options.beforeEach = function() {
-      assertion.reset();
-      assertion.inject();
+      hooks.runBeforeEach(QUnit.config.current.assert);
 
       return originalSetup.apply(this, arguments);
     };
@@ -32,8 +70,7 @@ export default function setupQUnit(assertion: Assertion, _qunitGlobal: QUnit) {
     options.afterEach = function() {
       let result = originalTeardown.apply(this, arguments);
 
-      assertion.assert();
-      assertion.restore();
+      hooks.runAfterEach(QUnit.config.current.assert);
 
       return result;
     };

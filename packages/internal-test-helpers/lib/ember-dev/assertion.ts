@@ -13,7 +13,7 @@ declare global {
 const BREAK = {};
 
 /*
-  This assertion class is used to test assertions made using Ember.assert.
+  This assertion helper is used to test assertions made using Ember.assert.
   It injects two helpers onto `window`:
 
   - expectAssertion(func: Function, [expectedMessage: String | RegExp])
@@ -29,21 +29,10 @@ const BREAK = {};
   In particular, this prevents `Ember.assert` from throw errors that would
   disrupt the control flow.
 */
-export default class AssertionAssert {
-  private env: DebugEnv;
-
-  constructor(env: DebugEnv) {
-    this.env = env;
-  }
-
-  reset() {}
-  assert() {}
-
-  inject() {
+export function setupAssertionHelpers(hooks: NestedHooks, env: DebugEnv) {
+  hooks.beforeEach(function(assert) {
     let expectAssertion: ExpectAssertionFunc = (func: () => void, expectedMessage: Message) => {
-      let { assert } = QUnit.config.current;
-
-      if (this.env.runningProdBuild) {
+      if (env.runningProdBuild) {
         assert.ok(true, 'Assertions disabled in production builds.');
         return;
       }
@@ -54,7 +43,7 @@ export default class AssertionAssert {
       // The try-catch statement is used to "exit" `func` as soon as
       // the first useful assertion has been produced.
       try {
-        callWithStub(this.env, 'assert', func, (message, test) => {
+        callWithStub(env, 'assert', func, (message, test) => {
           sawCall = true;
           if (checkTest(test)) {
             return;
@@ -72,17 +61,17 @@ export default class AssertionAssert {
     };
 
     let ignoreAssertion: IgnoreAssertionFunc = func => {
-      callWithStub(this.env, 'assert', func);
+      callWithStub(env, 'assert', func);
     };
 
     window.expectAssertion = expectAssertion;
     window.ignoreAssertion = ignoreAssertion;
-  }
+  });
 
-  restore() {
+  hooks.afterEach(function() {
     window.expectAssertion = null;
     window.ignoreAssertion = null;
-  }
+  });
 }
 
 function check(

@@ -2,27 +2,23 @@ import { Container } from '@ember/-internals/container';
 
 const { _leakTracking: containerLeakTracking } = Container;
 
-export default class ContainersAssert {
-  constructor(env) {
-    this.env = env;
-  }
-
-  reset() {}
-
-  inject() {}
-
-  assert() {
+export function setupContainersCheck(hooks) {
+  hooks.afterEach(function() {
     if (containerLeakTracking === undefined) return;
+
     let { config } = QUnit;
+
     let {
       testName,
       testId,
       module: { name: moduleName },
       finish: originalFinish,
     } = config.current;
+
     config.current.finish = function() {
       originalFinish.call(this);
       originalFinish = undefined;
+
       config.queue.unshift(function() {
         if (containerLeakTracking.hasContainers()) {
           containerLeakTracking.reset();
@@ -34,7 +30,5 @@ export default class ContainersAssert {
         }
       });
     };
-  }
-
-  restore() {}
+  });
 }
