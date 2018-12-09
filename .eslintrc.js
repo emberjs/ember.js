@@ -6,11 +6,13 @@ module.exports = {
     'eslint:recommended',
     'prettier',
     'plugin:import/errors',
+    'plugin:qunit/recommended',
   ],
   plugins: [
     'ember-internal',
     'prettier',
     'import',
+    'qunit',
   ],
   rules: {
     'semi': 'error',
@@ -18,6 +20,8 @@ module.exports = {
     'no-throw-literal': 'error',
     'no-useless-escape': 'off', // TODO: bring this back
     'prettier/prettier': 'error',
+    'qunit/no-commented-tests': 'off',
+    'qunit/require-expect': 'off',
   },
 
   settings: {

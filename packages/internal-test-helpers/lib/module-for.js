@@ -65,6 +65,7 @@ export default function moduleFor(description, TestClass, ...mixins) {
         return this.instance[name](assert);
       });
     } else if (name.indexOf('@only ') === 0) {
+      // eslint-disable-next-line qunit/no-only
       QUnit.only(name.slice(5), function(assert) {
         return this.instance[name](assert);
       });
