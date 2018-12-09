@@ -20,6 +20,24 @@ export default function setupQUnit({ runningProdBuild }: { runningProdBuild: boo
   let originalModule = QUnit.module;
 
   QUnit.module = function(name: string, _options: any) {
+    if (typeof _options === 'function') {
+      let callback = _options;
+
+      return originalModule(name, function(hooks) {
+        hooks.beforeEach(function() {
+          assertion.reset();
+          assertion.inject();
+        });
+
+        hooks.afterEach(function() {
+          assertion.assert();
+          assertion.restore();
+        });
+
+        callback(hooks);
+      });
+    }
+
     let options = _options || {};
     let originalSetup = options.setup || options.beforeEach || function() {};
     let originalTeardown = options.teardown || options.afterEach || function() {};
