@@ -93,10 +93,6 @@ module.exports = {
       rules: {
         'ember-internal/require-yuidoc-access': 'error',
         'ember-internal/no-const-outside-module-scope': 'error',
-
-        'no-unused-vars': 'error',
-        'no-throw-literal': 'error',
-        'comma-dangle': 'off',
       },
     },
     {
