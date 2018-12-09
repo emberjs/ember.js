@@ -5,16 +5,10 @@ export interface Assertion {
   restore(): void;
 }
 
-export default function setupQUnit(assertion: Assertion, _qunitGlobal: QUnit) {
-  let qunitGlobal = QUnit;
+export default function setupQUnit(assertion: Assertion) {
+  let originalModule = QUnit.module;
 
-  if (_qunitGlobal) {
-    qunitGlobal = _qunitGlobal;
-  }
-
-  let originalModule = qunitGlobal.module;
-
-  qunitGlobal.module = function(name: string, _options: any) {
+  QUnit.module = function(name: string, _options: any) {
     let options = _options || {};
     let originalSetup = options.setup || options.beforeEach || function() {};
     let originalTeardown = options.teardown || options.afterEach || function() {};
