@@ -2559,6 +2559,41 @@ if (EMBER_ROUTING_ROUTER_SERVICE && ROUTER_EVENTS) {
 
 if (EMBER_ROUTING_BUILD_ROUTEINFO_METADATA) {
   Route.reopen({
+    /**
+      Allows you to produce custom metadata for the route.
+      The return value of this method will be attatched to
+      its corresponding RouteInfoWithAttributes obejct.
+
+      Example
+
+      ```app/routes/posts/index.js
+      import Route from '@ember/routing/route';
+
+      export default Route.extend({
+        buildRouteInfoMetadata() {
+          return { title: 'Posts Page' }
+        }
+      });
+      ```
+      ```app/routes/application.js
+      import Route from '@ember/routing/route';
+      import { inject as service } from '@ember/service';
+
+      export default Route.extend({
+        router: service('router'),
+        init() {
+          this._super(...arguments);
+          this.router.on('routeDidChange', transition => {
+            document.title = transition.to.metadata.title;
+            // would update document's title to "Posts Page"
+          });
+        }
+      });
+      ```
+
+      @return any
+      @category ember-routing-build-routeinfo-metadata
+     */
     buildRouteInfoMetadata() {},
   });
 }
