@@ -2,6 +2,7 @@ import { RouterTestCase, moduleFor } from 'internal-test-helpers';
 import { EMBER_ROUTING_ROUTER_SERVICE } from '@ember/canary-features';
 import { inject as service } from '@ember/service';
 import { Route } from '@ember/-internals/routing';
+import { later } from '@ember/runloop';
 
 if (EMBER_ROUTING_ROUTER_SERVICE) {
   moduleFor(
@@ -97,6 +98,33 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
           toParent = false;
           return this.routerService.transitionTo('parent.sister');
         });
+      }
+
+      '@test transitions can be retried async'(assert) {
+        let done = assert.async();
+        this.add(
+          `route:parent.child`,
+          Route.extend({
+            actions: {
+              willTransition(transition) {
+                transition.abort();
+                this.intermediateTransitionTo('parent.sister');
+                later(() => {
+                  transition.retry();
+                  done();
+                }, 500);
+              },
+            },
+          })
+        );
+
+        return this.visit('/child')
+          .then(() => {
+            return this.visit('/');
+          })
+          .catch(e => {
+            assert.equal(e.message, 'TransitionAborted');
+          });
       }
 
       '@test redirection with `transitionTo`'(assert) {
