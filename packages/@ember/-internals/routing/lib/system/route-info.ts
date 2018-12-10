@@ -66,6 +66,14 @@
 */
 
 /**
+  Will contain the result `Route#buildRouteInfoMetadata`
+  for the corresponding Route.
+  @property {Any} metadata
+  @category ember-routing-build-routeinfo-metadata
+  @public
+*/
+
+/**
   A reference to the parent route's RouteInfo.
   This can be used to traverse upward to the topmost
   `RouteInfo`.

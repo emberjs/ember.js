@@ -347,6 +347,7 @@ module.exports = {
     'merge',
     'mergedProperties',
     'meta',
+    'metadata',
     'metaForProperty',
     'method',
     'min',

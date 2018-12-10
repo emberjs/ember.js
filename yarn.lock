@@ -7404,10 +7404,10 @@ route-recognizer@^0.3.4:
   resolved "https://registry.yarnpkg.com/route-recognizer/-/route-recognizer-0.3.4.tgz#39ab1ffbce1c59e6d2bdca416f0932611e4f3ca3"
   integrity sha512-2+MhsfPhvauN1O8KaXpXAOfR/fwe8dnUXVM+xw7yt40lJRfPVQxV6yryZm0cgRvAj5fMF/mdRZbL2ptwbs5i2g==
 
-router_js@^6.1.3:
-  version "6.1.3"
-  resolved "https://registry.yarnpkg.com/router_js/-/router_js-6.1.3.tgz#9fbecbb4b173f5a6c4580d15f94737cfeb4629e6"
-  integrity sha512-I3l/4wMpSl/Fd9SZQCa7kVAIn5H3v10KjA4CuJPg1gjihC5GKFi4owetf/psNg2lAqevmMn81yLCsIxBwoeK1A==
+router_js@^6.2.0:
+  version "6.2.0"
+  resolved "https://registry.yarnpkg.com/router_js/-/router_js-6.2.0.tgz#df2eac625169997f03d7cdf67507bda49d98be3a"
+  integrity sha512-K57PWU58OiXlaGzHw1vXg0PeC8NpMRIsd3poXq0qXZRIzB3OtMJQolHUuJ0c88544gv+tKw1kaYYM/0E1XNmng==
   dependencies:
     "@types/node" "^10.5.5"
 
