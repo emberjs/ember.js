@@ -8092,10 +8092,10 @@ route-recognizer@^0.3.4:
   resolved "https://registry.yarnpkg.com/route-recognizer/-/route-recognizer-0.3.4.tgz#39ab1ffbce1c59e6d2bdca416f0932611e4f3ca3"
   integrity sha512-2+MhsfPhvauN1O8KaXpXAOfR/fwe8dnUXVM+xw7yt40lJRfPVQxV6yryZm0cgRvAj5fMF/mdRZbL2ptwbs5i2g==
 
-router_js@^6.1.3:
-  version "6.1.3"
-  resolved "https://registry.yarnpkg.com/router_js/-/router_js-6.1.3.tgz#9fbecbb4b173f5a6c4580d15f94737cfeb4629e6"
-  integrity sha512-I3l/4wMpSl/Fd9SZQCa7kVAIn5H3v10KjA4CuJPg1gjihC5GKFi4owetf/psNg2lAqevmMn81yLCsIxBwoeK1A==
+router_js@^6.2.1:
+  version "6.2.1"
+  resolved "https://registry.yarnpkg.com/router_js/-/router_js-6.2.1.tgz#60130764ad3ed41592a41b9a0bb9133b3edc7d84"
+  integrity sha512-DL0FPuLZUkk7/mhIcXK3SO7215gyOVcQinPtdcLRHKJDt8GGqN6c0pNr0+vuE1IQX7QW1YyuIxBICZ0egzn8Dg==
   dependencies:
     "@types/node" "^10.5.5"
 
