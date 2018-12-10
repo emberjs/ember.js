@@ -96,7 +96,7 @@
     "@glimmer/opcode-compiler": "^0.36.4",
     "@glimmer/program": "^0.36.4",
     "@glimmer/reference": "^0.36.4",
-    "@glimmer/runtime": "^0.36.4",
+    "@glimmer/runtime": "^0.37.0",
     "@types/qunit": "^2.5.3",
     "@types/rsvp": "^4.0.1",
     "auto-dist-tag": "^1.0.0",
