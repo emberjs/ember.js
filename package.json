@@ -154,7 +154,7 @@
     "serve-static": "^1.13.2",
     "simple-dom": "^0.3.0",
     "testem": "^2.14.0",
-    "tslint": "^5.9.1",
+    "tslint": "^5.11.0",
     "typescript-eslint-parser": "^18.0.0"
   },
   "engines": {
