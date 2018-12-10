@@ -249,7 +249,7 @@ export default EmberObject.extend({
     Test that against the model class
     of your persistence library.
 
-    @private
+    @public
     @method detect
     @return boolean Whether the class is a model class or not.
   */
@@ -260,7 +260,7 @@ export default EmberObject.extend({
   /**
     Get the columns for a given model type.
 
-    @private
+    @public
     @method columnsForType
     @return {Array} An array of columns of the following format:
      name: {String} The name of the column.
@@ -400,7 +400,7 @@ export default EmberObject.extend({
   /**
     Fetches all loaded records for a given type.
 
-    @private
+    @public
     @method getRecords
     @return {Array} An array of records.
      This array will be observed for changes,
@@ -434,7 +434,7 @@ export default EmberObject.extend({
   /**
     Gets the values for each column.
 
-    @private
+    @public
     @method getRecordColumnValues
     @return {Object} Keys should match column names defined
     by the model type.
@@ -446,7 +446,7 @@ export default EmberObject.extend({
   /**
     Returns keywords to match when searching records.
 
-    @private
+    @public
     @method getRecordKeywords
     @return {Array} Relevant keywords for search.
   */
@@ -457,7 +457,7 @@ export default EmberObject.extend({
   /**
     Returns the values of filters defined by `getFilters`.
 
-    @private
+    @public
     @method getRecordFilterValues
     @param {Object} record The record instance.
     @return {Object} The filter values.
@@ -469,7 +469,7 @@ export default EmberObject.extend({
   /**
     Each record can have a color that represents its state.
 
-    @private
+    @public
     @method getRecordColor
     @param {Object} record The record instance
     @return {String} The records color.
@@ -483,7 +483,7 @@ export default EmberObject.extend({
     Observes all relevant properties and re-sends the wrapped record
     when a change occurs.
 
-    @private
+    @public
     @method observerRecord
     @return {Function} The function to call to remove all observers.
   */
