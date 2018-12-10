@@ -2049,7 +2049,7 @@ moduleFor(
         template: '{{name}}',
       });
 
-      expectDeprecation(() => {
+      expectAssertion(() => {
         this.render('{{sample-component notMyName name=myName}}', {
           myName: 'Quint',
           notMyName: 'Sergio',
