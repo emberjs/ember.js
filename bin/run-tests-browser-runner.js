@@ -1,5 +1,7 @@
+/* eslint-disable no-console, node/no-unsupported-features/es-syntax */
+
 'use strict';
-/* eslint-disable no-console, node/no-unsupported-features */
+
 const puppeteer = require('puppeteer');
 const chalk = require('chalk');
 const fs = require('fs');

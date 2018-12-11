@@ -1,4 +1,4 @@
-/* eslint-disable no-console, node/no-unsupported-features */
+/* eslint-disable no-console, node/no-unsupported-features/es-syntax */
 
 const execa = require('execa');
 const chalk = require('chalk');
