@@ -4181,12 +4181,10 @@ git-repo-version@0.2.0:
   dependencies:
     git-repo-info "^1.0.4"
 
-github@^0.2.3:
-  version "0.2.4"
-  resolved "https://registry.yarnpkg.com/github/-/github-0.2.4.tgz#24fa7f0e13fa11b946af91134c51982a91ce538b"
-  integrity sha1-JPp/DhP6EblGr5ETTFGYKpHOU4s=
-  dependencies:
-    mime "^1.2.11"
+github@^14.0.0:
+  version "14.0.0"
+  resolved "https://registry.yarnpkg.com/github/-/github-14.0.0.tgz#b707ed88c33cd05e155c785d289aa6229c59a850"
+  integrity sha512-34/VqwhYGeYN0VHBSH49TmRWMF7emy32qjK6POiW47T/QI2u/cpuKsmrWt7a218ew/73dF4dQSJE68/HXdNfPw==
 
 glob-base@^0.3.0:
   version "0.3.0"
@@ -6051,11 +6049,6 @@ mime@1.4.1:
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/mime/-/mime-1.4.1.tgz#121f9ebc49e3766f311a76e1fa1c8003c4b03aa6"
   integrity sha512-KI1+qOZu5DcW6wayYHSzR/tXKCDC5Om4s1z2QJjDULzLcmf3DvzS7oluY4HCTrc+9FiKmWUgeNLg7W3uIQvxtQ==
-
-mime@^1.2.11:
-  version "1.6.0"
-  resolved "https://registry.yarnpkg.com/mime/-/mime-1.6.0.tgz#32cd9e5c64553bd58d19a568af452acff04981b1"
-  integrity sha512-x0Vn8spI+wuJ1O6S7gnbaQg8Pxh4NNHb7KSINmEWKiPE4RKOplvijn+NkmYmmRgP68mc70j2EbeTFRsrswaQeg==
 
 mime@^2.0.3:
   version "2.4.0"
