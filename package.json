@@ -145,7 +145,7 @@
     "mkdirp": "^0.5.1",
     "mocha": "^5.2.0",
     "prettier": "1.15.3",
-    "puppeteer": "^1.3.0",
+    "puppeteer": "^1.11.0",
     "qunit": "^2.8.0",
     "route-recognizer": "^0.3.4",
     "router_js": "^6.2.1",
