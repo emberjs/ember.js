@@ -98,7 +98,7 @@
     "@glimmer/reference": "^0.37.0",
     "@glimmer/runtime": "^0.37.0",
     "@types/qunit": "^2.5.3",
-    "@types/rsvp": "^4.0.1",
+    "@types/rsvp": "^4.0.2",
     "auto-dist-tag": "^1.0.0",
     "aws-sdk": "^2.373.0",
     "babel-plugin-debug-macros": "^0.2.0",
