@@ -136,7 +136,7 @@
     "execa": "^1.0.0",
     "express": "^4.16.2",
     "finalhandler": "^1.0.2",
-    "fs-extra": "^5.0.0",
+    "fs-extra": "^7.0.1",
     "git-repo-info": "^1.4.1",
     "github": "^0.2.3",
     "glob": "^7.1.3",
