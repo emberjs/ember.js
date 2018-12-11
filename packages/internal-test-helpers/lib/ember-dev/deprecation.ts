@@ -16,6 +16,20 @@ declare global {
   }
 }
 
+export function setupDeprecationHelpers(hooks: NestedHooks, env: DebugEnv) {
+  let assertion = new DeprecationAssert(env);
+
+  hooks.beforeEach(function() {
+    assertion.reset();
+    assertion.inject();
+  });
+
+  hooks.afterEach(function() {
+    assertion.assert();
+    assertion.restore();
+  });
+}
+
 class DeprecationAssert extends DebugAssert {
   constructor(env: DebugEnv) {
     super('deprecate', env);
