@@ -4,16 +4,16 @@ import getAllPropertyNames from './get-all-property-names';
 import { all } from 'rsvp';
 
 export default function moduleFor(description, TestClass, ...mixins) {
-  QUnit.module(description, {
-    beforeEach: function(assert) {
+  QUnit.module(description, function(hooks) {
+    hooks.beforeEach(function(assert) {
       let instance = new TestClass(assert);
       this.instance = instance;
       if (instance.beforeEach) {
         return instance.beforeEach(assert);
       }
-    },
+    });
 
-    afterEach: function() {
+    hooks.afterEach(function() {
       let promises = [];
       let instance = this.instance;
       this.instance = null;
@@ -25,15 +25,15 @@ export default function moduleFor(description, TestClass, ...mixins) {
       }
 
       return all(promises);
-    },
+    });
+
+    if (mixins.length > 0) {
+      applyMixins(TestClass, ...mixins);
+    }
+
+    let properties = getAllPropertyNames(TestClass);
+    properties.forEach(generateTest);
   });
-
-  if (mixins.length > 0) {
-    applyMixins(TestClass, ...mixins);
-  }
-
-  let properties = getAllPropertyNames(TestClass);
-  properties.forEach(generateTest);
 
   function shouldTest(features) {
     return features.every(feature => {
