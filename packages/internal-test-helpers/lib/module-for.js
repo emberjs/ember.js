@@ -1,6 +1,7 @@
 import { isEnabled } from '@ember/canary-features';
 import applyMixins from './apply-mixins';
 import getAllPropertyNames from './get-all-property-names';
+import { setContext, unsetContext } from './test-context';
 import { all } from 'rsvp';
 
 export default function moduleFor(description, TestClass, ...mixins) {
@@ -13,6 +14,9 @@ export function setupTestClass(hooks, TestClass, ...mixins) {
   hooks.beforeEach(function(assert) {
     let instance = new TestClass(assert);
     this.instance = instance;
+
+    setContext(instance);
+
     if (instance.beforeEach) {
       return instance.beforeEach(assert);
     }
@@ -29,7 +33,9 @@ export function setupTestClass(hooks, TestClass, ...mixins) {
       promises.push(instance.afterEach());
     }
 
-    return all(promises);
+    return all(promises).finally(() => {
+      unsetContext();
+    });
   });
 
   if (mixins.length > 0) {
