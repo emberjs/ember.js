@@ -33,9 +33,18 @@ export function setupTestClass(hooks, TestClass, ...mixins) {
       promises.push(instance.afterEach());
     }
 
-    return all(promises).finally(() => {
-      unsetContext();
-    });
+    // this seems odd, but actually saves significant time
+    // in the test suite
+    //
+    // returning a promise from a QUnit test always adds a 13ms
+    // delay to the test, this filtering prevents returning a
+    // promise when it is not needed
+    let filteredPromises = promises.filter(Boolean);
+    if (filteredPromises.length > 0) {
+      return all(filteredPromises).finally(() => unsetContext());
+    }
+
+    unsetContext();
   });
 
   if (mixins.length > 0) {
