@@ -6,6 +6,7 @@ import { getCurrentRunLoop, hasScheduledTimers, next, run } from '@ember/runloop
 import NodeQuery from '../node-query';
 import equalInnerHTML from '../equal-inner-html';
 import equalTokens from '../equal-tokens';
+import { getElement } from '../element-helpers';
 import { equalsElement, regex, classes } from '../matchers';
 import { Promise } from 'rsvp';
 
@@ -63,7 +64,7 @@ export default class AbstractTestCase {
 
   nthChild(n) {
     let i = 0;
-    let node = this.element.firstChild;
+    let node = getElement().firstChild;
 
     while (node) {
       if (!isMarker(node)) {
@@ -82,7 +83,7 @@ export default class AbstractTestCase {
 
   get nodesCount() {
     let count = 0;
-    let node = this.element.firstChild;
+    let node = getElement().firstChild;
 
     while (node) {
       if (!isMarker(node)) {
@@ -99,11 +100,11 @@ export default class AbstractTestCase {
     if (sel instanceof Element) {
       return NodeQuery.element(sel);
     } else if (typeof sel === 'string') {
-      return NodeQuery.query(sel, this.element);
+      return NodeQuery.query(sel, getElement());
     } else if (sel !== undefined) {
       throw new Error(`Invalid this.$(${sel})`);
     } else {
-      return NodeQuery.element(this.element);
+      return NodeQuery.element(getElement());
     }
   }
 
@@ -114,7 +115,7 @@ export default class AbstractTestCase {
   click(selector) {
     let element;
     if (typeof selector === 'string') {
-      element = this.element.querySelector(selector);
+      element = getElement().querySelector(selector);
     } else {
       element = selector;
     }
@@ -144,13 +145,13 @@ export default class AbstractTestCase {
   }
 
   textValue() {
-    return this.element.textContent;
+    return getElement().textContent;
   }
 
   takeSnapshot() {
     let snapshot = (this.snapshot = []);
 
-    let node = this.element.firstChild;
+    let node = getElement().firstChild;
 
     while (node) {
       if (!isMarker(node)) {
@@ -172,11 +173,11 @@ export default class AbstractTestCase {
   }
 
   assertInnerHTML(html) {
-    equalInnerHTML(this.assert, this.element, html);
+    equalInnerHTML(this.assert, getElement(), html);
   }
 
   assertHTML(html) {
-    equalTokens(this.element, html, `#qunit-fixture content should be: \`${html}\``);
+    equalTokens(getElement(), html, `#qunit-fixture content should be: \`${html}\``);
   }
 
   assertElement(node, { ElementType = HTMLElement, tagName, attrs = null, content = null }) {
