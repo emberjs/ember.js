@@ -4,28 +4,32 @@ import getAllPropertyNames from './get-all-property-names';
 import { all } from 'rsvp';
 
 export default function moduleFor(description, TestClass, ...mixins) {
-  QUnit.module(description, {
-    beforeEach: function(assert) {
-      let instance = new TestClass(assert);
-      this.instance = instance;
-      if (instance.beforeEach) {
-        return instance.beforeEach(assert);
-      }
-    },
+  QUnit.module(description, function(hooks) {
+    setupTestClass(hooks, TestClass, ...mixins);
+  });
+}
 
-    afterEach: function() {
-      let promises = [];
-      let instance = this.instance;
-      this.instance = null;
-      if (instance.teardown) {
-        promises.push(instance.teardown());
-      }
-      if (instance.afterEach) {
-        promises.push(instance.afterEach());
-      }
+export function setupTestClass(hooks, TestClass, ...mixins) {
+  hooks.beforeEach(function(assert) {
+    let instance = new TestClass(assert);
+    this.instance = instance;
+    if (instance.beforeEach) {
+      return instance.beforeEach(assert);
+    }
+  });
 
-      return all(promises);
-    },
+  hooks.afterEach(function() {
+    let promises = [];
+    let instance = this.instance;
+    this.instance = null;
+    if (instance.teardown) {
+      promises.push(instance.teardown());
+    }
+    if (instance.afterEach) {
+      promises.push(instance.afterEach());
+    }
+
+    return all(promises);
   });
 
   if (mixins.length > 0) {
