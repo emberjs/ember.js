@@ -1,6 +1,6 @@
 import { RSVP } from '@ember/-internals/runtime';
 import { Route } from '@ember/-internals/routing';
-import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
+import { moduleFor, ApplicationTestCase, runLoopSettled } from 'internal-test-helpers';
 
 let counter;
 
@@ -720,7 +720,7 @@ moduleFor(
         'it broke'
       );
 
-      return this.runLoopSettled();
+      return runLoopSettled();
     }
 
     [`@test Handled errors that re-throw aren't swallowed`](assert) {
@@ -767,7 +767,7 @@ moduleFor(
         `it broke`
       );
 
-      return this.runLoopSettled();
+      return runLoopSettled();
     }
 
     ['@test errors that are bubbled are thrown at a higher level if not handled'](assert) {
@@ -799,7 +799,7 @@ moduleFor(
         'Correct error was thrown'
       );
 
-      return this.runLoopSettled();
+      return runLoopSettled();
     }
 
     [`@test Handled errors that are thrown through rejection aren't swallowed`](assert) {
@@ -846,7 +846,7 @@ moduleFor(
         'it broke'
       );
 
-      return this.runLoopSettled();
+      return runLoopSettled();
     }
 
     ['@test Default error events move into nested route, prioritizing more specifically named error routes - NEW'](

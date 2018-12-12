@@ -1,7 +1,7 @@
 import Controller from '@ember/controller';
 import { RSVP } from '@ember/-internals/runtime';
 import { Route } from '@ember/-internals/routing';
-import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
+import { moduleFor, ApplicationTestCase, runLoopSettled } from 'internal-test-helpers';
 
 moduleFor(
   'The {{link-to}} helper: invoking with query params',
@@ -688,7 +688,7 @@ moduleFor(
         this.visit('/');
       }, /You must provide one or more parameters to the link-to component/);
 
-      return this.runLoopSettled();
+      return runLoopSettled();
     }
   }
 );

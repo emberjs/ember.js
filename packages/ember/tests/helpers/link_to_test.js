@@ -1,4 +1,4 @@
-import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
+import { moduleFor, ApplicationTestCase, runLoopSettled } from 'internal-test-helpers';
 import Controller, { inject as injectController } from '@ember/controller';
 import { A as emberA } from '@ember/-internals/runtime';
 import { alias } from '@ember/-internals/metal';
@@ -252,7 +252,7 @@ moduleFor(
           let controller = this.applicationInstance.lookup('controller:index');
           controller.set('disabledWhen', false);
 
-          return this.runLoopSettled();
+          return runLoopSettled();
         })
         .then(() => {
           return this.click('#about-link');
@@ -1698,7 +1698,7 @@ moduleFor(
         this.visit('/');
       }, /(You attempted to define a `\{\{link-to "post"\}\}` but did not pass the parameters required for generating its dynamic segments.|You must provide param `post_id` to `generate`)/);
 
-      return this.runLoopSettled();
+      return runLoopSettled();
     }
 
     [`@test the {{link-to}} helper does not throw an error if its route has exited`](assert) {
