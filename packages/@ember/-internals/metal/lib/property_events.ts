@@ -26,7 +26,7 @@ let deferred = 0;
   manually.
 
   @method notifyPropertyChange
-  @for Ember
+  @for @ember/object
   @param {Object} obj The object with the property that will change
   @param {String} keyName The property key (or path) that will change.
   @param {Meta} meta The objects meta.
