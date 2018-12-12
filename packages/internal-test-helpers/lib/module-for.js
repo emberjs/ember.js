@@ -33,7 +33,7 @@ export function setupTestClass(hooks, TestClass, ...mixins) {
       promises.push(instance.afterEach());
     }
 
-    return all(promises).then(() => {
+    return all(promises).finally(() => {
       unsetContext();
     });
   });
