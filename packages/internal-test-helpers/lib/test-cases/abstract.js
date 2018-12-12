@@ -3,7 +3,7 @@
 import { assign } from '@ember/polyfills';
 import { getCurrentRunLoop, hasScheduledTimers, next, run } from '@ember/runloop';
 
-import NodeQuery from './node-query';
+import NodeQuery from '../node-query';
 import equalInnerHTML from '../equal-inner-html';
 import equalTokens from '../equal-tokens';
 import { equalsElement, regex, classes } from '../matchers';
