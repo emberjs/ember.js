@@ -3,14 +3,14 @@ import { getDebugFunction, setDebugFunction } from '@ember/debug';
 import { setupAssertionHelpers } from './assertion';
 // @ts-ignore
 import { setupContainersCheck } from './containers';
+import { setupDeprecationHelpers } from './deprecation';
 import HooksCompat from './hooks-compat';
-// @ts-ignore
-import EmberDevTestHelperAssert from './index';
 // @ts-ignore
 import { setupNamespacesCheck } from './namespaces';
 // @ts-ignore
 import { setupRunLoopCheck } from './run-loop';
 import { DebugEnv } from './utils';
+import { setupWarningHelpers } from './warning';
 
 export default function setupQUnit({ runningProdBuild }: { runningProdBuild: boolean }) {
   let env = {
@@ -19,23 +19,13 @@ export default function setupQUnit({ runningProdBuild }: { runningProdBuild: boo
     setDebugFunction,
   } as DebugEnv;
 
-  let assertion = new EmberDevTestHelperAssert(env);
-
   function setupAssert(hooks: NestedHooks) {
     setupContainersCheck(hooks);
     setupNamespacesCheck(hooks);
     setupRunLoopCheck(hooks);
     setupAssertionHelpers(hooks, env);
-
-    hooks.beforeEach(function() {
-      assertion.reset();
-      assertion.inject();
-    });
-
-    hooks.afterEach(function() {
-      assertion.assert();
-      assertion.restore();
-    });
+    setupDeprecationHelpers(hooks, env);
+    setupWarningHelpers(hooks, env);
   }
 
   let originalModule = QUnit.module;

@@ -16,6 +16,20 @@ declare global {
   }
 }
 
+export function setupWarningHelpers(hooks: NestedHooks, env: DebugEnv) {
+  let assertion = new WarningAssert(env);
+
+  hooks.beforeEach(function() {
+    assertion.reset();
+    assertion.inject();
+  });
+
+  hooks.afterEach(function() {
+    assertion.assert();
+    assertion.restore();
+  });
+}
+
 class WarningAssert extends DebugAssert {
   constructor(env: DebugEnv) {
     super('warn', env);
