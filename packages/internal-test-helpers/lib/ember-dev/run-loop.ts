@@ -1,6 +1,7 @@
+// @ts-ignore
 import { cancelTimers, end, getCurrentRunLoop, hasScheduledTimers } from '@ember/runloop';
 
-export function setupRunLoopCheck(hooks) {
+export function setupRunLoopCheck(hooks: NestedHooks) {
   hooks.afterEach(function() {
     let { assert } = QUnit.config.current;
 

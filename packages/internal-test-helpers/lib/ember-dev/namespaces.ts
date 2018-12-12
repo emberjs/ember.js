@@ -1,7 +1,7 @@
-import { run } from '@ember/runloop';
 import { NAMESPACES, NAMESPACES_BY_ID } from '@ember/-internals/metal';
+import { run } from '@ember/runloop';
 
-export function setupNamespacesCheck(hooks) {
+export function setupNamespacesCheck(hooks: NestedHooks) {
   hooks.afterEach(function() {
     let { assert } = QUnit.config.current;
 
