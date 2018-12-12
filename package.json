@@ -117,7 +117,7 @@
     "broccoli-string-replace": "^0.1.2",
     "broccoli-typescript-compiler": "^4.0.1",
     "broccoli-uglify-sourcemap": "^2.2.0",
-    "common-tags": "^1.7.2",
+    "common-tags": "^1.8.0",
     "dag-map": "^2.0.2",
     "ember-cli": "^3.5.1",
     "ember-cli-blueprint-test-helpers": "^0.18.3",
