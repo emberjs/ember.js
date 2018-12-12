@@ -5,35 +5,39 @@ import { all } from 'rsvp';
 
 export default function moduleFor(description, TestClass, ...mixins) {
   QUnit.module(description, function(hooks) {
-    hooks.beforeEach(function(assert) {
-      let instance = new TestClass(assert);
-      this.instance = instance;
-      if (instance.beforeEach) {
-        return instance.beforeEach(assert);
-      }
-    });
+    setupTestClass(hooks, TestClass, ...mixins);
+  });
+}
 
-    hooks.afterEach(function() {
-      let promises = [];
-      let instance = this.instance;
-      this.instance = null;
-      if (instance.teardown) {
-        promises.push(instance.teardown());
-      }
-      if (instance.afterEach) {
-        promises.push(instance.afterEach());
-      }
+export function setupTestClass(hooks, TestClass, ...mixins) {
+  hooks.beforeEach(function(assert) {
+    let instance = new TestClass(assert);
+    this.instance = instance;
+    if (instance.beforeEach) {
+      return instance.beforeEach(assert);
+    }
+  });
 
-      return all(promises);
-    });
-
-    if (mixins.length > 0) {
-      applyMixins(TestClass, ...mixins);
+  hooks.afterEach(function() {
+    let promises = [];
+    let instance = this.instance;
+    this.instance = null;
+    if (instance.teardown) {
+      promises.push(instance.teardown());
+    }
+    if (instance.afterEach) {
+      promises.push(instance.afterEach());
     }
 
-    let properties = getAllPropertyNames(TestClass);
-    properties.forEach(generateTest);
+    return all(promises);
   });
+
+  if (mixins.length > 0) {
+    applyMixins(TestClass, ...mixins);
+  }
+
+  let properties = getAllPropertyNames(TestClass);
+  properties.forEach(generateTest);
 
   function shouldTest(features) {
     return features.every(feature => {
