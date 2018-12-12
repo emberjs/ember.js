@@ -787,17 +787,6 @@ class TrustedContentTest extends DynamicContentTest {
   assertContent(content) {
     this.assertHTML(content);
   }
-
-  assertStableRerender() {
-    this.takeSnapshot();
-    this.runTask(() => this.rerender());
-    super.assertInvariants();
-  }
-
-  assertInvariants() {
-    // If it's not stable, we will wipe out all the content and replace them,
-    // so there are no invariants
-  }
 }
 
 moduleFor(
