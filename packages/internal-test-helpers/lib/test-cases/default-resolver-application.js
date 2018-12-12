@@ -5,7 +5,7 @@ import { setTemplates, setTemplate } from '@ember/-internals/glimmer';
 import { assign } from '@ember/polyfills';
 import { Router } from '@ember/-internals/routing';
 
-export default class ApplicationTestCase extends AbstractApplicationTestCase {
+export default class DefaultResolverApplicationTestCase extends AbstractApplicationTestCase {
   createApplication() {
     let application = (this.application = Application.create(this.applicationOptions));
     application.Router = Router.extend(this.routerOptions);
