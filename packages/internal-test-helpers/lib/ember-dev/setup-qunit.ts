@@ -6,7 +6,6 @@ import { setupDeprecationHelpers } from './deprecation';
 import HooksCompat from './hooks-compat';
 // @ts-ignore
 import { setupNamespacesCheck } from './namespaces';
-// @ts-ignore
 import { setupRunLoopCheck } from './run-loop';
 import { DebugEnv } from './utils';
 import { setupWarningHelpers } from './warning';
