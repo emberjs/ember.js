@@ -1,4 +1,4 @@
-import { RenderingTest, moduleFor } from '../../utils/test-case';
+import { RenderingTestCase, moduleFor } from '../../utils/test-case';
 import { strip } from '../../utils/abstract-test-case';
 import { set, get, setProperties } from '@ember/-internals/metal';
 import { Component } from '../../utils/helpers';
@@ -6,7 +6,7 @@ import { A as emberA } from '@ember/-internals/runtime';
 
 moduleFor(
   'Helpers test: {{unbound}}',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     ['@test should be able to output a property without binding']() {
       this.render(`<div id="first">{{unbound content.anUnboundString}}</div>`, {
         content: {

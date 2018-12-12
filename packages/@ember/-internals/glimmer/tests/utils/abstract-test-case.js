@@ -1,1 +1,1 @@
-export { AbstractTestCase as TestCase, applyMixins, strip } from 'internal-test-helpers';
+export { AbstractTestCase, applyMixins, strip } from 'internal-test-helpers';

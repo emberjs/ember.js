@@ -1,11 +1,11 @@
-import { RenderingTest, moduleFor } from '../../utils/test-case';
+import { RenderingTestCase, moduleFor } from '../../utils/test-case';
 import { Component, htmlSafe } from '../../utils/helpers';
 import { set, get, computed } from '@ember/-internals/metal';
 import { styles } from '../../utils/test-helpers';
 
 moduleFor(
   'Helpers test: {{mut}}',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     ['@test a simple mutable binding using `mut` propagates properly']() {
       let bottom;
 
@@ -430,7 +430,7 @@ moduleFor(
 
 moduleFor(
   'Mutable Bindings used in Computed Properties that are bound as attributeBindings',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     ['@test an attribute binding of a computed property of a 2-way bound attr recomputes when the attr changes']() {
       let input, output;
 

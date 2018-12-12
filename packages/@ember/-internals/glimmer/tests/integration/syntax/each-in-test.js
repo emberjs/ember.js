@@ -1,5 +1,5 @@
 import { get, set } from '@ember/-internals/metal';
-import { moduleFor, RenderingTest } from '../../utils/test-case';
+import { moduleFor, RenderingTestCase } from '../../utils/test-case';
 import { Object as EmberObject, ObjectProxy } from '@ember/-internals/runtime';
 import { strip } from '../../utils/abstract-test-case';
 import { HAS_NATIVE_SYMBOL } from '@ember/-internals/utils';
@@ -96,7 +96,7 @@ moduleFor(
 moduleFor('Syntax test: {{#each-in}}', BasicSyntaxTest);
 
 // Rendering tests
-class AbstractEachInTest extends RenderingTest {
+class AbstractEachInTest extends RenderingTestCase {
   createHash(/* hash */) {
     throw new Error('Not implemented: `createHash`');
   }

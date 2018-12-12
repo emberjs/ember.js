@@ -1,13 +1,13 @@
 import { assign } from '@ember/polyfills';
 import { Component } from '../../utils/helpers';
 import { applyMixins, strip } from '../../utils/abstract-test-case';
-import { moduleFor, RenderingTest } from '../../utils/test-case';
+import { moduleFor, RenderingTestCase } from '../../utils/test-case';
 import { isEmpty } from '@ember/-internals/metal';
 import { A as emberA } from '@ember/-internals/runtime';
 
 moduleFor(
   'Components test: contextual components',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     ['@test renders with component helper']() {
       let expectedText = 'Hodi';
 
@@ -1322,7 +1322,7 @@ moduleFor(
   }
 );
 
-class ContextualComponentMutableParamsTest extends RenderingTest {
+class ContextualComponentMutableParamsTest extends RenderingTestCase {
   render(templateStr, context = {}) {
     super.render(
       `${templateStr}<span class="value">{{model.val2}}</span>`,

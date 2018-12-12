@@ -1,9 +1,9 @@
 import { set } from '@ember/-internals/metal';
-import { moduleFor, RenderingTest } from '../../utils/test-case';
+import { moduleFor, RenderingTestCase } from '../../utils/test-case';
 import { Component, compile } from '../../utils/helpers';
 import { strip } from '../../utils/abstract-test-case';
 
-class AbstractAppendTest extends RenderingTest {
+class AbstractAppendTest extends RenderingTestCase {
   constructor() {
     super(...arguments);
 

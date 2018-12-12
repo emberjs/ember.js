@@ -1,8 +1,8 @@
-import { RenderingTest, moduleFor } from '../../utils/test-case';
+import { RenderingTestCase, moduleFor } from '../../utils/test-case';
 
 moduleFor(
   'Helpers test: {{log}}',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     constructor() {
       super(...arguments);
       /* eslint-disable no-console */

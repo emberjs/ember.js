@@ -1,9 +1,9 @@
-import { moduleFor, RenderingTest } from '../../utils/test-case';
+import { moduleFor, RenderingTestCase } from '../../utils/test-case';
 import { set } from '@ember/-internals/metal';
 
 moduleFor(
   'Components test: web component fallback',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     ['@test custom elements are rendered']() {
       let template = `<foo-bar some-attr="123">hello</foo-bar>`;
 

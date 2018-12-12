@@ -1,11 +1,11 @@
 import { precompile, compile } from 'ember-template-compiler';
 import { template } from '@ember/-internals/glimmer';
-import { RenderingTest, moduleFor } from '../utils/test-case';
+import { RenderingTestCase, moduleFor } from '../utils/test-case';
 import { Component } from '../utils/helpers';
 
 moduleFor(
   'Template factory test',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     ['@test the template factory returned from precompile is the same as compile'](assert) {
       let { owner } = this;
       let { runtimeResolver } = this;

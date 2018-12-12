@@ -1,10 +1,10 @@
-import { RenderingTest, moduleFor } from '../../utils/test-case';
+import { RenderingTestCase, moduleFor } from '../../utils/test-case';
 import { set } from '@ember/-internals/metal';
 import { _setStrings } from '@ember/string';
 
 moduleFor(
   'Helpers test: {{loc}}',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     constructor() {
       super(...arguments);
       _setStrings({

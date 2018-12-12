@@ -1,10 +1,10 @@
-import { RenderingTest, moduleFor } from '../utils/test-case';
+import { RenderingTestCase, moduleFor } from '../utils/test-case';
 import { set } from '@ember/-internals/metal';
 import { strip } from '../utils/abstract-test-case';
 
 moduleFor(
   'SVG element tests',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     ['@test unquoted viewBox property is output'](assert) {
       let viewBoxString = '0 0 100 100';
 

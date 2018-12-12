@@ -1,6 +1,6 @@
 import { assign } from '@ember/polyfills';
 import { applyMixins } from './abstract-test-case';
-import { RenderingTest } from './test-case';
+import { RenderingTestCase } from './test-case';
 import { get, set } from '@ember/-internals/metal';
 import {
   Object as EmberObject,
@@ -11,7 +11,7 @@ import {
 } from '@ember/-internals/runtime';
 import { Component } from './helpers';
 
-class AbstractConditionalsTest extends RenderingTest {
+class AbstractConditionalsTest extends RenderingTestCase {
   get truthyValue() {
     return true;
   }

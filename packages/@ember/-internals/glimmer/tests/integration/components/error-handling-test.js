@@ -1,10 +1,10 @@
 import { set } from '@ember/-internals/metal';
 import { Component } from '../../utils/helpers';
-import { moduleFor, RenderingTest } from '../../utils/test-case';
+import { moduleFor, RenderingTestCase } from '../../utils/test-case';
 
 moduleFor(
   'Errors thrown during render',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     ['@test it can recover resets the transaction when an error is thrown during initial render'](
       assert
     ) {

@@ -7,12 +7,12 @@ import { Object as EmberObject, A as emberA } from '@ember/-internals/runtime';
 import { jQueryDisabled } from '@ember/-internals/views';
 import { Component, compile, htmlSafe } from '../../utils/helpers';
 import { strip } from '../../utils/abstract-test-case';
-import { moduleFor, RenderingTest } from '../../utils/test-case';
+import { moduleFor, RenderingTestCase } from '../../utils/test-case';
 import { classes, equalTokens, equalsElement, styles } from '../../utils/test-helpers';
 
 moduleFor(
   'Components test: curly components',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     ['@test it can render a basic component']() {
       this.registerComponent('foo-bar', { template: 'hello' });
 
@@ -3572,7 +3572,7 @@ moduleFor(
 if (jQueryDisabled) {
   moduleFor(
     'Components test: curly components: jQuery disabled',
-    class extends RenderingTest {
+    class extends RenderingTestCase {
       ['@test jQuery proxy is not available without jQuery']() {
         let instance;
 
@@ -3599,7 +3599,7 @@ if (jQueryDisabled) {
 } else {
   moduleFor(
     'Components test: curly components: jQuery enabled',
-    class extends RenderingTest {
+    class extends RenderingTestCase {
       ['@test it has a jQuery proxy to the element']() {
         let instance;
 

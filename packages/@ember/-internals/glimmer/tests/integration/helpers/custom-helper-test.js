@@ -1,11 +1,11 @@
 /* globals EmberDev */
-import { RenderingTest, moduleFor } from '../../utils/test-case';
+import { RenderingTestCase, moduleFor } from '../../utils/test-case';
 import { runDestroy } from 'internal-test-helpers';
 import { set } from '@ember/-internals/metal';
 
 moduleFor(
   'Helpers test: custom helpers',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     ['@test it cannot override built-in syntax']() {
       this.registerHelper('if', () => 'Nope');
       expectAssertion(() => {
@@ -602,7 +602,7 @@ moduleFor(
 );
 
 if (!EmberDev.runningProdBuild) {
-  class HelperMutatingArgsTests extends RenderingTest {
+  class HelperMutatingArgsTests extends RenderingTestCase {
     buildCompute() {
       return (params, hash) => {
         this.assert.throws(() => {

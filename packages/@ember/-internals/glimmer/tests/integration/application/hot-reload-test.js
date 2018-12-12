@@ -2,7 +2,7 @@ import { ENV } from '@ember/-internals/environment';
 import Service, { inject as injectService } from '@ember/service';
 import { Component, Helper } from '@ember/-internals/glimmer';
 import { expect } from '@glimmer/util';
-import { moduleFor, ApplicationTest } from '../../utils/test-case';
+import { moduleFor, ApplicationTestCase } from '../../utils/test-case';
 import { strip } from '../../utils/abstract-test-case';
 
 // This simuates what the template hot-reloading would do in development mode
@@ -10,7 +10,7 @@ import { strip } from '../../utils/abstract-test-case';
 
 moduleFor(
   'Appliation test: template hot reloading',
-  class extends ApplicationTest {
+  class extends ApplicationTestCase {
     constructor() {
       super(...arguments);
       this._APPLICATION_TEMPLATE_WRAPPER = ENV._APPLICATION_TEMPLATE_WRAPPER;

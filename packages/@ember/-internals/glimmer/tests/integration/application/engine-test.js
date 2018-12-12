@@ -1,4 +1,4 @@
-import { moduleFor, ApplicationTest } from '../../utils/test-case';
+import { moduleFor, ApplicationTestCase } from '../../utils/test-case';
 import { strip } from '../../utils/abstract-test-case';
 import { compile } from '../../utils/helpers';
 import Controller from '@ember/controller';
@@ -10,7 +10,7 @@ import { next } from '@ember/runloop';
 
 moduleFor(
   'Application test: engine rendering',
-  class extends ApplicationTest {
+  class extends ApplicationTestCase {
     get routerOptions() {
       return {
         location: 'none',

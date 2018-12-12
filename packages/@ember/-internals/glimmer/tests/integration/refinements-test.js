@@ -1,10 +1,10 @@
-import { RenderingTest, moduleFor } from '../utils/test-case';
+import { RenderingTestCase, moduleFor } from '../utils/test-case';
 import { strip } from '../utils/abstract-test-case';
 import { set } from '@ember/-internals/metal';
 
 moduleFor(
   'syntax refinements',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     ['@test block params should not be refined']() {
       this.registerHelper('foo', () => 'bar helper');
 

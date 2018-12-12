@@ -1,10 +1,10 @@
-import { RenderingTest, moduleFor } from '../../utils/test-case';
+import { RenderingTestCase, moduleFor } from '../../utils/test-case';
 import { classes } from '../../utils/test-helpers';
 import { set } from '@ember/-internals/metal';
 
 moduleFor(
   'Helpers test: {{-class}}',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     ['@test casts binding to dasherized class']() {
       this.registerComponent('foo-bar', { template: '' });
       this.render(`{{foo-bar class=(-class someTruth "someTruth")}}`, {

@@ -1,4 +1,4 @@
-import { moduleFor, RenderingTest } from '../../utils/test-case';
+import { moduleFor, RenderingTestCase } from '../../utils/test-case';
 import { Component } from '../../utils/helpers';
 import { classes } from '../../utils/test-helpers';
 import { set, computed } from '@ember/-internals/metal';
@@ -6,7 +6,7 @@ import { strip } from '../../utils/abstract-test-case';
 
 moduleFor(
   'ClassNameBindings integration',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     ['@test it can have class name bindings on the class definition']() {
       let FooBarComponent = Component.extend({
         classNameBindings: ['foo', 'isEnabled:enabled', 'isHappy:happy:sad'],
@@ -673,7 +673,7 @@ moduleFor(
 
 moduleFor(
   'ClassBinding integration',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     ['@test it should apply classBinding without condition always']() {
       this.registerComponent('foo-bar', { template: 'hello' });
 

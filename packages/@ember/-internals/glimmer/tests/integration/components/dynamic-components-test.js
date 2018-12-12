@@ -3,11 +3,11 @@ import { set, computed } from '@ember/-internals/metal';
 import { jQueryDisabled } from '@ember/-internals/views';
 import { Component } from '../../utils/helpers';
 import { strip } from '../../utils/abstract-test-case';
-import { moduleFor, RenderingTest } from '../../utils/test-case';
+import { moduleFor, RenderingTestCase } from '../../utils/test-case';
 
 moduleFor(
   'Components test: dynamic components',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     ['@test it can render a basic component with a static component name argument']() {
       this.registerComponent('foo-bar', { template: 'hello {{name}}' });
 
@@ -804,7 +804,7 @@ moduleFor(
 if (jQueryDisabled) {
   moduleFor(
     'Components test: dynamic components: jQuery disabled',
-    class extends RenderingTest {
+    class extends RenderingTestCase {
       ['@test jQuery proxy is not available without jQuery']() {
         let instance;
 
@@ -831,7 +831,7 @@ if (jQueryDisabled) {
 } else {
   moduleFor(
     'Components test: dynamic components : jQuery enabled',
-    class extends RenderingTest {
+    class extends RenderingTestCase {
       ['@test it has a jQuery proxy to the element']() {
         let instance;
 

@@ -1,11 +1,11 @@
-import { moduleFor, RenderingTest } from '../../utils/test-case';
+import { moduleFor, RenderingTestCase } from '../../utils/test-case';
 import { EMBER_MODULE_UNIFICATION } from '@ember/canary-features';
 import { Component, helper } from '@ember/-internals/glimmer';
 
 if (EMBER_MODULE_UNIFICATION) {
   moduleFor(
     'Namespaced lookup',
-    class extends RenderingTest {
+    class extends RenderingTestCase {
       ['@test it can render a namespaced component']() {
         this.addTemplate(
           {

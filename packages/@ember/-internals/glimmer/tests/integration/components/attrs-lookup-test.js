@@ -1,11 +1,11 @@
-import { RenderingTest, moduleFor } from '../../utils/test-case';
+import { RenderingTestCase, moduleFor } from '../../utils/test-case';
 import { Component, htmlSafe } from '../../utils/helpers';
 import { set, computed } from '@ember/-internals/metal';
 import { styles } from '../../utils/test-helpers';
 
 moduleFor(
   'Components test: attrs lookup',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     ['@test it should be able to lookup attrs without `attrs.` - template access']() {
       this.registerComponent('foo-bar', { template: '{{first}}' });
 

@@ -1,5 +1,5 @@
 import { EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION } from '@ember/canary-features';
-import { moduleFor, RenderingTest } from '../../utils/test-case';
+import { moduleFor, RenderingTestCase } from '../../utils/test-case';
 import { set } from '@ember/-internals/metal';
 import { Component } from '../../utils/helpers';
 import { strip } from '../../utils/abstract-test-case';
@@ -8,7 +8,7 @@ import { classes } from '../../utils/test-helpers';
 if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
   moduleFor(
     'AngleBracket Invocation',
-    class extends RenderingTest {
+    class extends RenderingTestCase {
       '@test it can resolve <XBlah /> to x-blah'() {
         this.registerComponent('x-blah', { template: 'hello' });
 

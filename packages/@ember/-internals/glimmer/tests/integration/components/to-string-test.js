@@ -1,9 +1,9 @@
-import { moduleFor, RenderingTest } from '../../utils/test-case';
+import { moduleFor, RenderingTestCase } from '../../utils/test-case';
 import { Checkbox, Component, LinkComponent, TextArea, TextField } from '@ember/-internals/glimmer';
 
 moduleFor(
   'built-in component toString',
-  class AbstractAppendTest extends RenderingTest {
+  class AbstractAppendTest extends RenderingTestCase {
     '@test text-field has the correct toString value'(assert) {
       assert.strictEqual(TextField.toString(), '@ember/component/text-field');
     }

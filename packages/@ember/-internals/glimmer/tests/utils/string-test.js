@@ -1,10 +1,10 @@
 import { SafeString, htmlSafe, isHTMLSafe } from './helpers';
-import { TestCase } from './abstract-test-case';
+import { AbstractTestCase } from './abstract-test-case';
 import { moduleFor } from './test-case';
 
 moduleFor(
   'SafeString',
-  class extends TestCase {
+  class extends AbstractTestCase {
     ['@test htmlSafe should return an instance of SafeString']() {
       let safeString = htmlSafe('you need to be more <b>bold</b>');
 
@@ -29,7 +29,7 @@ moduleFor(
 
 moduleFor(
   'SafeString isHTMLSafe',
-  class extends TestCase {
+  class extends AbstractTestCase {
     ['@test isHTMLSafe should detect SafeString']() {
       let safeString = htmlSafe('<em>Emphasize</em> the important things.');
 

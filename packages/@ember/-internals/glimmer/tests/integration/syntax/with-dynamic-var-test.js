@@ -1,9 +1,9 @@
-import { moduleFor, RenderingTest } from '../../utils/test-case';
+import { moduleFor, RenderingTestCase } from '../../utils/test-case';
 import { strip } from '../../utils/abstract-test-case';
 
 moduleFor(
   '{{-with-dynamic-var}}',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     ['@test does not allow setting values other than outletState']() {
       expectAssertion(() => {
         this.render(strip`

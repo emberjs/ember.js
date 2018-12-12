@@ -1,4 +1,4 @@
-import { RenderingTest, moduleFor } from '../../utils/test-case';
+import { RenderingTestCase, moduleFor } from '../../utils/test-case';
 import { strip } from '../../utils/abstract-test-case';
 import { Component } from '../../utils/helpers';
 import { set } from '@ember/-internals/metal';
@@ -38,7 +38,7 @@ const isIE11 = !window.ActiveXObject && 'ActiveXObject' in window;
 if (EMBER_IMPROVED_INSTRUMENTATION) {
   moduleFor(
     'Helpers test: element action instrumentation',
-    class extends RenderingTest {
+    class extends RenderingTestCase {
       teardown() {
         super.teardown();
         instrumentationReset();
@@ -90,7 +90,7 @@ if (EMBER_IMPROVED_INSTRUMENTATION) {
 
 moduleFor(
   'Helpers test: element action',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     ['@test it can call an action on its enclosing component']() {
       let fooCallCount = 0;
 

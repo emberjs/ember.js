@@ -1,10 +1,10 @@
-import { RenderingTest, moduleFor } from '../../utils/test-case';
+import { RenderingTestCase, moduleFor } from '../../utils/test-case';
 import { Component } from '../../utils/helpers';
 import { set, get } from '@ember/-internals/metal';
 
 moduleFor(
   'Helpers test: {{readonly}}',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     ['@test {{readonly}} of a path should work']() {
       let component;
 

@@ -1,10 +1,10 @@
-import { RenderingTest, moduleFor } from '../../utils/test-case';
+import { RenderingTestCase, moduleFor } from '../../utils/test-case';
 import { Component } from '../../utils/helpers';
 import { set } from '@ember/-internals/metal';
 
 moduleFor(
   'Helpers test: {{hash}}',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     ['@test returns a hash with the right key-value']() {
       this.render(`{{#with (hash name=\"Sergio\") as |person|}}{{person.name}}{{/with}}`);
 

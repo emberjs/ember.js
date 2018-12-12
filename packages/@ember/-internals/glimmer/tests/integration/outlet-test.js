@@ -1,10 +1,10 @@
-import { RenderingTest, moduleFor } from '../utils/test-case';
+import { RenderingTestCase, moduleFor } from '../utils/test-case';
 import { runAppend } from 'internal-test-helpers';
 import { set } from '@ember/-internals/metal';
 
 moduleFor(
   'outlet view',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     constructor() {
       super(...arguments);
 

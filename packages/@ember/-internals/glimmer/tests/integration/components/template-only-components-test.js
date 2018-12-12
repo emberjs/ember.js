@@ -1,8 +1,8 @@
-import { moduleFor, RenderingTest } from '../../utils/test-case';
+import { moduleFor, RenderingTestCase } from '../../utils/test-case';
 import { classes } from '../../utils/test-helpers';
 import { ENV } from '@ember/-internals/environment';
 
-class TemplateOnlyComponentsTest extends RenderingTest {
+class TemplateOnlyComponentsTest extends RenderingTestCase {
   registerComponent(name, template) {
     super.registerComponent(name, { template, ComponentClass: null });
   }

@@ -1,6 +1,6 @@
 import { get, set } from '@ember/-internals/metal';
 import { A as emberA, ObjectProxy, removeAt } from '@ember/-internals/runtime';
-import { moduleFor, RenderingTest } from '../../utils/test-case';
+import { moduleFor, RenderingTestCase } from '../../utils/test-case';
 import { IfUnlessWithSyntaxTest } from '../../utils/shared-conditional-tests';
 import { strip } from '../../utils/abstract-test-case';
 
@@ -245,7 +245,7 @@ moduleFor(
 
 moduleFor(
   'Syntax test: Multiple {{#with as}} helpers',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     ['@test re-using the same variable with different {{#with}} blocks does not override each other']() {
       this.render(
         `Admin: {{#with admin as |person|}}{{person.name}}{{/with}} User: {{#with user as |person|}}{{person.name}}{{/with}}`,

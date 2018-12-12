@@ -1,4 +1,4 @@
-import { moduleFor, RenderingTest } from '../../utils/test-case';
+import { moduleFor, RenderingTestCase } from '../../utils/test-case';
 import { equalTokens } from '../../utils/test-helpers';
 import { strip } from '../../utils/abstract-test-case';
 import { Component } from '@ember/-internals/glimmer';
@@ -6,7 +6,7 @@ import { set } from '@ember/-internals/metal';
 
 moduleFor(
   '{{-in-element}}',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     ['@test using {{#in-element whatever}} asserts']() {
       // the in-element keyword is not yet public API this test should be removed
       // once https://github.com/emberjs/rfcs/pull/287 lands and is enabled

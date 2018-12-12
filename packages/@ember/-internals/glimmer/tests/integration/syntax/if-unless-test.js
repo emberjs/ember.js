@@ -3,7 +3,7 @@ import { A as emberA } from '@ember/-internals/runtime';
 import { set } from '@ember/-internals/metal';
 import { strip } from '../../utils/abstract-test-case';
 
-import { RenderingTest, moduleFor } from '../../utils/test-case';
+import { RenderingTestCase, moduleFor } from '../../utils/test-case';
 import { IfUnlessWithSyntaxTest } from '../../utils/shared-conditional-tests';
 
 moduleFor(
@@ -35,7 +35,7 @@ moduleFor(
 
 moduleFor(
   'Syntax test: {{#if}}',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     ['@test using `if` with an `{{each}}` destroys components when transitioning to and from inverse (GH #12267)'](
       assert
     ) {

@@ -1,6 +1,6 @@
 import { get, set, notifyPropertyChange } from '@ember/-internals/metal';
 import { applyMixins, strip } from '../../utils/abstract-test-case';
-import { moduleFor, RenderingTest } from '../../utils/test-case';
+import { moduleFor, RenderingTestCase } from '../../utils/test-case';
 import { A as emberA, ArrayProxy, RSVP } from '@ember/-internals/runtime';
 import { Component, htmlSafe } from '../../utils/helpers';
 import { HAS_NATIVE_SYMBOL } from '@ember/-internals/utils';
@@ -244,7 +244,7 @@ moduleFor(
   }
 );
 
-class AbstractEachTest extends RenderingTest {
+class AbstractEachTest extends RenderingTestCase {
   /* abstract */
   createList(/* items */) {
     throw new Error('Not implemented: `createList`');
@@ -1090,7 +1090,7 @@ moduleFor(
 
 moduleFor(
   'Syntax test: {{#each as}} undefined path',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     ['@test keying off of `undefined` does not render']() {
       this.render(
         strip`
@@ -1119,7 +1119,7 @@ moduleFor(
 
 moduleFor(
   'Syntax test: {{#each}} with sparse arrays',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     ['@test it should itterate over holes']() {
       let sparseArray = [];
       sparseArray[3] = 'foo';
@@ -1151,7 +1151,7 @@ moduleFor(
 if (typeof MutationObserver === 'function') {
   moduleFor(
     'Syntax test: {{#each as}} DOM mutation test',
-    class extends RenderingTest {
+    class extends RenderingTestCase {
       constructor() {
         super(...arguments);
         this.observer = null;

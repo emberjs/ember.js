@@ -1,4 +1,4 @@
-import { RenderingTest, moduleFor } from '../utils/test-case';
+import { RenderingTestCase, moduleFor } from '../utils/test-case';
 import { Component } from '../utils/helpers';
 import { getCurrentRunLoop, run } from '@ember/runloop';
 import {
@@ -21,7 +21,7 @@ function fireNativeWithDataTransfer(node, type, dataTransfer) {
 
 moduleFor(
   'EventDispatcher',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     ['@test events bubble view hierarchy for form elements'](assert) {
       let receivedEvent;
 
@@ -352,7 +352,7 @@ moduleFor(
 
 moduleFor(
   'EventDispatcher#setup',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     constructor() {
       super(...arguments);
 
@@ -426,7 +426,7 @@ moduleFor(
 if (EMBER_IMPROVED_INSTRUMENTATION) {
   moduleFor(
     'EventDispatcher - Instrumentation',
-    class extends RenderingTest {
+    class extends RenderingTestCase {
       teardown() {
         super.teardown();
         instrumentationReset();
@@ -485,7 +485,7 @@ if (EMBER_IMPROVED_INSTRUMENTATION) {
 if (canDataTransfer) {
   moduleFor(
     'EventDispatcher - Event Properties',
-    class extends RenderingTest {
+    class extends RenderingTestCase {
       ['@test dataTransfer property is added to drop event'](assert) {
         let receivedEvent;
         this.registerComponent('x-foo', {
@@ -508,7 +508,7 @@ if (canDataTransfer) {
 if (jQueryDisabled) {
   moduleFor(
     'EventDispatcher#native-events',
-    class extends RenderingTest {
+    class extends RenderingTestCase {
       ['@test native events are passed when jQuery is not present'](assert) {
         let receivedEvent;
 
@@ -532,7 +532,7 @@ if (jQueryDisabled) {
 } else {
   moduleFor(
     'EventDispatcher#jquery-events',
-    class extends RenderingTest {
+    class extends RenderingTestCase {
       beforeEach() {
         this.jqueryIntegration = window.ENV._JQUERY_INTEGRATION;
       }

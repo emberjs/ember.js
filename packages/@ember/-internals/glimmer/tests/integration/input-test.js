@@ -1,9 +1,9 @@
-import { RenderingTest, moduleFor } from '../utils/test-case';
+import { RenderingTestCase, moduleFor } from '../utils/test-case';
 import { set } from '@ember/-internals/metal';
 
 moduleFor(
   'Input element tests',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     runAttributeTest(attributeName, values) {
       let template = `<input ${attributeName}={{value}}>`;
       this.render(template, { value: values[0] });

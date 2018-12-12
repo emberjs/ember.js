@@ -1,4 +1,4 @@
-import { moduleFor, RenderingTest } from '../../utils/test-case';
+import { moduleFor, RenderingTestCase } from '../../utils/test-case';
 import { Component } from '../../utils/helpers';
 import { set } from '@ember/-internals/metal';
 import {
@@ -8,7 +8,7 @@ import {
 
 moduleFor(
   'Components instrumentation',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     constructor() {
       super(...arguments);
 

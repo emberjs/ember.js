@@ -1,11 +1,11 @@
-import { moduleFor, RenderingTest } from '../utils/test-case';
+import { moduleFor, RenderingTestCase } from '../utils/test-case';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import { GLIMMER_MODIFIER_MANAGER } from '@ember/canary-features';
 import { setModifierManager } from '@ember/-internals/glimmer';
 import { set } from '@ember/-internals/metal';
 
 if (GLIMMER_MODIFIER_MANAGER) {
-  class ModifierManagerTest extends RenderingTest {}
+  class ModifierManagerTest extends RenderingTestCase {}
 
   class CustomModifierManager {
     constructor(owner) {
