@@ -15,20 +15,16 @@ export default function setupQUnit({ runningProdBuild }: { runningProdBuild: boo
     setDebugFunction,
   } as DebugEnv;
 
-  function setupAssert(hooks: NestedHooks) {
-    setupContainersCheck(hooks);
-    setupNamespacesCheck(hooks);
-    setupRunLoopCheck(hooks);
-    setupAssertionHelpers(hooks, env);
-    setupDeprecationHelpers(hooks, env);
-    setupWarningHelpers(hooks, env);
-  }
-
   let originalModule = QUnit.module;
 
   QUnit.module = function(name: string, callback: any) {
     return originalModule(name, function(hooks) {
-      setupAssert(hooks);
+      setupContainersCheck(hooks);
+      setupNamespacesCheck(hooks);
+      setupRunLoopCheck(hooks);
+      setupAssertionHelpers(hooks, env);
+      setupDeprecationHelpers(hooks, env);
+      setupWarningHelpers(hooks, env);
 
       callback(hooks);
     });
