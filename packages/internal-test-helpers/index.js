@@ -9,6 +9,7 @@ export { default as applyMixins } from './lib/apply-mixins';
 export { default as getTextOf } from './lib/get-text-of';
 export { equalsElement, classes, styles, regex } from './lib/matchers';
 export { runAppend, runDestroy } from './lib/run';
+export { getContext, setContext, unsetContext } from './lib/test-context';
 
 export { default as AbstractTestCase } from './lib/test-cases/abstract';
 export { default as AbstractApplicationTestCase } from './lib/test-cases/abstract-application';
