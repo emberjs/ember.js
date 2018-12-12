@@ -1,7 +1,6 @@
-import { moduleFor, RenderingTestCase, ApplicationTestCase } from 'internal-test-helpers';
+import { moduleFor, RenderingTestCase, ApplicationTestCase, strip } from 'internal-test-helpers';
 
 import { assign } from '@ember/polyfills';
-import { strip } from 'internal-test-helpers';
 import { set, Mixin } from '@ember/-internals/metal';
 import Controller from '@ember/controller';
 import { Object as EmberObject } from '@ember/-internals/runtime';
