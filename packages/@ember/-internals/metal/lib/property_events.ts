@@ -84,6 +84,7 @@ if (ENABLE_PROPERTY_DID_CHANGE) {
   @param {String} keyName The property key (or path) that will change.
   @param {Meta} meta The objects meta.
   @return {void}
+  @since 3.1.0
   @public
 */
 function notifyPropertyChange(obj: object, keyName: string, _meta?: Meta): void {
