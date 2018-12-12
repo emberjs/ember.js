@@ -155,7 +155,7 @@
     "simple-dom": "^1.4.0",
     "testem": "^2.14.0",
     "tslint": "^5.11.0",
-    "typescript-eslint-parser": "^18.0.0"
+    "typescript-eslint-parser": "^21.0.2"
   },
   "engines": {
     "node": "6.* || 8.* || >= 10.*"
