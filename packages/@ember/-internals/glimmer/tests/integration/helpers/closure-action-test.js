@@ -1,3 +1,5 @@
+import { RenderingTestCase, moduleFor, strip } from 'internal-test-helpers';
+
 import {
   subscribe as instrumentationSubscribe,
   unsubscribe as instrumentationUnsubscribe,
@@ -5,8 +7,7 @@ import {
 import { getCurrentRunLoop } from '@ember/runloop';
 import { set, computed } from '@ember/-internals/metal';
 import { EMBER_IMPROVED_INSTRUMENTATION } from '@ember/canary-features';
-import { RenderingTestCase, moduleFor } from '../../utils/test-case';
-import { strip } from '../../utils/abstract-test-case';
+
 import { Component, INVOKE } from '../../utils/helpers';
 
 if (EMBER_IMPROVED_INSTRUMENTATION) {

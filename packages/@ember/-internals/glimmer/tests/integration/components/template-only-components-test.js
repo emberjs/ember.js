@@ -1,5 +1,5 @@
-import { moduleFor, RenderingTestCase } from '../../utils/test-case';
-import { classes } from '../../utils/test-helpers';
+import { moduleFor, RenderingTestCase, classes } from 'internal-test-helpers';
+
 import { ENV } from '@ember/-internals/environment';
 
 class TemplateOnlyComponentsTest extends RenderingTestCase {

@@ -1,4 +1,5 @@
-import { moduleFor, RenderingTestCase } from '../../utils/test-case';
+import { moduleFor, RenderingTestCase } from 'internal-test-helpers';
+
 import { Checkbox, Component, LinkComponent, TextArea, TextField } from '@ember/-internals/glimmer';
 
 moduleFor(

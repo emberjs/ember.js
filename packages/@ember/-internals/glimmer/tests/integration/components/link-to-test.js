@@ -1,8 +1,14 @@
-import { moduleFor, ApplicationTestCase, RenderingTestCase } from '../../utils/test-case';
+import {
+  moduleFor,
+  ApplicationTestCase,
+  RenderingTestCase,
+  classes as classMatcher,
+} from 'internal-test-helpers';
+
 import Controller from '@ember/controller';
 import { set } from '@ember/-internals/metal';
+
 import { LinkComponent } from '../../utils/helpers';
-import { classes as classMatcher } from '../../utils/test-helpers';
 
 moduleFor(
   'Link-to component',

@@ -1,11 +1,11 @@
 /* globals EmberDev */
-import { RenderingTestCase, moduleFor } from '../utils/test-case';
-import { applyMixins } from '../utils/abstract-test-case';
+
+import { RenderingTestCase, moduleFor, applyMixins, classes } from 'internal-test-helpers';
+
 import { set, computed } from '@ember/-internals/metal';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 import { readOnly } from '@ember/object/computed';
 import { Object as EmberObject, ObjectProxy } from '@ember/-internals/runtime';
-import { classes } from '../utils/test-helpers';
 import { constructStyleDeprecationMessage } from '@ember/-internals/views';
 import { Component, SafeString, htmlSafe } from '../utils/helpers';
 

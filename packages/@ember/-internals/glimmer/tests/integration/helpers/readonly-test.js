@@ -1,6 +1,8 @@
-import { RenderingTestCase, moduleFor } from '../../utils/test-case';
-import { Component } from '../../utils/helpers';
+import { RenderingTestCase, moduleFor } from 'internal-test-helpers';
+
 import { set, get } from '@ember/-internals/metal';
+
+import { Component } from '../../utils/helpers';
 
 moduleFor(
   'Helpers test: {{readonly}}',

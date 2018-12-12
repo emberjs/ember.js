@@ -1,13 +1,12 @@
+import { moduleFor, RenderingTestCase, classes, strip, runAppend } from 'internal-test-helpers';
+
 import { schedule } from '@ember/runloop';
 import { set, setProperties } from '@ember/-internals/metal';
 import { A as emberA } from '@ember/-internals/runtime';
-import { Component } from '../../utils/helpers';
-import { strip } from '../../utils/abstract-test-case';
-import { moduleFor, RenderingTestCase } from '../../utils/test-case';
 import { getViewId, getViewElement, jQueryDisabled } from '@ember/-internals/views';
-import { classes } from '../../utils/test-helpers';
 import { tryInvoke } from '@ember/-internals/utils';
-import { runAppend } from 'internal-test-helpers';
+
+import { Component } from '../../utils/helpers';
 
 class LifeCycleHooksTest extends RenderingTestCase {
   constructor() {

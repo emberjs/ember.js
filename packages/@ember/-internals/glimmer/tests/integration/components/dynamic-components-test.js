@@ -1,9 +1,10 @@
+import { moduleFor, RenderingTestCase, strip } from 'internal-test-helpers';
+
 import { EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION } from '@ember/canary-features';
 import { set, computed } from '@ember/-internals/metal';
 import { jQueryDisabled } from '@ember/-internals/views';
+
 import { Component } from '../../utils/helpers';
-import { strip } from '../../utils/abstract-test-case';
-import { moduleFor, RenderingTestCase } from '../../utils/test-case';
 
 moduleFor(
   'Components test: dynamic components',

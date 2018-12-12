@@ -1,6 +1,8 @@
+import { moduleFor, RenderingTestCase } from 'internal-test-helpers';
+
 import { set } from '@ember/-internals/metal';
+
 import { Component } from '../../utils/helpers';
-import { moduleFor, RenderingTestCase } from '../../utils/test-case';
 
 moduleFor(
   'Errors thrown during render',

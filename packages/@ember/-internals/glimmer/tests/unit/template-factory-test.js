@@ -1,6 +1,8 @@
-import { precompile, compile } from 'ember-template-compiler';
+import { RenderingTestCase, moduleFor } from 'internal-test-helpers';
+
 import { template } from '@ember/-internals/glimmer';
-import { RenderingTestCase, moduleFor } from '../utils/test-case';
+import { precompile, compile } from 'ember-template-compiler';
+
 import { Component } from '../utils/helpers';
 
 moduleFor(

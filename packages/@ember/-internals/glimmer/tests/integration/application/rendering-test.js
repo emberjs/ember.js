@@ -1,7 +1,7 @@
+import { moduleFor, ApplicationTestCase, strip } from 'internal-test-helpers';
+
 import { ENV } from '@ember/-internals/environment';
 import Controller from '@ember/controller';
-import { moduleFor, ApplicationTestCase } from '../../utils/test-case';
-import { strip } from '../../utils/abstract-test-case';
 import { Route } from '@ember/-internals/routing';
 import { Component } from '@ember/-internals/glimmer';
 

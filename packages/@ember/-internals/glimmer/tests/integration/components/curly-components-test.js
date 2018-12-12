@@ -1,14 +1,23 @@
+/* globals EmberDev */
+
+import {
+  moduleFor,
+  RenderingTestCase,
+  strip,
+  classes,
+  equalTokens,
+  equalsElement,
+  styles,
+} from 'internal-test-helpers';
+
 import { run } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
-/* globals EmberDev */
 import { set, get, observer, on, computed } from '@ember/-internals/metal';
 import Service, { inject as injectService } from '@ember/service';
 import { Object as EmberObject, A as emberA } from '@ember/-internals/runtime';
 import { jQueryDisabled } from '@ember/-internals/views';
+
 import { Component, compile, htmlSafe } from '../../utils/helpers';
-import { strip } from '../../utils/abstract-test-case';
-import { moduleFor, RenderingTestCase } from '../../utils/test-case';
-import { classes, equalTokens, equalsElement, styles } from '../../utils/test-helpers';
 
 moduleFor(
   'Components test: curly components',

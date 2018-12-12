@@ -1,6 +1,6 @@
+import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+
 import { SafeString, htmlSafe, isHTMLSafe } from './helpers';
-import { AbstractTestCase } from './abstract-test-case';
-import { moduleFor } from './test-case';
 
 moduleFor(
   'SafeString',

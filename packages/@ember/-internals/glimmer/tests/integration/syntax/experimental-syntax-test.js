@@ -1,5 +1,5 @@
-import { moduleFor, RenderingTestCase } from '../../utils/test-case';
-import { strip } from '../../utils/abstract-test-case';
+import { moduleFor, RenderingTestCase, strip } from 'internal-test-helpers';
+
 import { _registerMacros, _experimentalMacros } from '@ember/-internals/glimmer';
 
 moduleFor(

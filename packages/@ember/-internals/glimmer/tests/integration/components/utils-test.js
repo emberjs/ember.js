@@ -1,3 +1,5 @@
+import { moduleFor, ApplicationTestCase, RenderingTestCase } from 'internal-test-helpers';
+
 import Controller from '@ember/controller';
 import {
   getRootViews,
@@ -6,7 +8,7 @@ import {
   getViewClientRects,
   getViewBoundingClientRect,
 } from '@ember/-internals/views';
-import { moduleFor, ApplicationTestCase, RenderingTestCase } from '../../utils/test-case';
+
 import { Component } from '../../utils/helpers';
 
 moduleFor(

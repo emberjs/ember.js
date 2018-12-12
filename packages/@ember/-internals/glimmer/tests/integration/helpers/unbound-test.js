@@ -1,8 +1,9 @@
-import { RenderingTestCase, moduleFor } from '../../utils/test-case';
-import { strip } from '../../utils/abstract-test-case';
+import { RenderingTestCase, moduleFor, strip } from 'internal-test-helpers';
+
 import { set, get, setProperties } from '@ember/-internals/metal';
-import { Component } from '../../utils/helpers';
 import { A as emberA } from '@ember/-internals/runtime';
+
+import { Component } from '../../utils/helpers';
 
 moduleFor(
   'Helpers test: {{unbound}}',

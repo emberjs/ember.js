@@ -1,6 +1,6 @@
+import { RenderingTestCase, applyMixins } from 'internal-test-helpers';
+
 import { assign } from '@ember/polyfills';
-import { applyMixins } from './abstract-test-case';
-import { RenderingTestCase } from './test-case';
 import { get, set } from '@ember/-internals/metal';
 import {
   Object as EmberObject,
@@ -9,6 +9,7 @@ import {
   ArrayProxy,
   removeAt,
 } from '@ember/-internals/runtime';
+
 import { Component } from './helpers';
 
 class AbstractConditionalsTest extends RenderingTestCase {

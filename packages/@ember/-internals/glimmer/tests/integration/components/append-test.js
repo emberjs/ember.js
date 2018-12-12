@@ -1,7 +1,8 @@
+import { moduleFor, RenderingTestCase, strip } from 'internal-test-helpers';
+
 import { set } from '@ember/-internals/metal';
-import { moduleFor, RenderingTestCase } from '../../utils/test-case';
+
 import { Component, compile } from '../../utils/helpers';
-import { strip } from '../../utils/abstract-test-case';
 
 class AbstractAppendTest extends RenderingTestCase {
   constructor() {

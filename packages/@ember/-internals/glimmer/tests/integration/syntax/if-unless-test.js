@@ -1,9 +1,9 @@
-import { Component } from '../../utils/helpers';
+import { RenderingTestCase, moduleFor, strip } from 'internal-test-helpers';
+
 import { A as emberA } from '@ember/-internals/runtime';
 import { set } from '@ember/-internals/metal';
-import { strip } from '../../utils/abstract-test-case';
 
-import { RenderingTestCase, moduleFor } from '../../utils/test-case';
+import { Component } from '../../utils/helpers';
 import { IfUnlessWithSyntaxTest } from '../../utils/shared-conditional-tests';
 
 moduleFor(

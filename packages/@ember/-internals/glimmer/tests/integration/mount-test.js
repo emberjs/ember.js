@@ -1,5 +1,6 @@
+import { moduleFor, ApplicationTestCase, RenderingTestCase } from 'internal-test-helpers';
+
 import { getOwner } from '@ember/-internals/owner';
-import { moduleFor, ApplicationTestCase, RenderingTestCase } from '../utils/test-case';
 import { compile, Component } from '../utils/helpers';
 import Controller from '@ember/controller';
 import { set } from '@ember/-internals/metal';

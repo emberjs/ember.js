@@ -1,7 +1,8 @@
-import { RenderingTestCase, moduleFor } from '../../utils/test-case';
-import { Component, htmlSafe } from '../../utils/helpers';
+import { RenderingTestCase, moduleFor, styles } from 'internal-test-helpers';
+
 import { set, get, computed } from '@ember/-internals/metal';
-import { styles } from '../../utils/test-helpers';
+
+import { Component, htmlSafe } from '../../utils/helpers';
 
 moduleFor(
   'Helpers test: {{mut}}',

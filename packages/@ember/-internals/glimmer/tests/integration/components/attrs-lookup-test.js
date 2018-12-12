@@ -1,7 +1,8 @@
-import { RenderingTestCase, moduleFor } from '../../utils/test-case';
-import { Component, htmlSafe } from '../../utils/helpers';
+import { moduleFor, RenderingTestCase, styles } from 'internal-test-helpers';
+
 import { set, computed } from '@ember/-internals/metal';
-import { styles } from '../../utils/test-helpers';
+
+import { Component, htmlSafe } from '../../utils/helpers';
 
 moduleFor(
   'Components test: attrs lookup',

@@ -1,9 +1,9 @@
+import { moduleFor, RenderingTestCase, strip, classes } from 'internal-test-helpers';
+
 import { EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION } from '@ember/canary-features';
-import { moduleFor, RenderingTestCase } from '../../utils/test-case';
 import { set } from '@ember/-internals/metal';
+
 import { Component } from '../../utils/helpers';
-import { strip } from '../../utils/abstract-test-case';
-import { classes } from '../../utils/test-helpers';
 
 if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
   moduleFor(

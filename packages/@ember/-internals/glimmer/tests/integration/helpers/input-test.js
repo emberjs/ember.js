@@ -1,9 +1,10 @@
+import { RenderingTestCase, moduleFor, runDestroy } from 'internal-test-helpers';
+
 import { assign } from '@ember/polyfills';
 import { set } from '@ember/-internals/metal';
-import { Component } from '../../utils/helpers';
-import { RenderingTestCase, moduleFor } from '../../utils/test-case';
-import { runDestroy } from 'internal-test-helpers';
 import { jQuery } from '@ember/-internals/views';
+
+import { Component } from '../../utils/helpers';
 
 class InputRenderingTest extends RenderingTestCase {
   $input() {

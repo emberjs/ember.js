@@ -1,4 +1,5 @@
-import { moduleFor } from '../../utils/test-case';
+import { moduleFor } from 'internal-test-helpers';
+
 import { IfUnlessHelperTest } from '../../utils/shared-conditional-tests';
 
 moduleFor(

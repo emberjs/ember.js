@@ -1,4 +1,5 @@
-import { RenderingTestCase, moduleFor } from '../utils/test-case';
+import { RenderingTestCase, moduleFor } from 'internal-test-helpers';
+
 import { Component } from '../utils/helpers';
 import { getCurrentRunLoop, run } from '@ember/runloop';
 import {

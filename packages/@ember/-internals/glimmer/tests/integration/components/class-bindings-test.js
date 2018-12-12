@@ -1,8 +1,8 @@
-import { moduleFor, RenderingTestCase } from '../../utils/test-case';
-import { Component } from '../../utils/helpers';
-import { classes } from '../../utils/test-helpers';
+import { moduleFor, RenderingTestCase, strip, classes } from 'internal-test-helpers';
+
 import { set, computed } from '@ember/-internals/metal';
-import { strip } from '../../utils/abstract-test-case';
+
+import { Component } from '../../utils/helpers';
 
 moduleFor(
   'ClassNameBindings integration',

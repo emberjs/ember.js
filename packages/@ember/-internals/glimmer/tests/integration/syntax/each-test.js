@@ -1,9 +1,10 @@
+import { moduleFor, RenderingTestCase, applyMixins, strip } from 'internal-test-helpers';
+
 import { get, set, notifyPropertyChange } from '@ember/-internals/metal';
-import { applyMixins, strip } from '../../utils/abstract-test-case';
-import { moduleFor, RenderingTestCase } from '../../utils/test-case';
 import { A as emberA, ArrayProxy, RSVP } from '@ember/-internals/runtime';
-import { Component, htmlSafe } from '../../utils/helpers';
 import { HAS_NATIVE_SYMBOL } from '@ember/-internals/utils';
+
+import { Component, htmlSafe } from '../../utils/helpers';
 import {
   TogglingSyntaxConditionalsTest,
   TruthyGenerator,

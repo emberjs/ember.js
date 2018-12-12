@@ -1,8 +1,7 @@
+import { RenderingTestCase, moduleFor, classes, applyMixins } from 'internal-test-helpers';
+
 import { assign } from '@ember/polyfills';
 import { set } from '@ember/-internals/metal';
-import { RenderingTestCase, moduleFor } from '../../utils/test-case';
-import { classes } from '../../utils/test-helpers';
-import { applyMixins } from '../../utils/abstract-test-case';
 
 class TextAreaRenderingTest extends RenderingTestCase {
   assertTextArea({ attrs, value } = {}) {

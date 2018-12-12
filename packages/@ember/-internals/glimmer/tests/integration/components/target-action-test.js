@@ -1,11 +1,13 @@
+import { moduleFor, RenderingTestCase, ApplicationTestCase } from 'internal-test-helpers';
+
 import { assign } from '@ember/polyfills';
-import { moduleFor, RenderingTestCase, ApplicationTestCase } from '../../utils/test-case';
-import { strip } from '../../utils/abstract-test-case';
+import { strip } from 'internal-test-helpers';
 import { set, Mixin } from '@ember/-internals/metal';
-import { Component } from '../../utils/helpers';
 import Controller from '@ember/controller';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import { Route } from '@ember/-internals/routing';
+
+import { Component } from '../../utils/helpers';
 
 function expectSendActionDeprecation(fn) {
   expectDeprecation(

@@ -1,7 +1,7 @@
-import { RenderingTestCase, moduleFor } from '../../utils/test-case';
+import { RenderingTestCase, moduleFor, strip } from 'internal-test-helpers';
+
 import { set } from '@ember/-internals/metal';
 import { A as emberA } from '@ember/-internals/runtime';
-import { strip } from '../../utils/abstract-test-case';
 
 moduleFor(
   'Helpers test: {{partial}}',

@@ -1,5 +1,4 @@
-import { moduleFor, RenderingTestCase } from '../../utils/test-case';
-import { strip } from '../../utils/abstract-test-case';
+import { moduleFor, RenderingTestCase, strip } from 'internal-test-helpers';
 
 moduleFor(
   '{{-with-dynamic-var}}',

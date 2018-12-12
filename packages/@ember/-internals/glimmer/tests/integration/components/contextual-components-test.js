@@ -1,9 +1,10 @@
+import { moduleFor, RenderingTestCase, applyMixins, strip } from 'internal-test-helpers';
+
 import { assign } from '@ember/polyfills';
-import { Component } from '../../utils/helpers';
-import { applyMixins, strip } from '../../utils/abstract-test-case';
-import { moduleFor, RenderingTestCase } from '../../utils/test-case';
 import { isEmpty } from '@ember/-internals/metal';
 import { A as emberA } from '@ember/-internals/runtime';
+
+import { Component } from '../../utils/helpers';
 
 moduleFor(
   'Components test: contextual components',

@@ -1,9 +1,9 @@
+import { moduleFor, RenderingTestCase, strip, applyMixins } from 'internal-test-helpers';
+
 import { get, set } from '@ember/-internals/metal';
-import { moduleFor, RenderingTestCase } from '../../utils/test-case';
 import { Object as EmberObject, ObjectProxy } from '@ember/-internals/runtime';
-import { strip } from '../../utils/abstract-test-case';
 import { HAS_NATIVE_SYMBOL } from '@ember/-internals/utils';
-import { applyMixins } from '../../utils/abstract-test-case';
+
 import {
   TogglingSyntaxConditionalsTest,
   TruthyGenerator,

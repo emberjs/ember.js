@@ -1,4 +1,5 @@
-import { moduleFor, RenderingTestCase } from '../../utils/test-case';
+import { moduleFor, RenderingTestCase } from 'internal-test-helpers';
+
 import { EMBER_MODULE_UNIFICATION } from '@ember/canary-features';
 import { Component, helper } from '@ember/-internals/glimmer';
 

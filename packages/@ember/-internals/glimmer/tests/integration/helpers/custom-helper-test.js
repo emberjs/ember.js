@@ -1,6 +1,7 @@
 /* globals EmberDev */
-import { RenderingTestCase, moduleFor } from '../../utils/test-case';
-import { runDestroy } from 'internal-test-helpers';
+
+import { RenderingTestCase, moduleFor, runDestroy } from 'internal-test-helpers';
+
 import { set } from '@ember/-internals/metal';
 
 moduleFor(

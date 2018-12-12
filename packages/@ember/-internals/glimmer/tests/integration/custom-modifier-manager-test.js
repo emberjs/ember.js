@@ -1,4 +1,5 @@
-import { moduleFor, RenderingTestCase } from '../utils/test-case';
+import { moduleFor, RenderingTestCase } from 'internal-test-helpers';
+
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import { GLIMMER_MODIFIER_MANAGER } from '@ember/canary-features';
 import { setModifierManager } from '@ember/-internals/glimmer';

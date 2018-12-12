@@ -1,5 +1,5 @@
-import { RenderingTestCase, moduleFor } from '../utils/test-case';
-import { strip } from '../utils/abstract-test-case';
+import { RenderingTestCase, moduleFor, strip } from 'internal-test-helpers';
+
 import { set } from '@ember/-internals/metal';
 
 moduleFor(
