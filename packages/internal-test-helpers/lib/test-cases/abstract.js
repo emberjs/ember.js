@@ -1,7 +1,7 @@
 /* global Element */
 
 import { assign } from '@ember/polyfills';
-import { getCurrentRunLoop, hasScheduledTimers, next, run } from '@ember/runloop';
+import { getCurrentRunLoop, hasScheduledTimers, run } from '@ember/runloop';
 
 import NodeQuery from '../node-query';
 import equalInnerHTML from '../equal-inner-html';
@@ -43,12 +43,6 @@ export default class AbstractTestCase {
 
   runTask(callback) {
     return run(callback);
-  }
-
-  runTaskNext() {
-    return new Promise(resolve => {
-      return next(resolve);
-    });
   }
 
   setupFixture(innerHTML) {
