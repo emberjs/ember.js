@@ -4,7 +4,6 @@ import { setupAssertionHelpers } from './assertion';
 import { setupContainersCheck } from './containers';
 import { setupDeprecationHelpers } from './deprecation';
 import HooksCompat from './hooks-compat';
-// @ts-ignore
 import { setupNamespacesCheck } from './namespaces';
 import { setupRunLoopCheck } from './run-loop';
 import { DebugEnv } from './utils';
