@@ -1,13 +1,13 @@
+import { moduleFor, ApplicationTestCase, strip } from 'internal-test-helpers';
+
 import { ENV } from '@ember/-internals/environment';
 import Controller from '@ember/controller';
-import { moduleFor, ApplicationTest } from '../../utils/test-case';
-import { strip } from '../../utils/abstract-test-case';
 import { Route } from '@ember/-internals/routing';
 import { Component } from '@ember/-internals/glimmer';
 
 moduleFor(
   'Application test: rendering',
-  class extends ApplicationTest {
+  class extends ApplicationTestCase {
     constructor() {
       super(...arguments);
       this._APPLICATION_TEMPLATE_WRAPPER = ENV._APPLICATION_TEMPLATE_WRAPPER;

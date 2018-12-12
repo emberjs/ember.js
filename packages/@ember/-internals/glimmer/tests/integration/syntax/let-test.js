@@ -1,11 +1,11 @@
+import { moduleFor, RenderingTestCase, strip } from 'internal-test-helpers';
+
 import { get, set } from '@ember/-internals/metal';
 import { A as emberA, ObjectProxy, removeAt } from '@ember/-internals/runtime';
-import { moduleFor, RenderingTest } from '../../utils/test-case';
-import { strip } from '../../utils/abstract-test-case';
 
 moduleFor(
   'Syntax test: {{#let as}}',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     templateFor({ cond, truthy, falsy }) {
       return `{{#let ${cond} as |test|}}${truthy}{{else}}${falsy}{{/let}}`;
     }
@@ -210,7 +210,7 @@ moduleFor(
 
 moduleFor(
   'Syntax test: Multiple {{#let as}} helpers',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     ['@test re-using the same variable with different {{#let}} blocks does not override each other']() {
       this.render(
         `Admin: {{#let admin as |person|}}{{person.name}}{{/let}} User: {{#let user as |person|}}{{person.name}}{{/let}}`,

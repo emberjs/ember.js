@@ -1,10 +1,12 @@
+import { moduleFor, RenderingTestCase } from 'internal-test-helpers';
+
 import { set } from '@ember/-internals/metal';
+
 import { Component } from '../../utils/helpers';
-import { moduleFor, RenderingTest } from '../../utils/test-case';
 
 moduleFor(
   'Component willDestroyElement hook',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     ['@test it calls willDestroyElement when removed by if'](assert) {
       let didInsertElementCount = 0;
       let willDestroyElementCount = 0;

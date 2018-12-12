@@ -1,10 +1,12 @@
+import { moduleFor, RenderingTestCase } from 'internal-test-helpers';
+
 import { set } from '@ember/-internals/metal';
+
 import { Component } from '../../utils/helpers';
-import { moduleFor, RenderingTest } from '../../utils/test-case';
 
 moduleFor(
   'Component destroy',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     ['@test it correctly releases the destroyed components'](assert) {
       let FooBarComponent = Component.extend({});
 

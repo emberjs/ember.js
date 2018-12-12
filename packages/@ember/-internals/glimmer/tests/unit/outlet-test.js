@@ -1,6 +1,7 @@
+import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+
 import { OutletView } from '@ember/-internals/glimmer';
 import { run, schedule } from '@ember/runloop';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
   'Glimmer OutletView',

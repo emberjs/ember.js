@@ -1,13 +1,14 @@
-import { RenderingTest, moduleFor } from '../../utils/test-case';
-import { strip } from '../../utils/abstract-test-case';
-import { Component } from '../../utils/helpers';
+import { RenderingTestCase, moduleFor, strip } from 'internal-test-helpers';
+
 import { set } from '@ember/-internals/metal';
 import { EMBER_GLIMMER_ARRAY_HELPER } from '@ember/canary-features';
+
+import { Component } from '../../utils/helpers';
 
 if (EMBER_GLIMMER_ARRAY_HELPER) {
   moduleFor(
     'Helpers test: {{array}}',
-    class extends RenderingTest {
+    class extends RenderingTestCase {
       ['@test returns an array']() {
         this.render(strip`
         {{#with (array "Sergio") as |people|}}

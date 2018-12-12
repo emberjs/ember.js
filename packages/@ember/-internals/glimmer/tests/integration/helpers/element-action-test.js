@@ -1,16 +1,15 @@
-import { RenderingTest, moduleFor } from '../../utils/test-case';
-import { strip } from '../../utils/abstract-test-case';
-import { Component } from '../../utils/helpers';
+import { RenderingTestCase, moduleFor, strip } from 'internal-test-helpers';
+
 import { set } from '@ember/-internals/metal';
 import {
   subscribe as instrumentationSubscribe,
   reset as instrumentationReset,
 } from '@ember/instrumentation';
 import { EMBER_IMPROVED_INSTRUMENTATION } from '@ember/canary-features';
-
 import { Object as EmberObject, A as emberA } from '@ember/-internals/runtime';
-
 import { ActionManager } from '@ember/-internals/views';
+
+import { Component } from '../../utils/helpers';
 
 function getActionAttributes(element) {
   let attributes = element.attributes;
@@ -38,7 +37,7 @@ const isIE11 = !window.ActiveXObject && 'ActiveXObject' in window;
 if (EMBER_IMPROVED_INSTRUMENTATION) {
   moduleFor(
     'Helpers test: element action instrumentation',
-    class extends RenderingTest {
+    class extends RenderingTestCase {
       teardown() {
         super.teardown();
         instrumentationReset();
@@ -90,7 +89,7 @@ if (EMBER_IMPROVED_INSTRUMENTATION) {
 
 moduleFor(
   'Helpers test: element action',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     ['@test it can call an action on its enclosing component']() {
       let fooCallCount = 0;
 

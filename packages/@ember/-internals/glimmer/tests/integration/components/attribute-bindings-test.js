@@ -1,11 +1,12 @@
-import { moduleFor, RenderingTest } from '../../utils/test-case';
-import { Component } from '../../utils/helpers';
-import { strip } from '../../utils/abstract-test-case';
+import { moduleFor, RenderingTestCase, strip } from 'internal-test-helpers';
+
 import { set } from '@ember/-internals/metal';
+
+import { Component } from '../../utils/helpers';
 
 moduleFor(
   'Attribute bindings integration',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     ['@test it can have attribute bindings']() {
       let FooBarComponent = Component.extend({
         attributeBindings: ['foo:data-foo', 'bar:data-bar'],

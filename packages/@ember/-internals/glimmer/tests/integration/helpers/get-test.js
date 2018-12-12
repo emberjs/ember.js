@@ -1,10 +1,12 @@
-import { RenderingTest, moduleFor } from '../../utils/test-case';
-import { Component } from '../../utils/helpers';
+import { RenderingTestCase, moduleFor } from 'internal-test-helpers';
+
 import { set, get } from '@ember/-internals/metal';
+
+import { Component } from '../../utils/helpers';
 
 moduleFor(
   'Helpers test: {{get}}',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     ['@test should be able to get an object value with a static key']() {
       this.render(`[{{get colors 'apple'}}] [{{if true (get colors 'apple')}}]`, {
         colors: { apple: 'red' },

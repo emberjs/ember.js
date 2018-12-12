@@ -1,5 +1,6 @@
+import { moduleFor, ApplicationTestCase, RenderingTestCase } from 'internal-test-helpers';
+
 import { getOwner } from '@ember/-internals/owner';
-import { moduleFor, ApplicationTest, RenderingTest } from '../utils/test-case';
 import { compile, Component } from '../utils/helpers';
 import Controller from '@ember/controller';
 import { set } from '@ember/-internals/metal';
@@ -9,7 +10,7 @@ import { EMBER_ENGINES_MOUNT_PARAMS } from '@ember/canary-features';
 if (EMBER_ENGINES_MOUNT_PARAMS) {
   moduleFor(
     '{{mount}} single param assertion',
-    class extends RenderingTest {
+    class extends RenderingTestCase {
       ['@test it asserts that only a single param is passed']() {
         expectAssertion(() => {
           this.render('{{mount "chat" "foo"}}');
@@ -20,7 +21,7 @@ if (EMBER_ENGINES_MOUNT_PARAMS) {
 } else {
   moduleFor(
     '{{mount}} single param assertion',
-    class extends RenderingTest {
+    class extends RenderingTestCase {
       ['@test it asserts that only a single param is passed']() {
         expectAssertion(() => {
           this.render('{{mount "chat" "foo"}}');
@@ -32,7 +33,7 @@ if (EMBER_ENGINES_MOUNT_PARAMS) {
 
 moduleFor(
   '{{mount}} assertions',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     ['@test it asserts when an invalid engine name is provided']() {
       expectAssertion(() => {
         this.render('{{mount engineName}}', { engineName: {} });
@@ -49,7 +50,7 @@ moduleFor(
 
 moduleFor(
   '{{mount}} test',
-  class extends ApplicationTest {
+  class extends ApplicationTestCase {
     constructor() {
       super(...arguments);
 
@@ -300,7 +301,7 @@ moduleFor(
 if (EMBER_ENGINES_MOUNT_PARAMS) {
   moduleFor(
     '{{mount}} params tests',
-    class extends ApplicationTest {
+    class extends ApplicationTestCase {
       constructor() {
         super(...arguments);
 

@@ -1,13 +1,15 @@
-import { moduleFor, RenderingTest } from '../../utils/test-case';
-import { Component } from '../../utils/helpers';
+import { moduleFor, RenderingTestCase } from 'internal-test-helpers';
+
 import {
   subscribe as instrumentationSubscribe,
   reset as instrumentationReset,
 } from '@ember/instrumentation';
 
+import { Component } from '../../utils/helpers';
+
 moduleFor(
   'Components compile instrumentation',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     constructor() {
       super(...arguments);
 

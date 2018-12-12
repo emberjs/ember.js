@@ -1,11 +1,12 @@
+import { moduleFor, RenderingTestCase, ApplicationTestCase, strip } from 'internal-test-helpers';
+
 import { assign } from '@ember/polyfills';
-import { moduleFor, RenderingTest, ApplicationTest } from '../../utils/test-case';
-import { strip } from '../../utils/abstract-test-case';
 import { set, Mixin } from '@ember/-internals/metal';
-import { Component } from '../../utils/helpers';
 import Controller from '@ember/controller';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import { Route } from '@ember/-internals/routing';
+
+import { Component } from '../../utils/helpers';
 
 function expectSendActionDeprecation(fn) {
   expectDeprecation(
@@ -16,7 +17,7 @@ function expectSendActionDeprecation(fn) {
 
 moduleFor(
   'Components test: sendAction',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     constructor() {
       super(...arguments);
       this.actionCounts = {};
@@ -333,7 +334,7 @@ moduleFor(
 
 moduleFor(
   'Components test: sendAction to a controller',
-  class extends ApplicationTest {
+  class extends ApplicationTestCase {
     ["@test sendAction should trigger an action on the parent component's controller if it exists"](
       assert
     ) {
@@ -518,7 +519,7 @@ moduleFor(
 
 moduleFor(
   'Components test: sendAction of a closure action',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     ['@test action should be called'](assert) {
       assert.expect(2);
       let component;
@@ -595,7 +596,7 @@ moduleFor(
 
 moduleFor(
   'Components test: send',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     ['@test sending to undefined actions triggers an error'](assert) {
       assert.expect(2);
 

@@ -1,10 +1,12 @@
-import { RenderingTest, moduleFor } from '../../utils/test-case';
+import { RenderingTestCase, moduleFor } from 'internal-test-helpers';
+
 import { set } from '@ember/-internals/metal';
+
 import { Component } from '../../utils/helpers';
 
 moduleFor(
   'Helpers test: {{yield}} helper',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     ['@test can yield to block']() {
       this.registerComponent('yield-comp', {
         template: '[In layout:] {{yield}}',

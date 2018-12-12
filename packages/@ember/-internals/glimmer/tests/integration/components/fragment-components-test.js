@@ -1,11 +1,12 @@
-import { moduleFor, RenderingTest } from '../../utils/test-case';
-import { strip } from '../../utils/abstract-test-case';
-import { Component } from '../../utils/helpers';
+import { moduleFor, RenderingTestCase, strip } from 'internal-test-helpers';
+
 import { set } from '@ember/-internals/metal';
+
+import { Component } from '../../utils/helpers';
 
 moduleFor(
   'Components test: fragment components',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     getCustomDispatcherEvents() {
       return {
         hitDem: 'folks',

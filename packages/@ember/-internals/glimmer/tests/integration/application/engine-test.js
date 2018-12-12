@@ -1,6 +1,5 @@
-import { moduleFor, ApplicationTest } from '../../utils/test-case';
-import { strip } from '../../utils/abstract-test-case';
-import { compile } from '../../utils/helpers';
+import { moduleFor, ApplicationTestCase, strip } from 'internal-test-helpers';
+
 import Controller from '@ember/controller';
 import { RSVP } from '@ember/-internals/runtime';
 import { Component } from '@ember/-internals/glimmer';
@@ -8,9 +7,11 @@ import Engine from '@ember/engine';
 import { Route } from '@ember/-internals/routing';
 import { next } from '@ember/runloop';
 
+import { compile } from '../../utils/helpers';
+
 moduleFor(
   'Application test: engine rendering',
-  class extends ApplicationTest {
+  class extends ApplicationTestCase {
     get routerOptions() {
       return {
         location: 'none',

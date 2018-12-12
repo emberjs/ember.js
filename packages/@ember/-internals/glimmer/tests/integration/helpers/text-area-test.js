@@ -1,10 +1,9 @@
+import { RenderingTestCase, moduleFor, classes, applyMixins } from 'internal-test-helpers';
+
 import { assign } from '@ember/polyfills';
 import { set } from '@ember/-internals/metal';
-import { RenderingTest, moduleFor } from '../../utils/test-case';
-import { classes } from '../../utils/test-helpers';
-import { applyMixins } from '../../utils/abstract-test-case';
 
-class TextAreaRenderingTest extends RenderingTest {
+class TextAreaRenderingTest extends RenderingTestCase {
   assertTextArea({ attrs, value } = {}) {
     let mergedAttrs = assign({ class: classes('ember-view ember-text-area') }, attrs);
     this.assertComponentElement(this.firstChild, {

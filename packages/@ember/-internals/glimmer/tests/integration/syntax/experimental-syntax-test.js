@@ -1,10 +1,10 @@
-import { moduleFor, RenderingTest } from '../../utils/test-case';
-import { strip } from '../../utils/abstract-test-case';
+import { moduleFor, RenderingTestCase, strip } from 'internal-test-helpers';
+
 import { _registerMacros, _experimentalMacros } from '@ember/-internals/glimmer';
 
 moduleFor(
   'registerMacros',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     constructor() {
       let originalMacros = _experimentalMacros.slice();
 

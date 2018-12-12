@@ -1,15 +1,14 @@
+import { moduleFor, RenderingTestCase, classes, strip, runAppend } from 'internal-test-helpers';
+
 import { schedule } from '@ember/runloop';
 import { set, setProperties } from '@ember/-internals/metal';
 import { A as emberA } from '@ember/-internals/runtime';
-import { Component } from '../../utils/helpers';
-import { strip } from '../../utils/abstract-test-case';
-import { moduleFor, RenderingTest } from '../../utils/test-case';
 import { getViewId, getViewElement, jQueryDisabled } from '@ember/-internals/views';
-import { classes } from '../../utils/test-helpers';
 import { tryInvoke } from '@ember/-internals/utils';
-import { runAppend } from 'internal-test-helpers';
 
-class LifeCycleHooksTest extends RenderingTest {
+import { Component } from '../../utils/helpers';
+
+class LifeCycleHooksTest extends RenderingTestCase {
   constructor() {
     super(...arguments);
     this.hooks = [];
@@ -1335,7 +1334,7 @@ moduleFor(
 
 moduleFor(
   'Run loop and lifecycle hooks',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     ['@test afterRender set']() {
       let ComponentClass = Component.extend({
         width: '5',
@@ -1595,7 +1594,7 @@ moduleFor(
 if (!jQueryDisabled) {
   moduleFor(
     'Run loop and lifecycle hooks - jQuery only',
-    class extends RenderingTest {
+    class extends RenderingTestCase {
       ['@test lifecycle hooks have proper access to this.$()'](assert) {
         assert.expect(6);
         let component;

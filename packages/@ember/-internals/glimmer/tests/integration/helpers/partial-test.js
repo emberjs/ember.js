@@ -1,11 +1,11 @@
-import { RenderingTest, moduleFor } from '../../utils/test-case';
+import { RenderingTestCase, moduleFor, strip } from 'internal-test-helpers';
+
 import { set } from '@ember/-internals/metal';
 import { A as emberA } from '@ember/-internals/runtime';
-import { strip } from '../../utils/abstract-test-case';
 
 moduleFor(
   'Helpers test: {{partial}}',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     ['@test should render other templates registered with the container']() {
       this.registerPartial('_subTemplateFromContainer', 'sub-template');
 

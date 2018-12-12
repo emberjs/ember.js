@@ -1,17 +1,17 @@
 /* globals EmberDev */
-import { RenderingTest, moduleFor } from '../utils/test-case';
-import { applyMixins } from '../utils/abstract-test-case';
+
+import { RenderingTestCase, moduleFor, applyMixins, classes } from 'internal-test-helpers';
+
 import { set, computed } from '@ember/-internals/metal';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 import { readOnly } from '@ember/object/computed';
 import { Object as EmberObject, ObjectProxy } from '@ember/-internals/runtime';
-import { classes } from '../utils/test-helpers';
 import { constructStyleDeprecationMessage } from '@ember/-internals/views';
 import { Component, SafeString, htmlSafe } from '../utils/helpers';
 
 moduleFor(
   'Static content tests',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     ['@test it can render a static text node']() {
       this.render('hello');
       let text1 = this.assertTextNode(this.firstChild, 'hello');
@@ -65,7 +65,7 @@ moduleFor(
   }
 );
 
-class DynamicContentTest extends RenderingTest {
+class DynamicContentTest extends RenderingTestCase {
   /* abstract */
   renderPath(/* path, context = {} */) {
     throw new Error('Not implemented: `renderValues`');
@@ -883,7 +883,7 @@ moduleFor(
 
 moduleFor(
   'Dynamic content tests (integration)',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     ['@test it can render a dynamic template']() {
       let template = `
       <div class="header">
@@ -1528,7 +1528,7 @@ moduleFor(
 );
 
 let warnings, originalWarn;
-class StyleTest extends RenderingTest {
+class StyleTest extends RenderingTestCase {
   constructor() {
     super(...arguments);
     warnings = [];

@@ -1,3 +1,5 @@
+import { moduleFor, ApplicationTestCase, RenderingTestCase } from 'internal-test-helpers';
+
 import Controller from '@ember/controller';
 import {
   getRootViews,
@@ -6,12 +8,12 @@ import {
   getViewClientRects,
   getViewBoundingClientRect,
 } from '@ember/-internals/views';
-import { moduleFor, ApplicationTest, RenderingTest } from '../../utils/test-case';
+
 import { Component } from '../../utils/helpers';
 
 moduleFor(
   'View tree tests',
-  class extends ApplicationTest {
+  class extends ApplicationTestCase {
     constructor() {
       super(...arguments);
 
@@ -280,7 +282,7 @@ let ClientRectListCtor, ClientRectCtor;
 
 moduleFor(
   'Bounds tests',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     ['@test getViewBounds on a regular component'](assert) {
       let component;
       this.registerComponent('hi-mom', {

@@ -1,11 +1,12 @@
-import { RenderingTest, moduleFor } from '../utils/test-case';
-import { Component } from '../utils/helpers';
+import { RenderingTestCase, moduleFor, runDestroy, runAppend } from 'internal-test-helpers';
+
 import { set } from '@ember/-internals/metal';
-import { runDestroy, runAppend } from 'internal-test-helpers';
+
+import { Component } from '../utils/helpers';
 
 moduleFor(
   'ember-glimmer runtime resolver cache',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     '@test a helper definition is only generated once'(assert) {
       this.registerHelper('foo-bar', () => 'foo-bar helper!');
       this.registerHelper('baz-qux', () => 'baz-qux helper!');

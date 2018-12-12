@@ -1,9 +1,10 @@
-import { RenderingTest, moduleFor } from '../../utils/test-case';
+import { RenderingTestCase, moduleFor } from 'internal-test-helpers';
+
 import { set } from '@ember/-internals/metal';
 
 moduleFor(
   'Helpers test: {{concat}}',
-  class extends RenderingTest {
+  class extends RenderingTestCase {
     ['@test it concats static arguments']() {
       this.render(`{{concat "foo" " " "bar" " " "baz"}}`);
       this.assertText('foo bar baz');

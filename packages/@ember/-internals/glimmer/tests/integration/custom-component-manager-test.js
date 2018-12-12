@@ -1,4 +1,5 @@
-import { moduleFor, RenderingTest } from '../utils/test-case';
+import { moduleFor, RenderingTestCase } from 'internal-test-helpers';
+
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import { set, setProperties, computed } from '@ember/-internals/metal';
 import {
@@ -36,7 +37,7 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
 
   let InstrumentedComponentManager;
 
-  class ComponentManagerTest extends RenderingTest {
+  class ComponentManagerTest extends RenderingTestCase {
     constructor(assert) {
       super(...arguments);
 

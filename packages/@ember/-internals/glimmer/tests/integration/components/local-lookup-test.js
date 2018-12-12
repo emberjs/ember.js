@@ -1,12 +1,17 @@
-import { moduleFor, RenderingTest } from '../../utils/test-case';
+import {
+  moduleFor,
+  RenderingTestCase,
+  ModuleBasedTestResolver,
+  ApplicationTestCase,
+} from 'internal-test-helpers';
+
 import { compile } from 'ember-template-compiler';
-import { ModuleBasedTestResolver } from 'internal-test-helpers';
-import { moduleFor as applicationModuleFor, ApplicationTestCase } from 'internal-test-helpers';
-import { Component } from '../../utils/helpers';
 import { EMBER_MODULE_UNIFICATION } from '@ember/canary-features';
 import { helper, Helper } from '@ember/-internals/glimmer';
 
-class LocalLookupTest extends RenderingTest {
+import { Component } from '../../utils/helpers';
+
+class LocalLookupTest extends RenderingTestCase {
   ['@test it can lookup a local template']() {
     this.registerComponent('x-outer/x-inner', {
       template: 'Nested template says: {{yield}}',
@@ -370,7 +375,7 @@ if (EMBER_MODULE_UNIFICATION) {
 }
 
 if (EMBER_MODULE_UNIFICATION) {
-  applicationModuleFor(
+  moduleFor(
     'Components test: local lookup with resolution referrer (MU)',
     class extends ApplicationTestCase {
       ['@test Ensure that the same specifier with two sources does not share a cache key'](assert) {
