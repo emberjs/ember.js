@@ -122,7 +122,7 @@ class ConditionalHelperReference extends CachedReference {
   ```
 
   One detail to keep in mind is that both branches of the `if` helper will be evaluated,
-  so if you have `{{if condition "foo" (expensive-operation "bar")`,
+  so if you have `{{if condition "foo" (expensive-operation "bar")}}`,
   `expensive-operation` will always calculate.
 
   @method if
@@ -139,20 +139,70 @@ export function inlineIf(_vm: VM, { positional }: Arguments) {
 }
 
 /**
+  The `unless` helper allows you to conditionally render one of two branches,
+  depending on the "falsiness" of a property. The `unless` helper is the opposite of the `if` helper
+  and is the equiavlent of `if not`.
+  For example the following values are all falsey: `false`, `undefined`, `null`, `""`, `0`, `NaN` or an empty array.
+
+  This helper has two forms, block and inline.
+
+  ## Block form
+
+  You can use the block form of `unless` to conditionally render a section of the template.
+
+  To use it, pass the conditional value to the `unless` helper,
+  using the block form to wrap the section of template you want to conditionally render.
+  Like so:
+
+  ```handlebars
+  {{! will render if foo is not true}}
+  {{#unless foo}}
+    There are no foo's here!
+  {{/unless}}
+  ```
+
+  You can also specify a template to show if the property is true by using
+  the `else` helper.
+
+  ```handlebars
+  {{! is it raining outside?}}
+  {{#unless isRaining}}
+    No, it's lovely outside!
+  {{else}}
+    Yes, grab an umbrella!
+  {{/unless}}
+  ```
+
+  ## Inline form
+
   The inline `unless` helper conditionally renders a single property or string.
-  This helper acts like a ternary operator. If the first property is falsy,
-  the second argument will be displayed, otherwise, the third argument will be
-  displayed
+
+  In this form, the `unless` helper receives three arguments, the conditional value,
+  the value to render when falsey, and the value to render when truthy.
+
+  For example, if `useLongGreeting` is falsey, the following:
 
   ```handlebars
   {{unless useLongGreeting "Hi" "Hello"}} Ben
   ```
 
-  You can use the `unless` helper inside another helper as a subexpression.
+  Will render:
+
+  ```html
+  Hi Ben
+  ```
+
+  ### Nested `unless`
+
+  You can use the `unless` helper inside another helper as a nested helper:
 
   ```handlebars
   {{some-component height=(unless isBig "10" "100")}}
   ```
+
+  One detail to keep in mind is that both branches of the `unless` helper will be evaluated,
+  so if you have `{{unless condition (expensive-operation "bar") "foo"}}`,
+  `expensive-operation` will always calculate.
 
   @method unless
   @for Ember.Templates.helpers
