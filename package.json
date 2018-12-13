@@ -120,7 +120,7 @@
     "common-tags": "^1.8.0",
     "dag-map": "^2.0.2",
     "ember-cli": "^3.6.0",
-    "ember-cli-blueprint-test-helpers": "^0.18.3",
+    "ember-cli-blueprint-test-helpers": "^0.19.1",
     "ember-cli-browserstack": "^0.0.7",
     "ember-cli-dependency-checker": "^3.0.0",
     "ember-cli-yuidoc": "^0.8.8",
