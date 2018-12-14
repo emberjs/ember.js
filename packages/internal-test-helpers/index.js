@@ -8,7 +8,7 @@ export { default as strip } from './lib/strip';
 export { default as applyMixins } from './lib/apply-mixins';
 export { default as getTextOf } from './lib/get-text-of';
 export { equalsElement, classes, styles, regex } from './lib/matchers';
-export { runAppend, runDestroy } from './lib/run';
+export { runAppend, runDestroy, runTask, runTaskNext, runLoopSettled } from './lib/run';
 export { getContext, setContext, unsetContext } from './lib/test-context';
 
 export { default as AbstractTestCase } from './lib/test-cases/abstract';

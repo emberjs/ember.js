@@ -1,4 +1,4 @@
-import { moduleFor, RenderingTestCase, applyMixins, strip } from 'internal-test-helpers';
+import { moduleFor, RenderingTestCase, applyMixins, strip, runTask } from 'internal-test-helpers';
 
 import { assign } from '@ember/polyfills';
 import { isEmpty } from '@ember/-internals/metal';
@@ -20,7 +20,7 @@ moduleFor(
 
       this.assertText(expectedText);
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText(expectedText);
     }
@@ -38,7 +38,7 @@ moduleFor(
 
       this.assertText('Hodi Hodari');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('Hodi Hodari');
     }
@@ -60,19 +60,19 @@ moduleFor(
 
       this.assertText('Gabon Zack');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('Gabon Zack');
 
-      this.runTask(() => this.context.set('model.greeting', 'Good morning '));
+      runTask(() => this.context.set('model.greeting', 'Good morning '));
 
       this.assertText('Good morning Zack');
 
-      this.runTask(() => this.context.set('model.name', 'Matthew'));
+      runTask(() => this.context.set('model.name', 'Matthew'));
 
       this.assertText('Good morning Matthew');
 
-      this.runTask(() => this.context.set('model', { greeting: 'Gabon ', name: 'Zack' }));
+      runTask(() => this.context.set('model', { greeting: 'Gabon ', name: 'Zack' }));
 
       this.assertText('Gabon Zack');
     }
@@ -98,19 +98,19 @@ moduleFor(
 
       this.assertText('Gabon Zack Zack Gabon ');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('Gabon Zack Zack Gabon ');
 
-      this.runTask(() => this.context.set('model.greeting', 'Good morning '));
+      runTask(() => this.context.set('model.greeting', 'Good morning '));
 
       this.assertText('Good morning Zack Zack Good morning ');
 
-      this.runTask(() => this.context.set('model.name', 'Matthew '));
+      runTask(() => this.context.set('model.name', 'Matthew '));
 
       this.assertText('Good morning Matthew Matthew Good morning ');
 
-      this.runTask(() => this.context.set('model', { greeting: 'Gabon ', name: 'Zack ' }));
+      runTask(() => this.context.set('model', { greeting: 'Gabon ', name: 'Zack ' }));
 
       this.assertText('Gabon Zack Zack Gabon ');
     }
@@ -132,19 +132,19 @@ moduleFor(
 
       this.assertText('Gabon Zack');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('Gabon Zack');
 
-      this.runTask(() => this.context.set('model.greeting', 'Good morning '));
+      runTask(() => this.context.set('model.greeting', 'Good morning '));
 
       this.assertText('Good morning Zack');
 
-      this.runTask(() => this.context.set('model.name', 'Matthew'));
+      runTask(() => this.context.set('model.name', 'Matthew'));
 
       this.assertText('Good morning Matthew');
 
-      this.runTask(() => this.context.set('model', { greeting: 'Gabon ', name: 'Zack' }));
+      runTask(() => this.context.set('model', { greeting: 'Gabon ', name: 'Zack' }));
 
       this.assertText('Gabon Zack');
     }
@@ -169,19 +169,19 @@ moduleFor(
 
       this.assertText('Gabon Zack Zack Gabon ');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('Gabon Zack Zack Gabon ');
 
-      this.runTask(() => this.context.set('model.greeting', 'Good morning '));
+      runTask(() => this.context.set('model.greeting', 'Good morning '));
 
       this.assertText('Good morning Zack Zack Good morning ');
 
-      this.runTask(() => this.context.set('model.name', 'Matthew '));
+      runTask(() => this.context.set('model.name', 'Matthew '));
 
       this.assertText('Good morning Matthew Matthew Good morning ');
 
-      this.runTask(() => this.context.set('model', { greeting: 'Gabon ', name: 'Zack ' }));
+      runTask(() => this.context.set('model', { greeting: 'Gabon ', name: 'Zack ' }));
 
       this.assertText('Gabon Zack Zack Gabon ');
     }
@@ -200,7 +200,7 @@ moduleFor(
 
       this.assertText('Hola Hodari');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('Hola Hodari');
     }
@@ -222,15 +222,15 @@ moduleFor(
 
       this.assertText('ni hao');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('ni hao');
 
-      this.runTask(() => this.context.set('model.lookupComponent', '-hindi'));
+      runTask(() => this.context.set('model.lookupComponent', '-hindi'));
 
       this.assertText('Namaste');
 
-      this.runTask(() => this.context.set('model', { lookupComponent: '-mandarin' }));
+      runTask(() => this.context.set('model', { lookupComponent: '-mandarin' }));
 
       this.assertText('ni hao');
     }
@@ -248,15 +248,15 @@ moduleFor(
 
       this.assertText('Hodi');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('Hodi');
 
-      this.runTask(() => this.context.set('model.greeting', 'Hola'));
+      runTask(() => this.context.set('model.greeting', 'Hola'));
 
       this.assertText('Hola');
 
-      this.runTask(() => this.context.set('model', { greeting: 'Hodi' }));
+      runTask(() => this.context.set('model', { greeting: 'Hodi' }));
 
       this.assertText('Hodi');
     }
@@ -280,15 +280,15 @@ moduleFor(
 
       this.assertText('Hodi');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('Hodi');
 
-      this.runTask(() => this.context.set('model.greeting', 'Hola'));
+      runTask(() => this.context.set('model.greeting', 'Hola'));
 
       this.assertText('Hola');
 
-      this.runTask(() => this.context.set('model', { greeting: 'Hodi' }));
+      runTask(() => this.context.set('model', { greeting: 'Hodi' }));
 
       this.assertText('Hodi');
     }
@@ -307,7 +307,7 @@ moduleFor(
 
       this.assertText('Sergio 29');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('Sergio 29');
     }
@@ -324,7 +324,7 @@ moduleFor(
 
       this.assertText('Hi Max 9');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('Hi Max 9');
     }
@@ -350,15 +350,15 @@ moduleFor(
 
       this.assertText('Hodi Sigmundur 33');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('Hodi Sigmundur 33');
 
-      this.runTask(() => this.context.set('model.greeting', 'Kaixo'));
+      runTask(() => this.context.set('model.greeting', 'Kaixo'));
 
       this.assertText('Kaixo Sigmundur 33');
 
-      this.runTask(() => this.context.set('model', { greeting: 'Hodi' }));
+      runTask(() => this.context.set('model', { greeting: 'Hodi' }));
 
       this.assertText('Hodi Sigmundur 33');
     }
@@ -390,19 +390,19 @@ moduleFor(
 
       this.assertText('Outer 28');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('Outer 28');
 
-      this.runTask(() => this.context.set('model.outerAge', 29));
+      runTask(() => this.context.set('model.outerAge', 29));
 
       this.assertText('Outer 29');
 
-      this.runTask(() => this.context.set('model.outerName', 'Not outer'));
+      runTask(() => this.context.set('model.outerName', 'Not outer'));
 
       this.assertText('Not outer 29');
 
-      this.runTask(() => {
+      runTask(() => {
         this.context.set('model', {
           outerName: 'Outer',
           outerAge: 28,
@@ -436,19 +436,19 @@ moduleFor(
 
       this.assertText('Inner 28');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('Inner 28');
 
-      this.runTask(() => this.context.set('model.outerAge', 29));
+      runTask(() => this.context.set('model.outerAge', 29));
 
       this.assertText('Inner 29');
 
-      this.runTask(() => this.context.set('model.outerName', 'Not outer'));
+      runTask(() => this.context.set('model.outerName', 'Not outer'));
 
       this.assertText('Inner 29');
 
-      this.runTask(() => {
+      runTask(() => {
         this.context.set('model', {
           outerName: 'Outer',
           outerAge: 28,
@@ -476,15 +476,15 @@ moduleFor(
 
       this.assertText('Hodi Hodari');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('Hodi Hodari');
 
-      this.runTask(() => this.context.set('model.name', 'Sergio'));
+      runTask(() => this.context.set('model.name', 'Sergio'));
 
       this.assertText('Hodi Sergio');
 
-      this.runTask(() => this.context.set('model', { name: 'Hodari' }));
+      runTask(() => this.context.set('model', { name: 'Hodari' }));
 
       this.assertText('Hodi Hodari');
     }
@@ -499,15 +499,15 @@ moduleFor(
 
       this.assertText('');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('');
 
-      this.runTask(() => this.context.set('componentName', 'foo-bar'));
+      runTask(() => this.context.set('componentName', 'foo-bar'));
 
       this.assertText('hello Alex');
 
-      this.runTask(() => this.context.set('componentName', undefined));
+      runTask(() => this.context.set('componentName', undefined));
 
       this.assertText('');
     }
@@ -522,15 +522,15 @@ moduleFor(
 
       this.assertText('hello Alex');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('hello Alex');
 
-      this.runTask(() => this.context.set('componentName', undefined));
+      runTask(() => this.context.set('componentName', undefined));
 
       this.assertText('');
 
-      this.runTask(() => this.context.set('componentName', 'foo-bar'));
+      runTask(() => this.context.set('componentName', 'foo-bar'));
 
       this.assertText('hello Alex');
     }
@@ -545,15 +545,15 @@ moduleFor(
 
       this.assertText('');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('');
 
-      this.runTask(() => this.context.set('componentName', 'foo-bar'));
+      runTask(() => this.context.set('componentName', 'foo-bar'));
 
       this.assertText('hello Alex');
 
-      this.runTask(() => this.context.set('componentName', null));
+      runTask(() => this.context.set('componentName', null));
 
       this.assertText('');
     }
@@ -568,15 +568,15 @@ moduleFor(
 
       this.assertText('hello Alex');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('hello Alex');
 
-      this.runTask(() => this.context.set('componentName', null));
+      runTask(() => this.context.set('componentName', null));
 
       this.assertText('');
 
-      this.runTask(() => this.context.set('componentName', 'foo-bar'));
+      runTask(() => this.context.set('componentName', 'foo-bar'));
 
       this.assertText('hello Alex');
     }
@@ -608,7 +608,7 @@ moduleFor(
 
       this.assertText(expectedText);
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText(expectedText);
     }
@@ -633,15 +633,15 @@ moduleFor(
 
       this.assertText(expectedText);
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText(expectedText);
 
-      this.runTask(() => this.context.set('model.expectedText', 'Hola'));
+      runTask(() => this.context.set('model.expectedText', 'Hola'));
 
       this.assertText('Hola');
 
-      this.runTask(() => this.context.set('model', { expectedText }));
+      runTask(() => this.context.set('model', { expectedText }));
 
       this.assertText(expectedText);
     }
@@ -666,15 +666,15 @@ moduleFor(
 
       this.assertText(expectedText);
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText(expectedText);
 
-      this.runTask(() => this.context.set('model.expectedText', 'Hola'));
+      runTask(() => this.context.set('model.expectedText', 'Hola'));
 
       this.assertText('Hola');
 
-      this.runTask(() => this.context.set('model', { expectedText }));
+      runTask(() => this.context.set('model', { expectedText }));
 
       this.assertText(expectedText);
     }
@@ -703,15 +703,15 @@ moduleFor(
 
       this.assertText(`${expectedText},Hola`);
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText(`${expectedText},Hola`);
 
-      this.runTask(() => this.context.set('model.expectedText', 'Kaixo'));
+      runTask(() => this.context.set('model.expectedText', 'Kaixo'));
 
       this.assertText('Kaixo,Hola');
 
-      this.runTask(() => this.context.set('model', { expectedText }));
+      runTask(() => this.context.set('model', { expectedText }));
 
       this.assertText(`${expectedText},Hola`);
     }
@@ -782,19 +782,19 @@ moduleFor(
 
       assert.equal(this.$('#nested-prop').text(), '1');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       assert.equal(this.$('#nested-prop').text(), '1');
 
-      this.runTask(() => this.$('button').click());
+      runTask(() => this.$('button').click());
 
       assert.equal(this.$('#nested-prop').text(), '2');
 
-      this.runTask(() => this.$('button').click());
+      runTask(() => this.$('button').click());
 
       assert.equal(this.$('#nested-prop').text(), '3');
 
-      this.runTask(() => this.context.set('model', { myProp: 1 }));
+      runTask(() => this.context.set('model', { myProp: 1 }));
 
       assert.equal(this.$('#nested-prop').text(), '1');
     }
@@ -818,7 +818,7 @@ moduleFor(
 
       this.assertText('Foo');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('Foo');
     }
@@ -850,15 +850,15 @@ moduleFor(
 
       assert.equal(this.$('.value').text(), '8');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       assert.equal(this.$('.value').text(), '8');
 
-      this.runTask(() => this.$('.my-button').click());
+      runTask(() => this.$('.my-button').click());
 
       assert.equal(this.$('.value').text(), '10');
 
-      this.runTask(() => this.context.set('model', { val2: 8 }));
+      runTask(() => this.context.set('model', { val2: 8 }));
 
       assert.equal(this.$('.value').text(), '8');
     }
@@ -870,7 +870,7 @@ moduleFor(
 
       this.render(`{{my-comp}}`);
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       assert.equal(this.$().text(), '');
     }
@@ -900,15 +900,15 @@ moduleFor(
 
       assert.equal(this.$().text(), 'message: hello');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       assert.equal(this.$().text(), 'message: hello');
 
-      this.runTask(() => this.$('button').click());
+      runTask(() => this.$('button').click());
 
       assert.equal(this.$().text(), 'message: goodbye');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       assert.equal(this.$().text(), 'message: goodbye');
     }
@@ -946,28 +946,28 @@ moduleFor(
       assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'open', 'the components text is "open"');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       assert.ok(!isEmpty(instance), 'the component instance exists');
       assert.equal(previousInstance, undefined, 'no previous component exists');
       assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'open', 'the components text is "open"');
 
-      this.runTask(() => this.context.set('isOpen', false));
+      runTask(() => this.context.set('isOpen', false));
 
       assert.ok(!isEmpty(instance), 'the component instance exists');
       assert.equal(previousInstance, undefined, 'no previous component exists');
       assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'closed', 'the component text is "closed"');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       assert.ok(!isEmpty(instance), 'the component instance exists');
       assert.equal(previousInstance, undefined, 'no previous component exists');
       assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'closed', 'the component text is "closed"');
 
-      this.runTask(() => this.context.set('isOpen', true));
+      runTask(() => this.context.set('isOpen', true));
 
       assert.ok(!isEmpty(instance), 'the component instance exists');
       assert.equal(previousInstance, undefined, 'no previous component exists');
@@ -1011,28 +1011,28 @@ moduleFor(
       assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'open', 'the components text is "open"');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       assert.ok(!isEmpty(instance), 'the component instance exists');
       assert.equal(previousInstance, undefined, 'no previous component exists');
       assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'open', 'the components text is "open"');
 
-      this.runTask(() => this.context.set('isOpen', false));
+      runTask(() => this.context.set('isOpen', false));
 
       assert.ok(!isEmpty(instance), 'the component instance exists');
       assert.equal(previousInstance, undefined, 'no previous component exists');
       assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'closed', 'the component text is "closed"');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       assert.ok(!isEmpty(instance), 'the component instance exists');
       assert.equal(previousInstance, undefined, 'no previous component exists');
       assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'closed', 'the component text is "closed"');
 
-      this.runTask(() => this.context.set('isOpen', true));
+      runTask(() => this.context.set('isOpen', true));
 
       assert.ok(!isEmpty(instance), 'the component instance exists');
       assert.equal(previousInstance, undefined, 'no previous component exists');
@@ -1089,14 +1089,14 @@ moduleFor(
       assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'my-comp: open');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       assert.ok(!isEmpty(instance), 'a instance exists after rerender');
       assert.equal(previousInstance, undefined, 'there is no previous instance after rerender');
       assert.equal(initCount, 1, 'the component was constructed exactly 1 time');
       assert.equal(this.$().text(), 'my-comp: open');
 
-      this.runTask(() => this.context.set('compName', 'your-comp'));
+      runTask(() => this.context.set('compName', 'your-comp'));
 
       assert.ok(!isEmpty(instance), 'an instance was created after component name changed');
       assert.ok(!isEmpty(previousInstance), 'a previous instance now exists');
@@ -1108,7 +1108,7 @@ moduleFor(
       assert.equal(initCount, 2, 'the component was constructed exactly 2 times');
       assert.equal(this.$().text(), 'your-comp: open');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       assert.ok(
         !isEmpty(instance),
@@ -1123,7 +1123,7 @@ moduleFor(
       assert.equal(initCount, 2, 'the component was constructed exactly 2 times (rerender)');
       assert.equal(this.$().text(), 'your-comp: open');
 
-      this.runTask(() => this.context.set('compName', 'my-comp'));
+      runTask(() => this.context.set('compName', 'my-comp'));
 
       assert.ok(!isEmpty(instance), 'an instance was created after component name changed');
       assert.ok(!isEmpty(previousInstance), 'a previous instance still exists');
@@ -1150,27 +1150,27 @@ moduleFor(
 
       this.assertText('ab');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('ab');
 
-      this.runTask(() => this.context.get('allParams').pushObject('c'));
+      runTask(() => this.context.get('allParams').pushObject('c'));
 
       this.assertText('abc');
 
-      this.runTask(() => this.context.get('allParams').popObject());
+      runTask(() => this.context.get('allParams').popObject());
 
       this.assertText('ab');
 
-      this.runTask(() => this.context.get('allParams').clear());
+      runTask(() => this.context.get('allParams').clear());
 
       this.assertText('');
 
-      this.runTask(() => this.context.set('allParams', emberA(['1', '2'])));
+      runTask(() => this.context.set('allParams', emberA(['1', '2'])));
 
       this.assertText('12');
 
-      this.runTask(() => this.context.set('allParams', emberA(['a', 'b'])));
+      runTask(() => this.context.set('allParams', emberA(['a', 'b'])));
 
       this.assertText('ab');
     }
@@ -1192,27 +1192,27 @@ moduleFor(
 
       this.assertText('ab');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('ab');
 
-      this.runTask(() => this.context.get('allParams').pushObject('c'));
+      runTask(() => this.context.get('allParams').pushObject('c'));
 
       this.assertText('abc');
 
-      this.runTask(() => this.context.get('allParams').popObject());
+      runTask(() => this.context.get('allParams').popObject());
 
       this.assertText('ab');
 
-      this.runTask(() => this.context.get('allParams').clear());
+      runTask(() => this.context.get('allParams').clear());
 
       this.assertText('');
 
-      this.runTask(() => this.context.set('allParams', emberA(['1', '2'])));
+      runTask(() => this.context.set('allParams', emberA(['1', '2'])));
 
       this.assertText('12');
 
-      this.runTask(() => this.context.set('allParams', emberA(['a', 'b'])));
+      runTask(() => this.context.set('allParams', emberA(['a', 'b'])));
 
       this.assertText('ab');
     }
@@ -1354,15 +1354,15 @@ class MutableParamTestGenerator {
 
         assert.equal(this.$('.value').text(), '8');
 
-        this.runTask(() => this.rerender());
+        runTask(() => this.rerender());
 
         assert.equal(this.$('.value').text(), '8');
 
-        this.runTask(() => this.$('.my-button').click());
+        runTask(() => this.$('.my-button').click());
 
         assert.equal(this.$('.value').text(), '10');
 
-        this.runTask(() => this.context.set('model', { val2: 8 }));
+        runTask(() => this.context.set('model', { val2: 8 }));
 
         assert.equal(this.$('.value').text(), '8');
       },

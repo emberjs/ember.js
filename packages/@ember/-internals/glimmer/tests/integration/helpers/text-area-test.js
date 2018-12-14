@@ -1,4 +1,4 @@
-import { RenderingTestCase, moduleFor, classes, applyMixins } from 'internal-test-helpers';
+import { RenderingTestCase, moduleFor, classes, applyMixins, runTask } from 'internal-test-helpers';
 
 import { assign } from '@ember/polyfills';
 import { set } from '@ember/-internals/metal';
@@ -40,10 +40,10 @@ class BoundTextAreaAttributes {
 
         this.assertStableRerender();
 
-        this.runTask(() => set(this.context, 'value', second));
+        runTask(() => set(this.context, 'value', second));
         this.assertTextArea({ attrs: { [attribute]: second } });
 
-        this.runTask(() => set(this.context, 'value', first));
+        runTask(() => set(this.context, 'value', first));
         this.assertTextArea({ attrs: { [attribute]: first } });
       },
     };
@@ -94,10 +94,10 @@ moduleFor(
 
       this.assertStableRerender();
 
-      this.runTask(() => set(this.context, 'disabled', true));
+      runTask(() => set(this.context, 'disabled', true));
       assert.ok(this.$('textarea').is(':disabled'));
 
-      this.runTask(() => set(this.context, 'disabled', false));
+      runTask(() => set(this.context, 'disabled', false));
       assert.ok(this.$('textarea').is(':not(:disabled)'));
     }
 
@@ -109,10 +109,10 @@ moduleFor(
 
       this.assertStableRerender();
 
-      this.runTask(() => set(this.context, 'model.val', 'Auckland'));
+      runTask(() => set(this.context, 'model.val', 'Auckland'));
       this.assertTextArea({ value: 'Auckland' });
 
-      this.runTask(() => set(this.context, 'model', { val: 'A beautiful day in Seattle' }));
+      runTask(() => set(this.context, 'model', { val: 'A beautiful day in Seattle' }));
       this.assertTextArea({ value: 'A beautiful day in Seattle' });
     }
 
@@ -123,11 +123,11 @@ moduleFor(
 
       this.assertStableRerender();
 
-      this.runTask(() => set(this.context, 'message', 'hello'));
+      runTask(() => set(this.context, 'message', 'hello'));
 
       this.assert.strictEqual(this.firstChild.value, 'hello');
 
-      this.runTask(() => set(this.context, 'message', ''));
+      runTask(() => set(this.context, 'message', ''));
 
       this.assert.strictEqual(this.firstChild.value, '');
     }
@@ -140,25 +140,25 @@ moduleFor(
 
       this.assertStableRerender();
 
-      this.runTask(() => {
+      runTask(() => {
         this.firstChild.value = 'Auckland';
         this.triggerEvent('cut');
       });
       this.assertTextArea({ value: 'Auckland' });
 
-      this.runTask(() => {
+      runTask(() => {
         this.firstChild.value = 'Hope';
         this.triggerEvent('paste');
       });
       this.assertTextArea({ value: 'Hope' });
 
-      this.runTask(() => {
+      runTask(() => {
         this.firstChild.value = 'Boston';
         this.triggerEvent('input');
       });
       this.assertTextArea({ value: 'Boston' });
 
-      this.runTask(() => set(this.context, 'model', { val: 'A beautiful day in Seattle' }));
+      runTask(() => set(this.context, 'model', { val: 'A beautiful day in Seattle' }));
       this.assertTextArea({ value: 'A beautiful day in Seattle' });
     }
   }

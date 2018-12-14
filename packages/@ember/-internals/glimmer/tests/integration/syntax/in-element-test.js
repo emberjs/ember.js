@@ -1,4 +1,4 @@
-import { moduleFor, RenderingTestCase, strip, equalTokens } from 'internal-test-helpers';
+import { moduleFor, RenderingTestCase, strip, equalTokens, runTask } from 'internal-test-helpers';
 
 import { Component } from '@ember/-internals/glimmer';
 import { set } from '@ember/-internals/metal';
@@ -36,12 +36,12 @@ moduleFor(
 
       this.assertStableRerender();
 
-      this.runTask(() => set(this.context, 'text', 'Huzzah!!'));
+      runTask(() => set(this.context, 'text', 'Huzzah!!'));
 
       equalTokens(this.element, '<!---->');
       equalTokens(someElement, 'Huzzah!!');
 
-      this.runTask(() => set(this.context, 'text', 'Whoop!'));
+      runTask(() => set(this.context, 'text', 'Whoop!'));
 
       equalTokens(this.element, '<!---->');
       equalTokens(someElement, 'Whoop!');
@@ -86,28 +86,28 @@ moduleFor(
 
       this.assertStableRerender();
 
-      this.runTask(() => set(this.context, 'showModal', true));
+      runTask(() => set(this.context, 'showModal', true));
 
       equalTokens(this.element, '<!---->');
       this.assertComponentElement(someElement.firstChild, {
         content: 'Whoop!',
       });
 
-      this.runTask(() => set(this.context, 'text', 'Huzzah!'));
+      runTask(() => set(this.context, 'text', 'Huzzah!'));
 
       equalTokens(this.element, '<!---->');
       this.assertComponentElement(someElement.firstChild, {
         content: 'Huzzah!',
       });
 
-      this.runTask(() => set(this.context, 'text', 'Whoop!'));
+      runTask(() => set(this.context, 'text', 'Whoop!'));
 
       equalTokens(this.element, '<!---->');
       this.assertComponentElement(someElement.firstChild, {
         content: 'Whoop!',
       });
 
-      this.runTask(() => set(this.context, 'showModal', false));
+      runTask(() => set(this.context, 'showModal', false));
 
       equalTokens(this.element, '<!---->');
       equalTokens(someElement, '');

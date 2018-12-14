@@ -1,4 +1,4 @@
-import { moduleFor, ApplicationTestCase, RenderingTestCase } from 'internal-test-helpers';
+import { moduleFor, ApplicationTestCase, RenderingTestCase, runTask } from 'internal-test-helpers';
 
 import { getOwner } from '@ember/-internals/owner';
 import { compile, Component } from '../utils/helpers';
@@ -105,11 +105,11 @@ moduleFor(
 
         this.assertInnerHTML('<h2>Chat here, dgeb</h2>');
 
-        this.runTask(() => set(controller, 'username', 'chancancode'));
+        runTask(() => set(controller, 'username', 'chancancode'));
 
         this.assertInnerHTML('<h2>Chat here, chancancode</h2>');
 
-        this.runTask(() => set(controller, 'username', 'dgeb'));
+        runTask(() => set(controller, 'username', 'dgeb'));
 
         this.assertInnerHTML('<h2>Chat here, dgeb</h2>');
       });
@@ -204,27 +204,27 @@ moduleFor(
       return this.visit('/bound-engine-name').then(() => {
         this.assertInnerHTML('<!---->');
 
-        this.runTask(() => set(controller, 'engineName', 'foo'));
+        runTask(() => set(controller, 'engineName', 'foo'));
 
         this.assertInnerHTML('<h2>Foo Engine</h2>');
 
-        this.runTask(() => set(controller, 'engineName', undefined));
+        runTask(() => set(controller, 'engineName', undefined));
 
         this.assertInnerHTML('<!---->');
 
-        this.runTask(() => set(controller, 'engineName', 'foo'));
+        runTask(() => set(controller, 'engineName', 'foo'));
 
         this.assertInnerHTML('<h2>Foo Engine</h2>');
 
-        this.runTask(() => set(controller, 'engineName', 'bar'));
+        runTask(() => set(controller, 'engineName', 'bar'));
 
         this.assertInnerHTML('<h2>Bar Engine</h2>');
 
-        this.runTask(() => set(controller, 'engineName', 'foo'));
+        runTask(() => set(controller, 'engineName', 'foo'));
 
         this.assertInnerHTML('<h2>Foo Engine</h2>');
 
-        this.runTask(() => set(controller, 'engineName', null));
+        runTask(() => set(controller, 'engineName', null));
 
         this.assertInnerHTML('<!---->');
       });
@@ -356,27 +356,27 @@ if (EMBER_ENGINES_MOUNT_PARAMS) {
         return this.visit('/engine-params-bound').then(() => {
           this.assertInnerHTML('<h2>Param Engine: </h2>');
 
-          this.runTask(() => set(controller, 'boundParamValue', 'bar'));
+          runTask(() => set(controller, 'boundParamValue', 'bar'));
 
           this.assertInnerHTML('<h2>Param Engine: bar</h2>');
 
-          this.runTask(() => set(controller, 'boundParamValue', undefined));
+          runTask(() => set(controller, 'boundParamValue', undefined));
 
           this.assertInnerHTML('<h2>Param Engine: </h2>');
 
-          this.runTask(() => set(controller, 'boundParamValue', 'bar'));
+          runTask(() => set(controller, 'boundParamValue', 'bar'));
 
           this.assertInnerHTML('<h2>Param Engine: bar</h2>');
 
-          this.runTask(() => set(controller, 'boundParamValue', 'baz'));
+          runTask(() => set(controller, 'boundParamValue', 'baz'));
 
           this.assertInnerHTML('<h2>Param Engine: baz</h2>');
 
-          this.runTask(() => set(controller, 'boundParamValue', 'bar'));
+          runTask(() => set(controller, 'boundParamValue', 'bar'));
 
           this.assertInnerHTML('<h2>Param Engine: bar</h2>');
 
-          this.runTask(() => set(controller, 'boundParamValue', null));
+          runTask(() => set(controller, 'boundParamValue', null));
 
           this.assertInnerHTML('<h2>Param Engine: </h2>');
         });

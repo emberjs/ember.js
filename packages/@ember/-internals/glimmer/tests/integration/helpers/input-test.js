@@ -1,4 +1,4 @@
-import { RenderingTestCase, moduleFor, runDestroy } from 'internal-test-helpers';
+import { RenderingTestCase, moduleFor, runDestroy, runTask } from 'internal-test-helpers';
 
 import { assign } from '@ember/polyfills';
 import { set } from '@ember/-internals/metal';
@@ -71,7 +71,7 @@ class InputRenderingTest extends RenderingTestCase {
     assign(event, options);
 
     let element = this.$input()[0];
-    this.runTask(() => {
+    runTask(() => {
       element.dispatchEvent(event);
     });
   }
@@ -88,19 +88,19 @@ moduleFor(
       this.assertValue('hello');
       this.assertSingleInput();
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertValue('hello');
       this.assertSingleInput();
       this.assertInputId(id);
 
-      this.runTask(() => set(this.context, 'value', 'goodbye'));
+      runTask(() => set(this.context, 'value', 'goodbye'));
 
       this.assertValue('goodbye');
       this.assertSingleInput();
       this.assertInputId(id);
 
-      this.runTask(() => set(this.context, 'value', 'hello'));
+      runTask(() => set(this.context, 'value', 'hello'));
 
       this.assertValue('hello');
       this.assertSingleInput();
@@ -112,7 +112,7 @@ moduleFor(
 
       this.assertAttr('type', 'text');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertAttr('type', 'text');
     }
@@ -151,7 +151,7 @@ moduleFor(
       // this.assertAttr('size', '20'); //NOTE: failing in IE  (TEST_SUITE=sauce)
       // this.assertAttr('tabindex', '30'); //NOTE: failing in IE (TEST_SUITE=sauce)
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertNotDisabled();
       this.assertValue('Original value');
@@ -162,7 +162,7 @@ moduleFor(
       // this.assertAttr('size', '20'); //NOTE: failing in IE (TEST_SUITE=sauce)
       // this.assertAttr('tabindex', '30'); //NOTE: failing in IE (TEST_SUITE=sauce)
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'value', 'Updated value');
         set(this.context, 'disabled', true);
         set(this.context, 'placeholder', 'Updated placeholder');
@@ -182,7 +182,7 @@ moduleFor(
       // this.assertAttr('size', '21'); //NOTE: failing in IE (TEST_SUITE=sauce)
       // this.assertAttr('tabindex', '31'); //NOTE: failing in IE (TEST_SUITE=sauce)
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'value', 'Original value');
         set(this.context, 'disabled', false);
         set(this.context, 'placeholder', 'Original placeholder');
@@ -225,7 +225,7 @@ moduleFor(
       // this.assertAttr('size', '20');  //NOTE: failing in IE (TEST_SUITE=sauce)
       // this.assertAttr('tabindex', '30');  //NOTE: failing in IE (TEST_SUITE=sauce)
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertDisabled();
       this.assertValue('Original value');
@@ -249,26 +249,26 @@ moduleFor(
       // See https://ember-twiddle.com/33e506329f8176ae874422644d4cc08c?openFiles=components.input-component.js%2Ctemplates.components.input-component.hbs
       // this.assertSelectionRange(8, 8); //NOTE: this is (0, 0) on Firefox (TEST_SUITE=sauce)
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       // this.assertSelectionRange(8, 8); //NOTE: this is (0, 0) on Firefox (TEST_SUITE=sauce)
 
-      this.runTask(() => {
+      runTask(() => {
         input.selectionStart = 2;
         input.selectionEnd = 4;
       });
 
       this.assertSelectionRange(2, 4);
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertSelectionRange(2, 4);
 
-      // this.runTask(() => set(this.context, 'value', 'updated'));
+      // runTask(() => set(this.context, 'value', 'updated'));
       //
       // this.assertSelectionRange(7, 7); //NOTE: this fails in IE, the range is 0 -> 0 (TEST_SUITE=sauce)
       //
-      // this.runTask(() => set(this.context, 'value', 'original'));
+      // runTask(() => set(this.context, 'value', 'original'));
       //
       // this.assertSelectionRange(8, 8); //NOTE: this fails in IE, the range is 0 -> 0 (TEST_SUITE=sauce)
     }
@@ -378,7 +378,7 @@ moduleFor(
         },
       });
 
-      this.runTask(() => {
+      runTask(() => {
         this.$input().focus();
       });
 
@@ -532,15 +532,15 @@ moduleFor(
 
       this.assertAttr('type', 'password');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertAttr('type', 'password');
 
-      this.runTask(() => set(this.context, 'type', 'text'));
+      runTask(() => set(this.context, 'type', 'text'));
 
       this.assertAttr('type', 'text');
 
-      this.runTask(() => set(this.context, 'type', 'password'));
+      runTask(() => set(this.context, 'type', 'password'));
 
       this.assertAttr('type', 'password');
     }
@@ -554,15 +554,15 @@ moduleFor(
 
       this.assertAttr('type', 'text');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertAttr('type', 'text');
 
-      this.runTask(() => set(this.context, 'isTruthy', false));
+      runTask(() => set(this.context, 'isTruthy', false));
 
       this.assertAttr('type', 'password');
 
-      this.runTask(() => set(this.context, 'isTruthy', true));
+      runTask(() => set(this.context, 'isTruthy', true));
 
       this.assertAttr('type', 'text');
     }
@@ -610,14 +610,14 @@ moduleFor(
       this.assertAttr('name', 'original-name');
       this.assertAttr('tabindex', '10');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertSingleCheckbox();
       this.assertNotDisabled();
       this.assertAttr('name', 'original-name');
       this.assertAttr('tabindex', '10');
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'disabled', true);
         set(this.context, 'name', 'updated-name');
         set(this.context, 'tabindex', 11);
@@ -628,7 +628,7 @@ moduleFor(
       this.assertAttr('name', 'updated-name');
       this.assertAttr('tabindex', '11');
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'disabled', false);
         set(this.context, 'name', 'original-name');
         set(this.context, 'tabindex', 10);
@@ -657,15 +657,15 @@ moduleFor(
       this.assertSingleCheckbox();
       this.assertCheckboxIsChecked();
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertCheckboxIsChecked();
 
-      this.runTask(() => set(this.context, 'isChecked', false));
+      runTask(() => set(this.context, 'isChecked', false));
 
       this.assertCheckboxIsNotChecked();
 
-      this.runTask(() => set(this.context, 'isChecked', true));
+      runTask(() => set(this.context, 'isChecked', true));
 
       this.assertCheckboxIsChecked();
     }
@@ -692,7 +692,7 @@ moduleFor(
       this.assertAttr('tabindex', '10');
       this.assertAttr('name', 'original-name');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertSingleCheckbox();
       this.assertCheckboxIsNotChecked();
@@ -734,12 +734,12 @@ moduleFor(
       this.assertValue('');
       this.assertAllAttrs(attributes, undefined);
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertValue('');
       this.assertAllAttrs(attributes, undefined);
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'disabled', true);
         set(this.context, 'value', 'Updated value');
         set(this.context, 'placeholder', 'Updated placeholder');
@@ -757,7 +757,7 @@ moduleFor(
       this.assertAttr('size', '21');
       this.assertAttr('tabindex', '31');
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'disabled', null);
         set(this.context, 'value', null);
         set(this.context, 'placeholder', null);

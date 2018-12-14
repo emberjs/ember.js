@@ -1,5 +1,5 @@
 import Controller from '@ember/controller';
-import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
+import { moduleFor, ApplicationTestCase, runTask } from 'internal-test-helpers';
 import { Component } from '@ember/-internals/glimmer';
 
 /*
@@ -37,7 +37,7 @@ moduleFor(
       this.addTemplate('index', '{{component-with-action action=(action "componentAction")}}');
 
       return this.visit('/').then(() => {
-        this.runTask(() => this.$('.component-with-action').click());
+        runTask(() => this.$('.component-with-action').click());
       });
     }
   }

@@ -1,4 +1,4 @@
-import { moduleFor, ApplicationTestCase, strip } from 'internal-test-helpers';
+import { moduleFor, ApplicationTestCase, strip, runTaskNext } from 'internal-test-helpers';
 
 import Controller from '@ember/controller';
 import { RSVP } from '@ember/-internals/runtime';
@@ -695,7 +695,7 @@ moduleFor(
           this.assertText('ApplicationLoading');
           resolveLoading.resolve();
 
-          return this.runTaskNext().then(() => {
+          return runTaskNext().then(() => {
             this.assertText('ApplicationEnginePost');
             done();
           });
@@ -742,7 +742,7 @@ moduleFor(
           this.assertText('ApplicationEngineLoading');
           resolveLoading.resolve();
 
-          return this.runTaskNext().then(() => {
+          return runTaskNext().then(() => {
             this.assertText('ApplicationEnginePost');
             done();
           });
@@ -779,13 +779,13 @@ moduleFor(
         this.assertText('ApplicationEngineComments');
         let transition = this.transitionTo('blog.post.likes');
 
-        this.runTaskNext().then(() => {
+        runTaskNext().then(() => {
           this.assertText('ApplicationEngineLoading');
           resolveLoading();
         });
 
         return transition
-          .then(() => this.runTaskNext())
+          .then(() => runTaskNext())
           .then(() => this.assertText('ApplicationEngineLikes'));
       });
     }
@@ -829,7 +829,7 @@ moduleFor(
           this.assertText('ApplicationEngineLoading');
           resolveLoading.resolve();
 
-          return this.runTaskNext().then(() => {
+          return runTaskNext().then(() => {
             this.assertText('ApplicationEngineLikes');
             done();
           });

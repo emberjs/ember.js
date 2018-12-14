@@ -1,4 +1,4 @@
-import { moduleFor, RenderingTestCase } from 'internal-test-helpers';
+import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 
 import {
   subscribe as instrumentationSubscribe,
@@ -74,7 +74,7 @@ moduleFor(
 
       this.assertEvents('after initial render');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertEvents('after no-op rerender');
     }

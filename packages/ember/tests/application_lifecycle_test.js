@@ -1,4 +1,4 @@
-import { moduleFor, AutobootApplicationTestCase } from 'internal-test-helpers';
+import { moduleFor, AutobootApplicationTestCase, runTask } from 'internal-test-helpers';
 import Application from '@ember/application';
 import { Route, Router } from '@ember/-internals/routing';
 import { Component } from '@ember/-internals/glimmer';
@@ -26,7 +26,7 @@ moduleFor(
       super();
       let menuItem = (this.menuItem = {});
 
-      this.runTask(() => {
+      runTask(() => {
         this.createApplication();
 
         let SettingRoute = Route.extend({
@@ -74,7 +74,7 @@ moduleFor(
       assert.equal(indexController.get('selectedMenuItem'), this.menuItem);
       assert.equal(applicationController.get('selectedMenuItem'), this.menuItem);
 
-      this.runTask(() => {
+      runTask(() => {
         this.application.destroy();
       });
 
@@ -101,7 +101,7 @@ moduleFor(
     [`@test Destroying a route after the router does create an undestroyed 'toplevelView'`](
       assert
     ) {
-      this.runTask(() => {
+      runTask(() => {
         this.createApplication();
         this.addTemplate('index', `Index!`);
         this.addTemplate('application', `Application! {{outlet}}`);
@@ -110,13 +110,13 @@ moduleFor(
       let router = this.applicationInstance.lookup('router:main');
       let route = this.applicationInstance.lookup('route:index');
 
-      this.runTask(() => router.destroy());
+      runTask(() => router.destroy());
       assert.equal(router._toplevelView, null, 'the toplevelView was cleared');
 
-      this.runTask(() => route.destroy());
+      runTask(() => route.destroy());
       assert.equal(router._toplevelView, null, 'the toplevelView was not reinitialized');
 
-      this.runTask(() => this.application.destroy());
+      runTask(() => this.application.destroy());
       assert.equal(router._toplevelView, null, 'the toplevelView was not reinitialized');
     }
 
@@ -134,7 +134,7 @@ moduleFor(
         },
       });
 
-      this.runTask(() => {
+      runTask(() => {
         this.createApplication({}, MyApplication);
 
         this.add(
@@ -166,7 +166,7 @@ moduleFor(
           };
         },
       });
-      this.runTask(() => {
+      runTask(() => {
         this.createApplication({}, MyApplication);
 
         this.add(

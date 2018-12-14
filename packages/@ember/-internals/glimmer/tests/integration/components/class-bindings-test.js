@@ -1,4 +1,4 @@
-import { moduleFor, RenderingTestCase, strip, classes } from 'internal-test-helpers';
+import { moduleFor, RenderingTestCase, strip, classes, runTask } from 'internal-test-helpers';
 
 import { set, computed } from '@ember/-internals/metal';
 
@@ -29,7 +29,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -37,7 +37,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'foo', 'FOO');
         set(this.context, 'isEnabled', false);
       });
@@ -48,7 +48,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'foo', undefined);
         set(this.context, 'isHappy', true);
       });
@@ -59,7 +59,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'foo', 'foo');
         set(this.context, 'isEnabled', true);
         set(this.context, 'isHappy', false);
@@ -92,7 +92,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -100,7 +100,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'model.wat', true);
         set(this.context, 'model.super.robin', false);
       });
@@ -111,7 +111,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() =>
+      runTask(() =>
         set(this.context, 'model', {
           wat: false,
           super: { robin: true },
@@ -149,7 +149,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         attrs: {
@@ -158,7 +158,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'model.someInitiallyTrueProperty', false);
         set(this.context, 'model.someInitiallyFalseProperty', true);
         set(this.context, 'model.someInitiallyUndefinedProperty', true);
@@ -177,7 +177,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'model', {
           someInitiallyTrueProperty: true,
           someInitiallyFalseProperty: false,
@@ -218,7 +218,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -226,7 +226,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'foo.bar', 'FOO-BAR');
         set(this.context, 'is.enabled', false);
       });
@@ -237,7 +237,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'foo.bar', null);
         set(this.context, 'is.happy', true);
       });
@@ -248,7 +248,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'foo', null);
         set(this.context, 'is', null);
       });
@@ -259,7 +259,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'foo', { bar: 'foo-bar' });
         set(this.context, 'is', { enabled: true, happy: false });
       });
@@ -292,7 +292,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -300,7 +300,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'fooBar', false);
         set(this.context, 'nested.fooBarBaz', true);
       });
@@ -311,7 +311,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'fooBar', 'FOO-BAR');
         set(this.context, 'nested.fooBarBaz', null);
       });
@@ -322,7 +322,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => set(this.context, 'nested', null));
+      runTask(() => set(this.context, 'nested', null));
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -330,7 +330,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'fooBar', true);
         set(this.context, 'nested', { fooBarBaz: false });
       });
@@ -354,7 +354,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -362,7 +362,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => set(this.context, 'foo', false));
+      runTask(() => set(this.context, 'foo', false));
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -370,7 +370,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => set(this.context, 'foo', true));
+      runTask(() => set(this.context, 'foo', true));
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -399,7 +399,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => set(this.context, 'enabled', true));
+      runTask(() => set(this.context, 'enabled', true));
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -407,7 +407,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => set(this.context, 'enabled', false));
+      runTask(() => set(this.context, 'enabled', false));
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -436,7 +436,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => set(this.context, 'enabled', true));
+      runTask(() => set(this.context, 'enabled', true));
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -549,7 +549,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.nthChild(0), {
         tagName: 'div',
@@ -572,7 +572,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'foo', 'FOO');
         set(this.context, 'isEnabled', false);
       });
@@ -598,7 +598,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'foo', undefined);
         set(this.context, 'isHappy', true);
       });
@@ -624,7 +624,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'foo', 'foo');
         set(this.context, 'isEnabled', true);
         set(this.context, 'isHappy', false);
@@ -685,7 +685,7 @@ moduleFor(
         attrs: { class: classes('foo  ember-view') },
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -707,7 +707,7 @@ moduleFor(
         attrs: { class: classes('respeck myName ember-view') },
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -729,7 +729,7 @@ moduleFor(
         attrs: { class: classes('respeck  ember-view') },
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -751,7 +751,7 @@ moduleFor(
         attrs: { class: classes('shade  ember-view') },
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -773,7 +773,7 @@ moduleFor(
         attrs: { class: classes('ember-view') },
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -793,7 +793,7 @@ moduleFor(
         attrs: { class: classes('ember-view') },
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -815,7 +815,7 @@ moduleFor(
         attrs: { class: classes('scrub  ember-view') },
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -837,7 +837,7 @@ moduleFor(
         attrs: { class: classes('fresh  ember-view') },
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',

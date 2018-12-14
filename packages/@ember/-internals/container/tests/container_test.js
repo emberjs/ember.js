@@ -2,7 +2,7 @@ import { OWNER } from '@ember/-internals/owner';
 import { assign } from '@ember/polyfills';
 import { EMBER_MODULE_UNIFICATION } from '@ember/canary-features';
 import { Registry } from '..';
-import { factory, moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { factory, moduleFor, AbstractTestCase, runTask } from 'internal-test-helpers';
 
 moduleFor(
   'Container',
@@ -679,7 +679,7 @@ moduleFor(
       let instance = container.lookup('component:foo-bar');
       assert.ok(instance, 'precond lookup successful');
 
-      this.runTask(() => {
+      runTask(() => {
         container.destroy();
         container.finalizeDestroy();
       });
@@ -697,7 +697,7 @@ moduleFor(
       let instance = container.factoryFor('component:foo-bar');
       assert.ok(instance, 'precond lookup successful');
 
-      this.runTask(() => {
+      runTask(() => {
         container.destroy();
         container.finalizeDestroy();
       });

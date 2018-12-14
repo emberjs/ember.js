@@ -1,4 +1,11 @@
-import { moduleFor, RenderingTestCase, classes, strip, runAppend } from 'internal-test-helpers';
+import {
+  moduleFor,
+  RenderingTestCase,
+  classes,
+  strip,
+  runAppend,
+  runTask,
+} from 'internal-test-helpers';
 
 import { schedule } from '@ember/runloop';
 import { set, setProperties } from '@ember/-internals/metal';
@@ -382,7 +389,7 @@ class LifeCycleHooksTest extends RenderingTestCase {
       ],
     });
 
-    this.runTask(() => this.components['the-bottom'].rerender());
+    runTask(() => this.components['the-bottom'].rerender());
 
     this.assertText('Twitter: @tomdale|Name: Tom Dale|Website: tomdale.net');
 
@@ -415,7 +422,7 @@ class LifeCycleHooksTest extends RenderingTestCase {
       nonInteractive: [],
     });
 
-    this.runTask(() => this.components['the-middle'].rerender());
+    runTask(() => this.components['the-middle'].rerender());
 
     this.assertText('Twitter: @tomdale|Name: Tom Dale|Website: tomdale.net');
 
@@ -443,7 +450,7 @@ class LifeCycleHooksTest extends RenderingTestCase {
       nonInteractive: [],
     });
 
-    this.runTask(() => this.components['the-top'].rerender());
+    runTask(() => this.components['the-top'].rerender());
 
     this.assertText('Twitter: @tomdale|Name: Tom Dale|Website: tomdale.net');
 
@@ -465,7 +472,7 @@ class LifeCycleHooksTest extends RenderingTestCase {
       nonInteractive: [],
     });
 
-    this.runTask(() => set(this.context, 'twitter', '@horsetomdale'));
+    runTask(() => set(this.context, 'twitter', '@horsetomdale'));
 
     this.assertText('Twitter: @horsetomdale|Name: Tom Dale|Website: tomdale.net');
 
@@ -636,7 +643,7 @@ class LifeCycleHooksTest extends RenderingTestCase {
       ],
     });
 
-    this.runTask(() => this.components['the-first-child'].rerender());
+    runTask(() => this.components['the-first-child'].rerender());
 
     this.assertText('Twitter: @tomdale|Name: Tom Dale|Website: tomdale.net');
 
@@ -664,7 +671,7 @@ class LifeCycleHooksTest extends RenderingTestCase {
       nonInteractive: [],
     });
 
-    this.runTask(() => this.components['the-second-child'].rerender());
+    runTask(() => this.components['the-second-child'].rerender());
 
     this.assertText('Twitter: @tomdale|Name: Tom Dale|Website: tomdale.net');
 
@@ -692,7 +699,7 @@ class LifeCycleHooksTest extends RenderingTestCase {
       nonInteractive: [],
     });
 
-    this.runTask(() => this.components['the-last-child'].rerender());
+    runTask(() => this.components['the-last-child'].rerender());
 
     this.assertText('Twitter: @tomdale|Name: Tom Dale|Website: tomdale.net');
 
@@ -720,7 +727,7 @@ class LifeCycleHooksTest extends RenderingTestCase {
       nonInteractive: [],
     });
 
-    this.runTask(() => this.components['the-parent'].rerender());
+    runTask(() => this.components['the-parent'].rerender());
 
     this.assertText('Twitter: @tomdale|Name: Tom Dale|Website: tomdale.net');
 
@@ -742,7 +749,7 @@ class LifeCycleHooksTest extends RenderingTestCase {
       nonInteractive: [],
     });
 
-    this.runTask(() =>
+    runTask(() =>
       setProperties(this.context, {
         twitter: '@horsetomdale',
         name: 'Horse Tom Dale',
@@ -937,7 +944,7 @@ class LifeCycleHooksTest extends RenderingTestCase {
       ],
     });
 
-    this.runTask(() => set(this.context, 'twitter', '@horsetomdale'));
+    runTask(() => set(this.context, 'twitter', '@horsetomdale'));
 
     this.assertText('Top: Middle: Bottom: @horsetomdale');
 
@@ -994,7 +1001,7 @@ class LifeCycleHooksTest extends RenderingTestCase {
       ],
     });
 
-    this.runTask(() => this.rerender());
+    runTask(() => this.rerender());
 
     this.assertText('Top: Middle: Bottom: @horsetomdale');
 
@@ -1139,7 +1146,7 @@ class LifeCycleHooksTest extends RenderingTestCase {
       this.assert.equal(this.component.childViews.length, 5, 'childViews precond');
     }
 
-    this.runTask(() => set(this.context, 'items', []));
+    runTask(() => set(this.context, 'items', []));
 
     // TODO: Is this correct? Should childViews be populated in non-interactive mode?
     if (this.isInteractive) {
@@ -1352,7 +1359,7 @@ moduleFor(
 
       this.assertText('10');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('10');
     }
@@ -1375,7 +1382,7 @@ moduleFor(
 
       this.assertText('wat');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('wat');
     }
@@ -1476,7 +1483,7 @@ moduleFor(
 
       this.assertText('1AB2AB3AB4AB5AB6AB7AB');
 
-      this.runTask(() => {
+      runTask(() => {
         array.removeAt(2);
         array.removeAt(2);
         set(this.context, 'model.shouldShow', false);
@@ -1629,7 +1636,7 @@ if (!jQueryDisabled) {
         let { owner } = this;
         let comp = owner.lookup('component:foo-bar');
         runAppend(comp);
-        this.runTask(() => tryInvoke(component, 'destroy'));
+        runTask(() => tryInvoke(component, 'destroy'));
       }
     }
   );

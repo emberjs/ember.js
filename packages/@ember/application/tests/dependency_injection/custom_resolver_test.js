@@ -1,6 +1,6 @@
 import DefaultResolver from '@ember/application/globals-resolver';
 import { assign } from '@ember/polyfills';
-import { moduleFor, DefaultResolverApplicationTestCase } from 'internal-test-helpers';
+import { moduleFor, DefaultResolverApplicationTestCase, runTask } from 'internal-test-helpers';
 
 moduleFor(
   'Application with extended default resolver and autoboot',
@@ -25,7 +25,7 @@ moduleFor(
     }
 
     [`@test a resolver can be supplied to application`]() {
-      this.runTask(() => this.createApplication());
+      runTask(() => this.createApplication());
       this.assertText('Fallback');
     }
   }

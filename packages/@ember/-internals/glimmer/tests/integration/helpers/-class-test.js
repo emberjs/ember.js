@@ -1,4 +1,4 @@
-import { RenderingTestCase, moduleFor, classes } from 'internal-test-helpers';
+import { RenderingTestCase, moduleFor, classes, runTask } from 'internal-test-helpers';
 
 import { set } from '@ember/-internals/metal';
 
@@ -16,21 +16,21 @@ moduleFor(
         attrs: { class: classes('some-truth ember-view') },
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { class: classes('some-truth ember-view') },
       });
 
-      this.runTask(() => set(this.context, 'someTruth', false));
+      runTask(() => set(this.context, 'someTruth', false));
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { class: classes('ember-view') },
       });
 
-      this.runTask(() => set(this.context, 'someTruth', true));
+      runTask(() => set(this.context, 'someTruth', true));
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -51,21 +51,21 @@ moduleFor(
         attrs: { class: classes('some-truth ember-view') },
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { class: classes('some-truth ember-view') },
       });
 
-      this.runTask(() => set(this.context, 'model.someTruth', false));
+      runTask(() => set(this.context, 'model.someTruth', false));
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { class: classes('ember-view') },
       });
 
-      this.runTask(() => set(this.context, 'model', { someTruth: true }));
+      runTask(() => set(this.context, 'model', { someTruth: true }));
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',

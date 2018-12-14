@@ -1,4 +1,4 @@
-import { moduleFor, RenderingTestCase, strip, classes } from 'internal-test-helpers';
+import { moduleFor, RenderingTestCase, strip, classes, runTask } from 'internal-test-helpers';
 
 import { EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION } from '@ember/canary-features';
 import { set } from '@ember/-internals/metal';
@@ -16,7 +16,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
 
         this.assertComponentElement(this.firstChild, { content: 'hello' });
 
-        this.runTask(() => this.rerender());
+        runTask(() => this.rerender());
 
         this.assertComponentElement(this.firstChild, { content: 'hello' });
       }
@@ -28,7 +28,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
 
         this.assertComponentElement(this.firstChild, { content: 'hello' });
 
-        this.runTask(() => this.rerender());
+        runTask(() => this.rerender());
 
         this.assertComponentElement(this.firstChild, { content: 'hello' });
       }
@@ -40,7 +40,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
 
         this.assertComponentElement(this.firstChild, { content: 'hello' });
 
-        this.runTask(() => this.rerender());
+        runTask(() => this.rerender());
 
         this.assertComponentElement(this.firstChild, { content: 'hello' });
       }
@@ -63,7 +63,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
 
         this.assertComponentElement(this.firstChild, { content: 'hello' });
 
-        this.runTask(() => this.rerender());
+        runTask(() => this.rerender());
 
         this.assertComponentElement(this.firstChild, { content: 'hello' });
       }
@@ -95,7 +95,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
           content: 'bizz bizz',
         });
 
-        this.runTask(() => this.rerender());
+        runTask(() => this.rerender());
 
         this.assertComponentElement(this.firstChild, {
           tagName: 'div',
@@ -103,7 +103,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
           content: 'bizz bizz',
         });
 
-        this.runTask(() => set(this.context, 'customId', 'bar'));
+        runTask(() => set(this.context, 'customId', 'bar'));
 
         this.assertComponentElement(this.firstChild, {
           tagName: 'div',
@@ -111,7 +111,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
           content: 'bar bizz',
         });
 
-        this.runTask(() => set(this.context, 'customId', 'bizz'));
+        runTask(() => set(this.context, 'customId', 'bizz'));
 
         this.assertComponentElement(this.firstChild, {
           tagName: 'div',
@@ -137,7 +137,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
           content: 'hello',
         });
 
-        this.runTask(() => this.rerender());
+        runTask(() => this.rerender());
 
         this.assertComponentElement(this.firstChild, {
           tagName: 'foo-bar',
@@ -155,7 +155,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
           content: 'hello',
         });
 
-        this.runTask(() => this.rerender());
+        runTask(() => this.rerender());
 
         this.assertComponentElement(this.firstChild, {
           tagName: 'foo-bar',
@@ -181,7 +181,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
           content: 'hello',
         });
 
-        this.runTask(() => this.rerender());
+        runTask(() => this.rerender());
 
         this.assertComponentElement(this.firstChild, {
           tagName: 'div',
@@ -202,21 +202,21 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
           attrs: { class: classes('ember-view foo-bar') },
         });
 
-        this.runTask(() => this.rerender());
+        runTask(() => this.rerender());
 
         this.assertComponentElement(this.firstChild, {
           content: 'hello',
           attrs: { class: classes('ember-view foo-bar') },
         });
 
-        this.runTask(() => set(this.context, 'fooBar', false));
+        runTask(() => set(this.context, 'fooBar', false));
 
         this.assertComponentElement(this.firstChild, {
           content: 'hello',
           attrs: { class: classes('ember-view') },
         });
 
-        this.runTask(() => set(this.context, 'fooBar', true));
+        runTask(() => set(this.context, 'fooBar', true));
 
         this.assertComponentElement(this.firstChild, {
           content: 'hello',
@@ -256,7 +256,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
           content: 'hello',
         });
 
-        this.runTask(() => this.rerender());
+        runTask(() => this.rerender());
 
         this.assertComponentElement(this.nthChild(0), {
           tagName: 'div',
@@ -296,7 +296,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
 
         this.assertComponentElement(element1, { content: 'hello' });
 
-        this.runTask(() => this.rerender());
+        runTask(() => this.rerender());
 
         let element2 = instance.element;
 
@@ -340,7 +340,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
         assert.deepEqual(this.component.childViews, [fooBarInstance]);
         assert.deepEqual(fooBarInstance.childViews, [fooBarBazInstance]);
 
-        this.runTask(() => this.rerender());
+        runTask(() => this.rerender());
         this.assertText('foo-bar foo-bar-baz');
 
         assert.equal(fooBarInstance.parentView, this.component);
@@ -363,15 +363,15 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
 
         this.assertText('Hola');
 
-        this.runTask(() => this.rerender());
+        runTask(() => this.rerender());
 
         this.assertText('Hola');
 
-        this.runTask(() => this.context.set('model.bar', 'Hello'));
+        runTask(() => this.context.set('model.bar', 'Hello'));
 
         this.assertText('Hello');
 
-        this.runTask(() => this.context.set('model', { bar: 'Hola' }));
+        runTask(() => this.context.set('model', { bar: 'Hola' }));
 
         this.assertText('Hola');
       }
@@ -389,15 +389,15 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
 
         this.assertText('Hola');
 
-        this.runTask(() => this.rerender());
+        runTask(() => this.rerender());
 
         this.assertText('Hola');
 
-        this.runTask(() => this.context.set('model.bar', 'Hello'));
+        runTask(() => this.context.set('model.bar', 'Hello'));
 
         this.assertText('Hello');
 
-        this.runTask(() => this.context.set('model', { bar: 'Hola' }));
+        runTask(() => this.context.set('model', { bar: 'Hola' }));
 
         this.assertText('Hola');
       }
@@ -413,7 +413,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
           content: 'hello - In component',
         });
 
-        this.runTask(() => this.rerender());
+        runTask(() => this.rerender());
 
         this.assertComponentElement(this.firstChild, {
           content: 'hello - In component',
@@ -450,13 +450,13 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
           content: 'Joel Kang, hello',
         });
 
-        this.runTask(() => this.rerender());
+        runTask(() => this.rerender());
 
         this.assertComponentElement(this.firstChild, {
           content: 'Joel Kang, hello',
         });
 
-        this.runTask(() =>
+        runTask(() =>
           set(this.context, 'person', {
             firstName: 'Dora',
             lastName: 'the Explorer',
@@ -467,13 +467,13 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
           content: 'Dora the Explorer, hello',
         });
 
-        this.runTask(() => set(instance, 'greeting', 'hola'));
+        runTask(() => set(instance, 'greeting', 'hola'));
 
         this.assertComponentElement(this.firstChild, {
           content: 'Dora the Explorer, hola',
         });
 
-        this.runTask(() => {
+        runTask(() => {
           set(instance, 'greeting', 'hello');
           set(this.context, 'person', {
             firstName: 'Joel',
@@ -513,7 +513,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
 
         this.assertComponentElement(this.firstChild, { content: 'hello' });
 
-        this.runTask(() => this.rerender());
+        runTask(() => this.rerender());
 
         this.assertComponentElement(this.firstChild, { content: 'hello' });
 
@@ -527,7 +527,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
 
         this.assertComponentElement(this.firstChild.firstChild, { content: 'hello' });
 
-        this.runTask(() => this.rerender());
+        runTask(() => this.rerender());
 
         this.assertComponentElement(this.firstChild.firstChild, { content: 'hello' });
 
@@ -541,7 +541,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
 
         this.assertComponentElement(this.firstChild.firstChild, { content: 'hello' });
 
-        this.runTask(() => this.rerender());
+        runTask(() => this.rerender());
 
         this.assertComponentElement(this.firstChild.firstChild, { content: 'hello' });
 
@@ -599,7 +599,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
           content: 'hello',
         });
 
-        this.runTask(() => this.rerender());
+        runTask(() => this.rerender());
 
         this.assertComponentElement(this.firstChild, {
           tagName: 'div',
@@ -607,7 +607,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
           content: 'hello',
         });
 
-        this.runTask(() => {
+        runTask(() => {
           set(this.context, 'foo', 'FOO');
           set(this.context, 'bar', undefined);
         });
@@ -618,7 +618,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
           content: 'hello',
         });
 
-        this.runTask(() => {
+        runTask(() => {
           set(this.context, 'foo', 'foo');
           set(this.context, 'bar', 'bar');
         });
@@ -678,7 +678,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
           content: 'hello',
         });
 
-        this.runTask(() => this.rerender());
+        runTask(() => this.rerender());
 
         this.assertElement(this.firstChild, {
           tagName: 'div',
@@ -686,7 +686,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
           content: 'hello',
         });
 
-        this.runTask(() => {
+        runTask(() => {
           set(this.context, 'foo', 'FOO');
           set(this.context, 'bar', undefined);
         });
@@ -697,7 +697,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
           content: 'hello',
         });
 
-        this.runTask(() => {
+        runTask(() => {
           set(this.context, 'foo', 'foo');
           set(this.context, 'bar', 'bar');
         });
@@ -731,7 +731,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
           content: 'hello',
         });
 
-        this.runTask(() => this.rerender());
+        runTask(() => this.rerender());
 
         this.assertElement(this.firstChild, {
           tagName: 'div',
@@ -739,7 +739,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
           content: 'hello',
         });
 
-        this.runTask(() => {
+        runTask(() => {
           set(this.context, 'foo', 'FOO');
           set(this.context, 'bar', undefined);
           set(instance, 'localProp', 'QUZ');
@@ -751,7 +751,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
           content: 'hello',
         });
 
-        this.runTask(() => {
+        runTask(() => {
           set(this.context, 'foo', 'foo');
           set(this.context, 'bar', 'bar');
           set(instance, 'localProp', 'qux');
@@ -786,7 +786,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
           content: 'hello',
         });
 
-        this.runTask(() => this.rerender());
+        runTask(() => this.rerender());
 
         this.assertElement(this.firstChild, {
           tagName: 'div',
@@ -794,7 +794,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
           content: 'hello',
         });
 
-        this.runTask(() => {
+        runTask(() => {
           set(this.context, 'bar', undefined);
           set(instance, 'localProp', 'QUZ');
         });
@@ -805,7 +805,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
           content: 'hello',
         });
 
-        this.runTask(() => {
+        runTask(() => {
           set(this.context, 'bar', 'bar');
           set(instance, 'localProp', 'qux');
         });
@@ -874,7 +874,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
           content: 'world',
         });
 
-        this.runTask(() => this.rerender());
+        runTask(() => this.rerender());
 
         this.assertElement(this.firstChild, {
           tagName: 'div',
@@ -887,7 +887,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
           content: 'world',
         });
 
-        this.runTask(() => {
+        runTask(() => {
           set(this.context, 'foo', 'FOO');
           set(this.context, 'bar', undefined);
         });
@@ -903,7 +903,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
           content: 'world',
         });
 
-        this.runTask(() => {
+        runTask(() => {
           set(this.context, 'foo', 'foo');
           set(this.context, 'bar', 'bar');
         });

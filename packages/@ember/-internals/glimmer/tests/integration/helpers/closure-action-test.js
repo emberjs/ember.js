@@ -1,4 +1,4 @@
-import { RenderingTestCase, moduleFor, strip } from 'internal-test-helpers';
+import { RenderingTestCase, moduleFor, strip, runTask } from 'internal-test-helpers';
 
 import {
   subscribe as instrumentationSubscribe,
@@ -64,7 +64,7 @@ if (EMBER_IMPROVED_INSTRUMENTATION) {
 
         this.render(`{{outer-component}}`);
 
-        this.runTask(() => {
+        runTask(() => {
           this.$('#instrument-button').trigger('click');
         });
 
@@ -119,7 +119,7 @@ if (EMBER_IMPROVED_INSTRUMENTATION) {
 
         this.render(`{{outer-component}}`);
 
-        this.runTask(() => {
+        runTask(() => {
           this.$('#instrument-button').trigger('click');
         });
 
@@ -170,7 +170,7 @@ if (EMBER_IMPROVED_INSTRUMENTATION) {
 
         this.render(`{{outer-component}}`);
 
-        this.runTask(() => {
+        runTask(() => {
           this.$('#instrument-button').trigger('click');
         });
 
@@ -214,7 +214,7 @@ moduleFor(
 
       this.render('{{outer-component}}');
 
-      this.runTask(() => {
+      runTask(() => {
         component.fireAction();
       });
 
@@ -298,7 +298,7 @@ moduleFor(
 
       this.render('{{outer-component}}');
 
-      this.runTask(() => {
+      runTask(() => {
         innerComponent.fireAction();
       });
 
@@ -343,7 +343,7 @@ moduleFor(
 
       this.render('{{outer-component}}');
 
-      this.runTask(() => {
+      runTask(() => {
         innerComponent.fireAction();
       });
 
@@ -390,7 +390,7 @@ moduleFor(
 
       this.render('{{outer-component}}');
 
-      this.runTask(() => {
+      runTask(() => {
         innerComponent.fireAction();
       });
 
@@ -439,7 +439,7 @@ moduleFor(
 
       this.render('{{outer-component}}');
 
-      this.runTask(() => {
+      runTask(() => {
         innerComponent.fireAction();
       });
 
@@ -486,17 +486,17 @@ moduleFor(
 
       this.render('{{outer-component}}');
 
-      this.runTask(() => {
+      runTask(() => {
         innerComponent.fireAction();
       });
 
       this.assert.strictEqual(actualArg, '', 'action has the correct first arg');
 
-      this.runTask(() => {
+      runTask(() => {
         outerComponent.set('value', value);
       });
 
-      this.runTask(() => {
+      runTask(() => {
         innerComponent.fireAction();
       });
 
@@ -549,12 +549,12 @@ moduleFor(
 
       this.render('{{outer-component}}');
 
-      this.runTask(() => {
+      runTask(() => {
         outerComponent.set('first', first);
         outerComponent.set('second', second);
       });
 
-      this.runTask(() => {
+      runTask(() => {
         innerComponent.fireAction();
       });
 
@@ -599,7 +599,7 @@ moduleFor(
 
       this.render('{{outer-component}}');
 
-      this.runTask(() => {
+      runTask(() => {
         innerComponent.fireAction();
       });
 
@@ -642,7 +642,7 @@ moduleFor(
 
       this.render('{{outer-component}}');
 
-      this.runTask(() => {
+      runTask(() => {
         innerComponent.fireAction();
       });
 
@@ -692,7 +692,7 @@ moduleFor(
 
       this.render('{{outer-component}}');
 
-      this.runTask(() => {
+      runTask(() => {
         innerComponent.fireAction();
       });
 
@@ -787,7 +787,7 @@ moduleFor(
 
       this.render('{{outer-component}}');
 
-      this.runTask(() => {
+      runTask(() => {
         innerComponent.fireAction();
       });
 
@@ -835,7 +835,7 @@ moduleFor(
 
       this.render('{{outer-component}}');
 
-      this.runTask(() => {
+      runTask(() => {
         innerComponent.fireAction();
       });
 
@@ -878,7 +878,7 @@ moduleFor(
 
       this.render('{{outer-component}}');
 
-      this.runTask(() => {
+      runTask(() => {
         innerComponent.fireAction();
       });
 
@@ -922,7 +922,7 @@ moduleFor(
 
       this.render('{{outer-component}}');
 
-      this.runTask(() => {
+      runTask(() => {
         innerComponent.fireAction();
       });
 
@@ -989,7 +989,7 @@ moduleFor(
 
       this.render('{{outer-component}}');
 
-      this.runTask(() => {
+      runTask(() => {
         actualReturnedValue = innerComponent.fireAction();
       });
 
@@ -1032,7 +1032,7 @@ moduleFor(
 
       this.render('{{outer-component}}');
 
-      this.runTask(() => {
+      runTask(() => {
         innerComponent.fireAction();
       });
 
@@ -1078,7 +1078,7 @@ moduleFor(
 
       this.render('{{outer-component}}');
 
-      this.runTask(() => {
+      runTask(() => {
         innerComponent.fireAction();
       });
 
@@ -1109,25 +1109,25 @@ moduleFor(
 
       this.assertStableRerender();
 
-      this.runTask(() => {
+      runTask(() => {
         this.$('button').click();
       });
 
       this.assertText('Clicked!');
 
-      this.runTask(() => {
+      runTask(() => {
         component.set('label', 'Dun clicked');
       });
 
       this.assertText('Dun clicked');
 
-      this.runTask(() => {
+      runTask(() => {
         this.$('button').click();
       });
 
       this.assertText('Clicked!');
 
-      this.runTask(() => {
+      runTask(() => {
         component.set('label', undefined);
       });
 
@@ -1191,31 +1191,31 @@ moduleFor(
 
       assert.equal(didReceiveAttrsFired, 3);
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('clicked: 0; foo: 1');
 
       assert.equal(didReceiveAttrsFired, 3);
 
-      this.runTask(() => set(this.context, 'foo', 2));
+      runTask(() => set(this.context, 'foo', 2));
 
       this.assertText('clicked: 0; foo: 2');
 
       assert.equal(didReceiveAttrsFired, 3);
 
-      this.runTask(() => this.$('#string-action').click());
+      runTask(() => this.$('#string-action').click());
 
       this.assertText('clicked: 1; foo: 2');
 
       assert.equal(didReceiveAttrsFired, 3);
 
-      this.runTask(() => this.$('#function-action').click());
+      runTask(() => this.$('#function-action').click());
 
       this.assertText('clicked: 2; foo: 2');
 
       assert.equal(didReceiveAttrsFired, 3);
 
-      this.runTask(() =>
+      runTask(() =>
         set(outer, 'onClick', function() {
           outer.incrementProperty('clicked');
         })
@@ -1225,13 +1225,13 @@ moduleFor(
 
       assert.equal(didReceiveAttrsFired, 3);
 
-      this.runTask(() => this.$('#function-action').click());
+      runTask(() => this.$('#function-action').click());
 
       this.assertText('clicked: 3; foo: 2');
 
       assert.equal(didReceiveAttrsFired, 3);
 
-      this.runTask(() => this.$('#mut-action').click());
+      runTask(() => this.$('#mut-action').click());
 
       this.assertText('clicked: 4; foo: 2');
 

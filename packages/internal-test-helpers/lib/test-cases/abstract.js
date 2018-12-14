@@ -1,14 +1,13 @@
 /* global Element */
 
 import { assign } from '@ember/polyfills';
-import { getCurrentRunLoop, hasScheduledTimers, next, run } from '@ember/runloop';
 
 import NodeQuery from '../node-query';
 import equalInnerHTML from '../equal-inner-html';
 import equalTokens from '../equal-tokens';
 import { getElement } from '../element-helpers';
 import { equalsElement, regex, classes } from '../matchers';
-import { Promise } from 'rsvp';
+import { runLoopSettled, runTask } from '../run';
 
 const TextNode = window.Text;
 const HTMLElement = window.HTMLElement;
@@ -40,16 +39,6 @@ export default class AbstractTestCase {
 
   teardown() {}
   afterEach() {}
-
-  runTask(callback) {
-    return run(callback);
-  }
-
-  runTaskNext() {
-    return new Promise(resolve => {
-      return next(resolve);
-    });
-  }
 
   setupFixture(innerHTML) {
     let fixture = document.getElementById('qunit-fixture');
@@ -122,26 +111,7 @@ export default class AbstractTestCase {
 
     let event = element.click();
 
-    return this.runLoopSettled(event);
-  }
-
-  // TODO: Find a better name 😎
-  runLoopSettled(value) {
-    return new Promise(function(resolve) {
-      // Every 5ms, poll for the async thing to have finished
-      let watcher = setInterval(() => {
-        // If there are scheduled timers or we are inside of a run loop, keep polling
-        if (hasScheduledTimers() || getCurrentRunLoop()) {
-          return;
-        }
-
-        // Stop polling
-        clearInterval(watcher);
-
-        // Synchronously resolve the promise
-        resolve(value);
-      }, 5);
-    });
+    return runLoopSettled(event);
   }
 
   textValue() {
@@ -217,7 +187,7 @@ export default class AbstractTestCase {
 
   assertStableRerender() {
     this.takeSnapshot();
-    this.runTask(() => this.rerender());
+    runTask(() => this.rerender());
     this.assertInvariants();
   }
 }

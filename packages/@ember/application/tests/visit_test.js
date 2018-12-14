@@ -1,4 +1,4 @@
-import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
+import { moduleFor, ApplicationTestCase, runTask } from 'internal-test-helpers';
 import { inject as injectService } from '@ember/service';
 import { Object as EmberObject, RSVP, onerrorDefault } from '@ember/-internals/runtime';
 import { later } from '@ember/runloop';
@@ -78,7 +78,7 @@ moduleFor(
           );
         })
         .then(() => {
-          return this.runTask(() => {
+          return runTask(() => {
             this.applicationInstance.destroy();
             this.applicationInstance = null;
           });
@@ -138,7 +138,7 @@ moduleFor(
           assert.ok(appBooted === 0, '500ms elapsed without app being booted');
           assert.ok(instanceBooted === 0, '500ms elapsed without instances being booted');
 
-          return this.runTask(() => this.application.boot());
+          return runTask(() => this.application.boot());
         })
         .then(() => {
           assert.ok(appBooted === 1, 'app should boot when manually calling `app.boot()`');
@@ -191,7 +191,7 @@ moduleFor(
         },
       });
 
-      return this.runTask(() => this.application.boot())
+      return runTask(() => this.application.boot())
         .then(() => {
           assert.ok(appBooted === 1, 'the app should be booted');
           assert.ok(instanceBooted === 0, 'no instances should be booted');
@@ -205,7 +205,7 @@ moduleFor(
           /*
            * Destroy the instance.
            */
-          return this.runTask(() => {
+          return runTask(() => {
             this.applicationInstance.destroy();
             this.applicationInstance = null;
           });
@@ -721,12 +721,12 @@ moduleFor(
       let instances = [];
 
       return RSVP.all([
-        this.runTask(() => {
+        runTask(() => {
           return this.application.visit(`/x-foo?data=${data}`, {
             rootElement: foo,
           });
         }),
-        this.runTask(() => {
+        runTask(() => {
           return this.application.visit('/x-bar', { rootElement: bar });
         }),
       ])
@@ -750,7 +750,7 @@ moduleFor(
           assert.equal(bar.querySelector('button').textContent, 'Join 0 others in clicking me!');
           assert.ok(bar.textContent.indexOf('X-Foo') === -1);
 
-          this.runTask(() => {
+          runTask(() => {
             this.click(foo.querySelector('x-foo'));
           });
 
@@ -760,7 +760,7 @@ moduleFor(
           );
           assert.equal(bar.querySelector('button').textContent, 'Join 1 others in clicking me!');
 
-          this.runTask(() => {
+          runTask(() => {
             this.click(bar.querySelector('button'));
             this.click(bar.querySelector('button'));
           });
@@ -772,7 +772,7 @@ moduleFor(
           assert.equal(bar.querySelector('button').textContent, 'Join 3 others in clicking me!');
         })
         .finally(() => {
-          this.runTask(() => {
+          runTask(() => {
             instances.forEach(instance => {
               instance.destroy();
             });

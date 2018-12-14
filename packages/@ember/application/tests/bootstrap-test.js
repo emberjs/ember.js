@@ -1,5 +1,5 @@
 import { assign } from '@ember/polyfills';
-import { moduleFor, DefaultResolverApplicationTestCase } from 'internal-test-helpers';
+import { moduleFor, DefaultResolverApplicationTestCase, runTask } from 'internal-test-helpers';
 
 moduleFor(
   'Application with default resolver and autoboot',
@@ -21,7 +21,7 @@ moduleFor(
     }
 
     ['@test templates in script tags are extracted at application creation'](assert) {
-      this.runTask(() => this.createApplication());
+      runTask(() => this.createApplication());
       assert.equal(document.getElementById('app').textContent, 'Hello World!');
     }
   }

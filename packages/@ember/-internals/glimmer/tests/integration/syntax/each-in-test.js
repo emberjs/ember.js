@@ -1,4 +1,4 @@
-import { moduleFor, RenderingTestCase, strip, applyMixins } from 'internal-test-helpers';
+import { moduleFor, RenderingTestCase, strip, applyMixins, runTask } from 'internal-test-helpers';
 
 import { get, set } from '@ember/-internals/metal';
 import { Object as EmberObject, ObjectProxy } from '@ember/-internals/runtime';
@@ -110,19 +110,19 @@ class AbstractEachInTest extends RenderingTestCase {
   }
 
   replaceHash(hash) {
-    this.runTask(() => set(this.context, 'hash', this.createHash(hash).hash));
+    runTask(() => set(this.context, 'hash', this.createHash(hash).hash));
   }
 
   clear() {
-    return this.runTask(() => set(this.context, 'hash', this.createHash({}).hash));
+    return runTask(() => set(this.context, 'hash', this.createHash({}).hash));
   }
 
   setProp(key, value) {
-    return this.runTask(() => this.delegate.setProp(this.context, key, value));
+    return runTask(() => this.delegate.setProp(this.context, key, value));
   }
 
   updateNestedValue(key, innerKey, value) {
-    return this.runTask(() => this.delegate.updateNestedValue(this.context, key, innerKey, value));
+    return runTask(() => this.delegate.updateNestedValue(this.context, key, innerKey, value));
   }
 
   render(template, context = {}) {
@@ -182,7 +182,7 @@ class EachInTest extends AbstractEachInTest {
       this.assertText('Smartphones: 8203JavaScript Frameworks: InfinityTweets: 100');
     }
 
-    this.runTask(() => this.updateNestedValue('Smartphones', 'reports.unitsSold', 8204));
+    runTask(() => this.updateNestedValue('Smartphones', 'reports.unitsSold', 8204));
 
     assert.ok(this.textValue().indexOf('Smartphones: 8204') > -1);
 
@@ -245,21 +245,21 @@ class EachInTest extends AbstractEachInTest {
 
     this.assertStableRerender();
 
-    this.runTask(() => set(context, 'hashes.type', 'otherCategories'));
+    runTask(() => set(context, 'hashes.type', 'otherCategories'));
 
     this.assertText('Emberinios: 533462Tweets: 7323');
 
-    this.runTask(() => set(context, 'hashes.type', 'categories'));
+    runTask(() => set(context, 'hashes.type', 'categories'));
 
     this.assertText('Smartphones: 8203JavaScript Frameworks: Infinity');
 
-    this.runTask(() => set(context, 'hashes.type', 'nonExistent'));
+    runTask(() => set(context, 'hashes.type', 'nonExistent'));
 
     this.clear();
 
     this.assertText('Empty!');
 
-    this.runTask(() => set(context, 'hashes.type', 'categories'));
+    runTask(() => set(context, 'hashes.type', 'categories'));
 
     this.assertText('Smartphones: 8203JavaScript Frameworks: Infinity');
   }
@@ -341,7 +341,7 @@ moduleFor(
 
       this.assertStableRerender();
 
-      this.runTask(() => {
+      runTask(() => {
         set(protoCategories, 'Robots', 666);
         set(categories, 'Tweets', 443115);
       });
@@ -379,21 +379,21 @@ moduleFor(
 
       this.assertStableRerender();
 
-      this.runTask(() => {
+      runTask(() => {
         let categories = get(this.context, 'categories');
         delete categories.Smartphones;
       });
 
       this.assertInvariants();
 
-      this.runTask(() => {
+      runTask(() => {
         let categories = get(this.context, 'categories');
         categories['Emberinios'] = 123456;
       });
 
       this.assertInvariants();
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'categories', {
           Emberinios: 123456,
         });
@@ -405,7 +405,7 @@ moduleFor(
       </ul>
     `);
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'categories', {
           Smartphones: 8203,
           'JavaScript Frameworks': Infinity,
@@ -452,11 +452,11 @@ moduleFor(
 
       this.assertText('[0:1][1:2][2:3][foo:bar]');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('[0:1][1:2][2:3][foo:bar]');
 
-      this.runTask(() => {
+      runTask(() => {
         set(arr, 'zomg', 'lol');
       });
 
@@ -465,7 +465,7 @@ moduleFor(
       arr = [1, 2, 3];
       arr.foo = 'bar';
 
-      this.runTask(() => set(this.context, 'arr', arr));
+      runTask(() => set(this.context, 'arr', arr));
 
       this.assertText('[0:1][1:2][2:3][foo:bar]');
     }
@@ -551,7 +551,7 @@ moduleFor(
 
       this.assertStableRerender();
 
-      this.runTask(() => {
+      runTask(() => {
         set(proxy, 'content.Smartphones', 100);
         set(proxy, 'content.Tweets', 443115);
       });
@@ -564,7 +564,7 @@ moduleFor(
       </ul>
     `);
 
-      this.runTask(() => {
+      runTask(() => {
         set(proxy, 'content', {
           Smartphones: 100,
           Tablets: 20,
@@ -578,7 +578,7 @@ moduleFor(
       </ul>
     `);
 
-      this.runTask(() =>
+      runTask(() =>
         set(
           this.context,
           'categories',
@@ -644,7 +644,7 @@ moduleFor(
 
       this.assertStableRerender();
 
-      this.runTask(() => {
+      runTask(() => {
         let map = new Map();
         map.set({ name: 'three' }, 'qux');
         set(this.context, 'map', map);

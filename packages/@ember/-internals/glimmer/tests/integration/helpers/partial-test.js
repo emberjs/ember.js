@@ -1,4 +1,4 @@
-import { RenderingTestCase, moduleFor, strip } from 'internal-test-helpers';
+import { RenderingTestCase, moduleFor, strip, runTask } from 'internal-test-helpers';
 
 import { set } from '@ember/-internals/metal';
 import { A as emberA } from '@ember/-internals/runtime';
@@ -40,11 +40,11 @@ moduleFor(
 
       this.assertText('Who is Kris Selden?');
 
-      this.runTask(() => set(this.context, 'model.firstName', 'Kelly'));
+      runTask(() => set(this.context, 'model.firstName', 'Kelly'));
 
       this.assertText('Who is Kelly Selden?');
 
-      this.runTask(() => set(this.context, 'model', { firstName: 'Kris', lastName: 'Selden' }));
+      runTask(() => set(this.context, 'model', { firstName: 'Kris', lastName: 'Selden' }));
 
       this.assertText('Who is Kris Selden?');
     }
@@ -64,15 +64,15 @@ moduleFor(
 
       this.assertText('This sub-template is pretty great.');
 
-      this.runTask(() => set(this.context, 'templates.partialName', 'otherTemplate'));
+      runTask(() => set(this.context, 'templates.partialName', 'otherTemplate'));
 
       this.assertText('This other-template is pretty great.');
 
-      this.runTask(() => set(this.context, 'templates.partialName', null));
+      runTask(() => set(this.context, 'templates.partialName', null));
 
       this.assertText('This  is pretty great.');
 
-      this.runTask(() => set(this.context, 'templates', { partialName: 'subTemplate' }));
+      runTask(() => set(this.context, 'templates', { partialName: 'subTemplate' }));
 
       this.assertText('This sub-template is pretty great.');
     }
@@ -96,11 +96,11 @@ moduleFor(
 
       this.assertText('apple: apple |orange: orange |banana: banana |');
 
-      this.runTask(() => this.context.model.items.pushObject('strawberry'));
+      runTask(() => this.context.model.items.pushObject('strawberry'));
 
       this.assertText('apple: apple |orange: orange |banana: banana |strawberry: strawberry |');
 
-      this.runTask(() =>
+      runTask(() =>
         set(this.context, 'model', {
           items: emberA(['apple', 'orange', 'banana']),
         })
@@ -126,15 +126,15 @@ moduleFor(
 
       this.assertText('foo: 1');
 
-      this.runTask(() => set(this.context, 'model.id', 2));
+      runTask(() => set(this.context, 'model.id', 2));
 
       this.assertText('foo: 2');
 
-      this.runTask(() => set(this.context, 'model.name', 'bar'));
+      runTask(() => set(this.context, 'model.name', 'bar'));
 
       this.assertText('bar: 2');
 
-      this.runTask(() => set(this.context, 'model', { id: 1, name: 'foo' }));
+      runTask(() => set(this.context, 'model', { id: 1, name: 'foo' }));
 
       this.assertText('foo: 1');
     }
@@ -156,11 +156,11 @@ moduleFor(
 
       this.assertText('1: 1 |2: 2 |3: 3 |');
 
-      this.runTask(() => this.context.items.pushObject({ id: 4 }));
+      runTask(() => this.context.items.pushObject({ id: 4 }));
 
       this.assertText('1: 1 |2: 2 |3: 3 |4: 4 |');
 
-      this.runTask(() => set(this.context, 'items', emberA([{ id: 1 }, { id: 2 }, { id: 3 }])));
+      runTask(() => set(this.context, 'items', emberA([{ id: 1 }, { id: 2 }, { id: 3 }])));
 
       this.assertText('1: 1 |2: 2 |3: 3 |');
     }
@@ -182,11 +182,11 @@ moduleFor(
 
       this.assertText('apple: apple |:  |orange: orange |banana: banana |');
 
-      this.runTask(() => this.context.items.pushObject('strawberry'));
+      runTask(() => this.context.items.pushObject('strawberry'));
 
       this.assertText('apple: apple |:  |orange: orange |banana: banana |strawberry: strawberry |');
 
-      this.runTask(() => set(this.context, 'items', emberA(['apple', null, 'orange', 'banana'])));
+      runTask(() => set(this.context, 'items', emberA(['apple', null, 'orange', 'banana'])));
 
       this.assertText('apple: apple |:  |orange: orange |banana: banana |');
     }
@@ -215,13 +215,13 @@ moduleFor(
 
       this.assertText('0: [outer: Alex] [inner: Alex]1: [outer: Ben] [inner: Ben]');
 
-      this.runTask(() => this.context.names.pushObject('Sophie'));
+      runTask(() => this.context.names.pushObject('Sophie'));
 
       this.assertText(
         '0: [outer: Alex] [inner: Alex]1: [outer: Ben] [inner: Ben]2: [outer: Sophie] [inner: Sophie]'
       );
 
-      this.runTask(() => set(this.context, 'names', emberA(['Alex', 'Ben'])));
+      runTask(() => set(this.context, 'names', emberA(['Alex', 'Ben'])));
 
       this.assertText('0: [outer: Alex] [inner: Alex]1: [outer: Ben] [inner: Ben]');
     }
@@ -268,13 +268,13 @@ moduleFor(
         'Hi Sophie (aged 0). Hi Sophie (aged 0) and Ben. Hi Sophie (aged 0), Ben and Alex. Hi Sophie (aged 0), Ben, Alex and Sarah.'
       );
 
-      this.runTask(() => set(this.context, 'age', 1));
+      runTask(() => set(this.context, 'age', 1));
 
       this.assertText(
         'Hi Sophie (aged 1). Hi Sophie (aged 1) and Ben. Hi Sophie (aged 1), Ben and Alex. Hi Sophie (aged 1), Ben, Alex and Sarah.'
       );
 
-      this.runTask(() => set(this.context, 'age', 0));
+      runTask(() => set(this.context, 'age', 0));
 
       this.assertText(
         'Hi Sophie (aged 0). Hi Sophie (aged 0) and Ben. Hi Sophie (aged 0), Ben and Alex. Hi Sophie (aged 0), Ben, Alex and Sarah.'
@@ -302,11 +302,11 @@ moduleFor(
 
       this.assertText('number: EVEN0number: ODD1number: EVEN2number: ODD3');
 
-      this.runTask(() => set(this.context, 'model.type', 'integer'));
+      runTask(() => set(this.context, 'model.type', 'integer'));
 
       this.assertText('integer: EVEN0integer: ODD1integer: EVEN2integer: ODD3');
 
-      this.runTask(() =>
+      runTask(() =>
         set(this.context, 'model', {
           items: ['even', 'odd', 'even', 'odd'],
           type: 'number',
@@ -335,11 +335,11 @@ moduleFor(
 
       this.assertText('Nothing!');
 
-      this.runTask(() => set(this.context, 'item.thing', 'thing'));
+      runTask(() => set(this.context, 'item.thing', 'thing'));
 
       this.assertText('thing');
 
-      this.runTask(() => set(this.context, 'item', { thing: false }));
+      runTask(() => set(this.context, 'item', { thing: false }));
 
       this.assertText('Nothing!');
     }
@@ -374,11 +374,11 @@ moduleFor(
 
       this.assertText('inner.name: Sophie');
 
-      this.runTask(() => set(this.context, 'name', 'Ben'));
+      runTask(() => set(this.context, 'name', 'Ben'));
 
       this.assertText('inner.name: Ben');
 
-      this.runTask(() => set(this.context, 'name', 'Sophie'));
+      runTask(() => set(this.context, 'name', 'Sophie'));
 
       this.assertText('inner.name: Sophie');
     }

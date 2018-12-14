@@ -1,6 +1,6 @@
 /* globals EmberDev */
 
-import { RenderingTestCase, moduleFor, runDestroy } from 'internal-test-helpers';
+import { RenderingTestCase, moduleFor, runDestroy, runTask } from 'internal-test-helpers';
 
 import { set } from '@ember/-internals/metal';
 
@@ -22,7 +22,7 @@ moduleFor(
 
       this.assertText('hello | hello world');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('hello | hello world');
     }
@@ -42,11 +42,11 @@ moduleFor(
 
       this.assertText('');
 
-      this.runTask(() => set(this.context, 'hello', { world: 'hello world!' }));
+      runTask(() => set(this.context, 'hello', { world: 'hello world!' }));
 
       this.assertText('hello world!');
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'hello', {
           world: '',
         });
@@ -72,7 +72,7 @@ moduleFor(
 
       this.assertText('hello | hello world');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('hello | hello world');
     }
@@ -110,11 +110,11 @@ moduleFor(
 
       this.assertText('1');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('1');
 
-      this.runTask(() => helper.recompute());
+      runTask(() => helper.recompute());
 
       this.assertText('2');
 
@@ -144,11 +144,11 @@ moduleFor(
 
       this.assertText('1');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('1');
 
-      this.runTask(() => helper.recompute());
+      runTask(() => helper.recompute());
 
       this.assertText('2');
 
@@ -195,19 +195,19 @@ moduleFor(
 
       assert.strictEqual(computeCount, 1, 'compute is called exactly 1 time');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('bob-value');
 
       assert.strictEqual(computeCount, 1, 'compute is called exactly 1 time');
 
-      this.runTask(() => set(this.context, 'model.name', 'sal'));
+      runTask(() => set(this.context, 'model.name', 'sal'));
 
       this.assertText('sal-value');
 
       assert.strictEqual(computeCount, 2, 'compute is called exactly 2 times');
 
-      this.runTask(() => set(this.context, 'model', { name: 'bob' }));
+      runTask(() => set(this.context, 'model', { name: 'bob' }));
 
       this.assertText('bob-value');
 
@@ -237,19 +237,19 @@ moduleFor(
 
       assert.strictEqual(computeCount, 1, 'compute is called exactly 1 time');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('bob-value');
 
       assert.strictEqual(computeCount, 1, 'compute is called exactly 1 time');
 
-      this.runTask(() => set(this.context, 'model.name', 'sal'));
+      runTask(() => set(this.context, 'model.name', 'sal'));
 
       this.assertText('sal-value');
 
       assert.strictEqual(computeCount, 2, 'compute is called exactly 2 times');
 
-      this.runTask(() => set(this.context, 'model', { name: 'bob' }));
+      runTask(() => set(this.context, 'model', { name: 'bob' }));
 
       this.assertText('bob-value');
 
@@ -271,19 +271,19 @@ moduleFor(
 
       this.assertText('params: ["bob","rich"], hash: {"first":42,"last":"sam"}');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('params: ["bob","rich"], hash: {"first":42,"last":"sam"}');
 
-      this.runTask(() => set(this.context, 'model.name', 'sal'));
+      runTask(() => set(this.context, 'model.name', 'sal'));
 
       this.assertText('params: ["sal","rich"], hash: {"first":42,"last":"sam"}');
 
-      this.runTask(() => set(this.context, 'model.age', 28));
+      runTask(() => set(this.context, 'model.age', 28));
 
       this.assertText('params: ["sal","rich"], hash: {"first":28,"last":"sam"}');
 
-      this.runTask(() => set(this.context, 'model', { name: 'bob', age: 42 }));
+      runTask(() => set(this.context, 'model', { name: 'bob', age: 42 }));
 
       this.assertText('params: ["bob","rich"], hash: {"first":42,"last":"sam"}');
     }
@@ -304,19 +304,19 @@ moduleFor(
 
       this.assertText('params: ["bob","rich"], hash: {"first":42,"last":"sam"}');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('params: ["bob","rich"], hash: {"first":42,"last":"sam"}');
 
-      this.runTask(() => set(this.context, 'model.name', 'sal'));
+      runTask(() => set(this.context, 'model.name', 'sal'));
 
       this.assertText('params: ["sal","rich"], hash: {"first":42,"last":"sam"}');
 
-      this.runTask(() => set(this.context, 'model.age', 28));
+      runTask(() => set(this.context, 'model.age', 28));
 
       this.assertText('params: ["sal","rich"], hash: {"first":28,"last":"sam"}');
 
-      this.runTask(() => set(this.context, 'model', { name: 'bob', age: 42 }));
+      runTask(() => set(this.context, 'model', { name: 'bob', age: 42 }));
 
       this.assertText('params: ["bob","rich"], hash: {"first":42,"last":"sam"}');
     }
@@ -339,15 +339,15 @@ moduleFor(
 
       this.assertText('Who overcomes by force hath overcome but half his foe');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('Who overcomes by force hath overcome but half his foe');
 
-      this.runTask(() => set(this.context, 'model.reason', 'Nickleback'));
+      runTask(() => set(this.context, 'model.reason', 'Nickleback'));
 
       this.assertText('Who overcomes by Nickleback hath overcome but half his foe');
 
-      this.runTask(() => set(this.context, 'model', { reason: 'force' }));
+      runTask(() => set(this.context, 'model', { reason: 'force' }));
 
       this.assertText('Who overcomes by force hath overcome but half his foe');
     }
@@ -361,7 +361,7 @@ moduleFor(
 
       this.assertText('true');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('true');
     }
@@ -375,7 +375,7 @@ moduleFor(
 
       this.assertHTML('<div data-foo-bar="baz"></div>');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertHTML('<div data-foo-bar="baz"></div>');
     }
@@ -466,19 +466,19 @@ moduleFor(
 
       this.assertText('Who overcomes by force hath overcome but half his foe');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('Who overcomes by force hath overcome but half his foe');
 
       phrase = 'believes his';
 
-      this.runTask(() => helper.recompute());
+      runTask(() => helper.recompute());
 
       this.assertText('Who believes his force hath overcome but half his foe');
 
       phrase = 'overcomes by';
 
-      this.runTask(() => helper.recompute());
+      runTask(() => helper.recompute());
 
       this.assertText('Who overcomes by force hath overcome but half his foe');
     }
@@ -517,19 +517,19 @@ moduleFor(
 
       this.assertText('Who overcomes by force hath overcome but half his foe');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('Who overcomes by force hath overcome but half his foe');
 
       phrase = 'believes his';
 
-      this.runTask(() => helper.recompute());
+      runTask(() => helper.recompute());
 
       this.assertText('Who believes his force hath overcome but half his foe');
 
       phrase = 'overcomes by';
 
-      this.runTask(() => helper.recompute());
+      runTask(() => helper.recompute());
 
       this.assertText('Who overcomes by force hath overcome but half his foe');
     }

@@ -6,6 +6,7 @@ import {
   ApplicationTestCase,
   ModuleBasedTestResolver,
   DefaultResolverApplicationTestCase,
+  runTask,
 } from 'internal-test-helpers';
 
 moduleFor(
@@ -13,7 +14,7 @@ moduleFor(
   class extends DefaultResolverApplicationTestCase {
     constructor() {
       super();
-      this.runTask(() => this.createApplication());
+      runTask(() => this.createApplication());
       this.application.Post = EmberObject.extend();
     }
 

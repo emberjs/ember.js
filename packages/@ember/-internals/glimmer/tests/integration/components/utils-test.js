@@ -1,4 +1,4 @@
-import { moduleFor, ApplicationTestCase, RenderingTestCase } from 'internal-test-helpers';
+import { moduleFor, ApplicationTestCase, RenderingTestCase, runTask } from 'internal-test-helpers';
 
 import Controller from '@ember/controller';
 import {
@@ -139,11 +139,11 @@ moduleFor(
         .then(() => {
           this.assertRootViews(['root-1', 'root-2', 'root-3', 'root-4', 'root-5']);
 
-          this.runTask(() => this.$('#toggle-application').click());
+          runTask(() => this.$('#toggle-application').click());
 
           this.assertRootViews(['root-1', 'root-2', 'root-4', 'root-5']);
 
-          this.runTask(() => {
+          runTask(() => {
             this.$('#toggle-application').click();
             this.$('#toggle-index').click();
           });
@@ -180,11 +180,11 @@ moduleFor(
           this.assertChildViews('root-5', []);
           this.assertChildViews('inner-2', ['inner-3']);
 
-          this.runTask(() => this.$('#root-2').click());
+          runTask(() => this.$('#root-2').click());
 
           this.assertChildViews('root-2', []);
 
-          this.runTask(() => this.$('#root-5').click());
+          runTask(() => this.$('#root-5').click());
 
           this.assertChildViews('root-5', ['inner-4', 'inner-5']);
           this.assertChildViews('inner-5', ['inner-6']);
@@ -197,7 +197,7 @@ moduleFor(
           this.assertChildViews('inner-8', ['inner-9']);
           this.assertChildViews('root-9', []);
 
-          this.runTask(() => this.$('#root-8').click());
+          runTask(() => this.$('#root-8').click());
 
           this.assertChildViews('root-8', []);
 
@@ -214,8 +214,8 @@ moduleFor(
           this.assertChildViews('root-2', []);
           this.assertChildViews('root-5', []);
 
-          this.runTask(() => this.$('#root-2').click());
-          this.runTask(() => this.$('#inner-2').click());
+          runTask(() => this.$('#root-2').click());
+          runTask(() => this.$('#inner-2').click());
 
           this.assertChildViews('root-2', ['inner-1', 'inner-2']);
           this.assertChildViews('inner-2', []);
@@ -226,16 +226,16 @@ moduleFor(
       return this.visit('/').then(() => {
         this.assertChildViews('root-2', ['inner-1', 'inner-2']);
 
-        this.runTask(() => this.$('#root-2').click());
-        this.runTask(() => this.$('#root-2').click());
-        this.runTask(() => this.$('#root-2').click());
-        this.runTask(() => this.$('#root-2').click());
-        this.runTask(() => this.$('#root-2').click());
-        this.runTask(() => this.$('#root-2').click());
-        this.runTask(() => this.$('#root-2').click());
-        this.runTask(() => this.$('#root-2').click());
-        this.runTask(() => this.$('#root-2').click());
-        this.runTask(() => this.$('#root-2').click());
+        runTask(() => this.$('#root-2').click());
+        runTask(() => this.$('#root-2').click());
+        runTask(() => this.$('#root-2').click());
+        runTask(() => this.$('#root-2').click());
+        runTask(() => this.$('#root-2').click());
+        runTask(() => this.$('#root-2').click());
+        runTask(() => this.$('#root-2').click());
+        runTask(() => this.$('#root-2').click());
+        runTask(() => this.$('#root-2').click());
+        runTask(() => this.$('#root-2').click());
 
         this.assertChildViews('root-2', ['inner-1', 'inner-2']);
       });

@@ -1,4 +1,4 @@
-import { moduleFor, AutobootApplicationTestCase } from 'internal-test-helpers';
+import { moduleFor, AutobootApplicationTestCase, runTask } from 'internal-test-helpers';
 import Test from '../lib/test';
 
 import { A as emberA } from '@ember/-internals/runtime';
@@ -14,7 +14,7 @@ moduleFor(
       this.modelContent = [];
       this._originalAdapter = Test.adapter;
 
-      this.runTask(() => {
+      runTask(() => {
         this.createApplication();
 
         this.addTemplate(
@@ -42,7 +42,7 @@ moduleFor(
         this.application.setupForTesting();
       });
 
-      this.runTask(() => {
+      runTask(() => {
         this.application.reset();
       });
 
@@ -56,13 +56,13 @@ moduleFor(
 
     [`@test template is bound to empty array of people`](assert) {
       if (!jQueryDisabled) {
-        this.runTask(() => this.application.advanceReadiness());
+        runTask(() => this.application.advanceReadiness());
         window.visit('/').then(() => {
           let rows = window.find('.name').length;
           assert.equal(rows, 0, 'successfully stubbed an empty array of people');
         });
       } else {
-        this.runTask(() => this.application.advanceReadiness());
+        runTask(() => this.application.advanceReadiness());
         window.visit('/').then(() => {
           expectAssertion(
             () => window.find('.name'),
@@ -78,7 +78,7 @@ moduleFor(
         this.modelContent.pushObject({ firstName: 'x' });
         this.modelContent.pushObject({ firstName: 'y' });
 
-        this.runTask(() => this.application.advanceReadiness());
+        runTask(() => this.application.advanceReadiness());
         window.visit('/').then(() => {
           let rows = window.find('.name').length;
           assert.equal(rows, 2, 'successfully stubbed a non empty array of people');

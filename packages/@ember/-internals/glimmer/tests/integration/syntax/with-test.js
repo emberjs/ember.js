@@ -1,4 +1,4 @@
-import { moduleFor, RenderingTestCase, strip } from 'internal-test-helpers';
+import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 
 import { get, set } from '@ember/-internals/metal';
 import { A as emberA, ObjectProxy, removeAt } from '@ember/-internals/runtime';
@@ -32,15 +32,15 @@ moduleFor(
 
       this.assertText('');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('');
 
-      this.runTask(() => set(this.context, 'foo', { bar: { baz: 'Here!' } }));
+      runTask(() => set(this.context, 'foo', { bar: { baz: 'Here!' } }));
 
       this.assertText('Here!');
 
-      this.runTask(() => set(this.context, 'foo', {}));
+      runTask(() => set(this.context, 'foo', {}));
 
       this.assertText('');
     }
@@ -52,19 +52,19 @@ moduleFor(
 
       this.assertText('Hello');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('Hello');
 
-      this.runTask(() => set(this.context, 'cond1.greeting', 'Hello world'));
+      runTask(() => set(this.context, 'cond1.greeting', 'Hello world'));
 
       this.assertText('Hello world');
 
-      this.runTask(() => set(this.context, 'cond1', false));
+      runTask(() => set(this.context, 'cond1', false));
 
       this.assertText('False');
 
-      this.runTask(() => set(this.context, 'cond1', { greeting: 'Hello' }));
+      runTask(() => set(this.context, 'cond1', { greeting: 'Hello' }));
 
       this.assertText('Hello');
     }
@@ -77,18 +77,18 @@ moduleFor(
 
       this.assertText('Señor Engineer: Tom Dale');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('Señor Engineer: Tom Dale');
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'person.name', 'Yehuda Katz');
         set(this.context, 'title', 'Principal Engineer');
       });
 
       this.assertText('Principal Engineer: Yehuda Katz');
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'person', { name: 'Tom Dale' });
         set(this.context, 'title', 'Señor Engineer');
       });
@@ -104,19 +104,19 @@ moduleFor(
 
       this.assertText('Stef-Yehuda-Stef');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('Stef-Yehuda-Stef');
 
-      this.runTask(() => set(this.context, 'other', 'Chad'));
+      runTask(() => set(this.context, 'other', 'Chad'));
 
       this.assertText('Stef-Chad-Stef');
 
-      this.runTask(() => set(this.context, 'name', 'Tom'));
+      runTask(() => set(this.context, 'name', 'Tom'));
 
       this.assertText('Tom-Chad-Tom');
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'name', 'Stef');
         set(this.context, 'other', 'Yehuda');
       });
@@ -135,23 +135,23 @@ moduleFor(
 
       this.assertText('No Thing bar');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('No Thing bar');
 
-      this.runTask(() => set(this.context, 'otherThing', 'biz'));
+      runTask(() => set(this.context, 'otherThing', 'biz'));
 
       this.assertText('No Thing biz');
 
-      this.runTask(() => set(this.context, 'falsyThing', true));
+      runTask(() => set(this.context, 'falsyThing', true));
 
       this.assertText('Has Thing');
 
-      this.runTask(() => set(this.context, 'otherThing', 'baz'));
+      runTask(() => set(this.context, 'otherThing', 'baz'));
 
       this.assertText('Has Thing');
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'otherThing', 'bar');
         set(this.context, 'falsyThing', null);
       });
@@ -166,27 +166,27 @@ moduleFor(
 
       this.assertText('Tom Dale');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('Tom Dale');
 
-      this.runTask(() => set(this.context, 'proxy.name', 'Yehuda Katz'));
+      runTask(() => set(this.context, 'proxy.name', 'Yehuda Katz'));
 
       this.assertText('Yehuda Katz');
 
-      this.runTask(() => set(this.context, 'proxy.content', { name: 'Godfrey Chan' }));
+      runTask(() => set(this.context, 'proxy.content', { name: 'Godfrey Chan' }));
 
       this.assertText('Godfrey Chan');
 
-      this.runTask(() => set(this.context, 'proxy.content.name', 'Stefan Penner'));
+      runTask(() => set(this.context, 'proxy.content.name', 'Stefan Penner'));
 
       this.assertText('Stefan Penner');
 
-      this.runTask(() => set(this.context, 'proxy.content', null));
+      runTask(() => set(this.context, 'proxy.content', null));
 
       this.assertText('');
 
-      this.runTask(() =>
+      runTask(() =>
         set(this.context, 'proxy', ObjectProxy.create({ content: { name: 'Tom Dale' } }))
       );
 
@@ -203,11 +203,11 @@ moduleFor(
 
       this.assertText('Hello world');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('Hello world');
 
-      this.runTask(() => {
+      runTask(() => {
         let array = get(this.context, 'arrayThing');
         array.replace(0, 1, ['Goodbye']);
         removeAt(array, 1);
@@ -217,7 +217,7 @@ moduleFor(
 
       this.assertText('Goodbye, world!');
 
-      this.runTask(() => set(this.context, 'arrayThing', ['Hello', ' ', 'world']));
+      runTask(() => set(this.context, 'arrayThing', ['Hello', ' ', 'world']));
 
       this.assertText('Hello world');
     }
@@ -229,15 +229,15 @@ moduleFor(
 
       this.assertText('[foo-foo]');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('[foo-foo]');
 
-      this.runTask(() => this.context.set('hash.foo', 'FOO'));
+      runTask(() => this.context.set('hash.foo', 'FOO'));
 
       this.assertText('[FOO-FOO]');
 
-      this.runTask(() => this.context.set('hash.foo', 'foo'));
+      runTask(() => this.context.set('hash.foo', 'foo'));
 
       this.assertText('[foo-foo]');
     }
@@ -258,18 +258,18 @@ moduleFor(
 
       this.assertText('Admin: Tom Dale User: Yehuda Katz');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('Admin: Tom Dale User: Yehuda Katz');
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'admin.name', 'Godfrey Chan');
         set(this.context, 'user.name', 'Stefan Penner');
       });
 
       this.assertText('Admin: Godfrey Chan User: Stefan Penner');
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'admin', { name: 'Tom Dale' });
         set(this.context, 'user', { name: 'Yehuda Katz' });
       });
@@ -290,25 +290,25 @@ moduleFor(
 
       this.assertText('Greed-Limbo-Wrath-Treachery-Wrath-Limbo-Greed');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('Greed-Limbo-Wrath-Treachery-Wrath-Limbo-Greed');
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'ring', 'O');
         set(this.context, 'fifth', 'D');
       });
 
       this.assertText('O-Limbo-D-Treachery-D-Limbo-O');
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'first', 'I');
         set(this.context, 'ninth', 'K');
       });
 
       this.assertText('O-I-D-K-D-I-O');
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'ring', 'Greed');
         set(this.context, 'first', 'Limbo');
         set(this.context, 'fifth', 'Wrath');
@@ -325,15 +325,15 @@ moduleFor(
 
       this.assertText('caterpillar');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('caterpillar');
 
-      this.runTask(() => set(this.context, 'name', 'butterfly'));
+      runTask(() => set(this.context, 'name', 'butterfly'));
 
       this.assertText('butterfly');
 
-      this.runTask(() => set(this.context, 'name', 'caterpillar'));
+      runTask(() => set(this.context, 'name', 'caterpillar'));
 
       this.assertText('caterpillar');
     }
@@ -345,15 +345,15 @@ moduleFor(
 
       this.assertText('Los Pivots');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('Los Pivots');
 
-      this.runTask(() => set(this.context, 'name', "l'Pivots"));
+      runTask(() => set(this.context, 'name', "l'Pivots"));
 
       this.assertText("l'Pivots");
 
-      this.runTask(() => set(this.context, 'name', 'Los Pivots'));
+      runTask(() => set(this.context, 'name', 'Los Pivots'));
 
       this.assertText('Los Pivots');
     }
@@ -388,21 +388,21 @@ moduleFor(
 
       this.assertText('ebryn[trek[machty]trek]ebryn[machty[trek]machty]ebryn');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('ebryn[trek[machty]trek]ebryn[machty[trek]machty]ebryn');
 
-      this.runTask(() => set(this.context, 'name', 'chancancode'));
+      runTask(() => set(this.context, 'name', 'chancancode'));
 
       this.assertText('chancancode[trek[machty]trek]chancancode[machty[trek]machty]chancancode');
 
-      this.runTask(() => set(this.context, 'committer1', { name: 'krisselden' }));
+      runTask(() => set(this.context, 'committer1', { name: 'krisselden' }));
 
       this.assertText(
         'chancancode[krisselden[machty]krisselden]chancancode[machty[krisselden]machty]chancancode'
       );
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'committer1.name', 'wycats');
         set(this.context, 'committer2', { name: 'rwjblue' });
       });
@@ -411,7 +411,7 @@ moduleFor(
         'chancancode[wycats[rwjblue]wycats]chancancode[rwjblue[wycats]rwjblue]chancancode'
       );
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'name', 'ebryn');
         set(this.context, 'committer1', { name: 'trek' });
         set(this.context, 'committer2', { name: 'machty' });

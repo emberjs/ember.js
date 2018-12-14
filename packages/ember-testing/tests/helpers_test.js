@@ -1,4 +1,4 @@
-import { moduleFor, AutobootApplicationTestCase, isIE11 } from 'internal-test-helpers';
+import { moduleFor, AutobootApplicationTestCase, isIE11, runTask } from 'internal-test-helpers';
 
 import { Route } from '@ember/-internals/routing';
 import Controller from '@ember/controller';
@@ -82,7 +82,7 @@ class HelpersTestCase extends AutobootApplicationTestCase {
 class HelpersApplicationTestCase extends HelpersTestCase {
   constructor() {
     super();
-    this.runTask(() => {
+    runTask(() => {
       this.createApplication();
       this.application.setupForTesting();
       this.application.injectTestHelpers();
@@ -95,7 +95,7 @@ if (!jQueryDisabled) {
     'ember-testing: Helper setup',
     class extends HelpersTestCase {
       [`@test Ember.Application#injectTestHelpers/#removeTestHelper`](assert) {
-        this.runTask(() => {
+        runTask(() => {
           this.createApplication();
         });
 
@@ -121,7 +121,7 @@ if (!jQueryDisabled) {
       }
 
       [`@test Ember.Application#setupForTesting`](assert) {
-        this.runTask(() => {
+        runTask(() => {
           this.createApplication();
           this.application.setupForTesting();
         });
@@ -131,7 +131,7 @@ if (!jQueryDisabled) {
       }
 
       [`@test Ember.Application.setupForTesting sets the application to 'testing'`](assert) {
-        this.runTask(() => {
+        runTask(() => {
           this.createApplication();
           this.application.setupForTesting();
         });
@@ -140,7 +140,7 @@ if (!jQueryDisabled) {
       }
 
       [`@test Ember.Application.setupForTesting leaves the system in a deferred state.`](assert) {
-        this.runTask(() => {
+        runTask(() => {
           this.createApplication();
           this.application.setupForTesting();
         });
@@ -155,7 +155,7 @@ if (!jQueryDisabled) {
       [`@test App.reset() after Application.setupForTesting leaves the system in a deferred state.`](
         assert
       ) {
-        this.runTask(() => {
+        runTask(() => {
           this.createApplication();
           this.application.setupForTesting();
         });
@@ -186,7 +186,7 @@ if (!jQueryDisabled) {
 
         // bind(this) so Babel doesn't leak _this
         // into the context onInjectHelpers.
-        this.runTask(
+        runTask(
           function() {
             this.createApplication();
             this.application.setupForTesting();
@@ -203,7 +203,7 @@ if (!jQueryDisabled) {
       [`@test Ember.Application#injectTestHelpers adds helpers to provided object.`](assert) {
         let helpers = {};
 
-        this.runTask(() => {
+        runTask(() => {
           this.createApplication();
           this.application.setupForTesting();
         });
@@ -222,7 +222,7 @@ if (!jQueryDisabled) {
       ) {
         let helpers = { visit: 'snazzleflabber' };
 
-        this.runTask(() => {
+        runTask(() => {
           this.createApplication();
           this.application.setupForTesting();
         });
@@ -253,7 +253,7 @@ if (!jQueryDisabled) {
           return ++other > 2;
         }
 
-        this.runTask(() => {
+        runTask(() => {
           this.application.advanceReadiness();
         });
 
@@ -301,7 +301,7 @@ if (!jQueryDisabled) {
       [`@test 'wait' helper can be passed a resolution value`](assert) {
         assert.expect(4);
 
-        this.runTask(() => {
+        runTask(() => {
           this.application.advanceReadiness();
         });
 
@@ -387,7 +387,7 @@ if (!jQueryDisabled) {
       `
         );
 
-        this.runTask(() => {
+        runTask(() => {
           this.application.advanceReadiness();
         });
 
@@ -473,7 +473,7 @@ if (!jQueryDisabled) {
       `
         );
 
-        this.runTask(() => {
+        runTask(() => {
           this.application.advanceReadiness();
         });
 
@@ -517,7 +517,7 @@ if (!jQueryDisabled) {
 
         this.addTemplate('index', `{{#index-wrapper}}some text{{/index-wrapper}}`);
 
-        this.runTask(() => {
+        runTask(() => {
           this.application.advanceReadiness();
         });
 
@@ -542,7 +542,7 @@ if (!jQueryDisabled) {
       [`@test 'wait' waits for outstanding timers`](assert) {
         assert.expect(1);
 
-        this.runTask(() => {
+        runTask(() => {
           this.application.advanceReadiness();
         });
 
@@ -571,7 +571,7 @@ if (!jQueryDisabled) {
           return ++other > 2;
         }
 
-        this.runTask(() => {
+        runTask(() => {
           this.application.advanceReadiness();
         });
 
@@ -630,7 +630,7 @@ if (!jQueryDisabled) {
       `
         );
 
-        this.runTask(() => {
+        runTask(() => {
           this.application.advanceReadiness();
         });
 
@@ -683,7 +683,7 @@ if (!jQueryDisabled) {
         );
         this.addTemplate('index', `{{index-wrapper}}`);
 
-        this.runTask(() => {
+        runTask(() => {
           this.application.advanceReadiness();
         });
 
@@ -729,7 +729,7 @@ if (!jQueryDisabled) {
         );
         this.addTemplate('index', `{{index-wrapper}}`);
 
-        this.runTask(() => {
+        runTask(() => {
           this.application.advanceReadiness();
         });
 
@@ -765,7 +765,7 @@ if (!jQueryDisabled) {
       `
         );
 
-        this.runTask(() => {
+        runTask(() => {
           this.application.advanceReadiness();
         });
 
@@ -806,7 +806,7 @@ if (!jQueryDisabled) {
       `
         );
 
-        this.runTask(() => {
+        runTask(() => {
           this.application.advanceReadiness();
         });
 
@@ -853,7 +853,7 @@ if (!jQueryDisabled) {
       `
         );
 
-        this.runTask(() => {
+        runTask(() => {
           this.application.advanceReadiness();
         });
 
@@ -885,7 +885,7 @@ if (!jQueryDisabled) {
       `
         );
 
-        this.runTask(() => {
+        runTask(() => {
           this.application.advanceReadiness();
         });
 
@@ -934,7 +934,7 @@ if (!jQueryDisabled) {
         );
         this.addTemplate('index', `{{index-wrapper}}`);
 
-        this.runTask(() => {
+        runTask(() => {
           this.application.advanceReadiness();
         });
 
@@ -972,7 +972,7 @@ if (!jQueryDisabled) {
 
       constructor() {
         super();
-        this.runTask(() => {
+        runTask(() => {
           this.application.advanceReadiness();
         });
       }
@@ -1025,7 +1025,7 @@ if (!jQueryDisabled) {
     class extends HelpersTestCase {
       constructor() {
         super();
-        this.runTask(() => {
+        runTask(() => {
           this.createApplication();
           this.application.setupForTesting();
           this.application.injectTestHelpers();
@@ -1036,7 +1036,7 @@ if (!jQueryDisabled) {
             });
           });
         });
-        this.runTask(() => {
+        runTask(() => {
           this.application.advanceReadiness();
         });
       }
@@ -1165,7 +1165,7 @@ if (!jQueryDisabled) {
       constructor() {
         super();
 
-        this.runTask(() => {
+        runTask(() => {
           this.createApplication();
 
           this.router.map(function() {
@@ -1208,7 +1208,7 @@ if (!jQueryDisabled) {
         });
 
         this.application.injectTestHelpers();
-        this.runTask(() => {
+        runTask(() => {
           this.application.advanceReadiness();
         });
       }
@@ -1250,7 +1250,7 @@ if (!jQueryDisabled) {
     class extends HelpersTestCase {
       constructor() {
         super();
-        this.runTask(() => {
+        runTask(() => {
           this.createApplication();
           this.application.setupForTesting();
         });

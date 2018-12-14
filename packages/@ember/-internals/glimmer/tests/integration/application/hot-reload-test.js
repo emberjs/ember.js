@@ -1,4 +1,4 @@
-import { moduleFor, ApplicationTestCase, strip } from 'internal-test-helpers';
+import { moduleFor, ApplicationTestCase, strip, runTask } from 'internal-test-helpers';
 
 import { ENV } from '@ember/-internals/environment';
 import Service, { inject as injectService } from '@ember/service';
@@ -126,7 +126,7 @@ moduleFor(
           [x-bar]
         `);
 
-        this.runTask(() => {
+        runTask(() => {
           this.hotReload('x-foo', '<h1>{{@name}}</h1>');
         });
 
@@ -136,7 +136,7 @@ moduleFor(
           [x-bar]
         `);
 
-        this.runTask(() => {
+        runTask(() => {
           this.hotReload('x-bar', '<h2>wow</h2>');
         });
 
@@ -146,7 +146,7 @@ moduleFor(
           [<h2>wow</h2>]
         `);
 
-        this.runTask(() => {
+        runTask(() => {
           this.hotReload('x-foo', '<strong>x-foo</strong> <em>{{@name}}</em>');
         });
 
@@ -156,7 +156,7 @@ moduleFor(
           [<h2>wow</h2>]
         `);
 
-        this.runTask(() => {
+        runTask(() => {
           this.hotReload('x-foo', 'x-foo: {{@name}}');
           this.hotReload('x-bar', 'x-bar');
         });
@@ -210,7 +210,7 @@ moduleFor(
           [x-bar (2)]
         `);
 
-        this.runTask(() => {
+        runTask(() => {
           this.hotReload('x-foo', '<h1>{{@name}} ({{this.id}})</h1>');
         });
 
@@ -220,7 +220,7 @@ moduleFor(
           [x-bar (2)]
         `);
 
-        this.runTask(() => {
+        runTask(() => {
           this.hotReload('x-bar', '<h2>wow ({{this.id}})</h2>');
         });
 
@@ -230,7 +230,7 @@ moduleFor(
           [<h2>wow (5)</h2>]
         `);
 
-        this.runTask(() => {
+        runTask(() => {
           this.hotReload('x-foo', '<strong>x-foo</strong> <em>{{@name}} ({{this.id}})</em>');
         });
 
@@ -240,7 +240,7 @@ moduleFor(
           [<h2>wow (5)</h2>]
         `);
 
-        this.runTask(() => {
+        runTask(() => {
           this.hotReload('x-foo', 'x-foo: {{@name}} ({{this.id}})');
           this.hotReload('x-bar', 'x-bar ({{this.id}})');
         });
