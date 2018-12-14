@@ -1,4 +1,4 @@
-import { RenderingTestCase, moduleFor, strip } from 'internal-test-helpers';
+import { RenderingTestCase, moduleFor, strip, runTask } from 'internal-test-helpers';
 
 import { set } from '@ember/-internals/metal';
 
@@ -54,11 +54,11 @@ moduleFor(
 
       this.assertText('var---var---var---var---var---var---var');
 
-      this.runTask(() => set(this.context, 'var', 'RARRR!!!'));
+      runTask(() => set(this.context, 'var', 'RARRR!!!'));
 
       this.assertText('RARRR!!!---RARRR!!!---RARRR!!!---RARRR!!!---RARRR!!!---RARRR!!!---RARRR!!!');
 
-      this.runTask(() => set(this.context, 'var', 'var'));
+      runTask(() => set(this.context, 'var', 'var'));
 
       this.assertText('var---var---var---var---var---var---var');
     }

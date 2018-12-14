@@ -5,7 +5,7 @@ import { compile } from 'ember-template-compiler';
 import { Route, NoneLocation, HistoryLocation } from '@ember/-internals/routing';
 import Controller from '@ember/controller';
 import { Object as EmberObject, A as emberA } from '@ember/-internals/runtime';
-import { moduleFor, ApplicationTestCase, runDestroy } from 'internal-test-helpers';
+import { moduleFor, ApplicationTestCase, runDestroy, runTask } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
 import { Mixin, computed, set, addObserver, observer } from '@ember/-internals/metal';
 import { getTextOf } from 'internal-test-helpers';
@@ -310,7 +310,7 @@ moduleFor(
           let text = this.$('p').text();
           assert.equal(text, 'THIS IS THE REAL HOME', 'the homepage template was rendered');
 
-          return this.runTask(() => this.appRouter.send('showAlert'));
+          return runTask(() => this.appRouter.send('showAlert'));
         })
         .then(() => {
           let text = this.$('.alert-box').text();

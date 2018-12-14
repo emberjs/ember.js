@@ -19,6 +19,10 @@ export function runDestroy(toDestroy: any) {
   }
 }
 
+export function runTask(callback: Function) {
+  return run(callback);
+}
+
 export function runTaskNext(): Promise<void> {
   return new Promise(resolve => {
     return next(resolve);

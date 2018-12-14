@@ -1,5 +1,5 @@
 /* globals EmberDev */
-import { moduleFor, DefaultResolverApplicationTestCase } from 'internal-test-helpers';
+import { moduleFor, DefaultResolverApplicationTestCase, runTask } from 'internal-test-helpers';
 
 import { context } from '@ember/-internals/environment';
 import Controller from '@ember/controller';
@@ -13,7 +13,7 @@ moduleFor(
   'Application Dependency Injection - Integration - default resolver',
   class extends DefaultResolverApplicationTestCase {
     beforeEach() {
-      this.runTask(() => this.createApplication());
+      runTask(() => this.createApplication());
       return this.visit('/');
     }
 
@@ -255,14 +255,14 @@ moduleFor(
   class extends DefaultResolverApplicationTestCase {
     beforeEach() {
       this.UserInterface = context.lookup.UserInterface = Namespace.create();
-      this.runTask(() => this.createApplication());
+      runTask(() => this.createApplication());
       return this.visit('/');
     }
 
     teardown() {
       let UserInterfaceNamespace = Namespace.NAMESPACES_BY_ID['UserInterface'];
       if (UserInterfaceNamespace) {
-        this.runTask(() => {
+        runTask(() => {
           UserInterfaceNamespace.destroy();
         });
       }
@@ -292,7 +292,7 @@ moduleFor(
     }
 
     beforeEach() {
-      this.runTask(() => this.createApplication());
+      runTask(() => this.createApplication());
       return this.visit('/');
     }
 

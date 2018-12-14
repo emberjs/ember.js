@@ -1,4 +1,4 @@
-import { RenderingTestCase, moduleFor, strip } from 'internal-test-helpers';
+import { RenderingTestCase, moduleFor, strip, runTask } from 'internal-test-helpers';
 
 import { set } from '@ember/-internals/metal';
 import { EMBER_GLIMMER_ARRAY_HELPER } from '@ember/canary-features';
@@ -51,10 +51,10 @@ if (EMBER_GLIMMER_ARRAY_HELPER) {
 
         this.assertStableRerender();
 
-        this.runTask(() => set(this.context, 'personOne', 'Yehuda'));
+        runTask(() => set(this.context, 'personOne', 'Yehuda'));
         this.assertText('Yehuda');
 
-        this.runTask(() => set(this.context, 'personOne', 'Tom'));
+        runTask(() => set(this.context, 'personOne', 'Tom'));
         this.assertText('Tom');
       }
 
@@ -75,15 +75,15 @@ if (EMBER_GLIMMER_ARRAY_HELPER) {
 
         this.assertStableRerender();
 
-        this.runTask(() => set(this.context, 'personOne', 'Sergio'));
+        runTask(() => set(this.context, 'personOne', 'Sergio'));
 
         this.assertText('Sergio,Yehuda,');
 
-        this.runTask(() => set(this.context, 'personTwo', 'Tom'));
+        runTask(() => set(this.context, 'personTwo', 'Tom'));
 
         this.assertText('Sergio,Tom,');
 
-        this.runTask(() => {
+        runTask(() => {
           set(this.context, 'personOne', 'Tom');
           set(this.context, 'personTwo', 'Yehuda');
         });
@@ -111,15 +111,15 @@ if (EMBER_GLIMMER_ARRAY_HELPER) {
 
         this.assertStableRerender();
 
-        this.runTask(() => set(this.context, 'personOne', 'Chad'));
+        runTask(() => set(this.context, 'personOne', 'Chad'));
 
         this.assertText('List:Chad,Yehuda,');
 
-        this.runTask(() => set(this.context, 'personTwo', 'Balint'));
+        runTask(() => set(this.context, 'personTwo', 'Balint'));
 
         this.assertText('List:Chad,Balint,');
 
-        this.runTask(() => {
+        runTask(() => {
           set(this.context, 'personOne', 'Tom');
           set(this.context, 'personTwo', 'Yehuda');
         });
@@ -153,15 +153,15 @@ if (EMBER_GLIMMER_ARRAY_HELPER) {
 
         this.assertStableRerender();
 
-        this.runTask(() => set(fooBarInstance, 'model.personOne', 'Godfrey'));
+        runTask(() => set(fooBarInstance, 'model.personOne', 'Godfrey'));
 
         this.assertText('Godfrey');
 
-        this.runTask(() => set(fooBarInstance, 'model', { personOne: 'Chad' }));
+        runTask(() => set(fooBarInstance, 'model', { personOne: 'Chad' }));
 
         this.assertText('Chad');
 
-        this.runTask(() => set(fooBarInstance, 'model.personOne', 'Godfrey'));
+        runTask(() => set(fooBarInstance, 'model.personOne', 'Godfrey'));
 
         this.assertText('Godfrey');
       }
@@ -196,14 +196,14 @@ if (EMBER_GLIMMER_ARRAY_HELPER) {
 
         this.assertStableRerender();
 
-        this.runTask(() => {
+        runTask(() => {
           set(fooBarInstance, 'model.personOne', 'Godfrey');
           set(this.context, 'model.personTwo', 'Yehuda');
         });
 
         this.assertText('Godfrey,Yehuda,');
 
-        this.runTask(() => {
+        runTask(() => {
           set(fooBarInstance, 'model', { personOne: 'Chad' });
           set(this.context, 'model', { personTwo: 'Tom' });
         });
@@ -228,11 +228,11 @@ if (EMBER_GLIMMER_ARRAY_HELPER) {
 
         this.assertStableRerender();
 
-        this.runTask(() => set(this.context, 'personTwo', 'Godfrey'));
+        runTask(() => set(this.context, 'personTwo', 'Godfrey'));
 
         this.assertText('Tom,Godfrey,');
 
-        this.runTask(() => set(this.context, 'personTwo', 'Chad'));
+        runTask(() => set(this.context, 'personTwo', 'Chad'));
 
         this.assertText('Tom,Chad,');
       }
@@ -258,7 +258,7 @@ if (EMBER_GLIMMER_ARRAY_HELPER) {
 
         let firstArray = fooBarInstance.people;
 
-        this.runTask(() => set(this.context, 'personTwo', 'Godfrey'));
+        runTask(() => set(this.context, 'personTwo', 'Godfrey'));
 
         this.assert.ok(
           firstArray !== fooBarInstance.people,
@@ -278,11 +278,11 @@ if (EMBER_GLIMMER_ARRAY_HELPER) {
 
         this.assert.deepEqual(captured, ['Tom', 'Godfrey']);
 
-        this.runTask(() => set(this.context, 'personTwo', 'Robert'));
+        runTask(() => set(this.context, 'personTwo', 'Robert'));
 
         this.assert.deepEqual(captured, ['Tom', 'Robert']);
 
-        this.runTask(() => set(this.context, 'personTwo', 'Godfrey'));
+        runTask(() => set(this.context, 'personTwo', 'Godfrey'));
 
         this.assert.deepEqual(captured, ['Tom', 'Godfrey']);
       }

@@ -1,6 +1,6 @@
 import { RSVP } from '@ember/-internals/runtime';
 import { Route } from '@ember/-internals/routing';
-import { moduleFor, ApplicationTestCase, runLoopSettled } from 'internal-test-helpers';
+import { moduleFor, ApplicationTestCase, runLoopSettled, runTask } from 'internal-test-helpers';
 
 let counter;
 
@@ -653,7 +653,7 @@ moduleFor(
           return visit;
         })
         .then(() => {
-          this.runTask(() => puppiesDeferred.resolve());
+          runTask(() => puppiesDeferred.resolve());
 
           assert.equal(this.currentPath, 'grandma.puppies', 'Finished transition');
         });
@@ -941,7 +941,7 @@ moduleFor(
         `The loading template is nested in application template's outlet`
       );
 
-      this.runTask(() => grandmaDeferred.resolve());
+      runTask(() => grandmaDeferred.resolve());
       text = this.$('#app').text();
 
       assert.equal(

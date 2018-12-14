@@ -3,6 +3,7 @@ import {
   ApplicationTestCase,
   RenderingTestCase,
   classes as classMatcher,
+  runTask,
 } from 'internal-test-helpers';
 
 import Controller from '@ember/controller';
@@ -49,7 +50,7 @@ moduleFor(
 
       return this.visit('/').then(() => {
         this.assertText('foo');
-        this.runTask(() => set(controller, 'title', 'bar'));
+        runTask(() => set(controller, 'title', 'bar'));
         this.assertText('bar');
       });
     }
@@ -76,7 +77,7 @@ moduleFor(
 
       return this.visit('/bar').then(() => {
         assert.equal(this.firstChild.classList.contains('active'), false);
-        this.runTask(() => set(controller, 'routeName', 'bar'));
+        runTask(() => set(controller, 'routeName', 'bar'));
         assert.equal(this.firstChild.classList.contains('active'), true);
       });
     }

@@ -1,4 +1,4 @@
-import { moduleFor, RenderingTestCase, applyMixins, strip } from 'internal-test-helpers';
+import { moduleFor, RenderingTestCase, applyMixins, strip, runTask } from 'internal-test-helpers';
 
 import { get, set, notifyPropertyChange } from '@ember/-internals/metal';
 import { A as emberA, ArrayProxy, RSVP } from '@ember/-internals/runtime';
@@ -259,7 +259,7 @@ class AbstractEachTest extends RenderingTestCase {
   }
 
   replaceList(list) {
-    this.runTask(() => set(this.context, 'list', this.createList(list).list));
+    runTask(() => set(this.context, 'list', this.createList(list).list));
   }
 
   forEach(callback) {
@@ -329,22 +329,22 @@ class EachTest extends AbstractEachTest {
 
     this.assertText('hello');
 
-    this.runTask(() => this.rerender());
+    runTask(() => this.rerender());
 
     this.assertText('hello');
 
-    this.runTask(() => set(this.objectAt(0), 'text', 'Hello'));
+    runTask(() => set(this.objectAt(0), 'text', 'Hello'));
 
     this.assertText('Hello');
 
-    this.runTask(() => {
+    runTask(() => {
       this.pushObject({ text: ' ' });
       this.pushObject({ text: 'World' });
     });
 
     this.assertText('Hello World');
 
-    this.runTask(() => {
+    runTask(() => {
       this.pushObject({ text: 'Earth' });
       this.removeAt(1);
       this.insertAt(1, { text: 'Globe' });
@@ -352,7 +352,7 @@ class EachTest extends AbstractEachTest {
 
     this.assertText('HelloGlobeWorldEarth');
 
-    this.runTask(() => {
+    runTask(() => {
       this.pushObject({ text: 'Planet' });
       this.removeAt(1);
       this.insertAt(1, { text: ' ' });
@@ -363,7 +363,7 @@ class EachTest extends AbstractEachTest {
 
     this.assertText('Hello WorldPlanet Earth');
 
-    this.runTask(() => {
+    runTask(() => {
       this.pushObject({ text: 'Globe' });
       this.removeAt(1);
       this.insertAt(1, { text: ' ' });
@@ -374,11 +374,11 @@ class EachTest extends AbstractEachTest {
 
     this.assertText('Hello Planet EarthGlobe World');
 
-    this.runTask(() => this.replace(2, 4, [{ text: 'my' }]));
+    runTask(() => this.replace(2, 4, [{ text: 'my' }]));
 
     this.assertText('Hello my World');
 
-    this.runTask(() => this.clear());
+    runTask(() => this.clear());
 
     this.assertText('Empty');
 
@@ -396,7 +396,7 @@ class EachTest extends AbstractEachTest {
 
     this.assertStableRerender();
 
-    this.runTask(() => this.insertAt(1, { text: 'my' }));
+    runTask(() => this.insertAt(1, { text: 'my' }));
 
     this.assertText('[0. hello][1. my][2. world]');
 
@@ -414,7 +414,7 @@ class EachTest extends AbstractEachTest {
 
     this.assertStableRerender();
 
-    this.runTask(() => this.pushObject({ text: 'again' }));
+    runTask(() => this.pushObject({ text: 'again' }));
 
     this.assertText('helloworldagain');
 
@@ -432,7 +432,7 @@ class EachTest extends AbstractEachTest {
 
     this.assertStableRerender();
 
-    this.runTask(() => this.pushObject({ id: 3 }));
+    runTask(() => this.pushObject({ id: 3 }));
 
     this.assertText('123');
 
@@ -450,7 +450,7 @@ class EachTest extends AbstractEachTest {
 
     this.assertStableRerender();
 
-    this.runTask(() => this.pushObject({ id: 3 }));
+    runTask(() => this.pushObject({ id: 3 }));
 
     this.assertText('123');
 
@@ -468,7 +468,7 @@ class EachTest extends AbstractEachTest {
 
     this.assertStableRerender();
 
-    this.runTask(() => this.pushObject(3));
+    runTask(() => this.pushObject(3));
 
     this.assertText('123');
 
@@ -486,7 +486,7 @@ class EachTest extends AbstractEachTest {
 
     this.assertStableRerender();
 
-    this.runTask(() => this.insertAt(2, { id: 4 }));
+    runTask(() => this.insertAt(2, { id: 4 }));
 
     this.assertText('1243');
 
@@ -504,11 +504,11 @@ class EachTest extends AbstractEachTest {
 
     this.assertStableRerender();
 
-    this.runTask(() => this.pushObject('a'));
+    runTask(() => this.pushObject('a'));
 
     this.assertText('aaaa');
 
-    this.runTask(() => this.pushObject('a'));
+    runTask(() => this.pushObject('a'));
 
     this.assertText('aaaaa');
 
@@ -553,7 +553,7 @@ class EachTest extends AbstractEachTest {
 
     this.assertStableRerender();
 
-    this.runTask(() => set(this.objectAt(0), 'value', 3));
+    runTask(() => set(this.objectAt(0), 'value', 3));
 
     this.assertText('PrevNextPrev2NextPrev3Next');
 
@@ -573,11 +573,11 @@ class EachTest extends AbstractEachTest {
 
     this.assertStableRerender();
 
-    this.runTask(() => this.pushObject(duplicateItem));
+    runTask(() => this.pushObject(duplicateItem));
 
     this.assertText('foofoobarbazfoo');
 
-    this.runTask(() => this.pushObject(duplicateItem));
+    runTask(() => this.pushObject(duplicateItem));
 
     this.assertText('foofoobarbazfoofoo');
 
@@ -595,7 +595,7 @@ class EachTest extends AbstractEachTest {
 
     this.takeSnapshot();
 
-    this.runTask(() => {
+    runTask(() => {
       this.popObject();
       this.popObject();
       this.pushObject({ text: ' ' });
@@ -624,7 +624,7 @@ class EachTest extends AbstractEachTest {
 
     let oldSnapshot = this.takeSnapshot();
 
-    this.runTask(() => {
+    runTask(() => {
       this.unshiftObject({ text: ', ' });
       this.unshiftObject({ text: 'Hi' });
       this.pushObject({ text: '!' });
@@ -649,7 +649,7 @@ class EachTest extends AbstractEachTest {
 
     this.assertText('HelloHelloHello');
 
-    this.runTask(() => {
+    runTask(() => {
       this.forEach(hash => set(hash, 'text', 'Goodbye'));
     });
 
@@ -671,15 +671,15 @@ class EachTest extends AbstractEachTest {
 
     this.assertStableRerender();
 
-    this.runTask(() => this.shiftObject());
+    runTask(() => this.shiftObject());
 
     this.assertText('Joel-JoelJoel-Joel');
 
-    this.runTask(() => set(this.context, 'name', 'Godfrey'));
+    runTask(() => set(this.context, 'name', 'Godfrey'));
 
     this.assertText('Godfrey-GodfreyGodfrey-Godfrey');
 
-    this.runTask(() => set(this.context, 'name', 'Joel'));
+    runTask(() => set(this.context, 'name', 'Joel'));
     this.replaceList([{ name: 'Chad' }, { name: 'Zack' }, { name: 'Asa' }]);
 
     this.assertText('Joel-JoelJoelJoel-Joel');
@@ -696,13 +696,13 @@ class EachTest extends AbstractEachTest {
       '[Señor Engineer: Tom Dale][Señor Engineer: Yehuda Katz][Señor Engineer: Godfrey Chan]'
     );
 
-    this.runTask(() => this.rerender());
+    runTask(() => this.rerender());
 
     this.assertText(
       '[Señor Engineer: Tom Dale][Señor Engineer: Yehuda Katz][Señor Engineer: Godfrey Chan]'
     );
 
-    this.runTask(() => {
+    runTask(() => {
       set(this.objectAt(1), 'name', 'Stefan Penner');
       this.removeAt(0);
       this.pushObject({ name: 'Tom Dale' });
@@ -714,7 +714,7 @@ class EachTest extends AbstractEachTest {
       '[Principal Engineer: Stefan Penner][Principal Engineer: Chad Hietala][Principal Engineer: Godfrey Chan][Principal Engineer: Tom Dale]'
     );
 
-    this.runTask(() => set(this.context, 'title', 'Señor Engineer'));
+    runTask(() => set(this.context, 'title', 'Señor Engineer'));
     this.replaceList([{ name: 'Tom Dale' }, { name: 'Yehuda Katz' }, { name: 'Godfrey Chan' }]);
 
     this.assertText(
@@ -731,19 +731,19 @@ class EachTest extends AbstractEachTest {
 
     this.assertText('Stef-Yehuda-Stef');
 
-    this.runTask(() => this.rerender());
+    runTask(() => this.rerender());
 
     this.assertText('Stef-Yehuda-Stef');
 
-    this.runTask(() => this.pushObjects([' ', 'Katz']));
+    runTask(() => this.pushObjects([' ', 'Katz']));
 
     this.assertText('Stef-Yehuda Katz-Stef');
 
-    this.runTask(() => set(this.context, 'name', 'Tom'));
+    runTask(() => set(this.context, 'name', 'Tom'));
 
     this.assertText('Tom-Yehuda Katz-Tom');
 
-    this.runTask(() => set(this.context, 'name', 'Stef'));
+    runTask(() => set(this.context, 'name', 'Stef'));
     this.replaceList(['Yehuda']);
 
     this.assertText('Stef-Yehuda-Stef');
@@ -758,23 +758,23 @@ class EachTest extends AbstractEachTest {
 
     this.assertText('No Thing bar');
 
-    this.runTask(() => this.rerender());
+    runTask(() => this.rerender());
 
     this.assertText('No Thing bar');
 
-    this.runTask(() => set(this.context, 'otherThing', 'biz'));
+    runTask(() => set(this.context, 'otherThing', 'biz'));
 
     this.assertText('No Thing biz');
 
-    this.runTask(() => this.pushObject('non-empty'));
+    runTask(() => this.pushObject('non-empty'));
 
     this.assertText('Has Thing');
 
-    this.runTask(() => set(this.context, 'otherThing', 'baz'));
+    runTask(() => set(this.context, 'otherThing', 'baz'));
 
     this.assertText('Has Thing');
 
-    this.runTask(() => set(this.context, 'otherThing', 'bar'));
+    runTask(() => set(this.context, 'otherThing', 'bar'));
     this.replaceList([]);
 
     this.assertText('No Thing bar');
@@ -794,31 +794,31 @@ class EachTest extends AbstractEachTest {
 
     this.assertText('');
 
-    this.runTask(() => this.rerender());
+    runTask(() => this.rerender());
 
     this.assertText('');
 
-    this.runTask(() => this.pushObject({ text: 'foo' }));
+    runTask(() => this.pushObject({ text: 'foo' }));
 
     this.assertText('[foo]');
 
-    this.runTask(() => set(this.objectAt(0), 'text', 'FOO'));
+    runTask(() => set(this.objectAt(0), 'text', 'FOO'));
 
     this.assertText('[FOO]');
 
-    this.runTask(() => this.pushObject({ text: 'bar' }));
+    runTask(() => this.pushObject({ text: 'bar' }));
 
     this.assertText('[FOO][bar]');
 
-    this.runTask(() => set(this.objectAt(1), 'text', 'BAR'));
+    runTask(() => set(this.objectAt(1), 'text', 'BAR'));
 
     this.assertText('[FOO][BAR]');
 
-    this.runTask(() => set(this.objectAt(1), 'text', 'baz'));
+    runTask(() => set(this.objectAt(1), 'text', 'baz'));
 
     this.assertText('[FOO][baz]');
 
-    this.runTask(() => this.replace(1, 1, [{ text: 'BAZ' }]));
+    runTask(() => this.replace(1, 1, [{ text: 'BAZ' }]));
 
     this.assertText('[FOO][BAZ]');
 
@@ -836,15 +836,15 @@ class EachTest extends AbstractEachTest {
 
     this.assertStableRerender();
 
-    this.runTask(() => this.pushObjects([null, ' world']));
+    runTask(() => this.pushObjects([null, ' world']));
 
     this.assertText('before hello world after');
 
-    this.runTask(() => this.replace(1, 2, [undefined, ' world!']));
+    runTask(() => this.replace(1, 2, [undefined, ' world!']));
 
     this.assertText('before hello world! after');
 
-    this.runTask(() => this.replace(1, 2, [htmlSafe(''), ' world!!']));
+    runTask(() => this.replace(1, 2, [htmlSafe(''), ' world!!']));
 
     this.assertText('before hello world!! after');
 
@@ -869,18 +869,18 @@ class EachTest extends AbstractEachTest {
 
     this.assertText('Admin: [Tom Dale] User: [Yehuda Katz]');
 
-    this.runTask(() => this.rerender());
+    runTask(() => this.rerender());
 
     this.assertText('Admin: [Tom Dale] User: [Yehuda Katz]');
 
-    this.runTask(() => {
+    runTask(() => {
       admins.delegate.pushObject({ name: 'Godfrey Chan' });
       set(users.delegate.objectAt(0), 'name', 'Stefan Penner');
     });
 
     this.assertText('Admin: [Tom Dale][Godfrey Chan] User: [Stefan Penner]');
 
-    this.runTask(() => {
+    runTask(() => {
       set(this.context, 'admins', this.createList([{ name: 'Tom Dale' }]).list);
       set(this.context, 'users', this.createList([{ name: 'Yehuda Katz' }]).list);
     });
@@ -911,14 +911,14 @@ class EachTest extends AbstractEachTest {
 
     this.assertStableRerender();
 
-    this.runTask(() => {
+    runTask(() => {
       content.delegate.pushObject('Z');
       set(options.delegate.objectAt(0), 'value', 0);
     });
 
     this.assertText('X-0:One2:TwoY-0:One2:TwoZ-0:One2:Two');
 
-    this.runTask(() => {
+    runTask(() => {
       set(this.context, 'content', this.createList(['X', 'Y']).list);
       set(
         this.context,
@@ -947,25 +947,25 @@ class EachTest extends AbstractEachTest {
 
     this.assertText('Greed-Limbo-Wrath-Treachery-Wrath-Limbo-Greed');
 
-    this.runTask(() => this.rerender());
+    runTask(() => this.rerender());
 
     this.assertText('Greed-Limbo-Wrath-Treachery-Wrath-Limbo-Greed');
 
-    this.runTask(() => {
+    runTask(() => {
       set(this.context, 'ring', 'O');
       fifth.delegate.insertAt(0, 'D');
     });
 
     this.assertText('O-Limbo-D-Treachery-D-Wrath-Treachery-Wrath-Limbo-O');
 
-    this.runTask(() => {
+    runTask(() => {
       first.delegate.pushObject('I');
       ninth.delegate.replace(0, 1, ['K']);
     });
 
     this.assertText('O-Limbo-D-K-D-Wrath-K-Wrath-Limbo-I-D-K-D-Wrath-K-Wrath-I-O');
 
-    this.runTask(() => {
+    runTask(() => {
       set(this.context, 'ring', 'Greed');
       set(this.context, 'first', this.createList(['Limbo']).list);
       set(this.context, 'fifth', this.createList(['Wrath']).list);
@@ -988,18 +988,18 @@ class EachTest extends AbstractEachTest {
 
     this.assertText('caterpillar');
 
-    this.runTask(() => this.rerender());
+    runTask(() => this.rerender());
 
     this.assertText('caterpillar');
 
-    this.runTask(() => {
+    runTask(() => {
       inner.delegate.replace(0, 1, ['lady']);
       outer.delegate.pushObject(this.createList(['bird']).list);
     });
 
     this.assertText('ladybird');
 
-    this.runTask(() =>
+    runTask(() =>
       set(this.context, 'name', this.createList([this.createList(['caterpillar']).list]).list)
     );
 
@@ -1103,15 +1103,15 @@ moduleFor(
 
       this.assertText('');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('');
 
-      this.runTask(() => set(this.context, 'foo', { bar: { baz: ['Here!'] } }));
+      runTask(() => set(this.context, 'foo', { bar: { baz: ['Here!'] } }));
 
       this.assertText('Here!');
 
-      this.runTask(() => set(this.context, 'foo', {}));
+      runTask(() => set(this.context, 'foo', {}));
 
       this.assertText('');
     }
@@ -1138,7 +1138,7 @@ moduleFor(
 
       this.assertStableRerender();
 
-      this.runTask(() => {
+      runTask(() => {
         let list = get(this.context, 'list');
         list.pushObject('baz');
       });
@@ -1215,7 +1215,7 @@ if (typeof MutationObserver === 'function') {
           .then(() => {
             this.assertNoMutation();
 
-            this.runTask(() => set(this.context, 'page', { title: 'Essays' }));
+            runTask(() => set(this.context, 'page', { title: 'Essays' }));
 
             this.assertHTML(strip`
           <h1>Essays</h1>
@@ -1229,7 +1229,7 @@ if (typeof MutationObserver === 'function') {
           .then(() => {
             this.assertNoMutation();
 
-            this.runTask(() => set(this.context.page, 'title', 'Think Pieces™'));
+            runTask(() => set(this.context.page, 'title', 'Think Pieces™'));
 
             this.assertHTML(strip`
           <h1>Think Pieces™</h1>

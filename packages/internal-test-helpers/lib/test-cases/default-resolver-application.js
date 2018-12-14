@@ -5,6 +5,8 @@ import { setTemplates, setTemplate } from '@ember/-internals/glimmer';
 import { assign } from '@ember/polyfills';
 import { Router } from '@ember/-internals/routing';
 
+import { runTask } from '../run';
+
 export default class DefaultResolverApplicationTestCase extends AbstractApplicationTestCase {
   createApplication() {
     let application = (this.application = Application.create(this.applicationOptions));
@@ -30,7 +32,7 @@ export default class DefaultResolverApplicationTestCase extends AbstractApplicat
   }
 
   transitionTo() {
-    return this.runTask(() => {
+    return runTask(() => {
       return this.appRouter.transitionTo(...arguments);
     });
   }

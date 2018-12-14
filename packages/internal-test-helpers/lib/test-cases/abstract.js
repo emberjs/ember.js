@@ -1,14 +1,13 @@
 /* global Element */
 
 import { assign } from '@ember/polyfills';
-import { run } from '@ember/runloop';
 
 import NodeQuery from '../node-query';
 import equalInnerHTML from '../equal-inner-html';
 import equalTokens from '../equal-tokens';
 import { getElement } from '../element-helpers';
 import { equalsElement, regex, classes } from '../matchers';
-import { runLoopSettled } from '../run';
+import { runLoopSettled, runTask } from '../run';
 
 const TextNode = window.Text;
 const HTMLElement = window.HTMLElement;
@@ -40,10 +39,6 @@ export default class AbstractTestCase {
 
   teardown() {}
   afterEach() {}
-
-  runTask(callback) {
-    return run(callback);
-  }
 
   setupFixture(innerHTML) {
     let fixture = document.getElementById('qunit-fixture');
@@ -192,7 +187,7 @@ export default class AbstractTestCase {
 
   assertStableRerender() {
     this.takeSnapshot();
-    this.runTask(() => this.rerender());
+    runTask(() => this.rerender());
     this.assertInvariants();
   }
 }

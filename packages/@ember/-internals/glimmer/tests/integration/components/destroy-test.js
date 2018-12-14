@@ -1,4 +1,4 @@
-import { moduleFor, RenderingTestCase } from 'internal-test-helpers';
+import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 
 import { set } from '@ember/-internals/metal';
 
@@ -21,7 +21,7 @@ moduleFor(
 
       this.assertComponentElement(this.firstChild, { content: 'hello' });
 
-      this.runTask(() => set(this.context, 'switch', false));
+      runTask(() => set(this.context, 'switch', false));
 
       this.assertText('');
 

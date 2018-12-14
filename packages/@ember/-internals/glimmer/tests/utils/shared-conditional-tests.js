@@ -1,4 +1,4 @@
-import { RenderingTestCase, applyMixins } from 'internal-test-helpers';
+import { RenderingTestCase, applyMixins, runTask } from 'internal-test-helpers';
 
 import { assign } from '@ember/polyfills';
 import { get, set } from '@ember/-internals/metal';
@@ -70,15 +70,15 @@ export class TruthyGenerator extends AbstractGenerator {
 
         this.assertText('T1');
 
-        this.runTask(() => this.rerender());
+        runTask(() => this.rerender());
 
         this.assertText('T1');
 
-        this.runTask(() => set(this.context, 'cond1', this.falsyValue));
+        runTask(() => set(this.context, 'cond1', this.falsyValue));
 
         this.assertText('F1');
 
-        this.runTask(() => set(this.context, 'cond1', value));
+        runTask(() => set(this.context, 'cond1', value));
 
         this.assertText('T1');
       },
@@ -94,15 +94,15 @@ export class FalsyGenerator extends AbstractGenerator {
 
         this.assertText('F1');
 
-        this.runTask(() => this.rerender());
+        runTask(() => this.rerender());
 
         this.assertText('F1');
 
-        this.runTask(() => set(this.context, 'cond1', this.truthyValue));
+        runTask(() => set(this.context, 'cond1', this.truthyValue));
 
         this.assertText('T1');
 
-        this.runTask(() => set(this.context, 'cond1', value));
+        runTask(() => set(this.context, 'cond1', value));
 
         this.assertText('F1');
       },
@@ -120,13 +120,13 @@ export class StableTruthyGenerator extends TruthyGenerator {
 
         this.takeSnapshot();
 
-        this.runTask(() => set(this.context, 'cond1', this.truthyValue));
+        runTask(() => set(this.context, 'cond1', this.truthyValue));
 
         this.assertText('T1');
 
         this.assertInvariants();
 
-        this.runTask(() => set(this.context, 'cond1', value));
+        runTask(() => set(this.context, 'cond1', value));
 
         this.assertText('T1');
 
@@ -146,13 +146,13 @@ export class StableFalsyGenerator extends FalsyGenerator {
 
         this.takeSnapshot();
 
-        this.runTask(() => set(this.context, 'cond1', this.falsyValue));
+        runTask(() => set(this.context, 'cond1', this.falsyValue));
 
         this.assertText('F1');
 
         this.assertInvariants();
 
-        this.runTask(() => set(this.context, 'cond1', value));
+        runTask(() => set(this.context, 'cond1', value));
 
         this.assertText('F1');
 
@@ -175,15 +175,15 @@ class ObjectProxyGenerator extends AbstractGenerator {
 
           this.assertText('T1');
 
-          this.runTask(() => this.rerender());
+          runTask(() => this.rerender());
 
           this.assertText('T1');
 
-          this.runTask(() => set(this.context, 'cond1.content', this.falsyValue));
+          runTask(() => set(this.context, 'cond1.content', this.falsyValue));
 
           this.assertText('F1');
 
-          this.runTask(() => set(this.context, 'cond1', ObjectProxy.create({ content: value })));
+          runTask(() => set(this.context, 'cond1', ObjectProxy.create({ content: value })));
 
           this.assertText('T1');
         },
@@ -197,15 +197,15 @@ class ObjectProxyGenerator extends AbstractGenerator {
 
           this.assertText('F1');
 
-          this.runTask(() => this.rerender());
+          runTask(() => this.rerender());
 
           this.assertText('F1');
 
-          this.runTask(() => set(this.context, 'cond1.content', this.truthyValue));
+          runTask(() => set(this.context, 'cond1.content', this.truthyValue));
 
           this.assertText('T1');
 
-          this.runTask(() => set(this.context, 'cond1', ObjectProxy.create({ content: value })));
+          runTask(() => set(this.context, 'cond1', ObjectProxy.create({ content: value })));
 
           this.assertText('F1');
         },
@@ -222,22 +222,22 @@ export class BasicConditionalsTest extends AbstractConditionalsTest {
 
     this.assertText('T1F2');
 
-    this.runTask(() => this.rerender());
+    runTask(() => this.rerender());
 
     this.assertText('T1F2');
 
-    this.runTask(() => set(this.context, 'cond1', this.falsyValue));
+    runTask(() => set(this.context, 'cond1', this.falsyValue));
 
     this.assertText('F1F2');
 
-    this.runTask(() => {
+    runTask(() => {
       set(this.context, 'cond1', this.truthyValue);
       set(this.context, 'cond2', this.truthyValue);
     });
 
     this.assertText('T1T2');
 
-    this.runTask(() => {
+    runTask(() => {
       set(this.context, 'cond1', this.truthyValue);
       set(this.context, 'cond2', this.falsyValue);
     });
@@ -257,18 +257,18 @@ export const ObjectTestCases = {
 
     this.assertText('T1T2F3');
 
-    this.runTask(() => this.rerender());
+    runTask(() => this.rerender());
 
     this.assertText('T1T2F3');
 
-    this.runTask(() => {
+    runTask(() => {
       set(this.context, 'cond1.content', null);
       set(this.context, 'cond2.content', null);
     });
 
     this.assertText('F1F2F3');
 
-    this.runTask(() => {
+    runTask(() => {
       set(this.context, 'cond1.content', EmberObject.create());
       set(this.context, 'cond2.content', {});
       set(this.context, 'cond3.content', { foo: 'bar' });
@@ -276,7 +276,7 @@ export const ObjectTestCases = {
 
     this.assertText('T1T2T3');
 
-    this.runTask(() => {
+    runTask(() => {
       set(this.context, 'cond1', ObjectProxy.create({ content: {} }));
       set(this.context, 'cond2', ObjectProxy.create({ content: EmberObject.create() }));
       set(this.context, 'cond3', ObjectProxy.create({ content: null }));
@@ -293,22 +293,22 @@ export const ArrayTestCases = {
 
     this.assertText('T1F2');
 
-    this.runTask(() => this.rerender());
+    runTask(() => this.rerender());
 
     this.assertText('T1F2');
 
-    this.runTask(() => removeAt(get(this.context, 'cond1'), 0));
+    runTask(() => removeAt(get(this.context, 'cond1'), 0));
 
     this.assertText('F1F2');
 
-    this.runTask(() => {
+    runTask(() => {
       get(this.context, 'cond1').pushObject('hello');
       get(this.context, 'cond2').pushObjects([1]);
     });
 
     this.assertText('T1T2');
 
-    this.runTask(() => {
+    runTask(() => {
       set(this.context, 'cond1', emberA(['hello']));
       set(this.context, 'cond2', emberA());
     });
@@ -324,25 +324,25 @@ export const ArrayTestCases = {
 
     this.assertText('T1F2');
 
-    this.runTask(() => this.rerender());
+    runTask(() => this.rerender());
 
     this.assertText('T1F2');
 
-    this.runTask(() => {
+    runTask(() => {
       set(this.context, 'cond1.content', null);
       set(this.context, 'cond2.content', null);
     });
 
     this.assertText('F1F2');
 
-    this.runTask(() => {
+    runTask(() => {
       set(this.context, 'cond1.content', emberA(['hello']));
       set(this.context, 'cond2.content', emberA([1]));
     });
 
     this.assertText('T1T2');
 
-    this.runTask(() => {
+    runTask(() => {
       set(this.context, 'cond1', ArrayProxy.create({ content: emberA(['hello']) }));
       set(this.context, 'cond2', ArrayProxy.create({ content: null }));
     });
@@ -358,22 +358,22 @@ export const ArrayTestCases = {
 
     this.assertText('T1F2');
 
-    this.runTask(() => this.rerender());
+    runTask(() => this.rerender());
 
     this.assertText('T1F2');
 
-    this.runTask(() => removeAt(get(this.context, 'cond1.content'), 0));
+    runTask(() => removeAt(get(this.context, 'cond1.content'), 0));
 
     this.assertText('F1F2');
 
-    this.runTask(() => {
+    runTask(() => {
       get(this.context, 'cond1.content').pushObject('hello');
       get(this.context, 'cond2.content').pushObjects([1]);
     });
 
     this.assertText('T1T2');
 
-    this.runTask(() => {
+    runTask(() => {
       set(this.context, 'cond1', ArrayProxy.create({ content: emberA(['hello']) }));
       set(this.context, 'cond2', ArrayProxy.create({ content: emberA() }));
     });
@@ -491,25 +491,25 @@ export class TogglingHelperConditionalsTest extends TogglingConditionalsTest {
 
     this.assertText('YESNO');
 
-    this.runTask(() => this.rerender());
+    runTask(() => this.rerender());
 
     this.assertText('YESNO');
 
-    this.runTask(() => {
+    runTask(() => {
       set(this.context, 'truthy', 'YASS');
       set(this.context, 'falsy', 'NOPE');
     });
 
     this.assertText('YASSNOPE');
 
-    this.runTask(() => {
+    runTask(() => {
       set(this.context, 'cond1', this.falsyValue);
       set(this.context, 'cond2', this.truthyValue);
     });
 
     this.assertText('NOPEYASS');
 
-    this.runTask(() => {
+    runTask(() => {
       set(this.context, 'truthy', 'YES');
       set(this.context, 'falsy', 'NO');
       set(this.context, 'cond1', this.truthyValue);
@@ -537,22 +537,22 @@ export class TogglingHelperConditionalsTest extends TogglingConditionalsTest {
 
     this.assertText('T1F2');
 
-    this.runTask(() => this.rerender());
+    runTask(() => this.rerender());
 
     this.assertText('T1F2');
 
-    this.runTask(() => set(this.context, 'cond1', this.falsyValue));
+    runTask(() => set(this.context, 'cond1', this.falsyValue));
 
     this.assertText('T1F2');
 
-    this.runTask(() => {
+    runTask(() => {
       set(this.context, 'cond1', this.truthyValue);
       set(this.context, 'cond2', this.truthyValue);
     });
 
     this.assertText('T1F2');
 
-    this.runTask(() => {
+    runTask(() => {
       set(this.context, 'cond1', this.truthyValue);
       set(this.context, 'cond2', this.falsyValue);
     });
@@ -600,19 +600,19 @@ export class TogglingHelperConditionalsTest extends TogglingConditionalsTest {
 
     this.assertText('T');
 
-    withoutEvaluatingFalsy(() => this.runTask(() => this.rerender()));
+    withoutEvaluatingFalsy(() => runTask(() => this.rerender()));
 
     this.assertText('T');
 
-    withoutEvaluatingTruthy(() => this.runTask(() => set(this.context, 'cond', this.falsyValue)));
+    withoutEvaluatingTruthy(() => runTask(() => set(this.context, 'cond', this.falsyValue)));
 
     this.assertText('F');
 
-    withoutEvaluatingTruthy(() => this.runTask(() => this.rerender()));
+    withoutEvaluatingTruthy(() => runTask(() => this.rerender()));
 
     this.assertText('F');
 
-    withoutEvaluatingFalsy(() => this.runTask(() => set(this.context, 'cond', this.truthyValue)));
+    withoutEvaluatingFalsy(() => runTask(() => set(this.context, 'cond', this.truthyValue)));
 
     this.assertText('T');
   }
@@ -659,22 +659,22 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
 
     this.assertText('T1F2');
 
-    this.runTask(() => this.rerender());
+    runTask(() => this.rerender());
 
     this.assertText('T1F2');
 
-    this.runTask(() => set(this.context, 'cond1', this.falsyValue));
+    runTask(() => set(this.context, 'cond1', this.falsyValue));
 
     this.assertText('T1F2');
 
-    this.runTask(() => {
+    runTask(() => {
       set(this.context, 'cond1', this.truthyValue);
       set(this.context, 'cond2', this.truthyValue);
     });
 
     this.assertText('T1F2');
 
-    this.runTask(() => {
+    runTask(() => {
       set(this.context, 'cond1', this.truthyValue);
       set(this.context, 'cond2', this.falsyValue);
     });
@@ -705,25 +705,25 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
 
     this.assertText('YESNO');
 
-    this.runTask(() => this.rerender());
+    runTask(() => this.rerender());
 
     this.assertText('YESNO');
 
-    this.runTask(() => {
+    runTask(() => {
       set(this.context, 'truthy', 'YASS');
       set(this.context, 'falsy', 'NOPE');
     });
 
     this.assertText('YASSNOPE');
 
-    this.runTask(() => {
+    runTask(() => {
       set(this.context, 'cond1', this.falsyValue);
       set(this.context, 'cond2', this.truthyValue);
     });
 
     this.assertText('NOPEYASS');
 
-    this.runTask(() => {
+    runTask(() => {
       set(this.context, 'truthy', 'YES');
       set(this.context, 'falsy', 'NO');
       set(this.context, 'cond1', this.truthyValue);
@@ -750,17 +750,17 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
 
     this.assertText('T-inner');
 
-    this.runTask(() => this.rerender());
+    runTask(() => this.rerender());
 
     this.assertText('T-inner');
 
     // Changes the inner bounds
-    this.runTask(() => set(this.context, 'inner', this.falsyValue));
+    runTask(() => set(this.context, 'inner', this.falsyValue));
 
     this.assertText('F-inner');
 
     // Now rerender the outer conditional, which require first clearing its bounds
-    this.runTask(() => set(this.context, 'outer', this.falsyValue));
+    runTask(() => set(this.context, 'outer', this.falsyValue));
 
     this.assertText('F-outer');
   }
@@ -780,22 +780,22 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
 
     this.assertText('inner-before');
 
-    this.runTask(() => this.rerender());
+    runTask(() => this.rerender());
 
     this.assertText('inner-before');
 
     // Changes the inner bounds
-    this.runTask(() => set(this.context, 'inner', ['inner-after']));
+    runTask(() => set(this.context, 'inner', ['inner-after']));
 
     this.assertText('inner-after');
 
     // Now rerender the outer conditional, which require first clearing its bounds
-    this.runTask(() => set(this.context, 'outer', this.falsyValue));
+    runTask(() => set(this.context, 'outer', this.falsyValue));
 
     this.assertText('F-outer');
 
     // Reset
-    this.runTask(() => {
+    runTask(() => {
       set(this.context, 'inner', ['inner-again']);
       set(this.context, 'outer', this.truthyValue);
     });
@@ -803,12 +803,12 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
     this.assertText('inner-again');
 
     // Now clear the inner bounds
-    this.runTask(() => set(this.context, 'inner', []));
+    runTask(() => set(this.context, 'inner', []));
 
     this.assertText('');
 
     // Now rerender the outer conditional, which require first clearing its bounds
-    this.runTask(() => set(this.context, 'outer', this.falsyValue));
+    runTask(() => set(this.context, 'outer', this.falsyValue));
 
     this.assertText('F-outer');
   }
@@ -828,17 +828,17 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
 
     this.assertText('inner-before');
 
-    this.runTask(() => this.rerender());
+    runTask(() => this.rerender());
 
     this.assertText('inner-before');
 
     // Changes the inner bounds
-    this.runTask(() => set(this.context, 'inner', '<p>inner-after</p>'));
+    runTask(() => set(this.context, 'inner', '<p>inner-after</p>'));
 
     this.assertText('inner-after');
 
     // Now rerender the outer conditional, which require first clearing its bounds
-    this.runTask(() => set(this.context, 'outer', this.falsyValue));
+    runTask(() => set(this.context, 'outer', this.falsyValue));
 
     this.assertText('F-outer');
   }
@@ -877,12 +877,12 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
     assert.ok(!childCreated);
     this.assertText('');
 
-    this.runTask(() => this.rerender());
+    runTask(() => this.rerender());
 
     assert.ok(!childCreated);
     this.assertText('');
 
-    this.runTask(() => {
+    runTask(() => {
       set(this.context, 'cond2', this.truthyValue);
       set(this.context, 'cond1', this.falsyValue);
     });
@@ -890,7 +890,7 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
     assert.ok(!childCreated);
     this.assertText('');
 
-    this.runTask(() => {
+    runTask(() => {
       set(this.context, 'cond2', this.falsyValue);
       set(this.context, 'cond1', this.truthyValue);
     });
@@ -939,19 +939,19 @@ export class TogglingSyntaxConditionalsTest extends TogglingConditionalsTest {
 
     this.assertText('T');
 
-    withoutEvaluatingFalsy(() => this.runTask(() => this.rerender()));
+    withoutEvaluatingFalsy(() => runTask(() => this.rerender()));
 
     this.assertText('T');
 
-    withoutEvaluatingTruthy(() => this.runTask(() => set(this.context, 'cond', this.falsyValue)));
+    withoutEvaluatingTruthy(() => runTask(() => set(this.context, 'cond', this.falsyValue)));
 
     this.assertText('F');
 
-    withoutEvaluatingTruthy(() => this.runTask(() => this.rerender()));
+    withoutEvaluatingTruthy(() => runTask(() => this.rerender()));
 
     this.assertText('F');
 
-    withoutEvaluatingFalsy(() => this.runTask(() => set(this.context, 'cond', this.truthyValue)));
+    withoutEvaluatingFalsy(() => runTask(() => set(this.context, 'cond', this.truthyValue)));
 
     this.assertText('T');
   }

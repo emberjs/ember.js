@@ -1,4 +1,4 @@
-import { RenderingTestCase, moduleFor, runAppend } from 'internal-test-helpers';
+import { RenderingTestCase, moduleFor, runAppend, runTask } from 'internal-test-helpers';
 
 import { set } from '@ember/-internals/metal';
 
@@ -27,7 +27,7 @@ moduleFor(
         outlets: Object.create(null),
       };
 
-      this.runTask(() => this.component.setOutletState(outletState));
+      runTask(() => this.component.setOutletState(outletState));
 
       runAppend(this.component);
 
@@ -48,7 +48,7 @@ moduleFor(
         outlets: Object.create(null),
       };
 
-      this.runTask(() => this.component.setOutletState(outletState));
+      runTask(() => this.component.setOutletState(outletState));
 
       runAppend(this.component);
 
@@ -67,7 +67,7 @@ moduleFor(
         outlets: Object.create(null),
       };
 
-      this.runTask(() => this.component.setOutletState(outletState));
+      runTask(() => this.component.setOutletState(outletState));
 
       this.assertText('HI');
 
@@ -86,7 +86,7 @@ moduleFor(
         outlets: Object.create(null),
       };
 
-      this.runTask(() => this.component.setOutletState(outletState));
+      runTask(() => this.component.setOutletState(outletState));
 
       this.assertText('HIBYE');
     }
@@ -105,7 +105,7 @@ moduleFor(
         outlets: Object.create(null),
       };
 
-      this.runTask(() => this.component.setOutletState(outletState));
+      runTask(() => this.component.setOutletState(outletState));
 
       runAppend(this.component);
 
@@ -126,7 +126,7 @@ moduleFor(
         outlets: Object.create(null),
       };
 
-      this.runTask(() => this.component.setOutletState(outletState));
+      runTask(() => this.component.setOutletState(outletState));
 
       this.assertText('HIBYE');
     }
@@ -145,7 +145,7 @@ moduleFor(
         outlets: Object.create(null),
       };
 
-      this.runTask(() => this.component.setOutletState(outletState));
+      runTask(() => this.component.setOutletState(outletState));
 
       runAppend(this.component);
 
@@ -166,7 +166,7 @@ moduleFor(
         outlets: Object.create(null),
       };
 
-      this.runTask(() => this.component.setOutletState(outletState));
+      runTask(() => this.component.setOutletState(outletState));
 
       this.assertText('HIBYE');
     }
@@ -185,7 +185,7 @@ moduleFor(
         outlets: Object.create(null),
       };
 
-      this.runTask(() => this.component.setOutletState(outletState));
+      runTask(() => this.component.setOutletState(outletState));
 
       runAppend(this.component);
 
@@ -206,7 +206,7 @@ moduleFor(
         outlets: Object.create(null),
       };
 
-      this.runTask(() => this.component.setOutletState(outletState));
+      runTask(() => this.component.setOutletState(outletState));
 
       this.assertText('HI');
     }
@@ -226,7 +226,7 @@ moduleFor(
         outlets: Object.create(null),
       };
 
-      this.runTask(() => this.component.setOutletState(outletState));
+      runTask(() => this.component.setOutletState(outletState));
 
       runAppend(this.component);
 
@@ -260,11 +260,11 @@ moduleFor(
         outlets: Object.create(null),
       };
 
-      this.runTask(() => this.component.setOutletState(outletState));
+      runTask(() => this.component.setOutletState(outletState));
 
       this.assertText('HIFOO');
 
-      this.runTask(() => set(controller, 'outletName', 'bar'));
+      runTask(() => set(controller, 'outletName', 'bar'));
 
       this.assertText('HIBAR');
     }
@@ -306,7 +306,7 @@ moduleFor(
         },
       };
 
-      this.runTask(() => this.component.setOutletState(outletState));
+      runTask(() => this.component.setOutletState(outletState));
 
       runAppend(this.component);
 

@@ -1,4 +1,4 @@
-import { RenderingTestCase, moduleFor } from 'internal-test-helpers';
+import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
 
 import { set } from '@ember/-internals/metal';
 import { _setStrings } from '@ember/string';
@@ -22,21 +22,21 @@ moduleFor(
     ['@test it lets the original value through by default']() {
       this.render(`{{loc "Hiya buddy!"}}`);
       this.assertText('Hiya buddy!', 'the unlocalized string is correct');
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
       this.assertText('Hiya buddy!', 'the unlocalized string is correct after rerender');
     }
 
     ['@test it localizes a simple string']() {
       this.render(`{{loc "Hello Friend"}}`);
       this.assertText('Hallo Freund', 'the localized string is correct');
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
       this.assertText('Hallo Freund', 'the localized string is correct after rerender');
     }
 
     ['@test it takes passed formats into an account']() {
       this.render(`{{loc "%@, %@" "Hello" "Mr. Pitkin"}}`);
       this.assertText('Hello, Mr. Pitkin', 'the formatted string is correct');
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
       this.assertText('Hello, Mr. Pitkin', 'the formatted string is correct after rerender');
     }
 
@@ -47,16 +47,16 @@ moduleFor(
       });
       this.assertText('Hallo Freund - Hallo, Mr. Pitkin', 'the bound value is correct');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
       this.assertText(
         'Hallo Freund - Hallo, Mr. Pitkin',
         'the bound value is correct after rerender'
       );
 
-      this.runTask(() => set(this.context, 'simple', "G'day mate"));
+      runTask(() => set(this.context, 'simple', "G'day mate"));
       this.assertText("G'day mate - Hallo, Mr. Pitkin", 'the bound value is correct after update');
 
-      this.runTask(() => set(this.context, 'simple', 'Hello Friend'));
+      runTask(() => set(this.context, 'simple', 'Hello Friend'));
       this.assertText('Hallo Freund - Hallo, Mr. Pitkin', 'the bound value is correct after reset');
     }
 
@@ -69,19 +69,19 @@ moduleFor(
       });
       this.assertText('Hallo Freund - Hallo, Mr. Pitkin', 'the bound value is correct');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
       this.assertText(
         'Hallo Freund - Hallo, Mr. Pitkin',
         'the bound value is correct after rerender'
       );
 
-      this.runTask(() => set(this.context, 'greetings.simple', "G'day mate"));
+      runTask(() => set(this.context, 'greetings.simple', "G'day mate"));
       this.assertText(
         "G'day mate - Hallo, Mr. Pitkin",
         'the bound value is correct after interior mutation'
       );
 
-      this.runTask(() =>
+      runTask(() =>
         set(this.context, 'greetings', {
           simple: 'Hello Friend',
           personal: 'Hello',

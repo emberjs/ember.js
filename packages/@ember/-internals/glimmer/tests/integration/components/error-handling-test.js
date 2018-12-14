@@ -1,4 +1,4 @@
-import { moduleFor, RenderingTestCase } from 'internal-test-helpers';
+import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 
 import { set } from '@ember/-internals/metal';
 
@@ -37,11 +37,11 @@ moduleFor(
 
       this.assertText('');
 
-      this.runTask(() => set(this.context, 'switch', false));
+      runTask(() => set(this.context, 'switch', false));
 
       shouldThrow = false;
 
-      this.runTask(() => set(this.context, 'switch', true));
+      runTask(() => set(this.context, 'switch', true));
 
       this.assertText('hello');
     }
@@ -70,12 +70,12 @@ moduleFor(
 
       this.assertText('hello');
 
-      this.runTask(() => set(this.context, 'switch', false));
+      runTask(() => set(this.context, 'switch', false));
 
       shouldThrow = true;
 
       assert.throws(() => {
-        this.runTask(() => set(this.context, 'switch', true));
+        runTask(() => set(this.context, 'switch', true));
       }, /silly mistake in init/);
 
       assert.equal(
@@ -86,10 +86,10 @@ moduleFor(
 
       this.assertText('');
 
-      this.runTask(() => set(this.context, 'switch', false));
+      runTask(() => set(this.context, 'switch', false));
       shouldThrow = false;
 
-      this.runTask(() => set(this.context, 'switch', true));
+      runTask(() => set(this.context, 'switch', true));
 
       this.assertText('hello');
     }
@@ -124,7 +124,7 @@ moduleFor(
 
       this.assertText('hello');
 
-      this.runTask(() => set(this.context, 'switch', false));
+      runTask(() => set(this.context, 'switch', false));
 
       this.assertText('');
     }
@@ -152,13 +152,13 @@ moduleFor(
       this.assertText('hello');
 
       assert.throws(() => {
-        this.runTask(() => set(this.context, 'switch', false));
+        runTask(() => set(this.context, 'switch', false));
       }, /silly mistake/);
 
       this.assertText('');
 
       shouldThrow = false;
-      this.runTask(() => set(this.context, 'switch', true));
+      runTask(() => set(this.context, 'switch', true));
 
       this.assertText('hello');
     }

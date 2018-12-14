@@ -1,4 +1,4 @@
-import { RenderingTestCase, moduleFor, strip } from 'internal-test-helpers';
+import { RenderingTestCase, moduleFor, strip, runTask } from 'internal-test-helpers';
 
 import { set } from '@ember/-internals/metal';
 
@@ -20,7 +20,7 @@ moduleFor(
       </div>
     `);
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertInnerHTML(strip`
       <div>
@@ -28,11 +28,11 @@ moduleFor(
       </div>
     `);
 
-      this.runTask(() => set(this.context, 'model.viewBoxString', null));
+      runTask(() => set(this.context, 'model.viewBoxString', null));
 
       assert.equal(this.firstChild.getAttribute('svg'), null);
 
-      this.runTask(() => set(this.context, 'model', { viewBoxString }));
+      runTask(() => set(this.context, 'model', { viewBoxString }));
 
       this.assertInnerHTML(strip`
       <div>
@@ -56,7 +56,7 @@ moduleFor(
       </div>
     `);
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertInnerHTML(strip`
       <div>
@@ -64,11 +64,11 @@ moduleFor(
       </div>
     `);
 
-      this.runTask(() => set(this.context, 'model.viewBoxString', null));
+      runTask(() => set(this.context, 'model.viewBoxString', null));
 
       assert.equal(this.firstChild.getAttribute('svg'), null);
 
-      this.runTask(() => set(this.context, 'model', { viewBoxString }));
+      runTask(() => set(this.context, 'model', { viewBoxString }));
 
       this.assertInnerHTML(strip`
       <div>
@@ -92,7 +92,7 @@ moduleFor(
       </div>
     `);
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertInnerHTML(strip`
       <div>
@@ -100,7 +100,7 @@ moduleFor(
       </div>
     `);
 
-      this.runTask(() => set(this.context, 'model.viewBoxString', '200 200'));
+      runTask(() => set(this.context, 'model.viewBoxString', '200 200'));
 
       this.assertInnerHTML(strip`
       <div>
@@ -108,7 +108,7 @@ moduleFor(
       </div>
     `);
 
-      this.runTask(() => set(this.context, 'model', { viewBoxString }));
+      runTask(() => set(this.context, 'model', { viewBoxString }));
 
       this.assertInnerHTML(strip`
       <div>
@@ -130,7 +130,7 @@ moduleFor(
       </div>
     `);
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertInnerHTML(strip`
       <div>
@@ -138,7 +138,7 @@ moduleFor(
       </div>
     `);
 
-      this.runTask(() => set(this.context, 'model.color', 'yellow'));
+      runTask(() => set(this.context, 'model.color', 'yellow'));
 
       this.assertInnerHTML(strip`
       <div>
@@ -146,7 +146,7 @@ moduleFor(
       </div>
     `);
 
-      this.runTask(() => set(this.context, 'model', { color: 'blue' }));
+      runTask(() => set(this.context, 'model', { color: 'blue' }));
 
       this.assertInnerHTML(strip`
       <div>

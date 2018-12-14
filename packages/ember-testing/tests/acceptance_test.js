@@ -1,4 +1,4 @@
-import { moduleFor, AutobootApplicationTestCase } from 'internal-test-helpers';
+import { moduleFor, AutobootApplicationTestCase, runTask } from 'internal-test-helpers';
 
 import { later } from '@ember/runloop';
 import Test from '../lib/test';
@@ -24,7 +24,7 @@ if (!jQueryDisabled) {
 
         testContext = this;
 
-        this.runTask(() => {
+        runTask(() => {
           this.createApplication();
           this.router.map(function() {
             this.route('posts');
@@ -460,14 +460,14 @@ if (!jQueryDisabled) {
       [`@test that the setup/teardown happens correctly`](assert) {
         assert.expect(2);
 
-        this.runTask(() => {
+        runTask(() => {
           this.createApplication();
         });
         this.application.injectTestHelpers();
 
         assert.ok(typeof Test.Promise.prototype.click === 'function');
 
-        this.runTask(() => {
+        runTask(() => {
           this.application.destroy();
         });
 

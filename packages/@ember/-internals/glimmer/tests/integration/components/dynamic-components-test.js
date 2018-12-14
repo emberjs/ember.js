@@ -1,4 +1,4 @@
-import { moduleFor, RenderingTestCase, strip } from 'internal-test-helpers';
+import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 
 import { EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION } from '@ember/canary-features';
 import { set, computed } from '@ember/-internals/metal';
@@ -16,15 +16,15 @@ moduleFor(
 
       this.assertComponentElement(this.firstChild, { content: 'hello Sarah' });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, { content: 'hello Sarah' });
 
-      this.runTask(() => set(this.context, 'name', 'Gavin'));
+      runTask(() => set(this.context, 'name', 'Gavin'));
 
       this.assertComponentElement(this.firstChild, { content: 'hello Gavin' });
 
-      this.runTask(() => set(this.context, 'name', 'Sarah'));
+      runTask(() => set(this.context, 'name', 'Sarah'));
 
       this.assertComponentElement(this.firstChild, { content: 'hello Sarah' });
     }
@@ -46,25 +46,25 @@ moduleFor(
         content: 'hello Alex from foo-bar',
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         content: 'hello Alex from foo-bar',
       });
 
-      this.runTask(() => set(this.context, 'name', 'Ben'));
+      runTask(() => set(this.context, 'name', 'Ben'));
 
       this.assertComponentElement(this.firstChild, {
         content: 'hello Ben from foo-bar',
       });
 
-      this.runTask(() => set(this.context, 'componentName', 'foo-bar-baz'));
+      runTask(() => set(this.context, 'componentName', 'foo-bar-baz'));
 
       this.assertComponentElement(this.firstChild, {
         content: 'hello Ben from foo-bar-baz',
       });
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'componentName', 'foo-bar');
         set(this.context, 'name', 'Alex');
       });
@@ -95,7 +95,7 @@ moduleFor(
 
       this.assertComponentElement(element1, { content: 'hello' });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       let element2 = instance.element;
 
@@ -139,7 +139,7 @@ moduleFor(
       assert.deepEqual(this.component.childViews, [fooBarInstance]);
       assert.deepEqual(fooBarInstance.childViews, [fooBarBazInstance]);
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
       this.assertText('foo-bar foo-bar-baz');
 
       assert.equal(fooBarInstance.parentView, this.component);
@@ -156,7 +156,7 @@ moduleFor(
 
       this.assertComponentElement(this.firstChild, { content: 'hello' });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, { content: 'hello' });
     }
@@ -181,15 +181,15 @@ moduleFor(
 
       this.assertComponentElement(this.firstChild, { content: 'hello' });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, { content: 'hello' });
 
-      this.runTask(() => set(instance, 'message', 'goodbye'));
+      runTask(() => set(instance, 'message', 'goodbye'));
 
       this.assertComponentElement(this.firstChild, { content: 'goodbye' });
 
-      this.runTask(() => set(instance, 'message', 'hello'));
+      runTask(() => set(instance, 'message', 'hello'));
 
       this.assertComponentElement(this.firstChild, { content: 'hello' });
     }
@@ -203,15 +203,15 @@ moduleFor(
 
       this.assertComponentElement(this.firstChild, { content: 'hello' });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, { content: 'hello' });
 
-      this.runTask(() => set(this.context, 'message', 'goodbye'));
+      runTask(() => set(this.context, 'message', 'goodbye'));
 
       this.assertComponentElement(this.firstChild, { content: 'goodbye' });
 
-      this.runTask(() => set(this.context, 'message', 'hello'));
+      runTask(() => set(this.context, 'message', 'hello'));
 
       this.assertComponentElement(this.firstChild, { content: 'hello' });
     }
@@ -263,7 +263,7 @@ moduleFor(
 
       this.assertText('1 2 3 4 5 6 7 8 ');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       assert.deepEqual(destroyed, {
         1: 0,
@@ -276,7 +276,7 @@ moduleFor(
         8: 0,
       });
 
-      this.runTask(() => set(this.context, 'cond5', false));
+      runTask(() => set(this.context, 'cond5', false));
 
       this.assertText('1 2 3 4 8 ');
 
@@ -291,7 +291,7 @@ moduleFor(
         8: 0,
       });
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'cond3', false);
         set(this.context, 'cond5', true);
         set(this.context, 'cond4', false);
@@ -308,7 +308,7 @@ moduleFor(
         8: 1,
       });
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'cond2', false);
         set(this.context, 'cond1', false);
       });
@@ -363,15 +363,15 @@ moduleFor(
 
       assert.deepEqual(destroyed, { 'foo-bar': 0, 'foo-bar-baz': 0 });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       assert.deepEqual(destroyed, { 'foo-bar': 0, 'foo-bar-baz': 0 });
 
-      this.runTask(() => set(this.context, 'componentName', 'foo-bar-baz'));
+      runTask(() => set(this.context, 'componentName', 'foo-bar-baz'));
 
       assert.deepEqual(destroyed, { 'foo-bar': 1, 'foo-bar-baz': 0 });
 
-      this.runTask(() => set(this.context, 'componentName', 'foo-bar'));
+      runTask(() => set(this.context, 'componentName', 'foo-bar'));
 
       assert.deepEqual(destroyed, { 'foo-bar': 1, 'foo-bar-baz': 1 });
     }
@@ -416,15 +416,15 @@ moduleFor(
 
       this.assertText('foo-bar Caracas Caracas arepas!');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('foo-bar Caracas Caracas arepas!');
 
-      this.runTask(() => set(this.context, 'location', 'Loisaida'));
+      runTask(() => set(this.context, 'location', 'Loisaida'));
 
       this.assertText('foo-bar-baz Loisaida Loisaida arepas!');
 
-      this.runTask(() => set(this.context, 'location', 'Caracas'));
+      runTask(() => set(this.context, 'location', 'Caracas'));
 
       this.assertText('foo-bar Caracas Caracas arepas!');
     }
@@ -468,7 +468,7 @@ moduleFor(
 
       assert.equal(actionTriggered, 0, 'action was not triggered');
 
-      this.runTask(() => {
+      runTask(() => {
         this.$('.inner-component').click();
       });
 
@@ -497,19 +497,19 @@ moduleFor(
 
       this.assertText('yippie! Caracas yummy Caracas arepas!');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('yippie! Caracas yummy Caracas arepas!');
 
-      this.runTask(() => set(this.context, 'location', 'Loisaida'));
+      runTask(() => set(this.context, 'location', 'Loisaida'));
 
       this.assertText('yippie! Loisaida yummy Loisaida arepas!');
 
-      this.runTask(() => set(this.context, 'componentName1', 'corge-grault'));
+      runTask(() => set(this.context, 'componentName1', 'corge-grault'));
 
       this.assertText('delicious Loisaida yummy Loisaida arepas!');
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'componentName1', 'foo-bar');
         set(this.context, 'location', 'Caracas');
       });
@@ -541,15 +541,15 @@ moduleFor(
 
       this.assertText('hello Alex');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('hello Alex');
 
-      this.runTask(() => set(this.context, 'componentName', undefined));
+      runTask(() => set(this.context, 'componentName', undefined));
 
       this.assertText('');
 
-      this.runTask(() => set(this.context, 'componentName', 'foo-bar'));
+      runTask(() => set(this.context, 'componentName', 'foo-bar'));
 
       this.assertText('hello Alex');
     }
@@ -572,15 +572,15 @@ moduleFor(
 
       this.assertText('[Robert - Robert][Jacquie - Jacquie]');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('[Robert - Robert][Jacquie - Jacquie]');
 
-      this.runTask(() => set(this.context, 'items', [{ name: 'Max' }, { name: 'James' }]));
+      runTask(() => set(this.context, 'items', [{ name: 'Max' }, { name: 'James' }]));
 
       this.assertText('[Max - Max][James - James]');
 
-      this.runTask(() => set(this.context, 'items', [{ name: 'Robert' }, { name: 'Jacquie' }]));
+      runTask(() => set(this.context, 'items', [{ name: 'Robert' }, { name: 'Jacquie' }]));
 
       this.assertText('[Robert - Robert][Jacquie - Jacquie]');
     }
@@ -623,31 +623,31 @@ moduleFor(
         content: 'hello Alex (29) from foo-bar',
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         content: 'hello Alex (29) from foo-bar',
       });
 
-      this.runTask(() => set(this.context, 'name', 'Ben'));
+      runTask(() => set(this.context, 'name', 'Ben'));
 
       this.assertComponentElement(this.firstChild, {
         content: 'hello Ben (29) from foo-bar',
       });
 
-      this.runTask(() => set(this.context, 'age', 22));
+      runTask(() => set(this.context, 'age', 22));
 
       this.assertComponentElement(this.firstChild, {
         content: 'hello Ben (22) from foo-bar',
       });
 
-      this.runTask(() => set(this.context, 'componentName', 'foo-bar-baz'));
+      runTask(() => set(this.context, 'componentName', 'foo-bar-baz'));
 
       this.assertComponentElement(this.firstChild, {
         content: 'hello Ben (22) from foo-bar-baz',
       });
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'componentName', 'foo-bar');
         set(this.context, 'name', 'Alex');
         set(this.context, 'age', 29);
@@ -684,25 +684,25 @@ moduleFor(
         content: 'Normal: Hello!',
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         content: 'Normal: Hello!',
       });
 
-      this.runTask(() => set(this.context, 'componentName', 'alternative-message'));
+      runTask(() => set(this.context, 'componentName', 'alternative-message'));
 
       this.assertComponentElement(this.firstChild, {
         content: 'Alternative: Another Hello!',
       });
 
-      this.runTask(() => set(this.context, 'message', 'Hi'));
+      runTask(() => set(this.context, 'message', 'Hi'));
 
       this.assertComponentElement(this.firstChild, {
         content: 'Alternative: Another Hi!',
       });
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'componentName', 'normal-message');
         set(this.context, 'message', 'Hello');
       });
@@ -727,7 +727,7 @@ moduleFor(
 
       this.assertText('Foo4Bar5Baz');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('Foo4Bar5Baz');
     }
@@ -750,19 +750,19 @@ moduleFor(
 
       this.assertText('Foo4');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('Foo4');
 
-      this.runTask(() => this.context.set('user1', 'Bar'));
+      runTask(() => this.context.set('user1', 'Bar'));
 
       this.assertText('Bar4');
 
-      this.runTask(() => this.context.set('user2', '5'));
+      runTask(() => this.context.set('user2', '5'));
 
       this.assertText('Bar5');
 
-      this.runTask(() => {
+      runTask(() => {
         this.context.set('user1', 'Foo');
         this.context.set('user2', 4);
       });
@@ -854,7 +854,7 @@ if (jQueryDisabled) {
 
         this.assertComponentElement(element1, { content: 'hello' });
 
-        this.runTask(() => this.rerender());
+        runTask(() => this.rerender());
 
         let element2 = instance.$()[0];
 
@@ -885,7 +885,7 @@ if (jQueryDisabled) {
         assert.equal($span.length, 1);
         assert.equal($span.attr('class'), 'inner');
 
-        this.runTask(() => this.rerender());
+        runTask(() => this.rerender());
 
         $span = instance.$('span');
 

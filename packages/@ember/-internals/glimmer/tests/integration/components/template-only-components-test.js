@@ -1,4 +1,4 @@
-import { moduleFor, RenderingTestCase, classes } from 'internal-test-helpers';
+import { moduleFor, RenderingTestCase, classes, runTask } from 'internal-test-helpers';
 
 import { ENV } from '@ember/-internals/environment';
 
@@ -44,15 +44,15 @@ moduleFor(
 
       this.assertStableRerender();
 
-      this.runTask(() => this.context.set('foo', 'FOO'));
+      runTask(() => this.context.set('foo', 'FOO'));
 
       this.assertInnerHTML('|FOO|bar|');
 
-      this.runTask(() => this.context.set('bar', 'BAR'));
+      runTask(() => this.context.set('bar', 'BAR'));
 
       this.assertInnerHTML('|FOO|BAR|');
 
-      this.runTask(() => this.context.setProperties({ foo: 'foo', bar: 'bar' }));
+      runTask(() => this.context.setProperties({ foo: 'foo', bar: 'bar' }));
 
       this.assertInnerHTML('|foo|bar|');
     }
@@ -69,15 +69,15 @@ moduleFor(
 
       this.assertStableRerender();
 
-      this.runTask(() => this.context.set('foo', 'FOO'));
+      runTask(() => this.context.set('foo', 'FOO'));
 
       this.assertInnerHTML('|||');
 
-      this.runTask(() => this.context.set('bar', null));
+      runTask(() => this.context.set('bar', null));
 
       this.assertInnerHTML('|||');
 
-      this.runTask(() => this.context.setProperties({ foo: 'foo', bar: 'bar' }));
+      runTask(() => this.context.setProperties({ foo: 'foo', bar: 'bar' }));
 
       this.assertInnerHTML('|||');
     }
@@ -93,15 +93,15 @@ moduleFor(
 
       this.assertStableRerender();
 
-      this.runTask(() => this.context.set('class', 'foo'));
+      runTask(() => this.context.set('class', 'foo'));
 
       this.assertInnerHTML('hello');
 
-      this.runTask(() => this.context.set('class', null));
+      runTask(() => this.context.set('class', null));
 
       this.assertInnerHTML('hello');
 
-      this.runTask(() => this.context.set('class', 'foo bar'));
+      runTask(() => this.context.set('class', 'foo bar'));
 
       this.assertInnerHTML('hello');
     }
@@ -144,15 +144,15 @@ moduleFor(
 
       this.assertStableRerender();
 
-      this.runTask(() => this.context.set('foo', 'FOO'));
+      runTask(() => this.context.set('foo', 'FOO'));
 
       this.assertComponentElement(this.firstChild, { content: '|FOO|bar|' });
 
-      this.runTask(() => this.context.set('bar', 'BAR'));
+      runTask(() => this.context.set('bar', 'BAR'));
 
       this.assertComponentElement(this.firstChild, { content: '|FOO|BAR|' });
 
-      this.runTask(() => this.context.setProperties({ foo: 'foo', bar: 'bar' }));
+      runTask(() => this.context.setProperties({ foo: 'foo', bar: 'bar' }));
 
       this.assertComponentElement(this.firstChild, { content: '|foo|bar|' });
     }
@@ -169,15 +169,15 @@ moduleFor(
 
       this.assertStableRerender();
 
-      this.runTask(() => this.context.set('foo', 'FOO'));
+      runTask(() => this.context.set('foo', 'FOO'));
 
       this.assertComponentElement(this.firstChild, { content: '|FOO|bar|' });
 
-      this.runTask(() => this.context.set('bar', null));
+      runTask(() => this.context.set('bar', null));
 
       this.assertComponentElement(this.firstChild, { content: '|FOO||' });
 
-      this.runTask(() => this.context.setProperties({ foo: 'foo', bar: 'bar' }));
+      runTask(() => this.context.setProperties({ foo: 'foo', bar: 'bar' }));
 
       this.assertComponentElement(this.firstChild, { content: '|foo|bar|' });
     }
@@ -197,7 +197,7 @@ moduleFor(
 
       this.assertStableRerender();
 
-      this.runTask(() => this.context.set('class', 'foo'));
+      runTask(() => this.context.set('class', 'foo'));
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'p',
@@ -205,7 +205,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => this.context.set('class', null));
+      runTask(() => this.context.set('class', null));
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'p',
@@ -213,7 +213,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => this.context.set('class', 'foo bar'));
+      runTask(() => this.context.set('class', 'foo bar'));
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'p',

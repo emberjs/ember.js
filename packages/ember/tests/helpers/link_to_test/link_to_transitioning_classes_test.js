@@ -1,6 +1,6 @@
 import { RSVP } from '@ember/-internals/runtime';
 import { Route } from '@ember/-internals/routing';
-import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
+import { moduleFor, ApplicationTestCase, runTask } from 'internal-test-helpers';
 
 function assertHasClass(assert, selector, label) {
   let testLabel = `${selector.attr('id')} should have class ${label}`;
@@ -100,7 +100,7 @@ moduleFor(
       assertHasNoClass(assert, $about, 'ember-transitioning-out');
       assertHasNoClass(assert, $other, 'ember-transitioning-out');
 
-      this.runTask(() => this.aboutDefer.resolve());
+      runTask(() => this.aboutDefer.resolve());
 
       assertHasNoClass(assert, $index, 'active');
       assertHasClass(assert, $about, 'active');
@@ -134,7 +134,7 @@ moduleFor(
       assertHasNoClass(assert, $news, 'ember-transitioning-out');
       assertHasNoClass(assert, $other, 'ember-transitioning-out');
 
-      this.runTask(() => this.newsDefer.resolve());
+      runTask(() => this.newsDefer.resolve());
 
       assertHasNoClass(assert, $index, 'active');
       assertHasNoClass(assert, $news, 'active');
@@ -206,14 +206,14 @@ moduleFor(
     }
 
     resolveAbout() {
-      return this.runTask(() => {
+      return runTask(() => {
         this.aboutDefer.resolve();
         this.aboutDefer = RSVP.defer();
       });
     }
 
     resolveOther() {
-      return this.runTask(() => {
+      return runTask(() => {
         this.otherDefer.resolve();
         this.otherDefer = RSVP.defer();
       });

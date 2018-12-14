@@ -20,6 +20,7 @@ import {
   DefaultResolverApplicationTestCase,
   verifyInjection,
   verifyRegistration,
+  runTask,
 } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
 
@@ -52,24 +53,24 @@ moduleFor(
       super.teardown();
 
       if (this.secondApp) {
-        this.runTask(() => this.secondApp.destroy());
+        runTask(() => this.secondApp.destroy());
       }
     }
 
     [`@test you can make a new application in a non-overlapping element`](assert) {
-      let app = this.runTask(() =>
+      let app = runTask(() =>
         this.createSecondApplication({
           rootElement: '#two',
         })
       );
 
-      this.runTask(() => app.destroy());
+      runTask(() => app.destroy());
       assert.ok(true, 'should not raise');
     }
 
     [`@test you cannot make a new application that is a parent of an existing application`]() {
       expectAssertion(() => {
-        this.runTask(() =>
+        runTask(() =>
           this.createSecondApplication({
             rootElement: this.applicationOptions.rootElement,
           })
@@ -79,7 +80,7 @@ moduleFor(
 
     [`@test you cannot make a new application that is a descendant of an existing application`]() {
       expectAssertion(() => {
-        this.runTask(() =>
+        runTask(() =>
           this.createSecondApplication({
             rootElement: '#one-child',
           })
@@ -89,7 +90,7 @@ moduleFor(
 
     [`@test you cannot make a new application that is a duplicate of an existing application`]() {
       expectAssertion(() => {
-        this.runTask(() =>
+        runTask(() =>
           this.createSecondApplication({
             rootElement: '#one',
           })
@@ -99,7 +100,7 @@ moduleFor(
 
     [`@test you cannot make two default applications without a rootElement error`]() {
       expectAssertion(() => {
-        this.runTask(() => this.createSecondApplication());
+        runTask(() => this.createSecondApplication());
       });
     }
   }
@@ -232,14 +233,14 @@ moduleFor(
     }
 
     [`@test acts like a namespace`](assert) {
-      this.application = this.runTask(() => this.createApplication());
+      this.application = runTask(() => this.createApplication());
       let Foo = (this.application.Foo = EmberObject.extend());
       assert.equal(Foo.toString(), 'TestApp.Foo', 'Classes pick up their parent namespace');
     }
 
     [`@test can specify custom router`](assert) {
       let MyRouter = Router.extend();
-      this.runTask(() => {
+      runTask(() => {
         this.createApplication();
         this.application.Router = MyRouter;
       });
@@ -252,7 +253,7 @@ moduleFor(
 
     [`@test Minimal Application initialized with just an application template`]() {
       this.setupFixture('<script type="text/x-handlebars">Hello World</script>');
-      this.runTask(() => this.createApplication());
+      runTask(() => this.createApplication());
       this.assertInnerHTML('Hello World');
     }
   }
@@ -276,7 +277,7 @@ moduleFor(
     }
 
     [`@test initialized application goes to initial route`]() {
-      this.runTask(() => {
+      runTask(() => {
         this.createApplication();
         this.addTemplate('application', '{{outlet}}');
         this.addTemplate('index', '<h1>Hi from index</h1>');
@@ -288,7 +289,7 @@ moduleFor(
     [`@test ready hook is called before routing begins`](assert) {
       assert.expect(2);
 
-      this.runTask(() => {
+      runTask(() => {
         function registerRoute(application, name, callback) {
           let route = EmberRoute.extend({
             activate: callback,
@@ -312,7 +313,7 @@ moduleFor(
     }
 
     [`@test initialize application via initialize call`](assert) {
-      this.runTask(() => this.createApplication());
+      runTask(() => this.createApplication());
       // This is not a public way to access the container; we just
       // need to make some assertions about the created router
       let router = this.applicationInstance.lookup('router:main');
@@ -327,7 +328,7 @@ moduleFor(
     [`@test initialize application with stateManager via initialize call from Router class`](
       assert
     ) {
-      this.runTask(() => {
+      runTask(() => {
         this.createApplication();
         this.addTemplate('application', '<h1>Hello!</h1>');
       });
@@ -339,7 +340,7 @@ moduleFor(
     }
 
     [`@test Application Controller backs the appplication template`]() {
-      this.runTask(() => {
+      runTask(() => {
         this.createApplication();
         this.addTemplate('application', '<h1>{{greeting}}</h1>');
         this.add(
@@ -366,7 +367,7 @@ moduleFor(
 
       libraries.register('my-lib', '2.0.0a');
 
-      this.runTask(() => this.createApplication());
+      runTask(() => this.createApplication());
 
       assert.equal(messages[1], 'Ember  : ' + VERSION);
       if (jQueryDisabled) {
@@ -386,7 +387,7 @@ moduleFor(
 
       setDebugFunction('debug', () => (logged = true));
 
-      this.runTask(() => this.createApplication());
+      runTask(() => this.createApplication());
 
       assert.ok(!logged, 'library version logging skipped');
     }
@@ -394,7 +395,7 @@ moduleFor(
     [`@test can resolve custom router`](assert) {
       let CustomRouter = Router.extend();
 
-      this.runTask(() => {
+      runTask(() => {
         this.createApplication();
         this.add('router:main', CustomRouter);
       });
@@ -407,9 +408,9 @@ moduleFor(
 
     [`@test does not leak itself in onLoad._loaded`](assert) {
       assert.equal(_loaded.application, undefined);
-      this.runTask(() => this.createApplication());
+      runTask(() => this.createApplication());
       assert.equal(_loaded.application, this.application);
-      this.runTask(() => this.application.destroy());
+      runTask(() => this.application.destroy());
       assert.equal(_loaded.application, undefined);
     }
 

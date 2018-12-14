@@ -1,4 +1,4 @@
-import { moduleFor, RenderingTestCase } from 'internal-test-helpers';
+import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import { GLIMMER_MODIFIER_MANAGER } from '@ember/canary-features';
@@ -96,11 +96,11 @@ if (GLIMMER_MODIFIER_MANAGER) {
         });
         this.assertHTML(`<h1>hello world</h1>`);
 
-        this.runTask(() => set(this.context, 'truthy', 'true'));
+        runTask(() => set(this.context, 'truthy', 'true'));
 
-        this.runTask(() => set(this.context, 'truthy', false));
+        runTask(() => set(this.context, 'truthy', false));
 
-        this.runTask(() => set(this.context, 'truthy', true));
+        runTask(() => set(this.context, 'truthy', true));
       }
 
       '@test associates manager even through an inheritance structure'(assert) {
@@ -176,7 +176,7 @@ if (GLIMMER_MODIFIER_MANAGER) {
         });
         this.assertHTML(`<h1>hello world</h1>`);
 
-        this.runTask(() => set(this.context, 'truthy', 'true'));
+        runTask(() => set(this.context, 'truthy', 'true'));
       }
     }
   );

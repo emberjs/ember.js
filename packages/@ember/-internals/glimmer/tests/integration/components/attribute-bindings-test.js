@@ -1,4 +1,4 @@
-import { moduleFor, RenderingTestCase, strip } from 'internal-test-helpers';
+import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 
 import { set } from '@ember/-internals/metal';
 
@@ -25,7 +25,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -33,7 +33,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'foo', 'FOO');
         set(this.context, 'bar', undefined);
       });
@@ -44,7 +44,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'foo', 'foo');
         set(this.context, 'bar', 'bar');
       });
@@ -76,7 +76,7 @@ moduleFor(
         attrs: { 'data-bar': 'bar' },
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -84,7 +84,7 @@ moduleFor(
         attrs: { 'data-bar': 'bar' },
       });
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'model.foo', 'foo');
         set(this.context, 'model.baz.bar', undefined);
       });
@@ -95,7 +95,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() =>
+      runTask(() =>
         set(this.context, 'model', {
           foo: undefined,
           baz: { bar: 'bar' },
@@ -127,7 +127,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -135,7 +135,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => set(this.context, 'foo.bar', 'FOO-BAR'));
+      runTask(() => set(this.context, 'foo.bar', 'FOO-BAR'));
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -143,7 +143,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => set(this.context, 'foo.bar', undefined));
+      runTask(() => set(this.context, 'foo.bar', undefined));
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -151,7 +151,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => set(this.context, 'foo', undefined));
+      runTask(() => set(this.context, 'foo', undefined));
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -159,7 +159,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => set(this.context, 'foo', { bar: 'foo-bar' }));
+      runTask(() => set(this.context, 'foo', { bar: 'foo-bar' }));
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -188,7 +188,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -196,7 +196,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => set(this.context, 'submit', 'password'));
+      runTask(() => set(this.context, 'submit', 'password'));
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -204,7 +204,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => set(this.context, 'submit', null));
+      runTask(() => set(this.context, 'submit', null));
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -212,7 +212,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => set(this.context, 'submit', 'submit'));
+      runTask(() => set(this.context, 'submit', 'submit'));
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -258,7 +258,7 @@ moduleFor(
 
       this.assertStableRerender();
 
-      this.runTask(() => set(this.context, 'name', null));
+      runTask(() => set(this.context, 'name', null));
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -266,7 +266,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => set(this.context, 'name', 'qux'));
+      runTask(() => set(this.context, 'name', 'qux'));
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -297,7 +297,7 @@ moduleFor(
 
       this.assertStableRerender();
 
-      this.runTask(() => set(this.context, 'foo', null));
+      runTask(() => set(this.context, 'foo', null));
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -305,7 +305,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => set(this.context, 'foo', 'qux'));
+      runTask(() => set(this.context, 'foo', 'qux'));
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -337,11 +337,11 @@ moduleFor(
 
       this.assertStableRerender();
 
-      this.runTask(() => set(this.context, 'foo', null));
+      runTask(() => set(this.context, 'foo', null));
 
       this.assert.ok(!this.firstChild.hasAttribute('viewBox'), 'viewBox attribute removed');
 
-      this.runTask(() => set(this.context, 'foo', '0 0 100 200'));
+      runTask(() => set(this.context, 'foo', '0 0 100 200'));
 
       this.assert.equal(
         this.firstChild.getAttribute('viewBox'),
@@ -371,7 +371,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -379,7 +379,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'fizz', 'fizz');
         set(this.context, 'bar', 'bar');
       });
@@ -390,7 +390,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'fizz', null);
         set(this.context, 'bar', undefined);
       });
@@ -422,7 +422,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -430,7 +430,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => set(this.context, 'size', 0));
+      runTask(() => set(this.context, 'size', 0));
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -438,7 +438,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => set(this.context, 'size', 21));
+      runTask(() => set(this.context, 'size', 21));
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -471,7 +471,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -479,7 +479,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => set(component, 'type', 'checkbox'));
+      runTask(() => set(component, 'type', 'checkbox'));
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -487,7 +487,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => set(component, 'type', 'password'));
+      runTask(() => set(component, 'type', 'password'));
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -514,14 +514,14 @@ moduleFor(
         attrs: { type: 'password' },
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'input',
         attrs: { type: 'password' },
       });
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'type', 'checkbox');
         set(this.context, 'disabled', true);
       });
@@ -531,7 +531,7 @@ moduleFor(
         attrs: { type: 'checkbox', disabled: '' },
       });
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'type', 'password');
         set(this.context, 'disabled', false);
       });
@@ -558,21 +558,21 @@ moduleFor(
         attrs: { 'xlink:href': '/foo.png' },
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { 'xlink:href': '/foo.png' },
       });
 
-      this.runTask(() => set(this.context, 'xlinkHref', '/lol.png'));
+      runTask(() => set(this.context, 'xlinkHref', '/lol.png'));
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { 'xlink:href': '/lol.png' },
       });
 
-      this.runTask(() => set(this.context, 'xlinkHref', '/foo.png'));
+      runTask(() => set(this.context, 'xlinkHref', '/foo.png'));
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -601,14 +601,14 @@ moduleFor(
         attrs: { foo: 'bar' },
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { foo: 'bar' },
       });
 
-      this.runTask(() =>
+      runTask(() =>
         set(
           this.context,
           'foo',
@@ -623,7 +623,7 @@ moduleFor(
         attrs: { foo: 'baz' },
       });
 
-      this.runTask(() =>
+      runTask(() =>
         set(
           this.context,
           'foo',
@@ -655,21 +655,21 @@ moduleFor(
         attrs: { id: 'special-sauce' },
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { id: 'special-sauce' },
       });
 
-      this.runTask(() => set(this.context, 'sauce', 'foo'));
+      runTask(() => set(this.context, 'sauce', 'foo'));
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { id: 'special-sauce' },
       });
 
-      this.runTask(() => set(this.context, 'sauce', 'special-sauce'));
+      runTask(() => set(this.context, 'sauce', 'special-sauce'));
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -698,14 +698,14 @@ moduleFor(
         attrs: { href: 'dog.html' },
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { href: 'dog.html' },
       });
 
-      this.runTask(() => set(this.context, 'href', 'cat.html'));
+      runTask(() => set(this.context, 'href', 'cat.html'));
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -768,7 +768,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.nthChild(0), {
         tagName: 'div',
@@ -791,7 +791,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'foo', 'FOO');
         set(this.context, 'bar', undefined);
       });
@@ -817,7 +817,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => set(this.context, 'bar', 'BAR'));
+      runTask(() => set(this.context, 'bar', 'BAR'));
 
       this.assertComponentElement(this.nthChild(0), {
         tagName: 'div',
@@ -840,7 +840,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'foo', 'foo');
         set(this.context, 'bar', 'bar');
       });
@@ -918,21 +918,21 @@ moduleFor(
         attrs: { role: 'button' },
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { role: 'button' },
       });
 
-      this.runTask(() => set(this.context, 'role', 'combobox'));
+      runTask(() => set(this.context, 'role', 'combobox'));
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { role: 'combobox' },
       });
 
-      this.runTask(() => set(this.context, 'role', null));
+      runTask(() => set(this.context, 'role', null));
 
       this.assertComponentElement(this.firstChild, { tagName: 'div' });
     }

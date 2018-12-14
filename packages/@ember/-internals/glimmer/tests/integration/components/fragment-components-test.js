@@ -1,4 +1,4 @@
-import { moduleFor, RenderingTestCase, strip } from 'internal-test-helpers';
+import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 
 import { set } from '@ember/-internals/metal';
 
@@ -38,15 +38,15 @@ moduleFor(
 
       this.assertStableRerender();
 
-      this.runTask(() => set(instance, 'foo', false));
+      runTask(() => set(instance, 'foo', false));
 
       this.assertHTML(strip`<!---->bar`);
 
-      this.runTask(() => set(instance, 'bar', 'bizz'));
+      runTask(() => set(instance, 'bar', 'bizz'));
 
       this.assertHTML(strip`<!---->bizz`);
 
-      this.runTask(() => {
+      runTask(() => {
         set(instance, 'bar', 'bar');
         set(instance, 'foo', true);
       });
@@ -197,11 +197,11 @@ moduleFor(
 
       this.assertStableRerender();
 
-      this.runTask(() => set(this.context, 'fooBarId', 'qux'));
+      runTask(() => set(this.context, 'fooBarId', 'qux'));
 
       this.assertText('qux');
 
-      this.runTask(() => set(this.context, 'fooBarId', 'baz'));
+      runTask(() => set(this.context, 'fooBarId', 'baz'));
 
       this.assertText('baz');
     }
@@ -275,7 +275,7 @@ moduleFor(
         tagName: 'span',
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertElement(this.firstChild, { tagName: 'section' });
       this.assertElement(this.firstChild.firstElementChild, {

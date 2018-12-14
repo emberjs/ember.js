@@ -3,7 +3,7 @@ import EmberObject from '../../../lib/system/object';
 import { observer } from '@ember/-internals/metal';
 import { oneWay as reads, not } from '@ember/object/computed';
 import { A as a } from '../../../lib/mixins/array';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, runTask } from 'internal-test-helpers';
 import { set, get } from '@ember/-internals/metal';
 
 moduleFor(
@@ -90,7 +90,7 @@ moduleFor(
 
       assert.equal(obj.length, 2, 'precond');
 
-      this.runTask(() => obj.destroy());
+      runTask(() => obj.destroy());
 
       assert.equal(obj.length, 0, 'length is 0 without content');
       assert.deepEqual(obj.content, null, 'content was updated');

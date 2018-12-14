@@ -1,4 +1,4 @@
-import { moduleFor, RenderingTestCase } from 'internal-test-helpers';
+import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import { set, setProperties, computed } from '@ember/-internals/metal';
@@ -248,7 +248,7 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
 
         this.assertHTML(`<p>goodbye world </p>`);
 
-        this.runTask(() => set(customContext, 'greeting', 'sayonara'));
+        runTask(() => set(customContext, 'greeting', 'sayonara'));
 
         this.assertHTML(`<p>sayonara world </p>`);
       }
@@ -295,7 +295,7 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
 
         this.assertHTML(`<p>Yehuda Katz</p>`);
 
-        this.runTask(() =>
+        runTask(() =>
           setProperties(this.context, {
             firstName: 'Chad',
             lastName: 'Hietala',
@@ -348,7 +348,7 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
 
         this.assertHTML(`<p>hello world</p>`);
 
-        this.runTask(() => this.context.set('show', false));
+        runTask(() => this.context.set('show', false));
 
         this.assertText('');
 
@@ -407,7 +407,7 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
         this.assertHTML(`<p>hello world</p>`);
         assert.verifySteps(['createComponent', 'getContext', 'didCreateComponent']);
 
-        this.runTask(() => this.context.set('name', 'max'));
+        runTask(() => this.context.set('name', 'max'));
         this.assertHTML(`<p>hello max</p>`);
         assert.verifySteps(['updateComponent', 'didUpdateComponent']);
       }
@@ -491,7 +491,7 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
 
           this.assertHTML(`<p>Yehuda Katz</p>`);
 
-          this.runTask(() =>
+          runTask(() =>
             setProperties(this.context, {
               firstName: 'Chad',
               lastName: 'Hietala',
@@ -558,7 +558,7 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
           this.assertHTML(`<p data-test="foo">Hello world!</p>`);
           assert.verifySteps(['createComponent', 'getContext', 'didCreateComponent']);
 
-          this.runTask(() => this.context.set('value', 'bar'));
+          runTask(() => this.context.set('value', 'bar'));
           assert.verifySteps(['didUpdateComponent']);
         }
       }

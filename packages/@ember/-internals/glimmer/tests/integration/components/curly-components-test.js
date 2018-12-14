@@ -8,6 +8,7 @@ import {
   equalTokens,
   equalsElement,
   styles,
+  runTask,
 } from 'internal-test-helpers';
 
 import { run } from '@ember/runloop';
@@ -29,7 +30,7 @@ moduleFor(
 
       this.assertComponentElement(this.firstChild, { content: 'hello' });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, { content: 'hello' });
     }
@@ -47,7 +48,7 @@ moduleFor(
         content: 'bizz bizz',
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -55,7 +56,7 @@ moduleFor(
         content: 'bizz bizz',
       });
 
-      this.runTask(() => set(this.context, 'customId', 'bar'));
+      runTask(() => set(this.context, 'customId', 'bar'));
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -63,7 +64,7 @@ moduleFor(
         content: 'bar bizz',
       });
 
-      this.runTask(() => set(this.context, 'customId', 'bizz'));
+      runTask(() => set(this.context, 'customId', 'bizz'));
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -164,7 +165,7 @@ moduleFor(
         'Has a reasonable id attribute (found id=' + foundId + ').'
       );
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       let newFoundId = this.$('h1').attr('id');
       assert.ok(
@@ -190,7 +191,7 @@ moduleFor(
       let foundId = this.$('h1').attr('id');
       assert.equal(foundId, 'custom-id');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       let newFoundId = this.$('h1').attr('id');
       assert.equal(newFoundId, 'custom-id');
@@ -223,7 +224,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'foo-bar',
@@ -251,7 +252,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'foo-bar',
@@ -269,7 +270,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'foo-bar',
@@ -330,7 +331,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -352,7 +353,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -374,8 +375,8 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => set(this.context, 'predicate', true));
-      this.runTask(() => this.rerender());
+      runTask(() => set(this.context, 'predicate', true));
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -383,8 +384,8 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => set(this.context, 'predicate', false));
-      this.runTask(() => this.rerender());
+      runTask(() => set(this.context, 'predicate', false));
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -406,8 +407,8 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => set(this.context, 'predicate', false));
-      this.runTask(() => this.rerender());
+      runTask(() => set(this.context, 'predicate', false));
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -415,8 +416,8 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => set(this.context, 'predicate', true));
-      this.runTask(() => this.rerender());
+      runTask(() => set(this.context, 'predicate', true));
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -438,7 +439,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -446,7 +447,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => set(this.context, 'model.someTruth', false));
+      runTask(() => set(this.context, 'model.someTruth', false));
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -454,7 +455,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => set(this.context, 'model', { someTruth: true }));
+      runTask(() => set(this.context, 'model', { someTruth: true }));
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -475,21 +476,21 @@ moduleFor(
         attrs: { class: classes('ember-view foo-bar') },
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         content: 'hello',
         attrs: { class: classes('ember-view foo-bar') },
       });
 
-      this.runTask(() => set(this.context, 'fooBar', false));
+      runTask(() => set(this.context, 'fooBar', false));
 
       this.assertComponentElement(this.firstChild, {
         content: 'hello',
         attrs: { class: classes('ember-view') },
       });
 
-      this.runTask(() => set(this.context, 'fooBar', true));
+      runTask(() => set(this.context, 'fooBar', true));
 
       this.assertComponentElement(this.firstChild, {
         content: 'hello',
@@ -519,7 +520,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -560,7 +561,7 @@ moduleFor(
         content: 'hello',
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.nthChild(0), {
         tagName: 'div',
@@ -600,7 +601,7 @@ moduleFor(
 
       this.assertComponentElement(element1, { content: 'hello' });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       let element2 = instance.element;
 
@@ -630,7 +631,7 @@ moduleFor(
 
       assert.strictEqual(fooBarInstance.element.childNodes.length, 0);
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, { tagName: 'input' });
 
@@ -672,7 +673,7 @@ moduleFor(
       assert.deepEqual(this.component.childViews, [fooBarInstance]);
       assert.deepEqual(fooBarInstance.childViews, [fooBarBazInstance]);
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
       this.assertText('foo-bar foo-bar-baz');
 
       assert.equal(fooBarInstance.parentView, this.component);
@@ -695,15 +696,15 @@ moduleFor(
 
       this.assertText('Hola');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('Hola');
 
-      this.runTask(() => this.context.set('model.bar', 'Hello'));
+      runTask(() => this.context.set('model.bar', 'Hello'));
 
       this.assertText('Hello');
 
-      this.runTask(() => this.context.set('model', { bar: 'Hola' }));
+      runTask(() => this.context.set('model', { bar: 'Hola' }));
 
       this.assertText('Hola');
     }
@@ -721,15 +722,15 @@ moduleFor(
 
       this.assertText('Hola');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('Hola');
 
-      this.runTask(() => this.context.set('model.bar', 'Hello'));
+      runTask(() => this.context.set('model.bar', 'Hello'));
 
       this.assertText('Hello');
 
-      this.runTask(() => this.context.set('model', { bar: 'Hola' }));
+      runTask(() => this.context.set('model', { bar: 'Hola' }));
 
       this.assertText('Hola');
     }
@@ -745,7 +746,7 @@ moduleFor(
         content: 'hello - In component',
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         content: 'hello - In component',
@@ -765,7 +766,7 @@ moduleFor(
         content: 'yielded: [hello] - In component',
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         content: 'yielded: [hello] - In component',
@@ -785,7 +786,7 @@ moduleFor(
         content: 'yielded: [hello] - In component',
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         content: 'yielded: [hello] - In component',
@@ -812,15 +813,15 @@ moduleFor(
 
       this.assertComponentElement(this.firstChild, { content: 'hello' });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, { content: 'hello' });
 
-      this.runTask(() => set(instance, 'message', 'goodbye'));
+      runTask(() => set(instance, 'message', 'goodbye'));
 
       this.assertComponentElement(this.firstChild, { content: 'goodbye' });
 
-      this.runTask(() => set(instance, 'message', 'hello'));
+      runTask(() => set(instance, 'message', 'hello'));
 
       this.assertComponentElement(this.firstChild, { content: 'hello' });
     }
@@ -832,15 +833,15 @@ moduleFor(
 
       this.assertComponentElement(this.firstChild, { content: 'hello' });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, { content: 'hello' });
 
-      this.runTask(() => set(this.context, 'message', 'goodbye'));
+      runTask(() => set(this.context, 'message', 'goodbye'));
 
       this.assertComponentElement(this.firstChild, { content: 'goodbye' });
 
-      this.runTask(() => set(this.context, 'message', 'hello'));
+      runTask(() => set(this.context, 'message', 'hello'));
 
       this.assertComponentElement(this.firstChild, { content: 'hello' });
     }
@@ -868,11 +869,11 @@ moduleFor(
 
       this.assertStableRerender();
 
-      this.runTask(() => set(instance, 'name', 'derp-qux'));
+      runTask(() => set(instance, 'name', 'derp-qux'));
 
       this.assertComponentElement(this.firstChild, { content: 'derp-qux' });
 
-      this.runTask(() => set(instance, 'name', 'foo-bar'));
+      runTask(() => set(instance, 'name', 'foo-bar'));
 
       this.assertComponentElement(this.firstChild, { content: 'foo-bar' });
     }
@@ -907,13 +908,13 @@ moduleFor(
         content: 'Joel Kang, hello',
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, {
         content: 'Joel Kang, hello',
       });
 
-      this.runTask(() =>
+      runTask(() =>
         set(this.context, 'person', {
           firstName: 'Dora',
           lastName: 'the Explorer',
@@ -924,13 +925,13 @@ moduleFor(
         content: 'Dora the Explorer, hello',
       });
 
-      this.runTask(() => set(instance, 'greeting', 'hola'));
+      runTask(() => set(instance, 'greeting', 'hola'));
 
       this.assertComponentElement(this.firstChild, {
         content: 'Dora the Explorer, hola',
       });
 
-      this.runTask(() => {
+      runTask(() => {
         set(instance, 'greeting', 'hello');
         set(this.context, 'person', {
           firstName: 'Joel',
@@ -966,7 +967,7 @@ moduleFor(
 
       // Trigger a non-revalidating re-render. The yielded block will not be dirtied
       // nor will block param streams, and thus no infinite loop will occur.
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('0');
 
@@ -974,11 +975,11 @@ moduleFor(
       // in place.  Note that we do not see the infinite loop is in testing mode,
       // because a deprecation warning about re-renders is issued, which Ember
       // treats as an exception.
-      this.runTask(() => set(instance, 'danger', 1));
+      runTask(() => set(instance, 'danger', 1));
 
       this.assertText('1');
 
-      this.runTask(() => set(instance, 'danger', 0));
+      runTask(() => set(instance, 'danger', 0));
 
       this.assertText('0');
     }
@@ -1030,7 +1031,7 @@ moduleFor(
 
       this.assertText('1 2 3 4 5 6 7 8 ');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       assert.deepEqual(destroyed, {
         1: 0,
@@ -1043,7 +1044,7 @@ moduleFor(
         8: 0,
       });
 
-      this.runTask(() => set(this.context, 'cond5', false));
+      runTask(() => set(this.context, 'cond5', false));
 
       this.assertText('1 2 3 4 8 ');
 
@@ -1058,7 +1059,7 @@ moduleFor(
         8: 0,
       });
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'cond3', false);
         set(this.context, 'cond5', true);
         set(this.context, 'cond4', false);
@@ -1075,7 +1076,7 @@ moduleFor(
         8: 1,
       });
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'cond2', false);
         set(this.context, 'cond1', false);
       });
@@ -1111,15 +1112,15 @@ moduleFor(
 
       this.assertText('you need to be more <b>bold</b>');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('you need to be more <b>bold</b>');
 
-      this.runTask(() => set(component, 'output', 'you are so <i>super</i>'));
+      runTask(() => set(component, 'output', 'you are so <i>super</i>'));
 
       this.assertText('you are so <i>super</i>');
 
-      this.runTask(() => set(component, 'output', 'you need to be more <b>bold</b>'));
+      runTask(() => set(component, 'output', 'you need to be more <b>bold</b>'));
     }
 
     ['@test should not escape HTML in triple mustaches']() {
@@ -1143,15 +1144,15 @@ moduleFor(
 
       equalTokens(this.firstChild, expectedHtmlBold);
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       equalTokens(this.firstChild, expectedHtmlBold);
 
-      this.runTask(() => set(component, 'output', expectedHtmlItalic));
+      runTask(() => set(component, 'output', expectedHtmlItalic));
 
       equalTokens(this.firstChild, expectedHtmlItalic);
 
-      this.runTask(() => set(component, 'output', expectedHtmlBold));
+      runTask(() => set(component, 'output', expectedHtmlBold));
 
       equalTokens(this.firstChild, expectedHtmlBold);
     }
@@ -1177,15 +1178,15 @@ moduleFor(
 
       equalTokens(this.firstChild, expectedHtmlBold);
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       equalTokens(this.firstChild, expectedHtmlBold);
 
-      this.runTask(() => set(component, 'output', htmlSafe(expectedHtmlItalic)));
+      runTask(() => set(component, 'output', htmlSafe(expectedHtmlItalic)));
 
       equalTokens(this.firstChild, expectedHtmlItalic);
 
-      this.runTask(() => set(component, 'output', htmlSafe(expectedHtmlBold)));
+      runTask(() => set(component, 'output', htmlSafe(expectedHtmlBold)));
 
       equalTokens(this.firstChild, expectedHtmlBold);
     }
@@ -1251,15 +1252,15 @@ moduleFor(
 
       this.assertComponentElement(this.firstChild, { content: 'true' });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, { content: 'true' });
 
-      this.runTask(() => set(component, 'isStream', false));
+      runTask(() => set(component, 'isStream', false));
 
       this.assertComponentElement(this.firstChild, { content: 'false' });
 
-      this.runTask(() => set(component, 'isStream', true));
+      runTask(() => set(component, 'isStream', true));
 
       this.assertComponentElement(this.firstChild, { content: 'true' });
     }
@@ -1275,7 +1276,7 @@ moduleFor(
 
       this.assertText('some-prop some-component');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('some-prop some-component');
     }
@@ -1291,15 +1292,15 @@ moduleFor(
 
       this.assertText('notsomecomponent');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('notsomecomponent');
 
-      this.runTask(() => this.context.set('somecomponent', 'not not notsomecomponent'));
+      runTask(() => this.context.set('somecomponent', 'not not notsomecomponent'));
 
       this.assertText('not not notsomecomponent');
 
-      this.runTask(() => this.context.set('somecomponent', 'notsomecomponent'));
+      runTask(() => this.context.set('somecomponent', 'notsomecomponent'));
 
       this.assertText('notsomecomponent');
     }
@@ -1315,15 +1316,15 @@ moduleFor(
 
       this.assertText('In layout - someProp: something here');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('In layout - someProp: something here');
 
-      this.runTask(() => this.context.set('prop', 'other thing there'));
+      runTask(() => this.context.set('prop', 'other thing there'));
 
       this.assertText('In layout - someProp: other thing there');
 
-      this.runTask(() => this.context.set('prop', 'something here'));
+      runTask(() => this.context.set('prop', 'something here'));
 
       this.assertText('In layout - someProp: something here');
     }
@@ -1339,15 +1340,15 @@ moduleFor(
 
       this.assertText('In layout - someProp: something here');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('In layout - someProp: something here');
 
-      this.runTask(() => this.context.set('prop', 'other thing there'));
+      runTask(() => this.context.set('prop', 'other thing there'));
 
       this.assertText('In layout - someProp: other thing there');
 
-      this.runTask(() => this.context.set('prop', 'something here'));
+      runTask(() => this.context.set('prop', 'something here'));
 
       this.assertText('In layout - someProp: something here');
     }
@@ -1371,20 +1372,20 @@ moduleFor(
 
       this.assertText('In layout - someProp: value set in instance');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('In layout - someProp: value set in instance');
 
-      this.runTask(() => this.context.set('prop', 'updated something passed when invoked'));
+      runTask(() => this.context.set('prop', 'updated something passed when invoked'));
 
       this.assertText('In layout - someProp: updated something passed when invoked');
 
-      this.runTask(() => instance.set('someProp', 'update value set in instance'));
+      runTask(() => instance.set('someProp', 'update value set in instance'));
 
       this.assertText('In layout - someProp: update value set in instance');
 
-      this.runTask(() => this.context.set('prop', 'something passed when invoked'));
-      this.runTask(() => instance.set('someProp', 'value set in instance'));
+      runTask(() => this.context.set('prop', 'something passed when invoked'));
+      runTask(() => instance.set('someProp', 'value set in instance'));
 
       this.assertText('In layout - someProp: value set in instance');
     }
@@ -1435,26 +1436,26 @@ moduleFor(
 
       // Note: Hooks are not fired in Glimmer for idempotent re-renders
       expectHooks({ willUpdate: false, didReceiveAttrs: false }, () => {
-        this.runTask(() => this.rerender());
+        runTask(() => this.rerender());
       });
 
       this.assertText('In layout - someProp: wycats');
 
       expectHooks({ willUpdate: true, didReceiveAttrs: true }, () => {
-        this.runTask(() => this.context.set('someProp', 'tomdale'));
+        runTask(() => this.context.set('someProp', 'tomdale'));
       });
 
       this.assertText('In layout - someProp: tomdale');
 
       // Note: Hooks are not fired in Glimmer for idempotent re-renders
       expectHooks({ willUpdate: false, didReceiveAttrs: false }, () => {
-        this.runTask(() => this.rerender());
+        runTask(() => this.rerender());
       });
 
       this.assertText('In layout - someProp: tomdale');
 
       expectHooks({ willUpdate: true, didReceiveAttrs: true }, () => {
-        this.runTask(() => this.context.set('someProp', 'wycats'));
+        runTask(() => this.context.set('someProp', 'wycats'));
       });
 
       this.assertText('In layout - someProp: wycats');
@@ -1485,14 +1486,14 @@ moduleFor(
 
       this.assertStableRerender();
 
-      this.runTask(() => {
+      runTask(() => {
         this.context.set('model.value', 'lul');
         this.context.set('model.items', [1]);
       });
 
       this.assertText(strip`Args: lul | lul | lul111`);
 
-      this.runTask(() => this.context.set('model', { value: 'wat', items: [1, 2, 3] }));
+      runTask(() => this.context.set('model', { value: 'wat', items: [1, 2, 3] }));
 
       this.assertText('Args: wat | wat | wat123123123');
     }
@@ -1525,14 +1526,14 @@ moduleFor(
 
       this.assertStableRerender();
 
-      this.runTask(() => {
+      runTask(() => {
         this.context.set('model.value', 'lul');
         this.context.set('model.items', [1]);
       });
 
       this.assertText(strip`Args: lul | lul | lul | lul1111`);
 
-      this.runTask(() => this.context.set('model', { value: 'wat', items: [1, 2, 3] }));
+      runTask(() => this.context.set('model', { value: 'wat', items: [1, 2, 3] }));
 
       this.assertText('Args: wat | wat | wat | wat123123123123');
     }
@@ -1548,15 +1549,15 @@ moduleFor(
 
       this.assertText('In layout - someProp: something here');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('In layout - someProp: something here');
 
-      this.runTask(() => this.context.set('prop', 'something else'));
+      runTask(() => this.context.set('prop', 'something else'));
 
       this.assertText('In layout - someProp: something else');
 
-      this.runTask(() => this.context.set('prop', 'something here'));
+      runTask(() => this.context.set('prop', 'something here'));
 
       this.assertText('In layout - someProp: something here');
     }
@@ -1578,15 +1579,15 @@ moduleFor(
 
       this.assertText('In layout - someProp: something here - In template');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('In layout - someProp: something here - In template');
 
-      this.runTask(() => this.context.set('prop', 'something else'));
+      runTask(() => this.context.set('prop', 'something else'));
 
       this.assertText('In layout - someProp: something else - In template');
 
-      this.runTask(() => this.context.set('prop', 'something here'));
+      runTask(() => this.context.set('prop', 'something here'));
 
       this.assertText('In layout - someProp: something here - In template');
     }
@@ -1608,15 +1609,15 @@ moduleFor(
 
       this.assertText('In layout - someProp: something here - In template');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('In layout - someProp: something here - In template');
 
-      this.runTask(() => this.context.set('prop', 'something else'));
+      runTask(() => this.context.set('prop', 'something else'));
 
       this.assertText('In layout - someProp: something else - In template');
 
-      this.runTask(() => this.context.set('prop', 'something here'));
+      runTask(() => this.context.set('prop', 'something here'));
 
       this.assertText('In layout - someProp: something here - In template');
     }
@@ -1638,15 +1639,15 @@ moduleFor(
 
       this.assertText('In layout - someProp: something here - In template');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('In layout - someProp: something here - In template');
 
-      this.runTask(() => this.context.set('prop', 'something else'));
+      runTask(() => this.context.set('prop', 'something else'));
 
       this.assertText('In layout - someProp: something else - In template');
 
-      this.runTask(() => this.context.set('prop', 'something here'));
+      runTask(() => this.context.set('prop', 'something here'));
 
       this.assertText('In layout - someProp: something here - In template');
     }
@@ -1669,7 +1670,7 @@ moduleFor(
       assert.equal(this.$('#args-3').text(), 'Foo4Bar');
       assert.equal(this.$('#args-5').text(), 'Foo4Bar5Baz');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       assert.equal(this.$('#args-3').text(), 'Foo4Bar');
       assert.equal(this.$('#args-5').text(), 'Foo4Bar5Baz');
@@ -1710,23 +1711,23 @@ moduleFor(
 
       this.assertText('Foo4Bar');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('Foo4Bar');
 
-      this.runTask(() => this.context.get('things').pushObject(5));
+      runTask(() => this.context.get('things').pushObject(5));
 
       this.assertText('Foo4Bar5');
 
-      this.runTask(() => this.context.get('things').shiftObject());
+      runTask(() => this.context.get('things').shiftObject());
 
       this.assertText('4Bar5');
 
-      this.runTask(() => this.context.get('things').clear());
+      runTask(() => this.context.get('things').clear());
 
       this.assertText('');
 
-      this.runTask(() => this.context.set('things', emberA(['Foo', 4, 'Bar'])));
+      runTask(() => this.context.set('things', emberA(['Foo', 4, 'Bar'])));
 
       this.assertText('Foo4Bar');
     }
@@ -1749,7 +1750,7 @@ moduleFor(
       assert.equal(this.$('#one-positional').text(), 'one - two');
       assert.equal(this.$('#no-positional').text(), 'one - two');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       assert.equal(this.$('#two-positional').text(), 'one - two');
       assert.equal(this.$('#one-positional').text(), 'one - two');
@@ -1774,19 +1775,19 @@ moduleFor(
 
       this.assertText('Foo4');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('Foo4');
 
-      this.runTask(() => this.context.set('user1', 'Bar'));
+      runTask(() => this.context.set('user1', 'Bar'));
 
       this.assertText('Bar4');
 
-      this.runTask(() => this.context.set('user2', '5'));
+      runTask(() => this.context.set('user2', '5'));
 
       this.assertText('Bar5');
 
-      this.runTask(() => {
+      runTask(() => {
         this.context.set('user1', 'Foo');
         this.context.set('user2', 4);
       });
@@ -1805,17 +1806,17 @@ moduleFor(
 
       this.assertComponentElement(this.firstChild, { attrs: { role: 'main' } });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, { attrs: { role: 'main' } });
 
-      this.runTask(() => this.context.set('role', 'input'));
+      runTask(() => this.context.set('role', 'input'));
 
       this.assertComponentElement(this.firstChild, {
         attrs: { role: 'input' },
       });
 
-      this.runTask(() => this.context.set('role', 'main'));
+      runTask(() => this.context.set('role', 'main'));
 
       this.assertComponentElement(this.firstChild, { attrs: { role: 'main' } });
     }
@@ -1831,17 +1832,17 @@ moduleFor(
 
       this.assertComponentElement(this.firstChild, { attrs: {} });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, { attrs: {} });
 
-      this.runTask(() => this.context.set('role', 'input'));
+      runTask(() => this.context.set('role', 'input'));
 
       this.assertComponentElement(this.firstChild, {
         attrs: { role: 'input' },
       });
 
-      this.runTask(() => this.context.set('role', undefined));
+      runTask(() => this.context.set('role', undefined));
 
       this.assertComponentElement(this.firstChild, { attrs: {} });
     }
@@ -1864,11 +1865,11 @@ moduleFor(
 
       this.assertComponentElement(this.firstChild, { attrs: {} });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertComponentElement(this.firstChild, { attrs: {} });
 
-      this.runTask(() => instance.set('ariaRole', 'input'));
+      runTask(() => instance.set('ariaRole', 'input'));
 
       this.assertComponentElement(this.firstChild, { attrs: {} });
     }
@@ -1896,17 +1897,17 @@ moduleFor(
         '[In layout - with-block] [In block - Whoop, whoop!][In layout - without-block] '
       );
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText(
         '[In layout - with-block] [In block - Whoop, whoop!][In layout - without-block] '
       );
 
-      this.runTask(() => this.context.set('name', 'Ole, ole'));
+      runTask(() => this.context.set('name', 'Ole, ole'));
 
       this.assertText('[In layout - with-block] [In block - Ole, ole][In layout - without-block] ');
 
-      this.runTask(() => this.context.set('name', 'Whoop, whoop!'));
+      runTask(() => this.context.set('name', 'Whoop, whoop!'));
 
       this.assertText(
         '[In layout - with-block] [In block - Whoop, whoop!][In layout - without-block] '
@@ -1930,7 +1931,7 @@ moduleFor(
 
       this.assertText('In template');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('In template');
     }
@@ -1949,7 +1950,7 @@ moduleFor(
 
       this.assertText('No Block!');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('No Block!');
     }
@@ -1971,7 +1972,7 @@ moduleFor(
 
       this.assertText('In template - In Component');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('In template - In Component');
     }
@@ -1993,7 +1994,7 @@ moduleFor(
 
       this.assertText('In block No Block Param!');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('In block No Block Param!');
     }
@@ -2010,7 +2011,7 @@ moduleFor(
 
       this.assertText('Quint4');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('Quint4');
     }
@@ -2030,19 +2031,19 @@ moduleFor(
 
       this.assertText('Quint4');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('Quint4');
 
-      this.runTask(() => this.context.set('myName', 'Sergio'));
+      runTask(() => this.context.set('myName', 'Sergio'));
 
       this.assertText('Sergio4');
 
-      this.runTask(() => this.context.set('myAge', 2));
+      runTask(() => this.context.set('myAge', 2));
 
       this.assertText('Sergio2');
 
-      this.runTask(() => {
+      runTask(() => {
         this.context.set('myName', 'Quint');
         this.context.set('myAge', 4);
       });
@@ -2090,15 +2091,15 @@ moduleFor(
 
       this.assertText('Yes:Hello42');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('Yes:Hello42');
 
-      this.runTask(() => this.context.set('activated', false));
+      runTask(() => this.context.set('activated', false));
 
       this.assertText('No:Goodbye');
 
-      this.runTask(() => this.context.set('activated', true));
+      runTask(() => this.context.set('activated', true));
 
       this.assertText('Yes:Hello42');
     }
@@ -2452,7 +2453,7 @@ moduleFor(
         'x-outer receives the ambient scope as its parentView'
       );
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       assert.equal(
         innerTemplate.parentView,
@@ -2510,7 +2511,7 @@ moduleFor(
         'x-outer receives the ambient scope as its parentView'
       );
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       assert.equal(
         outer.parentView,
@@ -2518,7 +2519,7 @@ moduleFor(
         'x-outer receives the ambient scope as its parentView (after rerender)'
       );
 
-      this.runTask(() => this.context.set('showInner', true));
+      runTask(() => this.context.set('showInner', true));
 
       assert.equal(
         outer.parentView,
@@ -2531,7 +2532,7 @@ moduleFor(
         'receives the wrapping component as its parentView in template blocks'
       );
 
-      this.runTask(() => this.context.set('showInner', false));
+      runTask(() => this.context.set('showInner', false));
 
       assert.equal(
         outer.parentView,
@@ -2584,7 +2585,7 @@ moduleFor(
         'initial render of middle (observers do not run during init)'
       );
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       assert.equal(this.$('#inner-value').text(), '1', 'initial render of inner');
       assert.equal(
@@ -2596,7 +2597,7 @@ moduleFor(
       let expectedBacktrackingMessage = /modified "value" twice on <.+?> in a single render\. It was rendered in "component:x-middle" and modified in "component:x-inner"/;
 
       expectAssertion(() => {
-        this.runTask(() => outer.set('value', 2));
+        runTask(() => outer.set('value', 2));
       }, expectedBacktrackingMessage);
     }
 
@@ -2645,19 +2646,19 @@ moduleFor(
 
       this.assertText('In layout. [Child: Tom.][Child: Dick.][Child: Harry.]');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('In layout. [Child: Tom.][Child: Dick.][Child: Harry.]');
 
-      this.runTask(() => this.context.get('items').pushObject('Sergio'));
+      runTask(() => this.context.get('items').pushObject('Sergio'));
 
       this.assertText('In layout. [Child: Tom.][Child: Dick.][Child: Harry.][Child: Sergio.]');
 
-      this.runTask(() => this.context.get('items').shiftObject());
+      runTask(() => this.context.get('items').shiftObject());
 
       this.assertText('In layout. [Child: Dick.][Child: Harry.][Child: Sergio.]');
 
-      this.runTask(() => this.context.set('items', emberA(['Tom', 'Dick', 'Harry'])));
+      runTask(() => this.context.set('items', emberA(['Tom', 'Dick', 'Harry'])));
 
       this.assertText('In layout. [Child: Tom.][Child: Dick.][Child: Harry.]');
     }
@@ -2690,7 +2691,7 @@ moduleFor(
         attrs: { class: classes(expectedClassNames.join(' ')) },
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       assert.ok(
         this.$('button').is('.foo.bar.baz.ember-view'),
@@ -2724,7 +2725,7 @@ moduleFor(
 
       this.assertText('blarkporybaz- Click Me');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('blarkporybaz- Click Me');
     }
@@ -2750,7 +2751,7 @@ moduleFor(
 
       this.assertText('initial value - initial value');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('initial value - initial value');
 
@@ -2762,19 +2763,19 @@ moduleFor(
         this.assertText('initial value - initial value');
       }
 
-      this.runTask(() => {
+      runTask(() => {
         component.set('bar', 'updated value');
       });
 
       this.assertText('updated value - updated value');
 
-      this.runTask(() => {
+      runTask(() => {
         component.set('bar', undefined);
       });
 
       this.assertText(' - ');
 
-      this.runTask(() => {
+      runTask(() => {
         this.component.set('localBar', 'initial value');
       });
 
@@ -2813,17 +2814,17 @@ moduleFor(
 
       this.assertText('initial value - initial value');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('initial value - initial value');
 
-      this.runTask(() => {
+      runTask(() => {
         component.set('bar', 'updated value');
       });
 
       this.assertText('updated value - updated value');
 
-      this.runTask(() => {
+      runTask(() => {
         this.component.set('localBar', 'initial value');
       });
 
@@ -2861,17 +2862,17 @@ moduleFor(
 
       this.assertText('initial value');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('initial value');
 
-      this.runTask(() => {
+      runTask(() => {
         component.set('bar', 'updated value');
       });
 
       this.assertText('updated value');
 
-      this.runTask(() => {
+      runTask(() => {
         this.component.set('localBar', 'initial value');
       });
 
@@ -2902,17 +2903,17 @@ moduleFor(
 
       this.assertText('Jackson');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('Jackson');
 
-      this.runTask(() => {
+      runTask(() => {
         service.set('last', 'McGuffey');
       });
 
       this.assertText('McGuffey');
 
-      this.runTask(() => {
+      runTask(() => {
         service.set('last', 'Jackson');
       });
 
@@ -2968,12 +2969,12 @@ moduleFor(
 
       this.assertStableRerender();
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'visible', true);
       });
       assertStyle('');
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'visible', false);
       });
       assertStyle('display: none;');
@@ -3000,7 +3001,7 @@ moduleFor(
 
       this.assertStableRerender();
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'visible', true);
       });
 
@@ -3009,7 +3010,7 @@ moduleFor(
         attrs: { id: 'foo-bar', style: styles('color: blue;') },
       });
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'visible', false);
       });
 
@@ -3051,13 +3052,13 @@ moduleFor(
 
       this.assertStableRerender();
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'visible', true);
       });
 
       assertStyle('');
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'visible', false);
         set(this.context, 'foo', 'woo');
       });
@@ -3104,27 +3105,27 @@ moduleFor(
 
       this.assertStableRerender();
 
-      this.runTask(() => {
+      runTask(() => {
         this.firstChild.value = 'bar';
         this.$('input').trigger('change');
       });
 
       assertElement('bar');
 
-      this.runTask(() => {
+      runTask(() => {
         this.firstChild.value = 'foo';
         this.$('input').trigger('change');
       });
 
       assertElement('foo');
 
-      this.runTask(() => {
+      runTask(() => {
         set(component, 'value', 'bar');
       });
 
       assertElement('bar');
 
-      this.runTask(() => {
+      runTask(() => {
         this.firstChild.value = 'foo';
         this.$('input').trigger('change');
       });
@@ -3251,7 +3252,7 @@ moduleFor(
 
       assert.strictEqual(barCopyDidChangeCount, 1, 'expected observer firing for: barCopy');
 
-      this.runTask(() => set(this.context, 'bar', 7));
+      runTask(() => set(this.context, 'bar', 7));
 
       this.assertText('7-8');
 
@@ -3285,7 +3286,7 @@ moduleFor(
 
       this.render(`{{foo-bar foo=foo bar=bar}}`, { foo: 1, bar: 3 });
 
-      this.runTask(() => set(this.context, 'foo', 5));
+      runTask(() => set(this.context, 'foo', 5));
     }
 
     ['@test returning `true` from an action does not bubble if `target` is not specified (GH#14275)'](
@@ -3312,7 +3313,7 @@ moduleFor(
 
       this.assertText('Show');
 
-      this.runTask(() => this.$('button').click());
+      runTask(() => this.$('button').click());
     }
 
     ['@test returning `true` from an action bubbles to the `target` if specified'](assert) {
@@ -3340,7 +3341,7 @@ moduleFor(
 
       this.assertText('Show');
 
-      this.runTask(() => this.$('button').click());
+      runTask(() => this.$('button').click());
     }
 
     ['@test triggering an event only attempts to invoke an identically named method, if it actually is a function (GH#15228)'](
@@ -3414,11 +3415,11 @@ moduleFor(
 
       this.assertStableRerender();
 
-      this.runTask(() => set(this.context, 'editMode', true));
+      runTask(() => set(this.context, 'editMode', true));
 
       this.assertText('|foo|Remove foo|bar|Remove bar|qux|Remove qux|baz|Remove baz');
 
-      this.runTask(() => set(this.context, 'editMode', false));
+      runTask(() => set(this.context, 'editMode', false));
 
       this.assertText('|foo||bar||qux||baz|');
     }
@@ -3502,11 +3503,11 @@ moduleFor(
 
       this.assertStableRerender();
 
-      this.runTask(() => set(instance, 'foo.bar.baz', 'yippie!'));
+      runTask(() => set(instance, 'foo.bar.baz', 'yippie!'));
 
       this.assertText('yippie!');
 
-      this.runTask(() => set(instance, 'foo.bar.baz', 'huzzah!'));
+      runTask(() => set(instance, 'foo.bar.baz', 'huzzah!'));
 
       this.assertText('huzzah!');
     }
@@ -3630,7 +3631,7 @@ if (jQueryDisabled) {
 
         this.assertComponentElement(element1, { content: 'hello' });
 
-        this.runTask(() => this.rerender());
+        runTask(() => this.rerender());
 
         let element2 = instance.$()[0];
 
@@ -3661,7 +3662,7 @@ if (jQueryDisabled) {
         assert.equal($span.length, 1);
         assert.equal($span.attr('class'), 'inner');
 
-        this.runTask(() => this.rerender());
+        runTask(() => this.rerender());
 
         $span = instance.$('span');
 

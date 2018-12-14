@@ -1,4 +1,4 @@
-import { moduleFor, ApplicationTestCase, RenderingTestCase } from 'internal-test-helpers';
+import { moduleFor, ApplicationTestCase, RenderingTestCase, runTask } from 'internal-test-helpers';
 
 import Controller from '@ember/controller';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
@@ -42,7 +42,7 @@ moduleFor(
       );
 
       return this.visit('/').then(() => {
-        this.runTask(() => this.$('#handle-it').click());
+        runTask(() => this.$('#handle-it').click());
       });
     }
 
@@ -74,7 +74,7 @@ moduleFor(
       this.addTemplate('index', '<button id="handle-it" {{action "handleIt"}}>Click!</button>');
 
       return this.visit('/').then(() => {
-        this.runTask(() => this.$('#handle-it').click());
+        runTask(() => this.$('#handle-it').click());
       });
     }
   }

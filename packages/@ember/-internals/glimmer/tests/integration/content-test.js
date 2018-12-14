@@ -1,6 +1,6 @@
 /* globals EmberDev */
 
-import { RenderingTestCase, moduleFor, applyMixins, classes } from 'internal-test-helpers';
+import { RenderingTestCase, moduleFor, applyMixins, classes, runTask } from 'internal-test-helpers';
 
 import { set, computed } from '@ember/-internals/metal';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
@@ -16,7 +16,7 @@ moduleFor(
       this.render('hello');
       let text1 = this.assertTextNode(this.firstChild, 'hello');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       let text2 = this.assertTextNode(this.firstChild, 'hello');
 
@@ -28,7 +28,7 @@ moduleFor(
       let p1 = this.assertElement(this.firstChild, { tagName: 'p' });
       let text1 = this.assertTextNode(this.firstChild.firstChild, 'hello');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       let p2 = this.assertElement(this.firstChild, { tagName: 'p' });
       let text2 = this.assertTextNode(this.firstChild.firstChild, 'hello');
@@ -58,7 +58,7 @@ moduleFor(
       this.render(template);
       this.assertHTML(template);
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertHTML(template);
     }
@@ -87,12 +87,12 @@ class DynamicContentTest extends RenderingTestCase {
 
     this.assertStableRerender();
 
-    this.runTask(() => set(this.context, 'message', 'goodbye'));
+    runTask(() => set(this.context, 'message', 'goodbye'));
 
     this.assertContent('goodbye');
     this.assertInvariants();
 
-    this.runTask(() => set(this.context, 'message', 'hello'));
+    runTask(() => set(this.context, 'message', 'hello'));
 
     this.assertContent('hello');
     this.assertInvariants();
@@ -105,15 +105,15 @@ class DynamicContentTest extends RenderingTestCase {
 
     this.assertStableRerender();
 
-    this.runTask(() => set(this.context, 'foo', 'foo'));
+    runTask(() => set(this.context, 'foo', 'foo'));
 
     this.assertHTML('<p>3</p>');
 
-    this.runTask(() => set(this.context, 'foo', ''));
+    runTask(() => set(this.context, 'foo', ''));
 
     this.assertHTML('<p>0</p>');
 
-    this.runTask(() => set(this.context, 'foo', undefined));
+    runTask(() => set(this.context, 'foo', undefined));
 
     this.assertHTML('<p></p>');
   }
@@ -125,15 +125,15 @@ class DynamicContentTest extends RenderingTestCase {
 
     this.assertStableRerender();
 
-    this.runTask(() => set(this.context, 'foo', [1, 2, 3]));
+    runTask(() => set(this.context, 'foo', [1, 2, 3]));
 
     this.assertHTML('<p>3</p>');
 
-    this.runTask(() => set(this.context, 'foo', []));
+    runTask(() => set(this.context, 'foo', []));
 
     this.assertHTML('<p>0</p>');
 
-    this.runTask(() => set(this.context, 'foo', undefined));
+    runTask(() => set(this.context, 'foo', undefined));
 
     this.assertHTML('<p></p>');
   }
@@ -147,12 +147,12 @@ class DynamicContentTest extends RenderingTestCase {
 
     this.assertStableRerender();
 
-    this.runTask(() => set(this.context, 'CaptializedPath', 'still no deprecation'));
+    runTask(() => set(this.context, 'CaptializedPath', 'still no deprecation'));
 
     this.assertContent('still no deprecation');
     this.assertInvariants();
 
-    this.runTask(() => set(this.context, 'CaptializedPath', 'no deprecation'));
+    runTask(() => set(this.context, 'CaptializedPath', 'no deprecation'));
 
     this.assertContent('no deprecation');
     this.assertInvariants();
@@ -165,11 +165,11 @@ class DynamicContentTest extends RenderingTestCase {
 
     this.assertStableRerender();
 
-    this.runTask(() => set(this.context, 'name', 'foo-bar'));
+    runTask(() => set(this.context, 'name', 'foo-bar'));
 
     this.assertContent('foo-bar');
 
-    this.runTask(() => set(this.context, 'name', undefined));
+    runTask(() => set(this.context, 'name', undefined));
 
     this.assertIsEmpty();
   }
@@ -183,17 +183,17 @@ class DynamicContentTest extends RenderingTestCase {
 
     this.assertStableRerender();
 
-    this.runTask(() => set(this.context, 'a.b.c.d.e.f', 'goodbye'));
+    runTask(() => set(this.context, 'a.b.c.d.e.f', 'goodbye'));
 
     this.assertContent('goodbye');
     this.assertInvariants();
 
-    this.runTask(() => set(this.context, 'a.b.c.d', { e: { f: 'aloha' } }));
+    runTask(() => set(this.context, 'a.b.c.d', { e: { f: 'aloha' } }));
 
     this.assertContent('aloha');
     this.assertInvariants();
 
-    this.runTask(() => {
+    runTask(() => {
       set(this.context, 'a', { b: { c: { d: { e: { f: 'hello' } } } } });
     });
 
@@ -216,12 +216,12 @@ class DynamicContentTest extends RenderingTestCase {
 
     this.assertStableRerender();
 
-    this.runTask(() => set(m, 'message', 'goodbye'));
+    runTask(() => set(m, 'message', 'goodbye'));
 
     this.assertContent('GOODBYE');
     this.assertInvariants();
 
-    this.runTask(() => set(this.context, 'm', Formatter.create({ message: 'hello' })));
+    runTask(() => set(this.context, 'm', Formatter.create({ message: 'hello' })));
 
     this.assertContent('HELLO');
     this.assertInvariants();
@@ -242,14 +242,12 @@ class DynamicContentTest extends RenderingTestCase {
 
     this.assertStableRerender();
 
-    this.runTask(() => set(m, 'messenger.message', 'goodbye'));
+    runTask(() => set(m, 'messenger.message', 'goodbye'));
 
     this.assertContent('GOODBYE');
     this.assertInvariants();
 
-    this.runTask(() =>
-      set(this.context, 'm', Formatter.create({ messenger: { message: 'hello' } }))
-    );
+    runTask(() => set(this.context, 'm', Formatter.create({ messenger: { message: 'hello' } })));
 
     this.assertContent('HELLO');
     this.assertInvariants();
@@ -264,26 +262,26 @@ class DynamicContentTest extends RenderingTestCase {
 
     this.assertStableRerender();
 
-    this.runTask(() => set(this.context, 'proxy.content.name', 'Yehuda Katz'));
+    runTask(() => set(this.context, 'proxy.content.name', 'Yehuda Katz'));
 
     this.assertContent('Yehuda Katz');
     this.assertInvariants();
 
-    this.runTask(() => set(this.context, 'proxy.content', { name: 'Godfrey Chan' }));
+    runTask(() => set(this.context, 'proxy.content', { name: 'Godfrey Chan' }));
 
     this.assertContent('Godfrey Chan');
     this.assertInvariants();
 
-    this.runTask(() => set(this.context, 'proxy.name', 'Stefan Penner'));
+    runTask(() => set(this.context, 'proxy.name', 'Stefan Penner'));
 
     this.assertContent('Stefan Penner');
     this.assertInvariants();
 
-    this.runTask(() => set(this.context, 'proxy.content', null));
+    runTask(() => set(this.context, 'proxy.content', null));
 
     this.assertIsEmpty();
 
-    this.runTask(() =>
+    runTask(() =>
       set(this.context, 'proxy', ObjectProxy.create({ content: { name: 'Tom Dale' } }))
     );
 
@@ -302,21 +300,21 @@ class DynamicContentTest extends RenderingTestCase {
 
     this.assertStableRerender();
 
-    this.runTask(() => set(this.context, 'proxy.content.name.last', 'Cruise'));
+    runTask(() => set(this.context, 'proxy.content.name.last', 'Cruise'));
 
     this.assertContent('Cruise');
     this.assertInvariants();
 
-    this.runTask(() => set(this.context, 'proxy.content.name.first', 'Suri'));
+    runTask(() => set(this.context, 'proxy.content.name.first', 'Suri'));
 
     this.assertStableRerender();
 
-    this.runTask(() => set(this.context, 'proxy.content.name', { first: 'Yehuda', last: 'Katz' }));
+    runTask(() => set(this.context, 'proxy.content.name', { first: 'Yehuda', last: 'Katz' }));
 
     this.assertContent('Katz');
     this.assertInvariants();
 
-    this.runTask(() =>
+    runTask(() =>
       set(this.context, 'proxy.content', {
         name: { first: 'Godfrey', last: 'Chan' },
       })
@@ -325,16 +323,16 @@ class DynamicContentTest extends RenderingTestCase {
     this.assertContent('Chan');
     this.assertInvariants();
 
-    this.runTask(() => set(this.context, 'proxy.name', { first: 'Stefan', last: 'Penner' }));
+    runTask(() => set(this.context, 'proxy.name', { first: 'Stefan', last: 'Penner' }));
 
     this.assertContent('Penner');
     this.assertInvariants();
 
-    this.runTask(() => set(this.context, 'proxy', null));
+    runTask(() => set(this.context, 'proxy', null));
 
     this.assertIsEmpty();
 
-    this.runTask(() =>
+    runTask(() =>
       set(
         this.context,
         'proxy',
@@ -359,7 +357,7 @@ class DynamicContentTest extends RenderingTestCase {
 
     this.assertStableRerender();
 
-    this.runTask(() =>
+    runTask(() =>
       set(this.context, 'proxyOrObject', {
         name: { first: 'Tom', last: 'Dale' },
       })
@@ -367,16 +365,16 @@ class DynamicContentTest extends RenderingTestCase {
 
     this.assertStableRerender();
 
-    this.runTask(() => set(this.context, 'proxyOrObject.name.last', 'Cruise'));
+    runTask(() => set(this.context, 'proxyOrObject.name.last', 'Cruise'));
 
     this.assertContent('Cruise');
     this.assertInvariants();
 
-    this.runTask(() => set(this.context, 'proxyOrObject.name.first', 'Suri'));
+    runTask(() => set(this.context, 'proxyOrObject.name.first', 'Suri'));
 
     this.assertStableRerender();
 
-    this.runTask(() =>
+    runTask(() =>
       set(this.context, 'proxyOrObject', {
         name: { first: 'Yehuda', last: 'Katz' },
       })
@@ -385,7 +383,7 @@ class DynamicContentTest extends RenderingTestCase {
     this.assertContent('Katz');
     this.assertInvariants();
 
-    this.runTask(() =>
+    runTask(() =>
       set(
         this.context,
         'proxyOrObject',
@@ -398,7 +396,7 @@ class DynamicContentTest extends RenderingTestCase {
     this.assertContent('Chan');
     this.assertInvariants();
 
-    this.runTask(() =>
+    runTask(() =>
       set(this.context, 'proxyOrObject.content.name', {
         first: 'Stefan',
         last: 'Penner',
@@ -408,11 +406,11 @@ class DynamicContentTest extends RenderingTestCase {
     this.assertContent('Penner');
     this.assertInvariants();
 
-    this.runTask(() => set(this.context, 'proxyOrObject', null));
+    runTask(() => set(this.context, 'proxyOrObject', null));
 
     this.assertIsEmpty();
 
-    this.runTask(() =>
+    runTask(() =>
       set(
         this.context,
         'proxyOrObject',
@@ -435,7 +433,7 @@ class DynamicContentTest extends RenderingTestCase {
 
     this.assertStableRerender();
 
-    this.runTask(() =>
+    runTask(() =>
       set(
         this.context,
         'objectOrProxy',
@@ -447,16 +445,16 @@ class DynamicContentTest extends RenderingTestCase {
 
     this.assertStableRerender();
 
-    this.runTask(() => set(this.context, 'objectOrProxy.content.name.last', 'Cruise'));
+    runTask(() => set(this.context, 'objectOrProxy.content.name.last', 'Cruise'));
 
     this.assertContent('Cruise');
     this.assertInvariants();
 
-    this.runTask(() => set(this.context, 'objectOrProxy.content.name.first', 'Suri'));
+    runTask(() => set(this.context, 'objectOrProxy.content.name.first', 'Suri'));
 
     this.assertStableRerender();
 
-    this.runTask(() =>
+    runTask(() =>
       set(this.context, 'objectOrProxy.content', {
         name: { first: 'Yehuda', last: 'Katz' },
       })
@@ -465,7 +463,7 @@ class DynamicContentTest extends RenderingTestCase {
     this.assertContent('Katz');
     this.assertInvariants();
 
-    this.runTask(() =>
+    runTask(() =>
       set(this.context, 'objectOrProxy', {
         name: { first: 'Godfrey', last: 'Chan' },
       })
@@ -474,7 +472,7 @@ class DynamicContentTest extends RenderingTestCase {
     this.assertContent('Chan');
     this.assertInvariants();
 
-    this.runTask(() =>
+    runTask(() =>
       set(this.context, 'objectOrProxy.name', {
         first: 'Stefan',
         last: 'Penner',
@@ -484,11 +482,11 @@ class DynamicContentTest extends RenderingTestCase {
     this.assertContent('Penner');
     this.assertInvariants();
 
-    this.runTask(() => set(this.context, 'objectOrProxy', null));
+    runTask(() => set(this.context, 'objectOrProxy', null));
 
     this.assertIsEmpty();
 
-    this.runTask(() =>
+    runTask(() =>
       set(this.context, 'objectOrProxy', {
         name: { first: 'Tom', last: 'Dale' },
       })
@@ -508,7 +506,7 @@ class DynamicContentTest extends RenderingTestCase {
 
     this.assertStableRerender();
 
-    this.runTask(() => set(nullObject, 'message', 'goodbye'));
+    runTask(() => set(nullObject, 'message', 'goodbye'));
 
     this.assertContent('goodbye');
     this.assertInvariants();
@@ -516,7 +514,7 @@ class DynamicContentTest extends RenderingTestCase {
     nullObject = Object.create(null);
     nullObject['message'] = 'hello';
 
-    this.runTask(() => set(this.context, 'nullObject', nullObject));
+    runTask(() => set(this.context, 'nullObject', nullObject));
 
     this.assertContent('hello');
     this.assertInvariants();
@@ -541,12 +539,12 @@ class DynamicContentTest extends RenderingTestCase {
 
     this.assertStableRerender();
 
-    this.runTask(() => set(messenger, 'a.b.c', 'hi'));
+    runTask(() => set(messenger, 'a.b.c', 'hi'));
 
     this.assertContent('hi');
     this.assertInvariants();
 
-    this.runTask(() =>
+    runTask(() =>
       set(this.context, 'messenger.a.b', {
         c: 'goodbye',
       })
@@ -555,7 +553,7 @@ class DynamicContentTest extends RenderingTestCase {
     this.assertContent('goodbye');
     this.assertInvariants();
 
-    this.runTask(() =>
+    runTask(() =>
       set(this.context, 'messenger', {
         message: 'hello',
       })
@@ -575,14 +573,14 @@ class DynamicContentTest extends RenderingTestCase {
 
     this.assertStableRerender();
 
-    // this.runTask(() => set(func, 'aProp', 'still a property on a function'));
+    // runTask(() => set(func, 'aProp', 'still a property on a function'));
     // this.assertContent('still a property on a function');
     // this.assertInvariants();
 
     // func = () => {};
     // func.aProp = 'a prop on a new function';
 
-    // this.runTask(() => set(this.context, 'func', func));
+    // runTask(() => set(this.context, 'func', func));
 
     // this.assertContent('a prop on a new function');
     // this.assertInvariants();
@@ -608,11 +606,11 @@ class ContentTestGenerator {
 
           this.assertIsEmpty();
 
-          this.runTask(() => set(this.context, 'value', 'hello'));
+          runTask(() => set(this.context, 'value', 'hello'));
 
           this.assertContent('hello');
 
-          this.runTask(() => set(this.context, 'value', value));
+          runTask(() => set(this.context, 'value', value));
 
           this.assertIsEmpty();
         },
@@ -626,11 +624,11 @@ class ContentTestGenerator {
 
           this.assertStableRerender();
 
-          this.runTask(() => set(this.context, 'value', 'hello'));
+          runTask(() => set(this.context, 'value', 'hello'));
           this.assertContent('hello');
           this.assertInvariants();
 
-          this.runTask(() => set(this.context, 'value', value));
+          runTask(() => set(this.context, 'value', value));
 
           this.assertContent(expected);
           this.assertInvariants();
@@ -710,11 +708,11 @@ moduleFor(
 
       this.assertStableRerender();
 
-      this.runTask(() => set(this.context, 'value', htmlSafe('')));
+      runTask(() => set(this.context, 'value', htmlSafe('')));
 
       this.assertHTML('before <!----> after');
 
-      this.runTask(() => set(this.context, 'value', htmlSafe('hello')));
+      runTask(() => set(this.context, 'value', htmlSafe('hello')));
 
       this.assertHTML('before hello after');
     }
@@ -790,7 +788,7 @@ class TrustedContentTest extends DynamicContentTest {
 
   assertStableRerender() {
     this.takeSnapshot();
-    this.runTask(() => this.rerender());
+    runTask(() => this.rerender());
     super.assertInvariants();
   }
 
@@ -815,19 +813,19 @@ moduleFor(
 
       this.assertContent('<b>Max</b><b>James</b>');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertStableRerender();
 
-      this.runTask(() => set(this.context, 'htmlContent', '<i>M</i><u>a</u><s>x</s>'));
+      runTask(() => set(this.context, 'htmlContent', '<i>M</i><u>a</u><s>x</s>'));
 
       this.assertContent('<i>M</i><u>a</u><s>x</s><b>James</b>');
 
-      this.runTask(() => set(this.context, 'nested.htmlContent', 'Jammie'));
+      runTask(() => set(this.context, 'nested.htmlContent', 'Jammie'));
 
       this.assertContent('<i>M</i><u>a</u><s>x</s>Jammie');
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'htmlContent', '<b>Max</b>');
         set(this.context, 'nested', { htmlContent: '<i>James</i>' });
       });
@@ -842,39 +840,39 @@ moduleFor(
 
       this.assertContent('before hello after');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertStableRerender();
 
-      this.runTask(() => set(this.context, 'value', undefined));
+      runTask(() => set(this.context, 'value', undefined));
 
       this.assertContent('before <!----> after');
 
-      this.runTask(() => set(this.context, 'value', 'hello'));
+      runTask(() => set(this.context, 'value', 'hello'));
 
       this.assertContent('before hello after');
 
-      this.runTask(() => set(this.context, 'value', null));
+      runTask(() => set(this.context, 'value', null));
 
       this.assertContent('before <!----> after');
 
-      this.runTask(() => set(this.context, 'value', 'hello'));
+      runTask(() => set(this.context, 'value', 'hello'));
 
       this.assertContent('before hello after');
 
-      this.runTask(() => set(this.context, 'value', ''));
+      runTask(() => set(this.context, 'value', ''));
 
       this.assertContent('before <!----> after');
 
-      this.runTask(() => set(this.context, 'value', 'hello'));
+      runTask(() => set(this.context, 'value', 'hello'));
 
       this.assertContent('before hello after');
 
-      this.runTask(() => set(this.context, 'value', htmlSafe('')));
+      runTask(() => set(this.context, 'value', htmlSafe('')));
 
       this.assertContent('before <!----> after');
 
-      this.runTask(() => set(this.context, 'value', 'hello'));
+      runTask(() => set(this.context, 'value', 'hello'));
 
       this.assertContent('before hello after');
     }
@@ -941,15 +939,15 @@ moduleFor(
       });
       this.assertHTML(ember);
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertHTML(ember);
 
-      this.runTask(() => set(this.context, 'framework', 'React'));
+      runTask(() => set(this.context, 'framework', 'React'));
 
       this.assertHTML(react);
 
-      this.runTask(() => set(this.context, 'framework', 'Ember.js'));
+      runTask(() => set(this.context, 'framework', 'Ember.js'));
 
       this.assertHTML(ember);
     }
@@ -961,11 +959,11 @@ moduleFor(
 
       this.assertText('');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('');
 
-      this.runTask(() =>
+      runTask(() =>
         set(this.context, 'foo', {
           bar: { baz: { bizz: 'Hey!' } },
         })
@@ -973,11 +971,11 @@ moduleFor(
 
       this.assertText('Hey!');
 
-      this.runTask(() => set(this.context, 'foo', {}));
+      runTask(() => set(this.context, 'foo', {}));
 
       this.assertText('');
 
-      this.runTask(() =>
+      runTask(() =>
         set(this.context, 'foo', {
           bar: { baz: { bizz: 'Hello!' } },
         })
@@ -985,7 +983,7 @@ moduleFor(
 
       this.assertText('Hello!');
 
-      this.runTask(() => set(this.context, 'foo', {}));
+      runTask(() => set(this.context, 'foo', {}));
 
       this.assertText('');
     }
@@ -997,11 +995,11 @@ moduleFor(
 
       this.assertText('');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('');
 
-      this.runTask(() =>
+      runTask(() =>
         set(this.context, 'foo', {
           bar: false,
         })
@@ -1009,7 +1007,7 @@ moduleFor(
 
       this.assertText('');
 
-      this.runTask(() =>
+      runTask(() =>
         set(this.context, 'foo', {
           bar: 'Haha',
         })
@@ -1017,7 +1015,7 @@ moduleFor(
 
       this.assertText('');
 
-      this.runTask(() =>
+      runTask(() =>
         set(this.context, 'foo', {
           bar: null,
         })
@@ -1025,7 +1023,7 @@ moduleFor(
 
       this.assertText('');
 
-      this.runTask(() =>
+      runTask(() =>
         set(this.context, 'foo', {
           bar: undefined,
         })
@@ -1033,7 +1031,7 @@ moduleFor(
 
       this.assertText('');
 
-      this.runTask(() =>
+      runTask(() =>
         set(this.context, 'foo', {
           bar: 1,
         })
@@ -1041,7 +1039,7 @@ moduleFor(
 
       this.assertText('');
 
-      this.runTask(() =>
+      runTask(() =>
         set(this.context, 'foo', {
           bar: { baz: { bizz: 'Hello!' } },
         })
@@ -1049,7 +1047,7 @@ moduleFor(
 
       this.assertText('Hello!');
 
-      this.runTask(() =>
+      runTask(() =>
         set(this.context, 'foo', {
           bar: true,
         })
@@ -1071,7 +1069,7 @@ moduleFor(
         attrs: { href: 'http://example.com' },
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertElement(this.firstChild, {
         tagName: 'a',
@@ -1079,7 +1077,7 @@ moduleFor(
         attrs: { href: 'http://example.com' },
       });
 
-      this.runTask(() => set(this.context, 'model.url', 'http://linkedin.com'));
+      runTask(() => set(this.context, 'model.url', 'http://linkedin.com'));
 
       this.assertElement(this.firstChild, {
         tagName: 'a',
@@ -1087,7 +1085,7 @@ moduleFor(
         attrs: { href: 'http://linkedin.com' },
       });
 
-      this.runTask(() => set(this.context, 'model', { url: 'http://example.com' }));
+      runTask(() => set(this.context, 'model', { url: 'http://example.com' }));
 
       this.assertElement(this.firstChild, {
         tagName: 'a',
@@ -1107,7 +1105,7 @@ moduleFor(
         attrs: { class: classes('foo-bar') },
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
@@ -1115,11 +1113,11 @@ moduleFor(
         attrs: { class: classes('foo-bar') },
       });
 
-      this.runTask(() => set(this.context, 'fooBar', false));
+      runTask(() => set(this.context, 'fooBar', false));
 
       this.assertElement(this.firstChild, { tagName: 'div', content: 'hello' });
 
-      this.runTask(() => set(this.context, 'fooBar', true));
+      runTask(() => set(this.context, 'fooBar', true));
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
@@ -1139,7 +1137,7 @@ moduleFor(
         attrs: { class: classes('foo-bar') },
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
@@ -1147,11 +1145,11 @@ moduleFor(
         attrs: { class: classes('foo-bar') },
       });
 
-      this.runTask(() => set(this.context, 'fooBar', false));
+      runTask(() => set(this.context, 'fooBar', false));
 
       assert.equal(this.firstChild.className, '');
 
-      this.runTask(() => set(this.context, 'fooBar', true));
+      runTask(() => set(this.context, 'fooBar', true));
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
@@ -1173,7 +1171,7 @@ moduleFor(
         attrs: { class: classes('foo bar baz') },
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
@@ -1181,7 +1179,7 @@ moduleFor(
         attrs: { class: classes('foo bar baz') },
       });
 
-      this.runTask(() => set(this.context, 'model.classes', 'fizz bizz'));
+      runTask(() => set(this.context, 'model.classes', 'fizz bizz'));
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
@@ -1189,7 +1187,7 @@ moduleFor(
         attrs: { class: classes('fizz bizz') },
       });
 
-      this.runTask(() => set(this.context, 'model', { classes: 'foo bar baz' }));
+      runTask(() => set(this.context, 'model', { classes: 'foo bar baz' }));
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
@@ -1211,7 +1209,7 @@ moduleFor(
         attrs: { class: classes('foo') },
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
@@ -1219,7 +1217,7 @@ moduleFor(
         attrs: { class: classes('foo') },
       });
 
-      this.runTask(() => set(this.context, 'model.foo', 'fizz'));
+      runTask(() => set(this.context, 'model.foo', 'fizz'));
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
@@ -1227,7 +1225,7 @@ moduleFor(
         attrs: { class: classes('fizz') },
       });
 
-      this.runTask(() => set(this.context, 'model', { foo: 'foo' }));
+      runTask(() => set(this.context, 'model', { foo: 'foo' }));
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
@@ -1249,7 +1247,7 @@ moduleFor(
         attrs: { class: classes('foo') },
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
@@ -1257,7 +1255,7 @@ moduleFor(
         attrs: { class: classes('foo') },
       });
 
-      this.runTask(() => set(this.context, 'model.foo', 'fizz'));
+      runTask(() => set(this.context, 'model.foo', 'fizz'));
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
@@ -1265,7 +1263,7 @@ moduleFor(
         attrs: { class: classes('fizz') },
       });
 
-      this.runTask(() => set(this.context, 'model', { foo: 'foo' }));
+      runTask(() => set(this.context, 'model', { foo: 'foo' }));
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
@@ -1287,7 +1285,7 @@ moduleFor(
         attrs: { class: classes('foo bar baz') },
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
@@ -1295,7 +1293,7 @@ moduleFor(
         attrs: { class: classes('foo bar baz') },
       });
 
-      this.runTask(() => set(this.context, 'model.classes', 'fizz bizz'));
+      runTask(() => set(this.context, 'model.classes', 'fizz bizz'));
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
@@ -1303,7 +1301,7 @@ moduleFor(
         attrs: { class: classes('fizz bizz') },
       });
 
-      this.runTask(() => set(this.context, 'model', { classes: 'foo bar baz' }));
+      runTask(() => set(this.context, 'model', { classes: 'foo bar baz' }));
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
@@ -1327,7 +1325,7 @@ moduleFor(
         attrs: { class: classes('foo bar bizz') },
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
@@ -1335,7 +1333,7 @@ moduleFor(
         attrs: { class: classes('foo bar bizz') },
       });
 
-      this.runTask(() => set(this.context, 'model.foo', 'fizz'));
+      runTask(() => set(this.context, 'model.foo', 'fizz'));
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
@@ -1343,7 +1341,7 @@ moduleFor(
         attrs: { class: classes('fizz bar bizz') },
       });
 
-      this.runTask(() => set(this.context, 'model.bar', null));
+      runTask(() => set(this.context, 'model.bar', null));
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
@@ -1351,7 +1349,7 @@ moduleFor(
         attrs: { class: classes('fizz bizz') },
       });
 
-      this.runTask(() =>
+      runTask(() =>
         set(this.context, 'model', {
           foo: 'foo',
           bar: 'bar',
@@ -1385,7 +1383,7 @@ moduleFor(
         attrs: { class: classes('large') },
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
@@ -1393,7 +1391,7 @@ moduleFor(
         attrs: { class: classes('large') },
       });
 
-      this.runTask(() => set(this.context, 'model.hasShape', true));
+      runTask(() => set(this.context, 'model.hasShape', true));
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
@@ -1401,7 +1399,7 @@ moduleFor(
         attrs: { class: classes('large round') },
       });
 
-      this.runTask(() => set(this.context, 'model.hasSize', false));
+      runTask(() => set(this.context, 'model.hasSize', false));
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
@@ -1409,7 +1407,7 @@ moduleFor(
         attrs: { class: classes('round') },
       });
 
-      this.runTask(() =>
+      runTask(() =>
         set(this.context, 'model', {
           size: 'large',
           hasSize: true,
@@ -1444,7 +1442,7 @@ moduleFor(
         attrs: { class: classes('foo bar fizz baz') },
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
@@ -1452,7 +1450,7 @@ moduleFor(
         attrs: { class: classes('foo bar fizz baz') },
       });
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'model.foo', null);
         set(this.context, 'model.fizz', null);
       });
@@ -1463,7 +1461,7 @@ moduleFor(
         attrs: { class: classes('bar baz') },
       });
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'model', {
           foo: 'foo',
           bar: 'bar',
@@ -1493,7 +1491,7 @@ moduleFor(
         attrs: { class: 'foo  static   bar' },
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
@@ -1501,7 +1499,7 @@ moduleFor(
         attrs: { class: 'foo  static   bar' },
       });
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'model.bar', null);
       });
 
@@ -1511,7 +1509,7 @@ moduleFor(
         attrs: { class: 'foo  static   ' },
       });
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'model', {
           foo: 'foo',
           bar: 'bar',
@@ -1570,7 +1568,7 @@ moduleFor(
         attrs: { style: 'width: 60px;' },
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
@@ -1578,7 +1576,7 @@ moduleFor(
         attrs: { style: 'width: 60px;' },
       });
 
-      this.runTask(() => set(this.context, 'model.style', 'height: 60px;'));
+      runTask(() => set(this.context, 'model.style', 'height: 60px;'));
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
@@ -1586,7 +1584,7 @@ moduleFor(
         attrs: { style: 'height: 60px;' },
       });
 
-      this.runTask(() => set(this.context, 'model.style', null));
+      runTask(() => set(this.context, 'model.style', null));
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
@@ -1594,7 +1592,7 @@ moduleFor(
         attrs: {},
       });
 
-      this.runTask(() => set(this.context, 'model', { style: 'width: 60px;' }));
+      runTask(() => set(this.context, 'model', { style: 'width: 60px;' }));
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
@@ -1616,7 +1614,7 @@ moduleFor(
         attrs: { style: 'width: 60px;' },
       });
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
@@ -1624,7 +1622,7 @@ moduleFor(
         attrs: { style: 'width: 60px;' },
       });
 
-      this.runTask(() => set(this.context, 'model.style', 'height: 60px;'));
+      runTask(() => set(this.context, 'model.style', 'height: 60px;'));
 
       this.assertElement(this.firstChild, {
         tagName: 'div',
@@ -1632,7 +1630,7 @@ moduleFor(
         attrs: { style: 'height: 60px;' },
       });
 
-      this.runTask(() => set(this.context, 'model', { style: 'width: 60px;' }));
+      runTask(() => set(this.context, 'model', { style: 'width: 60px;' }));
 
       this.assertElement(this.firstChild, {
         tagName: 'div',

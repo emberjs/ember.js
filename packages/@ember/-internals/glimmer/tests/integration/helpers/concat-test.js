@@ -1,4 +1,4 @@
-import { RenderingTestCase, moduleFor } from 'internal-test-helpers';
+import { RenderingTestCase, moduleFor, runTask } from 'internal-test-helpers';
 
 import { set } from '@ember/-internals/metal';
 
@@ -17,19 +17,19 @@ moduleFor(
 
       this.assertText('onetwo');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('onetwo');
 
-      this.runTask(() => set(this.context, 'model.first', 'three'));
+      runTask(() => set(this.context, 'model.first', 'three'));
 
       this.assertText('threetwo');
 
-      this.runTask(() => set(this.context, 'model.second', 'four'));
+      runTask(() => set(this.context, 'model.second', 'four'));
 
       this.assertText('threefour');
 
-      this.runTask(() => set(this.context, 'model', { first: 'one', second: 'two' }));
+      runTask(() => set(this.context, 'model', { first: 'one', second: 'two' }));
 
       this.assertText('onetwo');
     }
@@ -49,22 +49,22 @@ moduleFor(
 
       this.assertText('onetwothreefour');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('onetwothreefour');
 
-      this.runTask(() => set(this.context, 'model.first', 'five'));
+      runTask(() => set(this.context, 'model.first', 'five'));
 
       this.assertText('fivetwothreefour');
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'model.second', 'six');
         set(this.context, 'model.third', 'seven');
       });
 
       this.assertText('fivesixsevenfour');
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'model', {
           first: 'one',
           second: 'two',
@@ -91,15 +91,15 @@ moduleFor(
 
       this.assertText('Truthy!');
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertText('Truthy!');
 
-      this.runTask(() => set(this.context, 'model.first', 'three'));
+      runTask(() => set(this.context, 'model.first', 'three'));
 
       this.assertText('False');
 
-      this.runTask(() => set(this.context, 'model', { first: 'one', second: 'two' }));
+      runTask(() => set(this.context, 'model', { first: 'one', second: 'two' }));
 
       this.assertText('Truthy!');
     }

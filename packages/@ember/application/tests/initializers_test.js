@@ -1,5 +1,5 @@
 import { assign } from '@ember/polyfills';
-import { moduleFor, AutobootApplicationTestCase } from 'internal-test-helpers';
+import { moduleFor, AutobootApplicationTestCase, runTask } from 'internal-test-helpers';
 import Application from '..';
 
 moduleFor(
@@ -33,7 +33,7 @@ moduleFor(
       super.teardown();
 
       if (this.secondApp) {
-        this.runTask(() => this.secondApp.destroy());
+        runTask(() => this.secondApp.destroy());
       }
     }
 
@@ -63,7 +63,7 @@ moduleFor(
         },
       });
 
-      this.runTask(() => {
+      runTask(() => {
         this.createApplication(
           {
             autoboot: false,
@@ -75,7 +75,7 @@ moduleFor(
       let app = this.application;
 
       try {
-        this.runTask(() => {
+        runTask(() => {
           app.boot().then(
             () => {
               assert.ok(false, 'The boot promise should not resolve when there is a boot error');
@@ -102,7 +102,7 @@ moduleFor(
         },
       });
 
-      this.runTask(() => this.createApplication({}, MyApplication));
+      runTask(() => this.createApplication({}, MyApplication));
     }
 
     [`@test initializers can be registered in a specified order`](assert) {
@@ -157,7 +157,7 @@ moduleFor(
         },
       });
 
-      this.runTask(() => this.createApplication({}, MyApplication));
+      runTask(() => this.createApplication({}, MyApplication));
 
       assert.deepEqual(order, ['first', 'second', 'third', 'fourth', 'fifth', 'sixth']);
     }
@@ -214,7 +214,7 @@ moduleFor(
         },
       });
 
-      this.runTask(() => this.createApplication({}, MyApplication));
+      runTask(() => this.createApplication({}, MyApplication));
 
       assert.deepEqual(order, ['first', 'second', 'third', 'fourth', 'fifth', 'sixth']);
     }
@@ -263,7 +263,7 @@ moduleFor(
       MyApplication.initializer(afterB);
       MyApplication.initializer(c);
 
-      this.runTask(() => this.createApplication({}, MyApplication));
+      runTask(() => this.createApplication({}, MyApplication));
 
       assert.ok(order.indexOf(a.name) < order.indexOf(b.name), 'a < b');
       assert.ok(order.indexOf(b.name) < order.indexOf(c.name), 'b < c');
@@ -292,12 +292,12 @@ moduleFor(
         },
       });
 
-      this.runTask(() => this.createApplication({}, FirstApp));
+      runTask(() => this.createApplication({}, FirstApp));
 
       assert.equal(firstInitializerRunCount, 1, 'first initializer only was run');
       assert.equal(secondInitializerRunCount, 0, 'first initializer only was run');
 
-      this.runTask(() => this.createSecondApplication({}, SecondApp));
+      runTask(() => this.createSecondApplication({}, SecondApp));
 
       assert.equal(firstInitializerRunCount, 1, 'second initializer only was run');
       assert.equal(secondInitializerRunCount, 1, 'second initializer only was run');
@@ -323,7 +323,7 @@ moduleFor(
         },
       });
 
-      this.runTask(() => this.createApplication({}, FirstApp));
+      runTask(() => this.createApplication({}, FirstApp));
 
       assert.equal(
         firstInitializerRunCount,
@@ -337,7 +337,7 @@ moduleFor(
       );
 
       firstInitializerRunCount = 0;
-      this.runTask(() => this.createSecondApplication({}, SecondApp));
+      runTask(() => this.createSecondApplication({}, SecondApp));
 
       assert.equal(firstInitializerRunCount, 1, 'first initializer was run when subclass created');
       assert.equal(
@@ -385,7 +385,7 @@ moduleFor(
         },
       });
 
-      this.runTask(() => this.createApplication({}, MyApplication));
+      runTask(() => this.createApplication({}, MyApplication));
     }
   }
 );

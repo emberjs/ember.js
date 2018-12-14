@@ -1,4 +1,4 @@
-import { RenderingTestCase, moduleFor, styles } from 'internal-test-helpers';
+import { RenderingTestCase, moduleFor, styles, runTask } from 'internal-test-helpers';
 
 import { set, get, computed } from '@ember/-internals/metal';
 
@@ -31,21 +31,21 @@ moduleFor(
 
       this.assertStableRerender();
 
-      this.runTask(() => bottom.attrs.setMe.update(13));
+      runTask(() => bottom.attrs.setMe.update(13));
 
       this.assertText('13', 'the set took effect');
       this.assert.strictEqual(get(bottom, 'setMe'), 13, "the set took effect on bottom's prop");
       this.assert.strictEqual(bottom.attrs.setMe.value, 13, "the set took effect on bottom's attr");
       this.assert.strictEqual(get(this.context, 'val'), 13, 'the set propagated back up');
 
-      this.runTask(() => set(bottom, 'setMe', 14));
+      runTask(() => set(bottom, 'setMe', 14));
 
       this.assertText('14', 'the set took effect');
       this.assert.strictEqual(get(bottom, 'setMe'), 14, "the set took effect on bottom's prop");
       this.assert.strictEqual(bottom.attrs.setMe.value, 14, "the set took effect on bottom's attr");
       this.assert.strictEqual(get(this.context, 'val'), 14, 'the set propagated back up');
 
-      this.runTask(() => set(this.context, 'val', 12));
+      runTask(() => set(this.context, 'val', 12));
 
       this.assertText('12');
     }
@@ -79,7 +79,7 @@ moduleFor(
 
       this.assertStableRerender();
 
-      this.runTask(() => bottom.attrs.setMe.update(13));
+      runTask(() => bottom.attrs.setMe.update(13));
 
       this.assertText('13', 'the set took effect');
       this.assert.strictEqual(get(bottom, 'setMe'), 13, "the set took effect on bottom's prop");
@@ -88,7 +88,7 @@ moduleFor(
       this.assert.strictEqual(middle.attrs.value.value, 13, "the set propagated to middle's attr");
       this.assert.strictEqual(get(this.context, 'val'), 13, 'the set propagated back up');
 
-      this.runTask(() => set(bottom, 'setMe', 14));
+      runTask(() => set(bottom, 'setMe', 14));
 
       this.assertText('14', 'the set took effect');
       this.assert.strictEqual(get(bottom, 'setMe'), 14, "the set took effect on bottom's prop");
@@ -97,7 +97,7 @@ moduleFor(
       this.assert.strictEqual(middle.attrs.value.value, 14, "the set propagated to middle's attr");
       this.assert.strictEqual(get(this.context, 'val'), 14, 'the set propagated back up');
 
-      this.runTask(() => set(this.context, 'val', 12));
+      runTask(() => set(this.context, 'val', 12));
 
       this.assertText('12');
     }
@@ -174,12 +174,12 @@ moduleFor(
 
       this.assertStableRerender();
 
-      this.runTask(() => middle.attrs.value.update(13));
+      runTask(() => middle.attrs.value.update(13));
 
       this.assert.strictEqual(get(middle, 'value'), 13, "the set took effect on middle's prop");
       this.assert.strictEqual(middle.attrs.value.value, 13, "the set took effect on middle's attr");
 
-      this.runTask(() => set(middle, 'value', 14));
+      runTask(() => set(middle, 'value', 14));
 
       this.assert.strictEqual(get(middle, 'value'), 14, "the set took effect on middle's prop");
       this.assert.strictEqual(middle.attrs.value.value, 14, "the set took effect on middle's attr");
@@ -191,7 +191,7 @@ moduleFor(
       this.assertText('14');
       this.assert.strictEqual(get(this.context, 'val'), 14, 'the set propagated back up');
 
-      this.runTask(() => set(this.context, 'val', 12));
+      runTask(() => set(this.context, 'val', 12));
 
       this.assertText('12');
     }
@@ -213,11 +213,11 @@ moduleFor(
 
       this.assertStableRerender();
 
-      this.runTask(() => set(this.context, 'model.name', 'Joel Kang'));
+      runTask(() => set(this.context, 'model.name', 'Joel Kang'));
 
       this.assertText('Joel Kang');
 
-      this.runTask(() => set(this.context, 'model', { name: 'Matthew Beale' }));
+      runTask(() => set(this.context, 'model', { name: 'Matthew Beale' }));
 
       this.assertText('Matthew Beale');
     }
@@ -258,19 +258,19 @@ moduleFor(
       this.assert.deepEqual(didInsert, [12], 'didInsert is [12]');
       this.assert.strictEqual(get(bottom, 'setMe'), 12, 'the data propagated');
 
-      this.runTask(() => bottom.attrs.setMe.update(13));
+      runTask(() => bottom.attrs.setMe.update(13));
 
       this.assert.strictEqual(get(bottom, 'setMe'), 13, "the set took effect on bottom's prop");
       this.assert.strictEqual(bottom.attrs.setMe.value, 13, "the set took effect on bottom's attr");
       this.assert.strictEqual(get(this.context, 'val'), 13, 'the set propagated back up');
 
-      this.runTask(() => set(bottom, 'setMe', 14));
+      runTask(() => set(bottom, 'setMe', 14));
 
       this.assert.strictEqual(get(bottom, 'setMe'), 14, "the set took effect on bottom's prop");
       this.assert.strictEqual(bottom.attrs.setMe.value, 14, "the set took effect on bottom's attr");
       this.assert.strictEqual(get(this.context, 'val'), 14, 'the set propagated back up');
 
-      this.runTask(() => set(this.context, 'val', 12));
+      runTask(() => set(this.context, 'val', 12));
 
       this.assertText('12');
     }
@@ -308,7 +308,7 @@ moduleFor(
 
       this.assertStableRerender();
 
-      this.runTask(() => set(middle, 'baseValue', 13));
+      runTask(() => set(middle, 'baseValue', 13));
 
       this.assert.strictEqual(get(middle, 'val'), 13, 'the set took effect');
       this.assert.strictEqual(
@@ -323,7 +323,7 @@ moduleFor(
       );
       this.assertText('13');
 
-      this.runTask(() => set(middle, 'baseValue', 12));
+      runTask(() => set(middle, 'baseValue', 12));
 
       this.assertText('12');
     }
@@ -350,13 +350,13 @@ moduleFor(
 
       this.assertStableRerender();
 
-      this.runTask(() => inner.attrs.foo.update('bar'));
+      runTask(() => inner.attrs.foo.update('bar'));
 
       this.assert.equal(inner.attrs.foo.value, 'bar');
       this.assert.equal(get(inner, 'foo'), 'bar');
       this.assertText('bar');
 
-      this.runTask(() => inner.attrs.foo.update('foo'));
+      runTask(() => inner.attrs.foo.update('foo'));
 
       this.assertText('foo');
     }
@@ -383,13 +383,13 @@ moduleFor(
 
       this.assertStableRerender();
 
-      this.runTask(() => inner.attrs.model.update(42));
+      runTask(() => inner.attrs.model.update(42));
 
       this.assert.equal(inner.attrs.model.value, 42);
       this.assert.equal(get(inner, 'model'), 42);
       this.assertText('42');
 
-      this.runTask(() => inner.attrs.model.update(undefined));
+      runTask(() => inner.attrs.model.update(undefined));
 
       this.assertText('');
     }
@@ -416,13 +416,13 @@ moduleFor(
 
       this.assertStableRerender();
 
-      this.runTask(() => inner.attrs.model.update(42));
+      runTask(() => inner.attrs.model.update(42));
 
       this.assert.equal(inner.attrs.model.value, 42);
       this.assert.equal(get(inner, 'model'), 42);
       this.assertText('hello42');
 
-      this.runTask(() => inner.attrs.model.update('foo'));
+      runTask(() => inner.attrs.model.update('foo'));
 
       this.assertText('hellofoo');
     }
@@ -470,7 +470,7 @@ moduleFor(
 
       this.assertStableRerender();
 
-      this.runTask(() => input.attrs.height.update(35));
+      runTask(() => input.attrs.height.update(35));
 
       this.assert.strictEqual(get(output, 'height'), 35, 'the set took effect');
       this.assert.strictEqual(get(this.context, 'height'), 35, 'the set propagated back up');
@@ -480,7 +480,7 @@ moduleFor(
         content: '35',
       });
 
-      this.runTask(() => set(input, 'height', 36));
+      runTask(() => set(input, 'height', 36));
 
       this.assert.strictEqual(get(output, 'height'), 36, 'the set took effect');
       this.assert.strictEqual(get(this.context, 'height'), 36, 'the set propagated back up');
@@ -490,7 +490,7 @@ moduleFor(
         content: '36',
       });
 
-      this.runTask(() => set(this.context, 'height', 60));
+      runTask(() => set(this.context, 'height', 60));
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -548,7 +548,7 @@ moduleFor(
 
       this.assertStableRerender();
 
-      this.runTask(() => set(input, 'width', 80));
+      runTask(() => set(input, 'width', 80));
 
       this.assert.strictEqual(get(output, 'width'), 80, 'the set took effect');
       this.assert.strictEqual(get(this.context, 'width'), 80, 'the set propagated back up');
@@ -558,7 +558,7 @@ moduleFor(
         content: '80x40',
       });
 
-      this.runTask(() => input.attrs.width.update(90));
+      runTask(() => input.attrs.width.update(90));
 
       this.assert.strictEqual(get(output, 'width'), 90, 'the set took effect');
       this.assert.strictEqual(get(this.context, 'width'), 90, 'the set propagated back up');
@@ -568,7 +568,7 @@ moduleFor(
         content: '90x45',
       });
 
-      this.runTask(() => set(this.context, 'width', 70));
+      runTask(() => set(this.context, 'width', 70));
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',

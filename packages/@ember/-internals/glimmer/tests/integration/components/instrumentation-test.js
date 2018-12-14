@@ -1,4 +1,4 @@
-import { moduleFor, RenderingTestCase } from 'internal-test-helpers';
+import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 
 import { set } from '@ember/-internals/metal';
 import {
@@ -94,26 +94,26 @@ moduleFor(
 
       this.assertEvents('after initial render', true);
 
-      this.runTask(() => this.rerender());
+      runTask(() => this.rerender());
 
       this.assertEvents('after no-op rerender');
 
-      this.runTask(() => set(this.context, 'foo', 'FOO'));
+      runTask(() => set(this.context, 'foo', 'FOO'));
 
       this.assertEvents('after updating top-level');
 
-      this.runTask(() => set(this.context, 'baz', 'BAZ'));
+      runTask(() => set(this.context, 'baz', 'BAZ'));
 
       this.assertEvents('after updating inner-most');
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'bar', 'BAR');
         set(this.context, 'bat', 'BAT');
       });
 
       this.assertEvents('after updating the rest');
 
-      this.runTask(() => {
+      runTask(() => {
         set(this.context, 'foo', 'FOO');
         set(this.context, 'bar', 'BAR');
         set(this.context, 'baz', 'BAZ');

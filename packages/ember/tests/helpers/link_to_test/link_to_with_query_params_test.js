@@ -1,7 +1,7 @@
 import Controller from '@ember/controller';
 import { RSVP } from '@ember/-internals/runtime';
 import { Route } from '@ember/-internals/routing';
-import { moduleFor, ApplicationTestCase, runLoopSettled } from 'internal-test-helpers';
+import { moduleFor, ApplicationTestCase, runLoopSettled, runTask } from 'internal-test-helpers';
 
 moduleFor(
   'The {{link-to}} helper: invoking with query params',
@@ -184,7 +184,7 @@ moduleFor(
         let theLink = this.$('#the-link');
         assert.equal(theLink.attr('href'), '/about?baz=lol');
 
-        this.runTask(() => this.click('#the-link'));
+        runTask(() => this.click('#the-link'));
 
         let aboutController = this.getController('about');
 
@@ -210,7 +210,7 @@ moduleFor(
 
         assert.equal(theLink.attr('href'), '/?foo=OMG');
 
-        this.runTask(() => indexController.set('boundThing', 'ASL'));
+        runTask(() => indexController.set('boundThing', 'ASL'));
 
         assert.equal(theLink.attr('href'), '/?foo=ASL');
       });
@@ -232,7 +232,7 @@ moduleFor(
 
         assert.equal(theLink.attr('href'), '/?abool=OMG');
 
-        this.runTask(() => indexController.set('boundThing', false));
+        runTask(() => indexController.set('boundThing', false));
 
         assert.equal(theLink.attr('href'), '/?abool=false');
 
@@ -259,11 +259,11 @@ moduleFor(
 
         assert.equal(theLink.attr('href'), '/?foo=lol');
 
-        this.runTask(() => indexController.set('bar', 'BORF'));
+        runTask(() => indexController.set('bar', 'BORF'));
 
         assert.equal(theLink.attr('href'), '/?bar=BORF&foo=lol');
 
-        this.runTask(() => indexController.set('foo', 'YEAH'));
+        runTask(() => indexController.set('foo', 'YEAH'));
 
         assert.equal(theLink.attr('href'), '/?bar=BORF&foo=lol');
       });
@@ -306,13 +306,13 @@ moduleFor(
 
         assert.equal(router.currentRouteName, 'cars.create');
 
-        this.runTask(() => this.click('#close-link'));
+        runTask(() => this.click('#close-link'));
 
         assert.equal(router.currentRouteName, 'cars.index');
         assert.equal(router.get('url'), '/cars');
         assert.equal(carsController.get('page'), 1, 'The page query-param is 1');
 
-        this.runTask(() => this.click('#page2-link'));
+        runTask(() => this.click('#page2-link'));
 
         assert.equal(router.currentRouteName, 'cars.index', 'The active route is still cars');
         assert.equal(router.get('url'), '/cars?page=2', 'The url has been updated');
@@ -593,13 +593,13 @@ moduleFor(
 
           assert.equal(parentController.get('page'), 2);
 
-          this.runTask(() => parentController.set('page', 3));
+          runTask(() => parentController.set('page', 3));
 
           assert.equal(router.get('location.path'), '/parent?page=3');
           this.shouldBeActive(assert, '#app-link');
           this.shouldBeActive(assert, '#parent-link');
 
-          this.runTask(() => this.click('#app-link'));
+          runTask(() => this.click('#app-link'));
 
           assert.equal(router.get('location.path'), '/parent');
         });
@@ -666,13 +666,13 @@ moduleFor(
         this.shouldNotBeActive(assert, '#baz-foos-link');
         this.shouldNotBeActive(assert, '#bars-link');
 
-        this.runTask(() => barsLink.click());
+        runTask(() => barsLink.click());
         this.shouldNotBeActive(assert, '#bars-link');
 
-        this.runTask(() => foosLink.click());
+        runTask(() => foosLink.click());
         this.shouldNotBeActive(assert, '#foos-link');
 
-        this.runTask(() => foos.resolve());
+        runTask(() => foos.resolve());
 
         assert.equal(router.get('location.path'), '/foos');
         this.shouldBeActive(assert, '#foos-link');
