@@ -100,7 +100,7 @@
     "@types/qunit": "^2.5.3",
     "@types/rsvp": "^4.0.2",
     "auto-dist-tag": "^1.0.0",
-    "aws-sdk": "^2.375.0",
+    "aws-sdk": "^2.376.0",
     "babel-plugin-debug-macros": "^0.2.0",
     "babel-plugin-filter-imports": "^2.0.4",
     "babel-plugin-module-resolver": "^3.1.1",
