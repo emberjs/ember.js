@@ -3,17 +3,14 @@ import { AbstractTestCase, moduleFor } from 'internal-test-helpers';
 
 class ArrayPrototypeExtensionSelfReferenceTests extends AbstractTestCase {
   '@test should not create non-Symbol, enumerable properties that refer to itself'() {
-    // Don't want to pollute Array.prototype so we make our own to extend
-    class ThrowAwayArray extends Array {}
+    // Don't want to pollute Array.prototype so we make a fake / simple prototype
+    function ThrowAwayArray() {}
 
     // Extend our throw-away prototype (like EXTEND_PROTOTYPES.Array would)
     NativeArray.apply(ThrowAwayArray.prototype);
 
     // Create an instance to test
     let obj = new ThrowAwayArray();
-
-    // Make sure we have an array-like thing & avoid the zero assertion problem is there are no enumerable properties
-    this.assert.strictEqual(obj.length, 0);
 
     // Make sure that no enumerable properties refer back to the object (creating a cyclic structure)
     for (let p in obj) {
