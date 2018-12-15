@@ -171,6 +171,18 @@ export function isArray(_obj) {
   return false;
 }
 
+/*
+  This allows us to define computed properties that are not enumerable.
+  The primary reason this is important is that when `NativeArray` is
+  applied to `Array.prototype` we need to ensure that we do not add _any_
+  new enumerable properties.
+*/
+function nonEnumerableComputed() {
+  let property = computed(...arguments);
+  property.enumerable = false;
+  return property;
+}
+
 // ..........................................................
 // ARRAY
 //
@@ -273,7 +285,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @return this
     @public
   */
-  '[]': computed({
+  '[]': nonEnumerableComputed({
     get() {
       return this;
     },
@@ -290,7 +302,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @return {Object | undefined} The first object in the array
     @public
   */
-  firstObject: computed(function() {
+  firstObject: nonEnumerableComputed(function() {
     return objectAt(this, 0);
   }).readOnly(),
 
@@ -301,7 +313,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @return {Object | undefined} The last object in the array
     @public
   */
-  lastObject: computed(function() {
+  lastObject: nonEnumerableComputed(function() {
     return objectAt(this, this.length - 1);
   }).readOnly(),
 
@@ -474,7 +486,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @property {Boolean} hasArrayObservers
     @public
   */
-  hasArrayObservers: computed(function() {
+  hasArrayObservers: nonEnumerableComputed(function() {
     return hasListeners(this, '@array:change') || hasListeners(this, '@array:before');
   }),
 
@@ -1154,7 +1166,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @public
   */
   '@each': ARRAY_AT_EACH
-    ? computed(function() {
+    ? nonEnumerableComputed(function() {
         deprecate(`Getting the '@each' property on object ${toString(this)} is deprecated`, false, {
           id: 'ember-metal.getting-each',
           until: '3.5.0',
