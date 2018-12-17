@@ -547,7 +547,7 @@ export function uniqBy(dependentKey, propertyKey) {
   @static
   @param {String} propertyKey*
   @return {ComputedProperty} computes a new array with all the
-  unique elements from the dependent array
+  unique elements from one or more dependent arrays.
   @public
 */
 export let union = uniq;
