@@ -20,7 +20,12 @@ function buildInfo(options) {
   let root = (options && options.root) || path.resolve(__dirname, '..');
   let packageVersion = (options && options.packageVersion) || readPackageVersion(root);
   let gitInfo = (options && options.gitInfo) || buildGitInfo(root);
-  let buildInfo = buildFromParts(packageVersion, gitInfo);
+  let buildInfo = buildFromParts(
+    packageVersion,
+    gitInfo,
+    process.env.TRAVIS,
+    process.env.TRAVIS_BRANCH
+  );
   if (!options) {
     cached = buildInfo;
   }
@@ -34,9 +39,9 @@ function buildInfo(options) {
 function buildGitInfo(root) {
   let info = gitRepoInfo(root);
   return {
-    sha: process.env.TRAVIS_COMMIT || info.sha,
-    branch: process.env.TRAVIS_BRANCH || info.branch,
-    tag: process.env.TRAVIS_TAG || info.tag,
+    sha: info.sha,
+    branch: info.branch,
+    tag: info.tag,
   };
 }
 
@@ -70,21 +75,25 @@ function buildGitInfo(root) {
  * Build info object from parts.
  * @param {string} packageVersion
  * @param {GitInfo} gitInfo
+ * @param {boolean} isCI
+ * @param {string} travisBranch
  * @returns {BuildInfo}
  */
-function buildFromParts(packageVersion, gitInfo) {
-  // Travis builds are always detached
+function buildFromParts(packageVersion, gitInfo, isCI = false, travisBranch = '') {
   let { tag, branch, sha } = gitInfo;
 
   let tagVersion = parseTagVersion(tag);
   let shortSha = sha.slice(0, 8);
+  branch = travisBranch || branch; // Travis builds are always detached
   let channel =
     branch === 'master'
       ? process.env.BUILD_TYPE === 'alpha'
         ? 'alpha'
         : 'canary'
       : branch && escapeSemVerIdentifier(branch);
-  let version = tagVersion || buildVersion(packageVersion, shortSha, channel);
+
+  let isBuildForTag = isTagBuild(tag, branch, isCI);
+  let version = isBuildForTag ? tagVersion : buildVersion(packageVersion, shortSha, channel);
 
   return {
     tag,
@@ -95,7 +104,18 @@ function buildFromParts(packageVersion, gitInfo) {
     packageVersion,
     tagVersion,
     version,
+    isBuildForTag,
   };
+}
+
+function isTagBuild(tag, branch, isCI) {
+  if (!tag) {
+    return false;
+  }
+  if (isCI) {
+    return branch === tag;
+  }
+  return true;
 }
 
 /**
@@ -162,3 +182,4 @@ module.exports.buildInfo = buildInfo;
 module.exports.buildFromParts = buildFromParts;
 module.exports.buildVersion = buildVersion;
 module.exports.parseTagVersion = parseTagVersion;
+module.exports.isTagBuild = isTagBuild;

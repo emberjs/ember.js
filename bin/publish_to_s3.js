@@ -17,7 +17,7 @@ const buildInfo = require('../broccoli/build-info').buildInfo();
 // ./bin/publish_to_s3.js
 // ```
 
-if (!buildInfo.tag) {
+if (!buildInfo.isBuildForTag) {
   const S3Publisher = require('ember-publisher');
   const configPath = require('path').join(__dirname, '../config/s3ProjectConfig.js');
 

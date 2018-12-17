@@ -63,12 +63,6 @@ function fileObject(baseName, extension, contentType, currentRevision, tag, date
     },
   };
 
-  if (tag) {
-    for (var key in obj.destinations) {
-      obj.destinations[key].push('tags/' + tag + fullName);
-    }
-  }
-
   return obj;
 }
 
