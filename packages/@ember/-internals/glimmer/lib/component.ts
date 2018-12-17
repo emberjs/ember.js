@@ -673,7 +673,7 @@ const Component = CoreView.extend(
      visually challenged users navigate rich web applications.
 
      The full list of valid WAI-ARIA roles is available at:
-     [http://www.w3.org/TR/wai-aria/roles#roles_categorization](http://www.w3.org/TR/wai-aria/roles#roles_categorization)
+     [https://www.w3.org/TR/wai-aria/#roles_categorization](https://www.w3.org/TR/wai-aria/#roles_categorization)
 
      @property ariaRole
      @type String
