@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### v3.7.0-beta.2 (December 17, 2018)
+
+- [#17328](https://github.com/emberjs/ember.js/pull/17328) [BUGFIX] Ensure that delayed transition retrys work
+- [#17374](https://github.com/emberjs/ember.js/pull/17374) [BUGFIX] Fix cyclic references on Array.prototype
+
 ### v3.7.0-beta.1 (December 6, 2018)
 
 - [#17254](https://github.com/emberjs/ember.js/pull/17254) [BREAKING] Explicitly drop support for Node 4
