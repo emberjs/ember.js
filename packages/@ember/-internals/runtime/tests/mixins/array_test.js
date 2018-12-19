@@ -283,22 +283,6 @@ moduleFor(
       assert.equal(called, 1, 'calls observer when object is pushed');
     }
 
-    ['@test getting @each is deprecated'](assert) {
-      assert.expect(1);
-
-      expectDeprecation(() => {
-        get(ary, '@each');
-      }, /Getting the '@each' property on object .* is deprecated/);
-    }
-
-    ['@test @each is readOnly'](assert) {
-      assert.expect(1);
-
-      assert.throws(function() {
-        set(ary, '@each', 'foo');
-      }, /Cannot set read-only property "@each"/);
-    }
-
     ['@test using @each to observe arrays that does not return objects raise error'](assert) {
       let called = 0;
 
@@ -326,25 +310,6 @@ moduleFor(
       }, /When using @each to observe the array/);
 
       assert.equal(called, 0, 'not calls observer when object is pushed');
-    }
-
-    ['@test modifying the array should also indicate the isDone prop itself has changed'](assert) {
-      // NOTE: we never actually get the '@each.isDone' property here.  This is
-      // important because it tests the case where we don't have an isDone
-      // EachArray materialized but just want to know when the property has
-      // changed.
-      let each;
-      expectDeprecation(() => {
-        each = get(ary, '@each');
-      });
-      let count = 0;
-
-      addObserver(each, 'isDone', () => count++);
-
-      count = 0;
-      let item = objectAt(ary, 2);
-      set(item, 'isDone', !get(item, 'isDone'));
-      assert.equal(count, 1, '@each.isDone should have notified');
     }
 
     ['@test `objectAt` returns correct object'](assert) {

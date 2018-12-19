@@ -1,10 +1,9 @@
 /**
 @module @ember/array
 */
-import { ARRAY_AT_EACH } from '@ember/deprecated-features';
 import { DEBUG } from '@glimmer/env';
 import { PROXY_CONTENT } from '@ember/-internals/metal';
-import { symbol, toString, HAS_NATIVE_PROXY, tryInvoke } from '@ember/-internals/utils';
+import { symbol, HAS_NATIVE_PROXY, tryInvoke } from '@ember/-internals/utils';
 import {
   get,
   set,
@@ -15,7 +14,6 @@ import {
   aliasMethod,
   Mixin,
   hasListeners,
-  eachProxyFor,
   beginPropertyChanges,
   endPropertyChanges,
   addArrayObserver,
@@ -1137,45 +1135,6 @@ const ArrayMixin = Mixin.create(Enumerable, {
     let predicate = value === value ? item => item !== value : item => item === item;
     return this.filter(predicate);
   },
-
-  /**
-    Returns a special object that can be used to observe individual properties
-    on the array. Just get an equivalent property on this object and it will
-    return an array that maps automatically to the named key on the
-    member objects.
-
-    `@each` should only be used in a non-terminal context. Example:
-
-    ```javascript
-    myMethod: computed('posts.@each.author', function(){
-      ...
-    });
-    ```
-
-    If you merely want to watch for the array being changed, like an object being
-    replaced, added or removed, use `[]` instead of `@each`.
-
-    ```javascript
-    myMethod: computed('posts.[]', function(){
-      ...
-    });
-    ```
-
-    @property @each
-    @deprecated
-    @public
-  */
-  '@each': ARRAY_AT_EACH
-    ? nonEnumerableComputed(function() {
-        deprecate(`Getting the '@each' property on object ${toString(this)} is deprecated`, false, {
-          id: 'ember-metal.getting-each',
-          until: '3.5.0',
-          url: 'https://emberjs.com/deprecations/v3.x#toc_getting-the-each-property',
-        });
-
-        return eachProxyFor(this);
-      }).readOnly()
-    : undefined,
 });
 
 /**
