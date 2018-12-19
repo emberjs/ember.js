@@ -26,7 +26,6 @@ import Enumerable from './enumerable';
 import compare from '../compare';
 import { ENV } from '@ember/-internals/environment';
 import Observable from '../mixins/observable';
-import copy from '../copy';
 import MutableEnumerable from './mutable_enumerable';
 import { typeOf } from '../type-of';
 
@@ -1582,19 +1581,6 @@ let NativeArray = Mixin.create(MutableArray, Observable, {
     replaceInNativeArray(this, start, deleteCount, items);
 
     return this;
-  },
-
-  copy(deep) {
-    deprecate(`Using \`NativeArray#copy\` is deprecated`, false, {
-      id: 'ember-runtime.using-array-copy',
-      until: '3.5.0',
-    });
-
-    if (deep) {
-      return this.map(item => copy(item, true));
-    }
-
-    return this.slice();
   },
 });
 
