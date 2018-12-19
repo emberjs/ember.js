@@ -109,7 +109,7 @@ export function isSearchDisabled(): boolean {
 }
 
 export function setSearchDisabled(flag: boolean): void {
-  searchDisabled = !!flag;
+  searchDisabled = Boolean(flag);
 }
 
 export function setUnprocessedMixins(): void {

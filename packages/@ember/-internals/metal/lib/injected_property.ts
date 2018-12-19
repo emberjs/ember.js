@@ -64,7 +64,7 @@ function injectedPropertyGet(this: any, keyName: string): any {
   );
   assert(
     `Attempting to lookup an injected property on an object without a container, ensure that the object was instantiated via a container.`,
-    !!owner
+    Boolean(owner)
   );
 
   let specifier = `${desc.type}:${desc.name || keyName}`;

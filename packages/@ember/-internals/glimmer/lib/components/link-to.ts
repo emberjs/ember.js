@@ -537,7 +537,7 @@ const LinkComponent = EmberComponent.extend({
       return currentWhen;
     }
 
-    let isCurrentWhenSpecified = !!currentWhen;
+    let isCurrentWhenSpecified = Boolean(currentWhen);
     currentWhen = currentWhen || get(this, 'qualifiedRouteName');
     currentWhen = currentWhen.split(' ');
 

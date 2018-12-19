@@ -17,7 +17,7 @@ export default function lookupPartial(templateName, owner) {
 
   let template = templateFor(owner, parseUnderscoredName(templateName), templateName);
 
-  assert(`Unable to find partial with name "${templateName}"`, !!template);
+  assert(`Unable to find partial with name "${templateName}"`, Boolean(template));
 
   return template;
 }

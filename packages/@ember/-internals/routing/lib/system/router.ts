@@ -531,7 +531,7 @@ class EmberRouter extends EmberObject {
     }
 
     let resolver = get(owner, 'application.__registry__.resolver.moduleBasedResolver');
-    return !!resolver;
+    return Boolean(resolver);
   }
 
   /**
@@ -979,7 +979,7 @@ class EmberRouter extends EmberObject {
     let targetRouteName = _targetRouteName || getActiveTargetName(this._routerMicrolib);
     assert(
       `The route ${targetRouteName} was not found`,
-      !!targetRouteName && this._routerMicrolib.hasRoute(targetRouteName)
+      Boolean(targetRouteName) && this._routerMicrolib.hasRoute(targetRouteName)
     );
 
     let queryParams = {};
@@ -991,7 +991,7 @@ class EmberRouter extends EmberObject {
       targetRouteName,
       models,
       queryParams as QueryParam,
-      !!_keepDefaultQueryParamValues
+      Boolean(_keepDefaultQueryParamValues)
     );
 
     let transition = this._routerMicrolib.transitionTo(targetRouteName, ...models, { queryParams });
@@ -1049,7 +1049,7 @@ class EmberRouter extends EmberObject {
     _fromRouterService?: boolean
   ) {
     let state = calculatePostTransitionState(this, targetRouteName, models);
-    this._hydrateUnsuppliedQueryParams(state, queryParams, !!_fromRouterService);
+    this._hydrateUnsuppliedQueryParams(state, queryParams, Boolean(_fromRouterService));
     this._serializeQueryParams(state.routeInfos, queryParams);
 
     if (!_fromRouterService) {

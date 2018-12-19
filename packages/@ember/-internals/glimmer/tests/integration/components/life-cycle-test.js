@@ -1422,9 +1422,9 @@ moduleFor(
           ParentDestroyedElements.push({
             id: this.itemId,
             name: 'parent-component',
-            hasParent: !!this.element.parentNode,
-            nextSibling: !!this.element.nextSibling,
-            previousSibling: !!this.element.previousSibling,
+            hasParent: Boolean(this.element.parentNode),
+            nextSibling: Boolean(this.element.nextSibling),
+            previousSibling: Boolean(this.element.previousSibling),
           });
         },
       });
@@ -1442,9 +1442,9 @@ moduleFor(
           ChildDestroyedElements.push({
             id: this.nestedId,
             name: 'nested-component',
-            hasParent: !!this.element.parentNode,
-            nextSibling: !!this.element.nextSibling,
-            previousSibling: !!this.element.previousSibling,
+            hasParent: Boolean(this.element.parentNode),
+            nextSibling: Boolean(this.element.nextSibling),
+            previousSibling: Boolean(this.element.previousSibling),
           });
         },
       });

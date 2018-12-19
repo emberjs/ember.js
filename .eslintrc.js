@@ -15,6 +15,7 @@ module.exports = {
     'qunit',
   ],
   rules: {
+    'no-implicit-coercion': 'error',
     'no-unused-vars': 'error',
     'no-throw-literal': 'error',
     'no-useless-escape': 'off', // TODO: bring this back

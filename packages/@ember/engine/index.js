@@ -120,7 +120,7 @@ const Engine = Namespace.extend(RegistryProxyMixin, {
   */
   runInitializers() {
     this._runInitializer('initializers', (name, initializer) => {
-      assert(`No application initializer named '${name}'`, !!initializer);
+      assert(`No application initializer named '${name}'`, Boolean(initializer));
       initializer.initialize(this);
     });
   },
@@ -132,7 +132,7 @@ const Engine = Namespace.extend(RegistryProxyMixin, {
   */
   runInstanceInitializers(instance) {
     this._runInitializer('instanceInitializers', (name, initializer) => {
-      assert(`No instance initializer named '${name}'`, !!initializer);
+      assert(`No instance initializer named '${name}'`, Boolean(initializer));
       initializer.initialize(instance);
     });
   },

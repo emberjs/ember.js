@@ -80,7 +80,7 @@ function _fmt(str: string, formats: any[]) {
   return str.replace(/%@([0-9]+)?/g, (_s: string, argIndex: string) => {
     let i = argIndex ? parseInt(argIndex, 10) - 1 : idx++;
     let r = i < formats.length ? formats[i] : undefined;
-    return typeof r === 'string' ? r : r === null ? '(null)' : r === undefined ? '' : '' + r;
+    return typeof r === 'string' ? r : r === null ? '(null)' : r === undefined ? '' : String(r);
   });
 }
 

@@ -67,7 +67,7 @@ export default Mixin.create({
   },
 
   isTruthy: computed('content', function() {
-    return !!get(this, 'content');
+    return Boolean(get(this, 'content'));
   }),
 
   willWatchProperty(key) {

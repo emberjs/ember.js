@@ -43,13 +43,13 @@ export function escapeExpression(string: any): string {
     } else if (string === null || string === undefined) {
       return '';
     } else if (!string) {
-      return string + '';
+      return String(string);
     }
 
     // Force a string conversion as this will be done by the append regardless and
     // the regex test will do this transparently behind the scenes, causing issues if
     // an object's to string has escaped characters in it.
-    string = '' + string;
+    string = String(string);
   }
 
   if (!possible.test(string)) {
@@ -79,7 +79,7 @@ export function htmlSafe(str: string) {
   if (str === null || str === undefined) {
     str = '';
   } else if (typeof str !== 'string') {
-    str = '' + str;
+    str = String(str);
   }
   return new SafeString(str);
 }

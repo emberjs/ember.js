@@ -11,7 +11,7 @@ import { jQueryDisabled, jQuery } from '@ember/-internals/views';
 import { HAS_NATIVE_PROXY } from '@ember/-internals/utils';
 import { DEBUG } from '@glimmer/env';
 
-let canDataTransfer = !!document.createEvent('HTMLEvents').dataTransfer;
+let canDataTransfer = Boolean(document.createEvent('HTMLEvents').dataTransfer);
 
 function fireNativeWithDataTransfer(node, type, dataTransfer) {
   let event = document.createEvent('HTMLEvents');

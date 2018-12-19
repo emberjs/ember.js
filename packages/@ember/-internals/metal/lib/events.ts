@@ -43,7 +43,10 @@ export function addListener(
   method?: Function | string,
   once?: boolean
 ): void {
-  assert('You must pass at least an object and event name to addListener', !!obj && !!eventName);
+  assert(
+    'You must pass at least an object and event name to addListener',
+    Boolean(obj) && Boolean(eventName)
+  );
 
   if (!method && 'function' === typeof target) {
     method = target;
@@ -73,7 +76,10 @@ export function removeListener(
   target: object | null,
   method?: Function | string
 ): void {
-  assert('You must pass at least an object and event name to removeListener', !!obj && !!eventName);
+  assert(
+    'You must pass at least an object and event name to removeListener',
+    Boolean(obj) && Boolean(eventName)
+  );
 
   if (!method && 'function' === typeof target) {
     method = target;

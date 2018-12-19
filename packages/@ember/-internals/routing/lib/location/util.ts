@@ -92,7 +92,7 @@ export function supportsHistory(userAgent: string, history: History) {
     return false;
   }
 
-  return !!(history && 'pushState' in history);
+  return Boolean(history && 'pushState' in history);
 }
 
 /**

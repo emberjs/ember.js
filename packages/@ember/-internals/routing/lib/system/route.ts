@@ -1313,7 +1313,7 @@ class Route extends EmberObject implements IRoute {
     //   passed a model to skip the assertion.
     assert(
       `The controller named '${name}' could not be found. Make sure that this route exists and has already been entered at least once. If you are accessing a controller not associated with a route, make sure the controller class is explicitly defined.`,
-      !!controller || _skipAssert === true
+      Boolean(controller) || _skipAssert === true
     );
 
     return controller;
@@ -1796,7 +1796,7 @@ function buildRenderOptions(
     controller = owner.lookup(`controller:${controllerName}`);
     assert(
       `You passed \`controller: '${controllerName}'\` into the \`render\` method, but no such controller could be found.`,
-      isDefaultRender || !!controller
+      isDefaultRender || Boolean(controller)
     );
   }
 
@@ -1807,7 +1807,7 @@ function buildRenderOptions(
   let template: TemplateFactory<unknown> = owner.lookup(`template:${templateName}`);
   assert(
     `Could not find "${templateName}" template, view, or component.`,
-    isDefaultRender || !!template
+    isDefaultRender || Boolean(template)
   );
 
   let parent: any;
@@ -2148,7 +2148,7 @@ Route.reopen(ActionHandler, Evented, {
           `You used the dynamic segment ${name}_id in your route ${routeName}, but ${namespace}.${classify(
             name
           )} did not exist and you did not override your route's \`model\` hook.`,
-          !!modelClass
+          Boolean(modelClass)
         );
 
         if (!modelClass) {

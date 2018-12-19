@@ -39,7 +39,7 @@ class AnyTests extends AbstractTestCase {
     let obj = emberA([0, 1, 2]);
     let result;
 
-    result = obj.any(i => !!i);
+    result = obj.any(i => Boolean(i));
     this.assert.equal(result, true, 'return value of obj.any');
   }
 

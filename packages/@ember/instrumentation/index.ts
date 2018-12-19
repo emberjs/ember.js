@@ -111,7 +111,7 @@ const time = ((): (() => number) => {
   return fn
     ? fn.bind(perf)
     : () => {
-        return +new Date();
+        return Number(new Date());
       };
 })();
 

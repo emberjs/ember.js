@@ -61,7 +61,7 @@ export function uniqBy(array, key = identityFunction) {
 
 function iter(key, value) {
   let valueProvided = arguments.length === 2;
-  return valueProvided ? item => value === get(item, key) : item => !!get(item, key);
+  return valueProvided ? item => value === get(item, key) : item => Boolean(get(item, key));
 }
 
 function findIndex(array, predicate, startAt) {

@@ -7,5 +7,5 @@ export const window = hasDom ? self : null;
 export const location = hasDom ? self.location : null;
 export const history = hasDom ? self.history : null;
 export const userAgent = hasDom ? self.navigator.userAgent : 'Lynx (textmode)';
-export const isChrome = hasDom ? !!(window as any).chrome && !(window as any).opera : false;
+export const isChrome = hasDom ? Boolean((window as any).chrome) && !(window as any).opera : false;
 export const isFirefox = hasDom ? typeof InstallTrigger !== 'undefined' : false;

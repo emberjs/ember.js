@@ -48,8 +48,8 @@ export function capabilities(managerAPI: '3.4', options: OptionalCapabilities = 
   assert('Invalid component manager compatibility specified', managerAPI === '3.4');
 
   return {
-    asyncLifeCycleCallbacks: !!options.asyncLifecycleCallbacks,
-    destructor: !!options.destructor,
+    asyncLifeCycleCallbacks: Boolean(options.asyncLifecycleCallbacks),
+    destructor: Boolean(options.destructor),
   };
 }
 
