@@ -202,11 +202,14 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
    */
   createTemplate(factory: TemplateFactory, owner: Owner): OwnedTemplate {
     let cache = this.templateCache.get(owner);
+    let template;
     if (cache === undefined) {
       cache = new Map();
       this.templateCache.set(owner, cache);
+    } else {
+      template = cache.get(factory);
     }
-    let template = cache.get(factory);
+
     if (template === undefined) {
       const { compiler } = this;
       const injections: Injections = { compiler };
