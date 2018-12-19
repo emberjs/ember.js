@@ -23,7 +23,7 @@ import { tagForProperty, update } from './tags';
 import { getCurrentTracker, setCurrentTracker } from './tracked';
 
 export type ComputedPropertyGetter = (keyName: string) => any;
-export type ComputedPropertySetter = (leyName: string, value: any) => any;
+export type ComputedPropertySetter = (keyName: string, value: any) => any;
 
 export interface ComputedPropertyGetterAndSetter {
   get?: ComputedPropertyGetter;
