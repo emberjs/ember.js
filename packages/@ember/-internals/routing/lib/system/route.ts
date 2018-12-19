@@ -625,8 +625,7 @@ class Route extends EmberObject implements IRoute {
     ```
 
     It is also possible to pass a URL (a string that starts with a
-    `/`). This is intended for testing and debugging purposes and
-    should rarely be used in production code.
+    `/`).
 
     ```javascript
     this.transitionTo('/');
