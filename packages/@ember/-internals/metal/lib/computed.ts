@@ -180,7 +180,7 @@ class ComputedProperty extends Descriptor implements DescriptorWithDependentKeys
       );
       assert(
         'Computed properties must receive a getter or a setter, you passed none.',
-        !!objectConfig.get || !!objectConfig.set
+        Boolean(objectConfig.get) || Boolean(objectConfig.set)
       );
       this._getter = objectConfig.get || noop;
       this._setter = objectConfig.set;
@@ -195,7 +195,7 @@ class ComputedProperty extends Descriptor implements DescriptorWithDependentKeys
     }
 
     this._dependentKeys = opts && opts.dependentKeys;
-    this._readOnly = !!opts && hasGetterOnly && opts.readOnly === true;
+    this._readOnly = Boolean(opts) && hasGetterOnly && opts!.readOnly === true;
   }
 
   /**

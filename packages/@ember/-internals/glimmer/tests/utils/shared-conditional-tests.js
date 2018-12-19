@@ -1,3 +1,5 @@
+/* eslint-disable no-new-wrappers */
+
 import { RenderingTestCase, applyMixins, runTask } from 'internal-test-helpers';
 
 import { assign } from '@ember/polyfills';

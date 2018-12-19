@@ -715,7 +715,7 @@ moduleFor(
             assert.equal(keyName, 'aInt', 'setter receives the keyName');
             assert.equal(value, 123, 'setter receives the new value');
             assert.equal(oldValue, 1, 'setter receives the old value');
-            this.set('a', '' + value); // side effect
+            this.set('a', String(value)); // side effect
             return parseInt(this.get('a'));
           },
         }),

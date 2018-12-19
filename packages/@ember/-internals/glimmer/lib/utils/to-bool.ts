@@ -5,6 +5,6 @@ export default function toBool(predicate: Opaque): boolean {
   if (isArray(predicate)) {
     return (predicate as { length: number }).length !== 0;
   } else {
-    return !!predicate;
+    return Boolean(predicate);
   }
 }

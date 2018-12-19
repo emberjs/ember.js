@@ -36,8 +36,8 @@ function assertHelpers(assert, application, helperContainer, expected) {
   }
 
   function checkHelperPresent(helper, expected) {
-    var presentInHelperContainer = !!helperContainer[helper];
-    var presentInTestHelpers = !!application.testHelpers[helper];
+    var presentInHelperContainer = Boolean(helperContainer[helper]);
+    var presentInTestHelpers = Boolean(application.testHelpers[helper]);
 
     assert.ok(
       presentInHelperContainer === expected,

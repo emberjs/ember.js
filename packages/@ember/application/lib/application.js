@@ -383,7 +383,7 @@ const Application = Engine.extend({
     this._booted = false;
     this._applicationInstances = new Set();
 
-    this.autoboot = this._globalsMode = !!this.autoboot;
+    this.autoboot = this._globalsMode = Boolean(this.autoboot);
 
     if (this._globalsMode) {
       this._prepareForGlobalsMode();

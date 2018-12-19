@@ -37,7 +37,7 @@ class DSL {
 
   constructor(name: string | null = null, options: DSLOptions) {
     this.parent = name;
-    this.enableLoadingSubstates = !!(options && options.enableLoadingSubstates);
+    this.enableLoadingSubstates = Boolean(options && options.enableLoadingSubstates);
     this.matches = [];
     this.options = options;
   }

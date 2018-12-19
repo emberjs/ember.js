@@ -791,7 +791,7 @@ export function observer(...args: (string | Function)[]) {
   assert('observer called without a function', typeof func === 'function');
   assert(
     'observer called without valid path',
-    _paths.length > 0 && _paths.every(p => typeof p === 'string' && !!p.length)
+    _paths.length > 0 && _paths.every(p => typeof p === 'string' && Boolean(p.length))
   );
 
   let paths: string[] = [];

@@ -99,12 +99,12 @@ export default {
   */
   create(options: { implementation: string }) {
     let implementation = options && options.implementation;
-    assert("Location.create: you must specify a 'implementation' option", !!implementation);
+    assert("Location.create: you must specify a 'implementation' option", Boolean(implementation));
 
     let implementationClass = this.implementations[implementation];
     assert(
       `Location.create: ${implementation} is not a valid implementation`,
-      !!implementationClass
+      Boolean(implementationClass)
     );
 
     return implementationClass.create(...arguments);

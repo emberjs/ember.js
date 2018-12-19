@@ -383,7 +383,7 @@ moduleFor(
       MyApplication.instanceInitializer({
         name: 'giveMeAnInstance',
         initialize(instance) {
-          assert.ok(!!instance, 'Initializer got an instance');
+          assert.ok(Boolean(instance), 'Initializer got an instance');
         },
       });
 

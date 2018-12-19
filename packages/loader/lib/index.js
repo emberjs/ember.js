@@ -92,7 +92,7 @@ mainContext = this; // eslint-disable-line no-undef
     requireModule['default'] = requireModule;
 
     requireModule.has = function registryHas(moduleName) {
-      return !!registry[moduleName] || !!registry[moduleName + '/index'];
+      return Boolean(registry[moduleName]) || Boolean(registry[moduleName + '/index']);
     };
 
     requireModule._eak_seen = registry;

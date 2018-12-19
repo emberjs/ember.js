@@ -183,9 +183,9 @@ if (DEBUG) {
     @since 1.0.0
   */
   deprecate = function deprecate(message, test, options) {
-    assert(missingOptionsDeprecation, !!(options && (options.id || options.until)));
-    assert(missingOptionsIdDeprecation, !!options!.id);
-    assert(missingOptionsUntilDeprecation, !!options!.until);
+    assert(missingOptionsDeprecation, Boolean(options && (options.id || options.until)));
+    assert(missingOptionsIdDeprecation, Boolean(options!.id));
+    assert(missingOptionsUntilDeprecation, Boolean(options!.until));
 
     invoke('deprecate', message, test, options);
   };

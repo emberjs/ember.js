@@ -105,8 +105,8 @@ if (DEBUG) {
       test = false;
     }
 
-    assert(missingOptionsDeprecation, !!options);
-    assert(missingOptionsIdDeprecation, !!(options && options.id));
+    assert(missingOptionsDeprecation, Boolean(options));
+    assert(missingOptionsIdDeprecation, Boolean(options && options.id));
 
     invoke('warn', message, test, options);
   };

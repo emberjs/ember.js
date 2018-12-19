@@ -239,7 +239,7 @@ export function not(dependentKey) {
 */
 export function bool(dependentKey) {
   return computed(dependentKey, function() {
-    return !!get(this, dependentKey);
+    return Boolean(get(this, dependentKey));
   });
 }
 

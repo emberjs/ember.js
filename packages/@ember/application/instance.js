@@ -385,7 +385,7 @@ class BootOptions {
       @public
     */
     if (options.isBrowser !== undefined) {
-      this.isBrowser = !!options.isBrowser;
+      this.isBrowser = Boolean(options.isBrowser);
     } else {
       this.isBrowser = environment.hasDOM;
     }
@@ -409,7 +409,7 @@ class BootOptions {
       @public
     */
     if (options.shouldRender !== undefined) {
-      this.shouldRender = !!options.shouldRender;
+      this.shouldRender = Boolean(options.shouldRender);
     } else {
       this.shouldRender = true;
     }
@@ -490,7 +490,7 @@ class BootOptions {
     }
 
     if (options.isInteractive !== undefined) {
-      this.isInteractive = !!options.isInteractive;
+      this.isInteractive = Boolean(options.isInteractive);
     }
   }
 

@@ -77,7 +77,7 @@ export class Libraries {
 
 if (EMBER_LIBRARIES_ISREGISTERED) {
   Libraries.prototype.isRegistered = function(name: string): boolean {
-    return !!this._getLibraryByName(name);
+    return Boolean(this._getLibraryByName(name));
   };
 }
 

@@ -119,8 +119,8 @@ module.exports = {
 
   shouldTouchRouter: function(name, options) {
     let entityTouchesRouter = this.shouldEntityTouchRouter(name);
-    let isDummy = !!options.dummy;
-    let isAddon = !!options.project.isEmberCLIAddon();
+    let isDummy = Boolean(options.dummy);
+    let isAddon = Boolean(options.project.isEmberCLIAddon());
     let isAddonDummyOrApp = isDummy === isAddon;
 
     return (
