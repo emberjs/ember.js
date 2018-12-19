@@ -541,7 +541,7 @@ const LinkComponent = EmberComponent.extend({
     currentWhen = currentWhen || get(this, 'qualifiedRouteName');
     currentWhen = currentWhen.split(' ');
 
-    let routing = get(this, '_routing');
+    let routing = this._routing;
     let models = get(this, 'models');
     let resolvedQueryParams = get(this, 'resolvedQueryParams');
 
@@ -593,7 +593,7 @@ const LinkComponent = EmberComponent.extend({
   willBeActive: computed('_routing.targetState', function computeLinkToComponentWillBeActive(
     this: any
   ) {
-    let routing = get(this, '_routing');
+    let routing = this._routing;
     let targetState = get(routing, 'targetState');
     if (get(routing, 'currentState') === targetState) {
       return;
@@ -695,7 +695,7 @@ const LinkComponent = EmberComponent.extend({
     queryParams: any[],
     shouldReplace: boolean
   ) {
-    let routing = get(this, '_routing');
+    let routing = this._routing;
     return () => {
       payload.transition = routing.transitionTo(
         qualifiedRouteName,
@@ -769,7 +769,7 @@ const LinkComponent = EmberComponent.extend({
       return get(this, 'loadingHref');
     }
 
-    let routing = get(this, '_routing');
+    let routing = this._routing;
     let queryParams = get(this, 'queryParams.values');
 
     if (DEBUG) {
