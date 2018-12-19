@@ -2,13 +2,7 @@
 @module @ember/object
 */
 import { assert } from '@ember/debug';
-import {
-  get,
-  ComputedProperty,
-  addObserver,
-  removeObserver,
-  getProperties,
-} from '@ember/-internals/metal';
+import { get, ComputedProperty, addObserver, removeObserver } from '@ember/-internals/metal';
 import { compare, isArray, A as emberA, uniqBy as uniqByArray } from '@ember/-internals/runtime';
 
 function reduceMacro(dependentKey, callback, initialValue, name) {
@@ -710,18 +704,12 @@ export function collect(...dependentKeys) {
   return multiArrayMacro(
     dependentKeys,
     function() {
-      let properties = getProperties(this, dependentKeys);
-      let res = emberA();
-      for (let key in properties) {
-        if (properties.hasOwnProperty(key)) {
-          if (properties[key] === undefined) {
-            res.push(null);
-          } else {
-            res.push(properties[key]);
-          }
-        }
-      }
-      return res;
+      let res = dependentKeys.map(key => {
+        let val = get(this, key);
+        return val === undefined ? null : val;
+      });
+
+      return emberA(res);
     },
     'collect'
   );
