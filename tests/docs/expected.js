@@ -1,7 +1,6 @@
 module.exports = {
   classitems: [
     '$',
-    '@each',
     'A',
     'EXTEND_PROTOTYPES',
     'GUID_KEY',
