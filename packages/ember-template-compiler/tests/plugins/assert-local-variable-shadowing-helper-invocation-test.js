@@ -35,12 +35,20 @@ moduleFor(
         { moduleName: 'baz/foo-bar' }
       );
 
-      // Not an invocation
+      // Not invocations
 
       compile(
         `
         {{#let foo as |foo|}}
           {{concat foo}}
+        {{/let}}`,
+        { moduleName: 'baz/foo-bar' }
+      );
+
+      compile(
+        `
+        {{#let (concat foo) as |concat|}}
+          {{input value=concat}}
         {{/let}}`,
         { moduleName: 'baz/foo-bar' }
       );
@@ -77,12 +85,20 @@ moduleFor(
         { moduleName: 'baz/foo-bar' }
       );
 
-      // Not an invocation
+      // Not invocations
 
       compile(
         `
         <Foo as |foo|>
           {{concat foo}}
+        </Foo>`,
+        { moduleName: 'baz/foo-bar' }
+      );
+
+      compile(
+        `
+        <Foo foo={{concat foo}} as |concat|>
+          {{input value=concat}}
         </Foo>`,
         { moduleName: 'baz/foo-bar' }
       );
@@ -136,7 +152,7 @@ moduleFor(
         { moduleName: 'baz/foo-bar' }
       );
 
-      // Not an invocation
+      // Not invocations
 
       compile(
         `
@@ -144,6 +160,300 @@ moduleFor(
           <FooBar as |bar|>
             {{#each items as |baz|}}
               {{concat foo}}
+            {{/each}}
+          </FooBar>
+        {{/let}}`,
+        { moduleName: 'baz/foo-bar' }
+      );
+
+      compile(
+        `
+        {{#let (foo foo) as |foo|}}
+          <FooBar bar=(bar bar) as |bar|>
+            {{#each (baz baz) as |baz|}}
+              {{concat foo bar baz}}
+            {{/each}}
+          </FooBar>
+        {{/let}}`,
+        { moduleName: 'baz/foo-bar' }
+      );
+    }
+
+    [`@test block statements shadowing attribute sub-expression invocations`]() {
+      expectAssertion(() => {
+        compile(
+          `
+          {{#let foo as |foo|}}
+            <div class={{concat (foo bar baz)}} />
+          {{/let}}`,
+          { moduleName: 'baz/foo-bar' }
+        );
+      }, `Cannot invoke the \`foo\` helper because it was shadowed by a local variable (i.e. a block param) with the same name. Please rename the local variable to resolve the conflict. ('baz/foo-bar' @ L3:C32) `);
+
+      // Not shadowed
+
+      compile(
+        `
+        {{#let foo as |foo|}}{{/let}}
+        <div class={{concat (foo)}} />
+        <div class={{concat (foo bar baz)}} />`,
+        { moduleName: 'baz/foo-bar' }
+      );
+
+      // Not invocations
+
+      compile(
+        `
+        {{#let foo as |foo|}}
+          <div class={{concat foo}} />
+        {{/let}}`,
+        { moduleName: 'baz/foo-bar' }
+      );
+
+      compile(
+        `
+        {{#let (foo foo) as |foo|}}
+          <div class={{concat foo}} />
+        {{/let}}`,
+        { moduleName: 'baz/foo-bar' }
+      );
+    }
+
+    [`@test element nodes shadowing attribute sub-expression invocations`]() {
+      expectAssertion(() => {
+        compile(
+          `
+          <Foo as |foo|>
+            <div class={{concat (foo bar baz)}} />
+          </Foo>`,
+          { moduleName: 'baz/foo-bar' }
+        );
+      }, `Cannot invoke the \`foo\` helper because it was shadowed by a local variable (i.e. a block param) with the same name. Please rename the local variable to resolve the conflict. ('baz/foo-bar' @ L3:C32) `);
+
+      // Not shadowed
+
+      compile(
+        `
+        <Foo as |foo|></Foo>
+        <div class={{concat (foo)}} />
+        <div class={{concat (foo bar baz)}} />`,
+        { moduleName: 'baz/foo-bar' }
+      );
+
+      // Not invocations
+
+      compile(
+        `
+        <Foo as |foo|>
+          <div class={{concat foo}} />
+        </Foo>`,
+        { moduleName: 'baz/foo-bar' }
+      );
+
+      compile(
+        `
+        <Foo foo={{foo foo}} as |foo|>
+          <div class={{concat foo}} />
+        </Foo>`,
+        { moduleName: 'baz/foo-bar' }
+      );
+    }
+
+    [`@test deeply nested attribute sub-expression invocations`]() {
+      expectAssertion(() => {
+        compile(
+          `
+          {{#let foo as |foo|}}
+            <FooBar as |bar|>
+              {{#each items as |baz|}}
+                <div class={{concat (foo bar baz)}} />
+              {{/each}}
+            </FooBar>
+          {{/let}}`,
+          { moduleName: 'baz/foo-bar' }
+        );
+      }, `Cannot invoke the \`foo\` helper because it was shadowed by a local variable (i.e. a block param) with the same name. Please rename the local variable to resolve the conflict. ('baz/foo-bar' @ L5:C36) `);
+
+      // Not shadowed
+
+      compile(
+        `
+        {{#let foo as |foo|}}
+          <FooBar as |bar|>
+            {{#each items as |baz|}}
+            {{/each}}
+            <div class={{concat (baz)}} />
+            <div class={{concat (baz bat)}} />
+          </FooBar>
+          <div class={{concat (bar)}} />
+          <div class={{concat (bar baz bat)}} />
+        {{/let}}
+        <div class={{concat (foo)}} />
+        <div class={{concat (foo bar baz bat)}} />`,
+        { moduleName: 'baz/foo-bar' }
+      );
+
+      // Not invocations
+
+      compile(
+        `
+        {{#let foo as |foo|}}
+          <FooBar as |bar|>
+            {{#each items as |baz|}}
+              <div class={{concat foo}} />
+            {{/each}}
+          </FooBar>
+        {{/let}}`,
+        { moduleName: 'baz/foo-bar' }
+      );
+
+      compile(
+        `
+        {{#let (foo foo) as |foo|}}
+          <FooBar bar=(bar bar) as |bar|>
+            {{#each (baz baz) as |baz|}}
+              <div class={{concat foo bar baz}} />
+            {{/each}}
+          </FooBar>
+        {{/let}}`,
+        { moduleName: 'baz/foo-bar' }
+      );
+    }
+
+    [`@test block statements shadowing attribute mustache invocations`]() {
+      expectAssertion(() => {
+        compile(
+          `
+          {{#let foo as |foo|}}
+            <div class={{foo bar baz}} />
+          {{/let}}`,
+          { moduleName: 'baz/foo-bar' }
+        );
+      }, `Cannot invoke the \`foo\` helper because it was shadowed by a local variable (i.e. a block param) with the same name. Please rename the local variable to resolve the conflict. ('baz/foo-bar' @ L3:C23) `);
+
+      // Not shadowed
+
+      compile(
+        `
+        {{#let foo as |foo|}}{{/let}}
+        <div class={{foo}} />
+        <div class={{foo bar baz}} />`,
+        { moduleName: 'baz/foo-bar' }
+      );
+
+      // Not invocations
+
+      compile(
+        `
+        {{#let foo as |foo|}}
+          <div class={{foo}} />
+        {{/let}}`,
+        { moduleName: 'baz/foo-bar' }
+      );
+
+      compile(
+        `
+        {{#let (concat foo) as |concat|}}
+          <div class={{concat}} />
+        {{/let}}`,
+        { moduleName: 'baz/foo-bar' }
+      );
+    }
+
+    [`@test element nodes shadowing attribute mustache invocations`]() {
+      expectAssertion(() => {
+        compile(
+          `
+          <Foo as |foo|>
+            <div class={{foo bar baz}} />
+          </Foo>`,
+          { moduleName: 'baz/foo-bar' }
+        );
+      }, `Cannot invoke the \`foo\` helper because it was shadowed by a local variable (i.e. a block param) with the same name. Please rename the local variable to resolve the conflict. ('baz/foo-bar' @ L3:C23) `);
+
+      // Not shadowed
+
+      compile(
+        `
+        <Foo as |foo|></Foo>
+        <div class={{foo}} />
+        <div class={{foo bar baz}} />`,
+        { moduleName: 'baz/foo-bar' }
+      );
+
+      // Not invocations
+
+      compile(
+        `
+        <Foo as |foo|>
+          <div class={{foo}} />
+        </Foo>`,
+        { moduleName: 'baz/foo-bar' }
+      );
+
+      compile(
+        `
+        <Foo foo={{concat foo}} as |concat|>
+          <div class={{concat}} />
+        </Foo>`,
+        { moduleName: 'baz/foo-bar' }
+      );
+    }
+
+    [`@test deeply nested attribute mustache invocations`]() {
+      expectAssertion(() => {
+        compile(
+          `
+          {{#let foo as |foo|}}
+            <FooBar as |bar|>
+              {{#each items as |baz|}}
+                <div class={{foo bar baz}} />
+              {{/each}}
+            </FooBar>
+          {{/let}}`,
+          { moduleName: 'baz/foo-bar' }
+        );
+      }, `Cannot invoke the \`foo\` helper because it was shadowed by a local variable (i.e. a block param) with the same name. Please rename the local variable to resolve the conflict. ('baz/foo-bar' @ L5:C27) `);
+
+      // Not shadowed
+
+      compile(
+        `
+        {{#let foo as |foo|}}
+          <FooBar as |bar|>
+            {{#each items as |baz|}}
+            {{/each}}
+            <div class={{baz}} />
+            <div class={{baz bat}} />
+          </FooBar>
+          <div class={{bar}} />
+          <div class={{bar baz bat}} />
+        {{/let}}
+        <div class={{foo}} />
+        <div class={{foo bar baz bat}} />`,
+        { moduleName: 'baz/foo-bar' }
+      );
+
+      // Not invocations
+
+      compile(
+        `
+        {{#let foo as |foo|}}
+          <FooBar as |bar|>
+            {{#each items as |baz|}}
+              <div class={{foo}} />
+            {{/each}}
+          </FooBar>
+        {{/let}}`,
+        { moduleName: 'baz/foo-bar' }
+      );
+
+      compile(
+        `
+        {{#let (foo foo) as |foo|}}
+          <FooBar bar=(bar bar) as |bar|>
+            {{#each (baz baz) as |baz|}}
+              <div foo={{foo}} bar={{bar}} baz={{baz}} />
             {{/each}}
           </FooBar>
         {{/let}}`,
