@@ -58,9 +58,6 @@ if (DEBUG) {
   registerHandler(function logWarning(message) {
     /* eslint-disable no-console */
     console.warn(`WARNING: ${message}`);
-    if (console.trace) {
-      console.trace();
-    }
     /* eslint-enable no-console */
   });
 
