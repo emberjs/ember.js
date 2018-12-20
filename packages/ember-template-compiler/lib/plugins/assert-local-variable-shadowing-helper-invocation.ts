@@ -12,18 +12,8 @@ export default function assertLocalVariableShadowingHelperInvocation(
     name: 'assert-local-variable-shadowing-helper-invocation',
 
     visitor: {
-      BlockStatement: {
-        enter(node: AST.BlockStatement) {
-          locals.push(node.program.blockParams);
-        },
-
-        exit() {
-          locals.pop();
-        },
-      },
-
-      ElementNode: {
-        enter(node: AST.ElementNode) {
+      Program: {
+        enter(node: AST.Program) {
           locals.push(node.blockParams);
         },
 
@@ -32,20 +22,49 @@ export default function assertLocalVariableShadowingHelperInvocation(
         },
       },
 
+      ElementNode: {
+        keys: {
+          children: {
+            enter(node: AST.ElementNode) {
+              locals.push(node.blockParams);
+            },
+
+            exit() {
+              locals.pop();
+            },
+          },
+        },
+      },
+
+      MustacheStatement(node: AST.MustacheStatement) {
+        if (isPath(node.path) && hasArguments(node)) {
+          let name = node.path.parts[0];
+          let type = 'helper';
+
+          assert(
+            `${messageFor(name, type)} ${calculateLocationDisplay(moduleName, node.loc)}`,
+            !isLocalVariable(node.path, locals)
+          );
+        }
+      },
+
       SubExpression(node: AST.SubExpression) {
+        let name = node.path.parts[0];
+        let type = 'helper';
+
         assert(
-          `${messageFor(node)} ${calculateLocationDisplay(moduleName, node.loc)}`,
+          `${messageFor(name, type)} ${calculateLocationDisplay(moduleName, node.loc)}`,
           !isLocalVariable(node.path, locals)
         );
       },
 
       ElementModifierStatement(node: AST.ElementModifierStatement) {
-        // The ElementNode get visited first, but modifiers are more of a sibling
-        // than a child in the lexical scope (we aren't evaluated in its "block")
-        // so any locals introduced by the last element doesn't count
+        let name = node.path.parts[0];
+        let type = 'modifier';
+
         assert(
-          `${messageFor(node)} ${calculateLocationDisplay(moduleName, node.loc)}`,
-          !isLocalVariable(node.path, locals.slice(0, -1))
+          `${messageFor(name, type)} ${calculateLocationDisplay(moduleName, node.loc)}`,
+          !isLocalVariable(node.path, locals)
         );
       },
     },
@@ -53,21 +72,21 @@ export default function assertLocalVariableShadowingHelperInvocation(
 }
 
 function isLocalVariable(node: AST.PathExpression, locals: string[][]): boolean {
-  return !node.this && hasLocalVariable(node.parts[0], locals);
+  return !node.this && node.parts.length === 1 && hasLocalVariable(node.parts[0], locals);
 }
 
 function hasLocalVariable(name: string, locals: string[][]): boolean {
   return locals.some(names => names.indexOf(name) !== -1);
 }
 
-function messageFor(node: AST.SubExpression | AST.ElementModifierStatement): string {
-  let type = isSubExpression(node) ? 'helper' : 'modifier';
-  let name = node.path.parts[0];
+function messageFor(name: string, type: string): string {
   return `Cannot invoke the \`${name}\` ${type} because it was shadowed by a local variable (i.e. a block param) with the same name. Please rename the local variable to resolve the conflict.`;
 }
 
-function isSubExpression(
-  node: AST.SubExpression | AST.ElementModifierStatement
-): node is AST.SubExpression {
-  return node.type === 'SubExpression';
+function isPath(node: AST.Node): node is AST.PathExpression {
+  return node.type === 'PathExpression';
+}
+
+function hasArguments(node: AST.MustacheStatement): boolean {
+  return node.params.length > 0 || node.hash.pairs.length > 0;
 }
