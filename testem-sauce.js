@@ -13,35 +13,35 @@ module.exports = {
         "protocol": "tap"
       },
       "SL_Chrome_Current": {
-        "command": "ember sauce:launch -p 'Windows 10' -b chrome -v latest --no-ct -u '<url>'",
+        "command": "ember sauce:launch -p 'Windows 10' -b chrome -v latest --no-connect -u '<url>'",
         "protocol": "tap"
       },
       "SL_Chrome_Last": {
-        "command": "ember sauce:launch -p 'Windows 10' -b chrome -v latest-1 --no-ct -u '<url>'",
+        "command": "ember sauce:launch -p 'Windows 10' -b chrome -v latest-1 --no-connect -u '<url>'",
         "protocol": "tap"
       },
       "SL_Firefox_Current": {
-        "command": "ember sauce:launch -p 'Windows 10' -b firefox -v latest --no-ct -u '<url>'",
+        "command": "ember sauce:launch -p 'Windows 10' -b firefox -v latest --no-connect -u '<url>'",
         "protocol": "tap"
       },
       "SL_Firefox_Last": {
-        "command": "ember sauce:launch -p 'Windows 10' -b firefox -v latest-1 --no-ct -u '<url>'",
+        "command": "ember sauce:launch -p 'Windows 10' -b firefox -v latest-1 --no-connect -u '<url>'",
         "protocol": "tap"
       },
       "SL_Safari_Current": {
-        "command": "ember sauce:launch -b safari -v latest --no-ct -u '<url>'",
+        "command": "ember sauce:launch -b safari -v latest --no-connect -u '<url>'",
         "protocol": "tap"
       },
       "SL_Safari_Last": {
-        "command": "ember sauce:launch -b safari -v latest-1 --no-ct -u '<url>'",
+        "command": "ember sauce:launch -b safari -v latest-1 --no-connect -u '<url>'",
         "protocol": "tap"
       },
       "SL_MS_Edge": {
-        "command": "ember sauce:launch -p 'Windows 10' -b 'microsoftedge' -v latest --no-ct -u '<url>'",
+        "command": "ember sauce:launch -p 'Windows 10' -b 'microsoftedge' -v latest --no-connect -u '<url>'",
         "protocol": "tap"
       },
       "SL_IE_11": {
-        "command": "ember sauce:launch -p 'Windows 10' -b 'internet explorer' -v 11 --no-ct -u '<url>'",
+        "command": "ember sauce:launch -p 'Windows 10' -b 'internet explorer' -v 11 --no-connect -u '<url>'",
         "protocol": "tap"
       }
     }
