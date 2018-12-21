@@ -209,6 +209,7 @@ function buildBundles(packagesES, dependenciesES, templateCompilerDependenciesES
         '@ember/polyfills/index.js',
         '@ember/polyfills/lib/**',
         'ember/version.js',
+        'ember-babel.js',
         'ember-template-compiler/**',
       ],
     }),
