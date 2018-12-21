@@ -120,7 +120,7 @@ function includeTestHarness() {
     destDir: '/assets'
   });
 
-  let qunit = funnel(path.join(require.resolve('qunitjs'), '..'), {
+  let qunit = funnel(path.join(require.resolve('qunit'), '..'), {
     destDir: 'assets/'
   });
 
