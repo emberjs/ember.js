@@ -2,30 +2,35 @@ language: node_js
 node_js:
   - 6
 
-cache: yarn
-
 addons:
   chrome: stable
 
-before_install:
-  - curl -o- -L https://yarnpkg.com/install.sh | bash -s -- --version 1.10.1
-  - export PATH="$HOME/.yarn/bin:$PATH"
 env:
   global:
     - SAUCE_USERNAME=htmlbars-ci
     - SAUCE_ACCESS_KEY=71947947-f373-4e9c-9166-23038df7ddf2
   matrix:
     - TEST_NODE=1 TEST_BROWSERS=1
+
 matrix:
   fast_finish: true
+
+cache: yarn
+
+before_install:
+  - curl -o- -L https://yarnpkg.com/install.sh | bash -s -- --version 1.10.1
+  - export PATH="$HOME/.yarn/bin:$PATH"
+
 before_script:
   - yarn run sauce:connect
+
 script:
   - yarn run problems
   - yarn run test:ci
   - yarn run build
   - yarn run test:types
   - yarn run eslint
+
 after_script:
   - sleep 10
   - yarn run sauce:disconnect
