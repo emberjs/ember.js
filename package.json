@@ -68,7 +68,7 @@
     "eslint": "^4.3.0",
     "glob": "^7.0.5",
     "js-yaml": "^3.10.0",
-    "lerna-changelog": "^0.7.0",
+    "lerna-changelog": "^0.8.2",
     "loader.js": "^4.0.10",
     "mkdirp": "^0.5.1",
     "prettier": "^1.12.1",
