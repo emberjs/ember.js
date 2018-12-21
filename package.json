@@ -1,10 +1,10 @@
 {
   "name": "glimmer-engine",
   "version": "0.37.0",
+  "private": true,
   "description": "Glimmer compiles Handlebars templates into document fragments rather than string buffers",
   "license": "MIT",
   "author": "Tilde, Inc.",
-  "private": true,
   "repository": {
     "type": "git",
     "url": "https://github.com/glimmerjs/glimmer-vm.git"
@@ -13,6 +13,8 @@
     "build": "ember build --env production",
     "build:flags": "RETAIN_FLAGS=true ember build --env production",
     "changelog": "lerna-changelog",
+    "eslint": "eslint build/",
+    "problems": "tsc -p tsconfig.json --noEmit",
     "sauce:connect": "ember sauce:connect",
     "sauce:disconnect": "ember sauce:disconnect",
     "start": "ember serve --port=7357",
@@ -21,24 +23,17 @@
     "test:node": "bin/run-node-tests.js",
     "test:types": "bin/run-types-tests.js",
     "tslint": "tslint --project tsconfig.json",
-    "eslint": "eslint build/",
-    "problems": "tsc -p tsconfig.json --noEmit",
     "yarn:link": "node bin/yarn-link-all",
     "yarn:unlink": "node bin/yarn-link-all --unlink"
   },
-  "ember-addon": {
-    "paths": [
-      "build/symlink-dependencies"
-    ]
-  },
   "dependencies": {
-    "babel-plugin-debug-macros": "^0.1.11",
-    "handlebars": "^4.0.6",
-    "simple-html-tokenizer": "^0.5.6",
     "@simple-dom/document": "^1.4.0",
+    "@simple-dom/interface": "^1.4.0",
     "@simple-dom/serializer": "^1.4.0",
     "@simple-dom/void-map": "^1.4.0",
-    "@simple-dom/interface": "^1.4.0"
+    "babel-plugin-debug-macros": "^0.1.11",
+    "handlebars": "^4.0.6",
+    "simple-html-tokenizer": "^0.5.6"
   },
   "devDependencies": {
     "@glimmer/build": "^0.8.2",
@@ -91,5 +86,10 @@
       "documentation": ":memo: Documentation",
       "internal": ":house: Internal"
     }
+  },
+  "ember-addon": {
+    "paths": [
+      "build/symlink-dependencies"
+    ]
   }
 }
