@@ -35,6 +35,7 @@ script:
   - yarn run build
   - yarn run test:types
   - yarn run eslint
+  - yarn run tslint
 
 after_script:
   - sleep 10
