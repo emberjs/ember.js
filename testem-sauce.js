@@ -65,7 +65,8 @@ module.exports = {
     "SL_Chrome_Last",
     "SL_Firefox_Current",
     "SL_Firefox_Last",
-    "SL_Safari_Current",
+    // disabled due to failing QUnit/Saucelabs integration
+    // "SL_Safari_Current",
     "SL_Safari_Last",
     "SL_MS_Edge",
     "SL_IE_11"
