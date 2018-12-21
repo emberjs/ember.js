@@ -32,13 +32,13 @@
     ]
   },
   "dependencies": {
-    "babel-plugin-debug-macros": "^0.1.11",
-    "handlebars": "^4.0.6",
-    "simple-html-tokenizer": "^0.5.6",
     "@simple-dom/document": "^1.4.0",
+    "@simple-dom/interface": "^1.4.0",
     "@simple-dom/serializer": "^1.4.0",
     "@simple-dom/void-map": "^1.4.0",
-    "@simple-dom/interface": "^1.4.0"
+    "babel-plugin-debug-macros": "^0.1.11",
+    "handlebars": "^4.0.6",
+    "simple-html-tokenizer": "^0.5.6"
   },
   "devDependencies": {
     "@glimmer/build": "^0.8.2",
@@ -58,7 +58,6 @@
     "broccoli-persistent-filter": "^1.2.13",
     "broccoli-rollup": "^2.0.0",
     "broccoli-source": "^1.1.0",
-    "broccoli-tslinter": "^2.0.0",
     "broccoli-typescript-compiler": "^2.3.0",
     "dag-map": "^2.0.2",
     "ember-cli": "^2.14.1",

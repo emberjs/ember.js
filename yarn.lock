@@ -2070,15 +2070,6 @@ broccoli-string-replace@0.1.1, broccoli-string-replace@^0.1.1:
     broccoli-persistent-filter "^1.1.5"
     minimatch "^2.0.8"
 
-broccoli-tslinter@^2.0.0:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/broccoli-tslinter/-/broccoli-tslinter-2.0.1.tgz#2679b46f921d429175635943bda03f3c5a3c37f8"
-  integrity sha1-Jnm0b5IdQpF1Y1lDvaA/PFo8N/g=
-  dependencies:
-    broccoli-persistent-filter "^1.2.0"
-    chalk "^1.1.1"
-    exists-sync "0.0.3"
-
 broccoli-typescript-compiler@^2.3.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/broccoli-typescript-compiler/-/broccoli-typescript-compiler-2.3.0.tgz#7922a553b55055138ae0d8b76abec0580d254dd0"
