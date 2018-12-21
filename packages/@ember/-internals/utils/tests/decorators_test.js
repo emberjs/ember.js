@@ -3,19 +3,23 @@ QUnit.module('ESNext Decorators', function() {
     assert.expect(5);
 
     function prototypeProp(elementDescriptor) {
-      assert.strictEqual(elementDescriptor.kind,'field');
-      assert.strictEqual(elementDescriptor.key,'x');
-      assert.strictEqual(elementDescriptor.placement,'own');
-      assert.deepEqual(elementDescriptor.descriptor,{ configurable: true, enumerable: true, writable: true });
-      assert.strictEqual(elementDescriptor.initializer(),1);
+      assert.strictEqual(elementDescriptor.kind, 'field');
+      assert.strictEqual(elementDescriptor.key, 'x');
+      assert.strictEqual(elementDescriptor.placement, 'own');
+      assert.deepEqual(elementDescriptor.descriptor, {
+        configurable: true,
+        enumerable: true,
+        writable: true,
+      });
+      assert.strictEqual(elementDescriptor.initializer(), 1);
     }
 
     class Demo {
       @prototypeProp
-      x = 1
+      x = 1;
     }
 
     // instantiate the class to apply the decorator
     new Demo();
-  })
+  });
 });
