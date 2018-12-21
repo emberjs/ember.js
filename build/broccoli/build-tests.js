@@ -7,7 +7,6 @@ const concat = require('broccoli-concat');
 const transpileES6 = require('emberjs-build/lib/utils/transpile-es6');
 const transpileToES5 = require('./transpile-to-es5');
 const handlebarsInlinedTrees = require('./handlebars-inliner');
-const TSLint = require('broccoli-tslinter');
 const babel = require('broccoli-babel-transpiler');
 
 /**
@@ -39,15 +38,6 @@ function transpileBrowserTestsToAMD(tsTree, jsTree) {
     include: ['@glimmer/!(node)/test/**/*.js']
   });
 
-  // The TSLint plugin passes through all files, so we need to filter out any
-  // non-TypeScript files.
-  tsTree = funnel(tsTree, {
-    include: ['**/*.ts']
-  });
-
-  let tslintTestsTree = generateTSLintTests(tsTree);
-
-  testTree = merge([testTree, tslintTestsTree]);
   testTree = transpileToES5(testTree, 'amd');
 
   return concat(testTree, {
@@ -63,13 +53,6 @@ function transpileNodeTestsToCommonJS(jsTree) {
   return babel(testTree, {
     sourceMaps: 'inline',
     plugins: ['transform-es2015-modules-commonjs']
-  });
-}
-
-function generateTSLintTests(tsTree) {
-  const tslintConfig = __dirname + '/../../tslint.json';
-  return new TSLint(tsTree, {
-    configuration: tslintConfig
   });
 }
 
