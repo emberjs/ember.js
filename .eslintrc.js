@@ -8,6 +8,7 @@ module.exports = {
     'plugin:import/errors',
     'plugin:qunit/recommended',
   ],
+  parser: 'babel-eslint',
   plugins: [
     'ember-internal',
     'prettier',
