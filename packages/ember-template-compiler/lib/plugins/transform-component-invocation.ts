@@ -124,13 +124,14 @@ export default function transformComponentInvocation(env: ASTPluginEnvironment):
   let { moduleName } = env.meta;
   let { builders: b } = env.syntax;
   let locals: string[][] = [];
+  let isAttrs = false;
 
   return {
     name: 'transform-component-invocation',
 
     visitor: {
-      ElementNode: {
-        enter(node: AST.ElementNode) {
+      Program: {
+        enter(node: AST.Program) {
           locals.push(node.blockParams);
         },
 
@@ -139,23 +140,38 @@ export default function transformComponentInvocation(env: ASTPluginEnvironment):
         },
       },
 
-      BlockStatement: {
-        enter(node: AST.BlockStatement) {
-          // check this before we push the new locals
-          if (isBlockInvocation(node, locals)) {
-            wrapInComponent(moduleName, node, b);
-          }
+      ElementNode: {
+        keys: {
+          attributes: {
+            enter() {
+              isAttrs = true;
+            },
 
-          locals.push(node.program.blockParams);
-        },
+            exit() {
+              isAttrs = false;
+            },
+          },
 
-        exit() {
-          locals.pop();
+          children: {
+            enter(node: AST.ElementNode) {
+              locals.push(node.blockParams);
+            },
+
+            exit() {
+              locals.pop();
+            },
+          },
         },
       },
 
+      BlockStatement(node: AST.BlockStatement) {
+        if (isBlockInvocation(node, locals)) {
+          wrapInComponent(moduleName, node, b);
+        }
+      },
+
       MustacheStatement(node: AST.MustacheStatement): AST.Node | void {
-        if (isInlineInvocation(node, locals)) {
+        if (!isAttrs && isInlineInvocation(node, locals)) {
           wrapInComponent(moduleName, node, b);
         }
       },
