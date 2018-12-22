@@ -731,7 +731,7 @@ module('[glimmer-runtime] Updating', hooks => {
           let expected: string;
 
           if (typeof _input === 'function') {
-            input = _input(wrapper.isHTML);
+            input = (_input as ((isHTML: boolean) => Opaque))(wrapper.isHTML);
           } else {
             input = _input;
           }
