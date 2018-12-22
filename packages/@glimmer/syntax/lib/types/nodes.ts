@@ -236,15 +236,15 @@ export type Node = Nodes[NodeType];
 export type ValuesOfType<T, U> = { [K in keyof T]: T[K] extends U ? T[K] : never }[keyof T];
 export type ChildKeyByNodeType = { [T in NodeType]: ValuesOfType<VisitorKeysMap[T], string> };
 
+// All potential child keys, e.g. `body`, `value`, `path`, ...
+export type ChildKey = ChildKeyByNodeType[NodeType];
+
 export type ChildKeyToNodeType<K extends ChildKey = ChildKey, T extends NodeType = NodeType> = {
   [P in T]: Extract<ChildKeyByNodeType[P], K> extends never ? never : P
 }[T];
 
 export type NodeTypeByChildKey = { [K in ChildKey]: ChildKeyToNodeType<K> };
 export type NodeByChildKey = { [K in ChildKey]: Nodes[NodeTypeByChildKey[K]] };
-
-// All potential child keys, e.g. `body`, `value`, `path`, ...
-export type ChildKey = ChildKeyByNodeType[NodeType];
 
 // Node types that can have child nodes, e.g. `MustacheStatement`
 export type ParentNodeType = NodeTypeByChildKey[ChildKey];
