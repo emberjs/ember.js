@@ -824,11 +824,11 @@ export interface RenderDelegateConstructor<
   new (env?: TEnvironment): Delegate;
 }
 
-export interface RenderTestConstructor<D extends RenderDelegate, T> {
+export interface RenderTestConstructor<D extends RenderDelegate, T extends RenderTest> {
   new (delegate: D): T;
 }
 
-export function module<T>(
+export function module<T extends RenderTest>(
   name: string,
   klass: RenderTestConstructor<RenderDelegate, T>,
   options = { componentModule: false }
@@ -836,7 +836,7 @@ export function module<T>(
   return rawModule(name, klass, LazyRenderDelegate, options);
 }
 
-export function rawModule<D extends RenderDelegate, T, E extends Environment>(
+export function rawModule<D extends RenderDelegate, T extends RenderTest, E extends Environment>(
   name: string,
   klass: RenderTestConstructor<D, T>,
   Delegate: RenderDelegateConstructor<D, E>,
