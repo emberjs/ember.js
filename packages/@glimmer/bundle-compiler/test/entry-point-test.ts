@@ -1,7 +1,7 @@
-import { module, test, EagerRenderDelegate } from '@glimmer/test-helpers';
+import { module, test, EagerRenderDelegate, RenderTest } from '@glimmer/test-helpers';
 import { PrimitiveReference } from '@glimmer/runtime';
 
-export class EntryPointTest {
+export class EntryPointTest extends RenderTest {
   @test
   'an entry point'() {
     let delegate = new EagerRenderDelegate();
