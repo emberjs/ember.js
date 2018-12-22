@@ -8876,9 +8876,9 @@ term-size@^0.1.0:
     execa "^0.4.0"
 
 testem@^1.13.0, testem@^1.15.0, testem@^1.16.0:
-  version "1.16.0"
-  resolved "https://registry.yarnpkg.com/testem/-/testem-1.16.0.tgz#3933040b5d5b5fbdb6a2b1e7032e511b54a05867"
-  integrity sha1-OTMEC11bX722orHnAy5RG1SgWGc=
+  version "1.18.5"
+  resolved "https://registry.yarnpkg.com/testem/-/testem-1.18.5.tgz#912f3bfd4773519fa3cce0a8fd0e354763cbd545"
+  integrity sha512-0jMQquldcrSl1HwNAkePOr02g/3ZQVZYw7GVJNbOiGvR5esyXvRPX916CLWxcdZqB3yHM80NZiz5P5biogu2Vw==
   dependencies:
     backbone "^1.1.2"
     bluebird "^3.4.6"
