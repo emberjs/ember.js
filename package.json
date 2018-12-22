@@ -36,7 +36,6 @@
     "simple-html-tokenizer": "^0.5.6"
   },
   "devDependencies": {
-    "@glimmer/build": "^0.8.2",
     "@types/handlebars": "^4.0.32",
     "@types/qunit": "^2.0.31",
     "amd-name-resolver": "^1.0.0",
