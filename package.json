@@ -49,7 +49,7 @@
     "broccoli-concat": "^2.1.0",
     "broccoli-file-creator": "^1.1.1",
     "broccoli-funnel": "^2.0.1",
-    "broccoli-merge-trees": "^1.1.1",
+    "broccoli-merge-trees": "^3.0.2",
     "broccoli-persistent-filter": "^1.2.13",
     "broccoli-rollup": "^2.0.0",
     "broccoli-source": "^1.1.0",
