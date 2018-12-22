@@ -7,13 +7,7 @@ language: node_js
 node_js:
   - 6
 
-addons:
-  chrome: stable
-
 env:
-  global:
-    - SAUCE_USERNAME=htmlbars-ci
-    - SAUCE_ACCESS_KEY=71947947-f373-4e9c-9166-23038df7ddf2
   matrix:
     - TEST_NODE=1 TEST_BROWSERS=1
 
@@ -26,17 +20,35 @@ before_install:
   - curl -o- -L https://yarnpkg.com/install.sh | bash -s -- --version 1.10.1
   - export PATH="$HOME/.yarn/bin:$PATH"
 
-before_script:
-  - yarn run sauce:connect
+jobs:
+  include:
+    - name: Tests
+      env:
+        - SAUCE_USERNAME=htmlbars-ci
+        - SAUCE_ACCESS_KEY=71947947-f373-4e9c-9166-23038df7ddf2
 
-script:
-  - yarn run problems
-  - yarn run test:ci
-  - yarn run build
-  - yarn run test:types
-  - yarn run eslint
-  - yarn run tslint
+      addons:
+        chrome: stable
 
-after_script:
-  - sleep 10
-  - yarn run sauce:disconnect
+      before_script:
+        - yarn run sauce:connect
+
+      script:
+        - yarn run test:ci
+
+      after_script:
+        - sleep 10
+        - yarn run sauce:disconnect
+
+    - name: Type Tests
+
+      script:
+        - yarn run build
+        - yarn run test:types
+
+    - name: Linting
+
+      script:
+        - yarn run problems
+        - yarn run tslint
+        - yarn run eslint
