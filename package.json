@@ -58,7 +58,7 @@
     "ember-cli": "~3.4.4",
     "ember-cli-sauce": "^2.2.0",
     "emberjs-build": "^0.19.0",
-    "eslint": "^4.3.0",
+    "eslint": "^5.10.0",
     "glob": "^7.0.5",
     "js-yaml": "^3.10.0",
     "lerna-changelog": "^0.8.2",
