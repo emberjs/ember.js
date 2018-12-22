@@ -41,6 +41,7 @@
     "amd-name-resolver": "^1.0.0",
     "auto-dist-tag": "^1.0.0",
     "babel-plugin-nukable-import": "^0.4.2",
+    "babel-plugin-strip-glimmer-utils": "^0.1.1",
     "babel-plugin-transform-proto-to-assign": "^6.23.0",
     "babel-preset-env": "^1.6.0",
     "benchmark": "^1.0.0",
