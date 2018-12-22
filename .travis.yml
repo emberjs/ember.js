@@ -32,24 +32,24 @@ jobs:
         - SAUCE_ACCESS_KEY=71947947-f373-4e9c-9166-23038df7ddf2
 
       before_script:
-        - yarn run sauce:connect
+        - yarn sauce:connect
 
       script:
-        - yarn run test:sauce
+        - yarn test:sauce
 
       after_script:
         - sleep 10
-        - yarn run sauce:disconnect
+        - yarn sauce:disconnect
 
     - name: Type Tests
 
       script:
-        - yarn run build
-        - yarn run test:types
+        - yarn build
+        - yarn test:types
 
     - name: Linting
 
       script:
-        - yarn run problems
-        - yarn run tslint
-        - yarn run eslint
+        - yarn problems
+        - yarn tslint
+        - yarn eslint
