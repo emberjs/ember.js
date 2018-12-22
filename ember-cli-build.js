@@ -2,7 +2,7 @@
 
 const merge = require('broccoli-merge-trees');
 const funnel = require('broccoli-funnel');
-const { typescript } = require('broccoli-typescript-compiler');
+const typescript = require('broccoli-typescript-compiler').default;
 
 const buildTests = require('./build/broccoli/build-tests');
 const buildPackages = require('./build/broccoli/build-packages.js');
