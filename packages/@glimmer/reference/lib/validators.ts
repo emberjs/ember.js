@@ -177,11 +177,11 @@ export abstract class CachedTag extends RevisionTag {
   private lastValue: Option<Revision> = null;
 
   value(): Revision {
-    let { lastChecked, lastValue } = this;
+    let { lastChecked } = this;
 
     if (lastChecked !== $REVISION) {
       this.lastChecked = $REVISION;
-      this.lastValue = lastValue = this.compute();
+      this.lastValue = this.compute();
     }
 
     return this.lastValue as Revision;
