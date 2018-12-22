@@ -400,7 +400,7 @@ export type MissingBlockMacro<Locator> = (
   template: Option<CompilableBlock>,
   inverse: Option<CompilableBlock>,
   builder: OpcodeBuilder<Locator>
-) => void;
+) => boolean;
 
 export class Blocks {
   private names = dict<number>();
