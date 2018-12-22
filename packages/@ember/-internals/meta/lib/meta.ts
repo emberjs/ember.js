@@ -865,7 +865,7 @@ export function peekMeta(obj: object) {
 
   let pointer = getPrototypeOf(obj);
 
-  while (pointer !== undefined && pointer !== null) {
+  while (pointer !== null) {
     if (DEBUG) {
       counters!.peekPrototypeWalks++;
     }

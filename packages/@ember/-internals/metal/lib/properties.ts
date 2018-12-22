@@ -91,14 +91,13 @@ export function INHERITING_GETTER_FUNCTION(name: string): InheritingGetterFuncti
     let val;
     if (meta !== undefined) {
       val = meta.readInheritedValue('values', name);
+      if (val === UNDEFINED) {
+        let proto = Object.getPrototypeOf(this);
+        return proto === null ? undefined : proto[name];
+      }
     }
 
-    if (val === UNDEFINED) {
-      let proto = Object.getPrototypeOf(this);
-      return proto && proto[name];
-    } else {
-      return val;
-    }
+    return val;
   }
 
   return Object.assign(IGETTER_FUNCTION as InheritingGetterFunction, {
