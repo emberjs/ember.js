@@ -10142,7 +10142,7 @@ term-size@^0.1.0:
   dependencies:
     execa "^0.4.0"
 
-testem@^1.13.0, testem@^1.16.0:
+testem@^1.13.0:
   version "1.16.0"
   resolved "https://registry.yarnpkg.com/testem/-/testem-1.16.0.tgz#3933040b5d5b5fbdb6a2b1e7032e511b54a05867"
   integrity sha1-OTMEC11bX722orHnAy5RG1SgWGc=
