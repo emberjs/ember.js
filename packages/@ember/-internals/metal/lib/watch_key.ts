@@ -1,4 +1,4 @@
-import { Meta, meta as metaFor, peekMeta, UNDEFINED } from '@ember/-internals/meta';
+import { Meta, meta as metaFor, peekMeta } from '@ember/-internals/meta';
 import { lookupDescriptor } from '@ember/-internals/utils';
 import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { DEBUG } from '@glimmer/env';
@@ -131,8 +131,8 @@ export function unwatchKey(obj: object, keyName: string, _meta?: Meta): void {
             maybeMandatoryDescriptor.get &&
             (maybeMandatoryDescriptor.get as InheritingGetterFunction).isInheritingGetter
           ) {
-            let possibleValue = meta.readInheritedValue('values', keyName);
-            if (possibleValue === UNDEFINED) {
+            let possibleValue = meta.readInheritedValue(keyName);
+            if (possibleValue === undefined) {
               delete obj[keyName];
               return;
             }
