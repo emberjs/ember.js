@@ -7,10 +7,6 @@ language: node_js
 node_js:
   - 6
 
-env:
-  matrix:
-    - TEST_NODE=1 TEST_BROWSERS=1
-
 matrix:
   fast_finish: true
 
