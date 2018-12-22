@@ -62,7 +62,8 @@ function visitNode(visitor: NodeVisitor, node: Node): Node | Node[] | undefined 
     if (JSON.stringify(node) === JSON.stringify(result)) {
       result = undefined;
     } else if (Array.isArray(result)) {
-      return visitArray(visitor, result) || result;
+      visitArray(visitor, result);
+      return result;
     } else {
       return visitNode(visitor, result) || result;
     }
