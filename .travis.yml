@@ -18,19 +18,24 @@ before_install:
 
 jobs:
   include:
-    - name: Tests
-      env:
-        - SAUCE_USERNAME=htmlbars-ci
-        - SAUCE_ACCESS_KEY=71947947-f373-4e9c-9166-23038df7ddf2
+    - name: Tests (Chrome + Node.js)
 
       addons:
         chrome: stable
+
+      script:
+        - yarn test
+
+    - name: Tests (Saucelabs)
+      env:
+        - SAUCE_USERNAME=htmlbars-ci
+        - SAUCE_ACCESS_KEY=71947947-f373-4e9c-9166-23038df7ddf2
 
       before_script:
         - yarn run sauce:connect
 
       script:
-        - yarn run test:ci
+        - yarn run test:sauce
 
       after_script:
         - sleep 10

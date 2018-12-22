@@ -19,7 +19,7 @@
     "sauce:disconnect": "ember sauce:disconnect",
     "start": "ember serve --port=7357",
     "test": "ember test",
-    "test:ci": "ember test --test-port=7000 --config-file=testem-sauce.js",
+    "test:sauce": "ember test --test-port=7000 --config-file=testem-sauce.js",
     "test:node": "bin/run-node-tests.js",
     "test:types": "bin/run-types-tests.js",
     "tslint": "tslint --project tsconfig.json",

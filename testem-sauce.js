@@ -8,10 +8,6 @@ module.exports = {
   "parallel": 2,
   "launchers":
     {
-      "Node": {
-        "command": "./bin/run-node-tests.js",
-        "protocol": "tap"
-      },
       "SL_Chrome_Current": {
         "command": "ember sauce:launch -p 'Windows 10' -b chrome -v latest --no-connect -u '<url>'",
         "protocol": "tap"
@@ -46,21 +42,8 @@ module.exports = {
       }
     }
   ,
-  "launch_in_dev": [
-    "Node",
-    "Chrome"
-  ],
-  "browser_args": {
-    "Chrome": [
-      '--disable-gpu',
-      '--headless',
-      '--remote-debugging-port=0',
-      '--no-sandbox'
-    ]
-  },
+  "launch_in_dev": [],
   "launch_in_ci": [
-    "Node",
-    "Chrome",
     "SL_Chrome_Current",
     "SL_Chrome_Last",
     "SL_Firefox_Current",
