@@ -140,6 +140,30 @@ export class BasicComponents extends RenderTest {
   @test({
     kind: 'basic',
   })
+  'invoke a component forwarding attributes'() {
+    this.registerComponent(
+      'Glimmer',
+      'InnerComponent',
+      '<p data-foo="target" ...attributes>Inner Component</p>'
+    );
+    this.render(
+      {
+        name: 'OuterComponent',
+        layout: '{{#with (component "InnerComponent") as |Inner|}}<Inner ...attributes />{{/with}}',
+        template: 'hello!',
+        args: {},
+        attributes: { title: 'Emberconf' },
+      },
+      {}
+    );
+    debugger;
+    this.assertHTML("<div title='emberconf'><p data-foo='target' title='Emberconf'>Inner Component</p></div>");
+    this.assertStableRerender();
+  }
+
+  @test({
+    kind: 'basic',
+  })
   'creating a new component yielding values'() {
     this.render(
       {
