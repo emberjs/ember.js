@@ -12,7 +12,6 @@ const expect = chai.expect;
 const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
 const enableModuleUnification = require('../helpers/module-unification').enableModuleUnification;
 const fixture = require('../helpers/fixture');
-const fs = require('fs-extra');
 
 describe('Blueprint: controller-test', function() {
   setupTestHooks(this);
@@ -154,7 +153,7 @@ describe('Blueprint: controller-test', function() {
     enableModuleUnification();
 
     beforeEach(function() {
-      return emberNew().then(() => fs.ensureDirSync('src'));
+      return emberNew();
     });
 
     describe('with ember-cli-qunit@4.1.0', function() {
@@ -319,7 +318,6 @@ describe('Blueprint: controller-test', function() {
 
     beforeEach(function() {
       return emberNew()
-        .then(() => fs.ensureDirSync('src'))
         .then(() =>
           modifyPackages([
             { name: 'ember-qunit', delete: true },

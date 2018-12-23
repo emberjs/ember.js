@@ -10,7 +10,6 @@ const enableModuleUnification = require('../helpers/module-unification').enableM
 
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
-const fs = require('fs-extra');
 
 describe('Blueprint: template', function() {
   setupTestHooks(this);
@@ -124,7 +123,7 @@ describe('Blueprint: template', function() {
     enableModuleUnification();
 
     beforeEach(function() {
-      return emberNew().then(() => fs.ensureDirSync('src'));
+      return emberNew();
     });
 
     it('template foo', function() {
@@ -144,7 +143,7 @@ describe('Blueprint: template', function() {
     enableModuleUnification();
 
     beforeEach(function() {
-      return emberNew().then(() => fs.ensureDirSync('src'));
+      return emberNew();
     });
 
     it('shows an error', function() {
@@ -159,7 +158,7 @@ describe('Blueprint: template', function() {
     enableModuleUnification();
 
     beforeEach(function() {
-      return emberNew({ target: 'addon' }).then(() => fs.ensureDirSync('src'));
+      return emberNew({ target: 'addon' });
     });
 
     it('template foo', function() {

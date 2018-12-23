@@ -10,7 +10,6 @@ const expectError = require('../helpers/expect-error');
 
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
-const fs = require('fs-extra');
 
 const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
 const enableModuleUnification = require('../helpers/module-unification').enableModuleUnification;
@@ -105,7 +104,6 @@ describe('Blueprint: service', function() {
 
     beforeEach(function() {
       return emberNew()
-        .then(() => fs.ensureDirSync('src'))
         .then(() =>
           modifyPackages([
             { name: 'ember-qunit', delete: true },
@@ -187,7 +185,6 @@ describe('Blueprint: service', function() {
 
     beforeEach(function() {
       return emberNew({ target: 'addon' })
-        .then(() => fs.ensureDirSync('src'))
         .then(() =>
           modifyPackages([
             { name: 'ember-qunit', delete: true },
