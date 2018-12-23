@@ -26,20 +26,20 @@ jobs:
       script:
         - yarn test
 
-    - name: Tests (Saucelabs)
+    - name: Tests (Browser)
       env:
-        - SAUCE_USERNAME=htmlbars-ci
-        - SAUCE_ACCESS_KEY=71947947-f373-4e9c-9166-23038df7ddf2
+        - BROWSERSTACK_USERNAME=glimmervm1
+        - BROWSERSTACK_ACCESS_KEY=7DFjbGLxYRsXWmc8tzeh
 
       before_script:
-        - yarn sauce:connect
+        - yarn browserstack:connect
 
       script:
-        - yarn test:sauce
+        - yarn test:browserstack
+        - yarn browserstack:results
 
       after_script:
-        - sleep 10
-        - yarn sauce:disconnect
+        - yarn browserstack:disconnect
 
     - name: Type Tests
 
