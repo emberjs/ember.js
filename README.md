@@ -1,4 +1,5 @@
-# Status [![Build Status](https://travis-ci.org/glimmerjs/glimmer-vm.svg?branch=master)](https://travis-ci.org/glimmerjs/glimmer-vm)
+# Status [![Build Status](https://travis-ci.org/glimmerjs/glimmer-vm.svg?branch=master)](https://travis-ci.org/glimmerjs/glimmer-vm) [![BrowserStack Status](https://www.browserstack.com/automate/badge.svg?badge_key=cG1zSVBpNk5nTWxDcGJ0YkVkQjZsM1YrRzFvQW9GdGlhQm5WMFh1QUZXWT0tLXpXTVRWMXNMRW03MmxUZVpLUy85YkE9PQ==--b6c04579b1314f752eacc8bfff1a03574b8bdc8d%)](https://www.browserstack.com/automate/public-build/cG1zSVBpNk5nTWxDcGJ0YkVkQjZsM1YrRzFvQW9GdGlhQm5WMFh1QUZXWT0tLXpXTVRWMXNMRW03MmxUZVpLUy85YkE9PQ==--b6c04579b1314f752eacc8bfff1a03574b8bdc8d%)
+
 
 Glimmer is a flexible, low-level rendering pipeline for building a "live" DOM
 from [Handlebars][handlebars] templates that can subsequently be updated cheaply
