@@ -300,6 +300,7 @@ import { computed, get } from '@ember/-internals/metal';
 import { isSimpleClick } from '@ember/-internals/views';
 import { assert, warn } from '@ember/debug';
 import { flaggedInstrument } from '@ember/instrumentation';
+import { assign } from '@ember/polyfills';
 import { inject as injectService } from '@ember/service';
 import { DEBUG } from '@glimmer/env';
 import EmberComponent, { HAS_BLOCK } from '../component';
@@ -323,6 +324,9 @@ import layout from '../templates/link-to';
   @see {Ember.Templates.helpers.link-to}
   @public
 **/
+
+const EMPTY_QUERY_PARAMS = Object.freeze({ values: Object.freeze({}) });
+
 const LinkComponent = EmberComponent.extend({
   layout,
 
@@ -706,7 +710,7 @@ const LinkComponent = EmberComponent.extend({
     };
   },
 
-  queryParams: null,
+  queryParams: EMPTY_QUERY_PARAMS,
 
   qualifiedRouteName: computed(
     'targetRouteName',
@@ -732,16 +736,9 @@ const LinkComponent = EmberComponent.extend({
     let resolvedQueryParams = {};
     let queryParams = get(this, 'queryParams');
 
-    if (!queryParams) {
-      return resolvedQueryParams;
-    }
-
-    let values = queryParams.values;
-    for (let key in values) {
-      if (!values.hasOwnProperty(key)) {
-        continue;
-      }
-      resolvedQueryParams[key] = values[key];
+    if (queryParams !== EMPTY_QUERY_PARAMS) {
+      let { values } = queryParams;
+      assign(resolvedQueryParams, values);
     }
 
     return resolvedQueryParams;
@@ -870,7 +867,7 @@ const LinkComponent = EmberComponent.extend({
     if (lastParam && lastParam.isQueryParams) {
       queryParams = params.pop();
     } else {
-      queryParams = { values: {} };
+      queryParams = EMPTY_QUERY_PARAMS;
     }
     this.set('queryParams', queryParams);
 
