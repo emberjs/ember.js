@@ -1,5 +1,11 @@
 # Ember Changelog
 
+### v3.7.0-beta.3 (December 24, 2018)
+
+- [#17398](https://github.com/emberjs/ember.js/pull/17398) [BUGFIX] Avoid console.trace for every Ember.warn
+- [#17399](https://github.com/emberjs/ember.js/pull/17399) [BUGFIX] Local variable shadowing assert
+- [#17403](https://github.com/emberjs/ember.js/pull/17403) [BUGFIX] Ensure legacy build of template compiler can be loaded.
+
 ### v3.7.0-beta.2 (December 17, 2018)
 
 - [#17328](https://github.com/emberjs/ember.js/pull/17328) [BUGFIX] Ensure that delayed transition retrys work
