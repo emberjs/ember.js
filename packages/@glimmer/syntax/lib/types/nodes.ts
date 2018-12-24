@@ -1,3 +1,5 @@
+import { VisitorKeysMap } from './visitor-keys';
+
 export type Option<T> = T | null;
 
 export interface BaseNode {
@@ -204,29 +206,6 @@ export interface Nodes {
   SubExpression: SubExpression;
   Hash: Hash;
   HashPair: HashPair;
-}
-
-export interface VisitorKeysMap {
-  Program: ['body'];
-  MustacheStatement: ['path', 'params', 'hash'];
-  BlockStatement: ['path', 'params', 'hash', 'program', 'inverse'];
-  ElementModifierStatement: ['path', 'params', 'hash'];
-  PartialStatement: ['name', 'params', 'hash'];
-  CommentStatement: never[];
-  MustacheCommentStatement: never[];
-  ElementNode: ['attributes', 'modifiers', 'children', 'comments'];
-  AttrNode: ['value'];
-  TextNode: never[];
-  ConcatStatement: ['parts'];
-  SubExpression: ['path', 'params', 'hash'];
-  PathExpression: never[];
-  StringLiteral: never[];
-  BooleanLiteral: never[];
-  NumberLiteral: never[];
-  NullLiteral: never[];
-  UndefinedLiteral: never[];
-  Hash: ['pairs'];
-  HashPair: ['value'];
 }
 
 export type NodeType = keyof Nodes;
