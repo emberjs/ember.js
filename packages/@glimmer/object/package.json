@@ -3,6 +3,7 @@
   "version": "0.37.0",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/object",
   "dependencies": {
+    "@glimmer/interfaces": "^0.37.0",
     "@glimmer/object-reference": "^0.37.0",
     "@glimmer/reference": "^0.37.0",
     "@glimmer/util": "^0.37.0"
