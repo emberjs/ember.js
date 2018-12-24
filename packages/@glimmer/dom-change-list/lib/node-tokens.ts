@@ -11,7 +11,7 @@ export class NodeTokens implements INodeTokens {
     return token;
   }
 
-  reify<N extends Simple.Node>(token: NodeToken): N {
-    return this.nodes[token] as N;
+  reify(token: NodeToken): Simple.Node {
+    return this.nodes[token];
   }
 }
