@@ -53,7 +53,7 @@
     "broccoli-persistent-filter": "^2.1.1",
     "broccoli-rollup": "^2.0.0",
     "broccoli-source": "^1.1.0",
-    "broccoli-typescript-compiler": "^2.3.0",
+    "broccoli-typescript-compiler": "^4.1.0",
     "dag-map": "^2.0.2",
     "ember-cli": "~3.4.4",
     "ember-cli-sauce": "^2.2.0",

@@ -26,7 +26,7 @@ export class TestDynamicScope implements DynamicScope {
     return this.bucket[key];
   }
 
-  set(key: string, reference: PathReference<Opaque>) {
+  set(key: string, reference: PathReference<Opaque>): PathReference<Opaque> {
     return (this.bucket[key] = reference);
   }
 

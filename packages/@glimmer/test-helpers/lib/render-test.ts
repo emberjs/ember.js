@@ -649,7 +649,7 @@ export class RehydrationDelegate implements RenderDelegate {
     return this.serialize(element);
   }
 
-  getSelf(context: Opaque) {
+  getSelf(context: Opaque): UpdatableReference<Opaque> {
     return new UpdatableReference(context);
   }
 
@@ -993,13 +993,13 @@ export function renderTemplate(
   env: LazyTestEnvironment,
   self: PathReference<Opaque>,
   builder: ElementBuilder
-) {
+): RenderResult<Opaque> {
   let template = env.preprocess(src);
   let iterator = env.renderMain(template, self, builder);
   return renderSync(env, iterator);
 }
 
-export function renderSync(env: Environment, iterator: TemplateIterator) {
+export function renderSync(env: Environment, iterator: TemplateIterator): RenderResult<Opaque> {
   env.begin();
 
   let iteratorResult: IteratorResult<RenderResult>;

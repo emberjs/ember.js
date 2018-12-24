@@ -319,14 +319,15 @@ export function assertNodeTagName<
   U extends ElementTagNameMap[T]
 >(node: any, tagName: T): node is U {
   if (assertIsElement(node)) {
+    const lowerTagName = tagName.toLowerCase();
     const nodeTagName = node.tagName.toLowerCase();
     QUnit.assert.pushResult({
-      result: nodeTagName === tagName,
+      result: nodeTagName === lowerTagName,
       expected: tagName,
       actual: nodeTagName,
       message: `expected tagName to be ${tagName} but was ${nodeTagName}`,
     });
-    return nodeTagName === tagName;
+    return nodeTagName === lowerTagName;
   }
   return false;
 }

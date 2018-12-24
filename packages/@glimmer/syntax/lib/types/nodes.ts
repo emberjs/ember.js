@@ -1,3 +1,5 @@
+import visitorKeys, { VisitorKeysMap } from './visitor-keys';
+
 export type Option<T> = T | null;
 
 export interface BaseNode {
@@ -206,35 +208,11 @@ export interface Nodes {
   HashPair: HashPair;
 }
 
-export interface VisitorKeysMap {
-  Program: ['body'];
-  MustacheStatement: ['path', 'params', 'hash'];
-  BlockStatement: ['path', 'params', 'hash', 'program', 'inverse'];
-  ElementModifierStatement: ['path', 'params', 'hash'];
-  PartialStatement: ['name', 'params', 'hash'];
-  CommentStatement: never[];
-  MustacheCommentStatement: never[];
-  ElementNode: ['attributes', 'modifiers', 'children', 'comments'];
-  AttrNode: ['value'];
-  TextNode: never[];
-  ConcatStatement: ['parts'];
-  SubExpression: ['path', 'params', 'hash'];
-  PathExpression: never[];
-  StringLiteral: never[];
-  BooleanLiteral: never[];
-  NumberLiteral: never[];
-  NullLiteral: never[];
-  UndefinedLiteral: never[];
-  Hash: ['pairs'];
-  HashPair: ['value'];
-}
-
 export type NodeType = keyof Nodes;
 export type Node = Nodes[NodeType];
 
 // VisitorKeysMap drives ParentNode and LeafNode typing
-export type ValuesOfType<T, U> = { [K in keyof T]: T[K] extends U ? T[K] : never }[keyof T];
-export type ChildKeyByNodeType = { [T in NodeType]: ValuesOfType<VisitorKeysMap[T], string> };
+export type ChildKeyByNodeType = { [T in keyof VisitorKeysMap]: typeof visitorKeys[T][number] };
 
 // All potential child keys, e.g. `body`, `value`, `path`, ...
 export type ChildKey = ChildKeyByNodeType[NodeType];

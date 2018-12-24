@@ -157,7 +157,7 @@ export default class EagerRenderDelegate implements RenderDelegate {
     };
   }
 
-  getSelf(context: Opaque) {
+  getSelf(context: Opaque): UpdatableReference<Opaque> {
     return new UpdatableReference(context);
   }
 

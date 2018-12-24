@@ -630,7 +630,7 @@ export class InitialRenderSuite extends RenderTest {
       this.assert.equal(svg.namespaceURI, SVG_NAMESPACE);
 
       let foreignObject = svg.firstChild!;
-      if (assertNodeTagName(foreignObject, 'foreignobject')) {
+      if (assertNodeTagName(foreignObject, 'foreignObject')) {
         this.assert.equal(
           foreignObject.namespaceURI,
           SVG_NAMESPACE,
