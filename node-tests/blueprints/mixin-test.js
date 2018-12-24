@@ -10,7 +10,6 @@ const enableModuleUnification = require('../helpers/module-unification').enableM
 
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
-const fs = require('fs-extra');
 
 describe('Blueprint: mixin', function() {
   setupTestHooks(this);
@@ -119,7 +118,7 @@ describe('Blueprint: mixin', function() {
     enableModuleUnification();
 
     beforeEach(function() {
-      return emberNew().then(() => fs.ensureDirSync('src'));
+      return emberNew();
     });
 
     it('mixin foo', function() {
@@ -218,7 +217,7 @@ describe('Blueprint: mixin', function() {
     enableModuleUnification();
 
     beforeEach(function() {
-      return emberNew({ target: 'addon' }).then(() => fs.ensureDirSync('src'));
+      return emberNew({ target: 'addon' });
     });
 
     it('mixin foo', function() {

@@ -9,7 +9,6 @@ const modifyPackages = blueprintHelpers.modifyPackages;
 
 const expectError = require('../helpers/expect-error');
 const chai = require('ember-cli-blueprint-test-helpers/chai');
-const fs = require('fs-extra');
 const expect = chai.expect;
 
 const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
@@ -176,7 +175,6 @@ describe('Blueprint: controller', function() {
 
     beforeEach(function() {
       return emberNew()
-        .then(() => fs.ensureDirSync('src'))
         .then(() =>
           modifyPackages([
             { name: 'ember-qunit', delete: true },
@@ -229,7 +227,6 @@ describe('Blueprint: controller', function() {
 
     beforeEach(function() {
       return emberNew({ target: 'addon' })
-        .then(() => fs.ensureDirSync('src'))
         .then(() =>
           modifyPackages([
             { name: 'ember-qunit', delete: true },
