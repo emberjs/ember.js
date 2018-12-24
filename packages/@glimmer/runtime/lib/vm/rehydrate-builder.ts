@@ -3,14 +3,14 @@ import { NewElementBuilder, ElementBuilder, RemoteBlockTracker } from './element
 import { Environment } from '../environment';
 import Bounds, { Cursor, ConcreteBounds } from '../bounds';
 import { Simple, Option } from '@glimmer/interfaces';
-import {
-  expect,
-  assert,
-  Stack,
-  isSerializationFirstNode,
-  SERIALIZATION_FIRST_NODE_STRING,
-} from '@glimmer/util';
+import { expect, assert, Stack } from '@glimmer/util';
 import { SVG_NAMESPACE } from '../dom/helper';
+
+export const SERIALIZATION_FIRST_NODE_STRING = '%+b:0%';
+
+export function isSerializationFirstNode(node: Simple.Node): boolean {
+  return node.nodeValue === SERIALIZATION_FIRST_NODE_STRING;
+}
 
 export class RehydratingCursor extends Cursor {
   candidate: Option<Simple.Node> = null;
