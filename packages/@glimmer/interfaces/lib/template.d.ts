@@ -1,8 +1,7 @@
-import { Maybe, Opaque, Option } from './core';
-import { BlockSymbolTable, ProgramSymbolTable, SymbolTable } from './tier1/symbol-table';
+import { Opaque, Option } from './core';
+import { BlockSymbolTable, SymbolTable } from './tier1/symbol-table';
 import ComponentCapabilities from './component-capabilities';
 import { CompileTimeConstants } from './program';
-import { ComponentDefinition } from './components';
 import { CompilableProgram } from './serialize';
 import {
   Statement,
@@ -12,7 +11,6 @@ import {
   Core,
   SerializedInlineBlock,
 } from '@glimmer/wire-format';
-import { CompileTimeProgram } from '@glimmer/interfaces';
 
 export type CompilableBlock = CompilableTemplate<BlockSymbolTable>;
 
