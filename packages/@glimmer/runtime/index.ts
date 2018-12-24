@@ -85,6 +85,11 @@ export {
   ElementOperations,
   clientBuilder,
 } from './lib/vm/element-builder';
-export { rehydrationBuilder, RehydrateBuilder } from './lib/vm/rehydrate-builder';
+export {
+  rehydrationBuilder,
+  RehydrateBuilder,
+  SERIALIZATION_FIRST_NODE_STRING,
+  isSerializationFirstNode,
+} from './lib/vm/rehydrate-builder';
 export { default as Bounds, ConcreteBounds, Cursor } from './lib/bounds';
 export { capabilityFlagsFrom, hasCapability, Capability } from './lib/capabilities';
