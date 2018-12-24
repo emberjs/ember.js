@@ -9,7 +9,7 @@ import { assign } from '@glimmer/util';
 import { SerializedTemplateBlock, SerializedTemplateWithLazyBlock } from '@glimmer/wire-format';
 import { CompilableProgram as CompilableProgramInstance } from './compilable-template';
 import { WrappedBuilder } from './wrapped-component';
-import { LazyCompiler } from '@glimmer/opcode-compiler';
+import { LazyCompiler } from './lazy';
 
 export interface TemplateFactory<Locator> {
   /**
