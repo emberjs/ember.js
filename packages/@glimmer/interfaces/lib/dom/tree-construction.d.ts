@@ -1,10 +1,10 @@
-import { Simple } from '@glimmer/interfaces';
+import * as Simple from './simple';
 import { Namespace } from '@simple-dom/interface';
 
 export type NodeToken = number;
 
 export interface NodeTokens {
-  reify<N extends Simple.Node>(token: NodeToken): N;
+  reify(token: NodeToken): Simple.Node;
 }
 
 export interface Reifiable {

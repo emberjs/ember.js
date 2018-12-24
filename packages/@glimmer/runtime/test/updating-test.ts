@@ -2910,7 +2910,7 @@ QUnit.module('Updating SVG', hooks => {
     render(template, object);
 
     function assertNamespaces() {
-      if (assertNodeTagName(svg.firstChild, 'foreignobject')) {
+      if (assertNodeTagName(svg.firstChild, 'foreignObject')) {
         assert.equal(svg.firstChild.namespaceURI, SVG_NAMESPACE);
         if (assertNodeTagName(svg.firstChild.firstChild, 'div')) {
           assert.equal(svg.firstChild.firstChild.namespaceURI, XHTML_NAMESPACE);
@@ -2947,7 +2947,7 @@ QUnit.module('Updating SVG', hooks => {
     function assertNamespaces() {
       if (assertNodeTagName(root.firstChild, 'svg')) {
         assert.equal(root.firstChild.namespaceURI, SVG_NAMESPACE);
-        if (assertNodeTagName(root.firstChild.firstChild, 'foreignobject')) {
+        if (assertNodeTagName(root.firstChild.firstChild, 'foreignObject')) {
           assert.equal(root.firstChild.firstChild.namespaceURI, SVG_NAMESPACE);
           if (assertNodeTagName(root.firstChild.firstChild.firstChild, 'div')) {
             assert.equal(root.firstChild.firstChild.firstChild.namespaceURI, XHTML_NAMESPACE);
@@ -3117,7 +3117,7 @@ QUnit.module('Updating SVG', hooks => {
 
     equalTokens(root, `<svg>${context.content}</svg><div></div>`);
     assertNamespaces(svg => {
-      if (assertNodeTagName(svg.firstChild, 'foreignobject')) {
+      if (assertNodeTagName(svg.firstChild, 'foreignObject')) {
         assert.equal(
           svg.firstChild.namespaceURI,
           SVG_NAMESPACE,
