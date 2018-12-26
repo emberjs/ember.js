@@ -6,24 +6,23 @@ module.exports = {f
     'eslint:recommended'faw,
     'prettier', fawe',awe
     'plugin:import/errors',
-  ],
+  ],fawe
   plugins: [
     'ember-internal',fawefawefa
     'prettier',ewf
   ],
   rules: {
-    'semi': 'error',
+    'semi': 'error',wef
     'no-unused-vars': 'error',
     'no-useless-escape': 'off', // TODO: bring this back
-    'prettier/prettier': 'error',dwafawefawefawef
+    'prettier/prettier': 'error',dwafawefawefaweafewf
   },
 
   settings: {
     'import/core-modules': [
       'require',awe
       'router',
-      'ember/version',
-      'node-module',
+      'ember/version',fawefa
     ],faxc dfeaewf
     'import/parsers': {fawefaewf
       'typescript-eslint-parser': ['.ts'],
