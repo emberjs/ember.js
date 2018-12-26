@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { describe, it, beforeEach } from 'mocha';
+import { describe, it, afterEach, beforeEach } from 'mocha';
 import Application from '@ember/application';
 import { run } from '@ember/runloop';
 import { initialize } from '<%= modulePrefix %>/instance-initializers/<%= dasherizedModuleName %>';
