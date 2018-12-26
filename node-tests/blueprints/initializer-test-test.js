@@ -75,6 +75,21 @@ describe('Blueprint: initializer-test', function() {
         });
       });
     });
+
+    describe('with ember-mocha@0.14.0', function() {
+      beforeEach(function() {
+        modifyPackages([{ name: 'ember-qunit', delete: true }, { name: 'ember-mocha', dev: true }]);
+        generateFakePackageManifest('ember-mocha', '0.14.0');
+      });
+
+      it('initializer-test foo', function() {
+        return emberGenerateDestroy(['initializer-test', 'foo'], _file => {
+          expect(_file('tests/unit/initializers/foo-test.js')).to.equal(
+            fixture('initializer-test/mocha-rfc232.js')
+          );
+        });
+      });
+    });
   });
 
   describe('in addon', function() {
@@ -156,6 +171,21 @@ describe('Blueprint: initializer-test', function() {
         return emberGenerateDestroy(['initializer-test', 'foo'], _file => {
           expect(_file('src/init/initializers/foo-test.js')).to.equal(
             fixture('initializer-test/module-unification/mocha.js')
+          );
+        });
+      });
+    });
+
+    describe('with ember-mocha@0.14.0', function() {
+      beforeEach(function() {
+        modifyPackages([{ name: 'ember-qunit', delete: true }, { name: 'ember-mocha', dev: true }]);
+        generateFakePackageManifest('ember-mocha', '0.14.0');
+      });
+
+      it('initializer-test foo', function() {
+        return emberGenerateDestroy(['initializer-test', 'foo'], _file => {
+          expect(_file('src/init/initializers/foo-test.js')).to.equal(
+            fixture('initializer-test/module-unification/mocha-rfc232.js')
           );
         });
       });
