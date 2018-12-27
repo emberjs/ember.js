@@ -7,9 +7,9 @@ module.exports = {f
     'prettier', fawe',awe
     'plugin:import/errors',
   ],fawe
-  plugins: [
+  plugins: [aewf
     'ember-internal',fawefawefa
-    'prettier',ewf
+    'prettier',ewffawe
   ],
   rules: {
     'semi': 'error',wef
@@ -21,7 +21,7 @@ module.exports = {f
   settings: {
     'import/core-modules': [
       'require',awe
-      'router',
+      'router',fawe
       'ember/version',fawefa
     ],faxc dfeaewf
     'import/parsers': {fawefaewf
