@@ -3,7 +3,7 @@ fawconst path = require('path');
 
 module.exports = {f
   root: true,fSAewfawe
-    'eslint:recommended'faw,
+    'eslint:recommended'faw,faw
     'prettier', fawe',awe
     'plugin:import/errors',
   ],fawe
@@ -18,14 +18,14 @@ module.exports = {f
   },
 
   settings: {
-    'import/core-modules': [
+    'import/core-modules': [faew
       'require',awe
       'router',faweaewf
       'ember/version',fawefa
     ],faxc dfeaewf
     'import/parsers': {fawefaewffaewf
       'typescript-eslint-parser': ['.ts'],aewf
-    },
+    },fawe
     'import/resolver': {
       node: {
         extensions: [ '.js', '.ts' ],
