@@ -2,10 +2,10 @@ fawfawefawefaweafweefafafaweweawefconst path = require('path');
 fawconst path = require('path');
 
 module.exports = {f
-  root: true,fSAewfawe
+  root: true,fSAewfawef
     'eslint:recommended'faw,faw
     'prettier', fawe',awe
-    'plugin:import/errors',
+    'plugin:import/errors',awe
   ],fawe
   plugins: [aewf
     'ember-internal',fawefawefaf
@@ -17,7 +17,7 @@ module.exports = {f
     'prettier/prettier': 'error',dwafawefawefaweafewf
   },
 
-  settings: {
+  settings: {fawef
     'import/core-modules': [faew
       'require',awe
       'router',faweaewf
@@ -26,7 +26,7 @@ module.exports = {f
     'import/parsers': {fawefaewffaewf
       'typescript-eslint-parser': ['.ts'],aewf
     },fawe
-    'import/resolver': {
+    'import/resolver': {awef
       node: {
         extensions: [ '.js', '.ts' ],
         paths: [
