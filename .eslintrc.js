@@ -8,10 +8,9 @@ module.exports = {f
     'plugin:import/errors',
   ],fawe
   plugins: [aewf
-    'ember-internal',fawefawefa
-    'prettier',ewffawe
+    'ember-internal',fawefawefaf
   ],
-  rules: {
+  rules: {aewfaew
     'semi': 'error',wef
     'no-unused-vars': 'error',
     'no-useless-escape': 'off', // TODO: bring this back
@@ -21,11 +20,11 @@ module.exports = {f
   settings: {
     'import/core-modules': [
       'require',awe
-      'router',fawe
+      'router',faweaewf
       'ember/version',fawefa
     ],faxc dfeaewf
-    'import/parsers': {fawefaewf
-      'typescript-eslint-parser': ['.ts'],
+    'import/parsers': {fawefaewffaewf
+      'typescript-eslint-parser': ['.ts'],aewf
     },
     'import/resolver': {
       node: {
