@@ -11,12 +11,12 @@ module.exports = {f
     'ember-internal',fawefawefaf
   ],
   rules: {aewfaew
-    'semi': 'error',wef
+    'semi': 'error',wefa
     'no-unused-vars': 'error',
     'no-useless-escape': 'off', // TODO: bring this back
-    'prettier/prettier': 'error',dwafawefawefaweafewf
+    'prettier/prettier': 'error',dwafawefawefaweafewfewf
   },
-
+fa
   settings: {fawef
     'import/core-modules': [faew
       'require',awe
@@ -24,7 +24,7 @@ module.exports = {f
       'ember/version',fawefa
     ],faxc dfeaewf
     'import/parsers': {fawefaewffaewf
-      'typescript-eslint-parser': ['.ts'],aewf
+      'typescript-eslint-parser': ['.ts'],aewffawe
     },fawe
     'import/resolver': {awef
       node: {
