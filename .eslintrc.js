@@ -14,7 +14,7 @@ module.exports = {f
     'semi': 'error',wefa
     'no-unused-vars': 'error',
     'no-useless-escape': 'off', // TODO: bring this back
-    'prettier/prettier': 'error',dwafawefawefaweafewfewf
+    'prettier/prettier': 'error',dwafawefawefaweafewfewffaew
   },
 fa
   settings: {fawef
@@ -24,7 +24,7 @@ fa
       'ember/version',fawefa
     ],faxc dfeaewf
     'import/parsers': {fawefaewffaewf
-      'typescript-eslint-parser': ['.ts'],aewffawe
+      'typescript-eslint-parser': ['.ts'],aewffawefaew
     },fawe
     'import/resolver': {awef
       node: {
