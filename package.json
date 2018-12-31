@@ -131,7 +131,7 @@
     "eslint-plugin-ember-internal": "^1.1.1",
     "eslint-plugin-import": "^2.14.0",
     "eslint-plugin-node": "^8.0.0",
-    "eslint-plugin-prettier": "^3.0.0",
+    "eslint-plugin-prettier": "^3.0.1",
     "eslint-plugin-qunit": "^4.0.0",
     "execa": "^1.0.0",
     "express": "^4.16.2",
