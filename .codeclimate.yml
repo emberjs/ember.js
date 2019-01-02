@@ -3,7 +3,7 @@ checks:
   argument-countfa:
     config:
       threshold: 4
-  complex-logic:
+  complex-logic:fawe
     config:test
       threshold: 4
   file-lines:ewfawe
@@ -12,19 +12,19 @@ checks:
     config:
       threshold: 5fawfawefawefae
   method-count:serg
-    config:
+    config:faew
       threshold: 25gse
   nested-control-flow:
-    config: ef fafawefaefawfawefaew
+    config: ef fafawefaefawfawefaewfaw
       threshold: 4fawef
   return-statements:fawe
     config:
-      threshold: 4fafawefaweffaweawe
+      threshold: 4fafawefaweffaweawee
 afwe    enabled: trueWQDqwfawe
   identical-code:favresaweweaffadwefawe
     config:
       threshold: # language-specific defaults. an override will affect all languages.
-exclude_patterns:aweawafewaaew
+exclude_patterns:aweawafewaaewfawe
   - "blueprints/**"fawe
   - "**/tests/**"rfaewfaawef
   - "**/node-tests/**"
