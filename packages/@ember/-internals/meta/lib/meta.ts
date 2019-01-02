@@ -92,7 +92,7 @@ type Listener = RemoveAllListener | StringListener | FunctionListener;
 let currentListenerVersion = 1;
 
 export class Meta {
-  _descriptors: any | undefined;
+  _descriptors: Map<string, any> | undefined;
   _watching: any | undefined;
   _mixins: any | undefined;
   _deps: any | undefined;
@@ -250,6 +250,20 @@ export class Meta {
           if (value !== undefined) {
             return value;
           }
+        }
+      }
+      pointer = pointer.parent;
+    }
+  }
+
+  _findInheritedMap(key: string, subkey: string): any | undefined {
+    let pointer: Meta | null = this;
+    while (pointer !== null) {
+      let map: Map<string, any> = pointer[key];
+      if (map !== undefined) {
+        let value = map.get(subkey);
+        if (value !== undefined) {
+          return value;
         }
       }
       pointer = pointer.parent;
@@ -461,12 +475,12 @@ export class Meta {
         : '',
       !this.isMetaDestroyed()
     );
-    let map = this._getOrCreateOwnMap('_descriptors');
-    map[subkey] = value;
+    let map = this._descriptors || (this._descriptors = new Map());
+    map.set(subkey, value);
   }
 
   peekDescriptors(subkey: string) {
-    let possibleDesc = this._findInherited2('_descriptors', subkey);
+    let possibleDesc = this._findInheritedMap('_descriptors', subkey);
     return possibleDesc === UNDEFINED ? undefined : possibleDesc;
   }
 
@@ -480,16 +494,15 @@ export class Meta {
     while (pointer !== null) {
       let map = pointer._descriptors;
       if (map !== undefined) {
-        for (let key in map) {
+        map.forEach((value, key) => {
           seen = seen === undefined ? new Set() : seen;
           if (!seen.has(key)) {
             seen.add(key);
-            let value = map[key];
             if (value !== UNDEFINED) {
               fn(key, value);
             }
           }
-        }
+        });
       }
       pointer = pointer.parent;
     }
@@ -728,7 +741,7 @@ export class Meta {
     return this._listeners;
   }
 
-  matchingListeners(eventName: string): (string | boolean | object | null)[] | undefined | void {
+  matchingListeners(eventName: string): (string | boolean | object | null)[] | undefined {
     let listeners = this.flattenedListeners();
     let result;
 
@@ -845,7 +858,7 @@ export function setMeta(obj: object, meta: Meta) {
   metaStore.set(obj, meta);
 }
 
-export function peekMeta(obj: object) {
+export function peekMeta(obj: object): Meta | null {
   assert('Cannot call `peekMeta` on null', obj !== null);
   assert('Cannot call `peekMeta` on undefined', obj !== undefined);
   assert(
@@ -884,6 +897,8 @@ export function peekMeta(obj: object) {
 
     pointer = getPrototypeOf(pointer);
   }
+
+  return null;
 }
 
 /**
@@ -909,7 +924,7 @@ export function deleteMeta(obj: object) {
   }
 
   let meta = peekMeta(obj);
-  if (meta !== undefined) {
+  if (meta !== null) {
     meta.destroy();
   }
 }
@@ -950,7 +965,7 @@ export const meta: {
   let maybeMeta = peekMeta(obj);
 
   // remove this code, in-favor of explicit parent
-  if (maybeMeta !== undefined && maybeMeta.source === obj) {
+  if (maybeMeta !== null && maybeMeta.source === obj) {
     return maybeMeta;
   }
 
@@ -972,7 +987,7 @@ if (DEBUG) {
   @return {Descriptor}
   @private
 */
-export function descriptorFor(obj: object, keyName: string, _meta?: Meta) {
+export function descriptorFor(obj: object, keyName: string, _meta?: Meta | null) {
   assert('Cannot call `descriptorFor` on null', obj !== null);
   assert('Cannot call `descriptorFor` on undefined', obj !== undefined);
   assert(
@@ -982,7 +997,7 @@ export function descriptorFor(obj: object, keyName: string, _meta?: Meta) {
 
   let meta = _meta === undefined ? peekMeta(obj) : _meta;
 
-  if (meta !== undefined) {
+  if (meta !== null) {
     return meta.peekDescriptors(keyName);
   }
 }

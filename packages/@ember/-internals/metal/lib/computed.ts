@@ -359,7 +359,7 @@ class ComputedProperty extends Descriptor implements DescriptorWithDependentKeys
 
     // don't create objects just to invalidate
     let meta = peekMeta(obj);
-    if (meta === undefined || meta.source !== obj) {
+    if (meta === null || meta.source !== obj) {
       return;
     }
 

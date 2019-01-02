@@ -96,6 +96,10 @@ export function get(obj: object, keyName: string): any {
   let isFunction = type === 'function';
   let isObjectLike = isObject || isFunction;
 
+  if (isPath(keyName)) {
+    return isObjectLike ? _getPath(obj, keyName) : undefined;
+  }
+
   let value: any;
 
   if (isObjectLike) {
@@ -119,9 +123,6 @@ export function get(obj: object, keyName: string): any {
   }
 
   if (value === undefined) {
-    if (isPath(keyName)) {
-      return _getPath(obj, keyName);
-    }
     if (
       isObject &&
       !(keyName in obj) &&
@@ -133,9 +134,9 @@ export function get(obj: object, keyName: string): any {
   return value;
 }
 
-export function _getPath<T extends object>(root: T, path: string): any {
+export function _getPath<T extends object>(root: T, path: string | string[]): any {
   let obj: any = root;
-  let parts = path.split('.');
+  let parts = typeof path === 'string' ? path.split('.') : path;
 
   for (let i = 0; i < parts.length; i++) {
     if (obj === undefined || obj === null || (obj as MaybeHasIsDestroyed).isDestroyed) {

@@ -14,7 +14,7 @@ interface ExtendedObject {
 }
 
 let setWithMandatorySetter: <T extends object, K extends Extract<keyof T, string>>(
-  meta: Meta,
+  meta: Meta | null,
   obj: T,
   keyName: K,
   value: T[K]
@@ -116,7 +116,7 @@ export function set(obj: object, keyName: string, value: any, tolerant?: boolean
 
 if (DEBUG) {
   setWithMandatorySetter = (meta, obj, keyName, value) => {
-    if (meta !== undefined && meta.peekWatching(keyName) > 0) {
+    if (meta !== null && meta.peekWatching(keyName) > 0) {
       makeEnumerable(obj, keyName);
       meta.writeValue(obj, keyName, value);
     } else {
@@ -136,17 +136,18 @@ if (DEBUG) {
 
 function setPath(root: object, path: string, value: any, tolerant?: boolean): any {
   let parts = path.split('.');
-  let keyName = parts.pop() as string;
+  let keyName = parts.pop()!;
 
-  assert('Property set failed: You passed an empty path', keyName!.trim().length > 0);
+  assert('Property set failed: You passed an empty path', keyName.trim().length > 0);
 
-  let newPath = parts.join('.');
-  let newRoot = getPath(root, newPath);
+  let newRoot = getPath(root, parts);
 
   if (newRoot !== null && newRoot !== undefined) {
     return set(newRoot, keyName, value);
   } else if (!tolerant) {
-    throw new EmberError(`Property set failed: object in path "${newPath}" could not be found.`);
+    throw new EmberError(
+      `Property set failed: object in path "${parts.join('.')}" could not be found.`
+    );
   }
 }
 

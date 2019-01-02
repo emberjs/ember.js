@@ -34,11 +34,10 @@ let deferred = 0;
   @since 3.1.0
   @public
 */
-function notifyPropertyChange(obj: object, keyName: string, _meta?: Meta): void {
+function notifyPropertyChange(obj: object, keyName: string, _meta?: Meta | null): void {
   let meta = _meta === undefined ? peekMeta(obj) : _meta;
-  let hasMeta = meta !== undefined;
 
-  if (hasMeta && (meta.isInitializing() || meta.isPrototypeMeta(obj))) {
+  if (meta !== null && (meta.isInitializing() || meta.isPrototypeMeta(obj))) {
     return;
   }
 
@@ -48,7 +47,7 @@ function notifyPropertyChange(obj: object, keyName: string, _meta?: Meta): void 
     possibleDesc.didChange(obj, keyName);
   }
 
-  if (hasMeta && meta.peekWatching(keyName) > 0) {
+  if (meta !== null && meta.peekWatching(keyName) > 0) {
     dependentKeysDidChange(obj, keyName, meta);
     chainsDidChange(obj, keyName, meta);
     notifyObservers(obj, keyName, meta);
@@ -58,7 +57,7 @@ function notifyPropertyChange(obj: object, keyName: string, _meta?: Meta): void 
     obj[PROPERTY_DID_CHANGE](keyName);
   }
 
-  if (hasMeta) {
+  if (meta !== null) {
     if (meta.isSourceDestroying()) {
       return;
     }
