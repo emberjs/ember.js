@@ -3,9 +3,7 @@ import _default from './default';
 import { join } from '@ember/runloop';
 import { flaggedInstrument } from '@ember/instrumentation';
 
-const hasElement = Object.create(_default);
-
-assign(hasElement, {
+const hasElement = assign({}, _default, {
   rerender(view) {
     view.renderer.rerender(view);
   },
@@ -28,4 +26,4 @@ assign(hasElement, {
   },
 });
 
-export default hasElement;
+export default Object.freeze(hasElement);

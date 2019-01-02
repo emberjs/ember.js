@@ -1,6 +1,6 @@
 import EmberError from '@ember/error';
 
-export default {
+const _default = {
   // appendChild is only legal while rendering the buffer.
   appendChild() {
     throw new EmberError("You can't use appendChild outside of the rendering process");
@@ -15,3 +15,5 @@ export default {
 
   destroy() {},
 };
+
+export default Object.freeze(_default);

@@ -2,12 +2,9 @@ import { assign } from '@ember/polyfills';
 import { addObserver } from '@ember/-internals/metal';
 import EmberError from '@ember/error';
 import { DEBUG } from '@glimmer/env';
-
 import hasElement from './has_element';
 
-const inDOM = Object.create(hasElement);
-
-assign(inDOM, {
+const inDOM = assign({}, hasElement, {
   enter(view) {
     // Register the view for event handling. This hash is used by
     // Ember.EventDispatcher to dispatch incoming events.
@@ -25,4 +22,4 @@ assign(inDOM, {
   },
 });
 
-export default inDOM;
+export default Object.freeze(inDOM);

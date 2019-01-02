@@ -1,6 +1,6 @@
 import { ActionHandler, Evented, FrameworkObject } from '@ember/-internals/runtime';
 import { initViewElement } from '../system/utils';
-import { cloneStates, states } from './states';
+import states from './states';
 
 /**
   `Ember.CoreView` is an abstract class that exists to give view-like behavior
@@ -21,7 +21,7 @@ import { cloneStates, states } from './states';
 const CoreView = FrameworkObject.extend(Evented, ActionHandler, {
   isView: true,
 
-  _states: cloneStates(states),
+  _states: states,
 
   init() {
     this._super(...arguments);

@@ -2,9 +2,7 @@ import { assign } from '@ember/polyfills';
 import EmberError from '@ember/error';
 import _default from './default';
 
-const destroying = Object.create(_default);
-
-assign(destroying, {
+const destroying = assign({}, _default, {
   appendChild() {
     throw new EmberError("You can't call appendChild on a view being destroyed");
   },
@@ -13,4 +11,4 @@ assign(destroying, {
   },
 });
 
-export default destroying;
+export default Object.freeze(destroying);
