@@ -6,7 +6,6 @@ import { HAS_NATIVE_PROXY, symbol } from '@ember/-internals/utils';
 import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { isPath } from './path_cache';
 import { tagForProperty } from './tags';
 import { getCurrentTracker } from './tracked';
 
@@ -90,47 +89,51 @@ export function get(obj: object, keyName: string): any {
     typeof keyName !== 'string' || keyName.lastIndexOf('this.', 0) !== 0
   );
 
+  if (typeof keyName === 'number') {
+    return getKey(obj, keyName);
+  }
+
+  let parts: string[] = keyName.split('.');
+  return parts.length === 1 ? getKey(obj, keyName) : _getPath(obj, parts);
+}
+
+function getKey(obj: object, keyName: string): any {
   let type = typeof obj;
 
   let isObject = type === 'object';
   let isFunction = type === 'function';
   let isObjectLike = isObject || isFunction;
 
-  if (isPath(keyName)) {
-    return isObjectLike ? _getPath(obj, keyName) : undefined;
+  if (!isObjectLike) {
+    return obj[keyName];
+  }
+
+  if (EMBER_METAL_TRACKED_PROPERTIES) {
+    let tracker = getCurrentTracker();
+    if (tracker) tracker.add(tagForProperty(obj, keyName));
+  }
+
+  let descriptor = descriptorFor(obj, keyName);
+  if (descriptor !== undefined) {
+    return descriptor.get(obj, keyName);
   }
 
   let value: any;
-
-  if (isObjectLike) {
-    if (EMBER_METAL_TRACKED_PROPERTIES) {
-      let tracker = getCurrentTracker();
-      if (tracker) tracker.add(tagForProperty(obj, keyName));
-    }
-
-    let descriptor = descriptorFor(obj, keyName);
-    if (descriptor !== undefined) {
-      return descriptor.get(obj, keyName);
-    }
-
-    if (DEBUG && HAS_NATIVE_PROXY) {
-      value = getPossibleMandatoryProxyValue(obj, keyName);
-    } else {
-      value = obj[keyName];
-    }
+  if (DEBUG && HAS_NATIVE_PROXY) {
+    value = getPossibleMandatoryProxyValue(obj, keyName);
   } else {
     value = obj[keyName];
   }
 
-  if (value === undefined) {
-    if (
-      isObject &&
-      !(keyName in obj) &&
-      typeof (obj as MaybeHasUnknownProperty).unknownProperty === 'function'
-    ) {
-      return (obj as MaybeHasUnknownProperty).unknownProperty!(keyName);
-    }
+  if (
+    value === undefined &&
+    isObject &&
+    !(keyName in obj) &&
+    typeof (obj as MaybeHasUnknownProperty).unknownProperty === 'function'
+  ) {
+    return (obj as MaybeHasUnknownProperty).unknownProperty!(keyName);
   }
+
   return value;
 }
 
@@ -143,7 +146,7 @@ export function _getPath<T extends object>(root: T, path: string | string[]): an
       return undefined;
     }
 
-    obj = get(obj, parts[i]);
+    obj = getKey(obj, parts[i]);
   }
 
   return obj;

@@ -3,7 +3,6 @@ import { HAS_NATIVE_PROXY, lookupDescriptor, toString } from '@ember/-internals/
 import { assert } from '@ember/debug';
 import EmberError from '@ember/error';
 import { DEBUG } from '@glimmer/env';
-import { isPath } from './path_cache';
 import { MandatorySetterFunction } from './properties';
 import { notifyPropertyChange } from './property_events';
 import { _getPath as getPath, getPossibleMandatoryProxyValue } from './property_get';
@@ -53,10 +52,6 @@ export function set(obj: object, keyName: string, value: any, tolerant?: boolean
     arguments.length === 3 || arguments.length === 4
   );
   assert(
-    `Cannot call set with '${keyName}' on an undefined object.`,
-    (obj && typeof obj === 'object') || typeof obj === 'function'
-  );
-  assert(
     `The key provided to set must be a string or number, you passed ${keyName}`,
     typeof keyName === 'string' || (typeof keyName === 'number' && !isNaN(keyName))
   );
@@ -64,7 +59,6 @@ export function set(obj: object, keyName: string, value: any, tolerant?: boolean
     `'this' in paths is not supported`,
     typeof keyName !== 'string' || keyName.lastIndexOf('this.', 0) !== 0
   );
-
   if ((obj as ExtendedObject).isDestroyed) {
     assert(
       `calling set on destroyed object: ${toString(obj)}.${keyName} = ${toString(value)}`,
@@ -72,11 +66,20 @@ export function set(obj: object, keyName: string, value: any, tolerant?: boolean
     );
     return;
   }
+  assert(
+    `Cannot call set with '${keyName}' on an undefined object.`,
+    (obj && typeof obj === 'object') || typeof obj === 'function'
+  );
 
-  if (isPath(keyName)) {
-    return setPath(obj, keyName, value, tolerant);
+  if (typeof keyName === 'number') {
+    return setKey(obj, keyName, value);
   }
 
+  let parts: string[] = keyName.split('.');
+  return parts.length === 1 ? setKey(obj, keyName, value) : setPath(obj, parts, value, tolerant);
+}
+
+function setKey(obj: object, keyName: string, value: any): any {
   let meta = peekMeta(obj);
   let descriptor = descriptorFor(obj, keyName, meta);
 
@@ -115,6 +118,23 @@ export function set(obj: object, keyName: string, value: any, tolerant?: boolean
   return value;
 }
 
+function setPath(root: object, path: string | string[], value: any, tolerant?: boolean): any {
+  let parts = typeof path === 'string' ? path.split('.') : path;
+  let keyName = parts.pop()!;
+
+  assert('Property set failed: You passed an empty path', keyName.trim().length > 0);
+
+  let newRoot = getPath(root, parts);
+
+  if (newRoot !== null && newRoot !== undefined) {
+    return setKey(newRoot, keyName, value);
+  } else if (!tolerant) {
+    throw new EmberError(
+      `Property set failed: object in path "${parts.join('.')}" could not be found.`
+    );
+  }
+}
+
 if (DEBUG) {
   setWithMandatorySetter = (meta, obj, keyName, value) => {
     if (meta !== null && meta.peekWatching(keyName) > 0) {
@@ -137,23 +157,6 @@ if (DEBUG) {
       Object.defineProperty(obj, key, desc);
     }
   };
-}
-
-function setPath(root: object, path: string, value: any, tolerant?: boolean): any {
-  let parts = path.split('.');
-  let keyName = parts.pop()!;
-
-  assert('Property set failed: You passed an empty path', keyName.trim().length > 0);
-
-  let newRoot = getPath(root, parts);
-
-  if (newRoot !== null && newRoot !== undefined) {
-    return set(newRoot, keyName, value);
-  } else if (!tolerant) {
-    throw new EmberError(
-      `Property set failed: object in path "${parts.join('.')}" could not be found.`
-    );
-  }
 }
 
 /**

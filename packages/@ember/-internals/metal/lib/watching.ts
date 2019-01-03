@@ -2,7 +2,6 @@
 @module ember
 */
 import { Meta, peekMeta } from '@ember/-internals/meta';
-import { isPath } from './path_cache';
 import { unwatchKey, watchKey } from './watch_key';
 import { unwatchPath, watchPath } from './watch_path';
 
@@ -20,10 +19,10 @@ import { unwatchPath, watchPath } from './watch_path';
   @param {Object} meta
 */
 export function watch(obj: any, keyPath: string, meta?: Meta): void {
-  if (isPath(keyPath)) {
-    watchPath(obj, keyPath, meta);
-  } else {
+  if (keyPath.indexOf('.') === -1) {
     watchKey(obj, keyPath, meta);
+  } else {
+    watchPath(obj, keyPath, meta);
   }
 }
 
@@ -49,9 +48,9 @@ export function watcherCount(obj: any, key: string): number {
 */
 
 export function unwatch(obj: object, keyPath: string, meta?: Meta): void {
-  if (isPath(keyPath)) {
-    unwatchPath(obj, keyPath, meta);
-  } else {
+  if (keyPath.indexOf('.') === -1) {
     unwatchKey(obj, keyPath, meta);
+  } else {
+    unwatchPath(obj, keyPath, meta);
   }
 }
