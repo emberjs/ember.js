@@ -55,7 +55,7 @@
     "broccoli-source": "^1.1.0",
     "broccoli-typescript-compiler": "^4.1.0",
     "dag-map": "^2.0.2",
-    "ember-cli": "~3.4.4",
+    "ember-cli": "~3.6.1",
     "ember-cli-sauce": "^2.2.0",
     "emberjs-build": "^0.19.0",
     "eslint": "^5.10.0",
