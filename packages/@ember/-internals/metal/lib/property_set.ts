@@ -1,5 +1,5 @@
 import { descriptorFor, Meta, peekMeta } from '@ember/-internals/meta';
-import { HAS_NATIVE_PROXY, toString } from '@ember/-internals/utils';
+import { HAS_NATIVE_PROXY, lookupDescriptor, toString } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import EmberError from '@ember/error';
 import { DEBUG } from '@glimmer/env';
@@ -19,6 +19,7 @@ let setWithMandatorySetter: <T extends object, K extends Extract<keyof T, string
   keyName: K,
   value: T[K]
 ) => void;
+
 let makeEnumerable: (obj: object, keyName: string) => void;
 
 /**
@@ -125,9 +126,13 @@ if (DEBUG) {
   };
 
   makeEnumerable = (obj: object, key: string) => {
-    let desc = Object.getOwnPropertyDescriptor(obj, key);
+    let desc = lookupDescriptor(obj, key);
 
-    if (desc && desc.set && (desc.set as MandatorySetterFunction).isMandatorySetter) {
+    if (
+      desc !== null &&
+      desc.set !== undefined &&
+      (desc.set as MandatorySetterFunction).isMandatorySetter
+    ) {
       desc.enumerable = true;
       Object.defineProperty(obj, key, desc);
     }
