@@ -10,8 +10,8 @@
     "url": "https://github.com/glimmerjs/glimmer-vm.git"
   },
   "scripts": {
-    "build": "ember build --env production",
-    "build:flags": "RETAIN_FLAGS=true ember build --env production",
+    "build": "ember build --env production --suppress-sizes",
+    "build:flags": "RETAIN_FLAGS=true ember build --env production --suppress-sizes",
     "changelog": "lerna-changelog",
     "eslint": "eslint build/",
     "problems": "tsc -p tsconfig.json --noEmit",
