@@ -3,7 +3,7 @@ import { AbstractTestCase, moduleFor } from 'internal-test-helpers';
 import { get, getWithDefault, tracked } from '../..';
 
 if (EMBER_METAL_TRACKED_PROPERTIES) {
-  function createObj() {
+  const createObj = function() {
     class Obj {
       @tracked string = 'string';
       @tracked number = 23;
@@ -13,7 +13,7 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
     }
 
     return new Obj();
-  }
+  };
 
   moduleFor(
     '@tracked decorator: get',

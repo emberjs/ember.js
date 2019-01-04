@@ -266,6 +266,14 @@ RouterService.reopen({
 });
 
 if (EMBER_ROUTING_ROUTER_SERVICE) {
+  const cleanURL = function(url: string, rootURL: string) {
+    if (rootURL === '/') {
+      return url;
+    }
+
+    return url.substr(rootURL.length, url.length);
+  };
+
   RouterService.reopen(Evented, {
     init() {
       this._super(...arguments);
@@ -401,12 +409,4 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
       @public
     */
   });
-
-  function cleanURL(url: string, rootURL: string) {
-    if (rootURL === '/') {
-      return url;
-    }
-
-    return url.substr(rootURL.length, url.length);
-  }
 }
