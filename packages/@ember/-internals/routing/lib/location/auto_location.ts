@@ -1,5 +1,5 @@
 import { history, location, userAgent, window } from '@ember/-internals/browser-environment';
-import { get, set } from '@ember/-internals/metal';
+import { set } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import { tryInvoke } from '@ember/-internals/utils';
@@ -15,6 +15,37 @@ import {
   supportsHashChange,
   supportsHistory,
 } from './util';
+
+const EMPTY_DELEGATE: EmberLocation = Object.freeze({
+  _assert() {
+    assert(
+      "AutoLocation's detect() method should be called before calling any other hooks.",
+      false
+    );
+  },
+
+  initState() {
+    this._assert();
+  },
+  getURL() {
+    this._assert();
+    return '';
+  },
+  setURL() {
+    this._assert();
+  },
+  replaceURL() {
+    this._assert();
+  },
+  onUpdateURL() {
+    this._assert();
+  },
+  formatURL() {
+    this._assert();
+    return '';
+  },
+  destroy() {},
+});
 
 /**
 @module @ember/routing
@@ -65,10 +96,7 @@ import {
 */
 export default class AutoLocation extends EmberObject implements EmberLocation {
   cancelRouterSetup?: boolean | undefined;
-  getURL!: () => string;
-  setURL!: (url: string) => void;
-  onUpdateURL!: (callback: UpdateCallback) => void;
-  formatURL!: (url: string) => string;
+  concreteImplementation: EmberLocation = EMPTY_DELEGATE;
 
   implementation = 'auto';
   /**
@@ -87,10 +115,10 @@ export default class AutoLocation extends EmberObject implements EmberLocation {
     );
 
     let implementation = detectImplementation({
+      rootURL,
       location: this.location,
       history: this.history,
       userAgent: this.userAgent,
-      rootURL,
       documentMode: this.documentMode,
       global: this.global,
     });
@@ -101,19 +129,38 @@ export default class AutoLocation extends EmberObject implements EmberLocation {
     }
 
     let concrete = getOwner(this).lookup(`location:${implementation}`);
-    set(concrete, 'rootURL', rootURL);
-
     assert(`Could not find location '${implementation}'.`, Boolean(concrete));
 
+    set(concrete, 'rootURL', rootURL);
     set(this, 'concreteImplementation', concrete);
   }
 
   willDestroy() {
-    let concreteImplementation = get(this, 'concreteImplementation');
+    tryInvoke(this.concreteImplementation, 'destroy');
+  }
 
-    if (concreteImplementation) {
-      concreteImplementation.destroy();
-    }
+  initState() {
+    tryInvoke(this.concreteImplementation, 'initState');
+  }
+
+  getURL(): string {
+    return this.concreteImplementation.getURL();
+  }
+
+  setURL(url: string) {
+    this.concreteImplementation.setURL(url);
+  }
+
+  replaceURL() {
+    tryInvoke(this.concreteImplementation, 'replaceURL');
+  }
+
+  onUpdateURL(callback: UpdateCallback) {
+    this.concreteImplementation.onUpdateURL(callback);
+  }
+
+  formatURL(url: string): string {
+    return this.concreteImplementation.formatURL(url);
   }
 }
 
@@ -128,13 +175,6 @@ AutoLocation.reopen({
     @default '/'
   */
   rootURL: '/',
-  initState: delegateToConcreteImplementation('initState'),
-  getURL: delegateToConcreteImplementation('getURL'),
-  setURL: delegateToConcreteImplementation('setURL'),
-  replaceURL: delegateToConcreteImplementation('replaceURL'),
-  onUpdateURL: delegateToConcreteImplementation('onUpdateURL'),
-  formatURL: delegateToConcreteImplementation('formatURL'),
-
   /**
     @private
 
@@ -144,7 +184,7 @@ AutoLocation.reopen({
     @property location
     @default environment.location
   */
-  location: location,
+  location,
 
   /**
     @private
@@ -156,7 +196,7 @@ AutoLocation.reopen({
     @property history
     @default environment.history
   */
-  history: history,
+  history,
 
   /**
    @private
@@ -179,7 +219,7 @@ AutoLocation.reopen({
     @property userAgent
     @default environment.history
   */
-  userAgent: userAgent,
+  userAgent,
 
   /**
     @private
@@ -193,17 +233,6 @@ AutoLocation.reopen({
   */
   cancelRouterSetup: false,
 });
-
-function delegateToConcreteImplementation(methodName: string) {
-  return function(this: AutoLocation, ...args: any[]) {
-    let concreteImplementation = get(this, 'concreteImplementation');
-    assert(
-      "AutoLocation's detect() method should be called before calling any other hooks.",
-      Boolean(concreteImplementation)
-    );
-    return tryInvoke(concreteImplementation, methodName, args);
-  };
-}
 
 /*
   Given the browser's `location`, `history` and `userAgent`, and a configured

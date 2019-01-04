@@ -1,4 +1,3 @@
-import { location } from '@ember/-internals/browser-environment';
 import { assert } from '@ember/debug';
 
 export interface EmberLocation {
@@ -6,10 +5,11 @@ export interface EmberLocation {
   cancelRouterSetup?: boolean;
   getURL(): string;
   setURL(url: string): void;
-  replaceURL?(url: string): void;
   onUpdateURL(callback: UpdateCallback): void;
   formatURL(url: string): string;
+  replaceURL?(url: string): void;
   detect?(): void;
+  destroy?(): void;
   initState?(): void;
 }
 
@@ -110,6 +110,5 @@ export default {
     return implementationClass.create(...arguments);
   },
 
-  implementations: {},
-  _location: location,
+  implementations: {}
 };

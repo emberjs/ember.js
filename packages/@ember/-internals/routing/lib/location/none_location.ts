@@ -1,4 +1,4 @@
-import { get, set } from '@ember/-internals/metal';
+import { set } from '@ember/-internals/metal';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import { assert } from '@ember/debug';
 import { EmberLocation, UpdateCallback } from './api';
@@ -42,8 +42,8 @@ export default class NoneLocation extends EmberObject implements EmberLocation {
     @return {String} path
   */
   getURL() {
-    let path = get(this, 'path');
-    let rootURL = get(this, 'rootURL');
+    let path = this.path;
+    let rootURL = this.rootURL;
 
     // remove trailing slashes if they exists
     rootURL = rootURL.replace(/\/$/, '');
@@ -73,7 +73,7 @@ export default class NoneLocation extends EmberObject implements EmberLocation {
     @method onUpdateURL
     @param callback {Function}
   */
-  onUpdateURL(callback: (url: string) => void) {
+  onUpdateURL(callback: UpdateCallback) {
     this.updateCallback = callback;
   }
 
@@ -102,7 +102,7 @@ export default class NoneLocation extends EmberObject implements EmberLocation {
     @return {String} url
   */
   formatURL(url: string) {
-    let rootURL = get(this, 'rootURL');
+    let rootURL = this.rootURL;
 
     if (url !== '') {
       // remove trailing slashes if they exists

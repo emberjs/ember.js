@@ -50,7 +50,7 @@ export function canInvoke(obj: any | null | undefined, methodName: string): obj 
 export function tryInvoke(
   obj: any | undefined | null,
   methodName: string,
-  args: Array<any | undefined | null>
+  args?: Array<any | undefined | null>
 ) {
   if (canInvoke(obj, methodName)) {
     let method = obj[methodName];

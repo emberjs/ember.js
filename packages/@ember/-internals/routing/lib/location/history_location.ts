@@ -1,5 +1,4 @@
-import { get, set } from '@ember/-internals/metal';
-
+import { set } from '@ember/-internals/metal';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import { EmberLocation, UpdateCallback } from './api';
 import { getHash } from './util';
@@ -68,11 +67,11 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
     @method getHash
   */
   getHash() {
-    return getHash(get(this, 'location'));
+    return getHash(this.location);
   }
 
   init() {
-    this._super(...arguments);
+    super.init(...arguments);
 
     let base = document.querySelector('base');
     let baseURL: string | null = '';
@@ -81,7 +80,7 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
     }
 
     set(this, 'baseURL', baseURL);
-    set(this, 'location', get(this, 'location') || window.location);
+    set(this, 'location', this.location || window.location);
 
     this._popstateHandler = undefined;
   }
@@ -93,7 +92,7 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
     @method initState
   */
   initState() {
-    let history = get(this, 'history') || window.history;
+    let history = this.history || window.history;
     set(this, 'history', history);
 
     if (history && 'state' in history) {
@@ -119,11 +118,11 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
     @return url {String}
   */
   getURL() {
-    let location = get(this, 'location');
+    let location = this.location;
     let path = location.pathname;
 
-    let rootURL = get(this, 'rootURL');
-    let baseURL = get(this, 'baseURL');
+    let rootURL = this.rootURL;
+    let baseURL = this.baseURL;
 
     // remove trailing slashes if they exists
     rootURL = rootURL.replace(/\/$/, '');
@@ -190,7 +189,7 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
   */
   getState() {
     if (this.supportsHistory) {
-      return get(this, 'history').state;
+      return this.history.state;
     }
 
     return this._historyState;
@@ -206,7 +205,7 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
   pushState(path: string) {
     let state = { path, uuid: _uuid() };
 
-    get(this, 'history').pushState(state, null, path);
+    this.history.pushState(state, null, path);
 
     this._historyState = state;
 
@@ -224,7 +223,7 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
   replaceState(path: string) {
     let state = { path, uuid: _uuid() };
 
-    get(this, 'history').replaceState(state, null, path);
+    this.history.replaceState(state, null, path);
 
     this._historyState = state;
 
@@ -266,8 +265,8 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
     @return formatted url {String}
   */
   formatURL(url: string) {
-    let rootURL = get(this, 'rootURL');
-    let baseURL = get(this, 'baseURL');
+    let rootURL = this.rootURL;
+    let baseURL = this.baseURL;
 
     if (url !== '') {
       // remove trailing slashes if they exists
