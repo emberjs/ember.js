@@ -62,8 +62,6 @@ module.exports = {
         'no-unused-vars': 'off',
         'no-undef': 'off',
 
-        'no-inner-declarations': 'off',
-
         'import/export': 'off',
         'import/named': 'off',
         'import/no-unresolved': 'off',
