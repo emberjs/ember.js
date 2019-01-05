@@ -17,7 +17,6 @@ export function assign(target: object, ...sources: any[]): any;
   var c = { company: 'Other Company' };
   var d = { company: 'Tilde Inc.' };
   assign(a, b, c, d); // a === { first: 'Yehuda', last: 'Katz', company: 'Tilde Inc.' };
- 
   ```
 
   @method assign
