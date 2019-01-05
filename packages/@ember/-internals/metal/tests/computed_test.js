@@ -76,6 +76,16 @@ moduleFor(
       assert.equal(count, 1, 'should have invoked computed property');
     }
 
+    ['@test can override volatile computed property'](assert) {
+      let obj = {};
+
+      defineProperty(obj, 'foo', computed(function() {}).volatile());
+
+      set(obj, 'foo', 'boom');
+
+      assert.equal(obj.foo, 'boom');
+    }
+
     ['@test defining computed property should invoke property on set'](assert) {
       let obj = {};
       let count = 0;
