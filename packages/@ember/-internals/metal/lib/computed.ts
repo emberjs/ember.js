@@ -501,12 +501,11 @@ class ComputedProperty extends Descriptor implements DescriptorWithDependentKeys
 
   /* called before property is overridden */
   teardown(obj: object, keyName: string, meta?: any): void {
-    if (this._volatile) {
-      return;
-    }
-    let cache = peekCacheFor(obj);
-    if (cache !== undefined && cache.delete(keyName)) {
-      removeDependentKeys(this, obj, keyName, meta);
+    if (!this._volatile) {
+      let cache = peekCacheFor(obj);
+      if (cache !== undefined && cache.delete(keyName)) {
+        removeDependentKeys(this, obj, keyName, meta);
+      }
     }
     super.teardown(obj, keyName, meta);
   }
