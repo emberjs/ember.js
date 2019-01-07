@@ -342,7 +342,7 @@ export interface PreprocessOptions {
   plugins?: {
     ast?: ASTPluginBuilder[];
   };
-  ignoreStandalone?: boolean;
+  parseOptions?: object;
 }
 
 export interface Syntax {
@@ -362,8 +362,8 @@ const syntax: Syntax = {
 };
 
 export function preprocess(html: string, options?: PreprocessOptions): AST.Program {
-  const ignoreStandalone = options ? options.ignoreStandalone : false;
-  let ast = typeof html === 'object' ? html : handlebars.parse(html, { ignoreStandalone });
+  const parseOptions = options ? options.parseOptions : {};
+  let ast = typeof html === 'object' ? html : handlebars.parse(html, parseOptions);
   let program = new TokenizerEventHandlers(html).acceptNode(ast);
 
   if (options && options.plugins && options.plugins.ast) {
