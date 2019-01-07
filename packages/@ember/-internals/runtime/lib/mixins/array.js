@@ -724,6 +724,13 @@ const ArrayMixin = Mixin.create(Enumerable, {
     Returns an array with just the items with the matched property. You
     can pass an optional second argument with the target value. Otherwise
     this will match any property that evaluates to `true`.
+    
+    Example Usage:
+
+    ```javascript
+    const things = Ember.A().addObjects([{food: 'apple'}, {food: 'beans'}]);
+    things.filterBy('food', 'beans'); // [{food: 'beans'}]
+    ```
 
     @method filterBy
     @param {String} key the property to test
