@@ -1,23 +1,18 @@
 # Ember Changelog
 
-### v3.7.0-beta.3 (December 24, 2018)
+### v3.7.0 (January 7, 2019)
 
+- [#17254](https://github.com/emberjs/ember.js/pull/17254) [BREAKING] Explicitly drop support for Node 4
+- [#17426](https://github.com/emberjs/ember.js/pull/17426) [BUGFIX] Fix 'strict mode does not allow function declarations'
+- [#17431](https://github.com/emberjs/ember.js/pull/17431) [BUGFIX] Fix ability to override a computed.volatile
 - [#17398](https://github.com/emberjs/ember.js/pull/17398) [BUGFIX] Avoid console.trace for every Ember.warn
 - [#17399](https://github.com/emberjs/ember.js/pull/17399) [BUGFIX] Local variable shadowing assert
 - [#17403](https://github.com/emberjs/ember.js/pull/17403) [BUGFIX] Ensure legacy build of template compiler can be loaded.
-
-### v3.7.0-beta.2 (December 17, 2018)
-
 - [#17328](https://github.com/emberjs/ember.js/pull/17328) [BUGFIX] Ensure that delayed transition retrys work
 - [#17374](https://github.com/emberjs/ember.js/pull/17374) [BUGFIX] Fix cyclic references on Array.prototype
-
-### v3.7.0-beta.1 (December 6, 2018)
-
-- [#17254](https://github.com/emberjs/ember.js/pull/17254) [BREAKING] Explicitly drop support for Node 4
-- [#16898](https://github.com/emberjs/ember.js/pull/16898) Add RFC 232 style util test blueprint for Mocha
-- [#17128](https://github.com/emberjs/ember.js/pull/17128) [BUGFIX] Fix Sourcemaps build 
 - [#17134](https://github.com/emberjs/ember.js/pull/17134) [CLEANUP] Remove deprecated '_router'
 - [#17133](https://github.com/emberjs/ember.js/pull/17133) [CLEANUP] Remove deprecated 'property{Did,Will}Change'
+- [#16898](https://github.com/emberjs/ember.js/pull/16898) Add RFC 232 style util test blueprint for Mocha
 
 ### v3.6.1 (December 18, 2018)
 
