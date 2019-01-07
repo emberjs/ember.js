@@ -387,7 +387,9 @@ test('Whitespace control - preserve all whitespace if config is set', function()
     ]),
     undefined,
     {
-      ignoreStandalone: true,
+      parseOptions: {
+        ignoreStandalone: true,
+      },
     }
   );
 });
