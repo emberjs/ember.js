@@ -3536,11 +3536,6 @@ execa@^1.0.0:
     signal-exit "^3.0.0"
     strip-eof "^1.0.0"
 
-exists-stat@1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/exists-stat/-/exists-stat-1.0.0.tgz#0660e3525a2e89d9e446129440c272edfa24b529"
-  integrity sha1-BmDjUlouidnkRhKUQMJy7foktSk=
-
 exists-sync@0.0.3:
   version "0.0.3"
   resolved "https://registry.yarnpkg.com/exists-sync/-/exists-sync-0.0.3.tgz#b910000bedbb113b378b82f5f5a7638107622dcf"
@@ -3877,7 +3872,7 @@ find-yarn-workspace-root@^1.1.0:
     fs-extra "^4.0.3"
     micromatch "^3.1.4"
 
-findup-sync@2.0.0, findup-sync@^2.0.0:
+findup-sync@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/findup-sync/-/findup-sync-2.0.0.tgz#9326b1488c22d1a6088650a86901b2d9a90a2cbc"
   integrity sha1-kyaxSIwi0aYIhlCoaQGy2akKLLw=
@@ -6303,6 +6298,11 @@ node-uuid@~1.4.0:
   resolved "https://registry.yarnpkg.com/node-uuid/-/node-uuid-1.4.8.tgz#b040eb0923968afabf8d32fb1f17f1167fdab907"
   integrity sha1-sEDrCSOWivq/jTL7HxfxFn/auQc=
 
+node-watch@0.6.0:
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/node-watch/-/node-watch-0.6.0.tgz#ab0703b60cd270783698e57a428faa0010ed8fd0"
+  integrity sha512-XAgTL05z75ptd7JSVejH1a2Dm1zmXYhuDr9l230Qk6Z7/7GPcnAs/UyJJ4ggsXSvWil8iOzwQLW0zuGUvHpG8g==
+
 nopt@^3.0.6:
   version "3.0.6"
   resolved "https://registry.yarnpkg.com/nopt/-/nopt-3.0.6.tgz#c6465dbf08abcd4db359317f79ac68a646b28ff9"
@@ -7005,18 +7005,16 @@ quick-temp@^0.1.2, quick-temp@^0.1.3, quick-temp@^0.1.5, quick-temp@^0.1.8:
     rimraf "^2.5.4"
     underscore.string "~3.3.4"
 
-qunit@^2.8.0:
-  version "2.8.0"
-  resolved "https://registry.yarnpkg.com/qunit/-/qunit-2.8.0.tgz#007474727cdba323c35f9526e21c0687f8ea04b3"
-  integrity sha512-bT7vvvE4Xvk6c/uSbvP11uZXlzPJINURQyG9zj5I0EXXycW9oeDCodvAOK3GuYZ+GoXiTAMsxVSXCPGeXlTWzg==
+qunit@^2.9.0:
+  version "2.9.0"
+  resolved "https://registry.yarnpkg.com/qunit/-/qunit-2.9.0.tgz#f28e067b8fa3e0269c94bfb9d661cbd32d2a79cb"
+  integrity sha512-hmgKmFMaXKSRz8Y5qzaMmgCLi6pAjajnYsOD5rjZpQtXy021UFpj4v6tb6RFcTKeCV1g2irALhWFPwIPuwS65A==
   dependencies:
     commander "2.12.2"
-    exists-stat "1.0.0"
-    findup-sync "2.0.0"
     js-reporters "1.2.1"
+    minimatch "3.0.4"
+    node-watch "0.6.0"
     resolve "1.5.0"
-    sane "^4.0.0"
-    walk-sync "0.3.2"
 
 randomatic@^1.1.3:
   version "1.1.7"
@@ -8687,14 +8685,6 @@ vow@0.4.3:
   version "0.4.3"
   resolved "https://registry.yarnpkg.com/vow/-/vow-0.4.3.tgz#d5c394d4f1e844c988100b57b540956c4a005ba6"
   integrity sha1-1cOU1PHoRMmIEAtXtUCVbEoAW6Y=
-
-walk-sync@0.3.2:
-  version "0.3.2"
-  resolved "https://registry.yarnpkg.com/walk-sync/-/walk-sync-0.3.2.tgz#4827280afc42d0e035367c4a4e31eeac0d136f75"
-  integrity sha512-FMB5VqpLqOCcqrzA9okZFc0wq0Qbmdm396qJxvQZhDpyu0W95G9JCmp74tx7iyYnyOcBtUuKJsgIKAqjozvmmQ==
-  dependencies:
-    ensure-posix-path "^1.0.0"
-    matcher-collection "^1.0.0"
 
 walk-sync@^0.2.0, walk-sync@^0.2.7:
   version "0.2.7"

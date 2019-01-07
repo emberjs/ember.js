@@ -146,7 +146,7 @@
     "mocha": "^5.2.0",
     "prettier": "1.15.3",
     "puppeteer": "^1.11.0",
-    "qunit": "^2.8.0",
+    "qunit": "^2.9.0",
     "route-recognizer": "^0.3.4",
     "router_js": "^6.2.1",
     "rsvp": "^4.8.4",
