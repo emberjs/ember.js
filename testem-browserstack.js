@@ -1,5 +1,7 @@
 'use strict';
 
+const FailureOnlyReporterGroupedByBrowser = require('testem-failure-only-reporter/grouped-by-browser');
+
 module.exports = {
   framework: "qunit",
   test_page: "tests/index.html?hidepassed",
@@ -8,6 +10,7 @@ module.exports = {
   browser_disconnect_timeout: 120,
   timeout: 600,
   parallel: 4,
+  reporter: FailureOnlyReporterGroupedByBrowser,
   launchers:
     {
       BS_Chrome_Current: {

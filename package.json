@@ -70,6 +70,7 @@
     "rimraf": "^2.6.1",
     "rollup-plugin-sourcemaps": "^0.4.2",
     "semver": "^5.3.0",
+    "testem-failure-only-reporter": "^0.0.1",
     "tslint": "^4.0.2",
     "tslint-config-prettier": "^1.12.0",
     "tslint-plugin-prettier": "^1.3.0"
