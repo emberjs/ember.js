@@ -2,7 +2,7 @@ export { Reference as BasicReference, PathReference as BasicPathReference } from
 
 export { ConstReference } from './lib/const';
 
-export { ListItem } from './lib/iterable';
+export { ListItem, END } from './lib/iterable';
 
 export * from './lib/validators';
 

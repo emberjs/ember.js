@@ -1,6 +1,5 @@
 import {
   Bounds,
-  Dict,
   DynamicScope,
   Environment,
   ExceptionHandler,
@@ -24,8 +23,9 @@ import {
   Tag,
   TagWrapper,
   UpdatableTag,
+  END,
 } from '@glimmer/reference';
-import { associate, dict, expect, LinkedList, Option, Stack } from '@glimmer/util';
+import { associate, expect, LinkedList, Option, Stack } from '@glimmer/util';
 import { SimpleComment, SimpleNode } from '@simple-dom/interface';
 import { move as moveBounds } from '../bounds';
 import { asyncReset, detach } from '../lifetime';
@@ -194,7 +194,7 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
 }
 
 class ListRevalidationDelegate implements IteratorSynchronizerDelegate<Environment> {
-  private map: Dict<BlockOpcode>;
+  private map: Map<unknown, BlockOpcode>;
   private updating: LinkedList<UpdatingOpcode>;
 
   private didInsert = false;
@@ -207,17 +207,17 @@ class ListRevalidationDelegate implements IteratorSynchronizerDelegate<Environme
 
   insert(
     _env: Environment,
-    key: string,
+    key: unknown,
     item: PathReference<unknown>,
     memo: PathReference<unknown>,
-    before: string
+    before: unknown
   ) {
     let { map, opcode, updating } = this;
     let nextSibling: Option<SimpleNode> = null;
     let reference: Option<BlockOpcode> = null;
 
     if (typeof before === 'string') {
-      reference = map[before];
+      reference = map.get(before)!;
       nextSibling = reference['bounds'].firstNode();
     } else {
       nextSibling = this.marker;
@@ -227,7 +227,8 @@ class ListRevalidationDelegate implements IteratorSynchronizerDelegate<Environme
     let tryOpcode: Option<TryOpcode> = null;
 
     vm.execute(vm => {
-      map[key] = tryOpcode = vm.iterate(memo, item);
+      tryOpcode = vm.iterate(memo, item);
+      map.set(key, tryOpcode);
       vm.pushUpdating(new LinkedList<UpdatingOpcode>());
       vm.updateWith(tryOpcode);
       vm.pushUpdating(tryOpcode.children);
@@ -240,39 +241,40 @@ class ListRevalidationDelegate implements IteratorSynchronizerDelegate<Environme
 
   retain(
     _env: Environment,
-    _key: string,
+    _key: unknown,
     _item: PathReference<unknown>,
     _memo: PathReference<unknown>
   ) {}
 
   move(
     _env: Environment,
-    key: string,
+    key: unknown,
     _item: PathReference<unknown>,
     _memo: PathReference<unknown>,
-    before: string
+    before: unknown
   ) {
     let { map, updating } = this;
 
-    let entry = map[key];
-    let reference = map[before] || null;
+    let entry = map.get(key)!;
 
-    if (typeof before === 'string') {
-      moveBounds(entry, reference.firstNode());
-    } else {
+    if (before === END) {
       moveBounds(entry, this.marker);
+      updating.remove(entry);
+      updating.append(entry);
+    } else {
+      let reference = map.get(before)!;
+      moveBounds(entry, reference.firstNode());
+      updating.remove(entry);
+      updating.insertBefore(entry, reference);
     }
-
-    updating.remove(entry);
-    updating.insertBefore(entry, reference);
   }
 
-  delete(env: Environment, key: string) {
+  delete(env: Environment, key: unknown) {
     let { map, updating } = this;
-    let opcode = map[key];
+    let opcode = map.get(key)!;
     detach(opcode, env);
     updating.remove(opcode);
-    delete map[key];
+    map.delete(key);
 
     this.didDelete = true;
   }
@@ -284,7 +286,7 @@ class ListRevalidationDelegate implements IteratorSynchronizerDelegate<Environme
 
 export class ListBlockOpcode extends BlockOpcode {
   public type = 'list-block';
-  public map = dict<BlockOpcode>();
+  public map = new Map<unknown, BlockOpcode>();
   public artifacts: IterationArtifacts;
   public tag: Tag;
 
