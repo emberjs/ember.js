@@ -75,7 +75,9 @@ jobs:
     - env:
       - TEST_SUITE=built-tests
       - EMBER_ENV=production
+
     - env: TEST_SUITE=old-jquery-and-extend-prototypes
+
     - name: Node.js Tests
       node_js: "6"
       script:
@@ -97,7 +99,8 @@ jobs:
       script:
         - "./bin/publish_builds"
 
-    - env:
+    - if: branch = master
+      env:
       - BUILD_TYPE=alpha
       - PUBLISH=true
       script:
