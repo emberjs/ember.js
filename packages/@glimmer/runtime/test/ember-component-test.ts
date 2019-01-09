@@ -1815,6 +1815,51 @@ QUnit.test('components inside a list are destroyed', function(assert) {
   assert.deepEqual(destroyed, [4, 5, 1, 2, 3], 'destroy should be called for each item');
 });
 
+QUnit.test('components inside a list are destroyed (when key is @identity)', function(assert) {
+  let destroyed: Array<{ val: number }> = [];
+
+  let DestroyMeComponent = EmberishGlimmerComponent.extend({
+    destroy(this: EmberishGlimmerComponent) {
+      this._super();
+      destroyed.push(this.attrs.item);
+    },
+  });
+
+  env.registerEmberishGlimmerComponent(
+    'DestroyMe',
+    DestroyMeComponent as any,
+    '<div>destroy me!</div>'
+  );
+
+  let val1 = { val: 1 };
+  let val2 = { val: 2 };
+  let val3 = { val: 3 };
+  let val4 = { val: 4 };
+  let val5 = { val: 5 };
+
+  appendViewFor(`{{#each list key='@identity' as |item|}}<DestroyMe @item={{item}} />{{/each}}`, {
+    list: [val1, val2, val3, val4, val5],
+  });
+
+  assert.strictEqual(destroyed.length, 0, 'destroy should not be called');
+
+  view.rerender({ list: [val1, val2, val3] });
+
+  assert.deepEqual(destroyed, [val4, val5], 'destroy should be called exactly twice');
+
+  view.rerender({ list: [val3, val2, val1] });
+
+  assert.deepEqual(destroyed, [val4, val5], 'destroy should be called exactly twice');
+
+  view.rerender({ list: [] });
+
+  assert.deepEqual(
+    destroyed,
+    [val4, val5, val1, val2, val3],
+    'destroy should be called for each item'
+  );
+});
+
 QUnit.test('components that are "destroyed twice" are destroyed once', function(assert) {
   let destroyed: string[] = [];
 

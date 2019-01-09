@@ -50,8 +50,11 @@ export default abstract class TestEnvironment extends EnvironmentImpl {
       case '@primitive':
         keyFor = (item: unknown) => String(item);
         break;
+      case '@identity':
+        keyFor = (item: unknown) => item;
+        break;
       default:
-        keyFor = (item: unknown) => item && String((item as Dict)[keyPath]);
+        keyFor = (item: unknown) => item && (item as Dict)[keyPath];
         break;
     }
 
