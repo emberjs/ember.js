@@ -1,4 +1,4 @@
-const FailureOnlyReporter = require('./lib/testem/failure-only-reporter');
+const FailureOnlyReporter = require('testem-failure-only-reporter');
 
 module.exports = {
   test_page: 'tests/index.html?hidepassed&hideskipped&timeout=60000',

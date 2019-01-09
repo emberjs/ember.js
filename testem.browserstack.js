@@ -1,4 +1,4 @@
-const FailureOnlyPerBrowserReporter = require('./lib/testem/failure-only-per-browser-reporter');
+const FailureOnlyPerBrowserReporter = require('testem-failure-only-reporter/grouped-by-browser');
 
 module.exports = {
   test_page: 'dist/tests/index.html?hidepassed&hideskipped&timeout=60000',

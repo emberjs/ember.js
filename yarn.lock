@@ -8188,6 +8188,13 @@ testdouble@^3.2.6:
     quibble "^0.5.1"
     stringify-object-es5 "^2.5.0"
 
+testem-failure-only-reporter@^0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/testem-failure-only-reporter/-/testem-failure-only-reporter-0.0.1.tgz#d096a22b3c78b4d4bdc74d4f8727d75ef8c57b7a"
+  integrity sha512-a3bquFhuguXcI244mAzt8ByCIEoAOsI7NVihNafi8PTYDVCnpgxm73JluduR9GITXopdOeyLAJnlI3pavY7x3w==
+  dependencies:
+    testem "^2.9.2"
+
 testem@^2.14.0, testem@^2.9.2:
   version "2.14.0"
   resolved "https://registry.yarnpkg.com/testem/-/testem-2.14.0.tgz#418a9a15843f68381659c6a486abb4ea48d06c29"
