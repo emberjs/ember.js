@@ -9,7 +9,6 @@ import {
   generateSnapshot,
   strip,
   TestEnvironment,
-  TestDynamicScope,
 } from '@glimmer/test-helpers';
 import { SimpleElement, SimpleNode } from '@simple-dom/interface';
 
@@ -39,7 +38,6 @@ function render(template: Template, context = {}) {
     { program: env.program, env, resolver: env.resolver },
     env.context,
     self,
-    new TestDynamicScope(),
     clientBuilder(env, cursor),
     handle
   );

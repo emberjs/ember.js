@@ -1,8 +1,8 @@
 import { DynamicScope } from '@glimmer/interfaces';
-import { PathReference } from '@glimmer/reference';
 import { assign } from '@glimmer/util';
+import { PathReference } from '@glimmer/reference';
 
-export class TestDynamicScope implements DynamicScope {
+export class DefaultDynamicScope implements DynamicScope {
   private bucket: any;
 
   constructor(bucket = null) {
@@ -21,7 +21,7 @@ export class TestDynamicScope implements DynamicScope {
     return (this.bucket[key] = reference);
   }
 
-  child(): TestDynamicScope {
-    return new TestDynamicScope(this.bucket);
+  child(): DefaultDynamicScope {
+    return new DefaultDynamicScope(this.bucket);
   }
 }
