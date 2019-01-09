@@ -23,6 +23,10 @@ import { Component, compile, htmlSafe } from '../../utils/helpers';
 moduleFor(
   'Components test: curly components',
   class extends RenderingTestCase {
+    ['@test this should run in prod tests']() {
+      this.assert.ok(!EmberDev.runningProdBuild, 'this should fail in prod build');
+    }
+
     ['@test it can render a basic component']() {
       this.registerComponent('foo-bar', { template: 'hello' });
 
