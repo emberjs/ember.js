@@ -18,6 +18,7 @@ import {
   SymbolDestroyable,
   SyntaxCompilationContext,
   TemplateMeta,
+  VM as PublicVM,
 } from '@glimmer/interfaces';
 import { DEBUG } from '@glimmer/local-debug-flags';
 import { RuntimeOpImpl } from '@glimmer/program';
@@ -69,19 +70,6 @@ import {
   TryOpcode,
   VMState,
 } from './update';
-
-/**
- * This is used in the Glimmer Embedding API. In particular, embeddings
- * provide helpers through the `CompileTimeLookup` interface, and the
- * helpers they provide implement the `Helper` interface, which is a
- * function that takes a `PublicVM` as a parameter.
- */
-export interface PublicVM {
-  env: Environment;
-  dynamicScope(): DynamicScope;
-  getSelf(): PathReference<unknown>;
-  associateDestroyable(child: SymbolDestroyable | Destroyable): void;
-}
 
 /**
  * This interface is used by internal opcodes, and is more stable than

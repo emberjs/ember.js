@@ -8,7 +8,7 @@ import {
   TemplateMeta,
 } from '@glimmer/interfaces';
 import { assign } from '@glimmer/util';
-import { compilableLayout } from './compilable-template';
+import { compilable } from './compilable-template';
 import { WrappedBuilder } from './wrapped-component';
 
 export interface TemplateFactory<M> {
@@ -89,7 +89,7 @@ class TemplateImpl<R> implements Template {
 
   asLayout(): CompilableProgram {
     if (this.layout) return this.layout;
-    return (this.layout = compilableLayout({
+    return (this.layout = compilable({
       ...this.parsedLayout,
       asPartial: false,
     }));
@@ -97,7 +97,7 @@ class TemplateImpl<R> implements Template {
 
   asPartial(): CompilableProgram {
     if (this.partial) return this.partial;
-    return (this.layout = compilableLayout({
+    return (this.layout = compilable({
       ...this.parsedLayout,
       asPartial: true,
     }));

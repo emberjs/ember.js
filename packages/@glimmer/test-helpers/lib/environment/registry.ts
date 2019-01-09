@@ -1,6 +1,11 @@
-import { CompilableProgram, ComponentDefinition, Invocation } from '@glimmer/interfaces';
+import {
+  CompilableProgram,
+  ComponentDefinition,
+  Helper as GlimmerHelper,
+  Invocation,
+} from '@glimmer/interfaces';
 import { PartialDefinition } from '@glimmer/opcode-compiler';
-import { Helper as GlimmerHelper, ModifierDefinition } from '@glimmer/runtime';
+import { ModifierDefinition } from '@glimmer/runtime';
 import { dict, Option } from '@glimmer/util';
 
 export interface Lookup {

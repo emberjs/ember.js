@@ -13,7 +13,6 @@ import {
   ScopeSlot,
   Transaction,
   TransactionSymbol,
-  VMArguments,
 } from '@glimmer/interfaces';
 import {
   IterableImpl,
@@ -28,7 +27,6 @@ import { AttrNamespace, SimpleDocument, SimpleElement } from '@simple-dom/interf
 import { DOMChangesImpl, DOMTreeConstruction } from './dom/helper';
 import { Modifier, ModifierManager } from './internal-interfaces';
 import { ConditionalReference, UNDEFINED_REFERENCE } from './references';
-import { PublicVM } from './vm/append';
 import { DynamicAttribute, dynamicAttribute } from './vm/attributes/dynamic';
 
 export function isScopeReference(s: ScopeSlot): s is VersionedPathReference {
@@ -355,7 +353,3 @@ export abstract class DefaultEnvironment extends EnvironmentImpl {
 }
 
 export default EnvironmentImpl;
-
-export interface Helper {
-  (vm: PublicVM, args: VMArguments): PathReference<unknown>;
-}
