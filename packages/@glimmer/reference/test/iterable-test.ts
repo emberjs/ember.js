@@ -10,53 +10,56 @@ import {
   IteratorSynchronizerDelegate,
   TagWrapper,
   CURRENT_TAG,
+  END,
 } from '@glimmer/reference';
 
 import { UpdatableReference } from '@glimmer/object-reference';
 
-import { Option, LinkedList, ListNode, dict } from '@glimmer/util';
+import { Option, LinkedList, ListNode } from '@glimmer/util';
 
 QUnit.module('Reference iterables');
 
 class Target implements IteratorSynchronizerDelegate<null> {
-  private map = dict<ListNode<BasicReference<unknown>>>();
+  private map = new Map<unknown, ListNode<BasicReference<unknown>>>();
   private list = new LinkedList<ListNode<BasicReference<unknown>>>();
   public tag = CURRENT_TAG;
 
-  retain(_env: null, key: string, item: BasicReference<unknown>) {
-    if (item !== this.map[key].value) {
+  retain(_env: null, key: unknown, item: BasicReference<unknown>) {
+    if (item !== this.map.get(key)!.value) {
       throw new Error('unstable reference');
     }
   }
 
   done() {}
 
-  append(key: string, item: BasicReference<unknown>) {
-    let node = (this.map[key] = new ListNode(item));
+  append(key: unknown, item: BasicReference<unknown>) {
+    let node = new ListNode(item);
+    this.map.set(key, node);
     this.list.append(node);
   }
 
   insert(
     _env: null,
-    key: string,
+    key: unknown,
     item: BasicReference<unknown>,
     _: BasicReference<unknown>,
-    before: string
+    before: unknown
   ) {
-    let referenceNode = before ? this.map[before] : null;
-    let node = (this.map[key] = new ListNode(item));
+    let referenceNode = before === END ? null : this.map.get(before);
+    let node = new ListNode(item);
+    this.map.set(key, node);
     this.list.insertBefore(node, referenceNode);
   }
 
   move(
     _env: null,
-    key: string,
+    key: unknown,
     item: BasicReference<unknown>,
     _: BasicReference<unknown>,
-    before: string
+    before: unknown
   ) {
-    let referenceNode = before ? this.map[before] : null;
-    let node = this.map[key];
+    let referenceNode = before === END ? null : this.map.get(before);
+    let node = this.map.get(key)!;
 
     if (item !== node.value) {
       throw new Error('unstable reference');
@@ -67,8 +70,8 @@ class Target implements IteratorSynchronizerDelegate<null> {
   }
 
   delete(_env: null, key: string) {
-    let node = this.map[key];
-    delete this.map[key];
+    let node = this.map.get(key)!;
+    this.map.delete(key);
     this.list.remove(node);
   }
 

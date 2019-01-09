@@ -78,6 +78,46 @@ export class EachSuite extends RenderTest {
   }
 
   @test
+  'receives the index as the second parameter (when key=@identity)'() {
+    let v1 = val(1);
+    let v2 = val(2);
+    let v3 = val(3);
+    let v4 = val(4);
+    let v5 = val(5);
+    let v6 = val(6);
+
+    let list = [v1, v2, v3, v4];
+    this.render(
+      '{{#each list key="@identity" as |item i|}}{{item.val}}-{{i}}{{else}}Empty{{/each}}',
+      {
+        list,
+      }
+    );
+    this.assertHTML('1-02-13-24-3');
+    this.assertStableRerender();
+
+    list.push(v5, v6);
+    this.rerender({ list });
+    this.assertHTML('1-02-13-24-35-46-5');
+    this.assertStableNodes();
+
+    v1.val = 1000;
+    this.rerender({ list });
+    this.assertHTML('1000-02-13-24-35-46-5');
+    this.assertStableNodes();
+
+    list = [];
+    this.rerender({ list });
+    this.assertHTML('Empty');
+    this.assertStableNodes();
+
+    list = [val(1), val(2), val(3), val(4)];
+    this.rerender({ list });
+    this.assertHTML('1-02-13-24-3');
+    this.assertStableNodes();
+  }
+
+  @test
   'it can render duplicate primitive items'() {
     let list = ['a', 'a', 'a'];
     this.render('{{#each list key="@index" as |item|}}{{item}}{{/each}}', {
@@ -198,4 +238,8 @@ export class EachSuite extends RenderTest {
     this.assertHTML('No thing Chad');
     this.assertStableNodes();
   }
+}
+
+function val(i: number): { val: number } {
+  return { val: i };
 }

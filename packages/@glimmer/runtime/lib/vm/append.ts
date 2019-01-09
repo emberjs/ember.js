@@ -112,7 +112,7 @@ export interface InternalVM<C extends JitOrAotBlock> {
   enterList(offset: number): void;
   exitList(): void;
   iterate(memo: PathReference<unknown>, item: PathReference<unknown>): TryOpcode;
-  enterItem(key: string, opcode: TryOpcode): void;
+  enterItem(key: unknown, opcode: TryOpcode): void;
 
   pushRootScope(size: number): PartialScope<C>;
   pushChildScope(): void;
@@ -393,7 +393,7 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
   }
 
   enterItem(key: string, opcode: TryOpcode) {
-    this.listBlock().map[key] = opcode;
+    this.listBlock().map.set(key, opcode);
     this.didEnter(opcode);
   }
 
