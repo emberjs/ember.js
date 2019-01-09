@@ -1,19 +1,16 @@
 import {
-  CompileTimeProgram,
-  Recast,
-  VMHandle,
-  RuntimeResolver,
   CompileTimeHeap,
+  SerializedHeap,
+  STDLib,
+  RuntimeHeap,
+  StdlibOperand,
+  RuntimeConstants,
+  RuntimeProgram,
+  CompilerArtifacts,
 } from '@glimmer/interfaces';
 import { DEBUG } from '@glimmer/local-debug-flags';
-import {
-  Constants,
-  WriteOnlyConstants,
-  RuntimeConstants,
-  ConstantPool,
-  RuntimeConstantsImpl,
-} from './constants';
-import { Opcode } from './opcode';
+import { RuntimeConstantsImpl } from './constants';
+import { RuntimeOpImpl } from './opcode';
 import { assert } from '@glimmer/util';
 
 const enum TableSlotState {
@@ -40,15 +37,46 @@ function changeState(info: number, newState: number) {
   return info | (newState << 30);
 }
 
-export interface SerializedHeap {
-  buffer: ArrayBuffer;
-  table: number[];
-  handle: number;
-}
-
 export type Placeholder = [number, () => number];
+export type StdlibPlaceholder = [number, StdlibOperand];
 
 const PAGE_SIZE = 0x100000;
+
+export class RuntimeHeapImpl implements RuntimeHeap {
+  private heap: Uint16Array;
+  private table: number[];
+
+  constructor(serializedHeap: SerializedHeap) {
+    let { buffer, table } = serializedHeap;
+    this.heap = new Uint16Array(buffer);
+    this.table = table;
+  }
+
+  // It is illegal to close over this address, as compaction
+  // may move it. However, it is legal to use this address
+  // multiple times between compactions.
+  getaddr(handle: number): number {
+    return this.table[handle];
+  }
+
+  getbyaddr(address: number): number {
+    assert(this.heap[address] !== undefined, 'Access memory out of bounds of the heap');
+    return this.heap[address];
+  }
+
+  sizeof(handle: number): number {
+    if (DEBUG) {
+      let info = this.table[handle + Size.INFO_OFFSET];
+      return info & Size.SIZE_MASK;
+    }
+    return -1;
+  }
+
+  scopesizeof(handle: number): number {
+    let info = this.table[handle + Size.INFO_OFFSET];
+    return (info & Size.SCOPE_MASK) >> 16;
+  }
+}
 
 /**
  * The Heap is responsible for dynamically allocating
@@ -70,26 +98,18 @@ const PAGE_SIZE = 0x100000;
  * valid during the execution. This means you cannot close
  * over them as you will have a bad memory access exception.
  */
-export class Heap implements CompileTimeHeap {
+export class CompileTimeHeapImpl implements CompileTimeHeap {
   private heap: Uint16Array;
   private placeholders: Placeholder[] = [];
+  private stdlibs: StdlibPlaceholder[] = [];
   private table: number[];
   private offset = 0;
   private handle = 0;
   private capacity = PAGE_SIZE;
 
-  constructor(serializedHeap?: SerializedHeap) {
-    if (serializedHeap) {
-      let { buffer, table, handle } = serializedHeap;
-      this.heap = new Uint16Array(buffer);
-      this.table = table;
-      this.offset = this.heap.length;
-      this.handle = handle;
-      this.capacity = 0;
-    } else {
-      this.heap = new Uint16Array(PAGE_SIZE);
-      this.table = [];
-    }
+  constructor() {
+    this.heap = new Uint16Array(PAGE_SIZE);
+    this.table = [];
   }
 
   push(item: number): void {
@@ -150,23 +170,20 @@ export class Heap implements CompileTimeHeap {
 
   sizeof(handle: number): number {
     if (DEBUG) {
-      let info = this.table[(handle as Recast<VMHandle, number>) + Size.INFO_OFFSET];
+      let info = this.table[handle + Size.INFO_OFFSET];
       return info & Size.SIZE_MASK;
     }
     return -1;
   }
 
   scopesizeof(handle: number): number {
-    let info = this.table[(handle as Recast<VMHandle, number>) + Size.INFO_OFFSET];
+    let info = this.table[handle + Size.INFO_OFFSET];
     return (info & Size.SCOPE_MASK) >> 16;
   }
 
-  free(handle: VMHandle): void {
-    let info = this.table[(handle as Recast<VMHandle, number>) + Size.INFO_OFFSET];
-    this.table[(handle as Recast<VMHandle, number>) + Size.INFO_OFFSET] = changeState(
-      info,
-      TableSlotState.Freed
-    );
+  free(handle: number): void {
+    let info = this.table[handle + Size.INFO_OFFSET];
+    this.table[handle + Size.INFO_OFFSET] = changeState(info, TableSlotState.Freed);
   }
 
   /**
@@ -219,6 +236,13 @@ export class Heap implements CompileTimeHeap {
     this.placeholders.push([address, valueFunc]);
   }
 
+  pushStdlib(operand: StdlibOperand): void {
+    this.sizeCheck();
+    let address = this.offset++;
+    this.heap[address] = Size.MAX_SIZE;
+    this.stdlibs.push([address, operand]);
+  }
+
   private patchPlaceholders() {
     let { placeholders } = this;
 
@@ -233,8 +257,25 @@ export class Heap implements CompileTimeHeap {
     }
   }
 
-  capture(offset = this.offset): SerializedHeap {
+  patchStdlibs(stdlib: STDLib): void {
+    let { stdlibs } = this;
+
+    for (let i = 0; i < stdlibs.length; i++) {
+      let [address, { value }] = stdlibs[i];
+
+      assert(
+        this.getbyaddr(address) === Size.MAX_SIZE,
+        `expected to find a placeholder value at ${address}`
+      );
+      this.setbyaddr(address, stdlib[value]);
+    }
+
+    this.stdlibs = [];
+  }
+
+  capture(stdlib: STDLib, offset = this.offset): SerializedHeap {
     this.patchPlaceholders();
+    this.patchStdlibs(stdlib);
 
     // Only called in eager mode
     let buffer = slice(this.heap, 0, offset).buffer;
@@ -246,52 +287,26 @@ export class Heap implements CompileTimeHeap {
   }
 }
 
-export class WriteOnlyProgram implements CompileTimeProgram {
+export class RuntimeProgramImpl implements RuntimeProgram {
   [key: number]: never;
 
-  private _opcode: Opcode;
+  static hydrate(artifacts: CompilerArtifacts) {
+    let heap = new RuntimeHeapImpl(artifacts.heap);
+    let constants = new RuntimeConstantsImpl(artifacts.constants);
 
-  constructor(
-    public constants: WriteOnlyConstants = new WriteOnlyConstants(),
-    public heap = new Heap()
-  ) {
-    this._opcode = new Opcode(this.heap);
+    return new RuntimeProgramImpl(constants, heap);
   }
 
-  opcode(offset: number): Opcode {
+  private _opcode: RuntimeOpImpl;
+
+  constructor(public constants: RuntimeConstants, public heap: RuntimeHeap) {
+    this._opcode = new RuntimeOpImpl(this.heap);
+  }
+
+  opcode(offset: number): RuntimeOpImpl {
     this._opcode.offset = offset;
     return this._opcode;
   }
-}
-
-export class RuntimeProgram<Locator> {
-  [key: number]: never;
-
-  static hydrate<Locator>(
-    rawHeap: SerializedHeap,
-    pool: ConstantPool,
-    resolver: RuntimeResolver<Locator>
-  ) {
-    let heap = new Heap(rawHeap);
-    let constants = new RuntimeConstantsImpl(resolver, pool);
-
-    return new RuntimeProgram(constants, heap);
-  }
-
-  private _opcode: Opcode;
-
-  constructor(public constants: RuntimeConstants<Locator>, public heap: Heap) {
-    this._opcode = new Opcode(this.heap);
-  }
-
-  opcode(offset: number): Opcode {
-    this._opcode.offset = offset;
-    return this._opcode;
-  }
-}
-
-export class Program<Locator> extends WriteOnlyProgram {
-  public constants!: Constants<Locator>;
 }
 
 function slice(arr: Uint16Array, start: number, end: number): Uint16Array {

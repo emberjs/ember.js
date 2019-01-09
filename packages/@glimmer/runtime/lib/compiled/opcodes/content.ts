@@ -1,5 +1,4 @@
 import { Reference, Tag, isConst } from '@glimmer/reference';
-import { Op } from '@glimmer/vm';
 import {
   check,
   CheckString,
@@ -7,7 +6,6 @@ import {
   CheckNode,
   CheckDocumentFragment,
 } from '@glimmer/debug';
-import { Opaque } from '@glimmer/util';
 
 import { APPEND_OPCODES } from '../../opcodes';
 import { ConditionalReference } from '../../references';
@@ -18,36 +16,27 @@ import {
 import { CheckPathReference } from './-debug-strip';
 import { isEmpty, isSafeString, isFragment, isNode, shouldCoerce } from '../../dom/normalize';
 import DynamicTextContent from '../../vm/content/text';
+import { ContentType, Op, Dict, Maybe } from '@glimmer/interfaces';
 
 export class IsCurriedComponentDefinitionReference extends ConditionalReference {
-  static create(inner: Reference<Opaque>): IsCurriedComponentDefinitionReference {
+  static create(inner: Reference<unknown>): IsCurriedComponentDefinitionReference {
     return new IsCurriedComponentDefinitionReference(inner);
   }
 
-  toBool(value: Opaque): boolean {
-    return isCurriedComponentDefinition(value);
+  toBool(value: unknown): boolean {
+    return isCurriedComponentDefinition(value as Maybe<Dict>);
   }
-}
-
-export const enum ContentType {
-  Component,
-  String,
-  Empty,
-  SafeString,
-  Fragment,
-  Node,
-  Other,
 }
 
 export class ContentTypeReference implements Reference<ContentType> {
   public tag: Tag;
 
-  constructor(private inner: Reference<Opaque>) {
+  constructor(private inner: Reference<unknown>) {
     this.tag = inner.tag;
   }
 
   value(): ContentType {
-    let value = this.inner.value();
+    let value = this.inner.value() as Maybe<Dict>;
 
     if (shouldCoerce(value)) {
       return ContentType.String;

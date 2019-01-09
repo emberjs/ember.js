@@ -1,16 +1,18 @@
 import { LowLevelVM, VM, UpdatingVM } from './vm';
 
-import { Option, Dict, Slice as ListSlice, initializeGuid, fillNulls, assert } from '@glimmer/util';
+import { Option, Slice as ListSlice, initializeGuid, fillNulls, assert } from '@glimmer/util';
 import { recordStackSize } from '@glimmer/debug';
-import { Op, $pc, $sp, $ra, $fp } from '@glimmer/vm';
+import { $pc, $sp, $ra, $fp } from '@glimmer/vm';
 import { Tag } from '@glimmer/reference';
 import { opcodeMetadata } from '@glimmer/vm';
-import { Opcode, Opaque } from '@glimmer/interfaces';
+import { RuntimeOp, Op, JitOrAotBlock, Maybe, Dict } from '@glimmer/interfaces';
 import { DEBUG, DEVMODE } from '@glimmer/local-debug-flags';
 // these import bindings will be stripped from build
 import { debug, logOpcode } from '@glimmer/opcode-compiler';
-import { DESTRUCTOR_STACK, INNER_VM, CONSTANTS, STACKS, REGISTERS } from './symbols';
-import { InternalVM } from './vm/append';
+import { DESTRUCTOR_STACK, INNER_VM, CONSTANTS, STACKS } from './symbols';
+import { InternalVM, InternalJitVM } from './vm/append';
+import { CURSOR_STACK } from './vm/element-builder';
+import { isScopeReference } from './environment';
 
 export interface OpcodeJSON {
   type: number | string;
@@ -25,8 +27,9 @@ export type Operand1 = number;
 export type Operand2 = number;
 export type Operand3 = number;
 
-export type Syscall = (vm: InternalVM, opcode: Opcode) => void;
-export type MachineOpcode = (vm: LowLevelVM, opcode: Opcode) => void;
+export type Syscall = (vm: InternalVM<JitOrAotBlock>, opcode: RuntimeOp) => void;
+export type JitSyscall = (vm: InternalJitVM, opcode: RuntimeOp) => void;
+export type MachineOpcode = (vm: LowLevelVM, opcode: RuntimeOp) => void;
 
 export type Evaluate =
   | { syscall: true; evaluate: Syscall }
@@ -38,9 +41,9 @@ export type DebugState = {
   type: number;
   isMachine: 0 | 1;
   size: number;
-  params?: object;
+  params?: Maybe<Dict>;
   name?: string;
-  state: Opaque;
+  state: unknown;
 };
 
 export class AppendOpcodes {
@@ -48,28 +51,30 @@ export class AppendOpcodes {
 
   add<Name extends Op>(name: Name, evaluate: Syscall): void;
   add<Name extends Op>(name: Name, evaluate: MachineOpcode, kind: 'machine'): void;
-  add<Name extends Op>(name: Name, evaluate: Syscall | MachineOpcode, kind = 'syscall'): void {
-    this.evaluateOpcode[name as number] = { syscall: kind === 'syscall', evaluate } as Evaluate;
+  add<Name extends Op>(name: Name, evaluate: JitSyscall, kind: 'jit'): void;
+  add<Name extends Op>(
+    name: Name,
+    evaluate: Syscall | JitSyscall | MachineOpcode,
+    kind = 'syscall'
+  ): void {
+    this.evaluateOpcode[name as number] = {
+      syscall: kind !== 'machine',
+      evaluate,
+    } as Evaluate;
   }
 
-  debugBefore(vm: VM<Opaque>, opcode: Opcode): DebugState {
-    let params: object | undefined = undefined;
+  debugBefore(vm: VM<JitOrAotBlock>, opcode: RuntimeOp): DebugState {
+    let params: Maybe<Dict> = undefined;
     let opName: string | undefined = undefined;
 
     if (DEBUG) {
       let pos = vm[INNER_VM].fetchRegister($pc) - opcode.size;
+
       /* tslint:disable */
-      [opName, params] = debug(
-        pos,
-        vm[CONSTANTS],
-        opcode.type,
-        opcode.isMachine,
-        opcode.op1,
-        opcode.op2,
-        opcode.op3
-      );
+      [opName, params] = debug(vm[CONSTANTS], vm.runtime.resolver, opcode, opcode.isMachine);
+
       // console.log(`${typePos(vm['pc'])}.`);
-      console.log(`${pos}. ${logOpcode(name, params)}`);
+      console.log(`${pos}. ${logOpcode(opName, params)}`);
 
       let debugParams = [];
       for (let prop in params) {
@@ -99,7 +104,7 @@ export class AppendOpcodes {
     };
   }
 
-  debugAfter(vm: VM<Opaque>, pre: DebugState) {
+  debugAfter(vm: VM<JitOrAotBlock>, pre: DebugState) {
     let { sp, type, isMachine, pc } = pre;
 
     let meta = opcodeMetadata(type, isMachine);
@@ -124,10 +129,10 @@ export class AppendOpcodes {
       console.log(
         '%c -> pc: %d, ra: %d, fp: %d, sp: %d, s0: %O, s1: %O, t0: %O, t1: %O, v0: %O',
         'color: orange',
-        vm[REGISTERS][$pc],
-        vm[REGISTERS][$ra],
-        vm[REGISTERS][$fp],
-        vm[REGISTERS][$sp],
+        vm[INNER_VM].registers[$pc],
+        vm[INNER_VM].registers[$ra],
+        vm[INNER_VM].registers[$fp],
+        vm[INNER_VM].registers[$sp],
         vm['s0'],
         vm['s1'],
         vm['t0'],
@@ -143,19 +148,17 @@ export class AppendOpcodes {
         console.log(
           '%c -> scope',
           'color: green',
-          vm.scope()['slots'].map(s => (s && s['value'] ? s['value']() : s))
+          vm.scope().slots.map(s => (isScopeReference(s) ? s.value() : s))
         );
       }
-      console.log(
-        '%c -> elements',
-        'color: blue',
-        vm.elements()['cursorStack']['stack'].map((c: any) => c.element)
-      );
+      console.log('%c -> elements', 'color: blue', vm.elements()[CURSOR_STACK]['stack'][0].element);
+
+      console.log('%c -> constructing', 'color: aqua', vm.elements()['constructing']);
       /* tslint:enable */
     }
   }
 
-  evaluate(vm: VM<Opaque>, opcode: Opcode, type: number) {
+  evaluate(vm: VM<JitOrAotBlock>, opcode: RuntimeOp, type: number) {
     let operation = this.evaluateOpcode[type];
 
     if (operation.syscall) {

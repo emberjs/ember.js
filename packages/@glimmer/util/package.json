@@ -6,6 +6,7 @@
   "license": "MIT",
   "devDependencies": {
     "@types/qunit": "^2.0.31",
+    "@simple-dom/interface": "^1.4.0",
     "typescript": "^2.8.3"
   }
 }

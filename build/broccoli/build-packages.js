@@ -17,15 +17,14 @@ const project = Project.from('packages');
 module.exports = function buildPackages(es2017, matrix) {
   // Filter out test files from the package builds.
   es2017 = funnel(es2017, {
-    exclude: ['**/test/**']
+    exclude: ['**/test/**'],
   });
 
   // Create an ES5 version of the higher-fidelity ES2017 code.
   let es5 = transpileToES5(es2017);
   let targets = { es5, es2017 };
 
-  let packages = project.packages
-    .map(buildPackage);
+  let packages = project.packages.map(buildPackage);
 
   packages = flatten(packages);
   packages = merge(flatten(packages));
@@ -45,11 +44,7 @@ module.exports = function buildPackages(es2017, matrix) {
       builds = buildMatrix(pkgName, matrix);
     }
 
-    return [
-      writePackageJSON(pkgName),
-      writeLicense(`${pkgName}/LICENSE`),
-      ...builds
-    ];
+    return [writePackageJSON(pkgName), writeLicense(`${pkgName}/LICENSE`), ...builds];
   }
 
   function buildMatrix(pkgName) {
@@ -69,11 +64,11 @@ module.exports = function buildPackages(es2017, matrix) {
       }
     });
   }
-}
+};
 
 function copyVerbatim(pkgName) {
   return funnel(new UnwatchedDir(`packages/${pkgName}`), {
-    destDir: `${pkgName}/dist/types/`
+    destDir: `${pkgName}/dist/types/`,
   });
 }
 
@@ -85,7 +80,7 @@ function copyESModules(pkgName, target, source) {
   return funnel(source, {
     srcDir: pkgName,
     destDir: `${pkgName}/dist/modules/${target}/`,
-    exclude: ['**/*.d.ts']
+    exclude: ['**/*.d.ts'],
   });
 }
 
@@ -93,7 +88,7 @@ function copyTypes(pkg, source) {
   return funnel(source, {
     srcDir: pkg,
     include: ['**/*.d.ts'],
-    destDir: `${pkg}/dist/types`
+    destDir: `${pkg}/dist/types`,
   });
 }
 
@@ -101,7 +96,7 @@ function transpileAMD(pkgName, esVersion, tree) {
   let bundleName = pkgName.replace('/', '-').replace('@', '');
   let pkgTree = funnel(tree, {
     include: [`${pkgName}/**/*`],
-    exclude: ['**/*.d.ts']
+    exclude: ['**/*.d.ts'],
   });
 
   // Provide Rollup a list of package names it should not try to include in the
@@ -130,16 +125,18 @@ function transpileAMD(pkgName, esVersion, tree) {
         }
         console.log(`Rollup warning: ${warning.message}`);
       },
-      output: [{
-        file: `${pkgName}/dist/amd/${esVersion}/${bundleName}.js`,
-        format: 'amd',
-        exports: 'named',
-        amd: {
-          id: pkgName
+      output: [
+        {
+          file: `${pkgName}/dist/amd/${esVersion}/${bundleName}.js`,
+          format: 'amd',
+          exports: 'named',
+          amd: {
+            id: pkgName,
+          },
+          sourcemap: 'inline',
         },
-        sourcemap: 'inline'
-      }]
-    }
+      ],
+    },
   };
 
   return new Rollup(pkgTree, options);
@@ -148,36 +145,39 @@ function transpileAMD(pkgName, esVersion, tree) {
 function transpileCommonJS(pkgName, esVersion, tree) {
   let pkgTree = funnel(tree, {
     include: [`${pkgName}/**/*`],
-    exclude: ['**/*.d.ts']
+    exclude: ['**/*.d.ts'],
   });
 
   let options = {
     annotation: `Transpile CommonJS - ${pkgName} - ${esVersion}`,
     plugins: [
-      [debugMacros, {
-        envFlags: {
-          source: '@glimmer/local-debug-flags',
-          flags: {
-            DEVMODE: process.env.EMBER_ENV !== 'production',
-            DEBUG: false
-          }
+      [
+        debugMacros,
+        {
+          envFlags: {
+            source: '@glimmer/local-debug-flags',
+            flags: {
+              DEVMODE: process.env.EMBER_ENV !== 'production',
+              DEBUG: false,
+            },
+          },
+          debugTools: {
+            source: '@glimmer/util',
+          },
+          externalizeHelpers: {
+            module: true,
+          },
         },
-        debugTools: {
-          source: '@glimmer/util'
-        },
-        externalizeHelpers: {
-          module: true
-        }
-      }],
-      'transform-es2015-modules-commonjs'
+      ],
+      'transform-es2015-modules-commonjs',
     ],
-    sourceMaps: 'inline'
+    sourceMaps: 'inline',
   };
 
   let commonjsTree = babel(pkgTree, options);
 
   return funnel(commonjsTree, {
     srcDir: pkgName,
-    destDir: `${pkgName}/dist/commonjs/${esVersion}`
+    destDir: `${pkgName}/dist/commonjs/${esVersion}`,
   });
 }

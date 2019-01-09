@@ -28,7 +28,7 @@ operand-stack = [
 
 [machine.scall]
 
-format = ["InvokeStatic", "handle:handle"]
+format = ["InvokeStatic", "offset:u32"]
 operation = "Evaluate the handle."
 
 [machine.goto]
@@ -86,10 +86,20 @@ operand-stack = [
 
 [syscall.sbblock]
 
-format = ["SetBlock", "symbol:u32"]
+format = ["SetAotBlock", "symbol:u32"]
 operation = "Bind the block at the top of the stack."
 operand-stack = [
   ["symbol-table", "scope", "handle"],
+  []
+]
+
+
+[syscall.sjblock]
+
+format = ["SetJitBlock", "symbol:u32"]
+operation = "Bind the block at the top of the stack."
+operand-stack = [
+  ["symbol-table", "scope", "block"],
   []
 ]
 
@@ -252,12 +262,11 @@ operand-stack = [
 
 [syscall.rscopepush]
 
-format = ["RootScope", "symbols:u32", "bindCallerScope:bool"]
+format = ["RootScope", "symbols:u32"]
 operation = "Push a new root scope onto the scope stack."
 notes = """
 A root scope has no parent scope, and therefore inherits no lexical
-variables. If `bindCallerScope` is `true`, the current scope remembers
-the caller scope (for yielding blocks).
+variables.
 """
 
 [syscall.vrscopepush]
@@ -635,7 +644,7 @@ notes = "The new reference represents a ContentType"
 
 [syscall.curry]
 
-format = ["CurryComponent", "templateMeta:locator"]
+format = ["CurryComponent", "templateMeta:meta"]
 operation = "Curry a component definition for a later invocation."
 operand-stack = [
   ["Reference", "Reference...", "Arguments"],
@@ -681,7 +690,7 @@ operand-stack = [
 
 [syscall.cdload]
 
-format = ["ResolveDynamicComponent", "templateMeta:locator"]
+format = ["ResolveDynamicComponent", "templateMeta:meta"]
 operation = "Push a resolved component definition onto the stack"
 operand-stack = [
   ["Reference"],
@@ -791,9 +800,18 @@ operand-stack = [
   ["option-str"]
 ]
 
-[syscall.comp_layoutload]
+[syscall.comp_alayoutload]
 
-format = ["GetComponentLayout", "state:register"]
+format = ["GetAotComponentLayout", "state:register"]
+operation = "Get the component layout from the manager."
+operand-stack = [
+  [],
+  ["ProgramSymbolTable", "handle"]
+]
+
+[syscall.comp_jlayoutload]
+
+format = ["GetJitComponentLayout", "state:register"]
 operation = "Get the component layout from the manager."
 operand-stack = [
   [],
@@ -853,7 +871,7 @@ operation = "Invoke didRenderLayout on the current component manager"
 
 [syscall.invokepartial]
 
-format = ["InvokePartial", "templateMeta:locator", "symbols:str-array", "evalInfo:array"]
+format = ["InvokePartial", "templateMeta:meta", "symbols:str-array", "evalInfo:array"]
 operation = "Lookup and invoke a partial template."
 operand-stack = [
   ["Reference"],

@@ -2,7 +2,7 @@
 
 1. [Introduction](./01-introduction.md)
 2. [Precompiler Overview](./02-precompiler-overview.md)
-3. [~~Runtime Overview~~](./03-runtime-overview.md)
+3. [Runtime Overview](./03-runtime-overview.md)
 4. [References](./04-references.md)
 5. [Validators](./05-validators.md)
 6. [~~Runtime Compiler~~](./06-runtime-compiler.md)
@@ -13,7 +13,7 @@
 
 # Precompiler Overview
 
-The precompilation step, which generally occurs at build time, takes a template string and turns it into an Intermediate Representation (also known as IR or WireFormat). The Intermediate Representation is a set of structured instructions that could be used directly for rendering, but is more approrpriately further processed into optimized opcodes. The public interface for the precompilation is the `precompile` function from the `@glimmer/compiler` package.
+The precompilation step, which generally occurs at build time, takes a template string and turns it into an Intermediate Representation (also known as IR or WireFormat). The Intermediate Representation is a set of structured instructions that could be used directly for rendering, but is more appropriately further processed into optimized opcodes. The public interface for the precompilation is the `precompile` function from the `@glimmer/compiler` package.
 
 ```js
 import { precompile } from '@glimmer/compiler';

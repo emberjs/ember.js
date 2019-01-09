@@ -1,34 +1,41 @@
-import * as SimpleDOM from 'simple-dom';
 import {
-  Environment,
+  BundleCompilationResult,
+  BundleCompiler,
+  DebugConstants,
+  ModuleLocatorMap,
+} from '@glimmer/bundle-compiler';
+import {
+  ComponentCapabilities,
   ComponentDefinition,
-  getDynamicVar,
-  Helper as GlimmerHelper,
-  RenderResult,
   ComponentManager,
+  Cursor,
+  Dict,
+  Environment,
+  ModuleLocator,
+  ProgramSymbolTable,
+  RenderResult,
+  Runtime,
+  TemplateMeta,
+} from '@glimmer/interfaces';
+import { UpdatableReference } from '@glimmer/object-reference';
+import { WrappedBuilder } from '@glimmer/opcode-compiler';
+import { RuntimeConstantsImpl, RuntimeHeapImpl, RuntimeProgramImpl } from '@glimmer/program';
+import { PathReference } from '@glimmer/reference';
+import {
   clientBuilder,
   ElementBuilder,
-  Cursor,
-  renderMain,
-  renderComponent,
+  getDynamicVar,
+  Helper as GlimmerHelper,
+  renderAotComponent,
+  renderAotMain,
+  renderSync,
 } from '@glimmer/runtime';
-import {
-  DebugConstants,
-  BundleCompiler,
-  ModuleLocatorMap,
-  BundleCompilationResult,
-} from '@glimmer/bundle-compiler';
-import { Opaque, assert, Dict, assign, expect, Option } from '@glimmer/util';
-import { WriteOnlyProgram, RuntimeProgram, Heap, RuntimeConstantsImpl } from '@glimmer/program';
-import { ProgramSymbolTable, ComponentCapabilities, ModuleLocator } from '@glimmer/interfaces';
-import { UpdatableReference } from '@glimmer/object-reference';
-
+import { assert, assign, expect, Option } from '@glimmer/util';
+import { SimpleElement } from '@simple-dom/interface';
+import { ComponentKind } from '../../../interfaces';
 import RenderDelegate from '../../../render-delegate';
-import EagerCompilerDelegate from './compiler-delegate';
-import { ComponentKind, renderSync } from '../../../render-test';
-import TestMacros from '../../macros';
-import { UserHelper, HelperReference } from '../../helper';
-
+import { locatorFor, TestComponentDefinitionState } from '../../component-definition';
+import { WrappedLocator } from '../../components';
 import { BasicComponent, BasicComponentManager, BASIC_CAPABILITIES } from '../../components/basic';
 import {
   EmberishCurlyComponent,
@@ -40,28 +47,24 @@ import {
   EmberishGlimmerComponentManager,
   EMBERISH_GLIMMER_CAPABILITIES,
 } from '../../components/emberish-glimmer';
-
-import EagerTestEnvironment from './environment';
-import EagerRuntimeResolver from './runtime-resolver';
-
-import { Modules } from './modules';
-import { TestDynamicScope } from '../../../environment';
-import { NodeEnv } from '../ssr/environment';
-import { TestComponentDefinitionState, locatorFor } from '../../component-definition';
-import { WrappedBuilder } from '@glimmer/opcode-compiler';
+import { TestDynamicScope } from '../../dynamic-scope';
+import { HelperReference, UserHelper } from '../../helper';
+import TestMacros from '../../macros';
 import {
-  TestModifierDefinitionState,
   TestModifierConstructor,
+  TestModifierDefinitionState,
   TestModifierManager,
 } from '../../modifier';
-import { PathReference } from '@glimmer/reference';
-import { Locator } from '../../components';
+import EagerCompilerDelegate from './compiler-delegate';
+import EagerTestEnvironment from './environment';
+import { Modules } from './modules';
+import EagerRuntimeResolver from './runtime-resolver';
 
 export type RenderDelegateComponentDefinition = ComponentDefinition<TestComponentDefinitionState>;
 
 type Entries<T> = { [F in ComponentKind]: Option<T> };
 
-const COMPONENT_CLASSES: Entries<Opaque> = {
+const COMPONENT_CLASSES: Entries<unknown> = {
   Basic: BasicComponent,
   Glimmer: EmberishGlimmerComponent,
   Dynamic: EmberishCurlyComponent,
@@ -69,7 +72,7 @@ const COMPONENT_CLASSES: Entries<Opaque> = {
   Fragment: null,
 };
 
-const COMPONENT_MANAGERS: Entries<ComponentManager<Opaque, Opaque>> = {
+const COMPONENT_MANAGERS: Entries<ComponentManager> = {
   Basic: new BasicComponentManager(),
   Glimmer: new EmberishGlimmerComponentManager(),
   Dynamic: new EmberishCurlyComponentManager(),
@@ -86,6 +89,8 @@ const COMPONENT_CAPABILITIES: Entries<ComponentCapabilities> = {
 };
 
 export default class EagerRenderDelegate implements RenderDelegate {
+  static readonly isEager = true;
+
   protected env: Environment;
   protected modules = new Modules();
   protected compileTimeModules = new Modules();
@@ -111,8 +116,12 @@ export default class EagerRenderDelegate implements RenderDelegate {
     this.env = new EagerTestEnvironment();
   }
 
-  getInitialElement(): HTMLElement {
-    return this.env.getAppendOperations().createElement('div') as HTMLElement;
+  getInitialElement(): SimpleElement {
+    return this.env.getAppendOperations().createElement('div');
+  }
+
+  createElement(tagName: string): SimpleElement {
+    return this.env.getAppendOperations().createElement(tagName);
   }
 
   registerComponent(
@@ -120,7 +129,7 @@ export default class EagerRenderDelegate implements RenderDelegate {
     testType: ComponentKind,
     name: string,
     template: string,
-    Class?: Opaque
+    Class?: unknown
   ): void {
     let module = `ui/components/${name}`;
 
@@ -152,7 +161,7 @@ export default class EagerRenderDelegate implements RenderDelegate {
     };
   }
 
-  getSelf(context: Opaque) {
+  getSelf(context: unknown): UpdatableReference {
     return new UpdatableReference(context);
   }
 
@@ -167,7 +176,7 @@ export default class EagerRenderDelegate implements RenderDelegate {
     this.modules.register(name, 'modifier', { default: { manager, state } });
   }
 
-  private addRegisteredComponents(bundleCompiler: BundleCompiler<Locator>): void {
+  private addRegisteredComponents(bundleCompiler: BundleCompiler<WrappedLocator>): void {
     let { components, modules, compileTimeModules } = this;
     Object.keys(components).forEach(key => {
       assert(
@@ -185,7 +194,7 @@ export default class EagerRenderDelegate implements RenderDelegate {
       if (state.type === 'Curly' || state.type === 'Dynamic') {
         let block = bundleCompiler.preprocess(state.template!);
         let parsedLayout = { block, referrer: locator.meta, asPartial: false };
-        let wrapped = new WrappedBuilder(bundleCompiler.compiler, parsedLayout);
+        let wrapped = new WrappedBuilder(parsedLayout);
         bundleCompiler.addCompilableTemplate(locator, wrapped);
 
         compileTimeModules.register(key, 'other', {
@@ -228,29 +237,26 @@ export default class EagerRenderDelegate implements RenderDelegate {
     });
   }
 
-  private getBundleCompiler(): BundleCompiler<Locator> {
+  private getBundleCompiler(): BundleCompiler<WrappedLocator> {
     let macros = new TestMacros();
     let delegate: EagerCompilerDelegate = new EagerCompilerDelegate(this.components, this.modules);
     this.constants = new DebugConstants();
-    let program = new WriteOnlyProgram(this.constants);
-    return new BundleCompiler(delegate, { macros, program });
+    let compiler = new BundleCompiler<WrappedLocator>(delegate, { macros });
+    this.constants = compiler.constants;
+    return compiler;
   }
 
-  private getRuntimeProgram({
-    table,
-    pool,
-    heap,
-  }: BundleCompilationResult): RuntimeProgram<Locator> {
+  private getRuntime({ table, pool, heap }: BundleCompilationResult): Runtime<TemplateMeta> {
     let resolver = new EagerRuntimeResolver(table, this.modules, this.symbolTables);
-    let runtimeHeap = new Heap(heap);
-    let runtimeProgram = new RuntimeProgram(new RuntimeConstantsImpl(resolver, pool), runtimeHeap);
-    return runtimeProgram;
+    let runtimeHeap = new RuntimeHeapImpl(heap);
+    let runtimeProgram = new RuntimeProgramImpl(new RuntimeConstantsImpl(pool), runtimeHeap);
+    return { env: this.env, program: runtimeProgram, resolver };
   }
 
   renderComponent(
     name: string,
-    args: Dict<PathReference<Opaque>>,
-    element: HTMLElement
+    args: Dict<PathReference<unknown>>,
+    element: SimpleElement
   ): RenderResult {
     let bundleCompiler = this.getBundleCompiler();
     this.addRegisteredComponents(bundleCompiler);
@@ -259,23 +265,17 @@ export default class EagerRenderDelegate implements RenderDelegate {
 
     let cursor = { element, nextSibling: null };
     let builder = this.getElementBuilder(env, cursor);
-    let runtimeProgram = this.getRuntimeProgram(compilationResult);
-    let iterator = renderComponent(
-      runtimeProgram,
-      env,
-      builder,
-      compilationResult.main,
-      name,
-      args
-    );
+    let runtime = this.getRuntime(compilationResult);
+    let iterator = renderAotComponent(runtime, builder, compilationResult.main, name, args);
 
     return renderSync(env, iterator);
   }
 
-  renderTemplate(template: string, context: Dict<Opaque>, element: HTMLElement): RenderResult {
+  renderTemplate(template: string, context: Dict<unknown>, element: SimpleElement): RenderResult {
+    this.registerComponent('Glimmer', 'Glimmer', 'main', template);
     let bundleCompiler = this.getBundleCompiler();
     let locator = locatorFor({ module: 'ui/components/main', name: 'default' });
-    bundleCompiler.add(locator, template);
+    // bundleCompiler.add(locator, template);
     this.addRegisteredComponents(bundleCompiler);
 
     let compilationResult = bundleCompiler.compile();
@@ -287,16 +287,10 @@ export default class EagerRenderDelegate implements RenderDelegate {
     let builder = this.getElementBuilder(env, cursor);
     let self = this.getSelf(context);
     let dynamicScope = new TestDynamicScope();
-    let runtimeProgram = this.getRuntimeProgram(compilationResult);
+    let runtime = this.getRuntime(compilationResult);
 
-    let iterator = renderMain(runtimeProgram, env, self, dynamicScope, builder, handle);
+    let iterator = renderAotMain(runtime, self, dynamicScope, builder, handle);
 
     return renderSync(env, iterator);
-  }
-}
-
-export class NodeRenderDelegate extends EagerRenderDelegate {
-  constructor(env = new NodeEnv({ document: new SimpleDOM.Document() })) {
-    super(env);
   }
 }

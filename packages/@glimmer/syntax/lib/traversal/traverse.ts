@@ -1,59 +1,98 @@
-import visitorKeys from '../types/visitor-keys';
+import visitorKeys, { VisitorKeys, VisitorKey } from '../types/visitor-keys';
 import {
   cannotRemoveNode,
   cannotReplaceNode,
   cannotReplaceOrRemoveInKeyHandlerYet,
 } from './errors';
-import { Node, NodeType, ParentNode, ChildKey } from '../types/nodes';
-import { NodeVisitor, NodeFunction, NodeHandler, KeyFunction, KeyHandler } from '../types/visitor';
+import * as AST from '../types/nodes';
+import { deprecate } from '@glimmer/util';
+import { DEVMODE } from '@glimmer/local-debug-flags';
+import { NodeHandler, NodeVisitor, KeyHandler, NodeTraversal, KeyTraversal } from './visitor';
 
-function getEnterFunction(handler: KeyHandler): KeyFunction | undefined;
-function getEnterFunction(handler: NodeHandler): NodeFunction | undefined;
-function getEnterFunction(
-  handler: NodeHandler | KeyHandler
-): NodeFunction | KeyFunction | undefined {
-  return typeof handler === 'function' ? handler : handler.enter;
+function getEnterFunction<N extends AST.Node>(
+  handler: NodeTraversal<N>
+): NodeHandler<N> | undefined;
+function getEnterFunction<N extends AST.Node, K extends VisitorKey<N>>(
+  handler: KeyTraversal<N, K>
+): KeyHandler<N, K> | undefined;
+function getEnterFunction<N extends AST.Node, K extends VisitorKey<N>>(
+  handler: NodeTraversal<N> | KeyTraversal<N, K>
+): NodeHandler<N> | KeyHandler<N, K> | undefined {
+  if (typeof handler === 'function') {
+    return handler;
+  } else {
+    return handler.enter as NodeHandler<N> | KeyHandler<N, K>;
+  }
 }
 
-function getExitFunction(handler: KeyHandler): KeyFunction | undefined;
-function getExitFunction(handler: NodeHandler): NodeFunction | undefined;
-function getExitFunction(
-  handler: NodeHandler | KeyHandler
-): NodeFunction | KeyFunction | undefined {
-  return typeof handler !== 'function' ? handler.exit : undefined;
+function getExitFunction<N extends AST.Node>(handler: NodeTraversal<N>): NodeHandler<N> | undefined;
+function getExitFunction<N extends AST.Node, K extends VisitorKey<N>>(
+  handler: KeyTraversal<N, K>
+): KeyHandler<N, K> | undefined;
+function getExitFunction<N extends AST.Node, K extends VisitorKey<N>>(
+  handler: NodeTraversal<N> | KeyTraversal<N, K>
+): NodeHandler<N> | KeyHandler<N, K> | undefined {
+  if (typeof handler === 'function') {
+    return undefined;
+  } else {
+    return handler.exit as NodeHandler<N> | KeyHandler<N, K>;
+  }
 }
 
-function getKeyHandler(handler: NodeHandler, key: ChildKey): KeyHandler | undefined {
+function getKeyHandler<N extends AST.Node, K extends VisitorKey<N>>(
+  handler: NodeTraversal<N>,
+  key: K
+): KeyTraversal<N, K> | KeyTraversal<N, VisitorKey<N>> | undefined {
   let keyVisitor = typeof handler !== 'function' ? handler.keys : undefined;
   if (keyVisitor === undefined) return;
+
   let keyHandler = keyVisitor[key];
   if (keyHandler !== undefined) {
-    // widen specific key to all keys
-    return keyHandler as KeyHandler;
+    return keyHandler as KeyTraversal<N, K>;
   }
   return keyVisitor.All;
 }
 
-function getNodeHandler(visitor: NodeVisitor, nodeType: NodeType): NodeHandler | undefined {
+function getNodeHandler<N extends AST.Node>(
+  visitor: NodeVisitor,
+  nodeType: N['type']
+): NodeTraversal<N>;
+function getNodeHandler(visitor: NodeVisitor, nodeType: 'All'): NodeTraversal<AST.Node>;
+function getNodeHandler<N extends AST.Node>(
+  visitor: NodeVisitor,
+  nodeType: N['type']
+): NodeTraversal<N> | NodeTraversal<AST.Node> | undefined {
+  if (nodeType === 'Template' || nodeType === 'Block') {
+    if (visitor.Program) {
+      if (DEVMODE) {
+        deprecate(`TODO`);
+      }
+
+      return visitor.Program as any;
+    }
+  }
+
   let handler = visitor[nodeType];
   if (handler !== undefined) {
-    // widen specific Node to all nodes
-    return handler as NodeHandler;
+    return handler as NodeTraversal<N>;
   }
   return visitor.All;
 }
 
-function visitNode(visitor: NodeVisitor, node: Node): Node | Node[] | undefined | null | void {
-  let handler = getNodeHandler(visitor, node.type);
-  let enter: NodeFunction | undefined;
-  let exit: NodeFunction | undefined;
+function visitNode<N extends AST.Node>(
+  visitor: NodeVisitor,
+  node: N
+): AST.Node | AST.Node[] | undefined | null | void {
+  let handler: NodeTraversal<N> = getNodeHandler(visitor, node.type);
+  let enter;
+  let exit;
 
   if (handler !== undefined) {
     enter = getEnterFunction(handler);
     exit = getExitFunction(handler);
   }
 
-  let result: Node | Node[] | undefined | null | void;
+  let result: AST.Node | AST.Node[] | undefined | null | void;
   if (enter !== undefined) {
     result = enter(node);
   }
@@ -73,8 +112,9 @@ function visitNode(visitor: NodeVisitor, node: Node): Node | Node[] | undefined 
     let keys = visitorKeys[node.type];
 
     for (let i = 0; i < keys.length; i++) {
+      let key = keys[i] as VisitorKeys[N['type']] & keyof N;
       // we know if it has child keys we can widen to a ParentNode
-      visitKey(visitor, handler, node as ParentNode, keys[i]);
+      visitKey(visitor, handler, node as N, key);
     }
 
     if (exit !== undefined) {
@@ -85,19 +125,30 @@ function visitNode(visitor: NodeVisitor, node: Node): Node | Node[] | undefined 
   return result;
 }
 
-function visitKey(
+function get<N extends AST.Node>(
+  node: N,
+  key: VisitorKeys[N['type']] & keyof N
+): AST.Node | AST.Node[] {
+  return (node[key] as unknown) as AST.Node | AST.Node[];
+}
+
+function set<N extends AST.Node, K extends keyof N>(node: N, key: K, value: N[K]): void {
+  node[key] = value;
+}
+
+function visitKey<N extends AST.Node>(
   visitor: NodeVisitor,
-  handler: NodeHandler | undefined,
-  node: ParentNode,
-  key: ChildKey
+  handler: NodeTraversal<N>,
+  node: N,
+  key: VisitorKeys[N['type']] & keyof N
 ) {
-  let value = node[key] as Node | Node[] | null | undefined;
+  let value = get(node, key);
   if (!value) {
     return;
   }
 
-  let keyEnter: KeyFunction | undefined;
-  let keyExit: KeyFunction | undefined;
+  let keyEnter;
+  let keyExit;
 
   if (handler !== undefined) {
     let keyHandler = getKeyHandler(handler, key);
@@ -118,7 +169,9 @@ function visitKey(
   } else {
     let result = visitNode(visitor, value);
     if (result !== undefined) {
-      assignKey(node, key, result);
+      // TODO: dynamically check the results by having a table of
+      // expected node types in value space, not just type space
+      assignKey(node, key, value, result as any);
     }
   }
 
@@ -129,7 +182,7 @@ function visitKey(
   }
 }
 
-function visitArray(visitor: NodeVisitor, array: Node[]) {
+function visitArray(visitor: NodeVisitor, array: AST.Node[]) {
   for (let i = 0; i < array.length; i++) {
     let result = visitNode(visitor, array[i]);
     if (result !== undefined) {
@@ -138,25 +191,30 @@ function visitArray(visitor: NodeVisitor, array: Node[]) {
   }
 }
 
-function assignKey(node: Node, key: ChildKey, result: Node | Node[] | null) {
+function assignKey<N extends AST.Node, K extends VisitorKey<N>>(
+  node: N,
+  key: K,
+  value: AST.Node,
+  result: N[K] | [N[K]] | null
+) {
   if (result === null) {
-    throw cannotRemoveNode(node[key], node, key);
+    throw cannotRemoveNode(value, node, key);
   } else if (Array.isArray(result)) {
     if (result.length === 1) {
-      node[key] = result[0];
+      set(node, key, result[0]);
     } else {
       if (result.length === 0) {
-        throw cannotRemoveNode(node[key], node, key);
+        throw cannotRemoveNode(value, node, key);
       } else {
-        throw cannotReplaceNode(node[key], node, key);
+        throw cannotReplaceNode(value, node, key);
       }
     }
   } else {
-    node[key] = result;
+    set(node, key, result);
   }
 }
 
-function spliceArray(array: Node[], index: number, result: Node | Node[] | null) {
+function spliceArray(array: AST.Node[], index: number, result: AST.Node | AST.Node[] | null) {
   if (result === null) {
     array.splice(index, 1);
     return 0;
@@ -169,6 +227,6 @@ function spliceArray(array: Node[], index: number, result: Node | Node[] | null)
   }
 }
 
-export default function traverse(node: Node, visitor: NodeVisitor) {
+export default function traverse(node: AST.Node, visitor: NodeVisitor) {
   visitNode(visitor, node);
 }

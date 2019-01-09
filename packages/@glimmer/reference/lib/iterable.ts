@@ -1,4 +1,4 @@
-import { LinkedList, ListNode, Opaque, Option, dict, expect } from '@glimmer/util';
+import { LinkedList, ListNode, Option, dict, expect } from '@glimmer/util';
 import { VersionedPathReference as PathReference, Tag } from './validators';
 
 export interface IterationItem<T, U> {
@@ -38,12 +38,12 @@ export type Iterable<T, U> = AbstractIterable<
   PathReference<U>
 >;
 
-export type OpaqueIterationItem = IterationItem<Opaque, Opaque>;
-export type OpaqueIterator = AbstractIterator<Opaque, Opaque, OpaqueIterationItem>;
-export type OpaquePathReference = PathReference<Opaque>;
+export type OpaqueIterationItem = IterationItem<unknown, unknown>;
+export type OpaqueIterator = AbstractIterator<unknown, unknown, OpaqueIterationItem>;
+export type OpaquePathReference = PathReference<unknown>;
 export type OpaqueIterable = AbstractIterable<
-  Opaque,
-  Opaque,
+  unknown,
+  unknown,
   OpaqueIterationItem,
   OpaquePathReference,
   OpaquePathReference
@@ -194,19 +194,19 @@ export class ReferenceIterator {
 }
 
 export interface IteratorSynchronizerDelegate<Env> {
-  retain(env: Env, key: string, item: PathReference<Opaque>, memo: PathReference<Opaque>): void;
+  retain(env: Env, key: string, item: PathReference<unknown>, memo: PathReference<unknown>): void;
   insert(
     env: Env,
     key: string,
-    item: PathReference<Opaque>,
-    memo: PathReference<Opaque>,
+    item: PathReference<unknown>,
+    memo: PathReference<unknown>,
     before: Option<string>
   ): void;
   move(
     env: Env,
     key: string,
-    item: PathReference<Opaque>,
-    memo: PathReference<Opaque>,
+    item: PathReference<unknown>,
+    memo: PathReference<unknown>,
     before: Option<string>
   ): void;
   delete(env: Env, key: string): void;

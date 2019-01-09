@@ -1,5 +1,5 @@
 import { Option } from '@glimmer/interfaces';
-import * as HBS from '../types/nodes';
+import * as AST from '../types/nodes';
 import { voidMap } from '../parser/tokenizer-event-handlers';
 import { isLiteral } from '../utils';
 import { escapeText, escapeAttrValue } from './util';
@@ -8,7 +8,7 @@ function unreachable(): never {
   throw new Error('unreachable');
 }
 
-export default function build(ast: HBS.Node): string {
+export default function build(ast: AST.Node): string {
   if (!ast) {
     return '';
   }
@@ -16,10 +16,12 @@ export default function build(ast: HBS.Node): string {
 
   switch (ast.type) {
     case 'Program':
+    case 'Block':
+    case 'Template':
       {
-        const chainBlock = ast['chained'] && ast.body[0];
+        const chainBlock = ast.chained && ast.body[0];
         if (chainBlock) {
-          chainBlock['chained'] = true;
+          (chainBlock as AST.BlockStatement).chained = true;
         }
         const body = buildEach(ast.body).join('');
         output.push(body);
@@ -69,7 +71,7 @@ export default function build(ast: HBS.Node): string {
       break;
     case 'ConcatStatement':
       output.push('"');
-      ast.parts.forEach((node: HBS.TextNode | HBS.MustacheStatement) => {
+      ast.parts.forEach((node: AST.TextNode | AST.MustacheStatement) => {
         if (node.type === 'TextNode') {
           output.push(escapeAttrValue(node.chars));
         } else {
@@ -111,7 +113,7 @@ export default function build(ast: HBS.Node): string {
       {
         const lines: string[] = [];
 
-        if (ast['chained']) {
+        if (ast.chained) {
           lines.push(['{{else ', pathParams(ast), '}}'].join(''));
         } else {
           lines.push(openBlock(ast));
@@ -120,13 +122,13 @@ export default function build(ast: HBS.Node): string {
         lines.push(build(ast.program));
 
         if (ast.inverse) {
-          if (!ast.inverse['chained']) {
+          if (!ast.inverse.chained) {
             lines.push('{{else}}');
           }
           lines.push(build(ast.inverse));
         }
 
-        if (!ast['chained']) {
+        if (!ast.chained) {
           lines.push(closeBlock(ast));
         }
 
@@ -193,11 +195,11 @@ function compact(array: Option<string>[]): string[] {
   return newArray;
 }
 
-function buildEach(asts: HBS.Node[]): string[] {
+function buildEach(asts: AST.Node[]): string[] {
   return asts.map(build);
 }
 
-function pathParams(ast: HBS.Node): string {
+function pathParams(ast: AST.Node): string {
   let path: string;
 
   switch (ast.type) {
@@ -225,7 +227,7 @@ function compactJoin(array: Option<string>[], delimiter?: string): string {
   return compact(array).join(delimiter || '');
 }
 
-function blockParams(block: HBS.BlockStatement): Option<string> {
+function blockParams(block: AST.BlockStatement): Option<string> {
   const params = block.program.blockParams;
   if (params.length) {
     return ` as |${params.join(' ')}|`;
@@ -234,7 +236,7 @@ function blockParams(block: HBS.BlockStatement): Option<string> {
   return null;
 }
 
-function openBlock(block: HBS.BlockStatement): string {
+function openBlock(block: AST.BlockStatement): string {
   return ['{{#', pathParams(block), blockParams(block), '}}'].join('');
 }
 

@@ -1,17 +1,10 @@
-import {
-  Opaque,
-  Option,
-  Dict,
-  BlockSymbolTable,
-  ProgramSymbolTable,
-  Simple,
-  Maybe,
-} from '@glimmer/interfaces';
+import { Option, Dict, BlockSymbolTable, ProgramSymbolTable, Maybe } from '@glimmer/interfaces';
+import { SimpleElement, SimpleDocumentFragment, SimpleNode } from '@simple-dom/interface';
 
 export interface Checker<T> {
   type: T;
 
-  validate(value: Opaque): value is T;
+  validate(value: unknown): value is T;
   expected(): string;
 }
 
@@ -19,7 +12,7 @@ export function wrap<T>(checker: () => Checker<T>): Checker<T> {
   class Wrapped {
     type!: T;
 
-    validate(value: Opaque): value is T {
+    validate(value: unknown): value is T {
       return checker().validate(value);
     }
 
@@ -40,7 +33,7 @@ class TypeofChecker<T> implements Checker<T> {
 
   constructor(private expectedType: string) {}
 
-  validate(value: Opaque): value is T {
+  validate(value: unknown): value is T {
     return typeof value === this.expectedType;
   }
 
@@ -54,7 +47,7 @@ export type Primitive = undefined | null | boolean | number | string;
 class PrimitiveChecker implements Checker<Primitive> {
   type!: Primitive;
 
-  validate(value: Opaque): value is Primitive {
+  validate(value: unknown): value is Primitive {
     return (
       typeof value !== 'string' ||
       typeof value === 'number' ||
@@ -72,7 +65,7 @@ class PrimitiveChecker implements Checker<Primitive> {
 class NullChecker implements Checker<null> {
   type!: null;
 
-  validate(value: Opaque): value is null {
+  validate(value: unknown): value is null {
     return value === null;
   }
 
@@ -86,7 +79,7 @@ class InstanceofChecker<T> implements Checker<T> {
 
   constructor(private Class: Constructor<T>) {}
 
-  validate(value: Opaque): value is T {
+  validate(value: unknown): value is T {
     return value ? value instanceof this.Class : false;
   }
 
@@ -100,7 +93,7 @@ class OptionChecker<T> implements Checker<Option<T>> {
 
   constructor(private checker: Checker<T>, private emptyValue: null | undefined) {}
 
-  validate(value: Opaque): value is Option<T> {
+  validate(value: unknown): value is Option<T> {
     if (value === this.emptyValue) return true;
     return this.checker.validate(value);
   }
@@ -115,7 +108,7 @@ class OrChecker<T, U> implements Checker<T | U> {
 
   constructor(private left: Checker<T>, private right: Checker<U>) {}
 
-  validate(value: Opaque): value is T | U {
+  validate(value: unknown): value is T | U {
     return this.left.validate(value) || this.right.validate(value);
   }
 
@@ -129,7 +122,7 @@ class ExactValueChecker<T> implements Checker<T> {
 
   constructor(private value: T, private desc: string) {}
 
-  validate(obj: Opaque): obj is T {
+  validate(obj: unknown): obj is T {
     return obj === this.value;
   }
 
@@ -141,16 +134,16 @@ class ExactValueChecker<T> implements Checker<T> {
 class PropertyChecker<T> implements Checker<T> {
   type!: T;
 
-  constructor(private checkers: Dict<Checker<Opaque>>) {}
+  constructor(private checkers: Dict<Checker<unknown>>) {}
 
-  validate(obj: Opaque): obj is T {
-    if (obj === null || obj === undefined) return false;
+  validate(obj: unknown): obj is T {
     if (typeof obj !== 'object') return false;
+    if (obj === null || obj === undefined) return false;
 
     return Object.keys(this.checkers).every(k => {
       if (!(k in obj)) return false;
 
-      let value = obj[k];
+      let value = (obj as Dict)[k];
       let checker = this.checkers[k];
 
       return checker.validate(value);
@@ -171,7 +164,7 @@ class ArrayChecker<T> implements Checker<T[]> {
 
   constructor(private checker: Checker<T>) {}
 
-  validate(obj: Opaque): obj is T[] {
+  validate(obj: unknown): obj is T[] {
     if (obj === null || obj === undefined) return false;
     if (!Array.isArray(obj)) return false;
 
@@ -183,10 +176,10 @@ class ArrayChecker<T> implements Checker<T[]> {
   }
 }
 
-class OpaqueChecker implements Checker<Opaque> {
-  type: Opaque;
+class OpaqueChecker implements Checker<unknown> {
+  type: unknown;
 
-  validate(_obj: Opaque): _obj is Opaque {
+  validate(_obj: unknown): _obj is unknown {
     return true;
   }
 
@@ -202,7 +195,7 @@ export interface SafeString {
 class SafeStringChecker implements Checker<SafeString> {
   type!: SafeString;
 
-  validate(value: Opaque): value is SafeString {
+  validate(value: unknown): value is SafeString {
     return (
       typeof value === 'object' && value !== null && typeof (value as any).toHTML === 'function'
     );
@@ -227,7 +220,7 @@ export function CheckMaybe<T>(checker: Checker<T>): Checker<Maybe<T>> {
 
 export function CheckInterface<
   I extends { [P in keyof O]: O[P]['type'] },
-  O extends Dict<Checker<Opaque>>
+  O extends Dict<Checker<unknown>>
 >(obj: O): Checker<I> {
   return new PropertyChecker(obj);
 }
@@ -236,7 +229,7 @@ export function CheckArray<T>(obj: Checker<T>): Checker<T[]> {
   return new ArrayChecker(obj);
 }
 
-export function check<T>(value: Opaque, checker: Checker<T>): T {
+export function check<T>(value: unknown, checker: Checker<T>): T {
   if (checker.validate(value)) {
     return value;
   } else {
@@ -267,7 +260,7 @@ export const CheckBoolean: Checker<boolean> = new TypeofChecker<boolean>('boolea
 export const CheckHandle: Checker<number> = CheckNumber;
 export const CheckString: Checker<string> = new TypeofChecker<string>('string');
 export const CheckNull: Checker<null> = new NullChecker();
-export const CheckOpaque: Checker<Opaque> = new OpaqueChecker();
+export const Checkunknown: Checker<unknown> = new OpaqueChecker();
 export const CheckSafeString: Checker<SafeString> = new SafeStringChecker();
 
 export function CheckOr<T, U>(left: Checker<T>, right: Checker<U>): Checker<T | U> {
@@ -287,18 +280,18 @@ export const CheckProgramSymbolTable: Checker<ProgramSymbolTable> = CheckInterfa
   symbols: CheckArray(CheckString),
 });
 
-export const CheckElement: Checker<Simple.Element> = CheckInterface({
+export const CheckElement: Checker<SimpleElement> = CheckInterface({
   nodeType: CheckValue(1),
   tagName: CheckString,
-  nextSibling: CheckOpaque,
+  nextSibling: Checkunknown,
 });
 
-export const CheckDocumentFragment: Checker<Simple.DocumentFragment> = CheckInterface({
+export const CheckDocumentFragment: Checker<SimpleDocumentFragment> = CheckInterface({
   nodeType: CheckValue(11),
-  nextSibling: CheckOpaque,
+  nextSibling: Checkunknown,
 });
 
-export const CheckNode: Checker<Simple.Node> = CheckInterface({
+export const CheckNode: Checker<SimpleNode> = CheckInterface({
   nodeType: CheckNumber,
-  nextSibling: CheckOpaque,
+  nextSibling: Checkunknown,
 });

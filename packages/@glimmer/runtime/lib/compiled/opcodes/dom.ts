@@ -7,7 +7,7 @@ import {
   isConst,
   isConstTag,
 } from '@glimmer/reference';
-import { Opaque, Option } from '@glimmer/util';
+import { Option } from '@glimmer/util';
 import {
   check,
   CheckString,
@@ -17,8 +17,8 @@ import {
   CheckInstanceof,
   CheckNull,
 } from '@glimmer/debug';
-import { Simple } from '@glimmer/interfaces';
-import { Op, $t0 } from '@glimmer/vm';
+import { Op } from '@glimmer/interfaces';
+import { $t0 } from '@glimmer/vm';
 import {
   ModifierDefinition,
   InternalModifierManager,
@@ -31,6 +31,7 @@ import { DynamicAttribute } from '../../vm/attributes/dynamic';
 import { ComponentElementOperations } from './component';
 import { CheckReference, CheckArguments } from './-debug-strip';
 import { CONSTANTS } from '../../symbols';
+import { SimpleElement, SimpleNode } from '@simple-dom/interface';
 
 APPEND_OPCODES.add(Op.Text, (vm, { op1: text }) => {
   vm.elements().appendText(vm[CONSTANTS].getString(text));
@@ -54,14 +55,14 @@ APPEND_OPCODES.add(Op.PushRemoteElement, vm => {
   let nextSiblingRef = check(vm.stack.pop(), CheckReference);
   let guidRef = check(vm.stack.pop(), CheckReference);
 
-  let element: Simple.Element;
-  let nextSibling: Option<Simple.Node>;
+  let element: SimpleElement;
+  let nextSibling: Option<SimpleNode>;
   let guid = guidRef.value() as string;
 
   if (isConst(elementRef)) {
     element = check(elementRef.value(), CheckElement);
   } else {
-    let cache = new ReferenceCache(elementRef as Reference<Simple.Element>);
+    let cache = new ReferenceCache(elementRef as Reference<SimpleElement>);
     element = check(cache.peek(), CheckElement);
     vm.updateWith(new Assert(cache));
   }
@@ -69,7 +70,7 @@ APPEND_OPCODES.add(Op.PushRemoteElement, vm => {
   if (isConst(nextSiblingRef)) {
     nextSibling = check(nextSiblingRef.value(), CheckOption(CheckNode));
   } else {
-    let cache = new ReferenceCache(nextSiblingRef as Reference<Option<Simple.Node>>);
+    let cache = new ReferenceCache(nextSiblingRef as Reference<Option<SimpleNode>>);
     nextSibling = check(cache.peek(), CheckOption(CheckNode));
     vm.updateWith(new Assert(cache));
   }
@@ -101,18 +102,12 @@ APPEND_OPCODES.add(Op.CloseElement, vm => {
 });
 
 APPEND_OPCODES.add(Op.Modifier, (vm, { op1: handle }) => {
-  let { manager, state } = vm[CONSTANTS].resolveHandle<ModifierDefinition>(handle);
+  let { manager, state } = vm.runtime.resolver.resolve<ModifierDefinition>(handle);
   let stack = vm.stack;
   let args = check(stack.pop(), CheckArguments);
   let { element, updateOperations } = vm.elements();
   let dynamicScope = vm.dynamicScope();
-  let modifier = manager.create(
-    element as Simple.FIX_REIFICATION<Element>,
-    state,
-    args,
-    dynamicScope,
-    updateOperations
-  );
+  let modifier = manager.create(element, state, args, dynamicScope, updateOperations);
 
   vm.env.scheduleInstallModifier(modifier, manager);
   let d = manager.getDestructor(modifier);
@@ -178,7 +173,7 @@ export class UpdateDynamicAttributeOpcode extends UpdatingOpcode {
   public tag: Tag;
   public lastRevision: number;
 
-  constructor(private reference: VersionedReference<Opaque>, private attribute: DynamicAttribute) {
+  constructor(private reference: VersionedReference<unknown>, private attribute: DynamicAttribute) {
     super();
     this.tag = reference.tag;
     this.lastRevision = this.tag.value();

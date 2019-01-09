@@ -1,32 +1,32 @@
 import {
-  Option,
-  Opaque,
-  ProgramSymbolTable,
-  ComponentCapabilities,
-  ModuleLocator,
-} from '@glimmer/interfaces';
-import GlimmerObject from '@glimmer/object';
-import { Tag, combine, PathReference, TagWrapper, DirtyableTag } from '@glimmer/reference';
-import { EMPTY_ARRAY, assign, expect, Destroyable } from '@glimmer/util';
-import {
-  Environment,
-  Arguments,
-  WithDynamicTagName,
-  PreparedArguments,
-  WithDynamicLayout,
-  PrimitiveReference,
-  ElementOperations,
+  AnnotatedModuleLocator,
   Bounds,
   CapturedNamedArguments,
+  CompilableTemplate,
+  ComponentCapabilities,
+  Destroyable,
   DynamicScope,
+  ElementOperations,
+  Environment,
   Invocation,
-} from '@glimmer/runtime';
+  ModuleLocator,
+  Option,
+  PreparedArguments,
+  ProgramSymbolTable,
+  VMArguments,
+  WithAotStaticLayout,
+  WithDynamicTagName,
+  WithJitDynamicLayout,
+} from '@glimmer/interfaces';
+import GlimmerObject from '@glimmer/object';
 import { UpdatableReference } from '@glimmer/object-reference';
-
-import { Attrs, createTemplate, AttrsDiff } from '../shared';
-import LazyRuntimeResolver from '../modes/lazy/runtime-resolver';
+import { combine, DirtyableTag, PathReference, Tag, TagWrapper } from '@glimmer/reference';
+import { PrimitiveReference } from '@glimmer/runtime';
+import { assign, EMPTY_ARRAY, expect } from '@glimmer/util';
+import { TestComponentDefinitionState } from '../components';
 import EagerRuntimeResolver from '../modes/eager/runtime-resolver';
-import { TestComponentDefinitionState, Locator } from '../components';
+import LazyRuntimeResolver from '../modes/lazy/runtime-resolver';
+import { Attrs, AttrsDiff, createTemplate } from '../shared';
 
 export class EmberishCurlyComponent extends GlimmerObject {
   public static positionalParams: string[] | string = [];
@@ -64,6 +64,7 @@ export class EmberishCurlyComponent extends GlimmerObject {
 export const BaseEmberishCurlyComponent = EmberishCurlyComponent.extend() as typeof EmberishCurlyComponent;
 
 export interface EmberishCurlyComponentFactory {
+  fromDynamicScope?: string[];
   positionalParams: Option<string | string[]>;
   create(options: { attrs: Attrs; targetObject: any }): EmberishCurlyComponent;
 }
@@ -98,12 +99,17 @@ export interface EmberishCurlyComponentDefinitionState {
 export class EmberishCurlyComponentManager
   implements
     WithDynamicTagName<EmberishCurlyComponent>,
-    WithDynamicLayout<EmberishCurlyComponent, Locator, LazyRuntimeResolver> {
+    WithJitDynamicLayout<EmberishCurlyComponent, LazyRuntimeResolver>,
+    WithAotStaticLayout<
+      EmberishCurlyComponent,
+      EmberishCurlyComponentDefinitionState,
+      EagerRuntimeResolver
+    > {
   getCapabilities(state: TestComponentDefinitionState) {
     return state.capabilities;
   }
 
-  getLayout(
+  getAotStaticLayout(
     state: EmberishCurlyComponentDefinitionState,
     resolver: EagerRuntimeResolver
   ): Invocation {
@@ -114,31 +120,32 @@ export class EmberishCurlyComponentManager
     };
   }
 
-  getDynamicLayout({ layout }: EmberishCurlyComponent, resolver: LazyRuntimeResolver): Invocation {
+  getJitDynamicLayout(
+    { layout }: EmberishCurlyComponent,
+    resolver: LazyRuntimeResolver
+  ): CompilableTemplate {
     if (!layout) {
       throw new Error('BUG: missing dynamic layout');
     }
 
-    let handle = resolver.lookup('template-source', layout.name);
+    let handle = resolver.lookup('template-source', layout.name, null);
 
     if (!handle) {
       throw new Error('BUG: missing dynamic layout');
     }
 
-    return resolver.compileTemplate(handle, layout.name, (source, options) => {
-      let factory = createTemplate(source);
-      let template = factory.create(options);
-      let builder = template.asWrappedLayout();
-      return {
-        handle: builder.compile(),
-        symbolTable: builder.symbolTable,
-      };
+    // TODO: This whole thing probably should have a more first-class
+    // structure.
+    return resolver.compilableProgram(handle, layout.name, source => {
+      let factory = createTemplate<AnnotatedModuleLocator>(source);
+      let template = factory.create();
+      return template.asWrappedLayout();
     });
   }
 
   prepareArgs(
     state: EmberishCurlyComponentDefinitionState,
-    args: Arguments
+    args: VMArguments
   ): Option<PreparedArguments> {
     const { positionalParams } = state.ComponentClass || BaseEmberishCurlyComponent;
 
@@ -182,9 +189,9 @@ export class EmberishCurlyComponentManager
   create(
     _environment: Environment,
     state: EmberishCurlyComponentDefinitionState,
-    _args: Arguments,
+    _args: VMArguments,
     dynamicScope: DynamicScope,
-    callerSelf: PathReference<Opaque>,
+    callerSelf: PathReference<unknown>,
     hasDefaultBlock: boolean
   ): EmberishCurlyComponent {
     let klass = state.ComponentClass || BaseEmberishCurlyComponent;
@@ -209,7 +216,7 @@ export class EmberishCurlyComponentManager
     }
 
     let dyn: Option<string[]> = state.ComponentClass
-      ? state.ComponentClass['fromDynamicScope']
+      ? state.ComponentClass['fromDynamicScope'] || null
       : null;
 
     if (dyn) {
@@ -231,7 +238,7 @@ export class EmberishCurlyComponentManager
     return combine([tag, dirtinessTag]);
   }
 
-  getSelf(component: EmberishCurlyComponent): PathReference<Opaque> {
+  getSelf(component: EmberishCurlyComponent): PathReference<unknown> {
     return new UpdatableReference(component);
   }
 

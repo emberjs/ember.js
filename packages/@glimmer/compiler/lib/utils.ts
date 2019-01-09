@@ -1,3 +1,5 @@
+import { Dict, Option } from '@glimmer/interfaces';
+
 export function processOpcodes(compiler: any, opcodes: any) {
   for (let i = 0, l = opcodes.length; i < l; i++) {
     let method = opcodes[i][0];
@@ -28,7 +30,7 @@ const XLINK = 'http://www.w3.org/1999/xlink';
 const XML = 'http://www.w3.org/XML/1998/namespace';
 const XMLNS = 'http://www.w3.org/2000/xmlns/';
 
-const WHITELIST = {
+const WHITELIST: Dict<string | undefined> = {
   'xlink:actuate': XLINK,
   'xlink:arcrole': XLINK,
   'xlink:href': XLINK,
@@ -43,6 +45,6 @@ const WHITELIST = {
   'xmlns:xlink': XMLNS,
 };
 
-export function getAttrNamespace(attrName: string) {
+export function getAttrNamespace(attrName: string): Option<string> {
   return WHITELIST[attrName] || null;
 }

@@ -1,14 +1,21 @@
-import { createTemplate } from '../shared';
-
-import { WithStaticLayout, Environment, Bounds, Invocation } from '@glimmer/runtime';
-import { unreachable, expect } from '@glimmer/util';
-import { PathReference, Tag, CONSTANT_TAG } from '@glimmer/reference';
-import { ComponentCapabilities, Opaque } from '@glimmer/interfaces';
+import {
+  AnnotatedModuleLocator,
+  Bounds,
+  CompilableProgram,
+  ComponentCapabilities,
+  Environment,
+  Invocation,
+  RuntimeResolver,
+  WithAotStaticLayout,
+  WithJitStaticLayout,
+} from '@glimmer/interfaces';
 import { UpdatableReference } from '@glimmer/object-reference';
-
-import LazyRuntimeResolver from '../modes/lazy/runtime-resolver';
-import EagerRuntimeResolver from '../modes/eager/runtime-resolver';
+import { CONSTANT_TAG, PathReference, Tag } from '@glimmer/reference';
+import { expect, unreachable } from '@glimmer/util';
 import { TestComponentDefinitionState } from '../components';
+import EagerRuntimeResolver from '../modes/eager/runtime-resolver';
+import LazyRuntimeResolver from '../modes/lazy/runtime-resolver';
+import { createTemplate } from '../shared';
 
 export class BasicComponent {
   public element!: Element;
@@ -34,7 +41,8 @@ export const BASIC_CAPABILITIES: ComponentCapabilities = {
 
 export class BasicComponentManager
   implements
-    WithStaticLayout<BasicComponent, TestComponentDefinitionState, Opaque, LazyRuntimeResolver> {
+    WithJitStaticLayout<BasicComponent, TestComponentDefinitionState, LazyRuntimeResolver>,
+    WithAotStaticLayout<BasicComponent, TestComponentDefinitionState, EagerRuntimeResolver> {
   getCapabilities(state: TestComponentDefinitionState) {
     return state.capabilities;
   }
@@ -48,26 +56,22 @@ export class BasicComponentManager
     return new klass();
   }
 
-  getLayout(
+  getJitStaticLayout(
     state: TestComponentDefinitionState,
-    resolver: EagerRuntimeResolver | LazyRuntimeResolver
-  ): Invocation {
+    resolver: RuntimeResolver & (EagerRuntimeResolver | LazyRuntimeResolver)
+  ): CompilableProgram {
     let { name } = state;
 
     if (resolver instanceof LazyRuntimeResolver) {
       let compile = (source: string) => {
-        let template = createTemplate(source);
-        let layout = template.create(resolver.compiler).asLayout();
-        return {
-          handle: layout.compile(),
-          symbolTable: layout.symbolTable,
-        };
+        let template = createTemplate<AnnotatedModuleLocator>(source);
+        return template.create().asLayout();
       };
 
       let handle = resolver.lookup('template-source', name)!;
 
-      return resolver.compileTemplate(handle, name, compile);
-    } else {
+      return resolver.compilableProgram(handle, name, compile);
+    } else if (resolver instanceof EagerRuntimeResolver) {
       // For the case of dynamically invoking (via `{{component}}`) in eager
       // mode, we need to exchange the module locator for the handle to the
       // compiled layout (which was provided at bundle compilation time and
@@ -76,11 +80,42 @@ export class BasicComponentManager
         state.locator,
         'component definition state should include module locator'
       );
-      return resolver.getInvocation({ locator });
+      let invocation = resolver.getInvocation(locator);
+
+      // TODO: Hack... is this the best approach?
+      return {
+        symbolTable: invocation.symbolTable,
+        compile() {
+          return invocation.handle;
+        },
+      };
+    } else {
+      throw new Error(
+        `Must pass EagerRuntimeResolver or LazyRuntimeResolver to BasicComponentManager's getLayout`
+      );
     }
   }
 
-  getSelf(component: BasicComponent): PathReference<Opaque> {
+  getAotStaticLayout(
+    state: TestComponentDefinitionState,
+    resolver: RuntimeResolver & EagerRuntimeResolver
+  ): Invocation {
+    if (resolver instanceof EagerRuntimeResolver) {
+      // For the case of dynamically invoking (via `{{component}}`) in eager
+      // mode, we need to exchange the module locator for the handle to the
+      // compiled layout (which was provided at bundle compilation time and
+      // stashed in the component definition state).
+      let locator = expect(
+        state.locator,
+        'component definition state should include module locator'
+      );
+      return resolver.getInvocation(locator);
+    } else {
+      throw new Error(`Must pass EagerRuntimeResolver to BasicComponentManager's getAotLayout`);
+    }
+  }
+
+  getSelf(component: BasicComponent): PathReference<unknown> {
     return new UpdatableReference(component);
   }
 

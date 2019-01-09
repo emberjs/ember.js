@@ -1,7 +1,6 @@
-import { Opaque, Option } from '@glimmer/interfaces';
+import { Option, Op, JitScopeBlock, AotScopeBlock } from '@glimmer/interfaces';
 import { VersionedPathReference } from '@glimmer/reference';
-import { Op, $v0 } from '@glimmer/vm';
-import { ScopeBlock } from '../../environment';
+import { $v0 } from '@glimmer/vm';
 import { APPEND_OPCODES } from '../../opcodes';
 import { FALSE_REFERENCE, TRUE_REFERENCE } from '../../references';
 import { PublicVM } from '../../vm';
@@ -28,7 +27,7 @@ export type FunctionExpression<T> = (vm: PublicVM) => VersionedPathReference<T>;
 
 APPEND_OPCODES.add(Op.Helper, (vm, { op1: handle }) => {
   let stack = vm.stack;
-  let helper = check(vm[CONSTANTS].resolveHandle(handle), CheckFunction);
+  let helper = check(vm.runtime.resolver.resolve(handle), CheckFunction);
   let args = check(stack.pop(), CheckArguments);
   let value = helper(vm, args);
 
@@ -45,12 +44,26 @@ APPEND_OPCODES.add(Op.SetVariable, (vm, { op1: symbol }) => {
   vm.scope().bindSymbol(symbol, expr);
 });
 
-APPEND_OPCODES.add(Op.SetBlock, (vm, { op1: symbol }) => {
-  let handle = check(vm.stack.pop(), CheckOr(CheckOption(CheckHandle), CheckCompilableBlock));
+APPEND_OPCODES.add(
+  Op.SetJitBlock,
+  (vm, { op1: symbol }) => {
+    let handle = check(vm.stack.pop(), CheckOption(CheckCompilableBlock));
+    let scope = check(vm.stack.pop(), CheckScope);
+    let table = check(vm.stack.pop(), CheckOption(CheckBlockSymbolTable));
+
+    let block: Option<JitScopeBlock> = table ? [handle!, scope, table] : null;
+
+    vm.scope().bindBlock(symbol, block);
+  },
+  'jit'
+);
+
+APPEND_OPCODES.add(Op.SetAotBlock, (vm, { op1: symbol }) => {
+  let handle = check(vm.stack.pop(), CheckOption(CheckHandle));
   let scope = check(vm.stack.pop(), CheckScope);
   let table = check(vm.stack.pop(), CheckOption(CheckBlockSymbolTable));
 
-  let block: Option<ScopeBlock> = table ? [handle!, scope!, table] : null;
+  let block: Option<AotScopeBlock> = table ? [handle!, scope, table] : null;
 
   vm.scope().bindBlock(symbol, block);
 });
@@ -67,8 +80,8 @@ APPEND_OPCODES.add(Op.ResolveMaybeLocal, (vm, { op1: _name }) => {
   vm.stack.push(ref);
 });
 
-APPEND_OPCODES.add(Op.RootScope, (vm, { op1: symbols, op2: bindCallerScope }) => {
-  vm.pushRootScope(symbols, !!bindCallerScope);
+APPEND_OPCODES.add(Op.RootScope, (vm, { op1: symbols }) => {
+  vm.pushRootScope(symbols);
 });
 
 APPEND_OPCODES.add(Op.GetProperty, (vm, { op1: _key }) => {
@@ -115,7 +128,7 @@ APPEND_OPCODES.add(Op.HasBlockParams, vm => {
 });
 
 APPEND_OPCODES.add(Op.Concat, (vm, { op1: count }) => {
-  let out: Array<VersionedPathReference<Opaque>> = new Array(count);
+  let out: Array<VersionedPathReference<unknown>> = new Array(count);
 
   for (let i = count; i > 0; i--) {
     let offset = i - 1;

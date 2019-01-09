@@ -2,27 +2,22 @@ import { Option, Dict } from '@glimmer/interfaces';
 
 const tuple = <T extends string[]>(...args: T) => args;
 
+// TODO: How do these map onto constant and machine types?
 export const OPERAND_TYPES = tuple(
-  'unknown',
-  'scope',
-  'symbol-table',
-  'locator',
-  'handle',
-  'i32',
   'u32',
-  'to',
+  'i32',
+  'handle',
+  'bool',
   'str',
   'option-str',
   'str-array',
   'array',
-  'bool',
+  'unknown',
   'primitive',
-  'table',
-  'symbol',
-  'block',
+  'scope',
+  'symbol-table',
   'register',
-  'serializable',
-  'lazy-constant'
+  'meta'
 );
 
 function isOperandType(s: string): s is OperandType {
@@ -138,7 +133,7 @@ export function normalizeAll(parsed: {
 }
 
 export function normalizeParsed(parsed: Dict<RawOperandMetadata>): Dict<NormalizedMetadata> {
-  let out = {};
+  let out = Object.create(null) as Dict<NormalizedMetadata>;
 
   for (let key of Object.keys(parsed)) {
     out[key] = normalize(key, parsed[key]);
@@ -147,17 +142,71 @@ export function normalizeParsed(parsed: Dict<RawOperandMetadata>): Dict<Normaliz
   return out;
 }
 
-export function buildEnum(name: string, parsed: Dict<NormalizedMetadata>): string {
+export function buildEnum(
+  name: string,
+  parsed: Dict<NormalizedMetadata>,
+  offset: number,
+  max?: number
+): { enumString: string; predicate: string } {
   let e = [`export const enum ${name} {`];
 
-  for (let key of Object.keys(parsed)) {
-    e.push(`  ${parsed[key].name},`);
-  }
+  let last: number;
 
-  e.push('  Size,');
+  Object.keys(parsed).forEach((key, i) => {
+    e.push(`  ${parsed[key].name} = ${offset + i},`);
+    last = i;
+  });
+
+  e.push(`  Size = ${last! + offset + 1},`);
   e.push('}');
 
-  return e.join('\n');
+  let enumString = e.join('\n');
+
+  let predicate;
+
+  if (max) {
+    predicate = strip`
+      export function is${name}(value: number): value is ${name} {
+        return value >= ${offset} && value <= ${max};
+      }
+    `;
+  } else {
+    predicate = strip`
+      export function is${name}(value: number): value is ${name} {
+        return value >= ${offset};
+      }
+    `;
+  }
+
+  return { enumString, predicate };
+}
+
+export function strip(strings: TemplateStringsArray, ...args: unknown[]) {
+  let out = '';
+  for (let i = 0; i < strings.length; i++) {
+    let string = strings[i];
+    let dynamic = args[i] !== undefined ? String(args[i]) : '';
+
+    out += `${string}${dynamic}`;
+  }
+
+  out = out.match(/^\s*?\n?([\s\S]*?)\n?\s*$/)![1];
+
+  let min = Number.MAX_SAFE_INTEGER;
+
+  for (let line of out.split('\n')) {
+    let leading = line.match(/^\s*/)![0].length;
+
+    min = Math.min(min, leading);
+  }
+
+  let stripped = '';
+
+  for (let line of out.split('\n')) {
+    stripped += line.slice(min) + '\n';
+  }
+
+  return stripped;
 }
 
 export const META_KIND = tuple('METADATA', 'MACHINE_METADATA');
@@ -187,7 +236,7 @@ function stringify(o: unknown, pad: number): string {
   let out = ['{'];
 
   for (let key of Object.keys(o)) {
-    out.push(`${' '.repeat(pad + 2)}${key}: ${stringify(o[key], pad + 2)},`);
+    out.push(`${' '.repeat(pad + 2)}${key}: ${stringify((o as Dict)[key], pad + 2)},`);
   }
 
   out.push(`${' '.repeat(pad)}}`);

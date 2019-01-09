@@ -1,13 +1,14 @@
-import { LinkedList, DESTROY, associate } from '@glimmer/util';
-import Environment, { inTransaction } from '../environment';
-import { DestroyableBounds, clear } from '../bounds';
-import UpdatingVM, { ExceptionHandler } from './update';
-import { UpdatingOpcode } from '../opcodes';
-import { Simple } from '@glimmer/interfaces';
-import { LiveBlock } from './element-builder';
+import { Environment, RenderResult } from '@glimmer/interfaces';
+import { associate, DESTROY, LinkedList } from '@glimmer/util';
+import { SimpleElement, SimpleNode } from '@simple-dom/interface';
+import { clear } from '../bounds';
+import { inTransaction } from '../environment';
 import { asyncDestroy } from '../lifetime';
+import { UpdatingOpcode } from '../opcodes';
+import { LiveBlock } from './element-builder';
+import UpdatingVM from './update';
 
-export default class RenderResult implements DestroyableBounds, ExceptionHandler {
+export default class RenderResultImpl implements RenderResult {
   constructor(
     public env: Environment,
     private updating: LinkedList<UpdatingOpcode>,
@@ -23,15 +24,15 @@ export default class RenderResult implements DestroyableBounds, ExceptionHandler
     vm.execute(updating, this);
   }
 
-  parentElement(): Simple.Element {
+  parentElement(): SimpleElement {
     return this.bounds.parentElement();
   }
 
-  firstNode(): Simple.Node {
+  firstNode(): SimpleNode {
     return this.bounds.firstNode();
   }
 
-  lastNode(): Simple.Node {
+  lastNode(): SimpleNode {
     return this.bounds.lastNode();
   }
 

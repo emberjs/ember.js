@@ -1,27 +1,21 @@
 import {
-  Environment,
-  DOMTreeConstruction,
-  IDOMChanges,
-  PrimitiveReference,
-  ConditionalReference,
-} from '@glimmer/runtime';
+  Dict,
+  RuntimeProgram,
+  RuntimeResolver,
+  WholeProgramCompilationContext,
+} from '@glimmer/interfaces';
+import { isConst, OpaqueIterable, Reference } from '@glimmer/reference';
+import { ConditionalReference, EnvironmentImpl, PrimitiveReference } from '@glimmer/runtime';
 import { dict } from '@glimmer/util';
-import { Dict, RuntimeResolver, Opaque, VMHandle } from '@glimmer/interfaces';
-import { Program } from '@glimmer/program';
-import { Reference, isConst, OpaqueIterable } from '@glimmer/reference';
+import { Iterable, KeyFor } from './iterable';
 
-import { KeyFor, Iterable } from './iterable';
+export type TestProgram = RuntimeProgram & WholeProgramCompilationContext;
 
-export interface TestEnvironmentOptions {
-  appendOperations: DOMTreeConstruction;
-  updateOperations: IDOMChanges;
-}
+export default abstract class TestEnvironment extends EnvironmentImpl {
+  public compiledLayouts: Dict<number> = dict();
 
-export default abstract class TestEnvironment<Locator> extends Environment {
-  public compiledLayouts: Dict<VMHandle> = dict();
-
-  protected abstract program: Program<Locator>;
-  protected abstract resolver: RuntimeResolver<Locator>;
+  protected abstract program: TestProgram;
+  protected abstract resolver: RuntimeResolver;
 
   protocolForURL(url: string): string {
     if (typeof window === 'undefined') {
@@ -42,8 +36,8 @@ export default abstract class TestEnvironment<Locator> extends Environment {
     return new EmberishConditionalReference(reference);
   }
 
-  iterableFor(ref: Reference<Opaque>, keyPath: string): OpaqueIterable {
-    let keyFor: KeyFor<Opaque>;
+  iterableFor(ref: Reference<unknown>, keyPath: string): OpaqueIterable {
+    let keyFor: KeyFor<unknown>;
 
     if (!keyPath) {
       throw new Error('Must specify a key for #each');
@@ -51,13 +45,13 @@ export default abstract class TestEnvironment<Locator> extends Environment {
 
     switch (keyPath) {
       case '@index':
-        keyFor = (_, index: Opaque) => String(index);
+        keyFor = (_, index: unknown) => String(index);
         break;
       case '@primitive':
-        keyFor = (item: Opaque) => String(item);
+        keyFor = (item: unknown) => String(item);
         break;
       default:
-        keyFor = (item: Opaque) => item && item[keyPath];
+        keyFor = (item: unknown) => item && String((item as Dict)[keyPath]);
         break;
     }
 

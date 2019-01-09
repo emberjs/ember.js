@@ -1,7 +1,13 @@
-import { Macros } from '@glimmer/opcode-compiler';
-import { Option } from '@glimmer/interfaces';
-import * as WireFormat from '@glimmer/wire-format';
+import {
+  Macros,
+  staticComponent,
+  invokeStaticBlock,
+  NONE,
+  UNHANDLED,
+} from '@glimmer/opcode-compiler';
+import { Option, WireFormat } from '@glimmer/interfaces';
 import { EMPTY_BLOCKS } from '@glimmer/opcode-compiler';
+import { resolveLayoutForTag } from '@glimmer/opcode-compiler';
 
 export default class TestMacros extends Macros {
   constructor() {
@@ -9,38 +15,36 @@ export default class TestMacros extends Macros {
 
     let { blocks, inlines } = this;
 
-    blocks.add('identity', (_params, _hash, blocks, builder) => {
-      builder.invokeStaticBlock(blocks.get('default')!);
+    blocks.add('identity', (_params, _hash, blocks) => {
+      return invokeStaticBlock(blocks.get('default')!);
     });
 
-    blocks.add('render-else', (_params, _hash, blocks, builder) => {
-      builder.invokeStaticBlock(blocks.get('else')!);
+    blocks.add('render-else', (_params, _hash, blocks) => {
+      return invokeStaticBlock(blocks.get('else')!);
     });
 
-    blocks.addMissing((name, params, hash, blocks, builder) => {
+    blocks.addMissing((name, params, hash, blocks, context) => {
       if (!params) {
         params = [];
       }
 
-      let { handle } = builder.compiler.resolveLayoutForTag(name, builder.referrer);
+      let { handle } = resolveLayoutForTag(name, context);
 
       if (handle !== null) {
-        builder.component.static(handle, [params, hashToArgs(hash), blocks]);
-        return true;
+        return staticComponent(context.resolver, handle, [params, hashToArgs(hash), blocks]);
       }
 
-      return false;
+      return NONE;
     });
 
-    inlines.addMissing((name, params, hash, builder) => {
-      let { handle } = builder.compiler.resolveLayoutForTag(name, builder.referrer);
+    inlines.addMissing((name, params, hash, context) => {
+      let { handle } = resolveLayoutForTag(name, context);
 
       if (handle !== null) {
-        builder.component.static(handle, [params!, hashToArgs(hash), EMPTY_BLOCKS]);
-        return true;
+        return staticComponent(context.resolver, handle, [params!, hashToArgs(hash), EMPTY_BLOCKS]);
       }
 
-      return false;
+      return UNHANDLED;
     });
   }
 }
