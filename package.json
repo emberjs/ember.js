@@ -62,7 +62,7 @@
   "dependencies": {
     "broccoli-funnel": "^2.0.1",
     "broccoli-merge-trees": "^3.0.2",
-    "chalk": "^2.3.0",
+    "chalk": "^2.4.2",
     "ember-cli-babel": "^7.2.0",
     "ember-cli-get-component-path-option": "^1.0.0",
     "ember-cli-is-package-missing": "^1.0.0",
