@@ -12,6 +12,7 @@
   "scripts": {
     "build": "ember build --env production --suppress-sizes",
     "build:flags": "RETAIN_FLAGS=true ember build --env production --suppress-sizes",
+    "build:typecheck": "tsc -p tsconfig.json --noEmit --pretty false",
     "changelog": "lerna-changelog",
     "sauce:connect": "ember sauce:connect",
     "sauce:disconnect": "ember sauce:disconnect",
