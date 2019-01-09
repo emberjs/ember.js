@@ -1,9 +1,8 @@
-import { Option, Op, JitScopeBlock, AotScopeBlock } from '@glimmer/interfaces';
+import { Option, Op, JitScopeBlock, AotScopeBlock, VM as PublicVM } from '@glimmer/interfaces';
 import { VersionedPathReference } from '@glimmer/reference';
 import { $v0 } from '@glimmer/vm';
 import { APPEND_OPCODES } from '../../opcodes';
 import { FALSE_REFERENCE, TRUE_REFERENCE } from '../../references';
-import { PublicVM } from '../../vm';
 import { ConcatReference } from '../expressions/concat';
 import { assert } from '@glimmer/util';
 import {

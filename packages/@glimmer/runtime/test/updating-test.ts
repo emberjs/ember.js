@@ -13,7 +13,6 @@ import {
   PrimitiveReference,
   SafeString,
   UNDEFINED_REFERENCE,
-  VM,
 } from '@glimmer/runtime';
 import {
   assertNodeTagName,
@@ -1186,7 +1185,7 @@ module('[glimmer-runtime] Updating', hooks => {
       },
     };
 
-    env.registerInternalHelper('destroy-me', (vm: VM) => {
+    env.registerInternalHelper('destroy-me', vm => {
       vm.associateDestroyable(destroyable);
       return PrimitiveReference.create('destroy me!');
     });
@@ -1300,7 +1299,7 @@ module('[glimmer-runtime] Updating', hooks => {
     let didDestroy = 0;
     let reference: UpdatableReference<T | U> | undefined;
 
-    env.registerInternalHelper('stateful-foo', (vm: VM) => {
+    env.registerInternalHelper('stateful-foo', vm => {
       didCreate++;
 
       vm.associateDestroyable({

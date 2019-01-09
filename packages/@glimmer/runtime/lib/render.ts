@@ -15,6 +15,7 @@ import {
   TemplateMeta,
   WithAotStaticLayout,
   WithJitStaticLayout,
+  TemplateIterator,
 } from '@glimmer/interfaces';
 import { PathReference } from '@glimmer/reference';
 import { expect } from '@glimmer/util';
@@ -24,10 +25,7 @@ import { resolveComponent } from './component/resolve';
 import { ARGS } from './symbols';
 import { AotVM, InternalVM, JitVM } from './vm/append';
 import { ElementBuilder } from './vm/element-builder';
-
-export interface TemplateIterator {
-  next(): RichIteratorResult<null, RenderResult>;
-}
+import { DefaultDynamicScope } from './dynamic-scope';
 
 class TemplateIteratorImpl<C extends JitOrAotBlock> implements TemplateIterator {
   constructor(private vm: InternalVM<C>) {}
@@ -55,9 +53,9 @@ export function renderSync(env: Environment, iterator: TemplateIterator): Render
 export function renderAotMain(
   runtime: Runtime<TemplateMeta>,
   self: PathReference,
-  dynamicScope: DynamicScope,
   treeBuilder: ElementBuilder,
-  handle: number
+  handle: number,
+  dynamicScope: DynamicScope = new DefaultDynamicScope()
 ): TemplateIterator {
   let vm = AotVM.initial(runtime, { self, dynamicScope, treeBuilder, handle });
   return new TemplateIteratorImpl(vm);
@@ -67,9 +65,9 @@ export function renderJitMain(
   runtime: Runtime<TemplateMeta>,
   context: SyntaxCompilationContext,
   self: PathReference,
-  dynamicScope: DynamicScope,
   treeBuilder: ElementBuilder,
-  handle: number
+  handle: number,
+  dynamicScope: DynamicScope = new DefaultDynamicScope()
 ): TemplateIterator {
   let vm = JitVM.initial(runtime, context, { self, dynamicScope, treeBuilder, handle });
   return new TemplateIteratorImpl(vm);
