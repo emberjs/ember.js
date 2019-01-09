@@ -79,6 +79,28 @@ moduleFor(
         });
     }
 
+    '@test substates survive aborts GH#17430'(assert) {
+      assert.expect(2);
+      this.add(
+        `route:parent.child`,
+        Route.extend({
+          beforeModel(transition) {
+            transition.abort();
+            this.intermediateTransitionTo('parent.sister');
+          },
+        })
+      );
+
+      return this.visit('/')
+        .then(() => {
+          return this.routerService.transitionTo('/child');
+        })
+        .catch(e => {
+          assert.equal(this.routerService.currentRouteName, 'parent.sister');
+          assert.equal(e.message, 'TransitionAborted');
+        });
+    }
+
     ['@test RouterService#currentRouteName is correctly set on each transition'](assert) {
       if (EMBER_ROUTING_ROUTER_SERVICE) {
         assert.expect(9);
