@@ -9,7 +9,7 @@ import { Option } from '@glimmer/interfaces';
 import { UpdatableReference } from '@glimmer/object-reference';
 import { isDict } from '@glimmer/util';
 
-export type KeyFor<T> = (item: unknown, index: T) => string;
+export type KeyFor<T> = (item: unknown, index: T) => unknown;
 
 interface ForEach<T> {
   forEach(callback: (input: T) => void): void;

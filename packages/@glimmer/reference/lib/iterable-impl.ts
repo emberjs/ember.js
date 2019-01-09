@@ -3,7 +3,7 @@ import { UpdatableReference } from '@glimmer/object-reference';
 import { Tag, VersionedReference } from './validators';
 import { Option } from '@glimmer/interfaces';
 
-export type KeyFor = (item: unknown, index: unknown) => string;
+export type KeyFor = (item: unknown, index: unknown) => object;
 export type UnknownKeyFor = (key: string) => KeyFor;
 
 // Public API
