@@ -14,7 +14,7 @@ export interface LayoutWithContext<R> {
   readonly id?: Option<string>;
   readonly block: SerializedTemplateBlock;
   readonly referrer: TemplateMeta<R>;
-  readonly asPartial: boolean;
+  readonly asPartial?: boolean;
 }
 
 export interface BlockWithContext<R> {

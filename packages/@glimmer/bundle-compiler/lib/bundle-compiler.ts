@@ -16,7 +16,7 @@ import {
   CompileTimeHeap,
   SyntaxCompilationContext,
 } from '@glimmer/interfaces';
-import { Macros, compilableLayout, compileStd } from '@glimmer/opcode-compiler';
+import { Macros, compileStd, compilable } from '@glimmer/opcode-compiler';
 
 import ModuleLocatorMap from './module-locator-map';
 import DebugConstants from './debug-constants';
@@ -150,7 +150,7 @@ export default class BundleCompiler<R> {
       asPartial: false,
     };
 
-    let template = compilableLayout<R>(layout);
+    let template = compilable<R>(layout);
 
     this.addCompilableTemplate(l, template);
 

@@ -1,5 +1,3 @@
-import { Helper } from '../environment';
-import { PublicVM } from '../vm/append';
 import {
   CONSTANT_TAG,
   Tag,
@@ -8,7 +6,7 @@ import {
   TagWrapper,
   combine,
 } from '@glimmer/reference';
-import { DynamicScope, VMArguments } from '@glimmer/interfaces';
+import { DynamicScope, VM as PublicVM, VMArguments, Helper } from '@glimmer/interfaces';
 
 class DynamicVarReference implements PathReference<unknown> {
   public tag: Tag;
