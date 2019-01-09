@@ -112,7 +112,7 @@ class TemplateImpl<R> implements Template {
   }
 }
 
-export function Layout(serialized: string, envMeta?: {}): CompilableProgram {
+export function Component(serialized: string, envMeta?: {}): CompilableProgram {
   let parsed = JSON.parse(serialized);
   let factory = templateFactory(parsed);
 

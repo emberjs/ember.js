@@ -11,7 +11,6 @@ export {
   default as TestEnvironment,
   DEFAULT_TEST_META,
 } from './lib/environment/modes/lazy/environment';
-export { TestDynamicScope } from './lib/environment/dynamic-scope';
 export * from './lib/environment/modes/lazy/fixture';
 export { default as LazyRenderDelegate } from './lib/environment/modes/lazy/render-delegate';
 export { debugRehydration } from './lib/environment/modes/rehydration/debug-builder';

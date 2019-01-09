@@ -6,7 +6,6 @@ import {
   ComponentCapabilities,
   ComponentDefinition,
   ComponentManager,
-  DynamicScope,
   GlimmerTreeChanges,
   GlimmerTreeConstruction,
   Helper as GlimmerHelper,
@@ -20,6 +19,8 @@ import {
   TemplateMeta,
   VMArguments,
   WholeProgramCompilationContext,
+  TemplateIterator,
+  VM,
 } from '@glimmer/interfaces';
 import { compileStd, PartialDefinition, templateFactory } from '@glimmer/opcode-compiler';
 import { CompileTimeHeapImpl, Constants, RuntimeOpImpl } from '@glimmer/program';
@@ -33,8 +34,6 @@ import {
   getDynamicVar,
   ModifierDefinition,
   renderJitMain,
-  TemplateIterator,
-  VM,
 } from '@glimmer/runtime';
 import { ComponentKind } from '@glimmer/test-helpers';
 import { templateMeta } from '@glimmer/util';
@@ -56,7 +55,6 @@ import {
   STATIC_TAGLESS_CAPABILITIES,
   TestComponentDefinitionState,
 } from '../../components';
-import { TestDynamicScope } from '../../dynamic-scope';
 import TestEnvironment from '../../environment';
 import { HelperReference, UserHelper } from '../../helper';
 import TestMacros from '../../macros';
@@ -140,14 +138,13 @@ export default class LazyTestEnvironment extends TestEnvironment {
     this.registerInternalHelper('-get-dynamic-var', getDynamicVar);
     this.registerInternalModifier('action', manager, state);
 
-    this.registerInternalHelper('hash', (_vm: VM, args: VMArguments) => args.capture().named);
+    this.registerInternalHelper('hash', (_vm, args) => args.capture().named);
   }
 
   renderMain(
     template: Template,
     self: PathReference<unknown>,
-    builder: ElementBuilder,
-    dynamicScope: DynamicScope = new TestDynamicScope()
+    builder: ElementBuilder
   ): TemplateIterator {
     let layout = template.asLayout();
     let handle = layout.compile(this.context);
@@ -156,7 +153,6 @@ export default class LazyTestEnvironment extends TestEnvironment {
       { program: this.program, env: this, resolver: this.resolver },
       this.context,
       self,
-      dynamicScope,
       builder,
       handle
     );

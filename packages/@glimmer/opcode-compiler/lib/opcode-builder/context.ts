@@ -9,6 +9,7 @@ import {
 import { EncoderImpl } from './encoder';
 import { Macros } from '../syntax/macros';
 import { ProgramCompilationContext } from '../program-context';
+import { DefaultCompileTimeResolverDelegate } from './delegate';
 
 export function syntaxCompilationContext(
   program: WholeProgramCompilationContext,
@@ -20,8 +21,8 @@ export function syntaxCompilationContext(
   };
 }
 
-export function Syntax(
-  resolver: CompileTimeResolverDelegate,
+export function Context(
+  resolver: CompileTimeResolverDelegate = new DefaultCompileTimeResolverDelegate(),
   mode: CompileMode = CompileMode.aot,
   macros = new Macros()
 ) {

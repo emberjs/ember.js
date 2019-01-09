@@ -78,6 +78,10 @@ export class RuntimeHeapImpl implements RuntimeHeap {
   }
 }
 
+export function hydrateHeap(serializedHeap: SerializedHeap): RuntimeHeap {
+  return new RuntimeHeapImpl(serializedHeap);
+}
+
 /**
  * The Heap is responsible for dynamically allocating
  * memory in which we read/write the VM's instructions
@@ -307,6 +311,13 @@ export class RuntimeProgramImpl implements RuntimeProgram {
     this._opcode.offset = offset;
     return this._opcode;
   }
+}
+
+export function hydrateProgram(artifacts: CompilerArtifacts): RuntimeProgram {
+  let heap = new RuntimeHeapImpl(artifacts.heap);
+  let constants = new RuntimeConstantsImpl(artifacts.constants);
+
+  return new RuntimeProgramImpl(constants, heap);
 }
 
 function slice(arr: Uint16Array, start: number, end: number): Uint16Array {
