@@ -10,13 +10,15 @@ import { extractRouteArgs, resemblesURL, shallowEqual } from '../utils';
 
 let freezeRouteInfo: Function;
 if (DEBUG) {
-  freezeRouteInfo = (transition: Transition) => {
-    if (transition.from !== null && !Object.isFrozen(transition.from)) {
-      Object.freeze(transition.from);
-    }
+  freezeRouteInfo = (transition: Transition | undefined) => {
+    if (transition) {
+      if (transition.from !== null && !Object.isFrozen(transition.from)) {
+        Object.freeze(transition.from);
+      }
 
-    if (transition.to !== null && !Object.isFrozen(transition.to)) {
-      Object.freeze(transition.to);
+      if (transition.to !== null && !Object.isFrozen(transition.to)) {
+        Object.freeze(transition.to);
+      }
     }
   };
 }
