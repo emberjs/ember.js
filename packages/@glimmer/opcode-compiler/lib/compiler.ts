@@ -1,159 +1,60 @@
-import { OpcodeBuilderImpl, StdOpcodeBuilder } from './opcode-builder';
-import { Macros } from './syntax';
-import { compile } from './compile';
 import { debugSlice } from './debug';
 import {
-  Compiler,
-  Option,
-  STDLib,
-  CompileTimeConstants,
-  CompileTimeLookup,
-  CompileTimeProgram,
-  LayoutWithContext,
-  Opaque,
   CompilerBuffer,
-  ResolvedLayout,
-  MaybeResolvedLayout,
-  CompilableProgram,
-  NamedBlocks as INamedBlocks,
+  CompileTimeHeap,
+  Statements,
+  StatementCompileActions,
+  WireFormat,
+  Unhandled,
+  TemplateCompilationContext,
 } from '@glimmer/interfaces';
-import { Statements, Core, Expression, Statement } from '@glimmer/wire-format';
 import { DEBUG } from '@glimmer/local-debug-flags';
+import { namedBlocks } from './utils';
 
-class StdLib {
-  static compile(compiler: Compiler): StdLib {
-    let main = this.std(compiler, b => b.main());
-    let trustingGuardedAppend = this.std(compiler, b => b.stdAppend(true));
-    let cautiousGuardedAppend = this.std(compiler, b => b.stdAppend(false));
-
-    return new StdLib(main, trustingGuardedAppend, cautiousGuardedAppend);
-  }
-
-  private static std(compiler: Compiler, callback: (builder: StdOpcodeBuilder) => void): number {
-    return StdOpcodeBuilder.build(compiler, callback);
-  }
-
-  constructor(
-    public main: number,
-    private trustingGuardedAppend: number,
-    private cautiousGuardedAppend: number
-  ) {}
-
-  getAppend(trusting: boolean) {
-    return trusting ? this.trustingGuardedAppend : this.cautiousGuardedAppend;
-  }
+export function compileInline(
+  sexp: Statements.Append,
+  context: TemplateCompilationContext
+): StatementCompileActions | Unhandled {
+  return context.syntax.macros.inlines.compile(sexp, context);
 }
 
-export abstract class AbstractCompiler<
-  Locator,
-  Builder extends OpcodeBuilderImpl<Locator>,
-  Program extends CompileTimeProgram = CompileTimeProgram
-> implements Compiler<Builder> {
-  stdLib!: STDLib; // Set by this.initialize() in constructor
-
-  protected constructor(
-    public readonly macros: Macros,
-    public readonly program: Program,
-    public readonly resolver: CompileTimeLookup<Locator>
-  ) {
-    this.initialize();
-  }
-
-  initialize() {
-    this.stdLib = StdLib.compile(this);
-  }
-
-  get constants(): CompileTimeConstants {
-    return this.program.constants;
-  }
-
-  compileInline(sexp: Statements.Append, builder: Builder): ['expr', Expression] | true {
-    let { inlines } = this.macros;
-    return inlines.compile(sexp, builder);
-  }
-
-  compileBlock(
-    name: string,
-    params: Core.Params,
-    hash: Core.Hash,
-    blocks: INamedBlocks,
-    builder: Builder
-  ): void {
-    this.macros.blocks.compile(name, params, hash, blocks, builder);
-  }
-
-  add(statements: Statement[], containingLayout: LayoutWithContext<Locator>): number {
-    return compile(statements, this.builderFor(containingLayout), this);
-  }
-
-  commit(scopeSize: number, buffer: CompilerBuffer): number {
-    let heap = this.program.heap;
-
-    let handle = heap.malloc();
-
-    for (let i = 0; i < buffer.length; i++) {
-      let value = buffer[i];
-
-      if (typeof value === 'function') {
-        heap.pushPlaceholder(value);
-      } else {
-        heap.push(value);
-      }
-    }
-
-    heap.finishMalloc(handle, scopeSize);
-
-    return handle;
-  }
-
-  resolveLayoutForTag(tag: string, referrer: Locator): MaybeResolvedLayout {
-    let { resolver } = this;
-
-    let handle = resolver.lookupComponentDefinition(tag, referrer);
-
-    if (handle === null) return { handle: null, capabilities: null, compilable: null };
-
-    return this.resolveLayoutForHandle(handle);
-  }
-
-  resolveLayoutForHandle(handle: number): ResolvedLayout {
-    let { resolver } = this;
-
-    let capabilities = resolver.getCapabilities(handle);
-    let compilable: Option<CompilableProgram> = null;
-
-    if (!capabilities.dynamicLayout) {
-      compilable = resolver.getLayout(handle)!;
-    }
-
-    return {
-      handle,
-      capabilities,
-      compilable,
-    };
-  }
-
-  resolveModifier(name: string, referrer: Locator): Option<number> {
-    return this.resolver.lookupModifier(name, referrer);
-  }
-
-  resolveHelper(name: string, referrer: Locator): Option<number> {
-    return this.resolver.lookupHelper(name, referrer);
-  }
-
-  abstract builderFor(containingLayout: LayoutWithContext<Opaque>): Builder;
+export function compileBlock(
+  block: WireFormat.Statements.Block,
+  context: TemplateCompilationContext
+): StatementCompileActions {
+  let [, name, params, hash, named] = block;
+  let blocks = namedBlocks(named, context.meta);
+  return context.syntax.macros.blocks.compile(name, params, hash, blocks, context);
 }
 
-export let debugCompiler: (compiler: AnyAbstractCompiler, handle: number) => void;
+export function commit(heap: CompileTimeHeap, scopeSize: number, buffer: CompilerBuffer): number {
+  let handle = heap.malloc();
+
+  for (let i = 0; i < buffer.length; i++) {
+    let value = buffer[i];
+
+    if (typeof value === 'function') {
+      heap.pushPlaceholder(value);
+    } else if (typeof value === 'object') {
+      heap.pushStdlib(value);
+    } else {
+      heap.push(value);
+    }
+  }
+
+  heap.finishMalloc(handle, scopeSize);
+
+  return handle;
+}
+
+export let debugCompiler: (context: TemplateCompilationContext, handle: number) => void;
 
 if (DEBUG) {
-  debugCompiler = (compiler: AnyAbstractCompiler, handle: number) => {
-    let { heap } = compiler['program'];
+  debugCompiler = (context: TemplateCompilationContext, handle: number) => {
+    let { heap } = context.syntax.program;
     let start = heap.getaddr(handle);
     let end = start + heap.sizeof(handle);
 
-    debugSlice(compiler['program'], start, end);
+    debugSlice(context, start, end);
   };
 }
-
-export type AnyAbstractCompiler = AbstractCompiler<Opaque, OpcodeBuilderImpl<Opaque>>;

@@ -1,8 +1,7 @@
 import { CompilerOps, Processor, Op, OpName, TemplateCompilerOps, PathHead } from './compiler-ops';
 import { AST } from '@glimmer/syntax';
-import { Option, Opaque } from '@glimmer/interfaces';
+import { Option } from '@glimmer/interfaces';
 import { Stack, expect } from '@glimmer/util';
-import { SymbolTable } from './template-visitor';
 
 export type InVariable = PathHead;
 export type OutVariable = number;
@@ -20,7 +19,7 @@ export type InOp<K extends keyof TemplateCompilerOps = keyof TemplateCompilerOps
 
 export class SymbolAllocator
   implements Processor<CompilerOps<InVariable>, OutVariable, CompilerOps<OutVariable>> {
-  private symbolStack = new Stack<SymbolTable>();
+  private symbolStack = new Stack<AST.Symbols>();
 
   constructor(private ops: Array<InOp>) {}
 
@@ -42,27 +41,27 @@ export class SymbolAllocator
     return out;
   }
 
-  dispatch<O extends InOp>(op: O): Opaque {
+  dispatch<O extends InOp>(op: O): unknown {
     let name = op[0];
     let operand = op[1];
 
     return (this[name] as any)(operand);
   }
 
-  get symbols(): SymbolTable {
+  get symbols(): AST.Symbols {
     return expect(this.symbolStack.current, 'Expected a symbol table on the stack');
   }
 
-  startProgram(op: AST.Program) {
-    this.symbolStack.push(op['symbols']);
+  startProgram(op: AST.Template) {
+    this.symbolStack.push(op.symbols!);
   }
 
   endProgram(_op: null) {
     this.symbolStack.pop();
   }
 
-  startBlock(op: AST.Program) {
-    this.symbolStack.push(op['symbols']);
+  startBlock(op: AST.Block) {
+    this.symbolStack.push(op.symbols!);
   }
 
   endBlock(_op: null) {
@@ -70,7 +69,7 @@ export class SymbolAllocator
   }
 
   openNamedBlock(op: AST.ElementNode) {
-    this.symbolStack.push(op['symbols']);
+    this.symbolStack.push(op.symbols!);
   }
 
   closeNamedBlock(_op: AST.ElementNode) {
@@ -78,7 +77,7 @@ export class SymbolAllocator
   }
 
   flushElement(op: AST.ElementNode) {
-    this.symbolStack.push(op['symbols']);
+    this.symbolStack.push(op.symbols!);
   }
 
   closeElement(_op: AST.ElementNode) {
@@ -177,6 +176,8 @@ export class SymbolAllocator
   staticAttr(_op: [string, Option<string>]) {}
   trustingAttr(_op: [string, Option<string>]) {}
   dynamicAttr(_op: [string, Option<string>]) {}
+  componentAttr(_op: [string, Option<string>]) {}
+  trustingComponentAttr(_op: [string, Option<string>]) {}
   modifier(_op: string) {}
   append(_op: boolean) {}
   block(_op: [string, number, Option<number>]) {}
@@ -189,6 +190,6 @@ export class SymbolAllocator
   concat(_op: null) {}
 }
 
-function isLocal(name: string, symbols: SymbolTable): boolean {
+function isLocal(name: string, symbols: AST.Symbols): boolean {
   return symbols && symbols.has(name);
 }

@@ -1,5 +1,4 @@
-import { Op } from '@glimmer/vm';
-import { CompilableTemplate, Opaque, Option, Recast, VMHandle } from '@glimmer/interfaces';
+import { PrimitiveType, CompilableTemplate, Option, Op } from '@glimmer/interfaces';
 import {
   CONSTANT_TAG,
   isConst,
@@ -22,10 +21,10 @@ import { stackAssert } from './assert';
 import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
 import { PrimitiveReference } from '../../references';
 import { UpdatingVM } from '../../vm';
-import { Arguments } from '../../vm/arguments';
-import { LazyConstants, PrimitiveType } from '@glimmer/program';
+import { VMArgumentsImpl } from '../../vm/arguments';
 import { CheckReference, CheckScope } from './-debug-strip';
 import { CONSTANTS } from '../../symbols';
+import { InternalJitVM } from '../../vm/append';
 
 APPEND_OPCODES.add(Op.ChildScope, vm => vm.pushChildScope());
 
@@ -36,7 +35,7 @@ APPEND_OPCODES.add(Op.PushDynamicScope, vm => vm.pushDynamicScope());
 APPEND_OPCODES.add(Op.PopDynamicScope, vm => vm.popDynamicScope());
 
 APPEND_OPCODES.add(Op.Constant, (vm, { op1: other }) => {
-  vm.stack.push((vm[CONSTANTS] as LazyConstants).getOther(other));
+  vm.stack.push(vm[CONSTANTS].getOther(other));
 });
 
 APPEND_OPCODES.add(Op.Primitive, (vm, { op1: primitive }) => {
@@ -108,7 +107,7 @@ APPEND_OPCODES.add(Op.Exit, vm => {
 
 APPEND_OPCODES.add(Op.PushSymbolTable, (vm, { op1: _table }) => {
   let stack = vm.stack;
-  stack.push(vm[CONSTANTS].getSerializable(_table));
+  stack.push(vm[CONSTANTS].getTemplateMeta(_table));
 });
 
 APPEND_OPCODES.add(Op.PushBlockScope, vm => {
@@ -116,18 +115,22 @@ APPEND_OPCODES.add(Op.PushBlockScope, vm => {
   stack.push(vm.scope());
 });
 
-APPEND_OPCODES.add(Op.CompileBlock, vm => {
-  let stack = vm.stack;
-  let block = stack.pop<Option<CompilableTemplate> | 0>();
+APPEND_OPCODES.add(
+  Op.CompileBlock,
+  (vm: InternalJitVM) => {
+    let stack = vm.stack;
+    let block = stack.pop<Option<CompilableTemplate> | 0>();
 
-  if (block) {
-    stack.pushSmi(block.compile() as Recast<VMHandle, number>);
-  } else {
-    stack.pushNull();
-  }
+    if (block) {
+      stack.pushSmi(vm.compile(block));
+    } else {
+      stack.pushNull();
+    }
 
-  check(vm.stack.peek(), CheckOption(CheckNumber));
-});
+    check(vm.stack.peek(), CheckOption(CheckNumber));
+  },
+  'jit'
+);
 
 APPEND_OPCODES.add(Op.InvokeYield, vm => {
   let { stack } = vm;
@@ -141,7 +144,7 @@ APPEND_OPCODES.add(Op.InvokeYield, vm => {
     stackAssert('Option<BlockSymbolTable>', table)
   );
 
-  let args = check(stack.pop(), CheckInstanceof(Arguments));
+  let args = check(stack.pop(), CheckInstanceof(VMArgumentsImpl));
 
   if (table === null) {
     // To balance the pop{Frame,Scope}
@@ -229,7 +232,7 @@ APPEND_OPCODES.add(Op.ToBoolean, vm => {
 });
 
 export class Assert extends UpdatingOpcode {
-  static initialize(cache: ReferenceCache<Opaque>): Assert {
+  static initialize(cache: ReferenceCache<unknown>): Assert {
     let assert = new Assert(cache);
     cache.peek();
     return assert;
@@ -239,9 +242,9 @@ export class Assert extends UpdatingOpcode {
 
   public tag: Tag;
 
-  private cache: ReferenceCache<Opaque>;
+  private cache: ReferenceCache<unknown>;
 
-  constructor(cache: ReferenceCache<Opaque>) {
+  constructor(cache: ReferenceCache<unknown>) {
     super();
     this.tag = cache.tag;
     this.cache = cache;

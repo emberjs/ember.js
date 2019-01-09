@@ -1,21 +1,22 @@
 {
   "version": "2.0.0",
-  "command": "npm",
-  "tasks": [{
-    "label": "vscode-build",
-    "type": "shell",
-    "command": "npm",
-    "args": ["run", "problems"],
-    "group": {
-      "kind": "build",
-      "isDefault": true
-    },
-    "problemMatcher": "$tsc",
-    "presentation": {
-      "echo": true,
-      "reveal": "always",
-      "focus": false,
-      "panel": "shared"
+  "tasks": [
+    {
+      "type": "npm",
+      "script": "build:typecheck",
+      "problemMatcher": ["$tsc"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "echo": true,
+        "reveal": "never",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": true
+      }
     }
-  }]
+  ]
 }

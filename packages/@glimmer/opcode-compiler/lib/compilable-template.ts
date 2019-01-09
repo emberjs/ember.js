@@ -1,62 +1,95 @@
 import {
-  CompilableTemplate,
-  ProgramSymbolTable,
-  CompilableProgram as ICompilableProgram,
   Option,
   LayoutWithContext,
-  Opaque,
-  Compiler,
-  BlockSymbolTable,
-  BlockWithContext,
+  ContainingMetadata,
+  SerializedInlineBlock,
+  WireFormat,
+  SymbolTable,
+  CompilableTemplate,
+  Statement,
+  SyntaxCompilationContext,
+  CompilableBlock,
+  CompilableProgram,
 } from '@glimmer/interfaces';
+import { meta } from './opcode-builder/helpers/shared';
+import { EMPTY_ARRAY } from '@glimmer/util';
+import { templateCompilationContext } from './opcode-builder/context';
+import { concatStatements } from './syntax/concat';
+import { DEBUG } from '@glimmer/local-debug-flags';
+import { debugCompiler } from './compiler';
+import { patchStdlibs } from '@glimmer/program';
+import { STATEMENTS } from './syntax/statements';
 
 export const PLACEHOLDER_HANDLE = -1;
 
-export class CompilableProgram implements ICompilableProgram {
-  private compiled: Option<number> = null;
+class CompilableTemplateImpl<S extends SymbolTable> implements CompilableTemplate<S> {
+  compiled: Option<number> = null;
 
-  constructor(protected compiler: Compiler<Opaque>, protected layout: LayoutWithContext) {}
+  constructor(
+    readonly statements: WireFormat.Statement[],
+    readonly meta: ContainingMetadata,
+    // Part of CompilableTemplate
+    readonly symbolTable: S
+  ) {}
 
-  get symbolTable(): ProgramSymbolTable {
-    return this.layout.block;
-  }
-
-  compile(): number {
-    if (this.compiled !== null) return this.compiled;
-
-    this.compiled = PLACEHOLDER_HANDLE;
-
-    let {
-      block: { statements },
-    } = this.layout;
-
-    return (this.compiled = this.compiler.add(statements, this.layout));
+  // Part of CompilableTemplate
+  compile(context: SyntaxCompilationContext): number {
+    return maybeCompile(this, context);
   }
 }
 
-export class CompilableBlock implements CompilableTemplate<BlockSymbolTable> {
-  private compiled: Option<number> = null;
+export function compilableLayout<R>(layout: LayoutWithContext<R>): CompilableProgram {
+  let block = layout.block;
+  return new CompilableTemplateImpl(block.statements, meta(layout), {
+    symbols: block.symbols,
+    hasEval: block.hasEval,
+  });
+}
 
-  constructor(private compiler: Compiler<Opaque>, private parsed: BlockWithContext) {}
+export function compilableBlock(
+  overloadBlock: SerializedInlineBlock | WireFormat.Statement[],
+  containing: ContainingMetadata
+): CompilableBlock {
+  let block = Array.isArray(overloadBlock)
+    ? { statements: overloadBlock, parameters: EMPTY_ARRAY }
+    : overloadBlock;
 
-  get symbolTable(): BlockSymbolTable {
-    return this.parsed.block;
+  return new CompilableTemplateImpl(block.statements, containing, { parameters: block.parameters });
+}
+
+function maybeCompile(
+  compilable: CompilableTemplateImpl<SymbolTable>,
+  context: SyntaxCompilationContext
+): number {
+  if (compilable.compiled !== null) return compilable.compiled!;
+
+  compilable.compiled = PLACEHOLDER_HANDLE;
+
+  let { statements, meta } = compilable;
+
+  let compiled = (compilable.compiled = compile(statements, meta, context));
+  patchStdlibs(context.program);
+
+  return compiled;
+}
+
+export function compile(
+  statements: Statement[],
+  meta: ContainingMetadata,
+  syntaxContext: SyntaxCompilationContext
+): number {
+  let sCompiler = STATEMENTS;
+  let context = templateCompilationContext(syntaxContext, meta);
+
+  for (let i = 0; i < statements.length; i++) {
+    concatStatements(context, sCompiler.compile(statements[i], context.meta));
   }
 
-  compile(): number {
-    if (this.compiled !== null) return this.compiled;
+  let handle = context.encoder.commit(syntaxContext.program.heap, meta.size);
 
-    // Track that compilation has started but not yet finished by temporarily
-    // using a placeholder handle. In eager compilation mode, where compile()
-    // may be called recursively, we use this as a signal that the handle cannot
-    // be known synchronously and must be linked lazily.
-    this.compiled = PLACEHOLDER_HANDLE;
-
-    let {
-      block: { statements },
-      containingLayout,
-    } = this.parsed;
-
-    return (this.compiled = this.compiler.add(statements, containingLayout));
+  if (DEBUG) {
+    debugCompiler(context, handle);
   }
+
+  return handle;
 }

@@ -24,3 +24,5 @@ export {
   IteratorSynchronizer,
   IteratorSynchronizerDelegate,
 } from './lib/iterable';
+
+export * from './lib/iterable-impl';

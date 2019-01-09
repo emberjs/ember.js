@@ -1,3 +1,4 @@
+import { clearElement } from '@glimmer/util';
 import { RenderTest, test } from '../render-test';
 
 export class YieldSuite extends RenderTest {
@@ -142,8 +143,8 @@ export class YieldSuite extends RenderTest {
 
       this.assertComponent(`${output}-`);
       this.assertStableRerender();
-      this.element.innerHTML = '';
-      this.delegate['resetEnv']();
+      clearElement(this.element);
+      this.delegate.resetEnv();
     });
   }
 

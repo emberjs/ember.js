@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.37.0 (2018-11-29)
+
+#### :bug: Bug Fix
+* Other
+  * [#863](https://github.com/glimmerjs/glimmer-vm/pull/863) Fixed Windows Build Error. ([@mattselden12](https://github.com/mattselden12))
+* `@glimmer/interfaces`, `@glimmer/node`, `@glimmer/runtime`
+  * [#856](https://github.com/glimmerjs/glimmer-vm/pull/856) `Bounds` must be non-empty. ([@chancancode](https://github.com/chancancode))
+
+#### :memo: Documentation
+* [#862](https://github.com/glimmerjs/glimmer-vm/pull/862) [DOCS] Adds runtime documentation. ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 5
+- Chris Garrett ([pzuraq](https://github.com/pzuraq))
+- Godfrey Chan ([chancancode](https://github.com/chancancode))
+- Robert Jackson ([rwjblue](https://github.com/rwjblue))
+- Tom Dale ([tomdale](https://github.com/tomdale))
+- [mattselden12](https://github.com/mattselden12)
+
 ## v0.36.5 (2018-10-16)
 
 #### :rocket: Enhancement

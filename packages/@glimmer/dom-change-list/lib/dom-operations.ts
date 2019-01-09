@@ -1,6 +1,15 @@
-import { Simple, Option } from '@glimmer/interfaces';
+import { Option } from '@glimmer/interfaces';
 import { dict, assert } from '@glimmer/util';
-import { NodeToken, NodeTokens } from './node-tokens';
+import { NodeToken, NodeTokensImpl } from './node-tokens';
+import {
+  Namespace,
+  ElementNamespace,
+  AttrNamespace,
+  SimpleDocument,
+  SimpleNode,
+  SimpleElement,
+  SimpleDocumentFragment,
+} from '@simple-dom/interface';
 
 export enum ConstructionOperation {
   OpenElement,
@@ -25,7 +34,7 @@ function opcodeof(opcode: number): ConstructionOperation {
   return opcode >> 3;
 }
 
-export const HTML = 'http://www.w3.org/1999/xhtml';
+export const HTML = Namespace.HTML;
 
 export class Constants {
   private strings: string[] = [];
@@ -59,7 +68,7 @@ export class OperationsBuilder {
     };
   }
 
-  openElement(name: string, ns: Simple.Namespace = HTML): NodeToken {
+  openElement(name: string, ns: Namespace = HTML): NodeToken {
     let nameConst = this.constants.get(name);
     let nsConst = this.constants.get(ns);
 
@@ -71,7 +80,7 @@ export class OperationsBuilder {
     this.ops.push(withSize(ConstructionOperation.CloseElement, 0));
   }
 
-  setAttribute(name: string, value: string, ns: Simple.Namespace = HTML) {
+  setAttribute(name: string, value: string, ns: Namespace = HTML) {
     let nameConst = this.constants.get(name);
     let valueConst = this.constants.get(value);
     let nsConst = this.constants.get(ns);
@@ -96,29 +105,29 @@ export class OperationsBuilder {
 }
 
 interface ConstructionState {
-  readonly document: Simple.Document;
-  readonly nextSibling: Option<Simple.Node>;
+  readonly document: SimpleDocument;
+  readonly nextSibling: Option<SimpleNode>;
   readonly elements: Parent[]; // mutable
-  readonly tokens: NodeTokens;
+  readonly tokens: NodeTokensImpl;
 
   parent: Parent;
   constants: ReadonlyArray<string>;
-  constructing: Option<Simple.Element>;
+  constructing: Option<SimpleElement>;
 }
 
-export type Parent = Simple.Element | Simple.DocumentFragment;
+export type Parent = SimpleElement | SimpleDocumentFragment;
 
 export interface RunOptions {
-  document: Simple.Document;
+  document: SimpleDocument;
   parent: Parent;
-  nextSibling: Option<Simple.Node>;
+  nextSibling: Option<SimpleNode>;
   constants: ReadonlyArray<string>;
 }
 
 export function run(opcodes: ReadonlyArray<number>, options: RunOptions) {
   let offset = 0;
   let end = opcodes.length;
-  let tokens = new NodeTokens();
+  let tokens = new NodeTokensImpl();
 
   tokens.register(options.parent);
 
@@ -166,7 +175,7 @@ const ConstructionOperations: ConstructionFunction[] = [
 
     if (state.constructing) flush(state);
 
-    let el = document.createElementNS(constants[namespace] as Simple.Namespace, constants[tag]);
+    let el = document.createElementNS(constants[namespace] as ElementNamespace, constants[tag]);
     state.constructing = el;
     state.tokens.register(el);
   },
@@ -188,7 +197,7 @@ const ConstructionOperations: ConstructionFunction[] = [
     );
 
     constructing!.setAttributeNS(
-      constants[namespace] as Simple.Namespace,
+      constants[namespace] as AttrNamespace,
       constants[name],
       constants[value]
     );
@@ -219,7 +228,7 @@ const ConstructionOperations: ConstructionFunction[] = [
   },
 ];
 
-function flush(state: ConstructionState): Simple.Element {
+function flush(state: ConstructionState): SimpleElement {
   let { constructing, nextSibling, elements } = state;
   state.parent.insertBefore(constructing!, nextSibling);
   state.constructing = null;

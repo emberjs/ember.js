@@ -1,11 +1,7 @@
-import {
-  ComponentDefinition,
-  Invocation,
-  Helper as GlimmerHelper,
-  ModifierDefinition,
-} from '@glimmer/runtime';
-import { Option, dict } from '@glimmer/util';
+import { CompilableProgram, ComponentDefinition, Invocation } from '@glimmer/interfaces';
 import { PartialDefinition } from '@glimmer/opcode-compiler';
+import { Helper as GlimmerHelper, ModifierDefinition } from '@glimmer/runtime';
+import { dict, Option } from '@glimmer/util';
 
 export interface Lookup {
   helper: GlimmerHelper;
@@ -13,6 +9,7 @@ export interface Lookup {
   partial: PartialDefinition;
   component: ComponentDefinition;
   template: Invocation;
+  compilable: CompilableProgram;
   'template-source': string;
 }
 
@@ -51,5 +48,6 @@ export default class Registry {
   partial = new TypedRegistry<PartialDefinition>();
   component: TypedRegistry<ComponentDefinition> = new TypedRegistry<ComponentDefinition>();
   template = new TypedRegistry<Invocation>();
+  compilable = new TypedRegistry<CompilableProgram>();
   'template-source' = new TypedRegistry<string>();
 }

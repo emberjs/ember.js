@@ -1,14 +1,15 @@
-import { RenderResult, ElementBuilder, Environment, Cursor } from '@glimmer/runtime';
-import { Dict, Opaque } from '@glimmer/util';
-
-import { ComponentKind, ComponentTypes } from './render-test';
-import { UserHelper } from './environment/helper';
-import { BasicReference } from '@glimmer/reference';
 import { DebugConstants } from '@glimmer/bundle-compiler';
+import { Cursor, Dict, Environment, RenderResult } from '@glimmer/interfaces';
+import { BasicReference } from '@glimmer/reference';
+import { ElementBuilder } from '@glimmer/runtime';
+import { SimpleElement } from '@simple-dom/interface';
+import { UserHelper } from './environment/helper';
+import { ComponentKind, ComponentTypes } from './interfaces';
 
 export default interface RenderDelegate {
   constants?: DebugConstants;
-  getInitialElement(): HTMLElement;
+  getInitialElement(): SimpleElement;
+  createElement(tagName: string): SimpleElement;
   registerComponent<K extends ComponentKind, L extends ComponentKind>(
     type: K,
     testType: L,
@@ -17,13 +18,14 @@ export default interface RenderDelegate {
     Class?: ComponentTypes[K]
   ): void;
   registerHelper(name: string, helper: UserHelper): void;
-  registerModifier(name: string, klass: Opaque): void;
+  registerModifier(name: string, klass: unknown): void;
   renderTemplate(
     template: string,
-    context: Dict<Opaque>,
-    element: HTMLElement,
+    context: Dict<unknown>,
+    element: SimpleElement,
     snapshot: () => void
   ): RenderResult;
   getElementBuilder(env: Environment, cursor: Cursor): ElementBuilder;
-  getSelf(context: Opaque): BasicReference<Opaque>;
+  getSelf(context: unknown): BasicReference<unknown>;
+  resetEnv(): void;
 }

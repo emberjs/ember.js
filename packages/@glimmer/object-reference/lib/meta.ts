@@ -2,7 +2,7 @@ import { PropertyReference } from './references/descriptors';
 import RootReference from './references/root';
 import { MetaOptions } from './types';
 
-import { Option, Dict, DictSet, HasGuid, Set, dict } from '@glimmer/util';
+import { Option, DictSet, HasGuid, Set, dict } from '@glimmer/util';
 
 import {
   RootReferenceFactory,
@@ -14,15 +14,14 @@ import {
 import { PathReference as IPathReference, CURRENT_TAG } from '@glimmer/reference';
 
 import { InnerReferenceFactory } from './references/descriptors';
+import { Dict } from '@glimmer/interfaces';
 
 const NOOP_DESTROY = { destroy() {} };
 
 class ConstPath implements IPathReference<any> {
-  private parent: any;
-  private property!: string; // TODO: is this meant to be set from the constructor?
   public tag = CURRENT_TAG;
 
-  constructor(parent: any, _property: string) {
+  constructor(private parent: any, private property: string) {
     this.parent = parent;
   }
 

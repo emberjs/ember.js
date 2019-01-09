@@ -1,17 +1,18 @@
+import { precompile } from '@glimmer/compiler';
+import { Cursor, Environment } from '@glimmer/interfaces';
 import {
-  RenderTest,
-  test,
-  rawModule,
-  NodeLazyRenderDelegate,
-  NodeEagerRenderDelegate,
-  SSRComponentSuite,
-  blockStack,
-  strip,
   AbstractNodeTest,
+  blockStack,
+  NodeEagerRenderDelegate,
+  NodeLazyRenderDelegate,
+  rawModule,
+  RenderTest,
+  SSRComponentSuite,
+  strip,
+  test,
+  toInnerHTML,
 } from '@glimmer/test-helpers';
 import { NodeDOMTreeConstruction, serializeBuilder } from '..';
-import { precompile } from '@glimmer/compiler';
-import { Environment, Cursor } from '@glimmer/runtime';
 
 class DOMHelperTests extends AbstractNodeTest {
   @test
@@ -109,7 +110,7 @@ class SerializedDOMHelperTests extends DOMHelperTests {
 
   assertHTML(html: string) {
     let b = blockStack();
-    let serialized = this.serializer.serializeChildren(this.element);
+    let serialized = toInnerHTML(this.element);
     this.assert.equal(serialized, `${b(0)}${html}${b(0)}`);
   }
 }

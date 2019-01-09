@@ -1,56 +1,55 @@
-import { Simple, Bounds } from '@glimmer/interfaces';
-import { Option, SymbolDestroyable, expect } from '@glimmer/util';
+import { Bounds, Cursor, SymbolDestroyable } from '@glimmer/interfaces';
+import { expect, Option } from '@glimmer/util';
+import { SimpleElement, SimpleNode } from '@simple-dom/interface';
 
-export class Cursor {
-  constructor(public element: Simple.Element, public nextSibling: Option<Simple.Node>) {}
+export class CursorImpl implements Cursor {
+  constructor(public element: SimpleElement, public nextSibling: Option<SimpleNode>) {}
 }
-
-export default Bounds;
 
 export type DestroyableBounds = Bounds & SymbolDestroyable;
 
 export class ConcreteBounds implements Bounds {
   constructor(
-    public parentNode: Simple.Element,
-    private first: Simple.Node,
-    private last: Simple.Node
+    public parentNode: SimpleElement,
+    private first: SimpleNode,
+    private last: SimpleNode
   ) {}
 
-  parentElement(): Simple.Element {
+  parentElement(): SimpleElement {
     return this.parentNode;
   }
 
-  firstNode(): Simple.Node {
+  firstNode(): SimpleNode {
     return this.first;
   }
 
-  lastNode(): Simple.Node {
+  lastNode(): SimpleNode {
     return this.last;
   }
 }
 
 export class SingleNodeBounds implements Bounds {
-  constructor(private parentNode: Simple.Element, private node: Simple.Node) {}
+  constructor(private parentNode: SimpleElement, private node: SimpleNode) {}
 
-  parentElement(): Simple.Element {
+  parentElement(): SimpleElement {
     return this.parentNode;
   }
 
-  firstNode(): Simple.Node {
+  firstNode(): SimpleNode {
     return this.node;
   }
 
-  lastNode(): Simple.Node {
+  lastNode(): SimpleNode {
     return this.node;
   }
 }
 
-export function move(bounds: Bounds, reference: Option<Simple.Node>): Option<Simple.Node> {
+export function move(bounds: Bounds, reference: Option<SimpleNode>): Option<SimpleNode> {
   let parent = bounds.parentElement();
   let first = bounds.firstNode();
   let last = bounds.lastNode();
 
-  let current: Simple.Node = first;
+  let current: SimpleNode = first;
 
   while (true) {
     let next = current.nextSibling;
@@ -65,12 +64,12 @@ export function move(bounds: Bounds, reference: Option<Simple.Node>): Option<Sim
   }
 }
 
-export function clear(bounds: Bounds): Option<Simple.Node> {
+export function clear(bounds: Bounds): Option<SimpleNode> {
   let parent = bounds.parentElement();
   let first = bounds.firstNode();
   let last = bounds.lastNode();
 
-  let current: Simple.Node = first;
+  let current: SimpleNode = first;
 
   while (true) {
     let next = current.nextSibling;

@@ -1,16 +1,17 @@
 import {
+  AnnotatedModuleLocator,
   CompilableProgram,
-  Option,
+  CompileTimeResolverDelegate,
   ComponentCapabilities,
-  CompileTimeLookup,
+  ComponentDefinition,
+  Option,
+  TemplateMeta,
+  WithJitStaticLayout,
 } from '@glimmer/interfaces';
 import { assert } from '@glimmer/util';
-import { ComponentDefinition, WithStaticLayout } from '@glimmer/runtime';
-
-import { TestMeta } from './environment';
 import RuntimeResolver from './runtime-resolver';
 
-export default class LazyCompileTimeLookup implements CompileTimeLookup<TestMeta> {
+export default class LazyCompileTimeLookup implements CompileTimeResolverDelegate {
   constructor(private resolver: RuntimeResolver) {}
 
   private getComponentDefinition(handle: number): ComponentDefinition {
@@ -19,6 +20,10 @@ export default class LazyCompileTimeLookup implements CompileTimeLookup<TestMeta
     assert(!!definition, `Couldn't find a template for handle ${definition}`);
 
     return definition!;
+  }
+
+  resolve<T>(handle: number): T {
+    return this.resolver.resolve(handle);
   }
 
   getCapabilities(handle: number): ComponentCapabilities {
@@ -35,32 +40,28 @@ export default class LazyCompileTimeLookup implements CompileTimeLookup<TestMeta
       return null;
     }
 
-    let invocation = (manager as WithStaticLayout<any, any, TestMeta, RuntimeResolver>).getLayout(
+    return (manager as WithJitStaticLayout<any, any, RuntimeResolver>).getJitStaticLayout(
       state,
       this.resolver
     );
-
-    return {
-      compile() {
-        return invocation.handle;
-      },
-      symbolTable: invocation.symbolTable,
-    };
   }
 
-  lookupHelper(name: string, referrer: TestMeta): Option<number> {
+  lookupHelper(name: string, referrer: TemplateMeta<AnnotatedModuleLocator>): Option<number> {
     return this.resolver.lookupHelper(name, referrer);
   }
 
-  lookupModifier(name: string, referrer: TestMeta): Option<number> {
+  lookupModifier(name: string, referrer: TemplateMeta<AnnotatedModuleLocator>): Option<number> {
     return this.resolver.lookupModifier(name, referrer);
   }
 
-  lookupComponentDefinition(name: string, referrer: TestMeta): Option<number> {
+  lookupComponentDefinition(
+    name: string,
+    referrer: Option<TemplateMeta<AnnotatedModuleLocator>>
+  ): Option<number> {
     return this.resolver.lookupComponentHandle(name, referrer);
   }
 
-  lookupPartial(name: string, referrer: TestMeta): Option<number> {
+  lookupPartial(name: string, referrer: TemplateMeta<AnnotatedModuleLocator>): Option<number> {
     return this.resolver.lookupPartial(name, referrer);
   }
 }

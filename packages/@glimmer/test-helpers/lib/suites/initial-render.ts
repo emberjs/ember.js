@@ -1,7 +1,7 @@
-import { test, RenderTest } from '../render-test';
-import { strip, assertNodeTagName } from '../helpers';
-import { SVG_NAMESPACE } from '@glimmer/runtime';
-import { Opaque } from '@glimmer/interfaces';
+import { Namespace, SimpleElement } from '@simple-dom/interface';
+import { firstElementChild, getElementsByTagName } from '../dom';
+import { assertNodeTagName, strip } from '../helpers';
+import { RenderTest, test } from '../render-test';
 
 export class InitialRenderSuite extends RenderTest {
   name = 'BASE';
@@ -480,16 +480,17 @@ export class InitialRenderSuite extends RenderTest {
       }
     );
 
-    let selectNode = this.element.firstElementChild;
+    let selectNode = firstElementChild(this.element);
     this.assert.ok(selectNode, 'rendered select');
     if (selectNode === null) {
       return;
     }
-    let options = selectNode.querySelectorAll('option');
-    let selected: HTMLOptionElement[] = [];
+    let options = getElementsByTagName(selectNode, 'option');
+    let selected: SimpleElement[] = [];
     for (let i = 0; i < options.length; i++) {
       let option = options[i];
-      if (option.selected) {
+      // TODO: This is a real discrepancy with SimpleDOM
+      if ((option as any).selected) {
         selected.push(option);
       }
     }
@@ -505,8 +506,8 @@ export class InitialRenderSuite extends RenderTest {
       </select>`);
 
     this.assert.equal(selected.length, 2, 'two options are selected');
-    this.assert.equal(selected[0].value, '1', 'first selected item is "1"');
-    this.assert.equal(selected[1].value, '2', 'second selected item is "2"');
+    this.assert.equal((selected[0] as HTMLOptionElement).value, '1', 'first selected item is "1"');
+    this.assert.equal((selected[1] as HTMLOptionElement).value, '2', 'second selected item is "2"');
   }
 
   @test
@@ -588,7 +589,7 @@ export class InitialRenderSuite extends RenderTest {
     this.assertHTML('<svg viewBox="0 0 0 0"></svg>');
     let svg = this.element.firstChild;
     if (assertNodeTagName(svg, 'svg')) {
-      this.assert.equal(svg.namespaceURI, SVG_NAMESPACE);
+      this.assert.equal(svg.namespaceURI, Namespace.SVG);
       this.assert.equal(svg.getAttribute('viewBox'), '0 0 0 0');
     }
     this.assertStableRerender();
@@ -603,13 +604,13 @@ export class InitialRenderSuite extends RenderTest {
     let svg = this.element.firstChild;
 
     if (assertNodeTagName(svg, 'svg')) {
-      this.assert.equal(svg.namespaceURI, SVG_NAMESPACE);
+      this.assert.equal(svg.namespaceURI, Namespace.SVG);
 
       let path = svg.firstChild;
       if (assertNodeTagName(path, 'path')) {
         this.assert.equal(
           path.namespaceURI,
-          SVG_NAMESPACE,
+          Namespace.SVG,
           'creates the path element with a namespace'
         );
         this.assert.equal(path.getAttribute('d'), d);
@@ -627,14 +628,14 @@ export class InitialRenderSuite extends RenderTest {
     let svg = this.element.firstChild;
 
     if (assertNodeTagName(svg, 'svg')) {
-      this.assert.equal(svg.namespaceURI, SVG_NAMESPACE);
+      this.assert.equal(svg.namespaceURI, Namespace.SVG);
 
       let foreignObject = svg.firstChild;
 
-      if (assertNodeTagName(foreignObject, 'foreignobject')) {
+      if (assertNodeTagName(foreignObject, 'foreignObject')) {
         this.assert.equal(
           foreignObject.namespaceURI,
-          SVG_NAMESPACE,
+          Namespace.SVG,
           'creates the foreignObject element with a namespace'
         );
       }
@@ -649,19 +650,19 @@ export class InitialRenderSuite extends RenderTest {
     this.assertHTML('<svg></svg><svg></svg><div></div>');
 
     this.assert.equal(
-      this.element.childNodes[0].namespaceURI,
-      SVG_NAMESPACE,
+      (this.element.childNodes[0] as Node).namespaceURI,
+      Namespace.SVG,
       'creates the first svg element with a namespace'
     );
 
     this.assert.equal(
-      this.element.childNodes[1].namespaceURI,
-      SVG_NAMESPACE,
+      (this.element.childNodes[1] as Node).namespaceURI,
+      Namespace.SVG,
       'creates the second svg element with a namespace'
     );
 
     this.assert.equal(
-      this.element.childNodes[2].namespaceURI,
+      (this.element.childNodes[2] as Node).namespaceURI,
       XHTML_NAMESPACE,
       'creates the div element without a namespace'
     );
@@ -688,7 +689,7 @@ export class InitialRenderSuite extends RenderTest {
     }
 
     if (assertNodeTagName(svg, 'svg')) {
-      this.assert.equal(svg.namespaceURI, SVG_NAMESPACE, "svg's namespace is svgNamespace");
+      this.assert.equal(svg.namespaceURI, Namespace.SVG, "svg's namespace is svgNamespace");
     }
 
     if (assertNodeTagName(secondDiv, 'div')) {
@@ -1027,7 +1028,7 @@ export class InitialRenderSuite extends RenderTest {
 
   @test
   'GH#13999 The compiler can handle simple helpers with inline undefined parameter'() {
-    let value: Opaque = 'PLACEHOLDER';
+    let value: unknown = 'PLACEHOLDER';
     let length;
     this.registerHelper('say-hello', function(params) {
       length = params.length;
@@ -1044,7 +1045,7 @@ export class InitialRenderSuite extends RenderTest {
 
   @test
   'GH#13999 The compiler can handle simple helpers with positional parameter undefined string literal'() {
-    let value: Opaque = 'PLACEHOLDER';
+    let value: unknown = 'PLACEHOLDER';
     let length;
     this.registerHelper('say-hello', function(params) {
       length = params.length;
@@ -1061,7 +1062,7 @@ export class InitialRenderSuite extends RenderTest {
 
   @test
   'GH#13999 The compiler can handle components with undefined named arguments'() {
-    let value: Opaque = 'PLACEHOLDER';
+    let value: unknown = 'PLACEHOLDER';
     this.registerHelper('say-hello', function(_, hash) {
       value = hash['foo'];
       return 'hello';
@@ -1075,7 +1076,7 @@ export class InitialRenderSuite extends RenderTest {
 
   @test
   'GH#13999 The compiler can handle components with undefined string literal named arguments'() {
-    let value: Opaque = 'PLACEHOLDER';
+    let value: unknown = 'PLACEHOLDER';
     this.registerHelper('say-hello', function(_, hash) {
       value = hash['foo'];
       return 'hello';

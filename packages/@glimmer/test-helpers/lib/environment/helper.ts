@@ -1,15 +1,14 @@
-import { Opaque, Dict } from '@glimmer/interfaces';
+import { Dict, CapturedArguments, VMArguments } from '@glimmer/interfaces';
 import { PathReference, Tag, Reference, CURRENT_TAG } from '@glimmer/reference';
-import { CapturedArguments, Arguments } from '@glimmer/runtime';
 
-export type UserHelper = (args: ReadonlyArray<Opaque>, named: Dict<Opaque>) => Opaque;
+export type UserHelper = (args: ReadonlyArray<unknown>, named: Dict<unknown>) => unknown;
 
-export class HelperReference implements PathReference<Opaque> {
+export class HelperReference implements PathReference<unknown> {
   private helper: UserHelper;
   private args: CapturedArguments;
   public tag: Tag = CURRENT_TAG;
 
-  constructor(helper: UserHelper, args: Arguments) {
+  constructor(helper: UserHelper, args: VMArguments) {
     this.helper = helper;
     this.args = args.capture();
   }
@@ -20,13 +19,13 @@ export class HelperReference implements PathReference<Opaque> {
     return helper(args.positional.value(), args.named.value());
   }
 
-  get(prop: string): SimplePathReference<Opaque> {
+  get(prop: string): SimplePathReference<unknown> {
     return new SimplePathReference(this, prop);
   }
 }
 
 export class SimplePathReference<T> implements PathReference<T> {
-  private parent: Reference<T>;
+  private parent: Reference<Dict>;
   private property: string;
   public tag: Tag = CURRENT_TAG;
 
@@ -36,10 +35,10 @@ export class SimplePathReference<T> implements PathReference<T> {
   }
 
   value(): T {
-    return this.parent.value()[this.property];
+    return this.parent.value()[this.property] as T;
   }
 
-  get(prop: string): PathReference<Opaque> {
+  get(prop: string): PathReference<unknown> {
     return new SimplePathReference(this, prop);
   }
 }

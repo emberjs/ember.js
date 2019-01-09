@@ -1,5 +1,5 @@
 import Reference, { PathReference } from './reference';
-import { Opaque, Option, Slice, LinkedListNode } from '@glimmer/util';
+import { Option, Slice, LinkedListNode } from '@glimmer/util';
 
 //////////
 
@@ -177,14 +177,14 @@ export abstract class CachedTag extends RevisionTag {
   private lastValue: Option<Revision> = null;
 
   value(): Revision {
-    let { lastChecked, lastValue } = this;
+    let { lastChecked } = this;
 
     if (lastChecked !== $REVISION) {
       this.lastChecked = $REVISION;
-      this.lastValue = lastValue = this.compute();
+      this.lastValue = this.compute();
     }
 
-    return lastValue as Revision;
+    return this.lastValue as Revision;
   }
 
   protected invalidate() {
@@ -274,10 +274,10 @@ register(UpdatableTag);
 
 //////////
 
-export interface VersionedReference<T = Opaque> extends Reference<T>, Tagged {}
+export interface VersionedReference<T = unknown> extends Reference<T>, Tagged {}
 
-export interface VersionedPathReference<T = Opaque> extends PathReference<T>, Tagged {
-  get(property: string): VersionedPathReference<Opaque>;
+export interface VersionedPathReference<T = unknown> extends PathReference<T>, Tagged {
+  get(property: string): VersionedPathReference<unknown>;
 }
 
 export abstract class CachedReference<T> implements VersionedReference<T> {

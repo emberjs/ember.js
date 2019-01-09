@@ -1,21 +1,19 @@
-import { TestEnvironment, TestMeta, DEFAULT_TEST_META } from '@glimmer/test-helpers';
+import { DEFAULT_TEST_META } from '@glimmer/test-helpers';
 import { templateFactory } from '@glimmer/opcode-compiler';
 import { precompile } from '@glimmer/compiler';
-import { SerializedTemplateWithLazyBlock } from '@glimmer/wire-format';
+import { SerializedTemplateWithLazyBlock, AnnotatedModuleLocator } from '@glimmer/interfaces';
 
-let env: TestEnvironment;
-
-let serializedTemplate: SerializedTemplateWithLazyBlock<TestMeta>;
-let serializedTemplateNoId: SerializedTemplateWithLazyBlock<TestMeta>;
+let serializedTemplate: SerializedTemplateWithLazyBlock<AnnotatedModuleLocator>;
+let serializedTemplateNoId: SerializedTemplateWithLazyBlock<AnnotatedModuleLocator>;
 
 QUnit.module('templateFactory', {
   beforeEach() {
-    env = new TestEnvironment();
     let templateJs = precompile('<div>{{name}}</div>', {
       meta: {
-        version: 12,
-        lang: 'es',
-        moduleName: 'template/module/name',
+        kind: 'unknown',
+        meta: {},
+        module: 'template/module/name',
+        name: 'default',
       },
     });
     serializedTemplate = JSON.parse(templateJs);
@@ -46,7 +44,7 @@ QUnit.test('generates id if no id is on the serialized template', assert => {
 
 QUnit.test('id of template matches factory', assert => {
   let factory = templateFactory(serializedTemplate);
-  let template = factory.create(env.compiler);
+  let template = factory.create();
   assert.ok(template.id, 'is present');
   assert.equal(template.id, factory.id, 'template id matches factory id');
 });
@@ -54,21 +52,23 @@ QUnit.test('id of template matches factory', assert => {
 QUnit.test('meta is accessible from factory', assert => {
   let factory = templateFactory(serializedTemplate);
   assert.deepEqual(factory.meta, {
-    version: 12,
-    lang: 'es',
-    moduleName: 'template/module/name',
+    kind: 'unknown',
+    meta: {},
+    module: 'template/module/name',
+    name: 'default',
   });
 });
 
 QUnit.test('meta is accessible from template', assert => {
   let factory = templateFactory(serializedTemplate);
-  let template = factory.create(env.compiler);
+  let template = factory.create();
   assert.deepEqual(
-    template.referrer,
+    template.referrer as AnnotatedModuleLocator,
     {
-      version: 12,
-      lang: 'es',
-      moduleName: 'template/module/name',
+      kind: 'unknown',
+      meta: {},
+      module: 'template/module/name',
+      name: 'default',
     },
     'template has expected meta'
   );
@@ -76,16 +76,21 @@ QUnit.test('meta is accessible from template', assert => {
 
 QUnit.test('can inject per environment things into meta', assert => {
   let owner = {};
-  let factory = templateFactory<TestMeta>(serializedTemplate);
+  let factory = templateFactory<AnnotatedModuleLocator>(serializedTemplate);
 
-  let template = factory.create(env.compiler, { ...DEFAULT_TEST_META, owner });
+  let template = factory.create({
+    ...DEFAULT_TEST_META,
+    owner,
+  });
+
   assert.strictEqual(template.referrer.owner, owner, 'is owner');
   assert.deepEqual(
-    template.referrer,
+    template.referrer as AnnotatedModuleLocator & { owner: unknown },
     {
-      version: 12,
-      lang: 'es',
-      moduleName: 'template/module/name',
+      kind: 'unknown',
+      meta: {},
+      module: 'template/module/name',
+      name: 'default',
       owner,
     },
     'template has expected meta'

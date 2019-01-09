@@ -2,14 +2,14 @@
 {
   "typescript.tsdk": "./node_modules/typescript/lib",
   "search.exclude": {
-    "**/node_modules": true,
+    "**/node_modules/**": true,
     "tmp": true
   },
   "files.exclude": {
     "**/.git": true,
     "**/.DS_Store": true,
-    "**/node_modules": true,
-    "**/dist": true,
+    "**/node_modules/**": true,
+    "**/dist/**": true,
     "dist": true,
     "tmp/**": true
   },
@@ -25,5 +25,7 @@
   "editor.renderWhitespace": "boundary",
   "editor.insertSpaces": true,
   "editor.tabSize": 2,
-  "editor.formatOnSave": true
+  "editor.formatOnSave": true,
+  "typescript.tsc.autoDetect": "off",
+  "javascript.updateImportsOnFileMove.enabled": "always"
 }

@@ -1,30 +1,41 @@
-import { Template, RichIteratorResult } from '@glimmer/interfaces';
 import {
-  UNDEFINED_REFERENCE,
+  AnnotatedModuleLocator,
+  Option,
   RenderResult,
-  SafeString,
-  PrimitiveReference,
-  VM,
+  RichIteratorResult,
+  Template,
+  TemplateMeta,
+} from '@glimmer/interfaces';
+import { UpdatableReference } from '@glimmer/object-reference';
+import { bump, ConstReference } from '@glimmer/reference';
+import {
   clientBuilder,
+  PrimitiveReference,
+  SafeString,
+  UNDEFINED_REFERENCE,
+  VM,
 } from '@glimmer/runtime';
 import {
   assertNodeTagName,
   BasicComponent,
-  TestEnvironment,
   equalTokens,
+  getElementByClassName,
+  getElementsByTagName,
+  qunitFixture,
   stripTight,
+  TestEnvironment,
+  toTextContent,
   trimLines,
 } from '@glimmer/test-helpers';
-import { ConstReference, bump } from '@glimmer/reference';
-import { UpdatableReference } from '@glimmer/object-reference';
-import { Opaque } from '@glimmer/util';
-import { test, module, assert } from './support';
+import { Namespace, SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
+import { assert, module, test } from './support';
 
-const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
-const XLINK_NAMESPACE = 'http://www.w3.org/1999/xlink';
+const SVG_NAMESPACE = Namespace.SVG;
+const XLINK_NAMESPACE = Namespace.XLink;
 const XHTML_NAMESPACE = 'http://www.w3.org/1999/xhtml';
 
-let root: HTMLElement;
+let root: SimpleElement;
+let doc: SimpleDocument;
 let env: TestEnvironment;
 let self: UpdatableReference<any>;
 let result: RenderResult;
@@ -35,7 +46,8 @@ function compile(template: string) {
 
 function commonSetup() {
   env = new TestEnvironment(); // TODO: Support SimpleDOM
-  root = document.getElementById('qunit-fixture')!;
+  root = qunitFixture();
+  doc = root.ownerDocument;
 }
 
 function assertProperty<T, K extends keyof T, V extends T[K]>(
@@ -49,7 +61,7 @@ function assertProperty<T, K extends keyof T, V extends T[K]>(
   }
 }
 
-function render(template: Template, context = {}) {
+function render(template: Template<TemplateMeta<AnnotatedModuleLocator>>, context = {}) {
   self = new UpdatableReference(context);
   env.begin();
   let cursor = { element: root, nextSibling: null };
@@ -76,7 +88,8 @@ function rerender(context: any = null) {
 }
 
 function getNodeByClassName(className: string) {
-  let itemNode = root.querySelector(`.${className}`);
+  let itemNode = getElementByClassName(root, className);
+  // let itemNode = root.querySelector(`.${className}`);
   assert.ok(itemNode, "Expected node with class='" + className + "'");
   return itemNode;
 }
@@ -634,35 +647,45 @@ module('[glimmer-runtime] Updating', hooks => {
   // swapping between safe and unsafe
   // swapping between unsafe and safe
 
-  function makeElement(tag: string, content: string) {
-    let el = document.createElement(tag);
-    el.appendChild(document.createTextNode(content));
+  function makeElement(tag: string, content: string): SimpleElement {
+    let el = doc.createElement(tag);
+    el.appendChild(doc.createTextNode(content));
     return el;
   }
 
-  function makeSVGElement(tag: string, content: string) {
-    let el = document.createElementNS(SVG_NAMESPACE, tag);
-    el.appendChild(document.createTextNode(content));
+  function makeSVGElement(tag: string, content: string): SimpleElement {
+    let el = doc.createElementNS(SVG_NAMESPACE, tag);
+    el.appendChild(doc.createTextNode(content));
     return el;
   }
 
-  function makeFragment(nodes: Node[]) {
-    let frag = document.createDocumentFragment();
+  function makeFragment(nodes: SimpleNode[]) {
+    let frag = doc.createDocumentFragment();
     nodes.forEach(node => frag.appendChild(node));
     return frag;
   }
+
+  type ContentValue =
+    | string
+    | SafeString
+    | null
+    | undefined
+    | number
+    | boolean
+    | Element
+    | DocumentFragment;
 
   interface ContentTestCase {
     name: string;
     template: string;
     values: Array<{
-      input: Opaque | ((isHTML: boolean) => Opaque);
+      input: ContentValue | ((isHTML: boolean) => ContentValue) | { toString(): string };
       expected: string | ((isHTML: boolean) => string);
       description: string;
     }>;
   }
 
-  function isInputFunction(value: any): value is (isHTML: boolean) => Opaque {
+  function isInputFunction(value: any): value is (isHTML: boolean) => unknown {
     return typeof value === 'function';
   }
 
@@ -726,10 +749,10 @@ module('[glimmer-runtime] Updating', hooks => {
       test(`updating ${tc.name} produces expected result in ${wrapper.name}`, () => {
         let template = compile(wrapper.before + tc.template + wrapper.after);
         let context = {
-          value: undefined as Opaque,
+          value: undefined as unknown,
         };
         tc.values.forEach(({ input: _input, expected: _expected, description }, index) => {
-          let input: Opaque;
+          let input: unknown;
           let expected: string;
 
           if (isInputFunction(_input)) {
@@ -1059,7 +1082,7 @@ module('[glimmer-runtime] Updating', hooks => {
     let rawString = '<b>bold</b> and spicy';
 
     env.registerInternalHelper('const-foobar', () => {
-      return new ValueReference<Opaque>(makeSafeString(rawString));
+      return new ValueReference<unknown>(makeSafeString(rawString));
     });
 
     let template = compile('<div>{{const-foobar}}</div>');
@@ -1085,7 +1108,7 @@ module('[glimmer-runtime] Updating', hooks => {
     let rawString = '<b>bold</b> and spicy';
 
     env.registerInternalHelper('const-foobar', () => {
-      return new ValueReference<Opaque>(document.createTextNode(rawString));
+      return new ValueReference<unknown>(doc.createTextNode(rawString));
     });
 
     let template = compile('<div>{{const-foobar}}</div>');
@@ -1111,7 +1134,7 @@ module('[glimmer-runtime] Updating', hooks => {
     let rawString = '<b>bold</b> and spicy';
 
     env.registerInternalHelper('const-foobar', () => {
-      return new ValueReference<Opaque>(makeSafeString(rawString));
+      return new ValueReference<unknown>(makeSafeString(rawString));
     });
 
     let template = compile('<div>{{{const-foobar}}}</div>');
@@ -1138,7 +1161,7 @@ module('[glimmer-runtime] Updating', hooks => {
     let rawString = '<b>bold</b> and spicy';
 
     env.registerInternalHelper('const-foobar', () => {
-      return new ValueReference<Opaque>(document.createTextNode(rawString));
+      return new ValueReference<unknown>(doc.createTextNode(rawString));
     });
 
     let template = compile('<div>{{{const-foobar}}}</div>');
@@ -1251,7 +1274,7 @@ module('[glimmer-runtime] Updating', hooks => {
   });
 
   test(`helpers passed as arguments to {{#in-element}} are not torn down when switching between blocks`, assert => {
-    let externalElement = document.createElement('div');
+    let externalElement = doc.createElement('div');
 
     let options = {
       template: '{{#in-element (stateful-foo)}}Yes{{/in-element}}',
@@ -1269,7 +1292,7 @@ module('[glimmer-runtime] Updating', hooks => {
       template: string;
       truthyValue: T;
       falsyValue: U;
-      element?: HTMLElement;
+      element?: SimpleElement;
     }
   ) {
     let { template, truthyValue, falsyValue, element = root } = arg1;
@@ -1294,27 +1317,27 @@ module('[glimmer-runtime] Updating', hooks => {
 
     render(compile(template), {});
 
-    assert.equal(element.textContent, 'Yes', 'initial render');
+    assert.equal(toTextContent(element), 'Yes', 'initial render');
     assert.strictEqual(didCreate, 1, 'didCreate: after initial render');
     assert.strictEqual(didDestroy, 0, 'didDestroy: after initial render');
 
     rerender();
 
-    assert.equal(element.textContent, 'Yes', 'after no-op re-render');
+    assert.equal(toTextContent(element), 'Yes', 'after no-op re-render');
     assert.strictEqual(didCreate, 1, 'didCreate: after no-op re-render');
     assert.strictEqual(didDestroy, 0, 'didDestroy: after no-op re-render');
 
     reference!.update(falsyValue);
     rerender();
 
-    assert.strictEqual(element.textContent, '', 'after switching to falsy');
+    assert.strictEqual(toTextContent(element), '', 'after switching to falsy');
     assert.strictEqual(didCreate, 1, 'didCreate: after switching to falsy');
     assert.strictEqual(didDestroy, 0, 'didDestroy: after switching to falsy');
 
     reference!.update(truthyValue);
     rerender();
 
-    assert.equal(element.textContent, 'Yes', 'after reset');
+    assert.equal(toTextContent(element), 'Yes', 'after reset');
     assert.strictEqual(didCreate, 1, 'didCreate: after reset');
     assert.strictEqual(didDestroy, 0, 'didDestroy: after reset');
   }
@@ -1869,7 +1892,7 @@ module('[glimmer-runtime] Updating', hooks => {
     let object = { value: 'hello' };
     render(template, object);
 
-    let firstNode = result.firstNode() as Node | null;
+    let firstNode: Option<SimpleNode> = result.firstNode();
     let textNode: Node | null;
     if (assertNodeTagName(firstNode, 'div')) {
       textNode = firstNode.firstChild;
@@ -1904,7 +1927,7 @@ module('[glimmer-runtime] Updating', hooks => {
     let object = { value: 'hello' };
     render(template, object);
 
-    let div = result.firstNode() as Node | null;
+    let div = result.firstNode();
     if (assertNodeTagName(div, 'div')) {
       assertProperty(div.firstChild, 'nodeValue', 'HELLO');
     }
@@ -2204,12 +2227,14 @@ module('[glimmer-runtime] Updating', hooks => {
 
   test('<option selected> is normalized and updated correctly', assert => {
     function assertSelected(expectedSelected: string[], label: string) {
-      let options = root.querySelectorAll('option');
+      let options = getElementsByTagName(root, 'option');
       let actualSelected = [];
       for (let i = 0; i < options.length; i++) {
         let option = options[i];
-        if (option.selected) {
-          actualSelected.push(option.value);
+        // TODO: these type errors reflect real incompatibility with
+        // SimpleDOM
+        if ((option as any).selected) {
+          actualSelected.push((option as any).value);
         }
       }
 
@@ -2353,7 +2378,8 @@ module('[glimmer-runtime] Updating', hooks => {
     let object = { list: [''] };
     render(template, object);
 
-    let lastNode = root.querySelector('li:last-child');
+    let items = getElementsByTagName(root, 'li');
+    let lastNode = items[items.length - 1];
 
     equalTokens(root, '<ul><li></li></ul>', 'Initial render');
 
@@ -2362,8 +2388,11 @@ module('[glimmer-runtime] Updating', hooks => {
 
     equalTokens(root, '<ul><li>first!</li><li></li></ul>', 'After prepending list item');
 
+    let newItems = getElementsByTagName(root, 'li');
+    let newLastNode = newItems[newItems.length - 1];
+
     assert.strictEqual(
-      root.querySelector('li:last-child'),
+      newLastNode,
       lastNode,
       'The last node has not changed after prepending to list'
     );
@@ -2905,14 +2934,14 @@ QUnit.module('Updating SVG', hooks => {
     );
 
     let parent = root;
-    let svg = document.createElementNS(SVG_NAMESPACE, 'svg');
+    let svg = doc.createElementNS(SVG_NAMESPACE, 'svg');
     root.appendChild(svg);
     root = svg as any;
 
     render(template, object);
 
     function assertNamespaces() {
-      if (assertNodeTagName(svg.firstChild, 'foreignobject')) {
+      if (assertNodeTagName(svg.firstChild, 'foreignObject')) {
         assert.equal(svg.firstChild.namespaceURI, SVG_NAMESPACE);
         if (assertNodeTagName(svg.firstChild.firstChild, 'div')) {
           assert.equal(svg.firstChild.firstChild.namespaceURI, XHTML_NAMESPACE);
@@ -2949,7 +2978,7 @@ QUnit.module('Updating SVG', hooks => {
     function assertNamespaces() {
       if (assertNodeTagName(root.firstChild, 'svg')) {
         assert.equal(root.firstChild.namespaceURI, SVG_NAMESPACE);
-        if (assertNodeTagName(root.firstChild.firstChild, 'foreignobject')) {
+        if (assertNodeTagName(root.firstChild.firstChild, 'foreignObject')) {
           assert.equal(root.firstChild.firstChild.namespaceURI, SVG_NAMESPACE);
           if (assertNodeTagName(root.firstChild.firstChild.firstChild, 'div')) {
             assert.equal(root.firstChild.firstChild.firstChild.namespaceURI, XHTML_NAMESPACE);
@@ -3084,10 +3113,10 @@ QUnit.module('Updating SVG', hooks => {
     let template = compile('<svg>{{{content}}}</svg><div></div>');
     render(template, context);
 
-    function assertNamespaces(callback: (svg: SVGSVGElement) => void) {
+    function assertNamespaces(callback: (svg: SimpleElement) => void) {
       if (assertNodeTagName(root.firstChild, 'svg')) {
         assert.equal(root.firstChild.namespaceURI, SVG_NAMESPACE);
-        callback(root.firstChild);
+        callback(root.firstChild as SimpleElement);
       }
       if (assertNodeTagName(root.lastChild, 'div')) {
         assert.equal(root.lastChild.namespaceURI, XHTML_NAMESPACE);
@@ -3119,7 +3148,7 @@ QUnit.module('Updating SVG', hooks => {
 
     equalTokens(root, `<svg>${context.content}</svg><div></div>`);
     assertNamespaces(svg => {
-      if (assertNodeTagName(svg.firstChild, 'foreignobject')) {
+      if (assertNodeTagName(svg.firstChild, 'foreignObject')) {
         assert.equal(
           svg.firstChild.namespaceURI,
           SVG_NAMESPACE,

@@ -1,11 +1,11 @@
 import { precompile as rawPrecompile, PrecompileOptions } from '@glimmer/compiler';
-import { Opaque, Option } from '@glimmer/interfaces';
-import { Environment } from '@glimmer/runtime';
-import * as WireFormat from '@glimmer/wire-format';
+import { Dict, Environment, Option, TemplateMeta, WireFormat } from '@glimmer/interfaces';
+import { SimpleElement, SimpleNode } from '@simple-dom/interface';
 import { EndTag, Token, tokenize } from 'simple-html-tokenizer';
+import { replaceHTML, toInnerHTML, toOuterHTML } from './dom';
 
 // For Phantom
-function toObject(val: Opaque) {
+function toObject(val: unknown) {
   if (val === null || val === undefined) {
     throw new TypeError('Object.assign cannot be called with null or undefined');
   }
@@ -14,7 +14,7 @@ function toObject(val: Opaque) {
 }
 
 if (typeof Object.assign !== 'function') {
-  Object.assign = function(target: Opaque, _source: Opaque) {
+  Object.assign = function(target: unknown, _source: unknown) {
     let from;
     let to = toObject(target);
     let symbols;
@@ -44,7 +44,9 @@ if (typeof Object.assign !== 'function') {
 
 export const assign = Object.assign;
 
-function isMarker(node: Node) {
+declare var window: Window & Dict;
+
+function isMarker(node: SimpleNode) {
   const TextNode = window['Text'] as typeof Text;
   const CommentNode = window['Comment'] as typeof Comment;
   if (node instanceof CommentNode && node.textContent === '') {
@@ -65,10 +67,10 @@ export interface TestCompileOptions extends PrecompileOptions {
 export function precompile(
   string: string,
   options?: TestCompileOptions
-): WireFormat.SerializedTemplate<WireFormat.TemplateMeta> {
+): WireFormat.SerializedTemplate<TemplateMeta> {
   let wrapper = JSON.parse(rawPrecompile(string, options));
   wrapper.block = JSON.parse(wrapper.block);
-  return wrapper as WireFormat.SerializedTemplate<WireFormat.TemplateMeta>;
+  return wrapper as WireFormat.SerializedTemplate<TemplateMeta>;
 }
 
 export function equalInnerHTML(fragment: { innerHTML: string }, html: string, message?: string) {
@@ -81,33 +83,16 @@ export function equalInnerHTML(fragment: { innerHTML: string }, html: string, me
   });
 }
 
-export function equalHTML(node: Node | Node[], html: string) {
-  let fragment: DocumentFragment | Node;
-  if (!node['nodeType'] && node['length']) {
-    fragment = document.createDocumentFragment();
-    while (node[0]) {
-      fragment.appendChild(node[0]);
-    }
-  } else {
-    fragment = node as Node;
-  }
-
-  let div = document.createElement('div');
-  div.appendChild(fragment.cloneNode(true));
-
-  equalInnerHTML(div, html);
-}
-
-function generateTokens(divOrHTML: Element | string): { tokens: Token[]; html: string } {
-  let div;
+function generateTokens(divOrHTML: SimpleElement | string): { tokens: Token[]; html: string } {
+  let div: SimpleElement;
   if (typeof divOrHTML === 'string') {
-    div = document.createElement('div');
-    div.innerHTML = divOrHTML;
+    div = document.createElement('div') as SimpleElement;
+    replaceHTML(div, divOrHTML);
   } else {
     div = divOrHTML;
   }
 
-  let tokens = tokenize(div.innerHTML, {});
+  let tokens = tokenize(toInnerHTML(div), {});
 
   tokens = tokens.reduce((tokens, token) => {
     if (token.type === 'StartTag') {
@@ -137,7 +122,7 @@ function generateTokens(divOrHTML: Element | string): { tokens: Token[]; html: s
     return tokens;
   }, new Array<Token>());
 
-  return { tokens, html: div.innerHTML };
+  return { tokens, html: toInnerHTML(div) };
 }
 
 declare const QUnit: QUnit & {
@@ -145,10 +130,14 @@ declare const QUnit: QUnit & {
 };
 
 export function equalTokens(
-  testFragment: HTMLElement | string,
-  testHTML: HTMLElement | string,
+  testFragment: SimpleElement | string | null,
+  testHTML: SimpleElement | string,
   message: Option<string> = null
 ) {
+  if (testFragment === null) {
+    throw new Error(`Unexpectedly passed null to equalTokens`);
+  }
+
   let fragTokens = generateTokens(testFragment);
   let htmlTokens = generateTokens(testHTML);
 
@@ -176,9 +165,9 @@ export function equalTokens(
   // QUnit.assert.deepEqual(fragTokens.tokens, htmlTokens.tokens, msg);
 }
 
-export function generateSnapshot(element: Element) {
-  let snapshot: Node[] = [];
-  let node: Option<Node> = element.firstChild;
+export function generateSnapshot(element: SimpleElement): SimpleNode[] {
+  let snapshot: SimpleNode[] = [];
+  let node: Option<SimpleNode> = element.firstChild;
 
   while (node) {
     if (!isMarker(node)) {
@@ -190,7 +179,7 @@ export function generateSnapshot(element: Element) {
   return snapshot;
 }
 
-export function equalSnapshots(a: Node[], b: Node[]) {
+export function equalSnapshots(a: SimpleNode[], b: SimpleNode[]) {
   QUnit.assert.strictEqual(a.length, b.length, 'Same number of nodes');
   for (let i = 0; i < b.length; i++) {
     QUnit.assert.strictEqual(a[i], b[i], 'Nodes are the same');
@@ -223,7 +212,7 @@ export function normalizeInnerHTML(actualHTML: string) {
   return actualHTML;
 }
 
-let isCheckedInputHTML: (element: Element) => void;
+let isCheckedInputHTML: (element: SimpleElement) => void;
 
 if (typeof document === 'undefined') {
   isCheckedInputHTML = function() {};
@@ -234,7 +223,7 @@ if (typeof document === 'undefined') {
   let checkedInputString = checkedInput.outerHTML;
 
   isCheckedInputHTML = function(element) {
-    QUnit.assert.equal(element.outerHTML, checkedInputString);
+    QUnit.assert.equal(toOuterHTML(element), checkedInputString);
   };
 }
 
@@ -245,7 +234,7 @@ let textProperty =
   typeof document === 'object' && document.createElement('div').textContent === undefined
     ? 'innerText'
     : 'textContent';
-export function getTextContent(el: Node) {
+export function getTextContent(el: Node & Dict) {
   // textNode
   if (el.nodeType === 3) {
     return el.nodeValue;
@@ -280,7 +269,7 @@ export function trimLines(strings: TemplateStringsArray) {
     .join('\n');
 }
 
-export function assertIsElement(node: Node | null): node is Element {
+export function assertIsElement(node: SimpleNode | null): node is SimpleElement {
   let nodeType = node === null ? null : node.nodeType;
   QUnit.assert.pushResult({
     result: nodeType === 1,
@@ -299,18 +288,18 @@ interface CompatibleTagNameMap extends ElementTagNameMap {
 export function assertNodeTagName<
   T extends keyof CompatibleTagNameMap,
   U extends CompatibleTagNameMap[T]
->(node: Node | null, tagName: T): node is U {
+>(node: SimpleNode | null, tagName: T): node is SimpleNode & U {
   if (assertIsElement(node)) {
-    const normalizedNodeTagName = node.tagName.toLowerCase();
+    const lowerTagName = node.tagName.toLowerCase();
     const nodeTagName = node.tagName;
 
     QUnit.assert.pushResult({
-      result: normalizedNodeTagName === tagName || nodeTagName === tagName,
+      result: lowerTagName === tagName || nodeTagName === tagName,
       expected: tagName,
       actual: nodeTagName,
       message: `expected tagName to be ${tagName} but was ${nodeTagName}`,
     });
-    return nodeTagName === tagName || normalizedNodeTagName === tagName;
+    return nodeTagName === tagName || lowerTagName === tagName;
   }
   return false;
 }
@@ -319,9 +308,9 @@ export function assertNodeProperty<
   T extends keyof HTMLElementTagNameMap,
   P extends keyof ElementTagNameMap[T],
   V extends HTMLElementTagNameMap[T][P]
->(node: Node | null, tagName: T, prop: P, value: V) {
+>(node: SimpleNode | null, tagName: T, prop: P, value: V) {
   if (assertNodeTagName(node, tagName)) {
-    QUnit.assert.strictEqual(node[prop], value);
+    QUnit.assert.strictEqual(node[prop] as any, value);
   }
 }
 

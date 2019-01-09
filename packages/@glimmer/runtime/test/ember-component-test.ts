@@ -1,31 +1,45 @@
+import {
+  AnnotatedModuleLocator,
+  Option,
+  RenderResult,
+  Template,
+  TemplateMeta,
+} from '@glimmer/interfaces';
 import EmberObject from '@glimmer/object';
 import { CLASS_META, setProperty as set, UpdatableReference } from '@glimmer/object-reference';
+import { bump } from '@glimmer/reference';
+import { clientBuilder } from '@glimmer/runtime';
 import {
+  assertElement,
+  assertElementShape,
   BasicComponent,
   classes,
+  ComponentHooks,
+  elementId,
   EmberishCurlyComponent,
   EmberishGlimmerComponent,
   equalsElement,
   equalTokens,
+  firstElementChild,
+  HookedComponent,
   inspectHooks,
+  nextElementSibling,
   regex,
   stripTight,
   TestEnvironment,
-  assertElement,
+  toInnerHTML,
 } from '@glimmer/test-helpers';
-import { assign } from '@glimmer/util';
-import { Template } from '@glimmer/interfaces';
-import { RenderResult, clientBuilder } from '@glimmer/runtime';
+import { assign, dict, unwrap } from '@glimmer/util';
+import { SimpleElement } from '@simple-dom/interface';
 import { assert } from './support';
-import { bump } from '@glimmer/reference';
 
 export class EmberishRootView extends EmberObject {
-  public element!: Element;
+  public element!: SimpleElement;
 
-  protected template: Template;
+  protected template: Template<TemplateMeta<AnnotatedModuleLocator>>;
   protected result!: RenderResult;
 
-  private parent!: Element;
+  private parent!: SimpleElement;
 
   constructor(protected env: TestEnvironment, template: string, context?: Object) {
     super(context);
@@ -33,7 +47,7 @@ export class EmberishRootView extends EmberObject {
   }
 
   appendTo(selector: string) {
-    let element = (this.parent = document.querySelector(selector)!);
+    let element = (this.parent = assertElement(document.querySelector(selector) as SimpleElement));
     let self = new UpdatableReference(this);
     let cursor = { element, nextSibling: null };
 
@@ -49,7 +63,7 @@ export class EmberishRootView extends EmberObject {
 
     this.result = result.value!;
 
-    this.element = element.firstElementChild!;
+    this.element = firstElementChild(element)!;
   }
 
   rerender(context: Object | null = null) {
@@ -61,7 +75,7 @@ export class EmberishRootView extends EmberObject {
     this.result.rerender();
     this.env.commit();
 
-    this.element = this.parent.firstElementChild!;
+    this.element = firstElementChild(this.parent)!;
   }
 
   destroy() {
@@ -95,7 +109,7 @@ export function appendViewFor(template: string, context: Object = {}) {
 }
 
 export function assertAppended(content: string) {
-  equalTokens(document.querySelector('#qunit-fixture') as HTMLElement, content);
+  equalTokens(document.querySelector('#qunit-fixture') as Option<SimpleElement>, content);
 }
 
 function assertText(expected: string) {
@@ -111,8 +125,8 @@ function assertText(expected: string) {
   QUnit.assert.strictEqual(text, expected, `#qunit-fixture content should be: \`${expected}\``);
 }
 
-function assertFired(component: EmberishGlimmerComponent, name: string, count = 1) {
-  let hooks = component['hooks'];
+function assertFired(component: HookedComponent, name: string, count = 1) {
+  let hooks = component.hooks;
 
   if (!hooks) {
     throw new TypeError('Not hooked: ' + component);
@@ -120,7 +134,7 @@ function assertFired(component: EmberishGlimmerComponent, name: string, count = 
 
   if (name in hooks) {
     assert.strictEqual(
-      hooks[name],
+      hooks[name as keyof ComponentHooks],
       count,
       `The ${name} hook fired ${count} ${count === 1 ? 'time' : 'times'}`
     );
@@ -149,23 +163,29 @@ function assertEmberishElement(...args: any[]): void {
 }
 
 export function assertElementIsEmberishElement(
-  element: Element | null,
+  element: SimpleElement | null,
   tagName: string,
   attrs: Object,
   contents: string
 ): void;
 export function assertElementIsEmberishElement(
-  element: Element | null,
+  element: SimpleElement | null,
   tagName: string,
   attrs: Object
 ): void;
 export function assertElementIsEmberishElement(
-  element: Element | null,
+  element: SimpleElement | null,
   tagName: string,
   contents: string
 ): void;
-export function assertElementIsEmberishElement(element: Element | null, tagName: string): void;
-export function assertElementIsEmberishElement(element: Element | null, ...args: any[]): void {
+export function assertElementIsEmberishElement(
+  element: SimpleElement | null,
+  tagName: string
+): void;
+export function assertElementIsEmberishElement(
+  element: SimpleElement | null,
+  ...args: any[]
+): void {
   let tagName, attrs, contents;
   if (args.length === 2) {
     if (typeof args[1] === 'string') [tagName, attrs, contents] = [args[0], {}, args[1]];
@@ -496,25 +516,21 @@ QUnit.test('correct scope - caller self can be threaded through (curly component
 QUnit.test('`false` class name do not render', assert => {
   appendViewFor('<div class={{isFalse}}>FALSE</div>', { isFalse: false });
   assert.strictEqual(view.element.getAttribute('class'), null);
-  assert.strictEqual(view.element.className, '');
 });
 
 QUnit.test('`null` class name do not render', assert => {
   appendViewFor('<div class={{isNull}}>NULL</div>', { isNull: null });
   assert.strictEqual(view.element.getAttribute('class'), null);
-  assert.strictEqual(view.element.className, '');
 });
 
 QUnit.test('`undefined` class name do not render', assert => {
   appendViewFor('<div class={{isUndefined}}>UNDEFINED</div>', { isUndefined: undefined });
   assert.strictEqual(view.element.getAttribute('class'), null);
-  assert.strictEqual(view.element.className, '');
 });
 
 QUnit.test('`0` class names do render', assert => {
   appendViewFor('<div class={{isZero}}>ZERO</div>', { isZero: 0 });
   assert.strictEqual(view.element.getAttribute('class'), '0');
-  assert.strictEqual(view.element.className, '0');
 });
 
 QUnit.test('component with slashed name', assert => {
@@ -524,7 +540,7 @@ QUnit.test('component with slashed name', assert => {
 
   appendViewFor('{{fizz-bar/baz-bar hey="hello"}}');
 
-  assert.equal(view.element.textContent, 'hello');
+  assert.equal(toInnerHTML(view.element), 'hello');
 });
 
 QUnit.test('correct scope - simple', () => {
@@ -803,8 +819,8 @@ QUnit.test('static arbitrary number of positional parameters', function() {
       {{!sample-component "Foo" 4 "Bar" 5 "Baz"}}</div>`
   );
 
-  let first = view.element.firstChild as Element;
-  let second = first.nextSibling as Element;
+  let first = assertElement(view.element.firstChild);
+  let second = assertElement(first.nextSibling);
   // let third = <Element>second.nextSibling;
 
   assertElementIsEmberishElement(first, 'div', 'Foo4Bar');
@@ -876,9 +892,9 @@ QUnit.test('can use hash parameter instead of positional param', function() {
     }
   );
 
-  let first = view.element.firstElementChild;
-  let second = first && first.nextElementSibling;
-  let third = second && second.nextElementSibling;
+  let first = unwrap(firstElementChild(view.element));
+  let second = unwrap(nextElementSibling(first));
+  let third = nextElementSibling(second);
 
   assertElementIsEmberishElement(first, 'div', 'one - two');
   assertElementIsEmberishElement(second, 'div', 'one - two');
@@ -906,7 +922,7 @@ QUnit.test('dynamic arbitrary number of positional parameters', function() {
     }
   );
 
-  let first = view.element.firstElementChild;
+  let first = firstElementChild(view.element);
   // let second = first.nextElementSibling;
 
   assertElementIsEmberishElement(first, 'div', 'Foo4');
@@ -1239,34 +1255,24 @@ QUnit.test('emberish curly component should have unique IDs', assert => {
       </div>`
   );
 
-  equalsElement(
-    view.element.childNodes[0] as Element,
-    'div',
-    { id: regex(/^ember\d*$/), class: 'ember-view' },
-    ''
-  );
-  equalsElement(
-    view.element.childNodes[1] as Element,
-    'div',
-    { id: regex(/^ember\d*$/), class: 'ember-view' },
-    ''
-  );
-  equalsElement(
-    view.element.childNodes[2] as Element,
-    'div',
-    { id: regex(/^ember\d*$/), class: 'ember-view' },
-    ''
-  );
+  let first = assertElement(view.element.firstChild);
+  let second = assertElement(first.nextSibling);
+  let third = assertElement(second.nextSibling);
 
-  let IDs = {};
+  equalsElement(first, 'div', { id: regex(/^ember\d*$/), class: 'ember-view' }, '');
+  equalsElement(second, 'div', { id: regex(/^ember\d*$/), class: 'ember-view' }, '');
+  equalsElement(third, 'div', { id: regex(/^ember\d*$/), class: 'ember-view' }, '');
 
-  function markAsSeen(element: Element) {
-    IDs[element.id] = (IDs[element.id] || 0) + 1;
+  let IDs = dict<number>();
+
+  function markAsSeen(element: SimpleElement) {
+    let id = unwrap(elementId(element));
+    IDs[id] = (IDs[id] || 0) + 1;
   }
 
-  markAsSeen(view.element.childNodes[0] as Element);
-  markAsSeen(view.element.childNodes[1] as Element);
-  markAsSeen(view.element.childNodes[2] as Element);
+  markAsSeen(assertElement(view.element.childNodes[0]));
+  markAsSeen(assertElement(view.element.childNodes[1]));
+  markAsSeen(assertElement(view.element.childNodes[2]));
 
   assert.equal(Object.keys(IDs).length, 3, 'Expected the components to each have a unique IDs');
 
@@ -1325,8 +1331,8 @@ styles.forEach(style => {
     rerender();
 
     assert.strictEqual(
-      node.firstElementChild,
-      view.element.firstElementChild,
+      firstElementChild(node),
+      firstElementChild(view.element),
       'The inner element has not changed'
     );
     equalsElement(node, style.tagName, { such: 'changed!!!' }, 'In layout');
@@ -1362,11 +1368,12 @@ QUnit.test('Custom element with element modifier', function(assert) {
 });
 
 QUnit.test('Curly component hooks (with attrs)', assert => {
-  let instance: NonBlock | undefined;
+  let instance: NonBlock & HookedComponent | undefined;
 
   class NonBlock extends EmberishCurlyComponent {
     init() {
-      instance = this;
+      this._super(...arguments);
+      instance = this as any;
     }
   }
 
@@ -1414,11 +1421,11 @@ QUnit.test('Curly component hooks (with attrs)', assert => {
 });
 
 QUnit.test('Curly component hooks (attrs as self props)', function() {
-  let instance: NonBlock | undefined;
+  let instance: NonBlock & HookedComponent | undefined;
 
   class NonBlock extends EmberishCurlyComponent {
     init() {
-      instance = this;
+      instance = this as any;
     }
   }
 
@@ -1545,11 +1552,11 @@ QUnit.test('Setting class attributeBinding does not clobber ember-view', assert 
 });
 
 QUnit.test('Curly component hooks (force recompute)', assert => {
-  let instance: NonBlock | undefined;
+  let instance: NonBlock & HookedComponent | undefined;
 
   class NonBlock extends EmberishCurlyComponent {
     init() {
-      instance = this;
+      instance = this as any;
     }
   }
 
@@ -1595,11 +1602,11 @@ QUnit.test('Curly component hooks (force recompute)', assert => {
 });
 
 QUnit.test('Glimmer component hooks', assert => {
-  let instance: NonBlock | undefined;
+  let instance: NonBlock & HookedComponent | undefined;
 
   class NonBlock extends EmberishGlimmerComponent {
     init() {
-      instance = this;
+      instance = this as any;
     }
   }
 
@@ -1622,12 +1629,12 @@ QUnit.test('Glimmer component hooks', assert => {
   assertFired(instance, 'didInsertElement');
   assertFired(instance, 'didRender');
 
-  assertElement(view.element as HTMLElement, 'div', 'In layout - someProp: wycats');
+  assertElementShape(view.element, 'div', 'In layout - someProp: wycats');
 
   set(view, 'someProp', 'tomdale');
   rerender();
 
-  assertElement(view.element as HTMLElement, 'div', 'In layout - someProp: tomdale');
+  assertElementShape(view.element, 'div', 'In layout - someProp: tomdale');
 
   assertFired(instance, 'didReceiveAttrs', 2);
   assertFired(instance, 'willUpdate');
@@ -1637,7 +1644,7 @@ QUnit.test('Glimmer component hooks', assert => {
 
   rerender();
 
-  assertElement(view.element as HTMLElement, 'div', 'In layout - someProp: tomdale');
+  assertElementShape(view.element, 'div', 'In layout - someProp: tomdale');
 
   assertFired(instance, 'didReceiveAttrs', 3);
   assertFired(instance, 'willUpdate', 2);
@@ -1647,11 +1654,11 @@ QUnit.test('Glimmer component hooks', assert => {
 });
 
 QUnit.test('Glimmer component hooks (force recompute)', assert => {
-  let instance: NonBlock | undefined;
+  let instance: NonBlock & HookedComponent | undefined;
 
   class NonBlock extends EmberishGlimmerComponent {
     init() {
-      instance = this;
+      instance = this as any;
     }
   }
 
@@ -1674,11 +1681,11 @@ QUnit.test('Glimmer component hooks (force recompute)', assert => {
   assertFired(instance, 'didInsertElement', 1);
   assertFired(instance, 'didRender', 1);
 
-  assertElement(view.element as HTMLElement, 'div', 'In layout - someProp: wycats');
+  assertElementShape(view.element, 'div', 'In layout - someProp: wycats');
 
   rerender();
 
-  assertElement(view.element as HTMLElement, 'div', 'In layout - someProp: wycats');
+  assertElementShape(view.element, 'div', 'In layout - someProp: wycats');
 
   assertFired(instance, 'didReceiveAttrs', 1);
   assertFired(instance, 'willRender', 1);
@@ -1687,7 +1694,7 @@ QUnit.test('Glimmer component hooks (force recompute)', assert => {
   instance.recompute();
   rerender();
 
-  assertElement(view.element as HTMLElement, 'div', 'In layout - someProp: wycats');
+  assertElementShape(view.element, 'div', 'In layout - someProp: wycats');
 
   assertFired(instance, 'didReceiveAttrs', 2);
   assertFired(instance, 'willUpdate', 1);
@@ -2252,7 +2259,7 @@ QUnit.test('it works for unwrapped components', function(assert) {
     return;
   }
 
-  assertElement(view.element as HTMLElement, 'span', { id: 'ralph-the-wrench' }, 'foo bar!');
+  assertElementShape(view.element, 'span', { id: 'ralph-the-wrench' }, 'foo bar!');
 
   let ralphy = document.getElementById('ralph-the-wrench')!;
 

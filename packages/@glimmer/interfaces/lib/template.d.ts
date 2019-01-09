@@ -1,37 +1,31 @@
-import { Maybe, Opaque, Option } from './core';
-import { BlockSymbolTable, ProgramSymbolTable, SymbolTable } from './tier1/symbol-table';
+import { SerializedInlineBlock, SerializedTemplateBlock, TemplateMeta } from '@glimmer/interfaces';
+import { Operand } from './compile';
+import { CompileMode } from './compile/encoder';
 import ComponentCapabilities from './component-capabilities';
-import { CompileTimeConstants } from './program';
-import { ComponentDefinition } from './components';
-import { CompilableProgram } from './serialize';
-import {
-  Statement,
-  SerializedTemplateBlock,
-  Statements,
-  Expression,
-  Core,
-  SerializedInlineBlock,
-} from '@glimmer/wire-format';
-import { CompileTimeProgram } from '@glimmer/interfaces';
+import { Option } from './core';
+import { ConstantPool, SerializedHeap, SyntaxCompilationContext } from './program';
+import { CompileTimeResolverDelegate } from './serialize';
+import { BlockSymbolTable, ProgramSymbolTable, SymbolTable } from './tier1/symbol-table';
 
+export type CompilableProgram = CompilableTemplate<ProgramSymbolTable>;
 export type CompilableBlock = CompilableTemplate<BlockSymbolTable>;
 
-export interface LayoutWithContext<Locator = Opaque> {
-  id?: Option<string>;
-  block: SerializedTemplateBlock;
-  referrer: Locator;
-  asPartial: boolean;
+export interface LayoutWithContext<R> {
+  readonly id?: Option<string>;
+  readonly block: SerializedTemplateBlock;
+  readonly referrer: TemplateMeta<R>;
+  readonly asPartial: boolean;
 }
 
-export interface BlockWithContext<Locator = Opaque> {
-  block: SerializedInlineBlock;
-  containingLayout: LayoutWithContext<Locator>;
+export interface BlockWithContext<R> {
+  readonly block: SerializedInlineBlock;
+  readonly containingLayout: LayoutWithContext<TemplateMeta & R>;
 }
 
 /**
  * Environment specific template.
  */
-export interface Template<Locator = Opaque> {
+export interface Template<R extends TemplateMeta = TemplateMeta> {
   /**
    * Template identifier, if precompiled will be the id of the
    * precompiled template.
@@ -41,7 +35,7 @@ export interface Template<Locator = Opaque> {
   /**
    * Template meta (both compile time and environment specific).
    */
-  referrer: Locator;
+  referrer: R;
 
   hasEval: boolean;
 
@@ -58,10 +52,15 @@ export interface Template<Locator = Opaque> {
 
 export interface STDLib {
   main: number;
-  getAppend(trusting: boolean): number;
+  'cautious-append': number;
+  'trusting-append': number;
 }
 
-export type CompilerBuffer = Array<number | (() => number)>;
+export type SerializedStdlib = [number, number, number];
+
+export type STDLibName = keyof STDLib;
+
+export type CompilerBuffer = Array<Operand>;
 
 export interface ResolvedLayout {
   handle: number;
@@ -84,30 +83,28 @@ export interface NamedBlocks {
   hasAny: boolean;
 }
 
-export interface Compiler<Builder = unknown, Locator = unknown> {
-  stdLib: STDLib;
-  constants: CompileTimeConstants;
-
-  add(statements: Statement[], containingLayout: LayoutWithContext): number;
-  commit(size: number, encoder: CompilerBuffer): number;
-
-  resolveLayoutForTag(tag: string, referrer: Opaque): MaybeResolvedLayout;
-  resolveLayoutForHandle(handle: Locator): ResolvedLayout;
-  resolveHelper(name: string, referrer: Opaque): Option<number>;
-  resolveModifier(name: string, referrer: Opaque): Option<number>;
-
-  compileInline(sexp: Statements.Append, builder: Builder): ['expr', Expression] | true;
-  compileBlock(
-    name: string,
-    params: Core.Params,
-    hash: Core.Hash,
-    blocks: NamedBlocks,
-    builder: Builder
-  ): void;
-  builderFor(containingLayout: LayoutWithContext): Builder;
+export interface ContainingMetadata {
+  asPartial: boolean;
+  evalSymbols: Option<string[]>;
+  referrer: TemplateMeta;
+  size: number;
 }
 
-export interface CompilableTemplate<S = SymbolTable> {
+export interface CompilerArtifacts {
+  heap: SerializedHeap;
+  constants: ConstantPool;
+}
+
+export interface CompileTime {
+  readonly resolver: CompileTimeResolverDelegate;
+  readonly mode: CompileMode;
+}
+
+export interface Unhandled {
+  'not-handled': true;
+}
+
+export interface CompilableTemplate<S extends SymbolTable = SymbolTable> {
   symbolTable: S;
-  compile(): number;
+  compile(context: SyntaxCompilationContext): number;
 }

@@ -1,3 +1,5 @@
+import { TemplateMeta } from './runtime/runtime';
+
 export type ModuleName = string;
 export type NamedExport = string;
 
@@ -36,14 +38,14 @@ export interface ModuleLocator {
  */
 export interface AnnotatedModuleLocator extends ModuleLocator {
   kind: string;
-  meta: {};
+  meta: unknown;
 }
 
 /**
  * A TemplateLocator is a ModuleLocator annotated with additional information
  * about a template.
  */
-export interface TemplateLocator<Meta> extends AnnotatedModuleLocator {
+export interface TemplateLocator<R> extends AnnotatedModuleLocator {
   kind: 'template';
-  meta: Meta;
+  meta: R;
 }

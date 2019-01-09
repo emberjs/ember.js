@@ -1,11 +1,21 @@
-import { RenderTest, module, test, LazyRenderDelegate, rawModule } from '@glimmer/test-helpers';
-import { SVG_NAMESPACE, normalizeProperty } from '@glimmer/runtime';
+import { Dict } from '@glimmer/interfaces';
 import { ConstReference, PathReference } from '@glimmer/reference';
-import { Opaque } from '@glimmer/util';
+import { normalizeProperty, UNDEFINED_REFERENCE } from '@glimmer/runtime';
+import {
+  assertElement,
+  hasAttribute,
+  LazyRenderDelegate,
+  module,
+  rawModule,
+  RenderTest,
+  test,
+} from '@glimmer/test-helpers';
+import { isDict } from '@glimmer/util';
+import { Namespace, SimpleElement } from '@simple-dom/interface';
 
 export class AttributesTests extends RenderTest {
-  protected readDOMAttr(attr: string, element = this.element.firstChild as Element) {
-    let isSVG = element.namespaceURI === SVG_NAMESPACE;
+  protected readDOMAttr(attr: string, element = this.element.firstChild as SimpleElement) {
+    let isSVG = element.namespaceURI === Namespace.SVG;
     let { type, normalized } = normalizeProperty(element, attr);
 
     if (isSVG) {
@@ -15,7 +25,8 @@ export class AttributesTests extends RenderTest {
     if (type === 'attr') {
       return element.getAttribute(normalized);
     }
-    return element[normalized];
+
+    return (element as Dict)[normalized];
   }
 
   protected nativeValueForElementProperty<
@@ -328,31 +339,31 @@ export class AttributesTests extends RenderTest {
       isNotUndefined: 'hello',
     });
 
-    let firstElement = this.element.firstChild as Element;
-    let secondElement = this.element.lastChild as Element;
+    let firstElement = assertElement(this.element.firstChild);
+    let secondElement = assertElement(this.element.lastChild);
 
-    this.assert.notOk(firstElement.hasAttribute('data-foo'));
-    this.assert.ok(secondElement.hasAttribute('data-foo'));
+    this.assert.notOk(hasAttribute(firstElement, 'data-foo'));
+    this.assert.ok(hasAttribute(secondElement, 'data-foo'));
     this.assert.equal(this.readDOMAttr('data-foo', secondElement), 'hello');
     this.assertStableRerender();
 
     this.rerender({ isUndefined: 'hey', isNotUndefined: 'hello' });
-    this.assert.ok(firstElement.hasAttribute('data-foo'));
-    this.assert.ok(secondElement.hasAttribute('data-foo'));
+    this.assert.ok(hasAttribute(firstElement, 'data-foo'));
+    this.assert.ok(hasAttribute(secondElement, 'data-foo'));
     this.assert.equal(this.readDOMAttr('data-foo', firstElement), 'hey');
     this.assert.equal(this.readDOMAttr('data-foo', secondElement), 'hello');
     this.assertStableNodes();
 
     this.rerender({ isUndefined: 'hey', isNotUndefined: 'world' });
-    this.assert.ok(firstElement.hasAttribute('data-foo'));
-    this.assert.ok(secondElement.hasAttribute('data-foo'));
+    this.assert.ok(hasAttribute(firstElement, 'data-foo'));
+    this.assert.ok(hasAttribute(secondElement, 'data-foo'));
     this.assert.equal(this.readDOMAttr('data-foo', firstElement), 'hey');
     this.assert.equal(this.readDOMAttr('data-foo', secondElement), 'world');
     this.assertStableNodes();
 
     this.rerender({ isUndefined: undefined, isNotUndefined: 'hello' });
-    this.assert.notOk(firstElement.hasAttribute('data-foo'));
-    this.assert.ok(secondElement.hasAttribute('data-foo'));
+    this.assert.notOk(hasAttribute(firstElement, 'data-foo'));
+    this.assert.ok(hasAttribute(secondElement, 'data-foo'));
     this.assert.equal(this.readDOMAttr('data-foo', secondElement), 'hello');
     this.assertStableNodes();
   }
@@ -364,34 +375,34 @@ export class AttributesTests extends RenderTest {
       isNotNull: 'hello',
     });
 
-    let firstElement = this.element.firstChild as Element;
-    let secondElement = this.element.lastChild as Element;
+    let firstElement = assertElement(this.element.firstChild);
+    let secondElement = assertElement(this.element.lastChild);
 
-    this.assert.notOk(firstElement.hasAttribute('data-foo'));
-    this.assert.ok(secondElement.hasAttribute('data-foo'));
+    this.assert.notOk(hasAttribute(firstElement, 'data-foo'));
+    this.assert.ok(hasAttribute(secondElement, 'data-foo'));
     this.assert.equal(this.readDOMAttr('data-foo', secondElement), 'hello');
     this.assertHTML('<div></div><div data-foo="hello" />');
     this.assertStableRerender();
 
     this.rerender({ isNull: 'hey', isNotNull: 'hello' });
-    this.assert.ok(firstElement.hasAttribute('data-foo'));
-    this.assert.ok(secondElement.hasAttribute('data-foo'));
+    this.assert.ok(hasAttribute(firstElement, 'data-foo'));
+    this.assert.ok(hasAttribute(secondElement, 'data-foo'));
     this.assert.equal(this.readDOMAttr('data-foo', firstElement), 'hey');
     this.assert.equal(this.readDOMAttr('data-foo', secondElement), 'hello');
     this.assertHTML('<div data-foo="hey"></div><div data-foo="hello" />');
     this.assertStableNodes();
 
     this.rerender({ isNull: 'hey', isNotNull: 'world' });
-    this.assert.ok(firstElement.hasAttribute('data-foo'));
-    this.assert.ok(secondElement.hasAttribute('data-foo'));
+    this.assert.ok(hasAttribute(firstElement, 'data-foo'));
+    this.assert.ok(hasAttribute(secondElement, 'data-foo'));
     this.assert.equal(this.readDOMAttr('data-foo', firstElement), 'hey');
     this.assert.equal(this.readDOMAttr('data-foo', secondElement), 'world');
     this.assertHTML('<div data-foo="hey"></div><div data-foo="world" />');
     this.assertStableNodes();
 
     this.rerender({ isNull: undefined, isNotNull: 'hello' });
-    this.assert.notOk(firstElement.hasAttribute('data-foo'));
-    this.assert.ok(secondElement.hasAttribute('data-foo'));
+    this.assert.notOk(hasAttribute(firstElement, 'data-foo'));
+    this.assert.ok(hasAttribute(secondElement, 'data-foo'));
     this.assert.equal(this.readDOMAttr('data-foo', secondElement), 'hello');
     this.assertHTML('<div></div><div data-foo="hello" />');
     this.assertStableNodes();
@@ -404,10 +415,10 @@ export class AttributesTests extends RenderTest {
       isNotUndefined: 'hello',
     });
 
-    let firstElement = this.element.firstChild as Element;
-    let secondElement = this.element.lastChild as Element;
+    let firstElement = assertElement(this.element.firstChild);
+    let secondElement = assertElement(this.element.lastChild);
 
-    this.assert.notOk(firstElement.hasAttribute('title'));
+    this.assert.notOk(hasAttribute(firstElement, 'title'));
     this.assert.equal(this.readDOMAttr('title', secondElement), 'hello');
     this.assertHTML('<div></div><div title="hello"></div>');
     this.assertStableRerender();
@@ -441,10 +452,10 @@ export class AttributesTests extends RenderTest {
       isNotNull: 'hello',
     });
 
-    let firstElement = this.element.firstChild as Element;
-    let secondElement = this.element.lastChild as Element;
+    let firstElement = assertElement(this.element.firstChild);
+    let secondElement = assertElement(this.element.lastChild);
 
-    this.assert.notOk(firstElement.hasAttribute('title'));
+    this.assert.notOk(hasAttribute(firstElement, 'title'));
     this.assert.equal(this.readDOMAttr('title', secondElement), 'hello');
     this.assertHTML('<div></div><div title="hello"></div>');
     this.assertStableRerender();
@@ -651,7 +662,7 @@ class ConstedAttributeTests extends RenderTest {
     this.assertHTML('<div class="bar"></div>');
     this.assertStableRerender();
 
-    this.element!.firstChild!['setAttribute'] = function() {
+    (this.element!.firstChild! as Dict)['setAttribute'] = function() {
       throw new Error('Should not setAttribute on an unchanged element');
     };
 
@@ -679,13 +690,18 @@ module(
 );
 
 class ConstPathReference<T> extends ConstReference<T> implements PathReference<T> {
-  get(key: string): PathReference<Opaque> {
-    return new ConstPathReference(this.inner[key]);
+  get(key: string): PathReference<unknown> {
+    let { inner } = this;
+    if (isDict(inner)) {
+      return new ConstPathReference(inner[key] as unknown);
+    } else {
+      return UNDEFINED_REFERENCE;
+    }
   }
 }
 
 class ConstRenderDelegate extends LazyRenderDelegate {
-  getSelf(context: Opaque) {
+  getSelf(context: unknown) {
     return new ConstPathReference(context);
   }
 }

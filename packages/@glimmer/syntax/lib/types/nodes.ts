@@ -1,4 +1,24 @@
-export type Option<T> = T | null;
+import { Dict, WireFormat, Option } from '@glimmer/interfaces';
+
+export interface Symbols {
+  symbols: string[];
+
+  has(name: string): boolean;
+  get(name: string): number;
+
+  getLocalsMap(): Dict<number>;
+  getEvalInfo(): WireFormat.Core.EvalInfo;
+
+  allocateNamed(name: string): number;
+  allocateBlock(name: string): number;
+  allocate(identifier: string): number;
+
+  child(locals: string[]): BlockSymbols;
+}
+
+export interface BlockSymbols extends Symbols {
+  slots: number[];
+}
 
 export interface BaseNode {
   // Every leaf interface that extends BaseNode must specify a type property.
@@ -21,11 +41,28 @@ export interface Position {
   column: number;
 }
 
-export interface Program extends BaseNode {
-  type: 'Program';
-  body: Statement[];
+export interface CommonProgram extends BaseNode {
+  body: TopLevelStatement[];
   blockParams: string[];
+  chained?: boolean;
 }
+
+export interface Program extends CommonProgram {
+  type: 'Program';
+  symbols?: Symbols;
+}
+
+export interface Block extends CommonProgram {
+  type: 'Block';
+  symbols?: BlockSymbols;
+}
+
+export interface Template extends CommonProgram {
+  type: 'Template';
+  symbols?: Symbols;
+}
+
+export type PossiblyDeprecatedBlock = Block | Template;
 
 export type Statement =
   | MustacheStatement
@@ -35,6 +72,18 @@ export type Statement =
   | CommentStatement
   | TextNode
   | ElementNode;
+
+export type TopLevelStatement =
+  | Template
+  | Block
+  | ElementNode
+  | AttrNode
+  | TextNode
+  | BlockStatement
+  | PartialStatement
+  | CommentStatement
+  | MustacheCommentStatement
+  | MustacheStatement;
 
 export interface Call extends BaseNode {
   name?: PathExpression | SubExpression;
@@ -56,8 +105,12 @@ export interface BlockStatement extends BaseNode {
   path: PathExpression;
   params: Expression[];
   hash: Hash;
-  program: Program;
-  inverse?: Option<Program>;
+  program: Block;
+  inverse?: Option<Block>;
+
+  // Glimmer extensions
+  chained?: boolean;
+  symbols?: BlockSymbols;
 }
 
 export interface ElementModifierStatement extends BaseNode {
@@ -94,7 +147,9 @@ export interface ElementNode extends BaseNode {
   blockParams: string[];
   modifiers: ElementModifierStatement[];
   comments: MustacheCommentStatement[];
-  children: Statement[];
+  children: TopLevelStatement[];
+
+  symbols?: BlockSymbols;
 }
 
 export interface AttrNode extends BaseNode {
@@ -184,6 +239,9 @@ export interface StripFlags {
 }
 
 export interface Nodes {
+  Program: Program;
+  Template: Template;
+  Block: Block;
   CommentStatement: CommentStatement;
   MustacheCommentStatement: MustacheCommentStatement;
   TextNode: TextNode;
@@ -193,7 +251,6 @@ export interface Nodes {
   NumberLiteral: NumberLiteral;
   NullLiteral: NullLiteral;
   UndefinedLiteral: UndefinedLiteral;
-  Program: Program;
   MustacheStatement: MustacheStatement;
   BlockStatement: BlockStatement;
   ElementModifierStatement: ElementModifierStatement;
@@ -206,48 +263,5 @@ export interface Nodes {
   HashPair: HashPair;
 }
 
-export interface VisitorKeysMap {
-  Program: ['body'];
-  MustacheStatement: ['path', 'params', 'hash'];
-  BlockStatement: ['path', 'params', 'hash', 'program', 'inverse'];
-  ElementModifierStatement: ['path', 'params', 'hash'];
-  PartialStatement: ['name', 'params', 'hash'];
-  CommentStatement: [];
-  MustacheCommentStatement: [];
-  ElementNode: ['attributes', 'modifiers', 'children', 'comments'];
-  AttrNode: ['value'];
-  TextNode: [];
-  ConcatStatement: ['parts'];
-  SubExpression: ['path', 'params', 'hash'];
-  PathExpression: [];
-  StringLiteral: [];
-  BooleanLiteral: [];
-  NumberLiteral: [];
-  NullLiteral: [];
-  UndefinedLiteral: [];
-  Hash: ['pairs'];
-  HashPair: ['value'];
-}
-
 export type NodeType = keyof Nodes;
 export type Node = Nodes[NodeType];
-
-// VisitorKeysMap drives ParentNode and LeafNode typing
-export type ValuesOfType<T, U> = { [K in keyof T]: T[K] extends U ? T[K] : never }[keyof T];
-export type ChildKeyByNodeType = { [T in NodeType]: ExtractElements<VisitorKeysMap[T]> };
-export type ExtractElements<T> = T extends (infer U)[] ? U : never;
-
-export type ChildKeyToNodeType<K extends ChildKey = ChildKey, T extends NodeType = NodeType> = {
-  [P in T]: Extract<ChildKeyByNodeType[P], K> extends never ? never : P
-}[T];
-
-export type NodeTypeByChildKey = { [K in ChildKey]: ChildKeyToNodeType<K> };
-export type NodeByChildKey = { [K in ChildKey]: Nodes[NodeTypeByChildKey[K]] };
-
-export type ChildKey = ChildKeyByNodeType[NodeType];
-
-export type ParentNodeType = NodeTypeByChildKey[ChildKey];
-export type ParentNode = Nodes[ParentNodeType];
-
-export type LeafNodeType = Exclude<NodeType, ParentNodeType>;
-export type LeafNode = Nodes[LeafNodeType];

@@ -1,38 +1,34 @@
+import { Cursor, Dict, Environment, Maybe, Option, RenderResult } from '@glimmer/interfaces';
+import { NodeDOMTreeConstruction, serializeBuilder } from '@glimmer/node';
+import { UpdatableReference } from '@glimmer/object-reference';
 import {
+  bump,
+  DirtyableTag,
   PathReference,
+  RevisionTag,
+  Tag,
   Tagged,
   TagWrapper,
-  RevisionTag,
-  DirtyableTag,
-  Tag,
-  bump,
 } from '@glimmer/reference';
-import {
-  RenderResult,
-  TemplateIterator,
-  Environment,
-  Cursor,
-  ElementBuilder,
-} from '@glimmer/runtime';
-import { Opaque, Dict, dict, expect } from '@glimmer/util';
-import { NodeDOMTreeConstruction, serializeBuilder } from '@glimmer/node';
-import { Option, Simple } from '@glimmer/interfaces';
-import { UpdatableReference } from '@glimmer/object-reference';
-import * as SimpleDOM from 'simple-dom';
-
-import { assign, equalTokens, normalizeInnerHTML } from './helpers';
-import LazyTestEnvironment from './environment/modes/lazy/environment';
-import LazyRenderDelegate from './environment/modes/lazy/render-delegate';
-import { equalsElement, classes, regex } from './environment';
+import { ElementBuilder, UNDEFINED_REFERENCE } from '@glimmer/runtime';
+import { clearElement, dict, expect, keys } from '@glimmer/util';
+import createHTMLDocument from '@simple-dom/document';
+import { SimpleElement, SimpleNode } from '@simple-dom/interface';
+import { assertElement, replaceHTML, toInnerHTML } from './dom';
+import { classes, equalsElement, regex } from './environment';
 import { UserHelper } from './environment/helper';
+import LazyTestEnvironment from './environment/modes/lazy/environment';
+import { qunitFixture } from './environment/modes/lazy/fixture';
+import LazyRenderDelegate from './environment/modes/lazy/render-delegate';
 import {
-  EmberishGlimmerComponent,
-  EmberishCurlyComponent,
-  BasicComponent,
-} from './environment/components';
-import RenderDelegate from './render-delegate';
-import { debugRehydration } from './environment/modes/rehydration/debug-builder';
+  debugRehydration,
+  DebugRehydrationBuilder,
+} from './environment/modes/rehydration/debug-builder';
 import { TestModifierConstructor } from './environment/modifier';
+import { assign, equalTokens, normalizeInnerHTML } from './helpers';
+import { ComponentKind, ComponentTypes } from './interfaces';
+import { registerComponent, renderTemplate } from './render';
+import RenderDelegate from './render-delegate';
 
 export const OPEN: { marker: 'open-block' } = { marker: 'open-block' };
 export const CLOSE: { marker: 'close-block' } = { marker: 'close-block' };
@@ -50,6 +46,8 @@ export function skip(_target: Object, _name: string, descriptor: PropertyDescrip
 const COMMENT_NODE = 8; //  Node.COMMENT_NODE
 
 export class VersionedObject implements Tagged {
+  [key: string]: unknown;
+
   public tag: TagWrapper<DirtyableTag>;
   public value!: Object;
 
@@ -63,7 +61,7 @@ export class VersionedObject implements Tagged {
     this.dirty();
   }
 
-  set(key: string, value: Opaque) {
+  set(key: string, value: unknown) {
     this[key] = value;
     this.dirty();
   }
@@ -73,7 +71,8 @@ export class VersionedObject implements Tagged {
   }
 }
 
-export type ComponentKind = 'Glimmer' | 'Curly' | 'Dynamic' | 'Basic' | 'Fragment';
+// TODO: Consolidate
+export type DeclaredComponentKind = 'glimmer' | 'curly' | 'dynamic' | 'basic' | 'fragment';
 
 export interface ComponentBlueprint {
   layout: string;
@@ -87,14 +86,14 @@ export interface ComponentBlueprint {
   blockParams?: string[];
 }
 
-export class SimpleRootReference implements PathReference<Opaque> {
+export class SimpleRootReference implements PathReference<unknown> {
   public tag: TagWrapper<RevisionTag>;
 
   constructor(private object: VersionedObject) {
     this.tag = object.tag;
   }
 
-  get(key: string): PathReference<Opaque> {
+  get(key: string): PathReference<unknown> {
     return new SimplePathReference(this, key);
   }
 
@@ -103,10 +102,10 @@ export class SimpleRootReference implements PathReference<Opaque> {
   }
 }
 
-class SimplePathReference implements PathReference<Opaque> {
+class SimplePathReference implements PathReference<unknown> {
   public tag: Tag;
 
-  constructor(private parent: PathReference<Opaque>, private key: string) {
+  constructor(private parent: PathReference<unknown>, private key: string) {
     this.tag = parent.tag;
   }
 
@@ -114,14 +113,22 @@ class SimplePathReference implements PathReference<Opaque> {
     return new SimplePathReference(this, key);
   }
 
-  value(): Opaque {
-    let parentValue = this.parent.value();
-    return parentValue && parentValue[this.key];
+  value(): unknown {
+    let parentValue = this.parent.value() as Maybe<Dict>;
+    if (parentValue === null || parentValue === undefined) {
+      return UNDEFINED_REFERENCE;
+    } else {
+      return parentValue && parentValue[this.key];
+    }
   }
 }
 
-export type IndividualSnapshot = 'up' | 'down' | Node;
+export type IndividualSnapshot = 'up' | 'down' | SimpleNode;
 export type NodesSnapshot = IndividualSnapshot[];
+
+export function snapshotIsNode(snapshot: IndividualSnapshot): snapshot is SimpleNode {
+  return snapshot !== 'up' && snapshot !== 'down';
+}
 
 export class Count {
   private expected = dict<number>();
@@ -137,13 +144,14 @@ export class Count {
   }
 }
 
-export class RenderTest {
-  protected element: HTMLElement;
+export class RenderTest implements IRenderTest {
+  testType!: ComponentKind;
+
+  protected element: SimpleElement;
   protected assert = QUnit.assert;
-  protected context: Dict<Opaque> = dict<Opaque>();
+  protected context: Dict = dict();
   protected renderResult: Option<RenderResult> = null;
   protected helpers = dict<UserHelper>();
-  protected testType!: ComponentKind;
   protected snapshot: NodesSnapshot = [];
   readonly count = new Count();
 
@@ -194,7 +202,7 @@ export class RenderTest {
     return invocation;
   }
 
-  private buildArgs(args: Object): string {
+  private buildArgs(args: Dict): string {
     let { testType } = this;
     let sigil = '';
     let needsCurlies = false;
@@ -208,7 +216,7 @@ export class RenderTest {
       .map(arg => {
         let rightSide: string;
 
-        let value = args[arg];
+        let value = args[arg] as Maybe<string[]>;
         if (needsCurlies) {
           let isString = value && (value[0] === "'" || value[0] === '"');
           if (isString) {
@@ -233,7 +241,7 @@ export class RenderTest {
     return `${elseBlock ? `{{else}}${elseBlock}` : ''}`;
   }
 
-  private buildAttributes(attrs: Object = {}): string {
+  private buildAttributes(attrs: Dict = {}): string {
     return Object.keys(attrs)
       .map(attr => `${attr}=${attrs[attr]}`)
       .join(' ');
@@ -426,14 +434,14 @@ export class RenderTest {
   }
 
   shouldBeVoid(tagName: string) {
-    this.element.innerHTML = '';
+    clearElement(this.element);
     let html = '<' + tagName + " data-foo='bar'><p>hello</p>";
     this.delegate.renderTemplate(html, this.context, this.element, () => this.takeSnapshot());
 
     let tag = '<' + tagName + ' data-foo="bar">';
     let closing = '</' + tagName + '>';
     let extra = '<p>hello</p>';
-    html = normalizeInnerHTML(this.element.innerHTML);
+    html = normalizeInnerHTML(toInnerHTML(this.element));
 
     QUnit.assert.pushResult({
       result: html === tag + extra || html === tag + closing + extra,
@@ -443,7 +451,7 @@ export class RenderTest {
     });
   }
 
-  render(template: string | ComponentBlueprint, properties: Dict<Opaque> = {}): void {
+  render(template: string | ComponentBlueprint, properties: Dict<unknown> = {}): void {
     QUnit.assert.ok(true, `Rendering ${template} with ${JSON.stringify(properties)}`);
     if (typeof template === 'object') {
       let blueprint = template as ComponentBlueprint;
@@ -461,7 +469,7 @@ export class RenderTest {
     );
   }
 
-  rerender(properties: Dict<Opaque> = {}): void {
+  rerender(properties: Dict<unknown> = {}): void {
     QUnit.assert.ok(true, `rerender ${JSON.stringify(properties)}`);
     this.setProperties(properties);
 
@@ -472,19 +480,19 @@ export class RenderTest {
     result.env.commit();
   }
 
-  protected set(key: string, value: Opaque): void {
+  protected set(key: string, value: unknown): void {
     this.context[key] = value;
   }
 
-  protected setProperties(properties: Dict<Opaque>): void {
+  protected setProperties(properties: Dict<unknown>): void {
     Object.assign(this.context, properties);
     bump();
   }
 
-  protected takeSnapshot() {
-    let snapshot: (Node | 'up' | 'down')[] = (this.snapshot = []);
+  protected takeSnapshot(): NodesSnapshot {
+    let snapshot: NodesSnapshot = (this.snapshot = []);
 
-    let node: Option<Node> = this.element.firstChild;
+    let node = this.element.firstChild;
     let upped = false;
 
     while (node && node !== this.element) {
@@ -527,11 +535,11 @@ export class RenderTest {
   }
 
   protected assertComponent(content: string, attrs: Object = {}) {
-    let element = this.element.firstChild as HTMLDivElement;
+    let element = assertElement(this.element.firstChild);
 
     switch (this.testType) {
       case 'Glimmer':
-        assertElement(element, 'div', attrs, content);
+        assertElementShape(element, 'div', attrs, content);
         break;
       default:
         assertEmberishElement(element, 'div', attrs, content);
@@ -545,11 +553,11 @@ export class RenderTest {
   }
 
   protected assertStableNodes(
-    { except: _except }: { except: Array<Node> | Node | Node[] } = {
+    { except: _except }: { except: SimpleNode | SimpleNode[] } = {
       except: [],
     }
   ) {
-    let except: Array<Node>;
+    let except: Array<SimpleNode>;
 
     if (Array.isArray(_except)) {
       except = uniq(_except);
@@ -563,46 +571,13 @@ export class RenderTest {
   }
 }
 
-export const CLASSES = {
-  Glimmer: EmberishGlimmerComponent,
-  Curly: EmberishCurlyComponent,
-  Dynamic: EmberishCurlyComponent,
-  Basic: BasicComponent,
-  Fragment: BasicComponent,
-};
-
-export type ComponentTypes = typeof CLASSES;
-
-export function registerComponent<K extends ComponentKind>(
-  env: LazyTestEnvironment,
-  type: K,
-  name: string,
-  layout: string,
-  Class?: ComponentTypes[K]
-) {
-  switch (type) {
-    case 'Glimmer':
-      env.registerEmberishGlimmerComponent(name, Class as typeof EmberishGlimmerComponent, layout);
-      break;
-    case 'Curly':
-      env.registerEmberishCurlyComponent(name, Class as typeof EmberishCurlyComponent, layout);
-      break;
-
-    case 'Dynamic':
-      env.registerEmberishCurlyComponent(name, Class as typeof EmberishCurlyComponent, layout);
-      break;
-    case 'Basic':
-    case 'Fragment':
-      env.registerBasicComponent(name, Class as typeof BasicComponent, layout);
-      break;
-  }
-}
-
 export interface RehydrationStats {
-  clearedNodes: Simple.Node[];
+  clearedNodes: SimpleNode[];
 }
 
 export class RehydrationDelegate implements RenderDelegate {
+  static readonly isEager = false;
+
   protected env: never;
 
   public clientEnv: LazyTestEnvironment;
@@ -611,7 +586,7 @@ export class RehydrationDelegate implements RenderDelegate {
   constructor() {
     this.clientEnv = new LazyTestEnvironment();
 
-    let doc = new SimpleDOM.Document();
+    let doc = createHTMLDocument();
 
     this.serverEnv = new LazyTestEnvironment({
       document: doc,
@@ -619,8 +594,12 @@ export class RehydrationDelegate implements RenderDelegate {
     });
   }
 
-  getInitialElement(): HTMLElement {
-    return this.clientEnv.getAppendOperations().createElement('div') as HTMLElement;
+  getInitialElement(): SimpleElement {
+    return this.clientEnv.getAppendOperations().createElement('div');
+  }
+
+  createElement(tagName: string): SimpleElement {
+    return this.clientEnv.getAppendOperations().createElement(tagName);
   }
 
   getElementBuilder(env: Environment, cursor: Cursor): ElementBuilder {
@@ -633,12 +612,12 @@ export class RehydrationDelegate implements RenderDelegate {
 
   renderServerSide(
     template: string,
-    context: Dict<Opaque>,
+    context: Dict<unknown>,
     takeSnapshot: () => void,
-    element: Element | undefined = undefined
+    element: SimpleElement | undefined = undefined
   ): string {
     let env = this.serverEnv;
-    element = element || (env.getAppendOperations().createElement('div') as HTMLDivElement);
+    element = element || env.getAppendOperations().createElement('div');
     let cursor = { element, nextSibling: null };
     // Emulate server-side render
     renderTemplate(template, env, this.getSelf(context), this.getElementBuilder(env, cursor));
@@ -647,21 +626,19 @@ export class RehydrationDelegate implements RenderDelegate {
     return this.serialize(element);
   }
 
-  getSelf(context: Opaque) {
+  getSelf(context: unknown): UpdatableReference {
     return new UpdatableReference(context);
   }
 
-  serialize(element: Simple.Element) {
-    let serializer = new SimpleDOM.HTMLSerializer(SimpleDOM.voidMap);
-    let serialized = serializer.serializeChildren(element);
-    return serialized;
+  serialize(element: SimpleElement): string {
+    return toInnerHTML(element);
   }
 
-  renderClientSide(template: string, context: Dict<Opaque>, element: HTMLElement): RenderResult {
+  renderClientSide(template: string, context: Dict<unknown>, element: SimpleElement): RenderResult {
     let env = this.clientEnv;
     // Client-side rehydration
     let cursor = { element, nextSibling: null };
-    let builder = this.getElementBuilder(env, cursor);
+    let builder = this.getElementBuilder(env, cursor) as DebugRehydrationBuilder;
     let result = renderTemplate(template, env, this.getSelf(context), builder);
 
     this.rehydrationStats = {
@@ -673,13 +650,13 @@ export class RehydrationDelegate implements RenderDelegate {
 
   renderTemplate(
     template: string,
-    context: Dict<Opaque>,
-    element: HTMLElement,
+    context: Dict<unknown>,
+    element: SimpleElement,
     snapshot: () => void
   ): RenderResult {
     let serialized = this.renderServerSide(template, context, snapshot);
-    element.innerHTML = serialized;
-    document.getElementById('qunit-fixture')!.appendChild(element);
+    replaceHTML(element, serialized);
+    qunitFixture().appendChild(element);
     return this.renderClientSide(template, context, element);
   }
 
@@ -697,9 +674,15 @@ export class RehydrationDelegate implements RenderDelegate {
     this.clientEnv.registerModifier(name, ModifierClass);
     this.serverEnv.registerModifier(name, ModifierClass);
   }
+
+  resetEnv() {}
 }
 
-function normalize(oldSnapshot: NodesSnapshot, newSnapshot: NodesSnapshot, except: Array<Node>) {
+function normalize(
+  oldSnapshot: NodesSnapshot,
+  newSnapshot: NodesSnapshot,
+  except: Array<SimpleNode>
+) {
   let oldIterator = new SnapshotIterator(oldSnapshot);
   let newIterator = new SnapshotIterator(newSnapshot);
 
@@ -713,8 +696,8 @@ function normalize(oldSnapshot: NodesSnapshot, newSnapshot: NodesSnapshot, excep
     if (nextOld === null && newIterator.peek() === null) break;
 
     if (
-      (nextOld instanceof Node && except.indexOf(nextOld) > -1) ||
-      (nextNew instanceof Node && except.indexOf(nextNew) > -1)
+      (nextOld && snapshotIsNode(nextOld) && except.indexOf(nextOld) > -1) ||
+      (nextNew && snapshotIsNode(nextNew) && except.indexOf(nextNew) > -1)
     ) {
       oldIterator.skip();
       newIterator.skip();
@@ -774,17 +757,17 @@ function uniq(arr: any[]) {
   }, []);
 }
 
-function isServerMarker(node: Node) {
+function isServerMarker(node: SimpleNode) {
   return node.nodeType === COMMENT_NODE && node.nodeValue!.charAt(0) === '%';
 }
 
 export interface ComponentTestMeta {
-  kind?: 'glimmer' | 'curly' | 'dynamic' | 'basic' | 'fragment';
-  skip?: boolean | 'glimmer' | 'curly' | 'dynamic' | 'basic' | 'fragment';
+  kind?: DeclaredComponentKind;
+  skip?: boolean | DeclaredComponentKind;
 }
 
 function setTestingDescriptor(descriptor: PropertyDescriptor): void {
-  let testFunction = descriptor.value as Function;
+  let testFunction = descriptor.value as Function & Dict;
   descriptor.enumerable = true;
   testFunction['isTest'] = true;
 }
@@ -799,8 +782,8 @@ export function test(...args: any[]) {
   if (args.length === 1) {
     let meta: ComponentTestMeta = args[0];
     return (_target: Object, _name: string, descriptor: PropertyDescriptor) => {
-      let testFunction = descriptor.value as Function;
-      Object.keys(meta).forEach(key => (testFunction[key] = meta[key]));
+      let testFunction = descriptor.value as Function & Dict;
+      keys(meta).forEach(key => (testFunction[key] = meta[key]));
       setTestingDescriptor(descriptor);
     };
   }
@@ -814,11 +797,13 @@ export interface RenderDelegateConstructor<
   Delegate extends RenderDelegate,
   TEnvironment extends Environment
 > {
+  readonly isEager: boolean;
   new (env?: TEnvironment): Delegate;
 }
 
 interface IRenderTest {
   readonly count: Count;
+  testType: ComponentKind;
 }
 
 export interface RenderTestConstructor<D extends RenderDelegate, T extends IRenderTest> {
@@ -891,7 +876,7 @@ function componentModule<D extends RenderDelegate, T extends IRenderTest, E exte
       if (!shouldSkip) {
         QUnit.test(`${type.toLowerCase()}: ${prop}`, assert => {
           let instance = new klass(new Delegate());
-          instance['testType'] = type;
+          instance.testType = type;
           test.call(instance, assert, instance.count);
         });
       }
@@ -904,8 +889,6 @@ function componentModule<D extends RenderDelegate, T extends IRenderTest, E exte
       if (test['kind'] === undefined) {
         let skip = test['skip'];
         switch (skip) {
-          case 'all':
-            break;
           case 'glimmer':
             tests.curly.push(createTest(prop, test));
             tests.dynamic.push(createTest(prop, test));
@@ -929,7 +912,7 @@ function componentModule<D extends RenderDelegate, T extends IRenderTest, E exte
               tests.fragment.push(createTest(prop, test, true));
             } else {
               ['glimmer', 'curly', 'dynamic'].forEach(kind => {
-                tests[kind].push(createTest(prop, test, true));
+                tests[kind as DeclaredComponentKind].push(createTest(prop, test, true));
               });
             }
           default:
@@ -974,7 +957,7 @@ function nestedComponentModules<D extends RenderDelegate, T extends IRenderTest>
   klass: RenderTestConstructor<D, T>,
   tests: ComponentTests
 ): void {
-  Object.keys(tests).forEach(type => {
+  keys(tests).forEach(type => {
     let formattedType = `${type[0].toUpperCase() + type.slice(1)}`;
     QUnit.module(`${formattedType}`, () => {
       for (let i = tests[type].length - 1; i >= 0; i--) {
@@ -986,37 +969,14 @@ function nestedComponentModules<D extends RenderDelegate, T extends IRenderTest>
   });
 }
 
-function isTestFunction(
-  value: any
-): value is (this: RenderTest, assert: typeof QUnit.assert) => void {
+interface TestFunction {
+  (this: IRenderTest, assert: typeof QUnit.assert, count?: Count): void;
+  kind?: DeclaredComponentKind;
+  skip?: boolean | DeclaredComponentKind;
+}
+
+function isTestFunction(value: any): value is TestFunction {
   return typeof value === 'function' && value.isTest;
-}
-
-export function renderTemplate(
-  src: string,
-  env: LazyTestEnvironment,
-  self: PathReference<Opaque>,
-  builder: ElementBuilder
-) {
-  let template = env.preprocess(src);
-  let iterator = env.renderMain(template, self, builder);
-  return renderSync(env, iterator);
-}
-
-export function renderSync(env: Environment, iterator: TemplateIterator) {
-  env.begin();
-
-  let iteratorResult: IteratorResult<RenderResult>;
-
-  do {
-    iteratorResult = iterator.next() as IteratorResult<RenderResult>;
-  } while (!iteratorResult.done);
-
-  let result = iteratorResult.value;
-
-  env.commit();
-
-  return result;
 }
 
 export function content(list: Content[]): string {
@@ -1048,7 +1008,7 @@ export function content(list: Content[]): string {
 
   TODO: future refactorings should clean up this interface (likely just making all callers pass a POJO)
 */
-export function processAssertElementArgs(args: any[]): [Element, string, any, string | null] {
+export function processAssertElementArgs(args: any[]): [SimpleElement, string, any, string | null] {
   let element = args[0];
 
   if (args.length === 3) {
@@ -1062,18 +1022,18 @@ export function processAssertElementArgs(args: any[]): [Element, string, any, st
 }
 
 export function assertEmberishElement(
-  element: HTMLElement,
+  element: SimpleElement,
   tagName: string,
   attrs: Object,
   contents: string
 ): void;
-export function assertEmberishElement(element: HTMLElement, tagName: string, attrs: Object): void;
+export function assertEmberishElement(element: SimpleElement, tagName: string, attrs: Object): void;
 export function assertEmberishElement(
-  element: HTMLElement,
+  element: SimpleElement,
   tagName: string,
   contents: string
 ): void;
-export function assertEmberishElement(element: HTMLElement, tagName: string): void;
+export function assertEmberishElement(element: SimpleElement, tagName: string): void;
 export function assertEmberishElement(...args: any[]): void {
   let [element, tagName, attrs, contents] = processAssertElementArgs(args);
 
@@ -1082,16 +1042,16 @@ export function assertEmberishElement(...args: any[]): void {
   equalsElement(element, tagName, fullAttrs, contents);
 }
 
-export function assertElement(
-  element: HTMLElement,
+export function assertElementShape(
+  element: SimpleElement,
   tagName: string,
   attrs: Object,
   contents: string
 ): void;
-export function assertElement(element: HTMLElement, tagName: string, attrs: Object): void;
-export function assertElement(element: HTMLElement, tagName: string, contents: string): void;
-export function assertElement(element: HTMLElement, tagName: string): void;
-export function assertElement(...args: any[]): void {
+export function assertElementShape(element: SimpleElement, tagName: string, attrs: Object): void;
+export function assertElementShape(element: SimpleElement, tagName: string, contents: string): void;
+export function assertElementShape(element: SimpleElement, tagName: string): void;
+export function assertElementShape(...args: any[]): void {
   let [element, tagName, attrs, contents] = processAssertElementArgs(args);
 
   equalsElement(element, tagName, attrs, contents);

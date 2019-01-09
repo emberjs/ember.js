@@ -1,7 +1,10 @@
-import { RenderTest, test, assertElement, assertEmberishElement, Count } from '../render-test';
+import { RenderTest, test, assertElementShape, assertEmberishElement, Count } from '../render-test';
 import { classes } from '../environment';
 import { strip, equalTokens } from '../helpers';
-import { EmberishGlimmerComponent, EmberishCurlyComponent } from '../../index';
+import { SimpleElement } from '@simple-dom/interface';
+import { assertElement, toInnerHTML } from '../dom';
+import { EmberishGlimmerComponent } from '../environment/components/emberish-glimmer';
+import { EmberishCurlyComponent } from '../environment/components/emberish-curly';
 
 export class EmberishComponentTests extends RenderTest {
   @test({ kind: 'glimmer' })
@@ -70,7 +73,7 @@ export class EmberishComponentTests extends RenderTest {
     this.registerComponent('Glimmer', 'Foo', '<Bar data-bar={{@childName}} @data={{@data}} />');
     this.registerComponent('Glimmer', 'Bar', '<div ...attributes>Hello World</div>');
 
-    let el = document.createElement('div');
+    let el = this.delegate.getInitialElement();
 
     this.render(
       strip`
@@ -82,9 +85,12 @@ export class EmberishComponentTests extends RenderTest {
     `,
       { components: [{ name: 'Foo', child: 'Bar', mount: el, data: { wat: 'Wat' } }] }
     );
-    assertElement(el.firstChild as HTMLElement, 'div', { 'data-bar': 'Bar' }, 'Hello World');
+
+    let first = assertElement(el.firstChild);
+
+    assertElementShape(first, 'div', { 'data-bar': 'Bar' }, 'Hello World');
     this.rerender({ components: [{ name: 'Foo', child: 'Bar', mount: el, data: { wat: 'Wat' } }] });
-    assertElement(el.firstChild as HTMLElement, 'div', { 'data-bar': 'Bar' }, 'Hello World');
+    assertElementShape(first, 'div', { 'data-bar': 'Bar' }, 'Hello World');
   }
 
   @test({ kind: 'glimmer' })
@@ -120,7 +126,7 @@ export class EmberishComponentTests extends RenderTest {
     this.registerModifier(
       'foo',
       class {
-        element?: Element;
+        element?: SimpleElement;
         didInsertElement() {
           count.expect('didInsertElement');
           assert.ok(this.element, 'didInsertElement');
@@ -286,6 +292,8 @@ export class EmberishComponentTests extends RenderTest {
   @test({ kind: 'curly' })
   'invoking wrapped layout via angle brackets - invocation attributes clobber internal attributes'() {
     class FooBar extends EmberishCurlyComponent {
+      [index: string]: unknown;
+
       constructor() {
         super(...arguments);
         this.attributeBindings = ['data-foo'];
@@ -303,6 +311,8 @@ export class EmberishComponentTests extends RenderTest {
   @test({ kind: 'curly' })
   'invoking wrapped layout via angle brackets - invocation attributes merges classes'() {
     class FooBar extends EmberishCurlyComponent {
+      [index: string]: unknown;
+
       constructor() {
         super(...arguments);
         this.attributeBindings = ['class'];
@@ -323,9 +333,9 @@ export class EmberishComponentTests extends RenderTest {
 
     this.render(`<FooBar data-foo="bar" />`);
 
-    let wrapperElement = this.element.firstChild as HTMLElement;
+    let wrapperElement = assertElement(this.element.firstChild);
     assertEmberishElement(wrapperElement, 'div', { 'data-foo': 'bar' });
-    equalTokens(wrapperElement.innerHTML, '<h1 data-foo="bar">Hello world!</h1>');
+    equalTokens(toInnerHTML(wrapperElement), '<h1 data-foo="bar">Hello world!</h1>');
 
     this.assertStableRerender();
   }

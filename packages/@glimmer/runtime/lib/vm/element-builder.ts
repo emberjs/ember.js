@@ -1,58 +1,47 @@
-import { Cursor, ConcreteBounds, SingleNodeBounds, clear } from '../bounds';
-
-import { DOMChanges, DOMTreeConstruction } from '../dom/helper';
-
 import {
-  Option,
+  Bounds,
+  Dict,
+  ElementOperations,
+  Environment,
+  GlimmerTreeChanges,
+  GlimmerTreeConstruction,
   SymbolDestroyable,
-  Stack,
-  LinkedList,
-  LinkedListNode,
-  assert,
-  expect,
-  DESTROY,
-} from '@glimmer/util';
-
-import { Environment } from '../environment';
-
-import { VersionedReference } from '@glimmer/reference';
-
+} from '@glimmer/interfaces';
+import { assert, DESTROY, expect, LinkedList, LinkedListNode, Option, Stack } from '@glimmer/util';
+import {
+  AttrNamespace,
+  SimpleComment,
+  SimpleDocumentFragment,
+  SimpleElement,
+  SimpleNode,
+  SimpleText,
+} from '@simple-dom/interface';
+import { clear, ConcreteBounds, CursorImpl, SingleNodeBounds } from '../bounds';
+import { detachChildren } from '../lifetime';
 import { DynamicAttribute } from './attributes/dynamic';
 
-import { Opaque, Simple, Bounds } from '@glimmer/interfaces';
-import { detachChildren } from '../lifetime';
-
 export interface FirstNode {
-  firstNode(): Simple.Node;
+  firstNode(): SimpleNode;
 }
 
 export interface LastNode {
-  lastNode(): Simple.Node;
+  lastNode(): SimpleNode;
 }
 
 class First {
-  constructor(private node: Simple.Node) {}
+  constructor(private node: SimpleNode) {}
 
-  firstNode(): Simple.Node {
+  firstNode(): SimpleNode {
     return this.node;
   }
 }
 
 class Last {
-  constructor(private node: Simple.Node) {}
+  constructor(private node: SimpleNode) {}
 
-  lastNode(): Simple.Node {
+  lastNode(): SimpleNode {
     return this.node;
   }
-}
-
-export interface ElementOperations {
-  setAttribute(
-    name: string,
-    value: VersionedReference<Opaque>,
-    trusting: boolean,
-    namespace: Option<string>
-  ): void;
 }
 
 export class Fragment implements Bounds {
@@ -62,41 +51,41 @@ export class Fragment implements Bounds {
     this.bounds = bounds;
   }
 
-  parentElement(): Simple.Element {
+  parentElement(): SimpleElement {
     return this.bounds.parentElement();
   }
 
-  firstNode(): Simple.Node {
+  firstNode(): SimpleNode {
     return this.bounds.firstNode();
   }
 
-  lastNode(): Simple.Node {
+  lastNode(): SimpleNode {
     return this.bounds.lastNode();
   }
 }
 
 export interface DOMStack {
   pushRemoteElement(
-    element: Simple.Element,
+    element: SimpleElement,
     guid: string,
-    nextSibling: Option<Simple.Node>
+    nextSibling: Option<SimpleNode>
   ): Option<RemoteLiveBlock>;
   popRemoteElement(): void;
   popElement(): void;
-  openElement(tag: string, _operations?: ElementOperations): Simple.Element;
+  openElement(tag: string, _operations?: ElementOperations): SimpleElement;
   flushElement(): void;
-  appendText(string: string): Simple.Text;
-  appendComment(string: string): Simple.Comment;
+  appendText(string: string): SimpleText;
+  appendComment(string: string): SimpleComment;
 
   appendDynamicHTML(value: string): void;
-  appendDynamicText(value: string): Simple.Text;
-  appendDynamicFragment(value: Simple.DocumentFragment): void;
-  appendDynamicNode(value: Simple.Node): void;
+  appendDynamicText(value: string): SimpleText;
+  appendDynamicFragment(value: SimpleDocumentFragment): void;
+  appendDynamicNode(value: SimpleNode): void;
 
   setStaticAttribute(name: string, value: string, namespace: Option<string>): void;
   setDynamicAttribute(
     name: string,
-    value: Opaque,
+    value: unknown,
     isTrusting: boolean,
     namespace: Option<string>
   ): DynamicAttribute;
@@ -104,24 +93,28 @@ export interface DOMStack {
 }
 
 export interface TreeOperations {
-  __openElement(tag: string): Simple.Element;
-  __flushElement(parent: Simple.Element, constructing: Simple.Element): void;
+  __openElement(tag: string): SimpleElement;
+  __flushElement(parent: SimpleElement, constructing: SimpleElement): void;
   __openBlock(): void;
   __closeBlock(): void;
-  __appendText(text: string): Simple.Text;
-  __appendComment(string: string): Simple.Comment;
-  __appendNode(node: Simple.Node): Simple.Node;
+  __appendText(text: string): SimpleText;
+  __appendComment(string: string): SimpleComment;
+  __appendNode(node: SimpleNode): SimpleNode;
   __appendHTML(html: string): Bounds;
   __setAttribute(name: string, value: string, namespace: Option<string>): void;
-  __setProperty(name: string, value: Opaque): void;
+  __setProperty(name: string, value: unknown): void;
 }
 
-export interface ElementBuilder extends Cursor, DOMStack, TreeOperations {
-  nextSibling: Option<Simple.Node>;
-  dom: DOMTreeConstruction;
-  updateOperations: DOMChanges;
-  constructing: Option<Simple.Element>;
-  element: Simple.Element;
+export const CURSOR_STACK = Symbol('CURSOR_STACK');
+
+export interface ElementBuilder extends CursorImpl, DOMStack, TreeOperations {
+  [CURSOR_STACK]: Stack<CursorImpl>;
+
+  nextSibling: Option<SimpleNode>;
+  dom: GlimmerTreeConstruction;
+  updateOperations: GlimmerTreeChanges;
+  constructing: Option<SimpleElement>;
+  element: SimpleElement;
   env: Environment;
 
   block(): LiveBlock;
@@ -136,16 +129,16 @@ export interface ElementBuilder extends Cursor, DOMStack, TreeOperations {
 }
 
 export class NewElementBuilder implements ElementBuilder {
-  public dom: DOMTreeConstruction;
-  public updateOperations: DOMChanges;
-  public constructing: Option<Simple.Element> = null;
+  public dom: GlimmerTreeConstruction;
+  public updateOperations: GlimmerTreeChanges;
+  public constructing: Option<SimpleElement> = null;
   public operations: Option<ElementOperations> = null;
   public env: Environment;
 
-  protected cursorStack = new Stack<Cursor>();
+  [CURSOR_STACK] = new Stack<CursorImpl>();
   private blockStack = new Stack<LiveBlock>();
 
-  static forInitialRender(env: Environment, cursor: Cursor) {
+  static forInitialRender(env: Environment, cursor: CursorImpl) {
     return new this(env, cursor.element, cursor.nextSibling).initialize();
   }
 
@@ -159,7 +152,7 @@ export class NewElementBuilder implements ElementBuilder {
     return stack;
   }
 
-  constructor(env: Environment, parentNode: Simple.Element, nextSibling: Option<Simple.Node>) {
+  constructor(env: Environment, parentNode: SimpleElement, nextSibling: Option<SimpleNode>) {
     this.pushElement(parentNode, nextSibling);
 
     this.env = env;
@@ -176,12 +169,12 @@ export class NewElementBuilder implements ElementBuilder {
     return this.blockStack.toArray();
   }
 
-  get element(): Simple.Element {
-    return this.cursorStack.current!.element;
+  get element(): SimpleElement {
+    return this[CURSOR_STACK].current!.element;
   }
 
-  get nextSibling(): Option<Simple.Node> {
-    return this.cursorStack.current!.nextSibling;
+  get nextSibling(): Option<SimpleNode> {
+    return this[CURSOR_STACK].current!.nextSibling;
   }
 
   block(): LiveBlock {
@@ -189,8 +182,8 @@ export class NewElementBuilder implements ElementBuilder {
   }
 
   popElement() {
-    this.cursorStack.pop();
-    expect(this.cursorStack.current, "can't pop past the last element");
+    this[CURSOR_STACK].pop();
+    expect(this[CURSOR_STACK].current, "can't pop past the last element");
   }
 
   pushSimpleBlock(): LiveBlock {
@@ -229,14 +222,14 @@ export class NewElementBuilder implements ElementBuilder {
   __closeBlock(): void {}
 
   // todo return seems unused
-  openElement(tag: string): Simple.Element {
+  openElement(tag: string): SimpleElement {
     let element = this.__openElement(tag);
     this.constructing = element;
 
     return element;
   }
 
-  __openElement(tag: string): Simple.Element {
+  __openElement(tag: string): SimpleElement {
     return this.dom.createElement(tag, this.element);
   }
 
@@ -256,7 +249,7 @@ export class NewElementBuilder implements ElementBuilder {
     this.didOpenElement(element);
   }
 
-  __flushElement(parent: Simple.Element, constructing: Simple.Element) {
+  __flushElement(parent: SimpleElement, constructing: SimpleElement) {
     this.dom.insertBefore(parent, constructing, this.nextSibling);
   }
 
@@ -266,17 +259,17 @@ export class NewElementBuilder implements ElementBuilder {
   }
 
   pushRemoteElement(
-    element: Simple.Element,
+    element: SimpleElement,
     guid: string,
-    nextSibling: Option<Simple.Node> = null
+    nextSibling: Option<SimpleNode> = null
   ): Option<RemoteLiveBlock> {
     return this.__pushRemoteElement(element, guid, nextSibling);
   }
 
   __pushRemoteElement(
-    element: Simple.Element,
+    element: SimpleElement,
     _guid: string,
-    nextSibling: Option<Simple.Node>
+    nextSibling: Option<SimpleNode>
   ): Option<RemoteLiveBlock> {
     this.pushElement(element, nextSibling);
     let block = new RemoteLiveBlock(element);
@@ -288,8 +281,8 @@ export class NewElementBuilder implements ElementBuilder {
     this.popElement();
   }
 
-  protected pushElement(element: Simple.Element, nextSibling: Option<Simple.Node>) {
-    this.cursorStack.push(new Cursor(element, nextSibling));
+  protected pushElement(element: SimpleElement, nextSibling: Option<SimpleNode>) {
+    this[CURSOR_STACK].push(new CursorImpl(element, nextSibling));
   }
 
   didAppendBounds(bounds: Bounds): Bounds {
@@ -297,12 +290,12 @@ export class NewElementBuilder implements ElementBuilder {
     return bounds;
   }
 
-  didAppendNode<T extends Simple.Node>(node: T): T {
+  didAppendNode<T extends SimpleNode>(node: T): T {
     this.block().didAppendNode(node);
     return node;
   }
 
-  didOpenElement(element: Simple.Element): Simple.Element {
+  didOpenElement(element: SimpleElement): SimpleElement {
     this.block().openElement(element);
     return element;
   }
@@ -311,23 +304,23 @@ export class NewElementBuilder implements ElementBuilder {
     this.block().closeElement();
   }
 
-  appendText(string: string): Simple.Text {
+  appendText(string: string): SimpleText {
     return this.didAppendNode(this.__appendText(string));
   }
 
-  __appendText(text: string): Simple.Text {
+  __appendText(text: string): SimpleText {
     let { dom, element, nextSibling } = this;
     let node = dom.createTextNode(text);
     dom.insertBefore(element, node, nextSibling);
     return node;
   }
 
-  __appendNode(node: Simple.Node): Simple.Node {
+  __appendNode(node: SimpleNode): SimpleNode {
     this.dom.insertBefore(this.element, node, this.nextSibling);
     return node;
   }
 
-  __appendFragment(fragment: Simple.DocumentFragment): Bounds {
+  __appendFragment(fragment: SimpleDocumentFragment): Bounds {
     let first = fragment.firstChild;
 
     if (first) {
@@ -348,18 +341,18 @@ export class NewElementBuilder implements ElementBuilder {
     this.didAppendBounds(bounds);
   }
 
-  appendDynamicText(value: string): Simple.Text {
+  appendDynamicText(value: string): SimpleText {
     let node = this.untrustedContent(value);
     this.didAppendNode(node);
     return node;
   }
 
-  appendDynamicFragment(value: Simple.DocumentFragment): void {
+  appendDynamicFragment(value: SimpleDocumentFragment): void {
     let bounds = this.__appendFragment(value);
     this.didAppendBounds(bounds);
   }
 
-  appendDynamicNode(value: Simple.Node): void {
+  appendDynamicNode(value: SimpleNode): void {
     let node = this.__appendNode(value);
     let bounds = new SingleNodeBounds(this.element, node);
     this.didAppendBounds(bounds);
@@ -369,38 +362,38 @@ export class NewElementBuilder implements ElementBuilder {
     return this.__appendHTML(value);
   }
 
-  private untrustedContent(value: string): Simple.Text {
+  private untrustedContent(value: string): SimpleText {
     return this.__appendText(value);
   }
 
-  appendComment(string: string): Simple.Comment {
+  appendComment(string: string): SimpleComment {
     return this.didAppendNode(this.__appendComment(string));
   }
 
-  __appendComment(string: string): Simple.Comment {
+  __appendComment(string: string): SimpleComment {
     let { dom, element, nextSibling } = this;
     let node = dom.createComment(string);
     dom.insertBefore(element, node, nextSibling);
     return node;
   }
 
-  __setAttribute(name: string, value: string, namespace: Option<string>): void {
+  __setAttribute(name: string, value: string, namespace: Option<AttrNamespace>): void {
     this.dom.setAttribute(this.constructing!, name, value, namespace);
   }
 
-  __setProperty(name: string, value: Opaque): void {
-    this.constructing![name] = value;
+  __setProperty(name: string, value: unknown): void {
+    (this.constructing! as Dict)[name] = value;
   }
 
-  setStaticAttribute(name: string, value: string, namespace: Option<string>): void {
+  setStaticAttribute(name: string, value: string, namespace: Option<AttrNamespace>): void {
     this.__setAttribute(name, value, namespace);
   }
 
   setDynamicAttribute(
     name: string,
-    value: Opaque,
+    value: unknown,
     trusting: boolean,
-    namespace: Option<string>
+    namespace: Option<AttrNamespace>
   ): DynamicAttribute {
     let element = this.constructing!;
     let attribute = this.env.attributeFor(element, name, trusting, namespace);
@@ -410,9 +403,9 @@ export class NewElementBuilder implements ElementBuilder {
 }
 
 export interface LiveBlock extends Bounds {
-  openElement(element: Simple.Element): void;
+  openElement(element: SimpleElement): void;
   closeElement(): void;
-  didAppendNode(node: Simple.Node): void;
+  didAppendNode(node: SimpleNode): void;
   didAppendBounds(bounds: Bounds): void;
   finalize(stack: ElementBuilder): void;
   [DESTROY]?(): void;
@@ -424,13 +417,13 @@ export class SimpleLiveBlock implements LiveBlock {
   protected destroyables: Option<SymbolDestroyable[]> = null;
   protected nesting = 0;
 
-  constructor(private parent: Simple.Element) {}
+  constructor(private parent: SimpleElement) {}
 
   parentElement() {
     return this.parent;
   }
 
-  firstNode(): Simple.Node {
+  firstNode(): SimpleNode {
     let first = expect(
       this.first,
       'cannot call `firstNode()` while `SimpleLiveBlock` is still initializing'
@@ -439,7 +432,7 @@ export class SimpleLiveBlock implements LiveBlock {
     return first.firstNode();
   }
 
-  lastNode(): Simple.Node {
+  lastNode(): SimpleNode {
     let last = expect(
       this.last,
       'cannot call `lastNode()` while `SimpleLiveBlock` is still initializing'
@@ -448,7 +441,7 @@ export class SimpleLiveBlock implements LiveBlock {
     return last.lastNode();
   }
 
-  openElement(element: Simple.Element) {
+  openElement(element: SimpleElement) {
     this.didAppendNode(element);
     this.nesting++;
   }
@@ -457,7 +450,7 @@ export class SimpleLiveBlock implements LiveBlock {
     this.nesting--;
   }
 
-  didAppendNode(node: Simple.Node) {
+  didAppendNode(node: SimpleNode) {
     if (this.nesting !== 0) return;
 
     if (!this.first) {
@@ -491,7 +484,7 @@ export class RemoteLiveBlock extends SimpleLiveBlock implements SymbolDestroyabl
 }
 
 export class UpdatableBlock extends SimpleLiveBlock {
-  reset(env: Environment): Option<Simple.Node> {
+  reset(env: Environment): Option<SimpleNode> {
     let nextSibling = detachChildren(this, env);
 
     // let nextSibling = clear(this);
@@ -508,7 +501,7 @@ export class UpdatableBlock extends SimpleLiveBlock {
 // FIXME: All the noops in here indicate a modelling problem
 class LiveBlockList implements LiveBlock {
   constructor(
-    private readonly parent: Simple.Element,
+    private readonly parent: SimpleElement,
     private readonly boundList: LinkedList<LinkedListNode & LiveBlock>
   ) {
     this.parent = parent;
@@ -519,7 +512,7 @@ class LiveBlockList implements LiveBlock {
     return this.parent;
   }
 
-  firstNode(): Simple.Node {
+  firstNode(): SimpleNode {
     let head = expect(
       this.boundList.head(),
       'cannot call `firstNode()` while `LiveBlockList` is still initializing'
@@ -528,7 +521,7 @@ class LiveBlockList implements LiveBlock {
     return head.firstNode();
   }
 
-  lastNode(): Simple.Node {
+  lastNode(): SimpleNode {
     let tail = expect(
       this.boundList.tail(),
       'cannot call `lastNode()` while `LiveBlockList` is still initializing'
@@ -537,7 +530,7 @@ class LiveBlockList implements LiveBlock {
     return tail.lastNode();
   }
 
-  openElement(_element: Simple.Element) {
+  openElement(_element: SimpleElement) {
     assert(false, 'Cannot openElement directly inside a block list');
   }
 
@@ -545,7 +538,7 @@ class LiveBlockList implements LiveBlock {
     assert(false, 'Cannot closeElement directly inside a block list');
   }
 
-  didAppendNode(_node: Simple.Node) {
+  didAppendNode(_node: SimpleNode) {
     assert(false, 'Cannot create a new node directly inside a block list');
   }
 
@@ -556,6 +549,6 @@ class LiveBlockList implements LiveBlock {
   }
 }
 
-export function clientBuilder(env: Environment, cursor: Cursor): ElementBuilder {
+export function clientBuilder(env: Environment, cursor: CursorImpl): ElementBuilder {
   return NewElementBuilder.forInitialRender(env, cursor);
 }

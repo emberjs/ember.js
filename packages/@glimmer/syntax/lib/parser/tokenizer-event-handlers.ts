@@ -2,15 +2,16 @@ import b, { SYNTHETIC } from '../builders';
 import { appendChild, parseElementBlockParams } from '../utils';
 import { HandlebarsNodeVisitors } from './handlebars-node-visitors';
 import * as AST from '../types/nodes';
+import * as HBS from '../types/handlebars-ast';
 import SyntaxError from '../errors/syntax-error';
 import { Tag } from '../parser';
 import builders from '../builders';
 import traverse from '../traversal/traverse';
-import { NodeVisitor } from '../types/visitor';
 import print from '../generation/print';
 import Walker from '../traversal/walker';
 import * as handlebars from 'handlebars';
 import { assign } from '@glimmer/util';
+import { NodeVisitor } from '../traversal/visitor';
 
 export const voidMap: {
   [tagName: string]: boolean;
@@ -342,6 +343,7 @@ export interface PreprocessOptions {
   plugins?: {
     ast?: ASTPluginBuilder[];
   };
+  parseOptions?: object;
 }
 
 export interface Syntax {
@@ -360,9 +362,10 @@ const syntax: Syntax = {
   Walker,
 };
 
-export function preprocess(html: string, options?: PreprocessOptions): AST.Program {
-  let ast = typeof html === 'object' ? html : handlebars.parse(html);
-  let program = new TokenizerEventHandlers(html).acceptNode(ast);
+export function preprocess(html: string, options?: PreprocessOptions): AST.Template {
+  const parseOptions = options ? options.parseOptions : {};
+  let ast = typeof html === 'object' ? html : (handlebars.parse(html, parseOptions) as HBS.Program);
+  let program = new TokenizerEventHandlers(html).acceptTemplate(ast);
 
   if (options && options.plugins && options.plugins.ast) {
     for (let i = 0, l = options.plugins.ast.length; i < l; i++) {

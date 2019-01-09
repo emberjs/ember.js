@@ -1,16 +1,17 @@
-import { RuntimeResolver, ComponentDefinition } from '@glimmer/interfaces';
-import { LazyCompiler } from '@glimmer/opcode-compiler';
-import { Option, Opaque } from '@glimmer/util';
-import { Invocation } from '@glimmer/runtime';
+import {
+  AnnotatedModuleLocator,
+  CompilableProgram,
+  ComponentDefinition,
+  Invocation,
+  RuntimeResolver,
+  TemplateMeta,
+} from '@glimmer/interfaces';
+import { Option } from '@glimmer/util';
+import Registry, { Lookup, LookupType, TypedRegistry } from '../../registry';
 
-import { TestMeta } from './environment';
-import Registry, { TypedRegistry, Lookup, LookupType } from '../../registry';
-
-export default class LazyRuntimeResolver implements RuntimeResolver<TestMeta> {
-  private handleLookup: TypedRegistry<Opaque>[] = [];
+export default class LazyRuntimeResolver implements RuntimeResolver {
+  private handleLookup: TypedRegistry<unknown>[] = [];
   private registry = new Registry();
-
-  public compiler!: LazyCompiler<TestMeta>;
 
   register<K extends LookupType>(type: K, name: string, value: Lookup[K]): number {
     let registry = this.registry[type];
@@ -20,7 +21,11 @@ export default class LazyRuntimeResolver implements RuntimeResolver<TestMeta> {
     return handle;
   }
 
-  lookup(type: LookupType, name: string, _referrer?: {}): Option<number> {
+  lookup(
+    type: LookupType,
+    name: string,
+    _referrer?: Option<TemplateMeta<AnnotatedModuleLocator>>
+  ): Option<number> {
     if (this.registry[type].hasName(name)) {
       return this.registry[type].getHandle(name);
     } else {
@@ -28,10 +33,28 @@ export default class LazyRuntimeResolver implements RuntimeResolver<TestMeta> {
     }
   }
 
+  compilableProgram(
+    sourceHandle: number,
+    templateName: string,
+    create: (source: string) => CompilableProgram
+  ) {
+    let compilableHandle = this.lookup('compilable', templateName);
+
+    if (compilableHandle) {
+      return this.resolve<CompilableProgram>(compilableHandle);
+    }
+
+    let source = this.resolve<string>(sourceHandle);
+
+    let compilable = create(source);
+    this.register('compilable', templateName, compilable);
+    return compilable;
+  }
+
   compileTemplate(
     sourceHandle: number,
     templateName: string,
-    create: (source: string, options: LazyCompiler<TestMeta>) => Invocation
+    create: (source: string) => Invocation
   ): Invocation {
     let invocationHandle = this.lookup('template', templateName);
 
@@ -41,30 +64,45 @@ export default class LazyRuntimeResolver implements RuntimeResolver<TestMeta> {
 
     let source = this.resolve<string>(sourceHandle);
 
-    let invocation = create(source, this.compiler);
+    let invocation = create(source);
     this.register('template', templateName, invocation);
     return invocation;
   }
 
-  lookupHelper(name: string, referrer?: {}): Option<number> {
+  lookupHelper(
+    name: string,
+    referrer?: Option<TemplateMeta<AnnotatedModuleLocator>>
+  ): Option<number> {
     return this.lookup('helper', name, referrer);
   }
 
-  lookupModifier(name: string, referrer?: {}): Option<number> {
+  lookupModifier(
+    name: string,
+    referrer?: Option<TemplateMeta<AnnotatedModuleLocator>>
+  ): Option<number> {
     return this.lookup('modifier', name, referrer);
   }
 
-  lookupComponentDefinition(name: string, referrer?: {}): Option<ComponentDefinition> {
+  lookupComponentDefinition(
+    name: string,
+    referrer: Option<TemplateMeta<AnnotatedModuleLocator>>
+  ): Option<ComponentDefinition> {
     let handle = this.lookupComponentHandle(name, referrer);
     if (handle === null) return null;
     return this.resolve(handle) as ComponentDefinition;
   }
 
-  lookupComponentHandle(name: string, referrer?: {}): Option<number> {
+  lookupComponentHandle(
+    name: string,
+    referrer?: Option<TemplateMeta<AnnotatedModuleLocator>>
+  ): Option<number> {
     return this.lookup('component', name, referrer);
   }
 
-  lookupPartial(name: string, referrer?: {}): Option<number> {
+  lookupPartial(
+    name: string,
+    referrer?: Option<TemplateMeta<AnnotatedModuleLocator>>
+  ): Option<number> {
     return this.lookup('partial', name, referrer);
   }
 

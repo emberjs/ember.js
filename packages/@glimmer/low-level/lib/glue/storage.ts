@@ -1,10 +1,8 @@
-export type Opaque = {} | null | undefined;
-
 export class Storage {
-  private readonly array: Opaque[] = [];
+  private readonly array: unknown[] = [];
   private next = 0;
 
-  add(element: Opaque): number {
+  add(element: unknown): number {
     let { next: slot, array } = this;
 
     if (slot === array.length) {
@@ -18,7 +16,7 @@ export class Storage {
     return slot;
   }
 
-  deref(pointer: number): Opaque {
+  deref(pointer: number): unknown {
     return this.array[pointer];
   }
 

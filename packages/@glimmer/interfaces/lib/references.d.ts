@@ -1,5 +1,3 @@
-import { Opaque } from './core';
-
 export interface Reference<T> {
   value(): T;
 }
@@ -7,7 +5,7 @@ export interface Reference<T> {
 export default Reference;
 
 export interface PathReference<T> extends Reference<T> {
-  get(key: string): PathReference<Opaque>;
+  get(key: string): PathReference<unknown>;
 }
 
 export type Revision = number;

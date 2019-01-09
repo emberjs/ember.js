@@ -1,6 +1,5 @@
 import { DEBUG } from '@glimmer/local-debug-flags';
-import { Opaque } from '@glimmer/interfaces';
-import { PrimitiveType } from '@glimmer/program';
+import { PrimitiveType } from '@glimmer/interfaces';
 import { unreachable } from '@glimmer/util';
 import { Stack as WasmStack } from '@glimmer/low-level';
 import { MachineRegister, $sp, $fp } from '@glimmer/vm';
@@ -27,7 +26,7 @@ export class InnerStack {
     return new InnerStack(inner, this.js.slice(start, end));
   }
 
-  sliceInner<T = Opaque>(start: number, end: number): T[] {
+  sliceInner<T = unknown>(start: number, end: number): T[] {
     let out = [];
 
     for (let i = start; i < end; i++) {
@@ -86,7 +85,7 @@ export class InnerStack {
 export interface EvaluationStack {
   [REGISTERS]: LowLevelRegisters;
 
-  push(value: Opaque): void;
+  push(value: unknown): void;
   pushSmi(value: number): void;
   pushImmediate(value: null | undefined | number | boolean): void;
   pushEncodedImmediate(value: number): void;
@@ -99,10 +98,10 @@ export interface EvaluationStack {
   peekSmi(offset?: number): number;
   get<T>(offset: number, base?: number): T;
   getSmi(offset: number, base?: number): number;
-  set(value: Opaque, offset: number, base?: number): void;
+  set(value: unknown, offset: number, base?: number): void;
   slice(start: number, end: number): InnerStack;
-  sliceArray<T = Opaque>(start: number, end: number): T[];
-  capture(items: number): Opaque[];
+  sliceArray<T = unknown>(start: number, end: number): T[];
+  capture(items: number): unknown[];
   reset(): void;
   toArray(): unknown[];
 }
@@ -129,7 +128,7 @@ export default class EvaluationStackImpl implements EvaluationStack {
     }
   }
 
-  push(value: Opaque): void {
+  push(value: unknown): void {
     this.stack.write(++this[REGISTERS][$sp], value);
   }
 
@@ -183,7 +182,7 @@ export default class EvaluationStackImpl implements EvaluationStack {
     return this.stack.getSmi(base + offset);
   }
 
-  set(value: Opaque, offset: number, base = this[REGISTERS][$fp]) {
+  set(value: unknown, offset: number, base = this[REGISTERS][$fp]) {
     this.stack.write(base + offset, value);
   }
 
@@ -191,11 +190,11 @@ export default class EvaluationStackImpl implements EvaluationStack {
     return this.stack.slice(start, end);
   }
 
-  sliceArray<T = Opaque>(start: number, end: number): T[] {
+  sliceArray<T = unknown>(start: number, end: number): T[] {
     return this.stack.sliceInner(start, end);
   }
 
-  capture(items: number): Opaque[] {
+  capture(items: number): unknown[] {
     let end = this[REGISTERS][$sp] + 1;
     let start = end - items;
     return this.stack.sliceInner(start, end);
@@ -206,6 +205,7 @@ export default class EvaluationStackImpl implements EvaluationStack {
   }
 
   toArray() {
+    console.log(this[REGISTERS]);
     return this.stack.sliceInner(this[REGISTERS][$fp], this[REGISTERS][$sp] + 1);
   }
 }

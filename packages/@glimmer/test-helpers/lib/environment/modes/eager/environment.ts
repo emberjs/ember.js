@@ -1,19 +1,17 @@
-import { Opaque } from '@glimmer/util';
-import { Program } from '@glimmer/program';
-import { RuntimeResolver } from '@glimmer/interfaces';
-import { DOMTreeConstruction, DOMChanges } from '@glimmer/runtime';
+import { EnvironmentOptions, RuntimeResolver } from '@glimmer/interfaces';
+import { DOMChanges, DOMTreeConstruction } from '@glimmer/runtime';
+import { SimpleDocument } from '@simple-dom/interface';
+import TestEnvironment, { TestProgram } from '../../environment';
 
-import TestEnvironment, { TestEnvironmentOptions } from '../../environment';
+export default class EagerTestEnvironment extends TestEnvironment {
+  protected program!: TestProgram;
+  protected resolver!: RuntimeResolver;
 
-export default class EagerTestEnvironment extends TestEnvironment<Opaque> {
-  protected program!: Program<Opaque>;
-  protected resolver!: RuntimeResolver<Opaque>;
-
-  constructor(options?: TestEnvironmentOptions) {
+  constructor(options?: EnvironmentOptions) {
     if (!options) {
-      let document = window.document;
+      let document = window.document as SimpleDocument;
       let appendOperations = new DOMTreeConstruction(document);
-      let updateOperations = new DOMChanges(document as HTMLDocument);
+      let updateOperations = new DOMChanges(document);
       options = { appendOperations, updateOperations };
     }
 

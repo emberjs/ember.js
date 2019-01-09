@@ -1,4 +1,4 @@
-import { Opaque, Option, Recast } from '@glimmer/interfaces';
+import { Option, Recast } from '@glimmer/interfaces';
 import { ConstReference, PathReference, Reference, Tag } from '@glimmer/reference';
 
 export type Primitive = undefined | null | boolean | number | string;
@@ -64,7 +64,7 @@ export const FALSE_REFERENCE: PrimitiveReference<boolean> = new ValueReference(f
 export class ConditionalReference implements Reference<boolean> {
   public tag: Tag;
 
-  constructor(private inner: Reference<Opaque>) {
+  constructor(private inner: Reference<unknown>) {
     this.tag = inner.tag;
   }
 
@@ -72,7 +72,7 @@ export class ConditionalReference implements Reference<boolean> {
     return this.toBool(this.inner.value());
   }
 
-  protected toBool(value: Opaque): boolean {
+  protected toBool(value: unknown): boolean {
     return !!value;
   }
 }

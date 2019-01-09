@@ -1,8 +1,15 @@
-import { moveNodesBefore, DOMOperations } from '../dom/helper';
-import { Option, unwrap, assert } from '@glimmer/util';
-import { Simple, Bounds } from '@glimmer/interfaces';
+import { Bounds } from '@glimmer/interfaces';
+import { assert, clearElement, Option, unwrap } from '@glimmer/util';
+import {
+  InsertPosition,
+  Namespace,
+  SimpleDocument,
+  SimpleElement,
+  SimpleNode,
+} from '@simple-dom/interface';
+import { DOMOperations, moveNodesBefore } from '../dom/helper';
 
-export const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
+export const SVG_NAMESPACE = Namespace.SVG;
 export type SVG_NAMESPACE = typeof SVG_NAMESPACE;
 
 // Patch:    insertAdjacentHTML on SVG Fix
@@ -17,7 +24,7 @@ export type SVG_NAMESPACE = typeof SVG_NAMESPACE;
 //           that whole string is added to a div. The created nodes are plucked
 //           out and applied to the target location on DOM.
 export function applySVGInnerHTMLFix(
-  document: Option<Document>,
+  document: Option<SimpleDocument>,
   DOMClass: typeof DOMOperations,
   svgNamespace: SVG_NAMESPACE
 ): typeof DOMOperations {
@@ -27,14 +34,10 @@ export function applySVGInnerHTMLFix(
     return DOMClass;
   }
 
-  let div = document.createElement('div');
+  let div = document.createElement('div') as SimpleElement;
 
   return class DOMChangesWithSVGInnerHTMLFix extends DOMClass {
-    insertHTMLBefore(
-      parent: Simple.Element,
-      nextSibling: Option<Simple.Node>,
-      html: string
-    ): Bounds {
+    insertHTMLBefore(parent: SimpleElement, nextSibling: Option<SimpleNode>, html: string): Bounds {
       if (html === '') {
         return super.insertHTMLBefore(parent, nextSibling, html);
       }
@@ -49,14 +52,14 @@ export function applySVGInnerHTMLFix(
 }
 
 function fixSVG(
-  parent: Simple.Element,
-  div: HTMLElement,
+  parent: SimpleElement,
+  div: SimpleElement,
   html: string,
-  reference: Option<Simple.Node>
+  reference: Option<SimpleNode>
 ): Bounds {
   assert(html !== '', 'html cannot be empty');
 
-  let source: Node;
+  let source: SimpleNode;
 
   // This is important, because decendants of the <foreignObject> integration
   // point are parsed in the HTML namespace
@@ -65,7 +68,8 @@ function fixSVG(
     // namespaced elements. So here a wrapper is used.
     let wrappedHtml = '<svg><foreignObject>' + html + '</foreignObject></svg>';
 
-    div.innerHTML = wrappedHtml;
+    clearElement(div);
+    parent.insertAdjacentHTML(InsertPosition.afterbegin, wrappedHtml);
 
     source = div.firstChild!.firstChild!;
   } else {
@@ -73,7 +77,8 @@ function fixSVG(
     // namespaced elements. So here a wrapper is used.
     let wrappedHtml = '<svg>' + html + '</svg>';
 
-    div.innerHTML = wrappedHtml;
+    clearElement(div);
+    parent.insertAdjacentHTML(InsertPosition.afterbegin, wrappedHtml);
 
     source = div.firstChild!;
   }
@@ -81,17 +86,20 @@ function fixSVG(
   return moveNodesBefore(source, parent, reference);
 }
 
-function shouldApplyFix(document: Document, svgNamespace: SVG_NAMESPACE) {
+function shouldApplyFix(document: SimpleDocument, svgNamespace: SVG_NAMESPACE) {
   let svg = document.createElementNS(svgNamespace, 'svg');
 
   try {
-    svg['insertAdjacentHTML']('beforeend', '<circle></circle>');
+    svg.insertAdjacentHTML(InsertPosition.beforeend, '<circle></circle>');
   } catch (e) {
     // IE, Edge: Will throw, insertAdjacentHTML is unsupported on SVG
     // Safari: Will throw, insertAdjacentHTML is not present on SVG
   } finally {
     // FF: Old versions will create a node in the wrong namespace
-    if (svg.childNodes.length === 1 && unwrap(svg.firstChild).namespaceURI === SVG_NAMESPACE) {
+    if (
+      svg.childNodes.length === 1 &&
+      (unwrap(svg.firstChild) as Node).namespaceURI === SVG_NAMESPACE
+    ) {
       // The test worked as expected, no fix required
       return false;
     }
