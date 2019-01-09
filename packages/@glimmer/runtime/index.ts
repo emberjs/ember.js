@@ -27,7 +27,6 @@ export { normalizeProperty } from './lib/dom/props';
 export {
   default as EnvironmentImpl,
   DefaultEnvironment,
-  Helper,
   RuntimeEnvironment,
   ScopeImpl,
 } from './lib/environment';

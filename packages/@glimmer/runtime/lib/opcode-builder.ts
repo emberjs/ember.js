@@ -2,8 +2,7 @@ import { VersionedPathReference } from '@glimmer/reference';
 
 import { Option } from '@glimmer/util';
 
-import { PublicVM } from './vm/append';
-import { RuntimeResolver, VMArguments, TemplateMeta } from '@glimmer/interfaces';
+import { RuntimeResolver, VMArguments, TemplateMeta, VM as PublicVM } from '@glimmer/interfaces';
 import { CurriedComponentDefinition } from './component/curried-component';
 
 export interface DynamicComponentDefinition {

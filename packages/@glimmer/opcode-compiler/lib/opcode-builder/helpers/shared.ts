@@ -71,7 +71,7 @@ export function compileParams(
 
 export function meta<R>(layout: LayoutWithContext<R>): ContainingMetadata {
   return {
-    asPartial: layout.asPartial,
+    asPartial: layout.asPartial || false,
     evalSymbols: evalSymbols(layout),
     referrer: layout.referrer,
     size: layout.block.symbols.length,
