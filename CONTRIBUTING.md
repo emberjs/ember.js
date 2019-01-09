@@ -280,7 +280,7 @@ Note: before using this approach, please be certain your test is really dependin
 
 To recreate this build environment locally:
 * Run `ember serve --environment=production` in a terminal (takes much much longer than a default `ember s`)
-* Browse to `localhost:4200/tests/index.html?skipPackage=container,ember-testing,ember-debug&dist=prod&prod=true`
+* Browse to `localhost:4200/tests/index.html?skipPackage=container,ember-testing,@ember/debug&dist=prod&prod=true`
 
 ### Single Unexplained Test Suite Failure
 
