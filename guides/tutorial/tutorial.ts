@@ -1,16 +1,16 @@
 import { precompile } from '@glimmer/compiler';
 import { UpdatableReference } from '@glimmer/object-reference';
-import { Syntax } from '@glimmer/opcode-compiler';
+import { Context } from '@glimmer/opcode-compiler';
 import { artifacts, RuntimeProgramImpl } from '@glimmer/program';
-import { Cursor, NewElementBuilder, renderAotMain, renderSync } from '@glimmer/runtime';
+import { NewElementBuilder, renderAotMain, renderSync } from '@glimmer/runtime';
 import { strip } from '@glimmer/util';
 import Serializer from '@simple-dom/serializer';
 import voidMap from '@simple-dom/void-map';
 import createHTMLDocument from '@simple-dom/document';
-import { TutorialResolver } from './context';
-import { TutorialRuntimeResolver, KEYS, TutorialDynamicScope } from './env';
+import { TutorialRuntimeResolver, KEYS } from './env';
 import { RuntimeEnvironment } from '@glimmer/runtime';
-import { Layout } from '@glimmer/opcode-compiler';
+import { Component } from '@glimmer/opcode-compiler';
+import { Cursor } from '@glimmer/interfaces';
 
 /**
  * The source code for the module we're compiling.
@@ -33,8 +33,8 @@ console.log('Wire Format', wire);
  * Rehydrate the wire format into a compilable module.
  */
 
-let layout = Layout(wire);
-console.log('Compilable Layout', layout);
+let component = Component(wire);
+console.log('Compilable component', component);
 
 /**
  * The ResolverDelegate is an object that resolves global names in modules at compile-time.
@@ -49,13 +49,13 @@ console.log('Compilable Layout', layout);
  * modules.
  */
 
-let syntax = Syntax(new TutorialResolver());
+let context = Context();
 
 /**
  * Compile the module, getting back a handle that we can use to invoke it
  */
 
-let compiled = layout.compile(syntax);
+let compiled = component.compile(context);
 console.log('Compiled Handle', compiled);
 
 /**
@@ -65,7 +65,7 @@ console.log('Compiled Handle', compiled);
  * - the constant pool, mostly used for storing strings
  */
 
-let payload = artifacts(syntax.program);
+let payload = artifacts(context);
 
 /**
  * Glimmer's internals are restricted to using a small subset of DOM
@@ -132,7 +132,7 @@ let cursor: Cursor = { element, nextSibling: null };
  */
 let builder = NewElementBuilder.forInitialRender(runtime.env, cursor);
 
-let iterator = renderAotMain(runtime, self, new TutorialDynamicScope(), builder, compiled);
+let iterator = renderAotMain(runtime, self, builder, compiled);
 
 renderSync(runtime.env, iterator);
 

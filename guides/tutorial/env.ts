@@ -1,13 +1,11 @@
 import {
   Dict,
-  DynamicScope,
   OpaqueTemplateMeta,
   Option,
   RuntimeResolver,
   TemplateMeta,
 } from '@glimmer/interfaces';
-import { IterableKeyDefinitions, PathReference } from '@glimmer/reference';
-import { assign } from '@glimmer/util';
+import { IterableKeyDefinitions } from '@glimmer/reference';
 
 export class TutorialRuntimeResolver implements RuntimeResolver<TemplateMeta> {
   lookupComponentDefinition(_name: string, _referrer?: Option<TemplateMeta>): Option<any> {
@@ -20,30 +18,6 @@ export class TutorialRuntimeResolver implements RuntimeResolver<TemplateMeta> {
 
   resolve<U>(_handle: number): U {
     throw new Error('Method not implemented.');
-  }
-}
-
-export class TutorialDynamicScope implements DynamicScope {
-  private bucket: any;
-
-  constructor(bucket = null) {
-    if (bucket) {
-      this.bucket = assign({}, bucket);
-    } else {
-      this.bucket = {};
-    }
-  }
-
-  get(key: string): PathReference<unknown> {
-    return this.bucket[key];
-  }
-
-  set(key: string, reference: PathReference<unknown>) {
-    return (this.bucket[key] = reference);
-  }
-
-  child(): TutorialDynamicScope {
-    return new TutorialDynamicScope(this.bucket);
   }
 }
 

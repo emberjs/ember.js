@@ -5,9 +5,10 @@ import {
   Option,
   Template,
   TemplateMeta,
+  TemplateIterator,
 } from '@glimmer/interfaces';
 import { PathReference } from '@glimmer/reference';
-import { ElementBuilder, TemplateIterator } from '@glimmer/runtime';
+import { ElementBuilder } from '@glimmer/runtime';
 import { BasicComponent, BasicComponentFactory } from './environment/components/basic';
 import {
   EmberishCurlyComponent,

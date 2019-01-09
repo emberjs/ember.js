@@ -45,10 +45,9 @@ export {
   renderJitComponent,
   renderJitMain,
   renderSync,
-  TemplateIterator,
 } from './lib/render';
 export { SafeString } from './lib/upsert';
-export { InternalVM, PublicVM as VM, UpdatingVM, VM as LowLevelVM } from './lib/vm';
+export { InternalVM, UpdatingVM, VM as LowLevelVM } from './lib/vm';
 export { EMPTY_ARGS } from './lib/vm/arguments';
 export { AttributeOperation } from './lib/vm/attributes';
 export { DynamicAttribute, SimpleDynamicAttribute } from './lib/vm/attributes/dynamic';

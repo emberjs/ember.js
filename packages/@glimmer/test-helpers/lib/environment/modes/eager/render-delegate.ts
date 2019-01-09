@@ -47,7 +47,6 @@ import {
   EmberishGlimmerComponentManager,
   EMBERISH_GLIMMER_CAPABILITIES,
 } from '../../components/emberish-glimmer';
-import { TestDynamicScope } from '../../dynamic-scope';
 import { HelperReference, UserHelper } from '../../helper';
 import TestMacros from '../../macros';
 import {
@@ -286,10 +285,9 @@ export default class EagerRenderDelegate implements RenderDelegate {
     let cursor = { element, nextSibling: null };
     let builder = this.getElementBuilder(env, cursor);
     let self = this.getSelf(context);
-    let dynamicScope = new TestDynamicScope();
     let runtime = this.getRuntime(compilationResult);
 
-    let iterator = renderAotMain(runtime, self, dynamicScope, builder, handle);
+    let iterator = renderAotMain(runtime, self, builder, handle);
 
     return renderSync(env, iterator);
   }
