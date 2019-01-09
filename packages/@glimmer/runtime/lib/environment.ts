@@ -1,61 +1,54 @@
-import { Reference, PathReference, OpaqueIterable } from '@glimmer/reference';
-import { Macros, OpcodeBuilderConstructor } from '@glimmer/opcode-compiler';
-import { Simple, RuntimeResolver, CompilableBlock, BlockSymbolTable } from '@glimmer/interfaces';
-import { Program } from '@glimmer/program';
-import { Dict, Option, Opaque, assert, expect, Drop, DROP } from '@glimmer/util';
-
-import { DOMChanges, DOMTreeConstruction } from './dom/helper';
+import {
+  ComponentManager,
+  Dict,
+  Drop,
+  Environment,
+  EnvironmentOptions,
+  GlimmerTreeChanges,
+  GlimmerTreeConstruction,
+  JitOrAotBlock,
+  PartialScope,
+  Scope,
+  ScopeBlock,
+  ScopeSlot,
+  Transaction,
+  TransactionSymbol,
+  VMArguments,
+} from '@glimmer/interfaces';
+import {
+  IterableImpl,
+  IterableKeyDefinitions,
+  OpaqueIterable,
+  PathReference,
+  Reference,
+  VersionedPathReference,
+} from '@glimmer/reference';
+import { assert, DROP, expect, Option } from '@glimmer/util';
+import { AttrNamespace, SimpleDocument, SimpleElement } from '@simple-dom/interface';
+import { DOMChangesImpl, DOMTreeConstruction } from './dom/helper';
+import { Modifier, ModifierManager } from './internal-interfaces';
+import { ConditionalReference, UNDEFINED_REFERENCE } from './references';
 import { PublicVM } from './vm/append';
-import { IArguments } from './vm/arguments';
-import { UNDEFINED_REFERENCE, ConditionalReference } from './references';
 import { DynamicAttribute, dynamicAttribute } from './vm/attributes/dynamic';
-import { Component, ComponentManager, ModifierManager, Modifier } from './internal-interfaces';
 
-export type ScopeBlock = [number | CompilableBlock, ScopeImpl, BlockSymbolTable];
-export type BlockValue = ScopeBlock[0 | 1 | 2];
-export type ScopeSlot = Option<PathReference<Opaque>> | Option<ScopeBlock>;
-
-export interface DynamicScope {
-  get(key: string): PathReference<Opaque>;
-  set(key: string, reference: PathReference<Opaque>): PathReference<Opaque>;
-  child(): DynamicScope;
+export function isScopeReference(s: ScopeSlot): s is VersionedPathReference {
+  if (s === null || Array.isArray(s)) return false;
+  return true;
 }
 
-export interface Scope {
-  getSelf(): PathReference<unknown>;
-  getSymbol(symbol: number): PathReference<unknown>;
-  getBlock(symbol: number): Option<ScopeBlock>;
-  getEvalScope(): Option<Dict<ScopeSlot>>;
-  getPartialMap(): Option<Dict<PathReference<unknown>>>;
-  bind(symbol: number, value: ScopeSlot): void;
-  bindSelf(self: PathReference<unknown>): void;
-  bindSymbol(symbol: number, value: PathReference<unknown>): void;
-  bindBlock(symbol: number, value: Option<ScopeBlock>): void;
-  bindEvalScope(map: Option<Dict<ScopeSlot>>): void;
-  bindPartialMap(map: Dict<PathReference<Opaque>>): void;
-  bindCallerScope(scope: Option<Scope>): void;
-  getCallerScope(): Option<Scope>;
-  child(): Scope;
-}
-
-export interface PartialScope extends Scope {
-  bindCallerScope(scope: Option<Scope>): void;
-  bindEvalScope(scope: Option<Dict<ScopeSlot>>): void;
-}
-
-export class ScopeImpl implements PartialScope {
-  static root(self: PathReference<Opaque>, size = 0) {
-    let refs: PathReference<Opaque>[] = new Array(size + 1);
+export class ScopeImpl<C extends JitOrAotBlock> implements PartialScope<C> {
+  static root<C extends JitOrAotBlock>(self: PathReference<unknown>, size = 0): PartialScope<C> {
+    let refs: PathReference<unknown>[] = new Array(size + 1);
 
     for (let i = 0; i <= size; i++) {
       refs[i] = UNDEFINED_REFERENCE;
     }
 
-    return new ScopeImpl(refs, null, null, null).init({ self });
+    return new ScopeImpl<C>(refs, null, null, null).init({ self });
   }
 
-  static sized(size = 0) {
-    let refs: PathReference<Opaque>[] = new Array(size + 1);
+  static sized<C extends JitOrAotBlock>(size = 0): Scope<C> {
+    let refs: PathReference<unknown>[] = new Array(size + 1);
 
     for (let i = 0; i <= size; i++) {
       refs[i] = UNDEFINED_REFERENCE;
@@ -66,77 +59,77 @@ export class ScopeImpl implements PartialScope {
 
   constructor(
     // the 0th slot is `self`
-    private slots: ScopeSlot[],
-    private callerScope: Option<Scope>,
+    readonly slots: Array<ScopeSlot<C>>,
+    private callerScope: Option<Scope<C>>,
     // named arguments and blocks passed to a layout that uses eval
-    private evalScope: Option<Dict<ScopeSlot>>,
+    private evalScope: Option<Dict<ScopeSlot<C>>>,
     // locals in scope when the partial was invoked
-    private partialMap: Option<Dict<PathReference<Opaque>>>
+    private partialMap: Option<Dict<PathReference<unknown>>>
   ) {}
 
-  init({ self }: { self: PathReference<Opaque> }): this {
+  init({ self }: { self: PathReference<unknown> }): this {
     this.slots[0] = self;
     return this;
   }
 
-  getSelf(): PathReference<Opaque> {
-    return this.get<PathReference<Opaque>>(0);
+  getSelf(): PathReference<unknown> {
+    return this.get<PathReference<unknown>>(0);
   }
 
-  getSymbol(symbol: number): PathReference<Opaque> {
-    return this.get<PathReference<Opaque>>(symbol);
+  getSymbol(symbol: number): PathReference<unknown> {
+    return this.get<PathReference<unknown>>(symbol);
   }
 
-  getBlock(symbol: number): Option<ScopeBlock> {
+  getBlock(symbol: number): Option<ScopeBlock<C>> {
     let block = this.get(symbol);
-    return block === UNDEFINED_REFERENCE ? null : (block as ScopeBlock);
+    return block === UNDEFINED_REFERENCE ? null : (block as ScopeBlock<C>);
   }
 
-  getEvalScope(): Option<Dict<ScopeSlot>> {
+  getEvalScope(): Option<Dict<ScopeSlot<C>>> {
     return this.evalScope;
   }
 
-  getPartialMap(): Option<Dict<PathReference<Opaque>>> {
+  getPartialMap(): Option<Dict<PathReference<unknown>>> {
     return this.partialMap;
   }
 
-  bind(symbol: number, value: ScopeSlot) {
+  bind(symbol: number, value: ScopeSlot<C>) {
     this.set(symbol, value);
   }
 
-  bindSelf(self: PathReference<Opaque>) {
-    this.set<PathReference<Opaque>>(0, self);
+  bindSelf(self: PathReference<unknown>) {
+    this.set<PathReference<unknown>>(0, self);
   }
 
-  bindSymbol(symbol: number, value: PathReference<Opaque>) {
+  bindSymbol(symbol: number, value: PathReference<unknown>) {
     this.set(symbol, value);
   }
 
-  bindBlock(symbol: number, value: Option<ScopeBlock>) {
-    this.set<Option<ScopeBlock>>(symbol, value);
+  bindBlock(symbol: number, value: Option<ScopeBlock<C>>) {
+    this.set<Option<ScopeBlock<C>>>(symbol, value);
   }
 
-  bindEvalScope(map: Option<Dict<ScopeSlot>>) {
+  bindEvalScope(map: Option<Dict<ScopeSlot<C>>>) {
     this.evalScope = map;
   }
 
-  bindPartialMap(map: Dict<PathReference<Opaque>>) {
+  bindPartialMap(map: Dict<PathReference<unknown>>) {
     this.partialMap = map;
   }
 
-  bindCallerScope(scope: Option<Scope>): void {
+  bindCallerScope(scope: Option<Scope<C>>): void {
     this.callerScope = scope;
   }
 
-  getCallerScope(): Option<Scope> {
+  getCallerScope(): Option<Scope<C>> {
     return this.callerScope;
   }
 
-  child(): ScopeImpl {
+  child(): Scope<C> {
     return new ScopeImpl(this.slots.slice(), this.callerScope, this.evalScope, this.partialMap);
   }
 
-  private get<T extends ScopeSlot>(index: number): T {
+  private get<T extends ScopeSlot<C>>(index: number): T {
     if (index >= this.slots.length) {
       throw new RangeError(`BUG: cannot get $${index} from scope; length=${this.slots.length}`);
     }
@@ -144,7 +137,7 @@ export class ScopeImpl implements PartialScope {
     return this.slots[index] as T;
   }
 
-  private set<T extends ScopeSlot>(index: number, value: T): void {
+  private set<T extends ScopeSlot<C>>(index: number, value: T): void {
     if (index >= this.slots.length) {
       throw new RangeError(`BUG: cannot get $${index} from scope; length=${this.slots.length}`);
     }
@@ -153,23 +146,27 @@ export class ScopeImpl implements PartialScope {
   }
 }
 
-class Transaction {
+export const TRANSACTION: TransactionSymbol = Symbol('TRANSACTION') as TransactionSymbol;
+
+class TransactionImpl implements Transaction {
+  readonly [TRANSACTION]: Option<TransactionImpl>;
+
   public scheduledInstallManagers: ModifierManager[] = [];
   public scheduledInstallModifiers: Modifier[] = [];
   public scheduledUpdateModifierManagers: ModifierManager[] = [];
   public scheduledUpdateModifiers: Modifier[] = [];
-  public createdComponents: Component[] = [];
-  public createdManagers: ComponentManager[] = [];
-  public updatedComponents: Component[] = [];
-  public updatedManagers: ComponentManager[] = [];
+  public createdComponents: unknown[] = [];
+  public createdManagers: ComponentManager<unknown, unknown>[] = [];
+  public updatedComponents: unknown[] = [];
+  public updatedManagers: ComponentManager<unknown, unknown>[] = [];
   public destructors: Drop[] = [];
 
-  didCreate(component: Component, manager: ComponentManager) {
+  didCreate(component: unknown, manager: ComponentManager<unknown, unknown>) {
     this.createdComponents.push(component);
     this.createdManagers.push(manager);
   }
 
-  didUpdate(component: Component, manager: ComponentManager) {
+  didUpdate(component: unknown, manager: ComponentManager<unknown, unknown>) {
     this.updatedComponents.push(component);
     this.updatedManagers.push(manager);
   }
@@ -229,24 +226,11 @@ class Transaction {
   }
 }
 
-export interface CompilationOptions<Locator, R extends RuntimeResolver<Locator>> {
-  resolver: R;
-  program: Program<Locator>;
-  macros: Macros;
-  Builder: OpcodeBuilderConstructor<Locator>;
-}
+export abstract class EnvironmentImpl implements Environment {
+  [TRANSACTION]: Option<TransactionImpl> = null;
 
-export interface EnvironmentOptions {
-  appendOperations: DOMTreeConstruction;
-  updateOperations: DOMChanges;
-}
-
-const TRANSACTION = Symbol('TRANSACTION');
-
-export abstract class Environment {
-  protected updateOperations: DOMChanges;
-  protected appendOperations: DOMTreeConstruction;
-  private [TRANSACTION]: Option<Transaction> = null;
+  protected updateOperations: GlimmerTreeChanges;
+  protected appendOperations: GlimmerTreeConstruction;
 
   constructor({ appendOperations, updateOperations }: EnvironmentOptions) {
     this.appendOperations = appendOperations;
@@ -257,13 +241,13 @@ export abstract class Environment {
     return new ConditionalReference(reference);
   }
 
-  abstract iterableFor(reference: Reference, key: Opaque): OpaqueIterable;
+  abstract iterableFor(reference: Reference, key: unknown): OpaqueIterable;
   abstract protocolForURL(s: string): string;
 
-  getAppendOperations(): DOMTreeConstruction {
+  getAppendOperations(): GlimmerTreeConstruction {
     return this.appendOperations;
   }
-  getDOM(): DOMChanges {
+  getDOM(): GlimmerTreeChanges {
     return this.updateOperations;
   }
 
@@ -273,18 +257,18 @@ export abstract class Environment {
       'A glimmer transaction was begun, but one already exists. You may have a nested transaction, possibly caused by an earlier runtime exception while rendering. Please check your console for the stack trace of any prior exceptions.'
     );
 
-    this[TRANSACTION] = new Transaction();
+    this[TRANSACTION] = new TransactionImpl();
   }
 
-  private get transaction(): Transaction {
+  private get transaction(): TransactionImpl {
     return expect(this[TRANSACTION]!, 'must be in a transaction');
   }
 
-  didCreate(component: Component, manager: ComponentManager) {
+  didCreate(component: unknown, manager: ComponentManager<unknown, unknown>) {
     this.transaction.didCreate(component, manager);
   }
 
-  didUpdate(component: Component, manager: ComponentManager) {
+  didUpdate(component: unknown, manager: ComponentManager<unknown, unknown>) {
     this.transaction.didUpdate(component, manager);
   }
 
@@ -307,12 +291,40 @@ export abstract class Environment {
   }
 
   attributeFor(
-    element: Simple.Element,
+    element: SimpleElement,
     attr: string,
     _isTrusting: boolean,
-    namespace: Option<string> = null
+    namespace: Option<AttrNamespace> = null
   ): DynamicAttribute {
     return dynamicAttribute(element, attr, namespace);
+  }
+}
+
+export interface RuntimeEnvironmentDelegate {
+  readonly document: SimpleDocument;
+  protocolForURL(url: string): string;
+  iterable: IterableKeyDefinitions;
+}
+
+export class RuntimeEnvironment extends EnvironmentImpl {
+  constructor(private delegate: RuntimeEnvironmentDelegate) {
+    super({
+      appendOperations: new DOMTreeConstruction(delegate.document),
+      updateOperations: new DOMChangesImpl(delegate.document),
+    });
+  }
+
+  protocolForURL(url: string): string {
+    return this.delegate.protocolForURL(url);
+  }
+
+  iterableFor(ref: Reference, inputKey: unknown): OpaqueIterable {
+    let key = String(inputKey);
+    let def = this.delegate.iterable;
+
+    let keyFor = key in def.named ? def.named[key] : def.default(key);
+
+    return new IterableImpl(ref, keyFor);
   }
 }
 
@@ -329,12 +341,12 @@ export function inTransaction(env: Environment, cb: () => void): void {
   }
 }
 
-export abstract class DefaultEnvironment extends Environment {
+export abstract class DefaultEnvironment extends EnvironmentImpl {
   constructor(options?: EnvironmentOptions) {
     if (!options) {
-      let document = window.document;
+      let document = window.document as SimpleDocument;
       let appendOperations = new DOMTreeConstruction(document);
-      let updateOperations = new DOMChanges(document as HTMLDocument);
+      let updateOperations = new DOMChangesImpl(document);
       options = { appendOperations, updateOperations };
     }
 
@@ -342,8 +354,8 @@ export abstract class DefaultEnvironment extends Environment {
   }
 }
 
-export default Environment;
+export default EnvironmentImpl;
 
 export interface Helper {
-  (vm: PublicVM, args: IArguments): PathReference<Opaque>;
+  (vm: PublicVM, args: VMArguments): PathReference<unknown>;
 }

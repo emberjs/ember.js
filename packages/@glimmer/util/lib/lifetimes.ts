@@ -1,25 +1,19 @@
+import { isDestroyable, isStringDestroyable, DESTROY } from './destroy';
 import {
-  isDestroyable,
-  isStringDestroyable,
+  Option,
   SymbolDestroyable,
-  DESTROY,
   Destroyable,
-} from './destroy';
-import { Option } from '@glimmer/interfaces';
+  Drop,
+  DropSymbol,
+  ChildrenSymbol,
+} from '@glimmer/interfaces';
 import { LinkedList, LinkedListNode } from './list-utils';
 import { DEVMODE } from '@glimmer/local-debug-flags';
 
 export const LINKED: WeakMap<object, Set<Drop>> = new WeakMap();
-export const DROP = Symbol('DROP');
-export const CHILDREN = Symbol('CHILDREN');
+export const DROP: DropSymbol = Symbol('DROP') as DropSymbol;
+export const CHILDREN: ChildrenSymbol = Symbol('CHILDREN') as ChildrenSymbol;
 export const DESTRUCTORS = new WeakMap();
-
-export interface Drop {
-  [DROP](): void;
-
-  // Debug only
-  [CHILDREN]: Iterable<Drop>;
-}
 
 export function isDrop(value: unknown): value is Drop {
   if (value === null || typeof value !== 'object') return false;

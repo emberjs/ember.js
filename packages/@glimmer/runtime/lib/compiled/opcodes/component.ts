@@ -1,75 +1,80 @@
-import { Op, $v0, $t1, $t0 } from '@glimmer/vm';
-import { Opaque, Option, Dict, dict, assert, unreachable, expect } from '@glimmer/util';
 import {
-  VMHandle,
-  ProgramSymbolTable,
-  ComponentInstanceState,
+  check,
+  CheckFunction,
+  CheckHandle,
+  CheckInstanceof,
+  CheckInterface,
+  CheckNull,
+  CheckProgramSymbolTable,
+} from '@glimmer/debug';
+import {
+  Bounds,
+  CompilableTemplate,
+  ComponentDefinition,
   ComponentDefinitionState,
+  ComponentInstanceState,
+  ComponentManager,
+  Dict,
+  DynamicScope,
+  ElementOperations,
+  InternalComponentManager,
+  JitOrAotBlock,
+  Maybe,
+  Op,
+  ProgramSymbolTable,
   Recast,
   RuntimeResolver,
+  ScopeSlot,
+  VMArguments,
+  WithAotDynamicLayout,
+  WithAotStaticLayout,
+  WithDynamicTagName,
+  WithElementHook,
+  WithJitDynamicLayout,
+  WithJitStaticLayout,
 } from '@glimmer/interfaces';
 import {
   CONSTANT_TAG,
-  Tag,
-  VersionedReference,
   isConst,
   isConstTag,
+  Tag,
   VersionedPathReference,
+  VersionedReference,
 } from '@glimmer/reference';
+import { assert, dict, expect, Option, unreachable } from '@glimmer/util';
+import { $t0, $t1, $v0 } from '@glimmer/vm';
 import {
-  check,
-  CheckInstanceof,
-  CheckFunction,
-  CheckInterface,
-  CheckProgramSymbolTable,
-  CheckHandle,
-  CheckNull,
-} from '@glimmer/debug';
-
-import Bounds from '../../bounds';
-import { DynamicScope, ScopeSlot } from '../../environment';
-import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
-import { UpdatingVM } from '../../vm';
-import { Arguments, IArguments, BlockArguments } from '../../vm/arguments';
-import { IsCurriedComponentDefinitionReference, ContentTypeReference } from './content';
-import { UpdateDynamicAttributeOpcode } from './dom';
-import { Component } from '../../internal-interfaces';
-import { resolveComponent } from '../../component/resolve';
-import {
-  WithDynamicTagName,
-  WithElementHook,
-  ComponentDefinition,
-  InternalComponentManager,
-  WithDynamicLayout,
-  WithStaticLayout,
-} from '../../component/interfaces';
+  Capability,
+  CapabilityFlags,
+  capabilityFlagsFrom,
+  hasCapability,
+} from '../../capabilities';
 import {
   CurriedComponentDefinition,
   isCurriedComponentDefinition,
 } from '../../component/curried-component';
-import CurryComponentReference from '../../references/curry-component';
+import { resolveComponent } from '../../component/resolve';
+import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
 import ClassListReference from '../../references/class-list';
+import CurryComponentReference from '../../references/curry-component';
+import { ARGS, CONSTANTS } from '../../symbols';
+import { UpdatingVM } from '../../vm';
+import { InternalVM } from '../../vm/append';
+import { BlockArgumentsImpl, VMArgumentsImpl } from '../../vm/arguments';
 import {
-  capabilityFlagsFrom,
-  Capability,
-  hasCapability,
-  CapabilityFlags,
-} from '../../capabilities';
-import {
-  CheckReference,
   CheckArguments,
   CheckCapturedArguments,
-  CheckPathReference,
+  CheckComponentDefinition,
   CheckComponentInstance,
-  CheckFinishedComponentInstance,
   CheckCurryComponent,
   CheckElementOperations,
-  CheckComponentDefinition,
+  CheckFinishedComponentInstance,
   CheckInvocation,
+  CheckPathReference,
+  CheckReference,
 } from './-debug-strip';
-import { CONSTANTS, ARGS } from '../../symbols';
-import { InternalVM } from '../../vm/append';
-import { ElementOperations } from '../../vm/element-builder';
+import { ContentTypeReference, IsCurriedComponentDefinitionReference } from './content';
+import { UpdateDynamicAttributeOpcode } from './dom';
 
 /**
  * The VM creates a new ComponentInstance data structure for every component
@@ -91,7 +96,7 @@ export interface ComponentInstance {
   state: ComponentInstanceState;
   handle: number;
   table: ProgramSymbolTable;
-  lookup: Option<Dict<ScopeSlot>>;
+  lookup: Option<Dict<ScopeSlot<JitOrAotBlock>>>;
 }
 
 export interface InitialComponentInstance {
@@ -100,20 +105,20 @@ export interface InitialComponentInstance {
   manager: Option<InternalComponentManager>;
   capabilities: Option<CapabilityFlags>;
   state: null;
-  handle: Option<VMHandle>;
+  handle: Option<number>;
   table: Option<ProgramSymbolTable>;
-  lookup: Option<Dict<ScopeSlot>>;
+  lookup: Option<Dict<ScopeSlot<JitOrAotBlock>>>;
 }
 
 export interface PopulatedComponentInstance {
   [COMPONENT_INSTANCE]: true;
   definition: ComponentDefinition;
-  manager: InternalComponentManager;
+  manager: ComponentManager<unknown, unknown>;
   capabilities: CapabilityFlags;
   state: null;
-  handle: Option<VMHandle>;
+  handle: number;
   table: Option<ProgramSymbolTable>;
-  lookup: Option<Dict<ScopeSlot>>;
+  lookup: Option<Dict<ScopeSlot<JitOrAotBlock>>>;
 }
 
 export interface PartialComponentDefinition {
@@ -141,8 +146,8 @@ APPEND_OPCODES.add(Op.CurryComponent, (vm, { op1: _meta }) => {
   let definition = check(stack.pop(), CheckReference);
   let capturedArgs = check(stack.pop(), CheckCapturedArguments);
 
-  let meta = vm[CONSTANTS].getSerializable(_meta);
-  let resolver = vm[CONSTANTS].resolver;
+  let meta = vm[CONSTANTS].getTemplateMeta(_meta);
+  let resolver = vm.runtime.resolver;
 
   vm.loadValue(
     $v0,
@@ -154,7 +159,7 @@ APPEND_OPCODES.add(Op.CurryComponent, (vm, { op1: _meta }) => {
 });
 
 APPEND_OPCODES.add(Op.PushComponentDefinition, (vm, { op1: handle }) => {
-  let definition = vm[CONSTANTS].resolveHandle<ComponentDefinition>(handle);
+  let definition = vm.runtime.resolver.resolve<ComponentDefinition>(handle);
   assert(!!definition, `Missing component for ${handle}`);
 
   let { manager } = definition;
@@ -176,18 +181,15 @@ APPEND_OPCODES.add(Op.PushComponentDefinition, (vm, { op1: handle }) => {
 
 APPEND_OPCODES.add(Op.ResolveDynamicComponent, (vm, { op1: _meta }) => {
   let stack = vm.stack;
-  let component = check(stack.pop(), CheckPathReference).value();
-  let meta = vm[CONSTANTS].getSerializable(_meta);
+  let component = check(stack.pop(), CheckPathReference).value() as Maybe<Dict>;
+  let meta = vm[CONSTANTS].getTemplateMeta(_meta);
 
   vm.loadValue($t1, null, CheckNull); // Clear the temp register
 
   let definition: ComponentDefinition | CurriedComponentDefinition;
 
   if (typeof component === 'string') {
-    let {
-      [CONSTANTS]: { resolver },
-    } = vm;
-    let resolvedDefinition = resolveComponent(resolver, component, meta);
+    let resolvedDefinition = resolveComponent(vm.runtime.resolver, component, meta);
 
     definition = expect(resolvedDefinition, `Could not find a component named "${component}"`);
   } else if (isCurriedComponentDefinition(component)) {
@@ -218,7 +220,7 @@ APPEND_OPCODES.add(Op.PushDynamicComponentInstance, vm => {
 APPEND_OPCODES.add(Op.PushCurriedComponent, vm => {
   let stack = vm.stack;
 
-  let component = check(stack.pop(), CheckPathReference).value();
+  let component = check(stack.pop(), CheckPathReference).value() as Maybe<Dict>;
   let definition: CurriedComponentDefinition;
 
   if (isCurriedComponentDefinition(component)) {
@@ -235,14 +237,14 @@ APPEND_OPCODES.add(Op.PushArgs, (vm, { op1: _names, op2: flags }) => {
   let names = vm[CONSTANTS].getStringArray(_names);
 
   let positionalCount = flags >> 4;
-  let synthetic = flags & 0b1000;
+  let atNames = flags & 0b1000;
   let blockNames: string[] = [];
 
   if (flags & 0b0100) blockNames.push('main');
   if (flags & 0b0010) blockNames.push('else');
   if (flags & 0b0001) blockNames.push('attrs');
 
-  vm[ARGS].setup(stack, names, blockNames, positionalCount, !!synthetic);
+  vm[ARGS].setup(stack, names, blockNames, positionalCount, !!atNames);
   stack.push(vm[ARGS]);
 });
 
@@ -255,7 +257,7 @@ APPEND_OPCODES.add(Op.PushEmptyArgs, vm => {
 APPEND_OPCODES.add(Op.CaptureArgs, vm => {
   let stack = vm.stack;
 
-  let args = check(stack.pop(), CheckInstanceof(Arguments));
+  let args = check(stack.pop(), CheckInstanceof(VMArgumentsImpl));
   let capturedArgs = args.capture();
   stack.push(capturedArgs);
 });
@@ -263,7 +265,7 @@ APPEND_OPCODES.add(Op.CaptureArgs, vm => {
 APPEND_OPCODES.add(Op.PrepareArgs, (vm, { op1: _state }) => {
   let stack = vm.stack;
   let instance = vm.fetchValue<ComponentInstance>(_state);
-  let args = check(stack.pop(), CheckInstanceof(Arguments));
+  let args = check(stack.pop(), CheckInstanceof(VMArgumentsImpl));
 
   let { definition } = instance;
 
@@ -308,7 +310,7 @@ APPEND_OPCODES.add(Op.PrepareArgs, (vm, { op1: _state }) => {
       stack.push(named[names[i]]);
     }
 
-    args.setup(stack, names, blockNames, positionalCount, true);
+    args.setup(stack, names, blockNames, positionalCount, false);
   }
 
   stack.push(args);
@@ -317,7 +319,7 @@ APPEND_OPCODES.add(Op.PrepareArgs, (vm, { op1: _state }) => {
 function resolveCurriedComponentDefinition(
   instance: ComponentInstance,
   definition: CurriedComponentDefinition,
-  args: Arguments
+  args: VMArgumentsImpl
 ): ComponentDefinition {
   let unwrappedDefinition = (instance.definition = definition.unwrap(args));
   let { manager, state } = unwrappedDefinition;
@@ -345,7 +347,7 @@ APPEND_OPCODES.add(Op.CreateComponent, (vm, { op1: flags, op2: _state }) => {
   }
 
   let hasDefaultBlock = flags & 1;
-  let args: Option<IArguments> = null;
+  let args: Option<VMArguments> = null;
 
   if (hasCapability(capabilities, Capability.CreateArgs)) {
     args = check(vm.stack.peek(), CheckArguments);
@@ -399,18 +401,18 @@ APPEND_OPCODES.add(Op.ComponentAttr, (vm, { op1: _name, op2: trusting, op3: _nam
 });
 
 interface DeferredAttribute {
-  value: VersionedReference<Opaque>;
+  value: VersionedReference<unknown>;
   namespace: Option<string>;
   trusting: boolean;
 }
 
 export class ComponentElementOperations implements ElementOperations {
   private attributes = dict<DeferredAttribute>();
-  private classes: VersionedReference<Opaque>[] = [];
+  private classes: VersionedReference<unknown>[] = [];
 
   setAttribute(
     name: string,
-    value: VersionedReference<Opaque>,
+    value: VersionedReference<unknown>,
     trusting: boolean,
     namespace: Option<string>
   ) {
@@ -423,7 +425,7 @@ export class ComponentElementOperations implements ElementOperations {
     this.attributes[name] = deferred;
   }
 
-  flush(vm: InternalVM) {
+  flush(vm: InternalVM<JitOrAotBlock>) {
     for (let name in this.attributes) {
       let attr = this.attributes[name];
       let { value: reference, namespace, trusting } = attr;
@@ -466,7 +468,7 @@ APPEND_OPCODES.add(Op.DidCreateElement, (vm, { op1: _state }) => {
 
   let operations = check(vm.fetchValue($t0), CheckInstanceof(ComponentElementOperations));
 
-  (manager as WithElementHook<Component>).didCreateElement(
+  (manager as WithElementHook<unknown>).didCreateElement(
     state,
     expect(vm.elements().constructing, `Expected a constructing elemet in DidCreateOpcode`),
     operations
@@ -485,18 +487,53 @@ APPEND_OPCODES.add(Op.GetComponentTagName, (vm, { op1: _state }) => {
   let { manager } = definition;
 
   vm.stack.push(
-    (manager as Recast<InternalComponentManager, WithDynamicTagName<Component>>).getTagName(state)
+    (manager as Recast<InternalComponentManager, WithDynamicTagName<unknown>>).getTagName(state)
   );
 });
 
 // Dynamic Invocation Only
-APPEND_OPCODES.add(Op.GetComponentLayout, (vm, { op1: _state }) => {
+APPEND_OPCODES.add(
+  Op.GetJitComponentLayout,
+  (vm, { op1: _state }) => {
+    let instance = check(vm.fetchValue(_state), CheckComponentInstance);
+    let { manager, definition } = instance;
+    let { stack } = vm;
+
+    let { state: instanceState, capabilities } = instance;
+    let { state: definitionState } = definition;
+
+    // let invoke: { handle: number; symbolTable: ProgramSymbolTable };
+
+    let layout: CompilableTemplate;
+
+    if (hasStaticLayoutCapability(capabilities, manager)) {
+      layout = (manager as WithJitStaticLayout<
+        ComponentInstanceState,
+        ComponentDefinitionState,
+        RuntimeResolver
+      >).getJitStaticLayout(definitionState, vm.runtime.resolver);
+    } else if (hasDynamicLayoutCapability(capabilities, manager)) {
+      layout = (manager as WithJitDynamicLayout<
+        ComponentInstanceState,
+        RuntimeResolver
+      >).getJitDynamicLayout(instanceState, vm.runtime.resolver, vm.context);
+    } else {
+      throw unreachable();
+    }
+
+    let handle = layout.compile(vm.context);
+
+    stack.push(layout.symbolTable);
+    stack.push(handle);
+  },
+  'jit'
+);
+
+// Dynamic Invocation Only
+APPEND_OPCODES.add(Op.GetAotComponentLayout, (vm, { op1: _state }) => {
   let instance = check(vm.fetchValue(_state), CheckComponentInstance);
   let { manager, definition } = instance;
-  let {
-    [CONSTANTS]: { resolver },
-    stack,
-  } = vm;
+  let { stack } = vm;
 
   let { state: instanceState, capabilities } = instance;
   let { state: definitionState } = definition;
@@ -504,9 +541,16 @@ APPEND_OPCODES.add(Op.GetComponentLayout, (vm, { op1: _state }) => {
   let invoke: { handle: number; symbolTable: ProgramSymbolTable };
 
   if (hasStaticLayoutCapability(capabilities, manager)) {
-    invoke = manager.getLayout(definitionState, resolver);
+    invoke = (manager as WithAotStaticLayout<
+      ComponentInstanceState,
+      ComponentDefinitionState,
+      RuntimeResolver
+    >).getAotStaticLayout(definitionState, vm.runtime.resolver);
   } else if (hasDynamicLayoutCapability(capabilities, manager)) {
-    invoke = manager.getDynamicLayout(instanceState, resolver);
+    invoke = (manager as WithAotDynamicLayout<
+      ComponentInstanceState,
+      RuntimeResolver
+    >).getAotDynamicLayout(instanceState, vm.runtime.resolver);
   } else {
     throw unreachable();
   }
@@ -515,22 +559,22 @@ APPEND_OPCODES.add(Op.GetComponentLayout, (vm, { op1: _state }) => {
   stack.push(invoke.handle);
 });
 
+// These types are absurd here
 export function hasStaticLayoutCapability(
   capabilities: CapabilityFlags,
   _manager: InternalComponentManager
-): _manager is WithStaticLayout<
-  ComponentInstanceState,
-  ComponentDefinitionState,
-  Opaque,
-  RuntimeResolver<Opaque>
-> {
+): _manager is
+  | WithJitStaticLayout<ComponentInstanceState, ComponentDefinitionState, RuntimeResolver>
+  | WithAotStaticLayout<ComponentInstanceState, ComponentDefinitionState, RuntimeResolver> {
   return hasCapability(capabilities, Capability.DynamicLayout) === false;
 }
 
 export function hasDynamicLayoutCapability(
   capabilities: CapabilityFlags,
   _manager: InternalComponentManager
-): _manager is WithDynamicLayout<ComponentInstanceState, Opaque, RuntimeResolver<Opaque>> {
+): _manager is
+  | WithAotDynamicLayout<ComponentInstanceState, RuntimeResolver>
+  | WithJitDynamicLayout<ComponentInstanceState, RuntimeResolver> {
   return hasCapability(capabilities, Capability.DynamicLayout) === true;
 }
 
@@ -547,7 +591,7 @@ APPEND_OPCODES.add(Op.Main, (vm, { op1: register }) => {
     manager,
     capabilities,
     state: null,
-    handle: invocation.handle as Recast<number, VMHandle>,
+    handle: invocation.handle,
     table: invocation.symbolTable,
     lookup: null,
   };
@@ -570,14 +614,14 @@ APPEND_OPCODES.add(Op.PopulateLayout, (vm, { op1: _state }) => {
 APPEND_OPCODES.add(Op.VirtualRootScope, (vm, { op1: _state }) => {
   let { symbols } = check(vm.fetchValue(_state), CheckFinishedComponentInstance).table;
 
-  vm.pushRootScope(symbols.length + 1, true);
+  vm.pushRootScope(symbols.length + 1);
 });
 
 APPEND_OPCODES.add(Op.SetupForEval, (vm, { op1: _state }) => {
   let state = check(vm.fetchValue(_state), CheckFinishedComponentInstance);
 
   if (state.table.hasEval) {
-    let lookup = (state.lookup = dict<ScopeSlot>());
+    let lookup = (state.lookup = dict<ScopeSlot<JitOrAotBlock>>());
     vm.scope().bindEvalScope(lookup);
   }
 });
@@ -592,19 +636,19 @@ APPEND_OPCODES.add(Op.SetNamedVariables, (vm, { op1: _state }) => {
   for (let i = callerNames.length - 1; i >= 0; i--) {
     let atName = callerNames[i];
     let symbol = state.table.symbols.indexOf(callerNames[i]);
-    let value = args.named.get(atName, false);
+    let value = args.named.get(atName, true);
 
     if (symbol !== -1) scope.bindSymbol(symbol + 1, value);
     if (state.lookup) state.lookup[atName] = value;
   }
 });
 
-function bindBlock(
+function bindBlock<C extends JitOrAotBlock>(
   symbolName: string,
   blockName: string,
   state: ComponentInstance,
-  blocks: BlockArguments,
-  vm: InternalVM
+  blocks: BlockArgumentsImpl<C>,
+  vm: InternalVM<C>
 ) {
   let symbol = state.table.symbols.indexOf(symbolName);
 
@@ -655,7 +699,7 @@ export class UpdateComponentOpcode extends UpdatingOpcode {
 
   constructor(
     public tag: Tag,
-    private component: Component,
+    private component: ComponentInstanceState,
     private manager: InternalComponentManager,
     private dynamicScope: Option<DynamicScope>
   ) {
@@ -675,7 +719,7 @@ export class DidUpdateLayoutOpcode extends UpdatingOpcode {
 
   constructor(
     private manager: InternalComponentManager,
-    private component: Component,
+    private component: ComponentInstanceState,
     private bounds: Bounds
   ) {
     super();

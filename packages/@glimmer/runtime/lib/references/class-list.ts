@@ -1,12 +1,12 @@
 import { Reference, Tag, combineTagged } from '@glimmer/reference';
-import { Option, Opaque } from '@glimmer/util';
+import { Option } from '@glimmer/util';
 
 import { normalizeStringValue } from '../dom/normalize';
 
 export default class ClassListReference implements Reference<Option<string>> {
   public tag: Tag;
 
-  constructor(private list: Reference<Opaque>[]) {
+  constructor(private list: Reference<unknown>[]) {
     this.tag = combineTagged(list);
     this.list = list;
   }

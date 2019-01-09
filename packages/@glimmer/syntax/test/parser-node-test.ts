@@ -345,6 +345,44 @@ test('Stripping - removes unnecessary text nodes', function() {
   );
 });
 
+test('Whitespace control - linebreaks after blocks removed by default', function() {
+  let t = '{{#each}}\n  <li> foo </li>\n{{/each}}';
+
+  astEqual(
+    t,
+    b.program([
+      b.block(
+        b.path('each'),
+        [],
+        b.hash(),
+        b.program([b.text('  '), b.element('li', ['body', b.text(' foo ')]), b.text('\n')]),
+        null
+      ),
+    ])
+  );
+});
+
+test('Whitespace control - preserve all whitespace if config is set', function() {
+  let t = '{{#each}}\n  <li> foo </li>\n{{/each}}';
+
+  astEqual(
+    t,
+    b.program([
+      b.block(
+        b.path('each'),
+        [],
+        b.hash(),
+        b.program([b.text('\n  '), b.element('li', ['body', b.text(' foo ')]), b.text('\n')]),
+        null
+      ),
+    ]),
+    undefined,
+    {
+      parseOptions: { ignoreStandalone: true },
+    }
+  );
+});
+
 // TODO: Make these throw an error.
 //test("Awkward mustache in unquoted attribute value", function() {
 //  let t = "<div class=a{{foo}}></div>";

@@ -1,34 +1,35 @@
 import {
-  Checker,
-  CheckInstanceof,
-  CheckFunction,
-  CheckInterface,
-  CheckOpaque,
   CheckBlockSymbolTable,
-  CheckProgramSymbolTable,
-  CheckHandle,
-  wrap,
-  CheckNumber,
   CheckBoolean,
+  Checker,
+  CheckFunction,
+  CheckHandle,
+  CheckInstanceof,
+  CheckInterface,
+  CheckNumber,
+  CheckProgramSymbolTable,
+  Checkunknown,
+  wrap,
 } from '@glimmer/debug';
-import { Tag, TagWrapper, VersionedPathReference, Reference } from '@glimmer/reference';
 import {
-  Arguments,
-  ICapturedArguments,
-  CapturedPositionalArguments,
-  CapturedNamedArguments,
-} from '../../vm/arguments';
-import { ComponentInstance, COMPONENT_INSTANCE } from './component';
-import { ComponentManager } from '../../internal-interfaces';
-import { ScopeImpl } from '../../environment';
-import {
+  CapturedArguments,
   CompilableBlock,
   ComponentDefinition,
-  ComponentDefinitionState,
+  ComponentManager,
+  ElementOperations,
+  Invocation,
+  JitOrAotBlock,
+  Scope,
 } from '@glimmer/interfaces';
+import { Reference, Tag, TagWrapper, VersionedPathReference } from '@glimmer/reference';
+import { ScopeImpl } from '../../environment';
 import CurryComponentReference from '../../references/curry-component';
-import { ElementOperations } from '../../vm/element-builder';
-import { InternalComponentManager, Invocation } from '../../component/interfaces';
+import {
+  CapturedNamedArgumentsImpl,
+  CapturedPositionalArgumentsImpl,
+  VMArgumentsImpl,
+} from '../../vm/arguments';
+import { ComponentInstance, COMPONENT_INSTANCE } from './component';
 
 export const CheckTag: Checker<Tag> = CheckInstanceof(TagWrapper);
 
@@ -43,34 +44,34 @@ export const CheckReference: Checker<Reference> = CheckInterface({
   value: CheckFunction,
 });
 
-export const CheckArguments = wrap(() => CheckInstanceof(Arguments));
-export const CheckCapturedArguments: Checker<ICapturedArguments> = CheckInterface({
+export const CheckArguments: Checker<VMArgumentsImpl> = wrap(() =>
+  CheckInstanceof(VMArgumentsImpl)
+);
+export const CheckCapturedArguments: Checker<CapturedArguments> = CheckInterface({
   tag: CheckTag,
   length: CheckNumber,
-  positional: CheckInstanceof(CapturedPositionalArguments),
-  named: CheckInstanceof(CapturedNamedArguments),
+  positional: CheckInstanceof(CapturedPositionalArgumentsImpl),
+  named: CheckInstanceof(CapturedNamedArgumentsImpl),
 });
 
 export const CheckCurryComponent = CheckInstanceof(CurryComponentReference);
 
-export const CheckScope = wrap(() => CheckInstanceof(ScopeImpl));
+export const CheckScope: Checker<Scope<JitOrAotBlock>> = wrap(() => CheckInstanceof(ScopeImpl));
 
-export const CheckComponentManager: Checker<ComponentManager> = CheckInterface({
+export const CheckComponentManager: Checker<ComponentManager<unknown, unknown>> = CheckInterface({
   getCapabilities: CheckFunction,
 });
 
 export const CheckComponentInstance: Checker<ComponentInstance> = CheckInterface({
   [COMPONENT_INSTANCE]: CheckBoolean,
-  definition: CheckOpaque,
-  state: CheckOpaque,
-  handle: CheckOpaque,
-  table: CheckOpaque,
+  definition: Checkunknown,
+  state: Checkunknown,
+  handle: Checkunknown,
+  table: Checkunknown,
 });
 
-export const CheckComponentDefinition: Checker<
-  ComponentDefinition<InternalComponentManager, ComponentDefinitionState>
-> = CheckInterface({
-  state: CheckOpaque,
+export const CheckComponentDefinition: Checker<ComponentDefinition> = CheckInterface({
+  state: Checkunknown,
   manager: CheckComponentManager,
 });
 
@@ -84,8 +85,8 @@ export const CheckElementOperations: Checker<ElementOperations> = CheckInterface
 });
 
 export const CheckFinishedComponentInstance: Checker<ComponentInstance> = CheckInterface({
-  definition: CheckOpaque,
-  state: CheckOpaque,
+  definition: Checkunknown,
+  state: Checkunknown,
   handle: CheckHandle,
   table: CheckProgramSymbolTable,
 });

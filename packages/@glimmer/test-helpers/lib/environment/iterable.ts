@@ -5,25 +5,34 @@ import {
   Tag,
   Reference,
 } from '@glimmer/reference';
-import { Opaque, Option } from '@glimmer/interfaces';
+import { Option } from '@glimmer/interfaces';
 import { UpdatableReference } from '@glimmer/object-reference';
+import { isDict } from '@glimmer/util';
 
-export type KeyFor<T> = (item: Opaque, index: T) => string;
+export type KeyFor<T> = (item: unknown, index: T) => string;
+
+interface ForEach<T> {
+  forEach(callback: (input: T) => void): void;
+}
+
+function isForEach(v: unknown): v is ForEach<unknown> {
+  return isDict(v) && typeof v.forEach === 'function';
+}
 
 export class Iterable
   implements
     AbstractIterable<
-      Opaque,
-      Opaque,
-      IterationItem<Opaque, Opaque>,
-      UpdatableReference<Opaque>,
-      UpdatableReference<Opaque>
+      unknown,
+      unknown,
+      IterationItem<unknown, unknown>,
+      UpdatableReference<unknown>,
+      UpdatableReference<unknown>
     > {
   public tag: Tag;
-  private ref: Reference<Opaque>;
-  private keyFor: KeyFor<Opaque>;
+  private ref: Reference<unknown>;
+  private keyFor: KeyFor<unknown>;
 
-  constructor(ref: Reference<Opaque>, keyFor: KeyFor<Opaque>) {
+  constructor(ref: Reference<unknown>, keyFor: KeyFor<unknown>) {
     this.tag = ref.tag;
     this.ref = ref;
     this.keyFor = keyFor;
@@ -32,23 +41,21 @@ export class Iterable
   iterate(): OpaqueIterator {
     let { ref, keyFor } = this;
 
-    let iterable = ref.value() as any;
+    let iterable = ref.value();
 
     if (Array.isArray(iterable)) {
       return iterable.length > 0 ? new ArrayIterator(iterable, keyFor) : EMPTY_ITERATOR;
     } else if (iterable === undefined || iterable === null) {
       return EMPTY_ITERATOR;
-    } else if (iterable.forEach !== undefined) {
-      let array: Opaque[] = [];
-      for (let i = 0; i < iterable.length; i++) {
-        array.push(iterable[i]);
-      }
+    } else if (isForEach(iterable)) {
+      let array: unknown[] = [];
+      iterable.forEach(item => array.push(item));
       return array.length > 0 ? new ArrayIterator(array, keyFor) : EMPTY_ITERATOR;
-    } else if (typeof iterable === 'object') {
+    } else if (isDict(iterable)) {
       let keys = Object.keys(iterable);
 
       if (keys.length > 0) {
-        let values: Opaque[] = [];
+        let values: unknown[] = [];
 
         for (let i = 0; i < keys.length; i++) {
           let key = keys[i];
@@ -64,19 +71,25 @@ export class Iterable
     }
   }
 
-  valueReferenceFor(item: IterationItem<Opaque, Opaque>): UpdatableReference<Opaque> {
+  valueReferenceFor(item: IterationItem<unknown, unknown>): UpdatableReference<unknown> {
     return new UpdatableReference(item.value);
   }
 
-  updateValueReference(reference: UpdatableReference<Opaque>, item: IterationItem<Opaque, Opaque>) {
+  updateValueReference(
+    reference: UpdatableReference<unknown>,
+    item: IterationItem<unknown, unknown>
+  ) {
     reference.update(item.value);
   }
 
-  memoReferenceFor(item: IterationItem<Opaque, Opaque>): UpdatableReference<Opaque> {
+  memoReferenceFor(item: IterationItem<unknown, unknown>): UpdatableReference<unknown> {
     return new UpdatableReference(item.memo);
   }
 
-  updateMemoReference(reference: UpdatableReference<Opaque>, item: IterationItem<Opaque, Opaque>) {
+  updateMemoReference(
+    reference: UpdatableReference<unknown>,
+    item: IterationItem<unknown, unknown>
+  ) {
     reference.update(item.memo);
   }
 }
@@ -86,18 +99,18 @@ class EmptyIterator implements OpaqueIterator {
     return true;
   }
 
-  next(): IterationItem<Opaque, Opaque> {
+  next(): IterationItem<unknown, unknown> {
     throw new Error(`Cannot call next() on an empty iterator`);
   }
 }
 
 class ObjectKeysIterator implements OpaqueIterator {
   private keys: string[];
-  private values: Opaque[];
+  private values: unknown[];
   private keyFor: KeyFor<string>;
   private position = 0;
 
-  constructor(keys: string[], values: Opaque[], keyFor: KeyFor<string>) {
+  constructor(keys: string[], values: unknown[], keyFor: KeyFor<string>) {
     this.keys = keys;
     this.values = values;
     this.keyFor = keyFor;
@@ -107,7 +120,7 @@ class ObjectKeysIterator implements OpaqueIterator {
     return this.keys.length === 0;
   }
 
-  next(): Option<IterationItem<Opaque, string>> {
+  next(): Option<IterationItem<unknown, string>> {
     let { position, keys, values, keyFor } = this;
 
     if (position >= keys.length) return null;
@@ -123,11 +136,11 @@ class ObjectKeysIterator implements OpaqueIterator {
 }
 
 class ArrayIterator implements OpaqueIterator {
-  private array: Opaque[];
+  private array: unknown[];
   private keyFor: KeyFor<number>;
   private position = 0;
 
-  constructor(array: Opaque[], keyFor: KeyFor<number>) {
+  constructor(array: unknown[], keyFor: KeyFor<number>) {
     this.array = array;
     this.keyFor = keyFor;
   }
@@ -136,7 +149,7 @@ class ArrayIterator implements OpaqueIterator {
     return this.array.length === 0;
   }
 
-  next(): Option<IterationItem<Opaque, number>> {
+  next(): Option<IterationItem<unknown, number>> {
     let { position, array, keyFor } = this;
 
     if (position >= array.length) return null;

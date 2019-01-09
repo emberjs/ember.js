@@ -1,44 +1,18 @@
-import {
-  // VM
-  DynamicScope,
-} from '@glimmer/runtime';
-
-import { Dict, Opaque, assign, dict } from '@glimmer/util';
-
-import { PathReference } from '@glimmer/reference';
-
-import { Unique } from '@glimmer/interfaces';
+import { Dict, Unique } from '@glimmer/interfaces';
+import { dict } from '@glimmer/util';
+import { SimpleElement } from '@simple-dom/interface';
+import { EmberishCurlyComponentFactory } from './environment/components/emberish-curly';
+import { EmberishGlimmerComponentFactory } from './environment/components/emberish-glimmer';
 
 export type _ = Unique<any>;
 
-export class TestDynamicScope implements DynamicScope {
-  private bucket: any;
+export function inspectHooks<
+  T extends EmberishCurlyComponentFactory | EmberishGlimmerComponentFactory
+>(ComponentClass: T): T {
+  return (class extends (ComponentClass as any) {
+    init() {
+      super.init();
 
-  constructor(bucket = null) {
-    if (bucket) {
-      this.bucket = assign({}, bucket);
-    } else {
-      this.bucket = {};
-    }
-  }
-
-  get(key: string): PathReference<Opaque> {
-    return this.bucket[key];
-  }
-
-  set(key: string, reference: PathReference<Opaque>) {
-    return (this.bucket[key] = reference);
-  }
-
-  child(): TestDynamicScope {
-    return new TestDynamicScope(this.bucket);
-  }
-}
-
-export function inspectHooks<T>(ComponentClass: T): T {
-  return (ComponentClass as any).extend({
-    init(this: any) {
-      this._super(...arguments);
       this.hooks = {
         didInitAttrs: 0,
         didUpdateAttrs: 0,
@@ -50,76 +24,80 @@ export function inspectHooks<T>(ComponentClass: T): T {
         didUpdate: 0,
         didRender: 0,
       };
-    },
+    }
 
     didInitAttrs(this: any) {
       this._super(...arguments);
       this.hooks['didInitAttrs']++;
-    },
+    }
 
     didUpdateAttrs(this: any) {
       this._super(...arguments);
       this.hooks['didUpdateAttrs']++;
-    },
+    }
 
     didReceiveAttrs(this: any) {
       this._super(...arguments);
       this.hooks['didReceiveAttrs']++;
-    },
+    }
 
     willInsertElement(this: any) {
       this._super(...arguments);
       this.hooks['willInsertElement']++;
-    },
+    }
 
     willUpdate(this: any) {
       this._super(...arguments);
       this.hooks['willUpdate']++;
-    },
+    }
 
     willRender(this: any) {
       this._super(...arguments);
       this.hooks['willRender']++;
-    },
+    }
 
     didInsertElement(this: any) {
       this._super(...arguments);
       this.hooks['didInsertElement']++;
-    },
+    }
 
     didUpdate(this: any) {
       this._super(...arguments);
       this.hooks['didUpdate']++;
-    },
+    }
 
     didRender(this: any) {
       this._super(...arguments);
       this.hooks['didRender']++;
-    },
-  });
+    }
+  } as any) as T;
 }
 
 export interface DebugElement {
-  element: Element | null;
+  element: SimpleElement | null;
   description: string;
 }
 
-export type EqualsElement = Element | null | DebugElement;
+function isDebugElement(el: SimpleElement | DebugElement): el is DebugElement {
+  return !(el as Dict).nodeType;
+}
+
+export type EqualsElement = SimpleElement | null | DebugElement;
 
 function extract(element: EqualsElement): DebugElement {
   if (element === null) {
     return { element: null, description: 'element' };
-  } else if (element instanceof Element) {
-    return { element, description: 'element' };
-  } else {
+  } else if (isDebugElement(element)) {
     return element;
+  } else {
+    return { element, description: 'element' };
   }
 }
 
 export function equalsElement(
   input: EqualsElement,
   tagName: string,
-  attributes: Object,
+  attributes: Dict,
   content: string | null
 ) {
   let { element, description } = extract(input);
@@ -148,8 +126,7 @@ export function equalsElement(
     expectedCount++;
     let expected = attributes[prop];
 
-    let matcher: Matcher =
-      typeof expected === 'object' && MATCHER in expected ? expected : equalsAttr(expected);
+    let matcher: Matcher = isMatcher(expected) ? expected : equalsAttr(expected);
     expectedAttrs[prop] = matcher;
 
     QUnit.assert.pushResult({
@@ -160,7 +137,7 @@ export function equalsElement(
     });
   }
 
-  let actualAttributes = {};
+  let actualAttributes = dict();
   if (element) {
     for (let i = 0, l = element.attributes.length; i < l; i++) {
       actualAttributes[element.attributes[i].name] = element.attributes[i].value;
@@ -202,7 +179,12 @@ interface Matcher {
 
 export const MATCHER = '3d4ef194-13be-4ccf-8dc7-862eea02c93e';
 
-export function equalsAttr(expected: any) {
+export function isMatcher(input: unknown): input is Matcher {
+  if (typeof input !== 'object' || input === null) return false;
+  return MATCHER in input;
+}
+
+export function equalsAttr(expected: any): Matcher {
   return {
     '3d4ef194-13be-4ccf-8dc7-862eea02c93e': true,
     match(actual: any) {

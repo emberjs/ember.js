@@ -1,11 +1,19 @@
+import { Bounds, Dict, GlimmerTreeChanges, GlimmerTreeConstruction } from '@glimmer/interfaces';
+import { expect, Option } from '@glimmer/util';
+import {
+  AttrNamespace,
+  ElementNamespace,
+  InsertPosition,
+  Namespace,
+  SimpleComment,
+  SimpleDocument,
+  SimpleElement,
+  SimpleNode,
+  SimpleText,
+} from '@simple-dom/interface';
 import { ConcreteBounds } from '../bounds';
 import { applySVGInnerHTMLFix } from '../compat/svg-inner-html-fix';
 import { applyTextNodeMergingFix } from '../compat/text-node-merging-fix';
-import { Simple, Bounds } from '@glimmer/interfaces';
-
-import { Option, expect } from '@glimmer/util';
-
-export const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 
 // http://www.w3.org/TR/html/syntax.html#html-integration-point
 const SVG_INTEGRATION_POINTS = { foreignObject: 1, desc: 1, title: 1 };
@@ -68,23 +76,24 @@ export const BLACKLIST_TABLE = Object.create(null);
 
 const WHITESPACE = /[\t-\r \xA0\u1680\u180E\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]/;
 
-let doc: Option<Document> = typeof document === 'undefined' ? null : document;
+let doc: Option<SimpleDocument> =
+  typeof document === 'undefined' ? null : (document as SimpleDocument);
 
 export function isWhitespace(string: string) {
   return WHITESPACE.test(string);
 }
 
 export function moveNodesBefore(
-  source: Simple.Node,
-  target: Simple.Element,
-  nextSibling: Option<Simple.Node>
+  source: SimpleNode,
+  target: SimpleElement,
+  nextSibling: Option<SimpleNode>
 ): Bounds {
   let first = expect(source.firstChild, 'source is empty');
-  let last: Simple.Node = first;
-  let current: Option<Simple.Node> = first;
+  let last: SimpleNode = first;
+  let current: Option<SimpleNode> = first;
 
   while (current) {
-    let next: Option<Simple.Node> = current.nextSibling;
+    let next: Option<SimpleNode> = current.nextSibling;
 
     target.insertBefore(current, nextSibling);
 
@@ -96,24 +105,24 @@ export function moveNodesBefore(
 }
 
 export class DOMOperations {
-  protected uselessElement!: Simple.Element; // Set by this.setupUselessElement() in constructor
+  protected uselessElement!: SimpleElement; // Set by this.setupUselessElement() in constructor
 
-  constructor(protected document: Simple.Document) {
+  constructor(protected document: SimpleDocument) {
     this.setupUselessElement();
   }
 
   // split into seperate method so that NodeDOMTreeConstruction
   // can override it.
   protected setupUselessElement() {
-    this.uselessElement = this.document.createElement('div') as HTMLElement;
+    this.uselessElement = this.document.createElement('div');
   }
 
-  createElement(tag: string, context?: Simple.Element): Simple.Element {
+  createElement(tag: string, context?: SimpleElement): SimpleElement {
     let isElementInSVGNamespace: boolean, isHTMLIntegrationPoint: boolean;
 
     if (context) {
-      isElementInSVGNamespace = context.namespaceURI === SVG_NAMESPACE || tag === 'svg';
-      isHTMLIntegrationPoint = SVG_INTEGRATION_POINTS[context.tagName];
+      isElementInSVGNamespace = context.namespaceURI === Namespace.SVG || tag === 'svg';
+      isHTMLIntegrationPoint = !!(SVG_INTEGRATION_POINTS as Dict<number>)[context.tagName];
     } else {
       isElementInSVGNamespace = tag === 'svg';
       isHTMLIntegrationPoint = false;
@@ -127,17 +136,17 @@ export class DOMOperations {
         throw new Error(`Cannot create a ${tag} inside an SVG context`);
       }
 
-      return this.document.createElementNS(SVG_NAMESPACE, tag);
+      return this.document.createElementNS(Namespace.SVG, tag);
     } else {
       return this.document.createElement(tag);
     }
   }
 
-  insertBefore(parent: Simple.Element, node: Simple.Node, reference: Option<Simple.Node>) {
+  insertBefore(parent: SimpleElement, node: SimpleNode, reference: Option<SimpleNode>) {
     parent.insertBefore(node, reference);
   }
 
-  insertHTMLBefore(parent: Simple.Element, nextSibling: Option<Simple.Node>, html: string): Bounds {
+  insertHTMLBefore(parent: SimpleElement, nextSibling: Option<SimpleNode>, html: string): Bounds {
     if (html === '') {
       let comment = this.createComment('');
       parent.insertBefore(comment, nextSibling);
@@ -145,10 +154,10 @@ export class DOMOperations {
     }
 
     let prev = nextSibling ? nextSibling.previousSibling : parent.lastChild;
-    let last: Simple.Node;
+    let last: SimpleNode;
 
     if (nextSibling === null) {
-      parent.insertAdjacentHTML('beforeend', html);
+      parent.insertAdjacentHTML(InsertPosition.beforeend, html);
       last = expect(parent.lastChild, 'bug in insertAdjacentHTML?');
     } else if (nextSibling instanceof HTMLElement) {
       nextSibling.insertAdjacentHTML('beforebegin', html);
@@ -162,7 +171,7 @@ export class DOMOperations {
       let { uselessElement } = this;
 
       parent.insertBefore(uselessElement, nextSibling);
-      uselessElement.insertAdjacentHTML('beforebegin', html);
+      uselessElement.insertAdjacentHTML(InsertPosition.beforebegin, html);
       last = expect(uselessElement.previousSibling, 'bug in insertAdjacentHTML?');
       parent.removeChild(uselessElement);
     }
@@ -171,26 +180,26 @@ export class DOMOperations {
     return new ConcreteBounds(parent, first, last);
   }
 
-  createTextNode(text: string): Simple.Text {
+  createTextNode(text: string): SimpleText {
     return this.document.createTextNode(text);
   }
 
-  createComment(data: string): Simple.Comment {
+  createComment(data: string): SimpleComment {
     return this.document.createComment(data);
   }
 }
 
 export namespace DOM {
-  export class TreeConstruction extends DOMOperations {
-    createElementNS(namespace: Simple.Namespace, tag: string): Simple.Element {
+  export class TreeConstruction extends DOMOperations implements GlimmerTreeConstruction {
+    createElementNS(namespace: ElementNamespace, tag: string): SimpleElement {
       return this.document.createElementNS(namespace, tag);
     }
 
     setAttribute(
-      element: Simple.Element,
+      element: SimpleElement,
       name: string,
       value: string,
-      namespace: Option<string> = null
+      namespace: Option<AttrNamespace> = null
     ) {
       if (namespace) {
         element.setAttributeNS(namespace, name, value);
@@ -208,40 +217,40 @@ export namespace DOM {
   appliedTreeContruction = applySVGInnerHTMLFix(
     doc,
     appliedTreeContruction,
-    SVG_NAMESPACE
+    Namespace.SVG
   ) as typeof TreeConstruction;
 
   export const DOMTreeConstruction = appliedTreeContruction;
   export type DOMTreeConstruction = TreeConstruction;
 }
 
-export class DOMChanges extends DOMOperations {
+export class DOMChangesImpl extends DOMOperations implements GlimmerTreeChanges {
   protected namespace: Option<string>;
 
-  constructor(protected document: HTMLDocument) {
+  constructor(protected document: SimpleDocument) {
     super(document);
     this.namespace = null;
   }
 
-  setAttribute(element: Simple.Element, name: string, value: string) {
+  setAttribute(element: SimpleElement, name: string, value: string) {
     element.setAttribute(name, value);
   }
 
-  removeAttribute(element: Simple.Element, name: string) {
+  removeAttribute(element: SimpleElement, name: string) {
     element.removeAttribute(name);
   }
 
-  insertAfter(element: Simple.Element, node: Simple.Node, reference: Simple.Node) {
+  insertAfter(element: SimpleElement, node: SimpleNode, reference: SimpleNode) {
     this.insertBefore(element, node, reference.nextSibling);
   }
 }
 
-let helper = DOMChanges;
+let helper = DOMChangesImpl;
 
-helper = applyTextNodeMergingFix(doc, helper) as typeof DOMChanges;
-helper = applySVGInnerHTMLFix(doc, helper, SVG_NAMESPACE) as typeof DOMChanges;
+helper = applyTextNodeMergingFix(doc, helper) as typeof DOMChangesImpl;
+helper = applySVGInnerHTMLFix(doc, helper, Namespace.SVG) as typeof DOMChangesImpl;
 
 export default helper;
 export const DOMTreeConstruction = DOM.DOMTreeConstruction;
 export type DOMTreeConstruction = DOM.DOMTreeConstruction;
-export type DOMNamespace = Simple.Namespace;
+export type DOMNamespace = Namespace;

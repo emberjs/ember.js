@@ -1,13 +1,16 @@
 import {
-  ModifierManager,
   CapturedArguments,
-  IDOMChanges,
-  Arguments,
+  Destroyable,
+  Dict,
   DynamicScope,
-} from '@glimmer/runtime';
-import { Option, Simple } from '@glimmer/interfaces';
-import { Tag, CONSTANT_TAG } from '@glimmer/reference';
-import { Opaque, Dict, SymbolDestroyable, Destroyable } from '@glimmer/util';
+  GlimmerTreeChanges,
+  ModifierManager,
+  Option,
+  SymbolDestroyable,
+  VMArguments,
+} from '@glimmer/interfaces';
+import { CONSTANT_TAG, Tag } from '@glimmer/reference';
+import { SimpleElement } from '@simple-dom/interface';
 
 export class InertModifierStateBucket {}
 
@@ -16,9 +19,9 @@ export class InertModifierDefinitionState {}
 export class InertModifierManager
   implements ModifierManager<InertModifierStateBucket, InertModifierDefinitionState> {
   create(
-    _element: Element,
+    _element: SimpleElement,
     _state: InertModifierDefinitionState,
-    _args: Arguments,
+    _args: VMArguments,
     _dynamicScope: DynamicScope,
     _dom: any
   ) {
@@ -49,10 +52,10 @@ export class TestModifierDefinitionState {
 
 export class TestModifier {
   constructor(
-    public element: Element,
+    public element: SimpleElement,
     public state: TestModifierDefinitionState,
     public args: CapturedArguments,
-    public dom: IDOMChanges
+    public dom: GlimmerTreeChanges
   ) {}
 }
 
@@ -61,24 +64,24 @@ export interface TestModifierConstructor {
 }
 
 export interface TestModifierInstance {
-  element?: Simple.Element;
-  didInsertElement(_params: Opaque[], _hash: Dict<Opaque>): void;
-  didUpdate(_params: Opaque[], _hash: Dict<Opaque>): void;
+  element?: SimpleElement;
+  didInsertElement(_params: unknown[], _hash: Dict<unknown>): void;
+  didUpdate(_params: unknown[], _hash: Dict<unknown>): void;
   willDestroyElement(): void;
 }
 
 export class TestModifierManager
   implements ModifierManager<TestModifier, TestModifierDefinitionState> {
-  public installedElements: Element[] = [];
-  public updatedElements: Element[] = [];
+  public installedElements: SimpleElement[] = [];
+  public updatedElements: SimpleElement[] = [];
   public destroyedModifiers: TestModifier[] = [];
 
   create(
-    element: Element,
+    element: SimpleElement,
     state: TestModifierDefinitionState,
-    args: Arguments,
+    args: VMArguments,
     _dynamicScope: DynamicScope,
-    dom: IDOMChanges
+    dom: GlimmerTreeChanges
   ) {
     return new TestModifier(element, state, args.capture(), dom);
   }

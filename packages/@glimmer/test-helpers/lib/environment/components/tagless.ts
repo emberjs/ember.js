@@ -1,5 +1,8 @@
-import { ComponentCapabilities } from '@glimmer/interfaces';
-import { Invocation } from '@glimmer/runtime';
+import {
+  ComponentCapabilities,
+  AnnotatedModuleLocator,
+  CompilableProgram,
+} from '@glimmer/interfaces';
 import { Option } from '@glimmer/util';
 
 import { createTemplate } from '../shared';
@@ -25,19 +28,17 @@ export class StaticTaglessComponentManager extends BasicComponentManager {
     return state.capabilities;
   }
 
-  getLayout(state: TestComponentDefinitionState, resolver: LazyRuntimeResolver): Invocation {
+  getJitStaticLayout(
+    state: TestComponentDefinitionState,
+    resolver: LazyRuntimeResolver
+  ): CompilableProgram {
     let { name } = state;
 
     let handle = resolver.lookup('template-source', name)!;
 
-    return resolver.compileTemplate(handle, name, (source, options) => {
-      let template = createTemplate(source);
-      let layout = template.create(options).asLayout();
-
-      return {
-        handle: layout.compile(),
-        symbolTable: layout.symbolTable,
-      };
+    return resolver.compilableProgram(handle, name, source => {
+      let template = createTemplate<AnnotatedModuleLocator>(source);
+      return template.create().asLayout();
     });
   }
 }

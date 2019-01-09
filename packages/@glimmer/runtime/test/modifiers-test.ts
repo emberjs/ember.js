@@ -1,15 +1,16 @@
 import { RenderTest, module, test, Count } from '@glimmer/test-helpers';
-import { Opaque, Dict } from '../../util';
+import { Dict } from '@glimmer/interfaces';
+import { SimpleElement } from '@simple-dom/interface';
 
 class BaseModifier {
-  element?: Element;
-  didInsertElement(_params: Opaque[], _hash: Dict<Opaque>) {}
+  element?: SimpleElement;
+  didInsertElement(_params: unknown[], _hash: Dict<unknown>) {}
   willDestroyElement() {}
-  didUpdate(_params: Opaque[], _hash: Dict<Opaque>) {}
+  didUpdate(_params: unknown[], _hash: Dict<unknown>) {}
 }
 
 abstract class AbstractInsertable extends BaseModifier {
-  abstract didInsertElement(_params: Opaque[], _hash: Dict<Opaque>): void;
+  abstract didInsertElement(_params: unknown[], _hash: Dict<unknown>): void;
 }
 
 abstract class AbstractDestroyable extends BaseModifier {
@@ -22,7 +23,7 @@ class ModifierTests extends RenderTest {
     this.registerModifier(
       'foo',
       class {
-        element?: Element;
+        element?: SimpleElement;
         didInsertElement() {
           count.expect('didInsertElement');
           assert.ok(this.element, 'didInsertElement');
@@ -55,7 +56,7 @@ class ModifierTests extends RenderTest {
     this.registerModifier(
       'foo',
       class {
-        element?: Element;
+        element?: SimpleElement;
         didInsertElement() {
           count.expect('didInsertElement');
           assert.ok(true);
@@ -219,11 +220,11 @@ class ModifierTests extends RenderTest {
   @test
   'with hash'(assert: Assert, count: Count) {
     class Foo extends BaseModifier {
-      didInsertElement(_params: Opaque[], { bar }: Dict<string>) {
+      didInsertElement(_params: unknown[], { bar }: Dict<string>) {
         count.expect('didInsertElement');
         assert.equal(bar, 'bar');
       }
-      didUpdate(_params: Opaque[], { bar }: Dict<string>) {
+      didUpdate(_params: unknown[], { bar }: Dict<string>) {
         count.expect('didUpdate');
         assert.equal(bar, 'foo');
       }

@@ -1,4 +1,4 @@
-import { Opaque, Dict, Option } from '@glimmer/interfaces';
+import { Dict, Option } from '@glimmer/interfaces';
 import { SafeString } from '@glimmer/runtime';
 import {
   module,
@@ -18,10 +18,16 @@ import {
   ComponentBlueprint,
   GLIMMER_TEST_COMPONENT,
   assertEmberishElement,
-  assertElement,
   assertSerializedInElement,
+  replaceHTML,
+  assertElement,
+  toInnerHTML,
+  firstElementChild,
+  toTextContent,
 } from '@glimmer/test-helpers';
 import { expect } from '@glimmer/util';
+import { SimpleElement } from '@simple-dom/interface';
+import { assertElementShape } from '@glimmer/test-helpers';
 
 class RenderTests extends InitialRenderSuite {
   name = 'client';
@@ -35,8 +41,8 @@ class AbstractRehydrationTests extends InitialRenderSuite {
 
   renderServerSide(
     template: string | ComponentBlueprint,
-    context: Dict<Opaque>,
-    element: Element | undefined = undefined
+    context: Dict<unknown>,
+    element: SimpleElement | undefined = undefined
   ): void {
     this.serverOutput = this.delegate.renderServerSide(
       template as string,
@@ -44,10 +50,10 @@ class AbstractRehydrationTests extends InitialRenderSuite {
       () => this.takeSnapshot(),
       element
     );
-    this.element.innerHTML = this.serverOutput;
+    replaceHTML(this.element, this.serverOutput);
   }
 
-  renderClientSide(template: string | ComponentBlueprint, context: Dict<Opaque>): void {
+  renderClientSide(template: string | ComponentBlueprint, context: Dict<unknown>): void {
     this.context = context;
     this.renderResult = this.delegate.renderClientSide(template as string, context, this.element);
   }
@@ -73,12 +79,8 @@ class AbstractRehydrationTests extends InitialRenderSuite {
 class Rehydration extends AbstractRehydrationTests {
   @test
   'rehydrates into element with pre-existing content'() {
-    let rootElement = this.delegate.serverEnv
-      .getAppendOperations()
-      .createElement('div') as HTMLDivElement;
-    let extraContent = this.delegate.serverEnv
-      .getAppendOperations()
-      .createElement('noscript') as HTMLElement;
+    let rootElement = this.delegate.serverEnv.getAppendOperations().createElement('div');
+    let extraContent = this.delegate.serverEnv.getAppendOperations().createElement('noscript');
     rootElement.appendChild(extraContent);
 
     let noScriptString = '<noscript></noscript>';
@@ -209,11 +211,11 @@ class Rehydration extends AbstractRehydrationTests {
     let clientNode2 = env.getDOM().createTextNode('goodbye');
     this.rerender({ node: clientNode2 });
     this.assertHTML('<div>goodbye</div>', 'rerender after node update');
-    this.assertStableNodes({ except: clientNode as Text });
+    this.assertStableNodes({ except: clientNode });
 
     this.rerender({ node: clientNode });
     this.assertHTML('<div>hello</div>', 'back to the beginning');
-    this.assertStableNodes({ except: clientNode2 as Text });
+    this.assertStableNodes({ except: clientNode2 });
   }
 
   @test
@@ -235,16 +237,16 @@ class Rehydration extends AbstractRehydrationTests {
     );
 
     env = this.delegate.clientEnv;
-    let clientRemote = (remote = env.getDOM().createElement('remote') as HTMLElement);
-    let host = env.getDOM().createElement('div') as HTMLElement;
+    let clientRemote = (remote = env.getDOM().createElement('remote'));
+    let host = env.getDOM().createElement('div');
     host.appendChild(this.element);
     host.appendChild(clientRemote);
-    clientRemote.innerHTML = serializedRemote;
-    this.element = host.firstChild as HTMLElement;
+    replaceHTML(clientRemote, serializedRemote);
+    this.element = assertElement(host.firstChild);
 
     this.renderClientSide(template, { remote: clientRemote });
     this.assertRehydrationStats({ nodesRemoved: 0 });
-    this.assert.equal(clientRemote.innerHTML, '<inner>Wat Wat</inner>');
+    this.assert.equal(toInnerHTML(clientRemote), '<inner>Wat Wat</inner>');
   }
 
   @test
@@ -283,23 +285,23 @@ class Rehydration extends AbstractRehydrationTests {
       'Serilaized nested remote'
     );
     env = this.delegate.clientEnv;
-    let clientRemoteParent = env.getDOM().createElement('remote') as HTMLElement;
-    let clientRemoteChild = env.getDOM().createElement('other') as HTMLElement;
-    let host = env.getDOM().createElement('div') as HTMLElement;
+    let clientRemoteParent = env.getDOM().createElement('remote');
+    let clientRemoteChild = env.getDOM().createElement('other');
+    let host = env.getDOM().createElement('div');
     host.appendChild(this.element);
     host.appendChild(clientRemoteParent);
     host.appendChild(clientRemoteChild);
 
-    clientRemoteParent.innerHTML = serializedParentRemote;
-    clientRemoteChild.innerHTML = serializedRemoteChild;
-    this.element = host.firstChild as HTMLElement;
+    replaceHTML(clientRemoteParent, serializedParentRemote);
+    replaceHTML(clientRemoteChild, serializedRemoteChild);
+    this.element = assertElement(host.firstChild);
     this.renderClientSide(template, {
       remoteParent: clientRemoteParent,
       remoteChild: clientRemoteChild,
     });
     this.assertRehydrationStats({ nodesRemoved: 0 });
-    this.assert.equal(clientRemoteParent.innerHTML, '<inner><!----></inner>');
-    this.assert.equal(clientRemoteChild.textContent, 'Wat Wat');
+    this.assert.equal(toInnerHTML(clientRemoteParent), '<inner><!----></inner>');
+    this.assert.equal(toInnerHTML(clientRemoteChild), 'Wat Wat');
   }
 
   @test
@@ -493,7 +495,7 @@ class Rehydration extends AbstractRehydrationTests {
 }
 
 class RehydratingComponents extends AbstractRehydrationTests {
-  _buildComponent(blueprint: ComponentBlueprint, properties: Dict<Opaque> = {}) {
+  _buildComponent(blueprint: ComponentBlueprint, properties: Dict<unknown> = {}) {
     let template = this.buildComponent(blueprint);
     if (this.testType === 'Dynamic' && properties['componentName'] === undefined) {
       properties['componentName'] = blueprint.name || GLIMMER_TEST_COMPONENT;
@@ -505,21 +507,21 @@ class RehydratingComponents extends AbstractRehydrationTests {
     // the Dynamic test type is using {{component 'foo'}} style invocation
     // and therefore an extra node is added delineating the block start
     let elementIndex = this.testType === 'Dynamic' ? 3 : 2;
-    let element = this.element.childNodes[elementIndex] as HTMLElement;
+    let element = assertElement(this.element.childNodes[elementIndex]);
 
     if (this.testType === 'Glimmer') {
-      assertElement(element, 'div', attrs, html);
+      assertElementShape(element, 'div', attrs, html);
     } else {
       assertEmberishElement(element, 'div', attrs, html);
     }
   }
 
-  renderServerSide(blueprint: ComponentBlueprint, properties: Dict<Opaque> = {}) {
+  renderServerSide(blueprint: ComponentBlueprint, properties: Dict<unknown> = {}) {
     let template = this._buildComponent(blueprint, properties);
     super.renderServerSide(template, properties);
   }
 
-  renderClientSide(blueprint: ComponentBlueprint, properties: Dict<Opaque> = {}) {
+  renderClientSide(blueprint: ComponentBlueprint, properties: Dict<unknown> = {}) {
     let template = this._buildComponent(blueprint, properties);
     super.renderClientSide(template, properties);
   }
@@ -728,10 +730,12 @@ class RehydratingComponents extends AbstractRehydrationTests {
     });
     let b = blockStack();
     if (emberishComponent) {
+      let wrapper = assertElement(firstElementChild(this.element));
+
       // injects wrapper elements
-      this.assert.ok(this.element.querySelector('div'));
-      this.assert.ok(this.element.querySelector('.ember-view'));
-      this.assert.equal(this.element.textContent, 'Hello World');
+      this.assert.equal(wrapper.getAttribute('class'), 'ember-view');
+      this.assert.equal(toTextContent(wrapper), 'Hello World');
+      // this.assert.equal(this.element.textContent, 'Hello World');
     } else {
       this.assertServerComponent(`${b(2)}Hello <!--%|%-->World${b(2)}`);
     }
@@ -741,7 +745,7 @@ class RehydratingComponents extends AbstractRehydrationTests {
       template,
     });
     this.assertRehydrationStats({ nodesRemoved: 0 });
-    this.assert.equal(this.element.textContent, 'Hello World');
+    this.assert.equal(toTextContent(this.element), 'Hello World');
     this.assertStableRerender();
   }
 
@@ -768,10 +772,10 @@ class RehydratingComponents extends AbstractRehydrationTests {
     });
     let b = blockStack();
     if (emberishComponent) {
+      let wrapper = assertElement(firstElementChild(this.element));
       // injects wrapper elements
-      this.assert.ok(this.element.querySelector('div'));
-      this.assert.ok(this.element.querySelector('.ember-view'));
-      this.assert.equal(this.element.textContent, 'Hello World');
+      this.assert.equal(wrapper.getAttribute('class'), 'ember-view');
+      this.assert.equal(toTextContent(this.element), 'Hello World');
     } else {
       this.assertServerComponent(`${b(2)}Hello <!--%|%-->World${b(2)}`);
     }
@@ -787,7 +791,7 @@ class RehydratingComponents extends AbstractRehydrationTests {
       template,
     });
     this.assertRehydrationStats({ nodesRemoved: 0 });
-    this.assert.equal(this.element.textContent, 'Hello Chad');
+    this.assert.equal(toTextContent(this.element), 'Hello Chad');
     this.assertStableRerender();
   }
 
@@ -803,7 +807,10 @@ class RehydratingComponents extends AbstractRehydrationTests {
           {{/if}}
         {{/each}}
       </ul>`;
-    this.registerHelper('even', (params: ReadonlyArray<Opaque>) => (params[0] as number) % 2 === 0);
+    this.registerHelper(
+      'even',
+      (params: ReadonlyArray<unknown>) => (params[0] as number) % 2 === 0
+    );
     let template = '{{#if (even i)}}<FooBar @count={{i}} />{{/if}}';
     this.registerComponent('Fragment', 'FooBar', '<li>{{@count}}</li>');
     let blockParams = ['i'];
@@ -900,7 +907,10 @@ class RehydratingComponents extends AbstractRehydrationTests {
           {{/if}}
         {{/each}}
       </ul>`;
-    this.registerHelper('even', (params: ReadonlyArray<Opaque>) => (params[0] as number) % 2 === 0);
+    this.registerHelper(
+      'even',
+      (params: ReadonlyArray<unknown>) => (params[0] as number) % 2 === 0
+    );
     let template = '{{#if (even i)}}<FooBar @count={{i}} />{{/if}}';
     this.registerComponent('Fragment', 'FooBar', '<li>{{@count}}</li>');
     let blockParams = ['i'];
@@ -1006,7 +1016,10 @@ class RehydratingComponents extends AbstractRehydrationTests {
         {{/each}}
       </ul>
     `;
-    this.registerHelper('even', (params: ReadonlyArray<Opaque>) => (params[0] as number) % 2 === 0);
+    this.registerHelper(
+      'even',
+      (params: ReadonlyArray<unknown>) => (params[0] as number) % 2 === 0
+    );
     let template = '{{#if (even i)}}<FooBar @count={{i}} />{{/if}}';
     this.registerComponent('Fragment', 'FooBar', '<li>{{@count}}</li>');
     let blockParams = ['i'];

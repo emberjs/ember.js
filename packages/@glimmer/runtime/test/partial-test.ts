@@ -1,22 +1,22 @@
-import { RenderResult, clientBuilder, renderMain } from '@glimmer/runtime';
+import { RenderResult, RichIteratorResult, Template } from '@glimmer/interfaces';
+import { UpdatableReference } from '@glimmer/object-reference';
+import { clientBuilder, renderJitMain } from '@glimmer/runtime';
 import {
   BasicComponent,
   EmberishCurlyComponent,
-  TestEnvironment,
-  TestDynamicScope,
-  equalTokens,
   equalSnapshots,
+  equalTokens,
   generateSnapshot,
   strip,
+  TestEnvironment,
+  TestDynamicScope,
 } from '@glimmer/test-helpers';
-import { Template, RichIteratorResult } from '@glimmer/interfaces';
-import { UpdatableReference } from '@glimmer/object-reference';
-import { Opaque } from '@glimmer/util';
+import { SimpleElement, SimpleNode } from '@simple-dom/interface';
 
 let env: TestEnvironment;
-let root: HTMLElement;
+let root: SimpleElement;
 let result: RenderResult;
-let self: UpdatableReference<Opaque>;
+let self: UpdatableReference<unknown>;
 
 function compile(template: string) {
   return env.preprocess(template);
@@ -24,7 +24,7 @@ function compile(template: string) {
 
 function commonSetup() {
   env = new TestEnvironment();
-  root = document.getElementById('qunit-fixture')!;
+  root = document.getElementById('qunit-fixture')! as SimpleElement;
 }
 
 function render(template: Template, context = {}) {
@@ -33,11 +33,11 @@ function render(template: Template, context = {}) {
   let cursor = { element: root, nextSibling: null };
 
   let compilable = template.asLayout();
-  let handle = compilable.compile();
+  let handle = compilable.compile(env.context);
 
-  let templateIterator = renderMain(
-    env.compiler.program,
-    env,
+  let templateIterator = renderJitMain(
+    { program: env.program, env, resolver: env.resolver },
+    env.context,
     self,
     new TestDynamicScope(),
     clientBuilder(env, cursor),
@@ -60,7 +60,7 @@ interface RerenderParams {
 }
 
 function rerender(context: any = null, params: RerenderParams = { assertStable: false }) {
-  let snapshot: Node[] | undefined;
+  let snapshot: SimpleNode[] | undefined;
   if (params.assertStable) {
     snapshot = generateSnapshot(root);
   }

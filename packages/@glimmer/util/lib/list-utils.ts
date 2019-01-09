@@ -1,5 +1,6 @@
 import { Option } from './platform-utils';
-import { DROP, destructor, Drop, CHILDREN } from './lifetimes';
+import { DROP, destructor, CHILDREN } from './lifetimes';
+import { Drop } from '@glimmer/interfaces';
 
 export interface LinkedListNode {
   next: Option<LinkedListNode>;
