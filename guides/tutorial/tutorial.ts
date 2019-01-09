@@ -1,23 +1,24 @@
 import { precompile } from '@glimmer/compiler';
-import { UpdatableReference } from '@glimmer/object-reference';
 import { Context } from '@glimmer/opcode-compiler';
-import { artifacts, RuntimeProgramImpl } from '@glimmer/program';
-import { NewElementBuilder, renderAotMain, renderSync } from '@glimmer/runtime';
+import { artifacts } from '@glimmer/program';
+import { renderAot, renderSync, Runtime } from '@glimmer/runtime';
 import { strip } from '@glimmer/util';
 import Serializer from '@simple-dom/serializer';
 import voidMap from '@simple-dom/void-map';
 import createHTMLDocument from '@simple-dom/document';
-import { TutorialRuntimeResolver, KEYS } from './env';
-import { RuntimeEnvironment } from '@glimmer/runtime';
 import { Component } from '@glimmer/opcode-compiler';
 import { Cursor } from '@glimmer/interfaces';
+import { State } from '@glimmer/object-reference';
+import { SimpleElement } from '@simple-dom/interface';
 
 /**
  * The source code for the module we're compiling.
  */
 
 let source = strip`
-  <div>hello {{this.world}}</div>
+  {{~#let "hello" "world" as |hello world|~}}
+    <p>{{hello}} {{world}}{{this.suffix}}</p>
+  {{~/let~}}
 `;
 
 /**
@@ -101,21 +102,13 @@ let document = createHTMLDocument();
  *
  * 3. Finally, we need to rehydrate the compilation artifacts.
  */
-let runtime = {
-  env: new RuntimeEnvironment({
-    document,
-    protocolForURL: (url: string) => new URL(url).protocol,
-    iterable: KEYS,
-  }),
-  resolver: new TutorialRuntimeResolver(),
-  program: RuntimeProgramImpl.hydrate(payload),
-};
+let runtime = Runtime(document, payload);
 
 /**
  * Create an `UpdatableReference` for the value of `this` in the module. Using an
  * UpdatableReference allows us to change it later and re-render the output.
  */
-let self = new UpdatableReference({ world: 'world' });
+let state = State({ suffix: '!' });
 
 /**
  * Create a new element to render into.
@@ -127,15 +120,17 @@ let element = document.createElement('main');
  */
 let cursor: Cursor = { element, nextSibling: null };
 
-/**
- * We're going to use the normal client-side rendering builder to render into.
- */
-let builder = NewElementBuilder.forInitialRender(runtime.env, cursor);
+let iterator = renderAot(runtime, compiled, cursor, state);
 
-let iterator = renderAotMain(runtime, self, builder, compiled);
+let result = renderSync(runtime.env, iterator);
 
-renderSync(runtime.env, iterator);
+console.log(serialize(element));
 
-let serialized = new Serializer(voidMap).serialize(element);
+state.update({ suffix: '?' });
 
-console.log(serialized);
+result.rerender();
+console.log(serialize(element));
+
+function serialize(element: SimpleElement) {
+  return new Serializer(voidMap).serialize(element);
+}

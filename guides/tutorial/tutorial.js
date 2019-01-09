@@ -4,7 +4,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const compiler_1 = require("@glimmer/compiler");
-const object_reference_1 = require("@glimmer/object-reference");
 const opcode_compiler_1 = require("@glimmer/opcode-compiler");
 const program_1 = require("@glimmer/program");
 const runtime_1 = require("@glimmer/runtime");
@@ -12,14 +11,15 @@ const util_1 = require("@glimmer/util");
 const serializer_1 = __importDefault(require("@simple-dom/serializer"));
 const void_map_1 = __importDefault(require("@simple-dom/void-map"));
 const document_1 = __importDefault(require("@simple-dom/document"));
-const env_1 = require("./env");
-const runtime_2 = require("@glimmer/runtime");
 const opcode_compiler_2 = require("@glimmer/opcode-compiler");
+const object_reference_1 = require("@glimmer/object-reference");
 /**
  * The source code for the module we're compiling.
  */
 let source = util_1.strip `
-  <div>hello {{this.world}}</div>
+  {{~#let "hello" "world" as |hello world|~}}
+    <p>{{hello}} {{world}}{{this.suffix}}</p>
+  {{~/let~}}
 `;
 /**
  * Precompile the source code for this module into the wire format. In JIT mode, the wire format
@@ -90,20 +90,12 @@ let document = document_1.default();
  *
  * 3. Finally, we need to rehydrate the compilation artifacts.
  */
-let runtime = {
-    env: new runtime_2.RuntimeEnvironment({
-        document,
-        protocolForURL: (url) => new URL(url).protocol,
-        iterable: env_1.KEYS,
-    }),
-    resolver: new env_1.TutorialRuntimeResolver(),
-    program: program_1.RuntimeProgramImpl.hydrate(payload),
-};
+let runtime = runtime_1.Runtime(document, payload);
 /**
  * Create an `UpdatableReference` for the value of `this` in the module. Using an
  * UpdatableReference allows us to change it later and re-render the output.
  */
-let self = new object_reference_1.UpdatableReference({ world: 'world' });
+let state = object_reference_1.State({ suffix: '!' });
 /**
  * Create a new element to render into.
  */
@@ -112,11 +104,12 @@ let element = document.createElement('main');
  * Create a cursor position for the rendering, which is just the element itself.
  */
 let cursor = { element, nextSibling: null };
-/**
- * We're going to use the normal client-side rendering builder to render into.
- */
-let builder = runtime_1.NewElementBuilder.forInitialRender(runtime.env, cursor);
-let iterator = runtime_1.renderAotMain(runtime, self, builder, compiled);
-runtime_1.renderSync(runtime.env, iterator);
-let serialized = new serializer_1.default(void_map_1.default).serialize(element);
-console.log(serialized);
+let iterator = runtime_1.renderAot(runtime, compiled, cursor, state);
+let result = runtime_1.renderSync(runtime.env, iterator);
+console.log(serialize(element));
+state.update({ suffix: '?' });
+result.rerender();
+console.log(serialize(element));
+function serialize(element) {
+    return new serializer_1.default(void_map_1.default).serialize(element);
+}
