@@ -266,12 +266,8 @@ export default class ArrayProxy extends EmberObject {
       dirtyIndex += length + removedCnt - addedCnt;
     }
 
-    if (this._objectsDirtyIndex === -1) {
+    if (this._objectsDirtyIndex === -1 || this._objectsDirtyIndex > dirtyIndex) {
       this._objectsDirtyIndex = dirtyIndex;
-    } else {
-      if (this._objectsDirtyIndex > dirtyIndex) {
-        this._objectsDirtyIndex = dirtyIndex;
-      }
     }
 
     this._lengthDirty = true;
