@@ -105,14 +105,10 @@ function populateListeners(name: string) {
 }
 
 const time = ((): (() => number) => {
-  let perf: MaybePerf = 'undefined' !== typeof window ? window.performance || {} : {};
+  let perf: MaybePerf = 'undefined' !== typeof window ? window.performance : {};
   let fn = perf.now || perf.mozNow || perf.webkitNow || perf.msNow || perf.oNow;
-  // fn.bind will be available in all the browsers that support the advanced window.performance... ;-)
-  return fn
-    ? fn.bind(perf)
-    : () => {
-        return Number(new Date());
-      };
+
+  return fn ? fn.bind(perf) : Date.now;
 })();
 
 /**
