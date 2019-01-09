@@ -1,16 +1,8 @@
-import { Opaque, Maybe } from '@glimmer/interfaces';
+import { Maybe, SymbolDestroyable, Destroyable, DestroySymbol, Dict } from '@glimmer/interfaces';
 
-export const DESTROY = Symbol('DESTROY');
+export const DESTROY: DestroySymbol = Symbol('DESTROY') as DestroySymbol;
 
-export interface Destroyable {
-  destroy(): void;
-}
-
-export interface SymbolDestroyable {
-  [DESTROY](): void;
-}
-
-export function isDestroyable(value: Opaque): value is SymbolDestroyable {
+export function isDestroyable(value: Maybe<Dict>): value is SymbolDestroyable {
   return !!(value && DESTROY in value);
 }
 

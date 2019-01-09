@@ -7,6 +7,7 @@ import {
   TestEnvironment,
 } from '@glimmer/test-helpers';
 import { EmberishRootView } from '@glimmer/runtime/test/ember-component-test';
+import { Dict } from '@glimmer/interfaces';
 
 abstract class RangeTests extends AttributesTests {
   min = -5;
@@ -109,7 +110,7 @@ abstract class EmberComponentRangeTests extends RangeTests {
     });
   }
   assertRangeValue(value: number): void {
-    let attr = this.view.element['value'];
+    let attr = (this.view.element as Dict)['value'];
     this.assert.equal(attr, value.toString());
   }
 }

@@ -1,9 +1,9 @@
-import { Option, Opaque, dict } from '@glimmer/util';
+import { Option, dict } from '@glimmer/util';
 import { PathReference } from './path';
 import { RootReference as IRootReference } from '../types';
 import { PathReference as IPathReference, Tag, CURRENT_TAG, bump } from '@glimmer/reference';
 
-export default class RootReference<T> implements IRootReference<T>, IPathReference<T> {
+export default class RootReference<T = unknown> implements IRootReference<T>, IPathReference<T> {
   private object: T;
   private chains = dict<PathReference<any>>();
   public tag: Tag = CURRENT_TAG;
@@ -33,14 +33,14 @@ export default class RootReference<T> implements IRootReference<T>, IPathReferen
     return null;
   }
 
-  path(string: string): IPathReference<Opaque> {
+  path(string: string): IPathReference<unknown> {
     return this.referenceFromParts(string.split('.'));
   }
 
-  referenceFromParts(parts: string[]): IPathReference<Opaque> {
+  referenceFromParts(parts: string[]): IPathReference<unknown> {
     return parts.reduce(
-      (ref, part) => ref.get(part) as IPathReference<Opaque>,
-      this as IPathReference<Opaque>
+      (ref, part) => ref.get(part) as IPathReference<unknown>,
+      this as IPathReference<unknown>
     );
   }
 

@@ -1,9 +1,15 @@
-import { Simple } from '@glimmer/interfaces';
+import { GlimmerDOMOperations } from './changes';
+import {
+  Namespace,
+  SimpleDocumentFragment,
+  SimpleElement,
+  SimpleNode,
+} from '@simple-dom/interface';
 
 export type NodeToken = number;
 
 export interface NodeTokens {
-  reify<N extends Simple.Node>(token: NodeToken): N;
+  reify(token: NodeToken): SimpleNode;
 }
 
 export interface Reifiable {
@@ -11,11 +17,11 @@ export interface Reifiable {
 }
 
 export interface SpecTreeConstruction {
-  openElement(name: string, ns?: Simple.Namespace): NodeToken;
+  openElement(name: string, ns?: Namespace): NodeToken;
   closeElement(): void;
   appendText(text: string): NodeToken;
   appendComment(text: string): NodeToken;
-  setAttribute(name: string, value: string, namespace?: Simple.Namespace): void;
+  setAttribute(name: string, value: string, namespace?: Namespace): void;
 
-  appendTo(parent: Simple.Element | Simple.DocumentFragment): NodeTokens;
+  appendTo(parent: SimpleElement | SimpleDocumentFragment): NodeTokens;
 }

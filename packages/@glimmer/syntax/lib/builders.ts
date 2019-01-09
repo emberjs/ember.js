@@ -1,5 +1,8 @@
 import * as AST from './types/nodes';
 import { Option, Dict } from '@glimmer/interfaces';
+import { deprecate } from '@glimmer/util';
+import { DEVMODE } from '@glimmer/local-debug-flags';
+import { StringLiteral, BooleanLiteral, NumberLiteral } from './types/handlebars-ast';
 
 // Statements
 
@@ -31,16 +34,39 @@ function buildBlock(
   path: BuilderPath,
   params: Option<AST.Expression[]>,
   hash: Option<AST.Hash>,
-  program: AST.Program,
-  elseBlock?: Option<AST.Program>,
+  _defaultBlock: AST.PossiblyDeprecatedBlock,
+  _elseBlock?: Option<AST.PossiblyDeprecatedBlock>,
   loc?: AST.SourceLocation
 ): AST.BlockStatement {
+  let defaultBlock: AST.Block;
+  let elseBlock: Option<AST.Block> | undefined;
+
+  if (_defaultBlock.type === 'Template') {
+    if (DEVMODE) {
+      deprecate(`b.program is deprecated. Use b.blockItself instead.`);
+    }
+
+    defaultBlock = { ..._defaultBlock, type: 'Block' } as AST.Block;
+  } else {
+    defaultBlock = _defaultBlock;
+  }
+
+  if (_elseBlock !== undefined && _elseBlock !== null && _elseBlock.type === 'Template') {
+    if (DEVMODE) {
+      deprecate(`b.program is deprecated. Use b.blockItself instead.`);
+    }
+
+    elseBlock = { ..._elseBlock, type: 'Block' } as AST.Block;
+  } else {
+    elseBlock = _elseBlock;
+  }
+
   return {
     type: 'BlockStatement',
     path: buildPath(path),
     params: params || [],
     hash: hash || buildHash([]),
-    program: program || null,
+    program: defaultBlock || null,
     inverse: elseBlock || null,
     loc: buildLoc(loc || null),
   };
@@ -387,13 +413,13 @@ function buildLiteral<T extends AST.Literal>(
   type: T['type'],
   value: T['value'],
   loc?: AST.SourceLocation
-): AST.Literal {
+): T {
   return {
     type,
     value,
     original: value,
     loc: buildLoc(loc || null),
-  } as AST.Literal;
+  } as T;
 }
 
 // Miscellaneous
@@ -419,9 +445,35 @@ function buildProgram(
   body?: AST.Statement[],
   blockParams?: string[],
   loc?: AST.SourceLocation
-): AST.Program {
+): AST.Template {
   return {
-    type: 'Program',
+    type: 'Template',
+    body: body || [],
+    blockParams: blockParams || [],
+    loc: buildLoc(loc || null),
+  };
+}
+
+function buildBlockItself(
+  body?: AST.Statement[],
+  blockParams?: string[],
+  loc?: AST.SourceLocation
+): AST.Block {
+  return {
+    type: 'Block',
+    body: body || [],
+    blockParams: blockParams || [],
+    loc: buildLoc(loc || null),
+  };
+}
+
+function buildTemplate(
+  body?: AST.Statement[],
+  blockParams?: string[],
+  loc?: AST.SourceLocation
+): AST.Template {
+  return {
+    type: 'Template',
     body: body || [],
     blockParams: blockParams || [],
     loc: buildLoc(loc || null),
@@ -494,12 +546,14 @@ export default {
   pair: buildPair,
   literal: buildLiteral,
   program: buildProgram,
+  blockItself: buildBlockItself,
+  template: buildTemplate,
   loc: buildLoc,
   pos: buildPosition,
 
-  string: literal('StringLiteral'),
-  boolean: literal('BooleanLiteral'),
-  number: literal('NumberLiteral'),
+  string: literal('StringLiteral') as (value: string) => StringLiteral,
+  boolean: literal('BooleanLiteral') as (value: boolean) => BooleanLiteral,
+  number: literal('NumberLiteral') as (value: number) => NumberLiteral,
   undefined() {
     return buildLiteral('UndefinedLiteral', undefined);
   },
@@ -508,8 +562,10 @@ export default {
   },
 };
 
-function literal<T extends AST.Literal>(type: T['type']) {
-  return function(value: T['value']) {
+type BuildLiteral<T extends AST.Literal> = (value: T['value']) => T;
+
+function literal<T extends AST.Literal>(type: T['type']): BuildLiteral<T> {
+  return function(value: T['value']): T {
     return buildLiteral(type, value);
   };
 }

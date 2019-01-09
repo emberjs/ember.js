@@ -1,38 +1,39 @@
-import { IDOMChanges, DOMChanges } from '@glimmer/runtime';
-import { Simple, Maybe } from '@glimmer/interfaces';
+import { GlimmerTreeChanges, GlimmerTreeConstruction, Maybe } from '@glimmer/interfaces';
 import { NodeDOMTreeConstruction } from '@glimmer/node';
-import * as SimpleDOM from 'simple-dom';
-
-import LazyTestEnvironment from '../lazy/environment';
-import LazyRenderDelegate from '../lazy/render-delegate';
-import EagerRenderDelegate from '../eager/render-delegate';
+import { DOMChanges } from '@glimmer/runtime';
+import createHTMLDocument from '@simple-dom/document';
+import { SimpleDocument } from '@simple-dom/interface';
+import { assertElement, toInnerHTML } from '../../../dom';
 import RenderDelegate from '../../../render-delegate';
 import { RenderTest } from '../../../render-test';
+import EagerRenderDelegate from '../eager/render-delegate';
+import LazyTestEnvironment, { TestEnvironmentOptions } from '../lazy/environment';
+import LazyRenderDelegate from '../lazy/render-delegate';
 
 export interface NodeEnvironmentOptions {
-  document: Simple.Document;
-  appendOperations?: NodeDOMTreeConstruction;
-  updateOperations?: IDOMChanges;
+  document: SimpleDocument;
+  appendOperations?: GlimmerTreeConstruction;
+  updateOperations?: GlimmerTreeChanges;
 }
 
-function testOptions(options: NodeEnvironmentOptions) {
+function testOptions(options: NodeEnvironmentOptions): TestEnvironmentOptions {
   let document = options.document;
-  let appendOperations: Maybe<NodeDOMTreeConstruction> = options && options.appendOperations;
-  let updateOperations: Maybe<IDOMChanges> = options && options.updateOperations;
+  let appendOperations: Maybe<GlimmerTreeConstruction> = options && options.appendOperations;
+  let updateOperations: Maybe<GlimmerTreeChanges> = options && options.updateOperations;
 
   if (!appendOperations) {
     appendOperations = new NodeDOMTreeConstruction(document);
   }
 
   if (!updateOperations) {
-    updateOperations = new DOMChanges(document as HTMLDocument);
+    updateOperations = new DOMChanges(document);
   }
 
   return { appendOperations, updateOperations, document };
 }
 
 export class NodeEnv extends LazyTestEnvironment {
-  protected document: Simple.Document;
+  protected document: SimpleDocument;
   constructor(options: NodeEnvironmentOptions) {
     super(testOptions(options));
     this.document = options.document;
@@ -41,30 +42,28 @@ export class NodeEnv extends LazyTestEnvironment {
 
 export class NodeLazyRenderDelegate extends LazyRenderDelegate {
   constructor() {
-    super(new NodeEnv({ document: new SimpleDOM.Document() }));
+    super(new NodeEnv({ document: createHTMLDocument() }));
   }
 }
 
 export class NodeEagerRenderDelegate extends EagerRenderDelegate {
   constructor() {
-    super(new NodeEnv({ document: new SimpleDOM.Document() }));
+    super(new NodeEnv({ document: createHTMLDocument() }));
   }
 }
 
 export class AbstractNodeTest extends RenderTest {
-  protected serializer: SimpleDOM.HTMLSerializer;
   constructor(delegate: RenderDelegate) {
     super(delegate);
-    this.serializer = new SimpleDOM.HTMLSerializer(SimpleDOM.voidMap);
   }
 
   assertHTML(html: string) {
-    let serialized = this.serializer.serializeChildren(this.element);
+    let serialized = toInnerHTML(this.element);
     this.assert.equal(serialized, html);
   }
 
   assertComponent(html: string) {
-    let el = this.element.firstChild! as Element;
+    let el = assertElement(this.element.firstChild);
 
     if (this.testType !== 'Glimmer') {
       this.assert.equal(el.getAttribute('class'), 'ember-view');
@@ -72,7 +71,13 @@ export class AbstractNodeTest extends RenderTest {
       this.assert.ok(el.getAttribute('id')!.indexOf('ember') > -1);
     }
 
-    let serialized = this.serializer.serializeChildren(el);
+    let serialized = toInnerHTML(el);
     this.assert.equal(serialized, html);
+  }
+}
+
+export class NodeRenderDelegate extends EagerRenderDelegate {
+  constructor(env = new NodeEnv({ document: createHTMLDocument() })) {
+    super(env);
   }
 }

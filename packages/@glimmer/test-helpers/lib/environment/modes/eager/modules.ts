@@ -1,10 +1,11 @@
-import { Opaque, Option, dict, Dict, assert } from '@glimmer/util';
-import { Locator } from '../../components';
+import { Option, dict, assert } from '@glimmer/util';
+import { WrappedLocator } from '../../components';
+import { TemplateMeta, Dict } from '@glimmer/interfaces';
 
 export type ModuleType = 'component' | 'helper' | 'modifier' | 'partial' | 'other';
 
 export class Module {
-  constructor(private dict: Dict<Opaque>, public type: ModuleType) {
+  constructor(private dict: Dict, public type: ModuleType) {
     Object.freeze(this.dict);
   }
 
@@ -12,7 +13,7 @@ export class Module {
     return key in this.dict;
   }
 
-  get(key: string): Opaque {
+  get(key: string): unknown {
     return this.dict[key];
   }
 }
@@ -33,13 +34,17 @@ export class Modules {
     return module.type;
   }
 
-  register(name: string, type: ModuleType, value: Dict<Opaque>) {
+  register(name: string, type: ModuleType, value: Dict<unknown>) {
     assert(name.indexOf('ui/components/ui') === -1, `BUG: ui/components/ui shouldn't be a prefix`);
     assert(!name.match(/^[A-Z]/), 'BUG: Components should be nested under ui/components');
     this.registry[name] = new Module(value, type);
   }
 
-  resolve(name: string, referrer: Locator, defaultRoot?: string): Option<string> {
+  resolve(
+    name: string,
+    referrer: TemplateMeta<WrappedLocator>,
+    defaultRoot?: string
+  ): Option<string> {
     let local =
       referrer &&
       referrer.locator.module &&

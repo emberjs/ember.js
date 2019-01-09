@@ -1,6 +1,8 @@
 import { WriteOnlyConstants } from '@glimmer/program';
+import { assert } from '@glimmer/util';
+import { RuntimeConstants, TemplateMeta } from '@glimmer/interfaces';
 
-export default class DebugConstants extends WriteOnlyConstants {
+export default class DebugConstants extends WriteOnlyConstants implements RuntimeConstants {
   getNumber(value: number): number {
     return this.numbers[value];
   }
@@ -26,10 +28,15 @@ export default class DebugConstants extends WriteOnlyConstants {
   }
 
   resolveHandle<T>(s: number): T {
+    assert(typeof s === 'number', 'Cannot resolve undefined as a handle');
     return ({ handle: s } as any) as T;
   }
 
-  getSerializable<T>(s: number): T {
-    return JSON.parse(this.strings[s]) as T;
+  getTemplateMeta(s: number): TemplateMeta {
+    return JSON.parse(this.strings[s]) as TemplateMeta;
+  }
+
+  getOther(s: number): unknown {
+    return this.others[s];
   }
 }

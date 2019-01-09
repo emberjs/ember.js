@@ -3,12 +3,12 @@ import JavaScriptCompiler, { Template } from './javascript-compiler';
 import { assert, Option } from '@glimmer/util';
 import { AST, isLiteral, SyntaxError } from '@glimmer/syntax';
 import { getAttrNamespace } from './utils';
-import { Opaque } from '@glimmer/interfaces';
 import { SymbolAllocator, InOp as SymbolInOp, OutOp as SymbolOutOp } from './allocate-symbols';
 import { PathHead } from './compiler-ops';
+import { DEBUG } from '@glimmer/local-debug-flags';
 
 export interface CompileOptions {
-  meta: Opaque;
+  meta: unknown;
   customizeComponentName?(tag: string): string;
 }
 
@@ -19,7 +19,7 @@ function isTrustedValue(value: any) {
 export const THIS = 0;
 
 export default class TemplateCompiler {
-  static compile(ast: AST.Program, options?: CompileOptions): Template {
+  static compile(ast: AST.Template, options?: CompileOptions): Template {
     let templateVisitor = new TemplateVisitor();
     templateVisitor.visit(ast);
 
@@ -27,7 +27,13 @@ export default class TemplateCompiler {
     let opcodes: SymbolInOp[] = compiler.process(templateVisitor.actions);
     let symbols: SymbolOutOp[] = new SymbolAllocator(opcodes).process();
 
-    return JavaScriptCompiler.process(symbols, ast['symbols'], options);
+    let out = JavaScriptCompiler.process(symbols, ast.symbols!, options);
+
+    if (DEBUG) {
+      console.log(`Template ->`, out);
+    }
+
+    return out;
   }
 
   private templateId = 0;
@@ -45,7 +51,7 @@ export default class TemplateCompiler {
     return this.opcodes;
   }
 
-  startProgram([program]: [AST.Program]) {
+  startProgram([program]: [AST.Template]) {
     this.opcode(['startProgram', program], program);
   }
 
@@ -53,7 +59,7 @@ export default class TemplateCompiler {
     this.opcode(['endProgram', null], null);
   }
 
-  startBlock([program]: [AST.Program]) {
+  startBlock([program]: [AST.Block]) {
     this.templateId++;
     this.opcode(['startBlock', program], program);
   }
@@ -73,15 +79,17 @@ export default class TemplateCompiler {
 
   openElement([action]: [AST.ElementNode]) {
     let attributes = action.attributes;
-    let hasSplat;
+    let hasSplat = false;
 
     for (let i = 0; i < attributes.length; i++) {
       let attr = attributes[i];
       if (attr.name === '...attributes') {
-        hasSplat = attr;
+        hasSplat = true;
         break;
       }
     }
+
+    let actionIsComponent = false;
 
     if (isDynamicComponent(action)) {
       let head: PathHead, rest: string[];
@@ -91,10 +99,12 @@ export default class TemplateCompiler {
       }
       this.opcode(['get', [head, rest]]);
       this.opcode(['openComponent', action], action);
+      actionIsComponent = true;
     } else if (isNamedBlock(action)) {
       this.opcode(['openNamedBlock', action], action);
     } else if (isComponent(action)) {
       this.opcode(['openComponent', action], action);
+      actionIsComponent = true;
     } else if (hasSplat) {
       this.opcode(['openSplattedElement', action], action);
     } else {
@@ -110,11 +120,11 @@ export default class TemplateCompiler {
           typeAttr = attrs[i];
           continue;
         }
-        this.attribute([attrs[i]]);
+        this.attribute([attrs[i]], hasSplat || actionIsComponent);
       }
 
       if (typeAttr) {
-        this.attribute([typeAttr]);
+        this.attribute([typeAttr], hasSplat || actionIsComponent);
       }
 
       this.opcode(['flushElement', action], null);
@@ -138,7 +148,7 @@ export default class TemplateCompiler {
     }
   }
 
-  attribute([action]: [AST.AttrNode]) {
+  attribute([action]: [AST.AttrNode], isComponent: boolean) {
     let { name, value } = action;
 
     let namespace = getAttrNamespace(name);
@@ -159,14 +169,17 @@ export default class TemplateCompiler {
 
       if (isStatic && name === '...attributes') {
         this.opcode(['attrSplat', null], action);
-      } else if (isStatic) {
+      } else if (isStatic && !isComponent) {
         this.opcode(['staticAttr', [name, namespace]], action);
       } else if (isTrusting) {
-        this.opcode(['trustingAttr', [name, namespace]], action);
+        this.opcode(
+          [isComponent ? 'trustingComponentAttr' : 'trustingAttr', [name, namespace]],
+          action
+        );
       } else if (action.value.type === 'MustacheStatement') {
-        this.opcode(['dynamicAttr', [name, null]], action);
+        this.opcode([isComponent ? 'componentAttr' : 'dynamicAttr', [name, null]], action);
       } else {
-        this.opcode(['dynamicAttr', [name, namespace]], action);
+        this.opcode([isComponent ? 'componentAttr' : 'dynamicAttr', [name, namespace]], action);
       }
     }
   }
@@ -383,7 +396,7 @@ export default class TemplateCompiler {
     this.opcode(['prepareObject', pairs.length], null);
   }
 
-  prepareAttributeValue(value: AST.AttrNode['value']) {
+  prepareAttributeValue(value: AST.AttrNode['value']): value is AST.TextNode {
     // returns the static value if the value is static
 
     switch (value.type) {
@@ -475,7 +488,7 @@ function isDynamicComponent(element: AST.ElementNode): boolean {
 
   let [maybeLocal] = element.tag.split('.');
   let isNamedArgument = open === '@';
-  let isLocal = element['symbols'].has(maybeLocal);
+  let isLocal = element.symbols!.has(maybeLocal);
   let isThisPath = element.tag.indexOf('this.') === 0;
 
   return isLocal || isNamedArgument || isThisPath;

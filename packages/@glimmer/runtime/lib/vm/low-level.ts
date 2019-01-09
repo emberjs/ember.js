@@ -1,9 +1,16 @@
-import { Heap, Opcode } from '@glimmer/program';
-import { Option, Opaque } from '@glimmer/interfaces';
+import {
+  Option,
+  RuntimeHeap,
+  MachineOp,
+  RuntimeProgram,
+  RuntimeOp,
+  JitOrAotBlock,
+} from '@glimmer/interfaces';
 import { APPEND_OPCODES } from '../opcodes';
 import VM from './append';
 import { DEVMODE } from '@glimmer/local-debug-flags';
-import { MachineRegister, $pc, $ra, $fp, $sp, MachineOp } from '@glimmer/vm';
+import { MachineRegister, $pc, $ra, $fp, $sp } from '@glimmer/vm';
+import { assert } from '@glimmer/util';
 
 export interface LowLevelRegisters {
   [MachineRegister.pc]: number;
@@ -33,13 +40,9 @@ export interface Stack {
   popSmi(): number;
 }
 
-export interface Program {
-  opcode(offset: number): Opcode;
-}
-
 export interface Externs {
-  debugBefore(opcode: Opcode): Opaque;
-  debugAfter(state: Opaque): void;
+  debugBefore(opcode: RuntimeOp): unknown;
+  debugAfter(state: unknown): void;
 }
 
 export default class LowLevelVM {
@@ -47,8 +50,8 @@ export default class LowLevelVM {
 
   constructor(
     public stack: Stack,
-    public heap: Heap,
-    public program: Program,
+    public heap: RuntimeHeap,
+    public program: RuntimeProgram,
     public externs: Externs,
     readonly registers: LowLevelRegisters
   ) {}
@@ -94,6 +97,8 @@ export default class LowLevelVM {
 
   // Save $pc into $ra, then jump to a new address in `program` (jal in MIPS)
   call(handle: number) {
+    assert(handle < 0b1111111111111111, `Jumping to placehoder address`);
+
     this.registers[$ra] = this.registers[$pc];
     this.registers[$pc] = this.heap.getaddr(handle);
   }
@@ -108,7 +113,7 @@ export default class LowLevelVM {
     this.registers[$pc] = this.registers[$ra];
   }
 
-  nextStatement(): Option<Opcode> {
+  nextStatement(): Option<RuntimeOp> {
     let { registers, program } = this;
 
     let pc = registers[$pc];
@@ -129,7 +134,7 @@ export default class LowLevelVM {
     return program.opcode(pc);
   }
 
-  evaluateOuter(opcode: Opcode, vm: VM<Opaque>) {
+  evaluateOuter(opcode: RuntimeOp, vm: VM<JitOrAotBlock>) {
     if (DEVMODE) {
       let {
         externs: { debugBefore, debugAfter },
@@ -142,7 +147,7 @@ export default class LowLevelVM {
     }
   }
 
-  evaluateInner(opcode: Opcode, vm: VM<Opaque>) {
+  evaluateInner(opcode: RuntimeOp, vm: VM<JitOrAotBlock>) {
     if (opcode.isMachine) {
       this.evaluateMachine(opcode);
     } else {
@@ -150,7 +155,7 @@ export default class LowLevelVM {
     }
   }
 
-  evaluateMachine(opcode: Opcode) {
+  evaluateMachine(opcode: RuntimeOp) {
     switch (opcode.type) {
       case MachineOp.PushFrame:
         return this.pushFrame();
@@ -169,7 +174,7 @@ export default class LowLevelVM {
     }
   }
 
-  evaluateSyscall(opcode: Opcode, vm: VM<Opaque>) {
+  evaluateSyscall(opcode: RuntimeOp, vm: VM<JitOrAotBlock>) {
     APPEND_OPCODES.evaluate(vm, opcode, opcode.type);
   }
 }

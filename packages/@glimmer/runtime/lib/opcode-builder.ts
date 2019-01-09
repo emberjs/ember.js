@@ -1,19 +1,16 @@
 import { VersionedPathReference } from '@glimmer/reference';
-import { BrandedComponentDefinition } from './component/interfaces';
-import { IArguments } from './vm/arguments';
 
 import { Option } from '@glimmer/util';
 
-import * as WireFormat from '@glimmer/wire-format';
-
 import { PublicVM } from './vm/append';
-import { RuntimeResolver } from '@glimmer/interfaces';
+import { RuntimeResolver, VMArguments, TemplateMeta } from '@glimmer/interfaces';
+import { CurriedComponentDefinition } from './component/curried-component';
 
-export interface DynamicComponentDefinition<Locator> {
+export interface DynamicComponentDefinition {
   (
     vm: PublicVM,
-    args: IArguments,
-    meta: WireFormat.TemplateMeta,
-    resolver: RuntimeResolver<Locator>
-  ): VersionedPathReference<Option<BrandedComponentDefinition>>;
+    args: VMArguments,
+    meta: TemplateMeta,
+    resolver: RuntimeResolver
+  ): VersionedPathReference<Option<CurriedComponentDefinition>>;
 }

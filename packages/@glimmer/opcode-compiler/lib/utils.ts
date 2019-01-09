@@ -1,33 +1,24 @@
-import { NamedBlocks as INamedBlocks, Option, CompilableBlock } from '@glimmer/interfaces';
-import * as WireFormat from '@glimmer/wire-format';
+import {
+  NamedBlocks,
+  Option,
+  CompilableBlock,
+  WireFormat,
+  ContainingMetadata,
+} from '@glimmer/interfaces';
 import { dict } from '@glimmer/util';
+import { compilableBlock } from './compilable-template';
 
 interface NamedBlocksDict {
   [key: string]: Option<CompilableBlock>;
 }
 
-export class NamedBlocksImpl implements INamedBlocks {
-  static fromWireFormat(
-    blocks: WireFormat.Core.Blocks,
-    callback: (block: WireFormat.SerializedInlineBlock) => CompilableBlock
-  ): INamedBlocks {
-    return namedBlocks(blocks, callback);
-  }
-
-  static from(name: string, value: Option<CompilableBlock>): INamedBlocks {
-    if (value === null) {
-      return EMPTY_BLOCKS;
-    }
-
-    return new NamedBlocksImpl({ [name]: value });
-  }
-
+export class NamedBlocksImpl implements NamedBlocks {
   constructor(private blocks: Option<NamedBlocksDict>) {}
 
   get(name: string): Option<CompilableBlock> {
     if (!this.blocks) return null;
 
-    return this.blocks[name];
+    return this.blocks[name] || null;
   }
 
   has(name: string): boolean {
@@ -35,7 +26,7 @@ export class NamedBlocksImpl implements INamedBlocks {
     return blocks !== null && name in blocks;
   }
 
-  with(name: string, block: Option<CompilableBlock>): INamedBlocks {
+  with(name: string, block: Option<CompilableBlock>): NamedBlocks {
     let { blocks } = this;
 
     if (blocks) {
@@ -52,15 +43,18 @@ export class NamedBlocksImpl implements INamedBlocks {
 
 export const EMPTY_BLOCKS = new NamedBlocksImpl(null);
 
-function namedBlocks(
-  blocks: WireFormat.Core.Blocks,
-  callback: (block: WireFormat.SerializedInlineBlock) => CompilableBlock
-): INamedBlocks {
+export function namedBlocks(blocks: WireFormat.Core.Blocks, meta: ContainingMetadata): NamedBlocks {
+  if (blocks === null) {
+    return EMPTY_BLOCKS;
+  }
+
   let out: NamedBlocksDict = dict();
 
-  new WireFormat.NamedBlocks(blocks).forEach((key, value) => {
-    out[key] = callback(value || null);
-  });
+  let [keys, values] = blocks;
+
+  for (let i = 0; i < keys.length; i++) {
+    out[keys[i]] = compilableBlock(values[i]!, meta);
+  }
 
   return new NamedBlocksImpl(out);
 }

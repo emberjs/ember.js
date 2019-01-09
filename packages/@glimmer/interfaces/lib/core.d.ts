@@ -1,11 +1,10 @@
 export type Present = {} | void;
-export type Opaque = Present | null | undefined;
 export type Option<T> = T | null;
 export type Maybe<T> = Option<T> | undefined | void;
 export type FIXME<T, S extends string> = T;
 export type unsafe = any;
 
-export interface Dict<T> {
+export interface Dict<T = unknown> {
   [key: string]: T;
 }
 
@@ -29,3 +28,26 @@ export type RichIteratorResult<Tick, Return> =
       done: true;
       value: Return;
     };
+
+export interface Destroyable {
+  destroy(): void;
+}
+
+declare const DestroySymbol: unique symbol;
+export type DestroySymbol = typeof DestroySymbol;
+
+export interface SymbolDestroyable {
+  [DestroySymbol](): void;
+}
+
+declare const DropSymbol: unique symbol;
+export type DropSymbol = typeof DropSymbol;
+declare const ChildrenSymbol: unique symbol;
+export type ChildrenSymbol = typeof ChildrenSymbol;
+
+export interface Drop {
+  [DropSymbol](): void;
+
+  // Debug only
+  [ChildrenSymbol]: Iterable<Drop>;
+}

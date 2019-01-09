@@ -1,10 +1,11 @@
-import { RehydrateBuilder, ElementBuilder, Environment, Cursor } from '@glimmer/runtime';
-import { Simple } from '@glimmer/interfaces';
+import { Cursor, Environment } from '@glimmer/interfaces';
+import { ElementBuilder, RehydrateBuilder } from '@glimmer/runtime';
+import { SimpleNode } from '@simple-dom/interface';
 
 export class DebugRehydrationBuilder extends RehydrateBuilder {
-  clearedNodes: Simple.Node[] = [];
+  clearedNodes: SimpleNode[] = [];
 
-  remove(node: Simple.Node) {
+  remove(node: SimpleNode) {
     let next = super.remove(node);
     let el = node as Element;
 

@@ -3,15 +3,17 @@ import { stripTight } from '../helpers';
 import { equalsElement } from '../environment';
 import { setProperty as set } from '@glimmer/object-reference';
 import { EmberishCurlyComponent } from '../environment/components/emberish-curly';
+import { replaceHTML } from '../dom';
 
 export class InElementSuite extends RenderTest {
   @test
   'Renders curlies into external element'() {
-    let externalElement = document.createElement('div');
+    let externalElement = this.delegate.createElement('div');
     this.render('{{#in-element externalElement}}[{{foo}}]{{/in-element}}', {
       externalElement,
       foo: 'Yippie!',
     });
+
     equalsElement(externalElement, 'div', {}, '[Yippie!]');
     this.assertStableRerender();
 
@@ -26,8 +28,8 @@ export class InElementSuite extends RenderTest {
 
   @test
   'Changing to falsey'() {
-    let first = document.createElement('div');
-    let second = document.createElement('div');
+    let first = this.delegate.createElement('div');
+    let second = this.delegate.createElement('div');
 
     this.render(
       stripTight`
@@ -70,8 +72,9 @@ export class InElementSuite extends RenderTest {
 
   @test
   'With pre-existing content'() {
-    let externalElement = document.createElement('div');
-    let initialContent = (externalElement.innerHTML = '<p>Hello there!</p>');
+    let externalElement = this.delegate.createElement('div');
+    let initialContent = '<p>Hello there!</p>';
+    replaceHTML(externalElement, initialContent);
 
     this.render(stripTight`{{#in-element externalElement}}[{{foo}}]{{/in-element}}`, {
       externalElement,
@@ -100,8 +103,8 @@ export class InElementSuite extends RenderTest {
 
   @test
   'With nextSibling'() {
-    let externalElement = document.createElement('div');
-    externalElement.innerHTML = '<b>Hello</b><em>there!</em>';
+    let externalElement = this.delegate.createElement('div');
+    replaceHTML(externalElement, '<b>Hello</b><em>there!</em>');
 
     this.render(
       stripTight`{{#in-element externalElement nextSibling=nextSibling}}[{{foo}}]{{/in-element}}`,
@@ -135,8 +138,8 @@ export class InElementSuite extends RenderTest {
 
   @test
   'Updating remote element'() {
-    let first = document.createElement('div');
-    let second = document.createElement('div');
+    let first = this.delegate.createElement('div');
+    let second = this.delegate.createElement('div');
 
     this.render(stripTight`{{#in-element externalElement}}[{{foo}}]{{/in-element}}`, {
       externalElement: first,
@@ -187,8 +190,8 @@ export class InElementSuite extends RenderTest {
 
   @test
   "Inside an '{{if}}'"() {
-    let first = { element: document.createElement('div'), description: 'first' };
-    let second = { element: document.createElement('div'), description: 'second' };
+    let first = { element: this.delegate.createElement('div'), description: 'first' };
+    let second = { element: this.delegate.createElement('div'), description: 'second' };
 
     this.render(
       stripTight`
@@ -252,8 +255,8 @@ export class InElementSuite extends RenderTest {
 
   @test
   Multiple() {
-    let firstElement = document.createElement('div');
-    let secondElement = document.createElement('div');
+    let firstElement = this.delegate.createElement('div');
+    let secondElement = this.delegate.createElement('div');
 
     this.render(
       stripTight`
@@ -302,9 +305,9 @@ export class InElementSuite extends RenderTest {
     this.registerComponent('Basic', 'FooBar', '<p>{{@value}}</p>');
 
     let roots = [
-      { id: 0, element: document.createElement('div'), value: 'foo' },
-      { id: 1, element: document.createElement('div'), value: 'bar' },
-      { id: 2, element: document.createElement('div'), value: 'baz' },
+      { id: 0, element: this.delegate.createElement('div'), value: 'foo' },
+      { id: 1, element: this.delegate.createElement('div'), value: 'bar' },
+      { id: 2, element: this.delegate.createElement('div'), value: 'baz' },
     ];
 
     this.render(
@@ -355,8 +358,8 @@ export class InElementSuite extends RenderTest {
 
   @test
   Nesting() {
-    let firstElement = document.createElement('div');
-    let secondElement = document.createElement('div');
+    let firstElement = this.delegate.createElement('div');
+    let secondElement = this.delegate.createElement('div');
 
     this.render(
       stripTight`
@@ -415,7 +418,7 @@ export class InElementSuite extends RenderTest {
       },
     });
     this.registerComponent('Glimmer', 'DestroyMe', 'destroy me!', DestroyMeComponent);
-    let externalElement = document.createElement('div');
+    let externalElement = this.delegate.createElement('div');
 
     this.render(
       stripTight`

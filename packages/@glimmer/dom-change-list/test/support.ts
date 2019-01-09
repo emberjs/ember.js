@@ -1,24 +1,33 @@
-import { Simple, Option, NodeTokens } from '@glimmer/interfaces';
-import * as SimpleDOM from 'simple-dom';
+import { Option, NodeTokens } from '@glimmer/interfaces';
 import { DOMTreeConstruction, TreeBuilder } from '@glimmer/dom-change-list';
+import {
+  Namespace,
+  AttrNamespace,
+  NodeType,
+  SimpleElement,
+  SimpleDocumentFragment,
+  SimpleAttr,
+} from '@simple-dom/interface';
+import Serializer from '@simple-dom/serializer';
+import voidMap from '@simple-dom/void-map';
 
-export const SVG: Simple.Namespace = 'http://www.w3.org/2000/svg';
-export const XLINK: Simple.Namespace = 'http://www.w3.org/1999/xlink';
+export const SVG = Namespace.SVG;
+export const XLINK = Namespace.XLink;
 
-export function toHTML(parent: Simple.Element | Simple.DocumentFragment) {
-  let serializer = new SimpleDOM.HTMLSerializer(SimpleDOM.voidMap);
+export function toHTML(parent: SimpleElement | SimpleDocumentFragment) {
+  let serializer = new Serializer(voidMap);
 
   return serializer.serializeChildren(parent);
 }
 
-export function toHTMLNS(parent: Simple.Element | Simple.DocumentFragment) {
-  let serializer = new NamespacedHTMLSerializer(SimpleDOM.voidMap);
+export function toHTMLNS(parent: SimpleElement | SimpleDocumentFragment) {
+  let serializer = new NamespacedHTMLSerializer(voidMap);
 
   return serializer.serializeChildren(parent);
 }
 
-class NamespacedHTMLSerializer extends SimpleDOM.HTMLSerializer {
-  openTag(element: Simple.Element): string {
+class NamespacedHTMLSerializer extends Serializer {
+  openTag(element: SimpleElement): string {
     if (element.namespaceURI === SVG) {
       return '<svg:' + element.tagName.toLowerCase() + this.attributes(element.attributes) + '>';
     } else {
@@ -26,7 +35,7 @@ class NamespacedHTMLSerializer extends SimpleDOM.HTMLSerializer {
     }
   }
 
-  closeTag(element: Simple.Element): string {
+  closeTag(element: SimpleElement): string {
     if (element.namespaceURI === SVG) {
       return '</svg:' + element.tagName.toLowerCase() + '>';
     } else {
@@ -34,7 +43,7 @@ class NamespacedHTMLSerializer extends SimpleDOM.HTMLSerializer {
     }
   }
 
-  attr(original: Simple.Attribute): string {
+  attr(original: SimpleAttr): string {
     let attr: { name: string; value: Option<string>; specified: boolean };
     if (original.namespaceURI === XLINK) {
       attr = {
@@ -46,7 +55,7 @@ class NamespacedHTMLSerializer extends SimpleDOM.HTMLSerializer {
       attr = original;
     }
 
-    return super.attr(attr as Simple.Attribute);
+    return super.attr(attr as SimpleAttr);
   }
 }
 
@@ -62,9 +71,9 @@ export class Builder {
     this.expected[0] = { type: 'element', value: '<undefined>' };
   }
 
-  appendTo(parent: Simple.Element | Simple.DocumentFragment) {
+  appendTo(parent: SimpleElement | SimpleDocumentFragment) {
     if (parent.nodeType === 1) {
-      this.expected[0].value = (parent as Simple.Element).tagName;
+      this.expected[0].value = (parent as SimpleElement).tagName;
     } else {
       this.expected[0].value = '#document-fragment';
     }
@@ -74,7 +83,7 @@ export class Builder {
     this.tree.closeElement();
   }
 
-  setAttribute(name: string, value: string, namespace?: Simple.Namespace) {
+  setAttribute(name: string, value: string, namespace?: AttrNamespace) {
     this.tree.setAttribute(name, value, namespace);
   }
 
@@ -96,13 +105,13 @@ export class Builder {
       let reified = tokens.reify(i);
 
       switch (reified.nodeType) {
-        case 1:
-          actual.push({ type: 'element', value: reified['tagName'] });
+        case NodeType.ELEMENT_NODE:
+          actual.push({ type: 'element', value: reified.tagName });
           break;
-        case 3:
+        case NodeType.TEXT_NODE:
           actual.push({ type: 'text', value: reified.nodeValue! });
           break;
-        case 8:
+        case NodeType.COMMENT_NODE:
           actual.push({ type: 'comment', value: reified.nodeValue! });
           break;
       }

@@ -1,9 +1,16 @@
-import { Simple, Option, NodeTokens } from '@glimmer/interfaces';
+import { Option, NodeTokens, Dict } from '@glimmer/interfaces';
 import { HTML } from './dom-operations';
 import { DOMTreeConstruction } from './tree-construction';
 import { NodeToken } from './node-tokens';
+import {
+  Namespace,
+  SimpleElement,
+  SimpleDocumentFragment,
+  SimpleDocument,
+} from '@simple-dom/interface';
 
-export const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
+export const SVG_NAMESPACE = Namespace.SVG;
+export const HTML_NAMESPACE = Namespace.HTML;
 
 // http://www.w3.org/TR/html/syntax.html#html-integration-point
 const SVG_INTEGRATION_POINTS = { foreignObject: 1, desc: 1, title: 1 };
@@ -66,7 +73,7 @@ export const BLACKLIST_TABLE = Object.create(null);
 
 interface Context {
   tag: string;
-  namespaceURI: Simple.Namespace;
+  namespaceURI: Namespace;
   isIntegration: boolean;
 }
 
@@ -100,7 +107,7 @@ export class TreeBuilder {
       this.contexts.push({
         tag,
         namespaceURI: SVG_NAMESPACE,
-        isIntegration: !!SVG_INTEGRATION_POINTS[tag],
+        isIntegration: !!(SVG_INTEGRATION_POINTS as Dict)[tag],
       });
       return this.dom.openElement(tag, SVG_NAMESPACE);
     }
@@ -113,7 +120,7 @@ export class TreeBuilder {
     this.dom.closeElement();
   }
 
-  setAttribute(name: string, value: string, namespace?: Simple.Namespace) {
+  setAttribute(name: string, value: string, namespace?: Namespace) {
     this.dom.setAttribute(name, value, namespace);
   }
 
@@ -130,12 +137,12 @@ export class TreeBuilder {
     return current && current.tag;
   }
 
-  get currentNamespace(): Option<Simple.Namespace> {
+  get currentNamespace(): Option<Namespace> {
     let current = this.current;
     return current && current.namespaceURI;
   }
 
-  appendTo(element: Simple.Element | Simple.DocumentFragment, owner: Simple.Document): NodeTokens {
+  appendTo(element: SimpleElement | SimpleDocumentFragment, owner: SimpleDocument): NodeTokens {
     return this.dom.appendTo(element, owner);
   }
 

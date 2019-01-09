@@ -1,35 +1,36 @@
-import { Dict, Opaque } from '@glimmer/util';
-import { Simple } from '@glimmer/interfaces';
-import { RenderResult, clientBuilder, Environment, Cursor, ElementBuilder } from '@glimmer/runtime';
+import { Cursor, Dict, Environment, RenderResult } from '@glimmer/interfaces';
 import { UpdatableReference } from '@glimmer/object-reference';
-
-import LazyTestEnvironment from './environment';
-import { UserHelper } from '../../helper';
-import RenderDelegate from '../../../render-delegate';
-import {
-  ComponentTypes,
-  ComponentKind,
-  registerComponent,
-  renderTemplate,
-} from '../../../render-test';
 import { PathReference } from '@glimmer/reference';
+import { clientBuilder, ElementBuilder } from '@glimmer/runtime';
+import { SimpleElement } from '@simple-dom/interface';
+import { ComponentKind, ComponentTypes } from '../../../interfaces';
+import { registerComponent, renderTemplate } from '../../../render';
+import RenderDelegate from '../../../render-delegate';
+import { UserHelper } from '../../helper';
 import { TestModifierConstructor } from '../../modifier';
+import LazyTestEnvironment from './environment';
 
 declare const module: any;
 
 export default class LazyRenderDelegate implements RenderDelegate {
+  static readonly isEager = false;
+
   constructor(protected env: LazyTestEnvironment = new LazyTestEnvironment()) {}
 
   resetEnv() {
     this.env = new LazyTestEnvironment();
   }
 
-  getInitialElement(): HTMLElement {
+  getInitialElement(): SimpleElement {
     if (typeof module !== 'undefined' && module.exports) {
-      return this.env.getAppendOperations().createElement('div') as HTMLElement;
+      return this.env.getAppendOperations().createElement('div');
     }
 
-    return document.getElementById('qunit-fixture')!;
+    return document.getElementById('qunit-fixture')! as SimpleElement;
+  }
+
+  createElement(tagName: string): SimpleElement {
+    return this.env.getAppendOperations().createElement(tagName);
   }
 
   registerComponent<K extends ComponentKind, L extends ComponentKind>(
@@ -54,11 +55,11 @@ export default class LazyRenderDelegate implements RenderDelegate {
     return clientBuilder(env, cursor);
   }
 
-  getSelf(context: Opaque): PathReference<Opaque> {
+  getSelf(context: unknown): PathReference<unknown> {
     return new UpdatableReference(context);
   }
 
-  renderTemplate(template: string, context: Dict<Opaque>, element: Simple.Element): RenderResult {
+  renderTemplate(template: string, context: Dict<unknown>, element: SimpleElement): RenderResult {
     let { env } = this;
     let cursor = { element, nextSibling: null };
     return renderTemplate(

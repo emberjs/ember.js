@@ -1,56 +1,74 @@
+import { check, Checker, Checkunknown } from '@glimmer/debug';
 import {
-  Register,
-  $pc,
-  MachineRegister,
-  isLowLevelRegister,
-  $sp,
+  CompilableBlock,
+  CompilableTemplate,
+  Destroyable,
+  Drop,
+  DynamicScope,
+  Environment,
+  JitOrAotBlock,
+  PartialScope,
+  RenderResult,
+  RichIteratorResult,
+  Runtime,
+  RuntimeConstants,
+  RuntimeHeap,
+  RuntimeProgram,
+  Scope,
+  SymbolDestroyable,
+  SyntaxCompilationContext,
+  TemplateMeta,
+} from '@glimmer/interfaces';
+import { DEBUG } from '@glimmer/local-debug-flags';
+import { RuntimeOpImpl } from '@glimmer/program';
+import {
+  combineSlice,
+  PathReference,
+  ReferenceIterator,
+  VersionedPathReference,
+} from '@glimmer/reference';
+import {
+  associateDestructor,
+  destructor,
+  expect,
+  isDrop,
+  LinkedList,
+  ListSlice,
+  Option,
+  Stack,
+} from '@glimmer/util';
+import {
   $fp,
-  SyscallRegister,
+  $pc,
   $s0,
   $s1,
+  $sp,
   $t0,
   $t1,
   $v0,
+  isLowLevelRegister,
+  MachineRegister,
+  Register,
+  SyscallRegister,
 } from '@glimmer/vm';
-import { ScopeImpl, DynamicScope, Environment, Scope, PartialScope } from '../environment';
-import { ElementBuilder, LiveBlock } from './element-builder';
-import {
-  Option,
-  Stack,
-  LinkedList,
-  ListSlice,
-  Opaque,
-  expect,
-  Drop,
-  associateDestructor,
-  isDrop,
-  destructor,
-  SymbolDestroyable,
-  Destroyable,
-} from '@glimmer/util';
-import {
-  ReferenceIterator,
-  PathReference,
-  VersionedPathReference,
-  combineSlice,
-} from '@glimmer/reference';
-import { RuntimeConstants } from '@glimmer/program';
-import { LabelOpcode, JumpIfNotModifiedOpcode, DidModifyOpcode } from '../compiled/opcodes/vm';
-import LowLevelVM, { Program, LowLevelRegisters, initializeRegisters } from './low-level';
-import { VMState, ListBlockOpcode, TryOpcode, BlockOpcode, Runtime } from './update';
-import RenderResult from './render-result';
-import EvaluationStackImpl, { EvaluationStack } from './stack';
-import { Arguments } from './arguments';
-
-import { APPEND_OPCODES, UpdatingOpcode, DebugState } from '../opcodes';
-
+import { DidModifyOpcode, JumpIfNotModifiedOpcode, LabelOpcode } from '../compiled/opcodes/vm';
+import { ScopeImpl } from '../environment';
+import { APPEND_OPCODES, DebugState, UpdatingOpcode } from '../opcodes';
 import { UNDEFINED_REFERENCE } from '../references';
-
-import { Heap, Opcode } from '@glimmer/program';
-import { DEBUG } from '@glimmer/local-debug-flags';
-import { HEAP, INNER_VM, DESTRUCTOR_STACK, CONSTANTS, ARGS, REGISTERS, STACKS } from '../symbols';
-import { RichIteratorResult } from '@glimmer/interfaces';
-import { Checker, check, CheckOpaque } from '@glimmer/debug';
+import { ARGS, CONSTANTS, DESTRUCTOR_STACK, HEAP, INNER_VM, REGISTERS, STACKS } from '../symbols';
+import { VMArgumentsImpl } from './arguments';
+import { ElementBuilder, LiveBlock } from './element-builder';
+import LowLevelVM from './low-level';
+import RenderResultImpl from './render-result';
+import EvaluationStackImpl, { EvaluationStack } from './stack';
+import {
+  BlockOpcode,
+  ListBlockOpcode,
+  ResumableVMState,
+  ResumableVMStateImpl,
+  TryOpcode,
+  VMState,
+} from './update';
 
 /**
  * This is used in the Glimmer Embedding API. In particular, embeddings
@@ -61,7 +79,7 @@ import { Checker, check, CheckOpaque } from '@glimmer/debug';
 export interface PublicVM {
   env: Environment;
   dynamicScope(): DynamicScope;
-  getSelf(): PathReference<Opaque>;
+  getSelf(): PathReference<unknown>;
   associateDestroyable(child: SymbolDestroyable | Destroyable): void;
 }
 
@@ -69,12 +87,13 @@ export interface PublicVM {
  * This interface is used by internal opcodes, and is more stable than
  * the implementation of the Append VM itself.
  */
-export interface InternalVM {
-  readonly [CONSTANTS]: RuntimeConstants<unknown>;
-  readonly [ARGS]: Arguments;
+export interface InternalVM<C extends JitOrAotBlock> {
+  readonly [CONSTANTS]: RuntimeConstants;
+  readonly [ARGS]: VMArgumentsImpl;
 
   readonly env: Environment;
   readonly stack: EvaluationStack;
+  readonly runtime: Runtime<TemplateMeta>;
 
   loadValue(register: MachineRegister, value: number, assertion: Checker<number>): void;
   loadValue<T>(register: Register, value: T, assertion: Checker<T>): void;
@@ -88,7 +107,7 @@ export interface InternalVM {
   load(register: Register): void;
   fetch(register: Register): void;
 
-  scope(): ScopeImpl;
+  scope(): Scope<C>;
   elements(): ElementBuilder;
 
   getSelf(): PathReference<unknown>;
@@ -107,11 +126,10 @@ export interface InternalVM {
   iterate(memo: PathReference<unknown>, item: PathReference<unknown>): TryOpcode;
   enterItem(key: string, opcode: TryOpcode): void;
 
-  // TODO: bindCallerScope can be deleted
-  pushRootScope(size: number, bindCallerScope: boolean): PartialScope;
+  pushRootScope(size: number): PartialScope<C>;
   pushChildScope(): void;
   popScope(): void;
-  pushScope(scope: Scope): void;
+  pushScope(scope: Scope<C>): void;
 
   dynamicScope(): DynamicScope;
   bindDynamicScope(names: number[]): void;
@@ -126,30 +144,33 @@ export interface InternalVM {
   pushFrame(): void;
 
   referenceForSymbol(symbol: number): PathReference<unknown>;
+
+  execute(initialize?: (vm: this) => void): RenderResult;
+  pushUpdating(list?: LinkedList<UpdatingOpcode>): void;
+  next(): RichIteratorResult<null, RenderResult>;
 }
 
-export interface RuntimeProgram<Locator> extends Program {
-  heap: Heap;
-  constants: RuntimeConstants<Locator>;
+export interface InternalJitVM extends InternalVM<CompilableBlock> {
+  compile(block: CompilableTemplate): number;
+  readonly context: SyntaxCompilationContext;
 }
 
-class Stacks {
-  readonly scope = new Stack<ScopeImpl>();
+class Stacks<C extends JitOrAotBlock> {
+  readonly scope = new Stack<Scope<C>>();
   readonly dynamicScope = new Stack<DynamicScope>();
   readonly updating = new Stack<LinkedList<UpdatingOpcode>>();
   readonly cache = new Stack<Option<UpdatingOpcode>>();
   readonly list = new Stack<ListBlockOpcode>();
 }
 
-export default class VM<T> implements PublicVM, InternalVM {
-  private readonly [STACKS] = new Stacks();
-  private readonly [HEAP]: Heap;
+export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, InternalVM<C> {
+  private readonly [STACKS] = new Stacks<C>();
+  private readonly [HEAP]: RuntimeHeap;
   private readonly destructor: object;
   private readonly [DESTRUCTOR_STACK] = new Stack<object>();
-  readonly [CONSTANTS]: RuntimeConstants<T>;
-  readonly [ARGS]: Arguments;
+  readonly [CONSTANTS]: RuntimeConstants;
+  readonly [ARGS]: VMArgumentsImpl;
   readonly [INNER_VM]: LowLevelVM;
-  readonly [REGISTERS]: LowLevelRegisters = initializeRegisters();
 
   get stack(): EvaluationStackImpl {
     return this[INNER_VM].stack as EvaluationStackImpl;
@@ -180,7 +201,7 @@ export default class VM<T> implements PublicVM, InternalVM {
   load(register: SyscallRegister) {
     let value = this.stack.pop();
 
-    this.loadValue(register, value, CheckOpaque);
+    this.loadValue(register, value, Checkunknown);
   }
 
   // Fetch a value from a register
@@ -271,63 +292,8 @@ export default class VM<T> implements PublicVM, InternalVM {
    * End of migrated.
    */
 
-  static initial<T>(
-    program: RuntimeProgram<T>,
-    env: Environment,
-    self: PathReference<Opaque>,
-    dynamicScope: DynamicScope,
-    elementStack: ElementBuilder,
-    handle: number
-  ) {
-    let scopeSize = program.heap.scopesizeof(handle);
-    let scope = ScopeImpl.root(self, scopeSize);
-    let vm = new VM(
-      { program, env },
-      { pc: program.heap.getaddr(handle), scope, dynamicScope, stack: [] },
-      elementStack
-    );
-    vm.pushUpdating();
-    return vm;
-  }
-
-  static empty<T>(
-    program: RuntimeProgram<T>,
-    env: Environment,
-    elementStack: ElementBuilder,
-    handle: number
-  ) {
-    let dynamicScope: DynamicScope = {
-      get() {
-        return UNDEFINED_REFERENCE;
-      },
-      set() {
-        return UNDEFINED_REFERENCE;
-      },
-      child() {
-        return dynamicScope;
-      },
-    };
-
-    let vm = new VM(
-      { program, env },
-      {
-        pc: program.heap.getaddr(handle),
-        scope: ScopeImpl.root(UNDEFINED_REFERENCE, 0),
-        dynamicScope,
-        stack: [],
-      },
-      elementStack
-    );
-    vm.pushUpdating();
-    return vm;
-  }
-
-  static resume(state: VMState, runtime: Runtime, builder: ElementBuilder) {
-    return new VM(runtime, state, builder);
-  }
-
   constructor(
-    private readonly runtime: Runtime,
+    readonly runtime: Runtime<TemplateMeta>,
     { pc, scope, dynamicScope, stack }: VMState,
     private readonly elementStack: ElementBuilder
   ) {
@@ -341,13 +307,13 @@ export default class VM<T> implements PublicVM, InternalVM {
     this.elementStack = elementStack;
     this[STACKS].scope.push(scope);
     this[STACKS].dynamicScope.push(dynamicScope);
-    this[ARGS] = new Arguments();
+    this[ARGS] = new VMArgumentsImpl();
     this[INNER_VM] = new LowLevelVM(
       evalStack,
       this[HEAP],
       runtime.program,
       {
-        debugBefore: (opcode: Opcode): DebugState => {
+        debugBefore: (opcode: RuntimeOpImpl): DebugState => {
           return APPEND_OPCODES.debugBefore(this, opcode);
         },
 
@@ -362,7 +328,7 @@ export default class VM<T> implements PublicVM, InternalVM {
     this[DESTRUCTOR_STACK].push(this.destructor);
   }
 
-  get program(): RuntimeProgram<Opaque> {
+  get program(): RuntimeProgram {
     return this.runtime.program;
   }
 
@@ -370,7 +336,7 @@ export default class VM<T> implements PublicVM, InternalVM {
     return this.runtime.env;
   }
 
-  capture(args: number, pc = this[INNER_VM].fetchRegister($pc)): VMState {
+  captureState(args: number, pc = this[INNER_VM].fetchRegister($pc)): VMState {
     return {
       pc,
       dynamicScope: this.dynamicScope(),
@@ -378,6 +344,16 @@ export default class VM<T> implements PublicVM, InternalVM {
       stack: this.stack.capture(args),
     };
   }
+
+  capture(args: number, pc?: number): ResumableVMState<C, InternalVM<C>> {
+    return new ResumableVMStateImpl<C, InternalVM<C>>(this.captureState(args, pc), this.resume);
+  }
+
+  abstract resume: (
+    runtime: Runtime<TemplateMeta>,
+    state: VMState,
+    builder: ElementBuilder
+  ) => InternalVM<C>;
 
   beginCacheGroup() {
     this[STACKS].cache.push(this.updating().tail());
@@ -410,7 +386,10 @@ export default class VM<T> implements PublicVM, InternalVM {
     this.didEnter(tryOpcode);
   }
 
-  iterate(memo: VersionedPathReference<Opaque>, value: VersionedPathReference<Opaque>): TryOpcode {
+  iterate(
+    memo: VersionedPathReference<unknown>,
+    value: VersionedPathReference<unknown>
+  ): TryOpcode {
     let stack = this.stack;
     stack.push(value);
     stack.push(memo);
@@ -508,7 +487,7 @@ export default class VM<T> implements PublicVM, InternalVM {
     return this.elementStack;
   }
 
-  scope(): ScopeImpl {
+  scope(): Scope<JitOrAotBlock> {
     return expect(this[STACKS].scope.current, 'expected scope on the scope stack');
   }
 
@@ -529,14 +508,13 @@ export default class VM<T> implements PublicVM, InternalVM {
     return child;
   }
 
-  pushRootScope(size: number, bindCaller: boolean): PartialScope {
-    let scope = ScopeImpl.sized(size);
-    if (bindCaller) scope.bindCallerScope(this.scope());
+  pushRootScope(size: number): PartialScope<C> {
+    let scope = ScopeImpl.sized<C>(size);
     this[STACKS].scope.push(scope);
     return scope;
   }
 
-  pushScope(scope: ScopeImpl) {
+  pushScope(scope: Scope<C>) {
     this[STACKS].scope.push(scope);
   }
 
@@ -560,7 +538,7 @@ export default class VM<T> implements PublicVM, InternalVM {
 
   /// EXECUTION
 
-  execute(initialize?: (vm: VM<T>) => void): RenderResult {
+  execute(initialize?: (vm: this) => void): RenderResult {
     if (DEBUG) {
       console.log(`EXECUTING FROM ${this[INNER_VM].fetchRegister($pc)}`);
     }
@@ -590,7 +568,12 @@ export default class VM<T> implements PublicVM, InternalVM {
 
       result = {
         done: true,
-        value: new RenderResult(env, this.popUpdating(), elementStack.popBlock(), this.destructor),
+        value: new RenderResultImpl(
+          env,
+          this.popUpdating(),
+          elementStack.popBlock(),
+          this.destructor
+        ),
       };
     }
     return result;
@@ -601,7 +584,135 @@ export default class VM<T> implements PublicVM, InternalVM {
 
     for (let i = names.length - 1; i >= 0; i--) {
       let name = this[CONSTANTS].getString(names[i]);
-      scope.set(name, this.stack.pop<VersionedPathReference<Opaque>>());
+      scope.set(name, this.stack.pop<VersionedPathReference<unknown>>());
     }
+  }
+}
+
+const EMPTY_DYNAMIC_SCOPE: DynamicScope = {
+  get() {
+    return UNDEFINED_REFERENCE;
+  },
+  set() {
+    return UNDEFINED_REFERENCE;
+  },
+  child() {
+    return EMPTY_DYNAMIC_SCOPE;
+  },
+};
+
+function vmState<C extends JitOrAotBlock>(
+  pc: number,
+  scope: Scope<C> = ScopeImpl.root<C>(UNDEFINED_REFERENCE, 0),
+  dynamicScope: DynamicScope = EMPTY_DYNAMIC_SCOPE
+) {
+  return {
+    pc,
+    scope,
+    dynamicScope,
+    stack: [],
+  };
+}
+
+export interface MinimalInitOptions {
+  handle: number;
+  treeBuilder: ElementBuilder;
+}
+
+export interface InitOptions extends MinimalInitOptions {
+  self: PathReference<unknown>;
+  dynamicScope: DynamicScope;
+}
+
+function emptyVm<C extends JitOrAotBlock>(
+  runtime: Runtime<TemplateMeta>,
+  { handle, treeBuilder }: MinimalInitOptions,
+  init: VmInitCallback<InternalVM<C>>
+) {
+  let vm = init(runtime, vmState(runtime.program.heap.getaddr(handle)), treeBuilder);
+  vm.pushUpdating();
+  return vm;
+}
+
+function initialVm<C extends JitOrAotBlock>(
+  runtime: Runtime<TemplateMeta>,
+  { handle, self, dynamicScope, treeBuilder }: InitOptions,
+  init: VmInitCallback<InternalVM<C>>
+): InternalVM<C> {
+  let scopeSize = runtime.program.heap.scopesizeof(handle);
+  let scope = ScopeImpl.root(self, scopeSize);
+  let state = vmState(runtime.program.heap.getaddr(handle), scope, dynamicScope);
+  let vm = init(runtime, state, treeBuilder);
+  vm.pushUpdating();
+  return vm;
+}
+
+export class AotVM extends VM<number> implements InternalVM<number> {
+  static empty(runtime: Runtime<TemplateMeta>, options: MinimalInitOptions): InternalVM<number> {
+    return emptyVm(runtime, options, initAOT);
+  }
+
+  static initial(runtime: Runtime<TemplateMeta>, options: InitOptions) {
+    return initialVm(runtime, options, initAOT);
+  }
+
+  readonly resume = initAOT;
+
+  capture(
+    args: number,
+    pc = this[INNER_VM].fetchRegister($pc)
+  ): ResumableVMState<number, InternalVM<number>> {
+    return new ResumableVMStateImpl<number, InternalVM<number>>(
+      this.captureState(args, pc),
+      initAOT
+    );
+  }
+}
+
+export type VmInitCallback<V extends InternalVM<JitOrAotBlock>> = (
+  this: void,
+  runtime: Runtime<TemplateMeta>,
+  state: VMState,
+  builder: ElementBuilder
+) => V;
+
+function initAOT(runtime: Runtime<TemplateMeta>, state: VMState, builder: ElementBuilder): AotVM {
+  return new AotVM(runtime, state, builder);
+}
+
+function initJIT(context: SyntaxCompilationContext): VmInitCallback<JitVM> {
+  return (runtime, state, builder) => new JitVM(runtime, state, builder, context);
+}
+
+export class JitVM extends VM<CompilableBlock> implements InternalJitVM {
+  static initial(
+    runtime: Runtime<TemplateMeta>,
+    context: SyntaxCompilationContext,
+    options: InitOptions
+  ) {
+    return initialVm(runtime, options, initJIT(context));
+  }
+
+  static empty(
+    runtime: Runtime<TemplateMeta>,
+    options: MinimalInitOptions,
+    context: SyntaxCompilationContext
+  ) {
+    return emptyVm(runtime, options, initJIT(context));
+  }
+
+  constructor(
+    runtime: Runtime<TemplateMeta>,
+    state: VMState,
+    elementStack: ElementBuilder,
+    readonly context: SyntaxCompilationContext
+  ) {
+    super(runtime, state, elementStack);
+  }
+
+  readonly resume = initJIT(this.context);
+
+  compile(block: CompilableTemplate): number {
+    return block.compile(this.context);
   }
 }

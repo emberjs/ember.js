@@ -2,24 +2,25 @@ import {
   ProgramSymbolTable,
   CompilableProgram,
   LayoutWithContext,
-  Compiler,
   Option,
+  SyntaxCompilationContext,
 } from '@glimmer/interfaces';
 
-import { ComponentArgs, ComponentBuilder as IComponentBuilder } from './interfaces';
+import { templateCompilationContext } from './opcode-builder/context';
+import { meta } from './opcode-builder/helpers/shared';
+import { wrappedComponent } from './opcode-builder/helpers/components';
+import { DEBUG } from '@glimmer/local-debug-flags';
+import { debugCompiler } from './compiler';
+import { ATTRS_BLOCK } from './syntax/compilers';
+import { concatStatements } from './syntax/concat';
+import { patchStdlibs } from '@glimmer/program';
 
-import OpcodeBuilder from './opcode-builder-interfaces';
-import { ATTRS_BLOCK } from './syntax';
-
-export class WrappedBuilder<Locator> implements CompilableProgram {
+export class WrappedBuilder implements CompilableProgram {
   public symbolTable: ProgramSymbolTable;
   private compiled: Option<number> = null;
   private attrsBlockNumber: number;
 
-  constructor(
-    private compiler: Compiler<OpcodeBuilder<Locator>>,
-    private layout: LayoutWithContext<Locator>
-  ) {
+  constructor(private layout: LayoutWithContext<unknown>) {
     let { block } = layout;
 
     let symbols = block.symbols.slice();
@@ -38,19 +39,23 @@ export class WrappedBuilder<Locator> implements CompilableProgram {
     };
   }
 
-  compile(): number {
+  compile(syntax: SyntaxCompilationContext): number {
     if (this.compiled !== null) return this.compiled;
 
-    let builder = this.compiler.builderFor(this.layout);
+    let m = meta(this.layout);
+    let context = templateCompilationContext(syntax, m);
 
-    return (this.compiled = builder.wrappedComponent(this.layout, this.attrsBlockNumber));
-  }
-}
+    let actions = wrappedComponent(this.layout, this.attrsBlockNumber);
 
-export class ComponentBuilderImpl<Locator> implements IComponentBuilder {
-  constructor(private builder: OpcodeBuilder<Locator>) {}
+    concatStatements(context, actions);
 
-  static(handle: number, args: ComponentArgs) {
-    this.builder.staticComponent(handle, args);
+    let handle = (this.compiled = context.encoder.commit(context.syntax.program.heap, m.size));
+
+    if (DEBUG) {
+      debugCompiler(context, handle);
+    }
+
+    patchStdlibs(context.syntax.program);
+    return handle;
   }
 }

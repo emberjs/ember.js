@@ -1,14 +1,20 @@
-import { Option, Opaque, Unique } from './core';
+import { VersionedPathReference } from '@glimmer/reference';
+import { ComponentManager } from './components/component-manager';
+import { Dict } from './core';
 
-export type ComponentDefinitionState = Unique<'ComponentDefinitionState'>;
-export type ComponentInstanceState = Unique<'ComponentInstanceState'>;
+export type ComponentDefinitionState = unknown;
+export type ComponentInstanceState = unknown;
 
 export interface ComponentDefinition<
-  ComponentManager = {},
-  ComponentDefinitionState = ComponentDefinitionState
+  D = ComponentDefinitionState,
+  I = ComponentInstanceState,
+  M extends ComponentManager<I, D> = ComponentManager<I, D>
 > {
-  state: ComponentDefinitionState;
-  manager: ComponentManager;
+  state: D;
+  manager: ComponentManager<I, D>;
 }
 
-export type ComponentManager = Opaque;
+export interface PreparedArguments {
+  positional: Array<VersionedPathReference<unknown>>;
+  named: Dict<VersionedPathReference<unknown>>;
+}

@@ -1,24 +1,27 @@
 import {
-  CapturedNamedArguments,
-  ComponentManager,
-  WithStaticLayout,
-  Environment,
-  Arguments,
+  AnnotatedModuleLocator,
   Bounds,
+  CapturedNamedArguments,
+  CompilableProgram,
+  ComponentCapabilities,
+  ComponentManager,
+  Destroyable,
+  DynamicScope,
+  Environment,
   Invocation,
-} from '@glimmer/runtime';
-import { Opaque, Option, ComponentCapabilities } from '@glimmer/interfaces';
-import { PathReference, Tag, combine, TagWrapper, DirtyableTag } from '@glimmer/reference';
-import { UpdatableReference } from '@glimmer/object-reference';
+  Option,
+  VMArguments,
+  WithAotStaticLayout,
+  WithJitStaticLayout,
+} from '@glimmer/interfaces';
 import GlimmerObject from '@glimmer/object';
-
+import { UpdatableReference } from '@glimmer/object-reference';
+import { combine, DirtyableTag, PathReference, Tag, TagWrapper } from '@glimmer/reference';
+import { TestComponentDefinitionState } from '../components';
+import EagerRuntimeResolver from '../modes/eager/runtime-resolver';
+import LazyRuntimeResolver from '../modes/lazy/runtime-resolver';
 import { Attrs, AttrsDiff, createTemplate } from '../shared';
 import { BASIC_CAPABILITIES } from './basic';
-import { TestComponentDefinitionState } from '../components';
-import LazyRuntimeResolver from '../modes/lazy/runtime-resolver';
-import EagerRuntimeResolver from '../modes/eager/runtime-resolver';
-import {} from '@glimmer/bundle-compiler';
-import { Destroyable } from '@glimmer/util';
 
 export const EMBERISH_GLIMMER_CAPABILITIES = {
   ...BASIC_CAPABILITIES,
@@ -37,11 +40,15 @@ export interface EmberishGlimmerComponentState {
 export class EmberishGlimmerComponentManager
   implements
     ComponentManager<EmberishGlimmerComponentState, TestComponentDefinitionState>,
-    WithStaticLayout<
+    WithJitStaticLayout<
       EmberishGlimmerComponentState,
       TestComponentDefinitionState,
-      Opaque,
       LazyRuntimeResolver
+    >,
+    WithAotStaticLayout<
+      EmberishGlimmerComponentState,
+      TestComponentDefinitionState,
+      EagerRuntimeResolver
     > {
   getCapabilities(state: TestComponentDefinitionState): ComponentCapabilities {
     return state.capabilities;
@@ -54,9 +61,9 @@ export class EmberishGlimmerComponentManager
   create(
     _environment: Environment,
     definition: TestComponentDefinitionState,
-    _args: Arguments,
-    _dynamicScope: any,
-    _callerSelf: PathReference<Opaque>,
+    _args: VMArguments,
+    _dynamicScope: DynamicScope,
+    _callerSelf: PathReference<unknown>,
     _hasDefaultBlock: boolean
   ): EmberishGlimmerComponentState {
     let args = _args.named.capture();
@@ -76,31 +83,42 @@ export class EmberishGlimmerComponentManager
     return combine([tag, dirtinessTag]);
   }
 
-  getLayout(
+  getJitStaticLayout(
     state: TestComponentDefinitionState,
     resolver: LazyRuntimeResolver | EagerRuntimeResolver
-  ): Invocation {
+  ): CompilableProgram {
     let { name, locator } = state;
     if (resolver instanceof LazyRuntimeResolver) {
       let compile = (source: string) => {
-        let template = createTemplate(source);
-        let layout = template.create(resolver.compiler).asLayout();
-
-        return {
-          handle: layout.compile(),
-          symbolTable: layout.symbolTable,
-        };
+        let template = createTemplate<AnnotatedModuleLocator>(source);
+        return template.create().asLayout();
       };
 
-      let handle = resolver.lookup('template-source', name)!;
+      let handle = resolver.lookup('template-source', name, null)!;
 
-      return resolver.compileTemplate(handle, name, compile);
+      return resolver.compilableProgram(handle, name, compile);
     }
 
-    return resolver.getInvocation(locator.meta);
+    let invocation = resolver.getInvocation(locator.meta.locator);
+
+    return {
+      symbolTable: invocation.symbolTable,
+      compile() {
+        return invocation.handle;
+      },
+    };
   }
 
-  getSelf({ component }: EmberishGlimmerComponentState): PathReference<Opaque> {
+  getAotStaticLayout(
+    state: TestComponentDefinitionState,
+    resolver: EagerRuntimeResolver
+  ): Invocation {
+    let { locator } = state;
+
+    return resolver.getInvocation(locator.meta.locator);
+  }
+
+  getSelf({ component }: EmberishGlimmerComponentState): PathReference<unknown> {
     return new UpdatableReference(component);
   }
 
@@ -140,6 +158,22 @@ export class EmberishGlimmerComponentManager
       },
     };
   }
+}
+
+export interface ComponentHooks {
+  didInitAttrs: number;
+  didUpdateAttrs: number;
+  didReceiveAttrs: number;
+  willInsertElement: number;
+  willUpdate: number;
+  willRender: number;
+  didInsertElement: number;
+  didUpdate: number;
+  didRender: number;
+}
+
+export interface HookedComponent {
+  hooks: ComponentHooks;
 }
 
 export class EmberishGlimmerComponent extends GlimmerObject {

@@ -1,56 +1,97 @@
-import { RenderResult, VM } from './vm';
-import { RuntimeProgram } from './vm/append';
-import { ElementBuilder } from './vm/element-builder';
-import { DynamicScope, Environment } from './environment';
+import {
+  ComponentDefinitionState,
+  ComponentInstanceState,
+  Dict,
+  DynamicScope,
+  Environment,
+  InternalComponentManager,
+  Invocation,
+  JitOrAotBlock,
+  RenderResult,
+  RichIteratorResult,
+  Runtime,
+  RuntimeResolver,
+  SyntaxCompilationContext,
+  TemplateMeta,
+  WithAotStaticLayout,
+  WithJitStaticLayout,
+} from '@glimmer/interfaces';
 import { PathReference } from '@glimmer/reference';
-import { Opaque, Dict, RichIteratorResult } from '@glimmer/interfaces';
-import { resolveComponent } from './component/resolve';
 import { expect } from '@glimmer/util';
 import { capabilityFlagsFrom } from './capabilities';
 import { hasStaticLayoutCapability } from './compiled/opcodes/component';
-import { CONSTANTS, ARGS } from './symbols';
+import { resolveComponent } from './component/resolve';
+import { ARGS } from './symbols';
+import { AotVM, InternalVM, JitVM } from './vm/append';
+import { ElementBuilder } from './vm/element-builder';
 
 export interface TemplateIterator {
   next(): RichIteratorResult<null, RenderResult>;
 }
 
-class TemplateIteratorImpl<T> implements TemplateIterator {
-  constructor(private vm: VM<T>) {}
+class TemplateIteratorImpl<C extends JitOrAotBlock> implements TemplateIterator {
+  constructor(private vm: InternalVM<C>) {}
   next(): RichIteratorResult<null, RenderResult> {
     return this.vm.next();
   }
 }
 
-export function renderMain<T>(
-  program: RuntimeProgram<T>,
-  env: Environment,
-  self: PathReference<Opaque>,
+export function renderSync(env: Environment, iterator: TemplateIterator): RenderResult {
+  env.begin();
+
+  let iteratorResult: IteratorResult<RenderResult>;
+
+  do {
+    iteratorResult = iterator.next() as IteratorResult<RenderResult>;
+  } while (!iteratorResult.done);
+
+  let result = iteratorResult.value;
+
+  env.commit();
+
+  return result;
+}
+
+export function renderAotMain(
+  runtime: Runtime<TemplateMeta>,
+  self: PathReference,
   dynamicScope: DynamicScope,
-  builder: ElementBuilder,
+  treeBuilder: ElementBuilder,
   handle: number
 ): TemplateIterator {
-  let vm = VM.initial(program, env, self, dynamicScope, builder, handle);
+  let vm = AotVM.initial(runtime, { self, dynamicScope, treeBuilder, handle });
   return new TemplateIteratorImpl(vm);
 }
 
-export type RenderComponentArgs = Dict<PathReference<Opaque>>;
+export function renderJitMain(
+  runtime: Runtime<TemplateMeta>,
+  context: SyntaxCompilationContext,
+  self: PathReference,
+  dynamicScope: DynamicScope,
+  treeBuilder: ElementBuilder,
+  handle: number
+): TemplateIterator {
+  let vm = JitVM.initial(runtime, context, { self, dynamicScope, treeBuilder, handle });
+  return new TemplateIteratorImpl(vm);
+}
+
+export type RenderComponentArgs = Dict<PathReference>;
 
 /**
  * Returns a TemplateIterator configured to render a root component.
  */
-export function renderComponent<T>(
-  program: RuntimeProgram<T>,
-  env: Environment,
-  builder: ElementBuilder,
-  main: number,
+function renderComponent<C extends JitOrAotBlock, R extends TemplateMeta>(
+  vm: InternalVM<C>,
   name: string,
-  args: RenderComponentArgs = {}
+  args: RenderComponentArgs,
+  invoke: (
+    manager: InternalComponentManager,
+    state: ComponentDefinitionState,
+    resolver: RuntimeResolver<R>
+  ) => Invocation
 ): TemplateIterator {
-  const vm = VM.empty(program, env, builder, main);
-  const { resolver } = vm[CONSTANTS];
-
   const definition = expect(
-    resolveComponent(resolver, name, null),
+    resolveComponent(vm.runtime.resolver, name),
     `could not find component "${name}"`
   );
 
@@ -60,7 +101,7 @@ export function renderComponent<T>(
   let invocation;
 
   if (hasStaticLayoutCapability(capabilities, manager)) {
-    invocation = manager.getLayout(state, resolver);
+    invocation = invoke(manager, state, vm.runtime.resolver);
   } else {
     throw new Error('Cannot invoke components with dynamic layouts as a root component.');
   }
@@ -88,7 +129,7 @@ export function renderComponent<T>(
   });
 
   // Configure VM based on blocks and args just pushed on to the stack.
-  vm[ARGS].setup(vm.stack, argNames, blockNames, 0, false);
+  vm[ARGS].setup(vm.stack, argNames, blockNames, 0, true);
 
   // Needed for the Op.Main opcode: arguments, component invocation object, and
   // component definition.
@@ -97,4 +138,43 @@ export function renderComponent<T>(
   vm.stack.push(definition);
 
   return new TemplateIteratorImpl(vm);
+}
+
+export function renderAotComponent<R>(
+  runtime: Runtime<TemplateMeta<R>>,
+  treeBuilder: ElementBuilder,
+  main: number,
+  name: string,
+  args: RenderComponentArgs = {}
+): TemplateIterator {
+  let vm = AotVM.empty(runtime, { treeBuilder, handle: main });
+  return renderComponent(vm, name, args, (manager, state, resolver) => {
+    return (manager as WithAotStaticLayout<
+      ComponentInstanceState,
+      ComponentDefinitionState,
+      RuntimeResolver
+    >).getAotStaticLayout(state, resolver);
+  });
+}
+
+export function renderJitComponent(
+  runtime: Runtime<TemplateMeta>,
+  treeBuilder: ElementBuilder,
+  context: SyntaxCompilationContext,
+  main: number,
+  name: string,
+  args: RenderComponentArgs = {}
+): TemplateIterator {
+  let vm = JitVM.empty(runtime, { treeBuilder, handle: main }, context);
+  return renderComponent(vm, name, args, (manager, state, resolver) => {
+    let template = (manager as WithJitStaticLayout<
+      ComponentInstanceState,
+      ComponentDefinitionState,
+      RuntimeResolver
+    >).getJitStaticLayout(state, resolver);
+
+    let handle = template.compile(context);
+
+    return { handle, symbolTable: template.symbolTable };
+  });
 }

@@ -1,19 +1,19 @@
-import * as SimpleDOM from 'simple-dom';
-import { DOMTreeConstruction, Bounds, ConcreteBounds } from '@glimmer/runtime';
-import { Simple } from '@glimmer/interfaces';
+import { Bounds } from '@glimmer/interfaces';
+import { ConcreteBounds, DOMTreeConstruction } from '@glimmer/runtime';
 import { Option } from '@glimmer/util';
+import { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
 
 export default class NodeDOMTreeConstruction extends DOMTreeConstruction {
-  protected document!: SimpleDOM.Document; // Hides property on base class
-  constructor(doc: Simple.Document) {
+  protected document!: SimpleDocument; // Hides property on base class
+  constructor(doc: SimpleDocument) {
     super(doc);
   }
 
   // override to prevent usage of `this.document` until after the constructor
   protected setupUselessElement() {}
 
-  insertHTMLBefore(parent: Simple.Element, reference: Option<Simple.Node>, html: string): Bounds {
-    let raw = this.document.createRawHTMLSection(html);
+  insertHTMLBefore(parent: SimpleElement, reference: Option<SimpleNode>, html: string): Bounds {
+    let raw = this.document.createRawHTMLSection!(html);
     parent.insertBefore(raw, reference);
     return new ConcreteBounds(parent, raw, raw);
   }
@@ -24,7 +24,7 @@ export default class NodeDOMTreeConstruction extends DOMTreeConstruction {
   }
 
   // override to avoid namespace shenanigans when in node (this is not needed in SSR)
-  setAttribute(element: Element, name: string, value: string) {
+  setAttribute(element: SimpleElement, name: string, value: string) {
     element.setAttribute(name, value);
   }
 }

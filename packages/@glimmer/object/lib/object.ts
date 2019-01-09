@@ -1,11 +1,11 @@
 import { Meta, InnerReferenceFactory, PropertyReference } from '@glimmer/object-reference';
-import { Dict, dict, assign, initializeGuid } from '@glimmer/util';
+import { dict, assign, initializeGuid } from '@glimmer/util';
 import { Mixin, extend as extendClass, toMixin, relinkSubclasses, wrapMethod } from './mixin';
 
 const { isArray } = Array;
 
 import { ROOT } from './utils';
-import { Option } from '@glimmer/interfaces';
+import { Option, Dict } from '@glimmer/interfaces';
 import { bump } from '@glimmer/reference';
 
 export const EMPTY_CACHE = function EMPTY_CACHE() {};
@@ -73,7 +73,7 @@ export class ClassMeta {
     else return null;
   }
 
-  init(object: GlimmerObject, attrs: Option<Object>) {
+  init(object: GlimmerObject, attrs: Option<Dict>) {
     if (typeof attrs !== 'object' || attrs === null) return;
 
     if (this.hasConcatenatedProperties) {
@@ -196,7 +196,7 @@ export class ClassMeta {
     return Object.keys(this.mergedProperties) as string[];
   }
 
-  addMergedProperty(property: string, value: Object) {
+  addMergedProperty(property: string, value: Dict) {
     this.hasMergedProperties = true;
 
     if (isArray(value)) {
@@ -272,6 +272,8 @@ export class ClassMeta {
     let slots = this.slots;
 
     class Slots {
+      [index: string]: unknown;
+
       constructor() {
         slots.forEach(name => {
           this[name] = EMPTY_CACHE;
@@ -300,12 +302,12 @@ export class ClassMeta {
   }
 }
 
-function mergeMergedProperties(attrs: Object, parent: Object) {
+function mergeMergedProperties(attrs: Dict, parent: Dict) {
   let merged = assign({}, parent);
 
   for (let prop in attrs) {
     if (prop in parent && typeof parent[prop] === 'function' && typeof attrs[prop] === 'function') {
-      let wrapped = wrapMethod(parent, prop, attrs[prop]);
+      let wrapped = wrapMethod(parent, prop, attrs[prop] as any);
       merged[prop] = wrapped;
     } else {
       merged[prop] = attrs[prop];
@@ -334,6 +336,8 @@ export class InstanceMeta extends ClassMeta {
 }
 
 export default class GlimmerObject {
+  [index: string]: unknown;
+
   static 'df8be4c8-4e89-44e2-a8f9-550c8dacdca7': InstanceMeta = InstanceMeta.fromParent(null);
   static isClass = true;
 

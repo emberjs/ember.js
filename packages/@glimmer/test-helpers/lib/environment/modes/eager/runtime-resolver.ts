@@ -1,32 +1,37 @@
-import {
-  RuntimeResolver,
-  ComponentDefinition,
-  ProgramSymbolTable,
-  ModuleLocator,
-} from '@glimmer/interfaces';
-import { Opaque, Option, expect } from '@glimmer/util';
-import { Invocation } from '@glimmer/runtime';
 import { ExternalModuleTable, ModuleLocatorMap } from '@glimmer/bundle-compiler';
-
-import { Locator } from '../../component-definition';
+import {
+  ComponentDefinition,
+  Invocation,
+  ModuleLocator,
+  ProgramSymbolTable,
+  RuntimeResolver,
+  TemplateMeta,
+} from '@glimmer/interfaces';
+import { expect, Option } from '@glimmer/util';
+import { WrappedLocator } from '../../component-definition';
 import { Modules } from './modules';
 
-export default class EagerRuntimeResolver implements RuntimeResolver<Locator> {
+export default class EagerRuntimeResolver implements RuntimeResolver {
   constructor(
     private table: ExternalModuleTable,
     private modules: Modules,
     public symbolTables: ModuleLocatorMap<ProgramSymbolTable>
   ) {}
 
-  lookupHelper(_name: string, _meta: Opaque): Option<number> {
+  lookupHelper(_name: string, _meta: unknown): Option<number> {
     throw new Error('Method not implemented.');
   }
 
-  lookupModifier(_name: string, _meta: Opaque): Option<number> {
+  lookupModifier(_name: string, _meta: unknown): Option<number> {
     throw new Error('Method not implemented.');
   }
 
-  lookupComponentDefinition(name: string, referrer: Locator): Option<ComponentDefinition> {
+  lookupComponentDefinition(
+    name: string,
+    referrer: Option<TemplateMeta<WrappedLocator>>
+  ): Option<ComponentDefinition> {
+    if (referrer === null) return null;
+
     let moduleName = this.modules.resolve(name, referrer, 'ui/components');
 
     if (!moduleName) return null;
@@ -35,7 +40,7 @@ export default class EagerRuntimeResolver implements RuntimeResolver<Locator> {
     return module.get('default') as ComponentDefinition;
   }
 
-  lookupPartial(_name: string, _meta: Opaque): Option<number> {
+  lookupPartial(_name: string, _meta: unknown): Option<number> {
     throw new Error('Method not implemented.');
   }
 
@@ -44,7 +49,7 @@ export default class EagerRuntimeResolver implements RuntimeResolver<Locator> {
     return this.modules.get(module.module).get('default') as U;
   }
 
-  getInvocation({ locator }: Locator): Invocation {
+  getInvocation(locator: ModuleLocator): Invocation {
     let handle = this.getVMHandle(locator);
     let symbolTable = expect(
       this.symbolTables.get(locator),

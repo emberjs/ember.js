@@ -1,5 +1,6 @@
 import { RenderTest, test } from '../render-test';
-import { stripTight, EmberishGlimmerComponent } from '../../index';
+import { EmberishGlimmerComponent } from '../environment/components/emberish-glimmer';
+import { stripTight } from '../helpers';
 
 export class FragmentComponents extends RenderTest {
   @test({

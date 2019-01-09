@@ -221,7 +221,7 @@ QUnit.test('Should recurrsively walk the transformed node', () => {
   let ast = parse(`{{x}}{{y}}{{z}}`);
 
   traverse(ast, {
-    MustacheStatement: function(node) {
+    MustacheStatement(node) {
       if (node.path.original === 'x') {
         return b.mustache('y');
       } else if (node.path.original === 'y') {
@@ -238,7 +238,7 @@ QUnit.test('Should recurrsively walk the keys in the transformed node', () => {
   let ast = parse(`{{#foo}}{{#bar}}{{baz}}{{/bar}}{{else}}{{#bar}}{{bat}}{{/bar}}{{/foo}}`);
 
   traverse(ast, {
-    BlockStatement: function(node) {
+    BlockStatement(node) {
       if (node.path.original === 'foo') {
         return b.block(
           b.path('x-foo'),

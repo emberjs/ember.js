@@ -46,7 +46,7 @@ QUnit.module('[glimmer-syntax] Traversal - visiting keys');
 QUnit.test('Blocks', function() {
   let ast = parse(`{{#block param1 param2 key1=value key2=value}}<b></b><b></b>{{/block}}`);
   let block = ast.body[0] as AST.BlockStatement;
-  let program = block.program as AST.Program;
+  let program = block.program as AST.Block;
   traversalEqual(ast, [
     ['enter', ast],
     ['enter:body', ast],

@@ -1,24 +1,35 @@
-import { NewElementBuilder, ElementBuilder, RemoteLiveBlock } from './element-builder';
-
-import { Environment } from '../environment';
-import Bounds, { Cursor, ConcreteBounds } from '../bounds';
-import { Simple, Option } from '@glimmer/interfaces';
+import { Bounds, Environment, Option } from '@glimmer/interfaces';
+import { assert, expect, Stack } from '@glimmer/util';
 import {
-  expect,
-  assert,
-  Stack,
-  isSerializationFirstNode,
-  SERIALIZATION_FIRST_NODE_STRING,
-} from '@glimmer/util';
-import { SVG_NAMESPACE } from '../dom/helper';
+  AttrNamespace,
+  Namespace,
+  SimpleAttr,
+  SimpleComment,
+  SimpleElement,
+  SimpleNode,
+  SimpleText,
+} from '@simple-dom/interface';
+import { ConcreteBounds, CursorImpl } from '../bounds';
+import {
+  CURSOR_STACK,
+  ElementBuilder,
+  NewElementBuilder,
+  RemoteLiveBlock,
+} from './element-builder';
 
-export class RehydratingCursor extends Cursor {
-  candidate: Option<Simple.Node> = null;
+export const SERIALIZATION_FIRST_NODE_STRING = '%+b:0%';
+
+export function isSerializationFirstNode(node: SimpleNode): boolean {
+  return node.nodeValue === SERIALIZATION_FIRST_NODE_STRING;
+}
+
+export class RehydratingCursor extends CursorImpl {
+  candidate: Option<SimpleNode> = null;
   openBlockDepth: number;
   injectedOmittedNode = false;
   constructor(
-    element: Simple.Element,
-    nextSibling: Option<Simple.Node>,
+    element: SimpleElement,
+    nextSibling: Option<SimpleNode>,
     public readonly startingBlockDepth: number
   ) {
     super(element, nextSibling);
@@ -27,13 +38,13 @@ export class RehydratingCursor extends Cursor {
 }
 
 export class RehydrateBuilder extends NewElementBuilder implements ElementBuilder {
-  private unmatchedAttributes: Option<Simple.Attribute[]> = null;
-  protected cursorStack!: Stack<RehydratingCursor>; // Hides property on base class
+  private unmatchedAttributes: Option<SimpleAttr[]> = null;
+  [CURSOR_STACK]!: Stack<RehydratingCursor>; // Hides property on base class
   private blockDepth = 0;
 
-  // private candidate: Option<Simple.Node> = null;
+  // private candidate: Option<SimpleNode> = null;
 
-  constructor(env: Environment, parentNode: Simple.Element, nextSibling: Option<Simple.Node>) {
+  constructor(env: Environment, parentNode: SimpleElement, nextSibling: Option<SimpleNode>) {
     super(env, parentNode, nextSibling);
     if (nextSibling) throw new Error('Rehydration with nextSibling not supported');
 
@@ -54,10 +65,10 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
   }
 
   get currentCursor(): Option<RehydratingCursor> {
-    return this.cursorStack.current;
+    return this[CURSOR_STACK].current;
   }
 
-  get candidate(): Option<Simple.Node> {
+  get candidate(): Option<SimpleNode> {
     if (this.currentCursor) {
       return this.currentCursor.candidate!;
     }
@@ -65,11 +76,11 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     return null;
   }
 
-  set candidate(node: Option<Simple.Node>) {
+  set candidate(node: Option<SimpleNode>) {
     this.currentCursor!.candidate = node;
   }
 
-  pushElement(element: Simple.Element, nextSibling: Option<Simple.Node>) {
+  pushElement(element: SimpleElement, nextSibling: Option<SimpleNode>) {
     let { blockDepth = 0 } = this;
     let cursor = new RehydratingCursor(element, nextSibling, blockDepth);
     let currentCursor = this.currentCursor;
@@ -92,11 +103,11 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
         currentCursor.candidate = element.nextSibling;
       }
     }
-    this.cursorStack.push(cursor);
+    this[CURSOR_STACK].push(cursor);
   }
 
-  private clearMismatch(candidate: Simple.Node) {
-    let current: Option<Simple.Node> = candidate;
+  private clearMismatch(candidate: SimpleNode) {
+    let current: Option<SimpleNode> = candidate;
     let currentCursor = this.currentCursor;
     if (currentCursor !== null) {
       let openBlockDepth = currentCursor.openBlockDepth;
@@ -175,7 +186,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     }
   }
 
-  __appendNode(node: Simple.Node): Simple.Node {
+  __appendNode(node: SimpleNode): SimpleNode {
     let { candidate } = this;
 
     // This code path is only used when inserting precisely one node. It needs more
@@ -214,8 +225,8 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     }
   }
 
-  protected remove(node: Simple.Node): Option<Simple.Node> {
-    let element = expect(node.parentNode, `cannot remove a detached node`) as Simple.Element;
+  protected remove(node: SimpleNode): Option<SimpleNode> {
+    let element = expect(node.parentNode, `cannot remove a detached node`) as SimpleElement;
     let next = node.nextSibling;
     element.removeChild(node);
     return next;
@@ -238,7 +249,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     }
   }
 
-  __appendText(string: string): Simple.Text {
+  __appendText(string: string): SimpleText {
     let { candidate } = this;
 
     if (candidate) {
@@ -267,7 +278,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     }
   }
 
-  __appendComment(string: string): Simple.Comment {
+  __appendComment(string: string): SimpleComment {
     let _candidate = this.candidate;
     if (_candidate && isComment(_candidate)) {
       if (_candidate.nodeValue !== string) {
@@ -283,7 +294,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     return super.__appendComment(string);
   }
 
-  __openElement(tag: string): Simple.Element {
+  __openElement(tag: string): SimpleElement {
     let _candidate = this.candidate;
 
     if (_candidate && isElement(_candidate) && isSameNodeType(_candidate, tag)) {
@@ -301,7 +312,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     return super.__openElement(tag);
   }
 
-  __setAttribute(name: string, value: string, namespace: Option<string>): void {
+  __setAttribute(name: string, value: string, namespace: Option<AttrNamespace>): void {
     let unmatched = this.unmatchedAttributes;
 
     if (unmatched) {
@@ -335,7 +346,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     return super.__setProperty(name, value);
   }
 
-  __flushElement(parent: Simple.Element, constructing: Simple.Element): void {
+  __flushElement(parent: SimpleElement, constructing: SimpleElement): void {
     let { unmatchedAttributes: unmatched } = this;
     if (unmatched) {
       for (let i = 0; i < unmatched.length; i++) {
@@ -361,19 +372,19 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     super.willCloseElement();
   }
 
-  getMarker(element: HTMLElement, guid: string): Simple.Node {
+  getMarker(element: HTMLElement, guid: string): SimpleNode {
     let marker = element.querySelector(`script[glmr="${guid}"]`);
     if (marker) {
-      return marker;
+      return marker as SimpleNode;
     }
 
     throw new Error('Cannot find serialized cursor for `in-element`');
   }
 
   __pushRemoteElement(
-    element: Simple.Element,
+    element: SimpleElement,
     cursorId: string,
-    nextSibling: Option<Simple.Node> = null
+    nextSibling: Option<SimpleNode> = null
   ): Option<RemoteLiveBlock> {
     let marker = this.getMarker(element as HTMLElement, cursorId);
 
@@ -403,15 +414,15 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
   }
 }
 
-function isTextNode(node: Simple.Node): node is Simple.Text {
+function isTextNode(node: SimpleNode): node is SimpleText {
   return node.nodeType === 3;
 }
 
-function isComment(node: Simple.Node): node is Simple.Comment {
+function isComment(node: SimpleNode): node is SimpleComment {
   return node.nodeType === 8;
 }
 
-function getOpenBlockDepth(node: Simple.Comment): Option<number> {
+function getOpenBlockDepth(node: SimpleComment): Option<number> {
   let boundsDepth = node.nodeValue!.match(/^%\+b:(\d+)%$/);
 
   if (boundsDepth && boundsDepth[1]) {
@@ -421,7 +432,7 @@ function getOpenBlockDepth(node: Simple.Comment): Option<number> {
   }
 }
 
-function getCloseBlockDepth(node: Simple.Comment): Option<number> {
+function getCloseBlockDepth(node: SimpleComment): Option<number> {
   let boundsDepth = node.nodeValue!.match(/^%\-b:(\d+)%$/);
 
   if (boundsDepth && boundsDepth[1]) {
@@ -431,29 +442,29 @@ function getCloseBlockDepth(node: Simple.Comment): Option<number> {
   }
 }
 
-function isElement(node: Simple.Node): node is Simple.Element {
+function isElement(node: SimpleNode): node is SimpleElement {
   return node.nodeType === 1;
 }
 
-function isMarker(node: Simple.Node): boolean {
+function isMarker(node: SimpleNode): boolean {
   return node.nodeType === 8 && node.nodeValue === '%glmr%';
 }
 
-function isSeparator(node: Simple.Node): boolean {
+function isSeparator(node: SimpleNode): boolean {
   return node.nodeType === 8 && node.nodeValue === '%|%';
 }
 
-function isEmpty(node: Simple.Node): boolean {
+function isEmpty(node: SimpleNode): boolean {
   return node.nodeType === 8 && node.nodeValue === '% %';
 }
-function isSameNodeType(candidate: Simple.Element, tag: string) {
-  if (candidate.namespaceURI === SVG_NAMESPACE) {
+function isSameNodeType(candidate: SimpleElement, tag: string) {
+  if (candidate.namespaceURI === Namespace.SVG) {
     return candidate.tagName === tag;
   }
   return candidate.tagName === tag.toUpperCase();
 }
 
-function findByName(array: Simple.Attribute[], name: string): Simple.Attribute | undefined {
+function findByName(array: SimpleAttr[], name: string): SimpleAttr | undefined {
   for (let i = 0; i < array.length; i++) {
     let attr = array[i];
     if (attr.name === name) return attr;
@@ -462,6 +473,6 @@ function findByName(array: Simple.Attribute[], name: string): Simple.Attribute |
   return undefined;
 }
 
-export function rehydrationBuilder(env: Environment, cursor: Cursor): ElementBuilder {
+export function rehydrationBuilder(env: Environment, cursor: CursorImpl): ElementBuilder {
   return RehydrateBuilder.forInitialRender(env, cursor);
 }

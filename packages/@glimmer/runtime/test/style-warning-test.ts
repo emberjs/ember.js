@@ -1,17 +1,23 @@
-import { TestEnvironment, equalTokens } from '@glimmer/test-helpers';
-import { test, module } from '@glimmer/runtime/test/support';
 import {
+  AnnotatedModuleLocator,
+  Option,
   RenderResult,
-  DynamicAttribute,
-  SimpleDynamicAttribute,
-  ElementBuilder,
-  clientBuilder,
-} from '@glimmer/runtime';
+  Template,
+  TemplateMeta,
+} from '@glimmer/interfaces';
 import { UpdatableReference } from '@glimmer/object-reference';
-import { Option, Simple, Opaque, Template } from '@glimmer/interfaces';
+import {
+  clientBuilder,
+  DynamicAttribute,
+  ElementBuilder,
+  SimpleDynamicAttribute,
+} from '@glimmer/runtime';
+import { module, test } from '@glimmer/runtime/test/support';
+import { equalTokens, qunitFixture, TestEnvironment } from '@glimmer/test-helpers';
+import { AttrNamespace, SimpleElement } from '@simple-dom/interface';
 
 let env: TestEnvironment;
-let root: HTMLElement;
+let root: SimpleElement;
 
 function compile(template: string) {
   let out = env.preprocess(template);
@@ -20,10 +26,10 @@ function compile(template: string) {
 
 function commonSetup(customEnv = new TestEnvironment()) {
   env = customEnv; // TODO: Support SimpleDOM
-  root = document.getElementById('qunit-fixture')!;
+  root = qunitFixture();
 }
 
-function render(template: Template, self: any) {
+function render(template: Template<TemplateMeta<AnnotatedModuleLocator>>, self: any) {
   let result: RenderResult;
   env.begin();
   let cursor = { element: root, nextSibling: null };
@@ -48,10 +54,10 @@ module(
     beforeEach() {
       class StyleEnv extends TestEnvironment {
         attributeFor(
-          element: Simple.Element,
+          element: SimpleElement,
           attr: string,
           isTrusting: boolean,
-          namespace: Option<string>
+          namespace: Option<AttrNamespace>
         ): DynamicAttribute {
           if (attr === 'style' && !isTrusting) {
             return new StyleAttribute({ element, name, namespace });
@@ -107,7 +113,7 @@ module(
 let warnings = 0;
 
 class StyleAttribute extends SimpleDynamicAttribute {
-  set(dom: ElementBuilder, value: Opaque, env: TestEnvironment): void {
+  set(dom: ElementBuilder, value: unknown, env: TestEnvironment): void {
     warnings++;
     super.set(dom, value, env);
   }

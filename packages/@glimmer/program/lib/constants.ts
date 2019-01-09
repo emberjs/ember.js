@@ -1,26 +1,16 @@
-import { Opaque, SymbolTable, RuntimeResolver, CompileTimeConstants } from '@glimmer/interfaces';
+import {
+  SymbolTable,
+  RuntimeResolver,
+  CompileTimeConstants,
+  EMPTY_ARRAY,
+  ConstantPool,
+  RuntimeConstants,
+} from '@glimmer/interfaces';
 
 const UNRESOLVED = {};
 
 export const WELL_KNOWN_EMPTY_ARRAY_POSITION = 0;
 const WELL_KNOW_EMPTY_ARRAY = Object.freeze([]);
-export type EMPTY_ARRAY = Array<ReadonlyArray<never>>;
-
-export interface ConstantPool {
-  strings: string[];
-  arrays: number[][] | EMPTY_ARRAY;
-  handles: number[];
-  numbers: number[];
-}
-
-export const enum PrimitiveType {
-  NUMBER = 0b000,
-  FLOAT = 0b001,
-  STRING = 0b010,
-  BOOLEAN_OR_VOID = 0b011,
-  NEGATIVE = 0b100,
-  BIG_NUM = 0b101,
-}
 
 export class WriteOnlyConstants implements CompileTimeConstants {
   // `0` means NULL
@@ -29,8 +19,13 @@ export class WriteOnlyConstants implements CompileTimeConstants {
   protected arrays: number[][] | EMPTY_ARRAY = [WELL_KNOW_EMPTY_ARRAY];
   protected tables: SymbolTable[] = [];
   protected handles: number[] = [];
-  protected resolved: Opaque[] = [];
+  protected resolved: unknown[] = [];
   protected numbers: number[] = [];
+  protected others: unknown[] = [];
+
+  other(other: unknown): number {
+    return this.others.push(other) - 1;
+  }
 
   string(value: string): number {
     let index = this.strings.indexOf(value);
@@ -66,17 +61,7 @@ export class WriteOnlyConstants implements CompileTimeConstants {
     return (this.arrays as number[][]).push(values) - 1;
   }
 
-  handle(handle: number): number {
-    let index = this.handles.indexOf(handle);
-    if (index > -1) {
-      return index;
-    }
-
-    this.resolved.push(UNRESOLVED);
-    return this.handles.push(handle) - 1;
-  }
-
-  serializable(value: Opaque): number {
+  templateMeta(value: unknown): number {
     let str = JSON.stringify(value);
     let index = this.strings.indexOf(str);
     if (index > -1) {
@@ -106,19 +91,19 @@ export class WriteOnlyConstants implements CompileTimeConstants {
   }
 }
 
-export class RuntimeConstantsImpl<Locator> implements RuntimeConstants<Locator> {
+export class RuntimeConstantsImpl implements RuntimeConstants {
   protected strings: string[];
   protected arrays: number[][] | EMPTY_ARRAY;
   protected handles: number[];
-  protected resolved: Opaque[];
   protected numbers: number[];
+  protected others: unknown[];
 
-  constructor(public resolver: RuntimeResolver<Locator>, pool: ConstantPool) {
+  constructor(pool: ConstantPool) {
     this.strings = pool.strings;
     this.arrays = pool.arrays;
     this.handles = pool.handles;
-    this.resolved = this.handles.map(() => UNRESOLVED);
     this.numbers = pool.numbers;
+    this.others = [];
   }
 
   getString(value: number): string {
@@ -145,34 +130,17 @@ export class RuntimeConstantsImpl<Locator> implements RuntimeConstants<Locator> 
     return (this.arrays as number[][])[value];
   }
 
-  resolveHandle<T>(index: number): T {
-    let resolved = this.resolved[index];
-
-    if (resolved === UNRESOLVED) {
-      let handle = this.handles[index];
-      resolved = this.resolved[index] = this.resolver.resolve(handle);
-    }
-
-    return resolved as T;
-  }
-
-  getSerializable<T>(s: number): T {
+  getTemplateMeta<T>(s: number): T {
     return JSON.parse(this.strings[s]) as T;
   }
+
+  getOther<T>(value: number): T {
+    return this.others[value] as T;
+  }
 }
 
-export interface RuntimeConstants<Locator> {
-  resolver: RuntimeResolver<Locator>;
-  getNumber(value: number): number;
-  getString(handle: number): string;
-  getStringArray(value: number): string[];
-  getArray(value: number): number[];
-  resolveHandle<T>(index: number): T;
-  getSerializable<T>(s: number): T;
-}
-
-export class Constants<Locator> extends WriteOnlyConstants implements RuntimeConstants<Locator> {
-  constructor(public resolver: RuntimeResolver<Locator>, pool?: ConstantPool) {
+export class Constants extends WriteOnlyConstants implements RuntimeConstants {
+  constructor(public resolver: RuntimeResolver, pool?: ConstantPool) {
     super();
 
     if (pool) {
@@ -182,6 +150,8 @@ export class Constants<Locator> extends WriteOnlyConstants implements RuntimeCon
       this.resolved = this.handles.map(() => UNRESOLVED);
       this.numbers = pool.numbers;
     }
+
+    this.others = [];
   }
 
   getNumber(value: number): number {
@@ -219,34 +189,11 @@ export class Constants<Locator> extends WriteOnlyConstants implements RuntimeCon
     return resolved as T;
   }
 
-  getSerializable<T>(s: number): T {
+  getTemplateMeta<T>(s: number): T {
     return JSON.parse(this.strings[s]) as T;
-  }
-}
-
-export class LazyConstants extends Constants<Opaque> {
-  private others: Opaque[] = [];
-  protected serializables: Opaque[] = [];
-
-  serializable(value: Opaque): number {
-    let index = this.serializables.indexOf(value);
-
-    if (index > -1) {
-      return index;
-    }
-
-    return this.serializables.push(value) - 1;
-  }
-
-  getSerializable<T>(s: number): T {
-    return this.serializables[s] as T;
   }
 
   getOther<T>(value: number): T {
-    return this.others[value - 1] as T;
-  }
-
-  other(other: Opaque): number {
-    return this.others.push(other);
+    return this.others[value] as T;
   }
 }

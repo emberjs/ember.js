@@ -1,24 +1,31 @@
-import { Option } from '@glimmer/util';
+import { Option, templateMeta } from '@glimmer/util';
 import {
   ProgramSymbolTable,
   ComponentCapabilities,
   ModuleLocator,
   TemplateLocator,
+  TemplateMeta,
 } from '@glimmer/interfaces';
 
-export interface Locator {
+export interface WrappedLocatorData {
   locator: ModuleLocator;
 }
 
-export function locatorFor(locator: ModuleLocator): TemplateLocator<Locator> {
-  let { module, name } = locator;
+export type WrappedLocator = TemplateMeta<WrappedLocatorData>;
 
-  return {
+export function locatorFor(
+  moduleLocator: ModuleLocator
+): TemplateMeta<TemplateLocator<WrappedLocator>> {
+  let { module, name } = moduleLocator;
+
+  let l: TemplateLocator<WrappedLocator> = {
     module,
     name,
     kind: 'template',
-    meta: { locator },
+    meta: templateMeta({ locator: moduleLocator }),
   };
+
+  return templateMeta(l);
 }
 
 export interface TestComponentDefinitionState {
@@ -30,7 +37,7 @@ export interface TestComponentDefinitionState {
   ComponentClass: any;
   type: string;
   layout: Option<number>;
-  locator: TemplateLocator<Locator>;
+  locator: TemplateLocator<WrappedLocator>;
   template?: string;
   hasSymbolTable?: boolean;
   symbolTable?: ProgramSymbolTable;

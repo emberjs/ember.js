@@ -14,16 +14,16 @@ import {
 
 import { UpdatableReference } from '@glimmer/object-reference';
 
-import { Opaque, Option, LinkedList, ListNode, dict } from '@glimmer/util';
+import { Option, LinkedList, ListNode, dict } from '@glimmer/util';
 
 QUnit.module('Reference iterables');
 
 class Target implements IteratorSynchronizerDelegate<null> {
-  private map = dict<ListNode<BasicReference<Opaque>>>();
-  private list = new LinkedList<ListNode<BasicReference<Opaque>>>();
+  private map = dict<ListNode<BasicReference<unknown>>>();
+  private list = new LinkedList<ListNode<BasicReference<unknown>>>();
   public tag = CURRENT_TAG;
 
-  retain(_env: null, key: string, item: BasicReference<Opaque>) {
+  retain(_env: null, key: string, item: BasicReference<unknown>) {
     if (item !== this.map[key].value) {
       throw new Error('unstable reference');
     }
@@ -31,7 +31,7 @@ class Target implements IteratorSynchronizerDelegate<null> {
 
   done() {}
 
-  append(key: string, item: BasicReference<Opaque>) {
+  append(key: string, item: BasicReference<unknown>) {
     let node = (this.map[key] = new ListNode(item));
     this.list.append(node);
   }
@@ -39,8 +39,8 @@ class Target implements IteratorSynchronizerDelegate<null> {
   insert(
     _env: null,
     key: string,
-    item: BasicReference<Opaque>,
-    _: BasicReference<Opaque>,
+    item: BasicReference<unknown>,
+    _: BasicReference<unknown>,
     before: string
   ) {
     let referenceNode = before ? this.map[before] : null;
@@ -51,8 +51,8 @@ class Target implements IteratorSynchronizerDelegate<null> {
   move(
     _env: null,
     key: string,
-    item: BasicReference<Opaque>,
-    _: BasicReference<Opaque>,
+    item: BasicReference<unknown>,
+    _: BasicReference<unknown>,
     before: string
   ) {
     let referenceNode = before ? this.map[before] : null;
@@ -72,11 +72,11 @@ class Target implements IteratorSynchronizerDelegate<null> {
     this.list.remove(node);
   }
 
-  toArray(): BasicReference<Opaque>[] {
+  toArray(): BasicReference<unknown>[] {
     return this.list.toArray().map(node => node.value);
   }
 
-  toValues(): Opaque[] {
+  toValues(): unknown[] {
     return this.toArray().map(ref => ref.value());
   }
 }
@@ -86,19 +86,19 @@ interface TestItem {
   name: string;
 }
 
-class TestIterationItem implements IterationItem<Opaque, Opaque> {
+class TestIterationItem implements IterationItem<unknown, unknown> {
   public key: string;
-  public value: Opaque;
-  public memo: Opaque;
+  public value: unknown;
+  public memo: unknown;
 
-  constructor(key: string, value: Opaque, memo: Opaque) {
+  constructor(key: string, value: unknown, memo: unknown) {
     this.key = key;
     this.value = value;
     this.memo = memo;
   }
 }
 
-class TestIterator implements Iterator<Opaque, Opaque> {
+class TestIterator implements Iterator<unknown, unknown> {
   private array: TestItem[];
   private position = 0;
 
@@ -110,7 +110,7 @@ class TestIterator implements Iterator<Opaque, Opaque> {
     return this.array.length === 0;
   }
 
-  next(): Option<IterationItem<Opaque, Opaque>> {
+  next(): Option<IterationItem<unknown, unknown>> {
     let { position, array } = this;
 
     if (position >= array.length) return null;
@@ -126,11 +126,11 @@ class TestIterator implements Iterator<Opaque, Opaque> {
 class TestIterable
   implements
     AbstractIterable<
-      Opaque,
-      Opaque,
-      IterationItem<Opaque, Opaque>,
-      UpdatableReference<Opaque>,
-      UpdatableReference<Opaque>
+      unknown,
+      unknown,
+      IterationItem<unknown, unknown>,
+      UpdatableReference<unknown>,
+      UpdatableReference<unknown>
     > {
   public tag: TagWrapper<RevisionTag | null>;
   private arrayRef: UpdatableReference<TestItem[]>;
@@ -140,23 +140,23 @@ class TestIterable
     this.arrayRef = arrayRef;
   }
 
-  iterate(): Iterator<Opaque, Opaque> {
+  iterate(): Iterator<unknown, unknown> {
     return new TestIterator(this.arrayRef.value());
   }
 
-  valueReferenceFor(item: TestIterationItem): UpdatableReference<Opaque> {
+  valueReferenceFor(item: TestIterationItem): UpdatableReference<unknown> {
     return new UpdatableReference(item.value);
   }
 
-  updateValueReference(reference: UpdatableReference<Opaque>, item: TestIterationItem) {
+  updateValueReference(reference: UpdatableReference<unknown>, item: TestIterationItem) {
     reference.update(item.value);
   }
 
-  memoReferenceFor(item: TestIterationItem): UpdatableReference<Opaque> {
+  memoReferenceFor(item: TestIterationItem): UpdatableReference<unknown> {
     return new UpdatableReference(item.memo);
   }
 
-  updateMemoReference(reference: UpdatableReference<Opaque>, item: TestIterationItem) {
+  updateMemoReference(reference: UpdatableReference<unknown>, item: TestIterationItem) {
     reference.update(item.memo);
   }
 }
