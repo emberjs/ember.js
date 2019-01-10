@@ -1,12 +1,10 @@
 import {
-  tagFor,
   UpdatableDirtyableTag,
   CONSTANT_TAG,
   Tag,
-  accessor,
+  trackedData,
   data,
-  Setter,
-  Getter,
+  tagFor,
 } from '@glimmer/reference';
 import { unwrap } from '@glimmer/util';
 
@@ -23,31 +21,16 @@ function unrelatedBump(tag: Tag, snapshot: number) {
 
 function tracked<T extends object, K extends keyof T>(k: { new (...args: any): T }, key: K) {
   let proto = k.prototype;
-  let property = Object.getOwnPropertyDescriptor(proto, key)!;
 
-  let getter: Getter<T, K>;
-  let setter: Setter<T, K> | undefined;
-
-  // These branches don't handle values on the prototype... probably not important
-  // for this test harness, but not hard to add
-  if (property && property.get) {
-    let { get, set } = property;
-    ({ getter, setter } = accessor({ get, set, key }));
-  } else {
-    ({ getter, setter } = data<T, K>(key));
-  }
-
-  let mappedSetter =
-    setter &&
-    function(this: T, value: T[K]) {
-      setter!(this, value);
-    };
+  let { getter, setter } = trackedData<T, K>(key);
 
   Object.defineProperty(proto, key, {
     get() {
       return getter(this);
     },
-    set: mappedSetter,
+    set(value) {
+      return setter(this, value);
+    },
   });
 }
 
@@ -102,9 +85,14 @@ QUnit.test('can request a tag for a property', assert => {
   tracked(TrackedPerson, 'firstName');
 
   let obj = new TrackedPerson();
-  assert.strictEqual(obj.firstName, 'Tom');
 
-  let tag = unwrap(tagFor(obj, 'firstName'));
+  let root = data(obj);
+  let firstName = root.get('firstName');
+
+  assert.strictEqual(firstName.value(), 'Tom');
+
+  let tag = firstName.tag;
+
   let snapshot = tag.value();
   assert.ok(tag.validate(snapshot), 'tag should be valid to start');
 
@@ -116,17 +104,25 @@ QUnit.test('can request a tag for a property', assert => {
   unrelatedBump(tag, snapshot);
 });
 
-QUnit.test('can request a tag for non-objects and get a CONSTANT_TAG', assert => {
+QUnit.todo('can request a tag for non-objects and get a CONSTANT_TAG', assert => {
   let snapshot = CONSTANT_TAG.value();
 
-  assert.ok(tagFor(null, 'foo').validate(snapshot));
-  assert.ok(tagFor(undefined, 'foo').validate(snapshot));
-  assert.ok(tagFor(12345, 'foo').validate(snapshot));
-  assert.ok(tagFor(0, 'foo').validate(snapshot));
-  assert.ok(tagFor(true, 'foo').validate(snapshot));
-  assert.ok(tagFor(false, 'foo').validate(snapshot));
-  assert.ok(tagFor(Symbol(), 'foo').validate(snapshot));
-  assert.ok(tagFor('hello world', 'foo').validate(snapshot));
+  function hasConstChildren(value: unknown) {
+    assert.ok(
+      data(value)
+        .get('foo')
+        .tag.validate(snapshot)
+    );
+  }
+
+  hasConstChildren(null);
+  hasConstChildren(undefined);
+  hasConstChildren(12345);
+  hasConstChildren(0);
+  hasConstChildren(true);
+  hasConstChildren(false);
+  hasConstChildren(Symbol());
+  hasConstChildren('hello world');
 });
 
 QUnit.test('can request a tag from a frozen POJO', assert => {
@@ -197,31 +193,43 @@ QUnit.test('can request a tag from an instance of a frozen class', assert => {
 });
 
 QUnit.test('can track a computed property', assert => {
-  let count = 0;
-  let firstName = 'Tom';
+  class TrackedCell<T> {
+    constructor(public value: T) {}
+  }
+
+  tracked(TrackedCell, 'value');
+
+  let firstName = new TrackedCell('Tom');
+  let count = new TrackedCell(0);
 
   class TrackedPerson {
     get firstName() {
-      return firstName + count++;
+      let c = count.value;
+      count.value = count.value + 1;
+      return firstName.value + c;
     }
 
     set firstName(value) {
-      firstName = value;
+      firstName.value = value;
     }
   }
 
-  tracked(TrackedPerson, 'firstName');
-
   let obj = new TrackedPerson();
-  assert.strictEqual(obj.firstName, 'Tom0');
-  assert.strictEqual(obj.firstName, 'Tom1');
+  let root = data(obj);
+  let first = root.get('firstName');
+  assert.strictEqual(first.value(), 'Tom0');
+  assert.strictEqual(first.value(), 'Tom1');
 
-  let tag = tagFor(obj, 'firstName');
+  let tag = first.tag;
   let snapshot = tag.value();
   assert.ok(tag.validate(snapshot), 'tag should be valid to start');
 
   assert.strictEqual(obj.firstName, 'Tom2');
-  assert.ok(tag.validate(snapshot), 'reading from property does not invalidate the tag');
+  assert.equal(
+    tag.validate(snapshot),
+    false,
+    'reading from property invalidates the tag because it mutated a child cell'
+  );
 
   obj.firstName = 'Edsger';
   assert.strictEqual(tag.validate(snapshot), false, 'tag is invalidated after property is set');
@@ -262,16 +270,18 @@ QUnit.test(
       lastName = 'Dale';
     }
 
-    tracked(TrackedPerson, 'salutation');
-    tracked(TrackedPerson, 'fullName');
     tracked(TrackedPerson, 'firstName');
     tracked(TrackedPerson, 'lastName');
 
     let obj = new TrackedPerson();
-    assert.strictEqual(obj.salutation, 'Hello, Tom Dale!', `the saluation field is valid`);
-    assert.strictEqual(obj.fullName, 'Tom Dale', `the fullName field is valid`);
+    let root = data(obj);
+    let salutation = root.get('salutation');
+    let fullName = root.get('fullName');
 
-    let tag = tagFor(obj, 'salutation');
+    assert.strictEqual(salutation.value(), 'Hello, Tom Dale!', `the saluation field is valid`);
+    assert.strictEqual(fullName.value(), 'Tom Dale', `the fullName field is valid`);
+
+    let tag = salutation.tag;
     let snapshot = tag.value();
     assert.ok(tag.validate(snapshot), 'tag should be valid to start');
 
@@ -330,8 +340,6 @@ QUnit.test('nested @tracked in multiple objects', assert => {
     lastName = 'Dale';
   }
 
-  tracked(TrackedPerson, 'salutation');
-  tracked(TrackedPerson, 'fullName');
   tracked(TrackedPerson, 'firstName');
   tracked(TrackedPerson, 'lastName');
 
@@ -351,14 +359,18 @@ QUnit.test('nested @tracked in multiple objects', assert => {
 
   tracked(TrackedContact, 'email');
   tracked(TrackedContact, 'person');
-  tracked(TrackedContact, 'contact');
 
   let obj = new TrackedContact(new TrackedPerson(), 'tom@example.com');
-  assert.strictEqual(obj.contact, 'Tom Dale @ tom@example.com', `the contact field is valid`);
-  assert.strictEqual(obj.person.fullName, 'Tom Dale', `the fullName field is valid`);
+  let root = data(obj);
+  let contact = root.get('contact');
+  let fullName = root.get('person').get('fullName');
+
+  assert.strictEqual(contact.value(), 'Tom Dale @ tom@example.com', `the contact field is valid`);
+  assert.strictEqual(fullName.value(), 'Tom Dale', `the fullName field is valid`);
+
   let person = obj.person;
 
-  let tag = tagFor(obj, 'contact');
+  let tag = contact.tag;
   let snapshot = tag.value();
   assert.ok(tag.validate(snapshot), 'tag should be valid to start');
 
