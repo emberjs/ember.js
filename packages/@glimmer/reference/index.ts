@@ -26,3 +26,5 @@ export {
 } from './lib/iterable';
 
 export * from './lib/iterable-impl';
+export * from './lib/tracked';
+export * from './lib/autotrack';

@@ -100,6 +100,15 @@ export function populateBuiltins(
     });
   });
 
+  blocks.add('let', (params, _hash, blocks) => {
+    if (!params) {
+      throw new Error(`SYNTAX ERROR: #let requires arguments`);
+    }
+
+    let { count, actions } = compileParams(params);
+    return [actions, invokeStaticBlockWithStack(blocks.get('default')!, count)];
+  });
+
   blocks.add('each', (params, hash, blocks) => {
     return replayable({
       args() {

@@ -9,13 +9,14 @@ import {
   JitOrAotBlock,
   RenderResult,
   RichIteratorResult,
-  Runtime,
+  RuntimeContext,
   RuntimeResolver,
   SyntaxCompilationContext,
   TemplateMeta,
   WithAotStaticLayout,
   WithJitStaticLayout,
   TemplateIterator,
+  Cursor,
 } from '@glimmer/interfaces';
 import { PathReference } from '@glimmer/reference';
 import { expect } from '@glimmer/util';
@@ -24,13 +25,18 @@ import { hasStaticLayoutCapability } from './compiled/opcodes/component';
 import { resolveComponent } from './component/resolve';
 import { ARGS } from './symbols';
 import { AotVM, InternalVM, JitVM } from './vm/append';
-import { ElementBuilder } from './vm/element-builder';
+import { ElementBuilder, NewElementBuilder } from './vm/element-builder';
 import { DefaultDynamicScope } from './dynamic-scope';
+import { UNDEFINED_REFERENCE } from './references';
 
 class TemplateIteratorImpl<C extends JitOrAotBlock> implements TemplateIterator {
   constructor(private vm: InternalVM<C>) {}
   next(): RichIteratorResult<null, RenderResult> {
     return this.vm.next();
+  }
+
+  sync(): RenderResult {
+    return renderSync(this.vm.runtime.env, this);
   }
 }
 
@@ -51,7 +57,7 @@ export function renderSync(env: Environment, iterator: TemplateIterator): Render
 }
 
 export function renderAotMain(
-  runtime: Runtime<TemplateMeta>,
+  runtime: RuntimeContext<TemplateMeta>,
   self: PathReference,
   treeBuilder: ElementBuilder,
   handle: number,
@@ -61,8 +67,20 @@ export function renderAotMain(
   return new TemplateIteratorImpl(vm);
 }
 
+export function renderAot(
+  runtime: RuntimeContext<TemplateMeta>,
+  handle: number,
+  cursor: Cursor,
+  self: PathReference = UNDEFINED_REFERENCE
+): TemplateIterator {
+  let treeBuilder = NewElementBuilder.forInitialRender(runtime.env, cursor);
+  let dynamicScope = new DefaultDynamicScope();
+  let vm = AotVM.initial(runtime, { self, dynamicScope, treeBuilder, handle });
+  return new TemplateIteratorImpl(vm);
+}
+
 export function renderJitMain(
-  runtime: Runtime<TemplateMeta>,
+  runtime: RuntimeContext<TemplateMeta>,
   context: SyntaxCompilationContext,
   self: PathReference,
   treeBuilder: ElementBuilder,
@@ -139,7 +157,7 @@ function renderComponent<C extends JitOrAotBlock, R extends TemplateMeta>(
 }
 
 export function renderAotComponent<R>(
-  runtime: Runtime<TemplateMeta<R>>,
+  runtime: RuntimeContext<TemplateMeta<R>>,
   treeBuilder: ElementBuilder,
   main: number,
   name: string,
@@ -156,7 +174,7 @@ export function renderAotComponent<R>(
 }
 
 export function renderJitComponent(
-  runtime: Runtime<TemplateMeta>,
+  runtime: RuntimeContext<TemplateMeta>,
   treeBuilder: ElementBuilder,
   context: SyntaxCompilationContext,
   main: number,

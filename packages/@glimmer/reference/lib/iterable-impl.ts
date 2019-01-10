@@ -1,9 +1,9 @@
 import { AbstractIterable, IterationItem, OpaqueIterator } from './iterable';
 import { UpdatableReference } from '@glimmer/object-reference';
 import { Tag, VersionedReference } from './validators';
-import { Option } from '@glimmer/interfaces';
+import { Option, Dict } from '@glimmer/interfaces';
 
-export type KeyFor = (item: unknown, index: unknown) => object;
+export type KeyFor = (item: Dict, index: unknown) => unknown;
 export type UnknownKeyFor = (key: string) => KeyFor;
 
 // Public API
@@ -113,7 +113,7 @@ class NativeIteratorIterator implements OpaqueIterator {
 
     let { keyFor } = this;
 
-    let key = keyFor(value, this.pos);
+    let key = keyFor(value as Dict, this.pos);
     let memo = this.pos;
 
     return { key, value, memo };

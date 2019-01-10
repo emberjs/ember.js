@@ -24,4 +24,5 @@ export interface RenderResult extends Bounds, SymbolDestroyable, ExceptionHandle
 
 export interface TemplateIterator {
   next(): RichIteratorResult<null, RenderResult>;
+  sync(): RenderResult;
 }

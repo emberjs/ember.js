@@ -29,6 +29,7 @@ export {
   DefaultEnvironment,
   RuntimeEnvironment,
   ScopeImpl,
+  Runtime,
 } from './lib/environment';
 export { default as getDynamicVar } from './lib/helpers/get-dynamic-var';
 export { PublicModifierDefinition as ModifierDefinition } from './lib/modifier/interfaces';
@@ -41,6 +42,7 @@ export {
 export {
   renderAotComponent,
   renderAotMain,
+  renderAot,
   RenderComponentArgs,
   renderJitComponent,
   renderJitMain,

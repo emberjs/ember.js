@@ -15,7 +15,7 @@ import {
   ModuleLocator,
   ProgramSymbolTable,
   RenderResult,
-  Runtime,
+  RuntimeContext,
   TemplateMeta,
 } from '@glimmer/interfaces';
 import { UpdatableReference } from '@glimmer/object-reference';
@@ -245,7 +245,7 @@ export default class EagerRenderDelegate implements RenderDelegate {
     return compiler;
   }
 
-  private getRuntime({ table, pool, heap }: BundleCompilationResult): Runtime<TemplateMeta> {
+  private getRuntime({ table, pool, heap }: BundleCompilationResult): RuntimeContext<TemplateMeta> {
     let resolver = new EagerRuntimeResolver(table, this.modules, this.symbolTables);
     let runtimeHeap = new RuntimeHeapImpl(heap);
     let runtimeProgram = new RuntimeProgramImpl(new RuntimeConstantsImpl(pool), runtimeHeap);
