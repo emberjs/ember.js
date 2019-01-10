@@ -2,6 +2,7 @@ import { Option, dict } from '@glimmer/util';
 import { PathReference } from './path';
 import { RootReference as IRootReference } from '../types';
 import { PathReference as IPathReference, Tag, CURRENT_TAG, bump } from '@glimmer/reference';
+import { UpdatableReference } from '@glimmer/object-reference';
 
 export default class RootReference<T = unknown> implements IRootReference<T>, IPathReference<T> {
   private object: T;
@@ -47,4 +48,8 @@ export default class RootReference<T = unknown> implements IRootReference<T>, IP
   label() {
     return '[reference Root]';
   }
+}
+
+export function State<T>(object: T): RootReference<T> {
+  return new UpdatableReference(object);
 }

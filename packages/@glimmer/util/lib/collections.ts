@@ -15,6 +15,10 @@ export function isDict<T>(u: T): u is Dict & T {
   return typeof u === 'object' && u !== null;
 }
 
+export function isObject<T>(u: T): u is object & T {
+  return typeof u === 'object' && u !== null;
+}
+
 export type SetMember = HasGuid | string;
 
 export class DictSet<T extends SetMember> implements Set<T> {

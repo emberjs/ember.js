@@ -5,7 +5,7 @@ import {
   ExceptionHandler,
   GlimmerTreeChanges,
   JitOrAotBlock,
-  Runtime,
+  RuntimeContext,
   Scope,
   TemplateMeta,
 } from '@glimmer/interfaces';
@@ -91,14 +91,14 @@ export interface VMState {
 }
 
 export interface ResumableVMState<B extends JitOrAotBlock, V extends InternalVM<B>> {
-  resume(runtime: Runtime<TemplateMeta>, builder: ElementBuilder): V;
+  resume(runtime: RuntimeContext<TemplateMeta>, builder: ElementBuilder): V;
 }
 
 export class ResumableVMStateImpl<B extends JitOrAotBlock, V extends InternalVM<B>>
   implements ResumableVMState<B, V> {
   constructor(readonly state: VMState, private resumeCallback: VmInitCallback<V>) {}
 
-  resume(runtime: Runtime<TemplateMeta>, builder: ElementBuilder): V {
+  resume(runtime: RuntimeContext<TemplateMeta>, builder: ElementBuilder): V {
     return this.resumeCallback(runtime, this.state, builder);
   }
 }
@@ -113,7 +113,7 @@ export abstract class BlockOpcode extends UpdatingOpcode implements Bounds {
 
   constructor(
     protected state: ResumableVMState<JitOrAotBlock, InternalVM<JitOrAotBlock>>,
-    protected runtime: Runtime<TemplateMeta>,
+    protected runtime: RuntimeContext<TemplateMeta>,
     bounds: LiveBlock,
     children: LinkedList<UpdatingOpcode>
   ) {
@@ -153,7 +153,7 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
 
   constructor(
     state: ResumableVMState<JitOrAotBlock, InternalVM<JitOrAotBlock>>,
-    runtime: Runtime<TemplateMeta>,
+    runtime: RuntimeContext<TemplateMeta>,
     bounds: UpdatableBlock,
     children: LinkedList<UpdatingOpcode>
   ) {
@@ -295,7 +295,7 @@ export class ListBlockOpcode extends BlockOpcode {
 
   constructor(
     state: ResumableVMState<JitOrAotBlock, InternalVM<JitOrAotBlock>>,
-    runtime: Runtime<TemplateMeta>,
+    runtime: RuntimeContext<TemplateMeta>,
     bounds: LiveBlock,
     children: LinkedList<UpdatingOpcode>,
     artifacts: IterationArtifacts
