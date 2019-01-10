@@ -12,7 +12,7 @@ export function dict<T = unknown>(): Dict<T> {
 }
 
 export function isDict<T>(u: T): u is Dict & T {
-  return typeof u === 'object' && u !== null;
+  return u !== null && u !== undefined;
 }
 
 export function isObject<T>(u: T): u is object & T {
