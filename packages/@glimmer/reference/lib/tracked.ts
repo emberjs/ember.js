@@ -1,6 +1,6 @@
 import { dict } from '@glimmer/util';
-import { dirtyTag } from './autotrack';
 import { DirtyableTag } from './validators';
+import { dirtyTag } from './tags';
 
 type Privates<T> = { [K in keyof T]?: Private<T[K]> };
 

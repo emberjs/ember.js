@@ -1,4 +1,5 @@
 import { VersionedPathReference, Tag } from './validators';
+import { property } from './property';
 
 export function map<T, U>(
   input: VersionedPathReference<T>,
@@ -21,6 +22,6 @@ class MapReference<T, U> implements VersionedPathReference<U> {
   }
 
   get(key: string): VersionedPathReference {
-    throw new Error('unimplemented');
+    return property(this, key);
   }
 }
