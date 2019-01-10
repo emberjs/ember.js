@@ -10,7 +10,7 @@ import {
   PartialScope,
   RenderResult,
   RichIteratorResult,
-  Runtime,
+  RuntimeContext,
   RuntimeConstants,
   RuntimeHeap,
   RuntimeProgram,
@@ -81,7 +81,7 @@ export interface InternalVM<C extends JitOrAotBlock> {
 
   readonly env: Environment;
   readonly stack: EvaluationStack;
-  readonly runtime: Runtime<TemplateMeta>;
+  readonly runtime: RuntimeContext<TemplateMeta>;
 
   loadValue(register: MachineRegister, value: number, assertion: Checker<number>): void;
   loadValue<T>(register: Register, value: T, assertion: Checker<T>): void;
@@ -281,7 +281,7 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
    */
 
   constructor(
-    readonly runtime: Runtime<TemplateMeta>,
+    readonly runtime: RuntimeContext<TemplateMeta>,
     { pc, scope, dynamicScope, stack }: VMState,
     private readonly elementStack: ElementBuilder
   ) {
@@ -338,7 +338,7 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
   }
 
   abstract resume: (
-    runtime: Runtime<TemplateMeta>,
+    runtime: RuntimeContext<TemplateMeta>,
     state: VMState,
     builder: ElementBuilder
   ) => InternalVM<C>;
@@ -613,7 +613,7 @@ export interface InitOptions extends MinimalInitOptions {
 }
 
 function emptyVm<C extends JitOrAotBlock>(
-  runtime: Runtime<TemplateMeta>,
+  runtime: RuntimeContext<TemplateMeta>,
   { handle, treeBuilder }: MinimalInitOptions,
   init: VmInitCallback<InternalVM<C>>
 ) {
@@ -623,7 +623,7 @@ function emptyVm<C extends JitOrAotBlock>(
 }
 
 function initialVm<C extends JitOrAotBlock>(
-  runtime: Runtime<TemplateMeta>,
+  runtime: RuntimeContext<TemplateMeta>,
   { handle, self, dynamicScope, treeBuilder }: InitOptions,
   init: VmInitCallback<InternalVM<C>>
 ): InternalVM<C> {
@@ -636,11 +636,14 @@ function initialVm<C extends JitOrAotBlock>(
 }
 
 export class AotVM extends VM<number> implements InternalVM<number> {
-  static empty(runtime: Runtime<TemplateMeta>, options: MinimalInitOptions): InternalVM<number> {
+  static empty(
+    runtime: RuntimeContext<TemplateMeta>,
+    options: MinimalInitOptions
+  ): InternalVM<number> {
     return emptyVm(runtime, options, initAOT);
   }
 
-  static initial(runtime: Runtime<TemplateMeta>, options: InitOptions) {
+  static initial(runtime: RuntimeContext<TemplateMeta>, options: InitOptions) {
     return initialVm(runtime, options, initAOT);
   }
 
@@ -659,12 +662,16 @@ export class AotVM extends VM<number> implements InternalVM<number> {
 
 export type VmInitCallback<V extends InternalVM<JitOrAotBlock>> = (
   this: void,
-  runtime: Runtime<TemplateMeta>,
+  runtime: RuntimeContext<TemplateMeta>,
   state: VMState,
   builder: ElementBuilder
 ) => V;
 
-function initAOT(runtime: Runtime<TemplateMeta>, state: VMState, builder: ElementBuilder): AotVM {
+function initAOT(
+  runtime: RuntimeContext<TemplateMeta>,
+  state: VMState,
+  builder: ElementBuilder
+): AotVM {
   return new AotVM(runtime, state, builder);
 }
 
@@ -674,7 +681,7 @@ function initJIT(context: SyntaxCompilationContext): VmInitCallback<JitVM> {
 
 export class JitVM extends VM<CompilableBlock> implements InternalJitVM {
   static initial(
-    runtime: Runtime<TemplateMeta>,
+    runtime: RuntimeContext<TemplateMeta>,
     context: SyntaxCompilationContext,
     options: InitOptions
   ) {
@@ -682,7 +689,7 @@ export class JitVM extends VM<CompilableBlock> implements InternalJitVM {
   }
 
   static empty(
-    runtime: Runtime<TemplateMeta>,
+    runtime: RuntimeContext<TemplateMeta>,
     options: MinimalInitOptions,
     context: SyntaxCompilationContext
   ) {
@@ -690,7 +697,7 @@ export class JitVM extends VM<CompilableBlock> implements InternalJitVM {
   }
 
   constructor(
-    runtime: Runtime<TemplateMeta>,
+    runtime: RuntimeContext<TemplateMeta>,
     state: VMState,
     elementStack: ElementBuilder,
     readonly context: SyntaxCompilationContext

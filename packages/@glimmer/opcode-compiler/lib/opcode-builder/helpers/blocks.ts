@@ -54,6 +54,10 @@ export function invokeStaticBlockWithStack(
   let calleeCount = parameters.length;
   let count = Math.min(callerCount, calleeCount);
 
+  if (count === 0) {
+    return invokeStaticBlock(block);
+  }
+
   let out: StatementCompileActions = [];
 
   out.push(op(MachineOp.PushFrame));
