@@ -13,6 +13,11 @@ import {
   ScopeSlot,
   Transaction,
   TransactionSymbol,
+  RuntimeResolver,
+  CompilerArtifacts,
+  RuntimeContext,
+  TemplateMeta,
+  OpaqueTemplateMeta,
 } from '@glimmer/interfaces';
 import {
   IterableImpl,
@@ -28,6 +33,7 @@ import { DOMChangesImpl, DOMTreeConstruction } from './dom/helper';
 import { Modifier, ModifierManager } from './internal-interfaces';
 import { ConditionalReference, UNDEFINED_REFERENCE } from './references';
 import { DynamicAttribute, dynamicAttribute } from './vm/attributes/dynamic';
+import { RuntimeProgramImpl } from '@glimmer/program';
 
 export function isScopeReference(s: ScopeSlot): s is VersionedPathReference {
   if (s === null || Array.isArray(s)) return false;
@@ -299,16 +305,58 @@ export abstract class EnvironmentImpl implements Environment {
 }
 
 export interface RuntimeEnvironmentDelegate {
-  readonly document: SimpleDocument;
   protocolForURL(url: string): string;
   iterable: IterableKeyDefinitions;
 }
 
+export class DefaultRuntimeEnvironmentDelegate implements RuntimeEnvironmentDelegate {
+  protocolForURL(url: string): string {
+    return new URL(url).protocol;
+  }
+
+  readonly iterable: IterableKeyDefinitions = {
+    named: {
+      '@index': (_, index) => String(index),
+      '@primitive': item => String(item),
+    },
+    default: key => item => item[key],
+  };
+}
+
+export class DefaultRuntimeResolver implements RuntimeResolver {
+  lookupComponentDefinition(_name: string, _referrer?: Option<TemplateMeta>): Option<any> {
+    throw new Error('Method not implemented.');
+  }
+
+  lookupPartial(_name: string, _referrer?: Option<OpaqueTemplateMeta>): Option<number> {
+    throw new Error('Method not implemented.');
+  }
+
+  resolve<U>(_handle: number): U {
+    throw new Error('Method not implemented.');
+  }
+}
+
+export function Runtime(
+  document: SimpleDocument,
+  program: CompilerArtifacts,
+  resolver: RuntimeResolver = new DefaultRuntimeResolver(),
+  delegate: RuntimeEnvironmentDelegate = new DefaultRuntimeEnvironmentDelegate()
+): RuntimeContext {
+  let env = new RuntimeEnvironment(document, delegate);
+
+  return {
+    env,
+    resolver,
+    program: RuntimeProgramImpl.hydrate(program),
+  };
+}
+
 export class RuntimeEnvironment extends EnvironmentImpl {
-  constructor(private delegate: RuntimeEnvironmentDelegate) {
+  constructor(document: SimpleDocument, private delegate: RuntimeEnvironmentDelegate) {
     super({
-      appendOperations: new DOMTreeConstruction(delegate.document),
-      updateOperations: new DOMChangesImpl(delegate.document),
+      appendOperations: new DOMTreeConstruction(document),
+      updateOperations: new DOMChangesImpl(document),
     });
   }
 

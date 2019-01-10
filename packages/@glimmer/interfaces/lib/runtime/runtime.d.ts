@@ -9,7 +9,7 @@ import { RuntimeResolver } from '../serialize';
   The contents of the Runtime do not change as the VM executes, unlike
   the VM state.
  */
-export interface Runtime<R extends TemplateMeta> {
+export interface RuntimeContext<R extends TemplateMeta = TemplateMeta> {
   env: Environment;
   program: RuntimeProgram;
   resolver: RuntimeResolver<R>;
