@@ -12,13 +12,14 @@ import {
   ScopeSlot,
   Transaction,
   TransactionSymbol,
-  RuntimeResolver,
+  RuntimeResolverDelegate,
   CompilerArtifacts,
   RuntimeContext,
   TemplateMeta,
   OpaqueTemplateMeta,
   WithCreateInstance,
   ResolvedValue,
+  RuntimeResolver,
 } from '@glimmer/interfaces';
 import {
   IterableImpl,
@@ -324,12 +325,20 @@ export class DefaultRuntimeEnvironmentDelegate implements RuntimeEnvironmentDele
   };
 }
 
-export class DefaultRuntimeResolver implements RuntimeResolver {
-  constructor(private inner: Partial<RuntimeResolver>) {}
+export class DefaultRuntimeResolver implements RuntimeResolverDelegate {
+  constructor(private inner: RuntimeResolver) {}
 
   lookupComponentDefinition(name: string, referrer?: Option<TemplateMeta>): Option<any> {
     if (this.inner.lookupComponentDefinition) {
-      return this.inner.lookupComponentDefinition(name, referrer);
+      let component = this.inner.lookupComponentDefinition(name, referrer);
+
+      if (component === undefined) {
+        throw new Error(
+          `Unexpected component ${name} (from ${referrer}) (lookupComponentDefinition returned undefined)`
+        );
+      }
+
+      return component;
     } else {
       throw new Error('lookupComponentDefinition not implemented on RuntimeResolver.');
     }
@@ -337,7 +346,15 @@ export class DefaultRuntimeResolver implements RuntimeResolver {
 
   lookupPartial(name: string, referrer?: Option<OpaqueTemplateMeta>): Option<number> {
     if (this.inner.lookupPartial) {
-      return this.inner.lookupPartial(name, referrer);
+      let partial = this.inner.lookupPartial(name, referrer);
+
+      if (partial === undefined) {
+        throw new Error(
+          `Unexpected partial ${name} (from ${referrer}) (lookupPartial returned undefined)`
+        );
+      }
+
+      return partial;
     } else {
       throw new Error('lookupPartial not implemented on RuntimeResolver.');
     }
@@ -345,7 +362,13 @@ export class DefaultRuntimeResolver implements RuntimeResolver {
 
   resolve<U extends ResolvedValue>(handle: number): U {
     if (this.inner.resolve) {
-      return this.inner.resolve(handle);
+      let resolved = this.inner.resolve(handle);
+
+      if (resolved === undefined) {
+        throw new Error(`Unexpected handle ${handle} (resolve returned undefined)`);
+      }
+
+      return resolved as U;
     } else {
       throw new Error('resolve not implemented on RuntimeResolver.');
     }
@@ -355,7 +378,7 @@ export class DefaultRuntimeResolver implements RuntimeResolver {
 export function Runtime(
   document: SimpleDocument,
   program: CompilerArtifacts,
-  resolver: Partial<RuntimeResolver> = {},
+  resolver: RuntimeResolver = {},
   delegate: RuntimeEnvironmentDelegate = new DefaultRuntimeEnvironmentDelegate()
 ): RuntimeContext {
   let env = new RuntimeEnvironment(document, delegate);

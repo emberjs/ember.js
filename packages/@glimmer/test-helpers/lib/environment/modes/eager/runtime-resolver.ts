@@ -4,14 +4,14 @@ import {
   Invocation,
   ModuleLocator,
   ProgramSymbolTable,
-  RuntimeResolver,
+  RuntimeResolverDelegate,
   TemplateMeta,
 } from '@glimmer/interfaces';
 import { expect, Option } from '@glimmer/util';
 import { WrappedLocator } from '../../component-definition';
 import { Modules } from './modules';
 
-export default class EagerRuntimeResolver implements RuntimeResolver {
+export default class EagerRuntimeResolver implements RuntimeResolverDelegate {
   constructor(
     private table: ExternalModuleTable,
     private modules: Modules,

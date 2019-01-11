@@ -1,7 +1,7 @@
 import {
   Dict,
   RuntimeProgram,
-  RuntimeResolver,
+  RuntimeResolverDelegate,
   WholeProgramCompilationContext,
 } from '@glimmer/interfaces';
 import { isConst, OpaqueIterable, Reference } from '@glimmer/reference';
@@ -15,7 +15,7 @@ export default abstract class TestEnvironment extends EnvironmentImpl {
   public compiledLayouts: Dict<number> = dict();
 
   protected abstract program: TestProgram;
-  protected abstract resolver: RuntimeResolver;
+  protected abstract resolver: RuntimeResolverDelegate;
 
   protocolForURL(url: string): string {
     if (typeof window === 'undefined') {

@@ -3,13 +3,13 @@ import {
   CompilableProgram,
   ComponentDefinition,
   Invocation,
-  RuntimeResolver,
+  RuntimeResolverDelegate,
   TemplateMeta,
 } from '@glimmer/interfaces';
 import { Option } from '@glimmer/util';
 import Registry, { Lookup, LookupType, TypedRegistry } from '../../registry';
 
-export default class LazyRuntimeResolver implements RuntimeResolver {
+export default class LazyRuntimeResolver implements RuntimeResolverDelegate {
   private handleLookup: TypedRegistry<unknown>[] = [];
   private registry = new Registry();
 
