@@ -46,17 +46,6 @@ export function compilable<R>(layout: LayoutWithContext<R>): CompilableProgram {
   });
 }
 
-export function compilableBlock(
-  overloadBlock: SerializedInlineBlock | WireFormat.Statement[],
-  containing: ContainingMetadata
-): CompilableBlock {
-  let block = Array.isArray(overloadBlock)
-    ? { statements: overloadBlock, parameters: EMPTY_ARRAY }
-    : overloadBlock;
-
-  return new CompilableTemplateImpl(block.statements, containing, { parameters: block.parameters });
-}
-
 function maybeCompile(
   compilable: CompilableTemplateImpl<SymbolTable>,
   context: SyntaxCompilationContext
@@ -92,4 +81,15 @@ export function compileStatements(
   }
 
   return handle;
+}
+
+export function compilableBlock(
+  overloadBlock: SerializedInlineBlock | WireFormat.Statement[],
+  containing: ContainingMetadata
+): CompilableBlock {
+  let block = Array.isArray(overloadBlock)
+    ? { statements: overloadBlock, parameters: EMPTY_ARRAY }
+    : overloadBlock;
+
+  return new CompilableTemplateImpl(block.statements, containing, { parameters: block.parameters });
 }

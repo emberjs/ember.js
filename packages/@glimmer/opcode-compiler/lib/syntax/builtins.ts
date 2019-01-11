@@ -1,4 +1,10 @@
-import { MachineOp, Op, StatementCompileActions } from '@glimmer/interfaces';
+import {
+  MachineOp,
+  Op,
+  StatementCompileActions,
+  MacroBlocks,
+  MacroInlines,
+} from '@glimmer/interfaces';
 import { invokeStaticBlock, invokeStaticBlockWithStack } from '@glimmer/opcode-compiler';
 import { assert, unwrap } from '@glimmer/util';
 import { $fp, $sp } from '@glimmer/vm';
@@ -13,12 +19,11 @@ import { dynamicScope, pushPrimitiveReference } from '../opcode-builder/helpers/
 import { label } from '../opcode-builder/operands';
 import { EMPTY_BLOCKS } from '../utils';
 import { isHandled, NONE, UNHANDLED } from './concat';
-import { Blocks, Inlines } from './macros';
 
 export function populateBuiltins(
-  blocks: Blocks = new Blocks(),
-  inlines: Inlines = new Inlines()
-): { blocks: Blocks; inlines: Inlines } {
+  blocks: MacroBlocks,
+  inlines: MacroInlines
+): { blocks: MacroBlocks; inlines: MacroInlines } {
   blocks.add('if', (params, _hash, blocks) => {
     if (!params || params.length !== 1) {
       throw new Error(`SYNTAX ERROR: #if requires a single argument`);
