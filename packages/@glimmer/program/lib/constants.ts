@@ -1,6 +1,6 @@
 import {
   SymbolTable,
-  RuntimeResolver,
+  RuntimeResolverDelegate,
   CompileTimeConstants,
   EMPTY_ARRAY,
   ConstantPool,
@@ -140,7 +140,7 @@ export class RuntimeConstantsImpl implements RuntimeConstants {
 }
 
 export class Constants extends WriteOnlyConstants implements RuntimeConstants {
-  constructor(public resolver: RuntimeResolver, pool?: ConstantPool) {
+  constructor(public resolver: RuntimeResolverDelegate, pool?: ConstantPool) {
     super();
 
     if (pool) {

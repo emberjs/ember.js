@@ -9,7 +9,7 @@ import { SyntaxCompilationContext } from '../program';
 import { VMArguments } from '../runtime/arguments';
 import { ElementOperations } from '../runtime/element';
 import { DynamicScope, Environment } from '../runtime/environment';
-import { RuntimeResolver } from '../serialize';
+import { RuntimeResolverDelegate } from '../serialize';
 import { CompilableProgram, CompilableTemplate } from '../template';
 import { ProgramSymbolTable } from '../tier1/symbol-table';
 
@@ -146,7 +146,7 @@ export interface WithUpdateHook<ComponentInstanceState = unknown>
 export interface WithAotStaticLayout<
   I = ComponentInstanceState,
   D = ComponentDefinitionState,
-  R extends RuntimeResolver = RuntimeResolver
+  R extends RuntimeResolverDelegate = RuntimeResolverDelegate
 > extends ComponentManager<I, D> {
   getAotStaticLayout(state: D, resolver: R): Invocation;
 }
@@ -154,14 +154,14 @@ export interface WithAotStaticLayout<
 export interface WithJitStaticLayout<
   I = ComponentInstanceState,
   D = ComponentDefinitionState,
-  R extends RuntimeResolver = RuntimeResolver
+  R extends RuntimeResolverDelegate = RuntimeResolverDelegate
 > extends ComponentManager<I, D> {
   getJitStaticLayout(state: D, resolver: R): CompilableProgram;
 }
 
 export interface WithJitDynamicLayout<
   I = ComponentInstanceState,
-  R extends RuntimeResolver = RuntimeResolver
+  R extends RuntimeResolverDelegate = RuntimeResolverDelegate
 > extends ComponentManager<I> {
   // Return the compiled layout to use for this component. This is called
   // *after* the component instance has been created, because you might
@@ -174,7 +174,7 @@ export interface WithJitDynamicLayout<
   ): CompilableTemplate;
 }
 
-export interface WithAotDynamicLayout<ComponentInstanceState, R extends RuntimeResolver>
+export interface WithAotDynamicLayout<ComponentInstanceState, R extends RuntimeResolverDelegate>
   extends ComponentManager<ComponentInstanceState> {
   // Return the compiled layout to use for this component. This is called
   // *after* the component instance has been created, because you might

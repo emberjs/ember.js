@@ -10,7 +10,7 @@ import {
   RenderResult,
   RichIteratorResult,
   RuntimeContext,
-  RuntimeResolver,
+  RuntimeResolverDelegate,
   SyntaxCompilationContext,
   TemplateMeta,
   WithAotStaticLayout,
@@ -103,7 +103,7 @@ function renderComponent<C extends JitOrAotBlock, R extends TemplateMeta>(
   invoke: (
     manager: InternalComponentManager,
     state: ComponentDefinitionState,
-    resolver: RuntimeResolver<R>
+    resolver: RuntimeResolverDelegate<R>
   ) => Invocation
 ): TemplateIterator {
   const definition = expect(
@@ -168,7 +168,7 @@ export function renderAotComponent<R>(
     return (manager as WithAotStaticLayout<
       ComponentInstanceState,
       ComponentDefinitionState,
-      RuntimeResolver
+      RuntimeResolverDelegate
     >).getAotStaticLayout(state, resolver);
   });
 }
@@ -186,7 +186,7 @@ export function renderJitComponent(
     let template = (manager as WithJitStaticLayout<
       ComponentInstanceState,
       ComponentDefinitionState,
-      RuntimeResolver
+      RuntimeResolverDelegate
     >).getJitStaticLayout(state, resolver);
 
     let handle = template.compile(context);
