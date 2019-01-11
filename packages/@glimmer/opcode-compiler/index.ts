@@ -9,6 +9,7 @@ export { compileStatements, compilable } from './lib/compilable-template';
 export { staticComponent } from './lib/opcode-builder/helpers/components';
 
 export * from './lib/opcode-builder/context';
+export * from './lib/opcode-builder/delegate';
 
 export { invokeStaticBlockWithStack, invokeStaticBlock } from './lib/opcode-builder/helpers/blocks';
 export { compileStd } from './lib/opcode-builder/helpers/stdlib';

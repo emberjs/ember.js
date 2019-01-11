@@ -260,7 +260,7 @@ export const CheckBoolean: Checker<boolean> = new TypeofChecker<boolean>('boolea
 export const CheckHandle: Checker<number> = CheckNumber;
 export const CheckString: Checker<string> = new TypeofChecker<string>('string');
 export const CheckNull: Checker<null> = new NullChecker();
-export const Checkunknown: Checker<unknown> = new OpaqueChecker();
+export const CheckUnknown: Checker<unknown> = new OpaqueChecker();
 export const CheckSafeString: Checker<SafeString> = new SafeStringChecker();
 
 export function CheckOr<T, U>(left: Checker<T>, right: Checker<U>): Checker<T | U> {
@@ -283,15 +283,15 @@ export const CheckProgramSymbolTable: Checker<ProgramSymbolTable> = CheckInterfa
 export const CheckElement: Checker<SimpleElement> = CheckInterface({
   nodeType: CheckValue(1),
   tagName: CheckString,
-  nextSibling: Checkunknown,
+  nextSibling: CheckUnknown,
 });
 
 export const CheckDocumentFragment: Checker<SimpleDocumentFragment> = CheckInterface({
   nodeType: CheckValue(11),
-  nextSibling: Checkunknown,
+  nextSibling: CheckUnknown,
 });
 
 export const CheckNode: Checker<SimpleNode> = CheckInterface({
   nodeType: CheckNumber,
-  nextSibling: Checkunknown,
+  nextSibling: CheckUnknown,
 });

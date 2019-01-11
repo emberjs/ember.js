@@ -1,4 +1,4 @@
-import { check, Checker, Checkunknown } from '@glimmer/debug';
+import { check, Checker, CheckUnknown } from '@glimmer/debug';
 import {
   CompilableBlock,
   CompilableTemplate,
@@ -189,7 +189,7 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
   load(register: SyscallRegister) {
     let value = this.stack.pop();
 
-    this.loadValue(register, value, Checkunknown);
+    this.loadValue(register, value, CheckUnknown);
   }
 
   // Fetch a value from a register

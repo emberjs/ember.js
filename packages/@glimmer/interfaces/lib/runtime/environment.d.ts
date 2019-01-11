@@ -5,7 +5,7 @@ import { ComponentDefinitionState, ComponentInstanceState } from '../components'
 import { ComponentManager } from '../components/component-manager';
 import { Drop, Option } from '../core';
 import { GlimmerTreeChanges, GlimmerTreeConstruction } from '../dom/changes';
-import { ModifierInstanceState, ModifierManager } from './modifier';
+import { ModifierManager } from './modifier';
 
 export interface EnvironmentOptions {
   appendOperations: GlimmerTreeConstruction;
@@ -13,10 +13,7 @@ export interface EnvironmentOptions {
 }
 
 export type InternalComponent = ComponentInstanceState;
-export type InternalComponentManager = ComponentManager<
-  ComponentInstanceState,
-  ComponentDefinitionState
->;
+export type InternalComponentManager = ComponentManager<ComponentInstanceState>;
 
 export interface Transaction {}
 
@@ -27,11 +24,11 @@ export interface Environment {
   [TransactionSymbol]: Option<Transaction>;
 
   didCreate(component: InternalComponent, manager: InternalComponentManager): void;
-  didUpdate(component: unknown, manager: ComponentManager<unknown, unknown>): void;
+  didUpdate(component: unknown, manager: ComponentManager<unknown>): void;
   didDestroy(drop: Drop): void;
 
-  scheduleInstallModifier(modifier: ModifierInstanceState, manager: ModifierManager): void;
-  scheduleUpdateModifier(modifier: ModifierInstanceState, manager: ModifierManager): void;
+  scheduleInstallModifier(modifier: unknown, manager: ModifierManager): void;
+  scheduleUpdateModifier(modifier: unknown, manager: ModifierManager): void;
 
   begin(): void;
   commit(): void;

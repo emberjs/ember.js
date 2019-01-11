@@ -61,6 +61,8 @@ import { ComponentDefinition } from './components';
 import { ResolvedLayout, STDLib, CompilableProgram, CompileTime } from './template';
 import { TemplateMeta } from './runtime/runtime';
 import { SyntaxCompilationContext } from './program';
+import { Helper } from './runtime/vm';
+import { ModifierDefinition } from './runtime/modifier';
 
 export interface HandleResolver {
   resolve(handle: number): unknown;
@@ -79,8 +81,10 @@ export interface CompileTimeResolverDelegate extends HandleResolver {
   resolve(handle: number): TemplateMeta;
 }
 
+export type ResolvedValue = ComponentDefinition | ModifierDefinition | Helper;
+
 export interface RuntimeResolver<R extends TemplateMeta = TemplateMeta> extends HandleResolver {
   lookupComponentDefinition(name: string, referrer?: Option<R>): Option<ComponentDefinition>;
   lookupPartial(name: string, referrer?: Option<R>): Option<number>;
-  resolve<U>(handle: number): U;
+  resolve<U extends ResolvedValue>(handle: number): U;
 }

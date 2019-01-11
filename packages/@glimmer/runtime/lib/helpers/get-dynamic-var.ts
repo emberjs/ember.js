@@ -35,7 +35,7 @@ class DynamicVarReference implements PathReference<unknown> {
   }
 }
 
-function getDynamicVar(vm: PublicVM, args: VMArguments): PathReference<unknown> {
+function getDynamicVar(args: VMArguments, vm: PublicVM): PathReference<unknown> {
   let scope = vm.dynamicScope();
   let nameRef = args.positional.at(0);
 

@@ -1,63 +1,31 @@
-import { precompile } from '@glimmer/compiler';
-import { Context } from '@glimmer/opcode-compiler';
+import { Cursor } from '@glimmer/interfaces';
+import { State } from '@glimmer/object-reference';
 import { artifacts } from '@glimmer/program';
 import { renderAot, renderSync, Runtime } from '@glimmer/runtime';
 import { strip } from '@glimmer/util';
+import createHTMLDocument from '@simple-dom/document';
+import { SimpleElement } from '@simple-dom/interface';
 import Serializer from '@simple-dom/serializer';
 import voidMap from '@simple-dom/void-map';
-import createHTMLDocument from '@simple-dom/document';
-import { Component } from '@glimmer/opcode-compiler';
-import { Cursor } from '@glimmer/interfaces';
-import { State } from '@glimmer/object-reference';
-import { SimpleElement } from '@simple-dom/interface';
+import { compile, context } from './context';
+import { RUNTIME_RESOLVER } from './env';
 
 /**
  * The source code for the module we're compiling.
  */
 
-let source = strip`
+let mainSource = strip`
   {{~#let "hello" "world" as |hello world|~}}
-    <p>{{hello}} {{world}}{{this.suffix}}</p>
+    <Second
+      @hello={{hello}}
+      @world={{world}}
+      @suffix={{this.suffix}}
+      @num={{this.num}}
+    />
   {{~/let~}}
 `;
 
-/**
- * Precompile the source code for this module into the wire format. In JIT mode, the wire format
- * is shipped over the wire, and the compilation process is finished as needed. In AOT (which
- * we're using here), we continue to compile the wire format immediately.
- */
-
-let wire = precompile(source);
-console.log('Wire Format', wire);
-
-/**
- * Rehydrate the wire format into a compilable module.
- */
-
-let component = Component(wire);
-console.log('Compilable component', component);
-
-/**
- * The ResolverDelegate is an object that resolves global names in modules at compile-time.
- * If possible, the ResolverDelegate can also tell the compiler that a particular component
- * uses a restricted subset of all available component capabilities, which allows the
- * compiler to specialize the bytecode used when invoking that component.
- *
- * (TODO: At the moment, the ResolverDelegate doesn't do anything, which makes it suitable
- * for compiling static content only)
- *
- * The `SyntaxCompilationContext` is the internal compilation context used to compile all
- * modules.
- */
-
-let context = Context();
-
-/**
- * Compile the module, getting back a handle that we can use to invoke it
- */
-
-let compiled = component.compile(context);
-console.log('Compiled Handle', compiled);
+let main = compile(mainSource);
 
 /**
  * Finalize the program, getting back the compilation artifacts:
@@ -102,13 +70,13 @@ let document = createHTMLDocument();
  *
  * 3. Finally, we need to rehydrate the compilation artifacts.
  */
-let runtime = Runtime(document, payload);
+let runtime = Runtime(document, payload, RUNTIME_RESOLVER);
 
 /**
  * Create an `UpdatableReference` for the value of `this` in the module. Using an
  * UpdatableReference allows us to change it later and re-render the output.
  */
-let state = State({ suffix: '!' });
+let state = State({ suffix: '!', num: 5 });
 
 /**
  * Create a new element to render into.
@@ -120,13 +88,13 @@ let element = document.createElement('main');
  */
 let cursor: Cursor = { element, nextSibling: null };
 
-let iterator = renderAot(runtime, compiled, cursor, state);
+let iterator = renderAot(runtime, main, cursor, state);
 
 let result = renderSync(runtime.env, iterator);
 
 console.log(serialize(element));
 
-state.update({ suffix: '?' });
+state.update({ suffix: '?', num: 10 });
 
 result.rerender();
 console.log(serialize(element));

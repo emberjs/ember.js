@@ -3,61 +3,36 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const compiler_1 = require("@glimmer/compiler");
-const opcode_compiler_1 = require("@glimmer/opcode-compiler");
+const object_reference_1 = require("@glimmer/object-reference");
 const program_1 = require("@glimmer/program");
 const runtime_1 = require("@glimmer/runtime");
 const util_1 = require("@glimmer/util");
+const document_1 = __importDefault(require("@simple-dom/document"));
 const serializer_1 = __importDefault(require("@simple-dom/serializer"));
 const void_map_1 = __importDefault(require("@simple-dom/void-map"));
-const document_1 = __importDefault(require("@simple-dom/document"));
-const opcode_compiler_2 = require("@glimmer/opcode-compiler");
-const object_reference_1 = require("@glimmer/object-reference");
+const context_1 = require("./context");
+const env_1 = require("./env");
 /**
  * The source code for the module we're compiling.
  */
-let source = util_1.strip `
+let mainSource = util_1.strip `
   {{~#let "hello" "world" as |hello world|~}}
-    <p>{{hello}} {{world}}{{this.suffix}}</p>
+    <Second
+      @hello={{hello}}
+      @world={{world}}
+      @suffix={{this.suffix}}
+      @num={{this.num}}
+    />
   {{~/let~}}
 `;
-/**
- * Precompile the source code for this module into the wire format. In JIT mode, the wire format
- * is shipped over the wire, and the compilation process is finished as needed. In AOT (which
- * we're using here), we continue to compile the wire format immediately.
- */
-let wire = compiler_1.precompile(source);
-console.log('Wire Format', wire);
-/**
- * Rehydrate the wire format into a compilable module.
- */
-let component = opcode_compiler_2.Component(wire);
-console.log('Compilable component', component);
-/**
- * The ResolverDelegate is an object that resolves global names in modules at compile-time.
- * If possible, the ResolverDelegate can also tell the compiler that a particular component
- * uses a restricted subset of all available component capabilities, which allows the
- * compiler to specialize the bytecode used when invoking that component.
- *
- * (TODO: At the moment, the ResolverDelegate doesn't do anything, which makes it suitable
- * for compiling static content only)
- *
- * The `SyntaxCompilationContext` is the internal compilation context used to compile all
- * modules.
- */
-let context = opcode_compiler_1.Context();
-/**
- * Compile the module, getting back a handle that we can use to invoke it
- */
-let compiled = component.compile(context);
-console.log('Compiled Handle', compiled);
+let main = context_1.compile(mainSource);
 /**
  * Finalize the program, getting back the compilation artifacts:
  *
  * - the serialized program, containing all of the compiled opcodes
  * - the constant pool, mostly used for storing strings
  */
-let payload = program_1.artifacts(context);
+let payload = program_1.artifacts(context_1.context);
 /**
  * Glimmer's internals are restricted to using a small subset of DOM
  * called Simple DOM. In a browser, you can use the normal DOM, but
@@ -90,12 +65,12 @@ let document = document_1.default();
  *
  * 3. Finally, we need to rehydrate the compilation artifacts.
  */
-let runtime = runtime_1.Runtime(document, payload);
+let runtime = runtime_1.Runtime(document, payload, env_1.RUNTIME_RESOLVER);
 /**
  * Create an `UpdatableReference` for the value of `this` in the module. Using an
  * UpdatableReference allows us to change it later and re-render the output.
  */
-let state = object_reference_1.State({ suffix: '!' });
+let state = object_reference_1.State({ suffix: '!', num: 5 });
 /**
  * Create a new element to render into.
  */
@@ -104,10 +79,10 @@ let element = document.createElement('main');
  * Create a cursor position for the rendering, which is just the element itself.
  */
 let cursor = { element, nextSibling: null };
-let iterator = runtime_1.renderAot(runtime, compiled, cursor, state);
+let iterator = runtime_1.renderAot(runtime, main, cursor, state);
 let result = runtime_1.renderSync(runtime.env, iterator);
 console.log(serialize(element));
-state.update({ suffix: '?' });
+state.update({ suffix: '?', num: 10 });
 result.rerender();
 console.log(serialize(element));
 function serialize(element) {

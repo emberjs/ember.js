@@ -31,3 +31,4 @@ export * from './lib/iterable-impl';
 export * from './lib/tracked';
 export * from './lib/autotrack';
 export * from './lib/tags';
+export * from './lib/combinators';
