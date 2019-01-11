@@ -20,42 +20,72 @@ export const DEFAULT_CAPABILITIES: ComponentCapabilities = {
 };
 
 export class DefaultCompileTimeResolverDelegate implements CompileTimeResolverDelegate {
-  getCapabilities(_handle: number): ComponentCapabilities {
-    return DEFAULT_CAPABILITIES;
+  constructor(private inner: Partial<CompileTimeResolverDelegate>) {}
+
+  getCapabilities(handle: number): ComponentCapabilities {
+    if (this.inner.getCapabilities) {
+      return this.inner.getCapabilities(handle);
+    } else {
+      return DEFAULT_CAPABILITIES;
+    }
   }
 
-  getLayout(_handle: number): Option<CompilableProgram> {
-    throw new Error(
-      `Can't compile global component invocations without an implementation of getLayout`
-    );
+  getLayout(handle: number): Option<CompilableProgram> {
+    if (this.inner.getLayout) {
+      return this.inner.getLayout(handle);
+    } else {
+      throw new Error(
+        `Can't compile global component invocations without an implementation of getLayout`
+      );
+    }
   }
 
-  lookupHelper(_name: string, _referrer: TemplateMeta): Option<number> {
-    throw new Error(
-      `Can't compile global helper invocations without an implementation of lookupHelper`
-    );
+  lookupHelper(name: string, referrer: TemplateMeta): Option<number> {
+    if (this.inner.lookupHelper) {
+      return this.inner.lookupHelper(name, referrer);
+    } else {
+      throw new Error(
+        `Can't compile global helper invocations without an implementation of lookupHelper`
+      );
+    }
   }
 
-  lookupModifier(_name: string, _referrer: TemplateMeta): Option<number> {
-    throw new Error(
-      `Can't compile global modifier invocations without an implementation of lookupModifier`
-    );
+  lookupModifier(name: string, referrer: TemplateMeta): Option<number> {
+    if (this.inner.lookupModifier) {
+      return this.inner.lookupModifier(name, referrer);
+    } else {
+      throw new Error(
+        `Can't compile global modifier invocations without an implementation of lookupModifier`
+      );
+    }
   }
 
-  lookupComponentDefinition(_name: string, _referrer: Option<TemplateMeta>): Option<number> {
-    throw new Error(
-      `Can't compile global component invocations without an implementation of lookupComponentDefinition`
-    );
+  lookupComponentDefinition(name: string, referrer: Option<TemplateMeta>): Option<number> {
+    if (this.inner.lookupComponentDefinition) {
+      return this.inner.lookupComponentDefinition(name, referrer);
+    } else {
+      throw new Error(
+        `Can't compile global component invocations without an implementation of lookupComponentDefinition`
+      );
+    }
   }
 
-  lookupPartial(_name: string, _referrer: TemplateMeta): Option<number> {
-    throw new Error(
-      `Can't compile global partial invocations without an implementation of lookupPartial`
-    );
+  lookupPartial(name: string, referrer: TemplateMeta): Option<number> {
+    if (this.inner.lookupPartial) {
+      return this.inner.lookupPartial(name, referrer);
+    } else {
+      throw new Error(
+        `Can't compile global partial invocations without an implementation of lookupPartial`
+      );
+    }
   }
 
   // For debugging
-  resolve(_handle: number): TemplateMeta {
-    throw new Error(`Compile-time debugging requires an implementation of resolve`);
+  resolve(handle: number): TemplateMeta {
+    if (this.inner.resolve) {
+      return this.inner.resolve(handle);
+    } else {
+      throw new Error(`Compile-time debugging requires an implementation of resolve`);
+    }
   }
 }

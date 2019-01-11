@@ -17,10 +17,8 @@ import {
   SyntaxCompilationContext,
   Template,
   TemplateMeta,
-  VMArguments,
   WholeProgramCompilationContext,
   TemplateIterator,
-  VM,
 } from '@glimmer/interfaces';
 import { compileStd, PartialDefinition, templateFactory } from '@glimmer/opcode-compiler';
 import { CompileTimeHeapImpl, Constants, RuntimeOpImpl } from '@glimmer/program';
@@ -138,7 +136,7 @@ export default class LazyTestEnvironment extends TestEnvironment {
     this.registerInternalHelper('-get-dynamic-var', getDynamicVar);
     this.registerInternalModifier('action', manager, state);
 
-    this.registerInternalHelper('hash', (_vm, args) => args.capture().named);
+    this.registerInternalHelper('hash', args => args.capture().named);
   }
 
   renderMain(
@@ -248,7 +246,7 @@ export default class LazyTestEnvironment extends TestEnvironment {
   }
 
   registerHelper(name: string, helper: UserHelper): GlimmerHelper {
-    let glimmerHelper = (_vm: VM, args: VMArguments) => new HelperReference(helper, args);
+    let glimmerHelper: GlimmerHelper = args => new HelperReference(helper, args);
     this.resolver.register('helper', name, glimmerHelper);
     return glimmerHelper;
   }

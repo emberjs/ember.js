@@ -23,6 +23,7 @@ export {
   DOMTreeConstruction,
   isWhitespace,
 } from './lib/dom/helper';
+export * from './lib/component/manager';
 export { normalizeProperty } from './lib/dom/props';
 export {
   default as EnvironmentImpl,

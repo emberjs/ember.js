@@ -5,12 +5,9 @@ import { Tag } from '@glimmer/reference';
 import { Option, SymbolDestroyable, Unique, Destroyable } from '../core';
 import { SimpleElement } from '@simple-dom/interface';
 
-export type ModifierDefinitionState = Unique<'ModifierDefinitionState'>;
-export type ModifierInstanceState = Unique<'ModifierInstanceState'>;
-
 export interface ModifierManager<
-  ModifierInstanceState = ModifierInstanceState,
-  ModifierDefinitionState = ModifierDefinitionState
+  ModifierInstanceState = unknown,
+  ModifierDefinitionState = unknown
 > {
   // Create is meant to only produce the state bucket
   create(
@@ -38,4 +35,12 @@ export interface ModifierManager<
   // Convert the opaque token into an object that implements Destroyable.
   // If it returns null, the modifier will not be destroyed.
   getDestructor(modifier: ModifierInstanceState): Option<SymbolDestroyable | Destroyable>;
+}
+
+export interface ModifierDefinition<
+  ModifierInstanceState = unknown,
+  ModifierDefinitionState = unknown
+> {
+  manager: ModifierManager<ModifierInstanceState, ModifierDefinitionState>;
+  state: ModifierDefinitionState;
 }
