@@ -3,6 +3,7 @@ import { runDestroy, buildOwner, moduleFor, AbstractTestCase } from 'internal-te
 import Service, { inject as injectService } from '@ember/service';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import EmberRoute from '../../lib/system/route';
+import { defineProperty } from '../../../metal';
 
 let route, routeOne, routeTwo, lookupHash;
 
@@ -53,7 +54,8 @@ moduleFor(
       let owner = buildOwner(ownerOptions);
       setOwner(route, owner);
 
-      route.set('_qp', null);
+      // Override the computed property by redefining it
+      defineProperty(route, '_qp', null, null);
 
       assert.equal(route.model({ post_id: 1 }), post);
       assert.equal(route.findModel('post', 1), post, '#findModel returns the correct post');

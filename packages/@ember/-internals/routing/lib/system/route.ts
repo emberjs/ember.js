@@ -2185,134 +2185,128 @@ Route.reopen(ActionHandler, Evented, {
 
       @property _qp
     */
-  _qp: computed({
-    get(this: Route) {
-      let combinedQueryParameterConfiguration;
+  _qp: computed(function(this: Route) {
+    let combinedQueryParameterConfiguration;
 
-      let controllerName = this.controllerName || this.routeName;
-      let owner = getOwner(this);
-      let controller = owner.lookup(`controller:${controllerName}`);
-      let queryParameterConfiguraton = get(this, 'queryParams');
-      let hasRouterDefinedQueryParams = Object.keys(queryParameterConfiguraton).length > 0;
+    let controllerName = this.controllerName || this.routeName;
+    let owner = getOwner(this);
+    let controller = owner.lookup(`controller:${controllerName}`);
+    let queryParameterConfiguraton = get(this, 'queryParams');
+    let hasRouterDefinedQueryParams = Object.keys(queryParameterConfiguraton).length > 0;
 
-      if (controller) {
-        // the developer has authored a controller class in their application for
-        // this route find its query params and normalize their object shape them
-        // merge in the query params for the route. As a mergedProperty,
-        // Route#queryParams is always at least `{}`
+    if (controller) {
+      // the developer has authored a controller class in their application for
+      // this route find its query params and normalize their object shape them
+      // merge in the query params for the route. As a mergedProperty,
+      // Route#queryParams is always at least `{}`
 
-        let controllerDefinedQueryParameterConfiguration = get(controller, 'queryParams') || {};
-        let normalizedControllerQueryParameterConfiguration = normalizeControllerQueryParams(
-          controllerDefinedQueryParameterConfiguration
-        );
-        combinedQueryParameterConfiguration = mergeEachQueryParams(
-          normalizedControllerQueryParameterConfiguration,
-          queryParameterConfiguraton
-        );
-      } else if (hasRouterDefinedQueryParams) {
-        // the developer has not defined a controller but *has* supplied route query params.
-        // Generate a class for them so we can later insert default values
-        controller = generateController(owner, controllerName);
-        combinedQueryParameterConfiguration = queryParameterConfiguraton;
+      let controllerDefinedQueryParameterConfiguration = get(controller, 'queryParams') || {};
+      let normalizedControllerQueryParameterConfiguration = normalizeControllerQueryParams(
+        controllerDefinedQueryParameterConfiguration
+      );
+      combinedQueryParameterConfiguration = mergeEachQueryParams(
+        normalizedControllerQueryParameterConfiguration,
+        queryParameterConfiguraton
+      );
+    } else if (hasRouterDefinedQueryParams) {
+      // the developer has not defined a controller but *has* supplied route query params.
+      // Generate a class for them so we can later insert default values
+      controller = generateController(owner, controllerName);
+      combinedQueryParameterConfiguration = queryParameterConfiguraton;
+    }
+
+    let qps = [];
+    let map = {};
+    let propertyNames = [];
+
+    for (let propName in combinedQueryParameterConfiguration) {
+      if (!combinedQueryParameterConfiguration.hasOwnProperty(propName)) {
+        continue;
       }
 
-      let qps = [];
-      let map = {};
-      let propertyNames = [];
-
-      for (let propName in combinedQueryParameterConfiguration) {
-        if (!combinedQueryParameterConfiguration.hasOwnProperty(propName)) {
-          continue;
-        }
-
-        // to support the dubious feature of using unknownProperty
-        // on queryParams configuration
-        if (propName === 'unknownProperty' || propName === '_super') {
-          // possible todo: issue deprecation warning?
-          continue;
-        }
-
-        let desc = combinedQueryParameterConfiguration[propName];
-        let scope = desc.scope || 'model';
-        let parts;
-
-        if (scope === 'controller') {
-          parts = [];
-        }
-
-        let urlKey = desc.as || this.serializeQueryParamKey(propName);
-        let defaultValue = get(controller, propName);
-
-        if (Array.isArray(defaultValue)) {
-          defaultValue = emberA(defaultValue.slice());
-        }
-
-        let type = desc.type || typeOf(defaultValue);
-
-        let defaultValueSerialized = this.serializeQueryParam(defaultValue, urlKey, type);
-        let scopedPropertyName = `${controllerName}:${propName}`;
-        let qp = {
-          undecoratedDefaultValue: get(controller, propName),
-          defaultValue,
-          serializedDefaultValue: defaultValueSerialized,
-          serializedValue: defaultValueSerialized,
-
-          type,
-          urlKey,
-          prop: propName,
-          scopedPropertyName,
-          controllerName,
-          route: this,
-          parts, // provided later when stashNames is called if 'model' scope
-          values: null, // provided later when setup is called. no idea why.
-          scope,
-        };
-
-        map[propName] = map[urlKey] = map[scopedPropertyName] = qp;
-        qps.push(qp);
-        propertyNames.push(propName);
+      // to support the dubious feature of using unknownProperty
+      // on queryParams configuration
+      if (propName === 'unknownProperty' || propName === '_super') {
+        // possible todo: issue deprecation warning?
+        continue;
       }
 
-      return {
-        qps,
-        map,
-        propertyNames,
-        states: {
-          /*
-            Called when a query parameter changes in the URL, this route cares
-            about that query parameter, but the route is not currently
-            in the active route hierarchy.
-          */
-          inactive: (prop: string, value: unknown) => {
-            let qp = map[prop];
-            this._qpChanged(prop, value, qp);
-          },
-          /*
-            Called when a query parameter changes in the URL, this route cares
-            about that query parameter, and the route is currently
-            in the active route hierarchy.
-          */
-          active: (prop: string, value: unknown) => {
-            let qp = map[prop];
-            this._qpChanged(prop, value, qp);
-            return this._activeQPChanged(qp, value);
-          },
-          /*
-            Called when a value of a query parameter this route handles changes in a controller
-            and the route is currently in the active route hierarchy.
-          */
-          allowOverrides: (prop: string, value: unknown) => {
-            let qp = map[prop];
-            this._qpChanged(prop, value, qp);
-            return this._updatingQPChanged(qp);
-          },
-        },
+      let desc = combinedQueryParameterConfiguration[propName];
+      let scope = desc.scope || 'model';
+      let parts;
+
+      if (scope === 'controller') {
+        parts = [];
+      }
+
+      let urlKey = desc.as || this.serializeQueryParamKey(propName);
+      let defaultValue = get(controller, propName);
+
+      if (Array.isArray(defaultValue)) {
+        defaultValue = emberA(defaultValue.slice());
+      }
+
+      let type = desc.type || typeOf(defaultValue);
+
+      let defaultValueSerialized = this.serializeQueryParam(defaultValue, urlKey, type);
+      let scopedPropertyName = `${controllerName}:${propName}`;
+      let qp = {
+        undecoratedDefaultValue: get(controller, propName),
+        defaultValue,
+        serializedDefaultValue: defaultValueSerialized,
+        serializedValue: defaultValueSerialized,
+
+        type,
+        urlKey,
+        prop: propName,
+        scopedPropertyName,
+        controllerName,
+        route: this,
+        parts, // provided later when stashNames is called if 'model' scope
+        values: null, // provided later when setup is called. no idea why.
+        scope,
       };
-    },
 
-    set(key, value) {
-      defineProperty(this, key, null, value);
-    },
+      map[propName] = map[urlKey] = map[scopedPropertyName] = qp;
+      qps.push(qp);
+      propertyNames.push(propName);
+    }
+
+    return {
+      qps,
+      map,
+      propertyNames,
+      states: {
+        /*
+          Called when a query parameter changes in the URL, this route cares
+          about that query parameter, but the route is not currently
+          in the active route hierarchy.
+        */
+        inactive: (prop: string, value: unknown) => {
+          let qp = map[prop];
+          this._qpChanged(prop, value, qp);
+        },
+        /*
+          Called when a query parameter changes in the URL, this route cares
+          about that query parameter, and the route is currently
+          in the active route hierarchy.
+        */
+        active: (prop: string, value: unknown) => {
+          let qp = map[prop];
+          this._qpChanged(prop, value, qp);
+          return this._activeQPChanged(qp, value);
+        },
+        /*
+          Called when a value of a query parameter this route handles changes in a controller
+          and the route is currently in the active route hierarchy.
+        */
+        allowOverrides: (prop: string, value: unknown) => {
+          let qp = map[prop];
+          this._qpChanged(prop, value, qp);
+          return this._updatingQPChanged(qp);
+        },
+      },
+    };
   }),
 
   /**

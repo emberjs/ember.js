@@ -77,15 +77,17 @@ moduleFor(
     }
 
     ['@test can override volatile computed property'](assert) {
+      let obj = {};
+
       expectDeprecation(() => {
-        let obj = {};
-
         defineProperty(obj, 'foo', computed(function() {}).volatile());
-
-        set(obj, 'foo', 'boom');
-
-        assert.equal(obj.foo, 'boom');
       }, 'Setting a computed property as volatile has been deprecated. Instead, consider using a native getter with native class syntax.');
+
+      expectDeprecation(() => {
+        set(obj, 'foo', 'boom');
+      }, /The \[object Object\]#foo computed property was just overriden./);
+
+      assert.equal(obj.foo, 'boom');
     }
 
     ['@test defining computed property should invoke property on set'](assert) {
@@ -740,23 +742,25 @@ moduleFor(
     }
 
     ['@test setter can be omited'](assert) {
-      expectDeprecation(() => {
-        let testObj = EmberObject.extend({
-          a: '1',
-          b: '2',
-          aInt: computed('a', {
-            get(keyName) {
-              assert.equal(keyName, 'aInt', 'getter receives the keyName');
-              return parseInt(this.get('a'));
-            },
-          }),
-        }).create();
+      let testObj = EmberObject.extend({
+        a: '1',
+        b: '2',
+        aInt: computed('a', {
+          get(keyName) {
+            assert.equal(keyName, 'aInt', 'getter receives the keyName');
+            return parseInt(this.get('a'));
+          },
+        }),
+      }).create();
 
-        assert.ok(testObj.get('aInt') === 1, 'getter works');
-        assert.ok(testObj.get('a') === '1');
+      assert.ok(testObj.get('aInt') === 1, 'getter works');
+      assert.ok(testObj.get('a') === '1');
+
+      expectDeprecation(() => {
         testObj.set('aInt', '123');
-        assert.ok(testObj.get('aInt') === '123', 'cp has been updated too');
-      }, /The aInt computed property was just overriden/);
+      }, /The <\(unknown\):ember\d*>#aInt computed property was just overriden/);
+
+      assert.ok(testObj.get('aInt') === '123', 'cp has been updated too');
     }
 
     ['@test getter can be omited'](assert) {
@@ -940,26 +944,26 @@ moduleFor(
   'computed - default setter',
   class extends AbstractTestCase {
     ["@test when setting a value on a computed property that doesn't handle sets"](assert) {
+      let obj = {};
+      let observerFired = false;
+
+      defineProperty(
+        obj,
+        'foo',
+        computed(function() {
+          return 'foo';
+        })
+      );
+
+      addObserver(obj, 'foo', null, () => (observerFired = true));
+
       expectDeprecation(() => {
-        let obj = {};
-        let observerFired = false;
-
-        defineProperty(
-          obj,
-          'foo',
-          computed(function() {
-            return 'foo';
-          })
-        );
-
-        addObserver(obj, 'foo', null, () => (observerFired = true));
-
         set(obj, 'foo', 'bar');
+      }, /The \[object Object\]#foo computed property was just overriden./);
 
-        assert.equal(get(obj, 'foo'), 'bar', 'The set value is properly returned');
-        assert.ok(typeof obj.foo === 'string', 'The computed property was removed');
-        assert.ok(observerFired, 'The observer was still notified');
-      }, /The foo computed property was just overriden./);
+      assert.equal(get(obj, 'foo'), 'bar', 'The set value is properly returned');
+      assert.ok(typeof obj.foo === 'string', 'The computed property was removed');
+      assert.ok(observerFired, 'The observer was still notified');
     }
   }
 );

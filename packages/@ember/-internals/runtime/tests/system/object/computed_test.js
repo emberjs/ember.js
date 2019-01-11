@@ -358,21 +358,23 @@ moduleFor(
     }
 
     ['@test can declare dependent keys with .property()'](assert) {
+      let Obj;
+
       expectDeprecation(() => {
-        let Obj = EmberObject.extend({
+        Obj = EmberObject.extend({
           foo: computed(function() {
             return this.bar;
           }).property('bar'),
         });
-
-        let obj = Obj.create({ bar: 1 });
-
-        assert.equal(obj.get('foo'), 1);
-
-        obj.set('bar', 2);
-
-        assert.equal(obj.get('foo'), 2);
       }, /Setting dependency keys using the `.property\(\)` modifier has been deprecated/);
+
+      let obj = Obj.create({ bar: 1 });
+
+      assert.equal(obj.get('foo'), 1);
+
+      obj.set('bar', 2);
+
+      assert.equal(obj.get('foo'), 2);
     }
   }
 );

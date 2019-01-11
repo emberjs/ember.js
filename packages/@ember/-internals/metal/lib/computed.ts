@@ -1,5 +1,5 @@
 import { meta as metaFor, peekMeta } from '@ember/-internals/meta';
-import { inspect } from '@ember/-internals/utils';
+import { inspect, toString } from '@ember/-internals/utils';
 import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { assert, deprecate, warn } from '@ember/debug';
 import EmberError from '@ember/error';
@@ -476,7 +476,9 @@ class ComputedProperty extends Descriptor implements DescriptorWithDependentKeys
 
   clobberSet(obj: object, keyName: string, value: any): any {
     deprecate(
-      `The ${keyName} computed property was just overriden. This removes the computed property and replaces it with a plain value, and has been deprecated. If you want this behavior, consider defining a setter which does it manually.`,
+      `The ${toString(
+        obj
+      )}#${keyName} computed property was just overriden. This removes the computed property and replaces it with a plain value, and has been deprecated. If you want this behavior, consider defining a setter which does it manually.`,
       false,
       {
         id: 'computed-property.override',

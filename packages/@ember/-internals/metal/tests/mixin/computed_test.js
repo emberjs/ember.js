@@ -110,62 +110,60 @@ moduleFor(
     }
 
     ['@test setter behavior works properly when overriding computed properties'](assert) {
-      expectDeprecation(() => {
-        let obj = {};
+      let obj = {};
 
-        let MixinA = Mixin.create({
-          cpWithSetter2: computed(K),
-          cpWithSetter3: computed(K),
-          cpWithoutSetter: computed(K),
-        });
+      let MixinA = Mixin.create({
+        cpWithSetter2: computed(K),
+        cpWithSetter3: computed(K),
+        cpWithoutSetter: computed(K),
+      });
 
-        let cpWasCalled = false;
+      let cpWasCalled = false;
 
-        let MixinB = Mixin.create({
-          cpWithSetter2: computed({
-            get: K,
-            set() {
-              cpWasCalled = true;
-            },
-          }),
-
-          cpWithSetter3: computed({
-            get: K,
-            set() {
-              cpWasCalled = true;
-            },
-          }),
-
-          cpWithoutSetter: computed(function() {
+      let MixinB = Mixin.create({
+        cpWithSetter2: computed({
+          get: K,
+          set() {
             cpWasCalled = true;
-          }),
-        });
+          },
+        }),
 
-        MixinA.apply(obj);
-        MixinB.apply(obj);
+        cpWithSetter3: computed({
+          get: K,
+          set() {
+            cpWasCalled = true;
+          },
+        }),
 
-        set(obj, 'cpWithSetter2', 'test');
-        assert.ok(
-          cpWasCalled,
-          'The computed property setter was called when defined with two args'
-        );
-        cpWasCalled = false;
+        cpWithoutSetter: computed(function() {
+          cpWasCalled = true;
+        }),
+      });
 
-        set(obj, 'cpWithSetter3', 'test');
-        assert.ok(
-          cpWasCalled,
-          'The computed property setter was called when defined with three args'
-        );
-        cpWasCalled = false;
+      MixinA.apply(obj);
+      MixinB.apply(obj);
 
+      set(obj, 'cpWithSetter2', 'test');
+      assert.ok(cpWasCalled, 'The computed property setter was called when defined with two args');
+      cpWasCalled = false;
+
+      set(obj, 'cpWithSetter3', 'test');
+      assert.ok(
+        cpWasCalled,
+        'The computed property setter was called when defined with three args'
+      );
+      cpWasCalled = false;
+
+      expectDeprecation(() => {
         set(obj, 'cpWithoutSetter', 'test');
-        assert.equal(
-          get(obj, 'cpWithoutSetter'),
-          'test',
-          'The default setter was called, the value is correct'
-        );
-        assert.ok(!cpWasCalled, 'The default setter was called, not the CP itself');
-      }, /The cpWithoutSetter computed property was just overriden./);
+      }, /The \[object Object\]#cpWithoutSetter computed property was just overriden./);
+
+      assert.equal(
+        get(obj, 'cpWithoutSetter'),
+        'test',
+        'The default setter was called, the value is correct'
+      );
+      assert.ok(!cpWasCalled, 'The default setter was called, not the CP itself');
     }
   }
 );
