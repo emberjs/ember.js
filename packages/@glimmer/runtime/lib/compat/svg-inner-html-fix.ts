@@ -7,7 +7,7 @@ import {
   SimpleElement,
   SimpleNode,
 } from '@simple-dom/interface';
-import { DOMOperations, moveNodesBefore } from '../dom/helper';
+import { DOMOperations, moveNodesBefore } from '../dom/operations';
 
 export const SVG_NAMESPACE = Namespace.SVG;
 export type SVG_NAMESPACE = typeof SVG_NAMESPACE;
