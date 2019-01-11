@@ -3,6 +3,7 @@ import { getOwner } from '@ember/-internals/owner';
 import { EMBER_MODULE_UNIFICATION } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { ComputedProperty } from './computed';
+import { defineProperty } from './properties';
 
 export interface InjectedPropertyOptions {
   source: string;
@@ -31,7 +32,7 @@ export default class InjectedProperty extends ComputedProperty {
   readonly namespace: string | undefined;
 
   constructor(type: string, name: string, options?: InjectedPropertyOptions) {
-    super(injectedPropertyGet);
+    super(injectedPropertyDesc);
 
     this.type = type;
     this.name = name;
@@ -54,22 +55,28 @@ export default class InjectedProperty extends ComputedProperty {
   }
 }
 
-function injectedPropertyGet(this: any, keyName: string): any {
-  let desc = descriptorFor(this, keyName);
-  let owner = getOwner(this) || this.container; // fallback to `container` for backwards compat
+const injectedPropertyDesc = {
+  get(this: any, keyName: string): any {
+    let desc = descriptorFor(this, keyName);
+    let owner = getOwner(this) || this.container; // fallback to `container` for backwards compat
 
-  assert(
-    `InjectedProperties should be defined with the inject computed property macros.`,
-    desc && desc.type
-  );
-  assert(
-    `Attempting to lookup an injected property on an object without a container, ensure that the object was instantiated via a container.`,
-    Boolean(owner)
-  );
+    assert(
+      `InjectedProperties should be defined with the inject computed property macros.`,
+      desc && desc.type
+    );
+    assert(
+      `Attempting to lookup an injected property on an object without a container, ensure that the object was instantiated via a container.`,
+      Boolean(owner)
+    );
 
-  let specifier = `${desc.type}:${desc.name || keyName}`;
-  return owner.lookup(specifier, {
-    source: desc.source,
-    namespace: desc.namespace,
-  });
-}
+    let specifier = `${desc.type}:${desc.name || keyName}`;
+    return owner.lookup(specifier, {
+      source: desc.source,
+      namespace: desc.namespace,
+    });
+  },
+
+  set(this: any, keyName: string, value: any) {
+    defineProperty(this, keyName, null, value);
+  },
+};

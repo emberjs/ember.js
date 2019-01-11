@@ -1,8 +1,15 @@
 /**
 @module @ember/object
 */
+import { DEBUG } from '@glimmer/env';
 import { assert } from '@ember/debug';
-import { get, ComputedProperty, addObserver, removeObserver } from '@ember/-internals/metal';
+import {
+  get,
+  computed,
+  ComputedProperty,
+  addObserver,
+  removeObserver,
+} from '@ember/-internals/metal';
 import { compare, isArray, A as emberA, uniqBy as uniqByArray } from '@ember/-internals/runtime';
 
 function reduceMacro(dependentKey, callback, initialValue, name) {
@@ -25,7 +32,7 @@ function reduceMacro(dependentKey, callback, initialValue, name) {
   return cp;
 }
 
-function arrayMacro(dependentKey, callback) {
+function arrayMacro(dependentKey, additionalDependentKeys, callback) {
   // This is a bit ugly
   let propertyName;
   if (/@each/.test(dependentKey)) {
@@ -35,21 +42,14 @@ function arrayMacro(dependentKey, callback) {
     dependentKey += '.[]';
   }
 
-  let cp = new ComputedProperty(
-    function() {
-      let value = get(this, propertyName);
-      if (isArray(value)) {
-        return emberA(callback.call(this, value));
-      } else {
-        return emberA();
-      }
-    },
-    { readOnly: true }
-  );
-
-  cp.property(dependentKey); // this forces to expand properties GH #15855
-
-  return cp;
+  return computed(dependentKey, ...additionalDependentKeys, function() {
+    let value = get(this, propertyName);
+    if (isArray(value)) {
+      return emberA(callback.call(this, value));
+    } else {
+      return emberA();
+    }
+  }).readOnly();
 }
 
 function multiArrayMacro(_dependentKeys, callback, name) {
@@ -217,12 +217,28 @@ export function min(dependentKey) {
   @for @ember/object/computed
   @static
   @param {String} dependentKey
+  @param {Array} additionalDependentKeys optional array of additional dependent keys
   @param {Function} callback
   @return {ComputedProperty} an array mapped via the callback
   @public
 */
-export function map(dependentKey, callback) {
-  return arrayMacro(dependentKey, function(value) {
+export function map(dependentKey, additionalDependentKeys, callback) {
+  if (callback === undefined && typeof additionalDependentKeys === 'function') {
+    callback = additionalDependentKeys;
+    additionalDependentKeys = [];
+  }
+
+  assert(
+    'The final parameter provided to map must be a callback function',
+    typeof callback === 'function'
+  );
+
+  assert(
+    'The second parameter provided to map must either be the callback or an array of additional dependent keys',
+    Array.isArray(additionalDependentKeys)
+  );
+
+  return arrayMacro(dependentKey, additionalDependentKeys, function(value) {
     return value.map(callback, this);
   });
 }
@@ -338,12 +354,28 @@ export function mapBy(dependentKey, propertyKey) {
   @for @ember/object/computed
   @static
   @param {String} dependentKey
+  @param {Array} additionalDependentKeys optional array of additional dependent keys
   @param {Function} callback
   @return {ComputedProperty} the filtered array
   @public
 */
-export function filter(dependentKey, callback) {
-  return arrayMacro(dependentKey, function(value) {
+export function filter(dependentKey, additionalDependentKeys, callback) {
+  if (callback === undefined && typeof additionalDependentKeys === 'function') {
+    callback = additionalDependentKeys;
+    additionalDependentKeys = [];
+  }
+
+  assert(
+    'The final parameter provided to filter must be a callback function',
+    typeof callback === 'function'
+  );
+
+  assert(
+    'The second parameter provided to filter must either be the callback or an array of additional dependent keys',
+    Array.isArray(additionalDependentKeys)
+  );
+
+  return arrayMacro(dependentKey, additionalDependentKeys, function(value) {
     return value.filter(callback, this);
   });
 }
@@ -782,28 +814,51 @@ export function collect(...dependentKeys) {
   @for @ember/object/computed
   @static
   @param {String} itemsKey
+  @param {Array} additionalDependentKeys optional array of additional dependent keys
   @param {String or Function} sortDefinition a dependent key to an
   array of sort properties (add `:desc` to the arrays sort properties to sort descending) or a function to use when sorting
   @return {ComputedProperty} computes a new sorted array based
   on the sort property array or callback function
   @public
 */
-export function sort(itemsKey, sortDefinition) {
-  assert(
-    '`computed.sort` requires two arguments: an array key to sort and ' +
-      'either a sort properties key or sort function',
-    arguments.length === 2
-  );
+export function sort(itemsKey, additionalDependentKeys, sortDefinition) {
+  if (DEBUG) {
+    let argumentsValid = false;
+
+    if (arguments.length === 2) {
+      argumentsValid =
+        typeof itemsKey === 'string' &&
+        (typeof additionalDependentKeys === 'string' ||
+          typeof additionalDependentKeys === 'function');
+    }
+
+    if (arguments.length === 3) {
+      argumentsValid =
+        typeof itemsKey === 'string' &&
+        Array.isArray(additionalDependentKeys) &&
+        typeof sortDefinition === 'function';
+    }
+
+    assert(
+      '`computed.sort` can either be used with an array of sort properties or with a sort function. If used with an array of sort properties, it must receive exactly two arguments: the key of the array to sort, and the key of the array of sort properties. If used with a sort function, it may recieve up to three arguments: the key of the array to sort, an optional additional array of dependent keys for the computed property, and the sort function.',
+      argumentsValid
+    );
+  }
+
+  if (sortDefinition === undefined && !Array.isArray(additionalDependentKeys)) {
+    sortDefinition = additionalDependentKeys;
+    additionalDependentKeys = [];
+  }
 
   if (typeof sortDefinition === 'function') {
-    return customSort(itemsKey, sortDefinition);
+    return customSort(itemsKey, additionalDependentKeys, sortDefinition);
   } else {
     return propertySort(itemsKey, sortDefinition);
   }
 }
 
-function customSort(itemsKey, comparator) {
-  return arrayMacro(itemsKey, function(value) {
+function customSort(itemsKey, additionalDependentKeys, comparator) {
+  return arrayMacro(itemsKey, additionalDependentKeys, function(value) {
     return value.slice().sort((x, y) => comparator.call(this, x, y));
   });
 }

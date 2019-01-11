@@ -30,10 +30,10 @@ moduleFor(
       defineProperty(
         obj,
         'abc',
-        computed(function(key) {
+        computed('a', 'b', 'c', function(key) {
           cpCount++;
           return 'computed ' + key;
-        }).property('a', 'b', 'c')
+        })
       );
 
       get(obj, 'abc');

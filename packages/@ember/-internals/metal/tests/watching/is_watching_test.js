@@ -61,7 +61,7 @@ moduleFor(
       testObserver(
         assert,
         (obj, key, fn) => {
-          defineProperty(obj, fn, computed(function() {}).property(key));
+          defineProperty(obj, fn, computed(key, function() {}));
           get(obj, fn);
         },
         (obj, key, fn) => defineProperty(obj, fn, null)
@@ -72,7 +72,7 @@ moduleFor(
       testObserver(
         assert,
         (obj, key, fn) => {
-          defineProperty(obj, fn, computed(function() {}).property(key + '.bar'));
+          defineProperty(obj, fn, computed(key + '.bar', function() {}));
           get(obj, fn);
         },
         (obj, key, fn) => defineProperty(obj, fn, null)
