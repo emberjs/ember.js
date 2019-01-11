@@ -9,6 +9,7 @@
     "simple-html-tokenizer": "^0.5.6"
   },
   "devDependencies": {
+    "@glimmer/local-debug-flags": "^0.36.5",
     "@types/handlebars": "^4.0.31",
     "@types/qunit": "^2.0.31",
     "typescript": "^2.8.3"
