@@ -9,6 +9,7 @@ import {
   CheckProgramSymbolTable,
   CheckUnknown,
   wrap,
+  CheckOption,
 } from '@glimmer/debug';
 import {
   CapturedArguments,
@@ -29,9 +30,11 @@ import {
   CapturedPositionalArgumentsImpl,
   VMArgumentsImpl,
 } from '../../vm/arguments';
-import { ComponentInstance } from './component';
+import { ComponentInstance, ComponentElementOperations } from './component';
 
 export const CheckTag: Checker<Tag> = CheckInstanceof(TagWrapper);
+
+export const CheckOperations = CheckOption(CheckInstanceof(ComponentElementOperations));
 
 export const CheckPathReference: Checker<VersionedPathReference> = CheckInterface({
   tag: CheckTag,

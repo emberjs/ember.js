@@ -9,6 +9,8 @@ import {
   SexpOpcodes,
   CompileTimeResolverDelegate,
   ContainingMetadata,
+  MacroBlocks,
+  MacroInlines,
 } from '@glimmer/interfaces';
 import { dict, assert } from '@glimmer/util';
 import { UNHANDLED } from './concat';
@@ -18,7 +20,7 @@ export class Macros {
   public inlines: Inlines;
 
   constructor() {
-    let { blocks, inlines } = populateBuiltins();
+    let { blocks, inlines } = populateBuiltins(new Blocks(), new Inlines());
     this.blocks = blocks;
     this.inlines = inlines;
   }
@@ -44,7 +46,7 @@ export type MissingBlockMacro = (
   context: MacroContext
 ) => StatementCompileActions;
 
-export class Blocks {
+export class Blocks implements MacroBlocks {
   private names = dict<number>();
   private funcs: BlockMacro[] = [];
   private missing: MissingBlockMacro | undefined;
@@ -93,7 +95,7 @@ export type AppendMacro = (
   context: MacroContext
 ) => StatementCompileActions | Unhandled;
 
-export class Inlines {
+export class Inlines implements MacroInlines {
   private names = dict<number>();
   private funcs: AppendMacro[] = [];
   private missing: AppendMacro | undefined;
