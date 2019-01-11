@@ -5,20 +5,14 @@ import { APPEND_OPCODES } from '../../opcodes';
 import { FALSE_REFERENCE, TRUE_REFERENCE } from '../../references';
 import { ConcatReference } from '../expressions/concat';
 import { assert } from '@glimmer/util';
-import {
-  check,
-  CheckFunction,
-  CheckOption,
-  CheckHandle,
-  CheckBlockSymbolTable,
-  CheckOr,
-} from '@glimmer/debug';
+import { check, CheckOption, CheckHandle, CheckBlockSymbolTable, CheckOr } from '@glimmer/debug';
 import { stackAssert } from './assert';
 import {
   CheckArguments,
   CheckPathReference,
   CheckCompilableBlock,
   CheckScope,
+  CheckHelper,
 } from './-debug-strip';
 import { CONSTANTS } from '../../symbols';
 
@@ -26,9 +20,9 @@ export type FunctionExpression<T> = (vm: PublicVM) => VersionedPathReference<T>;
 
 APPEND_OPCODES.add(Op.Helper, (vm, { op1: handle }) => {
   let stack = vm.stack;
-  let helper = check(vm.runtime.resolver.resolve(handle), CheckFunction);
+  let helper = check(vm.runtime.resolver.resolve(handle), CheckHelper);
   let args = check(stack.pop(), CheckArguments);
-  let value = helper(vm, args);
+  let value = helper(args, vm);
 
   vm.loadValue($v0, value, CheckPathReference);
 });

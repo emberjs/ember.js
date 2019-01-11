@@ -32,6 +32,8 @@ import {
   WithElementHook,
   WithJitDynamicLayout,
   WithJitStaticLayout,
+  WithUpdateHook,
+  WithCreateInstance,
 } from '@glimmer/interfaces';
 import {
   CONSTANT_TAG,
@@ -91,7 +93,7 @@ export const COMPONENT_INSTANCE = Symbol('COMPONENT_INSTANCE');
 export interface ComponentInstance {
   [COMPONENT_INSTANCE]: true;
   definition: ComponentDefinition;
-  manager: InternalComponentManager;
+  manager: ComponentManager;
   capabilities: CapabilityFlags;
   state: ComponentInstanceState;
   handle: number;
@@ -113,7 +115,7 @@ export interface InitialComponentInstance {
 export interface PopulatedComponentInstance {
   [COMPONENT_INSTANCE]: true;
   definition: ComponentDefinition;
-  manager: ComponentManager<unknown, unknown>;
+  manager: ComponentManager<unknown>;
   capabilities: CapabilityFlags;
   state: null;
   handle: number;
@@ -280,7 +282,7 @@ APPEND_OPCODES.add(Op.PrepareArgs, (vm, { op1: _state }) => {
   let { manager, state } = definition;
   let capabilities = instance.capabilities;
 
-  if (hasCapability(capabilities, Capability.PrepareArgs) !== true) {
+  if (!hasCapability(manager, capabilities, Capability.PrepareArgs)) {
     stack.push(args);
     return;
   }
@@ -341,20 +343,24 @@ APPEND_OPCODES.add(Op.CreateComponent, (vm, { op1: flags, op2: _state }) => {
     manager.getCapabilities(definition.state)
   ));
 
+  if (!hasCapability(manager, capabilities, Capability.CreateInstance)) {
+    throw new Error(`BUG`);
+  }
+
   let dynamicScope: Option<DynamicScope> = null;
-  if (hasCapability(capabilities, Capability.DynamicScope)) {
+  if (hasCapability(manager, capabilities, Capability.DynamicScope)) {
     dynamicScope = vm.dynamicScope();
   }
 
   let hasDefaultBlock = flags & 1;
   let args: Option<VMArguments> = null;
 
-  if (hasCapability(capabilities, Capability.CreateArgs)) {
+  if (hasCapability(manager, capabilities, Capability.CreateArgs)) {
     args = check(vm.stack.peek(), CheckArguments);
   }
 
   let self: Option<VersionedPathReference<unknown>> = null;
-  if (hasCapability(capabilities, Capability.CreateCaller)) {
+  if (hasCapability(manager, capabilities, Capability.CreateCaller)) {
     self = vm.getSelf();
   }
 
@@ -366,7 +372,7 @@ APPEND_OPCODES.add(Op.CreateComponent, (vm, { op1: flags, op2: _state }) => {
 
   let tag = manager.getTag(state);
 
-  if (hasCapability(capabilities, Capability.UpdateHook) && !isConstTag(tag)) {
+  if (hasCapability(manager, capabilities, Capability.UpdateHook) && !isConstTag(tag)) {
     vm.updateWith(new UpdateComponentOpcode(tag, state, manager, dynamicScope));
   }
 });
@@ -496,7 +502,9 @@ APPEND_OPCODES.add(
   Op.GetJitComponentLayout,
   (vm, { op1: _state }) => {
     let instance = check(vm.fetchValue(_state), CheckComponentInstance);
-    let { manager, definition } = instance;
+
+    let manager = instance.manager as WithJitStaticLayout | WithJitDynamicLayout;
+    let { definition } = instance;
     let { stack } = vm;
 
     let { state: instanceState, capabilities } = instance;
@@ -507,16 +515,9 @@ APPEND_OPCODES.add(
     let layout: CompilableTemplate;
 
     if (hasStaticLayoutCapability(capabilities, manager)) {
-      layout = (manager as WithJitStaticLayout<
-        ComponentInstanceState,
-        ComponentDefinitionState,
-        RuntimeResolver
-      >).getJitStaticLayout(definitionState, vm.runtime.resolver);
+      layout = manager.getJitStaticLayout(definitionState, vm.runtime.resolver);
     } else if (hasDynamicLayoutCapability(capabilities, manager)) {
-      layout = (manager as WithJitDynamicLayout<
-        ComponentInstanceState,
-        RuntimeResolver
-      >).getJitDynamicLayout(instanceState, vm.runtime.resolver, vm.context);
+      layout = manager.getJitDynamicLayout(instanceState, vm.runtime.resolver, vm.context);
     } else {
       throw unreachable();
     }
@@ -566,7 +567,7 @@ export function hasStaticLayoutCapability(
 ): _manager is
   | WithJitStaticLayout<ComponentInstanceState, ComponentDefinitionState, RuntimeResolver>
   | WithAotStaticLayout<ComponentInstanceState, ComponentDefinitionState, RuntimeResolver> {
-  return hasCapability(capabilities, Capability.DynamicLayout) === false;
+  return hasCapability(_manager, capabilities, Capability.DynamicLayout) === false;
 }
 
 export function hasDynamicLayoutCapability(
@@ -575,7 +576,7 @@ export function hasDynamicLayoutCapability(
 ): _manager is
   | WithAotDynamicLayout<ComponentInstanceState, RuntimeResolver>
   | WithJitDynamicLayout<ComponentInstanceState, RuntimeResolver> {
-  return hasCapability(capabilities, Capability.DynamicLayout) === true;
+  return hasCapability(_manager, capabilities, Capability.DynamicLayout) === true;
 }
 
 APPEND_OPCODES.add(Op.Main, (vm, { op1: register }) => {
@@ -678,8 +679,12 @@ APPEND_OPCODES.add(Op.InvokeComponentLayout, (vm, { op1: _state }) => {
 });
 
 APPEND_OPCODES.add(Op.DidRenderLayout, (vm, { op1: _state }) => {
-  let { manager, state } = check(vm.fetchValue(_state), CheckComponentInstance);
+  let { manager, state, capabilities } = check(vm.fetchValue(_state), CheckComponentInstance);
   let bounds = vm.elements().popBlock();
+
+  if (!hasCapability(manager, capabilities, Capability.CreateInstance)) {
+    throw new Error(`BUG`);
+  }
 
   let mgr = check(manager, CheckInterface({ didRenderLayout: CheckFunction }));
 
@@ -700,7 +705,7 @@ export class UpdateComponentOpcode extends UpdatingOpcode {
   constructor(
     public tag: Tag,
     private component: ComponentInstanceState,
-    private manager: InternalComponentManager,
+    private manager: WithUpdateHook,
     private dynamicScope: Option<DynamicScope>
   ) {
     super();
@@ -718,7 +723,7 @@ export class DidUpdateLayoutOpcode extends UpdatingOpcode {
   public tag: Tag = CONSTANT_TAG;
 
   constructor(
-    private manager: InternalComponentManager,
+    private manager: WithCreateInstance,
     private component: ComponentInstanceState,
     private bounds: Bounds
   ) {

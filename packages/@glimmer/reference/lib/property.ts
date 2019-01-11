@@ -191,3 +191,34 @@ export class NestedPropertyReference implements VersionedPathReference {
     return new NestedPropertyReference(this, key);
   }
 }
+
+export class UpdatableReference<T> implements VersionedPathReference {
+  public tag: TagWrapper<UpdatableDirtyableTag>;
+  private _value: T;
+
+  constructor(value: T) {
+    this.tag = UpdatableDirtyableTag.create(CONSTANT_TAG);
+    this._value = value;
+  }
+
+  value() {
+    return this._value;
+  }
+
+  update(value: T) {
+    let { _value } = this;
+
+    if (value !== _value) {
+      this.tag.inner.dirty();
+      this._value = value;
+    }
+  }
+
+  get(key: string): VersionedPathReference {
+    return new NestedPropertyReference(this, key);
+  }
+}
+
+export function State<T>(data: T): UpdatableReference<T> {
+  return new UpdatableReference(data);
+}

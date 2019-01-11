@@ -69,14 +69,16 @@ QUnit.test('allows querying bitmap for a capability', assert => {
     createInstance: false,
   });
 
-  assert.strictEqual(true, hasCapability(capabilities, Capability.DynamicLayout));
-  assert.strictEqual(false, hasCapability(capabilities, Capability.DynamicTag));
-  assert.strictEqual(true, hasCapability(capabilities, Capability.PrepareArgs));
-  assert.strictEqual(false, hasCapability(capabilities, Capability.CreateArgs));
-  assert.strictEqual(false, hasCapability(capabilities, Capability.AttributeHook));
-  assert.strictEqual(true, hasCapability(capabilities, Capability.ElementHook));
-  assert.strictEqual(true, hasCapability(capabilities, Capability.DynamicScope));
-  assert.strictEqual(false, hasCapability(capabilities, Capability.CreateCaller));
-  assert.strictEqual(true, hasCapability(capabilities, Capability.UpdateHook));
-  assert.strictEqual(false, hasCapability(capabilities, Capability.CreateInstance));
+  let manager = null as any;
+
+  assert.strictEqual(true, hasCapability(manager, capabilities, Capability.DynamicLayout));
+  assert.strictEqual(false, hasCapability(manager, capabilities, Capability.DynamicTag));
+  assert.strictEqual(true, hasCapability(manager, capabilities, Capability.PrepareArgs));
+  assert.strictEqual(false, hasCapability(manager, capabilities, Capability.CreateArgs));
+  assert.strictEqual(false, hasCapability(manager, capabilities, Capability.AttributeHook));
+  assert.strictEqual(true, hasCapability(manager, capabilities, Capability.ElementHook));
+  assert.strictEqual(true, hasCapability(manager, capabilities, Capability.DynamicScope));
+  assert.strictEqual(false, hasCapability(manager, capabilities, Capability.CreateCaller));
+  assert.strictEqual(true, hasCapability(manager, capabilities, Capability.UpdateHook));
+  assert.strictEqual(false, hasCapability(manager, capabilities, Capability.CreateInstance));
 });

@@ -1,4 +1,14 @@
-import { ComponentCapabilities, Unique, Recast } from '@glimmer/interfaces';
+import {
+  ComponentCapabilities,
+  Unique,
+  Recast,
+  ComponentManager,
+  WithUpdateHook,
+  WithPrepareArgs,
+  WithCreateInstance,
+  WithJitStaticLayout,
+  WithAotStaticLayout,
+} from '@glimmer/interfaces';
 import { check, CheckNumber } from '@glimmer/debug';
 
 export type CapabilityFlags = Unique<'CapabilityFlag'>;
@@ -36,7 +46,24 @@ export function capabilityFlagsFrom(capabilities: ComponentCapabilities): Capabi
   >;
 }
 
-export function hasCapability(capabilities: CapabilityFlags, capability: Capability): boolean {
+export interface CapabilityMap {
+  [Capability.DynamicLayout]: WithJitStaticLayout | WithAotStaticLayout;
+  [Capability.DynamicTag]: ComponentManager;
+  [Capability.PrepareArgs]: WithPrepareArgs;
+  [Capability.CreateArgs]: ComponentManager;
+  [Capability.AttributeHook]: ComponentManager;
+  [Capability.ElementHook]: ComponentManager;
+  [Capability.DynamicScope]: ComponentManager;
+  [Capability.CreateCaller]: ComponentManager;
+  [Capability.UpdateHook]: WithUpdateHook;
+  [Capability.CreateInstance]: WithCreateInstance;
+}
+
+export function hasCapability<F extends keyof CapabilityMap>(
+  manager: ComponentManager,
+  capabilities: CapabilityFlags,
+  capability: F
+): manager is CapabilityMap[F] {
   check(capabilities, CheckNumber);
   return !!((capabilities as Recast<CapabilityFlags, number>) & capability);
 }

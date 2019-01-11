@@ -1,30 +1,20 @@
-import {
-  Dict,
-  OpaqueTemplateMeta,
-  Option,
-  RuntimeResolver,
-  TemplateMeta,
-} from '@glimmer/interfaces';
-import { IterableKeyDefinitions } from '@glimmer/reference';
+import { Helper, ResolvedValue, VMArguments } from '@glimmer/interfaces';
+import { map } from '@glimmer/reference';
+import { SimpleComponentManager } from '@glimmer/runtime';
 
-export class TutorialRuntimeResolver implements RuntimeResolver<TemplateMeta> {
-  lookupComponentDefinition(_name: string, _referrer?: Option<TemplateMeta>): Option<any> {
-    throw new Error('Method not implemented.');
-  }
-
-  lookupPartial(_name: string, _referrer?: Option<OpaqueTemplateMeta>): Option<number> {
-    throw new Error('Method not implemented.');
-  }
-
-  resolve<U>(_handle: number): U {
-    throw new Error('Method not implemented.');
-  }
-}
-
-export const KEYS: IterableKeyDefinitions = {
-  named: {
-    '@index': (_: unknown, index: unknown) => String(index),
-    '@primitive': (item: unknown) => String(item),
+export const RUNTIME_RESOLVER = {
+  resolve<U extends ResolvedValue>(handle: number): U {
+    if (handle >= TABLE.length) {
+      throw new Error(`Unexpected handle ${handle}`);
+    } else {
+      return TABLE[handle] as U;
+    }
   },
-  default: (key: string) => (item: unknown) => String((item as Dict)[key]),
 };
+
+const increment: Helper = (args: VMArguments) => {
+  return map(args.positional.at(0), (i: number) => i + 1);
+};
+
+const TEMPLATE_ONLY_COMPONENT = { state: null, manager: new SimpleComponentManager() };
+const TABLE: ResolvedValue[] = [increment, TEMPLATE_ONLY_COMPONENT];
