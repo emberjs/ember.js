@@ -3,7 +3,7 @@ import {
   ComponentDefinitionState,
   ComponentInstanceState,
   ComponentManager,
-  RuntimeResolver,
+  RuntimeResolverDelegate,
   WithAotDynamicLayout,
   WithAotStaticLayout,
   WithJitDynamicLayout,
@@ -18,8 +18,8 @@ export function hasStaticLayout<
   state: D,
   manager: ComponentManager<I, D>
 ): manager is
-  | WithAotStaticLayout<I, D, RuntimeResolver>
-  | WithJitStaticLayout<I, D, RuntimeResolver> {
+  | WithAotStaticLayout<I, D, RuntimeResolverDelegate>
+  | WithJitStaticLayout<I, D, RuntimeResolverDelegate> {
   return manager.getCapabilities(state).dynamicLayout === false;
 }
 
@@ -30,7 +30,9 @@ export function hasDynamicLayout<
 >(
   state: D,
   manager: ComponentManager<I, D>
-): manager is WithAotDynamicLayout<I, RuntimeResolver> | WithJitDynamicLayout<I, RuntimeResolver> {
+): manager is
+  | WithAotDynamicLayout<I, RuntimeResolverDelegate>
+  | WithJitDynamicLayout<I, RuntimeResolverDelegate> {
   return manager.getCapabilities(state).dynamicLayout === true;
 }
 

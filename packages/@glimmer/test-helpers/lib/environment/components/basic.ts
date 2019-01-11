@@ -5,7 +5,7 @@ import {
   ComponentCapabilities,
   Environment,
   Invocation,
-  RuntimeResolver,
+  RuntimeResolverDelegate,
   WithAotStaticLayout,
   WithJitStaticLayout,
 } from '@glimmer/interfaces';
@@ -58,7 +58,7 @@ export class BasicComponentManager
 
   getJitStaticLayout(
     state: TestComponentDefinitionState,
-    resolver: RuntimeResolver & (EagerRuntimeResolver | LazyRuntimeResolver)
+    resolver: RuntimeResolverDelegate & (EagerRuntimeResolver | LazyRuntimeResolver)
   ): CompilableProgram {
     let { name } = state;
 
@@ -98,7 +98,7 @@ export class BasicComponentManager
 
   getAotStaticLayout(
     state: TestComponentDefinitionState,
-    resolver: RuntimeResolver & EagerRuntimeResolver
+    resolver: RuntimeResolverDelegate & EagerRuntimeResolver
   ): Invocation {
     if (resolver instanceof EagerRuntimeResolver) {
       // For the case of dynamically invoking (via `{{component}}`) in eager
