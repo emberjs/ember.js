@@ -60,5 +60,6 @@ export {
   rehydrationBuilder,
   SERIALIZATION_FIRST_NODE_STRING,
 } from './lib/vm/rehydrate-builder';
+export { DefaultDynamicScope } from './lib/dynamic-scope';
 
 export type IteratorResult<T> = RichIteratorResult<null, T>;
