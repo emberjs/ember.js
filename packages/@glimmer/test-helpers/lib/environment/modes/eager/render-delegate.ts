@@ -165,7 +165,7 @@ export default class EagerRenderDelegate implements RenderDelegate {
   }
 
   registerHelper(name: string, helper: UserHelper): void {
-    let glimmerHelper: GlimmerHelper = (_vm, args) => new HelperReference(helper, args);
+    let glimmerHelper: GlimmerHelper = args => new HelperReference(helper, args);
     this.modules.register(name, 'helper', { default: glimmerHelper });
   }
 

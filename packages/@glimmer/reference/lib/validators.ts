@@ -146,6 +146,21 @@ export function combineSlice(slice: Slice<Tagged & LinkedListNode>): Tag {
   return _combine(optimized);
 }
 
+export function pair(left: Tag, right: Tag): Tag {
+  let constLeft = isConstTag(left);
+  let constRight = isConstTag(right);
+
+  if (constLeft && constRight) {
+    return CONSTANT_TAG;
+  } else if (constLeft) {
+    return left;
+  } else if (constRight) {
+    return right;
+  } else {
+    return TagsPair.create(left, right);
+  }
+}
+
 export function combine(tags: Tag[]): Tag {
   let optimized: Tag[] = [];
 
@@ -273,7 +288,7 @@ export class UpdatableTag extends CachedTag {
 register(UpdatableTag);
 
 export class UpdatableDirtyableTag extends CachedTag {
-  static create(tag: Tag): TagWrapper<UpdatableDirtyableTag> {
+  static create(tag: Tag = CONSTANT_TAG): TagWrapper<UpdatableDirtyableTag> {
     return new TagWrapper(this.id, new UpdatableDirtyableTag(tag));
   }
 
@@ -337,36 +352,6 @@ export abstract class CachedReference<T> implements VersionedReference<T> {
   protected invalidate() {
     this.lastRevision = null;
   }
-}
-
-//////////
-
-export type Mapper<T, U> = (value: T) => U;
-
-class MapperReference<T, U> extends CachedReference<U> {
-  public tag: Tag;
-
-  private reference: VersionedReference<T>;
-  private mapper: Mapper<T, U>;
-
-  constructor(reference: VersionedReference<T>, mapper: Mapper<T, U>) {
-    super();
-    this.tag = reference.tag;
-    this.reference = reference;
-    this.mapper = mapper;
-  }
-
-  protected compute(): U {
-    let { reference, mapper } = this;
-    return mapper(reference.value());
-  }
-}
-
-export function map<T, U>(
-  reference: VersionedReference<T>,
-  mapper: Mapper<T, U>
-): VersionedReference<U> {
-  return new MapperReference<T, U>(reference, mapper);
 }
 
 //////////

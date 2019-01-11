@@ -1,6 +1,5 @@
 import {
   CheckBlockSymbolTable,
-  CheckBoolean,
   Checker,
   CheckFunction,
   CheckHandle,
@@ -8,7 +7,7 @@ import {
   CheckInterface,
   CheckNumber,
   CheckProgramSymbolTable,
-  Checkunknown,
+  CheckUnknown,
   wrap,
 } from '@glimmer/debug';
 import {
@@ -20,6 +19,7 @@ import {
   Invocation,
   JitOrAotBlock,
   Scope,
+  Helper,
 } from '@glimmer/interfaces';
 import { Reference, Tag, TagWrapper, VersionedPathReference } from '@glimmer/reference';
 import { ScopeImpl } from '../../environment';
@@ -29,7 +29,7 @@ import {
   CapturedPositionalArgumentsImpl,
   VMArgumentsImpl,
 } from '../../vm/arguments';
-import { ComponentInstance, COMPONENT_INSTANCE } from './component';
+import { ComponentInstance } from './component';
 
 export const CheckTag: Checker<Tag> = CheckInstanceof(TagWrapper);
 
@@ -47,6 +47,9 @@ export const CheckReference: Checker<Reference> = CheckInterface({
 export const CheckArguments: Checker<VMArgumentsImpl> = wrap(() =>
   CheckInstanceof(VMArgumentsImpl)
 );
+
+export const CheckHelper: Checker<Helper> = CheckFunction as Checker<Helper>;
+
 export const CheckCapturedArguments: Checker<CapturedArguments> = CheckInterface({
   tag: CheckTag,
   length: CheckNumber,
@@ -58,20 +61,19 @@ export const CheckCurryComponent = CheckInstanceof(CurryComponentReference);
 
 export const CheckScope: Checker<Scope<JitOrAotBlock>> = wrap(() => CheckInstanceof(ScopeImpl));
 
-export const CheckComponentManager: Checker<ComponentManager<unknown, unknown>> = CheckInterface({
+export const CheckComponentManager: Checker<ComponentManager<unknown>> = CheckInterface({
   getCapabilities: CheckFunction,
 });
 
 export const CheckComponentInstance: Checker<ComponentInstance> = CheckInterface({
-  [COMPONENT_INSTANCE]: CheckBoolean,
-  definition: Checkunknown,
-  state: Checkunknown,
-  handle: Checkunknown,
-  table: Checkunknown,
+  definition: CheckUnknown,
+  state: CheckUnknown,
+  handle: CheckUnknown,
+  table: CheckUnknown,
 });
 
 export const CheckComponentDefinition: Checker<ComponentDefinition> = CheckInterface({
-  state: Checkunknown,
+  state: CheckUnknown,
   manager: CheckComponentManager,
 });
 
@@ -85,8 +87,8 @@ export const CheckElementOperations: Checker<ElementOperations> = CheckInterface
 });
 
 export const CheckFinishedComponentInstance: Checker<ComponentInstance> = CheckInterface({
-  definition: Checkunknown,
-  state: Checkunknown,
+  definition: CheckUnknown,
+  state: CheckUnknown,
   handle: CheckHandle,
   table: CheckProgramSymbolTable,
 });

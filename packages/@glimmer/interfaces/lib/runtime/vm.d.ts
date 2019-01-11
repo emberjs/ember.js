@@ -17,5 +17,5 @@ export interface VM {
 }
 
 export interface Helper {
-  (vm: VM, args: VMArguments): PathReference<unknown>;
+  (args: VMArguments, vm: VM): PathReference;
 }

@@ -1,12 +1,6 @@
-import {
-  UpdatableDirtyableTag,
-  CONSTANT_TAG,
-  Tag,
-  trackedData,
-  data,
-  tagFor,
-} from '@glimmer/reference';
+import { UpdatableDirtyableTag, CONSTANT_TAG, Tag, State, tagFor } from '@glimmer/reference';
 import { unwrap } from '@glimmer/util';
+import { tracked } from './support';
 
 function unrelatedBump(tag: Tag, snapshot: number) {
   let t = UpdatableDirtyableTag.create(CONSTANT_TAG);
@@ -17,21 +11,6 @@ function unrelatedBump(tag: Tag, snapshot: number) {
     true,
     'tag is still valid after an unrelated bump'
   );
-}
-
-function tracked<T extends object, K extends keyof T>(k: { new (...args: any): T }, key: K) {
-  let proto = k.prototype;
-
-  let { getter, setter } = trackedData<T, K>(key);
-
-  Object.defineProperty(proto, key, {
-    get() {
-      return getter(this);
-    },
-    set(value) {
-      return setter(this, value);
-    },
-  });
 }
 
 QUnit.module('tracked properties');
@@ -86,7 +65,7 @@ QUnit.test('can request a tag for a property', assert => {
 
   let obj = new TrackedPerson();
 
-  let root = data(obj);
+  let root = State(obj);
   let firstName = root.get('firstName');
 
   assert.strictEqual(firstName.value(), 'Tom');
@@ -109,7 +88,7 @@ QUnit.todo('can request a tag for non-objects and get a CONSTANT_TAG', assert =>
 
   function hasConstChildren(value: unknown) {
     assert.ok(
-      data(value)
+      State(value)
         .get('foo')
         .tag.validate(snapshot)
     );
@@ -215,7 +194,7 @@ QUnit.test('can track a computed property', assert => {
   }
 
   let obj = new TrackedPerson();
-  let root = data(obj);
+  let root = State(obj);
   let first = root.get('firstName');
   assert.strictEqual(first.value(), 'Tom0');
   assert.strictEqual(first.value(), 'Tom1');
@@ -274,7 +253,7 @@ QUnit.test(
     tracked(TrackedPerson, 'lastName');
 
     let obj = new TrackedPerson();
-    let root = data(obj);
+    let root = State(obj);
     let salutation = root.get('salutation');
     let fullName = root.get('fullName');
 
@@ -361,7 +340,7 @@ QUnit.test('nested @tracked in multiple objects', assert => {
   tracked(TrackedContact, 'person');
 
   let obj = new TrackedContact(new TrackedPerson(), 'tom@example.com');
-  let root = data(obj);
+  let root = State(obj);
   let contact = root.get('contact');
   let fullName = root.get('person').get('fullName');
 

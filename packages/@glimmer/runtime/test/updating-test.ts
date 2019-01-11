@@ -1185,7 +1185,7 @@ module('[glimmer-runtime] Updating', hooks => {
       },
     };
 
-    env.registerInternalHelper('destroy-me', vm => {
+    env.registerInternalHelper('destroy-me', (_args, vm) => {
       vm.associateDestroyable(destroyable);
       return PrimitiveReference.create('destroy me!');
     });
@@ -1299,7 +1299,7 @@ module('[glimmer-runtime] Updating', hooks => {
     let didDestroy = 0;
     let reference: UpdatableReference<T | U> | undefined;
 
-    env.registerInternalHelper('stateful-foo', vm => {
+    env.registerInternalHelper('stateful-foo', (_args, vm) => {
       didCreate++;
 
       vm.associateDestroyable({

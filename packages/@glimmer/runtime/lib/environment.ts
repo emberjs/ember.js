@@ -1,5 +1,4 @@
 import {
-  ComponentManager,
   Dict,
   Drop,
   Environment,
@@ -18,6 +17,8 @@ import {
   RuntimeContext,
   TemplateMeta,
   OpaqueTemplateMeta,
+  WithCreateInstance,
+  ResolvedValue,
 } from '@glimmer/interfaces';
 import {
   IterableImpl,
@@ -160,17 +161,17 @@ class TransactionImpl implements Transaction {
   public scheduledUpdateModifierManagers: ModifierManager[] = [];
   public scheduledUpdateModifiers: Modifier[] = [];
   public createdComponents: unknown[] = [];
-  public createdManagers: ComponentManager<unknown, unknown>[] = [];
+  public createdManagers: WithCreateInstance<unknown>[] = [];
   public updatedComponents: unknown[] = [];
-  public updatedManagers: ComponentManager<unknown, unknown>[] = [];
+  public updatedManagers: WithCreateInstance<unknown>[] = [];
   public destructors: Drop[] = [];
 
-  didCreate(component: unknown, manager: ComponentManager<unknown, unknown>) {
+  didCreate(component: unknown, manager: WithCreateInstance) {
     this.createdComponents.push(component);
     this.createdManagers.push(manager);
   }
 
-  didUpdate(component: unknown, manager: ComponentManager<unknown, unknown>) {
+  didUpdate(component: unknown, manager: WithCreateInstance) {
     this.updatedComponents.push(component);
     this.updatedManagers.push(manager);
   }
@@ -268,11 +269,11 @@ export abstract class EnvironmentImpl implements Environment {
     return expect(this[TRANSACTION]!, 'must be in a transaction');
   }
 
-  didCreate(component: unknown, manager: ComponentManager<unknown, unknown>) {
+  didCreate(component: unknown, manager: WithCreateInstance) {
     this.transaction.didCreate(component, manager);
   }
 
-  didUpdate(component: unknown, manager: ComponentManager<unknown, unknown>) {
+  didUpdate(component: unknown, manager: WithCreateInstance) {
     this.transaction.didUpdate(component, manager);
   }
 
@@ -324,30 +325,44 @@ export class DefaultRuntimeEnvironmentDelegate implements RuntimeEnvironmentDele
 }
 
 export class DefaultRuntimeResolver implements RuntimeResolver {
-  lookupComponentDefinition(_name: string, _referrer?: Option<TemplateMeta>): Option<any> {
-    throw new Error('Method not implemented.');
+  constructor(private inner: Partial<RuntimeResolver>) {}
+
+  lookupComponentDefinition(name: string, referrer?: Option<TemplateMeta>): Option<any> {
+    if (this.inner.lookupComponentDefinition) {
+      return this.inner.lookupComponentDefinition(name, referrer);
+    } else {
+      throw new Error('lookupComponentDefinition not implemented on RuntimeResolver.');
+    }
   }
 
-  lookupPartial(_name: string, _referrer?: Option<OpaqueTemplateMeta>): Option<number> {
-    throw new Error('Method not implemented.');
+  lookupPartial(name: string, referrer?: Option<OpaqueTemplateMeta>): Option<number> {
+    if (this.inner.lookupPartial) {
+      return this.inner.lookupPartial(name, referrer);
+    } else {
+      throw new Error('lookupPartial not implemented on RuntimeResolver.');
+    }
   }
 
-  resolve<U>(_handle: number): U {
-    throw new Error('Method not implemented.');
+  resolve<U extends ResolvedValue>(handle: number): U {
+    if (this.inner.resolve) {
+      return this.inner.resolve(handle);
+    } else {
+      throw new Error('resolve not implemented on RuntimeResolver.');
+    }
   }
 }
 
 export function Runtime(
   document: SimpleDocument,
   program: CompilerArtifacts,
-  resolver: RuntimeResolver = new DefaultRuntimeResolver(),
+  resolver: Partial<RuntimeResolver> = {},
   delegate: RuntimeEnvironmentDelegate = new DefaultRuntimeEnvironmentDelegate()
 ): RuntimeContext {
   let env = new RuntimeEnvironment(document, delegate);
 
   return {
     env,
-    resolver,
+    resolver: new DefaultRuntimeResolver(resolver),
     program: RuntimeProgramImpl.hydrate(program),
   };
 }

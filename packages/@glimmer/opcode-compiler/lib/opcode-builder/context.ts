@@ -22,12 +22,12 @@ export function syntaxCompilationContext(
 }
 
 export function Context(
-  resolver: CompileTimeResolverDelegate = new DefaultCompileTimeResolverDelegate(),
+  resolver: Partial<CompileTimeResolverDelegate> = {},
   mode: CompileMode = CompileMode.aot,
   macros = new Macros()
 ) {
   return {
-    program: new ProgramCompilationContext(resolver, mode),
+    program: new ProgramCompilationContext(new DefaultCompileTimeResolverDelegate(resolver), mode),
     macros,
   };
 }
