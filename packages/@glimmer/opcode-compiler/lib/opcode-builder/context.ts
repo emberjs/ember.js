@@ -3,13 +3,12 @@ import {
   SyntaxCompilationContext,
   TemplateCompilationContext,
   WholeProgramCompilationContext,
-  CompileTimeResolverDelegate,
   CompileMode,
 } from '@glimmer/interfaces';
 import { EncoderImpl } from './encoder';
 import { Macros } from '../syntax/macros';
 import { ProgramCompilationContext } from '../program-context';
-import { DefaultCompileTimeResolverDelegate } from './delegate';
+import { DefaultCompileTimeResolverDelegate, ResolverDelegate } from './delegate';
 
 export function syntaxCompilationContext(
   program: WholeProgramCompilationContext,
@@ -22,7 +21,7 @@ export function syntaxCompilationContext(
 }
 
 export function Context(
-  resolver: Partial<CompileTimeResolverDelegate> = {},
+  resolver: ResolverDelegate = {},
   mode: CompileMode = CompileMode.aot,
   macros = new Macros()
 ) {

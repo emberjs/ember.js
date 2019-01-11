@@ -83,8 +83,18 @@ export interface CompileTimeResolverDelegate extends HandleResolver {
 
 export type ResolvedValue = ComponentDefinition | ModifierDefinition | Helper;
 
-export interface RuntimeResolver<R extends TemplateMeta = TemplateMeta> extends HandleResolver {
+export interface RuntimeResolverDelegate<R extends TemplateMeta = TemplateMeta>
+  extends HandleResolver {
   lookupComponentDefinition(name: string, referrer?: Option<R>): Option<ComponentDefinition>;
   lookupPartial(name: string, referrer?: Option<R>): Option<number>;
   resolve<U extends ResolvedValue>(handle: number): U;
+}
+
+export interface RuntimeResolver<R extends TemplateMeta = TemplateMeta> {
+  lookupComponentDefinition?(
+    name: string,
+    referrer?: Option<R>
+  ): Option<ComponentDefinition> | void;
+  lookupPartial?(name: string, referrer?: Option<R>): Option<number> | void;
+  resolve?(handle: number): ResolvedValue | void;
 }

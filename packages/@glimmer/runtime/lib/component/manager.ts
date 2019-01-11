@@ -68,3 +68,8 @@ export class SimpleComponentManager implements ComponentManager {
     return null;
   }
 }
+
+export const TEMPLATE_ONLY_COMPONENT = {
+  state: null,
+  manager: new SimpleComponentManager(),
+};

@@ -1,8 +1,8 @@
-import { RuntimeResolver, ComponentDefinition, TemplateMeta } from '@glimmer/interfaces';
+import { RuntimeResolverDelegate, ComponentDefinition, TemplateMeta } from '@glimmer/interfaces';
 import { Option, assert } from '@glimmer/util';
 
 export function resolveComponent<L extends TemplateMeta>(
-  resolver: RuntimeResolver<L>,
+  resolver: RuntimeResolverDelegate<L>,
   name: string,
   meta?: L
 ): Option<ComponentDefinition> {

@@ -23,7 +23,7 @@ import {
   Op,
   ProgramSymbolTable,
   Recast,
-  RuntimeResolver,
+  RuntimeResolverDelegate,
   ScopeSlot,
   VMArguments,
   WithAotDynamicLayout,
@@ -545,12 +545,12 @@ APPEND_OPCODES.add(Op.GetAotComponentLayout, (vm, { op1: _state }) => {
     invoke = (manager as WithAotStaticLayout<
       ComponentInstanceState,
       ComponentDefinitionState,
-      RuntimeResolver
+      RuntimeResolverDelegate
     >).getAotStaticLayout(definitionState, vm.runtime.resolver);
   } else if (hasDynamicLayoutCapability(capabilities, manager)) {
     invoke = (manager as WithAotDynamicLayout<
       ComponentInstanceState,
-      RuntimeResolver
+      RuntimeResolverDelegate
     >).getAotDynamicLayout(instanceState, vm.runtime.resolver);
   } else {
     throw unreachable();
@@ -565,8 +565,8 @@ export function hasStaticLayoutCapability(
   capabilities: CapabilityFlags,
   _manager: InternalComponentManager
 ): _manager is
-  | WithJitStaticLayout<ComponentInstanceState, ComponentDefinitionState, RuntimeResolver>
-  | WithAotStaticLayout<ComponentInstanceState, ComponentDefinitionState, RuntimeResolver> {
+  | WithJitStaticLayout<ComponentInstanceState, ComponentDefinitionState, RuntimeResolverDelegate>
+  | WithAotStaticLayout<ComponentInstanceState, ComponentDefinitionState, RuntimeResolverDelegate> {
   return hasCapability(_manager, capabilities, Capability.DynamicLayout) === false;
 }
 
@@ -574,8 +574,8 @@ export function hasDynamicLayoutCapability(
   capabilities: CapabilityFlags,
   _manager: InternalComponentManager
 ): _manager is
-  | WithAotDynamicLayout<ComponentInstanceState, RuntimeResolver>
-  | WithJitDynamicLayout<ComponentInstanceState, RuntimeResolver> {
+  | WithAotDynamicLayout<ComponentInstanceState, RuntimeResolverDelegate>
+  | WithJitDynamicLayout<ComponentInstanceState, RuntimeResolverDelegate> {
   return hasCapability(_manager, capabilities, Capability.DynamicLayout) === true;
 }
 
