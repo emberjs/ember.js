@@ -14,7 +14,6 @@ import {
   CheckElement,
   CheckNode,
   CheckOption,
-  CheckInstanceof,
   CheckNull,
 } from '@glimmer/debug';
 import { Op } from '@glimmer/interfaces';
@@ -28,8 +27,7 @@ import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
 import { UpdatingVM } from '../../vm';
 import { Assert } from './vm';
 import { DynamicAttribute } from '../../vm/attributes/dynamic';
-import { ComponentElementOperations } from './component';
-import { CheckReference, CheckArguments } from './-debug-strip';
+import { CheckReference, CheckArguments, CheckOperations } from './-debug-strip';
 import { CONSTANTS } from '../../symbols';
 import { SimpleElement, SimpleNode } from '@simple-dom/interface';
 
@@ -84,10 +82,7 @@ APPEND_OPCODES.add(Op.PopRemoteElement, vm => {
 });
 
 APPEND_OPCODES.add(Op.FlushElement, vm => {
-  let operations = check(
-    vm.fetchValue($t0),
-    CheckOption(CheckInstanceof(ComponentElementOperations))
-  );
+  let operations = check(vm.fetchValue($t0), CheckOperations);
 
   if (operations) {
     operations.flush(vm);
