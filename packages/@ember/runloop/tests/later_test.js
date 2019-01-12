@@ -26,7 +26,7 @@ function wait(callback, maxWaitCount = 100) {
 // run loop has to flush, it would have considered
 // the timer already expired.
 function pauseUntil(time) {
-  while (Number(new Date()) < time) {
+  while (Date.now() < time) {
     /* do nothing - sleeping */
   }
 }
@@ -113,7 +113,7 @@ moduleFor(
           1
         );
 
-        pauseUntil(Number(new Date()) + 100);
+        pauseUntil(Date.now() + 100);
       });
 
       assert.ok(firstRunLoop, 'first run loop captured');
@@ -247,7 +247,7 @@ moduleFor(
           // fine that they're not called in this run loop; just need to
           // make sure that invokeLaterTimers doesn't end up scheduling
           // a negative setTimeout.
-          pauseUntil(Number(new Date()) + 60);
+          pauseUntil(Date.now() + 60);
         }, 1);
 
         later(() => {
