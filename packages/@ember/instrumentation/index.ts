@@ -105,7 +105,7 @@ function populateListeners(name: string) {
 }
 
 const time = ((): (() => number) => {
-  let perf: MaybePerf = 'undefined' !== typeof window ? window.performance : {};
+  let perf: MaybePerf = 'undefined' !== typeof window ? window.performance || {} : {};
   let fn = perf.now || perf.mozNow || perf.webkitNow || perf.msNow || perf.oNow;
 
   return fn ? fn.bind(perf) : Date.now;
