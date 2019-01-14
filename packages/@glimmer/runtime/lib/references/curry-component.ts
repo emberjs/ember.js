@@ -1,12 +1,12 @@
 import { Reference, PathReference, Tag } from '@glimmer/reference';
 import { Option } from '@glimmer/util';
 import {
-  RuntimeResolverDelegate,
   CapturedArguments,
   ComponentDefinition,
   TemplateMeta,
   Maybe,
   Dict,
+  RuntimeResolver,
 } from '@glimmer/interfaces';
 
 import {
@@ -24,7 +24,7 @@ export default class CurryComponentReference
 
   constructor(
     private inner: Reference<unknown>,
-    private resolver: RuntimeResolverDelegate,
+    private resolver: RuntimeResolver,
     private meta: TemplateMeta,
     private args: Option<CapturedArguments>
   ) {

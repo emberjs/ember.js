@@ -20,11 +20,7 @@ import { ContentType, Op, Dict, Maybe } from '@glimmer/interfaces';
 
 export class IsCurriedComponentDefinitionReference extends ConditionalReference {
   static create(inner: Reference<unknown>): IsCurriedComponentDefinitionReference {
-    return new IsCurriedComponentDefinitionReference(inner);
-  }
-
-  toBool(value: unknown): boolean {
-    return isCurriedComponentDefinition(value as Maybe<Dict>);
+    return new ConditionalReference(inner, isCurriedComponentDefinition);
   }
 }
 

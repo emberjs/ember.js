@@ -3,11 +3,24 @@ import { ElementBuilder, renderSync } from '@glimmer/runtime';
 import { BasicComponent } from './environment/components/basic';
 import { EmberishCurlyComponent } from './environment/components/emberish-curly';
 import { EmberishGlimmerComponent } from './environment/components/emberish-glimmer';
-import { ComponentKind, ComponentTypes, LazyEnv } from './interfaces';
-import { RenderResult } from '@glimmer/interfaces';
+import { ComponentKind, ComponentTypes } from './interfaces';
+import {
+  RenderResult,
+  SyntaxCompilationContext,
+  RuntimeContext,
+  JitRuntimeContext,
+} from '@glimmer/interfaces';
+import { preprocess } from './environment/shared';
+import {
+  renderMain,
+  registerEmberishGlimmerComponent,
+  registerEmberishCurlyComponent,
+  registerBasicComponent,
+} from './environment/modes/lazy/environment';
+import LazyRuntimeResolver from './environment/modes/lazy/runtime-resolver';
 
 export function registerComponent<K extends ComponentKind>(
-  env: LazyEnv,
+  resolver: LazyRuntimeResolver,
   type: K,
   name: string,
   layout: string,
@@ -15,29 +28,54 @@ export function registerComponent<K extends ComponentKind>(
 ): void {
   switch (type) {
     case 'Glimmer':
-      env.registerEmberishGlimmerComponent(name, Class as typeof EmberishGlimmerComponent, layout);
+      registerEmberishGlimmerComponent(
+        resolver,
+        name,
+        Class as typeof EmberishGlimmerComponent,
+        layout
+      );
       break;
     case 'Curly':
-      env.registerEmberishCurlyComponent(name, Class as typeof EmberishCurlyComponent, layout);
+      registerEmberishCurlyComponent(
+        resolver,
+        name,
+        Class as typeof EmberishCurlyComponent,
+        layout
+      );
       break;
 
     case 'Dynamic':
-      env.registerEmberishCurlyComponent(name, Class as typeof EmberishCurlyComponent, layout);
+      registerEmberishCurlyComponent(
+        resolver,
+        name,
+        Class as typeof EmberishCurlyComponent,
+        layout
+      );
       break;
     case 'Basic':
     case 'Fragment':
-      env.registerBasicComponent(name, Class as typeof BasicComponent, layout);
+      registerBasicComponent(resolver, name, Class as typeof BasicComponent, layout);
       break;
   }
 }
 
+export interface TestDelegateContext {
+  runtime: RuntimeContext;
+  syntax: SyntaxCompilationContext;
+}
+
+export interface JitTestDelegateContext {
+  runtime: JitRuntimeContext;
+  syntax: SyntaxCompilationContext;
+}
+
 export function renderTemplate(
   src: string,
-  env: LazyEnv,
+  { runtime, syntax }: JitTestDelegateContext,
   self: PathReference<unknown>,
   builder: ElementBuilder
 ): RenderResult {
-  let template = env.preprocess(src);
-  let iterator = env.renderMain(template, self, builder);
-  return renderSync(env, iterator);
+  let template = preprocess(src);
+  let iterator = renderMain(runtime, syntax, template, self, builder);
+  return renderSync(runtime.env, iterator);
 }

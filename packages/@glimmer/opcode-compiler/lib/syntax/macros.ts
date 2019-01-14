@@ -16,8 +16,8 @@ import { dict, assert } from '@glimmer/util';
 import { UNHANDLED } from './concat';
 
 export class Macros {
-  public blocks: Blocks;
-  public inlines: Inlines;
+  public blocks: MacroBlocks;
+  public inlines: MacroInlines;
 
   constructor() {
     let { blocks, inlines } = populateBuiltins(new Blocks(), new Inlines());

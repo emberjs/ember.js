@@ -8,6 +8,8 @@ import {
   RuntimeContext,
   Scope,
   TemplateMeta,
+  AotRuntimeContext,
+  JitRuntimeContext,
 } from '@glimmer/interfaces';
 import {
   // Tags
@@ -30,7 +32,7 @@ import { SimpleComment, SimpleNode } from '@simple-dom/interface';
 import { move as moveBounds } from '../bounds';
 import { asyncReset, detach } from '../lifetime';
 import { UpdatingOpcode, UpdatingOpSeq } from '../opcodes';
-import { InternalVM, VmInitCallback } from './append';
+import { InternalVM, VmInitCallback, JitVM } from './append';
 import { ElementBuilder, LiveBlock, NewElementBuilder, UpdatableBlock } from './element-builder';
 
 export default class UpdatingVM {
@@ -90,15 +92,17 @@ export interface VMState {
   readonly stack: unknown[];
 }
 
-export interface ResumableVMState<B extends JitOrAotBlock, V extends InternalVM<B>> {
+export interface ResumableVMState<V extends InternalVM> {
   resume(runtime: RuntimeContext<TemplateMeta>, builder: ElementBuilder): V;
 }
 
-export class ResumableVMStateImpl<B extends JitOrAotBlock, V extends InternalVM<B>>
-  implements ResumableVMState<B, V> {
+export class ResumableVMStateImpl<V extends InternalVM> implements ResumableVMState<V> {
   constructor(readonly state: VMState, private resumeCallback: VmInitCallback<V>) {}
 
-  resume(runtime: RuntimeContext<TemplateMeta>, builder: ElementBuilder): V {
+  resume(
+    runtime: V extends JitVM ? JitRuntimeContext : AotRuntimeContext,
+    builder: ElementBuilder
+  ): V {
     return this.resumeCallback(runtime, this.state, builder);
   }
 }
@@ -112,7 +116,7 @@ export abstract class BlockOpcode extends UpdatingOpcode implements Bounds {
   protected readonly bounds: LiveBlock;
 
   constructor(
-    protected state: ResumableVMState<JitOrAotBlock, InternalVM<JitOrAotBlock>>,
+    protected state: ResumableVMState<InternalVM>,
     protected runtime: RuntimeContext<TemplateMeta>,
     bounds: LiveBlock,
     children: LinkedList<UpdatingOpcode>
@@ -152,7 +156,7 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
   protected bounds!: UpdatableBlock; // Hides property on base class
 
   constructor(
-    state: ResumableVMState<JitOrAotBlock, InternalVM<JitOrAotBlock>>,
+    state: ResumableVMState<InternalVM>,
     runtime: RuntimeContext<TemplateMeta>,
     bounds: UpdatableBlock,
     children: LinkedList<UpdatingOpcode>
@@ -294,7 +298,7 @@ export class ListBlockOpcode extends BlockOpcode {
   private _tag: TagWrapper<UpdatableTag>;
 
   constructor(
-    state: ResumableVMState<JitOrAotBlock, InternalVM<JitOrAotBlock>>,
+    state: ResumableVMState<InternalVM>,
     runtime: RuntimeContext<TemplateMeta>,
     bounds: LiveBlock,
     children: LinkedList<UpdatingOpcode>,

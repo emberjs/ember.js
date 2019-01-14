@@ -27,5 +27,4 @@ export default interface RenderDelegate {
   ): RenderResult;
   getElementBuilder(env: Environment, cursor: Cursor): ElementBuilder;
   getSelf(context: unknown): BasicReference<unknown>;
-  resetEnv(): void;
 }

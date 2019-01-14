@@ -1,12 +1,4 @@
-import {
-  AnnotatedModuleLocator,
-  DynamicScope,
-  Environment,
-  Option,
-  Template,
-  TemplateMeta,
-  TemplateIterator,
-} from '@glimmer/interfaces';
+import { DynamicScope, Environment, Option, Template, TemplateIterator } from '@glimmer/interfaces';
 import { PathReference } from '@glimmer/reference';
 import { ElementBuilder } from '@glimmer/runtime';
 import { BasicComponent, BasicComponentFactory } from './environment/components/basic';
@@ -32,11 +24,6 @@ export const CLASSES = {
 export type ComponentTypes = typeof CLASSES;
 
 export interface LazyEnv extends Environment {
-  preprocess(
-    template: string,
-    meta?: AnnotatedModuleLocator
-  ): Template<TemplateMeta<AnnotatedModuleLocator>>;
-
   renderMain(
     template: Template,
     self: PathReference<unknown>,

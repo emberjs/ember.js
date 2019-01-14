@@ -128,14 +128,16 @@ function ifResolvedComponent(
   action: IfResolvedComponentOp
 ): StatementCompileActions {
   let { name, attrs, blocks, staticTemplate, dynamicTemplate, orElse } = action.op1;
-  let { handle, capabilities, compilable } = resolveLayoutForTag(name, {
+  let component = resolveLayoutForTag(name, {
     resolver: context.syntax.program.resolverDelegate,
     meta: context.meta,
   });
 
   let { meta } = context;
 
-  if (handle !== null && capabilities !== null) {
+  if (component !== null) {
+    let { handle, capabilities, compilable } = component;
+
     let attrsBlock = compilableBlock(attrs, meta);
 
     let compilableBlocks = namedBlocks(blocks, meta);

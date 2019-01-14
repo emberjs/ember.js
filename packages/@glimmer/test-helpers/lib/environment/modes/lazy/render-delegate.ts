@@ -1,36 +1,53 @@
 import { Cursor, Dict, Environment, RenderResult } from '@glimmer/interfaces';
 import { UpdatableReference } from '@glimmer/object-reference';
 import { PathReference } from '@glimmer/reference';
-import { clientBuilder, ElementBuilder } from '@glimmer/runtime';
-import { SimpleElement } from '@simple-dom/interface';
+import { clientBuilder, ElementBuilder, JitRuntime, getDynamicVar } from '@glimmer/runtime';
+import { SimpleElement, SimpleDocument } from '@simple-dom/interface';
 import { ComponentKind, ComponentTypes } from '../../../interfaces';
-import { registerComponent, renderTemplate } from '../../../render';
+import { renderTemplate, JitTestDelegateContext } from '../../../render';
 import RenderDelegate from '../../../render-delegate';
 import { UserHelper } from '../../helper';
 import { TestModifierConstructor } from '../../modifier';
-import LazyTestEnvironment from './environment';
+import {
+  TestLazyCompilationContext,
+  registerModifier,
+  registerEmberishCurlyComponent,
+  registerEmberishGlimmerComponent,
+  registerStaticTaglessComponent,
+  registerHelper,
+  registerInternalHelper,
+} from './environment';
+import LazyRuntimeResolver from './runtime-resolver';
+import { BasicComponentFactory } from '../../components/basic';
+import { EmberishCurlyComponentFactory, EmberishGlimmerComponentFactory } from '../../components';
+import TestMacros from '../../macros';
 
 declare const module: any;
 
 export default class LazyRenderDelegate implements RenderDelegate {
   static readonly isEager = false;
 
-  constructor(protected env: LazyTestEnvironment = new LazyTestEnvironment()) {}
+  private resolver: LazyRuntimeResolver = new LazyRuntimeResolver();
+  private context: JitTestDelegateContext;
 
-  resetEnv() {
-    this.env = new LazyTestEnvironment();
+  constructor(private doc: SimpleDocument = document as SimpleDocument) {
+    this.context = this.getContext(this.resolver);
+  }
+
+  getContext(resolver: LazyRuntimeResolver): JitTestDelegateContext {
+    return JitDelegateContext(this.doc, resolver);
   }
 
   getInitialElement(): SimpleElement {
     if (typeof module !== 'undefined' && module.exports) {
-      return this.env.getAppendOperations().createElement('div');
+      return this.doc.createElement('div');
     }
 
     return document.getElementById('qunit-fixture')! as SimpleElement;
   }
 
   createElement(tagName: string): SimpleElement {
-    return this.env.getAppendOperations().createElement(tagName);
+    return this.doc.createElement(tagName);
   }
 
   registerComponent<K extends ComponentKind, L extends ComponentKind>(
@@ -40,15 +57,39 @@ export default class LazyRenderDelegate implements RenderDelegate {
     layout: string,
     Class?: ComponentTypes[K]
   ) {
-    registerComponent(this.env, type, name, layout, Class);
+    switch (type) {
+      case 'Basic':
+      case 'Fragment':
+        return registerStaticTaglessComponent(
+          this.resolver,
+          name,
+          Class as BasicComponentFactory,
+          layout
+        );
+      case 'Curly':
+      case 'Dynamic':
+        return registerEmberishCurlyComponent(
+          this.resolver,
+          name,
+          Class as EmberishCurlyComponentFactory,
+          layout
+        );
+      case 'Glimmer':
+        return registerEmberishGlimmerComponent(
+          this.resolver,
+          name,
+          Class as EmberishGlimmerComponentFactory,
+          layout
+        );
+    }
   }
 
   registerModifier(name: string, ModifierClass: TestModifierConstructor): void {
-    this.env.registerModifier(name, ModifierClass);
+    registerModifier(this.resolver, name, ModifierClass);
   }
 
   registerHelper(name: string, helper: UserHelper): void {
-    this.env.registerHelper(name, helper);
+    registerHelper(this.resolver, name, helper);
   }
 
   getElementBuilder(env: Environment, cursor: Cursor): ElementBuilder {
@@ -60,13 +101,21 @@ export default class LazyRenderDelegate implements RenderDelegate {
   }
 
   renderTemplate(template: string, context: Dict<unknown>, element: SimpleElement): RenderResult {
-    let { env } = this;
     let cursor = { element, nextSibling: null };
+
     return renderTemplate(
       template,
-      env,
+      this.context,
       this.getSelf(context),
-      this.getElementBuilder(env, cursor)
+      this.getElementBuilder(this.context.runtime.env, cursor)
     );
   }
+}
+
+export function JitDelegateContext(doc: SimpleDocument, resolver: LazyRuntimeResolver) {
+  registerInternalHelper(resolver, '-get-dynamic-var', getDynamicVar);
+  let program = new TestLazyCompilationContext(resolver);
+  let runtime = JitRuntime(doc, program, resolver);
+  let syntax = { program: program, macros: new TestMacros() };
+  return { runtime, syntax };
 }

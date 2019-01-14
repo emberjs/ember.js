@@ -12,14 +12,19 @@ import {
   ScopeSlot,
   Transaction,
   TransactionSymbol,
-  RuntimeResolverDelegate,
   CompilerArtifacts,
-  RuntimeContext,
   TemplateMeta,
   OpaqueTemplateMeta,
   WithCreateInstance,
   ResolvedValue,
+  RuntimeResolverOptions,
+  RuntimeProgram,
+  ModifierManager,
+  Template,
   RuntimeResolver,
+  Invocation,
+  JitRuntimeContext,
+  AotRuntimeContext,
 } from '@glimmer/interfaces';
 import {
   IterableImpl,
@@ -28,11 +33,11 @@ import {
   PathReference,
   Reference,
   VersionedPathReference,
+  VersionedReference,
 } from '@glimmer/reference';
 import { assert, DROP, expect, Option } from '@glimmer/util';
 import { AttrNamespace, SimpleDocument, SimpleElement } from '@simple-dom/interface';
 import { DOMChangesImpl, DOMTreeConstruction } from './dom/helper';
-import { Modifier, ModifierManager } from './internal-interfaces';
 import { ConditionalReference, UNDEFINED_REFERENCE } from './references';
 import { DynamicAttribute, dynamicAttribute } from './vm/attributes/dynamic';
 import { RuntimeProgramImpl } from '@glimmer/program';
@@ -158,9 +163,9 @@ class TransactionImpl implements Transaction {
   readonly [TRANSACTION]: Option<TransactionImpl>;
 
   public scheduledInstallManagers: ModifierManager[] = [];
-  public scheduledInstallModifiers: Modifier[] = [];
+  public scheduledInstallModifiers: unknown[] = [];
   public scheduledUpdateModifierManagers: ModifierManager[] = [];
-  public scheduledUpdateModifiers: Modifier[] = [];
+  public scheduledUpdateModifiers: unknown[] = [];
   public createdComponents: unknown[] = [];
   public createdManagers: WithCreateInstance<unknown>[] = [];
   public updatedComponents: unknown[] = [];
@@ -177,12 +182,12 @@ class TransactionImpl implements Transaction {
     this.updatedManagers.push(manager);
   }
 
-  scheduleInstallModifier(modifier: Modifier, manager: ModifierManager) {
+  scheduleInstallModifier(modifier: unknown, manager: ModifierManager) {
     this.scheduledInstallManagers.push(manager);
     this.scheduledInstallModifiers.push(modifier);
   }
 
-  scheduleUpdateModifier(modifier: Modifier, manager: ModifierManager) {
+  scheduleUpdateModifier(modifier: unknown, manager: ModifierManager) {
     this.scheduledUpdateModifierManagers.push(manager);
     this.scheduledUpdateModifiers.push(modifier);
   }
@@ -232,6 +237,12 @@ class TransactionImpl implements Transaction {
   }
 }
 
+export type ToBool = (value: unknown) => boolean;
+
+function toBool(value: unknown): boolean {
+  return !!value;
+}
+
 export abstract class EnvironmentImpl implements Environment {
   [TRANSACTION]: Option<TransactionImpl> = null;
 
@@ -244,7 +255,7 @@ export abstract class EnvironmentImpl implements Environment {
   }
 
   toConditionalReference(reference: Reference): Reference<boolean> {
-    return new ConditionalReference(reference);
+    return new ConditionalReference(reference, toBool);
   }
 
   abstract iterableFor(reference: Reference, key: unknown): OpaqueIterable;
@@ -278,11 +289,11 @@ export abstract class EnvironmentImpl implements Environment {
     this.transaction.didUpdate(component, manager);
   }
 
-  scheduleInstallModifier(modifier: Modifier, manager: ModifierManager) {
+  scheduleInstallModifier(modifier: unknown, manager: ModifierManager) {
     this.transaction.scheduleInstallModifier(modifier, manager);
   }
 
-  scheduleUpdateModifier(modifier: Modifier, manager: ModifierManager) {
+  scheduleUpdateModifier(modifier: unknown, manager: ModifierManager) {
     this.transaction.scheduleUpdateModifier(modifier, manager);
   }
 
@@ -307,40 +318,57 @@ export abstract class EnvironmentImpl implements Environment {
 }
 
 export interface RuntimeEnvironmentDelegate {
-  protocolForURL(url: string): string;
-  iterable: IterableKeyDefinitions;
+  protocolForURL?(url: string): string;
+  iterable?: IterableKeyDefinitions;
+  toBool?(value: unknown): boolean;
 }
 
-export class DefaultRuntimeEnvironmentDelegate implements RuntimeEnvironmentDelegate {
+export class RuntimeEnvironmentDelegateImpl implements RuntimeEnvironmentDelegate {
+  readonly toBool: (value: unknown) => boolean;
+
+  constructor(private inner: RuntimeEnvironmentDelegate = {}) {
+    if (inner.toBool) {
+      this.toBool = inner.toBool;
+    } else {
+      this.toBool = value => !!value;
+    }
+  }
+
   protocolForURL(url: string): string {
-    return new URL(url).protocol;
+    if (this.inner.protocolForURL) {
+      return this.inner.protocolForURL(url);
+    } else {
+      return new URL(url, typeof document !== 'undefined' ? document.baseURI : undefined).protocol;
+    }
   }
 
   readonly iterable: IterableKeyDefinitions = {
     named: {
       '@index': (_, index) => String(index),
       '@primitive': item => String(item),
+      '@identity': item => item,
     },
     default: key => item => item[key],
   };
 }
 
-export class DefaultRuntimeResolver implements RuntimeResolverDelegate {
-  constructor(private inner: RuntimeResolver) {}
+export class DefaultRuntimeResolver<R extends TemplateMeta<{ module: string }>>
+  implements RuntimeResolver<R> {
+  constructor(private inner: RuntimeResolverOptions) {}
 
-  lookupComponentDefinition(name: string, referrer?: Option<TemplateMeta>): Option<any> {
-    if (this.inner.lookupComponentDefinition) {
-      let component = this.inner.lookupComponentDefinition(name, referrer);
+  lookupComponent(name: string, referrer?: Option<TemplateMeta>): Option<any> {
+    if (this.inner.lookupComponent) {
+      let component = this.inner.lookupComponent(name, referrer);
 
       if (component === undefined) {
         throw new Error(
-          `Unexpected component ${name} (from ${referrer}) (lookupComponentDefinition returned undefined)`
+          `Unexpected component ${name} (from ${referrer}) (lookupComponent returned undefined)`
         );
       }
 
       return component;
     } else {
-      throw new Error('lookupComponentDefinition not implemented on RuntimeResolver.');
+      throw new Error('lookupComponent not implemented on RuntimeResolver.');
     }
   }
 
@@ -373,15 +401,47 @@ export class DefaultRuntimeResolver implements RuntimeResolverDelegate {
       throw new Error('resolve not implemented on RuntimeResolver.');
     }
   }
+
+  compilable(locator: TemplateMeta<{ module: string }>): Template {
+    if (this.inner.compilable) {
+      let resolved = this.inner.compilable(locator);
+
+      if (resolved === undefined) {
+        throw new Error(`Unable to compile ${name} (compilable returned undefined)`);
+      }
+
+      return resolved;
+    } else {
+      throw new Error('compilable not implemented on RuntimeResolver.');
+    }
+  }
+
+  getInvocation(locator: TemplateMeta<R>): Invocation {
+    if (this.inner.getInvocation) {
+      let invocation = this.inner.getInvocation(locator);
+
+      if (invocation === undefined) {
+        throw new Error(
+          `Unable to get invocation for ${JSON.stringify(
+            locator
+          )} (getInvocation returned undefined)`
+        );
+      }
+
+      return invocation;
+    } else {
+      throw new Error('getInvocation not implemented on RuntimeResolver.');
+    }
+  }
 }
 
-export function Runtime(
+export function AotRuntime(
   document: SimpleDocument,
   program: CompilerArtifacts,
-  resolver: RuntimeResolver = {},
-  delegate: RuntimeEnvironmentDelegate = new DefaultRuntimeEnvironmentDelegate()
-): RuntimeContext {
-  let env = new RuntimeEnvironment(document, delegate);
+  resolver: RuntimeResolverOptions = {},
+  delegate: RuntimeEnvironmentDelegate = {}
+): AotRuntimeContext {
+  let env = new RuntimeEnvironment(document, new RuntimeEnvironmentDelegateImpl(delegate));
 
   return {
     env,
@@ -390,12 +450,31 @@ export function Runtime(
   };
 }
 
+export function JitRuntime(
+  document: SimpleDocument,
+  program: RuntimeProgram,
+  resolver: RuntimeResolverOptions = {},
+  delegate: RuntimeEnvironmentDelegate = {}
+): JitRuntimeContext {
+  let env = new RuntimeEnvironment(document, new RuntimeEnvironmentDelegateImpl(delegate));
+
+  return {
+    env,
+    resolver: new DefaultRuntimeResolver(resolver),
+    program,
+  };
+}
+
 export class RuntimeEnvironment extends EnvironmentImpl {
-  constructor(document: SimpleDocument, private delegate: RuntimeEnvironmentDelegate) {
+  private delegate: RuntimeEnvironmentDelegateImpl;
+
+  constructor(document: SimpleDocument, delegate: RuntimeEnvironmentDelegateImpl) {
     super({
       appendOperations: new DOMTreeConstruction(document),
       updateOperations: new DOMChangesImpl(document),
     });
+
+    this.delegate = new RuntimeEnvironmentDelegateImpl(delegate);
   }
 
   protocolForURL(url: string): string {
@@ -409,6 +488,10 @@ export class RuntimeEnvironment extends EnvironmentImpl {
     let keyFor = key in def.named ? def.named[key] : def.default(key);
 
     return new IterableImpl(ref, keyFor);
+  }
+
+  toConditionalReference(input: VersionedPathReference): VersionedReference<boolean> {
+    return new ConditionalReference(input, this.delegate.toBool);
   }
 }
 
