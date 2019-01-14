@@ -2968,10 +2968,10 @@ ember-cli-version-checker@^2.1.2:
     resolve "^1.3.3"
     semver "^5.3.0"
 
-ember-cli-version-checker@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/ember-cli-version-checker/-/ember-cli-version-checker-3.0.0.tgz#4fb5c040ee7644a61794a3570f0ec699cafe4da6"
-  integrity sha512-1ql8LsqUCU9eYYW53zKhvebzFZZbrj89HStmvd0RMRQ41K+hM5hFOlP44cRhwlrvM3NJLO17PFXkGFa1LBqAJQ==
+ember-cli-version-checker@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/ember-cli-version-checker/-/ember-cli-version-checker-3.0.1.tgz#2d084d2b261374582c68edb658a7df3a10112749"
+  integrity sha512-hX2tGrFVt8PyaiWclZr8XFNUPSnA+Ax4bMifDIVVtYY8RQZG8LZf9AGyTj4XImkBBWBtgKyOeQ0ovg3kgos4JA==
   dependencies:
     resolve "^1.9.0"
     semver "^5.6.0"
