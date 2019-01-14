@@ -1,36 +1,34 @@
 import {
   ComponentCapabilities,
-  Unique,
-  Recast,
   ComponentManager,
   WithUpdateHook,
   WithPrepareArgs,
   WithCreateInstance,
-  WithJitStaticLayout,
-  WithAotStaticLayout,
+  WithJitDynamicLayout,
+  WithAotDynamicLayout,
 } from '@glimmer/interfaces';
 import { check, CheckNumber } from '@glimmer/debug';
 
-export type CapabilityFlags = Unique<'CapabilityFlag'>;
-
 export const enum Capability {
-  DynamicLayout = 0b0000000001,
-  DynamicTag = 0b0000000010,
-  PrepareArgs = 0b0000000100,
-  CreateArgs = 0b0000001000,
-  AttributeHook = 0b0000010000,
-  ElementHook = 0b0000100000,
-  DynamicScope = 0b0001000000,
-  CreateCaller = 0b0010000000,
-  UpdateHook = 0b0100000000,
-  CreateInstance = 0b1000000000,
+  DynamicLayout = 0b00000000001,
+  DynamicTag = 0b00000000010,
+  PrepareArgs = 0b00000000100,
+  CreateArgs = 0b00000001000,
+  AttributeHook = 0b00000010000,
+  ElementHook = 0b00000100000,
+  DynamicScope = 0b00001000000,
+  CreateCaller = 0b00010000000,
+  UpdateHook = 0b00100000000,
+  CreateInstance = 0b01000000000,
+  Wrapped = 0b10000000000,
 }
 
 /**
  * Converts a ComponentCapabilities object into a 32-bit integer representation.
  */
-export function capabilityFlagsFrom(capabilities: ComponentCapabilities): CapabilityFlags {
-  return (0 |
+export function capabilityFlagsFrom(capabilities: ComponentCapabilities): Capability {
+  return (
+    0 |
     (capabilities.dynamicLayout ? Capability.DynamicLayout : 0) |
     (capabilities.dynamicTag ? Capability.DynamicTag : 0) |
     (capabilities.prepareArgs ? Capability.PrepareArgs : 0) |
@@ -40,14 +38,13 @@ export function capabilityFlagsFrom(capabilities: ComponentCapabilities): Capabi
     (capabilities.dynamicScope ? Capability.DynamicScope : 0) |
     (capabilities.createCaller ? Capability.CreateCaller : 0) |
     (capabilities.updateHook ? Capability.UpdateHook : 0) |
-    (capabilities.createInstance ? Capability.CreateInstance : 0)) as Recast<
-    number,
-    CapabilityFlags
-  >;
+    (capabilities.createInstance ? Capability.CreateInstance : 0) |
+    (capabilities.wrapped ? Capability.Wrapped : 0)
+  );
 }
 
 export interface CapabilityMap {
-  [Capability.DynamicLayout]: WithJitStaticLayout | WithAotStaticLayout;
+  [Capability.DynamicLayout]: WithJitDynamicLayout | WithAotDynamicLayout;
   [Capability.DynamicTag]: ComponentManager;
   [Capability.PrepareArgs]: WithPrepareArgs;
   [Capability.CreateArgs]: ComponentManager;
@@ -57,13 +54,22 @@ export interface CapabilityMap {
   [Capability.CreateCaller]: ComponentManager;
   [Capability.UpdateHook]: WithUpdateHook;
   [Capability.CreateInstance]: WithCreateInstance;
+  [Capability.Wrapped]: ComponentManager;
+}
+
+export function managerHasCapability<F extends keyof CapabilityMap>(
+  _manager: ComponentManager,
+  capabilities: Capability,
+  capability: F
+): _manager is CapabilityMap[F] {
+  check(capabilities, CheckNumber);
+  return !!(capabilities & capability);
 }
 
 export function hasCapability<F extends keyof CapabilityMap>(
-  manager: ComponentManager,
-  capabilities: CapabilityFlags,
+  capabilities: Capability,
   capability: F
-): manager is CapabilityMap[F] {
+): boolean {
   check(capabilities, CheckNumber);
-  return !!((capabilities as Recast<CapabilityFlags, number>) & capability);
+  return !!(capabilities & capability);
 }

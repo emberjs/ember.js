@@ -28,20 +28,20 @@ export default class TestMacros extends Macros {
         params = [];
       }
 
-      let { handle } = resolveLayoutForTag(name, context);
+      let component = resolveLayoutForTag(name, context);
 
-      if (handle !== null) {
-        return staticComponent(context.resolver, handle, [params, hashToArgs(hash), blocks]);
+      if (component !== null) {
+        return staticComponent(component, [params, hashToArgs(hash), blocks]);
       }
 
       return NONE;
     });
 
     inlines.addMissing((name, params, hash, context) => {
-      let { handle } = resolveLayoutForTag(name, context);
+      let component = resolveLayoutForTag(name, context);
 
-      if (handle !== null) {
-        return staticComponent(context.resolver, handle, [params!, hashToArgs(hash), EMPTY_BLOCKS]);
+      if (component !== null) {
+        return staticComponent(component, [params!, hashToArgs(hash), EMPTY_BLOCKS]);
       }
 
       return UNHANDLED;

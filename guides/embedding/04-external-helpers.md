@@ -98,8 +98,6 @@ const RUNTIME_RESOLVER = {
   resolve(handle: number) {
     if (handle === 0) {
       return increment;
-    } else {
-      throw new Error(`Unexpected handle ${handle}`);
     }
   },
 };

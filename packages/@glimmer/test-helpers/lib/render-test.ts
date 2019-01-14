@@ -1,5 +1,5 @@
 import { Cursor, Dict, Environment, Maybe, Option, RenderResult } from '@glimmer/interfaces';
-import { NodeDOMTreeConstruction, serializeBuilder } from '@glimmer/node';
+import { serializeBuilder } from '@glimmer/node';
 import { UpdatableReference } from '@glimmer/object-reference';
 import {
   bump,
@@ -13,13 +13,13 @@ import {
 import { ElementBuilder, UNDEFINED_REFERENCE } from '@glimmer/runtime';
 import { clearElement, dict, expect, keys } from '@glimmer/util';
 import createHTMLDocument from '@simple-dom/document';
-import { SimpleElement, SimpleNode } from '@simple-dom/interface';
+import { SimpleElement, SimpleNode, SimpleDocument } from '@simple-dom/interface';
 import { assertElement, replaceHTML, toInnerHTML } from './dom';
 import { classes, equalsElement, regex } from './environment';
 import { UserHelper } from './environment/helper';
-import LazyTestEnvironment from './environment/modes/lazy/environment';
+import { registerHelper, registerModifier } from './environment/modes/lazy/environment';
 import { qunitFixture } from './environment/modes/lazy/fixture';
-import LazyRenderDelegate from './environment/modes/lazy/render-delegate';
+import LazyRenderDelegate, { JitDelegateContext } from './environment/modes/lazy/render-delegate';
 import {
   debugRehydration,
   DebugRehydrationBuilder,
@@ -27,8 +27,9 @@ import {
 import { TestModifierConstructor } from './environment/modifier';
 import { assign, equalTokens, normalizeInnerHTML } from './helpers';
 import { ComponentKind, ComponentTypes } from './interfaces';
-import { registerComponent, renderTemplate } from './render';
+import { registerComponent, renderTemplate, JitTestDelegateContext } from './render';
 import RenderDelegate from './render-delegate';
+import LazyRuntimeResolver from './environment/modes/lazy/runtime-resolver';
 
 export const OPEN: { marker: 'open-block' } = { marker: 'open-block' };
 export const CLOSE: { marker: 'close-block' } = { marker: 'close-block' };
@@ -578,28 +579,32 @@ export interface RehydrationStats {
 export class RehydrationDelegate implements RenderDelegate {
   static readonly isEager = false;
 
-  protected env: never;
+  public clientEnv: JitTestDelegateContext;
+  public serverEnv: JitTestDelegateContext;
 
-  public clientEnv: LazyTestEnvironment;
-  public serverEnv: LazyTestEnvironment;
+  private clientResolver: LazyRuntimeResolver;
+  private serverResolver: LazyRuntimeResolver;
+
+  public clientDoc: SimpleDocument;
+  public serverDoc: SimpleDocument;
+
   public rehydrationStats!: RehydrationStats;
   constructor() {
-    this.clientEnv = new LazyTestEnvironment();
+    this.clientDoc = document as SimpleDocument;
+    this.clientResolver = new LazyRuntimeResolver();
+    this.clientEnv = JitDelegateContext(this.clientDoc, this.clientResolver);
 
-    let doc = createHTMLDocument();
-
-    this.serverEnv = new LazyTestEnvironment({
-      document: doc,
-      appendOperations: new NodeDOMTreeConstruction(doc),
-    });
+    this.serverDoc = createHTMLDocument();
+    this.serverResolver = new LazyRuntimeResolver();
+    this.serverEnv = JitDelegateContext(this.serverDoc, this.serverResolver);
   }
 
   getInitialElement(): SimpleElement {
-    return this.clientEnv.getAppendOperations().createElement('div');
+    return this.clientDoc.createElement('div');
   }
 
   createElement(tagName: string): SimpleElement {
-    return this.clientEnv.getAppendOperations().createElement(tagName);
+    return this.clientDoc.createElement(tagName);
   }
 
   getElementBuilder(env: Environment, cursor: Cursor): ElementBuilder {
@@ -616,11 +621,15 @@ export class RehydrationDelegate implements RenderDelegate {
     takeSnapshot: () => void,
     element: SimpleElement | undefined = undefined
   ): string {
-    let env = this.serverEnv;
-    element = element || env.getAppendOperations().createElement('div');
+    element = element || this.serverDoc.createElement('div');
     let cursor = { element, nextSibling: null };
     // Emulate server-side render
-    renderTemplate(template, env, this.getSelf(context), this.getElementBuilder(env, cursor));
+    renderTemplate(
+      template,
+      this.serverEnv,
+      this.getSelf(context),
+      this.getElementBuilder(this.serverEnv.runtime.env, cursor)
+    );
 
     takeSnapshot();
     return this.serialize(element);
@@ -635,11 +644,11 @@ export class RehydrationDelegate implements RenderDelegate {
   }
 
   renderClientSide(template: string, context: Dict<unknown>, element: SimpleElement): RenderResult {
-    let env = this.clientEnv;
+    let env = this.clientEnv.runtime.env;
     // Client-side rehydration
     let cursor = { element, nextSibling: null };
     let builder = this.getElementBuilder(env, cursor) as DebugRehydrationBuilder;
-    let result = renderTemplate(template, env, this.getSelf(context), builder);
+    let result = renderTemplate(template, this.clientEnv, this.getSelf(context), builder);
 
     this.rehydrationStats = {
       clearedNodes: builder['clearedNodes'],
@@ -661,21 +670,19 @@ export class RehydrationDelegate implements RenderDelegate {
   }
 
   registerComponent(type: ComponentKind, _testType: string, name: string, layout: string): void {
-    registerComponent(this.clientEnv, type, name, layout);
-    registerComponent(this.serverEnv, type, name, layout);
+    registerComponent(this.clientResolver, type, name, layout);
+    registerComponent(this.serverResolver, type, name, layout);
   }
 
   registerHelper(name: string, helper: UserHelper): void {
-    this.clientEnv.registerHelper(name, helper);
-    this.serverEnv.registerHelper(name, helper);
+    registerHelper(this.clientResolver, name, helper);
+    registerHelper(this.serverResolver, name, helper);
   }
 
   registerModifier(name: string, ModifierClass: TestModifierConstructor): void {
-    this.clientEnv.registerModifier(name, ModifierClass);
-    this.serverEnv.registerModifier(name, ModifierClass);
+    registerModifier(this.clientResolver, name, ModifierClass);
+    registerModifier(this.serverResolver, name, ModifierClass);
   }
-
-  resetEnv() {}
 }
 
 function normalize(
@@ -793,12 +800,9 @@ export function test(...args: any[]) {
   return descriptor;
 }
 
-export interface RenderDelegateConstructor<
-  Delegate extends RenderDelegate,
-  TEnvironment extends Environment
-> {
+export interface RenderDelegateConstructor<Delegate extends RenderDelegate> {
   readonly isEager: boolean;
-  new (env?: TEnvironment): Delegate;
+  new (doc?: SimpleDocument): Delegate;
 }
 
 interface IRenderTest {
@@ -818,14 +822,14 @@ export function module<T extends IRenderTest>(
   return rawModule(name, klass, LazyRenderDelegate, options);
 }
 
-export function rawModule<D extends RenderDelegate, T extends IRenderTest, E extends Environment>(
+export function rawModule<D extends RenderDelegate>(
   name: string,
-  klass: RenderTestConstructor<D, T>,
-  Delegate: RenderDelegateConstructor<D, E>,
+  klass: RenderTestConstructor<D, IRenderTest>,
+  Delegate: RenderDelegateConstructor<D>,
   options = { componentModule: false }
 ): void {
   if (options.componentModule) {
-    if (shouldRunTest<D, E>(Delegate)) {
+    if (shouldRunTest<D>(Delegate)) {
       componentModule(name, (klass as any) as RenderTestConstructor<D, RenderTest>, Delegate);
     }
   } else {
@@ -834,7 +838,7 @@ export function rawModule<D extends RenderDelegate, T extends IRenderTest, E ext
     for (let prop in klass.prototype) {
       const test = klass.prototype[prop];
 
-      if (isTestFunction(test) && shouldRunTest<D, E>(Delegate)) {
+      if (isTestFunction(test) && shouldRunTest<D>(Delegate)) {
         QUnit.test(prop, assert => {
           let instance = new klass(new Delegate());
           test.call(instance, assert, instance.count);
@@ -853,10 +857,10 @@ interface ComponentTests {
   fragment: Function[];
 }
 
-function componentModule<D extends RenderDelegate, T extends IRenderTest, E extends Environment>(
+function componentModule<D extends RenderDelegate, T extends IRenderTest>(
   name: string,
   klass: RenderTestConstructor<D, T>,
-  Delegate: RenderDelegateConstructor<D, E>
+  Delegate: RenderDelegateConstructor<D>
 ) {
   let tests: ComponentTests = {
     glimmer: [],
@@ -1059,9 +1063,7 @@ export function assertElementShape(...args: any[]): void {
 
 const HAS_TYPED_ARRAYS = typeof Uint16Array !== 'undefined';
 
-function shouldRunTest<T extends RenderDelegate, E extends Environment>(
-  Delegate: RenderDelegateConstructor<T, E>
-) {
+function shouldRunTest<T extends RenderDelegate>(Delegate: RenderDelegateConstructor<T>) {
   let isEagerDelegate = Delegate['isEager'];
 
   if (HAS_TYPED_ARRAYS) {

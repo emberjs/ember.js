@@ -4,14 +4,15 @@ import {
   Invocation,
   ModuleLocator,
   ProgramSymbolTable,
-  RuntimeResolverDelegate,
   TemplateMeta,
+  RuntimeResolver,
+  Template,
 } from '@glimmer/interfaces';
 import { expect, Option } from '@glimmer/util';
 import { WrappedLocator } from '../../component-definition';
 import { Modules } from './modules';
 
-export default class EagerRuntimeResolver implements RuntimeResolverDelegate {
+export default class EagerRuntimeResolver implements RuntimeResolver {
   constructor(
     private table: ExternalModuleTable,
     private modules: Modules,
@@ -26,7 +27,7 @@ export default class EagerRuntimeResolver implements RuntimeResolverDelegate {
     throw new Error('Method not implemented.');
   }
 
-  lookupComponentDefinition(
+  lookupComponent(
     name: string,
     referrer: Option<TemplateMeta<WrappedLocator>>
   ): Option<ComponentDefinition> {
@@ -49,7 +50,7 @@ export default class EagerRuntimeResolver implements RuntimeResolverDelegate {
     return this.modules.get(module.module).get('default') as U;
   }
 
-  getInvocation(locator: ModuleLocator): Invocation {
+  getInvocation(locator: TemplateMeta<ModuleLocator>): Invocation {
     let handle = this.getVMHandle(locator);
     let symbolTable = expect(
       this.symbolTables.get(locator),
@@ -60,6 +61,10 @@ export default class EagerRuntimeResolver implements RuntimeResolverDelegate {
       handle,
       symbolTable,
     };
+  }
+
+  compilable(_locator: TemplateMeta<ModuleLocator>): Template {
+    throw new Error(`Unimplemented; AOT#compilable`);
   }
 
   getVMHandle(locator: ModuleLocator): number {

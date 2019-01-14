@@ -1,49 +1,27 @@
 import {
   AnnotatedModuleLocator,
-  CompilableProgram,
   CompileTimeResolverDelegate,
   ComponentCapabilities,
   ComponentDefinition,
   Option,
   TemplateMeta,
-  WithJitStaticLayout,
+  CompileTimeComponent,
+  Template,
 } from '@glimmer/interfaces';
-import { assert } from '@glimmer/util';
-import RuntimeResolver from './runtime-resolver';
+import LazyRuntimeResolver from './runtime-resolver';
+import { createTemplate } from '../../shared';
 
 export default class LazyCompileTimeLookup implements CompileTimeResolverDelegate {
-  constructor(private resolver: RuntimeResolver) {}
-
-  private getComponentDefinition(handle: number): ComponentDefinition {
-    let definition = this.resolver.resolve<Option<ComponentDefinition>>(handle);
-
-    assert(!!definition, `Couldn't find a template for handle ${definition}`);
-
-    return definition!;
-  }
+  constructor(private resolver: LazyRuntimeResolver) {}
 
   resolve<T>(handle: number): T {
     return this.resolver.resolve(handle);
   }
 
-  getCapabilities(handle: number): ComponentCapabilities {
+  private getCapabilities(handle: number): ComponentCapabilities {
     let definition = this.resolver.resolve<Option<ComponentDefinition>>(handle);
     let { manager, state } = definition!;
     return manager.getCapabilities(state);
-  }
-
-  getLayout(handle: number): Option<CompilableProgram> {
-    let { manager, state } = this.getComponentDefinition(handle);
-    let capabilities = manager.getCapabilities(state);
-
-    if (capabilities.dynamicLayout === true) {
-      return null;
-    }
-
-    return (manager as WithJitStaticLayout<any, any, RuntimeResolver>).getJitStaticLayout(
-      state,
-      this.resolver
-    );
   }
 
   lookupHelper(name: string, referrer: TemplateMeta<AnnotatedModuleLocator>): Option<number> {
@@ -54,11 +32,59 @@ export default class LazyCompileTimeLookup implements CompileTimeResolverDelegat
     return this.resolver.lookupModifier(name, referrer);
   }
 
-  lookupComponentDefinition(
+  // name is a cache key
+  compile(source: string, name: string): Template {
+    // throw new Error('NOPE');
+    // TODO: This whole thing probably should have a more first-class
+    // structure.
+    return this.resolver.templateFromSource(source, name, source => {
+      let factory = createTemplate<AnnotatedModuleLocator>(source);
+      return factory.create();
+    });
+  }
+
+  lookupComponent(
     name: string,
     referrer: Option<TemplateMeta<AnnotatedModuleLocator>>
-  ): Option<number> {
-    return this.resolver.lookupComponentHandle(name, referrer);
+  ): Option<CompileTimeComponent> {
+    let definitionHandle = this.resolver.lookupComponentHandle(name, referrer);
+
+    if (definitionHandle === null) {
+      return null;
+    }
+
+    let capabilities = this.getCapabilities(definitionHandle);
+
+    if (capabilities.dynamicLayout) {
+      return {
+        handle: definitionHandle,
+        capabilities,
+        compilable: null,
+      };
+    }
+
+    let templateHandle = this.resolver.lookup('template-source', name, null);
+
+    if (templateHandle === null) {
+      throw new Error(
+        `missing compile-time layout, but component ${name} didn't have the dynamicLayout capability`
+      );
+    }
+
+    let source = this.resolve<string>(templateHandle);
+
+    if (source === null || typeof source !== 'string') {
+      throw new Error('UH OH');
+    }
+
+    let template = this.compile(source, name);
+    let compilable = capabilities.wrapped ? template.asWrappedLayout() : template.asLayout();
+
+    return {
+      handle: definitionHandle,
+      capabilities,
+      compilable,
+    };
   }
 
   lookupPartial(name: string, referrer: TemplateMeta<AnnotatedModuleLocator>): Option<number> {

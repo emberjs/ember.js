@@ -1,22 +1,20 @@
 import {
-  ComponentDefinitionState,
-  ComponentInstanceState,
   Dict,
   DynamicScope,
   Environment,
-  InternalComponentManager,
   Invocation,
   JitOrAotBlock,
   RenderResult,
   RichIteratorResult,
-  RuntimeContext,
-  RuntimeResolverDelegate,
   SyntaxCompilationContext,
   TemplateMeta,
   WithAotStaticLayout,
   WithJitStaticLayout,
   TemplateIterator,
   Cursor,
+  ComponentDefinition,
+  JitRuntimeContext,
+  AotRuntimeContext,
 } from '@glimmer/interfaces';
 import { PathReference } from '@glimmer/reference';
 import { expect } from '@glimmer/util';
@@ -57,7 +55,7 @@ export function renderSync(env: Environment, iterator: TemplateIterator): Render
 }
 
 export function renderAotMain(
-  runtime: RuntimeContext<TemplateMeta>,
+  runtime: AotRuntimeContext<TemplateMeta>,
   self: PathReference,
   treeBuilder: ElementBuilder,
   handle: number,
@@ -68,7 +66,7 @@ export function renderAotMain(
 }
 
 export function renderAot(
-  runtime: RuntimeContext<TemplateMeta>,
+  runtime: AotRuntimeContext<TemplateMeta>,
   handle: number,
   cursor: Cursor,
   self: PathReference = UNDEFINED_REFERENCE
@@ -80,7 +78,7 @@ export function renderAot(
 }
 
 export function renderJitMain(
-  runtime: RuntimeContext<TemplateMeta>,
+  runtime: JitRuntimeContext<TemplateMeta>,
   context: SyntaxCompilationContext,
   self: PathReference,
   treeBuilder: ElementBuilder,
@@ -93,35 +91,12 @@ export function renderJitMain(
 
 export type RenderComponentArgs = Dict<PathReference>;
 
-/**
- * Returns a TemplateIterator configured to render a root component.
- */
-function renderComponent<C extends JitOrAotBlock, R extends TemplateMeta>(
+function renderInvocation<C extends JitOrAotBlock>(
   vm: InternalVM<C>,
-  name: string,
-  args: RenderComponentArgs,
-  invoke: (
-    manager: InternalComponentManager,
-    state: ComponentDefinitionState,
-    resolver: RuntimeResolverDelegate<R>
-  ) => Invocation
+  invocation: Invocation,
+  definition: ComponentDefinition,
+  args: RenderComponentArgs
 ): TemplateIterator {
-  const definition = expect(
-    resolveComponent(vm.runtime.resolver, name),
-    `could not find component "${name}"`
-  );
-
-  const { manager, state } = definition;
-  const capabilities = capabilityFlagsFrom(manager.getCapabilities(state));
-
-  let invocation;
-
-  if (hasStaticLayoutCapability(capabilities, manager)) {
-    invocation = invoke(manager, state, vm.runtime.resolver);
-  } else {
-    throw new Error('Cannot invoke components with dynamic layouts as a root component.');
-  }
-
   // Get a list of tuples of argument names and references, like
   // [['title', reference], ['name', reference]]
   const argList = Object.keys(args).map(key => [key, args[key]]);
@@ -157,24 +132,36 @@ function renderComponent<C extends JitOrAotBlock, R extends TemplateMeta>(
 }
 
 export function renderAotComponent<R>(
-  runtime: RuntimeContext<TemplateMeta<R>>,
+  runtime: AotRuntimeContext<TemplateMeta<R>>,
   treeBuilder: ElementBuilder,
   main: number,
   name: string,
   args: RenderComponentArgs = {}
 ): TemplateIterator {
   let vm = AotVM.empty(runtime, { treeBuilder, handle: main });
-  return renderComponent(vm, name, args, (manager, state, resolver) => {
-    return (manager as WithAotStaticLayout<
-      ComponentInstanceState,
-      ComponentDefinitionState,
-      RuntimeResolverDelegate
-    >).getAotStaticLayout(state, resolver);
-  });
+
+  const definition = expect(
+    resolveComponent(vm.runtime.resolver, name),
+    `could not find component "${name}"`
+  );
+
+  const { manager, state } = definition;
+
+  const capabilities = capabilityFlagsFrom(manager.getCapabilities(state));
+
+  let invocation;
+
+  if (hasStaticLayoutCapability(capabilities, manager)) {
+    invocation = (manager as WithAotStaticLayout).getAotStaticLayout(state, vm.runtime.resolver);
+  } else {
+    throw new Error('Cannot invoke components with dynamic layouts as a root component.');
+  }
+
+  return renderInvocation(vm, invocation, definition, args);
 }
 
 export function renderJitComponent(
-  runtime: RuntimeContext<TemplateMeta>,
+  runtime: JitRuntimeContext<TemplateMeta>,
   treeBuilder: ElementBuilder,
   context: SyntaxCompilationContext,
   main: number,
@@ -182,15 +169,24 @@ export function renderJitComponent(
   args: RenderComponentArgs = {}
 ): TemplateIterator {
   let vm = JitVM.empty(runtime, { treeBuilder, handle: main }, context);
-  return renderComponent(vm, name, args, (manager, state, resolver) => {
-    let template = (manager as WithJitStaticLayout<
-      ComponentInstanceState,
-      ComponentDefinitionState,
-      RuntimeResolverDelegate
-    >).getJitStaticLayout(state, resolver);
 
-    let handle = template.compile(context);
+  const definition = expect(
+    resolveComponent(vm.runtime.resolver, name),
+    `could not find component "${name}"`
+  );
 
-    return { handle, symbolTable: template.symbolTable };
-  });
+  const { manager, state } = definition;
+
+  const capabilities = capabilityFlagsFrom(manager.getCapabilities(state));
+
+  let invocation: Invocation;
+
+  if (hasStaticLayoutCapability(capabilities, manager)) {
+    let layout = (manager as WithJitStaticLayout).getJitStaticLayout(state, vm.runtime.resolver);
+    invocation = { handle: layout.compile(context), symbolTable: layout.symbolTable };
+  } else {
+    throw new Error('Cannot invoke components with dynamic layouts as a root component.');
+  }
+
+  return renderInvocation(vm, invocation, definition, args);
 }

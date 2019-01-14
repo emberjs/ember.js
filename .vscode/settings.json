@@ -1,6 +1,5 @@
 // Place your settings in this file to overwrite default and user settings.
 {
-  "typescript.tsdk": "./node_modules/typescript/lib",
   "search.exclude": {
     "**/node_modules/**": true,
     "tmp": true
@@ -26,6 +25,6 @@
   "editor.insertSpaces": true,
   "editor.tabSize": 2,
   "editor.formatOnSave": true,
-  "typescript.tsc.autoDetect": "off",
+  "typescript.tsc.autoDetect": "on",
   "javascript.updateImportsOnFileMove.enabled": "always"
 }

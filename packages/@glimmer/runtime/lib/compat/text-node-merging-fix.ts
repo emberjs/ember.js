@@ -1,4 +1,3 @@
-import { DOMOperations } from '../dom/helper';
 import { Bounds } from '@glimmer/interfaces';
 import { Option } from '@glimmer/util';
 import {
@@ -8,6 +7,7 @@ import {
   SimpleElement,
   SimpleNode,
 } from '@simple-dom/interface';
+import { DOMOperations } from '../dom/operations';
 
 // Patch:    Adjacent text node merging fix
 // Browsers: IE, Edge, Firefox w/o inspector open

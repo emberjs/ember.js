@@ -3,7 +3,7 @@ import { VersionedPathReference } from '@glimmer/reference';
 import { Option } from '@glimmer/util';
 
 import {
-  RuntimeResolverDelegate,
+  RuntimeResolverOptions,
   VMArguments,
   TemplateMeta,
   VM as PublicVM,
@@ -15,6 +15,6 @@ export interface DynamicComponentDefinition {
     vm: PublicVM,
     args: VMArguments,
     meta: TemplateMeta,
-    resolver: RuntimeResolverDelegate
+    resolver: RuntimeResolverOptions
   ): VersionedPathReference<Option<CurriedComponentDefinition>>;
 }

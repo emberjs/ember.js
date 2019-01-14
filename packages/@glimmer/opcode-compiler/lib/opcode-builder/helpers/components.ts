@@ -14,11 +14,11 @@ import {
   NamedBlocks,
   ComponentCapabilities,
   CompilableProgram,
-  CompileTimeResolverDelegate,
+  CompileTimeComponent,
 } from '@glimmer/interfaces';
 
 import { label, serializable } from '../operands';
-import { resolveLayoutForTag, resolveLayoutForHandle } from '../../resolver';
+import { resolveLayoutForTag } from '../../resolver';
 import { $s0, $sp, $s1, $v0, SavedRegister } from '@glimmer/vm';
 import { meta } from './shared';
 import { yieldBlock, pushSymbolTable, invokeStaticBlock, pushYieldableBlock } from './blocks';
@@ -30,6 +30,7 @@ import { UNHANDLED, NONE } from '../../syntax/concat';
 import { compilableBlock } from '../../compilable-template';
 import { NamedBlocksImpl } from '../../utils';
 import { MacroContext } from '../../syntax/macros';
+import { MINIMAL_CAPABILITIES } from '@glimmer/runtime';
 
 export type Block = () => CompileActions;
 
@@ -79,9 +80,11 @@ export function staticComponentHelper(
   hash: WireFormat.Core.Hash,
   template: Option<CompilableBlock>
 ): StatementCompileActions | Unhandled {
-  let { handle: h, capabilities, compilable } = resolveLayoutForTag(tag, context);
+  let component = resolveLayoutForTag(tag, context);
 
-  if (h !== null && capabilities !== null) {
+  if (component !== null) {
+    let { compilable, handle, capabilities } = component;
+
     if (compilable) {
       if (hash) {
         for (let i = 0; i < hash.length; i = i + 2) {
@@ -89,7 +92,7 @@ export function staticComponentHelper(
         }
       }
 
-      let out: StatementCompileActions = [op(Op.PushComponentDefinition, h)];
+      let out: StatementCompileActions = [op(Op.PushComponentDefinition, handle)];
 
       out.push(
         invokeStaticComponent({
@@ -299,21 +302,20 @@ export function wrappedComponent<R>(
 }
 
 export function staticComponent(
-  resolver: CompileTimeResolverDelegate,
-  handle: number,
+  component: Option<CompileTimeComponent>,
   args: [WireFormat.Core.Params, WireFormat.Core.Hash, NamedBlocks]
 ): StatementCompileActions {
   let [params, hash, blocks] = args;
 
-  if (handle === null) return NONE;
+  if (component === null) return NONE;
 
-  let { capabilities, compilable } = resolveLayoutForHandle(resolver, handle);
+  let { compilable, capabilities, handle } = component;
 
   if (compilable) {
     return [
       op(Op.PushComponentDefinition, handle),
       invokeStaticComponent({
-        capabilities,
+        capabilities: capabilities || MINIMAL_CAPABILITIES,
         layout: compilable,
         attrs: null,
         params,
@@ -325,7 +327,7 @@ export function staticComponent(
     return [
       op(Op.PushComponentDefinition, handle),
       invokeComponent({
-        capabilities,
+        capabilities: capabilities || MINIMAL_CAPABILITIES,
         attrs: null,
         params,
         hash,
