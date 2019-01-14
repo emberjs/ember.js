@@ -1,11 +1,11 @@
-import { EnvironmentOptions, RuntimeResolverDelegate } from '@glimmer/interfaces';
+import { EnvironmentOptions } from '@glimmer/interfaces';
 import { DOMChanges, DOMTreeConstruction } from '@glimmer/runtime';
 import { SimpleDocument } from '@simple-dom/interface';
 import TestEnvironment, { TestProgram } from '../../environment';
 
 export default class EagerTestEnvironment extends TestEnvironment {
   protected program!: TestProgram;
-  protected resolver!: RuntimeResolverDelegate;
+  // protected resolver!: RuntimeResolverOptions;
 
   constructor(options?: EnvironmentOptions) {
     if (!options) {

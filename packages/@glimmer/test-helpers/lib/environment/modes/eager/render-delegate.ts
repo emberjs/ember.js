@@ -15,12 +15,11 @@ import {
   ModuleLocator,
   ProgramSymbolTable,
   RenderResult,
-  RuntimeContext,
   TemplateMeta,
+  AotRuntimeContext,
 } from '@glimmer/interfaces';
 import { UpdatableReference } from '@glimmer/object-reference';
 import { WrappedBuilder } from '@glimmer/opcode-compiler';
-import { RuntimeConstantsImpl, RuntimeHeapImpl, RuntimeProgramImpl } from '@glimmer/program';
 import { PathReference } from '@glimmer/reference';
 import {
   clientBuilder,
@@ -29,9 +28,10 @@ import {
   renderAotComponent,
   renderAotMain,
   renderSync,
+  AotRuntime,
 } from '@glimmer/runtime';
 import { assert, assign, expect, Option } from '@glimmer/util';
-import { SimpleElement } from '@simple-dom/interface';
+import { SimpleElement, SimpleDocument } from '@simple-dom/interface';
 import { ComponentKind } from '../../../interfaces';
 import RenderDelegate from '../../../render-delegate';
 import { locatorFor, TestComponentDefinitionState } from '../../component-definition';
@@ -55,7 +55,6 @@ import {
   TestModifierManager,
 } from '../../modifier';
 import EagerCompilerDelegate from './compiler-delegate';
-import EagerTestEnvironment from './environment';
 import { Modules } from './modules';
 import EagerRuntimeResolver from './runtime-resolver';
 
@@ -90,16 +89,16 @@ const COMPONENT_CAPABILITIES: Entries<ComponentCapabilities> = {
 export default class EagerRenderDelegate implements RenderDelegate {
   static readonly isEager = true;
 
-  protected env: Environment;
   protected modules = new Modules();
   protected compileTimeModules = new Modules();
   protected components: Dict<ComponentDefinition<TestComponentDefinitionState>> = {};
   protected symbolTables = new ModuleLocatorMap<ProgramSymbolTable, ModuleLocator>();
   public constants!: DebugConstants;
+  private doc: SimpleDocument;
 
-  constructor(env?: Environment) {
-    this.env = env || new EagerTestEnvironment();
+  constructor(doc?: SimpleDocument) {
     this.registerInternalHelper('-get-dynamic-var', getDynamicVar);
+    this.doc = doc || (document as SimpleDocument);
   }
 
   private registerInternalHelper(name: string, helper: GlimmerHelper): GlimmerHelper {
@@ -111,16 +110,12 @@ export default class EagerRenderDelegate implements RenderDelegate {
     return clientBuilder(env, cursor);
   }
 
-  resetEnv() {
-    this.env = new EagerTestEnvironment();
-  }
-
   getInitialElement(): SimpleElement {
-    return this.env.getAppendOperations().createElement('div');
+    return this.doc.createElement('div');
   }
 
   createElement(tagName: string): SimpleElement {
-    return this.env.getAppendOperations().createElement(tagName);
+    return this.doc.createElement(tagName);
   }
 
   registerComponent(
@@ -201,6 +196,8 @@ export default class EagerRenderDelegate implements RenderDelegate {
         });
 
         symbolTable = wrapped.symbolTable;
+
+        this.symbolTables.set(locator, symbolTable);
       } else {
         block = bundleCompiler.add(
           locator,
@@ -245,11 +242,14 @@ export default class EagerRenderDelegate implements RenderDelegate {
     return compiler;
   }
 
-  private getRuntime({ table, pool, heap }: BundleCompilationResult): RuntimeContext<TemplateMeta> {
+  private getRuntimeContext({
+    table,
+    pool,
+    heap,
+  }: BundleCompilationResult): AotRuntimeContext<TemplateMeta> {
     let resolver = new EagerRuntimeResolver(table, this.modules, this.symbolTables);
-    let runtimeHeap = new RuntimeHeapImpl(heap);
-    let runtimeProgram = new RuntimeProgramImpl(new RuntimeConstantsImpl(pool), runtimeHeap);
-    return { env: this.env, program: runtimeProgram, resolver };
+
+    return AotRuntime(this.doc, { constants: pool, heap }, resolver);
   }
 
   renderComponent(
@@ -260,14 +260,13 @@ export default class EagerRenderDelegate implements RenderDelegate {
     let bundleCompiler = this.getBundleCompiler();
     this.addRegisteredComponents(bundleCompiler);
     let compilationResult = bundleCompiler.compile();
-    let { env } = this;
 
     let cursor = { element, nextSibling: null };
-    let builder = this.getElementBuilder(env, cursor);
-    let runtime = this.getRuntime(compilationResult);
+    let runtime = this.getRuntimeContext(compilationResult);
+    let builder = this.getElementBuilder(runtime.env, cursor);
     let iterator = renderAotComponent(runtime, builder, compilationResult.main, name, args);
 
-    return renderSync(env, iterator);
+    return renderSync(runtime.env, iterator);
   }
 
   renderTemplate(template: string, context: Dict<unknown>, element: SimpleElement): RenderResult {
@@ -280,15 +279,14 @@ export default class EagerRenderDelegate implements RenderDelegate {
     let compilationResult = bundleCompiler.compile();
 
     let handle = compilationResult.table.vmHandleByModuleLocator.get(locator)!;
-    let { env } = this;
 
     let cursor = { element, nextSibling: null };
-    let builder = this.getElementBuilder(env, cursor);
+    let runtime = this.getRuntimeContext(compilationResult);
+    let builder = this.getElementBuilder(runtime.env, cursor);
     let self = this.getSelf(context);
-    let runtime = this.getRuntime(compilationResult);
 
     let iterator = renderAotMain(runtime, self, builder, handle);
 
-    return renderSync(env, iterator);
+    return renderSync(runtime.env, iterator);
   }
 }

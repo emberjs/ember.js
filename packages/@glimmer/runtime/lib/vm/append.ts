@@ -19,6 +19,8 @@ import {
   SyntaxCompilationContext,
   TemplateMeta,
   VM as PublicVM,
+  JitRuntimeContext,
+  AotRuntimeContext,
 } from '@glimmer/interfaces';
 import { DEBUG } from '@glimmer/local-debug-flags';
 import { RuntimeOpImpl } from '@glimmer/program';
@@ -75,7 +77,7 @@ import {
  * This interface is used by internal opcodes, and is more stable than
  * the implementation of the Append VM itself.
  */
-export interface InternalVM<C extends JitOrAotBlock> {
+export interface InternalVM<C extends JitOrAotBlock = JitOrAotBlock> {
   readonly [CONSTANTS]: RuntimeConstants;
   readonly [ARGS]: VMArgumentsImpl;
 
@@ -140,6 +142,7 @@ export interface InternalVM<C extends JitOrAotBlock> {
 
 export interface InternalJitVM extends InternalVM<CompilableBlock> {
   compile(block: CompilableTemplate): number;
+  readonly runtime: JitRuntimeContext<TemplateMeta>;
   readonly context: SyntaxCompilationContext;
 }
 
@@ -333,15 +336,7 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
     };
   }
 
-  capture(args: number, pc?: number): ResumableVMState<C, InternalVM<C>> {
-    return new ResumableVMStateImpl<C, InternalVM<C>>(this.captureState(args, pc), this.resume);
-  }
-
-  abstract resume: (
-    runtime: RuntimeContext<TemplateMeta>,
-    state: VMState,
-    builder: ElementBuilder
-  ) => InternalVM<C>;
+  abstract capture(args: number, pc?: number): ResumableVMState<InternalVM>;
 
   beginCacheGroup() {
     this[STACKS].cache.push(this.updating().tail());
@@ -612,92 +607,87 @@ export interface InitOptions extends MinimalInitOptions {
   dynamicScope: DynamicScope;
 }
 
-function emptyVm<C extends JitOrAotBlock>(
-  runtime: RuntimeContext<TemplateMeta>,
-  { handle, treeBuilder }: MinimalInitOptions,
-  init: VmInitCallback<InternalVM<C>>
-) {
-  let vm = init(runtime, vmState(runtime.program.heap.getaddr(handle)), treeBuilder);
-  vm.pushUpdating();
-  return vm;
-}
-
-function initialVm<C extends JitOrAotBlock>(
-  runtime: RuntimeContext<TemplateMeta>,
-  { handle, self, dynamicScope, treeBuilder }: InitOptions,
-  init: VmInitCallback<InternalVM<C>>
-): InternalVM<C> {
-  let scopeSize = runtime.program.heap.scopesizeof(handle);
-  let scope = ScopeImpl.root(self, scopeSize);
-  let state = vmState(runtime.program.heap.getaddr(handle), scope, dynamicScope);
-  let vm = init(runtime, state, treeBuilder);
-  vm.pushUpdating();
-  return vm;
-}
-
 export class AotVM extends VM<number> implements InternalVM<number> {
   static empty(
-    runtime: RuntimeContext<TemplateMeta>,
-    options: MinimalInitOptions
+    runtime: AotRuntimeContext<TemplateMeta>,
+    { handle, treeBuilder }: MinimalInitOptions
   ): InternalVM<number> {
-    return emptyVm(runtime, options, initAOT);
+    let vm = initAOT(runtime, vmState(runtime.program.heap.getaddr(handle)), treeBuilder);
+    vm.pushUpdating();
+    return vm;
   }
 
-  static initial(runtime: RuntimeContext<TemplateMeta>, options: InitOptions) {
-    return initialVm(runtime, options, initAOT);
+  static initial(
+    runtime: AotRuntimeContext<TemplateMeta>,
+    { handle, self, treeBuilder, dynamicScope }: InitOptions
+  ) {
+    let scopeSize = runtime.program.heap.scopesizeof(handle);
+    let scope = ScopeImpl.root(self, scopeSize);
+    let state = vmState(runtime.program.heap.getaddr(handle), scope, dynamicScope);
+    let vm = initAOT(runtime, state, treeBuilder);
+    vm.pushUpdating();
+    return vm;
   }
 
-  readonly resume = initAOT;
-
-  capture(
-    args: number,
-    pc = this[INNER_VM].fetchRegister($pc)
-  ): ResumableVMState<number, InternalVM<number>> {
-    return new ResumableVMStateImpl<number, InternalVM<number>>(
-      this.captureState(args, pc),
-      initAOT
-    );
+  capture(args: number, pc = this[INNER_VM].fetchRegister($pc)): ResumableVMState<AotVM> {
+    return new ResumableVMStateImpl(this.captureState(args, pc), initAOT);
   }
 }
 
-export type VmInitCallback<V extends InternalVM<JitOrAotBlock>> = (
+export type VmInitCallback<V extends InternalVM = InternalVM> = (
   this: void,
-  runtime: RuntimeContext<TemplateMeta>,
+  runtime: V extends JitVM ? JitRuntimeContext<TemplateMeta> : AotRuntimeContext<TemplateMeta>,
+  state: VMState,
+  builder: ElementBuilder
+) => V;
+
+export type JitVmInitCallback<V extends InternalVM> = (
+  this: void,
+  runtime: JitRuntimeContext<TemplateMeta>,
   state: VMState,
   builder: ElementBuilder
 ) => V;
 
 function initAOT(
-  runtime: RuntimeContext<TemplateMeta>,
+  runtime: AotRuntimeContext<TemplateMeta>,
   state: VMState,
   builder: ElementBuilder
 ): AotVM {
   return new AotVM(runtime, state, builder);
 }
 
-function initJIT(context: SyntaxCompilationContext): VmInitCallback<JitVM> {
+function initJIT(context: SyntaxCompilationContext): JitVmInitCallback<JitVM> {
   return (runtime, state, builder) => new JitVM(runtime, state, builder, context);
 }
 
 export class JitVM extends VM<CompilableBlock> implements InternalJitVM {
   static initial(
-    runtime: RuntimeContext<TemplateMeta>,
+    runtime: JitRuntimeContext<TemplateMeta>,
     context: SyntaxCompilationContext,
-    options: InitOptions
+    { handle, self, dynamicScope, treeBuilder }: InitOptions
   ) {
-    return initialVm(runtime, options, initJIT(context));
+    let scopeSize = runtime.program.heap.scopesizeof(handle);
+    let scope = ScopeImpl.root(self, scopeSize);
+    let state = vmState(runtime.program.heap.getaddr(handle), scope, dynamicScope);
+    let vm = initJIT(context)(runtime, state, treeBuilder);
+    vm.pushUpdating();
+    return vm;
   }
 
   static empty(
-    runtime: RuntimeContext<TemplateMeta>,
-    options: MinimalInitOptions,
+    runtime: JitRuntimeContext<TemplateMeta>,
+    { handle, treeBuilder }: MinimalInitOptions,
     context: SyntaxCompilationContext
   ) {
-    return emptyVm(runtime, options, initJIT(context));
+    let vm = initJIT(context)(runtime, vmState(runtime.program.heap.getaddr(handle)), treeBuilder);
+    vm.pushUpdating();
+    return vm;
   }
 
+  readonly runtime!: JitRuntimeContext<TemplateMeta>;
+
   constructor(
-    runtime: RuntimeContext<TemplateMeta>,
+    runtime: JitRuntimeContext<TemplateMeta>,
     state: VMState,
     elementStack: ElementBuilder,
     readonly context: SyntaxCompilationContext
@@ -705,7 +695,11 @@ export class JitVM extends VM<CompilableBlock> implements InternalJitVM {
     super(runtime, state, elementStack);
   }
 
-  readonly resume = initJIT(this.context);
+  capture(args: number, pc = this[INNER_VM].fetchRegister($pc)): ResumableVMState<JitVM> {
+    return new ResumableVMStateImpl(this.captureState(args, pc), this.resume);
+  }
+
+  private resume: VmInitCallback<JitVM> = initJIT(this.context);
 
   compile(block: CompilableTemplate): number {
     return block.compile(this.context);

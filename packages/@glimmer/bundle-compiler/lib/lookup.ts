@@ -6,9 +6,12 @@ import {
   CompileTimeResolverDelegate,
   ModuleLocator,
   TemplateMeta,
+  CompileTimeComponent,
+  Template,
 } from '@glimmer/interfaces';
 import { expect, Option, templateMeta } from '@glimmer/util';
 import { ModuleLocatorMap } from '..';
+import { preprocess } from '@glimmer/opcode-compiler';
 
 /**
  * The BundleCompilerResolver resolves references to objects inside a template into
@@ -81,12 +84,16 @@ export default class BundleCompilerLookup<R> implements CompileTimeResolverDeleg
     }
   }
 
-  lookupComponentDefinition(name: string, referrer: Option<TemplateMeta<R>>): Option<number> {
+  lookupComponent(name: string, referrer: Option<TemplateMeta<R>>): Option<CompileTimeComponent> {
     if (referrer === null) {
       return null;
     } else if (this.delegate.hasComponentInScope(name, referrer)) {
       let locator = this.delegate.resolveComponent(name, referrer);
-      return this.table.handleForModuleLocator(locator);
+      let handle = this.table.handleForModuleLocator(locator);
+      let capabilities = this.getCapabilities(handle);
+      let compilable = this.getLayout(handle);
+
+      return { handle, capabilities, compilable };
     } else {
       return null;
     }
@@ -101,11 +108,11 @@ export default class BundleCompilerLookup<R> implements CompileTimeResolverDeleg
     }
   }
 
-  lookupComponent(_name: string, _meta: R & TemplateMeta): Option<number> {
+  lookupPartial(_name: string, _meta: R & TemplateMeta): Option<number> {
     throw new Error('Method not implemented.');
   }
 
-  lookupPartial(_name: string, _meta: R & TemplateMeta): Option<number> {
-    throw new Error('Method not implemented.');
+  compile(source: string): Template {
+    return preprocess(source, templateMeta({}));
   }
 }

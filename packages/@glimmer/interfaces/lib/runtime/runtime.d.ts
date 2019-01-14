@@ -1,6 +1,11 @@
 import { Environment } from './environment';
 import { RuntimeHeap, RuntimeConstants, RuntimeOp } from '../program';
-import { RuntimeResolverDelegate } from '../serialize';
+import {
+  RuntimeResolverOptions,
+  RuntimeResolver,
+  JitRuntimeResolver,
+  AotRuntimeResolver,
+} from '../serialize';
 
 /**
   The Runtime is the set of static structures that contain the compiled
@@ -12,7 +17,18 @@ import { RuntimeResolverDelegate } from '../serialize';
 export interface RuntimeContext<R extends TemplateMeta = TemplateMeta> {
   env: Environment;
   program: RuntimeProgram;
-  resolver: RuntimeResolverDelegate<R>;
+  resolver: RuntimeResolver<R>;
+}
+
+export interface AotRuntimeContext<R extends TemplateMeta = TemplateMeta> {
+  env: Environment;
+  program: RuntimeProgram;
+  resolver: AotRuntimeResolver<R>;
+}
+
+export interface JitRuntimeContext<R extends TemplateMeta = TemplateMeta>
+  extends RuntimeContext<R> {
+  resolver: JitRuntimeResolver<R>;
 }
 
 export interface RuntimeProgram {

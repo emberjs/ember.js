@@ -1,10 +1,10 @@
 import {
   SymbolTable,
-  RuntimeResolverDelegate,
   CompileTimeConstants,
   EMPTY_ARRAY,
   ConstantPool,
   RuntimeConstants,
+  RuntimeResolver,
 } from '@glimmer/interfaces';
 
 const UNRESOLVED = {};
@@ -140,7 +140,7 @@ export class RuntimeConstantsImpl implements RuntimeConstants {
 }
 
 export class Constants extends WriteOnlyConstants implements RuntimeConstants {
-  constructor(public resolver: RuntimeResolverDelegate, pool?: ConstantPool) {
+  constructor(public resolver: RuntimeResolver, pool?: ConstantPool) {
     super();
 
     if (pool) {

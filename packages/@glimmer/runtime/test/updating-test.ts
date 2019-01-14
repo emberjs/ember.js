@@ -5,6 +5,8 @@ import {
   RichIteratorResult,
   Template,
   TemplateMeta,
+  SyntaxCompilationContext,
+  JitRuntimeContext,
 } from '@glimmer/interfaces';
 import { UpdatableReference } from '@glimmer/object-reference';
 import { bump, ConstReference } from '@glimmer/reference';
@@ -13,6 +15,7 @@ import {
   PrimitiveReference,
   SafeString,
   UNDEFINED_REFERENCE,
+  JitRuntime,
 } from '@glimmer/runtime';
 import {
   assertNodeTagName,
@@ -20,11 +23,20 @@ import {
   equalTokens,
   getElementByClassName,
   getElementsByTagName,
-  qunitFixture,
   stripTight,
-  TestEnvironment,
   toTextContent,
   trimLines,
+  LazyRuntimeResolver,
+  TestLazyCompilationContext,
+  registerInternalHelper,
+  registerPartial,
+  registerHelper,
+  preprocess,
+  registerModifier,
+  registerBasicComponent,
+  renderMain,
+  TestMacros,
+  emberToBool,
 } from '@glimmer/test-helpers';
 import { Namespace, SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
 import { assert, module, test } from './support';
@@ -35,19 +47,32 @@ const XHTML_NAMESPACE = 'http://www.w3.org/1999/xhtml';
 
 let root: SimpleElement;
 let doc: SimpleDocument;
-let env: TestEnvironment;
 let self: UpdatableReference<any>;
 let result: RenderResult;
+let resolver: LazyRuntimeResolver;
+let context: TestLazyCompilationContext;
+let syntax: SyntaxCompilationContext;
+let runtime: JitRuntimeContext;
 
 function compile(template: string) {
-  return env.preprocess(template);
+  return preprocess(template);
 }
 
 function commonSetup() {
-  env = new TestEnvironment(); // TODO: Support SimpleDOM
-  root = qunitFixture();
-  doc = root.ownerDocument;
+  resolver = new LazyRuntimeResolver();
+  context = new TestLazyCompilationContext(resolver);
+  syntax = { program: context, macros: new TestMacros() };
+  doc = document as SimpleDocument;
+
+  runtime = JitRuntime(document as SimpleDocument, context, resolver, { toBool: emberToBool });
+  root = document.getElementById('qunit-fixture')! as SimpleElement;
 }
+
+// function commonSetup() {
+//   env = new TestEnvironment(); // TODO: Support SimpleDOM
+//   root = qunitFixture();
+//   doc = root.ownerDocument;
+// }
 
 function assertProperty<T, K extends keyof T, V extends T[K]>(
   obj: T | null,
@@ -60,12 +85,18 @@ function assertProperty<T, K extends keyof T, V extends T[K]>(
   }
 }
 
-function render(template: Template<TemplateMeta<AnnotatedModuleLocator>>, context = {}) {
-  self = new UpdatableReference(context);
-  env.begin();
+function render(template: Template<TemplateMeta<AnnotatedModuleLocator>>, state = {}) {
+  self = new UpdatableReference(state);
+  runtime.env.begin();
   let cursor = { element: root, nextSibling: null };
 
-  let templateIterator = env.renderMain(template, self, clientBuilder(env, cursor));
+  let templateIterator = renderMain(
+    runtime,
+    syntax,
+    template,
+    self,
+    clientBuilder(runtime.env, cursor)
+  );
 
   let iteratorResult: RichIteratorResult<null, RenderResult>;
   do {
@@ -73,7 +104,7 @@ function render(template: Template<TemplateMeta<AnnotatedModuleLocator>>, contex
   } while (!iteratorResult.done);
 
   result = iteratorResult.value;
-  env.commit();
+  runtime.env.commit();
   assertInvariants(QUnit.assert, result);
   return result;
 }
@@ -81,9 +112,9 @@ function render(template: Template<TemplateMeta<AnnotatedModuleLocator>>, contex
 function rerender(context: any = null) {
   if (context !== null) self.update(context);
   bump();
-  env.begin();
+  runtime.env.begin();
   result.rerender();
-  env.commit();
+  runtime.env.commit();
 }
 
 function getNodeByClassName(className: string) {
@@ -122,7 +153,7 @@ function assertInvariants(assert: Assert, result: RenderResult, msg?: string) {
   );
 }
 
-module('[glimmer-runtime] Updating', hooks => {
+module('[jit] Updating', hooks => {
   hooks.beforeEach(() => commonSetup());
 
   test('updating a single curly', assert => {
@@ -1080,7 +1111,7 @@ module('[glimmer-runtime] Updating', hooks => {
   test('double curlies with const SafeString', assert => {
     let rawString = '<b>bold</b> and spicy';
 
-    env.registerInternalHelper('const-foobar', () => {
+    registerInternalHelper(resolver, 'const-foobar', () => {
       return new ValueReference<unknown>(makeSafeString(rawString));
     });
 
@@ -1106,7 +1137,7 @@ module('[glimmer-runtime] Updating', hooks => {
   test('double curlies with const Node', assert => {
     let rawString = '<b>bold</b> and spicy';
 
-    env.registerInternalHelper('const-foobar', () => {
+    registerInternalHelper(resolver, 'const-foobar', () => {
       return new ValueReference<unknown>(doc.createTextNode(rawString));
     });
 
@@ -1132,7 +1163,7 @@ module('[glimmer-runtime] Updating', hooks => {
   test('triple curlies with const SafeString', assert => {
     let rawString = '<b>bold</b> and spicy';
 
-    env.registerInternalHelper('const-foobar', () => {
+    registerInternalHelper(resolver, 'const-foobar', () => {
       return new ValueReference<unknown>(makeSafeString(rawString));
     });
 
@@ -1159,7 +1190,7 @@ module('[glimmer-runtime] Updating', hooks => {
   test('triple curlies with const Node', assert => {
     let rawString = '<b>bold</b> and spicy';
 
-    env.registerInternalHelper('const-foobar', () => {
+    registerInternalHelper(resolver, 'const-foobar', () => {
       return new ValueReference<unknown>(doc.createTextNode(rawString));
     });
 
@@ -1185,7 +1216,7 @@ module('[glimmer-runtime] Updating', hooks => {
       },
     };
 
-    env.registerInternalHelper('destroy-me', (_args, vm) => {
+    registerInternalHelper(resolver, 'destroy-me', (_args, vm) => {
       vm.associateDestroyable(destroyable);
       return PrimitiveReference.create('destroy me!');
     });
@@ -1248,8 +1279,8 @@ module('[glimmer-runtime] Updating', hooks => {
   });
 
   test(`helpers passed as arguments to {{partial}} are not torn down when switching between blocks`, assert => {
-    env.registerPartial('yasss', 'Yes');
-    env.registerPartial('noooo', '');
+    registerPartial(resolver, 'yasss', 'Yes');
+    registerPartial(resolver, 'noooo', '');
 
     let options = {
       template: '{{partial (stateful-foo)}}',
@@ -1261,7 +1292,7 @@ module('[glimmer-runtime] Updating', hooks => {
   });
 
   test(`helpers passed as arguments to {{component}} are not torn down when switching between blocks`, assert => {
-    env.registerBasicComponent('XYasss', BasicComponent, '<div>Yes</div>');
+    registerBasicComponent(resolver, 'XYasss', BasicComponent, '<div>Yes</div>');
 
     let options = {
       template: '{{component (stateful-foo)}}',
@@ -1299,7 +1330,7 @@ module('[glimmer-runtime] Updating', hooks => {
     let didDestroy = 0;
     let reference: UpdatableReference<T | U> | undefined;
 
-    env.registerInternalHelper('stateful-foo', (_args, vm) => {
+    registerInternalHelper(resolver, 'stateful-foo', (_args, vm) => {
       didCreate++;
 
       vm.associateDestroyable({
@@ -1590,9 +1621,9 @@ module('[glimmer-runtime] Updating', hooks => {
   });
 
   test('block arguments should have higher presedence than helpers', () => {
-    env.registerHelper('foo', () => 'foo-helper');
-    env.registerHelper('bar', () => 'bar-helper');
-    env.registerHelper('echo', args => args[0]);
+    registerHelper(resolver, 'foo', () => 'foo-helper');
+    registerHelper(resolver, 'bar', () => 'bar-helper');
+    registerHelper(resolver, 'echo', args => args[0]);
 
     let template = compile(trimLines`
       <div>
@@ -1828,7 +1859,7 @@ module('[glimmer-runtime] Updating', hooks => {
   });
 
   test('block arguments cannot be accessed through {{this}}', () => {
-    env.registerHelper('noop', params => params[0]);
+    registerHelper(resolver, 'noop', params => params[0]);
 
     let template = compile(stripTight`
       <div>
@@ -1914,7 +1945,7 @@ module('[glimmer-runtime] Updating', hooks => {
   });
 
   test('helper calls follow the normal dirtying rules', () => {
-    env.registerHelper('capitalize', function(params) {
+    registerHelper(resolver, 'capitalize', function(params) {
       let value = params[0];
       if (value !== null && value !== undefined && typeof value === 'string') {
         return value.toUpperCase();
@@ -3351,7 +3382,7 @@ QUnit.module('Updating Element Modifiers', hooks => {
   hooks.beforeEach(() => commonSetup());
 
   test('Updating a element modifier', assert => {
-    let { manager } = env.registerModifier('foo');
+    let { manager } = registerModifier(resolver, 'foo');
 
     let template = compile('<div><div {{foo bar baz=fizz}}></div></div>');
     let input = {
@@ -3401,7 +3432,7 @@ QUnit.module('Updating Element Modifiers', hooks => {
   });
 
   test("Const input doesn't trigger update in a element modifier", assert => {
-    let { manager } = env.registerModifier('foo');
+    let { manager } = registerModifier(resolver, 'foo');
 
     let template = compile('<div><div {{foo "bar"}}></div></div>');
     let input = {};
@@ -3429,7 +3460,7 @@ QUnit.module('Updating Element Modifiers', hooks => {
   });
 
   test('Destructor is triggered on element modifiers', assert => {
-    let { manager } = env.registerModifier('foo');
+    let { manager } = registerModifier(resolver, 'foo');
 
     let template = compile('{{#if bar}}<div {{foo bar}}></div>{{else}}<div></div>{{/if}}');
     let input = {

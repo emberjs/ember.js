@@ -2,6 +2,7 @@ import { AbstractIterable, IterationItem, OpaqueIterator } from './iterable';
 import { UpdatableReference } from '@glimmer/object-reference';
 import { Tag, VersionedReference } from './validators';
 import { Option, Dict } from '@glimmer/interfaces';
+import { EMPTY_ARRAY } from '@glimmer/util';
 
 export type KeyFor = (item: Dict, index: unknown) => unknown;
 export type UnknownKeyFor = (key: string) => KeyFor;
@@ -43,12 +44,12 @@ export class IterableImpl
   iterate(): OpaqueIterator {
     let { ref, keyFor } = this;
 
-    let iterable = ref.value() as { [Symbol.iterator]: any };
+    let iterable = ref.value() as { [Symbol.iterator]: any } | null | false;
 
-    if (typeof iterable === 'object' && iterable && iterable[Symbol.iterator]) {
+    if (iterable && iterable[Symbol.iterator]) {
       return new NativeIteratorIterator(iterable[Symbol.iterator](), keyFor);
     } else {
-      throw new Error(`Can't iterate a non-iterable`);
+      return new NativeIteratorIterator(EMPTY_ARRAY[Symbol.iterator](), () => null);
     }
   }
 

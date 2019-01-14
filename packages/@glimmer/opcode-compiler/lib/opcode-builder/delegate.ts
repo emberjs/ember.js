@@ -1,10 +1,14 @@
 import {
   CompileTimeResolverDelegate,
   ComponentCapabilities,
-  CompilableProgram,
   Option,
   TemplateMeta,
+  CompileTimeComponent,
+  CompilableProgram,
+  Template,
 } from '@glimmer/interfaces';
+import { preprocess } from '../compilable-template';
+import { templateMeta } from '@glimmer/util';
 
 export const DEFAULT_CAPABILITIES: ComponentCapabilities = {
   dynamicLayout: true,
@@ -17,6 +21,7 @@ export const DEFAULT_CAPABILITIES: ComponentCapabilities = {
   createCaller: false,
   updateHook: true,
   createInstance: true,
+  wrapped: false,
 };
 
 export const MINIMAL_CAPABILITIES: ComponentCapabilities = {
@@ -30,16 +35,19 @@ export const MINIMAL_CAPABILITIES: ComponentCapabilities = {
   createCaller: false,
   updateHook: false,
   createInstance: false,
+  wrapped: false,
 };
 
 export interface ResolverDelegate {
-  getCapabilities?(handle: number): ComponentCapabilities | void;
-  getLayout?(handle: number): Option<CompilableProgram> | void;
-
   lookupHelper?(name: string, referrer: TemplateMeta): Option<number> | void;
   lookupModifier?(name: string, referrer: TemplateMeta): Option<number> | void;
-  lookupComponentDefinition?(name: string, referrer: Option<TemplateMeta>): Option<number> | void;
+  lookupComponent?(
+    name: string,
+    referrer: Option<TemplateMeta>
+  ): Option<CompileTimeComponent> | void;
   lookupPartial?(name: string, referrer: TemplateMeta): Option<number> | void;
+
+  compile?(source: string, name: string, wrapped: boolean): CompilableProgram;
 
   // For debugging
   resolve?(handle: number): TemplateMeta;
@@ -48,40 +56,15 @@ export interface ResolverDelegate {
 export class DefaultCompileTimeResolverDelegate implements CompileTimeResolverDelegate {
   constructor(private inner: ResolverDelegate) {}
 
-  getCapabilities(handle: number): ComponentCapabilities {
-    if (this.inner.getCapabilities) {
-      let capabilities = this.inner.getCapabilities(handle);
-      if (capabilities !== undefined) {
-        return capabilities;
-      }
-    }
-
-    return MINIMAL_CAPABILITIES;
-  }
-
-  getLayout(handle: number): Option<CompilableProgram> {
-    if (this.inner.getLayout) {
-      let compilable = this.inner.getLayout(handle);
-
-      if (compilable === undefined) {
-        throw new Error(`Unexpected layout handle ${handle} (getLayout returned undefined)`);
-      }
-
-      return compilable;
-    } else {
-      throw new Error(
-        `Can't compile global component invocations without an implementation of getLayout`
-      );
-    }
-  }
-
   lookupHelper(name: string, referrer: TemplateMeta): Option<number> {
     if (this.inner.lookupHelper) {
       let helper = this.inner.lookupHelper(name, referrer);
 
       if (helper === undefined) {
         throw new Error(
-          `Unexpected helper (${name} from ${referrer}) (lookupHelper returned undefined)`
+          `Unexpected helper (${name} from ${JSON.stringify(
+            referrer
+          )}) (lookupHelper returned undefined)`
         );
       }
 
@@ -99,7 +82,9 @@ export class DefaultCompileTimeResolverDelegate implements CompileTimeResolverDe
 
       if (modifier === undefined) {
         throw new Error(
-          `Unexpected modifier (${name} from ${referrer}) (lookupModifier returned undefined)`
+          `Unexpected modifier (${name} from ${JSON.stringify(
+            referrer
+          )}) (lookupModifier returned undefined)`
         );
       }
 
@@ -111,20 +96,22 @@ export class DefaultCompileTimeResolverDelegate implements CompileTimeResolverDe
     }
   }
 
-  lookupComponentDefinition(name: string, referrer: Option<TemplateMeta>): Option<number> {
-    if (this.inner.lookupComponentDefinition) {
-      let component = this.inner.lookupComponentDefinition(name, referrer);
+  lookupComponent(name: string, referrer: Option<TemplateMeta>): Option<CompileTimeComponent> {
+    if (this.inner.lookupComponent) {
+      let component = this.inner.lookupComponent(name, referrer);
 
       if (component === undefined) {
         throw new Error(
-          `Unexpected component (${name} from ${referrer}) (lookupComponentDefinition returned undefined)`
+          `Unexpected component (${name} from ${JSON.stringify(
+            referrer
+          )}) (lookupComponent returned undefined)`
         );
       }
 
       return component;
     } else {
       throw new Error(
-        `Can't compile global component invocations without an implementation of lookupComponentDefinition`
+        `Can't compile global component invocations without an implementation of lookupComponent`
       );
     }
   }
@@ -135,7 +122,9 @@ export class DefaultCompileTimeResolverDelegate implements CompileTimeResolverDe
 
       if (partial === undefined) {
         throw new Error(
-          `Unexpected partial (${name} from ${referrer}) (lookupPartial returned undefined)`
+          `Unexpected partial (${name} from ${JSON.stringify(
+            referrer
+          )}) (lookupPartial returned undefined)`
         );
       }
 
@@ -145,6 +134,10 @@ export class DefaultCompileTimeResolverDelegate implements CompileTimeResolverDe
         `Can't compile global partial invocations without an implementation of lookupPartial`
       );
     }
+  }
+
+  compile(source: string): Template {
+    return preprocess(source, templateMeta({}));
   }
 
   // For debugging

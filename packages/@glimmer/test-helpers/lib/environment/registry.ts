@@ -3,6 +3,7 @@ import {
   ComponentDefinition,
   Helper as GlimmerHelper,
   Invocation,
+  Template,
 } from '@glimmer/interfaces';
 import { PartialDefinition } from '@glimmer/opcode-compiler';
 import { ModifierDefinition } from '@glimmer/runtime';
@@ -14,7 +15,7 @@ export interface Lookup {
   partial: PartialDefinition;
   component: ComponentDefinition;
   template: Invocation;
-  compilable: CompilableProgram;
+  compilable: Template;
   'template-source': string;
 }
 

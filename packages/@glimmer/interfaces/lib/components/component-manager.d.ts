@@ -9,8 +9,8 @@ import { SyntaxCompilationContext } from '../program';
 import { VMArguments } from '../runtime/arguments';
 import { ElementOperations } from '../runtime/element';
 import { DynamicScope, Environment } from '../runtime/environment';
-import { RuntimeResolverDelegate } from '../serialize';
-import { CompilableProgram, CompilableTemplate } from '../template';
+import { RuntimeResolverOptions, JitRuntimeResolver, RuntimeResolver } from '../serialize';
+import { CompilableProgram, CompilableTemplate, Template } from '../template';
 import { ProgramSymbolTable } from '../tier1/symbol-table';
 
 export interface ComponentManager<
@@ -146,7 +146,7 @@ export interface WithUpdateHook<ComponentInstanceState = unknown>
 export interface WithAotStaticLayout<
   I = ComponentInstanceState,
   D = ComponentDefinitionState,
-  R extends RuntimeResolverDelegate = RuntimeResolverDelegate
+  R extends RuntimeResolverOptions = RuntimeResolverOptions
 > extends ComponentManager<I, D> {
   getAotStaticLayout(state: D, resolver: R): Invocation;
 }
@@ -154,28 +154,26 @@ export interface WithAotStaticLayout<
 export interface WithJitStaticLayout<
   I = ComponentInstanceState,
   D = ComponentDefinitionState,
-  R extends RuntimeResolverDelegate = RuntimeResolverDelegate
+  R extends JitRuntimeResolver = JitRuntimeResolver
 > extends ComponentManager<I, D> {
   getJitStaticLayout(state: D, resolver: R): CompilableProgram;
 }
 
 export interface WithJitDynamicLayout<
   I = ComponentInstanceState,
-  R extends RuntimeResolverDelegate = RuntimeResolverDelegate
+  R extends RuntimeResolverOptions = RuntimeResolverOptions
 > extends ComponentManager<I> {
   // Return the compiled layout to use for this component. This is called
   // *after* the component instance has been created, because you might
   // want to return a different layout per-instance for optimization reasons
   // or to implement features like Ember's "late-bound" layouts.
-  getJitDynamicLayout(
-    component: I,
-    resolver: R,
-    context: SyntaxCompilationContext
-  ): CompilableTemplate;
+  getJitDynamicLayout(component: I, resolver: R, context: SyntaxCompilationContext): Template;
 }
 
-export interface WithAotDynamicLayout<ComponentInstanceState, R extends RuntimeResolverDelegate>
-  extends ComponentManager<ComponentInstanceState> {
+export interface WithAotDynamicLayout<
+  ComponentInstanceState = ComponentInstanceState,
+  R extends RuntimeResolver = RuntimeResolver
+> extends ComponentManager<ComponentInstanceState> {
   // Return the compiled layout to use for this component. This is called
   // *after* the component instance has been created, because you might
   // want to return a different layout per-instance for optimization reasons

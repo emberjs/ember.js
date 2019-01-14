@@ -1,8 +1,6 @@
 import {
-  AnnotatedModuleLocator,
   Bounds,
   CapturedNamedArguments,
-  CompilableTemplate,
   ComponentCapabilities,
   Destroyable,
   DynamicScope,
@@ -17,16 +15,19 @@ import {
   WithAotStaticLayout,
   WithDynamicTagName,
   WithJitDynamicLayout,
+  SyntaxCompilationContext,
+  Template,
+  AotRuntimeResolver,
 } from '@glimmer/interfaces';
 import GlimmerObject from '@glimmer/object';
 import { UpdatableReference } from '@glimmer/object-reference';
 import { combine, DirtyableTag, PathReference, Tag, TagWrapper } from '@glimmer/reference';
 import { PrimitiveReference } from '@glimmer/runtime';
-import { assign, EMPTY_ARRAY, expect } from '@glimmer/util';
+import { assign, EMPTY_ARRAY, templateMeta } from '@glimmer/util';
 import { TestComponentDefinitionState } from '../components';
 import EagerRuntimeResolver from '../modes/eager/runtime-resolver';
 import LazyRuntimeResolver from '../modes/lazy/runtime-resolver';
-import { Attrs, AttrsDiff, createTemplate } from '../shared';
+import { Attrs, AttrsDiff } from '../shared';
 
 export class EmberishCurlyComponent extends GlimmerObject {
   public static positionalParams: string[] | string = [];
@@ -80,6 +81,7 @@ export const CURLY_CAPABILITIES: ComponentCapabilities = {
   createCaller: true,
   updateHook: true,
   createInstance: true,
+  wrapped: true,
 };
 
 export const EMBERISH_CURLY_CAPABILITIES: ComponentCapabilities = {
@@ -111,36 +113,27 @@ export class EmberishCurlyComponentManager
 
   getAotStaticLayout(
     state: EmberishCurlyComponentDefinitionState,
-    resolver: EagerRuntimeResolver
+    resolver: AotRuntimeResolver
   ): Invocation {
-    let handle = resolver.getVMHandle(expect(state.locator, 'expected locator'));
-    return {
-      handle,
-      symbolTable: state.symbolTable! as ProgramSymbolTable,
-    };
+    return resolver.getInvocation(templateMeta(state.locator));
   }
 
   getJitDynamicLayout(
     { layout }: EmberishCurlyComponent,
-    resolver: LazyRuntimeResolver
-  ): CompilableTemplate {
+    resolver: LazyRuntimeResolver,
+    { program: { resolverDelegate } }: SyntaxCompilationContext
+  ): Template {
     if (!layout) {
       throw new Error('BUG: missing dynamic layout');
     }
 
-    let handle = resolver.lookup('template-source', layout.name, null);
+    let source = resolver.resolve<string>(layout.handle);
 
-    if (!handle) {
-      throw new Error('BUG: missing dynamic layout');
+    if (source === null) {
+      throw new Error(`BUG: Missing dynamic layout for ${layout.name}`);
     }
 
-    // TODO: This whole thing probably should have a more first-class
-    // structure.
-    return resolver.compilableProgram(handle, layout.name, source => {
-      let factory = createTemplate<AnnotatedModuleLocator>(source);
-      let template = factory.create();
-      return template.asWrappedLayout();
-    });
+    return resolverDelegate.compile(source, layout.name);
   }
 
   prepareArgs(
@@ -208,10 +201,10 @@ export class EmberishCurlyComponentManager
     );
     let component = klass.create(merged);
 
-    component.name = state.name;
+    component.capabilities = component.name = state.name;
     component.args = args;
 
-    if (state.layout) {
+    if (state.layout !== null) {
       component.layout = { name: component.name, handle: state.layout };
     }
 

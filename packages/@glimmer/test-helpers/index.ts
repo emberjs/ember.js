@@ -1,7 +1,7 @@
 export * from './lib/dom';
 export { classes, equalsElement, inspectHooks, regex } from './lib/environment';
 export * from './lib/environment/components';
-export { default as AbstractTestEnvironment } from './lib/environment/environment';
+export { default as AbstractTestEnvironment, emberToBool } from './lib/environment/environment';
 export { HelperReference, UserHelper } from './lib/environment/helper';
 export { default as TestMacros } from './lib/environment/macros';
 export { default as EagerTestEnvironment } from './lib/environment/modes/eager/environment';
@@ -9,11 +9,23 @@ export { default as EagerRenderDelegate } from './lib/environment/modes/eager/re
 export {
   default as LazyTestEnvironment,
   default as TestEnvironment,
-  DEFAULT_TEST_META,
+  TestLazyCompilationContext,
+  registerPartial,
+  registerTemplate,
+  registerBasicComponent,
+  registerEmberishCurlyComponent,
+  registerEmberishGlimmerComponent,
+  registerHelper,
+  registerInternalHelper,
+  registerInternalModifier,
+  registerModifier,
+  registerStaticTaglessComponent,
+  renderMain,
 } from './lib/environment/modes/lazy/environment';
 export * from './lib/environment/modes/lazy/fixture';
 export { default as LazyRenderDelegate } from './lib/environment/modes/lazy/render-delegate';
 export { debugRehydration } from './lib/environment/modes/rehydration/debug-builder';
+export { default as LazyRuntimeResolver } from './lib/environment/modes/lazy/runtime-resolver';
 export {
   AbstractNodeTest,
   NodeEagerRenderDelegate,
@@ -42,3 +54,4 @@ export * from './lib/interfaces';
 export * from './lib/render';
 export * from './lib/render-test';
 export * from './lib/suites';
+export * from './lib/environment/shared';

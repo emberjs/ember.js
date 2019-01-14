@@ -58,43 +58,66 @@ import ComponentCapabilities from './component-capabilities';
 import { Option } from './core';
 import { SymbolTable, ProgramSymbolTable } from './tier1/symbol-table';
 import { ComponentDefinition } from './components';
-import { ResolvedLayout, STDLib, CompilableProgram, CompileTime } from './template';
+import { ResolvedLayout, STDLib, CompilableProgram, CompileTime, Template } from './template';
 import { TemplateMeta } from './runtime/runtime';
 import { SyntaxCompilationContext } from './program';
 import { Helper } from './runtime/vm';
 import { ModifierDefinition } from './runtime/modifier';
+import { PartialDefinition } from '@glimmer/opcode-compiler';
+import { Invocation } from './components/component-manager';
 
 export interface HandleResolver {
   resolve(handle: number): unknown;
 }
 
-export interface CompileTimeResolverDelegate extends HandleResolver {
-  getCapabilities(handle: number): ComponentCapabilities;
-  getLayout(handle: number): Option<CompilableProgram>;
+export interface CompileTimeComponent {
+  handle: number;
+  capabilities?: ComponentCapabilities;
+  compilable: Option<CompilableProgram>;
+}
 
+export interface CompileTimeResolverDelegate extends HandleResolver {
   lookupHelper(name: string, referrer: TemplateMeta): Option<number>;
   lookupModifier(name: string, referrer: TemplateMeta): Option<number>;
-  lookupComponentDefinition(name: string, referrer: Option<TemplateMeta>): Option<number>;
+  lookupComponent(name: string, referrer: Option<TemplateMeta>): Option<CompileTimeComponent>;
   lookupPartial(name: string, referrer: TemplateMeta): Option<number>;
+
+  // `name` is a cache key.
+  // TODO: The caller should cache
+  compile(source: string, name: string): Template;
 
   // For debugging
   resolve(handle: number): TemplateMeta;
 }
 
-export type ResolvedValue = ComponentDefinition | ModifierDefinition | Helper;
+export type ResolvedValue = ComponentDefinition | ModifierDefinition | Helper | PartialDefinition;
 
-export interface RuntimeResolverDelegate<R extends TemplateMeta = TemplateMeta>
-  extends HandleResolver {
-  lookupComponentDefinition(name: string, referrer?: Option<R>): Option<ComponentDefinition>;
+export interface RuntimeResolver<R extends TemplateMeta = TemplateMeta> extends HandleResolver {
+  lookupComponent(name: string, referrer?: Option<R>): Option<ComponentDefinition>;
   lookupPartial(name: string, referrer?: Option<R>): Option<number>;
   resolve<U extends ResolvedValue>(handle: number): U;
 }
 
-export interface RuntimeResolver<R extends TemplateMeta = TemplateMeta> {
-  lookupComponentDefinition?(
-    name: string,
-    referrer?: Option<R>
-  ): Option<ComponentDefinition> | void;
+export interface JitRuntimeResolver<R extends TemplateMeta = TemplateMeta>
+  extends RuntimeResolver<R> {
+  compilable(locator: R): Template;
+}
+
+export interface AotRuntimeResolver<R extends TemplateMeta = TemplateMeta>
+  extends RuntimeResolver<R> {
+  // for {{component}} support
+  getInvocation(locator: R): Invocation;
+}
+
+export interface RuntimeResolverOptions<R extends TemplateMeta = TemplateMeta> {
+  lookupComponent?(name: string, referrer?: Option<R>): Option<ComponentDefinition> | void;
   lookupPartial?(name: string, referrer?: Option<R>): Option<number> | void;
   resolve?(handle: number): ResolvedValue | void;
+  compilable?(locator: R): Template;
+  getInvocation?(locator: R): Invocation;
+}
+
+export interface JitRuntimeResolverOptions<R extends TemplateMeta = TemplateMeta>
+  extends RuntimeResolverOptions<R> {
+  compilable?(locator: R): Template;
 }
