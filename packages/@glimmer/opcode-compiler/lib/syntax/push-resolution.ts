@@ -124,7 +124,9 @@ function resolve(
       return resolver.lookupModifier(name, referrer);
     case ResolveHandle.Helper:
       return resolver.lookupHelper(name, referrer);
-    case ResolveHandle.ComponentDefinition:
-      return resolver.lookupComponentDefinition(name, referrer);
+    case ResolveHandle.ComponentDefinition: {
+      let component = resolver.lookupComponent(name, referrer);
+      return component && component.handle;
+    }
   }
 }

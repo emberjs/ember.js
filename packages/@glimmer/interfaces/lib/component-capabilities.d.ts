@@ -27,6 +27,8 @@ export default interface ComponentCapabilities {
    */
   dynamicTag: boolean;
 
+  wrapped: boolean;
+
   /**
    * Setting the `prepareArgs` flag to true enables the `prepareArgs` hook on
    * the component manager, which would otherwise not be called.

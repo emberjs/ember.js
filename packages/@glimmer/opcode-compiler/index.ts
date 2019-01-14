@@ -5,7 +5,7 @@ export { UNHANDLED, NONE } from './lib/syntax/concat';
 
 export { debugCompiler } from './lib/compiler';
 
-export { compileStatements, compilable } from './lib/compilable-template';
+export { compileStatements, compilable, preprocess } from './lib/compilable-template';
 export { staticComponent } from './lib/opcode-builder/helpers/components';
 
 export * from './lib/opcode-builder/context';

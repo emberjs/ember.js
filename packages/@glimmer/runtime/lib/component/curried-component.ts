@@ -6,9 +6,9 @@ const CURRIED_COMPONENT_DEFINITION_BRAND =
   'CURRIED COMPONENT DEFINITION [id=6f00feb9-a0ef-4547-99ea-ac328f80acea]';
 
 export function isCurriedComponentDefinition(
-  definition: Maybe<Dict>
+  definition: unknown
 ): definition is CurriedComponentDefinition {
-  return !!(definition && definition[CURRIED_COMPONENT_DEFINITION_BRAND]);
+  return !!(definition && (definition as Dict)[CURRIED_COMPONENT_DEFINITION_BRAND]);
 }
 
 export function isComponentDefinition(

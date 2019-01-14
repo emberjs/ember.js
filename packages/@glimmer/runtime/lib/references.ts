@@ -64,15 +64,11 @@ export const FALSE_REFERENCE: PrimitiveReference<boolean> = new ValueReference(f
 export class ConditionalReference implements Reference<boolean> {
   public tag: Tag;
 
-  constructor(private inner: Reference<unknown>) {
+  constructor(private inner: Reference<unknown>, private toBool: (value: unknown) => boolean) {
     this.tag = inner.tag;
   }
 
   value(): boolean {
     return this.toBool(this.inner.value());
-  }
-
-  protected toBool(value: unknown): boolean {
-    return !!value;
   }
 }

@@ -1,6 +1,12 @@
-import { RenderResult, RichIteratorResult, Template } from '@glimmer/interfaces';
+import {
+  RenderResult,
+  RichIteratorResult,
+  Template,
+  SyntaxCompilationContext,
+  JitRuntimeContext,
+} from '@glimmer/interfaces';
 import { UpdatableReference } from '@glimmer/object-reference';
-import { clientBuilder, renderJitMain } from '@glimmer/runtime';
+import { clientBuilder, renderJitMain, JitRuntime } from '@glimmer/runtime';
 import {
   BasicComponent,
   EmberishCurlyComponent,
@@ -8,37 +14,49 @@ import {
   equalTokens,
   generateSnapshot,
   strip,
-  TestEnvironment,
+  TestMacros,
+  preprocess,
+  registerPartial,
+  registerBasicComponent,
+  registerEmberishCurlyComponent,
 } from '@glimmer/test-helpers';
-import { SimpleElement, SimpleNode } from '@simple-dom/interface';
+import { SimpleElement, SimpleNode, SimpleDocument } from '@simple-dom/interface';
+import { TestLazyCompilationContext } from '@glimmer/test-helpers';
+import { LazyRuntimeResolver } from '@glimmer/test-helpers';
 
-let env: TestEnvironment;
+let resolver: LazyRuntimeResolver;
+let context: TestLazyCompilationContext;
+let runtime: JitRuntimeContext;
 let root: SimpleElement;
 let result: RenderResult;
 let self: UpdatableReference<unknown>;
 
 function compile(template: string) {
-  return env.preprocess(template);
+  return preprocess(template);
 }
 
 function commonSetup() {
-  env = new TestEnvironment();
+  resolver = new LazyRuntimeResolver();
+  context = new TestLazyCompilationContext(resolver);
+
+  runtime = JitRuntime(document as SimpleDocument, context, resolver);
   root = document.getElementById('qunit-fixture')! as SimpleElement;
 }
 
-function render(template: Template, context = {}) {
-  self = new UpdatableReference(context);
-  env.begin();
+function render(template: Template, state = {}) {
+  self = new UpdatableReference(state);
+  runtime.env.begin();
   let cursor = { element: root, nextSibling: null };
 
+  let syntax: SyntaxCompilationContext = { program: context, macros: new TestMacros() };
   let compilable = template.asLayout();
-  let handle = compilable.compile(env.context);
+  let handle = compilable.compile(syntax);
 
   let templateIterator = renderJitMain(
-    { program: env.program, env, resolver: env.resolver },
-    env.context,
+    runtime,
+    syntax,
     self,
-    clientBuilder(env, cursor),
+    clientBuilder(runtime.env, cursor),
     handle
   );
 
@@ -48,7 +66,7 @@ function render(template: Template, context = {}) {
   } while (!iteratorResult.done);
 
   result = iteratorResult.value;
-  env.commit();
+  runtime.env.commit();
   assertInvariants(result);
   return result;
 }
@@ -63,9 +81,9 @@ function rerender(context: any = null, params: RerenderParams = { assertStable: 
     snapshot = generateSnapshot(root);
   }
   if (context !== null) self.update(context);
-  env.begin();
+  runtime.env.begin();
   result.rerender();
-  env.commit();
+  runtime.env.commit();
   if (snapshot !== undefined) {
     equalSnapshots(generateSnapshot(root), snapshot);
   }
@@ -91,7 +109,7 @@ QUnit.module('Partials', {
 QUnit.test('static partial with static content', () => {
   let template = compile(`Before {{partial 'test'}} After`);
 
-  env.registerPartial('test', `<div>Testing</div>`);
+  registerPartial(resolver, 'test', `<div>Testing</div>`);
   render(template);
 
   equalTokens(root, `Before <div>Testing</div> After`);
@@ -102,7 +120,8 @@ QUnit.test('static partial with static content', () => {
 QUnit.test('static partial with self reference', () => {
   let template = compile(`{{partial 'birdman'}}`);
 
-  env.registerPartial(
+  registerPartial(
+    resolver,
     'birdman',
     `Respeck my {{item}}. When my {{item}} come up put some respeck on it.`
   );
@@ -118,7 +137,7 @@ QUnit.test('static partial with self reference', () => {
 QUnit.test('static partial with local reference', () => {
   let template = compile(`{{#each qualities key='id' as |quality|}}{{partial 'test'}}. {{/each}}`);
 
-  env.registerPartial('test', `You {{quality.value}}`);
+  registerPartial(resolver, 'test', `You {{quality.value}}`);
   render(template, { qualities: [{ id: 1, value: 'smaht' }, { id: 2, value: 'loyal' }] });
 
   rerender(null, { assertStable: true });
@@ -136,7 +155,7 @@ QUnit.test('static partial with local reference (unknown)', () => {
     `{{#each qualities key='@index' as |quality|}}{{partial 'test'}}. {{/each}}`
   );
 
-  env.registerPartial('test', `You {{quality}}`);
+  registerPartial(resolver, 'test', `You {{quality}}`);
   render(template, { qualities: ['smaht', 'loyal'] });
 
   rerender(null, { assertStable: true });
@@ -147,11 +166,11 @@ QUnit.test('static partial with local reference (unknown)', () => {
 });
 
 QUnit.test('static partial with named arguments', () => {
-  env.registerBasicComponent('FooBar', BasicComponent, `<p>{{@foo}}-{{partial 'test'}}</p>`);
+  registerBasicComponent(resolver, 'FooBar', BasicComponent, `<p>{{@foo}}-{{partial 'test'}}</p>`);
 
   let template = compile(`<FooBar @foo={{foo}} @bar={{bar}} />`);
 
-  env.registerPartial('test', `{{@foo}}-{{@bar}}`);
+  registerPartial(resolver, 'test', `{{@foo}}-{{@bar}}`);
   render(template, { foo: 'foo', bar: 'bar' });
   equalTokens(root, `<p>foo-foo-bar</p>`);
 
@@ -165,13 +184,14 @@ QUnit.test('static partial with named arguments', () => {
 });
 
 QUnit.test('static partial with has-block in basic component', () => {
-  env.registerBasicComponent('FooBar', BasicComponent, `<p>{{partial 'test'}}</p>`);
-  env.registerBasicComponent(
+  registerBasicComponent(resolver, 'FooBar', BasicComponent, `<p>{{partial 'test'}}</p>`);
+  registerBasicComponent(
+    resolver,
     'FooBarBaz',
     BasicComponent,
     `<p>{{partial 'test'}}-{{has-block}}-{{has-block 'inverse'}}</p>`
   );
-  env.registerPartial('test', `{{has-block}}-{{has-block 'inverse'}}`);
+  registerPartial(resolver, 'test', `{{has-block}}-{{has-block 'inverse'}}`);
 
   render(
     compile(strip`
@@ -200,17 +220,19 @@ QUnit.test('static partial with has-block in curly component', () => {
     tagName = '';
   }
 
-  env.registerEmberishCurlyComponent(
+  registerEmberishCurlyComponent(
+    resolver,
     'foo-bar',
     TaglessComponent as any,
     `<p>{{partial 'test'}}</p>`
   );
-  env.registerEmberishCurlyComponent(
+  registerEmberishCurlyComponent(
+    resolver,
     'foo-bar-baz',
     TaglessComponent as any,
     `<p>{{partial 'test'}}-{{has-block}}-{{has-block 'inverse'}}</p>`
   );
-  env.registerPartial('test', `{{has-block}}-{{has-block 'inverse'}}`);
+  registerPartial(resolver, 'test', `{{has-block}}-{{has-block 'inverse'}}`);
 
   render(
     compile(strip`
@@ -239,13 +261,14 @@ QUnit.test('static partial with has-block in curly component', () => {
 });
 
 QUnit.test('static partial with has-block-params in basic component', () => {
-  env.registerBasicComponent('FooBar', BasicComponent, `<p>{{partial 'test'}}</p>`);
-  env.registerBasicComponent(
+  registerBasicComponent(resolver, 'FooBar', BasicComponent, `<p>{{partial 'test'}}</p>`);
+  registerBasicComponent(
+    resolver,
     'FooBarBaz',
     BasicComponent,
     `<p>{{partial 'test'}}-{{has-block-params}}-{{has-block-params "inverse"}}</p>`
   );
-  env.registerPartial('test', `{{has-block-params}}-{{has-block-params "inverse"}}`);
+  registerPartial(resolver, 'test', `{{has-block-params}}-{{has-block-params "inverse"}}`);
 
   render(
     compile(strip`
@@ -278,17 +301,19 @@ QUnit.test('static partial with has-block-params in curly component', () => {
     tagName = '';
   }
 
-  env.registerEmberishCurlyComponent(
+  registerEmberishCurlyComponent(
+    resolver,
     'foo-bar',
     TaglessComponent as any,
     `<p>{{partial 'test'}}</p>`
   );
-  env.registerEmberishCurlyComponent(
+  registerEmberishCurlyComponent(
+    resolver,
     'foo-bar-baz',
     TaglessComponent as any,
     `<p>{{partial 'test'}}-{{has-block-params}}-{{has-block-params "inverse"}}</p>`
   );
-  env.registerPartial('test', `{{has-block-params}}-{{has-block-params "inverse"}}`);
+  registerPartial(resolver, 'test', `{{has-block-params}}-{{has-block-params "inverse"}}`);
 
   render(
     compile(strip`
@@ -321,13 +346,14 @@ QUnit.test('static partial with has-block-params in curly component', () => {
 });
 
 QUnit.test('static partial with yield in basic component', () => {
-  env.registerBasicComponent('FooBar', BasicComponent, `<p>{{partial 'test'}}</p>`);
-  env.registerBasicComponent(
+  registerBasicComponent(resolver, 'FooBar', BasicComponent, `<p>{{partial 'test'}}</p>`);
+  registerBasicComponent(
+    resolver,
     'FooBarBaz',
     BasicComponent,
     `<p>{{partial 'test'}}-{{yield "layout"}}-{{yield to='inverse'}}</p>`
   );
-  env.registerPartial('test', `{{yield "partial"}}-{{yield to='inverse'}}`);
+  registerPartial(resolver, 'test', `{{yield "partial"}}-{{yield to='inverse'}}`);
 
   render(
     compile(strip`
@@ -356,17 +382,19 @@ QUnit.test('static partial with yield in curly component', () => {
     tagName = '';
   }
 
-  env.registerEmberishCurlyComponent(
+  registerEmberishCurlyComponent(
+    resolver,
     'foo-bar',
     TaglessComponent as any,
     `<p>{{partial 'test'}}</p>`
   );
-  env.registerEmberishCurlyComponent(
+  registerEmberishCurlyComponent(
+    resolver,
     'foo-bar-baz',
     TaglessComponent as any,
     `<p>{{partial 'test'}}-{{yield "layout"}}-{{yield to='inverse'}}</p>`
   );
-  env.registerPartial('test', `{{yield "partial"}}-{{yield to='inverse'}}`);
+  registerPartial(resolver, 'test', `{{yield "partial"}}-{{yield to='inverse'}}`);
 
   render(
     compile(strip`
@@ -397,7 +425,7 @@ QUnit.test('static partial with yield in curly component', () => {
 QUnit.test('dynamic partial with static content', () => {
   let template = compile(`Before {{partial name}} After`);
 
-  env.registerPartial('test', `<div>Testing</div>`);
+  registerPartial(resolver, 'test', `<div>Testing</div>`);
   render(template, { name: 'test' });
 
   equalTokens(root, `Before <div>Testing</div> After`);
@@ -408,8 +436,8 @@ QUnit.test('dynamic partial with static content', () => {
 QUnit.test('nested dynamic partial with dynamic content', () => {
   let template = compile(`Before {{partial name}} After`);
 
-  env.registerPartial('test', `<div>Testing {{wat}} {{partial nest}}</div>`);
-  env.registerPartial('nested', `<div>Nested {{lol}}</div>`);
+  registerPartial(resolver, 'test', `<div>Testing {{wat}} {{partial nest}}</div>`);
+  registerPartial(resolver, 'nested', `<div>Nested {{lol}}</div>`);
 
   render(template, { name: 'test', nest: 'nested', wat: 'wat are', lol: 'you doing?' });
 
@@ -426,15 +454,18 @@ QUnit.test('nested partials within nested `{{#with}}` blocks', () => {
     `Hi {{person1}}. {{#with 'Sophie' as |person1|}}Hi {{person1}} (aged {{age}}), {{person2}}, {{person3}} and {{person4}}. {{partial 'person2-partial'}}{{/with}}`
   );
 
-  env.registerPartial(
+  registerPartial(
+    resolver,
     'person2-partial',
     `{{#with 'Ben' as |person2|}}Hi {{person1}} (aged {{age}}), {{person2}}, {{person3}} and {{person4}}. {{partial 'person3-partial'}}{{/with}}`
   );
-  env.registerPartial(
+  registerPartial(
+    resolver,
     'person3-partial',
     `{{#with 'Alex' as |person3|}}Hi {{person1}} (aged {{age}}), {{person2}}, {{person3}} and {{person4}}. {{partial 'person4-partial'}}{{/with}}`
   );
-  env.registerPartial(
+  registerPartial(
+    resolver,
     'person4-partial',
     `{{#with 'Sarah' as |person4|}}Hi {{person1}} (aged {{age}}), {{person2}}, {{person3}} and {{person4}}.{{/with}}`
   );
@@ -523,7 +554,7 @@ QUnit.test('dynamic partial that does not exist does not render', assert => {
 
 QUnit.test('dynamic partial with can change from falsy to real template', () => {
   let template = compile(`Before {{partial name}} After`);
-  env.registerPartial('test', `<div>Testing</div>`);
+  registerPartial(resolver, 'test', `<div>Testing</div>`);
 
   render(template, { name: false });
 
@@ -552,7 +583,7 @@ QUnit.test('dynamic partial with can change from falsy to real template', () => 
 QUnit.test('dynamic partial with self reference', () => {
   let template = compile(`{{partial name}}`);
 
-  env.registerPartial('test', `I know {{item}}. I have the best {{item}}s.`);
+  registerPartial(resolver, 'test', `I know {{item}}. I have the best {{item}}s.`);
   render(template, { name: 'test', item: 'partial' });
 
   equalTokens(root, `I know partial. I have the best partials.`);
@@ -563,8 +594,9 @@ QUnit.test('dynamic partial with self reference', () => {
 QUnit.test('changing dynamic partial with self reference', () => {
   let template = compile(`{{partial name}}`);
 
-  env.registerPartial('weezy', `Ain't my birthday but I got my {{item}} on the cake.`);
-  env.registerPartial(
+  registerPartial(resolver, 'weezy', `Ain't my birthday but I got my {{item}} on the cake.`);
+  registerPartial(
+    resolver,
     'birdman',
     `Respeck my {{item}}. When my {{item}} come up put some respeck on it.`
   );
@@ -580,8 +612,9 @@ QUnit.test('changing dynamic partial with self reference', () => {
 QUnit.test('changing dynamic partial and changing reference values', () => {
   let template = compile(`{{partial name}}`);
 
-  env.registerPartial('weezy', `Ain't my birthday but I got my {{item}} on the cake.`);
-  env.registerPartial(
+  registerPartial(resolver, 'weezy', `Ain't my birthday but I got my {{item}} on the cake.`);
+  registerPartial(
+    resolver,
     'birdman',
     `Respeck my {{item}}. When my {{item}} come up put some respeck on it.`
   );
@@ -597,8 +630,9 @@ QUnit.test('changing dynamic partial and changing reference values', () => {
 QUnit.test('changing dynamic partial and changing references', () => {
   let template = compile(`{{partial name}}`);
 
-  env.registerPartial('weezy', `Ain't my birthday but I got my {{item}} on the cake.`);
-  env.registerPartial(
+  registerPartial(resolver, 'weezy', `Ain't my birthday but I got my {{item}} on the cake.`);
+  registerPartial(
+    resolver,
     'birdman',
     `Respeck my {{noun}}. When my {{noun}} come up put some respeck on it.`
   );
@@ -614,7 +648,7 @@ QUnit.test('changing dynamic partial and changing references', () => {
 QUnit.test('dynamic partial with local reference', () => {
   let template = compile(`{{#each qualities key='id' as |quality|}}{{partial name}}. {{/each}}`);
 
-  env.registerPartial('test', `You {{quality.value}}`);
+  registerPartial(resolver, 'test', `You {{quality.value}}`);
   render(template, {
     name: 'test',
     qualities: [{ id: 1, value: 'smaht' }, { id: 2, value: 'loyal' }],
@@ -635,7 +669,7 @@ QUnit.test('dynamic partial with local reference (unknown)', () => {
     `{{#each qualities key='@index' as |quality|}}{{partial name}}. {{/each}}`
   );
 
-  env.registerPartial('test', `You {{quality}}`);
+  registerPartial(resolver, 'test', `You {{quality}}`);
   render(template, { name: 'test', qualities: ['smaht', 'loyal'] });
 
   rerender(null, { assertStable: true });
@@ -650,7 +684,7 @@ QUnit.test('partial with if statement on a simple local reference works as expec
     `{{#each qualities key='@index' as |quality|}}{{partial name}}. {{/each}}`
   );
 
-  env.registerPartial('test', `{{#if quality}}You {{quality}}{{else}}No quality{{/if}}`);
+  registerPartial(resolver, 'test', `{{#if quality}}You {{quality}}{{else}}No quality{{/if}}`);
   render(template, { name: 'test', qualities: ['smaht', 'loyal', undefined] });
 
   rerender(null, { assertStable: true });
@@ -665,7 +699,11 @@ QUnit.test('partial with if statement on a path local reference works as expecte
     `{{#each qualities key='@index' as |quality|}}{{partial name}}. {{/each}}`
   );
 
-  env.registerPartial('test', `{{#if quality.name}}You {{quality.name}}{{else}}No quality{{/if}}`);
+  registerPartial(
+    resolver,
+    'test',
+    `{{#if quality.name}}You {{quality.name}}{{else}}No quality{{/if}}`
+  );
   render(template, {
     name: 'test',
     qualities: [{ name: 'smaht' }, { name: 'loyal' }, { name: undefined }],

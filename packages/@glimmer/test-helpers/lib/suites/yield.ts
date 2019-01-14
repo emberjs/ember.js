@@ -1,4 +1,3 @@
-import { clearElement } from '@glimmer/util';
 import { RenderTest, test } from '../render-test';
 
 export class YieldSuite extends RenderTest {
@@ -108,44 +107,87 @@ export class YieldSuite extends RenderTest {
   }
 
   @test
-  'yielding primatives'() {
-    [
-      {
-        value: 'true',
-        output: 'true',
-      },
-      {
-        value: 'false',
-        output: 'false',
-      },
-      {
-        value: 'null',
-        output: '',
-      },
-      {
-        value: 'undefined',
-        output: '',
-      },
-      {
-        value: '1',
-        output: '1',
-      },
-      {
-        value: '"foo"',
-        output: 'foo',
-      },
-    ].forEach(({ value, output }) => {
-      this.render({
-        layout: `{{yield ${value}}}`,
-        blockParams: ['yielded'],
-        template: '{{yielded}}-{{yielded.foo.bar}}',
-      });
-
-      this.assertComponent(`${output}-`);
-      this.assertStableRerender();
-      clearElement(this.element);
-      this.delegate.resetEnv();
+  'yielding true'() {
+    this.render({
+      layout: `{{yield true}}`,
+      blockParams: ['yielded'],
+      template: '{{yielded}}-{{yielded.foo.bar}}',
     });
+
+    this.assertComponent(`true-`);
+    this.assertStableRerender();
+  }
+
+  @test
+  'yielding false'() {
+    this.render({
+      layout: `{{yield false}}`,
+      blockParams: ['yielded'],
+      template: '{{yielded}}-{{yielded.foo.bar}}',
+    });
+
+    this.assertComponent(`false-`);
+    this.assertStableRerender();
+  }
+
+  @test
+  'yielding null'() {
+    this.render({
+      layout: `{{yield null}}`,
+      blockParams: ['yielded'],
+      template: '{{yielded}}-{{yielded.foo.bar}}',
+    });
+
+    this.assertComponent(`-`);
+    this.assertStableRerender();
+  }
+
+  @test
+  'yielding undefined'() {
+    this.render({
+      layout: `{{yield undefined}}`,
+      blockParams: ['yielded'],
+      template: '{{yielded}}-{{yielded.foo.bar}}',
+    });
+
+    this.assertComponent(`-`);
+    this.assertStableRerender();
+  }
+
+  @test
+  'yielding integers'() {
+    this.render({
+      layout: `{{yield 123}}`,
+      blockParams: ['yielded'],
+      template: '{{yielded}}-{{yielded.foo.bar}}',
+    });
+
+    this.assertComponent(`123-`);
+    this.assertStableRerender();
+  }
+
+  @test
+  'yielding floats'() {
+    this.render({
+      layout: `{{yield 123.45}}`,
+      blockParams: ['yielded'],
+      template: '{{yielded}}-{{yielded.foo.bar}}',
+    });
+
+    this.assertComponent(`123.45-`);
+    this.assertStableRerender();
+  }
+
+  @test
+  'yielding strings'() {
+    this.render({
+      layout: `{{yield "hello"}}`,
+      blockParams: ['yielded'],
+      template: '{{yielded}}-{{yielded.foo.bar}}',
+    });
+
+    this.assertComponent(`hello-`);
+    this.assertStableRerender();
   }
 
   @test

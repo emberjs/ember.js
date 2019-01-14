@@ -23,7 +23,7 @@ import {
   Op,
   ProgramSymbolTable,
   Recast,
-  RuntimeResolverDelegate,
+  RuntimeResolverOptions,
   ScopeSlot,
   VMArguments,
   WithAotDynamicLayout,
@@ -34,6 +34,8 @@ import {
   WithJitStaticLayout,
   WithUpdateHook,
   WithCreateInstance,
+  JitRuntimeResolver,
+  RuntimeResolver,
 } from '@glimmer/interfaces';
 import {
   CONSTANT_TAG,
@@ -47,8 +49,8 @@ import { assert, dict, expect, Option, unreachable } from '@glimmer/util';
 import { $t0, $t1, $v0 } from '@glimmer/vm';
 import {
   Capability,
-  CapabilityFlags,
   capabilityFlagsFrom,
+  managerHasCapability,
   hasCapability,
 } from '../../capabilities';
 import {
@@ -75,8 +77,9 @@ import {
   CheckPathReference,
   CheckReference,
 } from './-debug-strip';
-import { ContentTypeReference, IsCurriedComponentDefinitionReference } from './content';
+import { ContentTypeReference } from './content';
 import { UpdateDynamicAttributeOpcode } from './dom';
+import { ConditionalReference } from '../../references';
 
 /**
  * The VM creates a new ComponentInstance data structure for every component
@@ -94,7 +97,7 @@ export interface ComponentInstance {
   [COMPONENT_INSTANCE]: true;
   definition: ComponentDefinition;
   manager: ComponentManager;
-  capabilities: CapabilityFlags;
+  capabilities: Capability;
   state: ComponentInstanceState;
   handle: number;
   table: ProgramSymbolTable;
@@ -105,7 +108,7 @@ export interface InitialComponentInstance {
   [COMPONENT_INSTANCE]: true;
   definition: PartialComponentDefinition;
   manager: Option<InternalComponentManager>;
-  capabilities: Option<CapabilityFlags>;
+  capabilities: Option<Capability>;
   state: null;
   handle: Option<number>;
   table: Option<ProgramSymbolTable>;
@@ -116,7 +119,7 @@ export interface PopulatedComponentInstance {
   [COMPONENT_INSTANCE]: true;
   definition: ComponentDefinition;
   manager: ComponentManager<unknown>;
-  capabilities: CapabilityFlags;
+  capabilities: Capability;
   state: null;
   handle: number;
   table: Option<ProgramSymbolTable>;
@@ -132,7 +135,7 @@ APPEND_OPCODES.add(Op.IsComponent, vm => {
   let stack = vm.stack;
   let ref = check(stack.pop(), CheckReference);
 
-  stack.push(IsCurriedComponentDefinitionReference.create(ref));
+  stack.push(new ConditionalReference(ref, isCurriedComponentDefinition));
 });
 
 APPEND_OPCODES.add(Op.ContentType, vm => {
@@ -282,7 +285,7 @@ APPEND_OPCODES.add(Op.PrepareArgs, (vm, { op1: _state }) => {
   let { manager, state } = definition;
   let capabilities = instance.capabilities;
 
-  if (!hasCapability(manager, capabilities, Capability.PrepareArgs)) {
+  if (!managerHasCapability(manager, capabilities, Capability.PrepareArgs)) {
     stack.push(args);
     return;
   }
@@ -343,24 +346,24 @@ APPEND_OPCODES.add(Op.CreateComponent, (vm, { op1: flags, op2: _state }) => {
     manager.getCapabilities(definition.state)
   ));
 
-  if (!hasCapability(manager, capabilities, Capability.CreateInstance)) {
+  if (!managerHasCapability(manager, capabilities, Capability.CreateInstance)) {
     throw new Error(`BUG`);
   }
 
   let dynamicScope: Option<DynamicScope> = null;
-  if (hasCapability(manager, capabilities, Capability.DynamicScope)) {
+  if (managerHasCapability(manager, capabilities, Capability.DynamicScope)) {
     dynamicScope = vm.dynamicScope();
   }
 
   let hasDefaultBlock = flags & 1;
   let args: Option<VMArguments> = null;
 
-  if (hasCapability(manager, capabilities, Capability.CreateArgs)) {
+  if (managerHasCapability(manager, capabilities, Capability.CreateArgs)) {
     args = check(vm.stack.peek(), CheckArguments);
   }
 
   let self: Option<VersionedPathReference<unknown>> = null;
-  if (hasCapability(manager, capabilities, Capability.CreateCaller)) {
+  if (managerHasCapability(manager, capabilities, Capability.CreateCaller)) {
     self = vm.getSelf();
   }
 
@@ -372,7 +375,7 @@ APPEND_OPCODES.add(Op.CreateComponent, (vm, { op1: flags, op2: _state }) => {
 
   let tag = manager.getTag(state);
 
-  if (hasCapability(manager, capabilities, Capability.UpdateHook) && !isConstTag(tag)) {
+  if (managerHasCapability(manager, capabilities, Capability.UpdateHook) && !isConstTag(tag)) {
     vm.updateWith(new UpdateComponentOpcode(tag, state, manager, dynamicScope));
   }
 });
@@ -507,17 +510,22 @@ APPEND_OPCODES.add(
     let { definition } = instance;
     let { stack } = vm;
 
-    let { state: instanceState, capabilities } = instance;
-    let { state: definitionState } = definition;
+    let { capabilities } = instance;
 
     // let invoke: { handle: number; symbolTable: ProgramSymbolTable };
 
     let layout: CompilableTemplate;
 
     if (hasStaticLayoutCapability(capabilities, manager)) {
-      layout = manager.getJitStaticLayout(definitionState, vm.runtime.resolver);
+      layout = manager.getJitStaticLayout(definition.state, vm.runtime.resolver);
     } else if (hasDynamicLayoutCapability(capabilities, manager)) {
-      layout = manager.getJitDynamicLayout(instanceState, vm.runtime.resolver, vm.context);
+      let template = manager.getJitDynamicLayout(instance.state, vm.runtime.resolver, vm.context);
+
+      if (hasCapability(capabilities, Capability.Wrapped)) {
+        layout = template.asWrappedLayout();
+      } else {
+        layout = template.asLayout();
+      }
     } else {
       throw unreachable();
     }
@@ -545,12 +553,12 @@ APPEND_OPCODES.add(Op.GetAotComponentLayout, (vm, { op1: _state }) => {
     invoke = (manager as WithAotStaticLayout<
       ComponentInstanceState,
       ComponentDefinitionState,
-      RuntimeResolverDelegate
+      RuntimeResolverOptions
     >).getAotStaticLayout(definitionState, vm.runtime.resolver);
   } else if (hasDynamicLayoutCapability(capabilities, manager)) {
     invoke = (manager as WithAotDynamicLayout<
       ComponentInstanceState,
-      RuntimeResolverDelegate
+      RuntimeResolver
     >).getAotDynamicLayout(instanceState, vm.runtime.resolver);
   } else {
     throw unreachable();
@@ -562,21 +570,32 @@ APPEND_OPCODES.add(Op.GetAotComponentLayout, (vm, { op1: _state }) => {
 
 // These types are absurd here
 export function hasStaticLayoutCapability(
-  capabilities: CapabilityFlags,
+  capabilities: Capability,
   _manager: InternalComponentManager
 ): _manager is
-  | WithJitStaticLayout<ComponentInstanceState, ComponentDefinitionState, RuntimeResolverDelegate>
-  | WithAotStaticLayout<ComponentInstanceState, ComponentDefinitionState, RuntimeResolverDelegate> {
-  return hasCapability(_manager, capabilities, Capability.DynamicLayout) === false;
+  | WithJitStaticLayout<ComponentInstanceState, ComponentDefinitionState, JitRuntimeResolver>
+  | WithAotStaticLayout<ComponentInstanceState, ComponentDefinitionState, RuntimeResolver> {
+  return managerHasCapability(_manager, capabilities, Capability.DynamicLayout) === false;
+}
+
+export function hasJitStaticLayoutCapability(
+  capabilities: Capability,
+  _manager: InternalComponentManager
+): _manager is WithJitStaticLayout<
+  ComponentInstanceState,
+  ComponentDefinitionState,
+  JitRuntimeResolver
+> {
+  return managerHasCapability(_manager, capabilities, Capability.DynamicLayout) === false;
 }
 
 export function hasDynamicLayoutCapability(
-  capabilities: CapabilityFlags,
+  capabilities: Capability,
   _manager: InternalComponentManager
 ): _manager is
-  | WithAotDynamicLayout<ComponentInstanceState, RuntimeResolverDelegate>
-  | WithJitDynamicLayout<ComponentInstanceState, RuntimeResolverDelegate> {
-  return hasCapability(_manager, capabilities, Capability.DynamicLayout) === true;
+  | WithJitDynamicLayout<ComponentInstanceState, JitRuntimeResolver>
+  | WithAotDynamicLayout<ComponentInstanceState, RuntimeResolver> {
+  return managerHasCapability(_manager, capabilities, Capability.DynamicLayout) === true;
 }
 
 APPEND_OPCODES.add(Op.Main, (vm, { op1: register }) => {
@@ -682,7 +701,7 @@ APPEND_OPCODES.add(Op.DidRenderLayout, (vm, { op1: _state }) => {
   let { manager, state, capabilities } = check(vm.fetchValue(_state), CheckComponentInstance);
   let bounds = vm.elements().popBlock();
 
-  if (!hasCapability(manager, capabilities, Capability.CreateInstance)) {
+  if (!managerHasCapability(manager, capabilities, Capability.CreateInstance)) {
     throw new Error(`BUG`);
   }
 

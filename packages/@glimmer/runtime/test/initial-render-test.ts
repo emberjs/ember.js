@@ -79,8 +79,8 @@ class AbstractRehydrationTests extends InitialRenderSuite {
 class Rehydration extends AbstractRehydrationTests {
   @test
   'rehydrates into element with pre-existing content'() {
-    let rootElement = this.delegate.serverEnv.getAppendOperations().createElement('div');
-    let extraContent = this.delegate.serverEnv.getAppendOperations().createElement('noscript');
+    let rootElement = this.delegate.serverDoc.createElement('div');
+    let extraContent = this.delegate.serverDoc.createElement('noscript');
     rootElement.appendChild(extraContent);
 
     let noScriptString = '<noscript></noscript>';
@@ -195,12 +195,12 @@ class Rehydration extends AbstractRehydrationTests {
   'Node curlies'() {
     let template = '<div>{{node}}</div>';
 
-    let env = this.delegate.serverEnv;
-    let node = env.getAppendOperations().createTextNode('hello');
+    let doc = this.delegate.serverDoc;
+    let node = doc.createTextNode('hello');
     this.renderServerSide(template, { node });
     this.assertServerOutput('<div>', OPEN, 'hello', CLOSE, '</div>');
-    env = this.delegate.clientEnv;
-    let clientNode = env.getDOM().createTextNode('hello');
+    doc = this.delegate.clientDoc;
+    let clientNode = doc.createTextNode('hello');
     this.context = { node: clientNode };
     this.renderClientSide(template, { node: clientNode });
     this.assertHTML('<div>hello</div>', 'first clean rerender');
@@ -208,7 +208,7 @@ class Rehydration extends AbstractRehydrationTests {
     this.assertRehydrationStats({ nodesRemoved: 0 });
     this.assertStableRerender();
 
-    let clientNode2 = env.getDOM().createTextNode('goodbye');
+    let clientNode2 = doc.createTextNode('goodbye');
     this.rerender({ node: clientNode2 });
     this.assertHTML('<div>goodbye</div>', 'rerender after node update');
     this.assertStableNodes({ except: clientNode });
@@ -221,8 +221,8 @@ class Rehydration extends AbstractRehydrationTests {
   @test
   'in-element can rehydrate'() {
     let template = '<outer>{{#in-element remote}}<inner>Wat Wat</inner>{{/in-element}}</outer>';
-    let env = this.delegate.serverEnv;
-    let remote = env.getAppendOperations().createElement('remote');
+    let doc = this.delegate.serverDoc;
+    let remote = doc.createElement('remote');
 
     this.renderServerSide(template, { remote });
     let serializedRemote = this.delegate.serialize(remote);
@@ -236,9 +236,9 @@ class Rehydration extends AbstractRehydrationTests {
     `
     );
 
-    env = this.delegate.clientEnv;
-    let clientRemote = (remote = env.getDOM().createElement('remote'));
-    let host = env.getDOM().createElement('div');
+    doc = this.delegate.clientDoc;
+    let clientRemote = (remote = doc.createElement('remote'));
+    let host = doc.createElement('div');
     host.appendChild(this.element);
     host.appendChild(clientRemote);
     replaceHTML(clientRemote, serializedRemote);
@@ -258,9 +258,9 @@ class Rehydration extends AbstractRehydrationTests {
       {{/in-element}}
     </outer>
     `;
-    let env = this.delegate.serverEnv;
-    let remoteParent = env.getAppendOperations().createElement('remote');
-    let remoteChild = env.getAppendOperations().createElement('other');
+    let doc = this.delegate.serverDoc;
+    let remoteParent = doc.createElement('remote');
+    let remoteChild = doc.createElement('other');
 
     this.renderServerSide(template, { remoteParent, remoteChild });
     let serializedParentRemote = this.delegate.serialize(remoteParent);
@@ -284,10 +284,10 @@ class Rehydration extends AbstractRehydrationTests {
     `,
       'Serilaized nested remote'
     );
-    env = this.delegate.clientEnv;
-    let clientRemoteParent = env.getDOM().createElement('remote');
-    let clientRemoteChild = env.getDOM().createElement('other');
-    let host = env.getDOM().createElement('div');
+    doc = this.delegate.clientDoc;
+    let clientRemoteParent = doc.createElement('remote');
+    let clientRemoteChild = doc.createElement('other');
+    let host = doc.createElement('div');
     host.appendChild(this.element);
     host.appendChild(clientRemoteParent);
     host.appendChild(clientRemoteChild);

@@ -1,22 +1,11 @@
-import {
-  Dict,
-  RuntimeProgram,
-  RuntimeResolverDelegate,
-  WholeProgramCompilationContext,
-} from '@glimmer/interfaces';
+import { Dict, RuntimeProgram, WholeProgramCompilationContext } from '@glimmer/interfaces';
 import { isConst, OpaqueIterable, Reference } from '@glimmer/reference';
 import { ConditionalReference, EnvironmentImpl, PrimitiveReference } from '@glimmer/runtime';
-import { dict } from '@glimmer/util';
 import { Iterable, KeyFor } from './iterable';
 
 export type TestProgram = RuntimeProgram & WholeProgramCompilationContext;
 
 export default abstract class TestEnvironment extends EnvironmentImpl {
-  public compiledLayouts: Dict<number> = dict();
-
-  protected abstract program: TestProgram;
-  protected abstract resolver: RuntimeResolverDelegate;
-
   protocolForURL(url: string): string {
     if (typeof window === 'undefined') {
       let match = /^([a-z][a-z0-9.+-]*:)?(\/\/)?([\S\s]*)/i.exec(url);
@@ -33,7 +22,7 @@ export default abstract class TestEnvironment extends EnvironmentImpl {
       return PrimitiveReference.create(emberToBool(reference.value()));
     }
 
-    return new EmberishConditionalReference(reference);
+    return new ConditionalReference(reference, emberToBool);
   }
 
   iterableFor(ref: Reference<unknown>, keyPath: string): OpaqueIterable {
@@ -62,16 +51,10 @@ export default abstract class TestEnvironment extends EnvironmentImpl {
   }
 }
 
-function emberToBool(value: any): boolean {
+export function emberToBool(value: any): boolean {
   if (Array.isArray(value)) {
     return value.length > 0;
   } else {
     return !!value;
-  }
-}
-
-class EmberishConditionalReference extends ConditionalReference {
-  protected toBool(value: any): boolean {
-    return emberToBool(value);
   }
 }

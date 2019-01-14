@@ -1,5 +1,4 @@
 import {
-  AnnotatedModuleLocator,
   Bounds,
   CapturedNamedArguments,
   CompilableProgram,
@@ -13,6 +12,7 @@ import {
   VMArguments,
   WithAotStaticLayout,
   WithJitStaticLayout,
+  AotRuntimeResolver,
 } from '@glimmer/interfaces';
 import GlimmerObject from '@glimmer/object';
 import { UpdatableReference } from '@glimmer/object-reference';
@@ -20,8 +20,9 @@ import { combine, DirtyableTag, PathReference, Tag, TagWrapper } from '@glimmer/
 import { TestComponentDefinitionState } from '../components';
 import EagerRuntimeResolver from '../modes/eager/runtime-resolver';
 import LazyRuntimeResolver from '../modes/lazy/runtime-resolver';
-import { Attrs, AttrsDiff, createTemplate } from '../shared';
+import { Attrs, AttrsDiff } from '../shared';
 import { BASIC_CAPABILITIES } from './basic';
+import { templateMeta } from '@glimmer/util';
 
 export const EMBERISH_GLIMMER_CAPABILITIES = {
   ...BASIC_CAPABILITIES,
@@ -85,37 +86,18 @@ export class EmberishGlimmerComponentManager
 
   getJitStaticLayout(
     state: TestComponentDefinitionState,
-    resolver: LazyRuntimeResolver | EagerRuntimeResolver
+    resolver: LazyRuntimeResolver
   ): CompilableProgram {
-    let { name, locator } = state;
-    if (resolver instanceof LazyRuntimeResolver) {
-      let compile = (source: string) => {
-        let template = createTemplate<AnnotatedModuleLocator>(source);
-        return template.create().asLayout();
-      };
-
-      let handle = resolver.lookup('template-source', name, null)!;
-
-      return resolver.compilableProgram(handle, name, compile);
-    }
-
-    let invocation = resolver.getInvocation(locator.meta.locator);
-
-    return {
-      symbolTable: invocation.symbolTable,
-      compile() {
-        return invocation.handle;
-      },
-    };
+    return resolver.compilable(templateMeta(state.locator)).asLayout();
   }
 
   getAotStaticLayout(
     state: TestComponentDefinitionState,
-    resolver: EagerRuntimeResolver
+    resolver: AotRuntimeResolver
   ): Invocation {
     let { locator } = state;
 
-    return resolver.getInvocation(locator.meta.locator);
+    return resolver.getInvocation(templateMeta(locator.meta.locator));
   }
 
   getSelf({ component }: EmberishGlimmerComponentState): PathReference<unknown> {

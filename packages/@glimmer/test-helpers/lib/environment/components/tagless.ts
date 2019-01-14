@@ -21,6 +21,7 @@ export const STATIC_TAGLESS_CAPABILITIES = {
   updateHook: false,
   createCaller: false,
   createInstance: false,
+  wrapped: false,
 };
 
 export class StaticTaglessComponentManager extends BasicComponentManager {
@@ -36,10 +37,11 @@ export class StaticTaglessComponentManager extends BasicComponentManager {
 
     let handle = resolver.lookup('template-source', name)!;
 
-    return resolver.compilableProgram(handle, name, source => {
-      let template = createTemplate<AnnotatedModuleLocator>(source);
-      return template.create().asLayout();
-    });
+    return resolver
+      .customCompilableTemplate(handle, name, source =>
+        createTemplate<AnnotatedModuleLocator>(source).create()
+      )
+      .asLayout();
   }
 }
 

@@ -115,7 +115,6 @@ export interface ElementBuilder extends CursorImpl, DOMStack, TreeOperations {
   updateOperations: GlimmerTreeChanges;
   constructing: Option<SimpleElement>;
   element: SimpleElement;
-  env: Environment;
 
   block(): LiveBlock;
   debugBlocks(): LiveBlock[];
@@ -133,7 +132,7 @@ export class NewElementBuilder implements ElementBuilder {
   public updateOperations: GlimmerTreeChanges;
   public constructing: Option<SimpleElement> = null;
   public operations: Option<ElementOperations> = null;
-  public env: Environment;
+  private env: Environment;
 
   [CURSOR_STACK] = new Stack<CursorImpl>();
   private blockStack = new Stack<LiveBlock>();

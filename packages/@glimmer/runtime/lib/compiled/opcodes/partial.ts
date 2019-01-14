@@ -21,7 +21,7 @@ APPEND_OPCODES.add(
 
     let handle = vm.runtime.resolver.lookupPartial(name as string, meta);
 
-    assert(handle, `Could not find a partial named "${name}"`);
+    assert(handle !== null, `Could not find a partial named "${name}"`);
 
     let definition = vm.runtime.resolver.resolve<PartialDefinition>(handle!);
 

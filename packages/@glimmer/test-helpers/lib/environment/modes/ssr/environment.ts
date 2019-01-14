@@ -42,13 +42,13 @@ export class NodeEnv extends LazyTestEnvironment {
 
 export class NodeLazyRenderDelegate extends LazyRenderDelegate {
   constructor() {
-    super(new NodeEnv({ document: createHTMLDocument() }));
+    super(createHTMLDocument());
   }
 }
 
 export class NodeEagerRenderDelegate extends EagerRenderDelegate {
   constructor() {
-    super(new NodeEnv({ document: createHTMLDocument() }));
+    super(createHTMLDocument());
   }
 }
 
@@ -77,7 +77,7 @@ export class AbstractNodeTest extends RenderTest {
 }
 
 export class NodeRenderDelegate extends EagerRenderDelegate {
-  constructor(env = new NodeEnv({ document: createHTMLDocument() })) {
-    super(env);
+  constructor(doc: SimpleDocument = createHTMLDocument()) {
+    super(doc);
   }
 }

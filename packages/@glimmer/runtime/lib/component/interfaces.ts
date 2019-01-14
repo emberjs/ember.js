@@ -3,11 +3,12 @@ import {
   ComponentDefinitionState,
   ComponentInstanceState,
   ComponentManager,
-  RuntimeResolverDelegate,
   WithAotDynamicLayout,
   WithAotStaticLayout,
   WithJitDynamicLayout,
   WithJitStaticLayout,
+  JitRuntimeResolver,
+  RuntimeResolver,
 } from '@glimmer/interfaces';
 
 /** @internal */
@@ -18,8 +19,8 @@ export function hasStaticLayout<
   state: D,
   manager: ComponentManager<I, D>
 ): manager is
-  | WithAotStaticLayout<I, D, RuntimeResolverDelegate>
-  | WithJitStaticLayout<I, D, RuntimeResolverDelegate> {
+  | WithAotStaticLayout<I, D, RuntimeResolver>
+  | WithJitStaticLayout<I, D, JitRuntimeResolver> {
   return manager.getCapabilities(state).dynamicLayout === false;
 }
 
@@ -30,9 +31,7 @@ export function hasDynamicLayout<
 >(
   state: D,
   manager: ComponentManager<I, D>
-): manager is
-  | WithAotDynamicLayout<I, RuntimeResolverDelegate>
-  | WithJitDynamicLayout<I, RuntimeResolverDelegate> {
+): manager is WithAotDynamicLayout<I, RuntimeResolver> | WithJitDynamicLayout<I, RuntimeResolver> {
   return manager.getCapabilities(state).dynamicLayout === true;
 }
 
@@ -47,6 +46,7 @@ export const DEFAULT_CAPABILITIES: ComponentCapabilities = {
   createCaller: false,
   updateHook: true,
   createInstance: true,
+  wrapped: false,
 };
 
 export const MINIMAL_CAPABILITIES: ComponentCapabilities = {
@@ -60,4 +60,5 @@ export const MINIMAL_CAPABILITIES: ComponentCapabilities = {
   createCaller: false,
   updateHook: false,
   createInstance: false,
+  wrapped: false,
 };

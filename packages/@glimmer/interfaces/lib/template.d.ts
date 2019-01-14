@@ -68,14 +68,6 @@ export interface ResolvedLayout {
   compilable: Option<CompilableProgram>;
 }
 
-export type MaybeResolvedLayout =
-  | {
-      handle: null;
-      capabilities: null;
-      compilable: null;
-    }
-  | ResolvedLayout;
-
 export interface NamedBlocks {
   get(name: string): Option<CompilableBlock>;
   has(name: string): boolean;
