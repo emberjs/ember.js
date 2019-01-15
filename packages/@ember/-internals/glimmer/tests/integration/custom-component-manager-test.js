@@ -305,6 +305,58 @@ if (GLIMMER_CUSTOM_COMPONENT_MANAGER) {
         this.assertHTML(`<p>Chad Hietala</p>`);
       }
 
+      ['@test it can set positional params on the component instance']() {
+        let ComponentClass = setComponentManager(
+          createBasicManager,
+          EmberObject.extend({
+            salutation: computed('args.positional', function() {
+              return this.args.positional[0] + ' ' + this.args.positional[1];
+            }),
+          })
+        );
+
+        this.registerComponent('foo-bar', {
+          template: `<p>{{salutation}}</p>`,
+          ComponentClass,
+        });
+
+        this.render('{{foo-bar "Yehuda" "Katz"}}');
+
+        this.assertHTML(`<p>Yehuda Katz</p>`);
+      }
+
+      ['@test positional params are updated if they change']() {
+        let ComponentClass = setComponentManager(
+          createBasicManager,
+          EmberObject.extend({
+            salutation: computed('args.positional', function() {
+              return this.args.positional[0] + ' ' + this.args.positional[1];
+            }),
+          })
+        );
+
+        this.registerComponent('foo-bar', {
+          template: `<p>{{salutation}}</p>`,
+          ComponentClass,
+        });
+
+        this.render('{{foo-bar firstName lastName}}', {
+          firstName: 'Yehuda',
+          lastName: 'Katz',
+        });
+
+        this.assertHTML(`<p>Yehuda Katz</p>`);
+
+        runTask(() =>
+          setProperties(this.context, {
+            firstName: 'Chad',
+            lastName: 'Hietala',
+          })
+        );
+
+        this.assertHTML(`<p>Chad Hietala</p>`);
+      }
+
       ['@test it can opt-in to running destructor'](assert) {
         let ComponentClass = setComponentManager(
           () => {
