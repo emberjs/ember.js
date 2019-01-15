@@ -36,3 +36,7 @@ class NativeDescriptor extends Descriptor {
     return (obj[key] = value);
   }
 }
+
+export function isComputedDescriptor(possibleDesc: unknown) {
+  return possibleDesc !== null && typeof possibleDesc === 'object' && possibleDesc.isDescriptor;
+}
