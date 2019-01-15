@@ -1,5 +1,8 @@
 # Ember Changelog
 
+### v3.8.0-beta.2 (January 14, 2019)
+- [#17467](https://github.com/emberjs/ember.js/pull/17467) [BUGFIX] Fix substate interactions with aborts
+
 ### v3.8.0-beta.1 (January 7, 2019)
 
 - [#17143](https://github.com/emberjs/ember.js/pull/17143) / [#17375](https://github.com/emberjs/ember.js/pull/17375) [FEATURE] Implement Element Modifier Manager RFC (see [emberjs/rfcs#0373](https://github.com/emberjs/rfcs/blob/master/text/0373-Element-Modifier-Managers.md)).
