@@ -111,6 +111,7 @@ let allExports = [
   ['computed', '@ember/-internals/metal', '_globalsComputed'],
   ['computed.alias', '@ember/-internals/metal', 'alias'],
   ['ComputedProperty', '@ember/-internals/metal'],
+  ['_setComputedDecorator', '@ember/-internals/metal', 'setComputedDecorator'],
   ['cacheFor', '@ember/-internals/metal', 'getCachedValueFor'],
   ['merge', '@ember/polyfills'],
   ['instrument', '@ember/instrumentation'],

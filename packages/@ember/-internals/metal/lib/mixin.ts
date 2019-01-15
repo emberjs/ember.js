@@ -1,7 +1,7 @@
 /**
 @module @ember/object
 */
-import { descriptorFor, Meta, meta as metaFor, peekMeta } from '@ember/-internals/meta';
+import { Meta, meta as metaFor, peekMeta } from '@ember/-internals/meta';
 import {
   getListeners,
   getObservers,
@@ -16,12 +16,23 @@ import { assert, deprecate } from '@ember/debug';
 import { ALIAS_METHOD } from '@ember/deprecated-features';
 import { assign } from '@ember/polyfills';
 import { DEBUG } from '@glimmer/env';
-import { ComputedProperty, ComputedPropertyGetter, ComputedPropertySetter } from './computed';
+import {
+  ComputedDecorator,
+  ComputedProperty,
+  ComputedPropertyGetter,
+  ComputedPropertySetter,
+} from './computed';
+import {
+  descriptorForDecorator,
+  descriptorForProperty,
+  isComputedDecorator,
+  makeComputedDecorator,
+} from './decorator';
 import { addListener, removeListener } from './events';
 import expandProperties from './expand_properties';
 import { classToString, setUnprocessedMixins } from './namespace_search';
 import { addObserver, removeObserver } from './observer';
-import { defineProperty, Descriptor } from './properties';
+import { defineProperty } from './properties';
 
 const a_concat = Array.prototype.concat;
 const { isArray } = Array;
@@ -67,46 +78,68 @@ function concatenatedMixinProperties(
   return concats;
 }
 
-function giveDescriptorSuper(
+function giveDecoratorSuper(
   meta: Meta,
   key: string,
-  property: ComputedProperty,
+  decorator: ComputedDecorator,
   values: { [key: string]: any },
   descs: { [key: string]: any },
   base: object
-): ComputedProperty {
+): ComputedDecorator {
+  let property = descriptorForDecorator(decorator)!;
   let superProperty;
+
+  if (!(property instanceof ComputedProperty) || property._getter === undefined) {
+    return decorator;
+  }
 
   // Computed properties override methods, and do not call super to them
   if (values[key] === undefined) {
     // Find the original descriptor in a parent mixin
-    superProperty = descs[key];
+    superProperty = descriptorForDecorator(descs[key]);
   }
 
   // If we didn't find the original descriptor in a parent mixin, find
   // it on the original object.
   if (!superProperty) {
-    superProperty = descriptorFor(base, key, meta);
+    superProperty = descriptorForProperty(base, key, meta);
   }
 
   if (superProperty === undefined || !(superProperty instanceof ComputedProperty)) {
-    return property;
+    return decorator;
   }
 
-  // Since multiple mixins may inherit from the same parent, we need
-  // to clone the computed property so that other mixins do not receive
-  // the wrapped version.
-  property = Object.create(property);
-  property._getter = wrap(property._getter, superProperty._getter) as ComputedPropertyGetter;
+  let get = wrap(property._getter!, superProperty._getter!) as ComputedPropertyGetter;
+  let set;
+
   if (superProperty._setter) {
     if (property._setter) {
-      property._setter = wrap(property._setter, superProperty._setter) as ComputedPropertySetter;
+      set = wrap(property._setter, superProperty._setter) as ComputedPropertySetter;
     } else {
-      property._setter = superProperty._setter;
+      // If the super property has a setter, we default to using it no matter what.
+      // This is clearly very broken and weird, but it's what was here so we have
+      // to keep it until the next major at least.
+      //
+      // TODO: Add a deprecation here.
+      set = superProperty._setter;
     }
+  } else {
+    set = property._setter;
   }
 
-  return property;
+  // only create a new CP if we must
+  if (get !== property._getter || set !== property._setter) {
+    // Since multiple mixins may inherit from the same parent, we need
+    // to clone the computed property so that other mixins do not receive
+    // the wrapped version.
+    let newProperty = Object.create(property);
+    newProperty._getter = get;
+    newProperty._setter = set;
+
+    return makeComputedDecorator(newProperty, ComputedProperty) as ComputedDecorator;
+  }
+
+  return decorator;
 }
 
 function giveMethodSuper(
@@ -126,7 +159,7 @@ function giveMethodSuper(
 
   // If we didn't find the original value in a parent mixin, find it in
   // the original object
-  if (superMethod === undefined && descriptorFor(obj, key) === undefined) {
+  if (superMethod === undefined && descriptorForProperty(obj, key) === undefined) {
     superMethod = obj[key];
   }
 
@@ -206,21 +239,16 @@ function applyMergedProperties(
 function addNormalizedProperty(
   base: any,
   key: string,
-  value: Descriptor | any,
+  value: any,
   meta: Meta,
   descs: { [key: string]: any },
   values: { [key: string]: any },
   concats?: string[],
   mergings?: string[]
 ): void {
-  if (value instanceof Descriptor) {
-    // Wrap descriptor function to implement
-    // _super() if needed
-    if ((value as ComputedProperty)._getter) {
-      value = giveDescriptorSuper(meta, key, value as ComputedProperty, values, descs, base);
-    }
-
-    descs[key] = value;
+  if (isComputedDecorator(value)) {
+    // Wrap descriptor function to implement _super() if needed
+    descs[key] = giveDecoratorSuper(meta, key, value, values, descs, base);
     values[key] = undefined;
   } else {
     if (
@@ -323,7 +351,7 @@ if (ALIAS_METHOD) {
 
     if (desc !== undefined || value !== undefined) {
       // do nothing
-    } else if ((possibleDesc = descriptorFor(obj, altKey)) !== undefined) {
+    } else if ((possibleDesc = descriptorForProperty(obj, altKey)) !== undefined) {
       desc = possibleDesc;
       value = undefined;
     } else {
@@ -409,7 +437,7 @@ export function applyMixin(obj: { [key: string]: any }, mixins: Mixin[]) {
       continue;
     }
 
-    if (descriptorFor(obj, key) !== undefined) {
+    if (descriptorForProperty(obj, key) !== undefined) {
       replaceObserversAndListeners(obj, key, null, value);
     } else {
       replaceObserversAndListeners(obj, key, obj[key], value);

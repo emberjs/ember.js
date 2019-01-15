@@ -1,5 +1,5 @@
 import { Object as EmberObject } from '@ember/-internals/runtime';
-import { Mixin, defineProperty, descriptor } from '..';
+import { Mixin, defineProperty, nativeDescDecorator } from '..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 let classes = [
@@ -150,12 +150,12 @@ let classes = [
 
 classes.forEach(TestClass => {
   moduleFor(
-    TestClass.module('@ember/-internals/metal/descriptor'),
+    TestClass.module('@ember/-internals/metal/nativeDescDecorator'),
     class extends AbstractTestCase {
       ['@test defining a configurable property'](assert) {
         let factory = new TestClass(assert);
 
-        factory.install('foo', descriptor({ configurable: true, value: 'bar' }), assert);
+        factory.install('foo', nativeDescDecorator({ configurable: true, value: 'bar' }), assert);
 
         let obj = factory.finalize();
 
@@ -174,7 +174,7 @@ classes.forEach(TestClass => {
 
       ['@test defining a non-configurable property'](assert) {
         let factory = new TestClass(assert);
-        factory.install('foo', descriptor({ configurable: false, value: 'bar' }), assert);
+        factory.install('foo', nativeDescDecorator({ configurable: false, value: 'bar' }), assert);
 
         let obj = factory.finalize();
 
@@ -198,7 +198,7 @@ classes.forEach(TestClass => {
 
       ['@test defining an enumerable property'](assert) {
         let factory = new TestClass(assert);
-        factory.install('foo', descriptor({ enumerable: true, value: 'bar' }), assert);
+        factory.install('foo', nativeDescDecorator({ enumerable: true, value: 'bar' }), assert);
 
         let obj = factory.finalize();
 
@@ -211,7 +211,7 @@ classes.forEach(TestClass => {
 
       ['@test defining a non-enumerable property'](assert) {
         let factory = new TestClass(assert);
-        factory.install('foo', descriptor({ enumerable: false, value: 'bar' }), assert);
+        factory.install('foo', nativeDescDecorator({ enumerable: false, value: 'bar' }), assert);
 
         let obj = factory.finalize();
 
@@ -224,7 +224,7 @@ classes.forEach(TestClass => {
 
       ['@test defining a writable property'](assert) {
         let factory = new TestClass(assert);
-        factory.install('foo', descriptor({ writable: true, value: 'bar' }), assert);
+        factory.install('foo', nativeDescDecorator({ writable: true, value: 'bar' }), assert);
 
         let obj = factory.finalize();
 
@@ -243,7 +243,7 @@ classes.forEach(TestClass => {
 
       ['@test defining a non-writable property'](assert) {
         let factory = new TestClass(assert);
-        factory.install('foo', descriptor({ writable: false, value: 'bar' }), assert);
+        factory.install('foo', nativeDescDecorator({ writable: false, value: 'bar' }), assert);
 
         let obj = factory.finalize();
 
@@ -261,7 +261,7 @@ classes.forEach(TestClass => {
         let factory = new TestClass(assert);
         factory.install(
           'foo',
-          descriptor({
+          nativeDescDecorator({
             get: function() {
               return this.__foo__;
             },
@@ -284,7 +284,7 @@ classes.forEach(TestClass => {
         let factory = new TestClass(assert);
         factory.install(
           'foo',
-          descriptor({
+          nativeDescDecorator({
             set: function(value) {
               this.__foo__ = value;
             },
@@ -307,7 +307,7 @@ classes.forEach(TestClass => {
         let factory = new TestClass(assert);
         factory.install(
           'foo',
-          descriptor({
+          nativeDescDecorator({
             get: function() {
               return this.__foo__;
             },
@@ -323,7 +323,7 @@ classes.forEach(TestClass => {
 
         factory.install(
           'bar',
-          descriptor({
+          nativeDescDecorator({
             get: function() {
               return this.__bar__;
             },
@@ -339,7 +339,7 @@ classes.forEach(TestClass => {
 
         factory.install(
           'fooBar',
-          descriptor({
+          nativeDescDecorator({
             get: function() {
               return this.foo + '-' + this.bar;
             },

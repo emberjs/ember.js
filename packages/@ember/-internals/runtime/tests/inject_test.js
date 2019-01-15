@@ -1,4 +1,4 @@
-import { InjectedProperty } from '@ember/-internals/metal';
+import { inject } from '@ember/-internals/metal';
 import { DEBUG } from '@glimmer/env';
 import EmberObject from '../lib/system/object';
 import { buildOwner } from 'internal-test-helpers';
@@ -10,7 +10,7 @@ moduleFor(
     ['@test attempting to inject a nonexistent container key should error']() {
       let owner = buildOwner();
       let AnObject = EmberObject.extend({
-        foo: new InjectedProperty('bar', 'baz'),
+        foo: inject('bar', 'baz'),
       });
 
       owner.register('foo:main', AnObject);
@@ -23,8 +23,8 @@ moduleFor(
     ['@test factories should return a list of lazy injection full names'](assert) {
       if (DEBUG) {
         let AnObject = EmberObject.extend({
-          foo: new InjectedProperty('foo', 'bar'),
-          bar: new InjectedProperty('quux'),
+          foo: inject('foo', 'bar'),
+          bar: inject('quux'),
         });
 
         assert.deepEqual(

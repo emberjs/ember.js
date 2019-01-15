@@ -13,7 +13,7 @@ import {
   isInternalSymbol,
 } from '@ember/-internals/utils';
 import { schedule } from '@ember/runloop';
-import { descriptorFor, meta, peekMeta, deleteMeta } from '@ember/-internals/meta';
+import { meta, peekMeta, deleteMeta } from '@ember/-internals/meta';
 import {
   PROXY_CONTENT,
   finishChains,
@@ -21,9 +21,10 @@ import {
   Mixin,
   applyMixin,
   defineProperty,
-  ComputedProperty,
-  InjectedProperty,
+  descriptorForProperty,
   classToString,
+  isComputedDecorator,
+  DEBUG_INJECTION_FUNCTIONS,
 } from '@ember/-internals/metal';
 import ActionHandler from '../mixins/action_handler';
 import { assert, deprecate } from '@ember/debug';
@@ -77,7 +78,7 @@ function initialize(obj, properties) {
         'EmberObject.create no longer supports defining computed ' +
           'properties. Define computed properties using extend() or reopen() ' +
           'before calling create().',
-        !(value instanceof ComputedProperty)
+        !isComputedDecorator(value)
       );
       assert(
         'EmberObject.create no longer supports defining methods that call _super.',
@@ -89,7 +90,7 @@ function initialize(obj, properties) {
         !(keyName === 'actions' && ActionHandler.detect(obj))
       );
 
-      let possibleDesc = descriptorFor(obj, keyName, m);
+      let possibleDesc = descriptorForProperty(obj, keyName, m);
       let isDescriptor = possibleDesc !== undefined;
 
       if (!isDescriptor) {
@@ -936,7 +937,7 @@ class CoreObject {
   */
   static metaForProperty(key) {
     let proto = this.proto(); // ensure prototype is initialized
-    let possibleDesc = descriptorFor(proto, key);
+    let possibleDesc = descriptorForProperty(proto, key);
 
     assert(
       `metaForProperty() could not find a computed property with key '${key}'.`,
@@ -1066,11 +1067,11 @@ if (DEBUG) {
     let proto = this.proto();
 
     for (let key in proto) {
-      let desc = descriptorFor(proto, key);
-      if (desc instanceof InjectedProperty) {
+      let desc = descriptorForProperty(proto, key);
+      if (desc && DEBUG_INJECTION_FUNCTIONS.has(desc._getter)) {
         assert(
           `Defining \`${key}\` as an injected controller property on a non-controller (\`${debugContainerKey}\`) is not allowed.`,
-          type === 'controller' || desc.type !== 'controller'
+          type === 'controller' || DEBUG_INJECTION_FUNCTIONS.get(desc._getter).type !== 'controller'
         );
       }
     }
@@ -1091,12 +1092,14 @@ if (DEBUG) {
     let desc;
 
     for (key in proto) {
-      desc = descriptorFor(proto, key);
-      if (desc instanceof InjectedProperty) {
+      desc = descriptorForProperty(proto, key);
+      if (desc && DEBUG_INJECTION_FUNCTIONS.has(desc._getter)) {
+        let { namespace, source, type, name } = DEBUG_INJECTION_FUNCTIONS.get(desc._getter);
+
         injections[key] = {
-          namespace: desc.namespace,
-          source: desc.source,
-          specifier: `${desc.type}:${desc.name || key}`,
+          namespace,
+          source,
+          specifier: `${type}:${name || key}`,
         };
       }
     }

@@ -1,7 +1,7 @@
 /**
 @module ember
 */
-import { Mixin, descriptor } from '@ember/-internals/metal';
+import { Mixin, nativeDescDecorator } from '@ember/-internals/metal';
 import { getChildViews, addChildView } from '../system/utils';
 
 export default Mixin.create({
@@ -13,7 +13,7 @@ export default Mixin.create({
     @default []
     @private
   */
-  childViews: descriptor({
+  childViews: nativeDescDecorator({
     configurable: false,
     enumerable: false,
     get() {

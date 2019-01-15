@@ -1,8 +1,6 @@
 export {
   counters,
   deleteMeta,
-  descriptorFor,
-  isDescriptor,
   Meta,
   meta,
   MetaCounters,

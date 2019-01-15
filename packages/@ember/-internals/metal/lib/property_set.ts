@@ -1,8 +1,9 @@
-import { descriptorFor, Meta, peekMeta } from '@ember/-internals/meta';
+import { Meta, peekMeta } from '@ember/-internals/meta';
 import { HAS_NATIVE_PROXY, lookupDescriptor, toString } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import EmberError from '@ember/error';
 import { DEBUG } from '@glimmer/env';
+import { descriptorForProperty } from './decorator';
 import { isPath } from './path_cache';
 import { MandatorySetterFunction } from './properties';
 import { notifyPropertyChange } from './property_events';
@@ -78,7 +79,7 @@ export function set(obj: object, keyName: string, value: any, tolerant?: boolean
   }
 
   let meta = peekMeta(obj);
-  let descriptor = descriptorFor(obj, keyName, meta);
+  let descriptor = descriptorForProperty(obj, keyName, meta);
 
   if (descriptor !== undefined) {
     descriptor.set(obj, keyName, value);
