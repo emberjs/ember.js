@@ -40,9 +40,8 @@ class InsertAtTests extends AbstractTestCase {
 
   '@test [].insertAt(200,X) => OUT_OF_RANGE_EXCEPTION exception'() {
     let obj = this.newObject([]);
-    let that = this;
-
-    this.assert.throws(() => obj.insertAt(200, that.newFixture(1)[0]), Error);
+    let item = newFixture(1)[0];
+    expectAssertion(() => obj.insertAt(200, item), /`insertAt` index provided is out of range/);
   }
 
   '@test [A].insertAt(0, X) => [X,A] + notify'() {

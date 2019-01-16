@@ -1,6 +1,7 @@
 import { OWNER } from '@ember/-internals/owner';
 import { assign } from '@ember/polyfills';
 import { EMBER_MODULE_UNIFICATION } from '@ember/canary-features';
+import { DEBUG } from '@glimmer/env';
 import { Registry } from '..';
 import { factory, moduleFor, AbstractTestCase, runTask } from 'internal-test-helpers';
 
@@ -199,7 +200,7 @@ moduleFor(
       }, /Failed to create an instance of \'controller:foo\'/);
     }
 
-    ['@test Injecting a failed lookup raises an error'](assert) {
+    ['@test Injecting a failed lookup raises an error']() {
       let registry = new Registry();
       let container = registry.container();
 
@@ -218,7 +219,7 @@ moduleFor(
       registry.register('model:foo', Foo);
       registry.injection('model:foo', 'store', 'store:main');
 
-      assert.throws(() => {
+      expectAssertion(() => {
         container.lookup('model:foo');
       });
     }
@@ -443,7 +444,7 @@ moduleFor(
       assert.deepEqual(resolveWasCalled, ['foo:post']);
     }
 
-    [`@test A factory's lazy injections are validated when first instantiated`](assert) {
+    [`@test A factory's lazy injections are validated when first instantiated`]() {
       let registry = new Registry();
       let container = registry.container();
       let Apple = factory();
@@ -458,12 +459,17 @@ moduleFor(
       registry.register('apple:main', Apple);
       registry.register('orange:main', Orange);
 
-      assert.throws(() => {
+      expectAssertion(() => {
         container.lookup('apple:main');
       }, /Attempting to inject an unknown injection: 'banana:main'/);
     }
 
     ['@test Lazy injection validations are cached'](assert) {
+      if (!DEBUG) {
+        assert.expect(0);
+        return;
+      }
+
       assert.expect(1);
 
       let registry = new Registry();

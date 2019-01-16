@@ -180,10 +180,10 @@ moduleFor(
       );
     }
 
-    ['@test cannot register an `undefined` factory'](assert) {
+    ['@test cannot register an `undefined` factory']() {
       let registry = new Registry();
 
-      assert.throws(() => {
+      expectAssertion(() => {
         registry.register('controller:apple', undefined);
       }, '');
     }
