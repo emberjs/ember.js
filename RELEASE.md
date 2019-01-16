@@ -132,9 +132,9 @@ end
     1. Any feature that has been GOed gets changed to true
 1. Run `ember s -prod`
 1. Run tests at `http://localhost:4200/tests/index.html`
-1. Run production tests `http://localhost:4200/tests/index.html?skipPackage=container,ember-testing,@ember/debug&dist=prod&prod=true`
-1. In `.travis.yml`, remove `branches:` section e.g. [this commit](https://github.com/emberjs/ember.js/commit/e38ec5d910721a9e02a819b4105a4875723f4b1b).
-1. Now we have to look at the commit just prior to branching 2.4.0.beta-1. Then find the commit after that to start the new branch at.
+2. Run production tests `http://localhost:4200/tests/index.html?dist=prod&prod=true`
+3. In `.travis.yml`, remove `branches:` section e.g. [this commit](https://github.com/emberjs/ember.js/commit/e38ec5d910721a9e02a819b4105a4875723f4b1b).
+4. Now we have to look at the commit just prior to branching 2.4.0.beta-1. Then find the commit after that to start the new branch at.
 
 ### Changelog
 

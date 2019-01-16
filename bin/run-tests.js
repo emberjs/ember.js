@@ -74,20 +74,14 @@ function generateEachPackageTests() {
 }
 
 function generateBuiltTests() {
-  // Container isn't publicly available.
-  // ember-testing and @ember/debug are stripped from prod/min.
-  var common = 'skipPackage=container,ember-testing,@ember/debug';
-
-  testFunctions.push(() => run(common));
-  testFunctions.push(() => run(common + '&dist=min&prod=true'));
-  testFunctions.push(() => run(common + '&dist=prod&prod=true'));
-  testFunctions.push(() => run(common + '&enableoptionalfeatures=true&dist=prod&prod=true'));
-  testFunctions.push(() => run(common + '&legacy=true'));
-  testFunctions.push(() => run(common + '&legacy=true&dist=min&prod=true'));
-  testFunctions.push(() => run(common + '&legacy=true&dist=prod&prod=true'));
-  testFunctions.push(() =>
-    run(common + '&legacy=true&enableoptionalfeatures=true&dist=prod&prod=true')
-  );
+  testFunctions.push(() => run(''));
+  testFunctions.push(() => run('dist=min&prod=true'));
+  testFunctions.push(() => run('dist=prod&prod=true'));
+  testFunctions.push(() => run('enableoptionalfeatures=true&dist=prod&prod=true'));
+  testFunctions.push(() => run('legacy=true'));
+  testFunctions.push(() => run('legacy=true&dist=min&prod=true'));
+  testFunctions.push(() => run('legacy=true&dist=prod&prod=true'));
+  testFunctions.push(() => run('legacy=true&enableoptionalfeatures=true&dist=prod&prod=true'));
 }
 
 function generateOldJQueryTests() {

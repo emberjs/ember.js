@@ -247,6 +247,7 @@ function buildBundles(packagesES, dependenciesES, templateCompilerDependenciesES
           '*/tests/**' /* packages */,
           'license.js',
         ],
+        exclude: ['@ember/debug/tests/**', 'ember-testing/tests/**'],
       }),
       bootstrapModule('empty'),
     ]);
