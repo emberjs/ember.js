@@ -8,19 +8,19 @@ import { renderTemplate, JitTestDelegateContext } from '../../../render';
 import RenderDelegate from '../../../render-delegate';
 import { UserHelper } from '../../helper';
 import { TestModifierConstructor } from '../../modifier';
-import {
-  TestLazyCompilationContext,
-  registerModifier,
-  registerEmberishCurlyComponent,
-  registerEmberishGlimmerComponent,
-  registerStaticTaglessComponent,
-  registerHelper,
-  registerInternalHelper,
-} from './environment';
 import LazyRuntimeResolver from './runtime-resolver';
 import { BasicComponentFactory } from '../../components/basic';
 import { EmberishCurlyComponentFactory, EmberishGlimmerComponentFactory } from '../../components';
 import TestMacros from '../../macros';
+import { TestLazyCompilationContext } from './compilation-context';
+import {
+  registerStaticTaglessComponent,
+  registerEmberishCurlyComponent,
+  registerEmberishGlimmerComponent,
+  registerModifier,
+  registerHelper,
+  registerInternalHelper,
+} from './register';
 
 declare const module: any;
 

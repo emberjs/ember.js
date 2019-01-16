@@ -11,13 +11,13 @@ import {
   JitRuntimeContext,
 } from '@glimmer/interfaces';
 import { preprocess } from './environment/shared';
+import { renderMain } from './environment/modes/lazy/environment';
+import LazyRuntimeResolver from './environment/modes/lazy/runtime-resolver';
 import {
-  renderMain,
   registerEmberishGlimmerComponent,
   registerEmberishCurlyComponent,
   registerBasicComponent,
-} from './environment/modes/lazy/environment';
-import LazyRuntimeResolver from './environment/modes/lazy/runtime-resolver';
+} from './environment/modes/lazy/register';
 
 export function registerComponent<K extends ComponentKind>(
   resolver: LazyRuntimeResolver,
