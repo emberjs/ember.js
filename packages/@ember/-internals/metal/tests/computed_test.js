@@ -24,23 +24,30 @@ moduleFor(
 
     ['@test computed properties assert the presence of a getter or setter function']() {
       expectAssertion(function() {
-        computed('nogetternorsetter', {});
+        let obj = {};
+        defineProperty(obj, 'someProp', computed('nogetternorsetter', {}))
       }, 'Computed properties must receive a getter or a setter, you passed none.');
     }
 
     ['@test computed properties check for the presence of a function or configuration object']() {
       expectAssertion(function() {
-        computed('nolastargument');
+        let obj = {};
+        defineProperty(obj, 'someProp', computed('nolastargument'));
       }, 'computed expects a function or an object as last argument.');
     }
 
+    // non valid properties are stripped away in the process of creating a computed property descriptor
     ['@test computed properties defined with an object only allow `get` and `set` keys']() {
       expectAssertion(function() {
-        computed({
-          get() {},
-          set() {},
-          other() {},
+        let obj = EmberObject.extend({
+          someProp: computed({
+            get() {},
+            set() {},
+            other() {},
+          }),
         });
+
+        obj.create().someProp;
       }, 'Config object passed to computed can only contain `get` and `set` keys.');
     }
 
@@ -970,10 +977,12 @@ moduleFor(
 
     ['@test throws assertion if called over a CP with a setter defined with the new syntax']() {
       expectAssertion(() => {
-        computed({
+        let obj = {};
+        defineProperty(obj, 'someProp', computed({
           get() {},
           set() {},
-        }).readOnly();
+        }).readOnly());
+
       }, /Computed properties that define a setter using the new syntax cannot be read-only/);
     }
 

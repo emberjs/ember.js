@@ -517,6 +517,7 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
 
 export class DecoratorDescriptor extends ComputedProperty {
   setup(obj, key, meta) {
+
     if (!this._computedDesc) {
       this._computedDesc = buildComputedDesc(this, { key });
     }
@@ -579,7 +580,6 @@ export class DecoratorDescriptor extends ComputedProperty {
     return this;
   }
 }
-
 
 /**
   This helper returns a new property descriptor that wraps the passed
@@ -690,6 +690,7 @@ export function emberComputed(...args: (string | ComputedPropertyConfig)[]): Com
   ```js
   import Component from '@ember/component';
   import { computed } from '@ember-decorators/object';
+import descriptor from '../../../../../tmp/funnel-input_base_path-gav85kkw.tmp/@ember/-internals/metal/lib/descriptor';
 
   export default class UserProfileComponent extends Component {
     first = 'Bruce';
@@ -778,6 +779,7 @@ export const computed = computedDecoratorWithParams(({ key, descriptor, initiali
 
   if (get === undefined && set === undefined) {
     usedClassDescriptor = true;
+
     get = descriptor.get;
     set = descriptor.set;
   }

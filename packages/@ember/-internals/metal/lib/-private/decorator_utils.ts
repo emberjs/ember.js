@@ -24,6 +24,36 @@ export function buildComputedDesc(dec, desc) {
   let params = DECORATOR_PARAMS.get(dec);
   let modifiers = DECORATOR_MODIFIERS.get(dec);
 
+  let lastArg = params[params.length - 1];
+  let objectConfig = params.slice(0, params.length);
+  // if (desc && desc.key && (desc.key === 'com')) {
+  //   debugger;
+  // }
+
+  if ((Object.keys(desc).length === 1) && typeof lastArg !== 'function') {
+    objectConfig = lastArg;
+
+    assert(
+      'computed expects a function or an object as last argument.',
+      typeof objectConfig === 'object' && !Array.isArray(objectConfig)
+    );
+    assert(
+      'Config object passed to computed can only contain `get` and `set` keys.',
+      Object.keys(objectConfig).every(key => key === 'get' || key === 'set')
+    );
+    assert(
+      'Computed properties must receive a getter or a setter, you passed none.',
+      Boolean(objectConfig.get) || Boolean(objectConfig.set)
+    );
+
+    if (typeof objectConfig === 'object') {
+      if (objectConfig.set && !objectConfig.get) {
+        params[0].get = () => undefined;
+      }
+    }
+  }
+
+
   let computedDesc = fn(desc, params);
 
   assert(`computed decorators must return an instance of an Ember ComputedProperty descriptor, received ${computedDesc}`, isComputedDescriptor(computedDesc));
@@ -77,6 +107,7 @@ export function computedDecoratorWithRequiredParams(fn, name) {
  */
 export function computedDecorator(fn, params) {
   let dec = decorator((desc) => {
+
     // All computeds are methods
     desc.kind = 'method';
     desc.placement = 'prototype';
