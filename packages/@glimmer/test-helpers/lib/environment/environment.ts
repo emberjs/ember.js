@@ -14,7 +14,7 @@ import {
   JitRuntime,
 } from '@glimmer/runtime';
 import { Iterable, KeyFor } from './iterable';
-import LazyRuntimeResolver from './modes/lazy/runtime-resolver';
+import LazyRuntimeResolver, { JitRegistry } from './modes/lazy/runtime-resolver';
 import { SimpleDocument, SimpleElement } from '@simple-dom/interface';
 import TestMacros from './macros';
 import { TestLazyCompilationContext } from './modes/lazy/compilation-context';
@@ -25,6 +25,7 @@ export type TestProgram = RuntimeProgram & WholeProgramCompilationContext;
 
 export interface TestContext {
   resolver: LazyRuntimeResolver;
+  registry: JitRegistry;
   syntax: SyntaxCompilationContext;
   program: WholeProgramCompilationContext;
   doc: SimpleDocument;
@@ -35,9 +36,10 @@ export interface TestContext {
 
 export function JitTestContext(delegate: RuntimeEnvironmentDelegate = {}): TestContext {
   let resolver = new LazyRuntimeResolver();
-  registerHelper(resolver, 'hash', (_positional, named) => named);
+  let registry = resolver.registry;
+  registerHelper(registry, 'hash', (_positional, named) => named);
 
-  let context = new TestLazyCompilationContext(resolver);
+  let context = new TestLazyCompilationContext(resolver, registry);
   let syntax: SyntaxCompilationContext = { program: context, macros: new TestMacros() };
   let doc = document as SimpleDocument;
 
@@ -48,7 +50,7 @@ export function JitTestContext(delegate: RuntimeEnvironmentDelegate = {}): TestC
 
   let root = document.getElementById('qunit-fixture')! as SimpleElement;
 
-  return { resolver, program: context, syntax, doc, root, runtime, env: runtime.env };
+  return { resolver, registry, program: context, syntax, doc, root, runtime, env: runtime.env };
 }
 
 export default abstract class TestEnvironment extends EnvironmentImpl {

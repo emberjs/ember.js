@@ -8,11 +8,11 @@ import {
   CompileTimeComponent,
   Template,
 } from '@glimmer/interfaces';
-import LazyRuntimeResolver from './runtime-resolver';
+import LazyRuntimeResolver, { JitRegistry } from './runtime-resolver';
 import { createTemplate } from '../../shared';
 
 export default class LazyCompileTimeLookup implements CompileTimeResolverDelegate {
-  constructor(private resolver: LazyRuntimeResolver) {}
+  constructor(private resolver: LazyRuntimeResolver, private registry: JitRegistry) {}
 
   resolve<T>(handle: number): T {
     return this.resolver.resolve(handle);
@@ -37,7 +37,7 @@ export default class LazyCompileTimeLookup implements CompileTimeResolverDelegat
     // throw new Error('NOPE');
     // TODO: This whole thing probably should have a more first-class
     // structure.
-    return this.resolver.templateFromSource(source, name, source => {
+    return this.registry.templateFromSource(source, name, source => {
       let factory = createTemplate<AnnotatedModuleLocator>(source);
       return factory.create();
     });
@@ -47,7 +47,7 @@ export default class LazyCompileTimeLookup implements CompileTimeResolverDelegat
     name: string,
     referrer: Option<TemplateMeta<AnnotatedModuleLocator>>
   ): Option<CompileTimeComponent> {
-    let definitionHandle = this.resolver.lookupComponentHandle(name, referrer);
+    let definitionHandle = this.registry.lookupComponentHandle(name, referrer);
 
     if (definitionHandle === null) {
       return null;

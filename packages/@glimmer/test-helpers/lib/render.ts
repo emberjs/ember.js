@@ -11,7 +11,7 @@ import {
   JitRuntimeContext,
 } from '@glimmer/interfaces';
 import { preprocess } from './environment/shared';
-import LazyRuntimeResolver from './environment/modes/lazy/runtime-resolver';
+import { JitRegistry } from './environment/modes/lazy/runtime-resolver';
 import {
   registerEmberishGlimmerComponent,
   registerEmberishCurlyComponent,
@@ -19,7 +19,7 @@ import {
 } from './environment/modes/lazy/register';
 
 export function registerComponent<K extends ComponentKind>(
-  resolver: LazyRuntimeResolver,
+  registry: JitRegistry,
   type: K,
   name: string,
   layout: string,
@@ -28,7 +28,7 @@ export function registerComponent<K extends ComponentKind>(
   switch (type) {
     case 'Glimmer':
       registerEmberishGlimmerComponent(
-        resolver,
+        registry,
         name,
         Class as typeof EmberishGlimmerComponent,
         layout
@@ -36,7 +36,7 @@ export function registerComponent<K extends ComponentKind>(
       break;
     case 'Curly':
       registerEmberishCurlyComponent(
-        resolver,
+        registry,
         name,
         Class as typeof EmberishCurlyComponent,
         layout
@@ -45,7 +45,7 @@ export function registerComponent<K extends ComponentKind>(
 
     case 'Dynamic':
       registerEmberishCurlyComponent(
-        resolver,
+        registry,
         name,
         Class as typeof EmberishCurlyComponent,
         layout
@@ -53,7 +53,7 @@ export function registerComponent<K extends ComponentKind>(
       break;
     case 'Basic':
     case 'Fragment':
-      registerBasicComponent(resolver, name, Class as typeof BasicComponent, layout);
+      registerBasicComponent(registry, name, Class as typeof BasicComponent, layout);
       break;
   }
 }

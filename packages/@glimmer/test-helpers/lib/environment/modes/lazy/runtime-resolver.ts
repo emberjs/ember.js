@@ -12,7 +12,7 @@ import { Option } from '@glimmer/util';
 import Registry, { Lookup, LookupType, TypedRegistry } from '../../registry';
 import { createTemplate } from '../../shared';
 
-export default class LazyRuntimeResolver implements JitRuntimeResolver {
+export class JitRegistry {
   private handleLookup: TypedRegistry<unknown>[] = [];
   private registry = new Registry();
 
@@ -22,32 +22,6 @@ export default class LazyRuntimeResolver implements JitRuntimeResolver {
     this.handleLookup.push(registry);
     (this.registry[type] as TypedRegistry<any>).register(handle, name, value);
     return handle;
-  }
-
-  lookup(
-    type: LookupType,
-    name: string,
-    _referrer?: Option<TemplateMeta<AnnotatedModuleLocator>>
-  ): Option<number> {
-    if (this.registry[type].hasName(name)) {
-      return this.registry[type].getHandle(name);
-    } else {
-      return null;
-    }
-  }
-
-  getInvocation(_locator: TemplateMeta<AnnotatedModuleLocator>): Invocation {
-    throw new Error(`getInvocation is not supported in JIT mode`);
-  }
-
-  compilable(locator: TemplateMeta<AnnotatedModuleLocator>): Template {
-    let compile = (source: string) => {
-      return createTemplate<AnnotatedModuleLocator>(source).create();
-    };
-
-    let handle = this.lookup('template-source', locator.module)!;
-
-    return this.customCompilableTemplate(handle, name, compile);
   }
 
   customCompilableTemplate(
@@ -102,27 +76,16 @@ export default class LazyRuntimeResolver implements JitRuntimeResolver {
     return invocation;
   }
 
-  lookupHelper(
+  lookup(
+    type: LookupType,
     name: string,
-    referrer?: Option<TemplateMeta<AnnotatedModuleLocator>>
+    _referrer?: Option<TemplateMeta<AnnotatedModuleLocator>>
   ): Option<number> {
-    return this.lookup('helper', name, referrer);
-  }
-
-  lookupModifier(
-    name: string,
-    referrer?: Option<TemplateMeta<AnnotatedModuleLocator>>
-  ): Option<number> {
-    return this.lookup('modifier', name, referrer);
-  }
-
-  lookupComponent(
-    name: string,
-    referrer: Option<TemplateMeta<AnnotatedModuleLocator>>
-  ): Option<ComponentDefinition> {
-    let handle = this.lookupComponentHandle(name, referrer);
-    if (handle === null) return null;
-    return this.resolve(handle) as ComponentDefinition;
+    if (this.registry[type].hasName(name)) {
+      return this.registry[type].getHandle(name);
+    } else {
+      return null;
+    }
   }
 
   lookupComponentHandle(
@@ -130,13 +93,6 @@ export default class LazyRuntimeResolver implements JitRuntimeResolver {
     referrer?: Option<TemplateMeta<AnnotatedModuleLocator>>
   ): Option<number> {
     return this.lookup('component', name, referrer);
-  }
-
-  lookupPartial(
-    name: string,
-    referrer?: Option<TemplateMeta<AnnotatedModuleLocator>>
-  ): Option<number> {
-    return this.lookup('partial', name, referrer);
   }
 
   private getCapabilities(handle: number): ComponentCapabilities {
@@ -190,5 +146,65 @@ export default class LazyRuntimeResolver implements JitRuntimeResolver {
   resolve<T>(handle: number): T {
     let registry = this.handleLookup[handle];
     return registry.getByHandle(handle) as T;
+  }
+}
+
+export default class LazyRuntimeResolver implements JitRuntimeResolver {
+  readonly registry = new JitRegistry();
+
+  lookup(
+    type: LookupType,
+    name: string,
+    referrer?: Option<TemplateMeta<AnnotatedModuleLocator>>
+  ): Option<number> {
+    return this.registry.lookup(type, name, referrer);
+  }
+
+  getInvocation(_locator: TemplateMeta<AnnotatedModuleLocator>): Invocation {
+    throw new Error(`getInvocation is not supported in JIT mode`);
+  }
+
+  compilable(locator: TemplateMeta<AnnotatedModuleLocator>): Template {
+    let compile = (source: string) => {
+      return createTemplate<AnnotatedModuleLocator>(source).create();
+    };
+
+    let handle = this.lookup('template-source', locator.module)!;
+
+    return this.registry.customCompilableTemplate(handle, name, compile);
+  }
+
+  lookupHelper(
+    name: string,
+    referrer?: Option<TemplateMeta<AnnotatedModuleLocator>>
+  ): Option<number> {
+    return this.lookup('helper', name, referrer);
+  }
+
+  lookupModifier(
+    name: string,
+    referrer?: Option<TemplateMeta<AnnotatedModuleLocator>>
+  ): Option<number> {
+    return this.lookup('modifier', name, referrer);
+  }
+
+  lookupComponent(
+    name: string,
+    referrer: Option<TemplateMeta<AnnotatedModuleLocator>>
+  ): Option<ComponentDefinition> {
+    let handle = this.registry.lookupComponentHandle(name, referrer);
+    if (handle === null) return null;
+    return this.resolve(handle) as ComponentDefinition;
+  }
+
+  lookupPartial(
+    name: string,
+    referrer?: Option<TemplateMeta<AnnotatedModuleLocator>>
+  ): Option<number> {
+    return this.lookup('partial', name, referrer);
+  }
+
+  resolve<T>(handle: number): T {
+    return this.registry.resolve(handle);
   }
 }
