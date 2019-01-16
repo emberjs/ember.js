@@ -1,8 +1,8 @@
 import { AbstractIterable, IterationItem, OpaqueIterator } from './iterable';
-import { UpdatableReference } from '@glimmer/object-reference';
 import { Tag, VersionedReference } from './validators';
 import { Option, Dict } from '@glimmer/interfaces';
 import { EMPTY_ARRAY } from '@glimmer/util';
+import { UpdatableReference } from './property';
 
 export type KeyFor = (item: Dict, index: unknown) => unknown;
 export type UnknownKeyFor = (key: string) => KeyFor;
