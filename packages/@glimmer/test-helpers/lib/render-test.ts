@@ -17,7 +17,6 @@ import { SimpleElement, SimpleNode, SimpleDocument } from '@simple-dom/interface
 import { assertElement, replaceHTML, toInnerHTML } from './dom';
 import { classes, equalsElement, regex } from './environment';
 import { UserHelper } from './environment/helper';
-import { registerHelper, registerModifier } from './environment/modes/lazy/environment';
 import { qunitFixture } from './environment/modes/lazy/fixture';
 import LazyRenderDelegate, { JitDelegateContext } from './environment/modes/lazy/render-delegate';
 import {
@@ -30,6 +29,7 @@ import { ComponentKind, ComponentTypes } from './interfaces';
 import { registerComponent, renderTemplate, JitTestDelegateContext } from './render';
 import RenderDelegate from './render-delegate';
 import LazyRuntimeResolver from './environment/modes/lazy/runtime-resolver';
+import { registerHelper, registerModifier } from './environment/modes/lazy/register';
 
 export const OPEN: { marker: 'open-block' } = { marker: 'open-block' };
 export const CLOSE: { marker: 'close-block' } = { marker: 'close-block' };
