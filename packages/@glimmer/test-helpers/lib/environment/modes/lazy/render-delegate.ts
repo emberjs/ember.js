@@ -8,7 +8,7 @@ import { renderTemplate, JitTestDelegateContext } from '../../../render';
 import RenderDelegate from '../../../render-delegate';
 import { UserHelper } from '../../helper';
 import { TestModifierConstructor } from '../../modifier';
-import LazyRuntimeResolver from './runtime-resolver';
+import LazyRuntimeResolver, { JitRegistry } from './runtime-resolver';
 import { BasicComponentFactory } from '../../components/basic';
 import { EmberishCurlyComponentFactory, EmberishGlimmerComponentFactory } from '../../components';
 import TestMacros from '../../macros';
@@ -28,14 +28,15 @@ export default class LazyRenderDelegate implements RenderDelegate {
   static readonly isEager = false;
 
   private resolver: LazyRuntimeResolver = new LazyRuntimeResolver();
+  private registry: JitRegistry = this.resolver.registry;
   private context: JitTestDelegateContext;
 
   constructor(private doc: SimpleDocument = document as SimpleDocument) {
-    this.context = this.getContext(this.resolver);
+    this.context = this.getContext();
   }
 
-  getContext(resolver: LazyRuntimeResolver): JitTestDelegateContext {
-    return JitDelegateContext(this.doc, resolver);
+  getContext(): JitTestDelegateContext {
+    return JitDelegateContext(this.doc, this.resolver, this.registry);
   }
 
   getInitialElement(): SimpleElement {
@@ -61,7 +62,7 @@ export default class LazyRenderDelegate implements RenderDelegate {
       case 'Basic':
       case 'Fragment':
         return registerStaticTaglessComponent(
-          this.resolver,
+          this.registry,
           name,
           Class as BasicComponentFactory,
           layout
@@ -69,14 +70,14 @@ export default class LazyRenderDelegate implements RenderDelegate {
       case 'Curly':
       case 'Dynamic':
         return registerEmberishCurlyComponent(
-          this.resolver,
+          this.registry,
           name,
           Class as EmberishCurlyComponentFactory,
           layout
         );
       case 'Glimmer':
         return registerEmberishGlimmerComponent(
-          this.resolver,
+          this.registry,
           name,
           Class as EmberishGlimmerComponentFactory,
           layout
@@ -85,11 +86,11 @@ export default class LazyRenderDelegate implements RenderDelegate {
   }
 
   registerModifier(name: string, ModifierClass: TestModifierConstructor): void {
-    registerModifier(this.resolver, name, ModifierClass);
+    registerModifier(this.registry, name, ModifierClass);
   }
 
   registerHelper(name: string, helper: UserHelper): void {
-    registerHelper(this.resolver, name, helper);
+    registerHelper(this.registry, name, helper);
   }
 
   getElementBuilder(env: Environment, cursor: Cursor): ElementBuilder {
@@ -112,9 +113,13 @@ export default class LazyRenderDelegate implements RenderDelegate {
   }
 }
 
-export function JitDelegateContext(doc: SimpleDocument, resolver: LazyRuntimeResolver) {
-  registerInternalHelper(resolver, '-get-dynamic-var', getDynamicVar);
-  let context = new TestLazyCompilationContext(resolver);
+export function JitDelegateContext(
+  doc: SimpleDocument,
+  resolver: LazyRuntimeResolver,
+  registry: JitRegistry
+) {
+  registerInternalHelper(registry, '-get-dynamic-var', getDynamicVar);
+  let context = new TestLazyCompilationContext(resolver, registry);
   let runtime = JitRuntime(doc, context.program(), resolver);
   let syntax = { program: context, macros: new TestMacros() };
   return { runtime, syntax };
