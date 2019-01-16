@@ -30,6 +30,9 @@ export const DEFAULT_TEST_META: AnnotatedModuleLocator = Object.freeze({
   name: 'default',
 });
 
+// TODO: This fundamentally has little to do with testing and
+// most tests should just use a more generic preprocess, extracted
+// out of the test environment.
 export function preprocess(
   template: string,
   meta?: AnnotatedModuleLocator
