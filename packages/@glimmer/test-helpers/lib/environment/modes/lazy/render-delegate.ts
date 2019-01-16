@@ -114,8 +114,8 @@ export default class LazyRenderDelegate implements RenderDelegate {
 
 export function JitDelegateContext(doc: SimpleDocument, resolver: LazyRuntimeResolver) {
   registerInternalHelper(resolver, '-get-dynamic-var', getDynamicVar);
-  let program = new TestLazyCompilationContext(resolver);
-  let runtime = JitRuntime(doc, program, resolver);
-  let syntax = { program: program, macros: new TestMacros() };
+  let context = new TestLazyCompilationContext(resolver);
+  let runtime = JitRuntime(doc, context.program(), resolver);
+  let syntax = { program: context, macros: new TestMacros() };
   return { runtime, syntax };
 }

@@ -10,7 +10,6 @@ export {
 export { HelperReference, UserHelper } from './lib/environment/helper';
 export { default as TestMacros } from './lib/environment/macros';
 export { default as EagerRenderDelegate } from './lib/environment/modes/eager/render-delegate';
-export { componentHelper } from './lib/environment/modes/lazy/environment';
 export * from './lib/environment/modes/lazy/register';
 export * from './lib/environment/modes/lazy/compilation-context';
 export * from './lib/environment/modes/lazy/fixture';
