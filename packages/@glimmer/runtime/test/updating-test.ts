@@ -1104,7 +1104,7 @@ module('[jit] Updating', hooks => {
   test('double curlies with const SafeString', assert => {
     let rawString = '<b>bold</b> and spicy';
 
-    registerInternalHelper(context.resolver, 'const-foobar', () => {
+    registerInternalHelper(context.registry, 'const-foobar', () => {
       return new ValueReference<unknown>(makeSafeString(rawString));
     });
 
@@ -1134,7 +1134,7 @@ module('[jit] Updating', hooks => {
   test('double curlies with const Node', assert => {
     let rawString = '<b>bold</b> and spicy';
 
-    registerInternalHelper(context.resolver, 'const-foobar', () => {
+    registerInternalHelper(context.registry, 'const-foobar', () => {
       return new ValueReference<unknown>(context.doc.createTextNode(rawString));
     });
 
@@ -1164,7 +1164,7 @@ module('[jit] Updating', hooks => {
   test('triple curlies with const SafeString', assert => {
     let rawString = '<b>bold</b> and spicy';
 
-    registerInternalHelper(context.resolver, 'const-foobar', () => {
+    registerInternalHelper(context.registry, 'const-foobar', () => {
       return new ValueReference<unknown>(makeSafeString(rawString));
     });
 
@@ -1195,7 +1195,7 @@ module('[jit] Updating', hooks => {
   test('triple curlies with const Node', assert => {
     let rawString = '<b>bold</b> and spicy';
 
-    registerInternalHelper(context.resolver, 'const-foobar', () => {
+    registerInternalHelper(context.registry, 'const-foobar', () => {
       return new ValueReference<unknown>(context.doc.createTextNode(rawString));
     });
 
@@ -1221,7 +1221,7 @@ module('[jit] Updating', hooks => {
       },
     };
 
-    registerInternalHelper(context.resolver, 'destroy-me', (_args, vm) => {
+    registerInternalHelper(context.registry, 'destroy-me', (_args, vm) => {
       vm.associateDestroyable(destroyable);
       return PrimitiveReference.create('destroy me!');
     });
@@ -1284,8 +1284,8 @@ module('[jit] Updating', hooks => {
   });
 
   test(`helpers passed as arguments to {{partial}} are not torn down when switching between blocks`, assert => {
-    registerPartial(context.resolver, 'yasss', 'Yes');
-    registerPartial(context.resolver, 'noooo', '');
+    registerPartial(context.registry, 'yasss', 'Yes');
+    registerPartial(context.registry, 'noooo', '');
 
     let options = {
       template: '{{partial (stateful-foo)}}',
@@ -1297,7 +1297,7 @@ module('[jit] Updating', hooks => {
   });
 
   test(`helpers passed as arguments to {{component}} are not torn down when switching between blocks`, assert => {
-    registerBasicComponent(context.resolver, 'XYasss', BasicComponent, '<div>Yes</div>');
+    registerBasicComponent(context.registry, 'XYasss', BasicComponent, '<div>Yes</div>');
 
     let options = {
       template: '{{component (stateful-foo)}}',
@@ -1335,7 +1335,7 @@ module('[jit] Updating', hooks => {
     let didDestroy = 0;
     let reference: UpdatableReference<T | U> | undefined;
 
-    registerInternalHelper(context.resolver, 'stateful-foo', (_args, vm) => {
+    registerInternalHelper(context.registry, 'stateful-foo', (_args, vm) => {
       didCreate++;
 
       vm.associateDestroyable({
@@ -1646,9 +1646,9 @@ module('[jit] Updating', hooks => {
   });
 
   test('block arguments should have higher presedence than helpers', () => {
-    registerHelper(context.resolver, 'foo', () => 'foo-helper');
-    registerHelper(context.resolver, 'bar', () => 'bar-helper');
-    registerHelper(context.resolver, 'echo', args => args[0]);
+    registerHelper(context.registry, 'foo', () => 'foo-helper');
+    registerHelper(context.registry, 'bar', () => 'bar-helper');
+    registerHelper(context.registry, 'echo', args => args[0]);
 
     let template = compile(trimLines`
       <div>
@@ -1884,7 +1884,7 @@ module('[jit] Updating', hooks => {
   });
 
   test('block arguments cannot be accessed through {{this}}', () => {
-    registerHelper(context.resolver, 'noop', params => params[0]);
+    registerHelper(context.registry, 'noop', params => params[0]);
 
     let template = compile(stripTight`
       <div>
@@ -1970,7 +1970,7 @@ module('[jit] Updating', hooks => {
   });
 
   test('helper calls follow the normal dirtying rules', () => {
-    registerHelper(context.resolver, 'capitalize', function(params) {
+    registerHelper(context.registry, 'capitalize', function(params) {
       let value = params[0];
       if (value !== null && value !== undefined && typeof value === 'string') {
         return value.toUpperCase();
@@ -3437,7 +3437,7 @@ QUnit.module('Updating Element Modifiers', hooks => {
   hooks.beforeEach(() => commonSetup());
 
   test('Updating a element modifier', assert => {
-    let { manager } = registerModifier(context.resolver, 'foo');
+    let { manager } = registerModifier(context.registry, 'foo');
 
     let template = compile('<div><div {{foo bar baz=fizz}}></div></div>');
     let input = {
@@ -3491,7 +3491,7 @@ QUnit.module('Updating Element Modifiers', hooks => {
   });
 
   test("Const input doesn't trigger update in a element modifier", assert => {
-    let { manager } = registerModifier(context.resolver, 'foo');
+    let { manager } = registerModifier(context.registry, 'foo');
 
     let template = compile('<div><div {{foo "bar"}}></div></div>');
     let input = {};
@@ -3527,7 +3527,7 @@ QUnit.module('Updating Element Modifiers', hooks => {
   });
 
   test('Destructor is triggered on element modifiers', assert => {
-    let { manager } = registerModifier(context.resolver, 'foo');
+    let { manager } = registerModifier(context.registry, 'foo');
 
     let template = compile('{{#if bar}}<div {{foo bar}}></div>{{else}}<div></div>{{/if}}');
     let input = {

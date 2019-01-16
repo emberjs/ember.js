@@ -232,7 +232,7 @@ QUnit.test('when no block present', () => {
     tagName = 'div';
   }
 
-  registerEmberishCurlyComponent(context.resolver, 'foo-bar', FooBar, `{{HAS_BLOCK}}`);
+  registerEmberishCurlyComponent(context.registry, 'foo-bar', FooBar, `{{HAS_BLOCK}}`);
 
   appendViewFor(`{{foo-bar}}`);
 
@@ -244,7 +244,7 @@ QUnit.test('when block present', () => {
     tagName = 'div';
   }
 
-  registerEmberishCurlyComponent(context.resolver, 'foo-bar', FooBar, `{{HAS_BLOCK}}`);
+  registerEmberishCurlyComponent(context.registry, 'foo-bar', FooBar, `{{HAS_BLOCK}}`);
 
   appendViewFor(`{{#foo-bar}}{{/foo-bar}}`);
 
@@ -254,7 +254,7 @@ QUnit.test('when block present', () => {
 module('Components - curlies - dynamic component');
 
 QUnit.test('initially missing, then present, then missing', () => {
-  registerBasicComponent(context.resolver, 'FooBar', BasicComponent, `<p>{{@arg1}}</p>`);
+  registerBasicComponent(context.registry, 'FooBar', BasicComponent, `<p>{{@arg1}}</p>`);
 
   appendViewFor(
     stripTight`
@@ -280,7 +280,7 @@ QUnit.test('initially missing, then present, then missing', () => {
 });
 
 QUnit.test('initially present, then missing, then present', () => {
-  registerBasicComponent(context.resolver, 'FooBar', BasicComponent, `<p>foo bar baz</p>`);
+  registerBasicComponent(context.registry, 'FooBar', BasicComponent, `<p>foo bar baz</p>`);
 
   appendViewFor(
     stripTight`
@@ -312,7 +312,7 @@ QUnit.test('dynamic tagName', () => {
     tagName = 'aside';
   }
 
-  registerEmberishCurlyComponent(context.resolver, 'foo-bar', FooBar, `Hello. It's me.`);
+  registerEmberishCurlyComponent(context.registry, 'foo-bar', FooBar, `Hello. It's me.`);
 
   appendViewFor(`{{foo-bar}}`);
   assertEmberishElement('aside', {}, `Hello. It's me.`);
@@ -328,7 +328,7 @@ QUnit.test('dynamic tagless component', () => {
   }
 
   registerEmberishCurlyComponent(
-    context.resolver,
+    context.registry,
     'foo-bar',
     FooBar,
     `Michael Jordan says "Go Tagless"`
@@ -356,7 +356,7 @@ QUnit.test('dynamic attribute bindings', assert => {
     }
   }
 
-  registerEmberishCurlyComponent(context.resolver, 'foo-bar', FooBar, `Hello. It's me.`);
+  registerEmberishCurlyComponent(context.registry, 'foo-bar', FooBar, `Hello. It's me.`);
 
   appendViewFor(`{{foo-bar}}`);
   assertEmberishElement('div', { style: 'color: red;' }, `Hello. It's me.`);
@@ -395,7 +395,7 @@ QUnit.test('using @value from emberish curly component', () => {
     tagName = 'div';
   }
 
-  registerEmberishCurlyComponent(context.resolver, 'foo-bar', FooBar, `{{@blah}}`);
+  registerEmberishCurlyComponent(context.registry, 'foo-bar', FooBar, `{{@blah}}`);
 
   appendViewFor(`{{foo-bar first blah="derp"}}`);
 
@@ -408,7 +408,7 @@ QUnit.test('correct scope - accessing local variable in yielded block (glimmer c
   class FooBar extends BasicComponent {}
 
   registerBasicComponent(
-    context.resolver,
+    context.registry,
     'FooBar',
     FooBar,
     `<div>[Layout: {{zomg}}][Layout: {{lol}}][Layout: {{@foo}}]{{yield}}</div>`
@@ -454,7 +454,7 @@ QUnit.test('correct scope - accessing local variable in yielded block (curly com
   }
 
   registerEmberishCurlyComponent(
-    context.resolver,
+    context.registry,
     'foo-bar',
     FooBar,
     `[Layout: {{zomg}}][Layout: {{lol}}][Layout: {{foo}}]{{yield}}`
@@ -506,7 +506,7 @@ QUnit.test('correct scope - caller self can be threaded through (curly component
   }
 
   registerEmberishCurlyComponent(
-    context.resolver,
+    context.registry,
     'foo-bar',
     FooBar,
     stripTight`
@@ -519,7 +519,7 @@ QUnit.test('correct scope - caller self can be threaded through (curly component
   );
 
   registerEmberishCurlyComponent(
-    context.resolver,
+    context.registry,
     'qux-derp',
     QuxDerp,
     `[Name: {{name}} | Target: {{targetObject.name}}]{{yield}}`
@@ -566,7 +566,7 @@ QUnit.test('component with slashed name', assert => {
   let SampleComponent = EmberishCurlyComponent.extend();
 
   registerEmberishCurlyComponent(
-    context.resolver,
+    context.registry,
     'fizz-bar/baz-bar',
     SampleComponent as any,
     '{{@hey}}'
@@ -578,7 +578,7 @@ QUnit.test('component with slashed name', assert => {
 });
 
 QUnit.test('correct scope - simple', () => {
-  registerBasicComponent(context.resolver, 'SubItem', BasicComponent, `<p>{{@name}}</p>`);
+  registerBasicComponent(context.registry, 'SubItem', BasicComponent, `<p>{{@name}}</p>`);
 
   let subitems = [{ id: 0 }, { id: 1 }, { id: 42 }];
 
@@ -596,7 +596,7 @@ QUnit.test('correct scope - simple', () => {
 });
 
 QUnit.test('correct scope - self lookup inside #each', () => {
-  registerBasicComponent(context.resolver, 'SubItem', BasicComponent, `<p>{{@name}}</p>`);
+  registerBasicComponent(context.registry, 'SubItem', BasicComponent, `<p>{{@name}}</p>`);
 
   let subitems = [{ id: 0 }, { id: 1 }, { id: 42 }];
 
@@ -624,10 +624,10 @@ QUnit.test('correct scope - self lookup inside #each', () => {
 });
 
 QUnit.test('correct scope - complex', () => {
-  registerBasicComponent(context.resolver, 'SubItem', BasicComponent, `<p>{{@name}}</p>`);
+  registerBasicComponent(context.registry, 'SubItem', BasicComponent, `<p>{{@name}}</p>`);
 
   registerBasicComponent(
-    context.resolver,
+    context.registry,
     'MyItem',
     BasicComponent,
     stripTight`
@@ -682,7 +682,7 @@ QUnit.test('correct scope - complex', () => {
 
 QUnit.test('correct scope - complex yield', () => {
   registerEmberishCurlyComponent(
-    context.resolver,
+    context.registry,
     'item-list',
     EmberishCurlyComponent.extend() as any,
     stripTight`
@@ -736,7 +736,7 @@ QUnit.test('correct scope - self', () => {
     public bar = 'bar';
   }
 
-  registerBasicComponent(context.resolver, 'FooBar', FooBar, `<p>{{foo}} {{bar}} {{@baz}}</p>`);
+  registerBasicComponent(context.registry, 'FooBar', FooBar, `<p>{{foo}} {{bar}} {{@baz}}</p>`);
 
   appendViewFor(
     stripTight`
@@ -767,7 +767,7 @@ QUnit.test('component has access to dynamic scope', function() {
   SampleComponent[CLASS_META].seal();
 
   registerEmberishCurlyComponent(
-    context.resolver,
+    context.registry,
     'sample-component',
     SampleComponent,
     '{{theme}}'
@@ -788,7 +788,7 @@ QUnit.test('static named positional parameters', function() {
   SampleComponent[CLASS_META].seal();
 
   registerEmberishCurlyComponent(
-    context.resolver,
+    context.registry,
     'sample-component',
     SampleComponent,
     '{{person}}{{age}}'
@@ -807,7 +807,7 @@ QUnit.test('dynamic named positional parameters', function() {
   });
 
   registerEmberishCurlyComponent(
-    context.resolver,
+    context.registry,
     'sample-component',
     SampleComponent as any,
     '{{person}}{{age}}'
@@ -837,7 +837,7 @@ QUnit.test(
     });
 
     registerEmberishCurlyComponent(
-      context.resolver,
+      context.registry,
       'sample-component',
       SampleComponent as any,
       '{{name}}'
@@ -860,7 +860,7 @@ QUnit.test('static arbitrary number of positional parameters', function() {
   });
 
   registerEmberishCurlyComponent(
-    context.resolver,
+    context.registry,
     'sample-component',
     SampleComponent as any,
     '{{#each names key="@index" as |name|}}{{name}}{{/each}}'
@@ -889,7 +889,7 @@ QUnit.test('arbitrary positional parameter conflict with hash parameter is repor
   });
 
   registerEmberishCurlyComponent(
-    context.resolver,
+    context.registry,
     'sample-component',
     SampleComponent as any,
     '{{#each attrs.names key="@index" as |name|}}{{name}}{{/each}}'
@@ -910,7 +910,7 @@ QUnit.test('can use hash parameter instead of arbitrary positional param [GH #12
   });
 
   registerEmberishCurlyComponent(
-    context.resolver,
+    context.registry,
     'sample-component',
     SampleComponent as any,
     '{{#each names key="@index" as |name|}}{{name}}{{/each}}'
@@ -931,7 +931,7 @@ QUnit.test('can use hash parameter instead of positional param', function() {
   });
 
   registerEmberishCurlyComponent(
-    context.resolver,
+    context.registry,
     'sample-component',
     SampleComponent as any,
     '{{first}} - {{second}}'
@@ -965,7 +965,7 @@ QUnit.test('dynamic arbitrary number of positional parameters', function() {
   });
 
   registerEmberishCurlyComponent(
-    context.resolver,
+    context.registry,
     'sample-component',
     SampleComponent as any,
     '{{#each attrs.n key="@index" as |name|}}{{name}}{{/each}}'
@@ -1007,7 +1007,7 @@ QUnit.test('{{component}} helper works with positional params', function() {
   });
 
   registerEmberishCurlyComponent(
-    context.resolver,
+    context.registry,
     'sample-component',
     SampleComponent as any,
     `{{attrs.name}}{{attrs.age}}`
@@ -1036,7 +1036,7 @@ QUnit.test('{{component}} helper works with positional params', function() {
 module('Emberish closure components');
 
 QUnit.test('component helper can handle aliased block components with args', () => {
-  registerEmberishCurlyComponent(context.resolver, 'foo-bar', null, 'Hello {{arg1}} {{yield}}');
+  registerEmberishCurlyComponent(context.registry, 'foo-bar', null, 'Hello {{arg1}} {{yield}}');
 
   appendViewFor(
     stripTight`
@@ -1050,7 +1050,7 @@ QUnit.test('component helper can handle aliased block components with args', () 
 });
 
 QUnit.test('component helper can handle aliased block components without args', () => {
-  registerEmberishCurlyComponent(context.resolver, 'foo-bar', null, 'Hello {{yield}}');
+  registerEmberishCurlyComponent(context.registry, 'foo-bar', null, 'Hello {{yield}}');
 
   appendViewFor(
     stripTight`
@@ -1064,7 +1064,7 @@ QUnit.test('component helper can handle aliased block components without args', 
 });
 
 QUnit.test('component helper can handle aliased inline components with args', () => {
-  registerEmberishCurlyComponent(context.resolver, 'foo-bar', null, 'Hello {{arg1}}');
+  registerEmberishCurlyComponent(context.registry, 'foo-bar', null, 'Hello {{arg1}}');
 
   appendViewFor(
     stripTight`
@@ -1078,7 +1078,7 @@ QUnit.test('component helper can handle aliased inline components with args', ()
 });
 
 QUnit.test('component helper can handle aliased inline components without args', () => {
-  registerEmberishCurlyComponent(context.resolver, 'foo-bar', null, 'Hello');
+  registerEmberishCurlyComponent(context.registry, 'foo-bar', null, 'Hello');
 
   appendViewFor(
     stripTight`
@@ -1093,12 +1093,12 @@ QUnit.test('component helper can handle aliased inline components without args',
 
 QUnit.test('component helper can handle higher order inline components with args', () => {
   registerEmberishCurlyComponent(
-    context.resolver,
+    context.registry,
     'foo-bar',
     null,
     '{{yield (hash comp=(component "baz-bar"))}}'
   );
-  registerEmberishCurlyComponent(context.resolver, 'baz-bar', null, 'Hello {{arg1}}');
+  registerEmberishCurlyComponent(context.registry, 'baz-bar', null, 'Hello {{arg1}}');
 
   appendViewFor(
     stripTight`
@@ -1113,12 +1113,12 @@ QUnit.test('component helper can handle higher order inline components with args
 
 QUnit.test('component helper can handle higher order inline components without args', () => {
   registerEmberishCurlyComponent(
-    context.resolver,
+    context.registry,
     'foo-bar',
     null,
     '{{yield (hash comp=(component "baz-bar"))}}'
   );
-  registerEmberishCurlyComponent(context.resolver, 'baz-bar', null, 'Hello');
+  registerEmberishCurlyComponent(context.registry, 'baz-bar', null, 'Hello');
 
   appendViewFor(
     stripTight`
@@ -1133,12 +1133,12 @@ QUnit.test('component helper can handle higher order inline components without a
 
 QUnit.test('component helper can handle higher order block components with args', () => {
   registerEmberishCurlyComponent(
-    context.resolver,
+    context.registry,
     'foo-bar',
     null,
     '{{yield (hash comp=(component "baz-bar"))}}'
   );
-  registerEmberishCurlyComponent(context.resolver, 'baz-bar', null, 'Hello {{arg1}} {{yield}}');
+  registerEmberishCurlyComponent(context.registry, 'baz-bar', null, 'Hello {{arg1}} {{yield}}');
 
   appendViewFor(
     stripTight`
@@ -1153,12 +1153,12 @@ QUnit.test('component helper can handle higher order block components with args'
 
 QUnit.test('component helper can handle higher order block components without args', () => {
   registerEmberishCurlyComponent(
-    context.resolver,
+    context.registry,
     'foo-bar',
     null,
     '{{yield (hash comp=(component "baz-bar"))}}'
   );
-  registerEmberishCurlyComponent(context.resolver, 'baz-bar', null, 'Hello {{arg1}} {{yield}}');
+  registerEmberishCurlyComponent(context.registry, 'baz-bar', null, 'Hello {{arg1}} {{yield}}');
 
   appendViewFor(
     stripTight`
@@ -1172,7 +1172,7 @@ QUnit.test('component helper can handle higher order block components without ar
 });
 
 QUnit.test('component deopt can handle aliased inline components without args', () => {
-  registerEmberishCurlyComponent(context.resolver, 'foo-bar', null, 'Hello');
+  registerEmberishCurlyComponent(context.registry, 'foo-bar', null, 'Hello');
 
   appendViewFor(
     stripTight`
@@ -1187,12 +1187,12 @@ QUnit.test('component deopt can handle aliased inline components without args', 
 
 QUnit.test('component deopt can handle higher order inline components without args', () => {
   registerEmberishCurlyComponent(
-    context.resolver,
+    context.registry,
     'foo-bar',
     null,
     '{{yield (hash comp=(component "baz-bar"))}}'
   );
-  registerEmberishCurlyComponent(context.resolver, 'baz-bar', null, 'Hello');
+  registerEmberishCurlyComponent(context.registry, 'baz-bar', null, 'Hello');
 
   appendViewFor(
     stripTight`
@@ -1213,7 +1213,7 @@ QUnit.test('component helper can curry arguments', () => {
   });
 
   registerEmberishCurlyComponent(
-    context.resolver,
+    context.registry,
     'foo-bar',
     FooBarComponent as any,
     stripTight`
@@ -1271,7 +1271,7 @@ QUnit.test('component helper: currying works inline', () => {
   });
 
   registerEmberishCurlyComponent(
-    context.resolver,
+    context.registry,
     'foo-bar',
     FooBarComponent as any,
     stripTight`
@@ -1309,7 +1309,7 @@ QUnit.test('component helper: currying works inline', () => {
 module('Emberish Component - ids');
 
 QUnit.test('emberish curly component should have unique IDs', assert => {
-  registerEmberishCurlyComponent(context.resolver, 'x-curly', null, '');
+  registerEmberishCurlyComponent(context.registry, 'x-curly', null, '');
 
   appendViewFor(
     stripTight`
@@ -1364,7 +1364,7 @@ let styles = [
 styles.forEach(style => {
   style.test(`NonBlock without attributes replaced with ${style.name}`, assert => {
     registerEmberishGlimmerComponent(
-      context.resolver,
+      context.registry,
       'NonBlock',
       null,
       `  <${style.tagName} ...attributes>In layout</${style.tagName}>  `
@@ -1383,7 +1383,7 @@ styles.forEach(style => {
 
   style.test(`NonBlock with attributes replaced with ${style.name}`, function() {
     registerEmberishGlimmerComponent(
-      context.resolver,
+      context.registry,
       'NonBlock',
       null,
       `  <${style.tagName} such="{{@stability}}" ...attributes>In layout</${style.tagName}>  `
@@ -1407,15 +1407,15 @@ styles.forEach(style => {
 });
 
 QUnit.test(`Ensure components can be invoked`, function() {
-  registerEmberishGlimmerComponent(context.resolver, 'Outer', null, `<Inner></Inner>`);
-  registerEmberishGlimmerComponent(context.resolver, 'Inner', null, `<div ...attributes>hi!</div>`);
+  registerEmberishGlimmerComponent(context.registry, 'Outer', null, `<Inner></Inner>`);
+  registerEmberishGlimmerComponent(context.registry, 'Inner', null, `<div ...attributes>hi!</div>`);
 
   appendViewFor('<Outer />');
   equalsElement(view.element, 'div', {}, 'hi!');
 });
 
 QUnit.test(`Glimmer component with element modifier`, function(assert) {
-  registerEmberishGlimmerComponent(context.resolver, 'NonBlock', null, `  <div>In layout</div>  `);
+  registerEmberishGlimmerComponent(context.registry, 'NonBlock', null, `  <div>In layout</div>  `);
 
   assert.throws(
     () => {
@@ -1429,7 +1429,7 @@ QUnit.test(`Glimmer component with element modifier`, function(assert) {
 QUnit.test('Custom element with element modifier', function(assert) {
   assert.expect(0);
 
-  registerModifier(context.resolver, 'foo');
+  registerModifier(context.registry, 'foo');
 
   appendViewFor('<some-custom-element {{foo "foo"}}></some-custom-element>');
 });
@@ -1445,7 +1445,7 @@ QUnit.test('Curly component hooks (with attrs)', assert => {
   }
 
   registerEmberishCurlyComponent(
-    context.resolver,
+    context.registry,
     'non-block',
     inspectHooks(NonBlock),
     'In layout - someProp: {{@someProp}}'
@@ -1498,7 +1498,7 @@ QUnit.test('Curly component hooks (attrs as self props)', function() {
   }
 
   registerEmberishCurlyComponent(
-    context.resolver,
+    context.registry,
     'non-block',
     inspectHooks(NonBlock),
     'In layout - someProp: {{someProp}}'
@@ -1555,7 +1555,7 @@ QUnit.test('Setting value attributeBinding to null results in empty string value
   }
 
   registerEmberishCurlyComponent(
-    context.resolver,
+    context.registry,
     'input-component',
     inspectHooks(InputComponent),
     'input component'
@@ -1594,7 +1594,7 @@ QUnit.test('Setting class attributeBinding does not clobber ember-view', assert 
     }
   }
 
-  registerEmberishCurlyComponent(context.resolver, 'foo-bar', FooBarComponent, 'FOO BAR');
+  registerEmberishCurlyComponent(context.registry, 'foo-bar', FooBarComponent, 'FOO BAR');
 
   appendViewFor('{{foo-bar class=classes}}', { classes: 'foo bar' });
 
@@ -1631,7 +1631,7 @@ QUnit.test('Curly component hooks (force recompute)', assert => {
   }
 
   registerEmberishCurlyComponent(
-    context.resolver,
+    context.registry,
     'non-block',
     inspectHooks(NonBlock),
     'In layout - someProp: {{@someProp}}'
@@ -1682,7 +1682,7 @@ QUnit.test('Glimmer component hooks', assert => {
   }
 
   registerEmberishGlimmerComponent(
-    context.resolver,
+    context.registry,
     'NonBlock',
     inspectHooks(NonBlock),
     '<div ...attributes>In layout - someProp: {{@someProp}}</div>'
@@ -1735,7 +1735,7 @@ QUnit.test('Glimmer component hooks (force recompute)', assert => {
   }
 
   registerEmberishGlimmerComponent(
-    context.resolver,
+    context.registry,
     'NonBlock',
     inspectHooks(NonBlock),
     '<div ...attributes>In layout - someProp: {{@someProp}}</div>'
@@ -1789,7 +1789,7 @@ QUnit.test('curly components are destroyed', function(assert) {
   });
 
   registerEmberishCurlyComponent(
-    context.resolver,
+    context.registry,
     'destroy-me',
     DestroyMeComponent as any,
     'destroy me!'
@@ -1815,7 +1815,7 @@ QUnit.test('glimmer components are destroyed', function(assert) {
   });
 
   registerEmberishGlimmerComponent(
-    context.resolver,
+    context.registry,
     'DestroyMe',
     DestroyMeComponent as any,
     '<div ...attributes>destroy me!</div>'
@@ -1841,7 +1841,7 @@ QUnit.test('component helpers component are destroyed', function(assert) {
   });
 
   registerEmberishCurlyComponent(
-    context.resolver,
+    context.registry,
     'destroy-me',
     DestroyMeComponent as any,
     'destroy me!'
@@ -1850,7 +1850,7 @@ QUnit.test('component helpers component are destroyed', function(assert) {
   let AnotherComponent = EmberishCurlyComponent.extend();
 
   registerEmberishCurlyComponent(
-    context.resolver,
+    context.registry,
     'another-component',
     AnotherComponent as any,
     'another thing!'
@@ -1876,7 +1876,7 @@ QUnit.test('components inside a list are destroyed', function(assert) {
   });
 
   registerEmberishGlimmerComponent(
-    context.resolver,
+    context.registry,
     'DestroyMe',
     DestroyMeComponent as any,
     '<div>destroy me!</div>'
@@ -1912,7 +1912,7 @@ QUnit.test('components inside a list are destroyed (when key is @identity)', fun
   });
 
   registerEmberishGlimmerComponent(
-    context.resolver,
+    context.registry,
     'DestroyMe',
     DestroyMeComponent as any,
     '<div>destroy me!</div>'
@@ -1965,13 +1965,13 @@ QUnit.test('components that are "destroyed twice" are destroyed once', function(
   });
 
   registerEmberishCurlyComponent(
-    context.resolver,
+    context.registry,
     'destroy-me',
     DestroyMeComponent as any,
     '{{#if @cond}}{{destroy-me-inner from="inner"}}{{/if}}'
   );
   registerEmberishCurlyComponent(
-    context.resolver,
+    context.registry,
     'destroy-me-inner',
     DestroyMe2Component as any,
     'inner'
@@ -2011,13 +2011,13 @@ QUnit.test('deeply nested destructions', function(assert) {
   });
 
   registerEmberishGlimmerComponent(
-    context.resolver,
+    context.registry,
     'DestroyMe1',
     DestroyMe1Component as any,
     '<div>{{#destroy-me2 item=@item from="destroy-me1"}}{{yield}}{{/destroy-me2}}</div>'
   );
   registerEmberishCurlyComponent(
-    context.resolver,
+    context.registry,
     'destroy-me2',
     DestroyMe2Component as any,
     'Destroy me! {{yield}}'
@@ -2091,13 +2091,13 @@ QUnit.test('components inside the root are destroyed when the render result is d
   });
 
   registerEmberishGlimmerComponent(
-    context.resolver,
+    context.registry,
     'DestroyMe1',
     DestroyMe1Component as any,
     '<div>Destry me!</div>'
   );
   registerEmberishCurlyComponent(
-    context.resolver,
+    context.registry,
     'destroy-me2',
     DestroyMe2Component as any,
     'Destroy me too!'
@@ -2135,7 +2135,7 @@ QUnit.test('tagless components render properly', () => {
   class FooBar extends BasicComponent {}
 
   registerStaticTaglessComponent(
-    context.resolver,
+    context.registry,
     'foo-bar',
     FooBar,
     `Michael Jordan says "Go Tagless"`
@@ -2153,10 +2153,10 @@ module('late bound layout');
 
 QUnit.test('can bind the layout late', () => {
   class FooBar extends EmberishCurlyComponent {
-    layout = registerTemplate(context.resolver, 'my-dynamic-layout', 'Swap - {{yield}}');
+    layout = registerTemplate(context.registry, 'my-dynamic-layout', 'Swap - {{yield}}');
   }
 
-  registerEmberishCurlyComponent(context.resolver, 'foo-bar', FooBar, null);
+  registerEmberishCurlyComponent(context.registry, 'foo-bar', FooBar, null);
 
   appendViewFor('{{#foo-bar}}YIELD{{/foo-bar}}');
 
@@ -2176,9 +2176,9 @@ module('appendable components');
 QUnit.test('it does not work on optimized appends', () => {
   class FooBar extends EmberishCurlyComponent {}
 
-  registerEmberishCurlyComponent(context.resolver, 'foo-bar', FooBar, 'foo bar');
+  registerEmberishCurlyComponent(context.registry, 'foo-bar', FooBar, 'foo bar');
 
-  let definition = componentHelper(context.resolver, 'foo-bar');
+  let definition = componentHelper(context.resolver, context.registry, 'foo-bar');
 
   appendViewFor('{{foo}}', { foo: definition });
 
@@ -2200,9 +2200,9 @@ QUnit.test('it does not work on optimized appends', () => {
 QUnit.test('it works on unoptimized appends (dot paths)', () => {
   class FooBar extends EmberishCurlyComponent {}
 
-  registerEmberishCurlyComponent(context.resolver, 'foo-bar', FooBar, 'foo bar');
+  registerEmberishCurlyComponent(context.registry, 'foo-bar', FooBar, 'foo bar');
 
-  let definition = componentHelper(context.resolver, 'foo-bar');
+  let definition = componentHelper(context.resolver, context.registry, 'foo-bar');
 
   appendViewFor('{{foo.bar}}', { foo: { bar: definition } });
 
@@ -2232,9 +2232,9 @@ QUnit.test('it works on unoptimized appends (dot paths)', () => {
 QUnit.test('it works on unoptimized appends (this paths)', () => {
   class FooBar extends EmberishCurlyComponent {}
 
-  registerEmberishCurlyComponent(context.resolver, 'foo-bar', FooBar, 'foo bar');
+  registerEmberishCurlyComponent(context.registry, 'foo-bar', FooBar, 'foo bar');
 
-  let definition = componentHelper(context.resolver, 'foo-bar');
+  let definition = componentHelper(context.resolver, context.registry, 'foo-bar');
 
   appendViewFor('{{this.foo}}', { foo: definition });
 
@@ -2264,9 +2264,9 @@ QUnit.test('it works on unoptimized appends (this paths)', () => {
 QUnit.test('it works on unoptimized appends when initially not a component (dot paths)', () => {
   class FooBar extends EmberishCurlyComponent {}
 
-  registerEmberishCurlyComponent(context.resolver, 'foo-bar', FooBar, 'foo bar');
+  registerEmberishCurlyComponent(context.registry, 'foo-bar', FooBar, 'foo bar');
 
-  let definition = componentHelper(context.resolver, 'foo-bar');
+  let definition = componentHelper(context.resolver, context.registry, 'foo-bar');
 
   appendViewFor('{{foo.bar}}', { foo: { bar: 'lol' } });
 
@@ -2292,9 +2292,9 @@ QUnit.test('it works on unoptimized appends when initially not a component (dot 
 QUnit.test('it works on unoptimized appends when initially not a component (this paths)', () => {
   class FooBar extends EmberishCurlyComponent {}
 
-  registerEmberishCurlyComponent(context.resolver, 'foo-bar', FooBar, 'foo bar');
+  registerEmberishCurlyComponent(context.registry, 'foo-bar', FooBar, 'foo bar');
 
-  let definition = componentHelper(context.resolver, 'foo-bar');
+  let definition = componentHelper(context.resolver, context.registry, 'foo-bar');
 
   appendViewFor('{{this.foo}}', { foo: 'lol' });
 
@@ -2331,7 +2331,7 @@ QUnit.test('it works for wrapped (curly) components', function(assert) {
     }
   }
 
-  registerEmberishCurlyComponent(context.resolver, 'foo-bar', FooBar, 'foo bar');
+  registerEmberishCurlyComponent(context.registry, 'foo-bar', FooBar, 'foo bar');
 
   appendViewFor('zomg {{foo-bar}} wow');
 
@@ -2361,7 +2361,7 @@ QUnit.test('it works for tagless components', function(assert) {
   }
 
   registerEmberishCurlyComponent(
-    context.resolver,
+    context.registry,
     'foo-bar',
     FooBar,
     '<span id="first-node">foo</span> <span id="before-last-node">bar</span>!'
@@ -2398,7 +2398,7 @@ QUnit.test('it works for unwrapped components', function(assert) {
   }
 
   registerEmberishGlimmerComponent(
-    context.resolver,
+    context.registry,
     'FooBar',
     FooBar,
     '<!-- ohhh --><span id="ralph-the-wrench" ...attributes>foo bar!</span>'

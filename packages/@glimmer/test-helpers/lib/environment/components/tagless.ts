@@ -37,7 +37,7 @@ export class StaticTaglessComponentManager extends BasicComponentManager {
 
     let handle = resolver.lookup('template-source', name)!;
 
-    return resolver
+    return resolver.registry
       .customCompilableTemplate(handle, name, source =>
         createTemplate<AnnotatedModuleLocator>(source).create()
       )
