@@ -27,6 +27,7 @@ import {
   ModifierManager,
   ComponentManager,
   ComponentCapabilities,
+  ComponentDefinition,
 } from '@glimmer/interfaces';
 import { UserHelper, HelperReference } from '../../helper';
 import {
@@ -37,6 +38,7 @@ import {
 import { PartialDefinition } from '@glimmer/opcode-compiler';
 import { preprocess } from '../../shared';
 import { TestComponentDefinitionState, locatorFor } from '../../components';
+import { CurriedComponentDefinition, curry } from '@glimmer/runtime';
 
 const BASIC_COMPONENT_MANAGER = new BasicComponentManager();
 const EMBERISH_CURLY_COMPONENT_MANAGER = new EmberishCurlyComponentManager();
@@ -234,4 +236,16 @@ function registerComponent(
 
   resolver.register('component', name, definition);
   return definition;
+}
+
+export function componentHelper(
+  resolver: LazyRuntimeResolver,
+  name: string
+): Option<CurriedComponentDefinition> {
+  let handle = resolver.lookupComponentHandle(name);
+
+  if (handle === null) return null;
+
+  let spec = resolver.resolve<ComponentDefinition>(handle);
+  return curry(spec);
 }
