@@ -6,7 +6,6 @@ import {
   EMPTY,
   OPEN,
   CLOSE,
-  TestEnvironment,
   equalTokens,
   Content,
   content,
@@ -31,7 +30,6 @@ import { assertElementShape } from '@glimmer/test-helpers';
 
 class RenderTests extends InitialRenderSuite {
   name = 'client';
-  protected env: TestEnvironment = new TestEnvironment();
 }
 
 class AbstractRehydrationTests extends InitialRenderSuite {

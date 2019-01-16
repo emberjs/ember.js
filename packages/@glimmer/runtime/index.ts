@@ -54,7 +54,11 @@ export { SafeString } from './lib/upsert';
 export { InternalVM, UpdatingVM, VM as LowLevelVM } from './lib/vm';
 export { EMPTY_ARGS } from './lib/vm/arguments';
 export { AttributeOperation } from './lib/vm/attributes';
-export { DynamicAttribute, SimpleDynamicAttribute } from './lib/vm/attributes/dynamic';
+export {
+  DynamicAttribute,
+  SimpleDynamicAttribute,
+  dynamicAttribute,
+} from './lib/vm/attributes/dynamic';
 export { clientBuilder, ElementBuilder, NewElementBuilder } from './lib/vm/element-builder';
 export {
   isSerializationFirstNode,
