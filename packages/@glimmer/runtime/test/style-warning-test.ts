@@ -4,6 +4,7 @@ import {
   RenderResult,
   Template,
   TemplateMeta,
+  Environment,
 } from '@glimmer/interfaces';
 import { UpdatableReference } from '@glimmer/object-reference';
 import {
@@ -11,32 +12,43 @@ import {
   DynamicAttribute,
   ElementBuilder,
   SimpleDynamicAttribute,
+  dynamicAttribute,
+  renderJitMain,
 } from '@glimmer/runtime';
 import { module, test } from '@glimmer/runtime/test/support';
-import { equalTokens, qunitFixture, TestEnvironment } from '@glimmer/test-helpers';
+import {
+  equalTokens,
+  qunitFixture,
+  JitTestContext,
+  TestContext,
+  preprocess,
+} from '@glimmer/test-helpers';
 import { AttrNamespace, SimpleElement } from '@simple-dom/interface';
+import { RuntimeEnvironmentDelegate } from '../lib/environment';
 
-let env: TestEnvironment;
+let context: TestContext;
 let root: SimpleElement;
 
 function compile(template: string) {
-  let out = env.preprocess(template);
+  let out = preprocess(template);
   return out;
 }
 
-function commonSetup(customEnv = new TestEnvironment()) {
-  env = customEnv; // TODO: Support SimpleDOM
+function commonSetup(delegate?: RuntimeEnvironmentDelegate) {
+  context = JitTestContext(delegate);
   root = qunitFixture();
 }
 
 function render(template: Template<TemplateMeta<AnnotatedModuleLocator>>, self: any) {
   let result: RenderResult;
-  env.begin();
+  context.env.begin();
   let cursor = { element: root, nextSibling: null };
-  let templateIterator = env.renderMain(
-    template,
+  let templateIterator = renderJitMain(
+    context.runtime,
+    context.syntax,
     new UpdatableReference(self),
-    clientBuilder(env, cursor)
+    clientBuilder(context.env, cursor),
+    template.asLayout().compile(context.syntax)
   );
   let iteratorResult: IteratorResult<RenderResult>;
   do {
@@ -44,7 +56,7 @@ function render(template: Template<TemplateMeta<AnnotatedModuleLocator>>, self: 
   } while (!iteratorResult.done);
 
   result = iteratorResult.value;
-  env.commit();
+  context.env.commit();
   return result;
 }
 
@@ -52,7 +64,7 @@ module(
   'Style attributes',
   {
     beforeEach() {
-      class StyleEnv extends TestEnvironment {
+      commonSetup({
         attributeFor(
           element: SimpleElement,
           attr: string,
@@ -63,11 +75,9 @@ module(
             return new StyleAttribute({ element, name, namespace });
           }
 
-          return super.attributeFor(element, attr, isTrusting, namespace);
-        }
-      }
-
-      commonSetup(new StyleEnv());
+          return dynamicAttribute(element, attr, namespace);
+        },
+      });
     },
     afterEach() {
       warnings = 0;
@@ -113,7 +123,7 @@ module(
 let warnings = 0;
 
 class StyleAttribute extends SimpleDynamicAttribute {
-  set(dom: ElementBuilder, value: unknown, env: TestEnvironment): void {
+  set(dom: ElementBuilder, value: unknown, env: Environment): void {
     warnings++;
     super.set(dom, value, env);
   }
