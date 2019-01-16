@@ -13,7 +13,7 @@ import {
 
 import { run } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
-import { set, get, observer, on, computed } from '@ember/-internals/metal';
+import { alias, set, get, observer, on, computed } from '@ember/-internals/metal';
 import Service, { inject as injectService } from '@ember/service';
 import { Object as EmberObject, A as emberA } from '@ember/-internals/runtime';
 import { jQueryDisabled } from '@ember/-internals/views';
@@ -3575,6 +3575,67 @@ moduleFor(
       this.registerComponent('foo-bar', { ComponentClass: FooBarComponent });
 
       this.render('{{foo-bar}}');
+    }
+
+    ['@test ensure aliases are watched properly [GH#17243]']() {
+      let fooInstance, barInstance;
+
+      let FooComponent = Component.extend({
+        source: 'first',
+        foo: alias('source'),
+
+        init() {
+          this._super(...arguments);
+          fooInstance = this;
+        },
+      });
+
+      this.registerComponent('foo', {
+        ComponentClass: FooComponent,
+        template: '{{this.foo}}',
+      });
+
+      let BarComponent = Component.extend({
+        target: null,
+
+        init() {
+          this._super(...arguments);
+          barInstance = this;
+        },
+
+        bar: computed('target.foo', function() {
+          if (this.target) {
+            return this.target.foo.toUpperCase();
+          }
+        }),
+      });
+
+      this.registerComponent('bar', {
+        ComponentClass: BarComponent,
+        template: '{{this.bar}}',
+      });
+
+      this.render('[<Foo />][<Bar />]');
+
+      this.assertText('[first][]');
+
+      // addObserver
+      runTask(() => set(barInstance, 'target', fooInstance));
+
+      this.assertText('[first][FIRST]');
+
+      runTask(() => set(fooInstance, 'source', 'second'));
+
+      this.assertText('[second][SECOND]');
+
+      // removeObserver
+      runTask(() => set(barInstance, 'target', null));
+
+      this.assertText('[second][]');
+
+      runTask(() => set(fooInstance, 'source', 'third'));
+
+      this.assertText('[third][]');
     }
   }
 );
