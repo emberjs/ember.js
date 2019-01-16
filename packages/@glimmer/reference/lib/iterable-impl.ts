@@ -61,7 +61,7 @@ export class IterableImpl
     reference: UpdatableReference<unknown>,
     item: IterationItem<unknown, unknown>
   ) {
-    reference.update(item.value);
+    reference.forceUpdate(item.value);
   }
 
   memoReferenceFor(item: IterationItem<unknown, unknown>): UpdatableReference<unknown> {
@@ -72,7 +72,7 @@ export class IterableImpl
     reference: UpdatableReference<unknown>,
     item: IterationItem<unknown, unknown>
   ) {
-    reference.update(item.memo);
+    reference.forceUpdate(item.memo);
   }
 }
 
