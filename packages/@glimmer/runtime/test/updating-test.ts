@@ -50,14 +50,6 @@ function compile(template: string) {
 }
 
 function commonSetup() {
-  // resolver = new LazyRuntimeResolver();
-  // compilationContext = new TestLazyCompilationContext(resolver);
-  // syntax = { program: context, macros: new TestMacros() };
-  // doc = document as SimpleDocument;
-
-  // runtime = JitRuntime(document as SimpleDocument, context, resolver, { toBool: emberToBool });
-  // context.root = document.getElementById('qunit-fixture')! as SimpleElement;
-
   context = JitTestContext();
 }
 
