@@ -17,7 +17,7 @@ import {
 } from '../template';
 import { CompileTimeResolverDelegate } from '../serialize';
 import { Op, MachineOp } from '../vm-opcodes';
-import { WireFormat } from '@glimmer/interfaces';
+import * as WireFormat from './wire-format';
 import ComponentCapabilities from '../component-capabilities';
 
 export interface Labels<InstructionEncoder> {

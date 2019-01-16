@@ -63,7 +63,6 @@ import { TemplateMeta } from './runtime/runtime';
 import { SyntaxCompilationContext } from './program';
 import { Helper } from './runtime/vm';
 import { ModifierDefinition } from './runtime/modifier';
-import { PartialDefinition } from '@glimmer/opcode-compiler';
 import { Invocation } from './components/component-manager';
 
 export interface HandleResolver {
@@ -88,6 +87,14 @@ export interface CompileTimeResolverDelegate extends HandleResolver {
 
   // For debugging
   resolve(handle: number): TemplateMeta;
+}
+
+export interface PartialDefinition {
+  name: string; // for debugging
+
+  getPartial(
+    context: SyntaxCompilationContext
+  ): { symbolTable: ProgramSymbolTable; handle: number };
 }
 
 export type ResolvedValue = ComponentDefinition | ModifierDefinition | Helper | PartialDefinition;

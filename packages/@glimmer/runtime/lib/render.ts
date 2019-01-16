@@ -15,6 +15,7 @@ import {
   ComponentDefinition,
   JitRuntimeContext,
   AotRuntimeContext,
+  ElementBuilder,
 } from '@glimmer/interfaces';
 import { PathReference } from '@glimmer/reference';
 import { expect } from '@glimmer/util';
@@ -23,7 +24,7 @@ import { hasStaticLayoutCapability } from './compiled/opcodes/component';
 import { resolveComponent } from './component/resolve';
 import { ARGS } from './symbols';
 import { AotVM, InternalVM, JitVM } from './vm/append';
-import { ElementBuilder, NewElementBuilder } from './vm/element-builder';
+import { NewElementBuilder } from './vm/element-builder';
 import { DefaultDynamicScope } from './dynamic-scope';
 import { UNDEFINED_REFERENCE } from './references';
 

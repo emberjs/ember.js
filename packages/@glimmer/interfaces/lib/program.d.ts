@@ -1,9 +1,8 @@
 import { Unique, Option } from './core';
 import { STDLib, ContainingMetadata } from './template';
-import { StdlibOperand, CompileMode, Encoder } from './compile';
+import { StdlibOperand, CompileMode, Encoder, Macros } from './compile';
 import { Op } from './vm-opcodes';
 import { TemplateMeta } from './runtime/runtime';
-import { Macros } from '@glimmer/opcode-compiler';
 import { CompileTimeResolverDelegate } from './serialize';
 
 export interface RuntimeOp {

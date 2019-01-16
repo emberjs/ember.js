@@ -5,6 +5,11 @@ import { StatementCompileActions } from './encoder';
 import { CompileTimeResolverDelegate } from '../serialize';
 import { Option } from '../core';
 
+export interface Macros {
+  blocks: MacroBlocks;
+  inlines: MacroInlines;
+}
+
 export interface MacroContext {
   resolver: CompileTimeResolverDelegate;
   meta: ContainingMetadata;

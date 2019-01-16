@@ -1,5 +1,5 @@
 import { PathReference } from '@glimmer/reference';
-import { ElementBuilder, renderSync, renderJitMain } from '@glimmer/runtime';
+import { renderSync, renderJitMain } from '@glimmer/runtime';
 import { BasicComponent } from './environment/components/basic';
 import { EmberishCurlyComponent } from './environment/components/emberish-curly';
 import { EmberishGlimmerComponent } from './environment/components/emberish-glimmer';
@@ -9,6 +9,7 @@ import {
   SyntaxCompilationContext,
   RuntimeContext,
   JitRuntimeContext,
+  ElementBuilder,
 } from '@glimmer/interfaces';
 import { preprocess } from './environment/shared';
 import { JitRegistry } from './environment/modes/lazy/runtime-resolver';

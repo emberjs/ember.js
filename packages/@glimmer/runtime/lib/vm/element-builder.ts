@@ -6,6 +6,9 @@ import {
   GlimmerTreeChanges,
   GlimmerTreeConstruction,
   SymbolDestroyable,
+  ElementBuilder,
+  LiveBlock,
+  CursorStackSymbol,
 } from '@glimmer/interfaces';
 import { assert, DESTROY, expect, LinkedList, LinkedListNode, Option, Stack } from '@glimmer/util';
 import {
@@ -64,68 +67,7 @@ export class Fragment implements Bounds {
   }
 }
 
-export interface DOMStack {
-  pushRemoteElement(
-    element: SimpleElement,
-    guid: string,
-    nextSibling: Option<SimpleNode>
-  ): Option<RemoteLiveBlock>;
-  popRemoteElement(): void;
-  popElement(): void;
-  openElement(tag: string, _operations?: ElementOperations): SimpleElement;
-  flushElement(): void;
-  appendText(string: string): SimpleText;
-  appendComment(string: string): SimpleComment;
-
-  appendDynamicHTML(value: string): void;
-  appendDynamicText(value: string): SimpleText;
-  appendDynamicFragment(value: SimpleDocumentFragment): void;
-  appendDynamicNode(value: SimpleNode): void;
-
-  setStaticAttribute(name: string, value: string, namespace: Option<string>): void;
-  setDynamicAttribute(
-    name: string,
-    value: unknown,
-    isTrusting: boolean,
-    namespace: Option<string>
-  ): DynamicAttribute;
-  closeElement(): void;
-}
-
-export interface TreeOperations {
-  __openElement(tag: string): SimpleElement;
-  __flushElement(parent: SimpleElement, constructing: SimpleElement): void;
-  __openBlock(): void;
-  __closeBlock(): void;
-  __appendText(text: string): SimpleText;
-  __appendComment(string: string): SimpleComment;
-  __appendNode(node: SimpleNode): SimpleNode;
-  __appendHTML(html: string): Bounds;
-  __setAttribute(name: string, value: string, namespace: Option<string>): void;
-  __setProperty(name: string, value: unknown): void;
-}
-
-export const CURSOR_STACK = Symbol('CURSOR_STACK');
-
-export interface ElementBuilder extends CursorImpl, DOMStack, TreeOperations {
-  [CURSOR_STACK]: Stack<CursorImpl>;
-
-  nextSibling: Option<SimpleNode>;
-  dom: GlimmerTreeConstruction;
-  updateOperations: GlimmerTreeChanges;
-  constructing: Option<SimpleElement>;
-  element: SimpleElement;
-
-  block(): LiveBlock;
-  debugBlocks(): LiveBlock[];
-
-  pushSimpleBlock(): LiveBlock;
-  pushUpdatableBlock(): UpdatableBlock;
-  pushBlockList(list: LinkedList<LinkedListNode & Bounds>): LiveBlockList;
-  popBlock(): LiveBlock;
-
-  didAppendBounds(bounds: Bounds): void;
-}
+export const CURSOR_STACK: CursorStackSymbol = Symbol('CURSOR_STACK') as CursorStackSymbol;
 
 export class NewElementBuilder implements ElementBuilder {
   public dom: GlimmerTreeConstruction;
@@ -399,15 +341,6 @@ export class NewElementBuilder implements ElementBuilder {
     attribute.set(this, value, this.env);
     return attribute;
   }
-}
-
-export interface LiveBlock extends Bounds {
-  openElement(element: SimpleElement): void;
-  closeElement(): void;
-  didAppendNode(node: SimpleNode): void;
-  didAppendBounds(bounds: Bounds): void;
-  finalize(stack: ElementBuilder): void;
-  [DESTROY]?(): void;
 }
 
 export class SimpleLiveBlock implements LiveBlock {

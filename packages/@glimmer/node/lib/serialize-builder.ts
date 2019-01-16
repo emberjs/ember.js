@@ -1,5 +1,5 @@
-import { Bounds, Environment, Option } from '@glimmer/interfaces';
-import { ConcreteBounds, ElementBuilder, NewElementBuilder } from '@glimmer/runtime';
+import { Bounds, Environment, Option, ElementBuilder } from '@glimmer/interfaces';
+import { ConcreteBounds, NewElementBuilder } from '@glimmer/runtime';
 import { RemoteLiveBlock } from '@glimmer/runtime/lib/vm/element-builder';
 import { SimpleElement, SimpleNode, SimpleText } from '@simple-dom/interface';
 
