@@ -34,7 +34,7 @@ class RemoveAtTests extends AbstractTestCase {
 
   '@test removeAt([], 200) => OUT_OF_RANGE_EXCEPTION exception'() {
     let obj = this.newObject([]);
-    this.assert.throws(() => removeAt(obj, 200), Error);
+    expectAssertion(() => removeAt(obj, 200), /`removeAt` index provided is out of range/);
   }
 
   '@test removeAt([A,B], 0) => [B] + notify'() {

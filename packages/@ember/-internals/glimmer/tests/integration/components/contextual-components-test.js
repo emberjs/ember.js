@@ -1266,19 +1266,17 @@ moduleFor(
       this.assertStableRerender();
     }
 
-    ['@test GH#17121 implicit component invocations should not perform string lookup'](assert) {
+    ['@test GH#17121 implicit component invocations should not perform string lookup']() {
       this.registerComponent('foo-bar', { template: 'foo-bar component' });
 
-      assert.throws(
+      expectAssertion(
         () =>
           this.render(strip`
           {{#let 'foo-bar' as |foo|}}
             {{foo 1 2 3}}
           {{/let}}
         `),
-        new TypeError(
-          "expected `foo` to be a contextual component but found a string. Did you mean `(component foo)`? ('-top-level' @ L1:C29) "
-        )
+        "expected `foo` to be a contextual component but found a string. Did you mean `(component foo)`? ('-top-level' @ L1:C29) "
       );
     }
 

@@ -1,36 +1,36 @@
+import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { Opaque } from '@glimmer/interfaces';
 import { Tag, VersionedPathReference } from '@glimmer/reference';
-import { Arguments, VM } from '@glimmer/runtime';
+import { Arguments, Helper, VM } from '@glimmer/runtime';
 
-class ComponentAssertionReference implements VersionedPathReference<Opaque> {
-  public tag: Tag;
+let helper: Helper;
 
-  constructor(private component: VersionedPathReference<Opaque>, private message: string) {
-    this.tag = component.tag;
-  }
+if (DEBUG) {
+  class ComponentAssertionReference implements VersionedPathReference<Opaque> {
+    public tag: Tag;
 
-  value(): Opaque {
-    let value = this.component.value();
-
-    if (typeof value === 'string') {
-      throw new TypeError(this.message);
+    constructor(private component: VersionedPathReference<Opaque>, private message: string) {
+      this.tag = component.tag;
     }
 
-    return value;
+    value(): Opaque {
+      let value = this.component.value();
+
+      assert(this.message, typeof value !== 'string');
+
+      return value;
+    }
+
+    get(property: string): VersionedPathReference<Opaque> {
+      return this.component.get(property);
+    }
   }
 
-  get(property: string): VersionedPathReference<Opaque> {
-    return this.component.get(property);
-  }
+  helper = (_vm: VM, args: Arguments) =>
+    new ComponentAssertionReference(args.positional.at(0), args.positional.at(1).value() as string);
+} else {
+  helper = (_vm: VM, args: Arguments) => args.positional.at(0);
 }
 
-export default (_vm: VM, args: Arguments) => {
-  if (DEBUG) {
-    return new ComponentAssertionReference(args.positional.at(0), args.positional
-      .at(1)
-      .value() as string);
-  } else {
-    return args.positional.at(0);
-  }
-};
+export default helper;

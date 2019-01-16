@@ -1,3 +1,4 @@
+import { DEBUG } from '@glimmer/env';
 import { AbstractTestCase, moduleFor } from 'internal-test-helpers';
 import { meta, counters } from '..';
 
@@ -48,8 +49,10 @@ moduleFor(
     }
 
     ['@test parent caching'](assert) {
-      counters.flattenedListenersCalls = 0;
-      counters.parentListenersUsed = 0;
+      if (DEBUG) {
+        counters.flattenedListenersCalls = 0;
+        counters.parentListenersUsed = 0;
+      }
 
       class Class {}
       let classMeta = meta(Class.prototype);
@@ -61,20 +64,25 @@ moduleFor(
       let matching = m.matchingListeners('hello');
 
       assert.equal(matching.length, 3);
-      assert.equal(counters.flattenedListenersCalls, 2);
-      assert.equal(counters.parentListenersUsed, 1);
-
+      if (DEBUG) {
+        assert.equal(counters.flattenedListenersCalls, 2);
+        assert.equal(counters.parentListenersUsed, 1);
+      }
       matching = m.matchingListeners('hello');
 
       assert.equal(matching.length, 3);
-      assert.equal(counters.flattenedListenersCalls, 3);
-      assert.equal(counters.parentListenersUsed, 1);
+      if (DEBUG) {
+        assert.equal(counters.flattenedListenersCalls, 3);
+        assert.equal(counters.parentListenersUsed, 1);
+      }
     }
 
     ['@test parent cache invalidation'](assert) {
-      counters.flattenedListenersCalls = 0;
-      counters.parentListenersUsed = 0;
-      counters.listenersInherited = 0;
+      if (DEBUG) {
+        counters.flattenedListenersCalls = 0;
+        counters.parentListenersUsed = 0;
+        counters.listenersInherited = 0;
+      }
 
       class Class {}
       let classMeta = meta(Class.prototype);
@@ -86,21 +94,30 @@ moduleFor(
       let matching = m.matchingListeners('hello');
 
       assert.equal(matching.length, 3);
-      assert.equal(counters.flattenedListenersCalls, 2);
-      assert.equal(counters.parentListenersUsed, 1);
-      assert.equal(counters.listenersInherited, 0);
+      if (DEBUG) {
+        assert.equal(counters.flattenedListenersCalls, 2);
+        assert.equal(counters.parentListenersUsed, 1);
+        assert.equal(counters.listenersInherited, 0);
+      }
 
       m.addToListeners('hello', null, 'm2');
 
       matching = m.matchingListeners('hello');
 
       assert.equal(matching.length, 6);
-      assert.equal(counters.flattenedListenersCalls, 4);
-      assert.equal(counters.parentListenersUsed, 1);
-      assert.equal(counters.listenersInherited, 1);
+      if (DEBUG) {
+        assert.equal(counters.flattenedListenersCalls, 4);
+        assert.equal(counters.parentListenersUsed, 1);
+        assert.equal(counters.listenersInherited, 1);
+      }
     }
 
     ['@test reopen after flatten'](assert) {
+      if (!DEBUG) {
+        assert.expect(0);
+        return;
+      }
+
       // Ensure counter is zeroed
       counters.reopensAfterFlatten = 0;
 
