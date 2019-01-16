@@ -96,15 +96,52 @@ function giveDescriptorSuper(
   // to clone the computed property so that other mixins do not receive
   // the wrapped version.
   property = Object.create(property);
-  property._getter = wrap(property._getter || property.get, superProperty._getter || superProperty.get) as ComputedPropertyGetter;
-  if (superProperty._setter || superProperty.set) {
-    if (property._setter || property.set) {
-      property._setter = wrap(property._setter || property.set, superProperty._setter || superProperty.set) as ComputedPropertySetter;
+  property._getter = wrap(property._getter, superProperty._getter) as ComputedPropertyGetter;
+  if (superProperty._setter) {
+    if (property._setter) {
+      property._setter = wrap(property._setter, superProperty._setter) as ComputedPropertySetter;
     } else {
       property._setter = superProperty._setter;
-      property.set = superProperty.set;
     }
   }
+
+  return property;
+}
+
+function giveDecoratorSuper(
+  meta: Meta,
+  key: string,
+  property: DecoratorDescriptor,
+  values: { [key: string]: any },
+  descs: { [key: string]: any },
+  base: object
+): DecoratorDescriptor {
+  let superProperty;
+
+  // Computed properties override methods, and do not call super to them
+  if (values[key] === undefined) {
+    // Find the original descriptor in a parent mixin
+    superProperty = descs[key];
+  }
+
+  // If we didn't find the original descriptor in a parent mixin, find
+  // it on the original object.
+  if (!superProperty) {
+    superProperty = descriptorFor(base, key, meta);
+  }
+
+  if (superProperty === undefined || !(superProperty instanceof ComputedProperty)) {
+    return property;
+  }
+
+  // Since multiple mixins may inherit from the same parent, we need
+  // to clone the computed property so that other mixins do not receive
+  // the wrapped version.
+  property = Object.create(property);
+
+  property.get = wrap(property.get, superProperty.get);
+  property.set = wrap(property.set, superProperty.set);
+
 
   return property;
 }
@@ -220,8 +257,12 @@ function addNormalizedProperty(
     // if (key === 'aProp') {
     //   debugger;
     // }
-    if ((value as ComputedProperty)._getter || (value as DecoratorDescriptor).get) {
+    if ((value as ComputedProperty)._getter) {
       value = giveDescriptorSuper(meta, key, value as ComputedProperty, values, descs, base);
+    }
+
+    if ((value as DecoratorDescriptor).get) {
+      value = giveDecoratorSuper(meta, key, value as DecoratorDescriptor, values, descs, base);
     }
 
     descs[key] = value;
@@ -770,6 +811,7 @@ export function aliasMethod(methodName: string): Alias {
   ```javascript
   import EmberObject from '@ember/object';
   import { observer } from '@ember/object';
+import descriptor from '../../../../../tmp/funnel-input_base_path-gav85kkw.tmp/@ember/-internals/metal/lib/descriptor';
 
   export default EmberObject.extend({
     valueObserver: observer('value', function() {
