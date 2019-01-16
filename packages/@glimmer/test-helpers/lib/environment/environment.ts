@@ -37,17 +37,18 @@ export function JitTestContext(delegate: RuntimeEnvironmentDelegate = {}): TestC
   let resolver = new LazyRuntimeResolver();
   registerHelper(resolver, 'hash', (_positional, named) => named);
 
-  let program = new TestLazyCompilationContext(resolver);
-  let syntax: SyntaxCompilationContext = { program, macros: new TestMacros() };
+  let context = new TestLazyCompilationContext(resolver);
+  let syntax: SyntaxCompilationContext = { program: context, macros: new TestMacros() };
   let doc = document as SimpleDocument;
 
-  let runtime = JitRuntime(document as SimpleDocument, program, resolver, {
+  let runtime = JitRuntime(document as SimpleDocument, context.program(), resolver, {
     toBool: emberToBool,
     ...delegate,
   });
+
   let root = document.getElementById('qunit-fixture')! as SimpleElement;
 
-  return { resolver, program, syntax, doc, root, runtime, env: runtime.env };
+  return { resolver, program: context, syntax, doc, root, runtime, env: runtime.env };
 }
 
 export default abstract class TestEnvironment extends EnvironmentImpl {
