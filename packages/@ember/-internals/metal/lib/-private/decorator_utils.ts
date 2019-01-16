@@ -28,16 +28,9 @@ export function buildComputedDesc(dec, desc) {
 
   let lastArg = params[params.length - 1];
   let objectConfig = params.slice(0, params.length);
-  // if (desc && desc.key && (desc.key === 'com')) {
+  // if (desc && desc.key && (desc.key === 'aProp')) {
   //   debugger;
   // }
-  // warn(
-  //   `Dependent keys containing @each only work one level deep. ` +
-  //     `You used the key "${desc.key}" which is invalid. ` +
-  //     `Please create an intermediary computed property.`,
-  //   DEEP_EACH_REGEX.test(desc.key) === false,
-  //   { id: 'ember-metal.computed-deep-each' }
-  // );
 
   if ((Object.keys(desc).length === 1) && typeof lastArg !== 'function') {
     objectConfig = lastArg;
@@ -63,6 +56,7 @@ export function buildComputedDesc(dec, desc) {
       }
     }
   }
+
 
   let computedDesc = fn(desc, params);
 

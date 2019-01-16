@@ -15,7 +15,7 @@ import {
 import { assert } from '@ember/debug';
 import { assign } from '@ember/polyfills';
 import { DEBUG } from '@glimmer/env';
-import { ComputedProperty, ComputedPropertyGetter, ComputedPropertySetter } from './computed';
+import { ComputedProperty, ComputedPropertyGetter, ComputedPropertySetter, DecoratorDescriptor } from './computed';
 import { addListener, removeListener } from './events';
 import expandProperties from './expand_properties';
 import { classToString, setUnprocessedMixins } from './namespace_search';
@@ -96,12 +96,13 @@ function giveDescriptorSuper(
   // to clone the computed property so that other mixins do not receive
   // the wrapped version.
   property = Object.create(property);
-  property._getter = wrap(property._getter, superProperty._getter) as ComputedPropertyGetter;
-  if (superProperty._setter) {
-    if (property._setter) {
-      property._setter = wrap(property._setter, superProperty._setter) as ComputedPropertySetter;
+  property._getter = wrap(property._getter || property.get, superProperty._getter || superProperty.get) as ComputedPropertyGetter;
+  if (superProperty._setter || superProperty.set) {
+    if (property._setter || property.set) {
+      property._setter = wrap(property._setter || property.set, superProperty._setter || superProperty.set) as ComputedPropertySetter;
     } else {
       property._setter = superProperty._setter;
+      property.set = superProperty.set;
     }
   }
 
@@ -215,7 +216,11 @@ function addNormalizedProperty(
   if (value instanceof Descriptor) {
     // Wrap descriptor function to implement
     // _super() if needed
-    if ((value as ComputedProperty)._getter) {
+
+    // if (key === 'aProp') {
+    //   debugger;
+    // }
+    if ((value as ComputedProperty)._getter || (value as DecoratorDescriptor).get) {
       value = giveDescriptorSuper(meta, key, value as ComputedProperty, values, descs, base);
     }
 
