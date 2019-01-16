@@ -104,7 +104,7 @@ abstract class EmberComponentRangeTests extends RangeTests {
   }
 
   renderRange(value: number): void {
-    registerEmberishCurlyComponent(this.context.resolver, 'range-input', this.component(), '');
+    registerEmberishCurlyComponent(this.context.registry, 'range-input', this.component(), '');
     this.appendViewFor(`{{range-input max=max min=min value=value}}`, {
       max: this.max,
       min: this.min,

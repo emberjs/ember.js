@@ -28,7 +28,7 @@ import { assign, equalTokens, normalizeInnerHTML } from './helpers';
 import { ComponentKind, ComponentTypes } from './interfaces';
 import { registerComponent, renderTemplate, JitTestDelegateContext } from './render';
 import RenderDelegate from './render-delegate';
-import LazyRuntimeResolver from './environment/modes/lazy/runtime-resolver';
+import LazyRuntimeResolver, { JitRegistry } from './environment/modes/lazy/runtime-resolver';
 import { registerHelper, registerModifier } from './environment/modes/lazy/register';
 
 export const OPEN: { marker: 'open-block' } = { marker: 'open-block' };
@@ -585,6 +585,9 @@ export class RehydrationDelegate implements RenderDelegate {
   private clientResolver: LazyRuntimeResolver;
   private serverResolver: LazyRuntimeResolver;
 
+  private clientRegistry: JitRegistry;
+  private serverRegistry: JitRegistry;
+
   public clientDoc: SimpleDocument;
   public serverDoc: SimpleDocument;
 
@@ -592,11 +595,13 @@ export class RehydrationDelegate implements RenderDelegate {
   constructor() {
     this.clientDoc = document as SimpleDocument;
     this.clientResolver = new LazyRuntimeResolver();
-    this.clientEnv = JitDelegateContext(this.clientDoc, this.clientResolver);
+    this.clientRegistry = this.clientResolver.registry;
+    this.clientEnv = JitDelegateContext(this.clientDoc, this.clientResolver, this.clientRegistry);
 
     this.serverDoc = createHTMLDocument();
     this.serverResolver = new LazyRuntimeResolver();
-    this.serverEnv = JitDelegateContext(this.serverDoc, this.serverResolver);
+    this.serverRegistry = this.serverResolver.registry;
+    this.serverEnv = JitDelegateContext(this.serverDoc, this.serverResolver, this.serverRegistry);
   }
 
   getInitialElement(): SimpleElement {
@@ -670,18 +675,18 @@ export class RehydrationDelegate implements RenderDelegate {
   }
 
   registerComponent(type: ComponentKind, _testType: string, name: string, layout: string): void {
-    registerComponent(this.clientResolver, type, name, layout);
-    registerComponent(this.serverResolver, type, name, layout);
+    registerComponent(this.clientRegistry, type, name, layout);
+    registerComponent(this.serverRegistry, type, name, layout);
   }
 
   registerHelper(name: string, helper: UserHelper): void {
-    registerHelper(this.clientResolver, name, helper);
-    registerHelper(this.serverResolver, name, helper);
+    registerHelper(this.clientRegistry, name, helper);
+    registerHelper(this.serverRegistry, name, helper);
   }
 
   registerModifier(name: string, ModifierClass: TestModifierConstructor): void {
-    registerModifier(this.clientResolver, name, ModifierClass);
-    registerModifier(this.serverResolver, name, ModifierClass);
+    registerModifier(this.clientRegistry, name, ModifierClass);
+    registerModifier(this.serverRegistry, name, ModifierClass);
   }
 }
 

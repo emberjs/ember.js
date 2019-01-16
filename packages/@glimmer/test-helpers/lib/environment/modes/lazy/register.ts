@@ -1,4 +1,4 @@
-import LazyRuntimeResolver from './runtime-resolver';
+import LazyRuntimeResolver, { JitRegistry } from './runtime-resolver';
 import { ComponentKind } from '../../../interfaces';
 import {
   BasicComponentFactory,
@@ -46,15 +46,15 @@ const EMBERISH_GLIMMER_COMPONENT_MANAGER = new EmberishGlimmerComponentManager()
 const STATIC_TAGLESS_COMPONENT_MANAGER = new StaticTaglessComponentManager();
 
 export function registerTemplate(
-  resolver: LazyRuntimeResolver,
+  registry: JitRegistry,
   name: string,
   source: string
 ): { name: string; handle: number } {
-  return { name, handle: resolver.register('template-source', name, source) };
+  return { name, handle: registry.register('template-source', name, source) };
 }
 
 export function registerBasicComponent(
-  resolver: LazyRuntimeResolver,
+  registry: JitRegistry,
   name: string,
   Component: BasicComponentFactory,
   layoutSource: string
@@ -63,10 +63,10 @@ export function registerBasicComponent(
     throw new Error('DEPRECATED: dasherized components');
   }
 
-  let { handle } = registerTemplate(resolver, name, layoutSource);
+  let { handle } = registerTemplate(registry, name, layoutSource);
 
   registerComponent(
-    resolver,
+    registry,
     name,
     'Basic',
     BASIC_COMPONENT_MANAGER,
@@ -77,15 +77,15 @@ export function registerBasicComponent(
 }
 
 export function registerStaticTaglessComponent(
-  resolver: LazyRuntimeResolver,
+  registry: JitRegistry,
   name: string,
   Component: BasicComponentFactory,
   layoutSource: string
 ): void {
-  let { handle } = registerTemplate(resolver, name, layoutSource);
+  let { handle } = registerTemplate(registry, name, layoutSource);
 
   registerComponent(
-    resolver,
+    registry,
     name,
     'Fragment',
     STATIC_TAGLESS_COMPONENT_MANAGER,
@@ -96,7 +96,7 @@ export function registerStaticTaglessComponent(
 }
 
 export function registerEmberishCurlyComponent(
-  resolver: LazyRuntimeResolver,
+  registry: JitRegistry,
   name: string,
   Component: Option<EmberishCurlyComponentFactory>,
   layoutSource: Option<string>
@@ -104,14 +104,14 @@ export function registerEmberishCurlyComponent(
   let layout: Option<{ name: string; handle: number }> = null;
 
   if (layoutSource !== null) {
-    layout = registerTemplate(resolver, name, layoutSource);
+    layout = registerTemplate(registry, name, layoutSource);
   }
 
   let handle = layout ? layout.handle : null;
   let ComponentClass = Component || EmberishCurlyComponent;
 
   registerComponent(
-    resolver,
+    registry,
     name,
     'Curly',
     EMBERISH_CURLY_COMPONENT_MANAGER,
@@ -122,7 +122,7 @@ export function registerEmberishCurlyComponent(
 }
 
 export function registerEmberishGlimmerComponent(
-  resolver: LazyRuntimeResolver,
+  registry: JitRegistry,
   name: string,
   Component: Option<EmberishGlimmerComponentFactory>,
   layoutSource: string
@@ -131,12 +131,12 @@ export function registerEmberishGlimmerComponent(
     throw new Error('DEPRECATED: dasherized components');
   }
 
-  let { handle } = registerTemplate(resolver, name, layoutSource);
+  let { handle } = registerTemplate(registry, name, layoutSource);
 
   let ComponentClass = Component || EmberishGlimmerComponent;
 
   registerComponent(
-    resolver,
+    registry,
     name,
     'Glimmer',
     EMBERISH_GLIMMER_COMPONENT_MANAGER,
@@ -147,51 +147,51 @@ export function registerEmberishGlimmerComponent(
 }
 
 export function registerHelper(
-  resolver: LazyRuntimeResolver,
+  registry: JitRegistry,
   name: string,
   helper: UserHelper
 ): GlimmerHelper {
   let glimmerHelper: GlimmerHelper = args => new HelperReference(helper, args);
-  resolver.register('helper', name, glimmerHelper);
+  registry.register('helper', name, glimmerHelper);
   return glimmerHelper;
 }
 
 export function registerInternalHelper(
-  resolver: LazyRuntimeResolver,
+  registry: JitRegistry,
   name: string,
   helper: GlimmerHelper
 ): GlimmerHelper {
-  resolver.register('helper', name, helper);
+  registry.register('helper', name, helper);
   return helper;
 }
 
 export function registerInternalModifier(
-  resolver: LazyRuntimeResolver,
+  registry: JitRegistry,
   name: string,
   manager: ModifierManager<unknown, unknown>,
   state: unknown
 ) {
-  resolver.register('modifier', name, { manager, state });
+  registry.register('modifier', name, { manager, state });
 }
 
 export function registerModifier(
-  resolver: LazyRuntimeResolver,
+  registry: JitRegistry,
   name: string,
   ModifierClass?: TestModifierConstructor
 ) {
   let state = new TestModifierDefinitionState(ModifierClass);
   let manager = new TestModifierManager();
-  resolver.register('modifier', name, { manager, state });
+  registry.register('modifier', name, { manager, state });
   return { manager, state };
 }
 
 export function registerPartial(
-  resolver: LazyRuntimeResolver,
+  registry: JitRegistry,
   name: string,
   source: string
 ): PartialDefinition {
   let definition = new PartialDefinition(name, preprocess(source));
-  resolver.register('partial', name, definition);
+  registry.register('partial', name, definition);
   return definition;
 }
 
@@ -212,7 +212,7 @@ export function resolvePartial(
 }
 
 function registerComponent(
-  resolver: LazyRuntimeResolver,
+  registry: JitRegistry,
   name: string,
   type: ComponentKind,
   manager: ComponentManager<unknown, unknown>,
@@ -234,15 +234,16 @@ function registerComponent(
     manager,
   };
 
-  resolver.register('component', name, definition);
+  registry.register('component', name, definition);
   return definition;
 }
 
 export function componentHelper(
   resolver: LazyRuntimeResolver,
+  registry: JitRegistry,
   name: string
 ): Option<CurriedComponentDefinition> {
-  let handle = resolver.lookupComponentHandle(name);
+  let handle = registry.lookupComponentHandle(name);
 
   if (handle === null) return null;
 
