@@ -52,7 +52,10 @@ export function buildComputedDesc(dec, desc) {
       if (objectConfig.set && !objectConfig.get) {
         // classic behavior
         // in new classes, accessing without a getter will raise an exception
-        params[0].get = () => undefined;
+        params[0].get = function() {
+          return this._super(...arguments);
+        };
+        // params[0].get = undefined;
       }
     }
   }

@@ -261,7 +261,7 @@ function addNormalizedProperty(
       value = giveDescriptorSuper(meta, key, value as ComputedProperty, values, descs, base);
     }
 
-    if ((value as DecoratorDescriptor).get) {
+    if ( (value as DecoratorDescriptor).get) {
       value = giveDecoratorSuper(meta, key, value as DecoratorDescriptor, values, descs, base);
     }
 
