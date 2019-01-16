@@ -1,5 +1,5 @@
 import { PathReference } from '@glimmer/reference';
-import { ElementBuilder, renderSync } from '@glimmer/runtime';
+import { ElementBuilder, renderSync, renderJitMain } from '@glimmer/runtime';
 import { BasicComponent } from './environment/components/basic';
 import { EmberishCurlyComponent } from './environment/components/emberish-curly';
 import { EmberishGlimmerComponent } from './environment/components/emberish-glimmer';
@@ -11,7 +11,6 @@ import {
   JitRuntimeContext,
 } from '@glimmer/interfaces';
 import { preprocess } from './environment/shared';
-import { renderMain } from './environment/modes/lazy/environment';
 import LazyRuntimeResolver from './environment/modes/lazy/runtime-resolver';
 import {
   registerEmberishGlimmerComponent,
@@ -76,6 +75,6 @@ export function renderTemplate(
   builder: ElementBuilder
 ): RenderResult {
   let template = preprocess(src);
-  let iterator = renderMain(runtime, syntax, template, self, builder);
+  let iterator = renderJitMain(runtime, syntax, self, builder, template.asLayout().compile(syntax));
   return renderSync(runtime.env, iterator);
 }

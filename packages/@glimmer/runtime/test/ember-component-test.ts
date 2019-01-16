@@ -10,7 +10,7 @@ import {
 import EmberObject from '@glimmer/object';
 import { CLASS_META, setProperty as set, UpdatableReference } from '@glimmer/object-reference';
 import { bump } from '@glimmer/reference';
-import { clientBuilder } from '@glimmer/runtime';
+import { clientBuilder, renderJitMain } from '@glimmer/runtime';
 import {
   assertElement,
   assertElementShape,
@@ -30,7 +30,6 @@ import {
   stripTight,
   toInnerHTML,
   preprocess,
-  renderMain,
   registerEmberishCurlyComponent,
   registerBasicComponent,
   registerEmberishGlimmerComponent,
@@ -70,12 +69,12 @@ export class EmberishRootView extends EmberObject {
     let self = new UpdatableReference(this);
     let cursor = { element, nextSibling: null };
 
-    let templateIterator = renderMain(
+    let templateIterator = renderJitMain(
       this.runtime,
       this.syntax,
-      this.template,
       self,
-      clientBuilder(this.runtime.env, cursor)
+      clientBuilder(this.runtime.env, cursor),
+      this.template.asLayout().compile(this.syntax)
     );
     let result;
     do {

@@ -321,6 +321,12 @@ export interface RuntimeEnvironmentDelegate {
   protocolForURL?(url: string): string;
   iterable?: IterableKeyDefinitions;
   toBool?(value: unknown): boolean;
+  attributeFor?(
+    element: SimpleElement,
+    attr: string,
+    isTrusting: boolean,
+    namespace: Option<AttrNamespace>
+  ): DynamicAttribute;
 }
 
 export class RuntimeEnvironmentDelegateImpl implements RuntimeEnvironmentDelegate {
@@ -339,6 +345,19 @@ export class RuntimeEnvironmentDelegateImpl implements RuntimeEnvironmentDelegat
       return this.inner.protocolForURL(url);
     } else {
       return new URL(url, typeof document !== 'undefined' ? document.baseURI : undefined).protocol;
+    }
+  }
+
+  attributeFor(
+    element: SimpleElement,
+    attr: string,
+    isTrusting: boolean,
+    namespace: Option<AttrNamespace>
+  ): DynamicAttribute {
+    if (this.inner.attributeFor) {
+      return this.inner.attributeFor(element, attr, isTrusting, namespace);
+    } else {
+      return dynamicAttribute(element, attr, namespace);
     }
   }
 
@@ -492,6 +511,15 @@ export class RuntimeEnvironment extends EnvironmentImpl {
 
   toConditionalReference(input: VersionedPathReference): VersionedReference<boolean> {
     return new ConditionalReference(input, this.delegate.toBool);
+  }
+
+  attributeFor(
+    element: SimpleElement,
+    attr: string,
+    isTrusting: boolean,
+    namespace: Option<AttrNamespace>
+  ): DynamicAttribute {
+    return this.delegate.attributeFor(element, attr, isTrusting, namespace);
   }
 }
 

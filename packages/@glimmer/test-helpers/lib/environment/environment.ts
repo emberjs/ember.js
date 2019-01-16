@@ -19,6 +19,7 @@ import { SimpleDocument, SimpleElement } from '@simple-dom/interface';
 import TestMacros from './macros';
 import { TestLazyCompilationContext } from './modes/lazy/compilation-context';
 import { registerHelper } from './modes/lazy/register';
+import { RuntimeEnvironmentDelegate } from '@glimmer/runtime/lib/environment';
 
 export type TestProgram = RuntimeProgram & WholeProgramCompilationContext;
 
@@ -32,7 +33,7 @@ export interface TestContext {
   env: Environment;
 }
 
-export function JitTestContext(): TestContext {
+export function JitTestContext(delegate: RuntimeEnvironmentDelegate = {}): TestContext {
   let resolver = new LazyRuntimeResolver();
   registerHelper(resolver, 'hash', (_positional, named) => named);
 
@@ -40,7 +41,10 @@ export function JitTestContext(): TestContext {
   let syntax: SyntaxCompilationContext = { program, macros: new TestMacros() };
   let doc = document as SimpleDocument;
 
-  let runtime = JitRuntime(document as SimpleDocument, program, resolver, { toBool: emberToBool });
+  let runtime = JitRuntime(document as SimpleDocument, program, resolver, {
+    toBool: emberToBool,
+    ...delegate,
+  });
   let root = document.getElementById('qunit-fixture')! as SimpleElement;
 
   return { resolver, program, syntax, doc, root, runtime, env: runtime.env };

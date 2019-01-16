@@ -13,6 +13,7 @@ import {
   PrimitiveReference,
   SafeString,
   UNDEFINED_REFERENCE,
+  renderJitMain,
 } from '@glimmer/runtime';
 import {
   assertNodeTagName,
@@ -29,7 +30,6 @@ import {
   preprocess,
   registerModifier,
   registerBasicComponent,
-  renderMain,
   JitTestContext,
   TestContext,
 } from '@glimmer/test-helpers';
@@ -77,12 +77,12 @@ function render(template: Template<TemplateMeta<AnnotatedModuleLocator>>, state 
   context.env.begin();
   let cursor = { element: context.root, nextSibling: null };
 
-  let templateIterator = renderMain(
+  let templateIterator = renderJitMain(
     context.runtime,
     context.syntax,
-    template,
     self,
-    clientBuilder(context.env, cursor)
+    clientBuilder(context.env, cursor),
+    template.asLayout().compile(context.syntax)
   );
 
   let iteratorResult: RichIteratorResult<null, RenderResult>;

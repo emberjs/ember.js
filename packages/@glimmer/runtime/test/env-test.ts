@@ -1,9 +1,9 @@
-import { TestEnvironment } from '@glimmer/test-helpers';
+import { JitTestContext } from '@glimmer/test-helpers';
 
 QUnit.module('env');
 
 QUnit.test('assert against nested transactions', assert => {
-  let env = new TestEnvironment();
+  let env = JitTestContext().env;
   env.begin();
   assert.throws(
     () => env.begin(),
@@ -12,7 +12,7 @@ QUnit.test('assert against nested transactions', assert => {
 });
 
 QUnit.test('ensure commit cleans up when it can', assert => {
-  let env = new TestEnvironment();
+  let env = JitTestContext().env;
   env.begin();
 
   // ghetto stub

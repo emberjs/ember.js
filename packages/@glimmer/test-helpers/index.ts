@@ -9,14 +9,8 @@ export {
 } from './lib/environment/environment';
 export { HelperReference, UserHelper } from './lib/environment/helper';
 export { default as TestMacros } from './lib/environment/macros';
-export { default as EagerTestEnvironment } from './lib/environment/modes/eager/environment';
 export { default as EagerRenderDelegate } from './lib/environment/modes/eager/render-delegate';
-export {
-  default as LazyTestEnvironment,
-  default as TestEnvironment,
-  componentHelper,
-  renderMain,
-} from './lib/environment/modes/lazy/environment';
+export { componentHelper } from './lib/environment/modes/lazy/environment';
 export * from './lib/environment/modes/lazy/register';
 export * from './lib/environment/modes/lazy/compilation-context';
 export * from './lib/environment/modes/lazy/fixture';
