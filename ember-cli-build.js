@@ -241,6 +241,7 @@ function buildBundles(packagesES, dependenciesES, templateCompilerDependenciesES
     emberTestsProdFiles = new MergeTrees([
       new Funnel(packagesProdES, {
         include: [
+          '@ember/-internals/*/tests/**' /* internal packages */,
           'internal-test-helpers/**',
           '*/*/tests/**' /* scoped packages */,
           '*/tests/**' /* packages */,
