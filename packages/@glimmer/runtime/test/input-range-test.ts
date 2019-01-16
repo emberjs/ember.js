@@ -4,7 +4,9 @@ import {
   test,
   EmberishCurlyComponent,
   EmberishCurlyComponentFactory,
-  TestEnvironment,
+  JitTestContext,
+  TestContext,
+  registerEmberishCurlyComponent,
 } from '@glimmer/test-helpers';
 import { EmberishRootView } from '@glimmer/runtime/test/ember-component-test';
 import { Dict } from '@glimmer/interfaces';
@@ -84,25 +86,25 @@ class EmberInputRangeComponent extends EmberishCurlyComponent {
 }
 
 abstract class EmberComponentRangeTests extends RangeTests {
-  env!: TestEnvironment;
+  context!: TestContext;
   view!: EmberishRootView;
 
   setup() {
-    this.env = new TestEnvironment();
+    this.context = JitTestContext();
   }
 
   abstract component(): EmberishCurlyComponentFactory;
 
-  appendViewFor(template: string, context: Object = {}) {
-    this.view = new EmberishRootView(this.env, template, context);
+  appendViewFor(template: string, state: Object = {}) {
+    this.view = new EmberishRootView(this.context.runtime, this.context.syntax, template, state);
 
-    this.env.begin();
+    this.context.env.begin();
     this.view.appendTo('#qunit-fixture');
-    this.env.commit();
+    this.context.env.commit();
   }
 
   renderRange(value: number): void {
-    this.env.registerEmberishCurlyComponent('range-input', this.component(), '');
+    registerEmberishCurlyComponent(this.context.resolver, 'range-input', this.component(), '');
     this.appendViewFor(`{{range-input max=max min=min value=value}}`, {
       max: this.max,
       min: this.min,

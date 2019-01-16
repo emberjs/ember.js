@@ -5,8 +5,6 @@ import {
   RichIteratorResult,
   Template,
   TemplateMeta,
-  SyntaxCompilationContext,
-  JitRuntimeContext,
 } from '@glimmer/interfaces';
 import { UpdatableReference } from '@glimmer/object-reference';
 import { bump, ConstReference } from '@glimmer/reference';
@@ -15,7 +13,6 @@ import {
   PrimitiveReference,
   SafeString,
   UNDEFINED_REFERENCE,
-  JitRuntime,
 } from '@glimmer/runtime';
 import {
   assertNodeTagName,
@@ -26,8 +23,6 @@ import {
   stripTight,
   toTextContent,
   trimLines,
-  LazyRuntimeResolver,
-  TestLazyCompilationContext,
   registerInternalHelper,
   registerPartial,
   registerHelper,
@@ -35,44 +30,36 @@ import {
   registerModifier,
   registerBasicComponent,
   renderMain,
-  TestMacros,
-  emberToBool,
+  JitTestContext,
+  TestContext,
 } from '@glimmer/test-helpers';
-import { Namespace, SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
+import { Namespace, SimpleElement, SimpleNode } from '@simple-dom/interface';
 import { assert, module, test } from './support';
 
 const SVG_NAMESPACE = Namespace.SVG;
 const XLINK_NAMESPACE = Namespace.XLink;
 const XHTML_NAMESPACE = 'http://www.w3.org/1999/xhtml';
 
-let root: SimpleElement;
-let doc: SimpleDocument;
 let self: UpdatableReference<any>;
 let result: RenderResult;
-let resolver: LazyRuntimeResolver;
-let context: TestLazyCompilationContext;
-let syntax: SyntaxCompilationContext;
-let runtime: JitRuntimeContext;
+
+let context: TestContext;
 
 function compile(template: string) {
   return preprocess(template);
 }
 
 function commonSetup() {
-  resolver = new LazyRuntimeResolver();
-  context = new TestLazyCompilationContext(resolver);
-  syntax = { program: context, macros: new TestMacros() };
-  doc = document as SimpleDocument;
+  // resolver = new LazyRuntimeResolver();
+  // compilationContext = new TestLazyCompilationContext(resolver);
+  // syntax = { program: context, macros: new TestMacros() };
+  // doc = document as SimpleDocument;
 
-  runtime = JitRuntime(document as SimpleDocument, context, resolver, { toBool: emberToBool });
-  root = document.getElementById('qunit-fixture')! as SimpleElement;
+  // runtime = JitRuntime(document as SimpleDocument, context, resolver, { toBool: emberToBool });
+  // context.root = document.getElementById('qunit-fixture')! as SimpleElement;
+
+  context = JitTestContext();
 }
-
-// function commonSetup() {
-//   env = new TestEnvironment(); // TODO: Support SimpleDOM
-//   root = qunitFixture();
-//   doc = root.ownerDocument;
-// }
 
 function assertProperty<T, K extends keyof T, V extends T[K]>(
   obj: T | null,
@@ -87,15 +74,15 @@ function assertProperty<T, K extends keyof T, V extends T[K]>(
 
 function render(template: Template<TemplateMeta<AnnotatedModuleLocator>>, state = {}) {
   self = new UpdatableReference(state);
-  runtime.env.begin();
-  let cursor = { element: root, nextSibling: null };
+  context.env.begin();
+  let cursor = { element: context.root, nextSibling: null };
 
   let templateIterator = renderMain(
-    runtime,
-    syntax,
+    context.runtime,
+    context.syntax,
     template,
     self,
-    clientBuilder(runtime.env, cursor)
+    clientBuilder(context.env, cursor)
   );
 
   let iteratorResult: RichIteratorResult<null, RenderResult>;
@@ -104,22 +91,22 @@ function render(template: Template<TemplateMeta<AnnotatedModuleLocator>>, state 
   } while (!iteratorResult.done);
 
   result = iteratorResult.value;
-  runtime.env.commit();
+  context.env.commit();
   assertInvariants(QUnit.assert, result);
   return result;
 }
 
-function rerender(context: any = null) {
-  if (context !== null) self.update(context);
+function rerender(state: any = null) {
+  if (state !== null) self.update(state);
   bump();
-  runtime.env.begin();
+  context.env.begin();
   result.rerender();
-  runtime.env.commit();
+  context.env.commit();
 }
 
 function getNodeByClassName(className: string) {
-  let itemNode = getElementByClassName(root, className);
-  // let itemNode = root.querySelector(`.${className}`);
+  let itemNode = getElementByClassName(context.root, className);
+  // let itemNode = context.root.querySelector(`.${className}`);
   assert.ok(itemNode, "Expected node with class='" + className + "'");
   return itemNode;
 }
@@ -143,13 +130,15 @@ function getFirstChildOfNode(className: string) {
 function assertInvariants(assert: Assert, result: RenderResult, msg?: string) {
   assert.strictEqual(
     result.firstNode(),
-    root.firstChild,
-    `The firstNode of the result is the same as the root's firstChild${msg ? ': ' + msg : ''}`
+    context.root.firstChild,
+    `The firstNode of the result is the same as the context.root's firstChild${
+      msg ? ': ' + msg : ''
+    }`
   );
   assert.strictEqual(
     result.lastNode(),
-    root.lastChild,
-    `The lastNode of the result is the same as the root's lastChild${msg ? ': ' + msg : ''}`
+    context.root.lastChild,
+    `The lastNode of the result is the same as the context.root's lastChild${msg ? ': ' + msg : ''}`
   );
 }
 
@@ -161,22 +150,22 @@ module('[jit] Updating', hooks => {
     let template = compile('<div><p>{{value}}</p></div>');
     render(template, object);
     let valueNode: Node | null | undefined;
-    if (assertNodeTagName(root.firstChild, 'div')) {
-      if (assertNodeTagName(root.firstChild.firstChild, 'p')) {
-        valueNode = root.firstChild.firstChild.firstChild;
+    if (assertNodeTagName(context.root.firstChild, 'div')) {
+      if (assertNodeTagName(context.root.firstChild.firstChild, 'p')) {
+        valueNode = context.root.firstChild.firstChild.firstChild;
       }
     }
 
-    equalTokens(root, '<div><p>hello world</p></div>', 'Initial render');
+    equalTokens(context.root, '<div><p>hello world</p></div>', 'Initial render');
 
     rerender();
 
-    equalTokens(root, '<div><p>hello world</p></div>', 'no change');
+    equalTokens(context.root, '<div><p>hello world</p></div>', 'no change');
 
-    if (assertNodeTagName(root.firstChild, 'div')) {
-      if (assertNodeTagName(root.firstChild.firstChild, 'p')) {
+    if (assertNodeTagName(context.root.firstChild, 'div')) {
+      if (assertNodeTagName(context.root.firstChild.firstChild, 'p')) {
         assert.strictEqual(
-          root.firstChild.firstChild.firstChild,
+          context.root.firstChild.firstChild.firstChild,
           valueNode,
           'The text node was not blown away'
         );
@@ -186,11 +175,11 @@ module('[jit] Updating', hooks => {
     object.value = 'goodbye world';
     rerender();
 
-    equalTokens(root, '<div><p>goodbye world</p></div>', 'After updating and dirtying');
-    if (assertNodeTagName(root.firstChild, 'div')) {
-      if (assertNodeTagName(root.firstChild.firstChild, 'p')) {
+    equalTokens(context.root, '<div><p>goodbye world</p></div>', 'After updating and dirtying');
+    if (assertNodeTagName(context.root.firstChild, 'div')) {
+      if (assertNodeTagName(context.root.firstChild.firstChild, 'p')) {
         assert.strictEqual(
-          root.firstChild.firstChild.firstChild,
+          context.root.firstChild.firstChild.firstChild,
           valueNode,
           'The text node was not blown away'
         );
@@ -200,15 +189,15 @@ module('[jit] Updating', hooks => {
 
   test('updating a single curly with siblings', () => {
     let value = 'brave new ';
-    let context = { value };
+    let state = { value };
     let template = compile('<div>hello {{value}}world</div>');
-    render(template, context);
+    render(template, state);
 
     function assertText(text1: string, text2: string, text3: string) {
-      if (assertNodeTagName(root.firstChild, 'div')) {
-        assertProperty(root.firstChild.firstChild, 'textContent', text1);
-        assertProperty(root.firstChild.childNodes[1], 'textContent', text2);
-        assertProperty(root.firstChild.lastChild, 'textContent', text3);
+      if (assertNodeTagName(context.root.firstChild, 'div')) {
+        assertProperty(context.root.firstChild.firstChild, 'textContent', text1);
+        assertProperty(context.root.firstChild.childNodes[1], 'textContent', text2);
+        assertProperty(context.root.firstChild.lastChild, 'textContent', text3);
       }
     }
 
@@ -218,7 +207,7 @@ module('[jit] Updating', hooks => {
 
     assertText('hello ', 'brave new ', 'world');
 
-    context.value = 'another ';
+    state.value = 'another ';
     rerender();
 
     assertText('hello ', 'another ', 'world');
@@ -236,38 +225,38 @@ module('[jit] Updating', hooks => {
     let valueNode1: Node | null;
     let valueNode2: Node | null;
     if (
-      assertNodeTagName(root.firstChild, 'div') &&
-      assertNodeTagName(root.firstChild.firstChild, 'p') &&
-      assertNodeTagName(root.firstChild.lastChild, 'p')
+      assertNodeTagName(context.root.firstChild, 'div') &&
+      assertNodeTagName(context.root.firstChild.firstChild, 'p') &&
+      assertNodeTagName(context.root.firstChild.lastChild, 'p')
     ) {
-      valueNode1 = root.firstChild.firstChild.firstChild;
-      valueNode2 = root.firstChild.lastChild.firstChild;
+      valueNode1 = context.root.firstChild.firstChild.firstChild;
+      valueNode2 = context.root.firstChild.lastChild.firstChild;
     }
 
     function assertStable() {
       if (
-        assertNodeTagName(root.firstChild, 'div') &&
-        assertNodeTagName(root.firstChild.firstChild, 'p') &&
-        assertNodeTagName(root.firstChild.lastChild, 'p')
+        assertNodeTagName(context.root.firstChild, 'div') &&
+        assertNodeTagName(context.root.firstChild.firstChild, 'p') &&
+        assertNodeTagName(context.root.firstChild.lastChild, 'p')
       ) {
         assert.equal(
-          root.firstChild.firstChild.firstChild,
+          context.root.firstChild.firstChild.firstChild,
           valueNode1,
           'The text node was not blown away'
         );
         assert.equal(
-          root.firstChild.lastChild.firstChild,
+          context.root.firstChild.lastChild.firstChild,
           valueNode2,
           'The text node was not blown away'
         );
       }
     }
 
-    equalTokens(root, '<div><p></p><p></p></div>', 'Initial render');
+    equalTokens(context.root, '<div><p></p><p></p></div>', 'Initial render');
 
     rerender();
 
-    equalTokens(root, '<div><p></p><p></p></div>', 'no change');
+    equalTokens(context.root, '<div><p></p><p></p></div>', 'no change');
 
     assertStable();
 
@@ -275,14 +264,14 @@ module('[jit] Updating', hooks => {
 
     rerender();
 
-    equalTokens(root, '<div><p>hello</p><p></p></div>', 'After updating and dirtying');
+    equalTokens(context.root, '<div><p>hello</p><p></p></div>', 'After updating and dirtying');
 
     assertStable();
 
     object.v2 = 'world';
     rerender();
 
-    equalTokens(root, '<div><p>hello</p><p>world</p></div>', 'After updating and dirtying');
+    equalTokens(context.root, '<div><p>hello</p><p>world</p></div>', 'After updating and dirtying');
 
     assertStable();
 
@@ -290,13 +279,13 @@ module('[jit] Updating', hooks => {
     object.v2 = undefined;
     rerender();
 
-    equalTokens(root, '<div><p></p><p></p></div>', 'Reset');
+    equalTokens(context.root, '<div><p></p><p></p></div>', 'Reset');
 
     assertStable();
   });
 
   test('weird paths', () => {
-    let context = {
+    let state = {
       '': 'empty string',
       '1': '1',
       undefined: 'undefined',
@@ -308,11 +297,11 @@ module('[jit] Updating', hooks => {
       nested: null as any | null,
     };
 
-    context.nested = context;
+    state.nested = state;
 
     function assertTextContent(expected: string) {
-      if (assertNodeTagName(root.firstChild, 'div')) {
-        assertProperty(root.firstChild, 'textContent', expected);
+      if (assertNodeTagName(context.root.firstChild, 'div')) {
+        assertProperty(context.root.firstChild, 'textContent', expected);
       }
     }
 
@@ -337,7 +326,7 @@ module('[jit] Updating', hooks => {
         [{{nested.[foo.bar]}}]
       </div>
     `);
-    render(template, context);
+    render(template, state);
 
     assertTextContent(stripTight`
       [empty string]
@@ -381,14 +370,14 @@ module('[jit] Updating', hooks => {
       [foo.bar]
     `);
 
-    context[''] = 'EMPTY STRING';
-    context['1'] = 'ONE';
-    context['undefined'] = 'UNDEFINED';
-    context['null'] = 'NULL';
-    context['true'] = 'TRUE';
-    context['false'] = 'FALSE';
-    context['this'] = 'THIS';
-    context['foo.bar'] = 'FOO.BAR';
+    state[''] = 'EMPTY STRING';
+    state['1'] = 'ONE';
+    state['undefined'] = 'UNDEFINED';
+    state['null'] = 'NULL';
+    state['true'] = 'TRUE';
+    state['false'] = 'FALSE';
+    state['this'] = 'THIS';
+    state['foo.bar'] = 'FOO.BAR';
     rerender();
 
     assertTextContent(stripTight`
@@ -411,7 +400,7 @@ module('[jit] Updating', hooks => {
       [FOO.BAR]
     `);
 
-    context = {
+    state = {
       '': 'empty string',
       '1': '1',
       undefined: 'undefined',
@@ -422,9 +411,9 @@ module('[jit] Updating', hooks => {
       'foo.bar': 'foo.bar',
       nested: null,
     };
-    context.nested = context;
+    state.nested = state;
 
-    rerender(context);
+    rerender(state);
 
     assertTextContent(stripTight`
       [empty string]
@@ -454,23 +443,23 @@ module('[jit] Updating', hooks => {
     render(template, object);
     let valueNode: Node | null | undefined;
     if (
-      assertNodeTagName(root.firstChild, 'div') &&
-      assertNodeTagName(root.firstChild.firstChild, 'p')
+      assertNodeTagName(context.root.firstChild, 'div') &&
+      assertNodeTagName(context.root.firstChild.firstChild, 'p')
     ) {
-      valueNode = root.firstChild.firstChild.firstChild;
+      valueNode = context.root.firstChild.firstChild.firstChild;
     }
 
-    equalTokens(root, `<div>${value}</div>`, 'Initial render');
+    equalTokens(context.root, `<div>${value}</div>`, 'Initial render');
 
     rerender();
 
-    equalTokens(root, '<div><p>hello world</p></div>', 'no change');
+    equalTokens(context.root, '<div><p>hello world</p></div>', 'no change');
     if (
-      assertNodeTagName(root.firstChild, 'div') &&
-      assertNodeTagName(root.firstChild.firstChild, 'p')
+      assertNodeTagName(context.root.firstChild, 'div') &&
+      assertNodeTagName(context.root.firstChild.firstChild, 'p')
     ) {
       assert.strictEqual(
-        root.firstChild.firstChild.firstChild,
+        context.root.firstChild.firstChild.firstChild,
         valueNode,
         'The text node was not blown away'
       );
@@ -479,13 +468,13 @@ module('[jit] Updating', hooks => {
     object.value = '<span>goodbye world</span>';
     rerender();
 
-    equalTokens(root, `<div>${object.value}</div>`, 'After updating and dirtying');
+    equalTokens(context.root, `<div>${object.value}</div>`, 'After updating and dirtying');
     if (
-      assertNodeTagName(root.firstChild, 'div') &&
-      assertNodeTagName(root.firstChild.firstChild, 'span')
+      assertNodeTagName(context.root.firstChild, 'div') &&
+      assertNodeTagName(context.root.firstChild.firstChild, 'span')
     ) {
       assert.notStrictEqual(
-        root.firstChild.firstChild.firstChild,
+        context.root.firstChild.firstChild.firstChild,
         valueNode,
         'The text node was blown away'
       );
@@ -494,73 +483,77 @@ module('[jit] Updating', hooks => {
     object.value = 'a <span>good man</span> is hard to <b>fund</b>';
     rerender();
 
-    equalTokens(root, `<div>${object.value}</div>`, 'After updating with many nodes and dirtying');
+    equalTokens(
+      context.root,
+      `<div>${object.value}</div>`,
+      'After updating with many nodes and dirtying'
+    );
 
     rerender({ value });
 
-    equalTokens(root, `<div>${value}</div>`, 'no change');
+    equalTokens(context.root, `<div>${value}</div>`, 'no change');
   });
 
   test('updating a single trusting curly with siblings', () => {
     let value = '<b>brave new </b>';
-    let context = { value };
+    let state = { value };
     let template = compile('<div>hello {{{value}}}world</div>');
-    render(template, context);
+    render(template, state);
 
-    equalTokens(root, '<div>hello <b>brave new </b>world</div>', 'Initial render');
+    equalTokens(context.root, '<div>hello <b>brave new </b>world</div>', 'Initial render');
 
     rerender();
 
-    equalTokens(root, '<div>hello <b>brave new </b>world</div>', 'rerender');
+    equalTokens(context.root, '<div>hello <b>brave new </b>world</div>', 'rerender');
 
-    context.value = 'big <b>wide</b> ';
+    state.value = 'big <b>wide</b> ';
     rerender();
 
-    if (assertNodeTagName(root.firstChild, 'div')) {
-      assertProperty(root.firstChild.firstChild, 'textContent', 'hello ');
-      assertProperty(root.firstChild.childNodes[1], 'textContent', 'big ');
-      assertProperty(root.firstChild.childNodes[2], 'textContent', 'wide');
-      assertProperty(root.firstChild.childNodes[3], 'textContent', ' ');
-      assertProperty(root.firstChild.lastChild, 'textContent', 'world');
+    if (assertNodeTagName(context.root.firstChild, 'div')) {
+      assertProperty(context.root.firstChild.firstChild, 'textContent', 'hello ');
+      assertProperty(context.root.firstChild.childNodes[1], 'textContent', 'big ');
+      assertProperty(context.root.firstChild.childNodes[2], 'textContent', 'wide');
+      assertProperty(context.root.firstChild.childNodes[3], 'textContent', ' ');
+      assertProperty(context.root.firstChild.lastChild, 'textContent', 'world');
     }
 
-    context.value = 'another ';
+    state.value = 'another ';
     rerender();
 
-    if (assertNodeTagName(root.firstChild, 'div')) {
-      assertProperty(root.firstChild.firstChild, 'textContent', 'hello ');
-      assertProperty(root.firstChild.childNodes[1], 'textContent', 'another ');
-      assertProperty(root.firstChild.lastChild, 'textContent', 'world');
+    if (assertNodeTagName(context.root.firstChild, 'div')) {
+      assertProperty(context.root.firstChild.firstChild, 'textContent', 'hello ');
+      assertProperty(context.root.firstChild.childNodes[1], 'textContent', 'another ');
+      assertProperty(context.root.firstChild.lastChild, 'textContent', 'world');
     }
 
     rerender({ value });
 
-    equalTokens(root, '<div>hello <b>brave new </b>world</div>', 'rerender');
+    equalTokens(context.root, '<div>hello <b>brave new </b>world</div>', 'rerender');
   });
 
   test('updating a single trusting curly with previous sibling', () => {
     let value = '<b>brave new </b>';
-    let context = { value };
+    let state = { value };
     let template = compile('<div>hello {{{value}}}</div>');
-    render(template, context);
+    render(template, state);
 
-    equalTokens(root, '<div>hello <b>brave new </b></div>', 'Initial render');
+    equalTokens(context.root, '<div>hello <b>brave new </b></div>', 'Initial render');
 
     rerender();
 
-    equalTokens(root, '<div>hello <b>brave new </b></div>', 'rerender');
+    equalTokens(context.root, '<div>hello <b>brave new </b></div>', 'rerender');
 
-    context.value = 'another ';
+    state.value = 'another ';
     rerender();
 
-    if (assertNodeTagName(root.firstChild, 'div')) {
-      assertProperty(root.firstChild.firstChild, 'textContent', 'hello ');
-      assertProperty(root.firstChild.lastChild, 'textContent', 'another ');
+    if (assertNodeTagName(context.root.firstChild, 'div')) {
+      assertProperty(context.root.firstChild.firstChild, 'textContent', 'hello ');
+      assertProperty(context.root.firstChild.lastChild, 'textContent', 'another ');
     }
 
     rerender({ value });
 
-    equalTokens(root, '<div>hello <b>brave new </b></div>', 'rerender');
+    equalTokens(context.root, '<div>hello <b>brave new </b></div>', 'rerender');
   });
 
   // This is to catch a regression about not caching lastValue correctly
@@ -572,21 +565,21 @@ module('[jit] Updating', hooks => {
     let template = compile('<div>{{{value}}}</div>');
     render(template, object);
 
-    equalTokens(root, '<div><p>A</p></div>', 'Initial render');
+    equalTokens(context.root, '<div><p>A</p></div>', 'Initial render');
 
     object.value = b;
     rerender();
-    equalTokens(root, '<div><p>B</p></div>', 'Updating');
+    equalTokens(context.root, '<div><p>B</p></div>', 'Updating');
 
     // Change it back
     object.value = a;
     rerender();
-    equalTokens(root, '<div><p>A</p></div>', 'Updating');
+    equalTokens(context.root, '<div><p>A</p></div>', 'Updating');
 
     // Change it back
     object.value = b;
     rerender();
-    equalTokens(root, '<div><p>B</p></div>', 'Updating');
+    equalTokens(context.root, '<div><p>B</p></div>', 'Updating');
   });
 
   test('updating a curly with a safe and unsafe string', assert => {
@@ -613,24 +606,24 @@ module('[jit] Updating', hooks => {
     render(template, object);
     let valueNode: Node | null | undefined;
     if (
-      assertNodeTagName(root.firstChild, 'div') &&
-      assertNodeTagName(root.firstChild.firstChild, 'p')
+      assertNodeTagName(context.root.firstChild, 'div') &&
+      assertNodeTagName(context.root.firstChild.firstChild, 'p')
     ) {
-      valueNode = root.firstChild.firstChild.firstChild;
+      valueNode = context.root.firstChild.firstChild.firstChild;
     }
 
-    equalTokens(root, '<div><p>hello world</p></div>', 'Initial render');
+    equalTokens(context.root, '<div><p>hello world</p></div>', 'Initial render');
 
     rerender();
 
-    equalTokens(root, '<div><p>hello world</p></div>', 'no change');
+    equalTokens(context.root, '<div><p>hello world</p></div>', 'no change');
 
     if (
-      assertNodeTagName(root.firstChild, 'div') &&
-      assertNodeTagName(root.firstChild.firstChild, 'p')
+      assertNodeTagName(context.root.firstChild, 'div') &&
+      assertNodeTagName(context.root.firstChild.firstChild, 'p')
     ) {
       assert.strictEqual(
-        root.firstChild.firstChild.firstChild,
+        context.root.firstChild.firstChild.firstChild,
         valueNode,
         'The text node was not blown away'
       );
@@ -640,19 +633,23 @@ module('[jit] Updating', hooks => {
     rerender();
 
     equalTokens(
-      root,
+      context.root,
       '<div>&lt;b&gt;Big old world!&lt;/b&gt;</div>',
       'After replacing with unsafe string'
     );
 
-    if (assertNodeTagName(root.firstChild, 'div')) {
-      assert.notStrictEqual(root.firstChild.firstChild, valueNode, 'The text node was blown away');
+    if (assertNodeTagName(context.root.firstChild, 'div')) {
+      assert.notStrictEqual(
+        context.root.firstChild.firstChild,
+        valueNode,
+        'The text node was blown away'
+      );
     }
 
     object.value = safeString;
     rerender();
 
-    equalTokens(root, '<div><p>hello world</p></div>', 'original input causes no problem');
+    equalTokens(context.root, '<div><p>hello world</p></div>', 'original input causes no problem');
   });
 
   function makeSafeString(value: string): SafeString {
@@ -678,19 +675,19 @@ module('[jit] Updating', hooks => {
   // swapping between unsafe and safe
 
   function makeElement(tag: string, content: string): SimpleElement {
-    let el = doc.createElement(tag);
-    el.appendChild(doc.createTextNode(content));
+    let el = context.doc.createElement(tag);
+    el.appendChild(context.doc.createTextNode(content));
     return el;
   }
 
   function makeSVGElement(tag: string, content: string): SimpleElement {
-    let el = doc.createElementNS(SVG_NAMESPACE, tag);
-    el.appendChild(doc.createTextNode(content));
+    let el = context.doc.createElementNS(SVG_NAMESPACE, tag);
+    el.appendChild(context.doc.createTextNode(content));
     return el;
   }
 
   function makeFragment(nodes: SimpleNode[]) {
-    let frag = doc.createDocumentFragment();
+    let frag = context.doc.createDocumentFragment();
     nodes.forEach(node => frag.appendChild(node));
     return frag;
   }
@@ -778,7 +775,7 @@ module('[jit] Updating', hooks => {
     ].forEach(wrapper => {
       test(`updating ${tc.name} produces expected result in ${wrapper.name}`, () => {
         let template = compile(wrapper.before + tc.template + wrapper.after);
-        let context = {
+        let state = {
           value: undefined as unknown,
         };
         tc.values.forEach(({ input: _input, expected: _expected, description }, index) => {
@@ -797,19 +794,19 @@ module('[jit] Updating', hooks => {
             expected = _expected;
           }
 
-          context.value = input;
+          state.value = input;
 
           if (index === 0) {
-            render(template, context);
+            render(template, state);
             equalTokens(
-              root,
+              context.root,
               wrapper.before + expected + wrapper.after,
               `expected initial render (${description})`
             );
           } else {
             rerender();
             equalTokens(
-              root,
+              context.root,
               wrapper.before + expected + wrapper.after,
               `expected updated render (${description})`
             );
@@ -1034,23 +1031,23 @@ module('[jit] Updating', hooks => {
 
     let valueNode: Node | null | undefined;
     if (
-      assertNodeTagName(root.firstChild, 'div') &&
-      assertNodeTagName(root.firstChild.firstChild, 'p')
+      assertNodeTagName(context.root.firstChild, 'div') &&
+      assertNodeTagName(context.root.firstChild.firstChild, 'p')
     ) {
-      valueNode = root.firstChild.firstChild.firstChild;
+      valueNode = context.root.firstChild.firstChild.firstChild;
     }
 
-    equalTokens(root, '<div><p>hello world</p></div>', 'Initial render');
+    equalTokens(context.root, '<div><p>hello world</p></div>', 'Initial render');
 
     rerender();
 
-    equalTokens(root, '<div><p>hello world</p></div>', 'no change');
+    equalTokens(context.root, '<div><p>hello world</p></div>', 'no change');
     if (
-      assertNodeTagName(root.firstChild, 'div') &&
-      assertNodeTagName(root.firstChild.firstChild, 'p')
+      assertNodeTagName(context.root.firstChild, 'div') &&
+      assertNodeTagName(context.root.firstChild.firstChild, 'p')
     ) {
       assert.strictEqual(
-        root.firstChild.firstChild.firstChild,
+        context.root.firstChild.firstChild.firstChild,
         valueNode,
         'The nodes were not blown away'
       );
@@ -1059,13 +1056,17 @@ module('[jit] Updating', hooks => {
     object.value = unsafeString;
     rerender();
 
-    equalTokens(root, '<div><b>Big old world!</b></div>', 'Normal strings may contain HTML');
+    equalTokens(
+      context.root,
+      '<div><b>Big old world!</b></div>',
+      'Normal strings may contain HTML'
+    );
     if (
-      assertNodeTagName(root.firstChild, 'div') &&
-      assertNodeTagName(root.firstChild.firstChild, 'b')
+      assertNodeTagName(context.root.firstChild, 'div') &&
+      assertNodeTagName(context.root.firstChild.firstChild, 'b')
     ) {
       assert.notStrictEqual(
-        root.firstChild.firstChild.firstChild,
+        context.root.firstChild.firstChild.firstChild,
         valueNode,
         'The nodes were blown away'
       );
@@ -1074,7 +1075,7 @@ module('[jit] Updating', hooks => {
     object.value = safeString;
     rerender();
 
-    equalTokens(root, '<div><p>hello world</p></div>', 'original input causes no problem');
+    equalTokens(context.root, '<div><p>hello world</p></div>', 'original input causes no problem');
   });
 
   test('triple curlies with empty string initial value', () => {
@@ -1085,21 +1086,21 @@ module('[jit] Updating', hooks => {
 
     render(template, input);
 
-    equalTokens(root, '<div><!----></div>', 'Initial render');
+    equalTokens(context.root, '<div><!----></div>', 'Initial render');
 
     rerender();
 
-    equalTokens(root, '<div><!----></div>', 'no change');
+    equalTokens(context.root, '<div><!----></div>', 'no change');
 
     input.value = '<b>Bold and spicy</b>';
     rerender();
 
-    equalTokens(root, '<div><b>Bold and spicy</b></div>', 'markup is updated');
+    equalTokens(context.root, '<div><b>Bold and spicy</b></div>', 'markup is updated');
 
     input.value = '';
     rerender();
 
-    equalTokens(root, '<div><!----></div>', 'back to empty string');
+    equalTokens(context.root, '<div><!----></div>', 'back to empty string');
   });
 
   class ValueReference<T> extends ConstReference<T> {
@@ -1111,7 +1112,7 @@ module('[jit] Updating', hooks => {
   test('double curlies with const SafeString', assert => {
     let rawString = '<b>bold</b> and spicy';
 
-    registerInternalHelper(resolver, 'const-foobar', () => {
+    registerInternalHelper(context.resolver, 'const-foobar', () => {
       return new ValueReference<unknown>(makeSafeString(rawString));
     });
 
@@ -1120,25 +1121,29 @@ module('[jit] Updating', hooks => {
 
     render(template, input);
     let valueNode: Node | null | undefined;
-    if (assertNodeTagName(root.firstChild, 'div')) {
-      valueNode = root.firstChild.firstChild;
+    if (assertNodeTagName(context.root.firstChild, 'div')) {
+      valueNode = context.root.firstChild.firstChild;
     }
 
-    equalTokens(root, '<div><b>bold</b> and spicy</div>', 'initial render');
+    equalTokens(context.root, '<div><b>bold</b> and spicy</div>', 'initial render');
 
     rerender();
 
-    equalTokens(root, '<div><b>bold</b> and spicy</div>', 'no change');
-    if (assertNodeTagName(root.firstChild, 'div')) {
-      assert.strictEqual(root.firstChild.firstChild, valueNode, 'The nodes were not blown away');
+    equalTokens(context.root, '<div><b>bold</b> and spicy</div>', 'no change');
+    if (assertNodeTagName(context.root.firstChild, 'div')) {
+      assert.strictEqual(
+        context.root.firstChild.firstChild,
+        valueNode,
+        'The nodes were not blown away'
+      );
     }
   });
 
   test('double curlies with const Node', assert => {
     let rawString = '<b>bold</b> and spicy';
 
-    registerInternalHelper(resolver, 'const-foobar', () => {
-      return new ValueReference<unknown>(doc.createTextNode(rawString));
+    registerInternalHelper(context.resolver, 'const-foobar', () => {
+      return new ValueReference<unknown>(context.doc.createTextNode(rawString));
     });
 
     let template = compile('<div>{{const-foobar}}</div>');
@@ -1146,24 +1151,28 @@ module('[jit] Updating', hooks => {
 
     render(template, input);
     let valueNode: Node | null | undefined;
-    if (assertNodeTagName(root.firstChild, 'div')) {
-      valueNode = root.firstChild.firstChild;
+    if (assertNodeTagName(context.root.firstChild, 'div')) {
+      valueNode = context.root.firstChild.firstChild;
     }
 
-    equalTokens(root, '<div>&lt;b&gt;bold&lt;/b&gt; and spicy</div>', 'initial render');
+    equalTokens(context.root, '<div>&lt;b&gt;bold&lt;/b&gt; and spicy</div>', 'initial render');
 
     rerender();
 
-    equalTokens(root, '<div>&lt;b&gt;bold&lt;/b&gt; and spicy</div>', 'no change');
-    if (assertNodeTagName(root.firstChild, 'div')) {
-      assert.strictEqual(root.firstChild.firstChild, valueNode, 'The node was not blown away');
+    equalTokens(context.root, '<div>&lt;b&gt;bold&lt;/b&gt; and spicy</div>', 'no change');
+    if (assertNodeTagName(context.root.firstChild, 'div')) {
+      assert.strictEqual(
+        context.root.firstChild.firstChild,
+        valueNode,
+        'The node was not blown away'
+      );
     }
   });
 
   test('triple curlies with const SafeString', assert => {
     let rawString = '<b>bold</b> and spicy';
 
-    registerInternalHelper(resolver, 'const-foobar', () => {
+    registerInternalHelper(context.resolver, 'const-foobar', () => {
       return new ValueReference<unknown>(makeSafeString(rawString));
     });
 
@@ -1172,40 +1181,44 @@ module('[jit] Updating', hooks => {
 
     render(template, input);
     let valueNode: Node | null | undefined;
-    if (assertNodeTagName(root.firstChild, 'div')) {
-      valueNode = root.firstChild.firstChild;
+    if (assertNodeTagName(context.root.firstChild, 'div')) {
+      valueNode = context.root.firstChild.firstChild;
     }
 
-    equalTokens(root, '<div><b>bold</b> and spicy</div>', 'initial render');
+    equalTokens(context.root, '<div><b>bold</b> and spicy</div>', 'initial render');
 
     rerender();
 
-    equalTokens(root, '<div><b>bold</b> and spicy</div>', 'no change');
+    equalTokens(context.root, '<div><b>bold</b> and spicy</div>', 'no change');
 
-    if (assertNodeTagName(root.firstChild, 'div')) {
-      assert.strictEqual(root.firstChild.firstChild, valueNode, 'The nodes were not blown away');
+    if (assertNodeTagName(context.root.firstChild, 'div')) {
+      assert.strictEqual(
+        context.root.firstChild.firstChild,
+        valueNode,
+        'The nodes were not blown away'
+      );
     }
   });
 
   test('triple curlies with const Node', assert => {
     let rawString = '<b>bold</b> and spicy';
 
-    registerInternalHelper(resolver, 'const-foobar', () => {
-      return new ValueReference<unknown>(doc.createTextNode(rawString));
+    registerInternalHelper(context.resolver, 'const-foobar', () => {
+      return new ValueReference<unknown>(context.doc.createTextNode(rawString));
     });
 
     let template = compile('<div>{{{const-foobar}}}</div>');
     let input = {};
 
     render(template, input);
-    let valueNode = root.firstChild;
+    let valueNode = context.root.firstChild;
 
-    equalTokens(root, '<div>&lt;b&gt;bold&lt;/b&gt; and spicy</div>', 'initial render');
+    equalTokens(context.root, '<div>&lt;b&gt;bold&lt;/b&gt; and spicy</div>', 'initial render');
 
     rerender();
 
-    equalTokens(root, '<div>&lt;b&gt;bold&lt;/b&gt; and spicy</div>', 'no change');
-    assert.strictEqual(root.firstChild, valueNode, 'The node was not blown away');
+    equalTokens(context.root, '<div>&lt;b&gt;bold&lt;/b&gt; and spicy</div>', 'no change');
+    assert.strictEqual(context.root.firstChild, valueNode, 'The node was not blown away');
   });
 
   test('helpers can add destroyables', assert => {
@@ -1216,7 +1229,7 @@ module('[jit] Updating', hooks => {
       },
     };
 
-    registerInternalHelper(resolver, 'destroy-me', (_args, vm) => {
+    registerInternalHelper(context.resolver, 'destroy-me', (_args, vm) => {
       vm.associateDestroyable(destroyable);
       return PrimitiveReference.create('destroy me!');
     });
@@ -1225,12 +1238,12 @@ module('[jit] Updating', hooks => {
 
     render(template, {});
 
-    equalTokens(root, '<div>destroy me!</div>', 'initial render');
+    equalTokens(context.root, '<div>destroy me!</div>', 'initial render');
     assert.strictEqual(destroyable.count, 0, 'not destroyed');
 
     rerender();
 
-    equalTokens(root, '<div>destroy me!</div>', 'no change');
+    equalTokens(context.root, '<div>destroy me!</div>', 'no change');
     assert.strictEqual(destroyable.count, 0, 'not destroyed');
 
     result.destroy();
@@ -1279,8 +1292,8 @@ module('[jit] Updating', hooks => {
   });
 
   test(`helpers passed as arguments to {{partial}} are not torn down when switching between blocks`, assert => {
-    registerPartial(resolver, 'yasss', 'Yes');
-    registerPartial(resolver, 'noooo', '');
+    registerPartial(context.resolver, 'yasss', 'Yes');
+    registerPartial(context.resolver, 'noooo', '');
 
     let options = {
       template: '{{partial (stateful-foo)}}',
@@ -1292,7 +1305,7 @@ module('[jit] Updating', hooks => {
   });
 
   test(`helpers passed as arguments to {{component}} are not torn down when switching between blocks`, assert => {
-    registerBasicComponent(resolver, 'XYasss', BasicComponent, '<div>Yes</div>');
+    registerBasicComponent(context.resolver, 'XYasss', BasicComponent, '<div>Yes</div>');
 
     let options = {
       template: '{{component (stateful-foo)}}',
@@ -1304,7 +1317,7 @@ module('[jit] Updating', hooks => {
   });
 
   test(`helpers passed as arguments to {{#in-element}} are not torn down when switching between blocks`, assert => {
-    let externalElement = doc.createElement('div');
+    let externalElement = context.doc.createElement('div');
 
     let options = {
       template: '{{#in-element (stateful-foo)}}Yes{{/in-element}}',
@@ -1325,12 +1338,12 @@ module('[jit] Updating', hooks => {
       element?: SimpleElement;
     }
   ) {
-    let { template, truthyValue, falsyValue, element = root } = arg1;
+    let { template, truthyValue, falsyValue, element = context.root } = arg1;
     let didCreate = 0;
     let didDestroy = 0;
     let reference: UpdatableReference<T | U> | undefined;
 
-    registerInternalHelper(resolver, 'stateful-foo', (_args, vm) => {
+    registerInternalHelper(context.resolver, 'stateful-foo', (_args, vm) => {
       didCreate++;
 
       vm.associateDestroyable({
@@ -1379,23 +1392,23 @@ module('[jit] Updating', hooks => {
 
     let valueNode: Node | null | undefined;
     if (
-      assertNodeTagName(root.firstChild, 'div') &&
-      assertNodeTagName(root.firstChild.firstChild, 'p')
+      assertNodeTagName(context.root.firstChild, 'div') &&
+      assertNodeTagName(context.root.firstChild.firstChild, 'p')
     ) {
-      valueNode = root.firstChild.firstChild.firstChild;
+      valueNode = context.root.firstChild.firstChild.firstChild;
     }
 
-    equalTokens(root, '<div><p>hello world</p></div>', 'Initial render');
+    equalTokens(context.root, '<div><p>hello world</p></div>', 'Initial render');
 
     rerender();
 
-    equalTokens(root, '<div><p>hello world</p></div>', 'no change');
+    equalTokens(context.root, '<div><p>hello world</p></div>', 'no change');
     if (
-      assertNodeTagName(root.firstChild, 'div') &&
-      assertNodeTagName(root.firstChild.firstChild, 'p')
+      assertNodeTagName(context.root.firstChild, 'div') &&
+      assertNodeTagName(context.root.firstChild.firstChild, 'p')
     ) {
       assert.strictEqual(
-        root.firstChild.firstChild.firstChild,
+        context.root.firstChild.firstChild.firstChild,
         valueNode,
         'The text node was not blown away'
       );
@@ -1404,13 +1417,13 @@ module('[jit] Updating', hooks => {
     object.value = 'goodbye world';
     rerender();
 
-    equalTokens(root, '<div><p>goodbye world</p></div>', 'After updating and dirtying');
+    equalTokens(context.root, '<div><p>goodbye world</p></div>', 'After updating and dirtying');
     if (
-      assertNodeTagName(root.firstChild, 'div') &&
-      assertNodeTagName(root.firstChild.firstChild, 'p')
+      assertNodeTagName(context.root.firstChild, 'div') &&
+      assertNodeTagName(context.root.firstChild.firstChild, 'p')
     ) {
       assert.strictEqual(
-        root.firstChild.firstChild.firstChild,
+        context.root.firstChild.firstChild.firstChild,
         valueNode,
         'The text node was not blown away'
       );
@@ -1425,23 +1438,23 @@ module('[jit] Updating', hooks => {
     render(template, object);
     let valueNode: Node | null | undefined;
     if (
-      assertNodeTagName(root.firstChild, 'div') &&
-      assertNodeTagName(root.firstChild.firstChild, 'p')
+      assertNodeTagName(context.root.firstChild, 'div') &&
+      assertNodeTagName(context.root.firstChild.firstChild, 'p')
     ) {
-      valueNode = root.firstChild.firstChild.firstChild;
+      valueNode = context.root.firstChild.firstChild.firstChild;
     }
 
-    equalTokens(root, '<div><p>hello world</p></div>', 'Initial render');
+    equalTokens(context.root, '<div><p>hello world</p></div>', 'Initial render');
 
     rerender();
 
-    equalTokens(root, '<div><p>hello world</p></div>', 'After dirtying but not updating');
+    equalTokens(context.root, '<div><p>hello world</p></div>', 'After dirtying but not updating');
     if (
-      assertNodeTagName(root.firstChild, 'div') &&
-      assertNodeTagName(root.firstChild.firstChild, 'p')
+      assertNodeTagName(context.root.firstChild, 'div') &&
+      assertNodeTagName(context.root.firstChild.firstChild, 'p')
     ) {
       assert.strictEqual(
-        root.firstChild.firstChild.firstChild,
+        context.root.firstChild.firstChild.firstChild,
         valueNode,
         'The text node was not blown away'
       );
@@ -1450,13 +1463,13 @@ module('[jit] Updating', hooks => {
     // Even though the #if was stable, a dirty child node is updated
     object.value = 'goodbye world';
     rerender();
-    equalTokens(root, '<div><p>goodbye world</p></div>', 'After updating and dirtying');
+    equalTokens(context.root, '<div><p>goodbye world</p></div>', 'After updating and dirtying');
     if (
-      assertNodeTagName(root.firstChild, 'div') &&
-      assertNodeTagName(root.firstChild.firstChild, 'p')
+      assertNodeTagName(context.root.firstChild, 'div') &&
+      assertNodeTagName(context.root.firstChild.firstChild, 'p')
     ) {
       assert.strictEqual(
-        root.firstChild.firstChild.firstChild,
+        context.root.firstChild.firstChild.firstChild,
         valueNode,
         'The text node was not blown away'
       );
@@ -1464,13 +1477,13 @@ module('[jit] Updating', hooks => {
 
     object.condition = false;
     rerender();
-    equalTokens(root, '<div><p>Nothing</p></div>', 'And then dirtying');
+    equalTokens(context.root, '<div><p>Nothing</p></div>', 'And then dirtying');
     if (
-      assertNodeTagName(root.firstChild, 'div') &&
-      assertNodeTagName(root.firstChild.firstChild, 'p')
+      assertNodeTagName(context.root.firstChild, 'div') &&
+      assertNodeTagName(context.root.firstChild.firstChild, 'p')
     ) {
       assert.notStrictEqual(
-        root.firstChild.firstChild.firstChild,
+        context.root.firstChild.firstChild.firstChild,
         valueNode,
         'The text node was not blown away'
       );
@@ -1484,14 +1497,14 @@ module('[jit] Updating', hooks => {
     );
     render(template, object);
 
-    equalTokens(root, '<div><p>Nothing</p></div>');
+    equalTokens(context.root, '<div><p>Nothing</p></div>');
 
     object.condition.push('thing');
     rerender();
-    equalTokens(root, '<div><p>hello world</p></div>', 'Initial render');
+    equalTokens(context.root, '<div><p>hello world</p></div>', 'Initial render');
     object.condition.pop();
     rerender();
-    equalTokens(root, '<div><p>Nothing</p></div>');
+    equalTokens(context.root, '<div><p>Nothing</p></div>');
   });
 
   test('a simple implementation of a dirtying rerender without else', () => {
@@ -1499,18 +1512,22 @@ module('[jit] Updating', hooks => {
     let template = compile('<div>{{#if condition}}<p>{{value}}</p>{{/if}}</div>');
     render(template, object);
 
-    equalTokens(root, '<div><p>hello world</p></div>', 'Initial render');
+    equalTokens(context.root, '<div><p>hello world</p></div>', 'Initial render');
 
     object.condition = false;
 
     rerender();
-    equalTokens(root, '<div><!----></div>', 'If the condition is false, the morph becomes empty');
+    equalTokens(
+      context.root,
+      '<div><!----></div>',
+      'If the condition is false, the morph becomes empty'
+    );
 
     object.condition = true;
 
     rerender();
     equalTokens(
-      root,
+      context.root,
       '<div><p>hello world</p></div>',
       'If the condition is true, the morph repopulates'
     );
@@ -1521,18 +1538,22 @@ module('[jit] Updating', hooks => {
     let template = compile('<div>{{#unless condition}}<p>{{value}}</p>{{/unless}}</div>');
     render(template, object);
 
-    equalTokens(root, '<div><!----></div>', 'Initial render');
+    equalTokens(context.root, '<div><!----></div>', 'Initial render');
 
     object.condition = false;
     rerender();
     equalTokens(
-      root,
+      context.root,
       '<div><p>hello world</p></div>',
       'If the condition is false, the morph becomes populated'
     );
     object.condition = true;
     rerender();
-    equalTokens(root, '<div><!----></div>', 'If the condition is true, the morph unpopulated');
+    equalTokens(
+      context.root,
+      '<div><!----></div>',
+      'If the condition is true, the morph unpopulated'
+    );
   });
 
   test('The unless helper with else', function() {
@@ -1543,18 +1564,22 @@ module('[jit] Updating', hooks => {
 
     render(template, object);
 
-    equalTokens(root, '<div><p>Nothing</p></div>', 'Initial render');
+    equalTokens(context.root, '<div><p>Nothing</p></div>', 'Initial render');
 
     object.condition = false;
     rerender();
     equalTokens(
-      root,
+      context.root,
       '<div><p>hello world</p></div>',
       'If the condition is false, the default renders'
     );
     object.condition = true;
     rerender();
-    equalTokens(root, '<div><p>Nothing</p></div>', 'If the condition is true, the else renders');
+    equalTokens(
+      context.root,
+      '<div><p>Nothing</p></div>',
+      'If the condition is true, the else renders'
+    );
   });
 
   test('The unless helper should consider an empty array falsy', function() {
@@ -1565,16 +1590,20 @@ module('[jit] Updating', hooks => {
 
     render(template, object);
 
-    equalTokens(root, '<div><p>hello world</p></div>', 'Initial render');
+    equalTokens(context.root, '<div><p>hello world</p></div>', 'Initial render');
 
     object.condition.push(1);
     rerender();
-    equalTokens(root, '<div><p>Nothing</p></div>', 'If the condition is true, the else renders');
+    equalTokens(
+      context.root,
+      '<div><p>Nothing</p></div>',
+      'If the condition is true, the else renders'
+    );
 
     object.condition.pop();
     rerender();
     equalTokens(
-      root,
+      context.root,
       '<div><p>hello world</p></div>',
       'If the condition is false, the default renders'
     );
@@ -1585,13 +1614,13 @@ module('[jit] Updating', hooks => {
     let template = compile('<div>{{#if condition}}<p>{{value}}</p>{{/if}}</div>');
     render(template, object);
 
-    equalTokens(root, '<div><!----></div>', 'Initial render');
+    equalTokens(context.root, '<div><!----></div>', 'Initial render');
 
     object.condition = true;
 
     rerender();
     equalTokens(
-      root,
+      context.root,
       '<div><p>hello world</p></div>',
       'If the condition is true, the morph populates'
     );
@@ -1599,7 +1628,11 @@ module('[jit] Updating', hooks => {
     object.condition = false;
 
     rerender();
-    equalTokens(root, '<div><!----></div>', 'If the condition is false, the morph is empty');
+    equalTokens(
+      context.root,
+      '<div><!----></div>',
+      'If the condition is false, the morph is empty'
+    );
   });
 
   test('block arguments', () => {
@@ -1608,22 +1641,22 @@ module('[jit] Updating', hooks => {
     let object = { person: { name: { first: 'Godfrey', last: 'Chan' } } };
     render(template, object);
 
-    equalTokens(root, '<div>Godfrey</div>', 'Initial render');
+    equalTokens(context.root, '<div>Godfrey</div>', 'Initial render');
 
     object.person.name.first = 'Godfreak';
     rerender();
 
-    equalTokens(root, '<div>Godfreak</div>', 'After updating');
+    equalTokens(context.root, '<div>Godfreak</div>', 'After updating');
 
     rerender({ person: { name: { first: 'Godfrey', last: 'Chan' } } });
 
-    equalTokens(root, '<div>Godfrey</div>', 'After reset');
+    equalTokens(context.root, '<div>Godfrey</div>', 'After reset');
   });
 
   test('block arguments should have higher presedence than helpers', () => {
-    registerHelper(resolver, 'foo', () => 'foo-helper');
-    registerHelper(resolver, 'bar', () => 'bar-helper');
-    registerHelper(resolver, 'echo', args => args[0]);
+    registerHelper(context.resolver, 'foo', () => 'foo-helper');
+    registerHelper(context.resolver, 'bar', () => 'bar-helper');
+    registerHelper(context.resolver, 'echo', args => args[0]);
 
     let template = compile(trimLines`
       <div>
@@ -1673,7 +1706,7 @@ module('[jit] Updating', hooks => {
     render(template, object);
 
     equalTokens(
-      root,
+      context.root,
       trimLines`
       <div>
         foo: "foo-helper";
@@ -1716,7 +1749,7 @@ module('[jit] Updating', hooks => {
     rerender();
 
     equalTokens(
-      root,
+      context.root,
       trimLines`
       <div>
         foo: "foo-helper";
@@ -1760,7 +1793,7 @@ module('[jit] Updating', hooks => {
     rerender();
 
     equalTokens(
-      root,
+      context.root,
       trimLines`
       <div>
         foo: "foo-helper";
@@ -1803,7 +1836,7 @@ module('[jit] Updating', hooks => {
     rerender({ foo: 'foo-value', bar: 'bar-value', value: 'value-value' });
 
     equalTokens(
-      root,
+      context.root,
       trimLines`
       <div>
         foo: "foo-helper";
@@ -1850,16 +1883,16 @@ module('[jit] Updating', hooks => {
     let object = { person: { name: { first: 'Godfrey', last: 'Chan' } }, f: 'Outer' };
     render(template, object);
 
-    equalTokens(root, '<div>GodfreyOuter</div>', 'Initial render');
+    equalTokens(context.root, '<div>GodfreyOuter</div>', 'Initial render');
 
     object.person.name.first = 'Godfreak';
     rerender();
 
-    equalTokens(root, '<div>GodfreakOuter</div>', 'After updating');
+    equalTokens(context.root, '<div>GodfreakOuter</div>', 'After updating');
   });
 
   test('block arguments cannot be accessed through {{this}}', () => {
-    registerHelper(resolver, 'noop', params => params[0]);
+    registerHelper(context.resolver, 'noop', params => params[0]);
 
     let template = compile(stripTight`
       <div>
@@ -1871,21 +1904,21 @@ module('[jit] Updating', hooks => {
     let object = { person: 'Yehuda', name: 'Godfrey' };
     render(template, object);
 
-    equalTokens(root, '<div>[Godfrey][Godfrey][Godfrey]</div>', 'Initial render');
+    equalTokens(context.root, '<div>[Godfrey][Godfrey][Godfrey]</div>', 'Initial render');
 
     rerender();
 
-    equalTokens(root, '<div>[Godfrey][Godfrey][Godfrey]</div>', 'Initial render');
+    equalTokens(context.root, '<div>[Godfrey][Godfrey][Godfrey]</div>', 'Initial render');
 
     object.name = 'Godfreak';
     rerender();
 
-    equalTokens(root, '<div>[Godfreak][Godfreak][Godfreak]</div>', 'After update');
+    equalTokens(context.root, '<div>[Godfreak][Godfreak][Godfreak]</div>', 'After update');
 
     object.name = 'Godfrey';
     rerender();
 
-    equalTokens(root, '<div>[Godfrey][Godfrey][Godfrey]</div>', 'After reset');
+    equalTokens(context.root, '<div>[Godfrey][Godfrey][Godfrey]</div>', 'After reset');
   });
 
   test('The with helper should consider an empty array falsy', () => {
@@ -1893,12 +1926,12 @@ module('[jit] Updating', hooks => {
     let template = compile('<div>{{#with condition as |c|}}{{c.length}}{{/with}}</div>');
     render(template, object);
 
-    equalTokens(root, '<div><!----></div>', 'Initial render');
+    equalTokens(context.root, '<div><!----></div>', 'Initial render');
 
     object.condition.push(1);
     rerender();
 
-    equalTokens(root, '<div>1</div>', 'After updating');
+    equalTokens(context.root, '<div>1</div>', 'After updating');
   });
 
   test('block helpers whose template has a morph at the edge', assert => {
@@ -1906,7 +1939,7 @@ module('[jit] Updating', hooks => {
     let object = { value: 'hello world' };
     render(template, object);
 
-    equalTokens(root, 'hello world');
+    equalTokens(context.root, 'hello world');
     let firstNode = result.firstNode();
     assert.notStrictEqual(firstNode, null, 'first node should have rendered');
     if (firstNode !== null) {
@@ -1932,12 +1965,12 @@ module('[jit] Updating', hooks => {
     object.value = 'goodbye';
     rerender();
 
-    equalTokens(root, '<div>goodbye</div>');
+    equalTokens(context.root, '<div>goodbye</div>');
 
     object.value = 'hello';
     rerender();
 
-    firstNode = root.firstChild;
+    firstNode = context.root.firstChild;
     if (assertNodeTagName(firstNode, 'div')) {
       textNode = firstNode.firstChild;
       assert.equal(textNode && textNode.nodeValue, 'hello');
@@ -1945,7 +1978,7 @@ module('[jit] Updating', hooks => {
   });
 
   test('helper calls follow the normal dirtying rules', () => {
-    registerHelper(resolver, 'capitalize', function(params) {
+    registerHelper(context.resolver, 'capitalize', function(params) {
       let value = params[0];
       if (value !== null && value !== undefined && typeof value === 'string') {
         return value.toUpperCase();
@@ -1965,18 +1998,18 @@ module('[jit] Updating', hooks => {
     object.value = 'goodbye';
     rerender();
 
-    equalTokens(root, '<div>GOODBYE</div>');
+    equalTokens(context.root, '<div>GOODBYE</div>');
 
     rerender();
 
-    equalTokens(root, '<div>GOODBYE</div>');
+    equalTokens(context.root, '<div>GOODBYE</div>');
 
     // Checks normalized value, not raw value
     object.value = 'GoOdByE';
     rerender();
 
-    if (assertNodeTagName(root.firstChild, 'div')) {
-      assertProperty(root.firstChild.firstChild, 'nodeValue', 'GOODBYE');
+    if (assertNodeTagName(context.root.firstChild, 'div')) {
+      assertProperty(context.root.firstChild.firstChild, 'nodeValue', 'GOODBYE');
     }
   });
 
@@ -1986,21 +2019,21 @@ module('[jit] Updating', hooks => {
 
     render(template, object);
 
-    equalTokens(root, "<div class='world'>hello</div>", 'Initial render');
+    equalTokens(context.root, "<div class='world'>hello</div>", 'Initial render');
 
     object.value = 'universe';
     rerender();
 
-    equalTokens(root, "<div class='universe'>hello</div>", 'Revalidating without dirtying');
+    equalTokens(context.root, "<div class='universe'>hello</div>", 'Revalidating without dirtying');
 
     rerender();
 
-    equalTokens(root, "<div class='universe'>hello</div>", 'Revalidating after dirtying');
+    equalTokens(context.root, "<div class='universe'>hello</div>", 'Revalidating after dirtying');
 
     object.value = 'world';
     rerender();
 
-    equalTokens(root, "<div class='world'>hello</div>", 'Revalidating after dirtying');
+    equalTokens(context.root, "<div class='world'>hello</div>", 'Revalidating after dirtying');
   });
 
   test('class attribute w/ concat follow the normal dirtying rules', () => {
@@ -2008,26 +2041,26 @@ module('[jit] Updating', hooks => {
     let object = { value: 'world' as string | null };
     render(template, object);
 
-    equalTokens(root, "<div class='hello world'>hello</div>");
+    equalTokens(context.root, "<div class='hello world'>hello</div>");
 
     rerender();
 
-    equalTokens(root, "<div class='hello world'>hello</div>");
+    equalTokens(context.root, "<div class='hello world'>hello</div>");
 
     object.value = 'universe';
     rerender();
 
-    equalTokens(root, "<div class='hello universe'>hello</div>");
+    equalTokens(context.root, "<div class='hello universe'>hello</div>");
 
     object.value = null;
     rerender();
 
-    equalTokens(root, "<div class='hello '>hello</div>");
+    equalTokens(context.root, "<div class='hello '>hello</div>");
 
     object.value = 'world';
     rerender();
 
-    equalTokens(root, "<div class='hello world'>hello</div>");
+    equalTokens(context.root, "<div class='hello world'>hello</div>");
   });
 
   test('class attribute is removed if the binding becomes null or undefined', () => {
@@ -2035,31 +2068,31 @@ module('[jit] Updating', hooks => {
     let object: { value: any } = { value: 'foo' };
     render(template, object);
 
-    equalTokens(root, "<div class='foo'>hello</div>");
+    equalTokens(context.root, "<div class='foo'>hello</div>");
 
     rerender();
 
-    equalTokens(root, "<div class='foo'>hello</div>");
+    equalTokens(context.root, "<div class='foo'>hello</div>");
 
     object.value = null;
     rerender();
 
-    equalTokens(root, '<div>hello</div>');
+    equalTokens(context.root, '<div>hello</div>');
 
     object.value = 0;
     rerender();
 
-    equalTokens(root, "<div class='0'>hello</div>");
+    equalTokens(context.root, "<div class='0'>hello</div>");
 
     object.value = undefined;
     rerender();
 
-    equalTokens(root, '<div>hello</div>');
+    equalTokens(context.root, '<div>hello</div>');
 
     object.value = 'foo';
     rerender();
 
-    equalTokens(root, "<div class='foo'>hello</div>");
+    equalTokens(context.root, "<div class='foo'>hello</div>");
   });
 
   test('attribute nodes follow the normal dirtying rules', () => {
@@ -2068,26 +2101,34 @@ module('[jit] Updating', hooks => {
 
     render(template, object);
 
-    equalTokens(root, "<div data-value='world'>hello</div>", 'Initial render');
+    equalTokens(context.root, "<div data-value='world'>hello</div>", 'Initial render');
 
     object.value = 'universe';
     rerender();
 
-    equalTokens(root, "<div data-value='universe'>hello</div>", 'Revalidating without dirtying');
+    equalTokens(
+      context.root,
+      "<div data-value='universe'>hello</div>",
+      'Revalidating without dirtying'
+    );
 
     rerender();
 
-    equalTokens(root, "<div data-value='universe'>hello</div>", 'Revalidating after dirtying');
+    equalTokens(
+      context.root,
+      "<div data-value='universe'>hello</div>",
+      'Revalidating after dirtying'
+    );
 
     object.value = null;
     rerender();
 
-    equalTokens(root, '<div>hello</div>', 'Revalidating after dirtying');
+    equalTokens(context.root, '<div>hello</div>', 'Revalidating after dirtying');
 
     object.value = 'world';
     rerender();
 
-    equalTokens(root, "<div data-value='world'>hello</div>", 'Revalidating after dirtying');
+    equalTokens(context.root, "<div data-value='world'>hello</div>", 'Revalidating after dirtying');
   });
 
   test('attribute nodes w/ concat follow the normal dirtying rules', () => {
@@ -2095,26 +2136,26 @@ module('[jit] Updating', hooks => {
     let object = { value: 'world' as string | null };
     render(template, object);
 
-    equalTokens(root, "<div data-value='hello world'>hello</div>");
+    equalTokens(context.root, "<div data-value='hello world'>hello</div>");
 
     rerender();
 
-    equalTokens(root, "<div data-value='hello world'>hello</div>");
+    equalTokens(context.root, "<div data-value='hello world'>hello</div>");
 
     object.value = 'universe';
     rerender();
 
-    equalTokens(root, "<div data-value='hello universe'>hello</div>");
+    equalTokens(context.root, "<div data-value='hello universe'>hello</div>");
 
     object.value = null;
     rerender();
 
-    equalTokens(root, "<div data-value='hello '>hello</div>");
+    equalTokens(context.root, "<div data-value='hello '>hello</div>");
 
     object.value = 'world';
     rerender();
 
-    equalTokens(root, "<div data-value='hello world'>hello</div>");
+    equalTokens(context.root, "<div data-value='hello world'>hello</div>");
   });
 
   test('attributes values are normalized correctly', () => {
@@ -2129,29 +2170,29 @@ module('[jit] Updating', hooks => {
 
     render(template, object);
 
-    equalTokens(root, "<div data-value='world'>hello</div>", 'Initial render');
+    equalTokens(context.root, "<div data-value='world'>hello</div>", 'Initial render');
 
     rerender();
 
-    equalTokens(root, "<div data-value='world'>hello</div>", 'Initial render');
+    equalTokens(context.root, "<div data-value='world'>hello</div>", 'Initial render');
 
     object.value = 123;
     rerender();
 
-    equalTokens(root, "<div data-value='123'>hello</div>", 'Revalidating without dirtying');
+    equalTokens(context.root, "<div data-value='123'>hello</div>", 'Revalidating without dirtying');
 
     rerender();
 
-    equalTokens(root, "<div data-value='123'>hello</div>", 'Revalidating after dirtying');
+    equalTokens(context.root, "<div data-value='123'>hello</div>", 'Revalidating after dirtying');
 
     object.value = false;
     rerender();
 
-    equalTokens(root, '<div>hello</div>', 'Revalidating after dirtying');
+    equalTokens(context.root, '<div>hello</div>', 'Revalidating after dirtying');
 
     rerender();
 
-    equalTokens(root, '<div>hello</div>', 'Revalidating after dirtying');
+    equalTokens(context.root, '<div>hello</div>', 'Revalidating after dirtying');
 
     object.value = {
       toString() {
@@ -2160,7 +2201,7 @@ module('[jit] Updating', hooks => {
     };
     rerender();
 
-    equalTokens(root, "<div data-value='world'>hello</div>", 'Revalidating after dirtying');
+    equalTokens(context.root, "<div data-value='world'>hello</div>", 'Revalidating after dirtying');
   });
 
   test('namespaced attribute nodes follow the normal dirtying rules', () => {
@@ -2169,16 +2210,16 @@ module('[jit] Updating', hooks => {
 
     render(template, object);
 
-    equalTokens(root, "<div xml:lang='en-us'>hello</div>", 'Initial render');
+    equalTokens(context.root, "<div xml:lang='en-us'>hello</div>", 'Initial render');
 
     object.lang = 'en-uk';
     rerender();
 
-    equalTokens(root, "<div xml:lang='en-uk'>hello</div>", 'Revalidating without dirtying');
+    equalTokens(context.root, "<div xml:lang='en-uk'>hello</div>", 'Revalidating without dirtying');
 
     rerender();
 
-    equalTokens(root, "<div xml:lang='en-uk'>hello</div>", 'Revalidating after dirtying');
+    equalTokens(context.root, "<div xml:lang='en-uk'>hello</div>", 'Revalidating after dirtying');
   });
 
   test('namespaced attribute nodes w/ concat follow the normal dirtying rules', () => {
@@ -2187,26 +2228,26 @@ module('[jit] Updating', hooks => {
 
     render(template, object);
 
-    equalTokens(root, "<div xml:lang='en-us'>hello</div>", 'Initial render');
+    equalTokens(context.root, "<div xml:lang='en-us'>hello</div>", 'Initial render');
 
     rerender();
 
-    equalTokens(root, "<div xml:lang='en-us'>hello</div>", 'No-op rerender');
+    equalTokens(context.root, "<div xml:lang='en-us'>hello</div>", 'No-op rerender');
 
     object.locale = 'uk';
     rerender();
 
-    equalTokens(root, "<div xml:lang='en-uk'>hello</div>", 'After update');
+    equalTokens(context.root, "<div xml:lang='en-uk'>hello</div>", 'After update');
 
     object.locale = null;
     rerender();
 
-    equalTokens(root, "<div xml:lang='en-'>hello</div>", 'After updating to null');
+    equalTokens(context.root, "<div xml:lang='en-'>hello</div>", 'After updating to null');
 
     object.locale = 'us';
     rerender();
 
-    equalTokens(root, "<div xml:lang='en-us'>hello</div>", 'After reset');
+    equalTokens(context.root, "<div xml:lang='en-us'>hello</div>", 'After reset');
   });
 
   test('non-standard namespaced attribute nodes follow the normal dirtying rules', () => {
@@ -2215,16 +2256,24 @@ module('[jit] Updating', hooks => {
 
     render(template, object);
 
-    equalTokens(root, "<div epub:type='dedication'>hello</div>", 'Initial render');
+    equalTokens(context.root, "<div epub:type='dedication'>hello</div>", 'Initial render');
 
     object.type = 'backmatter';
     rerender();
 
-    equalTokens(root, "<div epub:type='backmatter'>hello</div>", 'Revalidating without dirtying');
+    equalTokens(
+      context.root,
+      "<div epub:type='backmatter'>hello</div>",
+      'Revalidating without dirtying'
+    );
 
     rerender();
 
-    equalTokens(root, "<div epub:type='backmatter'>hello</div>", 'Revalidating after dirtying');
+    equalTokens(
+      context.root,
+      "<div epub:type='backmatter'>hello</div>",
+      'Revalidating after dirtying'
+    );
   });
 
   test('non-standard namespaced attribute nodes w/ concat follow the normal dirtying rules', () => {
@@ -2233,31 +2282,39 @@ module('[jit] Updating', hooks => {
 
     render(template, object);
 
-    equalTokens(root, "<div epub:type='dedication backmatter'>hello</div>", 'Initial render');
+    equalTokens(
+      context.root,
+      "<div epub:type='dedication backmatter'>hello</div>",
+      'Initial render'
+    );
 
     rerender();
 
-    equalTokens(root, "<div epub:type='dedication backmatter'>hello</div>", 'No-op rerender');
+    equalTokens(
+      context.root,
+      "<div epub:type='dedication backmatter'>hello</div>",
+      'No-op rerender'
+    );
 
     object.type = 'index';
     rerender();
 
-    equalTokens(root, "<div epub:type='dedication index'>hello</div>", 'After update');
+    equalTokens(context.root, "<div epub:type='dedication index'>hello</div>", 'After update');
 
     object.type = null;
     rerender();
 
-    equalTokens(root, "<div epub:type='dedication '>hello</div>", 'After updating to null');
+    equalTokens(context.root, "<div epub:type='dedication '>hello</div>", 'After updating to null');
 
     object.type = 'backmatter';
     rerender();
 
-    equalTokens(root, "<div epub:type='dedication backmatter'>hello</div>", 'After reset');
+    equalTokens(context.root, "<div epub:type='dedication backmatter'>hello</div>", 'After reset');
   });
 
   test('<option selected> is normalized and updated correctly', assert => {
     function assertSelected(expectedSelected: string[], label: string) {
-      let options = getElementsByTagName(root, 'option');
+      let options = getElementsByTagName(context.root, 'option');
       let actualSelected = [];
       for (let i = 0; i < options.length; i++) {
         let option = options[i];
@@ -2301,7 +2358,7 @@ module('[jit] Updating', hooks => {
         <option>5</option>
       </select>`;
 
-    equalTokens(root, expectedInitialTokens, 'initial render tokens');
+    equalTokens(context.root, expectedInitialTokens, 'initial render tokens');
     assertSelected(['1', '2'], 'selection after initial render');
 
     rerender();
@@ -2408,17 +2465,17 @@ module('[jit] Updating', hooks => {
     let object = { list: [''] };
     render(template, object);
 
-    let items = getElementsByTagName(root, 'li');
+    let items = getElementsByTagName(context.root, 'li');
     let lastNode = items[items.length - 1];
 
-    equalTokens(root, '<ul><li></li></ul>', 'Initial render');
+    equalTokens(context.root, '<ul><li></li></ul>', 'Initial render');
 
     object = { list: ['first!', ''] };
     rerender(object);
 
-    equalTokens(root, '<ul><li>first!</li><li></li></ul>', 'After prepending list item');
+    equalTokens(context.root, '<ul><li>first!</li><li></li></ul>', 'After prepending list item');
 
-    let newItems = getElementsByTagName(root, 'li');
+    let newItems = getElementsByTagName(context.root, 'li');
     let newLastNode = newItems[newItems.length - 1];
 
     assert.strictEqual(
@@ -2439,7 +2496,7 @@ module('[jit] Updating', hooks => {
     let itemNode = getNodeByClassName('none');
     let textNode = getFirstChildOfNode('none');
 
-    equalTokens(root, `<ul><li class="none">none</li></none`);
+    equalTokens(context.root, `<ul><li class="none">none</li></none`);
 
     rerender(object);
     assertStableNodes('none', 'after no-op rerender');
@@ -2447,12 +2504,12 @@ module('[jit] Updating', hooks => {
     object = { list: [{ name: 'Foo Bar', class: 'foobar' }] };
     rerender(object);
 
-    equalTokens(root, '<ul><li class="foobar">Foo Bar</li></ul>');
+    equalTokens(context.root, '<ul><li class="foobar">Foo Bar</li></ul>');
 
     object = { list: [] };
     rerender(object);
 
-    equalTokens(root, '<ul><li class="none">none</li></ul>');
+    equalTokens(context.root, '<ul><li class="none">none</li></ul>');
 
     function assertStableNodes(className: string, message: string) {
       assert.strictEqual(
@@ -2483,7 +2540,7 @@ module('[jit] Updating', hooks => {
     let nameNode = getFirstChildOfNode('tomdale');
 
     equalTokens(
-      root,
+      context.root,
       "<ul><li class='tomdale'>Tom Dale<p class='index-0'>0</p></li><li class='wycats'>Yehuda Katz<p class='index-1'>1</p></li></ul>",
       'Initial render'
     );
@@ -2491,7 +2548,7 @@ module('[jit] Updating', hooks => {
     rerender();
     assertStableNodes('tomdale', 0, 'after no-op rerender');
     equalTokens(
-      root,
+      context.root,
       "<ul><li class='tomdale'>Tom Dale<p class='index-0'>0</p></li><li class='wycats'>Yehuda Katz<p class='index-1'>1</p></li></ul>",
       'After no-op render'
     );
@@ -2499,7 +2556,7 @@ module('[jit] Updating', hooks => {
     rerender();
     assertStableNodes('tomdale', 0, 'after non-dirty rerender');
     equalTokens(
-      root,
+      context.root,
       "<ul><li class='tomdale'>Tom Dale<p class='index-0'>0</p></li><li class='wycats'>Yehuda Katz<p class='index-1'>1</p></li></ul>",
       'After non-dirty render'
     );
@@ -2507,7 +2564,7 @@ module('[jit] Updating', hooks => {
     object = { list: [yehuda, tom] };
     rerender(object);
     equalTokens(
-      root,
+      context.root,
       "<ul><li class='wycats'>Yehuda Katz<p class='index-0'>0</p></li><li class='tomdale'>Tom Dale<p class='index-1'>1</p></li></ul>",
       'After changing list order'
     );
@@ -2523,7 +2580,7 @@ module('[jit] Updating', hooks => {
     rerender(object);
     assertStableNodes('mmun', 0, 'after changing the list entries, but with stable keys');
     equalTokens(
-      root,
+      context.root,
       `<ul><li class='mmun'>Martin Muñoz<p class='index-0'>0</p></li><li class='krisselden'>Kris Selden<p class='index-1'>1</p></li></ul>`,
       `After changing the list entries, but with stable keys`
     );
@@ -2539,7 +2596,7 @@ module('[jit] Updating', hooks => {
     rerender(object);
     assertStableNodes('mmun', 0, 'after adding an additional entry');
     equalTokens(
-      root,
+      context.root,
       stripTight`<ul>
         <li class='mmun'>Martin Muñoz<p class='index-0'>0</p></li>
         <li class='krisselden'>Kristoph Selden<p class='index-1'>1</p></li>
@@ -2554,7 +2611,7 @@ module('[jit] Updating', hooks => {
     rerender(object);
     assertStableNodes('mmun', 0, 'after removing the middle entry');
     equalTokens(
-      root,
+      context.root,
       "<ul><li class='mmun'>Martin Muñoz<p class='index-0'>0</p></li><li class='mixonic'>Matthew Beale<p class='index-1'>1</p></li></ul>",
       'after removing the middle entry'
     );
@@ -2570,7 +2627,7 @@ module('[jit] Updating', hooks => {
     rerender(object);
     assertStableNodes('mmun', 0, 'after adding two more entries');
     equalTokens(
-      root,
+      context.root,
       stripTight`<ul>
         <li class='mmun'>Martin Muñoz<p class='index-0'>0</p></li>
         <li class='stefanpenner'>Stefan Penner<p class='index-1'>1</p></li>
@@ -2589,7 +2646,7 @@ module('[jit] Updating', hooks => {
 
     rerender(object);
     equalTokens(
-      root,
+      context.root,
       "<ul><li class='rwjblue'>Robert Jackson<p class='index-0'>0</p></li></ul>",
       'After removing two entries'
     );
@@ -2604,7 +2661,7 @@ module('[jit] Updating', hooks => {
 
     rerender(object);
     equalTokens(
-      root,
+      context.root,
       stripTight`<ul>
         <li class='mmun'>Martin Muñoz<p class='index-0'>0</p></li>
         <li class='stefanpenner'>Stefan Penner<p class='index-1'>1</p></li>
@@ -2624,7 +2681,7 @@ module('[jit] Updating', hooks => {
     rerender(object);
     assertStableNodes('mmun', 0, 'after removing from the back');
     equalTokens(
-      root,
+      context.root,
       "<ul><li class='mmun'>Martin Muñoz<p class='index-0'>0</p></li></ul>",
       'After removing from the back'
     );
@@ -2632,13 +2689,13 @@ module('[jit] Updating', hooks => {
     object = { list: [] };
 
     rerender(object);
-    if (assertNodeTagName(root.firstChild, 'ul')) {
+    if (assertNodeTagName(context.root.firstChild, 'ul')) {
       assert.strictEqual(
-        root.firstChild.firstChild && root.firstChild.firstChild.nodeType,
+        context.root.firstChild.firstChild && context.root.firstChild.firstChild.nodeType,
         8,
         "there are no li's after removing the remaining entry"
       );
-      equalTokens(root, '<ul><!----></ul>', 'After removing the remaining entries');
+      equalTokens(context.root, '<ul><!----></ul>', 'After removing the remaining entries');
     }
 
     function assertStableNodes(className: string, index: number, message: string) {
@@ -2675,7 +2732,7 @@ module('[jit] Updating', hooks => {
     let nameNode = getFirstChildOfNode('tomdale');
 
     equalTokens(
-      root,
+      context.root,
       "<ul><li class='tomdale'>Tom Dale<p class='index-0'>0</p></li><li class='wycats'>Yehuda Katz<p class='index-1'>1</p></li></ul>",
       'Initial render'
     );
@@ -2683,7 +2740,7 @@ module('[jit] Updating', hooks => {
     rerender();
     assertStableNodes('tomdale', 0, 'after no-op rerender');
     equalTokens(
-      root,
+      context.root,
       "<ul><li class='tomdale'>Tom Dale<p class='index-0'>0</p></li><li class='wycats'>Yehuda Katz<p class='index-1'>1</p></li></ul>",
       'After no-op render'
     );
@@ -2691,7 +2748,7 @@ module('[jit] Updating', hooks => {
     rerender();
     assertStableNodes('tomdale', 0, 'after non-dirty rerender');
     equalTokens(
-      root,
+      context.root,
       "<ul><li class='tomdale'>Tom Dale<p class='index-0'>0</p></li><li class='wycats'>Yehuda Katz<p class='index-1'>1</p></li></ul>",
       'After non-dirty render'
     );
@@ -2699,7 +2756,7 @@ module('[jit] Updating', hooks => {
     object = { list: [yehuda, tom] };
     rerender(object);
     equalTokens(
-      root,
+      context.root,
       "<ul><li class='wycats'>Yehuda Katz<p class='index-0'>0</p></li><li class='tomdale'>Tom Dale<p class='index-1'>1</p></li></ul>",
       'After changing list order'
     );
@@ -2718,7 +2775,7 @@ module('[jit] Updating', hooks => {
     rerender(object);
     assertStableNodes('mmun', 0, 'after changing the list entries, but with stable keys');
     equalTokens(
-      root,
+      context.root,
       `<ul><li class='mmun'>Martin Muñoz<p class='index-0'>0</p></li><li class='krisselden'>Kris Selden<p class='index-1'>1</p></li></ul>`,
       `After changing the list entries, but with stable keys`
     );
@@ -2734,7 +2791,7 @@ module('[jit] Updating', hooks => {
     rerender(object);
     assertStableNodes('mmun', 0, 'after adding an additional entry');
     equalTokens(
-      root,
+      context.root,
       stripTight`<ul>
         <li class='mmun'>Martin Muñoz<p class='index-0'>0</p></li>
         <li class='krisselden'>Kristoph Selden<p class='index-1'>1</p></li>
@@ -2752,7 +2809,7 @@ module('[jit] Updating', hooks => {
     rerender(object);
     assertStableNodes('mmun', 0, 'after removing the middle entry');
     equalTokens(
-      root,
+      context.root,
       "<ul><li class='mmun'>Martin Muñoz<p class='index-0'>0</p></li><li class='mixonic'>Matthew Beale<p class='index-1'>1</p></li></ul>",
       'after removing the middle entry'
     );
@@ -2768,7 +2825,7 @@ module('[jit] Updating', hooks => {
     rerender(object);
     assertStableNodes('mmun', 0, 'after adding two more entries');
     equalTokens(
-      root,
+      context.root,
       stripTight`<ul>
         <li class='mmun'>Martin Muñoz<p class='index-0'>0</p></li>
         <li class='stefanpenner'>Stefan Penner<p class='index-1'>1</p></li>
@@ -2788,7 +2845,7 @@ module('[jit] Updating', hooks => {
     rerender(object);
     assertStableNodes('rwjblue', 0, 'after removing two entries');
     equalTokens(
-      root,
+      context.root,
       "<ul><li class='rwjblue'>Robert Jackson<p class='index-0'>0</p></li></ul>",
       'After removing two entries'
     );
@@ -2804,7 +2861,7 @@ module('[jit] Updating', hooks => {
     rerender(object);
     assertStableNodes('rwjblue', 2, 'after adding back entries');
     equalTokens(
-      root,
+      context.root,
       stripTight`<ul>
         <li class='mmun'>Martin Muñoz<p class='index-0'>0</p></li>
         <li class='stefanpenner'>Stefan Penner<p class='index-1'>1</p></li>
@@ -2824,7 +2881,7 @@ module('[jit] Updating', hooks => {
     rerender(object);
     assertStableNodes('mmun', 0, 'after removing from the back');
     equalTokens(
-      root,
+      context.root,
       "<ul><li class='mmun'>Martin Muñoz<p class='index-0'>0</p></li></ul>",
       'After removing from the back'
     );
@@ -2832,14 +2889,14 @@ module('[jit] Updating', hooks => {
     object = { list: [] };
 
     rerender(object);
-    if (assertNodeTagName(root.firstChild, 'ul')) {
+    if (assertNodeTagName(context.root.firstChild, 'ul')) {
       assert.strictEqual(
-        root.firstChild.firstChild && root.firstChild.firstChild.nodeType,
+        context.root.firstChild.firstChild && context.root.firstChild.firstChild.nodeType,
         8,
         "there are no li's after removing the remaining entry"
       );
     }
-    equalTokens(root, '<ul><!----></ul>', 'After removing the remaining entries');
+    equalTokens(context.root, '<ul><!----></ul>', 'After removing the remaining entries');
 
     function assertStableNodes(className: string, index: number, message: string) {
       assert.strictEqual(
@@ -2875,7 +2932,7 @@ module('[jit] Updating', hooks => {
       let nameNode = getFirstChildOfNode('tomdale');
 
       equalTokens(
-        root,
+        context.root,
         "<ul><li class='tomdale'>Tom Dale</li><li class='wycats'>Yehuda Katz</li></ul>",
         'Initial render'
       );
@@ -2883,7 +2940,7 @@ module('[jit] Updating', hooks => {
       rerender();
       assertStableNodes('tomdale', 'after no-op rerender');
       equalTokens(
-        root,
+        context.root,
         "<ul><li class='tomdale'>Tom Dale</li><li class='wycats'>Yehuda Katz</li></ul>",
         'After no-op re-render'
       );
@@ -2891,7 +2948,7 @@ module('[jit] Updating', hooks => {
       rerender();
       assertStableNodes('tomdale', 'after non-dirty rerender');
       equalTokens(
-        root,
+        context.root,
         "<ul><li class='tomdale'>Tom Dale</li><li class='wycats'>Yehuda Katz</li></ul>",
         'After non-dirty re-render'
       );
@@ -2900,7 +2957,7 @@ module('[jit] Updating', hooks => {
       rerender(object);
       assertStableNodes('tomdale', 'after changing the list order');
       equalTokens(
-        root,
+        context.root,
         "<ul><li class='wycats'>Yehuda Katz</li><li class='tomdale'>Tom Dale</li></ul>",
         'After changing the list order'
       );
@@ -2924,49 +2981,49 @@ module('[jit] Updating', hooks => {
 QUnit.module('Updating SVG', hooks => {
   hooks.beforeEach(() => commonSetup());
 
-  test('HTML namespace from root element is continued to child templates', assert => {
+  test('HTML namespace from context.root element is continued to child templates', assert => {
     let object = { hasCircle: true };
     let template = compile('<svg>{{#if hasCircle}}<circle />{{/if}}</svg>');
     render(template, object);
 
     function assertNamespaces() {
-      if (assertNodeTagName(root.firstChild, 'svg')) {
-        assert.equal(root.firstChild.namespaceURI, SVG_NAMESPACE);
-        if (assertNodeTagName(root.firstChild.firstChild, 'circle')) {
-          assert.equal(root.firstChild.firstChild.namespaceURI, SVG_NAMESPACE);
+      if (assertNodeTagName(context.root.firstChild, 'svg')) {
+        assert.equal(context.root.firstChild.namespaceURI, SVG_NAMESPACE);
+        if (assertNodeTagName(context.root.firstChild.firstChild, 'circle')) {
+          assert.equal(context.root.firstChild.firstChild.namespaceURI, SVG_NAMESPACE);
         }
       }
     }
 
-    equalTokens(root, '<svg><circle /></svg>');
+    equalTokens(context.root, '<svg><circle /></svg>');
     assertNamespaces();
 
     rerender();
 
-    equalTokens(root, '<svg><circle /></svg>');
+    equalTokens(context.root, '<svg><circle /></svg>');
     assertNamespaces();
 
     object.hasCircle = false;
     rerender();
 
-    equalTokens(root, '<svg><!----></svg>');
+    equalTokens(context.root, '<svg><!----></svg>');
 
     rerender({ hasCircle: true });
 
-    equalTokens(root, '<svg><circle /></svg>');
+    equalTokens(context.root, '<svg><circle /></svg>');
     assertNamespaces();
   });
 
-  test('root <foreignObject> tag is SVG namespaced', assert => {
+  test('context.root <foreignObject> tag is SVG namespaced', assert => {
     let object = { hasForeignObject: true };
     let template = compile(
       '{{#if hasForeignObject}}<foreignObject><div></div></foreignObject>{{/if}}'
     );
 
-    let parent = root;
-    let svg = doc.createElementNS(SVG_NAMESPACE, 'svg');
-    root.appendChild(svg);
-    root = svg as any;
+    let parent = context.root;
+    let svg = context.doc.createElementNS(SVG_NAMESPACE, 'svg');
+    context.root.appendChild(svg);
+    context.root = svg as any;
 
     render(template, object);
 
@@ -3006,154 +3063,157 @@ QUnit.module('Updating SVG', hooks => {
     render(template, object);
 
     function assertNamespaces() {
-      if (assertNodeTagName(root.firstChild, 'svg')) {
-        assert.equal(root.firstChild.namespaceURI, SVG_NAMESPACE);
-        if (assertNodeTagName(root.firstChild.firstChild, 'foreignObject')) {
-          assert.equal(root.firstChild.firstChild.namespaceURI, SVG_NAMESPACE);
-          if (assertNodeTagName(root.firstChild.firstChild.firstChild, 'div')) {
-            assert.equal(root.firstChild.firstChild.firstChild.namespaceURI, XHTML_NAMESPACE);
+      if (assertNodeTagName(context.root.firstChild, 'svg')) {
+        assert.equal(context.root.firstChild.namespaceURI, SVG_NAMESPACE);
+        if (assertNodeTagName(context.root.firstChild.firstChild, 'foreignObject')) {
+          assert.equal(context.root.firstChild.firstChild.namespaceURI, SVG_NAMESPACE);
+          if (assertNodeTagName(context.root.firstChild.firstChild.firstChild, 'div')) {
+            assert.equal(
+              context.root.firstChild.firstChild.firstChild.namespaceURI,
+              XHTML_NAMESPACE
+            );
           }
         }
       }
     }
 
-    equalTokens(root, '<svg><foreignObject><div></div></foreignObject></svg>');
+    equalTokens(context.root, '<svg><foreignObject><div></div></foreignObject></svg>');
     assertNamespaces();
 
     rerender();
 
-    equalTokens(root, '<svg><foreignObject><div></div></foreignObject></svg>');
+    equalTokens(context.root, '<svg><foreignObject><div></div></foreignObject></svg>');
     assertNamespaces();
 
     object.hasDiv = false;
     rerender();
 
-    equalTokens(root, '<svg><foreignObject><!----></foreignObject></svg>');
+    equalTokens(context.root, '<svg><foreignObject><!----></foreignObject></svg>');
 
     rerender({ hasDiv: true });
 
-    equalTokens(root, '<svg><foreignObject><div></div></foreignObject></svg>');
+    equalTokens(context.root, '<svg><foreignObject><div></div></foreignObject></svg>');
     assertNamespaces();
   });
 
   test('Namespaced attribute with a quoted expression', assert => {
     let title = 'svg-title';
-    let context = { title };
+    let state = { title };
     let template = compile('<svg xlink:title="{{title}}">content</svg>');
-    render(template, context);
+    render(template, state);
 
     function assertNamespaces() {
-      if (assertNodeTagName(root.firstChild, 'svg')) {
-        assert.equal(root.firstChild.namespaceURI, SVG_NAMESPACE);
-        let attr = root.firstChild.attributes[0];
+      if (assertNodeTagName(context.root.firstChild, 'svg')) {
+        assert.equal(context.root.firstChild.namespaceURI, SVG_NAMESPACE);
+        let attr = context.root.firstChild.attributes[0];
         assert.equal(attr.namespaceURI, XLINK_NAMESPACE);
       }
     }
 
-    equalTokens(root, `<svg xlink:title="${title}">content</svg>`);
+    equalTokens(context.root, `<svg xlink:title="${title}">content</svg>`);
     assertNamespaces();
 
     rerender();
 
-    equalTokens(root, `<svg xlink:title="${title}">content</svg>`);
+    equalTokens(context.root, `<svg xlink:title="${title}">content</svg>`);
     assertNamespaces();
 
-    context.title = 'mmun';
+    state.title = 'mmun';
     rerender();
 
-    equalTokens(root, `<svg xlink:title="${context.title}">content</svg>`);
+    equalTokens(context.root, `<svg xlink:title="${state.title}">content</svg>`);
     assertNamespaces();
 
     rerender({ title });
 
-    equalTokens(root, `<svg xlink:title="${title}">content</svg>`);
+    equalTokens(context.root, `<svg xlink:title="${title}">content</svg>`);
     assertNamespaces();
   });
 
   test('<svg> tag and expression as sibling', assert => {
     let name = 'svg-title';
-    let context: { name: string | null } = { name };
+    let state: { name: string | null } = { name };
     let template = compile('<svg></svg>{{name}}');
-    render(template, context);
+    render(template, state);
 
     function assertNamespace() {
-      if (assertNodeTagName(root.firstChild, 'svg')) {
-        assert.equal(root.firstChild.namespaceURI, SVG_NAMESPACE);
+      if (assertNodeTagName(context.root.firstChild, 'svg')) {
+        assert.equal(context.root.firstChild.namespaceURI, SVG_NAMESPACE);
       }
     }
 
-    equalTokens(root, `<svg></svg>${name}`);
+    equalTokens(context.root, `<svg></svg>${name}`);
     assertNamespace();
 
     rerender();
 
-    equalTokens(root, `<svg></svg>${name}`);
+    equalTokens(context.root, `<svg></svg>${name}`);
     assertNamespace();
 
-    context.name = null;
+    state.name = null;
     rerender();
 
-    equalTokens(root, `<svg></svg>`);
+    equalTokens(context.root, `<svg></svg>`);
     assertNamespace();
 
     rerender({ name });
 
-    equalTokens(root, `<svg></svg>${name}`);
+    equalTokens(context.root, `<svg></svg>${name}`);
     assertNamespace();
   });
 
   test('<svg> tag and unsafe expression as sibling', assert => {
     let name = '<i>Biff</i>';
-    let context = { name };
+    let state = { name };
     let template = compile('<svg></svg>{{{name}}}');
-    render(template, context);
+    render(template, state);
 
     function assertNamespaces() {
-      if (assertNodeTagName(root.firstChild, 'svg')) {
-        assert.equal(root.firstChild.namespaceURI, SVG_NAMESPACE);
+      if (assertNodeTagName(context.root.firstChild, 'svg')) {
+        assert.equal(context.root.firstChild.namespaceURI, SVG_NAMESPACE);
       }
-      if (context.name === name && assertNodeTagName(root.lastChild, 'i')) {
-        assert.equal(root.lastChild.namespaceURI, XHTML_NAMESPACE);
+      if (state.name === name && assertNodeTagName(context.root.lastChild, 'i')) {
+        assert.equal(context.root.lastChild.namespaceURI, XHTML_NAMESPACE);
       }
     }
 
-    equalTokens(root, `<svg></svg>${name}`);
+    equalTokens(context.root, `<svg></svg>${name}`);
     assertNamespaces();
 
     rerender();
 
-    equalTokens(root, `<svg></svg>${name}`);
+    equalTokens(context.root, `<svg></svg>${name}`);
     assertNamespaces();
 
-    context.name = 'ef4';
+    state.name = 'ef4';
     rerender();
 
-    equalTokens(root, `<svg></svg>${context.name}`);
+    equalTokens(context.root, `<svg></svg>${state.name}`);
     assertNamespaces();
 
     rerender({ name });
 
-    equalTokens(root, `<svg></svg>${name}`);
+    equalTokens(context.root, `<svg></svg>${name}`);
     assertNamespaces();
   });
 
   test('unsafe expression nested inside a namespace', assert => {
     let content = '<path></path>';
-    let context = { content };
+    let state = { content };
     let template = compile('<svg>{{{content}}}</svg><div></div>');
-    render(template, context);
+    render(template, state);
 
     function assertNamespaces(callback: (svg: SimpleElement) => void) {
-      if (assertNodeTagName(root.firstChild, 'svg')) {
-        assert.equal(root.firstChild.namespaceURI, SVG_NAMESPACE);
-        callback(root.firstChild as SimpleElement);
+      if (assertNodeTagName(context.root.firstChild, 'svg')) {
+        assert.equal(context.root.firstChild.namespaceURI, SVG_NAMESPACE);
+        callback(context.root.firstChild as SimpleElement);
       }
-      if (assertNodeTagName(root.lastChild, 'div')) {
-        assert.equal(root.lastChild.namespaceURI, XHTML_NAMESPACE);
+      if (assertNodeTagName(context.root.lastChild, 'div')) {
+        assert.equal(context.root.lastChild.namespaceURI, XHTML_NAMESPACE);
       }
     }
 
-    equalTokens(root, `<svg>${content}</svg><div></div>`);
+    equalTokens(context.root, `<svg>${content}</svg><div></div>`);
     assertNamespaces(svg => {
       if (assertNodeTagName(svg.firstChild, 'path')) {
         assert.equal(
@@ -3166,17 +3226,17 @@ QUnit.module('Updating SVG', hooks => {
 
     rerender();
 
-    equalTokens(root, `<svg>${content}</svg><div></div>`);
+    equalTokens(context.root, `<svg>${content}</svg><div></div>`);
     assertNamespaces(svg => {
       if (assertNodeTagName(svg.firstChild, 'path')) {
         assert.equal(svg.firstChild.namespaceURI, SVG_NAMESPACE, 'path has SVG namespace');
       }
     });
 
-    context.content = '<foreignObject><span></span></foreignObject>';
+    state.content = '<foreignObject><span></span></foreignObject>';
     rerender();
 
-    equalTokens(root, `<svg>${context.content}</svg><div></div>`);
+    equalTokens(context.root, `<svg>${state.content}</svg><div></div>`);
     assertNamespaces(svg => {
       if (assertNodeTagName(svg.firstChild, 'foreignObject')) {
         assert.equal(
@@ -3194,10 +3254,10 @@ QUnit.module('Updating SVG', hooks => {
       }
     });
 
-    context.content = '<path></path><circle></circle>';
+    state.content = '<path></path><circle></circle>';
     rerender();
 
-    equalTokens(root, `<svg>${context.content}</svg><div></div>`);
+    equalTokens(context.root, `<svg>${state.content}</svg><div></div>`);
     assertNamespaces(svg => {
       if (assertNodeTagName(svg.firstChild, 'path')) {
         assert.equal(
@@ -3217,7 +3277,7 @@ QUnit.module('Updating SVG', hooks => {
 
     rerender({ content });
 
-    equalTokens(root, `<svg>${content}</svg><div></div>`);
+    equalTokens(context.root, `<svg>${content}</svg><div></div>`);
     assertNamespaces(svg => {
       if (assertNodeTagName(svg.firstChild, 'path')) {
         assert.equal(
@@ -3231,61 +3291,61 @@ QUnit.module('Updating SVG', hooks => {
 
   test('expression nested inside a namespace', assert => {
     let content = 'Milly';
-    let context = { content };
+    let state = { content };
     let template = compile('<div><svg>{{content}}</svg></div>');
-    render(template, context);
+    render(template, state);
 
     function assertNamespaces() {
-      if (assertNodeTagName(root.firstChild, 'div')) {
-        assert.equal(root.firstChild.namespaceURI, XHTML_NAMESPACE);
-        if (assertNodeTagName(root.firstChild.firstChild, 'svg')) {
-          assert.equal(root.firstChild.firstChild.namespaceURI, SVG_NAMESPACE);
+      if (assertNodeTagName(context.root.firstChild, 'div')) {
+        assert.equal(context.root.firstChild.namespaceURI, XHTML_NAMESPACE);
+        if (assertNodeTagName(context.root.firstChild.firstChild, 'svg')) {
+          assert.equal(context.root.firstChild.firstChild.namespaceURI, SVG_NAMESPACE);
         }
       }
     }
 
-    equalTokens(root, `<div><svg>${content}</svg></div>`);
+    equalTokens(context.root, `<div><svg>${content}</svg></div>`);
     assertNamespaces();
 
     rerender();
 
-    equalTokens(root, `<div><svg>${content}</svg></div>`);
+    equalTokens(context.root, `<div><svg>${content}</svg></div>`);
     assertNamespaces();
 
-    context.content = 'Moe';
+    state.content = 'Moe';
     rerender();
 
-    equalTokens(root, `<div><svg>${context.content}</svg></div>`);
+    equalTokens(context.root, `<div><svg>${state.content}</svg></div>`);
     assertNamespaces();
 
     rerender({ content });
 
-    equalTokens(root, `<div><svg>${content}</svg></div>`);
+    equalTokens(context.root, `<div><svg>${content}</svg></div>`);
     assertNamespaces();
   });
 
-  test('expression nested inside a namespaced root element', assert => {
+  test('expression nested inside a namespaced context.root element', assert => {
     let content = 'Maurice';
-    let context: { content: string | null } = { content };
+    let state: { content: string | null } = { content };
     let template = compile('<svg>{{content}}</svg>');
-    render(template, context);
+    render(template, state);
 
     function assertSvg(callback?: (svg: SVGSVGElement) => void) {
-      if (assertNodeTagName(root.firstChild, 'svg')) {
-        assert.equal(root.firstChild.namespaceURI, SVG_NAMESPACE);
-        if (callback) callback(root.firstChild);
+      if (assertNodeTagName(context.root.firstChild, 'svg')) {
+        assert.equal(context.root.firstChild.namespaceURI, SVG_NAMESPACE);
+        if (callback) callback(context.root.firstChild);
       }
     }
 
-    equalTokens(root, `<svg>${content}</svg>`);
+    equalTokens(context.root, `<svg>${content}</svg>`);
     assertSvg();
 
     rerender();
 
-    equalTokens(root, `<svg>${content}</svg>`);
+    equalTokens(context.root, `<svg>${content}</svg>`);
     assertSvg();
 
-    context.content = null;
+    state.content = null;
     rerender();
 
     assertSvg(svg => {
@@ -3294,86 +3354,89 @@ QUnit.module('Updating SVG', hooks => {
 
     rerender({ content });
 
-    equalTokens(root, `<svg>${content}</svg>`);
+    equalTokens(context.root, `<svg>${content}</svg>`);
     assertSvg();
   });
 
   test('HTML namespace is created in child templates', assert => {
     let isTrue = true;
-    let context = { isTrue };
+    let state = { isTrue };
     let template = compile('{{#if isTrue}}<svg></svg>{{else}}<div><svg></svg></div>{{/if}}');
-    render(template, context);
+    render(template, state);
     function assertNamespaces(isTrue: boolean) {
       if (isTrue) {
-        if (assertNodeTagName(root.firstChild, 'svg')) {
-          assert.equal(root.firstChild.namespaceURI, SVG_NAMESPACE);
+        if (assertNodeTagName(context.root.firstChild, 'svg')) {
+          assert.equal(context.root.firstChild.namespaceURI, SVG_NAMESPACE);
         }
       } else {
-        if (assertNodeTagName(root.firstChild, 'div')) {
-          assert.equal(root.firstChild.namespaceURI, XHTML_NAMESPACE);
-          if (assertNodeTagName(root.firstChild.firstChild, 'svg')) {
-            assert.equal(root.firstChild.firstChild.namespaceURI, SVG_NAMESPACE);
+        if (assertNodeTagName(context.root.firstChild, 'div')) {
+          assert.equal(context.root.firstChild.namespaceURI, XHTML_NAMESPACE);
+          if (assertNodeTagName(context.root.firstChild.firstChild, 'svg')) {
+            assert.equal(context.root.firstChild.firstChild.namespaceURI, SVG_NAMESPACE);
           }
         }
       }
     }
 
-    equalTokens(root, `<svg></svg>`);
+    equalTokens(context.root, `<svg></svg>`);
     assertNamespaces(true);
 
     rerender();
 
-    equalTokens(root, `<svg></svg>`);
+    equalTokens(context.root, `<svg></svg>`);
     assertNamespaces(true);
 
-    context.isTrue = false;
+    state.isTrue = false;
     rerender();
 
-    equalTokens(root, `<div><svg></svg></div>`);
+    equalTokens(context.root, `<div><svg></svg></div>`);
     assertNamespaces(false);
 
     rerender({ isTrue });
 
-    equalTokens(root, `<svg></svg>`);
+    equalTokens(context.root, `<svg></svg>`);
     assertNamespaces(true);
   });
 
   test('HTML namespace is continued to child templates', assert => {
     let isTrue = true;
-    let context = { isTrue };
+    let state = { isTrue };
     let template = compile('<div><svg>{{#if isTrue}}<circle />{{/if}}</svg></div>');
-    render(template, context);
+    render(template, state);
 
     function assertNamespaces(isTrue: boolean) {
-      if (assertNodeTagName(root.firstChild, 'div')) {
-        assert.equal(root.firstChild.namespaceURI, XHTML_NAMESPACE);
-        if (assertNodeTagName(root.firstChild.firstChild, 'svg')) {
-          assert.equal(root.firstChild.firstChild.namespaceURI, SVG_NAMESPACE);
-          if (isTrue && assertNodeTagName(root.firstChild.firstChild.firstChild, 'circle')) {
-            assert.equal(root.firstChild.firstChild.firstChild.namespaceURI, SVG_NAMESPACE);
+      if (assertNodeTagName(context.root.firstChild, 'div')) {
+        assert.equal(context.root.firstChild.namespaceURI, XHTML_NAMESPACE);
+        if (assertNodeTagName(context.root.firstChild.firstChild, 'svg')) {
+          assert.equal(context.root.firstChild.firstChild.namespaceURI, SVG_NAMESPACE);
+          if (
+            isTrue &&
+            assertNodeTagName(context.root.firstChild.firstChild.firstChild, 'circle')
+          ) {
+            assert.equal(context.root.firstChild.firstChild.firstChild.namespaceURI, SVG_NAMESPACE);
           }
         }
       }
     }
 
-    equalTokens(root, `<div><svg><circle /></svg></div>`);
+    equalTokens(context.root, `<div><svg><circle /></svg></div>`);
 
     assertNamespaces(true);
 
     rerender();
 
-    equalTokens(root, `<div><svg><circle /></svg></div>`);
+    equalTokens(context.root, `<div><svg><circle /></svg></div>`);
     assertNamespaces(true);
 
-    context.isTrue = false;
+    state.isTrue = false;
     rerender();
 
-    equalTokens(root, `<div><svg><!----></svg></div>`);
+    equalTokens(context.root, `<div><svg><!----></svg></div>`);
     assertNamespaces(false);
 
     rerender({ isTrue });
 
-    equalTokens(root, `<div><svg><circle /></svg></div>`);
+    equalTokens(context.root, `<div><svg><circle /></svg></div>`);
     assertNamespaces(true);
   });
 });
@@ -3382,7 +3445,7 @@ QUnit.module('Updating Element Modifiers', hooks => {
   hooks.beforeEach(() => commonSetup());
 
   test('Updating a element modifier', assert => {
-    let { manager } = registerModifier(resolver, 'foo');
+    let { manager } = registerModifier(context.resolver, 'foo');
 
     let template = compile('<div><div {{foo bar baz=fizz}}></div></div>');
     let input = {
@@ -3392,12 +3455,12 @@ QUnit.module('Updating Element Modifiers', hooks => {
     render(template, input);
 
     let valueNode: Node | null | undefined;
-    if (assertNodeTagName(root.firstChild, 'div')) {
-      valueNode = root.firstChild.firstChild;
+    if (assertNodeTagName(context.root.firstChild, 'div')) {
+      valueNode = context.root.firstChild.firstChild;
     }
 
     equalTokens(
-      root,
+      context.root,
       '<div><div data-modifier="installed - Super Metroid"></div></div>',
       'initial render'
     );
@@ -3409,7 +3472,7 @@ QUnit.module('Updating Element Modifiers', hooks => {
     rerender();
 
     equalTokens(
-      root,
+      context.root,
       '<div><div data-modifier="updated - Super Metroid"></div></div>',
       'modifier updated'
     );
@@ -3423,7 +3486,11 @@ QUnit.module('Updating Element Modifiers', hooks => {
 
     rerender();
 
-    equalTokens(root, '<div><div data-modifier="updated - Super Mario"></div></div>', 'no change');
+    equalTokens(
+      context.root,
+      '<div><div data-modifier="updated - Super Mario"></div></div>',
+      'no change'
+    );
     assert.equal(manager.installedElements.length, 1);
     assert.equal(valueNode, manager.installedElements[0]);
     assert.equal(manager.updatedElements.length, 2);
@@ -3432,7 +3499,7 @@ QUnit.module('Updating Element Modifiers', hooks => {
   });
 
   test("Const input doesn't trigger update in a element modifier", assert => {
-    let { manager } = registerModifier(resolver, 'foo');
+    let { manager } = registerModifier(context.resolver, 'foo');
 
     let template = compile('<div><div {{foo "bar"}}></div></div>');
     let input = {};
@@ -3440,11 +3507,15 @@ QUnit.module('Updating Element Modifiers', hooks => {
     render(template, input);
 
     let valueNode: Node | null | undefined;
-    if (assertNodeTagName(root.firstChild, 'div')) {
-      valueNode = root.firstChild.firstChild;
+    if (assertNodeTagName(context.root.firstChild, 'div')) {
+      valueNode = context.root.firstChild.firstChild;
     }
 
-    equalTokens(root, '<div><div data-modifier="installed - bar"></div></div>', 'initial render');
+    equalTokens(
+      context.root,
+      '<div><div data-modifier="installed - bar"></div></div>',
+      'initial render'
+    );
     assert.equal(manager.installedElements.length, 1);
     assert.equal(valueNode, manager.installedElements[0]);
     assert.equal(manager.updatedElements.length, 0);
@@ -3452,7 +3523,11 @@ QUnit.module('Updating Element Modifiers', hooks => {
 
     rerender();
 
-    equalTokens(root, '<div><div data-modifier="installed - bar"></div></div>', 'no change');
+    equalTokens(
+      context.root,
+      '<div><div data-modifier="installed - bar"></div></div>',
+      'no change'
+    );
     assert.equal(manager.installedElements.length, 1);
     assert.equal(valueNode, manager.installedElements[0]);
     assert.equal(manager.updatedElements.length, 0);
@@ -3460,7 +3535,7 @@ QUnit.module('Updating Element Modifiers', hooks => {
   });
 
   test('Destructor is triggered on element modifiers', assert => {
-    let { manager } = registerModifier(resolver, 'foo');
+    let { manager } = registerModifier(context.resolver, 'foo');
 
     let template = compile('{{#if bar}}<div {{foo bar}}></div>{{else}}<div></div>{{/if}}');
     let input = {
@@ -3469,9 +3544,9 @@ QUnit.module('Updating Element Modifiers', hooks => {
 
     render(template, input);
 
-    let valueNode = root.firstChild;
+    let valueNode = context.root.firstChild;
 
-    equalTokens(root, '<div data-modifier="installed - true"></div>', 'initial render');
+    equalTokens(context.root, '<div data-modifier="installed - true"></div>', 'initial render');
     assert.equal(manager.installedElements.length, 1);
     assert.equal(valueNode, manager.installedElements[0]);
     assert.equal(manager.updatedElements.length, 0);
@@ -3479,7 +3554,7 @@ QUnit.module('Updating Element Modifiers', hooks => {
 
     rerender();
 
-    equalTokens(root, '<div data-modifier="updated - true"></div>', 'modifier updated');
+    equalTokens(context.root, '<div data-modifier="updated - true"></div>', 'modifier updated');
     assert.equal(manager.installedElements.length, 1);
     assert.equal(valueNode, manager.installedElements[0]);
     assert.equal(manager.updatedElements.length, 1);
@@ -3488,13 +3563,17 @@ QUnit.module('Updating Element Modifiers', hooks => {
     input.bar = false;
     rerender();
 
-    equalTokens(root, '<div></div>', 'no more modifier');
+    equalTokens(context.root, '<div></div>', 'no more modifier');
     assert.equal(manager.destroyedModifiers.length, 1);
 
     input.bar = true;
     rerender();
 
-    equalTokens(root, '<div data-modifier="installed - true"></div>', 'back to default render');
+    equalTokens(
+      context.root,
+      '<div data-modifier="installed - true"></div>',
+      'back to default render'
+    );
     assert.equal(manager.installedElements.length, 2);
     assert.equal(manager.destroyedModifiers.length, 1);
   });
