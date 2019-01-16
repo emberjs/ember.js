@@ -6,6 +6,7 @@ import { ComponentManager } from '../components/component-manager';
 import { Drop, Option } from '../core';
 import { GlimmerTreeChanges, GlimmerTreeConstruction } from '../dom/changes';
 import { ModifierManager } from './modifier';
+import { Cursor } from '../dom/bounds';
 
 export interface EnvironmentOptions {
   appendOperations: GlimmerTreeConstruction;

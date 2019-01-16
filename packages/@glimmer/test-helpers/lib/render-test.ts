@@ -1,4 +1,12 @@
-import { Cursor, Dict, Environment, Maybe, Option, RenderResult } from '@glimmer/interfaces';
+import {
+  Cursor,
+  Dict,
+  Environment,
+  Maybe,
+  Option,
+  RenderResult,
+  ElementBuilder,
+} from '@glimmer/interfaces';
 import { serializeBuilder } from '@glimmer/node';
 import { UpdatableReference } from '@glimmer/object-reference';
 import {
@@ -10,7 +18,7 @@ import {
   Tagged,
   TagWrapper,
 } from '@glimmer/reference';
-import { ElementBuilder, UNDEFINED_REFERENCE } from '@glimmer/runtime';
+import { UNDEFINED_REFERENCE } from '@glimmer/runtime';
 import { clearElement, dict, expect, keys } from '@glimmer/util';
 import createHTMLDocument from '@simple-dom/document';
 import { SimpleElement, SimpleNode, SimpleDocument } from '@simple-dom/interface';

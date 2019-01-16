@@ -1,11 +1,10 @@
-import { Environment, RenderResult } from '@glimmer/interfaces';
+import { Environment, RenderResult, LiveBlock } from '@glimmer/interfaces';
 import { associate, DESTROY, LinkedList } from '@glimmer/util';
 import { SimpleElement, SimpleNode } from '@simple-dom/interface';
 import { clear } from '../bounds';
 import { inTransaction } from '../environment';
 import { asyncDestroy } from '../lifetime';
 import { UpdatingOpcode } from '../opcodes';
-import { LiveBlock } from './element-builder';
 import UpdatingVM from './update';
 
 export default class RenderResultImpl implements RenderResult {

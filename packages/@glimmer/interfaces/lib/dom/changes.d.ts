@@ -1,4 +1,3 @@
-import { Bounds, Option } from '@glimmer/interfaces';
 import {
   Namespace,
   SimpleComment,
@@ -6,6 +5,8 @@ import {
   SimpleNode,
   SimpleText,
 } from '@simple-dom/interface';
+import { Option } from '../core';
+import { Bounds } from './bounds';
 
 export interface GlimmerDOMOperations {
   createElement(tag: string, context?: SimpleElement): SimpleElement;

@@ -5,12 +5,12 @@ import {
   Template,
   TemplateMeta,
   Environment,
+  ElementBuilder,
 } from '@glimmer/interfaces';
 import { UpdatableReference } from '@glimmer/object-reference';
 import {
   clientBuilder,
   DynamicAttribute,
-  ElementBuilder,
   SimpleDynamicAttribute,
   dynamicAttribute,
   renderJitMain,

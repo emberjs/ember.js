@@ -6,6 +6,7 @@ export * from './lib/content';
 export * from './lib/core';
 export * from './lib/dom/bounds';
 export * from './lib/dom/changes';
+export * from './lib/dom/attributes';
 export * from './lib/dom/tree-construction';
 export * from './lib/module-locators';
 export * from './lib/program';

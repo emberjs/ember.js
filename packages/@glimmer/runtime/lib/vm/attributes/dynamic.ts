@@ -1,9 +1,8 @@
-import { Dict, Environment, Option } from '@glimmer/interfaces';
+import { Dict, Environment, Option, ElementBuilder } from '@glimmer/interfaces';
 import { AttrNamespace, Namespace, SimpleElement } from '@simple-dom/interface';
 import { normalizeStringValue } from '../../dom/normalize';
 import { normalizeProperty } from '../../dom/props';
 import { requiresSanitization, sanitizeAttributeValue } from '../../dom/sanitized-values';
-import { ElementBuilder } from '../element-builder';
 import { Attribute, AttributeOperation } from './index';
 
 export function dynamicAttribute(
