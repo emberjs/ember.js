@@ -7,6 +7,8 @@ import {
 } from '@glimmer/test-helpers';
 
 class BundleCompilerEmberTests extends EmberishComponentTests {
+  protected delegate!: EagerRenderDelegate;
+
   @test({ kind: 'glimmer' })
   'should not serialize the locator with static component helpers'() {
     this.registerComponent(
@@ -20,7 +22,7 @@ class BundleCompilerEmberTests extends EmberishComponentTests {
     let MainLocator = JSON.stringify({
       locator: { module: 'ui/components/main', name: 'default' },
     });
-    let { strings } = this.delegate.constants!.toPool();
+    let { strings } = this.delegate.getConstants();
     this.assert.equal(strings.indexOf(ALocator), -1);
     this.assert.equal(strings.indexOf(MainLocator), -1);
     this.assertHTML('B 1 B 2 B 3 B 4');

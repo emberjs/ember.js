@@ -10,6 +10,8 @@ import {
   TemplateMeta,
   AotRuntimeContext,
   JitRuntimeContext,
+  ElementBuilder,
+  LiveBlock,
 } from '@glimmer/interfaces';
 import {
   // Tags
@@ -33,7 +35,7 @@ import { move as moveBounds } from '../bounds';
 import { asyncReset, detach } from '../lifetime';
 import { UpdatingOpcode, UpdatingOpSeq } from '../opcodes';
 import { InternalVM, VmInitCallback, JitVM } from './append';
-import { ElementBuilder, LiveBlock, NewElementBuilder, UpdatableBlock } from './element-builder';
+import { NewElementBuilder, UpdatableBlock } from './element-builder';
 
 export default class UpdatingVM {
   public env: Environment;

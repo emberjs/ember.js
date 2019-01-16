@@ -1,7 +1,7 @@
-import { Cursor, Dict, Environment, RenderResult } from '@glimmer/interfaces';
+import { Cursor, Dict, Environment, RenderResult, ElementBuilder } from '@glimmer/interfaces';
 import { UpdatableReference } from '@glimmer/object-reference';
 import { PathReference } from '@glimmer/reference';
-import { clientBuilder, ElementBuilder, JitRuntime, getDynamicVar } from '@glimmer/runtime';
+import { clientBuilder, JitRuntime, getDynamicVar } from '@glimmer/runtime';
 import { SimpleElement, SimpleDocument } from '@simple-dom/interface';
 import { ComponentKind, ComponentTypes } from '../../../interfaces';
 import { renderTemplate, JitTestDelegateContext } from '../../../render';

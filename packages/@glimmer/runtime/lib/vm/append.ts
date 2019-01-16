@@ -21,6 +21,8 @@ import {
   VM as PublicVM,
   JitRuntimeContext,
   AotRuntimeContext,
+  LiveBlock,
+  ElementBuilder,
 } from '@glimmer/interfaces';
 import { DEBUG } from '@glimmer/local-debug-flags';
 import { RuntimeOpImpl } from '@glimmer/program';
@@ -60,7 +62,6 @@ import { APPEND_OPCODES, DebugState, UpdatingOpcode } from '../opcodes';
 import { UNDEFINED_REFERENCE } from '../references';
 import { ARGS, CONSTANTS, DESTRUCTOR_STACK, HEAP, INNER_VM, REGISTERS, STACKS } from '../symbols';
 import { VMArgumentsImpl } from './arguments';
-import { ElementBuilder, LiveBlock } from './element-builder';
 import LowLevelVM from './low-level';
 import RenderResultImpl from './render-result';
 import EvaluationStackImpl, { EvaluationStack } from './stack';

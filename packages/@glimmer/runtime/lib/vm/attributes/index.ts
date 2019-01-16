@@ -1,5 +1,4 @@
-import { Option, Environment } from '@glimmer/interfaces';
-import { ElementBuilder } from '../element-builder';
+import { Option, Environment, ElementBuilder } from '@glimmer/interfaces';
 import { AttrNamespace, SimpleElement } from '@simple-dom/interface';
 
 export interface Attribute {

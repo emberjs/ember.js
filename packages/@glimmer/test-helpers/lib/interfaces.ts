@@ -1,6 +1,12 @@
-import { DynamicScope, Environment, Option, Template, TemplateIterator } from '@glimmer/interfaces';
+import {
+  DynamicScope,
+  Environment,
+  Option,
+  Template,
+  TemplateIterator,
+  ElementBuilder,
+} from '@glimmer/interfaces';
 import { PathReference } from '@glimmer/reference';
-import { ElementBuilder } from '@glimmer/runtime';
 import { BasicComponent, BasicComponentFactory } from './environment/components/basic';
 import {
   EmberishCurlyComponent,

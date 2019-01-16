@@ -15,8 +15,10 @@ import {
   STDLib,
   CompileTimeHeap,
   SyntaxCompilationContext,
+  CompileTimeConstants,
+  Macros,
 } from '@glimmer/interfaces';
-import { Macros, compileStd, compilable } from '@glimmer/opcode-compiler';
+import { compileStd, compilable, MacrosImpl } from '@glimmer/opcode-compiler';
 
 import ModuleLocatorMap from './module-locator-map';
 import DebugConstants from './debug-constants';
@@ -32,6 +34,7 @@ export interface BundleCompileOptions {
 
 export interface BundleCompilerOptions {
   macros?: Macros;
+  constants?: CompileTimeConstants;
   plugins?: ASTPluginBuilder[];
 }
 
@@ -82,7 +85,7 @@ export class BundleCompilerCompilationContext<R> implements WholeProgramCompilat
   readonly meta = new ModuleLocatorMap<R>();
 
   // implement WholeProgramCompilationContext
-  readonly constants: DebugConstants = new DebugConstants();
+  readonly constants: CompileTimeConstants;
   readonly resolverDelegate: BundleCompilerLookup<R> = new BundleCompilerLookup(
     this.delegate,
     this.compilableTemplates,
@@ -92,7 +95,13 @@ export class BundleCompilerCompilationContext<R> implements WholeProgramCompilat
   readonly mode = CompileMode.aot;
   readonly stdlib: STDLib;
 
-  constructor(readonly delegate: BundleCompilerDelegate<R>) {
+  constructor(readonly delegate: BundleCompilerDelegate<R>, options: BundleCompilerOptions) {
+    if (options.constants) {
+      this.constants = options.constants;
+    } else {
+      this.constants = new DebugConstants();
+    }
+
     this.stdlib = compileStd(this);
   }
 }
@@ -117,15 +126,10 @@ export default class BundleCompiler<R> {
   private context: BundleCompilerCompilationContext<R>;
 
   constructor(delegate: BundleCompilerDelegate<R>, options: BundleCompilerOptions = {}) {
-    this.context = new BundleCompilerCompilationContext(delegate);
+    this.context = new BundleCompilerCompilationContext(delegate, options);
 
-    this.macros = options.macros || new Macros();
+    this.macros = options.macros || new MacrosImpl();
     this.plugins = options.plugins || [];
-  }
-
-  // For debugging
-  get constants(): DebugConstants {
-    return this.context.constants;
   }
 
   get syntaxContext(): SyntaxCompilationContext {

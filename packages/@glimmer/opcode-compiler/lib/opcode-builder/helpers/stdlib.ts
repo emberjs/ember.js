@@ -12,7 +12,7 @@ import {
 } from '@glimmer/interfaces';
 import { switchCases } from './conditional';
 import { concat } from '../../syntax/concat';
-import { Macros } from '../../syntax/macros';
+import { MacrosImpl } from '../../syntax/macros';
 import { templateMeta } from '@glimmer/util';
 
 export function main(): CompileActions {
@@ -63,7 +63,7 @@ const STDLIB_META = {
 
 function build(program: WholeProgramCompilationContext, callback: () => CompileActions): number {
   let encoder = new EncoderImpl();
-  let macros = new Macros();
+  let macros = new MacrosImpl();
 
   let stdContext: TemplateCompilationContext = {
     encoder,
