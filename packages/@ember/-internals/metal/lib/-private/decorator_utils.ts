@@ -1,4 +1,4 @@
-import { assert } from '@ember/debug';
+import { assert, warn } from '@ember/debug';
 
 import { defineProperty } from '@ember/-internals/metal';
 import { DecoratorDescriptor } from '../computed';
@@ -19,6 +19,8 @@ export function collapseProto(target) {
   }
 }
 
+const DEEP_EACH_REGEX = /\.@each\.[^.]+\./; // temp copied from computed
+
 export function buildComputedDesc(dec, desc) {
   let fn = DECORATOR_COMPUTED_FN.get(dec);
   let params = DECORATOR_PARAMS.get(dec);
@@ -29,6 +31,13 @@ export function buildComputedDesc(dec, desc) {
   // if (desc && desc.key && (desc.key === 'com')) {
   //   debugger;
   // }
+  // warn(
+  //   `Dependent keys containing @each only work one level deep. ` +
+  //     `You used the key "${desc.key}" which is invalid. ` +
+  //     `Please create an intermediary computed property.`,
+  //   DEEP_EACH_REGEX.test(desc.key) === false,
+  //   { id: 'ember-metal.computed-deep-each' }
+  // );
 
   if ((Object.keys(desc).length === 1) && typeof lastArg !== 'function') {
     objectConfig = lastArg;
@@ -54,7 +63,6 @@ export function buildComputedDesc(dec, desc) {
       }
     }
   }
-
 
   let computedDesc = fn(desc, params);
 
