@@ -214,6 +214,11 @@ export class UpdatableReference<T> implements VersionedPathReference {
     }
   }
 
+  forceUpdate(value: T) {
+    this.tag.inner.dirty();
+    this._value = value;
+  }
+
   get(key: string): VersionedPathReference {
     return new NestedPropertyReference(this, key);
   }
