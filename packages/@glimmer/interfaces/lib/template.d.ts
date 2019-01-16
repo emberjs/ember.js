@@ -1,11 +1,11 @@
-import { SerializedInlineBlock, SerializedTemplateBlock, TemplateMeta } from '@glimmer/interfaces';
-import { Operand } from './compile';
+import { Operand, SerializedTemplateBlock, SerializedInlineBlock } from './compile';
 import { CompileMode } from './compile/encoder';
 import ComponentCapabilities from './component-capabilities';
 import { Option } from './core';
 import { ConstantPool, SerializedHeap, SyntaxCompilationContext } from './program';
 import { CompileTimeResolverDelegate } from './serialize';
 import { BlockSymbolTable, ProgramSymbolTable, SymbolTable } from './tier1/symbol-table';
+import { TemplateMeta } from './runtime';
 
 export type CompilableProgram = CompilableTemplate<ProgramSymbolTable>;
 export type CompilableBlock = CompilableTemplate<BlockSymbolTable>;

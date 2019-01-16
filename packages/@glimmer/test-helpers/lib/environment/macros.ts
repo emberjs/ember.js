@@ -1,5 +1,5 @@
 import {
-  Macros,
+  MacrosImpl,
   staticComponent,
   invokeStaticBlock,
   NONE,
@@ -9,7 +9,7 @@ import { Option, WireFormat } from '@glimmer/interfaces';
 import { EMPTY_BLOCKS } from '@glimmer/opcode-compiler';
 import { resolveLayoutForTag } from '@glimmer/opcode-compiler';
 
-export default class TestMacros extends Macros {
+export default class TestMacros extends MacrosImpl {
   constructor() {
     super();
 

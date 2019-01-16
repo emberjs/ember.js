@@ -11,11 +11,12 @@ import {
   ContainingMetadata,
   MacroBlocks,
   MacroInlines,
+  Macros,
 } from '@glimmer/interfaces';
 import { dict, assert } from '@glimmer/util';
 import { UNHANDLED } from './concat';
 
-export class Macros {
+export class MacrosImpl implements Macros {
   public blocks: MacroBlocks;
   public inlines: MacroInlines;
 

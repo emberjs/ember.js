@@ -17,13 +17,14 @@ import {
   RenderResult,
   TemplateMeta,
   AotRuntimeContext,
+  ConstantPool,
+  ElementBuilder,
 } from '@glimmer/interfaces';
 import { UpdatableReference } from '@glimmer/object-reference';
 import { WrappedBuilder } from '@glimmer/opcode-compiler';
 import { PathReference } from '@glimmer/reference';
 import {
   clientBuilder,
-  ElementBuilder,
   getDynamicVar,
   renderAotComponent,
   renderAotMain,
@@ -54,7 +55,7 @@ import {
   TestModifierDefinitionState,
   TestModifierManager,
 } from '../../modifier';
-import EagerCompilerDelegate from './compiler-delegate';
+import EagerCompilerDelegate, { EagerCompilerRegistry } from './compiler-delegate';
 import { Modules } from './modules';
 import EagerRuntimeResolver from './runtime-resolver';
 
@@ -89,9 +90,8 @@ const COMPONENT_CAPABILITIES: Entries<ComponentCapabilities> = {
 export default class EagerRenderDelegate implements RenderDelegate {
   static readonly isEager = true;
 
-  protected modules = new Modules();
+  protected registry = new EagerCompilerRegistry();
   protected compileTimeModules = new Modules();
-  protected components: Dict<ComponentDefinition<TestComponentDefinitionState>> = {};
   protected symbolTables = new ModuleLocatorMap<ProgramSymbolTable, ModuleLocator>();
   public constants!: DebugConstants;
   private doc: SimpleDocument;
@@ -102,7 +102,7 @@ export default class EagerRenderDelegate implements RenderDelegate {
   }
 
   private registerInternalHelper(name: string, helper: GlimmerHelper): GlimmerHelper {
-    this.modules.register(name, 'helper', { default: helper });
+    this.registry.register(name, 'helper', { default: helper });
     return helper;
   }
 
@@ -149,10 +149,7 @@ export default class EagerRenderDelegate implements RenderDelegate {
       layout: null,
     };
 
-    this.components[module] = {
-      manager,
-      state,
-    };
+    this.registry.addComponent(module, manager, state);
   }
 
   getSelf(context: unknown): UpdatableReference {
@@ -161,24 +158,24 @@ export default class EagerRenderDelegate implements RenderDelegate {
 
   registerHelper(name: string, helper: UserHelper): void {
     let glimmerHelper: GlimmerHelper = args => new HelperReference(helper, args);
-    this.modules.register(name, 'helper', { default: glimmerHelper });
+    this.registry.register(name, 'helper', { default: glimmerHelper });
   }
 
   registerModifier(name: string, ModifierClass: TestModifierConstructor): void {
     let state = new TestModifierDefinitionState(ModifierClass);
     let manager = new TestModifierManager();
-    this.modules.register(name, 'modifier', { default: { manager, state } });
+    this.registry.register(name, 'modifier', { default: { manager, state } });
   }
 
   private addRegisteredComponents(bundleCompiler: BundleCompiler<WrappedLocator>): void {
-    let { components, modules, compileTimeModules } = this;
-    Object.keys(components).forEach(key => {
+    let { registry, compileTimeModules } = this;
+    Object.keys(registry.components).forEach(key => {
       assert(
         key.indexOf('ui/components') !== -1,
         `Expected component key to start with ui/components, got ${key}.`
       );
 
-      let { state, manager } = components[key];
+      let { state, manager } = registry.components[key];
 
       let locator = locatorFor({ module: key, name: 'default' });
 
@@ -216,14 +213,14 @@ export default class EagerRenderDelegate implements RenderDelegate {
       }
 
       if (state.hasSymbolTable) {
-        modules.register(key, 'component', {
+        registry.register(key, 'component', {
           default: {
             state: assign({}, state, { symbolTable }),
             manager,
           },
         });
       } else {
-        modules.register(key, 'component', {
+        registry.register(key, 'component', {
           default: {
             state,
             manager,
@@ -234,12 +231,14 @@ export default class EagerRenderDelegate implements RenderDelegate {
   }
 
   private getBundleCompiler(): BundleCompiler<WrappedLocator> {
-    let macros = new TestMacros();
-    let delegate: EagerCompilerDelegate = new EagerCompilerDelegate(this.components, this.modules);
-    this.constants = new DebugConstants();
-    let compiler = new BundleCompiler<WrappedLocator>(delegate, { macros });
-    this.constants = compiler.constants;
+    let { compiler, constants } = getBundleCompiler(this.registry);
+    this.constants = constants;
+
     return compiler;
+  }
+
+  getConstants(): ConstantPool {
+    return this.constants.toPool();
   }
 
   private getRuntimeContext({
@@ -247,7 +246,7 @@ export default class EagerRenderDelegate implements RenderDelegate {
     pool,
     heap,
   }: BundleCompilationResult): AotRuntimeContext<TemplateMeta> {
-    let resolver = new EagerRuntimeResolver(table, this.modules, this.symbolTables);
+    let resolver = new EagerRuntimeResolver(table, this.registry.modules, this.symbolTables);
 
     return AotRuntime(this.doc, { constants: pool, heap }, resolver);
   }
@@ -289,4 +288,16 @@ export default class EagerRenderDelegate implements RenderDelegate {
 
     return renderSync(runtime.env, iterator);
   }
+}
+
+function getBundleCompiler(
+  registry: EagerCompilerRegistry
+): { compiler: BundleCompiler<WrappedLocator>; constants: DebugConstants } {
+  let delegate: EagerCompilerDelegate = new EagerCompilerDelegate(registry);
+  let constants = new DebugConstants();
+  let compiler = new BundleCompiler<WrappedLocator>(delegate, {
+    macros: new TestMacros(),
+    constants,
+  });
+  return { constants, compiler };
 }

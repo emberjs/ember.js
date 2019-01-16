@@ -1,5 +1,5 @@
-import { Cursor, Environment } from '@glimmer/interfaces';
-import { ElementBuilder, RehydrateBuilder } from '@glimmer/runtime';
+import { Cursor, Environment, ElementBuilder } from '@glimmer/interfaces';
+import { RehydrateBuilder } from '@glimmer/runtime';
 import { SimpleNode } from '@simple-dom/interface';
 
 export class DebugRehydrationBuilder extends RehydrateBuilder {

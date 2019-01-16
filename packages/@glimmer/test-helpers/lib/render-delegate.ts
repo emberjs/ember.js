@@ -1,7 +1,6 @@
 import { DebugConstants } from '@glimmer/bundle-compiler';
-import { Cursor, Dict, Environment, RenderResult } from '@glimmer/interfaces';
+import { Cursor, Dict, Environment, RenderResult, ElementBuilder } from '@glimmer/interfaces';
 import { BasicReference } from '@glimmer/reference';
-import { ElementBuilder } from '@glimmer/runtime';
 import { SimpleElement } from '@simple-dom/interface';
 import { UserHelper } from './environment/helper';
 import { ComponentKind, ComponentTypes } from './interfaces';
