@@ -1603,7 +1603,7 @@ if (!jQueryDisabled) {
     'Run loop and lifecycle hooks - jQuery only',
     class extends RenderingTestCase {
       ['@test lifecycle hooks have proper access to this.$()'](assert) {
-        assert.expect(6);
+        assert.expect(7);
         let component;
         let FooBarComponent = Component.extend({
           tagName: 'div',
@@ -1634,8 +1634,12 @@ if (!jQueryDisabled) {
           template: 'hello',
         });
         let { owner } = this;
-        let comp = owner.lookup('component:foo-bar');
-        runAppend(comp);
+
+        expectDeprecation(() => {
+          let comp = owner.lookup('component:foo-bar');
+          runAppend(comp);
+          runTask(() => tryInvoke(component, 'destroy'));
+        }, 'Using this.$() in a component has been deprecated, consider using this.element');
         runTask(() => tryInvoke(component, 'destroy'));
       }
     }
