@@ -192,7 +192,7 @@ export class NestedPropertyReference implements VersionedPathReference {
   }
 }
 
-export class UpdatableReference<T> implements VersionedPathReference {
+export class UpdatableReference<T = unknown> implements VersionedPathReference<T> {
   public tag: TagWrapper<UpdatableDirtyableTag>;
   private _value: T;
 
