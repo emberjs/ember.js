@@ -1,8 +1,15 @@
 /**
 @module @ember/object
 */
+import { DEBUG } from '@glimmer/env';
 import { assert } from '@ember/debug';
-import { get, ComputedProperty, addObserver, removeObserver } from '@ember/-internals/metal';
+import {
+  get,
+  computed,
+  ComputedProperty,
+  addObserver,
+  removeObserver,
+} from '@ember/-internals/metal';
 import { compare, isArray, A as emberA, uniqBy as uniqByArray } from '@ember/-internals/runtime';
 
 function reduceMacro(dependentKey, callback, initialValue, name) {
@@ -25,7 +32,7 @@ function reduceMacro(dependentKey, callback, initialValue, name) {
   return cp;
 }
 
-function arrayMacro(dependentKey, callback) {
+function arrayMacro(dependentKey, additionalDependentKeys, callback) {
   // This is a bit ugly
   let propertyName;
   if (/@each/.test(dependentKey)) {
@@ -35,21 +42,14 @@ function arrayMacro(dependentKey, callback) {
     dependentKey += '.[]';
   }
 
-  let cp = new ComputedProperty(
-    function() {
-      let value = get(this, propertyName);
-      if (isArray(value)) {
-        return emberA(callback.call(this, value));
-      } else {
-        return emberA();
-      }
-    },
-    { readOnly: true }
-  );
-
-  cp.property(dependentKey); // this forces to expand properties GH #15855
-
-  return cp;
+  return computed(dependentKey, ...additionalDependentKeys, function() {
+    let value = get(this, propertyName);
+    if (isArray(value)) {
+      return emberA(callback.call(this, value));
+    } else {
+      return emberA();
+    }
+  }).readOnly();
 }
 
 function multiArrayMacro(_dependentKeys, callback, name) {
@@ -213,16 +213,60 @@ export function min(dependentKey) {
   hamster.get('excitingChores'); // ['CLEAN!', 'WRITE MORE UNIT TESTS!']
   ```
 
+  You can optionally pass an array of additional dependent keys as the second
+  parameter to the macro, if your map function relies on any external values:
+
+  ```javascript
+  import { map } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let Hamster = EmberObject.extend({
+    excitingChores: map('chores', ['shouldUpperCase'], function(chore, index) {
+      if (this.shouldUpperCase) {
+        return chore.toUpperCase() + '!';
+      } else {
+        return chore + '!';
+      }
+    })
+  });
+
+  let hamster = Hamster.create({
+    shouldUpperCase: false,
+
+    chores: ['clean', 'write more unit tests']
+  });
+
+  hamster.get('excitingChores'); // ['clean!', 'write more unit tests!']
+  hamster.set('shouldUpperCase', true);
+  hamster.get('excitingChores'); // ['CLEAN!', 'WRITE MORE UNIT TESTS!']
+  ```
+
   @method map
   @for @ember/object/computed
   @static
   @param {String} dependentKey
+  @param {Array} [additionalDependentKeys] optional array of additional dependent keys
   @param {Function} callback
   @return {ComputedProperty} an array mapped via the callback
   @public
 */
-export function map(dependentKey, callback) {
-  return arrayMacro(dependentKey, function(value) {
+export function map(dependentKey, additionalDependentKeys, callback) {
+  if (callback === undefined && typeof additionalDependentKeys === 'function') {
+    callback = additionalDependentKeys;
+    additionalDependentKeys = [];
+  }
+
+  assert(
+    'The final parameter provided to map must be a callback function',
+    typeof callback === 'function'
+  );
+
+  assert(
+    'The second parameter provided to map must either be the callback or an array of additional dependent keys',
+    Array.isArray(additionalDependentKeys)
+  );
+
+  return arrayMacro(dependentKey, additionalDependentKeys, function(value) {
     return value.map(callback, this);
   });
 }
@@ -333,17 +377,59 @@ export function mapBy(dependentKey, propertyKey) {
   hamster.get('remainingChores'); // []
   ```
 
+  Finally, you can optionally pass an array of additional dependent keys as the
+  second parameter to the macro, if your filter function relies on any external
+  values:
+
+  ```javascript
+  import { filter } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let Hamster = EmberObject.extend({
+    remainingChores: filter('chores', ['doneKey'], function(chore, index, array) {
+      return !chore[this.doneKey];
+    })
+  });
+
+  let hamster = Hamster.create({
+    doneKey: 'finished'
+
+    chores: [
+      { name: 'cook', finished: true },
+      { name: 'clean', finished: true },
+      { name: 'write more unit tests', finished: false }
+    ]
+  });
+
+  hamster.get('remainingChores'); // [{name: 'write more unit tests', finished: false}]
+  ```
 
   @method filter
   @for @ember/object/computed
   @static
   @param {String} dependentKey
+  @param {Array} [additionalDependentKeys] optional array of additional dependent keys
   @param {Function} callback
   @return {ComputedProperty} the filtered array
   @public
 */
-export function filter(dependentKey, callback) {
-  return arrayMacro(dependentKey, function(value) {
+export function filter(dependentKey, additionalDependentKeys, callback) {
+  if (callback === undefined && typeof additionalDependentKeys === 'function') {
+    callback = additionalDependentKeys;
+    additionalDependentKeys = [];
+  }
+
+  assert(
+    'The final parameter provided to filter must be a callback function',
+    typeof callback === 'function'
+  );
+
+  assert(
+    'The second parameter provided to filter must either be the callback or an array of additional dependent keys',
+    Array.isArray(additionalDependentKeys)
+  );
+
+  return arrayMacro(dependentKey, additionalDependentKeys, function(value) {
     return value.filter(callback, this);
   });
 }
@@ -722,9 +808,13 @@ export function collect(...dependentKeys) {
 /**
   A computed property which returns a new array with all the
   properties from the first dependent array sorted based on a property
-  or sort function.
+  or sort function. The sort macro can be used in two different ways:
 
-  The callback method you provide should have the following signature:
+  1. By providing a sort callback function
+  2. By providing an array of keys to sort the array
+
+  In the first form, the callback method you provide should have the following
+  signature:
 
   ```javascript
   function(itemA, itemB);
@@ -733,14 +823,81 @@ export function collect(...dependentKeys) {
   - `itemA` the first item to compare.
   - `itemB` the second item to compare.
 
-  This function should return negative number (e.g. `-1`) when `itemA` should come before
-  `itemB`. It should return positive number (e.g. `1`) when `itemA` should come after
-  `itemB`. If the `itemA` and `itemB` are equal this function should return `0`.
+  This function should return negative number (e.g. `-1`) when `itemA` should
+  come before `itemB`. It should return positive number (e.g. `1`) when `itemA`
+  should come after `itemB`. If the `itemA` and `itemB` are equal this function
+  should return `0`.
 
-  Therefore, if this function is comparing some numeric values, simple `itemA - itemB` or
-  `itemA.get( 'foo' ) - itemB.get( 'foo' )` can be used instead of series of `if`.
+  Therefore, if this function is comparing some numeric values, simple `itemA -
+  itemB` or `itemA.get( 'foo' ) - itemB.get( 'foo' )` can be used instead of
+  series of `if`.
 
   Example
+
+  ```javascript
+  import { sort } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let ToDoList = EmberObject.extend({
+    // using a custom sort function
+    priorityTodos: sort('todos', function(a, b){
+      if (a.priority > b.priority) {
+        return 1;
+      } else if (a.priority < b.priority) {
+        return -1;
+      }
+
+      return 0;
+    })
+  });
+
+  let todoList = ToDoList.create({
+    todos: [
+      { name: 'Unit Test', priority: 2 },
+      { name: 'Documentation', priority: 3 },
+      { name: 'Release', priority: 1 }
+    ]
+  });
+
+  todoList.get('priorityTodos');    // [{ name:'Release', priority:1 }, { name:'Unit Test', priority:2 }, { name:'Documentation', priority:3 }]
+  ```
+
+  You can also optionally pass an array of additional dependent keys as the
+  second parameter, if your sort function is dependent on additional values that
+  could changes:
+
+  ```js
+  import { sort } from '@ember/object/computed';
+  import EmberObject from '@ember/object';
+
+  let ToDoList = EmberObject.extend({
+    // using a custom sort function
+    sortedTodos: sort('todos', ['sortKey'] function(a, b){
+      if (a[this.sortKey] > b[this.sortKey]) {
+        return 1;
+      } else if (a[this.sortKey] < b[this.sortKey]) {
+        return -1;
+      }
+
+      return 0;
+    })
+  });
+
+  let todoList = ToDoList.create({
+    sortKey: 'priority',
+
+    todos: [
+      { name: 'Unit Test', priority: 2 },
+      { name: 'Documentation', priority: 3 },
+      { name: 'Release', priority: 1 }
+    ]
+  });
+
+  todoList.get('priorityTodos');    // [{ name:'Release', priority:1 }, { name:'Unit Test', priority:2 }, { name:'Documentation', priority:3 }]
+  ```
+
+  In the second form, you should provide the key of the array of sort values as
+  the second parameter:
 
   ```javascript
   import { sort } from '@ember/object/computed';
@@ -754,56 +911,69 @@ export function collect(...dependentKeys) {
     // using descending sort
     todosSortingDesc: Object.freeze(['name:desc']),
     sortedTodosDesc: sort('todos', 'todosSortingDesc'),
-
-    // using a custom sort function
-    priorityTodos: sort('todos', function(a, b){
-      if (a.priority > b.priority) {
-        return 1;
-      } else if (a.priority < b.priority) {
-        return -1;
-      }
-
-      return 0;
-    })
   });
 
-  let todoList = ToDoList.create({todos: [
-    { name: 'Unit Test', priority: 2 },
-    { name: 'Documentation', priority: 3 },
-    { name: 'Release', priority: 1 }
-  ]});
+  let todoList = ToDoList.create({
+    todos: [
+      { name: 'Unit Test', priority: 2 },
+      { name: 'Documentation', priority: 3 },
+      { name: 'Release', priority: 1 }
+    ]
+  });
 
   todoList.get('sortedTodos');      // [{ name:'Documentation', priority:3 }, { name:'Release', priority:1 }, { name:'Unit Test', priority:2 }]
   todoList.get('sortedTodosDesc');  // [{ name:'Unit Test', priority:2 }, { name:'Release', priority:1 }, { name:'Documentation', priority:3 }]
-  todoList.get('priorityTodos');    // [{ name:'Release', priority:1 }, { name:'Unit Test', priority:2 }, { name:'Documentation', priority:3 }]
   ```
 
   @method sort
   @for @ember/object/computed
   @static
   @param {String} itemsKey
+  @param {Array} [additionalDependentKeys] optional array of additional dependent keys
   @param {String or Function} sortDefinition a dependent key to an
   array of sort properties (add `:desc` to the arrays sort properties to sort descending) or a function to use when sorting
   @return {ComputedProperty} computes a new sorted array based
   on the sort property array or callback function
   @public
 */
-export function sort(itemsKey, sortDefinition) {
-  assert(
-    '`computed.sort` requires two arguments: an array key to sort and ' +
-      'either a sort properties key or sort function',
-    arguments.length === 2
-  );
+export function sort(itemsKey, additionalDependentKeys, sortDefinition) {
+  if (DEBUG) {
+    let argumentsValid = false;
+
+    if (arguments.length === 2) {
+      argumentsValid =
+        typeof itemsKey === 'string' &&
+        (typeof additionalDependentKeys === 'string' ||
+          typeof additionalDependentKeys === 'function');
+    }
+
+    if (arguments.length === 3) {
+      argumentsValid =
+        typeof itemsKey === 'string' &&
+        Array.isArray(additionalDependentKeys) &&
+        typeof sortDefinition === 'function';
+    }
+
+    assert(
+      '`computed.sort` can either be used with an array of sort properties or with a sort function. If used with an array of sort properties, it must receive exactly two arguments: the key of the array to sort, and the key of the array of sort properties. If used with a sort function, it may recieve up to three arguments: the key of the array to sort, an optional additional array of dependent keys for the computed property, and the sort function.',
+      argumentsValid
+    );
+  }
+
+  if (sortDefinition === undefined && !Array.isArray(additionalDependentKeys)) {
+    sortDefinition = additionalDependentKeys;
+    additionalDependentKeys = [];
+  }
 
   if (typeof sortDefinition === 'function') {
-    return customSort(itemsKey, sortDefinition);
+    return customSort(itemsKey, additionalDependentKeys, sortDefinition);
   } else {
     return propertySort(itemsKey, sortDefinition);
   }
 }
 
-function customSort(itemsKey, comparator) {
-  return arrayMacro(itemsKey, function(value) {
+function customSort(itemsKey, additionalDependentKeys, comparator) {
+  return arrayMacro(itemsKey, additionalDependentKeys, function(value) {
     return value.slice().sort((x, y) => comparator.call(this, x, y));
   });
 }

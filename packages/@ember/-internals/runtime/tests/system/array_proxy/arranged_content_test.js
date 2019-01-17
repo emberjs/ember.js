@@ -146,7 +146,7 @@ moduleFor(
     beforeEach() {
       run(function() {
         array = ArrayProxy.extend({
-          arrangedContent: computed(function() {
+          arrangedContent: computed('content.[]', function() {
             let content = this.get('content');
             return (
               content &&
@@ -162,7 +162,7 @@ moduleFor(
                 })
               )
             );
-          }).property('content.[]'),
+          }),
 
           objectAtContent(idx) {
             let obj = objectAt(this.get('arrangedContent'), idx);

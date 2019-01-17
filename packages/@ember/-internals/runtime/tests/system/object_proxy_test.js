@@ -180,7 +180,7 @@ moduleFor(
       let last;
 
       let Proxy = ObjectProxy.extend({
-        fullName: computed(function() {
+        fullName: computed('firstName', 'lastName', function() {
           let firstName = this.get('firstName');
           let lastName = this.get('lastName');
 
@@ -188,7 +188,7 @@ moduleFor(
             return firstName + ' ' + lastName;
           }
           return firstName || lastName;
-        }).property('firstName', 'lastName'),
+        }),
       });
 
       let proxy = Proxy.create();

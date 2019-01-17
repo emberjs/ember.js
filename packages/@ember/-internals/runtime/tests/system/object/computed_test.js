@@ -73,10 +73,10 @@ moduleFor(
 
         count: 0,
 
-        foo: computed(function() {
+        foo: computed('bar.baz', function() {
           set(this, 'count', get(this, 'count') + 1);
           return get(get(this, 'bar'), 'baz') + ' ' + get(this, 'count');
-        }).property('bar.baz'),
+        }),
       });
 
       let Subclass = MyClass.extend({
@@ -109,10 +109,10 @@ moduleFor(
 
         count: 0,
 
-        foo: computed(function() {
+        foo: computed('bar.baz', function() {
           set(this, 'count', get(this, 'count') + 1);
           return get(get(this, 'bar'), 'baz') + ' ' + get(this, 'count');
-        }).property('bar.baz'),
+        }),
       });
 
       let Subclass = MyClass.extend({
@@ -123,10 +123,10 @@ moduleFor(
 
         count: 0,
 
-        foo: computed(function() {
+        foo: computed('bar2.baz', function() {
           set(this, 'count', get(this, 'count') + 1);
           return get(get(this, 'bar2'), 'baz') + ' ' + get(this, 'count');
-        }).property('bar2.baz'),
+        }),
       });
 
       let obj2 = Subclass.create();
@@ -152,7 +152,7 @@ moduleFor(
       );
 
       let ClassWithNoMetadata = EmberObject.extend({
-        computedProperty: computed(function() {}).volatile(),
+        computedProperty: computed(function() {}),
 
         staticProperty: 12,
       });
@@ -355,6 +355,26 @@ moduleFor(
 
       assert.equal(obj1.get('name'), '1');
       assert.equal(obj2.get('name'), '2');
+    }
+
+    ['@test can declare dependent keys with .property()'](assert) {
+      let Obj;
+
+      expectDeprecation(() => {
+        Obj = EmberObject.extend({
+          foo: computed(function() {
+            return this.bar;
+          }).property('bar'),
+        });
+      }, /Setting dependency keys using the `.property\(\)` modifier has been deprecated/);
+
+      let obj = Obj.create({ bar: 1 });
+
+      assert.equal(obj.get('foo'), 1);
+
+      obj.set('bar', 2);
+
+      assert.equal(obj.get('foo'), 2);
     }
   }
 );

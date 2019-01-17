@@ -54,9 +54,9 @@ moduleFor(
       defineProperty(
         obj,
         'foo',
-        computed(function() {
+        computed('bar', function() {
           return get(this, 'bar').toUpperCase();
-        }).property('bar')
+        })
       );
 
       get(obj, 'foo');
@@ -139,17 +139,17 @@ moduleFor(
         defineProperty(
           obj,
           'foo',
-          computed(function() {
+          computed('bar', function() {
             return get(this, 'bar').toLowerCase();
-          }).property('bar')
+          })
         );
 
         defineProperty(
           obj,
           'bar',
-          computed(function() {
+          computed('baz', function() {
             return get(this, 'baz').toUpperCase();
-          }).property('baz')
+          })
         );
 
         mixin(obj, {
@@ -205,17 +205,17 @@ moduleFor(
       defineProperty(
         obj,
         'foo',
-        computed(function() {
+        computed('bar', function() {
           return get(this, 'bar').toLowerCase();
-        }).property('bar')
+        })
       );
 
       defineProperty(
         obj,
         'bar',
-        computed(function() {
+        computed('baz', function() {
           return get(this, 'baz').toUpperCase();
-        }).property('baz')
+        })
       );
 
       mixin(obj, {
@@ -690,14 +690,14 @@ moduleFor(
       defineProperty(
         obj,
         'foo',
-        computed({
+        computed('baz', {
           get: function() {
             return get(this, 'baz');
           },
           set: function(key, value) {
             return value;
           },
-        }).property('baz')
+        })
       );
 
       let count = 0;

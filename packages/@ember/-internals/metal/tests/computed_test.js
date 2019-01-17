@@ -79,9 +79,13 @@ moduleFor(
     ['@test can override volatile computed property'](assert) {
       let obj = {};
 
-      defineProperty(obj, 'foo', computed(function() {}).volatile());
+      expectDeprecation(() => {
+        defineProperty(obj, 'foo', computed(function() {}).volatile());
+      }, 'Setting a computed property as volatile has been deprecated. Instead, consider using a native getter with native class syntax.');
 
-      set(obj, 'foo', 'boom');
+      expectDeprecation(() => {
+        set(obj, 'foo', 'boom');
+      }, /The \[object Object\]#foo computed property was just overriden./);
 
       assert.equal(obj.foo, 'boom');
     }
@@ -399,13 +403,13 @@ moduleFor(
       defineProperty(
         obj,
         'plusOne',
-        computed({
+        computed('foo', {
           get() {},
           set(key, value, oldValue) {
             receivedOldValue = oldValue;
             return value;
           },
-        }).property('foo')
+        })
       );
 
       set(obj, 'plusOne', 1);
@@ -438,10 +442,10 @@ moduleFor(
       defineProperty(
         obj,
         'foo',
-        computed({
+        computed('bar', {
           get: getterAndSetter,
           set: getterAndSetter,
-        }).property('bar')
+        })
       );
     }
 
@@ -478,11 +482,11 @@ moduleFor(
       defineProperty(
         obj,
         'bar',
-        computed(function() {
+        computed('baz', function() {
           count++;
           get(this, 'baz');
           return 'baz ' + count;
-        }).property('baz')
+        })
       );
 
       assert.equal(isWatching(obj, 'bar'), false, 'precond not watching dependent key');
@@ -515,15 +519,15 @@ moduleFor(
         count++;
         return 'bar ' + count;
       };
-      defineProperty(obj, 'bar', computed({ get: func, set: func }).property('foo'));
+      defineProperty(obj, 'bar', computed('foo', { get: func, set: func }));
 
       defineProperty(
         obj,
         'foo',
-        computed(function() {
+        computed('bar', function() {
           count++;
           return 'foo ' + count;
-        }).property('bar')
+        })
       );
 
       assert.equal(get(obj, 'foo'), 'foo 1', 'get once');
@@ -543,10 +547,10 @@ moduleFor(
       defineProperty(
         obj,
         'foo',
-        computed(function() {
+        computed('baz', function() {
           count++;
           return 'baz ' + count;
-        }).property('baz')
+        })
       );
 
       assert.equal(
@@ -570,10 +574,10 @@ moduleFor(
       defineProperty(
         obj,
         'foo',
-        computed(function() {
+        computed('qux.{bar,baz}', function() {
           count++;
           return 'foo ' + count;
-        }).property('qux.{bar,baz}')
+        })
       );
 
       assert.equal(get(obj, 'foo'), 'foo 1', 'get once');
@@ -598,10 +602,10 @@ moduleFor(
         defineProperty(
           obj,
           'roo',
-          computed(function() {
+          computed('fee.{bar, baz,bop , }', function() {
             count++;
             return 'roo ' + count;
-          }).property('fee.{bar, baz,bop , }')
+          })
         );
       }, /cannot contain spaces/);
     }
@@ -656,7 +660,7 @@ moduleFor(
 
     ['@test depending on simple chain'](assert) {
       // assign computed property
-      defineProperty(obj, 'prop', computed(func).property('foo.bar.baz.biff'));
+      defineProperty(obj, 'prop', computed('foo.bar.baz.biff', func));
 
       assert.equal(get(obj, 'prop'), 'BIFF 1');
 
@@ -699,7 +703,7 @@ moduleFor(
 
     ['@test chained dependent keys should evaluate computed properties lazily'](assert) {
       defineProperty(obj.foo.bar, 'b', computed(func));
-      defineProperty(obj.foo, 'c', computed(function() {}).property('bar.b'));
+      defineProperty(obj.foo, 'c', computed('bar.b', function() {}));
       assert.equal(count, 0, 'b should not run');
     }
   }
@@ -751,7 +755,11 @@ moduleFor(
 
       assert.ok(testObj.get('aInt') === 1, 'getter works');
       assert.ok(testObj.get('a') === '1');
-      testObj.set('aInt', '123');
+
+      expectDeprecation(() => {
+        testObj.set('aInt', '123');
+      }, /The <\(unknown\):ember\d*>#aInt computed property was just overriden/);
+
       assert.ok(testObj.get('aInt') === '123', 'cp has been updated too');
     }
 
@@ -851,7 +859,7 @@ moduleFor(
       defineProperty(
         obj,
         'fullName',
-        computed({
+        computed('firstName', 'lastName', {
           get() {
             return get(this, 'firstName') + ' ' + get(this, 'lastName');
           },
@@ -861,7 +869,7 @@ moduleFor(
             set(this, 'lastName', values[1]);
             return value;
           },
-        }).property('firstName', 'lastName')
+        })
       );
 
       let fullNameDidChange = 0;
@@ -900,7 +908,7 @@ moduleFor(
       defineProperty(
         obj,
         'plusOne',
-        computed({
+        computed('foo', {
           get() {
             return get(this, 'foo') + 1;
           },
@@ -908,7 +916,7 @@ moduleFor(
             set(this, 'foo', value);
             return value + 1;
           },
-        }).property('foo')
+        })
       );
 
       let plusOneDidChange = 0;
@@ -949,7 +957,9 @@ moduleFor(
 
       addObserver(obj, 'foo', null, () => (observerFired = true));
 
-      set(obj, 'foo', 'bar');
+      expectDeprecation(() => {
+        set(obj, 'foo', 'bar');
+      }, /The \[object Object\]#foo computed property was just overriden./);
 
       assert.equal(get(obj, 'foo'), 'bar', 'The set value is properly returned');
       assert.ok(typeof obj.foo === 'string', 'The computed property was removed');

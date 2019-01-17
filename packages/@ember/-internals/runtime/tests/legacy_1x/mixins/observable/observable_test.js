@@ -48,7 +48,7 @@ moduleFor(
       object = ObservableObject.extend(Observable, {
         computed: computed(function() {
           return 'value';
-        }).volatile(),
+        }),
         method() {
           return 'value';
         },
@@ -97,7 +97,7 @@ moduleFor(
       objectA = ObservableObject.extend({
         computed: computed(function() {
           return 'value';
-        }).volatile(),
+        }),
         method() {
           return 'value';
         },
@@ -164,7 +164,7 @@ moduleFor(
         bar: ObservableObject.extend({
           baz: computed(function() {
             return 'blargh';
-          }).volatile(),
+          }),
         }).create(),
       });
 
@@ -202,7 +202,7 @@ moduleFor(
             this._computed = value;
             return this._computed;
           },
-        }).volatile(),
+        }),
 
         method(key, value) {
           if (value !== undefined) {
@@ -284,99 +284,95 @@ moduleFor(
     beforeEach() {
       lookup = context.lookup = {};
 
-      object = ObservableObject.extend({
-        computed: computed({
-          get() {
-            this.computedCalls.push('getter-called');
-            return 'computed';
-          },
-          set(key, value) {
-            this.computedCalls.push(value);
-          },
-        }).volatile(),
+      expectDeprecation(() => {
+        object = ObservableObject.extend({
+          computed: computed({
+            get() {
+              this.computedCalls.push('getter-called');
+              return 'computed';
+            },
+            set(key, value) {
+              this.computedCalls.push(value);
+            },
+          }).volatile(),
 
-        computedCached: computed({
-          get() {
-            this.computedCachedCalls.push('getter-called');
-            return 'computedCached';
-          },
-          set: function(key, value) {
-            this.computedCachedCalls.push(value);
-          },
-        }),
+          computedCached: computed({
+            get() {
+              this.computedCachedCalls.push('getter-called');
+              return 'computedCached';
+            },
+            set: function(key, value) {
+              this.computedCachedCalls.push(value);
+            },
+          }),
 
-        dependent: computed({
-          get() {
-            this.dependentCalls.push('getter-called');
-            return 'dependent';
-          },
-          set(key, value) {
-            this.dependentCalls.push(value);
-          },
-        })
-          .property('changer')
-          .volatile(),
-        dependentFront: computed('changer', {
-          get() {
-            this.dependentFrontCalls.push('getter-called');
-            return 'dependentFront';
-          },
-          set(key, value) {
-            this.dependentFrontCalls.push(value);
-          },
-        }).volatile(),
-        dependentCached: computed({
-          get() {
-            this.dependentCachedCalls.push('getter-called!');
-            return 'dependentCached';
-          },
-          set(key, value) {
-            this.dependentCachedCalls.push(value);
-          },
-        }).property('changer'),
+          dependent: computed('changer', {
+            get() {
+              this.dependentCalls.push('getter-called');
+              return 'dependent';
+            },
+            set(key, value) {
+              this.dependentCalls.push(value);
+            },
+          }).volatile(),
+          dependentFront: computed('changer', {
+            get() {
+              this.dependentFrontCalls.push('getter-called');
+              return 'dependentFront';
+            },
+            set(key, value) {
+              this.dependentFrontCalls.push(value);
+            },
+          }).volatile(),
+          dependentCached: computed('changer', {
+            get() {
+              this.dependentCachedCalls.push('getter-called!');
+              return 'dependentCached';
+            },
+            set(key, value) {
+              this.dependentCachedCalls.push(value);
+            },
+          }),
 
-        inc: computed('changer', function() {
-          return this.incCallCount++;
-        }),
+          inc: computed('changer', function() {
+            return this.incCallCount++;
+          }),
 
-        nestedInc: computed(function() {
-          get(this, 'inc');
-          return this.nestedIncCallCount++;
-        }).property('inc'),
+          nestedInc: computed('inc', function() {
+            get(this, 'inc');
+            return this.nestedIncCallCount++;
+          }),
 
-        isOn: computed({
-          get() {
-            return this.get('state') === 'on';
-          },
-          set() {
-            this.set('state', 'on');
-            return this.get('state') === 'on';
-          },
-        })
-          .property('state')
-          .volatile(),
+          isOn: computed('state', {
+            get() {
+              return this.get('state') === 'on';
+            },
+            set() {
+              this.set('state', 'on');
+              return this.get('state') === 'on';
+            },
+          }).volatile(),
 
-        isOff: computed({
-          get() {
-            return this.get('state') === 'off';
-          },
-          set() {
-            this.set('state', 'off');
-            return this.get('state') === 'off';
-          },
-        })
-          .property('state')
-          .volatile(),
-      }).create({
-        computedCalls: [],
-        computedCachedCalls: [],
-        changer: 'foo',
-        dependentCalls: [],
-        dependentFrontCalls: [],
-        dependentCachedCalls: [],
-        incCallCount: 0,
-        nestedIncCallCount: 0,
-        state: 'on',
+          isOff: computed('state', {
+            get() {
+              return this.get('state') === 'off';
+            },
+            set() {
+              this.set('state', 'off');
+              return this.get('state') === 'off';
+            },
+          }).volatile(),
+        }).create({
+          computedCalls: [],
+          computedCachedCalls: [],
+          changer: 'foo',
+          dependentCalls: [],
+          dependentFrontCalls: [],
+          dependentCachedCalls: [],
+          incCallCount: 0,
+          nestedIncCallCount: 0,
+          state: 'on',
+        });
       });
     }
     afterEach() {
@@ -542,9 +538,9 @@ moduleFor(
 
     ['@test dependent keys should be able to be specified as property paths'](assert) {
       var depObj = ObservableObject.extend({
-        menuPrice: computed(function() {
+        menuPrice: computed('menu.price', function() {
           return this.get('menu.price');
-        }).property('menu.price'),
+        }),
       }).create({
         menu: ObservableObject.create({
           price: 5,

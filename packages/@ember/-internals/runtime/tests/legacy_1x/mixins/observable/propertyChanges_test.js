@@ -112,19 +112,23 @@ moduleFor(
     ['@test should invalidate function property cache when notifyPropertyChange is called'](
       assert
     ) {
-      let a = ObservableObject.extend({
-        b: computed({
-          get() {
-            return this._b;
-          },
-          set(key, value) {
-            this._b = value;
-            return this;
-          },
-        }).volatile(),
-      }).create({
-        _b: null,
-      });
+      let a;
+
+      expectDeprecation(() => {
+        a = ObservableObject.extend({
+          b: computed({
+            get() {
+              return this._b;
+            },
+            set(key, value) {
+              this._b = value;
+              return this;
+            },
+          }).volatile(),
+        }).create({
+          _b: null,
+        });
+      }, /Setting a computed property as volatile has been deprecated/);
 
       a.set('b', 'foo');
       assert.equal(a.get('b'), 'foo', 'should have set the correct value for property b');

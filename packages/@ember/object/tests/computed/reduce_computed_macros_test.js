@@ -172,6 +172,48 @@ moduleFor(
         'properties unshifted in sequence are mapped correctly'
       );
     }
+
+    ['@test it updates if additional dependent keys are modified'](assert) {
+      obj = EmberObject.extend({
+        mapped: map('array', ['key'], function(item) {
+          return item[this.key];
+        }),
+      }).create({
+        key: 'name',
+        array: emberA([{ name: 'Cercei', house: 'Lannister' }]),
+      });
+
+      assert.deepEqual(
+        obj.get('mapped'),
+        ['Cercei'],
+        'precond - mapped array is initially correct'
+      );
+
+      obj.set('key', 'house');
+      assert.deepEqual(
+        obj.get('mapped'),
+        ['Lannister'],
+        'mapped prop updates correctly when additional dependency is updated'
+      );
+    }
+
+    ['@test it throws on bad inputs']() {
+      expectAssertion(() => {
+        map('items.@each.{prop}', 'foo');
+      }, /The final parameter provided to map must be a callback function/);
+
+      expectAssertion(() => {
+        map('items.@each.{prop}', 'foo', function() {});
+      }, /The second parameter provided to map must either be the callback or an array of additional dependent keys/);
+
+      expectAssertion(() => {
+        map('items.@each.{prop}', function() {}, ['foo']);
+      }, /The final parameter provided to map must be a callback function/);
+
+      expectAssertion(() => {
+        map('items.@each.{prop}', ['foo']);
+      }, /The final parameter provided to map must be a callback function/);
+    }
   }
 );
 
@@ -400,6 +442,48 @@ moduleFor(
       item.set('prop', false);
 
       assert.deepEqual(obj.get('filtered'), []);
+    }
+
+    ['@test it updates if additional dependent keys are modified'](assert) {
+      obj = EmberObject.extend({
+        filtered: filter('array', ['modulo'], function(item) {
+          return item % this.modulo === 0;
+        }),
+      }).create({
+        modulo: 2,
+        array: emberA([1, 2, 3, 4, 5, 6, 7, 8]),
+      });
+
+      assert.deepEqual(
+        obj.get('filtered'),
+        [2, 4, 6, 8],
+        'precond - filtered array is initially correct'
+      );
+
+      obj.set('modulo', 3);
+      assert.deepEqual(
+        obj.get('filtered'),
+        [3, 6],
+        'filtered prop updates correctly when additional dependency is updated'
+      );
+    }
+
+    ['@test it throws on bad inputs']() {
+      expectAssertion(() => {
+        filter('items.@each.{prop}', 'foo');
+      }, /The final parameter provided to filter must be a callback function/);
+
+      expectAssertion(() => {
+        filter('items.@each.{prop}', 'foo', function() {});
+      }, /The second parameter provided to filter must either be the callback or an array of additional dependent keys/);
+
+      expectAssertion(() => {
+        filter('items.@each.{prop}', function() {}, ['foo']);
+      }, /The final parameter provided to filter must be a callback function/);
+
+      expectAssertion(() => {
+        filter('items.@each.{prop}', ['foo']);
+      }, /The final parameter provided to filter must be a callback function/);
     }
   }
 );
@@ -1725,6 +1809,62 @@ moduleFor(
       } else {
         assert.expect(0);
       }
+    }
+
+    ['@test sort updates if additional dependent keys are present'](assert) {
+      obj = EmberObject.extend({
+        sortedItems: sort('items', ['sortFunction'], function() {
+          return this.sortFunction(...arguments);
+        }),
+      }).create({
+        sortFunction: sortByLnameFname,
+        items: emberA([
+          { fname: 'Jaime', lname: 'Lannister', age: 34 },
+          { fname: 'Cersei', lname: 'Lannister', age: 34 },
+          { fname: 'Robb', lname: 'Stark', age: 16 },
+          { fname: 'Bran', lname: 'Stark', age: 8 },
+        ]),
+      });
+
+      assert.deepEqual(
+        obj.get('sortedItems').mapBy('fname'),
+        ['Cersei', 'Jaime', 'Bran', 'Robb'],
+        'array is initially sorted'
+      );
+
+      obj.set('sortFunction', (a, b) => {
+        if (a.age > b.age) {
+          return -1;
+        } else if (a.age < b.age) {
+          return 1;
+        }
+
+        return 0;
+      });
+
+      assert.deepEqual(
+        obj.get('sortedItems').mapBy('fname'),
+        ['Jaime', 'Cersei', 'Robb', 'Bran'],
+        'array is updated when dependent key changes'
+      );
+    }
+
+    ['@test it throws on bad inputs']() {
+      expectAssertion(() => {
+        sort('foo', 'bar', 'baz');
+      }, /`computed.sort` can either be used with an array of sort properties or with a sort function/);
+
+      expectAssertion(() => {
+        sort('foo', ['bar'], 'baz');
+      }, /`computed.sort` can either be used with an array of sort properties or with a sort function/);
+
+      expectAssertion(() => {
+        sort('foo', 'bar', function() {});
+      }, /`computed.sort` can either be used with an array of sort properties or with a sort function/);
+
+      expectAssertion(() => {
+        sort('foo', ['bar'], function() {}, 'baz');
+      }, /`computed.sort` can either be used with an array of sort properties or with a sort function/);
     }
   }
 );
