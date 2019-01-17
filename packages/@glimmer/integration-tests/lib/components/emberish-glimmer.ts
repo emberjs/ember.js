@@ -1,12 +1,11 @@
 import {
   TagWrapper,
-  DirtyableTag,
   PathReference,
   combine,
   UpdatableReference,
   Tag,
+  UpdatableDirtyableTag,
 } from '@glimmer/reference';
-import { Attrs } from '@glimmer/test-helpers';
 import {
   Dict,
   Option,
@@ -28,19 +27,34 @@ import {
 import { keys, templateMeta } from '@glimmer/util';
 import { BASIC_CAPABILITIES } from './capabilities';
 import { TestComponentDefinitionState } from './test-component';
+import { TestComponentConstructor } from './types';
+import { EmberishCurlyComponentFactory } from './emberish-curly';
 
 export type Attrs = Dict;
 export type AttrsDiff = { oldAttrs: Option<Attrs>; newAttrs: Attrs };
+export type EmberishGlimmerArgs = { attrs: Attrs };
+
+const SELF_REF = new WeakMap<EmberishGlimmerComponent, UpdatableReference>();
+
+function getSelf(obj: EmberishGlimmerComponent): UpdatableReference {
+  if (SELF_REF.has(obj)) {
+    return SELF_REF.get(obj)!;
+  } else {
+    let ref = new UpdatableReference(obj);
+    SELF_REF.set(obj, ref);
+    return ref;
+  }
+}
 
 export class EmberishGlimmerComponent {
-  public dirtinessTag: TagWrapper<DirtyableTag> = DirtyableTag.create();
+  public dirtinessTag: TagWrapper<UpdatableDirtyableTag> = UpdatableDirtyableTag.create();
   public attrs!: Attrs;
   public element!: Element;
   public bounds!: Bounds;
   public parentView: Option<EmberishGlimmerComponent> = null;
 
-  static create(args: { attrs: Attrs }): EmberishGlimmerComponent {
-    let c: EmberishGlimmerComponent & Dict = new EmberishGlimmerComponent();
+  static create({ attrs: args }: EmberishGlimmerArgs): EmberishGlimmerComponent {
+    let c: EmberishGlimmerComponent & Dict = new this({ attrs: args });
 
     for (let key of keys(args)) {
       c[key] = args[key];
@@ -49,8 +63,10 @@ export class EmberishGlimmerComponent {
     return c;
   }
 
+  constructor(_args: EmberishGlimmerArgs) {}
+
   recompute() {
-    this.dirtinessTag.inner.dirty();
+    getSelf(this).dirty();
   }
 
   destroy() {}
@@ -66,7 +82,8 @@ export class EmberishGlimmerComponent {
   didRender() {}
 }
 
-export interface EmberishGlimmerComponentFactory {
+export interface EmberishGlimmerComponentFactory
+  extends TestComponentConstructor<EmberishGlimmerComponent> {
   create(options: { attrs: Attrs }): EmberishGlimmerComponent;
 }
 
@@ -126,8 +143,8 @@ export class EmberishGlimmerComponentManager
     return { args, component };
   }
 
-  getTag({ args: { tag }, component: { dirtinessTag } }: EmberishGlimmerComponentState): Tag {
-    return combine([tag, dirtinessTag]);
+  getTag({ args: { tag }, component }: EmberishGlimmerComponentState): Tag {
+    return combine([tag, getSelf(component).tag]);
   }
 
   getJitStaticLayout(
@@ -147,7 +164,7 @@ export class EmberishGlimmerComponentManager
   }
 
   getSelf({ component }: EmberishGlimmerComponentState): PathReference<unknown> {
-    return new UpdatableReference(component);
+    return getSelf(component);
   }
 
   didCreateElement(): void {}
@@ -202,4 +219,71 @@ export interface ComponentHooks {
 
 export interface HookedComponent {
   hooks: ComponentHooks;
+}
+
+export function inspectHooks<
+  T extends EmberishCurlyComponentFactory | EmberishGlimmerComponentFactory
+>(ComponentClass: T): T {
+  return (class extends (ComponentClass as any) {
+    constructor() {
+      super();
+
+      this.hooks = {
+        didInitAttrs: 0,
+        didUpdateAttrs: 0,
+        didReceiveAttrs: 0,
+        willInsertElement: 0,
+        willUpdate: 0,
+        willRender: 0,
+        didInsertElement: 0,
+        didUpdate: 0,
+        didRender: 0,
+      };
+    }
+
+    didInitAttrs(this: any) {
+      super.didInitAttrs(...arguments);
+      this.hooks['didInitAttrs']++;
+    }
+
+    didUpdateAttrs(this: any) {
+      super.didUpdateAttrs(...arguments);
+      this.hooks['didUpdateAttrs']++;
+    }
+
+    didReceiveAttrs(this: any) {
+      super.didReceiveAttrs(...arguments);
+      this.hooks['didReceiveAttrs']++;
+    }
+
+    willInsertElement(this: any) {
+      super.willInsertElement(...arguments);
+      this.hooks['willInsertElement']++;
+    }
+
+    willUpdate(this: any) {
+      super.willUpdate(...arguments);
+      this.hooks['willUpdate']++;
+    }
+
+    willRender(this: any) {
+      super.willRender(...arguments);
+      this.hooks['willRender']++;
+    }
+
+    didInsertElement(this: any) {
+      super.didInsertElement(...arguments);
+      this.hooks['didInsertElement']++;
+    }
+
+    didUpdate(this: any) {
+      super.didUpdate(...arguments);
+      this.hooks['didUpdate']++;
+    }
+
+    didRender(this: any) {
+      super.didRender(...arguments);
+      this.hooks['didRender']++;
+    }
+  } as any) as T;
 }

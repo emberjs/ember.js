@@ -1,7 +1,6 @@
 import { preprocess as parse, builders as b } from '..';
 
 import { astEqual } from './support';
-import { strip } from '@glimmer/test-helpers';
 
 const test = QUnit.test;
 
@@ -552,3 +551,14 @@ test('path expression with "dangling dot" throws error', function(assert) {
     parse('{{if foo. bar baz}}');
   }, /'\.' is not a supported path in Glimmer; check for a path with a trailing '\.' at L1:C8/);
 });
+
+export function strip(strings: TemplateStringsArray, ...args: string[]) {
+  return strings
+    .map((str: string, i: number) => {
+      return `${str
+        .split('\n')
+        .map(s => s.trim())
+        .join('')}${args[i] ? args[i] : ''}`;
+    })
+    .join('');
+}

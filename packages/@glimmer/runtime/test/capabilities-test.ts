@@ -1,4 +1,4 @@
-import { capabilityFlagsFrom, hasCapability, Capability } from '..';
+import { capabilityFlagsFrom, hasCapability, Capability } from '@glimmer/runtime';
 
 QUnit.module('Capabilities Bitmaps');
 
