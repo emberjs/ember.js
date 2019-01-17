@@ -6,6 +6,7 @@ import {
   ElementBuilder,
   Dict,
   RenderResult,
+  Option,
 } from '@glimmer/interfaces';
 import { SimpleDocument, SimpleElement } from '@simple-dom/interface';
 import { TestJitRegistry } from './registry';
@@ -18,7 +19,7 @@ import {
   registerModifier,
   registerHelper,
 } from './register';
-import TestMacros from '../../compile/macros';
+import { TestMacros } from '../../compile/macros';
 import { TestJitCompilationContext } from './compilation-context';
 import TestJitRuntimeResolver from './resolver';
 import RenderDelegate from '../../render-delegate';
@@ -28,7 +29,7 @@ import { EmberishCurlyComponentFactory } from '../../components/emberish-curly';
 import { EmberishGlimmerComponentFactory } from '../../components/emberish-glimmer';
 import { TestModifierConstructor } from '../../modifiers';
 import { UserHelper } from '../../helpers';
-import { VersionedPathReference, UpdatableReference } from '@glimmer/reference';
+import { UpdatableReference, ConstReference } from '@glimmer/reference';
 import { renderTemplate } from './render';
 
 export interface JitTestDelegateContext {
@@ -48,12 +49,14 @@ export function JitDelegateContext(
   return { runtime, syntax };
 }
 
-export default class JitRenderDelegate implements RenderDelegate {
+export class JitRenderDelegate implements RenderDelegate {
   static readonly isEager = false;
+  static style = 'jit';
 
   private resolver: TestJitRuntimeResolver = new TestJitRuntimeResolver();
   private registry: TestJitRegistry = this.resolver.registry;
   private context: JitTestDelegateContext;
+  private self: Option<UpdatableReference> = null;
 
   constructor(private doc: SimpleDocument = document as SimpleDocument) {
     this.context = this.getContext();
@@ -64,11 +67,11 @@ export default class JitRenderDelegate implements RenderDelegate {
   }
 
   getInitialElement(): SimpleElement {
-    if (typeof module !== 'undefined' && module.exports) {
-      return this.doc.createElement('div');
+    if (isBrowserTestDocument(this.doc)) {
+      return this.doc.getElementById('qunit-fixture')! as SimpleElement;
+    } else {
+      return this.createElement('div');
     }
-
-    return document.getElementById('qunit-fixture')! as SimpleElement;
   }
 
   createElement(tagName: string): SimpleElement {
@@ -121,8 +124,12 @@ export default class JitRenderDelegate implements RenderDelegate {
     return clientBuilder(env, cursor);
   }
 
-  getSelf(context: unknown): VersionedPathReference {
-    return new UpdatableReference(context);
+  getSelf(context: unknown): UpdatableReference | ConstReference {
+    if (!this.self) {
+      this.self = new UpdatableReference(context);
+    }
+
+    return this.self;
   }
 
   renderTemplate(template: string, context: Dict<unknown>, element: SimpleElement): RenderResult {
@@ -135,4 +142,8 @@ export default class JitRenderDelegate implements RenderDelegate {
       this.getElementBuilder(this.context.runtime.env, cursor)
     );
   }
+}
+
+function isBrowserTestDocument(doc: SimpleDocument): doc is SimpleDocument & Document {
+  return !!((doc as any).getElementById && (doc as any).getElementById('qunit-fixture'));
 }

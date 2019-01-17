@@ -1,4 +1,11 @@
-import { Cursor, Dict, ElementBuilder, Environment, RenderResult } from '@glimmer/interfaces';
+import {
+  Cursor,
+  Dict,
+  ElementBuilder,
+  Environment,
+  RenderResult,
+  Option,
+} from '@glimmer/interfaces';
 import { serializeBuilder } from '@glimmer/node';
 import { UpdatableReference } from '@glimmer/reference';
 import createHTMLDocument from '@simple-dom/document';
@@ -21,6 +28,7 @@ export interface RehydrationStats {
 
 export class RehydrationDelegate implements RenderDelegate {
   static readonly isEager = false;
+  static readonly style = 'rehydration';
 
   public clientEnv: JitTestDelegateContext;
   public serverEnv: JitTestDelegateContext;
@@ -35,6 +43,9 @@ export class RehydrationDelegate implements RenderDelegate {
   public serverDoc: SimpleDocument;
 
   public rehydrationStats!: RehydrationStats;
+
+  private self: Option<UpdatableReference> = null;
+
   constructor() {
     this.clientDoc = document as SimpleDocument;
     this.clientResolver = new TestJitRuntimeResolver();
@@ -84,7 +95,11 @@ export class RehydrationDelegate implements RenderDelegate {
   }
 
   getSelf(context: unknown): UpdatableReference {
-    return new UpdatableReference(context);
+    if (!this.self) {
+      this.self = new UpdatableReference(context);
+    }
+
+    return this.self;
   }
 
   serialize(element: SimpleElement): string {
@@ -93,6 +108,8 @@ export class RehydrationDelegate implements RenderDelegate {
 
   renderClientSide(template: string, context: Dict<unknown>, element: SimpleElement): RenderResult {
     let env = this.clientEnv.runtime.env;
+    this.self = null;
+
     // Client-side rehydration
     let cursor = { element, nextSibling: null };
     let builder = this.getElementBuilder(env, cursor) as DebugRehydrationBuilder;
@@ -114,6 +131,7 @@ export class RehydrationDelegate implements RenderDelegate {
     let serialized = this.renderServerSide(template, context, snapshot);
     replaceHTML(element, serialized);
     qunitFixture().appendChild(element);
+
     return this.renderClientSide(template, context, element);
   }
 

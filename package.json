@@ -72,7 +72,7 @@
     "loader.js": "^4.0.10",
     "mkdirp": "^0.5.1",
     "prettier": "^1.15.1",
-    "qunit": "^2.8.0",
+    "qunit": "^2.9.1",
     "qunit-tap": "^1.5.1",
     "rimraf": "^2.6.1",
     "rollup-plugin-sourcemaps": "^0.4.2",

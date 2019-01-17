@@ -1,21 +1,21 @@
+import { Dict, Maybe, Option, RenderResult } from '@glimmer/interfaces';
+import { bump, isConst, UpdatableReference } from '@glimmer/reference';
+import { clearElement, dict, expect } from '@glimmer/util';
 import { SimpleElement, SimpleNode } from '@simple-dom/interface';
-import { Dict, Option, RenderResult, Maybe } from '@glimmer/interfaces';
-import { dict, clearElement, expect } from '@glimmer/util';
 import {
+  ComponentBlueprint,
   ComponentKind,
   ComponentTypes,
-  ComponentBlueprint,
-  GLIMMER_TEST_COMPONENT,
   CURLY_TEST_COMPONENT,
+  GLIMMER_TEST_COMPONENT,
 } from './components';
-import { UserHelper } from './helpers';
+import { assertElementShape, assertEmberishElement } from './dom/assertions';
 import { normalizeInnerHTML } from './dom/normalize';
-import { toInnerHTML, assertElement } from './dom/simple-utils';
-import { bump } from '@glimmer/reference';
-import { NodesSnapshot, isServerMarker, equalTokens, normalizeSnapshot } from './snapshot';
-import { assertEmberishElement, assertElementShape } from './dom/assertions';
-import RenderDelegate from './render-delegate';
+import { assertElement, toInnerHTML } from './dom/simple-utils';
+import { UserHelper } from './helpers';
 import { TestModifierConstructor } from './modifiers';
+import RenderDelegate from './render-delegate';
+import { equalTokens, isServerMarker, NodesSnapshot, normalizeSnapshot } from './snapshot';
 
 export interface IRenderTest {
   readonly count: Count;
@@ -364,6 +364,12 @@ export class RenderTest implements IRenderTest {
   rerender(properties: Dict<unknown> = {}): void {
     QUnit.assert.ok(true, `rerender ${JSON.stringify(properties)}`);
     this.setProperties(properties);
+
+    let self = this.delegate.getSelf(this.context);
+
+    if (!isConst(self)) {
+      (self as UpdatableReference).forceUpdate(this.context);
+    }
 
     let result = expect(this.renderResult, 'the test should call render() before rerender()');
 
