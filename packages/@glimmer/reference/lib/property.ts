@@ -219,6 +219,10 @@ export class UpdatableReference<T = unknown> implements VersionedPathReference<T
     this._value = value;
   }
 
+  dirty() {
+    this.tag.inner.dirty();
+  }
+
   get(key: string): VersionedPathReference {
     return new NestedPropertyReference(this, key);
   }
@@ -226,4 +230,16 @@ export class UpdatableReference<T = unknown> implements VersionedPathReference<T
 
 export function State<T>(data: T): UpdatableReference<T> {
   return new UpdatableReference(data);
+}
+
+const STABLE_STATE = new WeakMap();
+
+export function StableState<T extends object>(data: T): UpdatableReference<T> {
+  if (STABLE_STATE.has(data)) {
+    return STABLE_STATE.get(data);
+  } else {
+    let ref = new UpdatableReference(data);
+    STABLE_STATE.set(data, ref);
+    return ref;
+  }
 }

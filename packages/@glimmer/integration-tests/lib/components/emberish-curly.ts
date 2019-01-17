@@ -33,8 +33,10 @@ import {
 import { keys, templateMeta, EMPTY_ARRAY, assign } from '@glimmer/util';
 import { TestComponentDefinitionState } from './test-component';
 import { PrimitiveReference } from '@glimmer/runtime';
+import { TestComponentConstructor } from './types';
 
-export interface EmberishCurlyComponentFactory {
+export interface EmberishCurlyComponentFactory
+  extends TestComponentConstructor<EmberishCurlyComponent> {
   fromDynamicScope?: string[];
   positionalParams: Option<string | string[]>;
   create(options: { attrs: Attrs; targetObject: any }): EmberishCurlyComponent;
@@ -59,7 +61,7 @@ export class EmberishCurlyComponent {
   public _guid: string;
 
   static create(args: { attrs: Attrs }): EmberishCurlyComponent {
-    let c = new EmberishCurlyComponent();
+    let c = new this();
 
     for (let key of keys(args)) {
       c[key] = args[key];
@@ -69,7 +71,7 @@ export class EmberishCurlyComponent {
   }
 
   constructor() {
-    this._guid = `ember${GUID++}`;
+    this._guid = `${GUID++}`;
   }
 
   set(key: string, value: unknown) {
@@ -80,6 +82,9 @@ export class EmberishCurlyComponent {
     for (let key of keys(dict)) {
       (this as Dict)[key] = dict[key];
     }
+
+    SELF_REF.get(this)!.dirty();
+    this.dirtinessTag.inner.dirty();
   }
 
   recompute() {
@@ -98,6 +103,8 @@ export class EmberishCurlyComponent {
   didUpdate() {}
   didRender() {}
 }
+
+const SELF_REF = new WeakMap<object, UpdatableReference>();
 
 export interface EmberishCurlyComponentDefinitionState {
   name: string;
@@ -242,7 +249,9 @@ export class EmberishCurlyComponentManager
   }
 
   getSelf(component: EmberishCurlyComponent): PathReference<unknown> {
-    return new UpdatableReference(component);
+    let ref = new UpdatableReference(component);
+    SELF_REF.set(component, ref);
+    return ref;
   }
 
   getTagName({ tagName }: EmberishCurlyComponent): Option<string> {
@@ -271,7 +280,7 @@ export class EmberishCurlyComponentManager
     operations.setAttribute('class', PrimitiveReference.create('ember-view'), false, null);
 
     let bindings = component.attributeBindings;
-    let rootRef = new UpdatableReference(component);
+    let rootRef = SELF_REF.get(component)!;
 
     if (bindings) {
       for (let i = 0; i < bindings.length; i++) {

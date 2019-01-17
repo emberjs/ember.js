@@ -3,7 +3,7 @@ import { SimpleElement } from '@simple-dom/interface';
 import { ComponentKind, ComponentTypes } from './components';
 import { UserHelper } from './helpers';
 import { Dict, RenderResult, Environment, Cursor, ElementBuilder } from '@glimmer/interfaces';
-import { BasicReference } from '@glimmer/reference';
+import { UpdatableReference, ConstReference } from '@glimmer/reference';
 
 export default interface RenderDelegate {
   constants?: DebugConstants;
@@ -25,5 +25,5 @@ export default interface RenderDelegate {
     snapshot: () => void
   ): RenderResult;
   getElementBuilder(env: Environment, cursor: Cursor): ElementBuilder;
-  getSelf(context: unknown): BasicReference<unknown>;
+  getSelf(context: unknown): UpdatableReference | ConstReference;
 }

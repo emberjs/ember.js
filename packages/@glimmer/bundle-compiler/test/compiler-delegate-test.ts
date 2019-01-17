@@ -1,8 +1,13 @@
 import { BundleCompiler } from '@glimmer/bundle-compiler';
 import { ComponentCapabilities, ModuleLocator } from '@glimmer/interfaces';
-import { BASIC_CAPABILITIES } from '@glimmer/test-helpers';
+import { MINIMAL_CAPABILITIES } from '@glimmer/opcode-compiler';
 
 const { test } = QUnit;
+
+export const BASIC_CAPABILITIES: ComponentCapabilities = {
+  ...MINIMAL_CAPABILITIES,
+  createInstance: true,
+};
 
 QUnit.module('[glimmer-bundle-compiler] CompilerDelegate');
 
@@ -39,7 +44,7 @@ test('correct referrer is passed during component lookup', function(assert) {
     }
 
     getComponentCapabilities(): ComponentCapabilities {
-      return BASIC_CAPABILITIES;
+      return MINIMAL_CAPABILITIES;
     }
   }
 

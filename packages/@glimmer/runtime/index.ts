@@ -17,21 +17,23 @@ export {
   isCurriedComponentDefinition,
 } from './lib/component/curried-component';
 export { DEFAULT_CAPABILITIES, MINIMAL_CAPABILITIES } from './lib/component/interfaces';
+export * from './lib/component/manager';
 export {
   default as DOMChanges,
   DOMChangesImpl as IDOMChanges,
   DOMTreeConstruction,
   isWhitespace,
 } from './lib/dom/helper';
-export * from './lib/component/manager';
 export { normalizeProperty } from './lib/dom/props';
+export { DefaultDynamicScope } from './lib/dynamic-scope';
 export {
+  AotRuntime,
   default as EnvironmentImpl,
   DefaultEnvironment,
-  RuntimeEnvironment,
-  ScopeImpl,
-  AotRuntime,
   JitRuntime,
+  RuntimeEnvironment,
+  RuntimeEnvironmentDelegate,
+  ScopeImpl,
 } from './lib/environment';
 export { default as getDynamicVar } from './lib/helpers/get-dynamic-var';
 export { PublicModifierDefinition as ModifierDefinition } from './lib/modifier/interfaces';
@@ -42,9 +44,9 @@ export {
   UNDEFINED_REFERENCE,
 } from './lib/references';
 export {
+  renderAot,
   renderAotComponent,
   renderAotMain,
-  renderAot,
   RenderComponentArgs,
   renderJitComponent,
   renderJitMain,
@@ -56,8 +58,8 @@ export { EMPTY_ARGS } from './lib/vm/arguments';
 export { AttributeOperation } from './lib/vm/attributes';
 export {
   DynamicAttribute,
-  SimpleDynamicAttribute,
   dynamicAttribute,
+  SimpleDynamicAttribute,
 } from './lib/vm/attributes/dynamic';
 export { clientBuilder, NewElementBuilder } from './lib/vm/element-builder';
 export {
@@ -66,6 +68,5 @@ export {
   rehydrationBuilder,
   SERIALIZATION_FIRST_NODE_STRING,
 } from './lib/vm/rehydrate-builder';
-export { DefaultDynamicScope } from './lib/dynamic-scope';
 
 export type IteratorResult<T> = RichIteratorResult<null, T>;

@@ -20,7 +20,7 @@ import {
   AotRuntimeResolver,
 } from '@glimmer/interfaces';
 import GlimmerObject from '@glimmer/object';
-import { UpdatableReference } from '@glimmer/object-reference';
+import { UpdatableReference, CLASS_META } from '@glimmer/object-reference';
 import { combine, DirtyableTag, PathReference, Tag, TagWrapper } from '@glimmer/reference';
 import { PrimitiveReference } from '@glimmer/runtime';
 import { assign, EMPTY_ARRAY, templateMeta } from '@glimmer/util';
@@ -61,6 +61,8 @@ export class EmberishCurlyComponent extends GlimmerObject {
   didUpdate() {}
   didRender() {}
 }
+
+EmberishCurlyComponent[CLASS_META].seal();
 
 export const BaseEmberishCurlyComponent = EmberishCurlyComponent.extend() as typeof EmberishCurlyComponent;
 
