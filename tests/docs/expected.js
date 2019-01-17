@@ -292,6 +292,7 @@ module.exports = {
     'isArray',
     'isBlank',
     'isBrowser',
+    'isDescriptor',
     'isDestroyed',
     'isDestroying',
     'isEmpty',
