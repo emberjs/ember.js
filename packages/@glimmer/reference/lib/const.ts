@@ -1,11 +1,16 @@
-import { CONSTANT_TAG, VersionedReference, Tag } from './validators';
+import { CONSTANT_TAG, Tag, VersionedPathReference } from './validators';
+import { UNDEFINED_REFERENCE } from './property';
 
-export class ConstReference<T> implements VersionedReference<T> {
+export class ConstReference<T = unknown> implements VersionedPathReference<T> {
   public tag: Tag = CONSTANT_TAG;
 
   constructor(protected inner: T) {}
 
   value(): T {
     return this.inner;
+  }
+
+  get(_key: string): VersionedPathReference {
+    return UNDEFINED_REFERENCE;
   }
 }

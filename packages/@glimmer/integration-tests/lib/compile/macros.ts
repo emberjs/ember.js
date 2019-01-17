@@ -9,7 +9,7 @@ import {
   UNHANDLED,
 } from '@glimmer/opcode-compiler';
 
-export default class TestMacros extends MacrosImpl {
+export class TestMacros extends MacrosImpl {
   constructor() {
     super();
 

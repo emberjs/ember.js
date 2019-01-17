@@ -1,40 +1,102 @@
 import { IRenderTest, Count, RenderTest } from '../render-test';
 import RenderDelegate from '../render-delegate';
-import JitRenderDelegate from '../modes/jit/delegate';
+import { JitRenderDelegate } from '../modes/jit/delegate';
 import { SimpleDocument } from '@simple-dom/interface';
 import { keys } from '@glimmer/util';
 import { DeclaredComponentKind } from '../test-decorator';
 import { ComponentKind } from '../components';
+import { AotRenderDelegate } from '../modes/aot/delegate';
+import { NodeRenderDelegate } from '../modes/node/env';
+import { JitSerializationDelegate, AotSerializationDelegate } from '../suites/custom-dom-helper';
 
 export interface RenderTestConstructor<D extends RenderDelegate, T extends IRenderTest> {
+  suiteName: string;
   new (delegate: D): T;
 }
 
-export function module<T extends IRenderTest>(
-  name: string,
+export function jitSuite<T extends IRenderTest>(
   klass: RenderTestConstructor<RenderDelegate, T>,
   options = { componentModule: false }
 ): void {
-  return rawModule(name, klass, JitRenderDelegate, options);
+  return suite(klass, JitRenderDelegate, options);
+}
+
+export function nodeSuite<T extends IRenderTest>(
+  klass: RenderTestConstructor<RenderDelegate, T>,
+  options = { componentModule: false }
+): void {
+  return suite(klass, NodeRenderDelegate, options);
+}
+
+export function nodeComponentSuite<T extends IRenderTest>(
+  klass: RenderTestConstructor<RenderDelegate, T>
+): void {
+  return suite(klass, NodeRenderDelegate, { componentModule: true });
+}
+
+export function jitComponentSuite<T extends IRenderTest>(
+  klass: RenderTestConstructor<RenderDelegate, T>
+): void {
+  return suite(klass, JitRenderDelegate, { componentModule: true });
+}
+
+export function aotSuite<T extends IRenderTest>(
+  klass: RenderTestConstructor<RenderDelegate, T>,
+  options = { componentModule: false }
+): void {
+  return suite(klass, AotRenderDelegate, options);
+}
+
+export function aotComponentSuite<T extends IRenderTest>(
+  klass: RenderTestConstructor<RenderDelegate, T>
+): void {
+  return suite(klass, AotRenderDelegate, { componentModule: true });
+}
+
+export function jitSerializeSuite<T extends IRenderTest>(
+  klass: RenderTestConstructor<RenderDelegate, T>,
+  options = { componentModule: false }
+): void {
+  return suite(klass, JitSerializationDelegate, options);
+}
+
+export function aotSerializeSuite<T extends IRenderTest>(
+  klass: RenderTestConstructor<RenderDelegate, T>,
+  options = { componentModule: false }
+): void {
+  return suite(klass, AotSerializationDelegate, options);
 }
 
 export interface RenderDelegateConstructor<Delegate extends RenderDelegate> {
   readonly isEager: boolean;
+  readonly style: string;
   new (doc?: SimpleDocument): Delegate;
 }
 
-export function rawModule<D extends RenderDelegate>(
-  name: string,
+export function componentSuite<D extends RenderDelegate>(
+  klass: RenderTestConstructor<D, IRenderTest>,
+  Delegate: RenderDelegateConstructor<D>
+): void {
+  return suite(klass, Delegate, { componentModule: true });
+}
+
+export function suite<D extends RenderDelegate>(
   klass: RenderTestConstructor<D, IRenderTest>,
   Delegate: RenderDelegateConstructor<D>,
   options = { componentModule: false }
 ): void {
+  let suiteName = klass.suiteName;
+
   if (options.componentModule) {
     if (shouldRunTest<D>(Delegate)) {
-      componentModule(name, (klass as any) as RenderTestConstructor<D, RenderTest>, Delegate);
+      componentModule(
+        `${Delegate.style} :: Components :: ${suiteName}`,
+        (klass as any) as RenderTestConstructor<D, RenderTest>,
+        Delegate
+      );
     }
   } else {
-    QUnit.module(`[NEW] ${name}`);
+    QUnit.module(`[integration] ${Delegate.style} :: ${suiteName}`);
 
     for (let prop in klass.prototype) {
       const test = klass.prototype[prop];
@@ -145,7 +207,7 @@ function componentModule<D extends RenderDelegate, T extends IRenderTest>(
       }
     }
   }
-  QUnit.module(`[NEW] ${name}`, () => {
+  QUnit.module(`[integration] ${name}`, () => {
     nestedComponentModules(klass, tests);
   });
 }
@@ -164,7 +226,7 @@ function nestedComponentModules<D extends RenderDelegate, T extends IRenderTest>
 ): void {
   keys(tests).forEach(type => {
     let formattedType = `${type[0].toUpperCase() + type.slice(1)}`;
-    QUnit.module(`${formattedType}`, () => {
+    QUnit.module(`[integration] ${formattedType}`, () => {
       for (let i = tests[type].length - 1; i >= 0; i--) {
         let t = tests[type][i];
         t(formattedType, klass);

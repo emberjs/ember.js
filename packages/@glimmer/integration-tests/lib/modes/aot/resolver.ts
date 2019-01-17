@@ -1,5 +1,6 @@
 import { ExternalModuleTable, ModuleLocatorMap } from '@glimmer/bundle-compiler';
 import { Modules } from './registry';
+import { WrappedLocator } from '../../components/test-component';
 import {
   ProgramSymbolTable,
   Option,
@@ -10,10 +11,9 @@ import {
   Template,
   RuntimeResolver,
 } from '@glimmer/interfaces';
-import { WrappedLocator } from '../components/test-component';
 import { expect } from '@glimmer/util';
 
-export default class EagerRuntimeResolver implements RuntimeResolver {
+export default class AotRuntimeResolver implements RuntimeResolver {
   constructor(
     private table: ExternalModuleTable,
     private modules: Modules,

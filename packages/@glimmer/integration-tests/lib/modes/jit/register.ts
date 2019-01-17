@@ -1,9 +1,5 @@
 import { TestJitRegistry } from './registry';
-import {
-  BasicComponentFactory,
-  BasicComponentManager,
-  BasicComponent,
-} from '../../components/basic';
+import { BasicComponentManager, BasicComponent } from '../../components/basic';
 import {
   BASIC_CAPABILITIES,
   STATIC_TAGLESS_CAPABILITIES,
@@ -18,12 +14,10 @@ import {
   ComponentDefinition,
 } from '@glimmer/interfaces';
 import {
-  EmberishCurlyComponentFactory,
   EmberishCurlyComponent,
   EmberishCurlyComponentManager,
 } from '../../components/emberish-curly';
 import {
-  EmberishGlimmerComponentFactory,
   EmberishGlimmerComponent,
   EMBERISH_GLIMMER_CAPABILITIES,
   EmberishGlimmerComponentManager,
@@ -59,7 +53,7 @@ export function registerTemplate(
 export function registerBasicComponent(
   registry: TestJitRegistry,
   name: string,
-  Component: BasicComponentFactory,
+  Component: ComponentTypes['Basic'],
   layoutSource: string
 ): void {
   if (name.indexOf('-') !== -1) {
@@ -82,7 +76,7 @@ export function registerBasicComponent(
 export function registerStaticTaglessComponent(
   registry: TestJitRegistry,
   name: string,
-  Component: BasicComponentFactory,
+  Component: ComponentTypes['Basic'],
   layoutSource: string
 ): void {
   let { handle } = registerTemplate(registry, name, layoutSource);
@@ -101,7 +95,7 @@ export function registerStaticTaglessComponent(
 export function registerEmberishCurlyComponent(
   registry: TestJitRegistry,
   name: string,
-  Component: Option<EmberishCurlyComponentFactory>,
+  Component: Option<ComponentTypes['Curly']>,
   layoutSource: Option<string>
 ): void {
   let layout: Option<{ name: string; handle: number }> = null;
@@ -127,7 +121,7 @@ export function registerEmberishCurlyComponent(
 export function registerEmberishGlimmerComponent(
   registry: TestJitRegistry,
   name: string,
-  Component: Option<EmberishGlimmerComponentFactory>,
+  Component: Option<ComponentTypes['Glimmer']>,
   layoutSource: string
 ): void {
   if (name.indexOf('-') !== -1) {
@@ -223,20 +217,10 @@ export function registerComponent<K extends ComponentKind>(
 ): void {
   switch (type) {
     case 'Glimmer':
-      registerEmberishGlimmerComponent(
-        registry,
-        name,
-        Class as typeof EmberishGlimmerComponent,
-        layout
-      );
+      registerEmberishGlimmerComponent(registry, name, Class as ComponentTypes['Glimmer'], layout);
       break;
     case 'Curly':
-      registerEmberishCurlyComponent(
-        registry,
-        name,
-        Class as typeof EmberishCurlyComponent,
-        layout
-      );
+      registerEmberishCurlyComponent(registry, name, Class as ComponentTypes['Curly'], layout);
       break;
 
     case 'Dynamic':

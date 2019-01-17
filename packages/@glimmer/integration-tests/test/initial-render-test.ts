@@ -6,8 +6,8 @@ import {
   CLOSE,
   equalTokens,
   InitialRenderSuite,
-  rawModule,
-  module,
+  suite,
+  jitSuite,
   toTextContent,
   RehydrationDelegate,
   toInnerHTML,
@@ -24,11 +24,13 @@ import {
   replaceHTML,
   assertElement,
   assertElementShape,
+  componentSuite,
 } from '@glimmer/integration-tests';
 import { expect } from '@glimmer/util';
 import { SimpleElement } from '@simple-dom/interface';
 
 class RenderTests extends InitialRenderSuite {
+  static suiteName = 'initial render (client)';
   name = 'client';
 }
 
@@ -75,6 +77,8 @@ class AbstractRehydrationTests extends InitialRenderSuite {
 }
 
 class Rehydration extends AbstractRehydrationTests {
+  static suiteName = 'rehydration';
+
   @test
   'rehydrates into element with pre-existing content'() {
     let rootElement = this.delegate.serverDoc.createElement('div');
@@ -1107,8 +1111,6 @@ class RehydratingComponents extends AbstractRehydrationTests {
   }
 }
 
-rawModule('integration - Rehydration Tests', Rehydration, RehydrationDelegate);
-module('integration - Initial Render Tests', RenderTests);
-rawModule('integration - Rehydrating components', RehydratingComponents, RehydrationDelegate, {
-  componentModule: true,
-});
+suite(Rehydration, RehydrationDelegate);
+jitSuite(RenderTests);
+componentSuite(RehydratingComponents, RehydrationDelegate);

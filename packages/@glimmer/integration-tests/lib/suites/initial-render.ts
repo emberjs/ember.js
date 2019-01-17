@@ -6,6 +6,8 @@ import { firstElementChild, getElementsByTagName } from '../dom/simple-utils';
 import { assertNodeTagName } from '../dom/assertions';
 
 export class InitialRenderSuite extends RenderTest {
+  static suiteName = 'initial render';
+
   name = 'BASE';
   @test
   'HTML text content'() {
