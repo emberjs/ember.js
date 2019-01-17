@@ -815,7 +815,6 @@ export function aliasMethod(methodName: string): Alias {
   ```javascript
   import EmberObject from '@ember/object';
   import { observer } from '@ember/object';
-import descriptor from '../../../../../tmp/funnel-input_base_path-gav85kkw.tmp/@ember/-internals/metal/lib/descriptor';
 
   export default EmberObject.extend({
     valueObserver: observer('value', function() {
