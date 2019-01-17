@@ -14,6 +14,11 @@ const debugMacros = require('babel-plugin-debug-macros').default;
 const Project = require('../utils/project');
 const project = Project.from('packages');
 
+console.log(project);
+
+const BroccoliDebug = require('broccoli-debug');
+let debug = BroccoliDebug.buildDebugCallback(`glimmer-vm`);
+
 module.exports = function buildPackages(es2017, matrix) {
   // Filter out test files from the package builds.
   es2017 = funnel(es2017, {
