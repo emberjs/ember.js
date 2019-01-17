@@ -21,7 +21,7 @@ import {
 import { UNDEFINED_REFERENCE } from '@glimmer/runtime';
 import { clearElement, dict, expect, keys } from '@glimmer/util';
 import createHTMLDocument from '@simple-dom/document';
-import { SimpleElement, SimpleNode, SimpleDocument } from '@simple-dom/interface';
+import { SimpleElement, SimpleNode, SimpleDocument, NodeType } from '@simple-dom/interface';
 import { assertElement, replaceHTML, toInnerHTML } from './dom';
 import { classes, equalsElement, regex } from './environment';
 import { UserHelper } from './environment/helper';
@@ -51,8 +51,6 @@ export type Content = string | typeof OPEN | typeof CLOSE | typeof SEP | typeof 
 export function skip(_target: Object, _name: string, descriptor: PropertyDescriptor) {
   descriptor.value['skip'] = true;
 }
-
-const COMMENT_NODE = 8; //  Node.COMMENT_NODE
 
 export class VersionedObject implements Tagged {
   [key: string]: unknown;
@@ -778,7 +776,7 @@ function uniq(arr: any[]) {
 }
 
 function isServerMarker(node: SimpleNode) {
-  return node.nodeType === COMMENT_NODE && node.nodeValue!.charAt(0) === '%';
+  return node.nodeType === NodeType.COMMENT_NODE && node.nodeValue!.charAt(0) === '%';
 }
 
 export interface ComponentTestMeta {
