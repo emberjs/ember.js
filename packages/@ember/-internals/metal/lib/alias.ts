@@ -46,10 +46,6 @@ export class AliasedProperty extends Descriptor implements DescriptorWithDepende
     this.consume(obj, keyName, meta);
   }
 
-  didUnwatch(obj: object, keyName: string, meta: Meta): void {
-    this.unconsume(obj, keyName, meta);
-  }
-
   get(obj: object, keyName: string): any {
     let ret = get(obj, this.altKey);
     this.consume(obj, keyName, metaFor(obj));
