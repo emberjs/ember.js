@@ -137,13 +137,17 @@ function giveDecoratorSuper(
   // Since multiple mixins may inherit from the same parent, we need
   // to clone the computed property so that other mixins do not receive
   // the wrapped version.
-  property = Object.create(property);
+  let duped = Object.create(property);
 
-  property.get = wrap(property.get, superProperty.get);
-  property.set = wrap(property.set, superProperty.set);
+  // NOTE: this wrap probably / maybe? won't work, because
+  //       the property is a decorator, and we maybe can't *just*
+  //       wrap a function around it, unless we can invoke the decorator's
+  //       getter stand-alone-ily
+  duped.get = wrap(duped.get, superProperty.get);
+  duped.set = wrap(duped.set, superProperty.set);
 
 
-  return property;
+  return duped;
 }
 
 function giveMethodSuper(

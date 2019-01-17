@@ -23,14 +23,11 @@ const DEEP_EACH_REGEX = /\.@each\.[^.]+\./; // temp copied from computed
 
 export function buildComputedDesc(dec, desc) {
   let fn = DECORATOR_COMPUTED_FN.get(dec);
-  let params = DECORATOR_PARAMS.get(dec);
+  let params = DECORATOR_PARAMS.get(dec) || [];
   let modifiers = DECORATOR_MODIFIERS.get(dec);
 
   let lastArg = params[params.length - 1];
   let objectConfig = params.slice(0, params.length);
-  // if (desc && desc.key && (desc.key === 'aProp')) {
-  //   debugger;
-  // }
 
   if ((Object.keys(desc).length === 1) && typeof lastArg !== 'function') {
     objectConfig = lastArg;
@@ -52,10 +49,7 @@ export function buildComputedDesc(dec, desc) {
       if (objectConfig.set && !objectConfig.get) {
         // classic behavior
         // in new classes, accessing without a getter will raise an exception
-        params[0].get = function() {
-          return this._super(...arguments);
-        };
-        // params[0].get = undefined;
+        params[0].get = undefined;
       }
     }
   }
