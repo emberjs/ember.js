@@ -22,14 +22,16 @@ moduleFor(
     ['@test computed can be used to compose new decorators'](assert) {
       let firstName = 'Diana';
 
-      let firstNameAlias = computed('firstName', function() {
-        return this.firstName;
+      let firstNameAlias = computed('firstName', {
+        get() {
+          return this.firstName;
+        }
       });
 
-      let Class1 = EmberObject.extend({
-        firstName,
-        otherFirstName: firstNameAlias
-      });
+      // let Class1 = EmberObject.extend({
+      //   firstName,
+      //   otherFirstName: firstNameAlias,
+      // });
 
       // debugger;
 
@@ -39,10 +41,10 @@ moduleFor(
         @firstNameAlias otherFirstName;
       }
 
-      let obj1 = new Class1();
+      // let obj1 = new Class1();
       let obj2 = new Class2();
 
-      assert.equal(firstName, obj1.otherFirstName);
+      // assert.equal(firstName, obj1.otherFirstName);
       assert.equal(firstName, obj2.otherFirstName);
     }
 
@@ -51,11 +53,11 @@ moduleFor(
         bar = 'something';
         foo = 'else';
 
-        @(computed('foo', {
+        @computed('foo', {
           get() {
             return this.bar;
-          }
-        }))
+          },
+        })
         baz;
       }
 
@@ -74,7 +76,8 @@ moduleFor(
         @computed('first', 'last', function() {
           assert.equal(this.first, 'rob');
           assert.equal(this.last, 'jackson');
-        }) fullName;
+        })
+        fullName;
       }
 
       let obj = new Foo();
@@ -106,8 +109,9 @@ moduleFor(
             setProperties(this, { first, last });
 
             return name;
-          }
-        }) fullName;
+          },
+        })
+        fullName;
       }
 
       let obj = new Foo();
@@ -118,9 +122,12 @@ moduleFor(
       expectedLast = 'katz';
       set(obj, 'fullName', 'yehuda katz');
 
-      assert.strictEqual(get(obj, 'fullName'), expectedName, 'return value of getter is new value of property');
+      assert.strictEqual(
+        get(obj, 'fullName'),
+        expectedName,
+        'return value of getter is new value of property'
+      );
     }
-
 
     ['@test it works with classic classes with full desc'](assert) {
       assert.expect(4);
@@ -147,8 +154,8 @@ moduleFor(
             setProperties(this, { first, last });
 
             return name;
-          }
-        })
+          },
+        }),
       });
 
       let obj = Foo.create();
@@ -159,7 +166,11 @@ moduleFor(
       expectedLast = 'katz';
       set(obj, 'fullName', 'yehuda katz');
 
-      assert.strictEqual(get(obj, 'fullName'), expectedName, 'return value of getter is new value of property');
+      assert.strictEqual(
+        get(obj, 'fullName'),
+        expectedName,
+        'return value of getter is new value of property'
+      );
     }
   }
 );
@@ -172,7 +183,7 @@ moduleFor(
         class TestObj {
           @computed()
           nonGetter() {
-            return  true;
+            return true;
           }
         }
 
@@ -210,7 +221,6 @@ moduleFor(
     }
   }
 );
-
 
 moduleFor(
   'computed - decorators',
@@ -262,7 +272,7 @@ moduleFor(
       }
       let obj = new Obj();
 
-      assert.equal(obj.foo = 'bar', 'bar', 'should return set value');
+      assert.equal((obj.foo = 'bar'), 'bar', 'should return set value');
       assert.equal(count, 1, 'should have invoked computed property');
       assert.equal(obj.foo, 'computed bar', 'should return new value');
     }
@@ -357,8 +367,10 @@ moduleFor(
     ['@test getCachedValueFor should return falsy cached values'](assert) {
       let obj = new class {
         @computed()
-        get falsy() { return false; }
-      }
+        get falsy() {
+          return false;
+        }
+      }();
 
       assert.equal(getCachedValueFor(obj, 'falsy'), undefined, 'should not yet be a cached value');
 
@@ -366,11 +378,8 @@ moduleFor(
 
       assert.equal(getCachedValueFor(obj, 'falsy'), false, 'should retrieve cached value');
     }
-
-
   }
 );
-
 
 // ..........................................................
 // DEPENDENT KEYS
@@ -392,12 +401,12 @@ moduleFor(
 
         @computed('bar')
         get foo() {
-          return getterAndSetter()
+          return getterAndSetter();
         }
         set foo(_value) {
-          return getterAndSetter()
+          return getterAndSetter();
         }
-      };
+      }();
     }
 
     afterEach() {

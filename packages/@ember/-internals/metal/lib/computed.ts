@@ -786,7 +786,7 @@ export const computed = computedDecoratorWithParams(({ key, descriptor, initiali
 
   assert(
     `Attempted to use @computed on ${key}, but it did not have a getter or a setter. You must either pass a get a function or getter/setter to @computed directly (e.g. \`@computed({ get() { ... } })\`) or apply @computed directly to a getter/setter`,
-    typeof get === 'function' || typeof 'set' === 'function'
+    typeof get === 'function' || typeof set === 'function'
   );
 
   if (descriptor !== undefined) {
