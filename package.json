@@ -52,6 +52,7 @@
     "benchmark": "^1.0.0",
     "broccoli-babel-transpiler": "^6.1.2",
     "broccoli-concat": "^2.1.0",
+    "broccoli-debug": "^0.6.5",
     "broccoli-file-creator": "^1.1.1",
     "broccoli-funnel": "^2.0.1",
     "broccoli-merge-trees": "^3.0.2",
