@@ -121,7 +121,7 @@ APPEND_OPCODES.add(Op.CompileBlock, vm => {
   let block = stack.pop<Option<CompilableTemplate> | 0>();
 
   if (block) {
-    stack.pushSmi(block.compile() as Recast<VMHandle, number>);
+    stack.push(block.compile() as Recast<VMHandle, number>);
   } else {
     stack.pushNull();
   }
