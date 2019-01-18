@@ -80,7 +80,7 @@ if (DEBUG) {
 
     [ASSERT_INIT_WAS_CALLED]() {
       assert(
-        `You must call \`this._super(...arguments);\` when overriding \`init\` on a framework object. Please update ${this} to call \`this._super(...arguments);\` from \`init\`.`,
+        `You must call \`super.init(...arguments);\` or \`this._super(...arguments)\` when overriding \`init\` on a framework object. Please update ${this} to call \`super.init(...arguments);\` from \`init\` when using native classes or \`this._super(...arguments)\` when using \`EmberObject.extend()\`.`,
         this[INIT_WAS_CALLED]
       );
     }
