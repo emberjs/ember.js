@@ -30,11 +30,17 @@ export interface IArguments {
   capture(): ICapturedArguments;
 }
 
+export interface ICapturedArgumentsValue {
+  named: Dict<Opaque>;
+  positional: Opaque[];
+}
+
 export interface ICapturedArguments {
   tag: Tag;
   length: number;
   positional: ICapturedPositionalArguments;
   named: ICapturedNamedArguments;
+  value(): ICapturedArgumentsValue;
 }
 
 export interface IPositionalArguments {
@@ -174,17 +180,29 @@ export class Arguments implements IArguments {
   capture(): ICapturedArguments {
     let positional = this.positional.length === 0 ? EMPTY_POSITIONAL : this.positional.capture();
     let named = this.named.length === 0 ? EMPTY_NAMED : this.named.capture();
-    return {
-      tag: this.tag,
-      length: this.length,
-      positional,
-      named,
-    };
+
+    return new CapturedArguments(this.tag, positional, named, this.length);
   }
 
   clear(): void {
     let { stack, length } = this;
     if (length > 0 && stack !== null) stack.pop(length);
+  }
+}
+
+export class CapturedArguments {
+  constructor(
+    public tag: Tag,
+    public positional: ICapturedPositionalArguments,
+    public named: ICapturedNamedArguments,
+    public length: number
+  ) {}
+
+  value() {
+    return {
+      named: this.named.value(),
+      positional: this.positional.value(),
+    };
   }
 }
 
@@ -614,9 +632,4 @@ class CapturedBlockArguments implements ICapturedBlockArguments {
 
 const EMPTY_NAMED = new CapturedNamedArguments(CONSTANT_TAG, EMPTY_ARRAY, EMPTY_ARRAY);
 const EMPTY_POSITIONAL = new CapturedPositionalArguments(CONSTANT_TAG, EMPTY_ARRAY);
-export const EMPTY_ARGS: ICapturedArguments = {
-  tag: CONSTANT_TAG,
-  length: 0,
-  positional: EMPTY_POSITIONAL,
-  named: EMPTY_NAMED,
-};
+export const EMPTY_ARGS = new CapturedArguments(CONSTANT_TAG, EMPTY_POSITIONAL, EMPTY_NAMED, 0);
