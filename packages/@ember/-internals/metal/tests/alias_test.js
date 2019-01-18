@@ -7,6 +7,7 @@ import {
   addObserver,
   removeObserver,
   tagFor,
+  tagForProperty,
 } from '..';
 import { meta } from '@ember/-internals/meta';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
@@ -163,6 +164,58 @@ moduleFor(
       set(obj, 'foo.faz', 'great');
 
       assert.equal(count, 2);
+    }
+
+    ['@test property tags are bumped when the source changes [GH#17243]'](assert) {
+      function assertPropertyTagChanged(obj, keyName, callback) {
+        let tag = tagForProperty(obj, keyName);
+        let before = tag.value();
+
+        callback();
+
+        let after = tag.value();
+
+        assert.notEqual(after, before, `tagForProperty ${keyName} should change`);
+      }
+
+      function assertPropertyTagUnchanged(obj, keyName, callback) {
+        let tag = tagForProperty(obj, keyName);
+        let before = tag.value();
+
+        callback();
+
+        let after = tag.value();
+
+        assert.equal(after, before, `tagForProperty ${keyName} should not change`);
+      }
+
+      defineProperty(obj, 'bar', alias('foo.faz'));
+
+      assertPropertyTagUnchanged(obj, 'bar', () => {
+        assert.equal(get(obj, 'bar'), 'FOO');
+      });
+
+      assertPropertyTagChanged(obj, 'bar', () => {
+        set(obj, 'foo.faz', 'BAR');
+      });
+
+      assertPropertyTagUnchanged(obj, 'bar', () => {
+        assert.equal(get(obj, 'bar'), 'BAR');
+      });
+
+      assertPropertyTagUnchanged(obj, 'bar', () => {
+        // trigger willWatch, then didUnwatch
+        addObserver(obj, 'bar', incrementCount);
+        removeObserver(obj, 'bar', incrementCount);
+      });
+
+      assertPropertyTagChanged(obj, 'bar', () => {
+        set(obj, 'foo.faz', 'FOO');
+      });
+
+      assertPropertyTagUnchanged(obj, 'bar', () => {
+        assert.equal(get(obj, 'bar'), 'FOO');
+      });
     }
   }
 );
