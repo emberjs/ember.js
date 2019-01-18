@@ -315,6 +315,9 @@ export default class JavaScriptCompiler
   }
 
   attrSplat(to: Option<number>) {
+    // consume (and disregard) the value pushed for the
+    // ...attributes attribute
+    this.popValue();
     this.push([Ops.AttrSplat, to!]);
   }
 
