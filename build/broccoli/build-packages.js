@@ -119,7 +119,8 @@ function transpileAMD(pkgName, esVersion, tree) {
           code === 'THIS_IS_UNDEFINED' ||
           // Suppress errors regarding un-used exports. These may be left behind
           // after DEBUG stripping and Rollup removed them anyway.
-          code === 'UNUSED_EXTERNAL_IMPORT'
+          code === 'UNUSED_EXTERNAL_IMPORT' ||
+          code === 'CIRCULAR_DEPENDENCY'
         ) {
           return;
         }

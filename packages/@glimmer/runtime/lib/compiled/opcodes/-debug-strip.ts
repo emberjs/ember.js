@@ -33,9 +33,9 @@ import {
 } from '../../vm/arguments';
 import { ComponentInstance, ComponentElementOperations } from './component';
 
-export const CheckTag: Checker<Tag> = CheckInstanceof(TagWrapper);
+export const CheckTag: Checker<Tag> = wrap(() => CheckInstanceof(TagWrapper));
 
-export const CheckOperations = CheckOption(CheckInstanceof(ComponentElementOperations));
+export const CheckOperations = wrap(() => CheckOption(CheckInstanceof(ComponentElementOperations)));
 
 export const CheckPathReference: Checker<VersionedPathReference> = CheckInterface({
   tag: CheckTag,
@@ -69,12 +69,12 @@ class CheckCapturedArgumentsValue implements Checker<() => CapturedArgumentsValu
 export const CheckCapturedArguments: Checker<CapturedArguments> = CheckInterface({
   tag: CheckTag,
   length: CheckNumber,
-  positional: CheckInstanceof(CapturedPositionalArgumentsImpl),
-  named: CheckInstanceof(CapturedNamedArgumentsImpl),
+  positional: wrap(() => CheckInstanceof(CapturedPositionalArgumentsImpl)),
+  named: wrap(() => CheckInstanceof(CapturedNamedArgumentsImpl)),
   value: new CheckCapturedArgumentsValue(),
 });
 
-export const CheckCurryComponent = CheckInstanceof(CurryComponentReference);
+export const CheckCurryComponent = wrap(() => CheckInstanceof(CurryComponentReference));
 
 export const CheckScope: Checker<Scope<JitOrAotBlock>> = wrap(() => CheckInstanceof(ScopeImpl));
 

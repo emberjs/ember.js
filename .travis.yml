@@ -26,6 +26,11 @@ jobs:
       script:
         - yarn test
 
+    - name: Tests (Node.js)
+
+      script:
+        - yarn test:node
+
     - name: Tests (Browser)
       env:
         - BROWSERSTACK_USERNAME=glimmervm1

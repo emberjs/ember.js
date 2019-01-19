@@ -343,8 +343,10 @@ export class RuntimeEnvironmentDelegateImpl implements RuntimeEnvironmentDelegat
   protocolForURL(url: string): string {
     if (this.inner.protocolForURL) {
       return this.inner.protocolForURL(url);
+    } else if (typeof document !== 'undefined') {
+      return new URL(url, document.baseURI).protocol;
     } else {
-      return new URL(url, typeof document !== 'undefined' ? document.baseURI : undefined).protocol;
+      return new URL(url, 'https://www.example.com').protocol;
     }
   }
 

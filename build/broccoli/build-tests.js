@@ -47,7 +47,7 @@ function transpileBrowserTestsToAMD(tsTree, jsTree) {
 
 function transpileNodeTestsToCommonJS(jsTree) {
   let testTree = funnel(jsTree, {
-    include: ['@glimmer/**/test/**/*-node-test.js'],
+    include: ['@glimmer/**/test/**/*.js'],
   });
 
   return babel(testTree, {
