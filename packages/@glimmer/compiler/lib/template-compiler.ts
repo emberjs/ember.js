@@ -152,7 +152,6 @@ export default class TemplateCompiler {
     let { name, value } = action;
 
     let namespace = getAttrNamespace(name);
-
     let isStatic = this.prepareAttributeValue(value);
 
     if (name.charAt(0) === '@') {
