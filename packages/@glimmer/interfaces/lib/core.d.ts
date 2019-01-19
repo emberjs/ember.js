@@ -33,16 +33,16 @@ export interface Destroyable {
   destroy(): void;
 }
 
-declare const DestroySymbol: unique symbol;
+declare const DestroySymbol: 'DESTROY [fc611582-3742-4845-88e1-971c3775e0b8]';
 export type DestroySymbol = typeof DestroySymbol;
 
 export interface SymbolDestroyable {
   [DestroySymbol](): void;
 }
 
-declare const DropSymbol: unique symbol;
+declare const DropSymbol: 'DROP [94d46cf3-3974-435d-b278-3e60d1155290]';
 export type DropSymbol = typeof DropSymbol;
-declare const ChildrenSymbol: unique symbol;
+declare const ChildrenSymbol: 'CHILDREN [7142e52a-8600-4e01-a773-42055b96630d]';
 export type ChildrenSymbol = typeof ChildrenSymbol;
 
 export interface Drop {

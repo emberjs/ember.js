@@ -157,7 +157,7 @@ export class ScopeImpl<C extends JitOrAotBlock> implements PartialScope<C> {
   }
 }
 
-export const TRANSACTION: TransactionSymbol = Symbol('TRANSACTION') as TransactionSymbol;
+export const TRANSACTION: TransactionSymbol = 'TRANSACTION [c3938885-aba0-422f-b540-3fd3431c78b5]';
 
 class TransactionImpl implements Transaction {
   readonly [TRANSACTION]: Option<TransactionImpl>;

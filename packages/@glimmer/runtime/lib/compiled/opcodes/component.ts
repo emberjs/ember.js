@@ -91,7 +91,7 @@ import { ConditionalReference } from '../../references';
  * component type's ComponentDefinition.
  */
 
-export const COMPONENT_INSTANCE = Symbol('COMPONENT_INSTANCE');
+export const COMPONENT_INSTANCE = 'COMPONENT_INSTANCE [c56c57de-e73a-4ef0-b137-07661da17029]';
 
 export interface ComponentInstance {
   [COMPONENT_INSTANCE]: true;

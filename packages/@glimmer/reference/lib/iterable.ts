@@ -228,7 +228,7 @@ enum Phase {
   Done,
 }
 
-export const END = Symbol();
+export const END = 'END [2600abdf-889f-4406-b059-b44ecbafa5c5]';
 
 export class IteratorSynchronizer<Env> {
   private target: IteratorSynchronizerDelegate<Env>;

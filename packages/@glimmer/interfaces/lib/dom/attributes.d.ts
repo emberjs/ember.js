@@ -77,7 +77,7 @@ export interface TreeOperations {
   __setProperty(name: string, value: unknown): void;
 }
 
-declare const CURSOR_STACK: unique symbol;
+declare const CURSOR_STACK: 'CURSOR_STACK [31ea0d2f-7c22-4814-9db7-28e4469b54e6]';
 export type CursorStackSymbol = typeof CURSOR_STACK;
 
 export interface ElementBuilder extends Cursor, DOMStack, TreeOperations {
