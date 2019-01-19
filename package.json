@@ -20,7 +20,6 @@
     "browserstack:results": "ember browserstack:results",
     "start": "ember serve --port=7357",
     "test": "ember test",
-    "test:smoke": "SMOKE_TESTS=true ember test",
     "test:browserstack": "ember test --test-port=7774 --host 127.0.0.1 --config-file=testem-browserstack.js",
     "test:node": "bin/run-node-tests.js",
     "test:types": "bin/run-types-tests.js",

@@ -4,7 +4,8 @@ import { PrimitiveType } from '@glimmer/program';
 import { unreachable } from '@glimmer/util';
 import { Stack as WasmStack } from '@glimmer/low-level';
 
-const MAX_SMI = 0xfffffff;
+const HI = 0x80000000;
+const MASK = 0x7fffffff;
 
 export class InnerStack {
   constructor(private inner = new WasmStack(), private js: Opaque[] = []) {}
@@ -43,22 +44,30 @@ export class InnerStack {
     } else {
       let idx = this.js.length;
       this.js.push(value);
-      this.inner.writeRaw(pos, ~idx);
+      this.inner.writeRaw(pos, idx | HI);
     }
   }
 
-  writeRaw(pos: number, value: number): void {
+  writeSmi(pos: number, value: number): void {
+    this.inner.writeSmi(pos, value);
+  }
+
+  writeImmediate(pos: number, value: number): void {
     this.inner.writeRaw(pos, value);
   }
 
   get<T>(pos: number): T {
     let value = this.inner.getRaw(pos);
 
-    if (value < 0) {
-      return this.js[~value] as T;
+    if (value & HI) {
+      return this.js[value & MASK] as T;
     } else {
       return decodeImmediate(value) as any;
     }
+  }
+
+  getSmi(pos: number): number {
+    return this.inner.getSmi(pos);
   }
 
   reset(): void {
@@ -96,12 +105,20 @@ export default class EvaluationStack {
     this.stack.write(++this.sp, value);
   }
 
+  pushSmi(value: number): void {
+    this.stack.writeSmi(++this.sp, value);
+  }
+
+  pushImmediate(value: null | undefined | number | boolean): void {
+    this.stack.writeImmediate(++this.sp, encodeImmediate(value));
+  }
+
   pushEncodedImmediate(value: number): void {
-    this.stack.writeRaw(++this.sp, value);
+    this.stack.writeImmediate(++this.sp, value);
   }
 
   pushNull(): void {
-    this.stack.write(++this.sp, null);
+    this.stack.writeImmediate(++this.sp, Immediates.Null);
   }
 
   dup(position = this.sp): void {
@@ -119,15 +136,23 @@ export default class EvaluationStack {
   }
 
   popSmi(): number {
-    return this.stack.get(this.sp--);
+    return this.stack.getSmi(this.sp--);
   }
 
   peek<T>(offset = 0): T {
     return this.stack.get<T>(this.sp - offset);
   }
 
+  peekSmi(offset = 0): number {
+    return this.stack.getSmi(this.sp - offset);
+  }
+
   get<T>(offset: number, base = this.fp): T {
     return this.stack.get<T>(base + offset);
+  }
+
+  getSmi(offset: number, base = this.fp): number {
+    return this.stack.getSmi(base + offset);
   }
 
   set(value: Opaque, offset: number, base = this.fp) {
@@ -172,7 +197,8 @@ function isImmediate(value: Opaque): value is number | boolean | null | undefine
 
       let abs = Math.abs(value as number);
 
-      if (abs > MAX_SMI) return false;
+      // too big
+      if (abs > HI) return false;
 
       return true;
     default:
@@ -197,11 +223,8 @@ export const enum Immediates {
 
 function encodeSmi(primitive: number) {
   if (primitive < 0) {
-    let abs = Math.abs(primitive);
-    if (abs > MAX_SMI) throw new Error('not smi');
     return (Math.abs(primitive) << 3) | PrimitiveType.NEGATIVE;
   } else {
-    if (primitive > MAX_SMI) throw new Error('not smi');
     return (primitive << 3) | PrimitiveType.NUMBER;
   }
 }

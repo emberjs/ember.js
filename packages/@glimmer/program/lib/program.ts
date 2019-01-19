@@ -18,25 +18,19 @@ const enum TableSlotState {
 }
 
 const enum Size {
-  ENTRY_SIZE = 3,
+  ENTRY_SIZE = 2,
   INFO_OFFSET = 1,
-  SIZE_OFFSET = 2,
-  MAX_SIZE = 0b1111111111111111111111111111111,
-  SCOPE_MASK = 0b1111111111111111111111111111100,
-  STATE_MASK = 0b11,
+  MAX_SIZE = 0b1111111111111111,
+  SIZE_MASK = 0b00000000000000001111111111111111,
+  SCOPE_MASK = 0b00111111111111110000000000000000,
+  STATE_MASK = 0b11000000000000000000000000000000,
 }
 
-function encodeTableInfo(scopeSize: number, state: number) {
-  assert(scopeSize > -1 && state > -1, 'Size, scopeSize or state were less than 0');
-  assert(state < 1 << 2, 'State is more than 2 bits');
-  assert(scopeSize < 1 << 30, 'Scope is more than 30-bits');
-  return state | (scopeSize << 2);
+function encodeTableInfo(size: number, scopeSize: number, state: number) {
+  return size | (scopeSize << 16) | (state << 30);
 }
 
 function changeState(info: number, newState: number) {
-  assert(info > -1 && newState > -1, 'Info or state were less than 0');
-  assert(newState < 1 << 2, 'State is more than 2 bits');
-  assert(info < 1 << 30, 'Info is more than 30 bits');
   return info | (newState << 30);
 }
 
@@ -60,9 +54,9 @@ const PAGE_SIZE = 0x100000;
  *
  * The table 32-bit aligned and has the following layout:
  *
- * | ... | hp (u32) |       info (u32)   | size (u32) |
- * | ... |  Handle  | Scope Size | State | Size       |
- * | ... | 32bits   | 30bits     | 2bits | 32bit      |
+ * | ... | hp (u32) |       info (u32)          |
+ * | ... |  Handle  | Size | Scope Size | State |
+ * | ... | 32-bits  | 16b  |    14b     |  2b   |
  *
  * With this information we effectively have the ability to
  * control when we want to free memory. That being said you
@@ -71,7 +65,7 @@ const PAGE_SIZE = 0x100000;
  * over them as you will have a bad memory access exception.
  */
 export class Heap implements CompileTimeHeap {
-  private heap: Uint32Array;
+  private heap: Uint16Array;
   private placeholders: Placeholder[] = [];
   private table: number[];
   private offset = 0;
@@ -81,13 +75,13 @@ export class Heap implements CompileTimeHeap {
   constructor(serializedHeap?: SerializedHeap) {
     if (serializedHeap) {
       let { buffer, table, handle } = serializedHeap;
-      this.heap = new Uint32Array(buffer);
+      this.heap = new Uint16Array(buffer);
       this.table = table;
       this.offset = this.heap.length;
       this.handle = handle;
       this.capacity = 0;
     } else {
-      this.heap = new Uint32Array(PAGE_SIZE);
+      this.heap = new Uint16Array(PAGE_SIZE);
       this.table = [];
     }
   }
@@ -100,7 +94,7 @@ export class Heap implements CompileTimeHeap {
   private sizeCheck() {
     if (this.capacity === 0) {
       let heap = slice(this.heap, 0, this.offset);
-      this.heap = new Uint32Array(heap.length + PAGE_SIZE);
+      this.heap = new Uint16Array(heap.length + PAGE_SIZE);
       this.heap.set(heap, 0);
       this.capacity = PAGE_SIZE;
     }
@@ -116,21 +110,18 @@ export class Heap implements CompileTimeHeap {
   }
 
   malloc(): number {
-    // push offset, info, size
-    this.table.push(this.offset, 0, 0);
+    this.table.push(this.offset, 0);
     let handle = this.handle;
     this.handle += Size.ENTRY_SIZE;
     return handle;
   }
 
   finishMalloc(handle: number, scopeSize: number): void {
-    if (DEBUG) {
-      let start = this.table[handle];
-      let finish = this.offset;
-      let instructionSize = finish - start;
-      this.table[handle + Size.SIZE_OFFSET] = instructionSize;
-    }
-    this.table[handle + Size.INFO_OFFSET] = encodeTableInfo(scopeSize, TableSlotState.Allocated);
+    let start = this.table[handle];
+    let finish = this.offset;
+    let instructionSize = finish - start;
+    let info = encodeTableInfo(instructionSize, scopeSize, TableSlotState.Allocated);
+    this.table[handle + Size.INFO_OFFSET] = info;
   }
 
   size(): number {
@@ -145,7 +136,7 @@ export class Heap implements CompileTimeHeap {
   }
 
   gethandle(address: number): number {
-    this.table.push(address, encodeTableInfo(0, TableSlotState.Pointer), 0);
+    this.table.push(address, encodeTableInfo(0, 0, TableSlotState.Pointer));
     let handle = this.handle;
     this.handle += Size.ENTRY_SIZE;
     return handle;
@@ -153,14 +144,15 @@ export class Heap implements CompileTimeHeap {
 
   sizeof(handle: number): number {
     if (DEBUG) {
-      return this.table[(handle as Recast<VMHandle, number>) + Size.SIZE_OFFSET];
+      let info = this.table[(handle as Recast<VMHandle, number>) + Size.INFO_OFFSET];
+      return info & Size.SIZE_MASK;
     }
     return -1;
   }
 
   scopesizeof(handle: number): number {
     let info = this.table[(handle as Recast<VMHandle, number>) + Size.INFO_OFFSET];
-    return info >> 2;
+    return (info & Size.SCOPE_MASK) >> 16;
   }
 
   free(handle: VMHandle): void {
@@ -169,6 +161,49 @@ export class Heap implements CompileTimeHeap {
       info,
       TableSlotState.Freed
     );
+  }
+
+  /**
+   * The heap uses the [Mark-Compact Algorithm](https://en.wikipedia.org/wiki/Mark-compact_algorithm) to shift
+   * reachable memory to the bottom of the heap and freeable
+   * memory to the top of the heap. When we have shifted all
+   * the reachable memory to the top of the heap, we move the
+   * offset to the next free position.
+   */
+  compact(): void {
+    let compactedSize = 0;
+    let {
+      table,
+      table: { length },
+      heap,
+    } = this;
+
+    for (let i = 0; i < length; i += Size.ENTRY_SIZE) {
+      let offset = table[i];
+      let info = table[i + Size.INFO_OFFSET];
+      let size = info & Size.SIZE_MASK;
+      let state = info & (Size.STATE_MASK >> 30);
+
+      if (state === TableSlotState.Purged) {
+        continue;
+      } else if (state === TableSlotState.Freed) {
+        // transition to "already freed" aka "purged"
+        // a good improvement would be to reuse
+        // these slots
+        table[i + Size.INFO_OFFSET] = changeState(info, TableSlotState.Purged);
+        compactedSize += size;
+      } else if (state === TableSlotState.Allocated) {
+        for (let j = offset; j <= i + size; j++) {
+          heap[j - compactedSize] = heap[j];
+        }
+
+        table[i] = offset - compactedSize;
+      } else if (state === TableSlotState.Pointer) {
+        table[i] = offset - compactedSize;
+      }
+    }
+
+    this.offset = this.offset - compactedSize;
   }
 
   pushPlaceholder(valueFunc: () => number): void {
@@ -253,12 +288,12 @@ export class Program<Locator> extends WriteOnlyProgram {
   public constants!: Constants<Locator>;
 }
 
-function slice(arr: Uint32Array, start: number, end: number): Uint32Array {
+function slice(arr: Uint16Array, start: number, end: number): Uint16Array {
   if (arr.slice !== undefined) {
     return arr.slice(start, end);
   }
 
-  let ret = new Uint32Array(end);
+  let ret = new Uint16Array(end);
 
   for (; start < end; start++) {
     ret[start] = arr[start];

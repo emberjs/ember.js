@@ -1,13 +1,11 @@
 'use strict';
 
 let isCI = !!process.env.CI;
-let smokeTests = !!process.env.SMOKE_TESTS
 
 let config = {
   "framework": "qunit",
-  "test_page": smokeTests ? "tests/index.html?smoke_tests=true" : "tests/index.html?hidepassed",
+  "test_page": "tests/index.html?hidepassed",
   "disable_watching": true,
-  "browser_start_timeout": smokeTests ? 300000 : 30000,
   "launchers": {
     "Node": {
       "exe": "node", args: ["./bin/run-node-tests.js"],

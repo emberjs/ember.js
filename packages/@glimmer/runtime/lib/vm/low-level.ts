@@ -9,9 +9,11 @@ export interface Stack {
   sp: number;
   fp: number;
 
-  push(value: number): void;
+  pushSmi(value: number): void;
+  pushEncodedImmediate(value: number): void;
 
-  get(position: number): number;
+  getSmi(position: number): number;
+  peekSmi(offset?: number): number;
   popSmi(): number;
 }
 
@@ -26,6 +28,7 @@ export interface Externs {
 
 export default class LowLevelVM {
   public currentOpSize = 0;
+
   constructor(
     public stack: Stack,
     public heap: Heap,
@@ -37,20 +40,20 @@ export default class LowLevelVM {
 
   // Start a new frame and save $ra and $fp on the stack
   pushFrame() {
-    this.stack.push(this.ra);
-    this.stack.push(this.stack.fp);
+    this.stack.pushSmi(this.ra);
+    this.stack.pushSmi(this.stack.fp);
     this.stack.fp = this.stack.sp - 1;
   }
 
   // Restore $ra, $sp and $fp
   popFrame() {
     this.stack.sp = this.stack.fp - 1;
-    this.ra = this.stack.get(0);
-    this.stack.fp = this.stack.get(1);
+    this.ra = this.stack.getSmi(0);
+    this.stack.fp = this.stack.getSmi(1);
   }
 
   pushSmallFrame() {
-    this.stack.push(this.ra);
+    this.stack.pushSmi(this.ra);
   }
 
   popSmallFrame() {
