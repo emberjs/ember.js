@@ -21,6 +21,7 @@ import {
   JitOrAotBlock,
   Scope,
   Helper,
+  CapturedArgumentsValue,
 } from '@glimmer/interfaces';
 import { Reference, Tag, TagWrapper, VersionedPathReference } from '@glimmer/reference';
 import { ScopeImpl } from '../../environment';
@@ -53,11 +54,24 @@ export const CheckArguments: Checker<VMArgumentsImpl> = wrap(() =>
 
 export const CheckHelper: Checker<Helper> = CheckFunction as Checker<Helper>;
 
+class CheckCapturedArgumentsValue implements Checker<() => CapturedArgumentsValue> {
+  type!: () => CapturedArgumentsValue;
+
+  validate(value: unknown): value is () => CapturedArgumentsValue {
+    return typeof value === 'function';
+  }
+
+  expected(): string {
+    return `SafeString`;
+  }
+}
+
 export const CheckCapturedArguments: Checker<CapturedArguments> = CheckInterface({
   tag: CheckTag,
   length: CheckNumber,
   positional: CheckInstanceof(CapturedPositionalArgumentsImpl),
   named: CheckInstanceof(CapturedNamedArgumentsImpl),
+  value: new CheckCapturedArgumentsValue(),
 });
 
 export const CheckCurryComponent = CheckInstanceof(CurryComponentReference);
