@@ -67,7 +67,8 @@ export class Fragment implements Bounds {
   }
 }
 
-export const CURSOR_STACK: CursorStackSymbol = Symbol('CURSOR_STACK') as CursorStackSymbol;
+export const CURSOR_STACK: CursorStackSymbol =
+  'CURSOR_STACK [31ea0d2f-7c22-4814-9db7-28e4469b54e6]';
 
 export class NewElementBuilder implements ElementBuilder {
   public dom: GlimmerTreeConstruction;
