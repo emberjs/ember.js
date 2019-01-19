@@ -1,4 +1,5 @@
-# Status [![Build Status](https://travis-ci.org/glimmerjs/glimmer-vm.svg?branch=master)](https://travis-ci.org/glimmerjs/glimmer-vm) [![Sauce Test Status](https://saucelabs.com/buildstatus/htmlbars-ci)](https://saucelabs.com/u/htmlbars-ci)
+# Status [![Build Status](https://travis-ci.org/glimmerjs/glimmer-vm.svg?branch=master)](https://travis-ci.org/glimmerjs/glimmer-vm) [![BrowserStack Status](https://www.browserstack.com/automate/badge.svg?badge_key=cG1zSVBpNk5nTWxDcGJ0YkVkQjZsM1YrRzFvQW9GdGlhQm5WMFh1QUZXWT0tLXpXTVRWMXNMRW03MmxUZVpLUy85YkE9PQ==--b6c04579b1314f752eacc8bfff1a03574b8bdc8d%)](https://www.browserstack.com/automate/public-build/cG1zSVBpNk5nTWxDcGJ0YkVkQjZsM1YrRzFvQW9GdGlhQm5WMFh1QUZXWT0tLXpXTVRWMXNMRW03MmxUZVpLUy85YkE9PQ==--b6c04579b1314f752eacc8bfff1a03574b8bdc8d%)
+
 
 Glimmer is a flexible, low-level rendering pipeline for building a "live" DOM
 from [Handlebars][handlebars] templates that can subsequently be updated cheaply
@@ -83,3 +84,10 @@ private properties outside of the package.**
 [handlebars]: http://handlebarsjs.com
 [typescript]: http://www.typescriptlang.org
 [guides]: ./guides/01-introduction.md
+
+
+---
+
+Cross-browser testing provided by:
+
+<a href="http://browserstack.com"><img height="70" src="https://p3.zdusercontent.com/attachment/1015988/PWfFdN71Aung2evRkIVQuKJpE?token=eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..aUrNFb8clSXsFwgw5BUTcg.IJr5piuCen7PmSSBHSrOnqM9K5YZfxX3lvbp-5LCqoKOi4CjjgdA419iqjofs0nLtm26FMURvZ8JRTuKB4iHer6lGu5f8dXHtIkYAHjP5fXDWkl044Yg2mSdrhF6uPy62GdlBYoYxwvgkNrac8nN_In8GY-qOC7bYmlZyJT7tsTZUTYbNMQiXS86YA5LgdCEWzWreMvc3C6cvZtVXIrcVgpkroIhvsTQPm4vQA-Uq6iCbTPA4oX5cpEtMtrlg4jYBnnAE4BTw5UwU_dY83ep5g.7wpc1IKv0rSRGsvqCG_q3g" alt="BrowserStack"></a>
