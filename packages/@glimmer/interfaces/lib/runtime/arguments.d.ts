@@ -17,6 +17,12 @@ export interface CapturedArguments {
   length: number;
   positional: CapturedPositionalArguments;
   named: CapturedNamedArguments;
+  value(): CapturedArgumentsValue;
+}
+
+export interface CapturedArgumentsValue {
+  named: Dict;
+  positional: unknown[];
 }
 
 export interface PositionalArguments {

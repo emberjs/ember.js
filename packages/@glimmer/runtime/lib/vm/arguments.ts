@@ -125,12 +125,8 @@ export class VMArgumentsImpl implements VMArguments {
   capture(): CapturedArguments {
     let positional = this.positional.length === 0 ? EMPTY_POSITIONAL : this.positional.capture();
     let named = this.named.length === 0 ? EMPTY_NAMED : this.named.capture();
-    return {
-      tag: this.tag,
-      length: this.length,
-      positional,
-      named,
-    };
+
+    return new CapturedArgumentsImpl(this.tag, positional, named, this.length);
   }
 
   clear(): void {
@@ -563,11 +559,22 @@ class CapturedBlockArgumentsImpl implements CapturedBlockArguments {
   }
 }
 
+export class CapturedArgumentsImpl implements CapturedArguments {
+  constructor(
+    public tag: Tag,
+    public positional: CapturedPositionalArguments,
+    public named: CapturedNamedArguments,
+    public length: number
+  ) {}
+
+  value() {
+    return {
+      named: this.named.value(),
+      positional: this.positional.value(),
+    };
+  }
+}
+
 const EMPTY_NAMED = new CapturedNamedArgumentsImpl(CONSTANT_TAG, EMPTY_ARRAY, EMPTY_ARRAY);
 const EMPTY_POSITIONAL = new CapturedPositionalArgumentsImpl(CONSTANT_TAG, EMPTY_ARRAY);
-export const EMPTY_ARGS: CapturedArguments = {
-  tag: CONSTANT_TAG,
-  length: 0,
-  positional: EMPTY_POSITIONAL,
-  named: EMPTY_NAMED,
-};
+export const EMPTY_ARGS = new CapturedArgumentsImpl(CONSTANT_TAG, EMPTY_POSITIONAL, EMPTY_NAMED, 0);
