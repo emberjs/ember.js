@@ -3,11 +3,11 @@ import { CompilerBuffer } from '@glimmer/interfaces';
 
 export const enum OpcodeSize {
   ARG_SHIFT = 8,
-  MAX_SIZE = 0b1111111111111111,
+  MAX_SIZE = 0xffffffff,
   TYPE_SIZE = 0b11111111,
-  TYPE_MASK = 0b0000000011111111,
-  OPERAND_LEN_MASK = 0b0000001100000000,
-  MACHINE_MASK = 0b0000010000000000,
+  TYPE_MASK = 0b00000000000000000000000011111111,
+  OPERAND_LEN_MASK = 0b00000000000000000000001100000000,
+  MACHINE_MASK = 0b00000000000000000000010000000000,
 }
 
 export type Operand = number | (() => number);
@@ -30,7 +30,7 @@ export class InstructionEncoder {
     for (let i = 2; i < arguments.length; i++) {
       let op = arguments[i];
       if (typeof op === 'number' && op > OpcodeSize.MAX_SIZE) {
-        throw new Error(`Operand over 16-bits. Got ${op}.`);
+        throw new Error(`Operand over 32-bits. Got ${op}.`);
       }
       this.buffer.push(op);
     }

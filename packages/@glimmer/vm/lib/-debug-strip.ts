@@ -185,6 +185,10 @@ OPCODE_METADATA(Op.PopDynamicScope, {
   name: 'PopDynamicScope',
 });
 
+OPCODE_METADATA(Op.Bug, {
+  name: 'Bug',
+});
+
 /// VM ///
 
 OPCODE_METADATA(Op.PushSymbolTable, {
