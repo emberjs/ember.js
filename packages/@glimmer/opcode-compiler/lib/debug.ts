@@ -1,57 +1,59 @@
 import {
-  CompileTimeProgram,
   CompileTimeConstants,
-  Option,
-  Opaque,
   Recast,
+  RuntimeOp,
+  PrimitiveType,
+  HandleResolver,
+  Dict,
+  Maybe,
+  TemplateCompilationContext,
+  TemplateMeta,
 } from '@glimmer/interfaces';
-import { METADATA, Op, Register } from '@glimmer/vm';
+import { opcodeMetadata, Register, $s0, $s1, $t0, $t1, $v0, $fp, $sp, $pc, $ra } from '@glimmer/vm';
 import { DEBUG } from '@glimmer/local-debug-flags';
-import { unreachable, dict } from '@glimmer/util';
 import { Primitive } from '@glimmer/debug';
-import { PrimitiveType } from '@glimmer/program';
+import { RuntimeOpImpl } from '@glimmer/program';
 
 export interface DebugConstants {
   getNumber(value: number): number;
   getString(value: number): string;
   getStringArray(value: number): string[];
   getArray(value: number): number[];
-  getSerializable<T>(s: number): T;
-  resolveHandle<T>(s: number): T;
+  getTemplateMeta(s: number): TemplateMeta;
 }
 
 interface LazyDebugConstants {
   getOther<T>(s: number): T;
 }
 
-export function debugSlice(program: CompileTimeProgram, start: number, end: number) {
+export function debugSlice(context: TemplateCompilationContext, start: number, end: number) {
   if (DEBUG) {
     /* tslint:disable:no-console */
-    let { constants } = program;
 
     (console as any).group(`%c${start}:${end}`, 'color: #999');
 
+    let heap = context.syntax.program.heap;
+    let opcode = new RuntimeOpImpl(heap);
+
     let _size = 0;
     for (let i = start; i < end; i = i + _size) {
-      let { type, op1, op2, op3, size } = program.opcode(i);
+      opcode.offset = i;
       let [name, params] = debug(
-        i,
-        constants as Recast<CompileTimeConstants, DebugConstants>,
-        type,
-        op1,
-        op2,
-        op3
+        context.syntax.program.constants as Recast<CompileTimeConstants, DebugConstants>,
+        context.syntax.program.resolverDelegate,
+        opcode,
+        opcode.isMachine
       );
       console.log(`${i}. ${logOpcode(name, params)}`);
-      _size = size;
+      _size = opcode.size;
     }
-    program.opcode(-_size);
+    opcode.offset = -_size;
     console.groupEnd();
     /* tslint:enable:no-console */
   }
 }
 
-export function logOpcode(type: string, params: Option<Object>): string | void {
+export function logOpcode(type: string, params: Maybe<Dict>): string | void {
   let out = type;
 
   if (params) {
@@ -63,7 +65,7 @@ export function logOpcode(type: string, params: Option<Object>): string | void {
   return `(${out})`;
 }
 
-function json(param: Opaque) {
+function json(param: unknown) {
   if (DEBUG) {
     if (typeof param === 'function') {
       return '<function>';
@@ -89,66 +91,104 @@ function json(param: Opaque) {
   }
 }
 
+export function opcodeOperand(opcode: RuntimeOp, index: number): number {
+  switch (index) {
+    case 0:
+      return opcode.op1;
+    case 1:
+      return opcode.op2;
+    case 2:
+      return opcode.op3;
+    default:
+      throw new Error(`Unexpected operand index (must be 0-2)`);
+  }
+}
+
 export function debug(
-  pos: number,
   c: DebugConstants,
-  op: Op,
-  ...operands: number[]
+  resolver: HandleResolver,
+  op: RuntimeOp,
+  isMachine: 0 | 1
 ): [string, object] {
-  let metadata = METADATA[op];
+  let metadata = opcodeMetadata(op.type, isMachine);
 
   if (!metadata) {
-    throw unreachable(`Missing Opcode Metadata for ${op}`);
+    throw new Error(`Missing Opcode Metadata for ${op}`);
   }
 
-  let out = dict<Opaque>();
+  let out = Object.create(null);
 
-  metadata.ops.forEach((operand, index) => {
-    let op = operands[index];
+  metadata.ops.forEach((operand, index: number) => {
+    let actualOperand = opcodeOperand(op, index);
 
     switch (operand.type) {
-      case 'to':
-        out[operand.name] = pos + op;
-        break;
+      case 'u32':
       case 'i32':
-      case 'symbol':
-      case 'block':
-        out[operand.name] = op;
+      case 'meta':
+        out[operand.name] = actualOperand;
         break;
       case 'handle':
-        out[operand.name] = c.resolveHandle(op);
+        out[operand.name] = resolver.resolve(actualOperand);
         break;
       case 'str':
-        out[operand.name] = c.getString(op);
+        out[operand.name] = c.getString(actualOperand);
         break;
       case 'option-str':
-        out[operand.name] = op ? c.getString(op) : null;
+        out[operand.name] = actualOperand ? c.getString(actualOperand) : null;
         break;
       case 'str-array':
-        out[operand.name] = c.getStringArray(op);
+        out[operand.name] = c.getStringArray(actualOperand);
         break;
       case 'array':
-        out[operand.name] = c.getArray(op);
+        out[operand.name] = c.getArray(actualOperand);
         break;
       case 'bool':
-        out[operand.name] = !!op;
+        out[operand.name] = !!actualOperand;
         break;
       case 'primitive':
-        out[operand.name] = decodePrimitive(op, c);
+        out[operand.name] = decodePrimitive(actualOperand, c);
         break;
       case 'register':
-        out[operand.name] = Register[op];
+        out[operand.name] = decodeRegister(actualOperand);
         break;
-      case 'serializable':
-        out[operand.name] = c.getSerializable(op);
+      case 'unknown':
+        out[operand.name] = (c as Recast<DebugConstants, LazyDebugConstants>).getOther(
+          actualOperand
+        );
         break;
-      case 'lazy-constant':
-        out[operand.name] = (c as Recast<DebugConstants, LazyDebugConstants>).getOther(op);
+      case 'symbol-table':
+      case 'scope':
+        out[operand.name] = `<scope ${actualOperand}>`;
         break;
+      default:
+        throw new Error(`Unexpected operand type ${operand.type} for debug output`);
     }
   });
 
   return [metadata.name, out];
+}
+
+function decodeRegister(register: Register): string {
+  switch (register) {
+    case $pc:
+      return 'pc';
+    case $ra:
+      return 'ra';
+    case $fp:
+      return 'fp';
+    case $sp:
+      return 'sp';
+    case $s0:
+      return 's0';
+    case $s1:
+      return 's1';
+    case $t0:
+      return 't0';
+    case $t1:
+      return 't1';
+    case $v0:
+      return 'v0';
+  }
 }
 
 function decodePrimitive(primitive: number, constants: DebugConstants): Primitive {
@@ -177,6 +217,6 @@ function decodePrimitive(primitive: number, constants: DebugConstants): Primitiv
     case PrimitiveType.BIG_NUM:
       return constants.getNumber(value);
     default:
-      throw unreachable();
+      throw new Error('unreachable');
   }
 }

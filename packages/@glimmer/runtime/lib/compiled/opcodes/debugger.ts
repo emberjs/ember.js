@@ -1,16 +1,15 @@
-import { Opaque } from '@glimmer/interfaces';
+import { Op, JitOrAotBlock, Scope } from '@glimmer/interfaces';
 import { VersionedPathReference } from '@glimmer/reference';
 import { dict } from '@glimmer/util';
-import { Scope } from '../../environment';
 import { APPEND_OPCODES } from '../../opcodes';
-import { Op } from '@glimmer/vm';
+import { CONSTANTS } from '../../symbols';
 
-export type DebugGet = ((path: string) => Opaque);
+export type DebugGet = ((path: string) => unknown);
 
-export type DebugCallback = ((context: Opaque, get: DebugGet) => void);
+export type DebugCallback = ((context: unknown, get: DebugGet) => void);
 
 /* tslint:disable */
-function debugCallback(context: Opaque, get: DebugGet): void {
+function debugCallback(context: unknown, get: DebugGet): void {
   console.info('Use `context`, and `get(<path>)` to debug this template.');
 
   // for example...
@@ -31,10 +30,10 @@ export function resetDebuggerCallback() {
   callback = debugCallback;
 }
 
-class ScopeInspector {
-  private locals = dict<VersionedPathReference<Opaque>>();
+class ScopeInspector<C extends JitOrAotBlock> {
+  private locals = dict<VersionedPathReference<unknown>>();
 
-  constructor(private scope: Scope, symbols: string[], evalInfo: number[]) {
+  constructor(private scope: Scope<C>, symbols: string[], evalInfo: number[]) {
     for (let i = 0; i < evalInfo.length; i++) {
       let slot = evalInfo[i];
       let name = symbols[slot - 1];
@@ -43,20 +42,20 @@ class ScopeInspector {
     }
   }
 
-  get(path: string): VersionedPathReference<Opaque> {
+  get(path: string): VersionedPathReference<unknown> {
     let { scope, locals } = this;
     let parts = path.split('.');
     let [head, ...tail] = path.split('.');
 
     let evalScope = scope.getEvalScope()!;
-    let ref: VersionedPathReference<Opaque>;
+    let ref: VersionedPathReference<unknown>;
 
     if (head === 'this') {
       ref = scope.getSelf();
     } else if (locals[head]) {
       ref = locals[head];
     } else if (head.indexOf('@') === 0 && evalScope[head]) {
-      ref = evalScope[head] as VersionedPathReference<Opaque>;
+      ref = evalScope[head] as VersionedPathReference<unknown>;
     } else {
       ref = this.scope.getSelf();
       tail = parts;
@@ -67,8 +66,8 @@ class ScopeInspector {
 }
 
 APPEND_OPCODES.add(Op.Debugger, (vm, { op1: _symbols, op2: _evalInfo }) => {
-  let symbols = vm.constants.getStringArray(_symbols);
-  let evalInfo = vm.constants.getArray(_evalInfo);
+  let symbols = vm[CONSTANTS].getStringArray(_symbols);
+  let evalInfo = vm[CONSTANTS].getArray(_evalInfo);
   let inspector = new ScopeInspector(vm.scope(), symbols, evalInfo);
   callback(vm.getSelf().value(), path => inspector.get(path).value());
 });

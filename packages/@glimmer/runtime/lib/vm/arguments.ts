@@ -1,16 +1,34 @@
-import EvaluationStack from './stack';
+import { EvaluationStack } from './stack';
 import { dict, EMPTY_ARRAY } from '@glimmer/util';
 import { combineTagged } from '@glimmer/reference';
-import { Dict, Opaque, Option, unsafe, BlockSymbolTable } from '@glimmer/interfaces';
+import {
+  Dict,
+  Option,
+  unsafe,
+  BlockSymbolTable,
+  VMArguments,
+  CapturedArguments,
+  PositionalArguments,
+  CapturedPositionalArguments,
+  NamedArguments,
+  CapturedNamedArguments,
+  JitOrAotBlock,
+  BlockValue,
+  ScopeBlock,
+  CapturedBlockArguments,
+  Scope,
+  BlockArguments,
+} from '@glimmer/interfaces';
 import { Tag, VersionedPathReference, CONSTANT_TAG } from '@glimmer/reference';
 import { PrimitiveReference, UNDEFINED_REFERENCE } from '../references';
-import { ScopeBlock, Scope, BlockValue } from '../environment';
 import { CheckBlockSymbolTable, check, CheckHandle, CheckOption, CheckOr } from '@glimmer/debug';
 import {
   CheckPathReference,
   CheckCompilableBlock,
   CheckScope,
 } from '../compiled/opcodes/-debug-strip';
+import { REGISTERS } from '../symbols';
+import { $sp } from '@glimmer/vm';
 
 /*
   The calling convention is:
@@ -20,87 +38,14 @@ import {
   * 0-N named arguments next
 */
 
-export interface IArguments {
-  tag: Tag;
-  length: number;
-  positional: IPositionalArguments;
-  named: INamedArguments;
-
-  at<T extends VersionedPathReference<Opaque>>(pos: number): T;
-  capture(): ICapturedArguments;
-}
-
-export interface ICapturedArgumentsValue {
-  named: Dict<Opaque>;
-  positional: Opaque[];
-}
-
-export interface ICapturedArguments {
-  tag: Tag;
-  length: number;
-  positional: ICapturedPositionalArguments;
-  named: ICapturedNamedArguments;
-  value(): ICapturedArgumentsValue;
-}
-
-export interface IPositionalArguments {
-  tag: Tag;
-  length: number;
-  at<T extends VersionedPathReference<Opaque>>(position: number): T;
-  capture(): ICapturedPositionalArguments;
-}
-
-export interface ICapturedPositionalArguments extends VersionedPathReference<Opaque[]> {
-  tag: Tag;
-  length: number;
-  references: VersionedPathReference<Opaque>[];
-  at<T extends VersionedPathReference<Opaque>>(position: number): T;
-  value(): Opaque[];
-}
-
-export interface INamedArguments {
-  tag: Tag;
-  names: string[];
-  length: number;
-  has(name: string): boolean;
-  get<T extends VersionedPathReference<Opaque>>(name: string): T;
-  capture(): ICapturedNamedArguments;
-}
-
-export interface IBlockArguments {
-  names: string[];
-  length: number;
-  has(name: string): boolean;
-  get(name: string): Option<ScopeBlock>;
-  capture(): ICapturedBlockArguments;
-}
-
-export interface ICapturedBlockArguments {
-  names: string[];
-  length: number;
-  has(name: string): boolean;
-  get(name: string): Option<ScopeBlock>;
-}
-
-export interface ICapturedNamedArguments extends VersionedPathReference<Dict<Opaque>> {
-  tag: Tag;
-  map: Dict<VersionedPathReference<Opaque>>;
-  names: string[];
-  length: number;
-  references: VersionedPathReference<Opaque>[];
-  has(name: string): boolean;
-  get<T extends VersionedPathReference<Opaque>>(name: string): T;
-  value(): Dict<Opaque>;
-}
-
-export class Arguments implements IArguments {
-  private stack: EvaluationStack | null = null;
-  public positional = new PositionalArguments();
-  public named = new NamedArguments();
-  public blocks = new BlockArguments();
+export class VMArgumentsImpl implements VMArguments {
+  private stack: Option<EvaluationStack> = null;
+  public positional = new PositionalArgumentsImpl();
+  public named = new NamedArgumentsImpl();
+  public blocks = new BlockArgumentsImpl();
 
   empty(stack: EvaluationStack): this {
-    let base = stack.sp + 1;
+    let base = stack[REGISTERS][$sp] + 1;
 
     this.named.empty(stack, base);
     this.positional.empty(stack, base);
@@ -114,7 +59,7 @@ export class Arguments implements IArguments {
     names: string[],
     blockNames: string[],
     positionalCount: number,
-    synthetic: boolean
+    atNames: boolean
   ) {
     this.stack = stack;
 
@@ -128,9 +73,9 @@ export class Arguments implements IArguments {
 
     let named = this.named;
     let namedCount = names.length;
-    let namedBase = stack.sp - namedCount + 1;
+    let namedBase = stack[REGISTERS][$sp] - namedCount + 1;
 
-    named.setup(stack, namedBase, namedCount, names, synthetic);
+    named.setup(stack, namedBase, namedCount, names, atNames);
 
     let positional = this.positional;
     let positionalBase = namedBase - positionalCount;
@@ -156,7 +101,7 @@ export class Arguments implements IArguments {
     return this.positional.length + this.named.length + this.blocks.length * 3;
   }
 
-  at<T extends VersionedPathReference<Opaque>>(pos: number): T {
+  at<T extends VersionedPathReference<unknown>>(pos: number): T {
     return this.positional.at<T>(pos);
   }
 
@@ -173,15 +118,15 @@ export class Arguments implements IArguments {
 
       positional.base += offset;
       named.base += offset;
-      stack.sp += offset;
+      stack[REGISTERS][$sp] += offset;
     }
   }
 
-  capture(): ICapturedArguments {
+  capture(): CapturedArguments {
     let positional = this.positional.length === 0 ? EMPTY_POSITIONAL : this.positional.capture();
     let named = this.named.length === 0 ? EMPTY_NAMED : this.named.capture();
 
-    return new CapturedArguments(this.tag, positional, named, this.length);
+    return new CapturedArgumentsImpl(this.tag, positional, named, this.length);
   }
 
   clear(): void {
@@ -190,30 +135,14 @@ export class Arguments implements IArguments {
   }
 }
 
-export class CapturedArguments {
-  constructor(
-    public tag: Tag,
-    public positional: ICapturedPositionalArguments,
-    public named: ICapturedNamedArguments,
-    public length: number
-  ) {}
-
-  value() {
-    return {
-      named: this.named.value(),
-      positional: this.positional.value(),
-    };
-  }
-}
-
-export class PositionalArguments implements IPositionalArguments {
+export class PositionalArgumentsImpl implements PositionalArguments {
   public base = 0;
   public length = 0;
 
   private stack: EvaluationStack = null as any;
 
   private _tag: Option<Tag> = null;
-  private _references: Option<VersionedPathReference<Opaque>[]> = null;
+  private _references: Option<VersionedPathReference<unknown>[]> = null;
 
   empty(stack: EvaluationStack, base: number) {
     this.stack = stack;
@@ -248,7 +177,7 @@ export class PositionalArguments implements IPositionalArguments {
     return tag;
   }
 
-  at<T extends VersionedPathReference<Opaque>>(position: number): T {
+  at<T extends VersionedPathReference<unknown>>(position: number): T {
     let { base, length, stack } = this;
 
     if (position < 0 || position >= length) {
@@ -258,11 +187,11 @@ export class PositionalArguments implements IPositionalArguments {
     return check(stack.get(position, base), CheckPathReference) as T;
   }
 
-  capture(): ICapturedPositionalArguments {
-    return new CapturedPositionalArguments(this.tag, this.references);
+  capture(): CapturedPositionalArgumentsImpl {
+    return new CapturedPositionalArgumentsImpl(this.tag, this.references);
   }
 
-  prepend(other: ICapturedPositionalArguments) {
+  prepend(other: CapturedPositionalArguments) {
     let additions = other.length;
 
     if (additions > 0) {
@@ -280,12 +209,12 @@ export class PositionalArguments implements IPositionalArguments {
     }
   }
 
-  private get references(): VersionedPathReference<Opaque>[] {
+  private get references(): VersionedPathReference<unknown>[] {
     let references = this._references;
 
     if (!references) {
       let { stack, base, length } = this;
-      references = this._references = stack.sliceArray<VersionedPathReference<Opaque>>(
+      references = this._references = stack.sliceArray<VersionedPathReference<unknown>>(
         base,
         base + length
       );
@@ -295,26 +224,26 @@ export class PositionalArguments implements IPositionalArguments {
   }
 }
 
-export class CapturedPositionalArguments implements ICapturedPositionalArguments {
+export class CapturedPositionalArgumentsImpl implements CapturedPositionalArguments {
   static empty(): CapturedPositionalArguments {
-    return new CapturedPositionalArguments(CONSTANT_TAG, EMPTY_ARRAY, 0);
+    return new CapturedPositionalArgumentsImpl(CONSTANT_TAG, EMPTY_ARRAY, 0);
   }
 
   constructor(
     public tag: Tag,
-    public references: VersionedPathReference<Opaque>[],
+    public references: VersionedPathReference<unknown>[],
     public length = references.length
   ) {}
 
-  at<T extends VersionedPathReference<Opaque>>(position: number): T {
+  at<T extends VersionedPathReference<unknown>>(position: number): T {
     return this.references[position] as T;
   }
 
-  value(): Opaque[] {
+  value(): unknown[] {
     return this.references.map(this.valueOf);
   }
 
-  get(name: string): VersionedPathReference<Opaque> {
+  get(name: string): VersionedPathReference<unknown> {
     let { references, length } = this;
 
     if (name === 'length') {
@@ -330,18 +259,18 @@ export class CapturedPositionalArguments implements ICapturedPositionalArguments
     }
   }
 
-  private valueOf(this: void, reference: VersionedPathReference<Opaque>): Opaque {
+  private valueOf(this: void, reference: VersionedPathReference<unknown>): unknown {
     return reference.value();
   }
 }
 
-export class NamedArguments implements INamedArguments {
+export class NamedArgumentsImpl implements NamedArguments {
   public base = 0;
   public length = 0;
 
   private stack!: EvaluationStack;
 
-  private _references: Option<VersionedPathReference<Opaque>[]> = null;
+  private _references: Option<VersionedPathReference<unknown>[]> = null;
 
   private _names: Option<string[]> = EMPTY_ARRAY;
   private _atNames: Option<string[]> = EMPTY_ARRAY;
@@ -356,7 +285,7 @@ export class NamedArguments implements INamedArguments {
     this._atNames = EMPTY_ARRAY;
   }
 
-  setup(stack: EvaluationStack, base: number, length: number, names: string[], synthetic: boolean) {
+  setup(stack: EvaluationStack, base: number, length: number, names: string[], atNames: boolean) {
     this.stack = stack;
     this.base = base;
     this.length = length;
@@ -368,12 +297,12 @@ export class NamedArguments implements INamedArguments {
     } else {
       this._references = null;
 
-      if (synthetic) {
-        this._names = names;
-        this._atNames = null;
-      } else {
+      if (atNames) {
         this._names = null;
         this._atNames = names;
+      } else {
+        this._names = names;
+        this._atNames = null;
       }
     }
   }
@@ -406,10 +335,10 @@ export class NamedArguments implements INamedArguments {
     return this.names.indexOf(name) !== -1;
   }
 
-  get<T extends VersionedPathReference<Opaque>>(name: string, synthetic = true): T {
+  get<T extends VersionedPathReference<unknown>>(name: string, atNames = false): T {
     let { base, stack } = this;
 
-    let names = synthetic ? this.names : this.atNames;
+    let names = atNames ? this.atNames : this.names;
 
     let idx = names.indexOf(name);
 
@@ -420,11 +349,11 @@ export class NamedArguments implements INamedArguments {
     return stack.get<T>(idx, base);
   }
 
-  capture(): ICapturedNamedArguments {
-    return new CapturedNamedArguments(this.tag, this.names, this.references);
+  capture(): CapturedNamedArguments {
+    return new CapturedNamedArgumentsImpl(this.tag, this.names, this.references);
   }
 
-  merge(other: ICapturedNamedArguments) {
+  merge(other: CapturedNamedArguments) {
     let { length: extras } = other;
 
     if (extras > 0) {
@@ -452,12 +381,12 @@ export class NamedArguments implements INamedArguments {
     }
   }
 
-  private get references(): VersionedPathReference<Opaque>[] {
+  private get references(): VersionedPathReference<unknown>[] {
     let references = this._references;
 
     if (!references) {
       let { base, length, stack } = this;
-      references = this._references = stack.sliceArray<VersionedPathReference<Opaque>>(
+      references = this._references = stack.sliceArray<VersionedPathReference<unknown>>(
         base,
         base + length
       );
@@ -475,14 +404,14 @@ export class NamedArguments implements INamedArguments {
   }
 }
 
-export class CapturedNamedArguments implements ICapturedNamedArguments {
+export class CapturedNamedArgumentsImpl implements CapturedNamedArguments {
   public length: number;
-  private _map: Option<Dict<VersionedPathReference<Opaque>>>;
+  private _map: Option<Dict<VersionedPathReference<unknown>>>;
 
   constructor(
     public tag: Tag,
     public names: string[],
-    public references: VersionedPathReference<Opaque>[]
+    public references: VersionedPathReference<unknown>[]
   ) {
     this.length = names.length;
     this._map = null;
@@ -493,7 +422,7 @@ export class CapturedNamedArguments implements ICapturedNamedArguments {
 
     if (!map) {
       let { names, references } = this;
-      map = this._map = dict<VersionedPathReference<Opaque>>();
+      map = this._map = dict<VersionedPathReference<unknown>>();
 
       for (let i = 0; i < names.length; i++) {
         let name = names[i];
@@ -508,7 +437,7 @@ export class CapturedNamedArguments implements ICapturedNamedArguments {
     return this.names.indexOf(name) !== -1;
   }
 
-  get<T extends VersionedPathReference<Opaque>>(name: string): T {
+  get<T extends VersionedPathReference<unknown>>(name: string): T {
     let { names, references } = this;
     let idx = names.indexOf(name);
 
@@ -519,9 +448,9 @@ export class CapturedNamedArguments implements ICapturedNamedArguments {
     }
   }
 
-  value(): Dict<Opaque> {
+  value(): Dict<unknown> {
     let { names, references } = this;
-    let out = dict<Opaque>();
+    let out = dict<unknown>();
 
     for (let i = 0; i < names.length; i++) {
       let name = names[i];
@@ -532,7 +461,7 @@ export class CapturedNamedArguments implements ICapturedNamedArguments {
   }
 }
 
-export class BlockArguments implements IBlockArguments {
+export class BlockArgumentsImpl<C extends JitOrAotBlock> implements BlockArguments<C> {
   private stack!: EvaluationStack;
   private internalValues: Option<number[]> = null;
 
@@ -582,7 +511,7 @@ export class BlockArguments implements IBlockArguments {
     return this.names!.indexOf(name) !== -1;
   }
 
-  get(name: string): Option<ScopeBlock> {
+  get(name: string): Option<ScopeBlock<C>> {
     let { base, stack, names } = this;
 
     let idx = names!.indexOf(name);
@@ -592,21 +521,21 @@ export class BlockArguments implements IBlockArguments {
     }
 
     let table = check(stack.get(idx * 3, base), CheckOption(CheckBlockSymbolTable));
-    let scope = check(stack.get(idx * 3 + 1, base), CheckOption(CheckScope)) as Option<Scope>; // FIXME(mmun): shouldn't need to cast this
+    let scope = check(stack.get(idx * 3 + 1, base), CheckOption(CheckScope));
     let handle = check(
       stack.get(idx * 3 + 2, base),
       CheckOption(CheckOr(CheckHandle, CheckCompilableBlock))
     );
 
-    return handle === null ? null : [handle, scope!, table!];
+    return handle === null ? null : ([handle, scope!, table!] as ScopeBlock<C>);
   }
 
-  capture(): ICapturedBlockArguments {
-    return new CapturedBlockArguments(this.names, this.values);
+  capture(): CapturedBlockArguments {
+    return new CapturedBlockArgumentsImpl(this.names, this.values);
   }
 }
 
-class CapturedBlockArguments implements ICapturedBlockArguments {
+class CapturedBlockArgumentsImpl implements CapturedBlockArguments {
   public length: number;
 
   constructor(public names: string[], public values: BlockValue[]) {
@@ -624,12 +553,28 @@ class CapturedBlockArguments implements ICapturedBlockArguments {
 
     return [
       this.values[idx * 3 + 2] as number,
-      this.values[idx * 3 + 1] as Scope,
+      this.values[idx * 3 + 1] as Scope<JitOrAotBlock>,
       this.values[idx * 3] as BlockSymbolTable,
     ];
   }
 }
 
-const EMPTY_NAMED = new CapturedNamedArguments(CONSTANT_TAG, EMPTY_ARRAY, EMPTY_ARRAY);
-const EMPTY_POSITIONAL = new CapturedPositionalArguments(CONSTANT_TAG, EMPTY_ARRAY);
-export const EMPTY_ARGS = new CapturedArguments(CONSTANT_TAG, EMPTY_POSITIONAL, EMPTY_NAMED, 0);
+export class CapturedArgumentsImpl implements CapturedArguments {
+  constructor(
+    public tag: Tag,
+    public positional: CapturedPositionalArguments,
+    public named: CapturedNamedArguments,
+    public length: number
+  ) {}
+
+  value() {
+    return {
+      named: this.named.value(),
+      positional: this.positional.value(),
+    };
+  }
+}
+
+const EMPTY_NAMED = new CapturedNamedArgumentsImpl(CONSTANT_TAG, EMPTY_ARRAY, EMPTY_ARRAY);
+const EMPTY_POSITIONAL = new CapturedPositionalArgumentsImpl(CONSTANT_TAG, EMPTY_ARRAY);
+export const EMPTY_ARGS = new CapturedArgumentsImpl(CONSTANT_TAG, EMPTY_POSITIONAL, EMPTY_NAMED, 0);

@@ -1,5 +1,5 @@
 import Reference, { PathReference } from './reference';
-import { Opaque, Option, Slice, LinkedListNode } from '@glimmer/util';
+import { Option, Slice, LinkedListNode } from '@glimmer/util';
 
 //////////
 
@@ -81,7 +81,7 @@ export function isConst({ tag }: Tagged): boolean {
   return tag === CONSTANT_TAG;
 }
 
-export function isConstTag(tag: Tag): boolean {
+export function isConstTag(tag: Tag): tag is TagWrapper<null> {
   return tag === CONSTANT_TAG;
 }
 
@@ -144,6 +144,21 @@ export function combineSlice(slice: Slice<Tagged & LinkedListNode>): Tag {
   }
 
   return _combine(optimized);
+}
+
+export function pair(left: Tag, right: Tag): Tag {
+  let constLeft = isConstTag(left);
+  let constRight = isConstTag(right);
+
+  if (constLeft && constRight) {
+    return CONSTANT_TAG;
+  } else if (constLeft) {
+    return left;
+  } else if (constRight) {
+    return right;
+  } else {
+    return TagsPair.create(left, right);
+  }
 }
 
 export function combine(tags: Tag[]): Tag {
@@ -272,12 +287,47 @@ export class UpdatableTag extends CachedTag {
 
 register(UpdatableTag);
 
+export class UpdatableDirtyableTag extends CachedTag {
+  static create(tag: Tag = CONSTANT_TAG): TagWrapper<UpdatableDirtyableTag> {
+    return new TagWrapper(this.id, new UpdatableDirtyableTag(tag));
+  }
+
+  private tag: Tag;
+  private lastUpdated: number;
+  private revision: Revision;
+
+  private constructor(tag: Tag, revision = $REVISION) {
+    super();
+    this.tag = tag;
+    this.lastUpdated = INITIAL;
+    this.revision = revision;
+  }
+
+  protected compute(): Revision {
+    return Math.max(this.lastUpdated, this.tag.value(), this.revision);
+  }
+
+  update(tag: Tag) {
+    if (tag !== this.tag) {
+      this.tag = tag;
+      this.lastUpdated = $REVISION;
+      this.invalidate();
+    }
+  }
+
+  dirty() {
+    this.revision = ++$REVISION;
+  }
+}
+
+register(UpdatableDirtyableTag);
+
 //////////
 
-export interface VersionedReference<T = Opaque> extends Reference<T>, Tagged {}
+export interface VersionedReference<T = unknown> extends Reference<T>, Tagged {}
 
-export interface VersionedPathReference<T = Opaque> extends PathReference<T>, Tagged {
-  get(property: string): VersionedPathReference<Opaque>;
+export interface VersionedPathReference<T = unknown> extends PathReference<T>, Tagged {
+  get(property: string): VersionedPathReference<unknown>;
 }
 
 export abstract class CachedReference<T> implements VersionedReference<T> {
@@ -302,36 +352,6 @@ export abstract class CachedReference<T> implements VersionedReference<T> {
   protected invalidate() {
     this.lastRevision = null;
   }
-}
-
-//////////
-
-export type Mapper<T, U> = (value: T) => U;
-
-class MapperReference<T, U> extends CachedReference<U> {
-  public tag: Tag;
-
-  private reference: VersionedReference<T>;
-  private mapper: Mapper<T, U>;
-
-  constructor(reference: VersionedReference<T>, mapper: Mapper<T, U>) {
-    super();
-    this.tag = reference.tag;
-    this.reference = reference;
-    this.mapper = mapper;
-  }
-
-  protected compute(): U {
-    let { reference, mapper } = this;
-    return mapper(reference.value());
-  }
-}
-
-export function map<T, U>(
-  reference: VersionedReference<T>,
-  mapper: Mapper<T, U>
-): VersionedReference<U> {
-  return new MapperReference<T, U>(reference, mapper);
 }
 
 //////////

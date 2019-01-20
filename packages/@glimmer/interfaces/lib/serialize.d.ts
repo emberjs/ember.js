@@ -58,29 +58,73 @@ import ComponentCapabilities from './component-capabilities';
 import { Option } from './core';
 import { SymbolTable, ProgramSymbolTable } from './tier1/symbol-table';
 import { ComponentDefinition } from './components';
+import { ResolvedLayout, STDLib, CompilableProgram, CompileTime, Template } from './template';
+import { TemplateMeta } from './runtime/runtime';
+import { SyntaxCompilationContext } from './program';
+import { Helper } from './runtime/vm';
+import { ModifierDefinition } from './runtime/modifier';
+import { Invocation } from './components/component-manager';
 
-export interface CompilableProgram {
-  symbolTable: ProgramSymbolTable;
-  compile(): number;
+export interface HandleResolver {
+  resolve(handle: number): unknown;
 }
 
-export interface CompileTimeLookup<Locator> {
-  getCapabilities(handle: number): ComponentCapabilities;
-  getLayout(handle: number): Option<CompilableProgram>;
-
-  // This interface produces module locators (and indicates if a name is present), but does not
-  // produce any actual objects. The main use-case for producing objects is handled above,
-  // with getCapabilities and getLayout, which drastically shrinks the size of the object
-  // that the core interface is forced to reify.
-  lookupHelper(name: string, referrer: Locator): Option<number>;
-  lookupModifier(name: string, referrer: Locator): Option<number>;
-  lookupComponentDefinition(name: string, referrer: Locator): Option<number>;
-  lookupPartial(name: string, referrer: Locator): Option<number>;
+export interface CompileTimeComponent {
+  handle: number;
+  capabilities?: ComponentCapabilities;
+  compilable: Option<CompilableProgram>;
 }
 
-export interface RuntimeResolver<Locator> {
-  lookupComponentDefinition(name: string, referrer: Locator): Option<ComponentDefinition>;
-  lookupPartial(name: string, referrer: Locator): Option<number>;
+export interface CompileTimeResolverDelegate extends HandleResolver {
+  lookupHelper(name: string, referrer: TemplateMeta): Option<number>;
+  lookupModifier(name: string, referrer: TemplateMeta): Option<number>;
+  lookupComponent(name: string, referrer: Option<TemplateMeta>): Option<CompileTimeComponent>;
+  lookupPartial(name: string, referrer: TemplateMeta): Option<number>;
 
-  resolve<U>(handle: number): U;
+  // `name` is a cache key.
+  // TODO: The caller should cache
+  compile(source: string, name: string): Template;
+
+  // For debugging
+  resolve(handle: number): TemplateMeta;
+}
+
+export interface PartialDefinition {
+  name: string; // for debugging
+
+  getPartial(
+    context: SyntaxCompilationContext
+  ): { symbolTable: ProgramSymbolTable; handle: number };
+}
+
+export type ResolvedValue = ComponentDefinition | ModifierDefinition | Helper | PartialDefinition;
+
+export interface RuntimeResolver<R extends TemplateMeta = TemplateMeta> extends HandleResolver {
+  lookupComponent(name: string, referrer?: Option<R>): Option<ComponentDefinition>;
+  lookupPartial(name: string, referrer?: Option<R>): Option<number>;
+  resolve<U extends ResolvedValue>(handle: number): U;
+}
+
+export interface JitRuntimeResolver<R extends TemplateMeta = TemplateMeta>
+  extends RuntimeResolver<R> {
+  compilable(locator: R): Template;
+}
+
+export interface AotRuntimeResolver<R extends TemplateMeta = TemplateMeta>
+  extends RuntimeResolver<R> {
+  // for {{component}} support
+  getInvocation(locator: R): Invocation;
+}
+
+export interface RuntimeResolverOptions<R extends TemplateMeta = TemplateMeta> {
+  lookupComponent?(name: string, referrer?: Option<R>): Option<ComponentDefinition> | void;
+  lookupPartial?(name: string, referrer?: Option<R>): Option<number> | void;
+  resolve?(handle: number): ResolvedValue | void;
+  compilable?(locator: R): Template;
+  getInvocation?(locator: R): Invocation;
+}
+
+export interface JitRuntimeResolverOptions<R extends TemplateMeta = TemplateMeta>
+  extends RuntimeResolverOptions<R> {
+  compilable?(locator: R): Template;
 }

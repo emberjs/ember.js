@@ -1,8 +1,8 @@
-import { LinkedList, ListNode, Opaque, Option, dict, expect } from '@glimmer/util';
+import { LinkedList, ListNode, Option, expect } from '@glimmer/util';
 import { VersionedPathReference as PathReference, Tag } from './validators';
 
 export interface IterationItem<T, U> {
-  key: string;
+  key: unknown;
   value: T;
   memo: U;
 }
@@ -38,12 +38,12 @@ export type Iterable<T, U> = AbstractIterable<
   PathReference<U>
 >;
 
-export type OpaqueIterationItem = IterationItem<Opaque, Opaque>;
-export type OpaqueIterator = AbstractIterator<Opaque, Opaque, OpaqueIterationItem>;
-export type OpaquePathReference = PathReference<Opaque>;
+export type OpaqueIterationItem = IterationItem<unknown, unknown>;
+export type OpaqueIterator = AbstractIterator<unknown, unknown, OpaqueIterationItem>;
+export type OpaquePathReference = PathReference<unknown>;
 export type OpaqueIterable = AbstractIterable<
-  Opaque,
-  Opaque,
+  unknown,
+  unknown,
   OpaqueIterationItem,
   OpaquePathReference,
   OpaquePathReference
@@ -54,7 +54,7 @@ export type OpaquePathReferenceIterationItem = IterationItem<
 >;
 
 export class ListItem extends ListNode<OpaquePathReference> implements OpaqueIterationItem {
-  public key: string;
+  public key: unknown;
   public memo: OpaquePathReference;
   public retained = false;
   public seen = false;
@@ -88,7 +88,7 @@ export class IterationArtifacts {
 
   private iterable: OpaqueIterable;
   private iterator: Option<OpaqueIterator> = null;
-  private map = dict<ListItem>();
+  private map = new Map<unknown, ListItem>();
   private list = new LinkedList<ListItem>();
 
   constructor(iterable: OpaqueIterable) {
@@ -115,22 +115,24 @@ export class IterationArtifacts {
     return iterator;
   }
 
-  has(key: string): boolean {
-    return !!this.map[key];
+  has(key: unknown): boolean {
+    return this.map.has(key);
   }
 
-  get(key: string): ListItem {
-    return this.map[key];
+  get(key: unknown): ListItem {
+    return this.map.get(key)!;
   }
 
-  wasSeen(key: string): boolean {
-    let node = this.map[key];
+  wasSeen(key: unknown): boolean {
+    let node = this.map.get(key);
     return node !== undefined && node.seen;
   }
 
   append(item: OpaqueIterationItem): ListItem {
     let { map, list, iterable } = this;
-    let node = (map[item.key] = new ListItem(iterable, item));
+
+    let node = new ListItem(iterable, item);
+    map.set(item.key, node);
 
     list.append(node);
     return node;
@@ -139,7 +141,8 @@ export class IterationArtifacts {
   insertBefore(item: OpaqueIterationItem, reference: Option<ListItem>): ListItem {
     let { map, list, iterable } = this;
 
-    let node = (map[item.key] = new ListItem(iterable, item));
+    let node = new ListItem(iterable, item);
+    map.set(item.key, node);
     node.retained = true;
     list.insertBefore(node, reference);
     return node;
@@ -157,7 +160,7 @@ export class IterationArtifacts {
     let { list } = this;
 
     list.remove(item);
-    delete this.map[item.key];
+    this.map.delete(item.key);
   }
 
   nextNode(item: ListItem): ListItem {
@@ -193,27 +196,30 @@ export class ReferenceIterator {
   }
 }
 
-export interface IteratorSynchronizerDelegate {
-  retain(key: string, item: PathReference<Opaque>, memo: PathReference<Opaque>): void;
+export interface IteratorSynchronizerDelegate<Env> {
+  retain(env: Env, key: unknown, item: PathReference<unknown>, memo: PathReference<unknown>): void;
   insert(
-    key: string,
-    item: PathReference<Opaque>,
-    memo: PathReference<Opaque>,
-    before: Option<string>
+    env: Env,
+    key: unknown,
+    item: PathReference<unknown>,
+    memo: PathReference<unknown>,
+    before: Option<unknown>
   ): void;
   move(
-    key: string,
-    item: PathReference<Opaque>,
-    memo: PathReference<Opaque>,
-    before: Option<string>
+    env: Env,
+    key: unknown,
+    item: PathReference<unknown>,
+    memo: PathReference<unknown>,
+    before: Option<unknown>
   ): void;
-  delete(key: string): void;
-  done(): void;
+  delete(env: Env, key: unknown): void;
+  done(env: Env): void;
 }
 
-export interface IteratorSynchronizerOptions {
-  target: IteratorSynchronizerDelegate;
+export interface IteratorSynchronizerOptions<Env> {
+  target: IteratorSynchronizerDelegate<Env>;
   artifacts: IterationArtifacts;
+  env: Env;
 }
 
 enum Phase {
@@ -222,17 +228,21 @@ enum Phase {
   Done,
 }
 
-export class IteratorSynchronizer {
-  private target: IteratorSynchronizerDelegate;
+export const END = 'END [2600abdf-889f-4406-b059-b44ecbafa5c5]';
+
+export class IteratorSynchronizer<Env> {
+  private target: IteratorSynchronizerDelegate<Env>;
   private iterator: OpaqueIterator;
   private current: Option<ListItem>;
   private artifacts: IterationArtifacts;
+  private env: Env;
 
-  constructor({ target, artifacts }: IteratorSynchronizerOptions) {
+  constructor({ target, artifacts, env }: IteratorSynchronizerOptions<Env>) {
     this.target = target;
     this.artifacts = artifacts;
     this.iterator = artifacts.iterate();
     this.current = artifacts.head();
+    this.env = env;
   }
 
   sync() {
@@ -253,7 +263,7 @@ export class IteratorSynchronizer {
     }
   }
 
-  private advanceToKey(key: string) {
+  private advanceToKey(key: unknown) {
     let { current, artifacts } = this;
 
     let seek = current;
@@ -297,7 +307,7 @@ export class IteratorSynchronizer {
 
     current.update(item);
     this.current = artifacts.nextNode(current);
-    this.target.retain(item.key, current.value, current.memo);
+    this.target.retain(this.env, item.key, current.value, current.memo);
   }
 
   private nextMove(item: OpaqueIterationItem) {
@@ -309,7 +319,7 @@ export class IteratorSynchronizer {
 
     if (artifacts.wasSeen(item.key)) {
       artifacts.move(found, current);
-      target.move(found.key, found.value, found.memo, current ? current.key : null);
+      target.move(this.env, found.key, found.value, found.memo, current ? current.key : END);
     } else {
       this.advanceToKey(key);
     }
@@ -319,7 +329,7 @@ export class IteratorSynchronizer {
     let { artifacts, target, current } = this;
 
     let node = artifacts.insertBefore(item, current);
-    target.insert(node.key, node.value, node.memo, current ? current.key : null);
+    target.insert(this.env, node.key, node.value, node.memo, current ? current.key : null);
   }
 
   private startPrune(): Phase {
@@ -339,7 +349,7 @@ export class IteratorSynchronizer {
 
     if (node.shouldRemove()) {
       artifacts.remove(node);
-      target.delete(node.key);
+      target.delete(this.env, node.key);
     } else {
       node.reset();
     }
@@ -348,6 +358,6 @@ export class IteratorSynchronizer {
   }
 
   private nextDone() {
-    this.target.done();
+    this.target.done(this.env);
   }
 }

@@ -1,7 +1,15 @@
-import { Simple, Option } from '@glimmer/interfaces';
-import { dict, assert } from '@glimmer/util';
-import { Namespace } from '@simple-dom/interface';
-import { NodeToken, NodeTokens } from './node-tokens';
+import { Option } from '@glimmer/interfaces';
+import { dict, assert, assign } from '@glimmer/util';
+import { NodeToken, NodeTokensImpl } from './node-tokens';
+import {
+  Namespace,
+  ElementNamespace,
+  AttrNamespace,
+  SimpleDocument,
+  SimpleNode,
+  SimpleElement,
+  SimpleDocumentFragment,
+} from '@simple-dom/interface';
 
 export enum ConstructionOperation {
   OpenElement,
@@ -72,7 +80,7 @@ export class OperationsBuilder {
     this.ops.push(withSize(ConstructionOperation.CloseElement, 0));
   }
 
-  setAttribute(name: string, value: string, ns: Namespace = Namespace.HTML) {
+  setAttribute(name: string, value: string, ns: Namespace = HTML) {
     let nameConst = this.constants.get(name);
     let valueConst = this.constants.get(value);
     let nsConst = this.constants.get(ns);
@@ -97,38 +105,37 @@ export class OperationsBuilder {
 }
 
 interface ConstructionState {
-  readonly document: Simple.Document;
-  readonly nextSibling: Option<Simple.Node>;
+  readonly document: SimpleDocument;
+  readonly nextSibling: Option<SimpleNode>;
   readonly elements: Parent[]; // mutable
-  readonly tokens: NodeTokens;
+  readonly tokens: NodeTokensImpl;
 
   parent: Parent;
   constants: ReadonlyArray<string>;
-  constructing: Option<Simple.Element>;
+  constructing: Option<SimpleElement>;
 }
 
-export type Parent = Simple.Element | Simple.DocumentFragment;
+export type Parent = SimpleElement | SimpleDocumentFragment;
 
 export interface RunOptions {
-  document: Simple.Document;
+  document: SimpleDocument;
   parent: Parent;
-  nextSibling: Option<Simple.Node>;
+  nextSibling: Option<SimpleNode>;
   constants: ReadonlyArray<string>;
 }
 
 export function run(opcodes: ReadonlyArray<number>, options: RunOptions) {
   let offset = 0;
   let end = opcodes.length;
-  let tokens = new NodeTokens();
+  let tokens = new NodeTokensImpl();
 
   tokens.register(options.parent);
 
-  let state: ConstructionState = {
-    ...options,
+  let state: ConstructionState = assign({}, options, {
     elements: [options.parent],
     constructing: null,
     tokens,
-  };
+  });
 
   while (offset < end) {
     let value = opcodes[offset];
@@ -167,10 +174,7 @@ const ConstructionOperations: ConstructionFunction[] = [
 
     if (state.constructing) flush(state);
 
-    let el = document.createElementNS(
-      constants[namespace] as Simple.ElementNamespace,
-      constants[tag]
-    );
+    let el = document.createElementNS(constants[namespace] as ElementNamespace, constants[tag]);
     state.constructing = el;
     state.tokens.register(el);
   },
@@ -192,7 +196,7 @@ const ConstructionOperations: ConstructionFunction[] = [
     );
 
     constructing!.setAttributeNS(
-      constants[namespace] as Simple.AttrNamespace,
+      constants[namespace] as AttrNamespace,
       constants[name],
       constants[value]
     );
@@ -223,7 +227,7 @@ const ConstructionOperations: ConstructionFunction[] = [
   },
 ];
 
-function flush(state: ConstructionState): Simple.Element {
+function flush(state: ConstructionState): SimpleElement {
   let { constructing, nextSibling, elements } = state;
   state.parent.insertBefore(constructing!, nextSibling);
   state.constructing = null;

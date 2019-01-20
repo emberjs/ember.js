@@ -1,7 +1,7 @@
 import b from '../builders';
 import { appendChild, isLiteral, printLiteral } from '../utils';
 import * as AST from '../types/nodes';
-import * as HandlebarsAST from '../types/handlebars-ast';
+import * as HBS from '../types/handlebars-ast';
 import { Parser, Tag, Attribute } from '../parser';
 import SyntaxError from '../errors/syntax-error';
 import { Option } from '@glimmer/util';
@@ -19,17 +19,32 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     return `%cursor:${this.cursorCount++}%`;
   }
 
-  Program(program: HandlebarsAST.Program): AST.Program {
+  private get isTopLevel() {
+    return this.elementStack.length === 0;
+  }
+
+  Program(program: HBS.Program): AST.Block;
+  Program(program: HBS.Program): AST.Template;
+  Program(program: HBS.Program): AST.Template | AST.Block;
+  Program(program: HBS.Program): AST.Block | AST.Template {
     let body: AST.Statement[] = [];
     this.cursorCount = 0;
-    let node = b.program(body, program.blockParams, program.loc);
+
+    let node;
+
+    if (this.isTopLevel) {
+      node = b.template(body, program.blockParams, program.loc);
+    } else {
+      node = b.blockItself(body, program.blockParams, program.loc);
+    }
+
     let i,
       l = program.body.length;
 
     this.elementStack.push(node);
 
     if (l === 0) {
-      return this.elementStack.pop() as AST.Program;
+      return this.elementStack.pop() as AST.Block | AST.Template;
     }
 
     for (i = 0; i < l; i++) {
@@ -50,7 +65,7 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     return node;
   }
 
-  BlockStatement(block: HandlebarsAST.BlockStatement) {
+  BlockStatement(block: HBS.BlockStatement): AST.BlockStatement | void {
     if (this.tokenizer['state'] === 'comment') {
       this.appendToCommentData(this.sourceForNode(block));
       return;
@@ -78,10 +93,11 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     let node = b.block(path, params, hash, program, inverse, block.loc);
 
     let parentProgram = this.currentElement();
+
     appendChild(parentProgram, node);
   }
 
-  MustacheStatement(rawMustache: HandlebarsAST.MustacheStatement) {
+  MustacheStatement(rawMustache: HBS.MustacheStatement): AST.MustacheStatement | void {
     let { tokenizer } = this;
 
     if (tokenizer.state === 'comment') {
@@ -92,7 +108,7 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     let mustache: AST.MustacheStatement;
     let { escaped, loc } = rawMustache;
 
-    if (rawMustache.path.type.match(/Literal$/)) {
+    if (isLiteral(rawMustache.path)) {
       mustache = {
         type: 'MustacheStatement',
         path: this.acceptNode<AST.Literal>(rawMustache.path),
@@ -102,12 +118,9 @@ export abstract class HandlebarsNodeVisitors extends Parser {
         loc,
       };
     } else {
-      let { path, params, hash } = acceptCallNodes(
-        this,
-        rawMustache as HandlebarsAST.MustacheStatement & {
-          path: HandlebarsAST.PathExpression;
-        }
-      );
+      let { path, params, hash } = acceptCallNodes(this, rawMustache as HBS.MustacheStatement & {
+        path: HBS.PathExpression;
+      });
       mustache = b.mustache(path, params, hash, !escaped, loc);
     }
 
@@ -159,16 +172,14 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     return mustache;
   }
 
-  ContentStatement(content: HandlebarsAST.ContentStatement) {
+  ContentStatement(content: HBS.ContentStatement): void {
     updateTokenizerLocation(this.tokenizer, content);
 
     this.tokenizer.tokenizePart(content.value);
     this.tokenizer.flushData();
   }
 
-  CommentStatement(
-    rawComment: HandlebarsAST.CommentStatement
-  ): Option<AST.MustacheCommentStatement> {
+  CommentStatement(rawComment: HBS.CommentStatement): Option<AST.MustacheCommentStatement> {
     let { tokenizer } = this;
 
     if (tokenizer.state === TokenizerState.comment) {
@@ -203,7 +214,7 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     return comment;
   }
 
-  PartialStatement(partial: HandlebarsAST.PartialStatement) {
+  PartialStatement(partial: HBS.PartialStatement): never {
     let { loc } = partial;
 
     throw new SyntaxError(
@@ -214,7 +225,7 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     );
   }
 
-  PartialBlockStatement(partialBlock: HandlebarsAST.PartialBlockStatement) {
+  PartialBlockStatement(partialBlock: HBS.PartialBlockStatement): never {
     let { loc } = partialBlock;
 
     throw new SyntaxError(
@@ -226,7 +237,7 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     );
   }
 
-  Decorator(decorator: HandlebarsAST.Decorator) {
+  Decorator(decorator: HBS.Decorator): never {
     let { loc } = decorator;
 
     throw new SyntaxError(
@@ -238,7 +249,7 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     );
   }
 
-  DecoratorBlock(decoratorBlock: HandlebarsAST.DecoratorBlock) {
+  DecoratorBlock(decoratorBlock: HBS.DecoratorBlock): never {
     let { loc } = decoratorBlock;
 
     throw new SyntaxError(
@@ -250,12 +261,12 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     );
   }
 
-  SubExpression(sexpr: HandlebarsAST.SubExpression): AST.SubExpression {
+  SubExpression(sexpr: HBS.SubExpression): AST.SubExpression {
     let { path, params, hash } = acceptCallNodes(this, sexpr);
     return b.sexpr(path, params, hash, sexpr.loc);
   }
 
-  PathExpression(path: HandlebarsAST.PathExpression): AST.PathExpression {
+  PathExpression(path: HBS.PathExpression): AST.PathExpression {
     let { original, loc } = path;
     let parts: string[];
 
@@ -321,34 +332,34 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     };
   }
 
-  Hash(hash: HandlebarsAST.Hash): AST.Hash {
+  Hash(hash: HBS.Hash): AST.Hash {
     let pairs: AST.HashPair[] = [];
 
     for (let i = 0; i < hash.pairs.length; i++) {
       let pair = hash.pairs[i];
-      pairs.push(b.pair(pair.key, this.acceptNode<AST.Expression>(pair.value), pair.loc));
+      pairs.push(b.pair(pair.key, this.acceptNode(pair.value), pair.loc));
     }
 
     return b.hash(pairs, hash.loc);
   }
 
-  StringLiteral(string: HandlebarsAST.StringLiteral) {
+  StringLiteral(string: HBS.StringLiteral): AST.StringLiteral {
     return b.literal('StringLiteral', string.value, string.loc);
   }
 
-  BooleanLiteral(boolean: HandlebarsAST.BooleanLiteral) {
+  BooleanLiteral(boolean: HBS.BooleanLiteral): AST.BooleanLiteral {
     return b.literal('BooleanLiteral', boolean.value, boolean.loc);
   }
 
-  NumberLiteral(number: HandlebarsAST.NumberLiteral) {
+  NumberLiteral(number: HBS.NumberLiteral): AST.NumberLiteral {
     return b.literal('NumberLiteral', number.value, number.loc);
   }
 
-  UndefinedLiteral(undef: HandlebarsAST.UndefinedLiteral) {
+  UndefinedLiteral(undef: HBS.UndefinedLiteral): AST.UndefinedLiteral {
     return b.literal('UndefinedLiteral', undefined, undef.loc);
   }
 
-  NullLiteral(nul: HandlebarsAST.NullLiteral) {
+  NullLiteral(nul: HBS.NullLiteral): AST.NullLiteral {
     return b.literal('NullLiteral', null, nul.loc);
   }
 }
@@ -375,15 +386,12 @@ function calculateRightStrippedOffsets(original: string, value: string) {
   };
 }
 
-function updateTokenizerLocation(
-  tokenizer: Parser['tokenizer'],
-  content: HandlebarsAST.ContentStatement
-) {
+function updateTokenizerLocation(tokenizer: Parser['tokenizer'], content: HBS.ContentStatement) {
   let line = content.loc.start.line;
   let column = content.loc.start.column;
 
   let offsets = calculateRightStrippedOffsets(
-    content.original as Recast<HandlebarsAST.StripFlags, string>,
+    content.original as Recast<HBS.StripFlags, string>,
     content.value
   );
 
@@ -401,9 +409,9 @@ function updateTokenizerLocation(
 function acceptCallNodes(
   compiler: HandlebarsNodeVisitors,
   node: {
-    path: HandlebarsAST.PathExpression;
-    params: HandlebarsAST.Expression[];
-    hash: HandlebarsAST.Hash;
+    path: HBS.PathExpression;
+    params: HBS.Expression[];
+    hash: HBS.Hash;
   }
 ): { path: AST.PathExpression; params: AST.Expression[]; hash: AST.Hash } {
   let path = compiler.PathExpression(node.path);

@@ -1,95 +1,77 @@
+/**
+ * @deprecated use RichIteratorResult<Tick, Return> or TemplateIterator instead
+ */
+import { RichIteratorResult } from '@glimmer/interfaces';
 import './lib/bootstrap';
 
-export { renderMain, renderComponent, TemplateIterator, RenderComponentArgs } from './lib/render';
-
+export { clear, ConcreteBounds, CursorImpl } from './lib/bounds';
+export { Capability, capabilityFlagsFrom, hasCapability } from './lib/capabilities';
 export {
-  NULL_REFERENCE,
-  UNDEFINED_REFERENCE,
-  PrimitiveReference,
-  ConditionalReference,
-} from './lib/references';
-
-export {
-  setDebuggerCallback,
-  resetDebuggerCallback,
   DebugCallback,
+  resetDebuggerCallback,
+  setDebuggerCallback,
 } from './lib/compiled/opcodes/debugger';
-
-export { default as getDynamicVar } from './lib/helpers/get-dynamic-var';
-
-export {
-  PublicVM as VM,
-  VM as LowLevelVM,
-  UpdatingVM,
-  RenderResult,
-  IteratorResult,
-} from './lib/vm';
-
-export { SimpleDynamicAttribute, DynamicAttribute } from './lib/vm/attributes/dynamic';
-
-export {
-  IArguments as Arguments,
-  ICapturedArguments as CapturedArguments,
-  IPositionalArguments as PositionalArguments,
-  ICapturedPositionalArguments as CapturedPositionalArguments,
-  INamedArguments as NamedArguments,
-  ICapturedNamedArguments as CapturedNamedArguments,
-  EMPTY_ARGS,
-} from './lib/vm/arguments';
-
-export { SafeString } from './lib/upsert';
-
-export {
-  Scope,
-  default as Environment,
-  DefaultEnvironment,
-  Helper,
-  DynamicScope,
-  CompilationOptions,
-} from './lib/environment';
-
-export {
-  DEFAULT_CAPABILITIES,
-  MINIMAL_CAPABILITIES,
-  ComponentManager,
-  PublicComponentDefinition as ComponentDefinition,
-  WithDynamicTagName,
-  PreparedArguments,
-  WithDynamicLayout,
-  Invocation,
-  WithStaticLayout,
-} from './lib/component/interfaces';
-
 export {
   CurriedComponentDefinition,
-  isCurriedComponentDefinition,
   curry,
+  isCurriedComponentDefinition,
 } from './lib/component/curried-component';
-
-export {
-  PublicModifierDefinition as ModifierDefinition,
-  ModifierManager,
-} from './lib/modifier/interfaces';
-
+export { DEFAULT_CAPABILITIES, MINIMAL_CAPABILITIES } from './lib/component/interfaces';
+export * from './lib/component/manager';
 export {
   default as DOMChanges,
-  SVG_NAMESPACE,
-  DOMChanges as IDOMChanges,
+  DOMChangesImpl as IDOMChanges,
   DOMTreeConstruction,
   isWhitespace,
 } from './lib/dom/helper';
 export { normalizeProperty } from './lib/dom/props';
+export { DefaultDynamicScope } from './lib/dynamic-scope';
 export {
-  ElementBuilder,
-  NewElementBuilder,
-  ElementOperations,
+  AotRuntime,
+  default as EnvironmentImpl,
+  DefaultEnvironment,
+  JitRuntime,
+  RuntimeEnvironment,
+  RuntimeEnvironmentDelegate,
+  ScopeImpl,
+} from './lib/environment';
+export { default as getDynamicVar } from './lib/helpers/get-dynamic-var';
+export { PublicModifierDefinition as ModifierDefinition } from './lib/modifier/interfaces';
+export {
+  ConditionalReference,
+  NULL_REFERENCE,
+  PrimitiveReference,
+  UNDEFINED_REFERENCE,
+} from './lib/references';
+export {
+  renderAot,
+  renderAotComponent,
+  renderAotMain,
+  RenderComponentArgs,
+  renderJitComponent,
+  renderJitMain,
+  renderSync,
+} from './lib/render';
+export { SafeString } from './lib/upsert';
+export { InternalVM, UpdatingVM, VM as LowLevelVM } from './lib/vm';
+export { EMPTY_ARGS } from './lib/vm/arguments';
+export { AttributeOperation } from './lib/vm/attributes';
+export {
+  DynamicAttribute,
+  dynamicAttribute,
+  SimpleDynamicAttribute,
+} from './lib/vm/attributes/dynamic';
+export {
   clientBuilder,
+  NewElementBuilder,
+  UpdatableBlockImpl,
+  RemoteLiveBlock,
 } from './lib/vm/element-builder';
 export {
-  rehydrationBuilder,
-  RehydrateBuilder,
-  SERIALIZATION_FIRST_NODE_STRING,
   isSerializationFirstNode,
+  RehydrateBuilder,
+  rehydrationBuilder,
+  SERIALIZATION_FIRST_NODE_STRING,
 } from './lib/vm/rehydrate-builder';
-export { default as Bounds, ConcreteBounds, Cursor } from './lib/bounds';
-export { capabilityFlagsFrom, hasCapability, Capability } from './lib/capabilities';
+
+export type IteratorResult<T> = RichIteratorResult<null, T>;

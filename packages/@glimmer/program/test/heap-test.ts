@@ -1,10 +1,12 @@
-import { Heap } from '@glimmer/program';
+import { CompileTimeHeapImpl } from '@glimmer/program';
+import { StdLib } from '@glimmer/opcode-compiler';
 
 QUnit.module('Heap');
 
 QUnit.test('Can grow', assert => {
   let size = 0x100000;
-  let heap = new Heap();
+  let heap = new CompileTimeHeapImpl();
+  let stdlib = new StdLib(0, 0, 0);
 
   let i = 0;
 
@@ -18,14 +20,14 @@ QUnit.test('Can grow', assert => {
 
   // Slices the buffer. Passing MAX_SAFE_INTEGER ensures
   // we get the whole thing out
-  let serialized = heap.capture(Number.MAX_SAFE_INTEGER);
+  let serialized = heap.capture(stdlib, Number.MAX_SAFE_INTEGER);
   let serializedHeap = new Uint16Array(serialized.buffer);
   assert.equal(serializedHeap.length, size);
   assert.equal(serializedHeap[size - 1], 10);
 
   heap.push(11);
 
-  serialized = heap.capture(Number.MAX_SAFE_INTEGER);
+  serialized = heap.capture(stdlib, Number.MAX_SAFE_INTEGER);
   serializedHeap = new Uint16Array(serialized.buffer);
 
   if (serializedHeap.slice) {

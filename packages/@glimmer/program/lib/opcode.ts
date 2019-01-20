@@ -1,18 +1,17 @@
-import { Heap } from './program';
-import { OpcodeSize } from '@glimmer/encoder';
+import { OpcodeSize, RuntimeOp, OpcodeHeap } from '@glimmer/interfaces';
 
-export class Opcode {
+export class RuntimeOpImpl implements RuntimeOp {
   public offset = 0;
-  constructor(private heap: Heap) {}
+  constructor(readonly heap: OpcodeHeap) {}
 
   get size() {
     let rawType = this.heap.getbyaddr(this.offset);
     return ((rawType & OpcodeSize.OPERAND_LEN_MASK) >> OpcodeSize.ARG_SHIFT) + 1;
   }
 
-  get isMachine() {
+  get isMachine(): 0 | 1 {
     let rawType = this.heap.getbyaddr(this.offset);
-    return rawType & OpcodeSize.MACHINE_MASK;
+    return rawType & OpcodeSize.MACHINE_MASK ? 1 : 0;
   }
 
   get type() {

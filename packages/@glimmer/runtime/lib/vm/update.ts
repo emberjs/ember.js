@@ -1,41 +1,52 @@
-import { Scope, DynamicScope, Environment } from '../environment';
-import { DestroyableBounds, clear, move as moveBounds } from '../bounds';
-import { NewElementBuilder, Tracker, UpdatableTracker } from './element-builder';
-import { Option, Opaque, Stack, LinkedList, Dict, dict, expect } from '@glimmer/util';
 import {
-  PathReference,
-  IterationArtifacts,
-  IteratorSynchronizer,
-  IteratorSynchronizerDelegate,
-
+  Bounds,
+  DynamicScope,
+  Environment,
+  ExceptionHandler,
+  GlimmerTreeChanges,
+  JitOrAotBlock,
+  RuntimeContext,
+  Scope,
+  TemplateMeta,
+  AotRuntimeContext,
+  JitRuntimeContext,
+  ElementBuilder,
+  LiveBlock,
+  UpdatableBlock,
+} from '@glimmer/interfaces';
+import {
   // Tags
   combine,
-  Revision,
-  UpdatableTag,
-  TagWrapper,
   combineSlice,
   CONSTANT_TAG,
   INITIAL,
+  IterationArtifacts,
+  IteratorSynchronizer,
+  IteratorSynchronizerDelegate,
+  PathReference,
+  Revision,
   Tag,
+  TagWrapper,
+  UpdatableTag,
+  END,
 } from '@glimmer/reference';
+import { associate, expect, LinkedList, Option, Stack } from '@glimmer/util';
+import { SimpleComment, SimpleNode } from '@simple-dom/interface';
+import { move as moveBounds } from '../bounds';
+import { asyncReset, detach } from '../lifetime';
 import { UpdatingOpcode, UpdatingOpSeq } from '../opcodes';
-import { DOMChanges } from '../dom/helper';
-import { Simple } from '@glimmer/interfaces';
+import { InternalVM, VmInitCallback, JitVM } from './append';
+import { NewElementBuilder } from './element-builder';
 
-import EvaluationStack from './stack';
-import VM, { RuntimeProgram, Constants } from './append';
-
-export default class UpdatingVM<T = Opaque> {
+export default class UpdatingVM {
   public env: Environment;
-  public dom: DOMChanges;
+  public dom: GlimmerTreeChanges;
   public alwaysRevalidate: boolean;
-  public constants: Constants<T>;
 
   private frameStack: Stack<UpdatingVMFrame> = new Stack<UpdatingVMFrame>();
 
-  constructor(env: Environment, program: RuntimeProgram<T>, { alwaysRevalidate = false }) {
+  constructor(env: Environment, { alwaysRevalidate = false }) {
     this.env = env;
-    this.constants = program.constants;
     this.dom = env.getDOM();
     this.alwaysRevalidate = alwaysRevalidate;
   }
@@ -77,41 +88,40 @@ export default class UpdatingVM<T = Opaque> {
   }
 }
 
-export interface ExceptionHandler {
-  handleException(): void;
-}
-
-/**
-  The Runtime is the set of static structures that contain the compiled
-  code and any host configuration.
-
-  The contents of the Runtime do not change as the VM executes, unlike
-  the VM state.
- */
-export interface Runtime {
-  env: Environment;
-  program: RuntimeProgram<Opaque>;
-}
-
 export interface VMState {
-  scope: Scope;
-  dynamicScope: DynamicScope;
-  stack: Opaque[];
+  readonly pc: number;
+  readonly scope: Scope<JitOrAotBlock>;
+  readonly dynamicScope: DynamicScope;
+  readonly stack: unknown[];
 }
 
-export abstract class BlockOpcode extends UpdatingOpcode implements DestroyableBounds {
+export interface ResumableVMState<V extends InternalVM> {
+  resume(runtime: RuntimeContext<TemplateMeta>, builder: ElementBuilder): V;
+}
+
+export class ResumableVMStateImpl<V extends InternalVM> implements ResumableVMState<V> {
+  constructor(readonly state: VMState, private resumeCallback: VmInitCallback<V>) {}
+
+  resume(
+    runtime: V extends JitVM ? JitRuntimeContext : AotRuntimeContext,
+    builder: ElementBuilder
+  ): V {
+    return this.resumeCallback(runtime, this.state, builder);
+  }
+}
+
+export abstract class BlockOpcode extends UpdatingOpcode implements Bounds {
   public type = 'block';
   public next = null;
   public prev = null;
-  public children: LinkedList<UpdatingOpcode>;
+  readonly children: LinkedList<UpdatingOpcode>;
 
-  protected bounds: DestroyableBounds;
+  protected readonly bounds: LiveBlock;
 
   constructor(
-    public start: number,
-    protected state: VMState,
-    protected runtime: Runtime,
-    bounds: DestroyableBounds,
+    protected state: ResumableVMState<InternalVM>,
+    protected runtime: RuntimeContext<TemplateMeta>,
+    bounds: LiveBlock,
     children: LinkedList<UpdatingOpcode>
   ) {
     super();
@@ -137,14 +147,6 @@ export abstract class BlockOpcode extends UpdatingOpcode implements DestroyableB
   evaluate(vm: UpdatingVM) {
     vm.try(this.children, null);
   }
-
-  destroy() {
-    this.bounds.destroy();
-  }
-
-  didDestroy() {
-    this.runtime.env.didDestroy(this.bounds);
-  }
 }
 
 export class TryOpcode extends BlockOpcode implements ExceptionHandler {
@@ -154,16 +156,15 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
 
   private _tag: TagWrapper<UpdatableTag>;
 
-  protected bounds!: UpdatableTracker; // Hides property on base class
+  protected bounds!: UpdatableBlock; // Hides property on base class
 
   constructor(
-    start: number,
-    state: VMState,
-    runtime: Runtime,
-    bounds: UpdatableTracker,
+    state: ResumableVMState<InternalVM>,
+    runtime: RuntimeContext<TemplateMeta>,
+    bounds: UpdatableBlock,
     children: LinkedList<UpdatingOpcode>
   ) {
-    super(start, state, runtime, bounds, children);
+    super(state, runtime, bounds, children);
     this.tag = this._tag = UpdatableTag.create(CONSTANT_TAG);
   }
 
@@ -176,47 +177,54 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
   }
 
   handleException() {
-    let { state, bounds, children, start, prev, next, runtime } = this;
+    let { state, bounds, children, prev, next, runtime } = this;
 
     children.clear();
+    asyncReset(this, runtime.env);
 
-    let elementStack = NewElementBuilder.resume(runtime.env, bounds, bounds.reset(runtime.env));
-
-    let vm = VM.resume(state, runtime, elementStack);
+    let elementStack = NewElementBuilder.resume(runtime.env, bounds);
+    let vm = state.resume(runtime, elementStack);
 
     let updating = new LinkedList<UpdatingOpcode>();
 
-    vm.execute(start, vm => {
-      vm.stack = EvaluationStack.restore(state.stack);
-      vm.updatingOpcodeStack.push(updating);
+    let result = vm.execute(vm => {
+      vm.pushUpdating(updating);
       vm.updateWith(this);
-      vm.updatingOpcodeStack.push(children);
+      vm.pushUpdating(children);
     });
+
+    associate(this, result.drop);
 
     this.prev = prev;
     this.next = next;
   }
 }
 
-class ListRevalidationDelegate implements IteratorSynchronizerDelegate {
-  private map: Dict<BlockOpcode>;
+class ListRevalidationDelegate implements IteratorSynchronizerDelegate<Environment> {
+  private map: Map<unknown, BlockOpcode>;
   private updating: LinkedList<UpdatingOpcode>;
 
   private didInsert = false;
   private didDelete = false;
 
-  constructor(private opcode: ListBlockOpcode, private marker: Simple.Comment) {
+  constructor(private opcode: ListBlockOpcode, private marker: SimpleComment) {
     this.map = opcode.map;
     this.updating = opcode['children'];
   }
 
-  insert(key: string, item: PathReference<Opaque>, memo: PathReference<Opaque>, before: string) {
+  insert(
+    _env: Environment,
+    key: unknown,
+    item: PathReference<unknown>,
+    memo: PathReference<unknown>,
+    before: unknown
+  ) {
     let { map, opcode, updating } = this;
-    let nextSibling: Option<Simple.Node> = null;
+    let nextSibling: Option<SimpleNode> = null;
     let reference: Option<BlockOpcode> = null;
 
     if (typeof before === 'string') {
-      reference = map[before];
+      reference = map.get(before)!;
       nextSibling = reference['bounds'].firstNode();
     } else {
       nextSibling = this.marker;
@@ -225,13 +233,12 @@ class ListRevalidationDelegate implements IteratorSynchronizerDelegate {
     let vm = opcode.vmForInsertion(nextSibling);
     let tryOpcode: Option<TryOpcode> = null;
 
-    let { start } = opcode;
-
-    vm.execute(start, vm => {
-      map[key] = tryOpcode = vm.iterate(memo, item);
-      vm.updatingOpcodeStack.push(new LinkedList<UpdatingOpcode>());
+    vm.execute(vm => {
+      tryOpcode = vm.iterate(memo, item);
+      map.set(key, tryOpcode);
+      vm.pushUpdating(new LinkedList<UpdatingOpcode>());
       vm.updateWith(tryOpcode);
-      vm.updatingOpcodeStack.push(tryOpcode.children);
+      vm.pushUpdating(tryOpcode.children);
     });
 
     updating.insertBefore(tryOpcode!, reference);
@@ -239,31 +246,42 @@ class ListRevalidationDelegate implements IteratorSynchronizerDelegate {
     this.didInsert = true;
   }
 
-  retain(_key: string, _item: PathReference<Opaque>, _memo: PathReference<Opaque>) {}
+  retain(
+    _env: Environment,
+    _key: unknown,
+    _item: PathReference<unknown>,
+    _memo: PathReference<unknown>
+  ) {}
 
-  move(key: string, _item: PathReference<Opaque>, _memo: PathReference<Opaque>, before: string) {
+  move(
+    _env: Environment,
+    key: unknown,
+    _item: PathReference<unknown>,
+    _memo: PathReference<unknown>,
+    before: unknown
+  ) {
     let { map, updating } = this;
 
-    let entry = map[key];
-    let reference = map[before] || null;
+    let entry = map.get(key)!;
 
-    if (typeof before === 'string') {
-      moveBounds(entry, reference.firstNode());
-    } else {
+    if (before === END) {
       moveBounds(entry, this.marker);
+      updating.remove(entry);
+      updating.append(entry);
+    } else {
+      let reference = map.get(before)!;
+      moveBounds(entry, reference.firstNode());
+      updating.remove(entry);
+      updating.insertBefore(entry, reference);
     }
-
-    updating.remove(entry);
-    updating.insertBefore(entry, reference);
   }
 
-  delete(key: string) {
-    let { map } = this;
-    let opcode = map[key];
-    opcode.didDestroy();
-    clear(opcode);
-    this.updating.remove(opcode);
-    delete map[key];
+  delete(env: Environment, key: unknown) {
+    let { map, updating } = this;
+    let opcode = map.get(key)!;
+    detach(opcode, env);
+    updating.remove(opcode);
+    map.delete(key);
 
     this.didDelete = true;
   }
@@ -275,7 +293,7 @@ class ListRevalidationDelegate implements IteratorSynchronizerDelegate {
 
 export class ListBlockOpcode extends BlockOpcode {
   public type = 'list-block';
-  public map = dict<BlockOpcode>();
+  public map = new Map<unknown, BlockOpcode>();
   public artifacts: IterationArtifacts;
   public tag: Tag;
 
@@ -283,14 +301,13 @@ export class ListBlockOpcode extends BlockOpcode {
   private _tag: TagWrapper<UpdatableTag>;
 
   constructor(
-    start: number,
-    state: VMState,
-    runtime: Runtime,
-    bounds: Tracker,
+    state: ResumableVMState<InternalVM>,
+    runtime: RuntimeContext<TemplateMeta>,
+    bounds: LiveBlock,
     children: LinkedList<UpdatingOpcode>,
     artifacts: IterationArtifacts
   ) {
-    super(start, state, runtime, bounds, children);
+    super(state, runtime, bounds, children);
     this.artifacts = artifacts;
     let _tag = (this._tag = UpdatableTag.create(CONSTANT_TAG));
     this.tag = combine([artifacts.tag, _tag]);
@@ -319,7 +336,7 @@ export class ListBlockOpcode extends BlockOpcode {
       );
 
       let target = new ListRevalidationDelegate(this, marker);
-      let synchronizer = new IteratorSynchronizer({ target, artifacts });
+      let synchronizer = new IteratorSynchronizer({ target, artifacts, env: vm.env });
 
       synchronizer.sync();
 
@@ -330,7 +347,7 @@ export class ListBlockOpcode extends BlockOpcode {
     super.evaluate(vm);
   }
 
-  vmForInsertion(nextSibling: Option<Simple.Node>): VM<Opaque> {
+  vmForInsertion(nextSibling: Option<SimpleNode>): InternalVM<JitOrAotBlock> {
     let { bounds, state, runtime } = this;
 
     let elementStack = NewElementBuilder.forInitialRender(runtime.env, {
@@ -338,7 +355,7 @@ export class ListBlockOpcode extends BlockOpcode {
       nextSibling,
     });
 
-    return VM.resume(state, runtime, elementStack);
+    return state.resume(runtime, elementStack);
   }
 }
 

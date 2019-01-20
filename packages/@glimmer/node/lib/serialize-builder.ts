@@ -1,19 +1,15 @@
-import {
-  NewElementBuilder,
-  ElementBuilder,
-  Bounds,
-  ConcreteBounds,
-  Environment,
-  Cursor,
-} from '@glimmer/runtime';
-
-import { Simple, Option } from '@glimmer/interfaces';
+import { Bounds, Environment, Option, ElementBuilder } from '@glimmer/interfaces';
+import { ConcreteBounds, NewElementBuilder } from '@glimmer/runtime';
+import { RemoteLiveBlock } from '@glimmer/runtime';
+import { SimpleElement, SimpleNode, SimpleText } from '@simple-dom/interface';
 
 const TEXT_NODE = 3;
 
+const NEEDS_EXTRA_CLOSE = new WeakMap<SimpleNode>();
+
 function currentNode(
-  cursor: ElementBuilder | { element: Simple.Element; nextSibling: Simple.Node }
-): Option<Simple.Node> {
+  cursor: ElementBuilder | { element: SimpleElement; nextSibling: SimpleNode }
+): Option<SimpleNode> {
   let { element, nextSibling } = cursor;
 
   if (nextSibling === null) {
@@ -60,11 +56,11 @@ class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
     return new ConcreteBounds(this.element, first, last);
   }
 
-  __appendText(string: string): Simple.Text {
+  __appendText(string: string): SimpleText {
     let current = currentNode(this);
 
     if (string === '') {
-      return (this.__appendComment('% %') as any) as Simple.Text;
+      return (this.__appendComment('% %') as any) as SimpleText;
     } else if (current && current.nodeType === TEXT_NODE) {
       this.__appendComment('%|%');
     }
@@ -73,8 +69,8 @@ class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
   }
 
   closeElement() {
-    if (this.element['needsExtraClose'] === true) {
-      this.element['needsExtraClose'] = false;
+    if (NEEDS_EXTRA_CLOSE.has(this.element)) {
+      NEEDS_EXTRA_CLOSE.delete(this.element);
       super.closeElement();
     }
 
@@ -89,7 +85,7 @@ class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
         // under the auto inserted tbody. Rehydration builder needs to
         // account for the insertion since it is injected here and not
         // really in the template.
-        this.constructing!['needsExtraClose'] = true;
+        NEEDS_EXTRA_CLOSE.set(this.constructing!, true);
         this.flushElement();
       }
     }
@@ -98,18 +94,21 @@ class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
   }
 
   pushRemoteElement(
-    element: Simple.Element,
+    element: SimpleElement,
     cursorId: string,
-    nextSibling: Option<Simple.Node> = null
-  ) {
+    nextSibling: Option<SimpleNode> = null
+  ): Option<RemoteLiveBlock> {
     let { dom } = this;
     let script = dom.createElement('script');
     script.setAttribute('glmr', cursorId);
     dom.insertBefore(element, script, nextSibling);
-    super.pushRemoteElement(element, cursorId, nextSibling);
+    return super.pushRemoteElement(element, cursorId, nextSibling);
   }
 }
 
-export function serializeBuilder(env: Environment, cursor: Cursor): ElementBuilder {
+export function serializeBuilder(
+  env: Environment,
+  cursor: { element: SimpleElement; nextSibling: Option<SimpleNode> }
+): ElementBuilder {
   return SerializeBuilder.forInitialRender(env, cursor);
 }

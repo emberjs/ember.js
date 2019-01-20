@@ -1,14 +1,37 @@
-import { Heap, Opcode } from '@glimmer/program';
-import { Option, Opaque } from '@glimmer/interfaces';
+import {
+  Option,
+  RuntimeHeap,
+  MachineOp,
+  RuntimeProgram,
+  RuntimeOp,
+  JitOrAotBlock,
+} from '@glimmer/interfaces';
 import { APPEND_OPCODES } from '../opcodes';
 import VM from './append';
 import { DEVMODE } from '@glimmer/local-debug-flags';
-import { Op } from '@glimmer/vm';
+import { MachineRegister, $pc, $ra, $fp, $sp } from '@glimmer/vm';
+import { assert } from '@glimmer/util';
+
+export interface LowLevelRegisters {
+  [MachineRegister.pc]: number;
+  [MachineRegister.ra]: number;
+  [MachineRegister.sp]: number;
+  [MachineRegister.fp]: number;
+}
+
+export function initializeRegisters(): LowLevelRegisters {
+  return [0, -1, 0, 0];
+}
+
+export function initializeRegistersWithSP(sp: number): LowLevelRegisters {
+  return [0, -1, sp, 0];
+}
+
+export function initializeRegistersWithPC(pc: number): LowLevelRegisters {
+  return [pc, -1, 0, 0];
+}
 
 export interface Stack {
-  sp: number;
-  fp: number;
-
   pushSmi(value: number): void;
   pushEncodedImmediate(value: number): void;
 
@@ -17,13 +40,9 @@ export interface Stack {
   popSmi(): number;
 }
 
-export interface Program {
-  opcode(offset: number): Opcode;
-}
-
 export interface Externs {
-  debugBefore(opcode: Opcode): Opaque;
-  debugAfter(opcode: Opcode, state: Opaque): void;
+  debugBefore(opcode: RuntimeOp): unknown;
+  debugAfter(state: unknown): void;
 }
 
 export default class LowLevelVM {
@@ -31,60 +50,73 @@ export default class LowLevelVM {
 
   constructor(
     public stack: Stack,
-    public heap: Heap,
-    public program: Program,
+    public heap: RuntimeHeap,
+    public program: RuntimeProgram,
     public externs: Externs,
-    public pc = -1,
-    public ra = -1
+    readonly registers: LowLevelRegisters
   ) {}
+
+  fetchRegister(register: MachineRegister): number {
+    return this.registers[register];
+  }
+
+  loadRegister(register: MachineRegister, value: number) {
+    this.registers[register] = value;
+  }
 
   // Start a new frame and save $ra and $fp on the stack
   pushFrame() {
-    this.stack.pushSmi(this.ra);
-    this.stack.pushSmi(this.stack.fp);
-    this.stack.fp = this.stack.sp - 1;
+    this.stack.pushSmi(this.registers[$ra]);
+    this.stack.pushSmi(this.registers[$fp]);
+    this.registers[$fp] = this.registers[$sp] - 1;
   }
 
   // Restore $ra, $sp and $fp
   popFrame() {
-    this.stack.sp = this.stack.fp - 1;
-    this.ra = this.stack.getSmi(0);
-    this.stack.fp = this.stack.getSmi(1);
+    this.registers[$sp] = this.registers[$fp] - 1;
+    this.registers[$ra] = this.stack.getSmi(0);
+    this.registers[$fp] = this.stack.getSmi(1);
   }
 
   pushSmallFrame() {
-    this.stack.pushSmi(this.ra);
+    this.stack.pushSmi(this.registers[$ra]);
   }
 
   popSmallFrame() {
-    this.ra = this.stack.popSmi();
+    this.registers[$ra] = this.stack.popSmi();
   }
 
   // Jump to an address in `program`
   goto(offset: number) {
-    let addr = this.pc + offset - this.currentOpSize;
-    this.pc = addr;
+    this.registers[$pc] = this.target(offset);
+  }
+
+  target(offset: number) {
+    return this.registers[$pc] + offset - this.currentOpSize;
   }
 
   // Save $pc into $ra, then jump to a new address in `program` (jal in MIPS)
   call(handle: number) {
-    this.ra = this.pc;
-    this.pc = this.heap.getaddr(handle);
+    assert(handle < 0b1111111111111111, `Jumping to placehoder address`);
+
+    this.registers[$ra] = this.registers[$pc];
+    this.registers[$pc] = this.heap.getaddr(handle);
   }
 
   // Put a specific `program` address in $ra
   returnTo(offset: number) {
-    let addr = this.pc + offset - this.currentOpSize;
-    this.ra = addr;
+    this.registers[$ra] = this.target(offset);
   }
 
   // Return to the `program` address stored in $ra
   return() {
-    this.pc = this.ra;
+    this.registers[$pc] = this.registers[$ra];
   }
 
-  nextStatement(): Option<Opcode> {
-    let { pc, program } = this;
+  nextStatement(): Option<RuntimeOp> {
+    let { registers, program } = this;
+
+    let pc = registers[$pc];
 
     if (pc === -1) {
       return null;
@@ -97,25 +129,25 @@ export default class LowLevelVM {
     // program counter to the next instruction prior to executing.
     let { size } = this.program.opcode(pc);
     let operationSize = (this.currentOpSize = size);
-    this.pc += operationSize;
+    this.registers[$pc] += operationSize;
 
     return program.opcode(pc);
   }
 
-  evaluateOuter(opcode: Opcode, vm: VM<Opaque>) {
+  evaluateOuter(opcode: RuntimeOp, vm: VM<JitOrAotBlock>) {
     if (DEVMODE) {
       let {
         externs: { debugBefore, debugAfter },
       } = this;
       let state = debugBefore(opcode);
       this.evaluateInner(opcode, vm);
-      debugAfter(opcode, state);
+      debugAfter(state);
     } else {
       this.evaluateInner(opcode, vm);
     }
   }
 
-  evaluateInner(opcode: Opcode, vm: VM<Opaque>) {
+  evaluateInner(opcode: RuntimeOp, vm: VM<JitOrAotBlock>) {
     if (opcode.isMachine) {
       this.evaluateMachine(opcode);
     } else {
@@ -123,30 +155,26 @@ export default class LowLevelVM {
     }
   }
 
-  evaluateMachine(opcode: Opcode) {
+  evaluateMachine(opcode: RuntimeOp) {
     switch (opcode.type) {
-      case Op.PushFrame:
+      case MachineOp.PushFrame:
         return this.pushFrame();
-      case Op.PopFrame:
+      case MachineOp.PopFrame:
         return this.popFrame();
-      case Op.PushSmallFrame:
-        return this.pushSmallFrame();
-      case Op.PopSmallFrame:
-        return this.popSmallFrame();
-      case Op.InvokeStatic:
+      case MachineOp.InvokeStatic:
         return this.call(opcode.op1);
-      case Op.InvokeVirtual:
+      case MachineOp.InvokeVirtual:
         return this.call(this.stack.popSmi());
-      case Op.Jump:
+      case MachineOp.Jump:
         return this.goto(opcode.op1);
-      case Op.Return:
+      case MachineOp.Return:
         return this.return();
-      case Op.ReturnTo:
+      case MachineOp.ReturnTo:
         return this.returnTo(opcode.op1);
     }
   }
 
-  evaluateSyscall(opcode: Opcode, vm: VM<Opaque>) {
+  evaluateSyscall(opcode: RuntimeOp, vm: VM<JitOrAotBlock>) {
     APPEND_OPCODES.evaluate(vm, opcode, opcode.type);
   }
 }

@@ -1,5 +1,5 @@
-import { Opaque } from '@glimmer/util';
-import { Simple } from '@glimmer/interfaces';
+import { Dict } from '@glimmer/interfaces';
+import { SimpleElement } from '@simple-dom/interface';
 
 /*
  * @method normalizeProperty
@@ -7,7 +7,7 @@ import { Simple } from '@glimmer/interfaces';
  * @param slotName {String}
  * @returns {Object} { name, type }
  */
-export function normalizeProperty(element: Simple.Element, slotName: string) {
+export function normalizeProperty(element: SimpleElement, slotName: string) {
   let type, normalized;
 
   if (slotName in element) {
@@ -34,7 +34,7 @@ export function normalizeProperty(element: Simple.Element, slotName: string) {
   return { normalized, type };
 }
 
-export function normalizePropertyValue(value: Opaque): Opaque {
+export function normalizePropertyValue(value: unknown): unknown {
   if (value === '') {
     return true;
   }
@@ -45,7 +45,7 @@ export function normalizePropertyValue(value: Opaque): Opaque {
 // properties that MUST be set as attributes, due to:
 // * browser bug
 // * strange spec outlier
-const ATTR_OVERRIDES = {
+const ATTR_OVERRIDES: Dict<Dict> = {
   INPUT: {
     form: true,
     // Chrome 46.0.2464.0: 'autocorrect' in document.createElement('input') === false

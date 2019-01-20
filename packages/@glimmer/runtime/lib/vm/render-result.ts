@@ -1,34 +1,37 @@
-import { LinkedList } from '@glimmer/util';
-import Environment from '../environment';
-import { DestroyableBounds, clear } from '../bounds';
-import UpdatingVM, { ExceptionHandler } from './update';
+import { Environment, RenderResult, LiveBlock } from '@glimmer/interfaces';
+import { associate, DESTROY, LinkedList } from '@glimmer/util';
+import { SimpleElement, SimpleNode } from '@simple-dom/interface';
+import { clear } from '../bounds';
+import { inTransaction } from '../environment';
+import { asyncDestroy } from '../lifetime';
 import { UpdatingOpcode } from '../opcodes';
-import { Simple, Opaque } from '@glimmer/interfaces';
-import { RuntimeProgram } from './append';
+import UpdatingVM from './update';
 
-export default class RenderResult<T = Opaque> implements DestroyableBounds, ExceptionHandler {
+export default class RenderResultImpl implements RenderResult {
   constructor(
     public env: Environment,
-    private program: RuntimeProgram<T>,
     private updating: LinkedList<UpdatingOpcode>,
-    private bounds: DestroyableBounds
-  ) {}
+    private bounds: LiveBlock,
+    readonly drop: object
+  ) {
+    associate(this, drop);
+  }
 
   rerender({ alwaysRevalidate = false } = { alwaysRevalidate: false }) {
-    let { env, program, updating } = this;
-    let vm = new UpdatingVM(env, program, { alwaysRevalidate });
+    let { env, updating } = this;
+    let vm = new UpdatingVM(env, { alwaysRevalidate });
     vm.execute(updating, this);
   }
 
-  parentElement(): Simple.Element {
+  parentElement(): SimpleElement {
     return this.bounds.parentElement();
   }
 
-  firstNode(): Simple.Node {
+  firstNode(): SimpleNode {
     return this.bounds.firstNode();
   }
 
-  lastNode(): Simple.Node {
+  lastNode(): SimpleNode {
     return this.bounds.lastNode();
   }
 
@@ -36,8 +39,12 @@ export default class RenderResult<T = Opaque> implements DestroyableBounds, Exce
     throw 'this should never happen';
   }
 
-  destroy() {
-    this.bounds.destroy();
+  [DESTROY]() {
     clear(this.bounds);
+  }
+
+  // compat, as this is a user-exposed API
+  destroy() {
+    inTransaction(this.env, () => asyncDestroy(this, this.env));
   }
 }
