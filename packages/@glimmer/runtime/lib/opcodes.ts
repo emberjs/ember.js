@@ -151,7 +151,9 @@ export class AppendOpcodes {
           vm.scope().slots.map(s => (isScopeReference(s) ? s.value() : s))
         );
       }
-      console.log('%c -> elements', 'color: blue', vm.elements()[CURSOR_STACK]['stack'][0].element);
+
+      debugger;
+      console.log('%c -> elements', 'color: blue', vm.elements()[CURSOR_STACK].current!.element);
 
       console.log('%c -> constructing', 'color: aqua', vm.elements()['constructing']);
       /* tslint:enable */

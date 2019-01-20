@@ -56,7 +56,7 @@ export class EmberishRootView extends EmberObject {
   private parent!: SimpleElement;
 
   constructor(
-    private runtime: JitRuntimeContext,
+    private runtime: JitRuntimeContext<TemplateMeta>,
     private syntax: SyntaxCompilationContext,
     template: string,
     state?: Object

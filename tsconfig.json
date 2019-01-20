@@ -6,7 +6,7 @@
     "inlineSourceMap": true,
     "declaration": true,
     "declarationMap": true,
-    "outDir": "dist",
+    "outDir": "ts-dist",
     "baseUrl": "packages",
     "rootDir": "packages",
 
@@ -25,12 +25,13 @@
     "noEmit": true,
 
     "paths": {
-      "*": ["*"]
+      "@glimmer/*": ["packages/@glimmer/*"]
     }
   },
   "include": ["packages/**/*.ts"],
   "exclude": [
     "dist",
+    "ts-dist",
     "demos",
     "packages/glimmer-demos",
     "packages/glimmer-benchmarks",

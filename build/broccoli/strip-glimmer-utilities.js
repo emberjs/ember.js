@@ -13,33 +13,47 @@ const nameResolver = require('amd-name-resolver').moduleResolve;
 module.exports = function(jsTree) {
   let RETAIN_FLAGS = process.env.RETAIN_FLAGS;
   let glimmerUtils = [];
+
+  console.log('retain flags', RETAIN_FLAGS);
+
   if (!RETAIN_FLAGS) {
-    glimmerUtils.push([debugMacros, {
-      envFlags: {
-        source: '@glimmer/local-debug-flags',
-        flags: {
-          DEBUG: process.env.EMBER_ENV !== 'production',
-          DEVMODE: process.env.EMBER_ENV !== 'production'
-        }
+    glimmerUtils.push([
+      debugMacros,
+      {
+        envFlags: {
+          source: '@glimmer/local-debug-flags',
+          flags: {
+            DEBUG: process.env.EMBER_ENV !== 'production',
+            DEVMODE: process.env.EMBER_ENV !== 'production',
+          },
+        },
+        debugTools: {
+          source: '@glimmer/util',
+        },
+        externalizeHelpers: {
+          module: true,
+        },
       },
-      debugTools: {
-        source: '@glimmer/util'
-      },
-      externalizeHelpers: {
-        module: true
-      }
-    }]);
+    ]);
 
     glimmerUtils.push([nuke, { source: '@glimmer/debug' }]);
     glimmerUtils.push([nuke, { source: '@glimmer/vm/lib/-debug-strip' }]);
-    glimmerUtils.push([nuke, {
-      source: '@glimmer/vm',
-      delegate: removeMetaData
-    }]);
-    glimmerUtils.push([nuke, {
-      source: '@glimmer/opcode-compiler',
-      delegate: removeLogging
-    }]);
+    glimmerUtils.push([nuke, { source: '@glimmer/runtime/lib/compiled/opcodes/-debug-strip' }]);
+    glimmerUtils.push([nuke, { source: './-debug-strip' }]);
+    glimmerUtils.push([
+      nuke,
+      {
+        source: '@glimmer/vm',
+        delegate: removeMetaData,
+      },
+    ]);
+    glimmerUtils.push([
+      nuke,
+      {
+        source: '@glimmer/opcode-compiler',
+        delegate: removeLogging,
+      },
+    ]);
   }
 
   return babel(jsTree, {
@@ -49,10 +63,10 @@ module.exports = function(jsTree) {
     getModuleId: nameResolver,
     plugins: [
       ...glimmerUtils,
-      [stripGlimmerUtils, { bindings: ['expect', 'unwrap'], source: '@glimmer/util' }]
-    ]
+      [stripGlimmerUtils, { bindings: ['expect', 'unwrap'], source: '@glimmer/util' }],
+    ],
   });
-}
+};
 
 function removeMetaData(bindingName, path, t) {
   if (bindingName === 'METADATA') {

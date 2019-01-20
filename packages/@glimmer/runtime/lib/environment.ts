@@ -14,7 +14,6 @@ import {
   TransactionSymbol,
   CompilerArtifacts,
   TemplateMeta,
-  OpaqueTemplateMeta,
   WithCreateInstance,
   ResolvedValue,
   RuntimeResolverOptions,
@@ -406,7 +405,7 @@ export class DefaultRuntimeResolver<R extends TemplateMeta<{ module: string }>>
     }
   }
 
-  lookupPartial(name: string, referrer?: Option<OpaqueTemplateMeta>): Option<number> {
+  lookupPartial(name: string, referrer?: Option<TemplateMeta>): Option<number> {
     if (this.inner.lookupPartial) {
       let partial = this.inner.lookupPartial(name, referrer);
 

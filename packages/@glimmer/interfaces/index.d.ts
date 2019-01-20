@@ -16,6 +16,8 @@ export * from './lib/template';
 export * from './lib/tier1/symbol-table';
 export * from './lib/vm-opcodes';
 export * from './lib/runtime/vm';
+export * from './lib/list';
+export * from './lib/stack';
 export { WireFormat };
 
 import * as WireFormat from './lib/compile/wire-format';

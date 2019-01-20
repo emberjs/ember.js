@@ -10,8 +10,8 @@ import { Option, DestroySymbol, SymbolDestroyable } from '../core';
 import { Bounds, Cursor } from './bounds';
 import { ElementOperations, Environment } from '../runtime';
 import { GlimmerTreeConstruction, GlimmerTreeChanges } from './changes';
-import { LinkedList, LinkedListNode, Stack } from '@glimmer/util';
-import { UpdatableBlock } from '@glimmer/runtime/lib/vm/element-builder';
+import { Stack } from '../stack';
+import { LinkedList, LinkedListNode } from '../list';
 
 export interface LiveBlock extends Bounds {
   openElement(element: SimpleElement): void;

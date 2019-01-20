@@ -26,5 +26,7 @@
   "editor.tabSize": 2,
   "editor.formatOnSave": true,
   "typescript.tsc.autoDetect": "on",
-  "javascript.updateImportsOnFileMove.enabled": "always"
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "javascript.preferences.importModuleSpecifier": "relative"
 }

@@ -19,6 +19,7 @@ import {
   ElementOperations,
   Destroyable,
   Dict,
+  ComponentCapabilities,
 } from '@glimmer/interfaces';
 import { Attrs, AttrsDiff } from './emberish-glimmer';
 import {
@@ -123,7 +124,7 @@ export class EmberishCurlyComponentManager
       EmberishCurlyComponentDefinitionState,
       AotRuntimeResolver
     > {
-  getCapabilities(state: TestComponentDefinitionState) {
+  getCapabilities(state: TestComponentDefinitionState): ComponentCapabilities {
     return state.capabilities;
   }
 

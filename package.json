@@ -30,7 +30,7 @@
     "link:local": "node bin/yarn-link-local"
   },
   "resolutions": {
-    "typescript": "3.2.2"
+    "typescript": "3.2.4"
   },
   "dependencies": {
     "@simple-dom/document": "^1.4.0",

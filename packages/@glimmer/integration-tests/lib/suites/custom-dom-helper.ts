@@ -2,7 +2,7 @@ import { AbstractNodeTest, NodeJitRenderDelegate, NodeAotRenderDelegate } from '
 import { test } from '../test-decorator';
 import { NodeDOMTreeConstruction, serializeBuilder } from '@glimmer/node';
 import { RenderTest } from '../render-test';
-import { Environment, Cursor } from '@glimmer/interfaces';
+import { Environment, Cursor, ElementBuilder } from '@glimmer/interfaces';
 import { blockStack } from '../dom/blocks';
 import { strip } from '../test-helpers/strings';
 import { toInnerHTML } from '../dom/simple-utils';
@@ -38,7 +38,7 @@ export class CompilationTests extends RenderTest {
 export class JitSerializationDelegate extends NodeJitRenderDelegate {
   static style = 'jit serialization';
 
-  getElementBuilder(env: Environment, cursor: Cursor) {
+  getElementBuilder(env: Environment, cursor: Cursor): ElementBuilder {
     return serializeBuilder(env, cursor);
   }
 }

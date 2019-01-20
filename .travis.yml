@@ -18,7 +18,7 @@ before_install:
 
 jobs:
   include:
-    - name: Tests (Chrome + Node.js)
+    - name: Tests (Chrome)
 
       addons:
         chrome: stable
