@@ -28,6 +28,9 @@ jobs:
 
     - name: Tests (Node.js)
 
+      env:
+        - NODE_PATH=dist
+
       script:
         - yarn test:node
 
