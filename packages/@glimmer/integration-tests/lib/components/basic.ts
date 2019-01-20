@@ -7,6 +7,7 @@ import {
   Environment,
   CompilableProgram,
   Invocation,
+  ComponentCapabilities,
 } from '@glimmer/interfaces';
 import { TestComponentDefinitionState } from './test-component';
 import { unreachable, templateMeta, expect } from '@glimmer/util';
@@ -25,7 +26,7 @@ export class BasicComponentManager
   implements
     WithJitStaticLayout<BasicComponent, TestComponentDefinitionState, JitRuntimeResolver>,
     WithAotStaticLayout<BasicComponent, TestComponentDefinitionState, AotRuntimeResolver> {
-  getCapabilities(state: TestComponentDefinitionState) {
+  getCapabilities(state: TestComponentDefinitionState): ComponentCapabilities {
     return state.capabilities;
   }
 

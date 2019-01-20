@@ -1,6 +1,6 @@
 import { Bounds, Environment, Option, ElementBuilder } from '@glimmer/interfaces';
 import { ConcreteBounds, NewElementBuilder } from '@glimmer/runtime';
-import { RemoteLiveBlock } from '@glimmer/runtime/lib/vm/element-builder';
+import { RemoteLiveBlock } from '@glimmer/runtime';
 import { SimpleElement, SimpleNode, SimpleText } from '@simple-dom/interface';
 
 const TEXT_NODE = 3;

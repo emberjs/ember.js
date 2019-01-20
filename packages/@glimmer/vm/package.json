@@ -8,5 +8,6 @@
   },
   "devDependencies": {
     "typescript": "^2.8.3"
-  }
+  },
+  "typings": "index.ts"
 }

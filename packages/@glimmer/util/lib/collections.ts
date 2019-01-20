@@ -1,6 +1,6 @@
 import { HasGuid, ensureGuid } from './guid';
 import { Option } from './platform-utils';
-import { Dict } from '@glimmer/interfaces';
+import { Dict, Stack } from '@glimmer/interfaces';
 
 export interface Set<T> {
   add(value: T): Set<T>;
@@ -40,7 +40,7 @@ export class DictSet<T extends SetMember> implements Set<T> {
   }
 }
 
-export class Stack<T> {
+export class StackImpl<T> implements Stack<T> {
   private stack: T[] = [];
   public current: Option<T> = null;
 

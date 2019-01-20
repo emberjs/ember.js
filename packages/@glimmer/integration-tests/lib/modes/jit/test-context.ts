@@ -5,6 +5,7 @@ import {
   WholeProgramCompilationContext,
   JitRuntimeContext,
   Environment,
+  TemplateMeta,
 } from '@glimmer/interfaces';
 import { SimpleDocument, SimpleElement } from '@simple-dom/interface';
 import { RuntimeEnvironmentDelegate, JitRuntime } from '@glimmer/runtime';
@@ -20,7 +21,7 @@ export interface TestContext {
   program: WholeProgramCompilationContext;
   doc: SimpleDocument;
   root: SimpleElement;
-  runtime: JitRuntimeContext;
+  runtime: JitRuntimeContext<TemplateMeta>;
   env: Environment;
 }
 

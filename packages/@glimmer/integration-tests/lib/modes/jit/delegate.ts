@@ -7,6 +7,7 @@ import {
   Dict,
   RenderResult,
   Option,
+  TemplateMeta,
 } from '@glimmer/interfaces';
 import { SimpleDocument, SimpleElement } from '@simple-dom/interface';
 import { TestJitRegistry } from './registry';
@@ -33,7 +34,7 @@ import { UpdatableReference, ConstReference } from '@glimmer/reference';
 import { renderTemplate } from './render';
 
 export interface JitTestDelegateContext {
-  runtime: JitRuntimeContext;
+  runtime: JitRuntimeContext<TemplateMeta>;
   syntax: SyntaxCompilationContext;
 }
 
@@ -41,7 +42,7 @@ export function JitDelegateContext(
   doc: SimpleDocument,
   resolver: TestJitRuntimeResolver,
   registry: TestJitRegistry
-) {
+): JitTestDelegateContext {
   registerInternalHelper(registry, '-get-dynamic-var', getDynamicVar);
   let context = new TestJitCompilationContext(resolver, registry);
   let runtime = JitRuntime(doc, context.program(), resolver);

@@ -4,7 +4,6 @@ import {
   CheckHandle,
   CheckInstanceof,
   CheckInterface,
-  CheckNull,
   CheckProgramSymbolTable,
 } from '@glimmer/debug';
 import {
@@ -70,8 +69,6 @@ import {
   CheckCapturedArguments,
   CheckComponentDefinition,
   CheckComponentInstance,
-  CheckCurryComponent,
-  CheckElementOperations,
   CheckFinishedComponentInstance,
   CheckInvocation,
   CheckPathReference,
@@ -154,11 +151,7 @@ APPEND_OPCODES.add(Op.CurryComponent, (vm, { op1: _meta }) => {
   let meta = vm[CONSTANTS].getTemplateMeta(_meta);
   let resolver = vm.runtime.resolver;
 
-  vm.loadValue(
-    $v0,
-    new CurryComponentReference(definition, resolver, meta, capturedArgs),
-    CheckCurryComponent
-  );
+  vm.loadValue($v0, new CurryComponentReference(definition, resolver, meta, capturedArgs));
 
   // expectStackChange(vm.stack, -args.length - 1, 'CurryComponent');
 });
@@ -189,7 +182,7 @@ APPEND_OPCODES.add(Op.ResolveDynamicComponent, (vm, { op1: _meta }) => {
   let component = check(stack.pop(), CheckPathReference).value() as Maybe<Dict>;
   let meta = vm[CONSTANTS].getTemplateMeta(_meta);
 
-  vm.loadValue($t1, null, CheckNull); // Clear the temp register
+  vm.loadValue($t1, null); // Clear the temp register
 
   let definition: ComponentDefinition | CurriedComponentDefinition;
 
@@ -393,7 +386,7 @@ APPEND_OPCODES.add(Op.BeginComponentTransaction, vm => {
 });
 
 APPEND_OPCODES.add(Op.PutComponentOperations, vm => {
-  vm.loadValue($t0, new ComponentElementOperations(), CheckElementOperations);
+  vm.loadValue($t0, new ComponentElementOperations());
 });
 
 APPEND_OPCODES.add(Op.ComponentAttr, (vm, { op1: _name, op2: trusting, op3: _namespace }) => {
@@ -616,7 +609,7 @@ APPEND_OPCODES.add(Op.Main, (vm, { op1: register }) => {
     lookup: null,
   };
 
-  vm.loadValue(register, state, CheckComponentInstance);
+  vm.loadValue(register, state);
 });
 
 APPEND_OPCODES.add(Op.PopulateLayout, (vm, { op1: _state }) => {

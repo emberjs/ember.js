@@ -61,7 +61,12 @@ export {
   dynamicAttribute,
   SimpleDynamicAttribute,
 } from './lib/vm/attributes/dynamic';
-export { clientBuilder, NewElementBuilder } from './lib/vm/element-builder';
+export {
+  clientBuilder,
+  NewElementBuilder,
+  UpdatableBlockImpl,
+  RemoteLiveBlock,
+} from './lib/vm/element-builder';
 export {
   isSerializationFirstNode,
   RehydrateBuilder,

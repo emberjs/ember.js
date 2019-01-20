@@ -24,7 +24,7 @@ APPEND_OPCODES.add(Op.Helper, (vm, { op1: handle }) => {
   let args = check(stack.pop(), CheckArguments);
   let value = helper(args, vm);
 
-  vm.loadValue($v0, value, CheckPathReference);
+  vm.loadValue($v0, value);
 });
 
 APPEND_OPCODES.add(Op.GetVariable, (vm, { op1: symbol }) => {

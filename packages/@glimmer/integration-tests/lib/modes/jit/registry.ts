@@ -60,7 +60,7 @@ export default class Registry {
   partial = new TypedRegistry<PartialDefinition>();
   component: TypedRegistry<ComponentDefinition> = new TypedRegistry<ComponentDefinition>();
   template = new TypedRegistry<Invocation>();
-  compilable = new TypedRegistry<CompilableProgram>();
+  compilable: TypedRegistry<CompilableProgram> = new TypedRegistry<CompilableProgram>();
   'template-source' = new TypedRegistry<string>();
 }
 

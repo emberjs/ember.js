@@ -1,4 +1,3 @@
-import { check, Checker, CheckUnknown } from '@glimmer/debug';
 import {
   CompilableBlock,
   CompilableTemplate,
@@ -86,9 +85,9 @@ export interface InternalVM<C extends JitOrAotBlock = JitOrAotBlock> {
   readonly stack: EvaluationStack;
   readonly runtime: RuntimeContext<TemplateMeta>;
 
-  loadValue(register: MachineRegister, value: number, assertion: Checker<number>): void;
-  loadValue<T>(register: Register, value: T, assertion: Checker<T>): void;
-  loadValue<T>(register: Register | MachineRegister, value: unknown, assertion: Checker<T>): void;
+  loadValue(register: MachineRegister, value: number): void;
+  loadValue(register: Register, value: unknown): void;
+  loadValue(register: Register | MachineRegister, value: unknown): void;
 
   fetchValue(register: MachineRegister.ra | MachineRegister.pc): number;
   // TODO: Something better than a type assertion?
@@ -193,7 +192,7 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
   load(register: SyscallRegister) {
     let value = this.stack.pop();
 
-    this.loadValue(register, value, CheckUnknown);
+    this.loadValue(register, value);
   }
 
   // Fetch a value from a register
@@ -220,9 +219,7 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
 
   // Load a value into a register
 
-  loadValue<T>(register: Register | MachineRegister, value: T, assertion: Checker<T>): void {
-    check(value, assertion);
-
+  loadValue<T>(register: Register | MachineRegister, value: T): void {
     if (isLowLevelRegister(register)) {
       this[INNER_VM].loadRegister(register, (value as any) as number);
     }

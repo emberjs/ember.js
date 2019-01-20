@@ -8,14 +8,7 @@ import {
   isConstTag,
 } from '@glimmer/reference';
 import { Option } from '@glimmer/util';
-import {
-  check,
-  CheckString,
-  CheckElement,
-  CheckNode,
-  CheckOption,
-  CheckNull,
-} from '@glimmer/debug';
+import { check, CheckString, CheckElement, CheckNode, CheckOption } from '@glimmer/debug';
 import { Op } from '@glimmer/interfaces';
 import { $t0 } from '@glimmer/vm';
 import {
@@ -86,7 +79,7 @@ APPEND_OPCODES.add(Op.FlushElement, vm => {
 
   if (operations) {
     operations.flush(vm);
-    vm.loadValue($t0, null, CheckNull);
+    vm.loadValue($t0, null);
   }
 
   vm.elements().flushElement();

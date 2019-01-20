@@ -6,8 +6,10 @@
   "license": "MIT",
   "devDependencies": {
     "@glimmer/local-debug-flags": "^0.36.5",
+    "@glimmer/interfaces": "^0.36.5",
     "@types/qunit": "^2.0.31",
     "@simple-dom/interface": "^1.4.0",
     "typescript": "^2.8.3"
-  }
+  },
+  "typings": "index.ts"
 }

@@ -9,6 +9,8 @@ import {
   ElementBuilder,
   LiveBlock,
   CursorStackSymbol,
+  UpdatableBlock,
+  Cursor,
 } from '@glimmer/interfaces';
 import { assert, DESTROY, expect, LinkedList, LinkedListNode, Option, Stack } from '@glimmer/util';
 import {
@@ -18,7 +20,6 @@ import {
   SimpleElement,
   SimpleNode,
   SimpleText,
-  NodeType,
 } from '@simple-dom/interface';
 import { clear, ConcreteBounds, CursorImpl, SingleNodeBounds } from '../bounds';
 import { detachChildren } from '../lifetime';
@@ -78,14 +79,14 @@ export class NewElementBuilder implements ElementBuilder {
   public operations: Option<ElementOperations> = null;
   private env: Environment;
 
-  [CURSOR_STACK] = new Stack<CursorImpl>();
+  [CURSOR_STACK] = new Stack<Cursor>();
   private blockStack = new Stack<LiveBlock>();
 
   static forInitialRender(env: Environment, cursor: CursorImpl) {
     return new this(env, cursor.element, cursor.nextSibling).initialize();
   }
 
-  static resume(env: Environment, block: UpdatableBlock) {
+  static resume(env: Environment, block: UpdatableBlock): NewElementBuilder {
     let parentNode = block.parentElement();
     let nextSibling = block.reset(env);
 
@@ -133,8 +134,8 @@ export class NewElementBuilder implements ElementBuilder {
     return this.pushLiveBlock(new SimpleLiveBlock(this.element));
   }
 
-  pushUpdatableBlock(): UpdatableBlock {
-    return this.pushLiveBlock(new UpdatableBlock(this.element));
+  pushUpdatableBlock(): UpdatableBlockImpl {
+    return this.pushLiveBlock(new UpdatableBlockImpl(this.element));
   }
 
   pushBlockList(list: LinkedList<LinkedListNode & LiveBlock>): LiveBlockList {
@@ -417,7 +418,7 @@ export class RemoteLiveBlock extends SimpleLiveBlock implements SymbolDestroyabl
   }
 }
 
-export class UpdatableBlock extends SimpleLiveBlock {
+export class UpdatableBlockImpl extends SimpleLiveBlock implements UpdatableBlock {
   reset(env: Environment): Option<SimpleNode> {
     let nextSibling = detachChildren(this, env);
 
