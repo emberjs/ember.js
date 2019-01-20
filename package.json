@@ -30,7 +30,8 @@
     "link:local": "node bin/yarn-link-local"
   },
   "resolutions": {
-    "typescript": "3.2.4"
+    "typescript": "3.2.4",
+    "amd-name-resolver": "https://github.com/ember-cli/amd-name-resolver.git"
   },
   "dependencies": {
     "@simple-dom/document": "^1.4.0",

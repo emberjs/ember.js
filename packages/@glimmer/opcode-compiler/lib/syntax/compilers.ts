@@ -7,6 +7,7 @@ import {
   WireFormat,
   ExpressionCompileActions,
   TupleSyntax,
+  Dict,
 } from '@glimmer/interfaces';
 import { assert, dict } from '@glimmer/util';
 
@@ -35,7 +36,7 @@ export interface StatementCompilationContext {
 }
 
 abstract class Compilers<U extends RegisteredSyntax> {
-  protected names = dict<number>();
+  protected names: Dict<number> = dict();
   protected abstract funcs: U[];
 
   add<N extends SexpOpcodes>(name: N, func: LeafCompilerFunction<SexpOpcodeMap[N]>): void {
