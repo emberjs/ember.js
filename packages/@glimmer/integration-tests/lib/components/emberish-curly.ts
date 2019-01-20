@@ -170,12 +170,12 @@ export class EmberishCurlyComponentManager
         }
       }
 
-      let named = Object.assign({}, args.named.capture().map);
+      let named = assign({}, args.named.capture().map);
       named[positionalParams] = args.positional.capture();
 
       return { positional: EMPTY_ARRAY, named };
     } else if (Array.isArray(positionalParams)) {
-      let named = Object.assign({}, args.named.capture().map);
+      let named = assign({}, args.named.capture().map);
       let count = Math.min(positionalParams.length, args.positional.length);
 
       for (let i = 0; i < count; i++) {

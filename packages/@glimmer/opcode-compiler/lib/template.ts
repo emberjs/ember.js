@@ -89,26 +89,29 @@ class TemplateImpl<R> implements Template {
 
   asLayout(): CompilableProgram {
     if (this.layout) return this.layout;
-    return (this.layout = compilable({
-      ...this.parsedLayout,
-      asPartial: false,
-    }));
+    return (this.layout = compilable(
+      assign({}, this.parsedLayout, {
+        asPartial: false,
+      })
+    ));
   }
 
   asPartial(): CompilableProgram {
     if (this.partial) return this.partial;
-    return (this.layout = compilable({
-      ...this.parsedLayout,
-      asPartial: true,
-    }));
+    return (this.layout = compilable(
+      assign({}, this.parsedLayout, {
+        asPartial: true,
+      })
+    ));
   }
 
   asWrappedLayout(): CompilableProgram {
     if (this.wrappedLayout) return this.wrappedLayout;
-    return (this.wrappedLayout = new WrappedBuilder({
-      ...this.parsedLayout,
-      asPartial: false,
-    }));
+    return (this.wrappedLayout = new WrappedBuilder(
+      assign({}, this.parsedLayout, {
+        asPartial: false,
+      })
+    ));
   }
 }
 

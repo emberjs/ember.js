@@ -1,6 +1,6 @@
 import * as AST from './types/nodes';
 import { Option, Dict } from '@glimmer/interfaces';
-import { deprecate } from '@glimmer/util';
+import { deprecate, assign } from '@glimmer/util';
 import { DEVMODE } from '@glimmer/local-debug-flags';
 import { StringLiteral, BooleanLiteral, NumberLiteral } from './types/handlebars-ast';
 
@@ -46,7 +46,7 @@ function buildBlock(
       deprecate(`b.program is deprecated. Use b.blockItself instead.`);
     }
 
-    defaultBlock = { ..._defaultBlock, type: 'Block' } as AST.Block;
+    defaultBlock = (assign({}, _defaultBlock, { type: 'Block' }) as unknown) as AST.Block;
   } else {
     defaultBlock = _defaultBlock;
   }
@@ -56,7 +56,7 @@ function buildBlock(
       deprecate(`b.program is deprecated. Use b.blockItself instead.`);
     }
 
-    elseBlock = { ..._elseBlock, type: 'Block' } as AST.Block;
+    elseBlock = (assign({}, _elseBlock, { type: 'Block' }) as unknown) as AST.Block;
   } else {
     elseBlock = _elseBlock;
   }

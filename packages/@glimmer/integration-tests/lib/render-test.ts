@@ -1,6 +1,6 @@
 import { Dict, Maybe, Option, RenderResult } from '@glimmer/interfaces';
 import { bump, isConst, UpdatableReference } from '@glimmer/reference';
-import { clearElement, dict, expect } from '@glimmer/util';
+import { clearElement, dict, expect, assign } from '@glimmer/util';
 import { SimpleElement, SimpleNode } from '@simple-dom/interface';
 import {
   ComponentBlueprint,
@@ -383,7 +383,7 @@ export class RenderTest implements IRenderTest {
   }
 
   protected setProperties(properties: Dict<unknown>): void {
-    Object.assign(this.context, properties);
+    assign(this.context, properties);
     bump();
   }
 

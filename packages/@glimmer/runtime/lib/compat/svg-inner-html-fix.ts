@@ -69,7 +69,7 @@ function fixSVG(
     let wrappedHtml = '<svg><foreignObject>' + html + '</foreignObject></svg>';
 
     clearElement(div);
-    parent.insertAdjacentHTML(InsertPosition.afterbegin, wrappedHtml);
+    div.insertAdjacentHTML(InsertPosition.afterbegin, wrappedHtml);
 
     source = div.firstChild!.firstChild!;
   } else {
@@ -78,7 +78,7 @@ function fixSVG(
     let wrappedHtml = '<svg>' + html + '</svg>';
 
     clearElement(div);
-    parent.insertAdjacentHTML(InsertPosition.afterbegin, wrappedHtml);
+    div.insertAdjacentHTML(InsertPosition.afterbegin, wrappedHtml);
 
     source = div.firstChild!;
   }

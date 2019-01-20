@@ -46,10 +46,12 @@ export class IterableImpl
 
     let iterable = ref.value() as { [Symbol.iterator]: any } | null | false;
 
-    if (iterable && iterable[Symbol.iterator]) {
+    if (Array.isArray(iterable)) {
+      return new ArrayIterator(iterable, keyFor);
+    } else if (iterable && iterable[Symbol.iterator]) {
       return new NativeIteratorIterator(iterable[Symbol.iterator](), keyFor);
     } else {
-      return new NativeIteratorIterator(EMPTY_ARRAY[Symbol.iterator](), () => null);
+      return new ArrayIterator(EMPTY_ARRAY, () => null);
     }
   }
 
@@ -110,6 +112,44 @@ class NativeIteratorIterator implements OpaqueIterator {
       } else {
         value = next.value;
       }
+    }
+
+    let { keyFor } = this;
+
+    let key = keyFor(value as Dict, this.pos);
+    let memo = this.pos;
+
+    return { key, value, memo };
+  }
+}
+
+class ArrayIterator implements OpaqueIterator {
+  private current: { kind: 'empty' } | { kind: 'first'; value: unknown } | { kind: 'progress' };
+  private pos = 0;
+
+  constructor(private iterator: unknown[], private keyFor: KeyFor) {
+    if (iterator.length === 0) {
+      this.current = { kind: 'empty' };
+    } else {
+      this.current = { kind: 'first', value: iterator[this.pos] };
+    }
+  }
+
+  isEmpty(): boolean {
+    return this.current.kind === 'empty';
+  }
+
+  next(): Option<IterationItem<unknown, number>> {
+    let value: unknown;
+
+    let current = this.current;
+    if (current.kind === 'first') {
+      this.current = { kind: 'progress' };
+      value = current.value;
+    } else if (this.pos >= this.iterator.length - 1) {
+      return null;
+    } else {
+      value = this.iterator[++this.pos];
     }
 
     let { keyFor } = this;

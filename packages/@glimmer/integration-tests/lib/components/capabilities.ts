@@ -1,4 +1,5 @@
 import { ComponentCapabilities } from '@glimmer/interfaces';
+import { assign } from '@glimmer/util';
 
 export const BASIC_CAPABILITIES: ComponentCapabilities = {
   dynamicLayout: false,
@@ -42,8 +43,7 @@ export const CURLY_CAPABILITIES: ComponentCapabilities = {
   wrapped: true,
 };
 
-export const EMBERISH_CURLY_CAPABILITIES: ComponentCapabilities = {
-  ...CURLY_CAPABILITIES,
+export const EMBERISH_CURLY_CAPABILITIES: ComponentCapabilities = assign({}, CURLY_CAPABILITIES, {
   dynamicLayout: false,
   attributeHook: false,
-};
+});

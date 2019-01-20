@@ -1,13 +1,17 @@
 import { precompile } from '@glimmer/compiler';
 import { preprocess, DEFAULT_TEST_META } from '@glimmer/integration-tests';
 import { module } from '../support';
+import { assign } from '@glimmer/util';
 
 QUnit.module('[glimmer-compiler] precompile');
 
 module('[glimmer-compiler] Compile options', ({ test }) => {
   test('moduleName option is passed into meta', assert => {
     let moduleName = "It ain't hard to tell";
-    let template = preprocess('Hi, {{name}}!', { ...DEFAULT_TEST_META, module: moduleName });
+    let template = preprocess(
+      'Hi, {{name}}!',
+      assign({}, DEFAULT_TEST_META, { module: moduleName })
+    );
     assert.equal(template.referrer.module, moduleName, 'Template has the moduleName');
   });
 });

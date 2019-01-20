@@ -18,6 +18,7 @@ import {
   SimpleElement,
   SimpleNode,
   SimpleText,
+  NodeType,
 } from '@simple-dom/interface';
 import { clear, ConcreteBounds, CursorImpl, SingleNodeBounds } from '../bounds';
 import { detachChildren } from '../lifetime';

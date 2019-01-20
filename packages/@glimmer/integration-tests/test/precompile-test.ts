@@ -1,6 +1,7 @@
 import { templateFactory } from '@glimmer/opcode-compiler';
 import { precompile } from '@glimmer/compiler';
 import { SerializedTemplateWithLazyBlock, AnnotatedModuleLocator } from '@glimmer/interfaces';
+import { assign } from '@glimmer/util';
 
 let serializedTemplate: SerializedTemplateWithLazyBlock<AnnotatedModuleLocator>;
 let serializedTemplateNoId: SerializedTemplateWithLazyBlock<AnnotatedModuleLocator>;
@@ -84,10 +85,11 @@ QUnit.test('can inject per environment things into meta', assert => {
   let owner = {};
   let factory = templateFactory<AnnotatedModuleLocator>(serializedTemplate);
 
-  let template = factory.create({
-    ...DEFAULT_TEST_META,
-    owner,
-  });
+  let template = factory.create(
+    assign({}, DEFAULT_TEST_META, {
+      owner,
+    })
+  );
 
   assert.strictEqual(template.referrer.owner, owner, 'is owner');
   assert.deepEqual(

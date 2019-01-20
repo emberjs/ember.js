@@ -1,7 +1,7 @@
 import { Namespace, SimpleElement } from '@simple-dom/interface';
 import { RenderTest } from '../render-test';
 import { test } from '../test-decorator';
-import { strip } from '@glimmer/util';
+import { strip, unwrap } from '@glimmer/util';
 import { firstElementChild, getElementsByTagName } from '../dom/simple-utils';
 import { assertNodeTagName } from '../dom/assertions';
 
@@ -414,7 +414,7 @@ export class InitialRenderSuite extends RenderTest {
       </select>
     `);
 
-    let selectNode: any = this.element.childNodes[0];
+    let selectNode = unwrap(firstElementChild(this.element)) as HTMLSelectElement;
     this.assert.equal(selectNode.selectedIndex, 1);
     this.assertStableRerender();
 
@@ -427,7 +427,7 @@ export class InitialRenderSuite extends RenderTest {
       </select>
     `);
 
-    selectNode = this.element.childNodes[0];
+    selectNode = unwrap(firstElementChild(this.element)) as HTMLSelectElement;
 
     this.assert.equal(selectNode.selectedIndex, 0);
 
@@ -443,7 +443,7 @@ export class InitialRenderSuite extends RenderTest {
       </select>
     `);
 
-    selectNode = this.element.childNodes[0];
+    selectNode = unwrap(firstElementChild(this.element)) as HTMLSelectElement;
 
     this.assert.equal(selectNode.selectedIndex, 0);
 
@@ -458,7 +458,7 @@ export class InitialRenderSuite extends RenderTest {
       </select>
     `);
 
-    selectNode = this.element.childNodes[0];
+    selectNode = unwrap(firstElementChild(this.element)) as HTMLSelectElement;
     this.assert.equal(selectNode.selectedIndex, 1);
     this.assertStableNodes();
   }

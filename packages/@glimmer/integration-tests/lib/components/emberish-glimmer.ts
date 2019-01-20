@@ -24,7 +24,7 @@ import {
   Invocation,
   Destroyable,
 } from '@glimmer/interfaces';
-import { keys, templateMeta } from '@glimmer/util';
+import { keys, templateMeta, assign } from '@glimmer/util';
 import { BASIC_CAPABILITIES } from './capabilities';
 import { TestComponentDefinitionState } from './test-component';
 import { TestComponentConstructor } from './types';
@@ -87,14 +87,13 @@ export interface EmberishGlimmerComponentFactory
   create(options: { attrs: Attrs }): EmberishGlimmerComponent;
 }
 
-export const EMBERISH_GLIMMER_CAPABILITIES = {
-  ...BASIC_CAPABILITIES,
+export const EMBERISH_GLIMMER_CAPABILITIES = assign({}, BASIC_CAPABILITIES, {
   dynamicTag: true,
   createArgs: true,
   attributeHook: true,
   updateHook: true,
   createInstance: true,
-};
+});
 
 export interface EmberishGlimmerComponentState {
   args: CapturedNamedArguments;

@@ -343,6 +343,8 @@ export class RuntimeEnvironmentDelegateImpl implements RuntimeEnvironmentDelegat
   protocolForURL(url: string): string {
     if (this.inner.protocolForURL) {
       return this.inner.protocolForURL(url);
+    } else if (typeof URL === 'object' || typeof URL === 'undefined') {
+      return legacyProtocolForURL(url);
     } else if (typeof document !== 'undefined') {
       return new URL(url, document.baseURI).protocol;
     } else {
@@ -371,6 +373,17 @@ export class RuntimeEnvironmentDelegateImpl implements RuntimeEnvironmentDelegat
     },
     default: key => item => item[key],
   };
+}
+
+function legacyProtocolForURL(url: string): string {
+  if (typeof window === 'undefined') {
+    let match = /^([a-z][a-z0-9.+-]*:)?(\/\/)?([\S\s]*)/i.exec(url);
+    return match && match[1] ? match[1].toLowerCase() : '';
+  }
+
+  let anchor = window.document.createElement('a');
+  anchor.href = url;
+  return anchor.protocol;
 }
 
 export class DefaultRuntimeResolver<R extends TemplateMeta<{ module: string }>>

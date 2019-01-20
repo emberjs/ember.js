@@ -2,11 +2,12 @@ import { Bounds } from '@glimmer/interfaces';
 import { ConcreteBounds, DOMTreeConstruction } from '@glimmer/runtime';
 import { Option } from '@glimmer/util';
 import { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
+import createHTMLDocument from '@simple-dom/document';
 
 export default class NodeDOMTreeConstruction extends DOMTreeConstruction {
   protected document!: SimpleDocument; // Hides property on base class
-  constructor(doc: SimpleDocument) {
-    super(doc);
+  constructor(doc: Option<SimpleDocument>) {
+    super(doc || createHTMLDocument());
   }
 
   // override to prevent usage of `this.document` until after the constructor
