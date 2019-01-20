@@ -1,6 +1,6 @@
 {
   "name": "glimmer-engine",
-  "version": "0.36.5",
+  "version": "0.39.0",
   "private": true,
   "description": "Glimmer compiles Handlebars templates into document fragments rather than string buffers",
   "license": "MIT",
