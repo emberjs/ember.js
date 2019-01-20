@@ -3,8 +3,10 @@ module.exports = {
     es6: true,
     node: true,
   },
-  extends: 'eslint:recommended',
+  extends: ['eslint:recommended', 'plugin:prettier/recommended'],
+  plugins: ['prettier'],
   rules: {
+    'prettier/prettier': 'error',
     'accessor-pairs': 'error',
     'array-bracket-spacing': 'off',
     'array-callback-return': 'error',
@@ -30,7 +32,6 @@ module.exports = {
     camelcase: 'error',
     'capitalized-comments': 'off',
     'class-methods-use-this': 'off',
-    'comma-dangle': 'error',
     'comma-spacing': [
       'error',
       {
@@ -78,7 +79,6 @@ module.exports = {
     ],
     'line-comment-position': 'error',
     'linebreak-style': ['error', 'unix'],
-    'lines-around-comment': 'error',
     'lines-around-directive': 'error',
     'max-depth': 'error',
     'max-len': 'off',

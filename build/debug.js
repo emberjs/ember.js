@@ -17,9 +17,6 @@ let parsed = parse('./packages/@glimmer/vm/lib/opcodes.toml');
 let machine = buildEnum('MachineOp', parsed.machine, 0, 15);
 let syscall = buildEnum('Op', parsed.syscall, 16);
 
-let enums =
-  buildEnum('MachineOp', parsed.machine, 0, 15) + '\n\n' + buildEnum('Op', parsed.syscall, 16);
-
 write(
   './packages/@glimmer/vm/lib/opcodes.ts',
   `import { Op, MachineOp } from '@glimmer/interfaces';\n\n` +

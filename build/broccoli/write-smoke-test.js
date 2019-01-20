@@ -1,5 +1,4 @@
 const Plugin = require('broccoli-plugin');
-const glob = require('glob');
 const fs = require('fs');
 const path = require('path');
 
@@ -10,14 +9,6 @@ const path = require('path');
  */
 class TypesSmokeTestWriter extends Plugin {
   build() {
-    let inputPath = this.inputPaths[0];
-    // let packages = glob.sync('@glimmer/*', { cwd: inputPath });
-
-    // let smokeTestPath = path.join(this.outputPath, 'types-smoke-test.ts');
-
-    // let id = 0;
-    // let source = packages.map(pkg => `import * as Pkg${++id} from './${pkg}';`).join('\n');
-
     fs.writeFileSync(
       path.join(this.outputPath, 'tsconfig.json'),
       JSON.stringify({
