@@ -5,7 +5,7 @@ import {
   WireFormat,
   ContainingMetadata,
 } from '@glimmer/interfaces';
-import { dict } from '@glimmer/util';
+import { dict, assign } from '@glimmer/util';
 import { compilableBlock } from './compilable-template';
 
 interface NamedBlocksDict {
@@ -30,7 +30,7 @@ export class NamedBlocksImpl implements NamedBlocks {
     let { blocks } = this;
 
     if (blocks) {
-      return new NamedBlocksImpl({ ...blocks, [name]: block });
+      return new NamedBlocksImpl(assign({}, blocks, { [name]: block }));
     } else {
       return new NamedBlocksImpl({ [name]: block });
     }

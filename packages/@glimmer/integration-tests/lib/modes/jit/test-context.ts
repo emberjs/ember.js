@@ -11,6 +11,7 @@ import { RuntimeEnvironmentDelegate, JitRuntime } from '@glimmer/runtime';
 import { registerHelper } from './register';
 import { TestJitCompilationContext } from './compilation-context';
 import { TestMacros } from '../../compile/macros';
+import { assign } from '@glimmer/util';
 
 export interface TestContext {
   resolver: TestJitRuntimeResolver;
@@ -32,10 +33,17 @@ export function JitTestContext(delegate: RuntimeEnvironmentDelegate = {}): TestC
   let syntax: SyntaxCompilationContext = { program: context, macros: new TestMacros() };
   let doc = document as SimpleDocument;
 
-  let runtime = JitRuntime(document as SimpleDocument, context.program(), resolver, {
-    toBool: emberToBool,
-    ...delegate,
-  });
+  let runtime = JitRuntime(
+    document as SimpleDocument,
+    context.program(),
+    resolver,
+    assign(
+      {
+        toBool: emberToBool,
+      },
+      delegate
+    )
+  );
 
   let root = document.getElementById('qunit-fixture')! as SimpleElement;
 

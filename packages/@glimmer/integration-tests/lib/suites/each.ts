@@ -58,15 +58,15 @@ export class EachSuite extends RenderTest {
   @test
   'receives the index as the second parameter'() {
     let list = [1, 2, 3, 4];
-    this.render('{{#each list key="@index" as |item i|}}{{item}}-{{i}}{{else}}Empty{{/each}}', {
+    this.render('{{#each list key="@index" as |item i|}}{{item}}-{{i}}:{{else}}Empty{{/each}}', {
       list,
     });
-    this.assertHTML('1-02-13-24-3');
+    this.assertHTML('1-0:2-1:3-2:4-3:');
     this.assertStableRerender();
 
     list.push(5, 6);
     this.rerender({ list });
-    this.assertHTML('1-02-13-24-35-46-5');
+    this.assertHTML('1-0:2-1:3-2:4-3:5-4:6-5:');
     this.assertStableNodes();
 
     list = [];
@@ -76,7 +76,7 @@ export class EachSuite extends RenderTest {
 
     list = [1, 2, 3, 4];
     this.rerender({ list });
-    this.assertHTML('1-02-13-24-3');
+    this.assertHTML('1-0:2-1:3-2:4-3:');
     this.assertStableNodes();
   }
 

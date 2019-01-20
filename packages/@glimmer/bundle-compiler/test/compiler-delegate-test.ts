@@ -1,13 +1,13 @@
 import { BundleCompiler } from '@glimmer/bundle-compiler';
 import { ComponentCapabilities, ModuleLocator } from '@glimmer/interfaces';
 import { MINIMAL_CAPABILITIES } from '@glimmer/opcode-compiler';
+import { assign } from '@glimmer/util';
 
 const { test } = QUnit;
 
-export const BASIC_CAPABILITIES: ComponentCapabilities = {
-  ...MINIMAL_CAPABILITIES,
+export const BASIC_CAPABILITIES: ComponentCapabilities = assign({}, MINIMAL_CAPABILITIES, {
   createInstance: true,
-};
+});
 
 QUnit.module('[glimmer-bundle-compiler] CompilerDelegate');
 

@@ -1,5 +1,5 @@
 import { Option } from '@glimmer/interfaces';
-import { dict, assert } from '@glimmer/util';
+import { dict, assert, assign } from '@glimmer/util';
 import { NodeToken, NodeTokensImpl } from './node-tokens';
 import {
   Namespace,
@@ -131,12 +131,11 @@ export function run(opcodes: ReadonlyArray<number>, options: RunOptions) {
 
   tokens.register(options.parent);
 
-  let state: ConstructionState = {
-    ...options,
+  let state: ConstructionState = assign({}, options, {
     elements: [options.parent],
     constructing: null,
     tokens,
-  };
+  });
 
   while (offset < end) {
     let value = opcodes[offset];

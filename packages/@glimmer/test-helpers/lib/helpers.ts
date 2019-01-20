@@ -42,8 +42,6 @@ if (typeof Object.assign !== 'function') {
   };
 }
 
-export const assign = Object.assign;
-
 declare var window: Window & Dict;
 
 function isMarker(node: SimpleNode) {

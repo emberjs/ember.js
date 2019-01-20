@@ -22,16 +22,15 @@ import EagerRuntimeResolver from '../modes/eager/runtime-resolver';
 import LazyRuntimeResolver from '../modes/lazy/runtime-resolver';
 import { Attrs, AttrsDiff } from '../shared';
 import { BASIC_CAPABILITIES } from './basic';
-import { templateMeta } from '@glimmer/util';
+import { templateMeta, assign } from '@glimmer/util';
 
-export const EMBERISH_GLIMMER_CAPABILITIES = {
-  ...BASIC_CAPABILITIES,
+export const EMBERISH_GLIMMER_CAPABILITIES = assign({}, BASIC_CAPABILITIES, {
   dynamicTag: true,
   createArgs: true,
   attributeHook: true,
   updateHook: true,
   createInstance: true,
-};
+});
 
 export interface EmberishGlimmerComponentState {
   args: CapturedNamedArguments;

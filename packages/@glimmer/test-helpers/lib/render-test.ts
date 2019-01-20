@@ -19,7 +19,7 @@ import {
   TagWrapper,
 } from '@glimmer/reference';
 import { UNDEFINED_REFERENCE } from '@glimmer/runtime';
-import { clearElement, dict, expect, keys } from '@glimmer/util';
+import { clearElement, dict, expect, keys, assign } from '@glimmer/util';
 import createHTMLDocument from '@simple-dom/document';
 import { SimpleElement, SimpleNode, SimpleDocument, NodeType } from '@simple-dom/interface';
 import { assertElement, replaceHTML, toInnerHTML } from './dom';
@@ -32,7 +32,7 @@ import {
   DebugRehydrationBuilder,
 } from './environment/modes/rehydration/debug-builder';
 import { TestModifierConstructor } from './environment/modifier';
-import { assign, equalTokens, normalizeInnerHTML } from './helpers';
+import { equalTokens, normalizeInnerHTML } from './helpers';
 import { ComponentKind, ComponentTypes } from './interfaces';
 import { registerComponent, renderTemplate, JitTestDelegateContext } from './render';
 import RenderDelegate from './render-delegate';
@@ -492,7 +492,7 @@ export class RenderTest implements IRenderTest {
   }
 
   protected setProperties(properties: Dict<unknown>): void {
-    Object.assign(this.context, properties);
+    assign(this.context, properties);
     bump();
   }
 

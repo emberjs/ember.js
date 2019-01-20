@@ -50,10 +50,10 @@ export function destroyAssociated(parent: object) {
   let associated = LINKED.get(parent);
 
   if (associated) {
-    for (let item of associated) {
+    associated.forEach(item => {
       item[DROP]();
-      associated.delete(item);
-    }
+      associated!.delete(item);
+    });
   }
 }
 
@@ -83,9 +83,7 @@ class SnapshotDestructor implements Drop {
   constructor(private destructors: Set<Drop>) {}
 
   [DROP]() {
-    for (let item of this.destructors) {
-      item[DROP]();
-    }
+    this.destructors.forEach(item => item[DROP]());
   }
 
   get [CHILDREN](): Iterable<Drop> {
