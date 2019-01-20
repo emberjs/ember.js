@@ -23,6 +23,7 @@ import {
   AllOpMap,
   Operands,
   NonlabelBuilderOperand,
+  Dict,
 } from '@glimmer/interfaces';
 import { isMachineOp } from '@glimmer/vm';
 import { Stack, dict, expect } from '@glimmer/util';
@@ -32,7 +33,7 @@ import { num } from './operands';
 export type OpcodeBuilderLabels = Labels<InstructionEncoder>;
 
 export class LabelsImpl implements Labels<InstructionEncoder> {
-  labels = dict<number>();
+  labels: Dict<number> = dict();
   targets: Array<{ at: number; target: string }> = [];
 
   label(name: string, index: number) {

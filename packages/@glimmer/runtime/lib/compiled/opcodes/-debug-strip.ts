@@ -22,6 +22,7 @@ import {
   Scope,
   Helper,
   CapturedArgumentsValue,
+  Option,
 } from '@glimmer/interfaces';
 import { Reference, Tag, TagWrapper, VersionedPathReference } from '@glimmer/reference';
 import { ScopeImpl } from '../../environment';
@@ -35,7 +36,9 @@ import { ComponentInstance, ComponentElementOperations } from './component';
 
 export const CheckTag: Checker<Tag> = wrap(() => CheckInstanceof(TagWrapper));
 
-export const CheckOperations = wrap(() => CheckOption(CheckInstanceof(ComponentElementOperations)));
+export const CheckOperations: Checker<Option<ComponentElementOperations>> = wrap(() =>
+  CheckOption(CheckInstanceof(ComponentElementOperations))
+);
 
 export const CheckPathReference: Checker<VersionedPathReference> = CheckInterface({
   tag: CheckTag,
