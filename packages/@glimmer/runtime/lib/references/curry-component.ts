@@ -1,9 +1,14 @@
 import { Reference, PathReference, Tag } from '@glimmer/reference';
-import { Option, Opaque } from '@glimmer/util';
-import { RuntimeResolver } from '@glimmer/interfaces';
+import { Option } from '@glimmer/util';
+import {
+  CapturedArguments,
+  ComponentDefinition,
+  TemplateMeta,
+  Maybe,
+  Dict,
+  RuntimeResolver,
+} from '@glimmer/interfaces';
 
-import { ICapturedArguments } from '../vm/arguments';
-import { ComponentDefinition } from '../component/interfaces';
 import {
   CurriedComponentDefinition,
   isCurriedComponentDefinition,
@@ -11,17 +16,17 @@ import {
 import { resolveComponent } from '../component/resolve';
 import { UNDEFINED_REFERENCE } from '../references';
 
-export default class CurryComponentReference<Locator>
+export default class CurryComponentReference
   implements PathReference<Option<CurriedComponentDefinition>> {
   public tag: Tag;
-  private lastValue: Opaque;
+  private lastValue: unknown;
   private lastDefinition: Option<CurriedComponentDefinition>;
 
   constructor(
-    private inner: Reference<Opaque>,
-    private resolver: RuntimeResolver<Locator>,
-    private meta: Locator,
-    private args: Option<ICapturedArguments>
+    private inner: Reference<unknown>,
+    private resolver: RuntimeResolver,
+    private meta: TemplateMeta,
+    private args: Option<CapturedArguments>
   ) {
     this.tag = inner.tag;
     this.lastValue = null;
@@ -31,7 +36,7 @@ export default class CurryComponentReference<Locator>
   value(): Option<CurriedComponentDefinition> {
     let { inner, lastValue } = this;
 
-    let value = inner.value();
+    let value = inner.value() as Maybe<Dict>;
 
     if (value === lastValue) {
       return this.lastDefinition;
@@ -54,7 +59,7 @@ export default class CurryComponentReference<Locator>
     return definition;
   }
 
-  get(): PathReference<Opaque> {
+  get(): PathReference<unknown> {
     return UNDEFINED_REFERENCE;
   }
 

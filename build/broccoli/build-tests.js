@@ -21,11 +21,11 @@ module.exports = function(tsTree, jsTree, packagesTree) {
     transpileBrowserTestsToAMD(tsTree, jsTree),
     includeGlimmerAMD(packagesTree),
     includeVendorDependencies(),
-    includeTestHarness()
+    includeTestHarness(),
   ]);
 
   browserTests = funnel(browserTests, {
-    destDir: 'tests'
+    destDir: 'tests',
   });
 
   let nodeTests = transpileNodeTestsToCommonJS(jsTree);
@@ -35,76 +35,73 @@ module.exports = function(tsTree, jsTree, packagesTree) {
 
 function transpileBrowserTestsToAMD(tsTree, jsTree) {
   let testTree = funnel(jsTree, {
-    include: ['@glimmer/!(node)/test/**/*.js']
+    include: ['@glimmer/!(node)/test/**/*.js'],
   });
 
   testTree = transpileToES5(testTree, 'amd');
 
   return concat(testTree, {
-    outputFile: 'assets/tests.js'
+    outputFile: 'assets/tests.js',
   });
 }
 
 function transpileNodeTestsToCommonJS(jsTree) {
   let testTree = funnel(jsTree, {
-    include: ['@glimmer/**/test/**/*-node-test.js']
+    include: ['@glimmer/**/test/**/*.js'],
   });
 
   return babel(testTree, {
     sourceMaps: 'inline',
-    plugins: ['transform-es2015-modules-commonjs']
+    plugins: ['transform-es2015-modules-commonjs'],
   });
 }
 
 function includeGlimmerAMD(packages) {
   let libAMD = funnel(packages, {
-    include: ['@glimmer/*/dist/amd/es5/*.js']
+    include: ['@glimmer/*/dist/amd/es5/*.js'],
   });
 
   return concat(libAMD, {
-    outputFile: 'assets/glimmer-vm.js'
+    outputFile: 'assets/glimmer-vm.js',
   });
 }
 
 function includeVendorDependencies() {
-  let simpleHTMLTokenizer = funnel(
-    'node_modules/simple-html-tokenizer/dist/es6',
-    {
-      destDir: 'simple-html-tokenizer'
-    }
-  );
+  let simpleHTMLTokenizer = funnel('node_modules/simple-html-tokenizer/dist/es6', {
+    destDir: 'simple-html-tokenizer',
+  });
 
   let transpiled = transpileES6(
     merge([simpleHTMLTokenizer, handlebarsInlinedTrees.compiler]),
     'test-dependencies',
     {
-      avoidDefine: false
+      avoidDefine: false,
     }
   );
 
   let simpleDOM = funnel('node_modules/@simple-dom', {
-    include: ['*/dist/amd/es5/*.{js,map}']
+    include: ['*/dist/amd/es5/*.{js,map}'],
   });
 
   return concat(merge([transpiled, simpleDOM]), {
     inputFiles: ['**/*.js'],
-    outputFile: 'assets/vendor.js'
+    outputFile: 'assets/vendor.js',
   });
 }
 
 function includeTestHarness() {
   let html = funnel('test', {
-    include: ['index.html']
+    include: ['index.html'],
   });
 
   let loaderPath = path.parse(require.resolve('loader.js'));
   let loader = funnel(loaderPath.dir, {
     files: [loaderPath.base],
-    destDir: '/assets'
+    destDir: '/assets',
   });
 
   let qunit = funnel(path.join(require.resolve('qunit'), '..'), {
-    destDir: 'assets/'
+    destDir: 'assets/',
   });
 
   let harnessTrees = [html, loader, qunit];

@@ -1,32 +1,32 @@
 {
-	"version": "0.2.0",
-	"configurations": [
-		{
-			"name": "All packages",
-			"type": "chrome",
-			"request": "launch",
-			"url": "http://localhost:7357/tests/index.html",
-			"sourceMaps": true,
-			"userDataDir": "${workspaceRoot}/tmp/chrome-user-data",
-			"webRoot": "${workspaceRoot}/packages/node_modules"
-		},
-		{
-			"name": "glimmer-runtime",
-			"type": "chrome",
-			"request": "launch",
-			"url": "http://localhost:7357/tests/index.html?packages=glimmer-runtime",
-			"sourceMaps": true,
-			"userDataDir": "${workspaceRoot}/tmp/chrome-user-data",
-			"webRoot": "${workspaceRoot}/packages/node_modules"
-		},
-		{
-			"name": "focused",
-			"type": "chrome",
-			"request": "launch",
-			"url": "http://localhost:7357/tests/index.html?packages=glimmer-runtime&testId=8b1252f6",
-			"sourceMaps": true,
-			"userDataDir": "${workspaceRoot}/tmp/chrome-user-data",
-			"webRoot": "${workspaceRoot}/packages/node_modules"
-		}
-	]
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "All packages",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:7357/tests/index.html",
+      "sourceMaps": true,
+      "userDataDir": "${workspaceRoot}/tmp/chrome-user-data",
+      "webRoot": "${workspaceRoot}/packages/node_modules"
+    },
+    {
+      "name": "glimmer-runtime",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:7357/tests/index.html?packages=glimmer-runtime",
+      "sourceMaps": true,
+      "userDataDir": "${workspaceRoot}/tmp/chrome-user-data",
+      "webRoot": "${workspaceRoot}/packages/node_modules"
+    },
+    {
+      "name": "focused",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:7357/tests/index.html?packages=glimmer-runtime&testId=8b1252f6",
+      "sourceMaps": true,
+      "userDataDir": "${workspaceRoot}/tmp/chrome-user-data",
+      "webRoot": "${workspaceRoot}/packages/node_modules"
+    }
+  ]
 }

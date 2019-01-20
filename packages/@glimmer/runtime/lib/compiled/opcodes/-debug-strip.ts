@@ -1,29 +1,44 @@
 import {
-  Checker,
-  CheckInstanceof,
-  CheckFunction,
-  CheckInterface,
-  CheckOpaque,
   CheckBlockSymbolTable,
-  CheckProgramSymbolTable,
+  Checker,
+  CheckFunction,
   CheckHandle,
-  wrap,
+  CheckInstanceof,
+  CheckInterface,
   CheckNumber,
+  CheckProgramSymbolTable,
+  CheckUnknown,
+  wrap,
+  CheckOption,
 } from '@glimmer/debug';
-import { Tag, TagWrapper, VersionedPathReference, Reference } from '@glimmer/reference';
 import {
-  Arguments,
-  ICapturedArguments,
-  CapturedPositionalArguments,
-  CapturedNamedArguments,
-  ICapturedArgumentsValue,
+  CapturedArguments,
+  CompilableBlock,
+  ComponentDefinition,
+  ComponentManager,
+  ElementOperations,
+  Invocation,
+  JitOrAotBlock,
+  Scope,
+  Helper,
+  CapturedArgumentsValue,
+  Option,
+} from '@glimmer/interfaces';
+import { Reference, Tag, TagWrapper, VersionedPathReference } from '@glimmer/reference';
+import { ScopeImpl } from '../../environment';
+import CurryComponentReference from '../../references/curry-component';
+import {
+  CapturedNamedArgumentsImpl,
+  CapturedPositionalArgumentsImpl,
+  VMArgumentsImpl,
 } from '../../vm/arguments';
-import { ComponentInstance } from './component';
-import { ComponentManager } from '../../internal-interfaces';
-import { Scope } from '../../environment';
-import { CompilableBlock, Opaque } from '@glimmer/interfaces';
+import { ComponentInstance, ComponentElementOperations } from './component';
 
-export const CheckTag: Checker<Tag> = CheckInstanceof(TagWrapper);
+export const CheckTag: Checker<Tag> = wrap(() => CheckInstanceof(TagWrapper));
+
+export const CheckOperations: Checker<Option<ComponentElementOperations>> = wrap(() =>
+  CheckOption(CheckInstanceof(ComponentElementOperations))
+);
 
 export const CheckPathReference: Checker<VersionedPathReference> = CheckInterface({
   tag: CheckTag,
@@ -36,10 +51,16 @@ export const CheckReference: Checker<Reference> = CheckInterface({
   value: CheckFunction,
 });
 
-class CheckCapturedArgumentsValue implements Checker<() => ICapturedArgumentsValue> {
-  type!: () => ICapturedArgumentsValue;
+export const CheckArguments: Checker<VMArgumentsImpl> = wrap(() =>
+  CheckInstanceof(VMArgumentsImpl)
+);
 
-  validate(value: Opaque): value is () => ICapturedArgumentsValue {
+export const CheckHelper: Checker<Helper> = CheckFunction as Checker<Helper>;
+
+class CheckCapturedArgumentsValue implements Checker<() => CapturedArgumentsValue> {
+  type!: () => CapturedArgumentsValue;
+
+  validate(value: unknown): value is () => CapturedArgumentsValue {
     return typeof value === 'function';
   }
 
@@ -48,31 +69,46 @@ class CheckCapturedArgumentsValue implements Checker<() => ICapturedArgumentsVal
   }
 }
 
-export const CheckArguments = wrap(() => CheckInstanceof(Arguments));
-export const CheckCapturedArguments: Checker<ICapturedArguments> = CheckInterface({
+export const CheckCapturedArguments: Checker<CapturedArguments> = CheckInterface({
   tag: CheckTag,
   length: CheckNumber,
-  positional: CheckInstanceof(CapturedPositionalArguments),
-  named: CheckInstanceof(CapturedNamedArguments),
+  positional: wrap(() => CheckInstanceof(CapturedPositionalArgumentsImpl)),
+  named: wrap(() => CheckInstanceof(CapturedNamedArgumentsImpl)),
   value: new CheckCapturedArgumentsValue(),
 });
 
-export const CheckScope = wrap(() => CheckInstanceof(Scope));
+export const CheckCurryComponent = wrap(() => CheckInstanceof(CurryComponentReference));
 
-export const CheckComponentManager: Checker<ComponentManager> = CheckInterface({
+export const CheckScope: Checker<Scope<JitOrAotBlock>> = wrap(() => CheckInstanceof(ScopeImpl));
+
+export const CheckComponentManager: Checker<ComponentManager<unknown>> = CheckInterface({
   getCapabilities: CheckFunction,
 });
 
 export const CheckComponentInstance: Checker<ComponentInstance> = CheckInterface({
-  definition: CheckOpaque,
-  state: CheckOpaque,
-  handle: CheckOpaque,
-  table: CheckOpaque,
+  definition: CheckUnknown,
+  state: CheckUnknown,
+  handle: CheckUnknown,
+  table: CheckUnknown,
+});
+
+export const CheckComponentDefinition: Checker<ComponentDefinition> = CheckInterface({
+  state: CheckUnknown,
+  manager: CheckComponentManager,
+});
+
+export const CheckInvocation: Checker<Invocation> = CheckInterface({
+  handle: CheckNumber,
+  symbolTable: CheckProgramSymbolTable,
+});
+
+export const CheckElementOperations: Checker<ElementOperations> = CheckInterface({
+  setAttribute: CheckFunction,
 });
 
 export const CheckFinishedComponentInstance: Checker<ComponentInstance> = CheckInterface({
-  definition: CheckOpaque,
-  state: CheckOpaque,
+  definition: CheckUnknown,
+  state: CheckUnknown,
   handle: CheckHandle,
   table: CheckProgramSymbolTable,
 });

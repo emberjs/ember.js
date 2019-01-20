@@ -1,5 +1,5 @@
 import { CLASS_META } from '@glimmer/object-reference';
-import { Dict, dict, assign } from '@glimmer/util';
+import { dict, assign } from '@glimmer/util';
 import GlimmerObject, {
   GlimmerObjectFactory,
   ClassMeta,
@@ -8,6 +8,7 @@ import GlimmerObject, {
 } from './object';
 
 import { ROOT } from './utils';
+import { Dict } from '@glimmer/interfaces';
 
 const { isArray } = Array;
 
@@ -165,7 +166,7 @@ export class Mixin {
     Target[CLASS_META].addStaticMixin(this);
   }
 
-  mergeProperties(target: Object, parent: Object, meta: ClassMeta) {
+  mergeProperties(target: Object, parent: Dict<Dict>, meta: ClassMeta) {
     if (meta.hasAppliedMixin(this)) return;
     meta.addAppliedMixin(this);
 
@@ -331,7 +332,7 @@ class MethodBlueprint extends DataBlueprint {
   }
 }
 
-export function wrapMethod(home: Object, methodName: string, original: (...args: any[]) => any) {
+export function wrapMethod(home: Dict, methodName: string, original: (...args: any[]) => any) {
   if (!((methodName as string) in home)) return maybeWrap(original);
 
   let superMethod = home[methodName];
@@ -340,7 +341,7 @@ export function wrapMethod(home: Object, methodName: string, original: (...args:
     if (!this) return original.apply(this, args);
 
     let lastSuper = this._super;
-    this._super = superMethod;
+    this._super = superMethod as any;
 
     try {
       return original.apply(this, args);

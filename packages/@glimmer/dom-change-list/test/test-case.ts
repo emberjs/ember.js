@@ -1,10 +1,10 @@
-import { Opaque, Dict } from '@glimmer/interfaces';
+import { Dict } from '@glimmer/interfaces';
 import { QUnitAssert } from './interfaces';
 
 // A bunch of this file was extracted from the Glimmer testing harness.
 // TODO: Clean this up and eliminate anything that isn't generically unnecessary.
 
-export type TestFunction = (this: TestCase, assert: typeof QUnit.assert) => void;
+export type TestFunction = (this: TestCase, assert: QUnitAssert) => void;
 
 function setTestingDescriptor(descriptor: PropertyDescriptor): void {
   let testFunction = descriptor.value as Function & { isTest: boolean };
@@ -16,7 +16,7 @@ function isTestFunction(value: any): value is TestFunction {
   return typeof value === 'function' && value.isTest;
 }
 
-export function test(meta: Dict<Opaque>): MethodDecorator;
+export function test(meta: Dict<unknown>): MethodDecorator;
 export function test(
   _target: object,
   _name: string,
@@ -24,9 +24,9 @@ export function test(
 ): PropertyDescriptor | void;
 export function test(...args: any[]) {
   if (args.length === 1) {
-    let meta: Dict<Opaque> = args[0];
+    let meta: Dict<unknown> = args[0];
     return (_target: Object, _name: string, descriptor: PropertyDescriptor) => {
-      let testFunction = descriptor.value as Function & Dict<Opaque>;
+      let testFunction = descriptor.value as Function & Dict<unknown>;
       Object.keys(meta).forEach(key => (testFunction[key] = meta[key]));
       setTestingDescriptor(descriptor);
     };
@@ -37,7 +37,7 @@ export function test(...args: any[]) {
   return descriptor;
 }
 
-export interface Constructor<T = Opaque, Prototype = T> {
+export interface Constructor<T = unknown, Prototype = T> {
   new (...args: any[]): T;
   prototype: Prototype;
 }
@@ -46,7 +46,7 @@ export function module(name: string): (klass: (typeof TestCase) & Constructor) =
   return function(klass: typeof TestCase & Constructor) {
     QUnit.module(name);
 
-    let proto = (klass.prototype as any) as Dict<Opaque>;
+    let proto = (klass.prototype as any) as Dict<unknown>;
     for (let prop in proto) {
       const test = proto[prop];
 

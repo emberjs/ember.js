@@ -1,13 +1,13 @@
-function tuple(): never[];
-function tuple<T extends string[]>(...args: T): T;
-function tuple<T>(...args: T[]): T[] {
-  return args;
-}
+import { tuple } from '@glimmer/util';
+import * as AST from '../types/nodes';
 
 // ensure stays in sync with typing
 // ParentNode and ChildKey types are derived from VisitorKeysMap
 const visitorKeys = {
   Program: tuple('body'),
+  Template: tuple('body'),
+  Block: tuple('body'),
+
   MustacheStatement: tuple('path', 'params', 'hash'),
   BlockStatement: tuple('path', 'params', 'hash', 'program', 'inverse'),
   ElementModifierStatement: tuple('path', 'params', 'hash'),
@@ -32,6 +32,9 @@ const visitorKeys = {
   HashPair: tuple('value'),
 };
 
-export default visitorKeys;
+type VisitorKeysMap = typeof visitorKeys;
 
-export type VisitorKeysMap = typeof visitorKeys;
+export type VisitorKeys = { [P in keyof VisitorKeysMap]: VisitorKeysMap[P][number] };
+export type VisitorKey<N extends AST.Node> = VisitorKeys[N['type']] & keyof N;
+
+export default visitorKeys;

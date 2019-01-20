@@ -1,33 +1,26 @@
-import { Register } from '@glimmer/vm';
 import {
   ProgramSymbolTable,
   CompilableProgram,
-  CompilableBlock,
   LayoutWithContext,
-  Compiler,
   Option,
-  Recast,
+  SyntaxCompilationContext,
 } from '@glimmer/interfaces';
 
-import { ComponentArgs, ComponentBuilder as IComponentBuilder } from './interfaces';
-
-import { debugCompiler, AnyAbstractCompiler } from './compiler';
-import { CompilableBlock as CompilableBlockInstance } from './compilable-template';
-import { OpcodeBuilder } from './opcode-builder';
-import { ATTRS_BLOCK } from './syntax';
-
+import { templateCompilationContext } from './opcode-builder/context';
+import { meta } from './opcode-builder/helpers/shared';
+import { wrappedComponent } from './opcode-builder/helpers/components';
 import { DEBUG } from '@glimmer/local-debug-flags';
-import { EMPTY_ARRAY } from '@glimmer/util';
+import { debugCompiler } from './compiler';
+import { ATTRS_BLOCK } from './syntax/compilers';
+import { concatStatements } from './syntax/concat';
+import { patchStdlibs } from '@glimmer/program';
 
-export class WrappedBuilder<Locator> implements CompilableProgram {
+export class WrappedBuilder implements CompilableProgram {
   public symbolTable: ProgramSymbolTable;
   private compiled: Option<number> = null;
   private attrsBlockNumber: number;
 
-  constructor(
-    private compiler: Compiler<OpcodeBuilder<Locator>>,
-    private layout: LayoutWithContext<Locator>
-  ) {
+  constructor(private layout: LayoutWithContext<unknown>) {
     let { block } = layout;
 
     let symbols = block.symbols.slice();
@@ -46,126 +39,23 @@ export class WrappedBuilder<Locator> implements CompilableProgram {
     };
   }
 
-  compile(): number {
+  compile(syntax: SyntaxCompilationContext): number {
     if (this.compiled !== null) return this.compiled;
-    //========DYNAMIC
-    //        PutValue(TagExpr)
-    //        Test
-    //        JumpUnless(BODY)
-    //        PutComponentOperations
-    //        OpenDynamicPrimitiveElement
-    //        DidCreateElement
-    //        ...attr statements...
-    //        FlushElement
-    // BODY:  Noop
-    //        ...body statements...
-    //        PutValue(TagExpr)
-    //        Test
-    //        JumpUnless(END)
-    //        CloseElement
-    // END:   Noop
-    //        DidRenderLayout
-    //        Exit
-    //
-    //========STATIC
-    //        OpenPrimitiveElementOpcode
-    //        DidCreateElement
-    //        ...attr statements...
-    //        FlushElement
-    //        ...body statements...
-    //        CloseElement
-    //        DidRenderLayout
-    //        Exit
 
-    let { compiler, layout } = this;
-    let b = compiler.builderFor(layout);
+    let m = meta(this.layout);
+    let context = templateCompilationContext(syntax, m);
 
-    b.startLabels();
+    let actions = wrappedComponent(this.layout, this.attrsBlockNumber);
 
-    b.fetch(Register.s1);
+    concatStatements(context, actions);
 
-    b.getComponentTagName(Register.s0);
-    b.primitiveReference();
-
-    b.dup();
-    b.load(Register.s1);
-
-    b.jumpUnless('BODY');
-
-    b.fetch(Register.s1);
-    b.setComponentAttrs(true);
-    b.putComponentOperations();
-    b.openDynamicElement();
-    b.didCreateElement(Register.s0);
-    b.yield(this.attrsBlockNumber, []);
-    b.setComponentAttrs(false);
-    b.flushElement();
-
-    b.label('BODY');
-
-    b.invokeStaticBlock(blockFor(layout, compiler));
-
-    b.fetch(Register.s1);
-    b.jumpUnless('END');
-    b.closeElement();
-
-    b.label('END');
-    b.load(Register.s1);
-
-    b.stopLabels();
-
-    let handle = b.commit();
+    let handle = (this.compiled = context.encoder.commit(context.syntax.program.heap, m.size));
 
     if (DEBUG) {
-      debugCompiler(
-        compiler as Recast<Compiler<OpcodeBuilder<Locator>>, AnyAbstractCompiler>,
-        handle
-      );
+      debugCompiler(context, handle);
     }
 
-    return (this.compiled = handle);
-  }
-}
-
-function blockFor<Locator>(
-  layout: LayoutWithContext,
-  compiler: Compiler<OpcodeBuilder<Locator>>
-): CompilableBlock {
-  return new CompilableBlockInstance(compiler, {
-    block: {
-      statements: layout.block.statements,
-      parameters: EMPTY_ARRAY,
-    },
-    containingLayout: layout,
-  });
-}
-
-export class ComponentBuilder<Locator> implements IComponentBuilder {
-  constructor(private builder: OpcodeBuilder<Locator>) {}
-
-  static(handle: number, args: ComponentArgs) {
-    let [params, hash, _default, inverse] = args;
-    let { builder } = this;
-
-    if (handle !== null) {
-      let { capabilities, compilable } = builder.compiler.resolveLayoutForHandle(handle);
-
-      if (compilable) {
-        builder.pushComponentDefinition(handle);
-        builder.invokeStaticComponent(
-          capabilities,
-          compilable,
-          null,
-          params,
-          hash,
-          false,
-          _default,
-          inverse
-        );
-      } else {
-        builder.pushComponentDefinition(handle);
-        builder.invokeComponent(capabilities, null, params, hash, false, _default, inverse);
-      }
-    }
+    patchStdlibs(context.syntax.program);
+    return handle;
   }
 }

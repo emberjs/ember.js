@@ -18,13 +18,21 @@ before_install:
 
 jobs:
   include:
-    - name: Tests (Chrome + Node.js)
+    - name: Tests (Chrome)
 
       addons:
         chrome: stable
 
       script:
         - yarn test
+
+    - name: Tests (Node.js)
+
+      env:
+        - NODE_PATH=dist
+
+      script:
+        - yarn test:node
 
     - name: Tests (Browser)
       env:

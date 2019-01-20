@@ -5,8 +5,9 @@
     "inlineSources": true,
     "inlineSourceMap": true,
     "declaration": true,
-    "outDir": "dist",
-    "baseUrl" : "packages",
+    "declarationMap": true,
+    "outDir": "ts-dist",
+    "baseUrl": "packages",
     "rootDir": "packages",
 
     // Environment Configuration
@@ -15,7 +16,7 @@
 
     // Enhance Strictness
     "strict": true,
-    "suppressImplicitAnyIndexErrors": true,
+    "suppressImplicitAnyIndexErrors": false,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitReturns": true,
@@ -24,14 +25,13 @@
     "noEmit": true,
 
     "paths": {
-      "*": ["*"]
+      "@glimmer/*": ["@glimmer/*"]
     }
   },
-  "include": [
-    "packages/**/*.ts"
-  ],
+  "include": ["packages/**/*.ts"],
   "exclude": [
     "dist",
+    "ts-dist",
     "demos",
     "packages/glimmer-demos",
     "packages/glimmer-benchmarks",

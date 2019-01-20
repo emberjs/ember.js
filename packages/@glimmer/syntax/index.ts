@@ -17,7 +17,7 @@ export {
   cannotReplaceOrRemoveInKeyHandlerYet,
 } from './lib/traversal/errors';
 export { default as traverse } from './lib/traversal/traverse';
-export * from './lib/types/visitor';
+export * from './lib/traversal/visitor';
 export { default as Walker } from './lib/traversal/walker';
 export { default as print } from './lib/generation/print';
 

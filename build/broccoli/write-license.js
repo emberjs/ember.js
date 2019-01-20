@@ -7,4 +7,4 @@ const LICENSE = readFileSync('./LICENSE', 'utf8');
 
 module.exports = function writeLicense(licensePath) {
   return writeFile(licensePath, LICENSE);
-}
+};

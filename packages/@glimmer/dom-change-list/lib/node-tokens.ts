@@ -1,17 +1,18 @@
-import { Simple, NodeTokens as INodeTokens } from '@glimmer/interfaces';
+import { NodeTokens } from '@glimmer/interfaces';
+import { SimpleNode } from '@simple-dom/interface';
 
 export type NodeToken = number;
 
-export class NodeTokens implements INodeTokens {
-  private nodes: Simple.Node[] = [];
+export class NodeTokensImpl implements NodeTokens {
+  private nodes: SimpleNode[] = [];
 
-  register(node: Simple.Node): NodeToken {
+  register(node: SimpleNode): NodeToken {
     let token = this.nodes.length;
     this.nodes.push(node);
     return token;
   }
 
-  reify(token: NodeToken): Simple.Node {
+  reify(token: NodeToken): SimpleNode {
     return this.nodes[token];
   }
 }

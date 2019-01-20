@@ -6,11 +6,11 @@ const funnel = require('broccoli-funnel');
 const UnwatchedDir = require('broccoli-source').UnwatchedDir;
 
 const PACKAGE_JSON_FIELDS = {
-  "main": "dist/commonjs/es5/index.js",
-  "jsnext:main": "dist/modules/es5/index.js",
-  "module": "dist/modules/es2017/index.js",
-  "typings": "dist/types/index.d.ts",
-  "license": "MIT"
+  main: 'dist/commonjs/es5/index.js',
+  'jsnext:main': 'dist/modules/es5/index.js',
+  module: 'dist/modules/es2017/index.js',
+  typings: 'dist/types/index.d.ts',
+  license: 'MIT',
 };
 
 class PackageJSONWriter extends Filter {
@@ -27,8 +27,8 @@ class PackageJSONWriter extends Filter {
 
 module.exports = function rewritePackageJSON(pkgName) {
   let tree = funnel(new UnwatchedDir('packages'), {
-    include: [`${pkgName}/package.json`]
+    include: [`${pkgName}/package.json`],
   });
 
   return new PackageJSONWriter(tree);
-}
+};

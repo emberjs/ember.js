@@ -22,7 +22,7 @@ module.exports = function(_options) {
   // path in the filesystem. This is important because tsconfig.json paths are
   // relative to the project root and we want to use the tsconfig as-is.
   let tsTree = funnel('packages/@glimmer', {
-    destDir: 'packages/@glimmer'
+    destDir: 'packages/@glimmer',
   });
 
   // Second, compile all of the TypeScript into ES2017 JavaScript. Because the
@@ -40,7 +40,7 @@ module.exports = function(_options) {
   if (PRODUCTION) {
     if (!process.env.RETAIN_FLAGS) {
       jsTree = funnel(jsTree, {
-        exclude: ['**/**/-debug-strip.js']
+        exclude: ['**/**/-debug-strip.js'],
       });
     }
     jsTree = stripGlimmerUtilities(jsTree);
@@ -55,15 +55,10 @@ module.exports = function(_options) {
       ['commonjs', 'es5'],
       ['modules', 'es2017'],
       ['modules', 'es5'],
-      ['types']
+      ['types'],
     ];
   } else {
-    matrix = [
-      ['amd', 'es5'],
-      ['commonjs', 'es5'],
-      ['modules', 'es2017'],
-      ['types']
-    ];
+    matrix = [['amd', 'es5'], ['commonjs', 'es5'], ['modules', 'es2017'], ['types']];
   }
 
   // Third, build our module/ES combinations for each package.
@@ -83,4 +78,4 @@ module.exports = function(_options) {
   }
 
   return merge(output);
-}
+};

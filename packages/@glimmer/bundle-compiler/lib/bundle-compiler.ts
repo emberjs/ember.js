@@ -1,31 +1,32 @@
 import { ASTPluginBuilder, preprocess } from '@glimmer/syntax';
 import { TemplateCompiler } from '@glimmer/compiler';
-import { expect } from '@glimmer/util';
-import { SerializedTemplateBlock } from '@glimmer/wire-format';
+import { expect, templateMeta } from '@glimmer/util';
 import {
   ProgramSymbolTable,
-  Recast,
-  Unique,
   ModuleLocator,
   TemplateLocator,
   CompilableProgram,
   CompilableTemplate,
-  CompileTimeLookup,
-  LayoutWithContext,
-} from '@glimmer/interfaces';
-import {
-  CompilableProgram as CompilableProgramInstance,
+  SerializedHeap,
+  ConstantPool,
+  SerializedTemplateBlock,
+  CompileMode,
+  WholeProgramCompilationContext,
+  STDLib,
+  CompileTimeHeap,
+  SyntaxCompilationContext,
+  CompileTimeConstants,
   Macros,
-  EagerOpcodeBuilder,
-  AbstractCompiler,
-} from '@glimmer/opcode-compiler';
-import { WriteOnlyProgram, ConstantPool, SerializedHeap } from '@glimmer/program';
+} from '@glimmer/interfaces';
+import { compileStd, compilable, MacrosImpl } from '@glimmer/opcode-compiler';
 
 import ModuleLocatorMap from './module-locator-map';
 import DebugConstants from './debug-constants';
 import ExternalModuleTable from './external-module-table';
 import BundleCompilerDelegate from './delegate';
 import BundleCompilerLookup from './lookup';
+import { CompileTimeHeapImpl } from '@glimmer/program';
+import { syntaxCompilationContext } from '@glimmer/opcode-compiler';
 
 export interface BundleCompileOptions {
   plugins: ASTPluginBuilder[];
@@ -33,8 +34,8 @@ export interface BundleCompileOptions {
 
 export interface BundleCompilerOptions {
   macros?: Macros;
+  constants?: CompileTimeConstants;
   plugins?: ASTPluginBuilder[];
-  program?: WriteOnlyProgram;
 }
 
 /**
@@ -70,21 +71,38 @@ export interface BundleCompilationResult {
   symbolTables: ModuleLocatorMap<ProgramSymbolTable>;
 }
 
-export interface PartialTemplateLocator<Locator> extends ModuleLocator {
-  meta?: Locator;
+export interface PartialTemplateLocator<M> extends ModuleLocator {
+  meta: M;
   kind?: 'template';
 }
 
 // to make --declaration happy
 export { CompilableTemplate };
 
-export class EagerCompiler<Locator> extends AbstractCompiler<
-  Locator,
-  EagerOpcodeBuilder<Locator>,
-  WriteOnlyProgram
-> {
-  builderFor(containingLayout: LayoutWithContext<Locator>): EagerOpcodeBuilder<Locator> {
-    return new EagerOpcodeBuilder(this, containingLayout);
+export class BundleCompilerCompilationContext<R> implements WholeProgramCompilationContext {
+  readonly compilableTemplates = new ModuleLocatorMap<CompilableProgram>();
+  readonly compiledBlocks = new ModuleLocatorMap<SerializedTemplateBlock, TemplateLocator<R>>();
+  readonly meta = new ModuleLocatorMap<R>();
+
+  // implement WholeProgramCompilationContext
+  readonly constants: CompileTimeConstants;
+  readonly resolverDelegate: BundleCompilerLookup<R> = new BundleCompilerLookup(
+    this.delegate,
+    this.compilableTemplates,
+    this.meta
+  );
+  readonly heap: CompileTimeHeap = new CompileTimeHeapImpl();
+  readonly mode = CompileMode.aot;
+  readonly stdlib: STDLib;
+
+  constructor(readonly delegate: BundleCompilerDelegate<R>, options: BundleCompilerOptions) {
+    if (options.constants) {
+      this.constants = options.constants;
+    } else {
+      this.constants = new DebugConstants();
+    }
+
+    this.stdlib = compileStd(this);
   }
 }
 
@@ -101,43 +119,44 @@ export class EagerCompiler<Locator> extends AbstractCompiler<
  * which is suitable for serialization into bytecode and JavaScript assets that
  * can be loaded and run in the browser.
  */
-export default class BundleCompiler<Locator> {
-  public compilableTemplates = new ModuleLocatorMap<CompilableProgram>();
-  public compiledBlocks = new ModuleLocatorMap<SerializedTemplateBlock, TemplateLocator<Locator>>();
-  public meta = new ModuleLocatorMap<Locator>();
-  public compiler: EagerCompiler<Locator>;
-
-  protected delegate: BundleCompilerDelegate<Locator>;
+export default class BundleCompiler<R> {
   protected macros: Macros;
   protected plugins: ASTPluginBuilder[];
-  protected resolver!: BundleCompilerLookup<Locator>; // Set by compilerResolver()
 
-  constructor(delegate: BundleCompilerDelegate<Locator>, options: BundleCompilerOptions = {}) {
-    this.delegate = delegate;
-    let macros = (this.macros = options.macros || new Macros());
+  private context: BundleCompilerCompilationContext<R>;
 
-    let program = options.program || new WriteOnlyProgram(new DebugConstants());
+  constructor(delegate: BundleCompilerDelegate<R>, options: BundleCompilerOptions = {}) {
+    this.context = new BundleCompilerCompilationContext(delegate, options);
+
+    this.macros = options.macros || new MacrosImpl();
     this.plugins = options.plugins || [];
+  }
 
-    this.compiler = new EagerCompiler(macros, program, this.compilerResolver());
+  get syntaxContext(): SyntaxCompilationContext {
+    return {
+      program: this.context,
+      macros: this.macros,
+    };
   }
 
   /**
    * Adds the template source code for a component to the bundle.
    */
-  add(_locator: PartialTemplateLocator<Locator>, templateSource: string): SerializedTemplateBlock {
-    let locator = normalizeLocator(_locator);
+  add(_locator: PartialTemplateLocator<R>, templateSource: string): SerializedTemplateBlock {
+    let l = normalizeLocator(_locator);
 
     let block = this.preprocess(templateSource);
-    this.compiledBlocks.set(locator, block);
+    this.context.compiledBlocks.set(l, block);
 
-    let template = new CompilableProgramInstance(this.compiler, {
+    let layout = {
       block,
-      referrer: locator.meta,
+      referrer: templateMeta(l.meta),
       asPartial: false,
-    });
+    };
 
-    this.addCompilableTemplate(locator, template);
+    let template = compilable<R>(layout);
+
+    this.addCompilableTemplate(l, template);
 
     return block;
   }
@@ -145,14 +164,11 @@ export default class BundleCompiler<Locator> {
   /**
    * Adds a custom CompilableTemplate instance to the bundle.
    */
-  addCompilableTemplate(
-    _locator: PartialTemplateLocator<Locator>,
-    template: CompilableProgram
-  ): void {
+  addCompilableTemplate(_locator: PartialTemplateLocator<R>, template: CompilableProgram): void {
     let locator = normalizeLocator(_locator);
 
-    this.meta.set(locator, locator.meta);
-    this.compilableTemplates.set(locator, template);
+    this.context.meta.set(locator, locator.meta);
+    this.context.compilableTemplates.set(locator, template);
   }
 
   /**
@@ -162,21 +178,18 @@ export default class BundleCompiler<Locator> {
    * data segment.
    */
   compile(): BundleCompilationResult {
-    let { main } = this.compiler.stdLib;
     let symbolTables = new ModuleLocatorMap<ProgramSymbolTable>();
 
-    this.compilableTemplates.forEach((template, locator) => {
+    this.context.compilableTemplates.forEach((template, locator) => {
       this.compileTemplate(locator);
       symbolTables.set(locator, template.symbolTable);
     });
 
-    let { heap, constants } = this.compiler.program;
-
     return {
-      main: main as Recast<Unique<'Handle'>, number>,
-      heap: heap.capture() as SerializedHeap,
-      pool: constants.toPool(),
-      table: this.resolver.getTable(),
+      main: this.context.stdlib.main,
+      heap: this.context.heap.capture(this.context.stdlib) as SerializedHeap,
+      pool: this.context.constants.toPool(),
+      table: this.compilerResolver().getTable(),
       symbolTables,
     };
   }
@@ -187,13 +200,8 @@ export default class BundleCompiler<Locator> {
     return template.toJSON();
   }
 
-  compilerResolver(): CompileTimeLookup<Locator> {
-    let resolver = this.resolver;
-    if (!resolver) {
-      resolver = this.resolver = new BundleCompilerLookup<Locator>(this.delegate, this);
-    }
-
-    return resolver;
+  compilerResolver(): BundleCompilerLookup<R> {
+    return this.context.resolverDelegate;
   }
 
   /**
@@ -204,13 +212,13 @@ export default class BundleCompiler<Locator> {
     // If this locator already has an assigned VM handle, it means we've already
     // compiled it. We need to skip compiling it again and just return the same
     // VM handle.
-    let vmHandle = this.resolver.getHandleByLocator(locator);
+    let vmHandle = this.compilerResolver().getHandleByLocator(locator);
     if (vmHandle !== undefined) return vmHandle;
 
     // It's an error to try to compile a template that wasn't first added to the
     // bundle via the add() or addCompilableTemplate() methods.
     let compilableTemplate = expect(
-      this.compilableTemplates.get(locator),
+      this.context.compilableTemplates.get(locator),
       `Can't compile a template that wasn't already added to the bundle (${locator.name} @ ${
         locator.module
       })`
@@ -218,10 +226,10 @@ export default class BundleCompiler<Locator> {
 
     // Compile the template, which writes opcodes to the heap and returns the VM
     // handle (the address of the compiled program in the heap).
-    vmHandle = compilableTemplate.compile();
+    vmHandle = compilableTemplate.compile(syntaxCompilationContext(this.context, this.macros));
 
     // Index the locator by VM handle and vice versa for easy lookups.
-    this.resolver.setHandleByLocator(locator, vmHandle);
+    this.compilerResolver().setHandleByLocator(locator, vmHandle);
 
     return vmHandle;
   }
@@ -234,12 +242,12 @@ export default class BundleCompiler<Locator> {
  * like the `kind` with the appropriate value and avoid boilerplate on the part
  * of API consumers.
  */
-function normalizeLocator<T>(locator: PartialTemplateLocator<T>): TemplateLocator<T> {
-  let { module, name, meta } = locator;
+function normalizeLocator<T>(l: PartialTemplateLocator<T>): TemplateLocator<T> {
+  let { module, name, meta } = l;
   return {
     module,
     name,
     kind: 'template',
-    meta: meta || ({} as T),
+    meta: templateMeta(meta),
   };
 }

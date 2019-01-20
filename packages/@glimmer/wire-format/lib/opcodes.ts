@@ -13,6 +13,7 @@ export enum Opcodes {
   CloseElement,
   StaticAttr,
   DynamicAttr,
+  ComponentAttr,
   AttrSplat,
   Yield,
   Partial,
@@ -20,6 +21,7 @@ export enum Opcodes {
   DynamicArg,
   StaticArg,
   TrustingAttr,
+  TrustingComponentAttr,
   Debugger,
   ClientSideStatement,
 
@@ -33,5 +35,4 @@ export enum Opcodes {
   Undefined,
   Helper,
   Concat,
-  ClientSideExpression,
 }

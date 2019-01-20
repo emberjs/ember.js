@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    // Compilation Configuration
+    "target": "es2017",
+    "inlineSources": true,
+    "inlineSourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+    "outDir": "../../../ts-dist/vm",
+
+    // Environment Configuration
+    "experimentalDecorators": true,
+    "moduleResolution": "node",
+
+    // Enhance Strictness
+    "strict": true,
+    "suppressImplicitAnyIndexErrors": false,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+
+    "newLine": "LF",
+    "noEmit": true
+  },
+  "include": ["lib/**/*.ts", "index.ts"],
+  "references": [
+    {
+      "path": "../interfaces"
+    }
+  ]
+}
