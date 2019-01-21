@@ -1,13 +1,7 @@
 import { preprocess } from '@glimmer/syntax';
 import TemplateCompiler, { CompileOptions } from './template-compiler';
-import {
-  Option,
-  TemplateJavascript,
-  SerializedTemplateWithLazyBlock,
-  TemplateMeta,
-} from '@glimmer/interfaces';
+import { Option, TemplateJavascript, SerializedTemplateWithLazyBlock } from '@glimmer/interfaces';
 import { PreprocessOptions } from '@glimmer/syntax';
-import { templateMeta } from '@glimmer/util';
 
 export interface TemplateIdFn {
   (src: string): Option<string>;
@@ -73,10 +67,10 @@ export function precompile(
   let { block } = TemplateCompiler.compile(ast, options);
   let idFn = options.id || defaultId;
   let blockJSON = JSON.stringify(block.toJSON());
-  let templateJSONObject: SerializedTemplateWithLazyBlock<TemplateMeta> = {
+  let templateJSONObject: SerializedTemplateWithLazyBlock<unknown> = {
     id: idFn(JSON.stringify(meta) + blockJSON),
     block: blockJSON,
-    meta: templateMeta(meta as TemplateMeta),
+    meta,
   };
 
   // JSON is javascript

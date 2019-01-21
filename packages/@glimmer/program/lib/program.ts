@@ -102,7 +102,7 @@ export function hydrateHeap(serializedHeap: SerializedHeap): RuntimeHeap {
  * valid during the execution. This means you cannot close
  * over them as you will have a bad memory access exception.
  */
-export class CompileTimeHeapImpl implements CompileTimeHeap {
+export class HeapImpl implements CompileTimeHeap, RuntimeHeap {
   private heap: Uint16Array;
   private placeholders: Placeholder[] = [];
   private stdlibs: StdlibPlaceholder[] = [];

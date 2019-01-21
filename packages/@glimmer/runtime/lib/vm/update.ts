@@ -7,7 +7,6 @@ import {
   JitOrAotBlock,
   RuntimeContext,
   Scope,
-  TemplateMeta,
   AotRuntimeContext,
   JitRuntimeContext,
   ElementBuilder,
@@ -96,7 +95,7 @@ export interface VMState {
 }
 
 export interface ResumableVMState<V extends InternalVM> {
-  resume(runtime: RuntimeContext<TemplateMeta>, builder: ElementBuilder): V;
+  resume(runtime: RuntimeContext, builder: ElementBuilder): V;
 }
 
 export class ResumableVMStateImpl<V extends InternalVM> implements ResumableVMState<V> {
@@ -120,7 +119,7 @@ export abstract class BlockOpcode extends UpdatingOpcode implements Bounds {
 
   constructor(
     protected state: ResumableVMState<InternalVM>,
-    protected runtime: RuntimeContext<TemplateMeta>,
+    protected runtime: RuntimeContext,
     bounds: LiveBlock,
     children: LinkedList<UpdatingOpcode>
   ) {
@@ -160,7 +159,7 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
 
   constructor(
     state: ResumableVMState<InternalVM>,
-    runtime: RuntimeContext<TemplateMeta>,
+    runtime: RuntimeContext,
     bounds: UpdatableBlock,
     children: LinkedList<UpdatingOpcode>
   ) {
@@ -302,7 +301,7 @@ export class ListBlockOpcode extends BlockOpcode {
 
   constructor(
     state: ResumableVMState<InternalVM>,
-    runtime: RuntimeContext<TemplateMeta>,
+    runtime: RuntimeContext,
     bounds: LiveBlock,
     children: LinkedList<UpdatingOpcode>,
     artifacts: IterationArtifacts

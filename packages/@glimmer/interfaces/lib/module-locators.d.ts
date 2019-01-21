@@ -1,5 +1,3 @@
-import { TemplateMeta } from './runtime/runtime';
-
 export type ModuleName = string;
 export type NamedExport = string;
 

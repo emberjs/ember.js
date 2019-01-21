@@ -2,13 +2,11 @@ import {
   CompileTimeResolverDelegate,
   ComponentCapabilities,
   Option,
-  TemplateMeta,
   CompileTimeComponent,
   CompilableProgram,
   Template,
 } from '@glimmer/interfaces';
 import { preprocess } from '../compilable-template';
-import { templateMeta } from '@glimmer/util';
 
 export const DEFAULT_CAPABILITIES: ComponentCapabilities = {
   dynamicLayout: true,
@@ -38,25 +36,22 @@ export const MINIMAL_CAPABILITIES: ComponentCapabilities = {
   wrapped: false,
 };
 
-export interface ResolverDelegate {
-  lookupHelper?(name: string, referrer: TemplateMeta): Option<number> | void;
-  lookupModifier?(name: string, referrer: TemplateMeta): Option<number> | void;
-  lookupComponent?(
-    name: string,
-    referrer: Option<TemplateMeta>
-  ): Option<CompileTimeComponent> | void;
-  lookupPartial?(name: string, referrer: TemplateMeta): Option<number> | void;
+export interface ResolverDelegate<R = unknown> {
+  lookupHelper?(name: string, referrer: R): Option<number> | void;
+  lookupModifier?(name: string, referrer: R): Option<number> | void;
+  lookupComponent?(name: string, referrer: R): Option<CompileTimeComponent> | void;
+  lookupPartial?(name: string, referrer: R): Option<number> | void;
 
   compile?(source: string, name: string, wrapped: boolean): CompilableProgram;
 
   // For debugging
-  resolve?(handle: number): TemplateMeta;
+  resolve?(handle: number): R;
 }
 
 export class DefaultCompileTimeResolverDelegate implements CompileTimeResolverDelegate {
   constructor(private inner: ResolverDelegate) {}
 
-  lookupHelper(name: string, referrer: TemplateMeta): Option<number> {
+  lookupHelper(name: string, referrer: unknown): Option<number> {
     if (this.inner.lookupHelper) {
       let helper = this.inner.lookupHelper(name, referrer);
 
@@ -76,7 +71,7 @@ export class DefaultCompileTimeResolverDelegate implements CompileTimeResolverDe
     }
   }
 
-  lookupModifier(name: string, referrer: TemplateMeta): Option<number> {
+  lookupModifier(name: string, referrer: unknown): Option<number> {
     if (this.inner.lookupModifier) {
       let modifier = this.inner.lookupModifier(name, referrer);
 
@@ -96,7 +91,7 @@ export class DefaultCompileTimeResolverDelegate implements CompileTimeResolverDe
     }
   }
 
-  lookupComponent(name: string, referrer: Option<TemplateMeta>): Option<CompileTimeComponent> {
+  lookupComponent(name: string, referrer: unknown): Option<CompileTimeComponent> {
     if (this.inner.lookupComponent) {
       let component = this.inner.lookupComponent(name, referrer);
 
@@ -116,7 +111,7 @@ export class DefaultCompileTimeResolverDelegate implements CompileTimeResolverDe
     }
   }
 
-  lookupPartial(name: string, referrer: TemplateMeta): Option<number> {
+  lookupPartial(name: string, referrer: unknown): Option<number> {
     if (this.inner.lookupPartial) {
       let partial = this.inner.lookupPartial(name, referrer);
 
@@ -137,11 +132,11 @@ export class DefaultCompileTimeResolverDelegate implements CompileTimeResolverDe
   }
 
   compile(source: string): Template {
-    return preprocess(source, templateMeta({}));
+    return preprocess(source, {});
   }
 
   // For debugging
-  resolve(handle: number): TemplateMeta {
+  resolve(handle: number): unknown {
     if (this.inner.resolve) {
       return this.inner.resolve(handle);
     } else {

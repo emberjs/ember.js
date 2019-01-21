@@ -4,7 +4,6 @@ import {
   RenderResult,
   RichIteratorResult,
   Template,
-  TemplateMeta,
 } from '@glimmer/interfaces';
 import { UpdatableReference } from '@glimmer/object-reference';
 import { bump, ConstReference } from '@glimmer/reference';
@@ -64,7 +63,7 @@ function assertProperty<T, K extends keyof T, V extends T[K]>(
   }
 }
 
-function render(template: Template<TemplateMeta<AnnotatedModuleLocator>>, state = {}) {
+function render(template: Template<AnnotatedModuleLocator>, state = {}) {
   self = new UpdatableReference(state);
   context.env.begin();
   let cursor = { element: context.root, nextSibling: null };

@@ -30,6 +30,8 @@ export {
   AotRuntime,
   default as EnvironmentImpl,
   DefaultEnvironment,
+  CustomJitRuntime,
+  JitRuntimeFromProgram,
   JitRuntime,
   RuntimeEnvironment,
   RuntimeEnvironmentDelegate,

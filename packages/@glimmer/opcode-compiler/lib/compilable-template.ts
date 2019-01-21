@@ -11,7 +11,6 @@ import {
   CompilableBlock,
   CompilableProgram,
   Template,
-  TemplateMeta,
 } from '@glimmer/interfaces';
 import { meta } from './opcode-builder/helpers/shared';
 import { EMPTY_ARRAY } from '@glimmer/util';
@@ -42,7 +41,7 @@ class CompilableTemplateImpl<S extends SymbolTable> implements CompilableTemplat
   }
 }
 
-export function preprocess<M extends TemplateMeta>(template: string, meta: M): Template<M> {
+export function preprocess<M>(template: string, meta: M): Template<M> {
   let wrapper = JSON.parse(precompile(template));
   let factory = templateFactory<M>(wrapper);
   return factory.create(meta);

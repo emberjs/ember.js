@@ -7,7 +7,6 @@ import {
   RenderResult,
   RichIteratorResult,
   SyntaxCompilationContext,
-  TemplateMeta,
   WithAotStaticLayout,
   WithJitStaticLayout,
   TemplateIterator,
@@ -56,7 +55,7 @@ export function renderSync(env: Environment, iterator: TemplateIterator): Render
 }
 
 export function renderAotMain(
-  runtime: AotRuntimeContext<TemplateMeta>,
+  runtime: AotRuntimeContext,
   self: PathReference,
   treeBuilder: ElementBuilder,
   handle: number,
@@ -67,7 +66,7 @@ export function renderAotMain(
 }
 
 export function renderAot(
-  runtime: AotRuntimeContext<TemplateMeta>,
+  runtime: AotRuntimeContext,
   handle: number,
   cursor: Cursor,
   self: PathReference = UNDEFINED_REFERENCE
@@ -79,7 +78,7 @@ export function renderAot(
 }
 
 export function renderJitMain(
-  runtime: JitRuntimeContext<TemplateMeta>,
+  runtime: JitRuntimeContext,
   context: SyntaxCompilationContext,
   self: PathReference,
   treeBuilder: ElementBuilder,
@@ -133,7 +132,7 @@ function renderInvocation<C extends JitOrAotBlock>(
 }
 
 export function renderAotComponent<R>(
-  runtime: AotRuntimeContext<TemplateMeta<R>>,
+  runtime: AotRuntimeContext<R>,
   treeBuilder: ElementBuilder,
   main: number,
   name: string,
@@ -162,7 +161,7 @@ export function renderAotComponent<R>(
 }
 
 export function renderJitComponent(
-  runtime: JitRuntimeContext<TemplateMeta>,
+  runtime: JitRuntimeContext,
   treeBuilder: ElementBuilder,
   context: SyntaxCompilationContext,
   main: number,

@@ -2,6 +2,7 @@ import { BundleCompiler } from '@glimmer/bundle-compiler';
 import { ComponentCapabilities, ModuleLocator } from '@glimmer/interfaces';
 import { MINIMAL_CAPABILITIES } from '@glimmer/opcode-compiler';
 import { assign } from '@glimmer/util';
+import { PartialTemplateLocator } from '../lib/bundle-compiler';
 
 const { test } = QUnit;
 
@@ -9,13 +10,17 @@ export const BASIC_CAPABILITIES: ComponentCapabilities = assign({}, MINIMAL_CAPA
   createInstance: true,
 });
 
+export interface WrappedLocator {
+  locator: ModuleLocator;
+}
+
 QUnit.module('[glimmer-bundle-compiler] CompilerDelegate');
 
 type Locator = {
   locator: ModuleLocator;
 };
 
-function locatorFor(locator: ModuleLocator) {
+function locatorFor(locator: ModuleLocator): PartialTemplateLocator<WrappedLocator> {
   let { module, name } = locator;
 
   return {

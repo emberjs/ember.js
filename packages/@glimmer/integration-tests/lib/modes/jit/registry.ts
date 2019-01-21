@@ -10,7 +10,6 @@ import {
   Option,
   PartialDefinition,
   Template,
-  TemplateMeta,
 } from '@glimmer/interfaces';
 import { dict } from '@glimmer/util';
 import { createTemplate } from '../../compile';
@@ -131,7 +130,7 @@ export class TestJitRegistry {
   lookup(
     type: LookupType,
     name: string,
-    _referrer?: Option<TemplateMeta<AnnotatedModuleLocator>>
+    _referrer?: Option<AnnotatedModuleLocator>
   ): Option<number> {
     if (this.registry[type].hasName(name)) {
       return this.registry[type].getHandle(name);
@@ -140,10 +139,7 @@ export class TestJitRegistry {
     }
   }
 
-  lookupComponentHandle(
-    name: string,
-    referrer?: Option<TemplateMeta<AnnotatedModuleLocator>>
-  ): Option<number> {
+  lookupComponentHandle(name: string, referrer?: Option<AnnotatedModuleLocator>): Option<number> {
     return this.lookup('component', name, referrer);
   }
 
@@ -155,7 +151,7 @@ export class TestJitRegistry {
 
   lookupCompileTimeComponent(
     name: string,
-    referrer: Option<TemplateMeta<AnnotatedModuleLocator>>
+    referrer: Option<AnnotatedModuleLocator>
   ): Option<CompileTimeComponent> {
     let definitionHandle = this.lookupComponentHandle(name, referrer);
 

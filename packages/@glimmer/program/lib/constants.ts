@@ -4,7 +4,6 @@ import {
   EMPTY_ARRAY,
   ConstantPool,
   RuntimeConstants,
-  RuntimeResolver,
 } from '@glimmer/interfaces';
 
 const UNRESOLVED = {};
@@ -140,7 +139,7 @@ export class RuntimeConstantsImpl implements RuntimeConstants {
 }
 
 export class Constants extends WriteOnlyConstants implements RuntimeConstants {
-  constructor(public resolver: RuntimeResolver, pool?: ConstantPool) {
+  constructor(pool?: ConstantPool) {
     super();
 
     if (pool) {
@@ -176,17 +175,6 @@ export class Constants extends WriteOnlyConstants implements RuntimeConstants {
 
   getArray(value: number): number[] {
     return (this.arrays as number[][])[value];
-  }
-
-  resolveHandle<T>(index: number): T {
-    let resolved = this.resolved[index];
-
-    if (resolved === UNRESOLVED) {
-      let handle = this.handles[index];
-      resolved = this.resolved[index] = this.resolver.resolve(handle);
-    }
-
-    return resolved as T;
   }
 
   getTemplateMeta<T>(s: number): T {
