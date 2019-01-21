@@ -18,6 +18,10 @@
 - [#17357](https://github.com/emberjs/ember.js/pull/17357) Allow notifyPropertyChange to be imported from @ember/object
 - [#17413](https://github.com/emberjs/ember.js/pull/17413) Fix missing import in instance-initializer blueprint for ember-mocha
 
+### v3.7.1 (January 21, 2019)
+
+- [#17461](https://github.com/emberjs/ember.js/pull/17461) [BUGFIX] Fix substate interactions with aborts
+
 ### v3.7.0 (January 7, 2019)
 
 - [#17254](https://github.com/emberjs/ember.js/pull/17254) [BREAKING] Explicitly drop support for Node 4
