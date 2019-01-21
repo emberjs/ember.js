@@ -22,7 +22,7 @@ import {
   Op,
   ProgramSymbolTable,
   Recast,
-  RuntimeResolverOptions,
+  RuntimeResolverDelegate,
   ScopeSlot,
   VMArguments,
   WithAotDynamicLayout,
@@ -546,7 +546,7 @@ APPEND_OPCODES.add(Op.GetAotComponentLayout, (vm, { op1: _state }) => {
     invoke = (manager as WithAotStaticLayout<
       ComponentInstanceState,
       ComponentDefinitionState,
-      RuntimeResolverOptions
+      RuntimeResolverDelegate
     >).getAotStaticLayout(definitionState, vm.runtime.resolver);
   } else if (hasDynamicLayoutCapability(capabilities, manager)) {
     invoke = (manager as WithAotDynamicLayout<

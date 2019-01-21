@@ -10,7 +10,7 @@ import {
   ComponentCapabilities,
 } from '@glimmer/interfaces';
 import { TestComponentDefinitionState } from './test-component';
-import { unreachable, templateMeta, expect } from '@glimmer/util';
+import { unreachable, expect } from '@glimmer/util';
 import { VersionedPathReference, UpdatableReference, Tag, CONSTANT_TAG } from '@glimmer/reference';
 
 export interface BasicComponentFactory {
@@ -43,7 +43,7 @@ export class BasicComponentManager
     state: TestComponentDefinitionState,
     resolver: JitRuntimeResolver
   ): CompilableProgram {
-    return resolver.compilable(templateMeta(state.locator)).asLayout();
+    return resolver.compilable(state.locator).asLayout();
   }
 
   getAotStaticLayout(
@@ -55,7 +55,7 @@ export class BasicComponentManager
     // compiled layout (which was provided at bundle compilation time and
     // stashed in the component definition state).
     let locator = expect(state.locator, 'component definition state should include module locator');
-    return resolver.getInvocation(templateMeta(locator));
+    return resolver.getInvocation(locator);
   }
 
   getSelf(component: BasicComponent): VersionedPathReference {

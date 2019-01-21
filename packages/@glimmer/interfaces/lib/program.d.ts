@@ -2,7 +2,6 @@ import { Unique, Option } from './core';
 import { STDLib, ContainingMetadata } from './template';
 import { StdlibOperand, CompileMode, Encoder, Macros } from './compile';
 import { Op } from './vm-opcodes';
-import { TemplateMeta } from './runtime/runtime';
 import { CompileTimeResolverDelegate } from './serialize';
 
 export interface RuntimeOp {
@@ -122,6 +121,6 @@ export interface RuntimeConstants {
   getString(handle: number): string;
   getStringArray(value: number): string[];
   getArray(value: number): number[];
-  getTemplateMeta(s: number): TemplateMeta;
+  getTemplateMeta(s: number): unknown;
   getOther(s: number): unknown;
 }

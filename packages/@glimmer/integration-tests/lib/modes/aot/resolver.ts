@@ -4,16 +4,15 @@ import { WrappedLocator } from '../../components/test-component';
 import {
   ProgramSymbolTable,
   Option,
-  TemplateMeta,
   ComponentDefinition,
   ModuleLocator,
   Invocation,
   Template,
-  RuntimeResolver,
+  AotRuntimeResolver,
 } from '@glimmer/interfaces';
 import { expect } from '@glimmer/util';
 
-export default class AotRuntimeResolver implements RuntimeResolver {
+export default class AotRuntimeResolverImpl implements AotRuntimeResolver {
   constructor(
     private table: ExternalModuleTable,
     private modules: Modules,
@@ -28,10 +27,7 @@ export default class AotRuntimeResolver implements RuntimeResolver {
     throw new Error('Method not implemented.');
   }
 
-  lookupComponent(
-    name: string,
-    referrer: Option<TemplateMeta<WrappedLocator>>
-  ): Option<ComponentDefinition> {
+  lookupComponent(name: string, referrer: Option<WrappedLocator>): Option<ComponentDefinition> {
     if (referrer === null) return null;
 
     let moduleName = this.modules.resolve(name, referrer, 'ui/components');
@@ -51,7 +47,7 @@ export default class AotRuntimeResolver implements RuntimeResolver {
     return this.modules.get(module.module).get('default') as U;
   }
 
-  getInvocation(locator: TemplateMeta<ModuleLocator>): Invocation {
+  getInvocation(locator: ModuleLocator): Invocation {
     let handle = this.getVMHandle(locator);
     let symbolTable = expect(
       this.symbolTables.get(locator),
@@ -64,7 +60,7 @@ export default class AotRuntimeResolver implements RuntimeResolver {
     };
   }
 
-  compilable(_locator: TemplateMeta<ModuleLocator>): Template {
+  compilable(_locator: ModuleLocator): Template {
     throw new Error(`Unimplemented; AOT#compilable`);
   }
 

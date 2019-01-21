@@ -18,7 +18,6 @@ export {
   ListSlice,
   Slice,
 } from './lib/list-utils';
-export { templateMeta } from './lib/locator';
 export { assign, fillNulls } from './lib/object-utils';
 export * from './lib/platform-utils';
 export * from './lib/string';

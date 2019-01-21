@@ -1,6 +1,6 @@
 import { WriteOnlyConstants } from '@glimmer/program';
 import { assert } from '@glimmer/util';
-import { RuntimeConstants, TemplateMeta } from '@glimmer/interfaces';
+import { RuntimeConstants } from '@glimmer/interfaces';
 
 export default class DebugConstants extends WriteOnlyConstants implements RuntimeConstants {
   getNumber(value: number): number {
@@ -32,8 +32,8 @@ export default class DebugConstants extends WriteOnlyConstants implements Runtim
     return ({ handle: s } as any) as T;
   }
 
-  getTemplateMeta(s: number): TemplateMeta {
-    return JSON.parse(this.strings[s]) as TemplateMeta;
+  getTemplateMeta(s: number): unknown {
+    return JSON.parse(this.strings[s]);
   }
 
   getOther(s: number): unknown {

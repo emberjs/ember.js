@@ -31,7 +31,7 @@ import {
   PathReference,
   Tag,
 } from '@glimmer/reference';
-import { keys, templateMeta, EMPTY_ARRAY, assign } from '@glimmer/util';
+import { keys, EMPTY_ARRAY, assign } from '@glimmer/util';
 import { TestComponentDefinitionState } from './test-component';
 import { PrimitiveReference } from '@glimmer/runtime';
 import { TestComponentConstructor } from './types';
@@ -132,7 +132,7 @@ export class EmberishCurlyComponentManager
     state: EmberishCurlyComponentDefinitionState,
     resolver: AotRuntimeResolver
   ): Invocation {
-    return resolver.getInvocation(templateMeta(state.locator));
+    return resolver.getInvocation(state.locator);
   }
 
   getJitDynamicLayout(

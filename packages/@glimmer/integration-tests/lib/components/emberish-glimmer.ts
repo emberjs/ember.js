@@ -24,7 +24,7 @@ import {
   Invocation,
   Destroyable,
 } from '@glimmer/interfaces';
-import { keys, templateMeta, assign } from '@glimmer/util';
+import { keys, assign } from '@glimmer/util';
 import { BASIC_CAPABILITIES } from './capabilities';
 import { TestComponentDefinitionState } from './test-component';
 import { TestComponentConstructor } from './types';
@@ -150,7 +150,7 @@ export class EmberishGlimmerComponentManager
     state: TestComponentDefinitionState,
     resolver: JitRuntimeResolver
   ): CompilableProgram {
-    return resolver.compilable(templateMeta(state.locator)).asLayout();
+    return resolver.compilable(state.locator).asLayout();
   }
 
   getAotStaticLayout(
@@ -159,7 +159,7 @@ export class EmberishGlimmerComponentManager
   ): Invocation {
     let { locator } = state;
 
-    return resolver.getInvocation(templateMeta(locator.meta.locator));
+    return resolver.getInvocation(locator.meta.locator);
   }
 
   getSelf({ component }: EmberishGlimmerComponentState): PathReference<unknown> {

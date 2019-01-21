@@ -1,10 +1,9 @@
 import { ASTPluginBuilder, preprocess } from '@glimmer/syntax';
 import { TemplateCompiler } from '@glimmer/compiler';
-import { expect, templateMeta } from '@glimmer/util';
+import { expect } from '@glimmer/util';
 import {
   ProgramSymbolTable,
   ModuleLocator,
-  TemplateLocator,
   CompilableProgram,
   CompilableTemplate,
   SerializedHeap,
@@ -25,7 +24,7 @@ import DebugConstants from './debug-constants';
 import ExternalModuleTable from './external-module-table';
 import BundleCompilerDelegate from './delegate';
 import BundleCompilerLookup from './lookup';
-import { CompileTimeHeapImpl } from '@glimmer/program';
+import { HeapImpl } from '@glimmer/program';
 import { syntaxCompilationContext } from '@glimmer/opcode-compiler';
 
 export interface BundleCompileOptions {
@@ -81,7 +80,10 @@ export { CompilableTemplate };
 
 export class BundleCompilerCompilationContext<R> implements WholeProgramCompilationContext {
   readonly compilableTemplates = new ModuleLocatorMap<CompilableProgram>();
-  readonly compiledBlocks = new ModuleLocatorMap<SerializedTemplateBlock, TemplateLocator<R>>();
+  readonly compiledBlocks = new ModuleLocatorMap<
+    SerializedTemplateBlock,
+    PartialTemplateLocator<R>
+  >();
   readonly meta = new ModuleLocatorMap<R>();
 
   // implement WholeProgramCompilationContext
@@ -91,7 +93,7 @@ export class BundleCompilerCompilationContext<R> implements WholeProgramCompilat
     this.compilableTemplates,
     this.meta
   );
-  readonly heap: CompileTimeHeap = new CompileTimeHeapImpl();
+  readonly heap: CompileTimeHeap = new HeapImpl();
   readonly mode = CompileMode.aot;
   readonly stdlib: STDLib;
 
@@ -150,7 +152,7 @@ export default class BundleCompiler<R> {
 
     let layout = {
       block,
-      referrer: templateMeta(l.meta),
+      referrer: l.meta,
       asPartial: false,
     };
 
@@ -164,10 +166,7 @@ export default class BundleCompiler<R> {
   /**
    * Adds a custom CompilableTemplate instance to the bundle.
    */
-  addCompilableTemplate(_locator: PartialTemplateLocator<R>, template: CompilableProgram): void {
-    let locator = normalizeLocator(_locator);
-
-    this.context.meta.set(locator, locator.meta);
+  addCompilableTemplate(locator: ModuleLocator, template: CompilableProgram): void {
     this.context.compilableTemplates.set(locator, template);
   }
 
@@ -242,12 +241,12 @@ export default class BundleCompiler<R> {
  * like the `kind` with the appropriate value and avoid boilerplate on the part
  * of API consumers.
  */
-function normalizeLocator<T>(l: PartialTemplateLocator<T>): TemplateLocator<T> {
+function normalizeLocator<T>(l: PartialTemplateLocator<T>): PartialTemplateLocator<T> {
   let { module, name, meta } = l;
   return {
     module,
     name,
     kind: 'template',
-    meta: templateMeta(meta),
+    meta,
   };
 }

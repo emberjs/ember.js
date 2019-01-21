@@ -5,7 +5,6 @@ import {
   SerializedTemplateBlock,
   SerializedTemplateWithLazyBlock,
   Template,
-  TemplateMeta,
 } from '@glimmer/interfaces';
 import { assign } from '@glimmer/util';
 import { compilable } from './compilable-template';
@@ -29,7 +28,7 @@ export interface TemplateFactory<M> {
    *
    * @param {Environment} env glimmer Environment
    */
-  create(): Template<TemplateMeta<M>>;
+  create(): Template<M>;
   /**
    * Used to create an environment specific singleton instance
    * of the template.
@@ -37,7 +36,7 @@ export interface TemplateFactory<M> {
    * @param {Environment} env glimmer Environment
    * @param {Object} meta environment specific injections into meta
    */
-  create<U>(meta: U): Template<TemplateMeta<M & U>>;
+  create<U>(meta: U): Template<M & U>;
 }
 
 let clientId = 0;
@@ -77,7 +76,7 @@ class TemplateImpl<R> implements Template {
   public symbols: string[];
   public hasEval: boolean;
   public id: string;
-  public referrer: TemplateMeta & R;
+  public referrer: R;
 
   constructor(private parsedLayout: Pick<LayoutWithContext<R>, 'id' | 'block' | 'referrer'>) {
     let { block } = parsedLayout;

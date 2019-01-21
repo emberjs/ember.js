@@ -15,7 +15,6 @@ import {
   ModuleLocator,
   ProgramSymbolTable,
   RenderResult,
-  TemplateMeta,
   AotRuntimeContext,
   ConstantPool,
   ElementBuilder,
@@ -54,7 +53,7 @@ import {
   TestModifierDefinitionState,
   TestModifierManager,
 } from '../../modifiers';
-import AotRuntimeResolver from './resolver';
+import AotRuntimeResolverImpl from './resolver';
 import { TestMacros } from '../../compile/macros';
 import AotCompilerDelegate from './compiler-delegate';
 
@@ -241,12 +240,8 @@ export class AotRenderDelegate implements RenderDelegate {
     return this.constants.toPool();
   }
 
-  private getRuntimeContext({
-    table,
-    pool,
-    heap,
-  }: BundleCompilationResult): AotRuntimeContext<TemplateMeta> {
-    let resolver = new AotRuntimeResolver(table, this.registry.modules, this.symbolTables);
+  private getRuntimeContext({ table, pool, heap }: BundleCompilationResult): AotRuntimeContext {
+    let resolver = new AotRuntimeResolverImpl(table, this.registry.modules, this.symbolTables);
 
     return AotRuntime(this.doc, { constants: pool, heap }, resolver);
   }

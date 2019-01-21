@@ -5,13 +5,13 @@ import {
   CompileMode,
   STDLib,
 } from '@glimmer/interfaces';
-import { WriteOnlyConstants, CompileTimeHeapImpl } from '@glimmer/program';
+import { WriteOnlyConstants, HeapImpl } from '@glimmer/program';
 import { compileStd } from './opcode-builder/helpers/stdlib';
 
 export class ProgramCompilationContext implements WholeProgramCompilationContext {
   readonly constants = new WriteOnlyConstants();
   readonly resolverDelegate: CompileTimeResolverDelegate;
-  readonly heap: CompileTimeHeap = new CompileTimeHeapImpl();
+  readonly heap: CompileTimeHeap = new HeapImpl();
   readonly stdlib: STDLib;
 
   constructor(delegate: CompileTimeResolverDelegate, readonly mode: CompileMode) {

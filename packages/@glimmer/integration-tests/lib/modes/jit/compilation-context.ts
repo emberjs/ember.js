@@ -7,25 +7,24 @@ import {
   ComponentCapabilities,
   Option,
   ComponentDefinition,
-  TemplateMeta,
   AnnotatedModuleLocator,
   Template,
   CompileTimeComponent,
 } from '@glimmer/interfaces';
-import { Constants, CompileTimeHeapImpl, RuntimeProgramImpl } from '@glimmer/program';
+import { Constants, HeapImpl, RuntimeProgramImpl } from '@glimmer/program';
 import { TestJitRegistry } from './registry';
 import { compileStd } from '@glimmer/opcode-compiler';
 import TestJitRuntimeResolver from './resolver';
 import { createTemplate } from '../../compile';
 
 export class TestJitCompilationContext implements WholeProgramCompilationContext {
-  readonly constants = new Constants(this.runtimeResolver);
+  readonly constants = new Constants();
   readonly resolverDelegate: JitCompileTimeLookup;
-  readonly heap = new CompileTimeHeapImpl();
+  readonly heap = new HeapImpl();
   readonly mode = CompileMode.jit;
   readonly stdlib: STDLib;
 
-  constructor(private runtimeResolver: TestJitRuntimeResolver, registry: TestJitRegistry) {
+  constructor(runtimeResolver: TestJitRuntimeResolver, registry: TestJitRegistry) {
     this.stdlib = compileStd(this);
     this.resolverDelegate = new JitCompileTimeLookup(runtimeResolver, registry);
   }
@@ -48,11 +47,11 @@ export default class JitCompileTimeLookup implements CompileTimeResolverDelegate
     return manager.getCapabilities(state);
   }
 
-  lookupHelper(name: string, referrer: TemplateMeta<AnnotatedModuleLocator>): Option<number> {
+  lookupHelper(name: string, referrer: AnnotatedModuleLocator): Option<number> {
     return this.resolver.lookupHelper(name, referrer);
   }
 
-  lookupModifier(name: string, referrer: TemplateMeta<AnnotatedModuleLocator>): Option<number> {
+  lookupModifier(name: string, referrer: AnnotatedModuleLocator): Option<number> {
     return this.resolver.lookupModifier(name, referrer);
   }
 
@@ -67,10 +66,7 @@ export default class JitCompileTimeLookup implements CompileTimeResolverDelegate
     });
   }
 
-  lookupComponent(
-    name: string,
-    referrer: Option<TemplateMeta<AnnotatedModuleLocator>>
-  ): Option<CompileTimeComponent> {
+  lookupComponent(name: string, referrer: AnnotatedModuleLocator): Option<CompileTimeComponent> {
     let definitionHandle = this.registry.lookupComponentHandle(name, referrer);
 
     if (definitionHandle === null) {
@@ -111,7 +107,7 @@ export default class JitCompileTimeLookup implements CompileTimeResolverDelegate
     };
   }
 
-  lookupPartial(name: string, referrer: TemplateMeta<AnnotatedModuleLocator>): Option<number> {
+  lookupPartial(name: string, referrer: AnnotatedModuleLocator): Option<number> {
     return this.resolver.lookupPartial(name, referrer);
   }
 }
