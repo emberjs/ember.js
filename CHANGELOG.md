@@ -1,6 +1,7 @@
 # Ember Changelog
 
 ### v3.8.0-beta.2 (January 14, 2019)
+
 - [#17467](https://github.com/emberjs/ember.js/pull/17467) [BUGFIX] Fix substate interactions with aborts
 
 ### v3.8.0-beta.1 (January 7, 2019)
@@ -78,7 +79,7 @@
 
 ### v3.4.7 (December 7, 2018)
 
-- #17271 [BUGFIX] Update `backburner.js` to 2.4.2.
+- [#17271](https://github.com/emberjs/ember.js/pull/17271) [BUGFIX] Update `backburner.js` to 2.4.2.
 
 ### v3.4.6 (October 29, 2018)
 
