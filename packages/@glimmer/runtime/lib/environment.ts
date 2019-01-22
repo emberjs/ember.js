@@ -25,6 +25,13 @@ import {
   AotRuntimeContext,
   JitRuntimeResolver,
   RuntimeResolver,
+  SyntaxCompilationContext,
+  RuntimeConstants,
+  RuntimeHeap,
+  WholeProgramCompilationContext,
+  CompileTimeConstants,
+  CompileTimeHeap,
+  Macros,
 } from '@glimmer/interfaces';
 import {
   IterableImpl,
@@ -484,12 +491,26 @@ export function AotRuntime(
   };
 }
 
+export interface JitProgramCompilationContext extends WholeProgramCompilationContext {
+  readonly constants: CompileTimeConstants & RuntimeConstants;
+  readonly heap: CompileTimeHeap & RuntimeHeap;
+}
+
+export interface JitSyntaxCompilationContext extends SyntaxCompilationContext {
+  readonly program: JitProgramCompilationContext;
+  readonly macros: Macros;
+}
+
 // TODO: There are a lot of variants here. Some are here for transitional purposes
 // and some might be GCable once the design stabilizes.
-export function CustomJitRuntime(resolver: RuntimeResolver, env: Environment): JitRuntimeContext {
-  let constants = new Constants();
-  let heap = new HeapImpl();
-  let program = new RuntimeProgramImpl(constants, heap);
+export function CustomJitRuntime(
+  resolver: RuntimeResolver,
+  context: SyntaxCompilationContext & {
+    program: { constants: RuntimeConstants; heap: RuntimeHeap };
+  },
+  env: Environment
+): JitRuntimeContext {
+  let program = new RuntimeProgramImpl(context.program.constants, context.program.heap);
 
   return {
     env,

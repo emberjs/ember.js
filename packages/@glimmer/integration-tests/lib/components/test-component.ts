@@ -4,7 +4,6 @@ import {
   ModuleLocator,
   ProgramSymbolTable,
 } from '@glimmer/interfaces';
-import { PartialTemplateLocator } from '@glimmer/bundle-compiler';
 
 export interface WrappedLocator {
   locator: ModuleLocator;
@@ -19,7 +18,7 @@ export interface TestComponentDefinitionState {
   ComponentClass: any;
   type: string;
   layout: Option<number>;
-  locator: PartialTemplateLocator<WrappedLocator>;
+  locator: ModuleLocator;
   template?: string;
   hasSymbolTable?: boolean;
   symbolTable?: ProgramSymbolTable;

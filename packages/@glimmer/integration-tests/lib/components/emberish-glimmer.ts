@@ -159,7 +159,7 @@ export class EmberishGlimmerComponentManager
   ): Invocation {
     let { locator } = state;
 
-    return resolver.getInvocation(locator.meta.locator);
+    return resolver.getInvocation(locator);
   }
 
   getSelf({ component }: EmberishGlimmerComponentState): PathReference<unknown> {

@@ -7,8 +7,9 @@ import {
 } from '@glimmer/interfaces';
 import { EncoderImpl } from './encoder';
 import { MacrosImpl } from '../syntax/macros';
-import { ProgramCompilationContext } from '../program-context';
+import { ProgramCompilationContext, JitProgramCompilationContext } from '../program-context';
 import { DefaultCompileTimeResolverDelegate, ResolverDelegate } from './delegate';
+import { JitSyntaxCompilationContext } from '@glimmer/runtime';
 
 export function syntaxCompilationContext(
   program: WholeProgramCompilationContext,
@@ -27,6 +28,26 @@ export function Context(
 ) {
   return {
     program: new ProgramCompilationContext(new DefaultCompileTimeResolverDelegate(resolver), mode),
+    macros,
+  };
+}
+
+export function JitContext(
+  resolver: ResolverDelegate = {},
+  macros = new MacrosImpl()
+): JitSyntaxCompilationContext {
+  return {
+    program: new JitProgramCompilationContext(new DefaultCompileTimeResolverDelegate(resolver)),
+    macros,
+  };
+}
+
+export function AotContext(resolver: ResolverDelegate = {}, macros = new MacrosImpl()) {
+  return {
+    program: new ProgramCompilationContext(
+      new DefaultCompileTimeResolverDelegate(resolver),
+      CompileMode.aot
+    ),
     macros,
   };
 }
