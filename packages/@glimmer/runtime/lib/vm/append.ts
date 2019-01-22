@@ -39,6 +39,7 @@ import {
   ListSlice,
   Option,
   Stack,
+  assert,
 } from '@glimmer/util';
 import {
   $fp,
@@ -71,6 +72,7 @@ import {
   TryOpcode,
   VMState,
 } from './update';
+import { CheckNumber, check } from '@glimmer/debug';
 
 /**
  * This interface is used by internal opcodes, and is more stable than
@@ -286,6 +288,9 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
     private readonly elementStack: ElementBuilder
   ) {
     let evalStack = EvaluationStackImpl.restore(stack);
+
+    assert(typeof pc === 'number', 'pc is a number');
+
     evalStack[REGISTERS][$pc] = pc;
     evalStack[REGISTERS][$sp] = stack.length - 1;
     evalStack[REGISTERS][$fp] = -1;
@@ -620,7 +625,8 @@ export class AotVM extends VM<number> implements InternalVM<number> {
   ) {
     let scopeSize = runtime.program.heap.scopesizeof(handle);
     let scope = ScopeImpl.root(self, scopeSize);
-    let state = vmState(runtime.program.heap.getaddr(handle), scope, dynamicScope);
+    let pc = check(runtime.program.heap.getaddr(handle), CheckNumber);
+    let state = vmState(pc, scope, dynamicScope);
     let vm = initAOT(runtime, state, treeBuilder);
     vm.pushUpdating();
     return vm;

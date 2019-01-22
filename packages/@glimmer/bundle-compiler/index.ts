@@ -2,8 +2,9 @@ export {
   default as BundleCompiler,
   BundleCompilerOptions,
   BundleCompileOptions,
-  BundleCompilationResult,
   PartialTemplateLocator,
+  BundleCompilationResult,
+  normalizeLocator,
 } from './lib/bundle-compiler';
 
 export { default as CompilerDelegate } from './lib/delegate';

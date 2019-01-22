@@ -1,6 +1,5 @@
 import { ExternalModuleTable, ModuleLocatorMap } from '@glimmer/bundle-compiler';
 import { Modules } from './registry';
-import { WrappedLocator } from '../../components/test-component';
 import {
   ProgramSymbolTable,
   Option,
@@ -27,7 +26,7 @@ export default class AotRuntimeResolverImpl implements AotRuntimeResolver {
     throw new Error('Method not implemented.');
   }
 
-  lookupComponent(name: string, referrer: Option<WrappedLocator>): Option<ComponentDefinition> {
+  lookupComponent(name: string, referrer: Option<ModuleLocator>): Option<ComponentDefinition> {
     if (referrer === null) return null;
 
     let moduleName = this.modules.resolve(name, referrer, 'ui/components');

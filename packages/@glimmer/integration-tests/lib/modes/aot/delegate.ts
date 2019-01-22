@@ -1,8 +1,9 @@
 import {
-  BundleCompilationResult,
   BundleCompiler,
   DebugConstants,
   ModuleLocatorMap,
+  normalizeLocator,
+  BundleCompilationResult,
 } from '@glimmer/bundle-compiler';
 import {
   ComponentCapabilities,
@@ -42,7 +43,7 @@ import {
   EMBERISH_GLIMMER_CAPABILITIES,
 } from '../../components/emberish-glimmer';
 import RenderDelegate from '../../render-delegate';
-import { TestComponentDefinitionState, WrappedLocator } from '../../components/test-component';
+import { TestComponentDefinitionState } from '../../components/test-component';
 import { ComponentKind } from '../../components/types';
 import { BASIC_CAPABILITIES, EMBERISH_CURLY_CAPABILITIES } from '../../components/capabilities';
 import { AotCompilerRegistry, Modules } from './registry';
@@ -166,7 +167,7 @@ export class AotRenderDelegate implements RenderDelegate {
     this.registry.register(name, 'modifier', { default: { manager, state } });
   }
 
-  private addRegisteredComponents(bundleCompiler: BundleCompiler<WrappedLocator>): void {
+  private addRegisteredComponents(bundleCompiler: BundleCompiler): void {
     let { registry, compileTimeModules } = this;
     Object.keys(registry.components).forEach(key => {
       assert(
@@ -183,9 +184,9 @@ export class AotRenderDelegate implements RenderDelegate {
 
       if (state.type === 'Curly' || state.type === 'Dynamic') {
         let block = bundleCompiler.preprocess(state.template!);
-        let parsedLayout = { block, referrer: locator.meta, asPartial: false };
+        let parsedLayout = { block, referrer: locator, asPartial: false };
         let wrapped = new WrappedBuilder(parsedLayout);
-        bundleCompiler.addCompilableTemplate(locator, wrapped);
+        bundleCompiler.addCompilableTemplate(normalizeLocator(locator), wrapped);
 
         compileTimeModules.register(key, 'other', {
           default: wrapped.symbolTable,
@@ -195,7 +196,7 @@ export class AotRenderDelegate implements RenderDelegate {
 
         this.symbolTables.set(locator, symbolTable);
       } else {
-        block = bundleCompiler.add(
+        block = bundleCompiler.addTemplateSource(
           locator,
           expect(state.template, 'expected component definition state to have template')
         );
@@ -229,7 +230,7 @@ export class AotRenderDelegate implements RenderDelegate {
     });
   }
 
-  private getBundleCompiler(): BundleCompiler<WrappedLocator> {
+  private getBundleCompiler(): BundleCompiler {
     let { compiler, constants } = getBundleCompiler(this.registry);
     this.constants = constants;
 
@@ -287,10 +288,10 @@ export class AotRenderDelegate implements RenderDelegate {
 
 function getBundleCompiler(
   registry: AotCompilerRegistry
-): { compiler: BundleCompiler<WrappedLocator>; constants: DebugConstants } {
+): { compiler: BundleCompiler; constants: DebugConstants } {
   let delegate: AotCompilerDelegate = new AotCompilerDelegate(registry);
   let constants = new DebugConstants();
-  let compiler = new BundleCompiler<WrappedLocator>(delegate, {
+  let compiler = new BundleCompiler(delegate, {
     macros: new TestMacros(),
     constants,
   });
