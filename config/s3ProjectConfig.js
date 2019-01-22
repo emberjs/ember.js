@@ -17,6 +17,7 @@ function fileMap(revision, tag, date) {
       canary: [`canary/daily/${date}.tgz`, `canary/shas/${revision}.tgz`],
       beta: [`beta/daily/${date}.tgz`, `beta/shas/${revision}.tgz`],
       release: [`release/daily/${date}.tgz`, `release/shas/${revision}.tgz`],
+      'lts-3-4': [`lts-3-4/daily/${date}.tgz`, `lts-3-4/shas/${revision}.tgz`],
     },
   };
   filesToPublish['../build-metadata.json'] = {
@@ -26,6 +27,7 @@ function fileMap(revision, tag, date) {
       canary: ['canary.json'],
       beta: ['beta.json'],
       release: ['release.json'],
+      'lts-3-4': ['lts-3-4.json'],
     },
   };
 
@@ -58,6 +60,11 @@ function fileObject(baseName, extension, contentType, currentRevision, tag, date
         'beta' + fullName,
         'beta/daily/' + date + fullName,
         'beta/shas/' + currentRevision + fullName,
+      ],
+      'lts-3-4': [
+        'lts-3-4' + fullName,
+        'lts-3-4/daily/' + date + fullName,
+        'lts-3-4/shas/' + currentRevision + fullName,
       ],
       wildcard: [],
     },
