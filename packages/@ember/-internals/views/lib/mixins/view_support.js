@@ -5,6 +5,7 @@ import { assert } from '@ember/debug';
 import { hasDOM } from '@ember/-internals/browser-environment';
 import { matches } from '../system/utils';
 import { default as jQuery, jQueryDisabled } from '../system/jquery';
+import { deprecate } from '@ember/debug';
 
 function K() {
   return this;
@@ -177,6 +178,15 @@ export default Mixin.create({
       this.tagName !== ''
     );
     assert('You cannot access this.$() with `jQuery` disabled.', !jQueryDisabled);
+    deprecate(
+      'Using this.$() in a component has been deprecated, consider using this.element',
+      false,
+      {
+        id: 'ember-views.curly-components.jquery-element',
+        until: '4.0.0',
+        url: 'https://emberjs.com/deprecations/v3.x#toc_jquery-apis',
+      }
+    );
     if (this.element) {
       return sel ? jQuery(sel, this.element) : jQuery(this.element);
     }

@@ -3673,6 +3673,8 @@ if (jQueryDisabled) {
     class extends RenderingTestCase {
       ['@test it has a jQuery proxy to the element']() {
         let instance;
+        let element1;
+        let element2;
 
         let FooBarComponent = Component.extend({
           init() {
@@ -3688,13 +3690,17 @@ if (jQueryDisabled) {
 
         this.render('{{foo-bar}}');
 
-        let element1 = instance.$()[0];
+        expectDeprecation(() => {
+          element1 = instance.$()[0];
+        }, 'Using this.$() in a component has been deprecated, consider using this.element');
 
         this.assertComponentElement(element1, { content: 'hello' });
 
         runTask(() => this.rerender());
 
-        let element2 = instance.$()[0];
+        expectDeprecation(() => {
+          element2 = instance.$()[0];
+        }, 'Using this.$() in a component has been deprecated, consider using this.element');
 
         this.assertComponentElement(element2, { content: 'hello' });
 
@@ -3703,6 +3709,7 @@ if (jQueryDisabled) {
 
       ['@test it scopes the jQuery proxy to the component element'](assert) {
         let instance;
+        let $span;
 
         let FooBarComponent = Component.extend({
           init() {
@@ -3718,14 +3725,18 @@ if (jQueryDisabled) {
 
         this.render('<span class="outer">outer</span>{{foo-bar}}');
 
-        let $span = instance.$('span');
+        expectDeprecation(() => {
+          $span = instance.$('span');
+        }, 'Using this.$() in a component has been deprecated, consider using this.element');
 
         assert.equal($span.length, 1);
         assert.equal($span.attr('class'), 'inner');
 
         runTask(() => this.rerender());
 
-        $span = instance.$('span');
+        expectDeprecation(() => {
+          $span = instance.$('span');
+        }, 'Using this.$() in a component has been deprecated, consider using this.element');
 
         assert.equal($span.length, 1);
         assert.equal($span.attr('class'), 'inner');
