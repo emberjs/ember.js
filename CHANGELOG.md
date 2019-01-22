@@ -19,6 +19,13 @@
 - [#17357](https://github.com/emberjs/ember.js/pull/17357) Allow notifyPropertyChange to be imported from @ember/object
 - [#17413](https://github.com/emberjs/ember.js/pull/17413) Fix missing import in instance-initializer blueprint for ember-mocha
 
+### v3.7.2 (January 22, 2019)
+
+* Upgrade @glimmer/* packages to 0.35.10. Fixes a few issues:
+  * Usage of positional arguments with custom components.
+  * Forwarding attributes via `...attributes` to a dynamic component.
+  * Prevent errors when rendering many template blocks (`Error: Operand over 16-bits. Got 65536`).
+
 ### v3.7.1 (January 21, 2019)
 
 - [#17461](https://github.com/emberjs/ember.js/pull/17461) [BUGFIX] Fix substate interactions with aborts
