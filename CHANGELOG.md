@@ -53,6 +53,13 @@
 - [#16978](https://github.com/emberjs/ember.js/pull/16978) [BUGFIX] Properly teardown alias
 - [#16877](https://github.com/emberjs/ember.js/pull/16877) [CLEANUP] Allow routes to be named "array" and "object"
 
+### v3.4.8 (January 22, 2019)
+
+* Upgrade @glimmer/* packages to 0.35.10. Fixes a few issues:
+  * Usage of positional arguments with custom components.
+  * Forwarding attributes via `...attributes` to a dynamic component.
+  * Prevent errors when rendering many template blocks (`Error: Operand over 16-bits. Got 65536`).
+
 ### v3.4.7 (December 7, 2018)
 
 - #17271 [BUGFIX] Update `backburner.js` to 2.4.2.
