@@ -561,7 +561,18 @@ Ember.VERSION = VERSION;
 
 // ****@ember/-internals/views****
 if (!views.jQueryDisabled) {
-  Ember.$ = views.jQuery;
+  Ember.$ = function() {
+    deprecate(
+      "Using Ember.$() has been deprecated, use `import jQuery from 'jquery';` instead",
+      false,
+      {
+        id: 'ember-views.curly-components.jquery-element',
+        until: '4.0.0',
+        url: 'https://emberjs.com/deprecations/v3.x#toc_jquery-apis',
+      }
+    );
+    return views.jQuery.apply(this, arguments);
+  };
 }
 Ember.ViewUtils = {
   isSimpleClick: views.isSimpleClick,
