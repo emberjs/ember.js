@@ -1861,16 +1861,19 @@ EmberRouter.reopen(Evented, {
     ```javascript
     import config from './config/environment';
     import EmberRouter from '@ember/routing/router';
+    import { inject as service } from '@ember/service';
 
     let Router = EmberRouter.extend({
       location: config.locationType,
 
+      router: service(),
+
       didTransition: function() {
         this._super(...arguments);
 
-        return ga('send', 'pageview', {
-          'page': this.get('url'),
-          'title': this.get('url')
+        ga('send', 'pageview', {
+          page: this.router.currentURL,
+          title: this.router.currentRouteName,
         });
       }
     });
