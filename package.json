@@ -97,7 +97,7 @@
     "@glimmer/program": "^0.37.1",
     "@glimmer/reference": "^0.37.1",
     "@glimmer/runtime": "^0.37.1",
-    "@types/qunit": "^2.5.3",
+    "@types/qunit": "^2.5.4",
     "@types/rsvp": "^4.0.2",
     "auto-dist-tag": "^1.0.0",
     "aws-sdk": "^2.392.0",
