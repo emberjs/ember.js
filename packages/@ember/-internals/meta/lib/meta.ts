@@ -1005,7 +1005,7 @@ export function descriptorFor(obj: object, keyName: string, _meta?: Meta | null)
 /**
   Check whether a value is a CP descriptor.
 
-  @method descriptorFor
+  @method isDescriptor
   @param {any} possibleDesc the value to check
   @return {boolean}
   @private
