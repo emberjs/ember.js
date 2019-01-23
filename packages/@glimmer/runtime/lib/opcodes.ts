@@ -152,7 +152,6 @@ export class AppendOpcodes {
         );
       }
 
-      debugger;
       console.log('%c -> elements', 'color: blue', vm.elements()[CURSOR_STACK].current!.element);
 
       console.log('%c -> constructing', 'color: aqua', vm.elements()['constructing']);

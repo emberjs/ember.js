@@ -6,10 +6,9 @@ import {
   Dict,
   ModuleLocator,
   Option,
-  TemplateMeta,
 } from '@glimmer/interfaces';
 import { assert, dict } from '@glimmer/util';
-import { WrappedLocator, TestComponentDefinitionState } from '../../components/test-component';
+import { TestComponentDefinitionState } from '../../components/test-component';
 
 export class Modules {
   private registry = dict<Module>();
@@ -33,15 +32,9 @@ export class Modules {
     this.registry[name] = new Module(value, type);
   }
 
-  resolve(
-    name: string,
-    referrer: TemplateMeta<WrappedLocator>,
-    defaultRoot?: string
-  ): Option<string> {
+  resolve(name: string, referrer: ModuleLocator, defaultRoot?: string): Option<string> {
     let local =
-      referrer &&
-      referrer.locator.module &&
-      referrer.locator.module.replace(/^((.*)\/)?([^\/]*)$/, `$1${name}`);
+      referrer && referrer.module && referrer.module.replace(/^((.*)\/)?([^\/]*)$/, `$1${name}`);
     if (local && this.registry[local]) {
       return local;
     } else if (defaultRoot && this.registry[`${defaultRoot}/${name}`]) {
@@ -90,7 +83,7 @@ export class AotCompilerRegistry {
 
   resolve(
     name: string,
-    referrer: TemplateMeta<WrappedLocator>,
+    referrer: ModuleLocator,
     { expected, root }: { expected?: ModuleType; root?: string } = {}
   ): Option<string> {
     let moduleName = this.modules.resolve(name, referrer, root);
@@ -113,15 +106,15 @@ export class AotCompilerRegistry {
     return this.modules.type(name);
   }
 
-  getComponentCapabilities(meta: TemplateMeta<WrappedLocator>): ComponentCapabilities {
-    return this.components[meta.locator.module].state.capabilities;
+  getComponentCapabilities(meta: ModuleLocator): ComponentCapabilities {
+    return this.components[meta.module].state.capabilities;
   }
 }
 
-export default class EagerCompilerDelegate implements CompilerDelegate<WrappedLocator> {
+export default class EagerCompilerDelegate implements CompilerDelegate<ModuleLocator> {
   constructor(private registry: AotCompilerRegistry) {}
 
-  hasComponentInScope(componentName: string, referrer: TemplateMeta<WrappedLocator>): boolean {
+  hasComponentInScope(componentName: string, referrer: ModuleLocator): boolean {
     let name = this.registry.resolve(componentName, referrer, {
       root: 'ui/components',
       expected: 'component',
@@ -129,41 +122,41 @@ export default class EagerCompilerDelegate implements CompilerDelegate<WrappedLo
     return !!name;
   }
 
-  resolveComponent(componentName: string, referrer: TemplateMeta<WrappedLocator>): ModuleLocator {
+  resolveComponent(componentName: string, referrer: ModuleLocator): ModuleLocator {
     return {
       module: this.registry.resolve(componentName, referrer, { root: 'ui/components' })!,
       name: 'default',
     };
   }
 
-  getComponentCapabilities(meta: TemplateMeta<WrappedLocator>): ComponentCapabilities {
+  getComponentCapabilities(meta: ModuleLocator): ComponentCapabilities {
     return this.registry.getComponentCapabilities(meta);
   }
 
-  hasHelperInScope(helperName: string, referrer: TemplateMeta<WrappedLocator>): boolean {
+  hasHelperInScope(helperName: string, referrer: ModuleLocator): boolean {
     return !!this.registry.resolve(helperName, referrer, { expected: 'helper' });
   }
 
-  resolveHelper(helperName: string, referrer: TemplateMeta<WrappedLocator>): ModuleLocator {
+  resolveHelper(helperName: string, referrer: ModuleLocator): ModuleLocator {
     return { module: this.registry.resolve(helperName, referrer)!, name: 'default' };
   }
 
-  hasModifierInScope(modifierName: string, referrer: TemplateMeta<WrappedLocator>): boolean {
+  hasModifierInScope(modifierName: string, referrer: ModuleLocator): boolean {
     return !!this.registry.resolve(modifierName, referrer, { expected: 'modifier' });
   }
 
-  resolveModifier(modifierName: string, referrer: TemplateMeta<WrappedLocator>): ModuleLocator {
+  resolveModifier(modifierName: string, referrer: ModuleLocator): ModuleLocator {
     return {
       module: this.registry.resolve(modifierName, referrer, { root: 'ui/components' })!,
       name: 'default',
     };
   }
 
-  hasPartialInScope(_partialName: string, _referrer: TemplateMeta<WrappedLocator>): boolean {
+  hasPartialInScope(_partialName: string, _referrer: ModuleLocator): boolean {
     return false;
   }
 
-  resolvePartial(_partialName: string, _referrer: TemplateMeta<WrappedLocator>): ModuleLocator {
+  resolvePartial(_partialName: string, _referrer: ModuleLocator): ModuleLocator {
     throw new Error('Method not implemented.');
   }
 }

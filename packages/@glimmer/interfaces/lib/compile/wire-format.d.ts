@@ -1,5 +1,4 @@
 import { Dict, Option } from '../core';
-import { TemplateMeta } from '../runtime/runtime';
 
 export type TupleSyntax = Statement | TupleExpression;
 
@@ -249,7 +248,7 @@ export interface SerializedTemplateBlock extends SerializedBlock {
 /**
  * A JSON object that the compiled Template was serialized into.
  */
-export interface SerializedTemplate<T extends TemplateMeta> {
+export interface SerializedTemplate<T> {
   block: SerializedTemplateBlock;
   meta: T;
 }
@@ -265,7 +264,7 @@ export type SerializedTemplateBlockJSON = string;
 export interface SerializedTemplateWithLazyBlock<M> {
   id?: Option<string>;
   block: SerializedTemplateBlockJSON;
-  meta: TemplateMeta<M>;
+  meta: M;
 }
 
 /**

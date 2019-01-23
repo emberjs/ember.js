@@ -9,36 +9,35 @@ export const BASIC_CAPABILITIES: ComponentCapabilities = assign({}, MINIMAL_CAPA
   createInstance: true,
 });
 
+export interface WrappedLocator {
+  locator: ModuleLocator;
+}
+
 QUnit.module('[glimmer-bundle-compiler] CompilerDelegate');
 
-type Locator = {
-  locator: ModuleLocator;
-};
-
-function locatorFor(locator: ModuleLocator) {
+function locatorFor(locator: ModuleLocator): ModuleLocator {
   let { module, name } = locator;
 
   return {
     module,
     name,
-    meta: { locator },
   };
 }
 
 test('correct referrer is passed during component lookup', function(assert) {
-  let inScopeReferrers: Locator[] = [];
-  let resolveComponentReferrers: Locator[] = [];
+  let inScopeReferrers: ModuleLocator[] = [];
+  let resolveComponentReferrers: ModuleLocator[] = [];
 
   // This partial implementation of CompilerDelegate tracks what referrers are
   // passed to hasComponentInScope and resolveComponent so that they
   // can be verified after compilation has finished.
   class TestDelegate {
-    hasComponentInScope(_componentName: string, referrer: Locator): boolean {
+    hasComponentInScope(_componentName: string, referrer: ModuleLocator): boolean {
       inScopeReferrers.push(referrer);
       return true;
     }
 
-    resolveComponent(componentName: string, referrer: Locator): ModuleLocator {
+    resolveComponent(componentName: string, referrer: ModuleLocator): ModuleLocator {
       resolveComponentReferrers.push(referrer);
       return { module: componentName, name: 'default' };
     }
@@ -50,21 +49,24 @@ test('correct referrer is passed during component lookup', function(assert) {
 
   let bundleCompiler = new BundleCompiler(new TestDelegate() as any);
 
-  bundleCompiler.add(
+  bundleCompiler.addTemplateSource(
     locatorFor({ module: 'UserNav', name: 'default' }),
     '<div class="user-nav"></div>'
   );
-  bundleCompiler.add(locatorFor({ module: 'Main', name: 'default' }), '<UserNav />');
-  bundleCompiler.add(locatorFor({ module: 'SideBar', name: 'default' }), '<UserNav />');
+  bundleCompiler.addTemplateSource(locatorFor({ module: 'Main', name: 'default' }), '<UserNav />');
+  bundleCompiler.addTemplateSource(
+    locatorFor({ module: 'SideBar', name: 'default' }),
+    '<UserNav />'
+  );
   bundleCompiler.compile();
 
   assert.deepEqual(inScopeReferrers, [
-    { locator: { module: 'Main', name: 'default' } },
-    { locator: { module: 'SideBar', name: 'default' } },
+    { module: 'Main', name: 'default' },
+    { module: 'SideBar', name: 'default' },
   ]);
 
   assert.deepEqual(resolveComponentReferrers, [
-    { locator: { module: 'Main', name: 'default' } },
-    { locator: { module: 'SideBar', name: 'default' } },
+    { module: 'Main', name: 'default' },
+    { module: 'SideBar', name: 'default' },
   ]);
 });

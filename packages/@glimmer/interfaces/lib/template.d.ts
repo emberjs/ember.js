@@ -5,7 +5,6 @@ import { Option } from './core';
 import { ConstantPool, SerializedHeap, SyntaxCompilationContext } from './program';
 import { CompileTimeResolverDelegate } from './serialize';
 import { BlockSymbolTable, ProgramSymbolTable, SymbolTable } from './tier1/symbol-table';
-import { TemplateMeta } from './runtime';
 
 export type CompilableProgram = CompilableTemplate<ProgramSymbolTable>;
 export type CompilableBlock = CompilableTemplate<BlockSymbolTable>;
@@ -13,19 +12,19 @@ export type CompilableBlock = CompilableTemplate<BlockSymbolTable>;
 export interface LayoutWithContext<R> {
   readonly id?: Option<string>;
   readonly block: SerializedTemplateBlock;
-  readonly referrer: TemplateMeta<R>;
+  readonly referrer: R;
   readonly asPartial?: boolean;
 }
 
 export interface BlockWithContext<R> {
   readonly block: SerializedInlineBlock;
-  readonly containingLayout: LayoutWithContext<TemplateMeta & R>;
+  readonly containingLayout: LayoutWithContext<R>;
 }
 
 /**
  * Environment specific template.
  */
-export interface Template<R extends TemplateMeta = TemplateMeta> {
+export interface Template<R = unknown> {
   /**
    * Template identifier, if precompiled will be the id of the
    * precompiled template.
@@ -78,7 +77,7 @@ export interface NamedBlocks {
 export interface ContainingMetadata {
   asPartial: boolean;
   evalSymbols: Option<string[]>;
-  referrer: TemplateMeta;
+  referrer: unknown;
   size: number;
 }
 

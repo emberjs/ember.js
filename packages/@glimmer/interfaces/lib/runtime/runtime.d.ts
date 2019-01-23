@@ -1,7 +1,7 @@
 import { Environment } from './environment';
 import { RuntimeHeap, RuntimeConstants, RuntimeOp } from '../program';
 import {
-  RuntimeResolverOptions,
+  RuntimeResolverDelegate,
   RuntimeResolver,
   JitRuntimeResolver,
   AotRuntimeResolver,
@@ -14,20 +14,19 @@ import {
   The contents of the Runtime do not change as the VM executes, unlike
   the VM state.
  */
-export interface RuntimeContext<R extends TemplateMeta = TemplateMeta> {
+export interface RuntimeContext<R = unknown> {
   env: Environment;
   program: RuntimeProgram;
   resolver: RuntimeResolver<R>;
 }
 
-export interface AotRuntimeContext<R extends TemplateMeta = TemplateMeta> {
+export interface AotRuntimeContext<R = unknown> {
   env: Environment;
   program: RuntimeProgram;
   resolver: AotRuntimeResolver<R>;
 }
 
-export interface JitRuntimeContext<R extends TemplateMeta = TemplateMeta>
-  extends RuntimeContext<R> {
+export interface JitRuntimeContext<R = unknown> extends RuntimeContext<R> {
   resolver: JitRuntimeResolver<R>;
 }
 
@@ -37,8 +36,3 @@ export interface RuntimeProgram {
 
   opcode(offset: number): RuntimeOp;
 }
-
-export const enum TemplateMetaEnum {}
-export type OpaqueTemplateMeta = TemplateMetaEnum & {};
-
-export type TemplateMeta<Inner = unknown> = OpaqueTemplateMeta & Inner;

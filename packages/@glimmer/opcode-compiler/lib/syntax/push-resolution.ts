@@ -9,7 +9,6 @@ import {
   IfResolvedOp,
   WireFormat,
   Op,
-  TemplateMeta,
   CompileTimeConstants,
   ContainingMetadata,
   TemplateCompilationContext,
@@ -117,7 +116,7 @@ function resolve(
   resolver: CompileTimeResolverDelegate,
   kind: ResolveHandle,
   name: string,
-  referrer: TemplateMeta
+  referrer: unknown
 ): Option<number> {
   switch (kind) {
     case ResolveHandle.Modifier:

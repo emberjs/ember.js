@@ -13,17 +13,25 @@ import {
   Transaction,
   TransactionSymbol,
   CompilerArtifacts,
-  TemplateMeta,
   WithCreateInstance,
   ResolvedValue,
-  RuntimeResolverOptions,
+  RuntimeResolverDelegate,
   RuntimeProgram,
   ModifierManager,
   Template,
-  RuntimeResolver,
+  AotRuntimeResolver,
   Invocation,
   JitRuntimeContext,
   AotRuntimeContext,
+  JitRuntimeResolver,
+  RuntimeResolver,
+  SyntaxCompilationContext,
+  RuntimeConstants,
+  RuntimeHeap,
+  WholeProgramCompilationContext,
+  CompileTimeConstants,
+  CompileTimeHeap,
+  Macros,
 } from '@glimmer/interfaces';
 import {
   IterableImpl,
@@ -39,7 +47,7 @@ import { AttrNamespace, SimpleDocument, SimpleElement } from '@simple-dom/interf
 import { DOMChangesImpl, DOMTreeConstruction } from './dom/helper';
 import { ConditionalReference, UNDEFINED_REFERENCE } from './references';
 import { DynamicAttribute, dynamicAttribute } from './vm/attributes/dynamic';
-import { RuntimeProgramImpl } from '@glimmer/program';
+import { RuntimeProgramImpl, Constants, HeapImpl } from '@glimmer/program';
 
 export function isScopeReference(s: ScopeSlot): s is VersionedPathReference {
   if (s === null || Array.isArray(s)) return false;
@@ -385,11 +393,11 @@ function legacyProtocolForURL(url: string): string {
   return anchor.protocol;
 }
 
-export class DefaultRuntimeResolver<R extends TemplateMeta<{ module: string }>>
-  implements RuntimeResolver<R> {
-  constructor(private inner: RuntimeResolverOptions) {}
+export class DefaultRuntimeResolver<R extends { module: string }>
+  implements JitRuntimeResolver<R>, AotRuntimeResolver {
+  constructor(private inner: RuntimeResolverDelegate) {}
 
-  lookupComponent(name: string, referrer?: Option<TemplateMeta>): Option<any> {
+  lookupComponent(name: string, referrer?: unknown): Option<any> {
     if (this.inner.lookupComponent) {
       let component = this.inner.lookupComponent(name, referrer);
 
@@ -405,7 +413,7 @@ export class DefaultRuntimeResolver<R extends TemplateMeta<{ module: string }>>
     }
   }
 
-  lookupPartial(name: string, referrer?: Option<TemplateMeta>): Option<number> {
+  lookupPartial(name: string, referrer?: unknown): Option<number> {
     if (this.inner.lookupPartial) {
       let partial = this.inner.lookupPartial(name, referrer);
 
@@ -435,7 +443,7 @@ export class DefaultRuntimeResolver<R extends TemplateMeta<{ module: string }>>
     }
   }
 
-  compilable(locator: TemplateMeta<{ module: string }>): Template {
+  compilable(locator: { module: string }): Template {
     if (this.inner.compilable) {
       let resolved = this.inner.compilable(locator);
 
@@ -449,7 +457,7 @@ export class DefaultRuntimeResolver<R extends TemplateMeta<{ module: string }>>
     }
   }
 
-  getInvocation(locator: TemplateMeta<R>): Invocation {
+  getInvocation(locator: R): Invocation {
     if (this.inner.getInvocation) {
       let invocation = this.inner.getInvocation(locator);
 
@@ -471,7 +479,7 @@ export class DefaultRuntimeResolver<R extends TemplateMeta<{ module: string }>>
 export function AotRuntime(
   document: SimpleDocument,
   program: CompilerArtifacts,
-  resolver: RuntimeResolverOptions = {},
+  resolver: RuntimeResolverDelegate = {},
   delegate: RuntimeEnvironmentDelegate = {}
 ): AotRuntimeContext {
   let env = new RuntimeEnvironment(document, new RuntimeEnvironmentDelegateImpl(delegate));
@@ -483,10 +491,56 @@ export function AotRuntime(
   };
 }
 
+export interface JitProgramCompilationContext extends WholeProgramCompilationContext {
+  readonly constants: CompileTimeConstants & RuntimeConstants;
+  readonly heap: CompileTimeHeap & RuntimeHeap;
+}
+
+export interface JitSyntaxCompilationContext extends SyntaxCompilationContext {
+  readonly program: JitProgramCompilationContext;
+  readonly macros: Macros;
+}
+
+// TODO: There are a lot of variants here. Some are here for transitional purposes
+// and some might be GCable once the design stabilizes.
+export function CustomJitRuntime(
+  resolver: RuntimeResolver,
+  context: SyntaxCompilationContext & {
+    program: { constants: RuntimeConstants; heap: RuntimeHeap };
+  },
+  env: Environment
+): JitRuntimeContext {
+  let program = new RuntimeProgramImpl(context.program.constants, context.program.heap);
+
+  return {
+    env,
+    resolver: new DefaultRuntimeResolver(resolver),
+    program,
+  };
+}
+
 export function JitRuntime(
   document: SimpleDocument,
+  resolver: RuntimeResolverDelegate = {},
+  delegate: RuntimeEnvironmentDelegate = {}
+): JitRuntimeContext {
+  let env = new RuntimeEnvironment(document, new RuntimeEnvironmentDelegateImpl(delegate));
+
+  let constants = new Constants();
+  let heap = new HeapImpl();
+  let program = new RuntimeProgramImpl(constants, heap);
+
+  return {
+    env,
+    resolver: new DefaultRuntimeResolver(resolver),
+    program,
+  };
+}
+
+export function JitRuntimeFromProgram(
+  document: SimpleDocument,
   program: RuntimeProgram,
-  resolver: RuntimeResolverOptions = {},
+  resolver: RuntimeResolverDelegate = {},
   delegate: RuntimeEnvironmentDelegate = {}
 ): JitRuntimeContext {
   let env = new RuntimeEnvironment(document, new RuntimeEnvironmentDelegateImpl(delegate));

@@ -1,11 +1,11 @@
-import { CompileTimeHeapImpl } from '@glimmer/program';
+import { HeapImpl } from '@glimmer/program';
 import { StdLib } from '@glimmer/opcode-compiler';
 
 QUnit.module('Heap');
 
 QUnit.test('Can grow', assert => {
   let size = 0x100000;
-  let heap = new CompileTimeHeapImpl();
+  let heap = new HeapImpl();
   let stdlib = new StdLib(0, 0, 0);
 
   let i = 0;

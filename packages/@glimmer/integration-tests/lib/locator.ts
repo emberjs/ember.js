@@ -1,18 +1,10 @@
-import { ModuleLocator, TemplateMeta, TemplateLocator } from '@glimmer/interfaces';
-import { WrappedLocator } from './components/test-component';
-import { templateMeta } from '@glimmer/util';
+import { ModuleLocator } from '@glimmer/interfaces';
 
-export function locatorFor(
-  moduleLocator: ModuleLocator
-): TemplateMeta<TemplateLocator<WrappedLocator>> {
+export function locatorFor(moduleLocator: ModuleLocator): ModuleLocator {
   let { module, name } = moduleLocator;
 
-  let l: TemplateLocator<WrappedLocator> = {
+  return {
     module,
     name,
-    kind: 'template',
-    meta: templateMeta({ locator: moduleLocator }),
   };
-
-  return templateMeta(l);
 }

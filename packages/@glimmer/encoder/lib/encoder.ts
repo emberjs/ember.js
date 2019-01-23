@@ -19,7 +19,9 @@ export class InstructionEncoderImpl implements InstructionEncoder {
       throw new Error(`Opcode type over 8-bits. Got ${type}.`);
     }
 
-    this.buffer.push(type | machine | ((arguments.length - 2) << OpcodeSize.ARG_SHIFT));
+    let first = type | machine | ((arguments.length - 2) << OpcodeSize.ARG_SHIFT);
+
+    this.buffer.push(first);
 
     for (let i = 2; i < arguments.length; i++) {
       let op = arguments[i];

@@ -3,7 +3,6 @@ import {
   Option,
   RenderResult,
   Template,
-  TemplateMeta,
   JitRuntimeContext,
   SyntaxCompilationContext,
 } from '@glimmer/interfaces';
@@ -50,13 +49,13 @@ let context: TestContext;
 export class EmberishRootView extends EmberObject {
   public element!: SimpleElement;
 
-  protected template: Template<TemplateMeta<AnnotatedModuleLocator>>;
+  protected template: Template<AnnotatedModuleLocator>;
   protected result!: RenderResult;
 
   private parent!: SimpleElement;
 
   constructor(
-    private runtime: JitRuntimeContext<TemplateMeta>,
+    private runtime: JitRuntimeContext,
     private syntax: SyntaxCompilationContext,
     template: string,
     state?: Object

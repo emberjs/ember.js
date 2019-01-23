@@ -13,7 +13,6 @@ import {
 import { switchCases } from './conditional';
 import { concat } from '../../syntax/concat';
 import { MacrosImpl } from '../../syntax/macros';
-import { templateMeta } from '@glimmer/util';
 
 export function main(): CompileActions {
   return [op(Op.Main, $s0), invokePreparedComponent(false, false, true)];
@@ -57,7 +56,7 @@ const STDLIB_META = {
   evalSymbols: null,
 
   // TODO: ??
-  referrer: templateMeta({}),
+  referrer: {},
   size: 0,
 };
 

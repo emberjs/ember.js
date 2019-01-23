@@ -7,11 +7,10 @@ import {
   Dict,
   RenderResult,
   Option,
-  TemplateMeta,
 } from '@glimmer/interfaces';
 import { SimpleDocument, SimpleElement } from '@simple-dom/interface';
 import { TestJitRegistry } from './registry';
-import { getDynamicVar, JitRuntime, clientBuilder } from '@glimmer/runtime';
+import { getDynamicVar, clientBuilder, JitRuntimeFromProgram } from '@glimmer/runtime';
 import {
   registerInternalHelper,
   registerStaticTaglessComponent,
@@ -34,7 +33,7 @@ import { UpdatableReference, ConstReference } from '@glimmer/reference';
 import { renderTemplate } from './render';
 
 export interface JitTestDelegateContext {
-  runtime: JitRuntimeContext<TemplateMeta>;
+  runtime: JitRuntimeContext;
   syntax: SyntaxCompilationContext;
 }
 
@@ -45,7 +44,7 @@ export function JitDelegateContext(
 ): JitTestDelegateContext {
   registerInternalHelper(registry, '-get-dynamic-var', getDynamicVar);
   let context = new TestJitCompilationContext(resolver, registry);
-  let runtime = JitRuntime(doc, context.program(), resolver);
+  let runtime = JitRuntimeFromProgram(doc, context.program(), resolver);
   let syntax = { program: context, macros: new TestMacros() };
   return { runtime, syntax };
 }

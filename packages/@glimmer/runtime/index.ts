@@ -30,10 +30,13 @@ export {
   AotRuntime,
   default as EnvironmentImpl,
   DefaultEnvironment,
+  CustomJitRuntime,
+  JitRuntimeFromProgram,
   JitRuntime,
   RuntimeEnvironment,
   RuntimeEnvironmentDelegate,
   ScopeImpl,
+  JitSyntaxCompilationContext,
 } from './lib/environment';
 export { default as getDynamicVar } from './lib/helpers/get-dynamic-var';
 export { PublicModifierDefinition as ModifierDefinition } from './lib/modifier/interfaces';
