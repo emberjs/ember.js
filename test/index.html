@@ -53,6 +53,19 @@
         tooltip: 'Enable Glimmer Logging',
       });
 
+      QUnit.config.urlConfig.push({
+        id: 'smoke_tests',
+        label: 'Enable Smoke Tests',
+        tooltip: 'Enable Smoke Tests',
+      });
+      var SMOKE_TESTS = (function() {
+        let location = typeof window !== 'undefined' && window.location;
+        if (location && /[?&]smoke_tests/.test(window.location.search)) {
+          return true;
+        }
+        return false;
+      })();
+
       var testMatch;
       var notslint = QUnit.urlParams.notslint;
 
@@ -62,12 +75,18 @@
         testMatch = /-test$/;
       }
 
-      Object.keys(requireModule.entries).forEach(function(entry) {
-        if (entry.match(testMatch)) {
-          if (notslint && entry.match(/\.lint-test$/)) return;
-          requireModule(entry);
-        }
-      });
+      var smokeTestFile = '@glimmer/integration-tests/test/smoke-test';
+
+      if (SMOKE_TESTS) {
+        requireModule(smokeTestFile);
+      } else {
+        Object.keys(requireModule.entries).forEach(function(entry) {
+          if (entry.match(testMatch) && entry !== smokeTestFile) {
+            if (notslint && entry.match(/\.lint-test$/)) return;
+            requireModule(entry);
+          }
+        });
+      }
     </script>
   </body>
 </html>

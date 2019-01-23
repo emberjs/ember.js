@@ -61,3 +61,11 @@ jobs:
         - yarn problems
         - yarn tslint
         - yarn eslint
+
+    - name: Smoke Test
+
+       addons:
+        chrome: stable
+
+       script:
+        - yarn test:smoke

@@ -22,6 +22,7 @@
     "test:browserstack": "ember test --test-port=7774 --host 127.0.0.1 --config-file=testem-browserstack.js",
     "test:node": "node bin/run-qunit.js",
     "test:types": "node bin/run-types-tests.js",
+    "test:smoke": "SMOKE_TESTS=true ember test",
     "tslint": "tslint --project tsconfig.json",
     "eslint": "eslint build/",
     "problems": "tsc -p tsconfig.json --noEmit --pretty false",
