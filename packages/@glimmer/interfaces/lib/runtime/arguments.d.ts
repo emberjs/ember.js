@@ -36,7 +36,7 @@ export interface CapturedPositionalArguments extends VersionedPathReference<unkn
   tag: Tag;
   length: number;
   references: VersionedPathReference<unknown>[];
-  at<T extends VersionedPathReference<unknown>>(position: number): T;
+  at<T extends unknown>(position: number): VersionedPathReference<T>;
   value(): unknown[];
 }
 

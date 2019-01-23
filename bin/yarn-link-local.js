@@ -7,7 +7,7 @@ const glob = require('glob');
 const chalk = require('chalk');
 
 let cwd = path.resolve(__dirname, '..');
-let packages = glob.sync('packages/@glimmer/*/', { cwd }).map(f => path.resolve(cwd, f));
+let packages = glob.sync('dist/@glimmer/*/', { cwd }).map(f => path.resolve(cwd, f));
 const node_modules = path.resolve(__dirname, '..', 'node_modules', '@glimmer');
 const package_root = path.resolve(__dirname, '..', 'packages', '@glimmer');
 

@@ -59,7 +59,6 @@ import { Option } from './core';
 import { SymbolTable, ProgramSymbolTable } from './tier1/symbol-table';
 import { ComponentDefinition } from './components';
 import { ResolvedLayout, STDLib, CompilableProgram, CompileTime, Template } from './template';
-import { TemplateMeta } from './runtime/runtime';
 import { SyntaxCompilationContext } from './program';
 import { Helper } from './runtime/vm';
 import { ModifierDefinition } from './runtime/modifier';
@@ -75,18 +74,18 @@ export interface CompileTimeComponent {
   compilable: Option<CompilableProgram>;
 }
 
-export interface CompileTimeResolverDelegate extends HandleResolver {
-  lookupHelper(name: string, referrer: TemplateMeta): Option<number>;
-  lookupModifier(name: string, referrer: TemplateMeta): Option<number>;
-  lookupComponent(name: string, referrer: Option<TemplateMeta>): Option<CompileTimeComponent>;
-  lookupPartial(name: string, referrer: TemplateMeta): Option<number>;
+export interface CompileTimeResolverDelegate<M = unknown> extends HandleResolver {
+  lookupHelper(name: string, referrer: M): Option<number>;
+  lookupModifier(name: string, referrer: M): Option<number>;
+  lookupComponent(name: string, referrer: M): Option<CompileTimeComponent>;
+  lookupPartial(name: string, referrer: M): Option<number>;
 
   // `name` is a cache key.
   // TODO: The caller should cache
   compile(source: string, name: string): Template;
 
   // For debugging
-  resolve(handle: number): TemplateMeta;
+  resolve(handle: number): M;
 }
 
 export interface PartialDefinition {
@@ -99,24 +98,22 @@ export interface PartialDefinition {
 
 export type ResolvedValue = ComponentDefinition | ModifierDefinition | Helper | PartialDefinition;
 
-export interface RuntimeResolver<R extends TemplateMeta = TemplateMeta> extends HandleResolver {
+export interface RuntimeResolver<R = unknown> extends HandleResolver {
   lookupComponent(name: string, referrer?: Option<R>): Option<ComponentDefinition>;
   lookupPartial(name: string, referrer?: Option<R>): Option<number>;
   resolve<U extends ResolvedValue>(handle: number): U;
 }
 
-export interface JitRuntimeResolver<R extends TemplateMeta = TemplateMeta>
-  extends RuntimeResolver<R> {
+export interface JitRuntimeResolver<R = unknown> extends RuntimeResolver<R> {
   compilable(locator: R): Template;
 }
 
-export interface AotRuntimeResolver<R extends TemplateMeta = TemplateMeta>
-  extends RuntimeResolver<R> {
+export interface AotRuntimeResolver<R = unknown> extends RuntimeResolver<R> {
   // for {{component}} support
   getInvocation(locator: R): Invocation;
 }
 
-export interface RuntimeResolverOptions<R extends TemplateMeta = TemplateMeta> {
+export interface RuntimeResolverDelegate<R = unknown> {
   lookupComponent?(name: string, referrer?: Option<R>): Option<ComponentDefinition> | void;
   lookupPartial?(name: string, referrer?: Option<R>): Option<number> | void;
   resolve?(handle: number): ResolvedValue | void;
@@ -124,7 +121,6 @@ export interface RuntimeResolverOptions<R extends TemplateMeta = TemplateMeta> {
   getInvocation?(locator: R): Invocation;
 }
 
-export interface JitRuntimeResolverOptions<R extends TemplateMeta = TemplateMeta>
-  extends RuntimeResolverOptions<R> {
+export interface JitRuntimeResolverOptions<R = unknown> extends RuntimeResolverDelegate<R> {
   compilable?(locator: R): Template;
 }

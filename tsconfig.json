@@ -35,6 +35,7 @@
     "demos",
     "packages/glimmer-demos",
     "packages/glimmer-benchmarks",
+    "**/dist",
     "tmp",
     "node_modules",
     ".vscode"

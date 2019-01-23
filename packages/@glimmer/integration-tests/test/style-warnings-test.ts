@@ -3,7 +3,6 @@ import {
   Option,
   RenderResult,
   Template,
-  TemplateMeta,
   Environment,
   ElementBuilder,
 } from '@glimmer/interfaces';
@@ -39,7 +38,7 @@ function commonSetup(delegate?: RuntimeEnvironmentDelegate) {
   root = qunitFixture();
 }
 
-function render(template: Template<TemplateMeta<AnnotatedModuleLocator>>, self: any) {
+function render(template: Template<AnnotatedModuleLocator>, self: any) {
   let result: RenderResult;
   context.env.begin();
   let cursor = { element: root, nextSibling: null };

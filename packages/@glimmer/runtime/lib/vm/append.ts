@@ -16,7 +16,6 @@ import {
   Scope,
   SymbolDestroyable,
   SyntaxCompilationContext,
-  TemplateMeta,
   VM as PublicVM,
   JitRuntimeContext,
   AotRuntimeContext,
@@ -40,6 +39,7 @@ import {
   ListSlice,
   Option,
   Stack,
+  assert,
 } from '@glimmer/util';
 import {
   $fp,
@@ -72,6 +72,7 @@ import {
   TryOpcode,
   VMState,
 } from './update';
+import { CheckNumber, check } from '@glimmer/debug';
 
 /**
  * This interface is used by internal opcodes, and is more stable than
@@ -83,7 +84,7 @@ export interface InternalVM<C extends JitOrAotBlock = JitOrAotBlock> {
 
   readonly env: Environment;
   readonly stack: EvaluationStack;
-  readonly runtime: RuntimeContext<TemplateMeta>;
+  readonly runtime: RuntimeContext;
 
   loadValue(register: MachineRegister, value: number): void;
   loadValue(register: Register, value: unknown): void;
@@ -142,7 +143,7 @@ export interface InternalVM<C extends JitOrAotBlock = JitOrAotBlock> {
 
 export interface InternalJitVM extends InternalVM<CompilableBlock> {
   compile(block: CompilableTemplate): number;
-  readonly runtime: JitRuntimeContext<TemplateMeta>;
+  readonly runtime: JitRuntimeContext;
   readonly context: SyntaxCompilationContext;
 }
 
@@ -282,11 +283,14 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
    */
 
   constructor(
-    readonly runtime: RuntimeContext<TemplateMeta>,
+    readonly runtime: RuntimeContext,
     { pc, scope, dynamicScope, stack }: VMState,
     private readonly elementStack: ElementBuilder
   ) {
     let evalStack = EvaluationStackImpl.restore(stack);
+
+    assert(typeof pc === 'number', 'pc is a number');
+
     evalStack[REGISTERS][$pc] = pc;
     evalStack[REGISTERS][$sp] = stack.length - 1;
     evalStack[REGISTERS][$fp] = -1;
@@ -607,7 +611,7 @@ export interface InitOptions extends MinimalInitOptions {
 
 export class AotVM extends VM<number> implements InternalVM<number> {
   static empty(
-    runtime: AotRuntimeContext<TemplateMeta>,
+    runtime: AotRuntimeContext,
     { handle, treeBuilder }: MinimalInitOptions
   ): InternalVM<number> {
     let vm = initAOT(runtime, vmState(runtime.program.heap.getaddr(handle)), treeBuilder);
@@ -616,12 +620,13 @@ export class AotVM extends VM<number> implements InternalVM<number> {
   }
 
   static initial(
-    runtime: AotRuntimeContext<TemplateMeta>,
+    runtime: AotRuntimeContext,
     { handle, self, treeBuilder, dynamicScope }: InitOptions
   ) {
     let scopeSize = runtime.program.heap.scopesizeof(handle);
     let scope = ScopeImpl.root(self, scopeSize);
-    let state = vmState(runtime.program.heap.getaddr(handle), scope, dynamicScope);
+    let pc = check(runtime.program.heap.getaddr(handle), CheckNumber);
+    let state = vmState(pc, scope, dynamicScope);
     let vm = initAOT(runtime, state, treeBuilder);
     vm.pushUpdating();
     return vm;
@@ -634,23 +639,19 @@ export class AotVM extends VM<number> implements InternalVM<number> {
 
 export type VmInitCallback<V extends InternalVM = InternalVM> = (
   this: void,
-  runtime: V extends JitVM ? JitRuntimeContext<TemplateMeta> : AotRuntimeContext<TemplateMeta>,
+  runtime: V extends JitVM ? JitRuntimeContext : AotRuntimeContext,
   state: VMState,
   builder: ElementBuilder
 ) => V;
 
 export type JitVmInitCallback<V extends InternalVM> = (
   this: void,
-  runtime: JitRuntimeContext<TemplateMeta>,
+  runtime: JitRuntimeContext,
   state: VMState,
   builder: ElementBuilder
 ) => V;
 
-function initAOT(
-  runtime: AotRuntimeContext<TemplateMeta>,
-  state: VMState,
-  builder: ElementBuilder
-): AotVM {
+function initAOT(runtime: AotRuntimeContext, state: VMState, builder: ElementBuilder): AotVM {
   return new AotVM(runtime, state, builder);
 }
 
@@ -660,7 +661,7 @@ function initJIT(context: SyntaxCompilationContext): JitVmInitCallback<JitVM> {
 
 export class JitVM extends VM<CompilableBlock> implements InternalJitVM {
   static initial(
-    runtime: JitRuntimeContext<TemplateMeta>,
+    runtime: JitRuntimeContext,
     context: SyntaxCompilationContext,
     { handle, self, dynamicScope, treeBuilder }: InitOptions
   ) {
@@ -673,7 +674,7 @@ export class JitVM extends VM<CompilableBlock> implements InternalJitVM {
   }
 
   static empty(
-    runtime: JitRuntimeContext<TemplateMeta>,
+    runtime: JitRuntimeContext,
     { handle, treeBuilder }: MinimalInitOptions,
     context: SyntaxCompilationContext
   ) {
@@ -682,10 +683,10 @@ export class JitVM extends VM<CompilableBlock> implements InternalJitVM {
     return vm;
   }
 
-  readonly runtime!: JitRuntimeContext<TemplateMeta>;
+  readonly runtime!: JitRuntimeContext;
 
   constructor(
-    runtime: JitRuntimeContext<TemplateMeta>,
+    runtime: JitRuntimeContext,
     state: VMState,
     elementStack: ElementBuilder,
     readonly context: SyntaxCompilationContext

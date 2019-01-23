@@ -4,11 +4,10 @@ import {
   Environment,
   SerializedTemplateWithLazyBlock,
   Template,
-  TemplateMeta,
   WireFormat,
 } from '@glimmer/interfaces';
 import { templateFactory, TemplateFactory } from '@glimmer/opcode-compiler';
-import { templateMeta } from '@glimmer/util';
+import { assign } from '@glimmer/util';
 
 export const DEFAULT_TEST_META: AnnotatedModuleLocator = Object.freeze({
   kind: 'unknown',
@@ -23,10 +22,10 @@ export const DEFAULT_TEST_META: AnnotatedModuleLocator = Object.freeze({
 export function preprocess(
   template: string,
   meta?: AnnotatedModuleLocator
-): Template<TemplateMeta<AnnotatedModuleLocator>> {
+): Template<AnnotatedModuleLocator> {
   let wrapper = JSON.parse(rawPrecompile(template));
   let factory = templateFactory<AnnotatedModuleLocator>(wrapper);
-  return factory.create(templateMeta(meta || DEFAULT_TEST_META));
+  return factory.create(meta || DEFAULT_TEST_META);
 }
 
 export function createTemplate<Locator>(
@@ -46,8 +45,10 @@ export interface TestCompileOptions extends PrecompileOptions {
 export function precompile(
   string: string,
   options?: TestCompileOptions
-): WireFormat.SerializedTemplate<TemplateMeta> {
-  let wrapper = JSON.parse(rawPrecompile(string, options));
-  wrapper.block = JSON.parse(wrapper.block);
-  return wrapper as WireFormat.SerializedTemplate<TemplateMeta>;
+): WireFormat.SerializedTemplate<unknown> {
+  let wrapper: WireFormat.SerializedTemplateWithLazyBlock<unknown> = JSON.parse(
+    rawPrecompile(string, options)
+  );
+
+  return assign(wrapper, { block: JSON.parse(wrapper.block) });
 }

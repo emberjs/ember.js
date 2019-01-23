@@ -64,6 +64,11 @@ export default class LowLevelVM {
     this.registers[register] = value;
   }
 
+  setPc(pc: number): void {
+    assert(typeof pc === 'number' && !isNaN(pc), 'pc is set to a number');
+    this.registers[$pc] = pc;
+  }
+
   // Start a new frame and save $ra and $fp on the stack
   pushFrame() {
     this.stack.pushSmi(this.registers[$ra]);
@@ -88,7 +93,7 @@ export default class LowLevelVM {
 
   // Jump to an address in `program`
   goto(offset: number) {
-    this.registers[$pc] = this.target(offset);
+    this.setPc(this.target(offset));
   }
 
   target(offset: number) {
@@ -100,7 +105,7 @@ export default class LowLevelVM {
     assert(handle < 0b1111111111111111, `Jumping to placehoder address`);
 
     this.registers[$ra] = this.registers[$pc];
-    this.registers[$pc] = this.heap.getaddr(handle);
+    this.setPc(this.heap.getaddr(handle));
   }
 
   // Put a specific `program` address in $ra
@@ -110,13 +115,15 @@ export default class LowLevelVM {
 
   // Return to the `program` address stored in $ra
   return() {
-    this.registers[$pc] = this.registers[$ra];
+    this.setPc(this.registers[$ra]);
   }
 
   nextStatement(): Option<RuntimeOp> {
     let { registers, program } = this;
 
     let pc = registers[$pc];
+
+    assert(typeof pc === 'number', 'pc is a number');
 
     if (pc === -1) {
       return null;
@@ -127,11 +134,11 @@ export default class LowLevelVM {
     // to where we are going. We can't simply ask for the size
     // in a jump because we have have already incremented the
     // program counter to the next instruction prior to executing.
-    let { size } = this.program.opcode(pc);
-    let operationSize = (this.currentOpSize = size);
+    let opcode = program.opcode(pc);
+    let operationSize = (this.currentOpSize = opcode.size);
     this.registers[$pc] += operationSize;
 
-    return program.opcode(pc);
+    return opcode;
   }
 
   evaluateOuter(opcode: RuntimeOp, vm: VM<JitOrAotBlock>) {

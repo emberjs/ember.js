@@ -7,7 +7,6 @@ import {
   Dict,
   Maybe,
   TemplateCompilationContext,
-  TemplateMeta,
 } from '@glimmer/interfaces';
 import { opcodeMetadata, Register, $s0, $s1, $t0, $t1, $v0, $fp, $sp, $pc, $ra } from '@glimmer/vm';
 import { DEBUG } from '@glimmer/local-debug-flags';
@@ -19,7 +18,7 @@ export interface DebugConstants {
   getString(value: number): string;
   getStringArray(value: number): string[];
   getArray(value: number): number[];
-  getTemplateMeta(s: number): TemplateMeta;
+  getTemplateMeta(s: number): unknown;
 }
 
 interface LazyDebugConstants {

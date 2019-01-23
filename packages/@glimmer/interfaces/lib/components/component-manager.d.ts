@@ -8,7 +8,7 @@ import { SyntaxCompilationContext } from '../program';
 import { VMArguments } from '../runtime/arguments';
 import { ElementOperations } from '../runtime/element';
 import { DynamicScope, Environment } from '../runtime/environment';
-import { RuntimeResolverOptions, JitRuntimeResolver, RuntimeResolver } from '../serialize';
+import { RuntimeResolverDelegate, JitRuntimeResolver, RuntimeResolver } from '../serialize';
 import { CompilableProgram, CompilableTemplate, Template } from '../template';
 import { ProgramSymbolTable } from '../tier1/symbol-table';
 
@@ -145,7 +145,7 @@ export interface WithUpdateHook<ComponentInstanceState = unknown>
 export interface WithAotStaticLayout<
   I = ComponentInstanceState,
   D = ComponentDefinitionState,
-  R extends RuntimeResolverOptions = RuntimeResolverOptions
+  R extends RuntimeResolverDelegate = RuntimeResolverDelegate
 > extends ComponentManager<I, D> {
   getAotStaticLayout(state: D, resolver: R): Invocation;
 }
@@ -160,7 +160,7 @@ export interface WithJitStaticLayout<
 
 export interface WithJitDynamicLayout<
   I = ComponentInstanceState,
-  R extends RuntimeResolverOptions = RuntimeResolverOptions
+  R extends RuntimeResolverDelegate = RuntimeResolverDelegate
 > extends ComponentManager<I> {
   // Return the compiled layout to use for this component. This is called
   // *after* the component instance has been created, because you might

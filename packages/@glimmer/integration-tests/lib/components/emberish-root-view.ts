@@ -1,11 +1,5 @@
 import { preprocess } from '../compile';
-import {
-  JitRuntimeContext,
-  SyntaxCompilationContext,
-  Template,
-  Option,
-  TemplateMeta,
-} from '@glimmer/interfaces';
+import { JitRuntimeContext, SyntaxCompilationContext, Template, Option } from '@glimmer/interfaces';
 import { assertElement, firstElementChild } from '../dom/simple-utils';
 import { UpdatableReference } from '@glimmer/reference';
 import { renderJitMain, clientBuilder } from '@glimmer/runtime';
@@ -17,7 +11,7 @@ export class EmberishRootView {
   public element: Option<SimpleElement> = null;
 
   constructor(
-    private runtime: JitRuntimeContext<TemplateMeta>,
+    private runtime: JitRuntimeContext,
     private syntax: SyntaxCompilationContext,
     template: string,
     state?: Object

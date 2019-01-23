@@ -15,9 +15,10 @@ export class BundleCompilerEmberTests extends EmberishComponentTests {
     );
     this.registerComponent('Glimmer', 'B', 'B {{@foo}}');
     this.render('<A @bar={{1}} /> {{component "B" foo=4}}');
-    let ALocator = JSON.stringify({ locator: { module: 'ui/components/A', name: 'default' } });
+    let ALocator = JSON.stringify({ module: 'ui/components/A', name: 'default' });
     let MainLocator = JSON.stringify({
-      locator: { module: 'ui/components/main', name: 'default' },
+      module: 'ui/components/main',
+      name: 'default',
     });
     let { strings } = this.delegate.getConstants();
     this.assert.equal(strings.indexOf(ALocator), -1);
@@ -50,9 +51,10 @@ export class BundleCompilerEmberTests extends EmberishComponentTests {
     this.registerComponent('Glimmer', 'A', '{{component @B foo=@bar}}');
     this.registerComponent('Glimmer', 'B', 'B {{@foo}}');
     this.render('<A @bar={{1}} @B={{name}} />', { name: 'B' });
-    let ALocator = JSON.stringify({ locator: { module: 'ui/components/A', name: 'default' } });
+    let ALocator = JSON.stringify({ module: 'ui/components/A', name: 'default' });
     let MainLocator = JSON.stringify({
-      locator: { module: 'ui/components/main', name: 'default' },
+      module: 'ui/components/main',
+      name: 'default',
     });
     let { strings } = this.delegate.constants!.toPool();
     this.assert.ok(strings.indexOf(ALocator) > -1, 'Has locator for "A"');

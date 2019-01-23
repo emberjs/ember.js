@@ -5,10 +5,9 @@ import {
   WholeProgramCompilationContext,
   JitRuntimeContext,
   Environment,
-  TemplateMeta,
 } from '@glimmer/interfaces';
 import { SimpleDocument, SimpleElement } from '@simple-dom/interface';
-import { RuntimeEnvironmentDelegate, JitRuntime } from '@glimmer/runtime';
+import { RuntimeEnvironmentDelegate, JitRuntimeFromProgram } from '@glimmer/runtime';
 import { registerHelper } from './register';
 import { TestJitCompilationContext } from './compilation-context';
 import { TestMacros } from '../../compile/macros';
@@ -21,7 +20,7 @@ export interface TestContext {
   program: WholeProgramCompilationContext;
   doc: SimpleDocument;
   root: SimpleElement;
-  runtime: JitRuntimeContext<TemplateMeta>;
+  runtime: JitRuntimeContext;
   env: Environment;
 }
 
@@ -34,7 +33,7 @@ export function JitTestContext(delegate: RuntimeEnvironmentDelegate = {}): TestC
   let syntax: SyntaxCompilationContext = { program: context, macros: new TestMacros() };
   let doc = document as SimpleDocument;
 
-  let runtime = JitRuntime(
+  let runtime = JitRuntimeFromProgram(
     document as SimpleDocument,
     context.program(),
     resolver,

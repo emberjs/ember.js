@@ -3,7 +3,6 @@ import { Option } from '@glimmer/util';
 import {
   CapturedArguments,
   ComponentDefinition,
-  TemplateMeta,
   Maybe,
   Dict,
   RuntimeResolver,
@@ -25,7 +24,7 @@ export default class CurryComponentReference
   constructor(
     private inner: Reference<unknown>,
     private resolver: RuntimeResolver,
-    private meta: TemplateMeta,
+    private meta: unknown,
     private args: Option<CapturedArguments>
   ) {
     this.tag = inner.tag;
