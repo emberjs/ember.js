@@ -156,7 +156,7 @@
     "testem": "^2.14.0",
     "testem-failure-only-reporter": "^0.0.1",
     "tslint": "^5.12.1",
-    "typescript-eslint-parser": "^21.0.2"
+    "typescript-eslint-parser": "^22.0.0"
   },
   "engines": {
     "node": "6.* || 8.* || >= 10.*"
