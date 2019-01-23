@@ -54,7 +54,7 @@ APPEND_OPCODES.add(Op.Primitive, (vm, { op1: primitive }) => {
       stack.push(vm[CONSTANTS].getString(value));
       break;
     case PrimitiveType.BOOLEAN_OR_VOID:
-      stack.pushEncodedImmediate(primitive);
+      stack.pushRaw(primitive);
       break;
     case PrimitiveType.NEGATIVE:
       stack.push(vm[CONSTANTS].getNumber(value));
@@ -122,9 +122,9 @@ APPEND_OPCODES.add(
     let block = stack.pop<Option<CompilableTemplate> | 0>();
 
     if (block) {
-      stack.pushSmi(vm.compile(block));
+      stack.push(vm.compile(block));
     } else {
-      stack.pushNull();
+      stack.push(null);
     }
 
     check(vm.stack.peek(), CheckOption(CheckNumber));

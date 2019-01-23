@@ -6,8 +6,7 @@ import { MachineRegister, $sp, $fp } from '@glimmer/vm';
 import { LowLevelRegisters, initializeRegistersWithSP } from './low-level';
 import { REGISTERS } from '../symbols';
 
-const HI = 0x80000000;
-const MASK = 0x7fffffff;
+const MAX_SMI = 0xfffffff;
 
 export class InnerStack {
   constructor(private inner = new WasmStack(), private js: unknown[] = []) {}
@@ -42,34 +41,30 @@ export class InnerStack {
 
   write(pos: number, value: unknown): void {
     if (isImmediate(value)) {
-      this.inner.writeRaw(pos, encodeImmediate(value));
+      this.writeRaw(pos, encodeImmediate(value));
     } else {
-      let idx = this.js.length;
-      this.js.push(value);
-      this.inner.writeRaw(pos, idx | HI);
+      this.writeJs(pos, value);
     }
   }
 
-  writeSmi(pos: number, value: number): void {
-    this.inner.writeSmi(pos, value);
+  private writeJs(pos: number, value: unknown): void {
+    let idx = this.js.length;
+    this.js.push(value);
+    this.inner.writeRaw(pos, ~idx);
   }
 
-  writeImmediate(pos: number, value: number): void {
+  writeRaw(pos: number, value: number) {
     this.inner.writeRaw(pos, value);
   }
 
   get<T>(pos: number): T {
     let value = this.inner.getRaw(pos);
 
-    if (value & HI) {
-      return this.js[value & MASK] as T;
+    if (value < 0) {
+      return this.js[~value] as T;
     } else {
       return decodeImmediate(value) as any;
     }
-  }
-
-  getSmi(pos: number): number {
-    return this.inner.getSmi(pos);
   }
 
   reset(): void {
@@ -86,18 +81,13 @@ export interface EvaluationStack {
   [REGISTERS]: LowLevelRegisters;
 
   push(value: unknown): void;
-  pushSmi(value: number): void;
-  pushImmediate(value: null | undefined | number | boolean): void;
-  pushEncodedImmediate(value: number): void;
   pushNull(): void;
+  pushRaw(value: number): void;
   dup(position?: MachineRegister): void;
   copy(from: number, to: number): void;
   pop<T>(n?: number): T;
-  popSmi(): number;
   peek<T>(offset?: number): T;
-  peekSmi(offset?: number): number;
   get<T>(offset: number, base?: number): T;
-  getSmi(offset: number, base?: number): number;
   set(value: unknown, offset: number, base?: number): void;
   slice(start: number, end: number): InnerStack;
   sliceArray<T = unknown>(start: number, end: number): T[];
@@ -132,20 +122,12 @@ export default class EvaluationStackImpl implements EvaluationStack {
     this.stack.write(++this[REGISTERS][$sp], value);
   }
 
-  pushSmi(value: number): void {
-    this.stack.writeSmi(++this[REGISTERS][$sp], value);
-  }
-
-  pushImmediate(value: null | undefined | number | boolean): void {
-    this.stack.writeImmediate(++this[REGISTERS][$sp], encodeImmediate(value));
-  }
-
-  pushEncodedImmediate(value: number): void {
-    this.stack.writeImmediate(++this[REGISTERS][$sp], value);
+  pushRaw(value: number): void {
+    this.stack.writeRaw(++this[REGISTERS][$sp], value);
   }
 
   pushNull(): void {
-    this.stack.writeImmediate(++this[REGISTERS][$sp], Immediates.Null);
+    this.stack.write(++this[REGISTERS][$sp], null);
   }
 
   dup(position = this[REGISTERS][$sp]): void {
@@ -162,24 +144,12 @@ export default class EvaluationStackImpl implements EvaluationStack {
     return top;
   }
 
-  popSmi(): number {
-    return this.stack.getSmi(this[REGISTERS][$sp]--);
-  }
-
   peek<T>(offset = 0): T {
     return this.stack.get<T>(this[REGISTERS][$sp] - offset);
   }
 
-  peekSmi(offset = 0): number {
-    return this.stack.getSmi(this[REGISTERS][$sp] - offset);
-  }
-
   get<T>(offset: number, base = this[REGISTERS][$fp]): T {
     return this.stack.get<T>(base + offset);
-  }
-
-  getSmi(offset: number, base = this[REGISTERS][$fp]): number {
-    return this.stack.getSmi(base + offset);
   }
 
   set(value: unknown, offset: number, base = this[REGISTERS][$fp]) {
@@ -226,7 +196,7 @@ function isImmediate(value: unknown): value is number | boolean | null | undefin
       let abs = Math.abs(value as number);
 
       // too big
-      if (abs > HI) return false;
+      if (abs > MAX_SMI) return false;
 
       return true;
     default:
