@@ -164,8 +164,8 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
   readonly [ARGS]: VMArgumentsImpl;
   readonly [INNER_VM]: LowLevelVM;
 
-  get stack(): EvaluationStackImpl {
-    return this[INNER_VM].stack as EvaluationStackImpl;
+  get stack(): EvaluationStack {
+    return this[INNER_VM].stack as EvaluationStack;
   }
 
   currentBlock(): LiveBlock {
