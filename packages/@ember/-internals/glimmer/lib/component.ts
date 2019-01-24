@@ -461,6 +461,7 @@ export const BOUNDS = symbol('BOUNDS');
     <h2>Chief Basket Weaver</h2>
     <h3>Fisherman Industries</h3>
   {{/person-profile}}
+  ```
 
   It will result in the following HTML output:
 
