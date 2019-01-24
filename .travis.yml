@@ -64,8 +64,8 @@ jobs:
 
     - name: Smoke Test
 
-       addons:
+      addons:
         chrome: stable
 
-       script:
+      script:
         - yarn test:smoke
