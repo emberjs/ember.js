@@ -149,10 +149,12 @@ export function w(str: string): string[] {
   Converts a camelized string into all lower case separated by underscores.
 
   ```javascript
-  'innerHTML'.decamelize();           // 'inner_html'
-  'action_name'.decamelize();        // 'action_name'
-  'css-class-name'.decamelize();     // 'css-class-name'
-  'my favorite items'.decamelize();  // 'my favorite items'
+  import { decamelize } from '@ember/string';
+
+  decamelize('innerHTML');          // 'inner_html'
+  decamelize('action_name');        // 'action_name'
+  decamelize('css-class-name');     // 'css-class-name'
+  decamelize('my favorite items');  // 'my favorite items'
   ```
 
   @method decamelize
@@ -168,11 +170,13 @@ export function decamelize(str: string): string {
   Replaces underscores, spaces, or camelCase with dashes.
 
   ```javascript
-  'innerHTML'.dasherize();          // 'inner-html'
-  'action_name'.dasherize();        // 'action-name'
-  'css-class-name'.dasherize();     // 'css-class-name'
-  'my favorite items'.dasherize();  // 'my-favorite-items'
-  'privateDocs/ownerInvoice'.dasherize(); // 'private-docs/owner-invoice'
+  import { dasherize } from '@ember/string';
+
+  dasherize('innerHTML');                // 'inner-html'
+  dasherize('action_name');              // 'action-name'
+  dasherize('css-class-name');           // 'css-class-name'
+  dasherize('my favorite items');        // 'my-favorite-items'
+  dasherize('privateDocs/ownerInvoice';  // 'private-docs/owner-invoice'
   ```
 
   @method dasherize
@@ -188,12 +192,14 @@ export function dasherize(str: string): string {
   Returns the lowerCamelCase form of a string.
 
   ```javascript
-  'innerHTML'.camelize();          // 'innerHTML'
-  'action_name'.camelize();        // 'actionName'
-  'css-class-name'.camelize();     // 'cssClassName'
-  'my favorite items'.camelize();  // 'myFavoriteItems'
-  'My Favorite Items'.camelize();  // 'myFavoriteItems'
-  'private-docs/owner-invoice'.camelize(); // 'privateDocs/ownerInvoice'
+  import { camelize } from '@ember/string';
+
+  camelize('innerHTML');                   // 'innerHTML'
+  camelize('action_name');                 // 'actionName'
+  camelize('css-class-name');              // 'cssClassName'
+  camelize('my favorite items');           // 'myFavoriteItems'
+  camelize('My Favorite Items');           // 'myFavoriteItems'
+  camelize('private-docs/owner-invoice');  // 'privateDocs/ownerInvoice'
   ```
 
   @method camelize
@@ -209,11 +215,13 @@ export function camelize(str: string): string {
   Returns the UpperCamelCase form of a string.
 
   ```javascript
-  'innerHTML'.classify();          // 'InnerHTML'
-  'action_name'.classify();        // 'ActionName'
-  'css-class-name'.classify();     // 'CssClassName'
-  'my favorite items'.classify();  // 'MyFavoriteItems'
-  'private-docs/owner-invoice'.classify(); // 'PrivateDocs/OwnerInvoice'
+  import { classify } from '@ember/string';
+
+  classify('innerHTML');                   // 'InnerHTML'
+  classify('action_name');                 // 'ActionName'
+  classify('css-class-name');              // 'CssClassName'
+  classify('my favorite items');           // 'MyFavoriteItems'
+  classify('private-docs/owner-invoice');  // 'PrivateDocs/OwnerInvoice'
   ```
 
   @method classify
@@ -230,11 +238,13 @@ export function classify(str: string): string {
   form of a string.
 
   ```javascript
-  'innerHTML'.underscore();          // 'inner_html'
-  'action_name'.underscore();        // 'action_name'
-  'css-class-name'.underscore();     // 'css_class_name'
-  'my favorite items'.underscore();  // 'my_favorite_items'
-  'privateDocs/ownerInvoice'.underscore(); // 'private_docs/owner_invoice'
+  import { underscore } from '@ember/string';
+
+  underscore('innerHTML');                 // 'inner_html'
+  underscore('action_name');               // 'action_name'
+  underscore('css-class-name');            // 'css_class_name'
+  underscore('my favorite items');         // 'my_favorite_items'
+  underscore('privateDocs/ownerInvoice');  // 'private_docs/owner_invoice'
   ```
 
   @method underscore
@@ -250,11 +260,13 @@ export function underscore(str: string): string {
   Returns the Capitalized form of a string
 
   ```javascript
-  'innerHTML'.capitalize()         // 'InnerHTML'
-  'action_name'.capitalize()       // 'Action_name'
-  'css-class-name'.capitalize()    // 'Css-class-name'
-  'my favorite items'.capitalize() // 'My favorite items'
-  'privateDocs/ownerInvoice'.capitalize(); // 'PrivateDocs/ownerInvoice'
+  import { capitalize } from '@ember/string';
+
+  capitalize('innerHTML')                 // 'InnerHTML'
+  capitalize('action_name')               // 'Action_name'
+  capitalize('css-class-name')            // 'Css-class-name'
+  capitalize('my favorite items')         // 'My favorite items'
+  capitalize('privateDocs/ownerInvoice'); // 'PrivateDocs/ownerInvoice'
   ```
 
   @method capitalize
@@ -280,7 +292,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       configurable: true,
       enumerable: false,
       writeable: true,
-      value: function() {
+      value: function () {
         return w(this);
       },
     },
@@ -297,7 +309,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       configurable: true,
       enumerable: false,
       writeable: true,
-      value: function(this: string, ...args: any[]) {
+      value: function (this: string, ...args: any[]) {
         return loc(this, args);
       },
     },
@@ -314,7 +326,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       configurable: true,
       enumerable: false,
       writeable: true,
-      value: function() {
+      value: function () {
         return camelize(this);
       },
     },
@@ -331,7 +343,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       configurable: true,
       enumerable: false,
       writeable: true,
-      value: function() {
+      value: function () {
         return decamelize(this);
       },
     },
@@ -348,7 +360,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       configurable: true,
       enumerable: false,
       writeable: true,
-      value: function() {
+      value: function () {
         return dasherize(this);
       },
     },
@@ -365,7 +377,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       configurable: true,
       enumerable: false,
       writeable: true,
-      value: function() {
+      value: function () {
         return underscore(this);
       },
     },
@@ -382,7 +394,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       configurable: true,
       enumerable: false,
       writeable: true,
-      value: function() {
+      value: function () {
         return classify(this);
       },
     },
@@ -399,7 +411,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       configurable: true,
       enumerable: false,
       writeable: true,
-      value: function() {
+      value: function () {
         return capitalize(this);
       },
     },
