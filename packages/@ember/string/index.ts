@@ -292,7 +292,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       configurable: true,
       enumerable: false,
       writeable: true,
-      value: function () {
+      value() {
         return w(this);
       },
     },
@@ -309,7 +309,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       configurable: true,
       enumerable: false,
       writeable: true,
-      value: function (this: string, ...args: any[]) {
+      value(this: string, ...args: any[]) {
         return loc(this, args);
       },
     },
@@ -326,7 +326,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       configurable: true,
       enumerable: false,
       writeable: true,
-      value: function () {
+      value() {
         return camelize(this);
       },
     },
@@ -343,7 +343,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       configurable: true,
       enumerable: false,
       writeable: true,
-      value: function () {
+      value() {
         return decamelize(this);
       },
     },
@@ -360,7 +360,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       configurable: true,
       enumerable: false,
       writeable: true,
-      value: function () {
+      value() {
         return dasherize(this);
       },
     },
@@ -377,7 +377,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       configurable: true,
       enumerable: false,
       writeable: true,
-      value: function () {
+      value() {
         return underscore(this);
       },
     },
@@ -394,7 +394,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       configurable: true,
       enumerable: false,
       writeable: true,
-      value: function () {
+      value() {
         return classify(this);
       },
     },
@@ -411,7 +411,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
       configurable: true,
       enumerable: false,
       writeable: true,
-      value: function () {
+      value() {
         return capitalize(this);
       },
     },
