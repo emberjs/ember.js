@@ -1,11 +1,12 @@
 import { context } from '@ember/-internals/environment';
 import { hasDOM } from '@ember/-internals/browser-environment';
 import { ENV } from '@ember/-internals/environment';
+import { JQUERY_INTEGRATION } from '@ember/deprecated-features';
 
 let jQuery;
-export let jQueryDisabled = ENV._JQUERY_INTEGRATION === false;
+export let jQueryDisabled = !JQUERY_INTEGRATION || ENV._JQUERY_INTEGRATION === false;
 
-if (hasDOM) {
+if (JQUERY_INTEGRATION && hasDOM) {
   jQuery = context.imports.jQuery;
 
   if (!jQueryDisabled && jQuery) {

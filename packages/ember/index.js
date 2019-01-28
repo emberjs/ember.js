@@ -125,7 +125,7 @@ import ApplicationInstance from '@ember/application/instance';
 import Engine from '@ember/engine';
 import EngineInstance from '@ember/engine/instance';
 import { assign, merge } from '@ember/polyfills';
-import { LOGGER, EMBER_EXTEND_PROTOTYPES } from '@ember/deprecated-features';
+import { LOGGER, EMBER_EXTEND_PROTOTYPES, JQUERY_INTEGRATION } from '@ember/deprecated-features';
 
 // ****@ember/-internals/environment****
 
@@ -560,7 +560,7 @@ Object.defineProperty(Ember, 'TEMPLATES', {
 Ember.VERSION = VERSION;
 
 // ****@ember/-internals/views****
-if (!views.jQueryDisabled) {
+if (JQUERY_INTEGRATION && !views.jQueryDisabled) {
   Object.defineProperty(Ember, '$', {
     get() {
       deprecate(

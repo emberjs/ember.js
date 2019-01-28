@@ -9,3 +9,4 @@ export const HANDLER_INFOS = !!'3.9.0';
 export const ROUTER_EVENTS = !!'3.9.0';
 export const TRANSITION_STATE = !!'3.9.0';
 export const COMPONENT_MANAGER_STRING_LOOKUP = !!'4.0.0';
+export const JQUERY_INTEGRATION = !!'3.9.0';

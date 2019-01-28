@@ -6,68 +6,64 @@ import { hasDOM } from '@ember/-internals/browser-environment';
 import { matches } from '../system/utils';
 import { default as jQuery, jQueryDisabled } from '../system/jquery';
 import { deprecate } from '@ember/debug';
+import { JQUERY_INTEGRATION } from '@ember/deprecated-features';
 
 function K() {
   return this;
 }
 
-/**
- @class ViewMixin
- @namespace Ember
- @private
-*/
-export default Mixin.create({
+let mixin = {
   /**
-    A list of properties of the view to apply as attributes. If the property
-    is a string value, the value of that string will be applied as the value
-    for an attribute of the property's name.
+   A list of properties of the view to apply as attributes. If the property
+   is a string value, the value of that string will be applied as the value
+   for an attribute of the property's name.
 
-    The following example creates a tag like `<div priority="high" />`.
+   The following example creates a tag like `<div priority="high" />`.
 
-    ```app/components/my-component.js
-    import Component from '@ember/component';
+   ```app/components/my-component.js
+   import Component from '@ember/component';
 
-    export default Component.extend({
+   export default Component.extend({
       attributeBindings: ['priority'],
       priority: 'high'
     });
-    ```
+   ```
 
-    If the value of the property is a Boolean, the attribute is treated as
-    an HTML Boolean attribute. It will be present if the property is `true`
-    and omitted if the property is `false`.
+   If the value of the property is a Boolean, the attribute is treated as
+   an HTML Boolean attribute. It will be present if the property is `true`
+   and omitted if the property is `false`.
 
-    The following example creates markup like `<div visible />`.
+   The following example creates markup like `<div visible />`.
 
-    ```app/components/my-component.js
-    import Component from '@ember/component';
+   ```app/components/my-component.js
+   import Component from '@ember/component';
 
-    export default Component.extend({
+   export default Component.extend({
       attributeBindings: ['visible'],
       visible: true
     });
-    ```
+   ```
 
-    If you would prefer to use a custom value instead of the property name,
-    you can create the same markup as the last example with a binding like
-    this:
+   If you would prefer to use a custom value instead of the property name,
+   you can create the same markup as the last example with a binding like
+   this:
 
-    ```app/components/my-component.js
-    import Component from '@ember/component';
+   ```app/components/my-component.js
+   import Component from '@ember/component';
 
-    export default Component.extend({
+   export default Component.extend({
       attributeBindings: ['isVisible:visible'],
       isVisible: true
     });
-    ```
+   ```
 
-    This list of attributes is inherited from the component's superclasses,
-    as well.
+   This list of attributes is inherited from the component's superclasses,
+   as well.
 
-    @property attributeBindings
-    @type Array
-    @default []
-    @public
+   @property attributeBindings
+   @type Array
+   @default []
+   @public
    */
   concatenatedProperties: ['attributeBindings'],
 
@@ -76,16 +72,16 @@ export default Mixin.create({
   //
 
   /**
-    Return the nearest ancestor that is an instance of the provided
-    class or mixin.
+   Return the nearest ancestor that is an instance of the provided
+   class or mixin.
 
-    @method nearestOfType
-    @param {Class,Mixin} klass Subclass of Ember.View (or Ember.View itself),
-           or an instance of Mixin.
-    @return Ember.View
-    @deprecated use `yield` and contextual components for composition instead.
-    @private
-  */
+   @method nearestOfType
+   @param {Class,Mixin} klass Subclass of Ember.View (or Ember.View itself),
+   or an instance of Mixin.
+   @return Ember.View
+   @deprecated use `yield` and contextual components for composition instead.
+   @private
+   */
   nearestOfType(klass) {
     let view = this.parentView;
     let isOfType =
@@ -100,14 +96,14 @@ export default Mixin.create({
   },
 
   /**
-    Return the nearest ancestor that has a given property.
+   Return the nearest ancestor that has a given property.
 
-    @method nearestWithProperty
-    @param {String} property A property name
-    @return Ember.View
-    @deprecated use `yield` and contextual components for composition instead.
-    @private
-  */
+   @method nearestWithProperty
+   @param {String} property A property name
+   @return Ember.View
+   @deprecated use `yield` and contextual components for composition instead.
+   @private
+   */
   nearestWithProperty(property) {
     let view = this.parentView;
 
@@ -120,22 +116,22 @@ export default Mixin.create({
   },
 
   /**
-    Renders the view again. This will work regardless of whether the
-    view is already in the DOM or not. If the view is in the DOM, the
-    rendering process will be deferred to give bindings a chance
-    to synchronize.
+   Renders the view again. This will work regardless of whether the
+   view is already in the DOM or not. If the view is in the DOM, the
+   rendering process will be deferred to give bindings a chance
+   to synchronize.
 
-    If children were added during the rendering process using `appendChild`,
-    `rerender` will remove them, because they will be added again
-    if needed by the next `render`.
+   If children were added during the rendering process using `appendChild`,
+   `rerender` will remove them, because they will be added again
+   if needed by the next `render`.
 
-    In general, if the display of your view changes, you should modify
-    the DOM element directly instead of manually calling `rerender`, which can
-    be slow.
+   In general, if the display of your view changes, you should modify
+   the DOM element directly instead of manually calling `rerender`, which can
+   be slow.
 
-    @method rerender
-    @public
-  */
+   @method rerender
+   @public
+   */
   rerender() {
     return this._currentState.rerender(this);
   },
@@ -145,12 +141,12 @@ export default Mixin.create({
   //
 
   /**
-    Returns the current DOM element for the view.
+   Returns the current DOM element for the view.
 
-    @property element
-    @type DOMElement
-    @public
-  */
+   @property element
+   @type DOMElement
+   @public
+   */
   element: descriptor({
     configurable: false,
     enumerable: false,
@@ -160,55 +156,22 @@ export default Mixin.create({
   }),
 
   /**
-    Returns a jQuery object for this view's element. If you pass in a selector
-    string, this method will return a jQuery object, using the current element
-    as its buffer.
+   Appends the view's element to the specified parent element.
 
-    For example, calling `view.$('li')` will return a jQuery object containing
-    all of the `li` elements inside the DOM element of this view.
+   Note that this method just schedules the view to be appended; the DOM
+   element will not be appended to the given element until all bindings have
+   finished synchronizing.
 
-    @method $
-    @param {String} [selector] a jQuery-compatible selector string
-    @return {jQuery} the jQuery object for the DOM node
-    @public
-  */
-  $(sel) {
-    assert(
-      "You cannot access this.$() on a component with `tagName: ''` specified.",
-      this.tagName !== ''
-    );
-    assert('You cannot access this.$() with `jQuery` disabled.', !jQueryDisabled);
-    deprecate(
-      'Using this.$() in a component has been deprecated, consider using this.element',
-      false,
-      {
-        id: 'ember-views.curly-components.jquery-element',
-        until: '4.0.0',
-        url: 'https://emberjs.com/deprecations/v3.x#toc_jquery-apis',
-      }
-    );
-    if (this.element) {
-      return sel ? jQuery(sel, this.element) : jQuery(this.element);
-    }
-  },
+   This is not typically a function that you will need to call directly when
+   building your application. If you do need to use `appendTo`, be sure that
+   the target element you are providing is associated with an `Application`
+   and does not have an ancestor element that is associated with an Ember view.
 
-  /**
-    Appends the view's element to the specified parent element.
-
-    Note that this method just schedules the view to be appended; the DOM
-    element will not be appended to the given element until all bindings have
-    finished synchronizing.
-
-    This is not typically a function that you will need to call directly when
-    building your application. If you do need to use `appendTo`, be sure that
-    the target element you are providing is associated with an `Application`
-    and does not have an ancestor element that is associated with an Ember view.
-
-    @method appendTo
-    @param {String|DOMElement|jQuery} A selector, element, HTML string, or jQuery object
-    @return {Ember.View} receiver
-    @private
-  */
+   @method appendTo
+   @param {String|DOMElement|jQuery} A selector, element, HTML string, or jQuery object
+   @return {Ember.View} receiver
+   @private
+   */
   appendTo(selector) {
     let target;
 
@@ -251,148 +214,148 @@ export default Mixin.create({
   },
 
   /**
-    Appends the view's element to the document body. If the view does
-    not have an HTML representation yet
-    the element will be generated automatically.
+   Appends the view's element to the document body. If the view does
+   not have an HTML representation yet
+   the element will be generated automatically.
 
-    If your application uses the `rootElement` property, you must append
-    the view within that element. Rendering views outside of the `rootElement`
-    is not supported.
+   If your application uses the `rootElement` property, you must append
+   the view within that element. Rendering views outside of the `rootElement`
+   is not supported.
 
-    Note that this method just schedules the view to be appended; the DOM
-    element will not be appended to the document body until all bindings have
-    finished synchronizing.
+   Note that this method just schedules the view to be appended; the DOM
+   element will not be appended to the document body until all bindings have
+   finished synchronizing.
 
-    @method append
-    @return {Ember.View} receiver
-    @private
-  */
+   @method append
+   @return {Ember.View} receiver
+   @private
+   */
   append() {
     return this.appendTo(document.body);
   },
 
   /**
-    The HTML `id` of the view's element in the DOM. You can provide this
-    value yourself but it must be unique (just as in HTML):
+   The HTML `id` of the view's element in the DOM. You can provide this
+   value yourself but it must be unique (just as in HTML):
 
-    ```handlebars
-      {{my-component elementId="a-really-cool-id"}}
-    ```
+   ```handlebars
+   {{my-component elementId="a-really-cool-id"}}
+   ```
 
-    If not manually set a default value will be provided by the framework.
+   If not manually set a default value will be provided by the framework.
 
-    Once rendered an element's `elementId` is considered immutable and you
-    should never change it. If you need to compute a dynamic value for the
-    `elementId`, you should do this when the component or element is being
-    instantiated:
+   Once rendered an element's `elementId` is considered immutable and you
+   should never change it. If you need to compute a dynamic value for the
+   `elementId`, you should do this when the component or element is being
+   instantiated:
 
-    ```app/components/my-component.js
-    import Component from '@ember/component';
+   ```app/components/my-component.js
+   import Component from '@ember/component';
 
-    export default Component.extend({
+   export default Component.extend({
       init() {
         this._super(...arguments);
         let index = this.get('index');
         this.set('elementId', 'component-id' + index);
       }
     });
-    ```
+   ```
 
-    @property elementId
-    @type String
-    @public
-  */
+   @property elementId
+   @type String
+   @public
+   */
   elementId: null,
 
   /**
-    Attempts to discover the element in the parent element. The default
-    implementation looks for an element with an ID of `elementId` (or the
-    view's guid if `elementId` is null). You can override this method to
-    provide your own form of lookup. For example, if you want to discover your
-    element using a CSS class name instead of an ID.
+   Attempts to discover the element in the parent element. The default
+   implementation looks for an element with an ID of `elementId` (or the
+   view's guid if `elementId` is null). You can override this method to
+   provide your own form of lookup. For example, if you want to discover your
+   element using a CSS class name instead of an ID.
 
-    @method findElementInParentElement
-    @param {DOMElement} parentElement The parent's DOM element
-    @return {DOMElement} The discovered element
-    @private
-  */
+   @method findElementInParentElement
+   @param {DOMElement} parentElement The parent's DOM element
+   @return {DOMElement} The discovered element
+   @private
+   */
   findElementInParentElement(parentElem) {
     let id = `#${this.elementId}`;
     return jQuery(id)[0] || jQuery(id, parentElem)[0];
   },
 
   /**
-    Called when a view is going to insert an element into the DOM.
+   Called when a view is going to insert an element into the DOM.
 
-    @event willInsertElement
-    @public
-  */
+   @event willInsertElement
+   @public
+   */
   willInsertElement: K,
 
   /**
-    Called when the element of the view has been inserted into the DOM.
-    Override this function to do any set up that requires an element
-    in the document body.
+   Called when the element of the view has been inserted into the DOM.
+   Override this function to do any set up that requires an element
+   in the document body.
 
-    When a view has children, didInsertElement will be called on the
-    child view(s) first and on itself afterwards.
+   When a view has children, didInsertElement will be called on the
+   child view(s) first and on itself afterwards.
 
-    @event didInsertElement
-    @public
-  */
+   @event didInsertElement
+   @public
+   */
   didInsertElement: K,
 
   /**
-    Called when the view is about to rerender, but before anything has
-    been torn down. This is a good opportunity to tear down any manual
-    observers you have installed based on the DOM state
+   Called when the view is about to rerender, but before anything has
+   been torn down. This is a good opportunity to tear down any manual
+   observers you have installed based on the DOM state
 
-    @event willClearRender
-    @public
-  */
+   @event willClearRender
+   @public
+   */
   willClearRender: K,
 
   /**
-    You must call `destroy` on a view to destroy the view (and all of its
-    child views). This will remove the view from any parent node, then make
-    sure that the DOM element managed by the view can be released by the
-    memory manager.
+   You must call `destroy` on a view to destroy the view (and all of its
+   child views). This will remove the view from any parent node, then make
+   sure that the DOM element managed by the view can be released by the
+   memory manager.
 
-    @method destroy
-    @private
-  */
+   @method destroy
+   @private
+   */
   destroy() {
     this._super(...arguments);
     this._currentState.destroy(this);
   },
 
   /**
-    Called when the element of the view is going to be destroyed. Override
-    this function to do any teardown that requires an element, like removing
-    event listeners.
+   Called when the element of the view is going to be destroyed. Override
+   this function to do any teardown that requires an element, like removing
+   event listeners.
 
-    Please note: any property changes made during this event will have no
-    effect on object observers.
+   Please note: any property changes made during this event will have no
+   effect on object observers.
 
-    @event willDestroyElement
-    @public
-  */
+   @event willDestroyElement
+   @public
+   */
   willDestroyElement: K,
 
   /**
-    Called after the element of the view is destroyed.
+   Called after the element of the view is destroyed.
 
-    @event willDestroyElement
-    @public
-  */
+   @event willDestroyElement
+   @public
+   */
   didDestroyElement: K,
 
   /**
-    Called when the parentView property has changed.
+   Called when the parentView property has changed.
 
-    @event parentViewDidChange
-    @private
-  */
+   @event parentViewDidChange
+   @private
+   */
   parentViewDidChange: K,
 
   // ..........................................................
@@ -400,17 +363,17 @@ export default Mixin.create({
   //
 
   /**
-    Tag name for the view's outer element. The tag name is only used when an
-    element is first created. If you change the `tagName` for an element, you
-    must destroy and recreate the view element.
+   Tag name for the view's outer element. The tag name is only used when an
+   element is first created. If you change the `tagName` for an element, you
+   must destroy and recreate the view element.
 
-    By default, the render buffer will use a `<div>` tag for views.
+   By default, the render buffer will use a `<div>` tag for views.
 
-    @property tagName
-    @type String
-    @default null
-    @public
-  */
+   @property tagName
+   @type String
+   @default null
+   @public
+   */
 
   // We leave this null by default so we can tell the difference between
   // the default case and a user-specified tag.
@@ -421,15 +384,15 @@ export default Mixin.create({
   //
 
   /**
-    Setup a view, but do not finish waking it up.
+   Setup a view, but do not finish waking it up.
 
-    * configure `childViews`
-    * register the view with the global views hash, which is used for event
-      dispatch
+   * configure `childViews`
+   * register the view with the global views hash, which is used for event
+   dispatch
 
-    @method init
-    @private
-  */
+   @method init
+   @private
+   */
   init() {
     this._super(...arguments);
 
@@ -457,14 +420,57 @@ export default Mixin.create({
   //
 
   /**
-    Handle events from `EventDispatcher`
+   Handle events from `EventDispatcher`
 
-    @method handleEvent
-    @param eventName {String}
-    @param evt {Event}
-    @private
-  */
+   @method handleEvent
+   @param eventName {String}
+   @param evt {Event}
+   @private
+   */
   handleEvent(eventName, evt) {
     return this._currentState.handleEvent(this, eventName, evt);
   },
-});
+};
+
+if (JQUERY_INTEGRATION) {
+  /**
+   Returns a jQuery object for this view's element. If you pass in a selector
+   string, this method will return a jQuery object, using the current element
+   as its buffer.
+
+   For example, calling `view.$('li')` will return a jQuery object containing
+   all of the `li` elements inside the DOM element of this view.
+
+   @method $
+   @param {String} [selector] a jQuery-compatible selector string
+   @return {jQuery} the jQuery object for the DOM node
+   @public
+   @deprecated
+   */
+  mixin.$ = function $(sel) {
+    assert(
+      "You cannot access this.$() on a component with `tagName: ''` specified.",
+      this.tagName !== ''
+    );
+    assert('You cannot access this.$() with `jQuery` disabled.', !jQueryDisabled);
+    deprecate(
+      'Using this.$() in a component has been deprecated, consider using this.element',
+      false,
+      {
+        id: 'ember-views.curly-components.jquery-element',
+        until: '4.0.0',
+        url: 'https://emberjs.com/deprecations/v3.x#toc_jquery-apis',
+      }
+    );
+    if (this.element) {
+      return sel ? jQuery(sel, this.element) : jQuery(this.element);
+    }
+  };
+}
+
+/**
+ @class ViewMixin
+ @namespace Ember
+ @private
+*/
+export default Mixin.create(mixin);

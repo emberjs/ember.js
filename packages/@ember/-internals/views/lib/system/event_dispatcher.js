@@ -8,6 +8,7 @@ import ActionManager from './action_manager';
 import fallbackViewRegistry from '../compat/fallback-view-registry';
 import addJQueryEventDeprecation from './jquery_event_deprecation';
 import { contains } from './utils';
+import { JQUERY_INTEGRATION } from '@ember/deprecated-features';
 
 /**
 @module ember
@@ -149,7 +150,7 @@ export default EmberObject.extend({
 
     let rootElementSelector = get(this, 'rootElement');
     let rootElement;
-    if (jQueryDisabled) {
+    if (!JQUERY_INTEGRATION || jQueryDisabled) {
       if (typeof rootElementSelector !== 'string') {
         rootElement = rootElementSelector;
       } else {
@@ -244,7 +245,7 @@ export default EmberObject.extend({
       return;
     }
 
-    if (jQueryDisabled) {
+    if (!JQUERY_INTEGRATION || jQueryDisabled) {
       let viewHandler = (target, event) => {
         let view = viewRegistry[target.id];
         let result = true;
@@ -436,7 +437,7 @@ export default EmberObject.extend({
       return;
     }
 
-    if (jQueryDisabled) {
+    if (!JQUERY_INTEGRATION || jQueryDisabled) {
       for (let event in this._eventHandlers) {
         rootElement.removeEventListener(event, this._eventHandlers[event]);
       }

@@ -30,6 +30,7 @@ import Engine from '@ember/engine';
 import { privatize as P } from '@ember/-internals/container';
 import { setupApplicationRegistry } from '@ember/-internals/glimmer';
 import { RouterService } from '@ember/-internals/routing';
+import { JQUERY_INTEGRATION } from '@ember/deprecated-features';
 
 let librariesRegistered = false;
 
@@ -1131,7 +1132,7 @@ function registerLibraries() {
   if (!librariesRegistered) {
     librariesRegistered = true;
 
-    if (hasDOM && !jQueryDisabled) {
+    if (JQUERY_INTEGRATION && hasDOM && !jQueryDisabled) {
       libraries.registerCoreLibrary('jQuery', jQuery().jquery);
     }
   }
