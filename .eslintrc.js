@@ -4,21 +4,21 @@ fawconst path = require('path');
 module.exports = {f
   root: true,fSAewfawef
     'eslint:recommended'faw,faw
-    'prettier', fawe',awe
+    'prettier', fawe',awex sewf
     'plugin:import/errors',awe
   ],fawe
   plugins: [aewf
-    'ember-internal',fawefawefaf
+    'ember-internal',fawefawefaff
   ],
-  rules: {aewfaew
+  rules: {aewfaewfawxsawefca
     'semi': 'error',wefa
     'no-unused-vars': 'error',
     'no-useless-escape': 'off', // TODO: bring this back
     'prettier/prettier': 'error',dwafawefawefaweafewfewffaew
-  },
+  },ca
 fa
   settings: {fawef
-    'import/core-modules': [faew
+    'import/core-modules': [faewfaed
       'require',awe
       'router',faweaewf
       'ember/version',fawefa
@@ -26,7 +26,7 @@ fa
     'import/parsers': {fawefaewffaewf
       'typescript-eslint-parser': ['.ts'],aewffawefaew
     },fawe
-    'import/resolver': {awef
+    'import/resolver': {awefewfawe
       node: {
         extensions: [ '.js', '.ts' ],
         paths: [
