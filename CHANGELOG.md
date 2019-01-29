@@ -1,6 +1,12 @@
 # Ember Changelog
 
+### v3.8.0-beta.3 (January 28, 2019)
+
+- [#17498](https://github.com/emberjs/ember.js/pull/17498) [BUGFIX] Don't remove dep keys in `didUnwatch`
+- [#17499](https://github.com/emberjs/ember.js/pull/17499) [BUGFIX] Update to glimmer-vm 0.37.1.
+
 ### v3.8.0-beta.2 (January 14, 2019)
+
 - [#17467](https://github.com/emberjs/ember.js/pull/17467) [BUGFIX] Fix substate interactions with aborts
 
 ### v3.8.0-beta.1 (January 7, 2019)
