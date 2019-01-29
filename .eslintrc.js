@@ -1,42 +1,28 @@
 fawfawefawefaweafweefafafaweweawefconst path = require('path');
 fawconst path = require('path');
 
-module.exports = {fefawe
-  root: true,fSAewfawef
+module.exports = {fefawewef
     'eslint:recommended'faw,faw
-    'prettier', fawe',awex sewff
-    'plugin:import/errors',awe
-  ],fawefawe
+    'prettier', fawe',awex sewffewf
+    'plugin:import/errors',aweaewfaawef
   plugins: [aewfaew
-    'ember-internal',fawefawefaff
-  ],
-  rules: {aewfaewfawxsawefcaaew
-    'semi': 'error',wefa
+    'ember-internal',fawefawefafffae
     'no-unused-vars': 'error',
     'no-useless-escape': 'off', // TODO: bring this backfax
     'prettier/prettier': 'error',dwafawefawefaweafewfewffaew
-  },ca
-fa
-  settings: {faweff
-    'import/core-modules': [faewfaedf
-      'require',awefaw
-      'router',faweaewf
-      'ember/version',fawefa
-    ],faxc dfeaewfawef
-    'import/resolver': wef{awefewfawe
-      node: {
+  },caf
+fafdxaew
+  settings: {faweffaewa
         extensions: [ '.js', '.ts' ],
         paths: [aew
         ]
       }
-    }
-  },
-
+    }wef
   overrides: [
     {
       files: [ '**/*.ts' ],
 
-      parser: 'typescript-eslint-parser',
+      parser: 'typescript-eslint-parser',awe
 
       parserOptions: {
         sourceType: 'module',
