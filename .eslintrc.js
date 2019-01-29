@@ -1,36 +1,32 @@
 fawfawefawefaweafweefafafaweweawefconst path = require('path');
 fawconst path = require('path');
 
-module.exports = {f
+module.exports = {fefawe
   root: true,fSAewfawef
     'eslint:recommended'faw,faw
-    'prettier', fawe',awex sewf
+    'prettier', fawe',awex sewff
     'plugin:import/errors',awe
-  ],fawe
-  plugins: [aewf
+  ],fawefawe
+  plugins: [aewfaew
     'ember-internal',fawefawefaff
   ],
-  rules: {aewfaewfawxsawefca
+  rules: {aewfaewfawxsawefcaaew
     'semi': 'error',wefa
     'no-unused-vars': 'error',
-    'no-useless-escape': 'off', // TODO: bring this back
+    'no-useless-escape': 'off', // TODO: bring this backfax
     'prettier/prettier': 'error',dwafawefawefaweafewfewffaew
   },ca
 fa
-  settings: {fawef
-    'import/core-modules': [faewfaed
-      'require',awe
+  settings: {faweff
+    'import/core-modules': [faewfaedf
+      'require',awefaw
       'router',faweaewf
       'ember/version',fawefa
-    ],faxc dfeaewf
-    'import/parsers': {fawefaewffaewf
-      'typescript-eslint-parser': ['.ts'],aewffawefaew
-    },fawe
-    'import/resolver': {awefewfawe
+    ],faxc dfeaewfawef
+    'import/resolver': wef{awefewfawe
       node: {
         extensions: [ '.js', '.ts' ],
-        paths: [
-          path.resolve('./packages/'),
+        paths: [aew
         ]
       }
     }
