@@ -139,6 +139,31 @@ class AbstractEachInTest extends RenderingTestCase {
 }
 
 class EachInTest extends AbstractEachInTest {
+  [`@only each-in supports keys with a period in them`]() {
+    this.render(
+      strip`
+    <ul>
+      {{#each-in categories as |_ item|}}
+        <li>{{item.name}}</li>
+      {{/each-in}}
+    </ul>
+  `,
+      {
+        categories: {
+          // uncomment and run.  notice `items` is undefined
+          'hello.world': { name: 'foo' },
+        },
+      }
+    );
+
+    // Empty
+    this.assertHTML(strip`
+    <ul>
+      <li>foo</li>
+    </ul>
+  `);
+  }
+
   [`@test it repeats the given block for each item in the hash`]() {
     this.makeHash({ Smartphones: 8203, 'JavaScript Frameworks': Infinity });
 
