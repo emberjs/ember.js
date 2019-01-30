@@ -817,6 +817,59 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
         });
       }
 
+      '@test merges trailing class attribute with `...attributes` in tagless component ("splattributes")'() {
+        let instance;
+        this.registerComponent('foo-bar', {
+          ComponentClass: Component.extend({
+            tagName: '',
+            init() {
+              instance = this;
+              this._super(...arguments);
+              this.localProp = 'qux';
+            },
+          }),
+          template: '<div ...attributes class={{localProp}}>hello</div>',
+        });
+
+        this.render('<FooBar class={{bar}} />', { bar: 'bar' });
+
+        this.assertElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { class: classes('bar qux') },
+          content: 'hello',
+        });
+
+        runTask(() => this.rerender());
+
+        this.assertElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { class: classes('bar qux') },
+          content: 'hello',
+        });
+
+        runTask(() => {
+          set(this.context, 'bar', undefined);
+          set(instance, 'localProp', 'QUZ');
+        });
+
+        this.assertElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { class: classes('QUZ') },
+          content: 'hello',
+        });
+
+        runTask(() => {
+          set(this.context, 'bar', 'bar');
+          set(instance, 'localProp', 'qux');
+        });
+
+        this.assertElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { class: classes('bar qux') },
+          content: 'hello',
+        });
+      }
+
       '@test merges class attribute with `...attributes` in yielded contextual component ("splattributes")'() {
         this.registerComponent('foo-bar', {
           ComponentClass: Component.extend({ tagName: '' }),
@@ -832,6 +885,25 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
         this.assertElement(this.firstChild, {
           tagName: 'div',
           attrs: { class: classes('default-class custom-class'), title: 'foo' },
+          content: 'hello',
+        });
+      }
+
+      '@test merges trailing class attribute with `...attributes` in yielded contextual component ("splattributes")'() {
+        this.registerComponent('foo-bar', {
+          ComponentClass: Component.extend({ tagName: '' }),
+          template: '{{yield (hash baz=(component "foo-bar/baz"))}}',
+        });
+        this.registerComponent('foo-bar/baz', {
+          ComponentClass: Component.extend({ tagName: '' }),
+          template: '<div ...attributes class="default-class" >hello</div>',
+        });
+
+        this.render('<FooBar as |fb|><fb.baz class="custom-class" title="foo"></fb.baz></FooBar>');
+
+        this.assertElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { class: classes('custom-class default-class'), title: 'foo' },
           content: 'hello',
         });
       }
