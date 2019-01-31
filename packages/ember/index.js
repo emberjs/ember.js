@@ -203,8 +203,6 @@ Object.defineProperty(Ember, 'NAME_KEY', {
   },
 });
 
-Ember._Cache = utils.Cache;
-
 // ****@ember/-internals/container****
 Ember.Container = Container;
 Ember.Registry = Registry;
