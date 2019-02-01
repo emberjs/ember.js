@@ -151,7 +151,7 @@ export default class BundleCompiler {
   addTemplateSource(_locator: ModuleLocator, templateSource: string): SerializedTemplateBlock {
     let l = normalizeLocator(_locator);
 
-    let block = this.preprocess(templateSource);
+    let block = this.preprocess(templateSource, { meta: { ...l }, plugins: { ast: this.plugins } });
     this.context.compiledBlocks.set(l, block);
 
     let layout = {
@@ -202,8 +202,9 @@ export default class BundleCompiler {
     };
   }
 
-  preprocess(input: string): SerializedTemplateBlock {
-    let ast = preprocess(input, { plugins: { ast: this.plugins } });
+  preprocess(input: string, options?: object): SerializedTemplateBlock {
+    options = options || { plugins: { ast: this.plugins } };
+    let ast = preprocess(input, options);
     let template = TemplateCompiler.compile(ast);
     return template.toJSON();
   }
@@ -228,7 +229,7 @@ export default class BundleCompiler {
     let compilableTemplate = expect(
       this.context.compilableTemplates.get(locator),
       `Can't compile a template that wasn't already added to the bundle (${locator.name} @ ${
-        locator.module
+      locator.module
       })`
     );
 

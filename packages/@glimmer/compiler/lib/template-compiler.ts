@@ -8,7 +8,7 @@ import { PathHead } from './compiler-ops';
 import { DEBUG } from '@glimmer/local-debug-flags';
 
 export interface CompileOptions {
-  meta: unknown;
+  meta?: unknown;
   customizeComponentName?(tag: string): string;
 }
 
@@ -537,7 +537,7 @@ function assertValidPartial(statement: AST.MustacheStatement) /* : expr */ {
   if (params && params.length !== 1) {
     throw new SyntaxError(
       `Partial found with no arguments. You must specify a template name. (on line ${
-        loc.start.line
+      loc.start.line
       })`,
       statement.loc
     );
@@ -549,7 +549,7 @@ function assertValidPartial(statement: AST.MustacheStatement) /* : expr */ {
   } else if (!escaped) {
     throw new SyntaxError(
       `{{{partial ...}}} is not supported, please use {{partial ...}} instead (on line ${
-        loc.start.line
+      loc.start.line
       })`,
       statement.loc
     );
