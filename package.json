@@ -140,7 +140,7 @@
     "git-repo-info": "^2.1.0",
     "github": "^0.2.3",
     "glob": "^7.1.3",
-    "html-differ": "^1.3.4",
+    "html-differ": "^1.4.0",
     "lodash.uniq": "^4.5.0",
     "mkdirp": "^0.5.1",
     "mocha": "^5.2.0",
