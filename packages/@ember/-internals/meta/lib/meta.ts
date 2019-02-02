@@ -112,7 +112,6 @@ export class Meta {
 
   // DEBUG
   _values: any | undefined;
-  _bindings: any | undefined;
 
   constructor(obj: object) {
     if (DEBUG) {
@@ -315,31 +314,23 @@ export class Meta {
   forEachInDeps(subkey: string, fn: Function) {
     let pointer: Meta | null = this;
     let seen: Set<any> | undefined;
-    let calls: any[] | undefined;
     while (pointer !== null) {
       let map = pointer._deps;
       if (map !== undefined) {
         let innerMap = map[subkey];
         if (innerMap !== undefined) {
+          seen = seen === undefined ? new Set() : seen;
           for (let innerKey in innerMap) {
-            seen = seen === undefined ? new Set() : seen;
             if (!seen.has(innerKey)) {
               seen.add(innerKey);
               if (innerMap[innerKey] > 0) {
-                calls = calls || [];
-                calls.push(innerKey);
+                fn(innerKey);
               }
             }
           }
         }
       }
       pointer = pointer.parent;
-    }
-
-    if (calls !== undefined) {
-      for (let i = 0; i < calls.length; i++) {
-        fn(calls[i]);
-      }
     }
   }
 
@@ -494,10 +485,10 @@ export class Meta {
     while (pointer !== null) {
       let map = pointer._descriptors;
       if (map !== undefined) {
+        seen = seen === undefined ? new Set() : seen;
         map.forEach((value, key) => {
-          seen = seen === undefined ? new Set() : seen;
-          if (!seen.has(key)) {
-            seen.add(key);
+          if (!seen!.has(key)) {
+            seen!.add(key);
             if (value !== UNDEFINED) {
               fn(key, value);
             }
@@ -780,10 +771,6 @@ export interface Meta {
   deleteFromValues(key: string): any;
   readInheritedValue(key: string, subkey: string): any;
   writeValue(obj: object, key: string, value: any): any;
-  writeBindings(subkey: string, value: any): void;
-  peekBindings(subkey: string): void;
-  forEachBindings(fn: Function): void;
-  clearBindings(): void;
 }
 
 if (DEBUG) {
