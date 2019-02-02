@@ -39,8 +39,13 @@ export const BOUNDS = symbol('BOUNDS');
   The easiest way to create a `Component` is via
   a template. If you name a template
   `app/templates/components/my-foo.hbs`, you will be able to use
-  `{{my-foo}}` in other templates, which will make
+  `<MyFoo />` or `{{my-foo}}` in other templates, which will make
   an instance of the isolated component.
+
+  ```app/templates/components/my-foo.hbs
+  <PersonProfile @person={{this.currentUser}} />
+  ```
+  or
 
   ```app/templates/components/my-foo.hbs
   {{person-profile person=currentUser}}
@@ -57,6 +62,13 @@ export const BOUNDS = symbol('BOUNDS');
   the component. The block will be executed in the
   context of the surrounding context or outer controller:
 
+  ```handlebars
+  <PersonProfile @person={{this.currentUser}}>
+    <p>Admin mode</p>
+    {{! Executed in the controller's context. }}
+  </PersonProfile>
+  ```
+  or
   ```handlebars
   {{#person-profile person=currentUser}}
     <p>Admin mode</p>
@@ -456,12 +468,19 @@ export const BOUNDS = symbol('BOUNDS');
 
   If you call the `person-profile` component like so:
 
-  ```
+ ```handlebars
+ <PersonProfile>
+     <h2>Chief Basket Weaver</h2>
+     <h3>Fisherman Industries</h3>
+ </PersonProfile>
+ ```
+ or
+ ```handlebars
   {{#person-profile}}
     <h2>Chief Basket Weaver</h2>
     <h3>Fisherman Industries</h3>
   {{/person-profile}}
-
+  ```
   It will result in the following HTML output:
 
   ```html
@@ -883,6 +902,10 @@ const Component = CoreView.extend(
 
       ```handlebars
       {{my-component elementId="a-really-cool-id"}}
+      ```
+
+      ```handlebars
+      <MyComponent @elementId="a-really-cool-id" />
       ```
       If not manually set a default value will be provided by the framework.
       Once rendered an element's `elementId` is considered immutable and you

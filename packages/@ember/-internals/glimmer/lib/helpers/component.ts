@@ -45,6 +45,10 @@
   component. In that case, use standard component syntax, for example:
 
   ```app/templates/application.hbs
+  <LiveUpdatingChart />
+  ```
+  or
+  ```app/templates/application.hbs
   {{live-updating-chart}}
   ```
 
@@ -107,6 +111,12 @@
   See the following snippet:
 
   ```
+  <PersonForm as |form|>
+    {{form.nameInput placeholder="Username"}}
+  </PersonForm>
+  ```
+  or
+  ```
   {{#person-form as |form|}}
     {{form.nameInput placeholder="Username"}}
   {{/person-form}}
@@ -122,6 +132,12 @@
   {{yield (component "my-input-component" value=model.name placeholder="Name")}}
   ```
 
+  ```
+  <FullName as |field|>
+    {{component field placeholder="Full name"}}
+  </FullName>
+  ```
+  or
   ```
   {{#full-name as |field|}}
     {{component field placeholder="Full name"}}

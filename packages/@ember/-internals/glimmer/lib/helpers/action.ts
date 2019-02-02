@@ -129,6 +129,10 @@ import { ACTION, INVOKE, UnboundReference } from '../utils/references';
   ```
 
   ```handlebars
+  <MyInput @submit={{action 'setName' this.model}} />
+  ```
+  or
+  ```handlebars
   {{my-input submit=(action 'setName' model)}}
   ```
 
