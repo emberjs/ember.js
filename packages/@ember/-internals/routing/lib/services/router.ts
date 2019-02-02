@@ -361,7 +361,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
         router: service('router'),
         init() {
           this._super(...arguments);
-          this.router.on('routeWillUpdate', (transition) => {
+          this.router.on('routeWillChange', (transition) => {
             if (!transition.to.find(route => route.name === this.routeName)) {
               alert("Please save or cancel your changes.");
               transition.abort();
@@ -393,7 +393,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
         router: service('router'),
         init() {
           this._super(...arguments);
-          this.router.on('routeDidUpdate', (transition) => {
+          this.router.on('routeDidChange', (transition) => {
             ga.send('pageView', {
               current: transition.to.name,
               from: transition.from.name
