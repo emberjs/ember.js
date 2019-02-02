@@ -22,13 +22,13 @@ import { OutletReference, OutletState } from '../utils/outlet';
   ```handlebars
   {{! app/templates/application.hbs }}
   <!-- header content goes here, and will always display -->
-  {{my-header}}
+  <MyHeader />
   <div class="my-dynamic-content">
     <!-- this content will change based on the current route, which depends on the current URL -->
     {{outlet}}
   </div>
   <!-- footer content goes here, and will always display -->
-  {{my-footer}}
+  <MyFooter />
   ```
 
   You may also specify a name for the `{{outlet}}`, which is useful when using more than one

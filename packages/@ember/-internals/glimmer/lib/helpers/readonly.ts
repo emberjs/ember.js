@@ -22,6 +22,9 @@ import { unMut } from './mut';
 
   ```app/templates/components/my-parent.hbs
   {{log totalClicks}} // -> 3
+  <MyChild @childClickCount={{readonly totalClicks}} />
+  ```
+  ```
   {{my-child childClickCount=(readonly totalClicks)}}
   ```
 
@@ -41,6 +44,11 @@ import { unMut } from './mut';
   {{log childClickCount}} //-> 4
   ```
 
+  ```app/templates/components/my-parent.hbs
+  {{log totalClicks}} //-> 3
+  <MyChild @childClickCount={{readonly totalClicks}} />
+  ```
+  or
   ```app/templates/components/my-parent.hbs
   {{log totalClicks}} //-> 3
   {{my-child childClickCount=(readonly totalClicks)}}
@@ -72,6 +80,10 @@ import { unMut } from './mut';
 
   ```app/templates/components/my-parent.hbs
   {{log clicks.total}} //-> 3
+  <MyChild @childClicks={{readonly clicks}} />
+  ```
+  ```app/templates/components/my-parent.hbs
+  {{log clicks.total}} //-> 3
   {{my-child childClicks=(readonly clicks)}}
   ```
 
@@ -89,6 +101,11 @@ import { unMut } from './mut';
 
   You will see the following happen:
 
+  ```app/templates/components/my-parent.hbs
+  {{log clicks.total}} //-> 4
+  <MyChild @childClicks={{readonly clicks}} />
+  ```
+  or
   ```app/templates/components/my-parent.hbs
   {{log clicks.total}} //-> 4
   {{my-child childClicks=(readonly clicks)}}

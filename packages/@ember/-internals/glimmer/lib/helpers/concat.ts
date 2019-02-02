@@ -22,9 +22,13 @@ const normalizeTextValue = (value: any): string => {
   Example:
 
   ```handlebars
-  {{some-component name=(concat firstName " " lastName)}}
+  <SomeComponent @name={{concat firstName " " lastName}} />
 
   {{! would pass name="<first name value> <last name value>" to the component}}
+  ```
+  or
+  ```handlebars
+  {{some-component name=(concat firstName " " lastName)}}
   ```
 
   @public
