@@ -1026,7 +1026,7 @@ moduleFor(
 
         this.assertElement(this.firstChild, {
           tagName: 'button',
-          attrs: { 'data-bar': '', 'disabled': '' },
+          attrs: { 'data-bar': '', disabled: '' },
           content: 'hello',
         });
 
