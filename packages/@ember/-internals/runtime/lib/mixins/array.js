@@ -11,7 +11,6 @@ import {
   replaceInNativeArray,
   replace,
   computed,
-  aliasMethod,
   Mixin,
   hasListeners,
   beginPropertyChanges,
@@ -178,6 +177,10 @@ function nonEnumerableComputed() {
   let property = computed(...arguments);
   property.enumerable = false;
   return property;
+}
+
+function mapBy(key) {
+  return this.map(next => get(next, key));
 }
 
 // ..........................................................
@@ -572,7 +575,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @return {Array} The mapped array.
     @public
   */
-  getEach: aliasMethod('mapBy'),
+  getEach: mapBy,
 
   /**
     Sets the value on the named property for each member. This is more
@@ -636,9 +639,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @return {Array} The mapped array.
     @public
   */
-  mapBy(key) {
-    return this.map(next => get(next, key));
-  },
+  mapBy,
 
   /**
     Returns an array with all of the items in the enumeration that the passed

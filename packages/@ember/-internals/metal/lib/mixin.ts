@@ -12,7 +12,8 @@ import {
   setObservers,
   wrap,
 } from '@ember/-internals/utils';
-import { assert } from '@ember/debug';
+import { assert, deprecate } from '@ember/debug';
+import { ALIAS_METHOD } from '@ember/deprecated-features';
 import { assign } from '@ember/polyfills';
 import { DEBUG } from '@glimmer/env';
 import { ComputedProperty, ComputedPropertyGetter, ComputedPropertySetter } from './computed';
@@ -301,28 +302,37 @@ function mergeMixins(
   }
 }
 
-function followMethodAlias(
+let followMethodAlias: (
   obj: object,
-  _desc: Alias,
+  alias: Alias,
   descs: { [key: string]: any },
   values: { [key: string]: any }
-) {
-  let altKey = _desc.methodName;
-  let possibleDesc;
-  let desc = descs[altKey];
-  let value = values[altKey];
+) => { desc: any; value: any };
 
-  if (desc !== undefined || value !== undefined) {
-    // do nothing
-  } else if ((possibleDesc = descriptorFor(obj, altKey)) !== undefined) {
-    desc = possibleDesc;
-    value = undefined;
-  } else {
-    desc = undefined;
-    value = obj[altKey];
-  }
+if (ALIAS_METHOD) {
+  followMethodAlias = function(
+    obj: object,
+    alias: Alias,
+    descs: { [key: string]: any },
+    values: { [key: string]: any }
+  ) {
+    let altKey = alias.methodName;
+    let possibleDesc;
+    let desc = descs[altKey];
+    let value = values[altKey];
 
-  return { desc, value };
+    if (desc !== undefined || value !== undefined) {
+      // do nothing
+    } else if ((possibleDesc = descriptorFor(obj, altKey)) !== undefined) {
+      desc = possibleDesc;
+      value = undefined;
+    } else {
+      desc = undefined;
+      value = obj[altKey];
+    }
+
+    return { desc, value };
+  };
 }
 
 function updateObserversAndListeners(
@@ -387,10 +397,12 @@ export function applyMixin(obj: { [key: string]: any }, mixins: Mixin[]) {
     desc = descs[key];
     value = values[key];
 
-    while (desc && desc instanceof Alias) {
-      let followed = followMethodAlias(obj, desc, descs, values);
-      desc = followed.desc;
-      value = followed.value;
+    if (ALIAS_METHOD) {
+      while (value && value instanceof AliasImpl) {
+        let followed = followMethodAlias(obj, value, descs, values);
+        desc = followed.desc;
+        value = followed.value;
+      }
     }
 
     if (desc === undefined && value === undefined) {
@@ -703,23 +715,17 @@ function _keys(mixin: Mixin, ret = new Set(), seen = new Set()) {
   return ret;
 }
 
-class Alias extends Descriptor {
-  methodName: string;
+declare class Alias {
+  public methodName: string;
+  constructor(methodName: string);
+}
 
-  constructor(methodName: string) {
-    super();
-    this.methodName = methodName;
-  }
+let AliasImpl: typeof Alias;
 
-  teardown(_obj: object, _keyName: string, _meta: Meta): void {
-    throw new Error('Method not implemented.');
-  }
-  get(_obj: object, _keyName: string) {
-    throw new Error('Method not implemented.');
-  }
-  set(_obj: object, _keyName: string, _value: any) {
-    throw new Error('Method not implemented.');
-  }
+if (ALIAS_METHOD) {
+  AliasImpl = class AliasImpl {
+    constructor(public methodName: string) {}
+  } as typeof Alias;
 }
 
 /**
@@ -747,12 +753,26 @@ class Alias extends Descriptor {
 
   @method aliasMethod
   @static
+  @deprecated Use a shared utility method instead
   @for @ember/object
   @param {String} methodName name of the method to alias
   @public
 */
-export function aliasMethod(methodName: string): Alias {
-  return new Alias(methodName);
+export let aliasMethod: (methodName: string) => any;
+
+if (ALIAS_METHOD) {
+  aliasMethod = function aliasMethod(methodName: string): Alias {
+    deprecate(
+      `You attempted to alias '${methodName}, but aliasMethod has been deprecated. Consider extracting the method into a shared utility function.`,
+      false,
+      {
+        id: 'object.alias-method',
+        until: '4.0.0',
+        url: 'https://emberjs.com/deprecations/v3.x#toc_object-alias-method',
+      }
+    );
+    return new AliasImpl(methodName);
+  };
 }
 
 // ..........................................................
