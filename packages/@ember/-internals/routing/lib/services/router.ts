@@ -52,6 +52,12 @@ if (DEBUG) {
  */
 export default class RouterService extends Service {
   _router!: EmberRouter;
+  get router() {
+    if (!this._router._didSetupRouter) {
+      this._router.startRouting();
+    }
+    return this._router;
+  };
 
   /**
      Transition the application into another route. The route may
@@ -75,12 +81,12 @@ export default class RouterService extends Service {
    */
   transitionTo(...args: string[]) {
     if (resemblesURL(args[0])) {
-      return this._router._doURLTransition('transitionTo', args[0]);
+      return this.router._doURLTransition('transitionTo', args[0]);
     }
 
     let { routeName, models, queryParams } = extractRouteArgs(args);
 
-    let transition = this._router._doTransition(routeName, models, queryParams, true);
+    let transition = this.router._doTransition(routeName, models, queryParams, true);
     transition['_keepDefaultQueryParamValues'] = true;
 
     return transition;
@@ -123,7 +129,7 @@ export default class RouterService extends Service {
      @public
    */
   urlFor(routeName: string, ...args: any[]) {
-    return this._router.generate(routeName, ...args);
+    return this.router.generate(routeName, ...args);
   }
 
   /**
@@ -140,7 +146,7 @@ export default class RouterService extends Service {
    */
   isActive(...args: any[]) {
     let { routeName, models, queryParams } = extractRouteArgs(args);
-    let routerMicrolib = this._router._routerMicrolib;
+    let routerMicrolib = this.router._routerMicrolib;
 
     if (!routerMicrolib.isActiveIntent(routeName, models)) {
       return false;
@@ -148,7 +154,7 @@ export default class RouterService extends Service {
     let hasQueryParams = Object.keys(queryParams).length > 0;
 
     if (hasQueryParams) {
-      this._router._prepareQueryParams(
+      this.router._prepareQueryParams(
         routeName,
         models,
         queryParams,
@@ -322,7 +328,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
         url.indexOf(this.rootURL) === 0
       );
       let internalURL = cleanURL(url, this.rootURL);
-      return this._router._routerMicrolib.recognize(internalURL);
+      return this.router._routerMicrolib.recognize(internalURL);
     },
 
     /**
@@ -343,7 +349,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
         url.indexOf(this.rootURL) === 0
       );
       let internalURL = cleanURL(url, this.rootURL);
-      return this._router._routerMicrolib.recognizeAndLoad(internalURL);
+      return this.router._routerMicrolib.recognizeAndLoad(internalURL);
     },
     /**
       The `routeWillChange` event is fired at the beginning of any

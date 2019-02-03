@@ -159,24 +159,18 @@ const ApplicationInstance = EngineInstance.extend({
   */
   startRouting() {
     this.router.startRouting();
-    this._didSetupRouter = true;
   },
 
   /**
-    @private
+   Sets up the router, initializing the child router and configuring the
+   location before routing begins.
 
-    Sets up the router, initializing the child router and configuring the
-    location before routing begins.
+   Because setup should only occur once, multiple calls to `router.setupRouter`
+   beyond the first call will have no effect.
 
-    Because setup should only occur once, multiple calls to `setupRouter`
-    beyond the first call have no effect.
+   @private
   */
   setupRouter() {
-    if (this._didSetupRouter) {
-      return;
-    }
-    this._didSetupRouter = true;
-
     this.router.setupRouter();
   },
 
