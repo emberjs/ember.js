@@ -45,10 +45,11 @@ export const BOUNDS = symbol('BOUNDS');
   ```app/templates/components/my-foo.hbs
   <PersonProfile @person={{this.currentUser}} />
   ```
+
   or
 
   ```app/templates/components/my-foo.hbs
-  {{person-profile person=currentUser}}
+  {{person-profile person=this.currentUser}}
   ```
 
   ```app/templates/components/person-profile.hbs
@@ -68,9 +69,10 @@ export const BOUNDS = symbol('BOUNDS');
     {{! Executed in the controller's context. }}
   </PersonProfile>
   ```
+
   or
   ```handlebars
-  {{#person-profile person=currentUser}}
+  {{#person-profile person=this.currentUser}}
     <p>Admin mode</p>
     {{! Executed in the controller's context. }}
   {{/person-profile}}
@@ -474,7 +476,9 @@ export const BOUNDS = symbol('BOUNDS');
      <h3>Fisherman Industries</h3>
  </PersonProfile>
  ```
+
  or
+
  ```handlebars
   {{#person-profile}}
     <h2>Chief Basket Weaver</h2>

@@ -112,9 +112,10 @@
 
   ```
   <PersonForm as |form|>
-    {{form.nameInput placeholder="Username"}}
+    <form.nameInput @placeholder={{"Username"}} />
   </PersonForm>
   ```
+
   or
   ```
   {{#person-form as |form|}}
