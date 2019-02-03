@@ -15,6 +15,9 @@ import { INVOKE, UPDATE } from '../utils/references';
   ```handlebars
   <MyChild @childClickCount={{action (mut totalClicks)}} />
   ```
+
+   or
+
   ```handlebars
   {{my-child childClickCount=(mut totalClicks)}}
   ```
@@ -40,7 +43,9 @@ import { INVOKE, UPDATE } from '../utils/references';
   ```handlebars
   <MyChild @childClickCount={{this.totalClicks}} @click-count-change={{action (mut totalClicks))}} />
   ```
+
   or
+
   ```handlebars
   {{my-child childClickCount=totalClicks click-count-change=(action (mut totalClicks))}}
   ```
