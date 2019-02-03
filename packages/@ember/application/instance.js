@@ -159,7 +159,6 @@ const ApplicationInstance = EngineInstance.extend({
   */
   startRouting() {
     this.router.startRouting();
-    this._didSetupRouter = true;
   },
 
   /**
@@ -168,23 +167,18 @@ const ApplicationInstance = EngineInstance.extend({
 
     Because setup should only occur once, multiple calls to `setupRouter`
     beyond the first call have no effect.
-    
+
     This is commonly used in order to confirm things that rely on the router
     are functioning properly from tests that are primarily rendering related.
-    
+
     For example, from within [ember-qunit](https://github.com/emberjs/ember-qunit)'s
     `setupRenderingTest` calling `this.owner.setupRouter()` would allow that
     rendering test to confirm that any `<LinkTo></LinkTo>`'s that are rendered
     have the correct URL.
-    
+
     @public
   */
   setupRouter() {
-    if (this._didSetupRouter) {
-      return;
-    }
-    this._didSetupRouter = true;
-
     this.router.setupRouter();
   },
 

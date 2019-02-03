@@ -61,6 +61,20 @@ moduleFor(
       assert.ok(!router._routerMicrolib);
     }
 
+    ['@test should create a router.js instance after setupRouter'](assert) {
+      let router = createRouter(undefined, { disableSetup: false });
+
+      assert.ok(router._didSetupRouter);
+      assert.ok(router._routerMicrolib);
+    }
+
+    ['@test should return false if setupRouter is called multiple times'](assert) {
+      let router = createRouter(undefined, { disableSetup: true });
+
+      assert.ok(router.setupRouter());
+      assert.notOk(router.setupRouter());
+    }
+
     ['@test should not reify location until setupRouter is called'](assert) {
       let router = createRouter(undefined, { disableSetup: true });
       assert.equal(typeof router.location, 'string', 'location is specified as a string');

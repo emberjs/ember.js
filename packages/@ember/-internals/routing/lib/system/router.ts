@@ -127,6 +127,7 @@ class EmberRouter extends EmberObject {
   location!: string | IEmberLocation;
   rootURL!: string;
   _routerMicrolib!: Router<Route>;
+  _didSetupRouter = false;
 
   currentURL: string | null = null;
   currentRouteName: string | null = null;
@@ -397,9 +398,8 @@ class EmberRouter extends EmberObject {
     @private
   */
   startRouting() {
-    let initialURL = get(this, 'initialURL');
-
     if (this.setupRouter()) {
+      let initialURL = get(this, 'initialURL');
       if (initialURL === undefined) {
         initialURL = get(this, 'location').getURL();
       }
@@ -411,6 +411,10 @@ class EmberRouter extends EmberObject {
   }
 
   setupRouter() {
+    if (this._didSetupRouter) {
+      return false;
+    }
+    this._didSetupRouter = true;
     this._setupLocation();
 
     let location = get(this, 'location');
@@ -480,7 +484,9 @@ class EmberRouter extends EmberObject {
       this._toplevelView = OutletView.create();
       this._toplevelView.setOutletState(liveRoutes as GlimmerOutletState);
       let instance: any = owner.lookup('-application-instance:main');
-      instance.didCreateRootView(this._toplevelView);
+      if (instance) {
+        instance.didCreateRootView(this._toplevelView);
+      }
     } else {
       this._toplevelView.setOutletState(liveRoutes as GlimmerOutletState);
     }
@@ -607,6 +613,7 @@ class EmberRouter extends EmberObject {
     @method reset
    */
   reset() {
+    this._didSetupRouter = false;
     if (this._routerMicrolib) {
       this._routerMicrolib.reset();
     }

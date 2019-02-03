@@ -1,4 +1,6 @@
+import { getOwner } from '@ember/-internals/owner';
 import { Evented } from '@ember/-internals/runtime';
+import { symbol } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { readOnly } from '@ember/object/computed';
 import { assign } from '@ember/polyfills';
@@ -8,6 +10,8 @@ import { consumeTag, tagFor } from '@glimmer/validator';
 import { Transition } from 'router_js';
 import EmberRouter, { QueryParam } from '../system/router';
 import { extractRouteArgs, resemblesURL, shallowEqual } from '../utils';
+
+const ROUTER = symbol('ROUTER');
 
 let freezeRouteInfo: Function;
 if (DEBUG) {
@@ -62,7 +66,16 @@ function cleanURL(url: string, rootURL: string) {
    @class RouterService
  */
 export default class RouterService extends Service {
-  _router!: EmberRouter;
+  get _router(): EmberRouter {
+    let router = this[ROUTER];
+    if (router !== undefined) {
+      return router;
+    }
+    const owner = getOwner(this) as any;
+    router = owner.lookup('router:main');
+    router.setupRouter();
+    return (this[ROUTER] = router);
+  }
 
   init() {
     super.init(...arguments);
