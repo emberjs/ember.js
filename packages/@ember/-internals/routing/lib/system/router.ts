@@ -274,7 +274,7 @@ class EmberRouter extends EmberObject {
   location!: string | IEmberLocation;
   rootURL!: string;
   _routerMicrolib!: Router<Route>;
-  _didSetupRouter = false;
+  _didSetupRouter!: boolean;
 
   _initRouterJs() {
     let location = get(this, 'location');
@@ -508,6 +508,7 @@ class EmberRouter extends EmberObject {
       this.currentRoute = null;
     }
 
+    this._didSetupRouter = false;
     this._qpCache = Object.create(null);
     this._qpUpdates = new Set();
     this._resetQueuedQueryParameterChanges();
@@ -767,6 +768,7 @@ class EmberRouter extends EmberObject {
     @method reset
    */
   reset() {
+    this._didSetupRouter = false;
     if (this._routerMicrolib) {
       this._routerMicrolib.reset();
     }

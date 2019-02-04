@@ -57,7 +57,7 @@ export default class RouterService extends Service {
       this._router.startRouting();
     }
     return this._router;
-  };
+  }
 
   /**
      Transition the application into another route. The route may
@@ -154,12 +154,7 @@ export default class RouterService extends Service {
     let hasQueryParams = Object.keys(queryParams).length > 0;
 
     if (hasQueryParams) {
-      this.router._prepareQueryParams(
-        routeName,
-        models,
-        queryParams,
-        true /* fromRouterService */
-      );
+      this.router._prepareQueryParams(routeName, models, queryParams, true /* fromRouterService */);
       return shallowEqual(queryParams, routerMicrolib.state!.queryParams);
     }
 

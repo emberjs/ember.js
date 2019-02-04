@@ -1,5 +1,5 @@
 import { inject as injectService } from '@ember/service';
-import { HashLocation } from '@ember/-internals/routing';
+import { Router, NoneLocation } from '@ember/-internals/routing';
 import { get } from '@ember/-internals/metal';
 import { run } from '@ember/runloop';
 import { Component } from '@ember/-internals/glimmer';
@@ -11,6 +11,8 @@ moduleFor(
   class extends AbstractRenderingTestCase {
     constructor() {
       super(...arguments);
+
+      this.resolver.add('router:main', Router.extend(this.routerOptions));
       this.router.map(function() {
         this.route('parent', { path: '/' }, function() {
           this.route('child');
@@ -24,12 +26,22 @@ moduleFor(
       });
     }
 
+    get routerOptions() {
+      return {
+        location: 'none',
+      };
+    }
+
     get router() {
       return this.owner.resolveRegistration('router:main');
     }
 
     get routerService() {
       return this.owner.lookup('service:router');
+    }
+
+    afterEach() {
+      super.afterEach();
     }
 
     ['@test RouterService can be instantiated in non application test'](assert) {
@@ -42,18 +54,18 @@ moduleFor(
       assert.expect(EMBER_ROUTING_ROUTER_SERVICE ? 7 : 6);
       assert.equal(this.routerService.get('currentRouteName'), null);
       assert.equal(this.routerService.get('currentURL'), null);
-      assert.equal(this.routerService.get('location'), 'hash');
+      assert.equal(this.routerService.get('location'), 'none');
       assert.equal(this.routerService.get('rootURL'), '/');
       if (EMBER_ROUTING_ROUTER_SERVICE) {
         assert.equal(this.routerService.get('currentRoute'), null);
       }
       assert.notOk(this.routerService._didSetupRouter);
       this.routerService.router;
-      assert.ok(this.routerService.get('location') instanceof HashLocation);
+      assert.ok(this.routerService.get('location') instanceof NoneLocation);
     }
 
     ['@test RouterService#urlFor returns url'](assert) {
-      assert.equal(this.routerService.urlFor('parent.child'), '#/child');
+      assert.equal(this.routerService.urlFor('parent.child'), '/child');
     }
 
     ['@test RouterService#transitionTo with basic route'](assert) {
