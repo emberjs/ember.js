@@ -272,6 +272,8 @@ Object.defineProperty(Ember.run, 'currentRunLoop', {
 // in globals builds
 const computed = metal._globalsComputed;
 Ember.computed = computed;
+Ember._descriptor = metal.nativeDescDecorator;
+Ember._tracked = metal.tracked;
 computed.alias = metal.alias;
 Ember.cacheFor = metal.getCachedValueFor;
 Ember.ComputedProperty = metal.ComputedProperty;

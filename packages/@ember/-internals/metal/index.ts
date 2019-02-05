@@ -49,7 +49,7 @@ export { Mixin, aliasMethod, mixin, observer, applyMixin } from './lib/mixin';
 export { default as inject, DEBUG_INJECTION_FUNCTIONS } from './lib/injected_property';
 export { setHasViews, tagForProperty, tagFor, markObjectAsDirty } from './lib/tags';
 export { default as runInTransaction, didRender, assertNotRendered } from './lib/transaction';
-export { tracked } from './lib/tracked';
+export { tracked, getCurrentTracker, setCurrentTracker } from './lib/tracked';
 
 export {
   NAMESPACES,
@@ -64,3 +64,16 @@ export {
   isSearchDisabled as isNamespaceSearchDisabled,
   setSearchDisabled as setNamespaceSearchDisabled,
 } from './lib/namespace_search';
+
+import { DEBUG } from '@glimmer/env';
+import { setComputedDecorator } from './lib/decorator';
+import { tracked } from './lib/tracked';
+
+// We have to set this here because there is a cycle of dependencies in tracked
+// which causes `setComputedDecorator` to not be resolved before the `tracked`
+// module.
+if (DEBUG) {
+  // Normally this isn't a classic decorator, but we want to throw a helpful
+  // error in development so we need it to treat it like one
+  setComputedDecorator(tracked);
+}

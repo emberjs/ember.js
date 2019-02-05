@@ -1,37 +1,17 @@
-import { tracked } from '../..';
+import { getCurrentTracker, setCurrentTracker } from '../..';
 
-export function createTracked(values, proto = {}) {
-  function Class() {
-    for (let prop in values) {
-      this[prop] = values[prop];
-    }
-  }
+/**
+  Creates an autotrack stack so we can test field changes as they flow through
+  getters/setters, and through the system overall
 
-  for (let prop in values) {
-    Object.defineProperty(
-      proto,
-      prop,
-      tracked(proto, prop, {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: values[prop],
-      })
-    );
-  }
+  @private
+*/
+export function track(fn) {
+  let parent = getCurrentTracker();
+  let tracker = setCurrentTracker();
 
-  Class.prototype = proto;
+  fn();
 
-  return new Class();
-}
-
-export function createWithDescriptors(values) {
-  function Class() {}
-
-  for (let prop in values) {
-    let descriptor = Object.getOwnPropertyDescriptor(values, prop);
-    Object.defineProperty(Class.prototype, prop, tracked(Class.prototype, prop, descriptor));
-  }
-
-  return new Class();
+  setCurrentTracker(parent);
+  return tracker.combine();
 }

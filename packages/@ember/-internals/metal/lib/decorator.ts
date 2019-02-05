@@ -72,8 +72,8 @@ export function isComputedDecorator(dec: Decorator | null | undefined) {
   @param {function} decorator the value to mark as a decorator
   @private
 */
-export function setComputedDecorator(dec: Decorator) {
-  DECORATOR_DESCRIPTOR_MAP.set(dec, true);
+export function setComputedDecorator(dec: Decorator, value: any = true) {
+  DECORATOR_DESCRIPTOR_MAP.set(dec, value);
 }
 
 // ..........................................................
@@ -188,7 +188,7 @@ export function makeComputedDecorator(
 
     assert(
       'Native decorators are not enabled without the EMBER_NATIVE_DECORATOR_SUPPORT flag',
-      EMBER_NATIVE_DECORATOR_SUPPORT ? !isClassicDecorator : isClassicDecorator
+      EMBER_NATIVE_DECORATOR_SUPPORT || isClassicDecorator
     );
 
     elementDesc.kind = 'method';
@@ -208,7 +208,7 @@ export function makeComputedDecorator(
     return elementDesc;
   };
 
-  DECORATOR_DESCRIPTOR_MAP.set(decorator, desc);
+  setComputedDecorator(decorator, desc);
 
   Object.setPrototypeOf(decorator, DecoratorClass.prototype);
 
