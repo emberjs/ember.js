@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.8.0-beta.4 (February 4, 2019)
+
+- [#17552](https://github.com/emberjs/ember.js/pull/17552) [BUGFIX] Support numbers in component names for Angle Brackets
+
 ### v3.8.0-beta.3 (January 28, 2019)
 
 - [#17498](https://github.com/emberjs/ember.js/pull/17498) [BUGFIX] Don't remove dep keys in `didUnwatch`
