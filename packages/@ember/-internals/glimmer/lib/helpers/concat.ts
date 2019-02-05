@@ -22,13 +22,15 @@ const normalizeTextValue = (value: any): string => {
   Example:
 
   ```handlebars
-  <SomeComponent @name={{concat firstName " " lastName}} />
+  {{some-component name=(concat firstName " " lastName)}}
 
   {{! would pass name="<first name value> <last name value>" to the component}}
   ```
-  or
+
+  or for angle bracket invocation, you actually don't need concat at all.
+
   ```handlebars
-  {{some-component name=(concat firstName " " lastName)}}
+  <SomeComponent @name="{{firstName lastName}}" />
   ```
 
   @public
