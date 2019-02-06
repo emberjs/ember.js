@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### v3.7.3 (February 6, 2019)
+
+- [#17563](https://github.com/emberjs/ember.js/pull/17563) [BUGFIX] Transition.send/trigger call signature
+- [#17552](https://github.com/emberjs/ember.js/pull/17552) [BUGFIX] Support numbers in component names for Angle Brackets
+
 ### v3.7.2 (January 22, 2019)
 
 * Upgrade @glimmer/* packages to 0.35.10. Fixes a few issues:
