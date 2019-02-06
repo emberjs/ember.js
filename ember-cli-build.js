@@ -9,6 +9,7 @@ const bootstrapModule = require('./broccoli/bootstrap-modules');
 const concatBundle = require('./broccoli/concat-bundle');
 const concat = require('broccoli-concat');
 const testIndexHTML = require('./broccoli/test-index-html');
+const testPolyfills = require('./broccoli/test-polyfills');
 const toES5 = require('./broccoli/to-es5');
 const toNamedAMD = require('./broccoli/to-named-amd');
 const stripForProd = require('./broccoli/strip-for-prod');
@@ -141,6 +142,7 @@ module.exports = function() {
     nodeTests(),
 
     // test harness
+    testPolyfills(),
     testIndexHTML(),
     jquery(),
     qunit(),
