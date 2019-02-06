@@ -13,6 +13,7 @@ import TransformHasBlockSyntax from './transform-has-block-syntax';
 import TransformInElement from './transform-in-element';
 import TransformInputTypeSyntax from './transform-input-type-syntax';
 import TransformLinkTo from './transform-link-to';
+import TransformLogAction from './transform-log-action';
 import TransformOldClassBindingSyntax from './transform-old-class-binding-syntax';
 import TransformQuotedBindingsIntoJustBindings from './transform-quoted-bindings-into-just-bindings';
 
@@ -40,6 +41,7 @@ const transforms: Array<APluginFunc> = [
   TransformInElement,
   AssertIfHelperWithoutArguments,
   AssertSplattributeExpressions,
+  TransformLogAction,
 ];
 
 if (!EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {

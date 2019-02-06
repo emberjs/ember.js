@@ -27,6 +27,7 @@ import { isHelperFactory, isSimpleHelper } from './helper';
 import { default as componentAssertionHelper } from './helpers/-assert-implicit-component-helper-argument';
 import { default as classHelper } from './helpers/-class';
 import { default as inputTypeHelper } from './helpers/-input-type';
+import { default as logAction } from './helpers/-log-action';
 import { default as normalizeClassHelper } from './helpers/-normalize-class';
 import { default as action } from './helpers/action';
 import { default as array } from './helpers/array';
@@ -74,6 +75,7 @@ const BUILTINS_HELPERS = {
   readonly,
   unbound,
   unless: inlineUnless,
+  '-log-action': logAction,
   '-class': classHelper,
   '-each-in': eachIn,
   '-input-type': inputTypeHelper,
