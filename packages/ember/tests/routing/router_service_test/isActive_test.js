@@ -105,5 +105,30 @@ moduleFor(
           );
         });
     }
+
+    ['@test RouterService#isActive does not alter query params hash'](assert) {
+      assert.expect(3);
+
+      this.add(
+        'controller:parent.child',
+        Controller.extend({
+          queryParams: ['sort', 'page'],
+          sort: 'ASC',
+          page: 1,
+        })
+      );
+
+      let qp = this.buildQueryParams({ sort: 'ascending' });
+
+      return this.visit('/')
+        .then(() => {
+          return this.routerService.transitionTo('parent.child', qp);
+        })
+        .then(() => {
+          assert.ok(this.routerService.isActive('parent.child', qp));
+          assert.ok(this.routerService.isActive('parent.child', qp)); // using same qp second time should not fail
+          assert.deepEqual(qp.queryParams, { sort: 'ascending' });
+        });
+    }
   }
 );

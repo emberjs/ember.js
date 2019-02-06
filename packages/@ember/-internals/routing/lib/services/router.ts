@@ -1,6 +1,7 @@
 import { Evented } from '@ember/-internals/runtime';
 import { assert } from '@ember/debug';
 import { readOnly } from '@ember/object/computed';
+import { assign } from '@ember/polyfills';
 import Service from '@ember/service';
 import { DEBUG } from '@glimmer/env';
 import { Transition } from 'router_js';
@@ -319,6 +320,7 @@ export default class RouterService extends Service {
     let hasQueryParams = Object.keys(queryParams).length > 0;
 
     if (hasQueryParams) {
+      queryParams = assign({}, queryParams);
       this._router._prepareQueryParams(
         // UNSAFE: casting `routeName as string` here encodes the existing
         // assumption but may be wrong: `extractRouteArgs` correctly returns it
@@ -334,6 +336,7 @@ export default class RouterService extends Service {
         queryParams as QueryParam,
         true /* fromRouterService */
       );
+
       return shallowEqual(queryParams, routerMicrolib.state!.queryParams);
     }
 
