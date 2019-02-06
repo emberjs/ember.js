@@ -16,4 +16,3 @@ export {
   $t1,
   $v0,
 } from './lib/registers';
-export { opcodeMetadata } from './lib/-debug-strip';
