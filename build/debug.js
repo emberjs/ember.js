@@ -47,7 +47,7 @@ let debugMetadata = strip`
 debugMetadata += buildMetas('MACHINE_METADATA', parsed.machine);
 debugMetadata += buildMetas('METADATA', parsed.syscall);
 
-write('./packages/@glimmer/vm/lib/-debug-strip.ts', debugMetadata);
+write('./packages/@glimmer/debug/lib/opcode-metadata.ts', debugMetadata);
 
 function write(file, contents) {
   console.log(`Generating ${file}`);

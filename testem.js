@@ -8,6 +8,7 @@ let config = {
   test_page: smokeTests ? 'tests/index.html?smoke_tests=true' : 'tests/index.html?hidepassed',
   disable_watching: true,
   browser_start_timeout: smokeTests ? 300000 : 30000,
+  browser_disconnect_timeout: smokeTests ? 120 : 10,
   browser_args: {
     Chrome: {
       mode: 'ci',
