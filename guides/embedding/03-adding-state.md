@@ -5,24 +5,25 @@ We now have a fully self-contained Glimmer component executing, but things get i
 As a reminder, here's the minimal environment we used in the previous chapter:
 
 ```ts
-import { Context } from '@glimmer/opcode-builder';
-import { Component } from '@glimmer/opcode-compiler';
+import { Component, Context } from '@glimmer/opcode-compiler';
+import { precompile } from '@glimmer/compiler';
+import createHTMLDocument from '@simple-dom/document';
+import { AotRuntime, renderAot } from '@glimmer/runtime';
+import Serializer from '@simple-dom/serializer';
+import voidMap from '@simple-dom/void-map';
 
 let source = `{{#let "hello" "world" as |hello world|}}<p>{{hello}} {{world}}</p>{{/let}}`;
 
 let context = Context();
-let component = Component(source);
+let component = Component(precompile(source));
 let handle = component.compile(context);
 
 let program = artifacts(context);
 
-import createHTMLDocument from '@simple-dom/document';
-import { Runtime, renderAot } from '@glimmer/runtime';
-
 let document = createHTMLDocument();
-let runtime = Runtime(document, payload);
-let main = document.createElement('main');
-let cursor = { element: main, nextSibling: null };
+let runtime = AotRuntime(document, payload);
+let element = document.createElement('main');
+let cursor = { element, nextSibling: null };
 let iterator = renderAot(runtime, handle, cursor);
 let result = iterator.sync();
 
@@ -30,6 +31,10 @@ console.log(serialize(element)); // <main><p>hello world</p></main>
 
 function serialize(element: SimpleElement): string {
   return new Serializer(voidMap).serialize(element);
+}
+
+function Compilable(source: string): CompilableProgram {
+  return Component(precompile(source));
 }
 ```
 
@@ -42,8 +47,13 @@ The simplest way to do that is the `State` function. The `State` function takes 
 To use our new state, we pass it as the final parameter to `renderAot`. When passed to `renderAot` in this way, it's available in the component as `this`.
 
 ```diff
-import { Context } from '@glimmer/opcode-builder';
-import { Component } from '@glimmer/opcode-compiler';
+import { Component, Context } from '@glimmer/opcode-compiler';
+import { artifacts } from '@glimmer/program';
+import { precompile } from '@glimmer/compiler';
+import createHTMLDocument from '@simple-dom/document';
+import { AotRuntime, renderAot } from '@glimmer/runtime';
+import Serializer from '@simple-dom/serializer';
+import voidMap from '@simple-dom/void-map';
 + import { State } from '@glimmer/references';
 
 let source = `
@@ -54,19 +64,16 @@ let source = `
 `;
 
 let context = Context();
-let component = Component(source);
+let component = Compilable(source));
 let handle = component.compile(context);
 
 let program = artifacts(context);
 
-import createHTMLDocument from '@simple-dom/document';
-import { Runtime, renderAot } from '@glimmer/runtime';
-
 let document = createHTMLDocument();
-let runtime = Runtime(document, payload);
-let main = document.createElement('main');
+let runtime = AotRuntime(document, payload);
+let element = document.createElement('main');
 + let state = State({ prefix: '!' });
-let cursor = { element: main, nextSibling: null };
+let cursor = { element, nextSibling: null };
 - let iterator = renderAot(runtime, handle, cursor);
 + let iterator = renderAot(runtime, handle, cursor, state);
 let result = iterator.sync();
@@ -76,6 +83,10 @@ let result = iterator.sync();
 
 function serialize(element: SimpleElement): string {
   return new Serializer(voidMap).serialize(element);
+}
+
+function Compilable(source: string): CompilableProgram {
+  return Component(precompile(source));
 }
 ```
 

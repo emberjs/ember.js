@@ -1,9 +1,9 @@
 # Previously
 
 ```ts
-import { Context } from '@glimmer/opcode-builder';
-import { Component } from '@glimmer/opcode-compiler';
-import { State } from '@glimmer/references';
+import { Component, Context } from '@glimmer/opcode-compiler';
+import { artifacts } from '@glimmer/program';
+import { precompile } from '@glimmer/compiler';
 
 let source = `
   {{#let "hello" "world" as |hello world|}}
@@ -12,16 +12,23 @@ let source = `
 `;
 
 let context = Context();
-let component = Component(source);
+let component = Compilable(source));
 let handle = component.compile(context);
 
 let program = artifacts(context);
 
+function Compilable(source: string): CompilableProgram {
+  return Component(precompile(source));
+}
+
 import createHTMLDocument from '@simple-dom/document';
-import { Runtime, renderAot } from '@glimmer/runtime';
+import { AotRuntime, renderAot } from '@glimmer/runtime';
+import Serializer from '@simple-dom/serializer';
+import voidMap from '@simple-dom/void-map';
+import { State } from '@glimmer/references';
 
 let document = createHTMLDocument();
-let runtime = Runtime(document, payload);
+let runtime = AotRuntime(document, program);
 let main = document.createElement('main');
 let state = State({ prefix: '!' });
 let cursor = { element: main, nextSibling: null };
@@ -111,7 +118,6 @@ function increment(args: VMArguments): Reference {
 Now let's update our program to use the `ResolverDelegate` in the compiler and the `RuntimeResolver` at runtime.
 
 ```diff
-@@ -90,20 +90,12 @@
 let source = `
   {{#let "hello" "world" as |hello world|}}
     <p>{{hello}} {{world}}{{this.prefix}}</p>
@@ -120,16 +126,18 @@ let source = `
 
 - let context = Context();
 + let context = Context(RESOLVER_DELEGATE);
-let component = Component(source);
+let component = Compilable(source);
 let handle = component.compile(context);
 
 let program = artifacts(context);
 ```
 
 ```diff
-@@ -90,20 +90,12 @@
 import createHTMLDocument from '@simple-dom/document';
-import { Runtime, renderAot } from '@glimmer/runtime';
+import { AotRuntime, renderAot } from '@glimmer/runtime';
+import Serializer from '@simple-dom/serializer';
+import voidMap from '@simple-dom/void-map';
+import { State } from '@glimmer/references';
 
 let document = createHTMLDocument();
 - let runtime = Runtime(document, payload);

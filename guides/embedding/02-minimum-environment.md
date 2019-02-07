@@ -33,7 +33,7 @@ Because this component is host-agnostic, we can compile and execute it without s
 First, we create a minimal "compilation context" by calling `Context()`.
 
 ```ts
-import { Context } from '@glimmer/opcode-builder';
+import { Context } from '@glimmer/opcode-compiler';
 
 let context = Context();
 ```
@@ -44,6 +44,7 @@ Next, we'll need to turn our source code into a compilable component:
 
 ```ts
 import { Component } from '@glimmer/opcode-compiler';
+import { precompile } from '@glimmer/compiler'; // Component() expects a serialized/precompiled template
 
 let source = `
 {{#let "hello" "world" as |hello world|}}
@@ -51,7 +52,11 @@ let source = `
 {{/let}}
 `;
 
-let component = Component(source);
+let component = Compilable(source);
+
+function Compilable(source: string): CompilableProgram {
+  return Component(precompile(source));
+}
 ```
 
 Finally, we'll compile our component using the compilation context we created.
@@ -65,6 +70,8 @@ A "handle" is a 32-bit integer that refers to a compiled component. We'll use it
 For this minimal example, we're done compiling components, so let's serialize our context into bytecode.
 
 ```ts
+import { artifacts } from '@glimmer/program';
+
 let program = artifacts(context);
 ```
 
@@ -100,9 +107,9 @@ let document = createHTMLDocument();
 Next, we need to hydrate the compilation artifacts into a `RuntimeContext`. The `RuntimeContext` is used by the VM to execute compiled components.
 
 ```ts
-import { Runtime } from '@glimmer/runtime';
+import { AotRuntime } from '@glimmer/runtime';
 
-let runtime = Runtime(document, payload);
+let runtime = AotRuntime(document, payload);
 ```
 
 ## Getting Ready to Execute
@@ -110,7 +117,7 @@ let runtime = Runtime(document, payload);
 Next, we'll create an element to execute our component into using our SimpleDOM document:
 
 ```ts
-let main = document.createElement('main');
+let element = document.createElement('main');
 ```
 
 Glimmer renders components into a `Cursor`, which is an element _and_ a `nextSibling`. This is important if you want to render your component into the middle of an existing element.
@@ -118,7 +125,7 @@ Glimmer renders components into a `Cursor`, which is an element _and_ a `nextSib
 In our case, we just want to append into our new `<main>` element:
 
 ```ts
-let cursor = { element: main, nextSibling: null };
+let cursor = { element, nextSibling: null };
 ```
 
 The `Cursor` interface matches the API signature of `insertBefore`, which is the primitive SimpleDOM API that Glimmer uses to insert elements into the DOM.
@@ -148,26 +155,30 @@ In addition to exhausting the iterator, the `sync()` method invokes lifecycle ho
 # All Together Now
 
 ```ts
-import { Context } from '@glimmer/opcode-builder';
-import { Component } from '@glimmer/opcode-compiler';
+import { Component, Context } from '@glimmer/opcode-compiler';
+import { artifacts } from '@glimmer/program';
+import { precompile } from '@glimmer/compiler';
+import createHTMLDocument from '@simple-dom/document';
+import { AotRuntime, renderAot } from '@glimmer/runtime';
 
 let source = `{{#let "hello" "world" as |hello world|}}<p>{{hello}} {{world}}</p>{{/let}}`;
 
 let context = Context();
-let component = Component(source);
+let component = Compilable(source);
 let handle = component.compile(context);
 
 let program = artifacts(context);
 
-import createHTMLDocument from '@simple-dom/document';
-import { Runtime, renderAot } from '@glimmer/runtime';
-
 let document = createHTMLDocument();
-let runtime = Runtime(document, payload);
-let main = document.createElement('main');
-let cursor = { element: main, nextSibling: null };
+let runtime = AotRuntime(document, payload);
+let element = document.createElement('main');
+let cursor = { element, nextSibling: null };
 let iterator = renderAot(runtime, handle, cursor);
 let result = iterator.sync();
+
+function Compilable(source: string): CompilableProgram {
+  return Component(precompile(source));
+}
 ```
 
 Finally, let's serialize our element into a string so we can look at it in the console. `@simple-dom/serializer` will take an object that implements SimpleDOM and turn it into a string:
@@ -178,7 +189,11 @@ import voidMap from '@simple-dom/void-map';
 
 let serialized = new Serializer(voidMap).serialize(element);
 
-console.log(serialized);
+function serialize(element: SimpleElement): string {
+  return new Serializer(voidMap).serialize(element);
+
+}
+console.log(serialize(element));
 
 // <main><p>hello world</p></main>
 ```
