@@ -11,12 +11,7 @@ import { DEBUG } from '@glimmer/env';
 import EmberLocation, { EmberLocation as IEmberLocation } from '../location/api';
 import { calculateCacheKey, extractRouteArgs, getActiveTargetName, resemblesURL } from '../utils';
 import EmberRouterDSL from './dsl';
-import Route, {
-  defaultSerialize,
-  hasDefaultSerialize,
-  RenderOptions,
-  ROUTER_EVENT_DEPRECATIONS,
-} from './route';
+import Route, { defaultSerialize, hasDefaultSerialize, RenderOptions } from './route';
 import RouterState from './router_state';
 /**
 @module @ember/routing
@@ -1939,6 +1934,36 @@ EmberRouter.reopen(Evented, {
 });
 
 if (EMBER_ROUTING_ROUTER_SERVICE && ROUTER_EVENTS) {
-  EmberRouter.reopen(ROUTER_EVENT_DEPRECATIONS);
+  EmberRouter.reopen({
+    on(name: string) {
+      this._super(...arguments);
+      let hasDidTransition = name === 'didTransition';
+      let hasWillTransition = name === 'willTransition';
+
+      if (hasDidTransition) {
+        deprecate(
+          'You attempted to listen to the "didTransition" event which is deprecated. Please inject the router service and listen to the "routeDidChange" event.',
+          false,
+          {
+            id: 'deprecate-router-events',
+            until: '4.0.0',
+            url: 'https://emberjs.com/deprecations/v3.x#toc_deprecate-router-events',
+          }
+        );
+      }
+
+      if (hasWillTransition) {
+        deprecate(
+          'You attempted to listen to the "willTransition" event which is deprecated. Please inject the router service and listen to the "routeWillChange" event.',
+          false,
+          {
+            id: 'deprecate-router-events',
+            until: '4.0.0',
+            url: 'https://emberjs.com/deprecations/v3.x#toc_deprecate-router-events',
+          }
+        );
+      }
+    },
+  });
 }
 export default EmberRouter;

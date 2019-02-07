@@ -694,36 +694,6 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
         });
       }
 
-      '@test willTransition events are deprecated on routes'() {
-        this.add(
-          'route:application',
-          Route.extend({
-            init() {
-              this._super(...arguments);
-              this.on('willTransition', () => {});
-            },
-          })
-        );
-        expectDeprecation(() => {
-          return this.visit('/');
-        }, 'You attempted to listen to the "willTransition" event which is deprecated. Please inject the router service and listen to the "routeWillChange" event.');
-      }
-
-      '@test didTransition events are deprecated on routes'() {
-        this.add(
-          'route:application',
-          Route.extend({
-            init() {
-              this._super(...arguments);
-              this.on('didTransition', () => {});
-            },
-          })
-        );
-        expectDeprecation(() => {
-          return this.visit('/');
-        }, 'You attempted to listen to the "didTransition" event which is deprecated. Please inject the router service and listen to the "routeDidChange" event.');
-      }
-
       '@test other events are not deprecated on routes'() {
         this.add(
           'route:application',

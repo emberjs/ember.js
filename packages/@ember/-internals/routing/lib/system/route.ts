@@ -19,7 +19,7 @@ import {
   EMBER_ROUTING_BUILD_ROUTEINFO_METADATA,
   EMBER_ROUTING_ROUTER_SERVICE,
 } from '@ember/canary-features';
-import { assert, deprecate, info, isTesting } from '@ember/debug';
+import { assert, info, isTesting } from '@ember/debug';
 import { ROUTER_EVENTS } from '@ember/deprecated-features';
 import { assign } from '@ember/polyfills';
 import { once } from '@ember/runloop';
@@ -2527,41 +2527,8 @@ Route.reopen(ActionHandler, Evented, {
   },
 });
 
-export let ROUTER_EVENT_DEPRECATIONS: any;
 if (EMBER_ROUTING_ROUTER_SERVICE && ROUTER_EVENTS) {
-  ROUTER_EVENT_DEPRECATIONS = {
-    on(name: string) {
-      this._super(...arguments);
-      let hasDidTransition = name === 'didTransition';
-      let hasWillTransition = name === 'willTransition';
-
-      if (hasDidTransition) {
-        deprecate(
-          'You attempted to listen to the "didTransition" event which is deprecated. Please inject the router service and listen to the "routeDidChange" event.',
-          false,
-          {
-            id: 'deprecate-router-events',
-            until: '4.0.0',
-            url: 'https://emberjs.com/deprecations/v3.x#toc_deprecate-router-events',
-          }
-        );
-      }
-
-      if (hasWillTransition) {
-        deprecate(
-          'You attempted to listen to the "willTransition" event which is deprecated. Please inject the router service and listen to the "routeWillChange" event.',
-          false,
-          {
-            id: 'deprecate-router-events',
-            until: '4.0.0',
-            url: 'https://emberjs.com/deprecations/v3.x#toc_deprecate-router-events',
-          }
-        );
-      }
-    },
-  };
-
-  Route.reopen(ROUTER_EVENT_DEPRECATIONS, {
+  Route.reopen({
     _paramsFor(routeName: string, params: {}) {
       let transition = this._router._routerMicrolib.activeTransition;
       if (transition !== undefined) {
