@@ -61,11 +61,9 @@ jobs:
         - yarn problems
         - yarn tslint
         - yarn eslint
-
-    - name: Smoke Test
-
-      addons:
-        chrome: stable
-
-      script:
-        - yarn test:smoke
+    # Temporarily disabling the smoke test as it is causing timeouts on Travis
+    # - name: Smoke Test
+    #   addons:
+    #     chrome: stable
+    #   script:
+    #     - yarn test:smoke
