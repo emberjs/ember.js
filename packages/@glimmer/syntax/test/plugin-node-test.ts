@@ -6,6 +6,8 @@ import {
   ASTPluginEnvironment,
   ASTPluginBuilder,
 } from '@glimmer/syntax';
+import { ModuleLocator } from '../../interfaces';
+import { expect } from '../../util';
 
 const { test } = QUnit;
 
@@ -136,4 +138,38 @@ test('AST plugins can be chained', assert => {
   });
 
   assert.equal(THIRD_PLUGIN.get(ast), true, 'return value from last AST transform is used');
+});
+
+test('AST plugins can access meta from environment', assert => {
+  assert.expect(2);
+
+  const locator: ModuleLocator = {
+    module: 'template/module/name',
+    name: 'default',
+  };
+
+  let hasExposedEnvMeta = (env: ASTPluginEnvironment) => {
+    return {
+      name: 'exposedMetaTemplateData',
+      visitor: {
+        Program() {
+          const { meta } = env;
+          const { module, name } = expect(meta as ModuleLocator, 'expected meta to not be null');
+          assert.equal(
+            module,
+            'template/module/name',
+            'module was passed in the meta enviornment property'
+          );
+          assert.equal(name, 'default', 'name was passed in the meta enviornment property');
+        },
+      },
+    };
+  };
+
+  preprocess('<div></div>', {
+    meta: locator,
+    plugins: {
+      ast: [hasExposedEnvMeta],
+    },
+  });
 });

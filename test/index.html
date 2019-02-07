@@ -33,7 +33,11 @@
         }
       }
 
-      Object.assign = null;
+      Object.assign = function() {
+        throw new Error(
+          'Unexpected use of Object.assign. Object.assign cannot be used because it is unavailable in IE11. This error was likely caused by using syntax like the spread operator ({ ...obj }) which transpiles to Object.assign. Please use alternate syntax that is compatible with IE11.'
+        );
+      };
 
       // Recursively merge all the dependencies for this configuration of
       // packages to ensure that we only inject each dependency once.

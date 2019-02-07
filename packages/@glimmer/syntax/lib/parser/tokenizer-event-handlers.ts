@@ -335,11 +335,12 @@ export interface ASTPlugin {
 }
 
 export interface ASTPluginEnvironment {
-  meta?: any;
+  meta?: object;
   syntax: Syntax;
 }
 
 export interface PreprocessOptions {
+  meta?: unknown;
   plugins?: {
     ast?: ASTPluginBuilder[];
   };
