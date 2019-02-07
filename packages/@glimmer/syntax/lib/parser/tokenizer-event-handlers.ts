@@ -160,7 +160,7 @@ export class TokenizerEventHandlers extends HandlebarsNodeVisitors {
     if (tag.type === 'EndTag') {
       throw new SyntaxError(
         `Invalid end tag: closing tag must not have attributes, ` +
-        `in \`${tag.name}\` (on line ${this.tokenizer.line}).`,
+          `in \`${tag.name}\` (on line ${this.tokenizer.line}).`,
         tag.loc
       );
     }
@@ -261,8 +261,8 @@ function assembleAttributeValue(
       } else {
         throw new SyntaxError(
           `An unquoted attribute value must be a string or a mustache, ` +
-          `preceeded by whitespace or a '=' character, and ` +
-          `followed by whitespace, a '>' character, or '/>' (on line ${line})`,
+            `preceeded by whitespace or a '=' character, and ` +
+            `followed by whitespace, a '>' character, or '/>' (on line ${line})`,
           b.loc(line, 0)
         );
       }
