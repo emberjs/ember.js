@@ -8,7 +8,7 @@ import { PathHead } from './compiler-ops';
 import { DEBUG } from '@glimmer/local-debug-flags';
 
 export interface CompileOptions {
-  meta: unknown;
+  meta?: unknown;
   customizeComponentName?(tag: string): string;
 }
 

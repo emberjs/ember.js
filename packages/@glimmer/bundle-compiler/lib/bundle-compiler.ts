@@ -149,20 +149,20 @@ export default class BundleCompiler {
    * Adds the template source code for a component to the bundle.
    */
   addTemplateSource(_locator: ModuleLocator, templateSource: string): SerializedTemplateBlock {
-    let l = normalizeLocator(_locator);
+    let locator = normalizeLocator(_locator);
 
-    let block = this.preprocess(templateSource);
-    this.context.compiledBlocks.set(l, block);
+    let block = this.preprocess(locator, templateSource);
+    this.context.compiledBlocks.set(locator, block);
 
     let layout = {
       block,
-      referrer: l,
+      referrer: locator,
       asPartial: false,
     };
 
     let template = compilable(layout);
 
-    this.addCompilableTemplate(l, template);
+    this.addCompilableTemplate(locator, template);
 
     return block;
   }
@@ -202,8 +202,9 @@ export default class BundleCompiler {
     };
   }
 
-  preprocess(input: string): SerializedTemplateBlock {
-    let ast = preprocess(input, { plugins: { ast: this.plugins } });
+  preprocess(locator: ModuleLocator, input: string): SerializedTemplateBlock {
+    let options = { meta: locator, plugins: { ast: this.plugins } };
+    let ast = preprocess(input, options);
     let template = TemplateCompiler.compile(ast);
     return template.toJSON();
   }

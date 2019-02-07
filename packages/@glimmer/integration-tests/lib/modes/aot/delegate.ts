@@ -183,7 +183,7 @@ export class AotRenderDelegate implements RenderDelegate {
       let symbolTable;
 
       if (state.type === 'Curly' || state.type === 'Dynamic') {
-        let block = bundleCompiler.preprocess(state.template!);
+        let block = bundleCompiler.preprocess(locator, state.template!);
         let parsedLayout = { block, referrer: locator, asPartial: false };
         let wrapped = new WrappedBuilder(parsedLayout);
         bundleCompiler.addCompilableTemplate(normalizeLocator(locator), wrapped);
