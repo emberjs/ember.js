@@ -1,10 +1,9 @@
 import { LowLevelVM, VM, UpdatingVM } from './vm';
 
 import { Option, Slice as ListSlice, initializeGuid, fillNulls, assert } from '@glimmer/util';
-import { recordStackSize } from '@glimmer/debug';
+import { recordStackSize, opcodeMetadata } from '@glimmer/debug';
 import { $pc, $sp, $ra, $fp } from '@glimmer/vm';
 import { Tag } from '@glimmer/reference';
-import { opcodeMetadata } from '@glimmer/vm';
 import { RuntimeOp, Op, JitOrAotBlock, Maybe, Dict } from '@glimmer/interfaces';
 import { DEBUG, DEVMODE } from '@glimmer/local-debug-flags';
 // these import bindings will be stripped from build
@@ -107,9 +106,8 @@ export class AppendOpcodes {
   debugAfter(vm: VM<JitOrAotBlock>, pre: DebugState) {
     let { sp, type, isMachine, pc } = pre;
 
-    let meta = opcodeMetadata(type, isMachine);
-
     if (DEBUG) {
+      let meta = opcodeMetadata(type, isMachine);
       let actualChange = vm.fetchValue($sp) - sp!;
       if (
         meta &&

@@ -8,9 +8,9 @@ import {
   Maybe,
   TemplateCompilationContext,
 } from '@glimmer/interfaces';
-import { opcodeMetadata, Register, $s0, $s1, $t0, $t1, $v0, $fp, $sp, $pc, $ra } from '@glimmer/vm';
+import { Register, $s0, $s1, $t0, $t1, $v0, $fp, $sp, $pc, $ra } from '@glimmer/vm';
 import { DEBUG } from '@glimmer/local-debug-flags';
-import { Primitive } from '@glimmer/debug';
+import { opcodeMetadata, Primitive } from '@glimmer/debug';
 import { RuntimeOpImpl } from '@glimmer/program';
 
 export interface DebugConstants {
