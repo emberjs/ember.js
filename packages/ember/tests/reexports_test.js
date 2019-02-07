@@ -1,5 +1,5 @@
 import Ember from '../index';
-import { FEATURES } from '@ember/canary-features';
+import { FEATURES, EMBER_NATIVE_DECORATOR_SUPPORT } from '@ember/canary-features';
 import { confirmExport } from 'internal-test-helpers';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 import { jQueryDisabled, jQuery } from '@ember/-internals/views';
@@ -269,6 +269,7 @@ let allExports = [
     '@ember/-internals/metal',
     { get: 'isNamespaceSearchDisabled', set: 'setNamespaceSearchDisabled' },
   ],
+  EMBER_NATIVE_DECORATOR_SUPPORT ? ['_action', '@ember/object', 'action'] : null,
   ['computed.empty', '@ember/object/computed', 'empty'],
   ['computed.notEmpty', '@ember/object/computed', 'notEmpty'],
   ['computed.none', '@ember/object/computed', 'none'],

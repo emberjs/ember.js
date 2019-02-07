@@ -28,6 +28,8 @@ import {
 } from '@ember/string';
 import Service, { inject as injectService } from '@ember/service';
 
+import { action } from '@ember/object';
+
 import {
   and,
   bool,
@@ -432,6 +434,8 @@ Ember.Service = Service;
 Ember._ProxyMixin = _ProxyMixin;
 Ember.RSVP = RSVP;
 Ember.Namespace = Namespace;
+
+Ember._action = action;
 
 computed.empty = empty;
 computed.notEmpty = notEmpty;
