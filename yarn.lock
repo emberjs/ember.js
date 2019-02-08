@@ -691,15 +691,15 @@
     lodash "^4.17.10"
     to-fast-properties "^2.0.0"
 
-"@glimmer/compiler@^0.37.1":
-  version "0.37.1"
-  resolved "https://registry.yarnpkg.com/@glimmer/compiler/-/compiler-0.37.1.tgz#a3d59e0b1e51341314d3f8202aa0d4b70dc55173"
-  integrity sha512-bGdRb52eWZuHEGaIa1Rl0e0f4vPpQtp+gnpsaRwBMmRLqDrCZKdEJ8jCN5bI8TMFbtvP78s/5O0qi/XK+UzO4A==
+"@glimmer/compiler@^0.39.2":
+  version "0.39.2"
+  resolved "https://registry.yarnpkg.com/@glimmer/compiler/-/compiler-0.39.2.tgz#7218b0efc0701c6eb64f5f85a1fbb676b0179e04"
+  integrity sha512-ecORFbE7vMB4Mv0ewTJUISW0xHsWCsIzpMFOOzJJCzymgbDryiDJtfi7uhlWl8rCn2pt/XutKCvIIX1JfpaPWw==
   dependencies:
-    "@glimmer/interfaces" "^0.37.1"
-    "@glimmer/syntax" "^0.37.1"
-    "@glimmer/util" "^0.37.1"
-    "@glimmer/wire-format" "^0.37.1"
+    "@glimmer/interfaces" "^0.39.2"
+    "@glimmer/syntax" "^0.39.2"
+    "@glimmer/util" "^0.39.2"
+    "@glimmer/wire-format" "^0.39.2"
 
 "@glimmer/encoder@^0.37.1":
   version "0.37.1"
@@ -718,6 +718,11 @@
   dependencies:
     "@glimmer/wire-format" "^0.37.1"
     "@simple-dom/interface" "1.4.0"
+
+"@glimmer/interfaces@^0.39.2":
+  version "0.39.2"
+  resolved "https://registry.yarnpkg.com/@glimmer/interfaces/-/interfaces-0.39.2.tgz#56506d1f13fc14022745f08e7effad8898b29a24"
+  integrity sha512-HRVavfo1AKZu6H1M12UvvW1OoGAxSe3p+Tq+gP7Kp9VzwuRctP+D7mzOzcBD8J4haJCezgFXtj4G2/93GFMJjg==
 
 "@glimmer/low-level@^0.37.1":
   version "0.37.1"
@@ -775,20 +780,25 @@
     "@glimmer/wire-format" "^0.37.1"
     "@simple-dom/interface" "^1.4.0"
 
-"@glimmer/syntax@^0.37.1":
-  version "0.37.1"
-  resolved "https://registry.yarnpkg.com/@glimmer/syntax/-/syntax-0.37.1.tgz#f3c507122f7c4b859ce712e0c5bbc43608ca12db"
-  integrity sha512-DtSRWrbZlgAvLOR62slBvMgUmcnYxfq4Jv5uqCqD4/DUrjV2ezmOMhDFW4zxAVz55luqx9/900XHYiUzsicPyA==
+"@glimmer/syntax@^0.39.2":
+  version "0.39.2"
+  resolved "https://registry.yarnpkg.com/@glimmer/syntax/-/syntax-0.39.2.tgz#435308fe5b42729bf625b437f5d8b242aa35f4f0"
+  integrity sha512-o6RAmT8x/7lZbW+yKmNa05/jfnQKtYud1PwC455jI8J2YuP334SCrSWWIzcmNRrC2j5cDZh9doQwPcrk2aWv/A==
   dependencies:
-    "@glimmer/interfaces" "^0.37.1"
-    "@glimmer/util" "^0.37.1"
+    "@glimmer/interfaces" "^0.39.2"
+    "@glimmer/util" "^0.39.2"
     handlebars "^4.0.6"
-    simple-html-tokenizer "^0.5.6"
+    simple-html-tokenizer "^0.5.7"
 
 "@glimmer/util@^0.37.1":
   version "0.37.1"
   resolved "https://registry.yarnpkg.com/@glimmer/util/-/util-0.37.1.tgz#b6dafd36134556053121fc8a8ffceb68e490a4b5"
   integrity sha512-Of58Of07fsT8JOkok/tXJvewEdI6LzDxdlIIcdhv6iOJgYUsJUQKUYf6XY+5o/rtsrByPQ5da2WwHbLAcpq0aQ==
+
+"@glimmer/util@^0.39.2":
+  version "0.39.2"
+  resolved "https://registry.yarnpkg.com/@glimmer/util/-/util-0.39.2.tgz#ce9a2d5916f90f4b4c23ad0983d0bbb48e38cea7"
+  integrity sha512-7J4D9nOkKpqu6ObHCjdJslT2+KDusyBx0Wibzo/BLvy+nGliE2O/O3oyg6tC6W/fGi3RyDakQLMX4JQWAj+emA==
 
 "@glimmer/vm@^0.37.1":
   version "0.37.1"
@@ -805,6 +815,14 @@
   integrity sha512-iDj8D1eCVDmcsNUcz5epdOCN6Gt53W3cMsS2qAkf2H6REiXQ9kG7ySIGIdahNsLT/f21MT+JzqawylZR0hrw0w==
   dependencies:
     "@glimmer/util" "^0.37.1"
+
+"@glimmer/wire-format@^0.39.2":
+  version "0.39.2"
+  resolved "https://registry.yarnpkg.com/@glimmer/wire-format/-/wire-format-0.39.2.tgz#06730951dec6b5f5cdfc2bf4b31d0243bd4f1817"
+  integrity sha512-D9W7ddHiVrR4bgzwxBRKg7Cm1m4AzeqFkFJwkjCM80q5Q7SnInVIxjMEAa5oM4A06c6R3GZU6xsh3jkxsgTXEw==
+  dependencies:
+    "@glimmer/interfaces" "^0.39.2"
+    "@glimmer/util" "^0.39.2"
 
 "@simple-dom/document@^1.4.0":
   version "1.4.0"
@@ -7610,10 +7628,10 @@ simple-dom@^1.4.0:
     "@simple-dom/serializer" "^1.4.0"
     "@simple-dom/void-map" "^1.4.0"
 
-simple-html-tokenizer@^0.5.6:
-  version "0.5.6"
-  resolved "https://registry.yarnpkg.com/simple-html-tokenizer/-/simple-html-tokenizer-0.5.6.tgz#e1e442b14f5484bf9a7e2924f78f00855e6b3c14"
-  integrity sha512-WgtFeFTAzegTCs1/x096l79gscV43LS17fEXBjv1s26oqiu1qmTM0buaqba/HmlxHNfk4yJuKmSJoRDMWuQU6w==
+simple-html-tokenizer@^0.5.7:
+  version "0.5.7"
+  resolved "https://registry.yarnpkg.com/simple-html-tokenizer/-/simple-html-tokenizer-0.5.7.tgz#8eca336ecfbe2b3c6166cbb31b2682088de79f40"
+  integrity sha512-APW9iYbkJ5cijjX4Ljhf3VG8SwYPUJT5gZrwci/wieMabQxWFiV5VwsrP5c6GMRvXKEQMGkAB1d9dvW66dTqpg==
 
 sinon@^1.17.6:
   version "1.17.7"
