@@ -14,10 +14,10 @@ import {
   addDependentKeys,
   ComputedDescriptor,
   Decorator,
-  descriptorForDecorator,
   makeComputedDecorator,
   removeDependentKeys,
 } from './decorator';
+import { descriptorForDecorator } from './descriptor_map';
 import expandProperties from './expand_properties';
 import { defineProperty } from './properties';
 import { notifyPropertyChange } from './property_events';

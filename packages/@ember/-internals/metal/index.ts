@@ -29,12 +29,12 @@ export {
   PROPERTY_DID_CHANGE,
 } from './lib/property_events';
 export { defineProperty } from './lib/properties';
+export { nativeDescDecorator } from './lib/decorator';
 export {
   descriptorForProperty,
   isComputedDecorator,
   setComputedDecorator,
-  nativeDescDecorator,
-} from './lib/decorator';
+} from './lib/descriptor_map';
 export { watchKey, unwatchKey } from './lib/watch_key';
 export { ChainNode, finishChains, removeChainWatcher } from './lib/chains';
 export { watchPath, unwatchPath } from './lib/watch_path';
@@ -64,16 +64,3 @@ export {
   isSearchDisabled as isNamespaceSearchDisabled,
   setSearchDisabled as setNamespaceSearchDisabled,
 } from './lib/namespace_search';
-
-import { DEBUG } from '@glimmer/env';
-import { setComputedDecorator } from './lib/decorator';
-import { tracked } from './lib/tracked';
-
-// We have to set this here because there is a cycle of dependencies in tracked
-// which causes `setComputedDecorator` to not be resolved before the `tracked`
-// module.
-if (DEBUG) {
-  // Normally this isn't a classic decorator, but we want to throw a helpful
-  // error in development so we need it to treat it like one
-  setComputedDecorator(tracked);
-}

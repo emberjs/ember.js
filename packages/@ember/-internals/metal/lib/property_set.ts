@@ -3,7 +3,7 @@ import { HAS_NATIVE_PROXY, lookupDescriptor, toString } from '@ember/-internals/
 import { assert } from '@ember/debug';
 import EmberError from '@ember/error';
 import { DEBUG } from '@glimmer/env';
-import { descriptorForProperty } from './decorator';
+import { descriptorForProperty } from './descriptor_map';
 import { isPath } from './path_cache';
 import { MandatorySetterFunction } from './properties';
 import { notifyPropertyChange } from './property_events';

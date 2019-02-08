@@ -2,7 +2,7 @@ import { Meta, peekMeta } from '@ember/-internals/meta';
 import { symbol } from '@ember/-internals/utils';
 import { DEBUG } from '@glimmer/env';
 import changeEvent from './change_event';
-import { descriptorForProperty } from './decorator';
+import { descriptorForProperty } from './descriptor_map';
 import { sendEvent } from './events';
 import ObserverSet from './observer_set';
 import { markObjectAsDirty } from './tags';

@@ -1,10 +1,9 @@
-import { Meta, meta as metaFor, peekMeta } from '@ember/-internals/meta';
+import { Meta, meta as metaFor } from '@ember/-internals/meta';
 import { EMBER_NATIVE_DECORATOR_SUPPORT } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
+import { setComputedDecorator } from './descriptor_map';
 import { unwatch, watch } from './watching';
-
-const DECORATOR_DESCRIPTOR_MAP: WeakMap<Decorator, ComputedDescriptor | boolean> = new WeakMap();
 
 // https://tc39.github.io/proposal-decorators/#sec-elementdescriptor-specification-type
 export interface ElementDescriptor {
@@ -20,61 +19,6 @@ export type Decorator = (
   desc: ElementDescriptor,
   isClassicDecorator?: boolean
 ) => ElementDescriptor;
-
-// ..........................................................
-// DESCRIPTOR
-//
-
-/**
-  Returns the CP descriptor assocaited with `obj` and `keyName`, if any.
-
-  @method descriptorFor
-  @param {Object} obj the object to check
-  @param {String} keyName the key to check
-  @return {Descriptor}
-  @private
-*/
-export function descriptorForProperty(obj: object, keyName: string, _meta?: Meta | null) {
-  assert('Cannot call `descriptorFor` on null', obj !== null);
-  assert('Cannot call `descriptorFor` on undefined', obj !== undefined);
-  assert(
-    `Cannot call \`descriptorFor\` on ${typeof obj}`,
-    typeof obj === 'object' || typeof obj === 'function'
-  );
-
-  let meta = _meta === undefined ? peekMeta(obj) : _meta;
-
-  if (meta !== null) {
-    return meta.peekDescriptors(keyName);
-  }
-}
-
-export function descriptorForDecorator(dec: Decorator) {
-  return DECORATOR_DESCRIPTOR_MAP.get(dec);
-}
-
-/**
-  Check whether a value is a decorator
-
-  @method isComputedDecorator
-  @param {any} possibleDesc the value to check
-  @return {boolean}
-  @private
-*/
-export function isComputedDecorator(dec: Decorator | null | undefined) {
-  return dec !== null && dec !== undefined && DECORATOR_DESCRIPTOR_MAP.has(dec);
-}
-
-/**
-  Set a value as a decorator
-
-  @method setComputedDecorator
-  @param {function} decorator the value to mark as a decorator
-  @private
-*/
-export function setComputedDecorator(dec: Decorator, value: any = true) {
-  DECORATOR_DESCRIPTOR_MAP.set(dec, value);
-}
 
 // ..........................................................
 // DEPENDENT KEYS

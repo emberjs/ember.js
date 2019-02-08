@@ -1,6 +1,6 @@
 import { Meta, meta as metaFor, peekMeta } from '@ember/-internals/meta';
 import { getCachedValueFor } from './computed_cache';
-import { descriptorForProperty } from './decorator';
+import { descriptorForProperty } from './descriptor_map';
 import { eachProxyFor } from './each_proxy';
 import { get } from './property_get';
 import { unwatchKey, watchKey } from './watch_key';

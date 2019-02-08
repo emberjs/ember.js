@@ -2,7 +2,8 @@ import { EMBER_NATIVE_DECORATOR_SUPPORT } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { combine, CONSTANT_TAG, Tag } from '@glimmer/reference';
-import { Decorator, ElementDescriptor, setComputedDecorator } from './decorator';
+import { Decorator, ElementDescriptor } from './decorator';
+import { setComputedDecorator } from './descriptor_map';
 import { dirty, tagFor, tagForProperty } from './tags';
 
 type Option<T> = T | null;
@@ -164,6 +165,29 @@ export function tracked(
   return descriptorForField(elementDesc);
 }
 
+if (DEBUG) {
+  // Normally this isn't a classic decorator, but we want to throw a helpful
+  // error in development so we need it to treat it like one
+  setComputedDecorator(tracked);
+}
+
+const TRACKED_FIELDS_SHAPE: WeakMap<object, [string, (() => any) | undefined][]> = new WeakMap();
+const TRACKED_FIELDS_VALUES: WeakMap<object, object> = new WeakMap();
+
+function getTrackedFieldValues(obj: any) {
+  let values = TRACKED_FIELDS_VALUES.get(obj);
+
+  if (values === undefined) {
+    values = {};
+    TRACKED_FIELDS_SHAPE.get(obj.constructor)!.forEach(
+      ([key, initializer]) => (values![key] = initializer === undefined ? undefined : initializer())
+    );
+    TRACKED_FIELDS_VALUES.set(obj, values);
+  }
+
+  return values;
+}
+
 function descriptorForField(elementDesc: ElementDescriptor): ElementDescriptor {
   let { key, kind, initializer } = elementDesc as ElementDescriptor;
 
@@ -171,8 +195,6 @@ function descriptorForField(elementDesc: ElementDescriptor): ElementDescriptor {
     `You attempted to use @tracked on ${key}, but that element is not a class field. @tracked is only usable on class fields. Native getters and setters will autotrack add any tracked fields they encounter, so there is no need mark getters and setters with @tracked.`,
     kind === 'field'
   );
-
-  let shadowKey = Symbol(key);
 
   return {
     key,
@@ -185,19 +207,27 @@ function descriptorForField(elementDesc: ElementDescriptor): ElementDescriptor {
       get(): any {
         if (CURRENT_TRACKER) CURRENT_TRACKER.add(tagForProperty(this, key));
 
-        if (!(shadowKey in this)) {
-          this[shadowKey] = initializer !== undefined ? initializer.call(this) : undefined;
-        }
-
-        return this[shadowKey];
+        return getTrackedFieldValues(this)[key];
       },
 
       set(newValue: any): void {
         tagFor(this).inner!['dirty']();
         dirty(tagForProperty(this, key));
-        this[shadowKey] = newValue;
+
+        getTrackedFieldValues(this)[key] = newValue;
+
         propertyDidChange();
       },
+    },
+    finisher(target) {
+      let shape = TRACKED_FIELDS_SHAPE.get(target);
+
+      if (shape === undefined) {
+        shape = [];
+        TRACKED_FIELDS_SHAPE.set(target, shape);
+      }
+
+      shape.push([key, initializer]);
     },
   };
 }

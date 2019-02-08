@@ -5,12 +5,8 @@
 import { Meta, meta as metaFor, peekMeta, UNDEFINED } from '@ember/-internals/meta';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import {
-  Decorator,
-  descriptorForProperty,
-  ElementDescriptor,
-  isComputedDecorator,
-} from './decorator';
+import { Decorator, ElementDescriptor } from './decorator';
+import { descriptorForProperty, isComputedDecorator } from './descriptor_map';
 import { overrideChains } from './property_events';
 
 export type MandatorySetterFunction = ((this: object, value: any) => void) & {
