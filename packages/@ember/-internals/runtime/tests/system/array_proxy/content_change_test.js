@@ -13,7 +13,9 @@ moduleFor(
 
       run(() => proxy1.destroy());
 
-      set(proxy2, 'content', proxy1);
+      expectWarning(() => {
+        set(proxy2, 'content', proxy1);
+      });
 
       assert.ok(true, 'No exception was raised');
     }
