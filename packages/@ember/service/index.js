@@ -1,5 +1,5 @@
 import { Object as EmberObject } from '@ember/-internals/runtime';
-import { InjectedProperty } from '@ember/-internals/metal';
+import { inject as metalInject } from '@ember/-internals/metal';
 
 /**
  @module @ember/service
@@ -39,7 +39,7 @@ import { InjectedProperty } from '@ember/-internals/metal';
   @public
 */
 export function inject(name, options) {
-  return new InjectedProperty('service', name, options);
+  return metalInject('service', name, options);
 }
 
 /**

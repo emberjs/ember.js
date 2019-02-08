@@ -12,6 +12,8 @@ moduleFor(
       let MixinA, MixinB, MixinC, MixinD;
       let obj;
 
+      window.testStarted = true;
+
       MixinA = Mixin.create({
         aProp: computed(function() {
           return 'A';

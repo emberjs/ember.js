@@ -1,6 +1,6 @@
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import ControllerMixin from './lib/controller_mixin';
-import { InjectedProperty } from '@ember/-internals/metal';
+import { inject as metalInject } from '@ember/-internals/metal';
 
 /**
 @module @ember/controller
@@ -44,7 +44,7 @@ const Controller = EmberObject.extend(ControllerMixin);
   @public
 */
 export function inject(name, options) {
-  return new InjectedProperty('controller', name, options);
+  return metalInject('controller', name, options);
 }
 
 export default Controller;

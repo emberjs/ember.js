@@ -1,7 +1,8 @@
-import { descriptorFor, Meta, peekMeta } from '@ember/-internals/meta';
+import { Meta, peekMeta } from '@ember/-internals/meta';
 import { symbol } from '@ember/-internals/utils';
 import { DEBUG } from '@glimmer/env';
 import changeEvent from './change_event';
+import { descriptorForProperty } from './decorator';
 import { sendEvent } from './events';
 import ObserverSet from './observer_set';
 import { markObjectAsDirty } from './tags';
@@ -41,7 +42,7 @@ function notifyPropertyChange(obj: object, keyName: string, _meta?: Meta | null)
     return;
   }
 
-  let possibleDesc = descriptorFor(obj, keyName, meta);
+  let possibleDesc = descriptorForProperty(obj, keyName, meta);
 
   if (possibleDesc !== undefined && typeof possibleDesc.didChange === 'function') {
     possibleDesc.didChange(obj, keyName);
@@ -112,7 +113,7 @@ function iterDeps(
 
   let possibleDesc;
   meta.forEachInDeps(depKey, (key: string) => {
-    possibleDesc = descriptorFor(obj, key, meta);
+    possibleDesc = descriptorForProperty(obj, key, meta);
 
     if (possibleDesc !== undefined && possibleDesc._suspended === obj) {
       return;

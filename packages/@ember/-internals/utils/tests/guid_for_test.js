@@ -1,4 +1,4 @@
-import { guidFor } from '..';
+import { guidFor, HAS_NATIVE_SYMBOL } from '..';
 import { moduleFor, AbstractTestCase as TestCase } from 'internal-test-helpers';
 
 function sameGuid(assert, a, b, message) {
@@ -49,7 +49,7 @@ moduleFor(
     }
 
     ['@test symbols'](assert) {
-      if (typeof Symbol === 'undefined') {
+      if (HAS_NATIVE_SYMBOL) {
         assert.ok(true, 'symbols are not supported on this browser');
         return;
       }

@@ -1,9 +1,15 @@
-import { descriptorFor } from '@ember/-internals/meta';
 import { getOwner } from '@ember/-internals/owner';
 import { EMBER_MODULE_UNIFICATION } from '@ember/canary-features';
 import { assert } from '@ember/debug';
-import { ComputedProperty } from './computed';
+import { DEBUG } from '@glimmer/env';
+import { computed } from './computed';
 import { defineProperty } from './properties';
+
+export let DEBUG_INJECTION_FUNCTIONS: WeakMap<Function, any>;
+
+if (DEBUG) {
+  DEBUG_INJECTION_FUNCTIONS = new WeakMap();
+}
 
 export interface InjectedPropertyOptions {
   source: string;
@@ -25,58 +31,48 @@ export interface InjectedPropertyOptions {
          to the property's name
   @private
 */
-export default class InjectedProperty extends ComputedProperty {
-  readonly type: string;
-  readonly name: string;
-  readonly source: string | undefined;
-  readonly namespace: string | undefined;
+export default function inject(type: string, name?: string, options?: InjectedPropertyOptions) {
+  let source: string | undefined, namespace: string | undefined;
 
-  constructor(type: string, name: string, options?: InjectedPropertyOptions) {
-    super(injectedPropertyDesc);
+  if (EMBER_MODULE_UNIFICATION) {
+    source = options ? options.source : undefined;
+    namespace = undefined;
 
-    this.type = type;
-    this.name = name;
+    if (name !== undefined) {
+      let namespaceDelimiterOffset = name.indexOf('::');
 
-    if (EMBER_MODULE_UNIFICATION) {
-      this.source = options ? options.source : undefined;
-      this.namespace = undefined;
-
-      if (name) {
-        let namespaceDelimiterOffset = name.indexOf('::');
-        if (namespaceDelimiterOffset === -1) {
-          this.name = name;
-          this.namespace = undefined;
-        } else {
-          this.name = name.slice(namespaceDelimiterOffset + 2);
-          this.namespace = name.slice(0, namespaceDelimiterOffset);
-        }
+      if (namespaceDelimiterOffset !== -1) {
+        namespace = name.slice(0, namespaceDelimiterOffset);
+        name = name.slice(namespaceDelimiterOffset + 2);
       }
     }
   }
-}
 
-const injectedPropertyDesc = {
-  get(this: any, keyName: string): any {
-    let desc = descriptorFor(this, keyName);
+  let getInjection = function getInjection(this: any, propertyName: string) {
     let owner = getOwner(this) || this.container; // fallback to `container` for backwards compat
 
-    assert(
-      `InjectedProperties should be defined with the inject computed property macros.`,
-      desc && desc.type
-    );
     assert(
       `Attempting to lookup an injected property on an object without a container, ensure that the object was instantiated via a container.`,
       Boolean(owner)
     );
 
-    let specifier = `${desc.type}:${desc.name || keyName}`;
-    return owner.lookup(specifier, {
-      source: desc.source,
-      namespace: desc.namespace,
-    });
-  },
+    return owner.lookup(`${type}:${name || propertyName}`, { source, namespace });
+  };
 
-  set(this: any, keyName: string, value: any) {
-    defineProperty(this, keyName, null, value);
-  },
-};
+  if (DEBUG) {
+    DEBUG_INJECTION_FUNCTIONS.set(getInjection, {
+      namespace,
+      source,
+      type,
+      name,
+    });
+  }
+
+  return computed({
+    get: getInjection,
+
+    set(this: any, keyName: string, value: any) {
+      defineProperty(this, keyName, null, value);
+    },
+  });
+}

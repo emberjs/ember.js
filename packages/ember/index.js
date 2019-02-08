@@ -28,6 +28,8 @@ import {
 } from '@ember/string';
 import Service, { inject as injectService } from '@ember/service';
 
+import { action } from '@ember/object';
+
 import {
   and,
   bool,
@@ -271,8 +273,9 @@ Object.defineProperty(Ember.run, 'currentRunLoop', {
 const computed = metal._globalsComputed;
 Ember.computed = computed;
 computed.alias = metal.alias;
-Ember.ComputedProperty = metal.ComputedProperty;
 Ember.cacheFor = metal.getCachedValueFor;
+Ember.ComputedProperty = metal.ComputedProperty;
+Ember._setComputedDecorator = metal.setComputedDecorator;
 Ember.meta = meta;
 Ember.get = metal.get;
 Ember.getWithDefault = metal.getWithDefault;
@@ -431,6 +434,8 @@ Ember.Service = Service;
 Ember._ProxyMixin = _ProxyMixin;
 Ember.RSVP = RSVP;
 Ember.Namespace = Namespace;
+
+Ember._action = action;
 
 computed.empty = empty;
 computed.notEmpty = notEmpty;

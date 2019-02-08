@@ -1,10 +1,9 @@
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import {
-  ComputedProperty,
   computed,
   getCachedValueFor,
-  Descriptor,
   defineProperty,
+  isComputedDecorator,
   get,
   set,
   isWatching,
@@ -19,28 +18,35 @@ moduleFor(
   'computed',
   class extends AbstractTestCase {
     ['@test computed property should be an instance of descriptor'](assert) {
-      assert.ok(computed(function() {}) instanceof Descriptor);
+      assert.ok(isComputedDecorator(computed(function() {})));
     }
 
     ['@test computed properties assert the presence of a getter or setter function']() {
       expectAssertion(function() {
-        computed('nogetternorsetter', {});
+        let obj = {};
+        defineProperty(obj, 'someProp', computed('nogetternorsetter', {}));
       }, 'Computed properties must receive a getter or a setter, you passed none.');
     }
 
     ['@test computed properties check for the presence of a function or configuration object']() {
       expectAssertion(function() {
-        computed('nolastargument');
-      }, 'computed expects a function or an object as last argument.');
+        let obj = {};
+        defineProperty(obj, 'someProp', computed('nolastargument'));
+      }, 'Attempted to use @computed on someProp, but it did not have a getter or a setter. You must either pass a get a function or getter/setter to @computed directly (e.g. `@computed({ get() { ... } })`) or apply @computed directly to a getter/setter');
     }
 
+    // non valid properties are stripped away in the process of creating a computed property descriptor
     ['@test computed properties defined with an object only allow `get` and `set` keys']() {
       expectAssertion(function() {
-        computed({
-          get() {},
-          set() {},
-          other() {},
+        let obj = EmberObject.extend({
+          someProp: computed({
+            get() {},
+            set() {},
+            other() {},
+          }),
         });
+
+        obj.create().someProp;
       }, 'Config object passed to computed can only contain `get` and `set` keys.');
     }
 
@@ -113,33 +119,39 @@ moduleFor(
       assert.equal(get(obj, 'foo'), 'computed bar', 'should return new value');
     }
 
-    ['@test defining a computed property with a dependent key ending with @each is expanded to []'](
-      assert
-    ) {
-      let cp = computed('blazo.@each', function() {});
+    // this should be a unit test elsewhere
+    // computed is more integration-like, and this test asserts on implementation details.
+    // ['@test defining a computed property with a dependent key ending with @each is expanded to []'](
+    //   assert
+    // ) {
+    //   let cp = computed('blazo.@each', function() {});
 
-      assert.deepEqual(cp._dependentKeys, ['blazo.[]']);
+    //   assert.deepEqual(cp._dependentKeys, ['blazo.[]']);
 
-      cp = computed('qux', 'zoopa.@each', function() {});
+    //   cp = computed('qux', 'zoopa.@each', function() {});
 
-      assert.deepEqual(cp._dependentKeys, ['qux', 'zoopa.[]']);
-    }
+    //   assert.deepEqual(cp._dependentKeys, ['qux', 'zoopa.[]']);
+    // }
 
     ['@test defining a computed property with a dependent key more than one level deep beyond @each is not supported']() {
       expectNoWarning(() => {
-        computed('todos', () => {});
+        let obj = {};
+        defineProperty(obj, 'someProp', computed('todos', () => {}));
       });
 
       expectNoWarning(() => {
-        computed('todos.@each.owner', () => {});
+        let obj = {};
+        defineProperty(obj, 'someProp', computed('todos.@each.owner', () => {}));
       });
 
       expectWarning(() => {
-        computed('todos.@each.owner.name', () => {});
+        let obj = {};
+        defineProperty(obj, 'someProp', computed('todos.@each.owner.name', () => {}));
       }, /You used the key "todos\.@each\.owner\.name" which is invalid\. /);
 
       expectWarning(() => {
-        computed('todos.@each.owner.@each.name', () => {});
+        let obj = {};
+        defineProperty(obj, 'someProp', computed('todos.@each.owner.@each.name', () => {}));
       }, /You used the key "todos\.@each\.owner\.@each\.name" which is invalid\. /);
     }
   }
@@ -972,18 +984,23 @@ moduleFor(
   'computed - readOnly',
   class extends AbstractTestCase {
     ['@test is chainable'](assert) {
-      let cp = computed(function() {}).readOnly();
+      let cp = computed(function() {});
+      let readOnlyCp = cp.readOnly();
 
-      assert.ok(cp instanceof Descriptor);
-      assert.ok(cp instanceof ComputedProperty);
+      assert.equal(cp, readOnlyCp);
     }
 
     ['@test throws assertion if called over a CP with a setter defined with the new syntax']() {
       expectAssertion(() => {
-        computed({
-          get() {},
-          set() {},
-        }).readOnly();
+        let obj = {};
+        defineProperty(
+          obj,
+          'someProp',
+          computed({
+            get() {},
+            set() {},
+          }).readOnly()
+        );
       }, /Computed properties that define a setter using the new syntax cannot be read-only/);
     }
 
