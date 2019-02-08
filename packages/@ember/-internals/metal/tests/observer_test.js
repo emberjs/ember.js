@@ -124,6 +124,33 @@ moduleFor(
       assert.equal(count, 1, 'should have invoked observer');
     }
 
+    async ['@test observer and computed with @each key are fired correct times'](assert) {
+      let obj = { bar: undefined };
+      let computedCount = 0;
+      let observerCount = 0;
+
+      defineProperty(
+        obj,
+        'foo',
+        computed('bar.@each.{a,b,c,d}', function () {
+          computedCount++;
+          return get(obj, 'bar');
+        })
+      );
+
+      addObserver(obj, 'foo', function () {
+        observerCount++;
+        get(obj, 'foo');
+      });
+
+      get(obj, 'foo');
+      set(obj, 'bar', []);
+      await runLoopSettled();
+
+      assert.equal(computedCount, 2);
+      assert.equal(observerCount, 1);
+    }
+
     // https://github.com/emberjs/ember.js/issues/18246
     async ['@test observer should fire when computed property is modified'](assert) {
       obj = { bar: 'bar' };
