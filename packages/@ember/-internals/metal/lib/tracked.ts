@@ -171,7 +171,6 @@ if (DEBUG) {
   setComputedDecorator(tracked);
 }
 
-const TRACKED_FIELDS_SHAPE: WeakMap<object, [string, (() => any) | undefined][]> = new WeakMap();
 const TRACKED_FIELDS_VALUES: WeakMap<object, object> = new WeakMap();
 
 function getTrackedFieldValues(obj: any) {
@@ -179,9 +178,6 @@ function getTrackedFieldValues(obj: any) {
 
   if (values === undefined) {
     values = {};
-    TRACKED_FIELDS_SHAPE.get(obj.constructor)!.forEach(
-      ([key, initializer]) => (values![key] = initializer === undefined ? undefined : initializer())
-    );
     TRACKED_FIELDS_VALUES.set(obj, values);
   }
 
@@ -218,16 +214,6 @@ function descriptorForField(elementDesc: ElementDescriptor): ElementDescriptor {
 
         propertyDidChange();
       },
-    },
-    finisher(target) {
-      let shape = TRACKED_FIELDS_SHAPE.get(target);
-
-      if (shape === undefined) {
-        shape = [];
-        TRACKED_FIELDS_SHAPE.set(target, shape);
-      }
-
-      shape.push([key, initializer]);
     },
   };
 }
