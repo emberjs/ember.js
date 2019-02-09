@@ -203,7 +203,13 @@ function descriptorForField(elementDesc: ElementDescriptor): ElementDescriptor {
       get(): any {
         if (CURRENT_TRACKER) CURRENT_TRACKER.add(tagForProperty(this, key));
 
-        return getTrackedFieldValues(this)[key];
+        let values = getTrackedFieldValues(this);
+
+        if (!(key in values)) {
+          values[key] = initializer !== undefined ? initializer.call(this) : undefined;
+        }
+
+        return values[key];
       },
 
       set(newValue: any): void {
