@@ -1,5 +1,15 @@
-import { didRender, get, set, tagFor, tagForProperty, watchKey } from '@ember/-internals/metal';
+import {
+  didRender,
+  get,
+  getCurrentTracker,
+  set,
+  setCurrentTracker,
+  tagFor,
+  tagForProperty,
+  watchKey,
+} from '@ember/-internals/metal';
 import { isProxy, symbol } from '@ember/-internals/utils';
+import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { DEBUG } from '@glimmer/env';
 import { Opaque } from '@glimmer/interfaces';
 import {
@@ -178,6 +188,7 @@ export class RootPropertyReference extends PropertyReference
   public tag: Tag;
   private _parentValue: any;
   private _propertyKey: string;
+  private _propertyTag: TagWrapper<UpdatableTag>;
 
   constructor(parentValue: any, propertyKey: string) {
     super();
@@ -185,14 +196,16 @@ export class RootPropertyReference extends PropertyReference
     this._parentValue = parentValue;
     this._propertyKey = propertyKey;
 
-    if (DEBUG) {
-      this.tag = TwoWayFlushDetectionTag.create(
-        tagForProperty(parentValue, propertyKey),
-        propertyKey,
-        this
-      );
+    if (EMBER_METAL_TRACKED_PROPERTIES) {
+      this._propertyTag = UpdatableTag.create(CONSTANT_TAG);
     } else {
-      this.tag = tagForProperty(parentValue, propertyKey);
+      this._propertyTag = UpdatableTag.create(tagForProperty(parentValue, propertyKey));
+    }
+
+    if (DEBUG) {
+      this.tag = TwoWayFlushDetectionTag.create(this._propertyTag, propertyKey, this);
+    } else {
+      this.tag = this._propertyTag;
     }
 
     if (DEBUG) {
@@ -207,7 +220,25 @@ export class RootPropertyReference extends PropertyReference
       (this.tag.inner as TwoWayFlushDetectionTag).didCompute(_parentValue);
     }
 
-    return get(_parentValue, _propertyKey);
+    let parent: any;
+    let tracker: any;
+
+    if (EMBER_METAL_TRACKED_PROPERTIES) {
+      parent = getCurrentTracker();
+      tracker = setCurrentTracker();
+    }
+
+    let ret = get(_parentValue, _propertyKey);
+
+    if (EMBER_METAL_TRACKED_PROPERTIES) {
+      setCurrentTracker(parent!);
+      let tag = tracker!.combine();
+      if (parent) parent.add(tag);
+
+      this._propertyTag.inner.update(tag);
+    }
+
+    return ret;
   }
 
   [UPDATE](value: any) {
@@ -218,34 +249,31 @@ export class RootPropertyReference extends PropertyReference
 export class NestedPropertyReference extends PropertyReference {
   public tag: Tag;
   private _parentReference: any;
-  private _parentObjectTag: TagWrapper<UpdatableTag>;
+  private _propertyTag: TagWrapper<UpdatableTag>;
   private _propertyKey: string;
 
   constructor(parentReference: VersionedPathReference<Opaque>, propertyKey: string) {
     super();
 
     let parentReferenceTag = parentReference.tag;
-    let parentObjectTag = UpdatableTag.create(CONSTANT_TAG);
+    let propertyTag = UpdatableTag.create(CONSTANT_TAG);
 
     this._parentReference = parentReference;
-    this._parentObjectTag = parentObjectTag;
+    this._propertyTag = propertyTag;
     this._propertyKey = propertyKey;
 
     if (DEBUG) {
-      let tag = combine([parentReferenceTag, parentObjectTag]);
+      let tag = combine([parentReferenceTag, propertyTag]);
       this.tag = TwoWayFlushDetectionTag.create(tag, propertyKey, this);
     } else {
-      this.tag = combine([parentReferenceTag, parentObjectTag]);
+      this.tag = combine([parentReferenceTag, propertyTag]);
     }
   }
 
   compute() {
-    let { _parentReference, _parentObjectTag, _propertyKey } = this;
+    let { _parentReference, _propertyTag, _propertyKey } = this;
 
     let parentValue = _parentReference.value();
-
-    _parentObjectTag.inner.update(tagForProperty(parentValue, _propertyKey));
-
     let parentValueType = typeof parentValue;
 
     if (parentValueType === 'string' && _propertyKey === 'length') {
@@ -261,7 +289,27 @@ export class NestedPropertyReference extends PropertyReference {
         (this.tag.inner as TwoWayFlushDetectionTag).didCompute(parentValue);
       }
 
-      return get(parentValue, _propertyKey);
+      let parent: any;
+      let tracker: any;
+
+      if (EMBER_METAL_TRACKED_PROPERTIES) {
+        parent = getCurrentTracker();
+        tracker = setCurrentTracker();
+      }
+
+      let ret = get(parentValue, _propertyKey);
+
+      if (EMBER_METAL_TRACKED_PROPERTIES) {
+        setCurrentTracker(parent!);
+        let tag = tracker!.combine();
+        if (parent) parent.add(tag);
+
+        _propertyTag.inner.update(tag);
+      } else {
+        _propertyTag.inner.update(tagForProperty(parentValue, _propertyKey));
+      }
+
+      return ret;
     } else {
       return undefined;
     }
