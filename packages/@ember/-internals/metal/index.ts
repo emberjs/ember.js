@@ -29,12 +29,12 @@ export {
   PROPERTY_DID_CHANGE,
 } from './lib/property_events';
 export { defineProperty } from './lib/properties';
+export { nativeDescDecorator } from './lib/decorator';
 export {
   descriptorForProperty,
   isComputedDecorator,
   setComputedDecorator,
-  nativeDescDecorator,
-} from './lib/decorator';
+} from './lib/descriptor_map';
 export { watchKey, unwatchKey } from './lib/watch_key';
 export { ChainNode, finishChains, removeChainWatcher } from './lib/chains';
 export { watchPath, unwatchPath } from './lib/watch_path';
@@ -49,7 +49,7 @@ export { Mixin, aliasMethod, mixin, observer, applyMixin } from './lib/mixin';
 export { default as inject, DEBUG_INJECTION_FUNCTIONS } from './lib/injected_property';
 export { setHasViews, tagForProperty, tagFor, markObjectAsDirty } from './lib/tags';
 export { default as runInTransaction, didRender, assertNotRendered } from './lib/transaction';
-export { tracked } from './lib/tracked';
+export { tracked, getCurrentTracker, setCurrentTracker } from './lib/tracked';
 
 export {
   NAMESPACES,

@@ -22,12 +22,12 @@ import {
   ComputedPropertyGetter,
   ComputedPropertySetter,
 } from './computed';
+import { makeComputedDecorator } from './decorator';
 import {
   descriptorForDecorator,
   descriptorForProperty,
   isComputedDecorator,
-  makeComputedDecorator,
-} from './decorator';
+} from './descriptor_map';
 import { addListener, removeListener } from './events';
 import expandProperties from './expand_properties';
 import { classToString, setUnprocessedMixins } from './namespace_search';

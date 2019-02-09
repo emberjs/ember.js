@@ -109,6 +109,8 @@ let allExports = [
 
   // @ember/-internals/metal
   ['computed', '@ember/-internals/metal', '_globalsComputed'],
+  ['_descriptor', '@ember/-internals/metal', 'nativeDescDecorator'],
+  ['_tracked', '@ember/-internals/metal', 'tracked'],
   ['computed.alias', '@ember/-internals/metal', 'alias'],
   ['ComputedProperty', '@ember/-internals/metal'],
   ['_setComputedDecorator', '@ember/-internals/metal', 'setComputedDecorator'],

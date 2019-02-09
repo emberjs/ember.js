@@ -1,24 +1,54 @@
 import { computed, defineProperty, get, set, tagForProperty, tracked } from '../..';
 
-import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
+import {
+  EMBER_METAL_TRACKED_PROPERTIES,
+  EMBER_NATIVE_DECORATOR_SUPPORT,
+} from '@ember/canary-features';
 import { AbstractTestCase, moduleFor } from 'internal-test-helpers';
+import { track } from './support';
 
-if (EMBER_METAL_TRACKED_PROPERTIES) {
+if (EMBER_METAL_TRACKED_PROPERTIES && EMBER_NATIVE_DECORATOR_SUPPORT) {
   moduleFor(
     '@tracked get validation',
     class extends AbstractTestCase {
-      [`@test validators for tracked getters with dependencies should invalidate when the dependencies invalidate`](
-        assert: Assert
-      ) {
+      [`@test autotracking should work with tracked fields`](assert) {
         class Tracked {
-          @tracked first?: string = undefined;
-          @tracked last?: string = undefined;
-          constructor(first: string, last: string) {
+          @tracked first = undefined;
+          constructor(first) {
+            this.first = first;
+          }
+        }
+
+        let obj = new Tracked('Tom', 'Dale');
+
+        let tag = track(() => obj.first);
+        let snapshot = tag.value();
+
+        assert.equal(obj.first, 'Tom', 'The full name starts correct');
+        assert.equal(tag.validate(snapshot), true);
+
+        snapshot = tag.value();
+        assert.equal(tag.validate(snapshot), true);
+
+        obj.first = 'Thomas';
+
+        assert.equal(tag.validate(snapshot), false);
+
+        assert.equal(obj.first, 'Thomas');
+        snapshot = tag.value();
+
+        assert.equal(tag.validate(snapshot), true);
+      }
+
+      [`@test autotracking should work with native getters`](assert) {
+        class Tracked {
+          @tracked first = undefined;
+          @tracked last = undefined;
+          constructor(first, last) {
             this.first = first;
             this.last = last;
           }
 
-          @tracked
           get full() {
             return `${this.first} ${this.last}`;
           }
@@ -26,11 +56,10 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
 
         let obj = new Tracked('Tom', 'Dale');
 
-        let tag = tagForProperty(obj, 'full');
+        let tag = track(() => obj.full);
         let snapshot = tag.value();
 
-        let full = obj.full;
-        assert.equal(full, 'Tom Dale', 'The full name starts correct');
+        assert.equal(obj.full, 'Tom Dale', 'The full name starts correct');
         assert.equal(tag.validate(snapshot), true);
 
         snapshot = tag.value();
@@ -46,22 +75,60 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
         assert.equal(tag.validate(snapshot), true);
       }
 
-      [`@test interaction with Ember object model (tracked property depending on Ember property)`](
-        assert: Assert
-      ) {
-        interface NameInterface {
-          first: string;
-          last: string;
-        }
+      [`@test autotracking should work with native setters`](assert) {
         class Tracked {
-          @tracked name: NameInterface;
-          constructor(name: NameInterface) {
+          @tracked first = undefined;
+          @tracked last = undefined;
+          constructor(first, last) {
+            this.first = first;
+            this.last = last;
+          }
+
+          get full() {
+            return `${this.first} ${this.last}`;
+          }
+
+          set full(value) {
+            let [first, last] = value.split(' ');
+
+            this.first = first;
+            this.last = last;
+          }
+        }
+
+        let obj = new Tracked('Tom', 'Dale');
+
+        let tag = track(() => obj.full);
+        let snapshot = tag.value();
+
+        assert.equal(obj.full, 'Tom Dale', 'The full name starts correct');
+        assert.equal(tag.validate(snapshot), true);
+
+        snapshot = tag.value();
+        assert.equal(tag.validate(snapshot), true);
+
+        obj.full = 'Melanie Sumner';
+
+        assert.equal(tag.validate(snapshot), false);
+
+        assert.equal(obj.full, 'Melanie Sumner');
+        assert.equal(obj.first, 'Melanie');
+        assert.equal(obj.last, 'Sumner');
+        snapshot = tag.value();
+
+        assert.equal(tag.validate(snapshot), true);
+      }
+
+      [`@test interaction with Ember object model (tracked property depending on Ember property)`](
+        assert
+      ) {
+        class Tracked {
+          constructor(name) {
             this.name = name;
           }
 
-          @tracked
           get full() {
-            return `${get(this.name, 'first')} ${get(this.name, 'last')}`;
+            return `${get(this, 'name.first')} ${get(this, 'name.last')}`;
           }
         }
 
@@ -69,11 +136,10 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
 
         let obj = new Tracked(tom);
 
-        let tag = tagForProperty(obj, 'full');
+        let tag = track(() => obj.full);
         let snapshot = tag.value();
 
-        let full = obj.full;
-        assert.equal(full, 'Tom Dale');
+        assert.equal(obj.full, 'Tom Dale');
         assert.equal(tag.validate(snapshot), true);
 
         snapshot = tag.value();
@@ -86,14 +152,22 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
         snapshot = tag.value();
 
         assert.equal(tag.validate(snapshot), true);
+
+        set(obj, 'name', { first: 'Ricardo', last: 'Mendes' });
+
+        assert.equal(tag.validate(snapshot), false, 'invalid after setting with Ember set');
+
+        assert.equal(obj.full, 'Ricardo Mendes');
+        snapshot = tag.value();
+
+        assert.equal(tag.validate(snapshot), true);
       }
 
       [`@test interaction with Ember object model (Ember computed property depending on tracked property)`](
-        assert: Assert
+        assert
       ) {
         class EmberObject {
-          name: Name;
-          constructor(name: Name) {
+          constructor(name) {
             this.name = name;
           }
         }
@@ -101,16 +175,17 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
         defineProperty(
           EmberObject.prototype,
           'full',
-          computed('name', function(this: EmberObject) {
+          computed('name', function() {
             let name = get(this, 'name');
             return `${name.first} ${name.last}`;
           })
         );
 
         class Name {
-          @tracked first: string;
-          @tracked last: string;
-          constructor(first: string, last: string) {
+          @tracked first;
+          @tracked last;
+
+          constructor(first, last) {
             this.first = first;
             this.last = last;
           }
@@ -143,12 +218,12 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
       }
 
       ['@test interaction with the Ember object model (paths going through tracked properties)'](
-        assert: Assert
+        assert
       ) {
-        let self: EmberObject;
+        let self;
         class EmberObject {
-          contact: Contact;
-          constructor(contact: Contact) {
+          contact;
+          constructor(contact) {
             this.contact = contact;
             self = this;
           }
@@ -164,16 +239,16 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
         );
 
         class Contact {
-          @tracked name?: EmberName = undefined;
-          constructor(name: EmberName) {
+          @tracked name = undefined;
+          constructor(name) {
             this.name = name;
           }
         }
 
         class EmberName {
-          first: string;
-          last: string;
-          constructor(first: string, last: string) {
+          first;
+          last;
+          constructor(first, last) {
             this.first = first;
             this.last = last;
           }

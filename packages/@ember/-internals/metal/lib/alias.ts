@@ -7,10 +7,10 @@ import {
   addDependentKeys,
   ComputedDescriptor,
   Decorator,
-  descriptorForDecorator,
   makeComputedDecorator,
   removeDependentKeys,
 } from './decorator';
+import { descriptorForDecorator } from './descriptor_map';
 import { defineProperty } from './properties';
 import { get } from './property_get';
 import { set } from './property_set';

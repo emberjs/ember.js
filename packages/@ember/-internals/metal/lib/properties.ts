@@ -3,15 +3,10 @@
 */
 
 import { Meta, meta as metaFor, peekMeta, UNDEFINED } from '@ember/-internals/meta';
-import { EMBER_NATIVE_DECORATOR_SUPPORT } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import {
-  Decorator,
-  descriptorForProperty,
-  ElementDescriptor,
-  isComputedDecorator,
-} from './decorator';
+import { Decorator, ElementDescriptor } from './decorator';
+import { descriptorForProperty, isComputedDecorator } from './descriptor_map';
 import { overrideChains } from './property_events';
 
 export type MandatorySetterFunction = ((this: object, value: any) => void) & {
@@ -155,16 +150,19 @@ export function defineProperty(
 
   let value;
   if (isComputedDecorator(desc)) {
-    let elementDesc: ElementDescriptor = {
+    let elementDesc = {
       key: keyName,
       kind: 'field',
       placement: 'own',
       descriptor: {
         value: undefined,
       },
-    };
+      toString() {
+        return '[object Descriptor]';
+      },
+    } as ElementDescriptor;
 
-    if (DEBUG && !EMBER_NATIVE_DECORATOR_SUPPORT) {
+    if (DEBUG) {
       elementDesc = desc!(elementDesc, true);
     } else {
       elementDesc = desc!(elementDesc);

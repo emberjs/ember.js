@@ -1,7 +1,7 @@
 import { Meta, meta as metaFor, peekMeta, UNDEFINED } from '@ember/-internals/meta';
 import { lookupDescriptor } from '@ember/-internals/utils';
 import { DEBUG } from '@glimmer/env';
-import { descriptorForProperty, isComputedDecorator } from './decorator';
+import { descriptorForProperty, isComputedDecorator } from './descriptor_map';
 import {
   DEFAULT_GETTER_FUNCTION,
   INHERITING_GETTER_FUNCTION,
