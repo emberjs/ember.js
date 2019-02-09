@@ -106,6 +106,7 @@ module.exports = {
 
     return {
       moduleName: stringUtil.dasherize(moduleName),
+      className: stringUtil.classify(moduleName),
     };
   },
 

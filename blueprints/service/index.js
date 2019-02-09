@@ -1,6 +1,7 @@
 'use strict';
 
 const isModuleUnificationProject = require('../module-unification').isModuleUnificationProject;
+const stringUtil = require('ember-cli-string-utils');
 
 module.exports = {
   description: 'Generates a service.',
@@ -17,5 +18,11 @@ module.exports = {
         },
       };
     }
+  },
+
+  locals(options) {
+    return {
+      className: stringUtil.classify(options.entity.name),
+    };
   },
 };
