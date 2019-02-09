@@ -97,6 +97,7 @@ module.exports = {
     return {
       importTemplate: importTemplate,
       contents: contents,
+      name: stringUtil.classify(options.entity.name),
       path: getPathOption(options),
     };
   },
