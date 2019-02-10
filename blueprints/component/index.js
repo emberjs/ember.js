@@ -20,19 +20,12 @@ module.exports = {
     },
   ],
 
-  filesPath: function() {
-    let filesDirectory = 'files';
-
-    if (isModuleUnificationProject(this.project)) {
-      filesDirectory = 'module-unification-files';
-    }
-
-    return path.join(this.path, filesDirectory);
-  },
-
   fileMapTokens: function() {
     if (isModuleUnificationProject(this.project)) {
       return {
+        __name__: function() {
+          return 'component';
+        },
         __root__(options) {
           if (options.inRepoAddon) {
             return path.join('packages', options.inRepoAddon, 'src');
@@ -44,6 +37,12 @@ module.exports = {
         },
         __path__(options) {
           return path.join('ui', 'components', options.dasherizedModuleName);
+        },
+        __templatepath__(options) {
+          return path.join('ui', 'components', options.dasherizedModuleName);
+        },
+        __templatename__: function() {
+          return 'template';
         },
       };
     } else {
@@ -80,18 +79,20 @@ module.exports = {
     let importTemplate = '';
     let contents = '';
 
-    // if we're in an addon, build import statement
-    if (options.project.isEmberCLIAddon() || (options.inRepoAddon && !options.inDummy)) {
-      if (options.pod) {
-        templatePath = './template';
-      } else {
-        templatePath =
-          pathUtil.getRelativeParentPath(options.entity.name) +
-          'templates/components/' +
-          stringUtil.dasherize(options.entity.name);
+    if (!isModuleUnificationProject(this.project)) {
+      // if we're in an addon, build import statement
+      if (options.project.isEmberCLIAddon() || (options.inRepoAddon && !options.inDummy)) {
+        if (options.pod) {
+          templatePath = './template';
+        } else {
+          templatePath =
+            pathUtil.getRelativeParentPath(options.entity.name) +
+            'templates/components/' +
+            stringUtil.dasherize(options.entity.name);
+        }
+        importTemplate = "import layout from '" + templatePath + "';" + EOL;
+        contents = EOL + '  layout';
       }
-      importTemplate = "import layout from '" + templatePath + "';" + EOL;
-      contents = EOL + '  layout';
     }
 
     return {
