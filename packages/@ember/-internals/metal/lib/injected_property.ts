@@ -1,8 +1,9 @@
 import { getOwner } from '@ember/-internals/owner';
-import { EMBER_MODULE_UNIFICATION } from '@ember/canary-features';
+import { EMBER_MODULE_UNIFICATION, EMBER_NATIVE_DECORATOR_SUPPORT } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { computed } from './computed';
+import { ElementDescriptor, isElementDescriptor } from './decorator';
 import { defineProperty } from './properties';
 
 export let DEBUG_INJECTION_FUNCTIONS: WeakMap<Function, any>;
@@ -27,12 +28,19 @@ export interface InjectedPropertyOptions {
   @namespace Ember
   @constructor
   @param {String} type The container type the property will lookup
-  @param {String} name (optional) The name the property will lookup, defaults
+  @param {String} nameOrDesc (optional) The name the property will lookup, defaults
          to the property's name
   @private
 */
-export default function inject(type: string, name?: string, options?: InjectedPropertyOptions) {
+export default function inject(
+  type: string,
+  nameOrDesc: string | ElementDescriptor,
+  options?: InjectedPropertyOptions
+) {
+  assert('a string type must be provided to inject', typeof type === 'string');
+
   let source: string | undefined, namespace: string | undefined;
+  let name = typeof nameOrDesc === 'string' ? nameOrDesc : undefined;
 
   if (EMBER_MODULE_UNIFICATION) {
     source = options ? options.source : undefined;
@@ -48,7 +56,7 @@ export default function inject(type: string, name?: string, options?: InjectedPr
     }
   }
 
-  let getInjection = function getInjection(this: any, propertyName: string) {
+  let getInjection = function(this: any, propertyName: string) {
     let owner = getOwner(this) || this.container; // fallback to `container` for backwards compat
 
     assert(
@@ -68,11 +76,22 @@ export default function inject(type: string, name?: string, options?: InjectedPr
     });
   }
 
-  return computed({
+  let decorator = computed({
     get: getInjection,
 
     set(this: any, keyName: string, value: any) {
       defineProperty(this, keyName, null, value);
     },
   });
+
+  if (isElementDescriptor(nameOrDesc)) {
+    assert(
+      'Native decorators are not enabled without the EMBER_NATIVE_DECORATOR_SUPPORT flag. If you are using inject in a classic class, add parenthesis to it: inject()',
+      Boolean(EMBER_NATIVE_DECORATOR_SUPPORT)
+    );
+
+    return decorator(nameOrDesc);
+  } else {
+    return decorator;
+  }
 }

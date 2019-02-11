@@ -1,4 +1,5 @@
 import { inject } from '@ember/-internals/metal';
+import { EMBER_NATIVE_DECORATOR_SUPPORT } from '@ember/canary-features';
 import { DEBUG } from '@glimmer/env';
 import EmberObject from '../lib/system/object';
 import { buildOwner } from 'internal-test-helpers';
@@ -49,3 +50,48 @@ moduleFor(
     }
   }
 );
+
+if (EMBER_NATIVE_DECORATOR_SUPPORT) {
+  moduleFor(
+    'inject - decorator',
+    class extends AbstractTestCase {
+      ['@test works with native decorators'](assert) {
+        let owner = buildOwner();
+
+        class Service extends EmberObject {}
+
+        class Foo extends EmberObject {
+          @inject('service', 'main') main;
+        }
+
+        owner.register('service:main', Service);
+        owner.register('foo:main', Foo);
+
+        let foo = owner.lookup('foo:main');
+
+        assert.ok(foo.main instanceof Service, 'service injected correctly');
+      }
+
+      ['@test uses the decorated property key if not provided'](assert) {
+        let owner = buildOwner();
+
+        function service() {
+          return inject('service', ...arguments);
+        }
+
+        class Service extends EmberObject {}
+
+        class Foo extends EmberObject {
+          @service main;
+        }
+
+        owner.register('service:main', Service);
+        owner.register('foo:main', Foo);
+
+        let foo = owner.lookup('foo:main');
+
+        assert.ok(foo.main instanceof Service, 'service injected correctly');
+      }
+    }
+  );
+}

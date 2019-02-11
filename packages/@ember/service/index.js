@@ -35,11 +35,11 @@ import { inject as metalInject } from '@ember/-internals/metal';
   @for @ember/service
   @param {String} name (optional) name of the service to inject, defaults to
          the property's name
-  @return {Ember.InjectedProperty} injection descriptor instance
+  @return {ComputedDecorator} injection decorator instance
   @public
 */
-export function inject(name, options) {
-  return metalInject('service', name, options);
+export function inject(nameOrDesc, options) {
+  return metalInject('service', nameOrDesc, options);
 }
 
 /**

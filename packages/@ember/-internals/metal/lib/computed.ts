@@ -1,6 +1,9 @@
 import { Meta, meta as metaFor, peekMeta } from '@ember/-internals/meta';
 import { inspect, toString } from '@ember/-internals/utils';
-import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
+import {
+  EMBER_METAL_TRACKED_PROPERTIES,
+  EMBER_NATIVE_DECORATOR_SUPPORT,
+} from '@ember/canary-features';
 import { assert, deprecate, warn } from '@ember/debug';
 import EmberError from '@ember/error';
 import {
@@ -14,10 +17,12 @@ import {
   addDependentKeys,
   ComputedDescriptor,
   Decorator,
+  ElementDescriptor,
+  isElementDescriptor,
   makeComputedDecorator,
   removeDependentKeys,
 } from './decorator';
-import { descriptorForDecorator } from './descriptor_map';
+import { descriptorForDecorator, isComputedDecorator } from './descriptor_map';
 import expandProperties from './expand_properties';
 import { defineProperty } from './properties';
 import { notifyPropertyChange } from './property_events';
@@ -173,6 +178,11 @@ export class ComputedProperty extends ComputedDescriptor {
       let config = args.pop();
 
       if (typeof config === 'function') {
+        assert(
+          `You attempted to pass a computed property instance to computed(). Computed property instances are decorator functions, and cannot be passed to computed() because they cannot be turned into decorators twice`,
+          !isComputedDecorator(config)
+        );
+
         this._getter = config as ComputedPropertyGetter;
       } else {
         const objectConfig = config as ComputedPropertyGetterAndSetter;
@@ -700,12 +710,32 @@ class ComputedDecoratorImpl extends Function {
   @static
   @param {String} [dependentKeys*] Optional dependent keys that trigger this computed property.
   @param {Function} func The computed property function.
-  @return {ComputedDecorator} property descriptor instance
+  @return {ComputedDecorator} property decorator instance
   @public
 */
-export function computed(...args: (string | ComputedPropertyConfig)[]): ComputedDecorator {
+export function computed(elementDesc: ElementDescriptor): ElementDescriptor;
+export function computed(...args: (string | ComputedPropertyConfig)[]): ComputedDecorator;
+export function computed(
+  ...args: (string | ComputedPropertyConfig | ElementDescriptor)[]
+): ComputedDecorator | ElementDescriptor {
+  let firstArg = args[0];
+
+  if (isElementDescriptor(firstArg)) {
+    assert(
+      'Native decorators are not enabled without the EMBER_NATIVE_DECORATOR_SUPPORT flag. If you are using computed in a classic class, add parenthesis to it: computed()',
+      Boolean(EMBER_NATIVE_DECORATOR_SUPPORT)
+    );
+
+    let decorator = makeComputedDecorator(
+      new ComputedProperty([]),
+      ComputedDecoratorImpl
+    ) as ComputedDecorator;
+
+    return decorator(firstArg);
+  }
+
   return makeComputedDecorator(
-    new ComputedProperty(args),
+    new ComputedProperty(args as (string | ComputedPropertyConfig)[]),
     ComputedDecoratorImpl
   ) as ComputedDecorator;
 }
