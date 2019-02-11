@@ -173,7 +173,7 @@ export function populateBuiltins(
 
         for (let i = 0; i < keys.length; i++) {
           let key = keys[i];
-          if (key === 'nextSibling' || key === 'guid') {
+          if (key === 'guid' || key === 'insertBefore') {
             actions.push(op('Expr', values[i]));
           } else {
             throw new Error(`SYNTAX ERROR: #in-element does not take a \`${keys[0]}\` option`);

@@ -379,15 +379,21 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
   __pushRemoteElement(
     element: SimpleElement,
     cursorId: string,
-    nextSibling: Option<SimpleNode> = null
+    insertBefore: Option<null>
   ): Option<RemoteLiveBlock> {
     let marker = this.getMarker(element as HTMLElement, cursorId);
 
     if (marker.parentNode === element) {
+      if (insertBefore === undefined) {
+        while (element.lastChild !== marker) {
+          element.removeChild(element.lastChild!);
+        }
+      }
+
       let currentCursor = this.currentCursor;
       let candidate = currentCursor!.candidate;
 
-      this.pushElement(element, nextSibling);
+      this.pushElement(element, insertBefore);
 
       currentCursor!.candidate = candidate;
       this.candidate = this.remove(marker);
