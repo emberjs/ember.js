@@ -60,7 +60,7 @@
     "test:browserstack": "node bin/run-browserstack-tests.js"
   },
   "dependencies": {
-    "broccoli-funnel": "^2.0.1",
+    "broccoli-funnel": "^2.0.2",
     "broccoli-merge-trees": "^3.0.2",
     "chalk": "^2.4.2",
     "ember-cli-babel": "^7.4.0",
