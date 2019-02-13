@@ -185,7 +185,7 @@ function getTrackedFieldValues(obj: any) {
 }
 
 function descriptorForField(elementDesc: ElementDescriptor): ElementDescriptor {
-  let { key, kind, initializer } = elementDesc as ElementDescriptor;
+  let { key, kind, initializer } = elementDesc;
 
   assert(
     `You attempted to use @tracked on ${key}, but that element is not a class field. @tracked is only usable on class fields. Native getters and setters will autotrack add any tracked fields they encounter, so there is no need mark getters and setters with @tracked.`,

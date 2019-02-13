@@ -6,12 +6,12 @@ moduleFor(
   'inject',
   class extends AbstractTestCase {
     ['@test injected properties should be descriptors'](assert) {
-      assert.ok(isComputedDecorator(inject()));
+      assert.ok(isComputedDecorator(inject('type')));
     }
 
     ['@test injected properties should be overridable'](assert) {
       let obj = {};
-      defineProperty(obj, 'foo', inject());
+      defineProperty(obj, 'foo', inject('type'));
 
       set(obj, 'foo', 'bar');
 

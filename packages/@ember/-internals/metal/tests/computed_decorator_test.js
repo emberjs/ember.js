@@ -133,6 +133,26 @@ if (EMBER_NATIVE_DECORATOR_SUPPORT) {
           new Foo();
         }, /Attempted to apply a computed property that already has a getter\/setter to a foo, but it is a method or an accessor./);
       }
+
+      ['@test it throws if a CP is passed to it']() {
+        expectAssertion(() => {
+          class Foo {
+            bar;
+
+            @computed(
+              'bar',
+              computed({
+                get() {
+                  return this._foo;
+                },
+              })
+            )
+            foo;
+          }
+
+          new Foo();
+        }, 'You attempted to pass a computed property instance to computed(). Computed property instances are decorator functions, and cannot be passed to computed() because they cannot be turned into decorators twice');
+      }
     }
   );
 
@@ -154,7 +174,7 @@ if (EMBER_NATIVE_DECORATOR_SUPPORT) {
 
       ['@test computed property works with a getter'](assert) {
         class TestObj {
-          @computed()
+          @computed
           get someGetter() {
             return true;
           }
@@ -271,6 +291,19 @@ if (EMBER_NATIVE_DECORATOR_SUPPORT) {
 
         assert.equal(set(obj, 'foo', 'bar'), 'bar', 'should return set value with set()');
         assert.equal(count, 0, 'should not have invoked getter');
+      }
+
+      ['@test throws if a value is decorated twice']() {
+        expectAssertion(() => {
+          class Obj {
+            @computed
+            @computed
+            get foo() {
+              return this._foo;
+            }
+          }
+          new Obj();
+        }, "Only one computed property decorator can be applied to a class field or accessor, but 'foo' was decorated twice. You may have added the decorator to both a getter and setter, which is unecessary.");
       }
     }
   );

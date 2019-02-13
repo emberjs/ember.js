@@ -20,6 +20,14 @@ export type Decorator = (
   isClassicDecorator?: boolean
 ) => ElementDescriptor;
 
+export function isElementDescriptor(maybeDesc: any): maybeDesc is ElementDescriptor {
+  return (
+    maybeDesc !== undefined &&
+    typeof maybeDesc.toString === 'function' &&
+    maybeDesc.toString() === '[object Descriptor]'
+  );
+}
+
 // ..........................................................
 // DEPENDENT KEYS
 //
@@ -133,6 +141,13 @@ export function makeComputedDecorator(
     assert(
       'Native decorators are not enabled without the EMBER_NATIVE_DECORATOR_SUPPORT flag',
       EMBER_NATIVE_DECORATOR_SUPPORT || isClassicDecorator
+    );
+
+    assert(
+      `Only one computed property decorator can be applied to a class field or accessor, but '${key}' was decorated twice. You may have added the decorator to both a getter and setter, which is unecessary.`,
+      isClassicDecorator ||
+        !propertyDesc.get ||
+        propertyDesc.get.toString().indexOf('CPGETTER_FUNCTION') === -1
     );
 
     elementDesc.kind = 'method';

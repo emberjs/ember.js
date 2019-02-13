@@ -42,7 +42,7 @@ export function descriptorForDecorator(dec: import('./decorator').Decorator) {
   @return {boolean}
   @private
 */
-export function isComputedDecorator(dec: import('./decorator').Decorator | null | undefined) {
+export function isComputedDecorator(dec: any) {
   return dec !== null && dec !== undefined && DECORATOR_DESCRIPTOR_MAP.has(dec);
 }
 
