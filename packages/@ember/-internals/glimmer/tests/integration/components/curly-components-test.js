@@ -3561,8 +3561,8 @@ moduleFor(
 
     ['@test has attrs by didReceiveAttrs with native classes'](assert) {
       class FooBarComponent extends Component {
-        constructor(injections) {
-          super(injections);
+        constructor() {
+          super(...arguments);
           // analagous to class field defaults
           this.foo = 'bar';
         }

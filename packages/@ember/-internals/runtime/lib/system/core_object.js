@@ -2,6 +2,7 @@
   @module @ember/object
 */
 
+import { getOwner, setOwner } from '@ember/-internals/owner';
 import { FACTORY_FOR } from '@ember/-internals/container';
 import { assign, _WeakSet as WeakSet } from '@ember/polyfills';
 import {
@@ -200,7 +201,7 @@ class CoreObject {
     factoryMap.set(this, factory);
   }
 
-  constructor(properties) {
+  constructor(owner, delayInit) {
     // pluck off factory
     let initFactory = factoryMap.get(this.constructor);
     if (initFactory !== undefined) {
@@ -268,7 +269,7 @@ class CoreObject {
     let m = meta(self);
     m.setInitializing();
 
-    if (properties !== DELAY_INIT) {
+    if (delayInit !== DELAY_INIT) {
       deprecate(
         'using `new` with EmberObject has been deprecated. Please use `create` instead, or consider using native classes without extending from EmberObject.',
         false,
@@ -279,7 +280,9 @@ class CoreObject {
         }
       );
 
-      initialize(self, properties);
+      initialize(self, owner);
+    } else if (owner !== undefined) {
+      setOwner(this, owner);
     }
 
     // only return when in debug builds and `self` is the proxy created above
@@ -755,7 +758,9 @@ class CoreObject {
   */
   static create(props, extra) {
     let C = this;
-    let instance = new C(DELAY_INIT);
+
+    let owner = typeof props === 'object' && props !== null ? getOwner(props) : undefined;
+    let instance = new C(owner, DELAY_INIT);
 
     if (extra === undefined) {
       initialize(instance, props);
