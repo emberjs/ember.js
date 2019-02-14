@@ -25,7 +25,11 @@ moduleFor(
     }
 
     get currentPath() {
-      return this.getController('application').get('currentPath');
+      let currentPath;
+      expectDeprecation(() => {
+        currentPath = this.getController('application').get('currentPath');
+      }, 'Accessing `currentPath` on `controller:application` is deprecated, use the `currentPath` property on `service:router` instead.');
+      return currentPath;
     }
 
     ['@test Slow promise from a child route of application enters nested loading state'](assert) {
@@ -178,7 +182,6 @@ moduleFor(
 
           assert.equal(text, 'DUMMY', `dummy template has been rendered`);
         });
-
         assert.equal(this.currentPath, 'loading', `loading state entered`);
         deferred.resolve();
 
@@ -567,7 +570,11 @@ moduleFor(
     }
 
     get currentPath() {
-      return this.getController('application').get('currentPath');
+      let currentPath;
+      expectDeprecation(() => {
+        currentPath = this.getController('application').get('currentPath');
+      }, 'Accessing `currentPath` on `controller:application` is deprecated, use the `currentPath` property on `service:router` instead.');
+      return currentPath;
     }
 
     ['@test ApplicationRoute#currentPath reflects loading state path'](assert) {
