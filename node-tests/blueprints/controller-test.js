@@ -13,6 +13,7 @@ const expect = chai.expect;
 
 const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
 const enableModuleUnification = require('../helpers/module-unification').enableModuleUnification;
+const enableOctane = require('../helpers/setup-test-environment').enableOctane;
 const fixture = require('../helpers/fixture');
 
 describe('Blueprint: controller', function() {
@@ -280,6 +281,138 @@ describe('Blueprint: controller', function() {
       return emberGenerateDestroy(['controller', 'foo/bar', '--dummy'], _file => {
         expect(_file('tests/dummy/src/ui/routes/foo/bar/controller.js')).to.equal(
           fixture('controller/controller-nested.js')
+        );
+
+        expect(_file('src/ui/routes/foo/bar/controller.js')).to.not.exist;
+
+        expect(_file('src/ui/routes/foo/bar/controller-test.js')).to.not.exist;
+      });
+    });
+
+    describe('with podModulePrefix', function() {
+      beforeEach(function() {
+        setupPodConfig({ podModulePrefix: true });
+      });
+
+      it('controller foo --pod podModulePrefix', function() {
+        return expectError(
+          emberGenerateDestroy(['controller', 'foo', '--pod']),
+          "Pods aren't supported within a module unification app"
+        );
+      });
+    });
+  });
+
+  describe('in app - octane', function() {
+    enableOctane();
+
+    beforeEach(function() {
+      return emberNew()
+        .then(() =>
+          modifyPackages([
+            { name: 'ember-qunit', delete: true },
+            { name: 'ember-cli-qunit', dev: true },
+          ])
+        )
+        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
+    });
+
+    it('controller foo', function() {
+      return emberGenerateDestroy(['controller', 'foo'], _file => {
+        expect(_file('src/ui/routes/foo/controller.js')).to.equal(
+          fixture('controller/native-controller.js')
+        );
+
+        expect(_file('src/ui/routes/foo/controller-test.js')).to.equal(
+          fixture('controller-test/default.js')
+        );
+      });
+    });
+
+    it('controller foo/bar', function() {
+      return emberGenerateDestroy(['controller', 'foo/bar'], _file => {
+        expect(_file('src/ui/routes/foo/bar/controller.js')).to.equal(
+          fixture('controller/native-controller-nested.js')
+        );
+
+        expect(_file('src/ui/routes/foo/bar/controller-test.js')).to.equal(
+          fixture('controller-test/default-nested.js')
+        );
+      });
+    });
+
+    describe('with podModulePrefix', function() {
+      beforeEach(function() {
+        setupPodConfig({ podModulePrefix: true });
+      });
+
+      it('controller foo --pod podModulePrefix', function() {
+        return expectError(
+          emberGenerateDestroy(['controller', 'foo', '--pod']),
+          "Pods aren't supported within a module unification app"
+        );
+      });
+    });
+  });
+
+  describe('in addon - octane', function() {
+    enableOctane();
+
+    beforeEach(function() {
+      return emberNew({ target: 'addon' })
+        .then(() =>
+          modifyPackages([
+            { name: 'ember-qunit', delete: true },
+            { name: 'ember-cli-qunit', dev: true },
+          ])
+        )
+        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
+    });
+
+    it('controller foo', function() {
+      return emberGenerateDestroy(['controller', 'foo'], _file => {
+        expect(_file('src/ui/routes/foo/controller.js')).to.equal(
+          fixture('controller/native-controller.js')
+        );
+
+        expect(_file('src/ui/routes/foo/controller-test.js')).to.equal(
+          fixture('controller-test/default.js')
+        );
+
+        expect(_file('app/controllers/foo.js')).to.not.exist;
+      });
+    });
+
+    it('controller foo/bar', function() {
+      return emberGenerateDestroy(['controller', 'foo/bar'], _file => {
+        expect(_file('src/ui/routes/foo/bar/controller.js')).to.equal(
+          fixture('controller/native-controller-nested.js')
+        );
+
+        expect(_file('src/ui/routes/foo/bar/controller-test.js')).to.equal(
+          fixture('controller-test/default-nested.js')
+        );
+
+        expect(_file('app/controllers/foo/bar.js')).to.not.exist;
+      });
+    });
+
+    it('controller foo --dummy', function() {
+      return emberGenerateDestroy(['controller', 'foo', '--dummy'], _file => {
+        expect(_file('tests/dummy/src/ui/routes/foo/controller.js')).to.equal(
+          fixture('controller/native-controller.js')
+        );
+
+        expect(_file('src/ui/routes/foo/controller.js')).to.not.exist;
+
+        expect(_file('src/ui/routes/foo/controller-test.js')).to.not.exist;
+      });
+    });
+
+    it('controller foo/bar --dummy', function() {
+      return emberGenerateDestroy(['controller', 'foo/bar', '--dummy'], _file => {
+        expect(_file('tests/dummy/src/ui/routes/foo/bar/controller.js')).to.equal(
+          fixture('controller/native-controller-nested.js')
         );
 
         expect(_file('src/ui/routes/foo/bar/controller.js')).to.not.exist;

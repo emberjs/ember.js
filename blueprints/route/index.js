@@ -5,9 +5,10 @@ const path = require('path');
 const chalk = require('chalk');
 const stringUtil = require('ember-cli-string-utils');
 const EmberRouterGenerator = require('ember-router-generator');
+const useEditionDetector = require('../edition-detector');
 const isModuleUnificationProject = require('../module-unification').isModuleUnificationProject;
 
-module.exports = {
+module.exports = useEditionDetector({
   description: 'Generates a route and a template, and registers the route with the router.',
 
   availableOptions: [
@@ -139,7 +140,7 @@ module.exports = {
   afterUninstall: function(options) {
     updateRouter.call(this, 'remove', options);
   },
-};
+});
 
 function updateRouter(action, options) {
   let entity = options.entity;

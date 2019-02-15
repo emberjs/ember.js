@@ -1,9 +1,10 @@
 'use strict';
 
+const useEditionDetector = require('../edition-detector');
 const isModuleUnificationProject = require('../module-unification').isModuleUnificationProject;
 const path = require('path');
 
-module.exports = {
+module.exports = useEditionDetector({
   description: 'Generates a controller.',
   fileMapTokens() {
     if (isModuleUnificationProject(this.project)) {
@@ -26,4 +27,4 @@ module.exports = {
       };
     }
   },
-};
+});

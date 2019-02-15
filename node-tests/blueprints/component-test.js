@@ -12,6 +12,7 @@ const expect = chai.expect;
 
 const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
 const enableModuleUnification = require('../helpers/module-unification').enableModuleUnification;
+const enableOctane = require('../helpers/setup-test-environment').enableOctane;
 const fixture = require('../helpers/fixture');
 
 describe('Blueprint: component', function() {
@@ -489,6 +490,75 @@ describe('Blueprint: component', function() {
     });
   });
 
+  describe('in app - octane', function() {
+    enableOctane();
+
+    beforeEach(function() {
+      return emberNew()
+        .then(() =>
+          modifyPackages([
+            { name: 'ember-qunit', delete: true },
+            { name: 'ember-cli-qunit', dev: true },
+          ])
+        )
+        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
+    });
+
+    it('component foo', function() {
+      return emberGenerateDestroy(['component', 'foo'], _file => {
+        expect(_file('src/ui/components/foo/component.js')).to.equal(
+          fixture('component/native-component.js')
+        );
+
+        expect(_file('src/ui/components/foo/template.hbs')).to.equal('{{yield}}');
+
+        expect(_file('src/ui/components/foo/component-test.js')).to.equal(
+          fixture('component-test/default-template.js', {
+            replace: {
+              component: 'foo',
+            },
+          })
+        );
+      });
+    });
+
+    it('component x-foo', function() {
+      return emberGenerateDestroy(['component', 'x-foo'], _file => {
+        expect(_file('src/ui/components/x-foo/component.js')).to.equal(
+          fixture('component/native-component-dash.js')
+        );
+
+        expect(_file('src/ui/components/x-foo/template.hbs')).to.equal('{{yield}}');
+
+        expect(_file('src/ui/components/x-foo/component-test.js')).to.equal(
+          fixture('component-test/default-template.js', {
+            replace: {
+              component: 'x-foo',
+            },
+          })
+        );
+      });
+    });
+
+    it('component foo/x-foo', function() {
+      return emberGenerateDestroy(['component', 'foo/x-foo'], _file => {
+        expect(_file('src/ui/components/foo/x-foo/component.js')).to.equal(
+          fixture('component/native-component-nested.js')
+        );
+
+        expect(_file('src/ui/components/foo/x-foo/template.hbs')).to.equal('{{yield}}');
+
+        expect(_file('src/ui/components/foo/x-foo/component-test.js')).to.equal(
+          fixture('component-test/default-template.js', {
+            replace: {
+              component: 'foo/x-foo',
+            },
+          })
+        );
+      });
+    });
+  });
+
   describe('in addon', function() {
     beforeEach(function() {
       return emberNew({ target: 'addon' })
@@ -716,6 +786,106 @@ describe('Blueprint: component', function() {
     });
   });
 
+  describe('in addon - octane', function() {
+    enableOctane();
+
+    beforeEach(function() {
+      return emberNew({ target: 'addon' })
+        .then(() =>
+          modifyPackages([
+            { name: 'ember-qunit', delete: true },
+            { name: 'ember-cli-qunit', dev: true },
+          ])
+        )
+        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
+    });
+
+    it('component foo', function() {
+      return emberGenerateDestroy(['component', 'foo'], _file => {
+        expect(_file('src/ui/components/foo/component.js')).to.equal(
+          fixture('component/native-component.js')
+        );
+
+        expect(_file('src/ui/components/foo/template.hbs')).to.equal('{{yield}}');
+
+        expect(_file('src/ui/components/foo/component-test.js')).to.equal(
+          fixture('component-test/default-template.js', {
+            replace: {
+              component: 'foo',
+              path: 'my-addon::',
+            },
+          })
+        );
+      });
+    });
+
+    it('component x-foo', function() {
+      return emberGenerateDestroy(['component', 'x-foo'], _file => {
+        expect(_file('src/ui/components/x-foo/component.js')).to.equal(
+          fixture('component/native-component-dash.js')
+        );
+
+        expect(_file('src/ui/components/x-foo/template.hbs')).to.equal('{{yield}}');
+
+        expect(_file('src/ui/components/x-foo/component-test.js')).to.equal(
+          fixture('component-test/default-template.js', {
+            replace: {
+              component: 'x-foo',
+              path: 'my-addon::',
+            },
+          })
+        );
+      });
+    });
+
+    it('component foo/x-foo', function() {
+      return emberGenerateDestroy(['component', 'foo/x-foo'], _file => {
+        expect(_file('src/ui/components/foo/x-foo/component.js')).to.equal(
+          fixture('component/native-component-nested.js')
+        );
+
+        expect(_file('src/ui/components/foo/x-foo/template.hbs')).to.equal('{{yield}}');
+
+        expect(_file('src/ui/components/foo/x-foo/component-test.js')).to.equal(
+          fixture('component-test/default-template.js', {
+            replace: {
+              component: 'foo/x-foo',
+              path: 'my-addon::',
+            },
+          })
+        );
+      });
+    });
+
+    it('component x-foo --dummy', function() {
+      return emberGenerateDestroy(['component', 'x-foo', '--dummy'], _file => {
+        expect(_file('tests/dummy/src/ui/components/x-foo/component.js')).to.equal(
+          fixture('component/native-component-dash.js')
+        );
+
+        expect(_file('tests/dummy/src/ui/components/x-foo/template.hbs')).to.equal('{{yield}}');
+
+        expect(_file('src/ui/components/x-foo/component.js')).to.not.exist;
+
+        expect(_file('src/ui/components/x-foo/component-test.js')).to.not.exist;
+      });
+    });
+
+    it('component foo/x-foo --dummy', function() {
+      return emberGenerateDestroy(['component', 'foo/x-foo', '--dummy'], _file => {
+        expect(_file('tests/dummy/src/ui/components/foo/x-foo/component.js')).to.equal(
+          fixture('component/native-component-nested.js')
+        );
+
+        expect(_file('tests/dummy/src/ui/components/foo/x-foo/template.hbs')).to.equal('{{yield}}');
+
+        expect(_file('src/ui/components/foo/x-foo/component.js')).to.not.exist;
+
+        expect(_file('src/ui/components/foo/x-foo/component-test.js')).to.not.exist;
+      });
+    });
+  });
+
   describe('in in-repo-addon', function() {
     beforeEach(function() {
       return emberNew({ target: 'in-repo-addon' })
@@ -886,6 +1056,61 @@ describe('Blueprint: component', function() {
       return emberGenerateDestroy(['component', 'x-foo', '--in-repo-addon=my-addon'], _file => {
         expect(_file('packages/my-addon/src/ui/components/x-foo/component.js')).to.equal(
           fixture('component/component-dash.js')
+        );
+
+        expect(_file('packages/my-addon/src/ui/components/x-foo/template.hbs')).to.equal(
+          '{{yield}}'
+        );
+
+        expect(_file('packages/my-addon/src/ui/components/x-foo/component-test.js')).to.equal(
+          fixture('component-test/default-template.js', {
+            replace: {
+              component: 'x-foo',
+              path: 'my-addon::',
+            },
+          })
+        );
+      });
+    });
+  });
+
+  describe('in in-repo-addon - octane', function() {
+    enableOctane();
+
+    beforeEach(function() {
+      return emberNew({ target: 'in-repo-addon' })
+        .then(() =>
+          modifyPackages([
+            { name: 'ember-qunit', delete: true },
+            { name: 'ember-cli-qunit', dev: true },
+          ])
+        )
+        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
+    });
+
+    it('component foo --in-repo-addon=my-addon', function() {
+      return emberGenerateDestroy(['component', 'foo', '--in-repo-addon=my-addon'], _file => {
+        expect(_file('packages/my-addon/src/ui/components/foo/component.js')).to.equal(
+          fixture('component/native-component.js')
+        );
+
+        expect(_file('packages/my-addon/src/ui/components/foo/template.hbs')).to.equal('{{yield}}');
+
+        expect(_file('packages/my-addon/src/ui/components/foo/component-test.js')).to.equal(
+          fixture('component-test/default-template.js', {
+            replace: {
+              component: 'foo',
+              path: 'my-addon::',
+            },
+          })
+        );
+      });
+    });
+
+    it('component x-foo --in-repo-addon=my-addon', function() {
+      return emberGenerateDestroy(['component', 'x-foo', '--in-repo-addon=my-addon'], _file => {
+        expect(_file('packages/my-addon/src/ui/components/x-foo/component.js')).to.equal(
+          fixture('component/native-component-dash.js')
         );
 
         expect(_file('packages/my-addon/src/ui/components/x-foo/template.hbs')).to.equal(
