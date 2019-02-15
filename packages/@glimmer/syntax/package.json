@@ -10,7 +10,6 @@
   },
   "devDependencies": {
     "@glimmer/local-debug-flags": "^0.39.2",
-    "@types/handlebars": "^4.0.31",
     "@types/qunit": "^2.0.31",
     "typescript": "^2.8.3"
   }
