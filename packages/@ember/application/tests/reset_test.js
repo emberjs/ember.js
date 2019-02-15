@@ -124,7 +124,9 @@ moduleFor(
           let location = initialRouter.get('location');
 
           assert.equal(location.getURL(), '/one');
-          assert.equal(get(initialApplicationController, 'currentPath'), 'one');
+          expectDeprecation(() => {
+            assert.equal(get(initialApplicationController, 'currentPath'), 'one');
+          }, 'Accessing `currentPath` on `controller:application` is deprecated, use the `currentPath` property on `service:router` instead.');
 
           this.application.reset();
 
@@ -153,7 +155,9 @@ moduleFor(
           );
 
           assert.equal(location.getURL(), '/one');
-          assert.equal(get(applicationController, 'currentPath'), 'one');
+          expectDeprecation(() => {
+            assert.equal(get(applicationController, 'currentPath'), 'one');
+          }, 'Accessing `currentPath` on `controller:application` is deprecated, use the `currentPath` property on `service:router` instead.');
         });
     }
 

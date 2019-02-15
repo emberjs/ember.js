@@ -69,7 +69,11 @@ moduleFor(
     }
 
     get currentPath() {
-      return this.getController('application').get('currentPath');
+      let currentPath;
+      expectDeprecation(() => {
+        currentPath = this.getController('application').get('currentPath');
+      }, 'Accessing `currentPath` on `controller:application` is deprecated, use the `currentPath` property on `service:router` instead.');
+      return currentPath;
     }
 
     get currentURL() {
@@ -1608,15 +1612,12 @@ moduleFor(
           1,
           'The home template was rendered'
         );
-        assert.equal(
-          this.applicationInstance.lookup('controller:application').get('currentPath'),
-          'home'
-        );
+        assert.equal(this.currentPath, 'home');
       });
     }
 
     ['@test Redirecting from the middle of a route aborts the remainder of the routes'](assert) {
-      assert.expect(3);
+      assert.expect(4);
 
       this.router.map(function() {
         this.route('home');
@@ -1651,10 +1652,13 @@ moduleFor(
       return this.visit('/').then(() => {
         let router = this.applicationInstance.lookup('router:main');
         this.handleURLAborts(assert, '/foo/bar/baz');
-        assert.equal(
-          this.applicationInstance.lookup('controller:application').get('currentPath'),
-          'home'
-        );
+        let currentPath;
+        expectDeprecation(() => {
+          currentPath = this.applicationInstance
+            .lookup('controller:application')
+            .get('currentPath');
+        }, 'Accessing `currentPath` on `controller:application` is deprecated, use the `currentPath` property on `service:router` instead.');
+        assert.equal(currentPath, 'home');
         assert.equal(router.get('location').getURL(), '/home');
       });
     }
@@ -1662,7 +1666,7 @@ moduleFor(
     ['@test Redirecting to the current target in the middle of a route does not abort initial routing'](
       assert
     ) {
-      assert.expect(5);
+      assert.expect(6);
 
       this.router.map(function() {
         this.route('home');
@@ -1701,10 +1705,13 @@ moduleFor(
 
       return this.visit('/foo/bar/baz').then(() => {
         assert.ok(true, '/foo/bar/baz has been handled');
-        assert.equal(
-          this.applicationInstance.lookup('controller:application').get('currentPath'),
-          'foo.bar.baz'
-        );
+        let currentPath;
+        expectDeprecation(() => {
+          currentPath = this.applicationInstance
+            .lookup('controller:application')
+            .get('currentPath');
+        }, 'Accessing `currentPath` on `controller:application` is deprecated, use the `currentPath` property on `service:router` instead.');
+        assert.equal(currentPath, 'foo.bar.baz');
         assert.equal(successCount, 1, 'transitionTo success handler was called once');
       });
     }
@@ -1712,7 +1719,7 @@ moduleFor(
     ['@test Redirecting to the current target with a different context aborts the remainder of the routes'](
       assert
     ) {
-      assert.expect(4);
+      assert.expect(5);
 
       this.router.map(function() {
         this.route('home');
@@ -1751,10 +1758,13 @@ moduleFor(
 
       return this.visit('/').then(() => {
         this.handleURLAborts(assert, '/foo/bar/1/baz');
-        assert.equal(
-          this.applicationInstance.lookup('controller:application').get('currentPath'),
-          'foo.bar.baz'
-        );
+        let currentPath;
+        expectDeprecation(() => {
+          currentPath = this.applicationInstance
+            .lookup('controller:application')
+            .get('currentPath');
+        }, 'Accessing `currentPath` on `controller:application` is deprecated, use the `currentPath` property on `service:router` instead.');
+        assert.equal(currentPath, 'foo.bar.baz');
         assert.equal(
           this.applicationInstance
             .lookup('router:main')
@@ -1792,9 +1802,17 @@ moduleFor(
         assert.ok(true, '/foo/bar/baz has been handled');
         let applicationController = this.applicationInstance.lookup('controller:application');
         let router = this.applicationInstance.lookup('router:main');
-        assert.equal(applicationController.get('currentPath'), 'foo.bar.baz');
+
+        let currentPath;
+        expectDeprecation(() => {
+          currentPath = applicationController.get('currentPath');
+        }, 'Accessing `currentPath` on `controller:application` is deprecated, use the `currentPath` property on `service:router` instead.');
+        assert.equal(currentPath, 'foo.bar.baz');
         run(() => router.send('goToQux'));
-        assert.equal(applicationController.get('currentPath'), 'foo.qux');
+        expectDeprecation(() => {
+          currentPath = applicationController.get('currentPath');
+        }, 'Accessing `currentPath` on `controller:application` is deprecated, use the `currentPath` property on `service:router` instead.');
+        assert.equal(currentPath, 'foo.qux');
         assert.equal(router.get('location').getURL(), '/foo/qux');
       });
     }
@@ -2404,7 +2422,9 @@ moduleFor(
         'controller:application',
         Controller.extend({
           currentPathDidChange: observer('currentPath', function() {
-            currentPath = this.currentPath;
+            expectDeprecation(() => {
+              currentPath = this.currentPath;
+            }, 'Accessing `currentPath` on `controller:application` is deprecated, use the `currentPath` property on `service:router` instead.');
           }),
         })
       );
@@ -3094,7 +3114,7 @@ moduleFor(
     ['@test currentRouteName is a property installed on ApplicationController that can be used in transitionTo'](
       assert
     ) {
-      assert.expect(24);
+      assert.expect(36);
 
       this.router.map(function() {
         this.route('index', { path: '/' });
@@ -3117,8 +3137,10 @@ moduleFor(
           if (path) {
             run(router, 'transitionTo', path);
           }
-          assert.equal(appController.get('currentPath'), expectedPath);
-          assert.equal(appController.get('currentRouteName'), expectedRouteName);
+          expectDeprecation(() => {
+            assert.equal(appController.get('currentPath'), expectedPath);
+            assert.equal(appController.get('currentRouteName'), expectedRouteName);
+          }, 'Accessing `currentPath` on `controller:application` is deprecated, use the `currentPath` property on `service:router` instead.');
         }
 
         transitionAndCheck(null, 'index', 'index');

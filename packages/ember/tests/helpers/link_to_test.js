@@ -1182,14 +1182,16 @@ moduleFor(
       return this.visit('/')
         .then(() => this.click('#about-link'))
         .then(() => {
-          let currentRouteName = this.applicationInstance
-            .lookup('controller:application')
-            .get('currentRouteName');
-          assert.notEqual(
-            currentRouteName,
-            'about',
-            'link-to should not transition if target is not equal to _self or empty'
-          );
+          expectDeprecation(() => {
+            let currentRouteName = this.applicationInstance
+              .lookup('controller:application')
+              .get('currentRouteName');
+            assert.notEqual(
+              currentRouteName,
+              'about',
+              'link-to should not transition if target is not equal to _self or empty'
+            );
+          }, 'Accessing `currentRouteName` on `controller:application` is deprecated, use the `currentRouteName` property on `service:router` instead.');
         });
     }
 
