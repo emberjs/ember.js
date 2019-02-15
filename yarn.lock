@@ -59,11 +59,6 @@
   resolved "https://registry.yarnpkg.com/@types/estree/-/estree-0.0.39.tgz#e177e699ee1b8c22d23174caaa7422644389509f"
   integrity sha512-EYNwp3bU+98cpU4lAWYYL7Zz+2gryWH1qbdDTidVd6hkiR6weksdbMadyXKXNPEkQFhXM+hVO9ZygomHXp+AIw==
 
-"@types/handlebars@^4.0.32":
-  version "4.0.40"
-  resolved "https://registry.yarnpkg.com/@types/handlebars/-/handlebars-4.0.40.tgz#b714e13d296a75bff3f199316d1311933ca79ffd"
-  integrity sha512-sGWNtsjNrLOdKha2RV1UeF8+UbQnPSG7qbe5wwbni0mw4h2gHXyPFUMOC+xwGirIiiydM/HSqjDO4rk6NFB18w==
-
 "@types/node@*":
   version "10.12.18"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-10.12.18.tgz#1d3ca764718915584fcd9f6344621b7672665c67"
@@ -4652,7 +4647,18 @@ handlebars@^4.0.11:
   optionalDependencies:
     uglify-js "^3.1.4"
 
-handlebars@^4.0.4, handlebars@^4.0.6:
+handlebars@^4.0.13:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/handlebars/-/handlebars-4.1.0.tgz#0d6a6f34ff1f63cecec8423aa4169827bf787c3a"
+  integrity sha512-l2jRuU1NAWK6AW5qqcTATWQJvNPEwkM7NEKSiv/gqOsoSQbVoWyqVEY5GS+XPQ88zLNmqASRpzfdm8d79hJS+w==
+  dependencies:
+    async "^2.5.0"
+    optimist "^0.6.1"
+    source-map "^0.6.1"
+  optionalDependencies:
+    uglify-js "^3.1.4"
+
+handlebars@^4.0.4:
   version "4.0.6"
   resolved "https://registry.yarnpkg.com/handlebars/-/handlebars-4.0.6.tgz#2ce4484850537f9c97a8026d5399b935c4ed4ed7"
   integrity sha1-LORISFBTf5yXqAJtU5m5NcTtTtc=

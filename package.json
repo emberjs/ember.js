@@ -41,11 +41,10 @@
     "@simple-dom/void-map": "^1.4.0",
     "babel-plugin-debug-macros": "^0.1.11",
     "ember-cli-browserstack": "^0.0.7",
-    "handlebars": "^4.0.6",
+    "handlebars": "^4.0.13",
     "simple-html-tokenizer": "^0.5.7"
   },
   "devDependencies": {
-    "@types/handlebars": "^4.0.32",
     "@types/qunit": "^2.0.31",
     "amd-name-resolver": "^1.0.0",
     "auto-dist-tag": "^1.0.0",
