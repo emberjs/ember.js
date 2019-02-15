@@ -1,8 +1,9 @@
 'use strict';
 
+const useNativeDetector = require('../native-detector');
 const isModuleUnificationProject = require('../module-unification').isModuleUnificationProject;
 
-module.exports = {
+module.exports = useNativeDetector({
   description: 'Generates a service.',
 
   fileMapTokens() {
@@ -18,4 +19,4 @@ module.exports = {
       };
     }
   },
-};
+});
