@@ -194,13 +194,35 @@ const RouterService = Service.extend({
   },
 
   /**
-     Determines whether a route is active.
+      Returns `true` if `routeName/models/queryParams` is the active route, where `models` and `queryParams` are optional. 
+      See [model](api/ember/release/classes/Route/methods/model?anchor=model) and 
+      [queryParams](/api/ember/3.7/classes/Route/properties/queryParams?anchor=queryParams) for more information about these arguments.
+
+      In the following example, isActive will return `true` if the current route is /posts.
+    ```app/components/posts.js
+    import Component from '@ember/component';
+    import { inject as service } from '@ember/service';
+    
+    export default Component.extend({
+    router: service(),
+    
+    actions: {
+      someAction() {
+        return this.get('router').isActive('posts');
+      }
+    }
+    });
+    ```
+    To use a model, you can do something like this:
+    ```javascript return this.get('router').isActive('posts', post.id)```
+
+    Where `post.id` is the id of a specific post, which is represented in the route as /posts/[post.id].  If `post.id` is equal to 1, then isActive will return true if 
+    the current route is /posts/1, and false if the route is anything else. 
 
      @method isActive
      @category ember-routing-router-service
      @param {String} routeName the name of the route
-     @param {...Object} models the model(s) or identifier(s) to be used while
-       transitioning to the route.
+     @param {...Object} models the model(s) or identifier(s) to be used when determining the active route.
      @param {Object} [options] optional hash with a queryParams property
        containing a mapping of query parameters
      @return {boolean} true if the provided routeName/models/queryParams are active
