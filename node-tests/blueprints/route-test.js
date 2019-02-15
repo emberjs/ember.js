@@ -774,7 +774,9 @@ describe('Blueprint: route', function() {
 
     it('route foo/bar', function() {
       return emberGenerateDestroy(['route', 'foo/bar'], _file => {
-        expect(_file('src/ui/routes/foo/bar/route.js')).to.equal(fixture('route/native-route-nested.js'));
+        expect(_file('src/ui/routes/foo/bar/route.js')).to.equal(
+          fixture('route/native-route-nested.js')
+        );
 
         expect(_file('src/ui/routes/foo/bar/template.hbs')).to.equal('{{outlet}}');
 
@@ -790,7 +792,9 @@ describe('Blueprint: route', function() {
 
     it('route foo --dummy', function() {
       return emberGenerateDestroy(['route', 'foo', '--dummy'], _file => {
-        expect(_file('tests/dummy/src/ui/routes/foo/route.js')).to.equal(fixture('route/native-route.js'));
+        expect(_file('tests/dummy/src/ui/routes/foo/route.js')).to.equal(
+          fixture('route/native-route.js')
+        );
 
         expect(_file('tests/dummy/src/ui/routes/foo/template.hbs')).to.equal('{{outlet}}');
 

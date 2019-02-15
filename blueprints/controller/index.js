@@ -1,10 +1,10 @@
 'use strict';
 
-const useNativeDetector = require('../native-detector');
+const useEditionDetector = require('../edition-detector');
 const isModuleUnificationProject = require('../module-unification').isModuleUnificationProject;
 const path = require('path');
 
-module.exports = useNativeDetector({
+module.exports = useEditionDetector({
   description: 'Generates a controller.',
   fileMapTokens() {
     if (isModuleUnificationProject(this.project)) {

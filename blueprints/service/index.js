@@ -1,9 +1,9 @@
 'use strict';
 
-const useNativeDetector = require('../native-detector');
+const useEditionDetector = require('../edition-detector');
 const isModuleUnificationProject = require('../module-unification').isModuleUnificationProject;
 
-module.exports = useNativeDetector({
+module.exports = useEditionDetector({
   description: 'Generates a service.',
 
   fileMapTokens() {

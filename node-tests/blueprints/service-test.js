@@ -164,7 +164,9 @@ describe('Blueprint: service', function() {
 
     it('service foo/bar', function() {
       return emberGenerateDestroy(['service', 'foo/bar'], _file => {
-        expect(_file('src/services/foo/bar.js')).to.equal(fixture('service/native-service-nested.js'));
+        expect(_file('src/services/foo/bar.js')).to.equal(
+          fixture('service/native-service-nested.js')
+        );
 
         expect(_file('src/services/foo/bar-test.js')).to.equal(
           fixture('service-test/default-nested.js')
@@ -284,7 +286,9 @@ describe('Blueprint: service', function() {
 
     it('service foo/bar', function() {
       return emberGenerateDestroy(['service', 'foo/bar'], _file => {
-        expect(_file('src/services/foo/bar.js')).to.equal(fixture('service/native-service-nested.js'));
+        expect(_file('src/services/foo/bar.js')).to.equal(
+          fixture('service/native-service-nested.js')
+        );
 
         expect(_file('src/services/foo/bar-test.js')).to.equal(
           fixture('service-test/default-nested.js')
