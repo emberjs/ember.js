@@ -5,10 +5,11 @@ const stringUtil = require('ember-cli-string-utils');
 const pathUtil = require('ember-cli-path-utils');
 const getPathOption = require('ember-cli-get-component-path-option');
 const normalizeEntityName = require('ember-cli-normalize-entity-name');
+const useNativeDetector = require('../native-detector');
 const isModuleUnificationProject = require('../module-unification').isModuleUnificationProject;
 const EOL = require('os').EOL;
 
-module.exports = {
+module.exports = useNativeDetector({
   description: 'Generates a component.',
 
   availableOptions: [
@@ -101,4 +102,4 @@ module.exports = {
       path: getPathOption(options),
     };
   },
-};
+});
