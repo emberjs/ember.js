@@ -45,7 +45,6 @@
     "simple-html-tokenizer": "^0.5.7"
   },
   "devDependencies": {
-    "@types/handlebars": "^4.0.32",
     "@types/qunit": "^2.0.31",
     "amd-name-resolver": "^1.0.0",
     "auto-dist-tag": "^1.0.0",
