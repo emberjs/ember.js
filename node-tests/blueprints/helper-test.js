@@ -12,7 +12,9 @@ const expect = chai.expect;
 
 const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
 const fixture = require('../helpers/fixture');
-const enableModuleUnification = require('../helpers/module-unification').enableModuleUnification;
+
+const setupTestEnvironment = require('../helpers/setup-test-environment');
+const enableModuleUnification = setupTestEnvironment.enableModuleUnification;
 
 describe('Blueprint: helper', function() {
   setupTestHooks(this);
