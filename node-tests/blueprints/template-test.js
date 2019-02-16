@@ -6,10 +6,12 @@ const emberNew = blueprintHelpers.emberNew;
 const emberGenerateDestroy = blueprintHelpers.emberGenerateDestroy;
 const setupPodConfig = blueprintHelpers.setupPodConfig;
 const expectError = require('../helpers/expect-error');
-const enableModuleUnification = require('../helpers/module-unification').enableModuleUnification;
 
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
+
+const setupTestEnvironment = require('../helpers/setup-test-environment');
+const enableModuleUnification = setupTestEnvironment.enableModuleUnification;
 
 describe('Blueprint: template', function() {
   setupTestHooks(this);

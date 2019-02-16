@@ -10,7 +10,8 @@ const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
 
 const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
-const enableModuleUnification = require('../helpers/module-unification').enableModuleUnification;
+const setupTestEnvironment = require('../helpers/setup-test-environment');
+const enableModuleUnification = setupTestEnvironment.enableModuleUnification;
 const fixture = require('../helpers/fixture');
 
 describe('Blueprint: acceptance-test', function() {

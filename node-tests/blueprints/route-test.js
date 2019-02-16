@@ -16,9 +16,11 @@ const file = chai.file;
 const fs = require('fs-extra');
 
 const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
-const enableModuleUnification = require('../helpers/module-unification').enableModuleUnification;
-const enableOctane = require('../helpers/setup-test-environment').enableOctane;
 const fixture = require('../helpers/fixture');
+
+const setupTestEnvironment = require('../helpers/setup-test-environment');
+const enableModuleUnification = setupTestEnvironment.enableModuleUnification;
+const enableOctane = setupTestEnvironment.enableOctane;
 
 describe('Blueprint: route', function() {
   setupTestHooks(this);
