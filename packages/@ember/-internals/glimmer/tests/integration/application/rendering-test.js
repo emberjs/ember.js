@@ -1,4 +1,4 @@
-import { moduleFor, ApplicationTestCase, strip } from 'internal-test-helpers';
+import { moduleFor, ApplicationTestCase, strip, runTask } from 'internal-test-helpers';
 
 import { ENV } from '@ember/-internals/environment';
 import Controller from '@ember/controller';
@@ -525,6 +525,49 @@ moduleFor(
         .then(() => {
           this.assertText('first');
         });
+    }
+
+    ['@test it can render a partial that shares a currently active route template [GH#17611]']() {
+      this.router.map(function() {
+        this.route('contact');
+      });
+
+      this.add(
+        'route:application',
+        Route.extend({
+          model() {
+            return 'application model';
+          },
+        })
+      );
+
+      this.add(
+        'route:contact',
+        Route.extend({
+          model() {
+            return 'contact model';
+          },
+        })
+      );
+
+      this.addTemplate(
+        'application',
+        strip`
+          [{{#link-to 'contact'}}go to contact{{/link-to}}]
+          {{partial 'contact'}}
+          {{outlet}}
+        `
+      );
+
+      this.addTemplate('contact', `[model: {{model}}]`);
+
+      return this.visit('/').then(() => {
+        this.assertText('[go to contact][model: application model]');
+
+        runTask(() => this.click('a'));
+
+        this.assertText('[go to contact][model: application model][model: contact model]');
+      });
     }
   }
 );
