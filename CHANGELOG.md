@@ -1,36 +1,25 @@
 # Ember Changelog
 
-### v3.8.0-beta.5 (February 11, 2019)
-
-- [#17563](https://github.com/emberjs/ember.js/pull/17563) [BUGFIX] Transition.send/trigger call signature
-
-### v3.8.0-beta.4 (February 4, 2019)
-
-- [#17552](https://github.com/emberjs/ember.js/pull/17552) [BUGFIX] Support numbers in component names for Angle Brackets
-
-### v3.8.0-beta.3 (January 28, 2019)
-
-- [#17498](https://github.com/emberjs/ember.js/pull/17498) [BUGFIX] Don't remove dep keys in `didUnwatch`
-- [#17499](https://github.com/emberjs/ember.js/pull/17499) [BUGFIX] Update to glimmer-vm 0.37.1.
-
-### v3.8.0-beta.2 (January 14, 2019)
-
-- [#17467](https://github.com/emberjs/ember.js/pull/17467) [BUGFIX] Fix substate interactions with aborts
-
-### v3.8.0-beta.1 (January 7, 2019)
+### v3.8.0 (February 18, 2019)
 
 - [#17143](https://github.com/emberjs/ember.js/pull/17143) / [#17375](https://github.com/emberjs/ember.js/pull/17375) [FEATURE] Implement Element Modifier Manager RFC (see [emberjs/rfcs#0373](https://github.com/emberjs/rfcs/blob/master/text/0373-Element-Modifier-Managers.md)).
 - [#17054](https://github.com/emberjs/ember.js/pull/17054) / [#17376](https://github.com/emberjs/ember.js/pull/17376) [FEATURE] Implement `array` helper RFC (see [emberjs/rfcs#0318](https://github.com/emberjs/rfcs/blob/master/text/0318-array-helper.md))
 - [#16735](https://github.com/emberjs/ember.js/pull/16735) [BUGFIX] Observed properties not being marked as enum
+- [#17498](https://github.com/emberjs/ember.js/pull/17498) [BUGFIX] Don't remove dep keys in `didUnwatch`
+- [#17467](https://github.com/emberjs/ember.js/pull/17467) [BUGFIX] Fix substate interactions with aborts
+- [#17413](https://github.com/emberjs/ember.js/pull/17413) [BUGFIX] Fix missing import in instance-initializer blueprint for ember-mocha
 - [#17319](https://github.com/emberjs/ember.js/pull/17319) [CLEANUP] Remove deprecated 'POSITIONAL_PARAM_CONFLICT'
 - [#17394](https://github.com/emberjs/ember.js/pull/17394) [CLEANUP] Remove deprecated code in mixins/array
+- [#17244](https://github.com/emberjs/ember.js/pull/17244) / [#17499](https://github.com/emberjs/ember.js/pull/17499) Upgrade to Glimmer VM 0.37.1
+Fixes a few issues:
+  * Usage of positional arguments with custom components.
+  * Forwarding attributes via `...attributes` to a dynamic component.
+  * Prevent errors when rendering many template blocks (`Error: Operand over 16-bits. Got 65536`).
 - [#17166](https://github.com/emberjs/ember.js/pull/17166) Improve performance of get() / set()
-- [#16710](https://github.com/emberjs/ember.js/pull/16710) Deprecation of (private) `NAME_KEY`
-- [#17244](https://github.com/emberjs/ember.js/pull/17244) Upgrade to Glimmer VM 0.37.0
+- [#16710](https://github.com/emberjs/ember.js/pull/16710) Deprecation of private `NAME_KEY`
 - [#17216](https://github.com/emberjs/ember.js/pull/17216) Use native Error instead of custom Error subclass.
 - [#17340](https://github.com/emberjs/ember.js/pull/17340) Remove unused `hooks` variable from qunit-rfc-232 util-test blueprint
 - [#17357](https://github.com/emberjs/ember.js/pull/17357) Allow notifyPropertyChange to be imported from @ember/object
-- [#17413](https://github.com/emberjs/ember.js/pull/17413) Fix missing import in instance-initializer blueprint for ember-mocha
 
 ### v3.7.3 (February 6, 2019)
 
@@ -39,7 +28,7 @@
 
 ### v3.7.2 (January 22, 2019)
 
-* Upgrade @glimmer/* packages to 0.35.10. Fixes a few issues:
+* Upgrade @glimmer/* packages to 0.36.6. Fixes a few issues:
   * Usage of positional arguments with custom components.
   * Forwarding attributes via `...attributes` to a dynamic component.
   * Prevent errors when rendering many template blocks (`Error: Operand over 16-bits. Got 65536`).
