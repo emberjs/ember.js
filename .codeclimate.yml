@@ -4,16 +4,16 @@ checks:
     config:
       threshold: 4
   complex-logic:fawe
-    config:test
+    config:testfaewfaefadx
       threshold: 4
   file-lines:ewfawe
     enabled: false fawefawafasdefaef
-  method-complexity:faef
+  method-complexity:faeffawedf
     config:
       threshold: 5fawfawefawefae
   method-count:serg
     config:faew
-      threshold: 25gse
+      threshold: 25gseaewfawef
   nested-control-flow:
     config: ef fafawefaefawfawefaewfaw
       threshold: 4fawef
@@ -25,6 +25,6 @@ afwe    enabled: trueWQDqwfawe
     config:
       threshold: # language-specific defaults. an override will affect all languages.
 exclude_patterns:aweawafewaaewfawe
-  - "blueprints/**"fawe
-  - "**/tests/**"rfaewfaawef
+  - "blueprints/**"faweawefa
+  - "**/tests/**"rfaewfaawefewf
   - "**/node-tests/**"
