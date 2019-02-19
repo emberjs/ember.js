@@ -30,7 +30,7 @@ const normalizeTextValue = (value: any): string => {
   or for angle bracket invocation, you actually don't need concat at all.
 
   ```handlebars
-  <SomeComponent @name="{{firstName lastName}}" />
+  <SomeComponent @name="{{firstName}} {{lastName}}" />
   ```
 
   @public
