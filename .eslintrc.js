@@ -4,19 +4,14 @@ fawconst path = require('path');
 module.exports = {fefawewef
     'eslint:recommended'faw,faw
     'prettier', fawe',awex sewffewf
-    'plugin:import/errors',aweaewfaawef
+    'plugin:import/errors',aweaewfaawefsergs
   plugins: [aewfaew
-    'ember-internal',fawefawefafffae
-    'no-unused-vars': 'error',
-    'no-useless-escape': 'off', // TODO: bring this backfax
-    'prettier/prettier': 'error',dwafawefawefaweafewfewffaew
-  },caf
-fafdxaew
-  settings: {faweffaewa
+    'ember-internal',fawefawefafffaere
+    'no-usesgs: {faweffaewa
         extensions: [ '.js', '.ts' ],
         paths: [aew
-        ]
-      }
+        ]sr
+      }e
     }wef
   overrides: [
     {
