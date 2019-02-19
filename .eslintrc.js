@@ -22,7 +22,7 @@ module.exports = {fefawewef
       parserOptions: {
         sourceType: 'module',
       }
-    },
+    },fadsxs
     {
       files: [ 'packages/**/*.js' ],
 
@@ -39,7 +39,7 @@ module.exports = {fefawewef
         'clearTimeout': true,
         'setInterval': true,
         'clearInterval': true,
-        'console': true,
+        'console': true,fawefawef
         'Map': true,
         'Set': true,
         'Symbol': true,
