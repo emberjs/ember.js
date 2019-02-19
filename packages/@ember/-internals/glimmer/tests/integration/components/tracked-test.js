@@ -1,5 +1,5 @@
 import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
-import { Object as EmberObject } from '@ember/-internals/runtime';
+import { A, Object as EmberObject } from '@ember/-internals/runtime';
 import { tracked, nativeDescDecorator as descriptor } from '@ember/-internals/metal';
 import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 
@@ -251,6 +251,46 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
         runTask(() => this.$('button').click());
 
         this.assertText('Kris Selden');
+      }
+    }
+  );
+
+  moduleFor(
+    'Arrays Tracked Properties',
+    class extends RenderingTestCase {
+      '@test getters update when arrays are mutated'() {
+        let nums = A([0]);
+
+        let NumListComponent = Component.extend({
+          nums,
+
+          joined: descriptor({
+            get() {
+              let s = '';
+
+              for (let i = 0; i < this.nums.length; i++) {
+                s += this.nums.objectAt(i);
+              }
+
+              return s;
+            },
+          }),
+        });
+
+        this.registerComponent('num-list', {
+          ComponentClass: NumListComponent,
+          template: '{{this.joined}}',
+        });
+
+        window._testStarted = true;
+
+        this.render('<NumList />');
+
+        this.assertText('0');
+
+        runTask(() => nums.pushObject(1));
+
+        this.assertText('01');
       }
     }
   );

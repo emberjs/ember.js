@@ -162,29 +162,6 @@ export default class ArrayProxy extends EmberObject {
     get(this, 'content').replace(idx, amt, objects);
   }
 
-  // Overriding objectAt is not supported.
-  objectAt(idx) {
-    if (this._objects === null) {
-      this._objects = [];
-    }
-
-    if (this._objectsDirtyIndex !== -1 && idx >= this._objectsDirtyIndex) {
-      let arrangedContent = get(this, 'arrangedContent');
-      if (arrangedContent) {
-        let length = (this._objects.length = get(arrangedContent, 'length'));
-
-        for (let i = this._objectsDirtyIndex; i < length; i++) {
-          this._objects[i] = this.objectAtContent(i);
-        }
-      } else {
-        this._objects.length = 0;
-      }
-      this._objectsDirtyIndex = -1;
-    }
-
-    return this._objects[idx];
-  }
-
   // Overriding length is not supported.
   get length() {
     if (this._lengthDirty) {
@@ -291,4 +268,29 @@ ArrayProxy.reopen(MutableArray, {
     @public
   */
   arrangedContent: alias('content'),
+
+  // Overriding objectAt is not supported.
+  objectAt(idx) {
+    this._super();
+
+    if (this._objects === null) {
+      this._objects = [];
+    }
+
+    if (this._objectsDirtyIndex !== -1 && idx >= this._objectsDirtyIndex) {
+      let arrangedContent = get(this, 'arrangedContent');
+      if (arrangedContent) {
+        let length = (this._objects.length = get(arrangedContent, 'length'));
+
+        for (let i = this._objectsDirtyIndex; i < length; i++) {
+          this._objects[i] = this.objectAtContent(i);
+        }
+      } else {
+        this._objects.length = 0;
+      }
+      this._objectsDirtyIndex = -1;
+    }
+
+    return this._objects[idx];
+  },
 });

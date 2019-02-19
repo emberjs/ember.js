@@ -19,7 +19,10 @@ import {
   removeArrayObserver,
   arrayContentWillChange,
   arrayContentDidChange,
+  tagForProperty,
+  getCurrentTracker,
 } from '@ember/-internals/metal';
+import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { assert, deprecate } from '@ember/debug';
 import Enumerable from './enumerable';
 import compare from '../compare';
@@ -256,6 +259,12 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @return {*} item at index or undefined
     @public
   */
+  objectAt() {
+    if (EMBER_METAL_TRACKED_PROPERTIES) {
+      let tracker = getCurrentTracker();
+      if (tracker) tracker.add(tagForProperty(this, '[]'));
+    }
+  },
 
   /**
     This returns the objects at the specified indexes, using `objectAt`.
@@ -1572,6 +1581,7 @@ const MutableArray = Mixin.create(ArrayMixin, MutableEnumerable, {
 */
 let NativeArray = Mixin.create(MutableArray, Observable, {
   objectAt(idx) {
+    this._super();
     return this[idx];
   },
 
