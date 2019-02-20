@@ -38,8 +38,8 @@ import { inject as metalInject } from '@ember/-internals/metal';
   @return {ComputedDecorator} injection decorator instance
   @public
 */
-export function inject(nameOrDesc, options) {
-  return metalInject('service', nameOrDesc, options);
+export function inject() {
+  return metalInject('service', ...arguments);
 }
 
 /**

@@ -37,17 +37,6 @@ if (EMBER_METAL_TRACKED_PROPERTIES && EMBER_NATIVE_DECORATOR_SUPPORT) {
           assert.equal(get(newObj, key), obj[key], 'should set value');
         }
       }
-
-      ['@test should set a number key on an object'](assert) {
-        class Obj {
-          @tracked 1 = 'original';
-        }
-
-        let obj = new Obj();
-
-        set(obj, '1', 'first');
-        assert.equal(obj[1], 'first');
-      }
     }
   );
 }

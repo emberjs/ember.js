@@ -1,30 +1,38 @@
 import { Meta, meta as metaFor } from '@ember/-internals/meta';
 import { EMBER_NATIVE_DECORATOR_SUPPORT } from '@ember/canary-features';
 import { assert } from '@ember/debug';
-import { DEBUG } from '@glimmer/env';
 import { setComputedDecorator } from './descriptor_map';
 import { unwatch, watch } from './watching';
 
-// https://tc39.github.io/proposal-decorators/#sec-elementdescriptor-specification-type
-export interface ElementDescriptor {
-  descriptor: PropertyDescriptor & { initializer?: any };
-  key: string;
-  kind: 'method' | 'field' | 'initializer';
-  placement: 'own' | 'prototype' | 'static';
-  initializer?: () => any;
-  finisher?: (obj: object, meta?: Meta) => any;
-}
+export type DecoratorPropertyDescriptor = PropertyDescriptor & { initializer?: any } | undefined;
 
 export type Decorator = (
-  desc: ElementDescriptor,
+  target: object,
+  key: string,
+  desc?: DecoratorPropertyDescriptor,
+  maybeMeta?: Meta,
   isClassicDecorator?: boolean
-) => ElementDescriptor;
+) => DecoratorPropertyDescriptor;
 
-export function isElementDescriptor(maybeDesc: any): maybeDesc is ElementDescriptor {
+export function isElementDescriptor(
+  args: any[]
+): args is [object, string, DecoratorPropertyDescriptor] {
+  let [maybeTarget, maybeKey, maybeDesc] = args;
+
   return (
-    maybeDesc !== undefined &&
-    typeof maybeDesc.toString === 'function' &&
-    maybeDesc.toString() === '[object Descriptor]'
+    // Ensure we have the right number of args
+    args.length === 3 &&
+    // Make sure the target is an object
+    (typeof maybeTarget === 'object' && maybeTarget !== null) &&
+    // Make sure the key is a string
+    typeof maybeKey === 'string' &&
+    // Make sure the descriptor is the right shape
+    ((typeof maybeDesc === 'object' &&
+      maybeDesc !== null &&
+      'enumerable' in maybeDesc &&
+      'configurable' in maybeDesc) ||
+      // TS compatibility
+      maybeDesc === undefined)
   );
 }
 
@@ -77,9 +85,8 @@ export function removeDependentKeys(
 }
 
 export function nativeDescDecorator(propertyDesc: PropertyDescriptor) {
-  let decorator = function(elementDesc: ElementDescriptor) {
-    elementDesc.descriptor = propertyDesc;
-    return elementDesc;
+  let decorator = function() {
+    return propertyDesc;
   };
 
   setComputedDecorator(decorator);
@@ -100,7 +107,12 @@ export abstract class ComputedDescriptor {
   _dependentKeys?: string[] = undefined;
   _meta: any = undefined;
 
-  setup(_obj: object, keyName: string, _propertyDesc: PropertyDescriptor, meta: Meta): void {
+  setup(
+    _obj: object,
+    keyName: string,
+    _propertyDesc: DecoratorPropertyDescriptor,
+    meta: Meta
+  ): void {
     meta.writeDescriptors(keyName, this);
   }
 
@@ -126,18 +138,14 @@ function DESCRIPTOR_GETTER_FUNCTION(name: string, descriptor: ComputedDescriptor
 export function makeComputedDecorator(
   desc: ComputedDescriptor,
   DecoratorClass: { prototype: object }
-) {
+): Decorator {
   let decorator = function COMPUTED_DECORATOR(
-    elementDesc: ElementDescriptor,
+    target: object,
+    key: string,
+    propertyDesc?: DecoratorPropertyDescriptor,
+    maybeMeta?: Meta,
     isClassicDecorator?: boolean
-  ): ElementDescriptor {
-    let { key, descriptor: propertyDesc } = elementDesc;
-
-    if (DEBUG) {
-      // Store the initializer for assertions
-      propertyDesc.initializer = elementDesc.initializer;
-    }
-
+  ): DecoratorPropertyDescriptor {
     assert(
       'Native decorators are not enabled without the EMBER_NATIVE_DECORATOR_SUPPORT flag',
       EMBER_NATIVE_DECORATOR_SUPPORT || isClassicDecorator
@@ -146,25 +154,19 @@ export function makeComputedDecorator(
     assert(
       `Only one computed property decorator can be applied to a class field or accessor, but '${key}' was decorated twice. You may have added the decorator to both a getter and setter, which is unecessary.`,
       isClassicDecorator ||
+        !propertyDesc ||
         !propertyDesc.get ||
         propertyDesc.get.toString().indexOf('CPGETTER_FUNCTION') === -1
     );
 
-    elementDesc.kind = 'method';
-    elementDesc.descriptor = {
+    let meta = arguments.length === 3 ? metaFor(target) : maybeMeta;
+    desc.setup(target, key, propertyDesc, meta!);
+
+    return {
       enumerable: desc.enumerable,
       configurable: desc.configurable,
-      get: DESCRIPTOR_GETTER_FUNCTION(elementDesc.key, desc),
+      get: DESCRIPTOR_GETTER_FUNCTION(key, desc),
     };
-
-    elementDesc.finisher = function(klass: any, _meta?: Meta) {
-      let obj = klass.prototype !== undefined ? klass.prototype : klass;
-      let meta = arguments.length === 1 ? metaFor(obj) : _meta;
-
-      desc.setup(obj, key, propertyDesc, meta!);
-    };
-
-    return elementDesc;
   };
 
   setComputedDecorator(decorator, desc);
