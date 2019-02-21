@@ -1,5 +1,6 @@
 import { guidFor } from '@ember/-internals/utils';
-import { descriptorForProperty, Mixin, nativeDescDecorator } from '@ember/-internals/metal';
+import { descriptorFor } from '@ember/-internals/meta';
+import { descriptor, Mixin } from '@ember/-internals/metal';
 import { assert } from '@ember/debug';
 import { hasDOM } from '@ember/-internals/browser-environment';
 import { matches } from '../system/utils';
@@ -142,11 +143,11 @@ let mixin = {
   /**
    Returns the current DOM element for the view.
 
-    @property element
-    @type DOMElement
-    @public
-  */
-  element: nativeDescDecorator({
+   @property element
+   @type DOMElement
+   @public
+   */
+  element: descriptor({
     configurable: false,
     enumerable: false,
     get() {
@@ -398,13 +399,13 @@ let mixin = {
     // tslint:disable-next-line:max-line-length
     assert(
       `You cannot use a computed property for the component's \`elementId\` (${this}).`,
-      descriptorForProperty(this, 'elementId') === undefined
+      descriptorFor(this, 'elementId') === undefined
     );
 
     // tslint:disable-next-line:max-line-length
     assert(
       `You cannot use a computed property for the component's \`tagName\` (${this}).`,
-      descriptorForProperty(this, 'tagName') === undefined
+      descriptorFor(this, 'tagName') === undefined
     );
 
     if (!this.elementId && this.tagName !== '') {

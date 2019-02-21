@@ -1,11 +1,11 @@
 /**
 @module @ember/object
 */
+import { descriptorFor } from '@ember/-internals/meta';
 import { HAS_NATIVE_PROXY, symbol } from '@ember/-internals/utils';
 import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { descriptorForProperty } from './descriptor_map';
 import { isPath } from './path_cache';
 import { tagForProperty } from './tags';
 import { getCurrentTracker } from './tracked';
@@ -108,7 +108,7 @@ export function get(obj: object, keyName: string): any {
       if (tracker) tracker.add(tagForProperty(obj, keyName));
     }
 
-    let descriptor = descriptorForProperty(obj, keyName);
+    let descriptor = descriptorFor(obj, keyName);
     if (descriptor !== undefined) {
       return descriptor.get(obj, keyName);
     }

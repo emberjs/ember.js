@@ -16,7 +16,6 @@ const WriteFile = require('broccoli-file-creator');
 const StringReplace = require('broccoli-string-replace');
 const GlimmerTemplatePrecompiler = require('./glimmer-template-compiler');
 const VERSION_PLACEHOLDER = /VERSION_STRING_PLACEHOLDER/g;
-const transfromBabelPlugins = require('./transforms/transform-babel-plugins');
 
 const debugTree = BroccoliDebug.buildDebugCallback('ember-source');
 
@@ -84,13 +83,6 @@ module.exports.getPackagesES = function getPackagesES() {
     exclude: ['**/*.ts'],
   });
 
-  // tsc / typescript handles decorators and class properties on its own
-  // so for non ts, transpile the proposal features (decorators, etc)
-  let transpiledProposals = debugTree(
-    transfromBabelPlugins(debugTree(nonTypeScriptContents, `get-packages-es:babel-plugins:input`)),
-    `get-packages-es:babel-plugins:output`
-  );
-
   let typescriptContents = new Funnel(debuggedCompiledTemplatesAndTypeScript, {
     include: ['**/*.ts'],
   });
@@ -103,7 +95,7 @@ module.exports.getPackagesES = function getPackagesES() {
 
   let debuggedCompiledTypescript = debugTree(typescriptCompiled, `get-packages-es:ts:output`);
 
-  let mergedFinalOutput = new MergeTrees([transpiledProposals, debuggedCompiledTypescript], {
+  let mergedFinalOutput = new MergeTrees([nonTypeScriptContents, debuggedCompiledTypescript], {
     overwrite: true,
   });
 

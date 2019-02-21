@@ -77,8 +77,6 @@
   },
   "devDependencies": {
     "@babel/helper-module-imports": "^7.0.0",
-    "@babel/plugin-proposal-class-properties": "^7.3.3",
-    "@babel/plugin-proposal-decorators": "^7.3.0",
     "@babel/plugin-transform-arrow-functions": "^7.2.0",
     "@babel/plugin-transform-block-scoping": "^7.2.0",
     "@babel/plugin-transform-classes": "^7.3.3",
@@ -103,7 +101,6 @@
     "@types/rsvp": "^4.0.2",
     "auto-dist-tag": "^1.0.0",
     "aws-sdk": "^2.404.0",
-    "babel-eslint": "^10.0.1",
     "babel-plugin-debug-macros": "^0.3.0",
     "babel-plugin-filter-imports": "^2.0.4",
     "babel-plugin-module-resolver": "^3.2.0",

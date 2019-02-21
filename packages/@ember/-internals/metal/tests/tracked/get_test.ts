@@ -1,12 +1,9 @@
-import {
-  EMBER_METAL_TRACKED_PROPERTIES,
-  EMBER_NATIVE_DECORATOR_SUPPORT,
-} from '@ember/canary-features';
+import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { AbstractTestCase, moduleFor } from 'internal-test-helpers';
 import { get, getWithDefault, tracked } from '../..';
 
-if (EMBER_METAL_TRACKED_PROPERTIES && EMBER_NATIVE_DECORATOR_SUPPORT) {
-  let createObj = function() {
+if (EMBER_METAL_TRACKED_PROPERTIES) {
+  const createObj = function() {
     class Obj {
       @tracked string = 'string';
       @tracked number = 23;
@@ -67,15 +64,37 @@ if (EMBER_METAL_TRACKED_PROPERTIES && EMBER_NATIVE_DECORATOR_SUPPORT) {
         this.assert.equal(get(obj, 'path.key.value'), 'value');
       }
 
+      '@test should not access a property more than once'() {
+        let count = 20;
+
+        class Count {
+          @tracked
+          get id() {
+            return ++count;
+          }
+        }
+
+        let obj = new Count();
+
+        get(obj, 'id');
+
+        this.assert.equal(count, 21);
+      }
+    }
+  );
+
+  moduleFor(
+    '@tracked decorator: getWithDefault',
+    class extends AbstractTestCase {
       ['@test should get arbitrary properties on an object']() {
         let obj = createObj();
 
         for (let key in obj) {
-          this.assert.equal(getWithDefault(obj, key, 'fail'), obj[key], key);
+          this.assert.equal(getWithDefault(obj, key as any, 'fail'), obj[key], key);
         }
 
         class Obj {
-          @tracked undef = undefined;
+          @tracked undef: string | undefined = undefined;
         }
 
         let obj2 = new Obj();
@@ -86,7 +105,7 @@ if (EMBER_METAL_TRACKED_PROPERTIES && EMBER_NATIVE_DECORATOR_SUPPORT) {
           'explicit undefined retrieves the default'
         );
         this.assert.equal(
-          getWithDefault(obj2, 'not-present', 'default'),
+          getWithDefault(obj2, 'not-present' as any, 'default'),
           'default',
           'non-present key retrieves the default'
         );
