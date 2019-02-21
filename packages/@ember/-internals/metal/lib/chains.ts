@@ -1,6 +1,5 @@
-import { Meta, meta as metaFor, peekMeta } from '@ember/-internals/meta';
+import { descriptorFor, Meta, meta as metaFor, peekMeta } from '@ember/-internals/meta';
 import { getCachedValueFor } from './computed_cache';
-import { descriptorForProperty } from './descriptor_map';
 import { eachProxyFor } from './each_proxy';
 import { get } from './property_get';
 import { unwatchKey, watchKey } from './watch_key';
@@ -10,7 +9,7 @@ function isObject(obj: any): obj is object {
 }
 
 function isVolatile(obj: any, keyName: string, meta?: Meta | null): boolean {
-  let desc = descriptorForProperty(obj, keyName, meta);
+  let desc = descriptorFor(obj, keyName, meta);
   return !(desc !== undefined && desc._volatile === false);
 }
 

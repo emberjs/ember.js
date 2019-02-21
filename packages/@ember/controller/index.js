@@ -1,6 +1,6 @@
 import { Object as EmberObject } from '@ember/-internals/runtime';
-import { inject as metalInject } from '@ember/-internals/metal';
 import ControllerMixin from './lib/controller_mixin';
+import { InjectedProperty } from '@ember/-internals/metal';
 
 /**
 @module @ember/controller
@@ -40,11 +40,11 @@ const Controller = EmberObject.extend(ControllerMixin);
   @since 1.10.0
   @param {String} name (optional) name of the controller to inject, defaults
          to the property's name
-  @return {ComputedDecorator} injection decorator instance
+  @return {Ember.InjectedProperty} injection descriptor instance
   @public
 */
-export function inject(nameOrDesc, options) {
-  return metalInject('controller', nameOrDesc, options);
+export function inject(name, options) {
+  return new InjectedProperty('controller', name, options);
 }
 
 export default Controller;

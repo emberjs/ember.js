@@ -1,18 +1,14 @@
-import { EMBER_NATIVE_DECORATOR_SUPPORT } from '@ember/canary-features';
-import { assert } from '@ember/debug';
-import { DEBUG } from '@glimmer/env';
 import { combine, CONSTANT_TAG, Tag } from '@glimmer/reference';
-import { Decorator, ElementDescriptor } from './decorator';
-import { setComputedDecorator } from './descriptor_map';
-import { dirty, tagFor, tagForProperty } from './tags';
+import { dirty, tagFor, tagForProperty, update } from './tags';
 
 type Option<T> = T | null;
+type unusable = null | undefined | void | {};
 
 /**
   An object that that tracks @tracked properties that were consumed.
 
   @private
-*/
+ */
 class Tracker {
   private tags = new Set<Tag>();
   private last: Option<Tag> = null;
@@ -99,129 +95,22 @@ class Tracker {
   ```
 
   @param dependencies Optional dependents to be tracked.
-*/
-export function tracked(propertyDesc: { value: any }): Decorator;
-export function tracked(elementDesc: ElementDescriptor): ElementDescriptor;
+ */
+export function tracked(...dependencies: string[]): MethodDecorator;
+export function tracked(target: unknown, key: PropertyKey): any;
 export function tracked(
-  elementDesc: ElementDescriptor | any,
-  isClassicDecorator?: boolean
-): ElementDescriptor | Decorator {
-  if (
-    elementDesc === undefined ||
-    elementDesc === null ||
-    elementDesc.toString() !== '[object Descriptor]'
-  ) {
-    assert(
-      `tracked() may only receive an options object containing 'value' or 'initializer', received ${elementDesc}`,
-      elementDesc === undefined || (elementDesc !== null && typeof elementDesc === 'object')
-    );
+  target: unknown,
+  key: PropertyKey,
+  descriptor: PropertyDescriptor
+): PropertyDescriptor;
+export function tracked(...dependencies: any[]): any {
+  let [, key, descriptor] = dependencies;
 
-    if (DEBUG && elementDesc) {
-      let keys = Object.keys(elementDesc);
-
-      assert(
-        `The options object passed to tracked() may only contain a 'value' or 'initializer' property, not both. Received: [${keys}]`,
-        keys.length <= 1 &&
-          (keys[0] === undefined || keys[0] === 'value' || keys[0] === 'undefined')
-      );
-
-      assert(
-        `The initializer passed to tracked must be a function. Received ${elementDesc.initializer}`,
-        !('initializer' in elementDesc) || typeof elementDesc.initializer === 'function'
-      );
-    }
-
-    let initializer = elementDesc ? elementDesc.initializer : undefined;
-    let value = elementDesc ? elementDesc.value : undefined;
-
-    let decorator = function(elementDesc: ElementDescriptor, isClassicDecorator?: boolean) {
-      assert(
-        `You attempted to set a default value for ${
-          elementDesc.key
-        } with the @tracked({ value: 'default' }) syntax. You can only use this syntax with classic classes. For native classes, you can use class initializers: @tracked field = 'default';`,
-        isClassicDecorator
-      );
-
-      elementDesc.initializer = initializer || (() => value);
-
-      return descriptorForField(elementDesc);
-    };
-
-    setComputedDecorator(decorator);
-
-    return decorator;
+  if (descriptor === undefined || 'initializer' in descriptor) {
+    return descriptorForDataProperty(key, descriptor);
+  } else {
+    return descriptorForAccessor(key, descriptor);
   }
-
-  assert(
-    'Native decorators are not enabled without the EMBER_NATIVE_DECORATOR_SUPPORT flag',
-    Boolean(EMBER_NATIVE_DECORATOR_SUPPORT)
-  );
-
-  assert(
-    `@tracked can only be used directly as a native decorator. If you're using tracked in classic classes, add parenthesis to call it like a function: tracked()`,
-    !isClassicDecorator
-  );
-
-  return descriptorForField(elementDesc);
-}
-
-if (DEBUG) {
-  // Normally this isn't a classic decorator, but we want to throw a helpful
-  // error in development so we need it to treat it like one
-  setComputedDecorator(tracked);
-}
-
-const TRACKED_FIELDS_VALUES: WeakMap<object, object> = new WeakMap();
-
-function getTrackedFieldValues(obj: any) {
-  let values = TRACKED_FIELDS_VALUES.get(obj);
-
-  if (values === undefined) {
-    values = {};
-    TRACKED_FIELDS_VALUES.set(obj, values);
-  }
-
-  return values;
-}
-
-function descriptorForField(elementDesc: ElementDescriptor): ElementDescriptor {
-  let { key, kind, initializer } = elementDesc;
-
-  assert(
-    `You attempted to use @tracked on ${key}, but that element is not a class field. @tracked is only usable on class fields. Native getters and setters will autotrack add any tracked fields they encounter, so there is no need mark getters and setters with @tracked.`,
-    kind === 'field'
-  );
-
-  return {
-    key,
-    kind: 'method',
-    placement: 'prototype',
-    descriptor: {
-      enumerable: true,
-      configurable: true,
-
-      get(): any {
-        if (CURRENT_TRACKER) CURRENT_TRACKER.add(tagForProperty(this, key));
-
-        let values = getTrackedFieldValues(this);
-
-        if (!(key in values)) {
-          values[key] = initializer !== undefined ? initializer.call(this) : undefined;
-        }
-
-        return values[key];
-      },
-
-      set(newValue: any): void {
-        tagFor(this).inner!['dirty']();
-        dirty(tagForProperty(this, key));
-
-        getTrackedFieldValues(this)[key] = newValue;
-
-        propertyDidChange();
-      },
-    },
-  };
 }
 
 /**
@@ -238,7 +127,7 @@ function descriptorForField(elementDesc: ElementDescriptor): ElementDescriptor {
   The consequence is that each tracked computed property has a tag
   that corresponds to the tracked properties consumed inside of
   itself, including child tracked computed properties.
-*/
+ */
 let CURRENT_TRACKER: Option<Tracker> = null;
 
 export function getCurrentTracker(): Option<Tracker> {
@@ -249,7 +138,90 @@ export function setCurrentTracker(tracker: Tracker = new Tracker()): Tracker {
   return (CURRENT_TRACKER = tracker);
 }
 
+function descriptorForAccessor(
+  key: string | symbol,
+  descriptor: PropertyDescriptor
+): PropertyDescriptor {
+  let get = descriptor.get as Function;
+  let set = descriptor.set as Function;
+
+  function getter(this: any): any {
+    // Swap the parent tracker for a new tracker
+    let old = CURRENT_TRACKER;
+    let tracker = (CURRENT_TRACKER = new Tracker());
+
+    // Call the getter
+    let ret = get.call(this);
+
+    // Swap back the parent tracker
+    CURRENT_TRACKER = old;
+
+    // Combine the tags in the new tracker and add them to the parent tracker
+    let tag = tracker.combine();
+    if (CURRENT_TRACKER) CURRENT_TRACKER.add(tag);
+
+    // Update the UpdatableTag for this property with the tag for all of the
+    // consumed dependencies.
+    update(tagForProperty(this, key), tag);
+
+    return ret;
+  }
+
+  function setter(this: unusable): void {
+    dirty(tagForProperty(this, key));
+    set.apply(this, arguments);
+  }
+
+  return {
+    enumerable: true,
+    configurable: false,
+    get: get && getter,
+    set: set && setter,
+  };
+}
+
 export type Key = string;
+
+/**
+  @private
+
+  A getter/setter for change tracking for a particular key. The accessor
+  acts just like a normal property, but it triggers the `propertyDidChange`
+  hook when written to.
+
+  Values are saved on the object using a "shadow key," or a symbol based on the
+  tracked property name. Sets write the value to the shadow key, and gets read
+  from it.
+ */
+
+function descriptorForDataProperty(
+  key: string,
+  descriptor: PropertyDescriptor
+): PropertyDescriptor {
+  let shadowKey = Symbol(key);
+
+  return {
+    enumerable: true,
+    configurable: true,
+
+    get(): any {
+      if (CURRENT_TRACKER) CURRENT_TRACKER.add(tagForProperty(this, key));
+
+      if (!(shadowKey in this)) {
+        this[shadowKey] = descriptor.value;
+      }
+
+      return this[shadowKey];
+    },
+
+    set(newValue: any): void {
+      tagFor(this).inner!['dirty']();
+      dirty(tagForProperty(this, key));
+      this[shadowKey] = newValue;
+      propertyDidChange();
+    },
+  };
+}
 
 export interface Interceptors {
   [key: string]: boolean;

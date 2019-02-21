@@ -1,4 +1,4 @@
-export { default as computed, _globalsComputed, ComputedProperty } from './lib/computed';
+export { default as computed, ComputedProperty, _globalsComputed } from './lib/computed';
 export { getCacheFor, getCachedValueFor, peekCacheFor } from './lib/computed_cache';
 export { default as alias } from './lib/alias';
 export { deprecateProperty } from './lib/deprecate_property';
@@ -28,13 +28,7 @@ export {
   overrideChains,
   PROPERTY_DID_CHANGE,
 } from './lib/property_events';
-export { defineProperty } from './lib/properties';
-export { nativeDescDecorator } from './lib/decorator';
-export {
-  descriptorForProperty,
-  isComputedDecorator,
-  setComputedDecorator,
-} from './lib/descriptor_map';
+export { defineProperty, Descriptor } from './lib/properties';
 export { watchKey, unwatchKey } from './lib/watch_key';
 export { ChainNode, finishChains, removeChainWatcher } from './lib/chains';
 export { watchPath, unwatchPath } from './lib/watch_path';
@@ -46,10 +40,11 @@ export { default as expandProperties } from './lib/expand_properties';
 
 export { addObserver, removeObserver } from './lib/observer';
 export { Mixin, aliasMethod, mixin, observer, applyMixin } from './lib/mixin';
-export { default as inject, DEBUG_INJECTION_FUNCTIONS } from './lib/injected_property';
+export { default as InjectedProperty } from './lib/injected_property';
 export { setHasViews, tagForProperty, tagFor, markObjectAsDirty } from './lib/tags';
 export { default as runInTransaction, didRender, assertNotRendered } from './lib/transaction';
-export { tracked, getCurrentTracker, setCurrentTracker } from './lib/tracked';
+export { default as descriptor } from './lib/descriptor';
+export { tracked } from './lib/tracked';
 
 export {
   NAMESPACES,

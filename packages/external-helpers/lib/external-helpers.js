@@ -2,32 +2,6 @@ import { DEBUG } from '@glimmer/env';
 
 const setPrototypeOf = Object.setPrototypeOf;
 
-var nativeWrapperCache = new Map();
-
-// Super minimal version of Babel's wrapNativeSuper. We only use this for
-// extending Function, for ComputedDecoratorImpl and AliasDecoratorImpl. We know
-// we will never directly create an instance of these classes so no need to
-// include `construct` code or other helpers.
-export function wrapNativeSuper(Class) {
-  if (nativeWrapperCache.has(Class)) {
-    return nativeWrapperCache.get(Class);
-  }
-
-  function Wrapper() {}
-  Wrapper.prototype = Object.create(Class.prototype, {
-    constructor: {
-      value: Wrapper,
-      enumerable: false,
-      writable: true,
-      configurable: true,
-    },
-  });
-
-  nativeWrapperCache.set(Class, Wrapper);
-
-  return setPrototypeOf(Wrapper, Class);
-}
-
 export function classCallCheck(instance, Constructor) {
   if (DEBUG) {
     if (!(instance instanceof Constructor)) {

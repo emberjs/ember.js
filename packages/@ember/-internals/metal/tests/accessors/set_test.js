@@ -124,28 +124,5 @@ moduleFor(
       trySet(obj, 'favoriteFood', 'hot dogs');
       assert.equal(obj.favoriteFood, undefined, 'does not set and does not error');
     }
-
-    ['@test should work with native setters'](assert) {
-      let count = 0;
-
-      class Foo {
-        __foo = '';
-
-        get foo() {
-          return this.__foo;
-        }
-
-        set foo(value) {
-          count++;
-          this.__foo = `computed ${value}`;
-        }
-      }
-
-      let obj = new Foo();
-
-      assert.equal(set(obj, 'foo', 'bar'), 'bar', 'should return set value');
-      assert.equal(count, 1, 'should have native setter');
-      assert.equal(get(obj, 'foo'), 'computed bar', 'should return new value');
-    }
   }
 );

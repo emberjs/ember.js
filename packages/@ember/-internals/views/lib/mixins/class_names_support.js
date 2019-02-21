@@ -1,7 +1,8 @@
 /**
 @module ember
 */
-import { descriptorForProperty, Mixin } from '@ember/-internals/metal';
+import { descriptorFor } from '@ember/-internals/meta';
+import { Mixin } from '@ember/-internals/metal';
 import { assert } from '@ember/debug';
 
 const EMPTY_ARRAY = Object.freeze([]);
@@ -19,12 +20,12 @@ export default Mixin.create({
 
     assert(
       `Only arrays are allowed for 'classNameBindings'`,
-      descriptorForProperty(this, 'classNameBindings') === undefined &&
+      descriptorFor(this, 'classNameBindings') === undefined &&
         Array.isArray(this.classNameBindings)
     );
     assert(
       `Only arrays of static class strings are allowed for 'classNames'. For dynamic classes, use 'classNameBindings'.`,
-      descriptorForProperty(this, 'classNames') === undefined && Array.isArray(this.classNames)
+      descriptorFor(this, 'classNames') === undefined && Array.isArray(this.classNames)
     );
   },
 

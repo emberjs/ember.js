@@ -1,17 +1,17 @@
 import { setOwner } from '@ember/-internals/owner';
-import { defineProperty, get, isComputedDecorator, set, inject } from '..';
+import { Descriptor, defineProperty, get, set, InjectedProperty } from '..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
-  'inject',
+  'InjectedProperty',
   class extends AbstractTestCase {
     ['@test injected properties should be descriptors'](assert) {
-      assert.ok(isComputedDecorator(inject('type')));
+      assert.ok(new InjectedProperty() instanceof Descriptor);
     }
 
     ['@test injected properties should be overridable'](assert) {
       let obj = {};
-      defineProperty(obj, 'foo', inject('type'));
+      defineProperty(obj, 'foo', new InjectedProperty());
 
       set(obj, 'foo', 'bar');
 
@@ -20,7 +20,7 @@ moduleFor(
 
     ['@test getting on an object without an owner or container should fail assertion']() {
       let obj = {};
-      defineProperty(obj, 'foo', inject('type', 'name'));
+      defineProperty(obj, 'foo', new InjectedProperty('type', 'name'));
 
       expectAssertion(function() {
         get(obj, 'foo');
@@ -37,7 +37,7 @@ moduleFor(
         },
       };
 
-      defineProperty(obj, 'foo', inject('type', 'name'));
+      defineProperty(obj, 'foo', new InjectedProperty('type', 'name'));
 
       assert.equal(get(obj, 'foo'), 'type:name', 'should return the value of container.lookup');
     }
@@ -54,7 +54,7 @@ moduleFor(
         },
       });
 
-      defineProperty(obj, 'foo', inject('type', 'name'));
+      defineProperty(obj, 'foo', new InjectedProperty('type', 'name'));
 
       assert.equal(get(obj, 'foo'), 'type:name', 'should return the value of container.lookup');
     }
@@ -68,7 +68,7 @@ moduleFor(
         },
       });
 
-      defineProperty(obj, 'foo', inject('type'));
+      defineProperty(obj, 'foo', new InjectedProperty('type'));
 
       assert.equal(get(obj, 'foo'), 'type:foo', 'should lookup the type using the property name');
     }

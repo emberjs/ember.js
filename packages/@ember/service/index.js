@@ -1,5 +1,5 @@
 import { Object as EmberObject } from '@ember/-internals/runtime';
-import { inject as metalInject } from '@ember/-internals/metal';
+import { InjectedProperty } from '@ember/-internals/metal';
 
 /**
  @module @ember/service
@@ -35,11 +35,11 @@ import { inject as metalInject } from '@ember/-internals/metal';
   @for @ember/service
   @param {String} name (optional) name of the service to inject, defaults to
          the property's name
-  @return {ComputedDecorator} injection decorator instance
+  @return {Ember.InjectedProperty} injection descriptor instance
   @public
 */
-export function inject(nameOrDesc, options) {
-  return metalInject('service', nameOrDesc, options);
+export function inject(name, options) {
+  return new InjectedProperty('service', name, options);
 }
 
 /**

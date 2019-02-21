@@ -2,11 +2,9 @@
 @module @ember/object
 */
 
-import { Meta, meta as metaFor, peekMeta, UNDEFINED } from '@ember/-internals/meta';
+import { descriptorFor, Meta, meta as metaFor, peekMeta, UNDEFINED } from '@ember/-internals/meta';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { Decorator, ElementDescriptor } from './decorator';
-import { descriptorForProperty, isComputedDecorator } from './descriptor_map';
 import { overrideChains } from './property_events';
 
 export type MandatorySetterFunction = ((this: object, value: any) => void) & {
@@ -16,6 +14,44 @@ export type DefaultGetterFunction = (this: object) => void;
 export type InheritingGetterFunction = ((this: object) => void) & {
   isInheritingGetter: true;
 };
+
+// ..........................................................
+// DESCRIPTOR
+//
+
+/**
+  Objects of this type can implement an interface to respond to requests to
+  get and set. The default implementation handles simple properties.
+
+  @class Descriptor
+  @private
+*/
+export abstract class Descriptor {
+  isDescriptor = true;
+  enumerable = true;
+  configurable = true;
+
+  setup(obj: object, keyName: string, meta: Meta): void {
+    Object.defineProperty(obj, keyName, {
+      enumerable: this.enumerable,
+      configurable: this.configurable,
+      get: DESCRIPTOR_GETTER_FUNCTION(keyName, this),
+    });
+    meta.writeDescriptors(keyName, this);
+  }
+
+  teardown(_obj: object, keyName: string, meta: Meta): void {
+    meta.removeDescriptors(keyName);
+  }
+
+  abstract get(obj: object, keyName: string): any | null | undefined;
+  abstract set(obj: object, keyName: string, value: any | null | undefined): any | null | undefined;
+
+  willWatch?(obj: object, keyName: string, meta: Meta): void;
+  didUnwatch?(obj: object, keyName: string, meta: Meta): void;
+
+  didChange?(obj: object, keyName: string): void;
+}
 
 interface ExtendedObject {
   didDefineProperty?: (obj: object, keyName: string, value: any) => void;
@@ -69,6 +105,12 @@ export function INHERITING_GETTER_FUNCTION(name: string): InheritingGetterFuncti
   });
 }
 
+function DESCRIPTOR_GETTER_FUNCTION(name: string, descriptor: Descriptor): () => any {
+  return function CPGETTER_FUNCTION(this: object): any {
+    return descriptor.get(this, name);
+  };
+}
+
 /**
   NOTE: This is a low-level method used by other parts of the API. You almost
   never want to call this method directly. Instead you should use
@@ -120,7 +162,7 @@ export function INHERITING_GETTER_FUNCTION(name: string): InheritingGetterFuncti
 export function defineProperty(
   obj: object,
   keyName: string,
-  desc?: Decorator | undefined | null,
+  desc?: Descriptor | undefined | null,
   data?: any | undefined | null,
   meta?: Meta
 ): void {
@@ -129,7 +171,7 @@ export function defineProperty(
   }
 
   let watching = meta.peekWatching(keyName) > 0;
-  let previousDesc = descriptorForProperty(obj, keyName, meta);
+  let previousDesc = descriptorFor(obj, keyName, meta);
   let wasDescriptor = previousDesc !== undefined;
 
   if (wasDescriptor) {
@@ -149,43 +191,9 @@ export function defineProperty(
   }
 
   let value;
-  if (isComputedDecorator(desc)) {
-    let elementDesc = {
-      key: keyName,
-      kind: 'field',
-      placement: 'own',
-      descriptor: {
-        value: undefined,
-      },
-      toString() {
-        return '[object Descriptor]';
-      },
-    } as ElementDescriptor;
-
-    if (DEBUG) {
-      elementDesc = desc!(elementDesc, true);
-    } else {
-      elementDesc = desc!(elementDesc);
-    }
-
-    Object.defineProperty(obj, keyName, elementDesc.descriptor);
-
-    if (elementDesc.finisher !== undefined) {
-      if (obj.constructor !== undefined && obj.constructor.prototype === obj) {
-        // Nonstandard, we push the meta along here
-        elementDesc.finisher(obj.constructor, meta);
-      } else {
-        // The most correct thing to do here is only pass the constructor of the
-        // object to the finisher, but we have to support being able to
-        // `defineProperty` directly on instances as well. This is _not_ spec
-        // compliant, but it's limited to core decorators that work with the
-        // classic object model.
-        elementDesc.finisher(obj, meta);
-      }
-    }
-
-    // pass the decorator function forward for backwards compat
+  if (desc instanceof Descriptor) {
     value = desc;
+    desc.setup(obj, keyName, meta);
   } else if (desc === undefined || desc === null) {
     value = data;
 
