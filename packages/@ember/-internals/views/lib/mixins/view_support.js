@@ -367,6 +367,12 @@ let mixin = {
    must destroy and recreate the view element.
 
    By default, the render buffer will use a `<div>` tag for views.
+   
+   If the tagName is `''`, the view will be tagless, with no outer element.
+   Component properties that depend on the presence of an outer element, such
+   as `classNameBindings` and `attributeBindings`, do not work with tagless
+   components. Tagless components cannot implement methods to handle events,
+   and have no associated jQuery object to return with `$()`.
 
    @property tagName
    @type String
