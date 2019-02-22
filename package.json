@@ -150,7 +150,7 @@
     "mocha": "^6.0.0",
     "prettier": "1.16.4",
     "puppeteer": "^1.12.2",
-    "qunit": "^2.9.1",
+    "qunit": "^2.9.2",
     "rollup-plugin-commonjs": "^9.2.0",
     "rollup-plugin-node-resolve": "^4.0.0",
     "route-recognizer": "^0.3.4",
