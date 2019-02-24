@@ -170,14 +170,14 @@ export interface WithJitDynamicLayout<
 }
 
 export interface WithAotDynamicLayout<
-  ComponentInstanceState = ComponentInstanceState,
+  I = ComponentInstanceState,
   R extends RuntimeResolver = RuntimeResolver
-> extends ComponentManager<ComponentInstanceState> {
+> extends ComponentManager<I> {
   // Return the compiled layout to use for this component. This is called
   // *after* the component instance has been created, because you might
   // want to return a different layout per-instance for optimization reasons
   // or to implement features like Ember's "late-bound" layouts.
-  getAotDynamicLayout(component: ComponentInstanceState, resolver: R): Invocation;
+  getAotDynamicLayout(component: I, resolver: R): Invocation;
 }
 
 export interface WithDynamicTagName<ComponentInstanceState>
