@@ -1,5 +1,6 @@
 'use strict';
 
+const path = require('path');
 const isModuleUnificationProject = require('../module-unification').isModuleUnificationProject;
 
 module.exports = {
@@ -11,6 +12,10 @@ module.exports = {
         __root__(options) {
           if (options.pod) {
             throw new Error("Pods aren't supported within a module unification app");
+          }
+
+          if (options.inDummy) {
+            return path.join('tests', 'dummy', 'src');
           }
 
           return 'src';
