@@ -213,6 +213,16 @@ describe('Blueprint: mixin', function() {
         expect(_file('app/mixins/foo/bar/baz.js')).to.not.exist;
       });
     });
+
+    it('mixin foo/bar/baz --dummy', function() {
+      return emberGenerateDestroy(['mixin', 'foo/bar/baz', '--dummy'], _file => {
+        expect(_file('tests/dummy/app/mixins/foo/bar/baz.js'))
+          .to.contain("import Mixin from '@ember/object/mixin';")
+          .to.contain('export default Mixin.create({\n});');
+
+        expect(_file('addon/mixins/foo/bar/baz.js')).to.not.exist;
+      });
+    });
   });
 
   describe('in addon - module unification', function() {
@@ -255,6 +265,16 @@ describe('Blueprint: mixin', function() {
         expect(_file('src/mixins/foo/bar/baz-test.js')).to.contain(
           "import FooBarBazMixin from 'my-addon/mixins/foo/bar/baz';"
         );
+      });
+    });
+
+    it('mixin foo/bar/baz --dummy', function() {
+      return emberGenerateDestroy(['mixin', 'foo/bar/baz', '--dummy'], _file => {
+        expect(_file('tests/dummy/src/mixins/foo/bar/baz.js'))
+          .to.contain("import Mixin from '@ember/object/mixin';")
+          .to.contain('export default Mixin.create({\n});');
+
+        expect(_file('src/mixins/foo/bar/baz.js')).to.not.exist;
       });
     });
   });
