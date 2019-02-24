@@ -1,5 +1,6 @@
 'use strict';
 
+const path = require('path');
 const useEditionDetector = require('../edition-detector');
 const isModuleUnificationProject = require('../module-unification').isModuleUnificationProject;
 
@@ -12,6 +13,10 @@ module.exports = useEditionDetector({
         __root__(options) {
           if (options.pod) {
             throw new Error("Pods aren't supported within a module unification app");
+          }
+
+          if (options.inDummy) {
+            return path.join('tests', 'dummy', 'src');
           }
 
           return 'src';

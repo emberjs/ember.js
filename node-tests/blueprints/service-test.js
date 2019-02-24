@@ -223,6 +223,15 @@ describe('Blueprint: service', function() {
         );
       });
     });
+
+    it('service foo/bar --dummy', function() {
+      return emberGenerateDestroy(['service', 'foo/bar', '--dummy'], _file => {
+        expect(_file('tests/dummy/app/services/foo/bar.js')).to.equal(
+          fixture('service/service-nested.js')
+        );
+        expect(_file('addon/services/foo/bar.js')).to.not.exist;
+      });
+    });
   });
 
   describe('in addon - module unification', function() {
@@ -258,6 +267,15 @@ describe('Blueprint: service', function() {
         );
 
         expect(_file('app/services/foo/bar.js')).to.not.exist;
+      });
+    });
+
+    it('service foo/bar --dummy', function() {
+      return emberGenerateDestroy(['service', 'foo/bar', '--dummy'], _file => {
+        expect(_file('tests/dummy/src/services/foo/bar.js')).to.equal(
+          fixture('service/service-nested.js')
+        );
+        expect(_file('src/services/foo/bar.js')).to.not.exist;
       });
     });
   });
@@ -297,6 +315,16 @@ describe('Blueprint: service', function() {
         );
 
         expect(_file('app/services/foo/bar.js')).to.not.exist;
+      });
+    });
+
+    it('service foo/bar --dummy', function() {
+      return emberGenerateDestroy(['service', 'foo/bar', '--dummy'], _file => {
+        expect(_file('tests/dummy/src/services/foo/bar.js')).to.equal(
+          fixture('service/native-service-nested.js')
+        );
+
+        expect(_file('src/services/foo/bar.js')).to.not.exist;
       });
     });
   });
