@@ -21,7 +21,7 @@ module.exports = {
           }
 
           if (options.inDummy) {
-            throw new Error("The --dummy flag isn't supported within a module unification app");
+            return path.join('tests', 'dummy', 'src');
           }
 
           return 'src';
@@ -31,7 +31,7 @@ module.exports = {
             throw new Error("Pods aren't supported within a module unification app");
           }
 
-          return 'ui/components';
+          return path.join('ui', 'components');
         },
       };
     } else {

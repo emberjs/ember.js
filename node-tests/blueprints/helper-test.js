@@ -185,6 +185,15 @@ describe('Blueprint: helper', function() {
         );
       });
     });
+
+    it('helper foo/bar-baz --dummy', function() {
+      return emberGenerateDestroy(['helper', 'foo/bar-baz', '--dummy'], _file => {
+        expect(_file('tests/dummy/src/ui/components/foo/bar-baz.js')).to.equal(
+          fixture('helper/helper.js')
+        );
+        expect(_file('src/ui/components/foo/bar-baz.js')).to.not.exist;
+      });
+    });
   });
 
   describe('in in-repo-addon', function() {
