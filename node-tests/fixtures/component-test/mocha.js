@@ -12,12 +12,12 @@ describeComponent('x-foo', 'Integration | Component | x-foo',
       // Handle any actions with this.on('myAction', function(val) { ... });
       // Template block usage:
       // this.render(hbs`
-      //   {{#x-foo}}
+      //   <XFoo>
       //     template content
-      //   {{/x-foo}}
+      //   </XFoo>
       // `);
 
-      this.render(hbs`{{x-foo}}`);
+      this.render(hbs`<XFoo />`);
       expect(this.$()).to.have.length(1);
     });
   }

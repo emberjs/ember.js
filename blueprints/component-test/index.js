@@ -72,7 +72,10 @@ module.exports = useTestFrameworkDetector({
   locals: function(options) {
     let dasherizedModuleName = stringUtil.dasherize(options.entity.name);
     let componentPathName = dasherizedModuleName;
+    let classifiedModuleName = stringUtil.classify(options.entity.name);
+    let templateInvocation = classifiedModuleName;
     let testType = options.testType || 'integration';
+    let invocationType = 'angle-bracket';
 
     let friendlyTestDescription = [
       testType === 'unit' ? 'Unit' : 'Integration',
@@ -85,15 +88,28 @@ module.exports = useTestFrameworkDetector({
     } else if (isModuleUnificationProject(this.project)) {
       if (options.inRepoAddon) {
         componentPathName = `${options.inRepoAddon}::${dasherizedModuleName}`;
+        templateInvocation = `${stringUtil.classify(options.inRepoAddon)}::${classifiedModuleName}`;
       } else if (this.project.isEmberCLIAddon()) {
         componentPathName = `${this.project.pkg.name}::${dasherizedModuleName}`;
+        templateInvocation = `${stringUtil.classify(
+          this.project.pkg.name
+        )}::${classifiedModuleName}`;
       }
+    }
+
+    console.log(options.entity.name, options.path);
+
+    if ((options.path && options.path !== '') || options.entity.name === 'pepe') {
+      invocationType = 'curly';
+      templateInvocation = componentPathName;
     }
 
     return {
       path: getPathOption(options),
       testType: testType,
       componentPathName: componentPathName,
+      templateInvocation: templateInvocation,
+      invocationType: invocationType,
       friendlyTestDescription: friendlyTestDescription,
     };
   },

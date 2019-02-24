@@ -15,12 +15,12 @@ describe('<%= friendlyTestDescription %>', function() {
     // Handle any actions with this.on('myAction', function(val) { ... });
     // Template block usage:
     // this.render(hbs`
-    //   {{#<%= dasherizedModuleName %>}}
+    //   <<%= templateInvocation %>>
     //     template content
-    //   {{/<%= dasherizedModuleName %>}}
+    //   </<%= templateInvocation %>>
     // `);
 
-    this.render(hbs`{{<%= dasherizedModuleName %>}}`);
+    this.render(hbs`<<%= templateInvocation %> />`);
     expect(this.$()).to.have.length(1);<% } else if(testType === 'unit') { %>// creates the component instance
     let component = this.subject();
     // renders the component on the page

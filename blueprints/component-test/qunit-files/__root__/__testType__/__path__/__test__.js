@@ -11,15 +11,15 @@ test('it renders', function(assert) {
   <% if (testType === 'integration' ) { %>// Set any properties with this.set('myProperty', 'value');
   // Handle any actions with this.on('myAction', function(val) { ... });
 
-  this.render(hbs`{{<%= componentPathName %>}}`);
+  this.render(hbs`<<%= templateInvocation %> />`);
 
   assert.equal(this.$().text().trim(), '');
 
   // Template block usage:
   this.render(hbs`
-    {{#<%= componentPathName %>}}
+    <<%= templateInvocation %>>
       template block text
-    {{/<%= componentPathName %>}}
+    </<%= templateInvocation %>>
   `);
 
   assert.equal(this.$().text().trim(), 'template block text');<% } else if(testType === 'unit') { %>
