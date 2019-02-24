@@ -75,7 +75,8 @@ module.exports = useTestFrameworkDetector({
     let classifiedModuleName = stringUtil.classify(options.entity.name);
     let templateInvocation = classifiedModuleName;
     let testType = options.testType || 'integration';
-    let invocationType = 'angle-bracket';
+    let blockTemplateInvocation;
+    let basicTemplateInvocation;
 
     let friendlyTestDescription = [
       testType === 'unit' ? 'Unit' : 'Integration',
@@ -100,16 +101,28 @@ module.exports = useTestFrameworkDetector({
     console.log(options.entity.name, options.path);
 
     if ((options.path && options.path !== '') || options.entity.name === 'pepe') {
-      invocationType = 'curly';
-      templateInvocation = componentPathName;
+      basicTemplateInvocation = `{{${componentPathName}}}`;
+      blockTemplateInvocation = `
+      {{#${componentPathName}}}
+        template block text
+      {{/${componentPathName}}}
+    `;
+    } else {
+      basicTemplateInvocation = `<${templateInvocation} />`;
+      blockTemplateInvocation = `
+          <${templateInvocation}>
+            template block text
+          </${templateInvocation}>
+        `;
+
     }
 
     return {
       path: getPathOption(options),
       testType: testType,
       componentPathName: componentPathName,
-      templateInvocation: templateInvocation,
-      invocationType: invocationType,
+      basicTemplateInvocation: basicTemplateInvocation,
+      blockTemplateInvocation: blockTemplateInvocation,
       friendlyTestDescription: friendlyTestDescription,
     };
   },

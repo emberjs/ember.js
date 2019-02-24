@@ -11,16 +11,12 @@ test('it renders', function(assert) {
   <% if (testType === 'integration' ) { %>// Set any properties with this.set('myProperty', 'value');
   // Handle any actions with this.on('myAction', function(val) { ... });
 
-  this.render(hbs`<<%= templateInvocation %> />`);
+  this.render(hbs`<%= basicTemplateInvocation %>`);
 
   assert.equal(this.$().text().trim(), '');
 
   // Template block usage:
-  this.render(hbs`
-    <<%= templateInvocation %>>
-      template block text
-    </<%= templateInvocation %>>
-  `);
+  this.render(hbs`<%= blockTemplateInvocation %>`);
 
   assert.equal(this.$().text().trim(), 'template block text');<% } else if(testType === 'unit') { %>
   // Creates the component instance

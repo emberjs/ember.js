@@ -11,16 +11,12 @@ describe('<%= friendlyTestDescription %>', function() {
     // Set any properties with this.set('myProperty', 'value');
     // Handle any actions with this.set('myAction', function(val) { ... });
 
-    await render(hbs`<<%= templateInvocation %> />`);
+    await render(hbs`<%= basicTemplateInvocation %>`);
 
     expect(this.element.textContent.trim()).to.equal('');
 
     // Template block usage:
-    await render(hbs`
-      <<%= templateInvocation %>>
-        template block text
-      </<%= templateInvocation %>>
-    `);
+    await render(hbs`<%= blockTemplateInvocation %>`);
 
     expect(this.element.textContent.trim()).to.equal('template block text');
   });

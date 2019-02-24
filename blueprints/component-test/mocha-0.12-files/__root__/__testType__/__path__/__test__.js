@@ -13,15 +13,14 @@ describe('<%= friendlyTestDescription %>', function() {
   it('renders', function() {
     <% if (testType === 'integration' ) { %>// Set any properties with this.set('myProperty', 'value');
     // Handle any actions with this.on('myAction', function(val) { ... });
-    // Template block usage:
-    // this.render(hbs`
-    //   <<%= templateInvocation %>>
-    //     template content
-    //   </<%= templateInvocation %>>
-    // `);
 
-    this.render(hbs`<<%= templateInvocation %> />`);
-    expect(this.$()).to.have.length(1);<% } else if(testType === 'unit') { %>// creates the component instance
+    this.render(hbs`<%= basicTemplateInvocation %>`);
+    expect(this.$()).to.have.length(1);
+
+    // Template block usage:
+    this.render(hbs`<%= blockTemplateInvocation %>`);
+
+    assert.equal(this.$().text().trim(), 'template block text');<% } else if(testType === 'unit') { %>// creates the component instance
     let component = this.subject();
     // renders the component on the page
     this.render();
