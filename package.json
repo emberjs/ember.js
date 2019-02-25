@@ -161,7 +161,7 @@
     "simple-dom": "^1.4.0",
     "testem": "^2.14.0",
     "testem-failure-only-reporter": "^0.0.1",
-    "tslint": "^5.12.1",
+    "tslint": "^5.13.0",
     "typescript-eslint-parser": "^22.0.0"
   },
   "engines": {
