@@ -1,19 +1,19 @@
 /* globals EmberDev */
-import { moduleFor, DefaultResolverApplicationTestCase } from 'internal-test-helpers';
+import { moduleFor, DefaultResolverApplicationTestCase, runTask } from 'internal-test-helpers';
 
-import { context } from 'ember-environment';
+import { context } from '@ember/-internals/environment';
 import Controller from '@ember/controller';
 import Service from '@ember/service';
-import { Object as EmberObject, Namespace } from 'ember-runtime';
-import { Route } from 'ember-routing';
-import { Component, Helper, helper as makeHelper } from 'ember-glimmer';
+import { Object as EmberObject, Namespace } from '@ember/-internals/runtime';
+import { Route } from '@ember/-internals/routing';
+import { Component, Helper, helper as makeHelper } from '@ember/-internals/glimmer';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 
 moduleFor(
   'Application Dependency Injection - Integration - default resolver',
   class extends DefaultResolverApplicationTestCase {
     beforeEach() {
-      this.runTask(() => this.createApplication());
+      runTask(() => this.createApplication());
       return this.visit('/');
     }
 
@@ -22,9 +22,9 @@ moduleFor(
     }
 
     /*
-   * This first batch of tests are integration tests against the public
-   * applicationInstance API.
-   */
+     * This first batch of tests are integration tests against the public
+     * applicationInstance API.
+     */
 
     [`@test the default resolver looks up templates in Ember.TEMPLATES`](assert) {
       let fooTemplate = this.addTemplate('foo', `foo template`);
@@ -161,8 +161,8 @@ moduleFor(
     }
 
     /*
-   * The following are integration tests against the private registry API.
-   */
+     * The following are integration tests against the private registry API.
+     */
 
     [`@test lookup description`](assert) {
       this.application.toString = () => 'App';
@@ -255,14 +255,14 @@ moduleFor(
   class extends DefaultResolverApplicationTestCase {
     beforeEach() {
       this.UserInterface = context.lookup.UserInterface = Namespace.create();
-      this.runTask(() => this.createApplication());
+      runTask(() => this.createApplication());
       return this.visit('/');
     }
 
     teardown() {
       let UserInterfaceNamespace = Namespace.NAMESPACES_BY_ID['UserInterface'];
       if (UserInterfaceNamespace) {
-        this.runTask(() => {
+        runTask(() => {
           UserInterfaceNamespace.destroy();
         });
       }
@@ -292,7 +292,7 @@ moduleFor(
     }
 
     beforeEach() {
-      this.runTask(() => this.createApplication());
+      runTask(() => this.createApplication());
       return this.visit('/');
     }
 

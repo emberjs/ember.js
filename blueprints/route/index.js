@@ -5,9 +5,10 @@ const path = require('path');
 const chalk = require('chalk');
 const stringUtil = require('ember-cli-string-utils');
 const EmberRouterGenerator = require('ember-router-generator');
+const useEditionDetector = require('../edition-detector');
 const isModuleUnificationProject = require('../module-unification').isModuleUnificationProject;
 
-module.exports = {
+module.exports = useEditionDetector({
   description: 'Generates a route and a template, and registers the route with the router.',
 
   availableOptions: [
@@ -32,7 +33,7 @@ module.exports = {
       return {
         __root__(options) {
           if (options.pod) {
-            throw "Pods aren't supported within a module unification app";
+            throw new Error("Pods aren't supported within a module unification app");
           }
           if (options.inDummy) {
             return path.join('tests', 'dummy', 'src');
@@ -119,8 +120,8 @@ module.exports = {
 
   shouldTouchRouter: function(name, options) {
     let entityTouchesRouter = this.shouldEntityTouchRouter(name);
-    let isDummy = !!options.dummy;
-    let isAddon = !!options.project.isEmberCLIAddon();
+    let isDummy = Boolean(options.dummy);
+    let isAddon = Boolean(options.project.isEmberCLIAddon());
     let isAddonDummyOrApp = isDummy === isAddon;
 
     return (
@@ -139,7 +140,7 @@ module.exports = {
   afterUninstall: function(options) {
     updateRouter.call(this, 'remove', options);
   },
-};
+});
 
 function updateRouter(action, options) {
   let entity = options.entity;

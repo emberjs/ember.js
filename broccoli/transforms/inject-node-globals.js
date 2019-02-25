@@ -12,7 +12,7 @@ function injectNodeGlobals({ types: t }) {
 
           if (requireId || moduleId) {
             let specifiers = [];
-            let source = t.stringLiteral(this.file.resolveModuleSource('node-module'));
+            let source = t.stringLiteral('node-module');
 
             if (requireId) {
               delete path.scope.globals.require;

@@ -3,11 +3,11 @@
 */
 
 import { assign } from '@ember/polyfills';
-import { get, set, computed } from 'ember-metal';
-import * as environment from 'ember-browser-environment';
-import { jQuery } from 'ember-views';
+import { get, set, computed } from '@ember/-internals/metal';
+import * as environment from '@ember/-internals/browser-environment';
+import { jQuery } from '@ember/-internals/views';
 import EngineInstance from '@ember/engine/instance';
-import { renderSettled } from 'ember-glimmer';
+import { renderSettled } from '@ember/-internals/glimmer';
 
 /**
   The `ApplicationInstance` encapsulates all of the stateful aspects of a
@@ -111,8 +111,7 @@ const ApplicationInstance = EngineInstance.extend({
     }
 
     if (options.location) {
-      let router = get(this, 'router');
-      set(router, 'location', options.location);
+      set(this.router, 'location', options.location);
     }
 
     this.application.runInstanceInitializers(this);
@@ -144,6 +143,7 @@ const ApplicationInstance = EngineInstance.extend({
     socket rather than appending to DOM.
 
     @param view {Ember.View} the root-most view
+    @deprecated
     @private
   */
   didCreateRootView(view) {
@@ -158,8 +158,7 @@ const ApplicationInstance = EngineInstance.extend({
     @private
   */
   startRouting() {
-    let router = get(this, 'router');
-    router.startRouting();
+    this.router.startRouting();
     this._didSetupRouter = true;
   },
 
@@ -178,8 +177,7 @@ const ApplicationInstance = EngineInstance.extend({
     }
     this._didSetupRouter = true;
 
-    let router = get(this, 'router');
-    router.setupRouter();
+    this.router.setupRouter();
   },
 
   /**
@@ -190,10 +188,8 @@ const ApplicationInstance = EngineInstance.extend({
     @private
   */
   handleURL(url) {
-    let router = get(this, 'router');
-
     this.setupRouter();
-    return router.handleURL(url);
+    return this.router.handleURL(url);
   },
 
   /**
@@ -219,7 +215,7 @@ const ApplicationInstance = EngineInstance.extend({
     @return {String} the current URL
   */
   getURL() {
-    return get(this, 'router.url');
+    return this.router.url;
   },
 
   // `instance.visit(url)` should eventually replace `instance.handleURL()`;
@@ -240,7 +236,7 @@ const ApplicationInstance = EngineInstance.extend({
 
     let bootOptions = this.__container__.lookup('-environment:main');
 
-    let router = get(this, 'router');
+    let router = this.router;
 
     let handleTransitionResolve = () => {
       if (!bootOptions.options.shouldRender) {
@@ -367,7 +363,7 @@ class BootOptions {
     /**
       Run in a full browser environment.
 
-      When this flag is set to `true`, it will disable most browser-specific
+      When this flag is set to `false`, it will disable most browser-specific
       and interactive features. Specifically:
 
       * It does not use `jQuery` to append the root view; the `rootElement`
@@ -389,7 +385,7 @@ class BootOptions {
       @public
     */
     if (options.isBrowser !== undefined) {
-      this.isBrowser = !!options.isBrowser;
+      this.isBrowser = Boolean(options.isBrowser);
     } else {
       this.isBrowser = environment.hasDOM;
     }
@@ -403,7 +399,7 @@ class BootOptions {
     /**
       Disable rendering completely.
 
-      When this flag is set to `true`, it will disable the entire rendering
+      When this flag is set to `false`, it will disable the entire rendering
       pipeline. Essentially, this puts the app into "routing-only" mode. No
       templates will be rendered, and no Components will be created.
 
@@ -413,7 +409,7 @@ class BootOptions {
       @public
     */
     if (options.shouldRender !== undefined) {
-      this.shouldRender = !!options.shouldRender;
+      this.shouldRender = Boolean(options.shouldRender);
     } else {
       this.shouldRender = true;
     }
@@ -494,7 +490,7 @@ class BootOptions {
     }
 
     if (options.isInteractive !== undefined) {
-      this.isInteractive = !!options.isInteractive;
+      this.isInteractive = Boolean(options.isInteractive);
     }
   }
 

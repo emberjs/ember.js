@@ -1,9 +1,9 @@
 import Application from '@ember/application';
 import Controller from '@ember/controller';
-import { Component } from 'ember-glimmer';
+import { Component } from '@ember/-internals/glimmer';
 import { compile } from 'ember-template-compiler';
-import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
-import { ENV } from 'ember-environment';
+import { moduleFor, ApplicationTestCase, runLoopSettled } from 'internal-test-helpers';
+import { ENV } from '@ember/-internals/environment';
 
 moduleFor(
   'Application Lifecycle - Component Registration',
@@ -246,7 +246,7 @@ moduleFor(
         this.visit('/');
       }, /.* named "no-good" .*/);
 
-      return this.runLoopSettled();
+      return runLoopSettled();
     }
   }
 );

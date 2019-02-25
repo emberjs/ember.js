@@ -1,7 +1,7 @@
-import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
+import { moduleFor, ApplicationTestCase, runTask } from 'internal-test-helpers';
 import Application from '@ember/application';
-import { Component } from 'ember-glimmer';
-import { getOwner } from 'ember-owner';
+import { Component } from '@ember/-internals/glimmer';
+import { getOwner } from '@ember/-internals/owner';
 import { assign } from '@ember/polyfills';
 import { resolve } from 'rsvp';
 
@@ -14,7 +14,7 @@ moduleFor(
       <div id="two"></div>
     `;
       super();
-      this.runTask(() => {
+      runTask(() => {
         this.createSecondApplication();
       });
     }
@@ -39,7 +39,7 @@ moduleFor(
       super.teardown();
 
       if (this.secondApp) {
-        this.runTask(() => {
+        runTask(() => {
           this.secondApp.destroy();
         });
       }

@@ -10,7 +10,7 @@ module.exports = {
       return {
         __root__(options) {
           if (options.pod) {
-            throw "Pods aren't supported within a module unification app";
+            throw new Error("Pods aren't supported within a module unification app");
           } else if (options.inDummy) {
             return 'tests/dummy/src/ui/routes';
           } else {

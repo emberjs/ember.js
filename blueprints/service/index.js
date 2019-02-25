@@ -1,8 +1,9 @@
 'use strict';
 
+const useEditionDetector = require('../edition-detector');
 const isModuleUnificationProject = require('../module-unification').isModuleUnificationProject;
 
-module.exports = {
+module.exports = useEditionDetector({
   description: 'Generates a service.',
 
   fileMapTokens() {
@@ -10,7 +11,7 @@ module.exports = {
       return {
         __root__(options) {
           if (options.pod) {
-            throw "Pods aren't supported within a module unification app";
+            throw new Error("Pods aren't supported within a module unification app");
           }
 
           return 'src';
@@ -18,4 +19,4 @@ module.exports = {
       };
     }
   },
-};
+});

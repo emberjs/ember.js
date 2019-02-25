@@ -1,4 +1,4 @@
-import { ENV } from 'ember-environment';
+import { ENV } from '@ember/-internals/environment';
 import { camelize } from '@ember/string';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 

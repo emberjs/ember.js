@@ -1,6 +1,6 @@
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
-import { Router } from 'ember-routing';
+import { Router } from '@ember/-internals/routing';
 
 moduleFor(
   'Router.map',

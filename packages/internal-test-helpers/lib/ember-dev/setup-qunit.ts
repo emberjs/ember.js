@@ -1,43 +1,32 @@
-export interface Assertion {
-  reset(): void;
-  inject(): void;
-  assert(): void;
-  restore(): void;
-}
+import { getDebugFunction, setDebugFunction } from '@ember/debug';
 
-export default function setupQUnit(assertion: Assertion, _qunitGlobal: QUnit) {
-  let qunitGlobal = QUnit;
+import { setupAssertionHelpers } from './assertion';
+import { setupContainersCheck } from './containers';
+import { setupDeprecationHelpers } from './deprecation';
+import { setupNamespacesCheck } from './namespaces';
+import { setupRunLoopCheck } from './run-loop';
+import { DebugEnv } from './utils';
+import { setupWarningHelpers } from './warning';
 
-  if (_qunitGlobal) {
-    qunitGlobal = _qunitGlobal;
-  }
+export default function setupQUnit({ runningProdBuild }: { runningProdBuild: boolean }) {
+  let env = {
+    runningProdBuild,
+    getDebugFunction,
+    setDebugFunction,
+  } as DebugEnv;
 
-  let originalModule = qunitGlobal.module;
+  let originalModule = QUnit.module;
 
-  qunitGlobal.module = function(name: string, _options: any) {
-    let options = _options || {};
-    let originalSetup = options.setup || options.beforeEach || function() {};
-    let originalTeardown = options.teardown || options.afterEach || function() {};
+  QUnit.module = function(name: string, callback: any) {
+    return originalModule(name, function(hooks) {
+      setupContainersCheck(hooks);
+      setupNamespacesCheck(hooks);
+      setupRunLoopCheck(hooks);
+      setupAssertionHelpers(hooks, env);
+      setupDeprecationHelpers(hooks, env);
+      setupWarningHelpers(hooks, env);
 
-    delete options.setup;
-    delete options.teardown;
-
-    options.beforeEach = function() {
-      assertion.reset();
-      assertion.inject();
-
-      return originalSetup.apply(this, arguments);
-    };
-
-    options.afterEach = function() {
-      let result = originalTeardown.apply(this, arguments);
-
-      assertion.assert();
-      assertion.restore();
-
-      return result;
-    };
-
-    return originalModule(name, options);
+      callback(hooks);
+    });
   };
 }

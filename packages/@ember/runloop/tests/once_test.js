@@ -55,7 +55,7 @@ moduleFor(
 
     ['@test should be inside of a runloop when running'](assert) {
       run(() => {
-        once(() => assert.ok(!!getCurrentRunLoop(), 'should have a runloop'));
+        once(() => assert.ok(Boolean(getCurrentRunLoop()), 'should have a runloop'));
       });
     }
   }

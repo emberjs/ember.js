@@ -1,16 +1,17 @@
 'use strict';
 
+const useEditionDetector = require('../edition-detector');
 const isModuleUnificationProject = require('../module-unification').isModuleUnificationProject;
 const path = require('path');
 
-module.exports = {
+module.exports = useEditionDetector({
   description: 'Generates a controller.',
   fileMapTokens() {
     if (isModuleUnificationProject(this.project)) {
       return {
         __root__(options) {
           if (options.pod) {
-            throw "Pods aren't supported within a module unification app";
+            throw new Error("Pods aren't supported within a module unification app");
           }
           if (options.inDummy) {
             return path.join('tests', 'dummy', 'src');
@@ -26,4 +27,4 @@ module.exports = {
       };
     }
   },
-};
+});

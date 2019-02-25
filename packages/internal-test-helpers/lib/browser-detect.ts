@@ -8,3 +8,4 @@ declare global {
   }
 }
 export const isIE11 = !window.ActiveXObject && 'ActiveXObject' in window;
+export const isEdge = /Edge/.test(navigator.userAgent);

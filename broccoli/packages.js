@@ -5,16 +5,18 @@ const path = require('path');
 const Rollup = require('broccoli-rollup');
 const Funnel = require('broccoli-funnel');
 const MergeTrees = require('broccoli-merge-trees');
-const typescript = require('broccoli-typescript-compiler').typescript;
+const typescript = require('broccoli-typescript-compiler').default;
 const BroccoliDebug = require('broccoli-debug');
 const findLib = require('./find-lib');
 const findPackage = require('./find-package');
 const funnelLib = require('./funnel-lib');
 const { VERSION } = require('./version');
+const PackageJSONWriter = require('./package-json-writer');
 const WriteFile = require('broccoli-file-creator');
 const StringReplace = require('broccoli-string-replace');
 const GlimmerTemplatePrecompiler = require('./glimmer-template-compiler');
 const VERSION_PLACEHOLDER = /VERSION_STRING_PLACEHOLDER/g;
+const transfromBabelPlugins = require('./transforms/transform-babel-plugins');
 
 const debugTree = BroccoliDebug.buildDebugCallback('ember-source');
 
@@ -24,7 +26,7 @@ module.exports.routerES = function _routerES() {
       external: ['route-recognizer', 'rsvp'],
       input: 'index.js',
       output: {
-        file: 'router.js',
+        file: 'router_js.js',
         format: 'es',
       },
     },
@@ -82,17 +84,35 @@ module.exports.getPackagesES = function getPackagesES() {
     exclude: ['**/*.ts'],
   });
 
+  // tsc / typescript handles decorators and class properties on its own
+  // so for non ts, transpile the proposal features (decorators, etc)
+  let transpiledProposals = debugTree(
+    transfromBabelPlugins(debugTree(nonTypeScriptContents, `get-packages-es:babel-plugins:input`)),
+    `get-packages-es:babel-plugins:output`
+  );
+
   let typescriptContents = new Funnel(debuggedCompiledTemplatesAndTypeScript, {
     include: ['**/*.ts'],
   });
 
-  let typescriptCompiled = typescript(debugTree(typescriptContents, `get-packages-es:ts:input`));
+  let typescriptCompiled = typescript(debugTree(typescriptContents, `get-packages-es:ts:input`), {
+    compilerOptions: {
+      sourceMap: false,
+    },
+  });
 
   let debuggedCompiledTypescript = debugTree(typescriptCompiled, `get-packages-es:ts:output`);
 
-  let mergedFinalOutput = new MergeTrees([nonTypeScriptContents, debuggedCompiledTypescript], {
+  let mergedFinalOutput = new MergeTrees([transpiledProposals, debuggedCompiledTypescript], {
     overwrite: true,
   });
+
+  let packageJSON = debugTree(
+    new PackageJSONWriter(mergedFinalOutput),
+    `get-packages-es:package-json`
+  );
+
+  mergedFinalOutput = new MergeTrees([mergedFinalOutput, packageJSON], { overwrite: true });
 
   return debugTree(mergedFinalOutput, `get-packages-es:output`);
 };

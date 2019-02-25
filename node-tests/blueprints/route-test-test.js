@@ -20,14 +20,28 @@ describe('Blueprint: route-test', function() {
       return emberNew();
     });
 
-    it('route-test foo', function() {
-      return emberGenerateDestroy(['route-test', 'foo'], _file => {
-        expect(_file('tests/unit/routes/foo-test.js')).to.equal(fixture('route-test/default.js'));
+    describe('with ember-cli-qunit@4.1.0', function() {
+      beforeEach(function() {
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]);
+        generateFakePackageManifest('ember-cli-qunit', '4.1.0');
+      });
+
+      it('route-test foo', function() {
+        return emberGenerateDestroy(['route-test', 'foo'], _file => {
+          expect(_file('tests/unit/routes/foo-test.js')).to.equal(fixture('route-test/default.js'));
+        });
       });
     });
 
     describe('with ember-cli-qunit@4.2.0', function() {
       beforeEach(function() {
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]);
         generateFakePackageManifest('ember-cli-qunit', '4.2.0');
       });
 
@@ -41,7 +55,7 @@ describe('Blueprint: route-test', function() {
     describe('with ember-cli-mocha@0.11.0', function() {
       beforeEach(function() {
         modifyPackages([
-          { name: 'ember-cli-qunit', delete: true },
+          { name: 'ember-qunit', delete: true },
           { name: 'ember-cli-mocha', dev: true },
         ]);
         generateFakePackageManifest('ember-cli-mocha', '0.11.0');
@@ -57,7 +71,7 @@ describe('Blueprint: route-test', function() {
     describe('with ember-cli-mocha@0.12.0', function() {
       beforeEach(function() {
         modifyPackages([
-          { name: 'ember-cli-qunit', delete: true },
+          { name: 'ember-qunit', delete: true },
           { name: 'ember-cli-mocha', dev: true },
         ]);
         generateFakePackageManifest('ember-cli-mocha', '0.12.0');
@@ -71,11 +85,33 @@ describe('Blueprint: route-test', function() {
         });
       });
     });
+
+    describe('with ember-mocha@0.14.0', function() {
+      beforeEach(function() {
+        modifyPackages([{ name: 'ember-qunit', delete: true }, { name: 'ember-mocha', dev: true }]);
+        generateFakePackageManifest('ember-mocha', '0.14.0');
+      });
+
+      it('route-test foo', function() {
+        return emberGenerateDestroy(['route-test', 'foo'], _file => {
+          expect(_file('tests/unit/routes/foo-test.js')).to.equal(
+            fixture('route-test/mocha-rfc232.js')
+          );
+        });
+      });
+    });
   });
 
   describe('in addon', function() {
     beforeEach(function() {
-      return emberNew({ target: 'addon' });
+      return emberNew({ target: 'addon' })
+        .then(() =>
+          modifyPackages([
+            { name: 'ember-qunit', delete: true },
+            { name: 'ember-cli-qunit', dev: true },
+          ])
+        )
+        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
     });
 
     it('route-test foo', function() {

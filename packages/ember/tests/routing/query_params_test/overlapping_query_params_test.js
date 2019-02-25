@@ -1,7 +1,7 @@
 import Controller from '@ember/controller';
-import { Route } from 'ember-routing';
+import { Route } from '@ember/-internals/routing';
 import { run } from '@ember/runloop';
-import { Mixin } from 'ember-metal';
+import { Mixin } from '@ember/-internals/metal';
 import { QueryParamTestCase, moduleFor } from 'internal-test-helpers';
 
 moduleFor(

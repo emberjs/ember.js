@@ -1,8 +1,6 @@
 /* eslint-disable no-console */
 'use strict';
 
-const execa = require('execa');
-const execFile = require('child_process').execFile;
 const chalk = require('chalk');
 const runInSequence = require('../lib/run-in-sequence');
 const path = require('path');
@@ -31,8 +29,8 @@ let browserRunner;
 function getBrowserRunner() {
   if (browserRunner === undefined) {
     // requires new node
-    let BroswerRunner = require('./run-tests-browser-runner');
-    browserRunner = new BroswerRunner();
+    let BrowserRunner = require('./run-tests-browser-runner');
+    browserRunner = new BrowserRunner();
   }
   return browserRunner;
 }
@@ -56,103 +54,45 @@ function generateTestsFor(packageName) {
     return;
   }
 
-  testFunctions.push(function() {
-    return run('package=' + packageName);
-  });
-  testFunctions.push(function() {
-    return run('package=' + packageName + '&dist=es');
-  });
-  testFunctions.push(function() {
-    return run('package=' + packageName + '&enableoptionalfeatures=true');
-  });
+  testFunctions.push(() => run('package=' + packageName));
+  testFunctions.push(() => run('package=' + packageName + '&dist=es'));
+  testFunctions.push(() => run('package=' + packageName + '&enableoptionalfeatures=true'));
 
   // TODO: this should ultimately be deleted (when all packages can run with and
   // without jQuery)
   if (packageName !== 'ember') {
-    testFunctions.push(function() {
-      return run('package=' + packageName + '&jquery=none');
-    });
+    testFunctions.push(() => run('package=' + packageName + '&jquery=none'));
   }
 }
 
 function generateEachPackageTests() {
   fs.readdirSync('packages/@ember').forEach(e => generateTestsFor(`@ember/${e}`));
 
-  fs
-    .readdirSync('packages')
+  fs.readdirSync('packages')
     .filter(e => e !== '@ember')
     .forEach(generateTestsFor);
 }
 
 function generateBuiltTests() {
-  // Container isn't publicly available.
-  // ember-testing and @ember/debug are stripped from prod/min.
-  var common = 'skipPackage=container,ember-testing,@ember/debug';
-  testFunctions.push(function() {
-    return run(common + '&nolint=true');
-  });
-  testFunctions.push(function() {
-    return run(common + '&dist=min&prod=true');
-  });
-  testFunctions.push(function() {
-    return run(common + '&dist=prod&prod=true');
-  });
-  testFunctions.push(function() {
-    return run(common + '&enableoptionalfeatures=true&dist=prod&prod=true');
-  });
+  testFunctions.push(() => run(''));
+  testFunctions.push(() => run('dist=min&prod=true'));
+  testFunctions.push(() => run('dist=prod&prod=true'));
+  testFunctions.push(() => run('enableoptionalfeatures=true&dist=prod&prod=true'));
+  testFunctions.push(() => run('legacy=true'));
+  testFunctions.push(() => run('legacy=true&dist=min&prod=true'));
+  testFunctions.push(() => run('legacy=true&dist=prod&prod=true'));
+  testFunctions.push(() => run('legacy=true&enableoptionalfeatures=true&dist=prod&prod=true'));
 }
 
 function generateOldJQueryTests() {
-  testFunctions.push(function() {
-    return run('jquery=1.8.3&nolint=true');
-  });
-  testFunctions.push(function() {
-    return run('jquery=1.10.2&nolint=true');
-  });
-  testFunctions.push(function() {
-    return run('jquery=2.2.4&nolint=true');
-  });
+  testFunctions.push(() => run('jquery=1.10.2'));
+  testFunctions.push(() => run('jquery=1.12.4'));
+  testFunctions.push(() => run('jquery=2.2.4'));
 }
 
 function generateExtendPrototypeTests() {
-  testFunctions.push(function() {
-    return run('extendprototypes=true&nolint=true');
-  });
-  testFunctions.push(function() {
-    return run('extendprototypes=true&nolint=true&enableoptionalfeatures=true');
-  });
-}
-
-function runChecker(bin, args) {
-  return new Promise(function(resolve) {
-    execFile(bin, args, {}, function(error, stdout, stderr) {
-      // I'm buffering instead of inheriting these so that each
-      // checker doesn't interleave its output
-      process.stdout.write(stdout.toString('utf8'));
-      process.stderr.write(stderr.toString('utf8'));
-      resolve({ name: path.basename(args[0]), ok: !error });
-    });
-  });
-}
-
-function codeQualityChecks() {
-  var checkers = [
-    runChecker('node', [require.resolve('typescript/bin/tsc'), '--noEmit']),
-    runChecker('node', [require.resolve('tslint/bin/tslint'), '-p', 'tsconfig.json']),
-    runChecker('node', [require.resolve('eslint/bin/eslint'), '.']),
-  ];
-  return Promise.all(checkers).then(function(results) {
-    results.forEach(result => {
-      if (result.ok) {
-        console.log(result.name + ': ' + chalk.green('OK'));
-      } else {
-        console.log(result.name + ': ' + chalk.red('Failed'));
-      }
-    });
-    if (!results.every(result => result.ok)) {
-      throw new Error('Some quality checks failed');
-    }
-  });
+  testFunctions.push(() => run('extendprototypes=true'));
+  testFunctions.push(() => run('extendprototypes=true&enableoptionalfeatures=true'));
 }
 
 function runAndExit() {
@@ -192,39 +132,6 @@ switch (process.env.TEST_SUITE) {
     generateOldJQueryTests();
     generateExtendPrototypeTests();
     generateEachPackageTests();
-    runAndExit();
-    break;
-  case 'node': {
-    console.log('suite: node');
-    let stream = execa('yarn', ['test:node']);
-    stream.stdout.pipe(process.stdout);
-    stream.then(
-      function() {
-        console.log(chalk.green('Passed!'));
-        process.exit(0);
-      },
-      function() {
-        console.error(chalk.red('Failed!'));
-        process.exit(1);
-      }
-    );
-    break;
-  }
-  case 'blueprints':
-    console.log('suite: blueprints');
-    require('../node-tests/nodetest-runner');
-    server.close();
-    break;
-  case 'travis-browsers':
-    console.log('suite: travis-browsers');
-    require('./run-travis-browser-tests');
-    break;
-  case 'browserstack':
-    console.log('suite: browserstack');
-    require('./run-browserstack-tests');
-    break;
-  case 'code-quality':
-    testFunctions.push(codeQualityChecks);
     runAndExit();
     break;
   default:

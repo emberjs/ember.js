@@ -1,7 +1,7 @@
 /*globals process */
 var enifed, requireModule, Ember;
 
-// Used in ember-environment/lib/global.js
+// Used in @ember/-internals/environment/lib/global.js
 mainContext = this; // eslint-disable-line no-undef
 
 (function() {
@@ -67,8 +67,8 @@ mainContext = this; // eslint-disable-line no-undef
   }
 
   if (typeof Ember.__loader === 'undefined') {
-    var registry = {};
-    var seen = {};
+    var registry = Object.create(null);
+    var seen = Object.create(null);
 
     enifed = function(name, deps, callback) {
       var value = {};
@@ -92,7 +92,7 @@ mainContext = this; // eslint-disable-line no-undef
     requireModule['default'] = requireModule;
 
     requireModule.has = function registryHas(moduleName) {
-      return !!registry[moduleName] || !!registry[moduleName + '/index'];
+      return Boolean(registry[moduleName]) || Boolean(registry[moduleName + '/index']);
     };
 
     requireModule._eak_seen = registry;

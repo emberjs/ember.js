@@ -1,25 +1,12 @@
 'use strict';
 
-const resolve = require('resolve');
 const fs = require('fs');
-const path = require('path');
+const ts = require('./typescript');
 
 function getFeatures() {
   let fileName = 'packages/@ember/canary-features/index.ts';
   let fileContents = fs.readFileSync(fileName).toString();
 
-  // our typescript version comes from a dependency in
-  // broccoli-typescript-compiler, so we look typescript up
-  // from there...
-  let broccoliTypescriptCompilerRoot = path.dirname(
-    resolve.sync('broccoli-typescript-compiler/package.json'),
-    { basedir: __dirname }
-  );
-  let typescriptEntryPoint = resolve.sync('typescript', {
-    basedir: broccoliTypescriptCompilerRoot,
-  });
-
-  let ts = require(typescriptEntryPoint);
   let sourceFile = ts.createSourceFile(
     fileName,
     fileContents,

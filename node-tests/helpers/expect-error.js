@@ -6,9 +6,9 @@ const expect = chai.expect;
 module.exports = function expectError(promise, expectedErrorText) {
   return promise
     .then(() => {
-      throw 'the command should raise an exception';
+      throw new Error('the command should raise an exception');
     })
     .catch(error => {
-      expect(error).to.equal(expectedErrorText);
+      expect(error.message).to.equal(expectedErrorText);
     });
 };

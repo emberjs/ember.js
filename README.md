@@ -5,7 +5,7 @@
 <p align="center">
   <a href="http://travis-ci.org/emberjs/ember.js"><img src="https://secure.travis-ci.org/emberjs/ember.js.svg?branch=master" alt="Build Status"></a>
   <a href="https://codeclimate.com/github/emberjs/ember.js"><img src="https://codeclimate.com/github/emberjs/ember.js.svg" alt="Code Climate"></a>
-  <a href="https://ember-community-slackin.herokuapp.com"><img src="https://ember-community-slackin.herokuapp.com/badge.svg" alt="Build Status"></a>
+  <a href="https://discord.gg/zT3asNS"><img src="https://img.shields.io/discord/480462759797063690.svg?logo=discord" alt="Discord Community Server"></a>
 </p>
 
 Ember.js is a JavaScript framework that greatly reduces the time, effort and resources needed

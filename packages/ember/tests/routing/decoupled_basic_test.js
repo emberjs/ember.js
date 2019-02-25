@@ -1,20 +1,19 @@
 /* eslint-disable no-console */
-import { getOwner } from 'ember-owner';
+import { getOwner } from '@ember/-internals/owner';
 import RSVP from 'rsvp';
 import { compile } from 'ember-template-compiler';
-import { ENV } from 'ember-environment';
-import { Route, NoneLocation, HistoryLocation } from 'ember-routing';
+import { Route, NoneLocation, HistoryLocation } from '@ember/-internals/routing';
 import Controller from '@ember/controller';
-import { Object as EmberObject, A as emberA, copy } from 'ember-runtime';
-import { moduleFor, ApplicationTestCase, runDestroy } from 'internal-test-helpers';
+import { Object as EmberObject, A as emberA } from '@ember/-internals/runtime';
+import { moduleFor, ApplicationTestCase, runDestroy, runTask } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
-import { Mixin, computed, set, addObserver, observer } from 'ember-metal';
+import { Mixin, computed, set, addObserver, observer } from '@ember/-internals/metal';
 import { getTextOf } from 'internal-test-helpers';
-import { Component } from 'ember-glimmer';
+import { Component } from '@ember/-internals/glimmer';
 import Engine from '@ember/engine';
-import { Transition } from 'router';
+import { InternalTransition as Transition } from 'router_js';
+import { EMBER_ROUTING_ROUTER_SERVICE } from '@ember/canary-features';
 
-let originalRenderSupport;
 let originalConsoleError;
 
 moduleFor(
@@ -29,14 +28,12 @@ moduleFor(
       this.router.map(function() {
         this.route('home', { path: '/' });
       });
-      originalRenderSupport = ENV._ENABLE_RENDER_SUPPORT;
-      ENV._ENABLE_RENDER_SUPPORT = true;
+
       originalConsoleError = console.error;
     }
 
     teardown() {
       super.teardown();
-      ENV._ENABLE_RENDER_SUPPORT = originalRenderSupport;
       console.error = originalConsoleError;
     }
 
@@ -44,10 +41,20 @@ moduleFor(
       return this.applicationInstance.lookup(`controller:${name}`);
     }
 
-    handleURLAborts(assert, path) {
+    handleURLAborts(assert, path, deprecated) {
       run(() => {
         let router = this.applicationInstance.lookup('router:main');
-        router.handleURL(path).then(
+        let result;
+
+        if (deprecated !== undefined) {
+          expectDeprecation(() => {
+            result = router.handleURL(path);
+          });
+        } else {
+          result = router.handleURL(path);
+        }
+
+        result.then(
           function() {
             assert.ok(false, 'url: `' + path + '` was NOT to be handled');
           },
@@ -62,7 +69,11 @@ moduleFor(
     }
 
     get currentPath() {
-      return this.getController('application').get('currentPath');
+      let currentPath;
+      expectDeprecation(() => {
+        currentPath = this.getController('application').get('currentPath');
+      }, 'Accessing `currentPath` on `controller:application` is deprecated, use the `currentPath` property on `service:router` instead.');
+      return currentPath;
     }
 
     get currentURL() {
@@ -76,7 +87,7 @@ moduleFor(
           assert.ok(false, 'expected handleURLing: `' + path + '` to fail');
         })
         .catch(reason => {
-          assert.equal(reason, expectedReason);
+          assert.equal(reason.message, expectedReason);
         });
     }
 
@@ -313,7 +324,7 @@ moduleFor(
           let text = this.$('p').text();
           assert.equal(text, 'THIS IS THE REAL HOME', 'the homepage template was rendered');
 
-          return this.runTask(() => this.appRouter.send('showAlert'));
+          return runTask(() => this.appRouter.send('showAlert'));
         })
         .then(() => {
           let text = this.$('.alert-box').text();
@@ -771,12 +782,12 @@ moduleFor(
         'route:special',
         Route.extend({
           setup() {
-            throw 'Setup error';
+            throw new Error('Setup error');
           },
           actions: {
             error(reason) {
               assert.equal(
-                reason,
+                reason.message,
                 'Setup error',
                 'SpecialRoute#error received the error thrown from setup'
               );
@@ -817,7 +828,7 @@ moduleFor(
           actions: {
             error(reason) {
               assert.equal(
-                reason,
+                reason.message,
                 'Setup error',
                 'error was correctly passed to custom ApplicationRoute handler'
               );
@@ -831,7 +842,7 @@ moduleFor(
         'route:special',
         Route.extend({
           setup() {
-            throw 'Setup error';
+            throw new Error('Setup error');
           },
         })
       );
@@ -1035,8 +1046,11 @@ moduleFor(
         actions: {
           showStuff(obj) {
             assert.ok(this instanceof HomeRoute, 'the handler is an App.HomeRoute');
-            // Using Ember.copy removes any private Ember vars which older IE would be confused by
-            assert.deepEqual(copy(obj, true), { name: 'Tom Dale' }, 'the context is correct');
+            assert.deepEqual(
+              Object.assign({}, obj),
+              { name: 'Tom Dale' },
+              'the context is correct'
+            );
             done();
           },
         },
@@ -1070,8 +1084,11 @@ moduleFor(
         actions: {
           showStuff(obj) {
             assert.ok(this instanceof RootRoute, 'the handler is an App.HomeRoute');
-            // Using Ember.copy removes any private Ember vars which older IE would be confused by
-            assert.deepEqual(copy(obj, true), { name: 'Tom Dale' }, 'the context is correct');
+            assert.deepEqual(
+              Object.assign({}, obj),
+              { name: 'Tom Dale' },
+              'the context is correct'
+            );
             done();
           },
         },
@@ -1210,10 +1227,13 @@ moduleFor(
         actions: {
           showStuff(obj1, obj2) {
             assert.ok(this instanceof RootRoute, 'the handler is an App.HomeRoute');
-            // Using Ember.copy removes any private Ember vars which older IE would be confused by
-            assert.deepEqual(copy(obj1, true), { name: 'Tilde' }, 'the first context is correct');
             assert.deepEqual(
-              copy(obj2, true),
+              Object.assign({}, obj1),
+              { name: 'Tilde' },
+              'the first context is correct'
+            );
+            assert.deepEqual(
+              Object.assign({}, obj2),
               { name: 'Tom Dale' },
               'the second context is correct'
             );
@@ -1592,15 +1612,12 @@ moduleFor(
           1,
           'The home template was rendered'
         );
-        assert.equal(
-          this.applicationInstance.lookup('controller:application').get('currentPath'),
-          'home'
-        );
+        assert.equal(this.currentPath, 'home');
       });
     }
 
     ['@test Redirecting from the middle of a route aborts the remainder of the routes'](assert) {
-      assert.expect(3);
+      assert.expect(4);
 
       this.router.map(function() {
         this.route('home');
@@ -1635,10 +1652,13 @@ moduleFor(
       return this.visit('/').then(() => {
         let router = this.applicationInstance.lookup('router:main');
         this.handleURLAborts(assert, '/foo/bar/baz');
-        assert.equal(
-          this.applicationInstance.lookup('controller:application').get('currentPath'),
-          'home'
-        );
+        let currentPath;
+        expectDeprecation(() => {
+          currentPath = this.applicationInstance
+            .lookup('controller:application')
+            .get('currentPath');
+        }, 'Accessing `currentPath` on `controller:application` is deprecated, use the `currentPath` property on `service:router` instead.');
+        assert.equal(currentPath, 'home');
         assert.equal(router.get('location').getURL(), '/home');
       });
     }
@@ -1646,7 +1666,7 @@ moduleFor(
     ['@test Redirecting to the current target in the middle of a route does not abort initial routing'](
       assert
     ) {
-      assert.expect(5);
+      assert.expect(6);
 
       this.router.map(function() {
         this.route('home');
@@ -1685,10 +1705,13 @@ moduleFor(
 
       return this.visit('/foo/bar/baz').then(() => {
         assert.ok(true, '/foo/bar/baz has been handled');
-        assert.equal(
-          this.applicationInstance.lookup('controller:application').get('currentPath'),
-          'foo.bar.baz'
-        );
+        let currentPath;
+        expectDeprecation(() => {
+          currentPath = this.applicationInstance
+            .lookup('controller:application')
+            .get('currentPath');
+        }, 'Accessing `currentPath` on `controller:application` is deprecated, use the `currentPath` property on `service:router` instead.');
+        assert.equal(currentPath, 'foo.bar.baz');
         assert.equal(successCount, 1, 'transitionTo success handler was called once');
       });
     }
@@ -1696,7 +1719,7 @@ moduleFor(
     ['@test Redirecting to the current target with a different context aborts the remainder of the routes'](
       assert
     ) {
-      assert.expect(4);
+      assert.expect(5);
 
       this.router.map(function() {
         this.route('home');
@@ -1735,10 +1758,13 @@ moduleFor(
 
       return this.visit('/').then(() => {
         this.handleURLAborts(assert, '/foo/bar/1/baz');
-        assert.equal(
-          this.applicationInstance.lookup('controller:application').get('currentPath'),
-          'foo.bar.baz'
-        );
+        let currentPath;
+        expectDeprecation(() => {
+          currentPath = this.applicationInstance
+            .lookup('controller:application')
+            .get('currentPath');
+        }, 'Accessing `currentPath` on `controller:application` is deprecated, use the `currentPath` property on `service:router` instead.');
+        assert.equal(currentPath, 'foo.bar.baz');
         assert.equal(
           this.applicationInstance
             .lookup('router:main')
@@ -1776,9 +1802,17 @@ moduleFor(
         assert.ok(true, '/foo/bar/baz has been handled');
         let applicationController = this.applicationInstance.lookup('controller:application');
         let router = this.applicationInstance.lookup('router:main');
-        assert.equal(applicationController.get('currentPath'), 'foo.bar.baz');
+
+        let currentPath;
+        expectDeprecation(() => {
+          currentPath = applicationController.get('currentPath');
+        }, 'Accessing `currentPath` on `controller:application` is deprecated, use the `currentPath` property on `service:router` instead.');
+        assert.equal(currentPath, 'foo.bar.baz');
         run(() => router.send('goToQux'));
-        assert.equal(applicationController.get('currentPath'), 'foo.qux');
+        expectDeprecation(() => {
+          currentPath = applicationController.get('currentPath');
+        }, 'Accessing `currentPath` on `controller:application` is deprecated, use the `currentPath` property on `service:router` instead.');
+        assert.equal(currentPath, 'foo.qux');
         assert.equal(router.get('location').getURL(), '/foo/qux');
       });
     }
@@ -2388,7 +2422,9 @@ moduleFor(
         'controller:application',
         Controller.extend({
           currentPathDidChange: observer('currentPath', function() {
-            currentPath = this.currentPath;
+            expectDeprecation(() => {
+              currentPath = this.currentPath;
+            }, 'Accessing `currentPath` on `controller:application` is deprecated, use the `currentPath` property on `service:router` instead.');
           }),
         })
       );
@@ -2510,30 +2546,6 @@ moduleFor(
             'The posts/footer template was removed'
           );
         });
-    }
-
-    ['@test Route will assert if you try to explicitly render {into: ...} a missing template']() {
-      expectDeprecation(
-        /Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./
-      );
-
-      this.router.map(function() {
-        this.route('home', { path: '/' });
-      });
-
-      this.add(
-        'route:home',
-        Route.extend({
-          renderTemplate() {
-            this.render({ into: 'nonexistent' });
-          },
-        })
-      );
-
-      expectAssertion(
-        () => this.visit('/'),
-        "You attempted to render into 'nonexistent' but it was not found"
-      );
     }
 
     ['@test Route supports clearing outlet explicitly'](assert) {
@@ -2767,15 +2779,7 @@ moduleFor(
     }
 
     ['@test Router `willTransition` hook passes in cancellable transition'](assert) {
-      // Should hit willTransition 3 times, once for the initial route, and then 2 more times
-      // for the two handleURL calls below
-      assert.expect(5);
-
-      this.router.map(function() {
-        this.route('nork');
-        this.route('about');
-      });
-
+      assert.expect(8);
       this.router.reopen({
         willTransition(_, _2, transition) {
           assert.ok(true, 'willTransition was called');
@@ -2783,6 +2787,11 @@ moduleFor(
             transition.abort();
           }
         },
+      });
+
+      this.router.map(function() {
+        this.route('nork');
+        this.route('about');
       });
 
       this.add(
@@ -2812,10 +2821,14 @@ moduleFor(
         })
       );
 
-      return this.visit('/').then(() => {
-        this.handleURLAborts(assert, '/nork');
-        this.handleURLAborts(assert, '/about');
-      });
+      let deprecation = /You attempted to override the "willTransition" method which is deprecated\./;
+
+      return expectDeprecation(() => {
+        return this.visit('/').then(() => {
+          this.handleURLAborts(assert, '/nork', deprecation);
+          this.handleURLAborts(assert, '/about', deprecation);
+        });
+      }, deprecation);
     }
 
     ['@test Aborting/redirecting the transition in `willTransition` prevents LoadingRoute from being entered'](
@@ -2941,13 +2954,17 @@ moduleFor(
       this.router.map(function() {
         this.route('nork');
       });
-
-      this.router.reopen({
-        didTransition() {
-          this._super(...arguments);
-          assert.ok(true, 'reopened didTransition was called');
-        },
-      });
+      if (EMBER_ROUTING_ROUTER_SERVICE) {
+        assert.ok(true, 'no longer a valid test');
+        return;
+      } else {
+        this.router.reopen({
+          didTransition() {
+            this._super(...arguments);
+            assert.ok(true, 'reopened didTransition was called');
+          },
+        });
+      }
 
       return this.visit('/');
     }
@@ -3097,7 +3114,7 @@ moduleFor(
     ['@test currentRouteName is a property installed on ApplicationController that can be used in transitionTo'](
       assert
     ) {
-      assert.expect(24);
+      assert.expect(36);
 
       this.router.map(function() {
         this.route('index', { path: '/' });
@@ -3120,8 +3137,10 @@ moduleFor(
           if (path) {
             run(router, 'transitionTo', path);
           }
-          assert.equal(appController.get('currentPath'), expectedPath);
-          assert.equal(appController.get('currentRouteName'), expectedRouteName);
+          expectDeprecation(() => {
+            assert.equal(appController.get('currentPath'), expectedPath);
+            assert.equal(appController.get('currentRouteName'), expectedRouteName);
+          }, 'Accessing `currentPath` on `controller:application` is deprecated, use the `currentPath` property on `service:router` instead.');
         }
 
         transitionAndCheck(null, 'index', 'index');
@@ -3528,7 +3547,7 @@ moduleFor(
       );
       console.error = () => {};
 
-      this.visit('/').then(() => {
+      return this.visit('/').then(() => {
         let rootElement = document.querySelector('#qunit-fixture');
         assert.equal(
           rootElement.querySelectorAll('#error').length,
@@ -3961,264 +3980,6 @@ moduleFor(
         assert.equal(rootElement.textContent.trim(), 'hilayer');
         run(router, 'send', 'close');
         assert.equal(rootElement.textContent.trim(), 'hi');
-      });
-    }
-
-    ['@test Can this.render({into:...}) the render helper'](assert) {
-      expectDeprecation(
-        /Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./
-      );
-
-      expectDeprecation(() => {
-        this.addTemplate('application', '{{render "sidebar"}}');
-      }, /Please refactor [\w\{\}"` ]+ to a component/);
-      this.router.map(function() {
-        this.route('index', { path: '/' });
-      });
-      this.addTemplate('sidebar', '<div class="sidebar">{{outlet}}</div>');
-      this.addTemplate('index', 'other');
-      this.addTemplate('bar', 'bar');
-
-      this.add(
-        'route:index',
-        Route.extend({
-          renderTemplate() {
-            this.render({ into: 'sidebar' });
-          },
-          actions: {
-            changeToBar() {
-              this.disconnectOutlet({
-                parentView: 'sidebar',
-                outlet: 'main',
-              });
-              this.render('bar', { into: 'sidebar' });
-            },
-          },
-        })
-      );
-
-      return this.visit('/').then(() => {
-        let rootElement = document.getElementById('qunit-fixture');
-        let router = this.applicationInstance.lookup('router:main');
-        assert.equal(getTextOf(rootElement.querySelector('.sidebar')), 'other');
-        run(router, 'send', 'changeToBar');
-        assert.equal(getTextOf(rootElement.querySelector('.sidebar')), 'bar');
-      });
-    }
-
-    ['@test Can disconnect from the render helper'](assert) {
-      expectDeprecation(
-        /Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./
-      );
-
-      expectDeprecation(() => {
-        this.addTemplate('application', '{{render "sidebar"}}');
-      }, /Please refactor [\w\{\}"` ]+ to a component/);
-      this.router.map(function() {
-        this.route('index', { path: '/' });
-      });
-      this.addTemplate('sidebar', '<div class="sidebar">{{outlet}}</div>');
-      this.addTemplate('index', 'other');
-
-      this.add(
-        'route:index',
-        Route.extend({
-          renderTemplate() {
-            this.render({ into: 'sidebar' });
-          },
-          actions: {
-            disconnect: function() {
-              this.disconnectOutlet({
-                parentView: 'sidebar',
-                outlet: 'main',
-              });
-            },
-          },
-        })
-      );
-
-      return this.visit('/').then(() => {
-        let rootElement = document.getElementById('qunit-fixture');
-        let router = this.applicationInstance.lookup('router:main');
-        assert.equal(getTextOf(rootElement.querySelector('.sidebar')), 'other');
-        run(router, 'send', 'disconnect');
-        assert.equal(getTextOf(rootElement.querySelector('.sidebar')), '');
-      });
-    }
-
-    ["@test Can this.render({into:...}) the render helper's children"](assert) {
-      expectDeprecation(
-        /Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./
-      );
-
-      expectDeprecation(() => {
-        this.addTemplate('application', '{{render "sidebar"}}');
-      }, /Please refactor [\w\{\}"` ]+ to a component/);
-
-      this.addTemplate('sidebar', '<div class="sidebar">{{outlet}}</div>');
-      this.addTemplate('index', '<div class="index">{{outlet}}</div>');
-      this.addTemplate('other', 'other');
-      this.addTemplate('bar', 'bar');
-      this.router.map(function() {
-        this.route('index', { path: '/' });
-      });
-      this.add(
-        'route:index',
-        Route.extend({
-          renderTemplate() {
-            this.render({ into: 'sidebar' });
-            this.render('other', { into: 'index' });
-          },
-          actions: {
-            changeToBar() {
-              this.disconnectOutlet({
-                parentView: 'index',
-                outlet: 'main',
-              });
-              this.render('bar', { into: 'index' });
-            },
-          },
-        })
-      );
-
-      return this.visit('/').then(() => {
-        let rootElement = document.getElementById('qunit-fixture');
-        let router = this.applicationInstance.lookup('router:main');
-        assert.equal(getTextOf(rootElement.querySelector('.sidebar .index')), 'other');
-        run(router, 'send', 'changeToBar');
-        assert.equal(getTextOf(rootElement.querySelector('.sidebar .index')), 'bar');
-      });
-    }
-
-    ["@test Can disconnect from the render helper's children"](assert) {
-      expectDeprecation(
-        /Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./
-      );
-
-      expectDeprecation(() => {
-        this.addTemplate('application', '{{render "sidebar"}}');
-      }, /Please refactor [\w\{\}"` ]+ to a component/);
-      this.router.map(function() {
-        this.route('index', { path: '/' });
-      });
-      this.addTemplate('sidebar', '<div class="sidebar">{{outlet}}</div>');
-      this.addTemplate('index', '<div class="index">{{outlet}}</div>');
-      this.addTemplate('other', 'other');
-
-      this.add(
-        'route:index',
-        Route.extend({
-          renderTemplate() {
-            this.render({ into: 'sidebar' });
-            this.render('other', { into: 'index' });
-          },
-          actions: {
-            disconnect() {
-              this.disconnectOutlet({
-                parentView: 'index',
-                outlet: 'main',
-              });
-            },
-          },
-        })
-      );
-
-      return this.visit('/').then(() => {
-        let rootElement = document.getElementById('qunit-fixture');
-        let router = this.applicationInstance.lookup('router:main');
-        assert.equal(getTextOf(rootElement.querySelector('.sidebar .index')), 'other');
-        run(router, 'send', 'disconnect');
-        assert.equal(getTextOf(rootElement.querySelector('.sidebar .index')), '');
-      });
-    }
-
-    ['@test Can this.render({into:...}) nested render helpers'](assert) {
-      expectDeprecation(
-        /Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./
-      );
-
-      expectDeprecation(() => {
-        this.addTemplate('application', '{{render "sidebar"}}');
-      }, /Please refactor [\w\{\}"` ]+ to a component/);
-
-      expectDeprecation(() => {
-        this.addTemplate('sidebar', '<div class="sidebar">{{render "cart"}}</div>');
-      }, /Please refactor [\w\{\}"` ]+ to a component/);
-      this.router.map(function() {
-        this.route('index', { path: '/' });
-      });
-      this.addTemplate('cart', '<div class="cart">{{outlet}}</div>');
-      this.addTemplate('index', 'other');
-      this.addTemplate('baz', 'baz');
-
-      this.add(
-        'route:index',
-        Route.extend({
-          renderTemplate() {
-            this.render({ into: 'cart' });
-          },
-          actions: {
-            changeToBaz() {
-              this.disconnectOutlet({
-                parentView: 'cart',
-                outlet: 'main',
-              });
-              this.render('baz', { into: 'cart' });
-            },
-          },
-        })
-      );
-
-      return this.visit('/').then(() => {
-        let rootElement = document.getElementById('qunit-fixture');
-        let router = this.applicationInstance.lookup('router:main');
-        assert.equal(getTextOf(rootElement.querySelector('.cart')), 'other');
-        run(router, 'send', 'changeToBaz');
-        assert.equal(getTextOf(rootElement.querySelector('.cart')), 'baz');
-      });
-    }
-
-    ['@test Can disconnect from nested render helpers'](assert) {
-      expectDeprecation(
-        /Rendering into a {{render}} helper that resolves to an {{outlet}} is deprecated./
-      );
-
-      expectDeprecation(() => {
-        this.addTemplate('application', '{{render "sidebar"}}');
-      }, /Please refactor [\w\{\}"` ]+ to a component/);
-
-      expectDeprecation(() => {
-        this.addTemplate('sidebar', '<div class="sidebar">{{render "cart"}}</div>');
-      }, /Please refactor [\w\{\}"` ]+ to a component/);
-      this.router.map(function() {
-        this.route('index', { path: '/' });
-      });
-      this.addTemplate('cart', '<div class="cart">{{outlet}}</div>');
-      this.addTemplate('index', 'other');
-
-      this.add(
-        'route:index',
-        Route.extend({
-          renderTemplate() {
-            this.render({ into: 'cart' });
-          },
-          actions: {
-            disconnect() {
-              this.disconnectOutlet({
-                parentView: 'cart',
-                outlet: 'main',
-              });
-            },
-          },
-        })
-      );
-
-      return this.visit('/').then(() => {
-        let rootElement = document.getElementById('qunit-fixture');
-        let router = this.applicationInstance.lookup('router:main');
-        assert.equal(getTextOf(rootElement.querySelector('.cart')), 'other');
-        run(router, 'send', 'disconnect');
-        assert.equal(getTextOf(rootElement.querySelector('.cart')), '');
       });
     }
 

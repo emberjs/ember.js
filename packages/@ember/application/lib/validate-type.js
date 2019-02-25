@@ -19,6 +19,6 @@ export default function validateType(resolvedType, parsedName) {
   assert(
     `Expected ${parsedName.fullName} to resolve to an ${expectedType} but ` +
       `instead it was ${resolvedType}.`,
-    !!resolvedType[factoryFlag]
+    Boolean(resolvedType[factoryFlag])
   );
 }

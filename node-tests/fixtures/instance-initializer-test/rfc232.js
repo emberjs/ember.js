@@ -2,12 +2,9 @@ import Application from '@ember/application';
 
 import { initialize } from 'my-app/instance-initializers/foo';
 import { module, test } from 'qunit';
-import { setupTest } from 'ember-qunit';
 import { run } from '@ember/runloop';
 
 module('Unit | Instance Initializer | foo', function(hooks) {
-  setupTest(hooks);
-
   hooks.beforeEach(function() {
     this.TestApplication = Application.extend();
     this.TestApplication.instanceInitializer({

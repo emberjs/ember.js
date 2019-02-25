@@ -1,7 +1,8 @@
-import { assert, deprecate, isTesting } from '@ember/debug';
-import { onErrorTarget } from 'ember-error-handling';
-import { beginPropertyChanges, endPropertyChanges } from 'ember-metal';
+import { assert, deprecate } from '@ember/debug';
+import { onErrorTarget } from '@ember/-internals/error-handling';
+import { beginPropertyChanges, endPropertyChanges } from '@ember/-internals/metal';
 import Backburner from 'backburner';
+import { RUN_SYNC } from '@ember/deprecated-features';
 
 let currentRunLoop = null;
 export function getCurrentRunLoop() {
@@ -30,7 +31,6 @@ export const _rsvpErrorQueue = `${Math.random()}${Date.now()}`.replace('.', '');
   @private
 */
 export const queues = [
-  'sync',
   'actions',
 
   // used in router transitions to prevent unnecessary loading state entry
@@ -46,17 +46,24 @@ export const queues = [
   _rsvpErrorQueue,
 ];
 
-export const backburner = new Backburner(queues, {
-  sync: {
-    before: beginPropertyChanges,
-    after: endPropertyChanges,
-  },
+let backburnerOptions = {
   defaultQueue: 'actions',
   onBegin,
   onEnd,
   onErrorTarget,
   onErrorMethod: 'onerror',
-});
+};
+
+if (RUN_SYNC) {
+  queues.unshift('sync');
+
+  backburnerOptions.sync = {
+    before: beginPropertyChanges,
+    after: endPropertyChanges,
+  };
+}
+
+export const backburner = new Backburner(queues, backburnerOptions);
 
 /**
  @module @ember/runloop
@@ -210,7 +217,30 @@ export function join() {
   @since 1.4.0
   @public
 */
-export const bind = (...curried) => (...args) => join(...curried.concat(args));
+export const bind = (...curried) => {
+  assert(
+    'could not find a suitable method to bind',
+    (function(methodOrTarget, methodOrArg) {
+      // Applies the same logic as backburner parseArgs for detecting if a method
+      // is actually being passed.
+      let length = arguments.length;
+
+      if (length === 0) {
+        return false;
+      } else if (length === 1) {
+        return typeof methodOrTarget === 'function';
+      } else {
+        let type = typeof methodOrArg;
+        return (
+          type === 'function' || // second argument is a function
+          (methodOrTarget !== null && type === 'string' && methodOrArg in methodOrTarget) || // second argument is the name of a method in first argument
+          typeof methodOrTarget === 'function' //first argument is a function
+        );
+      }
+    })(...curried)
+  );
+  return (...args) => join(...curried.concat(args));
+};
 
 /**
   Begins a new RunLoop. Any deferred actions invoked after the begin will
@@ -295,11 +325,6 @@ export function end() {
   @public
 */
 export function schedule(queue /*, target, method */) {
-  assert(
-    `You have turned on testing mode, which disabled the run-loop's autorun. ` +
-      `You will need to wrap any code with asynchronous side-effects in a run`,
-    currentRunLoop || !isTesting()
-  );
   deprecate(`Scheduling into the '${queue}' run loop queue is deprecated.`, queue !== 'sync', {
     id: 'ember-metal.run.sync',
     until: '3.5.0',
@@ -368,11 +393,6 @@ export function later(/*target, method*/) {
   @public
 */
 export function once(...args) {
-  assert(
-    `You have turned on testing mode, which disabled the run-loop's autorun. ` +
-      `You will need to wrap any code with asynchronous side-effects in a run`,
-    currentRunLoop || !isTesting()
-  );
   args.unshift('actions');
   return backburner.scheduleOnce(...args);
 }
@@ -450,11 +470,6 @@ export function once(...args) {
   @public
 */
 export function scheduleOnce(queue /*, target, method*/) {
-  assert(
-    `You have turned on testing mode, which disabled the run-loop's autorun. ` +
-      `You will need to wrap any code with asynchronous side-effects in a run`,
-    currentRunLoop || !isTesting()
-  );
   deprecate(`Scheduling into the '${queue}' run loop queue is deprecated.`, queue !== 'sync', {
     id: 'ember-metal.run.sync',
     until: '3.5.0',

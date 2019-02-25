@@ -1,17 +1,19 @@
 import { next, run } from '@ember/runloop';
-import { setOnerror } from 'ember-error-handling';
+import { setOnerror } from '@ember/-internals/error-handling';
 import Test from '../lib/test';
 import Adapter from '../lib/adapters/adapter';
 import QUnitAdapter from '../lib/adapters/qunit';
 import EmberApplication from '@ember/application';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
-import { RSVP } from 'ember-runtime';
+import { RSVP } from '@ember/-internals/runtime';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
+
+const HAS_UNHANDLED_REJECTION_HANDLER = 'onunhandledrejection' in window;
 
 const originalDebug = getDebugFunction('debug');
 const noop = function() {};
 
-var App, originalAdapter, originalQUnit, originalWindowOnerror;
+var App, originalAdapter, originalQUnit, originalWindowOnerror, originalQUnitUnhandledRejection;
 
 var originalConsoleError = console.error; // eslint-disable-line no-console
 
@@ -32,15 +34,14 @@ class AdapterSetupAndTearDown extends AbstractTestCase {
     setDebugFunction('debug', noop);
     super();
     originalAdapter = Test.adapter;
-    originalQUnit = window.QUnit;
+    originalQUnit = QUnit;
     originalWindowOnerror = window.onerror;
+    originalQUnitUnhandledRejection = QUnit.onUnhandledRejection;
   }
 
   afterEach() {
-    console.error = originalConsoleError; // eslint-disable-line no-console
-  }
+    super.afterEach();
 
-  teardown() {
     setDebugFunction('debug', originalDebug);
     if (App) {
       run(App, App.destroy);
@@ -52,6 +53,8 @@ class AdapterSetupAndTearDown extends AbstractTestCase {
     window.QUnit = originalQUnit;
     window.onerror = originalWindowOnerror;
     setOnerror(undefined);
+    console.error = originalConsoleError; // eslint-disable-line no-console
+    QUnit.onUnhandledRejection = originalQUnitUnhandledRejection;
   }
 }
 
@@ -240,6 +243,11 @@ moduleFor(
 function testAdapter(message, generatePromise, timeout = 10) {
   return class PromiseFailureTests extends AdapterSetupAndTearDown {
     [`@test ${message} when TestAdapter without \`exception\` method is present - rsvp`](assert) {
+      if (!HAS_UNHANDLED_REJECTION_HANDLER) {
+        assert.expect(0);
+        return;
+      }
+
       assert.expect(1);
 
       let thrown = new Error('the error');
@@ -247,13 +255,16 @@ function testAdapter(message, generatePromise, timeout = 10) {
         exception: undefined,
       });
 
-      window.onerror = function(message) {
+      // prevent QUnit handler from failing test
+      QUnit.onUnhandledRejection = () => {};
+
+      window.onunhandledrejection = function(rejection) {
         assert.pushResult({
-          result: /the error/.test(message),
-          actual: message,
+          result: /the error/.test(rejection.reason),
+          actual: rejection.reason,
           expected: 'to include `the error`',
           message:
-            'error should bubble out to window.onerror, and therefore fail tests (due to QUnit implementing window.onerror)',
+            'error should bubble out to window.onunhandledrejection, and therefore fail tests (due to QUnit implementing window.onunhandledrejection)',
         });
 
         // prevent "bubbling" and therefore failing the test

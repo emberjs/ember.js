@@ -20,18 +20,28 @@ describe('Blueprint: service-test', function() {
       return emberNew();
     });
 
-    it('service-test foo', function() {
-      return emberGenerateDestroy(['service-test', 'foo'], _file => {
-        expect(_file('tests/unit/services/foo-test.js')).to.equal(
-          fixture('service-test/default.js')
-        );
+    describe('with ember-cli-qunit@4.1.0', function() {
+      beforeEach(function() {
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]);
+        generateFakePackageManifest('ember-cli-qunit', '4.1.0');
+      });
+
+      it('service-test foo', function() {
+        return emberGenerateDestroy(['service-test', 'foo'], _file => {
+          expect(_file('tests/unit/services/foo-test.js')).to.equal(
+            fixture('service-test/default.js')
+          );
+        });
       });
     });
 
     describe('with ember-cli-mocha@0.11.0', function() {
       beforeEach(function() {
         modifyPackages([
-          { name: 'ember-cli-qunit', delete: true },
+          { name: 'ember-qunit', delete: true },
           { name: 'ember-cli-mocha', dev: true },
         ]);
         generateFakePackageManifest('ember-cli-mocha', '0.11.0');
@@ -57,7 +67,7 @@ describe('Blueprint: service-test', function() {
     describe('with ember-cli-mocha@0.12.0', function() {
       beforeEach(function() {
         modifyPackages([
-          { name: 'ember-cli-qunit', delete: true },
+          { name: 'ember-qunit', delete: true },
           { name: 'ember-cli-mocha', dev: true },
         ]);
         generateFakePackageManifest('ember-cli-mocha', '0.12.0');
@@ -80,8 +90,27 @@ describe('Blueprint: service-test', function() {
       });
     });
 
+    describe('with ember-mocha@0.14.0', function() {
+      beforeEach(function() {
+        modifyPackages([{ name: 'ember-qunit', delete: true }, { name: 'ember-mocha', dev: true }]);
+        generateFakePackageManifest('ember-mocha', '0.14.0');
+      });
+
+      it('service-test foo', function() {
+        return emberGenerateDestroy(['service-test', 'foo'], _file => {
+          expect(_file('tests/unit/services/foo-test.js')).to.equal(
+            fixture('service-test/mocha-rfc232.js')
+          );
+        });
+      });
+    });
+
     describe('with ember-cli-qunit@4.2.0', function() {
       beforeEach(function() {
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]);
         generateFakePackageManifest('ember-cli-qunit', '4.2.0');
       });
 
@@ -100,13 +129,23 @@ describe('Blueprint: service-test', function() {
       return emberNew({ target: 'addon' });
     });
 
-    it('service-test foo', function() {
-      return emberGenerateDestroy(['service-test', 'foo'], _file => {
-        expect(_file('tests/unit/services/foo-test.js')).to.equal(
-          fixture('service-test/default.js')
-        );
+    describe('with ember-cli-qunit@4.1.0', function() {
+      beforeEach(function() {
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]);
+        generateFakePackageManifest('ember-cli-qunit', '4.1.0');
+      });
 
-        expect(_file('app/service-test/foo.js')).to.not.exist;
+      it('service-test foo', function() {
+        return emberGenerateDestroy(['service-test', 'foo'], _file => {
+          expect(_file('tests/unit/services/foo-test.js')).to.equal(
+            fixture('service-test/default.js')
+          );
+
+          expect(_file('app/service-test/foo.js')).to.not.exist;
+        });
       });
     });
   });

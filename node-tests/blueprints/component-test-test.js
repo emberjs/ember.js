@@ -16,6 +16,9 @@ const expect = chai.expect;
 const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
 const fixture = require('../helpers/fixture');
 
+const setupTestEnvironment = require('../helpers/setup-test-environment');
+const enableModuleUnification = setupTestEnvironment.enableModuleUnification;
+
 describe('Blueprint: component-test', function() {
   setupTestHooks(this);
 
@@ -24,44 +27,58 @@ describe('Blueprint: component-test', function() {
       return emberNew();
     });
 
-    it('component-test x-foo', function() {
-      return emberGenerateDestroy(['component-test', 'x-foo'], _file => {
-        expect(_file('tests/integration/components/x-foo-test.js')).to.equal(
-          fixture('component-test/default.js')
-        );
-      });
-    });
-
-    it('component-test x-foo --unit', function() {
-      return emberGenerateDestroy(['component-test', 'x-foo', '--unit'], _file => {
-        expect(_file('tests/unit/components/x-foo-test.js')).to.equal(
-          fixture('component-test/unit.js')
-        );
-      });
-    });
-
-    describe('with usePods=true', function() {
+    describe('with ember-cli-qunit@4.1.0', function() {
       beforeEach(function() {
-        fs.writeFileSync(
-          '.ember-cli',
-          `{
-          "disableAnalytics": false,
-          "usePods": true
-        }`
-        );
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]);
+        generateFakePackageManifest('ember-cli-qunit', '4.1.0');
       });
 
       it('component-test x-foo', function() {
         return emberGenerateDestroy(['component-test', 'x-foo'], _file => {
-          expect(_file('tests/integration/components/x-foo/component-test.js')).to.equal(
+          expect(_file('tests/integration/components/x-foo-test.js')).to.equal(
             fixture('component-test/default.js')
           );
+        });
+      });
+
+      it('component-test x-foo --unit', function() {
+        return emberGenerateDestroy(['component-test', 'x-foo', '--unit'], _file => {
+          expect(_file('tests/unit/components/x-foo-test.js')).to.equal(
+            fixture('component-test/unit.js')
+          );
+        });
+      });
+
+      describe('with usePods=true', function() {
+        beforeEach(function() {
+          fs.writeFileSync(
+            '.ember-cli',
+            `{
+          "disableAnalytics": false,
+          "usePods": true
+        }`
+          );
+        });
+
+        it('component-test x-foo', function() {
+          return emberGenerateDestroy(['component-test', 'x-foo'], _file => {
+            expect(_file('tests/integration/components/x-foo/component-test.js')).to.equal(
+              fixture('component-test/default.js')
+            );
+          });
         });
       });
     });
 
     describe('with ember-cli-qunit@4.2.0', function() {
       beforeEach(function() {
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]);
         generateFakePackageManifest('ember-cli-qunit', '4.2.0');
       });
 
@@ -85,7 +102,7 @@ describe('Blueprint: component-test', function() {
     describe('with ember-cli-mocha@0.11.0', function() {
       beforeEach(function() {
         modifyPackages([
-          { name: 'ember-cli-qunit', delete: true },
+          { name: 'ember-qunit', delete: true },
           { name: 'ember-cli-mocha', dev: true },
         ]);
         generateFakePackageManifest('ember-cli-mocha', '0.11.0');
@@ -111,7 +128,7 @@ describe('Blueprint: component-test', function() {
     describe('with ember-cli-mocha@0.12.0', function() {
       beforeEach(function() {
         modifyPackages([
-          { name: 'ember-cli-qunit', delete: true },
+          { name: 'ember-qunit', delete: true },
           { name: 'ember-cli-mocha', dev: true },
         ]);
         generateFakePackageManifest('ember-cli-mocha', '0.12.0');
@@ -133,52 +150,88 @@ describe('Blueprint: component-test', function() {
         });
       });
     });
-  });
 
-  describe('in app - module unification', function() {
-    beforeEach(function() {
-      return emberNew().then(() => fs.ensureDirSync('src'));
-    });
-
-    it('component-test x-foo', function() {
-      return emberGenerateDestroy(['component-test', 'x-foo'], _file => {
-        expect(_file('src/ui/components/x-foo/component-test.js')).to.equal(
-          fixture('component-test/default.js')
-        );
-      });
-    });
-
-    it('component-test x-foo --unit', function() {
-      return emberGenerate(['component-test', 'x-foo', '--unit'])
-        .then(() => {
-          throw 'the command should raise an exception';
-        })
-        .catch(error => {
-          expect(error).to.equal("The --unit flag isn't supported within a module unification app");
-        });
-    });
-
-    describe('with usePods=true', function() {
+    describe('with ember-mocha@0.14.0', function() {
       beforeEach(function() {
-        fs.writeFileSync(
-          '.ember-cli',
-          `{
-          "disableAnalytics": false,
-          "usePods": true
-        }`
-        );
+        modifyPackages([{ name: 'ember-qunit', delete: true }, { name: 'ember-mocha', dev: true }]);
+        generateFakePackageManifest('ember-mocha', '0.14.0');
       });
 
       it('component-test x-foo', function() {
+        return emberGenerateDestroy(['component-test', 'x-foo'], _file => {
+          expect(_file('tests/integration/components/x-foo-test.js')).to.equal(
+            fixture('component-test/mocha-rfc232.js')
+          );
+        });
+      });
+
+      it('component-test x-foo --unit', function() {
+        return emberGenerateDestroy(['component-test', 'x-foo', '--unit'], _file => {
+          expect(_file('tests/unit/components/x-foo-test.js')).to.equal(
+            fixture('component-test/mocha-rfc232-unit.js')
+          );
+        });
+      });
+    });
+  });
+
+  describe('in app - module unification', function() {
+    enableModuleUnification();
+
+    beforeEach(function() {
+      return emberNew();
+    });
+
+    describe('with ember-cli-qunit@4.1.0', function() {
+      beforeEach(function() {
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]);
+        generateFakePackageManifest('ember-cli-qunit', '4.1.0');
+      });
+
+      it('component-test x-foo', function() {
+        return emberGenerateDestroy(['component-test', 'x-foo'], _file => {
+          expect(_file('src/ui/components/x-foo/component-test.js')).to.equal(
+            fixture('component-test/default.js')
+          );
+        });
+      });
+
+      it('component-test x-foo --unit', function() {
         return expectError(
-          emberGenerate(['component-test', 'x-foo']),
-          "Pods aren't supported within a module unification app"
+          emberGenerate(['component-test', 'x-foo', '--unit']),
+          "The --unit flag isn't supported within a module unification app"
         );
+      });
+
+      describe('with usePods=true', function() {
+        beforeEach(function() {
+          fs.writeFileSync(
+            '.ember-cli',
+            `{
+          "disableAnalytics": false,
+          "usePods": true
+        }`
+          );
+        });
+
+        it('component-test x-foo', function() {
+          return expectError(
+            emberGenerate(['component-test', 'x-foo']),
+            "Pods aren't supported within a module unification app"
+          );
+        });
       });
     });
 
     describe('with ember-cli-qunit@4.2.0', function() {
       beforeEach(function() {
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]);
         generateFakePackageManifest('ember-cli-qunit', '4.2.0');
       });
 
@@ -201,7 +254,7 @@ describe('Blueprint: component-test', function() {
     describe('with ember-cli-mocha@0.11.0', function() {
       beforeEach(function() {
         modifyPackages([
-          { name: 'ember-cli-qunit', delete: true },
+          { name: 'ember-qunit', delete: true },
           { name: 'ember-cli-mocha', dev: true },
         ]);
         generateFakePackageManifest('ember-cli-mocha', '0.11.0');
@@ -226,7 +279,7 @@ describe('Blueprint: component-test', function() {
     describe('with ember-cli-mocha@0.12.0', function() {
       beforeEach(function() {
         modifyPackages([
-          { name: 'ember-cli-qunit', delete: true },
+          { name: 'ember-qunit', delete: true },
           { name: 'ember-cli-mocha', dev: true },
         ]);
         generateFakePackageManifest('ember-cli-mocha', '0.12.0');
@@ -247,11 +300,40 @@ describe('Blueprint: component-test', function() {
         );
       });
     });
+
+    describe('with ember-mocha@0.14.0', function() {
+      beforeEach(function() {
+        modifyPackages([{ name: 'ember-qunit', delete: true }, { name: 'ember-mocha', dev: true }]);
+        generateFakePackageManifest('ember-mocha', '0.14.0');
+      });
+
+      it('component-test x-foo', function() {
+        return emberGenerateDestroy(['component-test', 'x-foo'], _file => {
+          expect(_file('src/ui/components/x-foo/component-test.js')).to.equal(
+            fixture('component-test/mocha-rfc232.js')
+          );
+        });
+      });
+
+      it('component-test x-foo --unit', function() {
+        return expectError(
+          emberGenerate(['component-test', 'x-foo', '--unit']),
+          "The --unit flag isn't supported within a module unification app"
+        );
+      });
+    });
   });
 
   describe('in addon', function() {
     beforeEach(function() {
-      return emberNew({ target: 'addon' });
+      return emberNew({ target: 'addon' })
+        .then(() =>
+          modifyPackages([
+            { name: 'ember-qunit', delete: true },
+            { name: 'ember-cli-qunit', dev: true },
+          ])
+        )
+        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
     });
 
     it('component-test x-foo', function() {
@@ -287,7 +369,14 @@ describe('Blueprint: component-test', function() {
 
   describe('in in-repo-addon', function() {
     beforeEach(function() {
-      return emberNew({ target: 'in-repo-addon' });
+      return emberNew({ target: 'in-repo-addon' })
+        .then(() =>
+          modifyPackages([
+            { name: 'ember-qunit', delete: true },
+            { name: 'ember-cli-qunit', dev: true },
+          ])
+        )
+        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
     });
 
     it('component-test x-foo --in-repo-addon=my-addon', function() {

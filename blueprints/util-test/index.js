@@ -14,7 +14,7 @@ module.exports = useTestFrameworkDetector({
       return {
         __root__(options) {
           if (options.pod) {
-            throw "Pods aren't supported within a module unification app";
+            throw new Error("Pods aren't supported within a module unification app");
           }
 
           return 'src';

@@ -1,7 +1,7 @@
 /**
 @module ember
 */
-import { RSVP } from 'ember-runtime';
+import { RSVP } from '@ember/-internals/runtime';
 import { assert, info } from '@ember/debug';
 
 let resume;
@@ -32,7 +32,7 @@ export function resumeTest() {
 
  You may want to turn off the timeout before pausing.
 
- qunit (as of 2.4.0):
+ qunit (timeout available to use as of 2.4.0):
 
  ```
  visit('/');
@@ -41,7 +41,7 @@ export function resumeTest() {
  click('.btn');
  ```
 
- mocha:
+ mocha (timeout happens automatically as of ember-mocha v0.14.0):
 
  ```
  visit('/');

@@ -1,9 +1,9 @@
-import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
+import { moduleFor, ApplicationTestCase, runLoopSettled, runTask } from 'internal-test-helpers';
 import Controller, { inject as injectController } from '@ember/controller';
-import { A as emberA } from 'ember-runtime';
-import { alias } from 'ember-metal';
+import { A as emberA } from '@ember/-internals/runtime';
+import { alias } from '@ember/-internals/metal';
 import { subscribe, reset } from '@ember/instrumentation';
-import { Route, NoneLocation } from 'ember-routing';
+import { Route, NoneLocation } from '@ember/-internals/routing';
 import { EMBER_IMPROVED_INSTRUMENTATION } from '@ember/canary-features';
 
 // IE includes the host name
@@ -127,7 +127,7 @@ moduleFor(
         );
 
         let controller = this.applicationInstance.lookup('controller:index');
-        this.runTask(() => controller.set('dynamicDisabledWhen', false));
+        runTask(() => controller.set('dynamicDisabledWhen', false));
 
         assert.equal(
           this.$('#about-link-dynamic.disabled').length,
@@ -252,7 +252,7 @@ moduleFor(
           let controller = this.applicationInstance.lookup('controller:index');
           controller.set('disabledWhen', false);
 
-          return this.runLoopSettled();
+          return runLoopSettled();
         })
         .then(() => {
           return this.click('#about-link');
@@ -349,7 +349,7 @@ moduleFor(
         );
 
         let controller = this.applicationInstance.lookup('controller:index');
-        this.runTask(() => controller.set('foo', true));
+        runTask(() => controller.set('foo', true));
 
         assert.equal(
           this.$('#about-link.foo-is-true').length,
@@ -780,7 +780,7 @@ moduleFor(
         );
 
         let controller = this.applicationInstance.lookup('controller:index.about');
-        this.runTask(() => controller.set('isCurrent', true));
+        runTask(() => controller.set('isCurrent', true));
 
         assert.ok(
           this.$('#index-link').hasClass('active'),
@@ -1182,14 +1182,16 @@ moduleFor(
       return this.visit('/')
         .then(() => this.click('#about-link'))
         .then(() => {
-          let currentRouteName = this.applicationInstance
-            .lookup('controller:application')
-            .get('currentRouteName');
-          assert.notEqual(
-            currentRouteName,
-            'about',
-            'link-to should not transition if target is not equal to _self or empty'
-          );
+          expectDeprecation(() => {
+            let currentRouteName = this.applicationInstance
+              .lookup('controller:application')
+              .get('currentRouteName');
+            assert.notEqual(
+              currentRouteName,
+              'about',
+              'link-to should not transition if target is not equal to _self or empty'
+            );
+          }, 'Accessing `currentRouteName` on `controller:application` is deprecated, use the `currentRouteName` property on `service:router` instead.');
         });
     }
 
@@ -1301,7 +1303,7 @@ moduleFor(
         assertEquality('/');
 
         let controller = this.applicationInstance.lookup('controller:index');
-        this.runTask(() => controller.set('foo', 'about'));
+        runTask(() => controller.set('foo', 'about'));
 
         assertEquality('/about');
       });
@@ -1326,7 +1328,7 @@ moduleFor(
 
       return this.visit('/').then(() => {
         let indexController = this.applicationInstance.lookup('controller:index');
-        this.runTask(() => indexController.set('post', post));
+        runTask(() => indexController.set('post', post));
 
         assert.equal(
           normalizeUrl(this.$('#post').attr('href')),
@@ -1334,7 +1336,7 @@ moduleFor(
           'precond - Link has rendered href attr properly'
         );
 
-        this.runTask(() => indexController.set('post', secondPost));
+        runTask(() => indexController.set('post', secondPost));
 
         assert.equal(
           this.$('#post').attr('href'),
@@ -1342,7 +1344,7 @@ moduleFor(
           'href attr was updated after one of the params had been changed'
         );
 
-        this.runTask(() => indexController.set('post', null));
+        runTask(() => indexController.set('post', null));
 
         assert.equal(
           this.$('#post').attr('href'),
@@ -1432,11 +1434,11 @@ moduleFor(
         linksEqual(this.$('a'), ['/foo', '/bar', '/rar', '/foo', '/bar', '/rar', '/bar', '/foo']);
 
         let indexController = this.applicationInstance.lookup('controller:index');
-        this.runTask(() => indexController.set('route1', 'rar'));
+        runTask(() => indexController.set('route1', 'rar'));
 
         linksEqual(this.$('a'), ['/foo', '/bar', '/rar', '/foo', '/bar', '/rar', '/rar', '/foo']);
 
-        this.runTask(() => indexController.routeNames.shiftObject());
+        runTask(() => indexController.routeNames.shiftObject());
 
         linksEqual(this.$('a'), ['/bar', '/rar', '/bar', '/rar', '/rar', '/foo']);
       });
@@ -1525,7 +1527,7 @@ moduleFor(
           );
 
           let controller = this.applicationInstance.lookup('controller:index');
-          this.runTask(() => controller.set('contactName', 'Joe'));
+          runTask(() => controller.set('contactName', 'Joe'));
 
           assert.equal(
             this.$('#contact-link').text(),
@@ -1533,7 +1535,7 @@ moduleFor(
             'The link title is correctly updated when the bound property changes'
           );
 
-          this.runTask(() => controller.set('contactName', 'Robert'));
+          runTask(() => controller.set('contactName', 'Robert'));
 
           assert.equal(
             this.$('#contact-link').text(),
@@ -1658,7 +1660,7 @@ moduleFor(
         assertEquality('/');
 
         let controller = this.applicationInstance.lookup('controller:index');
-        this.runTask(() => controller.set('foo', 'about'));
+        runTask(() => controller.set('foo', 'about'));
 
         assertEquality('/about');
       });
@@ -1678,7 +1680,7 @@ moduleFor(
         assert.equal(this.$('#link').text(), 'blahzorz');
 
         let controller = this.applicationInstance.lookup('controller:application');
-        this.runTask(() => controller.set('display', '<b>BLAMMO</b>'));
+        runTask(() => controller.set('display', '<b>BLAMMO</b>'));
 
         assert.equal(this.$('#link').text(), '<b>BLAMMO</b>');
         assert.equal(this.$('b').length, 0);
@@ -1698,7 +1700,7 @@ moduleFor(
         this.visit('/');
       }, /(You attempted to define a `\{\{link-to "post"\}\}` but did not pass the parameters required for generating its dynamic segments.|You must provide param `post_id` to `generate`)/);
 
-      return this.runLoopSettled();
+      return runLoopSettled();
     }
 
     [`@test the {{link-to}} helper does not throw an error if its route has exited`](assert) {
@@ -1928,7 +1930,7 @@ moduleFor(
         assert.equal(link.attr('href'), '/foo/one/two');
 
         let controller = this.applicationInstance.lookup('controller:index');
-        this.runTask(() => {
+        runTask(() => {
           controller.set('dynamicLinkParams', ['bar', 'one', 'two', 'three']);
         });
 
@@ -2044,25 +2046,25 @@ moduleFor(
         })
         .then(() => {
           // Set the destinationRoute (context is still null).
-          this.runTask(() => controller.set('destinationRoute', 'thing'));
+          runTask(() => controller.set('destinationRoute', 'thing'));
           assertLinkStatus(contextLink);
 
           // Set the routeContext to an id
-          this.runTask(() => controller.set('routeContext', '456'));
+          runTask(() => controller.set('routeContext', '456'));
           assertLinkStatus(contextLink, '/thing/456');
 
           // Test that 0 isn't interpreted as falsy.
-          this.runTask(() => controller.set('routeContext', 0));
+          runTask(() => controller.set('routeContext', 0));
           assertLinkStatus(contextLink, '/thing/0');
 
           // Set the routeContext to an object
-          this.runTask(() => {
+          runTask(() => {
             controller.set('routeContext', { id: 123 });
           });
           assertLinkStatus(contextLink, '/thing/123');
 
           // Set the destinationRoute back to null.
-          this.runTask(() => controller.set('destinationRoute', null));
+          runTask(() => controller.set('destinationRoute', null));
           assertLinkStatus(contextLink);
 
           return expectWarning(() => {
@@ -2070,7 +2072,7 @@ moduleFor(
           }, warningMessage);
         })
         .then(() => {
-          this.runTask(() => controller.set('secondRoute', 'about'));
+          runTask(() => controller.set('secondRoute', 'about'));
           assertLinkStatus(staticLink, '/about');
 
           // Click the now-active link

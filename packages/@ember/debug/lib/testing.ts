@@ -5,5 +5,5 @@ export function isTesting(): boolean {
 }
 
 export function setTesting(value: boolean) {
-  testing = !!value;
+  testing = Boolean(value);
 }

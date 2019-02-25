@@ -94,20 +94,34 @@ discussion at [discuss.emberjs.com](https://discuss.emberjs.com)
 
 # Building Ember.js
 
-Building Ember is quite simple.
+Building Ember.js is a quick process:
 
 ```sh
-clone the latest ember.js directory from github
+# clone the latest ember.js directory from github
  - git clone https://github.com/emberjs/ember.js.git
 
-cd to the cloned ember.js directory
+# cd to the cloned ember.js directory
  - cd ember.js
 
-ensure Node.js and yarn are installed
+# ensure Node.js and yarn are installed
 
-follow these commands to build ember.js
+# build ember.js
  - yarn install
- - yarn run build
+ - yarn build
+```
+
+## Using Custom Builds in an Ember CLI App
+While testing custom behavior (maybe that you'd like to write an RFC for...), here's how you'd use a local custom build with an Ember app to test out the custom build:
+
+```sh
+# cd to the directory from Building Ember.js (above)
+cd ember.js
+yarn link
+yarn start
+
+# in a new terminal
+cd ../your-app-directory/
+yarn link ember-source
 ```
 
 # How to Run Unit Tests
@@ -124,9 +138,7 @@ Pull requests should pass the Ember.js unit tests. Do the following to run these
 `PACKAGE_NAME` with the name of the package you want to test. For
 example:
 
-  * [Ember.js Runtime](http://localhost:4200/tests/index.html?package=ember-runtime)
-  * [Ember.js Views](http://localhost:4200/tests/index.html?package=ember-views)
-  * [Ember.js Glimmer](http://localhost:4200/tests/index.html?package=ember-glimmer)
+  * [Ember.js Internals](http://localhost:4200/tests/index.html?package=@ember/-internals)
 
 To test multiple packages, you can separate them with commas.
 
@@ -164,7 +176,7 @@ to know that you have a clean slate: `yarn install && yarn test`.
 3. Add a test for your change. Only refactoring and documentation changes
 require no new tests. If you are adding functionality or fixing a bug, we need
 a test! If your change is a new feature, please
-[wrap it in a feature flag](https://emberjs.com/guides/contributing/adding-new-features/).
+[wrap it in a feature flag](https://guides.emberjs.com/release/contributing/adding-new-features/).
 
 4. Make sure to check out the
    [JavaScript Style Guide](https://github.com/emberjs/ember.js/blob/master/STYLEGUIDE.md) and
@@ -268,7 +280,7 @@ Note: before using this approach, please be certain your test is really dependin
 
 To recreate this build environment locally:
 * Run `ember serve --environment=production` in a terminal (takes much much longer than a default `ember s`)
-* Browse to `localhost:4200/tests/index.html?skipPackage=container,ember-testing,ember-debug&dist=prod&prod=true`
+* Browse to `localhost:4200/tests/index.html?dist=prod&prod=true`
 
 ### Single Unexplained Test Suite Failure
 

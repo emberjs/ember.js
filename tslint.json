@@ -1,14 +1,5 @@
 {
-  "extends": [
-    "tslint-config-prettier",
-    "tslint-plugin-prettier"
-  ],
   "rules": {
-    "prettier": [true, {
-      "singleQuote": true,
-      "trailingComma": "es5",
-      "printWidth": 100
-    }],
     "curly": false,
     "no-var-keyword": true,
     "indent": [true, "spaces"],

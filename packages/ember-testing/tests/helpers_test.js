@@ -1,11 +1,11 @@
-import { moduleFor, AutobootApplicationTestCase, isIE11 } from 'internal-test-helpers';
+import { moduleFor, AutobootApplicationTestCase, isIE11, runTask } from 'internal-test-helpers';
 
-import { Route } from 'ember-routing';
+import { Route } from '@ember/-internals/routing';
 import Controller from '@ember/controller';
-import { RSVP } from 'ember-runtime';
+import { RSVP } from '@ember/-internals/runtime';
 import { later } from '@ember/runloop';
-import { Component } from 'ember-glimmer';
-import { jQueryDisabled, jQuery } from 'ember-views';
+import { Component } from '@ember/-internals/glimmer';
+import { jQueryDisabled, jQuery } from '@ember/-internals/views';
 
 import Test from '../lib/test';
 import setupForTesting from '../lib/setup_for_testing';
@@ -36,8 +36,8 @@ function assertHelpers(assert, application, helperContainer, expected) {
   }
 
   function checkHelperPresent(helper, expected) {
-    var presentInHelperContainer = !!helperContainer[helper];
-    var presentInTestHelpers = !!application.testHelpers[helper];
+    var presentInHelperContainer = Boolean(helperContainer[helper]);
+    var presentInTestHelpers = Boolean(application.testHelpers[helper]);
 
     assert.ok(
       presentInHelperContainer === expected,
@@ -82,7 +82,7 @@ class HelpersTestCase extends AutobootApplicationTestCase {
 class HelpersApplicationTestCase extends HelpersTestCase {
   constructor() {
     super();
-    this.runTask(() => {
+    runTask(() => {
       this.createApplication();
       this.application.setupForTesting();
       this.application.injectTestHelpers();
@@ -95,7 +95,7 @@ if (!jQueryDisabled) {
     'ember-testing: Helper setup',
     class extends HelpersTestCase {
       [`@test Ember.Application#injectTestHelpers/#removeTestHelper`](assert) {
-        this.runTask(() => {
+        runTask(() => {
           this.createApplication();
         });
 
@@ -121,7 +121,7 @@ if (!jQueryDisabled) {
       }
 
       [`@test Ember.Application#setupForTesting`](assert) {
-        this.runTask(() => {
+        runTask(() => {
           this.createApplication();
           this.application.setupForTesting();
         });
@@ -131,7 +131,7 @@ if (!jQueryDisabled) {
       }
 
       [`@test Ember.Application.setupForTesting sets the application to 'testing'`](assert) {
-        this.runTask(() => {
+        runTask(() => {
           this.createApplication();
           this.application.setupForTesting();
         });
@@ -140,7 +140,7 @@ if (!jQueryDisabled) {
       }
 
       [`@test Ember.Application.setupForTesting leaves the system in a deferred state.`](assert) {
-        this.runTask(() => {
+        runTask(() => {
           this.createApplication();
           this.application.setupForTesting();
         });
@@ -155,7 +155,7 @@ if (!jQueryDisabled) {
       [`@test App.reset() after Application.setupForTesting leaves the system in a deferred state.`](
         assert
       ) {
-        this.runTask(() => {
+        runTask(() => {
           this.createApplication();
           this.application.setupForTesting();
         });
@@ -186,7 +186,7 @@ if (!jQueryDisabled) {
 
         // bind(this) so Babel doesn't leak _this
         // into the context onInjectHelpers.
-        this.runTask(
+        runTask(
           function() {
             this.createApplication();
             this.application.setupForTesting();
@@ -203,7 +203,7 @@ if (!jQueryDisabled) {
       [`@test Ember.Application#injectTestHelpers adds helpers to provided object.`](assert) {
         let helpers = {};
 
-        this.runTask(() => {
+        runTask(() => {
           this.createApplication();
           this.application.setupForTesting();
         });
@@ -222,7 +222,7 @@ if (!jQueryDisabled) {
       ) {
         let helpers = { visit: 'snazzleflabber' };
 
-        this.runTask(() => {
+        runTask(() => {
           this.createApplication();
           this.application.setupForTesting();
         });
@@ -253,14 +253,16 @@ if (!jQueryDisabled) {
           return ++other > 2;
         }
 
-        this.runTask(() => {
+        runTask(() => {
           this.application.advanceReadiness();
         });
 
         registerWaiter(waiter);
         registerWaiter(otherWaiter);
 
-        let { application: { testHelpers } } = this;
+        let {
+          application: { testHelpers },
+        } = this;
         return testHelpers
           .wait()
           .then(() => {
@@ -299,13 +301,15 @@ if (!jQueryDisabled) {
       [`@test 'wait' helper can be passed a resolution value`](assert) {
         assert.expect(4);
 
-        this.runTask(() => {
+        runTask(() => {
           this.application.advanceReadiness();
         });
 
         let promiseObjectValue = {};
         let objectValue = {};
-        let { application: { testHelpers } } = this;
+        let {
+          application: { testHelpers },
+        } = this;
         return testHelpers
           .wait('text')
           .then(val => {
@@ -383,12 +387,14 @@ if (!jQueryDisabled) {
       `
         );
 
-        this.runTask(() => {
+        runTask(() => {
           this.application.advanceReadiness();
         });
 
         let events;
-        let { application: { testHelpers } } = this;
+        let {
+          application: { testHelpers },
+        } = this;
         return testHelpers
           .wait()
           .then(() => {
@@ -467,12 +473,16 @@ if (!jQueryDisabled) {
       `
         );
 
-        this.runTask(() => {
+        runTask(() => {
           this.application.advanceReadiness();
         });
 
         let events;
-        let { application: { testHelpers: { wait, click } } } = this;
+        let {
+          application: {
+            testHelpers: { wait, click },
+          },
+        } = this;
         return wait()
           .then(() => {
             events = [];
@@ -507,11 +517,15 @@ if (!jQueryDisabled) {
 
         this.addTemplate('index', `{{#index-wrapper}}some text{{/index-wrapper}}`);
 
-        this.runTask(() => {
+        runTask(() => {
           this.application.advanceReadiness();
         });
 
-        let { application: { testHelpers: { wait, triggerEvent } } } = this;
+        let {
+          application: {
+            testHelpers: { wait, triggerEvent },
+          },
+        } = this;
         return wait()
           .then(() => {
             return triggerEvent('.index-wrapper', 'mouseenter');
@@ -528,7 +542,7 @@ if (!jQueryDisabled) {
       [`@test 'wait' waits for outstanding timers`](assert) {
         assert.expect(1);
 
-        this.runTask(() => {
+        runTask(() => {
           this.application.advanceReadiness();
         });
 
@@ -557,14 +571,18 @@ if (!jQueryDisabled) {
           return ++other > 2;
         }
 
-        this.runTask(() => {
+        runTask(() => {
           this.application.advanceReadiness();
         });
 
         registerWaiter(obj, obj.ready);
         registerWaiter(otherWaiter);
 
-        let { application: { testHelpers: { wait } } } = this;
+        let {
+          application: {
+            testHelpers: { wait },
+          },
+        } = this;
         return wait()
           .then(() => {
             assert.equal(obj.ready(), true, 'should not resolve until our waiter is ready');
@@ -612,11 +630,15 @@ if (!jQueryDisabled) {
       `
         );
 
-        this.runTask(() => {
+        runTask(() => {
           this.application.advanceReadiness();
         });
 
-        let { application: { testHelpers: { wait, triggerEvent } } } = this;
+        let {
+          application: {
+            testHelpers: { wait, triggerEvent },
+          },
+        } = this;
         return wait()
           .then(() => {
             return triggerEvent('.input', 'keydown', { keyCode: 13 });
@@ -661,11 +683,15 @@ if (!jQueryDisabled) {
         );
         this.addTemplate('index', `{{index-wrapper}}`);
 
-        this.runTask(() => {
+        runTask(() => {
           this.application.advanceReadiness();
         });
 
-        let { application: { testHelpers: { wait, triggerEvent } } } = this;
+        let {
+          application: {
+            testHelpers: { wait, triggerEvent },
+          },
+        } = this;
         return wait()
           .then(() => {
             return triggerEvent('.input', '#limited', 'blur');
@@ -703,11 +729,15 @@ if (!jQueryDisabled) {
         );
         this.addTemplate('index', `{{index-wrapper}}`);
 
-        this.runTask(() => {
+        runTask(() => {
           this.application.advanceReadiness();
         });
 
-        let { application: { testHelpers: { wait, triggerEvent } } } = this;
+        let {
+          application: {
+            testHelpers: { wait, triggerEvent },
+          },
+        } = this;
         return wait()
           .then(() => {
             return triggerEvent('#foo', 'blur');
@@ -735,11 +765,15 @@ if (!jQueryDisabled) {
       `
         );
 
-        this.runTask(() => {
+        runTask(() => {
           this.application.advanceReadiness();
         });
 
-        let { application: { testHelpers: { visit, fillIn, andThen, find } } } = this;
+        let {
+          application: {
+            testHelpers: { visit, fillIn, andThen, find },
+          },
+        } = this;
         visit('/');
         fillIn('.current', '#parent', 'current value');
 
@@ -753,8 +787,8 @@ if (!jQueryDisabled) {
         let wasFocused = false;
 
         this.add(
-          'route:application',
-          Route.extend({
+          'controller:index',
+          Controller.extend({
             actions: {
               wasFocused() {
                 wasFocused = true;
@@ -767,16 +801,20 @@ if (!jQueryDisabled) {
           'index',
           `
         <div id="parent">
-          {{input type="text" id="first" focus-in="wasFocused"}}
+          {{input type="text" id="first" focus-in=(action "wasFocused")}}
         </div>'
       `
         );
 
-        this.runTask(() => {
+        runTask(() => {
           this.application.advanceReadiness();
         });
 
-        let { application: { testHelpers: { visit, fillIn, andThen, find, wait } } } = this;
+        let {
+          application: {
+            testHelpers: { visit, fillIn, andThen, find, wait },
+          },
+        } = this;
         visit('/');
         fillIn('#first', 'current value');
         andThen(() => {
@@ -815,11 +853,15 @@ if (!jQueryDisabled) {
       `
         );
 
-        this.runTask(() => {
+        runTask(() => {
           this.application.advanceReadiness();
         });
 
-        let { application: { testHelpers: { visit, fillIn, andThen, wait } } } = this;
+        let {
+          application: {
+            testHelpers: { visit, fillIn, andThen, wait },
+          },
+        } = this;
 
         visit('/');
         fillIn('#first', 'current value');
@@ -843,11 +885,15 @@ if (!jQueryDisabled) {
       `
         );
 
-        this.runTask(() => {
+        runTask(() => {
           this.application.advanceReadiness();
         });
 
-        let { application: { testHelpers: { visit, fillIn, find, andThen, wait } } } = this;
+        let {
+          application: {
+            testHelpers: { visit, fillIn, find, andThen, wait },
+          },
+        } = this;
 
         visit('/');
         fillIn('input.in-test', 'new value');
@@ -888,11 +934,15 @@ if (!jQueryDisabled) {
         );
         this.addTemplate('index', `{{index-wrapper}}`);
 
-        this.runTask(() => {
+        runTask(() => {
           this.application.advanceReadiness();
         });
 
-        let { application: { testHelpers: { wait, triggerEvent } } } = this;
+        let {
+          application: {
+            testHelpers: { wait, triggerEvent },
+          },
+        } = this;
         return wait()
           .then(() => {
             return triggerEvent('.input', '#limited', 'keydown', {
@@ -922,7 +972,7 @@ if (!jQueryDisabled) {
 
       constructor() {
         super();
-        this.runTask(() => {
+        runTask(() => {
           this.application.advanceReadiness();
         });
       }
@@ -948,7 +998,11 @@ if (!jQueryDisabled) {
         // overwrite info to supress the console output (see https://github.com/emberjs/ember.js/issues/16391)
         setDebugFunction('info', noop);
 
-        let { application: { testHelpers: { pauseTest, resumeTest } } } = this;
+        let {
+          application: {
+            testHelpers: { pauseTest, resumeTest },
+          },
+        } = this;
 
         later(() => resumeTest(), 20);
         return pauseTest().then(() => {
@@ -971,7 +1025,7 @@ if (!jQueryDisabled) {
     class extends HelpersTestCase {
       constructor() {
         super();
-        this.runTask(() => {
+        runTask(() => {
           this.createApplication();
           this.application.setupForTesting();
           this.application.injectTestHelpers();
@@ -982,7 +1036,7 @@ if (!jQueryDisabled) {
             });
           });
         });
-        this.runTask(() => {
+        runTask(() => {
           this.application.advanceReadiness();
         });
       }
@@ -990,7 +1044,9 @@ if (!jQueryDisabled) {
       [`@test currentRouteName for '/'`](assert) {
         assert.expect(3);
 
-        let { application: { testHelpers } } = this;
+        let {
+          application: { testHelpers },
+        } = this;
         return testHelpers.visit('/').then(() => {
           assert.equal(testHelpers.currentRouteName(), 'index', `should equal 'index'.`);
           assert.equal(testHelpers.currentPath(), 'index', `should equal 'index'.`);
@@ -1001,7 +1057,9 @@ if (!jQueryDisabled) {
       [`@test currentRouteName for '/posts'`](assert) {
         assert.expect(3);
 
-        let { application: { testHelpers } } = this;
+        let {
+          application: { testHelpers },
+        } = this;
         return testHelpers.visit('/posts').then(() => {
           assert.equal(
             testHelpers.currentRouteName(),
@@ -1016,7 +1074,9 @@ if (!jQueryDisabled) {
       [`@test currentRouteName for '/posts/new'`](assert) {
         assert.expect(3);
 
-        let { application: { testHelpers } } = this;
+        let {
+          application: { testHelpers },
+        } = this;
         return testHelpers.visit('/posts/new').then(() => {
           assert.equal(testHelpers.currentRouteName(), 'posts.new', `should equal 'posts.new'.`);
           assert.equal(testHelpers.currentPath(), 'posts.new', `should equal 'posts.new'.`);
@@ -1027,7 +1087,9 @@ if (!jQueryDisabled) {
       [`@test currentRouteName for '/posts/edit'`](assert) {
         assert.expect(3);
 
-        let { application: { testHelpers } } = this;
+        let {
+          application: { testHelpers },
+        } = this;
         return testHelpers.visit('/posts/edit').then(() => {
           assert.equal(testHelpers.currentRouteName(), 'edit', `should equal 'edit'.`);
           assert.equal(testHelpers.currentPath(), 'posts.edit', `should equal 'posts.edit'.`);
@@ -1103,7 +1165,7 @@ if (!jQueryDisabled) {
       constructor() {
         super();
 
-        this.runTask(() => {
+        runTask(() => {
           this.createApplication();
 
           this.router.map(function() {
@@ -1117,10 +1179,10 @@ if (!jQueryDisabled) {
           let resolveLater = () =>
             new RSVP.Promise(resolve => {
               /*
-          * The wait() helper has a 10ms tick. We should resolve() after
-          * at least one tick to test whether wait() held off while the
-          * async router was still loading. 20ms should be enough.
-          */
+               * The wait() helper has a 10ms tick. We should resolve() after
+               * at least one tick to test whether wait() held off while the
+               * async router was still loading. 20ms should be enough.
+               */
               later(resolve, { firstName: 'Tom' }, 20);
             });
 
@@ -1146,7 +1208,7 @@ if (!jQueryDisabled) {
         });
 
         this.application.injectTestHelpers();
-        this.runTask(() => {
+        runTask(() => {
           this.application.advanceReadiness();
         });
       }
@@ -1154,7 +1216,9 @@ if (!jQueryDisabled) {
       [`@test currentRouteName for '/user'`](assert) {
         assert.expect(4);
 
-        let { application: { testHelpers } } = this;
+        let {
+          application: { testHelpers },
+        } = this;
         return testHelpers.visit('/user').then(() => {
           assert.equal(testHelpers.currentRouteName(), 'user.index', `should equal 'user.index'.`);
           assert.equal(testHelpers.currentPath(), 'user.index', `should equal 'user.index'.`);
@@ -1167,7 +1231,9 @@ if (!jQueryDisabled) {
       [`@test currentRouteName for '/user/profile'`](assert) {
         assert.expect(4);
 
-        let { application: { testHelpers } } = this;
+        let {
+          application: { testHelpers },
+        } = this;
         return testHelpers.visit('/user/profile').then(() => {
           assert.equal(testHelpers.currentRouteName(), 'user.edit', `should equal 'user.edit'.`);
           assert.equal(testHelpers.currentPath(), 'user.edit', `should equal 'user.edit'.`);
@@ -1184,7 +1250,7 @@ if (!jQueryDisabled) {
     class extends HelpersTestCase {
       constructor() {
         super();
-        this.runTask(() => {
+        runTask(() => {
           this.createApplication();
           this.application.setupForTesting();
         });

@@ -2,21 +2,28 @@ const path = require('path');
 
 module.exports = {
   root: true,
+  parser: 'babel-eslint',
   extends: [
     'eslint:recommended',
     'prettier',
     'plugin:import/errors',
+    'plugin:qunit/recommended',
   ],
   plugins: [
     'ember-internal',
     'prettier',
     'import',
+    'qunit',
   ],
   rules: {
-    'semi': 'error',
+    'no-implicit-coercion': 'error',
+    'no-new-wrappers': 'error',
     'no-unused-vars': 'error',
+    'no-throw-literal': 'error',
     'no-useless-escape': 'off', // TODO: bring this back
     'prettier/prettier': 'error',
+    'qunit/no-commented-tests': 'off',
+    'qunit/require-expect': 'off',
   },
 
   settings: {
@@ -48,6 +55,17 @@ module.exports = {
 
       parserOptions: {
         sourceType: 'module',
+      },
+
+      rules: {
+        // the TypeScript compiler already takes care of this and
+        // leaving it enabled results in false positives for interface imports
+        'no-unused-vars': 'off',
+        'no-undef': 'off',
+
+        'import/export': 'off',
+        'import/named': 'off',
+        'import/no-unresolved': 'off',
       }
     },
     {
@@ -76,17 +94,14 @@ module.exports = {
       rules: {
         'ember-internal/require-yuidoc-access': 'error',
         'ember-internal/no-const-outside-module-scope': 'error',
-
-        'semi': 'error',
-        'no-unused-vars': 'error',
-        'comma-dangle': 'off',
       },
     },
     {
       files: [
-        'packages/*/tests/**/*.js',
-        'packages/@ember/*/tests/**/*.js',
-        'packages/internal-test-helpers/**/*.js',
+        'packages/*/tests/**/*.[jt]s',
+        'packages/@ember/*/tests/**/*.[jt]s',
+        'packages/@ember/-internals/*/tests/**/*.[jt]s',
+        'packages/internal-test-helpers/**/*.[jt]s',
       ],
       env: {
         qunit: true,
@@ -108,11 +123,13 @@ module.exports = {
         'tests/node/**/*.js',
         'blueprints/**/*.js',
         'bin/**/*.js',
+        'tests/docs/*.js',
         'config/**/*.js',
         'lib/**/*.js',
         'server/**/*.js',
+        'testem.js',
         'testem.travis-browsers.js',
-        'testem.dist.js',
+        'testem.browserstack.js',
         'd8-runner.js',
         'broccoli/**/*.js',
         'ember-cli-build.js',
@@ -133,12 +150,14 @@ module.exports = {
       rules: Object.assign({}, require('eslint-plugin-node').configs.recommended.rules, {
         // add your custom rules and overrides for node files here
         'no-process-exit': 'off',
+        'no-throw-literal': 'error'
       }),
     },
     {
       // matches node-land files that aren't shipped to consumers (allows using Node 6+ features)
       files: [
         'broccoli/**/*.js',
+        'tests/node/**/*.js',
         'ember-cli-build.js',
         'rollup.config.js',
         'd8-runner.js',
@@ -156,7 +175,10 @@ module.exports = {
       },
     },
     {
-      files: [ 'tests/node/**/*.js' ],
+      files: [
+        'tests/docs/**/*.js',
+        'tests/node/**/*.js',
+      ],
 
       env: {
         qunit: true

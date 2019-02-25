@@ -2,7 +2,7 @@
 @module ember
 */
 import { checkWaiters } from '../test/waiters';
-import { RSVP } from 'ember-runtime';
+import { RSVP } from '@ember/-internals/runtime';
 import { getCurrentRunLoop, hasScheduledTimers, run } from '@ember/runloop';
 import { pendingRequests } from '../test/pending_requests';
 
@@ -43,7 +43,8 @@ export default function wait(app, value) {
     // Every 10ms, poll for the async thing to have finished
     let watcher = setInterval(() => {
       // 1. If the router is loading, keep polling
-      let routerIsLoading = router._routerMicrolib && !!router._routerMicrolib.activeTransition;
+      let routerIsLoading =
+        router._routerMicrolib && Boolean(router._routerMicrolib.activeTransition);
       if (routerIsLoading) {
         return;
       }

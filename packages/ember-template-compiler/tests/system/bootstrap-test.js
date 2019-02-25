@@ -1,5 +1,11 @@
 import { run } from '@ember/runloop';
-import { Component, getTemplate, setTemplates, hasTemplate, setTemplate } from 'ember-glimmer';
+import {
+  Component,
+  getTemplate,
+  setTemplates,
+  hasTemplate,
+  setTemplate,
+} from '@ember/-internals/glimmer';
 import bootstrap from '../../lib/system/bootstrap';
 import {
   runAppend,

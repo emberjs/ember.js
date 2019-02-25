@@ -1,7 +1,7 @@
 import { assign } from '@ember/polyfills';
 import { compile } from 'ember-template-compiler';
-import { EventDispatcher } from 'ember-views';
-import { helper, Helper, Component, _resetRenderers } from 'ember-glimmer';
+import { EventDispatcher } from '@ember/-internals/views';
+import { helper, Helper, Component, _resetRenderers } from '@ember/-internals/glimmer';
 import { ModuleBasedResolver } from '../test-resolver';
 
 import AbstractTestCase from './abstract';
@@ -168,6 +168,17 @@ export default class AbstractRenderingTestCase extends AbstractTestCase {
         })
       );
     }
+  }
+
+  registerModifier(name, ModifierClass) {
+    let { owner } = this;
+
+    owner.register(`modifier:${name}`, ModifierClass);
+  }
+
+  registerComponentManager(name, manager) {
+    let owner = this.env.owner || this.owner;
+    owner.register(`component-manager:${name}`, manager);
   }
 
   registerTemplate(name, template) {

@@ -7,15 +7,16 @@ export function assign<T, U, V>(target: T, source1: U, source2: V): T & U & V;
 export function assign<T, U, V, W>(target: T, source1: U, source2: V, source3: W): T & U & V & W;
 export function assign(target: object, ...sources: any[]): any;
 /**
-  Copy properties from a source object to a target object.
+  Copy properties from a source object to a target object. Source arguments remain unchanged.
 
   ```javascript
   import { assign } from '@ember/polyfills';
 
   var a = { first: 'Yehuda' };
   var b = { last: 'Katz' };
-  var c = { company: 'Tilde Inc.' };
-  assign(a, b, c); // a === { first: 'Yehuda', last: 'Katz', company: 'Tilde Inc.' }, b === { last: 'Katz' }, c === { company: 'Tilde Inc.' }
+  var c = { company: 'Other Company' };
+  var d = { company: 'Tilde Inc.' };
+  assign(a, b, c, d); // a === { first: 'Yehuda', last: 'Katz', company: 'Tilde Inc.' };
   ```
 
   @method assign

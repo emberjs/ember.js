@@ -12,6 +12,9 @@ const expect = chai.expect;
 const generateFakePackageManifest = require('../helpers/generate-fake-package-manifest');
 const fixture = require('../helpers/fixture');
 
+const setupTestEnvironment = require('../helpers/setup-test-environment');
+const enableModuleUnification = setupTestEnvironment.enableModuleUnification;
+
 describe('Blueprint: helper-test', function() {
   setupTestHooks(this);
 
@@ -20,24 +23,38 @@ describe('Blueprint: helper-test', function() {
       return emberNew();
     });
 
-    it('helper-test foo/bar-baz', function() {
-      return emberGenerateDestroy(['helper-test', 'foo/bar-baz'], _file => {
-        expect(_file('tests/integration/helpers/foo/bar-baz-test.js')).to.equal(
-          fixture('helper-test/integration.js')
-        );
+    describe('with ember-cli-qunit@4.1.0', function() {
+      beforeEach(function() {
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]);
+        generateFakePackageManifest('ember-cli-qunit', '4.1.0');
       });
-    });
 
-    it('helper-test foo/bar-baz --integration', function() {
-      return emberGenerateDestroy(['helper-test', 'foo/bar-baz', '--integration'], _file => {
-        expect(_file('tests/integration/helpers/foo/bar-baz-test.js')).to.equal(
-          fixture('helper-test/integration.js')
-        );
+      it('helper-test foo/bar-baz', function() {
+        return emberGenerateDestroy(['helper-test', 'foo/bar-baz'], _file => {
+          expect(_file('tests/integration/helpers/foo/bar-baz-test.js')).to.equal(
+            fixture('helper-test/integration.js')
+          );
+        });
+      });
+
+      it('helper-test foo/bar-baz --integration', function() {
+        return emberGenerateDestroy(['helper-test', 'foo/bar-baz', '--integration'], _file => {
+          expect(_file('tests/integration/helpers/foo/bar-baz-test.js')).to.equal(
+            fixture('helper-test/integration.js')
+          );
+        });
       });
     });
 
     describe('with ember-cli-qunit@4.2.0', function() {
       beforeEach(function() {
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]);
         generateFakePackageManifest('ember-cli-qunit', '4.2.0');
       });
 
@@ -61,7 +78,7 @@ describe('Blueprint: helper-test', function() {
     describe('with ember-cli-mocha@0.11.0', function() {
       beforeEach(function() {
         modifyPackages([
-          { name: 'ember-cli-qunit', delete: true },
+          { name: 'ember-qunit', delete: true },
           { name: 'ember-cli-mocha', dev: true },
         ]);
         generateFakePackageManifest('ember-cli-mocha', '0.11.0');
@@ -87,7 +104,7 @@ describe('Blueprint: helper-test', function() {
     describe('with ember-cli-mocha@0.12.0', function() {
       beforeEach(function() {
         modifyPackages([
-          { name: 'ember-cli-qunit', delete: true },
+          { name: 'ember-qunit', delete: true },
           { name: 'ember-cli-mocha', dev: true },
         ]);
         generateFakePackageManifest('ember-cli-mocha', '0.12.0');
@@ -109,17 +126,211 @@ describe('Blueprint: helper-test', function() {
         });
       });
     });
+
+    describe('with ember-mocha@0.14.0', function() {
+      beforeEach(function() {
+        modifyPackages([{ name: 'ember-qunit', delete: true }, { name: 'ember-mocha', dev: true }]);
+        generateFakePackageManifest('ember-mocha', '0.14.0');
+      });
+
+      it('helper-test foo/bar-baz for mocha', function() {
+        return emberGenerateDestroy(['helper-test', 'foo/bar-baz'], _file => {
+          expect(_file('tests/integration/helpers/foo/bar-baz-test.js')).to.equal(
+            fixture('helper-test/mocha-rfc232.js')
+          );
+        });
+      });
+
+      it('helper-test foo/bar-baz for mocha --unit', function() {
+        return emberGenerateDestroy(['helper-test', 'foo/bar-baz', '--unit'], _file => {
+          expect(_file('tests/unit/helpers/foo/bar-baz-test.js')).to.equal(
+            fixture('helper-test/mocha-rfc232-unit.js')
+          );
+        });
+      });
+    });
+  });
+
+  describe('in app - module unification', function() {
+    enableModuleUnification();
+
+    beforeEach(function() {
+      return emberNew();
+    });
+
+    describe('with ember-cli-qunit@4.1.0', function() {
+      beforeEach(function() {
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]);
+        generateFakePackageManifest('ember-cli-qunit', '4.1.0');
+      });
+
+      it('helper-test foo/bar-baz', function() {
+        return emberGenerateDestroy(['helper-test', 'foo/bar-baz'], _file => {
+          expect(_file('src/ui/components/foo/bar-baz-test.js')).to.equal(
+            fixture('helper-test/integration.js')
+          );
+        });
+      });
+
+      it('helper-test foo/bar-baz --integration', function() {
+        return emberGenerateDestroy(['helper-test', 'foo/bar-baz', '--integration'], _file => {
+          expect(_file('src/ui/components/foo/bar-baz-test.js')).to.equal(
+            fixture('helper-test/integration.js')
+          );
+        });
+      });
+    });
+
+    describe('with ember-cli-qunit@4.2.0', function() {
+      beforeEach(function() {
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]);
+        generateFakePackageManifest('ember-cli-qunit', '4.2.0');
+      });
+
+      it('helper-test foo/bar-baz', function() {
+        return emberGenerateDestroy(['helper-test', 'foo/bar-baz'], _file => {
+          expect(_file('src/ui/components/foo/bar-baz-test.js')).to.equal(
+            fixture('helper-test/rfc232.js')
+          );
+        });
+      });
+
+      it('helper-test foo/bar-baz --unit', function() {
+        return emberGenerateDestroy(['helper-test', 'foo/bar-baz', '--unit'], _file => {
+          expect(_file('src/ui/components/foo/bar-baz-test.js')).to.equal(
+            fixture('helper-test/rfc232-unit.js')
+          );
+        });
+      });
+    });
+
+    describe('with ember-cli-mocha@0.11.0', function() {
+      beforeEach(function() {
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-mocha', dev: true },
+        ]);
+        generateFakePackageManifest('ember-cli-mocha', '0.11.0');
+      });
+
+      it('helper-test foo/bar-baz --integration', function() {
+        return emberGenerateDestroy(['helper-test', 'foo/bar-baz'], _file => {
+          expect(_file('src/ui/components/foo/bar-baz-test.js')).to.equal(
+            fixture('helper-test/mocha.js')
+          );
+        });
+      });
+
+      it('helper-test foo/bar-baz --unit', function() {
+        return emberGenerateDestroy(['helper-test', 'foo/bar-baz', '--unit'], _file => {
+          expect(_file('src/ui/components/foo/bar-baz-test.js')).to.equal(
+            fixture('helper-test/mocha-unit.js')
+          );
+        });
+      });
+    });
+
+    describe('with ember-cli-mocha@0.12.0', function() {
+      beforeEach(function() {
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-mocha', dev: true },
+        ]);
+        generateFakePackageManifest('ember-cli-mocha', '0.12.0');
+      });
+
+      it('helper-test foo/bar-baz for mocha', function() {
+        return emberGenerateDestroy(['helper-test', 'foo/bar-baz'], _file => {
+          expect(_file('src/ui/components/foo/bar-baz-test.js')).to.equal(
+            fixture('helper-test/mocha-0.12.js')
+          );
+        });
+      });
+
+      it('helper-test foo/bar-baz for mocha --unit', function() {
+        return emberGenerateDestroy(['helper-test', 'foo/bar-baz', '--unit'], _file => {
+          expect(_file('src/ui/components/foo/bar-baz-test.js')).to.equal(
+            fixture('helper-test/mocha-0.12-unit.js')
+          );
+        });
+      });
+    });
+
+    describe('with ember-mocha@0.14.0', function() {
+      beforeEach(function() {
+        modifyPackages([{ name: 'ember-qunit', delete: true }, { name: 'ember-mocha', dev: true }]);
+        generateFakePackageManifest('ember-mocha', '0.14.0');
+      });
+
+      it('helper-test foo/bar-baz for mocha', function() {
+        return emberGenerateDestroy(['helper-test', 'foo/bar-baz'], _file => {
+          expect(_file('src/ui/components/foo/bar-baz-test.js')).to.equal(
+            fixture('helper-test/mocha-rfc232.js')
+          );
+        });
+      });
+
+      it('helper-test foo/bar-baz for mocha --unit', function() {
+        return emberGenerateDestroy(['helper-test', 'foo/bar-baz', '--unit'], _file => {
+          expect(_file('src/ui/components/foo/bar-baz-test.js')).to.equal(
+            fixture('helper-test/mocha-rfc232-unit.js')
+          );
+        });
+      });
+    });
   });
 
   describe('in addon', function() {
     beforeEach(function() {
-      return emberNew({ target: 'addon' });
+      return emberNew({ target: 'addon' }).then(() => {
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]);
+        generateFakePackageManifest('ember-cli-qunit', '4.1.0');
+      });
     });
 
     it('helper-test foo/bar-baz', function() {
       return emberGenerateDestroy(['helper-test', 'foo/bar-baz'], _file => {
         expect(_file('tests/integration/helpers/foo/bar-baz-test.js')).to.equal(
           fixture('helper-test/integration.js')
+        );
+      });
+    });
+  });
+
+  describe('in addon - module unification', function() {
+    enableModuleUnification();
+
+    beforeEach(function() {
+      return emberNew({ target: 'addon' }).then(() => {
+        modifyPackages([
+          { name: 'ember-qunit', delete: true },
+          { name: 'ember-cli-qunit', dev: true },
+        ]);
+        generateFakePackageManifest('ember-cli-qunit', '4.1.0');
+      });
+    });
+
+    it('helper-test foo/bar-baz', function() {
+      return emberGenerateDestroy(['helper-test', 'foo/bar-baz'], _file => {
+        expect(_file('src/ui/components/foo/bar-baz-test.js')).to.equal(
+          fixture('helper-test/integration.js')
+        );
+      });
+    });
+
+    it('helper-test foo/bar-baz --unit', function() {
+      return emberGenerateDestroy(['helper-test', 'foo/bar-baz', '--unit'], _file => {
+        expect(_file('src/ui/components/foo/bar-baz-test.js')).to.equal(
+          fixture('helper-test/module-unification/addon-unit.js')
         );
       });
     });

@@ -9,7 +9,9 @@ const expectError = require('../helpers/expect-error');
 
 const chai = require('ember-cli-blueprint-test-helpers/chai');
 const expect = chai.expect;
-const fs = require('fs-extra');
+
+const setupTestEnvironment = require('../helpers/setup-test-environment');
+const enableModuleUnification = setupTestEnvironment.enableModuleUnification;
 
 describe('Blueprint: template', function() {
   setupTestHooks(this);
@@ -120,8 +122,10 @@ describe('Blueprint: template', function() {
   });
 
   describe('in app - module unification', function() {
+    enableModuleUnification();
+
     beforeEach(function() {
-      return emberNew().then(() => fs.ensureDirSync('src'));
+      return emberNew();
     });
 
     it('template foo', function() {
@@ -138,8 +142,10 @@ describe('Blueprint: template', function() {
   });
 
   describe('with usePods - module unification', function() {
+    enableModuleUnification();
+
     beforeEach(function() {
-      return emberNew().then(() => fs.ensureDirSync('src'));
+      return emberNew();
     });
 
     it('shows an error', function() {
@@ -151,8 +157,10 @@ describe('Blueprint: template', function() {
   });
 
   describe('in addon - module unification', function() {
+    enableModuleUnification();
+
     beforeEach(function() {
-      return emberNew({ target: 'addon' }).then(() => fs.ensureDirSync('src'));
+      return emberNew({ target: 'addon' });
     });
 
     it('template foo', function() {

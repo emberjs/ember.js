@@ -1,9 +1,11 @@
 import { isTesting, setTesting } from '@ember/debug';
 import { later, run } from '@ember/runloop';
-import { getOnerror, setOnerror } from 'ember-error-handling';
+import { getOnerror, setOnerror } from '@ember/-internals/error-handling';
 import RSVP from 'rsvp';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
+const HAS_UNHANDLED_REJECTION_HANDLER = 'onunhandledrejection' in window;
+let QUNIT_ON_UNHANDLED_REJECTION = QUnit.onUnhandledRejection;
 let WINDOW_ONERROR;
 
 function runThatThrowsSync(message = 'Error for testing error handling') {
@@ -26,6 +28,7 @@ moduleFor(
       window.onerror = WINDOW_ONERROR;
 
       setOnerror(undefined);
+      QUnit.onUnhandledRejection = QUNIT_ON_UNHANDLED_REJECTION;
     }
 
     ['@test by default there is no onerror - sync run'](assert) {
@@ -238,6 +241,11 @@ moduleFor(
     [`@test errors in promise constructor when Ember.onerror which does rethrow is present - rsvp`](
       assert
     ) {
+      if (!HAS_UNHANDLED_REJECTION_HANDLER) {
+        assert.expect(0);
+        return;
+      }
+
       assert.expect(2);
 
       let thrown = new Error('the error');
@@ -250,17 +258,17 @@ moduleFor(
         throw error;
       });
 
-      window.onerror = function(message) {
+      // prevent QUnit handler from failing test
+      QUnit.onUnhandledRejection = () => {};
+
+      window.onunhandledrejection = function(event) {
         assert.pushResult({
-          result: /the error/.test(message),
-          actual: message,
+          result: /the error/.test(event.reason),
+          actual: event.reason,
           expected: 'to include `the error`',
           message:
-            'error should bubble out to window.onerror, and therefore fail tests (due to QUnit implementing window.onerror)',
+            'error should bubble out to window.onunhandledrejection, and therefore fail tests (due to QUnit implementing window.onunhandledrejection)',
         });
-
-        // prevent "bubbling" and therefore failing the test
-        return true;
       };
 
       new RSVP.Promise(() => {
@@ -299,6 +307,11 @@ moduleFor(
     [`@test errors in promise constructor when Ember.onerror which does rethrow is present (Ember.testing = false) - rsvp`](
       assert
     ) {
+      if (!HAS_UNHANDLED_REJECTION_HANDLER) {
+        assert.expect(0);
+        return;
+      }
+
       assert.expect(2);
 
       setTesting(false);
@@ -312,17 +325,17 @@ moduleFor(
         throw error;
       });
 
-      window.onerror = function(message) {
+      // prevent QUnit handler from failing test
+      QUnit.onUnhandledRejection = () => {};
+
+      window.onunhandledrejection = function(event) {
         assert.pushResult({
-          result: /the error/.test(message),
-          actual: message,
+          result: /the error/.test(event.reason),
+          actual: event.reason,
           expected: 'to include `the error`',
           message:
-            'error should bubble out to window.onerror, and therefore fail tests (due to QUnit implementing window.onerror)',
+            'error should bubble out to window.onunhandledrejection, and therefore fail tests (due to QUnit implementing window.onunhandledrejection)',
         });
-
-        // prevent "bubbling" and therefore failing the test
-        return true;
       };
 
       new RSVP.Promise(() => {
@@ -360,6 +373,11 @@ moduleFor(
     [`@test errors in promise .then callback when Ember.onerror which does rethrow is present - rsvp`](
       assert
     ) {
+      if (!HAS_UNHANDLED_REJECTION_HANDLER) {
+        assert.expect(0);
+        return;
+      }
+
       assert.expect(2);
 
       let thrown = new Error('the error');
@@ -372,17 +390,17 @@ moduleFor(
         throw error;
       });
 
-      window.onerror = function(message) {
+      // prevent QUnit handler from failing test
+      QUnit.onUnhandledRejection = () => {};
+
+      window.onunhandledrejection = function(event) {
         assert.pushResult({
-          result: /the error/.test(message),
-          actual: message,
+          result: /the error/.test(event.reason),
+          actual: event.reason,
           expected: 'to include `the error`',
           message:
-            'error should bubble out to window.onerror, and therefore fail tests (due to QUnit implementing window.onerror)',
+            'error should bubble out to window.onunhandledrejection, and therefore fail tests (due to QUnit implementing window.onunhandledrejection)',
         });
-
-        // prevent "bubbling" and therefore failing the test
-        return true;
       };
 
       RSVP.resolve().then(() => {
@@ -421,6 +439,11 @@ moduleFor(
     [`@test errors in promise .then callback when Ember.onerror which does rethrow is present (Ember.testing = false) - rsvp`](
       assert
     ) {
+      if (!HAS_UNHANDLED_REJECTION_HANDLER) {
+        assert.expect(0);
+        return;
+      }
+
       assert.expect(2);
 
       setTesting(false);
@@ -434,17 +457,17 @@ moduleFor(
         throw error;
       });
 
-      window.onerror = function(message) {
+      // prevent QUnit handler from failing test
+      QUnit.onUnhandledRejection = () => {};
+
+      window.onunhandledrejection = function(event) {
         assert.pushResult({
-          result: /the error/.test(message),
-          actual: message,
+          result: /the error/.test(event.reason),
+          actual: event.reason,
           expected: 'to include `the error`',
           message:
-            'error should bubble out to window.onerror, and therefore fail tests (due to QUnit implementing window.onerror)',
+            'error should bubble out to window.onunhandledrejection, and therefore fail tests (due to QUnit implementing window.onunhandledrejection)',
         });
-
-        // prevent "bubbling" and therefore failing the test
-        return true;
       };
 
       RSVP.resolve().then(() => {
@@ -482,6 +505,11 @@ moduleFor(
     [`@test errors in async promise .then callback when Ember.onerror which does rethrow is present - rsvp`](
       assert
     ) {
+      if (!HAS_UNHANDLED_REJECTION_HANDLER) {
+        assert.expect(0);
+        return;
+      }
+
       assert.expect(2);
 
       let thrown = new Error('the error');
@@ -494,17 +522,17 @@ moduleFor(
         throw error;
       });
 
-      window.onerror = function(message) {
+      // prevent QUnit handler from failing test
+      QUnit.onUnhandledRejection = () => {};
+
+      window.onunhandledrejection = function(event) {
         assert.pushResult({
-          result: /the error/.test(message),
-          actual: message,
+          result: /the error/.test(event.reason),
+          actual: event.reason,
           expected: 'to include `the error`',
           message:
-            'error should bubble out to window.onerror, and therefore fail tests (due to QUnit implementing window.onerror)',
+            'error should bubble out to window.onunhandledrejection, and therefore fail tests (due to QUnit implementing window.onunhandledrejection)',
         });
-
-        // prevent "bubbling" and therefore failing the test
-        return true;
       };
 
       new RSVP.Promise(resolve => setTimeout(resolve, 10)).then(() => {
@@ -543,6 +571,10 @@ moduleFor(
     [`@test errors in async promise .then callback when Ember.onerror which does rethrow is present (Ember.testing = false) - rsvp`](
       assert
     ) {
+      if (!HAS_UNHANDLED_REJECTION_HANDLER) {
+        assert.expect(0);
+        return;
+      }
       assert.expect(2);
 
       setTesting(false);
@@ -556,17 +588,17 @@ moduleFor(
         throw error;
       });
 
-      window.onerror = function(message) {
+      // prevent QUnit handler from failing test
+      QUnit.onUnhandledRejection = () => {};
+
+      window.onunhandledrejection = function(event) {
         assert.pushResult({
-          result: /the error/.test(message),
-          actual: message,
+          result: /the error/.test(event.reason),
+          actual: event.reason,
           expected: 'to include `the error`',
           message:
-            'error should bubble out to window.onerror, and therefore fail tests (due to QUnit implementing window.onerror)',
+            'error should bubble out to window.onunhandledrejection, and therefore fail tests (due to QUnit implementing window.onunhandledrejection)',
         });
-
-        // prevent "bubbling" and therefore failing the test
-        return true;
       };
 
       new RSVP.Promise(resolve => setTimeout(resolve, 10)).then(() => {

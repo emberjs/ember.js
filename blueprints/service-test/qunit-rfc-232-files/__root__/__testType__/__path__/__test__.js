@@ -10,4 +10,3 @@ module('<%= friendlyTestDescription %>', function(hooks) {
     assert.ok(service);
   });
 });
-

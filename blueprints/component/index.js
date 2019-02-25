@@ -3,13 +3,14 @@
 const path = require('path');
 const stringUtil = require('ember-cli-string-utils');
 const pathUtil = require('ember-cli-path-utils');
-const validComponentName = require('ember-cli-valid-component-name');
 const getPathOption = require('ember-cli-get-component-path-option');
 const normalizeEntityName = require('ember-cli-normalize-entity-name');
+const useEditionDetector = require('../edition-detector');
 const isModuleUnificationProject = require('../module-unification').isModuleUnificationProject;
+const EOL = require('os').EOL;
 
-module.exports = {
-  description: 'Generates a component. Name must contain a hyphen.',
+module.exports = useEditionDetector({
+  description: 'Generates a component.',
 
   availableOptions: [
     {
@@ -20,19 +21,12 @@ module.exports = {
     },
   ],
 
-  filesPath: function() {
-    let filesDirectory = 'files';
-
-    if (isModuleUnificationProject(this.project)) {
-      filesDirectory = 'module-unification-files';
-    }
-
-    return path.join(this.path, filesDirectory);
-  },
-
   fileMapTokens: function() {
     if (isModuleUnificationProject(this.project)) {
       return {
+        __name__: function() {
+          return 'component';
+        },
         __root__(options) {
           if (options.inRepoAddon) {
             return path.join('packages', options.inRepoAddon, 'src');
@@ -44,6 +38,12 @@ module.exports = {
         },
         __path__(options) {
           return path.join('ui', 'components', options.dasherizedModuleName);
+        },
+        __templatepath__(options) {
+          return path.join('ui', 'components', options.dasherizedModuleName);
+        },
+        __templatename__: function() {
+          return 'template';
         },
       };
     } else {
@@ -72,9 +72,7 @@ module.exports = {
   },
 
   normalizeEntityName: function(entityName) {
-    entityName = normalizeEntityName(entityName);
-
-    return validComponentName(entityName);
+    return normalizeEntityName(entityName);
   },
 
   locals: function(options) {
@@ -82,18 +80,20 @@ module.exports = {
     let importTemplate = '';
     let contents = '';
 
-    // if we're in an addon, build import statement
-    if (options.project.isEmberCLIAddon() || (options.inRepoAddon && !options.inDummy)) {
-      if (options.pod) {
-        templatePath = './template';
-      } else {
-        templatePath =
-          pathUtil.getRelativeParentPath(options.entity.name) +
-          'templates/components/' +
-          stringUtil.dasherize(options.entity.name);
+    if (!isModuleUnificationProject(this.project)) {
+      // if we're in an addon, build import statement
+      if (options.project.isEmberCLIAddon() || (options.inRepoAddon && !options.inDummy)) {
+        if (options.pod) {
+          templatePath = './template';
+        } else {
+          templatePath =
+            pathUtil.getRelativeParentPath(options.entity.name) +
+            'templates/components/' +
+            stringUtil.dasherize(options.entity.name);
+        }
+        importTemplate = "import layout from '" + templatePath + "';" + EOL;
+        contents = EOL + '  layout';
       }
-      importTemplate = "import layout from '" + templatePath + "';\n";
-      contents = '\n  layout';
     }
 
     return {
@@ -102,4 +102,4 @@ module.exports = {
       path: getPathOption(options),
     };
   },
-};
+});

@@ -1,8 +1,8 @@
 /* eslint no-console:off */
 /* global console */
 
+import { ENV } from '@ember/-internals/environment';
 import { EMBER_IMPROVED_INSTRUMENTATION } from '@ember/canary-features';
-import { ENV } from 'ember-environment';
 
 export interface Listener<T> {
   before: (name: string, timestamp: number, payload: object) => T;
@@ -107,12 +107,8 @@ function populateListeners(name: string) {
 const time = ((): (() => number) => {
   let perf: MaybePerf = 'undefined' !== typeof window ? window.performance || {} : {};
   let fn = perf.now || perf.mozNow || perf.webkitNow || perf.msNow || perf.oNow;
-  // fn.bind will be available in all the browsers that support the advanced window.performance... ;-)
-  return fn
-    ? fn.bind(perf)
-    : () => {
-        return +new Date();
-      };
+
+  return fn ? fn.bind(perf) : Date.now;
 })();
 
 /**

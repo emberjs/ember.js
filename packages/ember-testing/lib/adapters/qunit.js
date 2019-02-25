@@ -1,6 +1,6 @@
 /* globals QUnit */
 
-import { inspect } from 'ember-utils';
+import { inspect } from '@ember/-internals/utils';
 import Adapter from './adapter';
 /**
    @module ember

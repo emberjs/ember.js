@@ -1,11 +1,12 @@
 import { assign } from '@ember/polyfills';
-import { guidFor } from 'ember-utils';
-import { Object as EmberObject } from 'ember-runtime';
+import { guidFor } from '@ember/-internals/utils';
+import { Object as EmberObject } from '@ember/-internals/runtime';
 import {
   moduleFor,
   ApplicationTestCase,
   ModuleBasedTestResolver,
   DefaultResolverApplicationTestCase,
+  runTask,
 } from 'internal-test-helpers';
 
 moduleFor(
@@ -13,7 +14,7 @@ moduleFor(
   class extends DefaultResolverApplicationTestCase {
     constructor() {
       super();
-      this.runTask(() => this.createApplication());
+      runTask(() => this.createApplication());
       this.application.Post = EmberObject.extend();
     }
 

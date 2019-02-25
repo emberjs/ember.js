@@ -1,10 +1,7 @@
 'use strict';
 
 const WriteFile = require('broccoli-file-creator');
-
-function defaultExport(moduleExport) {
-  return `(function (m) { if (typeof module === "object" && module.exports) { module.exports = m } }(requireModule('${moduleExport}').default));\n`;
-}
+const { stripIndent } = require('common-tags');
 
 function sideeffects(moduleExport) {
   return `requireModule('${moduleExport}')`;
@@ -14,11 +11,26 @@ function umd(moduleExport) {
   return `(function (m) { if (typeof module === "object" && module.exports) { module.exports = m } }(requireModule('${moduleExport}')));\n`;
 }
 
-module.exports = function bootstrapModule(moduleExport, type = 'sideeffects') {
+function testing() {
+  return stripIndent`
+    var testing = requireModule('ember-testing');
+    Ember.Test = testing.Test;
+    Ember.Test.Adapter = testing.Adapter;
+    Ember.Test.QUnitAdapter = testing.QUnitAdapter;
+    Ember.setupForTesting = testing.setupForTesting;
+  `;
+}
+
+function empty() {
+  return '';
+}
+
+module.exports = function bootstrapModule(type, moduleExport) {
   let moduleType = {
-    default: defaultExport,
-    umd,
+    empty,
     sideeffects,
+    testing,
+    umd,
   };
 
   return new WriteFile('bootstrap', moduleType[type](moduleExport));

@@ -20,7 +20,7 @@
 1. Check out `beta` branch and `git pull`
 1. Make sure any master commits that are conceptually `[{BUGFIX,DOC} {beta,release}]` are cherry-picked.
 1. `git push origin beta`, and `let travisBranch = kick off a travis build`
-1. `PRIOR_VERSION=v2.5.0-beta.1 ./bin/changelog | uniq | pbcopy`
+1. `PRIOR_VERSION=v2.5.0-beta.1 ./bin/changelog.js | uniq | pbcopy`
 1. Open `CHANGELOG.md`, paste in the results of the previous script, and clean it up for human-readability.
     1. e.g. [BUGFIX beta] -> [BUGFIX], [DEPRECATE beta] -> [DEPRECATE], ...
     1. Revert [BUGFIX ...] -> [BUGFIX] Revert ...
@@ -74,7 +74,7 @@ Starting point: [https://gist.github.com/rwjblue/fb945e55c70d698d4074](https://g
 ### Build Changelog
 
 1. Push `beta` branch to get Travis to run
-1. Run `PRIOR_VERSION=<tag> ./bin/changelog | uniq | pbcopy`
+1. Run `PRIOR_VERSION=<tag> ./bin/changelog.js | uniq | pbcopy`
 1. Clean up commits in CHANGELOG
     1. e.g. [BUGFIX beta] -> [BUGFIX], [DEPRECATE beta] -> [DEPRECATE], ...
     1. Remove `[DOC]` changes (who cares)
@@ -132,13 +132,13 @@ end
     1. Any feature that has been GOed gets changed to true
 1. Run `ember s -prod`
 1. Run tests at `http://localhost:4200/tests/index.html`
-1. Run production tests `http://localhost:4200/tests/index.htmlskipPackage=container,ember-testing,@ember/debug&dist=prod&prod=true`
-1. In `.travis.yml`, remove `branches:` section e.g. [this commit](https://github.com/emberjs/ember.js/commit/e38ec5d910721a9e02a819b4105a4875723f4b1b).
-1. Now we have to look at the commit just prior to branching 2.4.0.beta-1. Then find the commit after that to start the new branch at.
+2. Run production tests `http://localhost:4200/tests/index.html?dist=prod&prod=true`
+3. In `.travis.yml`, remove `branches:` section e.g. [this commit](https://github.com/emberjs/ember.js/commit/e38ec5d910721a9e02a819b4105a4875723f4b1b).
+4. Now we have to look at the commit just prior to branching 2.4.0.beta-1. Then find the commit after that to start the new branch at.
 
 ### Changelog
 
-1. `PRIOR_VERSION=v2.4.0-beta.1^ HEAD=master ./bin/changelog | uniq | pbcopy`
+1. `PRIOR_VERSION=v2.4.0-beta.1^ HEAD=master ./bin/changelog.js | uniq | pbcopy`
 1. Clean up changelog. Make sure the changelog from the stable release you just did is included.
 
 #### Tag & Release

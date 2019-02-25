@@ -2,16 +2,20 @@
 @module @ember/application
 */
 
-import { dictionary } from 'ember-utils';
-import { ENV } from 'ember-environment';
-import { hasDOM } from 'ember-browser-environment';
+import { dictionary } from '@ember/-internals/utils';
+import { ENV } from '@ember/-internals/environment';
+import { hasDOM } from '@ember/-internals/browser-environment';
 import { assert, isTesting } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { bind, join, once, run, schedule } from '@ember/runloop';
-import { libraries, processAllNamespaces, setNamespaceSearchDisabled } from 'ember-metal';
+import {
+  libraries,
+  processAllNamespaces,
+  setNamespaceSearchDisabled,
+} from '@ember/-internals/metal';
 import { _loaded, runLoadHooks } from './lazy_load';
-import { RSVP } from 'ember-runtime';
-import { EventDispatcher, jQuery, jQueryDisabled } from 'ember-views';
+import { RSVP } from '@ember/-internals/runtime';
+import { EventDispatcher, jQuery, jQueryDisabled } from '@ember/-internals/views';
 import {
   Route,
   Router,
@@ -20,13 +24,13 @@ import {
   AutoLocation,
   NoneLocation,
   BucketCache,
-} from 'ember-routing';
+} from '@ember/-internals/routing';
 import ApplicationInstance from '../instance';
 import Engine from '@ember/engine';
-import { privatize as P } from 'container';
-import { setupApplicationRegistry } from 'ember-glimmer';
-import { RouterService } from 'ember-routing';
-import { EMBER_ROUTING_ROUTER_SERVICE } from '@ember/canary-features';
+import { privatize as P } from '@ember/-internals/container';
+import { setupApplicationRegistry } from '@ember/-internals/glimmer';
+import { RouterService } from '@ember/-internals/routing';
+import { JQUERY_INTEGRATION } from '@ember/deprecated-features';
 
 let librariesRegistered = false;
 
@@ -144,7 +148,7 @@ let librariesRegistered = false;
 
   To learn more about the events Ember components use, see
 
-  [components/handling-events](https://guides.emberjs.com/current/components/handling-events/#toc_event-names).
+  [components/handling-events](https://guides.emberjs.com/release/components/handling-events/#toc_event-names).
 
   ### Initializers
 
@@ -378,9 +382,9 @@ const Application = Engine.extend({
     // the Application's own `boot` method.
     this._readinessDeferrals = 1;
     this._booted = false;
-    this._applicationInstances = [];
+    this._applicationInstances = new Set();
 
-    this.autoboot = this._globalsMode = !!this.autoboot;
+    this.autoboot = this._globalsMode = Boolean(this.autoboot);
 
     if (this._globalsMode) {
       this._prepareForGlobalsMode();
@@ -394,7 +398,7 @@ const Application = Engine.extend({
   /**
     Create an ApplicationInstance for this application.
 
-    @private
+    @public
     @method buildInstance
     @return {ApplicationInstance} the application instance
   */
@@ -412,7 +416,7 @@ const Application = Engine.extend({
     @method _watchInstance
   */
   _watchInstance(instance) {
-    this._applicationInstances.push(instance);
+    this._applicationInstances.add(instance);
   },
 
   /**
@@ -423,10 +427,7 @@ const Application = Engine.extend({
     @method _unwatchInstance
   */
   _unwatchInstance(instance) {
-    let index = this._applicationInstances.indexOf(instance);
-    if (index > -1) {
-      this._applicationInstances.splice(index, 1);
-    }
+    return this._applicationInstances.delete(instance);
   },
 
   /**
@@ -615,7 +616,7 @@ const Application = Engine.extend({
     is disabled, this is automatically called when the first application instance is
     created via `visit`.
 
-    @private
+    @public
     @method boot
     @return {Promise<Application,Error>}
   */
@@ -843,9 +844,9 @@ const Application = Engine.extend({
       _loaded.application = undefined;
     }
 
-    if (this._applicationInstances.length) {
+    if (this._applicationInstances.size) {
       this._applicationInstances.forEach(i => i.destroy());
-      this._applicationInstances.length = 0;
+      this._applicationInstances.clear();
     }
   },
 
@@ -915,7 +916,7 @@ const Application = Engine.extend({
       // Start the app at the special demo URL
       App.visit('/demo', options);
     });
-    ````
+    ```
 
     Or perhaps you might want to boot two instances of your app on the same
     page for a split-screen multiplayer experience:
@@ -1123,17 +1124,15 @@ function commonSetupRegistry(registry) {
     },
   });
 
-  if (EMBER_ROUTING_ROUTER_SERVICE) {
-    registry.register('service:router', RouterService);
-    registry.injection('service:router', '_router', 'router:main');
-  }
+  registry.register('service:router', RouterService);
+  registry.injection('service:router', '_router', 'router:main');
 }
 
 function registerLibraries() {
   if (!librariesRegistered) {
     librariesRegistered = true;
 
-    if (hasDOM && !jQueryDisabled) {
+    if (JQUERY_INTEGRATION && hasDOM && !jQueryDisabled) {
       libraries.registerCoreLibrary('jQuery', jQuery().jquery);
     }
   }

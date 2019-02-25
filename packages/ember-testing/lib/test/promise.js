@@ -1,4 +1,4 @@
-import { RSVP } from 'ember-runtime';
+import { RSVP } from '@ember/-internals/runtime';
 import run from './run';
 
 let lastPromise;
