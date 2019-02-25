@@ -63,12 +63,12 @@ export default Mixin.create({
     An optional target can be passed in as the 2nd argument that will
     be set as the "this" for the callback. This is a good way to give your
     function access to the object triggering the event. When the target
-    parameter is used the callback becomes the third argument.
+    parameter is used the callback method becomes the third argument.
 
     @method on
     @param {String} name The name of the event
     @param {Object} [target] The "this" binding for the callback
-    @param {Function} method The callback to execute
+    @param {Function|String} method A function or the name of a function to be called on `target`
     @return this
     @public
   */
@@ -83,13 +83,13 @@ export default Mixin.create({
     you only care about the first time an event has taken place.
 
     This function takes an optional 2nd argument that will become the "this"
-    value for the callback. If this argument is passed then the 3rd argument
-    becomes the function.
+    value for the callback. When the target parameter is used the callback method
+    becomes the third argument.
 
     @method one
     @param {String} name The name of the event
     @param {Object} [target] The "this" binding for the callback
-    @param {Function} method The callback to execute
+    @param {Function|String} method A function or the name of a function to be called on `target`
     @return this
     @public
   */
@@ -127,7 +127,7 @@ export default Mixin.create({
     @method off
     @param {String} name The name of the event
     @param {Object} target The target of the subscription
-    @param {Function} method The function of the subscription
+    @param {Function|String} method The function or the name of a function of the subscription
     @return this
     @public
   */
