@@ -3443,11 +3443,6 @@ estraverse@^4.0.0, estraverse@^4.1.0, estraverse@^4.1.1:
   resolved "https://registry.yarnpkg.com/estraverse/-/estraverse-4.2.0.tgz#0dee3fed31fcd469618ce7342099fc1afa0bdb13"
   integrity sha1-De4/7TH81GlhjOc0IJn8GvoL2xM=
 
-estree-walker@^0.3.0:
-  version "0.3.1"
-  resolved "https://registry.yarnpkg.com/estree-walker/-/estree-walker-0.3.1.tgz#e6b1a51cf7292524e7237c312e5fe6660c1ce1aa"
-  integrity sha1-5rGlHPcpJSTnI3wxLl/mZgwc4ao=
-
 estree-walker@^0.5.2:
   version "0.5.2"
   resolved "https://registry.yarnpkg.com/estree-walker/-/estree-walker-0.5.2.tgz#d3850be7529c9580d815600b53126515e146dd39"
@@ -7372,14 +7367,14 @@ rimraf@~2.5.2:
   dependencies:
     glob "^7.0.5"
 
-rollup-plugin-commonjs@^9.2.0:
-  version "9.2.0"
-  resolved "https://registry.yarnpkg.com/rollup-plugin-commonjs/-/rollup-plugin-commonjs-9.2.0.tgz#4604e25069e0c78a09e08faa95dc32dec27f7c89"
-  integrity sha512-0RM5U4Vd6iHjL6rLvr3lKBwnPsaVml+qxOGaaNUWN1lSq6S33KhITOfHmvxV3z2vy9Mk4t0g4rNlVaJJsNQPWA==
+rollup-plugin-commonjs@^9.2.1:
+  version "9.2.1"
+  resolved "https://registry.yarnpkg.com/rollup-plugin-commonjs/-/rollup-plugin-commonjs-9.2.1.tgz#bb151ca8fa23600c7a03e25f9f0a45b1ee922dac"
+  integrity sha512-X0A/Cp/t+zbONFinBhiTZrfuUaVwRIp4xsbKq/2ohA2CDULa/7ONSJTelqxon+Vds2R2t2qJTqJQucKUC8GKkw==
   dependencies:
     estree-walker "^0.5.2"
     magic-string "^0.25.1"
-    resolve "^1.8.1"
+    resolve "^1.10.0"
     rollup-pluginutils "^2.3.3"
 
 rollup-plugin-node-resolve@^4.0.1:
@@ -7391,15 +7386,7 @@ rollup-plugin-node-resolve@^4.0.1:
     is-module "^1.0.0"
     resolve "^1.10.0"
 
-rollup-pluginutils@^2.0.1:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/rollup-pluginutils/-/rollup-pluginutils-2.0.1.tgz#7ec95b3573f6543a46a6461bd9a7c544525d0fc0"
-  integrity sha1-fslbNXP2VDpGpkYb2afFRFJdD8A=
-  dependencies:
-    estree-walker "^0.3.0"
-    micromatch "^2.3.11"
-
-rollup-pluginutils@^2.3.3:
+rollup-pluginutils@^2.0.1, rollup-pluginutils@^2.3.3:
   version "2.3.3"
   resolved "https://registry.yarnpkg.com/rollup-pluginutils/-/rollup-pluginutils-2.3.3.tgz#3aad9b1eb3e7fe8262820818840bf091e5ae6794"
   integrity sha512-2XZwja7b6P5q4RZ5FhyX1+f46xi1Z3qBKigLRZ6VTZjwbN0K1IFGMlwm06Uu0Emcre2Z63l77nq/pzn+KxIEoA==
