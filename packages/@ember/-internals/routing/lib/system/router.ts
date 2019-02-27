@@ -1716,9 +1716,6 @@ EmberRouter.reopenClass({
     });
     ```
 
-    For more detailed documentation and examples please see
-    [the guides](https://guides.emberjs.com/release/routing/defining-your-routes/).
-
     @method map
     @param callback
     @public
