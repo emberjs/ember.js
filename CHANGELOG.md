@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### v3.9.0-beta.2 (February 26, 2019)
+
+- [#17618](https://github.com/emberjs/ember.js/pull/17618) [BUGFIX] Migrate autorun microtask queue to Promise.then
+- [#17649](https://github.com/emberjs/ember.js/pull/17649) [BUGFIX] Revert decorator refactors
+
 ### v3.9.0-beta.1 (February 18, 2019)
 
 - [#17470](https://github.com/emberjs/ember.js/pull/17470) [DEPRECATION] Implements the Computed Property Modifier deprecation RFCs
