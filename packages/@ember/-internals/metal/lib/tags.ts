@@ -94,7 +94,7 @@ export function markObjectAsDirty(obj: object, propertyKey: string, meta: Meta):
   }
 }
 
-function ensureRunloop(): void {
+export function ensureRunloop(): void {
   if (hasViews()) {
     backburner.ensureInstance();
   }

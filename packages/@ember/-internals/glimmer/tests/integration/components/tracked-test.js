@@ -32,6 +32,37 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
         this.assertText('1');
       }
 
+      '@test tracked properties rerender when updated outside of a runloop'(assert) {
+        let done = assert.async();
+
+        let CountComponent = Component.extend({
+          count: tracked({ value: 0 }),
+
+          increment() {
+            setTimeout(() => {
+              this.count++;
+            }, 100);
+          },
+        });
+
+        this.registerComponent('counter', {
+          ComponentClass: CountComponent,
+          template: '<button {{action this.increment}}>{{this.count}}</button>',
+        });
+
+        this.render('<Counter />');
+
+        this.assertText('0');
+
+        // intentionally outside of a runTask
+        this.$('button').click();
+
+        setTimeout(() => {
+          this.assertText('1');
+          done();
+        }, 200);
+      }
+
       '@test nested tracked properties rerender when updated'() {
         let Counter = EmberObject.extend({
           count: tracked({ value: 0 }),

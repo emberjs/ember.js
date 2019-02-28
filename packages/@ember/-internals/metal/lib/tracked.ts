@@ -4,7 +4,7 @@ import { DEBUG } from '@glimmer/env';
 import { combine, CONSTANT_TAG, Tag } from '@glimmer/reference';
 import { Decorator, ElementDescriptor } from './decorator';
 import { setComputedDecorator } from './descriptor_map';
-import { dirty, tagFor, tagForProperty } from './tags';
+import { dirty, ensureRunloop, tagFor, tagForProperty } from './tags';
 
 type Option<T> = T | null;
 
@@ -255,7 +255,7 @@ export interface Interceptors {
   [key: string]: boolean;
 }
 
-let propertyDidChange = function(): void {};
+let propertyDidChange = ensureRunloop;
 
 export function setPropertyDidChange(cb: () => void): void {
   propertyDidChange = cb;
