@@ -1,4 +1,4 @@
-import { runInTransaction, setHasViews } from '@ember/-internals/metal';
+import { runInTransaction } from '@ember/-internals/metal';
 import {
   fallbackViewRegistry,
   getViewElement,
@@ -168,8 +168,6 @@ const renderers: Renderer[] = [];
 export function _resetRenderers() {
   renderers.length = 0;
 }
-
-setHasViews(() => renderers.length > 0);
 
 function register(renderer: Renderer): void {
   assert('Cannot register the same renderer twice', renderers.indexOf(renderer) === -1);
@@ -401,7 +399,7 @@ export abstract class Renderer {
 
   _renderRoots() {
     let { _roots: roots, _env: env, _removedRoots: removedRoots } = this;
-    let globalShouldReflush: boolean;
+    let globalShouldReflush = false;
     let initialRootsLength: number;
 
     do {

@@ -11,12 +11,6 @@ import {
   UpdatableTag,
 } from '@glimmer/reference';
 
-let hasViews: () => boolean = () => false;
-
-export function setHasViews(fn: () => boolean): void {
-  hasViews = fn;
-}
-
 function makeTag(): TagWrapper<DirtyableTag> {
   return DirtyableTag.create();
 }
@@ -95,7 +89,5 @@ export function markObjectAsDirty(obj: object, propertyKey: string, meta: Meta):
 }
 
 export function ensureRunloop(): void {
-  if (hasViews()) {
-    backburner.ensureInstance();
-  }
+  backburner.ensureInstance();
 }
