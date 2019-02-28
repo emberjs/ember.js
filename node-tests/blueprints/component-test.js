@@ -91,10 +91,9 @@ describe('Blueprint: component', function() {
         expect(_file('app/templates/components/x-foo.hbs')).to.equal('{{yield}}');
 
         expect(_file('tests/integration/components/x-foo-test.js')).to.equal(
-          fixture('component-test/default-template.js', {
+          fixture('component-test/default-curly-template.js', {
             replace: {
               component: 'x-foo',
-              componentInvocation: 'XFoo',
             },
           })
         );

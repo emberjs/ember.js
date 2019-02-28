@@ -11,9 +11,8 @@ const isModuleUnificationProject = require('../module-unification').isModuleUnif
 function needsCurlyBracketInvocation(options) {
   let path = options.path || '';
   let fullPaths = [...path.split('/'), ...options.entity.name.split('/')];
-  let ignoreClassicPrefix = !options.pod && options.path !== 'components';
   let ignoreCommonPrefix = ['', 'components'].includes(fullPaths[0]);
-  if (ignoreClassicPrefix || ignoreCommonPrefix) fullPaths.shift();
+  if (ignoreCommonPrefix) fullPaths.shift();
   return fullPaths.length > 1;
 }
 
