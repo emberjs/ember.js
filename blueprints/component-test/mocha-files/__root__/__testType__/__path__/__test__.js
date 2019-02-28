@@ -12,15 +12,18 @@ describeComponent('<%= componentPathName %>', '<%= friendlyTestDescription %>',
     it('renders', function() {
       <% if (testType === 'integration' ) { %>// Set any properties with this.set('myProperty', 'value');
       // Handle any actions with this.on('myAction', function(val) { ... });
-      // Template block usage:
-      // this.render(hbs`
-      //   {{#<%= dasherizedModuleName %>}}
-      //     template content
-      //   {{/<%= dasherizedModuleName %>}}
-      // `);
 
-      this.render(hbs`{{<%= dasherizedModuleName %>}}`);
-      expect(this.$()).to.have.length(1);<% } else if(testType === 'unit') { %>// creates the component instance
+      this.render(hbs`<%= selfCloseComponent(componentName) %>`);
+      expect(this.$()).to.have.length(1);
+
+      // Template block usage:
+      this.render(hbs`
+        <%= openComponent(componentName) %>
+          template block text
+        <%= closeComponent(componentName) %>
+      `);
+
+      assert.equal(this.$().text().trim(), 'template block text');<% } else if(testType === 'unit') { %>// creates the component instance
       let component = this.subject();
       // renders the component on the page
       this.render();

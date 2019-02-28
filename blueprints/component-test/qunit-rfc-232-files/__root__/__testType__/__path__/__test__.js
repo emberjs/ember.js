@@ -10,15 +10,15 @@ module('<%= friendlyTestDescription %>', function(hooks) {
     // Set any properties with this.set('myProperty', 'value');
     // Handle any actions with this.set('myAction', function(val) { ... });
 
-    await render(hbs`{{<%= componentPathName %>}}`);
+    await render(hbs`<%= selfCloseComponent(componentName) %>`);
 
     assert.equal(this.element.textContent.trim(), '');
 
     // Template block usage:
     await render(hbs`
-      {{#<%= componentPathName %>}}
+      <%= openComponent(componentName) %>
         template block text
-      {{/<%= componentPathName %>}}
+      <%= closeComponent(componentName) %>
     `);
 
     assert.equal(this.element.textContent.trim(), 'template block text');

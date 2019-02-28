@@ -10,15 +10,18 @@ describeComponent('x-foo', 'Integration | Component | x-foo',
     it('renders', function() {
       // Set any properties with this.set('myProperty', 'value');
       // Handle any actions with this.on('myAction', function(val) { ... });
-      // Template block usage:
-      // this.render(hbs`
-      //   {{#x-foo}}
-      //     template content
-      //   {{/x-foo}}
-      // `);
 
-      this.render(hbs`{{x-foo}}`);
+      this.render(hbs`<XFoo />`);
       expect(this.$()).to.have.length(1);
+
+      // Template block usage:
+      this.render(hbs`
+        <XFoo>
+          template block text
+        </XFoo>
+      `);
+
+      assert.equal(this.$().text().trim(), 'template block text');
     });
   }
 );
