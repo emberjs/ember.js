@@ -8,6 +8,11 @@ const path = require('path');
 module.exports = {
   description: 'Generates a helper function.',
 
+  filesPath() {
+    let rootPath = isModuleUnificationProject(this.project) ? 'mu-files' : 'files';
+    return path.join(this.path, rootPath);
+  },
+
   fileMapTokens() {
     if (isModuleUnificationProject(this.project)) {
       return {

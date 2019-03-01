@@ -106,7 +106,7 @@ describe('Blueprint: helper', function() {
 
     it('helper foo/bar-baz', function() {
       return emberGenerateDestroy(['helper', 'foo/bar-baz'], _file => {
-        expect(_file('src/ui/components/foo/bar-baz.js')).to.equal(fixture('helper/helper.js'));
+        expect(_file('src/ui/components/foo/bar-baz.js')).to.equal(fixture('helper/mu-helper.js'));
         expect(_file('src/ui/components/foo/bar-baz-test.js')).to.equal(
           fixture('helper-test/integration.js')
         );
@@ -115,7 +115,7 @@ describe('Blueprint: helper', function() {
 
     it('helper foo/bar-baz unit', function() {
       return emberGenerateDestroy(['helper', '--test-type=unit', 'foo/bar-baz'], _file => {
-        expect(_file('src/ui/components/foo/bar-baz.js')).to.equal(fixture('helper/helper.js'));
+        expect(_file('src/ui/components/foo/bar-baz.js')).to.equal(fixture('helper/mu-helper.js'));
         expect(_file('src/ui/components/foo/bar-baz-test.js')).to.equal(
           fixture('helper-test/unit.js')
         );
@@ -170,7 +170,7 @@ describe('Blueprint: helper', function() {
 
     it('helper foo/bar-baz', function() {
       return emberGenerateDestroy(['helper', 'foo/bar-baz'], _file => {
-        expect(_file('src/ui/components/foo/bar-baz.js')).to.equal(fixture('helper/helper.js'));
+        expect(_file('src/ui/components/foo/bar-baz.js')).to.equal(fixture('helper/mu-helper.js'));
         expect(_file('src/ui/components/foo/bar-baz-test.js')).to.equal(
           fixture('helper-test/integration.js')
         );
@@ -179,7 +179,7 @@ describe('Blueprint: helper', function() {
 
     it('helper foo/bar-baz unit', function() {
       return emberGenerateDestroy(['helper', '--test-type=unit', 'foo/bar-baz'], _file => {
-        expect(_file('src/ui/components/foo/bar-baz.js')).to.equal(fixture('helper/helper.js'));
+        expect(_file('src/ui/components/foo/bar-baz.js')).to.equal(fixture('helper/mu-helper.js'));
         expect(_file('src/ui/components/foo/bar-baz-test.js')).to.equal(
           fixture('helper-test/module-unification/addon-unit.js')
         );
@@ -229,7 +229,7 @@ describe('Blueprint: helper', function() {
     it('helper foo/bar-baz --in-repo-addon=my-addon', function() {
       return emberGenerateDestroy(['helper', 'foo/bar-baz', '--in-repo-addon=my-addon'], _file => {
         expect(_file('packages/my-addon/src/ui/components/foo/bar-baz.js')).to.equal(
-          fixture('helper/helper.js')
+          fixture('helper/mu-helper.js')
         );
         expect(_file('packages/my-addon/src/ui/components/foo/bar-baz-test.js')).to.equal(
           fixture('helper-test/integration.js')
@@ -242,7 +242,7 @@ describe('Blueprint: helper', function() {
         ['helper', '--test-type=unit', 'foo/bar-baz', '--in-repo-addon=my-addon'],
         _file => {
           expect(_file('packages/my-addon/src/ui/components/foo/bar-baz.js')).to.equal(
-            fixture('helper/helper.js')
+            fixture('helper/mu-helper.js')
           );
           expect(_file('packages/my-addon/src/ui/components/foo/bar-baz-test.js')).to.equal(
             fixture('helper-test/module-unification/addon-unit.js')
