@@ -10,6 +10,7 @@ module.exports = {
     '[]',
     '_APPLICATION_TEMPLATE_WRAPPER',
     '_JQUERY_INTEGRATION',
+    '_RERENDER_LOOP_LIMIT',
     '_TEMPLATE_ONLY_GLIMMER_COMPONENTS',
     '__container__',
     '_activeQPChanged',
