@@ -76,6 +76,25 @@ moduleFor(
       assert.equal(count, 1, 'should have invoked computed property');
     }
 
+    ['@test computed property can be defined and accessed on a class constructor'](assert) {
+      let count = 0;
+
+      let Obj = EmberObject.extend();
+      Obj.reopenClass({
+        bar: 123,
+
+        foo: computed(function() {
+          count++;
+          return this.bar;
+        }),
+      });
+
+      assert.equal(Obj.foo, 123, 'should return value');
+      Obj.foo;
+
+      assert.equal(count, 1, 'should only call getter once');
+    }
+
     ['@test can override volatile computed property'](assert) {
       let obj = {};
 
