@@ -22,7 +22,8 @@ function makeTag(): TagWrapper<DirtyableTag> {
 }
 
 export function tagForProperty(object: any, propertyKey: string | symbol, _meta?: Meta): Tag {
-  if (typeof object !== 'object' || object === null) {
+  let objectType = typeof object;
+  if (objectType !== 'function' && (objectType !== 'object' || object === null)) {
     return CONSTANT_TAG;
   }
   let meta = _meta === undefined ? metaFor(object) : _meta;

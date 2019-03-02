@@ -70,6 +70,25 @@ if (EMBER_NATIVE_DECORATOR_SUPPORT) {
         get(obj, 'fullName');
       }
 
+      ['@test computed property can be defined and accessed on a class constructor'](assert) {
+        let count = 0;
+
+        class Obj {
+          static bar = 123;
+
+          @computed
+          static get foo() {
+            count++;
+            return this.bar;
+          }
+        }
+
+        assert.equal(Obj.foo, 123, 'should return value');
+        Obj.foo;
+
+        assert.equal(count, 1, 'should only call getter once');
+      }
+
       ['@test it works with computed desc'](assert) {
         assert.expect(4);
 
