@@ -17,7 +17,7 @@ import {
   addDependentKeys,
   ComputedDescriptor,
   Decorator,
-  ElementDescriptor,
+  DecoratorPropertyDescriptor,
   isElementDescriptor,
   makeComputedDecorator,
   removeDependentKeys,
@@ -212,12 +212,7 @@ export class ComputedProperty extends ComputedDescriptor {
     }
   }
 
-  setup(
-    obj: object,
-    keyName: string,
-    propertyDesc: PropertyDescriptor & { initializer: any },
-    meta: Meta
-  ) {
+  setup(obj: object, keyName: string, propertyDesc: DecoratorPropertyDescriptor, meta: Meta) {
     super.setup(obj, keyName, propertyDesc, meta);
 
     assert(
@@ -227,27 +222,29 @@ export class ComputedProperty extends ComputedDescriptor {
 
     assert(
       `@computed can only be used on empty fields. ${keyName} has an initial value (e.g. \`${keyName} = someValue\`)`,
-      !propertyDesc.initializer
+      !propertyDesc || !propertyDesc.initializer
     );
 
     assert(
       `Attempted to apply a computed property that already has a getter/setter to a ${keyName}, but it is a method or an accessor. If you passed @computed a function or getter/setter (e.g. \`@computed({ get() { ... } })\`), then it must be applied to a field`,
       !(
         this._hasConfig &&
+        propertyDesc &&
         (typeof propertyDesc.get === 'function' || typeof propertyDesc.set === 'function')
       )
     );
 
     if (this._hasConfig === false) {
-      let { get, set } = propertyDesc;
-
       assert(
         `Attempted to use @computed on ${keyName}, but it did not have a getter or a setter. You must either pass a get a function or getter/setter to @computed directly (e.g. \`@computed({ get() { ... } })\`) or apply @computed directly to a getter/setter`,
-        typeof get === 'function' || typeof set === 'function'
+        propertyDesc &&
+          (typeof propertyDesc.get === 'function' || typeof propertyDesc.set === 'function')
       );
 
+      let { get, set } = propertyDesc!;
+
       if (get !== undefined) {
-        this._getter = propertyDesc.get as ComputedPropertyGetter;
+        this._getter = get as ComputedPropertyGetter;
       }
 
       if (set !== undefined) {
@@ -713,14 +710,17 @@ class ComputedDecoratorImpl extends Function {
   @return {ComputedDecorator} property decorator instance
   @public
 */
-export function computed(elementDesc: ElementDescriptor): ElementDescriptor;
+export function computed(target: object, key: string, desc: PropertyDescriptor): PropertyDescriptor;
 export function computed(...args: (string | ComputedPropertyConfig)[]): ComputedDecorator;
 export function computed(
-  ...args: (string | ComputedPropertyConfig | ElementDescriptor)[]
-): ComputedDecorator | ElementDescriptor {
-  let firstArg = args[0];
+  ...args: (object | string | ComputedPropertyConfig | DecoratorPropertyDescriptor)[]
+): ComputedDecorator | DecoratorPropertyDescriptor {
+  assert(
+    `@computed can only be used directly as a native decorator. If you're using tracked in classic classes, add parenthesis to call it like a function: computed()`,
+    !(isElementDescriptor(args.slice(0, 3)) && args.length === 5 && args[4] === true)
+  );
 
-  if (isElementDescriptor(firstArg)) {
+  if (isElementDescriptor(args)) {
     assert(
       'Native decorators are not enabled without the EMBER_NATIVE_DECORATOR_SUPPORT flag. If you are using computed in a classic class, add parenthesis to it: computed()',
       Boolean(EMBER_NATIVE_DECORATOR_SUPPORT)
@@ -731,7 +731,7 @@ export function computed(
       ComputedDecoratorImpl
     ) as ComputedDecorator;
 
-    return decorator(firstArg);
+    return decorator(args[0], args[1], args[2]);
   }
 
   return makeComputedDecorator(

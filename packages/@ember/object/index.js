@@ -31,7 +31,7 @@ import { assign } from '@ember/polyfills';
   @method computed
   @for @ember/object
   @static
-  @param {ElementDescriptor} elementDesc the descriptor of the element to decorate
+  @param {} elementDesc the descriptor of the element to decorate
   @return {ElementDescriptor} the decorated descriptor
   @private
 */
@@ -40,18 +40,24 @@ export let action;
 if (EMBER_NATIVE_DECORATOR_SUPPORT) {
   let BINDINGS_MAP = new WeakMap();
 
-  action = function action(elementDesc) {
-    assert(
-      'The @action decorator must be applied to methods',
-      elementDesc &&
-        elementDesc.kind === 'method' &&
-        elementDesc.descriptor &&
-        typeof elementDesc.descriptor.value === 'function'
-    );
+  action = function action(target, key, desc) {
+    assert('The @action decorator must be applied to methods', typeof desc.value === 'function');
 
-    let actionFn = elementDesc.descriptor.value;
+    let actionFn = desc.value;
 
-    elementDesc.descriptor = {
+    if (target.constructor !== undefined && typeof target.constructor.proto === 'function') {
+      target.constructor.proto();
+    }
+
+    if (!target.hasOwnProperty('actions')) {
+      let parentActions = target.actions;
+      // we need to assign because of the way mixins copy actions down when inheriting
+      target.actions = parentActions ? assign({}, parentActions) : {};
+    }
+
+    target.actions[key] = actionFn;
+
+    return {
       get() {
         let bindings = BINDINGS_MAP.get(this);
 
@@ -70,26 +76,5 @@ if (EMBER_NATIVE_DECORATOR_SUPPORT) {
         return fn;
       },
     };
-
-    elementDesc.finisher = target => {
-      let { key } = elementDesc;
-      let { prototype } = target;
-
-      if (typeof target.proto === 'function') {
-        target.proto();
-      }
-
-      if (!prototype.hasOwnProperty('actions')) {
-        let parentActions = prototype.actions;
-        // we need to assign because of the way mixins copy actions down when inheriting
-        prototype.actions = parentActions ? assign({}, parentActions) : {};
-      }
-
-      prototype.actions[key] = actionFn;
-
-      return target;
-    };
-
-    return elementDesc;
   };
 }

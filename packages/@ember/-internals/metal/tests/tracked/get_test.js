@@ -29,26 +29,6 @@ if (EMBER_METAL_TRACKED_PROPERTIES && EMBER_NATIVE_DECORATOR_SUPPORT) {
         }
       }
 
-      '@test should retrieve a number key on an object'() {
-        class Obj {
-          @tracked 1 = 'first';
-        }
-
-        let obj = new Obj();
-
-        this.assert.equal(get(obj, '1'), 'first');
-      }
-
-      '@test should retrieve an empty key on an object'() {
-        class Obj {
-          @tracked '' = 'empty';
-        }
-
-        let obj = new Obj();
-
-        this.assert.equal(get(obj, ''), 'empty');
-      }
-
       '@test should get a @tracked path'() {
         class Key {
           @tracked value = 'value';

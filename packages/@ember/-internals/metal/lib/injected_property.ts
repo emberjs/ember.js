@@ -3,7 +3,7 @@ import { EMBER_MODULE_UNIFICATION, EMBER_NATIVE_DECORATOR_SUPPORT } from '@ember
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { computed } from './computed';
-import { ElementDescriptor, isElementDescriptor } from './decorator';
+import { Decorator, DecoratorPropertyDescriptor, isElementDescriptor } from './decorator';
 import { defineProperty } from './properties';
 
 export let DEBUG_INJECTION_FUNCTIONS: WeakMap<Function, any>;
@@ -34,13 +34,26 @@ export interface InjectedPropertyOptions {
 */
 export default function inject(
   type: string,
-  nameOrDesc: string | ElementDescriptor,
+  name: string,
   options?: InjectedPropertyOptions
-) {
+): Decorator;
+export default function inject(
+  type: string,
+  target: object,
+  key: string,
+  desc: DecoratorPropertyDescriptor
+): DecoratorPropertyDescriptor;
+export default function inject(
+  type: string,
+  ...args: any[]
+): Decorator | DecoratorPropertyDescriptor {
   assert('a string type must be provided to inject', typeof type === 'string');
 
+  let calledAsDecorator = isElementDescriptor(args);
   let source: string | undefined, namespace: string | undefined;
-  let name = typeof nameOrDesc === 'string' ? nameOrDesc : undefined;
+
+  let name = calledAsDecorator ? undefined : args[0];
+  let options = calledAsDecorator ? undefined : args[1];
 
   if (EMBER_MODULE_UNIFICATION) {
     source = options ? options.source : undefined;
@@ -84,13 +97,13 @@ export default function inject(
     },
   });
 
-  if (isElementDescriptor(nameOrDesc)) {
+  if (calledAsDecorator) {
     assert(
       'Native decorators are not enabled without the EMBER_NATIVE_DECORATOR_SUPPORT flag. If you are using inject in a classic class, add parenthesis to it: inject()',
       Boolean(EMBER_NATIVE_DECORATOR_SUPPORT)
     );
 
-    return decorator(nameOrDesc);
+    return decorator(args[0], args[1], args[2]);
   } else {
     return decorator;
   }

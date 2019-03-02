@@ -5,7 +5,7 @@
 import { Meta, meta as metaFor, peekMeta, UNDEFINED } from '@ember/-internals/meta';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { Decorator, ElementDescriptor } from './decorator';
+import { Decorator } from './decorator';
 import { descriptorForProperty, isComputedDecorator } from './descriptor_map';
 import { overrideChains } from './property_events';
 
@@ -150,39 +150,15 @@ export function defineProperty(
 
   let value;
   if (isComputedDecorator(desc)) {
-    let elementDesc = {
-      key: keyName,
-      kind: 'field',
-      placement: 'own',
-      descriptor: {
-        value: undefined,
-      },
-      toString() {
-        return '[object Descriptor]';
-      },
-    } as ElementDescriptor;
+    let propertyDesc;
 
     if (DEBUG) {
-      elementDesc = desc!(elementDesc, true);
+      propertyDesc = desc!(obj, keyName, undefined, meta, true);
     } else {
-      elementDesc = desc!(elementDesc);
+      propertyDesc = desc!(obj, keyName, undefined, meta);
     }
 
-    Object.defineProperty(obj, keyName, elementDesc.descriptor);
-
-    if (elementDesc.finisher !== undefined) {
-      if (obj.constructor !== undefined && obj.constructor.prototype === obj) {
-        // Nonstandard, we push the meta along here
-        elementDesc.finisher(obj.constructor, meta);
-      } else {
-        // The most correct thing to do here is only pass the constructor of the
-        // object to the finisher, but we have to support being able to
-        // `defineProperty` directly on instances as well. This is _not_ spec
-        // compliant, but it's limited to core decorators that work with the
-        // classic object model.
-        elementDesc.finisher(obj, meta);
-      }
-    }
+    Object.defineProperty(obj, keyName, propertyDesc as PropertyDescriptor);
 
     // pass the decorator function forward for backwards compat
     value = desc;

@@ -4,8 +4,8 @@ module.exports = function(tree) {
   let options = {
     sourceMaps: true,
     plugins: [
-      ['@babel/plugin-proposal-decorators', { decoratorsBeforeExport: true, legacy: false }],
-      ['@babel/plugin-proposal-class-properties'],
+      ['@babel/plugin-proposal-decorators', { legacy: true }],
+      ['@babel/plugin-proposal-class-properties', { loose: true }],
     ],
   };
 
