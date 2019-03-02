@@ -836,6 +836,28 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
         });
       }
 
+      '@test `...attributes` are merged regardless of the position where they are defined'() {
+        this.registerComponent('foo-bar', {
+          ComponentClass: Component.extend({ tagName: '' }),
+          template:
+            '<div class="inner" ...attributes>hello</div><div ...attributes class="inner">hello</div>',
+        });
+
+        this.render('<FooBar class="outer" />');
+
+        this.assertElement(this.firstChild, {
+          tagName: 'div',
+          attrs: { class: classes('inner outer') },
+          content: 'hello',
+        });
+
+        this.assertElement(this.nthChild(1), {
+          tagName: 'div',
+          attrs: { class: classes('outer inner') },
+          content: 'hello',
+        });
+      }
+
       '@test the attributes passed on invocation trump over the default ones on elements with `...attributes` in yielded contextual component ("splattributes")'() {
         this.registerComponent('foo-bar', {
           ComponentClass: Component.extend({ tagName: '' }),
