@@ -11,15 +11,15 @@ test('it renders', function(assert) {
   <% if (testType === 'integration' ) { %>// Set any properties with this.set('myProperty', 'value');
   // Handle any actions with this.on('myAction', function(val) { ... });
 
-  this.render(hbs`{{<%= componentPathName %>}}`);
+  this.render(hbs`<%= selfCloseComponent(componentName) %>`);
 
   assert.equal(this.$().text().trim(), '');
 
   // Template block usage:
   this.render(hbs`
-    {{#<%= componentPathName %>}}
+    <%= openComponent(componentName) %>
       template block text
-    {{/<%= componentPathName %>}}
+    <%= closeComponent(componentName) %>
   `);
 
   assert.equal(this.$().text().trim(), 'template block text');<% } else if(testType === 'unit') { %>

@@ -42,6 +42,7 @@ describe('Blueprint: component', function() {
           fixture('component-test/default-template.js', {
             replace: {
               component: 'foo',
+              componentInvocation: 'Foo',
             },
           })
         );
@@ -58,6 +59,7 @@ describe('Blueprint: component', function() {
           fixture('component-test/default-template.js', {
             replace: {
               component: 'x-foo',
+              componentInvocation: 'XFoo',
             },
           })
         );
@@ -73,7 +75,7 @@ describe('Blueprint: component', function() {
         expect(_file('app/templates/components/foo/x-foo.hbs')).to.equal('{{yield}}');
 
         expect(_file('tests/integration/components/foo/x-foo-test.js')).to.equal(
-          fixture('component-test/default-template.js', {
+          fixture('component-test/default-curly-template.js', {
             replace: {
               component: 'foo/x-foo',
             },
@@ -89,7 +91,7 @@ describe('Blueprint: component', function() {
         expect(_file('app/templates/components/x-foo.hbs')).to.equal('{{yield}}');
 
         expect(_file('tests/integration/components/x-foo-test.js')).to.equal(
-          fixture('component-test/default-template.js', {
+          fixture('component-test/default-curly-template.js', {
             replace: {
               component: 'x-foo',
             },
@@ -110,6 +112,7 @@ describe('Blueprint: component', function() {
           fixture('component-test/default-template.js', {
             replace: {
               component: 'x-foo',
+              componentInvocation: 'XFoo',
             },
           })
         );
@@ -125,7 +128,7 @@ describe('Blueprint: component', function() {
         expect(_file('app/components/foo/x-foo/template.hbs')).to.equal('{{yield}}');
 
         expect(_file('tests/integration/components/foo/x-foo/component-test.js')).to.equal(
-          fixture('component-test/default-template.js', {
+          fixture('component-test/default-curly-template.js', {
             replace: {
               component: 'foo/x-foo',
             },
@@ -143,7 +146,7 @@ describe('Blueprint: component', function() {
         expect(_file('app/foo/x-foo/template.hbs')).to.equal('{{yield}}');
 
         expect(_file('tests/integration/foo/x-foo/component-test.js')).to.equal(
-          fixture('component-test/default-template.js', {
+          fixture('component-test/default-curly-template.js', {
             replace: {
               component: 'x-foo',
               path: 'foo/',
@@ -162,7 +165,7 @@ describe('Blueprint: component', function() {
         expect(_file('app/bar/foo/x-foo/template.hbs')).to.equal('{{yield}}');
 
         expect(_file('tests/integration/bar/foo/x-foo/component-test.js')).to.equal(
-          fixture('component-test/default-template.js', {
+          fixture('component-test/default-curly-template.js', {
             replace: {
               component: 'foo/x-foo',
               path: 'bar/',
@@ -181,7 +184,7 @@ describe('Blueprint: component', function() {
         expect(_file('app/bar/foo/x-foo/template.hbs')).to.equal('{{yield}}');
 
         expect(_file('tests/integration/bar/foo/x-foo/component-test.js')).to.equal(
-          fixture('component-test/default-template.js', {
+          fixture('component-test/default-curly-template.js', {
             replace: {
               component: 'x-foo',
               path: 'bar/foo/',
@@ -202,7 +205,7 @@ describe('Blueprint: component', function() {
           expect(_file('app/bar/baz/foo/x-foo/template.hbs')).to.equal('{{yield}}');
 
           expect(_file('tests/integration/bar/baz/foo/x-foo/component-test.js')).to.equal(
-            fixture('component-test/default-template.js', {
+            fixture('component-test/default-curly-template.js', {
               replace: {
                 component: 'foo/x-foo',
                 path: 'bar/baz/',
@@ -223,6 +226,7 @@ describe('Blueprint: component', function() {
           fixture('component-test/default-template.js', {
             replace: {
               component: 'x-foo',
+              componentInvocation: 'XFoo',
             },
           })
         );
@@ -238,7 +242,7 @@ describe('Blueprint: component', function() {
         expect(_file('app/foo/x-foo/template.hbs')).to.equal('{{yield}}');
 
         expect(_file('tests/integration/foo/x-foo/component-test.js')).to.equal(
-          fixture('component-test/default-template.js', {
+          fixture('component-test/default-curly-template.js', {
             replace: {
               component: 'foo/x-foo',
             },
@@ -264,6 +268,7 @@ describe('Blueprint: component', function() {
             fixture('component-test/default-template.js', {
               replace: {
                 component: 'foo',
+                componentInvocation: 'Foo',
               },
             })
           );
@@ -282,6 +287,7 @@ describe('Blueprint: component', function() {
             fixture('component-test/default-template.js', {
               replace: {
                 component: 'x-foo',
+                componentInvocation: 'XFoo',
               },
             })
           );
@@ -297,7 +303,7 @@ describe('Blueprint: component', function() {
           expect(_file('app/pods/components/foo/x-foo/template.hbs')).to.equal('{{yield}}');
 
           expect(_file('tests/integration/pods/components/foo/x-foo/component-test.js')).to.equal(
-            fixture('component-test/default-template.js', {
+            fixture('component-test/default-curly-template.js', {
               replace: {
                 component: 'foo/x-foo',
               },
@@ -315,7 +321,7 @@ describe('Blueprint: component', function() {
           expect(_file('app/pods/foo/x-foo/template.hbs')).to.equal('{{yield}}');
 
           expect(_file('tests/integration/pods/foo/x-foo/component-test.js')).to.equal(
-            fixture('component-test/default-template.js', {
+            fixture('component-test/default-curly-template.js', {
               replace: {
                 component: 'x-foo',
                 path: 'foo/',
@@ -334,7 +340,7 @@ describe('Blueprint: component', function() {
           expect(_file('app/pods/bar/foo/x-foo/template.hbs')).to.equal('{{yield}}');
 
           expect(_file('tests/integration/pods/bar/foo/x-foo/component-test.js')).to.equal(
-            fixture('component-test/default-template.js', {
+            fixture('component-test/default-curly-template.js', {
               replace: {
                 component: 'foo/x-foo',
                 path: 'bar/',
@@ -351,9 +357,8 @@ describe('Blueprint: component', function() {
           );
 
           expect(_file('app/pods/bar/foo/x-foo/template.hbs')).to.equal('{{yield}}');
-
           expect(_file('tests/integration/pods/bar/foo/x-foo/component-test.js')).to.equal(
-            fixture('component-test/default-template.js', {
+            fixture('component-test/default-curly-template.js', {
               replace: {
                 component: 'x-foo',
                 path: 'bar/foo/',
@@ -374,7 +379,7 @@ describe('Blueprint: component', function() {
             expect(_file('app/pods/bar/baz/foo/x-foo/template.hbs')).to.equal('{{yield}}');
 
             expect(_file('tests/integration/pods/bar/baz/foo/x-foo/component-test.js')).to.equal(
-              fixture('component-test/default-template.js', {
+              fixture('component-test/default-curly-template.js', {
                 replace: {
                   component: 'foo/x-foo',
                   path: 'bar/baz/',
@@ -397,6 +402,7 @@ describe('Blueprint: component', function() {
             fixture('component-test/default-template.js', {
               replace: {
                 component: 'x-foo',
+                componentInvocation: 'XFoo',
               },
             })
           );
@@ -412,7 +418,7 @@ describe('Blueprint: component', function() {
           expect(_file('app/pods/foo/x-foo/template.hbs')).to.equal('{{yield}}');
 
           expect(_file('tests/integration/pods/foo/x-foo/component-test.js')).to.equal(
-            fixture('component-test/default-template.js', {
+            fixture('component-test/default-curly-template.js', {
               replace: {
                 component: 'foo/x-foo',
               },
@@ -449,6 +455,7 @@ describe('Blueprint: component', function() {
           fixture('component-test/default-template.js', {
             replace: {
               component: 'foo',
+              componentInvocation: 'Foo',
             },
           })
         );
@@ -467,6 +474,7 @@ describe('Blueprint: component', function() {
           fixture('component-test/default-template.js', {
             replace: {
               component: 'x-foo',
+              componentInvocation: 'XFoo',
             },
           })
         );
@@ -482,7 +490,7 @@ describe('Blueprint: component', function() {
         expect(_file('src/ui/components/foo/x-foo/template.hbs')).to.equal('{{yield}}');
 
         expect(_file('src/ui/components/foo/x-foo/component-test.js')).to.equal(
-          fixture('component-test/default-template.js', {
+          fixture('component-test/default-curly-template.js', {
             replace: {
               component: 'foo/x-foo',
             },
@@ -518,6 +526,7 @@ describe('Blueprint: component', function() {
           fixture('component-test/default-template.js', {
             replace: {
               component: 'foo',
+              componentInvocation: 'Foo',
             },
           })
         );
@@ -536,6 +545,7 @@ describe('Blueprint: component', function() {
           fixture('component-test/default-template.js', {
             replace: {
               component: 'x-foo',
+              componentInvocation: 'XFoo',
             },
           })
         );
@@ -551,7 +561,7 @@ describe('Blueprint: component', function() {
         expect(_file('src/ui/components/foo/x-foo/template.hbs')).to.equal('{{yield}}');
 
         expect(_file('src/ui/components/foo/x-foo/component-test.js')).to.equal(
-          fixture('component-test/default-template.js', {
+          fixture('component-test/default-curly-template.js', {
             replace: {
               component: 'foo/x-foo',
             },
@@ -587,6 +597,7 @@ describe('Blueprint: component', function() {
           fixture('component-test/default-template.js', {
             replace: {
               component: 'foo',
+              componentInvocation: 'Foo',
             },
           })
         );
@@ -609,6 +620,7 @@ describe('Blueprint: component', function() {
           fixture('component-test/default-template.js', {
             replace: {
               component: 'x-foo',
+              componentInvocation: 'XFoo',
             },
           })
         );
@@ -628,7 +640,7 @@ describe('Blueprint: component', function() {
         );
 
         expect(_file('tests/integration/components/foo/x-foo-test.js')).to.equal(
-          fixture('component-test/default-template.js', {
+          fixture('component-test/default-curly-template.js', {
             replace: {
               component: 'foo/x-foo',
             },
@@ -681,6 +693,7 @@ describe('Blueprint: component', function() {
           fixture('component-test/default-template.js', {
             replace: {
               component: 'x-foo',
+              componentInvocation: 'XFoo',
             },
           })
         );
@@ -714,7 +727,9 @@ describe('Blueprint: component', function() {
           fixture('component-test/default-template.js', {
             replace: {
               component: 'foo',
+              componentInvocation: 'Foo',
               path: 'my-addon::',
+              pathInvocation: 'MyAddon::',
             },
           })
         );
@@ -733,7 +748,9 @@ describe('Blueprint: component', function() {
           fixture('component-test/default-template.js', {
             replace: {
               component: 'x-foo',
+              componentInvocation: 'XFoo',
               path: 'my-addon::',
+              pathInvocation: 'MyAddon::',
             },
           })
         );
@@ -749,7 +766,7 @@ describe('Blueprint: component', function() {
         expect(_file('src/ui/components/foo/x-foo/template.hbs')).to.equal('{{yield}}');
 
         expect(_file('src/ui/components/foo/x-foo/component-test.js')).to.equal(
-          fixture('component-test/default-template.js', {
+          fixture('component-test/default-curly-template.js', {
             replace: {
               component: 'foo/x-foo',
               path: 'my-addon::',
@@ -814,7 +831,9 @@ describe('Blueprint: component', function() {
           fixture('component-test/default-template.js', {
             replace: {
               component: 'foo',
+              componentInvocation: 'Foo',
               path: 'my-addon::',
+              pathInvocation: 'MyAddon::',
             },
           })
         );
@@ -833,7 +852,9 @@ describe('Blueprint: component', function() {
           fixture('component-test/default-template.js', {
             replace: {
               component: 'x-foo',
+              componentInvocation: 'XFoo',
               path: 'my-addon::',
+              pathInvocation: 'MyAddon::',
             },
           })
         );
@@ -849,7 +870,7 @@ describe('Blueprint: component', function() {
         expect(_file('src/ui/components/foo/x-foo/template.hbs')).to.equal('{{yield}}');
 
         expect(_file('src/ui/components/foo/x-foo/component-test.js')).to.equal(
-          fixture('component-test/default-template.js', {
+          fixture('component-test/default-curly-template.js', {
             replace: {
               component: 'foo/x-foo',
               path: 'my-addon::',
@@ -916,6 +937,7 @@ describe('Blueprint: component', function() {
           fixture('component-test/default-template.js', {
             replace: {
               component: 'foo',
+              componentInvocation: 'Foo',
             },
           })
         );
@@ -938,6 +960,7 @@ describe('Blueprint: component', function() {
           fixture('component-test/default-template.js', {
             replace: {
               component: 'x-foo',
+              componentInvocation: 'XFoo',
             },
           })
         );
@@ -959,7 +982,7 @@ describe('Blueprint: component', function() {
         );
 
         expect(_file('tests/integration/components/foo/x-foo-test.js')).to.equal(
-          fixture('component-test/default-template.js', {
+          fixture('component-test/default-curly-template.js', {
             replace: {
               component: 'foo/x-foo',
             },
@@ -986,6 +1009,7 @@ describe('Blueprint: component', function() {
             fixture('component-test/default-template.js', {
               replace: {
                 component: 'x-foo',
+                componentInvocation: 'XFoo',
               },
             })
           );
@@ -1010,7 +1034,7 @@ describe('Blueprint: component', function() {
           );
 
           expect(_file('tests/integration/components/foo/x-foo/component-test.js')).to.equal(
-            fixture('component-test/default-template.js', {
+            fixture('component-test/default-curly-template.js', {
               replace: {
                 component: 'foo/x-foo',
               },
@@ -1047,7 +1071,9 @@ describe('Blueprint: component', function() {
           fixture('component-test/default-template.js', {
             replace: {
               component: 'foo',
+              componentInvocation: 'Foo',
               path: 'my-addon::',
+              pathInvocation: 'MyAddon::',
             },
           })
         );
@@ -1068,7 +1094,9 @@ describe('Blueprint: component', function() {
           fixture('component-test/default-template.js', {
             replace: {
               component: 'x-foo',
+              componentInvocation: 'XFoo',
               path: 'my-addon::',
+              pathInvocation: 'MyAddon::',
             },
           })
         );
@@ -1102,7 +1130,9 @@ describe('Blueprint: component', function() {
           fixture('component-test/default-template.js', {
             replace: {
               component: 'foo',
+              componentInvocation: 'Foo',
               path: 'my-addon::',
+              pathInvocation: 'MyAddon::',
             },
           })
         );
@@ -1123,7 +1153,9 @@ describe('Blueprint: component', function() {
           fixture('component-test/default-template.js', {
             replace: {
               component: 'x-foo',
+              componentInvocation: 'XFoo',
               path: 'my-addon::',
+              pathInvocation: 'MyAddon::',
             },
           })
         );

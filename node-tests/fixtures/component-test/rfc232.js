@@ -10,15 +10,15 @@ module('Integration | Component | x-foo', function(hooks) {
     // Set any properties with this.set('myProperty', 'value');
     // Handle any actions with this.set('myAction', function(val) { ... });
 
-    await render(hbs`{{x-foo}}`);
+    await render(hbs`<XFoo />`);
 
     assert.equal(this.element.textContent.trim(), '');
 
     // Template block usage:
     await render(hbs`
-      {{#x-foo}}
+      <XFoo>
         template block text
-      {{/x-foo}}
+      </XFoo>
     `);
 
     assert.equal(this.element.textContent.trim(), 'template block text');
