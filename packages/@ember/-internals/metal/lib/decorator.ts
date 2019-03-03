@@ -22,8 +22,9 @@ export function isElementDescriptor(
   return (
     // Ensure we have the right number of args
     args.length === 3 &&
-    // Make sure the target is an object
-    (typeof maybeTarget === 'object' && maybeTarget !== null) &&
+    // Make sure the target is a class or object (prototype)
+    (typeof maybeTarget === 'function' ||
+      (typeof maybeTarget === 'object' && maybeTarget !== null)) &&
     // Make sure the key is a string
     typeof maybeKey === 'string' &&
     // Make sure the descriptor is the right shape
