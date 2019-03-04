@@ -111,6 +111,19 @@ export const ENV = {
   */
   _JQUERY_INTEGRATION: true,
 
+  /**
+    Controls the maximum number of scheduled rerenders without "settling". In general,
+    applications should not need to modify this environment variable, but please
+    open an issue so that we can determine if a better default value is needed.
+
+    @property _RERENDER_LOOP_LIMIT
+    @for EmberENV
+    @type number
+    @default 1000
+    @private
+   */
+  _RERENDER_LOOP_LIMIT: 1000,
+
   EMBER_LOAD_HOOKS: {} as {
     [hook: string]: Function[];
   },
