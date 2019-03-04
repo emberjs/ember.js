@@ -7,18 +7,16 @@ import { TextSupport } from '@ember/-internals/views';
 import Component from '../component';
 import layout from '../templates/empty';
 
-const inputTypes = Object.create(null);
-function canSetTypeOfInput(type: string) {
-  if (type in inputTypes) {
-    return inputTypes[type];
+const inputTypes = hasDOM ? Object.create(null) : null;
+function canSetTypeOfInput(type: string): boolean {
+  // if running in outside of a browser always return
+  // the original type
+  if (!hasDOM) {
+    return Boolean(type);
   }
 
-  // if running in outside of a browser always return the
-  // original type
-  if (!hasDOM) {
-    inputTypes[type] = type;
-
-    return type;
+  if (type in inputTypes) {
+    return inputTypes[type];
   }
 
   let inputTypeTestElement = document.createElement('input');
