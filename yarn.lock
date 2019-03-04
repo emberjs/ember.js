@@ -2980,10 +2980,10 @@ ember-cli-yuidoc@^0.8.8:
     rsvp "3.0.14"
     yuidocjs "^0.10.0"
 
-ember-cli@^3.8.0:
-  version "3.8.0"
-  resolved "https://registry.yarnpkg.com/ember-cli/-/ember-cli-3.8.0.tgz#723a1281540421972c5da3296e70f463d805c22d"
-  integrity sha512-K2ds4uQ7nEjuNSovOnR8UykEO0tuojk6fUDRRhajpnsSiJqrfOE2TxZhOKH4xNUXlD4VnGsunnzS6SLlp7jPZQ==
+ember-cli@^3.8.1:
+  version "3.8.1"
+  resolved "https://registry.yarnpkg.com/ember-cli/-/ember-cli-3.8.1.tgz#2a4f66cf9da3c9665658690e615479af32749807"
+  integrity sha512-cg8Ug60lbNPQVGjHnO66cmrgFXxlFFdkDp+//e58Kgl9mz17cQIbU1TD1pMaW0dYi+2/XADeftHBULs3ejQBSA==
   dependencies:
     "@babel/core" "^7.0.0"
     "@babel/plugin-transform-modules-amd" "^7.2.0"
