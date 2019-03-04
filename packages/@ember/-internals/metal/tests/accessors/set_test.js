@@ -1,13 +1,9 @@
-import { get, set, trySet, setHasViews } from '../..';
+import { get, set, trySet } from '../..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
   'set',
   class extends AbstractTestCase {
-    teardown() {
-      setHasViews(() => false);
-    }
-
     ['@test should set arbitrary properties on an object'](assert) {
       let obj = {
         string: 'string',
@@ -110,7 +106,6 @@ moduleFor(
     }
 
     ['@test does not trigger auto-run assertion for objects that have not been tagged'](assert) {
-      setHasViews(() => true);
       let obj = {};
 
       set(obj, 'foo', 'bar');
