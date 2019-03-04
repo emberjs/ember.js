@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### v3.9.0-beta.3 (March 4, 2019)
+
+- [#17684](https://github.com/emberjs/ember.js/pull/17684) [BUGFIX] Enable maximum rerendering limit to be customized.
+- [#17691](https://github.com/emberjs/ember.js/pull/17691) [BUGFIX] Ensure tagForProperty works on class constructors
+
 ### v3.9.0-beta.2 (February 26, 2019)
 
 - [#17618](https://github.com/emberjs/ember.js/pull/17618) [BUGFIX] Migrate autorun microtask queue to Promise.then
