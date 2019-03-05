@@ -108,7 +108,7 @@
     "babel-plugin-filter-imports": "^2.0.4",
     "babel-plugin-module-resolver": "^3.2.0",
     "babel-template": "^6.26.0",
-    "backburner.js": "^2.5.0",
+    "backburner.js": "^2.6.0",
     "broccoli-babel-transpiler": "^7.2.0",
     "broccoli-concat": "^3.7.3",
     "broccoli-debug": "^0.6.4",
