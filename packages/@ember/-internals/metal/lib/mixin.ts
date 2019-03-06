@@ -5,6 +5,7 @@ import { descriptorFor, Meta, meta as metaFor, peekMeta } from '@ember/-internal
 import {
   getListeners,
   getObservers,
+  getOwnPropertyDescriptors,
   guidFor,
   makeArray,
   NAME_KEY,
@@ -17,6 +18,7 @@ import { ALIAS_METHOD } from '@ember/deprecated-features';
 import { assign } from '@ember/polyfills';
 import { DEBUG } from '@glimmer/env';
 import { ComputedProperty, ComputedPropertyGetter, ComputedPropertySetter } from './computed';
+import nativeDescriptor from './descriptor';
 import { addListener, removeListener } from './events';
 import expandProperties from './expand_properties';
 import { classToString, setUnprocessedMixins } from './namespace_search';
@@ -37,6 +39,36 @@ function isMethod(obj: any): boolean {
     obj !== Date &&
     obj !== String
   );
+}
+
+function isAccessor(desc: PropertyDescriptor) {
+  return typeof desc.get === 'function' || typeof desc.set === 'function';
+}
+
+function extractAccessors(properties: { [key: string]: any } | undefined) {
+  if (properties !== undefined) {
+    let descriptors = getOwnPropertyDescriptors(properties);
+    let keys = Object.keys(descriptors);
+    let hasAccessors = keys.some(key => isAccessor(descriptors[key]));
+
+    if (hasAccessors) {
+      let extracted = {};
+
+      keys.forEach(key => {
+        let descriptor = descriptors[key];
+
+        if (isAccessor(descriptor)) {
+          extracted[key] = nativeDescriptor(descriptor);
+        } else {
+          extracted[key] = properties[key];
+        }
+      });
+
+      return extracted;
+    }
+  }
+
+  return properties;
 }
 
 const CONTINUE: MixinLike = {};
@@ -522,7 +554,7 @@ export default class Mixin {
   _without: any[] | undefined;
 
   constructor(mixins: Mixin[] | undefined, properties?: { [key: string]: any }) {
-    this.properties = properties;
+    this.properties = extractAccessors(properties);
     this.mixins = buildMixinsArray(mixins);
     this.ownerConstructor = undefined;
     this._without = undefined;
