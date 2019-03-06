@@ -10,6 +10,7 @@
 */
 export { default as symbol, isInternalSymbol } from './lib/symbol';
 export { default as dictionary } from './lib/dictionary';
+export { default as getOwnPropertyDescriptors } from './lib/get-own-property-descriptors';
 export { uuid, GUID_KEY, generateGuid, guidFor } from './lib/guid';
 export { default as intern } from './lib/intern';
 export {
