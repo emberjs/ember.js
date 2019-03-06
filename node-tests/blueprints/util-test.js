@@ -164,6 +164,16 @@ describe('Blueprint: util', function() {
         );
       });
     });
+
+    it('util foo/bar-baz --dummy', function() {
+      return emberGenerateDestroy(['util', 'foo/bar-baz', '--dummy'], _file => {
+        expect(_file('tests/dummy/app/utils/foo/bar-baz.js')).to.equal(
+          fixture('util/util-nested.js')
+        );
+
+        expect(_file('addon/utils/foo/bar-baz.js')).to.not.exist;
+      });
+    });
   });
 
   describe('in addon - module unification', function() {
@@ -199,6 +209,16 @@ describe('Blueprint: util', function() {
         );
 
         expect(_file('app/utils/foo/bar-baz.js')).to.not.exist;
+      });
+    });
+
+    it('util foo/bar-baz --dummy', function() {
+      return emberGenerateDestroy(['util', 'foo/bar-baz', '--dummy'], _file => {
+        expect(_file('tests/dummy/src/utils/foo/bar-baz.js')).to.equal(
+          fixture('util/util-nested.js')
+        );
+
+        expect(_file('src/utils/foo/bar-baz.js')).to.not.exist;
       });
     });
   });
