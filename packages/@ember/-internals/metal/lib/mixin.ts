@@ -5,6 +5,7 @@ import { Meta, meta as metaFor, peekMeta } from '@ember/-internals/meta';
 import {
   getListeners,
   getObservers,
+  getOwnPropertyDescriptors,
   guidFor,
   makeArray,
   NAME_KEY,
@@ -22,7 +23,7 @@ import {
   ComputedPropertyGetter,
   ComputedPropertySetter,
 } from './computed';
-import { makeComputedDecorator } from './decorator';
+import { makeComputedDecorator, nativeDescDecorator } from './decorator';
 import {
   descriptorForDecorator,
   descriptorForProperty,
@@ -48,6 +49,36 @@ function isMethod(obj: any): boolean {
     obj !== Date &&
     obj !== String
   );
+}
+
+function isAccessor(desc: PropertyDescriptor) {
+  return typeof desc.get === 'function' || typeof desc.set === 'function';
+}
+
+function extractAccessors(properties: { [key: string]: any } | undefined) {
+  if (properties !== undefined) {
+    let descriptors = getOwnPropertyDescriptors(properties);
+    let keys = Object.keys(descriptors);
+    let hasAccessors = keys.some(key => isAccessor(descriptors[key]));
+
+    if (hasAccessors) {
+      let extracted = {};
+
+      keys.forEach(key => {
+        let descriptor = descriptors[key];
+
+        if (isAccessor(descriptor)) {
+          extracted[key] = nativeDescDecorator(descriptor);
+        } else {
+          extracted[key] = properties[key];
+        }
+      });
+
+      return extracted;
+    }
+  }
+
+  return properties;
 }
 
 const CONTINUE: MixinLike = {};
@@ -550,7 +581,7 @@ export default class Mixin {
   _without: any[] | undefined;
 
   constructor(mixins: Mixin[] | undefined, properties?: { [key: string]: any }) {
-    this.properties = properties;
+    this.properties = extractAccessors(properties);
     this.mixins = buildMixinsArray(mixins);
     this.ownerConstructor = undefined;
     this._without = undefined;
