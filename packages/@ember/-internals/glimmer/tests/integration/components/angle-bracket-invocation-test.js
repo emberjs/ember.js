@@ -1,5 +1,6 @@
 import { moduleFor, RenderingTestCase, strip, classes, runTask } from 'internal-test-helpers';
 
+import { EMBER_GLIMMER_ANGLE_BRACKET_NESTED_LOOKUP } from '@ember/canary-features';
 import { set } from '@ember/-internals/metal';
 
 import { Component } from '../../utils/helpers';
@@ -1018,3 +1019,22 @@ moduleFor(
     }
   }
 );
+
+if (EMBER_GLIMMER_ANGLE_BRACKET_NESTED_LOOKUP) {
+  moduleFor(
+    'AngleBracket Invocation Nested Lookup',
+    class extends RenderingTestCase {
+      '@test it can resolve <Foo::Bar::BazBing /> to foo/bar/baz-bing'() {
+        this.registerComponent('foo/bar/baz-bing', { template: 'hello' });
+
+        this.render('<Foo::Bar::BazBing />');
+
+        this.assertComponentElement(this.firstChild, { content: 'hello' });
+
+        runTask(() => this.rerender());
+
+        this.assertComponentElement(this.firstChild, { content: 'hello' });
+      }
+    }
+  );
+}
