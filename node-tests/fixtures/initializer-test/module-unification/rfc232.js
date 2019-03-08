@@ -6,8 +6,6 @@ import { setupTest } from 'ember-qunit';
 import { run } from '@ember/runloop';
 
 module('Unit | Initializer | foo', function(hooks) {
-  setupTest(hooks);
-
   hooks.beforeEach(function() {
     this.TestApplication = Application.extend();
     this.TestApplication.initializer({
