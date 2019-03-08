@@ -2,10 +2,7 @@ import { privatize as P } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
 import { LookupOptions, Owner, setOwner } from '@ember/-internals/owner';
 import { lookupComponent, lookupPartial, OwnedTemplateMeta } from '@ember/-internals/views';
-import {
-  EMBER_MODULE_UNIFICATION,
-  GLIMMER_MODIFIER_MANAGER,
-} from '@ember/canary-features';
+import { EMBER_MODULE_UNIFICATION } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { _instrumentStart } from '@ember/instrumentation';
 import {
@@ -279,7 +276,7 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
   private _lookupModifier(name: string, meta: OwnedTemplateMeta) {
     let builtin = this.builtInModifiers[name];
 
-    if (GLIMMER_MODIFIER_MANAGER && builtin === undefined) {
+    if (builtin === undefined) {
       let { owner } = meta;
       let modifier = owner.factoryFor(`modifier:${name}`);
       if (modifier !== undefined) {
