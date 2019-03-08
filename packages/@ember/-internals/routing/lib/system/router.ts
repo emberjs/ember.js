@@ -248,6 +248,11 @@ interface OutletState {
   outlets: NestedOutletState;
 }
 
+interface EngineInstance extends Owner {
+  boot(): void;
+  destroy(): void;
+}
+
 export interface QueryParam {
   prop: string;
   urlKey: string;
@@ -279,6 +284,27 @@ class EmberRouter extends EmberObject {
   location!: string | IEmberLocation;
   rootURL!: string;
   _routerMicrolib!: Router<Route>;
+
+  currentURL: string | null = null;
+  currentRouteName: string | null = null;
+  currentPath: string | null = null;
+
+  _qpCache = Object.create(null);
+  _qpUpdates = new Set();
+
+  _handledErrors = new Set();
+  _engineInstances: { [name: string]: { [id: string]: EngineInstance } } = Object.create(null);
+  _engineInfoByRoute = Object.create(null);
+
+  constructor() {
+    super(...arguments);
+
+    if (EMBER_ROUTING_ROUTER_SERVICE) {
+      this.currentRoute = null;
+    }
+
+    this._resetQueuedQueryParameterChanges();
+  }
 
   _initRouterJs() {
     let location = get(this, 'location');
@@ -501,25 +527,6 @@ class EmberRouter extends EmberObject {
     return new EmberRouterDSL(null, options);
   }
 
-  init() {
-    this._super(...arguments);
-
-    this.currentURL = null;
-    this.currentRouteName = null;
-    this.currentPath = null;
-
-    if (EMBER_ROUTING_ROUTER_SERVICE) {
-      this.currentRoute = null;
-    }
-
-    this._qpCache = Object.create(null);
-    this._qpUpdates = new Set();
-    this._resetQueuedQueryParameterChanges();
-    this._handledErrors = new Set();
-    this._engineInstances = Object.create(null);
-    this._engineInfoByRoute = Object.create(null);
-  }
-
   /*
     Resets all pending query parameter changes.
     Called after transitioning to a new route
@@ -592,7 +599,7 @@ class EmberRouter extends EmberObject {
     }
 
     let routeInfos = this._routerMicrolib.currentRouteInfos;
-    let route;
+    let route: Route | undefined;
     let defaultParentState: OutletState;
     let liveRoutes = null;
 
@@ -825,8 +832,8 @@ class EmberRouter extends EmberObject {
   }
 
   _setupLocation() {
-    let location = get(this, 'location');
-    let rootURL = get(this, 'rootURL');
+    let location = this.location;
+    let rootURL = this.rootURL;
     let owner = getOwner(this);
 
     if ('string' === typeof location && owner) {
@@ -1732,7 +1739,7 @@ EmberRouter.reopenClass({
   },
 
   _routePath(routeInfos: PrivateRouteInfo[]) {
-    let path = [];
+    let path: string[] = [];
 
     // We have to handle coalescing resource names that
     // are prefixed with their parent's names, e.g.
