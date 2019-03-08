@@ -1,6 +1,5 @@
 import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 
-import { EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION } from '@ember/canary-features';
 import { set, computed } from '@ember/-internals/metal';
 import { jQueryDisabled } from '@ember/-internals/views';
 
@@ -583,19 +582,6 @@ moduleFor(
       runTask(() => set(this.context, 'items', [{ name: 'Robert' }, { name: 'Jacquie' }]));
 
       this.assertText('[Robert - Robert][Jacquie - Jacquie]');
-    }
-
-    ['@test dashless components should not be found'](assert) {
-      if (EMBER_GLIMMER_ANGLE_BRACKET_INVOCATION) {
-        assert.ok(true, 'test is not applicable');
-        return;
-      }
-
-      this.registerComponent('dashless2', { template: 'Do not render me!' });
-
-      expectAssertion(() => {
-        this.render('{{component "dashless"}}');
-      }, /You cannot use 'dashless' as a component name. Component names must contain a hyphen./);
     }
 
     ['@test positional parameters does not clash when rendering different components']() {
