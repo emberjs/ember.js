@@ -1,5 +1,4 @@
 import { Owner } from '@ember/-internals/owner';
-import { GLIMMER_CUSTOM_COMPONENT_MANAGER } from '@ember/canary-features';
 import { deprecate } from '@ember/debug';
 import { COMPONENT_MANAGER_STRING_LOOKUP } from '@ember/deprecated-features';
 import { Opaque } from '@glimmer/interfaces';
@@ -28,9 +27,5 @@ export function setComponentManager(stringOrFunction: string | ManagerFactory<Op
 }
 
 export function getComponentManager<T>(obj: any): undefined | ManagerFactory<T> {
-  if (!GLIMMER_CUSTOM_COMPONENT_MANAGER) {
-    return;
-  }
-
   return getManager(obj);
 }

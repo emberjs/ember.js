@@ -2,12 +2,7 @@ import { privatize as P } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
 import { LookupOptions, Owner, setOwner } from '@ember/-internals/owner';
 import { lookupComponent, lookupPartial, OwnedTemplateMeta } from '@ember/-internals/views';
-import {
-  EMBER_GLIMMER_ARRAY_HELPER,
-  EMBER_MODULE_UNIFICATION,
-  GLIMMER_CUSTOM_COMPONENT_MANAGER,
-  GLIMMER_MODIFIER_MANAGER,
-} from '@ember/canary-features';
+import { EMBER_MODULE_UNIFICATION } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { _instrumentStart } from '@ember/instrumentation';
 import {
@@ -64,6 +59,7 @@ function makeOptions(moduleName: string, namespace?: string): LookupOptions {
 const BUILTINS_HELPERS = {
   if: inlineIf,
   action,
+  array,
   concat,
   get,
   hash,
@@ -83,10 +79,6 @@ const BUILTINS_HELPERS = {
   '-outlet': outletHelper,
   '-assert-implicit-component-helper-argument': componentAssertionHelper,
 };
-
-if (EMBER_GLIMMER_ARRAY_HELPER) {
-  BUILTINS_HELPERS['array'] = array;
-}
 
 const BUILTIN_MODIFIERS = {
   action: { manager: new ActionModifierManager(), state: null },
@@ -284,7 +276,7 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
   private _lookupModifier(name: string, meta: OwnedTemplateMeta) {
     let builtin = this.builtInModifiers[name];
 
-    if (GLIMMER_MODIFIER_MANAGER && builtin === undefined) {
+    if (builtin === undefined) {
       let { owner } = meta;
       let modifier = owner.factoryFor(`modifier:${name}`);
       if (modifier !== undefined) {
@@ -345,11 +337,7 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
       definition = new TemplateOnlyComponentDefinition(layout);
     }
 
-    if (
-      GLIMMER_CUSTOM_COMPONENT_MANAGER &&
-      component !== undefined &&
-      component.class !== undefined
-    ) {
+    if (component !== undefined && component.class !== undefined) {
       let managerFactory = getComponentManager<ManagerDelegate<Opaque>>(component.class);
       if (managerFactory) {
         let delegate = managerFactory(meta.owner);
