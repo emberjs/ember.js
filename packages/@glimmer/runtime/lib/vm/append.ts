@@ -472,7 +472,7 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
     return this.elementStack;
   }
 
-  scope(): Scope<JitOrAotBlock> {
+  scope(): Scope<C> {
     return expect(this[STACKS].scope.current, 'expected scope on the scope stack');
   }
 
