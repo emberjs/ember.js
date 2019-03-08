@@ -3,7 +3,6 @@ import { ENV } from '@ember/-internals/environment';
 import { LookupOptions, Owner, setOwner } from '@ember/-internals/owner';
 import { lookupComponent, lookupPartial, OwnedTemplateMeta } from '@ember/-internals/views';
 import {
-  EMBER_GLIMMER_ARRAY_HELPER,
   EMBER_MODULE_UNIFICATION,
   GLIMMER_MODIFIER_MANAGER,
 } from '@ember/canary-features';
@@ -63,6 +62,7 @@ function makeOptions(moduleName: string, namespace?: string): LookupOptions {
 const BUILTINS_HELPERS = {
   if: inlineIf,
   action,
+  array,
   concat,
   get,
   hash,
@@ -82,10 +82,6 @@ const BUILTINS_HELPERS = {
   '-outlet': outletHelper,
   '-assert-implicit-component-helper-argument': componentAssertionHelper,
 };
-
-if (EMBER_GLIMMER_ARRAY_HELPER) {
-  BUILTINS_HELPERS['array'] = array;
-}
 
 const BUILTIN_MODIFIERS = {
   action: { manager: new ActionModifierManager(), state: null },
