@@ -15,8 +15,8 @@ module('Unit | Instance Initializer | foo', function(hooks) {
     this.instance = this.application.buildInstance();
   });
   hooks.afterEach(function() {
-    run(this.application, 'destroy');
     run(this.instance, 'destroy');
+    run(this.application, 'destroy');
   });
 
   // Replace this with your real tests.

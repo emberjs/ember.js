@@ -15,8 +15,8 @@ module('<%= friendlyTestName %>', function(hooks) {
     this.instance = this.application.buildInstance();
   });
   hooks.afterEach(function() {
-    <% if (destroyAppExists) { %>destroyApp(this.application);<% } else { %>run(this.application, 'destroy');<% } %>
     <% if (destroyAppExists) { %>destroyApp(this.instance);<% } else { %>run(this.instance, 'destroy');<% } %>
+    <% if (destroyAppExists) { %>destroyApp(this.application);<% } else { %>run(this.application, 'destroy');<% } %>
   });
 
   // Replace this with your real tests.
