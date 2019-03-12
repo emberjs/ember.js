@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.9.0-beta.4 (March 11, 2019)
+
+- [#17710](https://github.com/emberjs/ember.js/pull/17710) [BUGFIX] Allow accessors in mixins
+
 ### v3.9.0-beta.3 (March 4, 2019)
 
 - [#17684](https://github.com/emberjs/ember.js/pull/17684) [BUGFIX] Enable maximum rerendering limit to be customized.
