@@ -28,7 +28,8 @@ import { assign } from '@ember/polyfills';
   <!-- template.hbs -->
   <button onclick={{this.foo}}>Execute foo action</button>
   ```
-  @method computed
+  @method action
+  @category EMBER_NATIVE_DECORATOR_SUPPORT
   @for @ember/object
   @static
   @param {} elementDesc the descriptor of the element to decorate
