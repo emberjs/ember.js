@@ -1,12 +1,12 @@
 import { expect } from 'chai';
-import { describe, it } from 'mocha';
+import { describe, it, beforeEach, afterEach } from 'mocha';
 import { setupTest } from 'ember-mocha';
 import Application from '@ember/application';
 import { initialize } from 'my-app/initializers/foo';
 import { run } from '@ember/runloop';
 
 describe('Unit | Initializer | foo', function() {
-  hooks.beforeEach(function() {
+  beforeEach(function() {
     this.TestApplication = Application.extend();
     this.TestApplication.initializer({
       name: 'initializer under test',
@@ -16,7 +16,7 @@ describe('Unit | Initializer | foo', function() {
     this.application = this.TestApplication.create({ autoboot: false });
   });
 
-  hooks.afterEach(function() {
+  afterEach(function() {
     run(this.application, 'destroy');
   });
 

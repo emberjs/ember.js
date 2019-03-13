@@ -1,12 +1,12 @@
 import { expect } from 'chai';
-import { describe, it } from 'mocha';
+import { describe, it, beforeEach, afterEach } from 'mocha';
 import { setupTest } from 'ember-mocha';
 import Application from '@ember/application';
 import { initialize } from '<%= modulePrefix %>/initializers/<%= dasherizedModuleName %>';
 <% if (destroyAppExists) { %>import destroyApp from '../../helpers/destroy-app';<% } else { %>import { run } from '@ember/runloop';<% } %>
 
 describe('<%= friendlyTestName %>', function() {
-  hooks.beforeEach(function() {
+  beforeEach(function() {
     this.TestApplication = Application.extend();
     this.TestApplication.initializer({
       name: 'initializer under test',
@@ -16,7 +16,7 @@ describe('<%= friendlyTestName %>', function() {
     this.application = this.TestApplication.create({ autoboot: false });
   });
 
-  hooks.afterEach(function() {
+  afterEach(function() {
     <% if (destroyAppExists) { %>destroyApp(this.application);<% } else { %>run(this.application, 'destroy');<% } %>
   });
 
