@@ -2608,7 +2608,7 @@ if (EMBER_ROUTING_BUILD_ROUTEINFO_METADATA) {
       ```
 
       @return any
-      @category ember-routing-build-routeinfo-metadata
+      @category EMBER_ROUTING_BUILD_ROUTEINFO_METADATA
      */
     buildRouteInfoMetadata() {},
   });
