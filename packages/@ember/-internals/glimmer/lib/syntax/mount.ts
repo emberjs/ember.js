@@ -66,7 +66,6 @@ export function mountHelper(
   @param {Object} [model] Object that will be set as
                           the model of the engine.
   @for Ember.Templates.helpers
-  @category ember-application-engines
   @public
 */
 export function mountMacro(
