@@ -1,18 +1,11 @@
-import {
-  moduleFor,
-  ApplicationTestCase,
-  RenderingTestCase,
-  classes as classMatcher,
-  runTask,
-} from 'internal-test-helpers';
+import { moduleFor, ApplicationTestCase, RenderingTestCase, runTask } from 'internal-test-helpers';
 
 import Controller from '@ember/controller';
 import { set } from '@ember/-internals/metal';
-
-import { LinkComponent } from '../../utils/helpers';
+import { LinkComponent } from '@ember/-internals/glimmer';
 
 moduleFor(
-  'Link-to component',
+  'link-to component (basic tests)',
   class extends ApplicationTestCase {
     visitWithDeprecation(path, deprecation) {
       let p;
@@ -163,52 +156,7 @@ moduleFor(
 );
 
 moduleFor(
-  'Link-to component with query-params',
-  class extends ApplicationTestCase {
-    constructor() {
-      super(...arguments);
-
-      this.add(
-        'controller:index',
-        Controller.extend({
-          queryParams: ['foo'],
-          foo: '123',
-          bar: 'yes',
-        })
-      );
-    }
-
-    ['@test populates href with fully supplied query param values']() {
-      this.addTemplate(
-        'index',
-        `{{#link-to 'index' (query-params foo='456' bar='NAW')}}Index{{/link-to}}`
-      );
-
-      return this.visit('/').then(() => {
-        this.assertComponentElement(this.firstChild, {
-          tagName: 'a',
-          attrs: { href: '/?bar=NAW&foo=456' },
-          content: 'Index',
-        });
-      });
-    }
-
-    ['@test populates href with partially supplied query param values, but omits if value is default value']() {
-      this.addTemplate('index', `{{#link-to 'index' (query-params foo='123')}}Index{{/link-to}}`);
-
-      return this.visit('/').then(() => {
-        this.assertComponentElement(this.firstChild, {
-          tagName: 'a',
-          attrs: { href: '/', class: classMatcher('ember-view active') },
-          content: 'Index',
-        });
-      });
-    }
-  }
-);
-
-moduleFor(
-  'Link-to component',
+  'link-to component (without router??!)',
   class extends RenderingTestCase {
     ['@test should be able to be inserted in DOM when the router is not present - block']() {
       this.render(`{{#link-to 'index'}}Go to Index{{/link-to}}`);

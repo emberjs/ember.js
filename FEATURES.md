@@ -36,3 +36,10 @@ for a detailed explanation.
   This feature is paired with the
   [`EMBER_RESOLVER_MODULE_UNIFICATION`](https://github.com/ember-cli/ember-resolver#ember_resolver_module_unification)
   flag on the ember-resolver package.
+
+* `ember-glimmer-angle-bracket-nested-lookup`
+
+  Allow the invoking nested components to be invoked with the `<Foo::Bar>`
+  syntax.
+
+  See [RFC #457](https://github.com/emberjs/rfcs/pull/457).
