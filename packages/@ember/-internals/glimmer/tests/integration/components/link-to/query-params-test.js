@@ -1,10 +1,61 @@
 import Controller from '@ember/controller';
 import { RSVP } from '@ember/-internals/runtime';
 import { Route } from '@ember/-internals/routing';
-import { moduleFor, ApplicationTestCase, runLoopSettled, runTask } from 'internal-test-helpers';
+import {
+  ApplicationTestCase,
+  classes as classMatcher,
+  moduleFor,
+  runLoopSettled,
+  runTask,
+} from 'internal-test-helpers';
 
 moduleFor(
-  'The {{link-to}} helper: invoking with query params',
+  'link-to component with query-params (probably overlaps with the below)',
+  class extends ApplicationTestCase {
+    constructor() {
+      super(...arguments);
+
+      this.add(
+        'controller:index',
+        Controller.extend({
+          queryParams: ['foo'],
+          foo: '123',
+          bar: 'yes',
+        })
+      );
+    }
+
+    ['@test populates href with fully supplied query param values']() {
+      this.addTemplate(
+        'index',
+        `{{#link-to 'index' (query-params foo='456' bar='NAW')}}Index{{/link-to}}`
+      );
+
+      return this.visit('/').then(() => {
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'a',
+          attrs: { href: '/?bar=NAW&foo=456' },
+          content: 'Index',
+        });
+      });
+    }
+
+    ['@test populates href with partially supplied query param values, but omits if value is default value']() {
+      this.addTemplate('index', `{{#link-to 'index' (query-params foo='123')}}Index{{/link-to}}`);
+
+      return this.visit('/').then(() => {
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'a',
+          attrs: { href: '/', class: classMatcher('ember-view active') },
+          content: 'Index',
+        });
+      });
+    }
+  }
+);
+
+moduleFor(
+  'link-to component (more query params)',
   class extends ApplicationTestCase {
     constructor() {
       super();
