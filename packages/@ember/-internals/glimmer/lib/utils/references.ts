@@ -38,6 +38,7 @@ import emberToBool from './to-bool';
 export const UPDATE = symbol('UPDATE');
 export const INVOKE = symbol('INVOKE');
 export const ACTION = symbol('ACTION');
+export const ACTION_METHOD = symbol('ACTION_METHOD');
 
 let maybeFreeze: (obj: any) => void;
 if (DEBUG) {

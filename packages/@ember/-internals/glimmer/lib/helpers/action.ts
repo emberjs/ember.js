@@ -2,14 +2,15 @@
 @module ember
 */
 import { get } from '@ember/-internals/metal';
-import { assert } from '@ember/debug';
+import { EMBER_NATIVE_DECORATOR_SUPPORT } from '@ember/canary-features';
+import { assert, warn } from '@ember/debug';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { join } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import { isConst, VersionedPathReference } from '@glimmer/reference';
 import { Arguments, VM } from '@glimmer/runtime';
 import { Opaque } from '@glimmer/util';
-import { ACTION, INVOKE, UnboundReference } from '../utils/references';
+import { ACTION, ACTION_METHOD, INVOKE, UnboundReference } from '../utils/references';
 
 /**
   The `{{action}}` helper provides a way to pass triggers for behavior (usually
@@ -389,6 +390,16 @@ function makeClosureAction(
 
       assert(`An action named '${action}' was not found in ${target}`, fn);
     } else if (typeofAction === 'function') {
+      if (EMBER_NATIVE_DECORATOR_SUPPORT) {
+        warn(
+          `You passed a method, ${debugKey}, to the {{action}} helper which was not decorated with the '@action' decorator. All actions should be decorated with the '@action' decorator.`,
+          target[debugKey] !== action || action[ACTION_METHOD] === true,
+          {
+            id: 'action-without-decorator',
+          }
+        );
+      }
+
       self = context;
       fn = action;
     } else {
