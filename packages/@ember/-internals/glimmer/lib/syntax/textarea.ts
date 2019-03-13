@@ -1,4 +1,5 @@
 import { OwnedTemplateMeta } from '@ember/-internals/views';
+import { EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS } from '@ember/canary-features';
 import { Option } from '@glimmer/interfaces';
 import { OpcodeBuilder } from '@glimmer/opcode-compiler';
 import * as WireFormat from '@glimmer/wire-format';
@@ -12,7 +13,7 @@ export function textAreaMacro(
   builder: OpcodeBuilder<OwnedTemplateMeta>
 ) {
   let definition = builder.compiler['resolver'].lookupComponentDefinition(
-    '-text-area',
+    EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS ? 'textarea' : '-text-area',
     builder.referrer
   );
   wrapComponentClassAttribute(hash);

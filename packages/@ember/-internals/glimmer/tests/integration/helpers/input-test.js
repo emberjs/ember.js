@@ -83,7 +83,7 @@ moduleFor(
     ['@test should not allow angle bracket invocation']() {
       expectAssertion(() => {
         this.render('<Input />');
-      }, 'You cannot use `input` as a component name.');
+      }, 'Invoking `{{input}}` using angle bracket syntax or `component` helper is not yet supported.');
     }
 
     ['@test a single text field is inserted into the DOM']() {

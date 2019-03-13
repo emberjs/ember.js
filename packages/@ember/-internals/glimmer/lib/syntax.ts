@@ -5,11 +5,11 @@ import { Macros, OpcodeBuilder } from '@glimmer/opcode-compiler';
 import { Option } from '@glimmer/util';
 import { Core } from '@glimmer/wire-format';
 import CompileTimeLookup from './compile-time-lookup';
-import { textAreaMacro } from './syntax/-text-area';
 import { inputMacro } from './syntax/input';
 import { blockLetMacro } from './syntax/let';
 import { mountMacro } from './syntax/mount';
 import { outletMacro } from './syntax/outlet';
+import { textAreaMacro } from './syntax/textarea';
 import { hashToArgs } from './syntax/utils';
 import { wrapComponentClassAttribute } from './utils/bindings';
 

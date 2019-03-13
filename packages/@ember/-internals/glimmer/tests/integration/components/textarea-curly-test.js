@@ -64,14 +64,8 @@ applyMixins(
 );
 
 moduleFor(
-  'Helpers test: {{textarea}}',
+  'Components test: {{textarea}}',
   class extends TextAreaRenderingTest {
-    ['@test Should not allow angle bracket invocation']() {
-      expectAssertion(() => {
-        this.render('<Textarea />');
-      }, 'You cannot use `textarea` as a component name.');
-    }
-
     ['@test Should insert a textarea'](assert) {
       this.render('{{textarea}}');
 

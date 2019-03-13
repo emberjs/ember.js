@@ -1220,13 +1220,38 @@ moduleFor(
     ['@test GH#14632 give useful warning when calling contextual components with input as a name']() {
       expectAssertion(() => {
         this.render('{{component (component "input" type="text")}}');
-      }, 'You cannot use `input` as a component name.');
+      }, 'Invoking `{{input}}` using angle bracket syntax or `component` helper is not yet supported.');
     }
 
-    ['@test GH#14632 give useful warning when calling contextual components with textarea as a name']() {
+    ['@feature(!ember-glimmer-angle-bracket-built-ins) GH#14632 give useful warning when calling contextual components with textarea as a name']() {
       expectAssertion(() => {
-        this.render('{{component (component "textarea" type="text")}}');
-      }, 'You cannot use `textarea` as a component name.');
+        this.render('{{component (component "textarea")}}');
+      }, 'Invoking `{{textarea}}` using angle bracket syntax or `component` helper is not yet supported.');
+    }
+
+    ['@feature(ember-glimmer-angle-bracket-built-ins) it can invoke textarea component']() {
+      this.render('{{component (component "textarea" value=value)}}', {
+        value: 'foo',
+      });
+
+      this.assertComponentElement(this.firstChild, {
+        tagName: 'textarea',
+        attrs: {
+          class: 'ember-text-area ember-view',
+        },
+      });
+
+      this.assert.strictEqual('foo', this.firstChild.value);
+
+      this.assertStableRerender();
+
+      runTask(() => this.context.set('value', 'bar'));
+
+      this.assert.strictEqual('bar', this.firstChild.value);
+
+      runTask(() => this.context.set('value', 'foo'));
+
+      this.assert.strictEqual('foo', this.firstChild.value);
     }
 
     ['@test GH#17121 local variable should win over helper (without arguments)']() {
