@@ -22,21 +22,6 @@ for a detailed explanation.
 
   Introduces the `resumeTest` testing helper to complement the `pauseTest` helper.
 
-* `glimmer-custom-component-manager`
-
-  Adds an ability to for developers to integrate their own custom component managers
-  into Ember Applications per [RFC](https://github.com/emberjs/rfcs/blob/custom-components/text/0000-custom-components.md).
-
-* `ember-glimmer-named-arguments`
-
-  Add `{{@foo}}` syntax to access named arguments in component templates per
-  [RFC](https://github.com/emberjs/rfcs/pull/276).
-
-* `ember-metal-es5-getters`
-
-  Define ES5 getters for computed properties, eliminating the need to access them
-  using `Ember.get()`. See [RFC](https://github.com/emberjs/rfcs/pull/281).
-
 * `ember-module-unification`
 
   Introduces support for Module Unification
@@ -51,7 +36,3 @@ for a detailed explanation.
   This feature is paired with the
   [`EMBER_RESOLVER_MODULE_UNIFICATION`](https://github.com/ember-cli/ember-resolver#ember_resolver_module_unification)
   flag on the ember-resolver package.
-
-* `ember-template-block-let-helper`
-
-  Introduce the block form of the `let` helper per [RFC](https://github.com/emberjs/rfcs/blob/78211b11387e7f477264e322687f1ec5ab131361/text/0286-block-let-template-helper.md).
