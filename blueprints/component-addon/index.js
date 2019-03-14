@@ -4,8 +4,9 @@ const path = require('path');
 const stringUtil = require('ember-cli-string-utils');
 const getPathOption = require('ember-cli-get-component-path-option');
 const normalizeEntityName = require('ember-cli-normalize-entity-name');
+const useEditionDetector = require('../edition-detector');
 
-module.exports = {
+module.exports = useEditionDetector({
   description: 'Generates a component.',
 
   fileMapTokens: function() {
@@ -28,6 +29,18 @@ module.exports = {
         }
         return 'app';
       },
+      __templatepath__: function(options) {
+        if (options.pod) {
+          return path.join(options.podPath, options.locals.path, options.dasherizedModuleName);
+        }
+        return 'templates/components';
+      },
+      __templatename__: function(options) {
+        if (options.pod) {
+          return 'template';
+        }
+        return options.dasherizedModuleName;
+      },
     };
   },
 
@@ -40,14 +53,24 @@ module.exports = {
     let addonName = stringUtil.dasherize(addonRawName);
     let fileName = stringUtil.dasherize(options.entity.name);
     let importPathName = [addonName, 'components', fileName].join('/');
+    let templatePath = '';
 
     if (options.pod) {
       importPathName = [addonName, 'components', fileName, 'component'].join('/');
     }
 
+    if (this.project.isEmberCLIAddon() || (options.inRepoAddon && !options.inDummy)) {
+      if (options.pod) {
+        templatePath = './template';
+      } else {
+        templatePath = [addonName, 'templates/components', fileName].join('/');
+      }
+    }
+
     return {
       modulePath: importPathName,
+      templatePath,
       path: getPathOption(options),
     };
   },
-};
+});
