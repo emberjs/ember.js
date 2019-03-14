@@ -1,4 +1,5 @@
 import { OwnedTemplateMeta } from '@ember/-internals/views';
+import { EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { CompilableBlock } from '@glimmer/interfaces';
 import { Macros, OpcodeBuilder } from '@glimmer/opcode-compiler';
@@ -26,7 +27,8 @@ function refineInlineSyntax(
       builder.referrer.owner.hasRegistration(`helper:${name}`)
     )
   );
-  if (name.indexOf('-') === -1) {
+
+  if (!EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS && name.indexOf('-') === -1) {
     return false;
   }
 
@@ -48,7 +50,7 @@ function refineBlockSyntax(
   inverse: Option<CompilableBlock>,
   builder: OpcodeBuilder<OwnedTemplateMeta>
 ) {
-  if (name.indexOf('-') === -1) {
+  if (!EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS && name.indexOf('-') === -1) {
     return false;
   }
 
@@ -97,10 +99,13 @@ export function populateMacros(macros: Macros) {
   inlines.add('outlet', outletMacro);
   inlines.add('mount', mountMacro);
   inlines.add('input', inputMacro);
-  inlines.add('textarea', textAreaMacro);
   inlines.addMissing(refineInlineSyntax);
   blocks.add('let', blockLetMacro);
   blocks.addMissing(refineBlockSyntax);
+
+  if (!EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
+    inlines.add('textarea', textAreaMacro);
+  }
 
   for (let i = 0; i < experimentalMacros.length; i++) {
     let macro = experimentalMacros[i];
