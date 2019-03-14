@@ -683,7 +683,7 @@ moduleFor(
       assert.deepEqual(fooBarInstance.childViews, [fooBarBazInstance]);
     }
 
-    ['@feature(ember-glimmer-named-arguments) it renders passed named arguments']() {
+    ['@test it renders passed named arguments']() {
       this.registerComponent('foo-bar', {
         template: '{{@foo}}',
       });
@@ -1329,7 +1329,7 @@ moduleFor(
       this.assertText('In layout - someProp: something here');
     }
 
-    ['@feature(ember-glimmer-named-arguments) non-block with named argument']() {
+    ['@test non-block with named argument']() {
       this.registerComponent('non-block', {
         template: 'In layout - someProp: {{@someProp}}',
       });
@@ -1461,44 +1461,7 @@ moduleFor(
       this.assertText('In layout - someProp: wycats');
     }
 
-    ['@feature(!ember-glimmer-named-arguments) this.attrs.foo === attrs.foo === foo']() {
-      this.registerComponent('foo-bar', {
-        template: strip`
-        Args: {{this.attrs.value}} | {{attrs.value}} | {{value}}
-        {{#each this.attrs.items as |item|}}
-          {{item}}
-        {{/each}}
-        {{#each attrs.items as |item|}}
-          {{item}}
-        {{/each}}
-        {{#each items as |item|}}
-          {{item}}
-        {{/each}}
-      `,
-      });
-
-      this.render('{{foo-bar value=model.value items=model.items}}', {
-        model: {
-          value: 'wat',
-          items: [1, 2, 3],
-        },
-      });
-
-      this.assertStableRerender();
-
-      runTask(() => {
-        this.context.set('model.value', 'lul');
-        this.context.set('model.items', [1]);
-      });
-
-      this.assertText(strip`Args: lul | lul | lul111`);
-
-      runTask(() => this.context.set('model', { value: 'wat', items: [1, 2, 3] }));
-
-      this.assertText('Args: wat | wat | wat123123123');
-    }
-
-    ['@feature(ember-glimmer-named-arguments) this.attrs.foo === attrs.foo === @foo === foo']() {
+    ['@test this.attrs.foo === attrs.foo === @foo === foo']() {
       this.registerComponent('foo-bar', {
         template: strip`
         Args: {{this.attrs.value}} | {{attrs.value}} | {{@value}} | {{value}}
@@ -1622,7 +1585,7 @@ moduleFor(
       this.assertText('In layout - someProp: something here - In template');
     }
 
-    ['@feature(ember-glimmer-named-arguments) block with named argument']() {
+    ['@test block with named argument']() {
       this.registerComponent('with-block', {
         template: 'In layout - someProp: {{@someProp}} - {{yield}}',
       });
@@ -3448,7 +3411,7 @@ moduleFor(
       this.assertText('MyVar1: 1 1 MyVar2: 2 2');
     }
 
-    ['@feature(ember-glimmer-named-arguments) using named arguments for positional params']() {
+    ['@test using named arguments for positional params']() {
       let MyComponent = Component.extend();
 
       this.registerComponent('foo-bar', {
@@ -3532,21 +3495,7 @@ moduleFor(
       this.assertText('Hi!');
     }
 
-    ['@feature(!ember-glimmer-named-arguments) can access properties off of rest style positionalParams array']() {
-      this.registerComponent('foo-bar', {
-        ComponentClass: Component.extend().reopenClass({
-          positionalParams: 'things',
-        }),
-        // using `attrs` here to simulate `@things.length`
-        template: `{{attrs.things.length}}`,
-      });
-
-      this.render('{{foo-bar "foo" "bar" "baz"}}');
-
-      this.assertText('3');
-    }
-
-    ['@feature(ember-glimmer-named-arguments) can access properties off of rest style positionalParams array']() {
+    ['@test can access properties off of rest style positionalParams array']() {
       this.registerComponent('foo-bar', {
         ComponentClass: Component.extend().reopenClass({
           positionalParams: 'things',

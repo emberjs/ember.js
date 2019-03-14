@@ -32,7 +32,7 @@ moduleFor(
       this.assertStableRerender();
     }
 
-    ['@feature(ember-glimmer-named-arguments) it can render named arguments']() {
+    ['@test it can render named arguments']() {
       this.registerComponent('foo-bar', '|{{@foo}}|{{@bar}}|');
 
       this.render('{{foo-bar foo=foo bar=bar}}', {
@@ -132,7 +132,7 @@ moduleFor(
       this.assertStableRerender();
     }
 
-    ['@feature(ember-glimmer-named-arguments) it can render named arguments']() {
+    ['@test it can render named arguments']() {
       this.registerComponent('foo-bar', '|{{@foo}}|{{@bar}}|');
 
       this.render('{{foo-bar foo=foo bar=bar}}', {
