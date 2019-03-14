@@ -139,6 +139,12 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
   lookupComponentHandle(name: string, meta: OwnedTemplateMeta) {
     let nextHandle = this.handles.length;
     let handle = this.handle(this._lookupComponentDefinition(name, meta));
+
+    assert(
+      'Could not find component `<TextArea />` (did you mean `<Textarea />`?)',
+      !(EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS && name === 'text-area' && handle === null)
+    );
+
     if (nextHandle === handle) {
       this.componentDefinitionCount++;
     }

@@ -83,6 +83,12 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
   moduleFor(
     'Components test: <Textarea>',
     class extends TextAreaRenderingTest {
+      ['@test Should catch <TextArea />` typo']() {
+        expectAssertion(() => {
+          this.render('<TextArea />');
+        }, 'Could not find component `<TextArea />` (did you mean `<Textarea />`?)');
+      }
+
       ['@test Should insert a <textarea>'](assert) {
         this.render('<Textarea />');
 
