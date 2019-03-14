@@ -12,7 +12,6 @@ import { getTextOf } from 'internal-test-helpers';
 import { Component } from '@ember/-internals/glimmer';
 import Engine from '@ember/engine';
 import { InternalTransition as Transition } from 'router_js';
-import { EMBER_ROUTING_ROUTER_SERVICE } from '@ember/canary-features';
 
 let originalConsoleError;
 
@@ -2946,27 +2945,6 @@ moduleFor(
 
           return this.visit('/nork');
         });
-    }
-
-    ['@test `didTransition` can be reopened'](assert) {
-      assert.expect(1);
-
-      this.router.map(function() {
-        this.route('nork');
-      });
-      if (EMBER_ROUTING_ROUTER_SERVICE) {
-        assert.ok(true, 'no longer a valid test');
-        return;
-      } else {
-        this.router.reopen({
-          didTransition() {
-            this._super(...arguments);
-            assert.ok(true, 'reopened didTransition was called');
-          },
-        });
-      }
-
-      return this.visit('/');
     }
 
     ['@test `activate` event fires on the route'](assert) {

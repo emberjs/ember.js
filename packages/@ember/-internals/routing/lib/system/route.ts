@@ -15,10 +15,7 @@ import {
   Object as EmberObject,
   typeOf,
 } from '@ember/-internals/runtime';
-import {
-  EMBER_ROUTING_BUILD_ROUTEINFO_METADATA,
-  EMBER_ROUTING_ROUTER_SERVICE,
-} from '@ember/canary-features';
+import { EMBER_ROUTING_BUILD_ROUTEINFO_METADATA } from '@ember/canary-features';
 import { assert, deprecate, info, isTesting } from '@ember/debug';
 import { ROUTER_EVENTS } from '@ember/deprecated-features';
 import { assign } from '@ember/polyfills';
@@ -1186,10 +1183,7 @@ class Route extends EmberObject implements IRoute {
     Router.js hook.
    */
   deserialize(_params: {}, transition: Transition) {
-    if (EMBER_ROUTING_ROUTER_SERVICE) {
-      return this.model(this._paramsFor(this.routeName, _params), transition);
-    }
-    return this.model(this.paramsFor(this.routeName), transition);
+    return this.model(this._paramsFor(this.routeName, _params), transition);
   }
 
   /**
@@ -2528,7 +2522,7 @@ Route.reopen(ActionHandler, Evented, {
 });
 
 export let ROUTER_EVENT_DEPRECATIONS: any;
-if (EMBER_ROUTING_ROUTER_SERVICE && ROUTER_EVENTS) {
+if (ROUTER_EVENTS) {
   ROUTER_EVENT_DEPRECATIONS = {
     on(name: string) {
       this._super(...arguments);
@@ -2608,7 +2602,7 @@ if (EMBER_ROUTING_BUILD_ROUTEINFO_METADATA) {
       ```
 
       @return any
-      @category ember-routing-build-routeinfo-metadata
+      @category EMBER_ROUTING_BUILD_ROUTEINFO_METADATA
      */
     buildRouteInfoMetadata() {},
   });

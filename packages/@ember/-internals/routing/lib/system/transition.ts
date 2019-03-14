@@ -141,7 +141,6 @@
  * property is simply represents leafmost route.
  * @property {RouteInfo|RouteInfoWithAttributes} to
  * @public
- * @category ember-routing-router-service
  */
 
 /**
@@ -153,7 +152,6 @@
  * `null`.
  * @property {RouteInfoWithAttributes} from
  * @public
- * @category ember-routing-router-service
  */
 
 /**

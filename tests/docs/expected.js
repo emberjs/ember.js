@@ -114,6 +114,7 @@ module.exports = {
     'catch',
     'changeProperties',
     'checkWaiters',
+    'child',
     'childViews',
     'classNameBindings',
     'classNames',

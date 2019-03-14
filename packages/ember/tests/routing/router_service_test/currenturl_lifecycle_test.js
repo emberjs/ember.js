@@ -5,7 +5,6 @@ import { Route } from '@ember/-internals/routing';
 import { get } from '@ember/-internals/metal';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
 import { RSVP } from '@ember/-internals/runtime';
-import { EMBER_ROUTING_ROUTER_SERVICE } from '@ember/canary-features';
 
 let results = [];
 let ROUTE_NAMES = ['index', 'child', 'sister', 'brother', 'loading'];
@@ -50,19 +49,12 @@ moduleFor(
         routerService: injectService('router'),
         currentURL: readOnly('routerService.currentURL'),
         currentRouteName: readOnly('routerService.currentRouteName'),
+        currentRoute: readOnly('routerService.currentRoute'),
       });
-
-      if (EMBER_ROUTING_ROUTER_SERVICE) {
-        CurrenURLComponent.reopen({
-          currentRoute: readOnly('routerService.currentRoute'),
-        });
-      }
 
       this.addComponent('current-url', {
         ComponentClass: CurrenURLComponent,
-        template: EMBER_ROUTING_ROUTER_SERVICE
-          ? '{{currentURL}}-{{currentRouteName}}-{{currentRoute.name}}'
-          : '{{currentURL}}-{{currentRouteName}}',
+        template: '{{currentURL}}-{{currentRouteName}}-{{currentRoute.name}}',
       });
     }
 
@@ -144,29 +136,17 @@ moduleFor(
 
       return this.visit('/')
         .then(() => {
-          let text = '/-parent.index';
-          if (EMBER_ROUTING_ROUTER_SERVICE) {
-            text = '/-parent.index-parent.index';
-          }
-          this.assertText(text);
+          this.assertText('/-parent.index-parent.index');
 
           return this.visit('/child');
         })
         .then(() => {
-          let text = '/child-parent.child';
-          if (EMBER_ROUTING_ROUTER_SERVICE) {
-            text = '/child-parent.child-parent.child';
-          }
-          this.assertText(text);
+          this.assertText('/child-parent.child-parent.child');
 
           return this.visit('/');
         })
         .then(() => {
-          let text = '/-parent.index';
-          if (EMBER_ROUTING_ROUTER_SERVICE) {
-            text = '/-parent.index-parent.index';
-          }
-          this.assertText(text);
+          this.assertText('/-parent.index-parent.index');
         });
     }
   }

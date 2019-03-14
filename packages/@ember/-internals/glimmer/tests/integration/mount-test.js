@@ -5,31 +5,17 @@ import { compile, Component } from '../utils/helpers';
 import Controller from '@ember/controller';
 import { set } from '@ember/-internals/metal';
 import Engine, { getEngineParent } from '@ember/engine';
-import { EMBER_ENGINES_MOUNT_PARAMS } from '@ember/canary-features';
 
-if (EMBER_ENGINES_MOUNT_PARAMS) {
-  moduleFor(
-    '{{mount}} single param assertion',
-    class extends RenderingTestCase {
-      ['@test it asserts that only a single param is passed']() {
-        expectAssertion(() => {
-          this.render('{{mount "chat" "foo"}}');
-        }, /You can only pass a single positional argument to the {{mount}} helper, e.g. {{mount "chat-engine"}}./i);
-      }
+moduleFor(
+  '{{mount}} single param assertion',
+  class extends RenderingTestCase {
+    ['@test it asserts that only a single param is passed']() {
+      expectAssertion(() => {
+        this.render('{{mount "chat" "foo"}}');
+      }, /You can only pass a single positional argument to the {{mount}} helper, e.g. {{mount "chat-engine"}}./i);
     }
-  );
-} else {
-  moduleFor(
-    '{{mount}} single param assertion',
-    class extends RenderingTestCase {
-      ['@test it asserts that only a single param is passed']() {
-        expectAssertion(() => {
-          this.render('{{mount "chat" "foo"}}');
-        }, /You can only pass a single argument to the {{mount}} helper, e.g. {{mount "chat-engine"}}./i);
-      }
-    }
-  );
-}
+  }
+);
 
 moduleFor(
   '{{mount}} assertions',
@@ -298,128 +284,126 @@ moduleFor(
   }
 );
 
-if (EMBER_ENGINES_MOUNT_PARAMS) {
-  moduleFor(
-    '{{mount}} params tests',
-    class extends ApplicationTestCase {
-      constructor() {
-        super(...arguments);
+moduleFor(
+  '{{mount}} params tests',
+  class extends ApplicationTestCase {
+    constructor() {
+      super(...arguments);
 
-        this.add(
-          'engine:paramEngine',
-          Engine.extend({
-            router: null,
-            init() {
-              this._super(...arguments);
-              this.register(
-                'template:application',
-                compile('<h2>Param Engine: {{model.foo}}</h2>', {
-                  moduleName: 'my-app/templates/application.hbs',
-                })
-              );
-            },
-          })
-        );
-      }
-
-      ['@test it renders with static parameters']() {
-        this.router.map(function() {
-          this.route('engine-params-static');
-        });
-        this.addTemplate('engine-params-static', '{{mount "paramEngine" model=(hash foo="bar")}}');
-
-        return this.visit('/engine-params-static').then(() => {
-          this.assertInnerHTML('<h2>Param Engine: bar</h2>');
-        });
-      }
-
-      ['@test it renders with bound parameters']() {
-        this.router.map(function() {
-          this.route('engine-params-bound');
-        });
-        let controller;
-        this.add(
-          'controller:engine-params-bound',
-          Controller.extend({
-            boundParamValue: null,
-            init() {
-              this._super();
-              controller = this;
-            },
-          })
-        );
-        this.addTemplate(
-          'engine-params-bound',
-          '{{mount "paramEngine" model=(hash foo=boundParamValue)}}'
-        );
-
-        return this.visit('/engine-params-bound').then(() => {
-          this.assertInnerHTML('<h2>Param Engine: </h2>');
-
-          runTask(() => set(controller, 'boundParamValue', 'bar'));
-
-          this.assertInnerHTML('<h2>Param Engine: bar</h2>');
-
-          runTask(() => set(controller, 'boundParamValue', undefined));
-
-          this.assertInnerHTML('<h2>Param Engine: </h2>');
-
-          runTask(() => set(controller, 'boundParamValue', 'bar'));
-
-          this.assertInnerHTML('<h2>Param Engine: bar</h2>');
-
-          runTask(() => set(controller, 'boundParamValue', 'baz'));
-
-          this.assertInnerHTML('<h2>Param Engine: baz</h2>');
-
-          runTask(() => set(controller, 'boundParamValue', 'bar'));
-
-          this.assertInnerHTML('<h2>Param Engine: bar</h2>');
-
-          runTask(() => set(controller, 'boundParamValue', null));
-
-          this.assertInnerHTML('<h2>Param Engine: </h2>');
-        });
-      }
-
-      ['@test it renders contextual components passed as parameter values']() {
-        this.router.map(function() {
-          this.route('engine-params-contextual-component');
-        });
-
-        this.addComponent('foo-component', {
-          template: `foo-component rendered! - {{app-bar-component}}`,
-        });
-        this.addComponent('app-bar-component', {
-          ComponentClass: Component.extend({ tagName: '' }),
-          template: 'rendered app-bar-component from the app',
-        });
-        this.add(
-          'engine:componentParamEngine',
-          Engine.extend({
-            router: null,
-            init() {
-              this._super(...arguments);
-              this.register(
-                'template:application',
-                compile('{{model.foo}}', {
-                  moduleName: 'my-app/templates/application.hbs',
-                })
-              );
-            },
-          })
-        );
-        this.addTemplate(
-          'engine-params-contextual-component',
-          '{{mount "componentParamEngine" model=(hash foo=(component "foo-component"))}}'
-        );
-
-        return this.visit('/engine-params-contextual-component').then(() => {
-          this.assertComponentElement(this.firstChild, {
-            content: 'foo-component rendered! - rendered app-bar-component from the app',
-          });
-        });
-      }
+      this.add(
+        'engine:paramEngine',
+        Engine.extend({
+          router: null,
+          init() {
+            this._super(...arguments);
+            this.register(
+              'template:application',
+              compile('<h2>Param Engine: {{model.foo}}</h2>', {
+                moduleName: 'my-app/templates/application.hbs',
+              })
+            );
+          },
+        })
+      );
     }
-  );
-}
+
+    ['@test it renders with static parameters']() {
+      this.router.map(function() {
+        this.route('engine-params-static');
+      });
+      this.addTemplate('engine-params-static', '{{mount "paramEngine" model=(hash foo="bar")}}');
+
+      return this.visit('/engine-params-static').then(() => {
+        this.assertInnerHTML('<h2>Param Engine: bar</h2>');
+      });
+    }
+
+    ['@test it renders with bound parameters']() {
+      this.router.map(function() {
+        this.route('engine-params-bound');
+      });
+      let controller;
+      this.add(
+        'controller:engine-params-bound',
+        Controller.extend({
+          boundParamValue: null,
+          init() {
+            this._super();
+            controller = this;
+          },
+        })
+      );
+      this.addTemplate(
+        'engine-params-bound',
+        '{{mount "paramEngine" model=(hash foo=boundParamValue)}}'
+      );
+
+      return this.visit('/engine-params-bound').then(() => {
+        this.assertInnerHTML('<h2>Param Engine: </h2>');
+
+        runTask(() => set(controller, 'boundParamValue', 'bar'));
+
+        this.assertInnerHTML('<h2>Param Engine: bar</h2>');
+
+        runTask(() => set(controller, 'boundParamValue', undefined));
+
+        this.assertInnerHTML('<h2>Param Engine: </h2>');
+
+        runTask(() => set(controller, 'boundParamValue', 'bar'));
+
+        this.assertInnerHTML('<h2>Param Engine: bar</h2>');
+
+        runTask(() => set(controller, 'boundParamValue', 'baz'));
+
+        this.assertInnerHTML('<h2>Param Engine: baz</h2>');
+
+        runTask(() => set(controller, 'boundParamValue', 'bar'));
+
+        this.assertInnerHTML('<h2>Param Engine: bar</h2>');
+
+        runTask(() => set(controller, 'boundParamValue', null));
+
+        this.assertInnerHTML('<h2>Param Engine: </h2>');
+      });
+    }
+
+    ['@test it renders contextual components passed as parameter values']() {
+      this.router.map(function() {
+        this.route('engine-params-contextual-component');
+      });
+
+      this.addComponent('foo-component', {
+        template: `foo-component rendered! - {{app-bar-component}}`,
+      });
+      this.addComponent('app-bar-component', {
+        ComponentClass: Component.extend({ tagName: '' }),
+        template: 'rendered app-bar-component from the app',
+      });
+      this.add(
+        'engine:componentParamEngine',
+        Engine.extend({
+          router: null,
+          init() {
+            this._super(...arguments);
+            this.register(
+              'template:application',
+              compile('{{model.foo}}', {
+                moduleName: 'my-app/templates/application.hbs',
+              })
+            );
+          },
+        })
+      );
+      this.addTemplate(
+        'engine-params-contextual-component',
+        '{{mount "componentParamEngine" model=(hash foo=(component "foo-component"))}}'
+      );
+
+      return this.visit('/engine-params-contextual-component').then(() => {
+        this.assertComponentElement(this.firstChild, {
+          content: 'foo-component rendered! - rendered app-bar-component from the app',
+        });
+      });
+    }
+  }
+);
