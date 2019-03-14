@@ -1,12 +1,9 @@
-import {
-  EMBER_ROUTING_ROUTER_SERVICE,
-  EMBER_ROUTING_BUILD_ROUTEINFO_METADATA,
-} from '@ember/canary-features';
+import { EMBER_ROUTING_BUILD_ROUTEINFO_METADATA } from '@ember/canary-features';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
 import { inject as service } from '@ember/service';
 import { Route } from '@ember/-internals/routing';
 
-if (EMBER_ROUTING_BUILD_ROUTEINFO_METADATA && EMBER_ROUTING_ROUTER_SERVICE) {
+if (EMBER_ROUTING_BUILD_ROUTEINFO_METADATA) {
   moduleFor(
     'buildRouteInfoMetadata',
     class extends RouterTestCase {

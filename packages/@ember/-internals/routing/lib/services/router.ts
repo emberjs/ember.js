@@ -1,5 +1,4 @@
 import { Evented } from '@ember/-internals/runtime';
-import { EMBER_ROUTING_ROUTER_SERVICE } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { readOnly } from '@ember/object/computed';
 import Service from '@ember/service';
@@ -19,6 +18,14 @@ if (DEBUG) {
       Object.freeze(transition.to);
     }
   };
+}
+
+function cleanURL(url: string, rootURL: string) {
+  if (rootURL === '/') {
+    return url;
+  }
+
+  return url.substr(rootURL.length, url.length);
 }
 
 /**
@@ -52,6 +59,25 @@ if (DEBUG) {
  */
 export default class RouterService extends Service {
   _router!: EmberRouter;
+
+  init() {
+    super.init(...arguments);
+
+    this._router.on('routeWillChange', (transition: Transition) => {
+      if (DEBUG) {
+        freezeRouteInfo(transition);
+      }
+      this.trigger('routeWillChange', transition);
+    });
+
+    this._router.on('routeDidChange', (transition: Transition) => {
+      if (DEBUG) {
+        freezeRouteInfo(transition);
+      }
+
+      this.trigger('routeDidChange', transition);
+    });
+  }
 
   /**
      Transition the application into another route. The route may
@@ -159,9 +185,109 @@ export default class RouterService extends Service {
 
     return true;
   }
+
+  /**
+     Takes a string URL and returns a `RouteInfo` for the leafmost route represented
+     by the URL. Returns `null` if the URL is not recognized. This method expects to
+     receive the actual URL as seen by the browser including the app's `rootURL`.
+
+      @method recognize
+      @param {String} url
+      @public
+    */
+  recognize(url: string) {
+    assert(
+      `You must pass a url that begins with the application's rootURL "${this.rootURL}"`,
+      url.indexOf(this.rootURL) === 0
+    );
+    let internalURL = cleanURL(url, this.rootURL);
+    return this._router._routerMicrolib.recognize(internalURL);
+  }
+
+  /**
+    Takes a string URL and returns a promise that resolves to a
+    `RouteInfoWithAttributes` for the leafmost route represented by the URL.
+    The promise rejects if the URL is not recognized or an unhandled exception
+    is encountered. This method expects to receive the actual URL as seen by
+    the browser including the app's `rootURL`.
+
+      @method recognizeAndLoad
+      @param {String} url
+      @public
+   */
+  recognizeAndLoad(url: string) {
+    assert(
+      `You must pass a url that begins with the application's rootURL "${this.rootURL}"`,
+      url.indexOf(this.rootURL) === 0
+    );
+    let internalURL = cleanURL(url, this.rootURL);
+    return this._router._routerMicrolib.recognizeAndLoad(internalURL);
+  }
+
+  /**
+    The `routeWillChange` event is fired at the beginning of any
+    attempted transition with a `Transition` object as the sole
+    argument. This action can be used for aborting, redirecting,
+    or decorating the transition from the currently active routes.
+
+    A good example is preventing navigation when a form is
+    half-filled out:
+
+    ```app/routes/contact-form.js
+    import {inject as service} from '@ember/service';
+
+    export default Route.extend({
+      router: service('router'),
+      init() {
+        this._super(...arguments);
+        this.router.on('routeWillChange', (transition) => {
+          if (!transition.to.find(route => route.name === this.routeName)) {
+            alert("Please save or cancel your changes.");
+            transition.abort();
+          }
+        })
+      }
+    });
+    ```
+
+    The `routeWillChange` event fires whenever a new route is chosen as the desired target of a transition. This includes `transitionTo`, `replaceWith`, all redirection for any reason including error handling, and abort. Aborting implies changing the desired target back to where you already were. Once a transition has completed, `routeDidChange` fires.
+
+    @event routeWillChange
+    @param {Transition} transition
+    @public
+  */
+
+  /**
+    The `routeDidChange` event only fires once a transition has settled.
+    This includes aborts and error substates. Like the `routeWillChange` event
+    it receives a Transition as the sole argument.
+
+    A good example is sending some analytics when the route has transitioned:
+
+    ```app/routes/contact-form.js
+    import {inject as service} from '@ember/service';
+
+    export default Route.extend({
+      router: service('router'),
+      init() {
+        this._super(...arguments);
+        this.router.on('routeDidChange', (transition) => {
+          ga.send('pageView', {
+            current: transition.to.name,
+            from: transition.from.name
+          });
+        })
+      }
+    });
+    ```
+
+    @event routeDidChange
+    @param {Transition} transition
+    @public
+  */
 }
 
-RouterService.reopen({
+RouterService.reopen(Evented, {
   /**
      Name of the current route.
 
@@ -263,37 +389,8 @@ RouterService.reopen({
     @public
   */
   rootURL: readOnly('_router.rootURL'),
-});
 
-if (EMBER_ROUTING_ROUTER_SERVICE) {
-  const cleanURL = function(url: string, rootURL: string) {
-    if (rootURL === '/') {
-      return url;
-    }
-
-    return url.substr(rootURL.length, url.length);
-  };
-
-  RouterService.reopen(Evented, {
-    init() {
-      this._super(...arguments);
-      this._router.on('routeWillChange', (transition: Transition) => {
-        if (DEBUG) {
-          freezeRouteInfo(transition);
-        }
-        this.trigger('routeWillChange', transition);
-      });
-
-      this._router.on('routeDidChange', (transition: Transition) => {
-        if (DEBUG) {
-          freezeRouteInfo(transition);
-        }
-
-        this.trigger('routeDidChange', transition);
-      });
-    },
-
-    /**
+  /**
      A RouteInfo that represents the current leaf route.
      It is guaranteed to change whenever a route transition
      happens (even when that transition only changes parameters
@@ -301,112 +398,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
 
      @property currentRoute
      @type RouteInfo
-     @category ember-routing-router-service
      @public
    */
-    currentRoute: readOnly('_router.currentRoute'),
-
-    /**
-     Takes a string URL and returns a `RouteInfo` for the leafmost route represented
-     by the URL. Returns `null` if the URL is not recognized. This method expects to
-     receive the actual URL as seen by the browser including the app's `rootURL`.
-
-      @method recognize
-      @param {String} url
-      @category ember-routing-router-service
-      @public
-    */
-    recognize(url: string) {
-      assert(
-        `You must pass a url that begins with the application's rootURL "${this.rootURL}"`,
-        url.indexOf(this.rootURL) === 0
-      );
-      let internalURL = cleanURL(url, this.rootURL);
-      return this._router._routerMicrolib.recognize(internalURL);
-    },
-
-    /**
-      Takes a string URL and returns a promise that resolves to a
-      `RouteInfoWithAttributes` for the leafmost route represented by the URL.
-      The promise rejects if the URL is not recognized or an unhandled exception
-      is encountered. This method expects to receive the actual URL as seen by
-      the browser including the app's `rootURL`.
-
-        @method recognizeAndLoad
-        @param {String} url
-        @category ember-routing-router-service
-        @public
-     */
-    recognizeAndLoad(url: string) {
-      assert(
-        `You must pass a url that begins with the application's rootURL "${this.rootURL}"`,
-        url.indexOf(this.rootURL) === 0
-      );
-      let internalURL = cleanURL(url, this.rootURL);
-      return this._router._routerMicrolib.recognizeAndLoad(internalURL);
-    },
-    /**
-      The `routeWillChange` event is fired at the beginning of any
-      attempted transition with a `Transition` object as the sole
-      argument. This action can be used for aborting, redirecting,
-      or decorating the transition from the currently active routes.
-
-      A good example is preventing navigation when a form is
-      half-filled out:
-
-      ```app/routes/contact-form.js
-      import {inject as service} from '@ember/service';
-
-      export default Route.extend({
-        router: service('router'),
-        init() {
-          this._super(...arguments);
-          this.router.on('routeWillChange', (transition) => {
-            if (!transition.to.find(route => route.name === this.routeName)) {
-              alert("Please save or cancel your changes.");
-              transition.abort();
-            }
-          })
-        }
-      });
-      ```
-
-      The `routeWillChange` event fires whenever a new route is chosen as the desired target of a transition. This includes `transitionTo`, `replaceWith`, all redirection for any reason including error handling, and abort. Aborting implies changing the desired target back to where you already were. Once a transition has completed, `routeDidChange` fires.
-
-      @event routeWillChange
-      @param {Transition} transition
-      @category ember-routing-router-service
-      @public
-    */
-
-    /**
-      The `routeDidChange` event only fires once a transition has settled.
-      This includes aborts and error substates. Like the `routeWillChange` event
-      it receives a Transition as the sole argument.
-
-      A good example is sending some analytics when the route has transitioned:
-
-      ```app/routes/contact-form.js
-      import {inject as service} from '@ember/service';
-
-      export default Route.extend({
-        router: service('router'),
-        init() {
-          this._super(...arguments);
-          this.router.on('routeDidChange', (transition) => {
-            ga.send('pageView', {
-              current: transition.to.name,
-              from: transition.from.name
-            });
-          })
-        }
-      });
-      ```
-
-      @event routeDidChange
-      @param {Transition} transition
-      @category ember-routing-router-service
-      @public
-    */
-  });
-}
+  currentRoute: readOnly('_router.currentRoute'),
+});
