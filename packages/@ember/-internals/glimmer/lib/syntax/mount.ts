@@ -2,7 +2,6 @@
 @module ember
 */
 import { OwnedTemplateMeta } from '@ember/-internals/views';
-import { EMBER_ENGINES_MOUNT_PARAMS } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { Opaque, Option } from '@glimmer/interfaces';
 import { OpcodeBuilder } from '@glimmer/opcode-compiler';
@@ -74,17 +73,10 @@ export function mountMacro(
   hash: Option<WireFormat.Core.Hash>,
   builder: OpcodeBuilder<OwnedTemplateMeta>
 ) {
-  if (EMBER_ENGINES_MOUNT_PARAMS) {
-    assert(
-      'You can only pass a single positional argument to the {{mount}} helper, e.g. {{mount "chat-engine"}}.',
-      params!.length === 1
-    );
-  } else {
-    assert(
-      'You can only pass a single argument to the {{mount}} helper, e.g. {{mount "chat-engine"}}.',
-      params!.length === 1 && hash === null
-    );
-  }
+  assert(
+    'You can only pass a single positional argument to the {{mount}} helper, e.g. {{mount "chat-engine"}}.',
+    params!.length === 1
+  );
 
   let expr: WireFormat.Expressions.Helper = [WireFormat.Ops.Helper, '-mount', params || [], hash];
   builder.dynamicComponent(expr, null, [], null, false, null, null);

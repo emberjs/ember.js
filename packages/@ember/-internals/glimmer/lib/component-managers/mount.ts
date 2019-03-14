@@ -7,7 +7,6 @@ import { Destroyable, Opaque, Option } from '@glimmer/util';
 import { Owner } from '@ember/-internals/owner';
 import { generateControllerFactory } from '@ember/-internals/routing';
 import { OwnedTemplateMeta } from '@ember/-internals/views';
-import { EMBER_ENGINES_MOUNT_PARAMS } from '@ember/canary-features';
 import Environment from '../environment';
 import RuntimeResolver from '../resolver';
 import { OwnedTemplate } from '../template';
@@ -87,27 +86,21 @@ class MountManager
     let self: RootReference<any>;
     let bucket: EngineState | EngineWithModelState;
     let tag: Tag;
-    if (EMBER_ENGINES_MOUNT_PARAMS) {
-      let modelRef = state.modelRef;
-      if (modelRef === undefined) {
-        controller = controllerFactory.create();
-        self = new RootReference(controller);
-        tag = CONSTANT_TAG;
-        bucket = { engine, controller, self, tag };
-      } else {
-        let model = modelRef.value();
-        let modelRev = modelRef.tag.value();
-        controller = controllerFactory.create({ model });
-        self = new RootReference(controller);
-        tag = modelRef.tag;
-        bucket = { engine, controller, self, tag, modelRef, modelRev };
-      }
-    } else {
+    let modelRef = state.modelRef;
+    if (modelRef === undefined) {
       controller = controllerFactory.create();
       self = new RootReference(controller);
       tag = CONSTANT_TAG;
       bucket = { engine, controller, self, tag };
+    } else {
+      let model = modelRef.value();
+      let modelRev = modelRef.tag.value();
+      controller = controllerFactory.create({ model });
+      self = new RootReference(controller);
+      tag = modelRef.tag;
+      bucket = { engine, controller, self, tag, modelRef, modelRev };
     }
+
     return bucket;
   }
 
@@ -130,13 +123,11 @@ class MountManager
   }
 
   update(bucket: EngineWithModelState): void {
-    if (EMBER_ENGINES_MOUNT_PARAMS) {
-      let { controller, modelRef, modelRev } = bucket;
-      if (!modelRef.tag.validate(modelRev!)) {
-        let model = modelRef.value();
-        bucket.modelRev = modelRef.tag.value();
-        controller.set('model', model);
-      }
+    let { controller, modelRef, modelRev } = bucket;
+    if (!modelRef.tag.validate(modelRev!)) {
+      let model = modelRef.value();
+      bucket.modelRev = modelRef.tag.value();
+      controller.set('model', model);
     }
   }
 }
