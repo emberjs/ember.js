@@ -80,6 +80,12 @@ class InputRenderingTest extends RenderingTestCase {
 moduleFor(
   'Helpers test: {{input}}',
   class extends InputRenderingTest {
+    ['@test should not allow angle bracket invocation']() {
+      expectAssertion(() => {
+        this.render('<Input />');
+      }, 'You cannot use `input` as a component name.');
+    }
+
     ['@test a single text field is inserted into the DOM']() {
       this.render(`{{input type="text" value=value}}`, { value: 'hello' });
 
