@@ -1,10 +1,10 @@
-import { Opaque, Option } from '@glimmer/interfaces';
+import { Option, Dict, Maybe } from '@glimmer/interfaces';
 import { CachedReference, combineTagged, PathReference, Tag } from '@glimmer/reference';
 
 export class ConcatReference extends CachedReference<Option<string>> {
   public tag: Tag;
 
-  constructor(private parts: Array<PathReference<Opaque>>) {
+  constructor(private parts: Array<PathReference<unknown>>) {
     super();
     this.tag = combineTagged(parts);
   }
@@ -13,7 +13,7 @@ export class ConcatReference extends CachedReference<Option<string>> {
     let parts = new Array<string>();
 
     for (let i = 0; i < this.parts.length; i++) {
-      let value = this.parts[i].value();
+      let value = this.parts[i].value() as Maybe<Dict>;
 
       if (value !== null && value !== undefined) {
         parts[i] = castToString(value);
@@ -28,7 +28,7 @@ export class ConcatReference extends CachedReference<Option<string>> {
   }
 }
 
-function castToString(value: {}) {
+function castToString(value: Dict) {
   if (typeof value.toString !== 'function') {
     return '';
   }

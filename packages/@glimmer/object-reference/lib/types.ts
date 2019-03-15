@@ -1,6 +1,7 @@
-import { Option, Opaque, Dict, Set } from '@glimmer/util';
+import { Option, Set } from '@glimmer/util';
 import { Reference, PathReference } from '@glimmer/reference';
 import { InnerReferenceFactory } from './references/descriptors';
+import { Dict } from '@glimmer/interfaces';
 
 export interface NotifiableReference<T> extends Reference<T> {
   // notify();
@@ -20,7 +21,7 @@ export interface RootReferenceFactory<T> {
 
 export interface RootReference<T> extends PathReference<T> {
   update(value: T): void;
-  referenceFromParts(parts: string[]): PathReference<Opaque>;
+  referenceFromParts(parts: string[]): PathReference<unknown>;
   chainFor(prop: string): Option<PathReference<T>>;
 }
 

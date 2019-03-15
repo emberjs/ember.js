@@ -1,6 +1,6 @@
 import { AST } from '@glimmer/syntax';
-import { Core } from '@glimmer/wire-format';
-import { Dict, Option, dict, unreachable, expect } from '@glimmer/util';
+import { Option, dict, unreachable, expect } from '@glimmer/util';
+import { Core, Dict } from '@glimmer/interfaces';
 
 export abstract class SymbolTable {
   static top(): ProgramSymbolTable {
@@ -57,6 +57,10 @@ export class ProgramSymbolTable extends SymbolTable {
   }
 
   allocateBlock(name: string): number {
+    if (name === 'inverse') {
+      name = 'else';
+    }
+
     let block = this.blocks[name];
 
     if (!block) {
@@ -169,14 +173,14 @@ class Frame {
   public mustacheCount = 0;
   public actions: Action[] = [];
   public blankChildTextNodes: Option<number[]> = null;
-  public symbols: Option<SymbolTable> = null;
+  public symbols: Option<AST.Symbols> = null;
 }
 
 export namespace Action {
-  export type StartProgram = ['startProgram', [AST.Program, number, number[]]];
-  export type EndProgram = ['endProgram', [AST.Program, number]];
-  export type StartBlock = ['startBlock', [AST.Program, number, number[]]];
-  export type EndBlock = ['endBlock', [AST.Program, number]];
+  export type StartProgram = ['startProgram', [AST.Template, number, number[]]];
+  export type EndProgram = ['endProgram', [AST.Template, number]];
+  export type StartBlock = ['startBlock', [AST.Block, number, number[]]];
+  export type EndBlock = ['endBlock', [AST.Block, number]];
   export type Block = ['block', [AST.BlockStatement, number, number]];
   export type Mustache = [
     'mustache',
@@ -207,22 +211,30 @@ export default class TemplateVisitor {
   public actions: Action[] = [];
   private programDepth = -1;
 
-  visit(node: AST.BaseNode) {
-    this[node.type](node);
+  visit<S extends AST.TopLevelStatement>(node: S) {
+    (this[node.type] as (this: this, node: S) => void)(node);
   }
 
   // Traversal methods
 
-  Program(program: AST.Program) {
+  Block(program: AST.Block) {
+    return this.anyBlock(program);
+  }
+
+  Template(program: AST.Template) {
+    return this.anyBlock(program);
+  }
+
+  anyBlock(program: AST.Block | AST.Template) {
     this.programDepth++;
 
     let parentFrame = this.getCurrentFrame();
     let programFrame = this.pushFrame();
 
     if (!parentFrame) {
-      program['symbols'] = SymbolTable.top();
+      (program as AST.Template).symbols = SymbolTable.top();
     } else {
-      program['symbols'] = parentFrame.symbols!.child(program.blockParams);
+      (program as AST.Block).symbols = parentFrame.symbols!.child(program.blockParams);
     }
 
     let startType: string, endType: string;
@@ -240,7 +252,7 @@ export default class TemplateVisitor {
     programFrame.childCount = program.body.length;
     programFrame.blankChildTextNodes = [];
     programFrame.actions.push([endType, [program, this.programDepth]] as Action);
-    programFrame.symbols = program['symbols'];
+    programFrame.symbols = program['symbols']!;
 
     for (let i = program.body.length - 1; i >= 0; i--) {
       programFrame.childIndex = i;
@@ -271,7 +283,7 @@ export default class TemplateVisitor {
     elementFrame.childCount = element.children.length;
     elementFrame.mustacheCount += element.modifiers.length;
     elementFrame.blankChildTextNodes = [];
-    elementFrame.symbols = element['symbols'] = parentFrame.symbols!.child(element.blockParams);
+    elementFrame.symbols = element.symbols = parentFrame.symbols!.child(element.blockParams);
 
     let actionArgs: [AST.ElementNode, number, number] = [
       element,

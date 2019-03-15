@@ -1,7 +1,11 @@
-import { Simple } from '@glimmer/interfaces';
-import { Namespace } from '@simple-dom/interface';
-import { NodeToken, NodeTokens } from './node-tokens';
+import { NodeToken, NodeTokensImpl } from './node-tokens';
 import { HTML, OperationsBuilder, run } from './dom-operations';
+import {
+  Namespace,
+  SimpleDocument,
+  SimpleElement,
+  SimpleDocumentFragment,
+} from '@simple-dom/interface';
 
 // https://github.com/whatwg/dom/issues/270
 
@@ -37,7 +41,7 @@ export class DOMTreeConstruction {
     this.builder.setAttribute(name, value, namespace);
   }
 
-  appendTo(parent: Simple.Element | Simple.DocumentFragment, owner: Simple.Document): NodeTokens {
+  appendTo(parent: SimpleElement | SimpleDocumentFragment, owner: SimpleDocument): NodeTokensImpl {
     let { ops, constants } = this.builder.finish();
 
     return run(ops, {

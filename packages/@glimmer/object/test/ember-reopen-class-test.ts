@@ -30,6 +30,6 @@ QUnit.test('class properties inherited by subclasses', assert => {
 
   let SubSub = Subclass.extend();
 
-  assert.equal(SubSub['foo'](), 'FOO', 'Adds method');
+  assert.equal((SubSub as any)['foo'](), 'FOO', 'Adds method');
   assert.equal(get(SubSub, 'bar'), 'BAR', 'Adds property');
 });

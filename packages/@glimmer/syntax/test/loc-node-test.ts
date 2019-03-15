@@ -405,11 +405,11 @@ test("whitespace control - 'else if' trailing", function() {
 
   let [, ifBlock] = ast.body;
   locEqual(ifBlock, 2, 2, 6, 9, 'if block');
-  if (assertNodeType(ifBlock, 'BlockStatement') && assertNodeType(ifBlock.inverse, 'Program')) {
+  if (assertNodeType(ifBlock, 'BlockStatement') && assertNodeType(ifBlock.inverse, 'Block')) {
     let [nestedIfBlock] = ifBlock.inverse.body;
     if (
       assertNodeType(nestedIfBlock, 'BlockStatement') &&
-      assertNodeType(nestedIfBlock.program, 'Program')
+      assertNodeType(nestedIfBlock.program, 'Block')
     ) {
       let [div] = nestedIfBlock.program.body;
       locEqual(div, 5, 4, 5, 15, 'div inside truthy else if block');

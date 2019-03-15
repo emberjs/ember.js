@@ -27,17 +27,9 @@ export class Stack {
     this.vec[pos] = value;
   }
 
-  writeSmi(pos: u32, value: i32): void {
-    this.vec[pos] = encodeSmi(value);
-  }
-
   // TODO: partially decoded enum?
   getRaw(pos: u32): u32 {
     return this.vec[pos];
-  }
-
-  getSmi(pos: u32): i32 {
-    return decodeSmi(this.vec[pos]);
   }
 
   reset(): void {
@@ -55,23 +47,4 @@ export const enum PrimitiveType {
   STRING = 0b010,
   BOOLEAN_OR_VOID = 0b011,
   NEGATIVE = 0b100,
-}
-
-function decodeSmi(smi: number): number {
-  switch (smi & 0b111) {
-    case PrimitiveType.NUMBER:
-      return smi >> 3;
-    case PrimitiveType.NEGATIVE:
-      return -(smi >> 3);
-    default:
-      throw new Error('unreachable');
-  }
-}
-
-function encodeSmi(primitive: number) {
-  if (primitive < 0) {
-    return (Math.abs(primitive) << 3) | PrimitiveType.NEGATIVE;
-  } else {
-    return (primitive << 3) | PrimitiveType.NUMBER;
-  }
 }

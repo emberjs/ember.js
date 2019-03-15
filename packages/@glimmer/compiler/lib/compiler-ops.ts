@@ -1,5 +1,5 @@
 import { AST } from '@glimmer/syntax';
-import { Option, Opaque } from '@glimmer/interfaces';
+import { Option } from '@glimmer/interfaces';
 
 /**
   - 0 - represents `this`
@@ -7,25 +7,29 @@ import { Option, Opaque } from '@glimmer/interfaces';
  */
 export type PathHead = string | 0;
 export interface CompilerOps<Variable> {
-  startProgram: AST.Program;
+  startProgram: AST.Template;
   endProgram: null;
-  startBlock: AST.Program;
+  startBlock: AST.Block;
   endBlock: null;
   text: string;
   comment: string;
   openElement: AST.ElementNode;
   openComponent: AST.ElementNode;
+  openNamedBlock: AST.ElementNode;
   openSplattedElement: AST.ElementNode;
   flushElement: AST.ElementNode;
   closeElement: AST.ElementNode;
   closeComponent: AST.ElementNode;
+  closeNamedBlock: AST.ElementNode;
   closeDynamicComponent: AST.ElementNode;
   staticArg: string;
   dynamicArg: string;
   attrSplat: Option<Variable>;
   staticAttr: [string, Option<string>];
   trustingAttr: [string, Option<string>];
+  trustingComponentAttr: [string, Option<string>];
   dynamicAttr: [string, Option<string>];
+  componentAttr: [string, Option<string>];
   modifier: string;
   append: boolean;
   block: [string, number, Option<number>];
@@ -49,10 +53,10 @@ export interface TemplateCompilerOps extends CompilerOps<PathHead> {
   maybeGet: [PathHead, string[]]; // {{path}}, might be helper
 }
 
-export type OpName = keyof CompilerOps<Opaque>;
+export type OpName = keyof CompilerOps<unknown>;
 
 export type Processor<
-  InOps extends CompilerOps<Opaque>,
+  InOps extends CompilerOps<unknown>,
   OutVariable,
   OutOps extends CompilerOps<OutVariable>
 > = {

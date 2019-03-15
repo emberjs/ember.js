@@ -1,5 +1,6 @@
 import { Mixin, Blueprint, toMixin } from '@glimmer/object';
 import { setProperty } from '@glimmer/object-reference';
+import { dict } from '@glimmer/util';
 export { Mixin };
 
 export function get(obj: any, key: string) {
@@ -27,7 +28,7 @@ export function mixin(obj: any, ...extensions: any[]) {
 }
 
 export function defineProperty(obj: any, key: string, desc: Blueprint | null) {
-  let extensions = {};
+  let extensions = dict();
   extensions[key] = desc;
 
   mixin(obj, extensions);

@@ -1,7 +1,13 @@
-import { Bounds } from '../bounds';
-import { DOMOperations } from '../dom/helper';
+import { Bounds } from '@glimmer/interfaces';
 import { Option } from '@glimmer/util';
-import { Simple } from '@glimmer/interfaces';
+import {
+  SimpleDocument,
+  SimpleComment,
+  InsertPosition,
+  SimpleElement,
+  SimpleNode,
+} from '@simple-dom/interface';
+import { DOMOperations } from '../dom/operations';
 
 // Patch:    Adjacent text node merging fix
 // Browsers: IE, Edge, Firefox w/o inspector open
@@ -16,7 +22,7 @@ import { Simple } from '@glimmer/interfaces';
 //           the base implementation of `insertHTMLBefore` already handles
 //           following text nodes correctly.
 export function applyTextNodeMergingFix(
-  document: Option<Document>,
+  document: Option<SimpleDocument>,
   DOMClass: typeof DOMOperations
 ): typeof DOMOperations {
   if (!document) return DOMClass;
@@ -26,18 +32,14 @@ export function applyTextNodeMergingFix(
   }
 
   return class DOMChangesWithTextNodeMergingFix extends DOMClass {
-    private uselessComment: Simple.Comment;
+    private uselessComment: SimpleComment;
 
-    constructor(document: Simple.Document) {
+    constructor(document: SimpleDocument) {
       super(document);
       this.uselessComment = document.createComment('');
     }
 
-    insertHTMLBefore(
-      parent: Simple.Element,
-      nextSibling: Option<Simple.Node>,
-      html: string
-    ): Bounds {
+    insertHTMLBefore(parent: SimpleElement, nextSibling: Option<SimpleNode>, html: string): Bounds {
       if (html === '') {
         return super.insertHTMLBefore(parent, nextSibling, html);
       }
@@ -62,11 +64,11 @@ export function applyTextNodeMergingFix(
   };
 }
 
-function shouldApplyFix(document: Document) {
-  let mergingTextDiv: HTMLDivElement = document.createElement('div');
+function shouldApplyFix(document: SimpleDocument) {
+  let mergingTextDiv = document.createElement('div');
 
-  mergingTextDiv.innerHTML = 'first';
-  mergingTextDiv.insertAdjacentHTML('beforeend', 'second');
+  mergingTextDiv.appendChild(document.createTextNode('first'));
+  mergingTextDiv.insertAdjacentHTML(InsertPosition.beforeend, 'second');
 
   if (mergingTextDiv.childNodes.length === 2) {
     // It worked as expected, no fix required

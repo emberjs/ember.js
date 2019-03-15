@@ -1,13 +1,14 @@
 {
   "name": "@glimmer/debug",
-  "version": "0.37.0",
+  "version": "0.39.3",
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/debug",
   "private": true,
   "dependencies": {
-    "@glimmer/interfaces": "^0.37.0"
+    "@glimmer/interfaces": "^0.39.3"
   },
   "devDependencies": {
     "@types/qunit": "^2.0.31",
-    "typescript": "^2.8.3"
+    "typescript": "^2.8.3",
+    "toml": "^2.3.3"
   }
 }

@@ -1,14 +1,15 @@
 import { DEBUG } from '@glimmer/local-debug-flags';
-import { Opaque } from '@glimmer/interfaces';
-import { PrimitiveType } from '@glimmer/program';
+import { PrimitiveType } from '@glimmer/interfaces';
 import { unreachable } from '@glimmer/util';
 import { Stack as WasmStack } from '@glimmer/low-level';
+import { MachineRegister, $sp, $fp } from '@glimmer/vm';
+import { LowLevelRegisters, initializeRegistersWithSP } from './low-level';
+import { REGISTERS } from '../symbols';
 
-const HI = 0x80000000;
-const MASK = 0x7fffffff;
+const MAX_SMI = 0xfffffff;
 
 export class InnerStack {
-  constructor(private inner = new WasmStack(), private js: Opaque[] = []) {}
+  constructor(private inner = new WasmStack(), private js: unknown[] = []) {}
 
   slice(start?: number, end?: number): InnerStack {
     let inner: WasmStack;
@@ -24,7 +25,7 @@ export class InnerStack {
     return new InnerStack(inner, this.js.slice(start, end));
   }
 
-  sliceInner<T = Opaque>(start: number, end: number): T[] {
+  sliceInner<T = unknown>(start: number, end: number): T[] {
     let out = [];
 
     for (let i = start; i < end; i++) {
@@ -38,36 +39,32 @@ export class InnerStack {
     this.inner.copy(from, to);
   }
 
-  write(pos: number, value: Opaque): void {
+  write(pos: number, value: unknown): void {
     if (isImmediate(value)) {
-      this.inner.writeRaw(pos, encodeImmediate(value));
+      this.writeRaw(pos, encodeImmediate(value));
     } else {
-      let idx = this.js.length;
-      this.js.push(value);
-      this.inner.writeRaw(pos, idx | HI);
+      this.writeJs(pos, value);
     }
   }
 
-  writeSmi(pos: number, value: number): void {
-    this.inner.writeSmi(pos, value);
+  private writeJs(pos: number, value: unknown): void {
+    let idx = this.js.length;
+    this.js.push(value);
+    this.inner.writeRaw(pos, ~idx);
   }
 
-  writeImmediate(pos: number, value: number): void {
+  writeRaw(pos: number, value: number) {
     this.inner.writeRaw(pos, value);
   }
 
   get<T>(pos: number): T {
     let value = this.inner.getRaw(pos);
 
-    if (value & HI) {
-      return this.js[value & MASK] as T;
+    if (value < 0) {
+      return this.js[~value] as T;
     } else {
       return decodeImmediate(value) as any;
     }
-  }
-
-  getSmi(pos: number): number {
-    return this.inner.getSmi(pos);
   }
 
   reset(): void {
@@ -80,49 +77,61 @@ export class InnerStack {
   }
 }
 
-export default class EvaluationStack {
-  static empty(): EvaluationStack {
-    return new this(new InnerStack(), 0, -1);
-  }
+export interface EvaluationStack {
+  [REGISTERS]: LowLevelRegisters;
 
-  static restore(snapshot: Opaque[]): EvaluationStack {
+  push(value: unknown): void;
+  pushNull(): void;
+  pushRaw(value: number): void;
+  dup(position?: MachineRegister): void;
+  copy(from: number, to: number): void;
+  pop<T>(n?: number): T;
+  peek<T>(offset?: number): T;
+  get<T>(offset: number, base?: number): T;
+  set(value: unknown, offset: number, base?: number): void;
+  slice(start: number, end: number): InnerStack;
+  sliceArray<T = unknown>(start: number, end: number): T[];
+  capture(items: number): unknown[];
+  reset(): void;
+  toArray(): unknown[];
+}
+
+export default class EvaluationStackImpl implements EvaluationStack {
+  static restore(snapshot: unknown[]): EvaluationStack {
     let stack = new InnerStack();
 
     for (let i = 0; i < snapshot.length; i++) {
       stack.write(i, snapshot[i]);
     }
 
-    return new this(stack, 0, snapshot.length - 1);
+    return new this(stack, initializeRegistersWithSP(snapshot.length - 1));
   }
 
-  constructor(private stack: InnerStack, public fp: number, public sp: number) {
+  readonly [REGISTERS]: LowLevelRegisters;
+
+  // fp -> sp
+  constructor(private stack: InnerStack, registers: LowLevelRegisters) {
+    this[REGISTERS] = registers;
+
     if (DEBUG) {
       Object.seal(this);
     }
   }
 
-  push(value: Opaque): void {
-    this.stack.write(++this.sp, value);
+  push(value: unknown): void {
+    this.stack.write(++this[REGISTERS][$sp], value);
   }
 
-  pushSmi(value: number): void {
-    this.stack.writeSmi(++this.sp, value);
-  }
-
-  pushImmediate(value: null | undefined | number | boolean): void {
-    this.stack.writeImmediate(++this.sp, encodeImmediate(value));
-  }
-
-  pushEncodedImmediate(value: number): void {
-    this.stack.writeImmediate(++this.sp, value);
+  pushRaw(value: number): void {
+    this.stack.writeRaw(++this[REGISTERS][$sp], value);
   }
 
   pushNull(): void {
-    this.stack.writeImmediate(++this.sp, Immediates.Null);
+    this.stack.write(++this[REGISTERS][$sp], null);
   }
 
-  dup(position = this.sp): void {
-    this.stack.copy(position, ++this.sp);
+  dup(position = this[REGISTERS][$sp]): void {
+    this.stack.copy(position, ++this[REGISTERS][$sp]);
   }
 
   copy(from: number, to: number): void {
@@ -130,32 +139,20 @@ export default class EvaluationStack {
   }
 
   pop<T>(n = 1): T {
-    let top = this.stack.get<T>(this.sp);
-    this.sp -= n;
+    let top = this.stack.get<T>(this[REGISTERS][$sp]);
+    this[REGISTERS][$sp] -= n;
     return top;
   }
 
-  popSmi(): number {
-    return this.stack.getSmi(this.sp--);
-  }
-
   peek<T>(offset = 0): T {
-    return this.stack.get<T>(this.sp - offset);
+    return this.stack.get<T>(this[REGISTERS][$sp] - offset);
   }
 
-  peekSmi(offset = 0): number {
-    return this.stack.getSmi(this.sp - offset);
-  }
-
-  get<T>(offset: number, base = this.fp): T {
+  get<T>(offset: number, base = this[REGISTERS][$fp]): T {
     return this.stack.get<T>(base + offset);
   }
 
-  getSmi(offset: number, base = this.fp): number {
-    return this.stack.getSmi(base + offset);
-  }
-
-  set(value: Opaque, offset: number, base = this.fp) {
+  set(value: unknown, offset: number, base = this[REGISTERS][$fp]) {
     this.stack.write(base + offset, value);
   }
 
@@ -163,12 +160,12 @@ export default class EvaluationStack {
     return this.stack.slice(start, end);
   }
 
-  sliceArray<T = Opaque>(start: number, end: number): T[] {
+  sliceArray<T = unknown>(start: number, end: number): T[] {
     return this.stack.sliceInner(start, end);
   }
 
-  capture(items: number): Opaque[] {
-    let end = this.sp + 1;
+  capture(items: number): unknown[] {
+    let end = this[REGISTERS][$sp] + 1;
     let start = end - items;
     return this.stack.sliceInner(start, end);
   }
@@ -178,11 +175,12 @@ export default class EvaluationStack {
   }
 
   toArray() {
-    return this.stack.sliceInner(this.fp, this.sp + 1);
+    console.log(this[REGISTERS]);
+    return this.stack.sliceInner(this[REGISTERS][$fp], this[REGISTERS][$sp] + 1);
   }
 }
 
-function isImmediate(value: Opaque): value is number | boolean | null | undefined {
+function isImmediate(value: unknown): value is number | boolean | null | undefined {
   let type = typeof value;
 
   if (value === null || value === undefined) return true;
@@ -198,7 +196,7 @@ function isImmediate(value: Opaque): value is number | boolean | null | undefine
       let abs = Math.abs(value as number);
 
       // too big
-      if (abs > HI) return false;
+      if (abs > MAX_SMI) return false;
 
       return true;
     default:

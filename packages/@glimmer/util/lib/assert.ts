@@ -15,4 +15,8 @@ export function debugAssert(test: any, msg: string) {
 
 export function prodAssert() {}
 
+export function deprecate(desc: string) {
+  console.warn(`DEPRECATION: ${desc}`);
+}
+
 export default debugAssert;

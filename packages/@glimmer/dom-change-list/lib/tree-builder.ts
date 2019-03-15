@@ -1,7 +1,13 @@
-import { Simple, Option, NodeTokens } from '@glimmer/interfaces';
-import { Namespace } from '@simple-dom/interface';
+import { Option, NodeTokens, Dict } from '@glimmer/interfaces';
+import { HTML } from './dom-operations';
 import { DOMTreeConstruction } from './tree-construction';
 import { NodeToken } from './node-tokens';
+import {
+  Namespace,
+  SimpleElement,
+  SimpleDocumentFragment,
+  SimpleDocument,
+} from '@simple-dom/interface';
 
 export const SVG_NAMESPACE = Namespace.SVG;
 export const HTML_NAMESPACE = Namespace.HTML;
@@ -101,12 +107,12 @@ export class TreeBuilder {
       this.contexts.push({
         tag,
         namespaceURI: SVG_NAMESPACE,
-        isIntegration: !!SVG_INTEGRATION_POINTS[tag],
+        isIntegration: !!(SVG_INTEGRATION_POINTS as Dict)[tag],
       });
       return this.dom.openElement(tag, SVG_NAMESPACE);
     }
 
-    this.contexts.push({ tag, namespaceURI: HTML_NAMESPACE, isIntegration: false });
+    this.contexts.push({ tag, namespaceURI: HTML, isIntegration: false });
     return this.dom.openElement(tag);
   }
 
@@ -136,7 +142,7 @@ export class TreeBuilder {
     return current && current.namespaceURI;
   }
 
-  appendTo(element: Simple.Element | Simple.DocumentFragment, owner: Simple.Document): NodeTokens {
+  appendTo(element: SimpleElement | SimpleDocumentFragment, owner: SimpleDocument): NodeTokens {
     return this.dom.appendTo(element, owner);
   }
 

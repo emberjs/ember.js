@@ -1,6 +1,3 @@
-import { Helper, DynamicScope } from '../environment';
-import { PublicVM } from '../vm/append';
-import { IArguments } from '../vm/arguments';
 import {
   CONSTANT_TAG,
   Tag,
@@ -9,26 +6,26 @@ import {
   TagWrapper,
   combine,
 } from '@glimmer/reference';
-import { Opaque } from '@glimmer/util';
+import { DynamicScope, VM as PublicVM, VMArguments, Helper } from '@glimmer/interfaces';
 
-class DynamicVarReference implements PathReference<Opaque> {
+class DynamicVarReference implements PathReference<unknown> {
   public tag: Tag;
   private varTag: TagWrapper<UpdatableTag>;
 
-  constructor(private scope: DynamicScope, private nameRef: PathReference<Opaque>) {
+  constructor(private scope: DynamicScope, private nameRef: PathReference<unknown>) {
     let varTag = (this.varTag = UpdatableTag.create(CONSTANT_TAG));
     this.tag = combine([nameRef.tag, varTag]);
   }
 
-  value(): Opaque {
+  value(): unknown {
     return this.getVar().value();
   }
 
-  get(key: string): PathReference<Opaque> {
+  get(key: string): PathReference<unknown> {
     return this.getVar().get(key);
   }
 
-  private getVar(): PathReference<Opaque> {
+  private getVar(): PathReference<unknown> {
     let name = String(this.nameRef.value());
     let ref = this.scope.get(name);
 
@@ -38,7 +35,7 @@ class DynamicVarReference implements PathReference<Opaque> {
   }
 }
 
-function getDynamicVar(vm: PublicVM, args: IArguments): PathReference<Opaque> {
+function getDynamicVar(args: VMArguments, vm: PublicVM): PathReference<unknown> {
   let scope = vm.dynamicScope();
   let nameRef = args.positional.at(0);
 

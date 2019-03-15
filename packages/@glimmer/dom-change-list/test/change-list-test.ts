@@ -1,25 +1,29 @@
-import { DOMTreeConstruction, NodeTokens } from '@glimmer/dom-change-list';
-import { Simple } from '@glimmer/interfaces';
-import { Namespace } from '@simple-dom/interface';
-import createHTMLDocument from '@simple-dom/document';
+import { DOMTreeConstruction, NodeTokensImpl } from '@glimmer/dom-change-list';
 
 import { TestCase, module, test } from './test-case';
 import { Builder as TestBuilder, toHTML, toHTMLNS } from './support';
+import {
+  Namespace,
+  SimpleDocument,
+  SimpleElement,
+  SimpleDocumentFragment,
+} from '@simple-dom/interface';
+import createDocument from '@simple-dom/document';
 
-const SVG: Namespace = Namespace.SVG;
-const XLINK: Namespace = Namespace.XLink;
+const SVG = Namespace.SVG;
+const XLINK = Namespace.XLink;
 
 @module('[dom-change-list] DOMTreeConstruction')
 export class ChangeListTest extends TestCase {
   // These definitely assigned properties are set in before()
-  protected document!: Simple.Document;
-  protected parent!: Simple.Element | Simple.DocumentFragment;
+  protected document!: SimpleDocument;
+  protected parent!: SimpleElement | SimpleDocumentFragment;
   protected tree!: Builder;
   protected construction!: DOMTreeConstruction;
 
   before() {
-    this.document = createHTMLDocument();
-    this.parent = document.createElement('div') as Simple.Element;
+    this.document = createDocument();
+    this.parent = this.document.createElement('div');
     this.construction = new DOMTreeConstruction();
     this.tree = new Builder(this.construction);
   }
@@ -101,9 +105,9 @@ export class ChangeListTest extends TestCase {
     this.shouldEqualNS('<svg:svg><svg:a fill="red" xlink:href="linky"></svg:a></svg:svg>');
   }
 
-  protected append(): NodeTokens {
+  protected append(): NodeTokensImpl {
     this.tree.appendTo(this.parent);
-    return this.construction.appendTo(this.parent, document as Simple.Document);
+    return this.construction.appendTo(this.parent, this.document);
   }
 
   protected shouldEqual(expectedHTML: string) {

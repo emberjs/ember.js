@@ -3,15 +3,14 @@ import {
   EntityParser,
   HTML5NamedCharRefs as namedCharRefs,
 } from 'simple-html-tokenizer';
-import { Program } from './types/nodes';
 import * as AST from './types/nodes';
-import * as HandlebarsAST from './types/handlebars-ast';
+import * as HBS from './types/handlebars-ast';
 import { Option } from '@glimmer/interfaces';
 import { assert, expect } from '@glimmer/util';
 
 const entityParser = new EntityParser(namedCharRefs);
 
-export type Element = AST.Program | AST.ElementNode;
+export type Element = AST.Template | AST.Block | AST.ElementNode;
 
 export interface Tag<T extends 'StartTag' | 'EndTag'> {
   type: T;
@@ -45,6 +44,25 @@ export abstract class Parser {
   constructor(source: string) {
     this.source = source.split(/(?:\r\n?|\n)/g);
   }
+
+  abstract Program(node: HBS.Program): HBS.Output<'Program'>;
+  abstract MustacheStatement(node: HBS.MustacheStatement): HBS.Output<'MustacheStatement'>;
+  abstract Decorator(node: HBS.Decorator): HBS.Output<'Decorator'>;
+  abstract BlockStatement(node: HBS.BlockStatement): HBS.Output<'BlockStatement'>;
+  abstract DecoratorBlock(node: HBS.DecoratorBlock): HBS.Output<'DecoratorBlock'>;
+  abstract PartialStatement(node: HBS.PartialStatement): HBS.Output<'PartialStatement'>;
+  abstract PartialBlockStatement(
+    node: HBS.PartialBlockStatement
+  ): HBS.Output<'PartialBlockStatement'>;
+  abstract ContentStatement(node: HBS.ContentStatement): HBS.Output<'ContentStatement'>;
+  abstract CommentStatement(node: HBS.CommentStatement): HBS.Output<'CommentStatement'>;
+  abstract SubExpression(node: HBS.SubExpression): HBS.Output<'SubExpression'>;
+  abstract PathExpression(node: HBS.PathExpression): HBS.Output<'PathExpression'>;
+  abstract StringLiteral(node: HBS.StringLiteral): HBS.Output<'StringLiteral'>;
+  abstract BooleanLiteral(node: HBS.BooleanLiteral): HBS.Output<'BooleanLiteral'>;
+  abstract NumberLiteral(node: HBS.NumberLiteral): HBS.Output<'NumberLiteral'>;
+  abstract UndefinedLiteral(node: HBS.UndefinedLiteral): HBS.Output<'UndefinedLiteral'>;
+  abstract NullLiteral(node: HBS.NullLiteral): HBS.Output<'NullLiteral'>;
 
   abstract reset(): void;
   abstract finishData(): void;
@@ -100,17 +118,21 @@ export abstract class Parser {
     return node as AST.TextNode;
   }
 
-  acceptNode(node: HandlebarsAST.Program): Program;
-  acceptNode<U extends AST.Node>(node: HandlebarsAST.Node): U;
-  acceptNode(node: HandlebarsAST.Node): any {
-    return this[node.type](node);
+  acceptTemplate(node: HBS.Program): AST.Template {
+    return (this as any)[node.type](node) as AST.Template;
+  }
+
+  acceptNode(node: HBS.Program): AST.Block | AST.Template;
+  acceptNode<U extends HBS.Node | AST.Node>(node: HBS.Node): U;
+  acceptNode(node: HBS.Node): any {
+    return (this as any)[node.type](node);
   }
 
   currentElement(): Element {
     return this.elementStack[this.elementStack.length - 1];
   }
 
-  sourceForNode(node: HandlebarsAST.Node, endNode?: { loc: HandlebarsAST.SourceLocation }): string {
+  sourceForNode(node: HBS.Node, endNode?: { loc: HBS.SourceLocation }): string {
     let firstLine = node.loc.start.line - 1;
     let currentLine = firstLine - 1;
     let firstColumn = node.loc.start.column;

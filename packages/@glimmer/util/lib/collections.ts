@@ -1,17 +1,22 @@
 import { HasGuid, ensureGuid } from './guid';
 import { Option } from './platform-utils';
-
-export interface Dict<T> {
-  [index: string]: T;
-}
+import { Dict, Stack } from '@glimmer/interfaces';
 
 export interface Set<T> {
   add(value: T): Set<T>;
   delete(value: T): void;
 }
 
-export function dict<T>(): Dict<T> {
+export function dict<T = unknown>(): Dict<T> {
   return Object.create(null);
+}
+
+export function isDict<T>(u: T): u is Dict & T {
+  return u !== null && u !== undefined;
+}
+
+export function isObject<T>(u: T): u is object & T {
+  return typeof u === 'object' && u !== null;
 }
 
 export type SetMember = HasGuid | string;
@@ -35,7 +40,7 @@ export class DictSet<T extends SetMember> implements Set<T> {
   }
 }
 
-export class Stack<T> {
+export class StackImpl<T> implements Stack<T> {
   private stack: T[] = [];
   public current: Option<T> = null;
 
@@ -56,7 +61,16 @@ export class Stack<T> {
     return item === undefined ? null : item;
   }
 
+  nth(from: number): Option<T> {
+    let len = this.stack.length;
+    return len < from ? null : this.stack[len - from];
+  }
+
   isEmpty(): boolean {
     return this.stack.length === 0;
+  }
+
+  toArray(): T[] {
+    return this.stack;
   }
 }

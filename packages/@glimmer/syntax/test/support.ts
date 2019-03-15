@@ -1,4 +1,4 @@
-import { preprocess as parse, AST } from '@glimmer/syntax';
+import { preprocess as parse, AST, PreprocessOptions } from '@glimmer/syntax';
 
 function normalizeNode(obj: AST.Node | Array<AST.Node>): AST.Node | Array<AST.Node> {
   if (obj && typeof obj === 'object') {
@@ -14,7 +14,7 @@ function normalizeNode(obj: AST.Node | Array<AST.Node>): AST.Node | Array<AST.No
       for (let i = 0; i < keys.length; i++) {
         let key = keys[i];
         if (key === 'loc') continue;
-        newObj[key] = normalizeNode(obj[key]);
+        newObj[key] = normalizeNode((obj as any)[key]);
       }
     }
     return newObj;
@@ -26,13 +26,14 @@ function normalizeNode(obj: AST.Node | Array<AST.Node>): AST.Node | Array<AST.No
 export function astEqual(
   actual: any | null | undefined,
   expected: any | null | undefined,
-  message?: string
+  message?: string,
+  parseOptions?: PreprocessOptions
 ) {
   if (typeof actual === 'string') {
-    actual = parse(actual);
+    actual = parse(actual, parseOptions);
   }
   if (typeof expected === 'string') {
-    expected = parse(expected);
+    expected = parse(expected, parseOptions);
   }
 
   actual = normalizeNode(actual);

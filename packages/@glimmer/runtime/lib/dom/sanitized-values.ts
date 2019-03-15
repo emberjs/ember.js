@@ -1,7 +1,7 @@
-import { Opaque, Option } from '@glimmer/util';
+import { Option } from '@glimmer/util';
 import { normalizeStringValue, isSafeString } from '../dom/normalize';
-import { Environment } from '../environment';
-import { Simple } from '@glimmer/interfaces';
+import { Environment } from '@glimmer/interfaces';
+import { SimpleElement } from '@simple-dom/interface';
 
 const badProtocols = ['javascript:', 'vbscript:'];
 
@@ -32,10 +32,10 @@ export function requiresSanitization(tagName: string, attribute: string): boolea
 
 export function sanitizeAttributeValue(
   env: Environment,
-  element: Simple.Element,
+  element: SimpleElement,
   attribute: string,
-  value: Opaque
-): Opaque {
+  value: unknown
+): unknown {
   let tagName: Option<string> = null;
 
   if (value === null || value === undefined) {

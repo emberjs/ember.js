@@ -1,21 +1,19 @@
-import { Simple, Option, Opaque } from '@glimmer/interfaces';
-import Environment from '../../environment';
-import { ElementBuilder } from '../element-builder';
-import { sanitizeAttributeValue, requiresSanitization } from '../../dom/sanitized-values';
-import { normalizeProperty } from '../../dom/props';
-import { SVG_NAMESPACE } from '../../dom/helper';
-import { Attribute, AttributeOperation } from './index';
+import { Dict, Environment, Option, ElementBuilder } from '@glimmer/interfaces';
+import { AttrNamespace, Namespace, SimpleElement } from '@simple-dom/interface';
 import { normalizeStringValue } from '../../dom/normalize';
+import { normalizeProperty } from '../../dom/props';
+import { requiresSanitization, sanitizeAttributeValue } from '../../dom/sanitized-values';
+import { Attribute, AttributeOperation } from './index';
 
 export function dynamicAttribute(
-  element: Simple.Element,
+  element: SimpleElement,
   attr: string,
-  namespace: Option<Simple.AttrNamespace>
+  namespace: Option<AttrNamespace>
 ): DynamicAttribute {
   let { tagName, namespaceURI } = element;
-  let attribute: Attribute = { element, name: attr, namespace };
+  let attribute = { element, name: attr, namespace };
 
-  if (namespaceURI === SVG_NAMESPACE) {
+  if (namespaceURI === Namespace.SVG) {
     return buildDynamicAttribute(tagName, attr, attribute);
   }
 
@@ -63,12 +61,12 @@ function buildDynamicProperty(
 export abstract class DynamicAttribute implements AttributeOperation {
   constructor(public attribute: Attribute) {}
 
-  abstract set(dom: ElementBuilder, value: Opaque, env: Environment): void;
-  abstract update(value: Opaque, env: Environment): void;
+  abstract set(dom: ElementBuilder, value: unknown, env: Environment): void;
+  abstract update(value: unknown, env: Environment): void;
 }
 
 export class SimpleDynamicAttribute extends DynamicAttribute {
-  set(dom: ElementBuilder, value: Opaque, _env: Environment): void {
+  set(dom: ElementBuilder, value: unknown, _env: Environment): void {
     let normalizedValue = normalizeValue(value);
 
     if (normalizedValue !== null) {
@@ -77,7 +75,7 @@ export class SimpleDynamicAttribute extends DynamicAttribute {
     }
   }
 
-  update(value: Opaque, _env: Environment): void {
+  update(value: unknown, _env: Environment): void {
     let normalizedValue = normalizeValue(value);
     let { element, name } = this.attribute;
 
@@ -94,19 +92,19 @@ export class DefaultDynamicProperty extends DynamicAttribute {
     super(attribute);
   }
 
-  value: Opaque;
-  set(dom: ElementBuilder, value: Opaque, _env: Environment): void {
+  value: unknown;
+  set(dom: ElementBuilder, value: unknown, _env: Environment): void {
     if (value !== null && value !== undefined) {
       this.value = value;
       dom.__setProperty(this.normalizedName, value);
     }
   }
 
-  update(value: Opaque, _env: Environment): void {
+  update(value: unknown, _env: Environment): void {
     let { element } = this.attribute;
 
     if (this.value !== value) {
-      element[this.normalizedName] = this.value = value;
+      (element as Dict)[this.normalizedName] = this.value = value;
 
       if (value === null || value === undefined) {
         this.removeAttribute();
@@ -128,13 +126,13 @@ export class DefaultDynamicProperty extends DynamicAttribute {
 }
 
 export class SafeDynamicProperty extends DefaultDynamicProperty {
-  set(dom: ElementBuilder, value: Opaque, env: Environment): void {
+  set(dom: ElementBuilder, value: unknown, env: Environment): void {
     let { element, name } = this.attribute;
     let sanitized = sanitizeAttributeValue(env, element, name, value);
     super.set(dom, sanitized, env);
   }
 
-  update(value: Opaque, env: Environment): void {
+  update(value: unknown, env: Environment): void {
     let { element, name } = this.attribute;
     let sanitized = sanitizeAttributeValue(env, element, name, value);
     super.update(sanitized, env);
@@ -142,13 +140,13 @@ export class SafeDynamicProperty extends DefaultDynamicProperty {
 }
 
 export class SafeDynamicAttribute extends SimpleDynamicAttribute {
-  set(dom: ElementBuilder, value: Opaque, env: Environment): void {
+  set(dom: ElementBuilder, value: unknown, env: Environment): void {
     let { element, name } = this.attribute;
     let sanitized = sanitizeAttributeValue(env, element, name, value);
     super.set(dom, sanitized, env);
   }
 
-  update(value: Opaque, env: Environment): void {
+  update(value: unknown, env: Environment): void {
     let { element, name } = this.attribute;
     let sanitized = sanitizeAttributeValue(env, element, name, value);
     super.update(sanitized, env);
@@ -156,11 +154,11 @@ export class SafeDynamicAttribute extends SimpleDynamicAttribute {
 }
 
 export class InputValueDynamicAttribute extends DefaultDynamicProperty {
-  set(dom: ElementBuilder, value: Opaque) {
+  set(dom: ElementBuilder, value: unknown) {
     dom.__setProperty('value', normalizeStringValue(value));
   }
 
-  update(value: Opaque) {
+  update(value: unknown) {
     let input = this.attribute.element as HTMLInputElement;
     let currentValue = input.value;
     let normalizedValue = normalizeStringValue(value);
@@ -171,13 +169,13 @@ export class InputValueDynamicAttribute extends DefaultDynamicProperty {
 }
 
 export class OptionSelectedDynamicAttribute extends DefaultDynamicProperty {
-  set(dom: ElementBuilder, value: Opaque): void {
+  set(dom: ElementBuilder, value: unknown): void {
     if (value !== null && value !== undefined && value !== false) {
       dom.__setProperty('selected', true);
     }
   }
 
-  update(value: Opaque): void {
+  update(value: unknown): void {
     let option = this.attribute.element as HTMLOptionElement;
 
     if (value) {
@@ -196,12 +194,12 @@ function isUserInputValue(tagName: string, attribute: string) {
   return (tagName === 'INPUT' || tagName === 'TEXTAREA') && attribute === 'value';
 }
 
-function normalizeValue(value: Opaque): Option<string> {
+function normalizeValue(value: unknown): Option<string> {
   if (
     value === false ||
     value === undefined ||
     value === null ||
-    typeof value.toString === 'undefined'
+    typeof (value as Dict).toString === 'undefined'
   ) {
     return null;
   }
