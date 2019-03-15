@@ -1,5 +1,25 @@
 # Changelog
 
+## v0.39.3 (2019-03-15)
+
+#### :bug: Bug Fix
+* `@glimmer/runtime`
+  * [#922](https://github.com/glimmerjs/glimmer-vm/pull/922) Use type generic for `scope()` function ([@pzuraq](https://github.com/pzuraq))
+* `@glimmer/interfaces`
+  * [#921](https://github.com/glimmerjs/glimmer-vm/pull/921) ComponentManager types - fix typeParam shadowing ([@mike-north](https://github.com/mike-north))
+* `@glimmer/syntax`
+  * [#919](https://github.com/glimmerjs/glimmer-vm/pull/919) fix: security audit handlebars update ([@knownasilya](https://github.com/knownasilya))
+
+#### :house: Internal
+* `@glimmer/bundle-compiler`
+  * [#917](https://github.com/glimmerjs/glimmer-vm/pull/917) Fixed typo on method name; compilerModuleLocatorResolver ([@wondersloth](https://github.com/wondersloth))
+
+#### Committers: 4
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+- Ilya Radchenko ([@knownasilya](https://github.com/knownasilya))
+- Matthew Edwards ([@wondersloth](https://github.com/wondersloth))
+- Mike North ([@mike-north](https://github.com/mike-north))
+
 ## 0.37.0 (2018-11-29)
 
 #### :bug: Bug Fix
