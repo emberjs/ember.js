@@ -197,7 +197,7 @@ export default class ActionModifierManager implements ModifierManager<ActionStat
     dom: any
   ) {
     let { named, positional, tag } = args.capture();
-    let implicitTarget;
+    let implicitTarget: any;
     let actionName;
     let actionNameRef: any;
     if (positional.length > 1) {
