@@ -7,18 +7,10 @@ import {
   isConst,
   isConstTag,
 } from '@glimmer/reference';
-import { Opaque, Option } from '@glimmer/util';
-import {
-  expectStackChange,
-  check,
-  CheckString,
-  CheckElement,
-  CheckNode,
-  CheckOption,
-  CheckInstanceof,
-} from '@glimmer/debug';
-import { Simple } from '@glimmer/interfaces';
-import { Op, Register } from '@glimmer/vm';
+import { Option } from '@glimmer/util';
+import { check, CheckString, CheckElement, CheckNode, CheckOption } from '@glimmer/debug';
+import { Op } from '@glimmer/interfaces';
+import { $t0 } from '@glimmer/vm';
 import {
   ModifierDefinition,
   InternalModifierManager,
@@ -28,19 +20,20 @@ import { APPEND_OPCODES, UpdatingOpcode } from '../../opcodes';
 import { UpdatingVM } from '../../vm';
 import { Assert } from './vm';
 import { DynamicAttribute } from '../../vm/attributes/dynamic';
-import { ComponentElementOperations } from './component';
-import { CheckReference, CheckArguments } from './-debug-strip';
+import { CheckReference, CheckArguments, CheckOperations } from './-debug-strip';
+import { CONSTANTS } from '../../symbols';
+import { SimpleElement, SimpleNode } from '@simple-dom/interface';
 
 APPEND_OPCODES.add(Op.Text, (vm, { op1: text }) => {
-  vm.elements().appendText(vm.constants.getString(text));
+  vm.elements().appendText(vm[CONSTANTS].getString(text));
 });
 
 APPEND_OPCODES.add(Op.Comment, (vm, { op1: text }) => {
-  vm.elements().appendComment(vm.constants.getString(text));
+  vm.elements().appendComment(vm[CONSTANTS].getString(text));
 });
 
 APPEND_OPCODES.add(Op.OpenElement, (vm, { op1: tag }) => {
-  vm.elements().openElement(vm.constants.getString(tag));
+  vm.elements().openElement(vm[CONSTANTS].getString(tag));
 });
 
 APPEND_OPCODES.add(Op.OpenDynamicElement, vm => {
@@ -53,14 +46,14 @@ APPEND_OPCODES.add(Op.PushRemoteElement, vm => {
   let nextSiblingRef = check(vm.stack.pop(), CheckReference);
   let guidRef = check(vm.stack.pop(), CheckReference);
 
-  let element: Simple.Element;
-  let nextSibling: Option<Simple.Node>;
+  let element: SimpleElement;
+  let nextSibling: Option<SimpleNode>;
   let guid = guidRef.value() as string;
 
   if (isConst(elementRef)) {
     element = check(elementRef.value(), CheckElement);
   } else {
-    let cache = new ReferenceCache(elementRef as Reference<Simple.Element>);
+    let cache = new ReferenceCache(elementRef as Reference<SimpleElement>);
     element = check(cache.peek(), CheckElement);
     vm.updateWith(new Assert(cache));
   }
@@ -68,12 +61,13 @@ APPEND_OPCODES.add(Op.PushRemoteElement, vm => {
   if (isConst(nextSiblingRef)) {
     nextSibling = check(nextSiblingRef.value(), CheckOption(CheckNode));
   } else {
-    let cache = new ReferenceCache(nextSiblingRef as Reference<Option<Simple.Node>>);
+    let cache = new ReferenceCache(nextSiblingRef as Reference<Option<SimpleNode>>);
     nextSibling = check(cache.peek(), CheckOption(CheckNode));
     vm.updateWith(new Assert(cache));
   }
 
-  vm.elements().pushRemoteElement(element, guid, nextSibling);
+  let block = vm.elements().pushRemoteElement(element, guid, nextSibling);
+  if (block) vm.associateDestroyable(block);
 });
 
 APPEND_OPCODES.add(Op.PopRemoteElement, vm => {
@@ -81,14 +75,11 @@ APPEND_OPCODES.add(Op.PopRemoteElement, vm => {
 });
 
 APPEND_OPCODES.add(Op.FlushElement, vm => {
-  let operations = check(
-    vm.fetchValue(Register.t0),
-    CheckOption(CheckInstanceof(ComponentElementOperations))
-  );
+  let operations = check(vm.fetchValue($t0), CheckOperations);
 
   if (operations) {
     operations.flush(vm);
-    vm.loadValue(Register.t0, null);
+    vm.loadValue($t0, null);
   }
 
   vm.elements().flushElement();
@@ -96,29 +87,21 @@ APPEND_OPCODES.add(Op.FlushElement, vm => {
 
 APPEND_OPCODES.add(Op.CloseElement, vm => {
   vm.elements().closeElement();
-
-  expectStackChange(vm.stack, 0, 'CloseElement');
 });
 
 APPEND_OPCODES.add(Op.Modifier, (vm, { op1: handle }) => {
-  let { manager, state } = vm.constants.resolveHandle<ModifierDefinition>(handle);
+  let { manager, state } = vm.runtime.resolver.resolve<ModifierDefinition>(handle);
   let stack = vm.stack;
   let args = check(stack.pop(), CheckArguments);
   let { element, updateOperations } = vm.elements();
   let dynamicScope = vm.dynamicScope();
-  let modifier = manager.create(
-    element as Simple.FIX_REIFICATION<Simple.Element>,
-    state,
-    args,
-    dynamicScope,
-    updateOperations
-  );
+  let modifier = manager.create(element, state, args, dynamicScope, updateOperations);
 
   vm.env.scheduleInstallModifier(modifier, manager);
-  let destructor = manager.getDestructor(modifier);
+  let d = manager.getDestructor(modifier);
 
-  if (destructor) {
-    vm.newDestroyable(destructor);
+  if (d) {
+    vm.associateDestroyable(d);
   }
 
   let tag = manager.getTag(modifier);
@@ -152,18 +135,18 @@ export class UpdateModifierOpcode extends UpdatingOpcode {
 }
 
 APPEND_OPCODES.add(Op.StaticAttr, (vm, { op1: _name, op2: _value, op3: _namespace }) => {
-  let name = vm.constants.getString(_name);
-  let value = vm.constants.getString(_value);
-  let namespace = _namespace ? vm.constants.getString(_namespace) : null;
+  let name = vm[CONSTANTS].getString(_name);
+  let value = vm[CONSTANTS].getString(_value);
+  let namespace = _namespace ? vm[CONSTANTS].getString(_namespace) : null;
 
   vm.elements().setStaticAttribute(name, value, namespace);
 });
 
 APPEND_OPCODES.add(Op.DynamicAttr, (vm, { op1: _name, op2: trusting, op3: _namespace }) => {
-  let name = vm.constants.getString(_name);
+  let name = vm[CONSTANTS].getString(_name);
   let reference = check(vm.stack.pop(), CheckReference);
   let value = reference.value();
-  let namespace = _namespace ? vm.constants.getString(_namespace) : null;
+  let namespace = _namespace ? vm[CONSTANTS].getString(_namespace) : null;
 
   let attribute = vm.elements().setDynamicAttribute(name, value, !!trusting, namespace);
 
@@ -178,7 +161,7 @@ export class UpdateDynamicAttributeOpcode extends UpdatingOpcode {
   public tag: Tag;
   public lastRevision: number;
 
-  constructor(private reference: VersionedReference<Opaque>, private attribute: DynamicAttribute) {
+  constructor(private reference: VersionedReference<unknown>, private attribute: DynamicAttribute) {
     super();
     this.tag = reference.tag;
     this.lastRevision = this.tag.value();

@@ -9,8 +9,8 @@ const UnwatchedDir = require('broccoli-source').UnwatchedDir;
 module.exports = function(jsTree) {
   let definitionsTree = funnel(new UnwatchedDir('packages/@glimmer'), {
     include: ['**/*.d.ts'],
-    destDir: '@glimmer'
+    destDir: '@glimmer',
   });
 
   return merge([jsTree, definitionsTree]);
-}
+};

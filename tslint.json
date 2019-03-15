@@ -1,17 +1,12 @@
 {
-  "extends": [
-    "tslint-config-prettier",
-    "tslint-plugin-prettier"
-  ],
+  "extends": ["tslint-config-prettier", "tslint-plugin-prettier"],
   "rules": {
     "prettier": true,
     "curly": false,
     "no-var-keyword": true,
     "indent": [true, "spaces"],
     "label-position": true,
-    "no-consecutive-blank-lines": [
-      true
-    ],
+    "no-consecutive-blank-lines": [true],
     "no-angle-bracket-type-assertion": true,
     "no-construct": true,
     "no-debugger": true,

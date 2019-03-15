@@ -15,14 +15,14 @@ function compareWalkedNodes(html: string, expected: string[]) {
 QUnit.module('[glimmer-syntax] (Legacy) Traversal - Walker');
 
 QUnit.test('walks elements', function() {
-  compareWalkedNodes('<div><li></li></div>', ['Program', 'ElementNode', 'ElementNode']);
+  compareWalkedNodes('<div><li></li></div>', ['Template', 'ElementNode', 'ElementNode']);
 });
 
 QUnit.test('walks blocks', function() {
   compareWalkedNodes('{{#foo}}<li></li>{{/foo}}', [
-    'Program',
+    'Template',
     'BlockStatement',
-    'Program',
+    'Block',
     'ElementNode',
   ]);
 });

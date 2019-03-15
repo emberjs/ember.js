@@ -1,4 +1,4 @@
-import { capabilityFlagsFrom, hasCapability, Capability } from '..';
+import { capabilityFlagsFrom, hasCapability, Capability } from '@glimmer/runtime';
 
 QUnit.module('Capabilities Bitmaps');
 
@@ -15,8 +15,9 @@ QUnit.test('encodes a capabilities object into a bitmap', assert => {
       createCaller: false,
       updateHook: false,
       createInstance: false,
+      wrapped: false,
     }),
-    0b0000000000,
+    0b00000000000,
     'empty capabilities'
   );
 
@@ -32,8 +33,9 @@ QUnit.test('encodes a capabilities object into a bitmap', assert => {
       createCaller: true,
       updateHook: true,
       createInstance: true,
+      wrapped: true,
     }),
-    0b1111111111,
+    0b11111111111,
     'all capabilities'
   );
 
@@ -48,9 +50,10 @@ QUnit.test('encodes a capabilities object into a bitmap', assert => {
       dynamicScope: false,
       createCaller: false,
       updateHook: true,
-      createInstance: true,
+      createInstance: false,
+      wrapped: true,
     }),
-    0b1100100101,
+    0b10100100101,
     'random sample'
   );
 });
@@ -67,6 +70,7 @@ QUnit.test('allows querying bitmap for a capability', assert => {
     createCaller: false,
     updateHook: true,
     createInstance: false,
+    wrapped: true,
   });
 
   assert.strictEqual(true, hasCapability(capabilities, Capability.DynamicLayout));

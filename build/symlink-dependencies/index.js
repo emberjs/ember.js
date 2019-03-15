@@ -28,9 +28,7 @@ module.exports = {
   outputReady() {
     let outputPath = process.env.EMBER_CLI_TEST_OUTPUT || 'dist';
 
-    Project.from('packages')
-      .packages
-      .forEach(symlinkDependencies);
+    Project.from('packages').packages.forEach(symlinkDependencies);
 
     // For a given package, enumerate its internal dependencies (other packages in
     // the repo) and symlink them into the appropriate spot in `node_modules`.
@@ -39,23 +37,15 @@ module.exports = {
       let modulesPath = path.join(outputPath, name, 'node_modules');
       let dependencies = pkg.internalDependencies;
 
-      // @glimmer/test-helpers has some tricky circular dependencies so we manually
-      // link it into every package locally.
-      if (name !== '@glimmer/test-helpers') {
-        dependencies.push('@glimmer/test-helpers');
-      }
-
       dependencies.forEach(dep => {
-        if (isScopedPackage(dep)) { mkdirpScope(dep, modulesPath); }
-        fs.symlinkSync(
-          path.join('../../../../', dep),
-          path.join(modulesPath, dep),
-          'junction'
-        );
+        if (isScopedPackage(dep)) {
+          mkdirpScope(dep, modulesPath);
+        }
+        fs.symlinkSync(path.join('../../../../', dep), path.join(modulesPath, dep), 'junction');
       });
     }
-  }
-}
+  },
+};
 
 function mkdirpScope(pkgName, modulesPath) {
   let scope = pkgName.split('/')[0];

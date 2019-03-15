@@ -1,3 +1,5 @@
+import { Dict } from '@glimmer/interfaces';
+
 const HAS_SUPER_PATTERN = /\.(_super|call\(this|apply\(this)/;
 
 export const checkHasSuper = (function() {
@@ -22,7 +24,7 @@ export const checkHasSuper = (function() {
 export function ROOT(..._args: any[]) {}
 (ROOT as any).__hasSuper = false;
 
-export function hasSuper(func: Function) {
+export function hasSuper(func: Function & Dict) {
   if (func['__hasSuper'] === undefined) {
     func['__hasSuper'] = checkHasSuper(func);
   }

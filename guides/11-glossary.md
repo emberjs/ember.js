@@ -42,7 +42,7 @@ can be performed.
 
 See also: [`CompilerDelegate` interface][compiler-delegate-source]
 
-[compiler-delegate-source]: ../packages/@glimmer/bundle-compiler/lib/compiler-delegate.ts
+[compiler-delegate-source]: ../packages/@glimmer/bundle-compiler/lib/delegate.ts
 
 ## Component
 

@@ -32,7 +32,7 @@ let packages = Project.from(DIST_PATH)
   .packages
   .filter(pkg => pkg.isPublishable);
 
-let packageNames = packages.map(package => package.name);
+let packageNames = packages.map(pkg => pkg.name);
 let newVersion;
 
 // Begin interactive CLI
@@ -51,7 +51,7 @@ function question(prompt) {
 }
 
 function printExistingVersions() {
-  let packageVersions = packages.map(package => [package.name, package.version]);
+  let packageVersions = packages.map(pkg => [pkg.name, pkg.version]);
   printPadded(packageVersions);
 }
 
@@ -82,9 +82,9 @@ function validateNewVersion(version) {
   if (version === '') { fatalError("Version must not be empty."); }
   if (!semver.valid(version)) { fatalError("Version must be a valid SemVer version."); }
 
-  packages.forEach(package => {
-    if (!semver.gt(version, package.version)) {
-      fatalError(`Version must be greater than existing versions. ${package.name} has version ${package.version}, which is greater than or equal to ${version}.`);
+  packages.forEach(pkg => {
+    if (!semver.gt(version, pkg.version)) {
+      fatalError(`Version must be greater than existing versions. ${pkg.name} has version ${pkg.version}, which is greater than or equal to ${version}.`);
     }
   });
 }
@@ -98,28 +98,28 @@ function applyNewVersion() {
   let rootSimpleHTMLTokenizerVersion = rootPkg.dependencies['simple-html-tokenizer'];
 
   // Update packages in the dist directory
-  packages.forEach(package => {
-    package.pkg.version = newVersion;
-    package.updateDependencies(newVersion);
-    package.updateSimpleHTMLTokenizer(rootSimpleHTMLTokenizerVersion);
+  packages.forEach(pkg => {
+    pkg.pkg.version = newVersion;
+    pkg.updateDependencies(newVersion);
+    pkg.updateSimpleHTMLTokenizer(rootSimpleHTMLTokenizerVersion);
 
     if (!DRY_RUN) {
-      package.savePackageJSON();
+      pkg.savePackageJSON();
     }
   });
 
   // Update source packages
   Project.from(PACKAGES_PATH)
     .packages
-    .forEach(package => {
-      package.pkg.version = newVersion;
-      package.updateDependencies(newVersion);
-      package.updateSimpleHTMLTokenizer(rootSimpleHTMLTokenizerVersion);
+    .forEach(pkg => {
+      pkg.pkg.version = newVersion;
+      pkg.updateDependencies(newVersion);
+      pkg.updateSimpleHTMLTokenizer(rootSimpleHTMLTokenizerVersion);
 
       if (!DRY_RUN) {
-        package.savePackageJSON();
+        pkg.savePackageJSON();
       }
-      execWithSideEffects(`git add "${package.packageJSONPath}"`);
+      execWithSideEffects(`git add "${pkg.packageJSONPath}"`);
     });
 
   rootPkg.version = newVersion;
@@ -159,17 +159,17 @@ async function confirmPublish() {
   let otp = await getOTPToken();
 
   let publicPackages = packages.filter(pkg => !pkg.private);
-  for (let package of publicPackages) {
-    let distTag = await autoDistTag(package.absolutePath);
+  for (let pkg of publicPackages) {
+    let distTag = await autoDistTag(pkg.absolutePath);
 
     try {
-      publishPackage(distTag, otp, package.absolutePath);
+      publishPackage(distTag, otp, pkg.absolutePath);
     } catch(e) {
       // the token is outdated, we need another one
       if (e.message.includes('E401')) {
         otp = await getOTPToken();
 
-        publishPackage(distTag, otp, package.absolutePath);
+        publishPackage(distTag, otp, pkg.absolutePath);
       } else {
         throw e;
       }

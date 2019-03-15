@@ -48,8 +48,7 @@ class Package {
    */
   get internalDependencies() {
     let siblings = this.siblingPackages;
-    return Object.keys(this.allDependencies)
-      .filter(dep => siblings.includes(dep));
+    return Object.keys(this.allDependencies).filter(dep => siblings.includes(dep));
   }
 
   get packageJSONPath() {
@@ -84,7 +83,9 @@ class Package {
   }
 
   _updateDependencies(deps, newVersion) {
-    if (!deps) { return; }
+    if (!deps) {
+      return;
+    }
 
     Object.keys(deps).forEach(dep => {
       if (this.siblingPackages.indexOf(dep) >= 0) {
@@ -101,10 +102,11 @@ class Package {
 const PACKAGES_GLOB = '@glimmer/*/';
 
 function findPackages(cwd, packagesGlob = PACKAGES_GLOB) {
-  let packageNames = glob.sync(packagesGlob, { cwd })
-    .map(trimTrailingSlash);
+  let packageNames = glob.sync(packagesGlob, { cwd }).map(trimTrailingSlash);
 
-  if (!packageNames.length) { throw new Error(`No packages found in ${cwd}`); }
+  if (!packageNames.length) {
+    throw new Error(`No packages found in ${cwd}`);
+  }
 
   let packages = packageNames.map(pkg => new Package(pkg, cwd, packageNames));
 
@@ -126,7 +128,7 @@ function topsort(packages) {
   packages
     .map(pkg => filterDependencies(pkg))
     .forEach(([pkg, deps]) => {
-      graph.add(pkg.name, pkg, null, deps)
+      graph.add(pkg.name, pkg, null, deps);
     });
 
   let sorted = [];
@@ -139,8 +141,9 @@ function topsort(packages) {
   function filterDependencies(pkg) {
     // Merge the package's dependencies and dev dependencies, then filter out
     // any dependencies that we didn't discover in the repo.
-    let dependencies = Object.keys(pkg.allDependencies)
-      .filter(dep => inRepoDependencies.indexOf(dep) > -1);
+    let dependencies = Object.keys(pkg.allDependencies).filter(
+      dep => inRepoDependencies.indexOf(dep) > -1
+    );
 
     return [pkg, dependencies];
   }
@@ -152,7 +155,6 @@ const PROJECT_CACHE = [];
  * Represents all of the packages in the monorepo project.
  */
 class Project {
-
   /**
    * Use the static `from()` method to share a cached Project across multiple
    * consumers, so long as the root path is the same.

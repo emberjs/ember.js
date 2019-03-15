@@ -1,6 +1,7 @@
 import { Blueprint, Descriptor } from './mixin';
 import { ClassMeta } from './object';
 import { ComputedBlueprint } from './computed';
+import { Dict } from '@glimmer/interfaces';
 
 class AliasMethodDescriptor extends Descriptor {
   private name: string;
@@ -10,7 +11,7 @@ class AliasMethodDescriptor extends Descriptor {
     this.name = name;
   }
 
-  define(target: Object, key: string, _home: Object) {
+  define(target: Dict, key: string, _home: Object) {
     let name = this.name as string;
 
     Object.defineProperty(target, key, {

@@ -1,4 +1,5 @@
 import * as AST from './types/nodes';
+import * as HBS from './types/handlebars-ast';
 import { Option } from '@glimmer/interfaces';
 import SyntaxError from './errors/syntax-error';
 
@@ -64,20 +65,28 @@ function parseBlockParams(element: AST.ElementNode): Option<string[]> {
   return null;
 }
 
-export function childrenFor(node: AST.Program | AST.ElementNode): AST.Statement[] {
+export function childrenFor(
+  node: AST.Block | AST.Template | AST.ElementNode
+): AST.TopLevelStatement[] {
   switch (node.type) {
-    case 'Program':
+    case 'Block':
+    case 'Template':
       return node.body;
     case 'ElementNode':
       return node.children;
   }
 }
 
-export function appendChild(parent: AST.Program | AST.ElementNode, node: AST.Statement) {
+export function appendChild(
+  parent: AST.Block | AST.Template | AST.ElementNode,
+  node: AST.Statement
+) {
   childrenFor(parent).push(node);
 }
 
-export function isLiteral(path: AST.PathExpression | AST.Literal): path is AST.Literal {
+export function isLiteral(
+  path: AST.PathExpression | HBS.PathExpression | AST.Literal | HBS.Literal
+): path is AST.Literal {
   return (
     path.type === 'StringLiteral' ||
     path.type === 'BooleanLiteral' ||

@@ -1,5 +1,8 @@
 import * as AST from './types/nodes';
-import { Option } from '@glimmer/interfaces';
+import { Option, Dict } from '@glimmer/interfaces';
+import { deprecate, assign } from '@glimmer/util';
+import { DEVMODE } from '@glimmer/local-debug-flags';
+import { StringLiteral, BooleanLiteral, NumberLiteral } from './types/handlebars-ast';
 
 // Statements
 
@@ -31,17 +34,40 @@ function buildBlock(
   path: BuilderPath,
   params: Option<AST.Expression[]>,
   hash: Option<AST.Hash>,
-  program: AST.Program,
-  inverse?: Option<AST.Program>,
+  _defaultBlock: AST.PossiblyDeprecatedBlock,
+  _elseBlock?: Option<AST.PossiblyDeprecatedBlock>,
   loc?: AST.SourceLocation
 ): AST.BlockStatement {
+  let defaultBlock: AST.Block;
+  let elseBlock: Option<AST.Block> | undefined;
+
+  if (_defaultBlock.type === 'Template') {
+    if (DEVMODE) {
+      deprecate(`b.program is deprecated. Use b.blockItself instead.`);
+    }
+
+    defaultBlock = (assign({}, _defaultBlock, { type: 'Block' }) as unknown) as AST.Block;
+  } else {
+    defaultBlock = _defaultBlock;
+  }
+
+  if (_elseBlock !== undefined && _elseBlock !== null && _elseBlock.type === 'Template') {
+    if (DEVMODE) {
+      deprecate(`b.program is deprecated. Use b.blockItself instead.`);
+    }
+
+    elseBlock = (assign({}, _elseBlock, { type: 'Block' }) as unknown) as AST.Block;
+  } else {
+    elseBlock = _elseBlock;
+  }
+
   return {
     type: 'BlockStatement',
     path: buildPath(path),
     params: params || [],
     hash: hash || buildHash([]),
-    program: program || null,
-    inverse: inverse || null,
+    program: defaultBlock || null,
+    inverse: elseBlock || null,
     loc: buildLoc(loc || null),
   };
 }
@@ -111,62 +137,211 @@ function buildConcat(
 
 // Nodes
 
-function buildElement(
-  tag: TagDescriptor,
-  attributes?: AST.AttrNode[],
-  modifiers?: AST.ElementModifierStatement[],
-  children?: AST.Statement[],
-  loc?: AST.SourceLocation
-): AST.ElementNode;
-function buildElement(
-  tag: TagDescriptor,
-  attributes?: AST.AttrNode[],
-  modifiers?: AST.ElementModifierStatement[],
-  children?: AST.Statement[],
-  comments?: AST.MustacheCommentStatement[],
-  blockParams?: string[],
-  loc?: AST.SourceLocation
-): AST.ElementNode;
+export type ElementArgs =
+  | ['attrs', ...AttrSexp[]]
+  | ['modifiers', ...ModifierSexp[]]
+  | ['body', ...AST.Statement[]]
+  | ['comments', ...ElementComment[]]
+  | ['as', ...string[]]
+  | ['loc', AST.SourceLocation];
 
+export type PathSexp = string | ['path', string, LocSexp?];
+
+export type ModifierSexp =
+  | string
+  | [PathSexp, LocSexp?]
+  | [PathSexp, AST.Expression[], LocSexp?]
+  | [PathSexp, AST.Expression[], Dict<AST.Expression>, LocSexp?];
+
+export type AttrSexp = [string, AST.AttrNode['value'] | string, LocSexp?];
+
+export type LocSexp = ['loc', AST.SourceLocation];
+
+export type ElementComment = AST.MustacheCommentStatement | AST.SourceLocation | string;
+
+export type SexpValue =
+  | string
+  | AST.Expression[]
+  | Dict<AST.Expression>
+  | LocSexp
+  | PathSexp
+  | undefined;
+
+export function isLocSexp(value: SexpValue): value is LocSexp {
+  return Array.isArray(value) && value.length === 2 && value[0] === 'loc';
+}
+
+export function isParamsSexp(value: SexpValue): value is AST.Expression[] {
+  return Array.isArray(value) && !isLocSexp(value);
+}
+
+export function isHashSexp(value: SexpValue): value is Dict<AST.Expression> {
+  if (typeof value === 'object' && value && !Array.isArray(value)) {
+    expectType<Dict<AST.Expression>>(value);
+    return true;
+  } else {
+    return false;
+  }
+}
+
+function expectType<T>(_input: T): void {
+  return;
+}
+
+export function normalizeModifier(sexp: ModifierSexp): AST.ElementModifierStatement {
+  if (typeof sexp === 'string') {
+    return buildElementModifier(sexp);
+  }
+
+  let path: AST.PathExpression = normalizePath(sexp[0]);
+  let params: AST.Expression[] | undefined;
+  let hash: AST.Hash | undefined;
+  let loc: AST.SourceLocation | null = null;
+
+  let parts = sexp.slice(1);
+  let next = parts.shift();
+
+  // tslint:disable-next-line:label-position
+  process: {
+    if (isParamsSexp(next)) {
+      params = next as AST.Expression[];
+    } else {
+      break process;
+    }
+
+    next = parts.shift();
+
+    if (isHashSexp(next)) {
+      hash = normalizeHash(next as Dict<AST.Expression>);
+    } else {
+      break process;
+    }
+  }
+
+  if (isLocSexp(next)) {
+    loc = next[1];
+  }
+
+  return buildElementModifier(path, params, hash, loc);
+}
+
+export function normalizeAttr(sexp: AttrSexp): AST.AttrNode {
+  let name = sexp[0];
+  let value;
+
+  if (typeof sexp[1] === 'string') {
+    value = buildText(sexp[1]);
+  } else {
+    value = sexp[1];
+  }
+
+  let loc = sexp[2] ? sexp[2][1] : undefined;
+
+  return buildAttr(name, value, loc);
+}
+
+export function normalizeHash(hash: Dict<AST.Expression>, loc?: AST.SourceLocation): AST.Hash {
+  let pairs: AST.HashPair[] = [];
+
+  Object.keys(hash).forEach(key => {
+    pairs.push(buildPair(key, hash[key]));
+  });
+
+  return buildHash(pairs, loc);
+}
+
+export function normalizePath(path: PathSexp): AST.PathExpression {
+  if (typeof path === 'string') {
+    return buildPath(path);
+  } else {
+    return buildPath(path[1], path[2] && path[2][1]);
+  }
+}
+
+export function normalizeElementOptions(...args: ElementArgs[]): BuildElementOptions {
+  let out: BuildElementOptions = {};
+
+  for (let arg of args) {
+    switch (arg[0]) {
+      case 'attrs': {
+        let [, ...rest] = arg;
+        out.attrs = rest.map(normalizeAttr);
+        break;
+      }
+      case 'modifiers': {
+        let [, ...rest] = arg;
+        out.modifiers = rest.map(normalizeModifier);
+        break;
+      }
+      case 'body': {
+        let [, ...rest] = arg;
+        out.children = rest;
+        break;
+      }
+      case 'comments': {
+        let [, ...rest] = arg;
+
+        out.comments = rest;
+        break;
+      }
+      case 'as': {
+        let [, ...rest] = arg;
+        out.blockParams = rest;
+        break;
+      }
+      case 'loc': {
+        let [, rest] = arg;
+        out.loc = rest;
+        break;
+      }
+    }
+  }
+
+  return out;
+}
+
+export interface BuildElementOptions {
+  attrs?: AST.AttrNode[];
+  modifiers?: AST.ElementModifierStatement[];
+  children?: AST.Statement[];
+  comments?: ElementComment[];
+  blockParams?: string[];
+  loc?: AST.SourceLocation;
+}
+
+function buildElement(tag: TagDescriptor, options?: BuildElementOptions): AST.ElementNode;
+function buildElement(tag: TagDescriptor, ...options: ElementArgs[]): AST.ElementNode;
 function buildElement(
   tag: TagDescriptor,
-  attributes?: AST.AttrNode[],
-  modifiers?: AST.ElementModifierStatement[],
-  children?: AST.Statement[],
-  comments?: AST.MustacheCommentStatement[] | AST.SourceLocation | string[],
-  blockParams?: string[],
-  loc?: AST.SourceLocation
+  options?: BuildElementOptions | ElementArgs,
+  ...rest: ElementArgs[]
 ): AST.ElementNode {
-  // this is used for backwards compat prior to `blockParams` being added to the AST
-  if (Array.isArray(comments)) {
-    if (isBlockParms(comments)) {
-      blockParams = comments;
-      comments = [];
-    } else if (isLoc(blockParams)) {
-      loc = blockParams;
-      blockParams = [];
-    }
-  } else if (isLoc(comments)) {
-    // this is used for backwards compat prior to `comments` being added to the AST
-    loc = comments;
-    comments = [];
-  } else if (isLoc(blockParams)) {
-    loc = blockParams;
-    blockParams = [];
+  let normalized: BuildElementOptions;
+  if (Array.isArray(options)) {
+    normalized = normalizeElementOptions(options, ...rest);
+  } else {
+    normalized = options || {};
   }
+
+  let { attrs, blockParams, modifiers, comments, children, loc } = normalized;
 
   // this is used for backwards compat, prior to `selfClosing` being part of the ElementNode AST
   let selfClosing = false;
   if (typeof tag === 'object') {
     selfClosing = tag.selfClosing;
     tag = tag.name;
+  } else {
+    if (tag.slice(-1) === '/') {
+      tag = tag.slice(0, -1);
+      selfClosing = true;
+    }
   }
 
   return {
     type: 'ElementNode',
     tag: tag || '',
     selfClosing: selfClosing,
-    attributes: attributes || [],
+    attributes: attrs || [],
     blockParams: blockParams || [],
     modifiers: modifiers || [],
     comments: (comments as AST.MustacheCommentStatement[]) || [],
@@ -238,13 +413,13 @@ function buildLiteral<T extends AST.Literal>(
   type: T['type'],
   value: T['value'],
   loc?: AST.SourceLocation
-): AST.Literal {
+): T {
   return {
     type,
     value,
     original: value,
     loc: buildLoc(loc || null),
-  } as AST.Literal;
+  } as T;
 }
 
 // Miscellaneous
@@ -270,9 +445,35 @@ function buildProgram(
   body?: AST.Statement[],
   blockParams?: string[],
   loc?: AST.SourceLocation
-): AST.Program {
+): AST.Template {
   return {
-    type: 'Program',
+    type: 'Template',
+    body: body || [],
+    blockParams: blockParams || [],
+    loc: buildLoc(loc || null),
+  };
+}
+
+function buildBlockItself(
+  body?: AST.Statement[],
+  blockParams?: string[],
+  loc?: AST.SourceLocation
+): AST.Block {
+  return {
+    type: 'Block',
+    body: body || [],
+    blockParams: blockParams || [],
+    loc: buildLoc(loc || null),
+  };
+}
+
+function buildTemplate(
+  body?: AST.Statement[],
+  blockParams?: string[],
+  loc?: AST.SourceLocation
+): AST.Template {
+  return {
+    type: 'Template',
     body: body || [],
     blockParams: blockParams || [],
     loc: buildLoc(loc || null),
@@ -328,16 +529,6 @@ function buildLoc(...args: any[]): AST.SourceLocation {
   }
 }
 
-function isBlockParms(arr: string[] | AST.MustacheCommentStatement[]): arr is string[] {
-  return arr[0] === 'string';
-}
-
-function isLoc(
-  item: string[] | AST.SourceLocation | AST.MustacheCommentStatement[] | undefined
-): item is AST.SourceLocation {
-  return !Array.isArray(item);
-}
-
 export default {
   mustache: buildMustache,
   block: buildBlock,
@@ -355,12 +546,14 @@ export default {
   pair: buildPair,
   literal: buildLiteral,
   program: buildProgram,
+  blockItself: buildBlockItself,
+  template: buildTemplate,
   loc: buildLoc,
   pos: buildPosition,
 
-  string: literal('StringLiteral'),
-  boolean: literal('BooleanLiteral'),
-  number: literal('NumberLiteral'),
+  string: literal('StringLiteral') as (value: string) => StringLiteral,
+  boolean: literal('BooleanLiteral') as (value: boolean) => BooleanLiteral,
+  number: literal('NumberLiteral') as (value: number) => NumberLiteral,
   undefined() {
     return buildLiteral('UndefinedLiteral', undefined);
   },
@@ -369,8 +562,10 @@ export default {
   },
 };
 
-function literal<T extends AST.Literal>(type: T['type']) {
-  return function(value: T['value']) {
+type BuildLiteral<T extends AST.Literal> = (value: T['value']) => T;
+
+function literal<T extends AST.Literal>(type: T['type']): BuildLiteral<T> {
+  return function(value: T['value']): T {
     return buildLiteral(type, value);
   };
 }

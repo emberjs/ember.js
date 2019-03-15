@@ -6,6 +6,8 @@ import {
   ASTPluginEnvironment,
   ASTPluginBuilder,
 } from '@glimmer/syntax';
+import { ModuleLocator } from '../../interfaces';
+import { expect } from '../../util';
 
 const { test } = QUnit;
 
@@ -85,6 +87,10 @@ test('can support the legacy AST transform API via ASTPlugin', assert => {
   });
 });
 
+const FIRST_PLUGIN = new WeakMap<AST.Program | AST.Block | AST.Template, boolean>();
+const SECOND_PLUGIN = new WeakMap<AST.Program | AST.Block | AST.Template, boolean>();
+const THIRD_PLUGIN = new WeakMap<AST.Program | AST.Block | AST.Template, boolean>();
+
 test('AST plugins can be chained', assert => {
   assert.expect(3);
 
@@ -92,8 +98,8 @@ test('AST plugins can be chained', assert => {
     return {
       name: 'first',
       visitor: {
-        Program(program: AST.Program) {
-          program['isFromFirstPlugin'] = true;
+        Program(program: AST.Program | AST.Template | AST.Block) {
+          FIRST_PLUGIN.set(program, true);
         },
       },
     };
@@ -103,14 +109,10 @@ test('AST plugins can be chained', assert => {
     return {
       name: 'second',
       visitor: {
-        Program(node: AST.Program) {
-          assert.equal(
-            node['isFromFirstPlugin'],
-            true,
-            'AST from first plugin is passed to second'
-          );
+        Program(node: AST.Program | AST.Block | AST.Template) {
+          assert.equal(FIRST_PLUGIN.get(node), true, 'AST from first plugin is passed to second');
 
-          node['isFromSecondPlugin'] = true;
+          SECOND_PLUGIN.set(node, true);
         },
       },
     };
@@ -120,14 +122,10 @@ test('AST plugins can be chained', assert => {
     return {
       name: 'third',
       visitor: {
-        Program(node: AST.Program) {
-          assert.equal(
-            node['isFromSecondPlugin'],
-            true,
-            'AST from second plugin is passed to third'
-          );
+        Program(node: AST.Program | AST.Block | AST.Template) {
+          assert.equal(SECOND_PLUGIN.get(node), true, 'AST from second plugin is passed to third');
 
-          node['isFromThirdPlugin'] = true;
+          THIRD_PLUGIN.set(node, true);
         },
       },
     };
@@ -139,5 +137,39 @@ test('AST plugins can be chained', assert => {
     },
   });
 
-  assert.equal(ast['isFromThirdPlugin'], true, 'return value from last AST transform is used');
+  assert.equal(THIRD_PLUGIN.get(ast), true, 'return value from last AST transform is used');
+});
+
+test('AST plugins can access meta from environment', assert => {
+  assert.expect(2);
+
+  const locator: ModuleLocator = {
+    module: 'template/module/name',
+    name: 'default',
+  };
+
+  let hasExposedEnvMeta = (env: ASTPluginEnvironment) => {
+    return {
+      name: 'exposedMetaTemplateData',
+      visitor: {
+        Program() {
+          const { meta } = env;
+          const { module, name } = expect(meta as ModuleLocator, 'expected meta to not be null');
+          assert.equal(
+            module,
+            'template/module/name',
+            'module was passed in the meta enviornment property'
+          );
+          assert.equal(name, 'default', 'name was passed in the meta enviornment property');
+        },
+      },
+    };
+  };
+
+  preprocess('<div></div>', {
+    meta: locator,
+    plugins: {
+      ast: [hasExposedEnvMeta],
+    },
+  });
 });

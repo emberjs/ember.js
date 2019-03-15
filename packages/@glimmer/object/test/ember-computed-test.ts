@@ -260,7 +260,7 @@ QUnit.test(
 QUnit.test(
   'Calling _super in call outside the immediate function of a CP getter works',
   function() {
-    function macro(callback: (obj: any) => any) {
+    function macro(callback: () => any) {
       return computed(function(this: any) {
         return callback.call(this);
       });
@@ -285,7 +285,7 @@ QUnit.test(
 QUnit.test(
   'Calling _super in apply outside the immediate function of a CP getter works',
   function() {
-    function macro(callback: (obj: any) => any) {
+    function macro(callback: () => any) {
       return computed(function(this: any) {
         return callback.apply(this);
       });

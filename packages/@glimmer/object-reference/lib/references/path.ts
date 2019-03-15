@@ -3,8 +3,8 @@ import { dict } from '@glimmer/util';
 import Meta from '../meta';
 import { PropertyReference } from './descriptors';
 import { PathReference as IPathReference, Reference, Tag, CURRENT_TAG } from '@glimmer/reference';
-import { Dict, HasGuid } from '@glimmer/util';
-import { Option } from '@glimmer/interfaces';
+import { HasGuid } from '@glimmer/util';
+import { Option, Dict } from '@glimmer/interfaces';
 
 export default class PathReference<T> implements IPathReference<T>, HasGuid {
   private parent: IPathReference<any>;
