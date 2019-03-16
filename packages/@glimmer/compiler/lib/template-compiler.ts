@@ -157,7 +157,7 @@ export default class TemplateCompiler {
       } else if (isTrusting) {
         this.opcode(['trustingAttr', [name, namespace]], action);
       } else if (action.value.type === 'MustacheStatement') {
-        this.opcode(['dynamicAttr', [name, null]], action);
+        this.opcode(['dynamicAttr', [name, namespace]], action);
       } else {
         this.opcode(['dynamicAttr', [name, namespace]], action);
       }
