@@ -72,7 +72,7 @@ class WarningAssert extends DebugAssert {
     // expectWarning(/* optionalStringOrRegex */);
     // Ember.warn("Times definitely be changin'");
     //
-    let expectWarning: ExpectWarningFunc = (func, message) => {
+    let expectWarning: ExpectWarningFunc = (func, message, options?) => {
       let actualFunc: (() => void) | undefined;
       if (typeof func !== 'function') {
         message = func as Message;
@@ -86,7 +86,7 @@ class WarningAssert extends DebugAssert {
           throw new Error('expectWarning was called after expectNoWarning was called!');
         }
 
-        tracker.expectCall(message);
+        tracker.expectCall(message, options);
       });
     };
 
