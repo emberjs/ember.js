@@ -21,7 +21,7 @@ describeComponent('x-foo', 'Integration | Component | x-foo',
         </XFoo>
       `);
 
-      assert.equal(this.$().text().trim(), 'template block text');
+      expect(this.$().text().trim()).to.equal('template block text');
     });
   }
 );
