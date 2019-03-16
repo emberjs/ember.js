@@ -23,7 +23,7 @@ describeComponent('<%= componentPathName %>', '<%= friendlyTestDescription %>',
         <%= closeComponent(componentName) %>
       `);
 
-      assert.equal(this.$().text().trim(), 'template block text');<% } else if(testType === 'unit') { %>// creates the component instance
+      expect(this.$().text().trim()).to.equal('template block text');<% } else if(testType === 'unit') { %>// creates the component instance
       let component = this.subject();
       // renders the component on the page
       this.render();
