@@ -319,7 +319,7 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
 
     assert(
       'Invoking `{{input}}` using angle bracket syntax or `component` helper is not yet supported.',
-      _name !== 'input'
+      EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS || _name !== 'input'
     );
 
     let name = _name;

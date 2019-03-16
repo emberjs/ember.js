@@ -1217,10 +1217,36 @@ moduleFor(
       this.assertText('ab');
     }
 
-    ['@test GH#14632 give useful warning when calling contextual components with input as a name']() {
+    ['@feature(!ember-glimmer-angle-bracket-built-ins) GH#14632 give useful warning when calling contextual components with input as a name']() {
       expectAssertion(() => {
         this.render('{{component (component "input" type="text")}}');
       }, 'Invoking `{{input}}` using angle bracket syntax or `component` helper is not yet supported.');
+    }
+
+    ['@feature(ember-glimmer-angle-bracket-built-ins) it can invoke input component']() {
+      this.render('{{component (component "input" type="text" value=value)}}', {
+        value: 'foo',
+      });
+
+      this.assertComponentElement(this.firstChild, {
+        tagName: 'input',
+        attrs: {
+          class: 'ember-text-field ember-view',
+          type: 'text',
+        },
+      });
+
+      this.assert.strictEqual('foo', this.firstChild.value);
+
+      this.assertStableRerender();
+
+      runTask(() => this.context.set('value', 'bar'));
+
+      this.assert.strictEqual('bar', this.firstChild.value);
+
+      runTask(() => this.context.set('value', 'foo'));
+
+      this.assert.strictEqual('foo', this.firstChild.value);
     }
 
     ['@feature(!ember-glimmer-angle-bracket-built-ins) GH#14632 give useful warning when calling contextual components with textarea as a name']() {

@@ -98,14 +98,16 @@ export function populateMacros(macros: Macros) {
   let { inlines, blocks } = macros;
   inlines.add('outlet', outletMacro);
   inlines.add('mount', mountMacro);
-  inlines.add('input', inputMacro);
-  inlines.addMissing(refineInlineSyntax);
-  blocks.add('let', blockLetMacro);
-  blocks.addMissing(refineBlockSyntax);
 
   if (!EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
+    inlines.add('input', inputMacro);
     inlines.add('textarea', textAreaMacro);
   }
+
+  inlines.addMissing(refineInlineSyntax);
+
+  blocks.add('let', blockLetMacro);
+  blocks.addMissing(refineBlockSyntax);
 
   for (let i = 0; i < experimentalMacros.length; i++) {
     let macro = experimentalMacros[i];

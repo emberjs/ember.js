@@ -5,9 +5,10 @@ import { EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS } from '@ember/canary-features';
 import { Simple } from '@glimmer/interfaces';
 import Component from './component';
 import Checkbox from './components/checkbox';
+import Input from './components/input';
 import LinkToComponent from './components/link-to';
-import TextArea from './components/text_area';
-import TextField from './components/text_field';
+import TextField from './components/text-field';
+import TextArea from './components/textarea';
 import {
   clientBuilder,
   DOMChanges,
@@ -21,6 +22,7 @@ import loc from './helpers/loc';
 import { InertRenderer, InteractiveRenderer } from './renderer';
 import TemplateCompiler from './template-compiler';
 import ComponentTemplate from './templates/component';
+import InputTemplate from './templates/input';
 import OutletTemplate from './templates/outlet';
 import RootTemplate from './templates/root';
 import OutletView from './views/outlet';
@@ -102,6 +104,19 @@ export function setupEngineRegistry(registry: Registry) {
   registry.register('component:link-to', LinkToComponent);
 
   if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
+    // Internal
+
+    // These are registered as CapCase because our internal tempaltes do not
+    // go through the dashify transform. As a nice bonus, it also makes it
+    // more difficult for users to invoke them by accident.
+    registry.register('component:TextField', TextField);
+    registry.register('component:Checkbox', Checkbox);
+
+    // Public
+
+    registry.register('component:input', Input);
+    registry.register('template:components/input', InputTemplate);
+
     registry.register('component:textarea', TextArea);
   } else {
     registry.register('component:-text-area', TextArea);

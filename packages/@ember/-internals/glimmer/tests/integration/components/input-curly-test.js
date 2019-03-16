@@ -1,5 +1,6 @@
 import { RenderingTestCase, moduleFor, runDestroy, runTask } from 'internal-test-helpers';
 
+import { EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS } from '@ember/canary-features';
 import { assign } from '@ember/polyfills';
 import { set } from '@ember/-internals/metal';
 import { jQuery } from '@ember/-internals/views';
@@ -78,14 +79,8 @@ class InputRenderingTest extends RenderingTestCase {
 }
 
 moduleFor(
-  'Helpers test: {{input}}',
+  'Components test: {{input}}',
   class extends InputRenderingTest {
-    ['@test should not allow angle bracket invocation']() {
-      expectAssertion(() => {
-        this.render('<Input />');
-      }, 'Invoking `{{input}}` using angle bracket syntax or `component` helper is not yet supported.');
-    }
-
     ['@test a single text field is inserted into the DOM']() {
       this.render(`{{input type="text" value=value}}`, { value: 'hello' });
 
@@ -293,16 +288,24 @@ moduleFor(
             },
           },
         });
-      }, 'Please refactor `{{input enter="foo"}}` to `{{input enter=(action "foo")}}. (\'-top-level\' @ L1:C0) ');
-      expectDeprecation(() => {
-        this.triggerEvent('keyup', { keyCode: 13 });
-      }, 'Passing actions to components as strings (like {{input enter="foo"}}) is deprecated. Please use closure actions instead ({{input enter=(action "foo")}})');
+      }, 'Passing actions to components as strings (like `{{input enter="foo"}}`) is deprecated. Please use closure actions instead (`{{input enter=(action "foo")}}`). (\'-top-level\' @ L1:C0) ');
+
+      if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
+        expectDeprecation(() => {
+          this.triggerEvent('keyup', { keyCode: 13 });
+        }, 'Passing actions to components as strings (like `<Input @enter="foo" />`) is deprecated. Please use closure actions instead (`<Input @enter={{action "foo"}} />`).');
+      } else {
+        expectDeprecation(() => {
+          this.triggerEvent('keyup', { keyCode: 13 });
+        }, 'Passing actions to components as strings (like `{{input enter="foo"}}`) is deprecated. Please use closure actions instead (`{{input enter=(action "foo")}}`).');
+      }
     }
 
     ['@test sends an action with `{{input enter=(action "foo")}}` when <enter> is pressed'](
       assert
     ) {
       assert.expect(2);
+
       this.render(`{{input enter=(action 'foo')}}`, {
         actions: {
           foo(value, event) {
@@ -331,11 +334,17 @@ moduleFor(
             },
           },
         });
-      }, 'Please refactor `{{input key-press="foo"}}` to `{{input key-press=(action "foo")}}. (\'-top-level\' @ L1:C0) ');
+      }, 'Passing actions to components as strings (like `{{input key-press="foo"}}`) is deprecated. Please use closure actions instead (`{{input key-press=(action "foo")}}`). (\'-top-level\' @ L1:C0) ');
 
-      expectDeprecation(() => {
-        this.triggerEvent('keypress', { keyCode: 65 });
-      }, 'Passing actions to components as strings (like {{input key-press="foo"}}) is deprecated. Please use closure actions instead ({{input key-press=(action "foo")}})');
+      if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
+        expectDeprecation(() => {
+          this.triggerEvent('keypress', { keyCode: 65 });
+        }, 'Passing actions to components as strings (like `<Input @key-press="foo" />`) is deprecated. Please use closure actions instead (`<Input @key-press={{action "foo"}} />`).');
+      } else {
+        expectDeprecation(() => {
+          this.triggerEvent('keypress', { keyCode: 65 });
+        }, 'Passing actions to components as strings (like `{{input key-press="foo"}}`) is deprecated. Please use closure actions instead (`{{input key-press=(action "foo")}}`).');
+      }
     }
 
     ['@test sends an action with `{{input key-press=(action "foo")}}` is pressed'](assert) {
@@ -422,11 +431,17 @@ moduleFor(
             },
           },
         });
-      }, 'Please refactor `{{input escape-press="foo"}}` to `{{input escape-press=(action "foo")}}. (\'-top-level\' @ L1:C0) ');
+      }, 'Passing actions to components as strings (like `{{input escape-press="foo"}}`) is deprecated. Please use closure actions instead (`{{input escape-press=(action "foo")}}`). (\'-top-level\' @ L1:C0) ');
 
-      expectDeprecation(() => {
-        this.triggerEvent('keyup', { keyCode: 27 });
-      }, 'Passing actions to components as strings (like {{input escape-press="foo"}}) is deprecated. Please use closure actions instead ({{input escape-press=(action "foo")}})');
+      if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
+        expectDeprecation(() => {
+          this.triggerEvent('keyup', { keyCode: 27 });
+        }, 'Passing actions to components as strings (like `<Input @escape-press="foo" />`) is deprecated. Please use closure actions instead (`<Input @escape-press={{action "foo"}} />`).');
+      } else {
+        expectDeprecation(() => {
+          this.triggerEvent('keyup', { keyCode: 27 });
+        }, 'Passing actions to components as strings (like `{{input escape-press="foo"}}`) is deprecated. Please use closure actions instead (`{{input escape-press=(action "foo")}}`).');
+      }
     }
 
     ['@test sends an action with `{{input escape-press=(action "foo")}}` when <escape> is pressed'](
@@ -460,11 +475,17 @@ moduleFor(
             },
           },
         });
-      }, 'Please refactor `{{input key-down="foo"}}` to `{{input key-down=(action "foo")}}. (\'-top-level\' @ L1:C0) ');
+      }, 'Passing actions to components as strings (like `{{input key-down="foo"}}`) is deprecated. Please use closure actions instead (`{{input key-down=(action "foo")}}`). (\'-top-level\' @ L1:C0) ');
 
-      expectDeprecation(() => {
-        this.triggerEvent('keydown', { keyCode: 65 });
-      }, 'Passing actions to components as strings (like {{input key-down="foo"}}) is deprecated. Please use closure actions instead ({{input key-down=(action "foo")}})');
+      if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
+        expectDeprecation(() => {
+          this.triggerEvent('keydown', { keyCode: 65 });
+        }, 'Passing actions to components as strings (like `<Input @key-down="foo" />`) is deprecated. Please use closure actions instead (`<Input @key-down={{action "foo"}} />`).');
+      } else {
+        expectDeprecation(() => {
+          this.triggerEvent('keydown', { keyCode: 65 });
+        }, 'Passing actions to components as strings (like `{{input key-down="foo"}}`) is deprecated. Please use closure actions instead (`{{input key-down=(action "foo")}}`).');
+      }
     }
 
     ['@test sends an action with `{{input key-down=(action "foo")}}` when a key is pressed'](
@@ -498,16 +519,20 @@ moduleFor(
             },
           },
         });
-      }, 'Please refactor `{{input key-up="foo"}}` to `{{input key-up=(action "foo")}}. (\'-top-level\' @ L1:C0) ');
+      }, 'Passing actions to components as strings (like `{{input key-up="foo"}}`) is deprecated. Please use closure actions instead (`{{input key-up=(action "foo")}}`). (\'-top-level\' @ L1:C0) ');
 
-      expectDeprecation(() => {
-        this.triggerEvent('keyup', { keyCode: 65 });
-      }, 'Passing actions to components as strings (like {{input key-up="foo"}}) is deprecated. Please use closure actions instead ({{input key-up=(action "foo")}})');
+      if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
+        expectDeprecation(() => {
+          this.triggerEvent('keyup', { keyCode: 65 });
+        }, 'Passing actions to components as strings (like `<Input @key-up="foo" />`) is deprecated. Please use closure actions instead (`<Input @key-up={{action "foo"}} />`).');
+      } else {
+        expectDeprecation(() => {
+          this.triggerEvent('keyup', { keyCode: 65 });
+        }, 'Passing actions to components as strings (like `{{input key-up="foo"}}`) is deprecated. Please use closure actions instead (`{{input key-up=(action "foo")}}`).');
+      }
     }
 
-    ['@test [DEPRECATED] sends an action with `{{input key-up=(action "foo")}}` when a key is pressed'](
-      assert
-    ) {
+    ['@test sends an action with `{{input key-up=(action "foo")}}` when a key is pressed'](assert) {
       assert.expect(2);
 
       this.render(`{{input key-up=(action 'foo')}}`, {
@@ -531,7 +556,7 @@ moduleFor(
 );
 
 moduleFor(
-  'Helpers test: {{input}} with dynamic type',
+  'Components test: {{input}} with dynamic type',
   class extends InputRenderingTest {
     ['@test a bound property can be used to determine type']() {
       this.render(`{{input type=type}}`, { type: 'password' });
@@ -592,7 +617,7 @@ moduleFor(
 );
 
 moduleFor(
-  `Helpers test: {{input type='checkbox'}}`,
+  `Components test: {{input type='checkbox'}}`,
   class extends InputRenderingTest {
     ['@test dynamic attributes']() {
       this.render(
@@ -651,7 +676,7 @@ moduleFor(
         this.render(`{{input type="checkbox" value=value}}`, {
           value: 'value',
         });
-      }, /you must use `checked=/);
+      }, /checkbox.+value.+not supported.+use.+checked.+instead/);
     }
 
     ['@test with a bound type']() {
@@ -710,7 +735,7 @@ moduleFor(
 );
 
 moduleFor(
-  `Helpers test: {{input type='text'}}`,
+  `Components test: {{input type='text'}}`,
   class extends InputRenderingTest {
     ['@test null values']() {
       let attributes = ['disabled', 'placeholder', 'name', 'maxlength', 'size', 'tabindex'];
@@ -795,7 +820,7 @@ moduleFor(
   'value="%x" type="range" min="-5" max="50"',
 ].forEach(attrs => {
   moduleFor(
-    `[GH#15675] Helpers test: {{input ${attrs}}}`,
+    `[GH#15675] Components test: {{input ${attrs}}}`,
     class extends InputRenderingTest {
       renderInput(value = 25) {
         this.render(`{{input ${attrs.replace('%x', value)}}}`);
