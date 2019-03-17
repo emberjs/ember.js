@@ -1,11 +1,11 @@
-import { HAS_NATIVE_SYMBOL, symbol as emberSymbol } from '@ember/-internals/utils';
+import { HAS_NATIVE_SYMBOL, isEmberArray, symbol as emberSymbol } from '@ember/-internals/utils';
 import { EMBER_NATIVE_DECORATOR_SUPPORT } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { combine, CONSTANT_TAG, Tag } from '@glimmer/reference';
 import { Decorator, DecoratorPropertyDescriptor, isElementDescriptor } from './decorator';
 import { setClassicDecorator } from './descriptor_map';
-import { dirty, ensureRunloop, tagFor, tagForProperty } from './tags';
+import { dirty, ensureRunloop, tagFor, tagForProperty, update } from './tags';
 
 type Option<T> = T | null;
 
@@ -131,7 +131,7 @@ export function tracked(...args: any[]): Decorator | DecoratorPropertyDescriptor
       assert(
         `The options object passed to tracked() may only contain a 'value' or 'initializer' property, not both. Received: [${keys}]`,
         keys.length <= 1 &&
-          (keys[0] === undefined || keys[0] === 'value' || keys[0] === 'undefined')
+          (keys[0] === undefined || keys[0] === 'value' || keys[0] === 'initializer')
       );
 
       assert(
@@ -201,11 +201,21 @@ function descriptorForField([_target, key, desc]: [
     configurable: true,
 
     get(): any {
-      if (CURRENT_TRACKER) CURRENT_TRACKER.add(tagForProperty(this, key));
+      let propertyTag = tagForProperty(this, key);
+
+      if (CURRENT_TRACKER) CURRENT_TRACKER.add(propertyTag);
 
       // If the field has never been initialized, we should initialize it
       if (!(secretKey in this)) {
         this[secretKey] = typeof initializer === 'function' ? initializer.call(this) : undefined;
+      }
+
+      let value = this[secretKey];
+
+      // Add the tag of the returned value if it is an array, since arrays
+      // should always cause updates if they are consumed and then changed
+      if (Array.isArray(value) || isEmberArray(value)) {
+        update(propertyTag, tagFor(value));
       }
 
       return this[secretKey];

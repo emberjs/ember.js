@@ -1,6 +1,6 @@
 import { get, objectAt, tagFor, tagForProperty } from '@ember/-internals/metal';
-import { _contentFor, isEmberArray } from '@ember/-internals/runtime';
-import { guidFor, HAS_NATIVE_SYMBOL, isProxy } from '@ember/-internals/utils';
+import { _contentFor } from '@ember/-internals/runtime';
+import { guidFor, HAS_NATIVE_SYMBOL, isEmberArray, isProxy } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import {
   AbstractIterable,

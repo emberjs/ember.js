@@ -6,7 +6,6 @@ export { default as compare } from './lib/compare';
 export { default as isEqual } from './lib/is-equal';
 export {
   default as Array,
-  isEmberArray,
   NativeArray,
   A,
   MutableArray,

@@ -13,8 +13,6 @@ export function deprecatingAlias(
 export const FrameworkObject: any;
 export const Object: any;
 
-export function isEmberArray(arr: any): boolean;
-
 export function _contentFor(proxy: any): any;
 
 export const A: any;
