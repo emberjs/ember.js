@@ -593,7 +593,9 @@ export class InitialRenderSuite extends RenderTest {
       `<svg xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:href="{{iconLink}}"></use></svg>`,
       { iconLink: 'home' }
     );
-    this.assertHTML(`<svg xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:href="home"></use></svg>`);
+    this.assertHTML(
+      `<svg xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:href="home"></use></svg>`
+    );
     let svg = this.element.firstChild;
     if (assertNodeTagName(svg, 'svg')) {
       let use = svg.firstChild;
@@ -609,8 +611,9 @@ export class InitialRenderSuite extends RenderTest {
       `<svg xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:href={{iconLink}}></use></svg>`,
       { iconLink: 'home' }
     );
-    this.assertHTML(`<svg xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:href="home"></use></svg>`);
-
+    this.assertHTML(
+      `<svg xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:href="home"></use></svg>`
+    );
     let svg = this.element.firstChild;
     if (assertNodeTagName(svg, 'svg')) {
       let use = svg.firstChild;
