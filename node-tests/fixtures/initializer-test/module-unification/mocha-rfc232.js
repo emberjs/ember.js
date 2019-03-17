@@ -1,6 +1,5 @@
 import { expect } from 'chai';
 import { describe, it, beforeEach, afterEach } from 'mocha';
-import { setupTest } from 'ember-mocha';
 import Application from '@ember/application';
 import { initialize } from 'my-app/init/initializers/foo';
 import { run } from '@ember/runloop';
