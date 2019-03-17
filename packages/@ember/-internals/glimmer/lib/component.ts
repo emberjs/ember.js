@@ -38,24 +38,61 @@ export const BOUNDS = symbol('BOUNDS');
 
   The easiest way to create a `Component` is via
   a template. If you name a template
-  `app/templates/components/my-foo.hbs`, you will be able to use
-  `<MyFoo />` or `{{my-foo}}` in other templates, which will make
-  an instance of the isolated component.
+  `app/templates/components/person-profile.hbs`:
 
-  ```app/templates/components/my-foo.hbs
+  ```app/templates/components/person-profile.hbs
+  <h1>{{@person.name}}</h1>
+  <img src={{@person.avatar}}>
+  <p class='signature'>{{@person.signature}}</p>
+  ```
+
+  You will be able to use `<PersonProfile />` to
+  refer to this component elsewhere in your
+  application:
+
+  ```app/templates/application.hbs
   <PersonProfile @person={{this.currentUser}} />
   ```
 
-  or
+  Note that component names are capitalized here
+  in order to distinguish them from regular HTML
+  elements.
 
-  ```app/templates/components/my-foo.hbs
+  While the angle bracket is generally preferred,
+  it is also possible to invoke the same component
+  with the `{{person-profile}}` syntax:
+
+  ```app/templates/application.hbs
   {{person-profile person=this.currentUser}}
   ```
 
-  ```app/templates/components/person-profile.hbs
-  <h1>{{person.title}}</h1>
-  <img src={{person.avatar}}>
-  <p class='signature'>{{person.signature}}</p>
+  Not that with this syntax, component names are
+  dashified and arguments are passed without the `@`
+  sign.
+
+  In both cases, it will render the content of the
+  component template we created above. The end result
+  will be something like this:
+
+  ```hbs
+  <h1>Tomster</h1>
+  <img src="https://emberjs.com/tomster.jpg">
+  <p class='signature'>Out of office this week</p>
+  ```
+
+  Components can be nested inside sub-folders for
+  logical groupping. For example, if we placed our
+  template in `app/templates/components/person/short-profile.hbs`,
+  we can invoke it as `<Person::ShortProfile />`:
+
+  ```app/templates/application.hbs
+  <Person::ShortProfile @person={{this.currentUser}} />
+  ```
+
+  Or equivalently, `{{person/short-profile}}`:
+
+  ```app/templates/application.hbs
+  {{person/short-profile person=this.currentUser}}
   ```
 
   You can use `yield` inside a template to
