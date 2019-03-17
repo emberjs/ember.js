@@ -176,7 +176,7 @@ export default class TemplateCompiler {
           action
         );
       } else if (action.value.type === 'MustacheStatement') {
-        this.opcode([isComponent ? 'componentAttr' : 'dynamicAttr', [name, null]], action);
+        this.opcode([isComponent ? 'componentAttr' : 'dynamicAttr', [name, namespace]], action);
       } else {
         this.opcode([isComponent ? 'componentAttr' : 'dynamicAttr', [name, namespace]], action);
       }
