@@ -1,6 +1,6 @@
 import { moduleFor, ApplicationTestCase, runLoopSettled, runTask } from 'internal-test-helpers';
 import Controller, { inject as injectController } from '@ember/controller';
-import { A as emberA } from '@ember/-internals/runtime';
+import { A as emberA, RSVP } from '@ember/-internals/runtime';
 import { alias } from '@ember/-internals/metal';
 import { subscribe, reset } from '@ember/instrumentation';
 import { Route, NoneLocation } from '@ember/-internals/routing';
@@ -1859,6 +1859,40 @@ moduleFor(
             '/about?bar=NAW&foo=456',
             'link has right href'
           );
+        });
+    }
+
+    ['@test [GH#17018] passing model to link-to with `hash` helper works']() {
+      this.router.map(function() {
+        this.route('post', { path: '/posts/:post_id' });
+      });
+
+      this.add(
+        'route:index',
+        Route.extend({
+          model() {
+            return RSVP.hash({
+              user: { name: 'Papa Smurf' },
+            });
+          },
+        })
+      );
+
+      this.addTemplate('index', `{{link-to 'Post' 'post' (hash id="someId" user=this.model.user)}}`);
+      this.addTemplate('post', 'Post: {{this.model.user.name}}');
+
+      return this.visit('/')
+        .then(() => {
+          this.assertComponentElement(this.firstChild, {
+            tagName: 'a',
+            attrs: { href: '/posts/someId' },
+            content: 'Post',
+          });
+
+          return this.click('a');
+        })
+        .then(() => {
+          this.assertText('Post: Papa Smurf');
         });
     }
 
