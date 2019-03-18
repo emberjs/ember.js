@@ -179,6 +179,36 @@
   @public
  */
 
+ /**
+  `{{has-block}}` indicates if the component was invoked with a block.
+
+  This component is invoked with a block:
+  ```handlebars
+  {{#my-component}}Hi Jenn!{{/my-component}}
+  ```
+
+  This component is invoked without a block:
+  ```handlebars
+  {{my-component}}
+  ```
+
+  This is useful when you want to create a component that can optionally take a block
+  and then render a default template when it is not invoked with a block.
+
+  ```app/templates/components/my-component.hbs
+  {{#if (has-block)}}
+    Welcome {{yield}}, we are happy you're here!
+  {{else}}
+    Hey you! You're great!
+  {{/if}}
+  ```
+
+  @method hasBlock
+  @for Ember.Templates.helpers
+  @return {Boolean} `true` if the component was invoked with a block
+  @public
+*/
+
 /**
   Execute the `debugger` statement in the current template's context.
 
