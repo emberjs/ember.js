@@ -43,3 +43,10 @@ for a detailed explanation.
   syntax.
 
   See [RFC #457](https://github.com/emberjs/rfcs/pull/457).
+
+* `ember-glimmer-angle-bracket-built-ins`
+
+  Allow the built-in `LinkTo`, `Input`, and `Textarea` components to be invoked
+  with the angle bracket invocation sytnax.
+
+  See [RFC #459](https://github.com/emberjs/rfcs/pull/459).

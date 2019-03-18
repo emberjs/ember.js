@@ -1281,7 +1281,29 @@ moduleFor(
       this.assertText('some-prop some-component');
     }
 
-    ['@test component without dash is not looked up']() {
+    ['@feature(ember-glimmer-angle-bracket-built-ins) component without dash is looked up']() {
+      this.registerComponent('somecomponent', {
+        template: 'somecomponent',
+      });
+
+      this.render('{{somecomponent}}', {
+        somecomponent: 'notsomecomponent',
+      });
+
+      this.assertText('somecomponent');
+
+      this.assertStableRerender();
+
+      runTask(() => this.context.set('somecomponent', 'not not notsomecomponent'));
+
+      this.assertText('somecomponent');
+
+      runTask(() => this.context.set('somecomponent', 'notsomecomponent'));
+
+      this.assertText('somecomponent');
+    }
+
+    ['@feature(!ember-glimmer-angle-bracket-built-ins) component without dash is not looked up']() {
       this.registerComponent('somecomponent', {
         template: 'somecomponent',
       });

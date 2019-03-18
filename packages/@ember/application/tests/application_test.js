@@ -3,10 +3,10 @@ import VERSION from 'ember/version';
 import { ENV, context } from '@ember/-internals/environment';
 import { libraries } from '@ember/-internals/metal';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
-import Application from '..';
 import { Router, NoneLocation, Route as EmberRoute } from '@ember/-internals/routing';
 import { jQueryDisabled, jQuery } from '@ember/-internals/views';
 import { _loaded } from '@ember/application';
+import { EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS } from '@ember/canary-features';
 import Controller from '@ember/controller';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import { setTemplates } from '@ember/-internals/glimmer';
@@ -23,6 +23,7 @@ import {
   runTask,
 } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
+import Application from '..';
 
 moduleFor(
   'Application, autobooting multiple apps',
@@ -151,9 +152,14 @@ moduleFor(
       verifyInjection(assert, application, 'route', '_router', 'router:main');
 
       verifyRegistration(assert, application, 'component:-text-field');
-      verifyRegistration(assert, application, 'component:-text-area');
       verifyRegistration(assert, application, 'component:-checkbox');
       verifyRegistration(assert, application, 'component:link-to');
+
+      if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
+        verifyRegistration(assert, application, 'component:textarea');
+      } else {
+        verifyRegistration(assert, application, 'component:-text-area');
+      }
 
       verifyRegistration(assert, application, 'service:-routing');
       verifyInjection(assert, application, 'service:-routing', 'router', 'router:main');

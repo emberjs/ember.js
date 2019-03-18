@@ -15,6 +15,7 @@ import TransformInputTypeSyntax from './transform-input-type-syntax';
 import TransformOldClassBindingSyntax from './transform-old-class-binding-syntax';
 import TransformQuotedBindingsIntoJustBindings from './transform-quoted-bindings-into-just-bindings';
 
+import { EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS } from '@ember/canary-features';
 import { SEND_ACTION } from '@ember/deprecated-features';
 import { ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
 
@@ -27,7 +28,6 @@ const transforms: Array<APluginFunc> = [
   TransformQuotedBindingsIntoJustBindings,
   AssertReservedNamedArguments,
   TransformActionSyntax,
-  TransformInputTypeSyntax,
   TransformAttrsIntoArgs,
   TransformEachInIntoEach,
   TransformHasBlockSyntax,
@@ -37,6 +37,10 @@ const transforms: Array<APluginFunc> = [
   AssertIfHelperWithoutArguments,
   AssertSplattributeExpressions,
 ];
+
+if (!EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
+  transforms.push(TransformInputTypeSyntax);
+}
 
 if (SEND_ACTION) {
   transforms.push(DeprecateSendAction);

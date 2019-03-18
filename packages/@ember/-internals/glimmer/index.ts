@@ -265,8 +265,8 @@
 export { default as RootTemplate } from './lib/templates/root';
 export { default as template } from './lib/template';
 export { default as Checkbox } from './lib/components/checkbox';
-export { default as TextField } from './lib/components/text_field';
-export { default as TextArea } from './lib/components/text_area';
+export { default as TextField } from './lib/components/text-field';
+export { default as TextArea } from './lib/components/textarea';
 export { default as LinkComponent } from './lib/components/link-to';
 export { default as Component, ROOT_REF } from './lib/component';
 export { default as Helper, helper } from './lib/helper';

@@ -2,7 +2,10 @@ import { privatize as P } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
 import { LookupOptions, Owner, setOwner } from '@ember/-internals/owner';
 import { lookupComponent, lookupPartial, OwnedTemplateMeta } from '@ember/-internals/views';
-import { EMBER_MODULE_UNIFICATION } from '@ember/canary-features';
+import {
+  EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS,
+  EMBER_MODULE_UNIFICATION,
+} from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { _instrumentStart } from '@ember/instrumentation';
 import {
@@ -136,6 +139,12 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
   lookupComponentHandle(name: string, meta: OwnedTemplateMeta) {
     let nextHandle = this.handles.length;
     let handle = this.handle(this._lookupComponentDefinition(name, meta));
+
+    assert(
+      'Could not find component `<TextArea />` (did you mean `<Textarea />`?)',
+      !(EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS && name === 'text-area' && handle === null)
+    );
+
     if (nextHandle === handle) {
       this.componentDefinitionCount++;
     }
@@ -303,8 +312,15 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
     _name: string,
     meta: OwnedTemplateMeta
   ): Option<ComponentDefinition> {
-    assert('You cannot use `textarea` as a component name.', _name !== 'textarea');
-    assert('You cannot use `input` as a component name.', _name !== 'input');
+    assert(
+      'Invoking `{{textarea}}` using angle bracket syntax or `component` helper is not yet supported.',
+      EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS || _name !== 'textarea'
+    );
+
+    assert(
+      'Invoking `{{input}}` using angle bracket syntax or `component` helper is not yet supported.',
+      EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS || _name !== 'input'
+    );
 
     let name = _name;
     let namespace = undefined;

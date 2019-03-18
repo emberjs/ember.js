@@ -4,6 +4,7 @@
 
 import { get, set, Mixin } from '@ember/-internals/metal';
 import { TargetActionSupport } from '@ember/-internals/runtime';
+import { EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS } from '@ember/canary-features';
 import { deprecate } from '@ember/debug';
 import { SEND_ACTION } from '@ember/deprecated-features';
 
@@ -310,15 +311,16 @@ function sendAction(eventName, view, event) {
   let value = get(view, 'value');
 
   if (SEND_ACTION && typeof actionName === 'string') {
-    deprecate(
-      `Passing actions to components as strings (like {{input ${eventName}="${actionName}"}}) is deprecated. Please use closure actions instead ({{input ${eventName}=(action "${actionName}")}})`,
-      false,
-      {
-        id: 'ember-component.send-action',
-        until: '4.0.0',
-        url: 'https://emberjs.com/deprecations/v3.x#toc_ember-component-send-action',
-      }
-    );
+    let message = EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS
+      ? `Passing actions to components as strings (like \`<Input @${eventName}="${actionName}" />\`) is deprecated. Please use closure actions instead (\`<Input @${eventName}={{action "${actionName}"}} />\`).`
+      : `Passing actions to components as strings (like \`{{input ${eventName}="${actionName}"}}\`) is deprecated. Please use closure actions instead (\`{{input ${eventName}=(action "${actionName}")}}\`).`;
+
+    deprecate(message, false, {
+      id: 'ember-component.send-action',
+      until: '4.0.0',
+      url: 'https://emberjs.com/deprecations/v3.x#toc_ember-component-send-action',
+    });
+
     view.triggerAction({
       action: actionName,
       actionContext: [value, event],

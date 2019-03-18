@@ -1,31 +1,15 @@
 /**
-@module ember
+@module @ember/component
 */
-import { OwnedTemplateMeta } from '@ember/-internals/views';
+import { computed } from '@ember/-internals/metal';
 import { EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { Option } from '@glimmer/interfaces';
-import { OpcodeBuilder } from '@glimmer/opcode-compiler';
-import { unreachable } from '@glimmer/util';
-import * as WireFormat from '@glimmer/wire-format';
-import { wrapComponentClassAttribute } from '../utils/bindings';
-import { hashToArgs } from './utils';
+import Component from '../component';
 
-export let inputMacro: (
-  name: string,
-  params: Option<WireFormat.Core.Params>,
-  hash: Option<WireFormat.Core.Hash>,
-  builder: OpcodeBuilder<OwnedTemplateMeta>
-) => boolean;
+let Input: any;
 
 if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
-  if (DEBUG) {
-    inputMacro = () => {
-      throw unreachable();
-    };
-  }
-} else {
   /**
     The `{{input}}` helper lets you create an HTML `<input />` component.
     It causes a `TextField` component to be rendered.  For more info,
@@ -161,52 +145,33 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
     @param {Hash} options
     @public
   */
+  Input = Component.extend({
+    tagName: '',
 
-  let buildSyntax = function buildSyntax(
-    type: string,
-    params: any[],
-    hash: any,
-    builder: OpcodeBuilder<OwnedTemplateMeta>
-  ) {
-    let definition = builder.compiler['resolver'].lookupComponentDefinition(type, builder.referrer);
-    builder.component.static(definition!, [params, hashToArgs(hash), null, null]);
-    return true;
-  };
+    isCheckbox: computed('type', function(this: { type?: unknown }) {
+      return this.type === 'checkbox';
+    }),
+  });
 
-  inputMacro = function inputMacro(
-    _name: string,
-    params: Option<WireFormat.Core.Params>,
-    hash: Option<WireFormat.Core.Hash>,
-    builder: OpcodeBuilder<OwnedTemplateMeta>
-  ) {
-    if (params === null) {
-      params = [];
-    }
-    if (hash !== null) {
-      let keys = hash[0];
-      let values = hash[1];
-      let typeIndex = keys.indexOf('type');
+  Input.toString = () => '@ember/component/input';
 
-      if (typeIndex > -1) {
-        let typeArg = values[typeIndex];
-        if (Array.isArray(typeArg)) {
-          // there is an AST plugin that converts this to an expression
-          // it really should just compile in the component call too.
-          let inputTypeExpr = params[0] as WireFormat.Expression;
-          builder.dynamicComponent(inputTypeExpr, null, params.slice(1), hash, true, null, null);
-          return true;
-        }
-        if (typeArg === 'checkbox') {
-          assert(
-            "`{{input type='checkbox' value=...}}` is not supported; " +
-              "please use `{{input type='checkbox' checked=...}}` instead.",
-            keys.indexOf('value') === -1
-          );
-          wrapComponentClassAttribute(hash);
-          return buildSyntax('-checkbox', params, hash, builder);
-        }
-      }
-    }
-    return buildSyntax('-text-field', params, hash, builder);
-  };
+  if (DEBUG) {
+    const UNSET = {};
+
+    Input.reopen({
+      value: UNSET,
+
+      didReceiveAttrs() {
+        this._super();
+
+        assert(
+          "`<Input @type='checkbox' @value={{...}} />` is not supported; " +
+            "please use `<Input @type='checkbox' @checked={{...}} />` instead.",
+          !(this.type === 'checkbox' && this.value !== UNSET)
+        );
+      },
+    });
+  }
 }
+
+export default Input;

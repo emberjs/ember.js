@@ -1,3 +1,4 @@
+import { EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS } from '@ember/canary-features';
 import { deprecate } from '@ember/debug';
 import { SEND_ACTION } from '@ember/deprecated-features';
 import { AST, ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
@@ -18,15 +19,51 @@ export default function deprecateSendAction(env: ASTPluginEnvironment): ASTPlugi
   if (SEND_ACTION) {
     let { moduleName } = env.meta;
 
-    let deprecationMessage = (node: AST.MustacheStatement, evName: string, action: string) => {
+    let deprecationMessage = (node: AST.Node, eventName: string, actionName: string) => {
       let sourceInformation = calculateLocationDisplay(moduleName, node.loc);
-      return `Please refactor \`{{input ${evName}="${action}"}}\` to \`{{input ${evName}=(action "${action}")}}\. ${sourceInformation}`;
+
+      if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS && node.type === 'ElementNode') {
+        return `Passing actions to components as strings (like \`<Input @${eventName}="${actionName}" />\`) is deprecated. Please use closure actions instead (\`<Input @${eventName}={{action "${actionName}"}} />\`). ${sourceInformation}`;
+      } else {
+        return `Passing actions to components as strings (like \`{{input ${eventName}="${actionName}"}}\`) is deprecated. Please use closure actions instead (\`{{input ${eventName}=(action "${actionName}")}}\`). ${sourceInformation}`;
+      }
     };
 
     return {
       name: 'deprecate-send-action',
 
       visitor: {
+        ElementNode(node: AST.ElementNode) {
+          if (!EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS || node.tag !== 'Input') {
+            return;
+          }
+
+          node.attributes.forEach(({ name, value }) => {
+            if (name.charAt(0) === '@') {
+              let eventName = name.substring(1);
+
+              if (EVENTS.indexOf(eventName) > -1) {
+                if (value.type === 'TextNode') {
+                  deprecate(deprecationMessage(node, eventName, value.chars), false, {
+                    id: 'ember-component.send-action',
+                    until: '4.0.0',
+                    url: 'https://emberjs.com/deprecations/v3.x#toc_ember-component-send-action',
+                  });
+                } else if (
+                  value.type === 'MustacheStatement' &&
+                  value.path.type === 'StringLiteral'
+                ) {
+                  deprecate(deprecationMessage(node, eventName, value.path.original), false, {
+                    id: 'ember-component.send-action',
+                    until: '4.0.0',
+                    url: 'https://emberjs.com/deprecations/v3.x#toc_ember-component-send-action',
+                  });
+                }
+              }
+            }
+          });
+        },
+
         MustacheStatement(node: AST.MustacheStatement) {
           if (node.path.original !== 'input') {
             return;
