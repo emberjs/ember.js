@@ -62,7 +62,7 @@ export const BOUNDS = symbol('BOUNDS');
   {{person-profile person=this.currentUser}}
   ```
 
-  Not that with this syntax, you use dashes in the component name and pass
+  Note that with this syntax, you use dashes in the component name and
   arguments are passed without the `@` sign.
 
   In both cases, Ember will render the content of the component template we
