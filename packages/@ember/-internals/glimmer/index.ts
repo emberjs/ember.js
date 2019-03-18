@@ -185,13 +185,22 @@
   This component is invoked with a block:
   ```handlebars
   {{#my-component}}
-    Hi Jenn!
+    Hi Jen!
   {{/my-component}}
   ```
 
   This component is invoked without a block:
   ```handlebars
   {{my-component}}
+  ```
+
+  Using angle bracket invocation, this looks like:
+  ```html
+  <MyComponent>Hi Jen!</MyComponent> {{! with a block}}
+  ```
+
+  ```html
+  <MyComponent/> {{! without a block}}
   ```
 
   This is useful when you want to create a component that can optionally take a block
@@ -207,6 +216,7 @@
 
   @method hasBlock
   @for Ember.Templates.helpers
+  @param {String} the name of the block. The name (at the moment) is either "main" or "inverse" (though only curly components support inverse)
   @return {Boolean} `true` if the component was invoked with a block
   @public
  */
@@ -217,7 +227,7 @@
   This component is invoked with block params:
   ```handlebars
   {{#my-component as |favoriteFlavor|}}
-    Hi Jenn!
+    Hi Jen!
   {{/my-component}}
   ```
 
@@ -243,6 +253,7 @@
 
   @method hasBlockParams
   @for Ember.Templates.helpers
+  @param {String} the name of the block. The name (at the moment) is either "main" or "inverse" (though only curly components support inverse)
   @return {Boolean} `true` if the component was invoked with block params
   @public
  */
