@@ -257,6 +257,7 @@ module.exports = {
     'handleURL',
     'has',
     'hasArrayObservers',
+    'hasBlock',
     'hasListeners',
     'hasObserverFor',
     'hasRegistration',
