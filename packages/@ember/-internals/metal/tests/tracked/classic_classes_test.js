@@ -156,6 +156,16 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
             new Tracked();
           }, "You attempted to set a default value for first with the @tracked({ value: 'default' }) syntax. You can only use this syntax with classic classes. For native classes, you can use class initializers: @tracked field = 'default';");
         }
+
+        [`@test errors if options are passed to native decorator (GH#17764)`](assert) {
+          class Tracked {
+            @tracked value;
+          }
+
+          let obj = new Tracked();
+
+          assert.strictEqual(obj.value, undefined, 'uninitilized value defaults to undefined');
+        }
       }
     );
   } else {

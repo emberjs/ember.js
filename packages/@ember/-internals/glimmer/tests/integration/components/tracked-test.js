@@ -9,6 +9,32 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
   moduleFor(
     'Component Tracked Properties',
     class extends RenderingTestCase {
+      '@test tracked properties that are uninitialized do not throw an error'() {
+        let CountComponent = Component.extend({
+          count: tracked(),
+
+          increment() {
+            if (!this.count) {
+              this.count = 0;
+            }
+            this.count++;
+          },
+        });
+
+        this.registerComponent('counter', {
+          ComponentClass: CountComponent,
+          template: '<button {{action this.increment}}>{{this.count}}</button>',
+        });
+
+        this.render('<Counter />');
+
+        this.assertText('');
+
+        runTask(() => this.$('button').click());
+
+        this.assertText('1');
+      }
+
       '@test tracked properties rerender when updated'() {
         let CountComponent = Component.extend({
           count: tracked({ value: 0 }),

@@ -205,7 +205,7 @@ function descriptorForField([_target, key, desc]: [
 
       // If the field has never been initialized, we should initialize it
       if (!(secretKey in this)) {
-        this[secretKey] = initializer !== undefined ? initializer.call(this) : undefined;
+        this[secretKey] = typeof initializer === 'function' ? initializer.call(this) : undefined;
       }
 
       return this[secretKey];
