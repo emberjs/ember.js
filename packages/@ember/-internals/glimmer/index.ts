@@ -184,7 +184,9 @@
 
   This component is invoked with a block:
   ```handlebars
-  {{#my-component}}Hi Jenn!{{/my-component}}
+  {{#my-component}}
+    Hi Jenn!
+  {{/my-component}}
   ```
 
   This component is invoked without a block:
@@ -206,6 +208,42 @@
   @method hasBlock
   @for Ember.Templates.helpers
   @return {Boolean} `true` if the component was invoked with a block
+  @public
+ */
+
+/**
+  `{{has-block-params}}` indicates if the component was invoked with block params.
+
+  This component is invoked with block params:
+  ```handlebars
+  {{#my-component as |favoriteFlavor|}}
+    Hi Jenn!
+  {{/my-component}}
+  ```
+
+  This component is invoked without block params:
+  ```handlebars
+  {{#my-component}}
+    Hi Jenn!
+  {{/my-component}}
+  ```
+
+  This is useful when you want to create a component that can render itself
+  differently when it is not invoked with block params.
+
+  ```app/templates/components/my-component.hbs
+  {{#if (has-block-params)}}
+    Welcome {{yield favoriteFlavor}}, we're happy you're here and hope you
+    enjoy your favorite ice cream flavor.
+  {{else}}
+    Welcome {{yield}}, we're happy you're here, but we're unsure what
+    flavor ice cream you would enjoy.
+  {{/if}}
+  ```
+
+  @method hasBlockParams
+  @for Ember.Templates.helpers
+  @return {Boolean} `true` if the component was invoked with block params
   @public
  */
 
