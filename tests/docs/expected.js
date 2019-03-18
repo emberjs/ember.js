@@ -258,6 +258,7 @@ module.exports = {
     'has',
     'hasArrayObservers',
     'hasBlock',
+    'hasBlockParams',
     'hasListeners',
     'hasObserverFor',
     'hasRegistration',
