@@ -768,6 +768,11 @@
     "@glimmer/wire-format" "^0.37.1"
     "@simple-dom/interface" "1.4.0"
 
+"@glimmer/interfaces@^0.39.3":
+  version "0.39.3"
+  resolved "https://registry.yarnpkg.com/@glimmer/interfaces/-/interfaces-0.39.3.tgz#1d46e1056c9ff3ce6174b82320893c027772e5f4"
+  integrity sha512-tmuZAUau8UbyGh4gLkpC6Vjdm0JP2dibAMMaU/yZG+SGSsQeT+bo+0XcEezscQDPihfXsBX4Z6yq98o15beYEA==
+
 "@glimmer/low-level@^0.37.1":
   version "0.37.1"
   resolved "https://registry.yarnpkg.com/@glimmer/low-level/-/low-level-0.37.1.tgz#307f818b20b8df43c04750c01eb92ead2af4b455"
