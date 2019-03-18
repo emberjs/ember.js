@@ -1878,7 +1878,10 @@ moduleFor(
         })
       );
 
-      this.addTemplate('index', `{{link-to 'Post' 'post' (hash id="someId" user=this.model.user)}}`);
+      this.addTemplate(
+        'index',
+        `{{link-to 'Post' 'post' (hash id="someId" user=this.model.user)}}`
+      );
       this.addTemplate('post', 'Post: {{this.model.user.name}}');
 
       return this.visit('/')
