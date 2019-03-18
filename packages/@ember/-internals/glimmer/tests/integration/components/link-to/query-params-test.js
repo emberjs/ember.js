@@ -10,7 +10,7 @@ import {
 } from 'internal-test-helpers';
 
 moduleFor(
-  'link-to component with query-params (probably overlaps with the below)',
+  '{{link-to}} component with query-params (rendering)',
   class extends ApplicationTestCase {
     constructor() {
       super(...arguments);
@@ -55,7 +55,7 @@ moduleFor(
 );
 
 moduleFor(
-  'link-to component (more query params)',
+  '{{link-to}} component with query params (routing)',
   class extends ApplicationTestCase {
     constructor() {
       super();
@@ -106,12 +106,7 @@ moduleFor(
     }
 
     [`@test doesn't update controller QP properties on current route when invoked`](assert) {
-      this.addTemplate(
-        'index',
-        `
-      {{#link-to 'index' id='the-link'}}Index{{/link-to}}
-    `
-      );
+      this.addTemplate('index', `{{#link-to 'index' id='the-link'}}Index{{/link-to}}`);
 
       return this.visit('/').then(() => {
         this.click('#the-link');
@@ -130,9 +125,7 @@ moduleFor(
     ) {
       this.addTemplate(
         'index',
-        `
-      {{#link-to 'index' (query-params) id='the-link'}}Index{{/link-to}}
-    `
+        `{{#link-to 'index' (query-params) id='the-link'}}Index{{/link-to}}`
       );
 
       return this.visit('/').then(() => {
@@ -150,12 +143,7 @@ moduleFor(
     [`@test doesn't update controller QP properties on current route when invoked (empty query-params obj, inferred route)`](
       assert
     ) {
-      this.addTemplate(
-        'index',
-        `
-      {{#link-to (query-params) id='the-link'}}Index{{/link-to}}
-    `
-      );
+      this.addTemplate('index', `{{#link-to (query-params) id='the-link'}}Index{{/link-to}}`);
 
       return this.visit('/').then(() => {
         this.click('#the-link');
@@ -173,10 +161,10 @@ moduleFor(
       this.addTemplate(
         'index',
         `
-      {{#link-to 'index' (query-params foo='456') id="the-link"}}
-        Index
-      {{/link-to}}
-    `
+        {{#link-to 'index' (query-params foo='456') id="the-link"}}
+          Index
+        {{/link-to}}
+        `
       );
 
       return this.visit('/').then(() => {
@@ -197,10 +185,10 @@ moduleFor(
       this.addTemplate(
         'index',
         `
-      {{#link-to (query-params foo='456') id="the-link"}}
-        Index
-      {{/link-to}}
-    `
+        {{#link-to (query-params foo='456') id="the-link"}}
+          Index
+        {{/link-to}}
+        `
       );
 
       return this.visit('/').then(() => {
@@ -225,10 +213,10 @@ moduleFor(
       this.addTemplate(
         'index',
         `
-      {{#link-to 'about' (query-params baz='lol') id='the-link'}}
-        About
-      {{/link-to}}
-    `
+        {{#link-to 'about' (query-params baz='lol') id='the-link'}}
+          About
+        {{/link-to}}
+        `
       );
 
       return this.visit('/').then(() => {
@@ -250,9 +238,7 @@ moduleFor(
     ['@test supplied QP properties can be bound'](assert) {
       this.addTemplate(
         'index',
-        `
-      {{#link-to (query-params foo=boundThing) id='the-link'}}Index{{/link-to}}
-    `
+        `{{#link-to (query-params foo=boundThing) id='the-link'}}Index{{/link-to}}`
       );
 
       return this.visit('/').then(() => {
@@ -271,10 +257,10 @@ moduleFor(
       this.addTemplate(
         'index',
         `
-      {{#link-to (query-params abool=boundThing) id='the-link'}}
-        Index
-      {{/link-to}}
-    `
+        {{#link-to (query-params abool=boundThing) id='the-link'}}
+          Index
+        {{/link-to}}
+        `
       );
 
       return this.visit('/').then(() => {
@@ -299,9 +285,7 @@ moduleFor(
     ['@test href updates when unsupplied controller QP props change'](assert) {
       this.addTemplate(
         'index',
-        `
-      {{#link-to (query-params foo='lol') id='the-link'}}Index{{/link-to}}
-    `
+        `{{#link-to (query-params foo='lol') id='the-link'}}Index{{/link-to}}`
       );
 
       return this.visit('/').then(() => {
@@ -327,11 +311,12 @@ moduleFor(
       this.addTemplate(
         'cars',
         `
-      {{#link-to 'cars.create' id='create-link'}}Create new car{{/link-to}}
-      {{#link-to (query-params page='2') id='page2-link'}}Page 2{{/link-to}}
-      {{outlet}}
-    `
+        {{#link-to 'cars.create' id='create-link'}}Create new car{{/link-to}}
+        {{#link-to (query-params page='2') id='page2-link'}}Page 2{{/link-to}}
+        {{outlet}}
+        `
       );
+
       this.addTemplate(
         'cars.create',
         `{{#link-to 'cars' id='close-link'}}Close create form{{/link-to}}`
@@ -375,35 +360,37 @@ moduleFor(
       this.addTemplate(
         'index',
         `
-      {{#link-to (query-params foo='cat') id='cat-link'}}Index{{/link-to}}
-      {{#link-to (query-params foo='dog') id='dog-link'}}Index{{/link-to}}
-      {{#link-to 'index' id='change-nothing'}}Index{{/link-to}}
-    `
+        {{#link-to (query-params foo='cat') id='cat-link'}}Index{{/link-to}}
+        {{#link-to (query-params foo='dog') id='dog-link'}}Index{{/link-to}}
+        {{#link-to 'index' id='change-nothing'}}Index{{/link-to}}
+        `
       );
+
       this.addTemplate(
         'search',
         `
-      {{#link-to (query-params search='same') id='same-search'}}Index{{/link-to}}
-      {{#link-to (query-params search='change') id='change-search'}}Index{{/link-to}}
-      {{#link-to (query-params search='same' archive=true) id='same-search-add-archive'}}Index{{/link-to}}
-      {{#link-to (query-params archive=true) id='only-add-archive'}}Index{{/link-to}}
-      {{#link-to (query-params search='same' archive=true) id='both-same'}}Index{{/link-to}}
-      {{#link-to (query-params search='different' archive=true) id='change-one'}}Index{{/link-to}}
-      {{#link-to (query-params search='different' archive=false) id='remove-one'}}Index{{/link-to}}
-      {{outlet}}
-    `
+        {{#link-to (query-params search='same') id='same-search'}}Index{{/link-to}}
+        {{#link-to (query-params search='change') id='change-search'}}Index{{/link-to}}
+        {{#link-to (query-params search='same' archive=true) id='same-search-add-archive'}}Index{{/link-to}}
+        {{#link-to (query-params archive=true) id='only-add-archive'}}Index{{/link-to}}
+        {{#link-to (query-params search='same' archive=true) id='both-same'}}Index{{/link-to}}
+        {{#link-to (query-params search='different' archive=true) id='change-one'}}Index{{/link-to}}
+        {{#link-to (query-params search='different' archive=false) id='remove-one'}}Index{{/link-to}}
+        {{outlet}}
+        `
       );
+
       this.addTemplate(
         'search.results',
         `
-      {{#link-to (query-params sort='title') id='same-sort-child-only'}}Index{{/link-to}}
-      {{#link-to (query-params search='same') id='same-search-parent-only'}}Index{{/link-to}}
-      {{#link-to (query-params search='change') id='change-search-parent-only'}}Index{{/link-to}}
-      {{#link-to (query-params search='same' sort='title') id='same-search-same-sort-child-and-parent'}}Index{{/link-to}}
-      {{#link-to (query-params search='same' sort='author') id='same-search-different-sort-child-and-parent'}}Index{{/link-to}}
-      {{#link-to (query-params search='change' sort='title') id='change-search-same-sort-child-and-parent'}}Index{{/link-to}}
-      {{#link-to (query-params foo='dog') id='dog-link'}}Index{{/link-to}}
-    `
+        {{#link-to (query-params sort='title') id='same-sort-child-only'}}Index{{/link-to}}
+        {{#link-to (query-params search='same') id='same-search-parent-only'}}Index{{/link-to}}
+        {{#link-to (query-params search='change') id='change-search-parent-only'}}Index{{/link-to}}
+        {{#link-to (query-params search='same' sort='title') id='same-search-same-sort-child-and-parent'}}Index{{/link-to}}
+        {{#link-to (query-params search='same' sort='author') id='same-search-different-sort-child-and-parent'}}Index{{/link-to}}
+        {{#link-to (query-params search='change' sort='title') id='change-search-same-sort-child-and-parent'}}Index{{/link-to}}
+        {{#link-to (query-params foo='dog') id='dog-link'}}Index{{/link-to}}
+        `
       );
 
       this.router.map(function() {
@@ -479,11 +466,12 @@ moduleFor(
       this.addTemplate(
         'index',
         `
-      {{#link-to (query-params page=pageNumber) id='page-link'}}
-        Index
-      {{/link-to}}
-    `
+        {{#link-to (query-params page=pageNumber) id='page-link'}}
+          Index
+        {{/link-to}}
+        `
       );
+
       this.add(
         'controller:index',
         Controller.extend({
@@ -507,10 +495,10 @@ moduleFor(
       this.addTemplate(
         'index',
         `
-      {{#link-to (query-params pages=pagesArray) id='array-link'}}Index{{/link-to}}
-      {{#link-to (query-params pages=biggerArray) id='bigger-link'}}Index{{/link-to}}
-      {{#link-to (query-params pages=emptyArray) id='empty-link'}}Index{{/link-to}}
-    `
+        {{#link-to (query-params pages=pagesArray) id='array-link'}}Index{{/link-to}}
+        {{#link-to (query-params pages=biggerArray) id='bigger-link'}}Index{{/link-to}}
+        {{#link-to (query-params pages=emptyArray) id='empty-link'}}Index{{/link-to}}
+        `
       );
 
       this.add(
@@ -550,7 +538,7 @@ moduleFor(
           this.shouldNotBeActive(assert, '#empty-link');
         });
     }
-    ['@test the {{link-to}} helper applies active class to the parent route'](assert) {
+    ['@test the {{link-to}} component applies active class to the parent route'](assert) {
       this.router.map(function() {
         this.route('parent', function() {
           this.route('child');
@@ -560,11 +548,11 @@ moduleFor(
       this.addTemplate(
         'application',
         `
-      {{#link-to 'parent' id='parent-link'}}Parent{{/link-to}}
-      {{#link-to 'parent.child' id='parent-child-link'}}Child{{/link-to}}
-      {{#link-to 'parent' (query-params foo=cat) id='parent-link-qp'}}Parent{{/link-to}}
-      {{outlet}}
-    `
+        {{#link-to 'parent' id='parent-link'}}Parent{{/link-to}}
+        {{#link-to 'parent.child' id='parent-child-link'}}Child{{/link-to}}
+        {{#link-to 'parent' (query-params foo=cat) id='parent-link-qp'}}Parent{{/link-to}}
+        {{outlet}}
+        `
       );
 
       this.add(
@@ -588,7 +576,7 @@ moduleFor(
         });
     }
 
-    ['@test The {{link-to}} helper disregards query-params in activeness computation when current-when is specified'](
+    ['@test The {{link-to}} component disregards query-params in activeness computation when current-when is specified'](
       assert
     ) {
       let appLink;
@@ -596,24 +584,27 @@ moduleFor(
       this.router.map(function() {
         this.route('parent');
       });
+
       this.addTemplate(
         'application',
         `
-      {{#link-to 'parent' (query-params page=1) current-when='parent' id='app-link'}}
-        Parent
-      {{/link-to}}
-      {{outlet}}
-    `
+        {{#link-to 'parent' (query-params page=1) current-when='parent' id='app-link'}}
+          Parent
+        {{/link-to}}
+        {{outlet}}
+        `
       );
+
       this.addTemplate(
         'parent',
         `
-      {{#link-to 'parent' (query-params page=1) current-when='parent' id='parent-link'}}
-        Parent
-      {{/link-to}}
-      {{outlet}}
-    `
+        {{#link-to 'parent' (query-params page=1) current-when='parent' id='parent-link'}}
+          Parent
+        {{/link-to}}
+        {{outlet}}
+        `
       );
+
       this.add(
         'controller:parent',
         Controller.extend({
@@ -656,22 +647,24 @@ moduleFor(
         });
     }
 
-    ['@test link-to default query params while in active transition regression test'](assert) {
+    ['@test {{link-to}} default query params while in active transition regression test'](assert) {
       this.router.map(function() {
         this.route('foos');
         this.route('bars');
       });
+
       let foos = RSVP.defer();
       let bars = RSVP.defer();
 
       this.addTemplate(
         'application',
         `
-      {{link-to 'Foos' 'foos' id='foos-link'}}
-      {{link-to 'Baz Foos' 'foos' (query-params baz=true) id='baz-foos-link'}}
-      {{link-to 'Quux Bars' 'bars' (query-params quux=true) id='bars-link'}}
-    `
+        {{link-to 'Foos' 'foos' id='foos-link'}}
+        {{link-to 'Baz Foos' 'foos' (query-params baz=true) id='baz-foos-link'}}
+        {{link-to 'Quux Bars' 'bars' (query-params quux=true) id='bars-link'}}
+        `
       );
+
       this.add(
         'controller:foos',
         Controller.extend({
@@ -679,6 +672,7 @@ moduleFor(
           baz: false,
         })
       );
+
       this.add(
         'route:foos',
         Route.extend({
@@ -687,6 +681,7 @@ moduleFor(
           },
         })
       );
+
       this.add(
         'controller:bars',
         Controller.extend({
@@ -694,6 +689,7 @@ moduleFor(
           quux: false,
         })
       );
+
       this.add(
         'route:bars',
         Route.extend({
@@ -730,7 +726,7 @@ moduleFor(
       });
     }
 
-    [`@test the {{link-to}} helper throws a useful error if you invoke it wrong`](assert) {
+    [`@test the {{link-to}} component throws a useful error if you invoke it wrong`](assert) {
       assert.expect(1);
 
       this.addTemplate('application', `{{#link-to id='the-link'}}Index{{/link-to}}`);

@@ -1,6 +1,6 @@
 import { moduleFor, ApplicationTestCase, runLoopSettled, runTask } from 'internal-test-helpers';
 import Controller, { inject as injectController } from '@ember/controller';
-import { A as emberA } from '@ember/-internals/runtime';
+import { A as emberA, RSVP } from '@ember/-internals/runtime';
 import { alias } from '@ember/-internals/metal';
 import { subscribe, reset } from '@ember/instrumentation';
 import { Route, NoneLocation } from '@ember/-internals/routing';
@@ -25,7 +25,7 @@ function checkActive(assert, element, active) {
 }
 
 moduleFor(
-  'The {{link-to}} helper - basic tests',
+  '{{link-to}} component (routing tests)',
   class extends ApplicationTestCase {
     constructor() {
       super();
@@ -37,22 +37,22 @@ moduleFor(
       this.addTemplate(
         'index',
         `
-      <h3 class="home">Home</h3>
-      {{#link-to 'about' id='about-link'}}About{{/link-to}}
-      {{#link-to 'index' id='self-link'}}Self{{/link-to}}
-    `
+        <h3 class="home">Home</h3>
+        {{#link-to 'about' id='about-link'}}About{{/link-to}}
+        {{#link-to 'index' id='self-link'}}Self{{/link-to}}
+        `
       );
       this.addTemplate(
         'about',
         `
-      <h3 class="about">About</h3>
-      {{#link-to 'index' id='home-link'}}Home{{/link-to}}
-      {{#link-to 'about' id='self-link'}}Self{{/link-to}}
-    `
+        <h3 class="about">About</h3>
+        {{#link-to 'index' id='home-link'}}Home{{/link-to}}
+        {{#link-to 'about' id='self-link'}}Self{{/link-to}}
+        `
       );
     }
 
-    ['@test The {{link-to}} helper moves into the named route'](assert) {
+    ['@test The {{link-to}} component navigates into the named route'](assert) {
       return this.visit('/')
         .then(() => {
           assert.equal(this.$('h3.home').length, 1, 'The home template was rendered');
@@ -84,12 +84,10 @@ moduleFor(
         });
     }
 
-    [`@test the {{link-to}} helper doesn't add an href when the tagName isn't 'a'`](assert) {
+    [`@test the {{link-to}} component doesn't add an href when the tagName isn't 'a'`](assert) {
       this.addTemplate(
         'index',
-        `
-      {{#link-to 'about' id='about-link' tagName='div'}}About{{/link-to}}
-    `
+        `{{#link-to 'about' id='about-link' tagName='div'}}About{{/link-to}}`
       );
 
       return this.visit('/').then(() => {
@@ -97,13 +95,13 @@ moduleFor(
       });
     }
 
-    [`@test the {{link-to}} applies a 'disabled' class when disabled`](assert) {
+    [`@test the {{link-to}} component applies a 'disabled' class when disabled`](assert) {
       this.addTemplate(
         'index',
         `
-      {{#link-to "about" id="about-link-static" disabledWhen="shouldDisable"}}About{{/link-to}}
-      {{#link-to "about" id="about-link-dynamic" disabledWhen=dynamicDisabledWhen}}About{{/link-to}}
-    `
+        {{#link-to "about" id="about-link-static" disabledWhen="shouldDisable"}}About{{/link-to}}
+        {{#link-to "about" id="about-link-dynamic" disabledWhen=dynamicDisabledWhen}}About{{/link-to}}
+        `
       );
 
       this.add(
@@ -137,7 +135,7 @@ moduleFor(
       });
     }
 
-    [`@test the {{link-to}} doesn't apply a 'disabled' class if disabledWhen is not provided`](
+    [`@test the {{link-to}} component doesn't apply a 'disabled' class if disabledWhen is not provided`](
       assert
     ) {
       this.addTemplate('index', `{{#link-to "about" id="about-link"}}About{{/link-to}}`);
@@ -150,12 +148,10 @@ moduleFor(
       });
     }
 
-    [`@test the {{link-to}} helper supports a custom disabledClass`](assert) {
+    [`@test the {{link-to}} component supports a custom disabledClass`](assert) {
       this.addTemplate(
         'index',
-        `
-      {{#link-to "about" id="about-link" disabledWhen=true disabledClass="do-not-want"}}About{{/link-to}}
-    `
+        `{{#link-to "about" id="about-link" disabledWhen=true disabledClass="do-not-want"}}About{{/link-to}}`
       );
 
       return this.visit('/').then(() => {
@@ -167,12 +163,12 @@ moduleFor(
       });
     }
 
-    [`@test the {{link-to}} helper supports a custom disabledClass set via bound param`](assert) {
+    [`@test the {{link-to}} component supports a custom disabledClass set via bound param`](
+      assert
+    ) {
       this.addTemplate(
         'index',
-        `
-      {{#link-to "about" id="about-link" disabledWhen=true disabledClass=disabledClass}}About{{/link-to}}
-    `
+        `{{#link-to "about" id="about-link" disabledWhen=true disabledClass=disabledClass}}About{{/link-to}}`
       );
 
       this.add(
@@ -191,12 +187,10 @@ moduleFor(
       });
     }
 
-    [`@test the {{link-to}} helper does not respond to clicks when disabledWhen`](assert) {
+    [`@test the {{link-to}} component does not respond to clicks when disabledWhen`](assert) {
       this.addTemplate(
         'index',
-        `
-      {{#link-to "about" id="about-link" disabledWhen=true}}About{{/link-to}}
-    `
+        `{{#link-to "about" id="about-link" disabledWhen=true}}About{{/link-to}}`
       );
 
       return this.visit('/')
@@ -208,12 +202,10 @@ moduleFor(
         });
     }
 
-    [`@test the {{link-to}} helper does not respond to clicks when disabled`](assert) {
+    [`@test the {{link-to}} component does not respond to clicks when disabled`](assert) {
       this.addTemplate(
         'index',
-        `
-      {{#link-to "about" id="about-link" disabled=true}}About{{/link-to}}
-    `
+        `{{#link-to "about" id="about-link" disabled=true}}About{{/link-to}}`
       );
 
       return this.visit('/')
@@ -225,14 +217,12 @@ moduleFor(
         });
     }
 
-    [`@test the {{link-to}} helper responds to clicks according to its disabledWhen bound param`](
+    [`@test the {{link-to}} component responds to clicks according to its disabledWhen bound param`](
       assert
     ) {
       this.addTemplate(
         'index',
-        `
-      {{#link-to "about" id="about-link" disabledWhen=disabledWhen}}About{{/link-to}}
-    `
+        `{{#link-to "about" id="about-link" disabledWhen=disabledWhen}}About{{/link-to}}`
       );
 
       this.add(
@@ -266,14 +256,14 @@ moduleFor(
         });
     }
 
-    [`@test The {{link-to}} helper supports a custom activeClass`](assert) {
+    [`@test The {{link-to}} component supports a custom activeClass`](assert) {
       this.addTemplate(
         'index',
         `
-      <h3 class="home">Home</h3>
-      {{#link-to 'about' id='about-link'}}About{{/link-to}}
-      {{#link-to 'index' id='self-link' activeClass='zomg-active'}}Self{{/link-to}}
-    `
+        <h3 class="home">Home</h3>
+        {{#link-to 'about' id='about-link'}}About{{/link-to}}
+        {{#link-to 'index' id='self-link' activeClass='zomg-active'}}Self{{/link-to}}
+        `
       );
 
       return this.visit('/').then(() => {
@@ -291,14 +281,14 @@ moduleFor(
       });
     }
 
-    [`@test The {{link-to}} helper supports a custom activeClass from a bound param`](assert) {
+    [`@test The {{link-to}} component supports a custom activeClass from a bound param`](assert) {
       this.addTemplate(
         'index',
         `
-      <h3 class="home">Home</h3>
-      {{#link-to 'about' id='about-link'}}About{{/link-to}}
-      {{#link-to 'index' id='self-link' activeClass=activeClass}}Self{{/link-to}}
-    `
+        <h3 class="home">Home</h3>
+        {{#link-to 'about' id='about-link'}}About{{/link-to}}
+        {{#link-to 'index' id='self-link' activeClass=activeClass}}Self{{/link-to}}
+        `
       );
 
       this.add(
@@ -323,15 +313,15 @@ moduleFor(
       });
     }
 
-    [`@test The {{link-to}} helper supports 'classNameBindings' with custom values [GH #11699]`](
+    [`@test The {{link-to}} component supports 'classNameBindings' with custom values [GH #11699]`](
       assert
     ) {
       this.addTemplate(
         'index',
         `
-      <h3 class="home">Home</h3>
-      {{#link-to 'about' id='about-link' classNameBindings='foo:foo-is-true:foo-is-false'}}About{{/link-to}}
-    `
+        <h3 class="home">Home</h3>
+        {{#link-to 'about' id='about-link' classNameBindings='foo:foo-is-true:foo-is-false'}}About{{/link-to}}
+        `
       );
 
       this.add(
@@ -362,7 +352,7 @@ moduleFor(
 );
 
 moduleFor(
-  'The {{link-to}} helper - location hooks',
+  '{{link-to}} component (routing tests - location hooks)',
   class extends ApplicationTestCase {
     constructor() {
       super();
@@ -392,18 +382,18 @@ moduleFor(
       this.addTemplate(
         'index',
         `
-      <h3 class="home">Home</h3>
-      {{#link-to 'about' id='about-link'}}About{{/link-to}}
-      {{#link-to 'index' id='self-link'}}Self{{/link-to}}
-    `
+        <h3 class="home">Home</h3>
+        {{#link-to 'about' id='about-link'}}About{{/link-to}}
+        {{#link-to 'index' id='self-link'}}Self{{/link-to}}
+        `
       );
       this.addTemplate(
         'about',
         `
-      <h3 class="about">About</h3>
-      {{#link-to 'index' id='home-link'}}Home{{/link-to}}
-      {{#link-to 'about' id='self-link'}}Self{{/link-to}}
-    `
+        <h3 class="about">About</h3>
+        {{#link-to 'index' id='home-link'}}Home{{/link-to}}
+        {{#link-to 'about' id='self-link'}}Self{{/link-to}}
+        `
       );
     }
 
@@ -414,13 +404,13 @@ moduleFor(
       });
     }
 
-    ['@test The {{link-to}} helper supports URL replacement'](assert) {
+    ['@test The {{link-to}} component supports URL replacement'](assert) {
       this.addTemplate(
         'index',
         `
-      <h3 class="home">Home</h3>
-      {{#link-to 'about' id='about-link' replace=true}}About{{/link-to}}
-    `
+        <h3 class="home">Home</h3>
+        {{#link-to 'about' id='about-link' replace=true}}About{{/link-to}}
+        `
       );
 
       return this.visit('/')
@@ -437,13 +427,15 @@ moduleFor(
         });
     }
 
-    ['@test The {{link-to}} helper supports URL replacement via replace=boundTruthyThing'](assert) {
+    ['@test The {{link-to}} component supports URL replacement via replace=boundTruthyThing'](
+      assert
+    ) {
       this.addTemplate(
         'index',
         `
-      <h3 class="home">Home</h3>
-      {{#link-to 'about' id='about-link' replace=boundTruthyThing}}About{{/link-to}}
-    `
+        <h3 class="home">Home</h3>
+        {{#link-to 'about' id='about-link' replace=boundTruthyThing}}About{{/link-to}}
+        `
       );
 
       this.add(
@@ -467,13 +459,13 @@ moduleFor(
         });
     }
 
-    ['@test The {{link-to}} helper supports setting replace=boundFalseyThing'](assert) {
+    ['@test The {{link-to}} component supports setting replace=boundFalseyThing'](assert) {
       this.addTemplate(
         'index',
         `
-      <h3 class="home">Home</h3>
-      {{#link-to 'about' id='about-link' replace=boundFalseyThing}}About{{/link-to}}
-    `
+        <h3 class="home">Home</h3>
+        {{#link-to 'about' id='about-link' replace=boundFalseyThing}}About{{/link-to}}
+        `
       );
 
       this.add(
@@ -501,7 +493,7 @@ moduleFor(
 
 if (EMBER_IMPROVED_INSTRUMENTATION) {
   moduleFor(
-    'The {{link-to}} helper with EMBER_IMPROVED_INSTRUMENTATION',
+    'The {{link-to}} component with EMBER_IMPROVED_INSTRUMENTATION',
     class extends ApplicationTestCase {
       constructor() {
         super();
@@ -513,18 +505,18 @@ if (EMBER_IMPROVED_INSTRUMENTATION) {
         this.addTemplate(
           'index',
           `
-        <h3 class="home">Home</h3>
-        {{#link-to 'about' id='about-link'}}About{{/link-to}}
-        {{#link-to 'index' id='self-link'}}Self{{/link-to}}
-      `
+          <h3 class="home">Home</h3>
+          {{#link-to 'about' id='about-link'}}About{{/link-to}}
+          {{#link-to 'index' id='self-link'}}Self{{/link-to}}
+          `
         );
         this.addTemplate(
           'about',
           `
-        <h3 class="about">About</h3>
-        {{#link-to 'index' id='home-link'}}Home{{/link-to}}
-        {{#link-to 'about' id='self-link'}}Self{{/link-to}}
-      `
+          <h3 class="about">About</h3>
+          {{#link-to 'index' id='home-link'}}Home{{/link-to}}
+          {{#link-to 'about' id='self-link'}}Self{{/link-to}}
+          `
         );
       }
 
@@ -538,7 +530,7 @@ if (EMBER_IMPROVED_INSTRUMENTATION) {
         return super.afterEach();
       }
 
-      ['@test The {{link-to}} helper fires an interaction event'](assert) {
+      ['@test The {{link-to}} component fires an interaction event'](assert) {
         assert.expect(2);
 
         subscribe('interaction.link-to', {
@@ -553,7 +545,7 @@ if (EMBER_IMPROVED_INSTRUMENTATION) {
         return this.click('#about-link');
       }
 
-      ['@test The {{link-to}} helper interaction event includes the route name'](assert) {
+      ['@test The {{link-to}} component interaction event includes the route name'](assert) {
         assert.expect(2);
 
         subscribe('interaction.link-to', {
@@ -591,7 +583,7 @@ if (EMBER_IMPROVED_INSTRUMENTATION) {
 }
 
 moduleFor(
-  'The {{link-to}} helper - nested routes and link-to arguments',
+  'The {{link-to}} component - nested routes and link-to arguments',
   class extends ApplicationTestCase {
     ['@test The {{link-to}} helper supports leaving off .index for nested routes'](assert) {
       this.router.map(function() {
@@ -609,7 +601,7 @@ moduleFor(
       });
     }
 
-    [`@test The {{link-to}} helper supports custom, nested, current-when`](assert) {
+    [`@test The {{link-to}} component supports custom, nested, current-when`](assert) {
       this.router.map(function() {
         this.route('index', { path: '/' }, function() {
           this.route('about');
@@ -621,9 +613,7 @@ moduleFor(
       this.addTemplate('index', `<h3 class="home">Home</h3>{{outlet}}`);
       this.addTemplate(
         'index.about',
-        `
-      {{#link-to 'item' id='other-link' current-when='index'}}ITEM{{/link-to}}
-    `
+        `{{#link-to 'item' id='other-link' current-when='index'}}ITEM{{/link-to}}`
       );
 
       return this.visit('/about').then(() => {
@@ -635,7 +625,7 @@ moduleFor(
       });
     }
 
-    [`@test The {{link-to}} helper does not disregard current-when when it is given explicitly for a route`](
+    [`@test The {{link-to}} component does not disregard current-when when it is given explicitly for a route`](
       assert
     ) {
       this.router.map(function() {
@@ -651,9 +641,7 @@ moduleFor(
       this.addTemplate('index', `<h3 class="home">Home</h3>{{outlet}}`);
       this.addTemplate(
         'index.about',
-        `
-      {{#link-to 'items' id='other-link' current-when='index'}}ITEM{{/link-to}}
-    `
+        `{{#link-to 'items' id='other-link' current-when='index'}}ITEM{{/link-to}}`
       );
 
       return this.visit('/about').then(() => {
@@ -665,7 +653,7 @@ moduleFor(
       });
     }
 
-    ['@test The {{link-to}} helper does not disregard current-when when it is set via a bound param'](
+    ['@test The {{link-to}} component does not disregard current-when when it is set via a bound param'](
       assert
     ) {
       this.router.map(function() {
@@ -700,7 +688,7 @@ moduleFor(
       });
     }
 
-    ['@test The {{link-to}} helper supports multiple current-when routes'](assert) {
+    ['@test The {{link-to}} component supports multiple current-when routes'](assert) {
       this.router.map(function() {
         this.route('index', { path: '/' }, function() {
           this.route('about');
@@ -751,7 +739,7 @@ moduleFor(
         });
     }
 
-    ['@test The {{link-to}} helper supports boolean values for current-when'](assert) {
+    ['@test The {{link-to}} component supports boolean values for current-when'](assert) {
       this.router.map(function() {
         this.route('index', { path: '/' }, function() {
           this.route('about');
@@ -762,9 +750,9 @@ moduleFor(
       this.addTemplate(
         'index.about',
         `
-      {{#link-to 'index' id='index-link' current-when=isCurrent}}index{{/link-to}}
-      {{#link-to 'item' id='about-link' current-when=true}}ITEM{{/link-to}}
-    `
+        {{#link-to 'index' id='index-link' current-when=isCurrent}}index{{/link-to}}
+        {{#link-to 'item' id='about-link' current-when=true}}ITEM{{/link-to}}
+        `
       );
 
       this.add('controller:index.about', Controller.extend({ isCurrent: false }));
@@ -789,22 +777,18 @@ moduleFor(
       });
     }
 
-    ['@test The {{link-to}} helper defaults to bubbling'](assert) {
+    ['@test The {{link-to}} component defaults to bubbling'](assert) {
       this.addTemplate(
         'about',
         `
-      <div {{action 'hide'}}>
-        {{#link-to 'about.contact' id='about-contact'}}About{{/link-to}}
-      </div>
-      {{outlet}}
-    `
-      );
-      this.addTemplate(
-        'about.contact',
+        <div {{action 'hide'}}>
+          {{#link-to 'about.contact' id='about-contact'}}About{{/link-to}}
+        </div>
+        {{outlet}}
         `
-      <h1 id='contact'>Contact</h1>
-    `
       );
+
+      this.addTemplate('about.contact', `<h1 id='contact'>Contact</h1>`);
 
       this.router.map(function() {
         this.route('about', function() {
@@ -836,17 +820,17 @@ moduleFor(
         });
     }
 
-    [`@test The {{link-to}} helper supports bubbles=false`](assert) {
+    [`@test The {{link-to}} component supports bubbles=false`](assert) {
       this.addTemplate(
         'about',
         `
-      <div {{action 'hide'}}>
-        {{#link-to 'about.contact' id='about-contact' bubbles=false}}
-          About
-        {{/link-to}}
-      </div>
-      {{outlet}}
-    `
+        <div {{action 'hide'}}>
+          {{#link-to 'about.contact' id='about-contact' bubbles=false}}
+            About
+          {{/link-to}}
+        </div>
+        {{outlet}}
+        `
       );
       this.addTemplate('about.contact', `<h1 id='contact'>Contact</h1>`);
 
@@ -880,18 +864,19 @@ moduleFor(
         });
     }
 
-    [`@test The {{link-to}} helper supports bubbles=boundFalseyThing`](assert) {
+    [`@test The {{link-to}} component supports bubbles=boundFalseyThing`](assert) {
       this.addTemplate(
         'about',
         `
-      <div {{action 'hide'}}>
-        {{#link-to 'about.contact' id='about-contact' bubbles=boundFalseyThing}}
-          About
-        {{/link-to}}
-      </div>
-      {{outlet}}
-    `
+        <div {{action 'hide'}}>
+          {{#link-to 'about.contact' id='about-contact' bubbles=boundFalseyThing}}
+            About
+          {{/link-to}}
+        </div>
+        {{outlet}}
+        `
       );
+
       this.addTemplate('about.contact', `<h1 id='contact'>Contact</h1>`);
 
       this.add(
@@ -930,7 +915,7 @@ moduleFor(
         });
     }
 
-    [`@test The {{link-to}} helper moves into the named route with context`](assert) {
+    [`@test The {{link-to}} component moves into the named route with context`](assert) {
       this.router.map(function() {
         this.route('about');
         this.route('item', { path: '/item/:id' });
@@ -939,35 +924,35 @@ moduleFor(
       this.addTemplate(
         'about',
         `
-      <h3 class="list">List</h3>
-      <ul>
-        {{#each model as |person|}}
-          <li>
-            {{#link-to 'item' person id=person.id}}
-              {{person.name}}
-            {{/link-to}}
-          </li>
-        {{/each}}
-      </ul>
-      {{#link-to 'index' id='home-link'}}Home{{/link-to}}
-    `
+        <h3 class="list">List</h3>
+        <ul>
+          {{#each model as |person|}}
+            <li>
+              {{#link-to 'item' person id=person.id}}
+                {{person.name}}
+              {{/link-to}}
+            </li>
+          {{/each}}
+        </ul>
+        {{#link-to 'index' id='home-link'}}Home{{/link-to}}
+        `
       );
 
       this.addTemplate(
         'item',
         `
-      <h3 class="item">Item</h3>
-      <p>{{model.name}}</p>
-      {{#link-to 'index' id='home-link'}}Home{{/link-to}}
-    `
+        <h3 class="item">Item</h3>
+        <p>{{model.name}}</p>
+        {{#link-to 'index' id='home-link'}}Home{{/link-to}}
+        `
       );
 
       this.addTemplate(
         'index',
         `
-      <h3 class="home">Home</h3>
-      {{#link-to 'about' id='about-link'}}About{{/link-to}}
-    `
+        <h3 class="home">Home</h3>
+        {{#link-to 'about' id='about-link'}}About{{/link-to}}
+        `
       );
 
       this.add(
@@ -1020,11 +1005,11 @@ moduleFor(
       this.addTemplate(
         'index',
         `
-      <h3 class="home">Home</h3>
-      {{#link-to 'index' id='self-link' title='title-attr' rel='rel-attr' tabindex='-1'}}
-        Self
-      {{/link-to}}
-    `
+        <h3 class="home">Home</h3>
+        {{#link-to 'index' id='self-link' title='title-attr' rel='rel-attr' tabindex='-1'}}
+          Self
+        {{/link-to}}
+        `
       );
 
       return this.visit('/').then(() => {
@@ -1039,9 +1024,9 @@ moduleFor(
       this.addTemplate(
         'index',
         `
-      <h3 class="home">Home</h3>
-      {{#link-to 'index' id='self-link' target='_blank'}}Self{{/link-to}}
-    `
+        <h3 class="home">Home</h3>
+        {{#link-to 'index' id='self-link' target='_blank'}}Self{{/link-to}}
+        `
       );
 
       return this.visit('/').then(() => {
@@ -1076,12 +1061,7 @@ moduleFor(
         this.route('about');
       });
 
-      this.addTemplate(
-        'index',
-        `
-      {{#link-to 'about' id='about-link'}}About{{/link-to}}
-    `
-      );
+      this.addTemplate('index', `{{#link-to 'about' id='about-link'}}About{{/link-to}}`);
 
       return this.visit('/').then(() => {
         assertNav({ prevented: true }, () => this.$('#about-link').click(), assert);
@@ -1097,9 +1077,7 @@ moduleFor(
 
       this.addTemplate(
         'index',
-        `
-      {{#link-to 'about' id='about-link' preventDefault=false}}About{{/link-to}}
-    `
+        `{{#link-to 'about' id='about-link' preventDefault=false}}About{{/link-to}}`
       );
 
       return this.visit('/').then(() => {
@@ -1116,9 +1094,7 @@ moduleFor(
 
       this.addTemplate(
         'index',
-        `
-      {{#link-to 'about' id='about-link' preventDefault=boundFalseyThing}}About{{/link-to}}
-    `
+        `{{#link-to 'about' id='about-link' preventDefault=boundFalseyThing}}About{{/link-to}}`
       );
 
       this.add(
@@ -1139,9 +1115,9 @@ moduleFor(
       this.addTemplate(
         'index',
         `
-      <h3 class="home">Home</h3>
-      {{#link-to 'index' id='self-link' target='_blank'}}Self{{/link-to}}
-    `
+        <h3 class="home">Home</h3>
+        {{#link-to 'index' id='self-link' target='_blank'}}Self{{/link-to}}
+        `
       );
 
       return this.visit('/').then(() => {
@@ -1153,9 +1129,9 @@ moduleFor(
       this.addTemplate(
         'index',
         `
-      <h3 class="home">Home</h3>
-      {{#link-to 'index' id='self-link' target='_self'}}Self{{/link-to}}
-    `
+        <h3 class="home">Home</h3>
+        {{#link-to 'index' id='self-link' target='_self'}}Self{{/link-to}}
+        `
       );
 
       return this.visit('/').then(() => {
@@ -1169,10 +1145,10 @@ moduleFor(
       this.addTemplate(
         'index',
         `
-      {{#link-to 'about' id='about-link' replace=true target='_blank'}}
-        About
-      {{/link-to}}
-    `
+        {{#link-to 'about' id='about-link' replace=true target='_blank'}}
+          About
+        {{/link-to}}
+        `
       );
 
       this.router.map(function() {
@@ -1214,13 +1190,13 @@ moduleFor(
       this.addTemplate(
         'filter',
         `
-      <p>{{filter}}</p>
-      {{#link-to "filter" "unpopular" id="link"}}Unpopular{{/link-to}}
-      {{#link-to "filter" filter id="path-link"}}Unpopular{{/link-to}}
-      {{#link-to "post" post_id id="post-path-link"}}Post{{/link-to}}
-      {{#link-to "post" 123 id="post-number-link"}}Post{{/link-to}}
-      {{#link-to "repo" repo id="repo-object-link"}}Repo{{/link-to}}
-    `
+        <p>{{filter}}</p>
+        {{#link-to "filter" "unpopular" id="link"}}Unpopular{{/link-to}}
+        {{#link-to "filter" filter id="path-link"}}Unpopular{{/link-to}}
+        {{#link-to "post" post_id id="post-path-link"}}Post{{/link-to}}
+        {{#link-to "post" 123 id="post-number-link"}}Post{{/link-to}}
+        {{#link-to "repo" repo id="repo-object-link"}}Repo{{/link-to}}
+        `
       );
 
       return this.visit('/filters/popular').then(() => {
@@ -1258,15 +1234,12 @@ moduleFor(
 
       this.addTemplate(
         'lobby.index',
-        `
-      {{#link-to 'lobby' 'foobar' id='lobby-link'}}Lobby{{/link-to}}
-    `
+        `{{#link-to 'lobby' 'foobar' id='lobby-link'}}Lobby{{/link-to}}`
       );
+
       this.addTemplate(
         'lobby.list',
-        `
-      {{#link-to 'lobby' 'foobar' id='lobby-link'}}Lobby{{/link-to}}
-    `
+        `{{#link-to 'lobby' 'foobar' id='lobby-link'}}Lobby{{/link-to}}`
       );
 
       return this.visit('/lobby/list')
@@ -1282,9 +1255,9 @@ moduleFor(
       this.addTemplate(
         'index',
         `
-      {{#link-to 'index' id='string-link'}}string{{/link-to}}
-      {{#link-to foo id='path-link'}}path{{/link-to}}
-    `
+        {{#link-to 'index' id='string-link'}}string{{/link-to}}
+        {{#link-to foo id='path-link'}}path{{/link-to}}
+        `
       );
 
       this.add(
@@ -1317,12 +1290,7 @@ moduleFor(
       let post = { id: '1' };
       let secondPost = { id: '2' };
 
-      this.addTemplate(
-        'index',
-        `
-      {{#link-to "post" post id="post"}}post{{/link-to}}
-    `
-      );
+      this.addTemplate('index', `{{#link-to "post" post id="post"}}post{{/link-to}}`);
 
       this.add('controller:index', Controller.extend());
 
@@ -1364,12 +1332,12 @@ moduleFor(
       this.addTemplate(
         'about',
         `
-      <div id='about'>
-        {{#link-to 'about' id='about-link'}}About{{/link-to}}
-        {{#link-to 'about.item' id='item-link'}}Item{{/link-to}}
-        {{outlet}}
-      </div>
-    `
+        <div id='about'>
+          {{#link-to 'about' id='about-link'}}About{{/link-to}}
+          {{#link-to 'about.item' id='item-link'}}Item{{/link-to}}
+          {{outlet}}
+        </div>
+        `
       );
 
       return this.visit('/about')
@@ -1404,15 +1372,15 @@ moduleFor(
       this.addTemplate(
         'index',
         `
-      {{#each routeNames as |routeName|}}
-        {{#link-to routeName}}{{routeName}}{{/link-to}}
-      {{/each}}
-      {{#each routeNames as |r|}}
-        {{#link-to r}}{{r}}{{/link-to}}
-      {{/each}}
-      {{#link-to route1}}a{{/link-to}}
-      {{#link-to route2}}b{{/link-to}}
-    `
+        {{#each routeNames as |routeName|}}
+          {{#link-to routeName}}{{routeName}}{{/link-to}}
+        {{/each}}
+        {{#each routeNames as |r|}}
+          {{#link-to r}}{{r}}{{/link-to}}
+        {{/each}}
+        {{#link-to route1}}a{{/link-to}}
+        {{#link-to route2}}b{{/link-to}}
+        `
       );
 
       let linksEqual = (links, expected) => {
@@ -1453,18 +1421,18 @@ moduleFor(
       this.addTemplate(
         'index',
         `
-      <h3 class="home">Home</h3>
-      {{link-to 'Contact us' 'contact' id='contact-link'}}
-      {{#link-to 'index' id='self-link'}}Self{{/link-to}}
-    `
+        <h3 class="home">Home</h3>
+        {{link-to 'Contact us' 'contact' id='contact-link'}}
+        {{#link-to 'index' id='self-link'}}Self{{/link-to}}
+        `
       );
       this.addTemplate(
         'contact',
         `
-      <h3 class="contact">Contact</h3>
-      {{link-to 'Home' 'index' id='home-link'}}
-      {{link-to 'Self' 'contact' id='self-link'}}
-    `
+        <h3 class="contact">Contact</h3>
+        {{link-to 'Home' 'index' id='home-link'}}
+        {{link-to 'Self' 'contact' id='self-link'}}
+        `
       );
 
       return this.visit('/')
@@ -1504,18 +1472,18 @@ moduleFor(
       this.addTemplate(
         'index',
         `
-      <h3 class="home">Home</h3>
-      {{link-to contactName 'contact' id='contact-link'}}
-      {{#link-to 'index' id='self-link'}}Self{{/link-to}}
-    `
+        <h3 class="home">Home</h3>
+        {{link-to contactName 'contact' id='contact-link'}}
+        {{#link-to 'index' id='self-link'}}Self{{/link-to}}
+        `
       );
       this.addTemplate(
         'contact',
         `
-      <h3 class="contact">Contact</h3>
-      {{link-to 'Home' 'index' id='home-link'}}
-      {{link-to 'Self' 'contact' id='self-link'}}
-    `
+        <h3 class="contact">Contact</h3>
+        {{link-to 'Home' 'index' id='home-link'}}
+        {{link-to 'Self' 'contact' id='self-link'}}
+        `
       );
 
       return this.visit('/')
@@ -1595,23 +1563,23 @@ moduleFor(
       this.addTemplate(
         'index',
         `
-      <h3 class="home">Home</h3>
-      <ul>
-        {{#each model as |person|}}
-          <li>
-            {{link-to person.name 'item' person id=person.id}}
-          </li>
-        {{/each}}
-      </ul>
-    `
+        <h3 class="home">Home</h3>
+        <ul>
+          {{#each model as |person|}}
+            <li>
+              {{link-to person.name 'item' person id=person.id}}
+            </li>
+          {{/each}}
+        </ul>
+        `
       );
       this.addTemplate(
         'item',
         `
-      <h3 class="item">Item</h3>
-      <p>{{model.name}}</p>
-      {{#link-to 'index' id='home-link'}}Home{{/link-to}}
-    `
+        <h3 class="item">Item</h3>
+        <p>{{model.name}}</p>
+        {{#link-to 'index' id='home-link'}}Home{{/link-to}}
+        `
       );
 
       return this.visit('/')
@@ -1639,9 +1607,9 @@ moduleFor(
       this.addTemplate(
         'index',
         `
-      {{link-to 'string' 'index' id='string-link'}}
-      {{link-to path foo id='path-link'}}
-    `
+        {{link-to 'string' 'index' id='string-link'}}
+        {{link-to path foo id='path-link'}}
+        `
       );
 
       this.add(
@@ -1687,7 +1655,7 @@ moduleFor(
       });
     }
 
-    [`@test the {{link-to}} helper throws a useful error if you invoke it wrong`](assert) {
+    [`@test the {{link-to}} component throws a useful error if you invoke it wrong`](assert) {
       assert.expect(1);
 
       this.router.map(function() {
@@ -1703,7 +1671,7 @@ moduleFor(
       return runLoopSettled();
     }
 
-    [`@test the {{link-to}} helper does not throw an error if its route has exited`](assert) {
+    [`@test the {{link-to}} component does not throw an error if its route has exited`](assert) {
       assert.expect(0);
 
       this.router.map(function() {
@@ -1713,12 +1681,12 @@ moduleFor(
       this.addTemplate(
         'application',
         `
-      {{#link-to 'index' id='home-link'}}Home{{/link-to}}
-      {{#link-to 'post' defaultPost id='default-post-link'}}Default Post{{/link-to}}
-      {{#if currentPost}}
-        {{#link-to 'post' currentPost id='current-post-link'}}Current Post{{/link-to}}
-      {{/if}}
-    `
+        {{#link-to 'index' id='home-link'}}Home{{/link-to}}
+        {{#link-to 'post' defaultPost id='default-post-link'}}Default Post{{/link-to}}
+        {{#if currentPost}}
+          {{#link-to 'post' currentPost id='current-post-link'}}Current Post{{/link-to}}
+        {{/if}}
+        `
       );
 
       this.add(
@@ -1761,9 +1729,9 @@ moduleFor(
       this.addTemplate(
         'application',
         `
-      {{link-to 'OMG' 'things' 'omg' id='omg-link'}}
-      {{link-to 'LOL' 'things' 'lol' id='lol-link'}}
-    `
+        {{link-to 'OMG' 'things' 'omg' id='omg-link'}}
+        {{link-to 'LOL' 'things' 'lol' id='lol-link'}}
+        `
       );
 
       return this.visit('/things/omg')
@@ -1810,9 +1778,7 @@ moduleFor(
 
       this.addTemplate(
         'index',
-        `
-      {{#link-to 'index' (query-params) id='the-link'}}Index{{/link-to}}
-    `
+        `{{#link-to 'index' (query-params) id='the-link'}}Index{{/link-to}}`
       );
 
       return this.visit('/').then(() => {
@@ -1836,9 +1802,7 @@ moduleFor(
 
       this.addTemplate(
         'application',
-        `
-      {{#link-to (query-params foo='456' bar='NAW') id='the-link'}}Index{{/link-to}}
-    `
+        `{{#link-to (query-params foo='456' bar='NAW') id='the-link'}}Index{{/link-to}}`
       );
 
       return this.visit('/')
@@ -1876,9 +1840,7 @@ moduleFor(
 
       this.addTemplate(
         'application',
-        `
-      {{link-to "Index" (query-params foo='456' bar='NAW') id='the-link'}}
-    `
+        `{{link-to "Index" (query-params foo='456' bar='NAW') id='the-link'}}`
       );
 
       return this.visit('/')
@@ -1900,7 +1862,41 @@ moduleFor(
         });
     }
 
-    [`@test The {{link-to}} helper can use dynamic params`](assert) {
+    ['@test [GH#17018] passing model to link-to with `hash` helper works']() {
+      this.router.map(function() {
+        this.route('post', { path: '/posts/:post_id' });
+      });
+
+      this.add(
+        'route:index',
+        Route.extend({
+          model() {
+            return RSVP.hash({
+              user: { name: 'Papa Smurf' },
+            });
+          },
+        })
+      );
+
+      this.addTemplate('index', `{{link-to 'Post' 'post' (hash id="someId" user=this.model.user)}}`);
+      this.addTemplate('post', 'Post: {{this.model.user.name}}');
+
+      return this.visit('/')
+        .then(() => {
+          this.assertComponentElement(this.firstChild, {
+            tagName: 'a',
+            attrs: { href: '/posts/someId' },
+            content: 'Post',
+          });
+
+          return this.click('a');
+        })
+        .then(() => {
+          this.assertText('Post: Papa Smurf');
+        });
+    }
+
+    [`@test The {{link-to}} component can use dynamic params`](assert) {
       this.router.map(function() {
         this.route('foo', { path: 'foo/:some/:thing' });
         this.route('bar', { path: 'bar/:some/:thing/:else' });
@@ -1919,9 +1915,9 @@ moduleFor(
       this.addTemplate(
         'index',
         `
-      <h3 class="home">Home</h3>
-      {{#link-to params=dynamicLinkParams id="dynamic-link"}}Dynamic{{/link-to}}
-    `
+        <h3 class="home">Home</h3>
+        {{#link-to params=dynamicLinkParams id="dynamic-link"}}Dynamic{{/link-to}}
+        `
       );
 
       return this.visit('/').then(() => {
@@ -1958,12 +1954,7 @@ moduleFor(
         })
       );
 
-      this.addTemplate(
-        'application',
-        `
-      {{link-to 'Parent' 'parent' id='parent-link'}}
-    `
-      );
+      this.addTemplate('application', `{{link-to 'Parent' 'parent' id='parent-link'}}`);
 
       return this.visit('/')
         .then(() => {
@@ -1979,7 +1970,9 @@ moduleFor(
 moduleFor(
   'The {{link-to}} helper - loading states and warnings',
   class extends ApplicationTestCase {
-    [`@test link-to with null/undefined dynamic parameters are put in a loading state`](assert) {
+    [`@test {{link-to}} with null/undefined dynamic parameters are put in a loading state`](
+      assert
+    ) {
       assert.expect(19);
       let warningMessage =
         'This link-to is in an inactive loading state because at least one of its parameters presently has a null/undefined value, or the provided route name is invalid.';
@@ -1992,13 +1985,13 @@ moduleFor(
       this.addTemplate(
         'index',
         `
-      {{#link-to destinationRoute routeContext loadingClass='i-am-loading' id='context-link'}}
-        string
-      {{/link-to}}
-      {{#link-to secondRoute loadingClass=loadingClass id='static-link'}}
-        string
-      {{/link-to}}
-    `
+        {{#link-to destinationRoute routeContext loadingClass='i-am-loading' id='context-link'}}
+          string
+        {{/link-to}}
+        {{#link-to secondRoute loadingClass=loadingClass id='static-link'}}
+          string
+        {{/link-to}}
+        `
       );
 
       this.add(

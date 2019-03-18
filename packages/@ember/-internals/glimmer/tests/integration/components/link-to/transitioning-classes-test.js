@@ -15,7 +15,7 @@ function assertHasNoClass(assert, selector, label) {
 }
 
 moduleFor(
-  'The {{link-to}} helper: .transitioning-in .transitioning-out CSS classes',
+  '{{link-to}} component: .transitioning-in .transitioning-out CSS classes',
   class extends ApplicationTestCase {
     constructor() {
       super();
@@ -61,12 +61,12 @@ moduleFor(
       this.addTemplate(
         'application',
         `
-      {{outlet}}
-      {{link-to 'Index' 'index' id='index-link'}}
-      {{link-to 'About' 'about' id='about-link'}}
-      {{link-to 'Other' 'other' id='other-link'}}
-      {{link-to 'News' 'news' activeClass=false id='news-link'}}
-    `
+        {{outlet}}
+        {{link-to 'Index' 'index' id='index-link'}}
+        {{link-to 'About' 'about' id='about-link'}}
+        {{link-to 'Other' 'other' id='other-link'}}
+        {{link-to 'News' 'news' activeClass=false id='news-link'}}
+        `
       );
     }
 
@@ -152,7 +152,7 @@ moduleFor(
 );
 
 moduleFor(
-  `The {{link-to}} helper: .transitioning-in .transitioning-out CSS classes - nested link-to's`,
+  `{{link-to}} component: .transitioning-in .transitioning-out CSS classes - nested link-to's`,
   class extends ApplicationTestCase {
     constructor() {
       super();
@@ -187,17 +187,17 @@ moduleFor(
       this.addTemplate(
         'application',
         `
-      {{outlet}}
-      {{#link-to 'index' tagName='li'}}
-        {{link-to 'Index' 'index' id='index-link'}}
-      {{/link-to}}
-      {{#link-to 'parent-route.about' tagName='li'}}
-        {{link-to 'About' 'parent-route.about' id='about-link'}}
-      {{/link-to}}
-      {{#link-to 'parent-route.other' tagName='li'}}
-        {{link-to 'Other' 'parent-route.other' id='other-link'}}
-      {{/link-to}}
-    `
+        {{outlet}}
+        {{#link-to 'index' tagName='li'}}
+          {{link-to 'Index' 'index' id='index-link'}}
+        {{/link-to}}
+        {{#link-to 'parent-route.about' tagName='li'}}
+          {{link-to 'About' 'parent-route.about' id='about-link'}}
+        {{/link-to}}
+        {{#link-to 'parent-route.other' tagName='li'}}
+          {{link-to 'Other' 'parent-route.other' id='other-link'}}
+        {{/link-to}}
+        `
       );
     }
 

@@ -29,68 +29,101 @@ export const BOUNDS = symbol('BOUNDS');
 */
 
 /**
-  A `Component` is a view that is completely
-  isolated. Properties accessed in its templates go
-  to the view object and actions are targeted at
-  the view object. There is no access to the
-  surrounding context or outer controller; all
-  contextual information must be passed in.
+  A component is an isolated piece of UI, represented by a template and an
+  optional class. When a component has a class, its template's `this` value
+  is an instance of the component class.
 
-  The easiest way to create a `Component` is via
-  a template. If you name a template
-  `app/templates/components/my-foo.hbs`, you will be able to use
-  `<MyFoo />` or `{{my-foo}}` in other templates, which will make
-  an instance of the isolated component.
+  ## Template-only Components
 
-  ```app/templates/components/my-foo.hbs
+  The simplest way to create a component is to create a template file in
+  `app/templates/components`. For example, if you name a template
+  `app/templates/components/person-profile.hbs`:
+
+  ```app/templates/components/person-profile.hbs
+  <h1>{{@person.name}}</h1>
+  <img src={{@person.avatar}}>
+  <p class='signature'>{{@person.signature}}</p>
+  ```
+
+  You will be able to use `<PersonProfile />` to invoke this component elsewhere
+  in your application:
+
+  ```app/templates/application.hbs
   <PersonProfile @person={{this.currentUser}} />
   ```
 
-  or
+  Note that component names are capitalized here in order to distinguish them
+  from regular HTML elements, but they are dasherized in the file system.
 
-  ```app/templates/components/my-foo.hbs
+  While the angle bracket invocation form is generally preferred, it is also
+  possible to invoke the same component with the `{{person-profile}}` syntax:
+
+  ```app/templates/application.hbs
   {{person-profile person=this.currentUser}}
   ```
 
-  ```app/templates/components/person-profile.hbs
-  <h1>{{person.title}}</h1>
-  <img src={{person.avatar}}>
-  <p class='signature'>{{person.signature}}</p>
+  Note that with this syntax, you use dashes in the component name and
+  arguments are passed without the `@` sign.
+
+  In both cases, Ember will render the content of the component template we
+  created above. The end result will be something like this:
+
+  ```html
+  <h1>Tomster</h1>
+  <img src="https://emberjs.com/tomster.jpg">
+  <p class='signature'>Out of office this week</p>
   ```
 
-  You can use `yield` inside a template to
-  include the **contents** of any block attached to
-  the component. The block will be executed in the
-  context of the surrounding context or outer controller:
+  ## File System Nesting
+
+  Components can be nested inside sub-folders for logical groupping. For
+  example, if we placed our template in
+  `app/templates/components/person/short-profile.hbs`, we can invoke it as
+  `<Person::ShortProfile />`:
+
+  ```app/templates/application.hbs
+  <Person::ShortProfile @person={{this.currentUser}} />
+  ```
+
+  Or equivalently, `{{person/short-profile}}`:
+
+  ```app/templates/application.hbs
+  {{person/short-profile person=this.currentUser}}
+  ```
+
+  ## Yielding Contents
+
+  You can use `yield` inside a template to include the **contents** of any block
+  attached to the component. The block will be executed in its original context:
 
   ```handlebars
   <PersonProfile @person={{this.currentUser}}>
     <p>Admin mode</p>
-    {{! Executed in the controller's context. }}
+    {{! Executed in the current context. }}
   </PersonProfile>
   ```
 
   or
+
   ```handlebars
   {{#person-profile person=this.currentUser}}
     <p>Admin mode</p>
-    {{! Executed in the controller's context. }}
+    {{! Executed in the current context. }}
   {{/person-profile}}
   ```
 
   ```app/templates/components/person-profile.hbs
   <h1>{{person.title}}</h1>
-  {{! Executed in the component's context. }}
-  {{yield}} {{! block contents }}
+  {{yield}}
   ```
 
-  If you want to customize the component, in order to
-  handle events or actions, you implement a subclass
-  of `Component` named after the name of the
-  component.
+  ## Customizing Components With JavaScript
 
-  For example, you could implement the action
-  `hello` for the `person-profile` component:
+  If you want to customize the component in order to handle events, transform
+  arguments or maintain internal state, you implement a subclass of `Component`.
+
+  For example, you could implement the action `hello` for the `person-profile`
+  component:
 
   ```app/components/person-profile.js
   import Component from '@ember/component';
@@ -114,16 +147,20 @@ export const BOUNDS = symbol('BOUNDS');
   </button>
   ```
 
-  Components must have a `-` in their name to avoid
-  conflicts with built-in controls that wrap HTML
-  elements. This is consistent with the same
-  requirement in web components.
+  When the user clicks the button, Ember will invoke the `hello` action,
+  passing in the current value of `person.name` as an argument.
 
-  ## HTML Tag
+  For historical reasons, components must have a `-` in their name when invoked
+  using the `{{` syntax.
 
-  The default HTML tag name used for a component's DOM representation is `div`.
+  ## Customizing a Component's HTML Element in JavaScript
+
+  ### HTML Tag
+
+  The default HTML tag name used for a component's HTML representation is `div`.
   This can be customized by setting the `tagName` property.
-  The following component class:
+
+  Consider the following component class:
 
   ```app/components/emphasized-paragraph.js
   import Component from '@ember/component';
@@ -133,13 +170,14 @@ export const BOUNDS = symbol('BOUNDS');
   });
   ```
 
-  Would result in instances with the following HTML:
+  When invoked, this component would produce output that looks something like
+  this:
 
   ```html
   <em id="ember1" class="ember-view"></em>
   ```
 
-  ## HTML `class` Attribute
+  ### HTML `class` Attribute
 
   The HTML `class` attribute of a component's tag can be set by providing a
   `classNames` property that is set to an array of strings:
@@ -152,16 +190,16 @@ export const BOUNDS = symbol('BOUNDS');
   });
   ```
 
-  Will result in component instances with an HTML representation of:
+  Invoking this component will produce output that looks like this:
 
   ```html
   <div id="ember1" class="ember-view my-class my-other-class"></div>
   ```
 
   `class` attribute values can also be set by providing a `classNameBindings`
-  property set to an array of properties names for the component. The return value
-  of these properties will be added as part of the value for the components's `class`
-  attribute. These properties can be computed properties:
+  property set to an array of properties names for the component. The return
+  value of these properties will be added as part of the value for the
+  components's `class` attribute. These properties can be computed properties:
 
   ```app/components/my-widget.js
   import Component from '@ember/component';
@@ -177,15 +215,15 @@ export const BOUNDS = symbol('BOUNDS');
   });
   ```
 
-  Will result in component instances with an HTML representation of:
+  Invoking this component will produce HTML that looks like:
 
   ```html
   <div id="ember1" class="ember-view from-a from-b"></div>
   ```
 
   If the value of a class name binding returns a boolean the property name
-  itself will be used as the class name if the property is true.
-  The class name will not be added if the value is `false` or `undefined`.
+  itself will be used as the class name if the property is true. The class name
+  will not be added if the value is `false` or `undefined`.
 
   ```app/components/my-widget.js
   import Component from '@ember/component';
@@ -197,11 +235,13 @@ export const BOUNDS = symbol('BOUNDS');
   });
   ```
 
-  Will result in component instances with an HTML representation of:
+  Invoking this component will produce HTML that looks like:
 
   ```html
   <div id="ember1" class="ember-view hovered"></div>
   ```
+
+  ### Custom Class Names for Boolean Values
 
   When using boolean class name bindings you can supply a string value other
   than the property name for use as the `class` HTML attribute by appending the
@@ -217,7 +257,7 @@ export const BOUNDS = symbol('BOUNDS');
   });
   ```
 
-  Will result in component instances with an HTML representation of:
+  Invoking this component will produce HTML that looks like:
 
   ```html
   <div id="ember1" class="ember-view so-very-cool"></div>
@@ -236,7 +276,7 @@ export const BOUNDS = symbol('BOUNDS');
   });
   ```
 
-  Will result in component instances with an HTML representation of:
+  Invoking this component will produce HTML that looks like:
 
   ```html
   <div id="ember1" class="ember-view is-urgent"></div>
@@ -258,7 +298,7 @@ export const BOUNDS = symbol('BOUNDS');
   });
   ```
 
-  Will result in component instances with an HTML representation of:
+  Invoking this component will produce HTML that looks like:
 
   ```html
   <div id="ember1" class="ember-view empty"></div>
@@ -277,14 +317,13 @@ export const BOUNDS = symbol('BOUNDS');
   });
   ```
 
-  Will result in component instances with an HTML representation of:
+  Invoking this component will produce HTML that looks like:
 
   ```html
   <div id="ember1" class="ember-view enabled"></div>
   ```
 
-  When isEnabled is `false`, the resulting HTML representation looks like
-  this:
+  When isEnabled is `false`, the resulting HTML representation looks like this:
 
   ```html
   <div id="ember1" class="ember-view disabled"></div>
@@ -302,23 +341,25 @@ export const BOUNDS = symbol('BOUNDS');
   });
   ```
 
-  Will result in component instances with an HTML representation of:
+  Invoking this component when the `isEnabled` property is true will produce
+  HTML that looks like:
 
   ```html
   <div id="ember1" class="ember-view"></div>
   ```
 
-  When the `isEnabled` property on the component is set to `false`, it will result
-  in component instances with an HTML representation of:
+  Invoking it when the `isEnabled` property on the component is `false` will
+  produce HTML that looks like:
 
   ```html
   <div id="ember1" class="ember-view disabled"></div>
   ```
 
-  Updates to the value of a class name binding will result in automatic
-  update of the  HTML `class` attribute in the component's rendered HTML
+  Updates to the value of a class name binding will result in automatic update
+  of the  HTML `class` attribute in the component's rendered HTML
   representation. If the value becomes `false` or `undefined` the class name
   will be removed.
+
   Both `classNames` and `classNameBindings` are concatenated properties. See
   [EmberObject](/api/ember/release/classes/EmberObject) documentation for more
   information about concatenated properties.
@@ -341,7 +382,7 @@ export const BOUNDS = symbol('BOUNDS');
   });
   ```
 
-  Will result in component instances with an HTML representation of:
+  Invoking this component will produce HTML that looks like:
 
   ```html
   <a id="ember1" class="ember-view" href="http://google.com"></a>
@@ -361,7 +402,7 @@ export const BOUNDS = symbol('BOUNDS');
   });
   ```
 
-  Will result in component instances with an HTML representation of:
+  Invoking this component will produce HTML that looks like:
 
   ```html
   <a id="ember1" class="ember-view" href="http://google.com"></a>
@@ -381,14 +422,14 @@ export const BOUNDS = symbol('BOUNDS');
   });
   ```
 
-  Will result in component instances with an HTML representation of:
+  Invoking this component will produce HTML that looks like:
 
   ```html
   <use xlink:href="#triangle"></use>
   ```
 
-  If the return value of an `attributeBindings` monitored property is a boolean
-  the attribute will be present or absent depending on the value:
+  If the value of a property monitored by `attributeBindings` is a boolean, the
+  attribute will be present or absent depending on the value:
 
   ```app/components/my-text-input.js
   import Component from '@ember/component';
@@ -401,7 +442,7 @@ export const BOUNDS = symbol('BOUNDS');
   });
   ```
 
-  Will result in a component instance with an HTML representation of:
+  Invoking this component will produce HTML that looks like:
 
   ```html
   <input id="ember1" class="ember-view" />
@@ -428,7 +469,7 @@ export const BOUNDS = symbol('BOUNDS');
   ```
 
   To prevent setting an attribute altogether, use `null` or `undefined` as the
-  return value of the `attributeBindings` monitored property:
+  value of the property used in `attributeBindings`:
 
   ```app/components/my-text-input.js
   import Component from '@ember/component';
@@ -441,22 +482,27 @@ export const BOUNDS = symbol('BOUNDS');
   ```
 
   Updates to the property of an attribute binding will result in automatic
-  update of the  HTML attribute in the component's rendered HTML representation.
-  `attributeBindings` is a concatenated property. See [EmberObject](/api/ember/release/classes/EmberObject)
-  documentation for more information about concatenated properties.
+  update of the  HTML attribute in the component's HTML output.
+
+  `attributeBindings` is a concatenated property. See
+  [EmberObject](/api/ember/release/classes/EmberObject) documentation for more
+  information about concatenated properties.
 
   ## Layouts
 
-  See [Ember.Templates.helpers.yield](/api/ember/release/classes/Ember.Templates.helpers/methods/yield?anchor=yield)
-  for more information.
+  The `layout` property can be used to dynamically specify a template associated
+  with a component class, instead of relying on Ember to link together a
+  component class and a template based on file names.
 
-  Layout can be used to wrap content in a component. In addition
-  to wrapping content in a Component's template, you can also use
-  the public layout API in your Component JavaScript.
+  In general, applications should not use this feature, but it's commonly used
+  in addons for historical reasons.
+
+  The `layout` property should be set to the default export of a template
+  module, which is the name of a template file without the `.hbs` extension.
 
   ```app/templates/components/person-profile.hbs
-    <h1>Person's Title</h1>
-    <div class='details'>{{yield}}</div>
+  <h1>Person's Title</h1>
+  <div class='details'>{{yield}}</div>
   ```
 
   ```app/components/person-profile.js
@@ -468,34 +514,35 @@ export const BOUNDS = symbol('BOUNDS');
     });
   ```
 
-  If you call the `person-profile` component like so:
+  If you invoke the component:
 
- ```handlebars
- <PersonProfile>
-     <h2>Chief Basket Weaver</h2>
-     <h3>Fisherman Industries</h3>
- </PersonProfile>
- ```
+  ```handlebars
+  <PersonProfile>
+    <h2>Chief Basket Weaver</h2>
+    <h3>Fisherman Industries</h3>
+  </PersonProfile>
+  ```
 
- or
+  or
 
- ```handlebars
+  ```handlebars
   {{#person-profile}}
     <h2>Chief Basket Weaver</h2>
     <h3>Fisherman Industries</h3>
   {{/person-profile}}
   ```
+
   It will result in the following HTML output:
 
   ```html
-    <h1>Person's Title</h1>
+  <h1>Person's Title</h1>
     <div class="details">
-      <h2>Chief Basket Weaver</h2>
-      <h3>Fisherman Industries</h3>
-    </div>
+    <h2>Chief Basket Weaver</h2>
+    <h3>Fisherman Industries</h3>
+  </div>
   ```
 
-  ## Responding to Browser Events
+  ## Handling Browser Events
 
   Components can respond to user-initiated events in one of three ways: method
   implementation, through an event manager, and through `{{action}}` helper use
@@ -504,16 +551,16 @@ export const BOUNDS = symbol('BOUNDS');
   ### Method Implementation
 
   Components can respond to user-initiated events by implementing a method that
-  matches the event name. A `jQuery.Event` object will be passed as the
-  argument to this method.
+  matches the event name. An event object will be passed as the argument to this
+  method.
 
   ```app/components/my-widget.js
   import Component from '@ember/component';
 
   export default Component.extend({
     click(event) {
-      // will be called when an instance's
-      // rendered element is clicked
+      // will be called with a browser event when an instance's rendered element
+      // is clicked
     }
   });
   ```

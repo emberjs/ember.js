@@ -5,18 +5,8 @@ import { set } from '@ember/-internals/metal';
 import { LinkComponent } from '@ember/-internals/glimmer';
 
 moduleFor(
-  'link-to component (basic tests)',
+  '{{link-to}} component (rendering tests)',
   class extends ApplicationTestCase {
-    visitWithDeprecation(path, deprecation) {
-      let p;
-
-      expectDeprecation(() => {
-        p = this.visit(path);
-      }, deprecation);
-
-      return p;
-    }
-
     ['@test should be able to be inserted in DOM when the router is not present']() {
       this.addTemplate('application', `{{#link-to 'index'}}Go to Index{{/link-to}}`);
 
@@ -156,7 +146,7 @@ moduleFor(
 );
 
 moduleFor(
-  'link-to component (without router??!)',
+  '{{link-to}} component (rendering tests, without router)',
   class extends RenderingTestCase {
     ['@test should be able to be inserted in DOM when the router is not present - block']() {
       this.render(`{{#link-to 'index'}}Go to Index{{/link-to}}`);

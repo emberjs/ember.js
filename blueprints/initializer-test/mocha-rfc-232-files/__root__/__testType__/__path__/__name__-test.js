@@ -1,6 +1,5 @@
 import { expect } from 'chai';
 import { describe, it, beforeEach, afterEach } from 'mocha';
-import { setupTest } from 'ember-mocha';
 import Application from '@ember/application';
 import { initialize } from '<%= modulePrefix %>/initializers/<%= dasherizedModuleName %>';
 <% if (destroyAppExists) { %>import destroyApp from '../../helpers/destroy-app';<% } else { %>import { run } from '@ember/runloop';<% } %>

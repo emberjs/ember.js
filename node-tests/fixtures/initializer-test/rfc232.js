@@ -2,7 +2,6 @@ import Application from '@ember/application';
 
 import { initialize } from 'my-app/initializers/foo';
 import { module, test } from 'qunit';
-import { setupTest } from 'ember-qunit';
 import { run } from '@ember/runloop';
 
 module('Unit | Initializer | foo', function(hooks) {

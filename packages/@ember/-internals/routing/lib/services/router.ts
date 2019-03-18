@@ -137,7 +137,60 @@ export default class RouterService extends Service {
   }
 
   /**
-     Generate a URL based on the supplied route name.
+    Generate a URL based on the supplied route name and optionally a model. The
+    URL is returned as a string that can be used for any purpose.
+
+    In this example, the URL for the `author.books` route for a given author
+    is copied to the clipboard.
+
+    ```app/components/copy-link.js
+    import Component from '@ember/component';
+    import {inject as service} from '@ember/service';
+
+    export default Component.extend({
+      router: service('router'),
+      clipboard: service('clipboard')
+
+      // Provided in the template
+      // { id: 'tomster', name: 'Tomster' }
+      author: null,
+
+      copyBooksURL() {
+        if (this.author) {
+          const url = this.router.urlFor('author.books', this.author);
+          this.clipboard.set(url);
+          // Clipboard now has /author/tomster/books
+        }
+      }
+    });
+    ```
+
+    Just like with `transitionTo` and `replaceWith`, `urlFor` can also handle
+    query parameters.
+
+    ```app/components/copy-link.js
+    import Component from '@ember/component';
+    import {inject as service} from '@ember/service';
+
+    export default Component.extend({
+      router: service('router'),
+      clipboard: service('clipboard')
+
+      // Provided in the template
+      // { id: 'tomster', name: 'Tomster' }
+      author: null,
+
+      copyOnlyEmberBooksURL() {
+        if (this.author) {
+          const url = this.router.urlFor('author.books', this.author, {
+            queryParams: { filter: 'emberjs' }
+          });
+          this.clipboard.set(url);
+          // Clipboard now has /author/tomster/books?filter=emberjs
+        }
+      }
+    });
+    ```
 
      @method urlFor
      @param {String} routeName the name of the route
