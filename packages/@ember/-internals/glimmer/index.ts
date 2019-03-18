@@ -179,7 +179,7 @@
   @public
  */
 
- /**
+/**
   `{{has-block}}` indicates if the component was invoked with a block.
 
   This component is invoked with a block:
@@ -207,7 +207,7 @@
   @for Ember.Templates.helpers
   @return {Boolean} `true` if the component was invoked with a block
   @public
-*/
+ */
 
 /**
   Execute the `debugger` statement in the current template's context.
