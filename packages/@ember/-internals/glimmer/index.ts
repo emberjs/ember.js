@@ -300,7 +300,7 @@ export { default as AbstractComponentManager } from './lib/component-managers/ab
 // rather than the problem was solved
 // DebugStack should just test the assert message
 // it supports for example
-export { ACTION_METHOD, UpdatableReference, INVOKE } from './lib/utils/references';
+export { UpdatableReference, INVOKE } from './lib/utils/references';
 export { default as iterableFor } from './lib/utils/iterable';
 export { default as DebugStack } from './lib/utils/debug-stack';
 export { default as OutletView } from './lib/views/outlet';

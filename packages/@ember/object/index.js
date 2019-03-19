@@ -1,8 +1,6 @@
-import { ACTION_METHOD } from '@ember/-internals/glimmer';
 import { EMBER_NATIVE_DECORATOR_SUPPORT } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { assign } from '@ember/polyfills';
-import { DEBUG } from '@glimmer/env';
 
 /**
   Decorator that turns the target function into an Action
@@ -73,11 +71,6 @@ if (EMBER_NATIVE_DECORATOR_SUPPORT) {
 
         if (fn === undefined) {
           fn = actionFn.bind(this);
-
-          if (DEBUG) {
-            fn[ACTION_METHOD] = true;
-          }
-
           bindings.set(actionFn, fn);
         }
 

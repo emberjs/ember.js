@@ -1,10 +1,8 @@
 import { uuid } from '@ember/-internals/utils';
 import { ActionManager, isSimpleClick } from '@ember/-internals/views';
-import { EMBER_NATIVE_DECORATOR_SUPPORT } from '@ember/canary-features';
-import { assert, warn } from '@ember/debug';
+import { assert } from '@ember/debug';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { join } from '@ember/runloop';
-import { DEBUG } from '@glimmer/env';
 import { Opaque, Simple } from '@glimmer/interfaces';
 import { RevisionTag, TagWrapper } from '@glimmer/reference';
 import {
@@ -15,7 +13,7 @@ import {
   ModifierManager,
 } from '@glimmer/runtime';
 import { Destroyable } from '@glimmer/util';
-import { ACTION_METHOD, INVOKE } from '../utils/references';
+import { INVOKE } from '../utils/references';
 
 const MODIFIERS = ['alt', 'shift', 'meta', 'ctrl'];
 const POINTER_EVENT_TYPE_REGEX = /^click|mouse|touch/;
@@ -197,7 +195,7 @@ export default class ActionModifierManager implements ModifierManager<ActionStat
     dom: any
   ) {
     let { named, positional, tag } = args.capture();
-    let implicitTarget: any;
+    let implicitTarget;
     let actionName;
     let actionNameRef: any;
     if (positional.length > 1) {
@@ -214,28 +212,13 @@ export default class ActionModifierManager implements ModifierManager<ActionStat
           'You specified a quoteless path, `' +
             actionLabel +
             '`, to the ' +
-            '{{action}} modifier which did not resolve to an action name (a ' +
+            '{{action}} helper which did not resolve to an action name (a ' +
             'string). Perhaps you meant to use a quoted actionName? (e.g. ' +
             '{{action "' +
             actionLabel +
             '"}}).',
           typeof actionName === 'string' || typeof actionName === 'function'
         );
-
-        if (DEBUG && EMBER_NATIVE_DECORATOR_SUPPORT) {
-          let implicitTargetValue = implicitTarget.value();
-
-          warn(
-            `You passed a method, ${actionLabel}, to the {{action}} modifier which was not decorated with the '@action' decorator. All actions should be decorated with the '@action' decorator.`,
-            typeof actionName !== 'function' ||
-              !implicitTargetValue ||
-              implicitTargetValue[actionLabel] !== actionName ||
-              actionName[ACTION_METHOD] === true,
-            {
-              id: 'action-without-decorator',
-            }
-          );
-        }
       }
     }
 
