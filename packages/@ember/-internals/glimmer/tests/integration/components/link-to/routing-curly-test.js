@@ -1,4 +1,5 @@
 import { moduleFor, ApplicationTestCase, runLoopSettled, runTask } from 'internal-test-helpers';
+import { EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS } from '@ember/canary-features';
 import Controller, { inject as injectController } from '@ember/controller';
 import { A as emberA, RSVP } from '@ember/-internals/runtime';
 import { alias } from '@ember/-internals/metal';
@@ -560,7 +561,7 @@ if (EMBER_IMPROVED_INSTRUMENTATION) {
         return this.click('#about-link');
       }
 
-      ['@test The {{link-to}} helper interaction event includes the transition in the after hook'](
+      ['@test The {{link-to}} component interaction event includes the transition in the after hook'](
         assert
       ) {
         assert.expect(1);
@@ -585,7 +586,7 @@ if (EMBER_IMPROVED_INSTRUMENTATION) {
 moduleFor(
   'The {{link-to}} component - nested routes and link-to arguments',
   class extends ApplicationTestCase {
-    ['@test The {{link-to}} helper supports leaving off .index for nested routes'](assert) {
+    ['@test The {{link-to}} component supports leaving off .index for nested routes'](assert) {
       this.router.map(function() {
         this.route('about', function() {
           this.route('item');
@@ -1001,7 +1002,7 @@ moduleFor(
         });
     }
 
-    [`@test The {{link-to}} helper binds some anchor html tag common attributes`](assert) {
+    [`@test The {{link-to}} component binds some anchor html tag common attributes`](assert) {
       this.addTemplate(
         'index',
         `
@@ -1020,7 +1021,7 @@ moduleFor(
       });
     }
 
-    [`@test The {{link-to}} helper supports 'target' attribute`](assert) {
+    [`@test The {{link-to}} component supports 'target' attribute`](assert) {
       this.addTemplate(
         'index',
         `
@@ -1035,7 +1036,7 @@ moduleFor(
       });
     }
 
-    [`@test The {{link-to}} helper supports 'target' attribute specified as a bound param`](
+    [`@test The {{link-to}} component supports 'target' attribute specified as a bound param`](
       assert
     ) {
       this.addTemplate(
@@ -1056,7 +1057,7 @@ moduleFor(
       });
     }
 
-    [`@test the {{link-to}} helper calls preventDefault`](assert) {
+    [`@test the {{link-to}} component calls preventDefault`](assert) {
       this.router.map(function() {
         this.route('about');
       });
@@ -1068,7 +1069,7 @@ moduleFor(
       });
     }
 
-    [`@test the {{link-to}} helper does not call preventDefault if 'preventDefault=false' is passed as an option`](
+    [`@test the {{link-to}} component does not call preventDefault if 'preventDefault=false' is passed as an option`](
       assert
     ) {
       this.router.map(function() {
@@ -1085,7 +1086,7 @@ moduleFor(
       });
     }
 
-    [`@test the {{link-to}} helper does not call preventDefault if 'preventDefault=boundFalseyThing' is passed as an option`](
+    [`@test the {{link-to}} component does not call preventDefault if 'preventDefault=boundFalseyThing' is passed as an option`](
       assert
     ) {
       this.router.map(function() {
@@ -1109,7 +1110,7 @@ moduleFor(
       });
     }
 
-    [`@test The {{link-to}} helper does not call preventDefault if 'target' attribute is provided`](
+    [`@test The {{link-to}} component does not call preventDefault if 'target' attribute is provided`](
       assert
     ) {
       this.addTemplate(
@@ -1125,7 +1126,7 @@ moduleFor(
       });
     }
 
-    [`@test The {{link-to}} helper should preventDefault when 'target = _self'`](assert) {
+    [`@test The {{link-to}} component should preventDefault when 'target = _self'`](assert) {
       this.addTemplate(
         'index',
         `
@@ -1139,7 +1140,7 @@ moduleFor(
       });
     }
 
-    [`@test The {{link-to}} helper should not transition if target is not equal to _self or empty`](
+    [`@test The {{link-to}} component should not transition if target is not equal to _self or empty`](
       assert
     ) {
       this.addTemplate(
@@ -1171,7 +1172,7 @@ moduleFor(
         });
     }
 
-    [`@test The {{link-to}} helper accepts string/numeric arguments`](assert) {
+    [`@test The {{link-to}} component accepts string/numeric arguments`](assert) {
       this.router.map(function() {
         this.route('filter', { path: '/filters/:filter' });
         this.route('post', { path: '/post/:post_id' });
@@ -1282,7 +1283,7 @@ moduleFor(
       });
     }
 
-    [`@test The {{link-to}} helper refreshes href element when one of params changes`](assert) {
+    [`@test The {{link-to}} component refreshes href element when one of params changes`](assert) {
       this.router.map(function() {
         this.route('post', { path: '/posts/:post_id' });
       });
@@ -1322,7 +1323,7 @@ moduleFor(
       });
     }
 
-    [`@test The {{link-to}} helper is active when a route is active`](assert) {
+    [`@test The {{link-to}} component is active when a route is active`](assert) {
       this.router.map(function() {
         this.route('about', function() {
           this.route('item');
@@ -1353,7 +1354,7 @@ moduleFor(
         });
     }
 
-    [`@test The {{link-to}} helper works in an #each'd array of string route names`](assert) {
+    [`@test The {{link-to}} component works in an #each'd array of string route names`](assert) {
       this.router.map(function() {
         this.route('foo');
         this.route('bar');
@@ -1412,7 +1413,7 @@ moduleFor(
       });
     }
 
-    [`@test The non-block form {{link-to}} helper moves into the named route`](assert) {
+    [`@test The non-block form {{link-to}} component moves into the named route`](assert) {
       assert.expect(3);
       this.router.map(function() {
         this.route('contact');
@@ -1454,7 +1455,7 @@ moduleFor(
         });
     }
 
-    [`@test The non-block form {{link-to}} helper updates the link text when it is a binding`](
+    [`@test The non-block form {{link-to}} component updates the link text when it is a binding`](
       assert
     ) {
       assert.expect(8);
@@ -1538,7 +1539,7 @@ moduleFor(
         });
     }
 
-    [`@test The non-block form {{link-to}} helper moves into the named route with context`](
+    [`@test The non-block form {{link-to}} component moves into the named route with context`](
       assert
     ) {
       assert.expect(5);
@@ -1971,14 +1972,21 @@ moduleFor(
 );
 
 moduleFor(
-  'The {{link-to}} helper - loading states and warnings',
+  'The {{link-to}} component - loading states and warnings',
   class extends ApplicationTestCase {
     [`@test {{link-to}} with null/undefined dynamic parameters are put in a loading state`](
       assert
     ) {
       assert.expect(19);
-      let warningMessage =
-        'This link-to is in an inactive loading state because at least one of its parameters presently has a null/undefined value, or the provided route name is invalid.';
+      let warningMessage;
+
+      if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
+        warningMessage =
+          'This link is in an inactive loading state because at least one of its models currently has a null/undefined value, or the provided route name is invalid.';
+      } else {
+        warningMessage =
+          'This link-to is in an inactive loading state because at least one of its parameters presently has a null/undefined value, or the provided route name is invalid.';
+      }
 
       this.router.map(function() {
         this.route('thing', { path: '/thing/:thing_id' });
