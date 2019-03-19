@@ -5,7 +5,6 @@ import {
   ApplicationTestCase,
   classes as classMatcher,
   moduleFor,
-  runLoopSettled,
   runTask,
 } from 'internal-test-helpers';
 
@@ -724,18 +723,6 @@ moduleFor(
         assert.equal(router.get('location.path'), '/foos');
         this.shouldBeActive(assert, '#foos-link');
       });
-    }
-
-    [`@test the {{link-to}} component throws a useful error if you invoke it wrong`](assert) {
-      assert.expect(1);
-
-      this.addTemplate('application', `{{#link-to id='the-link'}}Index{{/link-to}}`);
-
-      expectAssertion(() => {
-        this.visit('/');
-      }, /You must provide one or more parameters to the link-to component/);
-
-      return runLoopSettled();
     }
   }
 );

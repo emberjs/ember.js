@@ -7,6 +7,30 @@ import { LinkComponent } from '@ember/-internals/glimmer';
 moduleFor(
   '{{link-to}} component (rendering tests)',
   class extends ApplicationTestCase {
+    [`@feature(ember-glimmer-angle-bracket-built-ins) throws a useful error if you invoke it wrong`](
+      assert
+    ) {
+      assert.expect(1);
+
+      this.addTemplate('application', `{{#link-to id='the-link'}}Index{{/link-to}}`);
+
+      expectAssertion(() => {
+        this.visit('/');
+      }, /You must provide at least one of the `@route`, `@model`, `@models` or `@query` argument to `<LinkTo \/>`/);
+    }
+
+    [`@feature(!ember-glimmer-angle-bracket-built-ins) throws a useful error if you invoke it wrong`](
+      assert
+    ) {
+      assert.expect(1);
+
+      this.addTemplate('application', `{{#link-to id='the-link'}}Index{{/link-to}}`);
+
+      expectAssertion(() => {
+        this.visit('/');
+      }, /You must provide one or more parameters to the link-to component/);
+    }
+
     ['@test should be able to be inserted in DOM when the router is not present']() {
       this.addTemplate('application', `{{#link-to 'index'}}Go to Index{{/link-to}}`);
 
@@ -18,7 +42,8 @@ moduleFor(
     ['@test re-renders when title changes']() {
       let controller;
 
-      this.addTemplate('application', '{{link-to title routeName}}');
+      this.addTemplate('application', `{{link-to title 'index'}}`);
+
       this.add(
         'controller:application',
         Controller.extend({
@@ -27,7 +52,6 @@ moduleFor(
             controller = this;
           },
           title: 'foo',
-          routeName: 'index',
         })
       );
 
