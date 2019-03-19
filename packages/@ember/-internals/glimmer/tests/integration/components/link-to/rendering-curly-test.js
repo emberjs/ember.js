@@ -103,21 +103,6 @@ moduleFor(
       });
     }
 
-    ['@test escaped inline form with (-html-safe) does not escape link title'](assert) {
-      this.addTemplate('application', `{{link-to (-html-safe title) 'index'}}`);
-      this.add(
-        'controller:application',
-        Controller.extend({
-          title: '<b>blah</b>',
-        })
-      );
-
-      return this.visit('/').then(() => {
-        this.assertText('blah');
-        assert.equal(this.$('b').length, 1);
-      });
-    }
-
     ['@test unescaped inline form (triple curlies) does not escape link title'](assert) {
       this.addTemplate('application', `{{{link-to title 'index'}}}`);
       this.add(

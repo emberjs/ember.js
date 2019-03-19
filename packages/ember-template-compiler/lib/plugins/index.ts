@@ -10,8 +10,8 @@ import TransformComponentInvocation from './transform-component-invocation';
 import TransformEachInIntoEach from './transform-each-in-into-each';
 import TransformHasBlockSyntax from './transform-has-block-syntax';
 import TransformInElement from './transform-in-element';
-import TransformInlineLinkTo from './transform-inline-link-to';
 import TransformInputTypeSyntax from './transform-input-type-syntax';
+import TransformLinkTo from './transform-link-to';
 import TransformOldClassBindingSyntax from './transform-old-class-binding-syntax';
 import TransformQuotedBindingsIntoJustBindings from './transform-quoted-bindings-into-just-bindings';
 
@@ -23,7 +23,7 @@ export type APluginFunc = (env: ASTPluginEnvironment) => ASTPlugin | undefined;
 
 const transforms: Array<APluginFunc> = [
   TransformComponentInvocation,
-  TransformInlineLinkTo,
+  TransformLinkTo,
   TransformOldClassBindingSyntax,
   TransformQuotedBindingsIntoJustBindings,
   AssertReservedNamedArguments,
