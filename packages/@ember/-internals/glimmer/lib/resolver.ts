@@ -23,7 +23,6 @@ import { TemplateOnlyComponentDefinition } from './component-managers/template-o
 import { isHelperFactory, isSimpleHelper } from './helper';
 import { default as componentAssertionHelper } from './helpers/-assert-implicit-component-helper-argument';
 import { default as classHelper } from './helpers/-class';
-import { default as htmlSafeHelper } from './helpers/-html-safe';
 import { default as inputTypeHelper } from './helpers/-input-type';
 import { default as normalizeClassHelper } from './helpers/-normalize-class';
 import { default as action } from './helpers/action';
@@ -76,7 +75,6 @@ const BUILTINS_HELPERS = {
   '-each-in': eachIn,
   '-input-type': inputTypeHelper,
   '-normalize-class': normalizeClassHelper,
-  '-html-safe': htmlSafeHelper,
   '-get-dynamic-var': getDynamicVar,
   '-mount': mountHelper,
   '-outlet': outletHelper,
