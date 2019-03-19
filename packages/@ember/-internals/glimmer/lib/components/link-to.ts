@@ -344,24 +344,28 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
 
     /**
       @property route
+      @category EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS
       @public
     */
     route: UNDEFINED,
 
     /**
       @property model
+      @category EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS
       @public
     */
     model: UNDEFINED,
 
     /**
       @property models
+      @category EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS
       @public
     */
     models: UNDEFINED,
 
     /**
       @property query
+      @category EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS
       @public
     */
     query: UNDEFINED,
