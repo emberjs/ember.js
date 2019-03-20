@@ -12,11 +12,9 @@ moduleFor(
     ) {
       assert.expect(1);
 
-      this.addTemplate('application', `{{#link-to id='the-link'}}Index{{/link-to}}`);
-
       expectAssertion(() => {
-        this.visit('/');
-      }, /You must provide at least one of the `@route`, `@model`, `@models` or `@query` argument to `<LinkTo \/>`/);
+        this.addTemplate('application', `{{#link-to id='the-link'}}Index{{/link-to}}`);
+      }, /You must provide one or more parameters to the `{{link-to}}` component\. \('my-app\/templates\/application\.hbs' @ L1:C0\)/);
     }
 
     [`@feature(!ember-glimmer-angle-bracket-built-ins) throws a useful error if you invoke it wrong`](

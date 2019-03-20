@@ -557,13 +557,14 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
       let { model, models } = this;
 
       assert(
-        'You cannot provide both the `@model` and `@models` arguments to the <LinkTo /> component',
+        'You cannot provide both the `@model` and `@models` arguments to the <LinkTo /> component.',
         model === UNDEFINED || models === UNDEFINED
       );
 
       if (model !== UNDEFINED) {
         return [model];
       } else if (models !== UNDEFINED) {
+        assert('The `@models` argument must be an array.', Array.isArray(models));
         return models;
       } else {
         return [];
@@ -921,6 +922,16 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
           )
         );
 
+        if (DEBUG && this.query === UNDEFINED) {
+          let { _models: models } = this;
+          let lastModel = models.length > 0 && models[models.length - 1];
+
+          assert(
+            'The `(query-params)` helper can only be used when invoking the `{{link-to}}` component.',
+            !(lastModel && lastModel.isQueryParams)
+          );
+        }
+
         return;
       }
 
@@ -933,9 +944,9 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
       }
 
       // 2. The last argument is possibly the `query` object.
-      let lastParam = params[params.length - 1];
+      let queryParams = params[params.length - 1];
 
-      if (lastParam && lastParam.isQueryParams) {
+      if (queryParams && queryParams.isQueryParams) {
         this.set('query', params.pop().values);
       } else {
         this.set('query', UNDEFINED);
@@ -1795,8 +1806,8 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
       }
 
       assert(
-        'You must provide one or more parameters to the link-to component.',
-        params && params.length
+        'You must provide one or more parameters to the `{{link-to}}` component.',
+        params && params.length > 0
       );
 
       let disabledWhen = get(this, 'disabledWhen');
