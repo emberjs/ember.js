@@ -11,6 +11,9 @@
     @autofocus={{@autofocus}}
     @required={{@required}}
     @form={{@form}}
+
+    @__sourceInput={{this}}
+
     ...attributes
   />
 {{~else~}}
@@ -64,6 +67,9 @@
     @type={{@type}}
     @value={{@value}}
     @width={{@width}}
+
+    @__sourceInput={{this}}
+
     ...attributes
   />
 {{~/if~}}

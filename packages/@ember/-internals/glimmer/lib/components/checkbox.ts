@@ -59,6 +59,15 @@ const Checkbox = EmberComponent.extend({
   change() {
     set(this, 'checked', this.element.checked);
   },
+
+  __sourceInput: null,
+
+  init() {
+    if (this.__sourceInput) {
+      this.__sourceInput.__injectEvents(this);
+    }
+    this._super(...arguments);
+  },
 });
 
 Checkbox.toString = () => '@ember/component/checkbox';

@@ -2,10 +2,12 @@
 @module @ember/component
 */
 import { computed } from '@ember/-internals/metal';
+import { getOwner } from '@ember/-internals/owner';
 import { EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import Component from '../component';
+import { Dict } from '@glimmer/interfaces';
+import Component, { DISABLE_TAGLESS_EVENT_CHECK } from '../component';
 
 let Input: any;
 
@@ -148,9 +150,26 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
   Input = Component.extend({
     tagName: '',
 
+    init() {
+      if (DEBUG) {
+        this[DISABLE_TAGLESS_EVENT_CHECK] = true;
+      }
+      this._super(...arguments);
+    },
+
     isCheckbox: computed('type', function(this: { type?: unknown }) {
       return this.type === 'checkbox';
     }),
+
+    __injectEvents(target: any) {
+      let eventDispatcher = getOwner(this).lookup<any | undefined>('event_dispatcher:main');
+      let events: Dict<string> = (eventDispatcher && eventDispatcher._finalEvents) || {};
+      Object.values(events).forEach(key => {
+        if (this[key]) {
+          target[key] = this[key];
+        }
+      });
+    },
   });
 
   Input.toString = () => '@ember/component/input';
