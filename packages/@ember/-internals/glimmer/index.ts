@@ -180,6 +180,85 @@
  */
 
 /**
+  `{{has-block}}` indicates if the component was invoked with a block.
+
+  This component is invoked with a block:
+  ```handlebars
+  {{#my-component}}
+    Hi Jen!
+  {{/my-component}}
+  ```
+
+  This component is invoked without a block:
+  ```handlebars
+  {{my-component}}
+  ```
+
+  Using angle bracket invocation, this looks like:
+  ```html
+  <MyComponent>Hi Jen!</MyComponent> {{! with a block}}
+  ```
+
+  ```html
+  <MyComponent/> {{! without a block}}
+  ```
+
+  This is useful when you want to create a component that can optionally take a block
+  and then render a default template when it is not invoked with a block.
+
+  ```app/templates/components/my-component.hbs
+  {{#if (has-block)}}
+    Welcome {{yield}}, we are happy you're here!
+  {{else}}
+    Hey you! You're great!
+  {{/if}}
+  ```
+
+  @method hasBlock
+  @for Ember.Templates.helpers
+  @param {String} the name of the block. The name (at the moment) is either "main" or "inverse" (though only curly components support inverse)
+  @return {Boolean} `true` if the component was invoked with a block
+  @public
+ */
+
+/**
+  `{{has-block-params}}` indicates if the component was invoked with block params.
+
+  This component is invoked with block params:
+  ```handlebars
+  {{#my-component as |favoriteFlavor|}}
+    Hi Jen!
+  {{/my-component}}
+  ```
+
+  This component is invoked without block params:
+  ```handlebars
+  {{#my-component}}
+    Hi Jenn!
+  {{/my-component}}
+  ```
+
+  This is useful when you want to create a component that can render itself
+  differently when it is not invoked with block params.
+
+  ```app/templates/components/my-component.hbs
+  {{#if (has-block-params)}}
+    Welcome {{yield favoriteFlavor}}, we're happy you're here and hope you
+    enjoy your favorite ice cream flavor.
+  {{else}}
+    Welcome {{yield}}, we're happy you're here, but we're unsure what
+    flavor ice cream you would enjoy.
+  {{/if}}
+  ```
+
+  @method hasBlockParams
+  @for Ember.Templates.helpers
+  @param {String} the name of the block. The name (at the moment) is either "main" or "inverse" (though only curly components support inverse)
+  @return {Boolean} `true` if the component was invoked with block params
+  @public
+ */
+
+/**
   Execute the `debugger` statement in the current template's context.
 
   ```handlebars
