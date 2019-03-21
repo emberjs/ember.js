@@ -27,7 +27,9 @@ function ast(template: string): AST.Program {
     };
   }
 
-  let options = compileOptions({});
+  let options = compileOptions({
+    moduleName: '-top-level',
+  });
 
   options.plugins!.ast!.push(extractProgram);
 
