@@ -1601,44 +1601,6 @@ moduleFor(
         attrs: { style: 'width: 60px;' },
       });
     }
-
-    ['@test can set dynamic style with -html-safe']() {
-      this.render('<div style={{-html-safe model.style}}></div>', {
-        model: {
-          style: htmlSafe('width: 60px;'),
-        },
-      });
-
-      this.assertElement(this.firstChild, {
-        tagName: 'div',
-        content: '',
-        attrs: { style: 'width: 60px;' },
-      });
-
-      runTask(() => this.rerender());
-
-      this.assertElement(this.firstChild, {
-        tagName: 'div',
-        content: '',
-        attrs: { style: 'width: 60px;' },
-      });
-
-      runTask(() => set(this.context, 'model.style', 'height: 60px;'));
-
-      this.assertElement(this.firstChild, {
-        tagName: 'div',
-        content: '',
-        attrs: { style: 'height: 60px;' },
-      });
-
-      runTask(() => set(this.context, 'model', { style: 'width: 60px;' }));
-
-      this.assertElement(this.firstChild, {
-        tagName: 'div',
-        content: '',
-        attrs: { style: 'width: 60px;' },
-      });
-    }
   }
 );
 
@@ -1698,14 +1660,6 @@ if (!EmberDev.runningProdBuild) {
 
       ['@test undefined value do not generate htmlsafe warning']() {
         this.render('<div style={{userValue}}></div>');
-
-        this.assertNoWarning();
-      }
-
-      ['@test no warnings are triggered when using `-html-safe`']() {
-        this.render('<div style={{-html-safe userValue}}></div>', {
-          userValue: 'width: 42px',
-        });
 
         this.assertNoWarning();
       }
