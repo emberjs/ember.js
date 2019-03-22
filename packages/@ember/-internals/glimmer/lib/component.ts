@@ -23,6 +23,7 @@ export const ROOT_REF = symbol('ROOT_REF');
 export const IS_DISPATCHING_ATTRS = symbol('IS_DISPATCHING_ATTRS');
 export const HAS_BLOCK = symbol('HAS_BLOCK');
 export const BOUNDS = symbol('BOUNDS');
+export const DISABLE_TAGLESS_EVENT_CHECK = symbol('DISABLE_TAGLESS_EVENT_CHECK');
 
 /**
 @module @ember/component
@@ -650,7 +651,8 @@ const Component = CoreView.extend(
       assert(
         // tslint:disable-next-line:max-line-length
         `You can not define a function that handles DOM events in the \`${this}\` tagless component since it doesn't have any DOM element.`,
-        this.tagName !== '' ||
+        this[DISABLE_TAGLESS_EVENT_CHECK] ||
+          this.tagName !== '' ||
           !this.renderer._destinedForDOM ||
           !(() => {
             let eventDispatcher = getOwner(this).lookup<any | undefined>('event_dispatcher:main');

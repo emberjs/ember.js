@@ -153,6 +153,15 @@ const TextField = Component.extend(TextSupport, {
     @public
   */
   max: null,
+
+  __sourceInput: null,
+
+  init() {
+    if (this.__sourceInput) {
+      this.__sourceInput.__injectEvents(this);
+    }
+    this._super(...arguments);
+  },
 });
 
 TextField.toString = () => '@ember/component/text-field';

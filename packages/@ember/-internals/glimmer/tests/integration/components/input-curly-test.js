@@ -76,6 +76,71 @@ class InputRenderingTest extends RenderingTestCase {
       element.dispatchEvent(event);
     });
   }
+
+  assertTriggersNativeDOMEvents(type) {
+    // Defaults from EventDispatcher
+    let events = {
+      touchstart: 'touchStart',
+      touchmove: 'touchMove',
+      touchend: 'touchEnd',
+      touchcancel: 'touchCancel',
+      keydown: 'keyDown',
+      keyup: 'keyUp',
+      keypress: 'keyPress',
+      mousedown: 'mouseDown',
+      mouseup: 'mouseUp',
+      contextmenu: 'contextMenu',
+      click: 'click',
+      dblclick: 'doubleClick',
+      mousemove: 'mouseMove',
+      focusin: 'focusIn',
+      focusout: 'focusOut',
+      mouseenter: 'mouseEnter',
+      mouseleave: 'mouseLeave',
+      submit: 'submit',
+      input: 'input',
+      change: 'change',
+      dragstart: 'dragStart',
+      drag: 'drag',
+      dragenter: 'dragEnter',
+      dragleave: 'dragLeave',
+      dragover: 'dragOver',
+      drop: 'drop',
+      dragend: 'dragEnd',
+    };
+
+    let TestComponent = Component.extend({ tagName: 'input' });
+    this.registerComponent('test-component', { ComponentClass: TestComponent });
+
+    let triggeredEvents = [];
+    let actions = {};
+    Object.keys(events).forEach(evt => {
+      actions[`run_${evt}`] = function() {
+        triggeredEvents.push(evt);
+      };
+    });
+
+    let typeAttr = type ? `type="${type}" ` : '';
+    let actionAttrs = Object.keys(events)
+      .map(evt => `${events[evt]}=(action 'run_${evt}')`)
+      .join(' ');
+    let template = `{{test-component ${typeAttr}${actionAttrs}}}{{input ${typeAttr}${actionAttrs}}}`;
+
+    this.render(template, { actions });
+
+    Object.keys(events).forEach(evt => this.triggerEvent(evt, null, 'input:first-of-type'));
+    let normallyTriggeredEvents = [].concat(triggeredEvents);
+    triggeredEvents.length = 0;
+
+    this.assert.ok(
+      normallyTriggeredEvents.length > 10,
+      'sanity check that most events are triggered'
+    );
+
+    normallyTriggeredEvents.forEach(evt => this.triggerEvent(evt, null, 'input:last-of-type'));
+
+    this.assert.deepEqual(triggeredEvents, normallyTriggeredEvents, 'called for all events');
+  }
 }
 
 moduleFor(
@@ -552,6 +617,10 @@ moduleFor(
       this.assert.equal(this.$input()[0].type, 'text');
       this.assert.equal(this.$input()[1].type, 'file');
     }
+
+    ['@test sends an action with `{{input EVENT=(action "foo")}}` for native DOM events']() {
+      this.assertTriggersNativeDOMEvents();
+    }
   }
 );
 
@@ -730,6 +799,10 @@ moduleFor(
       this.assertNotDisabled();
       this.assertAttr('tabindex', '10');
       this.assertAttr('name', 'original-name');
+    }
+
+    ['@test sends an action with `{{input EVENT=(action "foo")}}` for native DOM events']() {
+      this.assertTriggersNativeDOMEvents('checkbox');
     }
   }
 );
