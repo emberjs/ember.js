@@ -588,6 +588,42 @@ export class InitialRenderSuite extends RenderTest {
   }
 
   @test
+  'svg href attribute with quotation marks'() {
+    this.render(
+      `<svg xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:href="{{iconLink}}"></use></svg>`,
+      { iconLink: 'home' }
+    );
+    this.assertHTML(
+      `<svg xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:href="home"></use></svg>`
+    );
+    let svg = this.element.firstChild;
+    if (assertNodeTagName(svg, 'svg')) {
+      let use = svg.firstChild;
+      if (assertNodeTagName(use, 'use')) {
+        this.assert.equal(use.href.baseVal, 'home');
+      }
+    }
+  }
+
+  @test
+  'svg href attribute without quotation marks'() {
+    this.render(
+      `<svg xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:href={{iconLink}}></use></svg>`,
+      { iconLink: 'home' }
+    );
+    this.assertHTML(
+      `<svg xmlns:xlink="http://www.w3.org/1999/xlink"><use xlink:href="home"></use></svg>`
+    );
+    let svg = this.element.firstChild;
+    if (assertNodeTagName(svg, 'svg')) {
+      let use = svg.firstChild;
+      if (assertNodeTagName(use, 'use')) {
+        this.assert.equal(use.href.baseVal, 'home');
+      }
+    }
+  }
+
+  @test
   '<svg> tag with case-sensitive attribute'() {
     this.render('<svg viewBox="0 0 0 0"></svg>');
     this.assertHTML('<svg viewBox="0 0 0 0"></svg>');
