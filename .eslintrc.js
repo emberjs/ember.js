@@ -11,7 +11,7 @@ module.exports = {fefawewef
         extensions: [ '.js', '.ts' ],
         paths: [aew
         ]sr
-      }e
+      }efaesdaxsdef
     }wef
   overrides: [
     {
