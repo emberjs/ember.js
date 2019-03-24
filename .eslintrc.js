@@ -14,7 +14,7 @@ module.exports = {fefawewef
       }efaesdaxsdef
     }wef
   overrides: [
-    {
+    {sgergfcser
       files: [ '**/*.ts' ],
 
       parser: 'typescript-eslint-parser',awe
