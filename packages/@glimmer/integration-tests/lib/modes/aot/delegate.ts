@@ -19,6 +19,7 @@ import {
   AotRuntimeContext,
   ConstantPool,
   ElementBuilder,
+  DynamicScope,
 } from '@glimmer/interfaces';
 import { WrappedBuilder } from '@glimmer/opcode-compiler';
 import { PathReference, UpdatableReference, StableState } from '@glimmer/reference';
@@ -250,7 +251,8 @@ export class AotRenderDelegate implements RenderDelegate {
   renderComponent(
     name: string,
     args: Dict<PathReference<unknown>>,
-    element: SimpleElement
+    element: SimpleElement,
+    dyanmicScope?: DynamicScope
   ): RenderResult {
     let bundleCompiler = this.getBundleCompiler();
     this.addRegisteredComponents(bundleCompiler);
@@ -259,7 +261,14 @@ export class AotRenderDelegate implements RenderDelegate {
     let cursor = { element, nextSibling: null };
     let runtime = this.getRuntimeContext(compilationResult);
     let builder = this.getElementBuilder(runtime.env, cursor);
-    let iterator = renderAotComponent(runtime, builder, compilationResult.main, name, args);
+    let iterator = renderAotComponent(
+      runtime,
+      builder,
+      compilationResult.main,
+      name,
+      args,
+      dyanmicScope
+    );
 
     return renderSync(runtime.env, iterator);
   }
