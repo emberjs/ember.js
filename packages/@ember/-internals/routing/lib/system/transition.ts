@@ -138,7 +138,7 @@
  * This property is a `RouteInfo` object that represents
  * where the router is transitioning to. It's important
  * to note that a `RouteInfo` is a linked list and this
- * property is simply represents leafmost route.
+ * property represents the leafmost route.
  * @property {RouteInfo|RouteInfoWithAttributes} to
  * @public
  * @category ember-routing-router-service
@@ -148,8 +148,8 @@
  * This property is a `RouteInfo` object that represents
  * where transition originated from. It's important
  * to note that a `RouteInfo` is a linked list and this
- * property is simply represents head node of the list.
- * In the case of an initial render, from will be set to
+ * property represents the head node of the list.
+ * In the case of an initial render, `from` will be set to
  * `null`.
  * @property {RouteInfoWithAttributes} from
  * @public
