@@ -38,7 +38,7 @@
 /**
   The ordered list of the names of the params
   required for this route. It will contain the same
-  strings as Object.keys(params), but here the order
+  strings as `Object.keys(params)`, but here the order
   is significant. This allows users to correctly pass
   params into routes programmatically.
   @property {Array} paramNames
@@ -142,9 +142,9 @@
 */
 
 /**
-  The values of the route's parametes. These are the
+  The values of the route's parameters. These are the
   same params that are received as arguments to the
-  route's model hook. Contains only the parameters
+  route's `model` hook. Contains only the parameters
   valid for this route, if any (params for parent or
   child routes are not merged).
   @property {Object} params
@@ -168,7 +168,7 @@
 */
 
 /**
-  A reference to the parent route's RouteInfo.
+  A reference to the parent route's `RouteInfo`.
   This can be used to traverse upward to the topmost
   `RouteInfo`.
   @property {RouteInfo|null} parent
@@ -176,7 +176,7 @@
 */
 
 /**
-  A reference to the child route's RouteInfo.
+  A reference to the child route's `RouteInfo`.
   This can be used to traverse downward to the
   leafmost `RouteInfo`.
   @property {RouteInfo|null} child
@@ -186,7 +186,9 @@
   of `RouteInfo`s from the topmost to leafmost.
   Returns the first `RouteInfo` in the linked list
   for which the callback returns true.
+*/
 
+/**
     This method is similar to the `find()` method
     defined in ECMAScript 2015.
 
