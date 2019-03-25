@@ -293,7 +293,7 @@ if (EMBER_ROUTING_ROUTER_SERVICE) {
       });
     },
 
-  /**
+    /**
      A `RouteInfo` that represents the current leaf route.
      It is guaranteed to change whenever a route transition
      happens (even when that transition only changes parameters
