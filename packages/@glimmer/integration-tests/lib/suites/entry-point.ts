@@ -1,4 +1,5 @@
-import { PrimitiveReference } from '@glimmer/runtime';
+import { PrimitiveReference, DefaultDynamicScope } from '@glimmer/runtime';
+import { ConstReference } from '@glimmer/reference';
 import { RenderTest, Count } from '../render-test';
 import { ComponentKind } from '../components/types';
 import { test } from '../test-decorator';
@@ -54,5 +55,19 @@ export class EntryPointTest extends RenderTest {
     let body = PrimitiveReference.create('text');
     delegate.renderComponent('Body', { body }, element);
     QUnit.assert.equal((element as Element).innerHTML, '<p>body text</p>');
+  }
+
+  @test
+  'supports passing in an initial dynamic context'() {
+    let delegate = new AotRenderDelegate();
+    delegate.registerComponent('Basic', 'Basic', 'Locale', `{{-get-dynamic-var "locale"}}`);
+
+    let element = delegate.getInitialElement();
+    let dynamicScope = new DefaultDynamicScope({
+      locale: new ConstReference('en_US'),
+    });
+    delegate.renderComponent('Locale', {}, element, dynamicScope);
+
+    QUnit.assert.equal((element as Element).innerHTML, 'en_US');
   }
 }

@@ -612,9 +612,18 @@ export interface InitOptions extends MinimalInitOptions {
 export class AotVM extends VM<number> implements InternalVM<number> {
   static empty(
     runtime: AotRuntimeContext,
+    dynamicScope: DynamicScope,
     { handle, treeBuilder }: MinimalInitOptions
   ): InternalVM<number> {
-    let vm = initAOT(runtime, vmState(runtime.program.heap.getaddr(handle)), treeBuilder);
+    let vm = initAOT(
+      runtime,
+      vmState(
+        runtime.program.heap.getaddr(handle),
+        ScopeImpl.root<number>(UNDEFINED_REFERENCE, 0),
+        dynamicScope
+      ),
+      treeBuilder
+    );
     vm.pushUpdating();
     return vm;
   }
@@ -675,10 +684,19 @@ export class JitVM extends VM<CompilableBlock> implements InternalJitVM {
 
   static empty(
     runtime: JitRuntimeContext,
+    dynamicScope: DynamicScope,
     { handle, treeBuilder }: MinimalInitOptions,
     context: SyntaxCompilationContext
   ) {
-    let vm = initJIT(context)(runtime, vmState(runtime.program.heap.getaddr(handle)), treeBuilder);
+    let vm = initJIT(context)(
+      runtime,
+      vmState(
+        runtime.program.heap.getaddr(handle),
+        ScopeImpl.root<CompilableBlock>(UNDEFINED_REFERENCE, 0),
+        dynamicScope
+      ),
+      treeBuilder
+    );
     vm.pushUpdating();
     return vm;
   }
