@@ -18,10 +18,10 @@ const CAPABILITIES: ComponentCapabilities = {
   createArgs: false,
   attributeHook: false,
   elementHook: false,
-  createCaller: true,
-  dynamicScope: true,
-  updateHook: true,
-  createInstance: true,
+  createCaller: false,
+  dynamicScope: false,
+  updateHook: false,
+  createInstance: false,
 };
 
 export default class TemplateOnlyComponentManager extends AbstractManager<null, OwnedTemplate>
