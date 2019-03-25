@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.9.0-beta.5 (March 25, 2019)
+
+- [#17733](https://github.com/emberjs/ember.js/pull/17733) [BUGFIX] Assert on use of reserved component names (`input` and `textarea`)
+
 ### v3.9.0-beta.4 (March 11, 2019)
 
 - [#17710](https://github.com/emberjs/ember.js/pull/17710) [BUGFIX] Allow accessors in mixins
