@@ -444,7 +444,7 @@ RouterService.reopen(Evented, {
   rootURL: readOnly('_router.rootURL'),
 
   /**
-     A RouteInfo that represents the current leaf route.
+     A `RouteInfo` that represents the current leaf route.
      It is guaranteed to change whenever a route transition
      happens (even when that transition only changes parameters
      and doesn't change the active route)
