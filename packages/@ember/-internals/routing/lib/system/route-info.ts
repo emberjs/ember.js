@@ -181,14 +181,14 @@
   leafmost `RouteInfo`.
   @property {RouteInfo|null} child
   @public
+*/
 
+/**
   Allows you to traverse through the linked list
   of `RouteInfo`s from the topmost to leafmost.
   Returns the first `RouteInfo` in the linked list
   for which the callback returns true.
-*/
 
-/**
     This method is similar to the `find()` method
     defined in ECMAScript 2015.
 
