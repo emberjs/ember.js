@@ -2,12 +2,10 @@
 @module @ember/component
 */
 import { computed } from '@ember/-internals/metal';
-import { getOwner } from '@ember/-internals/owner';
+import { Object as EmberObject } from '@ember/-internals/runtime';
 import { EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS } from '@ember/canary-features';
-import { assert } from '@ember/debug';
-import { DEBUG } from '@glimmer/env';
-import { Dict } from '@glimmer/interfaces';
-import Component, { DISABLE_TAGLESS_EVENT_CHECK } from '../component';
+import { InputComponentManagerFactory } from '../component-managers/input';
+import { setManager } from '../utils/managers';
 
 let Input: any;
 
@@ -147,50 +145,22 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
     @param {Hash} options
     @public
   */
-  Input = Component.extend({
-    tagName: '',
-
-    init() {
-      if (DEBUG) {
-        this[DISABLE_TAGLESS_EVENT_CHECK] = true;
-      }
-      this._super(...arguments);
-    },
-
+  Input = EmberObject.extend({
     isCheckbox: computed('type', function(this: { type?: unknown }) {
       return this.type === 'checkbox';
     }),
-
-    __injectEvents(target: any) {
-      let eventDispatcher = getOwner(this).lookup<any | undefined>('event_dispatcher:main');
-      let events: Dict<string> = (eventDispatcher && eventDispatcher._finalEvents) || {};
-      Object.values(events).forEach(key => {
-        if (this[key]) {
-          target[key] = this[key];
-        }
-      });
-    },
   });
 
+  setManager(
+    {
+      factory: InputComponentManagerFactory,
+      internal: true,
+      type: 'component',
+    },
+    Input
+  );
+
   Input.toString = () => '@ember/component/input';
-
-  if (DEBUG) {
-    const UNSET = {};
-
-    Input.reopen({
-      value: UNSET,
-
-      didReceiveAttrs() {
-        this._super();
-
-        assert(
-          "`<Input @type='checkbox' @value={{...}} />` is not supported; " +
-            "please use `<Input @type='checkbox' @checked={{...}} />` instead.",
-          !(this.type === 'checkbox' && this.value !== UNSET)
-        );
-      },
-    });
-  }
 }
 
 export default Input;

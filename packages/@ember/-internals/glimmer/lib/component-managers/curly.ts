@@ -3,12 +3,13 @@ import { get } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
 import { addChildView, OwnedTemplateMeta, setViewElement } from '@ember/-internals/views';
-import { assert } from '@ember/debug';
+import { assert, debugFreeze } from '@ember/debug';
 import { _instrumentStart } from '@ember/instrumentation';
 import { assign } from '@ember/polyfills';
 import { DEBUG } from '@glimmer/env';
 import {
   ComponentCapabilities,
+  Dict,
   Option,
   ProgramSymbolTable,
   Simple,
@@ -96,6 +97,9 @@ function applyAttributeBindings(
 }
 
 const DEFAULT_LAYOUT = P`template:components/-default`;
+const EMPTY_POSITIONAL_ARGS: VersionedPathReference[] = [];
+
+debugFreeze(EMPTY_POSITIONAL_ARGS);
 
 export default class CurlyComponentManager
   extends AbstractManager<ComponentStateBucket, DefinitionState>
@@ -157,6 +161,24 @@ export default class CurlyComponentManager
   }
 
   prepareArgs(state: DefinitionState, args: Arguments): Option<PreparedArguments> {
+    if (args.named.has('__ARGS__')) {
+      let __args__ = args.named.get('__ARGS__').value() as Dict<VersionedPathReference>;
+
+      let prepared = {
+        positional: EMPTY_POSITIONAL_ARGS,
+        named: {
+          ...args.named.capture().map,
+          ...__args__,
+        },
+      };
+
+      if (DEBUG) {
+        delete prepared.named.__ARGS__;
+      }
+
+      return prepared;
+    }
+
     const { positionalParams } = state.ComponentClass.class!;
 
     // early exits

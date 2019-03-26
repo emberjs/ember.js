@@ -245,6 +245,44 @@ moduleFor(
       }, `'@$' is reserved. ('baz/foo-bar' @ L1:C17) `);
     }
 
+    [`@test '@__ARGS__' is reserved`]() {
+      expectAssertion(() => {
+        compile(`<Foo @__ARGS__="bar" />`, {
+          moduleName: 'baz/foo-bar',
+        });
+      }, `'@__ARGS__' is reserved. ('baz/foo-bar' @ L1:C5) `);
+
+      expectAssertion(() => {
+        compile(`{{foo __ARGS__="bar"}}`, {
+          moduleName: 'baz/foo-bar',
+        });
+      }, `'__ARGS__' is reserved. ('baz/foo-bar' @ L1:C6) `);
+
+      expectAssertion(() => {
+        compile(`{{#let (component "foo" __ARGS__="bar") as |c|}}{{c}}{{/let}}`, {
+          moduleName: 'baz/foo-bar',
+        });
+      }, `'__ARGS__' is reserved. ('baz/foo-bar' @ L1:C24) `);
+
+      expectAssertion(() => {
+        compile(`{{@__ARGS__}}`, {
+          moduleName: 'baz/foo-bar',
+        });
+      }, `'@__ARGS__' is reserved. ('baz/foo-bar' @ L1:C2) `);
+
+      expectAssertion(() => {
+        compile(`{{#if @__ARGS__}}Yup{{/if}}`, {
+          moduleName: 'baz/foo-bar',
+        });
+      }, `'@__ARGS__' is reserved. ('baz/foo-bar' @ L1:C6) `);
+
+      expectAssertion(() => {
+        compile(`{{input type=(if @__ARGS__ "bar" "baz")}}`, {
+          moduleName: 'baz/foo-bar',
+        });
+      }, `'@__ARGS__' is reserved. ('baz/foo-bar' @ L1:C17) `);
+    }
+
     [`@test '@' is de facto reserved (parse error)`](assert) {
       assert.throws(() => {
         compile('{{@}}', {

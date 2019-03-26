@@ -19,6 +19,9 @@ import { getDynamicVar, Helper, ModifierDefinition } from '@glimmer/runtime';
 import CompileTimeLookup from './compile-time-lookup';
 import { CurlyComponentDefinition } from './component-managers/curly';
 import { CustomManagerDefinition, ManagerDelegate } from './component-managers/custom';
+import InternalComponentManager, {
+  InternalComponentDefinition,
+} from './component-managers/internal';
 import { TemplateOnlyComponentDefinition } from './component-managers/template-only';
 import { isHelperFactory, isSimpleHelper } from './helper';
 import { default as componentAssertionHelper } from './helpers/-assert-implicit-component-helper-argument';
@@ -43,8 +46,8 @@ import { populateMacros } from './syntax';
 import { mountHelper } from './syntax/mount';
 import { outletHelper } from './syntax/outlet';
 import { Factory as TemplateFactory, Injections, OwnedTemplate } from './template';
-import { getComponentManager } from './utils/custom-component-manager';
 import { getModifierManager } from './utils/custom-modifier-manager';
+import { getManager } from './utils/managers';
 import { ClassBasedHelperReference, SimpleHelperReference } from './utils/references';
 
 function instrumentationPayload(name: string) {
@@ -308,7 +311,7 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
 
   private _lookupComponentDefinition(
     _name: string,
-    meta: OwnedTemplateMeta
+    { moduleName, owner }: OwnedTemplateMeta
   ): Option<ComponentDefinition> {
     assert(
       'Invoking `{{textarea}}` using angle bracket syntax or `component` helper is not yet supported.',
@@ -327,11 +330,7 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
       name = parsed.name;
       namespace = parsed.namespace;
     }
-    let { layout, component } = lookupComponent(
-      meta.owner,
-      name,
-      makeOptions(meta.moduleName, namespace)
-    );
+    let { layout, component } = lookupComponent(owner, name, makeOptions(moduleName, namespace));
 
     let key = component === undefined ? layout : component;
 
@@ -346,28 +345,41 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
 
     let finalizer = _instrumentStart('render.getComponentDefinition', instrumentationPayload, name);
 
-    let definition;
+    let definition: Option<ComponentDefinition> = null;
+
     if (layout !== undefined && component === undefined && ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
       definition = new TemplateOnlyComponentDefinition(layout);
     }
 
     if (component !== undefined && component.class !== undefined) {
-      let managerFactory = getComponentManager<ManagerDelegate<Opaque>>(component.class);
-      if (managerFactory) {
-        let delegate = managerFactory(meta.owner);
-        definition = new CustomManagerDefinition(
-          name,
-          component,
-          delegate,
-          layout || meta.owner.lookup<OwnedTemplate>(P`template:components/-default`)
-        );
+      let wrapper = getManager(component.class);
+
+      if (wrapper && wrapper.type === 'component') {
+        let { factory } = wrapper;
+
+        if (wrapper.internal) {
+          assert(`missing layout for internal component ${name}`, layout !== undefined);
+
+          definition = new InternalComponentDefinition(
+            factory(owner) as InternalComponentManager<Opaque>,
+            component.class,
+            layout!
+          );
+        } else {
+          definition = new CustomManagerDefinition(
+            name,
+            component,
+            factory(owner) as ManagerDelegate<Opaque>,
+            layout || owner.lookup<OwnedTemplate>(P`template:components/-default`)
+          );
+        }
       }
     }
 
-    if (definition === undefined) {
+    if (definition === null) {
       definition = new CurlyComponentDefinition(
         name,
-        component || meta.owner.factoryFor(P`component:-default`),
+        component || owner.factoryFor(P`component:-default`),
         null,
         layout! // TODO fix type
       );

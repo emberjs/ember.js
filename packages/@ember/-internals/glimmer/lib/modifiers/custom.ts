@@ -1,8 +1,7 @@
 import { Factory } from '@ember/-internals/owner';
-import { Opaque, Simple } from '@glimmer/interfaces';
+import { Dict, Opaque, Simple } from '@glimmer/interfaces';
 import { Tag } from '@glimmer/reference';
 import { Arguments, CapturedArguments, ModifierManager } from '@glimmer/runtime';
-import { ManagerArgs, valueForCapturedArgs } from '../utils/managers';
 
 export interface CustomModifierDefinitionState<ModifierInstance> {
   ModifierClass: Factory<ModifierInstance>;
@@ -43,17 +42,22 @@ export class CustomModifierState<ModifierInstance> {
 
   destroy() {
     const { delegate, modifier, args } = this;
-    let modifierArgs = valueForCapturedArgs(args);
-    delegate.destroyModifier(modifier, modifierArgs);
+    delegate.destroyModifier(modifier, args.value());
   }
+}
+
+// TODO: export ICapturedArgumentsValue from glimmer and replace this
+export interface Args {
+  named: Dict<Opaque>;
+  positional: Opaque[];
 }
 
 export interface ModifierManagerDelegate<ModifierInstance> {
   capabilities: Capabilities;
-  createModifier(factory: Opaque, args: ManagerArgs): ModifierInstance;
-  installModifier(instance: ModifierInstance, element: Simple.Element, args: ManagerArgs): void;
-  updateModifier(instance: ModifierInstance, args: ManagerArgs): void;
-  destroyModifier(instance: ModifierInstance, args: ManagerArgs): void;
+  createModifier(factory: Opaque, args: Args): ModifierInstance;
+  installModifier(instance: ModifierInstance, element: Simple.Element, args: Args): void;
+  updateModifier(instance: ModifierInstance, args: Args): void;
+  destroyModifier(instance: ModifierInstance, args: Args): void;
 }
 
 /**
@@ -89,8 +93,10 @@ class CustomModifierManager<ModifierInstance>
     args: Arguments
   ) {
     const capturedArgs = args.capture();
-    let modifierArgs = valueForCapturedArgs(capturedArgs);
-    let instance = definition.delegate.createModifier(definition.ModifierClass, modifierArgs);
+    let instance = definition.delegate.createModifier(
+      definition.ModifierClass,
+      capturedArgs.value()
+    );
     return new CustomModifierState(element, definition.delegate, instance, capturedArgs);
   }
 
@@ -100,14 +106,12 @@ class CustomModifierManager<ModifierInstance>
 
   install(state: CustomModifierState<ModifierInstance>) {
     let { element, args, delegate, modifier } = state;
-    let modifierArgs = valueForCapturedArgs(args);
-    delegate.installModifier(modifier, element, modifierArgs);
+    delegate.installModifier(modifier, element, args.value());
   }
 
   update(state: CustomModifierState<ModifierInstance>) {
     let { args, delegate, modifier } = state;
-    let modifierArgs = valueForCapturedArgs(args);
-    delegate.updateModifier(modifier, modifierArgs);
+    delegate.updateModifier(modifier, args.value());
   }
 
   getDestructor(state: CustomModifierState<ModifierInstance>) {

@@ -2,9 +2,15 @@ import { Opaque } from '@glimmer/util';
 import { getManager, ManagerFactory, setManager } from './managers';
 
 export function setModifierManager(factory: ManagerFactory<Opaque>, obj: any) {
-  return setManager(factory, obj);
+  return setManager({ factory, internal: false, type: 'modifier' }, obj);
 }
 
 export function getModifierManager<T>(obj: any): undefined | ManagerFactory<T> {
-  return getManager(obj);
+  let wrapper = getManager<T>(obj);
+
+  if (wrapper && !wrapper.internal && wrapper.type === 'modifier') {
+    return wrapper.factory;
+  } else {
+    return undefined;
+  }
 }

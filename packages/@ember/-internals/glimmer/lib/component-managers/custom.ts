@@ -22,7 +22,6 @@ import { Destroyable } from '@glimmer/util';
 import Environment from '../environment';
 import RuntimeResolver from '../resolver';
 import { OwnedTemplate } from '../template';
-import { ManagerArgs, valueForCapturedArgs } from '../utils/managers';
 import { RootReference } from '../utils/references';
 import AbstractComponentManager from './abstract';
 
@@ -65,10 +64,16 @@ export interface Capabilities {
   destructor: boolean;
 }
 
+// TODO: export ICapturedArgumentsValue from glimmer and replace this
+export interface Args {
+  named: Dict<Opaque>;
+  positional: Opaque[];
+}
+
 export interface ManagerDelegate<ComponentInstance> {
   capabilities: Capabilities;
-  createComponent(factory: Opaque, args: ManagerArgs): ComponentInstance;
-  updateComponent(instance: ComponentInstance, args: ManagerArgs): void;
+  createComponent(factory: Opaque, args: Args): ComponentInstance;
+  updateComponent(instance: ComponentInstance, args: Args): void;
   getContext(instance: ComponentInstance): Opaque;
 }
 
@@ -145,14 +150,16 @@ export default class CustomComponentManager<ComponentInstance>
     const { delegate } = definition;
     const capturedArgs = args.capture();
 
-    let invocationArgs = valueForCapturedArgs(capturedArgs);
-    const component = delegate.createComponent(definition.ComponentClass.class, invocationArgs);
+    const component = delegate.createComponent(
+      definition.ComponentClass.class,
+      capturedArgs.value()
+    );
 
     return new CustomComponentState(delegate, component, capturedArgs);
   }
 
   update({ delegate, component, args }: CustomComponentState<ComponentInstance>) {
-    delegate.updateComponent(component, valueForCapturedArgs(args));
+    delegate.updateComponent(component, args.value());
   }
 
   didCreate({ delegate, component }: CustomComponentState<ComponentInstance>) {
