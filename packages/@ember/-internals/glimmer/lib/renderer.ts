@@ -1,14 +1,9 @@
 import { ENV } from '@ember/-internals/environment';
 import { runInTransaction } from '@ember/-internals/metal';
-import {
-  fallbackViewRegistry,
-  getViewElement,
-  getViewId,
-  setViewElement,
-} from '@ember/-internals/views';
+import { getViewElement, getViewId } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { backburner, getCurrentRunLoop } from '@ember/runloop';
-import { Simple } from '@glimmer/interfaces';
+import { Option, Simple } from '@glimmer/interfaces';
 import { CURRENT_TAG, VersionedPathReference } from '@glimmer/reference';
 import {
   clientBuilder,
@@ -245,12 +240,14 @@ function loopEnd() {
 backburner.on('begin', loopBegin);
 backburner.on('end', loopEnd);
 
+interface ViewRegistry {
+  [viewId: string]: Opaque;
+}
+
 export abstract class Renderer {
   private _env: Environment;
   private _rootTemplate: any;
-  private _viewRegistry: {
-    [viewId: string]: Opaque;
-  };
+  private _viewRegistry: ViewRegistry;
   private _destinedForDOM: boolean;
   private _destroyed: boolean;
   private _roots: RootState[];
@@ -262,13 +259,13 @@ export abstract class Renderer {
   constructor(
     env: Environment,
     rootTemplate: OwnedTemplate,
-    _viewRegistry = fallbackViewRegistry,
+    viewRegistry: ViewRegistry,
     destinedForDOM = false,
     builder = clientBuilder
   ) {
     this._env = env;
     this._rootTemplate = rootTemplate;
-    this._viewRegistry = _viewRegistry;
+    this._viewRegistry = viewRegistry;
     this._destinedForDOM = destinedForDOM;
     this._destroyed = false;
     this._roots = [];
@@ -331,14 +328,8 @@ export abstract class Renderer {
 
     this.cleanupRootFor(view);
 
-    setViewElement(view, null);
-
     if (this._destinedForDOM) {
       view.trigger('didDestroyElement');
-    }
-
-    if (!view.isDestroying) {
-      view.destroy();
     }
   }
 
@@ -370,7 +361,7 @@ export abstract class Renderer {
     this._clearAllRoots();
   }
 
-  abstract getElement(view: Opaque): Simple.Element | undefined;
+  abstract getElement(view: Opaque): Option<Simple.Element>;
 
   getBounds(view: Component) {
     let bounds = view[BOUNDS];
@@ -533,7 +524,7 @@ export class InertRenderer extends Renderer {
     return new this(env, rootTemplate, _viewRegistry, false, builder);
   }
 
-  getElement(_view: Opaque): Simple.Element | undefined {
+  getElement(_view: Opaque): Option<Simple.Element> {
     throw new Error(
       'Accessing `this.element` is not allowed in non-interactive environments (such as FastBoot).'
     );
@@ -555,7 +546,7 @@ export class InteractiveRenderer extends Renderer {
     return new this(env, rootTemplate, _viewRegistry, true, builder);
   }
 
-  getElement(view: Opaque): Simple.Element | undefined {
+  getElement(view: Opaque): Option<Simple.Element> {
     return getViewElement(view);
   }
 }

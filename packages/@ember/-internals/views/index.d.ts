@@ -1,4 +1,4 @@
-import { Simple, Template } from '@glimmer/interfaces';
+import { Simple, Template, Option } from '@glimmer/interfaces';
 import { Opaque } from '@glimmer/util';
 import { Factory, Owner } from '@ember/-internals/owner';
 
@@ -21,8 +21,12 @@ export const ViewMixin: any;
 export const ViewStateSupport: any;
 export const TextSupport: any;
 
-export function getViewElement(view: Opaque): Simple.Element;
-export function setViewElement(view: Opaque, element: Simple.Element | null): void;
+export function getElementView(element: Simple.Element): Opaque;
+export function getViewElement(view: Opaque): Option<Simple.Element>;
+export function setElementView(element: Simple.Element, view: Opaque): void;
+export function setViewElement(view: Opaque, element: Simple.Element): void;
+export function clearElementView(element: Simple.Element): void;
+export function clearViewElement(view: Opaque): void;
 
 export function addChildView(parent: Opaque, child: Opaque): void;
 
@@ -44,10 +48,6 @@ export function lookupComponent(
 export function lookupPartial(templateName: string, owner: Owner): any;
 
 export function getViewId(view: any): string;
-
-export const fallbackViewRegistry: {
-  [id: string]: any | undefined;
-};
 
 export const MUTABLE_CELL: string;
 

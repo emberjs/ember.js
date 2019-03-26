@@ -497,7 +497,6 @@ function commonSetupRegistry(registry) {
 
   registry.injection('view', '_viewRegistry', '-view-registry:main');
   registry.injection('renderer', '_viewRegistry', '-view-registry:main');
-  registry.injection('event_dispatcher:main', '_viewRegistry', '-view-registry:main');
 
   registry.injection('route', '_topLevelViewTemplate', 'template:-outlet');
 

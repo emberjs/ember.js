@@ -1,5 +1,4 @@
 import { ActionHandler, Evented, FrameworkObject } from '@ember/-internals/runtime';
-import { initViewElement } from '../system/utils';
 import states from './states';
 
 /**
@@ -27,8 +26,6 @@ const CoreView = FrameworkObject.extend(Evented, ActionHandler, {
     this._super(...arguments);
     this._state = 'preRender';
     this._currentState = this._states.preRender;
-
-    initViewElement(this);
 
     if (!this.renderer) {
       throw new Error(

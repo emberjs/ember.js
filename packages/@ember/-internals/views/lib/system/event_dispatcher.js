@@ -3,9 +3,9 @@ import { assign } from '@ember/polyfills';
 import { assert } from '@ember/debug';
 import { get, set } from '@ember/-internals/metal';
 import { Object as EmberObject } from '@ember/-internals/runtime';
+import { getElementView } from '@ember/-internals/views';
 import jQuery, { jQueryDisabled } from './jquery';
 import ActionManager from './action_manager';
-import fallbackViewRegistry from '../compat/fallback-view-registry';
 import addJQueryEventDeprecation from './jquery_event_deprecation';
 import { contains } from './utils';
 import { JQUERY_INTEGRATION } from '@ember/deprecated-features';
@@ -216,11 +216,9 @@ export default EmberObject.extend({
       }
     }
 
-    let viewRegistry = this._getViewRegistry();
-
     for (let event in events) {
       if (events.hasOwnProperty(event)) {
-        this.setupHandler(rootElement, event, events[event], viewRegistry);
+        this.setupHandler(rootElement, event, events[event]);
       }
     }
   },
@@ -238,16 +236,15 @@ export default EmberObject.extend({
     @param {Element} rootElement
     @param {String} event the browser-originated event to listen to
     @param {String} eventName the name of the method to call on the view
-    @param {Object} viewRegistry
   */
-  setupHandler(rootElement, event, eventName, viewRegistry) {
+  setupHandler(rootElement, event, eventName) {
     if (eventName === null) {
       return;
     }
 
     if (!JQUERY_INTEGRATION || jQueryDisabled) {
       let viewHandler = (target, event) => {
-        let view = viewRegistry[target.id];
+        let view = getElementView(target);
         let result = true;
 
         if (view) {
@@ -340,7 +337,7 @@ export default EmberObject.extend({
             (related === null || (related !== target && !contains(target, related)))
           ) {
             // mouseEnter/Leave don't bubble, so there is no logic to prevent it as with other events
-            if (viewRegistry[target.id]) {
+            if (getElementView(target)) {
               viewHandler(target, createFakeEvent(origEventType, event));
             } else if (target.hasAttribute('data-ember-action')) {
               actionHandler(target, createFakeEvent(origEventType, event));
@@ -358,7 +355,7 @@ export default EmberObject.extend({
           let target = event.target;
 
           do {
-            if (viewRegistry[target.id]) {
+            if (getElementView(target)) {
               if (viewHandler(target, event) === false) {
                 event.preventDefault();
                 event.stopPropagation();
@@ -378,7 +375,7 @@ export default EmberObject.extend({
       }
     } else {
       rootElement.on(`${event}.ember`, '.ember-view', function(evt) {
-        let view = viewRegistry[this.id];
+        let view = getElementView(this);
         let result = true;
 
         if (view) {
@@ -415,13 +412,6 @@ export default EmberObject.extend({
         }
       });
     }
-  },
-
-  _getViewRegistry() {
-    let owner = getOwner(this);
-    let viewRegistry = (owner && owner.lookup('-view-registry:main')) || fallbackViewRegistry;
-
-    return viewRegistry;
   },
 
   destroy() {

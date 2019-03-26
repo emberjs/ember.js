@@ -1,6 +1,6 @@
 import { getOwner } from '@ember/-internals/owner';
 /* globals Element */
-import { guidFor, symbol } from '@ember/-internals/utils';
+import { guidFor } from '@ember/-internals/utils';
 
 /**
 @module ember
@@ -60,7 +60,12 @@ export function getViewId(view) {
   }
 }
 
-const VIEW_ELEMENT = symbol('VIEW_ELEMENT');
+const ELEMENT_VIEW = new WeakMap();
+const VIEW_ELEMENT = new WeakMap();
+
+export function getElementView(element) {
+  return ELEMENT_VIEW.get(element) || null;
+}
 
 /**
   @private
@@ -68,15 +73,28 @@ const VIEW_ELEMENT = symbol('VIEW_ELEMENT');
   @param {Ember.View} view
  */
 export function getViewElement(view) {
-  return view[VIEW_ELEMENT];
+  return VIEW_ELEMENT.get(view) || null;
 }
 
-export function initViewElement(view) {
-  view[VIEW_ELEMENT] = null;
+export function setElementView(element, view) {
+  ELEMENT_VIEW.set(element, view);
 }
 
 export function setViewElement(view, element) {
-  return (view[VIEW_ELEMENT] = element);
+  VIEW_ELEMENT.set(view, element);
+}
+
+// These are not needed for GC, but for correctness. We want to be able to
+// null-out these links while the objects are still live. Specifically, in
+// this case, we want to prevent access to the element (and vice verse) during
+// destruction.
+
+export function clearElementView(element) {
+  ELEMENT_VIEW.delete(element);
+}
+
+export function clearViewElement(view) {
+  VIEW_ELEMENT.delete(view);
 }
 
 const CHILD_VIEW_IDS = new WeakMap();
