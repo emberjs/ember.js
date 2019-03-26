@@ -1,4 +1,6 @@
 import { get, set } from '@ember/-internals/metal';
+import { assert } from '@ember/debug';
+import { DEBUG } from '@glimmer/env';
 import EmberComponent from '../component';
 import layout from '../templates/empty';
 
@@ -59,16 +61,25 @@ const Checkbox = EmberComponent.extend({
   change() {
     set(this, 'checked', this.element.checked);
   },
-
-  __sourceInput: null,
-
-  init() {
-    if (this.__sourceInput) {
-      this.__sourceInput.__injectEvents(this);
-    }
-    this._super(...arguments);
-  },
 });
+
+if (DEBUG) {
+  const UNSET = {};
+
+  Checkbox.reopen({
+    value: UNSET,
+
+    didReceiveAttrs() {
+      this._super();
+
+      assert(
+        "`<Input @type='checkbox' @value={{...}} />` is not supported; " +
+          "please use `<Input @type='checkbox' @checked={{...}} />` instead.",
+        !(this.type === 'checkbox' && this.value !== UNSET)
+      );
+    },
+  });
+}
 
 Checkbox.toString = () => '@ember/component/checkbox';
 

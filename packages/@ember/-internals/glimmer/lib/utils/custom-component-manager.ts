@@ -2,9 +2,13 @@ import { Owner } from '@ember/-internals/owner';
 import { deprecate } from '@ember/debug';
 import { COMPONENT_MANAGER_STRING_LOOKUP } from '@ember/deprecated-features';
 import { Opaque } from '@glimmer/interfaces';
+import { ManagerDelegate } from '../component-managers/custom';
 import { getManager, ManagerFactory, setManager } from './managers';
 
-export function setComponentManager(stringOrFunction: string | ManagerFactory<Opaque>, obj: any) {
+export function setComponentManager(
+  stringOrFunction: string | ManagerFactory<ManagerDelegate<Opaque>>,
+  obj: any
+) {
   let factory: ManagerFactory<Opaque>;
   if (COMPONENT_MANAGER_STRING_LOOKUP && typeof stringOrFunction === 'string') {
     deprecate(
@@ -23,9 +27,15 @@ export function setComponentManager(stringOrFunction: string | ManagerFactory<Op
     factory = stringOrFunction as ManagerFactory<Opaque>;
   }
 
-  return setManager(factory, obj);
+  return setManager({ factory, internal: false, type: 'component' }, obj);
 }
 
-export function getComponentManager<T>(obj: any): undefined | ManagerFactory<T> {
-  return getManager(obj);
+export function getComponentManager<T>(obj: any): undefined | ManagerFactory<ManagerDelegate<T>> {
+  let wrapper = getManager<ManagerDelegate<T>>(obj);
+
+  if (wrapper && !wrapper.internal && wrapper.type === 'component') {
+    return wrapper.factory;
+  } else {
+    return undefined;
+  }
 }
