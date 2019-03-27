@@ -94,13 +94,7 @@ moduleFor(
         content: 'bizz bizz',
       });
 
-      runTask(() => this.rerender());
-
-      this.assertComponentElement(this.firstChild, {
-        tagName: 'div',
-        attrs: { id: 'bizz' },
-        content: 'bizz bizz',
-      });
+      this.assertStableRerender();
 
       runTask(() => set(this.context, 'customId', 'bar'));
 
@@ -116,6 +110,38 @@ moduleFor(
         tagName: 'div',
         attrs: { id: 'bizz' },
         content: 'bizz bizz',
+      });
+    }
+
+    '@test it can have a custom id attribute and it is bound'() {
+      this.registerComponent('foo-bar', { template: 'hello' });
+
+      this.render('<FooBar id={{customId}} />', {
+        customId: 'bizz',
+      });
+
+      this.assertComponentElement(this.firstChild, {
+        tagName: 'div',
+        attrs: { id: 'bizz' },
+        content: 'hello',
+      });
+
+      this.assertStableRerender();
+
+      runTask(() => set(this.context, 'customId', 'bar'));
+
+      this.assertComponentElement(this.firstChild, {
+        tagName: 'div',
+        attrs: { id: 'bar' },
+        content: 'hello',
+      });
+
+      runTask(() => set(this.context, 'customId', 'bizz'));
+
+      this.assertComponentElement(this.firstChild, {
+        tagName: 'div',
+        attrs: { id: 'bizz' },
+        content: 'hello',
       });
     }
 

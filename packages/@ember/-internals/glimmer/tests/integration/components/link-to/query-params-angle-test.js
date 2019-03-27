@@ -110,7 +110,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
       }
 
       [`@test doesn't update controller QP properties on current route when invoked`](assert) {
-        this.addTemplate('index', `<LinkTo @id='the-link' @route='index'>Index</LinkTo>`);
+        this.addTemplate('index', `<LinkTo id='the-link' @route='index'>Index</LinkTo>`);
 
         return this.visit('/').then(() => {
           this.click('#the-link');
@@ -129,7 +129,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
       ) {
         this.addTemplate(
           'index',
-          `<LinkTo @id='the-link' @route='index' @query={{hash}}>Index</LinkTo>`
+          `<LinkTo id='the-link' @route='index' @query={{hash}}>Index</LinkTo>`
         );
 
         return this.visit('/').then(() => {
@@ -147,7 +147,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
       [`@test doesn't update controller QP properties on current route when invoked (empty query-params obj, inferred route)`](
         assert
       ) {
-        this.addTemplate('index', `<LinkTo @id='the-link' @query={{hash}}>Index</LinkTo>`);
+        this.addTemplate('index', `<LinkTo id='the-link' @query={{hash}}>Index</LinkTo>`);
 
         return this.visit('/').then(() => {
           this.click('#the-link');
@@ -165,7 +165,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
         this.addTemplate(
           'index',
           `
-          <LinkTo @id="the-link" @route='index' @query={{hash foo='456'}}>
+          <LinkTo id="the-link" @route='index' @query={{hash foo='456'}}>
             Index
           </LinkTo>
           `
@@ -189,7 +189,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
         this.addTemplate(
           'index',
           `
-          <LinkTo @id="the-link" @query={{hash foo='456'}}>
+          <LinkTo id="the-link" @query={{hash foo='456'}}>
             Index
           </LinkTo>
           `
@@ -217,7 +217,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
         this.addTemplate(
           'index',
           `
-          <LinkTo @id="the-link" @route="about" @query={{hash baz='lol'}}>
+          <LinkTo id="the-link" @route="about" @query={{hash baz='lol'}}>
             About
           </LinkTo>
           `
@@ -243,7 +243,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
         this.addTemplate(
           'index',
           `
-          <LinkTo @id="the-link" @query={{hash foo=boundThing}}>
+          <LinkTo id="the-link" @query={{hash foo=boundThing}}>
             Index
           </LinkTo>
           `
@@ -265,7 +265,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
         this.addTemplate(
           'index',
           `
-          <LinkTo @id="the-link" @query={{hash abool=boundThing}}>
+          <LinkTo id="the-link" @query={{hash abool=boundThing}}>
             Index
           </LinkTo>
           `
@@ -294,7 +294,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
         this.addTemplate(
           'index',
           `
-          <LinkTo @id="the-link" @query={{hash foo='lol'}}>
+          <LinkTo id="the-link" @query={{hash foo='lol'}}>
             Index
           </LinkTo>
           `
@@ -323,15 +323,15 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
         this.addTemplate(
           'cars',
           `
-          <LinkTo @id='create-link' @route='cars.create'>Create new car</LinkTo>
-          <LinkTo @id='page2-link' @query={{hash page='2'}}>Page 2</LinkTo>
+          <LinkTo id='create-link' @route='cars.create'>Create new car</LinkTo>
+          <LinkTo id='page2-link' @query={{hash page='2'}}>Page 2</LinkTo>
           {{outlet}}
           `
         );
 
         this.addTemplate(
           'cars.create',
-          `<LinkTo @id='close-link' @route='cars'>Close create form</LinkTo>`
+          `<LinkTo id='close-link' @route='cars'>Close create form</LinkTo>`
         );
 
         this.router.map(function() {
@@ -374,22 +374,22 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
         this.addTemplate(
           'index',
           `
-          <LinkTo @id='cat-link' @query={{hash foo='cat'}}>Index</LinkTo>
-          <LinkTo @id='dog-link' @query={{hash foo='dog'}}>Index</LinkTo>
-          <LinkTo @id='change-nothing' @route='index'>Index</LinkTo>
+          <LinkTo id='cat-link' @query={{hash foo='cat'}}>Index</LinkTo>
+          <LinkTo id='dog-link' @query={{hash foo='dog'}}>Index</LinkTo>
+          <LinkTo id='change-nothing' @route='index'>Index</LinkTo>
           `
         );
 
         this.addTemplate(
           'search',
           `
-          <LinkTo @id='same-search' @query={{hash search='same'}}>Index</LinkTo>
-          <LinkTo @id='change-search' @query={{hash search='change'}}>Index</LinkTo>
-          <LinkTo @id='same-search-add-archive' @query={{hash search='same' archive=true}}>Index</LinkTo>
-          <LinkTo @id='only-add-archive' @query={{hash archive=true}}>Index</LinkTo>
-          <LinkTo @id='both-same' @query={{hash search='same' archive=true}}>Index</LinkTo>
-          <LinkTo @id='change-one' @query={{hash search='different' archive=true}}>Index</LinkTo>
-          <LinkTo @id='remove-one' @query={{hash search='different' archive=false}}>Index</LinkTo>
+          <LinkTo id='same-search' @query={{hash search='same'}}>Index</LinkTo>
+          <LinkTo id='change-search' @query={{hash search='change'}}>Index</LinkTo>
+          <LinkTo id='same-search-add-archive' @query={{hash search='same' archive=true}}>Index</LinkTo>
+          <LinkTo id='only-add-archive' @query={{hash archive=true}}>Index</LinkTo>
+          <LinkTo id='both-same' @query={{hash search='same' archive=true}}>Index</LinkTo>
+          <LinkTo id='change-one' @query={{hash search='different' archive=true}}>Index</LinkTo>
+          <LinkTo id='remove-one' @query={{hash search='different' archive=false}}>Index</LinkTo>
           {{outlet}}
           `
         );
@@ -397,13 +397,13 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
         this.addTemplate(
           'search.results',
           `
-          <LinkTo @id='same-sort-child-only' @query={{hash sort='title'}}>Index</LinkTo>
-          <LinkTo @id='same-search-parent-only' @query={{hash search='same'}}>Index</LinkTo>
-          <LinkTo @id='change-search-parent-only' @query={{hash search='change'}}>Index</LinkTo>
-          <LinkTo @id='same-search-same-sort-child-and-parent' @query={{hash search='same' sort='title'}}>Index</LinkTo>
-          <LinkTo @id='same-search-different-sort-child-and-parent' @query={{hash search='same' sort='author'}}>Index</LinkTo>
-          <LinkTo @id='change-search-same-sort-child-and-parent' @query={{hash search='change' sort='title'}}>Index</LinkTo>
-          <LinkTo @id='dog-link' @query={{hash foo='dog'}}>Index</LinkTo>
+          <LinkTo id='same-sort-child-only' @query={{hash sort='title'}}>Index</LinkTo>
+          <LinkTo id='same-search-parent-only' @query={{hash search='same'}}>Index</LinkTo>
+          <LinkTo id='change-search-parent-only' @query={{hash search='change'}}>Index</LinkTo>
+          <LinkTo id='same-search-same-sort-child-and-parent' @query={{hash search='same' sort='title'}}>Index</LinkTo>
+          <LinkTo id='same-search-different-sort-child-and-parent' @query={{hash search='same' sort='author'}}>Index</LinkTo>
+          <LinkTo id='change-search-same-sort-child-and-parent' @query={{hash search='change' sort='title'}}>Index</LinkTo>
+          <LinkTo id='dog-link' @query={{hash foo='dog'}}>Index</LinkTo>
           `
         );
 
@@ -480,7 +480,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
         this.addTemplate(
           'index',
           `
-          <LinkTo @id='page-link' @query={{hash page=pageNumber}}>
+          <LinkTo id='page-link' @query={{hash page=pageNumber}}>
             Index
           </LinkTo>
           `
@@ -509,9 +509,9 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
         this.addTemplate(
           'index',
           `
-          <LinkTo @id='array-link' @query={{hash pages=pagesArray}}>Index</LinkTo>
-          <LinkTo @id='bigger-link' @query={{hash pages=biggerArray}}>Index</LinkTo>
-          <LinkTo @id='empty-link' @query={{hash pages=emptyArray}}>Index</LinkTo>
+          <LinkTo id='array-link' @query={{hash pages=pagesArray}}>Index</LinkTo>
+          <LinkTo id='bigger-link' @query={{hash pages=biggerArray}}>Index</LinkTo>
+          <LinkTo id='empty-link' @query={{hash pages=emptyArray}}>Index</LinkTo>
           `
         );
 
@@ -562,9 +562,9 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
         this.addTemplate(
           'application',
           `
-          <LinkTo @id='parent-link' @route='parent'>Parent</LinkTo>
-          <LinkTo @id='parent-child-link' @route='parent.child'>Child</LinkTo>
-          <LinkTo @id='parent-link-qp' @route='parent' @query={{hash foo=cat}}>Parent</LinkTo>
+          <LinkTo id='parent-link' @route='parent'>Parent</LinkTo>
+          <LinkTo id='parent-child-link' @route='parent.child'>Child</LinkTo>
+          <LinkTo id='parent-link-qp' @route='parent' @query={{hash foo=cat}}>Parent</LinkTo>
           {{outlet}}
           `
         );
@@ -602,7 +602,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
         this.addTemplate(
           'application',
           `
-          <LinkTo @id='app-link' @route='parent' @query={{hash page=1}} @current-when='parent'>
+          <LinkTo id='app-link' @route='parent' @query={{hash page=1}} @current-when='parent'>
             Parent
           </LinkTo>
           {{outlet}}
@@ -612,7 +612,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
         this.addTemplate(
           'parent',
           `
-          <LinkTo @id='parent-link' @route='parent' @query={{hash page=1}} @current-when='parent'>
+          <LinkTo id='parent-link' @route='parent' @query={{hash page=1}} @current-when='parent'>
             Parent
           </LinkTo>
           {{outlet}}
@@ -675,9 +675,9 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
         this.addTemplate(
           'application',
           `
-          <LinkTo @id='foos-link' @route='foos'>Foos</LinkTo>
-          <LinkTo @id='baz-foos-link' @route='foos' @query={{hash baz=true}}>Baz Foos</LinkTo>
-          <LinkTo @id='bars-link' @route='bars' @query={{hash quux=true}}>Quux Bars</LinkTo>
+          <LinkTo id='foos-link' @route='foos'>Foos</LinkTo>
+          <LinkTo id='baz-foos-link' @route='foos' @query={{hash baz=true}}>Baz Foos</LinkTo>
+          <LinkTo id='bars-link' @route='bars' @query={{hash quux=true}}>Quux Bars</LinkTo>
           `
         );
 
