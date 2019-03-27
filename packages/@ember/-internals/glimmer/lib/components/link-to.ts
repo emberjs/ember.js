@@ -17,27 +17,17 @@ let LinkComponent: any;
 
 if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
   /**
-    The `{{link-to}}` component renders a link to the supplied
-    `routeName` passing an optionally supplied model to the
-    route as its `model` context of the route. The block
-    for `{{link-to}}` becomes the innerHTML of the rendered
-    element:
+    The `LinkTo` component renders a link to the supplied `routeName` passing an optionally
+    supplied model to the route as its `model` context of the route. The block for `LinkTo`
+    becomes the contents of the rendered element:
 
     ```handlebars
-    {{#link-to 'photoGallery'}}
+    <LinkTo @route='photoGallery'>
       Great Hamster Photos
-    {{/link-to}}
+    </LinkTo>
     ```
 
-    You can also use an inline form of `{{link-to}}` component by
-    passing the link text as the first argument
-    to the component:
-
-    ```handlebars
-    {{link-to 'Great Hamster Photos' 'photoGallery'}}
-    ```
-
-    Both will result in:
+    This will result in:
 
     ```html
     <a href="/hamster-photos">
@@ -45,69 +35,36 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
     </a>
     ```
 
-    ### Supplying a tagName
-    By default `{{link-to}}` renders an `<a>` element. This can
-    be overridden for a single use of `{{link-to}}` by supplying
-    a `tagName` option:
+    ### Disabling the `LinkTo` component
+
+    The `LinkTo` component can be disabled by using the `disabled` argument. A disabled link
+    doesn't result in a transition when activated, and adds the `disabled` class to the `<a>`
+    element.
+
+    (The class name to apply to the element can be overridden by using the `disabledClass`
+    argument)
 
     ```handlebars
-    {{#link-to 'photoGallery' tagName="li"}}
+    <LinkTo @route='photoGallery' @disabled={{true}}>
       Great Hamster Photos
-    {{/link-to}}
+    </LinkTo>
     ```
-
-    ```html
-    <li>
-      Great Hamster Photos
-    </li>
-    ```
-
-    To override this option for your entire application, see
-    "Overriding Application-wide Defaults".
-
-    ### Disabling the `link-to` component
-    By default `{{link-to}}` is enabled.
-    any passed value to the `disabled` component property will disable
-    the `link-to` component.
-
-    static use: the `disabled` option:
-
-    ```handlebars
-    {{#link-to 'photoGallery' disabled=true}}
-      Great Hamster Photos
-    {{/link-to}}
-    ```
-
-    dynamic use: the `disabledWhen` option:
-
-    ```handlebars
-    {{#link-to 'photoGallery' disabledWhen=controller.someProperty}}
-      Great Hamster Photos
-    {{/link-to}}
-    ```
-
-    any truthy value passed to `disabled` will disable it except `undefined`.
-
-    See "Overriding Application-wide Defaults" for more.
 
     ### Handling `href`
-    `{{link-to}}` will use your application's Router to
-    fill the element's `href` property with a url that
-    matches the path to the supplied `routeName` for your
-    router's configured `Location` scheme, which defaults
-    to HashLocation.
+
+    `<LinkTo >` will use your application's Router to fill the element's `href` property with a URL
+    that matches the path to the supplied `routeName`.
 
     ### Handling current route
-    `{{link-to}}` will apply a CSS class name of 'active'
-    when the application's current route matches
-    the supplied routeName. For example, if the application's
-    current route is 'photoGallery.recent' the following
-    use of `{{link-to}}`:
+
+    The `LinkTo` component will apply a CSS class name of 'active' when the application's current
+    route matches the supplied routeName. For example, if the application's current route is
+    'photoGallery.recent', then the following invocation of `LinkTo`:
 
     ```handlebars
-    {{#link-to 'photoGallery.recent'}}
+    <LinkTo @route='photoGallery.recent'>
       Great Hamster Photos
-    {{/link-to}}
+    </LinkTo>
     ```
 
     will result in
@@ -118,14 +75,12 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
     </a>
     ```
 
-    The CSS class name used for active classes can be customized
-    for a single use of `{{link-to}}` by passing an `activeClass`
-    option:
+    The CSS class used for active classes can be customized by passing an `activeClass` argument:
 
     ```handlebars
-    {{#link-to 'photoGallery.recent' activeClass="current-url"}}
+    <LinkTo @route='photoGallery.recent' @activeClass="current-url">
       Great Hamster Photos
-    {{/link-to}}
+    </LinkTo>
     ```
 
     ```html
@@ -134,18 +89,15 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
     </a>
     ```
 
-    To override this option for your entire application, see
-    "Overriding Application-wide Defaults".
-
     ### Keeping a link active for other routes
 
-    If you need a link to be 'active' even when it doesn't match
-    the current route, you can use the `current-when` argument.
+    If you need a link to be 'active' even when it doesn't match the current route, you can use the
+    `current-when` argument.
 
     ```handlebars
-    {{#link-to 'photoGallery' current-when='photos'}}
+    <LinkTo @route='photoGallery' @current-when='photos'>
       Photo Gallery
-    {{/link-to}}
+    </LinkTo>
     ```
 
     This may be helpful for keeping links active for:
@@ -160,13 +112,14 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
     To match multiple routes 'space-separate' the routes:
 
     ```handlebars
-    {{#link-to 'gallery' current-when='photos drawings paintings'}}
+    <LinkTo @route='gallery' @current-when='photos drawings paintings'>
       Art Gallery
-    {{/link-to}}
+    </LinkTo>
     ```
 
     ### Supplying a model
-    An optional model argument can be used for routes whose
+
+    An optional `model` argument can be used for routes whose
     paths contain dynamic segments. This argument will become
     the model context of the linked route:
 
@@ -177,9 +130,9 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
     ```
 
     ```handlebars
-    {{#link-to 'photoGallery' aPhoto}}
+    <LinkTo @route='photoGallery' @model={{this.aPhoto}}>
       {{aPhoto.title}}
-    {{/link-to}}
+    </LinkTo>
     ```
 
     ```html
@@ -189,8 +142,10 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
     ```
 
     ### Supplying multiple models
+
     For deep-linking to route paths that contain multiple
-    dynamic segments, multiple model arguments can be used.
+    dynamic segments, the `models` argument can be used.
+
     As the router transitions through the route path, each
     supplied model argument will become the context for the
     route with the dynamic segments:
@@ -202,12 +157,13 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
       });
     });
     ```
+
     This argument will become the model context of the linked route:
 
     ```handlebars
-    {{#link-to 'photoGallery.comment' aPhoto comment}}
+    <LinkTo @route='photoGallery.comment' @models={{array this.aPhoto this.comment}}>
       {{comment.body}}
-    {{/link-to}}
+    </LinkTo>
     ```
 
     ```html
@@ -217,7 +173,8 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
     ```
 
     ### Supplying an explicit dynamic segment value
-    If you don't have a model object available to pass to `{{link-to}}`,
+
+    If you don't have a model object available to pass to `LinkTo`,
     an optional string or integer argument can be passed for routes whose
     paths contain dynamic segments. This argument will become the value
     of the dynamic segment:
@@ -229,9 +186,9 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
     ```
 
     ```handlebars
-    {{#link-to 'photoGallery' aPhotoId}}
-      {{aPhoto.title}}
-    {{/link-to}}
+    <LinkTo @route='photoGallery' @model={{aPhotoId}}>
+      {{this.aPhoto.title}}
+    </LinkTo>
     ```
 
     ```html
@@ -245,67 +202,41 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
 
     ### Allowing Default Action
 
-    By default the `{{link-to}}` component prevents the default browser action
-    by calling `preventDefault()` as this sort of action bubbling is normally
-    handled internally and we do not want to take the browser to a new URL (for
-    example).
+    By default the `<LinkTo>` component prevents the default browser action by calling
+    `preventDefault()` to avoid reloading the browser page.
 
-    If you need to override this behavior specify `preventDefault=false` in
-    your template:
+    If you need to trigger a full browser reload pass `@preventDefault={{false}}`:
 
     ```handlebars
-    {{#link-to 'photoGallery' aPhotoId preventDefault=false}}
-      {{aPhotoId.title}}
-    {{/link-to}}
+    <LinkTo @route='photoGallery' @model={{this.aPhotoId}} @preventDefault={{false}}>
+      {{this.aPhotoId.title}}
+    </LinkTo>
     ```
 
-    ### Overriding attributes
-    You can override any given property of the `LinkComponent`
-    that is generated by the `{{link-to}}` component by passing
-    key/value pairs, like so:
+    ### Supplying a `tagName`
+
+    By default `<LinkTo>` renders an `<a>` element. This can be overridden for a single use of
+    `<LinkTo>` by supplying a `tagName` argument:
 
     ```handlebars
-    {{#link-to  aPhoto tagName='li' title='Following this link will change your life' classNames='pic sweet'}}
-      Uh-mazing!
-    {{/link-to}}
+    <LinkTo @route='photoGallery' @tagName='li'>
+      Great Hamster Photos
+    </LinkTo>
     ```
 
-    See [LinkComponent](/api/ember/release/classes/LinkComponent) for a
-    complete list of overrideable properties. Be sure to also
-    check out inherited properties of `LinkComponent`.
+    This produces:
 
-    ### Overriding Application-wide Defaults
-
-    ``{{link-to}}`` creates an instance of `LinkComponent` for rendering. To
-    override options for your entire application, export your customized
-    `LinkComponent` from `app/components/link-to.js` with the desired overrides:
-
-    ```javascript
-    // app/components/link-to.js
-    import LinkComponent from '@ember/routing/link-component';
-
-    export default LinkComponent.extend({
-      activeClass: "is-active",
-      tagName: 'li'
-    })
+    ```html
+    <li>
+      Great Hamster Photos
+    </li>
     ```
 
-    It is also possible to override the default event in this manner:
+    In general, this is not recommended. Instead, you can use the `transition-to` helper together
+    with a click event handler on the HTML tag of your choosing.
 
-    ```javascript
-    import LinkComponent from '@ember/routing/link-component';
-
-    export default LinkComponent.extend({
-      eventName: 'customEventName'
-    });
-    ```
-
-    @method link-to
-    @for Ember.Templates.helpers
-    @param {String} routeName
-    @param {Object} [context]*
-    @param [options] {Object} Handlebars key/value pairs of options, you can override any property of Ember.LinkComponent
-    @return {String} HTML string
+    @for Ember.Templates.components
+    @method LinkTo
     @see {LinkComponent}
     @public
   */
@@ -315,17 +246,20 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
   */
 
   /**
-    `LinkComponent` renders an element whose `click` event triggers a
-    transition of the application's instance of `Router` to
-    a supplied route by name.
+    See [Ember.Templates.components.LinkTo](/api/ember/release/classes/Ember.Templates.components/methods/input?anchor=input).
 
-    `LinkComponent` components are invoked with {{#link-to}}. Properties
-    of this class can be overridden with `reopen` to customize application-wide
-    behavior.
+    @for Ember.Templates.helpers
+    @method link-to
+    @see {Ember.Templates.components.LinkTo}
+    @public
+  **/
+
+  /**
+    `LinkComponent` is the internal component invoked with `<LinkTo>` or `{{link-to}}`.
 
     @class LinkComponent
     @extends Component
-    @see {Ember.Templates.helpers.link-to}
+    @see {Ember.Templates.components.LinkTo}
     @public
   **/
 
@@ -460,9 +394,10 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
     replace: false,
 
     /**
-      By default the `{{link-to}}` component will bind to the `href` and
-      `title` attributes. It's discouraged that you override these defaults,
-      however you can push onto the array if needed.
+      By default this component will forward `href`, `title`, `rel`, `tabindex`, and `target`
+      arguments to attributes on the component's element. When invoked with `{{link-to}}`, you can
+      only customize these attributes. When invoked with `<LinkTo>`, you can just use HTML
+      attributes directly.
 
       @property attributeBindings
       @type Array | String
@@ -472,8 +407,15 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
     attributeBindings: ['href', 'title', 'rel', 'tabindex', 'target'],
 
     /**
-      By default the `{{link-to}}` component will bind to the `active`, `loading`,
-      and `disabled` classes. It is discouraged to override these directly.
+      By default this component will set classes on its element when any of the following arguments
+      are truthy:
+
+      * active
+      * loading
+      * disabled
+
+      When these arguments are truthy, a class with the same name will be set on the element. When
+      falsy, the associated class will not be on the element.
 
       @property classNameBindings
       @type Array
@@ -483,12 +425,9 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
     classNameBindings: ['active', 'loading', 'disabled', 'transitioningIn', 'transitioningOut'],
 
     /**
-      By default the `{{link-to}}` component responds to the `click` event. You
-      can override this globally by setting this property to your custom
-      event name.
-
-      This is particularly useful on mobile when one wants to avoid the 300ms
-      click delay using some sort of custom `tap` event.
+      By default this component responds to the `click` event. When the component element is an
+      `<a>` element, activating the link in another way, such as using the keyboard, triggers the
+      click event.
 
       @property eventName
       @type String
@@ -582,10 +521,10 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
     }),
 
     /**
-      Accessed as a classname binding to apply the `LinkComponent`'s `disabledClass`
+      Accessed as a classname binding to apply the component's `disabledClass`
       CSS `class` to the element when the link is disabled.
 
-      When `true` interactions with the element will not trigger route changes.
+      When `true`, interactions with the element will not trigger route changes.
       @property disabled
       @private
     */
@@ -605,11 +544,11 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
     }),
 
     /**
-      Accessed as a classname binding to apply the `LinkComponent`'s `activeClass`
+      Accessed as a classname binding to apply the component's `activeClass`
       CSS `class` to the element when the link is active.
 
-      A `LinkComponent` is considered active when its `currentWhen` property is `true`
-      or the application's current route is the route the `LinkComponent` would trigger
+      This component is considered active when its `currentWhen` property is `true`
+      or the application's current route is the route this component would trigger
       transitions into.
 
       The `currentWhen` property can match against multiple routes by separating
@@ -913,7 +852,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
 
       if (!params || params.length === 0) {
         assert(
-          'You must provide at least one of the `@route`, `@model`, `@models` or `@query` argument to `<LinkTo />`.',
+          'You must provide at least one of the `@route`, `@model`, `@models` or `@query` argument to `<LinkTo>`.',
           !(
             this.route === UNDEFINED &&
             this.model === UNDEFINED &&

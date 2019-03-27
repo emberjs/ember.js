@@ -31,11 +31,9 @@ function canSetTypeOfInput(type: string): boolean {
 }
 
 /**
+  The internal class used to create text inputs when the `Input` component is used with `type` of `text`.
 
-  The internal class used to create text inputs when the `{{input}}`
-  helper is used with `type` of `text`.
-
-  See [Ember.Templates.helpers.input](/api/ember/release/classes/Ember.Templates.helpers/methods/input?anchor=input)  for usage details.
+  See [Ember.Templates.components.Input](/api/ember/release/classes/Ember.Templates.components/methods/Input?anchor=Input) for usage details.
 
   ## Layout and LayoutName properties
 
@@ -49,8 +47,54 @@ function canSetTypeOfInput(type: string): boolean {
 */
 const TextField = Component.extend(TextSupport, {
   layout,
+
+  /**
+    By default, this component will add the `ember-text-field` class to the component's element.
+
+    @property classNames
+    @type Array | String
+    @default ['ember-text-field']
+    @public
+   */
   classNames: ['ember-text-field'],
   tagName: 'input',
+
+  /**
+    By default this component will forward a number of arguments to attributes on the the
+    component's element:
+
+    * accept
+    * autocomplete
+    * autosave
+    * dir
+    * formaction
+    * formenctype
+    * formmethod
+    * formnovalidate
+    * formtarget
+    * height
+    * inputmode
+    * lang
+    * list
+    * type
+    * max
+    * min
+    * multiple
+    * name
+    * pattern
+    * size
+    * step
+    * value
+    * width
+
+    When invoked with `{{input type="text"}}`, you can only customize these attributes. When invoked
+    with `<Input @type="text" />`, you can just use HTML attributes directly.
+
+    @property attributeBindings
+    @type Array | String
+    @default ['accept', 'autocomplete', 'autosave', 'dir', 'formaction', 'formenctype', 'formmethod', 'formnovalidate', 'formtarget', 'height', 'inputmode', 'lang', 'list', 'type', 'max', 'min', 'multiple', 'name', 'pattern', 'size', 'step', 'value', 'width']
+    @public
+  */
   attributeBindings: [
     'accept',
     'autocomplete',
@@ -78,8 +122,8 @@ const TextField = Component.extend(TextSupport, {
   ],
 
   /**
-    The `value` attribute of the input element. As the user inputs text, this
-    property is updated live.
+    As the user inputs text, this property is updated to reflect the `value` property of the HTML
+    element.
 
     @property value
     @type String

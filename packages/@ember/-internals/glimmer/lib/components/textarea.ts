@@ -6,65 +6,41 @@ import Component from '../component';
 import layout from '../templates/empty';
 
 /**
-  `{{textarea}}` inserts a new instance of `<textarea>` tag into the template.
-  The attributes of `{{textarea}}` match those of the native HTML tags as
-  closely as possible.
+  The `Textarea` component inserts a new instance of `<textarea>` tag into the template.
 
-  The following HTML attributes can be set:
+  The `@value` argument provides the content of the `<textarea>`.
 
-    * `value`
-    * `name`
-    * `rows`
-    * `cols`
-    * `placeholder`
-    * `disabled`
-    * `maxlength`
-    * `tabindex`
-    * `selectionEnd`
-    * `selectionStart`
-    * `autocomplete`
-    * `selectionDirection`
-    * `wrap`
-    * `readonly`
-    * `autofocus`
-    * `form`
-    * `spellcheck`
-    * `required`
-
-  When set to a quoted string, these value will be directly applied to the HTML
-  element. When left unquoted, these values will be bound to a property on the
-  template's current rendering context (most typically a controller instance).
-
-  Unbound:
+  This template:
 
   ```handlebars
-  {{textarea value="Lots of static text that ISN'T bound"}}
+  <Textarea @value="A bunch of text" />
   ```
 
   Would result in the following HTML:
 
   ```html
   <textarea class="ember-text-area">
-    Lots of static text that ISN'T bound
+    A bunch of text
   </textarea>
   ```
 
-  Bound:
+  The `@value` argument is two-way bound. If the user types text into the textarea, the `@value`
+  argument is updated. If the `@value` argument is updated, the text in the textarea is updated.
 
-  In the following example, the `writtenWords` property on the application
-  Controller will be updated live as the user types 'Lots of text that IS
-  bound' into the text area of their browser's window.
+  In the following example, the `writtenWords` property on the component will be updated as the user
+  types 'Lots of text' into the text area of their browser's window.
 
-  ```app/controllers/application.js
-  import Controller from '@ember/controller';
+  ```app/components/word-editor.js
+  import Component from '@glimmer/component';
+  import { tracked } from '@glimmer/tracking';
 
-  export default Controller.extend({
-    writtenWords: "Lots of text that IS bound"
-  });
+  export default class extends Component {
+    @tracked writtenWords = "Lots of text that IS bound";
+  }
   ```
 
   ```handlebars
-  {{textarea value=writtenWords}}
+  <Textarea @value={{writtenWords}} />
   ```
 
   Would result in the following HTML:
@@ -75,82 +51,13 @@ import layout from '../templates/empty';
   </textarea>
   ```
 
-  If you wanted a one way binding between the text area and a div tag
-  somewhere else on your screen, you could use `oneWay`:
-
-  ```app/controllers/application.js
-  import Controller from '@ember/controller';
-  import { oneWay } from '@ember/object/computed';
-
-  export default Controller.extend({
-    writtenWords: "Lots of text that IS bound",
-
-    outputWrittenWords: oneWay("writtenWords")
-  });
-  ```
-
-  ```handlebars
-  {{textarea value=writtenWords}}
-  <div>
-    {{outputWrittenWords}}
-  </div>
-  ```
-
-  Would result in the following HTML:
-
-  ```html
-  <textarea class="ember-text-area">
-    Lots of text that IS bound
-  </textarea>
-  <-- the following div will be updated in real time as you type -->
-  <div>
-    Lots of text that IS bound
-  </div>
-  ```
-
-  Finally, this example really shows the power and ease of Ember when two
-  properties are bound to eachother via `alias`. Type into
-  either text area box and they'll both stay in sync. Note that
-  `alias` costs more in terms of performance, so only use it when
-  your really binding in both directions:
-
-  ```app/controllers/application.js
-  import Controller from '@ember/controller';
-  import { alias } from '@ember/object/computed';
-
-  export default Controller.extend({
-    writtenWords: "Lots of text that IS bound",
-
-    twoWayWrittenWords: alias("writtenWords")
-  });
-  ```
-
-  ```handlebars
-  {{textarea value=writtenWords}}
-  {{textarea value=twoWayWrittenWords}}
-  ```
-
-  ```html
-  <textarea id="ember1" class="ember-text-area">
-    Lots of text that IS bound
-  </textarea>
-  <-- both updated in real time -->
-  <textarea id="ember2" class="ember-text-area">
-    Lots of text that IS bound
-  </textarea>
-  ```
+  If you wanted a one way binding, you could use the `<textarea>` element directly, and use the
+  `value` DOM property and the `input` event.
 
   ### Actions
 
-  The helper can send multiple actions based on user events.
-  The action property defines the action which is send when
-  the user presses the return key.
-
-  ```handlebars
-  {{input action="submit"}}
-  ```
-
-  The helper allows some user events to send actions.
+  The `Textarea` component takes a number of arguments with callbacks that are invoked in
+  response to user events.
 
   * `enter`
   * `insert-newline`
@@ -159,59 +66,74 @@ import layout from '../templates/empty';
   * `focus-out`
   * `key-press`
 
-  For example, if you desire an action to be sent when the input is blurred,
-  you only need to setup the action name to the event name property.
+  These callbacks are passed to `Textarea` like this:
 
   ```handlebars
-  {{textarea focus-out="alertMessage"}}
+  <Textarea @value={{this.searchWord}} @enter={{this.query}} />
   ```
 
-  See more about [Text Support Actions](/api/ember/release/classes/TextArea)
+  ## Classic Invocation Syntax
 
-  ### Extension
+  The `Textarea` component can also be invoked using curly braces, just like any other Ember
+  component.
 
-  Internally, `{{textarea}}` creates an instance of `TextArea`, passing
-  arguments from the helper to `TextArea`'s `create` method. You can
-  extend the capabilities of text areas in your application by reopening this
-  class. For example, if you are building a Bootstrap project where `data-*`
-  attributes are used, you can globally add support for a `data-*` attribute
-  on all `{{textarea}}`s' in your app by reopening `TextArea` or
-  `TextSupport` and adding it to the `attributeBindings` concatenated
-  property:
+  For example, this is an invocation using angle-bracket notation:
 
-  ```javascript
-  import TextArea from '@ember/component/text-area';
-
-  TextArea.reopen({
-    attributeBindings: ['data-error']
-  });
+  ```handlebars
+  <Textarea @value={{this.searchWord}} @enter={{this.query}} />
   ```
 
-  Keep in mind when writing `TextArea` subclasses that `TextArea`
-  itself extends `Component`. Expect isolated component semantics, not
-  legacy 1.x view semantics (like `controller` being present).
+  You could accomplish the same thing using classic invocation:
 
-  See more about [Ember components](/api/ember/release/classes/Component)
+  ```handlebars
+  {{textarea value=this.searchWord enter=this.query}}
+  ```
 
-  @method textarea
-  @for Ember.Templates.helpers
-  @param {Hash} options
-  @public
-*/
+  The main difference is that angle-bracket invocation supports any HTML attribute using HTML
+  attribute syntax, because attributes and arguments have different syntax when using angle-bracket
+  invocation. Curly brace invocation, on the other hand, only has a single syntax for arguments,
+  and components must manually map attributes onto component arguments.
 
-/**
-  The internal class used to create textarea element when the `{{textarea}}`
-  helper is used.
+  When using classic invocation with `{{textarea}}`, only the following attributes are mapped onto
+  arguments:
 
-  See [Ember.Templates.helpers.textarea](/api/ember/release/classes/Ember.Templates.helpers/methods/textarea?anchor=textarea)  for usage details.
+  * rows
+  * cols
+  * name
+  * selectionEnd
+  * selectionStart
+  * autocomplete
+  * wrap
+  * lang
+  * dir
+  * value
 
-  ## Layout and LayoutName properties
+  ## Classic `layout` and `layoutName` properties
 
   Because HTML `textarea` elements do not contain inner HTML the `layout` and
   `layoutName` properties will not be applied.
 
+  @method Textarea
+  @for Ember.Templates.components
+  @see {TextArea}
+  @public
+*/
+
+/**
+  See Ember.Templates.components.Textarea.
+
+  @method textarea
+  @for Ember.Templates.helpers
+  @see {Ember.Templates.components.textarea}
+  @public
+*/
+
+/**
+  The internal representation used for `Textarea` invocations.
+
   @class TextArea
   @extends Component
+  @see {Ember.Templates.components.Textarea}
   @uses Ember.TextSupport
   @public
 */
