@@ -399,7 +399,7 @@ RouterService.reopen(Evented, {
   currentURL: readOnly('_router.currentURL'),
 
   /**
-    The `location` property determines the type of URLs that your
+    The `location` property determines the type of URLs your
     application will use.
 
     The following location types are currently available:
@@ -424,7 +424,7 @@ RouterService.reopen(Evented, {
         ...
       }
     }
-  ```
+    ```
 
     @property location
     @default 'hash'
