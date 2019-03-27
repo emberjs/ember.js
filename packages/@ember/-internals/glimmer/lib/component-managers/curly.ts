@@ -1,9 +1,11 @@
 import { privatize as P } from '@ember/-internals/container';
 import { get } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
-import { guidFor } from '@ember/-internals/utils';
 import {
   addChildView,
+  getElementId,
+  getViewId,
+  hasElementId,
   OwnedTemplateMeta,
   setElementView,
   setViewElement,
@@ -92,7 +94,7 @@ function applyAttributeBindings(
   }
 
   if (seen.indexOf('id') === -1) {
-    let id = component.elementId ? component.elementId : guidFor(component);
+    let id = hasElementId(component) ? getElementId(component) : getViewId(component);
     operations.setAttribute('id', PrimitiveReference.create(id), false, null);
   }
 
@@ -352,7 +354,7 @@ export default class CurlyComponentManager
     if (attributeBindings && attributeBindings.length) {
       applyAttributeBindings(element, attributeBindings, component, operations);
     } else {
-      let id = component.elementId ? component.elementId : guidFor(component);
+      let id = hasElementId(component) ? getElementId(component) : getViewId(component);
       operations.setAttribute('id', PrimitiveReference.create(id), false, null);
       IsVisibleBinding.install(element, component, operations);
     }
@@ -521,17 +523,15 @@ export function processComponentInitializationAssertions(component: Component, p
   );
 
   assert(
+    `You cannot use \`elementId\` on a tag-less component: ${component}`,
+    component.tagName !== '' || !hasElementId(component) || props.id === getElementId(component)
+  );
+
+  assert(
     `You cannot use \`classNameBindings\` on a tag-less component: ${component}`,
     component.tagName !== '' ||
       !component.classNameBindings ||
       component.classNameBindings.length === 0
-  );
-
-  assert(
-    `You cannot use \`elementId\` on a tag-less component: ${component}`,
-    component.tagName !== '' ||
-      props.id === component.elementId ||
-      (!component.elementId && component.elementId !== '')
   );
 
   assert(

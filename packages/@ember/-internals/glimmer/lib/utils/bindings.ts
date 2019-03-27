@@ -1,4 +1,4 @@
-import { get } from '@ember/-internals/metal';
+import { getElementId, getViewId } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { dasherize } from '@ember/string';
 import { Opaque, Option, Simple } from '@glimmer/interfaces';
@@ -86,13 +86,8 @@ export const AttributeBinding = {
     let [prop, attribute, isSimple] = parsed;
 
     if (attribute === 'id') {
-      let elementId = get(component, prop);
-      if (elementId === undefined || elementId === null) {
-        elementId = component.elementId;
-      }
-      elementId = PrimitiveReference.create(elementId);
-      operations.setAttribute('id', elementId, true, null);
-      // operations.addStaticAttribute(element, 'id', elementId);
+      let elementId = component[prop] || getElementId(component) || getViewId(component);
+      operations.setAttribute('id', PrimitiveReference.create(elementId), true, null);
       return;
     }
 
@@ -111,7 +106,6 @@ export const AttributeBinding = {
     }
 
     operations.setAttribute(attribute, reference, false, null);
-    // operations.addDynamicAttribute(element, attribute, reference, false);
   },
 };
 
