@@ -2,6 +2,8 @@ export { default as jQuery, jQueryDisabled } from './lib/system/jquery';
 export {
   addChildView,
   isSimpleClick,
+  registerView,
+  unregisterView,
   getViewBounds,
   getViewClientRects,
   getViewBoundingClientRect,

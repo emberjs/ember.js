@@ -1,6 +1,7 @@
 import { getOwner } from '@ember/-internals/owner';
 /* globals Element */
 import { guidFor } from '@ember/-internals/utils';
+import { assert } from '@glimmer/util';
 
 /**
 @module ember
@@ -26,20 +27,26 @@ export function constructStyleDeprecationMessage(affectedStyle) {
   );
 }
 
+const VIEW_REGISTRY = new Map();
+
+export function registerView(view) {
+  VIEW_REGISTRY.set(getViewId(view), view);
+}
+
+export function unregisterView(view) {
+  VIEW_REGISTRY.delete(getViewId(view));
+}
+
 /**
   @private
   @method getRootViews
   @param {Object} owner
 */
 export function getRootViews(owner) {
-  let registry = owner.lookup('-view-registry:main');
-
   let rootViews = [];
 
-  Object.keys(registry).forEach(id => {
-    let view = registry[id];
-
-    if (view.parentView === null) {
+  VIEW_REGISTRY.forEach(view => {
+    if (getOwner(view) === owner && view.parentView === null) {
       rootViews.push(view);
     }
   });
@@ -53,11 +60,7 @@ export function getRootViews(owner) {
   @param {Ember.View} view
  */
 export function getViewId(view) {
-  if (view.tagName !== '' && view.elementId) {
-    return view.elementId;
-  } else {
-    return guidFor(view);
-  }
+  return guidFor(view);
 }
 
 const ELEMENT_VIEW = new WeakMap();
@@ -105,9 +108,7 @@ const CHILD_VIEW_IDS = new WeakMap();
   @param {Ember.View} view
 */
 export function getChildViews(view) {
-  let owner = getOwner(view);
-  let registry = owner.lookup('-view-registry:main');
-  return collectChildViews(view, registry);
+  return collectChildViews(view);
 }
 
 export function initChildViews(view) {
@@ -125,20 +126,31 @@ export function addChildView(parent, child) {
   childViews.add(getViewId(child));
 }
 
-export function collectChildViews(view, registry) {
-  let views = [];
-  let childViews = CHILD_VIEW_IDS.get(view);
+export function collectChildViews(parentView) {
+  let childViews = [];
+  let childViewIds = CHILD_VIEW_IDS.get(parentView);
 
-  if (childViews !== undefined) {
-    childViews.forEach(id => {
-      let view = registry[id];
-      if (view && !view.isDestroying && !view.isDestroyed) {
-        views.push(view);
+  if (childViewIds !== undefined) {
+    childViewIds.forEach(id => {
+      let childView = VIEW_REGISTRY.get(id);
+
+      if (childView) {
+        assert(
+          `${childView} does not have the same owner as parent ${parentView}`,
+          getOwner(childView) === getOwner(parentView)
+        );
+
+        assert(
+          `${childView} should have been unregistered`,
+          !childView.isDestroying && !childView.isDestroyed
+        );
+
+        childViews.push(childView);
       }
     });
   }
 
-  return views;
+  return childViews;
 }
 
 /**

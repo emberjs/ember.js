@@ -1,6 +1,6 @@
 import { ENV } from '@ember/-internals/environment';
 import { runInTransaction } from '@ember/-internals/metal';
-import { getViewElement, getViewId } from '@ember/-internals/views';
+import { getViewElement, getViewId, registerView, unregisterView } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { backburner, getCurrentRunLoop } from '@ember/runloop';
 import { Option, Simple } from '@glimmer/interfaces';
@@ -240,14 +240,9 @@ function loopEnd() {
 backburner.on('begin', loopBegin);
 backburner.on('end', loopEnd);
 
-interface ViewRegistry {
-  [viewId: string]: Opaque;
-}
-
 export abstract class Renderer {
   private _env: Environment;
   private _rootTemplate: any;
-  private _viewRegistry: ViewRegistry;
   private _destinedForDOM: boolean;
   private _destroyed: boolean;
   private _roots: RootState[];
@@ -259,13 +254,11 @@ export abstract class Renderer {
   constructor(
     env: Environment,
     rootTemplate: OwnedTemplate,
-    viewRegistry: ViewRegistry,
     destinedForDOM = false,
     builder = clientBuilder
   ) {
     this._env = env;
     this._rootTemplate = rootTemplate;
-    this._viewRegistry = viewRegistry;
     this._destinedForDOM = destinedForDOM;
     this._destroyed = false;
     this._roots = [];
@@ -310,17 +303,12 @@ export abstract class Renderer {
     this._scheduleRevalidate();
   }
 
-  register(view: any) {
-    let id = getViewId(view);
-    assert(
-      'Attempted to register a view with an id already in use: ' + id,
-      !this._viewRegistry[id]
-    );
-    this._viewRegistry[id] = view;
+  register(view: Opaque) {
+    registerView(view);
   }
 
-  unregister(view: any) {
-    delete this._viewRegistry[getViewId(view)];
+  unregister(view: Opaque) {
+    unregisterView(view);
   }
 
   remove(view: Component) {
@@ -513,15 +501,13 @@ export class InertRenderer extends Renderer {
   static create({
     env,
     rootTemplate,
-    _viewRegistry,
     builder,
   }: {
     env: Environment;
     rootTemplate: OwnedTemplate;
-    _viewRegistry: any;
     builder: any;
   }) {
-    return new this(env, rootTemplate, _viewRegistry, false, builder);
+    return new this(env, rootTemplate, false, builder);
   }
 
   getElement(_view: Opaque): Option<Simple.Element> {
@@ -535,15 +521,13 @@ export class InteractiveRenderer extends Renderer {
   static create({
     env,
     rootTemplate,
-    _viewRegistry,
     builder,
   }: {
     env: Environment;
     rootTemplate: OwnedTemplate;
-    _viewRegistry: any;
     builder: any;
   }) {
-    return new this(env, rootTemplate, _viewRegistry, true, builder);
+    return new this(env, rootTemplate, true, builder);
   }
 
   getElement(view: Opaque): Option<Simple.Element> {

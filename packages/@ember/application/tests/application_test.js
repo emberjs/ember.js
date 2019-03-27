@@ -129,8 +129,6 @@ moduleFor(
       );
 
       verifyRegistration(assert, application, 'controller:basic');
-      verifyRegistration(assert, application, '-view-registry:main');
-      verifyInjection(assert, application, 'view', '_viewRegistry', '-view-registry:main');
       verifyInjection(assert, application, 'route', '_topLevelViewTemplate', 'template:-outlet');
       verifyRegistration(assert, application, 'route:basic');
       verifyRegistration(assert, application, 'event_dispatcher:main');
