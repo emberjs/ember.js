@@ -74,23 +74,6 @@ export const BOUNDS = symbol('BOUNDS');
   <p class='signature'>Out of office this week</p>
   ```
 
-  ## File System Nesting
-
-  Components can be nested inside sub-folders for logical groupping. For
-  example, if we placed our template in
-  `app/templates/components/person/short-profile.hbs`, we can invoke it as
-  `<Person::ShortProfile />`:
-
-  ```app/templates/application.hbs
-  <Person::ShortProfile @person={{this.currentUser}} />
-  ```
-
-  Or equivalently, `{{person/short-profile}}`:
-
-  ```app/templates/application.hbs
-  {{person/short-profile person=this.currentUser}}
-  ```
-
   ## Yielding Contents
 
   You can use `yield` inside a template to include the **contents** of any block
