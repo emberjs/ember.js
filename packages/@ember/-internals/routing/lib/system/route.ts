@@ -182,6 +182,10 @@ class Route extends EmberObject implements IRoute {
   /**
     Returns a hash containing the parameters of an ancestor route.
 
+    You may notice that `this.paramsFor` sometimes works when referring to a
+    child route, but this behavior should not be relied upon as only ancestor
+    routes are certain to be loaded in time.
+
     Example
 
     ```app/router.js
