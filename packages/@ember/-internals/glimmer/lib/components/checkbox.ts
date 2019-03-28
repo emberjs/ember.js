@@ -50,8 +50,6 @@ const Checkbox = EmberComponent.extend({
     By default this component will forward a number of arguments to attributes on the the
     component's element:
 
-    * type
-    * checked
     * indeterminate
     * disabled
     * tabindex
@@ -60,8 +58,13 @@ const Checkbox = EmberComponent.extend({
     * required
     * form
 
-    When invoked with `{{input type="checkbox"}}`, you can only customize these attributes. When
-    invoked with `<Input @type="checkbox" />`, you can just use HTML attributes directly.
+    When invoked with curly braces, this is the exhaustive list of HTML attributes you can
+    customize (i.e. `{{input type="checkbox" disabled=true}}`).
+
+    When invoked with angle bracket invocation, this list is irrelevant, because you can use HTML
+    attribute syntax to customize the element (i.e.
+    `<Input @type="checkbox" disabled data-custom="custom value" />`). However, `@type` and
+    `@checked` must be passed as named arguments, not attributes.
 
     @property attributeBindings
     @type Array | String

@@ -16,7 +16,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
 
         expectAssertion(() => {
           this.visit('/');
-        }, /You must provide at least one of the `@route`, `@model`, `@models` or `@query` argument to `<LinkTo \/>`/);
+        }, /You must provide at least one of the `@route`, `@model`, `@models` or `@query` argument to `<LinkTo>`/);
       }
 
       ['@test should be able to be inserted in DOM when the router is not present']() {

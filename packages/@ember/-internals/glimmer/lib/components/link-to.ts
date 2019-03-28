@@ -52,7 +52,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
 
     ### Handling `href`
 
-    `<LinkTo >` will use your application's Router to fill the element's `href` property with a URL
+    `<LinkTo>` will use your application's Router to fill the element's `href` property with a URL
     that matches the path to the supplied `routeName`.
 
     ### Handling current route
@@ -496,7 +496,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
       let { model, models } = this;
 
       assert(
-        'You cannot provide both the `@model` and `@models` arguments to the <LinkTo /> component.',
+        'You cannot provide both the `@model` and `@models` arguments to the <LinkTo> component.',
         model === UNDEFINED || models === UNDEFINED
       );
 

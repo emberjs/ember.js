@@ -34,7 +34,8 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
 
     ```handlebars
     Search:
-    <Input @value={{this.searchWord}}>`
+    <Input @value={{this.searchWord}}>
+    ```
 
     In this example, the initial value in the `<input>` will be set to the value of
     `this.searchWord`. If the user changes the text, the value of `this.searchWord` will also be
@@ -64,6 +65,13 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
     In most cases, if you want to pass an attribute to the underlying HTML `<input>` element, you
     can pass the attribute directly, just like any other Ember component.
 
+    ```handlebars
+    <Input @type="text" size="10" />
+    ```
+
+    In this example, the `size` attribute will be applied to the underlying `<input>` element in the
+    outputted HTML.
+
     However, there are a few attributes where you **must** use the `@` version.
 
     * `@type`: This argument is used to control which Ember component is used under the hood
@@ -79,6 +87,8 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
     the helper to `TextField`'s `create` method. Subclassing `TextField` is supported but not
     recommended.
 
+    See [TextField](/api/ember/release/classes/TextField)
+
     ### Checkbox
 
     To create an `<input type="checkbox">`:
@@ -93,10 +103,15 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
 
     ### Extending `Checkbox`
 
-    Internally, `<Input @type="checkbox" />` creates an instance of `Ember.Checkbox`
+    Internally, `<Input @type="checkbox" />` creates an instance of `Checkbox`. Subclassing
+    `TextField` is supported but not recommended.
+
+    See [Checkbox](/api/ember/release/classes/Checkbox)
 
     @method Input
     @for Ember.Templates.components
+    @see {TextField}
+    @see {Checkbox}
     @param {Hash} options
     @public
   */
