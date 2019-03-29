@@ -139,7 +139,7 @@ export function renderAotComponent<R>(
   args: RenderComponentArgs = {},
   dynamicScope: DynamicScope = new DefaultDynamicScope()
 ): TemplateIterator {
-  let vm = AotVM.empty(runtime, dynamicScope, { treeBuilder, handle: main });
+  let vm = AotVM.empty(runtime, { treeBuilder, handle: main, dynamicScope });
 
   const definition = expect(
     resolveComponent(vm.runtime.resolver, name),
@@ -170,7 +170,7 @@ export function renderJitComponent(
   args: RenderComponentArgs = {},
   dynamicScope: DynamicScope = new DefaultDynamicScope()
 ): TemplateIterator {
-  let vm = JitVM.empty(runtime, dynamicScope, { treeBuilder, handle: main }, context);
+  let vm = JitVM.empty(runtime, { treeBuilder, handle: main, dynamicScope }, context);
 
   const definition = expect(
     resolveComponent(vm.runtime.resolver, name),
