@@ -574,22 +574,10 @@ export default abstract class VM<C extends JitOrAotBlock> implements PublicVM, I
   }
 }
 
-const EMPTY_DYNAMIC_SCOPE: DynamicScope = {
-  get() {
-    return UNDEFINED_REFERENCE;
-  },
-  set() {
-    return UNDEFINED_REFERENCE;
-  },
-  child() {
-    return EMPTY_DYNAMIC_SCOPE;
-  },
-};
-
 function vmState<C extends JitOrAotBlock>(
   pc: number,
   scope: Scope<C> = ScopeImpl.root<C>(UNDEFINED_REFERENCE, 0),
-  dynamicScope: DynamicScope = EMPTY_DYNAMIC_SCOPE
+  dynamicScope: DynamicScope
 ) {
   return {
     pc,
@@ -602,18 +590,17 @@ function vmState<C extends JitOrAotBlock>(
 export interface MinimalInitOptions {
   handle: number;
   treeBuilder: ElementBuilder;
+  dynamicScope: DynamicScope;
 }
 
 export interface InitOptions extends MinimalInitOptions {
   self: PathReference<unknown>;
-  dynamicScope: DynamicScope;
 }
 
 export class AotVM extends VM<number> implements InternalVM<number> {
   static empty(
     runtime: AotRuntimeContext,
-    dynamicScope: DynamicScope,
-    { handle, treeBuilder }: MinimalInitOptions
+    { handle, treeBuilder, dynamicScope }: MinimalInitOptions
   ): InternalVM<number> {
     let vm = initAOT(
       runtime,
@@ -684,8 +671,7 @@ export class JitVM extends VM<CompilableBlock> implements InternalJitVM {
 
   static empty(
     runtime: JitRuntimeContext,
-    dynamicScope: DynamicScope,
-    { handle, treeBuilder }: MinimalInitOptions,
+    { handle, treeBuilder, dynamicScope }: MinimalInitOptions,
     context: SyntaxCompilationContext
   ) {
     let vm = initJIT(context)(
