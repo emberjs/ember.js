@@ -40,7 +40,7 @@ export interface DOMStack {
   pushRemoteElement(
     element: SimpleElement,
     guid: string,
-    nextSibling: Option<SimpleNode>
+    insertBefore: Option<null>
   ): Option<RemoteLiveBlock>;
   popRemoteElement(): void;
   popElement(): void;
