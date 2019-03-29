@@ -2,13 +2,48 @@ import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import { tracked, nativeDescDecorator as descriptor } from '@ember/-internals/metal';
 import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
-
+import GlimmerishComponent from '../../utils/glimmerish-component';
 import { Component } from '../../utils/helpers';
 
 if (EMBER_METAL_TRACKED_PROPERTIES) {
   moduleFor(
     'Component Tracked Properties',
     class extends RenderingTestCase {
+      '@test simple test using glimmerish component'() {
+        let personId = 0;
+        class Person {
+          @tracked first;
+          @tracked last;
+
+          constructor(first, last) {
+            this.id = personId++;
+            this.first = first;
+            this.last = last;
+          }
+        }
+
+        class PersonComponent extends GlimmerishComponent {
+          get person() {
+            return new Person(this.args.first, this.args.last);
+          }
+        }
+
+        this.registerComponent('person-wrapper', {
+          ComponentClass: PersonComponent,
+          template: '{{@first}} {{@last}} | {{this.person.first}} {{this.person.last}}',
+        });
+
+        this.render('<PersonWrapper @first={{first}} @last={{last}} />', {
+          first: 'robert',
+          last: 'jackson',
+        });
+
+        this.assertText('robert jackson | robert jackson');
+
+        runTask(() => this.context.set('first', 'max'));
+        this.assertText('max jackson | max jackson');
+      }
+
       '@test tracked properties that are uninitialized do not throw an error'() {
         let CountComponent = Component.extend({
           count: tracked(),
