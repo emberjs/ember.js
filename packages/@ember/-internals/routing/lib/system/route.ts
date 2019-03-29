@@ -77,6 +77,7 @@ export function hasDefaultSerialize(route: Route) {
 
 class Route extends EmberObject implements IRoute {
   routeName!: string;
+  _internalName!: string;
   context: {} = {};
   serialize!: (model: {}, params: string[]) => object | undefined;
 
