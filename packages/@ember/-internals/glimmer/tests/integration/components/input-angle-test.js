@@ -114,37 +114,68 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
         dragend: 'dragEnd',
       };
 
-      let TestComponent = Component.extend({ tagName: 'input' });
-      this.registerComponent('test-component', { ComponentClass: TestComponent });
-
-      let triggeredEvents = [];
-      let actions = {};
-      Object.keys(events).forEach(evt => {
-        actions[`run_${evt}`] = function() {
-          triggeredEvents.push(evt);
-        };
+      this.registerComponent('test-component', {
+        ComponentClass: Component.extend({
+          tagName: 'input',
+          attributeBindings: ['type'],
+        }),
       });
 
-      let typeAttr = type ? `type="${type}" ` : '';
-      let actionAttrs = Object.keys(events)
-        .map(evt => `@${events[evt]}={{action 'run_${evt}'}}`)
-        .join(' ');
-      let template = `<TestComponent ${typeAttr}${actionAttrs} /><Input ${typeAttr}${actionAttrs} />`;
+      let triggered = {
+        standard: [],
+        custom: [],
+      };
+
+      let actions = {
+        didTrigger(id, event) {
+          triggered[id].push(event);
+        },
+      };
+
+      function argsFor(id) {
+        let args = [`id="${id}"`];
+
+        if (type) {
+          args.push(`@type="${type}"`);
+        }
+
+        Object.keys(events).forEach(event => {
+          args.push(`@${events[event]}={{action "didTrigger" "${id}" "${event}"}}`);
+        });
+
+        return args.join(' ');
+      }
+
+      let template = `
+        <Input ${argsFor('standard')} />
+        <TestComponent ${argsFor('custom')} />
+      `;
 
       this.render(template, { actions });
 
-      Object.keys(events).forEach(evt => this.triggerEvent(evt, null, 'input:first-of-type'));
-      let normallyTriggeredEvents = [].concat(triggeredEvents);
-      triggeredEvents.length = 0;
+      this.assert.ok(this.$('input').length === 2);
+
+      let $standard = this.$('#standard');
+      let $custom = this.$('#custom');
+
+      this.assert.equal($standard.type, $custom.type);
+
+      Object.keys(events).forEach(event => {
+        this.triggerEvent(event, null, '#standard');
+        this.triggerEvent(event, null, '#custom');
+      });
 
       this.assert.ok(
-        normallyTriggeredEvents.length > 10,
-        'sanity check that most events are triggered'
+        triggered.standard.length > 10,
+        'sanity check that most events are triggered (standard)'
       );
 
-      normallyTriggeredEvents.forEach(evt => this.triggerEvent(evt, null, 'input:last-of-type'));
+      this.assert.ok(
+        triggered.custom.length > 10,
+        'sanity check that most events are triggered (custom)'
+      );
 
-      this.assert.deepEqual(triggeredEvents, normallyTriggeredEvents, 'called for all events');
+      this.assert.deepEqual(triggered.standard, triggered.custom, 'called for all events');
     }
   }
 
