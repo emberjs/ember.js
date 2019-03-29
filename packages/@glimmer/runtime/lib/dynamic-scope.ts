@@ -1,11 +1,11 @@
-import { DynamicScope } from '@glimmer/interfaces';
+import { DynamicScope, Dict } from '@glimmer/interfaces';
 import { assign } from '@glimmer/util';
 import { PathReference } from '@glimmer/reference';
 
 export class DefaultDynamicScope implements DynamicScope {
-  private bucket: any;
+  private bucket: Dict<PathReference>;
 
-  constructor(bucket = null) {
+  constructor(bucket?: Dict<PathReference>) {
     if (bucket) {
       this.bucket = assign({}, bucket);
     } else {
