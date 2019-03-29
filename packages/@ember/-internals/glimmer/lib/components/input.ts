@@ -11,61 +11,40 @@ let Input: any;
 
 if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
   /**
-    The `{{input}}` helper lets you create an HTML `<input />` component.
-    It causes a `TextField` component to be rendered.  For more info,
-    see the [TextField](/api/ember/release/classes/TextField) docs and
-    the [templates guide](https://guides.emberjs.com/release/templates/input-helpers/).
+    See [Ember.Templates.components.Input](/api/ember/release/classes/Ember.Templates.components/methods/Input?anchor=Input).
+
+    @method input
+    @for Ember.Templates.helpers
+    @param {Hash} options
+    @public
+   */
+
+  /**
+    The `Input` component lets you create an HTML `<input>` element.
 
     ```handlebars
-    {{input value="987"}}
+    <Input @value="987" />
     ```
 
-    renders as:
-
-    ```HTML
-    <input type="text" value="987" />
-    ```
+    creates an `<input>` element with `type="text"` and value set to 987.
 
     ### Text field
 
-    If no `type` option is specified, a default of type 'text' is used.
-    Many of the standard HTML attributes may be passed to this helper.
-    <table>
-      <tr><td>`readonly`</td><td>`required`</td><td>`autofocus`</td></tr>
-      <tr><td>`value`</td><td>`placeholder`</td><td>`disabled`</td></tr>
-      <tr><td>`size`</td><td>`tabindex`</td><td>`maxlength`</td></tr>
-      <tr><td>`name`</td><td>`min`</td><td>`max`</td></tr>
-      <tr><td>`pattern`</td><td>`accept`</td><td>`autocomplete`</td></tr>
-      <tr><td>`autosave`</td><td>`formaction`</td><td>`formenctype`</td></tr>
-      <tr><td>`formmethod`</td><td>`formnovalidate`</td><td>`formtarget`</td></tr>
-      <tr><td>`height`</td><td>`inputmode`</td><td>`multiple`</td></tr>
-      <tr><td>`step`</td><td>`width`</td><td>`form`</td></tr>
-      <tr><td>`selectionDirection`</td><td>`spellcheck`</td><td>&nbsp;</td></tr>
-    </table>
-    When set to a quoted string, these values will be directly applied to the HTML
-    element. When left unquoted, these values will be bound to a property on the
-    template's current rendering context (most typically a controller instance).
-    A very common use of this helper is to bind the `value` of an input to an Object's attribute:
+    If no `type` argument is specified, a default of type 'text' is used.
 
     ```handlebars
     Search:
-    {{input value=searchWord}}
+    <Input @value={{this.searchWord}}>
     ```
 
-    In this example, the initial value in the `<input />` will be set to the value of `searchWord`.
-    If the user changes the text, the value of `searchWord` will also be updated.
+    In this example, the initial value in the `<input>` will be set to the value of
+    `this.searchWord`. If the user changes the text, the value of `this.searchWord` will also be
+    updated.
 
     ### Actions
 
-    The helper can send multiple actions based on user events.
-    The action property defines the action which is sent when
-    the user presses the return key.
-
-    ```handlebars
-    {{input action="submit"}}
-    ```
-
-    The helper allows some user events to send actions.
+    The `Input` component takes a number of arguments with callbacks that are invoked in response to
+    user events.
 
     * `enter`
     * `insert-newline`
@@ -75,73 +54,64 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
     * `key-press`
     * `key-up`
 
-    For example, if you desire an action to be sent when the input is blurred,
-    you only need to setup the action name to the event name property.
+    These callbacks are passed to `Input` like this:
 
     ```handlebars
-    {{input focus-out="alertMessage"}}
+    <Input @value={{this.searchWord}} @enter={{this.query}} />
     ```
-    See more about [Text Support Actions](/api/ember/release/classes/TextField)
+
+    ### `<input>` HTML Attributes to Avoid
+
+    In most cases, if you want to pass an attribute to the underlying HTML `<input>` element, you
+    can pass the attribute directly, just like any other Ember component.
+
+    ```handlebars
+    <Input @type="text" size="10" />
+    ```
+
+    In this example, the `size` attribute will be applied to the underlying `<input>` element in the
+    outputted HTML.
+
+    However, there are a few attributes where you **must** use the `@` version.
+
+    * `@type`: This argument is used to control which Ember component is used under the hood
+    * `@value`: The `@value` argument installs a two-way binding onto the element. If you wanted a
+      one-way binding, use `<input>` with the `value` property and the `input` event instead.
+    * `@checked` (for checkboxes): like `@value`, the `@checked` argument installs a two-way binding
+      onto the element. If you wanted a one-way binding, use `<input type="checkbox">` with
+      `checked` and the `input` event instead.
 
     ### Extending `TextField`
 
-    Internally, `{{input type="text"}}` creates an instance of `TextField`, passing
-    arguments from the helper to `TextField`'s `create` method. You can extend the
-    capabilities of text inputs in your applications by reopening this class. For example,
-    if you are building a Bootstrap project where `data-*` attributes are used, you
-    can add one to the `TextField`'s `attributeBindings` property:
+    Internally, `<Input @type="text" />` creates an instance of `TextField`, passing arguments from
+    the helper to `TextField`'s `create` method. Subclassing `TextField` is supported but not
+    recommended.
 
-    ```javascript
-    import TextField from '@ember/component/text-field';
-    TextField.reopen({
-      attributeBindings: ['data-error']
-    });
-    ```
-
-    Keep in mind when writing `TextField` subclasses that `TextField`
-    itself extends `Component`. Expect isolated component semantics, not
-    legacy 1.x view semantics (like `controller` being present).
-    See more about [Ember components](/api/ember/release/classes/Component)
+    See [TextField](/api/ember/release/classes/TextField)
 
     ### Checkbox
 
-    Checkboxes are special forms of the `{{input}}` helper.  To create a `<checkbox />`:
+    To create an `<input type="checkbox">`:
 
     ```handlebars
     Emberize Everything:
-    {{input type="checkbox" name="isEmberized" checked=isEmberized}}
+    <Input @type="checkbox" @checked={{this.isEmberized}} name="isEmberized" />
     ```
 
-    This will bind checked state of this checkbox to the value of `isEmberized`  -- if either one changes,
-    it will be reflected in the other.
-
-    The following HTML attributes can be set via the helper:
-
-    * `checked`
-    * `disabled`
-    * `tabindex`
-    * `indeterminate`
-    * `name`
-    * `autofocus`
-    * `form`
+    This will bind the checked state of this checkbox to the value of `isEmberized` -- if either one
+    changes, it will be reflected in the other.
 
     ### Extending `Checkbox`
 
-    Internally, `{{input type="checkbox"}}` creates an instance of `Checkbox`, passing
-    arguments from the helper to `Checkbox`'s `create` method. You can extend the
-    capablilties of checkbox inputs in your applications by reopening this class. For example,
-    if you wanted to add a css class to all checkboxes in your application:
+    Internally, `<Input @type="checkbox" />` creates an instance of `Checkbox`. Subclassing
+    `TextField` is supported but not recommended.
 
-    ```javascript
-    import Checkbox from '@ember/component/checkbox';
+    See [Checkbox](/api/ember/release/classes/Checkbox)
 
-    Checkbox.reopen({
-      classNames: ['my-app-checkbox']
-    });
-    ```
-
-    @method input
-    @for Ember.Templates.helpers
+    @method Input
+    @for Ember.Templates.components
+    @see {TextField}
+    @see {Checkbox}
     @param {Hash} options
     @public
   */
