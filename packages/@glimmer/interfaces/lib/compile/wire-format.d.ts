@@ -211,6 +211,7 @@ export namespace Statements {
     | Statements.DynamicAttr
     | Statements.ComponentAttr
     | Statements.TrustingComponentAttr
+    | Statements.Modifier
     | Statements.AttrSplat;
 
   export type Argument = Statements.StaticArg | Statements.DynamicArg;

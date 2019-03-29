@@ -127,22 +127,21 @@ export default class TemplateCompiler {
         this.attribute([typeAttr], hasSplat || actionIsComponent);
       }
 
+      for (let i = 0; i < action.modifiers.length; i++) {
+        this.modifier([action.modifiers[i]]);
+      }
+
       this.opcode(['flushElement', action], null);
     }
   }
 
   closeElement([action]: [AST.ElementNode]) {
-    if (isDynamicComponent(action)) {
-      this.opcode(['closeDynamicComponent', action], action);
-    } else if (isNamedBlock(action)) {
+    if (isNamedBlock(action)) {
       this.opcode(['closeNamedBlock', action]);
+    } else if (isDynamicComponent(action)) {
+      this.opcode(['closeDynamicComponent', action], action);
     } else if (isComponent(action)) {
       this.opcode(['closeComponent', action], action);
-    } else if (action.modifiers.length > 0) {
-      for (let i = 0; i < action.modifiers.length; i++) {
-        this.modifier([action.modifiers[i]]);
-      }
-      this.opcode(['closeElement', action], action);
     } else {
       this.opcode(['closeElement', action], action);
     }

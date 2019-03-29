@@ -22,6 +22,7 @@ import { DynamicAttribute } from '../../vm/attributes/dynamic';
 import { CheckReference, CheckArguments, CheckOperations } from './-debug-strip';
 import { CONSTANTS } from '../../symbols';
 import { SimpleElement } from '@simple-dom/interface';
+import { expect } from '@glimmer/util';
 
 APPEND_OPCODES.add(Op.Text, (vm, { op1: text }) => {
   vm.elements().appendText(vm[CONSTANTS].getString(text));
@@ -85,9 +86,15 @@ APPEND_OPCODES.add(Op.Modifier, (vm, { op1: handle }) => {
   let { manager, state } = vm.runtime.resolver.resolve<ModifierDefinition>(handle);
   let stack = vm.stack;
   let args = check(stack.pop(), CheckArguments);
-  let { element, updateOperations } = vm.elements();
+  let { constructing, updateOperations } = vm.elements();
   let dynamicScope = vm.dynamicScope();
-  let modifier = manager.create(element, state, args, dynamicScope, updateOperations);
+  let modifier = manager.create(
+    expect(constructing, 'ElementModifier could not find the element it applies to'),
+    state,
+    args,
+    dynamicScope,
+    updateOperations
+  );
 
   vm.env.scheduleInstallModifier(modifier, manager);
   let d = manager.getDestructor(modifier);

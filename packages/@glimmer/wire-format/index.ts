@@ -8,14 +8,15 @@ export function is<T>(variant: number): (value: any) => value is T {
 
 // Statements
 export const isFlushElement = is<Statements.FlushElement>(SexpOpcodes.FlushElement);
-export const isAttrSplat = is<Statements.AttrSplat>(SexpOpcodes.AttrSplat);
 
 export function isAttribute(val: Statement): val is Statements.Attribute {
   return (
     val[0] === SexpOpcodes.StaticAttr ||
     val[0] === SexpOpcodes.DynamicAttr ||
     val[0] === SexpOpcodes.TrustingDynamicAttr ||
-    val[0] === SexpOpcodes.ComponentAttr
+    val[0] === SexpOpcodes.ComponentAttr ||
+    val[0] === SexpOpcodes.AttrSplat ||
+    val[0] === SexpOpcodes.Modifier
   );
 }
 
