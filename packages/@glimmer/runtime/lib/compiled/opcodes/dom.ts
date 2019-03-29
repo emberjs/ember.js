@@ -7,9 +7,8 @@ import {
   isConst,
   isConstTag,
 } from '@glimmer/reference';
-import { Option } from '@glimmer/util';
-import { check, CheckString, CheckElement, CheckNode, CheckOption } from '@glimmer/debug';
-import { Op } from '@glimmer/interfaces';
+import { check, CheckString, CheckElement } from '@glimmer/debug';
+import { Op, Option } from '@glimmer/interfaces';
 import { $t0 } from '@glimmer/vm';
 import {
   ModifierDefinition,
@@ -22,7 +21,7 @@ import { Assert } from './vm';
 import { DynamicAttribute } from '../../vm/attributes/dynamic';
 import { CheckReference, CheckArguments, CheckOperations } from './-debug-strip';
 import { CONSTANTS } from '../../symbols';
-import { SimpleElement, SimpleNode } from '@simple-dom/interface';
+import { SimpleElement } from '@simple-dom/interface';
 
 APPEND_OPCODES.add(Op.Text, (vm, { op1: text }) => {
   vm.elements().appendText(vm[CONSTANTS].getString(text));
@@ -43,11 +42,10 @@ APPEND_OPCODES.add(Op.OpenDynamicElement, vm => {
 
 APPEND_OPCODES.add(Op.PushRemoteElement, vm => {
   let elementRef = check(vm.stack.pop(), CheckReference);
-  let nextSiblingRef = check(vm.stack.pop(), CheckReference);
+  let insertBeforeRef = check(vm.stack.pop(), CheckReference);
   let guidRef = check(vm.stack.pop(), CheckReference);
 
   let element: SimpleElement;
-  let nextSibling: Option<SimpleNode>;
   let guid = guidRef.value() as string;
 
   if (isConst(elementRef)) {
@@ -58,15 +56,9 @@ APPEND_OPCODES.add(Op.PushRemoteElement, vm => {
     vm.updateWith(new Assert(cache));
   }
 
-  if (isConst(nextSiblingRef)) {
-    nextSibling = check(nextSiblingRef.value(), CheckOption(CheckNode));
-  } else {
-    let cache = new ReferenceCache(nextSiblingRef as Reference<Option<SimpleNode>>);
-    nextSibling = check(cache.peek(), CheckOption(CheckNode));
-    vm.updateWith(new Assert(cache));
-  }
+  let insertBefore = insertBeforeRef.value() as Option<null>;
 
-  let block = vm.elements().pushRemoteElement(element, guid, nextSibling);
+  let block = vm.elements().pushRemoteElement(element, guid, insertBefore);
   if (block) vm.associateDestroyable(block);
 });
 

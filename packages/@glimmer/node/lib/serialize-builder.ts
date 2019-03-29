@@ -96,13 +96,13 @@ class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
   pushRemoteElement(
     element: SimpleElement,
     cursorId: string,
-    nextSibling: Option<SimpleNode> = null
+    insertBefore: Option<null> = null
   ): Option<RemoteLiveBlock> {
     let { dom } = this;
     let script = dom.createElement('script');
     script.setAttribute('glmr', cursorId);
-    dom.insertBefore(element, script, nextSibling);
-    return super.pushRemoteElement(element, cursorId, nextSibling);
+    dom.insertBefore(element, script, insertBefore);
+    return super.pushRemoteElement(element, cursorId, insertBefore);
   }
 }
 
