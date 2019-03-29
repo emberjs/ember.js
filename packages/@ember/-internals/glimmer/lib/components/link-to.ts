@@ -818,6 +818,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
       @private
     */
     href: computed(
+      '_currentRouterState',
       '_route',
       '_models',
       '_query',
