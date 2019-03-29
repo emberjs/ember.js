@@ -2,7 +2,12 @@ import { privatize as P } from '@ember/-internals/container';
 import { get } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
-import { addChildView, OwnedTemplateMeta, setViewElement } from '@ember/-internals/views';
+import {
+  addChildView,
+  OwnedTemplateMeta,
+  setElementView,
+  setViewElement,
+} from '@ember/-internals/views';
 import { assert, debugFreeze } from '@ember/debug';
 import { _instrumentStart } from '@ember/instrumentation';
 import { assign } from '@ember/polyfills';
@@ -340,6 +345,7 @@ export default class CurlyComponentManager
     operations: ElementOperations
   ): void {
     setViewElement(component, element);
+    setElementView(element, component);
 
     let { attributeBindings, classNames, classNameBindings } = component;
 

@@ -8,8 +8,12 @@ export {
   getRootViews,
   getChildViews,
   getViewId,
+  getElementView,
   getViewElement,
+  setElementView,
   setViewElement,
+  clearElementView,
+  clearViewElement,
   constructStyleDeprecationMessage,
 } from './lib/system/utils';
 export { default as EventDispatcher } from './lib/system/event_dispatcher';
@@ -25,4 +29,3 @@ export { MUTABLE_CELL } from './lib/compat/attrs';
 export { default as lookupPartial, hasPartial } from './lib/system/lookup_partial';
 export { default as lookupComponent } from './lib/utils/lookup-component';
 export { default as ActionManager } from './lib/system/action_manager';
-export { default as fallbackViewRegistry } from './lib/compat/fallback-view-registry';

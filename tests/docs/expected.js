@@ -211,7 +211,6 @@ module.exports = {
     'finally',
     'find',
     'findBy',
-    'findElementInParentElement',
     'findModel',
     'findWithAssert',
     'firstObject',

@@ -267,23 +267,6 @@ let mixin = {
   elementId: null,
 
   /**
-   Attempts to discover the element in the parent element. The default
-   implementation looks for an element with an ID of `elementId` (or the
-   view's guid if `elementId` is null). You can override this method to
-   provide your own form of lookup. For example, if you want to discover your
-   element using a CSS class name instead of an ID.
-
-   @method findElementInParentElement
-   @param {DOMElement} parentElement The parent's DOM element
-   @return {DOMElement} The discovered element
-   @private
-   */
-  findElementInParentElement(parentElem) {
-    let id = `#${this.elementId}`;
-    return jQuery(id)[0] || jQuery(id, parentElem)[0];
-  },
-
-  /**
    Called when a view is going to insert an element into the DOM.
 
    @event willInsertElement
@@ -367,7 +350,7 @@ let mixin = {
    must destroy and recreate the view element.
 
    By default, the render buffer will use a `<div>` tag for views.
-   
+
    If the tagName is `''`, the view will be tagless, with no outer element.
    Component properties that depend on the presence of an outer element, such
    as `classNameBindings` and `attributeBindings`, do not work with tagless

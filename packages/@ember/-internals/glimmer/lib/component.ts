@@ -725,7 +725,14 @@ const Component = CoreView.extend(
      */
     readDOMAttr(name: string) {
       // TODO revisit this
-      let element = getViewElement(this);
+      let _element = getViewElement(this);
+
+      assert(
+        `Cannot call \`readDOMAttr\` on ${this} which does not have an element`,
+        _element !== null
+      );
+
+      let element = _element!;
       let isSVG = element.namespaceURI === SVG_NAMESPACE;
       let { type, normalized } = normalizeProperty(element, name);
 

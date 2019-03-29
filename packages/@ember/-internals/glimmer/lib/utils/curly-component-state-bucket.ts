@@ -1,3 +1,4 @@
+import { clearElementView, clearViewElement, getViewElement } from '@ember/-internals/views';
 import { Revision, VersionedReference } from '@glimmer/reference';
 import { CapturedNamedArguments } from '@glimmer/runtime';
 import { Opaque } from '@glimmer/util';
@@ -54,6 +55,13 @@ export default class ComponentStateBucket {
     if (environment.isInteractive) {
       component.trigger('willDestroyElement');
       component.trigger('willClearRender');
+
+      let element = getViewElement(component);
+
+      if (element) {
+        clearElementView(element);
+        clearViewElement(component);
+      }
     }
 
     environment.destroyedComponents.push(component);

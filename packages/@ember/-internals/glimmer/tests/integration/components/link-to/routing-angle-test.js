@@ -42,16 +42,16 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
           'index',
           `
           <h3 class="home">Home</h3>
-          <LinkTo @route='about' @id='about-link'>About</LinkTo>
-          <LinkTo @route='index' @id='self-link'>Self</LinkTo>
+          <LinkTo @route='about' id='about-link'>About</LinkTo>
+          <LinkTo @route='index' id='self-link'>Self</LinkTo>
           `
         );
         this.addTemplate(
           'about',
           `
           <h3 class="about">About</h3>
-          <LinkTo @route='index' @id='home-link'>Home</LinkTo>
-          <LinkTo @route='about' @id='self-link'>Self</LinkTo>
+          <LinkTo @route='index' id='home-link'>Home</LinkTo>
+          <LinkTo @route='about' id='self-link'>Self</LinkTo>
           `
         );
       }
@@ -91,7 +91,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
       [`@test the <LinkTo /> component doesn't add an href when the tagName isn't 'a'`](assert) {
         this.addTemplate(
           'index',
-          `<LinkTo @route='about' @id='about-link' @tagName='div'>About</LinkTo>`
+          `<LinkTo @route='about' id='about-link' @tagName='div'>About</LinkTo>`
         );
 
         return this.visit('/').then(() => {
@@ -103,8 +103,8 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
         this.addTemplate(
           'index',
           `
-          <LinkTo @id="about-link-static" @route="about" @disabledWhen="shouldDisable">About</LinkTo>
-          <LinkTo @id="about-link-dynamic" @route="about" @disabledWhen={{dynamicDisabledWhen}}>About</LinkTo>
+          <LinkTo id="about-link-static" @route="about" @disabledWhen="shouldDisable">About</LinkTo>
+          <LinkTo id="about-link-dynamic" @route="about" @disabledWhen={{dynamicDisabledWhen}}>About</LinkTo>
           `
         );
 
@@ -142,7 +142,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
       [`@test the <LinkTo /> component doesn't apply a 'disabled' class if disabledWhen is not provided`](
         assert
       ) {
-        this.addTemplate('index', `<LinkTo @id="about-link" @route="about">About</LinkTo>`);
+        this.addTemplate('index', `<LinkTo id="about-link" @route="about">About</LinkTo>`);
 
         return this.visit('/').then(() => {
           assert.ok(
@@ -155,7 +155,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
       [`@test the <LinkTo /> component supports a custom disabledClass`](assert) {
         this.addTemplate(
           'index',
-          `<LinkTo @id="about-link" @route="about" @disabledWhen={{true}} @disabledClass="do-not-want">About</LinkTo>`
+          `<LinkTo id="about-link" @route="about" @disabledWhen={{true}} @disabledClass="do-not-want">About</LinkTo>`
         );
 
         return this.visit('/').then(() => {
@@ -172,7 +172,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
       ) {
         this.addTemplate(
           'index',
-          `<LinkTo @id="about-link" @route="about" @disabledWhen={{true}} @disabledClass={{disabledClass}}>About</LinkTo>`
+          `<LinkTo id="about-link" @route="about" @disabledWhen={{true}} @disabledClass={{disabledClass}}>About</LinkTo>`
         );
 
         this.add(
@@ -194,7 +194,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
       [`@test the <LinkTo /> component does not respond to clicks when disabledWhen`](assert) {
         this.addTemplate(
           'index',
-          `<LinkTo @id="about-link" @route="about" @disabledWhen={{true}}>About</LinkTo>`
+          `<LinkTo id="about-link" @route="about" @disabledWhen={{true}}>About</LinkTo>`
         );
 
         return this.visit('/')
@@ -209,7 +209,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
       [`@test the <LinkTo /> component does not respond to clicks when disabled`](assert) {
         this.addTemplate(
           'index',
-          `<LinkTo @id="about-link" @route="about" @disabled={{true}}>About</LinkTo>`
+          `<LinkTo id="about-link" @route="about" @disabled={{true}}>About</LinkTo>`
         );
 
         return this.visit('/')
@@ -226,7 +226,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
       ) {
         this.addTemplate(
           'index',
-          `<LinkTo @id="about-link" @route="about" @disabledWhen={{disabledWhen}}>About</LinkTo>`
+          `<LinkTo id="about-link" @route="about" @disabledWhen={{disabledWhen}}>About</LinkTo>`
         );
 
         this.add(
@@ -265,8 +265,8 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
           'index',
           `
           <h3 class="home">Home</h3>
-          <LinkTo @id='about-link' @route='about'>About</LinkTo>
-          <LinkTo @id='self-link' @route='index' @activeClass='zomg-active'>Self</LinkTo>
+          <LinkTo id='about-link' @route='about'>About</LinkTo>
+          <LinkTo id='self-link' @route='index' @activeClass='zomg-active'>Self</LinkTo>
           `
         );
 
@@ -290,8 +290,8 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
           'index',
           `
           <h3 class="home">Home</h3>
-          <LinkTo @id='about-link' @route='about'>About</LinkTo>
-          <LinkTo @id='self-link' @route='index' @activeClass={{activeClass}}>Self</LinkTo>
+          <LinkTo id='about-link' @route='about'>About</LinkTo>
+          <LinkTo id='self-link' @route='index' @activeClass={{activeClass}}>Self</LinkTo>
           `
         );
 
@@ -325,7 +325,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
           'index',
           `
           <h3 class="home">Home</h3>
-          <LinkTo @id='about-link' @route='about' @classNameBindings='foo:foo-is-true:foo-is-false'>About</LinkTo>
+          <LinkTo id='about-link' @route='about' @classNameBindings='foo:foo-is-true:foo-is-false'>About</LinkTo>
           `
         );
 
@@ -388,16 +388,16 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
           'index',
           `
           <h3 class="home">Home</h3>
-          <LinkTo @id='about-link' @route='about'>About</LinkTo>
-          <LinkTo @id='self-link' @route='index'>Self</LinkTo>
+          <LinkTo id='about-link' @route='about'>About</LinkTo>
+          <LinkTo id='self-link' @route='index'>Self</LinkTo>
           `
         );
         this.addTemplate(
           'about',
           `
           <h3 class="about">About</h3>
-          <LinkTo @id='home-link' @route='index'>Home</LinkTo>
-          <LinkTo @id='self-link' @route='about'>Self</LinkTo>
+          <LinkTo id='home-link' @route='index'>Home</LinkTo>
+          <LinkTo id='self-link' @route='about'>Self</LinkTo>
           `
         );
       }
@@ -414,7 +414,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
           'index',
           `
           <h3 class="home">Home</h3>
-          <LinkTo @id='about-link' @route='about' @replace={{true}}>About</LinkTo>
+          <LinkTo id='about-link' @route='about' @replace={{true}}>About</LinkTo>
           `
         );
 
@@ -443,7 +443,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
           'index',
           `
           <h3 class="home">Home</h3>
-          <LinkTo @id='about-link' @route='about' @replace={{boundTruthyThing}}>About</LinkTo>
+          <LinkTo id='about-link' @route='about' @replace={{boundTruthyThing}}>About</LinkTo>
           `
         );
 
@@ -477,7 +477,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
           'index',
           `
           <h3 class="home">Home</h3>
-          <LinkTo @id='about-link' @route='about' replace={{boundFalseyThing}}>About</LinkTo>
+          <LinkTo id='about-link' @route='about' replace={{boundFalseyThing}}>About</LinkTo>
           `
         );
 
@@ -523,16 +523,16 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
             'index',
             `
             <h3 class="home">Home</h3>
-            <LinkTo @id='about-link' @route='about'>About</LinkTo>
-            <LinkTo @id='self-link' @route='index'>Self</LinkTo>
+            <LinkTo id='about-link' @route='about'>About</LinkTo>
+            <LinkTo id='self-link' @route='index'>Self</LinkTo>
             `
           );
           this.addTemplate(
             'about',
             `
             <h3 class="about">About</h3>
-            <LinkTo @id='home-link' @route='index'>Home</LinkTo>
-            <LinkTo @id='self-link' @route='about'>Self</LinkTo>
+            <LinkTo id='home-link' @route='index'>Home</LinkTo>
+            <LinkTo id='self-link' @route='about'>Self</LinkTo>
             `
           );
         }
@@ -633,7 +633,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
         this.addTemplate('index', `<h3 class="home">Home</h3>{{outlet}}`);
         this.addTemplate(
           'index.about',
-          `<LinkTo @id='other-link' @route='item' @current-when='index'>ITEM</LinkTo>`
+          `<LinkTo id='other-link' @route='item' @current-when='index'>ITEM</LinkTo>`
         );
 
         return this.visit('/about').then(() => {
@@ -661,7 +661,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
         this.addTemplate('index', `<h3 class="home">Home</h3>{{outlet}}`);
         this.addTemplate(
           'index.about',
-          `<LinkTo @id='other-link' @route='items' @current-when='index'>ITEM</LinkTo>`
+          `<LinkTo id='other-link' @route='items' @current-when='index'>ITEM</LinkTo>`
         );
 
         return this.visit('/about').then(() => {
@@ -696,7 +696,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
         this.addTemplate('index', `<h3 class="home">Home</h3>{{outlet}}`);
         this.addTemplate(
           'index.about',
-          `<LinkTo @id='other-link' @route='items' @current-when={{currentWhen}}>ITEM</LinkTo>`
+          `<LinkTo id='other-link' @route='items' @current-when={{currentWhen}}>ITEM</LinkTo>`
         );
 
         return this.visit('/about').then(() => {
@@ -720,15 +720,15 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
         this.addTemplate('index', `<h3 class="home">Home</h3>{{outlet}}`);
         this.addTemplate(
           'index.about',
-          `<LinkTo @id='link1' @route='item' @current-when='item index'>ITEM</LinkTo>`
+          `<LinkTo id='link1' @route='item' @current-when='item index'>ITEM</LinkTo>`
         );
         this.addTemplate(
           'item',
-          `<LinkTo @id='link2' @route='item' @current-when='item index'>ITEM</LinkTo>`
+          `<LinkTo id='link2' @route='item' @current-when='item index'>ITEM</LinkTo>`
         );
         this.addTemplate(
           'foo',
-          `<LinkTo @id='link3' @route='item' @current-when='item index'>ITEM</LinkTo>`
+          `<LinkTo id='link3' @route='item' @current-when='item index'>ITEM</LinkTo>`
         );
 
         return this.visit('/about')
@@ -770,8 +770,8 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
         this.addTemplate(
           'index.about',
           `
-          <LinkTo @id='index-link' @route='index' @current-when={{isCurrent}}>ITEM</LinkTo>
-          <LinkTo @id='about-link' @route='item' @current-when={{true}}>ITEM</LinkTo>
+          <LinkTo id='index-link' @route='index' @current-when={{isCurrent}}>ITEM</LinkTo>
+          <LinkTo id='about-link' @route='item' @current-when={{true}}>ITEM</LinkTo>
           `
         );
 
@@ -802,7 +802,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
           'about',
           `
           <div {{action 'hide'}}>
-            <LinkTo @id='about-contact' @route='about.contact'>About</LinkTo>
+            <LinkTo id='about-contact' @route='about.contact'>About</LinkTo>
           </div>
           {{outlet}}
           `
@@ -845,7 +845,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
           'about',
           `
           <div {{action 'hide'}}>
-            <LinkTo @id='about-contact' @route='about.contact' @bubbles={{false}}>
+            <LinkTo id='about-contact' @route='about.contact' @bubbles={{false}}>
               About
             </LinkTo>
           </div>
@@ -890,7 +890,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
           'about',
           `
           <div {{action 'hide'}}>
-            <LinkTo @id='about-contact' @route='about.contact' @bubbles={{boundFalseyThing}}>
+            <LinkTo id='about-contact' @route='about.contact' @bubbles={{boundFalseyThing}}>
               About
             </LinkTo>
           </div>
@@ -949,13 +949,13 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
           <ul>
             {{#each model as |person|}}
               <li>
-                <LinkTo @id={{person.id}} @route='item' @model={{person}}>
+                <LinkTo id={{person.id}} @route='item' @model={{person}}>
                   {{person.name}}
                 </LinkTo>
               </li>
             {{/each}}
           </ul>
-          <LinkTo @id='home-link' @route='index'>Home</LinkTo>
+          <LinkTo id='home-link' @route='index'>Home</LinkTo>
           `
         );
 
@@ -964,7 +964,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
           `
           <h3 class="item">Item</h3>
           <p>{{model.name}}</p>
-          <LinkTo @id='home-link' @route='index'>Home</LinkTo>
+          <LinkTo id='home-link' @route='index'>Home</LinkTo>
           `
         );
 
@@ -972,7 +972,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
           'index',
           `
           <h3 class="home">Home</h3>
-          <LinkTo @id='about-link' @route='about'>About</LinkTo>
+          <LinkTo id='about-link' @route='about'>About</LinkTo>
           `
         );
 
@@ -1027,7 +1027,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
           'index',
           `
           <h3 class="home">Home</h3>
-          <LinkTo @id='self-link' @route='index' title='title-attr' rel='rel-attr' tabindex='-1'>
+          <LinkTo id='self-link' @route='index' title='title-attr' rel='rel-attr' tabindex='-1'>
             Self
           </LinkTo>
           `
@@ -1046,7 +1046,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
           'index',
           `
           <h3 class="home">Home</h3>
-          <LinkTo @id='self-link' @route='index' target='_blank'>Self</LinkTo>
+          <LinkTo id='self-link' @route='index' target='_blank'>Self</LinkTo>
           `
         );
 
@@ -1063,7 +1063,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
           'index',
           `
           <h3 class="home">Home</h3>
-          <LinkTo @id='self-link' @route='index' target={{boundLinkTarget}}>Self</LinkTo>
+          <LinkTo id='self-link' @route='index' target={{boundLinkTarget}}>Self</LinkTo>
           `
         );
 
@@ -1085,7 +1085,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
           this.route('about');
         });
 
-        this.addTemplate('index', `<LinkTo @route='about' @id='about-link'>About</LinkTo>`);
+        this.addTemplate('index', `<LinkTo @route='about' id='about-link'>About</LinkTo>`);
 
         return this.visit('/').then(() => {
           assertNav({ prevented: true }, () => this.$('#about-link').click(), assert);
@@ -1101,7 +1101,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
 
         this.addTemplate(
           'index',
-          `<LinkTo @id='about-link' @route='about' @preventDefault={{false}}>About</LinkTo>`
+          `<LinkTo id='about-link' @route='about' @preventDefault={{false}}>About</LinkTo>`
         );
 
         return this.visit('/').then(() => {
@@ -1118,7 +1118,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
 
         this.addTemplate(
           'index',
-          `<LinkTo @id='about-link' @route='about' @preventDefault={{boundFalseyThing}}>About</LinkTo>`
+          `<LinkTo id='about-link' @route='about' @preventDefault={{boundFalseyThing}}>About</LinkTo>`
         );
 
         this.add(
@@ -1140,7 +1140,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
           'index',
           `
           <h3 class="home">Home</h3>
-          <LinkTo @id='self-link' @route='index' target='_blank'>Self</LinkTo>
+          <LinkTo id='self-link' @route='index' target='_blank'>Self</LinkTo>
           `
         );
 
@@ -1154,7 +1154,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
           'index',
           `
           <h3 class="home">Home</h3>
-          <LinkTo @id='self-link' @route='index' target='_self'>Self</LinkTo>
+          <LinkTo id='self-link' @route='index' target='_self'>Self</LinkTo>
           `
         );
 
@@ -1169,7 +1169,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
         this.addTemplate(
           'index',
           `
-          <LinkTo @id='about-link' @route='about' @replace={{true}} target='_blank'>
+          <LinkTo id='about-link' @route='about' @replace={{true}} target='_blank'>
             About
           </LinkTo>
           `
@@ -1215,11 +1215,11 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
           'filter',
           `
           <p>{{filter}}</p>
-          <LinkTo @id="link" @route="filter" @model="unpopular">Unpopular</LinkTo>
-          <LinkTo @id="path-link" @route="filter" @model={{filter}}>Unpopular</LinkTo>
-          <LinkTo @id="post-path-link" @route="post" @model={{post_id}}>Post</LinkTo>
-          <LinkTo @id="post-number-link" @route="post" @model={{123}}>Post</LinkTo>
-          <LinkTo @id="repo-object-link" @route="repo" @model={{repo}}>Repo</LinkTo>
+          <LinkTo id="link" @route="filter" @model="unpopular">Unpopular</LinkTo>
+          <LinkTo id="path-link" @route="filter" @model={{filter}}>Unpopular</LinkTo>
+          <LinkTo id="post-path-link" @route="post" @model={{post_id}}>Post</LinkTo>
+          <LinkTo id="post-number-link" @route="post" @model={{123}}>Post</LinkTo>
+          <LinkTo id="repo-object-link" @route="repo" @model={{repo}}>Repo</LinkTo>
           `
         );
 
@@ -1258,12 +1258,12 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
 
         this.addTemplate(
           'lobby.index',
-          `<LinkTo @id='lobby-link' @route='lobby' @model='foobar'>Lobby</LinkTo>`
+          `<LinkTo id='lobby-link' @route='lobby' @model='foobar'>Lobby</LinkTo>`
         );
 
         this.addTemplate(
           'lobby.list',
-          `<LinkTo @id='lobby-link' @route='lobby' @model='foobar'>Lobby</LinkTo>`
+          `<LinkTo id='lobby-link' @route='lobby' @model='foobar'>Lobby</LinkTo>`
         );
 
         return this.visit('/lobby/list')
@@ -1279,8 +1279,8 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
         this.addTemplate(
           'index',
           `
-          <LinkTo @id='string-link' @route='index'>string</LinkTo>
-          <LinkTo @id='path-link' @route={{foo}}>path</LinkTo>
+          <LinkTo id='string-link' @route='index'>string</LinkTo>
+          <LinkTo id='path-link' @route={{foo}}>path</LinkTo>
           `
         );
 
@@ -1314,7 +1314,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
         let post = { id: '1' };
         let secondPost = { id: '2' };
 
-        this.addTemplate('index', `<LinkTo @id="post" @route="post" @model={{post}}>post</LinkTo>`);
+        this.addTemplate('index', `<LinkTo id="post" @route="post" @model={{post}}>post</LinkTo>`);
 
         this.add('controller:index', Controller.extend());
 
@@ -1357,8 +1357,8 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
           'about',
           `
           <div id='about'>
-            <LinkTo @id='about-link' @route='about'>About</LinkTo>
-            <LinkTo @id='item-link' @route='about.item'>Item</LinkTo>
+            <LinkTo id='about-link' @route='about'>About</LinkTo>
+            <LinkTo id='item-link' @route='about.item'>Item</LinkTo>
             {{outlet}}
           </div>
           `
@@ -1462,10 +1462,10 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
         this.addTemplate(
           'application',
           `
-          <LinkTo @id='home-link' @route='index'>Home</LinkTo>
-          <LinkTo @id='default-post-link' @route='post' @model={{defaultPost}}>Default Post</LinkTo>
+          <LinkTo id='home-link' @route='index'>Home</LinkTo>
+          <LinkTo id='default-post-link' @route='post' @model={{defaultPost}}>Default Post</LinkTo>
           {{#if currentPost}}
-            <LinkTo @id='current-post-link' @route='post' @model={{currentPost}}>Current Post</LinkTo>
+            <LinkTo id='current-post-link' @route='post' @model={{currentPost}}>Current Post</LinkTo>
           {{/if}}
           `
         );
@@ -1512,8 +1512,8 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
         this.addTemplate(
           'application',
           `
-          <LinkTo @id='omg-link' @route='things' @model='omg'>OMG</LinkTo>
-          <LinkTo @id='lol-link' @route='things' @model='lol'>LOL</LinkTo>
+          <LinkTo id='omg-link' @route='things' @model='omg'>OMG</LinkTo>
+          <LinkTo id='lol-link' @route='things' @model='lol'>LOL</LinkTo>
           `
         );
 
@@ -1541,7 +1541,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
           })
         );
 
-        this.addTemplate('index', `<LinkTo @id='the-link' @route='index'>Index</LinkTo>`);
+        this.addTemplate('index', `<LinkTo id='the-link' @route='index'>Index</LinkTo>`);
 
         return this.visit('/').then(() => {
           assert.equal(this.$('#the-link').attr('href'), '/', 'link has right href');
@@ -1561,7 +1561,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
 
         this.addTemplate(
           'index',
-          `<LinkTo @id='the-link' @route='index' @query={{hash}}>Index</LinkTo>`
+          `<LinkTo id='the-link' @route='index' @query={{hash}}>Index</LinkTo>`
         );
 
         return this.visit('/').then(() => {
@@ -1587,7 +1587,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
 
         this.addTemplate(
           'application',
-          `<LinkTo @id='the-link' @query={{hash foo='456' bar='NAW'}}>Index</LinkTo>`
+          `<LinkTo id='the-link' @query={{hash foo='456' bar='NAW'}}>Index</LinkTo>`
         );
 
         return this.visit('/')
@@ -1667,7 +1667,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
           'index',
           `
           <h3 class="home">Home</h3>
-          <LinkTo @id="dynamic-link" @params={{dynamicLinkParams}}>Dynamic</LinkTo>
+          <LinkTo id="dynamic-link" @params={{dynamicLinkParams}}>Dynamic</LinkTo>
           `
         );
 
@@ -1705,10 +1705,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
           })
         );
 
-        this.addTemplate(
-          'application',
-          `<LinkTo @id='parent-link' @route='parent'>Parent</LinkTo>`
-        );
+        this.addTemplate('application', `<LinkTo id='parent-link' @route='parent'>Parent</LinkTo>`);
 
         return this.visit('/')
           .then(() => {
@@ -1739,10 +1736,10 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
         this.addTemplate(
           'index',
           `
-          <LinkTo @id='context-link' @route={{destinationRoute}} @model={{routeContext}} @loadingClass='i-am-loading'>
+          <LinkTo id='context-link' @route={{destinationRoute}} @model={{routeContext}} @loadingClass='i-am-loading'>
             string
           </LinkTo>
-          <LinkTo @id='static-link' @route={{secondRoute}} @loadingClass={{loadingClass}}>
+          <LinkTo id='static-link' @route={{secondRoute}} @loadingClass={{loadingClass}}>
             string
           </LinkTo>
           `

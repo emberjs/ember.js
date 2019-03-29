@@ -194,6 +194,7 @@ let allExports = [
 
   // @ember/-internals/views
   ['ViewUtils.isSimpleClick', '@ember/-internals/views', 'isSimpleClick'],
+  ['ViewUtils.getElementView', '@ember/-internals/views', 'getElementView'],
   ['ViewUtils.getViewElement', '@ember/-internals/views', 'getViewElement'],
   ['ViewUtils.getViewBounds', '@ember/-internals/views', 'getViewBounds'],
   ['ViewUtils.getViewClientRects', '@ember/-internals/views', 'getViewClientRects'],

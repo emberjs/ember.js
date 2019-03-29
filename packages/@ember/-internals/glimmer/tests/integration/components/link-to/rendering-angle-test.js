@@ -12,7 +12,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
       [`@test throws a useful error if you invoke it wrong`](assert) {
         assert.expect(1);
 
-        this.addTemplate('application', `<LinkTo @id='the-link'>Index</LinkTo>`);
+        this.addTemplate('application', `<LinkTo id='the-link'>Index</LinkTo>`);
 
         expectAssertion(() => {
           this.visit('/');

@@ -21,12 +21,17 @@ export default class AbstractRenderingTestCase extends AbstractTestCase {
       bootOptions,
     }));
 
+    owner.register('-view-registry:main', Object.create(null), { instantiate: false });
+    owner.register('event_dispatcher:main', EventDispatcher);
+
+    // TODO: why didn't buildOwner do this for us?
+    owner.inject('view', '_viewRegistry', '-view-registry:main');
+    owner.inject('renderer', '_viewRegistry', '-view-registry:main');
+
     this.renderer = this.owner.lookup('renderer:-dom');
     this.element = document.querySelector('#qunit-fixture');
     this.component = null;
 
-    owner.register('event_dispatcher:main', EventDispatcher);
-    owner.inject('event_dispatcher:main', '_viewRegistry', '-view-registry:main');
     if (!bootOptions || bootOptions.isInteractive !== false) {
       owner.lookup('event_dispatcher:main').setup(this.getCustomDispatcherEvents(), this.element);
     }

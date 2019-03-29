@@ -66,10 +66,10 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
           'application',
           `
           {{outlet}}
-          <LinkTo @id='index-link' @route='index'>Index</LinkTo>
-          <LinkTo @id='about-link' @route='about'>About</LinkTo>
-          <LinkTo @id='other-link' @route='other'>Other</LinkTo>
-          <LinkTo @id='news-link' @route='news' @activeClass={{false}}>News</LinkTo>
+          <LinkTo id='index-link' @route='index'>Index</LinkTo>
+          <LinkTo id='about-link' @route='about'>About</LinkTo>
+          <LinkTo id='other-link' @route='other'>Other</LinkTo>
+          <LinkTo id='news-link' @route='news' @activeClass={{false}}>News</LinkTo>
           `
         );
       }
@@ -193,13 +193,13 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
           `
           {{outlet}}
           <LinkTo @tagName='li' @route='index'>
-            <LinkTo @id='index-link' @route='index'>Index</LinkTo>
+            <LinkTo id='index-link' @route='index'>Index</LinkTo>
           </LinkTo>
           <LinkTo @tagName='li' @route='parent-route.about'>
-            <LinkTo @id='about-link' @route='parent-route.about'>About</LinkTo>
+            <LinkTo id='about-link' @route='parent-route.about'>About</LinkTo>
           </LinkTo>
           <LinkTo @tagName='li' @route='parent-route.other'>
-            <LinkTo @id='other-link' @route='parent-route.other'>Other</LinkTo>
+            <LinkTo id='other-link' @route='parent-route.other'>Other</LinkTo>
           </LinkTo>
           `
         );
