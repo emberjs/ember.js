@@ -38,5 +38,5 @@ import { helper } from '../helper';
   @public
 */
 export default helper(function(params) {
-  return loc.apply(null, params);
+  return loc.apply(null, params as any /* let the other side handle errors */);
 });

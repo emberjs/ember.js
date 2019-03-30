@@ -149,7 +149,7 @@ moduleFor(
     }
 
     ['@test raising an exception in the instrumentation attaches it to the payload'](assert) {
-      assert.expect(2);
+      assert.expect(3);
 
       let error = new Error('Instrumentation');
 
@@ -167,9 +167,13 @@ moduleFor(
         },
       });
 
-      instrument('render.handlebars', null, function() {
-        throw error;
-      });
+      assert.throws(
+        () =>
+          instrument('render.handlebars', null, () => {
+            throw error;
+          }),
+        /Instrumentation/
+      );
     }
 
     ['@test it is possible to add a new subscriber after the first instrument'](assert) {

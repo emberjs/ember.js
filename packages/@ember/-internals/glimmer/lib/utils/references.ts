@@ -31,7 +31,7 @@ import {
   ConditionalReference as GlimmerConditionalReference,
   PrimitiveReference,
 } from '@glimmer/runtime';
-import { Option } from '@glimmer/util';
+import { Option, unreachable } from '@glimmer/util';
 import { HelperFunction, HelperInstance, RECOMPUTE_TAG } from '../helper';
 import emberToBool from './to-bool';
 
@@ -529,14 +529,56 @@ export function referenceFromParts(
   return reference;
 }
 
+type Primitive = undefined | null | boolean | number | string;
+
+function isObject(value: Opaque): value is object {
+  return value !== null && typeof value === 'object';
+}
+
+function isFunction(value: Opaque): value is Function {
+  return typeof value === 'function';
+}
+
+function isPrimitive(value: Opaque): value is Primitive {
+  if (DEBUG) {
+    let type = typeof value;
+    return (
+      value === undefined ||
+      value === null ||
+      type === 'boolean' ||
+      type === 'number' ||
+      type === 'string'
+    );
+  } else {
+    return true;
+  }
+}
+
 export function valueToRef<T = Opaque>(value: T, bound = true): VersionedPathReference<T> {
-  if (value !== null && typeof value === 'object') {
+  if (isObject(value)) {
     // root of interop with ember objects
     return bound ? new RootReference(value) : new UnboundReference(value);
-  }
-  // ember doesn't do observing with functions
-  if (typeof value === 'function') {
+  } else if (isFunction(value)) {
+    // ember doesn't do observing with functions
     return new UnboundReference(value);
+  } else if (isPrimitive(value)) {
+    return PrimitiveReference.create(value);
+  } else if (DEBUG) {
+    let type = typeof value;
+    let output: Option<string>;
+
+    try {
+      output = String(value);
+    } catch (e) {
+      output = null;
+    }
+
+    if (output) {
+      throw unreachable(`[BUG] Unexpected ${type} (${output})`);
+    } else {
+      throw unreachable(`[BUG] Unexpected ${type}`);
+    }
+  } else {
+    throw unreachable();
   }
-  return PrimitiveReference.create(value);
 }

@@ -1,12 +1,47 @@
 import { Factory } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import { assign } from '@ember/polyfills';
+import { Option } from '@glimmer/interfaces';
 import { MatchCallback } from 'route-recognizer';
 import { EngineInfo, EngineRouteInfo } from './engines';
 
 let uuid = 0;
 
-interface DSLOptions {
+export interface RouteOptions {
+  path?: string;
+  resetNamespace?: boolean;
+  serialize?: any;
+  overrideNameAssertion?: boolean;
+}
+
+export interface MountOptions {
+  path?: string;
+  as?: string;
+  resetNamespace?: boolean;
+}
+
+export interface DSLCallback {
+  (this: DSL): void;
+}
+
+export interface DSL {
+  route(name: string): void;
+  route(name: string, callback: DSLCallback): void;
+  route(name: string, options: RouteOptions): void;
+  route(name: string, options: RouteOptions, callback: DSLCallback): void;
+
+  mount(name: string): void;
+  mount(name: string, options: MountOptions): void;
+}
+
+function isCallback(value?: RouteOptions | DSLCallback): value is DSLCallback {
+  return typeof value === 'function';
+}
+
+function isOptions(value?: RouteOptions | DSLCallback): value is RouteOptions {
+  return value !== null && typeof value === 'object';
+}
+export interface DSLImplOptions {
   enableLoadingSubstates: boolean;
   overrideNameAssertion?: boolean;
   engineInfo?: EngineInfo;
@@ -15,44 +50,47 @@ interface DSLOptions {
   path?: string;
 }
 
-interface RouteOptions {
-  path?: string;
-  resetNamespace?: boolean;
-  serialize?: any;
-  overrideNameAssertion?: boolean;
-}
-
-interface MountOptions {
-  path?: string;
-  as?: string;
-  resetNamespace?: boolean;
-}
-
-class DSL {
+export default class DSLImpl implements DSL {
   parent: string | null;
   matches: any[];
   enableLoadingSubstates: boolean;
   explicitIndex = false;
-  options: DSLOptions;
+  options: DSLImplOptions;
 
-  constructor(name: string | null = null, options: DSLOptions) {
+  constructor(name: string | null = null, options: DSLImplOptions) {
     this.parent = name;
     this.enableLoadingSubstates = Boolean(options && options.enableLoadingSubstates);
     this.matches = [];
     this.options = options;
   }
 
-  route(name: string, options: any = {}, callback?: MatchCallback) {
+  /* eslint-disable no-dupe-class-members */
+  route(name: string): void;
+  route(name: string, callback: DSLCallback): void;
+  route(name: string, options: RouteOptions): void;
+  route(name: string, options: RouteOptions, callback: DSLCallback): void;
+  route(name: string, _options?: RouteOptions | DSLCallback, _callback?: DSLCallback) {
+    let options: RouteOptions;
+    let callback: Option<DSLCallback> = null;
+
     let dummyErrorRoute = `/_unused_dummy_error_path_route_${name}/:error`;
-    if (arguments.length === 2 && typeof options === 'function') {
-      callback = options;
+    if (isCallback(_options)) {
+      assert('Unexpected arguments', arguments.length === 2);
       options = {};
+      callback = _options;
+    } else if (isCallback(_callback)) {
+      assert('Unexpected arguments', arguments.length === 3);
+      assert('Unexpected arguments', isOptions(_options));
+      options = _options as RouteOptions;
+      callback = _callback;
+    } else {
+      options = _options || {};
     }
 
     assert(
       `'${name}' cannot be used as a route name.`,
       (() => {
-        if (options!.overrideNameAssertion === true) {
+        if (options.overrideNameAssertion === true) {
           return true;
         }
 
@@ -77,7 +115,7 @@ class DSL {
 
     if (callback) {
       let fullName = getFullName(this, name, options.resetNamespace);
-      let dsl = new DSL(fullName, this.options);
+      let dsl = new DSLImpl(fullName, this.options);
 
       createRoute(dsl, 'loading');
       createRoute(dsl, 'error', { path: dummyErrorRoute });
@@ -89,6 +127,7 @@ class DSL {
       createRoute(this, name, options);
     }
   }
+  /* eslint-enable no-dupe-class-members */
 
   push(url: string, name: string, callback?: MatchCallback, serialize?: any) {
     let parts = name.split('.');
@@ -129,7 +168,7 @@ class DSL {
     };
   }
 
-  mount(_name: string, options: MountOptions = {}) {
+  mount(_name: string, options: Partial<MountOptions> = {}) {
     let engineRouteMap = this.options.resolveRouteMap(_name);
     let name = _name;
 
@@ -163,7 +202,7 @@ class DSL {
       }
 
       let optionsForChild = assign({ engineInfo }, this.options);
-      let childDSL = new DSL(fullName, optionsForChild);
+      let childDSL = new DSLImpl(fullName, optionsForChild);
 
       createRoute(childDSL, 'loading');
       createRoute(childDSL, 'error', { path: dummyErrorRoute });
@@ -207,13 +246,11 @@ class DSL {
   }
 }
 
-export default DSL;
-
-function canNest(dsl: DSL) {
+function canNest(dsl: DSLImpl) {
   return dsl.parent !== 'application';
 }
 
-function getFullName(dsl: DSL, name: string, resetNamespace?: boolean) {
+function getFullName(dsl: DSLImpl, name: string, resetNamespace?: boolean) {
   if (canNest(dsl) && resetNamespace !== true) {
     return `${dsl.parent}.${name}`;
   } else {
@@ -221,7 +258,12 @@ function getFullName(dsl: DSL, name: string, resetNamespace?: boolean) {
   }
 }
 
-function createRoute(dsl: DSL, name: string, options: RouteOptions = {}, callback?: MatchCallback) {
+function createRoute(
+  dsl: DSLImpl,
+  name: string,
+  options: RouteOptions = {},
+  callback?: MatchCallback
+) {
   let fullName = getFullName(dsl, name, options.resetNamespace);
 
   if (typeof options.path !== 'string') {
