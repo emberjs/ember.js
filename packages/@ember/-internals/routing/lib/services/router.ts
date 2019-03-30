@@ -399,13 +399,32 @@ RouterService.reopen(Evented, {
   currentURL: readOnly('_router.currentURL'),
 
   /**
-    The `location` property determines the type of URL's that your
+    The `location` property determines the type of URLs your
     application will use.
+
     The following location types are currently available:
     * `auto`
     * `hash`
     * `history`
     * `none`
+
+    You can pass a location type to force a particular `location` API
+    implementation to be used in your application. For example, to set
+    the `history` type:
+
+    ```config/environment.js
+    'use strict';
+
+    module.exports = function(environment) {
+      let ENV = {
+        modulePrefix: 'router-service',
+        environment,
+        rootURL: '/',
+        locationType: 'history',
+        ...
+      }
+    }
+    ```
 
     @property location
     @default 'hash'
