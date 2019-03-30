@@ -111,6 +111,14 @@ const time = ((): (() => number) => {
   return fn ? fn.bind(perf) : Date.now;
 })();
 
+type InstrumentCallback<Binding, Result> = (this: Binding) => Result;
+
+function isCallback<Binding, Result>(
+  value: InstrumentCallback<Binding, Result> | object
+): value is InstrumentCallback<Binding, Result> {
+  return typeof value === 'function';
+}
+
 /**
   Notifies event's subscribers, calls `before` and `after` hooks.
 
@@ -123,83 +131,107 @@ const time = ((): (() => number) => {
   @param {Object} binding Context that instrument function is called with.
   @private
 */
-export function instrument<T extends object>(name: string, callback: () => T, binding: object): T;
-export function instrument<TPayload extends object>(
+export function instrument<Result>(
+  name: string,
+  callback: InstrumentCallback<undefined, Result>
+): Result;
+export function instrument<Binding, Result>(
+  name: string,
+  callback: InstrumentCallback<Binding, Result>,
+  binding: Binding
+): Result;
+export function instrument<Result>(
   name: string,
   payload: object,
-  callback: () => TPayload,
-  binding: object
-): TPayload;
-export function instrument<TPayload extends object>(
+  callback: InstrumentCallback<undefined, Result>
+): Result;
+export function instrument<Binding, Result>(
   name: string,
-  p1: (() => TPayload) | TPayload,
-  p2: TPayload | (() => TPayload),
-  p3?: object
-): TPayload {
-  let payload: TPayload;
-  let callback: () => TPayload;
-  let binding: object;
-  if (arguments.length <= 3 && typeof p1 === 'function') {
-    payload = {} as TPayload;
+  payload: object,
+  callback: InstrumentCallback<Binding, Result>,
+  binding: Binding
+): Result;
+export function instrument<Binding, Result>(
+  name: string,
+  p1: InstrumentCallback<Binding, Result> | object,
+  p2?: Binding | InstrumentCallback<Binding, Result>,
+  p3?: Binding
+): Result {
+  let _payload: object | undefined;
+  let callback: InstrumentCallback<Binding, Result>;
+  let binding: Binding;
+
+  if (arguments.length <= 3 && isCallback(p1)) {
     callback = p1;
-    binding = p2;
+    binding = p2 as Binding;
   } else {
-    payload = (p1 || {}) as TPayload;
-    callback = p2 as () => TPayload;
-    binding = p3 as TPayload;
+    _payload = p1 as object;
+    callback = p2 as InstrumentCallback<Binding, Result>;
+    binding = p3 as Binding;
   }
+
+  // fast path
   if (subscribers.length === 0) {
     return callback.call(binding);
   }
+
+  // avoid allocating the payload in fast path
+  let payload = _payload || {};
+
   let finalizer = _instrumentStart(name, () => payload);
 
-  if (finalizer) {
-    return withFinalizer(callback, finalizer, payload, binding);
-  } else {
+  if (finalizer === NOOP) {
     return callback.call(binding);
+  } else {
+    return withFinalizer(callback, finalizer, payload, binding);
   }
 }
 
-let flaggedInstrument: <T, TPayload>(name: string, payload: TPayload, callback: () => T) => T;
+let flaggedInstrument: <Result>(name: string, payload: object, callback: () => Result) => Result;
+
 if (EMBER_IMPROVED_INSTRUMENTATION) {
-  flaggedInstrument = instrument as typeof flaggedInstrument;
+  flaggedInstrument = instrument;
 } else {
-  flaggedInstrument = <T, TPayload>(_name: string, _payload: TPayload, callback: () => T) =>
-    callback();
+  flaggedInstrument = function instrument<Result>(
+    _name: string,
+    _payload: object,
+    callback: () => Result
+  ): Result {
+    return callback();
+  };
 }
+
 export { flaggedInstrument };
 
-function withFinalizer<T extends object>(
-  callback: () => T,
+function withFinalizer<Binding, Result>(
+  callback: InstrumentCallback<Binding, Result>,
   finalizer: () => void,
-  payload: T,
-  binding: object
-): T & PayloadWithException {
-  let result: T;
+  payload: object,
+  binding: Binding
+): Result {
   try {
-    result = callback.call(binding);
+    return callback.call(binding);
   } catch (e) {
-    (payload as PayloadWithException).exception = e;
-    result = payload;
+    (payload as { exception: any }).exception = e;
+    throw e;
   } finally {
     finalizer();
   }
-  return result;
 }
 
 function NOOP() {}
 
 // private for now
-export function _instrumentStart<TPayloadParam>(
+export function _instrumentStart(name: string, payloadFunc: () => object): () => void;
+export function _instrumentStart<Arg>(
   name: string,
-  _payload: (_payloadParam: TPayloadParam) => object,
-  _payloadParam: TPayloadParam
+  payloadFunc: (arg: Arg) => object,
+  payloadArg: Arg
 ): () => void;
-export function _instrumentStart<TPayloadParam>(name: string, _payload: () => object): () => void;
-export function _instrumentStart<TPayloadParam>(
+export function _instrumentStart<Arg>(
   name: string,
-  _payload: (_payloadParam: TPayloadParam) => object,
-  _payloadParam?: TPayloadParam
+  payloadFunc: ((arg: Arg) => object) | (() => object),
+  payloadArg?: Arg
 ): () => void {
   if (subscribers.length === 0) {
     return NOOP;
@@ -215,7 +247,7 @@ export function _instrumentStart<TPayloadParam>(
     return NOOP;
   }
 
-  let payload = _payload(_payloadParam!);
+  let payload = payloadFunc(payloadArg!);
 
   let STRUCTURED_PROFILE = ENV.STRUCTURED_PROFILE;
   let timeName: string;
@@ -224,21 +256,17 @@ export function _instrumentStart<TPayloadParam>(
     console.time(timeName);
   }
 
-  let beforeValues = new Array(listeners.length);
-  let i: number;
-  let listener: Listener<any>;
+  let beforeValues: any[] = [];
   let timestamp = time();
-  for (i = 0; i < listeners.length; i++) {
-    listener = listeners[i];
-    beforeValues[i] = listener.before(name, timestamp, payload);
+  for (let i = 0; i < listeners.length; i++) {
+    let listener = listeners[i];
+    beforeValues.push(listener.before(name, timestamp, payload));
   }
 
   return function _instrumentEnd(): void {
-    let i: number;
-    let listener: Listener<any>;
     let timestamp = time();
-    for (i = 0; i < listeners.length; i++) {
-      listener = listeners[i];
+    for (let i = 0; i < listeners.length; i++) {
+      let listener = listeners[i];
       if (typeof listener.after === 'function') {
         listener.after(name, timestamp, payload, beforeValues[i]);
       }

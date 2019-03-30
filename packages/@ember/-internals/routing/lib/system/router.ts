@@ -15,7 +15,7 @@ import { cancel, once, run, scheduleOnce } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import EmberLocation, { EmberLocation as IEmberLocation } from '../location/api';
 import { calculateCacheKey, extractRouteArgs, getActiveTargetName, resemblesURL } from '../utils';
-import EmberRouterDSL from './dsl';
+import DSL from './dsl';
 import Route, {
   defaultSerialize,
   hasDefaultSerialize,
@@ -466,7 +466,7 @@ class EmberRouter extends EmberObject {
     dsl.route(
       'application',
       { path: '/', resetNamespace: true, overrideNameAssertion: true },
-      function(this: EmberRouterDSL) {
+      function() {
         for (let i = 0; i < dslCallbacks.length; i++) {
           dslCallbacks[i].call(this);
         }
@@ -482,7 +482,7 @@ class EmberRouter extends EmberObject {
     routerMicrolib.map(dsl.generate());
   }
 
-  _buildDSL() {
+  _buildDSL(): DSL {
     let enableLoadingSubstates = this._hasModuleBasedResolver();
     let router = this;
     let owner = getOwner(this);
@@ -498,7 +498,7 @@ class EmberRouter extends EmberObject {
       },
     };
 
-    return new EmberRouterDSL(null, options);
+    return new DSL(null, options);
   }
 
   init() {
@@ -1735,7 +1735,7 @@ EmberRouter.reopenClass({
   },
 
   _routePath(routeInfos: PrivateRouteInfo[]) {
-    let path = [];
+    let path: string[] = [];
 
     // We have to handle coalescing resource names that
     // are prefixed with their parent's names, e.g.

@@ -170,9 +170,9 @@ if (DEBUG) {
 
   let runner = new TransactionRunner();
 
-  runInTransaction = runner.runInTransaction.bind(runner);
-  didRender = runner.didRender.bind(runner);
-  assertNotRendered = runner.assertNotRendered.bind(runner);
+  runInTransaction = (...args) => runner.runInTransaction(...args);
+  didRender = (...args) => runner.didRender(...args);
+  assertNotRendered = (...args) => runner.assertNotRendered(...args);
 } else {
   // in production do nothing to detect reflushes
   runInTransaction = <T extends object, K extends MethodKey<T>>(context: T, methodName: K) => {
