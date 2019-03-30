@@ -6,12 +6,14 @@ import {
   setCurrentTracker,
   tagFor,
   tagForProperty,
+  Tracker,
   watchKey,
 } from '@ember/-internals/metal';
 import { isProxy, symbol } from '@ember/-internals/utils';
 import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
+import { debugFreeze } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { Opaque } from '@glimmer/interfaces';
+import { Dict, Opaque } from '@glimmer/interfaces';
 import {
   combine,
   CONSTANT_TAG,
@@ -30,6 +32,7 @@ import {
   CapturedArguments,
   ConditionalReference as GlimmerConditionalReference,
   PrimitiveReference,
+  UNDEFINED_REFERENCE,
 } from '@glimmer/runtime';
 import { Option, unreachable } from '@glimmer/util';
 import { HelperFunction, HelperInstance, RECOMPUTE_TAG } from '../helper';
@@ -39,26 +42,10 @@ export const UPDATE = symbol('UPDATE');
 export const INVOKE = symbol('INVOKE');
 export const ACTION = symbol('ACTION');
 
-let maybeFreeze: (obj: any) => void;
-if (DEBUG) {
-  // gaurding this in a DEBUG gaurd (as well as all invocations)
-  // so that it is properly stripped during the minification's
-  // dead code elimination
-  maybeFreeze = (obj: any) => {
-    // re-freezing an already frozen object introduces a significant
-    // performance penalty on Chrome (tested through 59).
-    //
-    // See: https://bugs.chromium.org/p/v8/issues/detail?id=6450
-    if (!Object.isFrozen(obj)) {
-      Object.freeze(obj);
-    }
-  };
-}
-
 abstract class EmberPathReference implements VersionedPathReference<Opaque> {
   abstract tag: Tag;
 
-  get(key: string): any {
+  get(key: string): VersionedPathReference<Opaque> {
     return PropertyReference.create(this, key);
   }
 
@@ -67,38 +54,43 @@ abstract class EmberPathReference implements VersionedPathReference<Opaque> {
 
 export abstract class CachedReference extends EmberPathReference {
   abstract tag: Tag;
-  private _lastRevision: Option<Revision>;
-  private _lastValue: Opaque;
+  private lastRevision: Option<Revision>;
+  private lastValue: Opaque;
 
   constructor() {
     super();
-    this._lastRevision = null;
-    this._lastValue = null;
+    this.lastRevision = null;
+    this.lastValue = null;
   }
 
   abstract compute(): Opaque;
 
-  value() {
-    let { tag, _lastRevision, _lastValue } = this;
+  value(): Opaque {
+    let { tag, lastRevision, lastValue } = this;
 
-    if (_lastRevision === null || !tag.validate(_lastRevision)) {
-      _lastValue = this._lastValue = this.compute();
-      this._lastRevision = tag.value();
+    if (lastRevision === null || !tag.validate(lastRevision)) {
+      lastValue = this.lastValue = this.compute();
+      this.lastRevision = tag.value();
     }
 
-    return _lastValue;
+    return lastValue;
   }
 }
 
-export class RootReference<T> extends ConstReference<T> {
-  public children: any;
+export class RootReference<T extends object> extends ConstReference<T>
+  implements VersionedPathReference<T> {
+  static create<T>(value: T): VersionedPathReference<T> {
+    return valueToRef(value);
+  }
+
+  private children: Dict<VersionedPathReference<Opaque>>;
 
   constructor(value: T) {
     super(value);
     this.children = Object.create(null);
   }
 
-  get(propertyKey: string) {
+  get(propertyKey: string): VersionedPathReference<Opaque> {
     let ref = this.children[propertyKey];
 
     if (ref === undefined) {
@@ -109,26 +101,20 @@ export class RootReference<T> extends ConstReference<T> {
   }
 }
 
-interface TwoWayFlushDetectionTag extends RevisionTag {
+interface ITwoWayFlushDetectionTag extends RevisionTag {
   didCompute(parent: Opaque): void;
 }
 
 let TwoWayFlushDetectionTag: {
-  new (tag: Tag, key: string, ref: VersionedPathReference<Opaque>): TwoWayFlushDetectionTag;
   create(
     tag: Tag,
     key: string,
     ref: VersionedPathReference<Opaque>
-  ): TagWrapper<TwoWayFlushDetectionTag>;
+  ): TagWrapper<ITwoWayFlushDetectionTag>;
 };
 
 if (DEBUG) {
-  TwoWayFlushDetectionTag = class {
-    public tag: Tag;
-    public parent: Opaque;
-    public key: string;
-    public ref: any;
-
+  TwoWayFlushDetectionTag = class TwoWayFlushDetectionTag implements ITwoWayFlushDetectionTag {
     static create(
       tag: Tag,
       key: string,
@@ -137,30 +123,31 @@ if (DEBUG) {
       return new TagWrapper((tag as any).type, new TwoWayFlushDetectionTag(tag, key, ref));
     }
 
-    constructor(tag: Tag, key: string, ref: any) {
-      this.tag = tag;
-      this.parent = null;
-      this.key = key;
-      this.ref = ref;
-    }
+    private parent: Opaque = null;
 
-    value() {
+    constructor(
+      private tag: Tag,
+      private key: string,
+      private ref: VersionedPathReference<Opaque>
+    ) {}
+
+    value(): Revision {
       return this.tag.value();
     }
 
-    validate(ticket: any) {
-      let { parent, key } = this;
+    validate(ticket: Revision): boolean {
+      let { parent, key, ref } = this;
 
       let isValid = this.tag.validate(ticket);
 
       if (isValid && parent) {
-        didRender(parent, key, this.ref);
+        didRender(parent, key, ref);
       }
 
       return isValid;
     }
 
-    didCompute(parent: any) {
+    didCompute(parent: Opaque): void {
       this.parent = parent;
       didRender(parent, this.key, this.ref);
     }
@@ -172,7 +159,7 @@ export abstract class PropertyReference extends CachedReference {
 
   static create(parentReference: VersionedPathReference<Opaque>, propertyKey: string) {
     if (isConst(parentReference)) {
-      return new RootPropertyReference(parentReference.value(), propertyKey);
+      return valueKeyToRef(parentReference.value(), propertyKey);
     } else {
       return new NestedPropertyReference(parentReference, propertyKey);
     }
@@ -186,26 +173,21 @@ export abstract class PropertyReference extends CachedReference {
 export class RootPropertyReference extends PropertyReference
   implements VersionedPathReference<Opaque> {
   public tag: Tag;
-  private _parentValue: any;
-  private _propertyKey: string;
-  private _propertyTag: TagWrapper<UpdatableTag>;
+  private propertyTag: TagWrapper<UpdatableTag>;
 
-  constructor(parentValue: any, propertyKey: string) {
+  constructor(private parentValue: object, private propertyKey: string) {
     super();
 
-    this._parentValue = parentValue;
-    this._propertyKey = propertyKey;
-
     if (EMBER_METAL_TRACKED_PROPERTIES) {
-      this._propertyTag = UpdatableTag.create(CONSTANT_TAG);
+      this.propertyTag = UpdatableTag.create(CONSTANT_TAG);
     } else {
-      this._propertyTag = UpdatableTag.create(tagForProperty(parentValue, propertyKey));
+      this.propertyTag = UpdatableTag.create(tagForProperty(parentValue, propertyKey));
     }
 
     if (DEBUG) {
-      this.tag = TwoWayFlushDetectionTag.create(this._propertyTag, propertyKey, this);
+      this.tag = TwoWayFlushDetectionTag.create(this.propertyTag, propertyKey, this);
     } else {
-      this.tag = this._propertyTag;
+      this.tag = this.propertyTag;
     }
 
     if (DEBUG) {
@@ -213,54 +195,51 @@ export class RootPropertyReference extends PropertyReference
     }
   }
 
-  compute() {
-    let { _parentValue, _propertyKey } = this;
+  compute(): Opaque {
+    let { parentValue, propertyKey } = this;
 
     if (DEBUG) {
-      (this.tag.inner as TwoWayFlushDetectionTag).didCompute(_parentValue);
+      (this.tag.inner as ITwoWayFlushDetectionTag).didCompute(parentValue);
     }
 
-    let parent: any;
-    let tracker: any;
+    let parent: Option<Tracker> = null;
+    let tracker: Option<Tracker> = null;
 
     if (EMBER_METAL_TRACKED_PROPERTIES) {
       parent = getCurrentTracker();
       tracker = setCurrentTracker();
     }
 
-    let ret = get(_parentValue, _propertyKey);
+    let ret = get(parentValue, propertyKey);
 
     if (EMBER_METAL_TRACKED_PROPERTIES) {
-      setCurrentTracker(parent!);
+      setCurrentTracker(parent);
       let tag = tracker!.combine();
       if (parent) parent.add(tag);
 
-      this._propertyTag.inner.update(tag);
+      this.propertyTag.inner.update(tag);
     }
 
     return ret;
   }
 
-  [UPDATE](value: any) {
-    set(this._parentValue, this._propertyKey, value);
+  [UPDATE](value: Opaque): void {
+    set(this.parentValue, this.propertyKey, value);
   }
 }
 
 export class NestedPropertyReference extends PropertyReference {
   public tag: Tag;
-  private _parentReference: any;
-  private _propertyTag: TagWrapper<UpdatableTag>;
-  private _propertyKey: string;
+  private propertyTag: TagWrapper<UpdatableTag>;
 
-  constructor(parentReference: VersionedPathReference<Opaque>, propertyKey: string) {
+  constructor(
+    private parentReference: VersionedPathReference<Opaque>,
+    private propertyKey: string
+  ) {
     super();
 
     let parentReferenceTag = parentReference.tag;
-    let propertyTag = UpdatableTag.create(CONSTANT_TAG);
-
-    this._parentReference = parentReference;
-    this._propertyTag = propertyTag;
-    this._propertyKey = propertyKey;
+    let propertyTag = (this.propertyTag = UpdatableTag.create(CONSTANT_TAG));
 
     if (DEBUG) {
       let tag = combine([parentReferenceTag, propertyTag]);
@@ -270,43 +249,45 @@ export class NestedPropertyReference extends PropertyReference {
     }
   }
 
-  compute() {
-    let { _parentReference, _propertyTag, _propertyKey } = this;
+  compute(): Opaque {
+    let { parentReference, propertyTag, propertyKey } = this;
 
-    let parentValue = _parentReference.value();
-    let parentValueType = typeof parentValue;
+    let _parentValue = parentReference.value();
+    let parentValueType = typeof _parentValue;
 
-    if (parentValueType === 'string' && _propertyKey === 'length') {
-      return parentValue.length;
+    if (parentValueType === 'string' && propertyKey === 'length') {
+      return (_parentValue as string).length;
     }
 
-    if ((parentValueType === 'object' && parentValue !== null) || parentValueType === 'function') {
+    if ((parentValueType === 'object' && _parentValue !== null) || parentValueType === 'function') {
+      let parentValue = _parentValue as object;
+
       if (DEBUG) {
-        watchKey(parentValue, _propertyKey);
+        watchKey(parentValue, propertyKey);
       }
 
       if (DEBUG) {
-        (this.tag.inner as TwoWayFlushDetectionTag).didCompute(parentValue);
+        (this.tag.inner as ITwoWayFlushDetectionTag).didCompute(parentValue);
       }
 
-      let parent: any;
-      let tracker: any;
+      let parent: Option<Tracker> = null;
+      let tracker: Option<Tracker> = null;
 
       if (EMBER_METAL_TRACKED_PROPERTIES) {
         parent = getCurrentTracker();
         tracker = setCurrentTracker();
       }
 
-      let ret = get(parentValue, _propertyKey);
+      let ret = get(parentValue, propertyKey);
 
       if (EMBER_METAL_TRACKED_PROPERTIES) {
         setCurrentTracker(parent!);
         let tag = tracker!.combine();
         if (parent) parent.add(tag);
 
-        _propertyTag.inner.update(tag);
+        propertyTag.inner.update(tag);
       } else {
-        _propertyTag.inner.update(tagForProperty(parentValue, _propertyKey));
+        propertyTag.inner.update(tagForProperty(parentValue, propertyKey));
       }
 
       return ret;
@@ -315,28 +296,31 @@ export class NestedPropertyReference extends PropertyReference {
     }
   }
 
-  [UPDATE](value: any) {
-    let parent = this._parentReference.value();
-    set(parent, this._propertyKey, value);
+  [UPDATE](value: Opaque): void {
+    set(
+      this.parentReference.value() as object /* let the other side handle the error */,
+      this.propertyKey,
+      value
+    );
   }
 }
 
 export class UpdatableReference extends EmberPathReference {
   public tag: TagWrapper<DirtyableTag>;
-  private _value: any;
+  private _value: Opaque;
 
-  constructor(value: any) {
+  constructor(value: Opaque) {
     super();
 
     this.tag = DirtyableTag.create();
     this._value = value;
   }
 
-  value() {
+  value(): Opaque {
     return this._value;
   }
 
-  update(value: any) {
+  update(value: Opaque): void {
     let { _value } = this;
 
     if (value !== _value) {
@@ -353,9 +337,7 @@ export class ConditionalReference extends GlimmerConditionalReference
     if (isConst(reference)) {
       let value = reference.value();
 
-      if (isProxy(value)) {
-        return new RootPropertyReference(value, 'isTruthy') as VersionedReference<any>;
-      } else {
+      if (!isProxy(value)) {
         return PrimitiveReference.create(emberToBool(value));
       }
     }
@@ -369,10 +351,10 @@ export class ConditionalReference extends GlimmerConditionalReference
     this.tag = combine([reference.tag, this.objectTag]);
   }
 
-  toBool(predicate: Opaque) {
+  toBool(predicate: Opaque): boolean {
     if (isProxy(predicate)) {
       this.objectTag.inner.update(tagForProperty(predicate, 'isTruthy'));
-      return get(predicate as object, 'isTruthy');
+      return Boolean(get(predicate, 'isTruthy'));
     } else {
       this.objectTag.inner.update(tagFor(predicate));
       return emberToBool(predicate);
@@ -381,10 +363,6 @@ export class ConditionalReference extends GlimmerConditionalReference
 }
 
 export class SimpleHelperReference extends CachedReference {
-  public tag: Tag;
-  public helper: HelperFunction;
-  public args: CapturedArguments;
-
   static create(helper: HelperFunction, args: CapturedArguments) {
     if (isConst(args)) {
       let { positional, named } = args;
@@ -393,8 +371,8 @@ export class SimpleHelperReference extends CachedReference {
       let namedValue = named.value();
 
       if (DEBUG) {
-        maybeFreeze(positionalValue);
-        maybeFreeze(namedValue);
+        debugFreeze(positionalValue);
+        debugFreeze(namedValue);
       }
 
       let result = helper(positionalValue, namedValue);
@@ -404,15 +382,14 @@ export class SimpleHelperReference extends CachedReference {
     }
   }
 
-  constructor(helper: HelperFunction, args: CapturedArguments) {
-    super();
+  public tag: Tag;
 
+  constructor(private helper: HelperFunction, private args: CapturedArguments) {
+    super();
     this.tag = args.tag;
-    this.helper = helper;
-    this.args = args;
   }
 
-  compute() {
+  compute(): Opaque {
     let {
       helper,
       args: { positional, named },
@@ -422,8 +399,8 @@ export class SimpleHelperReference extends CachedReference {
     let namedValue = named.value();
 
     if (DEBUG) {
-      maybeFreeze(positionalValue);
-      maybeFreeze(namedValue);
+      debugFreeze(positionalValue);
+      debugFreeze(namedValue);
     }
 
     return helper(positionalValue, namedValue);
@@ -431,23 +408,18 @@ export class SimpleHelperReference extends CachedReference {
 }
 
 export class ClassBasedHelperReference extends CachedReference {
-  public tag: Tag;
-  public instance: HelperInstance;
-  public args: CapturedArguments;
-
   static create(instance: HelperInstance, args: CapturedArguments) {
     return new ClassBasedHelperReference(instance, args);
   }
 
-  constructor(instance: HelperInstance, args: CapturedArguments) {
-    super();
+  public tag: Tag;
 
+  constructor(private instance: HelperInstance, private args: CapturedArguments) {
+    super();
     this.tag = combine([instance[RECOMPUTE_TAG], args.tag]);
-    this.instance = instance;
-    this.args = args;
   }
 
-  compute() {
+  compute(): Opaque {
     let {
       instance,
       args: { positional, named },
@@ -457,8 +429,8 @@ export class ClassBasedHelperReference extends CachedReference {
     let namedValue = named.value();
 
     if (DEBUG) {
-      maybeFreeze(positionalValue);
-      maybeFreeze(namedValue);
+      debugFreeze(positionalValue);
+      debugFreeze(namedValue);
     }
 
     return instance.compute(positionalValue, namedValue);
@@ -467,51 +439,48 @@ export class ClassBasedHelperReference extends CachedReference {
 
 export class InternalHelperReference extends CachedReference {
   public tag: Tag;
-  public helper: (args: CapturedArguments) => CapturedArguments;
-  public args: any;
 
-  constructor(helper: (args: CapturedArguments) => any, args: CapturedArguments) {
+  constructor(
+    private helper: (args: CapturedArguments) => Opaque,
+    private args: CapturedArguments
+  ) {
     super();
-
     this.tag = args.tag;
-    this.helper = helper;
-    this.args = args;
   }
 
-  compute() {
+  compute(): Opaque {
     let { helper, args } = this;
     return helper(args);
   }
 }
 
-export class UnboundReference<T> extends ConstReference<T> {
+export class UnboundReference<T extends object> extends ConstReference<T> {
   static create<T>(value: T): VersionedPathReference<T> {
     return valueToRef(value, false);
   }
 
-  get(key: string) {
-    return valueToRef(get(this.inner as any, key), false);
+  get(key: string): VersionedPathReference<Opaque> {
+    return valueToRef(this.inner[key], false);
   }
 }
 
 export class ReadonlyReference extends CachedReference {
+  public tag: Tag;
+
   constructor(private inner: VersionedPathReference<Opaque>) {
     super();
+    this.tag = inner.tag;
   }
 
-  get tag() {
-    return this.inner.tag;
-  }
-
-  get [INVOKE]() {
+  get [INVOKE](): Function | undefined {
     return this.inner[INVOKE];
   }
 
-  compute() {
+  compute(): Opaque {
     return this.inner.value();
   }
 
-  get(key: string) {
+  get(key: string): VersionedPathReference {
     return this.inner.get(key);
   }
 }
@@ -554,7 +523,7 @@ function isPrimitive(value: Opaque): value is Primitive {
   }
 }
 
-export function valueToRef<T = Opaque>(value: T, bound = true): VersionedPathReference<T> {
+function valueToRef<T = Opaque>(value: T, bound = true): VersionedPathReference<T> {
   if (isObject(value)) {
     // root of interop with ember objects
     return bound ? new RootReference(value) : new UnboundReference(value);
@@ -563,6 +532,35 @@ export function valueToRef<T = Opaque>(value: T, bound = true): VersionedPathRef
     return new UnboundReference(value);
   } else if (isPrimitive(value)) {
     return PrimitiveReference.create(value);
+  } else if (DEBUG) {
+    let type = typeof value;
+    let output: Option<string>;
+
+    try {
+      output = String(value);
+    } catch (e) {
+      output = null;
+    }
+
+    if (output) {
+      throw unreachable(`[BUG] Unexpected ${type} (${output})`);
+    } else {
+      throw unreachable(`[BUG] Unexpected ${type}`);
+    }
+  } else {
+    throw unreachable();
+  }
+}
+
+function valueKeyToRef(value: Opaque, key: string): VersionedPathReference<Opaque> {
+  if (isObject(value)) {
+    // root of interop with ember objects
+    return new RootPropertyReference(value, key);
+  } else if (isFunction(value)) {
+    // ember doesn't do observing with functions
+    return new UnboundReference(value[key]);
+  } else if (isPrimitive(value)) {
+    return UNDEFINED_REFERENCE;
   } else if (DEBUG) {
     let type = typeof value;
     let output: Option<string>;

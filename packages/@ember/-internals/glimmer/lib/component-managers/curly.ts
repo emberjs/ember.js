@@ -1,5 +1,4 @@
 import { privatize as P } from '@ember/-internals/container';
-import { get } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
 import {
@@ -121,7 +120,9 @@ export default class CurlyComponentManager
   }
 
   templateFor(component: Component, resolver: RuntimeResolver): OwnedTemplate {
-    let layout = get(component, 'layout') as TemplateFactory | OwnedTemplate | undefined;
+    let { layout, layoutName } = component;
+    let owner = getOwner(component);
+
     if (layout !== undefined) {
       // This needs to be cached by template.id
       if (isTemplateFactory(layout)) {
@@ -131,14 +132,14 @@ export default class CurlyComponentManager
         return layout;
       }
     }
-    let owner = getOwner(component);
-    let layoutName = get(component, 'layoutName');
+
     if (layoutName) {
       let template = owner.lookup<OwnedTemplate>('template:' + layoutName);
       if (template) {
         return template;
       }
     }
+
     return owner.lookup<OwnedTemplate>(DEFAULT_LAYOUT);
   }
 
@@ -358,7 +359,7 @@ export default class CurlyComponentManager
     }
 
     if (classRef) {
-      const ref = new SimpleClassNameBindingReference(classRef, classRef['_propertyKey']);
+      const ref = new SimpleClassNameBindingReference(classRef, classRef['propertyKey']);
       operations.setAttribute('class', ref, false, null);
     }
 

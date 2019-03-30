@@ -205,7 +205,7 @@ export default class ActionModifierManager implements ModifierManager<ActionStat
       if (actionNameRef[INVOKE]) {
         actionName = actionNameRef;
       } else {
-        let actionLabel = actionNameRef._propertyKey;
+        let actionLabel = actionNameRef.propertyKey;
         actionName = actionNameRef.value();
 
         assert(

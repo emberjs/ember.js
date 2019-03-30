@@ -284,12 +284,12 @@ export default function(_vm: VM, args: Arguments): UnboundReference<Function> {
   let [context, action, ...restArgs] = capturedArgs.references;
 
   // TODO: Is there a better way of doing this?
-  let debugKey: string | undefined = (action as any)._propertyKey;
+  let debugKey: string | undefined = (action as any).propertyKey;
 
   let target = named.has('target') ? named.get('target') : context;
   let processArgs = makeArgsProcessor(named.has('value') && named.get('value'), restArgs);
 
-  let fn;
+  let fn: Function;
 
   if (typeof action[INVOKE] === 'function') {
     fn = makeClosureAction(action, action, action[INVOKE], processArgs, debugKey);
