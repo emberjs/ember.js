@@ -14,7 +14,6 @@ import {
   CapturedArguments,
   ComponentDefinition,
   Invocation,
-  PrimitiveReference,
   WithStaticLayout,
 } from '@glimmer/runtime';
 import { Destroyable } from '@glimmer/util';
@@ -178,13 +177,8 @@ export default class CustomComponentManager<ComponentInstance>
     delegate.getContext(component);
   }
 
-  getSelf({
-    delegate,
-    component,
-  }: CustomComponentState<ComponentInstance>): PrimitiveReference<null> | PathReference<Opaque> {
-    const context = delegate.getContext(component);
-
-    return new RootReference(context);
+  getSelf({ delegate, component }: CustomComponentState<ComponentInstance>): PathReference<Opaque> {
+    return RootReference.create(delegate.getContext(component));
   }
 
   getDestructor(state: CustomComponentState<ComponentInstance>): Option<Destroyable> {

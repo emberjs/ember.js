@@ -18,7 +18,7 @@ let symbol = (HAS_NATIVE_SYMBOL ? Symbol : emberSymbol) as (debugKey: string) =>
 
   @private
 */
-class Tracker {
+export class Tracker {
   private tags = new Set<Tag>();
   private last: Option<Tag> = null;
 
@@ -243,7 +243,9 @@ export function getCurrentTracker(): Option<Tracker> {
   return CURRENT_TRACKER;
 }
 
-export function setCurrentTracker(tracker: Tracker = new Tracker()): Tracker {
+export function setCurrentTracker(): Tracker;
+export function setCurrentTracker(tracker: Option<Tracker>): Option<Tracker>;
+export function setCurrentTracker(tracker: Option<Tracker> = new Tracker()): Option<Tracker> {
   return (CURRENT_TRACKER = tracker);
 }
 

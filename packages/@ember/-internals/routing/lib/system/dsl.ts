@@ -168,7 +168,7 @@ export default class DSLImpl implements DSL {
     };
   }
 
-  mount(_name: string, options: Partial<MountOptions> = {}) {
+  mount(_name: string, options: MountOptions = {}) {
     let engineRouteMap = this.options.resolveRouteMap(_name);
     let name = _name;
 
