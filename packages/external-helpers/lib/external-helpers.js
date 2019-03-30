@@ -85,3 +85,9 @@ export function possibleConstructorReturn(self, call) {
   }
   return assertThisInitialized(self);
 }
+
+export function objectDestructuringEmpty(obj) {
+  if (DEBUG && (obj === null || obj === undefined)) {
+    throw new TypeError('Cannot destructure undefined');
+  }
+}
