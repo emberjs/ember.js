@@ -1,6 +1,7 @@
 import { RenderTest, jitSuite, test, Count } from '@glimmer/integration-tests';
 import { Dict } from '@glimmer/interfaces';
 import { SimpleElement } from '@simple-dom/interface';
+import { Option } from '@glimmer/interfaces';
 
 class BaseModifier {
   element?: SimpleElement;
@@ -82,16 +83,223 @@ class ModifierTests extends RenderTest {
   }
 
   @test
-  'do not work on component invocations'(assert: Assert) {
-    this.registerComponent('Glimmer', 'Foo', '<div ...attributes>Foo</div>');
-    this.registerModifier('bar', BaseModifier);
-    assert.throws(() => {
-      this.render('<Foo {{bar foo="foo"}} />');
-    }, 'Compile Error: Element modifiers are not allowed in components');
+  'modifiers on components are forwarded to a single element receiving the splattributes'(
+    assert: Assert
+  ) {
+    let modifierParams: Option<unknown[]> = null;
+    let modifierNamedArgs: Option<Dict<unknown>> = null;
+    let modifiedElement: SimpleElement | undefined;
+    class Bar extends AbstractInsertable {
+      didInsertElement(params: unknown[], namedArgs: Dict<unknown>) {
+        modifierParams = params;
+        modifierNamedArgs = namedArgs;
+        modifiedElement = this.element;
+      }
+    }
+    this.registerComponent('Glimmer', 'TheFoo', '<div id="inner-div" ...attributes>Foo</div>');
+    this.registerModifier('bar', Bar);
+    this.render('<TheFoo {{bar "something" foo="else"}}/>');
+    assert.deepEqual(modifierParams, ['something']);
+    assert.deepEqual(modifierNamedArgs, { foo: 'else' });
+    assert.equal(
+      modifiedElement && modifiedElement.getAttribute('id'),
+      'inner-div',
+      'Modifier is called on the element receiving the splattributes'
+    );
+  }
 
-    assert.throws(() => {
-      this.render('<Foo (bar foo="foo") />');
-    }, 'Compile Error: Element modifiers are not allowed in components');
+  @test
+  'modifiers on components are forwarded to all the elements receiving the splattributes'(
+    assert: Assert
+  ) {
+    let elementIds: Option<string>[] = [];
+    class Bar extends AbstractInsertable {
+      didInsertElement(params: unknown[], namedArgs: Dict<unknown>) {
+        assert.deepEqual(params, ['something']);
+        assert.deepEqual(namedArgs, { foo: 'else' });
+        if (this.element) {
+          elementIds.push(this.element.getAttribute('id'));
+        }
+      }
+    }
+    this.registerComponent(
+      'Glimmer',
+      'TheFoo',
+      '<div id="inner-one" ...attributes>Foo</div><div id="inner-two" ...attributes>Bar</div>'
+    );
+    this.registerModifier('bar', Bar);
+    this.render('<TheFoo {{bar "something" foo="else"}}/>');
+    assert.deepEqual(
+      elementIds,
+      ['inner-one', 'inner-two'],
+      'The modifier has been instantiated twice, once for each element with splattributes'
+    );
+  }
+
+  @test
+  'modifiers on components accept bound arguments and track changes on them'(assert: Assert) {
+    let modifierParams: Option<unknown[]> = null;
+    let modifierNamedArgs: Option<Dict<unknown>> = null;
+    let modifiedElement: SimpleElement | undefined;
+    class Bar extends AbstractInsertable {
+      didInsertElement(params: unknown[], namedArgs: Dict<unknown>) {
+        modifierParams = params;
+        modifierNamedArgs = namedArgs;
+        modifiedElement = this.element;
+      }
+      didUpdate(params: unknown[], namedArgs: Dict<unknown>) {
+        modifierParams = params;
+        modifierNamedArgs = namedArgs;
+        modifiedElement = this.element;
+      }
+    }
+    this.registerComponent('Glimmer', 'TheFoo', '<div id="inner-div" ...attributes>Foo</div>');
+    this.registerModifier('bar', Bar);
+    this.render('<TheFoo {{bar this.something foo=this.foo}}/>', {
+      something: 'something',
+      foo: 'else',
+    });
+    assert.deepEqual(modifierParams, ['something']);
+    assert.deepEqual(modifierNamedArgs, { foo: 'else' });
+    assert.equal(
+      modifiedElement && modifiedElement.getAttribute('id'),
+      'inner-div',
+      'Modifier is called on the element receiving the splattributes'
+    );
+    this.rerender({ something: 'another', foo: 'thingy' });
+    assert.deepEqual(modifierParams, ['another']);
+    assert.deepEqual(modifierNamedArgs, { foo: 'thingy' });
+    assert.equal(
+      modifiedElement && modifiedElement.getAttribute('id'),
+      'inner-div',
+      'Modifier is called on the element receiving the splattributes'
+    );
+  }
+
+  @test
+  'modifiers on components accept `this` in both positional params and named arguments, and updates when it changes'(
+    assert: Assert
+  ) {
+    let modifierParams: Option<unknown[]> = null;
+    let modifierNamedArgs: Option<Dict<unknown>> = null;
+    let modifiedElement: SimpleElement | undefined;
+    class Bar extends AbstractInsertable {
+      didInsertElement(params: unknown[], namedArgs: Dict<unknown>) {
+        modifierParams = params;
+        modifierNamedArgs = namedArgs;
+        modifiedElement = this.element;
+      }
+      didUpdate(params: unknown[], namedArgs: Dict<unknown>) {
+        modifierParams = params;
+        modifierNamedArgs = namedArgs;
+        modifiedElement = this.element;
+      }
+    }
+    let context = { id: 1 };
+    let context2 = { id: 2 };
+    this.registerComponent('Glimmer', 'TheFoo', '<div id="inner-div" ...attributes>Foo</div>');
+    this.registerModifier('bar', Bar);
+    this.render('<TheFoo {{bar "name" this foo=this}}/>', context);
+    assert.deepEqual(modifierParams, ['name', context]);
+    assert.deepEqual(modifierNamedArgs, { foo: context });
+    assert.equal(
+      modifiedElement && modifiedElement.getAttribute('id'),
+      'inner-div',
+      'Modifier is called on the element receiving the splattributes'
+    );
+    this.rerender(context2);
+    assert.deepEqual(modifierParams, ['name', context2]);
+    assert.deepEqual(modifierNamedArgs, { foo: context2 });
+    assert.equal(
+      modifiedElement && modifiedElement.getAttribute('id'),
+      'inner-div',
+      'Modifier is called on the element receiving the splattributes'
+    );
+  }
+
+  @test
+  'modifiers on components accept local variables in both positional params and named arguments, and updates when they change'(
+    assert: Assert
+  ) {
+    let modifierParams: Option<unknown[]> = null;
+    let modifierNamedArgs: Option<Dict<unknown>> = null;
+    let modifiedElement: SimpleElement | undefined;
+    class Bar extends AbstractInsertable {
+      didInsertElement(params: unknown[], namedArgs: Dict<unknown>) {
+        modifierParams = params;
+        modifierNamedArgs = namedArgs;
+        modifiedElement = this.element;
+      }
+      didUpdate(params: unknown[], namedArgs: Dict<unknown>) {
+        modifierParams = params;
+        modifierNamedArgs = namedArgs;
+        modifiedElement = this.element;
+      }
+    }
+    this.registerComponent('Glimmer', 'TheFoo', '<div id="inner-div" ...attributes>Foo</div>');
+    this.registerModifier('bar', Bar);
+    this.render(
+      `
+      {{#let this.foo as |v|}}
+        <TheFoo {{bar v foo=v}}/>
+      {{/let}}
+    `,
+      { foo: 'bar' }
+    );
+    assert.deepEqual(modifierParams, ['bar']);
+    assert.deepEqual(modifierNamedArgs, { foo: 'bar' });
+    assert.equal(
+      modifiedElement && modifiedElement.getAttribute('id'),
+      'inner-div',
+      'Modifier is called on the element receiving the splattributes'
+    );
+    this.rerender({ foo: 'qux' });
+    assert.deepEqual(modifierParams, ['qux']);
+    assert.deepEqual(modifierNamedArgs, { foo: 'qux' });
+    assert.equal(
+      modifiedElement && modifiedElement.getAttribute('id'),
+      'inner-div',
+      'Modifier is called on the element receiving the splattributes'
+    );
+  }
+
+  @test
+  'modifiers on components can be received and forwarded to inner components'(assert: Assert) {
+    let modifierParams: Option<unknown[]> = null;
+    let modifierNamedArgs: Option<Dict<unknown>> = null;
+    let elementIds: Option<string>[] = [];
+
+    class Bar extends AbstractInsertable {
+      didInsertElement(params: unknown[], namedArgs: Dict<unknown>) {
+        modifierParams = params;
+        modifierNamedArgs = namedArgs;
+        if (this.element) {
+          elementIds.push(this.element.getAttribute('id'));
+        }
+      }
+    }
+    this.registerComponent(
+      'Glimmer',
+      'TheInner',
+      '<div id="inner-div" ...attributes>{{yield}}</div>'
+    );
+    this.registerComponent(
+      'Glimmer',
+      'TheFoo',
+      '<div id="outer-div" ...attributes>Outer</div><TheInner ...attributes>Hello</TheInner>'
+    );
+    this.registerModifier('bar', Bar);
+    this.render(
+      `
+      {{#let this.foo as |v|}}
+        <TheFoo {{bar v foo=v}}/>
+      {{/let}}
+    `,
+      { foo: 'bar' }
+    );
+    assert.deepEqual(modifierParams, ['bar']);
+    assert.deepEqual(modifierNamedArgs, { foo: 'bar' });
+    assert.deepEqual(elementIds, ['outer-div', 'inner-div'], 'Modifiers are called on all levels');
   }
 
   @test
@@ -113,7 +321,7 @@ class ModifierTests extends RenderTest {
     this.registerModifier('foo', Foo);
 
     this.render('<div {{foo}}><div {{bar}}></div></div>');
-    assert.deepEqual(insertionOrder, ['bar', 'foo']);
+    assert.deepEqual(insertionOrder, ['foo', 'bar']);
   }
 
   @test
@@ -137,7 +345,7 @@ class ModifierTests extends RenderTest {
     this.render('{{#if nuke}}<div {{foo}}><div {{bar}}></div></div>{{/if}}', { nuke: true });
     assert.deepEqual(destructionOrder, []);
     this.rerender({ nuke: false });
-    assert.deepEqual(destructionOrder, ['bar', 'foo']);
+    assert.deepEqual(destructionOrder, ['foo', 'bar']);
   }
 
   @test
@@ -166,7 +374,7 @@ class ModifierTests extends RenderTest {
     this.registerModifier('baz', Baz);
 
     this.render('<div {{foo}}><div {{bar}}></div><div {{baz}}></div></div>');
-    assert.deepEqual(insertionOrder, ['bar', 'baz', 'foo']);
+    assert.deepEqual(insertionOrder, ['foo', 'bar', 'baz']);
   }
 
   @test
@@ -199,7 +407,7 @@ class ModifierTests extends RenderTest {
     });
     assert.deepEqual(destructionOrder, []);
     this.rerender({ nuke: false });
-    assert.deepEqual(destructionOrder, ['bar', 'baz', 'foo']);
+    assert.deepEqual(destructionOrder, ['foo', 'bar', 'baz']);
   }
 
   @test
