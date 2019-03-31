@@ -3,7 +3,7 @@ import {
   computed,
   getCachedValueFor,
   defineProperty,
-  isComputedDecorator,
+  isClassicDecorator,
   get,
   set,
   isWatching,
@@ -18,7 +18,7 @@ moduleFor(
   'computed',
   class extends AbstractTestCase {
     ['@test computed property should be an instance of descriptor'](assert) {
-      assert.ok(isComputedDecorator(computed(function() {})));
+      assert.ok(isClassicDecorator(computed(function() {})));
     }
 
     ['@test computed properties assert the presence of a getter or setter function']() {

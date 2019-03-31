@@ -1,6 +1,7 @@
 import { EMBER_NATIVE_DECORATOR_SUPPORT } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { assign } from '@ember/polyfills';
+import { isElementDescriptor, setClassicDecorator } from '@ember/-internals/metal';
 
 /**
   Decorator that turns the target function into an Action
@@ -41,11 +42,7 @@ export let action;
 if (EMBER_NATIVE_DECORATOR_SUPPORT) {
   let BINDINGS_MAP = new WeakMap();
 
-  action = function action(target, key, desc) {
-    assert('The @action decorator must be applied to methods', typeof desc.value === 'function');
-
-    let actionFn = desc.value;
-
+  let setupAction = function(target, key, actionFn) {
     if (target.constructor !== undefined && typeof target.constructor.proto === 'function') {
       target.constructor.proto();
     }
@@ -78,4 +75,41 @@ if (EMBER_NATIVE_DECORATOR_SUPPORT) {
       },
     };
   };
+
+  action = function action(target, key, desc) {
+    let actionFn;
+
+    if (!isElementDescriptor([target, key, desc])) {
+      actionFn = target;
+
+      let decorator = function(target, key, desc, meta, isClassicDecorator) {
+        assert(
+          'The @action decorator may only be passed a method when used in classic classes. You should decorate methods directly in native classes',
+          isClassicDecorator
+        );
+
+        assert(
+          'The action() decorator must be passed a method when used in classic classes',
+          typeof actionFn === 'function'
+        );
+
+        return setupAction(target, key, actionFn);
+      };
+
+      setClassicDecorator(decorator);
+
+      return decorator;
+    }
+
+    actionFn = desc.value;
+
+    assert(
+      'The @action decorator must be applied to methods when used in native classes',
+      typeof actionFn === 'function'
+    );
+
+    return setupAction(target, key, actionFn);
+  };
+
+  setClassicDecorator(action);
 }

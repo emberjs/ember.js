@@ -23,7 +23,7 @@ import {
   defineProperty,
   descriptorForProperty,
   classToString,
-  isComputedDecorator,
+  isClassicDecorator,
   DEBUG_INJECTION_FUNCTIONS,
 } from '@ember/-internals/metal';
 import ActionHandler from '../mixins/action_handler';
@@ -78,7 +78,7 @@ function initialize(obj, properties) {
         'EmberObject.create no longer supports defining computed ' +
           'properties. Define computed properties using extend() or reopen() ' +
           'before calling create().',
-        !isComputedDecorator(value)
+        !isClassicDecorator(value)
       );
       assert(
         'EmberObject.create no longer supports defining methods that call _super.',

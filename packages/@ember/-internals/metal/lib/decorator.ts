@@ -1,7 +1,7 @@
 import { Meta, meta as metaFor } from '@ember/-internals/meta';
 import { EMBER_NATIVE_DECORATOR_SUPPORT } from '@ember/canary-features';
 import { assert } from '@ember/debug';
-import { setComputedDecorator } from './descriptor_map';
+import { setClassicDecorator } from './descriptor_map';
 import { unwatch, watch } from './watching';
 
 export type DecoratorPropertyDescriptor = PropertyDescriptor & { initializer?: any } | undefined;
@@ -90,7 +90,7 @@ export function nativeDescDecorator(propertyDesc: PropertyDescriptor) {
     return propertyDesc;
   };
 
-  setComputedDecorator(decorator);
+  setClassicDecorator(decorator);
 
   return decorator;
 }
@@ -170,7 +170,7 @@ export function makeComputedDecorator(
     };
   };
 
-  setComputedDecorator(decorator, desc);
+  setClassicDecorator(decorator, desc);
 
   Object.setPrototypeOf(decorator, DecoratorClass.prototype);
 

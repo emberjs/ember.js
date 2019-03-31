@@ -27,7 +27,7 @@ import { makeComputedDecorator, nativeDescDecorator } from './decorator';
 import {
   descriptorForDecorator,
   descriptorForProperty,
-  isComputedDecorator,
+  isClassicDecorator,
 } from './descriptor_map';
 import { addListener, removeListener } from './events';
 import expandProperties from './expand_properties';
@@ -277,7 +277,7 @@ function addNormalizedProperty(
   concats?: string[],
   mergings?: string[]
 ): void {
-  if (isComputedDecorator(value)) {
+  if (isClassicDecorator(value)) {
     // Wrap descriptor function to implement _super() if needed
     descs[key] = giveDecoratorSuper(meta, key, value, values, descs, base);
     values[key] = undefined;

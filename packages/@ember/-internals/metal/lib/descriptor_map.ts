@@ -37,22 +37,22 @@ export function descriptorForDecorator(dec: import('./decorator').Decorator) {
 /**
   Check whether a value is a decorator
 
-  @method isComputedDecorator
+  @method isClassicDecorator
   @param {any} possibleDesc the value to check
   @return {boolean}
   @private
 */
-export function isComputedDecorator(dec: any) {
+export function isClassicDecorator(dec: any) {
   return dec !== null && dec !== undefined && DECORATOR_DESCRIPTOR_MAP.has(dec);
 }
 
 /**
   Set a value as a decorator
 
-  @method setComputedDecorator
+  @method setClassicDecorator
   @param {function} decorator the value to mark as a decorator
   @private
 */
-export function setComputedDecorator(dec: import('./decorator').Decorator, value: any = true) {
+export function setClassicDecorator(dec: import('./decorator').Decorator, value: any = true) {
   DECORATOR_DESCRIPTOR_MAP.set(dec, value);
 }

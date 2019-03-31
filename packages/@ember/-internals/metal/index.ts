@@ -29,11 +29,11 @@ export {
   PROPERTY_DID_CHANGE,
 } from './lib/property_events';
 export { defineProperty } from './lib/properties';
-export { nativeDescDecorator } from './lib/decorator';
+export { isElementDescriptor, nativeDescDecorator } from './lib/decorator';
 export {
   descriptorForProperty,
-  isComputedDecorator,
-  setComputedDecorator,
+  isClassicDecorator,
+  setClassicDecorator,
 } from './lib/descriptor_map';
 export { watchKey, unwatchKey } from './lib/watch_key';
 export { ChainNode, finishChains, removeChainWatcher } from './lib/chains';
