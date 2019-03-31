@@ -54,14 +54,47 @@ function multiArrayMacro(_dependentKeys, callback, name) {
 }
 
 /**
-  A computed property that returns the sum of the values
-  in the dependent array.
+  A computed property that returns the sum of the values in the dependent array.
+
+  Example:
+
+  ```javascript
+  import { sum } from '@ember/object/computed';
+
+  class Invoice {
+    lineItems = [1.00, 2.50, 9.99];
+
+    @sum('lineItems') total;
+  }
+
+  let invoice = new Invoice();
+
+  invoice.total; // 13.49
+  ```
+
+  Classic Class Example:
+
+  ```javascript
+  import EmberObject from '@ember/object';
+  import { sum } from '@ember/object/computed';
+
+  let Invoice = EmberObject.extend({
+    lineItems: [1.00, 2.50, 9.99],
+
+    total: sum('lineItems')
+  })
+
+  let invoice = Invoice.create();
+
+  invoice.total; // 13.49
+  ```
 
   @method sum
   @for @ember/object/computed
   @static
   @param {String} dependentKey
-  @return {ComputedProperty} computes the sum of all values in the dependentKey's array
+  @return {ComputedProperty} computes the sum of all values in the
+  dependentKey's array
   @since 1.4.0
   @public
 */
@@ -70,13 +103,52 @@ export function sum(dependentKey) {
 }
 
 /**
-  A computed property that calculates the maximum value in the
-  dependent array. This will return `-Infinity` when the dependent
-  array is empty.
+  A computed property that calculates the maximum value in the dependent array.
+  This will return `-Infinity` when the dependent array is empty.
+
+  Example:
 
   ```javascript
+  import { set } from '@ember/object';
   import { mapBy, max } from '@ember/object/computed';
-  import EmberObject from '@ember/object';
+
+  class Person {
+    children = [];
+
+    @mapBy('children', 'age') childAges;
+    @max('childAges') maxChildAge;
+  }
+
+  let lordByron = new Person();
+
+  lordByron.maxChildAge; // -Infinity
+
+  set(lordByron, 'children', [
+    {
+      name: 'Augusta Ada Byron',
+      age: 7
+    }
+  ]);
+  lordByron.maxChildAge; // 7
+
+  set(lordByron, 'children', [
+    ...lordByron.children,
+    {
+      name: 'Allegra Byron',
+      age: 5
+    }, {
+      name: 'Elizabeth Medora Leigh',
+      age: 8
+    }
+  ]);
+  lordByron.maxChildAge; // 8
+  ```
+
+  Classic Class Example:
+
+  ```javascript
+  import EmberObject, { set } from '@ember/object';
+  import { mapBy, max } from '@ember/object/computed';
 
   let Person = EmberObject.extend({
     childAges: mapBy('children', 'age'),
@@ -85,33 +157,40 @@ export function sum(dependentKey) {
 
   let lordByron = Person.create({ children: [] });
 
-  lordByron.get('maxChildAge'); // -Infinity
-  lordByron.get('children').pushObject({
-    name: 'Augusta Ada Byron', age: 7
-  });
-  lordByron.get('maxChildAge'); // 7
-  lordByron.get('children').pushObjects([{
-    name: 'Allegra Byron',
-    age: 5
-  }, {
-    name: 'Elizabeth Medora Leigh',
-    age: 8
-  }]);
-  lordByron.get('maxChildAge'); // 8
+  lordByron.maxChildAge; // -Infinity
+
+  set(lordByron, 'children', [
+    {
+      name: 'Augusta Ada Byron',
+      age: 7
+    }
+  ]);
+  lordByron.maxChildAge; // 7
+
+  set(lordByron, 'children', [
+    ...lordByron.children,
+    {
+      name: 'Allegra Byron',
+      age: 5
+    }, {
+      name: 'Elizabeth Medora Leigh',
+      age: 8
+    }
+  ]);
+  lordByron.maxChildAge; // 8
   ```
 
-  If the types of the arguments are not numbers,
-  they will be converted to numbers and the type
-  of the return value will always be `Number`.
-  For example, the max of a list of Date objects will be
-  the highest timestamp as a `Number`.
+  If the types of the arguments are not numbers, they will be converted to
+  numbers and the type of the return value will always be `Number`. For example,
+  the max of a list of Date objects will be the highest timestamp as a `Number`.
   This behavior is consistent with `Math.max`.
 
   @method max
   @for @ember/object/computed
   @static
   @param {String} dependentKey
-  @return {ComputedProperty} computes the largest value in the dependentKey's array
+  @return {ComputedProperty} computes the largest value in the dependentKey's
+  array
   @public
 */
 export function max(dependentKey) {
@@ -119,13 +198,52 @@ export function max(dependentKey) {
 }
 
 /**
-  A computed property that calculates the minimum value in the
-  dependent array. This will return `Infinity` when the dependent
-  array is empty.
+  A computed property that calculates the minimum value in the dependent array.
+  This will return `Infinity` when the dependent array is empty.
+
+  Example:
 
   ```javascript
+  import { set } from '@ember/object';
   import { mapBy, min } from '@ember/object/computed';
-  import EmberObject from '@ember/object';
+
+  class Person {
+    children = [];
+
+    @mapBy('children', 'age') childAges;
+    @min('childAges') minChildAge;
+  }
+
+  let lordByron = Person.create({ children: [] });
+
+  lordByron.minChildAge; // Infinity
+
+  set(lordByron, 'children', [
+    {
+      name: 'Augusta Ada Byron',
+      age: 7
+    }
+  ]);
+  lordByron.minChildAge; // 7
+
+  set(lordByron, 'children', [
+    ...lordByron.children,
+    {
+      name: 'Allegra Byron',
+      age: 5
+    }, {
+      name: 'Elizabeth Medora Leigh',
+      age: 8
+    }
+  ]);
+  lordByron.minChildAge; // 5
+  ```
+
+  Classic Class Example:
+
+  ```javascript
+  import EmberObject, { set } from '@ember/object';
+  import { mapBy, min } from '@ember/object/computed';
 
   let Person = EmberObject.extend({
     childAges: mapBy('children', 'age'),
@@ -134,26 +252,32 @@ export function max(dependentKey) {
 
   let lordByron = Person.create({ children: [] });
 
-  lordByron.get('minChildAge'); // Infinity
-  lordByron.get('children').pushObject({
-    name: 'Augusta Ada Byron', age: 7
-  });
-  lordByron.get('minChildAge'); // 7
-  lordByron.get('children').pushObjects([{
-    name: 'Allegra Byron',
-    age: 5
-  }, {
-    name: 'Elizabeth Medora Leigh',
-    age: 8
-  }]);
-  lordByron.get('minChildAge'); // 5
+  lordByron.minChildAge; // Infinity
+
+  set(lordByron, 'children', [
+    {
+      name: 'Augusta Ada Byron',
+      age: 7
+    }
+  ]);
+  lordByron.minChildAge; // 7
+
+  set(lordByron, 'children', [
+    ...lordByron.children,
+    {
+      name: 'Allegra Byron',
+      age: 5
+    }, {
+      name: 'Elizabeth Medora Leigh',
+      age: 8
+    }
+  ]);
+  lordByron.minChildAge; // 5
   ```
 
-  If the types of the arguments are not numbers,
-  they will be converted to numbers and the type
-  of the return value will always be `Number`.
-  For example, the min of a list of Date objects will be
-  the lowest timestamp as a `Number`.
+  If the types of the arguments are not numbers, they will be converted to
+  numbers and the type of the return value will always be `Number`. For example,
+  the min of a list of Date objects will be the lowest timestamp as a `Number`.
   This behavior is consistent with `Math.min`.
 
   @method min
@@ -170,23 +294,45 @@ export function min(dependentKey) {
 /**
   Returns an array mapped via the callback
 
-  The callback method you provide should have the following signature.
-  `item` is the current item in the iteration.
-  `index` is the integer index of the current item in the iteration.
+  The callback method you provide should have the following signature:
+  - `item` is the current item in the iteration.
+  - `index` is the integer index of the current item in the iteration.
 
   ```javascript
-  function(item, index);
+  function mapCallback(item, index);
   ```
 
-  Example
+  Example:
 
   ```javascript
+  import { set } from '@ember/object';
   import { map } from '@ember/object/computed';
+
+  class Hamster {
+    constructor(chores) {
+      set(this, 'chores', chores);
+    }
+
+    @map('chores', function(chore, index) {
+      return `${chore.toUpperCase()}!`;
+    })
+    excitingChores;
+  });
+
+  let hamster = new Hamster(['clean', 'write more unit tests']);
+
+  hamster.excitingChores; // ['CLEAN!', 'WRITE MORE UNIT TESTS!']
+  ```
+
+  Classic Class Example:
+
+  ```javascript
   import EmberObject from '@ember/object';
+  import { map } from '@ember/object/computed';
 
   let Hamster = EmberObject.extend({
     excitingChores: map('chores', function(chore, index) {
-      return chore.toUpperCase() + '!';
+      return `${chore.toUpperCase()}!`;
     })
   });
 
@@ -194,42 +340,47 @@ export function min(dependentKey) {
     chores: ['clean', 'write more unit tests']
   });
 
-  hamster.get('excitingChores'); // ['CLEAN!', 'WRITE MORE UNIT TESTS!']
+  hamster.excitingChores; // ['CLEAN!', 'WRITE MORE UNIT TESTS!']
   ```
 
   You can optionally pass an array of additional dependent keys as the second
   parameter to the macro, if your map function relies on any external values:
 
   ```javascript
+  import { set } from '@ember/object';
   import { map } from '@ember/object/computed';
-  import EmberObject from '@ember/object';
 
-  let Hamster = EmberObject.extend({
-    excitingChores: map('chores', ['shouldUpperCase'], function(chore, index) {
+  class Hamster {
+    shouldUpperCase = false;
+
+    constructor(chores) {
+      set(this, 'chores', chores);
+    }
+
+    @map('chores', ['shouldUpperCase'], function(chore, index) {
       if (this.shouldUpperCase) {
-        return chore.toUpperCase() + '!';
+        return `${chore.toUpperCase()}!`;
       } else {
-        return chore + '!';
+        return `${chore}!`;
       }
     })
-  });
+    excitingChores;
+  }
 
-  let hamster = Hamster.create({
-    shouldUpperCase: false,
+  let hamster = new Hamster(['clean', 'write more unit tests']);
 
-    chores: ['clean', 'write more unit tests']
-  });
+  hamster.excitingChores; // ['clean!', 'write more unit tests!']
 
-  hamster.get('excitingChores'); // ['clean!', 'write more unit tests!']
-  hamster.set('shouldUpperCase', true);
-  hamster.get('excitingChores'); // ['CLEAN!', 'WRITE MORE UNIT TESTS!']
+  set(hamster, 'shouldUpperCase', true);
+  hamster.excitingChores; // ['CLEAN!', 'WRITE MORE UNIT TESTS!']
   ```
 
   @method map
   @for @ember/object/computed
   @static
   @param {String} dependentKey
-  @param {Array} [additionalDependentKeys] optional array of additional dependent keys
+  @param {Array} [additionalDependentKeys] optional array of additional
+  dependent keys
   @param {Function} callback
   @return {ComputedProperty} an array mapped via the callback
   @public
@@ -258,9 +409,48 @@ export function map(dependentKey, additionalDependentKeys, callback) {
 /**
   Returns an array mapped to the specified key.
 
+  Example:
+
   ```javascript
+  import { set } from '@ember/object';
   import { mapBy } from '@ember/object/computed';
-  import EmberObject from '@ember/object';
+
+  class Person {
+    children = [];
+
+    @mapBy('children', 'age') childAges;
+  }
+
+  let lordByron = new Person();
+
+  lordByron.childAges; // []
+
+  set(lordByron, 'children', [
+    {
+      name: 'Augusta Ada Byron',
+      age: 7
+    }
+  ]);
+  lordByron.childAges; // [7]
+
+  set(lordByron, 'children', [
+    ...lordByron.children,
+    {
+      name: 'Allegra Byron',
+      age: 5
+    }, {
+      name: 'Elizabeth Medora Leigh',
+      age: 8
+    }
+  ]);
+  lordByron.childAges; // [7, 5, 8]
+  ```
+
+  Classic Class Example:
+
+  ```javascript
+  import EmberObject, { set } from '@ember/object';
+  import { mapBy } from '@ember/object/computed';
 
   let Person = EmberObject.extend({
     childAges: mapBy('children', 'age')
@@ -268,17 +458,27 @@ export function map(dependentKey, additionalDependentKeys, callback) {
 
   let lordByron = Person.create({ children: [] });
 
-  lordByron.get('childAges'); // []
-  lordByron.get('children').pushObject({ name: 'Augusta Ada Byron', age: 7 });
-  lordByron.get('childAges'); // [7]
-  lordByron.get('children').pushObjects([{
-    name: 'Allegra Byron',
-    age: 5
-  }, {
-    name: 'Elizabeth Medora Leigh',
-    age: 8
-  }]);
-  lordByron.get('childAges'); // [7, 5, 8]
+  lordByron.childAges; // []
+
+  set(lordByron, 'children', [
+    {
+      name: 'Augusta Ada Byron',
+      age: 7
+    }
+  ]);
+  lordByron.childAges; // [7]
+
+  set(lordByron, 'children', [
+    ...lordByron.children,
+    {
+      name: 'Allegra Byron',
+      age: 5
+    }, {
+      name: 'Elizabeth Medora Leigh',
+      age: 8
+    }
+  ]);
+  lordByron.childAges; // [7, 5, 8]
   ```
 
   @method mapBy
@@ -306,18 +506,46 @@ export function mapBy(dependentKey, propertyKey) {
 /**
   Filters the array by the callback.
 
-  The callback method you provide should have the following signature.
-  `item` is the current item in the iteration.
-  `index` is the integer index of the current item in the iteration.
-  `array` is the dependant array itself.
+  The callback method you provide should have the following signature:
+  - `item` is the current item in the iteration.
+  - `index` is the integer index of the current item in the iteration.
+  - `array` is the dependant array itself.
 
   ```javascript
-  function(item, index, array);
+  function filterCallback(item, index, array);
   ```
 
+  Example:
+
   ```javascript
+  import { set } from '@ember/object';
   import { filter } from '@ember/object/computed';
+
+  class Hamster {
+    constructor(chores) {
+      set(this, 'chores', chores);
+    }
+
+    @filter('chores', function(chore, index, array) {
+      return !chore.done;
+    })
+    remainingChores;
+  }
+
+  let hamster = Hamster.create([
+    { name: 'cook', done: true },
+    { name: 'clean', done: true },
+    { name: 'write more unit tests', done: false }
+  ]);
+
+  hamster.remainingChores; // [{name: 'write more unit tests', done: false}]
+  ```
+
+  Classic Class Example:
+
+  ```javascript
   import EmberObject from '@ember/object';
+  import { filter } from '@ember/object/computed';
 
   let Hamster = EmberObject.extend({
     remainingChores: filter('chores', function(chore, index, array) {
@@ -333,32 +561,36 @@ export function mapBy(dependentKey, propertyKey) {
     ]
   });
 
-  hamster.get('remainingChores'); // [{name: 'write more unit tests', done: false}]
+  hamster.remainingChores; // [{name: 'write more unit tests', done: false}]
   ```
 
-  You can also use `@each.property` in your dependent key, the callback will still use the underlying array:
+  You can also use `@each.property` in your dependent key, the callback will
+  still use the underlying array:
 
   ```javascript
-  import { A } from '@ember/array';
+  import { set } from '@ember/object';
   import { filter } from '@ember/object/computed';
-  import EmberObject from '@ember/object';
 
-  let Hamster = EmberObject.extend({
-    remainingChores: filter('chores.@each.done', function(chore, index, array) {
-      return !chore.get('done');
+  class Hamster {
+    constructor(chores) {
+      set(this, 'chores', chores);
+    }
+
+    @filter('chores.@each.done', function(chore, index, array) {
+      return !chore.done;
     })
-  });
+    remainingChores;
+  }
 
-  let hamster = Hamster.create({
-    chores: A([
-      EmberObject.create({ name: 'cook', done: true }),
-      EmberObject.create({ name: 'clean', done: true }),
-      EmberObject.create({ name: 'write more unit tests', done: false })
-    ])
-  });
-  hamster.get('remainingChores'); // [{name: 'write more unit tests', done: false}]
-  hamster.get('chores').objectAt(2).set('done', true);
-  hamster.get('remainingChores'); // []
+  let hamster = new Hamster([
+    { name: 'cook', done: true },
+    { name: 'clean', done: true },
+    { name: 'write more unit tests', done: false }
+  ]);
+  hamster.remainingChores; // [{name: 'write more unit tests', done: false}]
+
+  set(hamster.chores[2], 'done', true);
+  hamster.remainingChores; // []
   ```
 
   Finally, you can optionally pass an array of additional dependent keys as the
@@ -367,25 +599,27 @@ export function mapBy(dependentKey, propertyKey) {
 
   ```javascript
   import { filter } from '@ember/object/computed';
-  import EmberObject from '@ember/object';
 
-  let Hamster = EmberObject.extend({
-    remainingChores: filter('chores', ['doneKey'], function(chore, index, array) {
+  class Hamster {
+    constructor(chores) {
+      set(this, 'chores', chores);
+    }
+
+    doneKey = 'finished';
+
+    @filter('chores', ['doneKey'], function(chore, index, array) {
       return !chore[this.doneKey];
     })
-  });
+    remainingChores;
+  }
 
-  let hamster = Hamster.create({
-    doneKey: 'finished'
+  let hamster = new Hamster([
+    { name: 'cook', finished: true },
+    { name: 'clean', finished: true },
+    { name: 'write more unit tests', finished: false }
+  ]);
 
-    chores: [
-      { name: 'cook', finished: true },
-      { name: 'clean', finished: true },
-      { name: 'write more unit tests', finished: false }
-    ]
-  });
-
-  hamster.get('remainingChores'); // [{name: 'write more unit tests', finished: false}]
+  hamster.remainingChores; // [{name: 'write more unit tests', finished: false}]
   ```
 
   @method filter
@@ -419,11 +653,36 @@ export function filter(dependentKey, additionalDependentKeys, callback) {
 }
 
 /**
-  Filters the array by the property and value
+  Filters the array by the property and value.
+
+  Example:
 
   ```javascript
+  import { set } from '@ember/object';
   import { filterBy } from '@ember/object/computed';
+
+  class Hamster {
+    constructor(chores) {
+      set(this, 'chores', chores);
+    }
+
+    @filterBy('chores', 'done', false) remainingChores;
+  }
+
+  let hamster = new Hamster([
+    { name: 'cook', done: true },
+    { name: 'clean', done: true },
+    { name: 'write more unit tests', done: false }
+  ]);
+
+  hamster.remainingChores; // [{ name: 'write more unit tests', done: false }]
+  ```
+
+  Classic Class Example:
+
+  ```javascript
   import EmberObject from '@ember/object';
+  import { filterBy } from '@ember/object/computed';
 
   let Hamster = EmberObject.extend({
     remainingChores: filterBy('chores', 'done', false)
@@ -437,7 +696,7 @@ export function filter(dependentKey, additionalDependentKeys, callback) {
     ]
   });
 
-  hamster.get('remainingChores'); // [{ name: 'write more unit tests', done: false }]
+  hamster.remainingChores; // [{ name: 'write more unit tests', done: false }]
   ```
 
   @method filterBy
@@ -466,14 +725,38 @@ export function filterBy(dependentKey, propertyKey, value) {
 }
 
 /**
-  A computed property which returns a new array with all the unique
-  elements from one or more dependent arrays.
+  A computed property which returns a new array with all the unique elements
+  from one or more dependent arrays.
 
-  Example
+  Example:
 
   ```javascript
+  import { set } from '@ember/object';
   import { uniq } from '@ember/object/computed';
+
+  class Hamster {
+    constructor(fruits) {
+      set(this, 'fruits', fruits);
+    }
+
+    @uniq('fruits') uniqueFruits;
+  }
+
+  let hamster = new Hamster([
+    'banana',
+    'grape',
+    'kale',
+    'banana'
+  ]);
+
+  hamster.uniqueFruits; // ['banana', 'grape', 'kale']
+  ```
+
+  Classic Class Example:
+
+  ```javascript
   import EmberObject from '@ember/object';
+  import { uniq } from '@ember/object/computed';
 
   let Hamster = EmberObject.extend({
     uniqueFruits: uniq('fruits')
@@ -488,7 +771,7 @@ export function filterBy(dependentKey, propertyKey, value) {
     ]
   });
 
-  hamster.get('uniqueFruits'); // ['banana', 'grape', 'kale']
+  hamster.uniqueFruits; // ['banana', 'grape', 'kale']
   ```
 
   @method uniq
@@ -525,18 +808,43 @@ export function uniq(...args) {
 }
 
 /**
-  A computed property which returns a new array with all the unique
-  elements from an array, with uniqueness determined by specific key.
+  A computed property which returns a new array with all the unique elements
+  from an array, with uniqueness determined by specific key.
 
-  Example
+  Example:
 
   ```javascript
+  import { set } from '@ember/object';
   import { uniqBy } from '@ember/object/computed';
+
+  class Hamster {
+    constructor(fruits) {
+      set(this, 'fruits', fruits);
+    }
+
+    @uniqBy('fruits', 'id') uniqueFruits;
+  }
+
+  let hamster = new Hamster([
+    { id: 1, 'banana' },
+    { id: 2, 'grape' },
+    { id: 3, 'peach' },
+    { id: 1, 'banana' }
+  ]);
+
+  hamster.uniqueFruits; // [ { id: 1, 'banana' }, { id: 2, 'grape' }, { id: 3, 'peach' }]
+  ```
+
+  Classic Class Example:
+
+  ```javascript
   import EmberObject from '@ember/object';
+  import { uniqBy } from '@ember/object/computed';
 
   let Hamster = EmberObject.extend({
     uniqueFruits: uniqBy('fruits', 'id')
   });
+
   let hamster = Hamster.create({
     fruits: [
       { id: 1, 'banana' },
@@ -545,7 +853,8 @@ export function uniq(...args) {
       { id: 1, 'banana' }
     ]
   });
-  hamster.get('uniqueFruits'); // [ { id: 1, 'banana' }, { id: 2, 'grape' }, { id: 3, 'peach' }]
+
+  hamster.uniqueFruits; // [ { id: 1, 'banana' }, { id: 2, 'grape' }, { id: 3, 'peach' }]
   ```
 
   @method uniqBy
@@ -570,14 +879,47 @@ export function uniqBy(dependentKey, propertyKey) {
 }
 
 /**
-  A computed property which returns a new array with all the unique
-  elements from one or more dependent arrays.
+  A computed property which returns a new array with all the unique elements
+  from one or more dependent arrays.
 
-  Example
+  Example:
 
   ```javascript
+  import { set } from '@ember/object';
   import { union } from '@ember/object/computed';
+
+  class Hamster {
+    constructor(fruits, vegetables) {
+      set(this, 'fruits', fruits);
+      set(this, 'vegetables', vegetables);
+    }
+
+    @union('fruits', 'vegetables') ediblePlants;
+  });
+
+  let hamster = new, Hamster(
+    [
+      'banana',
+      'grape',
+      'kale',
+      'banana',
+      'tomato'
+    ],
+    [
+      'tomato',
+      'carrot',
+      'lettuce'
+    ]
+  );
+
+  hamster.uniqueFruits; // ['banana', 'grape', 'kale', 'tomato', 'carrot', 'lettuce']
+  ```
+
+  Classic Class Example:
+
+  ```javascript
   import EmberObject from '@ember/object';
+  import { union } from '@ember/object/computed';
 
   let Hamster = EmberObject.extend({
     uniqueFruits: union('fruits', 'vegetables')
@@ -598,15 +940,15 @@ export function uniqBy(dependentKey, propertyKey) {
     ]
   });
 
-  hamster.get('uniqueFruits'); // ['banana', 'grape', 'kale', 'tomato', 'carrot', 'lettuce']
+  hamster.uniqueFruits; // ['banana', 'grape', 'kale', 'tomato', 'carrot', 'lettuce']
   ```
 
   @method union
   @for @ember/object/computed
   @static
   @param {String} propertyKey*
-  @return {ComputedProperty} computes a new array with all the
-  unique elements from one or more dependent arrays.
+  @return {ComputedProperty} computes a new array with all the unique elements
+  from one or more dependent arrays.
   @public
 */
 export let union = uniq;
@@ -615,28 +957,53 @@ export let union = uniq;
   A computed property which returns a new array with all the elements
   two or more dependent arrays have in common.
 
-  Example
+  Example:
 
   ```javascript
+  import { set } from '@ember/object';
   import { intersect } from '@ember/object/computed';
-  import EmberObject from '@ember/object';
 
-  let obj = EmberObject.extend({
+  class FriendGroups {
+    constructor(adaFriends, charlesFriends) {
+      set(this, 'adaFriends', adaFriends);
+      set(this, 'charlesFriends', charlesFriends);
+    }
+
+    @intersect('adaFriends', 'charlesFriends') friendsInCommon;
+  }
+
+  let groups = new FriendGroups(
+    ['Charles Babbage', 'John Hobhouse', 'William King', 'Mary Somerville'],
+    ['William King', 'Mary Somerville', 'Ada Lovelace', 'George Peacock']
+  );
+
+  groups.friendsInCommon; // ['William King', 'Mary Somerville']
+  ```
+
+  Classic Class Example:
+
+  ```javascript
+  import EmberObject from '@ember/object';
+  import { intersect } from '@ember/object/computed';
+
+  let FriendGroups = EmberObject.extend({
     friendsInCommon: intersect('adaFriends', 'charlesFriends')
-  }).create({
+  });
+
+  let groups = FriendGroups.create({
     adaFriends: ['Charles Babbage', 'John Hobhouse', 'William King', 'Mary Somerville'],
     charlesFriends: ['William King', 'Mary Somerville', 'Ada Lovelace', 'George Peacock']
   });
 
-  obj.get('friendsInCommon'); // ['William King', 'Mary Somerville']
+  groups.friendsInCommon; // ['William King', 'Mary Somerville']
   ```
 
   @method intersect
   @for @ember/object/computed
   @static
   @param {String} propertyKey*
-  @return {ComputedProperty} computes a new array with all the
-  duplicated elements from the dependent arrays
+  @return {ComputedProperty} computes a new array with all the duplicated
+  elements from the dependent arrays
   @public
 */
 export function intersect(...args) {
@@ -674,29 +1041,62 @@ export function intersect(...args) {
 }
 
 /**
-  A computed property which returns a new array with all the
-  properties from the first dependent array that are not in the second
-  dependent array.
+  A computed property which returns a new array with all the properties from the
+  first dependent array that are not in the second dependent array.
 
-  Example
+  Example:
 
   ```javascript
+  import { set } from '@ember/object';
   import { setDiff } from '@ember/object/computed';
+
+  class Hamster {
+    constructor(likes, fruits) {
+      set(this, 'likes', likes);
+      set(this, 'fruits', fruits);
+    }
+
+    @setDiff('likes', 'fruits') wants;
+  }
+
+  let hamster = new Hamster(
+    [
+      'banana',
+      'grape',
+      'kale'
+    ],
+    [
+      'grape',
+      'kale',
+    ]
+  );
+
+  hamster.wants; // ['banana']
+  ```
+
+  Classic Class Example:
+
+  ```javascript
   import EmberObject from '@ember/object';
+  import { setDiff } from '@ember/object/computed';
 
   let Hamster = EmberObject.extend({
-    likes: ['banana', 'grape', 'kale'],
     wants: setDiff('likes', 'fruits')
   });
 
   let hamster = Hamster.create({
+    likes: [
+      'banana',
+      'grape',
+      'kale'
+    ],
     fruits: [
       'grape',
       'kale',
     ]
   });
 
-  hamster.get('wants'); // ['banana']
+  hamster.wants; // ['banana']
   ```
 
   @method setDiff
@@ -704,9 +1104,8 @@ export function intersect(...args) {
   @static
   @param {String} setAProperty
   @param {String} setBProperty
-  @return {ComputedProperty} computes a new array with all the
-  items from the first dependent array that are not in the second
-  dependent array
+  @return {ComputedProperty} computes a new array with all the items from the
+  first dependent array that are not in the second dependent array
   @public
 */
 export function setDiff(setAProperty, setBProperty) {
@@ -732,14 +1131,33 @@ export function setDiff(setAProperty, setBProperty) {
 }
 
 /**
-  A computed property that returns the array of values
-  for the provided dependent properties.
+  A computed property that returns the array of values for the provided
+  dependent properties.
 
-  Example
+  Example:
 
   ```javascript
+  import { set } from '@ember/object';
   import { collect } from '@ember/object/computed';
-  import EmberObject from '@ember/object';
+
+  class Hamster {
+    @collect('hat', 'shirt') clothes;
+  }
+
+  let hamster = new Hamster();
+
+  hamster.clothes; // [null, null]
+
+  set(hamster, 'hat', 'Camp Hat');
+  set(hamster, 'shirt', 'Camp Shirt');
+  hamster.clothes; // ['Camp Hat', 'Camp Shirt']
+  ```
+
+  Classic Class Example:
+
+  ```javascript
+  import EmberObject, { set } from '@ember/object';
+  import { collect } from '@ember/object/computed';
 
   let Hamster = EmberObject.extend({
     clothes: collect('hat', 'shirt')
@@ -747,18 +1165,19 @@ export function setDiff(setAProperty, setBProperty) {
 
   let hamster = Hamster.create();
 
-  hamster.get('clothes'); // [null, null]
-  hamster.set('hat', 'Camp Hat');
-  hamster.set('shirt', 'Camp Shirt');
-  hamster.get('clothes'); // ['Camp Hat', 'Camp Shirt']
+  hamster.clothes; // [null, null]
+
+  set(hamster, 'hat', 'Camp Hat');
+  set(hamster, 'shirt', 'Camp Shirt');
+  hamster.clothes; // ['Camp Hat', 'Camp Shirt']
   ```
 
   @method collect
   @for @ember/object/computed
   @static
   @param {String} dependentKey*
-  @return {ComputedProperty} computed property which maps
-  values of all passed in properties to an array.
+  @return {ComputedProperty} computed property which maps values of all passed
+  in properties to an array.
   @public
 */
 export function collect(...dependentKeys) {
@@ -777,9 +1196,9 @@ export function collect(...dependentKeys) {
 }
 
 /**
-  A computed property which returns a new array with all the
-  properties from the first dependent array sorted based on a property
-  or sort function. The sort macro can be used in two different ways:
+  A computed property which returns a new array with all the properties from the
+  first dependent array sorted based on a property or sort function. The sort
+  macro can be used in two different ways:
 
   1. By providing a sort callback function
   2. By providing an array of keys to sort the array
@@ -788,7 +1207,7 @@ export function collect(...dependentKeys) {
   signature:
 
   ```javascript
-  function(itemA, itemB);
+  function sortCallback(itemA, itemB);
   ```
 
   - `itemA` the first item to compare.
@@ -803,11 +1222,44 @@ export function collect(...dependentKeys) {
   itemB` or `itemA.get( 'foo' ) - itemB.get( 'foo' )` can be used instead of
   series of `if`.
 
-  Example
+  Example:
 
   ```javascript
+  import { set } from '@ember/object';
   import { sort } from '@ember/object/computed';
+
+  class ToDoList {
+    constructor(todos) {
+      set(this, 'todos', todos);
+    }
+
+    // using a custom sort function
+    @sort('todos', function(a, b){
+      if (a.priority > b.priority) {
+        return 1;
+      } else if (a.priority < b.priority) {
+        return -1;
+      }
+
+      return 0;
+    })
+    priorityTodos;
+  }
+
+  let todoList = new ToDoList([
+    { name: 'Unit Test', priority: 2 },
+    { name: 'Documentation', priority: 3 },
+    { name: 'Release', priority: 1 }
+  ]);
+
+  todoList.priorityTodos; // [{ name:'Release', priority:1 }, { name:'Unit Test', priority:2 }, { name:'Documentation', priority:3 }]
+  ```
+
+  Classic Class Example:
+
+  ```javascript
   import EmberObject from '@ember/object';
+  import { sort } from '@ember/object/computed';
 
   let ToDoList = EmberObject.extend({
     // using a custom sort function
@@ -830,7 +1282,7 @@ export function collect(...dependentKeys) {
     ]
   });
 
-  todoList.get('priorityTodos');    // [{ name:'Release', priority:1 }, { name:'Unit Test', priority:2 }, { name:'Documentation', priority:3 }]
+  todoList.priorityTodos; // [{ name:'Release', priority:1 }, { name:'Unit Test', priority:2 }, { name:'Documentation', priority:3 }]
   ```
 
   You can also optionally pass an array of additional dependent keys as the
@@ -838,12 +1290,18 @@ export function collect(...dependentKeys) {
   could changes:
 
   ```js
+  import EmberObject, { set } from '@ember/object';
   import { sort } from '@ember/object/computed';
-  import EmberObject from '@ember/object';
 
-  let ToDoList = EmberObject.extend({
+  class ToDoList {
+    sortKey = 'priority';
+
+    constructor(todos) {
+      set(this, 'todos', todos);
+    }
+
     // using a custom sort function
-    sortedTodos: sort('todos', ['sortKey'] function(a, b){
+    @sort('todos', ['sortKey'], function(a, b){
       if (a[this.sortKey] > b[this.sortKey]) {
         return 1;
       } else if (a[this.sortKey] < b[this.sortKey]) {
@@ -852,59 +1310,60 @@ export function collect(...dependentKeys) {
 
       return 0;
     })
+    sortedTodos;
   });
 
-  let todoList = ToDoList.create({
-    sortKey: 'priority',
+  let todoList = new ToDoList([
+    { name: 'Unit Test', priority: 2 },
+    { name: 'Documentation', priority: 3 },
+    { name: 'Release', priority: 1 }
+  ]);
 
-    todos: [
-      { name: 'Unit Test', priority: 2 },
-      { name: 'Documentation', priority: 3 },
-      { name: 'Release', priority: 1 }
-    ]
-  });
-
-  todoList.get('priorityTodos');    // [{ name:'Release', priority:1 }, { name:'Unit Test', priority:2 }, { name:'Documentation', priority:3 }]
+  todoList.priorityTodos; // [{ name:'Release', priority:1 }, { name:'Unit Test', priority:2 }, { name:'Documentation', priority:3 }]
   ```
 
   In the second form, you should provide the key of the array of sort values as
   the second parameter:
 
   ```javascript
+  import { set } from '@ember/object';
   import { sort } from '@ember/object/computed';
-  import EmberObject from '@ember/object';
 
-  let ToDoList = EmberObject.extend({
+  class ToDoList {
+    constructor(todos) {
+      set(this, 'todos', todos);
+    }
+
     // using standard ascending sort
-    todosSorting: Object.freeze(['name']),
-    sortedTodos: sort('todos', 'todosSorting'),
+    todosSorting = ['name'];
+    @sort('todos', 'todosSorting') sortedTodos;
 
     // using descending sort
-    todosSortingDesc: Object.freeze(['name:desc']),
-    sortedTodosDesc: sort('todos', 'todosSortingDesc'),
-  });
+    todosSortingDesc = ['name:desc'];
+    @sort('todos', 'todosSortingDesc') sortedTodosDesc;
+  }
 
-  let todoList = ToDoList.create({
-    todos: [
-      { name: 'Unit Test', priority: 2 },
-      { name: 'Documentation', priority: 3 },
-      { name: 'Release', priority: 1 }
-    ]
-  });
+  let todoList = new ToDoList([
+    { name: 'Unit Test', priority: 2 },
+    { name: 'Documentation', priority: 3 },
+    { name: 'Release', priority: 1 }
+  ]);
 
-  todoList.get('sortedTodos');      // [{ name:'Documentation', priority:3 }, { name:'Release', priority:1 }, { name:'Unit Test', priority:2 }]
-  todoList.get('sortedTodosDesc');  // [{ name:'Unit Test', priority:2 }, { name:'Release', priority:1 }, { name:'Documentation', priority:3 }]
+  todoList.sortedTodos; // [{ name:'Documentation', priority:3 }, { name:'Release', priority:1 }, { name:'Unit Test', priority:2 }]
+  todoList.sortedTodosDesc; // [{ name:'Unit Test', priority:2 }, { name:'Release', priority:1 }, { name:'Documentation', priority:3 }]
   ```
 
   @method sort
   @for @ember/object/computed
   @static
   @param {String} itemsKey
-  @param {Array} [additionalDependentKeys] optional array of additional dependent keys
-  @param {String or Function} sortDefinition a dependent key to an
-  array of sort properties (add `:desc` to the arrays sort properties to sort descending) or a function to use when sorting
-  @return {ComputedProperty} computes a new sorted array based
-  on the sort property array or callback function
+  @param {Array} [additionalDependentKeys] optional array of additional
+  dependent keys
+  @param {String or Function} sortDefinition a dependent key to an array of sort
+  properties (add `:desc` to the arrays sort properties to sort descending) or a
+  function to use when sorting
+  @return {ComputedProperty} computes a new sorted array based on the sort
+  property array or callback function
   @public
 */
 export function sort(itemsKey, additionalDependentKeys, sortDefinition) {
