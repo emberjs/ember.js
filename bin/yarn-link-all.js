@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+
 "use strict";
 
 /*
@@ -23,9 +24,17 @@ if (!fs.existsSync('dist')) {
 }
 
 let command = process.argv[2] === '--unlink' ? UNLINK_COMMAND : LINK_COMMAND;
-let packages = globSync('dist/@glimmer/*/', { cwd });
+let packages = globSync('dist/@glimmer/*/', {
+  cwd
+});
 
 packages.forEach(link);
+
+console.log('\nIn your project...\n')
+packages.forEach(dir => {
+  let name = dir.replace(/^dist\//, '').replace(/\/$/, '');
+  console.log(`${chalk.blue('yarn link')} ${name}`);
+});
 
 function link(dir) {
   try {
@@ -51,5 +60,7 @@ function link(dir) {
 
 function exec(cmd) {
   console.log(chalk.blue(cmd));
-  return execSync(cmd, { cwd });
+  return execSync(cmd, {
+    cwd
+  });
 }
