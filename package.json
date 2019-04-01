@@ -156,7 +156,7 @@
     "route-recognizer": "^0.3.4",
     "router_js": "^6.2.4",
     "rsvp": "^4.8.4",
-    "semver": "^5.5.0",
+    "semver": "^6.0.0",
     "serve-static": "^1.13.2",
     "simple-dom": "^1.4.0",
     "testem": "^2.14.0",
