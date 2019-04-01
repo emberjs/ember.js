@@ -13,7 +13,6 @@ import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { EMBER_ARRAY } from '@ember/-internals/utils';
 import { AbstractTestCase, moduleFor } from 'internal-test-helpers';
 import { value, validate } from '@glimmer/reference';
-import { DEBUG } from '@glimmer/env';
 
 if (EMBER_METAL_TRACKED_PROPERTIES) {
   moduleFor(
@@ -348,13 +347,30 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
         let obj = new EmberObject();
 
         expectAssertion(() => {
-          if (DEBUG) {
-            track(() => {
-              obj.value;
-              obj.value = 123;
-            });
-          }
+          track(() => {
+            obj.value;
+            obj.value = 123;
+          });
         }, /You attempted to update `value` on `EmberObject`, but it had already been used previously in the same computation/);
+      }
+
+      ['@test gives helpful assertion when a tracked property is mutated after access within unknownProperty within an autotracking transaction']() {
+        class EmberObject {
+          @tracked foo;
+
+          unknownProperty() {
+            this.foo;
+            this.foo = 123;
+          }
+        }
+
+        let obj = new EmberObject();
+
+        expectAssertion(() => {
+          track(() => {
+            get(obj, 'bar');
+          });
+        }, /You attempted to update `foo` on `EmberObject`, but it had already been used previously in the same computation/);
       }
     }
   );

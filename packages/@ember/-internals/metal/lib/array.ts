@@ -1,7 +1,6 @@
 import { arrayContentDidChange, arrayContentWillChange } from './array_events';
 import { addListener, removeListener } from './events';
 import { notifyPropertyChange } from './property_events';
-import { get } from './property_get';
 
 const EMPTY_ARRAY = Object.freeze([]);
 
@@ -84,7 +83,7 @@ function arrayObserversHelper(
 ): ObjectHasArrayObservers {
   let willChange = (opts && opts.willChange) || 'arrayWillChange';
   let didChange = (opts && opts.didChange) || 'arrayDidChange';
-  let hasObservers = get(obj, 'hasArrayObservers');
+  let hasObservers = obj.hasArrayObservers;
 
   operation(obj, '@array:before', target, willChange);
   operation(obj, '@array:change', target, didChange);
