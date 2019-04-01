@@ -629,6 +629,32 @@ moduleFor(
       });
     }
 
+    ['@test GH#16921 transitioning works if both model and query params are supplied and refreshModel is true'](assert) {
+      assert.expect(2);
+
+      this.router.map(function() {
+        this.route('target', { path: 'target/:target_id' });
+      });
+
+      this.add(
+        'route:target',
+        Route.extend({
+          queryParams: {
+            param1: {
+              refreshModel: true,
+            },
+          },
+          model() {},
+        })
+      );
+
+      return this.visitAndAssert('/').then(() => {
+        let model = { id: '123' };
+        this.transitionTo('target', model, { queryParams: { param1: 'new_param_value' }});
+        this.assertCurrentPath('/target/123?param1=new_param_value');
+      });
+    }
+
     ['@test multiple QP value changes only cause a single model refresh'](assert) {
       assert.expect(2);
 
