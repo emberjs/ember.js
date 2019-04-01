@@ -113,7 +113,7 @@ let allExports = [
   ['_tracked', '@ember/-internals/metal', 'tracked'],
   ['computed.alias', '@ember/-internals/metal', 'alias'],
   ['ComputedProperty', '@ember/-internals/metal'],
-  ['_setComputedDecorator', '@ember/-internals/metal', 'setComputedDecorator'],
+  ['_setClassicDecorator', '@ember/-internals/metal', 'setClassicDecorator'],
   ['cacheFor', '@ember/-internals/metal', 'getCachedValueFor'],
   ['merge', '@ember/polyfills'],
   ['instrument', '@ember/instrumentation'],

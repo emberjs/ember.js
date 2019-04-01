@@ -22,7 +22,7 @@ import {
   makeComputedDecorator,
   removeDependentKeys,
 } from './decorator';
-import { descriptorForDecorator, isComputedDecorator } from './descriptor_map';
+import { descriptorForDecorator, isClassicDecorator } from './descriptor_map';
 import expandProperties from './expand_properties';
 import { defineProperty } from './properties';
 import { notifyPropertyChange } from './property_events';
@@ -180,7 +180,7 @@ export class ComputedProperty extends ComputedDescriptor {
       if (typeof config === 'function') {
         assert(
           `You attempted to pass a computed property instance to computed(). Computed property instances are decorator functions, and cannot be passed to computed() because they cannot be turned into decorators twice`,
-          !isComputedDecorator(config)
+          !isClassicDecorator(config)
         );
 
         this._getter = config as ComputedPropertyGetter;

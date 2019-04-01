@@ -1,12 +1,12 @@
 import { setOwner } from '@ember/-internals/owner';
-import { defineProperty, get, isComputedDecorator, set, inject } from '..';
+import { defineProperty, get, isClassicDecorator, set, inject } from '..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
   'inject',
   class extends AbstractTestCase {
     ['@test injected properties should be descriptors'](assert) {
-      assert.ok(isComputedDecorator(inject('type')));
+      assert.ok(isClassicDecorator(inject('type')));
     }
 
     ['@test injected properties should be overridable'](assert) {

@@ -4,7 +4,7 @@ import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { combine, CONSTANT_TAG, Tag } from '@glimmer/reference';
 import { Decorator, DecoratorPropertyDescriptor, isElementDescriptor } from './decorator';
-import { setComputedDecorator } from './descriptor_map';
+import { setClassicDecorator } from './descriptor_map';
 import { dirty, ensureRunloop, tagFor, tagForProperty } from './tags';
 
 type Option<T> = T | null;
@@ -164,7 +164,7 @@ export function tracked(...args: any[]): Decorator | DecoratorPropertyDescriptor
       return descriptorForField([target, key, fieldDesc]);
     };
 
-    setComputedDecorator(decorator);
+    setClassicDecorator(decorator);
 
     return decorator;
   }
@@ -180,7 +180,7 @@ export function tracked(...args: any[]): Decorator | DecoratorPropertyDescriptor
 if (DEBUG) {
   // Normally this isn't a classic decorator, but we want to throw a helpful
   // error in development so we need it to treat it like one
-  setComputedDecorator(tracked);
+  setClassicDecorator(tracked);
 }
 
 function descriptorForField([_target, key, desc]: [

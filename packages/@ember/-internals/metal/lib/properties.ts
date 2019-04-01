@@ -6,7 +6,7 @@ import { Meta, meta as metaFor, peekMeta, UNDEFINED } from '@ember/-internals/me
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { Decorator } from './decorator';
-import { descriptorForProperty, isComputedDecorator } from './descriptor_map';
+import { descriptorForProperty, isClassicDecorator } from './descriptor_map';
 import { overrideChains } from './property_events';
 
 export type MandatorySetterFunction = ((this: object, value: any) => void) & {
@@ -149,7 +149,7 @@ export function defineProperty(
   }
 
   let value;
-  if (isComputedDecorator(desc)) {
+  if (isClassicDecorator(desc)) {
     let propertyDesc;
 
     if (DEBUG) {

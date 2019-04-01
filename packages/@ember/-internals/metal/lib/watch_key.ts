@@ -1,7 +1,7 @@
 import { Meta, meta as metaFor, peekMeta, UNDEFINED } from '@ember/-internals/meta';
 import { lookupDescriptor } from '@ember/-internals/utils';
 import { DEBUG } from '@glimmer/env';
-import { descriptorForProperty, isComputedDecorator } from './descriptor_map';
+import { descriptorForProperty, isClassicDecorator } from './descriptor_map';
 import {
   DEFAULT_GETTER_FUNCTION,
   INHERITING_GETTER_FUNCTION,
@@ -56,7 +56,7 @@ if (DEBUG) {
     let descriptor = lookupDescriptor(obj, keyName);
     let hasDescriptor = descriptor !== null;
     let possibleDesc = hasDescriptor && descriptor!.value;
-    if (isComputedDecorator(possibleDesc)) {
+    if (isClassicDecorator(possibleDesc)) {
       return;
     }
     let configurable = hasDescriptor ? descriptor!.configurable : true;

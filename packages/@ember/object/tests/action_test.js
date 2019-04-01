@@ -231,6 +231,50 @@ if (EMBER_NATIVE_DECORATOR_SUPPORT) {
           new TestObject();
         }, /The @action decorator must be applied to methods/);
       }
+
+      '@test action decorator throws an error if passed a function in native classes'() {
+        expectAssertion(() => {
+          class TestObject extends EmberObject {
+            @action(function() {}) foo = 'bar';
+          }
+
+          new TestObject();
+        }, /The @action decorator may only be passed a method when used in classic classes/);
+      }
+
+      '@test action decorator can be used as a classic decorator with strings'(assert) {
+        let FooComponent = Component.extend({
+          foo: action(function() {
+            assert.ok(true, 'called!');
+          }),
+        });
+
+        this.registerComponent('foo-bar', {
+          ComponentClass: FooComponent,
+          template: "<button {{action 'foo'}}>Click Me!</button>",
+        });
+
+        this.render('{{foo-bar}}');
+
+        this.$('button').click();
+      }
+
+      '@test action decorator can be used as a classic decorator directly'(assert) {
+        let FooComponent = Component.extend({
+          foo: action(function() {
+            assert.ok(true, 'called!');
+          }),
+        });
+
+        this.registerComponent('foo-bar', {
+          ComponentClass: FooComponent,
+          template: '<button onclick={{this.foo}}>Click Me!</button>',
+        });
+
+        this.render('{{foo-bar}}');
+
+        this.$('button').click();
+      }
     }
   );
 }
