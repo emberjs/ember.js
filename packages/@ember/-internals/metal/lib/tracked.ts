@@ -13,7 +13,7 @@ interface AutotrackingTransactionSourceData {
   error: Error;
 }
 
-let WARN_IN_AUTOTRACKING_TRANSACTION = false;
+let DEPRECATE_IN_AUTOTRACKING_TRANSACTION = false;
 let AUTOTRACKING_TRANSACTION: WeakMap<Tag, AutotrackingTransactionSourceData> | null = null;
 
 export let runInAutotrackingTransaction: undefined | ((fn: () => void) => void);
@@ -28,40 +28,51 @@ export let assertTagNotConsumed:
 let markTagAsConsumed: undefined | ((_tag: Tag, sourceError: Error) => void);
 
 if (DEBUG) {
+  /**
+   * Creates a global autotracking transaction. This will prevent any backflow
+   * in any `track` calls within the transaction, even if they are not
+   * externally consumed.
+   *
+   * `runInAutotrackingTransaction` can be called within itself, and it will add
+   * onto the existing transaction if one exists.
+   *
+   * TODO: Only throw an error if the `track` is consumed.
+   */
   runInAutotrackingTransaction = (fn: () => void) => {
-    if (AUTOTRACKING_TRANSACTION !== null) {
-      // already in a transaction, continue and let the original transaction finish
-      fn();
-      return;
-    }
+    let previousDeprecateState = DEPRECATE_IN_AUTOTRACKING_TRANSACTION;
+    let previousTransactionState = AUTOTRACKING_TRANSACTION;
 
-    AUTOTRACKING_TRANSACTION = new WeakMap();
+    DEPRECATE_IN_AUTOTRACKING_TRANSACTION = false;
+
+    if (previousTransactionState === null) {
+      // if there was no transaction start it. Otherwise, the transaction already exists.
+      AUTOTRACKING_TRANSACTION = new WeakMap();
+    }
 
     try {
       fn();
     } finally {
-      AUTOTRACKING_TRANSACTION = null;
+      DEPRECATE_IN_AUTOTRACKING_TRANSACTION = previousDeprecateState;
+      AUTOTRACKING_TRANSACTION = previousTransactionState;
     }
   };
 
+  /**
+   * Switches to deprecating within an autotracking transaction, if one exists.
+   * If `runInAutotrackingTransaction` is called within the callback of this
+   * method, it switches back to throwing an error, allowing zebra-striping of
+   * the types of errors that are thrown.
+   *
+   * Does not start an autotracking transaction.
+   */
   deprecateMutationsInAutotrackingTransaction = (fn: () => void) => {
-    assert(
-      'deprecations can only occur inside of an autotracking transaction',
-      AUTOTRACKING_TRANSACTION !== null
-    );
-
-    if (WARN_IN_AUTOTRACKING_TRANSACTION) {
-      // already in a transaction, continue and let the original transaction finish
-      fn();
-      return;
-    }
-
-    WARN_IN_AUTOTRACKING_TRANSACTION = true;
+    let previousDeprecateState = DEPRECATE_IN_AUTOTRACKING_TRANSACTION;
+    DEPRECATE_IN_AUTOTRACKING_TRANSACTION = true;
 
     try {
       fn();
     } finally {
-      WARN_IN_AUTOTRACKING_TRANSACTION = false;
+      DEPRECATE_IN_AUTOTRACKING_TRANSACTION = previousDeprecateState;
     }
   };
 
@@ -137,7 +148,7 @@ if (DEBUG) {
 
     if (!sourceData) return;
 
-    if (WARN_IN_AUTOTRACKING_TRANSACTION && !forceHardError) {
+    if (DEPRECATE_IN_AUTOTRACKING_TRANSACTION && !forceHardError) {
       deprecate(makeAutotrackingErrorMessage(sourceData, obj, keyName), false, {
         id: 'autotracking.mutation-after-consumption',
         until: '4.0.0',
@@ -354,7 +365,7 @@ function descriptorForField([_target, key, desc]: [
     get(): any {
       let propertyTag = tagForProperty(this, key) as UpdatableTag;
 
-      if (CURRENT_TRACKER) CURRENT_TRACKER.add(propertyTag);
+      consume(propertyTag);
 
       let value;
 
@@ -378,6 +389,9 @@ function descriptorForField([_target, key, desc]: [
 
     set(newValue: any): void {
       if (DEBUG) {
+        // No matter what, attempting to update a tracked property in an
+        // autotracking context after it has been read is invalid, even if we
+        // are otherwise warning, so always assert.
         assertTagNotConsumed!(tagForProperty(this, key), this, key, true);
       }
 

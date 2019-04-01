@@ -19,6 +19,7 @@ import {
   removeArrayObserver,
   arrayContentWillChange,
   arrayContentDidChange,
+  nativeDescDecorator as descriptor,
 } from '@ember/-internals/metal';
 import { assert } from '@ember/debug';
 import Enumerable from './enumerable';
@@ -564,8 +565,12 @@ const ArrayMixin = Mixin.create(Enumerable, {
     @property {Boolean} hasArrayObservers
     @public
   */
-  hasArrayObservers: nonEnumerableComputed(function() {
-    return hasListeners(this, '@array:change') || hasListeners(this, '@array:before');
+  hasArrayObservers: descriptor({
+    configurable: true,
+    enumerable: false,
+    get() {
+      hasListeners(this, '@array:change') || hasListeners(this, '@array:before');
+    },
   }),
 
   /**
@@ -695,7 +700,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     foods.forEach((food) => food.eaten = true);
 
     let output = '';
-    foods.forEach((item, index, array) => 
+    foods.forEach((item, index, array) =>
       output += `${index + 1}/${array.length} ${item.name}\n`;
     );
     console.log(output);
@@ -725,7 +730,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
 
   /**
     Alias for `mapBy`.
-    
+
     Returns the value of the named
     property on all items in the enumeration.
 

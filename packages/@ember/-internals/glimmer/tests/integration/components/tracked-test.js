@@ -1,9 +1,10 @@
-import { Object as EmberObject, A } from '@ember/-internals/runtime';
+import { Object as EmberObject, A, ArrayProxy, PromiseProxyMixin } from '@ember/-internals/runtime';
 import {
   EMBER_CUSTOM_COMPONENT_ARG_PROXY,
   EMBER_METAL_TRACKED_PROPERTIES,
 } from '@ember/canary-features';
 import { computed, tracked, nativeDescDecorator as descriptor } from '@ember/-internals/metal';
+import { Promise } from 'rsvp';
 import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 import GlimmerishComponent from '../../utils/glimmerish-component';
 import { Component } from '../../utils/helpers';
@@ -45,6 +46,31 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
 
         runTask(() => this.context.set('first', 'max'));
         this.assertText('max jackson | max jackson');
+      }
+
+      '@test creating an array proxy inside a tracking context does not trigger backtracking assertion'() {
+        let PromiseArray = ArrayProxy.extend(PromiseProxyMixin);
+
+        class LoaderComponent extends GlimmerishComponent {
+          get data() {
+            if (!this._data) {
+              this._data = PromiseArray.create({
+                promise: Promise.resolve([1, 2, 3]),
+              });
+            }
+
+            return this._data;
+          }
+        }
+
+        this.registerComponent('loader', {
+          ComponentClass: LoaderComponent,
+          template: '{{#each this.data as |item|}}{{item}}{{/each}}',
+        });
+
+        this.render('<Loader/>');
+
+        this.assertText('123');
       }
 
       '@test tracked properties that are uninitialized do not throw an error'() {
