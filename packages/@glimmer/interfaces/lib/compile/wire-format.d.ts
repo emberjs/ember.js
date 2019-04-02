@@ -23,7 +23,6 @@ export const enum SexpOpcodes {
   Component = 5,
   DynamicComponent = 6,
   OpenElement = 7,
-  OpenSplattedElement = 8,
   FlushElement = 9,
   CloseElement = 10,
   StaticAttr = 11,
@@ -62,7 +61,6 @@ export interface SexpOpcodeMap {
   [SexpOpcodes.Component]: Statements.Component;
   [SexpOpcodes.DynamicComponent]: Statements.DynamicComponent;
   [SexpOpcodes.OpenElement]: Statements.OpenElement;
-  [SexpOpcodes.OpenSplattedElement]: Statements.SplatElement;
   [SexpOpcodes.FlushElement]: Statements.FlushElement;
   [SexpOpcodes.CloseElement]: Statements.CloseElement;
   [SexpOpcodes.StaticAttr]: Statements.StaticAttr;
@@ -163,8 +161,7 @@ export namespace Statements {
     Hash,
     Blocks
   ];
-  export type OpenElement = [SexpOpcodes.OpenElement, str];
-  export type SplatElement = [SexpOpcodes.OpenSplattedElement, str];
+  export type OpenElement = [SexpOpcodes.OpenElement, str, boolean];
   export type FlushElement = [SexpOpcodes.FlushElement];
   export type CloseElement = [SexpOpcodes.CloseElement];
   export type StaticAttr = [SexpOpcodes.StaticAttr, str, str, Option<str>];
@@ -191,7 +188,6 @@ export namespace Statements {
     | Component
     | DynamicComponent
     | OpenElement
-    | SplatElement
     | FlushElement
     | CloseElement
     | StaticAttr
