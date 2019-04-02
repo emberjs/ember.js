@@ -3,7 +3,6 @@ import {
   EMBER_CUSTOM_COMPONENT_ARG_PROXY,
   EMBER_METAL_TRACKED_PROPERTIES,
 } from '@ember/canary-features';
-import { Object as EmberObject } from '@ember/-internals/runtime';
 import { tracked, nativeDescDecorator as descriptor } from '@ember/-internals/metal';
 import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 import GlimmerishComponent from '../../utils/glimmerish-component';
