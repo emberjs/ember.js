@@ -79,14 +79,18 @@ export default class TemplateCompiler {
 
   openElement([action]: [AST.ElementNode]) {
     let attributes = action.attributes;
-    let hasSplat = false;
+    let simple = true;
 
     for (let i = 0; i < attributes.length; i++) {
       let attr = attributes[i];
       if (attr.name === '...attributes') {
-        hasSplat = true;
+        simple = false;
         break;
       }
+    }
+
+    if (action.modifiers.length > 0) {
+      simple = false;
     }
 
     let actionIsComponent = false;
@@ -105,10 +109,8 @@ export default class TemplateCompiler {
     } else if (isComponent(action)) {
       this.opcode(['openComponent', action], action);
       actionIsComponent = true;
-    } else if (hasSplat) {
-      this.opcode(['openSplattedElement', action], action);
     } else {
-      this.opcode(['openElement', action], action);
+      this.opcode(['openElement', [action, simple]], action);
     }
 
     if (!isNamedBlock(action)) {
@@ -120,11 +122,11 @@ export default class TemplateCompiler {
           typeAttr = attrs[i];
           continue;
         }
-        this.attribute([attrs[i]], hasSplat || actionIsComponent);
+        this.attribute([attrs[i]], !simple || actionIsComponent);
       }
 
       if (typeAttr) {
-        this.attribute([typeAttr], hasSplat || actionIsComponent);
+        this.attribute([typeAttr], !simple || actionIsComponent);
       }
 
       for (let i = 0; i < action.modifiers.length; i++) {

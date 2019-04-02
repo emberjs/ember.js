@@ -303,6 +303,52 @@ class ModifierTests extends RenderTest {
   }
 
   @test
+  'same element insertion order'(assert: Assert) {
+    let insertionOrder: string[] = [];
+
+    class Foo extends AbstractInsertable {
+      didInsertElement() {
+        insertionOrder.push('foo');
+      }
+    }
+
+    class Bar extends AbstractInsertable {
+      didInsertElement() {
+        insertionOrder.push('bar');
+      }
+    }
+    this.registerModifier('bar', Bar);
+    this.registerModifier('foo', Foo);
+
+    this.render('<div {{foo}} {{bar}}></div>');
+    assert.deepEqual(insertionOrder, ['foo', 'bar']);
+  }
+
+  @test
+  'same element destruction order'(assert: Assert) {
+    let destructionOrder: string[] = [];
+
+    class Foo extends AbstractDestroyable {
+      willDestroyElement() {
+        destructionOrder.push('foo');
+      }
+    }
+
+    class Bar extends AbstractDestroyable {
+      willDestroyElement() {
+        destructionOrder.push('bar');
+      }
+    }
+    this.registerModifier('bar', Bar);
+    this.registerModifier('foo', Foo);
+
+    this.render('{{#if nuke}}<div {{foo}} {{bar}}></div>{{/if}}', { nuke: true });
+    assert.deepEqual(destructionOrder, []);
+    this.rerender({ nuke: false });
+    assert.deepEqual(destructionOrder, ['foo', 'bar']);
+  }
+
+  @test
   'parent -> child insertion order'(assert: Assert) {
     let insertionOrder: string[] = [];
 
@@ -321,7 +367,7 @@ class ModifierTests extends RenderTest {
     this.registerModifier('foo', Foo);
 
     this.render('<div {{foo}}><div {{bar}}></div></div>');
-    assert.deepEqual(insertionOrder, ['foo', 'bar']);
+    assert.deepEqual(insertionOrder, ['bar', 'foo']);
   }
 
   @test
@@ -345,7 +391,7 @@ class ModifierTests extends RenderTest {
     this.render('{{#if nuke}}<div {{foo}}><div {{bar}}></div></div>{{/if}}', { nuke: true });
     assert.deepEqual(destructionOrder, []);
     this.rerender({ nuke: false });
-    assert.deepEqual(destructionOrder, ['foo', 'bar']);
+    assert.deepEqual(destructionOrder, ['bar', 'foo']);
   }
 
   @test
@@ -374,7 +420,7 @@ class ModifierTests extends RenderTest {
     this.registerModifier('baz', Baz);
 
     this.render('<div {{foo}}><div {{bar}}></div><div {{baz}}></div></div>');
-    assert.deepEqual(insertionOrder, ['foo', 'bar', 'baz']);
+    assert.deepEqual(insertionOrder, ['bar', 'baz', 'foo']);
   }
 
   @test
@@ -407,7 +453,7 @@ class ModifierTests extends RenderTest {
     });
     assert.deepEqual(destructionOrder, []);
     this.rerender({ nuke: false });
-    assert.deepEqual(destructionOrder, ['foo', 'bar', 'baz']);
+    assert.deepEqual(destructionOrder, ['bar', 'baz', 'foo']);
   }
 
   @test

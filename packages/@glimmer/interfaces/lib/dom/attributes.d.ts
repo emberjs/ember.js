@@ -12,6 +12,7 @@ import { ElementOperations, Environment } from '../runtime';
 import { GlimmerTreeConstruction, GlimmerTreeChanges } from './changes';
 import { Stack } from '../stack';
 import { LinkedList, LinkedListNode } from '../list';
+import { ModifierManager } from '@glimmer/interfaces';
 
 export interface LiveBlock extends Bounds {
   openElement(element: SimpleElement): void;
@@ -45,7 +46,7 @@ export interface DOMStack {
   popRemoteElement(): void;
   popElement(): void;
   openElement(tag: string, _operations?: ElementOperations): SimpleElement;
-  flushElement(): void;
+  flushElement(modifiers: Option<[ModifierManager, unknown][]>): void;
   appendText(string: string): SimpleText;
   appendComment(string: string): SimpleComment;
 
@@ -61,7 +62,8 @@ export interface DOMStack {
     isTrusting: boolean,
     namespace: Option<string>
   ): AttributeOperation;
-  closeElement(): void;
+
+  closeElement(): Option<[ModifierManager, unknown][]>;
 }
 
 export interface TreeOperations {
