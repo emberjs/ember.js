@@ -1,5 +1,9 @@
-import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { Object as EmberObject, A } from '@ember/-internals/runtime';
+import {
+  EMBER_CUSTOM_COMPONENT_ARG_PROXY,
+  EMBER_METAL_TRACKED_PROPERTIES,
+} from '@ember/canary-features';
+import { Object as EmberObject } from '@ember/-internals/runtime';
 import { tracked, nativeDescDecorator as descriptor } from '@ember/-internals/metal';
 import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 import GlimmerishComponent from '../../utils/glimmerish-component';
@@ -373,4 +377,79 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
       }
     }
   );
+
+  if (EMBER_CUSTOM_COMPONENT_ARG_PROXY) {
+    moduleFor(
+      'Component Tracked Properties w/ Args Proxy',
+      class extends RenderingTestCase {
+        '@test downstream property changes do not invalidate upstream component getters/arguments'(
+          assert
+        ) {
+          let outerRenderCount = 0;
+          let innerRenderCount = 0;
+
+          class OuterComponent extends GlimmerishComponent {
+            get count() {
+              outerRenderCount++;
+              return this.args.count;
+            }
+          }
+
+          class InnerComponent extends GlimmerishComponent {
+            @tracked count = 0;
+
+            get combinedCounts() {
+              innerRenderCount++;
+              return this.args.count + this.count;
+            }
+
+            updateInnerCount() {
+              this.count++;
+            }
+          }
+
+          this.registerComponent('outer', {
+            ComponentClass: OuterComponent,
+            template: '<Inner @count={{this.count}}/>',
+          });
+
+          this.registerComponent('inner', {
+            ComponentClass: InnerComponent,
+            template: '<button {{action this.updateInnerCount}}>{{this.combinedCounts}}</button>',
+          });
+
+          this.render('<Outer @count={{this.count}}/>', {
+            count: 0,
+          });
+
+          this.assertText('0');
+
+          assert.equal(outerRenderCount, 1);
+          assert.equal(innerRenderCount, 1);
+
+          runTask(() => this.$('button').click());
+
+          this.assertText('1');
+
+          assert.equal(
+            outerRenderCount,
+            1,
+            'updating inner component does not cause outer component to rerender'
+          );
+          assert.equal(
+            innerRenderCount,
+            2,
+            'updating inner component causes inner component to rerender'
+          );
+
+          runTask(() => this.context.set('count', 1));
+
+          this.assertText('2');
+
+          assert.equal(outerRenderCount, 2, 'outer component updates based on context');
+          assert.equal(innerRenderCount, 3, 'inner component updates based on outer component');
+        }
+      }
+    );
+  }
 }
