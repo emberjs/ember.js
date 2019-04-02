@@ -79,13 +79,13 @@ jobs:
     - env: TEST_SUITE=old-jquery-and-extend-prototypes
 
     - name: Node.js Tests
-      node_js: "6"
+      node_js: "8"
       script:
         - yarn ember build -prod
         - yarn test:node
 
     - name: Blueprint Tests
-      node_js: "6"
+      node_js: "8"
       script:
         - yarn test:blueprints
 
