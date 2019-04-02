@@ -169,8 +169,8 @@ export class SymbolAllocator
   text(_op: string) {}
   comment(_op: string) {}
   openComponent(_op: AST.ElementNode) {}
-  openElement(_op: AST.ElementNode) {}
-  openSplattedElement(_op: AST.ElementNode) {}
+  openElement(_op: [AST.ElementNode, boolean]) {}
+  openElementWithOperations(_op: AST.ElementNode) {}
   staticArg(_op: string) {}
   dynamicArg(_op: string) {}
   staticAttr(_op: [string, Option<string>]) {}

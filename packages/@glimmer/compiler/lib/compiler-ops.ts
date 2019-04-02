@@ -13,10 +13,9 @@ export interface CompilerOps<Variable> {
   endBlock: null;
   text: string;
   comment: string;
-  openElement: AST.ElementNode;
+  openElement: [AST.ElementNode, boolean];
   openComponent: AST.ElementNode;
   openNamedBlock: AST.ElementNode;
-  openSplattedElement: AST.ElementNode;
   flushElement: AST.ElementNode;
   closeElement: AST.ElementNode;
   closeComponent: AST.ElementNode;

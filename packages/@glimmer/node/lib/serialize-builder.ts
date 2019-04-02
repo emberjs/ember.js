@@ -1,4 +1,4 @@
-import { Bounds, Environment, Option, ElementBuilder } from '@glimmer/interfaces';
+import { Bounds, Environment, Option, ElementBuilder, ModifierManager } from '@glimmer/interfaces';
 import { ConcreteBounds, NewElementBuilder } from '@glimmer/runtime';
 import { RemoteLiveBlock } from '@glimmer/runtime';
 import { SimpleElement, SimpleNode, SimpleText } from '@simple-dom/interface';
@@ -68,13 +68,13 @@ class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
     return super.__appendText(string);
   }
 
-  closeElement() {
+  closeElement(): Option<[ModifierManager, unknown][]> {
     if (NEEDS_EXTRA_CLOSE.has(this.element)) {
       NEEDS_EXTRA_CLOSE.delete(this.element);
       super.closeElement();
     }
 
-    super.closeElement();
+    return super.closeElement();
   }
 
   openElement(tag: string) {
@@ -86,7 +86,7 @@ class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
         // account for the insertion since it is injected here and not
         // really in the template.
         NEEDS_EXTRA_CLOSE.set(this.constructing!, true);
-        this.flushElement();
+        this.flushElement(null);
       }
     }
 

@@ -190,13 +190,13 @@ class TransactionImpl implements Transaction {
   }
 
   scheduleInstallModifier(modifier: unknown, manager: ModifierManager) {
-    this.scheduledInstallManagers.push(manager);
     this.scheduledInstallModifiers.push(modifier);
+    this.scheduledInstallManagers.push(manager);
   }
 
   scheduleUpdateModifier(modifier: unknown, manager: ModifierManager) {
-    this.scheduledUpdateModifierManagers.push(manager);
     this.scheduledUpdateModifiers.push(modifier);
+    this.scheduledUpdateModifierManagers.push(manager);
   }
 
   didDestroy(d: Drop) {
@@ -229,16 +229,16 @@ class TransactionImpl implements Transaction {
     let { scheduledInstallManagers, scheduledInstallModifiers } = this;
 
     for (let i = 0; i < scheduledInstallManagers.length; i++) {
-      let manager = scheduledInstallManagers[i];
       let modifier = scheduledInstallModifiers[i];
+      let manager = scheduledInstallManagers[i];
       manager.install(modifier);
     }
 
     let { scheduledUpdateModifierManagers, scheduledUpdateModifiers } = this;
 
     for (let i = 0; i < scheduledUpdateModifierManagers.length; i++) {
-      let manager = scheduledUpdateModifierManagers[i];
       let modifier = scheduledUpdateModifiers[i];
+      let manager = scheduledUpdateModifierManagers[i];
       manager.update(modifier);
     }
   }
