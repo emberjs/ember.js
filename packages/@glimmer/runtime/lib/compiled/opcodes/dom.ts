@@ -8,7 +8,7 @@ import {
   isConstTag,
 } from '@glimmer/reference';
 import { check, CheckString, CheckElement } from '@glimmer/debug';
-import { Op, Option } from '@glimmer/interfaces';
+import { Op, Option, ModifierManager } from '@glimmer/interfaces';
 import { $t0 } from '@glimmer/vm';
 import {
   ModifierDefinition,
@@ -69,17 +69,29 @@ APPEND_OPCODES.add(Op.PopRemoteElement, vm => {
 
 APPEND_OPCODES.add(Op.FlushElement, vm => {
   let operations = check(vm.fetchValue($t0), CheckOperations);
+  let modifiers: Option<[ModifierManager, unknown][]> = null;
 
   if (operations) {
-    operations.flush(vm);
+    modifiers = operations.flush(vm);
     vm.loadValue($t0, null);
   }
 
-  vm.elements().flushElement();
+  vm.elements().flushElement(modifiers);
 });
 
 APPEND_OPCODES.add(Op.CloseElement, vm => {
-  vm.elements().closeElement();
+  let modifiers = vm.elements().closeElement();
+
+  if (modifiers) {
+    modifiers.forEach(([manager, modifier]) => {
+      vm.env.scheduleInstallModifier(modifier, manager);
+      let d = manager.getDestructor(modifier);
+
+      if (d) {
+        vm.associateDestroyable(d);
+      }
+    });
+  }
 });
 
 APPEND_OPCODES.add(Op.Modifier, (vm, { op1: handle }) => {
@@ -89,19 +101,19 @@ APPEND_OPCODES.add(Op.Modifier, (vm, { op1: handle }) => {
   let { constructing, updateOperations } = vm.elements();
   let dynamicScope = vm.dynamicScope();
   let modifier = manager.create(
-    expect(constructing, 'ElementModifier could not find the element it applies to'),
+    expect(constructing, 'BUG: ElementModifier could not find the element it applies to'),
     state,
     args,
     dynamicScope,
     updateOperations
   );
 
-  vm.env.scheduleInstallModifier(modifier, manager);
-  let d = manager.getDestructor(modifier);
+  let operations = expect(
+    check(vm.fetchValue($t0), CheckOperations),
+    'BUG: ElementModifier could not find operations to append to'
+  );
 
-  if (d) {
-    vm.associateDestroyable(d);
-  }
+  operations.addModifier(manager, modifier);
 
   let tag = manager.getTag(modifier);
 

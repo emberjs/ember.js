@@ -24,6 +24,7 @@ write(
     '\n' +
     syscall.predicate
 );
+
 write(
   './packages/@glimmer/interfaces/lib/vm-opcodes.d.ts',
   machine.enumString + '\n\n' + syscall.enumString
@@ -62,6 +63,10 @@ ${contents}
   );
 }
 
+/*
+  Formats the string in accordance with our prettier rules to avoid
+  test failures.
+*/
 function format(file, contents) {
   let linter = new tslint.Linter({ fix: true });
   let config = tslint.Configuration.findConfiguration(
@@ -69,5 +74,9 @@ function format(file, contents) {
     __filename
   );
   linter.lint(file, contents, config.results);
-  linter.getResult();
+  let result = linter.getResult();
+
+  if (result.fixes.length === 0) {
+    fs.writeFileSync(file, contents, { encoding: 'utf8' });
+  }
 }

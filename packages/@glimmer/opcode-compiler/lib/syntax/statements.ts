@@ -60,12 +60,13 @@ STATEMENTS.add(SexpOpcodes.TrustingComponentAttr, ([, name, value, namespace]) =
   op(Op.ComponentAttr, name, true, namespace),
 ]);
 
-STATEMENTS.add(SexpOpcodes.OpenElement, ([, tag]) => op(Op.OpenElement, tag));
-
-STATEMENTS.add(SexpOpcodes.OpenSplattedElement, ([, tag]) => [
-  op(Op.PutComponentOperations),
-  op(Op.OpenElement, tag),
-]);
+STATEMENTS.add(SexpOpcodes.OpenElement, ([, tag, simple]) => {
+  if (simple) {
+    return op(Op.OpenElement, tag);
+  } else {
+    return [op(Op.PutComponentOperations), op(Op.OpenElement, tag)];
+  }
+});
 
 STATEMENTS.add(SexpOpcodes.DynamicComponent, ([, definition, attrs, args, blocks]) => {
   return op('DynamicComponent', {

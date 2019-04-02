@@ -283,7 +283,7 @@ export default class JavaScriptCompiler
     this.blocks.push(block);
   }
 
-  openSplattedElement(element: AST.ElementNode) {
+  openElement([element, simple]: [AST.ElementNode, boolean]) {
     let tag = element.tag;
 
     if (element.blockParams.length > 0) {
@@ -291,19 +291,7 @@ export default class JavaScriptCompiler
         `Compile Error: <${element.tag}> is not a component and doesn't support block parameters`
       );
     } else {
-      this.push([SexpOpcodes.OpenSplattedElement, tag]);
-    }
-  }
-
-  openElement(element: AST.ElementNode) {
-    let tag = element.tag;
-
-    if (element.blockParams.length > 0) {
-      throw new Error(
-        `Compile Error: <${element.tag}> is not a component and doesn't support block parameters`
-      );
-    } else {
-      this.push([SexpOpcodes.OpenElement, tag]);
+      this.push([SexpOpcodes.OpenElement, tag, simple]);
     }
   }
 

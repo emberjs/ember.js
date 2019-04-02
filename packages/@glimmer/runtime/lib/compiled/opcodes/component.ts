@@ -35,6 +35,7 @@ import {
   WithCreateInstance,
   JitRuntimeResolver,
   RuntimeResolver,
+  ModifierManager,
 } from '@glimmer/interfaces';
 import {
   CONSTANT_TAG,
@@ -411,6 +412,7 @@ interface DeferredAttribute {
 export class ComponentElementOperations implements ElementOperations {
   private attributes = dict<DeferredAttribute>();
   private classes: VersionedReference<unknown>[] = [];
+  private modifiers: [ModifierManager<unknown>, unknown][] = [];
 
   setAttribute(
     name: string,
@@ -427,7 +429,11 @@ export class ComponentElementOperations implements ElementOperations {
     this.attributes[name] = deferred;
   }
 
-  flush(vm: InternalVM<JitOrAotBlock>) {
+  addModifier<S>(manager: ModifierManager<S>, state: S): void {
+    this.modifiers.push([manager, state]);
+  }
+
+  flush(vm: InternalVM<JitOrAotBlock>): [ModifierManager<unknown>, unknown][] {
     for (let name in this.attributes) {
       let attr = this.attributes[name];
       let { value: reference, namespace, trusting } = attr;
@@ -461,6 +467,8 @@ export class ComponentElementOperations implements ElementOperations {
         vm.updateWith(new UpdateDynamicAttributeOpcode(reference, attribute));
       }
     }
+
+    return this.modifiers;
   }
 }
 

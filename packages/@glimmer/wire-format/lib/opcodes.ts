@@ -8,7 +8,7 @@ export enum Opcodes {
   Component,
   DynamicComponent,
   OpenElement,
-  OpenSplattedElement,
+  OpenElementWithOperations,
   FlushElement,
   CloseElement,
   StaticAttr,
