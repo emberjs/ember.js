@@ -49,6 +49,12 @@ moduleFor(
         );
       }
     }
+
+    '@test Ember._setComputedDecorator is deprecated'() {
+      expectDeprecation(() => {
+        Ember._setComputedDecorator;
+      }, 'Please migrate from Ember._setComputedDecorator to Ember._setClassicDecorator');
+    }
   }
 );
 
@@ -113,7 +119,7 @@ let allExports = [
   ['_tracked', '@ember/-internals/metal', 'tracked'],
   ['computed.alias', '@ember/-internals/metal', 'alias'],
   ['ComputedProperty', '@ember/-internals/metal'],
-  ['_setComputedDecorator', '@ember/-internals/metal', 'setClassicDecorator'],
+  ['_setClassicDecorator', '@ember/-internals/metal', 'setClassicDecorator'],
   ['cacheFor', '@ember/-internals/metal', 'getCachedValueFor'],
   ['merge', '@ember/polyfills'],
   ['instrument', '@ember/instrumentation'],

@@ -275,7 +275,21 @@ Ember._tracked = metal.tracked;
 computed.alias = metal.alias;
 Ember.cacheFor = metal.getCachedValueFor;
 Ember.ComputedProperty = metal.ComputedProperty;
-Ember._setComputedDecorator = metal.setClassicDecorator;
+Object.defineProperty(Ember, '_setComputedDecorator', {
+  get() {
+    deprecate(
+      'Please migrate from Ember._setComputedDecorator to Ember._setClassicDecorator',
+      false,
+      {
+        id: 'ember._setComputedDecorator',
+        until: '3.13.0',
+      }
+    );
+
+    return metal.setClassicDecorator;
+  },
+});
+Ember._setClassicDecorator = metal.setClassicDecorator;
 Ember.meta = meta;
 Ember.get = metal.get;
 Ember.getWithDefault = metal.getWithDefault;
