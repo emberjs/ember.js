@@ -2,12 +2,7 @@ import { computed, get, notifyPropertyChange, set } from '@ember/-internals/meta
 import { getOwner, Owner } from '@ember/-internals/owner';
 import { A as emberA, Evented, Object as EmberObject, typeOf } from '@ember/-internals/runtime';
 import { assert, deprecate, info } from '@ember/debug';
-import {
-  APP_CTRL_ROUTER_PROPS,
-  HANDLER_INFOS,
-  ROUTER_EVENTS,
-  TRANSITION_STATE,
-} from '@ember/deprecated-features';
+import { APP_CTRL_ROUTER_PROPS, ROUTER_EVENTS } from '@ember/deprecated-features';
 import EmberError from '@ember/error';
 import { assign } from '@ember/polyfills';
 import { cancel, once, run, scheduleOnce } from '@ember/runloop';
@@ -29,9 +24,7 @@ import RouterState from './router_state';
 import { MatchCallback } from 'route-recognizer';
 import Router, {
   InternalRouteInfo,
-  InternalTransition,
   logAbort,
-  PARAMS_SYMBOL,
   QUERY_PARAMS_SYMBOL,
   STATE_SYMBOL,
   Transition,
@@ -78,141 +71,6 @@ function defaultWillTransition(
       );
     }
   }
-}
-
-if (TRANSITION_STATE) {
-  Object.defineProperty(InternalTransition.prototype, 'state', {
-    get() {
-      deprecate(
-        'You attempted to read "transition.state" which is a private API. You should read the `RouteInfo` object on "transition.to" or "transition.from" which has the public state on it.',
-        false,
-        {
-          id: 'transition-state',
-          until: '3.9.0',
-          url: 'https://emberjs.com/deprecations/v3.x#toc_transition-state',
-        }
-      );
-      return this[STATE_SYMBOL];
-    },
-  });
-
-  Object.defineProperty(InternalTransition.prototype, 'queryParams', {
-    get() {
-      deprecate(
-        'You attempted to read "transition.queryParams" which is a private API. You should read the `RouteInfo` object on "transition.to" or "transition.from" which has the queryParams on it.',
-        false,
-        {
-          id: 'transition-state',
-          until: '3.9.0',
-          url: 'https://emberjs.com/deprecations/v3.x#toc_transition-state',
-        }
-      );
-      return this[QUERY_PARAMS_SYMBOL];
-    },
-  });
-
-  Object.defineProperty(InternalTransition.prototype, 'params', {
-    get() {
-      deprecate(
-        'You attempted to read "transition.params" which is a private API. You should read the `RouteInfo` object on "transition.to" or "transition.from" which has the params on it.',
-        false,
-        {
-          id: 'transition-state',
-          until: '3.9.0',
-          url: 'https://emberjs.com/deprecations/v3.x#toc_transition-state',
-        }
-      );
-      return this[PARAMS_SYMBOL];
-    },
-  });
-}
-
-if (HANDLER_INFOS) {
-  Object.defineProperty(InternalRouteInfo.prototype, 'handler', {
-    get() {
-      deprecate(
-        'You attempted to read "handlerInfo.handler" which is a private API that will be removed.',
-        false,
-        {
-          id: 'remove-handler-infos',
-          until: '3.9.0',
-          url: 'https://emberjs.com/deprecations/v3.x#toc_remove-handler-infos',
-        }
-      );
-      return this.route;
-    },
-
-    set(value: string) {
-      deprecate(
-        'You attempted to set "handlerInfo.handler" which is a private API that will be removed.',
-        false,
-        {
-          id: 'remove-handler-infos',
-          until: '3.9.0',
-          url: 'https://emberjs.com/deprecations/v3.x#toc_remove-handler-infos',
-        }
-      );
-      this.route = value;
-    },
-  });
-
-  Object.defineProperty(InternalTransition.prototype, 'handlerInfos', {
-    get() {
-      deprecate(
-        'You attempted to use "transition.handlerInfos" which is a private API that will be removed.',
-        false,
-        {
-          id: 'remove-handler-infos',
-          until: '3.9.0',
-          url: 'https://emberjs.com/deprecations/v3.x#toc_remove-handler-infos',
-        }
-      );
-      return this.routeInfos;
-    },
-  });
-
-  Object.defineProperty(TransitionState.prototype, 'handlerInfos', {
-    get() {
-      deprecate(
-        'You attempted to use "transition.state.handlerInfos" which is a private API that will be removed.',
-        false,
-        {
-          id: 'remove-handler-infos',
-          until: '3.9.0',
-          url: 'https://emberjs.com/deprecations/v3.x#toc_remove-handler-infos',
-        }
-      );
-      return this.routeInfos;
-    },
-  });
-
-  Object.defineProperty(Router.prototype, 'currentHandlerInfos', {
-    get() {
-      deprecate(
-        'You attempted to use "_routerMicrolib.currentHandlerInfos" which is a private API that will be removed.',
-        false,
-        {
-          id: 'remove-handler-infos',
-          until: '3.9.0',
-          url: 'https://emberjs.com/deprecations/v3.x#toc_remove-handler-infos',
-        }
-      );
-      return this.currentRouteInfos;
-    },
-  });
-
-  Router.prototype['getHandler'] = function(name: string) {
-    deprecate(
-      'You attempted to use "_routerMicrolib.getHandler" which is a private API that will be removed.',
-      false,
-      {
-        id: 'remove-handler-infos',
-        until: '3.9.0',
-        url: 'https://emberjs.com/deprecations/v3.x#toc_remove-handler-infos',
-      }
-    );
-    return this.getRoute(name);
-  };
 }
 
 interface RenderOutletState {
