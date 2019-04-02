@@ -3,7 +3,13 @@
 */
 import { DEBUG } from '@glimmer/env';
 import { assert } from '@ember/debug';
-import { get, computed, addObserver, removeObserver } from '@ember/-internals/metal';
+import {
+  get,
+  computed,
+  addObserver,
+  removeObserver,
+  notifyPropertyChange,
+} from '@ember/-internals/metal';
 import { compare, isArray, A as emberA, uniqBy as uniqByArray } from '@ember/-internals/runtime';
 
 function reduceMacro(dependentKey, callback, initialValue, name) {
@@ -1427,7 +1433,7 @@ function propertySort(itemsKey, sortPropertiesKey) {
 
     if (!sortPropertyDidChangeMap.has(this)) {
       sortPropertyDidChangeMap.set(this, function() {
-        this.notifyPropertyChange(key);
+        notifyPropertyChange(this, key);
       });
     }
 
