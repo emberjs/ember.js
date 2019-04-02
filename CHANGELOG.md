@@ -1,24 +1,6 @@
 # Ember Changelog
 
-### v3.9.0-beta.5 (March 25, 2019)
-
-- [#17733](https://github.com/emberjs/ember.js/pull/17733) [BUGFIX] Assert on use of reserved component names (`input` and `textarea`)
-
-### v3.9.0-beta.4 (March 11, 2019)
-
-- [#17710](https://github.com/emberjs/ember.js/pull/17710) [BUGFIX] Allow accessors in mixins
-
-### v3.9.0-beta.3 (March 4, 2019)
-
-- [#17684](https://github.com/emberjs/ember.js/pull/17684) [BUGFIX] Enable maximum rerendering limit to be customized.
-- [#17691](https://github.com/emberjs/ember.js/pull/17691) [BUGFIX] Ensure tagForProperty works on class constructors
-
-### v3.9.0-beta.2 (February 26, 2019)
-
-- [#17618](https://github.com/emberjs/ember.js/pull/17618) [BUGFIX] Migrate autorun microtask queue to Promise.then
-- [#17649](https://github.com/emberjs/ember.js/pull/17649) [BUGFIX] Revert decorator refactors
-
-### v3.9.0-beta.1 (February 18, 2019)
+### v3.9.0 (April 01, 2019)
 
 - [#17470](https://github.com/emberjs/ember.js/pull/17470) [DEPRECATION] Implements the Computed Property Modifier deprecation RFCs
   * Deprecates `.property()` (see [emberjs/rfcs#0375](https://github.com/emberjs/rfcs/blob/master/text/0375-deprecate-computed-property-modifier.md)
@@ -27,6 +9,13 @@
 - [#17488](https://github.com/emberjs/ember.js/pull/17488) [DEPRECATION] Deprecate this.$() in curly components (see [emberjs/rfcs#0386](https://github.com/emberjs/rfcs/blob/master/text/0386-remove-jquery.md))
 - [#17489](https://github.com/emberjs/ember.js/pull/17489) [DEPRECATION] Deprecate Ember.$() (see [emberjs/rfcs#0386](https://github.com/emberjs/rfcs/blob/master/text/0386-remove-jquery.md))
 - [#17540](https://github.com/emberjs/ember.js/pull/17540) [DEPRECATION] Deprecate aliasMethod
+- [#17823](https://github.com/emberjs/ember.js/pull/17823) Update router_js to 6.2.4
+- [#17733](https://github.com/emberjs/ember.js/pull/17733) [BUGFIX] Assert on use of reserved component names (`input` and `textarea`)
+- [#17710](https://github.com/emberjs/ember.js/pull/17710) [BUGFIX] Allow accessors in mixins
+- [#17684](https://github.com/emberjs/ember.js/pull/17684) [BUGFIX] Enable maximum rerendering limit to be customized.
+- [#17691](https://github.com/emberjs/ember.js/pull/17691) [BUGFIX] Ensure tagForProperty works on class constructors
+- [#17618](https://github.com/emberjs/ember.js/pull/17618) [BUGFIX] Migrate autorun microtask queue to Promise.then
+- [#17649](https://github.com/emberjs/ember.js/pull/17649) [BUGFIX] Revert decorator refactors
 - [#17487](https://github.com/emberjs/ember.js/pull/17487) [BUGFIX] Fix scenario where aliased properties did not update in production mode
 
 ### v3.8.0 (February 18, 2019)
