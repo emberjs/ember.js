@@ -717,4 +717,44 @@ export class BasicComponents extends RenderTest {
     this.render('<Foo data-from-top />');
     this.assertHTML('<div data-from-qux data-from-bar data-from-foo data-from-top></div>');
   }
+
+  @test({ kind: 'glimmer' })
+  'angle bracket invocation can allow invocation side to override attributes with ...attributes'() {
+    this.registerComponent('Glimmer', 'Qux', '<div id="qux" ...attributes />');
+    this.registerComponent('Glimmer', 'Bar', '<Qux id="bar" ...attributes />');
+    this.registerComponent('Glimmer', 'Foo', '<Bar id="foo" ...attributes />');
+
+    this.render('<Foo id="top" />');
+    this.assertHTML('<div id="top"></div>');
+  }
+
+  @test({ kind: 'glimmer' })
+  'angle bracket invocation can override invocation side attributes with ...attributes'() {
+    this.registerComponent('Glimmer', 'Qux', '<div ...attributes id="qux" />');
+    this.registerComponent('Glimmer', 'Bar', '<Qux ...attributes id="bar" />');
+    this.registerComponent('Glimmer', 'Foo', '<Bar ...attributes id="foo" />');
+
+    this.render('<Foo id="top" />');
+    this.assertHTML('<div id="qux"></div>');
+  }
+
+  @test({ kind: 'glimmer' })
+  'angle bracket invocation can forward classes before ...attributes to a nested component'() {
+    this.registerComponent('Glimmer', 'Qux', '<div class="qux" ...attributes />');
+    this.registerComponent('Glimmer', 'Bar', '<Qux class="bar" ...attributes />');
+    this.registerComponent('Glimmer', 'Foo', '<Bar class="foo" ...attributes />');
+
+    this.render('<Foo class="top" />');
+    this.assertHTML('<div class="qux bar foo top"></div>');
+  }
+
+  @test({ kind: 'glimmer' })
+  'angle bracket invocation can forward classes after ...attributes to a nested component'() {
+    this.registerComponent('Glimmer', 'Qux', '<div ...attributes class="qux" />');
+    this.registerComponent('Glimmer', 'Bar', '<Qux ...attributes class="bar" />');
+    this.registerComponent('Glimmer', 'Foo', '<Bar ...attributes class="foo" />');
+
+    this.render('<Foo class="top" />');
+    this.assertHTML('<div class="top foo bar qux"></div>');
+  }
 }
