@@ -31,7 +31,10 @@ import {
   intersect,
   collect,
 } from '@ember/object/computed';
-import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
+import {
+  EMBER_METAL_TRACKED_PROPERTIES,
+  EMBER_NATIVE_DECORATOR_SUPPORT,
+} from '@ember/canary-features';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 let obj;
@@ -989,554 +992,558 @@ moduleFor(
   }
 );
 
+class SortWithSortPropertiesTestCase extends AbstractTestCase {
+  beforeEach() {
+    this.obj = this.buildObject();
+  }
+
+  afterEach() {
+    if (this.obj) {
+      this.cleanupObject();
+    }
+  }
+
+  ['@test sort is readOnly'](assert) {
+    assert.throws(() => {
+      set(this.obj, 'sortedItems', 1);
+    }, /Cannot set read-only property "sortedItems" on object:/);
+  }
+
+  ['@test arrays are initially sorted'](assert) {
+    assert.deepEqual(
+      this.obj.sortedItems.mapBy('fname'),
+      ['Cersei', 'Jaime', 'Bran', 'Robb'],
+      'array is initially sorted'
+    );
+  }
+
+  ['@test default sort order is correct'](assert) {
+    assert.deepEqual(
+      this.obj.sortedItems.mapBy('fname'),
+      ['Cersei', 'Jaime', 'Bran', 'Robb'],
+      'array is initially sorted'
+    );
+  }
+
+  ['@test changing the dependent array updates the sorted array'](assert) {
+    assert.deepEqual(
+      this.obj.sortedItems.mapBy('fname'),
+      ['Cersei', 'Jaime', 'Bran', 'Robb'],
+      'precond - array is initially sorted'
+    );
+
+    set(this.obj, 'items', [
+      { fname: 'Roose', lname: 'Bolton' },
+      { fname: 'Theon', lname: 'Greyjoy' },
+      { fname: 'Ramsey', lname: 'Bolton' },
+      { fname: 'Stannis', lname: 'Baratheon' },
+    ]);
+
+    assert.deepEqual(
+      this.obj.sortedItems.mapBy('fname'),
+      ['Stannis', 'Ramsey', 'Roose', 'Theon'],
+      'changing dependent array updates sorted array'
+    );
+  }
+
+  ['@test adding to the dependent array updates the sorted array'](assert) {
+    let items = this.obj.items;
+
+    assert.deepEqual(
+      this.obj.sortedItems.mapBy('fname'),
+      ['Cersei', 'Jaime', 'Bran', 'Robb'],
+      'precond - array is initially sorted'
+    );
+
+    items.pushObject({
+      fname: 'Tyrion',
+      lname: 'Lannister',
+    });
+
+    assert.deepEqual(
+      this.obj.sortedItems.mapBy('fname'),
+      ['Cersei', 'Jaime', 'Tyrion', 'Bran', 'Robb'],
+      'Adding to the dependent array updates the sorted array'
+    );
+  }
+
+  ['@test removing from the dependent array updates the sorted array'](assert) {
+    assert.deepEqual(
+      this.obj.sortedItems.mapBy('fname'),
+      ['Cersei', 'Jaime', 'Bran', 'Robb'],
+      'precond - array is initially sorted'
+    );
+
+    this.obj.items.popObject();
+
+    assert.deepEqual(
+      this.obj.sortedItems.mapBy('fname'),
+      ['Cersei', 'Jaime', 'Robb'],
+      'Removing from the dependent array updates the sorted array'
+    );
+  }
+
+  ['@test distinct items may be sort-equal, although their relative order will not be guaranteed'](
+    assert
+  ) {
+    // We recreate jaime and "Cersei" here only for test stability: we want
+    // their guid-ordering to be deterministic
+    let jaimeInDisguise = {
+      fname: 'Cersei',
+      lname: 'Lannister',
+      age: 34,
+    };
+
+    let jaime = {
+      fname: 'Jaime',
+      lname: 'Lannister',
+      age: 34,
+    };
+
+    let items = this.obj.items;
+
+    items.replace(0, 1, [jaime]);
+    items.replace(1, 1, [jaimeInDisguise]);
+
+    assert.deepEqual(
+      this.obj.sortedItems.mapBy('fname'),
+      ['Cersei', 'Jaime', 'Bran', 'Robb'],
+      'precond - array is initially sorted'
+    );
+
+    set(jaimeInDisguise, 'fname', 'Jaime');
+
+    assert.deepEqual(
+      this.obj.sortedItems.mapBy('fname'),
+      ['Jaime', 'Jaime', 'Bran', 'Robb'],
+      'sorted array is updated'
+    );
+
+    set(jaimeInDisguise, 'fname', 'Cersei');
+
+    assert.deepEqual(
+      this.obj.sortedItems.mapBy('fname'),
+      ['Cersei', 'Jaime', 'Bran', 'Robb'],
+      'sorted array is updated'
+    );
+  }
+
+  ['@test guid sort-order fallback with a search proxy is not confused by non-search ObjectProxys'](
+    assert
+  ) {
+    let tyrion = {
+      fname: 'Tyrion',
+      lname: 'Lannister',
+    };
+
+    let tyrionInDisguise = ObjectProxy.create({
+      fname: 'Yollo',
+      lname: '',
+      content: tyrion,
+    });
+
+    let items = this.obj.items;
+
+    items.pushObject(tyrion);
+
+    assert.deepEqual(this.obj.sortedItems.mapBy('fname'), [
+      'Cersei',
+      'Jaime',
+      'Tyrion',
+      'Bran',
+      'Robb',
+    ]);
+
+    items.pushObject(tyrionInDisguise);
+
+    assert.deepEqual(this.obj.sortedItems.mapBy('fname'), [
+      'Yollo',
+      'Cersei',
+      'Jaime',
+      'Tyrion',
+      'Bran',
+      'Robb',
+    ]);
+  }
+
+  ['@test updating sort properties detaches observers for old sort properties'](assert) {
+    let objectToRemove = this.obj.items[3];
+
+    assert.deepEqual(
+      this.obj.sortedItems.mapBy('fname'),
+      ['Cersei', 'Jaime', 'Bran', 'Robb'],
+      'precond - array is initially sorted'
+    );
+
+    set(this.obj, 'itemSorting', emberA(['fname:desc']));
+
+    assert.deepEqual(
+      this.obj.sortedItems.mapBy('fname'),
+      ['Robb', 'Jaime', 'Cersei', 'Bran'],
+      'after updating sort properties array is updated'
+    );
+
+    this.obj.items.removeObject(objectToRemove);
+
+    assert.deepEqual(
+      this.obj.sortedItems.mapBy('fname'),
+      ['Robb', 'Jaime', 'Cersei'],
+      'after removing item array is updated'
+    );
+
+    set(objectToRemove, 'lname', 'Updated-Stark');
+
+    assert.deepEqual(
+      this.obj.sortedItems.mapBy('fname'),
+      ['Robb', 'Jaime', 'Cersei'],
+      'after changing removed item array is not updated'
+    );
+  }
+
+  ['@test sort works if array property is null (non array value) on first evaluation of computed prop'](
+    assert
+  ) {
+    set(this.obj, 'items', null);
+    assert.deepEqual(this.obj.sortedItems, []);
+    set(this.obj, 'items', emberA([{ fname: 'Cersei', lname: 'Lanister' }]));
+    assert.deepEqual(this.obj.sortedItems, [{ fname: 'Cersei', lname: 'Lanister' }]);
+  }
+
+  ['@test updating sort properties updates the sorted array'](assert) {
+    assert.deepEqual(
+      this.obj.sortedItems.mapBy('fname'),
+      ['Cersei', 'Jaime', 'Bran', 'Robb'],
+      'precond - array is initially sorted'
+    );
+
+    set(this.obj, 'itemSorting', emberA(['fname:desc']));
+
+    assert.deepEqual(
+      this.obj.sortedItems.mapBy('fname'),
+      ['Robb', 'Jaime', 'Cersei', 'Bran'],
+      'after updating sort properties array is updated'
+    );
+  }
+
+  ['@test updating sort properties invalidates the sorted array'](assert) {
+    let sortProps = this.obj.itemSorting;
+
+    assert.deepEqual(
+      this.obj.sortedItems.mapBy('fname'),
+      ['Cersei', 'Jaime', 'Bran', 'Robb'],
+      'precond - array is initially sorted'
+    );
+
+    sortProps.clear();
+    sortProps.pushObject('fname');
+
+    assert.deepEqual(
+      this.obj.sortedItems.mapBy('fname'),
+      ['Bran', 'Cersei', 'Jaime', 'Robb'],
+      'after updating sort properties array is updated'
+    );
+  }
+
+  ['@test updating new sort properties invalidates the sorted array'](assert) {
+    assert.deepEqual(
+      this.obj.sortedItems.mapBy('fname'),
+      ['Cersei', 'Jaime', 'Bran', 'Robb'],
+      'precond - array is initially sorted'
+    );
+
+    set(this.obj, 'itemSorting', emberA(['age:desc', 'fname:asc']));
+
+    assert.deepEqual(
+      this.obj.sortedItems.mapBy('fname'),
+      ['Cersei', 'Jaime', 'Robb', 'Bran'],
+      'precond - array is correct after item sorting is changed'
+    );
+
+    set(this.obj.items[1], 'age', 29);
+
+    assert.deepEqual(
+      this.obj.sortedItems.mapBy('fname'),
+      ['Jaime', 'Cersei', 'Robb', 'Bran'],
+      'after updating sort properties array is updated'
+    );
+  }
+
+  ['@test sort direction defaults to ascending'](assert) {
+    assert.deepEqual(this.obj.sortedItems.mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb']);
+  }
+
+  ['@test sort direction defaults to ascending (with sort property change)'](assert) {
+    assert.deepEqual(
+      this.obj.sortedItems.mapBy('fname'),
+      ['Cersei', 'Jaime', 'Bran', 'Robb'],
+      'precond - array is initially sorted'
+    );
+
+    set(this.obj, 'itemSorting', emberA(['fname']));
+
+    assert.deepEqual(
+      this.obj.sortedItems.mapBy('fname'),
+      ['Bran', 'Cersei', 'Jaime', 'Robb'],
+      'sort direction defaults to ascending'
+    );
+  }
+
+  ["@test updating an item's sort properties updates the sorted array"](assert) {
+    let tyrionInDisguise = this.obj.items[1];
+
+    assert.deepEqual(
+      this.obj.sortedItems.mapBy('fname'),
+      ['Cersei', 'Jaime', 'Bran', 'Robb'],
+      'precond - array is initially sorted'
+    );
+
+    set(tyrionInDisguise, 'fname', 'Tyrion');
+
+    assert.deepEqual(
+      this.obj.sortedItems.mapBy('fname'),
+      ['Jaime', 'Tyrion', 'Bran', 'Robb'],
+      "updating an item's sort properties updates the sorted array"
+    );
+  }
+
+  ["@test updating several of an item's sort properties updated the sorted array"](assert) {
+    let sansaInDisguise = this.obj.items[1];
+
+    assert.deepEqual(
+      this.obj.sortedItems.mapBy('fname'),
+      ['Cersei', 'Jaime', 'Bran', 'Robb'],
+      'precond - array is initially sorted'
+    );
+
+    setProperties(sansaInDisguise, {
+      fname: 'Sansa',
+      lname: 'Stark',
+    });
+
+    assert.deepEqual(
+      this.obj.sortedItems.mapBy('fname'),
+      ['Jaime', 'Bran', 'Robb', 'Sansa'],
+      "updating an item's sort properties updates the sorted array"
+    );
+  }
+
+  ["@test updating an item's sort properties does not error when binary search does a self compare (#3273)"](
+    assert
+  ) {
+    let jaime = {
+      name: 'Jaime',
+      status: 1,
+    };
+
+    let cersei = {
+      name: 'Cersei',
+      status: 2,
+    };
+
+    this.cleanupObject();
+    this.obj = this.buildObject([jaime, cersei], ['status']);
+
+    assert.deepEqual(this.obj.sortedItems, [jaime, cersei], 'precond - array is initially sorted');
+
+    set(cersei, 'status', 3);
+
+    assert.deepEqual(this.obj.sortedItems, [jaime, cersei], 'array is sorted correctly');
+
+    set(cersei, 'status', 2);
+
+    assert.deepEqual(this.obj.sortedItems, [jaime, cersei], 'array is sorted correctly');
+  }
+
+  ['@test array should not be sorted if sort properties array is empty'](assert) {
+    this.cleanupObject();
+    // This bug only manifests when array.sort(() => 0) is not equal to array.
+    // In order for this to happen, the browser must use an unstable sort and the
+    // array must be sufficient large. On Chrome, 12 items is currently sufficient.
+    this.obj = this.buildObject(emberA([6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5]), []);
+
+    assert.deepEqual(
+      this.obj.sortedItems,
+      [6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5],
+      'array is not changed'
+    );
+  }
+
+  ['@test array should update if items to be sorted is replaced when sort properties array is empty'](
+    assert
+  ) {
+    this.cleanupObject();
+    this.obj = this.buildObject(emberA([6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5]), emberA([]));
+
+    assert.deepEqual(
+      this.obj.sortedItems,
+      [6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5],
+      'array is not changed'
+    );
+
+    set(this.obj, 'items', emberA([5, 6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4]));
+
+    assert.deepEqual(
+      this.obj.sortedItems,
+      [5, 6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4],
+      'array was updated'
+    );
+  }
+
+  ['@test array should update if items to be sorted is mutated when sort properties array is empty'](
+    assert
+  ) {
+    this.cleanupObject();
+    this.obj = this.buildObject(emberA([6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5]), emberA([]));
+
+    assert.deepEqual(
+      this.obj.sortedItems,
+      [6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5],
+      'array is not changed'
+    );
+
+    this.obj.items.pushObject(12);
+
+    assert.deepEqual(
+      this.obj.sortedItems,
+      [6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5, 12],
+      'array was updated'
+    );
+  }
+
+  ['@test array observers do not leak'](assert) {
+    let daria = { name: 'Daria' };
+    let jane = { name: 'Jane' };
+
+    let sisters = [jane, daria];
+    let sortProps = emberA(['name']);
+
+    this.cleanupObject();
+    this.obj = this.buildObject(sisters, sortProps);
+
+    this.obj.sortedItems;
+    this.cleanupObject();
+
+    try {
+      sortProps.pushObject({
+        name: 'Anna',
+      });
+      assert.ok(true);
+    } catch (e) {
+      assert.ok(false, e);
+    }
+  }
+
+  ['@test property paths in sort properties update the sorted array'](assert) {
+    let jaime = {
+      relatedObj: { status: 1, firstName: 'Jaime', lastName: 'Lannister' },
+    };
+
+    let cersei = {
+      relatedObj: { status: 2, firstName: 'Cersei', lastName: 'Lannister' },
+    };
+
+    let sansa = EmberObject.create({
+      relatedObj: { status: 3, firstName: 'Sansa', lastName: 'Stark' },
+    });
+
+    this.cleanupObject();
+    this.obj = this.buildObject([jaime, cersei, sansa], ['relatedObj.status']);
+
+    assert.deepEqual(
+      this.obj.sortedItems,
+      [jaime, cersei, sansa],
+      'precond - array is initially sorted'
+    );
+
+    set(cersei, 'status', 3);
+
+    assert.deepEqual(this.obj.sortedItems, [jaime, cersei, sansa], 'array is sorted correctly');
+
+    set(cersei, 'status', 1);
+
+    assert.deepEqual(this.obj.sortedItems, [jaime, cersei, sansa], 'array is sorted correctly');
+
+    sansa.set('status', 1);
+
+    assert.deepEqual(this.obj.sortedItems, [jaime, cersei, sansa], 'array is sorted correctly');
+
+    set(this.obj, 'itemSorting', ['relatedObj.firstName']);
+
+    assert.deepEqual(this.obj.sortedItems, [cersei, jaime, sansa], 'array is sorted correctly');
+  }
+
+  ['@test if the dependentKey is neither an array nor object, it will return an empty array'](
+    assert
+  ) {
+    set(this.obj, 'items', null);
+    assert.ok(isArray(this.obj.sortedItems), 'returns an empty arrays');
+
+    set(this.obj, 'array', undefined);
+    assert.ok(isArray(this.obj.sortedItems), 'returns an empty arrays');
+
+    set(this.obj, 'array', 'not an array');
+    assert.ok(isArray(this.obj.sortedItems), 'returns an empty arrays');
+  }
+}
+
 moduleFor(
-  'sort - sortProperties',
-  class extends AbstractTestCase {
-    beforeEach() {
-      obj = EmberObject.extend({
-        sortedItems: sort('items', 'itemSorting'),
-      }).create({
-        itemSorting: emberA(['lname', 'fname']),
-        items: emberA([
+  'sort - sortProperties - Ember.Object',
+  class extends SortWithSortPropertiesTestCase {
+    buildObject(_items, _itemSorting) {
+      let items =
+        _items ||
+        emberA([
           { fname: 'Jaime', lname: 'Lannister', age: 34 },
           { fname: 'Cersei', lname: 'Lannister', age: 34 },
           { fname: 'Robb', lname: 'Stark', age: 16 },
           { fname: 'Bran', lname: 'Stark', age: 8 },
-        ]),
-      });
-    }
+        ]);
 
-    afterEach() {
-      run(obj, 'destroy');
-    }
+      let itemSorting = _itemSorting || emberA(['lname', 'fname']);
 
-    ['@test sort is readOnly'](assert) {
-      assert.throws(function() {
-        obj.set('sortedItems', 1);
-      }, /Cannot set read-only property "sortedItems" on object:/);
-    }
-
-    ['@test arrays are initially sorted'](assert) {
-      assert.deepEqual(
-        obj.get('sortedItems').mapBy('fname'),
-        ['Cersei', 'Jaime', 'Bran', 'Robb'],
-        'array is initially sorted'
-      );
-    }
-
-    ['@test default sort order is correct'](assert) {
-      assert.deepEqual(
-        obj.get('sortedItems').mapBy('fname'),
-        ['Cersei', 'Jaime', 'Bran', 'Robb'],
-        'array is initially sorted'
-      );
-    }
-
-    ['@test changing the dependent array updates the sorted array'](assert) {
-      assert.deepEqual(
-        obj.get('sortedItems').mapBy('fname'),
-        ['Cersei', 'Jaime', 'Bran', 'Robb'],
-        'precond - array is initially sorted'
-      );
-
-      obj.set('items', [
-        { fname: 'Roose', lname: 'Bolton' },
-        { fname: 'Theon', lname: 'Greyjoy' },
-        { fname: 'Ramsey', lname: 'Bolton' },
-        { fname: 'Stannis', lname: 'Baratheon' },
-      ]);
-
-      assert.deepEqual(
-        obj.get('sortedItems').mapBy('fname'),
-        ['Stannis', 'Ramsey', 'Roose', 'Theon'],
-        'changing dependent array updates sorted array'
-      );
-    }
-
-    ['@test adding to the dependent array updates the sorted array'](assert) {
-      let items = obj.get('items');
-
-      assert.deepEqual(
-        obj.get('sortedItems').mapBy('fname'),
-        ['Cersei', 'Jaime', 'Bran', 'Robb'],
-        'precond - array is initially sorted'
-      );
-
-      items.pushObject({
-        fname: 'Tyrion',
-        lname: 'Lannister',
-      });
-
-      assert.deepEqual(
-        obj.get('sortedItems').mapBy('fname'),
-        ['Cersei', 'Jaime', 'Tyrion', 'Bran', 'Robb'],
-        'Adding to the dependent array updates the sorted array'
-      );
-    }
-
-    ['@test removing from the dependent array updates the sorted array'](assert) {
-      assert.deepEqual(
-        obj.get('sortedItems').mapBy('fname'),
-        ['Cersei', 'Jaime', 'Bran', 'Robb'],
-        'precond - array is initially sorted'
-      );
-
-      obj.get('items').popObject();
-
-      assert.deepEqual(
-        obj.get('sortedItems').mapBy('fname'),
-        ['Cersei', 'Jaime', 'Robb'],
-        'Removing from the dependent array updates the sorted array'
-      );
-    }
-
-    ['@test distinct items may be sort-equal, although their relative order will not be guaranteed'](
-      assert
-    ) {
-      // We recreate jaime and "Cersei" here only for test stability: we want
-      // their guid-ordering to be deterministic
-      let jaimeInDisguise = {
-        fname: 'Cersei',
-        lname: 'Lannister',
-        age: 34,
-      };
-
-      let jaime = {
-        fname: 'Jaime',
-        lname: 'Lannister',
-        age: 34,
-      };
-
-      let items = obj.get('items');
-
-      items.replace(0, 1, [jaime]);
-      items.replace(1, 1, [jaimeInDisguise]);
-
-      assert.deepEqual(
-        obj.get('sortedItems').mapBy('fname'),
-        ['Cersei', 'Jaime', 'Bran', 'Robb'],
-        'precond - array is initially sorted'
-      );
-
-      set(jaimeInDisguise, 'fname', 'Jaime');
-
-      assert.deepEqual(
-        obj.get('sortedItems').mapBy('fname'),
-        ['Jaime', 'Jaime', 'Bran', 'Robb'],
-        'sorted array is updated'
-      );
-
-      set(jaimeInDisguise, 'fname', 'Cersei');
-
-      assert.deepEqual(
-        obj.get('sortedItems').mapBy('fname'),
-        ['Cersei', 'Jaime', 'Bran', 'Robb'],
-        'sorted array is updated'
-      );
-    }
-
-    ['@test guid sort-order fallback with a search proxy is not confused by non-search ObjectProxys'](
-      assert
-    ) {
-      let tyrion = {
-        fname: 'Tyrion',
-        lname: 'Lannister',
-      };
-
-      let tyrionInDisguise = ObjectProxy.create({
-        fname: 'Yollo',
-        lname: '',
-        content: tyrion,
-      });
-
-      let items = obj.get('items');
-
-      items.pushObject(tyrion);
-
-      assert.deepEqual(obj.get('sortedItems').mapBy('fname'), [
-        'Cersei',
-        'Jaime',
-        'Tyrion',
-        'Bran',
-        'Robb',
-      ]);
-
-      items.pushObject(tyrionInDisguise);
-
-      assert.deepEqual(obj.get('sortedItems').mapBy('fname'), [
-        'Yollo',
-        'Cersei',
-        'Jaime',
-        'Tyrion',
-        'Bran',
-        'Robb',
-      ]);
-    }
-
-    ['@test updating sort properties detaches observers for old sort properties'](assert) {
-      let objectToRemove = obj.get('items')[3];
-
-      assert.deepEqual(
-        obj.get('sortedItems').mapBy('fname'),
-        ['Cersei', 'Jaime', 'Bran', 'Robb'],
-        'precond - array is initially sorted'
-      );
-
-      obj.set('itemSorting', emberA(['fname:desc']));
-
-      assert.deepEqual(
-        obj.get('sortedItems').mapBy('fname'),
-        ['Robb', 'Jaime', 'Cersei', 'Bran'],
-        'after updating sort properties array is updated'
-      );
-
-      obj.get('items').removeObject(objectToRemove);
-
-      assert.deepEqual(
-        obj.get('sortedItems').mapBy('fname'),
-        ['Robb', 'Jaime', 'Cersei'],
-        'after removing item array is updated'
-      );
-
-      set(objectToRemove, 'lname', 'Updated-Stark');
-
-      assert.deepEqual(
-        obj.get('sortedItems').mapBy('fname'),
-        ['Robb', 'Jaime', 'Cersei'],
-        'after changing removed item array is not updated'
-      );
-    }
-
-    ['@test sort works if array property is null (non array value) on first evaluation of computed prop'](
-      assert
-    ) {
-      obj.set('items', null);
-      assert.deepEqual(obj.get('sortedItems'), []);
-      obj.set('items', emberA([{ fname: 'Cersei', lname: 'Lanister' }]));
-      assert.deepEqual(obj.get('sortedItems'), [{ fname: 'Cersei', lname: 'Lanister' }]);
-    }
-
-    ['@test updating sort properties updates the sorted array'](assert) {
-      assert.deepEqual(
-        obj.get('sortedItems').mapBy('fname'),
-        ['Cersei', 'Jaime', 'Bran', 'Robb'],
-        'precond - array is initially sorted'
-      );
-
-      obj.set('itemSorting', emberA(['fname:desc']));
-
-      assert.deepEqual(
-        obj.get('sortedItems').mapBy('fname'),
-        ['Robb', 'Jaime', 'Cersei', 'Bran'],
-        'after updating sort properties array is updated'
-      );
-    }
-
-    ['@test updating sort properties invalidates the sorted array'](assert) {
-      let sortProps = obj.get('itemSorting');
-
-      assert.deepEqual(
-        obj.get('sortedItems').mapBy('fname'),
-        ['Cersei', 'Jaime', 'Bran', 'Robb'],
-        'precond - array is initially sorted'
-      );
-
-      sortProps.clear();
-      sortProps.pushObject('fname');
-
-      assert.deepEqual(
-        obj.get('sortedItems').mapBy('fname'),
-        ['Bran', 'Cersei', 'Jaime', 'Robb'],
-        'after updating sort properties array is updated'
-      );
-    }
-
-    ['@test updating new sort properties invalidates the sorted array'](assert) {
-      assert.deepEqual(
-        obj.get('sortedItems').mapBy('fname'),
-        ['Cersei', 'Jaime', 'Bran', 'Robb'],
-        'precond - array is initially sorted'
-      );
-
-      obj.set('itemSorting', emberA(['age:desc', 'fname:asc']));
-
-      assert.deepEqual(
-        obj.get('sortedItems').mapBy('fname'),
-        ['Cersei', 'Jaime', 'Robb', 'Bran'],
-        'precond - array is correct after item sorting is changed'
-      );
-
-      set(obj.get('items')[1], 'age', 29);
-
-      assert.deepEqual(
-        obj.get('sortedItems').mapBy('fname'),
-        ['Jaime', 'Cersei', 'Robb', 'Bran'],
-        'after updating sort properties array is updated'
-      );
-    }
-
-    ['@test sort direction defaults to ascending'](assert) {
-      assert.deepEqual(obj.get('sortedItems').mapBy('fname'), ['Cersei', 'Jaime', 'Bran', 'Robb']);
-    }
-
-    ['@test sort direction defaults to ascending (with sort property change)'](assert) {
-      assert.deepEqual(
-        obj.get('sortedItems').mapBy('fname'),
-        ['Cersei', 'Jaime', 'Bran', 'Robb'],
-        'precond - array is initially sorted'
-      );
-
-      obj.set('itemSorting', emberA(['fname']));
-
-      assert.deepEqual(
-        obj.get('sortedItems').mapBy('fname'),
-        ['Bran', 'Cersei', 'Jaime', 'Robb'],
-        'sort direction defaults to ascending'
-      );
-    }
-
-    ["@test updating an item's sort properties updates the sorted array"](assert) {
-      let tyrionInDisguise = obj.get('items')[1];
-
-      assert.deepEqual(
-        obj.get('sortedItems').mapBy('fname'),
-        ['Cersei', 'Jaime', 'Bran', 'Robb'],
-        'precond - array is initially sorted'
-      );
-
-      set(tyrionInDisguise, 'fname', 'Tyrion');
-
-      assert.deepEqual(
-        obj.get('sortedItems').mapBy('fname'),
-        ['Jaime', 'Tyrion', 'Bran', 'Robb'],
-        "updating an item's sort properties updates the sorted array"
-      );
-    }
-
-    ["@test updating several of an item's sort properties updated the sorted array"](assert) {
-      let sansaInDisguise = obj.get('items')[1];
-
-      assert.deepEqual(
-        obj.get('sortedItems').mapBy('fname'),
-        ['Cersei', 'Jaime', 'Bran', 'Robb'],
-        'precond - array is initially sorted'
-      );
-
-      setProperties(sansaInDisguise, {
-        fname: 'Sansa',
-        lname: 'Stark',
-      });
-
-      assert.deepEqual(
-        obj.get('sortedItems').mapBy('fname'),
-        ['Jaime', 'Bran', 'Robb', 'Sansa'],
-        "updating an item's sort properties updates the sorted array"
-      );
-    }
-
-    ["@test updating an item's sort properties does not error when binary search does a self compare (#3273)"](
-      assert
-    ) {
-      let jaime = {
-        name: 'Jaime',
-        status: 1,
-      };
-
-      let cersei = {
-        name: 'Cersei',
-        status: 2,
-      };
-
-      let obj = EmberObject.extend({
-        sortProps: ['status'],
-        sortedPeople: sort('people', 'sortProps'),
-      }).create({
-        people: [jaime, cersei],
-      });
-
-      assert.deepEqual(
-        obj.get('sortedPeople'),
-        [jaime, cersei],
-        'precond - array is initially sorted'
-      );
-
-      set(cersei, 'status', 3);
-
-      assert.deepEqual(obj.get('sortedPeople'), [jaime, cersei], 'array is sorted correctly');
-
-      set(cersei, 'status', 2);
-
-      assert.deepEqual(obj.get('sortedPeople'), [jaime, cersei], 'array is sorted correctly');
-    }
-
-    ['@test array should not be sorted if sort properties array is empty'](assert) {
-      var o = EmberObject.extend({
+      return EmberObject.extend({
         sortedItems: sort('items', 'itemSorting'),
       }).create({
-        itemSorting: emberA([]),
-        // This bug only manifests when array.sort(() => 0) is not equal to array.
-        // In order for this to happen, the browser must use an unstable sort and the
-        // array must be sufficient large. On Chrome, 12 items is currently sufficient.
-        items: emberA([6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5]),
+        itemSorting,
+        items,
       });
-
-      assert.deepEqual(
-        o.get('sortedItems'),
-        [6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5],
-        'array is not changed'
-      );
     }
 
-    ['@test array should update if items to be sorted is replaced when sort properties array is empty'](
-      assert
-    ) {
-      var o = EmberObject.extend({
-        sortedItems: sort('items', 'itemSorting'),
-      }).create({
-        itemSorting: emberA([]),
-        items: emberA([6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5]),
-      });
-
-      assert.deepEqual(
-        o.get('sortedItems'),
-        [6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5],
-        'array is not changed'
-      );
-
-      set(o, 'items', emberA([5, 6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4]));
-
-      assert.deepEqual(
-        o.get('sortedItems'),
-        [5, 6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4],
-        'array was updated'
-      );
-    }
-
-    ['@test array should update if items to be sorted is mutated when sort properties array is empty'](
-      assert
-    ) {
-      var o = EmberObject.extend({
-        sortedItems: sort('items', 'itemSorting'),
-      }).create({
-        itemSorting: emberA([]),
-        items: emberA([6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5]),
-      });
-
-      assert.deepEqual(
-        o.get('sortedItems'),
-        [6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5],
-        'array is not changed'
-      );
-
-      o.get('items').pushObject(12);
-
-      assert.deepEqual(
-        o.get('sortedItems'),
-        [6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5, 12],
-        'array was updated'
-      );
-    }
-
-    ['@test array observers do not leak'](assert) {
-      let daria = { name: 'Daria' };
-      let jane = { name: 'Jane' };
-
-      let sisters = [jane, daria];
-
-      let sortProps = emberA(['name']);
-      let jaime = EmberObject.extend({
-        sortedPeople: sort('sisters', 'sortProps'),
-        sortProps,
-      }).create({
-        sisters,
-      });
-
-      jaime.get('sortedPeople');
-      run(jaime, 'destroy');
-
-      try {
-        sortProps.pushObject({
-          name: 'Anna',
-        });
-        assert.ok(true);
-      } catch (e) {
-        assert.ok(false, e);
-      }
-    }
-
-    ['@test property paths in sort properties update the sorted array'](assert) {
-      let jaime = {
-        relatedObj: { status: 1, firstName: 'Jaime', lastName: 'Lannister' },
-      };
-
-      let cersei = {
-        relatedObj: { status: 2, firstName: 'Cersei', lastName: 'Lannister' },
-      };
-
-      let sansa = EmberObject.create({
-        relatedObj: { status: 3, firstName: 'Sansa', lastName: 'Stark' },
-      });
-
-      let obj = EmberObject.extend({
-        sortProps: ['relatedObj.status'],
-        sortedPeople: sort('people', 'sortProps'),
-      }).create({
-        people: [jaime, cersei, sansa],
-      });
-
-      assert.deepEqual(
-        obj.get('sortedPeople'),
-        [jaime, cersei, sansa],
-        'precond - array is initially sorted'
-      );
-
-      set(cersei, 'status', 3);
-
-      assert.deepEqual(
-        obj.get('sortedPeople'),
-        [jaime, cersei, sansa],
-        'array is sorted correctly'
-      );
-
-      set(cersei, 'status', 1);
-
-      assert.deepEqual(
-        obj.get('sortedPeople'),
-        [jaime, cersei, sansa],
-        'array is sorted correctly'
-      );
-
-      sansa.set('status', 1);
-
-      assert.deepEqual(
-        obj.get('sortedPeople'),
-        [jaime, cersei, sansa],
-        'array is sorted correctly'
-      );
-
-      obj.set('sortProps', ['relatedObj.firstName']);
-
-      assert.deepEqual(
-        obj.get('sortedPeople'),
-        [cersei, jaime, sansa],
-        'array is sorted correctly'
-      );
-    }
-
-    ['@test if the dependentKey is neither an array nor object, it will return an empty array'](
-      assert
-    ) {
-      set(obj, 'items', null);
-      assert.ok(isArray(obj.get('sortedItems')), 'returns an empty arrays');
-
-      set(obj, 'array', undefined);
-      assert.ok(isArray(obj.get('sortedItems')), 'returns an empty arrays');
-
-      set(obj, 'array', 'not an array');
-      assert.ok(isArray(obj.get('sortedItems')), 'returns an empty arrays');
+    cleanupObject() {
+      run(this.obj, 'destroy');
     }
   }
 );
+
+if (EMBER_NATIVE_DECORATOR_SUPPORT) {
+  moduleFor(
+    'sort - sortProperties - Native Class',
+    class extends SortWithSortPropertiesTestCase {
+      buildObject(_items, _itemSorting) {
+        let items =
+          _items ||
+          emberA([
+            { fname: 'Jaime', lname: 'Lannister', age: 34 },
+            { fname: 'Cersei', lname: 'Lannister', age: 34 },
+            { fname: 'Robb', lname: 'Stark', age: 16 },
+            { fname: 'Bran', lname: 'Stark', age: 8 },
+          ]);
+
+        let itemSorting = _itemSorting || emberA(['lname', 'fname']);
+
+        return new class {
+          items = items;
+          itemSorting = itemSorting;
+
+          @sort('items', 'itemSorting')
+          sortedItems;
+        }();
+      }
+
+      cleanupObject() {}
+    }
+  );
+}
 
 function sortByLnameFname(a, b) {
   let lna = get(a, 'lname');
