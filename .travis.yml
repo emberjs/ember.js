@@ -1,6 +1,7 @@
 branches:
   only:
     - master
+    - /^release-.+/
     - /^v\d+\.\d+\.\d+/
 
 language: node_js
