@@ -4,7 +4,7 @@ import { OwnedTemplateMeta } from '@ember/-internals/views';
 import { _instrumentStart } from '@ember/instrumentation';
 import { assign } from '@ember/polyfills';
 import { DEBUG } from '@glimmer/env';
-import { ComponentCapabilities, Option, Simple, Unique } from '@glimmer/interfaces';
+import { ComponentCapabilities, Option, Simple } from '@glimmer/interfaces';
 import { CONSTANT_TAG, Tag, VersionedPathReference } from '@glimmer/reference';
 import {
   Arguments,
@@ -51,7 +51,7 @@ const CAPABILITIES: ComponentCapabilities = {
   elementHook: false,
   createCaller: true,
   dynamicScope: true,
-  updateHook: true,
+  updateHook: false,
   createInstance: true,
 };
 
@@ -80,14 +80,6 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
       self,
       finalize: _instrumentStart('render.outlet', instrumentationPayload, definition),
     };
-  }
-
-  layoutFor(
-    _state: OutletDefinitionState,
-    _component: OutletInstanceState,
-    _env: Environment
-  ): Unique<'Handle'> {
-    throw new Error('Method not implemented.');
   }
 
   getLayout({ template }: OutletDefinitionState, _resolver: RuntimeResolver): Invocation {
