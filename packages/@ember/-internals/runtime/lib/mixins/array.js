@@ -20,7 +20,7 @@ import {
   arrayContentWillChange,
   arrayContentDidChange,
 } from '@ember/-internals/metal';
-import { assert, deprecate } from '@ember/debug';
+import { assert } from '@ember/debug';
 import Enumerable from './enumerable';
 import compare from '../compare';
 import { ENV } from '@ember/-internals/environment';
@@ -1601,28 +1601,18 @@ if (ENV.EXTEND_PROTOTYPES.Array) {
   NativeArray.apply(Array.prototype);
 
   A = function(arr) {
-    deprecate(
-      '`new A()` has been deprecated, please update to calling A as a function: `A()`',
-      !(this instanceof A),
-      {
-        id: 'array.new-array-wrapper',
-        until: '3.9.0',
-        url: 'https://emberjs.com/deprecations/v3.x#toc_array-new-array-wrapper',
-      }
+    assert(
+      'You cannot create an Ember Array with `new A()`, please update to calling A as a function: `A()`',
+      !(this instanceof A)
     );
 
     return arr || [];
   };
 } else {
   A = function(arr) {
-    deprecate(
-      '`new A()` has been deprecated, please update to calling A as a function: `A()`',
-      !(this instanceof A),
-      {
-        id: 'array.new-array-wrapper',
-        until: '3.9.0',
-        url: 'https://emberjs.com/deprecations/v3.x#toc_array-new-array-wrapper',
-      }
+    assert(
+      'You cannot create an Ember Array with `new A()`, please update to calling A as a function: `A()`',
+      !(this instanceof A)
     );
 
     if (!arr) {
