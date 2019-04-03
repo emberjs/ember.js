@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### v3.8.1 (April 02, 2019)
+
+- [#17684](https://github.com/emberjs/ember.js/pull/17684) [BUGFIX] Enable maximum rerendering limit to be customized.
+- [#17823](https://github.com/emberjs/ember.js/pull/17823) Update router_js to 6.2.4
+
 ### v3.8.0 (February 18, 2019)
 
 - [#17143](https://github.com/emberjs/ember.js/pull/17143) / [#17375](https://github.com/emberjs/ember.js/pull/17375) [FEATURE] Implement Element Modifier Manager RFC (see [emberjs/rfcs#0373](https://github.com/emberjs/rfcs/blob/master/text/0373-Element-Modifier-Managers.md)).
