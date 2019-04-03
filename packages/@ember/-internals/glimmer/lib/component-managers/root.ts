@@ -83,7 +83,7 @@ export const ROOT_CAPABILITIES: ComponentCapabilities = {
   createCaller: true,
   dynamicScope: true,
   updateHook: true,
-  createInstance: false,
+  createInstance: true,
 };
 
 export class RootComponentDefinition implements ComponentDefinition {
