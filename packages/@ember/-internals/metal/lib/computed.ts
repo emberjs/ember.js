@@ -704,6 +704,13 @@ class ComputedDecoratorImpl extends Function {
     }
   }
 
+  // TODO: Remove this when we can provide alternatives in the ecosystem to
+  // addons such as ember-macro-helpers that use it.
+  get _getter(this: Decorator) {
+    return (descriptorForDecorator(this) as ComputedProperty)._getter;
+  }
+
+  // TODO: Refactor this, this is an internal API only
   set enumerable(this: Decorator, value: boolean) {
     (descriptorForDecorator(this) as ComputedProperty).enumerable = value;
   }
