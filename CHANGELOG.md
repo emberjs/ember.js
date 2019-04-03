@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### v3.8.1 (April 02, 2019)
+
+- [#17684](https://github.com/emberjs/ember.js/pull/17684) [BUGFIX] Enable maximum rerendering limit to be customized.
+- [#17823](https://github.com/emberjs/ember.js/pull/17823) Update router_js to 6.2.4
+
 ### v3.9.0 (April 01, 2019)
 
 - [#17470](https://github.com/emberjs/ember.js/pull/17470) [DEPRECATION] Implements the Computed Property Modifier deprecation RFCs
