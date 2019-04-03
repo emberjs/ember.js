@@ -7134,10 +7134,10 @@ rimraf@~2.5.2:
   dependencies:
     glob "^7.0.5"
 
-rollup-plugin-commonjs@^9.2.2:
-  version "9.2.2"
-  resolved "https://registry.yarnpkg.com/rollup-plugin-commonjs/-/rollup-plugin-commonjs-9.2.2.tgz#4959f3ff0d9706c132e5247b47ab385f11d9aae6"
-  integrity sha512-FXBgY+IvZIV2AZVT/0CPMsP+b1dKkxE+F6SHI9wddqKDV9KCGDA2cV5e/VsJLwXKFgrtliqMr7Rq3QBfPiJ8Xg==
+rollup-plugin-commonjs@^9.3.0:
+  version "9.3.0"
+  resolved "https://registry.yarnpkg.com/rollup-plugin-commonjs/-/rollup-plugin-commonjs-9.3.0.tgz#7250c8383264f59efc7092340dc426509c7cfe4c"
+  integrity sha512-ydk1TYrRP+k9UzJ8B8Q2yFBWQSwGYv9vQfZ9YP9MkLLIA8/DnXRpEkoDXByOu10vNusV1tvk3vwhhrs0NTP4pQ==
   dependencies:
     estree-walker "^0.6.0"
     magic-string "^0.25.2"
