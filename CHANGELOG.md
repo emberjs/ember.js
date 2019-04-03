@@ -1,5 +1,20 @@
 # Ember Changelog
 
+### v3.10.0-beta.1 (April 02, 2019)
+
+- [#17836](https://github.com/emberjs/ember.js/pull/17836) [BREAKING] Explicitly drop support for Node 6
+- [#17719](https://github.com/emberjs/ember.js/pull/17719) / [#17745](https://github.com/emberjs/ember.js/pull/17745) [FEATURE] Support for nested components in angle bracket invocation syntax (see [emberjs/rfcs#0457](https://github.com/emberjs/rfcs/blob/master/text/0457-nested-lookups.md)). 
+- [#17735](https://github.com/emberjs/ember.js/pull/17735) / [#17772](https://github.com/emberjs/ember.js/pull/17772) / [#17811](https://github.com/emberjs/ember.js/pull/17811) / [#17814](https://github.com/emberjs/ember.js/pull/17814) [FEATURE] Implement the Angle Bracket Invocations For Built-in Components RFC (see [emberjs/rfcs#0459](https://github.com/emberjs/rfcs/blob/master/text/0459-angle-bracket-built-in-components.md)).
+- [#17548](https://github.com/emberjs/ember.js/pull/17548) / [#17604](https://github.com/emberjs/ember.js/pull/17604) / [#17690](https://github.com/emberjs/ember.js/pull/17690) / [#17827](https://github.com/emberjs/ember.js/pull/17827) / [#17828](https://github.com/emberjs/ember.js/pull/17828) [FEATURE] Implement the Decorators RFC (see [emberjs/rfcs#0408](https://github.com/emberjs/rfcs/blob/master/text/0408-decorators.md)).
+- [#17747](https://github.com/emberjs/ember.js/pull/17747) [BUGFIX] Correct component-test blueprint for ember-cli-mocha
+- [#17788](https://github.com/emberjs/ember.js/pull/17788) [BUGFIX] Fix native DOM events in Glimmer Angle Brackets
+- [#17833](https://github.com/emberjs/ember.js/pull/17833) [BUGFIX] Reverts the naming of setClassicDecorator externally
+- [#17841](https://github.com/emberjs/ember.js/pull/17841) [BUGFIX] Ensure @sort works on non-Ember.Objects.
+- [#17818](https://github.com/emberjs/ember.js/pull/17818) [BUGFIX] Fix event dispatcher (part 1)
+- [#17411](https://github.com/emberjs/ember.js/pull/17411) / [#17732](https://github.com/emberjs/ember.js/pull/17732) / [#17412](https://github.com/emberjs/ember.js/pull/17412) Update initializer blueprints for ember-mocha 0.14
+- [#17702](https://github.com/emberjs/ember.js/pull/17702) Extend from glimmer component for octane blueprint
+- [#17740](https://github.com/emberjs/ember.js/pull/17740) Fix octane component blueprint and octane blueprint tests
+
 ### v3.8.1 (April 02, 2019)
 
 - [#17684](https://github.com/emberjs/ember.js/pull/17684) [BUGFIX] Enable maximum rerendering limit to be customized.
