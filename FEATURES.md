@@ -50,3 +50,10 @@ for a detailed explanation.
   with the angle bracket invocation sytnax.
 
   See [RFC #459](https://github.com/emberjs/rfcs/pull/459).
+
+* `ember-glimmer-forward-modifiers-with-splattributes`
+
+  Allows element modifiers to be applied to components that use angle-bracket syntax, and applies
+  those modifiers to the element or elements receiving the splattributes.
+
+  See [RFC #435](https://github.com/emberjs/rfcs/pull/435).
