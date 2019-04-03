@@ -2,7 +2,7 @@ import { RenderingTestCase, moduleFor, runDestroy, runTask } from 'internal-test
 
 import { assign } from '@ember/polyfills';
 import { set } from '@ember/-internals/metal';
-import { jQuery } from '@ember/-internals/views';
+import { jQueryDisabled, jQuery } from '@ember/-internals/views';
 
 import { Component } from '../../utils/helpers';
 
@@ -289,7 +289,11 @@ moduleFor(
           actions: {
             foo(value, event) {
               assert.ok(true, 'action was triggered');
-              assert.ok(event instanceof jQuery.Event, 'jQuery event was passed.');
+              if (jQueryDisabled) {
+                assert.notOk(event.originalEvent, 'event is not a jQuery.Event');
+              } else {
+                assert.ok(event instanceof jQuery.Event, 'jQuery event was passed.');
+              }
             },
           },
         });
@@ -307,7 +311,11 @@ moduleFor(
         actions: {
           foo(value, event) {
             assert.ok(true, 'action was triggered');
-            assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+            if (jQueryDisabled) {
+              assert.notOk(event.originalEvent, 'event is not a jQuery.Event');
+            } else {
+              assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+            }
           },
         },
       });
@@ -327,7 +335,11 @@ moduleFor(
           actions: {
             foo(value, event) {
               assert.ok(true, 'action was triggered');
-              assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+              if (jQueryDisabled) {
+                assert.notOk(event.originalEvent, 'event is not a jQuery.Event');
+              } else {
+                assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+              }
             },
           },
         });
@@ -347,7 +359,11 @@ moduleFor(
         actions: {
           foo(value, event) {
             assert.ok(true, 'action was triggered');
-            assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+            if (jQueryDisabled) {
+              assert.notOk(event.originalEvent, 'event is not a jQuery.Event');
+            } else {
+              assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+            }
           },
         },
       });
@@ -398,7 +414,11 @@ moduleFor(
         actions: {
           foo(value, event) {
             assert.ok(true, 'action was triggered');
-            assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+            if (jQueryDisabled) {
+              assert.notOk(event.originalEvent, 'event is not a jQuery.Event');
+            } else {
+              assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+            }
           },
         },
       });
@@ -418,7 +438,11 @@ moduleFor(
           actions: {
             foo(value, event) {
               assert.ok(true, 'action was triggered');
-              assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+              if (jQueryDisabled) {
+                assert.notOk(event.originalEvent, 'event is not a jQuery.Event');
+              } else {
+                assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+              }
             },
           },
         });
@@ -438,7 +462,11 @@ moduleFor(
         actions: {
           foo(value, event) {
             assert.ok(true, 'action was triggered');
-            assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+            if (jQueryDisabled) {
+              assert.notOk(event.originalEvent, 'event is not a jQuery.Event');
+            } else {
+              assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+            }
           },
         },
       });
@@ -456,7 +484,11 @@ moduleFor(
           actions: {
             foo(value, event) {
               assert.ok(true, 'action was triggered');
-              assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+              if (jQueryDisabled) {
+                assert.notOk(event.originalEvent, 'event is not a jQuery.Event');
+              } else {
+                assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+              }
             },
           },
         });
@@ -476,7 +508,11 @@ moduleFor(
         actions: {
           foo(value, event) {
             assert.ok(true, 'action was triggered');
-            assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+            if (jQueryDisabled) {
+              assert.notOk(event.originalEvent, 'event is not a jQuery.Event');
+            } else {
+              assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+            }
           },
         },
       });
@@ -494,7 +530,11 @@ moduleFor(
           actions: {
             foo(value, event) {
               assert.ok(true, 'action was triggered');
-              assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+              if (jQueryDisabled) {
+                assert.notOk(event.originalEvent, 'event is not a jQuery.Event');
+              } else {
+                assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+              }
             },
           },
         });
@@ -514,7 +554,11 @@ moduleFor(
         actions: {
           foo(value, event) {
             assert.ok(true, 'action was triggered');
-            assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+            if (jQueryDisabled) {
+              assert.notOk(event.originalEvent, 'event is not a jQuery.Event');
+            } else {
+              assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+            }
           },
         },
       });
