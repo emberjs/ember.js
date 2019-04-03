@@ -3,7 +3,7 @@ import { RenderingTestCase, moduleFor, runDestroy, runTask } from 'internal-test
 import { EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS } from '@ember/canary-features';
 import { assign } from '@ember/polyfills';
 import { set } from '@ember/-internals/metal';
-import { jQuery } from '@ember/-internals/views';
+import { jQueryDisabled, jQuery } from '@ember/-internals/views';
 
 import { Component } from '../../utils/helpers';
 
@@ -501,7 +501,11 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
             actions: {
               foo(value, event) {
                 assert.ok(true, 'action was triggered');
-                assert.ok(event instanceof jQuery.Event, 'jQuery event was passed.');
+                if (jQueryDisabled) {
+                  assert.notOk(event.originalEvent, 'event is not a jQuery.Event');
+                } else {
+                  assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+                }
               },
             },
           });
@@ -521,7 +525,11 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
           actions: {
             foo(value, event) {
               assert.ok(true, 'action was triggered');
-              assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+              if (jQueryDisabled) {
+                assert.notOk(event.originalEvent, 'event is not a jQuery.Event');
+              } else {
+                assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+              }
             },
           },
         });
@@ -541,7 +549,11 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
             actions: {
               foo(value, event) {
                 assert.ok(true, 'action was triggered');
-                assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+                if (jQueryDisabled) {
+                  assert.notOk(event.originalEvent, 'event is not a jQuery.Event');
+                } else {
+                  assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+                }
               },
             },
           });
@@ -561,7 +573,11 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
           actions: {
             foo(value, event) {
               assert.ok(true, 'action was triggered');
-              assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+              if (jQueryDisabled) {
+                assert.notOk(event.originalEvent, 'event is not a jQuery.Event');
+              } else {
+                assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+              }
             },
           },
         });
@@ -612,7 +628,11 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
           actions: {
             foo(value, event) {
               assert.ok(true, 'action was triggered');
-              assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+              if (jQueryDisabled) {
+                assert.notOk(event.originalEvent, 'event is not a jQuery.Event');
+              } else {
+                assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+              }
             },
           },
         });
@@ -632,7 +652,11 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
             actions: {
               foo(value, event) {
                 assert.ok(true, 'action was triggered');
-                assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+                if (jQueryDisabled) {
+                  assert.notOk(event.originalEvent, 'event is not a jQuery.Event');
+                } else {
+                  assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+                }
               },
             },
           });
@@ -652,7 +676,11 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
           actions: {
             foo(value, event) {
               assert.ok(true, 'action was triggered');
-              assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+              if (jQueryDisabled) {
+                assert.notOk(event.originalEvent, 'event is not a jQuery.Event');
+              } else {
+                assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+              }
             },
           },
         });
@@ -670,7 +698,11 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
             actions: {
               foo(value, event) {
                 assert.ok(true, 'action was triggered');
-                assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+                if (jQueryDisabled) {
+                  assert.notOk(event.originalEvent, 'event is not a jQuery.Event');
+                } else {
+                  assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+                }
               },
             },
           });
@@ -690,7 +722,11 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
           actions: {
             foo(value, event) {
               assert.ok(true, 'action was triggered');
-              assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+              if (jQueryDisabled) {
+                assert.notOk(event.originalEvent, 'event is not a jQuery.Event');
+              } else {
+                assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+              }
             },
           },
         });
@@ -708,7 +744,11 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
             actions: {
               foo(value, event) {
                 assert.ok(true, 'action was triggered');
-                assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+                if (jQueryDisabled) {
+                  assert.notOk(event.originalEvent, 'event is not a jQuery.Event');
+                } else {
+                  assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+                }
               },
             },
           });
@@ -728,7 +768,11 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
           actions: {
             foo(value, event) {
               assert.ok(true, 'action was triggered');
-              assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+              if (jQueryDisabled) {
+                assert.notOk(event.originalEvent, 'event is not a jQuery.Event');
+              } else {
+                assert.ok(event instanceof jQuery.Event, 'jQuery event was passed');
+              }
             },
           },
         });
