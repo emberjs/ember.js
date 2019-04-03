@@ -6,17 +6,17 @@ import { moduleFor, AbstractTestCase, buildOwner } from 'internal-test-helpers';
 moduleFor(
   'Ember.CoreObject',
   class extends AbstractTestCase {
-    ['@test throws deprecation with new (one arg)']() {
-      expectDeprecation(() => {
+    ['@test throws an error with new (one arg)']() {
+      expectAssertion(() => {
         new CoreObject({
           firstName: 'Stef',
           lastName: 'Penner',
         });
-      }, /using `new` with EmberObject has been deprecated/);
+      }, /You may have either used `new` instead of `.create\(\)`/);
     }
 
-    ['@test throws deprecation with new (> 1 arg)']() {
-      expectDeprecation(() => {
+    ['@test throws an error with new (> 1 arg)']() {
+      expectAssertion(() => {
         new CoreObject(
           {
             firstName: 'Stef',
@@ -26,7 +26,7 @@ moduleFor(
             other: 'name',
           }
         );
-      }, /using `new` with EmberObject has been deprecated/);
+      }, /You may have either used `new` instead of `.create\(\)`/);
     }
 
     ['@test toString should be not be added as a property when calling toString()'](assert) {

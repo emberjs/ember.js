@@ -138,24 +138,6 @@ moduleFor(
       assert.equal(hasListeners(obj, 'event!'), true, 'has listeners');
     }
 
-    ['@test calling removeListener without method should remove all listeners'](assert) {
-      expectDeprecation(() => {
-        let obj = {};
-        function F() {}
-        function F2() {}
-
-        assert.equal(hasListeners(obj, 'event!'), false, 'no listeners at first');
-
-        addListener(obj, 'event!', F);
-        addListener(obj, 'event!', F2);
-
-        assert.equal(hasListeners(obj, 'event!'), true, 'has listeners');
-        removeListener(obj, 'event!');
-
-        assert.equal(hasListeners(obj, 'event!'), false, 'has no more listeners');
-      }, /The remove all functionality of removeListener and removeObserver has been deprecated/);
-    }
-
     ['@test a listener can be added as part of a mixin'](assert) {
       let triggered = 0;
       let MyMixin = Mixin.create({
