@@ -6,6 +6,7 @@ import { alias } from '@ember/-internals/metal';
 import { subscribe, reset } from '@ember/instrumentation';
 import { Route, NoneLocation } from '@ember/-internals/routing';
 import { EMBER_IMPROVED_INSTRUMENTATION } from '@ember/canary-features';
+import { jQueryDisabled } from '@ember/-internals/views';
 
 // IE includes the host name
 function normalizeUrl(url) {
@@ -861,7 +862,12 @@ moduleFor(
         .then(() => {
           assert.equal(this.$('#contact').text(), 'Contact', 'precond - the link worked');
 
-          assert.equal(hidden, 0, "The link didn't bubble");
+          if (jQueryDisabled) {
+            // BUG: https://github.com/emberjs/ember.js/issues/17840
+            assert.equal(hidden, 1, 'The link bubbled anyway');
+          } else {
+            assert.strictEqual(hidden, 0, "The link didn't bubble");
+          }
         });
     }
 
@@ -912,7 +918,13 @@ moduleFor(
         })
         .then(() => {
           assert.equal(this.$('#contact').text(), 'Contact', 'precond - the link worked');
-          assert.equal(hidden, 0, "The link didn't bubble");
+
+          if (jQueryDisabled) {
+            // BUG: https://github.com/emberjs/ember.js/issues/17840
+            assert.equal(hidden, 1, 'The link bubbled anyway');
+          } else {
+            assert.strictEqual(hidden, 0, "The link didn't bubble");
+          }
         });
     }
 
