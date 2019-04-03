@@ -33,7 +33,7 @@ interface MaybePerf {
 
 /**
 @module @ember/instrumentation
-@private
+@public
 */
 
 /**
@@ -84,7 +84,7 @@ interface MaybePerf {
 
   @class Instrumentation
   @static
-  @private
+  @public
 */
 export let subscribers: Subscriber<any>[] = [];
 let cache: { [key: string]: Listener<any>[] } = {};
@@ -129,7 +129,7 @@ function isCallback<Binding, Result>(
   @param {Object} payload
   @param {Function} callback Function that you're instrumenting.
   @param {Object} binding Context that instrument function is called with.
-  @private
+  @public
 */
 export function instrument<Result>(
   name: string,
@@ -289,7 +289,7 @@ export function _instrumentStart<Arg>(
   @param {Object} [object] Before and After hooks.
 
   @return {Subscriber}
-  @private
+  @public
 */
 export function subscribe<T>(pattern: string, object: Listener<T>): Subscriber<T> {
   let paths = pattern.split('.');
@@ -328,7 +328,7 @@ export function subscribe<T>(pattern: string, object: Listener<T>): Subscriber<T
   @static
 
   @param {Object} [subscriber]
-  @private
+  @public
 */
 export function unsubscribe(subscriber: Subscriber<any>): void {
   let index = 0;
@@ -349,7 +349,7 @@ export function unsubscribe(subscriber: Subscriber<any>): void {
   @method reset
   @for @ember/instrumentation
   @static
-  @private
+  @public
 */
 export function reset(): void {
   subscribers.length = 0;
