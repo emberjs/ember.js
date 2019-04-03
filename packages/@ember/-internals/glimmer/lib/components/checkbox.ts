@@ -1,4 +1,4 @@
-import { get, set } from '@ember/-internals/metal';
+import { set } from '@ember/-internals/metal';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import EmberComponent from '../component';
@@ -121,7 +121,7 @@ const Checkbox = EmberComponent.extend({
    */
   didInsertElement() {
     this._super(...arguments);
-    get(this, 'element').indeterminate = Boolean(get(this, 'indeterminate'));
+    this.element.indeterminate = Boolean(this.indeterminate);
   },
 
   /**

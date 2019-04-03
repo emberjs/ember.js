@@ -90,9 +90,9 @@ if (DEBUG) {
           let label;
 
           if (lastRef !== undefined) {
-            while (lastRef && lastRef._propertyKey) {
-              parts.unshift(lastRef._propertyKey);
-              lastRef = lastRef._parentReference;
+            while (lastRef && lastRef.propertyKey) {
+              parts.unshift(lastRef.propertyKey);
+              lastRef = lastRef.parentReference;
             }
 
             label = parts.join('.');

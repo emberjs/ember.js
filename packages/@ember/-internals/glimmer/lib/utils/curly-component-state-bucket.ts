@@ -3,10 +3,12 @@ import { Revision, VersionedReference } from '@glimmer/reference';
 import { CapturedNamedArguments } from '@glimmer/runtime';
 import { Opaque } from '@glimmer/util';
 import Environment from '../environment';
+import { Factory as TemplateFactory, OwnedTemplate } from '../template';
 
 export interface Component {
   _debugContainerKey: string;
   _transitionTo(name: string): void;
+  layout?: TemplateFactory | OwnedTemplate;
   layoutName?: string;
   attributeBindings: Array<string>;
   classNames: Array<string>;

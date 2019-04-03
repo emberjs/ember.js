@@ -49,7 +49,7 @@ export { Mixin, aliasMethod, mixin, observer, applyMixin } from './lib/mixin';
 export { default as inject, DEBUG_INJECTION_FUNCTIONS } from './lib/injected_property';
 export { tagForProperty, tagFor, markObjectAsDirty } from './lib/tags';
 export { default as runInTransaction, didRender, assertNotRendered } from './lib/transaction';
-export { tracked, getCurrentTracker, setCurrentTracker } from './lib/tracked';
+export { Tracker, tracked, getCurrentTracker, setCurrentTracker } from './lib/tracked';
 
 export {
   NAMESPACES,
