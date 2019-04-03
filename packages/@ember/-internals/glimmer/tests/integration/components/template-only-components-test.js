@@ -105,6 +105,30 @@ moduleFor(
 
       this.assertInnerHTML('hello');
     }
+
+    ['@test it has the correct bounds']() {
+      this.registerComponent('foo-bar', 'hello');
+
+      this.render('outside {{#if this.isShowing}}before {{foo-bar}} after{{/if}} outside', {
+        isShowing: true,
+      });
+
+      this.assertInnerHTML('outside before hello after outside');
+
+      this.assertStableRerender();
+
+      runTask(() => this.context.set('isShowing', false));
+
+      this.assertInnerHTML('outside <!----> outside');
+
+      runTask(() => this.context.set('isShowing', null));
+
+      this.assertInnerHTML('outside <!----> outside');
+
+      runTask(() => this.context.set('isShowing', true));
+
+      this.assertInnerHTML('outside before hello after outside');
+    }
   }
 );
 
