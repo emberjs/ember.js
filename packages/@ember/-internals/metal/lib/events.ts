@@ -73,26 +73,30 @@ export function addListener(
 export function removeListener(
   obj: object,
   eventName: string,
-  target: object | null,
-  method?: Function | string
+  targetOrFunction: object | Function | null,
+  functionOrName?: string | Function
 ): void {
   assert(
-    'You must pass at least an object and event name to removeListener',
-    Boolean(obj) && Boolean(eventName)
+    'You must pass at least an object, event name, and method or target and method/method name to removeListener',
+    Boolean(obj) &&
+      Boolean(eventName) &&
+      (typeof targetOrFunction === 'function' ||
+        (typeof targetOrFunction === 'object' && Boolean(functionOrName)))
   );
 
-  if (!method && 'function' === typeof target) {
-    method = target;
+  let target, method;
+
+  if (typeof targetOrFunction === 'object') {
+    target = targetOrFunction;
+    method = functionOrName!;
+  } else {
     target = null;
+    method = targetOrFunction;
   }
 
   let m = metaFor(obj);
 
-  if (method === undefined) {
-    m.removeAllListeners(eventName);
-  } else {
-    m.removeFromListeners(eventName, target, method);
-  }
+  m.removeFromListeners(eventName, target, method);
 }
 
 /**

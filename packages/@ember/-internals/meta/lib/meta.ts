@@ -1,5 +1,5 @@
 import { lookupDescriptor, symbol, toString } from '@ember/-internals/utils';
-import { assert, deprecate } from '@ember/debug';
+import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { Tag } from '@glimmer/reference';
 
@@ -63,14 +63,6 @@ const enum ListenerKind {
   ADD = 0,
   ONCE = 1,
   REMOVE = 2,
-  REMOVE_ALL = 3,
-}
-
-interface RemoveAllListener {
-  event: string;
-  target: null;
-  method: null;
-  kind: ListenerKind.REMOVE_ALL;
 }
 
 interface StringListener {
@@ -87,7 +79,7 @@ interface FunctionListener {
   kind: ListenerKind.ADD | ListenerKind.ONCE | ListenerKind.REMOVE;
 }
 
-type Listener = RemoveAllListener | StringListener | FunctionListener;
+type Listener = StringListener | FunctionListener;
 
 let currentListenerVersion = 1;
 
@@ -520,44 +512,6 @@ export class Meta {
     this.pushListener(eventName, target, method, ListenerKind.REMOVE);
   }
 
-  removeAllListeners(event: string) {
-    deprecate(
-      'The remove all functionality of removeListener and removeObserver has been deprecated. Remove each listener/observer individually instead.',
-      false,
-      {
-        id: 'events.remove-all-listeners',
-        until: '3.9.0',
-        url: 'https://emberjs.com/deprecations/v3.x#toc_events-remove-all-listeners',
-      }
-    );
-
-    if (DEBUG) {
-      counters!.removeAllListenersCalls++;
-    }
-
-    let listeners = this.writableListeners();
-    let inheritedEnd = this._inheritedEnd;
-    // remove all listeners of event name
-    // adjusting the inheritedEnd if listener is below it
-    for (let i = listeners.length - 1; i >= 0; i--) {
-      let listener = listeners[i];
-      if (listener.event === event) {
-        listeners.splice(i, 1);
-        if (i < inheritedEnd) {
-          inheritedEnd--;
-        }
-      }
-    }
-    this._inheritedEnd = inheritedEnd;
-    // we put remove alls at start because rare and easy to check there
-    listeners.splice(inheritedEnd, 0, {
-      event,
-      target: null,
-      method: null,
-      kind: ListenerKind.REMOVE_ALL,
-    });
-  }
-
   private pushListener(
     event: string,
     target: object | null,
@@ -579,28 +533,18 @@ export class Meta {
     // found, even in the case of a function listener remove, because we may be
     // attempting to add or remove listeners _before_ flattening has occured.
     if (i === -1) {
-      deprecate(
-        'Adding function listeners to prototypes has been deprecated. Convert the listener to a string listener, or add it to the instance instead.',
-        !(this.isPrototypeMeta(this.source) && typeof method === 'function'),
-        {
-          id: 'events.inherited-function-listeners',
-          until: '3.9.0',
-          url: 'https://emberjs.com/deprecations/v3.x#toc_events-inherited-function-listeners',
-        }
+      assert(
+        'You cannot add function listeners to prototypes. Convert the listener to a string listener, or add it to the instance instead.',
+        !(this.isPrototypeMeta(this.source) && typeof method === 'function')
       );
 
-      deprecate(
-        'You attempted to remove a function listener which did not exist on the instance, which means it was an inherited prototype listener, or you attempted to remove it before it was added. Prototype function listeners have been deprecated, and attempting to remove a non-existent function listener this will error in the future.',
+      assert(
+        'You attempted to remove a function listener which did not exist on the instance, which means you may have attempted to remove it before it was added.',
         !(
           !this.isPrototypeMeta(this.source) &&
           typeof method === 'function' &&
           kind === ListenerKind.REMOVE
-        ),
-        {
-          id: 'events.inherited-function-listeners',
-          until: '3.9.0',
-          url: 'https://emberjs.com/deprecations/v3.x#toc_events-inherited-function-listeners',
-        }
+        )
       );
 
       listeners.push({
@@ -623,10 +567,6 @@ export class Meta {
       } else {
         // update own listener
         listener.kind = kind;
-
-        // TODO: Remove this when removing REMOVE_ALL, it won't be necessary
-        listener.target = target;
-        listener.method = method;
       }
     }
   }
@@ -744,7 +684,7 @@ export class Meta {
       for (let index = 0; index < listeners.length; index++) {
         let listener = listeners[index];
 
-        // REMOVE and REMOVE_ALL listeners are placeholders that tell us not to
+        // REMOVE listeners are placeholders that tell us not to
         // inherit, so they never match. Only ADD and ONCE can match.
         if (
           listener.event === eventName &&
@@ -976,11 +916,7 @@ function indexOfListener(
   for (let i = listeners.length - 1; i >= 0; i--) {
     let listener = listeners[i];
 
-    if (
-      listener.event === event &&
-      ((listener.target === target && listener.method === method) ||
-        listener.kind === ListenerKind.REMOVE_ALL)
-    ) {
+    if (listener.event === event && (listener.target === target && listener.method === method)) {
       return i;
     }
   }

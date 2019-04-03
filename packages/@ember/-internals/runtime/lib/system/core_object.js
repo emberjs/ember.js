@@ -27,7 +27,7 @@ import {
   DEBUG_INJECTION_FUNCTIONS,
 } from '@ember/-internals/metal';
 import ActionHandler from '../mixins/action_handler';
-import { assert, deprecate } from '@ember/debug';
+import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 
 const reopen = Mixin.prototype.reopen;
@@ -38,12 +38,12 @@ const factoryMap = new WeakMap();
 
 const prototypeMixinMap = new WeakMap();
 
-const DELAY_INIT = Object.freeze({});
-
+let PASSED_FROM_CREATE;
 let initCalled; // only used in debug builds to enable the proxy trap
 
 // using DEBUG here to avoid the extraneous variable when not needed
 if (DEBUG) {
+  PASSED_FROM_CREATE = Symbol();
   initCalled = new WeakSet();
 }
 
@@ -269,19 +269,12 @@ class CoreObject {
     let m = meta(self);
     m.setInitializing();
 
-    if (properties !== DELAY_INIT) {
-      deprecate(
-        'using `new` with EmberObject has been deprecated. Please use `create` instead, or consider using native classes without extending from EmberObject.',
-        false,
-        {
-          id: 'object.new-constructor',
-          until: '3.9.0',
-          url: 'https://emberjs.com/deprecations/v3.x#toc_object-new-constructor',
-        }
-      );
-
-      initialize(self, properties);
-    }
+    assert(
+      `An EmberObject based class, ${
+        this.constructor
+      }, was not instantiated correctly. You may have either used \`new\` instead of \`.create()\`, or not passed arguments to your call to super in the constructor: \`super(...arguments)\`. If you are trying to use \`new\`, consider using native classes without extending from EmberObject.`,
+      properties[PASSED_FROM_CREATE]
+    );
 
     // only return when in debug builds and `self` is the proxy created above
     if (DEBUG && self !== this) {
@@ -756,7 +749,7 @@ class CoreObject {
   */
   static create(props, extra) {
     let C = this;
-    let instance = new C(DELAY_INIT);
+    let instance = DEBUG ? new C(Object.freeze({ [PASSED_FROM_CREATE]: true })) : new C();
 
     if (extra === undefined) {
       initialize(instance, props);
