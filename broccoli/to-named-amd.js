@@ -23,6 +23,7 @@ module.exports = function processModulesOnly(tree, strict = false) {
       // ensures `@glimmer/compiler` requiring `crypto` works properly
       // in both browser and node-land
       injectNodeGlobals,
+      ['@babel/transform-template-literals', { loose: true }],
       ['module-resolver', { resolvePath: resolveRelativeModulePath }],
       ['@babel/transform-modules-amd', transformOptions],
       enifed,
