@@ -4,6 +4,7 @@
 
 import { FACTORY_FOR } from '@ember/-internals/container';
 import { assign, _WeakSet as WeakSet } from '@ember/polyfills';
+import { getOwner, setOwner } from '@ember/-internals/owner';
 import {
   guidFor,
   getName,
@@ -40,12 +41,14 @@ const factoryMap = new WeakMap();
 
 const prototypeMixinMap = new WeakMap();
 
-let PASSED_FROM_CREATE;
+let OWNER_PLACEHOLDER;
+let passedFromCreate;
 let initCalled; // only used in debug builds to enable the proxy trap
 
 // using DEBUG here to avoid the extraneous variable when not needed
 if (DEBUG) {
-  PASSED_FROM_CREATE = Symbol();
+  OWNER_PLACEHOLDER = Object.freeze({});
+  passedFromCreate = new WeakSet();
   initCalled = new WeakSet();
 }
 
@@ -215,7 +218,7 @@ class CoreObject {
     factoryMap.set(this, factory);
   }
 
-  constructor(properties) {
+  constructor(owner) {
     // pluck off factory
     let initFactory = factoryMap.get(this.constructor);
     if (initFactory !== undefined) {
@@ -284,12 +287,20 @@ class CoreObject {
 
     m.setInitializing();
 
-    assert(
-      `An EmberObject based class, ${
-        this.constructor
-      }, was not instantiated correctly. You may have either used \`new\` instead of \`.create()\`, or not passed arguments to your call to super in the constructor: \`super(...arguments)\`. If you are trying to use \`new\`, consider using native classes without extending from EmberObject.`,
-      properties[PASSED_FROM_CREATE]
-    );
+    if (DEBUG) {
+      assert(
+        `An EmberObject based class, ${
+          this.constructor
+        }, was not instantiated correctly. You may have either used \`new\` instead of \`.create()\`, or not passed arguments to your call to super in the constructor: \`super(...arguments)\`. If you are trying to use \`new\`, consider using native classes without extending from EmberObject.`,
+        passedFromCreate.has(owner) || owner === OWNER_PLACEHOLDER
+      );
+
+      if (owner !== OWNER_PLACEHOLDER) {
+        setOwner(this, owner);
+      }
+    } else {
+      setOwner(this, owner);
+    }
 
     // only return when in debug builds and `self` is the proxy created above
     if (DEBUG && self !== this) {
@@ -764,7 +775,22 @@ class CoreObject {
   */
   static create(props, extra) {
     let C = this;
-    let instance = DEBUG ? new C(Object.freeze({ [PASSED_FROM_CREATE]: true })) : new C();
+
+    let owner = typeof props === 'object' && props !== null ? getOwner(props) : undefined;
+
+    if (DEBUG) {
+      if (owner) {
+        passedFromCreate.add(owner);
+      } else {
+        owner = OWNER_PLACEHOLDER;
+      }
+    }
+
+    let instance = new C(owner);
+
+    if (DEBUG) {
+      passedFromCreate.delete(owner);
+    }
 
     if (extra === undefined) {
       initialize(instance, props);

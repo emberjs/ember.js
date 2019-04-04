@@ -29,6 +29,31 @@ moduleFor(
       }, /You may have either used `new` instead of `.create\(\)`/);
     }
 
+    ['@test tunnels the owner through to the base constructor'](assert) {
+      assert.expect(2);
+
+      let owner = {};
+      let props = {
+        someOtherProp: 'foo',
+      };
+
+      setOwner(props, owner);
+
+      class Route extends CoreObject {
+        constructor() {
+          super(...arguments);
+          assert.equal(
+            getOwner(this),
+            owner,
+            'owner was assigned properly in the root constructor'
+          );
+          assert.equal(this.someOtherProp, undefined, 'other props were not yet assigned');
+        }
+      }
+
+      Route.create(props);
+    }
+
     ['@test toString should be not be added as a property when calling toString()'](assert) {
       let obj = CoreObject.create({
         firstName: 'Foo',
