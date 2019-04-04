@@ -3,13 +3,12 @@
 const Babel = require('broccoli-babel-transpiler');
 const injectBabelHelpers = require('./transforms/inject-babel-helpers');
 
-module.exports = function toES6(tree, _options) {
+module.exports = function toES5(tree, _options) {
   let options = Object.assign({}, _options);
 
   options.sourceMaps = true;
   options.plugins = [
     injectBabelHelpers,
-    ['@babel/transform-template-literals', { loose: true }],
     ['@babel/transform-literals'],
     ['@babel/transform-arrow-functions'],
     ['@babel/transform-destructuring', { loose: true }],
