@@ -52,6 +52,12 @@ moduleFor(
         'Private-docs/Owner-invoice',
         'capitalize namespaced dasherized string'
       );
+      test(
+        assert,
+        'url is http://www.emberjs.com, not http:///www.emberjs.com',
+        'Url is http://www.emberjs.com, not http:///www.emberjs.com',
+        'does nothing with multiple slashes'
+      );
       test(assert, 'šabc', 'Šabc', 'capitalize string with accent character');
     }
   }
