@@ -3,6 +3,7 @@
 ### v3.10.0-beta.2 (UNRELEASED)
 
 - [#17846](https://github.com/emberjs/ember.js/pull/17846) [BUGFIX] Fix issues with template-only components causing errors in subsequent updates.
+- [#17870](https://github.com/emberjs/ember.js/pull/17870) / [#17871](https://github.com/emberjs/ember.js/pull/17871) [BUGFIX] Fix issue where `...attributes` may incorrectly overwrite attributes unexpectedly, depending on its position.
 
 ### v3.10.0-beta.1 (April 02, 2019)
 
