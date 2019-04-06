@@ -69,7 +69,7 @@ moduleFor(
   '{{link-to}} component with query params (routing)',
   class extends ApplicationTestCase {
     constructor() {
-      super();
+      super(...arguments);
       let indexProperties = {
         foo: '123',
         bar: 'abc',
@@ -734,6 +734,37 @@ moduleFor(
 
         assert.equal(router.get('location.path'), '/foos');
         this.shouldBeActive(assert, '#foos-link');
+      });
+    }
+
+    ['@test [GH#17869] it does not cause shadowing assertion with `hash` local variable']() {
+      this.router.map(function() {
+        this.route('post', { path: '/post/:id' });
+      });
+
+      this.add(
+        'controller:post',
+        Controller.extend({
+          queryParams: ['showComments'],
+          showComments: true,
+        })
+      );
+
+      this.addTemplate(
+        'index',
+        `
+        {{#let (hash id="1" title="Hello World!" body="Lorem ipsum dolor sit amet...") as |hash|}}
+          {{#link-to "post" hash (query-params showComments=false)}}View Post{{/link-to}}
+        {{/let}}
+        `
+      );
+
+      return this.visit('/').then(() => {
+        this.assertComponentElement(this.element.firstElementChild, {
+          tagName: 'a',
+          attrs: { href: '/post/1?showComments=false', class: classMatcher('ember-view') },
+          content: 'View Post',
+        });
       });
     }
   }
