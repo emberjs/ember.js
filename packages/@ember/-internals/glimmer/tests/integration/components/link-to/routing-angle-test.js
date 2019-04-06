@@ -8,7 +8,6 @@ import { alias } from '@ember/-internals/metal';
 import { subscribe, reset } from '@ember/instrumentation';
 import { Route, NoneLocation } from '@ember/-internals/routing';
 import { EMBER_IMPROVED_INSTRUMENTATION } from '@ember/canary-features';
-import { jQueryDisabled } from '@ember/-internals/views';
 
 if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
   // IE includes the host name
@@ -882,12 +881,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
           .then(() => {
             assert.equal(this.$('#contact').text(), 'Contact', 'precond - the link worked');
 
-            if (jQueryDisabled) {
-              // BUG: https://github.com/emberjs/ember.js/issues/17840
-              assert.equal(hidden, 1, 'The link bubbled anyway');
-            } else {
-              assert.strictEqual(hidden, 0, "The link didn't bubble");
-            }
+            assert.equal(hidden, 0, "The link didn't bubble");
           });
       }
 
@@ -938,13 +932,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
           })
           .then(() => {
             assert.equal(this.$('#contact').text(), 'Contact', 'precond - the link worked');
-
-            if (jQueryDisabled) {
-              // BUG: https://github.com/emberjs/ember.js/issues/17840
-              assert.equal(hidden, 1, 'The link bubbled anyway');
-            } else {
-              assert.strictEqual(hidden, 0, "The link didn't bubble");
-            }
+            assert.equal(hidden, 0, "The link didn't bubble");
           });
       }
 
