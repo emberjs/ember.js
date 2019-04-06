@@ -1,4 +1,5 @@
 import { moduleFor, RenderingTestCase, strip, classes, runTask } from 'internal-test-helpers';
+import { ENV } from '@ember/-internals/environment';
 import { setModifierManager } from '@ember/-internals/glimmer';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 
@@ -882,6 +883,59 @@ moduleFor(
       });
     }
 
+    '@test merges trailing class attribute with `...attributes` in tagless component ("splattributes")'() {
+      let instance;
+      this.registerComponent('foo-bar', {
+        ComponentClass: Component.extend({
+          tagName: '',
+          init() {
+            instance = this;
+            this._super(...arguments);
+            this.localProp = 'qux';
+          },
+        }),
+        template: '<div ...attributes class={{localProp}}>hello</div>',
+      });
+
+      this.render('<FooBar class={{bar}} />', { bar: 'bar' });
+
+      this.assertElement(this.firstChild, {
+        tagName: 'div',
+        attrs: { class: classes('bar qux') },
+        content: 'hello',
+      });
+
+      runTask(() => this.rerender());
+
+      this.assertElement(this.firstChild, {
+        tagName: 'div',
+        attrs: { class: classes('bar qux') },
+        content: 'hello',
+      });
+
+      runTask(() => {
+        set(this.context, 'bar', undefined);
+        set(instance, 'localProp', 'QUZ');
+      });
+
+      this.assertElement(this.firstChild, {
+        tagName: 'div',
+        attrs: { class: classes('QUZ') },
+        content: 'hello',
+      });
+
+      runTask(() => {
+        set(this.context, 'bar', 'bar');
+        set(instance, 'localProp', 'qux');
+      });
+
+      this.assertElement(this.firstChild, {
+        tagName: 'div',
+        attrs: { class: classes('bar qux') },
+        content: 'hello',
+      });
+    }
+
     '@test merges class attribute with `...attributes` in yielded contextual component ("splattributes")'() {
       this.registerComponent('foo-bar', {
         ComponentClass: Component.extend({ tagName: '' }),
@@ -897,6 +951,25 @@ moduleFor(
       this.assertElement(this.firstChild, {
         tagName: 'div',
         attrs: { class: classes('default-class custom-class'), title: 'foo' },
+        content: 'hello',
+      });
+    }
+
+    '@test merges trailing class attribute with `...attributes` in yielded contextual component ("splattributes")'() {
+      this.registerComponent('foo-bar', {
+        ComponentClass: Component.extend({ tagName: '' }),
+        template: '{{yield (hash baz=(component "foo-bar/baz"))}}',
+      });
+      this.registerComponent('foo-bar/baz', {
+        ComponentClass: Component.extend({ tagName: '' }),
+        template: '<div ...attributes class="default-class" >hello</div>',
+      });
+
+      this.render('<FooBar as |fb|><fb.baz class="custom-class" title="foo"></fb.baz></FooBar>');
+
+      this.assertElement(this.firstChild, {
+        tagName: 'div',
+        attrs: { class: classes('custom-class default-class'), title: 'foo' },
         content: 'hello',
       });
     }
@@ -1082,6 +1155,88 @@ moduleFor(
         attrs: {},
         content: 'Outside the let',
       });
+    }
+  }
+);
+
+moduleFor(
+  'AngleBracket Invocation (splattributes)',
+  class extends RenderingTestCase {
+    constructor() {
+      super(...arguments);
+      this._TEMPLATE_ONLY_GLIMMER_COMPONENTS = ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS;
+      ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = true;
+    }
+
+    teardown() {
+      super.teardown();
+      ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = this._TEMPLATE_ONLY_GLIMMER_COMPONENTS;
+    }
+
+    registerComponent(name, template) {
+      super.registerComponent(name, { template, ComponentClass: null });
+    }
+
+    '@test angle bracket invocation can pass merge ...attributes'() {
+      this.registerComponent(
+        'qux',
+        '<div data-from-qux-before ...attributes data-from-qux-after></div>'
+      );
+      this.registerComponent(
+        'bar',
+        '<Qux data-from-bar-before ...attributes data-from-bar-after />'
+      );
+      this.registerComponent(
+        'foo',
+        '<Bar data-from-foo-before ...attributes data-from-foo-after />'
+      );
+
+      this.render('<Foo data-from-top />');
+      this.assertHTML(`<div
+        data-from-qux-before=""
+        data-from-bar-before=""
+        data-from-foo-before=""
+        data-from-top=""
+        data-from-foo-after=""
+        data-from-bar-after=""
+        data-from-qux-after=""
+      ></div>`);
+    }
+
+    '@test angle bracket invocation can allow invocation side to override attributes with ...attributes'() {
+      this.registerComponent('qux', '<div id="qux" ...attributes />');
+      this.registerComponent('bar', '<Qux id="bar" ...attributes />');
+      this.registerComponent('foo', '<Bar id="foo" ...attributes />');
+
+      this.render('<Foo id="top" />');
+      this.assertHTML('<div id="top"></div>');
+    }
+
+    '@test angle bracket invocation can override invocation side attributes with ...attributes'() {
+      this.registerComponent('qux', '<div ...attributes id="qux" />');
+      this.registerComponent('bar', '<Qux ...attributes id="bar" />');
+      this.registerComponent('foo', '<Bar ...attributes id="foo" />');
+
+      this.render('<Foo id="top" />');
+      this.assertHTML('<div id="qux"></div>');
+    }
+
+    '@test angle bracket invocation can forward classes before ...attributes to a nested component'() {
+      this.registerComponent('qux', '<div class="qux" ...attributes />');
+      this.registerComponent('bar', '<Qux class="bar" ...attributes />');
+      this.registerComponent('foo', '<Bar class="foo" ...attributes />');
+
+      this.render('<Foo class="top" />');
+      this.assertHTML('<div class="qux bar foo top"></div>');
+    }
+
+    '@test angle bracket invocation can forward classes after ...attributes to a nested component'() {
+      this.registerComponent('qux', '<div ...attributes class="qux" />');
+      this.registerComponent('bar', '<Qux ...attributes class="bar" />');
+      this.registerComponent('foo', '<Bar ...attributes class="foo" />');
+
+      this.render('<Foo class="top" />');
+      this.assertHTML('<div class="top foo bar qux"></div>');
     }
   }
 );
