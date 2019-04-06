@@ -27,7 +27,6 @@ export type APluginFunc = (env: ASTPluginEnvironment) => ASTPlugin | undefined;
 
 const transforms: Array<APluginFunc> = [
   TransformComponentInvocation,
-  TransformLinkTo,
   TransformOldClassBindingSyntax,
   TransformQuotedBindingsIntoJustBindings,
   AssertReservedNamedArguments,
@@ -36,6 +35,7 @@ const transforms: Array<APluginFunc> = [
   TransformEachInIntoEach,
   TransformHasBlockSyntax,
   AssertLocalVariableShadowingHelperInvocation,
+  TransformLinkTo,
   AssertInputHelperWithoutBlock,
   TransformInElement,
   AssertIfHelperWithoutArguments,
