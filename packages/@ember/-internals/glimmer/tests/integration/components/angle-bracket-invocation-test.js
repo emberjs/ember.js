@@ -1,6 +1,7 @@
 import { moduleFor, RenderingTestCase, strip, classes, runTask } from 'internal-test-helpers';
 
 import { EMBER_GLIMMER_ANGLE_BRACKET_NESTED_LOOKUP } from '@ember/canary-features';
+import { ENV } from '@ember/-internals/environment';
 import { set } from '@ember/-internals/metal';
 
 import { Component } from '../../utils/helpers';
@@ -1042,6 +1043,88 @@ moduleFor(
         attrs: {},
         content: 'Outside the let',
       });
+    }
+  }
+);
+
+moduleFor(
+  'AngleBracket Invocation (splattributes)',
+  class extends RenderingTestCase {
+    constructor() {
+      super(...arguments);
+      this._TEMPLATE_ONLY_GLIMMER_COMPONENTS = ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS;
+      ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = true;
+    }
+
+    teardown() {
+      super.teardown();
+      ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS = this._TEMPLATE_ONLY_GLIMMER_COMPONENTS;
+    }
+
+    registerComponent(name, template) {
+      super.registerComponent(name, { template, ComponentClass: null });
+    }
+
+    '@test angle bracket invocation can pass merge ...attributes'() {
+      this.registerComponent(
+        'qux',
+        '<div data-from-qux-before ...attributes data-from-qux-after></div>'
+      );
+      this.registerComponent(
+        'bar',
+        '<Qux data-from-bar-before ...attributes data-from-bar-after />'
+      );
+      this.registerComponent(
+        'foo',
+        '<Bar data-from-foo-before ...attributes data-from-foo-after />'
+      );
+
+      this.render('<Foo data-from-top />');
+      this.assertHTML(`<div
+        data-from-qux-before=""
+        data-from-bar-before=""
+        data-from-foo-before=""
+        data-from-top=""
+        data-from-foo-after=""
+        data-from-bar-after=""
+        data-from-qux-after=""
+      ></div>`);
+    }
+
+    '@test angle bracket invocation can allow invocation side to override attributes with ...attributes'() {
+      this.registerComponent('qux', '<div id="qux" ...attributes />');
+      this.registerComponent('bar', '<Qux id="bar" ...attributes />');
+      this.registerComponent('foo', '<Bar id="foo" ...attributes />');
+
+      this.render('<Foo id="top" />');
+      this.assertHTML('<div id="top"></div>');
+    }
+
+    '@test angle bracket invocation can override invocation side attributes with ...attributes'() {
+      this.registerComponent('qux', '<div ...attributes id="qux" />');
+      this.registerComponent('bar', '<Qux ...attributes id="bar" />');
+      this.registerComponent('foo', '<Bar ...attributes id="foo" />');
+
+      this.render('<Foo id="top" />');
+      this.assertHTML('<div id="qux"></div>');
+    }
+
+    '@test angle bracket invocation can forward classes before ...attributes to a nested component'() {
+      this.registerComponent('qux', '<div class="qux" ...attributes />');
+      this.registerComponent('bar', '<Qux class="bar" ...attributes />');
+      this.registerComponent('foo', '<Bar class="foo" ...attributes />');
+
+      this.render('<Foo class="top" />');
+      this.assertHTML('<div class="qux bar foo top"></div>');
+    }
+
+    '@test angle bracket invocation can forward classes after ...attributes to a nested component'() {
+      this.registerComponent('qux', '<div ...attributes class="qux" />');
+      this.registerComponent('bar', '<Qux ...attributes class="bar" />');
+      this.registerComponent('foo', '<Bar ...attributes class="foo" />');
+
+      this.render('<Foo class="top" />');
+      this.assertHTML('<div class="top foo bar qux"></div>');
     }
   }
 );
