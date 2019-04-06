@@ -106,7 +106,7 @@ moduleFor(
       assert.strictEqual(receivedEvent.target, this.$('#is-done')[0]);
     }
 
-    ['@test events bubbling up can be prevented'](assert) {
+    ['@test events bubbling up can be prevented by returning false'](assert) {
       let hasReceivedEvent;
 
       this.registerComponent('x-foo', {
@@ -122,6 +122,33 @@ moduleFor(
         ComponentClass: Component.extend({
           change() {
             return false;
+          },
+        }),
+        template: `<input id="is-done" type="checkbox">`,
+      });
+
+      this.render(`{{#x-foo}}{{x-bar}}{{/x-foo}}`);
+
+      runTask(() => this.$('#is-done').trigger('change'));
+      assert.notOk(hasReceivedEvent, 'change event has not been received');
+    }
+
+    ['@test events bubbling up can be prevented by calling stopPropagation()'](assert) {
+      let hasReceivedEvent;
+
+      this.registerComponent('x-foo', {
+        ComponentClass: Component.extend({
+          change() {
+            hasReceivedEvent = true;
+          },
+        }),
+        template: `{{yield}}`,
+      });
+
+      this.registerComponent('x-bar', {
+        ComponentClass: Component.extend({
+          change(e) {
+            e.stopPropagation();
           },
         }),
         template: `<input id="is-done" type="checkbox">`,
