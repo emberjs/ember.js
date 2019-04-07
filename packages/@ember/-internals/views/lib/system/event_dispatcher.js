@@ -285,13 +285,16 @@ export default EmberObject.extend({
           return;
         }
 
+        let result = true;
         for (let index = 0; index < actions.length; index++) {
           let action = actions[index];
 
           if (action && action.eventName === eventName) {
-            return action.handler(event);
+            // return false if any of the action handlers returns false
+            result = action.handler(event) && result;
           }
         }
+        return result;
       };
 
       // Special handling of events that don't bubble (event delegation does not work).
