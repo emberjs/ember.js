@@ -712,6 +712,45 @@ moduleFor(
       this.assert.equal(originalHandlerWasCalled, true, 'the click handler was called');
     }
 
+    ['@test multiple actions with bubbles=false for same event are called but prevent bubbling']() {
+      let clickAction1WasCalled = false;
+      let clickAction2WasCalled = false;
+      let eventHandlerWasCalled = false;
+
+      let ExampleComponent = Component.extend({
+        actions: {
+          clicked1() {
+            clickAction1WasCalled = true;
+          },
+          clicked2() {
+            clickAction2WasCalled = true;
+          },
+        },
+      });
+
+      this.registerComponent('example-component', {
+        ComponentClass: ExampleComponent,
+        template: strip`
+        <a href="#"
+          {{action "clicked1" on="click" bubbles=false}}
+          {{action "clicked2" on="click" bubbles=false}}
+        >click me</a>`,
+        click() {
+          eventHandlerWasCalled = true;
+        },
+      });
+
+      this.render('{{example-component}}');
+
+      runTask(() => {
+        this.$('a').trigger('click');
+      });
+
+      this.assert.ok(clickAction1WasCalled, 'the first clicked action was called');
+      this.assert.ok(clickAction2WasCalled, 'the second clicked action was called');
+      this.assert.notOk(eventHandlerWasCalled, 'event did not bubble up');
+    }
+
     ['@test it should work properly in an #each block']() {
       let editHandlerWasCalled = false;
 
@@ -1357,6 +1396,40 @@ moduleFor(
       });
 
       this.assert.ok(doubleClickActionWasCalled, 'the doubleClicked action was called');
+    }
+
+    ['@test allows multiple actions for same event on a single element']() {
+      let clickAction1WasCalled = false;
+      let clickAction2WasCalled = false;
+
+      let ExampleComponent = Component.extend({
+        actions: {
+          clicked1() {
+            clickAction1WasCalled = true;
+          },
+          clicked2() {
+            clickAction2WasCalled = true;
+          },
+        },
+      });
+
+      this.registerComponent('example-component', {
+        ComponentClass: ExampleComponent,
+        template: strip`
+        <a href="#"
+          {{action "clicked1" on="click"}}
+          {{action "clicked2" on="click"}}
+        >click me</a>`,
+      });
+
+      this.render('{{example-component}}');
+
+      runTask(() => {
+        this.$('a').trigger('click');
+      });
+
+      this.assert.ok(clickAction1WasCalled, 'the first clicked action was called');
+      this.assert.ok(clickAction2WasCalled, 'the second clicked action was called');
     }
 
     ['@test it should respect preventDefault option if provided']() {
