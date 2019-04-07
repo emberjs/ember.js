@@ -1016,22 +1016,23 @@ moduleFor(
         content: 'Hello!',
       });
     }
-      '@test attributes without values at definition are included in `...attributes` on focussable element ("splattributes")'() {
-        this.registerComponent('foo-bar', {
-          ComponentClass: Component.extend({ tagName: '' }),
-          template: '<button data-bar ...attributes>hello</button>',
-        });
 
-        this.render('<FooBar disabled/>');
+    '@test attributes without values at definition are included in `...attributes` on focussable element ("splattributes")'() {
+      this.registerComponent('foo-bar', {
+        ComponentClass: Component.extend({ tagName: '' }),
+        template: '<button data-bar ...attributes>hello</button>',
+      });
 
-        this.assertElement(this.firstChild, {
-          tagName: 'button',
-          attrs: { 'data-bar': '', disabled: '' },
-          content: 'hello',
-        });
+      this.render('<FooBar disabled/>');
 
-        this.assertStableRerender();
-      }
+      this.assertElement(this.firstChild, {
+        tagName: 'button',
+        attrs: { 'data-bar': '', disabled: '' },
+        content: 'hello',
+      });
+
+      this.assertStableRerender();
+    }
 
     '@test an inner angle invocation can forward ...attributes through dynamic component invocation ("splattributes")'() {
       this.registerComponent('x-outer', {
