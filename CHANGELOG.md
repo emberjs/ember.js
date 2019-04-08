@@ -7,6 +7,10 @@
 - [#17872](https://github.com/emberjs/ember.js/pull/17872) [BUGFIX] Fix issue where `{{link-to}}` is causing unexpected local variable shadowing assertions.
 - [#17874](https://github.com/emberjs/ember.js/pull/17874) [BUGFIX] Fix issue with `event.stopPropagation()` in component event handlers when jQuery is disabled.
 - [#17876](https://github.com/emberjs/ember.js/pull/17876) [BUGFIX] Fix issue with multiple `{{action}}` modifiers on the same element when jQuery is disabled.
+- [#17841](https://github.com/emberjs/ember.js/pull/17841) [BUGFIX] Ensure `@sort` works on non-`Ember.Object`s.
+- [#17855](https://github.com/emberjs/ember.js/pull/17855) [BUGFIX] Expose (private) computed `_getter` functions.
+- [#17860](https://github.com/emberjs/ember.js/pull/17860) [BUGFIX] Add assertions for required parameters in computed macros, when used as a decorator.
+- [#17868](https://github.com/emberjs/ember.js/pull/17868) [BUGFIX] Fix controller injection via decorators.
 
 ### v3.10.0-beta.1 (April 02, 2019)
 
