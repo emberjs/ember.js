@@ -147,7 +147,7 @@
     "html-differ": "^1.4.0",
     "lodash.uniq": "^4.5.0",
     "mkdirp": "^0.5.1",
-    "mocha": "^6.0.2",
+    "mocha": "^6.1.1",
     "prettier": "1.16.4",
     "puppeteer": "^1.14.0",
     "qunit": "^2.9.2",
