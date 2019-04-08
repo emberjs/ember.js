@@ -4,11 +4,12 @@
 import { DEBUG } from '@glimmer/env';
 import { assert } from '@ember/debug';
 import {
-  get,
-  computed,
   addObserver,
-  removeObserver,
+  computed,
+  get,
+  isElementDescriptor,
   notifyPropertyChange,
+  removeObserver,
 } from '@ember/-internals/metal';
 import { compare, isArray, A as emberA, uniqBy as uniqByArray } from '@ember/-internals/runtime';
 
@@ -105,6 +106,11 @@ function multiArrayMacro(_dependentKeys, callback, name) {
   @public
 */
 export function sum(dependentKey) {
+  assert(
+    'You attempted to use @sum as a decorator directly, but it requires a `dependentKey` parameter',
+    !isElementDescriptor(Array.prototype.slice.call(arguments))
+  );
+
   return reduceMacro(dependentKey, (sum, item) => sum + item, 0, 'sum');
 }
 
@@ -200,6 +206,11 @@ export function sum(dependentKey) {
   @public
 */
 export function max(dependentKey) {
+  assert(
+    'You attempted to use @max as a decorator directly, but it requires a `dependentKey` parameter',
+    !isElementDescriptor(Array.prototype.slice.call(arguments))
+  );
+
   return reduceMacro(dependentKey, (max, item) => Math.max(max, item), -Infinity, 'max');
 }
 
@@ -294,6 +305,11 @@ export function max(dependentKey) {
   @public
 */
 export function min(dependentKey) {
+  assert(
+    'You attempted to use @min as a decorator directly, but it requires a `dependentKey` parameter',
+    !isElementDescriptor(Array.prototype.slice.call(arguments))
+  );
+
   return reduceMacro(dependentKey, (min, item) => Math.min(min, item), Infinity, 'min');
 }
 
@@ -392,6 +408,11 @@ export function min(dependentKey) {
   @public
 */
 export function map(dependentKey, additionalDependentKeys, callback) {
+  assert(
+    'You attempted to use @map as a decorator directly, but it requires atleast `dependentKey` and `callback` parameters',
+    !isElementDescriptor(Array.prototype.slice.call(arguments))
+  );
+
   if (callback === undefined && typeof additionalDependentKeys === 'function') {
     callback = additionalDependentKeys;
     additionalDependentKeys = [];
@@ -496,6 +517,11 @@ export function map(dependentKey, additionalDependentKeys, callback) {
   @public
 */
 export function mapBy(dependentKey, propertyKey) {
+  assert(
+    'You attempted to use @mapBy as a decorator directly, but it requires `dependentKey` and `propertyKey` parameters',
+    !isElementDescriptor(Array.prototype.slice.call(arguments))
+  );
+
   assert(
     '`computed.mapBy` expects a property string for its second argument, ' +
       'perhaps you meant to use "map"',
@@ -638,6 +664,11 @@ export function mapBy(dependentKey, propertyKey) {
   @public
 */
 export function filter(dependentKey, additionalDependentKeys, callback) {
+  assert(
+    'You attempted to use @filter as a decorator directly, but it requires atleast `dependentKey` and `callback` parameters',
+    !isElementDescriptor(Array.prototype.slice.call(arguments))
+  );
+
   if (callback === undefined && typeof additionalDependentKeys === 'function') {
     callback = additionalDependentKeys;
     additionalDependentKeys = [];
@@ -716,6 +747,11 @@ export function filter(dependentKey, additionalDependentKeys, callback) {
 */
 export function filterBy(dependentKey, propertyKey, value) {
   assert(
+    'You attempted to use @filterBy as a decorator directly, but it requires atleast `dependentKey` and `propertyKey` parameters',
+    !isElementDescriptor(Array.prototype.slice.call(arguments))
+  );
+
+  assert(
     `Dependent key passed to \`computed.filterBy\` shouldn't contain brace expanding pattern.`,
     !/[\[\]\{\}]/g.test(dependentKey)
   );
@@ -789,6 +825,11 @@ export function filterBy(dependentKey, propertyKey, value) {
   @public
 */
 export function uniq(...args) {
+  assert(
+    'You attempted to use @uniq/@union as a decorator directly, but it requires atleast one dependent key parameter',
+    !isElementDescriptor(Array.prototype.slice.call(arguments))
+  );
+
   return multiArrayMacro(
     args,
     function(dependentKeys) {
@@ -873,6 +914,11 @@ export function uniq(...args) {
   @public
 */
 export function uniqBy(dependentKey, propertyKey) {
+  assert(
+    'You attempted to use @uniqBy as a decorator directly, but it requires `dependentKey` and `propertyKey` parameters',
+    !isElementDescriptor(Array.prototype.slice.call(arguments))
+  );
+
   assert(
     `Dependent key passed to \`computed.uniqBy\` shouldn't contain brace expanding pattern.`,
     !/[\[\]\{\}]/g.test(dependentKey)
@@ -1013,6 +1059,11 @@ export let union = uniq;
   @public
 */
 export function intersect(...args) {
+  assert(
+    'You attempted to use @intersect as a decorator directly, but it requires atleast one dependent key parameter',
+    !isElementDescriptor(Array.prototype.slice.call(arguments))
+  );
+
   return multiArrayMacro(
     args,
     function(dependentKeys) {
@@ -1115,6 +1166,11 @@ export function intersect(...args) {
   @public
 */
 export function setDiff(setAProperty, setBProperty) {
+  assert(
+    'You attempted to use @setDiff as a decorator directly, but it requires atleast one dependent key parameter',
+    !isElementDescriptor(Array.prototype.slice.call(arguments))
+  );
+
   assert('`computed.setDiff` requires exactly two dependent arrays.', arguments.length === 2);
   assert(
     `Dependent keys passed to \`computed.setDiff\` shouldn't contain brace expanding pattern.`,
@@ -1187,6 +1243,11 @@ export function setDiff(setAProperty, setBProperty) {
   @public
 */
 export function collect(...dependentKeys) {
+  assert(
+    'You attempted to use @collect as a decorator directly, but it requires atleast one dependent key parameter',
+    !isElementDescriptor(Array.prototype.slice.call(arguments))
+  );
+
   return multiArrayMacro(
     dependentKeys,
     function() {
@@ -1373,6 +1434,11 @@ export function collect(...dependentKeys) {
   @public
 */
 export function sort(itemsKey, additionalDependentKeys, sortDefinition) {
+  assert(
+    'You attempted to use @sort as a decorator directly, but it requires atleast an `itemsKey` parameter',
+    !isElementDescriptor(Array.prototype.slice.call(arguments))
+  );
+
   if (DEBUG) {
     let argumentsValid = false;
 

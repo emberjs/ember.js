@@ -7,6 +7,7 @@ import {
   addDependentKeys,
   ComputedDescriptor,
   Decorator,
+  isElementDescriptor,
   makeComputedDecorator,
   removeDependentKeys,
 } from './decorator';
@@ -20,6 +21,11 @@ const CONSUMED = Object.freeze({});
 export type AliasDecorator = Decorator & PropertyDecorator & AliasDecoratorImpl;
 
 export default function alias(altKey: string): AliasDecorator {
+  assert(
+    'You attempted to use @alias as a decorator directly, but it requires a `altKey` parameter',
+    !isElementDescriptor(Array.prototype.slice.call(arguments))
+  );
+
   return makeComputedDecorator(new AliasedProperty(altKey), AliasDecoratorImpl) as AliasDecorator;
 }
 
