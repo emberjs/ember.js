@@ -2988,10 +2988,10 @@ ember-cli-yuidoc@^0.8.8:
     rsvp "3.0.14"
     yuidocjs "^0.10.0"
 
-ember-cli@^3.8.1:
-  version "3.8.1"
-  resolved "https://registry.yarnpkg.com/ember-cli/-/ember-cli-3.8.1.tgz#2a4f66cf9da3c9665658690e615479af32749807"
-  integrity sha512-cg8Ug60lbNPQVGjHnO66cmrgFXxlFFdkDp+//e58Kgl9mz17cQIbU1TD1pMaW0dYi+2/XADeftHBULs3ejQBSA==
+ember-cli@^3.8.2:
+  version "3.8.2"
+  resolved "https://registry.yarnpkg.com/ember-cli/-/ember-cli-3.8.2.tgz#86b4aa603215277ba44261a9285ef1dc2b7bc702"
+  integrity sha512-K8Oljg8OXI1rTR9A+e1YF5lIn2CMZsCQiSbMSX/EDdmqOjYA3CNk0GAL4Mr1GQsNUxLV51ZkmUz6TvKVkbtKqQ==
   dependencies:
     "@babel/core" "^7.0.0"
     "@babel/plugin-transform-modules-amd" "^7.2.0"
@@ -4005,17 +4005,7 @@ fs-sync@^1.0.4:
     mkdirp "^0.5.1"
     rimraf "^2.1.4"
 
-fs-tree-diff@^0.5.2, fs-tree-diff@^0.5.3, fs-tree-diff@^0.5.6, fs-tree-diff@^0.5.7:
-  version "0.5.7"
-  resolved "https://registry.yarnpkg.com/fs-tree-diff/-/fs-tree-diff-0.5.7.tgz#315e2b098d5fe7f622880ac965b1b051868ac871"
-  integrity sha512-dJwDX6NBH7IfdfFjZAdHCZ6fIKc8LwR7kzqUhYRFJuX4g9ctG/7cuqJuwegGQsyLEykp6Z4krq+yIFMQlt7d9Q==
-  dependencies:
-    heimdalljs-logger "^0.1.7"
-    object-assign "^4.1.0"
-    path-posix "^1.0.0"
-    symlink-or-copy "^1.1.8"
-
-fs-tree-diff@^0.5.4:
+fs-tree-diff@^0.5.2, fs-tree-diff@^0.5.3, fs-tree-diff@^0.5.4, fs-tree-diff@^0.5.6, fs-tree-diff@^0.5.7:
   version "0.5.9"
   resolved "https://registry.yarnpkg.com/fs-tree-diff/-/fs-tree-diff-0.5.9.tgz#a4ec6182c2f5bd80b9b83c8e23e4522e6f5fd946"
   integrity sha512-872G8ax0kHh01m9n/2KDzgYwouKza0Ad9iFltBpNykvROvf2AGtoOzPJgGx125aolGPER3JuC7uZFrQ7bG1AZw==
@@ -4390,21 +4380,13 @@ heimdalljs-graph@^0.3.4:
   resolved "https://registry.yarnpkg.com/heimdalljs-graph/-/heimdalljs-graph-0.3.5.tgz#420fbbc8fc3aec5963ddbbf1a5fb47921c4a5927"
   integrity sha512-szOy9WZUc7eUInEBQEsoa1G2d+oYHrn6ndZPf76eh8A9ID1zWUCEEsxP3F+CvQx9+EDrg1srdyLUmfVAr8EB4g==
 
-heimdalljs-logger@^0.1.7:
+heimdalljs-logger@^0.1.7, heimdalljs-logger@^0.1.9:
   version "0.1.10"
   resolved "https://registry.yarnpkg.com/heimdalljs-logger/-/heimdalljs-logger-0.1.10.tgz#90cad58aabb1590a3c7e640ddc6a4cd3a43faaf7"
   integrity sha512-pO++cJbhIufVI/fmB/u2Yty3KJD0TqNPecehFae0/eps0hkZ3b4Zc/PezUMOpYuHFQbA7FxHZxa305EhmjLj4g==
   dependencies:
     debug "^2.2.0"
     heimdalljs "^0.2.6"
-
-heimdalljs-logger@^0.1.9:
-  version "0.1.9"
-  resolved "https://registry.yarnpkg.com/heimdalljs-logger/-/heimdalljs-logger-0.1.9.tgz#d76ada4e45b7bb6f786fc9c010a68eb2e2faf176"
-  integrity sha1-12raTkW3u294b8nAEKaOsuL68XY=
-  dependencies:
-    debug "^2.2.0"
-    heimdalljs "^0.2.0"
 
 heimdalljs@0.3.3:
   version "0.3.3"
