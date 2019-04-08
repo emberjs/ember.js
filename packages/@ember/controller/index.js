@@ -55,8 +55,8 @@ const Controller = EmberObject.extend(ControllerMixin);
   @return {ComputedDecorator} injection decorator instance
   @public
 */
-export function inject(nameOrDesc, options) {
-  return metalInject('controller', nameOrDesc, options);
+export function inject() {
+  return metalInject('controller', ...arguments);
 }
 
 export default Controller;
