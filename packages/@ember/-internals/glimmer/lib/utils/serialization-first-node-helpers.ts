@@ -1,1 +1,1 @@
-export { isSerializationFirstNode } from '@glimmer/util';
+export { isSerializationFirstNode } from '@glimmer/runtime';
