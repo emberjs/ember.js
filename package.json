@@ -165,7 +165,7 @@
     "typescript-eslint-parser": "^22.0.0"
   },
   "engines": {
-    "node": "8.* || >= 10.*"
+    "node": "6.* || 8.* || >= 10.*"
   },
   "ember-addon": {
     "after": "ember-cli-legacy-blueprints"
