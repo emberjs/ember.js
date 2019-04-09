@@ -765,6 +765,14 @@
     "@glimmer/interfaces" "^0.38.5-alpha.1"
     "@glimmer/vm" "^0.38.5-alpha.1"
 
+"@glimmer/encoder@^0.40.0":
+  version "0.40.0"
+  resolved "https://registry.yarnpkg.com/@glimmer/encoder/-/encoder-0.40.0.tgz#86c0e8b305a12443450064cdac81e7976bb797cc"
+  integrity sha512-aBQ2uDH/z0vfmCjci/sS7E+LLihx9PcEwK749bwF+7ypRXe1lw8J1IKK9M+UdaVlomnEXaSy+B11zTaq2f1DIg==
+  dependencies:
+    "@glimmer/interfaces" "^0.40.0"
+    "@glimmer/vm" "^0.40.0"
+
 "@glimmer/env@^0.1.7":
   version "0.1.7"
   resolved "https://registry.yarnpkg.com/@glimmer/env/-/env-0.1.7.tgz#fd2d2b55a9029c6b37a6c935e8c8871ae70dfa07"
@@ -778,18 +786,28 @@
     "@glimmer/wire-format" "^0.38.5-alpha.1"
     "@simple-dom/interface" "1.4.0"
 
+"@glimmer/interfaces@^0.40.0":
+  version "0.40.0"
+  resolved "https://registry.yarnpkg.com/@glimmer/interfaces/-/interfaces-0.40.0.tgz#80995021b341f479990b244314c2489c34b46906"
+  integrity sha512-4LyeQKmGqAovoP9n6EVh8JfxBPAyJZiV0ocVwCmQpCRKam10W0iYjSaEisDuIM2a0gGxuewAS1oZEf/dWChMRg==
+
 "@glimmer/low-level@^0.38.5-alpha.1":
   version "0.38.5-alpha.1"
   resolved "https://registry.yarnpkg.com/@glimmer/low-level/-/low-level-0.38.5-alpha.1.tgz#87d920cc3bbd4cff683a0d0f425b323804efa232"
   integrity sha512-1wv8qR/t/OayqCW0S+mMGmpsQblRInR3pY8ueQrpUrTIqwTiZ7/u5k+4/H9fIbEHLe8Egt464QY5On0PNylqeQ==
 
-"@glimmer/node@0.38.5-alpha.1":
-  version "0.38.5-alpha.1"
-  resolved "https://registry.yarnpkg.com/@glimmer/node/-/node-0.38.5-alpha.1.tgz#b48508bc6c8736cf06a6540da4f2697d1054f23f"
-  integrity sha512-yn4ll0xJXFNA993/Y4FNVnUY4BM+DGVYGBTODuHr8AXP0a4AqtsYhHpsk9u8RO+HaKHURYWJrTJNn4rwE8OLLA==
+"@glimmer/low-level@^0.40.0":
+  version "0.40.0"
+  resolved "https://registry.yarnpkg.com/@glimmer/low-level/-/low-level-0.40.0.tgz#6c7b7af5eba25dc3b39851fc1feae890934e19e7"
+  integrity sha512-T/8Bjsqi29sZJSmqSHChTv5UrV2d2iOhzBnNl5junC1d/BIG8VMYybVho9y+Sli/QfPrVrdgbd/vvmBfhAIQGg==
+
+"@glimmer/node@0.40.0":
+  version "0.40.0"
+  resolved "https://registry.yarnpkg.com/@glimmer/node/-/node-0.40.0.tgz#9946eac1d7593f523b7bd7362118864fdb07055c"
+  integrity sha512-oo5R7mcgI4/WhQR05dzP8ii7o/GuLMRES5cT+MoXRDPyPdoyPAXWQv2i0ec6U0LcqRKtsrgguJoBIDCSi8Uf1g==
   dependencies:
-    "@glimmer/interfaces" "^0.38.5-alpha.1"
-    "@glimmer/runtime" "^0.38.5-alpha.1"
+    "@glimmer/interfaces" "^0.40.0"
+    "@glimmer/runtime" "^0.40.0"
 
 "@glimmer/opcode-compiler@0.38.5-alpha.1":
   version "0.38.5-alpha.1"
@@ -813,6 +831,15 @@
     "@glimmer/interfaces" "^0.38.5-alpha.1"
     "@glimmer/util" "^0.38.5-alpha.1"
 
+"@glimmer/program@^0.40.0":
+  version "0.40.0"
+  resolved "https://registry.yarnpkg.com/@glimmer/program/-/program-0.40.0.tgz#41c81cc913c6478f4b8d7a3e09a92f94e673e835"
+  integrity sha512-xVm1CRD+87ftLYHIW2VBfd7LZN3ETvnC676v3+bJSSmPrymN8Dg/mKG555DAcNeS6lQtvYf6/ODvClD6jz0kJw==
+  dependencies:
+    "@glimmer/encoder" "^0.40.0"
+    "@glimmer/interfaces" "^0.40.0"
+    "@glimmer/util" "^0.40.0"
+
 "@glimmer/reference@0.38.5-alpha.1", "@glimmer/reference@^0.38.5-alpha.1":
   version "0.38.5-alpha.1"
   resolved "https://registry.yarnpkg.com/@glimmer/reference/-/reference-0.38.5-alpha.1.tgz#36b06ce7bdeb9fb6e7177837fc504e2576c0885c"
@@ -820,7 +847,14 @@
   dependencies:
     "@glimmer/util" "^0.38.5-alpha.1"
 
-"@glimmer/runtime@0.38.5-alpha.1", "@glimmer/runtime@^0.38.5-alpha.1":
+"@glimmer/reference@^0.40.0":
+  version "0.40.0"
+  resolved "https://registry.yarnpkg.com/@glimmer/reference/-/reference-0.40.0.tgz#76402b1281f740f8c0b0fcabff94166ed0fdcdcc"
+  integrity sha512-7W31iDN6lE4DxTOxNbub811lbER65QlV3b3XCL1ML0t/RUWLqUFsDaJBpDPwBAlVkaJbJPM8ha+cGI6XIYdvkA==
+  dependencies:
+    "@glimmer/util" "^0.40.0"
+
+"@glimmer/runtime@0.38.5-alpha.1":
   version "0.38.5-alpha.1"
   resolved "https://registry.yarnpkg.com/@glimmer/runtime/-/runtime-0.38.5-alpha.1.tgz#870b6028cda8af5d9f3e7a8bd35c8e03848bb644"
   integrity sha512-fPIDxAfq8WhJiXsZprHHvHK26n1+ENW0fGSrEmGBAEHWLxnhI1xHOZcj5/06IU7y/R/7c98iaAu6D+B23CMFsQ==
@@ -833,6 +867,19 @@
     "@glimmer/vm" "^0.38.5-alpha.1"
     "@glimmer/wire-format" "^0.38.5-alpha.1"
     "@simple-dom/interface" "^1.4.0"
+
+"@glimmer/runtime@^0.40.0":
+  version "0.40.0"
+  resolved "https://registry.yarnpkg.com/@glimmer/runtime/-/runtime-0.40.0.tgz#ef1beeec9f4dc18895768d0ba548fc6a327b6cc7"
+  integrity sha512-1qOvWS3lcrd8SGebg0Fa4oogB2BI3XKYrPP1zapF+NjFt6WYpsxJOMQF+QKsC+3zRQO0YWKTHD+Eq9i4NN7t+A==
+  dependencies:
+    "@glimmer/interfaces" "^0.40.0"
+    "@glimmer/low-level" "^0.40.0"
+    "@glimmer/program" "^0.40.0"
+    "@glimmer/reference" "^0.40.0"
+    "@glimmer/util" "^0.40.0"
+    "@glimmer/vm" "^0.40.0"
+    "@glimmer/wire-format" "^0.40.0"
 
 "@glimmer/syntax@^0.38.5-alpha.1":
   version "0.38.5-alpha.1"
@@ -849,6 +896,11 @@
   resolved "https://registry.yarnpkg.com/@glimmer/util/-/util-0.38.5-alpha.1.tgz#2508e5015ab3a42262bf608d885233115488148e"
   integrity sha512-JO7PDInhp0FepIx1V6XTPJ4q1xPlNtdS3B8j0uteNnhOPpkIMbpRLcJKPJbAHuFRORQBEDEeWzkZ6NAPpfVenQ==
 
+"@glimmer/util@^0.40.0":
+  version "0.40.0"
+  resolved "https://registry.yarnpkg.com/@glimmer/util/-/util-0.40.0.tgz#0f0bceb1dd45a466cf99558f8c4b3dfbcdcd8399"
+  integrity sha512-1Pl64HuuIm97N2ty9mpPCq2U9GKVZGyKoShi2sF4+BdaNtI3rHjZe7rIIo1dBmFOojgKRFkbUFyTktB2HqlR5A==
+
 "@glimmer/vm@^0.38.5-alpha.1":
   version "0.38.5-alpha.1"
   resolved "https://registry.yarnpkg.com/@glimmer/vm/-/vm-0.38.5-alpha.1.tgz#20cad81985f58e512b95d5927230ac324c324e26"
@@ -857,12 +909,28 @@
     "@glimmer/interfaces" "^0.38.5-alpha.1"
     "@glimmer/util" "^0.38.5-alpha.1"
 
+"@glimmer/vm@^0.40.0":
+  version "0.40.0"
+  resolved "https://registry.yarnpkg.com/@glimmer/vm/-/vm-0.40.0.tgz#b0a05ef6c87368ba37ba4a25403dd6b7cd1951b8"
+  integrity sha512-E47wzGfNINICQr4EGNxeQfM2pClA0goECb/KYl/S9rQpuHl9A+c3Juuc/+4CiS2SxYA7SXR31G6BI+AmGD09eQ==
+  dependencies:
+    "@glimmer/interfaces" "^0.40.0"
+    "@glimmer/util" "^0.40.0"
+
 "@glimmer/wire-format@^0.38.5-alpha.1":
   version "0.38.5-alpha.1"
   resolved "https://registry.yarnpkg.com/@glimmer/wire-format/-/wire-format-0.38.5-alpha.1.tgz#f4b8476622cbe0b8cc0b0422677866d524aad2a1"
   integrity sha512-BlgyY/11jaafWuK5DA13tvuwn1HOuso8MdW7PaFYqceFMYn/fhGrRXqcgeKiwT9p7U/LbNA1OZf678X2QYjzog==
   dependencies:
     "@glimmer/util" "^0.38.5-alpha.1"
+
+"@glimmer/wire-format@^0.40.0":
+  version "0.40.0"
+  resolved "https://registry.yarnpkg.com/@glimmer/wire-format/-/wire-format-0.40.0.tgz#bb70c2134a3a8820088ac75e9e349bdc0418dfe0"
+  integrity sha512-PdqEjcjS0rrImOBQ4NPMNccrE4A5aiYzaqhv6p72+dkxOOHVEv2ZwAFHfSSjRCf1WIg+o2SUZbjd3iotzfBhjA==
+  dependencies:
+    "@glimmer/interfaces" "^0.40.0"
+    "@glimmer/util" "^0.40.0"
 
 "@simple-dom/document@^1.4.0":
   version "1.4.0"
