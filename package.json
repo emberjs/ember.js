@@ -93,7 +93,7 @@
     "@babel/plugin-transform-template-literals": "^7.2.0",
     "@glimmer/compiler": "0.38.5-alpha.1",
     "@glimmer/env": "^0.1.7",
-    "@glimmer/interfaces": "0.38.5-alpha.1",
+    "@glimmer/interfaces": "0.40.0",
     "@glimmer/node": "0.38.5-alpha.1",
     "@glimmer/opcode-compiler": "0.38.5-alpha.1",
     "@glimmer/program": "0.38.5-alpha.1",
