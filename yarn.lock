@@ -7127,15 +7127,15 @@ rimraf@~2.5.2:
   dependencies:
     glob "^7.0.5"
 
-rollup-plugin-commonjs@^9.3.1:
-  version "9.3.1"
-  resolved "https://registry.yarnpkg.com/rollup-plugin-commonjs/-/rollup-plugin-commonjs-9.3.1.tgz#de9d33847a94fe3078359c0ca4efb6a8ecdd490e"
-  integrity sha512-RuOmsomyM9gbgV4OikMSdB3Nq5aqi7MOIXje6nT5JeRPrwWlT/qZ7Ve4xxh5i08W6BxTLS9T8P2B+KcSj2sSTw==
+rollup-plugin-commonjs@^9.3.4:
+  version "9.3.4"
+  resolved "https://registry.yarnpkg.com/rollup-plugin-commonjs/-/rollup-plugin-commonjs-9.3.4.tgz#2b3dddbbbded83d45c36ff101cdd29e924fd23bc"
+  integrity sha512-DTZOvRoiVIHHLFBCL4pFxOaJt8pagxsVldEXBOn6wl3/V21wVaj17HFfyzTsQUuou3sZL3lEJZVWKPFblJfI6w==
   dependencies:
     estree-walker "^0.6.0"
     magic-string "^0.25.2"
     resolve "^1.10.0"
-    rollup-pluginutils "^2.5.0"
+    rollup-pluginutils "^2.6.0"
 
 rollup-plugin-node-resolve@^4.2.2:
   version "4.2.2"
@@ -7147,10 +7147,10 @@ rollup-plugin-node-resolve@^4.2.2:
     is-module "^1.0.0"
     resolve "^1.10.0"
 
-rollup-pluginutils@^2.0.1, rollup-pluginutils@^2.5.0:
-  version "2.5.0"
-  resolved "https://registry.yarnpkg.com/rollup-pluginutils/-/rollup-pluginutils-2.5.0.tgz#23be0f05ac3972ea7b08fc7870cb91fde5b23a09"
-  integrity sha512-9Muh1H+XB5f5ONmKMayUoTYR1EZwHbwJJ9oZLrKT5yuTf/RLIQ5mYIGsrERquVucJmjmaAW0Y7+6Qo1Ep+5w3Q==
+rollup-pluginutils@^2.0.1, rollup-pluginutils@^2.6.0:
+  version "2.6.0"
+  resolved "https://registry.yarnpkg.com/rollup-pluginutils/-/rollup-pluginutils-2.6.0.tgz#203706edd43dfafeaebc355d7351119402fc83ad"
+  integrity sha512-aGQwspEF8oPKvg37u3p7h0cYNwmJR1sCBMZGZ5b9qy8HGtETknqjzcxrDRrcAnJNXN18lBH4Q9vZYth/p4n8jQ==
   dependencies:
     estree-walker "^0.6.0"
     micromatch "^3.1.10"
