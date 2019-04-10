@@ -150,9 +150,6 @@ export const BOUNDS = symbol('BOUNDS');
   When the user clicks the button, Ember will invoke the `hello` action,
   passing in the current value of `person.name` as an argument.
 
-  For historical reasons, components must have a `-` in their name when invoked
-  using the `{{` syntax.
-
   ## Customizing a Component's HTML Element in JavaScript
 
   ### HTML Tag
