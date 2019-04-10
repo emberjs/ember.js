@@ -113,7 +113,7 @@ export const BOUNDS = symbol('BOUNDS');
   ```
 
   ```app/templates/components/person-profile.hbs
-  <h1>{{person.title}}</h1>
+  <h1>{{@person.name}}</h1>
   {{yield}}
   ```
 
@@ -122,33 +122,30 @@ export const BOUNDS = symbol('BOUNDS');
   If you want to customize the component in order to handle events, transform
   arguments or maintain internal state, you implement a subclass of `Component`.
 
-  For example, you could implement the action `hello` for the `person-profile`
-  component:
+  One example is to add computed properties to your component:
 
   ```app/components/person-profile.js
   import Component from '@ember/component';
 
   export default Component.extend({
-    actions: {
-      hello(name) {
-        console.log("Hello", name);
+    displayName: computed('person.title', 'person.firstName', 'person.lastName', function() {
+      let { title, firstName, lastName } = this;
+
+      if (title) {
+        return `${title} ${lastName}`;
+      } else {
+        return `${firstName} ${lastName};
       }
-    }
+    })
   });
   ```
 
   And then use it in the component's template:
 
   ```app/templates/components/person-profile.hbs
-  <h1>{{person.title}}</h1>
-  {{yield}} <!-- block contents -->
-  <button {{action 'hello' person.name}}>
-    Say Hello to {{person.name}}
-  </button>
+  <h1>{{this.displayName}}</h1>
+  {{yield}}
   ```
-
-  When the user clicks the button, Ember will invoke the `hello` action,
-  passing in the current value of `person.name` as an argument.
 
   ## Customizing a Component's HTML Element in JavaScript
 
@@ -203,6 +200,7 @@ export const BOUNDS = symbol('BOUNDS');
   import { computed } from '@ember/object';
 
   export default Component.extend({
+    classNames: ['my-class', 'my-other-class'],
     classNameBindings: ['propertyA', 'propertyB'],
 
     propertyA: 'from-a',
@@ -215,7 +213,21 @@ export const BOUNDS = symbol('BOUNDS');
   Invoking this component will produce HTML that looks like:
 
   ```html
-  <div id="ember1" class="ember-view from-a from-b"></div>
+  <div id="ember1" class="ember-view my-class my-other-class from-a from-b"></div>
+  ```
+
+  Note that `classNames` and `classNameBindings` is in addition to the `class`
+  attribute passed with the angle bracket invocation syntax. Therefore, if this
+  component was invoked like so:
+
+  ```handlebars
+  <MyWidget class="from-invocation" />
+  ```
+
+  The resulting HTML will look similar to this:
+
+  ```html
+  <div id="ember1" class="from-invocation ember-view my-class my-other-class from-a from-b"></div>
   ```
 
   If the value of a class name binding returns a boolean the property name
@@ -361,7 +373,7 @@ export const BOUNDS = symbol('BOUNDS');
   [EmberObject](/api/ember/release/classes/EmberObject) documentation for more
   information about concatenated properties.
 
-  ## HTML Attributes
+  ### Other HTML Attributes
 
   The HTML attribute section of a component's tag can be set by providing an
   `attributeBindings` property set to an array of property names on the component.
@@ -404,6 +416,24 @@ export const BOUNDS = symbol('BOUNDS');
   ```html
   <a id="ember1" class="ember-view" href="http://google.com"></a>
   ```
+
+  HTML attributes passed with angle bracket invocations will take precedence
+  over those specified in `attributeBindings`. Therefore, if this component was
+  invoked like so:
+
+  ```handlebars
+  <MyAnchor href="http://bing.com" @url="http://google.com" />
+  ```
+
+  The resulting HTML will looks like this:
+
+  ```html
+  <a id="ember1" class="ember-view" href="http://bing.com"></a>
+  ```
+
+  Note that the `href` attribute is ultimately set to `http://bing.com`,
+  despite it having attribute binidng to the `url` property, which was
+  set to `http://google.com`.
 
   Namespaced attributes (e.g. `xlink:href`) are supported, but have to be
   mapped, since `:` is not a valid character for properties in Javascript:
@@ -541,11 +571,11 @@ export const BOUNDS = symbol('BOUNDS');
 
   ## Handling Browser Events
 
-  Components can respond to user-initiated events in one of three ways: method
-  implementation, through an event manager, and through `{{action}}` helper use
-  in their template or layout.
+  Components can respond to user-initiated events in one of two ways: adding
+  event handler methods to the component's class, or adding actions to the
+  component's template.
 
-  ### Method Implementation
+  ### Event Handler Methods
 
   Components can respond to user-initiated events by implementing a method that
   matches the event name. An event object will be passed as the argument to this
@@ -556,22 +586,19 @@ export const BOUNDS = symbol('BOUNDS');
 
   export default Component.extend({
     click(event) {
-      // will be called with a browser event when an instance's rendered element
-      // is clicked
+      // `event.target` is either the component's element or one of its children
+      let tag = event.target.tagName.toLowerCase();
+      console.log('clicked on a `<${tag}>` HTML element!');
     }
   });
   ```
 
-  ### `{{action}}` Helper
+  In this example, whenever the user clicked anywhere inside the component, it
+  will log a message to the console.
 
-  See [Ember.Templates.helpers.action](/api/ember/release/classes/Ember.Templates.helpers/methods/yield?anchor=yield).
-
-  ### Event Names
-
-  All of the event handling approaches described above respond to the same set
-  of events. The names of the built-in events are listed below. (The hash of
-  built-in events exists in `Ember.EventDispatcher`.) Additional, custom events
-  can be registered by using `Application.customEvents`.
+  It is possible to handle event types other than `click` by implementing the
+  following event handler methods. In addition, custom events can be registered
+  by using `Application.customEvents`.
 
   Touch events:
 
@@ -607,7 +634,7 @@ export const BOUNDS = symbol('BOUNDS');
   * `focusOut`
   * `input`
 
-  HTML5 drag and drop events:
+  Drag and drop events:
 
   * `dragStart`
   * `drag`
@@ -616,6 +643,43 @@ export const BOUNDS = symbol('BOUNDS');
   * `dragOver`
   * `dragEnd`
   * `drop`
+
+  ### `{{action}}` Helper
+
+  Instead of handling all events of a particular type anywhere inside the
+  component's element, you may instead want to limit it to a particular
+  element in the component's template. In this case, it would be more
+  convenient to implement an action instead.
+
+  For example, you could implement the action `hello` for the `person-profile`
+  component:
+
+  ```app/components/person-profile.js
+  import Component from '@ember/component';
+
+  export default Component.extend({
+    actions: {
+      hello(name) {
+        console.log("Hello", name);
+      }
+    }
+  });
+  ```
+
+  And then use it in the component's template:
+
+  ```app/templates/components/person-profile.hbs
+  <h1>{{@person.name}}</h1>
+
+  <button {{action 'hello' @person.name}}>
+    Say Hello to {{@person.name}}
+  </button>
+  ```
+
+  When the user clicks the button, Ember will invoke the `hello` action,
+  passing in the current value of `@person.name` as an argument.
+
+  See [Ember.Templates.helpers.action](/api/ember/release/classes/Ember.Templates.helpers/methods/action?anchor=action).
 
   @class Component
   @extends Ember.CoreView
