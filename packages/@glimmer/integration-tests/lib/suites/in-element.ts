@@ -131,17 +131,38 @@ export class InElementSuite extends RenderTest {
   }
 
   @test
-  '`insertBefore` can only be null'() {
+  'With insertBefore'() {
     let externalElement = this.delegate.createElement('div');
-    let before = this.delegate.createElement('div');
+    replaceHTML(externalElement, '<b>Hello</b><em>there!</em>');
 
-    this.assert.throws(() => {
-      this.render('{{#in-element externalElement insertBefore=before}}[{{foo}}]{{/in-element}}', {
-        externalElement,
-        before,
-        foo: 'Yippie!',
-      });
-    }, /insertBefore only takes `null` as an argument/);
+    this.render(
+      stripTight`{{#in-element externalElement insertBefore=insertBefore}}[{{foo}}]{{/in-element}}`,
+      { externalElement, insertBefore: externalElement.lastChild, foo: 'Yippie!' }
+    );
+
+    equalsElement(externalElement, 'div', {}, '<b>Hello</b>[Yippie!]<em>there!</em>');
+    this.assertHTML('<!---->');
+    this.assertStableRerender();
+
+    this.rerender({ foo: 'Double Yips!' });
+    equalsElement(externalElement, 'div', {}, '<b>Hello</b>[Double Yips!]<em>there!</em>');
+    this.assertHTML('<!---->');
+    this.assertStableNodes();
+
+    this.rerender({ insertBefore: null });
+    equalsElement(externalElement, 'div', {}, '<b>Hello</b><em>there!</em>[Double Yips!]');
+    this.assertHTML('<!---->');
+    this.assertStableRerender();
+
+    this.rerender({ externalElement: null });
+    equalsElement(externalElement, 'div', {}, '<b>Hello</b><em>there!</em>');
+    this.assertHTML('<!---->');
+    this.assertStableRerender();
+
+    this.rerender({ externalElement, insertBefore: externalElement.lastChild, foo: 'Yippie!' });
+    equalsElement(externalElement, 'div', {}, '<b>Hello</b>[Yippie!]<em>there!</em>');
+    this.assertHTML('<!---->');
+    this.assertStableRerender();
   }
 
   @test

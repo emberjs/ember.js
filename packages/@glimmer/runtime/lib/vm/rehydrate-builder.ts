@@ -1,5 +1,5 @@
 import { Bounds, Environment, Option, ElementBuilder } from '@glimmer/interfaces';
-import { assert, expect, Stack } from '@glimmer/util';
+import { assert, expect, Stack, Maybe } from '@glimmer/util';
 import {
   AttrNamespace,
   Namespace,
@@ -75,7 +75,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     this.currentCursor!.candidate = node;
   }
 
-  pushElement(element: SimpleElement, nextSibling: Option<SimpleNode>) {
+  pushElement(element: SimpleElement, nextSibling: Maybe<SimpleNode> = null) {
     let { blockDepth = 0 } = this;
     let cursor = new RehydratingCursor(element, nextSibling, blockDepth);
     let currentCursor = this.currentCursor;
@@ -379,7 +379,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
   __pushRemoteElement(
     element: SimpleElement,
     cursorId: string,
-    insertBefore: Option<null>
+    insertBefore: Maybe<SimpleNode>
   ): Option<RemoteLiveBlock> {
     let marker = this.getMarker(element as HTMLElement, cursorId);
 
