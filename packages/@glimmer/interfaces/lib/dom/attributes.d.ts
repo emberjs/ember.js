@@ -6,7 +6,7 @@ import {
   SimpleDocumentFragment,
   AttrNamespace,
 } from '@simple-dom/interface';
-import { Option, DestroySymbol, SymbolDestroyable } from '../core';
+import { Option, DestroySymbol, SymbolDestroyable, Maybe } from '../core';
 import { Bounds, Cursor } from './bounds';
 import { ElementOperations, Environment } from '../runtime';
 import { GlimmerTreeConstruction, GlimmerTreeChanges } from './changes';
@@ -41,7 +41,7 @@ export interface DOMStack {
   pushRemoteElement(
     element: SimpleElement,
     guid: string,
-    insertBefore: Option<null>
+    insertBefore: Maybe<SimpleNode>
   ): Option<RemoteLiveBlock>;
   popRemoteElement(): void;
   popElement(): void;
