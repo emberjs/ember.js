@@ -39,7 +39,7 @@ if (DEBUG) {
 
      actions: {
        next() {
-         this.get('router').transitionTo('other.route');
+         this.router.transitionTo('other.route');
        }
      }
    });
