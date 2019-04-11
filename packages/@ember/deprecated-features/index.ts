@@ -12,4 +12,4 @@ export const ROUTER_EVENTS = !!'4.0.0';
 export const COMPONENT_MANAGER_STRING_LOOKUP = !!'3.8.0';
 export const JQUERY_INTEGRATION = !!'3.9.0';
 export const ALIAS_METHOD = !!'3.9.0';
-export const APP_CTRL_ROUTER_PROPS = !!'3.10.0';
+export const APP_CTRL_ROUTER_PROPS = !!'3.10.0-beta.1';
