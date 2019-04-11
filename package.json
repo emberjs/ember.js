@@ -152,7 +152,7 @@
     "puppeteer": "^1.14.0",
     "qunit": "^2.9.2",
     "rollup-plugin-commonjs": "^9.3.4",
-    "rollup-plugin-node-resolve": "^4.2.2",
+    "rollup-plugin-node-resolve": "^4.2.3",
     "route-recognizer": "^0.3.4",
     "router_js": "^6.2.4",
     "rsvp": "^4.8.4",
