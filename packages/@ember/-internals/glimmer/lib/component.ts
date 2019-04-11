@@ -571,15 +571,35 @@ export const BOUNDS = symbol('BOUNDS');
 
   ## Handling Browser Events
 
-  Components can respond to user-initiated events in one of two ways: adding
-  event handler methods to the component's class, or adding actions to the
-  component's template.
+  Components can respond to user-initiated events in one of three ways: passing
+  actions with angle bracket invocation, adding event handler methods to the
+  component's class, or adding actions to the component's template.
+
+  ### Passing Actions With Angle Bracket Invoation
+
+  For one-off events specific to particular instance of a component, it is possible
+  to pass actions to the component's element using angle bracket invoation syntax.
+
+  ```handlebars
+  <MyWidget {{action 'firstWidgetClicked'}} />
+
+  <MyWidget {{action 'secondWidgetClicked'}} />
+  ```
+
+  In this case, when the first component is clicked on, Ember will invoke the
+  `firstWidgetClicked` action. When the second component is clicked on, Ember
+  will invoke the `secondWidgetClicked` action instead.
+
+  Besides `{{action}}`, it is also possible to pass any arbitrary element modifiers
+  using the angle bracket invocation syntax.
 
   ### Event Handler Methods
 
-  Components can respond to user-initiated events by implementing a method that
-  matches the event name. An event object will be passed as the argument to this
-  method.
+  Components can also respond to user-initiated events by implementing a method
+  that matches the event name. This approach is appropiate when the same event
+  should be handled by all instances of the same component.
+
+  An event object will be passed as the argument to the event handler method.
 
   ```app/components/my-widget.js
   import Component from '@ember/component';
