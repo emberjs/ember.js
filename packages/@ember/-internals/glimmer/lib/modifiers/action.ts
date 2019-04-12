@@ -17,6 +17,7 @@ import { registerDestructor } from '@glimmer/runtime';
 import { createUpdatableTag, UpdatableTag } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
 import { INVOKE } from '../helpers/action';
+import { Owner } from '@ember/-internals/owner';
 
 const MODIFIERS = ['alt', 'shift', 'meta', 'ctrl'];
 const POINTER_EVENT_TYPE_REGEX = /^click|mouse|touch/;
@@ -204,6 +205,22 @@ export class ActionState {
 // implements ModifierManager<Action>
 export default class ActionModifierManager
   implements InternalModifierManager<ActionState, unknown> {
+  public owner: Owner;
+  private _setupEventHandler?: (eventName: string) => void;
+
+  constructor(owner: Owner) {
+    this.owner = owner;
+  }
+
+  get setupEventHandler(): (eventName: string) => void {
+    if (this._setupEventHandler === undefined) {
+      let dispatcher = this.owner.lookup('event_dispatcher:main');
+      this._setupEventHandler = (eventName) => dispatcher['setupHandler'](eventName);
+    }
+
+    return this._setupEventHandler;
+  }
+
   create(
     element: SimpleElement,
     _state: unknown,
@@ -285,6 +302,8 @@ export default class ActionModifierManager
     actionState.actionName = actionName;
     actionState.implicitTarget = implicitTarget;
 
+    this.setupEventHandler(actionState.eventName);
+
     ActionHelper.registerAction(actionState);
 
     dom.setAttribute(element, 'data-ember-action', '');
@@ -299,7 +318,11 @@ export default class ActionModifierManager
       actionState.actionName = valueForRef(actionNameRef);
     }
 
-    actionState.eventName = actionState.getEventName();
+    let newEventName = actionState.getEventName();
+    if (newEventName !== actionState.eventName) {
+      this.setupEventHandler(actionState.eventName);
+      actionState.eventName = actionState.getEventName();
+    }
   }
 
   getTag(actionState: ActionState): UpdatableTag {

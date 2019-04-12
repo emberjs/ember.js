@@ -235,7 +235,7 @@ export default class RuntimeResolverImpl implements RuntimeResolver<Owner> {
     this.isInteractive = isInteractive;
 
     this.builtInModifiers = {
-      action: { manager: new ActionModifierManager(), state: null },
+      action: { manager: new ActionModifierManager(owner), state: null },
       on: { manager: new OnModifierManager(owner, isInteractive), state: null },
     };
   }
