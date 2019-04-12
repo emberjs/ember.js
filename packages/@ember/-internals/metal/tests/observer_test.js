@@ -16,6 +16,7 @@ import {
   set,
 } from '..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { FUNCTION_PROTOTYPE_EXTENSIONS } from '@ember/deprecated-features';
 
 function K() {}
 
@@ -103,18 +104,20 @@ moduleFor(
       assert.equal(observerCount, 10, 'should continue to fire indefinitely');
     }
 
-    ['@test observer added declaratively via brace expansion should fire when property changes'](
+    ['@test observer added via Function.prototype extensions and brace expansion should fire when property changes'](
       assert
     ) {
-      if (ENV.EXTEND_PROTOTYPES.Function) {
+      if (!FUNCTION_PROTOTYPE_EXTENSIONS && ENV.EXTEND_PROTOTYPES.Function) {
         let obj = {};
         let count = 0;
 
-        mixin(obj, {
-          observeFooAndBar: function() {
-            count++;
-          }.observes('{foo,bar}'),
-        });
+        expectDeprecation(() => {
+          mixin(obj, {
+            observeFooAndBar: function() {
+              count++;
+            }.observes('{foo,bar}'),
+          });
+        }, /Function prototype extensions have been deprecated, please migrate from function\(\){}.observes\('foo'\) to observer\('foo', function\(\) {}\)/);
 
         set(obj, 'foo', 'foo');
         assert.equal(count, 1, 'observer specified via brace expansion invoked on property change');
@@ -129,10 +132,10 @@ moduleFor(
       }
     }
 
-    ['@test observer specified declaratively via brace expansion should fire when dependent property changes'](
+    ['@test observer specified via Function.prototype extensions via brace expansion should fire when dependent property changes'](
       assert
     ) {
-      if (ENV.EXTEND_PROTOTYPES.Function) {
+      if (!FUNCTION_PROTOTYPE_EXTENSIONS && ENV.EXTEND_PROTOTYPES.Function) {
         let obj = { baz: 'Initial' };
         let count = 0;
 
@@ -152,11 +155,13 @@ moduleFor(
           })
         );
 
-        mixin(obj, {
-          fooAndBarWatcher: function() {
-            count++;
-          }.observes('{foo,bar}'),
-        });
+        expectDeprecation(() => {
+          mixin(obj, {
+            fooAndBarWatcher: function() {
+              count++;
+            }.observes('{foo,bar}'),
+          });
+        }, /Function prototype extensions have been deprecated, please migrate from function\(\){}.observes\('foo'\) to observer\('foo', function\(\) {}\)/);
 
         get(obj, 'foo');
         set(obj, 'baz', 'Baz');

@@ -3,12 +3,13 @@ import { Mixin, mixin, get, set } from '@ember/-internals/metal';
 import EmberObject from '../../lib/system/object';
 import Evented from '../../lib/mixins/evented';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { FUNCTION_PROTOTYPE_EXTENSIONS } from '@ember/deprecated-features';
 
 moduleFor(
   'Function.prototype.observes() helper',
   class extends AbstractTestCase {
     ['@test global observer helper takes multiple params'](assert) {
-      if (!ENV.EXTEND_PROTOTYPES.Function) {
+      if (!FUNCTION_PROTOTYPE_EXTENSIONS || !ENV.EXTEND_PROTOTYPES.Function) {
         assert.ok(
           'undefined' === typeof Function.prototype.observes,
           'Function.prototype helper disabled'
@@ -16,13 +17,16 @@ moduleFor(
         return;
       }
 
-      let MyMixin = Mixin.create({
-        count: 0,
+      let MyMixin;
+      expectDeprecation(() => {
+        MyMixin = Mixin.create({
+          count: 0,
 
-        foo: function() {
-          set(this, 'count', get(this, 'count') + 1);
-        }.observes('bar', 'baz'),
-      });
+          foo: function() {
+            set(this, 'count', get(this, 'count') + 1);
+          }.observes('bar', 'baz'),
+        });
+      }, /Function prototype extensions have been deprecated, please migrate from function\(\){}.observes\('foo'\) to observer\('foo', function\(\) {}\)/);
 
       let obj = mixin({}, MyMixin);
       assert.equal(get(obj, 'count'), 0, 'should not invoke observer immediately');
@@ -38,7 +42,7 @@ moduleFor(
   'Function.prototype.on() helper',
   class extends AbstractTestCase {
     ['@test sets up an event listener, and can trigger the function on multiple events'](assert) {
-      if (!ENV.EXTEND_PROTOTYPES.Function) {
+      if (!FUNCTION_PROTOTYPE_EXTENSIONS || !ENV.EXTEND_PROTOTYPES.Function) {
         assert.ok(
           'undefined' === typeof Function.prototype.on,
           'Function.prototype helper disabled'
@@ -46,13 +50,16 @@ moduleFor(
         return;
       }
 
-      let MyMixin = Mixin.create({
-        count: 0,
+      let MyMixin;
+      expectDeprecation(() => {
+        MyMixin = Mixin.create({
+          count: 0,
 
-        foo: function() {
-          set(this, 'count', get(this, 'count') + 1);
-        }.on('bar', 'baz'),
-      });
+          foo: function() {
+            set(this, 'count', get(this, 'count') + 1);
+          }.on('bar', 'baz'),
+        });
+      }, /Function prototype extensions have been deprecated, please migrate from function\(\){}.on\('foo'\) to on\('foo', function\(\) {}\)/);
 
       let obj = mixin({}, Evented, MyMixin);
       assert.equal(get(obj, 'count'), 0, 'should not invoke listener immediately');
@@ -63,19 +70,22 @@ moduleFor(
     }
 
     ['@test can be chained with observes'](assert) {
-      if (!ENV.EXTEND_PROTOTYPES.Function) {
+      if (!FUNCTION_PROTOTYPE_EXTENSIONS || !ENV.EXTEND_PROTOTYPES.Function) {
         assert.ok('Function.prototype helper disabled');
         return;
       }
 
-      let MyMixin = Mixin.create({
-        count: 0,
-        bay: 'bay',
-        foo: function() {
-          set(this, 'count', get(this, 'count') + 1);
-        }
-          .observes('bay')
-          .on('bar'),
+      let MyMixin;
+      expectDeprecation(function() {
+        MyMixin = Mixin.create({
+          count: 0,
+          bay: 'bay',
+          foo: function() {
+            set(this, 'count', get(this, 'count') + 1);
+          }
+            .observes('bay')
+            .on('bar'),
+        });
       });
 
       let obj = mixin({}, Evented, MyMixin);
@@ -92,7 +102,7 @@ moduleFor(
   'Function.prototype.property() helper',
   class extends AbstractTestCase {
     ['@test sets up a ComputedProperty'](assert) {
-      if (!ENV.EXTEND_PROTOTYPES.Function) {
+      if (!FUNCTION_PROTOTYPE_EXTENSIONS || !ENV.EXTEND_PROTOTYPES.Function) {
         assert.ok(
           'undefined' === typeof Function.prototype.property,
           'Function.prototype helper disabled'
@@ -100,13 +110,16 @@ moduleFor(
         return;
       }
 
-      let MyClass = EmberObject.extend({
-        firstName: null,
-        lastName: null,
-        fullName: function() {
-          return get(this, 'firstName') + ' ' + get(this, 'lastName');
-        }.property('firstName', 'lastName'),
-      });
+      let MyClass;
+      expectDeprecation(function() {
+        MyClass = EmberObject.extend({
+          firstName: null,
+          lastName: null,
+          fullName: function() {
+            return get(this, 'firstName') + ' ' + get(this, 'lastName');
+          }.property('firstName', 'lastName'),
+        });
+      }, /Function prototype extensions have been deprecated, please migrate from function\(\){}.property\('bar'\) to computed\('bar', function\(\) {}\)/);
 
       let obj = MyClass.create({ firstName: 'Fred', lastName: 'Flinstone' });
       assert.equal(get(obj, 'fullName'), 'Fred Flinstone', 'should return the computed value');
