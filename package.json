@@ -159,7 +159,7 @@
     "semver": "^6.0.0",
     "serve-static": "^1.13.2",
     "simple-dom": "^1.4.0",
-    "testem": "^2.15.0",
+    "testem": "^2.15.1",
     "testem-failure-only-reporter": "^0.0.1",
     "tslint": "^5.15.0",
     "typescript-eslint-parser": "^22.0.0"
