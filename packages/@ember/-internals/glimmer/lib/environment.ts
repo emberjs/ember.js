@@ -35,6 +35,7 @@ export default class Environment extends GlimmerEnvironment {
 
   public debugStack: typeof DebugStack;
   public inTransaction = false;
+  public eventDispatcher: any;
 
   constructor(injections: any) {
     super(injections);
@@ -48,6 +49,10 @@ export default class Environment extends GlimmerEnvironment {
 
     if (DEBUG) {
       this.debugStack = new DebugStack();
+    }
+
+    if (this.isInteractive) {
+      this.eventDispatcher = this.owner.lookup('event_dispatcher:main');
     }
   }
 

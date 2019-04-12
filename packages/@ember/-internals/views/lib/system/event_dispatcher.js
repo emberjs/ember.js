@@ -127,6 +127,9 @@ export default EmberObject.extend({
     );
 
     this._eventHandlers = Object.create(null);
+    this._finalEventNameMapping = null;
+    this._sanitizedRootElement = null;
+    this._lazyEvents = new Map();
   },
 
   /**
@@ -142,7 +145,8 @@ export default EmberObject.extend({
     @param addedEvents {Object}
   */
   setup(addedEvents, _rootElement) {
-    let events = (this._finalEvents = assign({}, get(this, 'events'), addedEvents));
+    let events = (this._finalEventNameMapping = assign({}, get(this, 'events'), addedEvents));
+    let lazyEvents = this._lazyEvents;
 
     if (_rootElement !== undefined && _rootElement !== null) {
       set(this, 'rootElement', _rootElement);
@@ -216,9 +220,13 @@ export default EmberObject.extend({
       }
     }
 
+    // save off the final sanitized root element (for usage in setupHandler)
+    this._sanitizedRootElement = rootElement;
+
+    // setup event listeners for the non-lazily setup events
     for (let event in events) {
       if (events.hasOwnProperty(event)) {
-        this.setupHandler(rootElement, event, events[event]);
+        lazyEvents.set(event, events[event]);
       }
     }
   },
@@ -234,12 +242,16 @@ export default EmberObject.extend({
     @private
     @method setupHandler
     @param {Element} rootElement
-    @param {String} event the browser-originated event to listen to
+    @param {String} event the name of the event in the browser
     @param {String} eventName the name of the method to call on the view
   */
-  setupHandler(rootElement, event, eventName) {
-    if (eventName === null) {
-      return;
+  setupHandler(
+    event,
+    eventName = this._finalEventNameMapping[event],
+    rootElement = this._sanitizedRootElement
+  ) {
+    if (eventName === null || !this._lazyEvents.has(event)) {
+      return; // nothing to do
     }
 
     if (!JQUERY_INTEGRATION || jQueryDisabled) {
@@ -417,6 +429,8 @@ export default EmberObject.extend({
         }
       });
     }
+
+    this._lazyEvents.delete(event);
   },
 
   destroy() {

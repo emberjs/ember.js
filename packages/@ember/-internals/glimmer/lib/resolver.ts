@@ -84,10 +84,6 @@ const BUILTINS_HELPERS = {
   '-assert-implicit-component-helper-argument': componentAssertionHelper,
 };
 
-const BUILTIN_MODIFIERS = {
-  action: { manager: new ActionModifierManager(), state: null },
-};
-
 export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMeta> {
   public compiler: LazyCompiler<OwnedTemplateMeta>;
 
@@ -102,7 +98,7 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
 
   private builtInModifiers: {
     [name: string]: ModifierDefinition;
-  } = BUILTIN_MODIFIERS;
+  };
 
   // supports directly imported late bound layouts on component.prototype.layout
   private templateCache: Map<Owner, Map<TemplateFactory, OwnedTemplate>> = new Map();
@@ -114,10 +110,14 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
   public componentDefinitionCount = 0;
   public helperDefinitionCount = 0;
 
-  constructor() {
+  constructor(owner: Owner) {
     let macros = new Macros();
     populateMacros(macros);
     this.compiler = new LazyCompiler<OwnedTemplateMeta>(new CompileTimeLookup(this), this, macros);
+
+    this.builtInModifiers = {
+      action: { manager: new ActionModifierManager(owner), state: null },
+    };
   }
 
   /***  IRuntimeResolver ***/
