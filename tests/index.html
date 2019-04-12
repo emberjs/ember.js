@@ -17,6 +17,14 @@
       window.loadScript = function(url) {
         document.write(unescape('%3Cscript src="'+url+'"%3E%3C/script%3E'));
       };
+      window.addEventListener('beforeunload', function (e) {
+        debugger
+
+        // Cancel the event
+        e.preventDefault();
+        // Chrome requires returnValue to be set
+        e.returnValue = '';
+      });
     </script>
 
     <script type="text/javascript">
