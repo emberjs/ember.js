@@ -31,7 +31,6 @@ import Router, {
   TransitionError,
   TransitionState,
 } from 'router_js';
-import { DEFAULT_QUERY_PARAM_VALUE } from './query_params';
 import { EngineRouteInfo } from './engines';
 
 function defaultDidTransition(this: EmberRouter, infos: PrivateRouteInfo[]) {
