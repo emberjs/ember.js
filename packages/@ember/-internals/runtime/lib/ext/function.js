@@ -4,8 +4,10 @@
 
 import { ENV } from '@ember/-internals/environment';
 import { on, computed, observer } from '@ember/-internals/metal';
+import { deprecate } from '@ember/debug';
+import { FUNCTION_PROTOTYPE_EXTENSIONS } from '@ember/deprecated-features';
 
-if (ENV.EXTEND_PROTOTYPES.Function) {
+if (FUNCTION_PROTOTYPE_EXTENSIONS && ENV.EXTEND_PROTOTYPES.Function) {
   Object.defineProperties(Function.prototype, {
     /**
       The `property` extension of Javascript's Function prototype is available
@@ -77,6 +79,15 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
       enumerable: false,
       writable: true,
       value: function() {
+        deprecate(
+          `Function prototype extensions have been deprecated, please migrate from function(){}.property('bar') to computed('bar', function() {}).`,
+          false,
+          {
+            id: 'function-prototype-extensions.property',
+            until: '4.0.0',
+            url: 'https://deprecations.emberjs.com/v3.x#toc_function-prototype-extensions-property',
+          }
+        );
         return computed(...arguments, this);
       },
     },
@@ -113,6 +124,16 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
       enumerable: false,
       writable: true,
       value: function() {
+        deprecate(
+          `Function prototype extensions have been deprecated, please migrate from function(){}.observes('foo') to observer('foo', function() {}).`,
+          false,
+          {
+            id: 'function-prototype-extensions.observes',
+            until: '4.0.0',
+            url: 'https://deprecations.emberjs.com/v3.x#toc_function-prototype-extensions-observes',
+          }
+        );
+
         return observer(...arguments, this);
       },
     },
@@ -147,6 +168,16 @@ if (ENV.EXTEND_PROTOTYPES.Function) {
       enumerable: false,
       writable: true,
       value: function() {
+        deprecate(
+          `Function prototype extensions have been deprecated, please migrate from function(){}.on('foo') to on('foo', function() {}).`,
+          false,
+          {
+            id: 'function-prototype-extensions.on',
+            until: '4.0.0',
+            url: 'https://deprecations.emberjs.com/v3.x#toc_function-prototype-extensions-on',
+          }
+        );
+
         return on(...arguments, this);
       },
     },
