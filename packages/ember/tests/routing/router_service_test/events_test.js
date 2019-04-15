@@ -692,7 +692,7 @@ moduleFor(
       });
     }
 
-    '@test willTransition events are deprecated on routes'() {
+    async '@test willTransition events are deprecated on routes'() {
       this.add(
         'route:application',
         Route.extend({
@@ -702,12 +702,13 @@ moduleFor(
           },
         })
       );
-      expectDeprecation(() => {
-        return this.visit('/');
-      }, 'You attempted to listen to the "willTransition" event which is deprecated. Please inject the router service and listen to the "routeWillChange" event.');
+      await expectDeprecationAsync(
+        () => this.visit('/'),
+        'You attempted to listen to the "willTransition" event which is deprecated. Please inject the router service and listen to the "routeWillChange" event.'
+      );
     }
 
-    '@test didTransition events are deprecated on routes'() {
+    async '@test didTransition events are deprecated on routes'() {
       this.add(
         'route:application',
         Route.extend({
@@ -717,9 +718,10 @@ moduleFor(
           },
         })
       );
-      expectDeprecation(() => {
-        return this.visit('/');
-      }, 'You attempted to listen to the "didTransition" event which is deprecated. Please inject the router service and listen to the "routeDidChange" event.');
+      await expectDeprecationAsync(
+        () => this.visit('/'),
+        'You attempted to listen to the "didTransition" event which is deprecated. Please inject the router service and listen to the "routeDidChange" event.'
+      );
     }
 
     '@test other events are not deprecated on routes'() {
@@ -767,10 +769,11 @@ moduleFor(
       };
     }
 
-    '@test willTransition hook is deprecated'() {
-      expectDeprecation(() => {
-        return this.visit('/');
-      }, 'You attempted to override the "willTransition" method which is deprecated. Please inject the router service and listen to the "routeWillChange" event.');
+    async '@test willTransition hook is deprecated'() {
+      await expectDeprecationAsync(
+        () => this.visit('/'),
+        'You attempted to override the "willTransition" method which is deprecated. Please inject the router service and listen to the "routeWillChange" event.'
+      );
     }
   }
 );
@@ -786,10 +789,11 @@ moduleFor(
       };
     }
 
-    '@test didTransition hook is deprecated'() {
-      expectDeprecation(() => {
-        return this.visit('/');
-      }, 'You attempted to override the "didTransition" method which is deprecated. Please inject the router service and listen to the "routeDidChange" event.');
+    async '@test didTransition hook is deprecated'() {
+      await expectDeprecationAsync(
+        () => this.visit('/'),
+        'You attempted to override the "didTransition" method which is deprecated. Please inject the router service and listen to the "routeDidChange" event.'
+      );
     }
   }
 );

@@ -1,7 +1,7 @@
 import { getOwner, setOwner } from '@ember/-internals/owner';
 import { get, set, observer } from '@ember/-internals/metal';
 import CoreObject from '../../lib/system/core_object';
-import { moduleFor, AbstractTestCase, buildOwner } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, buildOwner, runLoopSettled } from 'internal-test-helpers';
 
 moduleFor(
   'Ember.CoreObject',
@@ -107,7 +107,7 @@ moduleFor(
       }).create(options);
     }
 
-    ['@test observed properties are enumerable when set GH#14594'](assert) {
+    async ['@test observed properties are enumerable when set GH#14594'](assert) {
       let callCount = 0;
       let Test = CoreObject.extend({
         myProp: null,
@@ -126,6 +126,7 @@ moduleFor(
       set(test, 'anotherProp', 'nice');
 
       assert.deepEqual(Object.keys(test).sort(), ['anotherProp', 'id', 'myProp']);
+      await runLoopSettled();
 
       assert.equal(callCount, 1);
     }

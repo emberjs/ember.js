@@ -10,6 +10,8 @@ import { DebugEnv } from './utils';
 import { setupWarningHelpers } from './warning';
 
 declare global {
+  var Ember: any;
+
   interface Assert {
     rejects(promise: Promise<any>, expected?: string | RegExp, message?: string): Promise<any>;
 
@@ -49,25 +51,30 @@ export default function setupQUnit({ runningProdBuild }: { runningProdBuild: boo
     expected?: RegExp | string,
     message?: string
   ) {
-    let threw = false;
+    let error: Error;
+    let prevOnError = Ember.onerror;
+
+    Ember.onerror = (e: Error) => {
+      error = e;
+    };
 
     try {
       await promise;
     } catch (e) {
-      threw = true;
-
-      QUnit.assert.throws(
-        () => {
-          throw e;
-        },
-        expected,
-        message
-      );
+      error = e;
     }
 
-    if (!threw) {
-      QUnit.assert.ok(false, `expected an error to be thrown: ${expected}`);
-    }
+    QUnit.assert.throws(
+      () => {
+        if (error) {
+          throw error;
+        }
+      },
+      expected,
+      message
+    );
+
+    Ember.onerror = prevOnError;
   };
 
   QUnit.assert.throwsAssertion = function(

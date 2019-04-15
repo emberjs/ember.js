@@ -1,6 +1,6 @@
 import { computed, get, observer } from '@ember/-internals/metal';
 import EmberObject from '../../../lib/system/object';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 
 moduleFor(
   'EmberObject.extend',
@@ -122,7 +122,7 @@ moduleFor(
       );
     }
 
-    ['@test Overriding a computed property with an observer'](assert) {
+    async ['@test Overriding a computed property with an observer'](assert) {
       let Parent = EmberObject.extend({
         foo: computed(function() {
           return 'FOO';
@@ -142,10 +142,12 @@ moduleFor(
       assert.deepEqual(seen, []);
 
       child.set('bar', 1);
+      await runLoopSettled();
 
       assert.deepEqual(seen, [1]);
 
       child.set('bar', 2);
+      await runLoopSettled();
 
       assert.deepEqual(seen, [1, 2]);
     }

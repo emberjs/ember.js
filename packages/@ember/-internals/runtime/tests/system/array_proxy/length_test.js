@@ -3,7 +3,7 @@ import EmberObject from '../../../lib/system/object';
 import { observer } from '@ember/-internals/metal';
 import { oneWay as reads, not } from '@ember/object/computed';
 import { A as a } from '../../../lib/mixins/array';
-import { moduleFor, AbstractTestCase, runTask } from 'internal-test-helpers';
+import { moduleFor, AbstractTestCase, runTask, runLoopSettled } from 'internal-test-helpers';
 import { set, get } from '@ember/-internals/metal';
 
 moduleFor(
@@ -152,7 +152,7 @@ moduleFor(
       assert.deepEqual(obj.content, ['foo'], 'content length was truncated');
     }
 
-    ['@test array proxy + aliasedProperty complex test'](assert) {
+    async ['@test array proxy + aliasedProperty complex test'](assert) {
       let aCalled, bCalled, cCalled, dCalled, eCalled;
 
       aCalled = bCalled = cCalled = dCalled = eCalled = 0;
@@ -175,6 +175,11 @@ moduleFor(
         })
       );
 
+      // bootstrap aliases
+      obj.length;
+
+      await runLoopSettled();
+
       assert.equal(obj.get('colors.content.length'), 3);
       assert.equal(obj.get('colors.length'), 3);
       assert.equal(obj.get('length'), 3);
@@ -186,6 +191,7 @@ moduleFor(
       assert.equal(eCalled, 1, 'expected observer `colors.content.[]` to be called ONCE');
 
       obj.get('colors').pushObjects(['green', 'red']);
+      await runLoopSettled();
 
       assert.equal(obj.get('colors.content.length'), 5);
       assert.equal(obj.get('colors.length'), 5);

@@ -7,7 +7,7 @@ import Controller from '@ember/controller';
 import { Object as EmberObject, A as emberA } from '@ember/-internals/runtime';
 import { moduleFor, ApplicationTestCase, runDestroy, runTask } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
-import { Mixin, computed, set, addObserver, observer } from '@ember/-internals/metal';
+import { Mixin, computed, set, addObserver } from '@ember/-internals/metal';
 import { getTextOf } from 'internal-test-helpers';
 import { Component } from '@ember/-internals/glimmer';
 import Engine from '@ember/engine';
@@ -709,7 +709,7 @@ moduleFor(
       this.addTemplate('special', '<p>{{model.id}}</p>');
       this.addTemplate('loading', '<p>LOADING!</p>');
 
-      let visited = this.visit('/specials/1');
+      let visited = runTask(() => this.visit('/specials/1'));
       this.assertText('LOADING!', 'The app is in the loading state');
 
       resolve(menuItem);
@@ -794,7 +794,7 @@ moduleFor(
         })
       );
 
-      this.handleURLRejectsWith(this, assert, 'specials/1', 'Setup error');
+      runTask(() => this.handleURLRejectsWith(this, assert, 'specials/1', 'Setup error'));
 
       resolve(menuItem);
     }
@@ -844,7 +844,9 @@ moduleFor(
         })
       );
 
-      let promise = this.handleURLRejectsWith(this, assert, '/specials/1', 'Setup error');
+      let promise = runTask(() =>
+        this.handleURLRejectsWith(this, assert, '/specials/1', 'Setup error')
+      );
 
       resolve(menuItem);
 
@@ -2404,7 +2406,6 @@ moduleFor(
 
     ['@test ApplicationRoute with model does not proxy the currentPath'](assert) {
       let model = {};
-      let currentPath;
 
       this.router.map(function() {
         this.route('index', { path: '/' });
@@ -2419,19 +2420,9 @@ moduleFor(
         })
       );
 
-      this.add(
-        'controller:application',
-        Controller.extend({
-          currentPathDidChange: observer('currentPath', function() {
-            expectDeprecation(() => {
-              currentPath = this.currentPath;
-            }, 'Accessing `currentPath` on `controller:application` is deprecated, use the `currentPath` property on `service:router` instead.');
-          }),
-        })
-      );
-
       return this.visit('/').then(() => {
-        assert.equal(currentPath, 'index', 'currentPath is index');
+        let routerService = this.applicationInstance.lookup('service:router');
+        assert.equal(routerService.currentRouteName, 'index', 'currentPath is index');
         assert.equal(
           'currentPath' in model,
           false,
@@ -3367,7 +3358,7 @@ moduleFor(
 
       await assert.rejects(
         this.visit('/'),
-        function(err) {
+        function({ errorThrown: err }) {
           assert.equal(err.message, rejectedMessage);
           return true;
         },

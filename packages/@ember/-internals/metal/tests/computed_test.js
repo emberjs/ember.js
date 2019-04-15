@@ -11,7 +11,8 @@ import {
   addObserver,
 } from '..';
 import { meta as metaFor } from '@ember/-internals/meta';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
+import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 
 let obj, count;
 
@@ -503,67 +504,6 @@ moduleFor(
       obj = count = null;
     }
 
-    ['@test should lazily watch dependent keys on set'](assert) {
-      assert.equal(isWatching(obj, 'bar'), false, 'precond not watching dependent key');
-      set(obj, 'foo', 'bar');
-      assert.equal(isWatching(obj, 'bar'), true, 'lazily watching dependent key');
-    }
-
-    ['@test should lazily watch dependent keys on get'](assert) {
-      assert.equal(isWatching(obj, 'bar'), false, 'precond not watching dependent key');
-      get(obj, 'foo');
-      assert.equal(isWatching(obj, 'bar'), true, 'lazily watching dependent key');
-    }
-
-    ['@test local dependent key should invalidate cache'](assert) {
-      assert.equal(isWatching(obj, 'bar'), false, 'precond not watching dependent key');
-      assert.equal(get(obj, 'foo'), 'bar 1', 'get once');
-      assert.equal(isWatching(obj, 'bar'), true, 'lazily setup watching dependent key');
-      assert.equal(get(obj, 'foo'), 'bar 1', 'cached retrieve');
-
-      set(obj, 'bar', 'BIFF'); // should invalidate foo
-
-      assert.equal(get(obj, 'foo'), 'bar 2', 'should recache');
-      assert.equal(get(obj, 'foo'), 'bar 2', 'cached retrieve');
-    }
-
-    ['@test should invalidate multiple nested dependent keys'](assert) {
-      let count = 0;
-      defineProperty(
-        obj,
-        'bar',
-        computed('baz', function() {
-          count++;
-          get(this, 'baz');
-          return 'baz ' + count;
-        })
-      );
-
-      assert.equal(isWatching(obj, 'bar'), false, 'precond not watching dependent key');
-      assert.equal(isWatching(obj, 'baz'), false, 'precond not watching dependent key');
-      assert.equal(get(obj, 'foo'), 'bar 1', 'get once');
-      assert.equal(isWatching(obj, 'bar'), true, 'lazily setup watching dependent key');
-      assert.equal(isWatching(obj, 'baz'), true, 'lazily setup watching dependent key');
-      assert.equal(get(obj, 'foo'), 'bar 1', 'cached retrieve');
-
-      set(obj, 'baz', 'BIFF'); // should invalidate bar -> foo
-      assert.equal(
-        isWatching(obj, 'bar'),
-        false,
-        'should not be watching dependent key after cache cleared'
-      );
-      assert.equal(
-        isWatching(obj, 'baz'),
-        false,
-        'should not be watching dependent key after cache cleared'
-      );
-
-      assert.equal(get(obj, 'foo'), 'bar 2', 'should recache');
-      assert.equal(get(obj, 'foo'), 'bar 2', 'cached retrieve');
-      assert.equal(isWatching(obj, 'bar'), true, 'lazily setup watching dependent key');
-      assert.equal(isWatching(obj, 'baz'), true, 'lazily setup watching dependent key');
-    }
-
     ['@test circular keys should not blow up'](assert) {
       let func = function() {
         count++;
@@ -590,9 +530,7 @@ moduleFor(
     }
 
     ['@test redefining a property should undo old dependent keys'](assert) {
-      assert.equal(isWatching(obj, 'bar'), false, 'precond not watching dependent key');
       assert.equal(get(obj, 'foo'), 'bar 1');
-      assert.equal(isWatching(obj, 'bar'), true, 'lazily watching dependent key');
 
       defineProperty(
         obj,
@@ -601,12 +539,6 @@ moduleFor(
           count++;
           return 'baz ' + count;
         })
-      );
-
-      assert.equal(
-        isWatching(obj, 'bar'),
-        false,
-        'after redefining should not be watching dependent key'
       );
 
       assert.equal(get(obj, 'foo'), 'baz 2');
@@ -660,22 +592,110 @@ moduleFor(
       }, /cannot contain spaces/);
     }
 
-    ['@test throws an assertion if an uncached `get` is called after object is destroyed'](assert) {
-      assert.equal(isWatching(obj, 'bar'), false, 'precond not watching dependent key');
-
+    ['@test throws an assertion if an uncached `get` is called after object is destroyed']() {
       let meta = metaFor(obj);
       meta.destroy();
 
       obj.toString = () => '<custom-obj:here>';
 
-      expectAssertion(() => {
-        get(obj, 'foo');
-      }, 'Cannot modify dependent keys for `foo` on `<custom-obj:here>` after it has been destroyed.');
+      let message = EMBER_METAL_TRACKED_PROPERTIES
+        ? 'Attempted to access the computed <custom-obj:here>.foo on a destroyed object, which is not allowed'
+        : 'Cannot modify dependent keys for `foo` on `<custom-obj:here>` after it has been destroyed.';
 
-      assert.equal(isWatching(obj, 'bar'), false, 'deps were not updated');
+      expectAssertion(() => get(obj, 'foo'), message);
     }
   }
 );
+
+if (!EMBER_METAL_TRACKED_PROPERTIES) {
+  moduleFor(
+    'computed - dependentkey - watching',
+    class extends AbstractTestCase {
+      beforeEach() {
+        obj = { bar: 'baz' };
+        count = 0;
+        let getterAndSetter = function() {
+          count++;
+          get(this, 'bar');
+          return 'bar ' + count;
+        };
+        defineProperty(
+          obj,
+          'foo',
+          computed('bar', {
+            get: getterAndSetter,
+            set: getterAndSetter,
+          })
+        );
+      }
+
+      afterEach() {
+        obj = count = null;
+      }
+
+      ['@test should lazily watch dependent keys on set'](assert) {
+        assert.equal(isWatching(obj, 'bar'), false, 'precond not watching dependent key');
+        set(obj, 'foo', 'bar');
+        assert.equal(isWatching(obj, 'bar'), true, 'lazily watching dependent key');
+      }
+
+      ['@test should lazily watch dependent keys on get'](assert) {
+        assert.equal(isWatching(obj, 'bar'), false, 'precond not watching dependent key');
+        get(obj, 'foo');
+        assert.equal(isWatching(obj, 'bar'), true, 'lazily watching dependent key');
+      }
+
+      ['@test local dependent key should invalidate cache'](assert) {
+        assert.equal(isWatching(obj, 'bar'), false, 'precond not watching dependent key');
+        assert.equal(get(obj, 'foo'), 'bar 1', 'get once');
+        assert.equal(isWatching(obj, 'bar'), true, 'lazily setup watching dependent key');
+        assert.equal(get(obj, 'foo'), 'bar 1', 'cached retrieve');
+
+        set(obj, 'bar', 'BIFF'); // should invalidate foo
+
+        assert.equal(get(obj, 'foo'), 'bar 2', 'should recache');
+        assert.equal(get(obj, 'foo'), 'bar 2', 'cached retrieve');
+      }
+
+      ['@test should invalidate multiple nested dependent keys'](assert) {
+        let count = 0;
+        defineProperty(
+          obj,
+          'bar',
+          computed('baz', function() {
+            count++;
+            get(this, 'baz');
+            return 'baz ' + count;
+          })
+        );
+
+        assert.equal(isWatching(obj, 'bar'), false, 'precond not watching dependent key');
+        assert.equal(isWatching(obj, 'baz'), false, 'precond not watching dependent key');
+        assert.equal(get(obj, 'foo'), 'bar 1', 'get once');
+        assert.equal(isWatching(obj, 'bar'), true, 'lazily setup watching dependent key');
+        assert.equal(isWatching(obj, 'baz'), true, 'lazily setup watching dependent key');
+        assert.equal(get(obj, 'foo'), 'bar 1', 'cached retrieve');
+
+        set(obj, 'baz', 'BIFF'); // should invalidate bar -> foo
+        assert.equal(
+          isWatching(obj, 'bar'),
+          false,
+          'should not be watching dependent key after cache cleared'
+        );
+        assert.equal(
+          isWatching(obj, 'baz'),
+          false,
+          'should not be watching dependent key after cache cleared'
+        );
+
+        assert.equal(get(obj, 'foo'), 'bar 2', 'should recache');
+        assert.equal(get(obj, 'foo'), 'bar 2', 'cached retrieve');
+        assert.equal(isWatching(obj, 'bar'), true, 'lazily setup watching dependent key');
+        assert.equal(isWatching(obj, 'baz'), true, 'lazily setup watching dependent key');
+      }
+    }
+  );
+}
 
 // ..........................................................
 // CHAINED DEPENDENT KEYS
@@ -900,7 +920,7 @@ moduleFor(
 moduleFor(
   'computed - setter',
   class extends AbstractTestCase {
-    ['@test setting a watched computed property'](assert) {
+    async ['@test setting a watched computed property'](assert) {
       let obj = {
         firstName: 'Yehuda',
         lastName: 'Katz',
@@ -945,12 +965,14 @@ moduleFor(
       assert.equal(get(obj, 'firstName'), 'Kris');
       assert.equal(get(obj, 'lastName'), 'Selden');
 
+      await runLoopSettled();
+
       assert.equal(fullNameDidChange, 1);
       assert.equal(firstNameDidChange, 1);
       assert.equal(lastNameDidChange, 1);
     }
 
-    ['@test setting a cached computed property that modifies the value you give it'](assert) {
+    async ['@test setting a cached computed property that modifies the value you give it'](assert) {
       let obj = {
         foo: 0,
       };
@@ -975,16 +997,22 @@ moduleFor(
       });
 
       assert.equal(get(obj, 'plusOne'), 1);
+
       set(obj, 'plusOne', 1);
-      assert.equal(get(obj, 'plusOne'), 2);
-      set(obj, 'plusOne', 1);
+      await runLoopSettled();
+
       assert.equal(get(obj, 'plusOne'), 2);
 
+      set(obj, 'plusOne', 1);
+      await runLoopSettled();
+
+      assert.equal(get(obj, 'plusOne'), 2);
       assert.equal(plusOneDidChange, 1);
 
       set(obj, 'foo', 5);
-      assert.equal(get(obj, 'plusOne'), 6);
+      await runLoopSettled();
 
+      assert.equal(get(obj, 'plusOne'), 6);
       assert.equal(plusOneDidChange, 2);
     }
   }
@@ -993,7 +1021,7 @@ moduleFor(
 moduleFor(
   'computed - default setter',
   class extends AbstractTestCase {
-    ["@test when setting a value on a computed property that doesn't handle sets"](assert) {
+    async ["@test when setting a value on a computed property that doesn't handle sets"](assert) {
       let obj = {};
       let observerFired = false;
 
@@ -1013,6 +1041,9 @@ moduleFor(
 
       assert.equal(get(obj, 'foo'), 'bar', 'The set value is properly returned');
       assert.ok(typeof obj.foo === 'string', 'The computed property was removed');
+
+      await runLoopSettled();
+
       assert.ok(observerFired, 'The observer was still notified');
     }
   }

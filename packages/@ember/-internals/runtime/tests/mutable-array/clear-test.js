@@ -1,13 +1,16 @@
 import { get } from '@ember/-internals/metal';
-import { AbstractTestCase } from 'internal-test-helpers';
+import { AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 import { runArrayTests, newFixture } from '../helpers/array';
 
 class ClearTests extends AbstractTestCase {
-  '@test [].clear() => [] + notify'() {
+  async '@test [].clear() => [] + notify'() {
     let before = [];
     let after = [];
     let obj = this.newObject(before);
     let observer = this.newObserver(obj, '[]', '@each', 'length', 'firstObject', 'lastObject');
+
+    // flush observers
+    await runLoopSettled();
 
     obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
@@ -31,7 +34,7 @@ class ClearTests extends AbstractTestCase {
     );
   }
 
-  '@test [X].clear() => [] + notify'() {
+  async '@test [X].clear() => [] + notify'() {
     var obj, before, after, observer;
 
     before = newFixture(1);
@@ -41,6 +44,9 @@ class ClearTests extends AbstractTestCase {
     obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
     this.assert.equal(obj.clear(), obj, 'return self');
+
+    // flush observers
+    await runLoopSettled();
 
     this.assert.deepEqual(this.toArray(obj), after, 'post item results');
     this.assert.equal(get(obj, 'length'), after.length, 'length');

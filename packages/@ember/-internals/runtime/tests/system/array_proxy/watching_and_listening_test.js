@@ -3,6 +3,7 @@ import { get, addObserver, defineProperty, watcherCount, computed } from '@ember
 import ArrayProxy from '../../../lib/system/array_proxy';
 import { A } from '../../../lib/mixins/array';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 
 function sortedListenersFor(obj, eventName) {
   let listeners = peekMeta(obj).matchingListeners(eventName) || [];
@@ -59,6 +60,11 @@ moduleFor(
     }
 
     [`@test regression test for https://github.com/emberjs/ember.js/issues/12475`](assert) {
+      if (EMBER_METAL_TRACKED_PROPERTIES) {
+        // Test is primarily about watching values, which is not necessary anymore
+        return assert.expect(0);
+      }
+
       let item1a = { id: 1 };
       let item1b = { id: 2 };
       let item1c = { id: 3 };

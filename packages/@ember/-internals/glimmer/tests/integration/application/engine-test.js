@@ -856,7 +856,7 @@ moduleFor(
       });
     }
 
-    ['@test query params in customized controllerName have stickiness by default between model'](
+    async ['@test query params in customized controllerName have stickiness by default between model'](
       assert
     ) {
       assert.expect(2);
@@ -867,16 +867,16 @@ moduleFor(
         this.register('template:author', compile(tmpl));
       });
 
-      return this.visit('/blog/author/1?official=true').then(() => {
-        let suffix1 = '/blog/author/1?official=true';
-        let href1 = this.element.querySelector('.author-1').href;
-        let suffix1337 = '/blog/author/1337';
-        let href1337 = this.element.querySelector('.author-1337').href;
+      await this.visit('/blog/author/1?official=true');
 
-        // check if link ends with the suffix
-        assert.ok(this.stringsEndWith(href1, suffix1), `${href1} ends with ${suffix1}`);
-        assert.ok(this.stringsEndWith(href1337, suffix1337), `${href1337} ends with ${suffix1337}`);
-      });
+      let suffix1 = '/blog/author/1?official=true';
+      let href1 = this.element.querySelector('.author-1').href;
+      let suffix1337 = '/blog/author/1337';
+      let href1337 = this.element.querySelector('.author-1337').href;
+
+      // check if link ends with the suffix
+      assert.ok(this.stringsEndWith(href1, suffix1), `${href1} ends with ${suffix1}`);
+      assert.ok(this.stringsEndWith(href1337, suffix1337), `${href1337} ends with ${suffix1337}`);
     }
 
     ['@test visit() routable engine which errors on init'](assert) {

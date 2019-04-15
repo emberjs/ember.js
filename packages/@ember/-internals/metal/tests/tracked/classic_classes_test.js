@@ -1,7 +1,5 @@
 import { AbstractTestCase, moduleFor } from 'internal-test-helpers';
-import { defineProperty, tracked, nativeDescDecorator } from '../..';
-
-import { track } from './support';
+import { defineProperty, tracked, track, nativeDescDecorator } from '../..';
 
 import {
   EMBER_METAL_TRACKED_PROPERTIES,

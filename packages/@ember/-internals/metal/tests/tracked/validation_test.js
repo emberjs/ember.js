@@ -5,6 +5,7 @@ import {
   set,
   tagForProperty,
   tracked,
+  track,
   notifyPropertyChange,
 } from '../..';
 
@@ -14,7 +15,6 @@ import {
 } from '@ember/canary-features';
 import { EMBER_ARRAY } from '@ember/-internals/utils';
 import { AbstractTestCase, moduleFor } from 'internal-test-helpers';
-import { track } from './support';
 
 if (EMBER_METAL_TRACKED_PROPERTIES && EMBER_NATIVE_DECORATOR_SUPPORT) {
   moduleFor(
@@ -184,7 +184,7 @@ if (EMBER_METAL_TRACKED_PROPERTIES && EMBER_NATIVE_DECORATOR_SUPPORT) {
         defineProperty(
           EmberObject.prototype,
           'full',
-          computed('name', function() {
+          computed('name.first', 'name.last', function() {
             let name = get(this, 'name');
             return `${name.first} ${name.last}`;
           })

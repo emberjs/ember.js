@@ -1,7 +1,8 @@
 import { Meta, meta as metaFor } from '@ember/-internals/meta';
-import { isProxy } from '@ember/-internals/utils';
+import { isProxy, setupMandatorySetter, symbol } from '@ember/-internals/utils';
 import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { backburner } from '@ember/runloop';
+import { DEBUG } from '@glimmer/env';
 import {
   combine,
   CONSTANT_TAG,
@@ -10,6 +11,8 @@ import {
   TagWrapper,
   UpdatableTag,
 } from '@glimmer/reference';
+
+export const UNKNOWN_PROPERTY_TAG = symbol('UNKNOWN_PROPERTY_TAG');
 
 function makeTag(): TagWrapper<DirtyableTag> {
   return DirtyableTag.create();
@@ -22,7 +25,11 @@ export function tagForProperty(object: any, propertyKey: string | symbol, _meta?
   }
   let meta = _meta === undefined ? metaFor(object) : _meta;
 
-  if (isProxy(object)) {
+  if (EMBER_METAL_TRACKED_PROPERTIES) {
+    if (!(propertyKey in object) && typeof object[UNKNOWN_PROPERTY_TAG] === 'function') {
+      return object[UNKNOWN_PROPERTY_TAG](propertyKey);
+    }
+  } else if (isProxy(object)) {
     return tagFor(object, meta);
   }
 
@@ -34,6 +41,15 @@ export function tagForProperty(object: any, propertyKey: string | symbol, _meta?
 
   if (EMBER_METAL_TRACKED_PROPERTIES) {
     let pair = combine([makeTag(), UpdatableTag.create(CONSTANT_TAG)]);
+
+    if (DEBUG) {
+      if (EMBER_METAL_TRACKED_PROPERTIES) {
+        setupMandatorySetter!(object, propertyKey);
+      }
+
+      (pair as any)._propertyKey = propertyKey;
+    }
+
     return (tags[propertyKey] = pair);
   } else {
     return (tags[propertyKey] = makeTag());
@@ -61,6 +77,7 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
   };
 
   update = (outer, inner) => {
+    (outer.inner! as any).lastChecked = 0;
     (outer.inner! as any).second.inner.update(inner);
   };
 } else {
@@ -69,7 +86,8 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
   };
 }
 
-export function markObjectAsDirty(obj: object, propertyKey: string, meta: Meta): void {
+export function markObjectAsDirty(obj: object, propertyKey: string, _meta?: Meta): void {
+  let meta = _meta === undefined ? metaFor(obj) : _meta;
   let objectTag = meta.readableTag();
 
   if (objectTag !== undefined) {

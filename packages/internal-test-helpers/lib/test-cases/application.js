@@ -3,7 +3,7 @@ import Application from '@ember/application';
 import { Router } from '@ember/-internals/routing';
 import { assign } from '@ember/polyfills';
 
-import { runTask } from '../run';
+import { runTask, runLoopSettled } from '../run';
 
 export default class ApplicationTestCase extends TestResolverApplicationTestCase {
   constructor() {
@@ -33,9 +33,9 @@ export default class ApplicationTestCase extends TestResolverApplicationTestCase
     return this.applicationInstance.lookup('router:main');
   }
 
-  transitionTo() {
-    return runTask(() => {
-      return this.appRouter.transitionTo(...arguments);
-    });
+  async transitionTo() {
+    await this.appRouter.transitionTo(...arguments);
+
+    await runLoopSettled();
   }
 }

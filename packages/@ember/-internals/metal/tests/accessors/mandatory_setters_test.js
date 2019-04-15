@@ -1,6 +1,7 @@
 import { DEBUG } from '@glimmer/env';
 import { get, set, watch, unwatch } from '../..';
 import { meta as metaFor } from '@ember/-internals/meta';
+import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 function hasMandatorySetter(object, property) {
@@ -15,7 +16,7 @@ function hasMetaValue(object, property) {
   return metaFor(object).peekValues(property) !== undefined;
 }
 
-if (DEBUG) {
+if (DEBUG && !EMBER_METAL_TRACKED_PROPERTIES) {
   moduleFor(
     'mandory-setters',
     class extends AbstractTestCase {
