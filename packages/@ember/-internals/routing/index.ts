@@ -15,7 +15,10 @@ export { default as controllerFor } from './lib/system/controller_for';
 export { default as RouterDSL } from './lib/system/dsl';
 export { default as Router } from './lib/system/router';
 export { default as Route } from './lib/system/route';
-export { default as QueryParams, DEFAULT_QUERY_PARAM_VALUE as DEFAULT_VALUE } from './lib/system/query_params';
+export {
+  default as QueryParams,
+  DEFAULT_QUERY_PARAM_VALUE as DEFAULT_VALUE,
+} from './lib/system/query_params';
 export { default as RoutingService } from './lib/services/routing';
 export { default as RouterService } from './lib/services/router';
 export { default as BucketCache } from './lib/system/cache';

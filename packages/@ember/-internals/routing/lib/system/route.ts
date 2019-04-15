@@ -37,8 +37,8 @@ import {
   prefixRouteNameArg,
   stashParamNames,
 } from '../utils';
-import { DEFAULT_QUERY_PARAM_VALUE } from './query_params';
 import generateController from './generate_controller';
+import { DEFAULT_QUERY_PARAM_VALUE } from './query_params';
 import EmberRouter, { QueryParam } from './router';
 
 export function defaultSerialize(model: {}, params: string[]) {
@@ -2502,8 +2502,11 @@ Route.reopen(ActionHandler, Evented, {
         // Stash current serialized value of controller.
         qp.serializedValue = svalue;
 
-        let thisQueryParamHasDefaultValue = qp.serializedDefaultValue === svalue; 
-        if (!thisQueryParamHasDefaultValue || (!forcedDefault && (transition as any)._keepDefaultQueryParamValues)) {
+        let thisQueryParamHasDefaultValue = qp.serializedDefaultValue === svalue;
+        if (
+          !thisQueryParamHasDefaultValue ||
+          (!forcedDefault && (transition as any)._keepDefaultQueryParamValues)
+        ) {
           finalParams.push({
             value: svalue,
             visible: true,
