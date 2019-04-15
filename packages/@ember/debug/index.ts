@@ -211,7 +211,7 @@ if (DEBUG) {
   });
 
   /**
-   @module @ember/application
+   @module @ember/debug
    @public
   */
 
@@ -226,14 +226,14 @@ if (DEBUG) {
     incuring any performance penalty.
 
     ```javascript
-    import { deprecateFunc } from '@ember/application/deprecations';
+    import { deprecateFunc } from '@ember/debug';
 
     Ember.oldMethod = deprecateFunc('Please use the new, updated method', options, Ember.newMethod);
     ```
 
     @method deprecateFunc
     @static
-    @for @ember/application/deprecations
+    @for @ember/debug
     @param {String} message A description of the deprecation.
     @param {Object} [options] The options object for `deprecate`.
     @param {Function} func The new function called to replace its deprecated counterpart.
