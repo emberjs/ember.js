@@ -2,6 +2,7 @@ import { inject as injectService } from '@ember/service';
 import { Component } from '@ember/-internals/glimmer';
 import { Route, NoneLocation } from '@ember/-internals/routing';
 import Controller from '@ember/controller';
+import { DEFAULT_VALUE } from '@ember/-internals/routing';
 import { run } from '@ember/runloop';
 import { get } from '@ember/-internals/metal';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
@@ -259,6 +260,30 @@ moduleFor(
         })
         .then(() => {
           assert.equal(this.routerService.get('currentURL'), '/child?sort=ASC');
+        });
+    }
+
+    ['@test RouterService#transitionTo with basic query params using DEFAULT_VALUE does remove query param defaults'](
+      assert
+    ) {
+      assert.expect(1);
+
+      this.add(
+        'controller:parent.child',
+        Controller.extend({
+          queryParams: ['sort'],
+          sort: 'ASC',
+        })
+      );
+
+      let queryParams = this.buildQueryParams({ sort: DEFAULT_VALUE });
+
+      return this.visit('/')
+        .then(() => {
+          return this.routerService.transitionTo('parent.child', queryParams);
+        })
+        .then(() => {
+          assert.equal(this.routerService.get('currentURL'), '/child');
         });
     }
 
