@@ -37,6 +37,7 @@ import {
   prefixRouteNameArg,
   stashParamNames,
 } from '../utils';
+import { DEFAULT_QUERY_PARAM_VALUE } from './query_params';
 import generateController from './generate_controller';
 import EmberRouter, { QueryParam } from './router';
 
@@ -2452,6 +2453,7 @@ Route.reopen(ActionHandler, Evented, {
         let route = qp.route;
         let controller = route.controller;
         let presentKey = qp.urlKey in params && qp.urlKey;
+        let forcedDefault = false;
 
         // Do a reverse lookup to see if the changed query
         // param URL key corresponds to a QP property on
@@ -2460,6 +2462,10 @@ Route.reopen(ActionHandler, Evented, {
         if (changes.has(qp.urlKey)) {
           // Value updated in/before setupController
           value = get(controller, qp.prop);
+          if (value === DEFAULT_QUERY_PARAM_VALUE) {
+            value = copyDefaultValue(qp.defaultValue);
+            forcedDefault = true;
+          }
           svalue = route.serializeQueryParam(value, qp.urlKey, qp.type);
         } else {
           if (presentKey) {
@@ -2496,8 +2502,8 @@ Route.reopen(ActionHandler, Evented, {
         // Stash current serialized value of controller.
         qp.serializedValue = svalue;
 
-        let thisQueryParamHasDefaultValue = qp.serializedDefaultValue === svalue;
-        if (!thisQueryParamHasDefaultValue || (transition as any)._keepDefaultQueryParamValues) {
+        let thisQueryParamHasDefaultValue = qp.serializedDefaultValue === svalue; 
+        if (!thisQueryParamHasDefaultValue || (!forcedDefault && (transition as any)._keepDefaultQueryParamValues)) {
           finalParams.push({
             value: svalue,
             visible: true,
