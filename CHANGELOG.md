@@ -1,5 +1,11 @@
 # Ember Changelog
 
+### v3.10.0-beta.3 (April 15, 2019)
+
+- [#17859](https://github.com/emberjs/ember.js/pull/17859) [BUGFIX] Fixes a regression in the legacy build
+- [#17891](https://github.com/emberjs/ember.js/pull/17891) [BUGFIX] Loosen "engines" restriction for Node versions 
+- [#17900](https://github.com/emberjs/ember.js/pull/17900) [BUGFIX] Fix version for APP_CTRL_ROUTER_PROPS deprecation flag
+
 ### v3.9.1 (April 09, 2019)
 
 - [#17870](https://github.com/emberjs/ember.js/pull/17870) / [#17871](https://github.com/emberjs/ember.js/pull/17871) [BUGFIX] Fix issue where `...attributes` may incorrectly overwrite attributes, depending on its position.
