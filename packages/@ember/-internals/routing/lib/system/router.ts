@@ -31,6 +31,7 @@ import Router, {
   TransitionError,
   TransitionState,
 } from 'router_js';
+import { DEFAULT_QUERY_PARAM_VALUE } from './query-params';
 import { EngineRouteInfo } from './engines';
 
 function defaultDidTransition(this: EmberRouter, infos: PrivateRouteInfo[]) {
@@ -802,13 +803,16 @@ class EmberRouter extends EmberObject {
     @method _pruneDefaultQueryParamValues
     @param {Array<RouteInfo>} routeInfos
     @param {Object} queryParams
+    @param {boolean} _fromRouterService
     @return {Void}
   */
-  _pruneDefaultQueryParamValues(routeInfos: PrivateRouteInfo[], queryParams: {}) {
+  _pruneDefaultQueryParamValues(routeInfos: PrivateRouteInfo[], queryParams: {}, _fromRouterService?: boolean) {
     let qps = this._queryParamsFor(routeInfos);
     for (let key in queryParams) {
       let qp = qps.map[key];
-      if (qp && qp.serializedDefaultValue === queryParams[key]) {
+      if (_fromRouterService && qp && DEFAULT_QUERY_PARAM_VALUE === queryParams[key]) {
+        delete queryParams[key];
+      } else if (qp && qp.serializedDefaultValue === queryParams[key]) {
         delete queryParams[key];
       }
     }
@@ -895,10 +899,7 @@ class EmberRouter extends EmberObject {
     let state = calculatePostTransitionState(this, targetRouteName, models);
     this._hydrateUnsuppliedQueryParams(state, queryParams, Boolean(_fromRouterService));
     this._serializeQueryParams(state.routeInfos, queryParams);
-
-    if (!_fromRouterService) {
-      this._pruneDefaultQueryParamValues(state.routeInfos, queryParams);
-    }
+    this._pruneDefaultQueryParamValues(state.routeInfos, queryParams, Boolean(_fromRouterService));
   }
 
   /**
