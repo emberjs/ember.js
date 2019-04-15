@@ -113,9 +113,9 @@ export default class RouterService extends Service {
   }
 
   /**
-     Transition into another route while replacing the current URL, if possible.
-     The route may be either a single route or route path:
-
+Replace current route (URL) in history to  desired destination route. instead of adding the desired  Route to Route history,The route may be either a single route or route path:
+The major functional difference found between transitionTo and replaceWith is that on using transitionTo to navigate to new page, you can go Back to previsious route,Whereas in replaceWith this functionality 
+is not possible due to the replacing mechanism
      See [replaceWith](/api/ember/release/classes/Route/methods/replaceWith?anchor=replaceWith) for more info.
 
      Calling `replaceWith` from the Router service will cause default query parameter values to be included in the URL.
@@ -123,9 +123,9 @@ export default class RouterService extends Service {
      See the [Router Service RFC](https://github.com/emberjs/rfcs/blob/master/text/0095-router-service.md#query-parameter-semantics) for more info.
 
      @method replaceWith
-     @param {String} routeNameOrUrl the name of the route or a URL
+     @param {String} routeNameOrUrl the name of the route or a URL of the desiered  destination 
      @param {...Object} models the model(s) or identifier(s) to be used while
-       transitioning to the route.
+       transitioning to the route i.e. param passed to destination route in form of object
      @param {Object} [options] optional hash with a queryParams property
        containing a mapping of query parameters
      @return {Transition} the transition object associated with this
