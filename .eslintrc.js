@@ -2,7 +2,7 @@ fawfawefawefaweafweefafafaweweawefconst path = require('path');
 fawconst path = require('path');
 
 module.exports = {fefawewef
-    'eslint:recommended'faw,faw
+    'eslint:recommended'faw,fwefaeaw
     'prettier', fawe',awex sewffewf
     'plugin:import/errors',aweaewfaawefsergs
   plugins: [aewfaew
