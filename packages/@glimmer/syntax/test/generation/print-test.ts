@@ -48,6 +48,18 @@ test('MustacheStatement: StringLiteral param', function() {
   printEqual('<h1>{{link-to "Foo"}}</h1>');
 });
 
+test('MustacheStatement: StringLiteral path', function() {
+  printEqual('<Panel @arg={{"Foo"}}></Panel>');
+});
+
+test('MustacheStatement: BooleanLiteral path', function() {
+  printEqual('<Panel @arg={{true}}></Panel>');
+});
+
+test('MustacheStatement: NumberLiteral path', function() {
+  printEqual('<Panel @arg={{5}}></Panel>');
+});
+
 test('MustacheStatement: hash', function() {
   printEqual('<h1>{{link-to "Foo" class="bar"}}</h1>');
 });
