@@ -1,4 +1,11 @@
-import { Bounds, Environment, Option, ElementBuilder, ModifierManager } from '@glimmer/interfaces';
+import {
+  Bounds,
+  Environment,
+  Option,
+  ElementBuilder,
+  ModifierManager,
+  Maybe,
+} from '@glimmer/interfaces';
 import { ConcreteBounds, NewElementBuilder } from '@glimmer/runtime';
 import { RemoteLiveBlock } from '@glimmer/runtime';
 import { SimpleElement, SimpleNode, SimpleText } from '@simple-dom/interface';
@@ -96,7 +103,7 @@ class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
   pushRemoteElement(
     element: SimpleElement,
     cursorId: string,
-    insertBefore: Option<null> = null
+    insertBefore: Maybe<SimpleNode> = null
   ): Option<RemoteLiveBlock> {
     let { dom } = this;
     let script = dom.createElement('script');

@@ -448,10 +448,6 @@ function addInElementHash(cursor: string, hash: AST.Hash, loc: AST.SourceLocatio
     }
 
     if (pair.key === 'insertBefore') {
-      if (pair.value.type !== 'NullLiteral') {
-        throw new SyntaxError('insertBefore only takes `null` as an argument', loc);
-      }
-
       hasInsertBefore = true;
     }
   });
