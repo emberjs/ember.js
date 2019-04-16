@@ -13,7 +13,16 @@ import {
   Cursor,
   ModifierManager,
 } from '@glimmer/interfaces';
-import { assert, DESTROY, expect, LinkedList, LinkedListNode, Option, Stack } from '@glimmer/util';
+import {
+  assert,
+  DESTROY,
+  expect,
+  LinkedList,
+  LinkedListNode,
+  Option,
+  Stack,
+  Maybe,
+} from '@glimmer/util';
 import {
   AttrNamespace,
   SimpleComment,
@@ -209,7 +218,7 @@ export class NewElementBuilder implements ElementBuilder {
   pushRemoteElement(
     element: SimpleElement,
     guid: string,
-    insertBefore: Option<null>
+    insertBefore: Maybe<SimpleNode>
   ): Option<RemoteLiveBlock> {
     return this.__pushRemoteElement(element, guid, insertBefore);
   }
@@ -217,7 +226,7 @@ export class NewElementBuilder implements ElementBuilder {
   __pushRemoteElement(
     element: SimpleElement,
     _guid: string,
-    insertBefore: Option<null>
+    insertBefore: Maybe<SimpleNode>
   ): Option<RemoteLiveBlock> {
     this.pushElement(element, insertBefore);
 
@@ -237,7 +246,7 @@ export class NewElementBuilder implements ElementBuilder {
     this.popElement();
   }
 
-  protected pushElement(element: SimpleElement, nextSibling: Option<SimpleNode>) {
+  protected pushElement(element: SimpleElement, nextSibling: Maybe<SimpleNode> = null) {
     this[CURSOR_STACK].push(new CursorImpl(element, nextSibling));
   }
 

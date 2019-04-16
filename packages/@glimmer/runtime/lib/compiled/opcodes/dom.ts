@@ -7,7 +7,7 @@ import {
   isConst,
   isConstTag,
 } from '@glimmer/reference';
-import { check, CheckString, CheckElement } from '@glimmer/debug';
+import { check, CheckString, CheckElement, CheckOption, CheckNode } from '@glimmer/debug';
 import { Op, Option, ModifierManager } from '@glimmer/interfaces';
 import { $t0 } from '@glimmer/vm';
 import {
@@ -21,8 +21,8 @@ import { Assert } from './vm';
 import { DynamicAttribute } from '../../vm/attributes/dynamic';
 import { CheckReference, CheckArguments, CheckOperations } from './-debug-strip';
 import { CONSTANTS } from '../../symbols';
-import { SimpleElement } from '@simple-dom/interface';
-import { expect } from '@glimmer/util';
+import { SimpleElement, SimpleNode } from '@simple-dom/interface';
+import { expect, Maybe } from '@glimmer/util';
 
 APPEND_OPCODES.add(Op.Text, (vm, { op1: text }) => {
   vm.elements().appendText(vm[CONSTANTS].getString(text));
@@ -47,6 +47,7 @@ APPEND_OPCODES.add(Op.PushRemoteElement, vm => {
   let guidRef = check(vm.stack.pop(), CheckReference);
 
   let element: SimpleElement;
+  let insertBefore: Maybe<SimpleNode>;
   let guid = guidRef.value() as string;
 
   if (isConst(elementRef)) {
@@ -57,7 +58,15 @@ APPEND_OPCODES.add(Op.PushRemoteElement, vm => {
     vm.updateWith(new Assert(cache));
   }
 
-  let insertBefore = insertBeforeRef.value() as Option<null>;
+  if (insertBeforeRef.value() !== undefined) {
+    if (isConst(insertBeforeRef)) {
+      insertBefore = check(insertBeforeRef.value(), CheckOption(CheckNode));
+    } else {
+      let cache = new ReferenceCache(insertBeforeRef as Reference<Option<SimpleNode>>);
+      insertBefore = check(cache.peek(), CheckOption(CheckNode));
+      vm.updateWith(new Assert(cache));
+    }
+  }
 
   let block = vm.elements().pushRemoteElement(element, guid, insertBefore);
   if (block) vm.associateDestroyable(block);
