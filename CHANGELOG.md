@@ -1,5 +1,43 @@
 # Changelog
 
+## v0.40.1 (2019-04-16)
+
+#### :rocket: Enhancement
+* `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/node`, `@glimmer/runtime`, `@glimmer/syntax`
+  * [#931](https://github.com/glimmerjs/glimmer-vm/pull/931) Modifying in-element semantics to support non-null insertBefore elements ([@chiragpat](https://github.com/chiragpat))
+
+#### Committers: 1
+- Chirag Patel ([@chiragpat](https://github.com/chiragpat))
+
+
+## v0.40.0 (2019-04-08)
+
+#### :boom: Breaking Change
+* `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/node`, `@glimmer/opcode-compiler`, `@glimmer/runtime`, `@glimmer/syntax`
+  * [#918](https://github.com/glimmerjs/glimmer-vm/pull/918) [FEATURE | BREAKING] Change semantics of in-element to match emberjs/rfcs#287 ([@chadhietala](https://github.com/chadhietala))
+
+#### :rocket: Enhancement
+* `@glimmer/compiler`, `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/runtime`, `@glimmer/wire-format`
+  * [#923](https://github.com/glimmerjs/glimmer-vm/pull/923) Allow forward element modifiers into component invocations via ...attributes ([@cibernox](https://github.com/cibernox))
+* `@glimmer/integration-tests`, `@glimmer/runtime`
+  * [#924](https://github.com/glimmerjs/glimmer-vm/pull/924) Add ability to pass in dynamic scope to render component apis ([@chiragpat](https://github.com/chiragpat))
+* `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/node`, `@glimmer/opcode-compiler`, `@glimmer/runtime`, `@glimmer/syntax`
+  * [#918](https://github.com/glimmerjs/glimmer-vm/pull/918) [FEATURE | BREAKING] Change semantics of in-element to match emberjs/rfcs#287 ([@chadhietala](https://github.com/chadhietala))
+
+#### :bug: Bug Fix
+* `@glimmer/compiler`, `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/node`, `@glimmer/opcode-compiler`, `@glimmer/runtime`, `@glimmer/wire-format`
+  * [#928](https://github.com/glimmerjs/glimmer-vm/pull/928) Fix modifiers order ([@chancancode](https://github.com/chancancode))
+* `@glimmer/compiler`, `@glimmer/integration-tests`
+  * [#869](https://github.com/glimmerjs/glimmer-vm/pull/869) Ensure passing attribute as mustache properly forwards the current namespace (e.g. svg) ([@mhankus](https://github.com/mhankus))
+
+#### Committers: 6
+- Chad Hietala ([@chadhietala](https://github.com/chadhietala))
+- Chirag Patel ([@chiragpat](https://github.com/chiragpat))
+- Edward Faulkner ([@ef4](https://github.com/ef4))
+- Godfrey Chan ([@chancancode](https://github.com/chancancode))
+- Miguel Camba ([@cibernox](https://github.com/cibernox))
+- Mirek Hankus ([@mhankus](https://github.com/mhankus))
+
 ## v0.39.3 (2019-03-15)
 
 #### :bug: Bug Fix
