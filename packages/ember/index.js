@@ -227,6 +227,7 @@ Ember.Error = EmberError;
 Ember.Debug = {
   registerDeprecationHandler: EmberDebug.registerDeprecationHandler,
   registerWarnHandler: EmberDebug.registerWarnHandler,
+  isComputed: metal.isComputed,
 };
 
 // ****@ember/instrumentation****

@@ -4,6 +4,7 @@ import {
   getCachedValueFor,
   defineProperty,
   isClassicDecorator,
+  isComputed,
   get,
   set,
   isWatching,
@@ -17,6 +18,24 @@ let obj, count;
 moduleFor(
   'computed',
   class extends AbstractTestCase {
+    ['@test isComputed is true for computed property on a factory'](assert) {
+      let Obj = EmberObject.extend({
+        foo: computed(function() {}),
+      });
+
+      Obj.proto(); // ensure the prototype is "collapsed" / merged
+
+      assert.ok(isComputed(Obj.prototype, 'foo'));
+    }
+
+    ['@test isComputed is true for computed property on an instance'](assert) {
+      let obj = EmberObject.extend({
+        foo: computed(function() {}),
+      }).create();
+
+      assert.ok(isComputed(obj, 'foo'));
+    }
+
     ['@test computed property should be an instance of descriptor'](assert) {
       assert.ok(isClassicDecorator(computed(function() {})));
     }
