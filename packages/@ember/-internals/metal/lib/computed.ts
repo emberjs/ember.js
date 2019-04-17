@@ -22,7 +22,11 @@ import {
   makeComputedDecorator,
   removeDependentKeys,
 } from './decorator';
-import { descriptorForDecorator, isClassicDecorator } from './descriptor_map';
+import {
+  descriptorForDecorator,
+  descriptorForProperty,
+  isClassicDecorator,
+} from './descriptor_map';
 import expandProperties from './expand_properties';
 import { defineProperty } from './properties';
 import { notifyPropertyChange } from './property_events';
@@ -832,6 +836,23 @@ export function computed(
     new ComputedProperty(args as (string | ComputedPropertyConfig)[]),
     ComputedDecoratorImpl
   ) as ComputedDecorator;
+}
+
+/**
+  Allows checking if a given property on an object is a computed property. For the most part,
+  this doesn't matter (you would normally just access the property directly and use its value),
+  but for some tooling specific scenarios (e.g. the ember-inspector) it is important to
+  differentiate if a property is a computed property or a "normal" property.
+
+  This will work on either a class's prototype or an instance itself.
+
+  @static
+  @method isComputed
+  @for @ember/debug
+  @private
+ */
+export function isComputed(obj: object, key: string): boolean {
+  return Boolean(descriptorForProperty(obj, key));
 }
 
 export const _globalsComputed = computed.bind(null);
