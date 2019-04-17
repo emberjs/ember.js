@@ -12,6 +12,7 @@ import {
   ViewStateSupport,
 } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
+import { DEBUG } from '@glimmer/env';
 import { DirtyableTag } from '@glimmer/reference';
 import { normalizeProperty, SVG_NAMESPACE } from '@glimmer/runtime';
 
@@ -727,27 +728,26 @@ const Component = CoreView.extend(
       this[ROOT_REF] = new RootReference(this);
       this[BOUNDS] = null;
 
-      // If in a tagless component, assert that no event handlers are defined
-      assert(
-        // tslint:disable-next-line:max-line-length
-        `You can not define a function that handles DOM events in the \`${this}\` tagless component since it doesn't have any DOM element.`,
-        this.tagName !== '' ||
-          !this.renderer._destinedForDOM ||
-          !(() => {
-            let eventDispatcher = getOwner(this).lookup<any | undefined>('event_dispatcher:main');
-            let events = (eventDispatcher && eventDispatcher._finalEvents) || {};
+      if (DEBUG && this.renderer._destinedForDOM && this.tagName === '') {
+        let eventNames = [];
+        let eventDispatcher = getOwner(this).lookup<any | undefined>('event_dispatcher:main');
+        let events = (eventDispatcher && eventDispatcher._finalEvents) || {};
 
-            // tslint:disable-next-line:forin
-            for (let key in events) {
-              let methodName = events[key];
+        // tslint:disable-next-line:forin
+        for (let key in events) {
+          let methodName = events[key];
 
-              if (typeof this[methodName] === 'function') {
-                return true; // indicate that the assertion should be triggered
-              }
-            }
-            return false;
-          })()
-      );
+          if (typeof this[methodName] === 'function') {
+            eventNames.push(methodName);
+          }
+        }
+        // If in a tagless component, assert that no event handlers are defined
+        assert(
+          // tslint:disable-next-line:max-line-length
+          `You can not define \`${eventNames}\` function(s) to handle DOM event in the \`${this}\` tagless component since it doesn't have any DOM element.`,
+          !eventNames.length
+        );
+      }
     },
 
     rerender() {
