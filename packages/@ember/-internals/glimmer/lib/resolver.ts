@@ -4,6 +4,7 @@ import { LookupOptions, Owner, setOwner } from '@ember/-internals/owner';
 import { lookupComponent, lookupPartial, OwnedTemplateMeta } from '@ember/-internals/views';
 import {
   EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS,
+  EMBER_GLIMMER_FN_HELPER,
   EMBER_MODULE_UNIFICATION,
 } from '@ember/canary-features';
 import { assert } from '@ember/debug';
@@ -32,6 +33,7 @@ import { default as action } from './helpers/action';
 import { default as array } from './helpers/array';
 import { default as concat } from './helpers/concat';
 import { default as eachIn } from './helpers/each-in';
+import { default as fn } from './helpers/fn';
 import { default as get } from './helpers/get';
 import { default as hash } from './helpers/hash';
 import { inlineIf, inlineUnless } from './helpers/if-unless';
@@ -61,7 +63,11 @@ function makeOptions(moduleName: string, namespace?: string): LookupOptions {
   };
 }
 
-const BUILTINS_HELPERS = {
+interface IBuiltInHelpers {
+  [name: string]: Helper | undefined;
+}
+
+const BUILTINS_HELPERS: IBuiltInHelpers = {
   if: inlineIf,
   action,
   array,
@@ -82,7 +88,12 @@ const BUILTINS_HELPERS = {
   '-mount': mountHelper,
   '-outlet': outletHelper,
   '-assert-implicit-component-helper-argument': componentAssertionHelper,
+  fn: undefined,
 };
+
+if (EMBER_GLIMMER_FN_HELPER) {
+  BUILTINS_HELPERS.fn = fn;
+}
 
 const BUILTIN_MODIFIERS = {
   action: { manager: new ActionModifierManager(), state: null },
@@ -96,9 +107,7 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
   ];
   private objToHandle = new WeakMap<any, number>();
 
-  private builtInHelpers: {
-    [name: string]: Helper | undefined;
-  } = BUILTINS_HELPERS;
+  private builtInHelpers: IBuiltInHelpers = BUILTINS_HELPERS;
 
   private builtInModifiers: {
     [name: string]: ModifierDefinition;
