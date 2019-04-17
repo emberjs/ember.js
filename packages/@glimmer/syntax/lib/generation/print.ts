@@ -1,7 +1,6 @@
 import { Option } from '@glimmer/interfaces';
 import * as AST from '../types/nodes';
 import { voidMap } from '../parser/tokenizer-event-handlers';
-import { isLiteral } from '../utils';
 import { escapeText, escapeAttrValue } from './util';
 
 function unreachable(): never {
@@ -207,10 +206,6 @@ function pathParams(ast: AST.Node): string {
     case 'SubExpression':
     case 'ElementModifierStatement':
     case 'BlockStatement':
-      if (isLiteral(ast.path)) {
-        return String(ast.path.value);
-      }
-
       path = build(ast.path);
       break;
     case 'PartialStatement':
