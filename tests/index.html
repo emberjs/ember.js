@@ -17,14 +17,6 @@
       window.loadScript = function(url) {
         document.write(unescape('%3Cscript src="'+url+'"%3E%3C/script%3E'));
       };
-      window.addEventListener('beforeunload', function (e) {
-        debugger
-
-        // Cancel the event
-        e.preventDefault();
-        // Chrome requires returnValue to be set
-        e.returnValue = '';
-      });
     </script>
 
     <script type="text/javascript">
@@ -159,9 +151,10 @@
           QUnit.config.reorder = false;
         }
 
-        var testsTotal, testsPassed, testsFailed;
+        var testsTotal, testsPassed, testsFailed, testsRunning;
 
         QUnit.begin(function() {
+          testsRunning = true;
           testsTotal = testsPassed = testsFailed = 0;
 
           if (QUnit.urlParams.hideskipped) {
@@ -180,7 +173,19 @@
         });
 
         QUnit.done(function(result) {
-            console.log('\n' + 'Took ' + result.runtime + 'ms to run ' + testsTotal + ' tests. ' + testsPassed + ' passed, ' + testsFailed + ' failed.');
+          console.log('\n' + 'Took ' + result.runtime + 'ms to run ' + testsTotal + ' tests. ' + testsPassed + ' passed, ' + testsFailed + ' failed.');
+          testsRunning = false;
+        });
+
+        window.addEventListener('beforeunload', function (e) {
+          if (testsRunning) {
+            debugger
+
+            // Cancel the event
+            e.preventDefault();
+            // Chrome requires returnValue to be set
+            e.returnValue = '';
+          }
         });
       })();
     </script>
