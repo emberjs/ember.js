@@ -14,6 +14,7 @@ import {
 } from '@glimmer/runtime';
 import { Destroyable } from '@glimmer/util';
 import { INVOKE } from '../utils/references';
+import { Owner } from '@ember/-internals/owner';
 
 const MODIFIERS = ['alt', 'shift', 'meta', 'ctrl'];
 const POINTER_EVENT_TYPE_REGEX = /^click|mouse|touch/;
@@ -187,6 +188,23 @@ export class ActionState {
 
 // implements ModifierManager<Action>
 export default class ActionModifierManager implements ModifierManager<ActionState, Opaque> {
+  public owner: Owner;
+  private _setupEventHandler?: (eventName: string) => void;
+
+
+  constructor(owner: Owner) {
+    this.owner = owner;
+  }
+
+  get setupEventHandler(): (eventName: string) => void {
+    if (this._setupEventHandler === undefined) {
+      let dispatcher = this.owner.lookup('event_dispatcher:main');
+      this._setupEventHandler = (eventName) => dispatcher['setupHandler'](eventName);
+    }
+
+    return this._setupEventHandler;
+  }
+
   create(
     element: Simple.Element,
     _state: Opaque,
@@ -246,6 +264,8 @@ export default class ActionModifierManager implements ModifierManager<ActionStat
   install(actionState: ActionState) {
     let { dom, element, actionId } = actionState;
 
+    this.setupEventHandler(actionState.eventName);
+
     ActionHelper.registerAction(actionState);
 
     dom.setAttribute(element, 'data-ember-action', '');
@@ -260,7 +280,11 @@ export default class ActionModifierManager implements ModifierManager<ActionStat
       actionState.actionName = actionNameRef.value();
     }
 
-    actionState.eventName = actionState.getEventName();
+    let newEventName = actionState.getEventName();
+    if (newEventName !== actionState.eventName) {
+      this.setupEventHandler(actionState.eventName);
+      actionState.eventName = actionState.getEventName();
+    }
   }
 
   getTag(actionState: ActionState) {

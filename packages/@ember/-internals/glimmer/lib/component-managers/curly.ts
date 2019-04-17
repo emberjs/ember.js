@@ -105,6 +105,19 @@ const EMPTY_POSITIONAL_ARGS: VersionedPathReference[] = [];
 
 debugFreeze(EMPTY_POSITIONAL_ARGS);
 
+function _setupLazyEventsForComponent(dispatcher: any, component: object) {
+  // non-interactive rendering (e.g. SSR) has no event dispatcher
+  if (dispatcher === undefined) { return; }
+
+  let lazyEvents = dispatcher._lazyEvents;
+
+  lazyEvents.forEach((mappedEventName: string, event: string) => {
+    if (mappedEventName !== null && typeof component[mappedEventName] === 'function') {
+      dispatcher.setupHandler(event, mappedEventName);
+    }
+  });
+}
+
 export default class CurlyComponentManager
   extends AbstractManager<ComponentStateBucket, DefinitionState>
   implements
@@ -310,6 +323,8 @@ export default class CurlyComponentManager
         component.trigger('willInsertElement');
       }
     }
+
+    _setupLazyEventsForComponent(environment.eventDispatcher, component);
 
     // Track additional lifecycle metadata about this component in a state bucket.
     // Essentially we're saving off all the state we'll need in the future.
