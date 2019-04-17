@@ -1953,10 +1953,10 @@ broccoli-typescript-compiler@^4.1.0:
     typescript "~3.2.1"
     walk-sync "^0.3.2"
 
-broccoli-uglify-sourcemap@^3.1.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/broccoli-uglify-sourcemap/-/broccoli-uglify-sourcemap-3.1.0.tgz#424abcb2c1c70fd1857165c5f191d59a37ee33ff"
-  integrity sha512-8urQlRfoL6TDP65EylZgbqTwYkSMuZkWE+bwYgC+GMhncSb6bCc0zHn4AGaC+1DRaAsEjb8uyhtYnKCil4NRPA==
+broccoli-uglify-sourcemap@^3.1.1:
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/broccoli-uglify-sourcemap/-/broccoli-uglify-sourcemap-3.1.1.tgz#c99342fe1da09ff79653b6184ef8efe0b9bac793"
+  integrity sha512-X0GkGz75DFPVwRj7LCUaa1hFOPd6STveaHRCOSXIyq076AZzLVAc08zxhbbMHQOxCer8aRD1pHfuU72fQBCzcA==
   dependencies:
     async-promise-queue "^1.0.4"
     broccoli-plugin "^1.2.1"
