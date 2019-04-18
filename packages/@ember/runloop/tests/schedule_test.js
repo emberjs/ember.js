@@ -50,28 +50,24 @@ moduleFor(
         let runLoop = getCurrentRunLoop();
         assert.ok(runLoop, 'run loop present');
 
-        expectDeprecation(() => {
-          schedule('sync', () => {
-            order.push('sync');
-            assert.equal(runLoop, getCurrentRunLoop(), 'same run loop used');
-          });
-        }, `Scheduling into the 'sync' run loop queue is deprecated.`);
-
         schedule('actions', () => {
           order.push('actions');
           assert.equal(runLoop, getCurrentRunLoop(), 'same run loop used');
+        });
+
+        schedule('afterRender', () => {
+          order.push('afterRender');
+          assert.equal(runLoop, getCurrentRunLoop(), 'same run loop used');
+
+          schedule('afterRender', () => {
+            order.push('afterRender');
+            assert.equal(runLoop, getCurrentRunLoop(), 'same run loop used');
+          });
 
           schedule('actions', () => {
             order.push('actions');
             assert.equal(runLoop, getCurrentRunLoop(), 'same run loop used');
           });
-
-          expectDeprecation(() => {
-            schedule('sync', () => {
-              order.push('sync');
-              assert.equal(runLoop, getCurrentRunLoop(), 'same run loop used');
-            });
-          }, `Scheduling into the 'sync' run loop queue is deprecated.`);
         });
 
         schedule('destroy', () => {
@@ -80,7 +76,7 @@ moduleFor(
         });
       });
 
-      assert.deepEqual(order, ['sync', 'actions', 'sync', 'actions', 'destroy']);
+      assert.deepEqual(order, ['actions', 'afterRender', 'actions', 'afterRender', 'destroy']);
     }
   }
 );
