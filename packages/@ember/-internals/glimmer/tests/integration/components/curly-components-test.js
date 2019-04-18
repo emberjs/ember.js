@@ -2904,22 +2904,30 @@ moduleFor(
         template: `<p>foo</p>`,
       });
 
-      this.render(`{{foo-bar id="foo-bar" isVisible=visible}}`, {
-        visible: false,
-      });
+      expectDeprecation(() => {
+        this.render(`{{foo-bar id="foo-bar" isVisible=visible}}`, {
+          visible: false,
+        });
+      }, '`isVisible` is deprecated (from "component:foo-bar")');
 
       assertStyle('display: none;');
 
       this.assertStableRerender();
 
-      runTask(() => {
-        set(this.context, 'visible', true);
-      });
+      expectDeprecation(() => {
+        runTask(() => {
+          set(this.context, 'visible', true);
+        });
+      }, '`isVisible` is deprecated (from "component:foo-bar")');
+
       assertStyle('');
 
-      runTask(() => {
-        set(this.context, 'visible', false);
-      });
+      expectDeprecation(() => {
+        runTask(() => {
+          set(this.context, 'visible', false);
+        });
+      }, '`isVisible` is deprecated (from "component:foo-bar")');
+
       assertStyle('display: none;');
     }
 
@@ -2933,9 +2941,11 @@ moduleFor(
         template: `<p>foo</p>`,
       });
 
-      this.render(`{{foo-bar id="foo-bar" isVisible=visible}}`, {
-        visible: false,
-      });
+      expectDeprecation(() => {
+        this.render(`{{foo-bar id="foo-bar" isVisible=visible}}`, {
+          visible: false,
+        });
+      }, '`isVisible` is deprecated (from "component:foo-bar")');
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -2944,18 +2954,22 @@ moduleFor(
 
       this.assertStableRerender();
 
-      runTask(() => {
-        set(this.context, 'visible', true);
-      });
+      expectDeprecation(() => {
+        runTask(() => {
+          set(this.context, 'visible', true);
+        });
+      }, '`isVisible` is deprecated (from "component:foo-bar")');
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { id: 'foo-bar', style: styles('color: blue;') },
       });
 
-      runTask(() => {
-        set(this.context, 'visible', false);
-      });
+      expectDeprecation(() => {
+        runTask(() => {
+          set(this.context, 'visible', false);
+        });
+      }, '`isVisible` is deprecated (from "component:foo-bar")');
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -2986,25 +3000,31 @@ moduleFor(
         template: `<p>foo</p>`,
       });
 
-      this.render(`{{foo-bar id="foo-bar" foo=foo isVisible=visible}}`, {
-        visible: false,
-        foo: 'baz',
-      });
+      expectDeprecation(() => {
+        this.render(`{{foo-bar id="foo-bar" foo=foo isVisible=visible}}`, {
+          visible: false,
+          foo: 'baz',
+        });
+      }, '`isVisible` is deprecated (from "component:foo-bar")');
 
       assertStyle('display: none;');
 
       this.assertStableRerender();
 
-      runTask(() => {
-        set(this.context, 'visible', true);
-      });
+      expectDeprecation(() => {
+        runTask(() => {
+          set(this.context, 'visible', true);
+        });
+      }, '`isVisible` is deprecated (from "component:foo-bar")');
 
       assertStyle('');
 
-      runTask(() => {
-        set(this.context, 'visible', false);
-        set(this.context, 'foo', 'woo');
-      });
+      expectDeprecation(() => {
+        runTask(() => {
+          set(this.context, 'visible', false);
+          set(this.context, 'foo', 'woo');
+        });
+      }, '`isVisible` is deprecated (from "component:foo-bar")');
 
       assertStyle('display: none;');
       assert.equal(this.firstChild.getAttribute('foo'), 'woo');
