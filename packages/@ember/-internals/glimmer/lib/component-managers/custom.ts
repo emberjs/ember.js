@@ -1,6 +1,10 @@
+import { getCurrentTracker } from '@ember/-internals/metal';
 import { Factory } from '@ember/-internals/owner';
+import { HAS_NATIVE_PROXY } from '@ember/-internals/utils';
 import { OwnedTemplateMeta } from '@ember/-internals/views';
+import { EMBER_CUSTOM_COMPONENT_ARG_PROXY } from '@ember/canary-features';
 import { assert } from '@ember/debug';
+import { DEBUG } from '@glimmer/env';
 import {
   ComponentCapabilities,
   Dict,
@@ -40,14 +44,22 @@ const CAPABILITIES = {
 export interface OptionalCapabilities {
   asyncLifecycleCallbacks?: boolean;
   destructor?: boolean;
+  updateHook?: boolean;
 }
 
 export function capabilities(managerAPI: '3.4', options: OptionalCapabilities = {}): Capabilities {
   assert('Invalid component manager compatibility specified', managerAPI === '3.4');
 
+  let updateHook = true;
+
+  if (EMBER_CUSTOM_COMPONENT_ARG_PROXY) {
+    updateHook = 'updateHook' in options ? Boolean(options.updateHook) : true;
+  }
+
   return {
     asyncLifeCycleCallbacks: Boolean(options.asyncLifecycleCallbacks),
     destructor: Boolean(options.destructor),
+    updateHook,
   };
 }
 
@@ -61,6 +73,7 @@ export interface DefinitionState<ComponentInstance> {
 export interface Capabilities {
   asyncLifeCycleCallbacks: boolean;
   destructor: boolean;
+  updateHook: boolean;
 }
 
 // TODO: export ICapturedArgumentsValue from glimmer and replace this
@@ -132,12 +145,12 @@ export interface ComponentArguments {
 export default class CustomComponentManager<ComponentInstance>
   extends AbstractComponentManager<
     CustomComponentState<ComponentInstance>,
-    DefinitionState<ComponentInstance>
+    CustomComponentDefinitionState<ComponentInstance>
   >
   implements
     WithStaticLayout<
       CustomComponentState<ComponentInstance>,
-      DefinitionState<ComponentInstance>,
+      CustomComponentDefinitionState<ComponentInstance>,
       OwnedTemplateMeta,
       RuntimeResolver
     > {
@@ -149,16 +162,82 @@ export default class CustomComponentManager<ComponentInstance>
     const { delegate } = definition;
     const capturedArgs = args.capture();
 
-    const component = delegate.createComponent(
-      definition.ComponentClass.class,
-      capturedArgs.value()
-    );
+    let value;
+    let namedArgsProxy = {};
 
-    return new CustomComponentState(delegate, component, capturedArgs);
+    if (EMBER_CUSTOM_COMPONENT_ARG_PROXY) {
+      if (HAS_NATIVE_PROXY) {
+        let handler: ProxyHandler<{}> = {
+          get(_target, prop) {
+            assert('args can only be strings', typeof prop === 'string');
+
+            let tracker = getCurrentTracker();
+            let ref = capturedArgs.named.get(prop as string);
+
+            if (tracker) {
+              tracker.add(ref.tag);
+            }
+
+            return ref.value();
+          },
+        };
+
+        if (DEBUG) {
+          handler.set = function(_target, prop) {
+            assert(
+              `You attempted to set ${definition.ComponentClass.class}#${String(
+                prop
+              )} on a components arguments. Component arguments are immutable and cannot be updated directly, they always represent the values that are passed to your component. If you want to set default values, you should use a getter instead`
+            );
+
+            return false;
+          };
+        }
+
+        namedArgsProxy = new Proxy(namedArgsProxy, handler);
+      } else {
+        capturedArgs.named.names.forEach(name => {
+          Object.defineProperty(namedArgsProxy, name, {
+            get() {
+              let ref = capturedArgs.named.get(name);
+              let tracker = getCurrentTracker();
+
+              if (tracker) {
+                tracker.add(ref.tag);
+              }
+
+              return ref.value();
+            },
+          });
+        });
+      }
+
+      value = {
+        named: namedArgsProxy,
+        positional: capturedArgs.positional.value(),
+      };
+    } else {
+      value = capturedArgs.value();
+    }
+
+    const component = delegate.createComponent(definition.ComponentClass.class, value);
+
+    return new CustomComponentState(delegate, component, capturedArgs, namedArgsProxy);
   }
 
-  update({ delegate, component, args }: CustomComponentState<ComponentInstance>) {
-    delegate.updateComponent(component, args.value());
+  update({ delegate, component, args, namedArgsProxy }: CustomComponentState<ComponentInstance>) {
+    let value;
+
+    if (EMBER_CUSTOM_COMPONENT_ARG_PROXY) {
+      value = {
+        named: namedArgsProxy!,
+        positional: args.positional.value(),
+      };
+    } else {
+      value = args.value();
+    }
+
+    delegate.updateComponent(component, value);
   }
 
   didCreate({ delegate, component }: CustomComponentState<ComponentInstance>) {
@@ -189,8 +268,12 @@ export default class CustomComponentManager<ComponentInstance>
     }
   }
 
-  getCapabilities(): ComponentCapabilities {
-    return CAPABILITIES;
+  getCapabilities({
+    delegate,
+  }: CustomComponentDefinitionState<ComponentInstance>): ComponentCapabilities {
+    return Object.assign({}, CAPABILITIES, {
+      updateHook: delegate.capabilities.updateHook,
+    });
   }
 
   getTag({ args }: CustomComponentState<ComponentInstance>): Tag {
@@ -215,7 +298,8 @@ export class CustomComponentState<ComponentInstance> {
   constructor(
     public delegate: ManagerDelegate<ComponentInstance>,
     public component: ComponentInstance,
-    public args: CapturedArguments
+    public args: CapturedArguments,
+    public namedArgsProxy?: {}
   ) {}
 
   destroy() {
