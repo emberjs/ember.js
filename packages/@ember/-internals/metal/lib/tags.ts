@@ -43,10 +43,13 @@ export function tagForProperty(object: any, propertyKey: string | symbol, _meta?
 export function tagFor(object: any | null, _meta?: Meta): Tag {
   if (typeof object === 'object' && object !== null) {
     let meta = _meta === undefined ? metaFor(object) : _meta;
-    return meta.writableTag(makeTag);
-  } else {
-    return CONSTANT_TAG;
+
+    if (!meta.isMetaDestroyed()) {
+      return meta.writableTag(makeTag);
+    }
   }
+
+  return CONSTANT_TAG;
 }
 
 export let dirty: (tag: Tag) => void;

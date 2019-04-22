@@ -3,7 +3,7 @@
 */
 import { DEBUG } from '@glimmer/env';
 import { PROXY_CONTENT } from '@ember/-internals/metal';
-import { symbol, HAS_NATIVE_PROXY, tryInvoke } from '@ember/-internals/utils';
+import { EMBER_ARRAY, HAS_NATIVE_PROXY, tryInvoke } from '@ember/-internals/utils';
 import {
   get,
   set,
@@ -29,11 +29,6 @@ import MutableEnumerable from './mutable_enumerable';
 import { typeOf } from '../type-of';
 
 const EMPTY_ARRAY = Object.freeze([]);
-const EMBER_ARRAY = symbol('EMBER_ARRAY');
-
-export function isEmberArray(obj) {
-  return obj && obj[EMBER_ARRAY];
-}
 
 const identityFunction = item => item;
 
@@ -722,7 +717,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     Returns an array with just the items with the matched property. You
     can pass an optional second argument with the target value. Otherwise
     this will match any property that evaluates to `true`.
-    
+
     Example Usage:
 
     ```javascript

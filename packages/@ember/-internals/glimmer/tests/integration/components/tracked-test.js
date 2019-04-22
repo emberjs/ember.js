@@ -1,5 +1,5 @@
 import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
-import { Object as EmberObject } from '@ember/-internals/runtime';
+import { Object as EmberObject, A } from '@ember/-internals/runtime';
 import { tracked, nativeDescDecorator as descriptor } from '@ember/-internals/metal';
 import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 import GlimmerishComponent from '../../utils/glimmerish-component';
@@ -149,6 +149,33 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
         runTask(() => this.$('button').click());
 
         this.assertText('1');
+      }
+
+      '@test array properties rerender when updated'() {
+        let NumListComponent = Component.extend({
+          numbers: tracked({ initializer: () => A([1, 2, 3]) }),
+
+          addNumber() {
+            this.numbers.pushObject(4);
+          },
+        });
+
+        this.registerComponent('num-list', {
+          ComponentClass: NumListComponent,
+          template: strip`
+            <button {{action this.addNumber}}>
+              {{#each this.numbers as |num|}}{{num}}{{/each}}
+            </button>
+          `,
+        });
+
+        this.render('<NumList />');
+
+        this.assertText('123');
+
+        runTask(() => this.$('button').click());
+
+        this.assertText('1234');
       }
 
       '@test getters update when dependent properties are invalidated'() {
