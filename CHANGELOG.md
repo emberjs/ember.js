@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.10.0-beta.4 (April 22, 2019)
+
+- [#17930](https://github.com/emberjs/ember.js/pull/17930) [BUGFIX] Update assertion for events in tagless component to include method names
+
 ### v3.10.0-beta.3 (April 15, 2019)
 
 - [#17859](https://github.com/emberjs/ember.js/pull/17859) [BUGFIX] Fixes a regression in the legacy build
