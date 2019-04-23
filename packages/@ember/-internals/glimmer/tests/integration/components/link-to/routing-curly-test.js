@@ -1656,7 +1656,7 @@ moduleFor(
       });
     }
 
-    [`@test the {{link-to}} component throws a useful error if you invoke it wrong`](assert) {
+    async [`@test the {{link-to}} component throws a useful error if you invoke it wrong`](assert) {
       assert.expect(1);
 
       this.router.map(function() {
@@ -1665,11 +1665,10 @@ moduleFor(
 
       this.addTemplate('application', `{{#link-to 'post'}}Post{{/link-to}}`);
 
-      assert.throws(() => {
-        this.visit('/');
-      }, /(You attempted to define a `\{\{link-to "post"\}\}` but did not pass the parameters required for generating its dynamic segments.|You must provide param `post_id` to `generate`)/);
-
-      return runLoopSettled();
+      await assert.rejects(
+        this.visit('/'),
+        /(You attempted to define a `\{\{link-to "post"\}\}` but did not pass the parameters required for generating its dynamic segments.|You must provide param `post_id` to `generate`)/
+      );
     }
 
     [`@test the {{link-to}} component does not throw an error if its route has exited`](assert) {

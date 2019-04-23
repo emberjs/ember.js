@@ -109,6 +109,7 @@ module.exports = {
       globals: {
         'expectAssertion': true,
         'expectDeprecation': true,
+        'expectDeprecationAsync': true,
         'expectNoDeprecation': true,
         'expectWarning': true,
         'expectNoWarning': true,

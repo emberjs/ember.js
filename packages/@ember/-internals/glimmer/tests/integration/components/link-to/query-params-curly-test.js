@@ -51,14 +51,16 @@ moduleFor(
       });
     }
 
-    ['@feature(ember-glimmer-angle-bracket-built-ins) `(query-params)` must be used in conjunction with `{{link-to}}']() {
+    async ['@feature(ember-glimmer-angle-bracket-built-ins) `(query-params)` must be used in conjunction with `{{link-to}}'](
+      assert
+    ) {
       this.addTemplate(
         'index',
         `{{#let (query-params foo='456' bar='NAW') as |qp|}}{{link-to 'Index' 'index' qp}}{{/let}}`
       );
 
-      return expectAssertion(
-        () => this.visit('/'),
+      await assert.rejectsAssertion(
+        this.visit('/'),
         /The `\(query-params\)` helper can only be used when invoking the `{{link-to}}` component\./
       );
     }

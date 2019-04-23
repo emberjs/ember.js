@@ -469,7 +469,7 @@ moduleFor(
       });
     }
 
-    ['@test it emits a useful backtracking re-render assertion message']() {
+    async ['@test it emits a useful backtracking re-render assertion message'](assert) {
       this.router.map(function() {
         this.route('routeWithError');
       });
@@ -497,11 +497,9 @@ moduleFor(
 
       let expectedBacktrackingMessage = /modified "model\.name" twice on \[object Object\] in a single render\. It was rendered in "template:my-app\/templates\/routeWithError.hbs" and modified in "component:x-foo"/;
 
-      return this.visit('/').then(() => {
-        expectAssertion(() => {
-          this.visit('/routeWithError');
-        }, expectedBacktrackingMessage);
-      });
+      await this.visit('/');
+
+      assert.rejectsAssertion(this.visit('/routeWithError'), expectedBacktrackingMessage);
     }
 
     ['@test route templates with {{{undefined}}} [GH#14924] [GH#16172]']() {

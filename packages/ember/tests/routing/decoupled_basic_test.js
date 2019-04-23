@@ -90,12 +90,10 @@ moduleFor(
         });
     }
 
-    ['@test warn on URLs not included in the route set']() {
-      return this.visit('/').then(() => {
-        expectAssertion(() => {
-          this.visit('/what-is-this-i-dont-even');
-        }, /'\/what-is-this-i-dont-even' did not match any routes/);
-      });
+    async ['@test warn on URLs not included in the route set'](assert) {
+      await this.visit('/');
+
+      await assert.rejects(this.visit('/what-is-this-i-dont-even'), /\/what-is-this-i-dont-even/);
     }
 
     ['@test The Homepage'](assert) {
@@ -798,7 +796,7 @@ moduleFor(
 
       this.handleURLRejectsWith(this, assert, 'specials/1', 'Setup error');
 
-      run(() => resolve(menuItem));
+      resolve(menuItem);
     }
 
     ["@test ApplicationRoute's default error handler can be overridden"](assert) {
@@ -848,7 +846,7 @@ moduleFor(
 
       this.handleURLRejectsWith(this, assert, '/specials/1', 'Setup error');
 
-      run(() => resolve(menuItem));
+      resolve(menuItem);
     }
 
     ['@test Moving from one page to another triggers the correct callbacks'](assert) {
@@ -980,7 +978,7 @@ moduleFor(
       });
     }
 
-    ['@test Events are triggered on the controller if a matching action name is implemented'](
+    async ['@test Events are triggered on the controller if a matching action name is implemented'](
       assert
     ) {
       let done = assert.async();
@@ -1021,15 +1019,17 @@ moduleFor(
         })
       );
 
-      this.visit('/').then(() => {
-        document
-          .getElementById('qunit-fixture')
-          .querySelector('a')
-          .click();
-      });
+      await this.visit('/');
+
+      document
+        .getElementById('qunit-fixture')
+        .querySelector('a')
+        .click();
     }
 
-    ['@test Events are triggered on the current state when defined in `actions` object'](assert) {
+    async ['@test Events are triggered on the current state when defined in `actions` object'](
+      assert
+    ) {
       let done = assert.async();
 
       this.router.map(function() {
@@ -1058,15 +1058,15 @@ moduleFor(
       this.add('route:home', HomeRoute);
       this.addTemplate('home', '<a {{action "showStuff" model}}>{{model.name}}</a>');
 
-      this.visit('/').then(() => {
-        document
-          .getElementById('qunit-fixture')
-          .querySelector('a')
-          .click();
-      });
+      await this.visit('/');
+
+      document
+        .getElementById('qunit-fixture')
+        .querySelector('a')
+        .click();
     }
 
-    ['@test Events defined in `actions` object are triggered on the current state when routes are nested'](
+    async ['@test Events defined in `actions` object are triggered on the current state when routes are nested'](
       assert
     ) {
       let done = assert.async();
@@ -1104,12 +1104,12 @@ moduleFor(
 
       this.addTemplate('root.index', '<a {{action "showStuff" model}}>{{model.name}}</a>');
 
-      this.visit('/').then(() => {
-        document
-          .getElementById('qunit-fixture')
-          .querySelector('a')
-          .click();
-      });
+      await this.visit('/');
+
+      document
+        .getElementById('qunit-fixture')
+        .querySelector('a')
+        .click();
     }
 
     ['@test Events can be handled by inherited event handlers'](assert) {
@@ -1162,7 +1162,7 @@ moduleFor(
       });
     }
 
-    ['@test Actions are not triggered on the controller if a matching action name is implemented as a method'](
+    async ['@test Actions are not triggered on the controller if a matching action name is implemented as a method'](
       assert
     ) {
       let done = assert.async();
@@ -1203,15 +1203,15 @@ moduleFor(
         })
       );
 
-      this.visit('/').then(() => {
-        document
-          .getElementById('qunit-fixture')
-          .querySelector('a')
-          .click();
-      });
+      await this.visit('/');
+
+      document
+        .getElementById('qunit-fixture')
+        .querySelector('a')
+        .click();
     }
 
-    ['@test actions can be triggered with multiple arguments'](assert) {
+    async ['@test actions can be triggered with multiple arguments'](assert) {
       let done = assert.async();
       this.router.map(function() {
         this.route('root', { path: '/' }, function() {
@@ -1253,12 +1253,12 @@ moduleFor(
 
       this.addTemplate('root.index', '<a {{action "showStuff" model1 model2}}>{{model1.name}}</a>');
 
-      this.visit('/').then(() => {
-        document
-          .getElementById('qunit-fixture')
-          .querySelector('a')
-          .click();
-      });
+      await this.visit('/');
+
+      document
+        .getElementById('qunit-fixture')
+        .querySelector('a')
+        .click();
     }
 
     ['@test transitioning multiple times in a single run loop only sets the URL once'](assert) {
@@ -2822,7 +2822,7 @@ moduleFor(
 
       let deprecation = /You attempted to override the "willTransition" method which is deprecated\./;
 
-      return expectDeprecation(() => {
+      return expectDeprecationAsync(() => {
         return this.visit('/').then(() => {
           this.handleURLAborts(assert, '/nork', deprecation);
           this.handleURLAborts(assert, '/about', deprecation);
@@ -2917,34 +2917,32 @@ moduleFor(
       });
     }
 
-    ['@test `didTransition` event fires on the router'](assert) {
+    async ['@test `didTransition` event fires on the router'](assert) {
       assert.expect(3);
 
       this.router.map(function() {
         this.route('nork');
       });
 
-      return this.visit('/')
-        .then(() => {
-          let router = this.applicationInstance.lookup('router:main');
-          router.one('didTransition', function() {
-            assert.ok(true, 'didTransition fired on initial routing');
-          });
-          this.visit('/');
-        })
-        .then(() => {
-          let router = this.applicationInstance.lookup('router:main');
-          router.one('didTransition', function() {
-            assert.ok(true, 'didTransition fired on the router');
-            assert.equal(
-              router.get('url'),
-              '/nork',
-              'The url property is updated by the time didTransition fires'
-            );
-          });
+      await this.visit('/');
 
-          return this.visit('/nork');
-        });
+      let router = this.applicationInstance.lookup('router:main');
+      router.one('didTransition', function() {
+        assert.ok(true, 'didTransition fired on initial routing');
+      });
+
+      await this.visit('/');
+
+      router.one('didTransition', function() {
+        assert.ok(true, 'didTransition fired on the router');
+        assert.equal(
+          router.get('url'),
+          '/nork',
+          'The url property is updated by the time didTransition fires'
+        );
+      });
+
+      await this.visit('/nork');
     }
 
     ['@test `activate` event fires on the route'](assert) {
@@ -3281,7 +3279,7 @@ moduleFor(
       });
     }
 
-    ['@test rejecting the model hooks promise with a non-error prints the `message` property'](
+    async ['@test rejecting the model hooks promise with a non-error prints the `message` property'](
       assert
     ) {
       assert.expect(5);
@@ -3319,10 +3317,8 @@ moduleFor(
         })
       );
 
-      return assert.throws(
-        () => {
-          return this.visit('/');
-        },
+      await assert.rejects(
+        this.visit('/'),
         function(err) {
           assert.equal(err.message, rejectedMessage);
           return true;
@@ -3331,7 +3327,7 @@ moduleFor(
       );
     }
 
-    ['@test rejecting the model hooks promise with an error with `errorThrown` property prints `errorThrown.message` property'](
+    async ['@test rejecting the model hooks promise with an error with `errorThrown` property prints `errorThrown.message` property'](
       assert
     ) {
       assert.expect(5);
@@ -3367,8 +3363,8 @@ moduleFor(
         })
       );
 
-      assert.throws(
-        () => this.visit('/'),
+      await assert.rejects(
+        this.visit('/'),
         function(err) {
           assert.equal(err.message, rejectedMessage);
           return true;
@@ -3377,7 +3373,7 @@ moduleFor(
       );
     }
 
-    ['@test rejecting the model hooks promise with no reason still logs error'](assert) {
+    async ['@test rejecting the model hooks promise with no reason still logs error'](assert) {
       assert.expect(2);
       this.router.map(function() {
         this.route('wowzers', { path: '/' });
@@ -3400,10 +3396,10 @@ moduleFor(
         })
       );
 
-      return assert.throws(() => this.visit('/'));
+      await assert.rejects(this.visit('/'));
     }
 
-    ['@test rejecting the model hooks promise with a string shows a good error'](assert) {
+    async ['@test rejecting the model hooks promise with a string shows a good error'](assert) {
       assert.expect(3);
       let rejectedMessage = 'Supercalifragilisticexpialidocious';
 
@@ -3433,7 +3429,7 @@ moduleFor(
         })
       );
 
-      assert.throws(() => this.visit('/'), new RegExp(rejectedMessage), 'expected an exception');
+      await assert.rejects(this.visit('/'), new RegExp(rejectedMessage), 'expected an exception');
     }
 
     ["@test willLeave, willChangeContext, willChangeModel actions don't fire unless feature flag enabled"](
@@ -3472,7 +3468,7 @@ moduleFor(
       return this.visit('/about');
     }
 
-    ['@test Errors in transitionTo within redirect hook are logged'](assert) {
+    async ['@test Errors in transitionTo within redirect hook are logged'](assert) {
       assert.expect(4);
       let actual = [];
 
@@ -3495,7 +3491,7 @@ moduleFor(
         actual.push(arguments);
       };
 
-      assert.throws(() => this.visit('/'), /More context objects were passed/);
+      await assert.rejects(this.visit('/'), /More context objects were passed/);
 
       assert.equal(actual.length, 1, 'the error is only logged once');
       assert.equal(actual[0][0], 'Error while processing route: yondo', 'source route is printed');
@@ -3585,7 +3581,7 @@ moduleFor(
         });
     }
 
-    ['@test Exception during initialization of non-initial route is not swallowed'](assert) {
+    async ['@test Exception during initialization of non-initial route is not swallowed'](assert) {
       this.router.map(function() {
         this.route('boom');
       });
@@ -3598,10 +3594,10 @@ moduleFor(
         })
       );
 
-      return assert.throws(() => this.visit('/boom'), /\bboom\b/);
+      await assert.rejects(this.visit('/boom'), /\bboom\b/);
     }
 
-    ['@test Exception during initialization of initial route is not swallowed'](assert) {
+    async ['@test Exception during initialization of initial route is not swallowed'](assert) {
       this.router.map(function() {
         this.route('boom', { path: '/' });
       });
@@ -3613,7 +3609,8 @@ moduleFor(
           },
         })
       );
-      return assert.throws(() => this.visit('/'), /\bboom\b/);
+
+      await assert.rejects(this.visit('/'), /\bboom\b/);
     }
 
     ['@test {{outlet}} works when created after initial render'](assert) {
@@ -4038,7 +4035,7 @@ moduleFor(
       });
     }
 
-    ['@test Doesnt swallow exception thrown from willTransition'](assert) {
+    async ['@test Doesnt swallow exception thrown from willTransition'](assert) {
       assert.expect(1);
       this.addTemplate('application', '{{outlet}}');
       this.addTemplate('index', 'index');
@@ -4060,15 +4057,12 @@ moduleFor(
         })
       );
 
-      return this.visit('/').then(() => {
-        return assert.throws(
-          () => {
-            return this.visit('/other');
-          },
-          /boom/,
-          'expected an exception but none was thrown'
-        );
-      });
+      await this.visit('/');
+      await assert.rejects(
+        this.visit('/other'),
+        /boom/,
+        'expected an exception but none was thrown'
+      );
     }
 
     ['@test Exception if outlet name is undefined in render and disconnectOutlet']() {
@@ -4140,7 +4134,7 @@ moduleFor(
       });
     }
 
-    ['@test Defining a Route#serialize method in an Engine throws an error'](assert) {
+    async ['@test Defining a Route#serialize method in an Engine throws an error'](assert) {
       assert.expect(1);
 
       // Register engine
@@ -4157,16 +4151,20 @@ moduleFor(
         this.mount('blog');
       });
 
-      return this.visit('/').then(() => {
-        let router = this.applicationInstance.lookup('router:main');
-        let PostRoute = Route.extend({ serialize() {} });
-        this.applicationInstance.lookup('engine:blog').register('route:post', PostRoute);
+      await this.visit('/');
 
-        assert.throws(
-          () => router.transitionTo('blog.post'),
-          /Defining a custom serialize method on an Engine route is not supported/
+      let router = this.applicationInstance.lookup('router:main');
+      let PostRoute = Route.extend({ serialize() {} });
+      this.applicationInstance.lookup('engine:blog').register('route:post', PostRoute);
+
+      try {
+        // TODO: for some reason this doesn't work with assert.reject
+        await router.transitionTo('blog.post');
+      } catch (e) {
+        assert.ok(
+          e.message.match(/Defining a custom serialize method on an Engine route is not supported/)
         );
-      });
+      }
     }
 
     ['@test App.destroy does not leave undestroyed views after clearing engines'](assert) {

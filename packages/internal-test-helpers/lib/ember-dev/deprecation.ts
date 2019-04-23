@@ -2,6 +2,10 @@ import DebugAssert from './debug';
 import { callWithStub, DebugEnv, Message } from './utils';
 
 type ExpectNoDeprecationFunc = (func?: () => void) => void;
+type ExpectDeprecationAsyncFunc = (
+  func: () => void | undefined | Message | Promise<any>,
+  expectedMessage: Message
+) => Promise<any>;
 type ExpectDeprecationFunc = (
   func: () => void | undefined | Message,
   expectedMessage: Message
@@ -12,6 +16,7 @@ declare global {
   interface Window {
     expectNoDeprecation: ExpectNoDeprecationFunc | null;
     expectDeprecation: ExpectDeprecationFunc | null;
+    expectDeprecationAsync: ExpectDeprecationAsyncFunc | null;
     ignoreDeprecation: IgnoreDeprecationFunc | null;
   }
 }
@@ -90,18 +95,42 @@ class DeprecationAssert extends DebugAssert {
       });
     };
 
+    let expectDeprecationAsync: ExpectDeprecationAsyncFunc = async (func, message) => {
+      let actualFunc: (() => void) | undefined;
+      if (typeof func !== 'function') {
+        message = func as Message;
+        actualFunc = undefined;
+      } else {
+        actualFunc = func;
+      }
+
+      await this.runExpectation(
+        actualFunc,
+        tracker => {
+          if (tracker.isExpectingNoCalls()) {
+            throw new Error('expectDeprecation was called after expectNoDeprecation was called!');
+          }
+
+          tracker.expectCall(message, ['id', 'until']);
+        },
+        true
+      );
+    };
+
     let ignoreDeprecation: IgnoreDeprecationFunc = func => {
       callWithStub(this.env, 'deprecate', func);
     };
 
     window.expectNoDeprecation = expectNoDeprecation;
     window.expectDeprecation = expectDeprecation;
+    window.expectDeprecationAsync = expectDeprecationAsync;
     window.ignoreDeprecation = ignoreDeprecation;
   }
 
   restore() {
     super.restore();
     window.expectDeprecation = null;
+    window.expectDeprecationAsync = null;
     window.expectNoDeprecation = null;
     window.ignoreDeprecation = null;
   }
