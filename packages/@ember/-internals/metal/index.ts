@@ -1,4 +1,9 @@
-export { default as computed, _globalsComputed, ComputedProperty } from './lib/computed';
+export {
+  default as computed,
+  isComputed,
+  _globalsComputed,
+  ComputedProperty,
+} from './lib/computed';
 export { getCacheFor, getCachedValueFor, peekCacheFor } from './lib/computed_cache';
 export { default as alias } from './lib/alias';
 export { deprecateProperty } from './lib/deprecate_property';

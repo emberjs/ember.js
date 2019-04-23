@@ -9,17 +9,17 @@ const DECORATOR_DESCRIPTOR_MAP: WeakMap<
 /**
   Returns the CP descriptor assocaited with `obj` and `keyName`, if any.
 
-  @method descriptorFor
+  @method descriptorForProperty
   @param {Object} obj the object to check
   @param {String} keyName the key to check
   @return {Descriptor}
   @private
 */
 export function descriptorForProperty(obj: object, keyName: string, _meta?: Meta | null) {
-  assert('Cannot call `descriptorFor` on null', obj !== null);
-  assert('Cannot call `descriptorFor` on undefined', obj !== undefined);
+  assert('Cannot call `descriptorForProperty` on null', obj !== null);
+  assert('Cannot call `descriptorForProperty` on undefined', obj !== undefined);
   assert(
-    `Cannot call \`descriptorFor\` on ${typeof obj}`,
+    `Cannot call \`descriptorForProperty\` on ${typeof obj}`,
     typeof obj === 'object' || typeof obj === 'function'
   );
 
