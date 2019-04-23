@@ -312,8 +312,6 @@ moduleFor(
     }
 
     async ['@test error is thrown if dynamic segment and query param have same name'](assert) {
-      assert.expect(1);
-
       this.router.map(function() {
         this.route('index', { path: '/:foo' });
       });

@@ -7,8 +7,9 @@ module.exports = function polyfills() {
   let polyfillEntry = writeFile(
     'polyfill-entry.js',
     `
+      require('core-js/modules/es6.promise');
       require('core-js/modules/es6.symbol');
-      require('regenerator-runtime/runtime')
+      require('regenerator-runtime/runtime');
     `
   );
 

@@ -844,9 +844,11 @@ moduleFor(
         })
       );
 
-      this.handleURLRejectsWith(this, assert, '/specials/1', 'Setup error');
+      let promise = this.handleURLRejectsWith(this, assert, '/specials/1', 'Setup error');
 
       resolve(menuItem);
+
+      return promise;
     }
 
     ['@test Moving from one page to another triggers the correct callbacks'](assert) {
