@@ -43,7 +43,7 @@ if (EMBER_GLIMMER_ON_MODIFIER) {
         if (isChrome || isFirefox) {
           assert.strictEqual(SUPPORTS_EVENT_OPTIONS, true, 'is true in chrome and firefox');
         } else if (isIE11) {
-          assert.strictEqual(SUPPORTS_EVENT_OPTIONS, false, 'is true in chrome and firefox');
+          assert.strictEqual(SUPPORTS_EVENT_OPTIONS, false, 'is false in IE11');
         } else {
           assert.expect(0);
         }
@@ -318,6 +318,52 @@ if (EMBER_GLIMMER_ON_MODIFIER) {
         expectAssertion(() => {
           this.render(`<button {{on 'click' this.foo}}>Click Me</button>`, { foo: null });
         }, /You must pass a function as the second argument to the `on` modifier/);
+      }
+
+      '@test asserts if the provided callback accesses `this` without being bound prior to passing to on'() {
+        this.render(`<button {{on 'click' this.myFunc}}>Click Me</button>`, {
+          myFunc() {
+            expectAssertion(() => {
+              this.arg1;
+            }, /You accessed `this.arg1` from a function passed to the `on` modifier, but the function itself was not bound to a valid `this` context. Consider updating to usage of `@action`./);
+          },
+
+          arg1: 'foo',
+        });
+
+        runTask(() => this.$('button').click());
+      }
+
+      '@test asserts if more than 2 positional parameters are provided'() {
+        expectAssertion(() => {
+          this.render(`<button {{on 'click' this.callback this.someArg}}>Click Me</button>`, {
+            callback() {},
+            someArg: 'foo',
+          });
+        }, /You can only pass two positional arguments \(event name and callback\) to the `on` modifier, but you provided 3. Consider using the `fn` helper to provide additional arguments to the `on` callback./);
+      }
+
+      '@test it removes the modifier when the element is removed'(assert) {
+        let count = 0;
+
+        this.render(
+          '{{#if this.showButton}}<button {{on "click" this.callback}}>Click Me</button>{{/if}}',
+          {
+            callback() {
+              count++;
+            },
+            showButton: true,
+          }
+        );
+
+        this.assertCounts({ adds: 1, removes: 0 });
+
+        runTask(() => this.$('button').click());
+        assert.equal(count, 1, 'has been called 1 time');
+
+        runTask(() => this.context.set('showButton', false));
+
+        this.assertCounts({ adds: 1, removes: 1 });
       }
     }
   );

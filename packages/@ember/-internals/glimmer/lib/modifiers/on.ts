@@ -4,6 +4,9 @@ import { Opaque, Simple } from '@glimmer/interfaces';
 import { Tag } from '@glimmer/reference';
 import { Arguments, CapturedArguments, ModifierManager } from '@glimmer/runtime';
 import { Destroyable } from '@glimmer/util';
+import buildUntouchableThis from '../utils/untouchable-this';
+
+const untouchableContext = buildUntouchableThis('`on` modifier');
 
 /*
   Internet Explorer 11 does not support `once` and also does not support
@@ -105,21 +108,39 @@ export class OnModifierState {
       this.shouldUpdate = true;
     }
 
-    if (this.shouldUpdate) {
-      let callback = (this.callback = function(this: Element, event) {
-        if (DEBUG && passive) {
-          event.preventDefault = () => {
-            assert(
-              `You marked this listener as 'passive', meaning that you must not call 'event.preventDefault()': \n\n${userProvidedCallback}`
-            );
-          };
-        }
+    assert(
+      `You can only pass two positional arguments (event name and callback) to the \`on\` modifier, but you provided ${
+        args.positional.length
+      }. Consider using the \`fn\` helper to provide additional arguments to the \`on\` callback.`,
+      args.positional.length === 2
+    );
 
-        if (!SUPPORTS_EVENT_OPTIONS && once) {
-          removeEventListener(this, eventName, callback, options);
-        }
-        return userProvidedCallback.call(null, event);
-      });
+    let needsCustomCallback =
+        (SUPPORTS_EVENT_OPTIONS === false && once) /* needs manual once implementation */ ||
+        (DEBUG && passive) /* needs passive enforcement */;
+
+    if (this.shouldUpdate) {
+      if (needsCustomCallback) {
+        let callback = (this.callback = function(this: Element, event) {
+          if (DEBUG && passive) {
+            event.preventDefault = () => {
+              assert(
+                `You marked this listener as 'passive', meaning that you must not call 'event.preventDefault()': \n\n${userProvidedCallback}`
+              );
+            };
+          }
+
+          if (!SUPPORTS_EVENT_OPTIONS && once) {
+            removeEventListener(this, eventName, callback, options);
+          }
+          return userProvidedCallback.call(untouchableContext, event);
+        });
+      } else if (DEBUG) {
+        // prevent the callback from being bound to the element
+        this.callback = userProvidedCallback.bind(untouchableContext);
+      } else {
+        this.callback = userProvidedCallback;
+      }
     }
   }
 
@@ -156,7 +177,7 @@ function removeEventListener(
     // used only in the following cases:
     //
     // * where there is no options
-    // * `{ once: true | false, passive: true, capture: false }
+    // * `{ once: true | false, passive: true | false, capture: false }
     element.removeEventListener(eventName, callback);
   }
 }
@@ -184,7 +205,7 @@ function addEventListener(
     // used only in the following cases:
     //
     // * where there is no options
-    // * `{ once: true | false, passive: true, capture: false }
+    // * `{ once: true | false, passive: true | false, capture: false }
     element.addEventListener(eventName, callback);
   }
 }
