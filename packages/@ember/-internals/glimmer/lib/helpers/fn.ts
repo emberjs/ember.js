@@ -3,6 +3,7 @@ import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { Arguments, VM } from '@glimmer/runtime';
 import { ICapturedArguments } from '@glimmer/runtime/dist/types/lib/vm/arguments';
+import { Opaque } from '@glimmer/util';
 import { InternalHelperReference } from '../utils/references';
 
 let context: any = null;
@@ -45,10 +46,10 @@ function fnHelper({ positional }: ICapturedArguments) {
     typeof positional.at(0).value() === 'function'
   );
 
-  return () => {
+  return (...invocationArgs: Opaque[]) => {
     let [fn, ...args] = positional.value();
 
-    return fn!['apply'](context, args);
+    return fn!['call'](context, ...args, ...invocationArgs);
   };
 }
 

@@ -158,6 +158,38 @@ if (EMBER_GLIMMER_FN_HELPER) {
 
         assert.equal(this.stashedFn(), 'arg1: foo, arg2: bar');
       }
+
+      '@test partially applies each layer when nested [GH#17959]'() {
+        this.render(`{{invoke (fn (fn (fn this.myFunc this.arg1) this.arg2) this.arg3)}}`, {
+          myFunc(arg1, arg2, arg3) {
+            return `arg1: ${arg1}, arg2: ${arg2}, arg3: ${arg3}`;
+          },
+
+          arg1: 'foo',
+          arg2: 'bar',
+          arg3: 'qux',
+        });
+
+        this.assertText('arg1: foo, arg2: bar, arg3: qux');
+        this.assertStableRerender();
+
+        runTask(() => set(this.context, 'arg1', 'qux'));
+        this.assertText('arg1: qux, arg2: bar, arg3: qux');
+
+        runTask(() => set(this.context, 'arg2', 'derp'));
+        this.assertText('arg1: qux, arg2: derp, arg3: qux');
+
+        runTask(() => set(this.context, 'arg3', 'huzzah'));
+        this.assertText('arg1: qux, arg2: derp, arg3: huzzah');
+
+        runTask(() => {
+          set(this.context, 'arg1', 'foo');
+          set(this.context, 'arg2', 'bar');
+          set(this.context, 'arg3', 'qux');
+        });
+
+        this.assertText('arg1: foo, arg2: bar, arg3: qux');
+      }
     }
   );
 }
