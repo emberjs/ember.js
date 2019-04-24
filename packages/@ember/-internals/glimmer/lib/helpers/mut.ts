@@ -13,7 +13,7 @@ import { INVOKE, UPDATE } from '../utils/references';
   To specify that a parameter is mutable, when invoking the child `Component`:
 
   ```handlebars
-  <MyChild @childClickCount={{action (mut totalClicks)}} />
+  <MyChild @childClickCount={{fn (mut totalClicks)}} />
   ```
 
    or
@@ -37,20 +37,20 @@ import { INVOKE, UPDATE } from '../utils/references';
   Note that for curly components (`{{my-component}}`) the bindings are already mutable,
   making the `mut` unnecessary.
 
-  Additionally, the `mut` helper can be combined with the `action` helper to
+  Additionally, the `mut` helper can be combined with the `fn` helper to
   mutate a value. For example:
 
   ```handlebars
-  <MyChild @childClickCount={{this.totalClicks}} @click-count-change={{action (mut totalClicks))}} />
+  <MyChild @childClickCount={{this.totalClicks}} @click-count-change={{fn (mut totalClicks))}} />
   ```
 
   or
 
   ```handlebars
-  {{my-child childClickCount=totalClicks click-count-change=(action (mut totalClicks))}}
+  {{my-child childClickCount=totalClicks click-count-change=(fn (mut totalClicks))}}
   ```
 
-  The child `Component` would invoke the action with the new click value:
+  The child `Component` would invoke the function with the new click value:
 
   ```javascript
   // my-child.js
@@ -61,17 +61,15 @@ import { INVOKE, UPDATE } from '../utils/references';
   });
   ```
 
-  The `mut` helper changes the `totalClicks` value to what was provided as the action argument.
+  The `mut` helper changes the `totalClicks` value to what was provided as the `fn` argument.
 
-  The `mut` helper, when used with `action`, will return a function that
-  sets the value passed to `mut` to its first argument. This works like any other
-  closure action and interacts with the other features `action` provides.
-  As an example, we can create a button that increments a value passing the value
-  directly to the `action`:
+  The `mut` helper, when used with `fn`, will return a function that
+  sets the value passed to `mut` to its first argument. As an example, we can create a
+  button that increments a value passing the value directly to the `fn`:
 
   ```handlebars
   {{! inc helper is not provided by Ember }}
-  <button onclick={{action (mut count) (inc count)}}>
+  <button onclick={{fn (mut count) (inc count)}}>
     Increment count
   </button>
   ```
@@ -79,7 +77,7 @@ import { INVOKE, UPDATE } from '../utils/references';
   You can also use the `value` option:
 
   ```handlebars
-  <input value={{name}} oninput={{action (mut name) value="target.value"}}>
+  <input value={{name}} oninput={{fn (mut name) value="target.value"}}>
   ```
 
   @method mut
