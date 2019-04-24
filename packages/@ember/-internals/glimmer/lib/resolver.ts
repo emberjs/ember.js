@@ -5,6 +5,7 @@ import { lookupComponent, lookupPartial, OwnedTemplateMeta } from '@ember/-inter
 import {
   EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS,
   EMBER_GLIMMER_FN_HELPER,
+  EMBER_GLIMMER_ON_MODIFIER,
   EMBER_MODULE_UNIFICATION,
 } from '@ember/canary-features';
 import { assert } from '@ember/debug';
@@ -44,6 +45,7 @@ import { default as readonly } from './helpers/readonly';
 import { default as unbound } from './helpers/unbound';
 import ActionModifierManager from './modifiers/action';
 import { CustomModifierDefinition, ModifierManagerDelegate } from './modifiers/custom';
+import OnModifierManager from './modifiers/on';
 import { populateMacros } from './syntax';
 import { mountHelper } from './syntax/mount';
 import { outletHelper } from './syntax/outlet';
@@ -95,10 +97,17 @@ if (EMBER_GLIMMER_FN_HELPER) {
   BUILTINS_HELPERS.fn = fn;
 }
 
-const BUILTIN_MODIFIERS = {
+interface IBuiltInModifiers {
+  [name: string]: ModifierDefinition | undefined;
+}
+const BUILTIN_MODIFIERS: IBuiltInModifiers = {
   action: { manager: new ActionModifierManager(), state: null },
+  on: undefined,
 };
 
+if (EMBER_GLIMMER_ON_MODIFIER) {
+  BUILTIN_MODIFIERS.on = { manager: new OnModifierManager(), state: null };
+}
 export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMeta> {
   public compiler: LazyCompiler<OwnedTemplateMeta>;
 
@@ -109,9 +118,7 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
 
   private builtInHelpers: IBuiltInHelpers = BUILTINS_HELPERS;
 
-  private builtInModifiers: {
-    [name: string]: ModifierDefinition;
-  } = BUILTIN_MODIFIERS;
+  private builtInModifiers: IBuiltInModifiers = BUILTIN_MODIFIERS;
 
   // supports directly imported late bound layouts on component.prototype.layout
   private templateCache: Map<Owner, Map<TemplateFactory, OwnedTemplate>> = new Map();
