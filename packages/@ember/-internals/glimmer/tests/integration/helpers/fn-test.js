@@ -190,6 +190,19 @@ if (EMBER_GLIMMER_FN_HELPER) {
 
         this.assertText('arg1: foo, arg2: bar, arg3: qux');
       }
+
+      '@test can be used on the result of `mut`'() {
+        this.render(`{{this.arg1}}{{stash stashedFn=(fn (mut this.arg1) this.arg2)}}`, {
+          arg1: 'foo',
+          arg2: 'bar',
+        });
+
+        this.assertText('foo');
+
+        runTask(() => this.stashedFn());
+
+        this.assertText('bar');
+      }
     }
   );
 }
