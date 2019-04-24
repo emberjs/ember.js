@@ -16,6 +16,7 @@ const stripForProd = require('./broccoli/strip-for-prod');
 const debugMacros = require('./broccoli/debug-macros');
 const minify = require('./broccoli/minify');
 const rename = require('./broccoli/rename');
+const testBabelPluginsTransform = require('./broccoli/transforms/test-babel-plugins');
 const {
   routerES,
   jquery,
@@ -240,19 +241,24 @@ function buildBundles(packagesES, dependenciesES, templateCompilerDependenciesES
       bootstrapModule('sideeffects', 'ember'),
     ]);
 
-    emberTestsProdFiles = new MergeTrees([
-      new Funnel(packagesProdES, {
-        include: [
-          '@ember/-internals/*/tests/**' /* internal packages */,
-          'internal-test-helpers/**',
-          '*/*/tests/**' /* scoped packages */,
-          '*/tests/**' /* packages */,
-          'license.js',
-        ],
-        exclude: ['@ember/debug/tests/**', 'ember-testing/tests/**'],
-      }),
-      bootstrapModule('empty'),
-    ]);
+    emberTestsProdFiles = testBabelPluginsTransform(
+      MergeTrees([
+        new Funnel(packagesProdES, {
+          include: [
+            '@ember/-internals/*/tests/**' /* internal packages */,
+            'internal-test-helpers/**',
+            '*/*/tests/**' /* scoped packages */,
+            '*/tests/**' /* packages */,
+            'license.js',
+          ],
+          exclude: ['@ember/debug/tests/**', 'ember-testing/tests/**'],
+        }),
+        bootstrapModule('empty'),
+      ])
+    );
+
+    // apply the babel transforms for legacy tests
+    emberTestsFiles = testBabelPluginsTransform(emberTestsFiles);
 
     // Note:
     // We have to build custom production template compiler

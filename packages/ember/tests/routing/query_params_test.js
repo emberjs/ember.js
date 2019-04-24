@@ -311,18 +311,17 @@ moduleFor(
       return this.visitAndAssert('/boo?foo=baz');
     }
 
-    ['@test error is thrown if dynamic segment and query param have same name'](assert) {
-      assert.expect(1);
-
+    async ['@test error is thrown if dynamic segment and query param have same name'](assert) {
       this.router.map(function() {
         this.route('index', { path: '/:foo' });
       });
 
       this.setSingleQPController('index');
 
-      expectAssertion(() => {
-        this.visitAndAssert('/boo?foo=baz');
-      }, `The route 'index' has both a dynamic segment and query param with name 'foo'. Please rename one to avoid collisions.`);
+      await assert.rejectsAssertion(
+        this.visitAndAssert('/boo?foo=baz'),
+        `The route 'index' has both a dynamic segment and query param with name 'foo'. Please rename one to avoid collisions.`
+      );
     }
 
     ['@test query params have been set by the time setupController is called'](assert) {
@@ -1535,7 +1534,7 @@ moduleFor(
       return this.refreshModelWhileLoadingTest(true);
     }
 
-    ["@test warn user that Route's queryParams configuration must be an Object, not an Array"](
+    async ["@test warn user that Route's queryParams configuration must be an Object, not an Array"](
       assert
     ) {
       assert.expect(1);
@@ -1547,9 +1546,10 @@ moduleFor(
         })
       );
 
-      expectAssertion(() => {
-        this.visit('/');
-      }, 'You passed in `[{"commitBy":{"replace":true}}]` as the value for `queryParams` but `queryParams` cannot be an Array');
+      await assert.rejectsAssertion(
+        this.visit('/'),
+        'You passed in `[{"commitBy":{"replace":true}}]` as the value for `queryParams` but `queryParams` cannot be an Array'
+      );
     }
 
     ['@test handle route names that clash with Object.prototype properties'](assert) {

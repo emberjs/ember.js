@@ -9,14 +9,13 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
   moduleFor(
     '<LinkTo /> component (rendering tests)',
     class extends ApplicationTestCase {
-      [`@test throws a useful error if you invoke it wrong`](assert) {
-        assert.expect(1);
-
+      async [`@test throws a useful error if you invoke it wrong`](assert) {
         this.addTemplate('application', `<LinkTo id='the-link'>Index</LinkTo>`);
 
-        expectAssertion(() => {
-          this.visit('/');
-        }, /You must provide at least one of the `@route`, `@model`, `@models` or `@query` argument to `<LinkTo>`/);
+        await assert.rejectsAssertion(
+          this.visit('/'),
+          /You must provide at least one of the `@route`, `@model`, `@models` or `@query` argument to `<LinkTo>`/
+        );
       }
 
       ['@test should be able to be inserted in DOM when the router is not present']() {

@@ -9,7 +9,7 @@ import { EMBER_MODULE_UNIFICATION } from '@ember/canary-features';
 moduleFor(
   'Service Injection',
   class extends ApplicationTestCase {
-    ['@test Service can be injected and is resolved'](assert) {
+    async ['@test Service can be injected and is resolved'](assert) {
       this.add(
         'controller:application',
         Controller.extend({
@@ -20,13 +20,13 @@ moduleFor(
       this.add('service:my-service', MyService);
       this.addTemplate('application', '');
 
-      this.visit('/').then(() => {
-        let controller = this.applicationInstance.lookup('controller:application');
-        assert.ok(controller.get('myService') instanceof MyService);
-      });
+      await this.visit('/');
+
+      let controller = this.applicationInstance.lookup('controller:application');
+      assert.ok(controller.get('myService') instanceof MyService);
     }
 
-    ['@test Service can be an object proxy and access owner in init GH#16484'](assert) {
+    async ['@test Service can be an object proxy and access owner in init GH#16484'](assert) {
       let serviceOwner;
 
       this.add(
@@ -45,11 +45,11 @@ moduleFor(
       this.add('service:my-service', MyService);
       this.addTemplate('application', '');
 
-      this.visit('/').then(instance => {
-        let controller = this.applicationInstance.lookup('controller:application');
-        assert.ok(controller.get('myService') instanceof MyService);
-        assert.equal(serviceOwner, instance, 'should be able to `getOwner` in init');
-      });
+      let instance = await this.visit('/');
+
+      let controller = this.applicationInstance.lookup('controller:application');
+      assert.ok(controller.get('myService') instanceof MyService);
+      assert.equal(serviceOwner, instance, 'should be able to `getOwner` in init');
     }
   }
 );
@@ -57,7 +57,7 @@ moduleFor(
 moduleFor(
   'Service Injection with ES5 Getters',
   class extends ApplicationTestCase {
-    ['@test Service can be injected and is resolved without calling `get`'](assert) {
+    async ['@test Service can be injected and is resolved without calling `get`'](assert) {
       this.add(
         'controller:application',
         Controller.extend({
@@ -72,11 +72,11 @@ moduleFor(
       this.add('service:my-service', MyService);
       this.addTemplate('application', '');
 
-      this.visit('/').then(() => {
-        let controller = this.applicationInstance.lookup('controller:application');
-        assert.ok(controller.myService instanceof MyService);
-        assert.equal(controller.myService.name, 'The service name', 'service property accessible');
-      });
+      await this.visit('/');
+
+      let controller = this.applicationInstance.lookup('controller:application');
+      assert.ok(controller.myService instanceof MyService);
+      assert.equal(controller.myService.name, 'The service name', 'service property accessible');
     }
   }
 );
@@ -252,7 +252,7 @@ if (EMBER_MODULE_UNIFICATION) {
         });
       }
 
-      ['@test Service with namespace can be injected and is resolved'](assert) {
+      async ['@test Service with namespace can be injected and is resolved'](assert) {
         this.add(
           'controller:application',
           Controller.extend({
@@ -268,10 +268,10 @@ if (EMBER_MODULE_UNIFICATION) {
           MyService
         );
 
-        this.visit('/').then(() => {
-          let controller = this.applicationInstance.lookup('controller:application');
-          assert.ok(controller.get('myService') instanceof MyService);
-        });
+        await this.visit('/');
+
+        let controller = this.applicationInstance.lookup('controller:application');
+        assert.ok(controller.get('myService') instanceof MyService);
       }
     }
   );

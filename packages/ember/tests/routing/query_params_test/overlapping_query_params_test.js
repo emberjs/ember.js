@@ -134,7 +134,8 @@ moduleFor(
         this.assertCurrentPath('/parent/child?page=2');
       });
     }
-    ['@test query params in the same route hierarchy with the same url key get auto-scoped'](
+
+    async ['@test query params in the same route hierarchy with the same url key get auto-scoped'](
       assert
     ) {
       assert.expect(1);
@@ -142,9 +143,10 @@ moduleFor(
       this.setMappedQPController('parent');
       this.setMappedQPController('parent.child');
 
-      expectAssertion(() => {
-        this.setupBase();
-      }, "You're not allowed to have more than one controller property map to the same query param key, but both `parent:page` and `parent.child:page` map to `parentPage`. You can fix this by mapping one of the controller properties to a different query param key via the `as` config option, e.g. `page: { as: 'other-page' }`");
+      await assert.rejectsAssertion(
+        this.setupBase(),
+        "You're not allowed to have more than one controller property map to the same query param key, but both `parent:page` and `parent.child:page` map to `parentPage`. You can fix this by mapping one of the controller properties to a different query param key via the `as` config option, e.g. `page: { as: 'other-page' }`"
+      );
     }
 
     ['@test Support shared but overridable mixin pattern'](assert) {

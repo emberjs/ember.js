@@ -2,7 +2,7 @@ import Application from '@ember/application';
 import Controller from '@ember/controller';
 import { Component } from '@ember/-internals/glimmer';
 import { compile } from 'ember-template-compiler';
-import { moduleFor, ApplicationTestCase, runLoopSettled } from 'internal-test-helpers';
+import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 import { ENV } from '@ember/-internals/environment';
 
 moduleFor(
@@ -238,15 +238,10 @@ moduleFor(
       });
     }
 
-    ['@test Using name of component that does not exist']() {
+    async ['@test Using name of component that does not exist'](assert) {
       this.addTemplate('application', `<div id='wrapper'>{{#no-good}} {{/no-good}}</div>`);
 
-      // TODO: Use the async form of expectAssertion here when it is available
-      expectAssertion(() => {
-        this.visit('/');
-      }, /.* named "no-good" .*/);
-
-      return runLoopSettled();
+      await assert.rejectsAssertion(this.visit('/'), /.* named "no-good" .*/);
     }
   }
 );
