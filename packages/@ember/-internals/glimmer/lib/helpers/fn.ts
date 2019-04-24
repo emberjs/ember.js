@@ -3,8 +3,8 @@ import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { Arguments, VM } from '@glimmer/runtime';
 import { ICapturedArguments } from '@glimmer/runtime/dist/types/lib/vm/arguments';
-import { InternalHelperReference } from '../utils/references';
 import { Opaque } from '@glimmer/util';
+import { InternalHelperReference } from '../utils/references';
 
 let context: any = null;
 if (DEBUG && HAS_NATIVE_PROXY) {
