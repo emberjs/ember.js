@@ -97,7 +97,12 @@ export function get(obj: object, keyName: string): any {
   let isObjectLike = isObject || isFunction;
 
   if (isPath(keyName)) {
-    return isObjectLike ? _getPath(obj, keyName) : undefined;
+    if(isObjectLike) {
+      let path = _getPath(obj, keyName);
+      return ((path === undefined) && isObject) ? obj[keyName] : path;
+    } else {
+      return undefined;
+    }
   }
 
   let value: any;
