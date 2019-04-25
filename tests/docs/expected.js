@@ -217,6 +217,7 @@ module.exports = {
     'findModel',
     'findWithAssert',
     'firstObject',
+    'fn',
     'focusIn',
     'focusOut',
     'followRedirects',
