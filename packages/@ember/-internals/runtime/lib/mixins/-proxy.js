@@ -18,14 +18,6 @@ import {
 import { setProxy } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 
-function contentPropertyDidChange(content, contentKey) {
-  let key = contentKey.slice(8); // remove "content."
-  if (key in this) {
-    return;
-  } // if shadowed in proxy
-  notifyPropertyChange(this, key);
-}
-
 export function contentFor(proxy, m) {
   let content = get(proxy, 'content');
   let tag = (m === undefined ? meta(proxy) : m).readableTag();
@@ -72,12 +64,20 @@ export default Mixin.create({
 
   willWatchProperty(key) {
     let contentKey = `content.${key}`;
-    addObserver(this, contentKey, null, contentPropertyDidChange);
+    addObserver(this, contentKey, null, '_contentPropertyDidChange');
   },
 
   didUnwatchProperty(key) {
     let contentKey = `content.${key}`;
-    removeObserver(this, contentKey, null, contentPropertyDidChange);
+    removeObserver(this, contentKey, null, '_contentPropertyDidChange');
+  },
+
+  _contentPropertyDidChange(content, contentKey) {
+    let key = contentKey.slice(8); // remove "content."
+    if (key in this) {
+      return;
+    } // if shadowed in proxy
+    notifyPropertyChange(this, key);
   },
 
   unknownProperty(key) {
