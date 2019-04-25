@@ -1,6 +1,7 @@
 import { DEBUG } from '@glimmer/env';
 import {
   addObserver,
+  observer,
   computed,
   get,
   set,
@@ -316,6 +317,16 @@ moduleFor(
         undefined,
         'sets the `undefined` value to the proxied content'
       );
+    }
+
+    ['@test should not throw or deprecate when adding an observer to an ObjectProxy based class'](
+      assert
+    ) {
+      assert.expect(0);
+
+      ObjectProxy.extend({
+        observe: observer('foo', function() {}),
+      }).create();
     }
   }
 );
