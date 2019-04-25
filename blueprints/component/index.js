@@ -72,7 +72,9 @@ module.exports = useEditionDetector({
   },
 
   normalizeEntityName: function(entityName) {
-    return normalizeEntityName(entityName);
+    return normalizeEntityName(
+      entityName.replace(/\.js$/, '') //Prevent generation of ".js.js" files
+    );
   },
 
   locals: function(options) {
