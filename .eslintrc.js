@@ -14,6 +14,7 @@ module.exports = {
     'prettier',
     'import',
     'qunit',
+    'disable-features',
   ],
   rules: {
     'no-implicit-coercion': 'error',
@@ -24,6 +25,8 @@ module.exports = {
     'prettier/prettier': 'error',
     'qunit/no-commented-tests': 'off',
     'qunit/require-expect': 'off',
+    'disable-features/disable-async-await': 'error',
+    'disable-features/disable-generator-functions': 'error',
   },
 
   settings: {
@@ -116,6 +119,10 @@ module.exports = {
         'ignoreAssertion': true,
         'ignoreDeprecation': true,
       },
+      rules: {
+        'disable-features/disable-async-await': 'off',
+        'disable-features/disable-generator-functions': 'off',
+      }
     },
     {
       // matches all node-land files
@@ -151,7 +158,9 @@ module.exports = {
       rules: Object.assign({}, require('eslint-plugin-node').configs.recommended.rules, {
         // add your custom rules and overrides for node files here
         'no-process-exit': 'off',
-        'no-throw-literal': 'error'
+        'no-throw-literal': 'error',
+        'disable-features/disable-async-await': 'off',
+        'disable-features/disable-generator-functions': 'off',
       }),
     },
     {
