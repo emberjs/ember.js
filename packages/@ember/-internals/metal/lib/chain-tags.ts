@@ -6,7 +6,7 @@ import { getLastRevisionFor, peekCacheFor } from './computed_cache';
 import { descriptorForProperty } from './descriptor_map';
 import get from './property_get';
 import { tagForProperty } from './tags';
-import { track } from './tracked';
+import { untrack } from './tracked';
 
 export const ARGS_PROXY_TAGS = new WeakMap();
 
@@ -19,14 +19,18 @@ export function finishLazyChains(obj: any, key: string, value: any) {
   }
 
   if (value === null || (typeof value !== 'object' && typeof value !== 'function')) {
-    lazyTags.length = 0;
+    for (let path in lazyTags) {
+      delete lazyTags[path];
+    }
     return;
   }
 
-  while (lazyTags.length > 0) {
-    let [path, tag] = lazyTags.pop()!;
+  for (let path in lazyTags) {
+    let tag = lazyTags[path];
 
-    tag.inner.update(getChainTagsForKey(value, path));
+    tag.inner.update(combine(getChainTagsForKey(value, path)));
+
+    delete lazyTags[path];
   }
 }
 
@@ -34,22 +38,22 @@ export function getChainTagsForKeys(obj: any, keys: string[]) {
   let chainTags: Tag[] = [];
 
   for (let i = 0; i < keys.length; i++) {
-    chainTags.push(getChainTagsForKey(obj, keys[i]));
+    chainTags.push(...getChainTagsForKey(obj, keys[i]));
   }
 
-  return combine(chainTags);
+  return chainTags;
 }
 
-export function getChainTagsForKey(obj: any, key: string) {
+export function getChainTagsForKey(obj: any, path: string) {
   let chainTags: Tag[] = [];
 
   let current: any = obj;
-  let segments = key.split('.');
 
+  let segmentEnd = -1;
   // prevent closures
   let segment: string, descriptor: any;
 
-  while (segments.length > 0) {
+  while (true) {
     let currentType = typeof current;
 
     if (current === null || (currentType !== 'object' && currentType !== 'function')) {
@@ -57,15 +61,28 @@ export function getChainTagsForKey(obj: any, key: string) {
       break;
     }
 
-    segment = segments.shift()!;
+    let lastSegmentEnd = segmentEnd + 1;
+    segmentEnd = path.indexOf('.', lastSegmentEnd);
 
-    if (segment === '@each' && segments.length > 0) {
+    if (segmentEnd === -1) {
+      segmentEnd = path.length;
+    }
+
+    segment = path.slice(lastSegmentEnd, segmentEnd);
+
+    if (segment === '@each' && segmentEnd !== path.length) {
       assert(
         `When using @each, the value you are attempting to watch must be an array, was: ${current.toString()}`,
         Array.isArray(current) || isEmberArray(current)
       );
 
-      segment = segments.shift()!;
+      segment = path.substr(segmentEnd + 1)!;
+
+      // There shouldn't be any more segments after an `@each`, so break
+      assert(
+        `When using @each, you can only chain one property level deep`,
+        segment.indexOf('.') === -1
+      );
 
       // Push the tags for each item's property
       let tags = (current as Array<any>).map(item => {
@@ -80,28 +97,26 @@ export function getChainTagsForKey(obj: any, key: string) {
       // Push the tag for the array length itself
       chainTags.push(...tags, tagForProperty(current, '[]'));
 
-      // There shouldn't be any more segments after an `@each`, so break
-      assert(`When using @each, you can only chain one property level deep`, segments.length === 0);
-
       break;
     }
 
     if (segment === 'args' && ARGS_PROXY_TAGS.has(current.args)) {
       assert(
         `When watching the 'args' on a GlimmerComponent, you must watch a value on the args. You cannot watch the object itself, as it never changes.`,
-        segments.length > 0
+        segmentEnd !== path.length
       );
 
-      segment = segments.shift()!;
+      segment = path.substr(segmentEnd + 1)!;
+      segmentEnd = path.indexOf('.', segmentEnd);
 
       let namedArgs = ARGS_PROXY_TAGS.get(current.args);
       let ref = namedArgs.get(segment);
 
       chainTags.push(ref.tag);
 
-      if (segments.length > 0) {
+      if (segmentEnd !== -1) {
         current = ref.value();
-        segment = segments.shift()!;
+        segment = path.substr(segmentEnd + 1);
         continue;
       }
     }
@@ -109,6 +124,10 @@ export function getChainTagsForKey(obj: any, key: string) {
     let propertyTag = tagForProperty(current, segment);
 
     chainTags.push(propertyTag);
+
+    if (segmentEnd === path.length) {
+      break;
+    }
 
     descriptor = descriptorForProperty(current, segment);
 
@@ -126,18 +145,22 @@ export function getChainTagsForKey(obj: any, key: string) {
       if (propertyTag.validate(lastRevision)) {
         if (typeof descriptor.altKey === 'string') {
           // it's an alias, so just get the altkey without tracking
-          track(() => {
+          untrack(() => {
             current = get(current, descriptor.altKey);
           });
         } else {
           current = peekCacheFor(current).get(segment);
         }
-      } else if (segments.length > 0) {
-        let placeholderTag = UpdatableTag.create(CONSTANT_TAG);
+      } else {
+        let lazyChains = metaFor(current).writableLazyChainsFor(segment);
 
-        metaFor(current)
-          .writableLazyChainsFor(segment)
-          .push([segments.join('.'), placeholderTag]);
+        let rest = path.substr(segmentEnd + 1);
+
+        let placeholderTag = lazyChains[rest];
+
+        if (placeholderTag === undefined) {
+          placeholderTag = lazyChains[rest] = UpdatableTag.create(CONSTANT_TAG);
+        }
 
         chainTags.push(placeholderTag);
 
@@ -146,5 +169,5 @@ export function getChainTagsForKey(obj: any, key: string) {
     }
   }
 
-  return combine(chainTags);
+  return chainTags;
 }

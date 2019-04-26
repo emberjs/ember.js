@@ -88,7 +88,7 @@ export default Mixin.create({
   },
 
   [UNKNOWN_PROPERTY_TAG](key) {
-    return getChainTagsForKey(this, `content.${key}`);
+    return combine(getChainTagsForKey(this, `content.${key}`));
   },
 
   unknownProperty(key) {

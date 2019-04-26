@@ -2,7 +2,7 @@ import { ENV } from '@ember/-internals/environment';
 import { peekMeta } from '@ember/-internals/meta';
 import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { schedule } from '@ember/runloop';
-import { CURRENT_TAG, Tag } from '@glimmer/reference';
+import { combine, CURRENT_TAG, Tag } from '@glimmer/reference';
 import { getChainTagsForKey } from './chain-tags';
 import changeEvent from './change_event';
 import { addListener, removeListener, sendEvent } from './events';
@@ -105,7 +105,7 @@ export function activateObserver(target: object, eventName: string, sync = false
     activeObservers.get(eventName)!.count++;
   } else {
     let [path] = eventName.split(':');
-    let tag = getChainTagsForKey(target, path);
+    let tag = combine(getChainTagsForKey(target, path));
 
     activeObservers.set(eventName, {
       count: 1,
@@ -147,14 +147,14 @@ export function deactivateObserver(target: object, eventName: string, sync = fal
 export function revalidateObservers(target: object) {
   if (ASYNC_OBSERVERS.has(target)) {
     ASYNC_OBSERVERS.get(target)!.forEach(observer => {
-      observer.tag = getChainTagsForKey(target, observer.path);
+      observer.tag = combine(getChainTagsForKey(target, observer.path));
       observer.lastRevision = observer.tag.value();
     });
   }
 
   if (SYNC_OBSERVERS.has(target)) {
     SYNC_OBSERVERS.get(target)!.forEach(observer => {
-      observer.tag = getChainTagsForKey(target, observer.path);
+      observer.tag = combine(getChainTagsForKey(target, observer.path));
       observer.lastRevision = observer.tag.value();
     });
   }
@@ -183,7 +183,7 @@ export function flushAsyncObservers() {
           try {
             sendEvent(target, eventName, [target, observer.path]);
           } finally {
-            observer.tag = getChainTagsForKey(target, observer.path);
+            observer.tag = combine(getChainTagsForKey(target, observer.path));
             observer.lastRevision = observer.tag.value();
           }
         });
@@ -212,7 +212,7 @@ export function flushSyncObservers() {
           sendEvent(target, eventName, [target, observer.path]);
         } finally {
           observer.suspended = false;
-          observer.tag = getChainTagsForKey(target, observer.path);
+          observer.tag = combine(getChainTagsForKey(target, observer.path));
           observer.lastRevision = observer.tag.value();
         }
       }

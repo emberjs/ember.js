@@ -268,6 +268,17 @@ export function isTracking() {
   return CURRENT_TRACKER !== null;
 }
 
+export function untrack(callback: () => void) {
+  let parent = CURRENT_TRACKER;
+  CURRENT_TRACKER = null;
+
+  try {
+    callback();
+  } finally {
+    CURRENT_TRACKER = parent;
+  }
+}
+
 export type Key = string;
 
 export interface Interceptors {

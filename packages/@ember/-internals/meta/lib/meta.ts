@@ -368,7 +368,7 @@ export class Meta {
     let lazyChains = this._getOrCreateOwnMap('_lazyChains');
 
     if (!(key in lazyChains)) {
-      lazyChains[key] = [];
+      lazyChains[key] = Object.create(null);
     }
 
     return lazyChains[key];

@@ -3,8 +3,14 @@ import { inspect } from '@ember/-internals/utils';
 import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import EmberError from '@ember/error';
+import { combine } from '@glimmer/reference';
 import { finishLazyChains, getChainTagsForKey } from './chain-tags';
-import { getCachedValueFor, getCacheFor, setLastRevisionFor } from './computed_cache';
+import {
+  getCachedValueFor,
+  getCacheFor,
+  getLastRevisionFor,
+  setLastRevisionFor,
+} from './computed_cache';
 import {
   addDependentKeys,
   ComputedDescriptor,
@@ -18,7 +24,7 @@ import { defineProperty } from './properties';
 import { get } from './property_get';
 import { set } from './property_set';
 import { tagForProperty, update } from './tags';
-import { consume, track } from './tracked';
+import { consume, untrack } from './tracked';
 
 const CONSUMED = Object.freeze({});
 
@@ -98,16 +104,19 @@ export class AliasedProperty extends ComputedDescriptor {
 
       // We don't use the tag since CPs are not automatic, we just want to avoid
       // anything tracking while we get the altKey
-      track(() => {
+      untrack(() => {
         ret = get(obj, this.altKey);
       });
 
-      let altPropertyTag = getChainTagsForKey(obj, this.altKey);
-      update(propertyTag, altPropertyTag);
-      consume(propertyTag);
+      let lastRevision = getLastRevisionFor(obj, keyName);
 
-      finishLazyChains(obj, keyName, ret);
-      setLastRevisionFor(obj, keyName, propertyTag.value());
+      if (!propertyTag.validate(lastRevision)) {
+        update(propertyTag, combine(getChainTagsForKey(obj, this.altKey)));
+        setLastRevisionFor(obj, keyName, propertyTag.value());
+        finishLazyChains(obj, keyName, ret);
+      }
+
+      consume(propertyTag);
     } else {
       ret = get(obj, this.altKey);
       this.consume(obj, keyName, metaFor(obj));

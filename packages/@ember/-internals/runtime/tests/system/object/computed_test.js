@@ -7,6 +7,7 @@ import {
   observer,
   defineProperty,
 } from '@ember/-internals/metal';
+import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { oneWay as reads } from '@ember/object/computed';
 import EmberObject from '../../../lib/system/object';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
@@ -375,6 +376,32 @@ moduleFor(
       obj.set('bar', 2);
 
       assert.equal(obj.get('foo'), 2);
+    }
+
+    ['@test native getters and setters work'](assert) {
+      if (!EMBER_METAL_TRACKED_PROPERTIES) {
+        return assert.expect(0);
+      }
+
+      let MyClass = EmberObject.extend({
+        bar: 123,
+
+        foo: computed({
+          get() {
+            return this.bar;
+          },
+
+          set(key, value) {
+            this.bar = value;
+          },
+        }),
+      });
+
+      let instance = MyClass.create();
+
+      assert.equal(instance.foo, 123, 'getters work');
+      instance.foo = 456;
+      assert.equal(instance.bar, 456, 'setters work');
     }
   }
 );
