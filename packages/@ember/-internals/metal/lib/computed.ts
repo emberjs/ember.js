@@ -6,6 +6,8 @@ import {
 } from '@ember/canary-features';
 import { assert, deprecate, warn } from '@ember/debug';
 import EmberError from '@ember/error';
+import { combine, Tag } from '@glimmer/reference';
+import { finishLazyChains, getChainTagsForKeys } from './chain-tags';
 import {
   getCachedValueFor,
   getCacheFor,
@@ -32,7 +34,7 @@ import { defineProperty } from './properties';
 import { notifyPropertyChange } from './property_events';
 import { set } from './property_set';
 import { tagFor, tagForProperty, update } from './tags';
-import { getCurrentTracker, setCurrentTracker } from './tracked';
+import { consume, track } from './tracked';
 
 export type ComputedPropertyGetter = (keyName: string) => any;
 export type ComputedPropertySetter = (keyName: string, value: any, cachedValue?: any) => any;
@@ -297,10 +299,6 @@ export class ComputedProperty extends ComputedDescriptor {
     if (args.length > 0) {
       this._property(...(args as string[]));
     }
-
-    if (EMBER_METAL_TRACKED_PROPERTIES) {
-      this._auto = false;
-    }
   }
 
   setup(obj: object, keyName: string, propertyDesc: DecoratorPropertyDescriptor, meta: Meta) {
@@ -521,19 +519,14 @@ export class ComputedProperty extends ComputedDescriptor {
     }
 
     let cache = getCacheFor(obj);
-    let propertyTag;
+    let propertyTag: Tag;
 
     if (EMBER_METAL_TRACKED_PROPERTIES) {
       propertyTag = tagForProperty(obj, keyName);
 
       if (cache.has(keyName)) {
-        // special-case for computed with no dependent keys used to
-        // trigger cacheable behavior.
-        if (!this._auto && (!this._dependentKeys || this._dependentKeys.length === 0)) {
-          return cache.get(keyName);
-        }
-
         let lastRevision = getLastRevisionFor(obj, keyName);
+
         if (propertyTag.validate(lastRevision)) {
           return cache.get(keyName);
         }
@@ -544,41 +537,58 @@ export class ComputedProperty extends ComputedDescriptor {
       }
     }
 
-    let parent: any;
-    let tracker: any;
+    let ret;
 
     if (EMBER_METAL_TRACKED_PROPERTIES) {
-      parent = getCurrentTracker();
-      tracker = setCurrentTracker();
-    }
+      assert(
+        `Attempted to access the computed ${obj}.${keyName} on a destroyed object, which is not allowed`,
+        !metaFor(obj).isMetaDestroyed()
+      );
 
-    let ret = this._getter!.call(obj, keyName);
+      // Create a tracker that absorbs any trackable actions inside the CP
+      let tag = track(() => {
+        ret = this._getter!.call(obj, keyName);
+      });
 
-    if (EMBER_METAL_TRACKED_PROPERTIES) {
-      setCurrentTracker(parent!);
-      let tag = tracker!.combine();
-      if (parent) {
-        parent.add(tag);
+      finishLazyChains(obj, keyName, ret);
 
-        // Add the tag of the returned value if it is an array, since arrays
-        // should always cause updates if they are consumed and then changed
-        if (Array.isArray(ret) || isEmberArray(ret)) {
-          parent.add(tagFor(ret));
-        }
+      let upstreamTags: Tag[] = [];
+
+      if (this._auto === true) {
+        upstreamTags.push(tag);
       }
 
-      update(propertyTag as any, tag);
-      setLastRevisionFor(obj, keyName, (propertyTag as any).value());
+      if (this._dependentKeys !== undefined) {
+        upstreamTags.push(getChainTagsForKeys(obj, this._dependentKeys));
+      }
+
+      if (upstreamTags.length > 0) {
+        update(propertyTag!, combine(upstreamTags));
+      }
+
+      setLastRevisionFor(obj, keyName, propertyTag!.value());
+
+      consume(propertyTag!);
+
+      // Add the tag of the returned value if it is an array, since arrays
+      // should always cause updates if they are consumed and then changed
+      if (Array.isArray(ret) || isEmberArray(ret)) {
+        consume(tagFor(ret));
+      }
+    } else {
+      ret = this._getter!.call(obj, keyName);
     }
 
     cache.set(keyName, ret);
 
-    let meta = metaFor(obj);
-    let chainWatchers = meta.readableChainWatchers();
-    if (chainWatchers !== undefined) {
-      chainWatchers.revalidate(keyName);
+    if (!EMBER_METAL_TRACKED_PROPERTIES) {
+      let meta = metaFor(obj);
+      let chainWatchers = meta.readableChainWatchers();
+      if (chainWatchers !== undefined) {
+        chainWatchers.revalidate(keyName);
+      }
+      addDependentKeys(this, obj, keyName, meta);
     }
-    addDependentKeys(this, obj, keyName, meta);
 
     return ret;
   }
@@ -596,7 +606,23 @@ export class ComputedProperty extends ComputedDescriptor {
       return this.volatileSet(obj, keyName, value);
     }
 
-    return this.setWithSuspend(obj, keyName, value);
+    if (EMBER_METAL_TRACKED_PROPERTIES) {
+      let ret = this._set(obj, keyName, value);
+
+      finishLazyChains(obj, keyName, ret);
+
+      let propertyTag = tagForProperty(obj, keyName);
+
+      if (this._dependentKeys !== undefined) {
+        update(propertyTag, getChainTagsForKeys(obj, this._dependentKeys));
+      }
+
+      setLastRevisionFor(obj, keyName, propertyTag.value());
+
+      return ret;
+    } else {
+      return this.setWithSuspend(obj, keyName, value);
+    }
   }
 
   _throwReadOnlyError(obj: object, keyName: string): never {
@@ -649,18 +675,13 @@ export class ComputedProperty extends ComputedDescriptor {
     }
 
     let meta = metaFor(obj);
-    if (!hadCachedValue) {
+    if (!EMBER_METAL_TRACKED_PROPERTIES && !hadCachedValue) {
       addDependentKeys(this, obj, keyName, meta);
     }
 
     cache.set(keyName, ret);
 
     notifyPropertyChange(obj, keyName, meta);
-
-    if (EMBER_METAL_TRACKED_PROPERTIES) {
-      let propertyTag = tagForProperty(obj, keyName);
-      setLastRevisionFor(obj, keyName, propertyTag.value());
-    }
 
     return ret;
   }
@@ -676,13 +697,12 @@ export class ComputedProperty extends ComputedDescriptor {
     super.teardown(obj, keyName, meta);
   }
 
-  auto!: () => ComputedProperty;
+  auto!: () => void;
 }
 
 if (EMBER_METAL_TRACKED_PROPERTIES) {
-  ComputedProperty.prototype.auto = function(): ComputedProperty {
+  ComputedProperty.prototype.auto = function() {
     this._auto = true;
-    return this;
   };
 }
 

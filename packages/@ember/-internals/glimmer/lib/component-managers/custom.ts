@@ -1,4 +1,4 @@
-import { getCurrentTracker } from '@ember/-internals/metal';
+import { consume } from '@ember/-internals/metal';
 import { Factory } from '@ember/-internals/owner';
 import { HAS_NATIVE_PROXY } from '@ember/-internals/utils';
 import { OwnedTemplateMeta } from '@ember/-internals/views';
@@ -171,12 +171,8 @@ export default class CustomComponentManager<ComponentInstance>
           get(_target, prop) {
             assert('args can only be strings', typeof prop === 'string');
 
-            let tracker = getCurrentTracker();
             let ref = capturedArgs.named.get(prop as string);
-
-            if (tracker) {
-              tracker.add(ref.tag);
-            }
+            consume(ref.tag);
 
             return ref.value();
           },
@@ -200,11 +196,7 @@ export default class CustomComponentManager<ComponentInstance>
           Object.defineProperty(namedArgsProxy, name, {
             get() {
               let ref = capturedArgs.named.get(name);
-              let tracker = getCurrentTracker();
-
-              if (tracker) {
-                tracker.add(ref.tag);
-              }
+              consume(ref.tag);
 
               return ref.value();
             },

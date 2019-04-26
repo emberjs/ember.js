@@ -36,12 +36,14 @@ export {
 export { defineProperty } from './lib/properties';
 export { isElementDescriptor, nativeDescDecorator } from './lib/decorator';
 export {
+  descriptorForDecorator,
   descriptorForProperty,
   isClassicDecorator,
   setClassicDecorator,
 } from './lib/descriptor_map';
 export { watchKey, unwatchKey } from './lib/watch_key';
 export { ChainNode, finishChains, removeChainWatcher } from './lib/chains';
+export { getChainTagsForKey } from './lib/chain-tags';
 export { watchPath, unwatchPath } from './lib/watch_path';
 export { isWatching, unwatch, watch, watcherCount } from './lib/watching';
 export { default as libraries, Libraries } from './lib/libraries';
@@ -49,12 +51,17 @@ export { default as getProperties } from './lib/get_properties';
 export { default as setProperties } from './lib/set_properties';
 export { default as expandProperties } from './lib/expand_properties';
 
-export { addObserver, removeObserver } from './lib/observer';
+export {
+  addObserver,
+  activateObserver,
+  removeObserver,
+  flushInvalidActiveObservers,
+} from './lib/observer';
 export { Mixin, aliasMethod, mixin, observer, applyMixin } from './lib/mixin';
 export { default as inject, DEBUG_INJECTION_FUNCTIONS } from './lib/injected_property';
-export { tagForProperty, tagFor, markObjectAsDirty } from './lib/tags';
+export { tagForProperty, tagFor, markObjectAsDirty, UNKNOWN_PROPERTY_TAG } from './lib/tags';
 export { default as runInTransaction, didRender, assertNotRendered } from './lib/transaction';
-export { Tracker, tracked, getCurrentTracker, setCurrentTracker } from './lib/tracked';
+export { consume, Tracker, tracked, track } from './lib/tracked';
 
 export {
   NAMESPACES,

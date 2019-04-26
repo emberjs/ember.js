@@ -1,8 +1,8 @@
 import Controller from '@ember/controller';
 import { NoneLocation } from '@ember/-internals/routing';
-import { run } from '@ember/runloop';
 
 import ApplicationTestCase from './application';
+import { runLoopSettled } from '../run';
 
 export default class QueryParamTestCase extends ApplicationTestCase {
   constructor() {
@@ -68,8 +68,14 @@ export default class QueryParamTestCase extends ApplicationTestCase {
     };
   }
 
-  setAndFlush(obj, prop, value) {
-    return run(obj, 'set', prop, value);
+  async setAndFlush(obj, prop, value) {
+    if (typeof prop === 'object') {
+      obj.setProperties(prop);
+    } else {
+      obj.set(prop, value);
+    }
+
+    await runLoopSettled();
   }
 
   assertCurrentPath(path, message = `current path equals '${path}'`) {

@@ -12,6 +12,7 @@ import {
   HAS_NATIVE_PROXY,
   isInternalSymbol,
 } from '@ember/-internals/utils';
+import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { schedule } from '@ember/runloop';
 import { meta, peekMeta, deleteMeta } from '@ember/-internals/meta';
 import {
@@ -19,6 +20,7 @@ import {
   finishChains,
   sendEvent,
   Mixin,
+  activateObserver,
   applyMixin,
   defineProperty,
   descriptorForProperty,
@@ -129,9 +131,21 @@ function initialize(obj, properties) {
   }
   obj.init(properties);
 
-  // re-enable chains
   m.unsetInitializing();
-  finishChains(m);
+
+  if (EMBER_METAL_TRACKED_PROPERTIES) {
+    let observerEvents = m.observerEvents();
+
+    if (observerEvents !== undefined) {
+      for (let i = 0; i < observerEvents.length; i++) {
+        activateObserver(obj, observerEvents[i]);
+      }
+    }
+  } else {
+    // re-enable chains
+    finishChains(m);
+  }
+
   sendEvent(obj, 'init', undefined, undefined, undefined, m);
 }
 
@@ -267,6 +281,7 @@ class CoreObject {
 
     // disable chains
     let m = meta(self);
+
     m.setInitializing();
 
     assert(

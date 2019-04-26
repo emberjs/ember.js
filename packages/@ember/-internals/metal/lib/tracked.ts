@@ -5,7 +5,7 @@ import { DEBUG } from '@glimmer/env';
 import { combine, CONSTANT_TAG, Tag } from '@glimmer/reference';
 import { Decorator, DecoratorPropertyDescriptor, isElementDescriptor } from './decorator';
 import { setClassicDecorator } from './descriptor_map';
-import { dirty, ensureRunloop, tagFor, tagForProperty, update } from './tags';
+import { markObjectAsDirty, tagFor, tagForProperty, update } from './tags';
 
 type Option<T> = T | null;
 
@@ -222,12 +222,13 @@ function descriptorForField([_target, key, desc]: [
     },
 
     set(newValue: any): void {
-      tagFor(this).inner!['dirty']();
-      dirty(tagForProperty(this, key));
+      markObjectAsDirty(this, key);
 
       this[secretKey] = newValue;
 
-      propertyDidChange();
+      if (propertyDidChange !== null) {
+        propertyDidChange();
+      }
     },
   };
 }
@@ -249,14 +250,29 @@ function descriptorForField([_target, key, desc]: [
 */
 let CURRENT_TRACKER: Option<Tracker> = null;
 
-export function getCurrentTracker(): Option<Tracker> {
-  return CURRENT_TRACKER;
+export function track(callback: () => void) {
+  let parent = CURRENT_TRACKER;
+  let current = new Tracker();
+
+  CURRENT_TRACKER = current;
+
+  try {
+    callback();
+  } finally {
+    CURRENT_TRACKER = parent;
+  }
+
+  return current.combine();
 }
 
-export function setCurrentTracker(): Tracker;
-export function setCurrentTracker(tracker: Option<Tracker>): Option<Tracker>;
-export function setCurrentTracker(tracker: Option<Tracker> = new Tracker()): Option<Tracker> {
-  return (CURRENT_TRACKER = tracker);
+export function consume(tag: Tag) {
+  if (CURRENT_TRACKER !== null) {
+    CURRENT_TRACKER.add(tag);
+  }
+}
+
+export function isTracking() {
+  return CURRENT_TRACKER !== null;
 }
 
 export type Key = string;
@@ -265,7 +281,7 @@ export interface Interceptors {
   [key: string]: boolean;
 }
 
-let propertyDidChange = ensureRunloop;
+let propertyDidChange: (() => void) | null = null;
 
 export function setPropertyDidChange(cb: () => void): void {
   propertyDidChange = cb;

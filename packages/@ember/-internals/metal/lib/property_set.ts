@@ -1,5 +1,11 @@
 import { Meta, peekMeta } from '@ember/-internals/meta';
-import { HAS_NATIVE_PROXY, lookupDescriptor, toString } from '@ember/-internals/utils';
+import {
+  HAS_NATIVE_PROXY,
+  lookupDescriptor,
+  setWithMandatorySetter as trackedSetWithMandatorySetter,
+  toString,
+} from '@ember/-internals/utils';
+import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import EmberError from '@ember/error';
 import { DEBUG } from '@glimmer/env';
@@ -15,10 +21,10 @@ interface ExtendedObject {
 }
 
 let setWithMandatorySetter: <T extends object, K extends Extract<keyof T, string>>(
-  meta: Meta | null,
   obj: T,
   keyName: K,
-  value: T[K]
+  value: T[K],
+  meta: Meta | null
 ) => void;
 
 let makeEnumerable: (obj: object, keyName: string) => void;
@@ -103,7 +109,11 @@ export function set(obj: object, keyName: string, value: any, tolerant?: boolean
     (obj as ExtendedObject).setUnknownProperty!(keyName, value);
   } else {
     if (DEBUG) {
-      setWithMandatorySetter<any, any>(meta, obj, keyName, value);
+      if (EMBER_METAL_TRACKED_PROPERTIES) {
+        trackedSetWithMandatorySetter!(obj, keyName, value);
+      } else {
+        setWithMandatorySetter<any, any>(obj, keyName, value, meta);
+      }
     } else {
       obj[keyName] = value;
     }
@@ -117,7 +127,7 @@ export function set(obj: object, keyName: string, value: any, tolerant?: boolean
 }
 
 if (DEBUG) {
-  setWithMandatorySetter = (meta, obj, keyName, value) => {
+  setWithMandatorySetter = (obj, keyName, value, meta) => {
     if (meta !== null && meta.peekWatching(keyName) > 0) {
       makeEnumerable(obj, keyName);
       meta.writeValue(obj, keyName, value);

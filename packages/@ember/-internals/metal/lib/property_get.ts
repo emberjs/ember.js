@@ -8,7 +8,7 @@ import { DEBUG } from '@glimmer/env';
 import { descriptorForProperty } from './descriptor_map';
 import { isPath } from './path_cache';
 import { tagFor, tagForProperty } from './tags';
-import { getCurrentTracker } from './tracked';
+import { consume, isTracking } from './tracked';
 
 export const PROXY_CONTENT = symbol('PROXY_CONTENT');
 
@@ -103,12 +103,11 @@ export function get(obj: object, keyName: string): any {
   let value: any;
 
   if (isObjectLike) {
-    let tracker = null;
+    let tracking = isTracking();
 
     if (EMBER_METAL_TRACKED_PROPERTIES) {
-      tracker = getCurrentTracker();
-      if (tracker !== null) {
-        tracker.add(tagForProperty(obj, keyName));
+      if (tracking) {
+        consume(tagForProperty(obj, keyName));
       }
     }
 
@@ -127,10 +126,10 @@ export function get(obj: object, keyName: string): any {
     // should always cause updates if they are consumed and then changed
     if (
       EMBER_METAL_TRACKED_PROPERTIES &&
-      tracker !== null &&
+      tracking &&
       (Array.isArray(value) || isEmberArray(value))
     ) {
-      tracker.add(tagFor(value));
+      consume(tagFor(value));
     }
   } else {
     value = obj[keyName];

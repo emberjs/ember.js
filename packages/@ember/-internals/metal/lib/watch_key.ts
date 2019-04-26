@@ -1,5 +1,6 @@
 import { Meta, meta as metaFor, peekMeta, UNDEFINED } from '@ember/-internals/meta';
 import { lookupDescriptor } from '@ember/-internals/utils';
+import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { DEBUG } from '@glimmer/env';
 import { descriptorForProperty, isClassicDecorator } from './descriptor_map';
 import {
@@ -33,8 +34,10 @@ export function watchKey(obj: object, keyName: string, _meta?: Meta): void {
       possibleDesc.willWatch(obj, keyName, meta);
     }
 
-    if (typeof (obj as MaybeHasWillWatchProperty).willWatchProperty === 'function') {
-      (obj as MaybeHasWillWatchProperty).willWatchProperty!(keyName);
+    if (!EMBER_METAL_TRACKED_PROPERTIES) {
+      if (typeof (obj as MaybeHasWillWatchProperty).willWatchProperty === 'function') {
+        (obj as MaybeHasWillWatchProperty).willWatchProperty!(keyName);
+      }
     }
 
     if (DEBUG) {

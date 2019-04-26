@@ -10,7 +10,9 @@ import {
   addArrayObserver,
   removeArrayObserver,
   replace,
+  getChainTagsForKey,
 } from '@ember/-internals/metal';
+import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import EmberObject from './object';
 import { isArray, MutableArray } from '../mixins/array';
 import { assert } from '@ember/debug';
@@ -101,6 +103,13 @@ export default class ArrayProxy extends EmberObject {
     this._length = 0;
 
     this._arrangedContent = null;
+
+    if (EMBER_METAL_TRACKED_PROPERTIES) {
+      this._arrangedContentIsUpdating = false;
+      this._arrangedContentTag = getChainTagsForKey(this, 'arrangedContent');
+      this._arrangedContentRevision = this._arrangedContentTag.value();
+    }
+
     this._addArrangedContentArrayObsever();
   }
 
@@ -164,6 +173,10 @@ export default class ArrayProxy extends EmberObject {
 
   // Overriding objectAt is not supported.
   objectAt(idx) {
+    if (EMBER_METAL_TRACKED_PROPERTIES) {
+      this._revalidate();
+    }
+
     if (this._objects === null) {
       this._objects = [];
     }
@@ -187,6 +200,10 @@ export default class ArrayProxy extends EmberObject {
 
   // Overriding length is not supported.
   get length() {
+    if (EMBER_METAL_TRACKED_PROPERTIES) {
+      this._revalidate();
+    }
+
     if (this._lengthDirty) {
       let arrangedContent = get(this, 'arrangedContent');
       this._length = arrangedContent ? get(arrangedContent, 'length') : 0;
@@ -217,26 +234,34 @@ export default class ArrayProxy extends EmberObject {
   }
 
   [PROPERTY_DID_CHANGE](key) {
-    if (key === 'arrangedContent') {
-      let oldLength = this._objects === null ? 0 : this._objects.length;
-      let arrangedContent = get(this, 'arrangedContent');
-      let newLength = arrangedContent ? get(arrangedContent, 'length') : 0;
-
-      this._removeArrangedContentArrayObsever();
-      this.arrayContentWillChange(0, oldLength, newLength);
-
-      this._invalidate();
-
-      this.arrayContentDidChange(0, oldLength, newLength);
-      this._addArrangedContentArrayObsever();
-    } else if (key === 'content') {
-      this._invalidate();
+    if (EMBER_METAL_TRACKED_PROPERTIES) {
+      this._revalidate();
+    } else {
+      if (key === 'arrangedContent') {
+        this._updateArrangedContentArray();
+      } else if (key === 'content') {
+        this._invalidate();
+      }
     }
+  }
+
+  _updateArrangedContentArray() {
+    let oldLength = this._objects === null ? 0 : this._objects.length;
+    let arrangedContent = get(this, 'arrangedContent');
+    let newLength = arrangedContent ? get(arrangedContent, 'length') : 0;
+
+    this._removeArrangedContentArrayObsever();
+    this.arrayContentWillChange(0, oldLength, newLength);
+
+    this._invalidate();
+
+    this.arrayContentDidChange(0, oldLength, newLength);
+    this._addArrangedContentArrayObsever();
   }
 
   _addArrangedContentArrayObsever() {
     let arrangedContent = get(this, 'arrangedContent');
-    if (arrangedContent) {
+    if (arrangedContent && !arrangedContent.isDestroyed) {
       assert("Can't set ArrayProxy's content to itself", arrangedContent !== this);
       assert(
         `ArrayProxy expects an Array or ArrayProxy, but you passed ${typeof arrangedContent}`,
@@ -281,6 +306,24 @@ export default class ArrayProxy extends EmberObject {
   }
 }
 
+let _revalidate;
+
+if (EMBER_METAL_TRACKED_PROPERTIES) {
+  _revalidate = function() {
+    if (
+      !this._arrangedContentIsUpdating &&
+      !this._arrangedContentTag.validate(this._arrangedContentRevision)
+    ) {
+      this._arrangedContentIsUpdating = true;
+      this._updateArrangedContentArray();
+      this._arrangedContentIsUpdating = false;
+
+      this._arrangedContentTag = getChainTagsForKey(this, 'arrangedContent');
+      this._arrangedContentRevision = this._arrangedContentTag.value();
+    }
+  };
+}
+
 ArrayProxy.reopen(MutableArray, {
   /**
     The array that the proxy pretends to be. In the default `ArrayProxy`
@@ -291,4 +334,6 @@ ArrayProxy.reopen(MutableArray, {
     @public
   */
   arrangedContent: alias('content'),
+
+  _revalidate,
 });

@@ -7,6 +7,7 @@ import {
   classes as classMatcher,
   moduleFor,
   runTask,
+  runLoopSettled,
 } from 'internal-test-helpers';
 
 if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
@@ -290,7 +291,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
           );
         });
       }
-      ['@test href updates when unsupplied controller QP props change'](assert) {
+      async ['@test href updates when unsupplied controller QP props change'](assert) {
         this.addTemplate(
           'index',
           `
@@ -300,20 +301,22 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
           `
         );
 
-        return this.visit('/').then(() => {
-          let indexController = this.getController('index');
-          let theLink = this.$('#the-link');
+        await this.visit('/');
 
-          assert.equal(theLink.attr('href'), '/?foo=lol');
+        let indexController = this.getController('index');
+        let theLink = this.$('#the-link');
 
-          runTask(() => indexController.set('bar', 'BORF'));
+        assert.equal(theLink.attr('href'), '/?foo=lol');
 
-          assert.equal(theLink.attr('href'), '/?bar=BORF&foo=lol');
+        indexController.set('bar', 'BORF');
+        await runLoopSettled();
 
-          runTask(() => indexController.set('foo', 'YEAH'));
+        assert.equal(theLink.attr('href'), '/?bar=BORF&foo=lol');
 
-          assert.equal(theLink.attr('href'), '/?bar=BORF&foo=lol');
-        });
+        indexController.set('foo', 'YEAH');
+        await runLoopSettled();
+
+        assert.equal(theLink.attr('href'), '/?bar=BORF&foo=lol');
       }
 
       ['@test The <LinkTo /> component with only query params always transitions to the current route with the query params applied'](
@@ -590,7 +593,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
           });
       }
 
-      ['@test The <LinkTo /> component disregards query-params in activeness computation when current-when is specified'](
+      async ['@test The <LinkTo /> component disregards query-params in activeness computation when current-when is specified'](
         assert
       ) {
         let appLink;
@@ -627,38 +630,38 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
           })
         );
 
-        return this.visit('/')
-          .then(() => {
-            appLink = this.$('#app-link');
+        await this.visit('/');
 
-            assert.equal(appLink.attr('href'), '/parent');
-            this.shouldNotBeActive(assert, '#app-link');
+        appLink = this.$('#app-link');
 
-            return this.visit('/parent?page=2');
-          })
-          .then(() => {
-            appLink = this.$('#app-link');
-            let router = this.appRouter;
+        assert.equal(appLink.attr('href'), '/parent');
+        this.shouldNotBeActive(assert, '#app-link');
 
-            assert.equal(appLink.attr('href'), '/parent');
-            this.shouldBeActive(assert, '#app-link');
-            assert.equal(this.$('#parent-link').attr('href'), '/parent');
-            this.shouldBeActive(assert, '#parent-link');
+        await this.visit('/parent?page=2');
 
-            let parentController = this.getController('parent');
+        appLink = this.$('#app-link');
+        let router = this.appRouter;
 
-            assert.equal(parentController.get('page'), 2);
+        assert.equal(appLink.attr('href'), '/parent');
+        this.shouldBeActive(assert, '#app-link');
+        assert.equal(this.$('#parent-link').attr('href'), '/parent');
+        this.shouldBeActive(assert, '#parent-link');
 
-            runTask(() => parentController.set('page', 3));
+        let parentController = this.getController('parent');
 
-            assert.equal(router.get('location.path'), '/parent?page=3');
-            this.shouldBeActive(assert, '#app-link');
-            this.shouldBeActive(assert, '#parent-link');
+        assert.equal(parentController.get('page'), 2);
 
-            runTask(() => this.click('#app-link'));
+        parentController.set('page', 3);
+        await runLoopSettled();
 
-            assert.equal(router.get('location.path'), '/parent');
-          });
+        assert.equal(router.get('location.path'), '/parent?page=3');
+        this.shouldBeActive(assert, '#app-link');
+        this.shouldBeActive(assert, '#parent-link');
+
+        this.click('#app-link');
+        await runLoopSettled();
+
+        assert.equal(router.get('location.path'), '/parent');
       }
 
       ['@test the <LinkTo /> component default query params while in active transition regression test'](

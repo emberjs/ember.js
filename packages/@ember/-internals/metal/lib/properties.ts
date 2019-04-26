@@ -3,6 +3,8 @@
 */
 
 import { Meta, meta as metaFor, peekMeta, UNDEFINED } from '@ember/-internals/meta';
+import { setWithMandatorySetter } from '@ember/-internals/utils';
+import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { Decorator } from './decorator';
@@ -184,7 +186,11 @@ export function defineProperty(
         value,
       });
     } else {
-      obj[keyName] = data;
+      if (EMBER_METAL_TRACKED_PROPERTIES && DEBUG) {
+        setWithMandatorySetter!(obj, keyName, data);
+      } else {
+        obj[keyName] = data;
+      }
     }
   } else {
     value = desc;

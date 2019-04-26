@@ -1447,8 +1447,8 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
 
         this.addTemplate('application', `<LinkTo @route='post'>Post</LinkTo>`);
 
-        await assert.rejects(
-          this.visit('/'),
+        await assert.throws(
+          () => runTask(() => this.visit('/')),
           /(You attempted to generate a link for the "post" route, but did not pass the models required for generating its dynamic segments.|You must provide param `post_id` to `generate`)/
         );
       }

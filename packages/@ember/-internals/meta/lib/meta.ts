@@ -13,6 +13,7 @@ export interface MetaCounters {
   metaCalls: number;
   metaInstantiated: number;
   matchingListenersCalls: number;
+  observerEventsCalls: number;
   addToListenersCalls: number;
   removeFromListenersCalls: number;
   removeAllListenersCalls: number;
@@ -21,6 +22,8 @@ export interface MetaCounters {
   parentListenersUsed: number;
   flattenedListenersCalls: number;
   reopensAfterFlatten: number;
+  readableLazyChainsCalls: number;
+  writableLazyChainsCalls: number;
 }
 
 let counters: MetaCounters | undefined;
@@ -33,6 +36,7 @@ if (DEBUG) {
     metaCalls: 0,
     metaInstantiated: 0,
     matchingListenersCalls: 0,
+    observerEventsCalls: 0,
     addToListenersCalls: 0,
     removeFromListenersCalls: 0,
     removeAllListenersCalls: 0,
@@ -41,6 +45,8 @@ if (DEBUG) {
     parentListenersUsed: 0,
     flattenedListenersCalls: 0,
     reopensAfterFlatten: 0,
+    readableLazyChainsCalls: 0,
+    writableLazyChainsCalls: 0,
   };
 }
 
@@ -93,6 +99,7 @@ export class Meta {
   _tag: Tag | undefined;
   _tags: any | undefined;
   _flags: MetaFlags;
+  _lazyChains: Map<string, Array<[string, Tag]>> | undefined;
   source: object;
   proto: object | undefined;
   _parent: Meta | undefined | null;
@@ -349,6 +356,32 @@ export class Meta {
 
   readableTag() {
     return this._tag;
+  }
+
+  writableLazyChainsFor(key: string) {
+    if (DEBUG) {
+      counters!.writableLazyChainsCalls++;
+    }
+
+    let lazyChains = this._getOrCreateOwnMap('_lazyChains');
+
+    if (!(key in lazyChains)) {
+      lazyChains[key] = [];
+    }
+
+    return lazyChains[key];
+  }
+
+  readableLazyChainsFor(key: string) {
+    if (DEBUG) {
+      counters!.readableLazyChainsCalls++;
+    }
+
+    let lazyChains = this._lazyChains;
+
+    if (lazyChains !== undefined) {
+      return lazyChains[key];
+    }
   }
 
   writableChainWatchers(create: (source: object) => any) {
@@ -697,6 +730,38 @@ export class Meta {
           }
 
           result.push(listener.target!, listener.method, listener.kind === ListenerKind.ONCE);
+        }
+      }
+    }
+
+    return result;
+  }
+
+  observerEvents() {
+    let listeners = this.flattenedListeners();
+    let result;
+
+    if (DEBUG) {
+      counters!.observerEventsCalls++;
+    }
+
+    if (listeners !== undefined) {
+      for (let index = 0; index < listeners.length; index++) {
+        let listener = listeners[index];
+
+        // REMOVE listeners are placeholders that tell us not to
+        // inherit, so they never match. Only ADD and ONCE can match.
+        if (
+          (listener.kind === ListenerKind.ADD || listener.kind === ListenerKind.ONCE) &&
+          listener.event.indexOf(':change') !== -1
+        ) {
+          if (result === undefined) {
+            // we create this array only after we've found a listener that
+            // matches to avoid allocations when no matches are found.
+            result = [] as any[];
+          }
+
+          result.push(listener.event);
         }
       }
     }

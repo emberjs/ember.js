@@ -18,9 +18,7 @@ export default class AbstractApplicationTestCase extends AbstractTestCase {
 
   async visit(url, options) {
     // Create the instance
-    let instance = await runTask(() =>
-      this._ensureInstance(options).then(instance => instance.visit(url))
-    );
+    let instance = await this._ensureInstance(options).then(instance => instance.visit(url));
 
     // Await all asynchronous actions
     await runLoopSettled();

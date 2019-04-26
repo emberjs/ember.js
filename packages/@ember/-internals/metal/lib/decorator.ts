@@ -1,5 +1,8 @@
 import { Meta, meta as metaFor } from '@ember/-internals/meta';
-import { EMBER_NATIVE_DECORATOR_SUPPORT } from '@ember/canary-features';
+import {
+  EMBER_METAL_TRACKED_PROPERTIES,
+  EMBER_NATIVE_DECORATOR_SUPPORT,
+} from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { setClassicDecorator } from './descriptor_map';
 import { unwatch, watch } from './watching';
@@ -136,6 +139,15 @@ function DESCRIPTOR_GETTER_FUNCTION(name: string, descriptor: ComputedDescriptor
   };
 }
 
+function DESCRIPTOR_SETTER_FUNCTION(
+  name: string,
+  descriptor: ComputedDescriptor
+): (value: any) => void {
+  return function CPSETTER_FUNCTION(this: object, value: any): void {
+    return descriptor.set(this, name, value);
+  };
+}
+
 export function makeComputedDecorator(
   desc: ComputedDescriptor,
   DecoratorClass: { prototype: object }
@@ -163,11 +175,17 @@ export function makeComputedDecorator(
     let meta = arguments.length === 3 ? metaFor(target) : maybeMeta;
     desc.setup(target, key, propertyDesc, meta!);
 
-    return {
+    let computedDesc: PropertyDescriptor = {
       enumerable: desc.enumerable,
       configurable: desc.configurable,
       get: DESCRIPTOR_GETTER_FUNCTION(key, desc),
     };
+
+    if (EMBER_METAL_TRACKED_PROPERTIES) {
+      computedDesc.set = DESCRIPTOR_SETTER_FUNCTION(key, desc);
+    }
+
+    return computedDesc;
   };
 
   setClassicDecorator(decorator, desc);

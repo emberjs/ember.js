@@ -1,9 +1,9 @@
-import { AbstractTestCase } from 'internal-test-helpers';
+import { AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 import { runArrayTests, newFixture } from '../helpers/array';
 import { get } from '@ember/-internals/metal';
 
 class SetObjectsTests extends AbstractTestCase {
-  '@test [A,B,C].setObjects([]) = > [] + notify'() {
+  async '@test [A,B,C].setObjects([]) = > [] + notify'() {
     let before = newFixture(3);
     let after = [];
     let obj = this.newObject(before);
@@ -12,6 +12,9 @@ class SetObjectsTests extends AbstractTestCase {
     obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
     this.assert.equal(obj.setObjects(after), obj, 'return self');
+
+    // flush observers
+    await runLoopSettled();
 
     this.assert.deepEqual(this.toArray(obj), after, 'post item results');
     this.assert.equal(get(obj, 'length'), after.length, 'length');
@@ -31,7 +34,7 @@ class SetObjectsTests extends AbstractTestCase {
     );
   }
 
-  '@test [A,B,C].setObjects([D, E, F, G]) = > [D, E, F, G] + notify'() {
+  async '@test [A,B,C].setObjects([D, E, F, G]) = > [D, E, F, G] + notify'() {
     let before = newFixture(3);
     let after = newFixture(4);
     let obj = this.newObject(before);
@@ -40,6 +43,9 @@ class SetObjectsTests extends AbstractTestCase {
     obj.getProperties('firstObject', 'lastObject'); /* Prime the cache */
 
     this.assert.equal(obj.setObjects(after), obj, 'return self');
+
+    // flush observers
+    await runLoopSettled();
 
     this.assert.deepEqual(this.toArray(obj), after, 'post item results');
     this.assert.equal(get(obj, 'length'), after.length, 'length');

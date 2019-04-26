@@ -1,4 +1,10 @@
-import { RenderingTestCase, moduleFor, strip, runTask } from 'internal-test-helpers';
+import {
+  RenderingTestCase,
+  moduleFor,
+  strip,
+  runTask,
+  runLoopSettled,
+} from 'internal-test-helpers';
 
 import { set, get, setProperties } from '@ember/-internals/metal';
 import { A as emberA } from '@ember/-internals/runtime';
@@ -360,7 +366,7 @@ moduleFor(
       this.assertText('abc abc');
     }
 
-    ['@test should be able to render an unbound helper invocation for helpers with dependent keys']() {
+    async ['@test should be able to render an unbound helper invocation for helpers with dependent keys']() {
       this.registerHelper('capitalizeName', {
         destroy() {
           this.removeObserver('value.firstName', this, this.recompute);
@@ -410,10 +416,12 @@ moduleFor(
       this.assertText('SHOOBY SHOOBY shoobytaylor shoobytaylor');
 
       runTask(() => this.rerender());
+      await runLoopSettled();
 
       this.assertText('SHOOBY SHOOBY shoobytaylor shoobytaylor');
 
       runTask(() => set(this.context, 'person.firstName', 'sally'));
+      await runLoopSettled();
 
       this.assertText('SALLY SHOOBY sallytaylor shoobytaylor');
 
@@ -423,6 +431,7 @@ moduleFor(
           lastName: 'taylor',
         })
       );
+      await runLoopSettled();
 
       this.assertText('SHOOBY SHOOBY shoobytaylor shoobytaylor');
     }
@@ -476,7 +485,7 @@ moduleFor(
       this.assertText('SHOOBY SHOOBYCINDY CINDY');
     }
 
-    ['@test should be able to render an unbound helper invocation with bound hash options']() {
+    async ['@test should be able to render an unbound helper invocation with bound hash options']() {
       this.registerHelper('capitalizeName', {
         destroy() {
           this.removeObserver('value.firstName', this, this.recompute);
@@ -522,14 +531,17 @@ moduleFor(
           },
         }
       );
+      await runLoopSettled();
 
       this.assertText('SHOOBY SHOOBY shoobytaylor shoobytaylor');
 
       runTask(() => this.rerender());
+      await runLoopSettled();
 
       this.assertText('SHOOBY SHOOBY shoobytaylor shoobytaylor');
 
       runTask(() => set(this.context, 'person.firstName', 'sally'));
+      await runLoopSettled();
 
       this.assertText('SALLY SHOOBY sallytaylor shoobytaylor');
 

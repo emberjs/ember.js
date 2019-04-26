@@ -1,12 +1,11 @@
 import {
+  consume,
   didRender,
   get,
-  getCurrentTracker,
   set,
-  setCurrentTracker,
   tagFor,
   tagForProperty,
-  Tracker,
+  track,
   watchKey,
 } from '@ember/-internals/metal';
 import { isProxy, symbol } from '@ember/-internals/utils';
@@ -190,7 +189,7 @@ export class RootPropertyReference extends PropertyReference
       this.tag = this.propertyTag;
     }
 
-    if (DEBUG) {
+    if (DEBUG && !EMBER_METAL_TRACKED_PROPERTIES) {
       watchKey(parentValue, propertyKey);
     }
   }
@@ -202,22 +201,17 @@ export class RootPropertyReference extends PropertyReference
       (this.tag.inner as ITwoWayFlushDetectionTag).didCompute(parentValue);
     }
 
-    let parent: Option<Tracker> = null;
-    let tracker: Option<Tracker> = null;
+    let ret;
 
     if (EMBER_METAL_TRACKED_PROPERTIES) {
-      parent = getCurrentTracker();
-      tracker = setCurrentTracker();
-    }
+      let tag = track(() => {
+        ret = get(parentValue, propertyKey);
+      });
 
-    let ret = get(parentValue, propertyKey);
-
-    if (EMBER_METAL_TRACKED_PROPERTIES) {
-      setCurrentTracker(parent);
-      let tag = tracker!.combine();
-      if (parent) parent.add(tag);
-
+      consume(tag);
       this.propertyTag.inner.update(tag);
+    } else {
+      ret = get(parentValue, propertyKey);
     }
 
     return ret;
@@ -262,7 +256,7 @@ export class NestedPropertyReference extends PropertyReference {
     if ((parentValueType === 'object' && _parentValue !== null) || parentValueType === 'function') {
       let parentValue = _parentValue as object;
 
-      if (DEBUG) {
+      if (DEBUG && !EMBER_METAL_TRACKED_PROPERTIES) {
         watchKey(parentValue, propertyKey);
       }
 
@@ -270,23 +264,18 @@ export class NestedPropertyReference extends PropertyReference {
         (this.tag.inner as ITwoWayFlushDetectionTag).didCompute(parentValue);
       }
 
-      let parent: Option<Tracker> = null;
-      let tracker: Option<Tracker> = null;
+      let ret;
 
       if (EMBER_METAL_TRACKED_PROPERTIES) {
-        parent = getCurrentTracker();
-        tracker = setCurrentTracker();
-      }
+        let tag = track(() => {
+          ret = get(parentValue, propertyKey);
+        });
 
-      let ret = get(parentValue, propertyKey);
-
-      if (EMBER_METAL_TRACKED_PROPERTIES) {
-        setCurrentTracker(parent!);
-        let tag = tracker!.combine();
-        if (parent) parent.add(tag);
+        consume(tag);
 
         propertyTag.inner.update(tag);
       } else {
+        ret = get(parentValue, propertyKey);
         propertyTag.inner.update(tagForProperty(parentValue, propertyKey));
       }
 
