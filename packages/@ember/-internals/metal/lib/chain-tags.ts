@@ -81,6 +81,10 @@ export function getChainTagsForKey(obj: any, key: string) {
 
     chainTags.push(propertyTag);
 
+    if (segments.length === 0) {
+      break;
+    }
+
     descriptor = descriptorForProperty(current, segment);
 
     if (descriptor === undefined) {
@@ -103,7 +107,7 @@ export function getChainTagsForKey(obj: any, key: string) {
         } else {
           current = peekCacheFor(current).get(segment);
         }
-      } else if (segments.length > 0) {
+      } else {
         let placeholderTag = UpdatableTag.create(CONSTANT_TAG);
 
         metaFor(current)

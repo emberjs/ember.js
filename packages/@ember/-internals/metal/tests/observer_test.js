@@ -15,6 +15,7 @@ import {
   changeProperties,
   get,
   set,
+  alias,
 } from '..';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 import { FUNCTION_PROTOTYPE_EXTENSIONS } from '@ember/deprecated-features';
@@ -1077,6 +1078,28 @@ moduleFor(
       addObserver(beer, 'type', K);
       removeObserver(beer, 'type', K);
       assert.deepEqual(Object.keys(itsMyLastBeer), ['type'], 'set -> removeObserver');
+    }
+
+    async ['@test should not access leaf nodes when unneeded'](assert) {
+      class Beer {
+        _type = 'ipa';
+
+        unknownProperty(key) {
+          defineProperty(this, key, alias(`_${key}`));
+
+          return this[key];
+        }
+      }
+
+      let beer = new Beer();
+
+      let count = 0;
+      addObserver(beer, 'type', () => count++);
+
+      set(beer, '_type', 'pale ale');
+      await runLoopSettled();
+
+      assert.equal(count, 0, 'observer was not called');
     }
   }
 );
