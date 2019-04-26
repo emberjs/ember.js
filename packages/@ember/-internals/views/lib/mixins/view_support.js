@@ -1,5 +1,6 @@
-import { guidFor } from '@ember/-internals/utils';
 import { descriptorForProperty, Mixin, nativeDescDecorator } from '@ember/-internals/metal';
+import { symbol } from '@ember/-internals/utils';
+import { getViewElement } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { hasDOM } from '@ember/-internals/browser-environment';
 import { matches } from '../system/utils';
@@ -9,6 +10,17 @@ import { JQUERY_INTEGRATION } from '@ember/deprecated-features';
 
 function K() {
   return this;
+}
+
+const ELEMENT_ID = symbol('elementId');
+
+export function hasElementId(view) {
+  let elementId = view[ELEMENT_ID];
+  return elementId !== null && elementId !== undefined;
+}
+
+export function getElementId(view) {
+  return view[ELEMENT_ID];
 }
 
 let mixin = {
@@ -155,6 +167,71 @@ let mixin = {
   }),
 
   /**
+   The HTML `id` of the view's element in the DOM. You can provide this
+   value yourself but it must be unique (just as in HTML):
+
+   ```handlebars
+   {{my-component elementId="a-really-cool-id"}}
+   ```
+
+   If not manually set a default value will be provided by the framework.
+
+   Once rendered an element's `elementId` is considered immutable and you
+   should never change it. If you need to compute a dynamic value for the
+   `elementId`, you should do this when the component or element is being
+   instantiated:
+
+   ```app/components/my-component.js
+   import Component from '@ember/component';
+
+   export default Component.extend({
+      init() {
+        this._super(...arguments);
+        let index = this.get('index');
+        this.set('elementId', 'component-id' + index);
+      }
+    });
+   ```
+
+   @property elementId
+   @type String
+   @public
+   */
+  elementId: nativeDescDecorator({
+    configurable: false,
+    enumerable: false,
+    get() {
+      let value = this[ELEMENT_ID];
+
+      assert(
+        `\`elementId\` on ${this} does not match the \`id\` attribute in DOM`,
+        !(value && getViewElement(this) && getViewElement(this).getAttribute('id') !== value)
+      );
+
+      if (!value) {
+        let element = getViewElement(this);
+        let id = element && element.getAttribute('id');
+
+        if (id) {
+          value = this[ELEMENT_ID] = element.getAttribute('id');
+        }
+      }
+
+      return value;
+    },
+    set(value) {
+      assert(
+        `cannot change \`elementId\` on ${this} once it is set`,
+        this[ELEMENT_ID] === null || this[ELEMENT_ID] === undefined
+      );
+
+      assert(`cannot set \`elementId\` on ${this} after rendering`, !getViewElement(this));
+
+      this[ELEMENT_ID] = value ? String(value) : null;
+    },
+  }),
+
+  /**
    Appends the view's element to the specified parent element.
 
    Note that this method just schedules the view to be appended; the DOM
@@ -232,39 +309,6 @@ let mixin = {
   append() {
     return this.appendTo(document.body);
   },
-
-  /**
-   The HTML `id` of the view's element in the DOM. You can provide this
-   value yourself but it must be unique (just as in HTML):
-
-   ```handlebars
-   {{my-component elementId="a-really-cool-id"}}
-   ```
-
-   If not manually set a default value will be provided by the framework.
-
-   Once rendered an element's `elementId` is considered immutable and you
-   should never change it. If you need to compute a dynamic value for the
-   `elementId`, you should do this when the component or element is being
-   instantiated:
-
-   ```app/components/my-component.js
-   import Component from '@ember/component';
-
-   export default Component.extend({
-      init() {
-        this._super(...arguments);
-        let index = this.get('index');
-        this.set('elementId', 'component-id' + index);
-      }
-    });
-   ```
-
-   @property elementId
-   @type String
-   @public
-   */
-  elementId: null,
 
   /**
    Called when a view is going to insert an element into the DOM.
@@ -395,10 +439,6 @@ let mixin = {
       `You cannot use a computed property for the component's \`tagName\` (${this}).`,
       descriptorForProperty(this, 'tagName') === undefined
     );
-
-    if (!this.elementId && this.tagName !== '') {
-      this.elementId = guidFor(this);
-    }
 
     assert('Using a custom `.render` function is no longer supported.', !this.render);
   },

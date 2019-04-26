@@ -165,7 +165,7 @@ moduleFor(
     }
 
     ['@test can build and boot a registered engine'](assert) {
-      assert.expect(11);
+      assert.expect(10);
 
       let ChatEngine = Engine.extend();
       let chatEngineInstance;
@@ -194,7 +194,6 @@ moduleFor(
         let singletons = [
           'router:main',
           P`-bucket-cache:main`,
-          '-view-registry:main',
           '-environment:main',
           'service:-document',
           'event_dispatcher:main',

@@ -99,7 +99,7 @@ moduleFor(
       if (EmberDev && !EmberDev.runningProdBuild) {
         let willThrow = () => run(null, set, component, 'elementId', 'herpyderpy');
 
-        assert.throws(willThrow, /Changing a view's elementId after creation is not allowed/);
+        assert.throws(willThrow, /cannot change `elementId` on <.+> once it is set/);
 
         this.assertComponentElement(this.firstChild, {
           tagName: 'div',
@@ -276,6 +276,23 @@ moduleFor(
         tagName: 'foo-bar',
         content: 'hello',
       });
+    }
+
+    ['@test elementId can not be a computed property']() {
+      let FooBarComponent = Component.extend({
+        elementId: computed(function() {
+          return 'foo-bar';
+        }),
+      });
+
+      this.registerComponent('foo-bar', {
+        ComponentClass: FooBarComponent,
+        template: 'hello',
+      });
+
+      expectAssertion(() => {
+        this.render('{{foo-bar}}');
+      }, /You cannot use a computed property for the component's `elementId` \(<.+?>\)\./);
     }
 
     ['@test tagName can not be a computed property']() {

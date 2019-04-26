@@ -21,6 +21,12 @@ export const ViewMixin: any;
 export const ViewStateSupport: any;
 export const TextSupport: any;
 
+export function getElementId(view: Opaque): Option<string>;
+export function hasElementId(view: Opaque): boolean;
+
+export function registerView(view: Opaque): void;
+export function unregisterView(view: Opaque): void;
+
 export function getElementView(element: Simple.Element): Opaque;
 export function getViewElement(view: Opaque): Option<Simple.Element>;
 export function setElementView(element: Simple.Element, view: Opaque): void;

@@ -22,7 +22,6 @@ class LifeCycleHooksTest extends RenderingTestCase {
     this.components = {};
     this.componentRegistry = [];
     this.teardownAssertions = [];
-    this.viewRegistry = this.owner.lookup('-view-registry:main');
   }
 
   afterEach() {
@@ -63,22 +62,6 @@ class LifeCycleHooksTest extends RenderingTestCase {
       invoke: bind(this.invocationFor, this),
       attr: bind(this.attrFor, this),
     };
-  }
-
-  assertRegisteredViews(label) {
-    let viewRegistry = this.viewRegistry;
-    let topLevelId = getViewId(this.component);
-    let actual = Object.keys(viewRegistry)
-      .sort()
-      .filter(id => id !== topLevelId);
-
-    if (this.isInteractive) {
-      let expected = this.componentRegistry.sort();
-
-      this.assert.deepEqual(actual, expected, 'registered views - ' + label);
-    } else {
-      this.assert.deepEqual(actual, [], 'no views should be registered for non-interactive mode');
-    }
   }
 
   registerComponent(name, { template = null }) {
@@ -335,7 +318,6 @@ class LifeCycleHooksTest extends RenderingTestCase {
     });
 
     this.assertText('Twitter: @tomdale|Name: Tom Dale|Website: tomdale.net');
-    this.assertRegisteredViews('intial render');
 
     this.assertHooks({
       label: 'after initial render',
@@ -532,8 +514,6 @@ class LifeCycleHooksTest extends RenderingTestCase {
           ['the-bottom', 'willDestroy'],
         ],
       });
-
-      this.assertRegisteredViews('after destroy');
     });
   }
 
@@ -575,7 +555,6 @@ class LifeCycleHooksTest extends RenderingTestCase {
     );
 
     this.assertText('Twitter: @tomdale|Name: Tom Dale|Website: tomdale.net');
-    this.assertRegisteredViews('intial render');
 
     this.assertHooks({
       label: 'after initial render',
@@ -853,8 +832,6 @@ class LifeCycleHooksTest extends RenderingTestCase {
           ['the-last-child', 'willDestroy'],
         ],
       });
-
-      this.assertRegisteredViews('after destroy');
     });
   }
 
@@ -889,7 +866,6 @@ class LifeCycleHooksTest extends RenderingTestCase {
     });
 
     this.assertText('Top: Middle: Bottom: @tomdale');
-    this.assertRegisteredViews('intial render');
 
     this.assertHooks({
       label: 'after initial render',
@@ -1038,8 +1014,6 @@ class LifeCycleHooksTest extends RenderingTestCase {
           ['the-bottom', 'willDestroy'],
         ],
       });
-
-      this.assertRegisteredViews('after destroy');
     });
   }
 
@@ -1074,7 +1048,6 @@ class LifeCycleHooksTest extends RenderingTestCase {
     );
 
     this.assertText('Item: 1Item: 2Item: 3Item: 4Item: 5');
-    this.assertRegisteredViews('intial render');
 
     let initialHooks = () => {
       let ret = [['an-item', 'init'], ['an-item', 'on(init)'], ['an-item', 'didReceiveAttrs']];
@@ -1261,8 +1234,6 @@ class LifeCycleHooksTest extends RenderingTestCase {
 
         nonInteractive: [['no-items', 'willDestroy'], ['nested-item', 'willDestroy']],
       });
-
-      this.assertRegisteredViews('after destroy');
     });
   }
 }

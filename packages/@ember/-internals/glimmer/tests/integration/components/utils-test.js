@@ -4,6 +4,7 @@ import Controller from '@ember/controller';
 import {
   getRootViews,
   getChildViews,
+  getElementView,
   getViewBounds,
   getViewClientRects,
   getViewBoundingClientRect,
@@ -252,9 +253,8 @@ moduleFor(
     }
 
     viewFor(id) {
-      let owner = this.applicationInstance;
-      let registry = owner.lookup('-view-registry:main');
-      return registry[id];
+      let element = this.element.querySelector(`#${id}`);
+      return getElementView(element);
     }
   }
 );

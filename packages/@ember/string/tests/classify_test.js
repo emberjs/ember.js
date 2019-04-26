@@ -45,7 +45,7 @@ moduleFor(
         'PrivateDocs/OwnerInvoice',
         'classify namespaced dasherized string'
       );
-      test(assert, '-view-registry', '_ViewRegistry', 'classify prefixed dasherized string');
+      test(assert, '-text-field', '_TextField', 'classify prefixed dasherized string');
       test(
         assert,
         'components/-text-field',

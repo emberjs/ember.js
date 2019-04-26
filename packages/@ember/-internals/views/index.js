@@ -2,6 +2,8 @@ export { default as jQuery, jQueryDisabled } from './lib/system/jquery';
 export {
   addChildView,
   isSimpleClick,
+  registerView,
+  unregisterView,
   getViewBounds,
   getViewClientRects,
   getViewBoundingClientRect,
@@ -23,7 +25,7 @@ export { default as CoreView } from './lib/views/core_view';
 export { default as ClassNamesSupport } from './lib/mixins/class_names_support';
 export { default as ChildViewsSupport } from './lib/mixins/child_views_support';
 export { default as ViewStateSupport } from './lib/mixins/view_state_support';
-export { default as ViewMixin } from './lib/mixins/view_support';
+export { default as ViewMixin, getElementId, hasElementId } from './lib/mixins/view_support';
 export { default as ActionSupport } from './lib/mixins/action_support';
 export { MUTABLE_CELL } from './lib/compat/attrs';
 export { default as lookupPartial, hasPartial } from './lib/system/lookup_partial';
