@@ -57,6 +57,8 @@ export interface Block extends CommonProgram {
   symbols?: BlockSymbols;
 }
 
+export type EntityEncodingState = 'transformed' | 'raw';
+
 export interface Template extends CommonProgram {
   type: 'Template';
   symbols?: Symbols;
