@@ -333,7 +333,7 @@ if (EMBER_METAL_TRACKED_PROPERTIES && EMBER_NATIVE_DECORATOR_SUPPORT) {
         let emberArray = get(obj, 'emberArray');
         assert.equal(tag.validate(snapshot), true);
 
-        set(emberArray, 'foo', 123);
+        notifyPropertyChange(emberArray, '[]');
         assert.equal(
           tag.validate(snapshot),
           false,

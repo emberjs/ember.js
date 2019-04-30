@@ -5,7 +5,7 @@ import { DEBUG } from '@glimmer/env';
 import { combine, CONSTANT_TAG, Tag } from '@glimmer/reference';
 import { Decorator, DecoratorPropertyDescriptor, isElementDescriptor } from './decorator';
 import { setClassicDecorator } from './descriptor_map';
-import { markObjectAsDirty, tagFor, tagForProperty, update } from './tags';
+import { markObjectAsDirty, tagForProperty, update } from './tags';
 
 type Option<T> = T | null;
 
@@ -215,7 +215,7 @@ function descriptorForField([_target, key, desc]: [
       // Add the tag of the returned value if it is an array, since arrays
       // should always cause updates if they are consumed and then changed
       if (Array.isArray(value) || isEmberArray(value)) {
-        update(propertyTag, tagFor(value));
+        update(propertyTag, tagForProperty(value, '[]'));
       }
 
       return this[secretKey];

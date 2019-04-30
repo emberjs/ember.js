@@ -33,7 +33,7 @@ import expandProperties from './expand_properties';
 import { defineProperty } from './properties';
 import { notifyPropertyChange } from './property_events';
 import { set } from './property_set';
-import { tagFor, tagForProperty, update } from './tags';
+import { tagForProperty, update } from './tags';
 import { consume, track } from './tracked';
 
 export type ComputedPropertyGetter = (keyName: string) => any;
@@ -573,7 +573,7 @@ export class ComputedProperty extends ComputedDescriptor {
       // Add the tag of the returned value if it is an array, since arrays
       // should always cause updates if they are consumed and then changed
       if (Array.isArray(ret) || isEmberArray(ret)) {
-        consume(tagFor(ret));
+        consume(tagForProperty(ret, '[]'));
       }
     } else {
       ret = this._getter!.call(obj, keyName);
