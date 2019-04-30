@@ -104,7 +104,7 @@
     "@types/qunit": "^2.5.4",
     "@types/rsvp": "^4.0.2",
     "auto-dist-tag": "^1.0.0",
-    "aws-sdk": "^2.444.0",
+    "aws-sdk": "^2.445.0",
     "babel-eslint": "^10.0.1",
     "babel-plugin-debug-macros": "^0.3.1",
     "babel-plugin-filter-imports": "^2.0.4",

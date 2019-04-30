@@ -1317,10 +1317,10 @@ auto-dist-tag@^1.0.0:
     pkg-up "^2.0.0"
     semver "^5.3.0"
 
-aws-sdk@^2.0.9, aws-sdk@^2.444.0:
-  version "2.444.0"
-  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.444.0.tgz#7c4bb613636796bf4ee5888ea376bca247af51d8"
-  integrity sha512-3vdC7l5BJ3zHzVNgtIxD+TDviti/sAA/1T8zAXAm2XhZ7AePR5lYIMNAwqu+J44Nm6PFSK1QNSzRQ6A4/6b9eA==
+aws-sdk@^2.0.9, aws-sdk@^2.445.0:
+  version "2.445.0"
+  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.445.0.tgz#30046be1d4b89c1ba5421514e7cfedf6b102e556"
+  integrity sha512-VontdYjQs7218Mw73IYIVhmbRlnHsbbNxuatOFgKvhFCWh4+ze4joM95ViKOUVofSWwlm1HmNasdhb2kOTg+MA==
   dependencies:
     buffer "4.9.1"
     events "1.1.1"
