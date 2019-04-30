@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### v3.10.0-beta.5 (April 29, 2019)
+
+- [#17938](https://github.com/emberjs/ember.js/pull/17938) [BUGFIX] Expose mechanism to detect if a property is a computed
+- [#17974](https://github.com/emberjs/ember.js/pull/17974) [BUGFIX] Ensure inheritable observers on object proxies are string based
+
 ### v3.10.0-beta.4 (April 22, 2019)
 
 - [#17930](https://github.com/emberjs/ember.js/pull/17930) [BUGFIX] Update assertion for events in tagless component to include method names
