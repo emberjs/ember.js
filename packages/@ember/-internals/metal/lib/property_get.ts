@@ -7,7 +7,7 @@ import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { descriptorForProperty } from './descriptor_map';
 import { isPath } from './path_cache';
-import { tagFor, tagForProperty } from './tags';
+import { tagForProperty } from './tags';
 import { consume, isTracking } from './tracked';
 
 export const PROXY_CONTENT = symbol('PROXY_CONTENT');
@@ -129,7 +129,7 @@ export function get(obj: object, keyName: string): any {
       tracking &&
       (Array.isArray(value) || isEmberArray(value))
     ) {
-      consume(tagFor(value));
+      consume(tagForProperty(value, '[]'));
     }
   } else {
     value = obj[keyName];
