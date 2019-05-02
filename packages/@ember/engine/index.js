@@ -1,7 +1,3 @@
-/**
-@module @ember/engine
-*/
-
 export { getEngineParent, setEngineParent } from './lib/engine-parent';
 
 import { canInvoke } from '@ember/-internals/utils';
@@ -27,6 +23,10 @@ function props(obj) {
 
   return properties;
 }
+
+/**
+@module @ember/engine
+*/
 
 /**
   The `Engine` class contains core functionality for both applications and
