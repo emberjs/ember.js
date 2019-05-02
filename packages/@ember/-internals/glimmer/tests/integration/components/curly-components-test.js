@@ -3594,6 +3594,30 @@ moduleFor(
 
       this.assertText('[third][]');
     }
+
+    ['@feature(EMBER_FRAMEWORK_OBJECT_OWNER_ARGUMENT) it can render a basic component in native ES class syntax'](
+      assert
+    ) {
+      let testContext = this;
+      this.registerComponent('foo-bar', {
+        ComponentClass: class extends Component {
+          constructor(owner) {
+            super(owner);
+
+            assert.equal(owner, testContext.owner, 'owner was passed as a constructor argument');
+          }
+        },
+        template: 'hello',
+      });
+
+      this.render('{{foo-bar}}');
+
+      this.assertComponentElement(this.firstChild, { content: 'hello' });
+
+      runTask(() => this.rerender());
+
+      this.assertComponentElement(this.firstChild, { content: 'hello' });
+    }
   }
 );
 

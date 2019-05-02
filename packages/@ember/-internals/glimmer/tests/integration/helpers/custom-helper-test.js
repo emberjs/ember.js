@@ -1,7 +1,7 @@
 /* globals EmberDev */
 
 import { RenderingTestCase, moduleFor, runDestroy, runTask } from 'internal-test-helpers';
-
+import { Helper } from '@ember/-internals/glimmer';
 import { set } from '@ember/-internals/metal';
 
 moduleFor(
@@ -598,6 +598,30 @@ moduleFor(
 
       assert.equal(typeof instance.compute, 'function', 'expected instance.compute to be present');
       assert.equal(instance.compute(), 'lolol', 'can invoke `.compute`');
+    }
+
+    ['@feature(EMBER_FRAMEWORK_OBJECT_OWNER_ARGUMENT) class-based helper in native ES syntax receives owner'](
+      assert
+    ) {
+      let testContext = this;
+      this.add(
+        'helper:hello-world',
+        class extends Helper {
+          constructor(owner) {
+            super(owner);
+
+            assert.equal(owner, testContext.owner, 'owner was passed as a constructor argument');
+          }
+
+          compute() {
+            return 'huzza!';
+          }
+        }
+      );
+
+      this.render('{{hello-world}}');
+
+      this.assertText('huzza!');
     }
   }
 );

@@ -3,17 +3,21 @@
 */
 
 import { FACTORY_FOR } from '@ember/-internals/container';
+import { getOwner } from '@ember/-internals/owner';
 import { assign, _WeakSet as WeakSet } from '@ember/polyfills';
-import { getOwner, setOwner } from '@ember/-internals/owner';
 import {
   guidFor,
   getName,
   setName,
+  symbol,
   makeArray,
   HAS_NATIVE_PROXY,
   isInternalSymbol,
 } from '@ember/-internals/utils';
-import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
+import {
+  EMBER_METAL_TRACKED_PROPERTIES,
+  EMBER_FRAMEWORK_OBJECT_OWNER_ARGUMENT,
+} from '@ember/canary-features';
 import { schedule } from '@ember/runloop';
 import { meta, peekMeta, deleteMeta } from '@ember/-internals/meta';
 import {
@@ -41,15 +45,15 @@ const factoryMap = new WeakMap();
 
 const prototypeMixinMap = new WeakMap();
 
-let OWNER_PLACEHOLDER;
-let passedFromCreate;
-let initCalled; // only used in debug builds to enable the proxy trap
+const initCalled = DEBUG ? new WeakSet() : undefined; // only used in debug builds to enable the proxy trap
+const PASSED_FROM_CREATE = DEBUG ? symbol('PASSED_FROM_CREATE') : undefined;
 
-// using DEBUG here to avoid the extraneous variable when not needed
-if (DEBUG) {
-  OWNER_PLACEHOLDER = Object.freeze({});
-  passedFromCreate = new WeakSet();
-  initCalled = new WeakSet();
+const FRAMEWORK_CLASSES = EMBER_FRAMEWORK_OBJECT_OWNER_ARGUMENT
+  ? symbol('FRAMEWORK_CLASS')
+  : undefined;
+
+export function setFrameworkClass(klass) {
+  klass[FRAMEWORK_CLASSES] = true;
 }
 
 function initialize(obj, properties) {
@@ -218,7 +222,7 @@ class CoreObject {
     factoryMap.set(this, factory);
   }
 
-  constructor(owner) {
+  constructor(passedFromCreate) {
     // pluck off factory
     let initFactory = factoryMap.get(this.constructor);
     if (initFactory !== undefined) {
@@ -287,20 +291,30 @@ class CoreObject {
 
     m.setInitializing();
 
-    if (DEBUG) {
-      assert(
-        `An EmberObject based class, ${
-          this.constructor
-        }, was not instantiated correctly. You may have either used \`new\` instead of \`.create()\`, or not passed arguments to your call to super in the constructor: \`super(...arguments)\`. If you are trying to use \`new\`, consider using native classes without extending from EmberObject.`,
-        passedFromCreate.has(owner) || owner === OWNER_PLACEHOLDER
-      );
+    assert(
+      `An EmberObject based class, ${
+        this.constructor
+      }, was not instantiated correctly. You may have either used \`new\` instead of \`.create()\`, or not passed arguments to your call to super in the constructor: \`super(...arguments)\`. If you are trying to use \`new\`, consider using native classes without extending from EmberObject.`,
+      (() => {
+        if (passedFromCreate === PASSED_FROM_CREATE) {
+          return true;
+        }
 
-      if (owner !== OWNER_PLACEHOLDER) {
-        setOwner(this, owner);
-      }
-    } else {
-      setOwner(this, owner);
-    }
+        if (!EMBER_FRAMEWORK_OBJECT_OWNER_ARGUMENT) {
+          return false;
+        }
+
+        if (initFactory === undefined) {
+          return false;
+        }
+
+        if (passedFromCreate === initFactory.owner) {
+          return true;
+        }
+
+        return false;
+      })()
+    );
 
     // only return when in debug builds and `self` is the proxy created above
     if (DEBUG && self !== this) {
@@ -775,21 +789,27 @@ class CoreObject {
   */
   static create(props, extra) {
     let C = this;
+    let instance;
 
-    let owner = typeof props === 'object' && props !== null ? getOwner(props) : undefined;
-
-    if (DEBUG) {
-      if (owner) {
-        passedFromCreate.add(owner);
-      } else {
-        owner = OWNER_PLACEHOLDER;
+    if (EMBER_FRAMEWORK_OBJECT_OWNER_ARGUMENT && this[FRAMEWORK_CLASSES]) {
+      let initFactory = factoryMap.get(this);
+      let owner;
+      if (initFactory !== undefined) {
+        owner = initFactory.owner;
+      } else if (props !== undefined) {
+        owner = getOwner(props);
       }
-    }
 
-    let instance = new C(owner);
+      if (owner === undefined) {
+        // fallback to passing the special PASSED_FROM_CREATE symbol
+        // to avoid an error when folks call things like Controller.extend().create()
+        // we should do a subsequent deprecation pass to ensure this isn't allowed
+        owner = PASSED_FROM_CREATE;
+      }
 
-    if (DEBUG) {
-      passedFromCreate.delete(owner);
+      instance = new C(owner);
+    } else {
+      instance = DEBUG ? new C(PASSED_FROM_CREATE) : new C();
     }
 
     if (extra === undefined) {
