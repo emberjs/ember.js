@@ -100,6 +100,27 @@ describe('Blueprint: component', function() {
       });
     });
 
+    it('component foo.js', function() {
+      return emberGenerateDestroy(['component', 'foo.js'], _file => {
+        expect(_file('app/components/foo.js.js')).to.not.exist;
+        expect(_file('app/templates/components/foo.js.hbs')).to.not.exist;
+        expect(_file('tests/integration/components/foo.js-test.js')).to.not.exist;
+
+        expect(_file('app/components/foo.js')).to.equal(fixture('component/component.js'));
+
+        expect(_file('app/templates/components/foo.hbs')).to.equal('{{yield}}');
+
+        expect(_file('tests/integration/components/foo-test.js')).to.equal(
+          fixture('component-test/default-template.js', {
+            replace: {
+              component: 'foo',
+              componentInvocation: 'Foo',
+            },
+          })
+        );
+      });
+    });
+
     it('component x-foo --pod', function() {
       return emberGenerateDestroy(['component', 'x-foo', '--pod'], _file => {
         expect(_file('app/components/x-foo/component.js')).to.equal(
@@ -245,6 +266,29 @@ describe('Blueprint: component', function() {
           fixture('component-test/default-curly-template.js', {
             replace: {
               component: 'foo/x-foo',
+            },
+          })
+        );
+      });
+    });
+
+    it('component x-foo.js --pod', function() {
+      return emberGenerateDestroy(['component', 'x-foo.js', '--pod'], _file => {
+        expect(_file('app/components/x-foo.js/component.js')).to.not.exist;
+        expect(_file('app/components/x-foo.js/template.hbs')).to.not.exist;
+        expect(_file('tests/integration/components/x-foo.js/component-test.js')).to.not.exist;
+
+        expect(_file('app/components/x-foo/component.js')).to.equal(
+          fixture('component/component-dash.js')
+        );
+
+        expect(_file('app/components/x-foo/template.hbs')).to.equal('{{yield}}');
+
+        expect(_file('tests/integration/components/x-foo/component-test.js')).to.equal(
+          fixture('component-test/default-template.js', {
+            replace: {
+              component: 'x-foo',
+              componentInvocation: 'XFoo',
             },
           })
         );
@@ -498,6 +542,29 @@ describe('Blueprint: component', function() {
         );
       });
     });
+
+    it('component foo.js', function() {
+      return emberGenerateDestroy(['component', 'foo.js'], _file => {
+        expect(_file('src/ui/components/foo.js/component.js')).to.not.exist;
+        expect(_file('src/ui/components/foo.js/template.hbs')).to.not.exist;
+        expect(_file('src/ui/components/foo.js/component-test.js')).to.not.exist;
+
+        expect(_file('src/ui/components/foo/component.js')).to.equal(
+          fixture('component/component.js')
+        );
+
+        expect(_file('src/ui/components/foo/template.hbs')).to.equal('{{yield}}');
+
+        expect(_file('src/ui/components/foo/component-test.js')).to.equal(
+          fixture('component-test/default-template.js', {
+            replace: {
+              component: 'foo',
+              componentInvocation: 'Foo',
+            },
+          })
+        );
+      });
+    });
   });
 
   describe('in app - octane', function() {
@@ -533,6 +600,29 @@ describe('Blueprint: component', function() {
 
     it('component x-foo', function() {
       return emberGenerateDestroy(['component', 'x-foo'], _file => {
+        expect(_file('app/components/x-foo.js')).to.equal(
+          fixture('component/native-component-dash.js')
+        );
+
+        expect(_file('app/templates/components/x-foo.hbs')).to.equal('{{yield}}');
+
+        expect(_file('tests/integration/components/x-foo-test.js')).to.equal(
+          fixture('component-test/default-template.js', {
+            replace: {
+              component: 'x-foo',
+              componentInvocation: 'XFoo',
+            },
+          })
+        );
+      });
+    });
+
+    it('component x-foo.js', function() {
+      return emberGenerateDestroy(['component', 'x-foo.js'], _file => {
+        expect(_file('app/components/x-foo.js.js')).to.not.exist;
+        expect(_file('app/templates/components/x-foo.js.hbs')).to.not.exist;
+        expect(_file('tests/integration/components/x-foo-test.js.js')).to.not.exist;
+
         expect(_file('app/components/x-foo.js')).to.equal(
           fixture('component/native-component-dash.js')
         );
@@ -625,6 +715,34 @@ describe('Blueprint: component', function() {
       });
     });
 
+    it('component x-foo.js', function() {
+      return emberGenerateDestroy(['component', 'x-foo.js'], _file => {
+        expect(_file('addon/components/x-foo.js.js')).to.not.exist;
+        expect(_file('addon/templates/components/x-foo.js.hbs')).to.not.exist;
+        expect(_file('app/components/x-foo.js.js')).to.not.exist;
+        expect(_file('tests/integration/components/x-foo.js-test.js')).to.not.exist;
+
+        expect(_file('addon/components/x-foo.js')).to.equal(
+          fixture('component/component-addon-dash.js')
+        );
+
+        expect(_file('addon/templates/components/x-foo.hbs')).to.equal('{{yield}}');
+
+        expect(_file('app/components/x-foo.js')).to.contain(
+          "export { default } from 'my-addon/components/x-foo';"
+        );
+
+        expect(_file('tests/integration/components/x-foo-test.js')).to.equal(
+          fixture('component-test/default-template.js', {
+            replace: {
+              component: 'x-foo',
+              componentInvocation: 'XFoo',
+            },
+          })
+        );
+      });
+    });
+
     it('component foo/x-foo', function() {
       return emberGenerateDestroy(['component', 'foo/x-foo'], _file => {
         expect(_file('addon/components/foo/x-foo.js')).to.equal(
@@ -672,6 +790,25 @@ describe('Blueprint: component', function() {
         expect(_file('app/components/foo/x-foo.js')).to.not.exist;
 
         expect(_file('tests/unit/components/foo/x-foo-test.js')).to.not.exist;
+      });
+    });
+
+    it('component x-foo.js --dummy', function() {
+      return emberGenerateDestroy(['component', 'x-foo.js', '--dummy'], _file => {
+        expect(_file('tests/dummy/app/components/x-foo.js.js')).to.not.exist;
+        expect(_file('tests/dummy/app/templates/components/x-foo.js.hbs')).to.not.exist;
+        expect(_file('app/components/x-foo.js.js')).to.not.exist;
+        expect(_file('tests/unit/components/x-foo.js-test.js')).to.not.exist;
+
+        expect(_file('tests/dummy/app/components/x-foo.js')).to.equal(
+          fixture('component/component-addon-dash.js')
+        );
+
+        expect(_file('tests/dummy/app/templates/components/x-foo.hbs')).to.equal('{{yield}}');
+
+        expect(_file('app/components/x-foo.js')).to.not.exist;
+
+        expect(_file('tests/unit/components/x-foo-test.js')).to.not.exist;
       });
     });
 
@@ -755,6 +892,31 @@ describe('Blueprint: component', function() {
       });
     });
 
+    it('component x-foo.js', function() {
+      return emberGenerateDestroy(['component', 'x-foo.js'], _file => {
+        expect(_file('src/ui/components/x-foo.js/component.js')).to.not.exist;
+        expect(_file('src/ui/components/x-foo.js/template.hbs')).to.not.exist;
+        expect(_file('src/ui/components/x-foo.js/component-test.js')).to.not.exist;
+
+        expect(_file('src/ui/components/x-foo/component.js')).to.equal(
+          fixture('component/component-dash.js')
+        );
+
+        expect(_file('src/ui/components/x-foo/template.hbs')).to.equal('{{yield}}');
+
+        expect(_file('src/ui/components/x-foo/component-test.js')).to.equal(
+          fixture('component-test/default-template.js', {
+            replace: {
+              component: 'x-foo',
+              componentInvocation: 'XFoo',
+              path: 'my-addon::',
+              pathInvocation: 'MyAddon::',
+            },
+          })
+        );
+      });
+    });
+
     it('component foo/x-foo', function() {
       return emberGenerateDestroy(['component', 'foo/x-foo'], _file => {
         expect(_file('src/ui/components/foo/x-foo/component.js')).to.equal(
@@ -776,6 +938,23 @@ describe('Blueprint: component', function() {
 
     it('component x-foo --dummy', function() {
       return emberGenerateDestroy(['component', 'x-foo', '--dummy'], _file => {
+        expect(_file('tests/dummy/src/ui/components/x-foo/component.js')).to.equal(
+          fixture('component/component-dash.js')
+        );
+
+        expect(_file('tests/dummy/src/ui/components/x-foo/template.hbs')).to.equal('{{yield}}');
+
+        expect(_file('src/ui/components/x-foo/component.js')).to.not.exist;
+
+        expect(_file('src/ui/components/x-foo/component-test.js')).to.not.exist;
+      });
+    });
+
+    it('component x-foo.js --dummy', function() {
+      return emberGenerateDestroy(['component', 'x-foo.js', '--dummy'], _file => {
+        expect(_file('tests/dummy/src/ui/components/x-foo.js/component.js')).to.not.exist;
+        expect(_file('tests/dummy/src/ui/components/x-foo.js/template.hbs')).to.not.exist;
+
         expect(_file('tests/dummy/src/ui/components/x-foo/component.js')).to.equal(
           fixture('component/component-dash.js')
         );
@@ -869,6 +1048,39 @@ describe('Blueprint: component', function() {
       });
     });
 
+    it('component x-foo.js', function() {
+      return emberGenerateDestroy(['component', 'x-foo.js'], _file => {
+        expect(_file('addon/components/x-foo.js.js')).to.not.exist;
+        expect(_file('addon/templates/components/x-foo.js.hbs')).to.not.exist;
+        expect(_file('app/components/x-foo.js.js')).to.not.exist;
+        expect(_file('app/templates/components/x-foo.js.js')).to.not.exist;
+        expect(_file('tests/integration/components/x-foo.js-test.js')).to.not.exist;
+
+        expect(_file('addon/components/x-foo.js')).to.equal(
+          fixture('component/native-component-dash.js')
+        );
+
+        expect(_file('addon/templates/components/x-foo.hbs')).to.equal('{{yield}}');
+
+        expect(_file('app/components/x-foo.js')).to.contain(
+          "export { default } from 'my-addon/components/x-foo';"
+        );
+
+        expect(_file('app/templates/components/x-foo.js')).to.contain(
+          "export { default } from 'my-addon/templates/components/x-foo';"
+        );
+
+        expect(_file('tests/integration/components/x-foo-test.js')).to.equal(
+          fixture('component-test/default-template.js', {
+            replace: {
+              component: 'x-foo',
+              componentInvocation: 'XFoo',
+            },
+          })
+        );
+      });
+    });
+
     it('component foo/x-foo', function() {
       return emberGenerateDestroy(['component', 'foo/x-foo'], _file => {
         expect(_file('addon/components/foo/x-foo.js')).to.equal(
@@ -897,6 +1109,24 @@ describe('Blueprint: component', function() {
 
     it('component x-foo --dummy', function() {
       return emberGenerateDestroy(['component', 'x-foo', '--dummy'], _file => {
+        expect(_file('tests/dummy/app/components/x-foo.js')).to.equal(
+          fixture('component/native-component-dash.js')
+        );
+
+        expect(_file('tests/dummy/app/templates/components/x-foo.hbs')).to.equal('{{yield}}');
+
+        expect(_file('app/components/x-foo.js')).to.not.exist;
+        expect(_file('app/templates/components/x-foo.js')).to.not.exist;
+
+        expect(_file('tests/integration/components/x-foo-test.js')).to.not.exist;
+      });
+    });
+
+    it('component x-foo.js --dummy', function() {
+      return emberGenerateDestroy(['component', 'x-foo.js', '--dummy'], _file => {
+        expect(_file('tests/dummy/app/components/x-foo.js.js')).to.not.exist;
+        expect(_file('tests/dummy/app/templates/components/x-foo.js.hbs')).to.not.exist;
+
         expect(_file('tests/dummy/app/components/x-foo.js')).to.equal(
           fixture('component/native-component-dash.js')
         );
@@ -984,6 +1214,34 @@ describe('Blueprint: component', function() {
       });
     });
 
+    it('component x-foo.js --in-repo-addon=my-addon', function() {
+      return emberGenerateDestroy(['component', 'x-foo.js', '--in-repo-addon=my-addon'], _file => {
+        expect(_file('lib/my-addon/addon/components/x-foo.js.js')).to.not.exist;
+        expect(_file('lib/my-addon/addon/templates/components/x-foo.js.hbs')).to.not.exist;
+        expect(_file('lib/my-addon/app/components/x-foo.js.js')).to.not.exist;
+        expect(_file('tests/integration/components/x-foo-test.js.js')).to.not.exist;
+
+        expect(_file('lib/my-addon/addon/components/x-foo.js')).to.equal(
+          fixture('component/component-addon-dash.js')
+        );
+
+        expect(_file('lib/my-addon/addon/templates/components/x-foo.hbs')).to.equal('{{yield}}');
+
+        expect(_file('lib/my-addon/app/components/x-foo.js')).to.contain(
+          "export { default } from 'my-addon/components/x-foo';"
+        );
+
+        expect(_file('tests/integration/components/x-foo-test.js')).to.equal(
+          fixture('component-test/default-template.js', {
+            replace: {
+              component: 'x-foo',
+              componentInvocation: 'XFoo',
+            },
+          })
+        );
+      });
+    });
+
     it('component foo/x-foo --in-repo-addon=my-addon', function() {
       return emberGenerateDestroy(['component', 'foo/x-foo', '--in-repo-addon=my-addon'], _file => {
         expect(_file('lib/my-addon/addon/components/foo/x-foo.js')).to.equal(
@@ -1012,6 +1270,37 @@ describe('Blueprint: component', function() {
       return emberGenerateDestroy(
         ['component', 'x-foo', '--in-repo-addon=my-addon', '--pod'],
         _file => {
+          expect(_file('lib/my-addon/addon/components/x-foo/component.js')).to.equal(
+            fixture('component/component-addon-dash-pod.js')
+          );
+
+          expect(_file('lib/my-addon/addon/components/x-foo/template.hbs')).to.equal('{{yield}}');
+
+          expect(_file('lib/my-addon/app/components/x-foo/component.js')).to.contain(
+            "export { default } from 'my-addon/components/x-foo/component';"
+          );
+
+          expect(_file('tests/integration/components/x-foo/component-test.js')).to.equal(
+            fixture('component-test/default-template.js', {
+              replace: {
+                component: 'x-foo',
+                componentInvocation: 'XFoo',
+              },
+            })
+          );
+        }
+      );
+    });
+
+    it('component x-foo.js --in-repo-addon=my-addon --pod', function() {
+      return emberGenerateDestroy(
+        ['component', 'x-foo.js', '--in-repo-addon=my-addon', '--pod'],
+        _file => {
+          expect(_file('lib/my-addon/addon/components/x-foo/component.js.js')).to.not.exist;
+          expect(_file('lib/my-addon/addon/components/x-foo/template.js.hbs')).to.not.exist;
+          expect(_file('lib/my-addon/app/components/x-foo/component.js.js')).to.not.exist;
+          expect(_file('tests/integration/components/x-foo/component-test.js.js')).to.not.exist;
+
           expect(_file('lib/my-addon/addon/components/x-foo/component.js')).to.equal(
             fixture('component/component-addon-dash-pod.js')
           );
@@ -1119,6 +1408,34 @@ describe('Blueprint: component', function() {
         );
       });
     });
+
+    it('component x-foo.js --in-repo-addon=my-addon', function() {
+      return emberGenerateDestroy(['component', 'x-foo.js', '--in-repo-addon=my-addon'], _file => {
+        expect(_file('packages/my-addon/src/ui/components/x-foo/component.js.js')).to.not.exist;
+        expect(_file('packages/my-addon/src/ui/components/x-foo/template.js.hbs')).to.not.exist;
+        expect(_file('packages/my-addon/src/ui/components/x-foo/component-test.js.js')).to.not
+          .exist;
+
+        expect(_file('packages/my-addon/src/ui/components/x-foo/component.js')).to.equal(
+          fixture('component/component-dash.js')
+        );
+
+        expect(_file('packages/my-addon/src/ui/components/x-foo/template.hbs')).to.equal(
+          '{{yield}}'
+        );
+
+        expect(_file('packages/my-addon/src/ui/components/x-foo/component-test.js')).to.equal(
+          fixture('component-test/default-template.js', {
+            replace: {
+              component: 'x-foo',
+              componentInvocation: 'XFoo',
+              path: 'my-addon::',
+              pathInvocation: 'MyAddon::',
+            },
+          })
+        );
+      });
+    });
   });
 
   describe('in in-repo-addon - octane', function() {
@@ -1164,6 +1481,39 @@ describe('Blueprint: component', function() {
 
     it('component x-foo --in-repo-addon=my-addon', function() {
       return emberGenerateDestroy(['component', 'x-foo', '--in-repo-addon=my-addon'], _file => {
+        expect(_file('lib/my-addon/addon/components/x-foo.js')).to.equal(
+          fixture('component/native-component-dash.js')
+        );
+
+        expect(_file('lib/my-addon/addon/templates/components/x-foo.hbs')).to.equal('{{yield}}');
+
+        expect(_file('lib/my-addon/app/components/x-foo.js')).to.contain(
+          "export { default } from 'my-addon/components/x-foo';"
+        );
+
+        expect(_file('lib/my-addon/app/templates/components/x-foo.js')).to.contain(
+          "export { default } from 'my-addon/templates/components/x-foo';"
+        );
+
+        expect(_file('tests/integration/components/x-foo-test.js')).to.equal(
+          fixture('component-test/default-template.js', {
+            replace: {
+              component: 'x-foo',
+              componentInvocation: 'XFoo',
+            },
+          })
+        );
+      });
+    });
+
+    it('component x-foo.js --in-repo-addon=my-addon', function() {
+      return emberGenerateDestroy(['component', 'x-foo.js', '--in-repo-addon=my-addon'], _file => {
+        expect(_file('lib/my-addon/addon/components/x-foo.js.js')).to.not.exist;
+        expect(_file('lib/my-addon/addon/templates/components/x-foo.js.hbs')).to.not.exist;
+        expect(_file('lib/my-addon/app/components/x-foo.js.js')).to.not.exist;
+        expect(_file('lib/my-addon/app/templates/components/x-foo.js.js')).to.not.exist;
+        expect(_file('tests/integration/components/x-foo-test.js.js')).to.not.exist;
+
         expect(_file('lib/my-addon/addon/components/x-foo.js')).to.equal(
           fixture('component/native-component-dash.js')
         );

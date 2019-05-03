@@ -27,4 +27,7 @@ module.exports = useEditionDetector({
       };
     }
   },
+  normalizeEntityName: function(entityName) {
+    return entityName.replace(/\.js$/, ''); //Prevent generation of ".js.js" files
+  },
 });

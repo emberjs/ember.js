@@ -28,4 +28,7 @@ module.exports = {
       };
     }
   },
+  normalizeEntityName: function(entityName) {
+    return entityName.replace(/\.hbs$/, ''); //Prevent generation of ".hbs.hbs" files
+  },
 };

@@ -43,6 +43,19 @@ describe('Blueprint: controller', function() {
       });
     });
 
+    it('controller foo.js', function() {
+      return emberGenerateDestroy(['controller', 'foo.js'], _file => {
+        expect(_file('app/controllers/foo.js.js')).to.not.exist;
+        expect(_file('tests/unit/controllers/foo.js-test.js')).to.not.exist;
+
+        expect(_file('app/controllers/foo.js')).to.equal(fixture('controller/controller.js'));
+
+        expect(_file('tests/unit/controllers/foo-test.js')).to.equal(
+          fixture('controller-test/default.js')
+        );
+      });
+    });
+
     it('controller foo/bar', function() {
       return emberGenerateDestroy(['controller', 'foo/bar'], _file => {
         expect(_file('app/controllers/foo/bar.js')).to.equal(
@@ -57,6 +70,19 @@ describe('Blueprint: controller', function() {
 
     it('controller foo --pod', function() {
       return emberGenerateDestroy(['controller', 'foo', '--pod'], _file => {
+        expect(_file('app/foo/controller.js')).to.equal(fixture('controller/controller.js'));
+
+        expect(_file('tests/unit/foo/controller-test.js')).to.equal(
+          fixture('controller-test/default.js')
+        );
+      });
+    });
+
+    it('controller foo.js --pod', function() {
+      return emberGenerateDestroy(['controller', 'foo.js', '--pod'], _file => {
+        expect(_file('app/foo.js/controller.js')).to.not.exist;
+        expect(_file('tests/unit/foo.js/controller-test.js')).to.not.exist;
+
         expect(_file('app/foo/controller.js')).to.equal(fixture('controller/controller.js'));
 
         expect(_file('tests/unit/foo/controller-test.js')).to.equal(
@@ -84,6 +110,19 @@ describe('Blueprint: controller', function() {
 
       it('controller foo --pod podModulePrefix', function() {
         return emberGenerateDestroy(['controller', 'foo', '--pod'], _file => {
+          expect(_file('app/pods/foo/controller.js')).to.equal(fixture('controller/controller.js'));
+
+          expect(_file('tests/unit/pods/foo/controller-test.js')).to.equal(
+            fixture('controller-test/default.js')
+          );
+        });
+      });
+
+      it('controller foo.js --pod podModulePrefix', function() {
+        return emberGenerateDestroy(['controller', 'foo.js', '--pod'], _file => {
+          expect(_file('app/pods/foo.js/controller.js')).to.not.exist;
+          expect(_file('tests/unit/pods/foo.js/controller-test.js')).to.not.exist;
+
           expect(_file('app/pods/foo/controller.js')).to.equal(fixture('controller/controller.js'));
 
           expect(_file('tests/unit/pods/foo/controller-test.js')).to.equal(
@@ -132,6 +171,24 @@ describe('Blueprint: controller', function() {
       });
     });
 
+    it('controller foo.js', function() {
+      return emberGenerateDestroy(['controller', 'foo.js'], _file => {
+        expect(_file('addon/controllers/foo.js.js')).to.not.exist;
+        expect(_file('app/controllers/foo.js.js')).to.not.exist;
+        expect(_file('tests/unit/controllers/foo.js-test.js')).to.not.exist;
+
+        expect(_file('addon/controllers/foo.js')).to.equal(fixture('controller/controller.js'));
+
+        expect(_file('app/controllers/foo.js')).to.contain(
+          "export { default } from 'my-addon/controllers/foo';"
+        );
+
+        expect(_file('tests/unit/controllers/foo-test.js')).to.equal(
+          fixture('controller-test/default.js')
+        );
+      });
+    });
+
     it('controller foo/bar', function() {
       return emberGenerateDestroy(['controller', 'foo/bar'], _file => {
         expect(_file('addon/controllers/foo/bar.js')).to.equal(
@@ -150,6 +207,20 @@ describe('Blueprint: controller', function() {
 
     it('controller foo --dummy', function() {
       return emberGenerateDestroy(['controller', 'foo', '--dummy'], _file => {
+        expect(_file('tests/dummy/app/controllers/foo.js')).to.equal(
+          fixture('controller/controller.js')
+        );
+
+        expect(_file('app/controllers/foo-test.js')).to.not.exist;
+
+        expect(_file('tests/unit/controllers/foo-test.js')).to.not.exist;
+      });
+    });
+
+    it('controller foo.js --dummy', function() {
+      return emberGenerateDestroy(['controller', 'foo.js', '--dummy'], _file => {
+        expect(_file('tests/dummy/app/controllers/foo.js.js')).to.not.exist;
+
         expect(_file('tests/dummy/app/controllers/foo.js')).to.equal(
           fixture('controller/controller.js')
         );
@@ -189,6 +260,21 @@ describe('Blueprint: controller', function() {
 
     it('controller foo', function() {
       return emberGenerateDestroy(['controller', 'foo'], _file => {
+        expect(_file('src/ui/routes/foo/controller.js')).to.equal(
+          fixture('controller/controller.js')
+        );
+
+        expect(_file('src/ui/routes/foo/controller-test.js')).to.equal(
+          fixture('controller-test/default.js')
+        );
+      });
+    });
+
+    it('controller foo.js', function() {
+      return emberGenerateDestroy(['controller', 'foo.js'], _file => {
+        expect(_file('src/ui/routes/foo.js/controller.js')).to.not.exist;
+        expect(_file('src/ui/routes/foo.js/controller-test.js')).to.not.exist;
+
         expect(_file('src/ui/routes/foo/controller.js')).to.equal(
           fixture('controller/controller.js')
         );
@@ -253,6 +339,23 @@ describe('Blueprint: controller', function() {
       });
     });
 
+    it('controller foo.js', function() {
+      return emberGenerateDestroy(['controller', 'foo.js'], _file => {
+        expect(_file('src/ui/routes/foo.js/controller.js')).to.not.exist;
+        expect(_file('src/ui/routes/foo.js/controller-test.js')).to.not.exist;
+
+        expect(_file('src/ui/routes/foo/controller.js')).to.equal(
+          fixture('controller/controller.js')
+        );
+
+        expect(_file('src/ui/routes/foo/controller-test.js')).to.equal(
+          fixture('controller-test/default.js')
+        );
+
+        expect(_file('app/controllers/foo.js')).to.not.exist;
+      });
+    });
+
     it('controller foo/bar', function() {
       return emberGenerateDestroy(['controller', 'foo/bar'], _file => {
         expect(_file('src/ui/routes/foo/bar/controller.js')).to.equal(
@@ -269,6 +372,20 @@ describe('Blueprint: controller', function() {
 
     it('controller foo --dummy', function() {
       return emberGenerateDestroy(['controller', 'foo', '--dummy'], _file => {
+        expect(_file('tests/dummy/src/ui/routes/foo/controller.js')).to.equal(
+          fixture('controller/controller.js')
+        );
+
+        expect(_file('src/ui/routes/foo/controller.js')).to.not.exist;
+
+        expect(_file('src/ui/routes/foo/controller-test.js')).to.not.exist;
+      });
+    });
+
+    it('controller foo.js --dummy', function() {
+      return emberGenerateDestroy(['controller', 'foo.js', '--dummy'], _file => {
+        expect(_file('tests/dummy/src/ui/routes/foo.js/controller.js')).to.not.exist;
+
         expect(_file('tests/dummy/src/ui/routes/foo/controller.js')).to.equal(
           fixture('controller/controller.js')
         );
@@ -331,6 +448,21 @@ describe('Blueprint: controller', function() {
       });
     });
 
+    it('controller foo.js', function() {
+      return emberGenerateDestroy(['controller', 'foo.js'], _file => {
+        expect(_file('app/controllers/foo.js.js')).to.not.exist;
+        expect(_file('tests/unit/controllers/foo.js-test.js')).to.not.exist;
+
+        expect(_file('app/controllers/foo.js')).to.equal(
+          fixture('controller/native-controller.js')
+        );
+
+        expect(_file('tests/unit/controllers/foo-test.js')).to.equal(
+          fixture('controller-test/default.js')
+        );
+      });
+    });
+
     it('controller foo/bar', function() {
       return emberGenerateDestroy(['controller', 'foo/bar'], _file => {
         expect(_file('app/controllers/foo/bar.js')).to.equal(
@@ -350,6 +482,18 @@ describe('Blueprint: controller', function() {
 
       it('controller foo --pod podModulePrefix', function() {
         return emberGenerateDestroy(['controller', 'foo', '--pod'], _file => {
+          expect(_file('app/pods/foo/controller.js')).to.equal(
+            fixture('controller/native-controller.js')
+          );
+
+          expect(_file('tests/unit/pods/foo/controller-test.js')).to.equal(
+            fixture('controller-test/default.js')
+          );
+        });
+      });
+
+      it('controller foo.js --pod podModulePrefix', function() {
+        return emberGenerateDestroy(['controller', 'foo.js', '--pod'], _file => {
           expect(_file('app/pods/foo/controller.js')).to.equal(
             fixture('controller/native-controller.js')
           );
@@ -392,6 +536,26 @@ describe('Blueprint: controller', function() {
       });
     });
 
+    it('controller foo.js', function() {
+      return emberGenerateDestroy(['controller', 'foo.js'], _file => {
+        expect(_file('addon/controllers/foo.js.js')).to.not.exist;
+        expect(_file('app/controllers/foo.js.js')).to.not.exist;
+        expect(_file('tests/unit/controllers/foo.js-test.js')).to.not.exist;
+
+        expect(_file('addon/controllers/foo.js')).to.equal(
+          fixture('controller/native-controller.js')
+        );
+
+        expect(_file('app/controllers/foo.js')).to.contain(
+          "export { default } from 'my-addon/controllers/foo';"
+        );
+
+        expect(_file('tests/unit/controllers/foo-test.js')).to.equal(
+          fixture('controller-test/default.js')
+        );
+      });
+    });
+
     it('controller foo/bar', function() {
       return emberGenerateDestroy(['controller', 'foo/bar'], _file => {
         expect(_file('addon/controllers/foo/bar.js')).to.equal(
@@ -410,6 +574,20 @@ describe('Blueprint: controller', function() {
 
     it('controller foo --dummy', function() {
       return emberGenerateDestroy(['controller', 'foo', '--dummy'], _file => {
+        expect(_file('tests/dummy/app/controllers/foo.js')).to.equal(
+          fixture('controller/native-controller.js')
+        );
+
+        expect(_file('app/controllers/foo-test.js')).to.not.exist;
+
+        expect(_file('tests/unit/controllers/foo-test.js')).to.not.exist;
+      });
+    });
+
+    it('controller foo.js --dummy', function() {
+      return emberGenerateDestroy(['controller', 'foo.js', '--dummy'], _file => {
+        expect(_file('tests/dummy/app/controllers/foo.js.js')).to.not.exist;
+
         expect(_file('tests/dummy/app/controllers/foo.js')).to.equal(
           fixture('controller/native-controller.js')
         );
@@ -447,6 +625,26 @@ describe('Blueprint: controller', function() {
 
     it('controller foo --in-repo-addon=my-addon', function() {
       return emberGenerateDestroy(['controller', 'foo', '--in-repo-addon=my-addon'], _file => {
+        expect(_file('lib/my-addon/addon/controllers/foo.js')).to.equal(
+          fixture('controller/controller.js')
+        );
+
+        expect(_file('lib/my-addon/app/controllers/foo.js')).to.contain(
+          "export { default } from 'my-addon/controllers/foo';"
+        );
+
+        expect(_file('tests/unit/controllers/foo-test.js')).to.equal(
+          fixture('controller-test/default.js')
+        );
+      });
+    });
+
+    it('controller foo.js --in-repo-addon=my-addon', function() {
+      return emberGenerateDestroy(['controller', 'foo.js', '--in-repo-addon=my-addon'], _file => {
+        expect(_file('lib/my-addon/addon/controllers/foo.js.js')).to.not.exist;
+        expect(_file('lib/my-addon/app/controllers/foo.js.js')).to.not.exist;
+        expect(_file('tests/unit/controllers/foo.js-test.js')).to.not.exist;
+
         expect(_file('lib/my-addon/addon/controllers/foo.js')).to.equal(
           fixture('controller/controller.js')
         );

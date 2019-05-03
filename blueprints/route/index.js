@@ -140,6 +140,9 @@ module.exports = useEditionDetector({
   afterUninstall: function(options) {
     updateRouter.call(this, 'remove', options);
   },
+  normalizeEntityName: function(entityName) {
+    return entityName.replace(/\.js$/, ''); //Prevent generation of ".js.js" files
+  },
 });
 
 function updateRouter(action, options) {

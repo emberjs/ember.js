@@ -39,6 +39,18 @@ describe('Blueprint: helper', function() {
       });
     });
 
+    it('helper foo/bar-baz.js', function() {
+      return emberGenerateDestroy(['helper', 'foo/bar-baz.js'], _file => {
+        expect(_file('app/helpers/foo/bar-baz.js.js')).to.not.exist;
+        expect(_file('tests/integration/helpers/foo/bar-baz.js-test.js')).to.not.exist;
+
+        expect(_file('app/helpers/foo/bar-baz.js')).to.equal(fixture('helper/helper.js'));
+        expect(_file('tests/integration/helpers/foo/bar-baz-test.js')).to.equal(
+          fixture('helper-test/integration.js')
+        );
+      });
+    });
+
     it('helper foo/bar-baz unit', function() {
       return emberGenerateDestroy(['helper', '--test-type=unit', 'foo/bar-baz'], _file => {
         expect(_file('app/helpers/foo/bar-baz.js')).to.equal(fixture('helper/helper.js'));
@@ -57,8 +69,11 @@ describe('Blueprint: helper', function() {
       });
     });
 
-    it('helper foo/bar-baz --pod', function() {
-      return emberGenerateDestroy(['helper', 'foo/bar-baz', '--pod'], _file => {
+    it('helper foo/bar-baz.js --pod', function() {
+      return emberGenerateDestroy(['helper', 'foo/bar-baz.js', '--pod'], _file => {
+        expect(_file('app/helpers/foo/bar-baz.js.js')).to.not.exist;
+        expect(_file('tests/integration/helpers/foo/bar-baz.js-test.js')).to.not.exist;
+
         expect(_file('app/helpers/foo/bar-baz.js')).to.equal(fixture('helper/helper.js'));
         expect(_file('tests/integration/helpers/foo/bar-baz-test.js')).to.equal(
           fixture('helper-test/integration.js')
@@ -80,8 +95,11 @@ describe('Blueprint: helper', function() {
         });
       });
 
-      it('helper foo/bar-baz --pod', function() {
-        return emberGenerateDestroy(['helper', 'foo/bar-baz', '--pod'], _file => {
+      it('helper foo/bar-baz.js --pod', function() {
+        return emberGenerateDestroy(['helper', 'foo/bar-baz.js', '--pod'], _file => {
+          expect(_file('app/helpers/foo/bar-baz.js.js')).to.not.exist;
+          expect(_file('tests/integration/helpers/foo/bar-baz.js-test.js')).to.not.exist;
+
           expect(_file('app/helpers/foo/bar-baz.js')).to.equal(fixture('helper/helper.js'));
           expect(_file('tests/integration/helpers/foo/bar-baz-test.js')).to.equal(
             fixture('helper-test/integration.js')
@@ -106,6 +124,18 @@ describe('Blueprint: helper', function() {
 
     it('helper foo/bar-baz', function() {
       return emberGenerateDestroy(['helper', 'foo/bar-baz'], _file => {
+        expect(_file('src/ui/components/foo/bar-baz.js')).to.equal(fixture('helper/mu-helper.js'));
+        expect(_file('src/ui/components/foo/bar-baz-test.js')).to.equal(
+          fixture('helper-test/integration.js')
+        );
+      });
+    });
+
+    it('helper foo/bar-baz.js', function() {
+      return emberGenerateDestroy(['helper', 'foo/bar-baz.js'], _file => {
+        expect(_file('src/ui/components/foo/bar-baz.js.js')).to.not.exist;
+        expect(_file('src/ui/components/foo/bar-baz.js-test.js')).to.not.exist;
+
         expect(_file('src/ui/components/foo/bar-baz.js')).to.equal(fixture('helper/mu-helper.js'));
         expect(_file('src/ui/components/foo/bar-baz-test.js')).to.equal(
           fixture('helper-test/integration.js')
@@ -144,8 +174,34 @@ describe('Blueprint: helper', function() {
       });
     });
 
+    it('helper foo/bar-baz.js', function() {
+      return emberGenerateDestroy(['helper', 'foo/bar-baz.js'], _file => {
+        expect(_file('addon/helpers/foo/bar-baz.js.js')).to.not.exist;
+        expect(_file('app/helpers/foo/bar-baz.js.js')).to.not.exist;
+        expect(_file('tests/integration/helpers/foo/bar-baz.js-test.js')).to.not.exist;
+
+        expect(_file('addon/helpers/foo/bar-baz.js')).to.equal(fixture('helper/helper.js'));
+        expect(_file('app/helpers/foo/bar-baz.js')).to.equal(fixture('helper/helper-addon.js'));
+        expect(_file('tests/integration/helpers/foo/bar-baz-test.js')).to.equal(
+          fixture('helper-test/integration.js')
+        );
+      });
+    });
+
     it('helper foo/bar-baz --dummy', function() {
       return emberGenerateDestroy(['helper', 'foo/bar-baz', '--dummy'], _file => {
+        expect(_file('tests/dummy/app/helpers/foo/bar-baz.js')).to.equal(
+          fixture('helper/helper.js')
+        );
+        expect(_file('app/helpers/foo/bar-baz.js')).to.not.exist;
+        expect(_file('tests/integration/helpers/foo/bar-baz-test.js')).to.not.exist;
+      });
+    });
+
+    it('helper foo/bar-baz.js --dummy', function() {
+      return emberGenerateDestroy(['helper', 'foo/bar-baz.js', '--dummy'], _file => {
+        expect(_file('tests/dummy/app/helpers/foo/bar-baz.js.js')).to.not.exist;
+
         expect(_file('tests/dummy/app/helpers/foo/bar-baz.js')).to.equal(
           fixture('helper/helper.js')
         );
@@ -186,8 +242,31 @@ describe('Blueprint: helper', function() {
       });
     });
 
+    it('helper foo/bar-baz.js unit', function() {
+      return emberGenerateDestroy(['helper', '--test-type=unit', 'foo/bar-baz'], _file => {
+        expect(_file('src/ui/components/foo/bar-baz.js.js')).to.not.exist;
+        expect(_file('src/ui/components/foo/bar-baz.js-test.js')).to.not.exist;
+
+        expect(_file('src/ui/components/foo/bar-baz.js')).to.equal(fixture('helper/mu-helper.js'));
+        expect(_file('src/ui/components/foo/bar-baz-test.js')).to.equal(
+          fixture('helper-test/module-unification/addon-unit.js')
+        );
+      });
+    });
+
     it('helper foo/bar-baz --dummy', function() {
       return emberGenerateDestroy(['helper', 'foo/bar-baz', '--dummy'], _file => {
+        expect(_file('tests/dummy/src/ui/components/foo/bar-baz.js')).to.equal(
+          fixture('helper/mu-helper.js')
+        );
+        expect(_file('src/ui/components/foo/bar-baz.js')).to.not.exist;
+      });
+    });
+
+    it('helper foo/bar-baz.js --dummy', function() {
+      return emberGenerateDestroy(['helper', 'foo/bar-baz.js', '--dummy'], _file => {
+        expect(_file('tests/dummy/src/ui/components/foo/bar-baz.js.js')).to.not.exist;
+
         expect(_file('tests/dummy/src/ui/components/foo/bar-baz.js')).to.equal(
           fixture('helper/mu-helper.js')
         );
@@ -220,6 +299,27 @@ describe('Blueprint: helper', function() {
         );
       });
     });
+
+    it('helper foo/bar-baz.js --in-repo-addon=my-addon', function() {
+      return emberGenerateDestroy(
+        ['helper', 'foo/bar-baz.js', '--in-repo-addon=my-addon'],
+        _file => {
+          expect(_file('lib/my-addon/addon/helpers/foo/bar-baz.js.js')).to.not.exist;
+          expect(_file('lib/my-addon/app/helpers/foo/bar-baz.js.js')).to.not.exist;
+          expect(_file('tests/integration/helpers/foo/bar-baz.js-test.js')).to.not.exist;
+
+          expect(_file('lib/my-addon/addon/helpers/foo/bar-baz.js')).to.equal(
+            fixture('helper/helper.js')
+          );
+          expect(_file('lib/my-addon/app/helpers/foo/bar-baz.js')).to.equal(
+            fixture('helper/helper-addon.js')
+          );
+          expect(_file('tests/integration/helpers/foo/bar-baz-test.js')).to.equal(
+            fixture('helper-test/integration.js')
+          );
+        }
+      );
+    });
   });
 
   describe('in in-repo-addon - module unification', function() {
@@ -244,6 +344,23 @@ describe('Blueprint: helper', function() {
           fixture('helper-test/integration.js')
         );
       });
+    });
+
+    it('helper foo/bar-baz.js --in-repo-addon=my-addon', function() {
+      return emberGenerateDestroy(
+        ['helper', 'foo/bar-baz.js', '--in-repo-addon=my-addon'],
+        _file => {
+          expect(_file('packages/my-addon/src/ui/components/foo/bar-baz.js.js')).to.not.exist;
+          expect(_file('packages/my-addon/src/ui/components/foo/bar-baz.js-test.js')).to.not.exist;
+
+          expect(_file('packages/my-addon/src/ui/components/foo/bar-baz.js')).to.equal(
+            fixture('helper/mu-helper.js')
+          );
+          expect(_file('packages/my-addon/src/ui/components/foo/bar-baz-test.js')).to.equal(
+            fixture('helper-test/integration.js')
+          );
+        }
+      );
     });
 
     it('helper foo/bar-baz unit --in-repo-addon=my-addon', function() {
