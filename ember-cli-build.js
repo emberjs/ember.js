@@ -278,7 +278,7 @@ function buildBundles(packagesES, dependenciesES, templateCompilerDependenciesES
   return new MergeTrees(
     [
       emberProdBundle,
-      emberMinBundle,
+      process.env.DISABLE_MINIFICATION !== '1' && emberMinBundle,
       emberProdTestsBundle,
       buildBundle('ember.debug.js', emberDebugFiles, vendor),
       buildBundle('ember-tests.js', emberTestsFiles, vendor),
