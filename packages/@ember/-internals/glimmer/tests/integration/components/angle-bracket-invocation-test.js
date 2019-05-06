@@ -1209,6 +1209,13 @@ moduleFor(
       this.assertHTML('<div id="top"></div>');
     }
 
+    '@test angle bracket invocation can allow invocation side to override attributes with ...attributes on input'() {
+      this.registerComponent('my-input', '<input type="text" ...attributes >');
+
+      this.render('<MyInput type="password" />');
+      this.assertHTML('<input type="password">');
+    }
+
     '@test angle bracket invocation can override invocation side attributes with ...attributes'() {
       this.registerComponent('qux', '<div ...attributes id="qux" />');
       this.registerComponent('bar', '<Qux ...attributes id="bar" />');
