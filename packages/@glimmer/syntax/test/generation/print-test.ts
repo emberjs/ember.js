@@ -141,6 +141,18 @@ test('Void elements self closing', function() {
   printEqual('<br />');
 });
 
+test('Angle bracket component', function() {
+  printEqual('<Foo>{{bar}}</Foo>');
+});
+
+test('Angle bracket component without content', function() {
+  printEqual('<Foo></Foo>');
+});
+
+test('Self-closing angle bracket component', function() {
+  printEqual('<Foo />');
+});
+
 test('Block params', function() {
   printEqual('<Foo as |bar|>{{bar}}</Foo>');
 });
