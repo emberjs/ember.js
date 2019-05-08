@@ -48,6 +48,8 @@ export default function build(ast: AST.Node): string {
         }
 
         output.push('>');
+      } else if (ast.selfClosing) {
+        output.push(' />');
       } else {
         output.push('>');
         output.push.apply(output, buildEach(ast.children));
