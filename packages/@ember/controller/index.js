@@ -1,5 +1,6 @@
-import { Object as EmberObject } from '@ember/-internals/runtime';
+import { FrameworkObject, setFrameworkClass } from '@ember/-internals/runtime';
 import { inject as metalInject } from '@ember/-internals/metal';
+import { EMBER_FRAMEWORK_OBJECT_OWNER_ARGUMENT } from '@ember/canary-features';
 import ControllerMixin from './lib/controller_mixin';
 
 /**
@@ -12,7 +13,11 @@ import ControllerMixin from './lib/controller_mixin';
   @uses Ember.ControllerMixin
   @public
 */
-const Controller = EmberObject.extend(ControllerMixin);
+const Controller = FrameworkObject.extend(ControllerMixin);
+
+if (EMBER_FRAMEWORK_OBJECT_OWNER_ARGUMENT) {
+  setFrameworkClass(Controller);
+}
 
 /**
   Creates a property that lazily looks up another controller in the container.

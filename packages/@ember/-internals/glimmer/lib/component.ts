@@ -1,6 +1,6 @@
 import { get, PROPERTY_DID_CHANGE } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
-import { TargetActionSupport } from '@ember/-internals/runtime';
+import { setFrameworkClass, TargetActionSupport } from '@ember/-internals/runtime';
 import { symbol } from '@ember/-internals/utils';
 import {
   ActionSupport,
@@ -16,6 +16,7 @@ import { DEBUG } from '@glimmer/env';
 import { DirtyableTag } from '@glimmer/reference';
 import { normalizeProperty, SVG_NAMESPACE } from '@glimmer/runtime';
 
+import { EMBER_FRAMEWORK_OBJECT_OWNER_ARGUMENT } from '@ember/canary-features';
 import { RootReference, UPDATE } from './utils/references';
 
 export const DIRTY_TAG = symbol('DIRTY_TAG');
@@ -1085,5 +1086,9 @@ Component.reopenClass({
   isComponentFactory: true,
   positionalParams: [],
 });
+
+if (EMBER_FRAMEWORK_OBJECT_OWNER_ARGUMENT) {
+  setFrameworkClass(Component);
+}
 
 export default Component;

@@ -11,6 +11,7 @@ export function deprecatingAlias(
 ): any;
 
 export const FrameworkObject: any;
+export function setFrameworkClass<T>(klass: new () => T): void;
 export const Object: any;
 
 export function _contentFor(proxy: any): any;

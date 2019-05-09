@@ -1,5 +1,5 @@
 import { get } from '@ember/-internals/metal';
-import { Owner } from '@ember/-internals/owner';
+import { Factory, Owner } from '@ember/-internals/owner';
 import { info } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 /**
@@ -14,7 +14,7 @@ import { DEBUG } from '@glimmer/env';
   @private
 */
 
-export function generateControllerFactory(owner: Owner, controllerName: string) {
+export function generateControllerFactory(owner: Owner, controllerName: string): Factory<{}> {
   let Factory = owner.factoryFor<any, any>('controller:basic')!.class!;
 
   Factory = Factory.extend({
@@ -27,7 +27,7 @@ export function generateControllerFactory(owner: Owner, controllerName: string) 
 
   owner.register(fullName, Factory);
 
-  return Factory;
+  return owner.factoryFor(fullName) as Factory<{}>;
 }
 
 /**

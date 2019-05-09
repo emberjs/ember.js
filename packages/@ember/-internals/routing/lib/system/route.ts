@@ -14,9 +14,11 @@ import {
   ActionHandler,
   Evented,
   Object as EmberObject,
+  setFrameworkClass,
   typeOf,
 } from '@ember/-internals/runtime';
 import {
+  EMBER_FRAMEWORK_OBJECT_OWNER_ARGUMENT,
   EMBER_METAL_TRACKED_PROPERTIES,
   EMBER_ROUTING_BUILD_ROUTEINFO_METADATA,
 } from '@ember/canary-features';
@@ -2625,6 +2627,10 @@ if (EMBER_ROUTING_BUILD_ROUTEINFO_METADATA) {
      */
     buildRouteInfoMetadata() {},
   });
+}
+
+if (EMBER_FRAMEWORK_OBJECT_OWNER_ARGUMENT) {
+  setFrameworkClass(Route);
 }
 
 export default Route;
