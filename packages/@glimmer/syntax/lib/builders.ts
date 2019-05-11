@@ -457,12 +457,14 @@ function buildProgram(
 function buildBlockItself(
   body?: AST.Statement[],
   blockParams?: string[],
+  chained = false,
   loc?: AST.SourceLocation
 ): AST.Block {
   return {
     type: 'Block',
     body: body || [],
     blockParams: blockParams || [],
+    chained,
     loc: buildLoc(loc || null),
   };
 }
