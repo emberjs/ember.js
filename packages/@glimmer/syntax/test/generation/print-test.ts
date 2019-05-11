@@ -1,4 +1,4 @@
-import { preprocess as parse, print, AST } from '@glimmer/syntax';
+import { preprocess as parse, print } from '@glimmer/syntax';
 
 const { test } = QUnit;
 
@@ -15,6 +15,7 @@ let templates = [
   '<p>{{my-component submit=(action (mut model.name) (full-name model.firstName "Smith"))}}</p>',
   '<ul>{{#each foos as |foo index|}}\n  <li>{{foo}}: {{index}}</li>\n{{/each}}</ul>',
   '{{#if foo}}<p>{{foo}}</p>{{/if}}',
+  '{{#if foo}}Foo{{else if bar}}Bar{{else}}Baz{{/if}}',
   '<Foo>{{bar}}</Foo>',
   '<Foo></Foo>',
   '<Foo />',
@@ -71,15 +72,6 @@ QUnit.module('[glimmer-syntax] Code generation', function() {
 
   test('Handlebars comment', assert => {
     assert.equal(printTransform('{{! foo }}'), '{{!-- foo --}}');
-  });
-
-  test('BlockStatement: chained', function(assert) {
-    let ast = parse('{{#if foo}}Foo{{else if bar}}Bar{{else}}Baz{{/if}}');
-
-    // adjust the AST manually because the parser does not set `chained` yet
-    (ast.body[0] as AST.BlockStatement).inverse!.chained = true;
-
-    assert.equal(print(ast), '{{#if foo}}Foo{{else if bar}}Bar{{else}}Baz{{/if}}');
   });
 });
 
