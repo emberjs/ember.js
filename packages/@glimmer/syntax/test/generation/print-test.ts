@@ -1,4 +1,4 @@
-import { preprocess as parse, print } from '@glimmer/syntax';
+import { preprocess as parse, print, AST } from '@glimmer/syntax';
 
 const { test } = QUnit;
 
@@ -71,6 +71,15 @@ QUnit.module('[glimmer-syntax] Code generation', function() {
 
   test('Handlebars comment', assert => {
     assert.equal(printTransform('{{! foo }}'), '{{!-- foo --}}');
+  });
+
+  test('BlockStatement: chained', function(assert) {
+    let ast = parse('{{#if foo}}Foo{{else if bar}}Bar{{else}}Baz{{/if}}');
+
+    // adjust the AST manually because the parser does not set `chained` yet
+    (ast.body[0] as AST.BlockStatement).inverse!.chained = true;
+
+    assert.equal(print(ast), '{{#if foo}}Foo{{else if bar}}Bar{{else}}Baz{{/if}}');
   });
 });
 
