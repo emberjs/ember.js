@@ -27,6 +27,12 @@ let packages = globSync('dist/@glimmer/*/', { cwd });
 
 packages.forEach(link);
 
+console.log('\nIn your project...\n')
+packages.forEach(dir => {
+  let name = dir.replace(/^dist\//, '').replace(/\/$/, '');
+  console.log(`${chalk.blue('yarn link')} ${name}`);
+});
+
 function link(dir) {
   try {
     let stat = fs.statSync(dir);
