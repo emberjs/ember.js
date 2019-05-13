@@ -212,7 +212,7 @@ test('Simple embedded block helpers', function() {
         b.path('if'),
         [b.path('foo')],
         b.hash(),
-        b.program([b.element('div', ['body', b.mustache(b.path('content'))])])
+        b.blockItself([b.element('div', ['body', b.mustache(b.path('content'))])])
       ),
     ])
   );
@@ -230,7 +230,7 @@ test('Involved block helper', function() {
         b.path('testing'),
         [b.path('shouldRender')],
         b.hash(),
-        b.program([b.element('p', ['body', b.text('Appears!')])])
+        b.blockItself([b.element('p', ['body', b.text('Appears!')])])
       ),
       b.text(' more '),
       b.element('em', ['body', b.text('content')]),
@@ -291,13 +291,21 @@ test('Stripping - blocks', function() {
   let t = 'foo {{~#wat}}{{/wat}} bar';
   astEqual(
     t,
-    b.program([b.text('foo'), b.block(b.path('wat'), [], b.hash(), b.program()), b.text(' bar')])
+    b.program([
+      b.text('foo'),
+      b.block(b.path('wat'), [], b.hash(), b.blockItself()),
+      b.text(' bar'),
+    ])
   );
 
   t = 'foo {{#wat}}{{/wat~}} bar';
   astEqual(
     t,
-    b.program([b.text('foo '), b.block(b.path('wat'), [], b.hash(), b.program()), b.text('bar')])
+    b.program([
+      b.text('foo '),
+      b.block(b.path('wat'), [], b.hash(), b.blockItself()),
+      b.text('bar'),
+    ])
   );
 });
 
@@ -305,25 +313,33 @@ test('Stripping - programs', function() {
   let t = '{{#wat~}} foo {{else}}{{/wat}}';
   astEqual(
     t,
-    b.program([b.block(b.path('wat'), [], b.hash(), b.program([b.text('foo ')]), b.program())])
+    b.program([
+      b.block(b.path('wat'), [], b.hash(), b.blockItself([b.text('foo ')]), b.blockItself()),
+    ])
   );
 
   t = '{{#wat}} foo {{~else}}{{/wat}}';
   astEqual(
     t,
-    b.program([b.block(b.path('wat'), [], b.hash(), b.program([b.text(' foo')]), b.program())])
+    b.program([
+      b.block(b.path('wat'), [], b.hash(), b.blockItself([b.text(' foo')]), b.blockItself()),
+    ])
   );
 
   t = '{{#wat}}{{else~}} foo {{/wat}}';
   astEqual(
     t,
-    b.program([b.block(b.path('wat'), [], b.hash(), b.program(), b.program([b.text('foo ')]))])
+    b.program([
+      b.block(b.path('wat'), [], b.hash(), b.blockItself(), b.blockItself([b.text('foo ')])),
+    ])
   );
 
   t = '{{#wat}}{{else}} foo {{~/wat}}';
   astEqual(
     t,
-    b.program([b.block(b.path('wat'), [], b.hash(), b.program(), b.program([b.text(' foo')]))])
+    b.program([
+      b.block(b.path('wat'), [], b.hash(), b.blockItself(), b.blockItself([b.text(' foo')])),
+    ])
   );
 });
 
@@ -337,7 +353,7 @@ test('Stripping - removes unnecessary text nodes', function() {
         b.path('each'),
         [],
         b.hash(),
-        b.program([b.element('li', ['body', b.text(' foo ')])]),
+        b.blockItself([b.element('li', ['body', b.text(' foo ')])]),
         null
       ),
     ])
@@ -354,7 +370,7 @@ test('Whitespace control - linebreaks after blocks removed by default', function
         b.path('each'),
         [],
         b.hash(),
-        b.program([b.text('  '), b.element('li', ['body', b.text(' foo ')]), b.text('\n')]),
+        b.blockItself([b.text('  '), b.element('li', ['body', b.text(' foo ')]), b.text('\n')]),
         null
       ),
     ])
@@ -371,7 +387,7 @@ test('Whitespace control - preserve all whitespace if config is set', function()
         b.path('each'),
         [],
         b.hash(),
-        b.program([b.text('\n  '), b.element('li', ['body', b.text(' foo ')]), b.text('\n')]),
+        b.blockItself([b.text('\n  '), b.element('li', ['body', b.text(' foo ')]), b.text('\n')]),
         null
       ),
     ]),
