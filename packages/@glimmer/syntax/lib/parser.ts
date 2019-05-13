@@ -8,8 +8,6 @@ import * as HBS from './types/handlebars-ast';
 import { Option } from '@glimmer/interfaces';
 import { assert, expect } from '@glimmer/util';
 
-const entityParser = new EntityParser(namedCharRefs);
-
 export type Element = AST.Template | AST.Block | AST.ElementNode;
 
 export interface Tag<T extends 'StartTag' | 'EndTag'> {
@@ -39,10 +37,11 @@ export abstract class Parser {
   public currentNode: Option<
     AST.CommentStatement | AST.TextNode | Tag<'StartTag' | 'EndTag'>
   > = null;
-  public tokenizer = new EventedTokenizer(this, entityParser);
+  public tokenizer: EventedTokenizer;
 
-  constructor(source: string) {
+  constructor(source: string, entityParser = new EntityParser(namedCharRefs)) {
     this.source = source.split(/(?:\r\n?|\n)/g);
+    this.tokenizer = new EventedTokenizer(this, entityParser);
   }
 
   abstract Program(node: HBS.Program): HBS.Output<'Program'>;

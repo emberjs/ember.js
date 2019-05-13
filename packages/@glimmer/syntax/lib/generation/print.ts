@@ -7,10 +7,63 @@ function unreachable(): never {
   throw new Error('unreachable');
 }
 
-export default function build(ast: AST.Node): string {
+interface PrinterOptions {
+  entityEncoding: 'transformed' | 'raw';
+}
+
+export default function build(
+  ast: AST.Node,
+  options: PrinterOptions = { entityEncoding: 'transformed' }
+): string {
   if (!ast) {
     return '';
   }
+
+  function buildEach(asts: AST.Node[]): string[] {
+    return asts.map(node => build(node, options));
+  }
+
+  function pathParams(ast: AST.Node): string {
+    let path: string;
+
+    switch (ast.type) {
+      case 'MustacheStatement':
+      case 'SubExpression':
+      case 'ElementModifierStatement':
+      case 'BlockStatement':
+        path = build(ast.path, options);
+        break;
+      case 'PartialStatement':
+        path = build(ast.name, options);
+        break;
+      default:
+        return unreachable();
+    }
+
+    return compactJoin([path, buildEach(ast.params).join(' '), build(ast.hash, options)], ' ');
+  }
+
+  function compactJoin(array: Option<string>[], delimiter?: string): string {
+    return compact(array).join(delimiter || '');
+  }
+
+  function blockParams(block: AST.BlockStatement): Option<string> {
+    const params = block.program.blockParams;
+    if (params.length) {
+      return ` as |${params.join(' ')}|`;
+    }
+
+    return null;
+  }
+
+  function openBlock(block: AST.BlockStatement): string {
+    return ['{{#', pathParams(block), blockParams(block), '}}'].join('');
+  }
+
+  function closeBlock(block: any): string {
+    return ['{{/', build(block.path, options), '}}'].join('');
+  }
+
   const output: string[] = [];
 
   switch (ast.type) {
@@ -60,29 +113,33 @@ export default function build(ast: AST.Node): string {
       if (ast.value.type === 'TextNode') {
         if (ast.value.chars !== '') {
           output.push(ast.name, '=');
-          output.push('"', escapeAttrValue(ast.value.chars), '"');
+          output.push(
+            '"',
+            options.entityEncoding === 'raw' ? ast.value.chars : escapeAttrValue(ast.value.chars),
+            '"'
+          );
         } else {
           output.push(ast.name);
         }
       } else {
         output.push(ast.name, '=');
         // ast.value is mustache or concat
-        output.push(build(ast.value));
+        output.push(build(ast.value, options));
       }
       break;
     case 'ConcatStatement':
       output.push('"');
       ast.parts.forEach((node: AST.TextNode | AST.MustacheStatement) => {
         if (node.type === 'TextNode') {
-          output.push(escapeAttrValue(node.chars));
+          output.push(options.entityEncoding === 'raw' ? node.chars : escapeAttrValue(node.chars));
         } else {
-          output.push(build(node));
+          output.push(build(node, options));
         }
       });
       output.push('"');
       break;
     case 'TextNode':
-      output.push(escapeText(ast.chars));
+      output.push(options.entityEncoding === 'raw' ? ast.chars : escapeText(ast.chars));
       break;
     case 'MustacheStatement':
       {
@@ -120,13 +177,13 @@ export default function build(ast: AST.Node): string {
           lines.push(openBlock(ast));
         }
 
-        lines.push(build(ast.program));
+        lines.push(build(ast.program, options));
 
         if (ast.inverse) {
           if (!ast.inverse.chained) {
             lines.push('{{else}}');
           }
-          lines.push(build(ast.inverse));
+          lines.push(build(ast.inverse, options));
         }
 
         if (!ast.chained) {
@@ -171,7 +228,7 @@ export default function build(ast: AST.Node): string {
         output.push(
           ast.pairs
             .map(pair => {
-              return build(pair);
+              return build(pair, options);
             })
             .join(' ')
         );
@@ -179,7 +236,7 @@ export default function build(ast: AST.Node): string {
       break;
     case 'HashPair':
       {
-        output.push(`${ast.key}=${build(ast.value)}`);
+        output.push(`${ast.key}=${build(ast.value, options)}`);
       }
       break;
   }
@@ -194,49 +251,4 @@ function compact(array: Option<string>[]): string[] {
     }
   });
   return newArray;
-}
-
-function buildEach(asts: AST.Node[]): string[] {
-  return asts.map(build);
-}
-
-function pathParams(ast: AST.Node): string {
-  let path: string;
-
-  switch (ast.type) {
-    case 'MustacheStatement':
-    case 'SubExpression':
-    case 'ElementModifierStatement':
-    case 'BlockStatement':
-      path = build(ast.path);
-      break;
-    case 'PartialStatement':
-      path = build(ast.name);
-      break;
-    default:
-      return unreachable();
-  }
-
-  return compactJoin([path, buildEach(ast.params).join(' '), build(ast.hash)], ' ');
-}
-
-function compactJoin(array: Option<string>[], delimiter?: string): string {
-  return compact(array).join(delimiter || '');
-}
-
-function blockParams(block: AST.BlockStatement): Option<string> {
-  const params = block.program.blockParams;
-  if (params.length) {
-    return ` as |${params.join(' ')}|`;
-  }
-
-  return null;
-}
-
-function openBlock(block: AST.BlockStatement): string {
-  return ['{{#', pathParams(block), blockParams(block), '}}'].join('');
-}
-
-function closeBlock(block: any): string {
-  return ['{{/', build(block.path), '}}'].join('');
 }
