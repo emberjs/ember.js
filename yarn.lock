@@ -8011,10 +8011,10 @@ testem-failure-only-reporter@^0.0.1:
   dependencies:
     testem "^2.9.2"
 
-testem@^2.14.0, testem@^2.15.1, testem@^2.9.2:
-  version "2.15.1"
-  resolved "https://registry.yarnpkg.com/testem/-/testem-2.15.1.tgz#8e00a28c13719a8ac1bd4a78dd129e3ad4177055"
-  integrity sha512-fPo7pmTsF15zbb7/Jf7HB5foc3M6qKU7iCCJPAMkZswRzMpSGtTVtMAfUS4UOEKvWWNocnChz8wliGWMlJ2zDg==
+testem@^2.14.0, testem@^2.16.0, testem@^2.9.2:
+  version "2.16.0"
+  resolved "https://registry.yarnpkg.com/testem/-/testem-2.16.0.tgz#da2682f3e02459212b8670b88f9d7cd4d4b0aebb"
+  integrity sha512-yDuRp2f1wP1/1kCtSNzowHxPvtHBhJpSPQUy1py9LtFrZUliJQfUHU8402Ac6C4l9KOb5I+heMMVWRyYdPOu4g==
   dependencies:
     backbone "^1.1.2"
     bluebird "^3.4.6"
