@@ -1,5 +1,23 @@
 # Changelog
 
+## v0.40.2 (2019-05-13)
+
+#### :bug: Bug Fix
+* `@glimmer/syntax`
+  * [#941](https://github.com/glimmerjs/glimmer-vm/pull/941) Fix printer support for self-closing angle bracket component invocations ([@Turbo87](https://github.com/Turbo87))
+  * [#932](https://github.com/glimmerjs/glimmer-vm/pull/932) Fix printing of MustacheStatement with literal path ([@ef4](https://github.com/ef4))
+
+#### :house: Internal
+* `@glimmer/runtime`
+  * [#943](https://github.com/glimmerjs/glimmer-vm/pull/943) Remove redundant "this" ([@2hu12](https://github.com/2hu12))
+
+#### Committers: 4
+- 2hu ([@2hu12](https://github.com/2hu12))
+- Edward Faulkner ([@ef4](https://github.com/ef4))
+- Robert Jackson ([@rwjblue](https://github.com/rwjblue))
+- Tobias Bieniek ([@Turbo87](https://github.com/Turbo87))
+
+
 ## v0.40.1 (2019-04-16)
 
 #### :rocket: Enhancement
