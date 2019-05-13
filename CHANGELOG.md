@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.41.0 (2019-05-13)
+
+#### :boom: Breaking Change
+* `@glimmer/syntax`
+  * [#942](https://github.com/glimmerjs/glimmer-vm/pull/942) Add support for `chained` inverse blocks ([@Turbo87](https://github.com/Turbo87))
+
+#### :house: Internal
+* [#927](https://github.com/glimmerjs/glimmer-vm/pull/927) Update yarn-link-all script to print out commands to run in project ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+
+#### Committers: 2
+- L. Preston Sego III ([@NullVoxPopuli](https://github.com/NullVoxPopuli))
+- Tobias Bieniek ([@Turbo87](https://github.com/Turbo87))
+
+
 ## v0.40.2 (2019-05-13)
 
 #### :bug: Bug Fix
