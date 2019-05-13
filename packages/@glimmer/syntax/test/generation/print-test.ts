@@ -15,6 +15,7 @@ let templates = [
   '<p>{{my-component submit=(action (mut model.name) (full-name model.firstName "Smith"))}}</p>',
   '<ul>{{#each foos as |foo index|}}\n  <li>{{foo}}: {{index}}</li>\n{{/each}}</ul>',
   '{{#if foo}}<p>{{foo}}</p>{{/if}}',
+  '{{#if foo}}Foo{{else if bar}}Bar{{else}}Baz{{/if}}',
   '<Foo>{{bar}}</Foo>',
   '<Foo></Foo>',
   '<Foo />',

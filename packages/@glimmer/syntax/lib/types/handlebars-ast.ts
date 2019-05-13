@@ -51,6 +51,7 @@ export interface Program extends CommonNode {
   type: 'Program';
   body: Statement[];
   blockParams: string[];
+  chained?: boolean;
 }
 
 export type Statement =
