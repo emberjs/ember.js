@@ -61,7 +61,7 @@ export default class UpdatingVM {
       let opcode = this.frame.nextStatement();
 
       if (opcode === null) {
-        this.frameStack.pop();
+        frameStack.pop();
         continue;
       }
 
