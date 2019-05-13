@@ -2,6 +2,7 @@ import { EMBER_GLIMMER_ON_MODIFIER } from '@ember/canary-features';
 import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 import { isChrome, isFirefox } from '@ember/-internals/browser-environment';
 import { privatize as P } from '@ember/-internals/container';
+import { HAS_NATIVE_PROXY } from '@ember/-internals/utils';
 
 const isIE11 = !window.ActiveXObject && 'ActiveXObject' in window;
 
@@ -320,12 +321,23 @@ if (EMBER_GLIMMER_ON_MODIFIER) {
         }, /You must pass a function as the second argument to the `on` modifier/);
       }
 
-      '@test asserts if the provided callback accesses `this` without being bound prior to passing to on'() {
+      '@test asserts if the provided callback accesses `this` without being bound prior to passing to on'(
+        assert
+      ) {
         this.render(`<button {{on 'click' this.myFunc}}>Click Me</button>`, {
           myFunc() {
-            expectAssertion(() => {
-              this.arg1;
-            }, /You accessed `this.arg1` from a function passed to the `on` modifier, but the function itself was not bound to a valid `this` context. Consider updating to usage of `@action`./);
+            if (HAS_NATIVE_PROXY) {
+              expectAssertion(() => {
+                this.arg1;
+              }, /You accessed `this.arg1` from a function passed to the `on` modifier, but the function itself was not bound to a valid `this` context. Consider updating to usage of `@action`./);
+            } else {
+              // IE11
+              assert.strictEqual(
+                this,
+                null,
+                'this is null on browsers without native proxy support'
+              );
+            }
           },
 
           arg1: 'foo',
