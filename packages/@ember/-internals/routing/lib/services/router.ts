@@ -46,7 +46,7 @@ function cleanURL(url: string, rootURL: string) {
 
      actions: {
        next() {
-         this.get('router').transitionTo('other.route');
+         this.router.transitionTo('other.route');
        }
      }
    });
