@@ -1,5 +1,18 @@
 # Ember Changelog
 
+### v3.11.0-beta.1 (May 13, 2019)
+
+- [#17842](https://github.com/emberjs/ember.js/pull/17842) / [#17901](https://github.com/emberjs/ember.js/pull/17901) [FEATURE] Implement the [Forwarding Element Modifiers with "Splattributes" RFC](https://github.com/emberjs/rfcs/blob/master/text/0435-modifier-splattributes.md).
+- [#17941](https://github.com/emberjs/ember.js/pull/17941) / [#17961](https://github.com/emberjs/ember.js/pull/17961) [FEATURE] Implement the [{{fn}} rfc](https://github.com/emberjs/rfcs/blob/master/text/0470-fn-helper.md).
+- [#17960](https://github.com/emberjs/ember.js/pull/17960) [FEATURE] Implement the [{{on}} modifier RFC](https://github.com/emberjs/rfcs/blob/master/text/0471-on-modifier.md)
+- [#17858](https://github.com/emberjs/ember.js/pull/17858) [FEATURE] Implement the [Inject Parameter Normalization RFC](https://github.com/emberjs/rfcs/blob/master/text/0451-injection-parameter-normalization.md).
+- [#17910](https://github.com/emberjs/ember.js/pull/17910) [DEPRECATION] Add deprecation for Function.prototype extensions. 
+- [#17845](https://github.com/emberjs/ember.js/pull/17845) [CLEANUP] Removes various deprecated APIs
+- [#17843](https://github.com/emberjs/ember.js/pull/17843) [CLEANUP] Remove deprecated intimate apis in the router
+- [#17940](https://github.com/emberjs/ember.js/pull/17940) [CLEANUP] Remove `sync` queue from @ember/runloop.
+- [#18026](https://github.com/emberjs/ember.js/pull/18026) Enabling featured discussed in 2019-05-03 core team meeting.
+
+
 ### v3.10.0 (May 13, 2019)
 
 - [#17836](https://github.com/emberjs/ember.js/pull/17836) [BREAKING] Explicitly drop support for Node 6
