@@ -151,7 +151,7 @@
     "lodash.uniq": "^4.5.0",
     "mkdirp": "^0.5.1",
     "mocha": "^6.1.4",
-    "prettier": "1.16.4",
+    "prettier": "1.17.1",
     "puppeteer": "^1.16.0",
     "qunit": "^2.9.2",
     "rollup-plugin-commonjs": "^9.3.4",
