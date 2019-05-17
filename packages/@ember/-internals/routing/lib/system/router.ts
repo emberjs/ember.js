@@ -14,6 +14,7 @@ import Route, {
   defaultSerialize,
   hasDefaultSerialize,
   RenderOptions,
+  ROUTE_CONNECTIONS,
   ROUTER_EVENT_DEPRECATIONS,
 } from './route';
 import RouterState from './router_state';
@@ -441,7 +442,7 @@ class EmberRouter extends EmberObject {
 
     for (let i = 0; i < routeInfos.length; i++) {
       route = routeInfos[i].route;
-      let connections = route!.connections;
+      let connections = ROUTE_CONNECTIONS.get(route!);
       let ownState: OutletState;
       for (let j = 0; j < connections.length; j++) {
         let appended = appendLiveRoute(liveRoutes!, defaultParentState!, connections[j]);
