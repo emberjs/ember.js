@@ -43,9 +43,9 @@ export default Mixin.create({
     The object whose properties will be forwarded.
 
     @property content
-    @type EmberObject
+    @type {unknown}
     @default null
-    @private
+    @public
   */
   content: null,
 
