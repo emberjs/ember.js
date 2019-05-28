@@ -24,6 +24,7 @@ function updatePackageJSONVersion() {
   let pkgContents = fs.readFileSync(packageJSONPath, { encoding: 'utf-8' });
   let pkg = JSON.parse(pkgContents);
   if (!pkg._originalVersion) {
+    SPRINTS TESTING
     pkg._originalVersion = pkg.version;
   }
   pkg._versionPreviouslyCalculated = true;
