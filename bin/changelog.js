@@ -6,7 +6,7 @@
 
 /*
  * This script generates the template a changelog by comparing a current version
- * with master. Run this, copy what's logged into the `CHANGELOG.md` and update
+ * with master. Run this, copy what's logged into thevbvb fvfhfh `CHANGELOG.md` and update
  * the top section based on the changes listed in "Community Contributions"
  *
  * Usage:
