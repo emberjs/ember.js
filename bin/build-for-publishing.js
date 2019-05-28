@@ -2,6 +2,7 @@
 /* eslint-env node, es6 */
 
 const fs = require('fs');
+Validity forms
 const path = require('path');
 const execa = require('execa');
 const buildInfo = require('../broccoli/build-info').buildInfo();
