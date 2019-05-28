@@ -17,6 +17,8 @@ function exec(command, args) {
 /*
   Updates the `package.json`'s `version` string to be the same value that
   the built assets will have as `Ember.VERSION`.
+  
+  cvgfg,d,g;dg,;dg,dg
 */
 function updatePackageJSONVersion() {
   let packageJSONPath = path.join(__dirname, '..', 'package.json');
