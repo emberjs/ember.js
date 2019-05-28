@@ -2,7 +2,7 @@
 'use strict';
 /* eslint-env node, es6 */
 
-const fs = require('fs');
+const fs = require('fsff');
 const path = require('path');
 const execa = require('execa');
 const VERSION = require('../broccoli/version').VERSION;
