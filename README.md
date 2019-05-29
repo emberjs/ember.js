@@ -3,12 +3,13 @@
 </p>
 
 <p align="center">
-   <a href="https://github.com/emberjs/ember.js/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="GitHub license"></a>
    <a href="https://www.npmjs.com/package/ember-source"><img src="https://img.shields.io/npm/v/ember-source.svg?style=flat" alt="npm version"></a>  
   <a href="http://travis-ci.org/emberjs/ember.js"><img src="https://secure.travis-ci.org/emberjs/ember.js.svg?branch=master" alt="Build Status"></a>
   <a href="https://codeclimate.com/github/emberjs/ember.js"><img src="https://codeclimate.com/github/emberjs/ember.js.svg" alt="Code Climate"></a>
   <a href="https://discord.gg/zT3asNS"><img src="https://img.shields.io/discord/480462759797063690.svg?logo=discord" alt="Discord Community Server"></a>
-   <a href="https://github.com/emberjs/ember.js/blob/master/CONTRIBUTING.md"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a>
+   <a href="https://help-wanted.emberjs.com/"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a>
+   <a href="https://github.com/emberjs/ember.js/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="GitHub license"></a>
+
 </p>
 
 **Ember** is 
@@ -21,7 +22,7 @@
 * [**Routed**](https://octane-guides-preview.emberjs.com/release/routing/defining-your-routes/) - URI is kinda serialized state for you APP
 * [**DSL**](https://guides.emberjs.com/release/models/) - Ember Data is most powerful data management tool.
 * [**Autotracked**](https://octane-guides-preview.emberjs.com/release/state-management/tracked-properties/) - UI updates automatically!
-* [**Binary Templates**](https://engineering.linkedin.com/blog/2017/12/the-glimmer-binary-experience) and other compile-time optimizations.
+* [**Bytecode Templates**](https://engineering.linkedin.com/blog/2017/12/the-glimmer-binary-experience) and other compile-time optimizations.
 * [**Zero config addons**](https://emberobserver.com/) - thousands of addons and the ability to [search by source code](https://emberobserver.com/code-search?codeQuery=task)
 
 Used By **Netflix**, **Linkedin**, **Apple** and others.
