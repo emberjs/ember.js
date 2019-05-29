@@ -3,15 +3,26 @@
 </p>
 
 <p align="center">
+   <a href="https://github.com/emberjs/ember.js/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="GitHub license"></a>
+   <a href="https://www.npmjs.com/package/ember-source"><img src="https://img.shields.io/npm/v/ember-source.svg?style=flat" alt="npm version"></a>  
   <a href="http://travis-ci.org/emberjs/ember.js"><img src="https://secure.travis-ci.org/emberjs/ember.js.svg?branch=master" alt="Build Status"></a>
   <a href="https://codeclimate.com/github/emberjs/ember.js"><img src="https://codeclimate.com/github/emberjs/ember.js.svg" alt="Code Climate"></a>
   <a href="https://discord.gg/zT3asNS"><img src="https://img.shields.io/discord/480462759797063690.svg?logo=discord" alt="Discord Community Server"></a>
 </p>
 
-Ember.js is a JavaScript framework that greatly reduces the time, effort and resources needed
-to build any web application. It is focused on making you, the developer, as productive as possible by doing all the common, repetitive, yet essential, tasks involved in most web development projects.
+**Ember** is 
 
-Ember.js also provides access to the most advanced features of JavaScript, HTML and the Browser giving you everything you need to create your next killer web app.
+* [**Immortal**](https://en.wikipedia.org/wiki/Ember.js) - bulding amazing apps with bleeding edge technologies 8+ years.
+* [**Stable & Secure**](https://emberjs.com/releases/) - LTS Releases, 30 weeks of security fixes
+* [**Modern**](https://blog.emberjs.com/2019/02/11/coming-soon-in-ember-octane-part-1.html) - Classes, Decorators, optional TypeScript, Generators
+* [**Documented**](https://guides.emberjs.com) - We have amazing documentation for each Ember version
+* [**Component-Based**](https://octane-guides-preview.emberjs.com/release/components/component-basics/) - Any HTML is valid component!
+* [**Routed**](https://octane-guides-preview.emberjs.com/release/routing/defining-your-routes/) - URI is kinda serialized state for you APP
+* [**Atotracked**](https://octane-guides-preview.emberjs.com/release/state-management/tracked-properties/) - UI updates automatically!
+* [**Binary Templates**](https://engineering.linkedin.com/blog/2017/12/the-glimmer-binary-experience) and other compile-time optimizations.
+
+Used By **Netflix**, **Linkedin**, **Apple** and others.
+
 
 - [Website](https://emberjs.com)
 - [Guides](https://guides.emberjs.com)
