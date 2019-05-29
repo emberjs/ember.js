@@ -20,6 +20,7 @@
 * [**Routed**](https://octane-guides-preview.emberjs.com/release/routing/defining-your-routes/) - URI is kinda serialized state for you APP
 * [**Autotracked **](https://octane-guides-preview.emberjs.com/release/state-management/tracked-properties/) - UI updates automatically!
 * [**Binary Templates**](https://engineering.linkedin.com/blog/2017/12/the-glimmer-binary-experience) and other compile-time optimizations.
+* [**Zero config addons**](https://emberobserver.com/) - thousands of addons and the ability to [search by source code](https://emberobserver.com/code-search?codeQuery=task)
 
 Used By **Netflix**, **Linkedin**, **Apple** and others.
 
