@@ -18,7 +18,7 @@
 * [**Documented**](https://guides.emberjs.com) - We have amazing documentation for each Ember version
 * [**Component-Based**](https://octane-guides-preview.emberjs.com/release/components/component-basics/) - Any HTML is valid component!
 * [**Routed**](https://octane-guides-preview.emberjs.com/release/routing/defining-your-routes/) - URI is kinda serialized state for you APP
-* [**Atotracked**](https://octane-guides-preview.emberjs.com/release/state-management/tracked-properties/) - UI updates automatically!
+* [**Autotracked **](https://octane-guides-preview.emberjs.com/release/state-management/tracked-properties/) - UI updates automatically!
 * [**Binary Templates**](https://engineering.linkedin.com/blog/2017/12/the-glimmer-binary-experience) and other compile-time optimizations.
 
 Used By **Netflix**, **Linkedin**, **Apple** and others.
