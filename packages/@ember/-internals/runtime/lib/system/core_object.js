@@ -145,7 +145,7 @@ function initialize(obj, properties) {
 
     if (observerEvents !== undefined) {
       for (let i = 0; i < observerEvents.length; i++) {
-        activateObserver(obj, observerEvents[i]);
+        activateObserver(obj, observerEvents[i].event, observerEvents[i].sync);
       }
     }
   } else {

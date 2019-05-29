@@ -76,6 +76,7 @@ interface StringListener {
   target: null;
   method: string;
   kind: ListenerKind.ADD | ListenerKind.ONCE | ListenerKind.REMOVE;
+  sync: boolean;
 }
 
 interface FunctionListener {
@@ -83,6 +84,7 @@ interface FunctionListener {
   target: object | null;
   method: Function;
   kind: ListenerKind.ADD | ListenerKind.ONCE | ListenerKind.REMOVE;
+  sync: boolean;
 }
 
 type Listener = StringListener | FunctionListener;
@@ -528,13 +530,14 @@ export class Meta {
     eventName: string,
     target: object | null,
     method: Function | string,
-    once: boolean
+    once: boolean,
+    sync: boolean
   ) {
     if (DEBUG) {
       counters!.addToListenersCalls++;
     }
 
-    this.pushListener(eventName, target, method, once ? ListenerKind.ONCE : ListenerKind.ADD);
+    this.pushListener(eventName, target, method, once ? ListenerKind.ONCE : ListenerKind.ADD, sync);
   }
 
   removeFromListeners(eventName: string, target: object | null, method: Function | string): void {
@@ -549,7 +552,8 @@ export class Meta {
     event: string,
     target: object | null,
     method: Function | string,
-    kind: ListenerKind.ADD | ListenerKind.ONCE | ListenerKind.REMOVE
+    kind: ListenerKind.ADD | ListenerKind.ONCE | ListenerKind.REMOVE,
+    sync = false
   ): void {
     let listeners = this.writableListeners();
 
@@ -585,9 +589,11 @@ export class Meta {
         target,
         method,
         kind,
+        sync,
       } as Listener);
     } else {
       let listener = listeners[i];
+
       // If the listener is our own function listener and we are trying to
       // remove it, we want to splice it out entirely so we don't hold onto a
       // reference.
@@ -598,8 +604,20 @@ export class Meta {
       ) {
         listeners.splice(i, 1);
       } else {
+        assert(
+          `You attempted to add an observer for the same method on '${
+            event.split(':')[0]
+          }' twice to ${target} as both sync and async. Observers must be either sync or async, they cannot be both. This is likely a mistake, you should either remove the code that added the observer a second time, or update it to always be sync or async. The method was ${method}.`,
+          !(
+            listener.kind === ListenerKind.ADD &&
+            kind === ListenerKind.ADD &&
+            listener.sync !== sync
+          )
+        );
+
         // update own listener
         listener.kind = kind;
+        listener.sync = sync;
       }
     }
   }
@@ -761,7 +779,7 @@ export class Meta {
             result = [] as any[];
           }
 
-          result.push(listener.event);
+          result.push(listener);
         }
       }
     }

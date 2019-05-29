@@ -17,7 +17,7 @@ export function finishLazyChains(obj: any, key: string, value: any) {
   }
 
   if (value === null || (typeof value !== 'object' && typeof value !== 'function')) {
-    lazyTags.clear();
+    lazyTags.length = 0;
     return;
   }
 

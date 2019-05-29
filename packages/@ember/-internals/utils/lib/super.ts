@@ -38,10 +38,8 @@ function hasSuper(func: Function) {
 
 const OBSERVERS_MAP = new WeakMap();
 
-export function setObservers(func: Function, observers?: string[]) {
-  if (observers) {
-    OBSERVERS_MAP.set(func, observers);
-  }
+export function setObservers(func: Function, observers: { paths: string[]; sync: boolean }) {
+  OBSERVERS_MAP.set(func, observers);
 }
 
 export function getObservers(func: Function) {
