@@ -178,3 +178,38 @@ moduleFor(
     }
   }
 );
+
+moduleFor(
+  'Rendering test: non-interactive custom modifiers',
+  class extends RenderingTestCase {
+    getBootOptions() {
+      return { isInteractive: false };
+    }
+
+    [`@test doesn't trigger lifecycle hooks when non-interactive`](assert) {
+      let ModifierClass = setModifierManager(
+        owner => {
+          return new CustomModifierManager(owner);
+        },
+        EmberObject.extend({
+          didInsertElement() {
+            assert.ok(false);
+          },
+          didUpdate() {
+            assert.ok(false);
+          },
+          willDestroyElement() {
+            assert.ok(false);
+          },
+        })
+      );
+
+      this.registerModifier('foo-bar', ModifierClass);
+
+      this.render('<h1 {{foo-bar baz}}>hello world</h1>');
+      runTask(() => this.context.set('baz', 'Hello'));
+
+      this.assertHTML('<h1>hello world</h1>');
+    }
+  }
+);
