@@ -4,6 +4,8 @@ import { isChrome, isFirefox } from '@ember/-internals/browser-environment';
 import { privatize as P } from '@ember/-internals/container';
 import { HAS_NATIVE_PROXY } from '@ember/-internals/utils';
 
+import { Component } from '../../utils/helpers';
+
 const isIE11 = !window.ActiveXObject && 'ActiveXObject' in window;
 
 if (EMBER_GLIMMER_ON_MODIFIER) {
@@ -376,6 +378,65 @@ if (EMBER_GLIMMER_ON_MODIFIER) {
         runTask(() => this.context.set('showButton', false));
 
         this.assertCounts({ adds: 1, removes: 1 });
+      }
+    }
+  );
+
+  moduleFor(
+    'Rendering test: non-interactive `on` modifier',
+    class extends RenderingTestCase {
+      getBootOptions() {
+        return { isInteractive: false };
+      }
+
+      beforeEach() {
+        // might error if getOnManagerInstance fails
+        this.startingCounters = this.getOnManagerInstance().counters;
+      }
+
+      getOnManagerInstance() {
+        // leveraging private APIs, this can be deleted if these APIs change
+        // but it has been useful to verify some internal details
+        let templateCompiler = this.owner.lookup(P`template-compiler:main`);
+
+        return templateCompiler.resolver.resolver.builtInModifiers.on.manager;
+      }
+
+      assertCounts(expected) {
+        let { counters } = this.getOnManagerInstance();
+
+        this.assert.deepEqual(
+          counters,
+          {
+            adds: expected.adds + this.startingCounters.adds,
+            removes: expected.removes + this.startingCounters.removes,
+          },
+          `counters have incremented by ${JSON.stringify(expected)}`
+        );
+      }
+
+      [`@test doesn't trigger lifecycle hooks when non-interactive`](assert) {
+        this.registerComponent('foo-bar2', {
+          ComponentClass: Component.extend({
+            tagName: '',
+            fire() {
+              assert.ok(false);
+            },
+          }),
+          template: `<button {{on 'click' this.fire}}>Fire!</button>`,
+        });
+
+        this.render('{{#if this.showButton}}<FooBar2 />{{/if}}', {
+          showButton: true,
+        });
+        this.assertHTML('<button>Fire!</button>');
+        this.assertCounts({ adds: 0, removes: 0 });
+
+        this.$('button').click();
+
+        runTask(() => this.context.set('showButton', false));
+
+        this.assertCounts({ adds: 0, removes: 0 });
       }
     }
   );
