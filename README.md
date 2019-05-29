@@ -22,7 +22,7 @@
 * [**Routed**](https://octane-guides-preview.emberjs.com/release/routing/defining-your-routes/) - URI is kinda serialized state for you APP
 * [**DSL**](https://guides.emberjs.com/release/models/) - Ember Data is most powerful data management tool.
 * [**Autotracked**](https://octane-guides-preview.emberjs.com/release/state-management/tracked-properties/) - UI updates automatically!
-* [**Bytecode Templates**](https://engineering.linkedin.com/blog/2017/12/the-glimmer-binary-experience) and other compile-time optimizations.
+* [**Bytecode Templates**](https://yehudakatz.com/2017/04/05/the-glimmer-vm-boots-fast-and-stays-fast/) and other compile-time optimizations.
 * [**Zero config addons**](https://emberobserver.com/) - thousands of addons and the ability to [search by source code](https://emberobserver.com/code-search?codeQuery=task)
 
 Used By [**Netflix**](https://github.com/Netflix?utf8=%E2%9C%93&q=ember&type=&language=), [**Linkedin**](https://engineering.linkedin.com/blog/topic/ember), [**Apple**](http://builtwithember.io/featured/2015/07/04/apple-music/), [**Hashicorp**](https://github.com/hashicorp/vault), [**Travis CI**](https://github.com/travis-ci/travis-web), [**DigitalOcean**](http://builtwithember.io/2018/02/08/digital-ocean/), [**Percy**](https://github.com/percy/percy-web) and [others](http://builtwithember.io/).
