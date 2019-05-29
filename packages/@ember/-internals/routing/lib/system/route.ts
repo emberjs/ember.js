@@ -1,7 +1,6 @@
 import {
   computed,
   defineProperty,
-  flushInvalidActiveObservers,
   get,
   getProperties,
   isEmpty,
@@ -19,7 +18,6 @@ import {
 } from '@ember/-internals/runtime';
 import {
   EMBER_FRAMEWORK_OBJECT_OWNER_ARGUMENT,
-  EMBER_METAL_TRACKED_PROPERTIES,
   EMBER_ROUTING_BUILD_ROUTEINFO_METADATA,
 } from '@ember/canary-features';
 import { assert, deprecate, info, isTesting } from '@ember/debug';
@@ -364,13 +362,6 @@ class Route extends EmberObject implements IRoute {
     controller._qpDelegate = get(this, '_qp.states.inactive');
 
     this.resetController(controller, isExiting, transition);
-
-    // TODO: Once tags are enabled by default, we should refactor QP changes to
-    // use autotracking. This will likely be a large refactor, and for now we
-    // just need to trigger observers eagerly.
-    if (EMBER_METAL_TRACKED_PROPERTIES) {
-      flushInvalidActiveObservers(false);
-    }
   }
 
   /**
@@ -953,13 +944,6 @@ class Route extends EmberObject implements IRoute {
 
     if (this._environment.options.shouldRender) {
       this.renderTemplate(controller, context);
-    }
-
-    // TODO: Once tags are enabled by default, we should refactor QP changes to
-    // use autotracking. This will likely be a large refactor, and for now we
-    // just need to trigger observers eagerly.
-    if (EMBER_METAL_TRACKED_PROPERTIES) {
-      flushInvalidActiveObservers(false);
     }
   }
 

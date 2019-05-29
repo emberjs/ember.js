@@ -113,6 +113,20 @@ export const ENV = {
   _JQUERY_INTEGRATION: true,
 
   /**
+    Whether the app defaults to using async observers.
+
+    This is not intended to be set directly, as the implementation may change in
+    the future. Use `@ember/optional-features` instead.
+
+    @property _DEFAULT_ASYNC_OBSERVERS
+    @for EmberENV
+    @type Boolean
+    @default false
+    @private
+  */
+  _DEFAULT_ASYNC_OBSERVERS: false,
+
+  /**
     Controls the maximum number of scheduled rerenders without "settling". In general,
     applications should not need to modify this environment variable, but please
     open an issue so that we can determine if a better default value is needed.

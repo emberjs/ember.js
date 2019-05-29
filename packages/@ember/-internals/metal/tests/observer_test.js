@@ -35,7 +35,31 @@ moduleFor(
 
       expectAssertion(() => {
         observer(null);
+      }, 'observer must be provided a function or an observer definition');
+
+      expectAssertion(() => {
+        observer({});
       }, 'observer called without a function');
+
+      expectAssertion(() => {
+        observer({
+          fn() {},
+        });
+      }, 'observer called without valid path');
+
+      expectAssertion(() => {
+        observer({
+          fn() {},
+          dependentKeys: [],
+        });
+      }, 'observer called without valid path');
+
+      expectAssertion(() => {
+        observer({
+          fn() {},
+          dependentKeys: ['foo'],
+        });
+      }, 'observer called without sync');
     }
 
     async ['@test observer should fire when property is modified'](assert) {
@@ -343,16 +367,12 @@ moduleFor(
         fooCount++;
       });
 
-      if (!EMBER_METAL_TRACKED_PROPERTIES) {
-        beginPropertyChanges();
-      }
+      beginPropertyChanges();
 
       set(obj, 'foo', 'BIFF');
       set(obj, 'foo', 'BAZ');
 
-      if (!EMBER_METAL_TRACKED_PROPERTIES) {
-        endPropertyChanges();
-      }
+      endPropertyChanges();
 
       await runLoopSettled();
 

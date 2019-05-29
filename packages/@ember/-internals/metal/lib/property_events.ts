@@ -5,6 +5,7 @@ import { DEBUG } from '@glimmer/env';
 import changeEvent from './change_event';
 import { descriptorForProperty } from './descriptor_map';
 import { sendEvent } from './events';
+import { flushSyncObservers } from './observer';
 import ObserverSet from './observer_set';
 import { markObjectAsDirty } from './tags';
 import { assertNotRendered } from './transaction';
@@ -59,6 +60,10 @@ function notifyPropertyChange(obj: object, keyName: string, _meta?: Meta | null)
 
   if (meta !== null) {
     markObjectAsDirty(obj, keyName, meta);
+  }
+
+  if (EMBER_METAL_TRACKED_PROPERTIES && deferred <= 0) {
+    flushSyncObservers();
   }
 
   if (PROPERTY_DID_CHANGE in obj) {
@@ -153,7 +158,11 @@ function beginPropertyChanges(): void {
 function endPropertyChanges(): void {
   deferred--;
   if (deferred <= 0) {
-    observerSet.flush();
+    if (EMBER_METAL_TRACKED_PROPERTIES) {
+      flushSyncObservers();
+    } else {
+      observerSet.flush();
+    }
   }
 }
 

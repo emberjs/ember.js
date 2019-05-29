@@ -30,6 +30,7 @@ import {
   isClassicDecorator,
 } from './descriptor_map';
 import expandProperties from './expand_properties';
+import { setObserverSuspended } from './observer';
 import { defineProperty } from './properties';
 import { notifyPropertyChange } from './property_events';
 import { set } from './property_set';
@@ -667,7 +668,19 @@ export class ComputedProperty extends ComputedDescriptor {
     let hadCachedValue = cache.has(keyName);
     let cachedValue = cache.get(keyName);
 
-    let ret = this._setter!.call(obj, keyName, value, cachedValue);
+    let ret;
+
+    if (EMBER_METAL_TRACKED_PROPERTIES) {
+      setObserverSuspended(obj, keyName, true);
+
+      try {
+        ret = this._setter!.call(obj, keyName, value, cachedValue);
+      } finally {
+        setObserverSuspended(obj, keyName, false);
+      }
+    } else {
+      ret = this._setter!.call(obj, keyName, value, cachedValue);
+    }
 
     // allows setter to return the same value that is cached already
     if (hadCachedValue && cachedValue === ret) {

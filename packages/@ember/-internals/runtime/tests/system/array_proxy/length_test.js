@@ -168,15 +168,15 @@ moduleFor(
         e: observer('colors.content.[]', () => eCalled++),
       }).create();
 
+      // bootstrap aliases
+      obj.length;
+
       obj.set(
         'model',
         ArrayProxy.create({
           content: a(['red', 'yellow', 'blue']),
         })
       );
-
-      // bootstrap aliases
-      obj.length;
 
       await runLoopSettled();
 
