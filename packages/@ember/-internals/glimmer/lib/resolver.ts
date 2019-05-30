@@ -1,6 +1,6 @@
 import { privatize as P } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
-import { LookupOptions, Owner, setOwner } from '@ember/-internals/owner';
+import { FactoryClass, LookupOptions, Owner } from '@ember/-internals/owner';
 import { lookupComponent, lookupPartial, OwnedTemplateMeta } from '@ember/-internals/views';
 import {
   EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS,
@@ -49,7 +49,6 @@ import OnModifierManager from './modifiers/on';
 import { populateMacros } from './syntax';
 import { mountHelper } from './syntax/mount';
 import { outletHelper } from './syntax/outlet';
-import { Factory as TemplateFactory, Injections, OwnedTemplate } from './template';
 import { getModifierManager } from './utils/custom-modifier-manager';
 import { getManager } from './utils/managers';
 import { ClassBasedHelperReference, SimpleHelperReference } from './utils/references';
@@ -114,13 +113,9 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
 
   private builtInModifiers: IBuiltInModifiers;
 
-  // supports directly imported late bound layouts on component.prototype.layout
-  private templateCache: Map<Owner, Map<TemplateFactory, OwnedTemplate>> = new Map();
   private componentDefinitionCache: Map<object, ComponentDefinition | null> = new Map();
   private customManagerCache: Map<string, ManagerDelegate<Opaque>> = new Map();
 
-  public templateCacheHits = 0;
-  public templateCacheMisses = 0;
   public componentDefinitionCount = 0;
   public helperDefinitionCount = 0;
 
@@ -213,34 +208,6 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
 
   // end CompileTimeLookup
 
-  /**
-   * Creates a template with injections from a directly imported template factory.
-   * @param templateFactory the directly imported template factory.
-   * @param owner the owner the template instance would belong to if resolved
-   */
-  createTemplate(factory: TemplateFactory, owner: Owner): OwnedTemplate {
-    let cache = this.templateCache.get(owner);
-    let template;
-    if (cache === undefined) {
-      cache = new Map();
-      this.templateCache.set(owner, cache);
-    } else {
-      template = cache.get(factory);
-    }
-
-    if (template === undefined) {
-      const { compiler } = this;
-      const injections: Injections = { compiler };
-      setOwner(injections, owner);
-      template = factory.create(injections);
-      cache.set(factory, template);
-      this.templateCacheMisses++;
-    } else {
-      this.templateCacheHits++;
-    }
-    return template;
-  }
-
   // needed for lazy compile time lookup
   private handle(obj: Opaque) {
     if (obj === undefined || obj === null) {
@@ -290,13 +257,10 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
   }
 
   private _lookupPartial(name: string, meta: OwnedTemplateMeta): PartialDefinition {
-    const template = lookupPartial(name, meta.owner);
+    let templateFactory = lookupPartial(name, meta.owner);
+    let template = templateFactory(meta.owner);
 
-    if (template) {
-      return new PartialDefinition(name, template);
-    } else {
-      throw new Error(`${name} is not a partial`);
-    }
+    return new PartialDefinition(name, template);
   }
 
   private _lookupModifier(name: string, meta: OwnedTemplateMeta) {
@@ -304,7 +268,7 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
 
     if (builtin === undefined) {
       let { owner } = meta;
-      let modifier = owner.factoryFor(`modifier:${name}`);
+      let modifier = owner.factoryFor<unknown, FactoryClass>(`modifier:${name}`);
       if (modifier !== undefined) {
         let managerFactory = getModifierManager<ModifierManagerDelegate<Opaque>>(modifier.class);
         let manager = managerFactory!(owner);
@@ -367,13 +331,13 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
     let definition: Option<ComponentDefinition> = null;
 
     if (layout !== undefined && component === undefined && ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
-      definition = new TemplateOnlyComponentDefinition(layout);
+      definition = new TemplateOnlyComponentDefinition(layout(owner));
     }
 
     if (component !== undefined && component.class !== undefined) {
       let wrapper = getManager(component.class);
 
-      if (wrapper && wrapper.type === 'component') {
+      if (wrapper !== null && wrapper.type === 'component') {
         let { factory } = wrapper;
 
         if (wrapper.internal) {
@@ -382,14 +346,18 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
           definition = new InternalComponentDefinition(
             factory(owner) as InternalComponentManager<Opaque>,
             component.class,
-            layout!
+            layout!(owner)
           );
         } else {
+          if (layout === undefined) {
+            layout = owner.lookup(P`template:components/-default`);
+          }
+
           definition = new CustomManagerDefinition(
             name,
             component,
             factory(owner) as ManagerDelegate<Opaque>,
-            layout || owner.lookup<OwnedTemplate>(P`template:components/-default`)
+            layout!(owner)
           );
         }
       }
@@ -400,7 +368,7 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
         name,
         component || owner.factoryFor(P`component:-default`),
         null,
-        layout! // TODO fix type
+        layout !== undefined ? layout(owner) : undefined
       );
     }
 

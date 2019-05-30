@@ -55,7 +55,7 @@ export function setupApplicationRegistry(registry: Registry) {
   registry.injection('service:-dom-builder', 'bootOptions', '-environment:main');
   registry.injection('renderer', 'builder', 'service:-dom-builder');
 
-  registry.register(P`template:-root`, RootTemplate);
+  registry.register(P`template:-root`, RootTemplate as any);
   registry.injection('renderer', 'rootTemplate', P`template:-root`);
 
   registry.register('renderer:-dom', InteractiveRenderer);
@@ -80,21 +80,21 @@ export function setupApplicationRegistry(registry: Registry) {
 }
 
 export function setupEngineRegistry(registry: Registry) {
+  registry.optionsForType('template', { instantiate: false });
+
   registry.register('view:-outlet', OutletView);
-  registry.register('template:-outlet', OutletTemplate);
+  registry.register('template:-outlet', OutletTemplate as any);
   registry.injection('view:-outlet', 'template', 'template:-outlet');
 
   registry.injection('service:-dom-changes', 'document', 'service:-document');
   registry.injection('service:-dom-tree-construction', 'document', 'service:-document');
 
-  registry.register(P`template:components/-default`, ComponentTemplate);
+  registry.register(P`template:components/-default`, ComponentTemplate as any);
 
   registry.register('service:-glimmer-environment', Environment);
 
   registry.register(P`template-compiler:main`, TemplateCompiler);
   registry.injection(P`template-compiler:main`, 'environment', '-environment:main');
-
-  registry.injection('template', 'compiler', P`template-compiler:main`);
 
   registry.optionsForType('helper', { instantiate: false });
 
@@ -106,7 +106,7 @@ export function setupEngineRegistry(registry: Registry) {
 
   if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
     registry.register('component:input', Input);
-    registry.register('template:components/input', InputTemplate);
+    registry.register('template:components/input', InputTemplate as any);
 
     registry.register('component:textarea', TextArea);
   } else {

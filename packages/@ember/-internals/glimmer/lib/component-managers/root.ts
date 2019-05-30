@@ -7,7 +7,6 @@ import { Arguments, ComponentDefinition } from '@glimmer/runtime';
 import { DIRTY_TAG } from '../component';
 import Environment from '../environment';
 import { DynamicScope } from '../renderer';
-import RuntimeResolver from '../resolver';
 import ComponentStateBucket, { Component } from '../utils/curly-component-state-bucket';
 import CurlyComponentManager, {
   initialRenderInstrumentDetails,
@@ -23,8 +22,8 @@ class RootComponentManager extends CurlyComponentManager {
     this.component = component;
   }
 
-  getLayout(_state: DefinitionState, resolver: RuntimeResolver) {
-    const template = this.templateFor(this.component, resolver);
+  getLayout(_state: DefinitionState) {
+    const template = this.templateFor(this.component);
     const layout = template.asWrappedLayout();
     return {
       handle: layout.compile(),

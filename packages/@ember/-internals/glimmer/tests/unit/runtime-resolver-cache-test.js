@@ -7,28 +7,18 @@ import {
 } from 'internal-test-helpers';
 
 import { set } from '@ember/-internals/metal';
-
+import { templateCacheCounters } from '@ember/-internals/glimmer';
 import { Component } from '../utils/helpers';
 
 moduleFor(
   'ember-glimmer runtime resolver cache',
   class extends RenderingTestCase {
-    '@test a helper definition is only generated once'(assert) {
+    '@test a helper definition is only generated once'() {
       this.registerHelper('foo-bar', () => 'foo-bar helper!');
       this.registerHelper('baz-qux', () => 'baz-qux helper!');
 
-      // assert precondition
-      let state = this.getCacheCounters();
-      assert.deepEqual(
-        state,
-        {
-          templateCacheHits: 0,
-          templateCacheMisses: 0,
-          componentDefinitionCount: 0,
-          helperDefinitionCount: 0,
-        },
-        'precondition'
-      );
+      // snapshot counters
+      this.getCacheCounters();
 
       this.render(
         `
@@ -43,9 +33,12 @@ moduleFor(
       );
 
       this.assertText('foo-bar helper!');
-      state = this.expectCacheChanges(
-        { helperDefinitionCount: 1 },
-        state,
+      this.expectCacheChanges(
+        {
+          helperDefinitionCount: 1,
+          // from this.render
+          templateCacheMisses: 1,
+        },
         'calculate foo-bar helper only'
       );
 
@@ -53,11 +46,10 @@ moduleFor(
       runTask(() => set(this.context, 'cond', false));
 
       this.assertText('baz-qux helper!');
-      state = this.expectCacheChanges(
+      this.expectCacheChanges(
         {
           helperDefinitionCount: 1,
         },
-        state,
         'calculate baz-qux helper, misses cache'
       );
 
@@ -65,16 +57,16 @@ moduleFor(
       runTask(() => set(this.context, 'cond', true));
 
       this.assertText('foo-bar helper!');
-      state = this.expectCacheChanges({}, state, 'toggle back to foo-bar cache hit');
+      this.expectCacheChanges({}, 'toggle back to foo-bar cache hit');
 
       // show baz-qux again
       runTask(() => set(this.context, 'cond', false));
 
       this.assertText('baz-qux helper!');
-      state = this.expectCacheChanges({}, state, 'toggle back to baz-qux cache hit');
+      this.expectCacheChanges({}, 'toggle back to baz-qux cache hit');
     }
 
-    '@test a component definition is only generated once'(assert) {
+    '@test a component definition is only generated once'() {
       // static layout
       this.registerComponent('component-one', { template: 'One' });
       this.registerComponent('component-two', {
@@ -82,18 +74,8 @@ moduleFor(
         template: 'Two',
       });
 
-      // assert precondition
-      let state = this.getCacheCounters();
-      assert.deepEqual(
-        state,
-        {
-          templateCacheHits: 0,
-          templateCacheMisses: 0,
-          componentDefinitionCount: 0,
-          helperDefinitionCount: 0,
-        },
-        'precondition'
-      );
+      // snapshot counters
+      this.getCacheCounters();
 
       // show component-one for the first time
       this.render(`{{component componentName}}`, {
@@ -101,9 +83,12 @@ moduleFor(
       });
 
       this.assertText('One');
-      state = this.expectCacheChanges(
-        { componentDefinitionCount: 1 },
-        state,
+      this.expectCacheChanges(
+        {
+          componentDefinitionCount: 1,
+          // 1 from this.render, 1 from component-one
+          templateCacheMisses: 2,
+        },
         'test case component and component-one no change'
       );
 
@@ -111,9 +96,11 @@ moduleFor(
       runTask(() => set(this.context, 'componentName', 'component-two'));
 
       this.assertText('Two');
-      state = this.expectCacheChanges(
-        { componentDefinitionCount: 1 },
-        state,
+      this.expectCacheChanges(
+        {
+          componentDefinitionCount: 1,
+          templateCacheMisses: 1,
+        },
         'component-two first render'
       );
 
@@ -121,16 +108,16 @@ moduleFor(
       runTask(() => set(this.context, 'componentName', 'component-one'));
 
       this.assertText('One');
-      state = this.expectCacheChanges({}, state, 'toggle back to component-one no change');
+      this.expectCacheChanges({}, 'toggle back to component-one no change');
 
       // show component-two again
       runTask(() => set(this.context, 'componentName', 'component-two'));
 
       this.assertText('Two');
-      state = this.expectCacheChanges({}, state, 'toggle back to component-two no change');
+      this.expectCacheChanges({}, 'toggle back to component-two no change');
     }
 
-    ['@test each template is only compiled once'](assert) {
+    ['@test each template is only compiled once']() {
       // static layout
       this.registerComponent('component-one', { template: 'One' });
 
@@ -147,18 +134,8 @@ moduleFor(
       // template instance shared between to template managers
       let rootFactory = this.owner.factoryFor('component:root-component');
 
-      // assert precondition
-      let state = this.getCacheCounters();
-      assert.deepEqual(
-        state,
-        {
-          templateCacheHits: 0,
-          templateCacheMisses: 0,
-          componentDefinitionCount: 0,
-          helperDefinitionCount: 0,
-        },
-        'precondition'
-      );
+      // snapshot counters
+      this.getCacheCounters();
 
       // show component-one for the first time
       this.render(
@@ -174,9 +151,11 @@ moduleFor(
       );
 
       this.assertText('One');
-      state = this.expectCacheChanges(
-        { componentDefinitionCount: 1 },
-        state,
+      this.expectCacheChanges(
+        {
+          componentDefinitionCount: 1,
+          templateCacheMisses: 2,
+        },
         'test case component and component-one no change'
       );
 
@@ -184,12 +163,11 @@ moduleFor(
       runTask(() => set(this.context, 'cond', false));
 
       this.assertText('Two');
-      state = this.expectCacheChanges(
+      this.expectCacheChanges(
         {
           templateCacheMisses: 1,
           componentDefinitionCount: 1,
         },
-        state,
         'component-two first render misses template cache'
       );
 
@@ -197,17 +175,16 @@ moduleFor(
       runTask(() => set(this.context, 'cond', true));
 
       this.assertText('One');
-      state = this.expectCacheChanges({}, state, 'toggle back to component-one no change');
+      this.expectCacheChanges({}, 'toggle back to component-one no change');
 
       // show component-two again
       runTask(() => set(this.context, 'cond', false));
 
       this.assertText('Two');
-      state = this.expectCacheChanges(
+      this.expectCacheChanges(
         {
           templateCacheHits: 1,
         },
-        state,
         'toggle back to component-two hits template cache'
       );
 
@@ -217,14 +194,17 @@ moduleFor(
         runAppend(root);
         this.assertText('TwoOne');
         // roots have different capabilities so this will hit
-        state = this.expectCacheChanges({}, state, 'append root with component-one no change');
+        this.expectCacheChanges(
+          { templateCacheHits: 1 },
+          'append root with component-one no change'
+        );
 
         // render new root append
         let root2 = rootFactory.create();
         try {
           runAppend(root2);
           this.assertText('TwoOneOne');
-          state = this.expectCacheChanges({}, state, 'append another root no change');
+          this.expectCacheChanges({ templateCacheHits: 1 }, 'append another root no change');
         } finally {
           runDestroy(root2);
         }
@@ -234,26 +214,21 @@ moduleFor(
     }
 
     getCacheCounters() {
-      let {
-        templateCacheHits,
-        templateCacheMisses,
-        componentDefinitionCount,
-        helperDefinitionCount,
-      } = this.runtimeResolver;
+      let { componentDefinitionCount, helperDefinitionCount } = this.runtimeResolver;
 
-      return {
-        templateCacheHits,
-        templateCacheMisses,
+      return (this._counters = {
+        templateCacheHits: templateCacheCounters.cacheHit,
+        templateCacheMisses: templateCacheCounters.cacheMiss,
         componentDefinitionCount,
         helperDefinitionCount,
-      };
+      });
     }
 
-    expectCacheChanges(expected, lastState, message) {
+    expectCacheChanges(expected, message) {
+      let lastState = this._counters;
       let state = this.getCacheCounters();
       let actual = diff(state, lastState);
       this.assert.deepEqual(actual, expected, message);
-      return state;
     }
   }
 );

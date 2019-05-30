@@ -7,9 +7,9 @@ import { Destroyable, Opaque, Option } from '@glimmer/util';
 import { Owner } from '@ember/-internals/owner';
 import { generateControllerFactory } from '@ember/-internals/routing';
 import { OwnedTemplateMeta } from '@ember/-internals/views';
+import { TemplateFactory } from '../..';
 import Environment from '../environment';
 import RuntimeResolver from '../resolver';
-import { OwnedTemplate } from '../template';
 import { RootReference } from '../utils/references';
 import AbstractManager from './abstract';
 
@@ -54,8 +54,10 @@ class MountManager
   implements
     WithDynamicLayout<EngineState | EngineWithModelState, OwnedTemplateMeta, RuntimeResolver> {
   getDynamicLayout(state: EngineState, _: RuntimeResolver): Invocation {
-    let template = state.engine.lookup('template:application') as OwnedTemplate;
+    let templateFactory = state.engine.lookup('template:application') as TemplateFactory;
+    let template = templateFactory(state.engine);
     let layout = template.asLayout();
+
     return {
       handle: layout.compile(),
       symbolTable: layout.symbolTable,

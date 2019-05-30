@@ -34,8 +34,9 @@ export default class OutletView {
   }
 
   static create(options: any) {
-    let { _environment, renderer, template } = options;
+    let { _environment, renderer, template: templateFactory } = options;
     let owner = options[OWNER];
+    let template = templateFactory(owner);
     return new OutletView(_environment, renderer, owner, template);
   }
 

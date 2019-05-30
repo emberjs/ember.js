@@ -207,7 +207,6 @@ moduleFor(
       verifyRegistration(assert, application, P`template:components/-default`);
       verifyRegistration(assert, application, 'template:-outlet');
       verifyInjection(assert, application, 'view:-outlet', 'template', 'template:-outlet');
-      verifyInjection(assert, application, 'template', 'compiler', P`template-compiler:main`);
 
       assert.deepEqual(
         application.registeredOptionsForType('helper'),
