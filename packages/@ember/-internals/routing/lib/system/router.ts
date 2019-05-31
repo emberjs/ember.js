@@ -497,7 +497,7 @@ class EmberRouter extends EmberObject {
     Transition the application into another route. The route may
     be either a single route or route path:
 
-    See [transitionTo](/api/ember/release/classes/Route/methods/transitionTo?anchor=transitionTo) for more info.
+    See [transitionTo](/ember/release/classes/Route/methods/transitionTo?anchor=transitionTo) for more info.
 
     @method transitionTo
     @param {String} name the name of the route or a URL

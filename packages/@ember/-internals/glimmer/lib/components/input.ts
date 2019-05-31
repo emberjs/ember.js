@@ -11,7 +11,7 @@ let Input: any;
 
 if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
   /**
-    See [Ember.Templates.components.Input](/api/ember/release/classes/Ember.Templates.components/methods/Input?anchor=Input).
+    See [Ember.Templates.components.Input](/ember/release/classes/Ember.Templates.components/methods/Input?anchor=Input).
 
     @method input
     @for Ember.Templates.helpers
@@ -87,7 +87,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
     the helper to `TextField`'s `create` method. Subclassing `TextField` is supported but not
     recommended.
 
-    See [TextField](/api/ember/release/classes/TextField)
+    See [TextField](/ember/release/classes/TextField)
 
     ### Checkbox
 

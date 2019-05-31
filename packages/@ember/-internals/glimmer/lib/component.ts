@@ -372,7 +372,7 @@ export const BOUNDS = symbol('BOUNDS');
   will be removed.
 
   Both `classNames` and `classNameBindings` are concatenated properties. See
-  [EmberObject](/api/ember/release/classes/EmberObject) documentation for more
+  [EmberObject](/ember/release/classes/EmberObject) documentation for more
   information about concatenated properties.
 
   ### Other HTML Attributes
@@ -514,7 +514,7 @@ export const BOUNDS = symbol('BOUNDS');
   update of the  HTML attribute in the component's HTML output.
 
   `attributeBindings` is a concatenated property. See
-  [EmberObject](/api/ember/release/classes/EmberObject) documentation for more
+  [EmberObject](/ember/release/classes/EmberObject) documentation for more
   information about concatenated properties.
 
   ## Layouts

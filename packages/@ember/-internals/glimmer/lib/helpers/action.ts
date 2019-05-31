@@ -87,7 +87,7 @@ import { ACTION, INVOKE, UnboundReference } from '../utils/references';
 
   Closure actions curry both their scope and any arguments. When invoked, any
   additional arguments are added to the already curried list.
-  Actions should be invoked using the [sendAction](/api/ember/release/classes/Component/methods/sendAction?anchor=sendAction)
+  Actions should be invoked using the [sendAction](/ember/release/classes/Component/methods/sendAction?anchor=sendAction)
   method. The first argument to `sendAction` is the action to be called, and
   additional arguments are passed to the action function. This has interesting
   properties combined with currying of arguments. For example:
@@ -208,7 +208,7 @@ import { ACTION, INVOKE, UnboundReference } from '../utils/references';
 
   If you need the default handler to trigger you should either register your
   own event handler, or use event methods on your view class. See
-  ["Responding to Browser Events"](/api/ember/release/classes/Component)
+  ["Responding to Browser Events"](/ember/release/classes/Component)
   in the documentation for `Component` for more information.
 
   ### Specifying DOM event type
@@ -223,7 +223,7 @@ import { ACTION, INVOKE, UnboundReference } from '../utils/references';
   </div>
   ```
 
-  See ["Event Names"](/api/ember/release/classes/Component) for a list of
+  See ["Event Names"](/ember/release/classes/Component) for a list of
   acceptable DOM event names.
 
   ### Specifying whitelisted modifier keys
