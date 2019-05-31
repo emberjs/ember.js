@@ -29,6 +29,7 @@ import {
 import Service, { inject as injectService } from '@ember/service';
 
 import { action } from '@ember/object';
+import { dependentKeyCompat } from '@ember/object/compat';
 
 import {
   and,
@@ -456,6 +457,7 @@ Ember.RSVP = RSVP;
 Ember.Namespace = Namespace;
 
 Ember._action = action;
+Ember._dependentKeyCompat = dependentKeyCompat;
 
 computed.empty = empty;
 computed.notEmpty = notEmpty;
