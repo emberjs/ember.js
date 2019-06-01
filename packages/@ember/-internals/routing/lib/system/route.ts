@@ -44,6 +44,8 @@ import {
 import generateController from './generate_controller';
 import EmberRouter, { QueryParam } from './router';
 
+export const ROUTE_CONNECTIONS = new WeakMap();
+
 export function defaultSerialize(model: {}, params: string[]) {
   if (params.length < 1 || !model) {
     return;
@@ -370,7 +372,7 @@ class Route extends EmberObject implements IRoute {
     @method enter
   */
   enter() {
-    this.connections = [];
+    ROUTE_CONNECTIONS.set(this, []);
     this.activate();
     this.trigger('activate');
   }
@@ -1604,7 +1606,7 @@ class Route extends EmberObject implements IRoute {
     }
 
     let renderOptions = buildRenderOptions(this, isDefaultRender, name, options);
-    this.connections.push(renderOptions);
+    ROUTE_CONNECTIONS.get(this).push(renderOptions);
     once(this._router, '_setOutlets');
   }
 
@@ -1699,8 +1701,9 @@ class Route extends EmberObject implements IRoute {
     if (parent && parentView === parent.routeName) {
       parentView = undefined;
     }
-    for (let i = 0; i < this.connections.length; i++) {
-      let connection = this.connections[i];
+    let connections = ROUTE_CONNECTIONS.get(this);
+    for (let i = 0; i < connections.length; i++) {
+      let connection = connections[i];
       if (connection.outlet === outletName && connection.into === parentView) {
         // This neuters the disconnected outlet such that it doesn't
         // render anything, but it leaves an entry in the outlet
@@ -1708,7 +1711,7 @@ class Route extends EmberObject implements IRoute {
         // don't suddenly blow up. They will still stick themselves
         // into its outlets, which won't render anywhere. All of this
         // statefulness should get the machete in 2.0.
-        this.connections[i] = {
+        connections[i] = {
           owner: connection.owner,
           into: connection.into,
           outlet: connection.outlet,
@@ -1719,6 +1722,8 @@ class Route extends EmberObject implements IRoute {
         once(this._router, '_setOutlets');
       }
     }
+
+    ROUTE_CONNECTIONS.set(this, connections);
   }
 
   willDestroy() {
@@ -1731,8 +1736,9 @@ class Route extends EmberObject implements IRoute {
     @method teardownViews
   */
   teardownViews() {
-    if (this.connections && this.connections.length > 0) {
-      this.connections = [];
+    let connections = ROUTE_CONNECTIONS.get(this);
+    if (connections !== undefined && connections.length > 0) {
+      ROUTE_CONNECTIONS.set(this, []);
       once(this._router, '_setOutlets');
     }
   }
