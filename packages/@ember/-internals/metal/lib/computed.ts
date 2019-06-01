@@ -77,7 +77,7 @@ function noop(): void {}
       set(this, 'lastName', lastName);
     }
 
-    @computed('firstName', 'lastName')
+    &#64;computed('firstName', 'lastName')
     get fullName() {
       return `${this.firstName} ${this.lastName}`;
     }
@@ -101,7 +101,7 @@ function noop(): void {}
       set(this, 'lastName', lastName);
     }
 
-    @computed('firstName', 'lastName')
+    &#64;computed('firstName', 'lastName')
     get fullName() {
       return `${this.firstName} ${this.lastName}`;
     }
@@ -149,7 +149,7 @@ function noop(): void {}
   import { computed, set } from '@ember/object';
 
   function fullNameMacro(firstNameKey, lastNameKey) {
-    @computed(firstNameKey, lastNameKey, {
+    &#64;computed(firstNameKey, lastNameKey, {
       get() {
         return `${this[firstNameKey]} ${this[lastNameKey]}`;
       }
@@ -231,7 +231,7 @@ function noop(): void {}
       set(this, 'lastName', lastName);
     }
 
-    @computed('firstName', 'lastName').readOnly()
+    &#64;computed('firstName', 'lastName').readOnly()
     get fullName() {
       return `${this.firstName} ${this.lastName}`;
     }

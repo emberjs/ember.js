@@ -12,7 +12,7 @@ import { isElementDescriptor, setClassicDecorator } from '@ember/-internals/meta
   import { action, set } from '@ember/object';
 
   export default class Tooltip extends Component {
-    @action
+    &#64;action
     toggleShowing() {
       set(this, 'isShowing', !this.isShowing);
     }
@@ -76,7 +76,7 @@ import { isElementDescriptor, setClassicDecorator } from '@ember/-internals/meta
       document.addEventListener('click', this.toggleShowing);
     }
 
-    @action
+    &#64;action
     toggleShowing() {
       set(this, 'isShowing', !this.isShowing);
     }

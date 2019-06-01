@@ -33,7 +33,7 @@ const context = buildUntouchableThis('`fn` helper');
   import { action } from '@ember/object';
 
   export default class ItemsList extends Component {
-    @action
+    &#64;action
     handleSelected(item) {
       // ...snip...
     }

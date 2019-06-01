@@ -55,7 +55,7 @@ export class Tracker {
   Marking a property as tracked means that when that property changes,
   a rerender of the component is scheduled so the template is kept up to date.
 
-  There are two usages for the `@tracked` decorator, shown below.
+  There are two usages for the `&#64;tracked` decorator, shown below.
 
   @example No dependencies
 
@@ -66,7 +66,7 @@ export class Tracker {
   import Component, { tracked } from '@glimmer/component';
 
   export default class MyComponent extends Component {
-    @tracked
+    &#64;tracked
     remainingApples = 10
   }
   ```
@@ -89,10 +89,10 @@ export class Tracker {
   const totalApples = 100;
 
   export default class MyComponent extends Component {
-    @tracked
+    &#64;tracked
     eatenApples = 0
 
-    @tracked('eatenApples')
+    &#64;tracked('eatenApples')
     get remainingApples() {
       return totalApples - this.eatenApples;
     }

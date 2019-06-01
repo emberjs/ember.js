@@ -75,7 +75,7 @@ function generateComputedWithPredicate(name, predicate) {
       set(this, 'todos', todos);
     }
 
-    @empty('todos') isDone;
+    &#64;empty('todos') isDone;
   }
 
   let todoList = new ToDoList(
@@ -143,7 +143,7 @@ export function empty(dependentKey) {
       set(this, 'backpack', backpack);
     }
 
-    @notEmpty('backpack') hasStuff
+    &#64;notEmpty('backpack') hasStuff
   }
 
   let hamster = new Hamster(
@@ -203,7 +203,7 @@ export function notEmpty(dependentKey) {
   import { none } from '@ember/object/computed';
 
   class Hamster {
-    @none('food') isHungry;
+    &#64;none('food') isHungry;
   }
 
   let hamster = new Hamster();
@@ -220,7 +220,7 @@ export function notEmpty(dependentKey) {
   Classic Class Example:
 
   ```javascript
-  import EmberObject, { set } from '@ember/object';
+  import EmberObject, { set } from 'ember/object';
   import { none } from '@ember/object/computed';
 
   let Hamster = EmberObject.extend({
@@ -270,7 +270,7 @@ export function none(dependentKey) {
   class User {
     loggedIn = false;
 
-    @not('loggedIn') isAnonymous;
+    &#64;not('loggedIn') isAnonymous;
   }
 
   let user = new User();
@@ -330,7 +330,7 @@ export function not(dependentKey) {
 
 
   class Hamster {
-    @bool('numBananas') hasBananas
+    &#64;bool('numBananas') hasBananas
   }
 
   let hamster = new Hamster();
@@ -403,7 +403,7 @@ export function bool(dependentKey) {
   import { match } from '@ember/object/computed';
 
   class User {
-    @match('email', /^.+@.+\..+$/) hasValidEmail;
+    &#64;match('email', /^.+@.+\..+$/) hasValidEmail;
   }
 
   let user = new User();
@@ -470,7 +470,7 @@ export function match(dependentKey, regexp) {
   import { equal } from '@ember/object/computed';
 
   class Hamster {
-    @equal('percentCarrotsEaten', 100) satisfied;
+    &#64;equal('percentCarrotsEaten', 100) satisfied;
   }
 
   let hamster = new Hamster();
@@ -536,7 +536,7 @@ export function equal(dependentKey, value) {
   import { gt } from '@ember/object/computed';
 
   class Hamster {
-    @gt('numBananas', 10) hasTooManyBananas;
+    &#64;gt('numBananas', 10) hasTooManyBananas;
   }
 
   let hamster = new Hamster();
@@ -602,7 +602,7 @@ export function gt(dependentKey, value) {
   import { gte } from '@ember/object/computed';
 
   class Hamster {
-    @gte('numBananas', 10) hasTooManyBananas;
+    &#64;gte('numBananas', 10) hasTooManyBananas;
   }
 
   let hamster = new Hamster();
@@ -668,7 +668,7 @@ export function gte(dependentKey, value) {
   import { lt } from '@ember/object/computed';
 
   class Hamster {
-    @lt('numBananas', 3) needsMoreBananas;
+    &#64;lt('numBananas', 3) needsMoreBananas;
   }
 
   let hamster = new Hamster();
@@ -734,7 +734,7 @@ export function lt(dependentKey, value) {
   import { lte } from '@ember/object/computed';
 
   class Hamster {
-    @lte('numBananas', 3) needsMoreBananas;
+    &#64;lte('numBananas', 3) needsMoreBananas;
   }
 
   let hamster = new Hamster();
@@ -804,8 +804,8 @@ export function lte(dependentKey, value) {
   import { and } from '@ember/object/computed';
 
   class Hamster {
-    @and('hasTent', 'hasBackpack') readyForCamp;
-    @and('hasWalkingStick', 'hasBackpack') readyForHike;
+    &#64;and('hasTent', 'hasBackpack') readyForCamp;
+    &#64;and('hasWalkingStick', 'hasBackpack') readyForHike;
   }
 
   let tomster = new Hamster();
@@ -878,8 +878,8 @@ export const and = generateComputedWithPredicate('and', value => value);
   import { or } from '@ember/object/computed';
 
   let Hamster = EmberObject.extend({
-    @or('hasJacket', 'hasUmbrella') readyForRain;
-    @or('hasSunscreen', 'hasUmbrella') readyForBeach;
+    &#64;or('hasJacket', 'hasUmbrella') readyForRain;
+    &#64;or('hasSunscreen', 'hasUmbrella') readyForBeach;
   });
 
   let tomster = new Hamster();
@@ -945,7 +945,7 @@ export const or = generateComputedWithPredicate('or', value => !value);
   class Person {
     name = 'Alex Matchneer';
 
-    @alias('name') nomen;
+    &#64;alias('name') nomen;
   }
 
   let alex = new Person();
@@ -1006,7 +1006,7 @@ export const or = generateComputedWithPredicate('or', value => !value);
       set(this, 'lastName', lastName);
     }
 
-    @oneWay('firstName') nickName;
+    &#64;oneWay('firstName') nickName;
   }
 
   let teddy = new User('Teddy', 'Zeenny');
@@ -1092,7 +1092,7 @@ export function oneWay(dependentKey) {
       set(this, 'lastName', lastName);
     }
 
-    @readOnly('firstName') nickName;
+    &#64;readOnly('firstName') nickName;
   });
 
   let teddy = new User('Teddy', 'Zeenny');
@@ -1161,7 +1161,7 @@ export function readOnly(dependentKey) {
   import { deprecatingAlias } from '@ember/object/computed';
 
   class Hamster {
-    @deprecatingAlias('cavendishCount', {
+    &#64;deprecatingAlias('cavendishCount', {
       id: 'hamster.deprecate-banana',
       until: '3.0.0'
     })

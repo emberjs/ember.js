@@ -18,7 +18,7 @@ import { inject as metalInject } from '@ember/-internals/metal';
   import { inject as service } from '@ember/service';
 
   export default class ApplicationRoute extends Route {
-    @service('auth') authManager;
+    &#64;service('auth') authManager;
 
     model() {
       return this.authManager.findCurrentUser();
