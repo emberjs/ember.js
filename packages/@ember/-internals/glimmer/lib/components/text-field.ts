@@ -33,7 +33,7 @@ function canSetTypeOfInput(type: string): boolean {
 /**
   The internal class used to create text inputs when the `Input` component is used with `type` of `text`.
 
-  See [Ember.Templates.components.Input](/api/ember/release/classes/Ember.Templates.components/methods/Input?anchor=Input) for usage details.
+  See [Ember.Templates.components.Input](/ember/release/classes/Ember.Templates.components/methods/Input?anchor=Input) for usage details.
 
   ## Layout and LayoutName properties
 

@@ -29,7 +29,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
   /**
     The `{{input}}` helper lets you create an HTML `<input />` component.
     It causes a `TextField` component to be rendered.  For more info,
-    see the [TextField](/api/ember/release/classes/TextField) docs and
+    see the [TextField](/ember/release/classes/TextField) docs and
     the [templates guide](https://guides.emberjs.com/release/templates/input-helpers/).
 
     ```handlebars
@@ -97,7 +97,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
     ```handlebars
     {{input focus-out="alertMessage"}}
     ```
-    See more about [Text Support Actions](/api/ember/release/classes/TextField)
+    See more about [Text Support Actions](/ember/release/classes/TextField)
 
     ### Extending `TextField`
 
@@ -117,7 +117,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
     Keep in mind when writing `TextField` subclasses that `TextField`
     itself extends `Component`. Expect isolated component semantics, not
     legacy 1.x view semantics (like `controller` being present).
-    See more about [Ember components](/api/ember/release/classes/Component)
+    See more about [Ember components](/ember/release/classes/Component)
 
     ### Checkbox
 

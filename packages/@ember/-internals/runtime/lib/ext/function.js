@@ -68,7 +68,7 @@ if (FUNCTION_PROTOTYPE_EXTENSIONS && ENV.EXTEND_PROTOTYPES.Function) {
       will instead clear the cache so that it is updated when the next `get`
       is called on the property.
 
-      See [ComputedProperty](/api/ember/release/classes/ComputedProperty), [@ember/object/computed](/api/ember/release/classes/@ember%2Fobject%2Fcomputed).
+      See [ComputedProperty](/ember/release/classes/ComputedProperty), [@ember/object/computed](/ember/release/classes/@ember%2Fobject%2Fcomputed).
 
       @method property
       @for Function

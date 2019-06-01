@@ -1165,7 +1165,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
     {{/link-to}}
     ```
 
-    See [LinkComponent](/api/ember/release/classes/LinkComponent) for a
+    See [LinkComponent](/ember/release/classes/LinkComponent) for a
     complete list of overrideable properties. Be sure to also
     check out inherited properties of `LinkComponent`.
 
