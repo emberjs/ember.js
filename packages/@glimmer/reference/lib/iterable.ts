@@ -150,7 +150,6 @@ export class IterationArtifacts {
 
   move(item: ListItem, reference: Option<ListItem>): void {
     let { list } = this;
-
     item.retained = true;
     list.remove(item);
     list.insertBefore(item, reference);
@@ -264,8 +263,7 @@ export class IteratorSynchronizer<Env> {
   }
 
   private advanceToKey(key: unknown) {
-    let { current, artifacts } = this;
-
+    let { current, artifacts, target } = this;
     let seek = current;
 
     while (seek !== null && seek.key !== key) {
@@ -274,7 +272,14 @@ export class IteratorSynchronizer<Env> {
     }
 
     if (seek !== null) {
-      this.current = artifacts.nextNode(seek);
+      if (current && current.next === seek) {
+        this.current = artifacts.nextNode(seek);
+        return;
+      }
+      artifacts.move(seek, current);
+      target.move(this.env, seek.key, seek.value, seek.memo, current ? current.key : END);
+
+      this.current = artifacts.nextNode(current as ListItem);
     }
   }
 
@@ -318,6 +323,9 @@ export class IteratorSynchronizer<Env> {
     found.update(item);
 
     if (artifacts.wasSeen(item.key)) {
+      if (current && current.prev === found) {
+        return;
+      }
       artifacts.move(found, current);
       target.move(this.env, found.key, found.value, found.memo, current ? current.key : END);
     } else {
