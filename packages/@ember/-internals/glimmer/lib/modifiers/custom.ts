@@ -1,6 +1,6 @@
 import { Factory } from '@ember/-internals/owner';
 import { Opaque, Simple } from '@glimmer/interfaces';
-import { Tag } from '@glimmer/reference';
+import { CONSTANT_TAG, Tag } from '@glimmer/reference';
 import { Arguments, CapturedArguments, ModifierManager } from '@glimmer/runtime';
 import { ManagerArgs, valueForCapturedArgs } from '../utils/managers';
 
@@ -19,17 +19,23 @@ export function capabilities(_managerAPI: string, _optionalFeatures?: {}): Capab
 
 export class CustomModifierDefinition<ModifierInstance> {
   public state: CustomModifierDefinitionState<ModifierInstance>;
-  public manager = CUSTOM_MODIFIER_MANAGER;
+  public manager: ModifierManager<unknown | null, CustomModifierDefinitionState<ModifierInstance>>;
+
   constructor(
     public name: string,
     public ModifierClass: Factory<ModifierInstance>,
-    public delegate: ModifierManagerDelegate<ModifierInstance>
+    public delegate: ModifierManagerDelegate<ModifierInstance>,
+    isInteractive: boolean
   ) {
     this.state = {
       ModifierClass,
       name,
       delegate,
     };
+
+    this.manager = isInteractive
+      ? CUSTOM_INTERACTIVE_MODIFIER_MANAGER
+      : CUSTOM_NON_INTERACTIVE_MODIFIER_MANAGER;
   }
 }
 
@@ -63,12 +69,15 @@ export interface ModifierManagerDelegate<ModifierInstance> {
   implements a set of hooks that determine modifier behavior.
   To create a custom modifier manager, instantiate a new CustomModifierManager
   class and pass the delegate as the first argument:
+
   ```js
   let manager = new CustomModifierManager({
     // ...delegate implementation...
   });
   ```
+
   ## Delegate Hooks
+
   Throughout the lifecycle of a modifier, the modifier manager will invoke
   delegate hooks that are responsible for surfacing those lifecycle changes to
   the end developer.
@@ -77,7 +86,7 @@ export interface ModifierManagerDelegate<ModifierInstance> {
   * `updateModifier()` - invoked when the arguments passed to a modifier change
   * `destroyModifier()` - invoked when the modifier is about to be destroyed
 */
-class CustomModifierManager<ModifierInstance>
+class InteractiveCustomModifierManager<ModifierInstance>
   implements
     ModifierManager<
       CustomModifierState<ModifierInstance>,
@@ -115,4 +124,24 @@ class CustomModifierManager<ModifierInstance>
   }
 }
 
-const CUSTOM_MODIFIER_MANAGER = new CustomModifierManager();
+class NonInteractiveCustomModifierManager<ModifierInstance>
+  implements ModifierManager<null, CustomModifierDefinitionState<ModifierInstance>> {
+  create() {
+    return null;
+  }
+
+  getTag(): Tag {
+    return CONSTANT_TAG;
+  }
+
+  install() {}
+
+  update() {}
+
+  getDestructor() {
+    return null;
+  }
+}
+
+const CUSTOM_INTERACTIVE_MODIFIER_MANAGER = new InteractiveCustomModifierManager();
+const CUSTOM_NON_INTERACTIVE_MODIFIER_MANAGER = new NonInteractiveCustomModifierManager();
