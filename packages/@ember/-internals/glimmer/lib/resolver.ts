@@ -89,6 +89,7 @@ const BUILTIN_MODIFIERS = {
 };
 
 export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMeta> {
+  public isInteractive: boolean;
   public compiler: LazyCompiler<OwnedTemplateMeta>;
 
   private handles: any[] = [
@@ -114,10 +115,11 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
   public componentDefinitionCount = 0;
   public helperDefinitionCount = 0;
 
-  constructor() {
+  constructor(isInteractive: boolean) {
     let macros = new Macros();
     populateMacros(macros);
     this.compiler = new LazyCompiler<OwnedTemplateMeta>(new CompileTimeLookup(this), this, macros);
+    this.isInteractive = isInteractive;
   }
 
   /***  IRuntimeResolver ***/
@@ -290,7 +292,7 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
         let managerFactory = getModifierManager<ModifierManagerDelegate<Opaque>>(modifier.class);
         let manager = managerFactory!(owner);
 
-        return new CustomModifierDefinition(name, modifier, manager);
+        return new CustomModifierDefinition(name, modifier, manager, this.isInteractive);
       }
     }
 
