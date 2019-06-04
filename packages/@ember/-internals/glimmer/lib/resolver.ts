@@ -100,15 +100,9 @@ if (EMBER_GLIMMER_FN_HELPER) {
 interface IBuiltInModifiers {
   [name: string]: ModifierDefinition | undefined;
 }
-const BUILTIN_MODIFIERS: IBuiltInModifiers = {
-  action: { manager: new ActionModifierManager(), state: null },
-  on: undefined,
-};
 
-if (EMBER_GLIMMER_ON_MODIFIER) {
-  BUILTIN_MODIFIERS.on = { manager: new OnModifierManager(), state: null };
-}
 export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMeta> {
+  public isInteractive: boolean;
   public compiler: LazyCompiler<OwnedTemplateMeta>;
 
   private handles: any[] = [
@@ -118,7 +112,7 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
 
   private builtInHelpers: IBuiltInHelpers = BUILTINS_HELPERS;
 
-  private builtInModifiers: IBuiltInModifiers = BUILTIN_MODIFIERS;
+  private builtInModifiers: IBuiltInModifiers;
 
   // supports directly imported late bound layouts on component.prototype.layout
   private templateCache: Map<Owner, Map<TemplateFactory, OwnedTemplate>> = new Map();
@@ -130,10 +124,19 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
   public componentDefinitionCount = 0;
   public helperDefinitionCount = 0;
 
-  constructor() {
+  constructor(isInteractive: boolean) {
     let macros = new Macros();
     populateMacros(macros);
     this.compiler = new LazyCompiler<OwnedTemplateMeta>(new CompileTimeLookup(this), this, macros);
+    this.isInteractive = isInteractive;
+
+    this.builtInModifiers = {
+      action: { manager: new ActionModifierManager(), state: null },
+    };
+
+    if (EMBER_GLIMMER_ON_MODIFIER) {
+      this.builtInModifiers.on = { manager: new OnModifierManager(isInteractive), state: null };
+    }
   }
 
   /***  IRuntimeResolver ***/
@@ -306,7 +309,7 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
         let managerFactory = getModifierManager<ModifierManagerDelegate<Opaque>>(modifier.class);
         let manager = managerFactory!(owner);
 
-        return new CustomModifierDefinition(name, modifier, manager);
+        return new CustomModifierDefinition(name, modifier, manager, this.isInteractive);
       }
     }
 

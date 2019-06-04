@@ -1,7 +1,7 @@
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { Opaque, Simple } from '@glimmer/interfaces';
-import { Tag } from '@glimmer/reference';
+import { CONSTANT_TAG, Tag } from '@glimmer/reference';
 import { Arguments, CapturedArguments, ModifierManager } from '@glimmer/runtime';
 import { Destroyable } from '@glimmer/util';
 import buildUntouchableThis from '../utils/untouchable-this';
@@ -210,24 +210,41 @@ function addEventListener(
   }
 }
 
-export default class OnModifierManager implements ModifierManager<OnModifierState, Opaque> {
+export default class OnModifierManager implements ModifierManager<OnModifierState | null, Opaque> {
   public SUPPORTS_EVENT_OPTIONS: boolean = SUPPORTS_EVENT_OPTIONS;
+  public isInteractive: boolean;
+
+  constructor(isInteractive: boolean) {
+    this.isInteractive = isInteractive;
+  }
 
   get counters() {
     return { adds, removes };
   }
 
   create(element: Simple.Element | Element, _state: Opaque, args: Arguments) {
+    if (!this.isInteractive) {
+      return null;
+    }
+
     const capturedArgs = args.capture();
 
     return new OnModifierState(<Element>element, capturedArgs);
   }
 
-  getTag({ tag }: OnModifierState): Tag {
-    return tag;
+  getTag(state: OnModifierState | null): Tag {
+    if (state === null) {
+      return CONSTANT_TAG;
+    }
+
+    return state.tag;
   }
 
-  install(state: OnModifierState) {
+  install(state: OnModifierState | null) {
+    if (state === null) {
+      return;
+    }
+
     state.updateFromArgs();
 
     let { element, eventName, callback, options } = state;
@@ -237,7 +254,11 @@ export default class OnModifierManager implements ModifierManager<OnModifierStat
     state.shouldUpdate = false;
   }
 
-  update(state: OnModifierState) {
+  update(state: OnModifierState | null) {
+    if (state === null) {
+      return;
+    }
+
     // stash prior state for el.removeEventListener
     let { element, eventName, callback, options } = state;
 
@@ -256,7 +277,7 @@ export default class OnModifierManager implements ModifierManager<OnModifierStat
     state.shouldUpdate = false;
   }
 
-  getDestructor(state: Destroyable) {
+  getDestructor(state: Destroyable | null) {
     return state;
   }
 }
