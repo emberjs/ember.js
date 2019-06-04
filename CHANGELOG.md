@@ -16,6 +16,10 @@
 - [#17940](https://github.com/emberjs/ember.js/pull/17940) [CLEANUP] Remove `sync` queue from @ember/runloop.
 - [#18026](https://github.com/emberjs/ember.js/pull/18026) Enabling featured discussed in 2019-05-03 core team meeting.
 
+### v3.10.1 (June 4, 2019)
+
+- [#18071](https://github.com/emberjs/ember.js/pull/18071) [BUGFIX] Ensure modifiers do not run in FastBoot modes. (#18071)
+- [#18064](https://github.com/emberjs/ember.js/pull/18064) [BUGFIX] Fix 'hasAttribute is not a function' when jQuery is disabled (#18064)
 
 ### v3.10.0 (May 13, 2019)
 
