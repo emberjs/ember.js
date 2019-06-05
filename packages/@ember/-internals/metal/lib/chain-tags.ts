@@ -98,7 +98,7 @@ export function getChainTagsForKey(obj: any, key: string) {
         if (typeof descriptor.altKey === 'string') {
           // it's an alias, so just get the altkey without tracking
           track(() => {
-            current = get(obj, descriptor.altKey);
+            current = get(current, descriptor.altKey);
           });
         } else {
           current = peekCacheFor(current).get(segment);

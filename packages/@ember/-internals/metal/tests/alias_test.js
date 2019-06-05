@@ -1,5 +1,6 @@
 import {
   alias,
+  computed,
   defineProperty,
   get,
   set,
@@ -252,6 +253,39 @@ moduleFor(
       assertPropertyTagUnchanged(obj, 'bar', () => {
         assert.equal(get(obj, 'bar'), 'FOO');
       });
+    }
+
+    ['@test nested aliases update their chained dependencies properly'](assert) {
+      let count = 0;
+
+      class Inner {
+        @alias('pojo') aliased;
+
+        pojo = {
+          value: 123,
+        };
+      }
+
+      class Outer {
+        @computed('inner.aliased.value')
+        get value() {
+          count++;
+          return this.inner.aliased.value;
+        }
+
+        inner = new Inner();
+      }
+
+      let outer = new Outer();
+
+      assert.equal(outer.value, 123, 'Property works');
+
+      outer.value;
+      assert.equal(count, 1, 'Property was properly cached');
+
+      set(outer, 'inner.pojo.value', 456);
+
+      assert.equal(outer.value, 456, 'Property was invalidated correctly');
     }
   }
 );
