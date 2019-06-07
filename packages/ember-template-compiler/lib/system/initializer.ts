@@ -18,12 +18,9 @@ if (
   Application.initializer({
     name: 'domTemplates',
     initialize() {
-      let context;
       if (hasDOM) {
-        context = document;
+        bootstrap({ context: document, hasTemplate, setTemplate });
       }
-
-      bootstrap({ context, hasTemplate, setTemplate });
     },
   });
 }
