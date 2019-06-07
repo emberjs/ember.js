@@ -438,7 +438,7 @@ RouterService.reopen(Evented, {
     the application, '/' by default.
     This prefix is assumed on all routes defined on this app.
 
-    IF you change the `rootURL` in your environment configuration
+    If you change the `rootURL` in your environment configuration
     like so:
 
     ```config/environment.js
@@ -463,10 +463,28 @@ RouterService.reopen(Evented, {
   rootURL: readOnly('_router.rootURL'),
 
   /**
-     A `RouteInfo` that represents the current leaf route.
-     It is guaranteed to change whenever a route transition
-     happens (even when that transition only changes parameters
-     and doesn't change the active route)
+    The `currentRoute` property contains metadata about the current leaf route.
+    It returns a `RouteInfo` object that has information like the route name,
+    params, query params and more.
+
+    See [RouteInfo](/ember/release/classes/RouteInfo) for more info.
+
+    This property is guaranteed to change whenever a route transition
+    happens (even when that transition only changes parameters
+    and doesn't change the active route).
+
+    Usage example:
+    ```app/components/header.js
+      import Component from '@ember/component';
+      import { inject as service } from '@ember/service';
+      import { computed } from '@ember/object';
+
+      export default Component.extend({
+        router: service(),
+
+        isChildRoute: computed.notEmpty('router.currentRoute.child')
+      });
+    ```
 
      @property currentRoute
      @type RouteInfo
