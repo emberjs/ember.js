@@ -5,7 +5,6 @@ import { lookupComponent, lookupPartial, OwnedTemplateMeta } from '@ember/-inter
 import {
   EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS,
   EMBER_GLIMMER_FN_HELPER,
-  EMBER_GLIMMER_ON_MODIFIER,
   EMBER_MODULE_UNIFICATION,
 } from '@ember/canary-features';
 import { assert } from '@ember/debug';
@@ -132,11 +131,8 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
 
     this.builtInModifiers = {
       action: { manager: new ActionModifierManager(), state: null },
+      on: { manager: new OnModifierManager(isInteractive), state: null },
     };
-
-    if (EMBER_GLIMMER_ON_MODIFIER) {
-      this.builtInModifiers.on = { manager: new OnModifierManager(isInteractive), state: null };
-    }
   }
 
   /***  IRuntimeResolver ***/
