@@ -595,9 +595,7 @@ class FactoryManager<T, C> {
 
     if (!this.class.create) {
       throw new Error(
-        `Failed to create an instance of '${
-          this.normalizedName
-        }'. Most likely an improperly defined class or an invalid module export.`
+        `Failed to create an instance of '${this.normalizedName}'. Most likely an improperly defined class or an invalid module export.`
       );
     }
 

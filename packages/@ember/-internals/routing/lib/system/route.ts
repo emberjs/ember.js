@@ -253,9 +253,7 @@ class Route extends EmberObject implements IRoute {
 
     return Object.keys(queryParams).reduce((params, key) => {
       assert(
-        `The route '${
-          this.routeName
-        }' has both a dynamic segment and query param with name '${key}'. Please rename one to avoid collisions.`,
+        `The route '${this.routeName}' has both a dynamic segment and query param with name '${key}'. Please rename one to avoid collisions.`,
         !params[key]
       );
       params[key] = queryParams[key];
@@ -2364,9 +2362,7 @@ Route.reopen(ActionHandler, Evented, {
   */
   send(...args: any[]) {
     assert(
-      `Attempted to call .send() with the action '${args[0]}' on the destroyed route '${
-        this.routeName
-      }'.`,
+      `Attempted to call .send() with the action '${args[0]}' on the destroyed route '${this.routeName}'.`,
       !this.isDestroying && !this.isDestroyed
     );
     if ((this._router && this._router._routerMicrolib) || !isTesting()) {

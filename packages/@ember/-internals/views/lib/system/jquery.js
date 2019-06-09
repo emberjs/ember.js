@@ -27,4 +27,4 @@ if (JQUERY_INTEGRATION && hasDOM) {
   }
 }
 
-export default (jQueryDisabled ? undefined : jQuery);
+export default jQueryDisabled ? undefined : jQuery;
