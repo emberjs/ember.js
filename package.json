@@ -73,6 +73,7 @@
     "ember-router-generator": "^1.2.3",
     "inflection": "^1.12.0",
     "jquery": "^3.4.1",
+    "prettier": "^1.18.2",
     "resolve": "^1.10.1"
   },
   "devDependencies": {
@@ -151,7 +152,6 @@
     "lodash.uniq": "^4.5.0",
     "mkdirp": "^0.5.1",
     "mocha": "^6.1.4",
-    "prettier": "1.16.4",
     "puppeteer": "^1.16.0",
     "qunit": "^2.9.2",
     "rollup-plugin-commonjs": "^9.3.4",
