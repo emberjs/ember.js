@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### v3.11.0-beta.3 (June 10, 2019)
+
+- [#18080](https://github.com/emberjs/ember.js/pull/18080) [BUGFIX] Fix `ember-template-compiler` compatibility with Fastboot.
+- [#18071](https://github.com/emberjs/ember.js/pull/18071) [BUGFIX] Ensure modifiers do not run in FastBoot modes. 
+
 ### v3.11.0-beta.2 (June 3, 2019)
 
 - [#18064](https://github.com/emberjs/ember.js/pull/18064) [BUGFIX] Fix 'hasAttribute is not a function' when jQuery is disabled
