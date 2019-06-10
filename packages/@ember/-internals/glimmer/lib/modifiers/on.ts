@@ -109,9 +109,7 @@ export class OnModifierState {
     }
 
     assert(
-      `You can only pass two positional arguments (event name and callback) to the \`on\` modifier, but you provided ${
-        args.positional.length
-      }. Consider using the \`fn\` helper to provide additional arguments to the \`on\` callback.`,
+      `You can only pass two positional arguments (event name and callback) to the \`on\` modifier, but you provided ${args.positional.length}. Consider using the \`fn\` helper to provide additional arguments to the \`on\` callback.`,
       args.positional.length === 2
     );
 

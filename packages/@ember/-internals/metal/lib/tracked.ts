@@ -135,9 +135,7 @@ export function tracked(...args: any[]): Decorator | DecoratorPropertyDescriptor
       );
 
       assert(
-        `The initializer passed to tracked must be a function. Received ${
-          propertyDesc.initializer
-        }`,
+        `The initializer passed to tracked must be a function. Received ${propertyDesc.initializer}`,
         !('initializer' in propertyDesc) || typeof propertyDesc.initializer === 'function'
       );
     }
