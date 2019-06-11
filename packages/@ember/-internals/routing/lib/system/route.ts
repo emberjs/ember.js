@@ -2414,7 +2414,7 @@ Route.reopen(ActionHandler, Evented, {
     @param totalPresent {Object} Keys are names of query params that are currently set.
     @param removed {Object} Keys are names of query params that have been removed.
     @returns {boolean}
-    @private
+    @public
    */
     queryParamsDidChange(this: Route, changed: {}, _totalPresent: unknown, removed: {}) {
       let qpMap = get(this, '_qp').map;
