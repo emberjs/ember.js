@@ -128,7 +128,7 @@
     "ember-cli": "^3.9.0",
     "ember-cli-blueprint-test-helpers": "^0.19.2",
     "ember-cli-browserstack": "^0.0.7",
-    "ember-cli-dependency-checker": "^3.1.0",
+    "ember-cli-dependency-checker": "^3.2.0",
     "ember-cli-yuidoc": "^0.8.8",
     "ember-publisher": "0.0.7",
     "eslint": "^5.16.0",
