@@ -155,8 +155,9 @@ moduleFor(
       this.add(
         'controller:homepage',
         Controller.extend({
-          model: {
-            home: 'Comes from homepage',
+          init() {
+            this._super(...arguments);
+            this.model = { home: 'Comes from homepage' };
           },
         })
       );
@@ -183,16 +184,18 @@ moduleFor(
       this.add(
         'controller:foo',
         Controller.extend({
-          model: {
-            home: 'Comes from foo',
+          init() {
+            this._super(...arguments);
+            this.model = { home: 'Comes from foo' };
           },
         })
       );
       this.add(
         'controller:homepage',
         Controller.extend({
-          model: {
-            home: 'Comes from homepage',
+          init() {
+            this._super(...arguments);
+            this.model = { home: 'Comes from homepage' };
           },
         })
       );
@@ -220,8 +223,9 @@ moduleFor(
       this.add(
         'controller:home',
         Controller.extend({
-          model: {
-            home: 'Comes from home.',
+          init() {
+            this._super(...arguments);
+            this.model = { home: 'Comes from home.' };
           },
         })
       );
@@ -241,8 +245,9 @@ moduleFor(
       this.add(
         'controller:home',
         Controller.extend({
-          model: {
-            home: 'YES I AM HOME',
+          init() {
+            this._super(...arguments);
+            this.model = { home: 'YES I AM HOME' };
           },
         })
       );
