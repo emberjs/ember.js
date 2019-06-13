@@ -16,10 +16,7 @@ import {
   setFrameworkClass,
   typeOf,
 } from '@ember/-internals/runtime';
-import {
-  EMBER_FRAMEWORK_OBJECT_OWNER_ARGUMENT,
-  EMBER_ROUTING_BUILD_ROUTEINFO_METADATA,
-} from '@ember/canary-features';
+import { EMBER_FRAMEWORK_OBJECT_OWNER_ARGUMENT } from '@ember/canary-features';
 import { assert, deprecate, info, isTesting } from '@ember/debug';
 import { ROUTER_EVENTS } from '@ember/deprecated-features';
 import { assign } from '@ember/polyfills';
@@ -1740,6 +1737,42 @@ class Route extends EmberObject implements IRoute {
       once(this._router, '_setOutlets');
     }
   }
+
+  /**
+    Allows you to produce custom metadata for the route.
+    The return value of this method will be attatched to
+    its corresponding RouteInfoWithAttributes obejct.
+
+    Example
+
+    ```app/routes/posts/index.js
+    import Route from '@ember/routing/route';
+
+    export default Route.extend({
+      buildRouteInfoMetadata() {
+        return { title: 'Posts Page' }
+      }
+    });
+    ```
+    ```app/routes/application.js
+    import Route from '@ember/routing/route';
+    import { inject as service } from '@ember/service';
+
+    export default Route.extend({
+      router: service('router'),
+      init() {
+        this._super(...arguments);
+        this.router.on('routeDidChange', transition => {
+          document.title = transition.to.metadata.title;
+          // would update document's title to "Posts Page"
+        });
+      }
+    });
+    ```
+
+    @return any
+   */
+  buildRouteInfoMetadata() {}
 }
 
 Route.reopenClass({
@@ -2571,47 +2604,6 @@ if (ROUTER_EVENTS) {
 
       return params;
     },
-  });
-}
-
-if (EMBER_ROUTING_BUILD_ROUTEINFO_METADATA) {
-  Route.reopen({
-    /**
-      Allows you to produce custom metadata for the route.
-      The return value of this method will be attatched to
-      its corresponding RouteInfoWithAttributes obejct.
-
-      Example
-
-      ```app/routes/posts/index.js
-      import Route from '@ember/routing/route';
-
-      export default Route.extend({
-        buildRouteInfoMetadata() {
-          return { title: 'Posts Page' }
-        }
-      });
-      ```
-      ```app/routes/application.js
-      import Route from '@ember/routing/route';
-      import { inject as service } from '@ember/service';
-
-      export default Route.extend({
-        router: service('router'),
-        init() {
-          this._super(...arguments);
-          this.router.on('routeDidChange', transition => {
-            document.title = transition.to.metadata.title;
-            // would update document's title to "Posts Page"
-          });
-        }
-      });
-      ```
-
-      @return any
-      @category EMBER_ROUTING_BUILD_ROUTEINFO_METADATA
-     */
-    buildRouteInfoMetadata() {},
   });
 }
 
