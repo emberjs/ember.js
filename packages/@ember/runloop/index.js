@@ -301,15 +301,20 @@ export function end() {
   ```javascript
   import { schedule } from '@ember/runloop';
 
+  schedule('afterRender', this, function() {
+    // this will be executed in the 'afterRender' queue
+    console.log('scheduled on afterRender queue');
+  });
+
   schedule('actions', this, function() {
-    // this will be executed in the 'actions' queue, after bindings have synced.
+    // this will be executed in the 'actions' queue
     console.log('scheduled on actions queue');
   });
 
   // Note the functions will be run in order based on the run queues order.
   // Output would be:
-  //   scheduled on sync queue
   //   scheduled on actions queue
+  //   scheduled on afterRender queue
   ```
 
   @method schedule
