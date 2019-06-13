@@ -358,7 +358,7 @@ QUnit.test('When re-iterated via swap #1, the original references are updated', 
   );
   assert.equal(target.historyStats.move, 2, 'moved nodes count');
   assert.equal(target.historyStats.retain, 6, 'retained nodes count');
-  assert.deepEqual(target.toValues(), arr);
+  assert.deepEqual(target.toValues(), arr, 'the array is correct');
 });
 
 QUnit.test('When re-iterated via swap #2, the original references are updated', assert => {
