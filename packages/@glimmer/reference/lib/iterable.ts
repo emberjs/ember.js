@@ -1,4 +1,4 @@
-import { LinkedList, ListNode, Option, expect } from '@glimmer/util';
+import { LinkedList, ListNode, Option } from '@glimmer/util';
 import { VersionedPathReference as PathReference, Tag } from './validators';
 
 export interface IterationItem<T, U> {
@@ -115,6 +115,16 @@ export class IterationArtifacts {
     return iterator;
   }
 
+  advanceToKey(key: unknown, current: ListItem): Option<ListItem> {
+    let seek = current;
+
+    while (seek !== null && seek.key !== key) {
+      seek = this.advanceNode(seek);
+    }
+
+    return seek;
+  }
+
   has(key: unknown): boolean {
     return this.map.has(key);
   }
@@ -126,6 +136,12 @@ export class IterationArtifacts {
   wasSeen(key: unknown): boolean {
     let node = this.map.get(key);
     return node !== undefined && node.seen;
+  }
+
+  update(item: OpaqueIterationItem): ListItem {
+    let found = this.get(item.key);
+    found.update(item);
+    return found;
   }
 
   append(item: OpaqueIterationItem): ListItem {
@@ -150,7 +166,6 @@ export class IterationArtifacts {
 
   move(item: ListItem, reference: Option<ListItem>): void {
     let { list } = this;
-
     item.retained = true;
     list.remove(item);
     list.insertBefore(item, reference);
@@ -164,6 +179,11 @@ export class IterationArtifacts {
   }
 
   nextNode(item: ListItem): ListItem {
+    return this.list.nextNode(item);
+  }
+
+  advanceNode(item: ListItem): ListItem {
+    item.seen = true;
     return this.list.nextNode(item);
   }
 
@@ -266,15 +286,27 @@ export class IteratorSynchronizer<Env> {
   private advanceToKey(key: unknown) {
     let { current, artifacts } = this;
 
-    let seek = current;
+    if (current === null) return;
 
-    while (seek !== null && seek.key !== key) {
-      seek.seen = true;
-      seek = artifacts.nextNode(seek);
+    let next = artifacts.advanceNode(current);
+
+    if (next.key === key) {
+      this.current = artifacts.advanceNode(next);
+      return;
     }
 
-    if (seek !== null) {
-      this.current = artifacts.nextNode(seek);
+    let seek = artifacts.advanceToKey(key, current);
+
+    if (seek) {
+      this.move(seek, current);
+      this.current = artifacts.nextNode(current);
+    }
+  }
+
+  private move(item: ListItem, reference: Option<ListItem>) {
+    if (item.next !== reference) {
+      this.artifacts.move(item, reference);
+      this.target.move(this.env, item.key, item.value, item.memo, reference ? reference.key : END);
     }
   }
 
@@ -290,7 +322,7 @@ export class IteratorSynchronizer<Env> {
     let { key } = item;
 
     if (current !== null && current.key === key) {
-      this.nextRetain(item);
+      this.nextRetain(item, current);
     } else if (artifacts.has(key)) {
       this.nextMove(item);
     } else {
@@ -300,10 +332,10 @@ export class IteratorSynchronizer<Env> {
     return Phase.Append;
   }
 
-  private nextRetain(item: OpaqueIterationItem) {
-    let { artifacts, current } = this;
+  private nextRetain(item: OpaqueIterationItem, current: ListItem) {
+    let { artifacts } = this;
 
-    current = expect(current, 'BUG: current is empty');
+    // current = expect(current, 'BUG: current is empty');
 
     current.update(item);
     this.current = artifacts.nextNode(current);
@@ -311,15 +343,13 @@ export class IteratorSynchronizer<Env> {
   }
 
   private nextMove(item: OpaqueIterationItem) {
-    let { current, artifacts, target } = this;
+    let { current, artifacts } = this;
     let { key } = item;
 
-    let found = artifacts.get(item.key);
-    found.update(item);
+    let found = artifacts.update(item);
 
-    if (artifacts.wasSeen(item.key)) {
-      artifacts.move(found, current);
-      target.move(this.env, found.key, found.value, found.memo, current ? current.key : END);
+    if (artifacts.wasSeen(key)) {
+      this.move(found, current);
     } else {
       this.advanceToKey(key);
     }
