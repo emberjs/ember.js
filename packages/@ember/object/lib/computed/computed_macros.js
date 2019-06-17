@@ -877,10 +877,10 @@ export const and = generateComputedWithPredicate('and', value => value);
   import { set } from '@ember/object';
   import { or } from '@ember/object/computed';
 
-  let Hamster = EmberObject.extend({
+  class Hamster {
     @or('hasJacket', 'hasUmbrella') readyForRain;
     @or('hasSunscreen', 'hasUmbrella') readyForBeach;
-  });
+  }
 
   let tomster = new Hamster();
 

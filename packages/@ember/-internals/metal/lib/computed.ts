@@ -149,7 +149,7 @@ function noop(): void {}
   import { computed, set } from '@ember/object';
 
   function fullNameMacro(firstNameKey, lastNameKey) {
-    @computed(firstNameKey, lastNameKey, {
+    return computed(firstNameKey, lastNameKey, {
       get() {
         return `${this[firstNameKey]} ${this[lastNameKey]}`;
       }
