@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.10.2 (June 17, 2019)
+
+- [#17971](https://github.com/emberjs/ember.js/pull/17971) [BUGFIX] Ensure query param only link-to's work in error states.
+
 ### v3.10.1 (June 4, 2019)
 
 - [#18071](https://github.com/emberjs/ember.js/pull/18071) [BUGFIX] Ensure modifiers do not run in FastBoot modes. (#18071)
