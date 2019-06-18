@@ -280,7 +280,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
         );
 
         return this.visit('/')
-          .then(async () => {
+          .then(() => {
             assert.equal(this.$('#good-link').length, 1, 'good-link should be in the DOM');
             assert.equal(this.$('#bad-link').length, 1, 'bad-link should be in the DOM');
 
