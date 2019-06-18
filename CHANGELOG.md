@@ -25,9 +25,10 @@
 - [#17940](https://github.com/emberjs/ember.js/pull/17940) [CLEANUP] Remove `sync` queue from @ember/runloop.
 - [#18026](https://github.com/emberjs/ember.js/pull/18026) Enabling featured discussed in 2019-05-03 core team meeting.
 
-### v3.10.2 (June 17, 2019)
+### v3.10.2 (June 18, 2019)
 
 - [#17971](https://github.com/emberjs/ember.js/pull/17971) [BUGFIX] Ensure query param only link-to's work in error states.
+- [#18080](https://github.com/emberjs/ember.js/pull/18080) [BUGFIX] Ensure that `ember-template-compiler` can be used during FastBoot runtime.
 
 ### v3.10.1 (June 4, 2019)
 
