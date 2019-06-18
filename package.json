@@ -116,7 +116,7 @@
     "broccoli-debug": "^0.6.4",
     "broccoli-file-creator": "^2.1.1",
     "broccoli-persistent-filter": "^2.2.2",
-    "broccoli-plugin": "^2.0.0",
+    "broccoli-plugin": "^2.1.0",
     "broccoli-rollup": "^2.1.1",
     "broccoli-source": "^2.0.0",
     "broccoli-string-replace": "^0.1.2",
