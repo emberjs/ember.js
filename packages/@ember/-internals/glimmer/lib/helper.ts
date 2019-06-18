@@ -6,6 +6,7 @@ import { Factory } from '@ember/-internals/owner';
 import { FrameworkObject, setFrameworkClass } from '@ember/-internals/runtime';
 import { symbol } from '@ember/-internals/utils';
 import { EMBER_FRAMEWORK_OBJECT_OWNER_ARGUMENT } from '@ember/canary-features';
+import { join } from '@ember/runloop';
 import { Dict, Opaque } from '@glimmer/interfaces';
 import { DirtyableTag } from '@glimmer/reference';
 
@@ -116,7 +117,7 @@ let Helper = FrameworkObject.extend({
     @since 1.13.0
   */
   recompute() {
-    this[RECOMPUTE_TAG].inner.dirty();
+    join(() => this[RECOMPUTE_TAG].inner.dirty());
   },
 
   /**

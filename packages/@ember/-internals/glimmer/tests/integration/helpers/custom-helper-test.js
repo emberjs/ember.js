@@ -155,6 +155,43 @@ moduleFor(
       assert.strictEqual(destroyCount, 0, 'destroy is not called on recomputation');
     }
 
+    // https://github.com/emberjs/ember.js/issues/14774
+    ['@test class-based helper with static arguments can recompute a new value without a runloop'](
+      assert
+    ) {
+      let destroyCount = 0;
+      let computeCount = 0;
+      let helper;
+
+      this.registerHelper('hello-world', {
+        init() {
+          this._super(...arguments);
+          helper = this;
+        },
+        compute() {
+          return ++computeCount;
+        },
+        destroy() {
+          destroyCount++;
+          this._super();
+        },
+      });
+
+      this.render('{{hello-world "whut"}}');
+
+      this.assertText('1');
+
+      runTask(() => this.rerender());
+
+      this.assertText('1');
+
+      helper.recompute();
+
+      this.assertText('2');
+
+      assert.strictEqual(destroyCount, 0, 'destroy is not called on recomputation');
+    }
+
     ['@test helper params can be returned']() {
       this.registerHelper('hello-world', values => {
         return values;
