@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.11.0-beta.4 (June 17, 2019)
+
+- [#17971](https://github.com/emberjs/ember.js/pull/17971) [BUGFIX] Ensure query param only link-to's work in error states.
+
 ### v3.11.0-beta.3 (June 10, 2019)
 
 - [#18080](https://github.com/emberjs/ember.js/pull/18080) [BUGFIX] Fix `ember-template-compiler` compatibility with Fastboot.
