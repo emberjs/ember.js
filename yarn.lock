@@ -1764,10 +1764,10 @@ broccoli-plugin@^1.0.0, broccoli-plugin@^1.1.0, broccoli-plugin@^1.2.0, broccoli
     rimraf "^2.3.4"
     symlink-or-copy "^1.1.8"
 
-broccoli-plugin@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/broccoli-plugin/-/broccoli-plugin-2.0.0.tgz#c248d0241ba14be42b3253f6707370ee9d71c88e"
-  integrity sha512-p/p6pqDI+FlXwPSnwlFhzUgHNn1yj/EKaBys4/gL094+cVRbdsojFStrIjDoOtL8j+7iU+DazPnH3+/rD9PuLA==
+broccoli-plugin@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/broccoli-plugin/-/broccoli-plugin-2.1.0.tgz#2fab6c578219cfcc64f773e9616073313fc8b334"
+  integrity sha512-ElE4caljW4slapyEhSD9jU9Uayc8SoSABWdmY9SqbV8DHNxU6xg1jJsPcMm+cXOvggR3+G+OXAYQeFjWVnznaw==
   dependencies:
     promise-map-series "^0.2.1"
     quick-temp "^0.1.3"
