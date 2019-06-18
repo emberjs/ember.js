@@ -400,18 +400,14 @@ RouterService.reopen(Evented, {
   currentURL: readOnly('_router.currentURL'),
 
   /**
-    The `location` property determines the type of URLs your
-    application will use.
+    The `location` property returns what implementation of the `location` API
+    your application is using, which determines what type of URL is being used.
 
-    The following location types are currently available:
-    * `auto`
-    * `hash`
-    * `history`
-    * `none`
+    See [Location](/ember/release/classes/Location) for more information.
 
-    You can pass a location type to force a particular `location` API
-    implementation to be used in your application. For example, to set
-    the `history` type:
+    To force a particular `location` API implementation to be used in your
+    application you can set a location type on your `config/environment`.
+    For example, to set the `history` type:
 
     ```config/environment.js
     'use strict';
@@ -426,6 +422,14 @@ RouterService.reopen(Evented, {
       }
     }
     ```
+
+    The following location types are available by default:
+    `auto`, `hash`, `history`, `none`.
+
+    See [HashLocation](/ember/release/classes/HashLocation).
+    See [HistoryLocation](/ember/release/classes/HistoryLocation).
+    See [NoneLocation](/ember/release/classes/NoneLocation).
+    See [AutoLocation](/ember/release/classes/AutoLocation).
 
     @property location
     @default 'hash'
