@@ -659,15 +659,15 @@
     exec-sh "^0.3.2"
     minimist "^1.2.0"
 
-"@glimmer/compiler@0.38.5-alpha.1":
-  version "0.38.5-alpha.1"
-  resolved "https://registry.yarnpkg.com/@glimmer/compiler/-/compiler-0.38.5-alpha.1.tgz#bd34a40d167c0bd589f8b9084adf49d771466747"
-  integrity sha512-PqliDQUQkwIDsxzFfSKsgQUkLk6/rQ5BaF2cSI5i6D8T1J+ZUgzT0NaHNiDCVWUSsqd+SDaFe/NjG3cP/dplVw==
+"@glimmer/compiler@0.41.0":
+  version "0.41.0"
+  resolved "https://registry.yarnpkg.com/@glimmer/compiler/-/compiler-0.41.0.tgz#e7a719ff4215a1a5fa6af8f8cb5e6d634a2f7972"
+  integrity sha512-NFr22rJBKGqPxwTuYbFJcFsd6FLaRLKbOW3mgXj6DejgPG6ppOxVqysrQfi8Zp543FfKfy0isnPMRwzSAvECSg==
   dependencies:
-    "@glimmer/interfaces" "^0.38.5-alpha.1"
-    "@glimmer/syntax" "^0.38.5-alpha.1"
-    "@glimmer/util" "^0.38.5-alpha.1"
-    "@glimmer/wire-format" "^0.38.5-alpha.1"
+    "@glimmer/interfaces" "^0.41.0"
+    "@glimmer/syntax" "^0.41.0"
+    "@glimmer/util" "^0.41.0"
+    "@glimmer/wire-format" "^0.41.0"
 
 "@glimmer/encoder@^0.38.5-alpha.1":
   version "0.38.5-alpha.1"
@@ -689,6 +689,11 @@
   dependencies:
     "@glimmer/wire-format" "^0.38.5-alpha.1"
     "@simple-dom/interface" "1.4.0"
+
+"@glimmer/interfaces@^0.41.0":
+  version "0.41.0"
+  resolved "https://registry.yarnpkg.com/@glimmer/interfaces/-/interfaces-0.41.0.tgz#3f571a181025406f29faed9006d0a914afb577b1"
+  integrity sha512-d0Ryj8iV3FiyMyT4QpwHNg2QFFEmdzI5cJFcbmC+OmuTe6eOQ52mLDlw1+D+a3ZDv8Jfj3l0QkEcEugCxDY+1Q==
 
 "@glimmer/low-level@^0.38.5-alpha.1":
   version "0.38.5-alpha.1"
@@ -746,20 +751,25 @@
     "@glimmer/wire-format" "^0.38.5-alpha.1"
     "@simple-dom/interface" "^1.4.0"
 
-"@glimmer/syntax@^0.38.5-alpha.1":
-  version "0.38.5-alpha.1"
-  resolved "https://registry.yarnpkg.com/@glimmer/syntax/-/syntax-0.38.5-alpha.1.tgz#5b2c13aff088a39c326e142b465c57e7e3cf8ba9"
-  integrity sha512-VB5mQFqL2A9y8Sx9spALarokyZRfRzgClsmX+K3J19N+oLuXu8al9+5T9utDTLDZy33PQzFMkDYf/x91n3w7ow==
+"@glimmer/syntax@^0.41.0":
+  version "0.41.0"
+  resolved "https://registry.yarnpkg.com/@glimmer/syntax/-/syntax-0.41.0.tgz#af033e48475e29a4784900c13695925d752f462d"
+  integrity sha512-sYmgUMdK0jX+3ZNX9C2TKvL1YZGsKIcXRicwnzoTC7F56z29CbSCc7o6Zf0CI4L2Q7FSnHDxldlSe48wBAr6vQ==
   dependencies:
-    "@glimmer/interfaces" "^0.38.5-alpha.1"
-    "@glimmer/util" "^0.38.5-alpha.1"
-    handlebars "^4.0.6"
-    simple-html-tokenizer "^0.5.6"
+    "@glimmer/interfaces" "^0.41.0"
+    "@glimmer/util" "^0.41.0"
+    handlebars "^4.0.13"
+    simple-html-tokenizer "^0.5.7"
 
 "@glimmer/util@^0.38.5-alpha.1":
   version "0.38.5-alpha.1"
   resolved "https://registry.yarnpkg.com/@glimmer/util/-/util-0.38.5-alpha.1.tgz#2508e5015ab3a42262bf608d885233115488148e"
   integrity sha512-JO7PDInhp0FepIx1V6XTPJ4q1xPlNtdS3B8j0uteNnhOPpkIMbpRLcJKPJbAHuFRORQBEDEeWzkZ6NAPpfVenQ==
+
+"@glimmer/util@^0.41.0":
+  version "0.41.0"
+  resolved "https://registry.yarnpkg.com/@glimmer/util/-/util-0.41.0.tgz#743fa455d1d7fa0ce29688e932c231a99c0752cf"
+  integrity sha512-aKmQy62eRFhOZET9XmTB8MOA32G1FmD4d9HWL21OfdcGM4IbguRrWLMQc2DRh1YOE2AaT0PBrFrPmpNwFp5tpQ==
 
 "@glimmer/vm@^0.38.5-alpha.1":
   version "0.38.5-alpha.1"
@@ -775,6 +785,14 @@
   integrity sha512-BlgyY/11jaafWuK5DA13tvuwn1HOuso8MdW7PaFYqceFMYn/fhGrRXqcgeKiwT9p7U/LbNA1OZf678X2QYjzog==
   dependencies:
     "@glimmer/util" "^0.38.5-alpha.1"
+
+"@glimmer/wire-format@^0.41.0":
+  version "0.41.0"
+  resolved "https://registry.yarnpkg.com/@glimmer/wire-format/-/wire-format-0.41.0.tgz#a50edcdcae0d11e68dffa04d96dd37a007f708b4"
+  integrity sha512-4n0xgXQ5czqxDUjeOq+rN+5C3qDJ+Ce1NCl2jfrhw9lUdQisT2BmjSRf7CMXQZTonjVub1Lgjk9jpuT0UBaNvg==
+  dependencies:
+    "@glimmer/interfaces" "^0.41.0"
+    "@glimmer/util" "^0.41.0"
 
 "@simple-dom/document@^1.4.0":
   version "1.4.0"
@@ -4180,12 +4198,23 @@ growly@^1.3.0:
   resolved "https://registry.yarnpkg.com/growly/-/growly-1.3.0.tgz#f10748cbe76af964b7c96c93c6bcc28af120c081"
   integrity sha1-8QdIy+dq+WS3yWyTxrzCivEgwIE=
 
-handlebars@^4.0.11, handlebars@^4.0.4, handlebars@^4.0.6:
+handlebars@^4.0.11, handlebars@^4.0.4:
   version "4.1.0"
   resolved "https://registry.yarnpkg.com/handlebars/-/handlebars-4.1.0.tgz#0d6a6f34ff1f63cecec8423aa4169827bf787c3a"
   integrity sha512-l2jRuU1NAWK6AW5qqcTATWQJvNPEwkM7NEKSiv/gqOsoSQbVoWyqVEY5GS+XPQ88zLNmqASRpzfdm8d79hJS+w==
   dependencies:
     async "^2.5.0"
+    optimist "^0.6.1"
+    source-map "^0.6.1"
+  optionalDependencies:
+    uglify-js "^3.1.4"
+
+handlebars@^4.0.13:
+  version "4.1.2"
+  resolved "https://registry.yarnpkg.com/handlebars/-/handlebars-4.1.2.tgz#b6b37c1ced0306b221e094fc7aca3ec23b131b67"
+  integrity sha512-nvfrjqvt9xQ8Z/w0ijewdD/vvWDTOweBUm96NTr66Wfvo1mJenBLwcYmPs3TIBP5ruzYGD7Hx/DaM9RmhroGPw==
+  dependencies:
+    neo-async "^2.6.0"
     optimist "^0.6.1"
     source-map "^0.6.1"
   optionalDependencies:
@@ -5976,6 +6005,11 @@ negotiator@0.6.1:
   resolved "https://registry.yarnpkg.com/negotiator/-/negotiator-0.6.1.tgz#2b327184e8992101177b28563fb5e7102acd0ca9"
   integrity sha1-KzJxhOiZIQEXeyhWP7XnECrNDKk=
 
+neo-async@^2.6.0:
+  version "2.6.1"
+  resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.1.tgz#ac27ada66167fa8849a6addd837f6b189ad2081c"
+  integrity sha512-iyam8fBuCUpWeKPGpaNMetEocMt364qkCsfL9JuhjXX6dRnguRVOfk2GZaDpPjcOKiiXCPINZC1GczQ7iTq3Zw==
+
 nice-try@^1.0.4:
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/nice-try/-/nice-try-1.0.5.tgz#a3378a7696ce7d223e88fc9b764bd7ef1089e366"
@@ -7364,10 +7398,10 @@ simple-dom@^1.4.0:
     "@simple-dom/serializer" "^1.4.0"
     "@simple-dom/void-map" "^1.4.0"
 
-simple-html-tokenizer@^0.5.6:
-  version "0.5.6"
-  resolved "https://registry.yarnpkg.com/simple-html-tokenizer/-/simple-html-tokenizer-0.5.6.tgz#e1e442b14f5484bf9a7e2924f78f00855e6b3c14"
-  integrity sha512-WgtFeFTAzegTCs1/x096l79gscV43LS17fEXBjv1s26oqiu1qmTM0buaqba/HmlxHNfk4yJuKmSJoRDMWuQU6w==
+simple-html-tokenizer@^0.5.7:
+  version "0.5.7"
+  resolved "https://registry.yarnpkg.com/simple-html-tokenizer/-/simple-html-tokenizer-0.5.7.tgz#8eca336ecfbe2b3c6166cbb31b2682088de79f40"
+  integrity sha512-APW9iYbkJ5cijjX4Ljhf3VG8SwYPUJT5gZrwci/wieMabQxWFiV5VwsrP5c6GMRvXKEQMGkAB1d9dvW66dTqpg==
 
 sinon@^1.17.6:
   version "1.17.7"
