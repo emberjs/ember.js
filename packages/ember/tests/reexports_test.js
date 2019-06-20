@@ -38,12 +38,6 @@ moduleFor(
       }, /EXTEND_PROTOTYPES is deprecated/);
     }
 
-    ['@test Ember.NAME_KEY is deprecated']() {
-      expectDeprecation(() => {
-        Ember.NAME_KEY;
-      }, 'Using `Ember.NAME_KEY` is deprecated, override `.toString` instead');
-    }
-
     '@test Ember.FEATURES is exported'(assert) {
       for (let feature in FEATURES) {
         assert.equal(

@@ -9,7 +9,6 @@ import {
   getOwnPropertyDescriptors,
   guidFor,
   makeArray,
-  NAME_KEY,
   ROOT,
   setObservers,
   wrap,
@@ -596,7 +595,6 @@ export default class Mixin {
     this._without = undefined;
 
     if (DEBUG) {
-      this[NAME_KEY] = undefined;
       /*
         In debug builds, we seal mixins to help avoid performance pitfalls.
 
@@ -744,7 +742,6 @@ type MixinLike = Mixin | { [key: string]: any };
 Mixin.prototype.toString = classToString;
 
 if (DEBUG) {
-  Mixin.prototype[NAME_KEY] = undefined;
   Object.seal(Mixin.prototype);
 }
 

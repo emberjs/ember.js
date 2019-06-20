@@ -38,6 +38,3 @@ export {
   teardownMandatorySetter,
   setWithMandatorySetter,
 } from './lib/mandatory-setter';
-
-import symbol from './lib/symbol';
-export const NAME_KEY = symbol('NAME_KEY');
