@@ -1,4 +1,3 @@
-import { location } from '@ember/-internals/browser-environment';
 import { assert } from '@ember/debug';
 
 export interface EmberLocation {
@@ -111,5 +110,4 @@ export default {
   },
 
   implementations: {},
-  _location: location,
 };
