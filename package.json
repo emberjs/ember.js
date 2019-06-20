@@ -141,7 +141,7 @@
     "eslint-plugin-prettier": "^3.1.0",
     "eslint-plugin-qunit": "^4.0.0",
     "execa": "^1.0.0",
-    "express": "^4.16.2",
+    "express": "^4.17.1",
     "finalhandler": "^1.1.2",
     "fs-extra": "^7.0.1",
     "git-repo-info": "^2.1.0",
