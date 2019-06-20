@@ -24,6 +24,31 @@ moduleFor(
       assert.equal(get(obj, 'count'), 1, 'should invoke observer after change');
     }
 
+    async ['@test setting `undefined` value on observed property behaves correctly'](assert) {
+      let MyClass = EmberObject.extend({
+        mood: 'good',
+        foo: observer('mood', function() {}),
+      });
+
+      let obj = MyClass.create();
+      assert.equal(get(obj, 'mood'), 'good');
+
+      set(obj, 'mood', 'bad');
+      await runLoopSettled();
+
+      assert.equal(get(obj, 'mood'), 'bad');
+
+      set(obj, 'mood', undefined);
+      await runLoopSettled();
+
+      assert.equal(get(obj, 'mood'), undefined);
+
+      set(obj, 'mood', 'awesome');
+      await runLoopSettled();
+
+      assert.equal(get(obj, 'mood'), 'awesome');
+    }
+
     async ['@test observer on subclass'](assert) {
       let MyClass = EmberObject.extend({
         count: 0,

@@ -792,7 +792,7 @@ export interface Meta {
   writeValues(subkey: string, value: any): void;
   peekValues(key: string): any;
   deleteFromValues(key: string): any;
-  readInheritedValue(key: string, subkey: string): any;
+  readInheritedValue(key: string): any;
   writeValue(obj: object, key: string, value: any): any;
 }
 
@@ -808,34 +808,20 @@ if (DEBUG) {
     );
 
     let map = this._getOrCreateOwnMap('_values');
-    map[subkey] = value;
+    map[subkey] = value === undefined ? UNDEFINED : value;
   };
 
-  Meta.prototype.peekValues = function(subkey: string) {
-    return this._findInherited2('_values', subkey);
+  Meta.prototype.peekValues = function(key: string) {
+    let val = this._findInherited2('_values', key);
+    return val === UNDEFINED ? undefined : val;
   };
 
-  Meta.prototype.deleteFromValues = function(subkey: string) {
-    delete this._getOrCreateOwnMap('_values')[subkey];
+  Meta.prototype.deleteFromValues = function(key: string) {
+    delete this._getOrCreateOwnMap('_values')[key];
   };
 
-  Meta.prototype.readInheritedValue = function(key, subkey) {
-    let internalKey = `_${key}`;
-
-    let pointer: Meta | null = this;
-
-    while (pointer !== null) {
-      let map = pointer[internalKey];
-      if (map !== undefined) {
-        let value = map[subkey];
-        if (value !== undefined || subkey in map) {
-          return value;
-        }
-      }
-      pointer = pointer.parent;
-    }
-
-    return UNDEFINED;
+  Meta.prototype.readInheritedValue = function(key: string) {
+    return this._findInherited2('_values', key);
   };
 
   Meta.prototype.writeValue = function(obj: object, key: string, value: any) {

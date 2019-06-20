@@ -56,10 +56,12 @@ export function INHERITING_GETTER_FUNCTION(name: string): InheritingGetterFuncti
     let meta = peekMeta(this);
     let val;
     if (meta !== null) {
-      val = meta.readInheritedValue('values', name);
-      if (val === UNDEFINED) {
+      val = meta.readInheritedValue(name);
+      if (val === undefined) {
         let proto = Object.getPrototypeOf(this);
-        return proto === null ? undefined : proto[name];
+        val = proto === null ? undefined : proto[name];
+      } else {
+        val = val === UNDEFINED ? undefined : val;
       }
     }
 
