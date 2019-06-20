@@ -7,7 +7,7 @@ import EmberError from '@ember/error';
 import { assign } from '@ember/polyfills';
 import { cancel, once, run, scheduleOnce } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
-import EmberLocation, { EmberLocation as IEmberLocation } from '../location/api';
+import { EmberLocation } from '../location/util';
 import { calculateCacheKey, extractRouteArgs, getActiveTargetName, resemblesURL } from '../utils';
 import DSL from './dsl';
 import Route, {
@@ -121,7 +121,7 @@ const { slice } = Array.prototype;
   @public
 */
 class EmberRouter extends EmberObject {
-  location!: string | IEmberLocation;
+  location!: string | EmberLocation;
   rootURL!: string;
   _routerMicrolib!: Router<Route>;
 
@@ -546,7 +546,7 @@ class EmberRouter extends EmberObject {
 
   generate(name: string, ...args: any[]) {
     let url = this._routerMicrolib.generate(name, ...args);
-    return (this.location as IEmberLocation).formatURL(url);
+    return (this.location as EmberLocation).formatURL(url);
   }
 
   /**
@@ -667,17 +667,8 @@ class EmberRouter extends EmberObject {
 
     if ('string' === typeof location && owner) {
       let resolvedLocation = owner.lookup(`location:${location}`);
-
-      if (resolvedLocation !== undefined) {
-        location = set(this, 'location', resolvedLocation);
-      } else {
-        // Allow for deprecated registration of custom location API's
-        let options = {
-          implementation: location,
-        };
-
-        location = set(this, 'location', EmberLocation.create(options));
-      }
+      assert(`Location factory with ${location} name is not found`, resolvedLocation !== undefined);
+      location = set(this, 'location', resolvedLocation);
     }
 
     if (location !== null && typeof location === 'object') {

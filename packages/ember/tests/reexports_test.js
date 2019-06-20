@@ -319,7 +319,6 @@ let allExports = [
   ['computed.collect', '@ember/object/computed', 'collect'],
 
   // @ember/-internals/routing
-  ['Location', '@ember/-internals/routing'],
   ['AutoLocation', '@ember/-internals/routing'],
   ['HashLocation', '@ember/-internals/routing'],
   ['HistoryLocation', '@ember/-internals/routing'],

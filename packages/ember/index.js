@@ -624,7 +624,6 @@ Ember.ComponentLookup = views.ComponentLookup;
 Ember.EventDispatcher = views.EventDispatcher;
 
 // ****@ember/-internals/routing****
-Ember.Location = routing.Location;
 Ember.AutoLocation = routing.AutoLocation;
 Ember.HashLocation = routing.HashLocation;
 Ember.HistoryLocation = routing.HistoryLocation;
