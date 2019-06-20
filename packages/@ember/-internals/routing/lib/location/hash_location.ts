@@ -1,6 +1,5 @@
-import { get, set } from '@ember/-internals/metal';
+import { set } from '@ember/-internals/metal';
 import { bind } from '@ember/runloop';
-
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import { EmberLocation, UpdateCallback } from './api';
 import { getHash } from './util';
@@ -41,8 +40,7 @@ export default class HashLocation extends EmberObject implements EmberLocation {
   implementation = 'hash';
 
   init() {
-    set(this, 'location', get(this, '_location') || window.location);
-
+    set(this, 'location', this._location || window.location);
     this._hashchangeHandler = undefined;
   }
 
@@ -55,7 +53,7 @@ export default class HashLocation extends EmberObject implements EmberLocation {
     @method getHash
   */
   getHash() {
-    return getHash(get(this, 'location'));
+    return getHash(this.location);
   }
 
   /**
@@ -98,7 +96,7 @@ export default class HashLocation extends EmberObject implements EmberLocation {
     @param path {String}
   */
   setURL(path: string) {
-    get(this, 'location').hash = path;
+    this.location.hash = path;
     set(this, 'lastSetURL', path);
   }
 
@@ -111,7 +109,7 @@ export default class HashLocation extends EmberObject implements EmberLocation {
     @param path {String}
   */
   replaceURL(path: string) {
-    get(this, 'location').replace(`#${path}`);
+    this.location.replace(`#${path}`);
     set(this, 'lastSetURL', path);
   }
 
@@ -128,7 +126,7 @@ export default class HashLocation extends EmberObject implements EmberLocation {
     this._removeEventListener();
     this._hashchangeHandler = bind(this, function(this: HashLocation) {
       let path = this.getURL();
-      if (get(this, 'lastSetURL') === path) {
+      if (this.lastSetURL === path) {
         return;
       }
 
