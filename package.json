@@ -158,7 +158,7 @@
     "rollup-plugin-node-resolve": "^4.2.4",
     "route-recognizer": "^0.3.4",
     "router_js": "^6.2.4",
-    "rsvp": "^4.8.4",
+    "rsvp": "^4.8.5",
     "semver": "^6.1.1",
     "serve-static": "^1.14.1",
     "simple-dom": "^1.4.0",
