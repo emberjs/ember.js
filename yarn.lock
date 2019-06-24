@@ -1241,10 +1241,10 @@ babel-messages@^6.23.0:
   dependencies:
     babel-runtime "^6.22.0"
 
-babel-plugin-debug-macros@^0.3.0, babel-plugin-debug-macros@^0.3.1:
-  version "0.3.1"
-  resolved "https://registry.yarnpkg.com/babel-plugin-debug-macros/-/babel-plugin-debug-macros-0.3.1.tgz#cf45b497ab02cdd0c98e11f6da79b1e0773ceae1"
-  integrity sha512-1tnO63L4d9HFHguR4Xc+/Y7Og1+mDsXwiStVrsayyXIDauv6r1o9dnhRKPmmCV5digG2XgScnQJpWDsxNNLU7g==
+babel-plugin-debug-macros@^0.3.0, babel-plugin-debug-macros@^0.3.2:
+  version "0.3.2"
+  resolved "https://registry.yarnpkg.com/babel-plugin-debug-macros/-/babel-plugin-debug-macros-0.3.2.tgz#b536a29386fac76f525bf1b73c4f74cd5281c5fa"
+  integrity sha512-CslqMZ3RGUvlEERuKr+wrXcHqQGvQ9ALLrbcOt8aSEp4ySfNCHAQbuGQYKZYw3P30/VGkPaR0Begch+dbqgEpg==
   dependencies:
     semver "^5.3.0"
 
