@@ -50,6 +50,9 @@ let templates = [
 
   // slash in path
   '{{namespace/foo "bar" baz="qux"}}',
+
+  // unescaped
+  '{{{unescaped}}}',
 ];
 
 QUnit.module('[glimmer-syntax] Code generation', function() {

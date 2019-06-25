@@ -143,7 +143,9 @@ export default function build(
       break;
     case 'MustacheStatement':
       {
-        output.push(compactJoin(['{{', pathParams(ast), '}}']));
+        output.push(
+          compactJoin([ast.escaped ? '{{' : '{{{', pathParams(ast), ast.escaped ? '}}' : '}}}'])
+        );
       }
       break;
     case 'MustacheCommentStatement':
