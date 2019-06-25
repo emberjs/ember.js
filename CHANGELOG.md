@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.41.1 (2019-06-25)
+
+#### :rocket: Enhancement
+* `@glimmer/reference`
+  * [#945](https://github.com/glimmerjs/glimmer-vm/pull/945) Performance improvements for keyed lists changes ([@lifeart](https://github.com/lifeart))
+
+#### :bug: Bug Fix
+* `@glimmer/syntax`
+  * [#949](https://github.com/glimmerjs/glimmer-vm/pull/949) Print unescaped statements correctly ([@paddyobrien](https://github.com/paddyobrien))
+
+#### Committers: 2
+- Alex Kanunnikov ([@lifeart](https://github.com/lifeart))
+- Paddy O'Brien ([@paddyobrien](https://github.com/paddyobrien))
+
+
 ## v0.41.0 (2019-05-13)
 
 #### :boom: Breaking Change
