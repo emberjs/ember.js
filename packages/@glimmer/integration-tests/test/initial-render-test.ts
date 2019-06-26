@@ -399,6 +399,28 @@ class Rehydration extends AbstractRehydrationTests {
   }
 
   @test
+  'style tag'() {
+    let template = '<style>{{selector}} { color: #fff; }</style>';
+    this.renderServerSide(template, { selector: 'div' });
+    let b = blockStack();
+    this.assertHTML(strip`
+      ${b(0)}
+      <style>
+        div { color: #fff; }
+      </style>
+      ${b(0)}
+    `);
+    this.renderClientSide(template, { selector: 'div' });
+    this.assertRehydrationStats({ nodesRemoved: 0 });
+    this.assertHTML(strip`
+      <style>
+        div { color: #fff; }
+      </style>
+    `);
+    this.assertStableRerender();
+  }
+
+  @test
   'clearing bounds'() {
     let template = strip`
       {{#if isTrue}}
