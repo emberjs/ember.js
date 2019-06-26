@@ -172,5 +172,33 @@ moduleFor(
         'one reopen call after mutating parents and flattening out of order'
       );
     }
+
+    '@test removed listeners are removed from the underlying structure GH#1112213'(assert) {
+      // this is using private API to confirm the underlying data structure is properly maintained
+      // and should be changed to match the data structure as needed
+
+      class Class1 {}
+      let class1Meta = meta(Class1.prototype);
+      class1Meta.addToListeners('hello', null, 'm', 0);
+
+      let instance1 = new Class1();
+      let m1 = meta(instance1);
+
+      function listenerFunc() {}
+
+      m1.removeFromListeners('hello', null, 'm', 0);
+
+      m1.addToListeners('stringListener', null, 'm', 0);
+      m1.addToListeners('functionListener', null, listenerFunc, 0);
+
+      m1.removeFromListeners('functionListener', null, listenerFunc, 0);
+      m1.removeFromListeners('stringListener', null, 'm', 0);
+
+      assert.equal(
+        m1.flattenedListeners().length,
+        1,
+        'instance listeners correctly removed, inherited listeners remain'
+      );
+    }
   }
 );
