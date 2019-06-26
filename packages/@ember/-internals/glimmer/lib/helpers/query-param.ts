@@ -1,10 +1,9 @@
 /**
 @module ember
 */
-import { QueryParams } from '@ember/-internals/routing';
+import { EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS } from '@ember/canary-features';
 import { assert } from '@ember/debug';
-import { assign } from '@ember/polyfills';
-import { Arguments, CapturedArguments, VM } from '@glimmer/runtime';
+import { Arguments, CapturedArguments, UNDEFINED_REFERENCE, VM } from '@glimmer/runtime';
 import { InternalHelperReference } from '../utils/references';
 
 /**
@@ -23,16 +22,32 @@ import { InternalHelperReference } from '../utils/references';
   @return {Object} A `QueryParams` object for `{{link-to}}`
   @public
 */
-function queryParams({ positional, named }: CapturedArguments) {
-  // tslint:disable-next-line:max-line-length
-  assert(
-    "The `query-params` helper only accepts hash parameters, e.g. (query-params queryParamPropertyName='foo') as opposed to just (query-params 'foo')",
-    positional.value().length === 0
-  );
-
-  return new QueryParams(assign({}, named.value() as any));
-}
 
 export default function(_vm: VM, args: Arguments) {
-  return new InternalHelperReference(queryParams, args.capture());
+  if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
+    assert(
+      'The `(query-params)` helper can only be used when invoking the `{{link-to}}` component.'
+    );
+    return UNDEFINED_REFERENCE;
+  } else {
+    /* eslint-disable no-inner-declarations */
+    function queryParams({ positional, named }: CapturedArguments) {
+      // tslint:disable-next-line:max-line-length
+      assert(
+        "The `query-params` helper only accepts hash parameters, e.g. (query-params queryParamPropertyName='foo') as opposed to just (query-params 'foo')",
+        positional.value().length === 0
+      );
+      return new QueryParams(named.value() as any);
+    }
+
+    class QueryParams {
+      values: null | object;
+      isQueryParams = true;
+      constructor(values = null) {
+        this.values = values;
+      }
+    }
+
+    return new InternalHelperReference(queryParams, args.capture());
+  }
 }
