@@ -356,21 +356,21 @@ class Rehydration extends AbstractRehydrationTests {
 
   @test
   'title tag'() {
-    let template = '<title>{{pageTitle}}</title>';
-    this.renderServerSide(template, { pageTitle: 'kiwi' });
+    let template = '<title>{{pageTitle}} some {{{other}}}{{thing}} <b>hey!</b></title>';
+    this.renderServerSide(template, { pageTitle: 'kiwi', other: 'other', thing: 'thing' });
     let b = blockStack();
     this.assertHTML(strip`
       ${b(0)}
       <title>
-        kiwi
+        kiwi some otherthing <b>hey!</b>
       </title>
       ${b(0)}
     `);
-    this.renderClientSide(template, { pageTitle: 'kiwi' });
+    this.renderClientSide(template, { pageTitle: 'kiwi', other: 'other', thing: 'thing' });
     this.assertRehydrationStats({ nodesRemoved: 0 });
     this.assertHTML(strip`
       <title>
-        kiwi
+        kiwi some otherthing <b>hey!</b>
       </title>
     `);
     this.assertStableRerender();
