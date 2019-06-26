@@ -594,14 +594,9 @@ export class Meta {
     } else {
       let listener = listeners[i];
 
-      // If the listener is our own function listener and we are trying to
-      // remove it, we want to splice it out entirely so we don't hold onto a
-      // reference.
-      if (
-        kind === ListenerKind.REMOVE &&
-        listener.kind !== ListenerKind.REMOVE &&
-        typeof method === 'function'
-      ) {
+      // If the listener is our own listener and we are trying to remove it, we
+      // want to splice it out entirely so we don't hold onto a reference.
+      if (kind === ListenerKind.REMOVE && listener.kind !== ListenerKind.REMOVE) {
         listeners.splice(i, 1);
       } else {
         assert(
