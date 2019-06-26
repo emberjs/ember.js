@@ -306,7 +306,7 @@ class Rehydration extends AbstractRehydrationTests {
       strip`
       ${b(4)}Wat Wat${b(4)}
     `,
-      'Serilaized nested remote'
+      'Serialized nested remote'
     );
     doc = this.delegate.clientDoc;
     let clientRemoteParent = doc.createElement('remote');
