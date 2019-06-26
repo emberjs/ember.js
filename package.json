@@ -143,7 +143,7 @@
     "execa": "^1.0.0",
     "express": "^4.17.1",
     "finalhandler": "^1.1.2",
-    "fs-extra": "^7.0.1",
+    "fs-extra": "^8.0.1",
     "git-repo-info": "^2.1.0",
     "github": "^0.2.3",
     "glob": "^7.1.4",
