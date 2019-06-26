@@ -30,15 +30,21 @@ class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
   private serializeBlockDepth = 0;
 
   __openBlock(): void {
-    let depth = this.serializeBlockDepth++;
-    this.__appendComment(`%+b:${depth}%`);
+    if (this.element.tagName !== 'TITLE') {
+      let depth = this.serializeBlockDepth++;
+      this.__appendComment(`%+b:${depth}%`);
+    }
 
     super.__openBlock();
   }
 
   __closeBlock(): void {
     super.__closeBlock();
-    this.__appendComment(`%-b:${--this.serializeBlockDepth}%`);
+
+    if (this.element.tagName !== 'TITLE') {
+      let depth = --this.serializeBlockDepth;
+      this.__appendComment(`%-b:${depth}%`);
+    }
   }
 
   __appendHTML(html: string): Bounds {

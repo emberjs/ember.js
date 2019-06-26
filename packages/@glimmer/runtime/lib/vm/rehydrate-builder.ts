@@ -138,7 +138,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     if (isComment(candidate) && getOpenBlockDepth(candidate) === blockDepth) {
       currentCursor.candidate = this.remove(candidate);
       currentCursor.openBlockDepth = blockDepth;
-    } else {
+    } else if (currentCursor.element.tagName !== 'TITLE') {
       this.clearMismatch(candidate);
     }
   }
