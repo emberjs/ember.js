@@ -156,30 +156,32 @@ moduleFor(
       );
     }
 
-    ['@test REMOVE_ALL does not interfere with future adds'](assert) {
-      expectDeprecation(() => {
-        let t = {};
-        let m = meta({});
+    '@test removed listeners are removed from the underlying structure GH#1112213'(assert) {
+      // this is using private API to confirm the underlying data structure is properly maintained
+      // and should be changed to match the data structure as needed
 
-        m.addToListeners('hello', t, 'm', 0);
-        let matching = m.matchingListeners('hello');
+      class Class1 {}
+      let class1Meta = meta(Class1.prototype);
+      class1Meta.addToListeners('hello', null, 'm', 0);
 
-        assert.equal(matching.length, 3);
-        assert.equal(matching[0], t);
+      let instance1 = new Class1();
+      let m1 = meta(instance1);
 
-        // Remove all listeners
-        m.removeAllListeners('hello');
+      function listenerFunc() {}
 
-        matching = m.matchingListeners('hello');
-        assert.equal(matching, undefined);
+      m1.removeFromListeners('hello', null, 'm', 0);
 
-        m.addToListeners('hello', t, 'm', 0);
-        matching = m.matchingListeners('hello');
+      m1.addToListeners('stringListener', null, 'm', 0);
+      m1.addToListeners('functionListener', null, listenerFunc, 0);
 
-        // listener was added back successfully
-        assert.equal(matching.length, 3);
-        assert.equal(matching[0], t);
-      });
+      m1.removeFromListeners('functionListener', null, listenerFunc, 0);
+      m1.removeFromListeners('stringListener', null, 'm', 0);
+
+      assert.equal(
+        m1.flattenedListeners().length,
+        1,
+        'instance listeners correctly removed, inherited listeners remain'
+      );
     }
   }
 );
