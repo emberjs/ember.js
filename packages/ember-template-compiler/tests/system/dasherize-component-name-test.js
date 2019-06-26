@@ -1,6 +1,5 @@
 import COMPONENT_NAME_SIMPLE_DASHERIZE_CACHE from '../../lib/system/dasherize-component-name';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
-import { EMBER_GLIMMER_ANGLE_BRACKET_NESTED_LOOKUP } from '@ember/canary-features';
 
 moduleFor(
   'dasherize-component-name',
@@ -17,17 +16,12 @@ moduleFor(
       assert.equal(COMPONENT_NAME_SIMPLE_DASHERIZE_CACHE.get('X-Blah'), 'x-blah');
       assert.equal(COMPONENT_NAME_SIMPLE_DASHERIZE_CACHE.get('Foo@BarBaz'), 'foo@bar-baz');
       assert.equal(COMPONENT_NAME_SIMPLE_DASHERIZE_CACHE.get('Foo@Bar-Baz'), 'foo@bar-baz');
-      if (EMBER_GLIMMER_ANGLE_BRACKET_NESTED_LOOKUP) {
-        assert.equal(COMPONENT_NAME_SIMPLE_DASHERIZE_CACHE.get('Foo::BarBaz'), 'foo/bar-baz');
-        assert.equal(COMPONENT_NAME_SIMPLE_DASHERIZE_CACHE.get('Foo::Bar-Baz'), 'foo/bar-baz');
-        assert.equal(
-          COMPONENT_NAME_SIMPLE_DASHERIZE_CACHE.get('Foo::BarBaz::Bang'),
-          'foo/bar-baz/bang'
-        );
-      } else {
-        assert.equal(COMPONENT_NAME_SIMPLE_DASHERIZE_CACHE.get('Foo::BarBaz'), 'foo::bar-baz');
-        assert.equal(COMPONENT_NAME_SIMPLE_DASHERIZE_CACHE.get('Foo::Bar-Baz'), 'foo::bar-baz');
-      }
+      assert.equal(COMPONENT_NAME_SIMPLE_DASHERIZE_CACHE.get('Foo::BarBaz'), 'foo/bar-baz');
+      assert.equal(COMPONENT_NAME_SIMPLE_DASHERIZE_CACHE.get('Foo::Bar-Baz'), 'foo/bar-baz');
+      assert.equal(
+        COMPONENT_NAME_SIMPLE_DASHERIZE_CACHE.get('Foo::BarBaz::Bang'),
+        'foo/bar-baz/bang'
+      );
     }
   }
 );
