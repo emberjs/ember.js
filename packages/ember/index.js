@@ -195,18 +195,6 @@ Ember.tryInvoke = utils.tryInvoke;
 Ember.wrap = utils.wrap;
 Ember.uuid = utils.uuid;
 
-Object.defineProperty(Ember, 'NAME_KEY', {
-  enumerable: false,
-  get() {
-    deprecate('Using `Ember.NAME_KEY` is deprecated, override `.toString` instead', false, {
-      id: 'ember-name-key-usage',
-      until: '3.9.0',
-    });
-
-    return utils.NAME_KEY;
-  },
-});
-
 // ****@ember/-internals/container****
 Ember.Container = Container;
 Ember.Registry = Registry;
