@@ -1803,10 +1803,10 @@ broccoli-source@^1.1.0:
   resolved "https://registry.yarnpkg.com/broccoli-source/-/broccoli-source-1.1.0.tgz#54f0e82c8b73f46580cbbc4f578f0b32fca8f809"
   integrity sha1-VPDoLItz9GWAy7xPV48LMvyo+Ak=
 
-broccoli-source@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/broccoli-source/-/broccoli-source-2.0.0.tgz#02d3f369fd0ef1b25c0b1646cc3c87d4c7f76cc0"
-  integrity sha512-2rRtM8WGvZFwLY+HdBflnri/r44ldx5Kc5QPlW5rRREzGt61iP22WnJzM4KY509KtDvQCeb+QDlRgxE+RkjE7A==
+broccoli-source@^2.1.2:
+  version "2.1.2"
+  resolved "https://registry.yarnpkg.com/broccoli-source/-/broccoli-source-2.1.2.tgz#e9ae834f143b607e9ec114ade66731500c38b90b"
+  integrity sha512-1lLayO4wfS0c0Sj50VfHJXNWf94FYY0WUhxj0R77thbs6uWI7USiOWFqQV5dRmhAJnoKaGN4WyLGQbgjgiYFwQ==
 
 broccoli-stew@^2.1.0:
   version "2.1.0"

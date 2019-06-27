@@ -118,7 +118,7 @@
     "broccoli-persistent-filter": "^2.3.0",
     "broccoli-plugin": "^2.1.0",
     "broccoli-rollup": "^2.1.1",
-    "broccoli-source": "^2.0.0",
+    "broccoli-source": "^2.1.2",
     "broccoli-string-replace": "^0.1.2",
     "broccoli-typescript-compiler": "^4.1.0",
     "broccoli-uglify-sourcemap": "^3.1.1",
