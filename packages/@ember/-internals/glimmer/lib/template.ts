@@ -32,7 +32,7 @@ export default function template(json: StaticTemplate): Factory {
 
     if (result === undefined) {
       counters.cacheMiss++;
-      let compiler: LazyCompiler<StaticTemplateMeta> = owner.lookup(TEMPLATE_COMPILER_MAIN);
+      let compiler = owner.lookup<LazyCompiler<StaticTemplateMeta>>(TEMPLATE_COMPILER_MAIN)!;
       result = glimmerFactory.create(compiler, { owner });
       cache.set(owner, result);
     } else {

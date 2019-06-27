@@ -395,3 +395,4 @@ export { setComponentManager, getComponentManager } from './lib/utils/custom-com
 export { setModifierManager, getModifierManager } from './lib/utils/custom-modifier-manager';
 export { capabilities as modifierCapabilties } from './lib/modifiers/custom';
 export { isSerializationFirstNode } from './lib/utils/serialization-first-node-helpers';
+export { setComponentTemplate, getComponentTemplate } from './lib/utils/component-template';

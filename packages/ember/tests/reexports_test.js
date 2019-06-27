@@ -3,6 +3,7 @@ import {
   FEATURES,
   EMBER_NATIVE_DECORATOR_SUPPORT,
   EMBER_METAL_TRACKED_PROPERTIES,
+  EMBER_GLIMMER_SET_COMPONENT_TEMPLATE,
 } from '@ember/canary-features';
 import { confirmExport } from 'internal-test-helpers';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
@@ -225,6 +226,12 @@ let allExports = [
   ['String.htmlSafe', '@ember/-internals/glimmer', 'htmlSafe'],
   ['_setComponentManager', '@ember/-internals/glimmer', 'setComponentManager'],
   ['_componentManagerCapabilities', '@ember/-internals/glimmer', 'capabilities'],
+  EMBER_GLIMMER_SET_COMPONENT_TEMPLATE
+    ? ['_setComponentTemplate', '@ember/-internals/glimmer', 'setComponentTemplate']
+    : null,
+  EMBER_GLIMMER_SET_COMPONENT_TEMPLATE
+    ? ['_getComponentTemplate', '@ember/-internals/glimmer', 'getComponentTemplate']
+    : null,
 
   // @ember/-internals/runtime
   ['A', '@ember/-internals/runtime'],

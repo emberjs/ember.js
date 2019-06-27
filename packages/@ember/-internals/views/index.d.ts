@@ -37,15 +37,6 @@ export function constructStyleDeprecationMessage(affectedStyle: any): string;
 
 export function hasPartial(name: string, owner: any): boolean;
 
-export function lookupComponent(
-  owner: Owner,
-  name: string,
-  options?: { source?: string }
-): {
-  layout: TemplateFactory | undefined;
-  component: Factory<any, any> | undefined;
-};
-
 export function lookupPartial(templateName: string, owner: Owner): TemplateFactory;
 
 export function getViewId(view: any): string;

@@ -583,7 +583,7 @@ export class CurlyComponentDefinition implements ComponentDefinition {
     public name: string,
     public ComponentClass: any,
     public handle: Option<VMHandle>,
-    public template?: OwnedTemplate,
+    public template: Option<OwnedTemplate>,
     args?: CurriedArgs
   ) {
     const layout = template && template.asLayout();
