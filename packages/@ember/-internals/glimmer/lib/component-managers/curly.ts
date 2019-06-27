@@ -62,7 +62,7 @@ function aliasIdToElementId(args: Arguments, props: any) {
 }
 
 function isTemplateFactory(template: OwnedTemplate | TemplateFactory): template is TemplateFactory {
-  return typeof (template as TemplateFactory).create === 'function';
+  return typeof template === 'function';
 }
 
 // We must traverse the attributeBindings in reverse keeping track of
@@ -119,33 +119,33 @@ export default class CurlyComponentManager
     };
   }
 
-  templateFor(component: Component, resolver: RuntimeResolver): OwnedTemplate {
-    let { layout, layoutName } = component;
+  templateFor(component: Component): OwnedTemplate {
+    let { layout: _layout, layoutName } = component;
     let owner = getOwner(component);
 
-    if (layout !== undefined) {
-      // This needs to be cached by template.id
-      if (isTemplateFactory(layout)) {
-        return resolver.createTemplate(layout, getOwner(component));
+    let layout: TemplateFactory;
+
+    if (_layout === undefined) {
+      if (layoutName !== undefined) {
+        layout = owner.lookup<TemplateFactory>(`template:${layoutName}`);
+        assert(`Layout \`${layoutName}\` not found!`, layout !== undefined);
       } else {
-        // we were provided an instance already
-        return layout;
+        layout = owner.lookup(DEFAULT_LAYOUT);
       }
+    } else if (isTemplateFactory(_layout)) {
+      layout = _layout;
+    } else {
+      // we were provided an instance already
+      return _layout;
     }
 
-    if (layoutName) {
-      let template = owner.lookup<OwnedTemplate>('template:' + layoutName);
-      if (template) {
-        return template;
-      }
-    }
-
-    return owner.lookup<OwnedTemplate>(DEFAULT_LAYOUT);
+    return layout(owner);
   }
 
-  getDynamicLayout({ component }: ComponentStateBucket, resolver: RuntimeResolver): Invocation {
-    const template = this.templateFor(component, resolver);
-    const layout = template.asWrappedLayout();
+  getDynamicLayout({ component }: ComponentStateBucket): Invocation {
+    let template = this.templateFor(component);
+    let layout = template.asWrappedLayout();
+
     return {
       handle: layout.compile(),
       symbolTable: layout.symbolTable,
@@ -153,7 +153,7 @@ export default class CurlyComponentManager
   }
 
   getTagName(state: ComponentStateBucket): Option<string> {
-    const { component, hasWrappedElement } = state;
+    let { component, hasWrappedElement } = state;
 
     if (!hasWrappedElement) {
       return null;
@@ -574,7 +574,6 @@ export const CURLY_CAPABILITIES: ComponentCapabilities = {
 
 const CURLY_COMPONENT_MANAGER = new CurlyComponentManager();
 export class CurlyComponentDefinition implements ComponentDefinition {
-  public template: OwnedTemplate;
   public args: CurriedArgs | undefined;
   public state: DefinitionState;
   public symbolTable: ProgramSymbolTable | undefined;
@@ -584,7 +583,7 @@ export class CurlyComponentDefinition implements ComponentDefinition {
     public name: string,
     public ComponentClass: any,
     public handle: Option<VMHandle>,
-    template: OwnedTemplate,
+    public template?: OwnedTemplate,
     args?: CurriedArgs
   ) {
     const layout = template && template.asLayout();

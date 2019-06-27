@@ -344,7 +344,12 @@
 */
 
 export { default as RootTemplate } from './lib/templates/root';
-export { default as template } from './lib/template';
+export {
+  default as template,
+  counters as templateCacheCounters,
+  Factory as TemplateFactory,
+  OwnedTemplate,
+} from './lib/template';
 export { default as Checkbox } from './lib/components/checkbox';
 export { default as TextField } from './lib/components/text-field';
 export { default as TextArea } from './lib/components/textarea';

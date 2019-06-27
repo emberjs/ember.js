@@ -8,8 +8,6 @@ var distPath = path.join(__dirname, '../../../dist');
 var emberPath = path.join(distPath, 'ember.debug');
 var templateCompilerPath = path.join(distPath, 'ember-template-compiler');
 
-var templateId;
-
 function clearEmber() {
   delete global.Ember;
 
@@ -66,7 +64,7 @@ function setupComponentTest() {
 
   this._hasRendered = false;
   let OutletView = module.owner.factoryFor('view:-outlet');
-  var OutletTemplate = module.owner.lookup('template:-outlet');
+  var outletTemplateFactory = module.owner.lookup('template:-outlet');
   module.component = OutletView.create();
   this._outletState = {
     render: {
@@ -75,13 +73,11 @@ function setupComponentTest() {
       outlet: 'main',
       name: 'application',
       controller: module,
-      template: OutletTemplate,
+      template: outletTemplateFactory(module.owner),
     },
 
     outlets: {},
   };
-
-  templateId = 0;
 
   this.run(function() {
     module.component.setOutletState(module._outletState);
@@ -98,17 +94,15 @@ function setupComponentTest() {
 
 function render(_template) {
   var module = this;
-  var template = this.compile(_template);
+  var templateFactory = this.compile(_template);
 
-  var templateFullName = 'template:-undertest-' + ++templateId;
-  this.owner.register(templateFullName, template);
   var stateToRender = {
     owner: this.owner,
     into: undefined,
     outlet: 'main',
     name: 'index',
     controller: this,
-    template: this.owner.lookup(templateFullName),
+    template: templateFactory(this.owner),
   };
 
   stateToRender.name = 'index';

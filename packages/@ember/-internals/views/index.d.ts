@@ -1,6 +1,7 @@
 import { Simple, Template, Option } from '@glimmer/interfaces';
 import { Opaque } from '@glimmer/util';
 import { Factory, Owner } from '@ember/-internals/owner';
+import { TemplateFactory } from '@ember/-internals/glimmer';
 
 export interface StaticTemplateMeta {
   moduleName: string;
@@ -41,11 +42,11 @@ export function lookupComponent(
   name: string,
   options?: { source?: string }
 ): {
-  layout: Template<OwnedTemplateMeta> | undefined;
+  layout: TemplateFactory | undefined;
   component: Factory<any, any> | undefined;
 };
 
-export function lookupPartial(templateName: string, owner: Owner): any;
+export function lookupPartial(templateName: string, owner: Owner): TemplateFactory;
 
 export function getViewId(view: any): string;
 

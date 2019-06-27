@@ -62,7 +62,7 @@ moduleFor(
           outlet: 'main',
           name: 'application',
           controller: {},
-          template: this.owner.lookup('template:application'),
+          template: this.owner.lookup('template:application')(this.owner),
         },
         outlets: Object.create(null),
       };
@@ -81,7 +81,7 @@ moduleFor(
           outlet: 'main',
           name: 'index',
           controller: {},
-          template: this.owner.lookup('template:index'),
+          template: this.owner.lookup('template:index')(this.owner),
         },
         outlets: Object.create(null),
       };
@@ -100,7 +100,7 @@ moduleFor(
           outlet: 'main',
           name: 'application',
           controller: {},
-          template: this.owner.lookup('template:application'),
+          template: this.owner.lookup('template:application')(this.owner),
         },
         outlets: Object.create(null),
       };
@@ -121,7 +121,7 @@ moduleFor(
           outlet: 'main',
           name: 'index',
           controller: {},
-          template: this.owner.lookup('template:index'),
+          template: this.owner.lookup('template:index')(this.owner),
         },
         outlets: Object.create(null),
       };
@@ -140,7 +140,7 @@ moduleFor(
           outlet: 'main',
           name: 'application',
           controller: {},
-          template: this.owner.lookup('template:application'),
+          template: this.owner.lookup('template:application')(this.owner),
         },
         outlets: Object.create(null),
       };
@@ -161,7 +161,7 @@ moduleFor(
           outlet: 'main',
           name: 'special',
           controller: {},
-          template: this.owner.lookup('template:special'),
+          template: this.owner.lookup('template:special')(this.owner),
         },
         outlets: Object.create(null),
       };
@@ -180,7 +180,7 @@ moduleFor(
           outlet: 'main',
           name: 'application',
           controller: {},
-          template: this.owner.lookup('template:application'),
+          template: this.owner.lookup('template:application')(this.owner),
         },
         outlets: Object.create(null),
       };
@@ -201,7 +201,7 @@ moduleFor(
           outlet: 'main',
           name: 'special',
           controller: {},
-          template: this.owner.lookup('template:special'),
+          template: this.owner.lookup('template:special')(this.owner),
         },
         outlets: Object.create(null),
       };
@@ -221,7 +221,7 @@ moduleFor(
           outlet: 'main',
           name: 'application',
           controller,
-          template: this.owner.lookup('template:application'),
+          template: this.owner.lookup('template:application')(this.owner),
         },
         outlets: Object.create(null),
       };
@@ -242,7 +242,7 @@ moduleFor(
           outlet: 'main',
           name: 'foo',
           controller: {},
-          template: this.owner.lookup('template:foo'),
+          template: this.owner.lookup('template:foo')(this.owner),
         },
         outlets: Object.create(null),
       };
@@ -255,7 +255,7 @@ moduleFor(
           outlet: 'main',
           name: 'bar',
           controller: {},
-          template: this.owner.lookup('template:bar'),
+          template: this.owner.lookup('template:bar')(this.owner),
         },
         outlets: Object.create(null),
       };
@@ -289,7 +289,7 @@ moduleFor(
           outlet: 'main',
           name: 'outer',
           controller: {},
-          template: this.owner.lookup('template:outer'),
+          template: this.owner.lookup('template:outer')(this.owner),
         },
         outlets: {
           main: {
@@ -299,7 +299,7 @@ moduleFor(
               outlet: 'main',
               name: 'inner',
               controller: {},
-              template: this.owner.lookup('template:inner'),
+              template: this.owner.lookup('template:inner')(this.owner),
             },
             outlets: Object.create(null),
           },

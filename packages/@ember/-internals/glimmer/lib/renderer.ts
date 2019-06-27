@@ -23,7 +23,7 @@ import { BOUNDS } from './component';
 import { createRootOutlet } from './component-managers/outlet';
 import { RootComponentDefinition } from './component-managers/root';
 import Environment from './environment';
-import { OwnedTemplate } from './template';
+import { Factory as TemplateFactory, OwnedTemplate } from './template';
 import { Component } from './utils/curly-component-state-bucket';
 import { OutletState } from './utils/outlet';
 import { UnboundReference } from './utils/references';
@@ -246,7 +246,7 @@ interface ViewRegistry {
 
 export abstract class Renderer {
   private _env: Environment;
-  private _rootTemplate: any;
+  private _rootTemplate: OwnedTemplate;
   private _viewRegistry: ViewRegistry;
   private _destinedForDOM: boolean;
   private _destroyed: boolean;
@@ -258,13 +258,13 @@ export abstract class Renderer {
 
   constructor(
     env: Environment,
-    rootTemplate: OwnedTemplate,
+    rootTemplate: TemplateFactory,
     viewRegistry: ViewRegistry,
     destinedForDOM = false,
     builder = clientBuilder
   ) {
     this._env = env;
-    this._rootTemplate = rootTemplate;
+    this._rootTemplate = rootTemplate(env.owner);
     this._viewRegistry = viewRegistry;
     this._destinedForDOM = destinedForDOM;
     this._destroyed = false;
@@ -517,7 +517,7 @@ export class InertRenderer extends Renderer {
     builder,
   }: {
     env: Environment;
-    rootTemplate: OwnedTemplate;
+    rootTemplate: TemplateFactory;
     _viewRegistry: any;
     builder: any;
   }) {
@@ -539,7 +539,7 @@ export class InteractiveRenderer extends Renderer {
     builder,
   }: {
     env: Environment;
-    rootTemplate: OwnedTemplate;
+    rootTemplate: TemplateFactory;
     _viewRegistry: any;
     builder: any;
   }) {

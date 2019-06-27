@@ -1,3 +1,4 @@
+import { OwnedTemplate, TemplateFactory } from '@ember/-internals/glimmer';
 import {
   computed,
   defineProperty,
@@ -23,7 +24,6 @@ import { assign } from '@ember/polyfills';
 import { once } from '@ember/runloop';
 import { classify } from '@ember/string';
 import { DEBUG } from '@glimmer/env';
-import { TemplateFactory } from '@glimmer/opcode-compiler';
 import {
   InternalRouteInfo,
   PARAMS_SYMBOL,
@@ -1850,7 +1850,7 @@ function buildRenderOptions(
     (controller! as any).set('model', model);
   }
 
-  let template: TemplateFactory<unknown> = owner.lookup(`template:${templateName}`);
+  let template: TemplateFactory = owner.lookup(`template:${templateName}`);
   assert(
     `Could not find "${templateName}" template, view, or component.`,
     isDefaultRender || Boolean(template)
@@ -1861,13 +1861,13 @@ function buildRenderOptions(
     into = undefined;
   }
 
-  let renderOptions = {
+  let renderOptions: RenderOptions = {
     owner,
     into,
     outlet,
     name,
     controller: controller! as any,
-    template: template || route._topLevelViewTemplate,
+    template: template !== undefined ? template(owner) : route._topLevelViewTemplate(owner),
   };
 
   if (DEBUG) {
@@ -1888,7 +1888,7 @@ export interface RenderOptions {
   outlet: string;
   name: string;
   controller: any;
-  template: TemplateFactory<unknown>;
+  template: OwnedTemplate;
 }
 
 interface PartialRenderOptions {

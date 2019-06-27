@@ -1,38 +1,55 @@
-import { getOwner } from '@ember/-internals/owner';
+import { privatize as P } from '@ember/-internals/container';
+import { Owner } from '@ember/-internals/owner';
 import { OwnedTemplateMeta, StaticTemplateMeta } from '@ember/-internals/views';
 import { Template } from '@glimmer/interfaces';
-import { LazyCompiler, templateFactory, TemplateFactory } from '@glimmer/opcode-compiler';
+import { LazyCompiler, templateFactory } from '@glimmer/opcode-compiler';
 import { SerializedTemplateWithLazyBlock } from '@glimmer/wire-format';
 
 export type StaticTemplate = SerializedTemplateWithLazyBlock<StaticTemplateMeta>;
 export type OwnedTemplate = Template<OwnedTemplateMeta>;
 
-export default function template(json: StaticTemplate): Factory {
-  return new FactoryWrapper(templateFactory(json));
+export function id(factory: Factory): string {
+  return factory.__id;
 }
 
-export interface Injections {
-  compiler: LazyCompiler<StaticTemplateMeta>;
-  [key: string]: any;
+export function meta(factory: Factory): StaticTemplateMeta {
+  return factory.__meta;
+}
+
+export let counters = {
+  cacheHit: 0,
+  cacheMiss: 0,
+};
+
+const TEMPLATE_COMPILER_MAIN = P`template-compiler:main`;
+
+export default function template(json: StaticTemplate): Factory {
+  let glimmerFactory = templateFactory(json);
+  let cache = new WeakMap<Owner, OwnedTemplate>();
+
+  let factory = ((owner: Owner) => {
+    let result = cache.get(owner);
+
+    if (result === undefined) {
+      counters.cacheMiss++;
+      let compiler: LazyCompiler<StaticTemplateMeta> = owner.lookup(TEMPLATE_COMPILER_MAIN);
+      result = glimmerFactory.create(compiler, { owner });
+      cache.set(owner, result);
+    } else {
+      counters.cacheHit++;
+    }
+
+    return result;
+  }) as Factory;
+
+  factory.__id = glimmerFactory.id;
+  factory.__meta = glimmerFactory.meta;
+
+  return factory;
 }
 
 export interface Factory {
-  id: string;
-  meta: StaticTemplateMeta;
-  create(injections: Injections): OwnedTemplate;
-}
-
-class FactoryWrapper implements Factory {
-  public id: string;
-  public meta: StaticTemplateMeta;
-
-  constructor(public factory: TemplateFactory<StaticTemplateMeta>) {
-    this.id = factory.id;
-    this.meta = factory.meta;
-  }
-
-  create(injections: Injections): OwnedTemplate {
-    const owner = getOwner(injections);
-    return this.factory.create(injections.compiler, { owner });
-  }
+  __id: string;
+  __meta: StaticTemplateMeta;
+  (owner: Owner): OwnedTemplate;
 }
