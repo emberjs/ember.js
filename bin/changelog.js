@@ -59,34 +59,54 @@ function getCommitMessage(commitInfo) {
   return message;
 }
 
+function excludeDependabot(commitInfo) {
+  let author = commitInfo.author.login;
+  return author !== 'dependabot-preview[bot]' && author !== 'dependabot[bot]';
+}
+
+function isMergeOrCherryPick(commitInfo) {
+  if (commitInfo.parents.length == 2) return true;
+
+  let message = commitInfo.commit.message;
+  return message.indexOf('Merge pull request #') > -1 || message.indexOf('cherry picked from') > -1;
+}
+
+function comparePrNumber(a, b) {
+  if (a.number < b.number) return -1;
+  if (a.number > b.number) return 1;
+  return 0;
+}
+
 function processPages(res) {
   let contributions = res.commits
-    .filter(commitInfo => {
-      let message = commitInfo.commit.message;
-
-      return (
-        message.indexOf('Merge pull request #') > -1 || message.indexOf('cherry picked from') > -1
-      );
-    })
+    .filter(excludeDependabot)
+    .filter(isMergeOrCherryPick)
     .map(commitInfo => {
       let message = getCommitMessage(commitInfo);
-      let match = message.match(/#(\d+) from (.*)\//);
+
+      let mergeFromBranchRegex = /#(\d+) from (.*)\//;
+      let mergeWithPrReferenceRegex = /\(#(\d+)\)$/m;
       let result = {
         sha: commitInfo.sha,
       };
 
-      if (match) {
+      if (mergeFromBranchRegex.test(message)) {
+        let match = message.match(mergeFromBranchRegex);
         let numAndAuthor = match.slice(1, 3);
 
         result.number = numAndAuthor[0];
         result.title = message.split('\n\n')[1];
+      } else if (mergeWithPrReferenceRegex.test(message)) {
+        let match = message.match(mergeWithPrReferenceRegex);
+        result.number = match[1];
+        result.title = message.split('\n')[0];
       } else {
         result.title = message.split('\n\n')[0];
       }
 
       return result;
     })
-    .sort((a, b) => a.number > b.number)
+    .sort(comparePrNumber)
     .map(pr => {
       let title = pr.title;
       let link;
