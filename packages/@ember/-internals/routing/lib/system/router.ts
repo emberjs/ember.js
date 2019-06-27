@@ -150,7 +150,7 @@ class EmberRouter extends EmberObject {
     let seen = Object.create(null);
 
     class PrivateRouter extends Router<Route> {
-      getRoute(name: string) {
+      getRoute(name: string): Route {
         let routeName = name;
         let routeOwner = owner;
         let engineInfo = router._engineInfoByRoute[routeName];
@@ -164,10 +164,10 @@ class EmberRouter extends EmberObject {
 
         let fullRouteName = `route:${routeName}`;
 
-        let route: Route = routeOwner.lookup(fullRouteName);
+        let route = routeOwner.lookup<Route>(fullRouteName);
 
         if (seen[name]) {
-          return route;
+          return route!;
         }
 
         seen[name] = true;
@@ -184,15 +184,15 @@ class EmberRouter extends EmberObject {
           }
         }
 
-        route._setRouteName(routeName);
+        route!._setRouteName(routeName);
 
-        if (engineInfo && !hasDefaultSerialize(route)) {
+        if (engineInfo && !hasDefaultSerialize(route!)) {
           throw new Error(
             'Defining a custom serialize method on an Engine route is not supported.'
           );
         }
 
-        return route;
+        return route!;
       }
 
       getSerializer(name: string) {

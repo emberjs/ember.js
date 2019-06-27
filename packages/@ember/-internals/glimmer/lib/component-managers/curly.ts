@@ -119,27 +119,28 @@ export default class CurlyComponentManager
     };
   }
 
-  templateFor(component: Component): OwnedTemplate {
-    let { layout: _layout, layoutName } = component;
+  protected templateFor(component: Component): OwnedTemplate {
+    let { layout, layoutName } = component;
     let owner = getOwner(component);
 
-    let layout: TemplateFactory;
+    let factory: TemplateFactory;
 
-    if (_layout === undefined) {
+    if (layout === undefined) {
       if (layoutName !== undefined) {
-        layout = owner.lookup<TemplateFactory>(`template:${layoutName}`);
-        assert(`Layout \`${layoutName}\` not found!`, layout !== undefined);
+        let _factory = owner.lookup<TemplateFactory>(`template:${layoutName}`);
+        assert(`Layout \`${layoutName}\` not found!`, _factory !== undefined);
+        factory = _factory!;
       } else {
-        layout = owner.lookup(DEFAULT_LAYOUT);
+        factory = owner.lookup<TemplateFactory>(DEFAULT_LAYOUT)!;
       }
-    } else if (isTemplateFactory(_layout)) {
-      layout = _layout;
+    } else if (isTemplateFactory(layout)) {
+      factory = layout;
     } else {
       // we were provided an instance already
-      return _layout;
+      return layout;
     }
 
-    return layout(owner);
+    return factory(owner);
   }
 
   getDynamicLayout({ component }: ComponentStateBucket): Invocation {

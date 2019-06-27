@@ -18,6 +18,7 @@ import {
   typeOf,
 } from '@ember/-internals/runtime';
 import { EMBER_FRAMEWORK_OBJECT_OWNER_ARGUMENT } from '@ember/canary-features';
+import Controller from '@ember/controller';
 import { assert, deprecate, info, isTesting } from '@ember/debug';
 import { ROUTER_EVENTS } from '@ember/deprecated-features';
 import { assign } from '@ember/polyfills';
@@ -235,9 +236,9 @@ class Route extends EmberObject implements IRoute {
     @public
   */
   paramsFor(name: string) {
-    let route: Route = getOwner(this).lookup(`route:${name}`);
+    let route = getOwner(this).lookup<Route>(`route:${name}`);
 
-    if (!route) {
+    if (route === undefined) {
       return {};
     }
 
@@ -1272,7 +1273,7 @@ class Route extends EmberObject implements IRoute {
     @since 1.0.0
     @public
   */
-  setupController(controller: any, context: {}, _transition: Transition) {
+  setupController(controller: Controller, context: {}, _transition: Transition) {
     // eslint-disable-line no-unused-vars
     if (controller && context !== undefined) {
       set(controller, 'model', context);
@@ -1303,26 +1304,25 @@ class Route extends EmberObject implements IRoute {
     @since 1.0.0
     @public
   */
-  controllerFor(name: string, _skipAssert: boolean) {
+  controllerFor(name: string, _skipAssert: boolean): Controller {
     let owner = getOwner(this);
-    let route: Route = owner.lookup(`route:${name}`);
-    let controller: string;
+    let route = owner.lookup<Route>(`route:${name}`);
 
     if (route && route.controllerName) {
       name = route.controllerName;
     }
 
-    controller = owner.lookup(`controller:${name}`);
+    let controller = owner.lookup<Controller>(`controller:${name}`);
 
     // NOTE: We're specifically checking that skipAssert is true, because according
     //   to the old API the second parameter was model. We do not want people who
     //   passed a model to skip the assertion.
     assert(
       `The controller named '${name}' could not be found. Make sure that this route exists and has already been entered at least once. If you are accessing a controller not associated with a route, make sure the controller class is explicitly defined.`,
-      Boolean(controller) || _skipAssert === true
+      controller !== undefined || _skipAssert === true
     );
 
-    return controller;
+    return controller!;
   }
 
   /**
@@ -1408,7 +1408,7 @@ class Route extends EmberObject implements IRoute {
       name = _name;
     }
 
-    let route: Route = owner.lookup(`route:${name}`);
+    let route = owner.lookup<Route>(`route:${name}`);
     // If we are mid-transition, we want to try and look up
     // resolved parent contexts on the current transitionEvent.
     if (transition !== undefined && transition !== null) {
@@ -1812,7 +1812,9 @@ function buildRenderOptions(
   );
 
   let owner = getOwner(route);
-  let name, templateName, into, outlet, controller: string | {}, model;
+  let name, templateName, into, outlet, model;
+  let controller: Controller | string | undefined = undefined;
+
   if (options) {
     into = options.into && options.into.replace(/\//g, '.');
     outlet = options.outlet;
@@ -1829,20 +1831,21 @@ function buildRenderOptions(
     templateName = name;
   }
 
-  if (!controller!) {
+  if (controller === undefined) {
     if (isDefaultRender) {
-      controller = route.controllerName || owner.lookup(`controller:${name}`);
+      controller = route.controllerName || owner.lookup<Controller>(`controller:${name}`);
     } else {
-      controller = owner.lookup(`controller:${name}`) || route.controllerName || route.routeName;
+      controller =
+        owner.lookup<Controller>(`controller:${name}`) || route.controllerName || route.routeName;
     }
   }
 
-  if (typeof controller! === 'string') {
-    let controllerName = controller!;
-    controller = owner.lookup(`controller:${controllerName}`);
+  if (typeof controller === 'string') {
+    let controllerName = controller;
+    controller = owner.lookup<Controller>(`controller:${controllerName}`);
     assert(
       `You passed \`controller: '${controllerName}'\` into the \`render\` method, but no such controller could be found.`,
-      isDefaultRender || Boolean(controller)
+      isDefaultRender || controller !== undefined
     );
   }
 
@@ -1850,10 +1853,10 @@ function buildRenderOptions(
     (controller! as any).set('model', model);
   }
 
-  let template: TemplateFactory = owner.lookup(`template:${templateName}`);
+  let template = owner.lookup<TemplateFactory>(`template:${templateName}`);
   assert(
     `Could not find "${templateName}" template, view, or component.`,
-    isDefaultRender || Boolean(template)
+    isDefaultRender || template !== undefined
   );
 
   let parent: any;
@@ -1866,7 +1869,7 @@ function buildRenderOptions(
     into,
     outlet,
     name,
-    controller: controller! as any,
+    controller,
     template: template !== undefined ? template(owner) : route._topLevelViewTemplate(owner),
   };
 
@@ -2228,7 +2231,7 @@ Route.reopen(ActionHandler, Evented, {
 
     let controllerName = this.controllerName || this.routeName;
     let owner = getOwner(this);
-    let controller = owner.lookup(`controller:${controllerName}`);
+    let controller = owner.lookup<Controller>(`controller:${controllerName}`);
     let queryParameterConfiguraton = get(this, 'queryParams');
     let hasRouterDefinedQueryParams = Object.keys(queryParameterConfiguraton).length > 0;
 
@@ -2278,7 +2281,7 @@ Route.reopen(ActionHandler, Evented, {
       }
 
       let urlKey = desc.as || this.serializeQueryParamKey(propName);
-      let defaultValue = get(controller, propName);
+      let defaultValue = get(controller!, propName);
 
       defaultValue = copyDefaultValue(defaultValue);
 
@@ -2287,7 +2290,7 @@ Route.reopen(ActionHandler, Evented, {
       let defaultValueSerialized = this.serializeQueryParam(defaultValue, urlKey, type);
       let scopedPropertyName = `${controllerName}:${propName}`;
       let qp = {
-        undecoratedDefaultValue: get(controller, propName),
+        undecoratedDefaultValue: get(controller!, propName),
         defaultValue,
         serializedDefaultValue: defaultValueSerialized,
         serializedValue: defaultValueSerialized,
