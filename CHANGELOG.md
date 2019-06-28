@@ -6,6 +6,11 @@
 - [#18150](https://github.com/emberjs/ember.js/pull/18150) [BUGFIX] Fix a memory retention issue with string-based event listeners
 - [#18124](https://github.com/emberjs/ember.js/pull/18124) [CLEANUP] Remove deprecated `NAME_KEY`
 
+### v3.11.1 (June 27, 2019)
+
+- [#18159](https://github.com/emberjs/ember.js/pull/18159) Ensure `RouteInfo` object's do not eagerly cache routes in lazy Engines
+- [#18150](https://github.com/emberjs/ember.js/pull/18150) Ensure string based event listeners that are removed are not retained
+
 ### v3.11.0 (June 24, 2019)
 
 - [#17842](https://github.com/emberjs/ember.js/pull/17842) / [#17901](https://github.com/emberjs/ember.js/pull/17901) [FEATURE] Implement the [Forwarding Element Modifiers with "Splattributes" RFC](https://github.com/emberjs/rfcs/blob/master/text/0435-modifier-splattributes.md).
