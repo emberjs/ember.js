@@ -60,6 +60,12 @@
 - [#17874](https://github.com/emberjs/ember.js/pull/17874) [BUGFIX] Fix issue with `event.stopPropagation()` in component event handlers when jQuery is disabled.
 - [#17876](https://github.com/emberjs/ember.js/pull/17876) [BUGFIX] Fix issue with multiple `{{action}}` modifiers on the same element when jQuery is disabled.
 
+### v3.8.3 (June 28, 2019)
+
+- [#18159](https://github.com/emberjs/ember.js/pull/18159) [BUGFIX] Ensure `RouteInfo` object's do not eagerly cache routes in lazy Engines
+- [#18150](https://github.com/emberjs/ember.js/pull/18150) [BUGFIX] Ensure string based event listeners that are removed are not retained
+- [#18080](https://github.com/emberjs/ember.js/pull/18080) [BUGFIX] Fix `ember-template-compiler` compatibility with Fastboot.
+
 ### v3.8.2 (June, 4, 2019)
 
 - [#18071](https://github.com/emberjs/ember.js/pull/18071) [BUGFIX] Ensure modifiers do not run in FastBoot modes. (#18071)
