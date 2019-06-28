@@ -18,24 +18,52 @@ moduleFor(
     }
 
     ['@test inheritance'](assert) {
+      let matching;
       let target = {};
       let parent = {};
       let parentMeta = meta(parent);
       parentMeta.addToListeners('hello', target, 'm', 0);
 
-      let child = Object.create(parent);
-      let m = meta(child);
+      let child1 = Object.create(parent);
+      let m1 = meta(child1);
 
-      let matching = m.matchingListeners('hello');
-      assert.equal(matching.length, 3);
-      assert.equal(matching[0], target);
-      assert.equal(matching[1], 'm');
-      assert.equal(matching[2], 0);
-      m.removeFromListeners('hello', target, 'm');
-      matching = m.matchingListeners('hello');
-      assert.equal(matching, undefined);
+      let child2 = Object.create(parent);
+      let m2 = meta(child2);
+
+      let child3 = Object.create(parent);
+      let m3 = meta(child3);
+
+      m3.removeFromListeners('hello', target, 'm');
+
+      matching = m3.matchingListeners('hello');
+      assert.deepEqual(matching, undefined, 'no listeners for child3');
+
+      m3.addToListeners('hello', target, 'm', 0);
+
+      matching = m3.matchingListeners('hello');
+      assert.deepEqual(matching, [target, 'm', false], 'listener still exists for child1');
+
+      m3.removeFromListeners('hello', target, 'm');
+
+      matching = m3.matchingListeners('hello');
+      assert.deepEqual(matching, undefined, 'no listeners for child3');
+
+      matching = m1.matchingListeners('hello');
+      assert.deepEqual(matching, [target, 'm', false], 'listener still exists for child1');
+
+      matching = m2.matchingListeners('hello');
+      assert.deepEqual(matching, [target, 'm', false], 'listener still exists for child2');
+
+      m1.removeFromListeners('hello', target, 'm');
+
+      matching = m1.matchingListeners('hello');
+      assert.equal(matching, undefined, 'listener removed from child1');
+
+      matching = m2.matchingListeners('hello');
+      assert.deepEqual(matching, [target, 'm', false], 'listener still exists for child2');
+
       matching = parentMeta.matchingListeners('hello');
-      assert.equal(matching.length, 3);
+      assert.deepEqual(matching, [target, 'm', false], 'listener still present for parent');
     }
 
     ['@test deduplication'](assert) {
