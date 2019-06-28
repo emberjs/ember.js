@@ -1,7 +1,6 @@
 import Controller from '@ember/controller';
 import { RSVP } from '@ember/-internals/runtime';
 import { Route } from '@ember/-internals/routing';
-import { DEBUG } from '@glimmer/env';
 import {
   ApplicationTestCase,
   classes as classMatcher,
@@ -76,9 +75,7 @@ moduleFor(
         `{{#let (query-params foo='456' bar='NAW') as |qp|}}{{link-to 'Index' 'index' qp}}{{/let}}`
       );
 
-      // TODO If we visit this page at all in production mode, it'll fail for
-      // entirely different reasons than what this test is trying to test.
-      let promise = DEBUG ? this.visit('/') : null;
+      let promise = this.visit('/');
 
       await assert.rejectsAssertion(
         promise,
