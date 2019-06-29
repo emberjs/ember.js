@@ -101,8 +101,19 @@ QUnit.module('[glimmer-syntax] Code generation - source -> source', function() {
 
     // newlines after opening block
     '{{#each}}\n  <li> foo </li>\n{{/each}}',
-
-    // TODO: fix whitespace control in codemod mode
-    // '\n{{~#foo-bar~}} {{~/foo-bar~}}  ',
   ].forEach(buildTest);
+
+  test('whitespace control is preserved', function(assert) {
+    let before = '\n{{~var~}}  ';
+    let after = '{{~var~}}';
+
+    assert.equal(printTransform(before), after);
+  });
+
+  test('block whitespace control is preserved', function(assert) {
+    let before = '\n{{~#foo-bar~}} {{~else if x~}} {{~else~}} {{~/foo-bar~}}  ';
+    let after = '{{~#foo-bar~}}{{~else if x~}}{{~else~}}{{~/foo-bar~}}';
+
+    assert.equal(printTransform(before), after);
+  });
 });

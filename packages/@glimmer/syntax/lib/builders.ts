@@ -14,7 +14,8 @@ function buildMustache(
   params?: AST.Expression[],
   hash?: AST.Hash,
   raw?: boolean,
-  loc?: AST.SourceLocation
+  loc?: AST.SourceLocation,
+  strip?: AST.StripFlags
 ): AST.MustacheStatement {
   if (typeof path === 'string') {
     path = buildPath(path);
@@ -27,6 +28,7 @@ function buildMustache(
     hash: hash || buildHash([]),
     escaped: !raw,
     loc: buildLoc(loc || null),
+    strip: strip || { open: false, close: false },
   };
 }
 
@@ -36,7 +38,10 @@ function buildBlock(
   hash: Option<AST.Hash>,
   _defaultBlock: AST.PossiblyDeprecatedBlock,
   _elseBlock?: Option<AST.PossiblyDeprecatedBlock>,
-  loc?: AST.SourceLocation
+  loc?: AST.SourceLocation,
+  openStrip?: AST.StripFlags,
+  inverseStrip?: AST.StripFlags,
+  closeStrip?: AST.StripFlags
 ): AST.BlockStatement {
   let defaultBlock: AST.Block;
   let elseBlock: Option<AST.Block> | undefined;
@@ -69,6 +74,9 @@ function buildBlock(
     program: defaultBlock || null,
     inverse: elseBlock || null,
     loc: buildLoc(loc || null),
+    openStrip: openStrip || { open: false, close: false },
+    inverseStrip: inverseStrip || { open: false, close: false },
+    closeStrip: closeStrip || { open: false, close: false },
   };
 }
 
