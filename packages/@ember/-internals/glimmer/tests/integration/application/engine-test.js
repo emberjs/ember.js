@@ -313,8 +313,8 @@ moduleFor(
       this.assert.expect(1);
 
       let sharedLayout = compile(strip`
-      {{ambiguous-curlies}}
-    `);
+        {{ambiguous-curlies}}
+      `);
 
       let sharedComponent = Component.extend({
         layout: sharedLayout,
@@ -323,10 +323,10 @@ moduleFor(
       this.addTemplate(
         'application',
         strip`
-      <h1>Application</h1>
-      {{my-component ambiguous-curlies="Local Data!"}}
-      {{outlet}}
-    `
+          <h1>Application</h1>
+          {{my-component ambiguous-curlies="Local Data!"}}
+          {{outlet}}
+        `
       );
 
       this.add('component:my-component', sharedComponent);
@@ -344,17 +344,17 @@ moduleFor(
             this.register(
               'template:application',
               compile(strip`
-          <h1>Engine</h1>
-          {{my-component}}
-          {{outlet}}
-        `)
+                <h1>Engine</h1>
+                {{my-component}}
+                {{outlet}}
+              `)
             );
             this.register('component:my-component', sharedComponent);
             this.register(
               'template:components/ambiguous-curlies',
               compile(strip`
-          <p>Component!</p>
-        `)
+                <p>Component!</p>
+              `)
             );
           },
         })

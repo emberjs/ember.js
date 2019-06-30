@@ -1,7 +1,7 @@
 import { Owner } from '@ember/-internals/owner';
-import { Opaque, Option } from '@glimmer/interfaces';
+import { Option } from '@glimmer/interfaces';
 
-const MANAGERS: WeakMap<any, ManagerWrapper<Opaque>> = new WeakMap();
+const MANAGERS: WeakMap<object, ManagerWrapper<unknown>> = new WeakMap();
 
 const getPrototypeOf = Object.getPrototypeOf;
 
@@ -13,16 +13,18 @@ export interface ManagerWrapper<ManagerDelegate> {
   type: 'component' | 'modifier';
 }
 
-export function setManager<ManagerDelegate>(wrapper: ManagerWrapper<ManagerDelegate>, obj: any) {
+export function setManager<ManagerDelegate>(wrapper: ManagerWrapper<ManagerDelegate>, obj: object) {
   MANAGERS.set(obj, wrapper);
   return obj;
 }
 
-export function getManager<ManagerDelegate>(obj: any): Option<ManagerWrapper<ManagerDelegate>> {
+export function getManager<ManagerDelegate>(obj: object): Option<ManagerWrapper<ManagerDelegate>> {
   let pointer = obj;
   while (pointer !== undefined && pointer !== null) {
-    if (MANAGERS.has(pointer)) {
-      return MANAGERS.get(pointer) as ManagerWrapper<ManagerDelegate>;
+    let manager = MANAGERS.get(pointer);
+
+    if (manager !== undefined) {
+      return manager as ManagerWrapper<ManagerDelegate>;
     }
 
     pointer = getPrototypeOf(pointer);

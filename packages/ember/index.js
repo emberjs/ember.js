@@ -7,7 +7,12 @@ import { Registry, Container } from '@ember/-internals/container';
 import * as instrumentation from '@ember/instrumentation';
 import { deleteMeta, meta } from '@ember/-internals/meta';
 import * as metal from '@ember/-internals/metal';
-import { FEATURES, isEnabled, EMBER_FRAMEWORK_OBJECT_OWNER_ARGUMENT } from '@ember/canary-features';
+import {
+  FEATURES,
+  isEnabled,
+  EMBER_FRAMEWORK_OBJECT_OWNER_ARGUMENT,
+  EMBER_GLIMMER_SET_COMPONENT_TEMPLATE,
+} from '@ember/canary-features';
 import * as EmberDebug from '@ember/debug';
 import { assert, deprecate } from '@ember/debug';
 import Backburner from 'backburner';
@@ -113,6 +118,8 @@ import {
   isSerializationFirstNode,
   setModifierManager,
   modifierCapabilties,
+  setComponentTemplate,
+  getComponentTemplate,
 } from '@ember/-internals/glimmer';
 // eslint-disable-next-line import/no-unresolved
 import VERSION from './version';
@@ -530,6 +537,10 @@ Ember._setComponentManager = setComponentManager;
 Ember._componentManagerCapabilities = capabilities;
 Ember._setModifierManager = setModifierManager;
 Ember._modifierManagerCapabilties = modifierCapabilties;
+if (EMBER_GLIMMER_SET_COMPONENT_TEMPLATE) {
+  Ember._getComponentTemplate = getComponentTemplate;
+  Ember._setComponentTemplate = setComponentTemplate;
+}
 Ember.Handlebars = {
   template,
   Utils: {

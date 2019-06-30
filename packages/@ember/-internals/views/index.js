@@ -27,5 +27,4 @@ export { default as ViewMixin } from './lib/mixins/view_support';
 export { default as ActionSupport } from './lib/mixins/action_support';
 export { MUTABLE_CELL } from './lib/compat/attrs';
 export { default as lookupPartial, hasPartial } from './lib/system/lookup_partial';
-export { default as lookupComponent } from './lib/utils/lookup-component';
 export { default as ActionManager } from './lib/system/action_manager';

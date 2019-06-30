@@ -1,5 +1,5 @@
 import { OWNER, Owner } from '@ember/-internals/owner';
-import { constructStyleDeprecationMessage, lookupComponent } from '@ember/-internals/views';
+import { constructStyleDeprecationMessage } from '@ember/-internals/views';
 import { warn } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { Option, Simple } from '@glimmer/interfaces';
@@ -55,10 +55,6 @@ export default class Environment extends GlimmerEnvironment {
   // it really should just delegate to a platform specific injection
   protocolForURL(s: string): string {
     return s;
-  }
-
-  lookupComponent(name: string, meta: any) {
-    return lookupComponent(meta.owner, name, meta);
   }
 
   toConditionalReference(reference: UpdatableReference): VersionedReference<boolean> {
