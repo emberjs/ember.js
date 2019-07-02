@@ -1494,6 +1494,60 @@ if (EMBER_GLIMMER_FORWARD_MODIFIERS_WITH_SPLATTRIBUTES) {
           'Modifiers are called on all levels'
         );
       }
+
+      '@test angle bracket invocation can forward element modifiers and are attached in the specified order'(
+        assert
+      ) {
+        let eventInvocations = [];
+        this.registerComponent('default-first', {
+          ComponentClass: Component.extend({
+            tagName: '',
+            defaultHanlder() {
+              eventInvocations.push('defaultHandler');
+            },
+          }),
+          template:
+            '<div id="default-first" {{on "click" this.defaultHanlder}} ...attributes>{{yield}}</div>',
+        });
+        this.registerComponent('default-last', {
+          ComponentClass: Component.extend({
+            tagName: '',
+            defaultHanlder() {
+              eventInvocations.push('defaultHandler');
+            },
+          }),
+          template:
+            '<div id="default-last" ...attributes {{on "click" this.defaultHanlder}}>{{yield}}</div>',
+        });
+        this.registerComponent('the-foo', {
+          ComponentClass: Component.extend({
+            tagName: '',
+            customHandler() {
+              eventInvocations.push('customHandler');
+            },
+          }),
+          template: `
+            <DefaultFirst {{on "click" this.customHandler}}>Hello</DefaultFirst>
+            <DefaultLast {{on "click" this.customHandler}}>Hello</DefaultLast>
+          `,
+        });
+        this.render(`<TheFoo />`);
+        let event = new window.MouseEvent('click', { cancelable: true, bubbles: true });
+        this.element.querySelector('#default-first').dispatchEvent(event);
+        assert.deepEqual(
+          eventInvocations,
+          ['defaultHandler', 'customHandler'],
+          'When splattributes are after the modifier, the outer even runs last'
+        );
+        eventInvocations = [];
+        event = new window.MouseEvent('click', { cancelable: true, bubbles: true });
+        this.element.querySelector('#default-last').dispatchEvent(event);
+        assert.deepEqual(
+          eventInvocations,
+          ['customHandler', 'defaultHandler'],
+          'When splattributes are before the modifier, the outer even runs first'
+        );
+      }
     }
   );
 }
