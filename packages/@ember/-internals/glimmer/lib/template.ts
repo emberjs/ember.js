@@ -8,6 +8,10 @@ import { SerializedTemplateWithLazyBlock } from '@glimmer/wire-format';
 export type StaticTemplate = SerializedTemplateWithLazyBlock<StaticTemplateMeta>;
 export type OwnedTemplate = Template<OwnedTemplateMeta>;
 
+export function isTemplateFactory(template: OwnedTemplate | Factory): template is Factory {
+  return typeof template === 'function';
+}
+
 export function id(factory: Factory): string {
   return factory.__id;
 }
