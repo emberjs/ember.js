@@ -12,6 +12,7 @@ import {
 import * as WireFormat from '@glimmer/wire-format';
 import { OutletComponentDefinition, OutletDefinitionState } from '../component-managers/outlet';
 import { DynamicScope } from '../renderer';
+import { isTemplateFactory } from '../template';
 import { OutletReference, OutletState } from '../utils/outlet';
 
 /**
@@ -124,6 +125,13 @@ function stateFor(
   if (render === undefined) return null;
   let template = render.template;
   if (template === undefined) return null;
+
+  // this guard can be removed once @ember/test-helpers@1.6.0 has "aged out"
+  // and is no longer considered supported
+  if (isTemplateFactory(template)) {
+    template = template(render.owner);
+  }
+
   return {
     ref,
     name: render.name,

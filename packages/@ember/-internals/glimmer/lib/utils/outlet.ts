@@ -1,7 +1,7 @@
 import { Owner } from '@ember/-internals/owner';
 import { Opaque } from '@glimmer/interfaces';
 import { combine, DirtyableTag, Reference, Tag, VersionedPathReference } from '@glimmer/reference';
-import { OwnedTemplate } from '../template';
+import { Factory as TemplateFactory, OwnedTemplate } from '../template';
 
 export interface RenderState {
   /**
@@ -34,7 +34,7 @@ export interface RenderState {
   /**
    * template (the layout of the outlet component)
    */
-  template: OwnedTemplate | undefined;
+  template: OwnedTemplate | TemplateFactory | undefined;
 }
 
 export interface Outlets {

@@ -37,7 +37,7 @@ import { BOUNDS, DIRTY_TAG, HAS_BLOCK, IS_DISPATCHING_ATTRS, ROOT_REF } from '..
 import Environment from '../environment';
 import { DynamicScope } from '../renderer';
 import RuntimeResolver from '../resolver';
-import { Factory as TemplateFactory, OwnedTemplate } from '../template';
+import { Factory as TemplateFactory, isTemplateFactory, OwnedTemplate } from '../template';
 import {
   AttributeBinding,
   ClassNameBinding,
@@ -59,10 +59,6 @@ function aliasIdToElementId(args: Arguments, props: any) {
     );
     props.elementId = props.id;
   }
-}
-
-function isTemplateFactory(template: OwnedTemplate | TemplateFactory): template is TemplateFactory {
-  return typeof template === 'function';
 }
 
 // We must traverse the attributeBindings in reverse keeping track of
