@@ -1532,13 +1532,13 @@ if (EMBER_NATIVE_DECORATOR_SUPPORT) {
 
         let itemSorting = _itemSorting || emberA(['lname', 'fname']);
 
-        return new (class {
+        return new class {
           items = items;
           itemSorting = itemSorting;
 
           @sort('items', 'itemSorting')
           sortedItems;
-        })();
+        }();
       }
 
       cleanupObject() {}

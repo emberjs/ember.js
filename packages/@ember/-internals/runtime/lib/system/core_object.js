@@ -292,7 +292,9 @@ class CoreObject {
     m.setInitializing();
 
     assert(
-      `An EmberObject based class, ${this.constructor}, was not instantiated correctly. You may have either used \`new\` instead of \`.create()\`, or not passed arguments to your call to super in the constructor: \`super(...arguments)\`. If you are trying to use \`new\`, consider using native classes without extending from EmberObject.`,
+      `An EmberObject based class, ${
+        this.constructor
+      }, was not instantiated correctly. You may have either used \`new\` instead of \`.create()\`, or not passed arguments to your call to super in the constructor: \`super(...arguments)\`. If you are trying to use \`new\`, consider using native classes without extending from EmberObject.`,
       (() => {
         if (passedFromCreate === PASSED_FROM_CREATE) {
           return true;

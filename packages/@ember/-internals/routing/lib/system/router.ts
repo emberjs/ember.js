@@ -513,14 +513,18 @@ class EmberRouter extends EmberObject {
   transitionTo(...args: unknown[]) {
     if (resemblesURL(args[0] as string)) {
       assert(
-        `A transition was attempted from '${this.currentRouteName}' to '${args[0]}' but the application instance has already been destroyed.`,
+        `A transition was attempted from '${this.currentRouteName}' to '${
+          args[0]
+        }' but the application instance has already been destroyed.`,
         !this.isDestroying && !this.isDestroyed
       );
       return this._doURLTransition('transitionTo', args[0] as string);
     }
     let { routeName, models, queryParams } = extractRouteArgs(args);
     assert(
-      `A transition was attempted from '${this.currentRouteName}' to '${routeName}' but the application instance has already been destroyed.`,
+      `A transition was attempted from '${
+        this.currentRouteName
+      }' to '${routeName}' but the application instance has already been destroyed.`,
       !this.isDestroying && !this.isDestroyed
     );
     return this._doTransition(routeName, models, queryParams);
@@ -955,7 +959,13 @@ class EmberRouter extends EmberObject {
           qpOther = qpsByUrlKey![urlKey];
           if (qpOther && qpOther.controllerName !== qp.controllerName) {
             assert(
-              `You're not allowed to have more than one controller property map to the same query param key, but both \`${qpOther.scopedPropertyName}\` and \`${qp.scopedPropertyName}\` map to \`${urlKey}\`. You can fix this by mapping one of the controller properties to a different query param key via the \`as\` config option, e.g. \`${qpOther.prop}: { as: \'other-${qpOther.prop}\' }\``,
+              `You're not allowed to have more than one controller property map to the same query param key, but both \`${
+                qpOther.scopedPropertyName
+              }\` and \`${
+                qp.scopedPropertyName
+              }\` map to \`${urlKey}\`. You can fix this by mapping one of the controller properties to a different query param key via the \`as\` config option, e.g. \`${
+                qpOther.prop
+              }: { as: \'other-${qpOther.prop}\' }\``,
               false
             );
           }
@@ -1057,7 +1067,9 @@ class EmberRouter extends EmberObject {
           (qp.urlKey in queryParams && qp.urlKey);
 
         assert(
-          `You passed the \`${presentProp}\` query parameter during a transition into ${qp.route.routeName}, please update to ${qp.urlKey}`,
+          `You passed the \`${presentProp}\` query parameter during a transition into ${
+            qp.route.routeName
+          }, please update to ${qp.urlKey}`,
           (function() {
             if (qp.urlKey === presentProp) {
               return true;

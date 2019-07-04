@@ -33,6 +33,7 @@ import {
   Transition,
   TransitionState,
 } from 'router_js';
+import RSVP from 'rsvp';
 import {
   calculateCacheKey,
   normalizeControllerQueryParams,
@@ -251,7 +252,9 @@ class Route extends EmberObject implements IRoute {
 
     return Object.keys(queryParams).reduce((params, key) => {
       assert(
-        `The route '${this.routeName}' has both a dynamic segment and query param with name '${key}'. Please rename one to avoid collisions.`,
+        `The route '${
+          this.routeName
+        }' has both a dynamic segment and query param with name '${key}'. Please rename one to avoid collisions.`,
         !params[key]
       );
       params[key] = queryParams[key];
@@ -1189,7 +1192,15 @@ class Route extends EmberObject implements IRoute {
     Router.js hook.
    */
   deserialize(_params: {}, transition: Transition) {
-    return this.model(this._paramsFor(this.routeName, _params), transition);
+    let result = this.model(this._paramsFor(this.routeName, _params), transition);
+
+    if (Array.isArray(result)) {
+      return Promise.all(result);
+    } else if (typeof result === 'object') {
+      return RSVP.hash(result);
+    }
+
+    return result;
   }
 
   /**
@@ -2398,7 +2409,9 @@ Route.reopen(ActionHandler, Evented, {
   */
   send(...args: any[]) {
     assert(
-      `Attempted to call .send() with the action '${args[0]}' on the destroyed route '${this.routeName}'.`,
+      `Attempted to call .send() with the action '${args[0]}' on the destroyed route '${
+        this.routeName
+      }'.`,
       !this.isDestroying && !this.isDestroyed
     );
     if ((this._router && this._router._routerMicrolib) || !isTesting()) {

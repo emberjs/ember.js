@@ -161,12 +161,16 @@ export default class MethodCallTracker {
       } else if (actual[1]) {
         assert.ok(
           false,
-          `Did not receive failing Ember.${methodName} call matching '${expectedMessage}' ${expectedOptionsMessage}, last was success with '${actual[0]}' ${actualOptionsMessage}`
+          `Did not receive failing Ember.${methodName} call matching '${expectedMessage}' ${expectedOptionsMessage}, last was success with '${
+            actual[0]
+          }' ${actualOptionsMessage}`
         );
       } else if (!actual[1]) {
         assert.ok(
           false,
-          `Did not receive failing Ember.${methodName} call matching '${expectedMessage}' ${expectedOptionsMessage}, last was failure with '${actual[0]}' ${actualOptionsMessage}`
+          `Did not receive failing Ember.${methodName} call matching '${expectedMessage}' ${expectedOptionsMessage}, last was failure with '${
+            actual[0]
+          }' ${actualOptionsMessage}`
         );
       }
     }
