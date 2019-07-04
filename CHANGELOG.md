@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.41.2 (2019-07-04)
+
+#### :rocket: Enhancement
+* `@glimmer/syntax`
+  * [#951](https://github.com/glimmerjs/glimmer-vm/pull/951) Preserve mustache whitespace stripping information in AST and printer ([@CvX](https://github.com/CvX))
+
+#### Committers: 1
+- Jarek Radosz ([@CvX](https://github.com/CvX))
+
+
 ## v0.41.1 (2019-06-25)
 
 #### :rocket: Enhancement
