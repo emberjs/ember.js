@@ -57,11 +57,26 @@ export default function build(
   }
 
   function openBlock(block: AST.BlockStatement): string {
-    return ['{{#', pathParams(block), blockParams(block), '}}'].join('');
+    return compactJoin([
+      '{{',
+      block.openStrip.open ? '~' : null,
+      '#',
+      pathParams(block),
+      blockParams(block),
+      block.openStrip.close ? '~' : null,
+      '}}',
+    ]);
   }
 
-  function closeBlock(block: any): string {
-    return ['{{/', build(block.path, options), '}}'].join('');
+  function closeBlock(block: AST.BlockStatement): string {
+    return compactJoin([
+      '{{',
+      block.closeStrip.open ? '~' : null,
+      '/',
+      build(block.path, options),
+      block.closeStrip.close ? '~' : null,
+      '}}',
+    ]);
   }
 
   const output: string[] = [];
@@ -144,7 +159,13 @@ export default function build(
     case 'MustacheStatement':
       {
         output.push(
-          compactJoin([ast.escaped ? '{{' : '{{{', pathParams(ast), ast.escaped ? '}}' : '}}}'])
+          compactJoin([
+            ast.escaped ? '{{' : '{{{',
+            ast.strip.open ? '~' : null,
+            pathParams(ast),
+            ast.strip.close ? '~' : null,
+            ast.escaped ? '}}' : '}}}',
+          ])
         );
       }
       break;
@@ -174,7 +195,16 @@ export default function build(
         const lines: string[] = [];
 
         if (ast.chained) {
-          lines.push(['{{else ', pathParams(ast), '}}'].join(''));
+          lines.push(
+            compactJoin([
+              '{{',
+              ast.inverseStrip.open ? '~' : null,
+              'else ',
+              pathParams(ast),
+              ast.inverseStrip.close ? '~' : null,
+              '}}',
+            ])
+          );
         } else {
           lines.push(openBlock(ast));
         }
@@ -183,7 +213,15 @@ export default function build(
 
         if (ast.inverse) {
           if (!ast.inverse.chained) {
-            lines.push('{{else}}');
+            lines.push(
+              compactJoin([
+                '{{',
+                ast.inverseStrip.open ? '~' : null,
+                'else',
+                ast.inverseStrip.close ? '~' : null,
+                '}}',
+              ])
+            );
           }
           lines.push(build(ast.inverse, options));
         }

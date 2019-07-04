@@ -90,7 +90,17 @@ export abstract class HandlebarsNodeVisitors extends Parser {
       hash = addInElementHash(this.cursor(), hash, block.loc);
     }
 
-    let node = b.block(path, params, hash, program, inverse, block.loc);
+    let node = b.block(
+      path,
+      params,
+      hash,
+      program,
+      inverse,
+      block.loc,
+      block.openStrip,
+      block.inverseStrip,
+      block.closeStrip
+    );
 
     let parentProgram = this.currentElement();
 
@@ -106,7 +116,7 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     }
 
     let mustache: AST.MustacheStatement;
-    let { escaped, loc } = rawMustache;
+    let { escaped, loc, strip } = rawMustache;
 
     if (isLiteral(rawMustache.path)) {
       mustache = {
@@ -116,12 +126,13 @@ export abstract class HandlebarsNodeVisitors extends Parser {
         hash: b.hash(),
         escaped,
         loc,
+        strip,
       };
     } else {
       let { path, params, hash } = acceptCallNodes(this, rawMustache as HBS.MustacheStatement & {
         path: HBS.PathExpression;
       });
-      mustache = b.mustache(path, params, hash, !escaped, loc);
+      mustache = b.mustache(path, params, hash, !escaped, loc, strip);
     }
 
     switch (tokenizer.state) {

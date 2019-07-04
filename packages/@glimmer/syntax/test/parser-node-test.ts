@@ -281,10 +281,30 @@ test('Tokenizer: MustacheStatement encountered in afterAttributeValueQuoted stat
 
 test('Stripping - mustaches', function() {
   let t = 'foo {{~content}} bar';
-  astEqual(t, b.program([b.text('foo'), b.mustache(b.path('content')), b.text(' bar')]));
+  astEqual(
+    t,
+    b.program([
+      b.text('foo'),
+      b.mustache(b.path('content'), undefined, undefined, undefined, undefined, {
+        open: true,
+        close: false,
+      }),
+      b.text(' bar'),
+    ])
+  );
 
   t = 'foo {{content~}} bar';
-  astEqual(t, b.program([b.text('foo '), b.mustache(b.path('content')), b.text('bar')]));
+  astEqual(
+    t,
+    b.program([
+      b.text('foo '),
+      b.mustache(b.path('content'), undefined, undefined, undefined, undefined, {
+        open: false,
+        close: true,
+      }),
+      b.text('bar'),
+    ])
+  );
 });
 
 test('Stripping - blocks', function() {
@@ -293,7 +313,10 @@ test('Stripping - blocks', function() {
     t,
     b.program([
       b.text('foo'),
-      b.block(b.path('wat'), [], b.hash(), b.blockItself()),
+      b.block(b.path('wat'), [], b.hash(), b.blockItself(), undefined, undefined, {
+        open: true,
+        close: false,
+      }),
       b.text(' bar'),
     ])
   );
@@ -303,7 +326,17 @@ test('Stripping - blocks', function() {
     t,
     b.program([
       b.text('foo '),
-      b.block(b.path('wat'), [], b.hash(), b.blockItself()),
+      b.block(
+        b.path('wat'),
+        [],
+        b.hash(),
+        b.blockItself(),
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        { open: false, close: true }
+      ),
       b.text('bar'),
     ])
   );
@@ -314,7 +347,15 @@ test('Stripping - programs', function() {
   astEqual(
     t,
     b.program([
-      b.block(b.path('wat'), [], b.hash(), b.blockItself([b.text('foo ')]), b.blockItself()),
+      b.block(
+        b.path('wat'),
+        [],
+        b.hash(),
+        b.blockItself([b.text('foo ')]),
+        b.blockItself(),
+        undefined,
+        { open: false, close: true }
+      ),
     ])
   );
 
@@ -322,7 +363,16 @@ test('Stripping - programs', function() {
   astEqual(
     t,
     b.program([
-      b.block(b.path('wat'), [], b.hash(), b.blockItself([b.text(' foo')]), b.blockItself()),
+      b.block(
+        b.path('wat'),
+        [],
+        b.hash(),
+        b.blockItself([b.text(' foo')]),
+        b.blockItself(),
+        undefined,
+        undefined,
+        { open: true, close: false }
+      ),
     ])
   );
 
@@ -330,7 +380,16 @@ test('Stripping - programs', function() {
   astEqual(
     t,
     b.program([
-      b.block(b.path('wat'), [], b.hash(), b.blockItself(), b.blockItself([b.text('foo ')])),
+      b.block(
+        b.path('wat'),
+        [],
+        b.hash(),
+        b.blockItself(),
+        b.blockItself([b.text('foo ')]),
+        undefined,
+        undefined,
+        { open: false, close: true }
+      ),
     ])
   );
 
@@ -338,7 +397,17 @@ test('Stripping - programs', function() {
   astEqual(
     t,
     b.program([
-      b.block(b.path('wat'), [], b.hash(), b.blockItself(), b.blockItself([b.text(' foo')])),
+      b.block(
+        b.path('wat'),
+        [],
+        b.hash(),
+        b.blockItself(),
+        b.blockItself([b.text(' foo')]),
+        undefined,
+        undefined,
+        undefined,
+        { open: true, close: false }
+      ),
     ])
   );
 });
@@ -354,7 +423,11 @@ test('Stripping - removes unnecessary text nodes', function() {
         [],
         b.hash(),
         b.blockItself([b.element('li', ['body', b.text(' foo ')])]),
-        null
+        null,
+        undefined,
+        { open: false, close: true },
+        undefined,
+        { open: true, close: false }
       ),
     ])
   );
