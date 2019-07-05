@@ -277,6 +277,27 @@ export default class RouterService extends Service {
      by the URL. Returns `null` if the URL is not recognized. This method expects to
      receive the actual URL as seen by the browser including the app's `rootURL`.
 
+     See [RouteInfo](/ember/release/classes/RouteInfo) for more info.
+
+     In the following example `recognize` is used to verify if a path belongs to our
+     application before transitioning to it.
+
+     ```
+     import Component from '@ember/component';
+     import { inject as service } from '@ember/service';
+
+     export default Component.extend({
+       router: service(),
+       path: '/',
+
+       click() {
+         if(this.router.recognize(this.path)) {
+           this.router.transitionTo(this.path);
+         }
+       }
+     });
+     ```
+
       @method recognize
       @param {String} url
       @public
