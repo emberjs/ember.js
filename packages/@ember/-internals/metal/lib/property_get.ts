@@ -105,10 +105,8 @@ export function get(obj: object, keyName: string): any {
   if (isObjectLike) {
     let tracking = isTracking();
 
-    if (EMBER_METAL_TRACKED_PROPERTIES) {
-      if (tracking) {
-        consume(tagForProperty(obj, keyName));
-      }
+    if (EMBER_METAL_TRACKED_PROPERTIES && tracking) {
+      consume(tagForProperty(obj, keyName));
     }
 
     let descriptor = descriptorForProperty(obj, keyName);
@@ -131,19 +129,19 @@ export function get(obj: object, keyName: string): any {
     ) {
       consume(tagForProperty(value, '[]'));
     }
-  } else {
-    value = obj[keyName];
-  }
 
-  if (value === undefined) {
     if (
+      value === undefined &&
       isObject &&
       !(keyName in obj) &&
       typeof (obj as MaybeHasUnknownProperty).unknownProperty === 'function'
     ) {
-      return (obj as MaybeHasUnknownProperty).unknownProperty!(keyName);
+      value = (obj as MaybeHasUnknownProperty).unknownProperty!(keyName);
     }
+  } else {
+    value = obj[keyName];
   }
+
   return value;
 }
 
