@@ -412,6 +412,10 @@ Engine.reopenClass({
     registry.register('application:main', namespace, { instantiate: false });
 
     commonSetupRegistry(registry);
+    console.log('euaouasoutoeuh-------------');
+    console.log(setupEngineRegistry);
+    console.log(typeof setupEngineRegistry);
+    console.log('----------');
     setupEngineRegistry(registry);
 
     return registry;

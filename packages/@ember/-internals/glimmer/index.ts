@@ -372,6 +372,12 @@ export {
   getTemplates,
   setTemplates,
 } from './lib/template_registry';
+import { setupEngineRegistry } from './lib/setup-registry';
+
+console.log('--------------------glim');
+console.log(setupEngineRegistry);
+throw 'help'
+
 export { setupEngineRegistry, setupApplicationRegistry } from './lib/setup-registry';
 export { DOMChanges, NodeDOMTreeConstruction, DOMTreeConstruction } from './lib/dom';
 export {
