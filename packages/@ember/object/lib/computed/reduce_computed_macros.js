@@ -948,7 +948,7 @@ export function uniqBy(dependentKey, propertyKey) {
       set(this, 'vegetables', vegetables);
     }
 
-    @union('fruits', 'vegetables') ediblePlants;
+    @union('fruits', 'vegetables') uniqueFruits;
   });
 
   let hamster = new, Hamster(
