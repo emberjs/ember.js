@@ -8,6 +8,7 @@ import {
   EMBER_GLIMMER_SET_COMPONENT_TEMPLATE,
   EMBER_MODULE_UNIFICATION,
 } from '@ember/canary-features';
+import { isTemplateOnlyComponent } from '@ember/component/template-only';
 import { assert } from '@ember/debug';
 import { _instrumentStart } from '@ember/instrumentation';
 import {
@@ -449,7 +450,14 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
 
     let definition: Option<ComponentDefinition> = null;
 
-    if (pair.component === null && ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
+    if (pair.component === null) {
+      if (ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
+        definition = new TemplateOnlyComponentDefinition(layout!);
+      }
+    } else if (
+      EMBER_GLIMMER_SET_COMPONENT_TEMPLATE &&
+      isTemplateOnlyComponent(pair.component.class)
+    ) {
       definition = new TemplateOnlyComponentDefinition(layout!);
     }
 

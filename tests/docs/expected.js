@@ -532,6 +532,7 @@ module.exports = {
     'target',
     'teardownViews',
     'templateName',
+    'templateOnly',
     'testCheckboxClick',
     'testHelpers',
     'testing',

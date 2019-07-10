@@ -137,7 +137,7 @@ import Engine from '@ember/engine';
 import EngineInstance from '@ember/engine/instance';
 import { assign, merge } from '@ember/polyfills';
 import { LOGGER, EMBER_EXTEND_PROTOTYPES, JQUERY_INTEGRATION } from '@ember/deprecated-features';
-
+import templateOnlyComponent from '@ember/component/template-only';
 // ****@ember/-internals/environment****
 
 const Ember = (typeof context.imports.Ember === 'object' && context.imports.Ember) || {};
@@ -540,6 +540,7 @@ Ember._modifierManagerCapabilties = modifierCapabilties;
 if (EMBER_GLIMMER_SET_COMPONENT_TEMPLATE) {
   Ember._getComponentTemplate = getComponentTemplate;
   Ember._setComponentTemplate = setComponentTemplate;
+  Ember._templateOnlyComponent = templateOnlyComponent;
 }
 Ember.Handlebars = {
   template,
