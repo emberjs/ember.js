@@ -136,7 +136,7 @@ export const BOUNDS = symbol('BOUNDS');
       if (title) {
         return `${title} ${lastName}`;
       } else {
-        return `${firstName} ${lastName};
+        return `${firstName} ${lastName}`;
       }
     })
   });
