@@ -1,4 +1,3 @@
-import Component from '@ember/component';
+<%= importComponent %>
 <%= importTemplate %>
-export default Component.extend({<%= contents %>
-});
+export default <%= defaultExport %>
