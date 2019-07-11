@@ -232,6 +232,9 @@ let allExports = [
   EMBER_GLIMMER_SET_COMPONENT_TEMPLATE
     ? ['_getComponentTemplate', '@ember/-internals/glimmer', 'getComponentTemplate']
     : null,
+  EMBER_GLIMMER_SET_COMPONENT_TEMPLATE
+    ? ['_templateOnlyComponent', '@ember/component/template-only', 'default']
+    : null,
 
   // @ember/-internals/runtime
   ['A', '@ember/-internals/runtime'],
