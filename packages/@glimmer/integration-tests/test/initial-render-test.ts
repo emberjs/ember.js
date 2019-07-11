@@ -141,6 +141,28 @@ class Rehydration extends AbstractRehydrationTests {
   }
 
   @test
+  'table with thead'() {
+    let template = '<table><thead><tr><th>standards</th></tr></thead></table>';
+    this.renderServerSide(template, {});
+    this.assertServerOutput('<table><thead><tr><th>standards</th></tr></thead></table>');
+    this.renderClientSide(template, {});
+    this.assertHTML('<table><thead><tr><th>standards</th></tr></thead></table>');
+    this.assertRehydrationStats({ nodesRemoved: 0 });
+    this.assertStableNodes();
+  }
+
+  @test
+  'table with tfoot'() {
+    let template = '<table><tfoot><tr><th>standards</th></tr></tfoot></table>';
+    this.renderServerSide(template, {});
+    this.assertServerOutput('<table><tfoot><tr><th>standards</th></tr></tfoot></table>');
+    this.renderClientSide(template, {});
+    this.assertHTML('<table><tfoot><tr><th>standards</th></tr></tfoot></table>');
+    this.assertRehydrationStats({ nodesRemoved: 0 });
+    this.assertStableNodes();
+  }
+
+  @test
   'mismatched text nodes'() {
     let template = '{{content}}';
     this.renderServerSide(template, { content: 'hello' });
