@@ -86,7 +86,11 @@ class SerializeBuilder extends NewElementBuilder implements ElementBuilder {
 
   openElement(tag: string) {
     if (tag === 'tr') {
-      if (this.element.tagName !== 'TBODY') {
+      if (
+        this.element.tagName !== 'TBODY' &&
+        this.element.tagName !== 'THEAD' &&
+        this.element.tagName !== 'TFOOT'
+      ) {
         this.openElement('tbody');
         // This prevents the closeBlock comment from being re-parented
         // under the auto inserted tbody. Rehydration builder needs to
