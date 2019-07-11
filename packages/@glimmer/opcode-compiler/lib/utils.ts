@@ -4,9 +4,11 @@ import {
   CompilableBlock,
   WireFormat,
   ContainingMetadata,
+  CompileErrorOp,
 } from '@glimmer/interfaces';
 import { dict, assign } from '@glimmer/util';
 import { compilableBlock } from './compilable-template';
+import { error } from './opcode-builder/encoder';
 
 interface NamedBlocksDict {
   [key: string]: Option<CompilableBlock>;
@@ -57,4 +59,33 @@ export function namedBlocks(blocks: WireFormat.Core.Blocks, meta: ContainingMeta
   }
 
   return new NamedBlocksImpl(out);
+}
+
+export function expectString(
+  expr: WireFormat.Expression,
+  meta: ContainingMetadata,
+  desc: string
+): string | CompileErrorOp {
+  if (!meta.upvars) {
+    return error(`${desc}, but there were no free variables in the template`, 0, 0);
+  }
+
+  if (!Array.isArray(expr) || expr[0] !== WireFormat.SexpOpcodes.GetPath) {
+    throw new Error(`${desc}, got ${JSON.stringify(expr)}`);
+  }
+
+  if (expr[2].length !== 0) {
+    throw new Error(`${desc}, got ${JSON.stringify(expr)}`);
+  }
+
+  if (
+    expr[1][0] === WireFormat.SexpOpcodes.GetContextualFree ||
+    expr[1][0] === WireFormat.SexpOpcodes.GetFree
+  ) {
+    let head = expr[1][1];
+
+    return meta.upvars[head];
+  }
+
+  throw new Error(`${desc}, got ${JSON.stringify(expr)}`);
 }

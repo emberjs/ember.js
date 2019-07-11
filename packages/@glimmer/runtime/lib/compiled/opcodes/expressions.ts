@@ -87,6 +87,13 @@ APPEND_OPCODES.add(Op.GetBlock, (vm, { op1: _block }) => {
   let { stack } = vm;
   let block = vm.scope().getBlock(_block);
 
+  stack.push(block);
+});
+
+APPEND_OPCODES.add(Op.JitSpreadBlock, vm => {
+  let { stack } = vm;
+  let block = stack.pop<JitScopeBlock>();
+
   if (block) {
     stack.push(block[2]);
     stack.push(block[1]);
@@ -98,10 +105,9 @@ APPEND_OPCODES.add(Op.GetBlock, (vm, { op1: _block }) => {
   }
 });
 
-APPEND_OPCODES.add(Op.HasBlock, (vm, { op1: _block }) => {
-  let hasBlock = !!vm.scope().getBlock(_block);
-  vm.stack.push(hasBlock ? TRUE_REFERENCE : FALSE_REFERENCE);
-});
+APPEND_OPCODES.add(Op.HasBlock, vm =>
+  vm.stack.push(!!vm.stack.pop() ? TRUE_REFERENCE : FALSE_REFERENCE)
+);
 
 APPEND_OPCODES.add(Op.HasBlockParams, vm => {
   // FIXME(mmun): should only need to push the symbol table

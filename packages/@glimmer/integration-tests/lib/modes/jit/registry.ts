@@ -13,6 +13,7 @@ import {
 } from '@glimmer/interfaces';
 import { dict } from '@glimmer/util';
 import { createTemplate } from '../../compile';
+import { unwrapTemplate } from '@glimmer/opcode-compiler';
 
 export interface Lookup {
   helper: GlimmerHelper;
@@ -167,10 +168,12 @@ export class TestJitRegistry {
 
     // TODO: This whole thing probably should have a more first-class
     // structure.
-    let template = this.customCompilableTemplate(templateHandle, name, source => {
-      let factory = createTemplate<AnnotatedModuleLocator>(source);
-      return factory.create();
-    });
+    let template = unwrapTemplate(
+      this.customCompilableTemplate(templateHandle, name, source => {
+        let factory = createTemplate<AnnotatedModuleLocator>(source);
+        return factory.create();
+      })
+    );
 
     return {
       handle: definitionHandle,

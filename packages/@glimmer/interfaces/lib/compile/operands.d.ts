@@ -1,6 +1,6 @@
 import { Option } from '../core';
 import * as WireFormat from './wire-format';
-import { NamedBlocks } from '../template';
+import { NamedBlocks, HandleResult } from '../template';
 import {
   HighLevelCompileOp,
   HighLevelBuilderOp,
@@ -9,6 +9,7 @@ import {
   HighLevelCompileOpcode,
   CompileActions,
   ArgsOptions,
+  EncoderError,
 } from './encoder';
 
 export const enum PrimitiveType {
@@ -125,7 +126,7 @@ export type BuilderOperandsTuple =
 
 export type SingleBuilderOperands = SingleBuilderOperandsTuple & SingleBuilderOperand[];
 
-export type BuilderHandleThunk = () => number;
+export type BuilderHandleThunk = () => HandleResult;
 
 export type Operand = number | BuilderHandleThunk | StdlibOperand;
 

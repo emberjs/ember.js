@@ -26,6 +26,7 @@ import { AotVM, InternalVM, JitVM } from './vm/append';
 import { NewElementBuilder } from './vm/element-builder';
 import { DefaultDynamicScope } from './dynamic-scope';
 import { UNDEFINED_REFERENCE } from './references';
+import { unwrapHandle } from '@glimmer/opcode-compiler';
 
 class TemplateIteratorImpl<C extends JitOrAotBlock> implements TemplateIterator {
   constructor(private vm: InternalVM<C>) {}
@@ -185,7 +186,17 @@ export function renderJitComponent(
 
   if (hasStaticLayoutCapability(capabilities, manager)) {
     let layout = (manager as WithJitStaticLayout).getJitStaticLayout(state, vm.runtime.resolver);
-    invocation = { handle: layout.compile(context), symbolTable: layout.symbolTable };
+
+    let handle = unwrapHandle(layout.compile(context));
+
+    if (Array.isArray(handle)) {
+      let error = handle[0];
+      throw new Error(
+        `Compile Error: ${error.problem} ${error.span.start}..${error.span.end} :: TODO (thread better)`
+      );
+    }
+
+    invocation = { handle, symbolTable: layout.symbolTable };
   } else {
     throw new Error('Cannot invoke components with dynamic layouts as a root component.');
   }

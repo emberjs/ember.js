@@ -4,7 +4,7 @@ import { op } from '../encoder';
 
 export type When = (match: number, callback: () => CompileActions) => void;
 
-export function switchCases(callback: (when: When) => void): CompileActions {
+export function SwitchCases(callback: (when: When) => void): CompileActions {
   // Setup the switch DSL
   let clauses: Array<{ match: number; label: string; callback: () => CompileActions }> = [];
 
@@ -111,7 +111,7 @@ export function switchCases(callback: (when: When) => void): CompileActions {
  * encountered, the program jumps to -1 rather than the END label,
  * and the PopFrame opcode is not needed.
  */
-export function replayable<T extends CompileActions | StatementCompileActions>({
+export function Replayable<T extends CompileActions | StatementCompileActions>({
   args,
   body,
 }: {
@@ -188,7 +188,7 @@ export function replayable<T extends CompileActions | StatementCompileActions>({
  * routine, as it can reuse the DOM block and is always only a single
  * frame deep.
  */
-export function replayableIf<T extends CompileActions | StatementCompileActions>({
+export function ReplayableIf<T extends CompileActions | StatementCompileActions>({
   args,
   ifTrue,
   ifFalse,
@@ -197,7 +197,7 @@ export function replayableIf<T extends CompileActions | StatementCompileActions>
   ifTrue(): T;
   ifFalse?(): T;
 }): T {
-  return replayable({
+  return Replayable({
     args,
 
     body: () => {

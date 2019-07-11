@@ -1,4 +1,4 @@
-import { templateFactory } from '@glimmer/opcode-compiler';
+import { templateFactory, unwrapTemplate } from '@glimmer/opcode-compiler';
 import { precompile } from '@glimmer/compiler';
 import { SerializedTemplateWithLazyBlock, AnnotatedModuleLocator } from '@glimmer/interfaces';
 import { assign } from '@glimmer/util';
@@ -51,7 +51,7 @@ QUnit.test('generates id if no id is on the serialized template', assert => {
 
 QUnit.test('id of template matches factory', assert => {
   let factory = templateFactory(serializedTemplate);
-  let template = factory.create();
+  let template = unwrapTemplate(factory.create());
   assert.ok(template.id, 'is present');
   assert.equal(template.id, factory.id, 'template id matches factory id');
 });
@@ -68,7 +68,7 @@ QUnit.test('meta is accessible from factory', assert => {
 
 QUnit.test('meta is accessible from template', assert => {
   let factory = templateFactory(serializedTemplate);
-  let template = factory.create();
+  let template = unwrapTemplate(factory.create());
   assert.deepEqual(
     template.referrer as AnnotatedModuleLocator,
     {
@@ -85,10 +85,12 @@ QUnit.test('can inject per environment things into meta', assert => {
   let owner = {};
   let factory = templateFactory<AnnotatedModuleLocator>(serializedTemplate);
 
-  let template = factory.create(
-    assign({}, DEFAULT_TEST_META, {
-      owner,
-    })
+  let template = unwrapTemplate(
+    factory.create(
+      assign({}, DEFAULT_TEST_META, {
+        owner,
+      })
+    )
   );
 
   assert.strictEqual(template.referrer.owner, owner, 'is owner');

@@ -8,7 +8,7 @@ export interface DebugElement {
 }
 
 function isDebugElement(el: SimpleElement | DebugElement): el is DebugElement {
-  return !(el as Dict).nodeType;
+  return !(el as any).nodeType;
 }
 
 function extract(element: EqualsElement): DebugElement {

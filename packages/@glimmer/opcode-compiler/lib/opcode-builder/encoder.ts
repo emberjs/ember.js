@@ -6,6 +6,7 @@ import {
   BuilderHandleThunk,
   Operand,
   CompileTimeHeap,
+  Op,
   BuilderOpcode,
   HighLevelBuilderOpcode,
   BuilderOp,
@@ -24,6 +25,10 @@ import {
   Operands,
   NonlabelBuilderOperand,
   Dict,
+  ErrorOpcode,
+  EncoderError,
+  HandleResult,
+  CompileErrorOp,
 } from '@glimmer/interfaces';
 import { isMachineOp } from '@glimmer/vm';
 import { Stack, dict, expect } from '@glimmer/util';
@@ -54,6 +59,14 @@ export class LabelsImpl implements Labels<InstructionEncoder> {
   }
 }
 
+export function error(problem: string, start: number, end: number): CompileErrorOp {
+  return op('Error', {
+    problem,
+    start,
+    end,
+  });
+}
+
 export function op(name: BuilderOpcode, ...ops: SingleBuilderOperands): BuilderOp;
 export function op<K extends AllOpcode>(name: K, ...operands: Operands<AllOpMap[K]>): AllOpMap[K];
 export function op<K extends AllOpcode>(
@@ -81,14 +94,16 @@ export function op<K extends AllOpcode>(
       type = 'Resolution';
     } else if (isSimpleOpcode(name)) {
       type = 'Simple';
+    } else if (isErrorOpcode(name)) {
+      type = 'Error';
     } else {
       throw new Error(`Exhausted ${name}`);
     }
 
     if (op1 === undefined) {
-      return { type, op: name, op1: undefined } as HighLevelOp;
+      return { type, op: name, op1: undefined } as any;
     } else {
-      return { type, op: name, op1 } as HighLevelOp;
+      return { type, op: name, op1 } as any;
     }
   }
 }
@@ -96,10 +111,22 @@ export function op<K extends AllOpcode>(
 export class EncoderImpl implements Encoder {
   private labelsStack = new Stack<OpcodeBuilderLabels>();
   private encoder: InstructionEncoder = new InstructionEncoderImpl([]);
+  private errors: EncoderError[] = [];
 
-  commit(heap: CompileTimeHeap, size: number): number {
+  error(error: EncoderError): void {
+    this.encoder.encode(Op.Primitive, 0);
+    this.errors.push(error);
+  }
+
+  commit(heap: CompileTimeHeap, size: number): HandleResult {
     this.encoder.encode(MachineOp.Return, OpcodeSize.MACHINE_MASK);
-    return commit(heap, size, this.encoder.buffer);
+    let handle = commit(heap, size, this.encoder.buffer);
+
+    if (this.errors.length) {
+      return { errors: this.errors, handle };
+    } else {
+      return handle;
+    }
   }
 
   push(constants: CompileTimeConstants, name: BuilderOpcode, ...args: SingleBuilderOperands): void {
@@ -227,7 +254,17 @@ function isCompileOpcode(op: AllOpcode): op is HighLevelCompileOpcode {
 }
 
 function isResolutionOpcode(op: AllOpcode): op is HighLevelResolutionOpcode {
-  return op === 'IfResolved' || op === 'Expr' || op === 'SimpleArgs';
+  return (
+    op === 'IfResolved' ||
+    op === 'Expr' ||
+    op === 'SimpleArgs' ||
+    op === 'ResolveFree' ||
+    op === 'ResolveContextualFree'
+  );
+}
+
+function isErrorOpcode(op: AllOpcode): op is ErrorOpcode {
+  return op === 'Error';
 }
 
 function sizeImmediate(

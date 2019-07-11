@@ -5,7 +5,9 @@ import {
   Template,
   JitRuntimeContext,
   SyntaxCompilationContext,
+  Dict,
 } from '@glimmer/interfaces';
+import { unwrapTemplate, unwrapHandle } from '@glimmer/opcode-compiler';
 import EmberObject from '@glimmer/object';
 import { CLASS_META, setProperty as set, UpdatableReference } from '@glimmer/object-reference';
 import { bump } from '@glimmer/reference';
@@ -42,7 +44,7 @@ import {
   registerTemplate,
   componentHelper,
 } from '@glimmer/integration-tests';
-import { EmberishGlimmerArgs } from '../lib/components';
+import { EmberishGlimmerArgs, EmberishCurlyComponentFactory } from '../lib/components';
 
 let context: TestContext;
 
@@ -58,7 +60,7 @@ export class EmberishRootView extends EmberObject {
     private runtime: JitRuntimeContext,
     private syntax: SyntaxCompilationContext,
     template: string,
-    state?: Object
+    state?: Dict
   ) {
     super(state);
     this.template = preprocess(template);
@@ -69,12 +71,16 @@ export class EmberishRootView extends EmberObject {
     let self = new UpdatableReference(this);
     let cursor = { element, nextSibling: null };
 
+    let handle = unwrapTemplate(this.template)
+      .asLayout()
+      .compile(this.syntax);
+
     let templateIterator = renderJitMain(
       this.runtime,
       this.syntax,
       self,
       clientBuilder(this.runtime.env, cursor),
-      this.template.asLayout().compile(this.syntax)
+      unwrapHandle(handle)
     );
     let result;
     do {
@@ -118,7 +124,7 @@ function module(name: string) {
   });
 }
 
-export function appendViewFor(template: string, state: Object = {}) {
+export function appendViewFor(template: string, state: Dict = {}) {
   view = new EmberishRootView(context.runtime, context.syntax, template, state);
 
   context.env.begin();
@@ -1422,7 +1428,7 @@ QUnit.test('Curly component hooks (with attrs)', assert => {
   registerEmberishCurlyComponent(
     context.registry,
     'non-block',
-    inspectHooks(NonBlock),
+    inspectHooks((NonBlock as unknown) as EmberishCurlyComponentFactory),
     'In layout - someProp: {{@someProp}}'
   );
 
@@ -1475,7 +1481,7 @@ QUnit.test('Curly component hooks (attrs as self props)', function() {
   registerEmberishCurlyComponent(
     context.registry,
     'non-block',
-    inspectHooks(NonBlock),
+    inspectHooks(NonBlock as any),
     'In layout - someProp: {{someProp}}'
   );
 
@@ -1532,7 +1538,7 @@ QUnit.test('Setting value attributeBinding to null results in empty string value
   registerEmberishCurlyComponent(
     context.registry,
     'input-component',
-    inspectHooks(InputComponent),
+    inspectHooks(InputComponent as any),
     'input component'
   );
 
@@ -1608,7 +1614,7 @@ QUnit.test('Curly component hooks (force recompute)', assert => {
   registerEmberishCurlyComponent(
     context.registry,
     'non-block',
-    inspectHooks(NonBlock),
+    inspectHooks(NonBlock as any),
     'In layout - someProp: {{@someProp}}'
   );
 

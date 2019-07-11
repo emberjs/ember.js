@@ -58,7 +58,14 @@ import ComponentCapabilities from './component-capabilities';
 import { Option } from './core';
 import { SymbolTable, ProgramSymbolTable } from './tier1/symbol-table';
 import { ComponentDefinition } from './components';
-import { ResolvedLayout, STDLib, CompilableProgram, CompileTime, Template } from './template';
+import {
+  ResolvedLayout,
+  STDLib,
+  CompilableProgram,
+  CompileTime,
+  Template,
+  HandleResult,
+} from './template';
 import { SyntaxCompilationContext } from './program';
 import { Helper } from './runtime/vm';
 import { ModifierDefinition } from './runtime/modifier';
@@ -93,7 +100,7 @@ export interface PartialDefinition {
 
   getPartial(
     context: SyntaxCompilationContext
-  ): { symbolTable: ProgramSymbolTable; handle: number };
+  ): { symbolTable: ProgramSymbolTable; handle: HandleResult };
 }
 
 export type ResolvedValue = ComponentDefinition | ModifierDefinition | Helper | PartialDefinition;

@@ -7,9 +7,11 @@ import {
   WireFormat,
   Unhandled,
   TemplateCompilationContext,
+  HandleResult,
 } from '@glimmer/interfaces';
 import { DEBUG } from '@glimmer/local-debug-flags';
-import { namedBlocks } from './utils';
+import { namedBlocks, expectString } from './utils';
+import { extractHandle } from './template';
 
 export function compileInline(
   sexp: Statements.Append,
@@ -24,7 +26,14 @@ export function compileBlock(
 ): StatementCompileActions {
   let [, name, params, hash, named] = block;
   let blocks = namedBlocks(named, context.meta);
-  return context.syntax.macros.blocks.compile(name, params, hash, blocks, context);
+
+  let nameOrError = expectString(name, context.meta, 'Expected block head to be a string');
+
+  if (typeof nameOrError !== 'string') {
+    return nameOrError;
+  }
+
+  return context.syntax.macros.blocks.compile(nameOrError, params || [], hash, blocks, context);
 }
 
 export function commit(heap: CompileTimeHeap, scopeSize: number, buffer: CompilerBuffer): number {
@@ -47,10 +56,11 @@ export function commit(heap: CompileTimeHeap, scopeSize: number, buffer: Compile
   return handle;
 }
 
-export let debugCompiler: (context: TemplateCompilationContext, handle: number) => void;
+export let debugCompiler: (context: TemplateCompilationContext, handle: HandleResult) => void;
 
 if (DEBUG) {
-  debugCompiler = (context: TemplateCompilationContext, handle: number) => {
+  debugCompiler = (context: TemplateCompilationContext, result: HandleResult) => {
+    let handle = extractHandle(result);
     let { heap } = context.syntax.program;
     let start = heap.getaddr(handle);
     let end = start + heap.sizeof(handle);

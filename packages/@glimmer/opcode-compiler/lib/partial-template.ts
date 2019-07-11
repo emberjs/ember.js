@@ -1,4 +1,10 @@
-import { ProgramSymbolTable, Template, SyntaxCompilationContext } from '@glimmer/interfaces';
+import {
+  ProgramSymbolTable,
+  Template,
+  SyntaxCompilationContext,
+  HandleResult,
+} from '@glimmer/interfaces';
+import { unwrapTemplate } from './template';
 
 export class PartialDefinition {
   constructor(
@@ -8,9 +14,10 @@ export class PartialDefinition {
 
   getPartial(
     context: SyntaxCompilationContext
-  ): { symbolTable: ProgramSymbolTable; handle: number } {
-    let partial = this.template.asPartial();
+  ): { symbolTable: ProgramSymbolTable; handle: HandleResult } {
+    let partial = unwrapTemplate(this.template).asPartial();
     let handle = partial.compile(context);
+
     return { symbolTable: partial.symbolTable, handle };
   }
 }

@@ -24,6 +24,7 @@ import {
   qunitFixture,
   equalTokens,
 } from '@glimmer/integration-tests';
+import { unwrapTemplate, unwrapHandle } from '@glimmer/opcode-compiler';
 
 let context: TestContext;
 let root: SimpleElement;
@@ -42,14 +43,21 @@ function render(template: Template<AnnotatedModuleLocator>, self: any) {
   let result: RenderResult;
   context.env.begin();
   let cursor = { element: root, nextSibling: null };
+
+  let handle = unwrapTemplate(template)
+    .asLayout()
+    .compile(context.syntax);
+
   let templateIterator = renderJitMain(
     context.runtime,
     context.syntax,
     new UpdatableReference(self),
     clientBuilder(context.env, cursor),
-    template.asLayout().compile(context.syntax)
+    unwrapHandle(handle)
   );
+
   let iteratorResult: IteratorResult<RenderResult>;
+
   do {
     iteratorResult = templateIterator.next() as IteratorResult<RenderResult>;
   } while (!iteratorResult.done);

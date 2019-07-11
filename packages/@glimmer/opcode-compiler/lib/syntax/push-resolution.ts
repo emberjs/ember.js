@@ -12,39 +12,96 @@ import {
   CompileTimeConstants,
   ContainingMetadata,
   TemplateCompilationContext,
+  ExpressionContext,
 } from '@glimmer/interfaces';
-import { compileParams } from '../opcode-builder/helpers/shared';
+import { CompilePositional } from '../opcode-builder/helpers/shared';
 import { exhausted, EMPTY_ARRAY } from '@glimmer/util';
-import { op } from '../opcode-builder/encoder';
+import { op, error } from '../opcode-builder/encoder';
 import { strArray } from '../opcode-builder/operands';
-import { primitive } from '../opcode-builder/helpers/vm';
+import { PushPrimitive, Call } from '../opcode-builder/helpers/vm';
 import { concatExpressions } from './concat';
 import { EXPRESSIONS } from './expressions';
 
 export default function pushResolutionOp(
   encoder: Encoder,
   context: TemplateCompilationContext,
-  op: HighLevelResolutionOp,
+  operation: HighLevelResolutionOp,
   constants: CompileTimeConstants
 ): void {
-  switch (op.op) {
+  switch (operation.op) {
     case HighLevelResolutionOpcode.SimpleArgs:
       concatExpressions(
         encoder,
         context,
-        compileSimpleArgs(op.op1.params, op.op1.hash, op.op1.atNames),
+        compileSimpleArgs(operation.op1.params, operation.op1.hash, operation.op1.atNames),
         constants
       );
       break;
     case HighLevelResolutionOpcode.Expr:
-      concatExpressions(encoder, context, expr(op.op1, context.meta), constants);
+      concatExpressions(encoder, context, expr(operation.op1, context.meta), constants);
       break;
     case HighLevelResolutionOpcode.IfResolved: {
-      concatExpressions(encoder, context, ifResolved(context, op), constants);
+      concatExpressions(encoder, context, ifResolved(context, operation), constants);
+      break;
+    }
+    case HighLevelResolutionOpcode.ResolveFree: {
+      throw new Error('Unimplemented HighLevelResolutionOpcode.ResolveFree');
+    }
+    case HighLevelResolutionOpcode.ResolveContextualFree: {
+      let { freeVar, context: expressionContext } = operation.op1;
+
+      if (context.meta.asPartial) {
+        let name = context.meta.upvars![freeVar];
+
+        concatExpressions(encoder, context, [op(Op.ResolveMaybeLocal, name)], constants);
+
+        break;
+      }
+
+      switch (expressionContext) {
+        case ExpressionContext.Expression: {
+          // in classic mode, this is always a this-fallback
+          let name = context.meta.upvars![freeVar];
+
+          concatExpressions(
+            encoder,
+            context,
+            [op(Op.GetVariable, 0), op(Op.GetProperty, name)],
+            constants
+          );
+
+          break;
+        }
+
+        case ExpressionContext.AppendSingleId: {
+          let resolver = context.syntax.program.resolverDelegate;
+          let name = context.meta.upvars![freeVar];
+
+          let resolvedHelper = resolver.lookupHelper(name, context.meta.referrer);
+          let expressions: ExpressionCompileActions;
+
+          if (resolvedHelper) {
+            expressions = Call({ handle: resolvedHelper, params: null, hash: null });
+          } else {
+            // in classic mode, this is always a this-fallback
+            expressions = [op(Op.GetVariable, 0), op(Op.GetProperty, name)];
+          }
+
+          concatExpressions(encoder, context, expressions, constants);
+
+          break;
+        }
+
+        default:
+          throw new Error(
+            `unimplemented: Can't evaluate expression in context ${expressionContext}`
+          );
+      }
+
       break;
     }
     default:
-      return exhausted(op);
+      return exhausted(operation);
   }
 }
 
@@ -55,7 +112,7 @@ export function expr(
   if (Array.isArray(expression)) {
     return EXPRESSIONS.compile(expression, meta);
   } else {
-    return [primitive(expression), op(Op.PrimitiveReference)];
+    return [PushPrimitive(expression), op(Op.PrimitiveReference)];
   }
 }
 
@@ -66,7 +123,7 @@ export function compileSimpleArgs(
 ): ExpressionCompileActions {
   let out: ExpressionCompileActions = [];
 
-  let { count, actions } = compileParams(params);
+  let { count, actions } = CompilePositional(params);
 
   out.push(actions);
 
@@ -91,9 +148,9 @@ export function compileSimpleArgs(
 
 function ifResolved(
   context: TemplateCompilationContext,
-  op: IfResolvedOp
+  { op1 }: IfResolvedOp
 ): ExpressionCompileActions {
-  let { kind, name, andThen, orElse } = op.op1;
+  let { kind, name, andThen, orElse, span } = op1;
 
   let resolved = resolve(
     context.syntax.program.resolverDelegate,
@@ -107,8 +164,7 @@ function ifResolved(
   } else if (orElse) {
     return orElse();
   } else {
-    // TODO: Fix error reporting
-    throw new Error(`Unexpected ${kind} ${name}`);
+    return error(`Unexpected ${kind} ${name}`, span.start, span.end);
   }
 }
 

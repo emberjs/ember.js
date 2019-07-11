@@ -81,9 +81,9 @@ export class EmberishComponentTests extends RenderTest {
 
     this.render(
       strip`
-    {{#each components key="id" as |component|}}
-      {{#in-element component.mount}}
-        {{component component.name childName=component.child data=component.data}}
+    {{#each components key="id" as |c|}}
+      {{#in-element c.mount}}
+        {{component c.name childName=c.child data=c.data}}
       {{/in-element}}
     {{/each}}
     `,

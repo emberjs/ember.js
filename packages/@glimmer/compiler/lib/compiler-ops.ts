@@ -1,68 +1,127 @@
 import { AST } from '@glimmer/syntax';
-import { Option } from '@glimmer/interfaces';
+import { Option, WireFormat, ExpressionContext } from '@glimmer/interfaces';
 
 /**
   - 0 - represents `this`
   - string - represents any other path
  */
 export type PathHead = string | 0;
-export interface CompilerOps<Variable> {
+
+export interface SourceLocation {
+  source: string | null;
+  start: number;
+  end: number;
+}
+
+export interface InputOps {
+  startProgram: [AST.Template];
+  endProgram: [AST.Template];
+  startBlock: [AST.Block];
+  endBlock: [AST.Block];
+  block: [AST.BlockStatement];
+  mustache: [AST.MustacheStatement];
+  openElement: [AST.ElementNode];
+  closeElement: [AST.ElementNode];
+  text: [AST.TextNode];
+  comment: [AST.CommentStatement];
+}
+
+// type Location = ['loc', [null, [number, number], [number, number]]];
+
+export interface AllocateSymbolsOps {
   startProgram: AST.Template;
-  endProgram: null;
+  endProgram: void;
   startBlock: AST.Block;
-  endBlock: null;
+  endBlock: void;
+  append: boolean;
   text: string;
   comment: string;
+  block: [number, Option<number>];
+  yield: string;
+  debugger: null;
+  hasBlock: string;
+  hasBlockParams: string;
+  partial: void;
+
   openElement: [AST.ElementNode, boolean];
-  openComponent: AST.ElementNode;
-  openNamedBlock: AST.ElementNode;
-  flushElement: AST.ElementNode;
   closeElement: AST.ElementNode;
+  openComponent: AST.ElementNode;
   closeComponent: AST.ElementNode;
+  openNamedBlock: AST.ElementNode;
   closeNamedBlock: AST.ElementNode;
   closeDynamicComponent: AST.ElementNode;
+  flushElement: AST.ElementNode;
+
   staticArg: string;
   dynamicArg: string;
-  attrSplat: Option<Variable>;
   staticAttr: [string, Option<string>];
-  trustingAttr: [string, Option<string>];
-  trustingComponentAttr: [string, Option<string>];
-  dynamicAttr: [string, Option<string>];
   componentAttr: [string, Option<string>];
-  modifier: string;
-  append: boolean;
-  block: [string, number, Option<number>];
-  get: [Variable, string[]]; // path
+  dynamicAttr: [string, Option<string>];
+  trustingComponentAttr: [string, Option<string>];
+  trustingAttr: [string, Option<string>];
+  attrSplat: void;
+
+  getVar: [string, ExpressionContext];
+  getArg: string;
+  getFree: string;
+  getThis: void;
+
+  getPath: string[];
+
+  modifier: void;
+  helper: void;
+
   literal: string | boolean | number | null | undefined;
-  helper: string;
-  unknown: string;
-  maybeLocal: string[];
-  yield: Variable;
-  debugger: Option<Variable[]>;
-  partial: Option<Variable[]>;
-  hasBlock: Variable;
-  hasBlockParams: Variable;
+  concat: void;
 
   prepareArray: number;
   prepareObject: number;
-  concat: null;
 }
 
-export interface TemplateCompilerOps extends CompilerOps<PathHead> {
-  maybeGet: [PathHead, string[]]; // {{path}}, might be helper
+export interface JavaScriptCompilerOps {
+  text: string;
+  comment: string;
+
+  openElement: [AST.ElementNode, boolean];
+  closeElement: AST.ElementNode;
+  openComponent: AST.ElementNode;
+  closeComponent: AST.ElementNode;
+  openNamedBlock: AST.ElementNode;
+  closeNamedBlock: AST.ElementNode;
+  closeDynamicComponent: AST.ElementNode;
+  flushElement: AST.ElementNode;
+
+  staticAttr: [string, Option<string>];
+  componentAttr: [string, Option<string>];
+  dynamicAttr: [string, Option<string>];
+  trustingComponentAttr: [string, Option<string>];
+  trustingAttr: [string, Option<string>];
+
+  helper: void;
+  modifier: void;
+  block: [number, Option<number>];
+  attrSplat: Option<number>;
+  getPath: string[];
+  getSymbol: number;
+  getFree: number;
+  getFreeWithContext: [number, ExpressionContext];
+  yield: number;
+
+  hasBlock: number;
+  hasBlockParams: number;
+
+  debugger: WireFormat.Core.EvalInfo;
+  partial: WireFormat.Core.EvalInfo;
 }
 
-export type OpName = keyof CompilerOps<unknown>;
-
-export type Processor<
-  InOps extends CompilerOps<unknown>,
-  OutVariable,
-  OutOps extends CompilerOps<OutVariable>
-> = {
-  [P in keyof InOps & keyof OutOps]: (operand: InOps[P]) => void | Op<OutVariable, OutOps, OpName>;
+export type Processor<InOps extends PipelineOps> = {
+  [P in keyof InOps]: InOps[P] extends void ? () => void : (op: InOps[P]) => void;
 };
 
-export type Op<V, O extends CompilerOps<V>, K extends keyof O = keyof O> = {
-  0: K;
-  1: O[K];
+export type PipelineOps = InputOps | AllocateSymbolsOps | JavaScriptCompilerOps;
+
+export type OpsDict<O extends PipelineOps> = {
+  [K in keyof O]: O[K] extends void ? [K] : [K, O[K]];
 };
+export type Ops<O extends PipelineOps> = OpsDict<O>[keyof O];
+export type Op<O extends PipelineOps, K extends keyof O> = OpsDict<O>[K];

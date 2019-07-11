@@ -5,6 +5,10 @@ import {
   SerializedTemplateBlock,
   SerializedTemplateWithLazyBlock,
   Template,
+  TemplateOk,
+  HandleResult,
+  OkHandle,
+  ErrHandle,
 } from '@glimmer/interfaces';
 import { assign } from '@glimmer/util';
 import { compilable } from './compilable-template';
@@ -69,7 +73,9 @@ export default function templateFactory<M>({
   return { id, meta, create };
 }
 
-class TemplateImpl<R> implements Template {
+class TemplateImpl<R> implements TemplateOk<R> {
+  readonly result = 'ok';
+
   private layout: Option<CompilableProgram> = null;
   private partial: Option<CompilableProgram> = null;
   private wrappedLayout: Option<CompilableProgram> = null;
@@ -118,6 +124,41 @@ export function Component(serialized: string, envMeta?: {}): CompilableProgram {
   let parsed = JSON.parse(serialized);
   let factory = templateFactory(parsed);
 
-  let template = factory.create(envMeta);
+  let template = unwrapTemplate(factory.create(envMeta));
   return template.asLayout();
+}
+
+export function unwrapTemplate<M>(template: Template<M>): TemplateOk<M> {
+  if (template.result === 'error') {
+    throw new Error(
+      `Compile Error: ${template.problem} @ ${template.span.start}..${template.span.end}`
+    );
+  }
+
+  return template;
+}
+
+export function unwrapHandle(handle: HandleResult): number {
+  if (typeof handle === 'number') {
+    return handle;
+  } else {
+    let error = handle.errors[0];
+    throw new Error(`Compile Error: ${error.problem} @ ${error.span.start}..${error.span.end}`);
+  }
+}
+
+export function extractHandle(handle: HandleResult): number {
+  if (typeof handle === 'number') {
+    return handle;
+  } else {
+    return handle.handle;
+  }
+}
+
+export function isOkHandle(handle: HandleResult): handle is OkHandle {
+  return typeof handle === 'number';
+}
+
+export function isErrHandle(handle: HandleResult): handle is ErrHandle {
+  return typeof handle === 'number';
 }

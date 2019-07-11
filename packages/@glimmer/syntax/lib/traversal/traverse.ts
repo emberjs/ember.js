@@ -74,7 +74,7 @@ function getNodeHandler<N extends AST.Node>(
 
   let handler = visitor[nodeType];
   if (handler !== undefined) {
-    return handler as NodeTraversal<N>;
+    return (handler as unknown) as NodeTraversal<N>;
   }
   return visitor.All;
 }

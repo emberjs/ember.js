@@ -1,7 +1,6 @@
 import {
   BuilderOp,
   CompilableBlock,
-  CompilableTemplate,
   MachineOp,
   Op,
   Option,
@@ -11,16 +10,23 @@ import {
 } from '@glimmer/interfaces';
 import { $fp } from '@glimmer/vm';
 import { op } from '../encoder';
-import { primitive } from './vm';
+import { PushPrimitive } from './vm';
 import { serializable } from '../operands';
 
-export function yieldBlock(
+/**
+ * Yield to a block located at a particular symbol location.
+ *
+ * @param to the symbol containing the block to yield to
+ * @param params optional block parameters to yield to the block
+ */
+export function YieldBlock(
   to: number,
   params: Option<WireFormat.Core.Params>
 ): StatementCompileActions {
   return [
     op('SimpleArgs', { params, hash: null, atNames: true }),
     op(Op.GetBlock, to),
+    op(Op.JitSpreadBlock),
     op('Option', op('JitCompileBlock')),
     op(Op.InvokeYield),
     op(Op.PopScope),
@@ -28,15 +34,26 @@ export function yieldBlock(
   ];
 }
 
-export function pushYieldableBlock(block: Option<CompilableTemplate>): StatementCompileActions {
+/**
+ * Push an (optional) yieldable block onto the stack. The yieldable block must be known
+ * statically at compile time.
+ *
+ * @param block An optional Compilable block
+ */
+export function PushYieldableBlock(block: Option<CompilableBlock>): StatementCompileActions {
   return [
-    pushSymbolTable(block && block.symbolTable),
+    PushSymbolTable(block && block.symbolTable),
     op(Op.PushBlockScope),
     op('PushCompilable', block),
   ];
 }
 
-export function invokeStaticBlock(block: CompilableBlock): StatementCompileActions {
+/**
+ * Invoke a block that is known statically at compile time.
+ *
+ * @param block a Compilable block
+ */
+export function InvokeStaticBlock(block: CompilableBlock): StatementCompileActions {
   return [
     op(MachineOp.PushFrame),
     op('PushCompilable', block),
@@ -46,7 +63,14 @@ export function invokeStaticBlock(block: CompilableBlock): StatementCompileActio
   ];
 }
 
-export function invokeStaticBlockWithStack(
+/**
+ * Invoke a static block, preserving some number of stack entries for use in
+ * updating.
+ *
+ * @param block A compilable block
+ * @param callerCount A number of stack entries to preserve
+ */
+export function InvokeStaticBlockWithStack(
   block: CompilableBlock,
   callerCount: number
 ): StatementCompileActions {
@@ -55,7 +79,7 @@ export function invokeStaticBlockWithStack(
   let count = Math.min(callerCount, calleeCount);
 
   if (count === 0) {
-    return invokeStaticBlock(block);
+    return InvokeStaticBlock(block);
   }
 
   let out: StatementCompileActions = [];
@@ -84,10 +108,10 @@ export function invokeStaticBlockWithStack(
   return out;
 }
 
-export function pushSymbolTable(table: Option<SymbolTable>): BuilderOp {
+export function PushSymbolTable(table: Option<SymbolTable>): BuilderOp {
   if (table) {
     return op(Op.PushSymbolTable, serializable(table));
   } else {
-    return primitive(null);
+    return PushPrimitive(null);
   }
 }

@@ -99,14 +99,14 @@ export class JitRenderDelegate implements RenderDelegate {
         return registerEmberishCurlyComponent(
           this.registry,
           name,
-          Class as EmberishCurlyComponentFactory,
+          (Class as any) as EmberishCurlyComponentFactory,
           layout
         );
       case 'Glimmer':
         return registerEmberishGlimmerComponent(
           this.registry,
           name,
-          Class as EmberishGlimmerComponentFactory,
+          (Class as any) as EmberishGlimmerComponentFactory,
           layout
         );
     }

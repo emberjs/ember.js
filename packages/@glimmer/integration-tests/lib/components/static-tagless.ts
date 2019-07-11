@@ -8,6 +8,7 @@ import {
 } from '@glimmer/interfaces';
 import TestJitRuntimeResolver from '../modes/jit/resolver';
 import { createTemplate } from '../compile';
+import { unwrapTemplate } from '@glimmer/opcode-compiler';
 
 export class StaticTaglessComponentManager extends BasicComponentManager {
   getCapabilities(state: TestComponentDefinitionState): ComponentCapabilities {
@@ -22,11 +23,11 @@ export class StaticTaglessComponentManager extends BasicComponentManager {
 
     let handle = resolver.lookup('template-source', name)!;
 
-    return resolver.registry
-      .customCompilableTemplate(handle, name, source =>
+    return unwrapTemplate(
+      resolver.registry.customCompilableTemplate(handle, name, source =>
         createTemplate<AnnotatedModuleLocator>(source).create()
       )
-      .asLayout();
+    ).asLayout();
   }
 }
 

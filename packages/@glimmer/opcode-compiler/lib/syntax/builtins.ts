@@ -8,14 +8,14 @@ import {
 import { invokeStaticBlock, invokeStaticBlockWithStack } from '@glimmer/opcode-compiler';
 import { assert, unwrap } from '@glimmer/util';
 import { $fp, $sp } from '@glimmer/vm';
-import { op } from '../opcode-builder/encoder';
+import { op, error } from '../opcode-builder/encoder';
 import {
-  invokeDynamicComponent,
-  staticComponentHelper,
+  InvokeDynamicComponent,
+  StaticComponentHelper,
 } from '../opcode-builder/helpers/components';
-import { replayable, replayableIf } from '../opcode-builder/helpers/conditional';
-import { compileParams } from '../opcode-builder/helpers/shared';
-import { dynamicScope, pushPrimitiveReference } from '../opcode-builder/helpers/vm';
+import { Replayable, ReplayableIf } from '../opcode-builder/helpers/conditional';
+import { CompilePositional } from '../opcode-builder/helpers/shared';
+import { DynamicScope, PushPrimitiveReference } from '../opcode-builder/helpers/vm';
 import { label } from '../opcode-builder/operands';
 import { EMPTY_BLOCKS } from '../utils';
 import { isHandled, NONE, UNHANDLED } from './concat';
@@ -29,7 +29,7 @@ export function populateBuiltins(
       throw new Error(`SYNTAX ERROR: #if requires a single argument`);
     }
 
-    return replayableIf({
+    return ReplayableIf({
       args() {
         return {
           count: 1,
@@ -56,7 +56,7 @@ export function populateBuiltins(
       throw new Error(`SYNTAX ERROR: #unless requires a single argument`);
     }
 
-    return replayableIf({
+    return ReplayableIf({
       args() {
         return {
           count: 1,
@@ -83,7 +83,7 @@ export function populateBuiltins(
       throw new Error(`SYNTAX ERROR: #with requires a single argument`);
     }
 
-    return replayableIf({
+    return ReplayableIf({
       args() {
         return {
           count: 2,
@@ -107,22 +107,22 @@ export function populateBuiltins(
 
   blocks.add('let', (params, _hash, blocks) => {
     if (!params) {
-      throw new Error(`SYNTAX ERROR: #let requires arguments`);
+      return error('let requires arguments', 0, 0);
     }
 
-    let { count, actions } = compileParams(params);
+    let { count, actions } = CompilePositional(params);
     return [actions, invokeStaticBlockWithStack(blocks.get('default')!, count)];
   });
 
   blocks.add('each', (params, hash, blocks) => {
-    return replayable({
+    return Replayable({
       args() {
         let actions: StatementCompileActions;
 
         if (hash && hash[0][0] === 'key') {
           actions = [op('Expr', hash[1][0])];
         } else {
-          actions = [pushPrimitiveReference(null)];
+          actions = [PushPrimitiveReference(null)];
         }
 
         actions.push(op('Expr', params[0]));
@@ -165,7 +165,7 @@ export function populateBuiltins(
       throw new Error(`SYNTAX ERROR: #in-element requires a single argument`);
     }
 
-    return replayableIf({
+    return ReplayableIf({
       args() {
         let [keys, values] = hash!;
 
@@ -199,11 +199,11 @@ export function populateBuiltins(
     if (hash) {
       let [names, expressions] = hash;
 
-      let { actions } = compileParams(expressions);
+      let { actions } = CompilePositional(expressions);
 
       return [
         actions,
-        dynamicScope(names, () => {
+        DynamicScope(names, () => {
           return invokeStaticBlock(unwrap(blocks.get('default')));
         }),
       ];
@@ -217,7 +217,7 @@ export function populateBuiltins(
 
     let tag = _params[0];
     if (typeof tag === 'string') {
-      let returned = staticComponentHelper(
+      let returned = StaticComponentHelper(
         context,
         _params[0] as string,
         hash,
@@ -247,12 +247,12 @@ export function populateBuiltins(
 
     let tag = _params && _params[0];
     if (typeof tag === 'string') {
-      let returned = staticComponentHelper(context, tag as string, hash, null);
+      let returned = StaticComponentHelper(context, tag as string, hash, null);
       if (returned !== UNHANDLED) return returned;
     }
 
     let [definition, ...params] = _params!;
-    return invokeDynamicComponent(context.meta, {
+    return InvokeDynamicComponent(context.meta, {
       definition,
       attrs: null,
       params,

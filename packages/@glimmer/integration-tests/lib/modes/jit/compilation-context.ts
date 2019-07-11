@@ -13,7 +13,7 @@ import {
 } from '@glimmer/interfaces';
 import { Constants, HeapImpl, RuntimeProgramImpl } from '@glimmer/program';
 import { TestJitRegistry } from './registry';
-import { compileStd } from '@glimmer/opcode-compiler';
+import { compileStd, unwrapTemplate } from '@glimmer/opcode-compiler';
 import TestJitRuntimeResolver from './resolver';
 import { createTemplate } from '../../compile';
 
@@ -97,7 +97,7 @@ export default class JitCompileTimeLookup implements CompileTimeResolverDelegate
       throw new Error('UH OH');
     }
 
-    let template = this.compile(source, name);
+    let template = unwrapTemplate(this.compile(source, name));
     let compilable = capabilities.wrapped ? template.asWrappedLayout() : template.asLayout();
 
     return {

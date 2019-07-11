@@ -12,7 +12,7 @@ export function isCurriedComponentDefinition(
 }
 
 export function isComponentDefinition(
-  definition: Maybe<Dict>
+  definition: Maybe<Dict> | CurriedComponentDefinition
 ): definition is CurriedComponentDefinition {
   return !!(definition && definition[CURRIED_COMPONENT_DEFINITION_BRAND]);
 }

@@ -1,6 +1,7 @@
 import { EmberishGlimmerComponent } from './emberish-glimmer';
 import { EmberishCurlyComponent } from './emberish-curly';
 import { BasicComponent } from './basic';
+import { Dict } from '@glimmer/interfaces';
 
 export type ComponentKind = 'Glimmer' | 'Curly' | 'Dynamic' | 'Basic' | 'Fragment';
 
@@ -22,9 +23,9 @@ export interface ComponentBlueprint {
   else?: string;
   template?: string;
   name?: string;
-  args?: Object;
-  attributes?: Object;
-  layoutAttributes?: Object;
+  args?: Dict;
+  attributes?: Dict;
+  layoutAttributes?: Dict;
   blockParams?: string[];
 }
 

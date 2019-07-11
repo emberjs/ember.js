@@ -1,12 +1,12 @@
 import { setStateFor, trackedData } from '@glimmer/reference';
 
+export function tracked<T extends object, K extends keyof T>(obj: T, key: K): void;
 export function tracked<T extends object, K extends keyof T>(
-  k: { new (...args: any): T },
+  k: { new (...args: any[]): T },
   key: K
 ): void;
-export function tracked<T extends object, K extends keyof T>(obj: object, key: K): void;
 export function tracked<T extends object, K extends keyof T>(
-  obj: T | { new (...args: any): T },
+  obj: T | { new (...args: unknown[]): T },
   key: K
 ): void {
   let target: T;

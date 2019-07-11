@@ -14,6 +14,7 @@ import {
   CompilableBlock,
   CompilableProgram,
   CompilableTemplate,
+  HandleResult,
 } from '../template';
 import { CompileTimeResolverDelegate } from '../serialize';
 import { Op, MachineOp } from '../vm-opcodes';
@@ -29,7 +30,11 @@ export interface Labels<InstructionEncoder> {
   patch(encoder: InstructionEncoder): void;
 }
 
-export type HighLevelOp = HighLevelBuilderOp | HighLevelCompileOp | HighLevelResolutionOp;
+export type HighLevelOp =
+  | HighLevelBuilderOp
+  | HighLevelCompileOp
+  | HighLevelResolutionOp
+  | CompileErrorOp;
 
 export interface AllOpMap {
   Label: LabelOp;
@@ -41,6 +46,8 @@ export interface AllOpMap {
 
   IfResolved: IfResolvedOp;
   Expr: ExprOp;
+  ResolveFree: ResolveFreeOp;
+  ResolveContextualFree: ResolveContextualFreeOp;
   SimpleArgs: SimpleArgsOp;
 
   CompileInline: CompileInlineOp;
@@ -51,6 +58,8 @@ export interface AllOpMap {
   Args: ArgsOp;
   IfResolvedComponent: IfResolvedComponentOp;
   DynamicComponent: DynamicComponentOp;
+
+  Error: CompileErrorOp;
 }
 
 export type AllOpcode = keyof AllOpMap;
@@ -84,7 +93,14 @@ export const enum HighLevelCompileOpcode {
 export const enum HighLevelResolutionOpcode {
   IfResolved = 'IfResolved',
   Expr = 'Expr',
+  ResolveFree = 'ResolveFree',
+  ResolveContextualFree = 'ResolveContextualFree',
   SimpleArgs = 'SimpleArgs',
+}
+
+// Must be kept in sync with isErrorOpcode in encoder.ts
+export const enum ErrorOpcode {
+  Error = 'Error',
 }
 
 export type HighLevelOpcode =
@@ -146,6 +162,10 @@ export interface IfResolvedOp {
     name: string;
     andThen: (handle: number) => ExpressionCompileActions;
     orElse?: () => ExpressionCompileActions;
+    span: {
+      start: number;
+      end: number;
+    };
   };
 }
 
@@ -200,7 +220,12 @@ export type HighLevelCompileOp =
 
 export type HighLevelCompileOperands = [HighLevelCompileOp['op1']];
 
-export type HighLevelResolutionOp = IfResolvedOp | ExprOp | SimpleArgsOp;
+export type HighLevelResolutionOp =
+  | IfResolvedOp
+  | ExprOp
+  | ResolveFreeOp
+  | ResolveContextualFreeOp
+  | SimpleArgsOp;
 
 export type BuilderOpcode = Op | MachineOp;
 
@@ -272,10 +297,35 @@ export interface ExprOp {
   op1: WireFormat.Expression;
 }
 
+export interface ResolveFreeOp {
+  type: 'Resolution';
+  op: HighLevelResolutionOpcode.ResolveFree;
+  op1: number;
+}
+
+export interface ResolveContextualFreeOp {
+  type: 'Resolution';
+  op: HighLevelResolutionOpcode.ResolveContextualFree;
+  op1: {
+    freeVar: number;
+    context: WireFormat.ExpressionContext;
+  };
+}
+
 export interface GetComponentLayoutOp {
   type: 'Simple';
   op: HighLevelBuilderOpcode.GetComponentLayout;
   op1: number;
+}
+
+export interface CompileErrorOp {
+  type: 'Error';
+  op: ErrorOpcode.Error;
+  op1: {
+    problem: string;
+    start: number;
+    end: number;
+  };
 }
 
 export type HighLevelBuilderOp =
@@ -297,13 +347,13 @@ export interface NestedCompileActions extends Array<CompileActions | CompileActi
 export type CompileActions = CompileAction | NestedCompileActions;
 
 export type StatementCompileOp = CompileOp | HighLevelCompileOp | HighLevelResolutionOp;
-export type StatementCompileAction = StatementCompileOp | NO_ACTION;
+export type StatementCompileAction = StatementCompileOp | CompileErrorOp | NO_ACTION;
 export interface NestedStatementCompileActions
   extends Array<StatementCompileAction | NestedStatementCompileActions> {}
 export type StatementCompileActions = NestedStatementCompileActions | StatementCompileAction;
 
 export type ExpressionCompileOp = CompileOp | HighLevelResolutionOp | ExprOp;
-export type ExpressionCompileAction = ExpressionCompileOp | NO_ACTION;
+export type ExpressionCompileAction = ExpressionCompileOp | CompileErrorOp | NO_ACTION;
 export interface NestedExpressionCompileActions
   extends Array<ExpressionCompileAction | NestedExpressionCompileActions> {}
 
@@ -312,6 +362,14 @@ export type ExpressionCompileActions = NestedExpressionCompileActions | Expressi
 export const enum CompileMode {
   aot = 'aot',
   jit = 'jit',
+}
+
+export interface EncoderError {
+  problem: string;
+  span: {
+    start: number;
+    end: number;
+  };
 }
 
 /**
@@ -327,7 +385,7 @@ export interface Encoder {
    * @param compiler
    * @param size
    */
-  commit(heap: CompileTimeHeap, size: number): number;
+  commit(heap: CompileTimeHeap, size: number): HandleResult;
 
   /**
    * Push a syscall into the program with up to three optional
@@ -378,4 +436,6 @@ export interface Encoder {
    * @param index
    */
   label(name: string): void;
+
+  error(error: EncoderError): void;
 }

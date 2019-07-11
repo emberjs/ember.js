@@ -3,7 +3,7 @@ import { Stack, DictSet, Option, expect } from '@glimmer/util';
 import { AST } from '@glimmer/syntax';
 import { CompileOptions } from './template-compiler';
 import { isArgument, isAttribute, isFlushElement } from '@glimmer/wire-format';
-import { Processor, CompilerOps, OpName, Op } from './compiler-ops';
+import { Processor, JavaScriptCompilerOps, Ops, SourceLocation } from './compiler-ops';
 import {
   WireFormat,
   SerializedInlineBlock,
@@ -13,11 +13,13 @@ import {
   SexpOpcodes,
   Expression,
   Expressions,
+  ExpressionContext,
 } from '@glimmer/interfaces';
 
 export type str = string;
 import Core = WireFormat.Core;
 export type Params = WireFormat.Core.Params;
+export type ConcatParams = WireFormat.Core.ConcatParams;
 export type Hash = WireFormat.Core.Hash;
 export type Path = WireFormat.Core.Path;
 export type StackValue = WireFormat.Expression | Params | Hash | str;
@@ -58,7 +60,7 @@ export class TemplateBlock extends Block {
   public blocks: SerializedInlineBlock[] = [];
   public hasEval = false;
 
-  constructor(private symbolTable: AST.Symbols) {
+  constructor(private symbolTable: AST.ProgramSymbols) {
     super();
   }
 
@@ -71,6 +73,7 @@ export class TemplateBlock extends Block {
       symbols: this.symbolTable.symbols,
       statements: this.statements,
       hasEval: this.hasEval,
+      upvars: this.symbolTable.freeVariables,
     };
   }
 }
@@ -143,7 +146,7 @@ export class ComponentBlock extends Block {
 export class Template {
   public block: TemplateBlock;
 
-  constructor(symbols: AST.Symbols) {
+  constructor(symbols: AST.ProgramSymbols) {
     this.block = new TemplateBlock(symbols);
   }
 
@@ -152,27 +155,33 @@ export class Template {
   }
 }
 
-export type InVariable = number;
-export type InOp<K extends keyof CompilerOps<InVariable> = OpName> = Op<
-  InVariable,
-  CompilerOps<InVariable>,
-  K
->;
+type Input = readonly Ops<JavaScriptCompilerOps>[];
 
-export default class JavaScriptCompiler
-  implements Processor<CompilerOps<number>, void, CompilerOps<void>> {
-  static process(opcodes: InOp[], symbols: AST.Symbols, options?: CompileOptions): Template {
-    let compiler = new JavaScriptCompiler(opcodes, symbols, options);
+export default class JavaScriptCompiler implements Processor<JavaScriptCompilerOps> {
+  static process(
+    opcodes: Input,
+    locations: readonly Option<SourceLocation>[],
+    symbols: AST.ProgramSymbols,
+    options?: CompileOptions
+  ): Template {
+    let compiler = new JavaScriptCompiler(opcodes, symbols, locations, options);
     return compiler.process();
   }
 
-  private template: Template;
-  private blocks = new Stack<Block>();
-  private opcodes: InOp[];
-  private values: StackValue[] = [];
-  private options: CompileOptions | undefined;
+  private readonly template: Template;
+  private readonly blocks = new Stack<Block>();
+  private readonly opcodes: readonly Ops<JavaScriptCompilerOps>[];
+  private readonly values: StackValue[] = [];
+  private readonly options: CompileOptions | undefined;
+  private location: Option<SourceLocation> = null;
+  private locationStack: Option<SourceLocation>[] = [];
 
-  constructor(opcodes: InOp[], symbols: AST.Symbols, options?: CompileOptions) {
+  constructor(
+    opcodes: Input,
+    symbols: AST.ProgramSymbols,
+    private locations: readonly Option<SourceLocation>[],
+    options?: CompileOptions
+  ) {
     this.opcodes = opcodes;
     this.template = new Template(symbols);
     this.options = options;
@@ -193,8 +202,10 @@ export default class JavaScriptCompiler
   }
 
   process(): Template {
-    this.opcodes.forEach(op => {
+    this.opcodes.forEach((op, i) => {
       let opcode = op[0];
+      this.location = this.locations[i];
+
       let arg = op[1];
 
       if (!this[opcode]) {
@@ -225,24 +236,26 @@ export default class JavaScriptCompiler
   /// Statements
 
   text(content: string) {
-    this.push([SexpOpcodes.Text, content]);
+    this.push([SexpOpcodes.Append, 1, 0, 0, content]);
   }
 
   append(trusted: boolean) {
-    this.push([SexpOpcodes.Append, this.popValue<Expression>(), trusted]);
+    this.push([SexpOpcodes.Append, +trusted, 0, 0, this.popValue<Expression>()]);
   }
 
   comment(value: string) {
     this.push([SexpOpcodes.Comment, value]);
   }
 
-  modifier(name: string) {
+  modifier() {
+    let name = this.popValue<Expression>();
     let params = this.popValue<Params>();
     let hash = this.popValue<Hash>();
-    this.push([SexpOpcodes.Modifier, name, params, hash]);
+    this.push([SexpOpcodes.Modifier, 0, 0, name, params, hash]);
   }
 
-  block([name, template, inverse]: [string, number, Option<number>]) {
+  block([template, inverse]: [number, Option<number>]) {
+    let head = this.popValue<Expression>();
     let params = this.popValue<Params>();
     let hash = this.popValue<Hash>();
 
@@ -266,7 +279,9 @@ export default class JavaScriptCompiler
       namedBlocks = [['default', 'else'], [blocks[template], blocks[inverse]]];
     }
 
-    this.push([SexpOpcodes.Block, name, params, hash, namedBlocks]);
+    // assert(head[]);
+
+    this.push([SexpOpcodes.Block, head, params, hash, namedBlocks]);
   }
 
   openComponent(element: AST.ElementNode) {
@@ -315,7 +330,7 @@ export default class JavaScriptCompiler
   closeDynamicComponent(_element: AST.ElementNode) {
     let [, attrs, args, block] = this.endComponent();
 
-    this.push([SexpOpcodes.DynamicComponent, this.popValue<Expression>(), attrs, args, block]);
+    this.push([SexpOpcodes.Component, this.popValue<Expression>(), attrs, args, block]);
   }
 
   closeElement(_element: AST.ElementNode) {
@@ -375,11 +390,14 @@ export default class JavaScriptCompiler
   }
 
   hasBlock(name: number) {
-    this.pushValue<Expressions.HasBlock>([SexpOpcodes.HasBlock, name]);
+    this.pushValue<Expressions.HasBlock>([SexpOpcodes.HasBlock, [SexpOpcodes.GetSymbol, name]]);
   }
 
   hasBlockParams(name: number) {
-    this.pushValue<Expressions.HasBlockParams>([SexpOpcodes.HasBlockParams, name]);
+    this.pushValue<Expressions.HasBlockParams>([
+      SexpOpcodes.HasBlockParams,
+      [SexpOpcodes.GetSymbol, name],
+    ]);
   }
 
   partial(evalInfo: Option<Core.EvalInfo>) {
@@ -398,27 +416,40 @@ export default class JavaScriptCompiler
     }
   }
 
-  unknown(name: string) {
-    this.pushValue<Expressions.Unknown>([SexpOpcodes.Unknown, name]);
+  getPath(rest: string[]) {
+    let head = this.popValue<Expressions.Get>();
+    this.pushValue<Expressions.GetPath>([SexpOpcodes.GetPath, head, rest]);
   }
 
-  get([head, path]: [number, string[]]) {
-    this.pushValue<Expressions.Get>([SexpOpcodes.Get, head, path]);
+  getSymbol(head: number) {
+    this.pushValue<Expressions.GetSymbol>([SexpOpcodes.GetSymbol, head]);
   }
 
-  maybeLocal(path: string[]) {
-    this.pushValue<Expressions.MaybeLocal>([SexpOpcodes.MaybeLocal, path]);
+  getFree(head: number) {
+    this.pushValue<Expressions.GetFree>([SexpOpcodes.GetFree, head]);
+  }
+
+  getFreeWithContext([head, context]: [number, ExpressionContext]) {
+    this.pushValue<Expressions.GetContextualFree>([SexpOpcodes.GetContextualFree, head, context]);
   }
 
   concat() {
-    this.pushValue<Expressions.Concat>([SexpOpcodes.Concat, this.popValue<Params>()]);
+    this.pushValue<Expressions.Concat>([SexpOpcodes.Concat, this.popValue<ConcatParams>()]);
   }
 
-  helper(name: string) {
+  helper() {
+    let { value: head, location } = this.popLocatedValue<Expression>();
     let params = this.popValue<Params>();
     let hash = this.popValue<Hash>();
 
-    this.pushValue<Expressions.Helper>([SexpOpcodes.Helper, name, params, hash]);
+    this.pushValue<Expressions.Helper>([
+      SexpOpcodes.Call,
+      start(location),
+      end(location),
+      head,
+      params,
+      hash,
+    ]);
   }
 
   /// Stack Management Opcodes
@@ -479,10 +510,38 @@ export default class JavaScriptCompiler
 
   pushValue<S extends Expression | Params | Hash>(val: S) {
     this.values.push(val);
+    this.locationStack.push(this.location);
+  }
+
+  popLocatedValue<T extends StackValue>(): { value: T; location: Option<SourceLocation> } {
+    assert(this.values.length, 'No expression found on stack');
+    let value = this.values.pop() as T;
+    let location = this.locationStack.pop();
+
+    if (location === undefined) {
+      throw new Error('Unbalanced location push and pop');
+    }
+
+    return { value, location };
   }
 
   popValue<T extends StackValue>(): T {
-    assert(this.values.length, 'No expression found on stack');
-    return this.values.pop() as T;
+    return this.popLocatedValue<T>().value;
+  }
+}
+
+function start(location: Option<SourceLocation>): number {
+  if (location) {
+    return location.start;
+  } else {
+    return -1;
+  }
+}
+
+function end(location: Option<SourceLocation>): number {
+  if (location) {
+    return location.end - location.start;
+  } else {
+    return -1;
   }
 }

@@ -1,6 +1,5 @@
 import {
   Bounds,
-  Dict,
   ElementOperations,
   Environment,
   GlimmerTreeChanges,
@@ -355,7 +354,7 @@ export class NewElementBuilder implements ElementBuilder {
   }
 
   __setProperty(name: string, value: unknown): void {
-    (this.constructing! as Dict)[name] = value;
+    (this.constructing! as any)[name] = value;
   }
 
   setStaticAttribute(name: string, value: string, namespace: Option<AttrNamespace>): void {

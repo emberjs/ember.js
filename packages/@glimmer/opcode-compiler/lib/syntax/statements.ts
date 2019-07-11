@@ -8,31 +8,41 @@ import {
 } from '@glimmer/interfaces';
 import { op } from '../opcode-builder/encoder';
 import { serializable, strArray, arr } from '../opcode-builder/operands';
-import { invokeStaticComponent, invokeComponent } from '../opcode-builder/helpers/components';
-import { replayableIf } from '../opcode-builder/helpers/conditional';
-import { yieldBlock } from '../opcode-builder/helpers/blocks';
+import { InvokeStaticComponent, InvokeComponent } from '../opcode-builder/helpers/components';
+import { ReplayableIf } from '../opcode-builder/helpers/conditional';
+import { YieldBlock } from '../opcode-builder/helpers/blocks';
 import { EMPTY_ARRAY } from '@glimmer/util';
 import { $sp } from '@glimmer/vm';
+import { expectString } from '../utils';
 
 export const STATEMENTS = new StatementCompilers();
 
-STATEMENTS.add(SexpOpcodes.Text, sexp => op(Op.Text, sexp[1]));
 STATEMENTS.add(SexpOpcodes.Comment, sexp => op(Op.Comment, sexp[1]));
 STATEMENTS.add(SexpOpcodes.CloseElement, () => op(Op.CloseElement));
 STATEMENTS.add(SexpOpcodes.FlushElement, () => op(Op.FlushElement));
 
-STATEMENTS.add(SexpOpcodes.Modifier, sexp => {
-  let [, name, params, hash] = sexp;
+STATEMENTS.add(SexpOpcodes.Modifier, (sexp, meta) => {
+  let [, , , name, params, hash] = sexp;
+
+  let stringName = expectString(name, meta, 'Expected modifier head to be a string');
+
+  if (typeof stringName !== 'string') {
+    return stringName;
+  }
 
   return op('IfResolved', {
     kind: ResolveHandle.Modifier,
-    name,
+    name: stringName,
     andThen: handle => [
       op(MachineOp.PushFrame),
       op('SimpleArgs', { params, hash, atNames: false }),
       op(Op.Modifier, handle),
       op(MachineOp.PopFrame),
     ],
+    span: {
+      start: 0,
+      end: 0,
+    },
   });
 });
 
@@ -68,53 +78,53 @@ STATEMENTS.add(SexpOpcodes.OpenElement, ([, tag, simple]) => {
   }
 });
 
-STATEMENTS.add(SexpOpcodes.DynamicComponent, ([, definition, attrs, args, blocks]) => {
-  return op('DynamicComponent', {
-    definition,
-    attrs,
-    params: null,
-    args,
-    blocks,
-    atNames: true,
-  });
-});
-
 STATEMENTS.add(SexpOpcodes.Component, ([, tag, attrs, args, blocks]) => {
-  return op('IfResolvedComponent', {
-    name: tag,
-    attrs,
-    blocks,
-    staticTemplate: (layoutHandle, capabilities, template, { blocks, attrs }) => {
-      return [
-        op(Op.PushComponentDefinition, layoutHandle),
-        invokeStaticComponent({
-          capabilities,
-          layout: template,
-          attrs,
-          params: null,
-          hash: args,
-          blocks,
-        }),
-      ];
-    },
-    dynamicTemplate: (layoutHandle, capabilities, { attrs, blocks }) => {
-      return [
-        op(Op.PushComponentDefinition, layoutHandle),
-        invokeComponent({
-          capabilities,
-          attrs,
-          params: null,
-          hash: args,
-          atNames: true,
-          blocks,
-        }),
-      ];
-    },
-  });
+  if (typeof tag === 'string') {
+    return op('IfResolvedComponent', {
+      name: tag,
+      attrs,
+      blocks,
+      staticTemplate: (layoutHandle, capabilities, template, { blocks, attrs }) => {
+        return [
+          op(Op.PushComponentDefinition, layoutHandle),
+          InvokeStaticComponent({
+            capabilities,
+            layout: template,
+            attrs,
+            params: null,
+            hash: args,
+            blocks,
+          }),
+        ];
+      },
+      dynamicTemplate: (layoutHandle, capabilities, { attrs, blocks }) => {
+        return [
+          op(Op.PushComponentDefinition, layoutHandle),
+          InvokeComponent({
+            capabilities,
+            attrs,
+            params: null,
+            hash: args,
+            atNames: true,
+            blocks,
+          }),
+        ];
+      },
+    });
+  } else {
+    return op('DynamicComponent', {
+      definition: tag,
+      attrs,
+      params: null,
+      args,
+      blocks,
+      atNames: true,
+    });
+  }
 });
 
 STATEMENTS.add(SexpOpcodes.Partial, ([, name, evalInfo], meta) =>
-  replayableIf({
+  ReplayableIf({
     args() {
       return {
         count: 2,
@@ -137,23 +147,29 @@ STATEMENTS.add(SexpOpcodes.Partial, ([, name, evalInfo], meta) =>
   })
 );
 
-STATEMENTS.add(SexpOpcodes.Yield, ([, to, params]) => yieldBlock(to, params));
+STATEMENTS.add(SexpOpcodes.Yield, ([, to, params]) => YieldBlock(to, params));
 
-STATEMENTS.add(SexpOpcodes.AttrSplat, ([, to]) => yieldBlock(to, EMPTY_ARRAY));
+STATEMENTS.add(SexpOpcodes.AttrSplat, ([, to]) => YieldBlock(to, EMPTY_ARRAY));
 
 STATEMENTS.add(SexpOpcodes.Debugger, ([, evalInfo], meta) =>
   op(Op.Debugger, strArray(meta.evalSymbols!), arr(evalInfo))
 );
 
 STATEMENTS.add(SexpOpcodes.Append, sexp => {
+  let [, trusted, , , value] = sexp;
+
+  if (typeof value === 'string' && trusted) {
+    return op(Op.Text, value);
+  }
+
   return op('CompileInline', {
     inline: sexp,
     ifUnhandled: () => [
       op(MachineOp.PushFrame),
-      op(HighLevelResolutionOpcode.Expr, sexp[1]),
+      op(HighLevelResolutionOpcode.Expr, value),
       op(MachineOp.InvokeStatic, {
         type: 'stdlib',
-        value: sexp[2] ? 'trusting-append' : 'cautious-append',
+        value: trusted ? 'trusting-append' : 'cautious-append',
       }),
       op(MachineOp.PopFrame),
     ],

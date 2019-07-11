@@ -21,8 +21,8 @@ import { label, serializable } from '../operands';
 import { resolveLayoutForTag } from '../../resolver';
 import { $s0, $sp, $s1, $v0, SavedRegister } from '@glimmer/vm';
 import { meta } from './shared';
-import { yieldBlock, pushSymbolTable, invokeStaticBlock, pushYieldableBlock } from './blocks';
-import { replayable } from './conditional';
+import { YieldBlock, PushSymbolTable, InvokeStaticBlock, PushYieldableBlock } from './blocks';
+import { Replayable } from './conditional';
 import { EMPTY_ARRAY } from '@glimmer/util';
 import { op } from '../encoder';
 import { ATTRS_BLOCK } from '../../syntax/compilers';
@@ -74,7 +74,7 @@ export interface Component extends AnyComponent {
   layout?: CompilableProgram;
 }
 
-export function staticComponentHelper(
+export function StaticComponentHelper(
   context: MacroContext,
   tag: string,
   hash: WireFormat.Core.Hash,
@@ -95,7 +95,7 @@ export function staticComponentHelper(
       let out: StatementCompileActions = [op(Op.PushComponentDefinition, handle)];
 
       out.push(
-        invokeStaticComponent({
+        InvokeStaticComponent({
           capabilities,
           layout: compilable,
           attrs: null,
@@ -112,7 +112,7 @@ export function staticComponentHelper(
   return UNHANDLED;
 }
 
-export function invokeStaticComponent({
+export function InvokeStaticComponent({
   capabilities,
   layout,
   attrs,
@@ -125,7 +125,7 @@ export function invokeStaticComponent({
   let bailOut = symbolTable.hasEval || capabilities.prepareArgs;
 
   if (bailOut) {
-    return invokeComponent({
+    return InvokeComponent({
       capabilities,
       attrs,
       params,
@@ -184,10 +184,10 @@ export function invokeStaticComponent({
         }
 
         if (callerBlock) {
-          out.push(pushYieldableBlock(callerBlock));
+          out.push(PushYieldableBlock(callerBlock));
           bindings.push({ symbol: i + 1, isBlock: true });
         } else {
-          out.push(pushYieldableBlock(null));
+          out.push(PushYieldableBlock(null));
           bindings.push({ symbol: i + 1, isBlock: true });
         }
 
@@ -241,11 +241,11 @@ export function invokeStaticComponent({
   return out;
 }
 
-export function invokeDynamicComponent(
+export function InvokeDynamicComponent(
   meta: ContainingMetadata,
   { definition, attrs, params, hash, atNames, blocks }: DynamicComponent
 ): StatementCompileActions {
-  return replayable({
+  return Replayable({
     args: () => {
       return {
         count: 2,
@@ -258,7 +258,7 @@ export function invokeDynamicComponent(
         op(Op.JumpUnless, label('ELSE')),
         op(Op.ResolveDynamicComponent, serializable(meta.referrer)),
         op(Op.PushDynamicComponentInstance),
-        invokeComponent({
+        InvokeComponent({
           capabilities: true,
           attrs,
           params,
@@ -272,13 +272,13 @@ export function invokeDynamicComponent(
   });
 }
 
-export function wrappedComponent<R>(
+export function WrappedComponent<R>(
   layout: LayoutWithContext<R>,
   attrsBlockNumber: number
 ): StatementCompileActions {
   return [
     op('StartLabels'),
-    withSavedRegister($s1, () => [
+    WithSavedRegister($s1, () => [
       op(Op.GetComponentTagName, $s0),
       op(Op.PrimitiveReference),
       op(Op.Dup, $sp, 0),
@@ -288,10 +288,10 @@ export function wrappedComponent<R>(
     op(Op.PutComponentOperations),
     op(Op.OpenDynamicElement),
     op(Op.DidCreateElement, $s0),
-    yieldBlock(attrsBlockNumber, EMPTY_ARRAY),
+    YieldBlock(attrsBlockNumber, EMPTY_ARRAY),
     op(Op.FlushElement),
     op('Label', 'BODY'),
-    invokeStaticBlock(blockForLayout(layout)),
+    InvokeStaticBlock(blockForLayout(layout)),
     op(Op.Fetch, $s1),
     op(Op.JumpUnless, label('END')),
     op(Op.CloseElement),
@@ -301,7 +301,7 @@ export function wrappedComponent<R>(
   ];
 }
 
-export function staticComponent(
+export function StaticComponent(
   component: Option<CompileTimeComponent>,
   args: [WireFormat.Core.Params, WireFormat.Core.Hash, NamedBlocks]
 ): StatementCompileActions {
@@ -314,7 +314,7 @@ export function staticComponent(
   if (compilable) {
     return [
       op(Op.PushComponentDefinition, handle),
-      invokeStaticComponent({
+      InvokeStaticComponent({
         capabilities: capabilities || MINIMAL_CAPABILITIES,
         layout: compilable,
         attrs: null,
@@ -326,7 +326,7 @@ export function staticComponent(
   } else {
     return [
       op(Op.PushComponentDefinition, handle),
-      invokeComponent({
+      InvokeComponent({
         capabilities: capabilities || MINIMAL_CAPABILITIES,
         attrs: null,
         params,
@@ -338,7 +338,7 @@ export function staticComponent(
   }
 }
 
-export function invokeComponent({
+export function InvokeComponent({
   capabilities,
   attrs,
   params,
@@ -366,7 +366,7 @@ export function invokeComponent({
 
       if (layout) {
         out = [
-          pushSymbolTable(layout.symbolTable),
+          PushSymbolTable(layout.symbolTable),
           op('PushCompilable', layout),
           op('JitCompileBlock'),
         ];
@@ -426,7 +426,7 @@ export function invokePreparedComponent<T extends CompileActions | StatementComp
   return out as T;
 }
 
-export function invokeBareComponent(): CompileActions {
+export function InvokeBareComponent(): CompileActions {
   return [
     op(Op.Fetch, $s0),
     op(Op.Dup, $sp, 1),
@@ -462,6 +462,6 @@ function blockForLayout<R>(layout: LayoutWithContext<R>): CompilableBlock {
   return compilableBlock(layout.block.statements, meta(layout));
 }
 
-export function withSavedRegister(register: SavedRegister, block: Block): CompileActions {
+export function WithSavedRegister(register: SavedRegister, block: Block): CompileActions {
   return [op(Op.Fetch, register), block(), op(Op.Load, register)];
 }

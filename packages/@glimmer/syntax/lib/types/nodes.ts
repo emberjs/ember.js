@@ -9,6 +9,7 @@ export interface Symbols {
   getLocalsMap(): Dict<number>;
   getEvalInfo(): WireFormat.Core.EvalInfo;
 
+  allocateFree(name: string): number;
   allocateNamed(name: string): number;
   allocateBlock(name: string): number;
   allocate(identifier: string): number;
@@ -18,6 +19,10 @@ export interface Symbols {
 
 export interface BlockSymbols extends Symbols {
   slots: number[];
+}
+
+export interface ProgramSymbols extends Symbols {
+  freeVariables: string[];
 }
 
 export interface BaseNode {
@@ -61,7 +66,7 @@ export type EntityEncodingState = 'transformed' | 'raw';
 
 export interface Template extends CommonProgram {
   type: 'Template';
-  symbols?: Symbols;
+  symbols?: ProgramSymbols;
 }
 
 export type PossiblyDeprecatedBlock = Block | Template;
@@ -88,15 +93,15 @@ export type TopLevelStatement =
   | MustacheStatement;
 
 export interface Call extends BaseNode {
-  name?: PathExpression | SubExpression;
-  path: PathExpression;
+  name?: Expression;
+  path: Expression;
   params: Expression[];
   hash: Hash;
 }
 
 export interface MustacheStatement extends BaseNode {
   type: 'MustacheStatement';
-  path: PathExpression | Literal;
+  path: Expression;
   params: Expression[];
   hash: Hash;
   escaped: boolean;
@@ -105,7 +110,7 @@ export interface MustacheStatement extends BaseNode {
 
 export interface BlockStatement extends BaseNode {
   type: 'BlockStatement';
-  path: PathExpression;
+  path: Expression;
   params: Expression[];
   hash: Hash;
   program: Block;
@@ -121,7 +126,7 @@ export interface BlockStatement extends BaseNode {
 
 export interface ElementModifierStatement extends BaseNode {
   type: 'ElementModifierStatement';
-  path: PathExpression;
+  path: Expression;
   params: Expression[];
   hash: Hash;
 }
@@ -178,7 +183,7 @@ export type Expression = SubExpression | PathExpression | Literal;
 
 export interface SubExpression extends Call {
   type: 'SubExpression';
-  path: PathExpression;
+  path: Expression;
   params: Expression[];
   hash: Hash;
 }

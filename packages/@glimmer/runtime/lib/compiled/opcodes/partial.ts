@@ -1,6 +1,6 @@
 import { VersionedPathReference } from '@glimmer/reference';
 import { APPEND_OPCODES } from '../../opcodes';
-import { PartialDefinition } from '@glimmer/opcode-compiler';
+import { PartialDefinition, unwrapHandle } from '@glimmer/opcode-compiler';
 import { assert } from '@glimmer/util';
 import { check } from '@glimmer/debug';
 import { Op, Dict } from '@glimmer/interfaces';
@@ -59,7 +59,7 @@ APPEND_OPCODES.add(
       partialScope.bindPartialMap(locals);
 
       vm.pushFrame(); // sp += 2
-      vm.call(vmHandle!);
+      vm.call(unwrapHandle(vmHandle!));
     }
   },
   'jit'
