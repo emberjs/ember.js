@@ -29,6 +29,7 @@ import { BASIC_CAPABILITIES } from './capabilities';
 import { TestComponentDefinitionState } from './test-component';
 import { TestComponentConstructor } from './types';
 import { EmberishCurlyComponentFactory } from './emberish-curly';
+import { unwrapTemplate } from '@glimmer/opcode-compiler';
 
 export type Attrs = Dict;
 export type AttrsDiff = { oldAttrs: Option<Attrs>; newAttrs: Attrs };
@@ -54,10 +55,10 @@ export class EmberishGlimmerComponent {
   public parentView: Option<EmberishGlimmerComponent> = null;
 
   static create({ attrs: args }: EmberishGlimmerArgs): EmberishGlimmerComponent {
-    let c: EmberishGlimmerComponent & Dict = new this({ attrs: args });
+    let c = new this({ attrs: args });
 
     for (let key of keys(args)) {
-      c[key] = args[key];
+      (c as any)[key] = args[key];
     }
 
     return c;
@@ -85,6 +86,7 @@ export class EmberishGlimmerComponent {
 export interface EmberishGlimmerComponentFactory
   extends TestComponentConstructor<EmberishGlimmerComponent> {
   create(options: { attrs: Attrs }): EmberishGlimmerComponent;
+  new (...args: unknown[]): this;
 }
 
 export const EMBERISH_GLIMMER_CAPABILITIES = assign({}, BASIC_CAPABILITIES, {
@@ -150,7 +152,7 @@ export class EmberishGlimmerComponentManager
     state: TestComponentDefinitionState,
     resolver: JitRuntimeResolver
   ): CompilableProgram {
-    return resolver.compilable(state.locator).asLayout();
+    return unwrapTemplate(resolver.compilable(state.locator)).asLayout();
   }
 
   getAotStaticLayout(
@@ -227,7 +229,7 @@ export function inspectHooks<
     constructor() {
       super();
 
-      this.hooks = {
+      (this as any).hooks = {
         didInitAttrs: 0,
         didUpdateAttrs: 0,
         didReceiveAttrs: 0,

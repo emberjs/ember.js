@@ -15,6 +15,7 @@ import {
 } from '@glimmer/interfaces';
 import { dict, assert } from '@glimmer/util';
 import { UNHANDLED } from './concat';
+import { expectString } from '../utils';
 
 export class MacrosImpl implements Macros {
   public blocks: MacroBlocks;
@@ -114,7 +115,7 @@ export class Inlines implements MacroInlines {
     sexp: AppendSyntax,
     context: TemplateCompilationContext
   ): StatementCompileActions | Unhandled {
-    let value = sexp[1];
+    let [, , , , value] = sexp;
 
     // TODO: Fix this so that expression macros can return
     // things like components, so that {{component foo}}
@@ -126,13 +127,30 @@ export class Inlines implements MacroInlines {
     let params: Option<WireFormat.Core.Params>;
     let hash: Option<WireFormat.Core.Hash>;
 
-    if (value[0] === SexpOpcodes.Helper) {
-      name = value[1];
-      params = value[2];
-      hash = value[3];
-    } else if (value[0] === SexpOpcodes.Unknown) {
-      name = value[1];
-      params = hash = null;
+    if (value[0] === SexpOpcodes.Call) {
+      let nameOrError = expectString(
+        value[3],
+        context.meta,
+        'Expected head of call to be a string'
+      );
+
+      if (typeof nameOrError !== 'string') {
+        return nameOrError;
+      }
+
+      name = nameOrError;
+      params = value[4];
+      hash = value[5];
+    } else if (value[0] === SexpOpcodes.GetPath) {
+      let pathName = simplePathName(value, context.meta);
+
+      if (pathName === null) {
+        return UNHANDLED;
+      }
+
+      name = pathName;
+      params = null;
+      hash = null;
     } else {
       return UNHANDLED;
     }
@@ -154,4 +172,19 @@ export class Inlines implements MacroInlines {
       return UNHANDLED;
     }
   }
+}
+
+function simplePathName(
+  [, get, tail]: WireFormat.Expressions.GetPath,
+  meta: ContainingMetadata
+): Option<string> {
+  if (tail.length > 0) {
+    return null;
+  }
+
+  if (get[0] === SexpOpcodes.GetFree || get[0] === SexpOpcodes.GetContextualFree) {
+    return meta.upvars![get[1]];
+  }
+
+  return null;
 }

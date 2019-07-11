@@ -9,7 +9,6 @@ import {
   registerEmberishCurlyComponent,
   EmberishRootView,
 } from '@glimmer/integration-tests';
-import { Dict } from '@glimmer/interfaces';
 
 abstract class RangeTests extends AttributesTests {
   min = -5;
@@ -113,7 +112,7 @@ abstract class EmberComponentRangeTests extends RangeTests {
     });
   }
   assertRangeValue(value: number): void {
-    let attr = (this.view.element as Dict)['value'];
+    let attr = (this.view.element as any)['value'];
     this.assert.equal(attr, value.toString());
   }
 }
@@ -125,7 +124,7 @@ jitSuite(
     component(): EmberishCurlyComponentFactory {
       return class extends EmberInputRangeComponent {
         attributeBindings = ['type', 'value', 'min', 'max'];
-      };
+      } as any;
     }
   }
 );

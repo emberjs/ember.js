@@ -23,11 +23,20 @@ export interface CompileHelper {
   hash: WireFormat.Core.Hash;
 }
 
-export function pushPrimitiveReference(value: Primitive): CompileActions {
-  return [primitive(value), op(Op.PrimitiveReference)];
+/**
+ * Push a reference onto the stack corresponding to a statically known primitive
+ * @param value A JavaScript primitive (undefined, null, boolean, number or string)
+ */
+export function PushPrimitiveReference(value: Primitive): CompileActions {
+  return [PushPrimitive(value), op(Op.PrimitiveReference)];
 }
 
-export function primitive(_primitive: Primitive): BuilderOp {
+/**
+ * Push an encoded representation of a JavaScript primitive on the stack
+ *
+ * @param value A JavaScript primitive (undefined, null, boolean, number or string)
+ */
+export function PushPrimitive(_primitive: Primitive): BuilderOp {
   let type: PrimitiveType = PrimitiveType.NUMBER;
   let p: SingleBuilderOperand;
   switch (typeof _primitive) {
@@ -68,7 +77,14 @@ export function primitive(_primitive: Primitive): BuilderOp {
   return op(Op.Primitive, prim(p, type));
 }
 
-export function helper({ handle, params, hash }: CompileHelper): ExpressionCompileActions {
+/**
+ * Invoke a foreign function (a "helper") based on a statically known handle
+ *
+ * @param compile.handle A handle
+ * @param compile.params An optional list of expressions to compile
+ * @param compile.hash An optional list of named arguments (name + expression) to compile
+ */
+export function Call({ handle, params, hash }: CompileHelper): ExpressionCompileActions {
   return [
     op(MachineOp.PushFrame),
     op('SimpleArgs', { params, hash, atNames: false }),
@@ -78,14 +94,19 @@ export function helper({ handle, params, hash }: CompileHelper): ExpressionCompi
   ];
 }
 
-export function dynamicScope(
-  names: Option<string[]>,
-  block: StatementBlock
-): StatementCompileActions {
-  let out: StatementCompileActions = [op(Op.PushDynamicScope)];
-  if (names && names.length) {
-    out.push(op(Op.BindDynamicScope, strArray(names)));
-  }
-  out.push(block(), op(Op.PopDynamicScope));
-  return out;
+/**
+ * Evaluate statements in the context of new dynamic scope entries. Move entries from the
+ * stack into named entries in the dynamic scope, then evaluate the statements, then pop
+ * the dynamic scope
+ *
+ * @param names a list of dynamic scope names
+ * @param block a function that returns a list of statements to evaluate
+ */
+export function DynamicScope(names: string[], block: StatementBlock): StatementCompileActions {
+  return [
+    op(Op.PushDynamicScope),
+    op(Op.BindDynamicScope, strArray(names)),
+    block(),
+    op(Op.PopDynamicScope),
+  ];
 }

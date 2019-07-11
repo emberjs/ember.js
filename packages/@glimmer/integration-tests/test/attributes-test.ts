@@ -1,4 +1,3 @@
-import { Dict } from '@glimmer/interfaces';
 import { ConstReference, PathReference } from '@glimmer/reference';
 import { normalizeProperty, UNDEFINED_REFERENCE } from '@glimmer/runtime';
 import {
@@ -28,7 +27,7 @@ export class AttributesTests extends RenderTest {
       return element.getAttribute(normalized);
     }
 
-    return (element as Dict)[normalized];
+    return (element as any)[normalized];
   }
 
   protected nativeValueForElementProperty<
@@ -666,7 +665,7 @@ class ConstedAttributeTests extends RenderTest {
     this.assertHTML('<div class="bar"></div>');
     this.assertStableRerender();
 
-    (this.element!.firstChild! as Dict)['setAttribute'] = function() {
+    (this.element!.firstChild! as any)['setAttribute'] = function() {
       throw new Error('Should not setAttribute on an unchanged element');
     };
 

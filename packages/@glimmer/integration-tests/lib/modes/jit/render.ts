@@ -3,6 +3,7 @@ import { VersionedPathReference } from '@glimmer/reference';
 import { ElementBuilder, RenderResult } from '@glimmer/interfaces';
 import { preprocess } from '../../compile';
 import { renderJitMain, renderSync } from '@glimmer/runtime';
+import { unwrapTemplate, unwrapHandle } from '@glimmer/opcode-compiler';
 
 export function renderTemplate(
   src: string,
@@ -11,6 +12,10 @@ export function renderTemplate(
   builder: ElementBuilder
 ): RenderResult {
   let template = preprocess(src);
-  let iterator = renderJitMain(runtime, syntax, self, builder, template.asLayout().compile(syntax));
+  let handle = unwrapTemplate(template)
+    .asLayout()
+    .compile(syntax);
+
+  let iterator = renderJitMain(runtime, syntax, self, builder, unwrapHandle(handle));
   return renderSync(runtime.env, iterator);
 }

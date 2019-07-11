@@ -73,6 +73,7 @@ import {
   VMState,
 } from './update';
 import { CheckNumber, check } from '@glimmer/debug';
+import { unwrapHandle } from '@glimmer/opcode-compiler';
 
 /**
  * This interface is used by internal opcodes, and is more stable than
@@ -705,6 +706,8 @@ export class JitVM extends VM<CompilableBlock> implements InternalJitVM {
   private resume: VmInitCallback<JitVM> = initJIT(this.context);
 
   compile(block: CompilableTemplate): number {
-    return block.compile(this.context);
+    let handle = unwrapHandle(block.compile(this.context));
+
+    return handle;
   }
 }

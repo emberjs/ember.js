@@ -333,6 +333,8 @@ export class InElementSuite extends RenderTest {
     this.testType = 'Dynamic';
     this.registerComponent('Basic', 'FooBar', '<p>{{@value}}</p>');
 
+    this.registerHelper('log', ([item]) => console.log(item));
+
     let roots = [
       { id: 0, element: this.delegate.createElement('div'), value: 'foo' },
       { id: 1, element: this.delegate.createElement('div'), value: 'bar' },
@@ -341,9 +343,11 @@ export class InElementSuite extends RenderTest {
 
     this.render(
       stripTight`
-        {{~#each roots key="id" as |root|~}}
+        {{~#each this.roots key="id" as |root|~}}
+          {{~log root~}}
           {{~#in-element root.element ~}}
-            {{component 'FooBar' value=root.value}}
+            <FooBar @value={{root.value}} />
+            {{!component 'FooBar' value=root.value}}
           {{~/in-element~}}
         {{~/each}}
         `,

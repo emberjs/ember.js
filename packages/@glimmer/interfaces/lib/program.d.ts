@@ -1,6 +1,6 @@
 import { Unique, Option } from './core';
-import { STDLib, ContainingMetadata } from './template';
-import { StdlibOperand, CompileMode, Encoder, Macros } from './compile';
+import { STDLib, ContainingMetadata, HandleResult } from './template';
+import { StdlibOperand, CompileMode, Encoder, Macros, EncoderError } from './compile';
 import { Op } from './vm-opcodes';
 import { CompileTimeResolverDelegate } from './serialize';
 
@@ -26,7 +26,7 @@ export interface OpcodeHeap {
 
 export interface CompileTimeHeap extends OpcodeHeap {
   push(name: Op, op1?: number, op2?: number, op3?: number): void;
-  pushPlaceholder(valueFunc: () => number): void;
+  pushPlaceholder(valueFunc: () => HandleResult): void;
   pushStdlib(stdlib: StdlibOperand): void;
   patchStdlibs(stdlib: STDLib): void;
   malloc(): number;

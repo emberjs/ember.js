@@ -319,7 +319,7 @@ export abstract class AccessorBlueprint extends Blueprint {
 }
 
 class MethodDescriptor extends ValueDescriptor {
-  define(target: Object, key: string, home: Object): void {
+  define(target: Object, key: string, home: Dict): void {
     this.value = wrapMethod(home, key, this.value);
     super.define(target, key, home);
   }

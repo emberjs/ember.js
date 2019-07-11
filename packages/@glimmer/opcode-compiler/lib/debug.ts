@@ -105,7 +105,7 @@ export function debug(
   resolver: HandleResolver,
   op: RuntimeOp,
   isMachine: 0 | 1
-): [string, object] {
+): [string, Dict] {
   let metadata = opcodeMetadata(op.type, isMachine);
 
   if (!metadata) {

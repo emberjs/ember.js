@@ -46,13 +46,18 @@ abstract class Compilers<U extends RegisteredSyntax> {
 }
 
 export class StatementCompilers extends Compilers<RegisteredStatementSyntax> {
-  protected funcs: RegisteredStatementSyntax[] = [];
+  protected funcs: Array<
+    StatementCompilerFunction<SexpOpcodeMap[SexpOpcodes] & WireFormat.Statement>
+  > = [];
 
   add<T extends SexpOpcodes>(
     name: T,
     func: StatementCompilerFunction<SexpOpcodeMap[T] & WireFormat.Statement>
   ): void {
-    this.funcs.push(func);
+    // TODO: This is not ideal and could probably miss bugs. However, getting the type inference
+    // to work correctly here is critical to the correctness of expressions.ts and statements.ts
+    // so it seems worth it for now.
+    this.funcs.push(func as any);
     this.names[name] = this.funcs.length - 1;
   }
 

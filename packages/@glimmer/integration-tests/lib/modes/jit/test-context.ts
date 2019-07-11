@@ -5,6 +5,7 @@ import {
   WholeProgramCompilationContext,
   JitRuntimeContext,
   Environment,
+  Dict,
 } from '@glimmer/interfaces';
 import { SimpleDocument, SimpleElement } from '@simple-dom/interface';
 import { RuntimeEnvironmentDelegate, JitRuntimeFromProgram } from '@glimmer/runtime';
@@ -13,7 +14,7 @@ import { TestJitCompilationContext } from './compilation-context';
 import { TestMacros } from '../../compile/macros';
 import { assign } from '@glimmer/util';
 
-export interface TestContext {
+export interface TestContext extends Dict {
   resolver: TestJitRuntimeResolver;
   registry: TestJitRegistry;
   syntax: SyntaxCompilationContext;

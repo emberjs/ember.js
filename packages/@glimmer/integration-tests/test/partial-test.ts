@@ -22,6 +22,7 @@ import {
   TestMacros,
 } from '@glimmer/integration-tests';
 import { SimpleNode } from '@simple-dom/interface';
+import { unwrapTemplate, unwrapHandle } from '@glimmer/opcode-compiler';
 
 let context: TestContext;
 let result: RenderResult;
@@ -41,7 +42,7 @@ function render(template: Template, state = {}) {
   let cursor = { element: context.root, nextSibling: null };
 
   let syntax: SyntaxCompilationContext = { program: context.program, macros: new TestMacros() };
-  let compilable = template.asLayout();
+  let compilable = unwrapTemplate(template).asLayout();
   let handle = compilable.compile(syntax);
 
   let templateIterator = renderJitMain(
@@ -49,7 +50,7 @@ function render(template: Template, state = {}) {
     syntax,
     self,
     clientBuilder(context.env, cursor),
-    handle
+    unwrapHandle(handle)
   );
 
   let iteratorResult: RichIteratorResult<null, RenderResult>;

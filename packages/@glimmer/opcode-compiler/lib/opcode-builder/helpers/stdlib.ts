@@ -1,6 +1,6 @@
 import { $s0 } from '@glimmer/vm';
 
-import { invokePreparedComponent, invokeBareComponent } from './components';
+import { invokePreparedComponent, InvokeBareComponent } from './components';
 import { StdLib } from '../stdlib';
 import { EncoderImpl, op } from '../encoder';
 import {
@@ -10,7 +10,7 @@ import {
   WholeProgramCompilationContext,
   TemplateCompilationContext,
 } from '@glimmer/interfaces';
-import { switchCases } from './conditional';
+import { SwitchCases } from './conditional';
 import { concat } from '../../syntax/concat';
 import { MacrosImpl } from '../../syntax/macros';
 
@@ -18,10 +18,18 @@ export function main(): CompileActions {
   return [op(Op.Main, $s0), invokePreparedComponent(false, false, true)];
 }
 
-export function stdAppend(trusting: boolean): CompileActions {
+/**
+ * Append content to the DOM. This standard function triages content and does the
+ * right thing based upon whether it's a string, safe string, component, fragment
+ * or node.
+ *
+ * @param trusting whether to interpolate a string as raw HTML (corresponds to
+ * triple curlies)
+ */
+export function StdAppend(trusting: boolean): CompileActions {
   return [
     op(Op.ContentType),
-    switchCases(when => {
+    SwitchCases(when => {
       when(ContentType.String, () => {
         if (trusting) {
           return [op(Op.AssertSame), op(Op.AppendHTML)];
@@ -33,7 +41,7 @@ export function stdAppend(trusting: boolean): CompileActions {
       when(ContentType.Component, () => [
         op(Op.PushCurriedComponent),
         op(Op.PushDynamicComponentInstance),
-        invokeBareComponent(),
+        InvokeBareComponent(),
       ]);
 
       when(ContentType.SafeString, () => [op(Op.AssertSame), op(Op.AppendSafeHTML)]);
@@ -45,8 +53,8 @@ export function stdAppend(trusting: boolean): CompileActions {
 
 export function compileStd(context: WholeProgramCompilationContext): StdLib {
   let mainHandle = build(context, main);
-  let trustingGuardedAppend = build(context, () => stdAppend(true));
-  let cautiousGuardedAppend = build(context, () => stdAppend(false));
+  let trustingGuardedAppend = build(context, () => StdAppend(true));
+  let cautiousGuardedAppend = build(context, () => StdAppend(false));
 
   return new StdLib(mainHandle, trustingGuardedAppend, cautiousGuardedAppend);
 }
@@ -54,6 +62,7 @@ export function compileStd(context: WholeProgramCompilationContext): StdLib {
 const STDLIB_META = {
   asPartial: false,
   evalSymbols: null,
+  upvars: null,
 
   // TODO: ??
   referrer: {},
@@ -74,5 +83,13 @@ function build(program: WholeProgramCompilationContext, callback: () => CompileA
   };
 
   concat(stdContext, callback());
-  return encoder.commit(program.heap, 0);
+
+  let result = encoder.commit(program.heap, 0);
+
+  if (typeof result !== 'number') {
+    // This shouldn't be possible
+    throw new Error(`Unexpected errors compiling std`);
+  } else {
+    return result;
+  }
 }

@@ -11,6 +11,7 @@ import {
   CompilableBlock,
   CompilableProgram,
   Template,
+  HandleResult,
 } from '@glimmer/interfaces';
 import { meta } from './opcode-builder/helpers/shared';
 import { EMPTY_ARRAY } from '@glimmer/util';
@@ -26,7 +27,7 @@ import templateFactory from './template';
 export const PLACEHOLDER_HANDLE = -1;
 
 class CompilableTemplateImpl<S extends SymbolTable> implements CompilableTemplate<S> {
-  compiled: Option<number> = null;
+  compiled: Option<HandleResult> = null;
 
   constructor(
     readonly statements: WireFormat.Statement[],
@@ -36,7 +37,7 @@ class CompilableTemplateImpl<S extends SymbolTable> implements CompilableTemplat
   ) {}
 
   // Part of CompilableTemplate
-  compile(context: SyntaxCompilationContext): number {
+  compile(context: SyntaxCompilationContext): HandleResult {
     return maybeCompile(this, context);
   }
 }
@@ -58,24 +59,25 @@ export function compilable<R>(layout: LayoutWithContext<R>): CompilableProgram {
 function maybeCompile(
   compilable: CompilableTemplateImpl<SymbolTable>,
   context: SyntaxCompilationContext
-): number {
+): HandleResult {
   if (compilable.compiled !== null) return compilable.compiled!;
 
   compilable.compiled = PLACEHOLDER_HANDLE;
 
   let { statements, meta } = compilable;
 
-  let compiled = (compilable.compiled = compileStatements(statements, meta, context));
+  let result = compileStatements(statements, meta, context);
   patchStdlibs(context.program);
+  compilable.compiled = result;
 
-  return compiled;
+  return result;
 }
 
 export function compileStatements(
   statements: Statement[],
   meta: ContainingMetadata,
   syntaxContext: SyntaxCompilationContext
-): number {
+): HandleResult {
   let sCompiler = STATEMENTS;
   let context = templateCompilationContext(syntaxContext, meta);
 

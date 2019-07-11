@@ -134,33 +134,42 @@ format = ["GetBlock", "block:u32"]
 operation = "Push the specified bound block onto the stack."
 operand-stack = [
   [],
-  ["symbol-table", "scope", "handle"]
+  ["scope-block"]
 ]
 notes = "TODO: The three elements on the stack can be null"
 
+[syscall.blockspread]
+
+format = ["JitSpreadBlock"]
+operation = "Spread a JIT scope block into three stack elements"
+operand-stack = [
+  ["scope-block"],
+  ["symbol-table", "scope", "handle"]
+]
+
 [syscall.hasblockload]
 
-format = ["HasBlock", "block:u32"]
+format = ["HasBlock"]
 operation = """
 Push TRUE onto the stack if the specified block
 is bound and FALSE if it is not.
 """
 operand-stack = [
-  [],
+  ["block?"],
   ["bool"]
 ]
 
 [syscall.hasparamsload]
 
-format = ["HasBlockParams", "block:u32"]
+format = ["HasBlockParams"]
 operation = """
 Push TRUE onto the stack if the specified block
 is bound *and* has at least one specified formal
 parameter, and FALSE otherwise.
 """
 operand-stack = [
-  ["symbol-table", "scope", "block"],
-  ["Reference"]
+  ["block?"],
+  ["bool"]
 ]
 
 [syscall.concat]

@@ -1,5 +1,5 @@
 import { Operand, SerializedTemplateBlock, SerializedInlineBlock } from './compile';
-import { CompileMode } from './compile/encoder';
+import { CompileMode, EncoderError } from './compile/encoder';
 import ComponentCapabilities from './component-capabilities';
 import { Option } from './core';
 import { ConstantPool, SerializedHeap, SyntaxCompilationContext } from './program';
@@ -24,7 +24,9 @@ export interface BlockWithContext<R> {
 /**
  * Environment specific template.
  */
-export interface Template<R = unknown> {
+export interface TemplateOk<R = unknown> {
+  result: 'ok';
+
   /**
    * Template identifier, if precompiled will be the id of the
    * precompiled template.
@@ -49,6 +51,18 @@ export interface Template<R = unknown> {
   asWrappedLayout(): CompilableProgram;
 }
 
+export interface TemplateError {
+  result: 'error';
+
+  problem: string;
+  span: {
+    start: number;
+    end: number;
+  };
+}
+
+export type Template<M = unknown> = TemplateOk<M> | TemplateError;
+
 export interface STDLib {
   main: number;
   'cautious-append': number;
@@ -67,6 +81,14 @@ export interface ResolvedLayout {
   compilable: Option<CompilableProgram>;
 }
 
+export type OkHandle = number;
+export interface ErrHandle {
+  handle: number;
+  errors: EncoderError[];
+}
+
+export type HandleResult = OkHandle | ErrHandle;
+
 export interface NamedBlocks {
   get(name: string): Option<CompilableBlock>;
   has(name: string): boolean;
@@ -77,6 +99,7 @@ export interface NamedBlocks {
 export interface ContainingMetadata {
   asPartial: boolean;
   evalSymbols: Option<string[]>;
+  upvars: Option<string[]>;
   referrer: unknown;
   size: number;
 }
@@ -97,5 +120,5 @@ export interface Unhandled {
 
 export interface CompilableTemplate<S extends SymbolTable = SymbolTable> {
   symbolTable: S;
-  compile(context: SyntaxCompilationContext): number;
+  compile(context: SyntaxCompilationContext): HandleResult;
 }

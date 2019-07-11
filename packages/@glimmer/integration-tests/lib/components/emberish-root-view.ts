@@ -5,6 +5,7 @@ import { UpdatableReference } from '@glimmer/reference';
 import { renderJitMain, clientBuilder } from '@glimmer/runtime';
 import { SimpleElement } from '@simple-dom/interface';
 import { assign } from '@glimmer/util';
+import { unwrapTemplate, unwrapHandle } from '@glimmer/opcode-compiler';
 
 export class EmberishRootView {
   private template: Template;
@@ -25,12 +26,16 @@ export class EmberishRootView {
     let self = new UpdatableReference(this);
     let cursor = { element, nextSibling: null };
 
+    let handle = unwrapTemplate(this.template)
+      .asLayout()
+      .compile(this.syntax);
+
     let templateIterator = renderJitMain(
       this.runtime,
       this.syntax,
       self,
       clientBuilder(this.runtime.env, cursor),
-      this.template.asLayout().compile(this.syntax)
+      unwrapHandle(handle)
     );
     let result;
     do {

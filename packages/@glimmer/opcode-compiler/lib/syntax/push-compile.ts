@@ -16,16 +16,17 @@ import {
   Option,
   CompilableTemplate,
   BuilderOp,
+  CompileErrorOp,
 } from '@glimmer/interfaces';
 import { op } from '../opcode-builder/encoder';
-import { compileArgs } from '../opcode-builder/helpers/shared';
+import { CompileArgs } from '../opcode-builder/helpers/shared';
 import { compilableBlock, PLACEHOLDER_HANDLE } from '../compilable-template';
-import { invokeDynamicComponent } from '../opcode-builder/helpers/components';
+import { InvokeDynamicComponent } from '../opcode-builder/helpers/components';
 import { resolveLayoutForTag } from '../resolver';
 import { exhausted } from '@glimmer/util';
 import { concatStatements, isHandled } from './concat';
 import { compileInline, compileBlock } from '../compiler';
-import { primitive } from '../opcode-builder/helpers/vm';
+import { PushPrimitive } from '../opcode-builder/helpers/vm';
 import { namedBlocks } from '../utils';
 
 export default function pushCompileOp(
@@ -41,30 +42,30 @@ function compileOp(
 ): StatementCompileActions {
   switch (action.op) {
     case HighLevelCompileOpcode.CompileBlock:
-      return compileBlockOp(context, action);
+      return CompileBlockOp(context, action);
     case HighLevelCompileOpcode.CompileInline:
-      return compileInlineOp(context, action);
+      return CompileInlineOp(context, action);
     case HighLevelCompileOpcode.InvokeStatic:
-      return invokeStatic(context.syntax, action);
+      return InvokeStatic(context.syntax, action);
     case HighLevelCompileOpcode.Args:
-      return compileArgs(action.op1);
+      return CompileArgs(action.op1);
     case HighLevelCompileOpcode.PushCompilable:
-      return pushCompilable(action.op1, context.syntax);
+      return PushCompilable(action.op1, context.syntax);
     case HighLevelCompileOpcode.DynamicComponent:
-      return dynamicComponent(context, action);
+      return DynamicComponent(context, action);
     case HighLevelCompileOpcode.IfResolvedComponent:
-      return ifResolvedComponent(context, action);
+      return IfResolvedComponent(context, action);
 
     default:
       return exhausted(action);
   }
 }
 
-function compileBlockOp(context: TemplateCompilationContext, op: CompileBlockOp) {
+function CompileBlockOp(context: TemplateCompilationContext, op: CompileBlockOp) {
   return compileBlock(op.op1, context);
 }
 
-function compileInlineOp(
+function CompileInlineOp(
   context: TemplateCompilationContext,
   op: CompileInlineOp
 ): StatementCompileActions {
@@ -79,7 +80,7 @@ function compileInlineOp(
   }
 }
 
-function invokeStatic(
+function InvokeStatic(
   context: SyntaxCompilationContext,
   action: InvokeStaticOp
 ): StatementCompileActions {
@@ -87,6 +88,10 @@ function invokeStatic(
 
   if (context.program.mode === CompileMode.aot) {
     let handle = compilable.compile(context);
+
+    if (typeof handle !== 'number') {
+      return op('Error', { problem: 'Invalid block', start: 0, end: 0 });
+    }
 
     // If the handle for the invoked component is not yet known (for example,
     // because this is a recursive invocation and we're still compiling), push a
@@ -102,7 +107,7 @@ function invokeStatic(
   }
 }
 
-function dynamicComponent(
+function DynamicComponent(
   context: TemplateCompilationContext,
   action: DynamicComponentOp
 ): StatementCompileActions {
@@ -113,7 +118,7 @@ function dynamicComponent(
   let compiled =
     Array.isArray(blocks) || blocks === null ? namedBlocks(blocks, context.meta) : blocks;
 
-  return invokeDynamicComponent(context.meta, {
+  return InvokeDynamicComponent(context.meta, {
     definition,
     attrs: attrsBlock,
     params,
@@ -123,7 +128,7 @@ function dynamicComponent(
   });
 }
 
-function ifResolvedComponent(
+function IfResolvedComponent(
   context: TemplateCompilationContext,
   action: IfResolvedComponentOp
 ): StatementCompileActions {
@@ -160,14 +165,24 @@ function ifResolvedComponent(
   }
 }
 
-function pushCompilable(
+function PushCompilable(
   block: Option<CompilableTemplate>,
   context: SyntaxCompilationContext
-): BuilderOp {
+): BuilderOp | CompileErrorOp {
   if (block === null) {
-    return primitive(null);
+    return PushPrimitive(null);
   } else if (context.program.mode === CompileMode.aot) {
-    return primitive(block.compile(context));
+    let compiled = block.compile(context);
+
+    if (typeof compiled !== 'number') {
+      return op('Error', {
+        problem: 'Compile Error (TODO: thread better)',
+        start: 0,
+        end: 0,
+      });
+    }
+
+    return PushPrimitive(compiled);
   } else {
     return op(Op.Constant, other(block));
   }

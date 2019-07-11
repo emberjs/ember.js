@@ -40,8 +40,9 @@ import { TestComponentConstructor } from './types';
 export interface EmberishCurlyComponentFactory
   extends TestComponentConstructor<EmberishCurlyComponent> {
   fromDynamicScope?: string[];
-  positionalParams: Option<string | string[]>;
+  positionalParams: string | string[];
   create(options: { attrs: Attrs; targetObject: any }): EmberishCurlyComponent;
+  new (...args: unknown[]): this;
 }
 
 let GUID = 1;
@@ -62,11 +63,13 @@ export class EmberishCurlyComponent {
 
   public _guid: string;
 
-  static create(args: { attrs: Attrs }): EmberishCurlyComponent {
+  // create(options: { attrs: Attrs; targetObject: any }): EmberishCurlyComponent
+
+  static create(args: { attrs: Attrs; targetObject: any }): EmberishCurlyComponent {
     let c = new this();
 
     for (let key of keys(args)) {
-      c[key] = args[key];
+      (c as any)[key] = args[key];
     }
 
     return c;
@@ -77,12 +80,12 @@ export class EmberishCurlyComponent {
   }
 
   set(key: string, value: unknown) {
-    (this as Dict)[key] = value;
+    (this as any)[key] = value;
   }
 
   setProperties(dict: Dict) {
     for (let key of keys(dict)) {
-      (this as Dict)[key] = dict[key];
+      (this as any)[key] = dict[key];
     }
 
     SELF_REF.get(this)!.dirty();

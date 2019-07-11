@@ -13,6 +13,7 @@ import pushBuilderOp from './push-builder';
 import pushCompileOp from './push-compile';
 import pushOp from './push-op';
 import pushResolutionOp from './push-resolution';
+import { assertNever } from '@glimmer/util';
 
 export const NONE: NO_ACTION = { 'no-action': true };
 export const UNHANDLED: Unhandled = { 'not-handled': true };
@@ -59,8 +60,18 @@ export function concatExpressions(
     pushOp(encoder, constants, action);
   } else if (action.type === 'Resolution') {
     pushResolutionOp(encoder, context, action, constants);
-  } else {
+  } else if (action.type === 'Simple') {
     pushBuilderOp(context, action);
+  } else if (action.type === 'Error') {
+    encoder.error({
+      problem: action.op1.problem,
+      span: {
+        start: action.op1.start,
+        end: action.op1.end,
+      },
+    });
+  } else {
+    throw assertNever(action, 'unexpected action kind');
   }
 }
 
@@ -81,8 +92,11 @@ export function concatStatements(
       pushCompileOp(context, action);
     } else if (action.type === 'Resolution') {
       pushResolutionOp(context.encoder, context, action, context.syntax.program.constants);
-    } else {
+    } else if (action.type === 'Simple') {
       pushBuilderOp(context, action);
+    } else if (action.type === 'Error') {
+    } else {
+      throw assertNever(action, `unexpected action type`);
     }
   }
 }

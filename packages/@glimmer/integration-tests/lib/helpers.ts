@@ -24,18 +24,24 @@ export class HelperReference implements VersionedPathReference<unknown> {
   }
 }
 
-export class SimplePathReference<T = unknown> implements VersionedPathReference<T> {
-  private parent: Reference<Dict>;
+export class SimplePathReference implements VersionedPathReference {
+  private parent: Reference<unknown>;
   private property: string;
   public tag: Tag = CURRENT_TAG;
 
-  constructor(parent: Reference<T>, property: string) {
+  constructor(parent: Reference<unknown>, property: string) {
     this.parent = parent;
     this.property = property;
   }
 
-  value(): T {
-    return this.parent.value()[this.property] as T;
+  value(): unknown {
+    let value = this.parent.value();
+
+    if (value === null || value === undefined) {
+      return value;
+    }
+
+    return (value as any)[this.property];
   }
 
   get(prop: string): VersionedPathReference {

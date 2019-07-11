@@ -4,11 +4,12 @@ import {
   LayoutWithContext,
   Option,
   SyntaxCompilationContext,
+  HandleResult,
 } from '@glimmer/interfaces';
 
 import { templateCompilationContext } from './opcode-builder/context';
 import { meta } from './opcode-builder/helpers/shared';
-import { wrappedComponent } from './opcode-builder/helpers/components';
+import { WrappedComponent } from './opcode-builder/helpers/components';
 import { DEBUG } from '@glimmer/local-debug-flags';
 import { debugCompiler } from './compiler';
 import { ATTRS_BLOCK } from './syntax/compilers';
@@ -39,17 +40,23 @@ export class WrappedBuilder implements CompilableProgram {
     };
   }
 
-  compile(syntax: SyntaxCompilationContext): number {
+  compile(syntax: SyntaxCompilationContext): HandleResult {
     if (this.compiled !== null) return this.compiled;
 
     let m = meta(this.layout);
     let context = templateCompilationContext(syntax, m);
 
-    let actions = wrappedComponent(this.layout, this.attrsBlockNumber);
+    let actions = WrappedComponent(this.layout, this.attrsBlockNumber);
 
     concatStatements(context, actions);
 
-    let handle = (this.compiled = context.encoder.commit(context.syntax.program.heap, m.size));
+    let handle = context.encoder.commit(context.syntax.program.heap, m.size);
+
+    if (typeof handle !== 'number') {
+      return handle;
+    }
+
+    this.compiled = handle;
 
     if (DEBUG) {
       debugCompiler(context, handle);

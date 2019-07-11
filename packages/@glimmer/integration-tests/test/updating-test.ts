@@ -3,7 +3,10 @@ import {
   Option,
   RenderResult,
   RichIteratorResult,
-  Template,
+  TemplateOk,
+  HandleResult,
+  ErrHandle,
+  EncoderError,
 } from '@glimmer/interfaces';
 import { UpdatableReference } from '@glimmer/object-reference';
 import { bump, ConstReference } from '@glimmer/reference';
@@ -34,6 +37,8 @@ import {
 } from '@glimmer/integration-tests';
 import { Namespace, SimpleElement, SimpleNode } from '@simple-dom/interface';
 import { assert, module, test } from './support';
+import { unwrapHandle } from '@glimmer/opcode-compiler';
+import { QUnitAssert } from '../../dom-change-list/test/interfaces';
 
 const SVG_NAMESPACE = Namespace.SVG;
 const XLINK_NAMESPACE = Namespace.XLink;
@@ -44,8 +49,16 @@ let result: RenderResult;
 
 let context: TestContext;
 
-function compile(template: string) {
-  return preprocess(template);
+function compile(template: string): TemplateOk<AnnotatedModuleLocator> {
+  let compiled = preprocess(template);
+
+  if (compiled.result === 'error') {
+    throw new Error(
+      `Compile Error: ${compiled.problem} @ ${compiled.span.start}..${compiled.span.end}`
+    );
+  } else {
+    return compiled;
+  }
 }
 
 function commonSetup() {
@@ -63,17 +76,23 @@ function assertProperty<T, K extends keyof T, V extends T[K]>(
   }
 }
 
-function render(template: Template<AnnotatedModuleLocator>, state = {}) {
+function compileTemplate(template: TemplateOk<AnnotatedModuleLocator>): HandleResult {
+  return template.asLayout().compile(context.syntax);
+}
+
+function render(template: TemplateOk<AnnotatedModuleLocator>, state = {}): RenderResult {
   self = new UpdatableReference(state);
   context.env.begin();
   let cursor = { element: context.root, nextSibling: null };
+
+  let handle = template.asLayout().compile(context.syntax);
 
   let templateIterator = renderJitMain(
     context.runtime,
     context.syntax,
     self,
     clientBuilder(context.env, cursor),
-    template.asLayout().compile(context.syntax)
+    unwrapHandle(handle)
   );
 
   let iteratorResult: RichIteratorResult<null, RenderResult>;
@@ -1642,6 +1661,21 @@ module('[jit] integration - Updating', hooks => {
     rerender({ person: { name: { first: 'Godfrey', last: 'Chan' } } });
 
     equalTokens(context.root, '<div>Godfrey</div>', 'After reset');
+  });
+
+  test('missing helper', () => {
+    registerHelper(context.registry, 'hello', () => 'hello');
+
+    let template = compile(trimLines`
+      {{helo world}}
+    `);
+
+    let result = compileTemplate(template);
+
+    assertHandleError(assert, result, {
+      problem: 'Unexpected Helper helo',
+      span: { start: 2, end: 6 },
+    });
   });
 
   test('block arguments should have higher presedence than helpers', () => {
@@ -3569,3 +3603,8 @@ QUnit.module('integration - Updating Element Modifiers', hooks => {
     assert.equal(manager.destroyedModifiers.length, 1);
   });
 });
+
+function assertHandleError(assert: QUnitAssert, result: HandleResult, ...errors: EncoderError[]) {
+  assert.ok(typeof result !== 'number', 'Expected errors, found none');
+  assert.deepEqual((result as ErrHandle).errors, errors);
+}

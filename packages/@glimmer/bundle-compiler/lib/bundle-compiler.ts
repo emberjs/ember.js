@@ -17,6 +17,8 @@ import {
   CompileTimeConstants,
   Macros,
   Option,
+  EncoderError,
+  HandleResult,
 } from '@glimmer/interfaces';
 import { compileStd, compilable, MacrosImpl } from '@glimmer/opcode-compiler';
 
@@ -205,7 +207,7 @@ export default class BundleCompiler {
   preprocess(locator: ModuleLocator, input: string): SerializedTemplateBlock {
     let options = { meta: locator, plugins: { ast: this.plugins } };
     let ast = preprocess(input, options);
-    let template = TemplateCompiler.compile(ast);
+    let template = TemplateCompiler.compile(ast, input);
     return template.toJSON();
   }
 
@@ -217,11 +219,14 @@ export default class BundleCompiler {
    * Performs the actual compilation of the template identified by the passed
    * locator into the Program. ModuleLocatoreturns the VM handle for the compiled template.
    */
-  protected compileTemplate(locator: ModuleLocator): number {
+  protected compileTemplate(locator: ModuleLocator): HandleResult {
     // If this locator already has an assigned VM handle, it means we've already
     // compiled it. We need to skip compiling it again and just return the same
     // VM handle.
-    let vmHandle = this.compilerModuleLocatorResolver().getHandleByLocator(locator);
+    let vmHandle:
+      | number
+      | { handle: number; errors: EncoderError[] }
+      | undefined = this.compilerModuleLocatorResolver().getHandleByLocator(locator);
     if (vmHandle !== undefined) return vmHandle;
 
     // It's an error to try to compile a template that wasn't first added to the
@@ -234,6 +239,10 @@ export default class BundleCompiler {
     // Compile the template, which writes opcodes to the heap and returns the VM
     // handle (the address of the compiled program in the heap).
     vmHandle = compilableTemplate.compile(syntaxCompilationContext(this.context, this.macros));
+
+    if (typeof vmHandle !== 'number') {
+      return vmHandle;
+    }
 
     // Index the locator by VM handle and vice versa for easy lookups.
     this.compilerModuleLocatorResolver().setHandleByLocator(locator, vmHandle);

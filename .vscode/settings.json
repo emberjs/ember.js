@@ -1,13 +1,11 @@
 // Place your settings in this file to overwrite default and user settings.
 {
   "search.exclude": {
-    "**/node_modules/**": true,
     "tmp": true
   },
   "files.exclude": {
-    "**/.git": true,
     "**/.DS_Store": true,
-    "**/node_modules/**": true,
+    "**/.git": true,
     "**/dist/**": true,
     "dist": true,
     "tmp/**": true
@@ -15,7 +13,6 @@
   "files.watcherExclude": {
     "**/.git/objects/**": true,
     "**/.git/subtree-cache/**": true,
-    "**/node_modules/**": true,
     "tmp": true,
     "dist": true
   },

@@ -78,6 +78,7 @@ import {
 import { ContentTypeReference } from './content';
 import { UpdateDynamicAttributeOpcode } from './dom';
 import { ConditionalReference } from '../../references';
+import { unwrapTemplate } from '@glimmer/opcode-compiler';
 
 /**
  * The VM creates a new ComponentInstance data structure for every component
@@ -520,7 +521,9 @@ APPEND_OPCODES.add(
     if (hasStaticLayoutCapability(capabilities, manager)) {
       layout = manager.getJitStaticLayout(definition.state, vm.runtime.resolver);
     } else if (hasDynamicLayoutCapability(capabilities, manager)) {
-      let template = manager.getJitDynamicLayout(instance.state, vm.runtime.resolver, vm.context);
+      let template = unwrapTemplate(
+        manager.getJitDynamicLayout(instance.state, vm.runtime.resolver, vm.context)
+      );
 
       if (hasCapability(capabilities, Capability.Wrapped)) {
         layout = template.asWrappedLayout();

@@ -31,8 +31,17 @@ write(
 
 let debugMetadata = strip`
   import { MachineOp, Op, Option } from '@glimmer/interfaces';
-  import { fillNulls } from '@glimmer/util';
   import { NormalizedMetadata } from '@glimmer/debug';
+
+  function fillNulls<T>(count: number): T[] {
+    let arr = new Array(count);
+
+    for (let i = 0; i < count; i++) {
+      arr[i] = null;
+    }
+
+    return arr;
+  }
 
   export function opcodeMetadata(op: MachineOp | Op, isMachine: 0 | 1): Option<NormalizedMetadata> {
     let value = isMachine ? MACHINE_METADATA[op] : METADATA[op];

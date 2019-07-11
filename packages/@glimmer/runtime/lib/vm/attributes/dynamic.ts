@@ -104,7 +104,7 @@ export class DefaultDynamicProperty extends DynamicAttribute {
     let { element } = this.attribute;
 
     if (this.value !== value) {
-      (element as Dict)[this.normalizedName] = this.value = value;
+      (element as any)[this.normalizedName] = this.value = value;
 
       if (value === null || value === undefined) {
         this.removeAttribute();

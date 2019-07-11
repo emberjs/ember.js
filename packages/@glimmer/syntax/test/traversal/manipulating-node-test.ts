@@ -222,9 +222,9 @@ QUnit.test('Should recurrsively walk the transformed node', () => {
 
   traverse(ast, {
     MustacheStatement(node) {
-      if (node.path.original === 'x') {
+      if (expectPath(node.path).original === 'x') {
         return b.mustache('y');
-      } else if (node.path.original === 'y') {
+      } else if (expectPath(node.path).original === 'y') {
         return b.mustache('z');
       }
       return;
@@ -234,12 +234,20 @@ QUnit.test('Should recurrsively walk the transformed node', () => {
   astEqual(ast, `{{z}}{{z}}{{z}}`);
 });
 
+function expectPath(node: AST.Expression): AST.PathExpression {
+  if (node.type !== 'PathExpression') {
+    throw new Error(`Expected a PathExpression, got ${node.type}`);
+  }
+
+  return node;
+}
+
 QUnit.test('Should recurrsively walk the keys in the transformed node', () => {
   let ast = parse(`{{#foo}}{{#bar}}{{baz}}{{/bar}}{{else}}{{#bar}}{{bat}}{{/bar}}{{/foo}}`);
 
   traverse(ast, {
     BlockStatement(node) {
-      if (node.path.original === 'foo') {
+      if (expectPath(node.path).original === 'foo') {
         return b.block(
           b.path('x-foo'),
           node.params,
@@ -248,7 +256,7 @@ QUnit.test('Should recurrsively walk the keys in the transformed node', () => {
           node.inverse,
           node.loc
         );
-      } else if (node.path.original === 'bar') {
+      } else if (expectPath(node.path).original === 'bar') {
         return b.block(
           b.path('x-bar'),
           node.params,
@@ -262,9 +270,9 @@ QUnit.test('Should recurrsively walk the keys in the transformed node', () => {
     },
 
     MustacheStatement: function(node) {
-      if (node.path.original === 'baz') {
+      if (expectPath(node.path).original === 'baz') {
         return b.mustache('x-baz');
-      } else if (node.path.original === 'bat') {
+      } else if (expectPath(node.path).original === 'bat') {
         return b.mustache('x-bat');
       }
       return;
@@ -286,11 +294,11 @@ QUnit.test('Exit event is not triggered if the node is replaced during the enter
   traverse(ast, {
     MustacheStatement: {
       enter(node) {
-        entered.push(node.path.original);
+        entered.push(expectPath(node.path).original);
         return b.mustache('y');
       },
       exit(node) {
-        exited.push(node.path.original);
+        exited.push(expectPath(node.path).original);
       },
     },
   });

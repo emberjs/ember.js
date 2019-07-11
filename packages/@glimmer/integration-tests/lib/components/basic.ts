@@ -12,6 +12,7 @@ import {
 import { TestComponentDefinitionState } from './test-component';
 import { unreachable, expect } from '@glimmer/util';
 import { VersionedPathReference, UpdatableReference, Tag, CONSTANT_TAG } from '@glimmer/reference';
+import { unwrapTemplate } from '@glimmer/opcode-compiler';
 
 export interface BasicComponentFactory {
   new (): BasicComponent;
@@ -43,7 +44,7 @@ export class BasicComponentManager
     state: TestComponentDefinitionState,
     resolver: JitRuntimeResolver
   ): CompilableProgram {
-    return resolver.compilable(state.locator).asLayout();
+    return unwrapTemplate(resolver.compilable(state.locator)).asLayout();
   }
 
   getAotStaticLayout(
