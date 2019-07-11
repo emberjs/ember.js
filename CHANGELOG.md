@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.41.4 (2019-07-11)
+
+#### :rocket: Enhancement
+* `@glimmer/syntax`
+  * [#957](https://github.com/glimmerjs/glimmer-vm/pull/957) Add ability to override printing of specific AST nodes. ([@rwjblue](https://github.com/rwjblue))
+
+#### :bug: Bug Fix
+* `@glimmer/integration-tests`, `@glimmer/node`
+  * [#956](https://github.com/glimmerjs/glimmer-vm/pull/956) Fix table thead and tfoot rehydration ([@josemarluedke](https://github.com/josemarluedke))
+
+#### Committers: 2
+- Josemar Luedke ([@josemarluedke](https://github.com/josemarluedke))
+- Robert Jackson ([@rwjblue](https://github.com/rwjblue))
+
+
 ## v0.41.2 (2019-07-04)
 
 #### :rocket: Enhancement
