@@ -106,7 +106,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
     Internally, `<Input @type="checkbox" />` creates an instance of `Checkbox`. Subclassing
     `TextField` is supported but not recommended.
 
-    See [Checkbox](/api/ember/release/classes/Checkbox)
+    See [Checkbox](/ember/release/classes/Checkbox)
 
     @method Input
     @for Ember.Templates.components
