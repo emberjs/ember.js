@@ -117,3 +117,23 @@ QUnit.module('[glimmer-syntax] Code generation - source -> source', function() {
     assert.equal(printTransform(before), after);
   });
 });
+
+QUnit.module('[glimmer-syntax] Code generation - override', function() {
+  test('can provide a custom options.override to be used', function(assert) {
+    let ast = parse(`<FooBar @baz="qux" @derp="qux" />`);
+
+    let actual = print(ast, {
+      entityEncoding: 'transformed',
+
+      override(ast) {
+        if (ast.type === 'AttrNode' && ast.name === '@baz') {
+          return '@baz="ZOMG!!!!"';
+        }
+
+        return;
+      },
+    });
+
+    assert.equal(actual, `<FooBar @baz="ZOMG!!!!" @derp="qux" />`);
+  });
+});
