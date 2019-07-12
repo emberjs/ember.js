@@ -90,6 +90,24 @@ export default class RouterService extends Service {
      This behavior is different from calling `transitionTo` on a route or `transitionToRoute` on a controller.
      See the [Router Service RFC](https://github.com/emberjs/rfcs/blob/master/text/0095-router-service.md#query-parameter-semantics) for more info.
 
+     In the following example we use the Router service to navigate to a route with a
+     specific model from a Component.
+
+     ```javascript
+     import Component from '@ember/component';
+     import { inject as service } from '@ember/service';
+
+     export default Component.extend({
+       router: service(),
+
+       actions: {
+         goToComments(post) {
+           this.router.transitionTo('comments', post);
+         }
+       }
+     });
+     ```
+
      @method transitionTo
      @param {String} routeNameOrUrl the name of the route or a URL
      @param {...Object} models the model(s) or identifier(s) to be used while
@@ -122,6 +140,20 @@ export default class RouterService extends Service {
      Calling `replaceWith` from the Router service will cause default query parameter values to be included in the URL.
      This behavior is different from calling `replaceWith` on a route.
      See the [Router Service RFC](https://github.com/emberjs/rfcs/blob/master/text/0095-router-service.md#query-parameter-semantics) for more info.
+
+     Usage example:
+
+     ```app/routes/application.js
+     import Route from '@ember/routing/route';
+
+     export default Route.extend({
+       beforeModel() {
+         if (!authorized()){
+           this.replaceWith('unauthorized');
+         }
+       }
+     });
+     ```
 
      @method replaceWith
      @param {String} routeNameOrUrl the name of the route or a URL
@@ -244,6 +276,27 @@ export default class RouterService extends Service {
      Takes a string URL and returns a `RouteInfo` for the leafmost route represented
      by the URL. Returns `null` if the URL is not recognized. This method expects to
      receive the actual URL as seen by the browser including the app's `rootURL`.
+
+     See [RouteInfo](/ember/release/classes/RouteInfo) for more info.
+
+     In the following example `recognize` is used to verify if a path belongs to our
+     application before transitioning to it.
+
+     ```
+     import Component from '@ember/component';
+     import { inject as service } from '@ember/service';
+
+     export default Component.extend({
+       router: service(),
+       path: '/',
+
+       click() {
+         if(this.router.recognize(this.path)) {
+           this.router.transitionTo(this.path);
+         }
+       }
+     });
+     ```
 
       @method recognize
       @param {String} url
