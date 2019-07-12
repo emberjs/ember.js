@@ -62,23 +62,8 @@
     </script>
 
     <script>
-      var dist = QUnit.urlParams.dist;
-      var legacy = QUnit.urlParams.legacy;
-
-      var relativePath = legacy ? '../legacy' : '..';
-
-      switch (dist) {
-        case 'prod':
-        case 'min':
-          loadScript(relativePath + '/ember.' + dist + '.js');
-          break;
-        case 'es':
-          loadScript(relativePath + '/ember-all.debug.js');
-          break;
-        default:
-          loadScript(relativePath + '/ember.debug.js');
-          break;
-      }
+      loadScript('../ember.js');
+      loadScript('../ember-testing.js');
     </script>
 
     <script type="text/javascript">
@@ -87,32 +72,8 @@
     </script>
 
     <script>
-      var dist = QUnit.urlParams.dist;
-      var legacy = QUnit.urlParams.legacy;
-
-      var relativePath = legacy ? '../legacy' : '..';
-
-      if (dist === 'es') {
-        // do nothing template compiler already included
-      } else {
-        loadScript(relativePath + '/ember-template-compiler.js');
-      }
-    </script>
-
-    <script>
-      var prod = QUnit.urlParams.prod;
-      var dist = QUnit.urlParams.dist;
-      var legacy = QUnit.urlParams.legacy;
-
-      var relativePath = legacy ? '../legacy' : '..';
-
-      if (dist === 'es') {
-        // do nothing, tests are included
-      } else if (prod) {
-        loadScript(relativePath + '/ember-tests.prod.js');
-      } else {
-        loadScript(relativePath + '/ember-tests.js');
-      }
+      loadScript('../ember-template-compiler.js');
+      loadScript('../ember-tests.js');
     </script>
 
     <script>

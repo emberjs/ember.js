@@ -2,7 +2,7 @@
 
 var path = require('path');
 var distPath = path.join(__dirname, '../../dist');
-var emberPath = path.join(distPath, 'ember.debug');
+var emberPath = path.join(distPath, 'ember');
 
 QUnit.module('instrumentation', function(hooks) {
   hooks.afterEach(function() {
