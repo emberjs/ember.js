@@ -4,7 +4,7 @@ import { assert } from '@ember/debug';
 import { get, set } from '@ember/-internals/metal';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import { getElementView } from '@ember/-internals/views';
-import jQuery, { jQueryDisabled } from './jquery';
+import { jQuery, jQueryDisabled } from './jquery';
 import ActionManager from './action_manager';
 import addJQueryEventDeprecation from './jquery_event_deprecation';
 import { contains } from './utils';

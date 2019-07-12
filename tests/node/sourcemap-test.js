@@ -1,17 +1,13 @@
 var fs = require('fs');
 
 QUnit.module('sourcemap validation', function() {
-  var assets = ['ember.debug', 'ember.prod', 'ember.min'];
+  QUnit.test(`ember.js has only a single sourcemaps comment`, function(assert) {
+    var jsPath = `dist/ember.js`;
+    assert.ok(fs.existsSync(jsPath));
 
-  assets.forEach(asset => {
-    QUnit.test(`${asset} has only a single sourcemaps comment`, function(assert) {
-      var jsPath = `dist/${asset}.js`;
-      assert.ok(fs.existsSync(jsPath));
-
-      var contents = fs.readFileSync(jsPath, 'utf-8');
-      var num = count(contents, '//# sourceMappingURL=');
-      assert.equal(num, 1);
-    });
+    var contents = fs.readFileSync(jsPath, 'utf-8');
+    var num = count(contents, '//# sourceMappingURL=');
+    assert.equal(num, 1);
   });
 });
 

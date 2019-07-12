@@ -60,26 +60,42 @@ install:
 jobs:
   include:
     - stage: basic test
-      env: TEST_SUITE=each-package-tests
+      env: TEST_SUITE=each-package
+      script:
+        - yarn ember build
+        - yarn test
 
     - name: Linting
       script:
         - yarn lint
 
-    - stage: additional tests
+    - stage: Additional Tests
       name: Browserstack Tests (Safari, Edge, IE11)
+      env: SHOULD_TRANSPILE=true
       script:
-        - yarn ember build -prod
+        - yarn ember build
         - yarn test:browserstack
 
-    - env:
-      - TEST_SUITE=built-tests
-      - EMBER_ENV=production
+    - name: Development (All Tests + Canary Features)
+      script:
+        - yarn ember build
+        - yarn test
 
-    - env: TEST_SUITE=old-jquery-and-extend-prototypes
+    - name: Production (All Tests + Canary Features)
+      env: SHOULD_TRANSPILE=true
+      script:
+        - yarn ember build -prod
+        - yarn test
+
+    - name: Old Jquery and Extend Prototypes
+      env: TEST_SUITE=old-jquery-and-extend-prototypes
+      script:
+        - yarn ember build
+        - yarn test
 
     - name: Node.js Tests
       node_js: "8"
+      env: SHOULD_TRANSPILE=true
       script:
         - yarn ember build -prod
         - yarn test:node

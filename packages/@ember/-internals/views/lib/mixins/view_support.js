@@ -3,7 +3,7 @@ import { descriptorForProperty, Mixin, nativeDescDecorator } from '@ember/-inter
 import { assert } from '@ember/debug';
 import { hasDOM } from '@ember/-internals/browser-environment';
 import { matches } from '../system/utils';
-import { default as jQuery, jQueryDisabled } from '../system/jquery';
+import { jQuery, jQueryDisabled } from '../system/jquery';
 import { deprecate } from '@ember/debug';
 import { JQUERY_INTEGRATION } from '@ember/deprecated-features';
 

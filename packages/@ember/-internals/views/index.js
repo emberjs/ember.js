@@ -1,4 +1,4 @@
-export { default as jQuery, jQueryDisabled } from './lib/system/jquery';
+export { jQuery, jQueryDisabled } from './lib/system/jquery';
 export {
   addChildView,
   isSimpleClick,

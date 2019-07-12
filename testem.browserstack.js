@@ -134,7 +134,7 @@ module.exports = {
         '-t',
         '1500',
         '--u',
-        '<url>&legacy=true',
+        '<url>',
       ],
       protocol: 'browser',
     },
