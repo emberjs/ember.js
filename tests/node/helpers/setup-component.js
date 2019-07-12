@@ -5,7 +5,7 @@ var SimpleDOM = require('simple-dom');
 var buildOwner = require('./build-owner');
 
 var distPath = path.join(__dirname, '../../../dist');
-var emberPath = path.join(distPath, 'ember.debug');
+var emberPath = path.join(distPath, 'tests/ember');
 var templateCompilerPath = path.join(distPath, 'ember-template-compiler');
 
 var templateId;

@@ -2,7 +2,6 @@
 'use strict';
 
 const chalk = require('chalk');
-const runInSequence = require('../lib/run-in-sequence');
 const path = require('path');
 
 const finalhandler = require('finalhandler');
@@ -55,7 +54,7 @@ function generateTestsFor(packageName) {
   }
 
   testFunctions.push(() => run('package=' + packageName));
-  testFunctions.push(() => run('package=' + packageName + '&dist=es'));
+  testFunctions.push(() => run('package=' + packageName + '&prebuilt=true'));
   testFunctions.push(() => run('package=' + packageName + '&enableoptionalfeatures=true'));
 
   // TODO: this should ultimately be deleted (when all packages can run with and
@@ -79,15 +78,9 @@ function generateEachPackageTests() {
     .forEach(generateTestsFor);
 }
 
-function generateBuiltTests() {
+function generateStandardTests() {
   testFunctions.push(() => run(''));
-  testFunctions.push(() => run('dist=min&prod=true'));
-  testFunctions.push(() => run('dist=prod&prod=true'));
-  testFunctions.push(() => run('enableoptionalfeatures=true&dist=prod&prod=true'));
-  testFunctions.push(() => run('legacy=true'));
-  testFunctions.push(() => run('legacy=true&dist=min&prod=true'));
-  testFunctions.push(() => run('legacy=true&dist=prod&prod=true'));
-  testFunctions.push(() => run('legacy=true&enableoptionalfeatures=true&dist=prod&prod=true'));
+  testFunctions.push(() => run('enableoptionalfeatures=true'));
 }
 
 function generateOldJQueryTests() {
@@ -99,6 +92,18 @@ function generateOldJQueryTests() {
 function generateExtendPrototypeTests() {
   testFunctions.push(() => run('extendprototypes=true'));
   testFunctions.push(() => run('extendprototypes=true&enableoptionalfeatures=true'));
+}
+
+function runInSequence(tasks) {
+  var length = tasks.length;
+  var current = Promise.resolve();
+  var results = new Array(length);
+
+  for (var i = 0; i < length; ++i) {
+    current = results[i] = current.then(tasks[i]);
+  }
+
+  return Promise.all(results);
 }
 
 function runAndExit() {
@@ -121,9 +126,9 @@ switch (process.env.TEST_SUITE) {
     generateTestsFor(p);
     runAndExit();
     break;
-  case 'built-tests':
-    console.log('suite: built-tests');
-    generateBuiltTests();
+  case 'each-package':
+    console.log('suite: each-package');
+    generateEachPackageTests();
     runAndExit();
     break;
   case 'old-jquery-and-extend-prototypes':
@@ -134,7 +139,6 @@ switch (process.env.TEST_SUITE) {
     break;
   case 'all':
     console.log('suite: all');
-    generateBuiltTests();
     generateOldJQueryTests();
     generateExtendPrototypeTests();
     generateEachPackageTests();
@@ -142,6 +146,6 @@ switch (process.env.TEST_SUITE) {
     break;
   default:
     console.log('suite: default (generate each package)');
-    generateEachPackageTests();
+    generateStandardTests();
     runAndExit();
 }
