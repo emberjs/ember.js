@@ -1,6 +1,6 @@
 import { uuid } from '@ember/-internals/utils';
 import { ActionManager, isSimpleClick } from '@ember/-internals/views';
-import { assert } from '@ember/debug';
+import { assert, deprecate } from '@ember/debug';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { join } from '@ember/runloop';
 import { Opaque, Simple } from '@glimmer/interfaces';
@@ -230,7 +230,7 @@ export default class ActionModifierManager implements ModifierManager<ActionStat
     }
 
     let actionId = uuid();
-    return new ActionState(
+    let actionState = new ActionState(
       element,
       actionId,
       actionName,
@@ -241,6 +241,18 @@ export default class ActionModifierManager implements ModifierManager<ActionStat
       dom,
       tag
     );
+
+    deprecate(
+      `Using the \`{{action}}\` modifier with \`${actionState.eventName}\` events has been deprecated.`,
+      actionState.eventName !== 'mouseEnter' && actionState.eventName !== 'mouseLeave' && actionState.eventName !== 'mouseMove',
+      {
+        id: 'ember-views.event-dispatcher.mouseenter-leave-move',
+        until: '4.0.0',
+        url: 'https://emberjs.com/deprecations/v3.x#toc_action-mouseenter-leave-move',
+      },
+    );
+
+    return actionState;
   }
 
   install(actionState: ActionState) {

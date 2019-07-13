@@ -8,7 +8,7 @@ import jQuery, { jQueryDisabled } from './jquery';
 import ActionManager from './action_manager';
 import addJQueryEventDeprecation from './jquery_event_deprecation';
 import { contains } from './utils';
-import { JQUERY_INTEGRATION } from '@ember/deprecated-features';
+import { JQUERY_INTEGRATION, MOUSE_ENTER_LEAVE_MOVE_EVENTS } from '@ember/deprecated-features';
 
 /**
 @module ember
@@ -67,35 +67,38 @@ export default EmberObject.extend({
     @type Object
     @private
   */
-  events: {
-    touchstart: 'touchStart',
-    touchmove: 'touchMove',
-    touchend: 'touchEnd',
-    touchcancel: 'touchCancel',
-    keydown: 'keyDown',
-    keyup: 'keyUp',
-    keypress: 'keyPress',
-    mousedown: 'mouseDown',
-    mouseup: 'mouseUp',
-    contextmenu: 'contextMenu',
-    click: 'click',
-    dblclick: 'doubleClick',
-    mousemove: 'mouseMove',
-    focusin: 'focusIn',
-    focusout: 'focusOut',
-    mouseenter: 'mouseEnter',
-    mouseleave: 'mouseLeave',
-    submit: 'submit',
-    input: 'input',
-    change: 'change',
-    dragstart: 'dragStart',
-    drag: 'drag',
-    dragenter: 'dragEnter',
-    dragleave: 'dragLeave',
-    dragover: 'dragOver',
-    drop: 'drop',
-    dragend: 'dragEnd',
-  },
+  events: assign(
+    {
+      touchstart: 'touchStart',
+      touchmove: 'touchMove',
+      touchend: 'touchEnd',
+      touchcancel: 'touchCancel',
+      keydown: 'keyDown',
+      keyup: 'keyUp',
+      keypress: 'keyPress',
+      mousedown: 'mouseDown',
+      mouseup: 'mouseUp',
+      contextmenu: 'contextMenu',
+      click: 'click',
+      dblclick: 'doubleClick',
+      focusin: 'focusIn',
+      focusout: 'focusOut',
+      submit: 'submit',
+      input: 'input',
+      change: 'change',
+      dragstart: 'dragStart',
+      drag: 'drag',
+      dragenter: 'dragEnter',
+      dragleave: 'dragLeave',
+      dragover: 'dragOver',
+      drop: 'drop',
+      dragend: 'dragEnd',
+    },
+    MOUSE_ENTER_LEAVE_MOVE_EVENTS ? {
+      mouseenter: 'mouseEnter',
+      mouseleave: 'mouseLeave',
+      mousemove: 'mouseMove',
+    } : {}),
 
   /**
     The root DOM element to which event listeners should be attached. Event
@@ -300,7 +303,7 @@ export default EmberObject.extend({
       // Special handling of events that don't bubble (event delegation does not work).
       // Mimics the way this is handled in jQuery,
       // see https://github.com/jquery/jquery/blob/899c56f6ada26821e8af12d9f35fa039100e838e/src/event.js#L666-L700
-      if (EVENT_MAP[event] !== undefined) {
+      if (MOUSE_ENTER_LEAVE_MOVE_EVENTS && EVENT_MAP[event] !== undefined) {
         let mappedEventType = EVENT_MAP[event];
         let origEventType = event;
 

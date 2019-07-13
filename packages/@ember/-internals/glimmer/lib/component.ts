@@ -11,7 +11,7 @@ import {
   ViewMixin,
   ViewStateSupport,
 } from '@ember/-internals/views';
-import { assert } from '@ember/debug';
+import { assert, deprecate } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { DirtyableTag } from '@glimmer/reference';
 import { normalizeProperty, SVG_NAMESPACE } from '@glimmer/runtime';
@@ -749,6 +749,34 @@ const Component = CoreView.extend(
           !eventNames.length
         );
       }
+
+      deprecate(
+        `Using \`mouseEnter\` event handler methods in components has been deprecated.`,
+        this.mouseEnter === undefined,
+        {
+          id: 'ember-views.event-dispatcher.mouseenter-leave-move',
+          until: '4.0.0',
+          url: 'https://emberjs.com/deprecations/v3.x#toc_component-mouseenter-leave-move',
+        },
+      );
+      deprecate(
+        `Using \`mouseLeave\` event handler methods in components has been deprecated.`,
+        this.mouseLeave === undefined,
+        {
+          id: 'ember-views.event-dispatcher.mouseenter-leave-move',
+          until: '4.0.0',
+          url: 'https://emberjs.com/deprecations/v3.x#toc_component-mouseenter-leave-move',
+        },
+      );
+      deprecate(
+        `Using \`mouseMove\` event handler methods in components has been deprecated.`,
+        this.mouseMove === undefined,
+        {
+          id: 'ember-views.event-dispatcher.mouseenter-leave-move',
+          until: '4.0.0',
+          url: 'https://emberjs.com/deprecations/v3.x#toc_component-mouseenter-leave-move',
+        },
+      );
     },
 
     rerender() {
