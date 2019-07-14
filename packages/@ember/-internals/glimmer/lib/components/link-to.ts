@@ -246,7 +246,7 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
   */
 
   /**
-    See [Ember.Templates.components.LinkTo](/api/ember/release/classes/Ember.Templates.components/methods/input?anchor=input).
+    See [Ember.Templates.components.LinkTo](/ember/release/classes/Ember.Templates.components/methods/input?anchor=LinkTo).
 
     @for Ember.Templates.helpers
     @method link-to

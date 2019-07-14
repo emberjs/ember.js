@@ -24,7 +24,7 @@ export type DeprecateFunc = (message: string, test?: boolean, options?: Deprecat
 */
 /**
   Allows for runtime registration of handler functions that override the default deprecation behavior.
-  Deprecations are invoked by calls to [@ember/debug/deprecate](https://emberjs.com/api/ember/release/classes/@ember%2Fdebug/methods/deprecate?anchor=deprecate).
+  Deprecations are invoked by calls to [@ember/debug/deprecate](/ember/release/classes/@ember%2Fdebug/methods/deprecate?anchor=deprecate).
   The following example demonstrates its usage by registering a handler that throws an error if the
   message contains the word "should", otherwise defers to the default handler.
 

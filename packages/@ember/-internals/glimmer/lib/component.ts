@@ -701,7 +701,7 @@ export const BOUNDS = symbol('BOUNDS');
   When the user clicks the button, Ember will invoke the `hello` action,
   passing in the current value of `@person.name` as an argument.
 
-  See [Ember.Templates.helpers.action](/api/ember/release/classes/Ember.Templates.helpers/methods/action?anchor=action).
+  See [Ember.Templates.helpers.action](/ember/release/classes/Ember.Templates.helpers/methods/action?anchor=action).
 
   @class Component
   @extends Ember.CoreView

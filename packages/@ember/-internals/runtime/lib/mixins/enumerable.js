@@ -6,7 +6,7 @@ import { Mixin } from '@ember/-internals/metal';
 */
 
 /**
-  The methods in this mixin have been moved to [MutableArray](https://emberjs.com/api/ember/release/classes/MutableArray). This mixin has
+  The methods in this mixin have been moved to [MutableArray](/ember/release/classes/MutableArray). This mixin has
   been intentionally preserved to avoid breaking Enumerable.detect checks
   until the community migrates away from them.
 

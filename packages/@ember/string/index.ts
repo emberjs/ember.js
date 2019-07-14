@@ -366,7 +366,7 @@ if (ENV.EXTEND_PROTOTYPES.String) {
     },
 
     /**
-      See [String.underscore](/api/ember/release/classes/String/methods/underscore?anchor=underscore).
+      See [String.underscore](/ember/release/classes/String/methods/underscore?anchor=underscore).
 
       @method underscore
       @for @ember/string
