@@ -153,9 +153,9 @@ export function pair(left: Tag, right: Tag): Tag {
   if (constLeft && constRight) {
     return CONSTANT_TAG;
   } else if (constLeft) {
-    return left;
-  } else if (constRight) {
     return right;
+  } else if (constRight) {
+    return left;
   } else {
     return TagsPair.create(left, right);
   }

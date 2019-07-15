@@ -1,4 +1,12 @@
-import { State, VersionedPathReference, UpdatableReference, map } from '@glimmer/reference';
+import {
+  State,
+  VersionedPathReference,
+  UpdatableReference,
+  map,
+  pair,
+  DirtyableTag,
+  CONSTANT_TAG,
+} from '@glimmer/reference';
 import { tracked } from './support';
 
 QUnit.module('@glimmer/reference - combinators: map');
@@ -47,6 +55,17 @@ QUnit.test('mapping an object with interior mutability', () => {
     ['update-child', 'first', 'Tom'],
     ['eq', `Tom Dale`]
   );
+});
+
+QUnit.test('pair works correctly', () => {
+  let tag = DirtyableTag.create();
+  let constantTag = CONSTANT_TAG;
+
+  let snapshot = tag.value();
+  let paired = pair(tag, constantTag);
+
+  tag.inner.dirty();
+  QUnit.assert.notOk(paired.validate(snapshot));
 });
 
 export type Step<T, U, K extends keyof T> =
