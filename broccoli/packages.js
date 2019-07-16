@@ -62,7 +62,7 @@ module.exports.qunit = function _qunit() {
 
 module.exports.getPackagesES = function getPackagesES() {
   let input = new Funnel(`packages`, {
-    exclude: ['node-module/**', 'loader/**', 'external-helpers/**'],
+    exclude: ['loader/**', 'external-helpers/**'],
     destDir: `packages`,
   });
 
@@ -270,12 +270,6 @@ module.exports.glimmerTrees = function glimmerTrees(entries) {
     }
   }
   return trees;
-};
-
-module.exports.nodeModuleUtils = function _nodeModuleUtils() {
-  return new Funnel('packages/node-module/lib', {
-    files: ['node-module.js'],
-  });
 };
 
 module.exports.emberVersionES = function _emberVersionES() {
