@@ -1,4 +1,4 @@
-/* globals EmberDev */
+import { DEBUG } from '@glimmer/env';
 
 import { RenderingTestCase, moduleFor, applyMixins, classes, runTask } from 'internal-test-helpers';
 
@@ -1604,7 +1604,7 @@ moduleFor(
   }
 );
 
-if (!EmberDev.runningProdBuild) {
+if (DEBUG) {
   moduleFor(
     'Inline style tests - warnings',
     class extends StyleTest {

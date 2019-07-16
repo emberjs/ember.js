@@ -130,11 +130,8 @@
           }
         }
 
-        window.EmberDev = window.EmberDev || {};
-        EmberDev.runningProdBuild = !!QUnit.urlParams.prod;
-
         var setupQUnit = window.Ember.__loader.require('internal-test-helpers/lib/ember-dev/setup-qunit')['default'];
-        setupQUnit({ runningProdBuild: EmberDev.runningProdBuild });
+        setupQUnit();
 
         // Tests should time out after 15 seconds
         QUnit.config.testTimeout = QUnit.urlParams.timeout ? parseInt(QUnit.urlParams.timeout, 10) : 15000;
