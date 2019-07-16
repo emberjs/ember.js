@@ -1,4 +1,4 @@
-/*globals EmberDev */
+import { DEBUG } from '@glimmer/env';
 import VERSION from 'ember/version';
 import { ENV, context } from '@ember/-internals/environment';
 import { libraries } from '@ember/-internals/metal';
@@ -360,7 +360,7 @@ moduleFor(
     }
 
     [`@test enable log of libraries with an ENV var`](assert) {
-      if (EmberDev && EmberDev.runningProdBuild) {
+      if (!DEBUG) {
         assert.ok(true, 'Logging does not occur in production builds');
         return;
       }

@@ -1,4 +1,5 @@
-/* globals EmberDev */
+import { DEBUG } from '@glimmer/env';
+
 import { moduleFor, DefaultResolverApplicationTestCase, runTask } from 'internal-test-helpers';
 
 import { context } from '@ember/-internals/environment';
@@ -303,7 +304,7 @@ moduleFor(
     }
 
     [`@test the default resolver logs hits if 'LOG_RESOLVER' is set`](assert) {
-      if (EmberDev && EmberDev.runningProdBuild) {
+      if (!DEBUG) {
         assert.ok(true, 'Logging does not occur in production builds');
         return;
       }
@@ -324,7 +325,7 @@ moduleFor(
     }
 
     [`@test the default resolver logs misses if 'LOG_RESOLVER' is set`](assert) {
-      if (EmberDev && EmberDev.runningProdBuild) {
+      if (!DEBUG) {
         assert.ok(true, 'Logging does not occur in production builds');
         return;
       }
@@ -344,7 +345,7 @@ moduleFor(
     }
 
     [`@test doesn't log without LOG_RESOLVER`](assert) {
-      if (EmberDev && EmberDev.runningProdBuild) {
+      if (!DEBUG) {
         assert.ok(true, 'Logging does not occur in production builds');
         return;
       }

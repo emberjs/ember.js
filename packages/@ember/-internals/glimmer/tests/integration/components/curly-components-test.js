@@ -1,5 +1,3 @@
-/* globals EmberDev */
-
 import {
   moduleFor,
   RenderingTestCase,
@@ -98,7 +96,7 @@ moduleFor(
         content: 'blahzorz',
       });
 
-      if (EmberDev && !EmberDev.runningProdBuild) {
+      if (DEBUG) {
         let willThrow = () => run(null, set, component, 'elementId', 'herpyderpy');
 
         assert.throws(willThrow, /Changing a view's elementId after creation is not allowed/);

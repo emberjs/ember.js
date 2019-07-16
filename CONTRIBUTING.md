@@ -271,9 +271,12 @@ If your build is failing on the 'production' suite, you may be relying on a debu
 
 There are helpers for many of these functions, which will resolve this for you: `expectDeprecation`, `expectAssertion`, etc.  Please use these helpers when dealing with these functions.
 
-If your tests can't aren't covered a helper, one common solution is the use of `EmberDev.runningProdBuild`.  Wrapping the debug-only dependent test in a check of this flag will cause that test to not be run in the prod test suite:
+If your tests can't aren't covered a helper, one common solution is the use of `DEBUG` flag.  Wrapping the debug-only dependent test in a check of this flag will cause that test to not be run in the prod test suite:
+
 ```javascript
-if (EmberDev && !EmberDev.runningProdBuild) {
+import { DEBUG } from '@glimmer/env';
+
+if (DEBUG) {
   // Development-only test goes here
 }
 ```
