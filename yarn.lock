@@ -691,7 +691,12 @@
   resolved "https://registry.yarnpkg.com/@glimmer/env/-/env-0.1.7.tgz#fd2d2b55a9029c6b37a6c935e8c8871ae70dfa07"
   integrity sha1-/S0rVakCnGs3psk16MiHGucN+gc=
 
-"@glimmer/interfaces@0.38.5-alpha.1", "@glimmer/interfaces@^0.38.5-alpha.1":
+"@glimmer/interfaces@0.41.4":
+  version "0.41.4"
+  resolved "https://registry.yarnpkg.com/@glimmer/interfaces/-/interfaces-0.41.4.tgz#3f3e26abea8a4e1463130e9a75e94372781d154b"
+  integrity sha512-MzXwMyod3MlwSZezHSaVBsCEIW/giYYfTDYARR46QnYsaFVatMVbydjsI7jkAuBCbnLCyNOIc1TrYIj71i/rpg==
+
+"@glimmer/interfaces@^0.38.5-alpha.1":
   version "0.38.5-alpha.1"
   resolved "https://registry.yarnpkg.com/@glimmer/interfaces/-/interfaces-0.38.5-alpha.1.tgz#c1bbb7604c272fa879cd00dcbb9191efb22204a2"
   integrity sha512-Q38UPwaIzTNgqh00fjf7BqMxtlHL2tchOqf3wKYWK0csfMhR+NvmWGVP02sr7vbXxw0+rf1hg9iv+Ejburbgqw==
