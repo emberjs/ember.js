@@ -84,7 +84,7 @@ export default class RouterService extends Service {
      Transition the application into another route. The route may
      be either a single route or route path:
 
-     See [transitionTo](/api/ember/release/classes/Route/methods/transitionTo?anchor=transitionTo) for more info.
+     See [transitionTo](/ember/release/classes/Route/methods/transitionTo?anchor=transitionTo) for more info.
 
      Calling `transitionTo` from the Router service will cause default query parameter values to be included in the URL.
      This behavior is different from calling `transitionTo` on a route or `transitionToRoute` on a controller.
@@ -117,7 +117,7 @@ export default class RouterService extends Service {
      Transition into another route while replacing the current URL, if possible.
      The route may be either a single route or route path:
 
-     See [replaceWith](/api/ember/release/classes/Route/methods/replaceWith?anchor=replaceWith) for more info.
+     See [replaceWith](/ember/release/classes/Route/methods/replaceWith?anchor=replaceWith) for more info.
 
      Calling `replaceWith` from the Router service will cause default query parameter values to be included in the URL.
      This behavior is different from calling `replaceWith` on a route.
