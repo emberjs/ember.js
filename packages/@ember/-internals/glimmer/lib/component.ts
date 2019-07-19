@@ -642,11 +642,8 @@ export const BOUNDS = symbol('BOUNDS');
   * `contextMenu`
   * `click`
   * `doubleClick`
-  * `mouseMove`
   * `focusIn`
   * `focusOut`
-  * `mouseEnter`
-  * `mouseLeave`
 
   Form events:
 
