@@ -754,7 +754,7 @@ const Component = CoreView.extend(
           id: 'ember-views.event-dispatcher.mouseenter-leave-move',
           until: '4.0.0',
           url: 'https://emberjs.com/deprecations/v3.x#toc_component-mouseenter-leave-move',
-        },
+        }
       );
       deprecate(
         `Using \`mouseLeave\` event handler methods in components has been deprecated.`,
@@ -763,7 +763,7 @@ const Component = CoreView.extend(
           id: 'ember-views.event-dispatcher.mouseenter-leave-move',
           until: '4.0.0',
           url: 'https://emberjs.com/deprecations/v3.x#toc_component-mouseenter-leave-move',
-        },
+        }
       );
       deprecate(
         `Using \`mouseMove\` event handler methods in components has been deprecated.`,
@@ -772,7 +772,7 @@ const Component = CoreView.extend(
           id: 'ember-views.event-dispatcher.mouseenter-leave-move',
           until: '4.0.0',
           url: 'https://emberjs.com/deprecations/v3.x#toc_component-mouseenter-leave-move',
-        },
+        }
       );
     },
 

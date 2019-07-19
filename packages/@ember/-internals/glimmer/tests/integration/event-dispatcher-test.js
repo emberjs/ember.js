@@ -292,7 +292,9 @@ moduleFor(
       assert.strictEqual(receivedLeaveEvents[0].target, outer);
     }
 
-    ['@test [DEPRECATED] delegated event listeners work for mouseEnter/Leave with skipped events'](assert) {
+    ['@test [DEPRECATED] delegated event listeners work for mouseEnter/Leave with skipped events'](
+      assert
+    ) {
       let receivedEnterEvents = [];
       let receivedLeaveEvents = [];
 

@@ -94,11 +94,14 @@ export default EmberObject.extend({
       drop: 'drop',
       dragend: 'dragEnd',
     },
-    MOUSE_ENTER_LEAVE_MOVE_EVENTS ? {
-      mouseenter: 'mouseEnter',
-      mouseleave: 'mouseLeave',
-      mousemove: 'mouseMove',
-    } : {}),
+    MOUSE_ENTER_LEAVE_MOVE_EVENTS
+      ? {
+          mouseenter: 'mouseEnter',
+          mouseleave: 'mouseLeave',
+          mousemove: 'mouseMove',
+        }
+      : {}
+  ),
 
   /**
     The root DOM element to which event listeners should be attached. Event

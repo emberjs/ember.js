@@ -244,12 +244,14 @@ export default class ActionModifierManager implements ModifierManager<ActionStat
 
     deprecate(
       `Using the \`{{action}}\` modifier with \`${actionState.eventName}\` events has been deprecated.`,
-      actionState.eventName !== 'mouseEnter' && actionState.eventName !== 'mouseLeave' && actionState.eventName !== 'mouseMove',
+      actionState.eventName !== 'mouseEnter' &&
+        actionState.eventName !== 'mouseLeave' &&
+        actionState.eventName !== 'mouseMove',
       {
         id: 'ember-views.event-dispatcher.mouseenter-leave-move',
         until: '4.0.0',
         url: 'https://emberjs.com/deprecations/v3.x#toc_action-mouseenter-leave-move',
-      },
+      }
     );
 
     return actionState;

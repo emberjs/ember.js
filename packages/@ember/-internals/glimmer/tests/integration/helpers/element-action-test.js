@@ -1680,7 +1680,8 @@ moduleFor(
         template: '<div id="inner" {{action "show" on="mouseEnter"}}></div>',
       });
 
-      expectDeprecation(() => this.render('{{example-component id="outer"}}'),
+      expectDeprecation(
+        () => this.render('{{example-component id="outer"}}'),
         'Using the `{{action}}` modifier with `mouseEnter` events has been deprecated.'
       );
 
@@ -1713,7 +1714,8 @@ moduleFor(
         template: '<div id="inner" {{action "show" on="mouseLeave"}}></div>',
       });
 
-      expectDeprecation(() => this.render('{{example-component id="outer"}}'),
+      expectDeprecation(
+        () => this.render('{{example-component id="outer"}}'),
         'Using the `{{action}}` modifier with `mouseLeave` events has been deprecated.'
       );
 
@@ -1746,7 +1748,8 @@ moduleFor(
         template: '<div id="inner" {{action "show" on="mouseMove"}}></div>',
       });
 
-      expectDeprecation(() => this.render('{{example-component id="outer"}}'),
+      expectDeprecation(
+        () => this.render('{{example-component id="outer"}}'),
         'Using the `{{action}}` modifier with `mouseMove` events has been deprecated.'
       );
 
@@ -1774,7 +1777,8 @@ moduleFor(
         template: '<div id="inner" {{action "show" on=eventType}}></div>',
       });
 
-      expectDeprecation(() => this.render('{{example-component id="outer"}}'),
+      expectDeprecation(
+        () => this.render('{{example-component id="outer"}}'),
         'Using the `{{action}}` modifier with `mouseMove` events has been deprecated.'
       );
 
