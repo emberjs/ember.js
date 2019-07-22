@@ -28,5 +28,6 @@
   "typescript.tsc.autoDetect": "on",
   "javascript.updateImportsOnFileMove.enabled": "always",
   "typescript.preferences.importModuleSpecifier": "relative",
-  "javascript.preferences.importModuleSpecifier": "relative"
+  "javascript.preferences.importModuleSpecifier": "relative",
+  "typescript.tsdk": "node_modules/typescript/lib"
 }

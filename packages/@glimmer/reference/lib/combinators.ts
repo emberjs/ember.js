@@ -1,5 +1,6 @@
-import { VersionedPathReference, Tag, UpdatableDirtyableTag, TagWrapper, pair } from './validators';
+import { Tag, createUpdatableTag, combine, update } from './validators';
 import { property } from './property';
+import { VersionedPathReference } from './reference';
 import { pushTrackFrame, popTrackFrame } from './autotrack';
 
 export function map<T, U>(
@@ -11,10 +12,10 @@ export function map<T, U>(
 
 class MapReference<T, U> implements VersionedPathReference<U> {
   readonly tag: Tag;
-  readonly updatable: TagWrapper<UpdatableDirtyableTag> = UpdatableDirtyableTag.create();
+  readonly updatable = createUpdatableTag();
 
   constructor(private inner: VersionedPathReference<T>, private callback: (value: T) => U) {
-    this.tag = pair(inner.tag, this.updatable);
+    this.tag = combine([inner.tag, this.updatable]);
   }
 
   value(): U {
@@ -23,7 +24,7 @@ class MapReference<T, U> implements VersionedPathReference<U> {
     let old = pushTrackFrame();
     let ret = callback(inner.value());
     let tag = popTrackFrame(old);
-    this.updatable.inner.update(tag);
+    update(this.updatable, tag);
 
     return ret;
   }

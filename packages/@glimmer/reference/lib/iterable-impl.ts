@@ -1,5 +1,6 @@
 import { AbstractIterable, IterationItem, OpaqueIterator } from './iterable';
-import { Tag, VersionedReference } from './validators';
+import { Tag } from './validators';
+import { VersionedReference } from './reference';
 import { Option, Dict } from '@glimmer/interfaces';
 import { EMPTY_ARRAY } from '@glimmer/util';
 import { UpdatableReference } from './property';

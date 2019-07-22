@@ -1,16 +1,22 @@
-export { Reference as BasicReference, PathReference as BasicPathReference } from './lib/reference';
+export {
+  Reference as BasicReference,
+  PathReference as BasicPathReference,
+  VersionedReference as Reference,
+  VersionedPathReference as PathReference,
+  VersionedReference,
+  VersionedPathReference,
+  CachedReference,
+  ReferenceCache,
+  Validation,
+  NotModified,
+  isModified,
+} from './lib/reference';
 
 export { ConstReference } from './lib/const';
 
 export { ListItem, END } from './lib/iterable';
 
 export * from './lib/validators';
-
-export {
-  VersionedReference as Reference,
-  VersionedPathReference as PathReference,
-} from './lib/validators';
-
 export * from './lib/property';
 
 export {

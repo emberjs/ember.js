@@ -1,13 +1,13 @@
 import { isEmpty, isString } from '../../dom/normalize';
 import { UpdatingOpcode } from '../../opcodes';
-import { Tag, VersionedReference } from '@glimmer/reference';
+import { Tag, VersionedReference, value, validate, Revision } from '@glimmer/reference';
 import { SimpleText } from '@simple-dom/interface';
 
 export default class DynamicTextContent extends UpdatingOpcode {
   public type = 'dynamic-text';
 
   public tag: Tag;
-  public lastRevision: number;
+  public lastRevision: Revision;
 
   constructor(
     public node: SimpleText,
@@ -16,14 +16,14 @@ export default class DynamicTextContent extends UpdatingOpcode {
   ) {
     super();
     this.tag = reference.tag;
-    this.lastRevision = this.tag.value();
+    this.lastRevision = value(this.tag);
   }
 
   evaluate() {
     let { reference, tag } = this;
 
-    if (!tag.validate(this.lastRevision)) {
-      this.lastRevision = tag.value();
+    if (!validate(tag, this.lastRevision)) {
+      this.lastRevision = value(tag);
       this.update(reference.value());
     }
   }

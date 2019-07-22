@@ -87,6 +87,10 @@
     "tslint-config-prettier": "^1.15.0",
     "tslint-plugin-prettier": "^2.0.1"
   },
+  "resolutions": {
+    "typescript": "3.3.3",
+    "broccoli-typescript-transpiler/typescript": "3.3.3"
+  },
   "changelog": {
     "repo": "glimmerjs/glimmer-vm",
     "labels": {

@@ -1,4 +1,5 @@
-import { CONSTANT_TAG, Tag, VersionedPathReference } from './validators';
+import { CONSTANT_TAG, Tag } from './validators';
+import { VersionedPathReference } from './reference';
 import { UNDEFINED_REFERENCE } from './property';
 
 export class ConstReference<T = unknown> implements VersionedPathReference<T> {
