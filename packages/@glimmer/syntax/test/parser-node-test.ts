@@ -50,7 +50,7 @@ test('html content with svg content inline', function() {
   astEqual(t, b.program([b.element('div', ['body', b.element('svg')])]));
 });
 
-let integrationPoints = ['foreignObject', 'desc', 'title'];
+let integrationPoints = ['foreignObject', 'desc'];
 function buildIntegrationPointTest(integrationPoint: string) {
   return function integrationPointTest() {
     let t = '<svg><' + integrationPoint + '><div></div></' + integrationPoint + '></svg>';
@@ -68,6 +68,14 @@ for (let i = 0, length = integrationPoints.length; i < length; i++) {
     buildIntegrationPointTest(integrationPoints[i])
   );
 }
+
+test('svg title with html content', function() {
+  let t = '<svg><title><div></div></title></svg>';
+  astEqual(
+    t,
+    b.program([b.element('svg', ['body', b.element('title', ['body', b.text('<div></div>')])])])
+  );
+});
 
 test('a piece of content with HTML', function() {
   let t = 'some <div>content</div> done';
