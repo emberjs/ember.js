@@ -12,6 +12,7 @@ import {
 import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { EMBER_ARRAY } from '@ember/-internals/utils';
 import { AbstractTestCase, moduleFor } from 'internal-test-helpers';
+import { value, validate } from '@glimmer/reference';
 
 if (EMBER_METAL_TRACKED_PROPERTIES) {
   moduleFor(
@@ -28,22 +29,22 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
         let obj = new Tracked('Tom', 'Dale');
 
         let tag = track(() => obj.first);
-        let snapshot = tag.value();
+        let snapshot = value(tag);
 
         assert.equal(obj.first, 'Tom', 'The full name starts correct');
-        assert.equal(tag.validate(snapshot), true);
+        assert.equal(validate(tag, snapshot), true);
 
-        snapshot = tag.value();
-        assert.equal(tag.validate(snapshot), true);
+        snapshot = value(tag);
+        assert.equal(validate(tag, snapshot), true);
 
         obj.first = 'Thomas';
 
-        assert.equal(tag.validate(snapshot), false);
+        assert.equal(validate(tag, snapshot), false);
 
         assert.equal(obj.first, 'Thomas');
-        snapshot = tag.value();
+        snapshot = value(tag);
 
-        assert.equal(tag.validate(snapshot), true);
+        assert.equal(validate(tag, snapshot), true);
       }
 
       [`@test autotracking should work with native getters`](assert) {
@@ -63,22 +64,22 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
         let obj = new Tracked('Tom', 'Dale');
 
         let tag = track(() => obj.full);
-        let snapshot = tag.value();
+        let snapshot = value(tag);
 
         assert.equal(obj.full, 'Tom Dale', 'The full name starts correct');
-        assert.equal(tag.validate(snapshot), true);
+        assert.equal(validate(tag, snapshot), true);
 
-        snapshot = tag.value();
-        assert.equal(tag.validate(snapshot), true);
+        snapshot = value(tag);
+        assert.equal(validate(tag, snapshot), true);
 
         obj.first = 'Thomas';
 
-        assert.equal(tag.validate(snapshot), false);
+        assert.equal(validate(tag, snapshot), false);
 
         assert.equal(obj.full, 'Thomas Dale');
-        snapshot = tag.value();
+        snapshot = value(tag);
 
-        assert.equal(tag.validate(snapshot), true);
+        assert.equal(validate(tag, snapshot), true);
       }
 
       [`@test autotracking should work with native setters`](assert) {
@@ -105,24 +106,24 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
         let obj = new Tracked('Tom', 'Dale');
 
         let tag = track(() => obj.full);
-        let snapshot = tag.value();
+        let snapshot = value(tag);
 
         assert.equal(obj.full, 'Tom Dale', 'The full name starts correct');
-        assert.equal(tag.validate(snapshot), true);
+        assert.equal(validate(tag, snapshot), true);
 
-        snapshot = tag.value();
-        assert.equal(tag.validate(snapshot), true);
+        snapshot = value(tag);
+        assert.equal(validate(tag, snapshot), true);
 
         obj.full = 'Melanie Sumner';
 
-        assert.equal(tag.validate(snapshot), false);
+        assert.equal(validate(tag, snapshot), false);
 
         assert.equal(obj.full, 'Melanie Sumner');
         assert.equal(obj.first, 'Melanie');
         assert.equal(obj.last, 'Sumner');
-        snapshot = tag.value();
+        snapshot = value(tag);
 
-        assert.equal(tag.validate(snapshot), true);
+        assert.equal(validate(tag, snapshot), true);
       }
 
       [`@test interaction with Ember object model (tracked property depending on Ember property)`](
@@ -143,30 +144,30 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
         let obj = new Tracked(tom);
 
         let tag = track(() => obj.full);
-        let snapshot = tag.value();
+        let snapshot = value(tag);
 
         assert.equal(obj.full, 'Tom Dale');
-        assert.equal(tag.validate(snapshot), true);
+        assert.equal(validate(tag, snapshot), true);
 
-        snapshot = tag.value();
-        assert.equal(tag.validate(snapshot), true);
+        snapshot = value(tag);
+        assert.equal(validate(tag, snapshot), true);
 
         set(tom, 'first', 'Thomas');
-        assert.equal(tag.validate(snapshot), false, 'invalid after setting with Ember set');
+        assert.equal(validate(tag, snapshot), false, 'invalid after setting with Ember set');
 
         assert.equal(obj.full, 'Thomas Dale');
-        snapshot = tag.value();
+        snapshot = value(tag);
 
-        assert.equal(tag.validate(snapshot), true);
+        assert.equal(validate(tag, snapshot), true);
 
         set(obj, 'name', { first: 'Ricardo', last: 'Mendes' });
 
-        assert.equal(tag.validate(snapshot), false, 'invalid after setting with Ember set');
+        assert.equal(validate(tag, snapshot), false, 'invalid after setting with Ember set');
 
         assert.equal(obj.full, 'Ricardo Mendes');
-        snapshot = tag.value();
+        snapshot = value(tag);
 
-        assert.equal(tag.validate(snapshot), true);
+        assert.equal(validate(tag, snapshot), true);
       }
 
       [`@test interaction with Ember object model (Ember computed property depending on tracked property)`](
@@ -201,26 +202,26 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
         let obj = new EmberObject(tom);
 
         let tag = tagForProperty(obj, 'full');
-        let snapshot = tag.value();
+        let snapshot = value(tag);
 
         let full = get(obj, 'full');
         assert.equal(full, 'Tom Dale');
-        assert.equal(tag.validate(snapshot), true);
+        assert.equal(validate(tag, snapshot), true);
 
-        snapshot = tag.value();
-        assert.equal(tag.validate(snapshot), true);
+        snapshot = value(tag);
+        assert.equal(validate(tag, snapshot), true);
 
         tom.first = 'Thomas';
         assert.equal(
-          tag.validate(snapshot),
+          validate(tag, snapshot),
           false,
           'invalid after setting with tracked properties'
         );
 
         assert.equal(get(obj, 'full'), 'Thomas Dale');
-        snapshot = tag.value();
+        snapshot = value(tag);
 
-        assert.equal(tag.validate(snapshot), true);
+        assert.equal(validate(tag, snapshot), true);
       }
 
       ['@test interaction with the Ember object model (paths going through tracked properties)'](
@@ -265,29 +266,29 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
         let obj = new EmberObject(contact);
 
         let tag = tagForProperty(obj, 'full');
-        let snapshot = tag.value();
+        let snapshot = value(tag);
 
         let full = get(obj, 'full');
         assert.equal(full, 'Tom Dale');
-        assert.equal(tag.validate(snapshot), true);
+        assert.equal(validate(tag, snapshot), true);
 
-        snapshot = tag.value();
-        assert.equal(tag.validate(snapshot), true);
+        snapshot = value(tag);
+        assert.equal(validate(tag, snapshot), true);
 
         set(tom, 'first', 'Thomas');
-        assert.equal(tag.validate(snapshot), false, 'invalid after setting with Ember.set');
+        assert.equal(validate(tag, snapshot), false, 'invalid after setting with Ember.set');
 
         assert.equal(get(obj, 'full'), 'Thomas Dale');
-        snapshot = tag.value();
+        snapshot = value(tag);
 
         tom = contact.name = new EmberName('T', 'Dale');
-        assert.equal(tag.validate(snapshot), false, 'invalid after setting with Ember.set');
+        assert.equal(validate(tag, snapshot), false, 'invalid after setting with Ember.set');
 
         assert.equal(get(obj, 'full'), 'T Dale');
-        snapshot = tag.value();
+        snapshot = value(tag);
 
         set(tom, 'first', 'Tizzle');
-        assert.equal(tag.validate(snapshot), false, 'invalid after setting with Ember.set');
+        assert.equal(validate(tag, snapshot), false, 'invalid after setting with Ember.set');
 
         assert.equal(get(obj, 'full'), 'Tizzle Dale');
       }
@@ -300,16 +301,16 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
         let obj = new EmberObject();
 
         let tag = tagForProperty(obj, 'array');
-        let snapshot = tag.value();
+        let snapshot = value(tag);
 
         let array = get(obj, 'array');
         assert.deepEqual(array, []);
-        assert.equal(tag.validate(snapshot), true);
+        assert.equal(validate(tag, snapshot), true);
 
         array.push(1);
         notifyPropertyChange(array, '[]');
         assert.equal(
-          tag.validate(snapshot),
+          validate(tag, snapshot),
           false,
           'invalid after pushing an object and notifying on the array'
         );
@@ -325,14 +326,14 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
         let obj = new EmberObject();
 
         let tag = tagForProperty(obj, 'emberArray');
-        let snapshot = tag.value();
+        let snapshot = value(tag);
 
         let emberArray = get(obj, 'emberArray');
-        assert.equal(tag.validate(snapshot), true);
+        assert.equal(validate(tag, snapshot), true);
 
         notifyPropertyChange(emberArray, '[]');
         assert.equal(
-          tag.validate(snapshot),
+          validate(tag, snapshot),
           false,
           'invalid after setting a property on the object'
         );

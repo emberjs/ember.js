@@ -3,7 +3,7 @@ import { inspect } from '@ember/-internals/utils';
 import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import EmberError from '@ember/error';
-import { combine } from '@glimmer/reference';
+import { combine, UpdatableTag, update, validate, value } from '@glimmer/reference';
 import { finishLazyChains, getChainTagsForKey } from './chain-tags';
 import {
   getCachedValueFor,
@@ -23,7 +23,7 @@ import { descriptorForDecorator } from './descriptor_map';
 import { defineProperty } from './properties';
 import { get } from './property_get';
 import { set } from './property_set';
-import { tagForProperty, update } from './tags';
+import { tagForProperty } from './tags';
 import { consume, untrack } from './tracked';
 
 const CONSUMED = Object.freeze({});
@@ -100,7 +100,7 @@ export class AliasedProperty extends ComputedDescriptor {
     let ret: any;
 
     if (EMBER_METAL_TRACKED_PROPERTIES) {
-      let propertyTag = tagForProperty(obj, keyName);
+      let propertyTag = tagForProperty(obj, keyName) as UpdatableTag;
 
       // We don't use the tag since CPs are not automatic, we just want to avoid
       // anything tracking while we get the altKey
@@ -110,9 +110,9 @@ export class AliasedProperty extends ComputedDescriptor {
 
       let lastRevision = getLastRevisionFor(obj, keyName);
 
-      if (!propertyTag.validate(lastRevision)) {
+      if (!validate(propertyTag, lastRevision)) {
         update(propertyTag, combine(getChainTagsForKey(obj, this.altKey)));
-        setLastRevisionFor(obj, keyName, propertyTag.value());
+        setLastRevisionFor(obj, keyName, value(propertyTag));
         finishLazyChains(obj, keyName, ret);
       }
 

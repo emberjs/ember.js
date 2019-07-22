@@ -1,5 +1,5 @@
 import { clearElementView, clearViewElement, getViewElement } from '@ember/-internals/views';
-import { Revision, VersionedReference } from '@glimmer/reference';
+import { Revision, value, VersionedReference } from '@glimmer/reference';
 import { CapturedNamedArguments } from '@glimmer/runtime';
 import { Opaque } from '@glimmer/util';
 import Environment from '../environment';
@@ -48,7 +48,7 @@ export default class ComponentStateBucket {
     public hasWrappedElement: boolean
   ) {
     this.classRef = null;
-    this.argsRevision = args === null ? 0 : args.tag.value();
+    this.argsRevision = args === null ? 0 : value(args.tag);
   }
 
   destroy() {

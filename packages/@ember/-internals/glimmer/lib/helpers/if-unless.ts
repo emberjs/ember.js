@@ -3,12 +3,12 @@
 */
 
 import { assert } from '@ember/debug';
-import { combine, CONSTANT_TAG, isConst, TagWrapper, UpdatableTag } from '@glimmer/reference';
+import { combine, createUpdatableTag, isConst, UpdatableTag, update } from '@glimmer/reference';
 import { Arguments, PrimitiveReference, VM } from '@glimmer/runtime';
 import { CachedReference, ConditionalReference } from '../utils/references';
 
 class ConditionalHelperReference extends CachedReference {
-  public branchTag: TagWrapper<UpdatableTag>;
+  public branchTag: UpdatableTag;
   public tag: any;
   public cond: any;
   public truthy: any;
@@ -30,7 +30,7 @@ class ConditionalHelperReference extends CachedReference {
   constructor(cond: any, truthy: any, falsy: any) {
     super();
 
-    this.branchTag = UpdatableTag.create(CONSTANT_TAG);
+    this.branchTag = createUpdatableTag();
     this.tag = combine([cond.tag, this.branchTag]);
 
     this.cond = cond;
@@ -41,7 +41,7 @@ class ConditionalHelperReference extends CachedReference {
   compute() {
     let branch = this.cond.value() ? this.truthy : this.falsy;
 
-    this.branchTag.inner.update(branch.tag);
+    update(this.branchTag, branch.tag);
 
     return branch.value();
   }

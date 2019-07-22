@@ -1,6 +1,6 @@
 import { DEBUG } from '@glimmer/env';
 import { ComponentCapabilities } from '@glimmer/interfaces';
-import { CONSTANT_TAG, Tag, VersionedPathReference } from '@glimmer/reference';
+import { CONSTANT_TAG, Tag, validate, value, VersionedPathReference } from '@glimmer/reference';
 import { ComponentDefinition, Invocation, WithDynamicLayout } from '@glimmer/runtime';
 import { Destroyable, Opaque, Option } from '@glimmer/util';
 
@@ -96,7 +96,7 @@ class MountManager
       bucket = { engine, controller, self, tag };
     } else {
       let model = modelRef.value();
-      let modelRev = modelRef.tag.value();
+      let modelRev = value(modelRef.tag);
       controller = controllerFactory.create({ model });
       self = new RootReference(controller);
       tag = modelRef.tag;
@@ -126,9 +126,9 @@ class MountManager
 
   update(bucket: EngineWithModelState): void {
     let { controller, modelRef, modelRev } = bucket;
-    if (!modelRef.tag.validate(modelRev!)) {
+    if (!validate(modelRef.tag, modelRev!)) {
       let model = modelRef.value();
-      bucket.modelRev = modelRef.tag.value();
+      bucket.modelRev = value(modelRef.tag);
       controller.set('model', model);
     }
   }

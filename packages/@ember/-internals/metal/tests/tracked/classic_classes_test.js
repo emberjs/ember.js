@@ -2,6 +2,7 @@ import { AbstractTestCase, moduleFor } from 'internal-test-helpers';
 import { defineProperty, tracked, track, nativeDescDecorator } from '../..';
 
 import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
+import { value, validate } from '@glimmer/reference';
 
 if (EMBER_METAL_TRACKED_PROPERTIES) {
   moduleFor(
@@ -36,24 +37,24 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
         obj.last = 'Dale';
 
         let tag = track(() => obj.full);
-        let snapshot = tag.value();
+        let snapshot = value(tag);
 
         assert.equal(obj.full, 'Tom Dale', 'The full name starts correct');
-        assert.equal(tag.validate(snapshot), true);
+        assert.equal(validate(tag, snapshot), true);
 
-        snapshot = tag.value();
-        assert.equal(tag.validate(snapshot), true);
+        snapshot = value(tag);
+        assert.equal(validate(tag, snapshot), true);
 
         obj.full = 'Melanie Sumner';
 
-        assert.equal(tag.validate(snapshot), false);
+        assert.equal(validate(tag, snapshot), false);
 
         assert.equal(obj.full, 'Melanie Sumner');
         assert.equal(obj.first, 'Melanie');
         assert.equal(obj.last, 'Sumner');
-        snapshot = tag.value();
+        snapshot = value(tag);
 
-        assert.equal(tag.validate(snapshot), true);
+        assert.equal(validate(tag, snapshot), true);
       }
 
       [`@test can pass a default value to the tracked decorator`](assert) {
