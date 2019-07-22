@@ -42,7 +42,7 @@
     "babel-plugin-debug-macros": "^0.1.11",
     "ember-cli-browserstack": "^0.0.7",
     "handlebars": "^4.0.13",
-    "simple-html-tokenizer": "^0.5.7"
+    "simple-html-tokenizer": "^0.5.8"
   },
   "devDependencies": {
     "@types/qunit": "^2.0.31",
