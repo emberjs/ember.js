@@ -6,7 +6,14 @@ import {
 } from '@ember/canary-features';
 import { assert, deprecate, warn } from '@ember/debug';
 import EmberError from '@ember/error';
-import { combine, Tag } from '@glimmer/reference';
+import {
+  combine,
+  Tag,
+  UpdatableTag,
+  update,
+  validate,
+  value as tagValue,
+} from '@glimmer/reference';
 import { finishLazyChains, getChainTagsForKeys } from './chain-tags';
 import {
   getCachedValueFor,
@@ -34,7 +41,7 @@ import { setObserverSuspended } from './observer';
 import { defineProperty } from './properties';
 import { beginPropertyChanges, endPropertyChanges, notifyPropertyChange } from './property_events';
 import { set } from './property_set';
-import { tagForProperty, update } from './tags';
+import { tagForProperty } from './tags';
 import { consume, track, untrack } from './tracked';
 
 export type ComputedPropertyGetter = (keyName: string) => any;
@@ -520,14 +527,12 @@ export class ComputedProperty extends ComputedDescriptor {
     }
 
     let cache = getCacheFor(obj);
-    let propertyTag: Tag;
-
     if (EMBER_METAL_TRACKED_PROPERTIES) {
-      propertyTag = tagForProperty(obj, keyName);
+      let propertyTag = tagForProperty(obj, keyName) as UpdatableTag;
 
       let ret;
 
-      if (cache.has(keyName) && propertyTag.validate(getLastRevisionFor(obj, keyName))) {
+      if (cache.has(keyName) && validate(propertyTag, getLastRevisionFor(obj, keyName))) {
         ret = cache.get(keyName);
       } else {
         // For backwards compatibility, we only throw if the CP has any dependencies. CPs without dependencies
@@ -562,7 +567,7 @@ export class ComputedProperty extends ComputedDescriptor {
           update(propertyTag!, upstreamTag);
         }
 
-        setLastRevisionFor(obj, keyName, propertyTag!.value());
+        setLastRevisionFor(obj, keyName, tagValue(propertyTag));
       }
 
       consume(propertyTag!);
@@ -618,13 +623,13 @@ export class ComputedProperty extends ComputedDescriptor {
 
         finishLazyChains(obj, keyName, ret);
 
-        let propertyTag = tagForProperty(obj, keyName);
+        let propertyTag = tagForProperty(obj, keyName) as UpdatableTag;
 
         if (this._dependentKeys !== undefined) {
           update(propertyTag, combine(getChainTagsForKeys(obj, this._dependentKeys)));
         }
 
-        setLastRevisionFor(obj, keyName, propertyTag.value());
+        setLastRevisionFor(obj, keyName, tagValue(propertyTag));
       } finally {
         endPropertyChanges();
       }

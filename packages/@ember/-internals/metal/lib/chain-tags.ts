@@ -1,7 +1,7 @@
 import { meta as metaFor, peekMeta } from '@ember/-internals/meta';
 import { isEmberArray } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
-import { combine, CONSTANT_TAG, Tag, UpdatableTag } from '@glimmer/reference';
+import { combine, createUpdatableTag, Tag, update, validate } from '@glimmer/reference';
 import { getLastRevisionFor, peekCacheFor } from './computed_cache';
 import { descriptorForProperty } from './descriptor_map';
 import get from './property_get';
@@ -28,7 +28,7 @@ export function finishLazyChains(obj: any, key: string, value: any) {
   for (let path in lazyTags) {
     let tag = lazyTags[path];
 
-    tag.inner.update(combine(getChainTagsForKey(value, path)));
+    update(tag, combine(getChainTagsForKey(value, path)));
 
     delete lazyTags[path];
   }
@@ -142,7 +142,7 @@ export function getChainTagsForKey(obj: any, path: string) {
     } else {
       let lastRevision = getLastRevisionFor(current, segment);
 
-      if (propertyTag.validate(lastRevision)) {
+      if (validate(propertyTag, lastRevision)) {
         if (typeof descriptor.altKey === 'string') {
           // it's an alias, so just get the altkey without tracking
           untrack(() => {
@@ -159,7 +159,7 @@ export function getChainTagsForKey(obj: any, path: string) {
         let placeholderTag = lazyChains[rest];
 
         if (placeholderTag === undefined) {
-          placeholderTag = lazyChains[rest] = UpdatableTag.create(CONSTANT_TAG);
+          placeholderTag = lazyChains[rest] = createUpdatableTag();
         }
 
         chainTags.push(placeholderTag);

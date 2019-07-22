@@ -2,10 +2,10 @@ import { isEmberArray } from '@ember/-internals/utils';
 import { EMBER_NATIVE_DECORATOR_SUPPORT } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { combine, CONSTANT_TAG, Tag } from '@glimmer/reference';
+import { combine, CONSTANT_TAG, Tag, UpdatableTag, update } from '@glimmer/reference';
 import { Decorator, DecoratorPropertyDescriptor, isElementDescriptor } from './decorator';
 import { setClassicDecorator } from './descriptor_map';
-import { markObjectAsDirty, tagForProperty, update } from './tags';
+import { markObjectAsDirty, tagForProperty } from './tags';
 
 type Option<T> = T | null;
 
@@ -196,7 +196,7 @@ function descriptorForField([_target, key, desc]: [
     configurable: true,
 
     get(): any {
-      let propertyTag = tagForProperty(this, key);
+      let propertyTag = tagForProperty(this, key) as UpdatableTag;
 
       if (CURRENT_TRACKER) CURRENT_TRACKER.add(propertyTag);
 

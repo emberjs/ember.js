@@ -5,11 +5,11 @@ import { assert } from '@ember/debug';
 import {
   AbstractIterable,
   combine,
-  CONSTANT_TAG,
+  createUpdatableTag,
   IterationItem,
   OpaqueIterator,
   Tag,
-  UpdatableTag,
+  update,
   VersionedReference,
 } from '@glimmer/reference';
 import { Opaque, Option } from '@glimmer/util';
@@ -261,7 +261,7 @@ const EMPTY_ITERATOR: OpaqueIterator = {
 
 class EachInIterable implements EmberIterable {
   public tag: Tag;
-  private valueTag = UpdatableTag.create(CONSTANT_TAG);
+  private valueTag = createUpdatableTag();
 
   constructor(private ref: VersionedReference, private keyPath: string) {
     this.tag = combine([ref.tag, this.valueTag]);
@@ -279,7 +279,7 @@ class EachInIterable implements EmberIterable {
       iterable = _contentFor(iterable);
     }
 
-    valueTag.inner.update(tag);
+    update(valueTag, tag);
 
     if (!isIndexable(iterable)) {
       return EMPTY_ITERATOR;
@@ -331,7 +331,7 @@ class EachInIterable implements EmberIterable {
 
 class EachIterable implements EmberIterable {
   public tag: Tag;
-  private valueTag = UpdatableTag.create(CONSTANT_TAG);
+  private valueTag = createUpdatableTag();
 
   constructor(private ref: VersionedReference, private keyPath: string) {
     this.tag = combine([ref.tag, this.valueTag]);
@@ -342,7 +342,7 @@ class EachIterable implements EmberIterable {
 
     let iterable = ref.value();
 
-    valueTag.inner.update(tagForProperty(iterable, '[]'));
+    update(valueTag, tagForProperty(iterable, '[]'));
 
     if (iterable === null || typeof iterable !== 'object') {
       return EMPTY_ITERATOR;

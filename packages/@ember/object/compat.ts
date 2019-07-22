@@ -7,17 +7,17 @@ import {
   setClassicDecorator,
   tagForProperty,
   track,
-  update,
 } from '@ember/-internals/metal';
 import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { assert } from '@ember/debug';
+import { UpdatableTag, update } from '@glimmer/reference';
 
 let wrapGetterSetter = function(_target: object, key: string, desc: PropertyDescriptor) {
   let { get: originalGet } = desc;
 
   if (originalGet !== undefined) {
     desc.get = function() {
-      let propertyTag = tagForProperty(this, key);
+      let propertyTag = tagForProperty(this, key) as UpdatableTag;
       let ret;
 
       let tag = track(() => {

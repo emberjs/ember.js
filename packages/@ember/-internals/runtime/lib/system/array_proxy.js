@@ -16,7 +16,7 @@ import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import EmberObject from './object';
 import { isArray, MutableArray } from '../mixins/array';
 import { assert } from '@ember/debug';
-import { combine } from '@glimmer/reference';
+import { combine, validate, value } from '@glimmer/reference';
 
 const ARRAY_OBSERVER_MAPPING = {
   willChange: '_arrangedContentArrayWillChange',
@@ -108,7 +108,7 @@ export default class ArrayProxy extends EmberObject {
     if (EMBER_METAL_TRACKED_PROPERTIES) {
       this._arrangedContentIsUpdating = false;
       this._arrangedContentTag = combine(getChainTagsForKey(this, 'arrangedContent'));
-      this._arrangedContentRevision = this._arrangedContentTag.value();
+      this._arrangedContentRevision = value(this._arrangedContentTag);
     }
 
     this._addArrangedContentArrayObsever();
@@ -313,14 +313,14 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
   _revalidate = function() {
     if (
       !this._arrangedContentIsUpdating &&
-      !this._arrangedContentTag.validate(this._arrangedContentRevision)
+      !validate(this._arrangedContentTag, this._arrangedContentRevision)
     ) {
       this._arrangedContentIsUpdating = true;
       this._updateArrangedContentArray();
       this._arrangedContentIsUpdating = false;
 
       this._arrangedContentTag = combine(getChainTagsForKey(this, 'arrangedContent'));
-      this._arrangedContentRevision = this._arrangedContentTag.value();
+      this._arrangedContentRevision = value(this._arrangedContentTag);
     }
   };
 }
