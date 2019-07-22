@@ -1,4 +1,4 @@
-import { Tag, CONSTANT_TAG, combine, TagWrapper, UpdatableDirtyableTag } from './validators';
+import { Tag, combine, update, UpdatableTag, createUpdatableTag } from './validators';
 import { Option } from '@glimmer/interfaces';
 import { getStateFor, setStateFor } from './tracked';
 import { tagFor } from './tags';
@@ -16,16 +16,20 @@ class Tracker {
     return this.tags.size;
   }
 
-  combine(): TagWrapper<UpdatableDirtyableTag> {
-    if (this.tags.size === 0) {
-      return UpdatableDirtyableTag.create(CONSTANT_TAG);
-    } else if (this.tags.size === 1) {
-      return UpdatableDirtyableTag.create(this.last!);
-    } else {
+  combine(): UpdatableTag {
+    let { tags } = this;
+    let tag = createUpdatableTag();
+
+    if (tags.size === 1) {
+      update(tag, this.last!);
+    } else if (tags.size > 1) {
       let tags: Tag[] = [];
       this.tags.forEach(tag => tags.push(tag));
-      return UpdatableDirtyableTag.create(combine(tags));
+
+      update(tag, combine(tags));
     }
+
+    return tag;
   }
 }
 
@@ -37,7 +41,7 @@ export function pushTrackFrame(): Option<Tracker> {
   return old;
 }
 
-export function popTrackFrame(old: Option<Tracker>): TagWrapper<UpdatableDirtyableTag> {
+export function popTrackFrame(old: Option<Tracker>): UpdatableTag {
   let tag = CURRENT_TRACKER!.combine();
   CURRENT_TRACKER = old;
   if (CURRENT_TRACKER) CURRENT_TRACKER.add(tag);

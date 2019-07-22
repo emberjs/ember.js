@@ -24,7 +24,7 @@ import {
   CapturedArgumentsValue,
   Option,
 } from '@glimmer/interfaces';
-import { Reference, Tag, TagWrapper, VersionedPathReference } from '@glimmer/reference';
+import { Tag, VersionedPathReference, Reference, COMPUTE } from '@glimmer/reference';
 import { ScopeImpl } from '../../environment';
 import CurryComponentReference from '../../references/curry-component';
 import {
@@ -34,7 +34,9 @@ import {
 } from '../../vm/arguments';
 import { ComponentInstance, ComponentElementOperations } from './component';
 
-export const CheckTag: Checker<Tag> = wrap(() => CheckInstanceof(TagWrapper));
+export const CheckTag: Checker<Tag> = CheckInterface({
+  [COMPUTE]: CheckFunction,
+});
 
 export const CheckOperations: Checker<Option<ComponentElementOperations>> = wrap(() =>
   CheckOption(CheckInstanceof(ComponentElementOperations))

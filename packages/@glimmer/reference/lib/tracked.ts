@@ -1,5 +1,5 @@
 import { dict } from '@glimmer/util';
-import { DirtyableTag } from './validators';
+import { createTag, dirty } from './validators';
 import { dirtyTag } from './tags';
 
 type Privates<T> = { [K in keyof T]?: Private<T[K]> };
@@ -42,14 +42,14 @@ function privateFor<O extends object, K extends keyof O>(object: O, key: K): Pri
   }
 }
 
-export const EPOCH = DirtyableTag.create();
+export const EPOCH = createTag();
 
 export function setStateFor<O extends object, K extends keyof O>(
   object: O,
   key: K,
   value: O[K]
 ): void {
-  EPOCH.inner.dirty();
+  dirty(EPOCH);
   dirtyTag(object, key);
   privateFor(object, key).set(value);
 }

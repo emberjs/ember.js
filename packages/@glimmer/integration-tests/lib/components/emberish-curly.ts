@@ -23,7 +23,8 @@ import {
 } from '@glimmer/interfaces';
 import { Attrs, AttrsDiff } from './emberish-glimmer';
 import {
-  TagWrapper,
+  createTag,
+  dirty,
   DirtyableTag,
   VersionedPathReference,
   combine,
@@ -48,7 +49,7 @@ let GUID = 1;
 export class EmberishCurlyComponent {
   public static positionalParams: string[] | string = [];
 
-  public dirtinessTag: TagWrapper<DirtyableTag> = DirtyableTag.create();
+  public dirtinessTag: DirtyableTag = createTag();
   public layout!: { name: string; handle: number };
   public name!: string;
   public tagName: Option<string> = null;
@@ -85,11 +86,11 @@ export class EmberishCurlyComponent {
     }
 
     SELF_REF.get(this)!.dirty();
-    this.dirtinessTag.inner.dirty();
+    dirty(this.dirtinessTag);
   }
 
   recompute() {
-    this.dirtinessTag.inner.dirty();
+    dirty(this.dirtinessTag);
   }
 
   destroy() {}

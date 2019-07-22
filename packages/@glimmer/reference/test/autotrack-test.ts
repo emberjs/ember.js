@@ -1,13 +1,22 @@
-import { UpdatableDirtyableTag, CONSTANT_TAG, Tag, State, tagFor } from '@glimmer/reference';
+import {
+  dirty,
+  value,
+  validate,
+  createUpdatableTag,
+  CONSTANT_TAG,
+  Tag,
+  State,
+  tagFor,
+} from '@glimmer/reference';
 import { unwrap } from '@glimmer/util';
 import { tracked } from './support';
 
 function unrelatedBump(tag: Tag, snapshot: number) {
-  let t = UpdatableDirtyableTag.create(CONSTANT_TAG);
-  t.inner.dirty();
+  let t = createUpdatableTag();
+  dirty(t);
 
   QUnit.assert.strictEqual(
-    tag.validate(snapshot),
+    validate(tag, snapshot),
     true,
     'tag is still valid after an unrelated bump'
   );
@@ -72,26 +81,22 @@ QUnit.test('can request a tag for a property', assert => {
 
   let tag = firstName.tag;
 
-  let snapshot = tag.value();
-  assert.ok(tag.validate(snapshot), 'tag should be valid to start');
+  let snapshot = value(tag);
+  assert.ok(validate(tag, snapshot), 'tag should be valid to start');
 
   obj.firstName = 'Edsger';
-  assert.strictEqual(tag.validate(snapshot), false, 'tag is invalidated after property is set');
-  snapshot = tag.value();
-  assert.strictEqual(tag.validate(snapshot), true, 'tag is valid on the second check');
+  assert.strictEqual(validate(tag, snapshot), false, 'tag is invalidated after property is set');
+  snapshot = value(tag);
+  assert.strictEqual(validate(tag, snapshot), true, 'tag is valid on the second check');
 
   unrelatedBump(tag, snapshot);
 });
 
 QUnit.skip('can request a tag for non-objects and get a CONSTANT_TAG', assert => {
-  let snapshot = CONSTANT_TAG.value();
+  let snapshot = value(CONSTANT_TAG);
 
   function hasConstChildren(value: unknown) {
-    assert.ok(
-      State(value)
-        .get('foo')
-        .tag.validate(snapshot)
-    );
+    assert.ok(validate(State(value).get('foo').tag, snapshot));
   }
 
   hasConstChildren(null);
@@ -113,10 +118,10 @@ QUnit.test('can request a tag from a frozen POJO', assert => {
   assert.strictEqual(obj.firstName, 'Toran');
 
   let tag = unwrap(tagFor(obj, 'firstName'));
-  let snapshot = tag.value();
-  assert.ok(tag.validate(snapshot), 'tag should be valid to start');
-  snapshot = tag.value();
-  assert.strictEqual(tag.validate(snapshot), true, 'tag is still valid');
+  let snapshot = value(tag);
+  assert.ok(validate(tag, snapshot), 'tag should be valid to start');
+  snapshot = value(tag);
+  assert.strictEqual(validate(tag, snapshot), true, 'tag is still valid');
 
   unrelatedBump(tag, snapshot);
 });
@@ -135,17 +140,17 @@ QUnit.test('can request a tag from a frozen class instance', assert => {
 
   // Explicitly annotated tracked properties
   let tag = tagFor(obj, 'firstName');
-  let snapshot = tag.value();
-  assert.ok(tag.validate(snapshot), 'tag should be valid to start');
-  snapshot = tag.value();
-  assert.strictEqual(tag.validate(snapshot), true, 'tag is still valid');
+  let snapshot = value(tag);
+  assert.ok(validate(tag, snapshot), 'tag should be valid to start');
+  snapshot = value(tag);
+  assert.strictEqual(validate(tag, snapshot), true, 'tag is still valid');
 
   // Non-tracked data properties
   tag = tagFor(obj, 'lastName');
-  snapshot = tag.value();
-  assert.ok(tag.validate(snapshot), 'tag should be valid to start');
-  snapshot = tag.value();
-  assert.strictEqual(tag.validate(snapshot), true, 'tag is still valid');
+  snapshot = value(tag);
+  assert.ok(validate(tag, snapshot), 'tag should be valid to start');
+  snapshot = value(tag);
+  assert.strictEqual(validate(tag, snapshot), true, 'tag is still valid');
 
   unrelatedBump(tag, snapshot);
 });
@@ -164,10 +169,10 @@ QUnit.test('can request a tag from an instance of a frozen class', assert => {
   assert.strictEqual(obj.firstName, 'Toran');
 
   let tag = tagFor(obj, 'firstName');
-  let snapshot = tag.value();
-  assert.ok(tag.validate(snapshot), 'tag should be valid to start');
-  snapshot = tag.value();
-  assert.strictEqual(tag.validate(snapshot), true, 'tag is still valid');
+  let snapshot = value(tag);
+  assert.ok(validate(tag, snapshot), 'tag should be valid to start');
+  snapshot = value(tag);
+  assert.strictEqual(validate(tag, snapshot), true, 'tag is still valid');
 
   unrelatedBump(tag, snapshot);
 });
@@ -201,29 +206,29 @@ QUnit.test('can track a computed property', assert => {
   assert.strictEqual(first.value(), 'Tom1');
 
   let tag = first.tag;
-  let snapshot = tag.value();
-  assert.ok(tag.validate(snapshot), 'tag should be valid to start');
+  let snapshot = value(tag);
+  assert.ok(validate(tag, snapshot), 'tag should be valid to start');
 
   assert.strictEqual(obj.firstName, 'Tom2');
   assert.equal(
-    tag.validate(snapshot),
+    validate(tag, snapshot),
     false,
     'reading from property invalidates the tag because it mutated a child cell'
   );
 
   obj.firstName = 'Edsger';
-  assert.strictEqual(tag.validate(snapshot), false, 'tag is invalidated after property is set');
-  snapshot = tag.value();
+  assert.strictEqual(validate(tag, snapshot), false, 'tag is invalidated after property is set');
+  snapshot = value(tag);
 
   unrelatedBump(tag, snapshot);
 
   assert.strictEqual(obj.firstName, 'Edsger3');
   assert.strictEqual(
-    tag.validate(snapshot),
+    validate(tag, snapshot),
     false,
     'tag is invalid, since reading always recomputes the tags'
   );
-  snapshot = tag.value();
+  snapshot = value(tag);
 
   unrelatedBump(tag, snapshot);
 });
@@ -262,25 +267,25 @@ QUnit.test(
     assert.strictEqual(fullName.value(), 'Tom Dale', `the fullName field is valid`);
 
     let tag = salutation.tag;
-    let snapshot = tag.value();
-    assert.ok(tag.validate(snapshot), 'tag should be valid to start');
+    let snapshot = value(tag);
+    assert.ok(validate(tag, snapshot), 'tag should be valid to start');
 
     obj.firstName = 'Edsger';
     obj.lastName = 'Dijkstra';
     assert.strictEqual(
-      tag.validate(snapshot),
+      validate(tag, snapshot),
       false,
       'tag is invalidated after chained dependency is set'
     );
     assert.strictEqual(obj.fullName, 'Edsger Dijkstra');
     assert.strictEqual(obj.salutation, 'Hello, Edsger Dijkstra!');
 
-    snapshot = tag.value();
-    assert.strictEqual(tag.validate(snapshot), true);
+    snapshot = value(tag);
+    assert.strictEqual(validate(tag, snapshot), true);
 
     obj.fullName = 'Alan Kay';
     assert.strictEqual(
-      tag.validate(snapshot),
+      validate(tag, snapshot),
       false,
       'tag is invalidated after chained dependency is set'
     );
@@ -289,8 +294,8 @@ QUnit.test(
     assert.strictEqual(obj.lastName, 'Kay');
     assert.strictEqual(obj.salutation, 'Hello, Alan Kay!');
 
-    snapshot = tag.value();
-    assert.strictEqual(tag.validate(snapshot), true);
+    snapshot = value(tag);
+    assert.strictEqual(validate(tag, snapshot), true);
 
     unrelatedBump(tag, snapshot);
   }
@@ -351,25 +356,25 @@ QUnit.test('nested @tracked in multiple objects', assert => {
   let person = obj.person;
 
   let tag = contact.tag;
-  let snapshot = tag.value();
-  assert.ok(tag.validate(snapshot), 'tag should be valid to start');
+  let snapshot = value(tag);
+  assert.ok(validate(tag, snapshot), 'tag should be valid to start');
 
   person.firstName = 'Edsger';
   person.lastName = 'Dijkstra';
   assert.strictEqual(
-    tag.validate(snapshot),
+    validate(tag, snapshot),
     false,
     'tag is invalidated after nested dependency is set'
   );
   assert.strictEqual(person.fullName, 'Edsger Dijkstra');
   assert.strictEqual(obj.contact, 'Edsger Dijkstra @ tom@example.com');
 
-  snapshot = tag.value();
-  assert.strictEqual(tag.validate(snapshot), true);
+  snapshot = value(tag);
+  assert.strictEqual(validate(tag, snapshot), true);
 
   person.fullName = 'Alan Kay';
   assert.strictEqual(
-    tag.validate(snapshot),
+    validate(tag, snapshot),
     false,
     'tag is invalidated after chained dependency is set'
   );
@@ -378,12 +383,12 @@ QUnit.test('nested @tracked in multiple objects', assert => {
   assert.strictEqual(person.lastName, 'Kay');
   assert.strictEqual(obj.contact, 'Alan Kay @ tom@example.com');
 
-  snapshot = tag.value();
-  assert.strictEqual(tag.validate(snapshot), true);
+  snapshot = value(tag);
+  assert.strictEqual(validate(tag, snapshot), true);
 
   obj.email = 'alan@example.com';
   assert.strictEqual(
-    tag.validate(snapshot),
+    validate(tag, snapshot),
     false,
     'tag is invalidated after chained dependency is set'
   );
@@ -392,8 +397,8 @@ QUnit.test('nested @tracked in multiple objects', assert => {
   assert.strictEqual(person.lastName, 'Kay');
   assert.strictEqual(obj.contact, 'Alan Kay @ alan@example.com');
 
-  snapshot = tag.value();
-  assert.strictEqual(tag.validate(snapshot), true);
+  snapshot = value(tag);
+  assert.strictEqual(validate(tag, snapshot), true);
 
   unrelatedBump(tag, snapshot);
 });
