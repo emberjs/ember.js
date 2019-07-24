@@ -1,35 +1,12 @@
 'use strict';
 
-const fs = require('fs');
-const ts = require('./typescript');
-
+const requireEsm = require('esm')(module);
 function getFeatures() {
-  let fileName = 'packages/@ember/canary-features/index.ts';
-  let fileContents = fs.readFileSync(fileName).toString();
-
-  let sourceFile = ts.createSourceFile(
-    fileName,
-    fileContents,
-    ts.ScriptTarget.ES2017,
-    /*setParentNodes */ true
+  const { default: features } = requireEsm(
+    '../packages/@ember/canary-features/default-features.js'
   );
 
-  let features;
-
-  ts.forEachChild(sourceFile, processVariableDeclarations);
-
-  function processVariableDeclarations(node) {
-    if (node.kind === ts.SyntaxKind.VariableDeclaration && node.name.text === 'DEFAULT_FEATURES') {
-      let featuresText = node.initializer.getFullText();
-      features = new Function(`return ${featuresText}`)();
-      return;
-    }
-
-    ts.forEachChild(node, processVariableDeclarations);
-  }
-
   let featureName;
-
   if (process.env.BUILD_TYPE === 'alpha') {
     for (featureName in features) {
       if (features[featureName] === null) {

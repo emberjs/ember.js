@@ -12,19 +12,8 @@ import { assign } from '@ember/polyfills';
   @public
 */
 
-export const DEFAULT_FEATURES = {
-  EMBER_LIBRARIES_ISREGISTERED: null,
-  EMBER_IMPROVED_INSTRUMENTATION: null,
-  EMBER_MODULE_UNIFICATION: false,
-  EMBER_METAL_TRACKED_PROPERTIES: true,
-  EMBER_GLIMMER_FORWARD_MODIFIERS_WITH_SPLATTRIBUTES: true,
-  EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS: true,
-  EMBER_NATIVE_DECORATOR_SUPPORT: true,
-  EMBER_GLIMMER_FN_HELPER: true,
-  EMBER_CUSTOM_COMPONENT_ARG_PROXY: true,
-  EMBER_FRAMEWORK_OBJECT_OWNER_ARGUMENT: true,
-  EMBER_GLIMMER_SET_COMPONENT_TEMPLATE: null,
-};
+import { default: DEFAULT_FEATURES } from '@ember/canary-features/default-features';
+export const DEFAULT_FEATURES;
 
 /**
   The hash of enabled Canary features. Add to this, any canary features
