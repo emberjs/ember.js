@@ -4,7 +4,6 @@ export type DebugFunctionOptions = object;
 export type DebugFunction = (message: string, test: Test, options: DebugFunctionOptions) => void;
 
 export interface DebugEnv {
-  runningProdBuild: boolean;
   getDebugFunction(name: string): DebugFunction;
   setDebugFunction(name: string, func: DebugFunction): void;
 }

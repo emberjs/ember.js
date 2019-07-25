@@ -1,4 +1,4 @@
-/*globals EmberDev */
+import { DEBUG } from '@glimmer/env';
 
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 
@@ -46,7 +46,7 @@ moduleFor(
     }
 
     ['@test log class generation if logging enabled'](assert) {
-      if (EmberDev && EmberDev.runningProdBuild) {
+      if (!DEBUG) {
         assert.ok(true, 'Logging does not occur in production builds');
         return;
       }
@@ -57,7 +57,7 @@ moduleFor(
     }
 
     ['@test actively generated classes get logged'](assert) {
-      if (EmberDev && EmberDev.runningProdBuild) {
+      if (!DEBUG) {
         assert.ok(true, 'Logging does not occur in production builds');
         return;
       }
@@ -125,7 +125,7 @@ moduleFor(
     }
 
     [`@test log when template and view are missing when flag is active`](assert) {
-      if (EmberDev && EmberDev.runningProdBuild) {
+      if (!DEBUG) {
         assert.ok(true, 'Logging does not occur in production builds');
         return;
       }
