@@ -12,7 +12,7 @@ import { assign } from '@ember/polyfills';
   @public
 */
 
-import { default: DEFAULT_FEATURES } from '@ember/canary-features/default-features';
+import DEFAULT_FEATURES from '@ember/canary-features/default-features';
 export const DEFAULT_FEATURES;
 
 /**
