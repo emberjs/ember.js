@@ -12,8 +12,8 @@ import { assign } from '@ember/polyfills';
   @public
 */
 
-import DEFAULT_FEATURES from '@ember/canary-features/default-features';
-export const DEFAULT_FEATURES;
+import defaultFeatures from '@ember/canary-features/default-features';
+export const DEFAULT_FEATURES = defaultFeatures;
 
 /**
   The hash of enabled Canary features. Add to this, any canary features
