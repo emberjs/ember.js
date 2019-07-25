@@ -12,7 +12,9 @@ import { assign } from '@ember/polyfills';
   @public
 */
 
-import defaultFeatures from '@ember/canary-features/default-features';
+export { default as DEFAULT_FEATURES } from './default-features';
+
+import DEFAULT_FEATURES from './default-features';
 
 /**
   The hash of enabled Canary features. Add to this, any canary features
