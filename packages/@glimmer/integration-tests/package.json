@@ -18,7 +18,7 @@
     "@simple-dom/document": "^1.4.0",
     "@simple-dom/serializer": "^1.4.0",
     "@simple-dom/void-map": "^1.4.0",
-    "simple-html-tokenizer": "^0.5.7"
+    "simple-html-tokenizer": "^0.5.8"
   },
   "devDependencies": {
     "@types/qunit": "^2.0.31",
