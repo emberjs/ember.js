@@ -1,4 +1,4 @@
-/* globals EmberDev */
+import { DEBUG } from '@glimmer/env';
 
 import { RenderingTestCase, moduleFor, runDestroy, runTask } from 'internal-test-helpers';
 import { Helper } from '@ember/-internals/glimmer';
@@ -663,7 +663,7 @@ moduleFor(
   }
 );
 
-if (!EmberDev.runningProdBuild) {
+if (DEBUG) {
   class HelperMutatingArgsTests extends RenderingTestCase {
     buildCompute() {
       return (params, hash) => {

@@ -175,7 +175,7 @@ moduleFor(
       this.$('#is-done').trigger('click');
     }
 
-    ['@test delegated event listeners work for mouseEnter/Leave'](assert) {
+    ['@test [DEPRECATED] delegated event listeners work for mouseEnter/Leave'](assert) {
       let receivedEnterEvents = [];
       let receivedLeaveEvents = [];
 
@@ -191,7 +191,10 @@ moduleFor(
         template: `<div id="inner"></div>`,
       });
 
-      this.render(`{{x-foo id="outer"}}`);
+      expectDeprecation(
+        () => this.render(`{{x-foo id="outer"}}`),
+        /Using `mouse(Enter|Leave)` event handler methods in components has been deprecated./
+      );
 
       let parent = this.element;
       let outer = this.$('#outer')[0];
@@ -230,7 +233,7 @@ moduleFor(
       assert.strictEqual(receivedLeaveEvents[0].target, outer);
     }
 
-    ['@test delegated event listeners work for mouseEnter on SVG elements'](assert) {
+    ['@test [DEPRECATED] delegated event listeners work for mouseEnter on SVG elements'](assert) {
       let receivedEnterEvents = [];
       let receivedLeaveEvents = [];
 
@@ -247,7 +250,10 @@ moduleFor(
         template: `<g id="inner"></g>`,
       });
 
-      this.render(`{{x-foo id="outer"}}`);
+      expectDeprecation(
+        () => this.render(`{{x-foo id="outer"}}`),
+        /Using `mouse(Enter|Leave)` event handler methods in components has been deprecated./
+      );
 
       let parent = this.element;
       let outer = this.$('#outer')[0];
@@ -286,7 +292,9 @@ moduleFor(
       assert.strictEqual(receivedLeaveEvents[0].target, outer);
     }
 
-    ['@test delegated event listeners work for mouseEnter/Leave with skipped events'](assert) {
+    ['@test [DEPRECATED] delegated event listeners work for mouseEnter/Leave with skipped events'](
+      assert
+    ) {
       let receivedEnterEvents = [];
       let receivedLeaveEvents = [];
 
@@ -302,7 +310,10 @@ moduleFor(
         template: `<div id="inner"></div>`,
       });
 
-      this.render(`{{x-foo id="outer"}}`);
+      expectDeprecation(
+        () => this.render(`{{x-foo id="outer"}}`),
+        /Using `mouse(Enter|Leave)` event handler methods in components has been deprecated./
+      );
 
       let parent = this.element;
       let outer = this.$('#outer')[0];
@@ -327,7 +338,7 @@ moduleFor(
       assert.strictEqual(receivedLeaveEvents[0].target, inner);
     }
 
-    ['@test delegated event listeners work for mouseEnter/Leave with skipped events and subcomponent'](
+    ['@test [DEPRECATED] delegated event listeners work for mouseEnter/Leave with skipped events and subcomponent'](
       assert
     ) {
       let receivedEnterEvents = [];
@@ -350,7 +361,10 @@ moduleFor(
         template: ``,
       });
 
-      this.render(`{{#x-outer id="outer"}}{{x-inner id="inner"}}{{/x-outer}}`);
+      expectDeprecation(
+        () => this.render(`{{#x-outer id="outer"}}{{x-inner id="inner"}}{{/x-outer}}`),
+        /Using `mouse(Enter|Leave)` event handler methods in components has been deprecated./
+      );
 
       let parent = this.element;
       let outer = this.$('#outer')[0];
@@ -374,6 +388,28 @@ moduleFor(
 
       assert.equal(receivedLeaveEvents.length, 1, 'mouseleave event was triggered');
       assert.strictEqual(receivedLeaveEvents[0].target, inner);
+    }
+
+    ['@test [DEPRECATED] supports mouseMove events'](assert) {
+      let receivedEvent;
+
+      this.registerComponent('x-foo', {
+        ComponentClass: Component.extend({
+          mouseMove(event) {
+            receivedEvent = event;
+          },
+        }),
+        template: `<div id="inner"></div>`,
+      });
+
+      expectDeprecation(
+        'Using `mouseMove` event handler methods in components has been deprecated.'
+      );
+
+      this.render(`{{x-foo}}`);
+
+      runTask(() => this.$('#inner').trigger('mousemove'));
+      assert.ok(receivedEvent, 'mousemove event was triggered');
     }
   }
 );

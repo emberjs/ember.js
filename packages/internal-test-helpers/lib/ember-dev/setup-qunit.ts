@@ -24,9 +24,8 @@ declare global {
   }
 }
 
-export default function setupQUnit({ runningProdBuild }: { runningProdBuild: boolean }) {
+export default function setupQUnit() {
   let env = {
-    runningProdBuild,
     getDebugFunction,
     setDebugFunction,
   } as DebugEnv;
