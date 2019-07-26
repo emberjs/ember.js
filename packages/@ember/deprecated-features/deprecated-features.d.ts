@@ -8,3 +8,4 @@ export declare const JQUERY_INTEGRATION: boolean;
 export declare const ALIAS_METHOD: boolean;
 export declare const APP_CTRL_ROUTER_PROPS: boolean;
 export declare const FUNCTION_PROTOTYPE_EXTENSIONS: boolean;
+export declare const MOUSE_ENTER_LEAVE_MOVE_EVENTS: boolean;
