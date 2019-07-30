@@ -1,4 +1,4 @@
-import { consume } from '@ember/-internals/metal';
+import { ARGS_PROXY_TAGS, consume } from '@ember/-internals/metal';
 import { Factory } from '@ember/-internals/owner';
 import { HAS_NATIVE_PROXY } from '@ember/-internals/utils';
 import { OwnedTemplateMeta } from '@ember/-internals/views';
@@ -169,12 +169,32 @@ export default class CustomComponentManager<ComponentInstance>
       if (HAS_NATIVE_PROXY) {
         let handler: ProxyHandler<{}> = {
           get(_target, prop) {
-            assert('args can only be strings', typeof prop === 'string');
+            if (capturedArgs.named.has(prop as string)) {
+              let ref = capturedArgs.named.get(prop as string);
+              consume(ref.tag);
 
-            let ref = capturedArgs.named.get(prop as string);
-            consume(ref.tag);
+              return ref.value();
+            }
+          },
 
-            return ref.value();
+          has(_target, prop) {
+            return capturedArgs.named.has(prop as string);
+          },
+
+          ownKeys(_target) {
+            return capturedArgs.named.names;
+          },
+
+          getOwnPropertyDescriptor(_target, prop) {
+            assert(
+              'args proxies do not have real property descriptors, so you should never need to call getOwnPropertyDescriptor yourself. This code exists for enumerability, such as in for-in loops and Object.keys()',
+              capturedArgs.named.has(prop as string)
+            );
+
+            return {
+              enumerable: true,
+              configurable: true,
+            };
           },
         };
 
@@ -194,6 +214,8 @@ export default class CustomComponentManager<ComponentInstance>
       } else {
         capturedArgs.named.names.forEach(name => {
           Object.defineProperty(namedArgsProxy, name, {
+            enumerable: true,
+            configurable: true,
             get() {
               let ref = capturedArgs.named.get(name);
               consume(ref.tag);
@@ -203,6 +225,8 @@ export default class CustomComponentManager<ComponentInstance>
           });
         });
       }
+
+      ARGS_PROXY_TAGS.set(namedArgsProxy, capturedArgs.named);
 
       value = {
         named: namedArgsProxy,

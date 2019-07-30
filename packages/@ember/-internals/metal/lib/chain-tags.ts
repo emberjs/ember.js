@@ -8,6 +8,8 @@ import get from './property_get';
 import { tagForProperty } from './tags';
 import { track } from './tracked';
 
+export const ARGS_PROXY_TAGS = new WeakMap();
+
 export function finishLazyChains(obj: any, key: string, value: any) {
   let meta = peekMeta(obj);
   let lazyTags = meta !== null ? meta.readableLazyChainsFor(key) : undefined;
@@ -48,6 +50,13 @@ export function getChainTagsForKey(obj: any, key: string) {
   let segment: string, descriptor: any;
 
   while (segments.length > 0) {
+    let currentType = typeof current;
+
+    if (current === null || (currentType !== 'object' && currentType !== 'function')) {
+      // we've hit the end of the chain for now, break out
+      break;
+    }
+
     segment = segments.shift()!;
 
     if (segment === '@each' && segments.length > 0) {
@@ -75,6 +84,26 @@ export function getChainTagsForKey(obj: any, key: string) {
       assert(`When using @each, you can only chain one property level deep`, segments.length === 0);
 
       break;
+    }
+
+    if (segment === 'args' && ARGS_PROXY_TAGS.has(current.args)) {
+      assert(
+        `When watching the 'args' on a GlimmerComponent, you must watch a value on the args. You cannot watch the object itself, as it never changes.`,
+        segments.length > 0
+      );
+
+      segment = segments.shift()!;
+
+      let namedArgs = ARGS_PROXY_TAGS.get(current.args);
+      let ref = namedArgs.get(segment);
+
+      chainTags.push(ref.tag);
+
+      if (segments.length > 0) {
+        current = ref.value();
+        segment = segments.shift()!;
+        continue;
+      }
     }
 
     let propertyTag = tagForProperty(current, segment);
@@ -114,13 +143,6 @@ export function getChainTagsForKey(obj: any, key: string) {
 
         break;
       }
-    }
-
-    let currentType = typeof current;
-
-    if (current === null || (currentType !== 'object' && currentType !== 'function')) {
-      // we've hit the end of the chain for now, break out
-      break;
     }
   }
 

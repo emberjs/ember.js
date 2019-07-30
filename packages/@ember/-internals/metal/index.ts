@@ -48,7 +48,7 @@ export {
 } from './lib/descriptor_map';
 export { watchKey, unwatchKey } from './lib/watch_key';
 export { ChainNode, finishChains, removeChainWatcher } from './lib/chains';
-export { getChainTagsForKey } from './lib/chain-tags';
+export { getChainTagsForKey, ARGS_PROXY_TAGS } from './lib/chain-tags';
 export { watchPath, unwatchPath } from './lib/watch_path';
 export { isWatching, unwatch, watch, watcherCount } from './lib/watching';
 export { default as libraries, Libraries } from './lib/libraries';
