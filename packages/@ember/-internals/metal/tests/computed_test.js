@@ -604,6 +604,23 @@ moduleFor(
 
       expectAssertion(() => get(obj, 'foo'), message);
     }
+
+    ['@test does not throw an assertion if an uncached `get` is called on computed without dependencies after object is destroyed'](
+      assert
+    ) {
+      let meta = metaFor(obj);
+      defineProperty(
+        obj,
+        'foo',
+        computed(function() {
+          return 'baz';
+        })
+      );
+
+      meta.destroy();
+
+      assert.equal(get(obj, 'foo'), 'baz', 'CP calculated successfully');
+    }
   }
 );
 
