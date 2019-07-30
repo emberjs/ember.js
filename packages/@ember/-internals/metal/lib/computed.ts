@@ -543,7 +543,7 @@ export class ComputedProperty extends ComputedDescriptor {
     if (EMBER_METAL_TRACKED_PROPERTIES) {
       assert(
         `Attempted to access the computed ${obj}.${keyName} on a destroyed object, which is not allowed`,
-        !metaFor(obj).isMetaDestroyed()
+        this._dependentKeys === undefined || !metaFor(obj).isMetaDestroyed()
       );
 
       // Create a tracker that absorbs any trackable actions inside the CP
