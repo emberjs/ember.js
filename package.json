@@ -73,7 +73,8 @@
     "ember-router-generator": "^1.2.3",
     "inflection": "^1.12.0",
     "jquery": "^3.4.1",
-    "resolve": "^1.11.1"
+    "resolve": "^1.11.1",
+    "silent-error": "^1.1.1"
   },
   "devDependencies": {
     "@babel/helper-module-imports": "^7.0.0",
