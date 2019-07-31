@@ -4,6 +4,7 @@ import {
   EMBER_GLIMMER_SET_COMPONENT_TEMPLATE,
   EMBER_MODULE_UNIFICATION,
 } from '@ember/canary-features';
+import { HAS_NATIVE_SYMBOL } from '@ember/-internals/utils';
 
 import { Component, compile } from '../../utils/helpers';
 import { setComponentTemplate, getComponentTemplate } from '../../..';
@@ -74,9 +75,11 @@ if (EMBER_GLIMMER_SET_COMPONENT_TEMPLATE) {
             setComponentTemplate(compile('foo'), 'foo');
           }, /Cannot call `setComponentTemplate` on `foo`/);
 
-          expectAssertion(() => {
-            setComponentTemplate(compile('foo'), Symbol('foo'));
-          }, /Cannot call `setComponentTemplate` on `Symbol\(foo\)`/);
+          if (HAS_NATIVE_SYMBOL) {
+            expectAssertion(() => {
+              setComponentTemplate(compile('foo'), Symbol('foo'));
+            }, /Cannot call `setComponentTemplate` on `Symbol\(foo\)`/);
+          }
         }
 
         '@test calling it twice on the same object asserts'() {
