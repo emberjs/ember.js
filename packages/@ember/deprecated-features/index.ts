@@ -1,1 +1,1 @@
-export * from './deprecated-features';
+export * from './index.js';
