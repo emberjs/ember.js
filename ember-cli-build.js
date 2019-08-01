@@ -29,7 +29,6 @@ const {
   dagES,
   routeRecognizerES,
   glimmerTrees,
-  nodeModuleUtils,
   emberVersionES,
   emberLicense,
   nodeTests,
@@ -43,7 +42,6 @@ let debugTree = BroccoliDebug.buildDebugCallback('ember-source:ember-cli-build')
 
 module.exports = function() {
   let loader = internalLoader();
-  let nodeModule = nodeModuleUtils();
 
   // generate "loose" ES<latest> modules...
   let dependenciesES = new MergeTrees([
@@ -80,7 +78,7 @@ module.exports = function() {
   let emberEnvFlagsDebug = toNamedAMD(buildEmberEnvFlagsES({ DEBUG: true }));
 
   let pkgAndTestESBundleDebug = concat(
-    new MergeTrees([pkgAndTestESInAMD, loader, nodeModule, emberEnvFlagsDebug]),
+    new MergeTrees([pkgAndTestESInAMD, loader, emberEnvFlagsDebug]),
     {
       headerFiles: ['loader.js'],
       inputFiles: ['**/*.js'],
@@ -214,6 +212,7 @@ function buildBundles(packagesES, dependenciesES, templateCompilerDependenciesES
         'ember/version.js',
         'ember-babel.js',
         'ember-template-compiler/**',
+        'node-module/**',
       ],
     }),
     templateCompilerDependenciesDevES,
@@ -267,7 +266,7 @@ function buildBundles(packagesES, dependenciesES, templateCompilerDependenciesES
   }
 
   // Files that are prebuilt and should not be AMD transformed
-  let vendor = [internalLoader(), nodeModuleUtils(), emberLicense()];
+  let vendor = [internalLoader(), emberLicense()];
 
   let emberProdBundle = emberProdFiles && buildBundle('ember.prod.js', emberProdFiles, vendor);
   let emberMinBundle =

@@ -541,9 +541,11 @@ export class ComputedProperty extends ComputedDescriptor {
     let ret;
 
     if (EMBER_METAL_TRACKED_PROPERTIES) {
+      // For backwards compatibility, we only throw if the CP has any dependencies. CPs without dependencies
+      // should be allowed, even after the object has been destroyed, which is why we check _dependentKeys.
       assert(
         `Attempted to access the computed ${obj}.${keyName} on a destroyed object, which is not allowed`,
-        !metaFor(obj).isMetaDestroyed()
+        this._dependentKeys === undefined || !metaFor(obj).isMetaDestroyed()
       );
 
       // Create a tracker that absorbs any trackable actions inside the CP

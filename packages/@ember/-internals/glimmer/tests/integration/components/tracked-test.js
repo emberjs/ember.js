@@ -485,6 +485,68 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
           assert.equal(outerRenderCount, 2, 'outer component updates based on context');
           assert.equal(innerRenderCount, 3, 'inner component updates based on outer component');
         }
+
+        '@test computed properties can depend on args'() {
+          class TestComponent extends GlimmerishComponent {
+            @computed('args.text')
+            get text() {
+              return this.args.text;
+            }
+          }
+
+          this.registerComponent('test', {
+            ComponentClass: TestComponent,
+            template: '<p>{{this.text}}</p>',
+          });
+
+          this.render('<Test @text={{this.text}}/>', {
+            text: 'hello!',
+          });
+
+          this.assertText('hello!');
+
+          runTask(() => this.context.set('text', 'hello world!'));
+          this.assertText('hello world!');
+
+          runTask(() => this.context.set('text', 'hello!'));
+          this.assertText('hello!');
+        }
+
+        '@test named args are enumerable'() {
+          class TestComponent extends GlimmerishComponent {
+            get objectKeys() {
+              return Object.keys(this.args).join('');
+            }
+
+            get hasArg() {
+              return 'text' in this.args;
+            }
+          }
+
+          this.registerComponent('test', {
+            ComponentClass: TestComponent,
+            template: '<p>{{this.objectKeys}} {{this.hasArg}}</p>',
+          });
+
+          this.render('<Test @text={{this.text}}/>', {
+            text: 'hello!',
+          });
+
+          this.assertText('text true');
+        }
+
+        '@test each-in works with args'() {
+          this.registerComponent('test', {
+            ComponentClass: class extends GlimmerishComponent {},
+            template: '{{#each-in this.args as |key value|}}{{key}}:{{value}}{{/each-in}}',
+          });
+
+          this.render('<Test @text={{this.text}}/>', {
+            text: 'hello!',
+          });
+
+          this.assertText('text:hello!');
+        }
       }
     );
   }

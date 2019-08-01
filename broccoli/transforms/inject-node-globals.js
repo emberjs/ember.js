@@ -6,7 +6,9 @@ function injectNodeGlobals({ types: t }) {
     name: 'inject require',
     visitor: {
       Program: {
-        enter(path) {
+        enter(path, state) {
+          if (state.file.opts.filename.match(/node-module\/index.js/)) return;
+
           requireId = path.scope.globals.require;
           moduleId = path.scope.globals.module;
 
