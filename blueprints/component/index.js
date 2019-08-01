@@ -14,12 +14,10 @@ const OCTANE = process.env.EMBER_VERSION === 'octane';
 // TODO: this should be reading from the @ember/canary-features module
 // need to refactor broccoli/features.js to be able to work more similarly
 // to https://github.com/emberjs/data/pull/6231
-const EMBER_GLIMMER_SET_COMPONENT_TEMPLATE = OCTANE;
+const EMBER_GLIMMER_SET_COMPONENT_TEMPLATE = true;
 
 // intentionally avoiding use-edition-detector
 module.exports = {
-  EMBER_GLIMMER_SET_COMPONENT_TEMPLATE,
-
   description: 'Generates a component.',
 
   availableOptions: [
