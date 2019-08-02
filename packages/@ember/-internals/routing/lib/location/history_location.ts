@@ -129,7 +129,7 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
     let url = path
       .replace(new RegExp(`^${baseURL}(?=/|$)`), '')
       .replace(new RegExp(`^${rootURL}(?=/|$)`), '')
-      .replace(/\/\/$/g, '/'); // remove extra slashes
+      .replace(/\/\//g, '/'); // remove extra slashes
 
     let search = location.search || '';
     url += search + this.getHash();

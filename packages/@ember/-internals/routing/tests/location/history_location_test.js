@@ -288,15 +288,15 @@ moduleFor(
       HistoryTestLocation.reopen({
         init() {
           this._super(...arguments);
-          let location = mockBrowserLocation('//');
-          location.pathname = '//'; // mockBrowserLocation does not allow for `//`, so force it
+          let location = mockBrowserLocation('//admin//profile//');
+          location.pathname = '//admin//profile//'; // mockBrowserLocation does not allow for `//`, so force it
           set(this, 'location', location);
         },
       });
 
       createLocation();
 
-      assert.equal(location.getURL(), '/');
+      assert.equal(location.getURL(), '/admin/profile/');
     }
 
     ['@test Existing state is preserved on init'](assert) {
