@@ -1,7 +1,9 @@
 # Ember Changelog
 
-# v3.12.0-beta.1 (June 27, 2019)
+### v3.12.0 (August 5, 2019)
 
+- [#18159](https://github.com/emberjs/ember.js/pull/18159) [BUGFIX] Update router.js to ensure buildRouteInfoMetadata does not eagerly cache routes in lazy Engines
+- [#18226](https://github.com/emberjs/ember.js/pull/18226) [BUGFIX] Fix routing path with double slash (#18226)
 - [#17406](https://github.com/emberjs/ember.js/pull/17406) [BUGFIX] Properties observed through `Ember.Observer` can be set to `undefined`
 - [#18150](https://github.com/emberjs/ember.js/pull/18150) [BUGFIX] Fix a memory retention issue with string-based event listeners
 - [#18124](https://github.com/emberjs/ember.js/pull/18124) [CLEANUP] Remove deprecated `NAME_KEY`
