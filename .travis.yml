@@ -41,7 +41,7 @@ cache:
   yarn: true
 
 stages:
-  - basic test
+  - basic tests
   - additional tests
   - name: deploy
     if: type IN (push)
@@ -59,7 +59,8 @@ install:
 
 jobs:
   include:
-    - stage: basic test
+    - stage: Basic Tests
+      name: Debug and Prebuilt (All Tests by Package + Canary Features + Optional Jquery)
       env: TEST_SUITE=each-package
       script:
         - yarn ember build
@@ -76,13 +77,7 @@ jobs:
         - yarn ember build
         - yarn test:browserstack
 
-    - name: Development (All Tests + Canary Features)
-      script:
-        - yarn ember build
-        - yarn test
-
     - name: Production (All Tests + Canary Features)
-      env: SHOULD_TRANSPILE=true
       script:
         - yarn ember build -prod
         - yarn test
@@ -95,7 +90,6 @@ jobs:
 
     - name: Node.js Tests
       node_js: "8"
-      env: SHOULD_TRANSPILE=true
       script:
         - yarn ember build -prod
         - yarn test:node

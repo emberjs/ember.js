@@ -3,14 +3,14 @@
   <head>
     <meta charset="utf-8">
     <title>Ember</title>
-    <link rel="stylesheet" href="../qunit/qunit.css">
+    <link rel="stylesheet" href="./qunit/qunit.css">
     <style type="text/css">
       #qunit-tests.hideskipped li.skipped {
         display: none;
       }
     </style>
-    <script src="../polyfill.js"></script>
-    <script src="../qunit/qunit.js"></script>
+    <script src="./polyfill.js"></script>
+    <script src="./qunit/qunit.js"></script>
     <script src="/testem.js"></script>
 
     <script type="text/javascript">
@@ -31,7 +31,7 @@
     <script type="text/javascript">
       // Fallback to default jQuery
       if (jQueryVersion !== 'none' && !window.jQuery) {
-        loadScript('../jquery/jquery.js');
+        loadScript('./jquery/jquery.js');
       }
       // Close the script tag to make sure document.write happens
     </script>
@@ -62,8 +62,12 @@
     </script>
 
     <script>
-      loadScript('../ember.js');
-      loadScript('../ember-testing.js');
+      if (QUnit.urlParams.prebuilt) {
+        loadScript('../ember.debug.js');
+      } else {
+        loadScript('./ember.js');
+      }
+      loadScript('./ember-testing.js');
     </script>
 
     <script type="text/javascript">
@@ -73,7 +77,7 @@
 
     <script>
       loadScript('../ember-template-compiler.js');
-      loadScript('../ember-tests.js');
+      loadScript('./ember-tests.js');
     </script>
 
     <script>
