@@ -27,6 +27,11 @@ module.exports = function canaryFeatures(tree) {
       },
       'debug-macros:canary-flags',
     ],
+
+    // These plugins are necessary for being able to run test code through this
+    // transform, since some tests use decorators and class fields
+    ['@babel/plugin-proposal-decorators', { legacy: true }],
+    ['@babel/plugin-proposal-class-properties', { loose: true }],
   ];
 
   return new Babel(tree, { plugins });

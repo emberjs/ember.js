@@ -17,7 +17,6 @@ const WriteFile = require('broccoli-file-creator');
 const StringReplace = require('broccoli-string-replace');
 const GlimmerTemplatePrecompiler = require('./glimmer-template-compiler');
 const VERSION_PLACEHOLDER = /VERSION_STRING_PLACEHOLDER/g;
-const transfromBabelPlugins = require('./transforms/transform-babel-plugins');
 const canaryFeatures = require('./canary-features');
 const injectNodeGlobals = require('./transforms/inject-node-globals');
 
@@ -34,6 +33,14 @@ module.exports.routerES = function _routerES() {
       },
     },
     annotation: 'router.js',
+  });
+};
+
+module.exports.jquery = function _jquery() {
+  return new Funnel(findLib('jquery'), {
+    files: ['jquery.js'],
+    destDir: 'jquery',
+    annotation: 'jquery',
   });
 };
 
@@ -74,16 +81,12 @@ module.exports.getPackagesES = function getPackagesES() {
     `get-packages-es:templates-output`
   );
 
-  let nonTypeScriptContents = new Funnel(debuggedCompiledTemplatesAndTypeScript, {
-    srcDir: 'packages',
-    exclude: ['**/*.ts'],
-  });
-
-  // tsc / typescript handles decorators and class properties on its own
-  // so for non ts, transpile the proposal features (decorators, etc)
-  let transpiledProposals = debugTree(
-    transfromBabelPlugins(debugTree(nonTypeScriptContents, `get-packages-es:babel-plugins:input`)),
-    `get-packages-es:babel-plugins:output`
+  let nonTypeScriptContents = debugTree(
+    new Funnel(debuggedCompiledTemplatesAndTypeScript, {
+      srcDir: 'packages',
+      exclude: ['**/*.ts'],
+    }),
+    'get-packages-es:js:output'
   );
 
   let typescriptContents = new Funnel(debuggedCompiledTemplatesAndTypeScript, {
@@ -98,7 +101,7 @@ module.exports.getPackagesES = function getPackagesES() {
 
   let debuggedCompiledTypescript = debugTree(typescriptCompiled, `get-packages-es:ts:output`);
 
-  let mergedFinalOutput = new MergeTrees([transpiledProposals, debuggedCompiledTypescript], {
+  let mergedFinalOutput = new MergeTrees([nonTypeScriptContents, debuggedCompiledTypescript], {
     overwrite: true,
   });
 

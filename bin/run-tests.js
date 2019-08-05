@@ -2,7 +2,6 @@
 'use strict';
 
 const chalk = require('chalk');
-const RSVP = require('rsvp');
 const path = require('path');
 
 const finalhandler = require('finalhandler');
@@ -55,7 +54,7 @@ function generateTestsFor(packageName) {
   }
 
   testFunctions.push(() => run('package=' + packageName));
-  testFunctions.push(() => run('package=' + packageName + '&dist=es'));
+  testFunctions.push(() => run('package=' + packageName + '&prebuilt=true'));
   testFunctions.push(() => run('package=' + packageName + '&enableoptionalfeatures=true'));
 
   // TODO: this should ultimately be deleted (when all packages can run with and
@@ -97,14 +96,14 @@ function generateExtendPrototypeTests() {
 
 function runInSequence(tasks) {
   var length = tasks.length;
-  var current = RSVP.Promise.resolve();
+  var current = Promise.resolve();
   var results = new Array(length);
 
   for (var i = 0; i < length; ++i) {
     current = results[i] = current.then(tasks[i]);
   }
 
-  return RSVP.Promise.all(results);
+  return Promise.all(results);
 }
 
 function runAndExit() {
@@ -128,7 +127,7 @@ switch (process.env.TEST_SUITE) {
     runAndExit();
     break;
   case 'each-package':
-    console.log('suite: optional-features');
+    console.log('suite: each-package');
     generateEachPackageTests();
     runAndExit();
     break;
