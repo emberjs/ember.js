@@ -5,7 +5,6 @@
 import { Factory } from '@ember/-internals/owner';
 import { FrameworkObject, setFrameworkClass } from '@ember/-internals/runtime';
 import { symbol } from '@ember/-internals/utils';
-import { EMBER_FRAMEWORK_OBJECT_OWNER_ARGUMENT } from '@ember/canary-features';
 import { join } from '@ember/runloop';
 import { Dict, Opaque } from '@glimmer/interfaces';
 import { DirtyableTag } from '@glimmer/reference';
@@ -133,9 +132,7 @@ let Helper = FrameworkObject.extend({
 
 Helper.isHelperFactory = true;
 
-if (EMBER_FRAMEWORK_OBJECT_OWNER_ARGUMENT) {
-  setFrameworkClass(Helper);
-}
+setFrameworkClass(Helper);
 
 class Wrapper implements HelperFactory<SimpleHelper> {
   isHelperFactory: true = true;

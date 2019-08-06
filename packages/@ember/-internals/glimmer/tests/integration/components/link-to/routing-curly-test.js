@@ -1,5 +1,4 @@
 import { moduleFor, ApplicationTestCase, runLoopSettled, runTask } from 'internal-test-helpers';
-import { EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS } from '@ember/canary-features';
 import Controller, { inject as injectController } from '@ember/controller';
 import { A as emberA, RSVP } from '@ember/-internals/runtime';
 import { alias } from '@ember/-internals/metal';
@@ -1979,15 +1978,8 @@ moduleFor(
       assert
     ) {
       assert.expect(19);
-      let warningMessage;
-
-      if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
-        warningMessage =
-          'This link is in an inactive loading state because at least one of its models currently has a null/undefined value, or the provided route name is invalid.';
-      } else {
-        warningMessage =
-          'This link-to is in an inactive loading state because at least one of its parameters presently has a null/undefined value, or the provided route name is invalid.';
-      }
+      let warningMessage =
+        'This link is in an inactive loading state because at least one of its models currently has a null/undefined value, or the provided route name is invalid.';
 
       this.router.map(function() {
         this.route('thing', { path: '/thing/:thing_id' });

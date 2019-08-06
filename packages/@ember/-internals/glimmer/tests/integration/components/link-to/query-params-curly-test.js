@@ -68,22 +68,18 @@ moduleFor(
       });
     }
 
-    async ['@feature(ember-glimmer-angle-bracket-built-ins) `(query-params)` must be used in conjunction with `{{link-to}}'](
-      assert
-    ) {
-      this.addTemplate(
-        'index',
-        `{{#let (query-params foo='456' bar='NAW') as |qp|}}{{link-to 'Index' 'index' qp}}{{/let}}`
-      );
+    ['@test `(query-params)` must be used in conjunction with `{{link-to}}'](assert) {
+      if (DEBUG) {
+        this.addTemplate(
+          'index',
+          `{{#let (query-params foo='456' bar='NAW') as |qp|}}{{link-to 'Index' 'index' qp}}{{/let}}`
+        );
 
-      // TODO If we visit this page at all in production mode, it'll fail for
-      // entirely different reasons than what this test is trying to test.
-      let promise = DEBUG ? this.visit('/') : null;
-
-      await assert.rejectsAssertion(
-        promise,
-        /The `\(query-params\)` helper can only be used when invoking the `{{link-to}}` component\./
-      );
+        return assert.rejectsAssertion(
+          this.visit('/'),
+          /The `\(query-params\)` helper can only be used when invoking the `{{link-to}}` component\./
+        );
+      }
     }
   }
 );

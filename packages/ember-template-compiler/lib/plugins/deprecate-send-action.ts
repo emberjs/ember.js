@@ -1,4 +1,3 @@
-import { EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS } from '@ember/canary-features';
 import { deprecate } from '@ember/debug';
 import { SEND_ACTION } from '@ember/deprecated-features';
 import { AST, ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
@@ -22,7 +21,7 @@ export default function deprecateSendAction(env: ASTPluginEnvironment): ASTPlugi
     let deprecationMessage = (node: AST.Node, eventName: string, actionName: string) => {
       let sourceInformation = calculateLocationDisplay(moduleName, node.loc);
 
-      if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS && node.type === 'ElementNode') {
+      if (node.type === 'ElementNode') {
         return `Passing actions to components as strings (like \`<Input @${eventName}="${actionName}" />\`) is deprecated. Please use closure actions instead (\`<Input @${eventName}={{action "${actionName}"}} />\`). ${sourceInformation}`;
       } else {
         return `Passing actions to components as strings (like \`{{input ${eventName}="${actionName}"}}\`) is deprecated. Please use closure actions instead (\`{{input ${eventName}=(action "${actionName}")}}\`). ${sourceInformation}`;
@@ -34,7 +33,7 @@ export default function deprecateSendAction(env: ASTPluginEnvironment): ASTPlugi
 
       visitor: {
         ElementNode(node: AST.ElementNode) {
-          if (!EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS || node.tag !== 'Input') {
+          if (node.tag !== 'Input') {
             return;
           }
 

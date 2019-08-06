@@ -31,10 +31,7 @@ import {
   intersect,
   collect,
 } from '@ember/object/computed';
-import {
-  EMBER_METAL_TRACKED_PROPERTIES,
-  EMBER_NATIVE_DECORATOR_SUPPORT,
-} from '@ember/canary-features';
+import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 
 let obj;
@@ -1516,35 +1513,33 @@ moduleFor(
   }
 );
 
-if (EMBER_NATIVE_DECORATOR_SUPPORT) {
-  moduleFor(
-    'sort - sortProperties - Native Class',
-    class extends SortWithSortPropertiesTestCase {
-      buildObject(_items, _itemSorting) {
-        let items =
-          _items ||
-          emberA([
-            { fname: 'Jaime', lname: 'Lannister', age: 34 },
-            { fname: 'Cersei', lname: 'Lannister', age: 34 },
-            { fname: 'Robb', lname: 'Stark', age: 16 },
-            { fname: 'Bran', lname: 'Stark', age: 8 },
-          ]);
+moduleFor(
+  'sort - sortProperties - Native Class',
+  class extends SortWithSortPropertiesTestCase {
+    buildObject(_items, _itemSorting) {
+      let items =
+        _items ||
+        emberA([
+          { fname: 'Jaime', lname: 'Lannister', age: 34 },
+          { fname: 'Cersei', lname: 'Lannister', age: 34 },
+          { fname: 'Robb', lname: 'Stark', age: 16 },
+          { fname: 'Bran', lname: 'Stark', age: 8 },
+        ]);
 
-        let itemSorting = _itemSorting || emberA(['lname', 'fname']);
+      let itemSorting = _itemSorting || emberA(['lname', 'fname']);
 
-        return new (class {
-          items = items;
-          itemSorting = itemSorting;
+      return new (class {
+        items = items;
+        itemSorting = itemSorting;
 
-          @sort('items', 'itemSorting')
-          sortedItems;
-        })();
-      }
-
-      cleanupObject() {}
+        @sort('items', 'itemSorting')
+        sortedItems;
+      })();
     }
-  );
-}
+
+    cleanupObject() {}
+  }
+);
 
 function sortByLnameFname(a, b) {
   let lna = get(a, 'lname');

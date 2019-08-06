@@ -1,12 +1,9 @@
-import {
-  EMBER_NATIVE_DECORATOR_SUPPORT,
-  EMBER_METAL_TRACKED_PROPERTIES,
-} from '@ember/canary-features';
+import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { Route } from '@ember/-internals/routing';
 import Controller from '@ember/controller';
 import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
 
-if (EMBER_METAL_TRACKED_PROPERTIES && EMBER_NATIVE_DECORATOR_SUPPORT) {
+if (EMBER_METAL_TRACKED_PROPERTIES) {
   moduleFor(
     'Route <-> Controller Integration',
     class extends ApplicationTestCase {

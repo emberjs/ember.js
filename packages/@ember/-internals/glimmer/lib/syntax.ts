@@ -1,16 +1,13 @@
 import { OwnedTemplateMeta } from '@ember/-internals/views';
-import { EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { CompilableBlock } from '@glimmer/interfaces';
 import { Macros, OpcodeBuilder } from '@glimmer/opcode-compiler';
 import { Option } from '@glimmer/util';
 import { Core } from '@glimmer/wire-format';
 import CompileTimeLookup from './compile-time-lookup';
-import { inputMacro } from './syntax/input';
 import { blockLetMacro } from './syntax/let';
 import { mountMacro } from './syntax/mount';
 import { outletMacro } from './syntax/outlet';
-import { textAreaMacro } from './syntax/textarea';
 import { hashToArgs } from './syntax/utils';
 import { wrapComponentClassAttribute } from './utils/bindings';
 
@@ -27,10 +24,6 @@ function refineInlineSyntax(
       builder.referrer.owner.hasRegistration(`helper:${name}`)
     )
   );
-
-  if (!EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS && name.indexOf('-') === -1) {
-    return false;
-  }
 
   let handle = builder.compiler['resolver'].lookupComponentDefinition(name, builder.referrer);
 
@@ -50,10 +43,6 @@ function refineBlockSyntax(
   inverse: Option<CompilableBlock>,
   builder: OpcodeBuilder<OwnedTemplateMeta>
 ) {
-  if (!EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS && name.indexOf('-') === -1) {
-    return false;
-  }
-
   let handle = builder.compiler['resolver'].lookupComponentDefinition(name, builder.referrer);
 
   if (handle !== null) {
@@ -98,11 +87,6 @@ export function populateMacros(macros: Macros) {
   let { inlines, blocks } = macros;
   inlines.add('outlet', outletMacro);
   inlines.add('mount', mountMacro);
-
-  if (!EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
-    inlines.add('input', inputMacro);
-    inlines.add('textarea', textAreaMacro);
-  }
 
   inlines.addMissing(refineInlineSyntax);
 

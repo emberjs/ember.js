@@ -14,10 +14,7 @@ import {
   HAS_NATIVE_PROXY,
   isInternalSymbol,
 } from '@ember/-internals/utils';
-import {
-  EMBER_METAL_TRACKED_PROPERTIES,
-  EMBER_FRAMEWORK_OBJECT_OWNER_ARGUMENT,
-} from '@ember/canary-features';
+import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { schedule } from '@ember/runloop';
 import { meta, peekMeta, deleteMeta } from '@ember/-internals/meta';
 import {
@@ -48,9 +45,7 @@ const prototypeMixinMap = new WeakMap();
 const initCalled = DEBUG ? new WeakSet() : undefined; // only used in debug builds to enable the proxy trap
 const PASSED_FROM_CREATE = DEBUG ? symbol('PASSED_FROM_CREATE') : undefined;
 
-const FRAMEWORK_CLASSES = EMBER_FRAMEWORK_OBJECT_OWNER_ARGUMENT
-  ? symbol('FRAMEWORK_CLASS')
-  : undefined;
+const FRAMEWORK_CLASSES = symbol('FRAMEWORK_CLASS');
 
 export function setFrameworkClass(klass) {
   klass[FRAMEWORK_CLASSES] = true;
@@ -296,10 +291,6 @@ class CoreObject {
       (() => {
         if (passedFromCreate === PASSED_FROM_CREATE) {
           return true;
-        }
-
-        if (!EMBER_FRAMEWORK_OBJECT_OWNER_ARGUMENT) {
-          return false;
         }
 
         if (initFactory === undefined) {
@@ -789,7 +780,7 @@ class CoreObject {
     let C = this;
     let instance;
 
-    if (EMBER_FRAMEWORK_OBJECT_OWNER_ARGUMENT && this[FRAMEWORK_CLASSES]) {
+    if (this[FRAMEWORK_CLASSES]) {
       let initFactory = factoryMap.get(this);
       let owner;
       if (initFactory !== undefined) {

@@ -7,27 +7,12 @@ import { LinkComponent } from '@ember/-internals/glimmer';
 moduleFor(
   '{{link-to}} component (rendering tests)',
   class extends ApplicationTestCase {
-    [`@feature(ember-glimmer-angle-bracket-built-ins) throws a useful error if you invoke it wrong`](
-      assert
-    ) {
+    [`@test throws a useful error if you invoke it wrong`](assert) {
       assert.expect(1);
 
       expectAssertion(() => {
         this.addTemplate('application', `{{#link-to id='the-link'}}Index{{/link-to}}`);
       }, /You must provide one or more parameters to the `{{link-to}}` component\. \('my-app\/templates\/application\.hbs' @ L1:C0\)/);
-    }
-
-    async [`@feature(!ember-glimmer-angle-bracket-built-ins) throws a useful error if you invoke it wrong`](
-      assert
-    ) {
-      assert.expect(1);
-
-      this.addTemplate('application', `{{#link-to id='the-link'}}Index{{/link-to}}`);
-
-      await assert.rejectsAssertion(
-        this.visit('/'),
-        /You must provide one or more parameters to the link-to component/
-      );
     }
 
     ['@test should be able to be inserted in DOM when the router is not present']() {

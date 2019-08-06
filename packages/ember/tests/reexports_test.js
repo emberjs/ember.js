@@ -1,7 +1,6 @@
 import Ember from '../index';
 import {
   FEATURES,
-  EMBER_NATIVE_DECORATOR_SUPPORT,
   EMBER_METAL_TRACKED_PROPERTIES,
   EMBER_GLIMMER_SET_COMPONENT_TEMPLATE,
 } from '@ember/canary-features';
@@ -286,7 +285,7 @@ let allExports = [
     '@ember/-internals/metal',
     { get: 'isNamespaceSearchDisabled', set: 'setNamespaceSearchDisabled' },
   ],
-  EMBER_NATIVE_DECORATOR_SUPPORT ? ['_action', '@ember/object', 'action'] : null,
+  ['_action', '@ember/object', 'action'],
   EMBER_METAL_TRACKED_PROPERTIES
     ? ['_dependentKeyCompat', '@ember/object/compat', 'dependentKeyCompat']
     : null,

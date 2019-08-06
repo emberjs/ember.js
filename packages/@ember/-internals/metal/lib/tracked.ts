@@ -1,5 +1,4 @@
 import { isEmberArray } from '@ember/-internals/utils';
-import { EMBER_NATIVE_DECORATOR_SUPPORT } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { combine, CONSTANT_TAG, Tag } from '@glimmer/reference';
@@ -162,11 +161,6 @@ export function tracked(...args: any[]): Decorator | DecoratorPropertyDescriptor
 
     return decorator;
   }
-
-  assert(
-    'Native decorators are not enabled without the EMBER_NATIVE_DECORATOR_SUPPORT flag',
-    Boolean(EMBER_NATIVE_DECORATOR_SUPPORT)
-  );
 
   return descriptorForField(args);
 }
