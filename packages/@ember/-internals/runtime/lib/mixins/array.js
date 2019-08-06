@@ -860,11 +860,10 @@ const ArrayMixin = Mixin.create(Enumerable, {
   },
 
   /**
-    Returns `true` if the passed function returns true for any item in the
-    enumeration.
-
-    The callback method you provide should have the following signature (all
-    parameters are optional):
+    The any() method executes the callback function once for each element
+    present in the array until it finds the one where callback returns a truthy
+    value (i.e. `true`). If such an element is found, any() immediately returns
+    true. Otherwise, any() returns false.
 
     ```javascript
     function(item, index, array);
@@ -874,18 +873,21 @@ const ArrayMixin = Mixin.create(Enumerable, {
     - `index` is the current index in the iteration.
     - `array` is the array object itself.
 
-    It must return a truthy value (i.e. `true`) to include an item in the
-    results. Any non-truthy return value will discard the item from the
-    results.
-
     Note that in addition to a callback, you can also pass an optional target
-    object that will be set as `this` on the context. This is a good way
-    to give your iterator function access to the current object.
+    object that will be set as `this` on the context. It can be a good way
+    to give your iterator function access to an object in cases where an ES6
+    arrow function would not be appropriate.
 
     Usage Example:
 
     ```javascript
-    if (people.any(isManager)) {
+    let includesManager = people.any(this.findPersonInManagersList, this);
+
+    let includesStockHolder = people.any(person => {
+      return this.findPersonInStockHoldersList(person)
+    });
+
+    if (includesManager || includesStockHolder) {
       Paychecks.addBiggerBonus();
     }
     ```
