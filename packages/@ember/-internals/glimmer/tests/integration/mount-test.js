@@ -1,10 +1,4 @@
-import {
-  moduleFor,
-  ApplicationTestCase,
-  RenderingTestCase,
-  runTask,
-  runLoopSettled,
-} from 'internal-test-helpers';
+import { moduleFor, ApplicationTestCase, RenderingTestCase, runTask } from 'internal-test-helpers';
 
 import { getOwner } from '@ember/-internals/owner';
 import { compile, Component } from '../utils/helpers';
@@ -140,12 +134,7 @@ moduleFor(
 
       await this.visit('/');
 
-      assert.throwsAssertion(
-        () => runTask(() => this.visit('/route-with-mount')),
-        expectedBacktrackingMessage
-      );
-
-      await runLoopSettled();
+      return assert.rejectsAssertion(this.visit('/route-with-mount'), expectedBacktrackingMessage);
     }
 
     ['@test it renders with a bound engine name']() {

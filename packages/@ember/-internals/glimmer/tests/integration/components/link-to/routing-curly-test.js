@@ -1664,12 +1664,10 @@ moduleFor(
 
       this.addTemplate('application', `{{#link-to 'post'}}Post{{/link-to}}`);
 
-      assert.throws(
-        () => runTask(() => this.visit('/')),
+      return assert.rejectsAssertion(
+        this.visit('/'),
         /(You attempted to define a `\{\{link-to "post"\}\}` but did not pass the parameters required for generating its dynamic segments.|You must provide param `post_id` to `generate`)/
       );
-
-      await runLoopSettled();
     }
 
     [`@test the {{link-to}} component does not throw an error if its route has exited`](assert) {
