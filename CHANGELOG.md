@@ -1,5 +1,13 @@
 # Ember Changelog
 
+### v3.13.0-beta.1 (August 6, 2019)
+
+- [#16366](https://github.com/emberjs/ember.js/pull/16366) / [#16903](https://github.com/emberjs/ember.js/pull/16903) / [#17572](https://github.com/emberjs/ember.js/pull/17572) / [#17682](https://github.com/emberjs/ember.js/pull/17682) / [#17765](https://github.com/emberjs/ember.js/pull/17765) / [#17751](https://github.com/emberjs/ember.js/pull/17751) / [#17835](https://github.com/emberjs/ember.js/pull/17835) / [#18059](https://github.com/emberjs/ember.js/pull/18059) / [#17951](https://github.com/emberjs/ember.js/pull/17951) / [#18069](https://github.com/emberjs/ember.js/pull/18069) / [#18074](https://github.com/emberjs/ember.js/pull/18074) / [#18073](https://github.com/emberjs/ember.js/pull/18073) / [#18091](https://github.com/emberjs/ember.js/pull/18091) / [#18186](https://github.com/emberjs/ember.js/pull/18186) [FEATURE] Implement the [Tracked Properties](https://github.com/emberjs/rfcs/blob/master/text/0410-tracked-properties.md) and [Tracked Property Updates](https://github.com/emberjs/rfcs/blob/master/text/0478-tracked-properties-updates.md) RFCs.
+- [#18158](https://github.com/emberjs/ember.js/pull/18158) / [#18203](https://github.com/emberjs/ember.js/pull/18203) / [#18198](https://github.com/emberjs/ember.js/pull/18198) / [#18190](https://github.com/emberjs/ember.js/pull/18190) [FEATURE] Implement the [Component Templates Co-location](https://github.com/emberjs/rfcs/blob/master/text/0481-component-templates-co-location.md).
+- [#18214](https://github.com/emberjs/ember.js/pull/18214) [DEPRECATION] Implement the [Deprecate support for mouseEnter/Leave/Move Ember events](https://github.com/emberjs/rfcs/blob/master/text/0486-deprecate-mouseenter.md).
+- [#18217](https://github.com/emberjs/ember.js/pull/18217) [BUGFIX] Adds ability for computed props to depend on args
+- [#18222](https://github.com/emberjs/ember.js/pull/18222) [BUGFIX] Matches assertion behavior for CPs computing after destroy
+
 ### v3.12.0 (August 5, 2019)
 
 - [#18159](https://github.com/emberjs/ember.js/pull/18159) [BUGFIX] Update router.js to ensure buildRouteInfoMetadata does not eagerly cache routes in lazy Engines
