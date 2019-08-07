@@ -1,1 +1,11 @@
-export * from './index.js';
+export const SEND_ACTION = Boolean('3.4.0');
+export const EMBER_EXTEND_PROTOTYPES = Boolean('3.2.0-beta.5');
+export const LOGGER = Boolean('3.2.0-beta.1');
+export const MERGE = Boolean('3.6.0-beta.1');
+export const ROUTER_EVENTS = Boolean('4.0.0');
+export const COMPONENT_MANAGER_STRING_LOOKUP = Boolean('3.8.0');
+export const JQUERY_INTEGRATION = Boolean('3.9.0');
+export const ALIAS_METHOD = Boolean('3.9.0');
+export const APP_CTRL_ROUTER_PROPS = Boolean('3.10.0-beta.1');
+export const FUNCTION_PROTOTYPE_EXTENSIONS = Boolean('3.11.0-beta.1');
+export const MOUSE_ENTER_LEAVE_MOVE_EVENTS = Boolean('3.13.0-beta.1');
