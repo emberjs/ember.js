@@ -1217,13 +1217,7 @@ moduleFor(
       this.assertText('ab');
     }
 
-    ['@feature(!ember-glimmer-angle-bracket-built-ins) GH#14632 give useful warning when calling contextual components with input as a name']() {
-      expectAssertion(() => {
-        this.render('{{component (component "input" type="text")}}');
-      }, 'Invoking `{{input}}` using angle bracket syntax or `component` helper is not yet supported.');
-    }
-
-    ['@feature(ember-glimmer-angle-bracket-built-ins) it can invoke input component']() {
+    ['@test it can invoke input component']() {
       this.render('{{component (component "input" type="text" value=value)}}', {
         value: 'foo',
       });
@@ -1249,13 +1243,7 @@ moduleFor(
       this.assert.strictEqual('foo', this.firstChild.value);
     }
 
-    ['@feature(!ember-glimmer-angle-bracket-built-ins) GH#14632 give useful warning when calling contextual components with textarea as a name']() {
-      expectAssertion(() => {
-        this.render('{{component (component "textarea")}}');
-      }, 'Invoking `{{textarea}}` using angle bracket syntax or `component` helper is not yet supported.');
-    }
-
-    ['@feature(ember-glimmer-angle-bracket-built-ins) it can invoke textarea component']() {
+    ['@test it can invoke textarea component']() {
       this.render('{{component (component "textarea" value=value)}}', {
         value: 'foo',
       });

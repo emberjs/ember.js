@@ -637,9 +637,7 @@ moduleFor(
       assert.equal(instance.compute(), 'lolol', 'can invoke `.compute`');
     }
 
-    ['@feature(EMBER_FRAMEWORK_OBJECT_OWNER_ARGUMENT) class-based helper in native ES syntax receives owner'](
-      assert
-    ) {
+    ['@test class-based helper in native ES syntax receives owner'](assert) {
       let testContext = this;
       this.add(
         'helper:hello-world',

@@ -9,14 +9,11 @@ import {
   notifyPropertyChange,
 } from '../..';
 
-import {
-  EMBER_METAL_TRACKED_PROPERTIES,
-  EMBER_NATIVE_DECORATOR_SUPPORT,
-} from '@ember/canary-features';
+import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { EMBER_ARRAY } from '@ember/-internals/utils';
 import { AbstractTestCase, moduleFor } from 'internal-test-helpers';
 
-if (EMBER_METAL_TRACKED_PROPERTIES && EMBER_NATIVE_DECORATOR_SUPPORT) {
+if (EMBER_METAL_TRACKED_PROPERTIES) {
   moduleFor(
     '@tracked get validation',
     class extends AbstractTestCase {

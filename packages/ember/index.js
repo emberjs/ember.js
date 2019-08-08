@@ -7,12 +7,7 @@ import { Registry, Container } from '@ember/-internals/container';
 import * as instrumentation from '@ember/instrumentation';
 import { deleteMeta, meta } from '@ember/-internals/meta';
 import * as metal from '@ember/-internals/metal';
-import {
-  FEATURES,
-  isEnabled,
-  EMBER_FRAMEWORK_OBJECT_OWNER_ARGUMENT,
-  EMBER_GLIMMER_SET_COMPONENT_TEMPLATE,
-} from '@ember/canary-features';
+import { FEATURES, isEnabled, EMBER_GLIMMER_SET_COMPONENT_TEMPLATE } from '@ember/canary-features';
 import * as EmberDebug from '@ember/debug';
 import { assert, deprecate } from '@ember/debug';
 import Backburner from 'backburner';
@@ -397,10 +392,7 @@ Ember._ContainerProxyMixin = ContainerProxyMixin;
 Ember.compare = compare;
 Ember.copy = copy;
 Ember.isEqual = isEqual;
-
-if (EMBER_FRAMEWORK_OBJECT_OWNER_ARGUMENT) {
-  Ember._setFrameworkClass = setFrameworkClass;
-}
+Ember._setFrameworkClass = setFrameworkClass;
 
 /**
 @module ember

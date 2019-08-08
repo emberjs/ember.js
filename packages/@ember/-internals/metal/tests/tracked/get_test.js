@@ -1,11 +1,8 @@
-import {
-  EMBER_METAL_TRACKED_PROPERTIES,
-  EMBER_NATIVE_DECORATOR_SUPPORT,
-} from '@ember/canary-features';
+import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { AbstractTestCase, moduleFor } from 'internal-test-helpers';
 import { get, getWithDefault, tracked } from '../..';
 
-if (EMBER_METAL_TRACKED_PROPERTIES && EMBER_NATIVE_DECORATOR_SUPPORT) {
+if (EMBER_METAL_TRACKED_PROPERTIES) {
   let createObj = function() {
     class Obj {
       @tracked string = 'string';

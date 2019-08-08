@@ -1,4 +1,3 @@
-import { EMBER_FRAMEWORK_OBJECT_OWNER_ARGUMENT } from '@ember/canary-features';
 import { FrameworkObject, setFrameworkClass } from '@ember/-internals/runtime';
 import { inject as metalInject } from '@ember/-internals/metal';
 
@@ -70,8 +69,6 @@ Service.reopenClass({
   isServiceFactory: true,
 });
 
-if (EMBER_FRAMEWORK_OBJECT_OWNER_ARGUMENT) {
-  setFrameworkClass(Service);
-}
+setFrameworkClass(Service);
 
 export default Service;

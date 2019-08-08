@@ -1,9 +1,6 @@
 import { Meta, meta as metaFor, peekMeta } from '@ember/-internals/meta';
 import { inspect, isEmberArray, toString } from '@ember/-internals/utils';
-import {
-  EMBER_METAL_TRACKED_PROPERTIES,
-  EMBER_NATIVE_DECORATOR_SUPPORT,
-} from '@ember/canary-features';
+import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { assert, deprecate, warn } from '@ember/debug';
 import EmberError from '@ember/error';
 import { combine, Tag } from '@glimmer/reference';
@@ -862,11 +859,6 @@ export function computed(
   );
 
   if (isElementDescriptor(args)) {
-    assert(
-      'Native decorators are not enabled without the EMBER_NATIVE_DECORATOR_SUPPORT flag. If you are using computed in a classic class, add parenthesis to it: computed()',
-      Boolean(EMBER_NATIVE_DECORATOR_SUPPORT)
-    );
-
     let decorator = makeComputedDecorator(
       new ComputedProperty([]),
       ComputedDecoratorImpl

@@ -1281,7 +1281,7 @@ moduleFor(
       this.assertText('some-prop some-component');
     }
 
-    ['@feature(ember-glimmer-angle-bracket-built-ins) component without dash is looked up']() {
+    ['@test component without dash is looked up']() {
       this.registerComponent('somecomponent', {
         template: 'somecomponent',
       });
@@ -1301,30 +1301,6 @@ moduleFor(
       runTask(() => this.context.set('somecomponent', 'notsomecomponent'));
 
       this.assertText('somecomponent');
-    }
-
-    ['@feature(!ember-glimmer-angle-bracket-built-ins) component without dash is not looked up']() {
-      this.registerComponent('somecomponent', {
-        template: 'somecomponent',
-      });
-
-      this.render('{{somecomponent}}', {
-        somecomponent: 'notsomecomponent',
-      });
-
-      this.assertText('notsomecomponent');
-
-      runTask(() => this.rerender());
-
-      this.assertText('notsomecomponent');
-
-      runTask(() => this.context.set('somecomponent', 'not not notsomecomponent'));
-
-      this.assertText('not not notsomecomponent');
-
-      runTask(() => this.context.set('somecomponent', 'notsomecomponent'));
-
-      this.assertText('notsomecomponent');
     }
 
     ['@test non-block with properties on attrs']() {
@@ -3593,9 +3569,7 @@ moduleFor(
       this.assertText('[third][]');
     }
 
-    ['@feature(EMBER_FRAMEWORK_OBJECT_OWNER_ARGUMENT) it can render a basic component in native ES class syntax'](
-      assert
-    ) {
+    ['@test it can render a basic component in native ES class syntax'](assert) {
       let testContext = this;
       this.registerComponent('foo-bar', {
         ComponentClass: class extends Component {

@@ -6,7 +6,6 @@ import { getDebugFunction, setDebugFunction } from '@ember/debug';
 import { Router, NoneLocation, Route as EmberRoute } from '@ember/-internals/routing';
 import { jQueryDisabled, jQuery } from '@ember/-internals/views';
 import { _loaded } from '@ember/application';
-import { EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS } from '@ember/canary-features';
 import Controller from '@ember/controller';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import { setTemplates } from '@ember/-internals/glimmer';
@@ -155,11 +154,7 @@ moduleFor(
       verifyRegistration(assert, application, 'component:-checkbox');
       verifyRegistration(assert, application, 'component:link-to');
 
-      if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
-        verifyRegistration(assert, application, 'component:textarea');
-      } else {
-        verifyRegistration(assert, application, 'component:-text-area');
-      }
+      verifyRegistration(assert, application, 'component:textarea');
 
       verifyRegistration(assert, application, 'service:-routing');
       verifyInjection(assert, application, 'service:-routing', 'router', 'router:main');

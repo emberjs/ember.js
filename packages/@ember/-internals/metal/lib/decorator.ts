@@ -1,8 +1,5 @@
 import { Meta, meta as metaFor } from '@ember/-internals/meta';
-import {
-  EMBER_METAL_TRACKED_PROPERTIES,
-  EMBER_NATIVE_DECORATOR_SUPPORT,
-} from '@ember/canary-features';
+import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { setClassicDecorator } from './descriptor_map';
 import { unwatch, watch } from './watching';
@@ -159,11 +156,6 @@ export function makeComputedDecorator(
     maybeMeta?: Meta,
     isClassicDecorator?: boolean
   ): DecoratorPropertyDescriptor {
-    assert(
-      'Native decorators are not enabled without the EMBER_NATIVE_DECORATOR_SUPPORT flag',
-      EMBER_NATIVE_DECORATOR_SUPPORT || isClassicDecorator
-    );
-
     assert(
       `Only one computed property decorator can be applied to a class field or accessor, but '${key}' was decorated twice. You may have added the decorator to both a getter and setter, which is unecessary.`,
       isClassicDecorator ||

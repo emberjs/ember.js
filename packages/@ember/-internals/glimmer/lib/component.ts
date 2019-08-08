@@ -16,7 +16,6 @@ import { DEBUG } from '@glimmer/env';
 import { DirtyableTag } from '@glimmer/reference';
 import { normalizeProperty, SVG_NAMESPACE } from '@glimmer/runtime';
 
-import { EMBER_FRAMEWORK_OBJECT_OWNER_ARGUMENT } from '@ember/canary-features';
 import { RootReference, UPDATE } from './utils/references';
 
 export const DIRTY_TAG = symbol('DIRTY_TAG');
@@ -1112,8 +1111,6 @@ Component.reopenClass({
   positionalParams: [],
 });
 
-if (EMBER_FRAMEWORK_OBJECT_OWNER_ARGUMENT) {
-  setFrameworkClass(Component);
-}
+setFrameworkClass(Component);
 
 export default Component;

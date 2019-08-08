@@ -1,10 +1,7 @@
 import { AbstractTestCase, moduleFor } from 'internal-test-helpers';
 import { defineProperty, tracked, track, nativeDescDecorator } from '../..';
 
-import {
-  EMBER_METAL_TRACKED_PROPERTIES,
-  EMBER_NATIVE_DECORATOR_SUPPORT,
-} from '@ember/canary-features';
+import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 
 if (EMBER_METAL_TRACKED_PROPERTIES) {
   moduleFor(
@@ -137,49 +134,32 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
     }
   );
 
-  if (EMBER_NATIVE_DECORATOR_SUPPORT) {
-    moduleFor(
-      '@tracked decorator - native decorator behavior',
-      class extends AbstractTestCase {
-        [`@test errors if options are passed to native decorator`]() {
-          expectAssertion(() => {
-            class Tracked {
-              @tracked() first;
-
-              get full() {
-                return `${this.first} ${this.last}`;
-              }
-            }
-
-            new Tracked();
-          }, "You attempted to set a default value for first with the @tracked({ value: 'default' }) syntax. You can only use this syntax with classic classes. For native classes, you can use class initializers: @tracked field = 'default';");
-        }
-
-        [`@test errors if options are passed to native decorator (GH#17764)`](assert) {
+  moduleFor(
+    '@tracked decorator - native decorator behavior',
+    class extends AbstractTestCase {
+      [`@test errors if options are passed to native decorator`]() {
+        expectAssertion(() => {
           class Tracked {
-            @tracked value;
+            @tracked() first;
+
+            get full() {
+              return `${this.first} ${this.last}`;
+            }
           }
 
-          let obj = new Tracked();
-
-          assert.strictEqual(obj.value, undefined, 'uninitilized value defaults to undefined');
-        }
+          new Tracked();
+        }, "You attempted to set a default value for first with the @tracked({ value: 'default' }) syntax. You can only use this syntax with classic classes. For native classes, you can use class initializers: @tracked field = 'default';");
       }
-    );
-  } else {
-    moduleFor(
-      '@tracked decorator - native decorator behavior',
-      class extends AbstractTestCase {
-        [`@test errors if used as a native decorator`]() {
-          expectAssertion(() => {
-            class Tracked {
-              @tracked first;
-            }
 
-            new Tracked();
-          }, 'Native decorators are not enabled without the EMBER_NATIVE_DECORATOR_SUPPORT flag');
+      [`@test errors if options are passed to native decorator (GH#17764)`](assert) {
+        class Tracked {
+          @tracked value;
         }
+
+        let obj = new Tracked();
+
+        assert.strictEqual(obj.value, undefined, 'uninitilized value defaults to undefined');
       }
-    );
-  }
+    }
+  );
 }

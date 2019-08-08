@@ -1,10 +1,4 @@
-import {
-  moduleFor,
-  ApplicationTestCase,
-  strip,
-  runTask,
-  runLoopSettled,
-} from 'internal-test-helpers';
+import { moduleFor, ApplicationTestCase, strip } from 'internal-test-helpers';
 
 import { ENV } from '@ember/-internals/environment';
 import Controller from '@ember/controller';
@@ -505,12 +499,7 @@ moduleFor(
 
       await this.visit('/');
 
-      assert.throwsAssertion(
-        () => runTask(() => this.visit('/routeWithError')),
-        expectedBacktrackingMessage
-      );
-
-      await runLoopSettled();
+      return assert.rejectsAssertion(this.visit('/routeWithError'), expectedBacktrackingMessage);
     }
 
     ['@test route templates with {{{undefined}}} [GH#14924] [GH#16172]']() {

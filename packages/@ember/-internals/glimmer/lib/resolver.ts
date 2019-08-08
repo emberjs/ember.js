@@ -3,8 +3,6 @@ import { ENV } from '@ember/-internals/environment';
 import { Factory, FactoryClass, LookupOptions, Owner } from '@ember/-internals/owner';
 import { lookupPartial, OwnedTemplateMeta } from '@ember/-internals/views';
 import {
-  EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS,
-  EMBER_GLIMMER_FN_HELPER,
   EMBER_GLIMMER_SET_COMPONENT_TEMPLATE,
   EMBER_MODULE_UNIFICATION,
 } from '@ember/canary-features';
@@ -187,6 +185,7 @@ const BUILTINS_HELPERS: IBuiltInHelpers = {
   action,
   array,
   concat,
+  fn,
   get,
   hash,
   log,
@@ -203,12 +202,7 @@ const BUILTINS_HELPERS: IBuiltInHelpers = {
   '-mount': mountHelper,
   '-outlet': outletHelper,
   '-assert-implicit-component-helper-argument': componentAssertionHelper,
-  fn: undefined,
 };
-
-if (EMBER_GLIMMER_FN_HELPER) {
-  BUILTINS_HELPERS.fn = fn;
-}
 
 interface IBuiltInModifiers {
   [name: string]: ModifierDefinition | undefined;
@@ -267,7 +261,7 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
 
     assert(
       'Could not find component `<TextArea />` (did you mean `<Textarea />`?)',
-      !(EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS && name === 'text-area' && handle === null)
+      !(name === 'text-area' && handle === null)
     );
 
     if (nextHandle === handle) {
@@ -406,16 +400,6 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
     _name: string,
     { moduleName, owner }: OwnedTemplateMeta
   ): Option<ComponentDefinition> {
-    assert(
-      'Invoking `{{textarea}}` using angle bracket syntax or `component` helper is not yet supported.',
-      EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS || _name !== 'textarea'
-    );
-
-    assert(
-      'Invoking `{{input}}` using angle bracket syntax or `component` helper is not yet supported.',
-      EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS || _name !== 'input'
-    );
-
     let name = _name;
     let namespace = undefined;
     if (EMBER_MODULE_UNIFICATION) {

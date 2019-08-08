@@ -6,7 +6,6 @@ import { FACTORY_FOR } from '@ember/-internals/container';
 import { OWNER, setOwner } from '@ember/-internals/owner';
 import { symbol, setName } from '@ember/-internals/utils';
 import { addListener } from '@ember/-internals/metal';
-import { EMBER_FRAMEWORK_OBJECT_OWNER_ARGUMENT } from '@ember/canary-features';
 import CoreObject from './core_object';
 import Observable from '../mixins/observable';
 import { assert } from '@ember/debug';
@@ -52,23 +51,20 @@ Observable.apply(EmberObject.prototype);
 
 export let FrameworkObject;
 
-if (EMBER_FRAMEWORK_OBJECT_OWNER_ARGUMENT) {
-  FrameworkObject = class FrameworkObject extends CoreObject {
-    get _debugContainerKey() {
-      let factory = FACTORY_FOR.get(this);
-      return factory !== undefined && factory.fullName;
-    }
+FrameworkObject = class FrameworkObject extends CoreObject {
+  get _debugContainerKey() {
+    let factory = FACTORY_FOR.get(this);
+    return factory !== undefined && factory.fullName;
+  }
 
-    constructor(owner) {
-      super();
+  constructor(owner) {
+    super();
 
-      setOwner(this, owner);
-    }
-  };
-  Observable.apply(FrameworkObject.prototype);
-} else {
-  FrameworkObject = class FrameworkObject extends EmberObject {};
-}
+    setOwner(this, owner);
+  }
+};
+
+Observable.apply(FrameworkObject.prototype);
 
 if (DEBUG) {
   let INIT_WAS_CALLED = symbol('INIT_WAS_CALLED');

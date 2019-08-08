@@ -1,5 +1,4 @@
 import { context } from '@ember/-internals/environment';
-import { EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS } from '@ember/canary-features';
 import { run } from '@ember/runloop';
 import Engine from '@ember/engine';
 import { Object as EmberObject } from '@ember/-internals/runtime';
@@ -77,11 +76,7 @@ moduleFor(
       verifyRegistration(assert, engine, 'component:-checkbox');
       verifyRegistration(assert, engine, 'component:link-to');
 
-      if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
-        verifyRegistration(assert, engine, 'component:textarea');
-      } else {
-        verifyRegistration(assert, engine, 'component:-text-area');
-      }
+      verifyRegistration(assert, engine, 'component:textarea');
 
       verifyRegistration(assert, engine, 'service:-routing');
       verifyInjection(assert, engine, 'service:-routing', 'router', 'router:main');

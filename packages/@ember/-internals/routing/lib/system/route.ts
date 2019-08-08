@@ -17,7 +17,6 @@ import {
   setFrameworkClass,
   typeOf,
 } from '@ember/-internals/runtime';
-import { EMBER_FRAMEWORK_OBJECT_OWNER_ARGUMENT } from '@ember/canary-features';
 import Controller from '@ember/controller';
 import { assert, deprecate, info, isTesting } from '@ember/debug';
 import { ROUTER_EVENTS } from '@ember/deprecated-features';
@@ -2610,8 +2609,6 @@ if (ROUTER_EVENTS) {
   });
 }
 
-if (EMBER_FRAMEWORK_OBJECT_OWNER_ARGUMENT) {
-  setFrameworkClass(Route);
-}
+setFrameworkClass(Route);
 
 export default Route;

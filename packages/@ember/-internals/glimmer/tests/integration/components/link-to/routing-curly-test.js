@@ -1,11 +1,11 @@
 import { moduleFor, ApplicationTestCase, runLoopSettled, runTask } from 'internal-test-helpers';
-import { EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS } from '@ember/canary-features';
 import Controller, { inject as injectController } from '@ember/controller';
 import { A as emberA, RSVP } from '@ember/-internals/runtime';
 import { alias } from '@ember/-internals/metal';
 import { subscribe, reset } from '@ember/instrumentation';
 import { Route, NoneLocation } from '@ember/-internals/routing';
 import { EMBER_IMPROVED_INSTRUMENTATION } from '@ember/canary-features';
+import { DEBUG } from '@glimmer/env';
 
 // IE includes the host name
 function normalizeUrl(url) {
@@ -1657,7 +1657,10 @@ moduleFor(
     }
 
     async [`@test the {{link-to}} component throws a useful error if you invoke it wrong`](assert) {
-      assert.expect(1);
+      if (!DEBUG) {
+        assert.expect(0);
+        return;
+      }
 
       this.router.map(function() {
         this.route('post', { path: 'post/:post_id' });
@@ -1665,12 +1668,10 @@ moduleFor(
 
       this.addTemplate('application', `{{#link-to 'post'}}Post{{/link-to}}`);
 
-      assert.throws(
-        () => runTask(() => this.visit('/')),
+      return assert.rejectsAssertion(
+        this.visit('/'),
         /(You attempted to define a `\{\{link-to "post"\}\}` but did not pass the parameters required for generating its dynamic segments.|You must provide param `post_id` to `generate`)/
       );
-
-      await runLoopSettled();
     }
 
     [`@test the {{link-to}} component does not throw an error if its route has exited`](assert) {
@@ -1979,15 +1980,8 @@ moduleFor(
       assert
     ) {
       assert.expect(19);
-      let warningMessage;
-
-      if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
-        warningMessage =
-          'This link is in an inactive loading state because at least one of its models currently has a null/undefined value, or the provided route name is invalid.';
-      } else {
-        warningMessage =
-          'This link-to is in an inactive loading state because at least one of its parameters presently has a null/undefined value, or the provided route name is invalid.';
-      }
+      let warningMessage =
+        'This link is in an inactive loading state because at least one of its models currently has a null/undefined value, or the provided route name is invalid.';
 
       this.router.map(function() {
         this.route('thing', { path: '/thing/:thing_id' });

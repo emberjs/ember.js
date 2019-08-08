@@ -1,4 +1,3 @@
-import { EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { AST, ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
 import calculateLocationDisplay from '../system/calculate-location-display';
@@ -187,17 +186,12 @@ export default function transformLinkTo(env: ASTPluginEnvironment): ASTPlugin {
       MustacheStatement(node: AST.MustacheStatement): AST.Node | void {
         if (isInlineLinkTo(node)) {
           let block = transformInlineLinkToIntoBlockForm(env, node);
-
-          if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
-            block = transformPositionalLinkToIntoNamedArguments(env, block);
-          }
-
-          return block;
+          return transformPositionalLinkToIntoNamedArguments(env, block);
         }
       },
 
       BlockStatement(node: AST.BlockStatement): AST.Node | void {
-        if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS && isBlockLinkTo(node)) {
+        if (isBlockLinkTo(node)) {
           return transformPositionalLinkToIntoNamedArguments(env, node);
         }
       },
