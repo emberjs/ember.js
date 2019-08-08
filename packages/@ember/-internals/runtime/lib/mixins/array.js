@@ -724,15 +724,17 @@ const ArrayMixin = Mixin.create(Enumerable, {
   },
 
   /**
-    Returns an array with just the items with the matched property. You
-    can pass an optional second argument with the target value. Otherwise
-    this will match any property that evaluates to `true`.
+    Filters the array by the property and an optional value. If a value is given, it returns
+    the items that have said value for the property. If not, it returns all the items that
+    have a truthy value for the property.
 
     Example Usage:
 
     ```javascript
-    const things = Ember.A().addObjects([{food: 'apple'}, {food: 'beans'}]);
-    things.filterBy('food', 'beans'); // [{food: 'beans'}]
+    let things = Ember.A([{ food: 'apple', isFruit: true }, { food: 'beans', isFruit: false }]);
+
+    things.filterBy('food', 'beans'); // [{ food: 'beans' }]
+    things.filterBy('isFruit'); // [{ food: 'apple' }]
     ```
 
     @method filterBy
