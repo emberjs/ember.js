@@ -69,17 +69,20 @@ moduleFor(
     }
 
     ['@test `(query-params)` must be used in conjunction with `{{link-to}}'](assert) {
-      if (DEBUG) {
-        this.addTemplate(
-          'index',
-          `{{#let (query-params foo='456' bar='NAW') as |qp|}}{{link-to 'Index' 'index' qp}}{{/let}}`
-        );
-
-        return assert.rejectsAssertion(
-          this.visit('/'),
-          /The `\(query-params\)` helper can only be used when invoking the `{{link-to}}` component\./
-        );
+      if (!DEBUG) {
+        assert.expect(0);
+        return;
       }
+
+      this.addTemplate(
+        'index',
+        `{{#let (query-params foo='456' bar='NAW') as |qp|}}{{link-to 'Index' 'index' qp}}{{/let}}`
+      );
+
+      return assert.rejectsAssertion(
+        this.visit('/'),
+        /The `\(query-params\)` helper can only be used when invoking the `{{link-to}}` component\./
+      );
     }
   }
 );

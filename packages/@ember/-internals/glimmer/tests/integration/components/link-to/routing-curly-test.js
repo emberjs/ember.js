@@ -5,6 +5,7 @@ import { alias } from '@ember/-internals/metal';
 import { subscribe, reset } from '@ember/instrumentation';
 import { Route, NoneLocation } from '@ember/-internals/routing';
 import { EMBER_IMPROVED_INSTRUMENTATION } from '@ember/canary-features';
+import { DEBUG } from '@glimmer/env';
 
 // IE includes the host name
 function normalizeUrl(url) {
@@ -1656,7 +1657,10 @@ moduleFor(
     }
 
     async [`@test the {{link-to}} component throws a useful error if you invoke it wrong`](assert) {
-      assert.expect(1);
+      if (!DEBUG) {
+        assert.expect(0);
+        return;
+      }
 
       this.router.map(function() {
         this.route('post', { path: 'post/:post_id' });
