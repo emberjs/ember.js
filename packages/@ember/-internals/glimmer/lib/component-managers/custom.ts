@@ -47,13 +47,21 @@ export interface OptionalCapabilities {
   updateHook?: boolean;
 }
 
-export function capabilities(managerAPI: '3.4', options: OptionalCapabilities = {}): Capabilities {
-  assert('Invalid component manager compatibility specified', managerAPI === '3.4');
+type managerAPIVersion = '3.4' | '3.13';
+
+export function capabilities(
+  managerAPI: managerAPIVersion,
+  options: OptionalCapabilities = {}
+): Capabilities {
+  assert(
+    'Invalid component manager compatibility specified',
+    managerAPI === '3.4' || managerAPI === '3.13'
+  );
 
   let updateHook = true;
 
   if (EMBER_CUSTOM_COMPONENT_ARG_PROXY) {
-    updateHook = 'updateHook' in options ? Boolean(options.updateHook) : true;
+    updateHook = managerAPI === '3.13' ? Boolean(options.updateHook) : true;
   }
 
   return {
