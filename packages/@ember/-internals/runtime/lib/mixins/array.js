@@ -790,6 +790,21 @@ const ArrayMixin = Mixin.create(Enumerable, {
 
     This method works much like the more generic `find()` method.
 
+    Usage Example:
+
+    ```javascript
+    let users = [
+      { id: 1, name: 'Yehuda', isTom: false },
+      { id: 2, name: 'Tom', isTom: true },
+      { id: 3, name: 'Melanie', isTom: false },
+      { id: 4, name: 'Leah', isTom: false }
+    ];
+
+    users.findBy('id', 4); // { id: 4, name: 'Leah', isTom: false }
+    users.findBy('name', 'Melanie'); // { id: 3, name: 'Melanie', isTom: false }
+    users.findBy('isTom'); // { id: 2, name: 'Tom', isTom: true }
+    ```
+
     @method findBy
     @param {String} key the property to test
     @param {String} [value] optional value to test against.
