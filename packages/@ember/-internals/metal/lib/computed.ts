@@ -32,7 +32,7 @@ import {
 import expandProperties from './expand_properties';
 import { setObserverSuspended } from './observer';
 import { defineProperty } from './properties';
-import { notifyPropertyChange } from './property_events';
+import { beginPropertyChanges, endPropertyChanges, notifyPropertyChange } from './property_events';
 import { set } from './property_set';
 import { tagForProperty, update } from './tags';
 import { consume, track } from './tracked';
@@ -610,19 +610,24 @@ export class ComputedProperty extends ComputedDescriptor {
     }
 
     if (EMBER_METAL_TRACKED_PROPERTIES) {
-      let ret = this._set(obj, keyName, value);
+      let ret;
 
-      finishLazyChains(obj, keyName, ret);
+      try {
+        beginPropertyChanges();
+        ret = this._set(obj, keyName, value);
 
-      let propertyTag = tagForProperty(obj, keyName);
+        finishLazyChains(obj, keyName, ret);
 
-      if (this._dependentKeys !== undefined) {
-        update(propertyTag, getChainTagsForKeys(obj, this._dependentKeys));
+        let propertyTag = tagForProperty(obj, keyName);
+
+        if (this._dependentKeys !== undefined) {
+          update(propertyTag, getChainTagsForKeys(obj, this._dependentKeys));
+        }
+
+        setLastRevisionFor(obj, keyName, propertyTag.value());
+      } finally {
+        endPropertyChanges();
       }
-
-      setLastRevisionFor(obj, keyName, propertyTag.value());
-
-      return ret;
     } else {
       return this.setWithSuspend(obj, keyName, value);
     }

@@ -101,6 +101,37 @@ moduleFor(
       assert.equal(count, 1, 'should have invoked observer');
     }
 
+    // https://github.com/emberjs/ember.js/issues/18246
+    async ['@test observer should fire when computed property is modified'](assert) {
+      let obj = { bar: 'bar' };
+      defineProperty(
+        obj,
+        'foo',
+        computed('bar', {
+          get() {
+            return get(this, 'bar');
+          },
+          set(key, value) {
+            return value;
+          },
+        })
+      );
+
+      get(obj, 'foo');
+
+      let count = 0;
+      addObserver(obj, 'foo', function() {
+        assert.equal(get(obj, 'foo'), 'baz', 'should have invoked after prop change');
+        count++;
+      });
+
+      set(obj, 'foo', 'baz');
+      await runLoopSettled();
+
+      assert.equal(count, 1, 'should have invoked observer');
+      assert.equal(get(obj, 'foo'), 'baz', 'computed should have correct value');
+    }
+
     async ['@test observer should continue to fire after dependent properties are accessed'](
       assert
     ) {
