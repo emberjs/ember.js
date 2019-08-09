@@ -6,6 +6,7 @@ import { run } from '@ember/runloop';
 import { get } from '@ember/-internals/metal';
 import { RouterTestCase, moduleFor } from 'internal-test-helpers';
 import { InternalTransition as Transition } from 'router_js';
+import { inject as service } from '@ember/service';
 
 moduleFor(
   'Router Service - transitionTo',
@@ -360,6 +361,32 @@ moduleFor(
         expectAssertion(() => {
           return this.routerService.transitionTo('parent.child', queryParams);
         }, 'You passed the `cont_sort` query parameter during a transition into parent.child, please update to url_sort');
+      });
+    }
+
+    ['@test RouterService#transitionTo with application query params when redirecting form a different route'](
+      assert
+    ) {
+      assert.expect(1);
+
+      this.add(
+        'route:parent.child',
+        Route.extend({
+          router: service(),
+          beforeModel() {
+            this.router.transitionTo('parent');
+          },
+        })
+      );
+      this.add(
+        'controller:parent',
+        Controller.extend({
+          queryParams: ['url_sort'],
+        })
+      );
+
+      return this.visit('/child?url_sort=a').then(() => {
+        assert.equal(this.routerService.get('currentURL'), '/?url_sort=a');
       });
     }
   }
