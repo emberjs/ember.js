@@ -3,7 +3,7 @@ import { setOwner } from '@ember/-internals/owner';
 
 class GlimmerishComponentManager {
   constructor(owner) {
-    this.capabilities = capabilities('3.4', { updateHook: false });
+    this.capabilities = capabilities('3.13', { updateHook: false });
     this.owner = owner;
   }
 
