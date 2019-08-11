@@ -22,19 +22,15 @@
 
   ```app/controllers/application.js
   import Controller from '@ember/controller';
-  import { computed } from '@ember/object';
+  import { tracked } from '@glimmer/tracking';
 
-  export default Controller.extend({
-    infographicComponentName: computed('isMarketOpen', {
-      get() {
-        if (this.get('isMarketOpen')) {
-          return 'live-updating-chart';
-        } else {
-          return 'market-close-summary';
+  export default class ApplicationController extends Controller {
+    @tracked isMarketOpen = 'live-updating-chart'
+
+    get infographicComponentName() {
+      return this.isMarketOpen ? 'live-updating-chart' : 'market-close-summary';
         }
       }
-    })
-  });
   ```
 
   The `live-updating-chart` component will be appended when `isMarketOpen` is
@@ -68,22 +64,19 @@
   ```app/controllers/application.js
   import Controller from '@ember/controller';
   import { computed } from '@ember/object';
+  import { tracked } from '@glimmer/tracking';
 
-  export default Controller.extend({
-    lastUpdateTimestamp: computed(function() {
+  export default class ApplicationController extends Controller {
+    @tracked isMarketOpen = 'live-updating-chart'
+
+    get lastUpdateTimestamp() {
       return new Date();
-    }),
+    }
 
-    infographicComponentName: computed('isMarketOpen', {
-      get() {
-        if (this.get('isMarketOpen')) {
-          return 'live-updating-chart';
-        } else {
-          return 'market-close-summary';
-        }
-      }
-    })
-  });
+    get infographicComponentName() {
+      return this.isMarketOpen ? 'live-updating-chart' : 'market-close-summary';
+    }
+  }
   ```
 
   And the following component template:

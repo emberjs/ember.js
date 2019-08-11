@@ -34,7 +34,7 @@ import layout from '../templates/empty';
   import Component from '@glimmer/component';
   import { tracked } from '@glimmer/tracking';
 
-  export default class extends Component {
+  export default class WordEditorComponent extends Component {
     @tracked writtenWords = "Lots of text that IS bound";
   }
   ```
