@@ -117,17 +117,21 @@ import { Opaque } from '@glimmer/util';
 
   For example, if the `@user` argument contains this object:
 
-  ```javascript
-  {
-    "name": "Shelly Sails",
-    "age": 42
+  ```app/components/developer-details.js
+  import Component from '@glimmer/component';
+
+  export default class extends Component {
+    developer = {
+      "name": "Shelly Sails",
+      "age": 42
+    };
   }
   ```
 
   This template would display all properties on the `@user`
   object in a list:
 
-  ```handlebars
+  ```app/components/developer-details.hbs
   <ul>
   {{#each-in @user as |key value|}}
     <li>{{key}}: {{value}}</li>
