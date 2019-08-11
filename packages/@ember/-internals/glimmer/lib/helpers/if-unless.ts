@@ -155,10 +155,14 @@ export function inlineIf(_vm: VM, { positional }: Arguments) {
   the second argument will be displayed, otherwise, the third argument will be
   displayed
 
-  For example, if `useLongGreeting` is false below:
+  For example, if you pass a falsey `useLongGreeting` to the `Greeting` component:
 
-  ```handlebars
-  {{unless useLongGreeting "Hi" "Hello"}} Ben
+  ```app/templates/application.hbs
+  <Greeting @useLongGreeting={{false}} />
+  ```
+
+  ```app/components/greeting.hbs
+  {{unless @useLongGreeting "Hi" "Hello"}} Ben
   ```
 
   Then it will display:
@@ -171,27 +175,52 @@ export function inlineIf(_vm: VM, { positional }: Arguments) {
 
   Like the `if` helper, `unless` helper also has a block form.
 
-  ```handlebars
-  {{! If greetings are found, the text below will not render.}}
+  The following:
+
+  ```app/templates/application.hbs
+  <Greetings />
+  ```
+
+  ```app/components/greetings.hbs
   {{#unless greetings}}
     No greetings were found. Why not set one?
   {{/unless}}
   ```
 
+  Will not render anything.
+
   You can also use an `else` helper with the `unless` block. The
   `else` will display if the value is truthy.
 
-  ```handlebars
-  {{! Is the user logged in?}}
-  {{#unless userData}}
+  If you have the following component:
+
+  ```app/components/logged-in.hbs
+  {{#unless @userData}}
     Please login.
   {{else}}
     Welcome back!
   {{/unless}}
   ```
 
-  If `userData` is false, undefined, null, or empty in the above example,
-  then it will render:
+  Calling it with a truthy `userData`:
+
+  ```app/templates/application.hbs
+  <LoggedIn @userData={{hash username="Zoey"}} />
+  ```
+
+  Will render:
+
+  ```html
+  Welcome back!
+  ```
+
+  and calling it with a falsey `userData`:
+
+  ```app/templates/application.hbs
+  <LoggedIn @userData=false />
+
+
+  Will render:
 
   ```html
   Please login.
