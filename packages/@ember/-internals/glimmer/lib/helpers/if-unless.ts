@@ -62,19 +62,22 @@ class ConditionalHelperReference extends CachedReference {
   using the block form to wrap the section of template you want to conditionally render.
   Like so:
 
-  ```handlebars
-  {{! will not render if foo is falsey}}
-  {{#if foo}}
-    Welcome to the {{foo.bar}}
+  ```app/templates/application.hbs
+  <Weather />
+  ```
+
+  ```app/components/weather.hbs
+  {{! will not render because greeting is undefined}}
+  {{#if @isRaining}}
+    Yes, grab an umbrella!
   {{/if}}
   ```
 
-  You can also specify a template to show if the property is falsey by using
+  You can also define what to show if the property is falsey by using
   the `else` helper.
 
-  ```handlebars
-  {{! is it raining outside?}}
-  {{#if isRaining}}
+  ```app/components/weather.hbs
+  {{#if @isRaining}}
     Yes, grab an umbrella!
   {{else}}
     No, it's lovely outside!
@@ -84,15 +87,25 @@ class ConditionalHelperReference extends CachedReference {
   You are also able to combine `else` and `if` helpers to create more complex
   conditional logic.
 
-  ```handlebars
-  {{#if isMorning}}
-    Good morning
-  {{else if isAfternoon}}
-    Good afternoon
+  For the following template:
+
+    ```app/components/weather.hbs
+  {{#if @isRaining}}
+    Yes, grab an umbrella!
+  {{else if @isCold}}
+    Grab a coat, it's chilly!
   {{else}}
-    Good night
+    No, it's lovely outside!
   {{/if}}
   ```
+
+  If you call it by saying `isCold` is true:
+  
+  ```app/templates/application.hbs
+  <Weather @isCold={{true}} />
+  ```
+
+  Then `Grab a coat, it's chilly!` will be rendered.
 
   ## Inline form
 
@@ -103,8 +116,12 @@ class ConditionalHelperReference extends CachedReference {
 
   For example, if `useLongGreeting` is truthy, the following:
 
-  ```handlebars
-  {{if useLongGreeting "Hello" "Hi"}} Alex
+  ```app/templates/application.hbs
+  <Greeting @useLongGreeting={{true}} />
+  ```
+
+  ```app/components/greeting.hbs
+  {{if @useLongGreeting "Hello" "Hi"}} Alex
   ```
 
   Will render:
@@ -151,7 +168,7 @@ export function inlineIf(_vm: VM, { positional }: Arguments) {
   Then it will display:
 
   ```html
-  Hi
+  Hi Ben
   ```
 
   You can use the `unless` helper inside another helper as a subexpression.
