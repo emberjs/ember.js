@@ -61,15 +61,15 @@ import { ACTION, INVOKE, UnboundReference } from '../utils/references';
   Here is an example action handler on a component:
 
   ```app/components/my-component.js
-  import Component from '@ember/component';
+  import Component from '@glimmer/component';
+  import { action } from '@ember/object';
 
-  export default Component.extend({
-    actions: {
-      save() {
-        this.get('model').save();
-      }
+  export default class extends Component {
+    @action
+    save() {
+      this.model.save();
     }
-  });
+  }
   ```
 
   Actions are always looked up on the `actions` property of the current context.
@@ -91,24 +91,24 @@ import { ACTION, INVOKE, UnboundReference } from '../utils/references';
   method. The first argument to `sendAction` is the action to be called, and
   additional arguments are passed to the action function. This has interesting
   properties combined with currying of arguments. For example:
+  
+  ```app/components/update-name.js
+  import Component from '@glimmer/component';
+  import { action } from '@ember/object';
 
-  ```app/templates/components/my-component.hbs
-  {{input on-input=(action (action 'setName' model) value="target.value")}}
-  ```
-
-  ```app/components/my-component.js
-  import Component from '@ember/component';
-
-  export default Component.extend({
-    actions: {
-      setName(model, name) {
-        model.set('name', name);
-      }
+  export default class extends Component {
+    @action
+    setName(model, name) {
+      model.set('name', name);
     }
-  });
+  }
   ```
 
-  The first argument (`model`) was curried over, and the run-time argument (`event`)
+  ```app/components/update-name.hbs
+  {{input on-input=(action (action 'setName' @model) value="target.value")}}
+  ```
+  
+  The first argument (`@model`) was curried over, and the run-time argument (`event`)
   becomes a second argument. Action calls can be nested this way because each simply
   returns a function. Any function can be passed to the `{{action}}` helper, including
   other actions.
@@ -117,23 +117,25 @@ import { ACTION, INVOKE, UnboundReference } from '../utils/references';
   with `on-input` above. For example:
 
   ```app/components/my-input.js
-  import Component from '@ember/component';
+  import Component from '@glimmer/component';
+  import { action } from '@ember/object';
 
-  export default Component.extend({
-    actions: {
-      setName(model, name) {
-        model.set('name', name);
-      }
+  export default class extends Component {
+    @action
+    setName(model, name) {
+      model.set('name', name);
     }
-  });
+  }
   ```
 
   ```handlebars
-  <MyInput @submit={{action 'setName' this.model}} />
+  <MyInput @submit={{action 'setName' @model}} />
   ```
+  
   or
+  
   ```handlebars
-  {{my-input submit=(action 'setName' model)}}
+  {{my-input submit=(action 'setName' @model)}}
   ```
 
   ```app/components/my-component.js
@@ -263,9 +265,9 @@ import { ACTION, INVOKE, UnboundReference } from '../utils/references';
   import Controller from '@ember/controller';
   import { inject as service } from '@ember/service';
 
-  export default Controller.extend({
-    someService: service()
-  });
+  export default class extends Controller {
+    @service someService;
+  }
   ```
 
   @method action
