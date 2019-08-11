@@ -12,12 +12,16 @@ import { Opaque } from '@glimmer/util';
   The default behavior of `{{#each}}` is to yield its inner block once for every
   item in an array passing the item as the first block parameter.
 
-  ```javascript
-  var developers = [{ name: 'Yehuda' },{ name: 'Tom' }, { name: 'Paul' }];
+  ```app/components/developer-listing.js
+  import Component from '@glimmer/component';
+
+  export default class extends Component {
+    developers = [{ name: 'Yehuda' },{ name: 'Tom' }, { name: 'Paul' }];
+  }
   ```
 
-  ```handlebars
-  {{#each developers key="name" as |person|}}
+  ```app/components/developer-listing.hbs
+  {{#each this.developers key="name" as |person|}}
     {{person.name}}
     {{! `this` is whatever it was outside the #each }}
   {{/each}}
@@ -25,12 +29,16 @@ import { Opaque } from '@glimmer/util';
 
   The same rules apply to arrays of primitives.
 
-  ```javascript
-  var developerNames = ['Yehuda', 'Tom', 'Paul']
+  ```app/components/developer-listing.js
+  import Component from '@glimmer/component';
+
+  export default class extends Component {
+    developerNames = ['Yehuda', 'Tom', 'Paul']
+  }
   ```
 
-  ```handlebars
-  {{#each developerNames key="@index" as |name|}}
+  ```app/components/developer-listing.hbs
+  {{#each this.developerNames key="@index" as |name|}}
     {{name}}
   {{/each}}
   ```
@@ -39,7 +47,7 @@ import { Opaque } from '@glimmer/util';
 
   ```handlebars
   <ul>
-    {{#each people as |person index|}}
+    {{#each this.people as |person index|}}
       <li>Hello, {{person.name}}! You're number {{index}} in line</li>
     {{/each}}
   </ul>
@@ -55,7 +63,7 @@ import { Opaque } from '@glimmer/util';
   For example, here's the `{{#each}}` helper with its `key` set to `id`:
 
   ```handlebars
-  {{#each model key="id" as |item|}}
+  {{#each @model key="id" as |item|}}
   {{/each}}
   ```
 
@@ -70,7 +78,7 @@ import { Opaque } from '@glimmer/util';
   if the collection is empty.
 
   ```handlebars
-  {{#each developers as |person|}}
+  {{#each this.developers as |person|}}
     {{person.name}}
   {{else}}
     <p>Sorry, nobody is available for this task.</p>
@@ -87,19 +95,23 @@ import { Opaque } from '@glimmer/util';
 
   For example, given a `user` object that looks like:
 
-  ```javascript
-  {
-    "name": "Shelly Sails",
-    "age": 42
+  ```app/components/developer-details.js
+  import Component from '@glimmer/component';
+
+  export default class extends Component {
+    developer = {
+      "name": "Shelly Sails",
+      "age": 42
+    };
   }
   ```
 
   This template would display all properties on the `user`
   object in a list:
 
-  ```handlebars
+  ```app/components/developer-details.hbs
   <ul>
-  {{#each-in user as |key value|}}
+  {{#each-in this.developer as |key value|}}
     <li>{{key}}: {{value}}</li>
   {{/each-in}}
   </ul>
