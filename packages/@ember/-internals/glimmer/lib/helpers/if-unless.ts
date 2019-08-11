@@ -62,19 +62,22 @@ class ConditionalHelperReference extends CachedReference {
   using the block form to wrap the section of template you want to conditionally render.
   Like so:
 
-  ```handlebars
-  {{! will not render if foo is falsey}}
-  {{#if foo}}
-    Welcome to the {{foo.bar}}
+  ```app/templates/application.hbs
+  <Welcome />
+  ```
+
+  ```app/components/welcome.js
+  {{! will not render because greeting is undefined}}
+  {{#if @greeting}}
+    Welcome to our website!
   {{/if}}
   ```
 
-  You can also specify a template to show if the property is falsey by using
+  You can also what to show if the property is falsey by using
   the `else` helper.
 
-  ```handlebars
-  {{! is it raining outside?}}
-  {{#if isRaining}}
+  ```app/components/weather.hbs
+  {{#if @isRaining}}
     Yes, grab an umbrella!
   {{else}}
     No, it's lovely outside!
@@ -84,15 +87,25 @@ class ConditionalHelperReference extends CachedReference {
   You are also able to combine `else` and `if` helpers to create more complex
   conditional logic.
 
-  ```handlebars
-  {{#if isMorning}}
+  For the following template:
+
+  ```app/components/greeting.hbs
+  {{#if @isMorning}}
     Good morning
-  {{else if isAfternoon}}
+  {{else if @isAfternoon}}
     Good afternoon
   {{else}}
     Good night
   {{/if}}
   ```
+
+  If you call it by saying `isAfternoon` is true:
+  
+  ```app/templates/application.hbs
+  <Greeting @isAfternoon={{true}} />
+  ```
+
+  Then `Good afternoon` will be rendered.
 
   ## Inline form
 
@@ -103,8 +116,8 @@ class ConditionalHelperReference extends CachedReference {
 
   For example, if `useLongGreeting` is truthy, the following:
 
-  ```handlebars
-  {{if useLongGreeting "Hello" "Hi"}} Alex
+  ```app/components/greeting.hbs
+  {{if @useLongGreeting "Hello" "Hi"}} Alex
   ```
 
   Will render:
