@@ -167,20 +167,6 @@ export function inlineIf(_vm: VM, { positional }: Arguments) {
   Hi
   ```
 
-  You can use the `unless` helper inside another helper as a subexpression.
-  If isBig is not true, it will set the height to 10:
-
-  ```handlebars
-  {{! If isBig is not true, it will set the height to 10.}}
-  <SomeComponent @height={{unless isBig "10" "100"}} />
-  ```
-
-  or
-
-  ```handlebars
-  {{some-component height=(unless isBig "10" "100")}}
-  ```
-
   ## Block form
 
   Like the `if` helper, `unless` helper also has a block form.
