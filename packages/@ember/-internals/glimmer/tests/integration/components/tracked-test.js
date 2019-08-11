@@ -245,6 +245,10 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
         runTask(() => this.$('button').click());
 
         this.assertText('1');
+
+        runTask(() => this.$('button').click());
+
+        this.assertText('2');
       }
 
       '@test nested getters update when dependent properties are invalidated'() {
