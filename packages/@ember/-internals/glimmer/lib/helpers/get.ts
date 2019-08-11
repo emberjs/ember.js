@@ -23,16 +23,32 @@ import { CachedReference, referenceFromParts, UPDATE } from '../utils/references
 
   For example, these two usages are equivalent:
 
+  ```app/components/developer-detail.js
+  import Component from '@glimmer/component';
+
+  export default class extends Component {
+    developer = {
+      name: "Sandi Metz",
+      language: "Ruby"
+    }
+  }
+  ```
+
   ```handlebars
-  {{person.height}}
-  {{get person "height"}}
+  {{this.developer.name}}
+  {{get this.developer "name"}}
   ```
 
   If there were several facts about a person, the `{{get}}` helper can dynamically
   pick one:
 
+
+  ```app/templates/application.hbs
+  <DeveloperDetail @factName="language" />
+  ```
+
   ```handlebars
-  {{get person factName}}
+  {{get this.developer @factName}}
   ```
 
   For a more complex example, this template would allow the user to switch
