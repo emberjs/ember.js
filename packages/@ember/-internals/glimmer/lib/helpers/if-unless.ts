@@ -113,20 +113,6 @@ class ConditionalHelperReference extends CachedReference {
   Hello Alex
   ```
 
-  ### Nested `if`
-
-  You can use the `if` helper inside another helper as a nested helper:
-
-  ```handlebars
-  <SomeComponent @height={{if isBig "100" "10"}} />
-  ```
-
-  or
-
-  ```handlebars
-  {{some-component height=(if isBig "100" "10")}}
-  ```
-
   One detail to keep in mind is that both branches of the `if` helper will be evaluated,
   so if you have `{{if condition "foo" (expensive-operation "bar")`,
   `expensive-operation` will always calculate.
