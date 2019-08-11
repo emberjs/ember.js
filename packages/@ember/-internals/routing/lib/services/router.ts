@@ -37,19 +37,20 @@ function cleanURL(url: string, rootURL: string) {
 
    In this example, the Router service is injected into a component to initiate a transition
    to a dedicated route:
+
    ```javascript
-   import Component from '@ember/component';
+   import Component from '@glimmer/component';
+   import { action } from '@ember/object';
    import { inject as service } from '@ember/service';
 
-   export default Component.extend({
-     router: service(),
+   export default class extends Component {
+     @service router;
 
-     actions: {
-       next() {
-         this.router.transitionTo('other.route');
-       }
+     @action
+     next() {
+       this.router.transitionTo('other.route');
      }
-   });
+   }
    ```
 
    Like any service, it can also be injected into helpers, routes, etc.
@@ -177,17 +178,17 @@ export default class RouterService extends Service {
     is copied to the clipboard.
 
     ```app/components/copy-link.js
-    import Component from '@ember/component';
-    import {inject as service} from '@ember/service';
+    import Component from '@glimmer/component';
+    import { inject as service } from '@ember/service';
 
-    export default Component.extend({
-      router: service('router'),
-      clipboard: service('clipboard')
+    export default class extends Component {
+      @service router;
+      @service clipboard;
 
-      // Provided in the template
+      // Provided` in the template
       // { id: 'tomster', name: 'Tomster' }
       author: null,
-
+      
       copyBooksURL() {
         if (this.author) {
           const url = this.router.urlFor('author.books', this.author);
@@ -195,24 +196,23 @@ export default class RouterService extends Service {
           // Clipboard now has /author/tomster/books
         }
       }
-    });
-    ```
+    }
 
     Just like with `transitionTo` and `replaceWith`, `urlFor` can also handle
     query parameters.
 
     ```app/components/copy-link.js
-    import Component from '@ember/component';
-    import {inject as service} from '@ember/service';
+    import Component from '@glimmer/component';
+    import { inject as service } from '@ember/service';
 
-    export default Component.extend({
-      router: service('router'),
-      clipboard: service('clipboard')
+    export default class extends Component {
+      @service router;
+      @service clipboard;
 
       // Provided in the template
       // { id: 'tomster', name: 'Tomster' }
       author: null,
-
+  
       copyOnlyEmberBooksURL() {
         if (this.author) {
           const url = this.router.urlFor('author.books', this.author, {
@@ -222,7 +222,7 @@ export default class RouterService extends Service {
           // Clipboard now has /author/tomster/books?filter=emberjs
         }
       }
-    });
+    }
     ```
 
      @method urlFor
@@ -341,7 +341,7 @@ export default class RouterService extends Service {
     half-filled out:
 
     ```app/routes/contact-form.js
-    import {inject as service} from '@ember/service';
+    import { inject as service } from '@ember/service';
 
     export default Route.extend({
       router: service('router'),
@@ -372,7 +372,7 @@ export default class RouterService extends Service {
     A good example is sending some analytics when the route has transitioned:
 
     ```app/routes/contact-form.js
-    import {inject as service} from '@ember/service';
+    import { inject as service } from '@ember/service';
 
     export default Route.extend({
       router: service('router'),
