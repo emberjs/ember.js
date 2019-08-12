@@ -46,16 +46,20 @@ export function isSimpleHelper(helper: SimpleHelper | HelperInstance): helper is
   Ember Helpers are functions that can compute values, and are used in templates.
   For example, this code calls a helper named `format-currency`:
 
-  ```handlebars
-  <div>{{format-currency cents currency="$"}}</div>
+  ```app/templates/application.hbs
+  <Cost @cents={{230}} />
   ```
 
-  Additionally a helper can be called as a nested helper (sometimes called a
-  subexpression). In this example, the computed value of a helper is passed
-  to a component named `show-money`:
+  ```app/components/cost.hbs
+  <div>{{format-currency @cents currency="$"}}</div>
+  ```
+
+  Additionally a helper can be called as a nested helper.
+  In this example, we show the formatted currency value if the `showMoney`
+  named argument is truthy.
 
   ```handlebars
-  {{show-money amount=(format-currency cents currency="$")}}
+  {{if @showMoney (format-currency @cents currency="$")}}
   ```
 
   Helpers defined using a class must provide a `compute` function. For example:
@@ -63,11 +67,11 @@ export function isSimpleHelper(helper: SimpleHelper | HelperInstance): helper is
   ```app/helpers/format-currency.js
   import Helper from '@ember/component/helper';
 
-  export default Helper.extend({
+  export default class extends Helper {
     compute([cents], { currency }) {
       return `${currency}${cents * 0.01}`;
     }
-  });
+  }
   ```
 
   Each time the input to a helper changes, the `compute` function will be
@@ -100,13 +104,16 @@ let Helper = FrameworkObject.extend({
     import { inject as service } from '@ember/service'
     import { observer } from '@ember/object'
 
-    export default Helper.extend({
-      session: service(),
-      onNewUser: observer('session.currentUser', function() {
+    export default class extends Helper {
+      @service session;
+
+      @observer('session.currentUser)
+      onNewUser() {
         this.recompute();
       }),
+
       compute() {
-        return this.get('session.currentUser.email');
+        return this.session.currentUser.email;
       }
     });
     ```
@@ -148,16 +155,14 @@ class Wrapper implements HelperFactory<SimpleHelper> {
 }
 
 /**
-  In many cases, the ceremony of a full `Helper` class is not required.
-  The `helper` method create pure-function helpers without instances. For
-  example:
+  In many cases it is not necessary to use the full `Helper` class.
+  The `helper` method create pure-function helpers without instances.
+  For example:
 
   ```app/helpers/format-currency.js
   import { helper } from '@ember/component/helper';
 
-  export default helper(function(params, hash) {
-    let cents = params[0];
-    let currency = hash.currency;
+  export default helper(function([cents], {currency}) {
     return `${currency}${cents * 0.01}`;
   });
   ```
