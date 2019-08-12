@@ -117,7 +117,7 @@ import {
   TextArea,
   isSerializationFirstNode,
   setModifierManager,
-  modifierCapabilties,
+  modifierCapabilities,
   setComponentTemplate,
   getComponentTemplate,
 } from '@ember/-internals/glimmer';
@@ -536,7 +536,7 @@ Ember.LinkComponent = LinkComponent;
 Ember._setComponentManager = setComponentManager;
 Ember._componentManagerCapabilities = capabilities;
 Ember._setModifierManager = setModifierManager;
-Ember._modifierManagerCapabilties = modifierCapabilties;
+Ember._modifierManagerCapabilities = modifierCapabilities;
 if (EMBER_GLIMMER_SET_COMPONENT_TEMPLATE) {
   Ember._getComponentTemplate = getComponentTemplate;
   Ember._setComponentTemplate = setComponentTemplate;

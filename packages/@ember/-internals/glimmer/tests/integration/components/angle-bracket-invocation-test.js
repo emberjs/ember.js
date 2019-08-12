@@ -1,6 +1,6 @@
 import { moduleFor, RenderingTestCase, strip, classes, runTask } from 'internal-test-helpers';
 import { ENV } from '@ember/-internals/environment';
-import { setModifierManager } from '@ember/-internals/glimmer';
+import { setModifierManager, modifierCapabilities } from '@ember/-internals/glimmer';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 
 import { EMBER_GLIMMER_FORWARD_MODIFIERS_WITH_SPLATTRIBUTES } from '@ember/canary-features';
@@ -10,6 +10,7 @@ import { Component } from '../../utils/helpers';
 
 class CustomModifierManager {
   constructor(owner) {
+    this.capabilities = modifierCapabilities('3.13');
     this.owner = owner;
   }
 
