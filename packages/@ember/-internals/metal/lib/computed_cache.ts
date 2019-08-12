@@ -4,6 +4,16 @@ const COMPUTED_PROPERTY_LAST_REVISION = EMBER_METAL_TRACKED_PROPERTIES
   ? new WeakMap<object, Map<string, number>>()
   : undefined;
 
+export function getCacheFor(obj: object): Map<string, any> {
+  let cache = COMPUTED_PROPERTY_CACHED_VALUES.get(obj);
+  if (cache === undefined) {
+    cache = new Map<string, any>();
+
+    COMPUTED_PROPERTY_CACHED_VALUES.set(obj, cache);
+  }
+  return cache;
+}
+
 /**
   Returns the cached value for a property, if one exists.
   This can be useful for peeking at the value of a computed
@@ -19,16 +29,6 @@ const COMPUTED_PROPERTY_LAST_REVISION = EMBER_METAL_TRACKED_PROPERTIES
   @return {Object} the cached value
   @public
 */
-export function getCacheFor(obj: object): Map<string, any> {
-  let cache = COMPUTED_PROPERTY_CACHED_VALUES.get(obj);
-  if (cache === undefined) {
-    cache = new Map<string, any>();
-
-    COMPUTED_PROPERTY_CACHED_VALUES.set(obj, cache);
-  }
-  return cache;
-}
-
 export function getCachedValueFor(obj: object, key: string): any {
   let cache = COMPUTED_PROPERTY_CACHED_VALUES.get(obj);
   if (cache !== undefined) {
