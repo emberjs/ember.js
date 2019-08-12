@@ -796,19 +796,18 @@ export function lte(dependentKey, value) {
   }
 
   let tomster = new Hamster();
-
   tomster.readyForCamp; // false
 
-  set(tomster, 'hasTent', true);
+  tomster.hasTent = true;
   tomster.readyForCamp; // false
 
-  set(tomster, 'hasBackpack', true);
+  tomster.hasBackpack = true;
   tomster.readyForCamp; // true
 
-  set(tomster, 'hasBackpack', 'Yes');
+  tomster.hasBackpack = 'Yes';
   tomster.readyForCamp; // 'Yes'
 
-  set(tomster, 'hasWalkingStick', null);
+  tomster.hasWalkingStick = null;
   tomster.readyForHike; // null
   ```
 
@@ -824,7 +823,6 @@ export function lte(dependentKey, value) {
   });
 
   let tomster = Hamster.create();
-
   tomster.readyForCamp; // false
 
   set(tomster, 'hasTent', true);
