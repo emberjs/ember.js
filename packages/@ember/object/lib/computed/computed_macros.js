@@ -67,15 +67,16 @@ function generateComputedWithPredicate(name, predicate) {
   Example:
 
   ```javascript
-  import { set } from '@ember/object';
   import { empty } from '@ember/object/computed';
+  import { tracked } from '@glimmer/tracking';
 
   class ToDoList {
-    constructor(todos) {
-      set(this, 'todos', todos);
-    }
-
+    @tracked todos;
     @empty('todos') isDone;
+
+    constructor(todos) {
+      this.todos = todos
+    }
   }
 
   let todoList = new ToDoList(
@@ -83,7 +84,7 @@ function generateComputedWithPredicate(name, predicate) {
   );
 
   todoList.isDone; // false
-  set(todoList, 'todos', []);
+  todoList.todos = [];
   todoList.isDone; // true
   ```
 
@@ -135,15 +136,16 @@ export function empty(dependentKey) {
   Example:
 
   ```javascript
-  import { set } from '@ember/object';
   import { notEmpty } from '@ember/object/computed';
+  import { tracked } from '@glimmer/tracking';
 
   class Hamster {
-    constructor(backpack) {
-      set(this, 'backpack', backpack);
-    }
-
+    @tracked backpack;
     @notEmpty('backpack') hasStuff
+
+    constructor(backpack) {
+      this.backpack = backpack;
+    }
   }
 
   let hamster = new Hamster(
@@ -151,7 +153,7 @@ export function empty(dependentKey) {
   );
 
   hamster.hasStuff; // true
-  set(hamster, 'backpack', []);
+  hamster.backpack = []
   hamster.hasStuff; // false
   ```
 
@@ -199,21 +201,20 @@ export function notEmpty(dependentKey) {
   ==, which can be technically confusing.
 
   ```javascript
-  import { set } from '@ember/object';
   import { none } from '@ember/object/computed';
 
   class Hamster {
+    @tracked food;
     @none('food') isHungry;
   }
 
   let hamster = new Hamster();
-
   hamster.isHungry; // true
 
-  set(hamster, 'food', 'Banana');
+  hamster.food = 'Banana';
   hamster.isHungry; // false
-
-  set(hamster, 'food', null);
+  
+  hamster.food = null;
   hamster.isHungry; // true
   ```
 
@@ -264,11 +265,10 @@ export function none(dependentKey) {
   Example:
 
   ```javascript
-  import { set } from '@ember/object';
   import { not } from '@ember/object/computed';
 
   class User {
-    loggedIn = false;
+    @tracked loggedIn = false;
 
     @not('loggedIn') isAnonymous;
   }
@@ -276,7 +276,7 @@ export function none(dependentKey) {
   let user = new User();
 
   user.isAnonymous; // true
-  set(user, 'loggedIn', true);
+  user.loggedIn = true;
   user.isAnonymous; // false
   ```
 
@@ -325,25 +325,23 @@ export function not(dependentKey) {
   Example:
 
   ```javascript
-  import { set } from '@ember/object';
   import { bool } from '@ember/object/computed';
 
-
   class Hamster {
+    @tracked numBananas;
     @bool('numBananas') hasBananas
   }
 
   let hamster = new Hamster();
-
   hamster.hasBananas; // false
 
-  set(hamster, 'numBananas', 0);
+  hamster.numBananas = 0;
   hamster.hasBananas; // false
-
-  set(hamster, 'numBananas', 1);
+  
+  hamster.numBananas = 1;
   hamster.hasBananas; // true
-
-  set(hamster, 'numBananas', null);
+  
+  hamster.numBananas = null;
   hamster.hasBananas; // false
   ```
 
@@ -399,7 +397,6 @@ export function bool(dependentKey) {
   Example:
 
   ```javascript
-  import { set } from '@ember/object';
   import { match } from '@ember/object/computed';
 
   class User {
@@ -407,13 +404,12 @@ export function bool(dependentKey) {
   }
 
   let user = new User();
-
   user.hasValidEmail; // false
 
-  set(user, 'email', '');
+  user.email = '';
   user.hasValidEmail; // false
-
-  set(user, 'email', 'ember_hamster@example.com');
+  
+  user.email = 'ember_hamster@example.com';
   user.hasValidEmail; // true
   ```
 
@@ -466,7 +462,6 @@ export function match(dependentKey, regexp) {
   Example:
 
   ```javascript
-  import { set } from '@ember/object';
   import { equal } from '@ember/object/computed';
 
   class Hamster {
@@ -474,13 +469,12 @@ export function match(dependentKey, regexp) {
   }
 
   let hamster = new Hamster();
-
   hamster.satisfied; // false
 
-  set(hamster, 'percentCarrotsEaten', 100);
+  hamster.percentCarrotsEaten = 100;
   hamster.satisfied; // true
-
-  set(hamster, 'percentCarrotsEaten', 50);
+  
+  hamster.percentCarrotsEaten = 50;
   hamster.satisfied; // false
   ```
 
@@ -495,7 +489,6 @@ export function match(dependentKey, regexp) {
   });
 
   let hamster = Hamster.create();
-
   hamster.satisfied; // false
 
   set(hamster, 'percentCarrotsEaten', 100);
@@ -532,21 +525,21 @@ export function equal(dependentKey, value) {
   Example:
 
   ```javascript
-  import { set } from '@ember/object';
   import { gt } from '@ember/object/computed';
+  import { tracked } from '@glimmer/tracking';
 
   class Hamster {
+    @tracked numBananas;
     @gt('numBananas', 10) hasTooManyBananas;
   }
 
   let hamster = new Hamster();
-
   hamster.hasTooManyBananas; // false
 
-  set(hamster, 'numBananas', 3);
+  hamster.numBananas = 3;
   hamster.hasTooManyBananas; // false
-
-  set(hamster, 'numBananas', 11);
+  
+  hamster.numBananas = 11;
   hamster.hasTooManyBananas; // true
   ```
 
@@ -561,7 +554,6 @@ export function equal(dependentKey, value) {
   });
 
   let hamster = Hamster.create();
-
   hamster.hasTooManyBananas; // false
 
   set(hamster, 'numBananas', 3);
@@ -598,7 +590,6 @@ export function gt(dependentKey, value) {
   Example:
 
   ```javascript
-  import { set } from '@ember/object';
   import { gte } from '@ember/object/computed';
 
   class Hamster {
@@ -606,13 +597,12 @@ export function gt(dependentKey, value) {
   }
 
   let hamster = new Hamster();
-
   hamster.hasTooManyBananas; // false
 
-  set(hamster, 'numBananas', 3);
+  hamster.numBananas = 3;
   hamster.hasTooManyBananas; // false
-
-  set(hamster, 'numBananas', 10);
+  
+  hamster.numBananas = 10;
   hamster.hasTooManyBananas; // true
   ```
 
@@ -664,7 +654,6 @@ export function gte(dependentKey, value) {
   Example:
 
   ```javascript
-  import { set } from '@ember/object';
   import { lt } from '@ember/object/computed';
 
   class Hamster {
@@ -672,13 +661,12 @@ export function gte(dependentKey, value) {
   }
 
   let hamster = new Hamster();
-
   hamster.needsMoreBananas; // true
 
-  set(hamster, 'numBananas', 3);
+  hamster.numBananas = 3;
   hamster.needsMoreBananas; // false
 
-  set(hamster, 'numBananas', 2);
+  hamster.numBananas = 2;
   hamster.needsMoreBananas; // true
   ```
 
@@ -730,7 +718,7 @@ export function lt(dependentKey, value) {
   Example:
 
   ```javascript
-  import { set } from '@ember/object';
+
   import { lte } from '@ember/object/computed';
 
   class Hamster {
@@ -738,13 +726,12 @@ export function lt(dependentKey, value) {
   }
 
   let hamster = new Hamster();
-
   hamster.needsMoreBananas; // true
 
-  set(hamster, 'numBananas', 5);
+  hamster.numBananas = 5;
   hamster.needsMoreBananas; // false
 
-  set(hamster, 'numBananas', 3);
+  hamster.numBananas = 3;
   hamster.needsMoreBananas; // true
   ```
 
