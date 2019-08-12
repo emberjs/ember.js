@@ -1,6 +1,7 @@
 import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { Object as EmberObject, A } from '@ember/-internals/runtime';
 import { tracked, nativeDescDecorator as descriptor } from '@ember/-internals/metal';
+import Service, { inject } from '@ember/service';
 import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 
 import { Component } from '../../utils/helpers';
@@ -208,6 +209,98 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
         });
 
         this.assertText('Kris Selden');
+
+        assert.strictEqual(computeCount, 2, 'compute is called exactly 2 times');
+      }
+
+      '@test functional helpers autotrack based on non-argument tracked props that are accessed'(
+        assert
+      ) {
+        let computeCount = 0;
+
+        let currentUserService;
+        this.registerService(
+          'current-user',
+          Service.extend({
+            name: tracked({ value: 'bob' }),
+
+            init() {
+              this._super(...arguments);
+              currentUserService = this;
+            },
+          })
+        );
+
+        this.registerComponent('person', {
+          ComponentClass: Component.extend({
+            currentUser: inject('current-user'),
+          }),
+
+          template: strip`
+            {{hello-world this.currentUser}}
+          `,
+        });
+
+        this.registerHelper('hello-world', ([service]) => {
+          computeCount++;
+          return `${service.name}-value`;
+        });
+
+        this.render('<Person/>');
+
+        this.assertText('bob-value');
+
+        assert.strictEqual(computeCount, 1, 'compute is called exactly 1 time');
+
+        runTask(() => this.rerender());
+
+        this.assertText('bob-value');
+
+        assert.strictEqual(computeCount, 1, 'compute is called exactly 1 time');
+
+        runTask(() => (currentUserService.name = 'sal'));
+
+        this.assertText('sal-value');
+
+        assert.strictEqual(computeCount, 2, 'compute is called exactly 2 times');
+      }
+
+      '@test class based helpers are autotracked'(assert) {
+        let computeCount = 0;
+
+        let TrackedClass = EmberObject.extend({
+          value: tracked({ value: 'bob' }),
+        });
+
+        let trackedInstance = TrackedClass.create();
+
+        this.registerComponent('person', {
+          ComponentClass: Component.extend(),
+          template: strip`{{hello-world}}`,
+        });
+
+        this.registerHelper('hello-world', {
+          compute() {
+            computeCount++;
+            return `${trackedInstance.value}-value`;
+          },
+        });
+
+        this.render('<Person/>');
+
+        this.assertText('bob-value');
+
+        assert.strictEqual(computeCount, 1, 'compute is called exactly 1 time');
+
+        runTask(() => this.rerender());
+
+        this.assertText('bob-value');
+
+        assert.strictEqual(computeCount, 1, 'compute is called exactly 1 time');
+
+        runTask(() => (trackedInstance.value = 'sal'));
+
+        this.assertText('sal-value');
 
         assert.strictEqual(computeCount, 2, 'compute is called exactly 2 times');
       }

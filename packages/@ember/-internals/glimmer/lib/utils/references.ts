@@ -349,16 +349,20 @@ export class SimpleHelperReference extends CachedReference {
     }
   }
 
+  private computeTag: UpdatableTag;
   public tag: Tag;
 
   constructor(private helper: HelperFunction, private args: CapturedArguments) {
     super();
-    this.tag = args.tag;
+
+    let computeTag = (this.computeTag = createUpdatableTag());
+    this.tag = combine([args.tag, computeTag]);
   }
 
   compute(): Opaque {
     let {
       helper,
+      computeTag,
       args: { positional, named },
     } = this;
 
@@ -370,7 +374,12 @@ export class SimpleHelperReference extends CachedReference {
       debugFreeze(namedValue);
     }
 
-    return helper(positionalValue, namedValue);
+    let computedValue;
+    let combinedTrackingTag = track(() => (computedValue = helper(positionalValue, namedValue)));
+
+    update(computeTag, combinedTrackingTag);
+
+    return computedValue;
   }
 }
 
@@ -379,16 +388,20 @@ export class ClassBasedHelperReference extends CachedReference {
     return new ClassBasedHelperReference(instance, args);
   }
 
+  private computeTag: UpdatableTag;
   public tag: Tag;
 
   constructor(private instance: HelperInstance, private args: CapturedArguments) {
     super();
-    this.tag = combine([instance[RECOMPUTE_TAG], args.tag]);
+
+    let computeTag = (this.computeTag = createUpdatableTag());
+    this.tag = combine([instance[RECOMPUTE_TAG], args.tag, computeTag]);
   }
 
   compute(): Opaque {
     let {
       instance,
+      computeTag,
       args: { positional, named },
     } = this;
 
@@ -400,7 +413,14 @@ export class ClassBasedHelperReference extends CachedReference {
       debugFreeze(namedValue);
     }
 
-    return instance.compute(positionalValue, namedValue);
+    let computedValue;
+    let combinedTrackingTag = track(
+      () => (computedValue = instance.compute(positionalValue, namedValue))
+    );
+
+    update(computeTag, combinedTrackingTag);
+
+    return computedValue;
   }
 }
 
