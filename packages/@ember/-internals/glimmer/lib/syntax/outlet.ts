@@ -20,22 +20,21 @@ import { OutletReference, OutletState } from '../utils/outlet';
   your template. An important use of the `{{outlet}}` helper is in your
   application's `application.hbs` file:
 
-  ```handlebars
-  {{! app/templates/application.hbs }}
-  <!-- header content goes here, and will always display -->
+  ```app/templates/application.hbs
   <MyHeader />
+
   <div class="my-dynamic-content">
     <!-- this content will change based on the current route, which depends on the current URL -->
     {{outlet}}
   </div>
-  <!-- footer content goes here, and will always display -->
+
   <MyFooter />
   ```
 
   You may also specify a name for the `{{outlet}}`, which is useful when using more than one
   `{{outlet}}` in a template:
 
-  ```handlebars
+  ```app/templates/application.hbs
   {{outlet "menu"}}
   {{outlet "sidebar"}}
   {{outlet "main"}}
