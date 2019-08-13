@@ -16,17 +16,19 @@ import {
 import {
   // Tags
   combine,
+  value,
+  update,
+  validate,
+  createUpdatableTag,
+  Tag,
+  UpdatableTag,
+  Revision,
   combineSlice,
-  CONSTANT_TAG,
   INITIAL,
   IterationArtifacts,
   IteratorSynchronizer,
   IteratorSynchronizerDelegate,
   PathReference,
-  Revision,
-  Tag,
-  TagWrapper,
-  UpdatableTag,
   END,
 } from '@glimmer/reference';
 import { associate, expect, LinkedList, Option, Stack } from '@glimmer/util';
@@ -153,7 +155,7 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
 
   public tag: Tag;
 
-  private _tag: TagWrapper<UpdatableTag>;
+  private _tag: UpdatableTag;
 
   protected bounds!: UpdatableBlock; // Hides property on base class
 
@@ -164,11 +166,11 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
     children: LinkedList<UpdatingOpcode>
   ) {
     super(state, runtime, bounds, children);
-    this.tag = this._tag = UpdatableTag.create(CONSTANT_TAG);
+    this.tag = this._tag = createUpdatableTag();
   }
 
   didInitializeChildren() {
-    this._tag.inner.update(combineSlice(this.children));
+    update(this._tag, combineSlice(this.children));
   }
 
   evaluate(vm: UpdatingVM) {
@@ -297,7 +299,7 @@ export class ListBlockOpcode extends BlockOpcode {
   public tag: Tag;
 
   private lastIterated: Revision = INITIAL;
-  private _tag: TagWrapper<UpdatableTag>;
+  private _tag: UpdatableTag;
 
   constructor(
     state: ResumableVMState<InternalVM>,
@@ -308,22 +310,22 @@ export class ListBlockOpcode extends BlockOpcode {
   ) {
     super(state, runtime, bounds, children);
     this.artifacts = artifacts;
-    let _tag = (this._tag = UpdatableTag.create(CONSTANT_TAG));
+    let _tag = (this._tag = createUpdatableTag());
     this.tag = combine([artifacts.tag, _tag]);
   }
 
   didInitializeChildren(listDidChange = true) {
-    this.lastIterated = this.artifacts.tag.value();
+    this.lastIterated = value(this.artifacts.tag);
 
     if (listDidChange) {
-      this._tag.inner.update(combineSlice(this.children));
+      update(this._tag, combineSlice(this.children));
     }
   }
 
   evaluate(vm: UpdatingVM) {
     let { artifacts, lastIterated } = this;
 
-    if (!artifacts.tag.validate(lastIterated)) {
+    if (!validate(artifacts.tag, lastIterated)) {
       let { bounds } = this;
       let { dom } = vm;
 

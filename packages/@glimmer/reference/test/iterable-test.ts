@@ -1,6 +1,5 @@
 import {
   BasicReference,
-  RevisionTag,
   AbstractIterable,
   Iterator,
   IterationItem,
@@ -8,7 +7,7 @@ import {
   ReferenceIterator,
   IteratorSynchronizer,
   IteratorSynchronizerDelegate,
-  TagWrapper,
+  Tag,
   CURRENT_TAG,
   END,
 } from '@glimmer/reference';
@@ -165,7 +164,7 @@ class TestIterable
       UpdatableReference<unknown>,
       UpdatableReference<unknown>
     > {
-  public tag: TagWrapper<RevisionTag | null>;
+  public tag: Tag;
   private arrayRef: UpdatableReference<TestItem[]>;
 
   constructor(arrayRef: UpdatableReference<TestItem[]>) {

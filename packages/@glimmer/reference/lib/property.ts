@@ -1,13 +1,17 @@
 import { dict, isDict } from '@glimmer/util';
 import {
-  VersionedPathReference,
   CONSTANT_TAG,
   isConst,
   Tag,
-  TagWrapper,
   combine,
-  UpdatableDirtyableTag,
+  createUpdatableTag,
+  UpdatableTag,
+  validate,
+  value,
+  dirty,
+  update,
 } from './validators';
+import { VersionedPathReference } from './reference';
 import { pushTrackFrame, popTrackFrame } from './autotrack';
 import { tagFor } from './tags';
 
@@ -88,9 +92,9 @@ export class Cached<T = unknown> implements VersionedPathReference<T> {
   value() {
     let { tag, _lastRevision, _lastValue } = this;
 
-    if (!_lastRevision || !tag.validate(_lastRevision)) {
+    if (!_lastRevision || !validate(tag, _lastRevision)) {
       _lastValue = this._lastValue = this.inner.value();
-      this._lastRevision = tag.value();
+      this._lastRevision = value(tag);
     }
 
     return _lastValue;
@@ -124,15 +128,9 @@ export function property(parentReference: VersionedPathReference, propertyKey: s
 // function child(value: unknown, key: string): VersionedPathReference {}
 
 export class RootPropertyReference implements VersionedPathReference {
-  tag: TagWrapper<UpdatableDirtyableTag>;
-  private _parentValue: unknown;
-  private _propertyKey: string;
+  tag = createUpdatableTag();
 
-  constructor(parentValue: unknown, propertyKey: string) {
-    this._parentValue = parentValue;
-    this._propertyKey = propertyKey;
-    this.tag = UpdatableDirtyableTag.create(CONSTANT_TAG);
-  }
+  constructor(private _parentValue: unknown, private _propertyKey: string) {}
 
   value(): unknown {
     let { _parentValue } = this;
@@ -140,7 +138,7 @@ export class RootPropertyReference implements VersionedPathReference {
       let old = pushTrackFrame();
       let ret = _parentValue[this._propertyKey];
       let tag = popTrackFrame(old);
-      this.tag.inner.update(tag);
+      update(this.tag, tag);
       return ret;
     } else {
       return undefined;
@@ -154,17 +152,11 @@ export class RootPropertyReference implements VersionedPathReference {
 
 export class NestedPropertyReference implements VersionedPathReference {
   public tag: Tag;
-  private _parentReference: VersionedPathReference;
-  private _parentObjectTag: TagWrapper<UpdatableDirtyableTag>;
-  private _propertyKey: string;
+  private _parentObjectTag: UpdatableTag;
 
-  constructor(parentReference: VersionedPathReference, propertyKey: string) {
-    let parentReferenceTag = parentReference.tag;
-    let parentObjectTag = UpdatableDirtyableTag.create(CONSTANT_TAG);
-
-    this._parentReference = parentReference;
-    this._parentObjectTag = parentObjectTag;
-    this._propertyKey = propertyKey;
+  constructor(private _parentReference: VersionedPathReference, private _propertyKey: string) {
+    let parentObjectTag = (this._parentObjectTag = createUpdatableTag());
+    let parentReferenceTag = _parentReference.tag;
 
     this.tag = combine([parentReferenceTag, parentObjectTag]);
   }
@@ -174,13 +166,13 @@ export class NestedPropertyReference implements VersionedPathReference {
 
     let parentValue = _parentReference.value();
 
-    _parentObjectTag.inner.update(tagFor(parentValue, _propertyKey));
+    update(_parentObjectTag, tagFor(parentValue, _propertyKey));
 
     if (isDict(parentValue)) {
       let old = pushTrackFrame();
       let ret = parentValue[_propertyKey];
       let tag = popTrackFrame(old);
-      _parentObjectTag.inner.update(tag);
+      update(_parentObjectTag, tag);
       return ret;
     } else {
       return undefined;
@@ -193,13 +185,9 @@ export class NestedPropertyReference implements VersionedPathReference {
 }
 
 export class UpdatableReference<T = unknown> implements VersionedPathReference<T> {
-  public tag: TagWrapper<UpdatableDirtyableTag>;
-  private _value: T;
+  public tag = createUpdatableTag();
 
-  constructor(value: T) {
-    this.tag = UpdatableDirtyableTag.create(CONSTANT_TAG);
-    this._value = value;
-  }
+  constructor(private _value: T) {}
 
   value() {
     return this._value;
@@ -209,18 +197,18 @@ export class UpdatableReference<T = unknown> implements VersionedPathReference<T
     let { _value } = this;
 
     if (value !== _value) {
-      this.tag.inner.dirty();
+      dirty(this.tag);
       this._value = value;
     }
   }
 
   forceUpdate(value: T) {
-    this.tag.inner.dirty();
+    dirty(this.tag);
     this._value = value;
   }
 
   dirty() {
-    this.tag.inner.dirty();
+    dirty(this.tag);
   }
 
   get(key: string): VersionedPathReference {

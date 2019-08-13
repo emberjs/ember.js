@@ -3,8 +3,11 @@ import {
   VersionedPathReference,
   UpdatableReference,
   map,
-  pair,
-  DirtyableTag,
+  createTag,
+  dirty,
+  value,
+  validate,
+  combine,
   CONSTANT_TAG,
 } from '@glimmer/reference';
 import { tracked } from './support';
@@ -58,14 +61,14 @@ QUnit.test('mapping an object with interior mutability', () => {
 });
 
 QUnit.test('pair works correctly', () => {
-  let tag = DirtyableTag.create();
+  let tag = createTag();
   let constantTag = CONSTANT_TAG;
 
-  let snapshot = tag.value();
-  let paired = pair(tag, constantTag);
+  let snapshot = value(tag);
+  let paired = combine([tag, constantTag]);
 
-  tag.inner.dirty();
-  QUnit.assert.notOk(paired.validate(snapshot));
+  dirty(tag);
+  QUnit.assert.notOk(validate(paired, snapshot));
 });
 
 export type Step<T, U, K extends keyof T> =
@@ -80,32 +83,32 @@ function steps<T, U, K extends keyof T>(
   ...steps: Array<Step<T, U, K>>
 ) {
   let tag = derived.tag;
-  let snapshot = tag.value();
+  let snapshot = value(tag);
 
   for (let step of steps) {
     switch (step[0]) {
       case 'eq':
         QUnit.assert.equal(derived.value(), step[1], JSON.stringify(step));
-        QUnit.assert.equal(tag.validate(snapshot), true, `snapshot valid ${JSON.stringify(step)}`);
+        QUnit.assert.equal(validate(tag, snapshot), true, `snapshot valid ${JSON.stringify(step)}`);
         break;
       case 'update':
         state = step[1];
         ref.update(step[1]);
         QUnit.assert.equal(
-          tag.validate(snapshot),
+          validate(tag, snapshot),
           false,
           `snapshot invalidated ${JSON.stringify(step)}`
         );
-        snapshot = tag.value();
+        snapshot = value(tag);
         break;
       case 'update-child':
         state[step[1]] = step[2];
         QUnit.assert.equal(
-          tag.validate(snapshot),
+          validate(tag, snapshot),
           false,
           `snapshot invalidated ${JSON.stringify(step)}`
         );
-        snapshot = tag.value();
+        snapshot = value(tag);
     }
   }
 }
