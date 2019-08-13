@@ -1,19 +1,19 @@
 import {
-  CONSTANT_TAG,
   Tag,
-  PathReference,
   UpdatableTag,
-  TagWrapper,
+  PathReference,
   combine,
+  createUpdatableTag,
+  update,
 } from '@glimmer/reference';
 import { DynamicScope, VM as PublicVM, VMArguments, Helper } from '@glimmer/interfaces';
 
 class DynamicVarReference implements PathReference<unknown> {
   public tag: Tag;
-  private varTag: TagWrapper<UpdatableTag>;
+  private varTag: UpdatableTag;
 
   constructor(private scope: DynamicScope, private nameRef: PathReference<unknown>) {
-    let varTag = (this.varTag = UpdatableTag.create(CONSTANT_TAG));
+    let varTag = (this.varTag = createUpdatableTag());
     this.tag = combine([nameRef.tag, varTag]);
   }
 
@@ -29,7 +29,7 @@ class DynamicVarReference implements PathReference<unknown> {
     let name = String(this.nameRef.value());
     let ref = this.scope.get(name);
 
-    this.varTag.inner.update(ref.tag);
+    update(this.varTag, ref.tag);
 
     return ref;
   }

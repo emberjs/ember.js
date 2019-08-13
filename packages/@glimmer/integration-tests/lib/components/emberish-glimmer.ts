@@ -1,10 +1,10 @@
 import {
-  TagWrapper,
   PathReference,
   combine,
   UpdatableReference,
+  UpdatableTag,
   Tag,
-  UpdatableDirtyableTag,
+  createUpdatableTag,
 } from '@glimmer/reference';
 import {
   Dict,
@@ -47,7 +47,7 @@ function getSelf(obj: EmberishGlimmerComponent): UpdatableReference {
 }
 
 export class EmberishGlimmerComponent {
-  public dirtinessTag: TagWrapper<UpdatableDirtyableTag> = UpdatableDirtyableTag.create();
+  public dirtinessTag: UpdatableTag = createUpdatableTag();
   public attrs!: Attrs;
   public element!: Element;
   public bounds!: Bounds;
