@@ -1,6 +1,6 @@
 {
   "name": "glimmer-engine",
-  "version": "0.41.4",
+  "version": "0.42.0",
   "private": true,
   "description": "Glimmer compiles Handlebars templates into document fragments rather than string buffers",
   "license": "MIT",
@@ -31,8 +31,8 @@
     "link:local": "node bin/yarn-link-local"
   },
   "resolutions": {
-    "typescript": "3.2.4",
-    "amd-name-resolver": "https://github.com/ember-cli/amd-name-resolver.git"
+    "typescript": "3.3.3",
+    "broccoli-typescript-transpiler/typescript": "3.3.3"
   },
   "dependencies": {
     "@simple-dom/document": "^1.4.0",
@@ -86,10 +86,6 @@
     "tslint": "^5.11.0",
     "tslint-config-prettier": "^1.15.0",
     "tslint-plugin-prettier": "^2.0.1"
-  },
-  "resolutions": {
-    "typescript": "3.3.3",
-    "broccoli-typescript-transpiler/typescript": "3.3.3"
   },
   "changelog": {
     "repo": "glimmerjs/glimmer-vm",
