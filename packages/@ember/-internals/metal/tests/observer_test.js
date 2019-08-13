@@ -15,7 +15,6 @@ import {
   changeProperties,
   get,
   set,
-  alias,
 } from '..';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 import { FUNCTION_PROTOTYPE_EXTENSIONS } from '@ember/deprecated-features';

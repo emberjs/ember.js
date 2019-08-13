@@ -27,9 +27,7 @@ import {
   UpdatableTag,
   update,
   validate,
-  VALIDATE,
   value,
-  VALUE,
   VersionedPathReference,
   VersionedReference,
 } from '@glimmer/reference';
@@ -116,36 +114,17 @@ if (DEBUG) {
       return (new TwoWayFlushDetectionTag(tag, key, ref) as unknown) as Tag;
     }
 
-    private parent: Opaque = null;
-
     constructor(
       private tag: Tag,
       private key: string,
       private ref: VersionedPathReference<Opaque>
     ) {}
 
-    [VALUE](): Revision {
-      return value(this.tag);
-    }
-
     [COMPUTE](): Revision {
       return this.tag[COMPUTE]();
     }
 
-    [VALIDATE](ticket: Revision): boolean {
-      let { parent, key, ref } = this;
-
-      let isValid = validate(this.tag, ticket);
-
-      if (isValid && parent) {
-        didRender(parent, key, ref);
-      }
-
-      return isValid;
-    }
-
     didCompute(parent: Opaque): void {
-      this.parent = parent;
       didRender(parent, this.key, this.ref);
     }
   };

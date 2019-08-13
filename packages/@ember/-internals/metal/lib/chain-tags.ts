@@ -53,6 +53,7 @@ export function getChainTagsForKey(obj: any, path: string) {
   // prevent closures
   let segment: string, descriptor: any;
 
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     let currentType = typeof current;
 
