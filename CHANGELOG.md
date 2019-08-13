@@ -1,5 +1,23 @@
 # Changelog
 
+## v0.42.0 (2019-08-13)
+
+#### :boom: Breaking Change
+* `@glimmer/integration-tests`, `@glimmer/reference`, `@glimmer/runtime`
+  * [#964](https://github.com/glimmerjs/glimmer-vm/pull/964) [FEAT] Perf Tuning + Functional API ([@pzuraq](https://github.com/pzuraq))
+
+#### :bug: Bug Fix
+* `@glimmer/integration-tests`, `@glimmer/node`, `@glimmer/runtime`
+  * [#961](https://github.com/glimmerjs/glimmer-vm/pull/961) Fix `<title>`, `<script>`, and `<style>` rehydration ([@CvX](https://github.com/CvX))
+* `@glimmer/integration-tests`, `@glimmer/syntax`
+  * [#960](https://github.com/glimmerjs/glimmer-vm/pull/960) Update simple-html-tokenizer to v0.5.8 ([@josemarluedke](https://github.com/josemarluedke))
+
+#### Committers: 4
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+- Jarek Radosz ([@CvX](https://github.com/CvX))
+- Josemar Luedke ([@josemarluedke](https://github.com/josemarluedke))
+- bek ([@bekzod](https://github.com/bekzod))
+
 ## v0.41.4 (2019-07-11)
 
 #### :rocket: Enhancement
