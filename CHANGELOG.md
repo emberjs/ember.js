@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### v3.13.0.beta.2 (August 12, 2019)
+
+- [#18248](https://github.com/emberjs/ember.js/pull/18248) [BUGFIX] Ensures that observers are flushed after CPs are updated
+- [#18241](https://github.com/emberjs/ember.js/pull/18241) [BUGFIX] Adds Component Manager 3.13 Capabilities
+
 ### v3.13.0-beta.1 (August 6, 2019)
 
 - [#16366](https://github.com/emberjs/ember.js/pull/16366) / [#16903](https://github.com/emberjs/ember.js/pull/16903) / [#17572](https://github.com/emberjs/ember.js/pull/17572) / [#17682](https://github.com/emberjs/ember.js/pull/17682) / [#17765](https://github.com/emberjs/ember.js/pull/17765) / [#17751](https://github.com/emberjs/ember.js/pull/17751) / [#17835](https://github.com/emberjs/ember.js/pull/17835) / [#18059](https://github.com/emberjs/ember.js/pull/18059) / [#17951](https://github.com/emberjs/ember.js/pull/17951) / [#18069](https://github.com/emberjs/ember.js/pull/18069) / [#18074](https://github.com/emberjs/ember.js/pull/18074) / [#18073](https://github.com/emberjs/ember.js/pull/18073) / [#18091](https://github.com/emberjs/ember.js/pull/18091) / [#18186](https://github.com/emberjs/ember.js/pull/18186) [FEATURE] Implement the [Tracked Properties](https://github.com/emberjs/rfcs/blob/master/text/0410-tracked-properties.md) and [Tracked Property Updates](https://github.com/emberjs/rfcs/blob/master/text/0478-tracked-properties-updates.md) RFCs.
