@@ -306,7 +306,7 @@ class Rehydration extends AbstractRehydrationTests {
       strip`
       ${b(4)}Wat Wat${b(4)}
     `,
-      'Serilaized nested remote'
+      'Serialized nested remote'
     );
     doc = this.delegate.clientDoc;
     let clientRemoteParent = doc.createElement('remote');
@@ -350,6 +350,83 @@ class Rehydration extends AbstractRehydrationTests {
       <circle />
       </svg>
       <p>Hello</p>
+    `);
+    this.assertStableRerender();
+  }
+
+  @test
+  'title tag'() {
+    let template = '<title>{{pageTitle}} some {{{other}}}{{thing}} <b>hey!</b></title>';
+    this.renderServerSide(template, { pageTitle: 'kiwi', other: 'other', thing: 'thing' });
+    let b = blockStack();
+    this.assertHTML(strip`
+      ${b(0)}
+      <title>
+        kiwi some otherthing <b>hey!</b>
+      </title>
+      ${b(0)}
+    `);
+    this.renderClientSide(template, { pageTitle: 'kiwi', other: 'other', thing: 'thing' });
+    this.assertRehydrationStats({ nodesRemoved: 0 });
+    this.assertHTML(strip`
+      <title>
+        kiwi some otherthing <b>hey!</b>
+      </title>
+    `);
+    this.assertStableRerender();
+  }
+
+  @test
+  'script tag'() {
+    let template = strip`
+      <script type="application/ld+json">{{data}}</script>
+      <script type="application/ld+json">{{otherData}}</script>
+    `;
+    this.renderServerSide(template, { data: '{ "status": "ok" }', otherData: '{ "code": 200 }' });
+    let b = blockStack();
+    this.assertHTML(strip`
+      ${b(0)}
+      <script type="application/ld+json">
+        { "status": "ok" }
+      </script>
+
+      <script type="application/ld+json">
+        { "code": 200 }
+      </script>
+      ${b(0)}
+    `);
+    this.renderClientSide(template, { data: '{ "status": "ok" }', otherData: '{ "code": 200 }' });
+    this.assertRehydrationStats({ nodesRemoved: 0 });
+    this.assertHTML(strip`
+      <script type="application/ld+json">
+        { "status": "ok" }
+      </script>
+
+      <script type="application/ld+json">
+        { "code": 200 }
+      </script>
+    `);
+    this.assertStableRerender();
+  }
+
+  @test
+  'style tag'() {
+    let template = '<style>{{selector}} { color: #fff; }</style>';
+    this.renderServerSide(template, { selector: 'div' });
+    let b = blockStack();
+    this.assertHTML(strip`
+      ${b(0)}
+      <style>
+        div { color: #fff; }
+      </style>
+      ${b(0)}
+    `);
+    this.renderClientSide(template, { selector: 'div' });
+    this.assertRehydrationStats({ nodesRemoved: 0 });
+    this.assertHTML(strip`
+      <style>
+        div { color: #fff; }
+      </style>
     `);
     this.assertStableRerender();
   }
