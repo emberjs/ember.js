@@ -4,7 +4,7 @@ import { getViewElement, getViewId } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { backburner, getCurrentRunLoop } from '@ember/runloop';
 import { Option, Simple } from '@glimmer/interfaces';
-import { CURRENT_TAG, VersionedPathReference } from '@glimmer/reference';
+import { CURRENT_TAG, validate, value, VersionedPathReference } from '@glimmer/reference';
 import {
   clientBuilder,
   CurriedComponentDefinition,
@@ -431,7 +431,7 @@ export abstract class Renderer {
           globalShouldReflush = globalShouldReflush || shouldReflush;
         }
 
-        this._lastRevision = CURRENT_TAG.value();
+        this._lastRevision = value(CURRENT_TAG);
       } finally {
         env.commit();
       }
@@ -467,7 +467,7 @@ export abstract class Renderer {
       completedWithoutError = true;
     } finally {
       if (!completedWithoutError) {
-        this._lastRevision = CURRENT_TAG.value();
+        this._lastRevision = value(CURRENT_TAG);
         if (this._env.inTransaction === true) {
           this._env.commit();
         }
@@ -498,7 +498,7 @@ export abstract class Renderer {
   }
 
   _isValid() {
-    return this._destroyed || this._roots.length === 0 || CURRENT_TAG.validate(this._lastRevision);
+    return this._destroyed || this._roots.length === 0 || validate(CURRENT_TAG, this._lastRevision);
   }
 
   _revalidate() {

@@ -19,7 +19,7 @@ import {
   Simple,
   VMHandle,
 } from '@glimmer/interfaces';
-import { combine, Tag, VersionedPathReference } from '@glimmer/reference';
+import { combine, Tag, validate, value, VersionedPathReference } from '@glimmer/reference';
 import {
   Arguments,
   Bounds,
@@ -414,10 +414,10 @@ export default class CurlyComponentManager
 
     bucket.finalizer = _instrumentStart('render.component', rerenderInstrumentDetails, component);
 
-    if (args && !args.tag.validate(argsRevision)) {
+    if (args && !validate(args.tag, argsRevision)) {
       let props = processComponentArgs(args!);
 
-      bucket.argsRevision = args!.tag.value();
+      bucket.argsRevision = value(args!.tag);
 
       component[IS_DISPATCHING_ATTRS] = true;
       component.setProperties(props);

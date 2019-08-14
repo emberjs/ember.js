@@ -15,15 +15,19 @@ import { DEBUG } from '@glimmer/env';
 import { Dict, Opaque } from '@glimmer/interfaces';
 import {
   combine,
-  CONSTANT_TAG,
+  COMPUTE,
   ConstReference,
+  createTag,
+  createUpdatableTag,
+  dirty,
   DirtyableTag,
   isConst,
   Revision,
-  RevisionTag,
   Tag,
-  TagWrapper,
   UpdatableTag,
+  update,
+  validate,
+  value,
   VersionedPathReference,
   VersionedReference,
 } from '@glimmer/reference';
@@ -67,9 +71,9 @@ export abstract class CachedReference extends EmberPathReference {
   value(): Opaque {
     let { tag, lastRevision, lastValue } = this;
 
-    if (lastRevision === null || !tag.validate(lastRevision)) {
+    if (lastRevision === null || !validate(tag, lastRevision)) {
       lastValue = this.lastValue = this.compute();
-      this.lastRevision = tag.value();
+      this.lastRevision = value(tag);
     }
 
     return lastValue;
@@ -100,29 +104,15 @@ export class RootReference<T extends object> extends ConstReference<T>
   }
 }
 
-interface ITwoWayFlushDetectionTag extends RevisionTag {
-  didCompute(parent: Opaque): void;
-}
-
 let TwoWayFlushDetectionTag: {
-  create(
-    tag: Tag,
-    key: string,
-    ref: VersionedPathReference<Opaque>
-  ): TagWrapper<ITwoWayFlushDetectionTag>;
+  create(tag: Tag, key: string, ref: VersionedPathReference<Opaque>): Tag;
 };
 
 if (DEBUG) {
-  TwoWayFlushDetectionTag = class TwoWayFlushDetectionTag implements ITwoWayFlushDetectionTag {
-    static create(
-      tag: Tag,
-      key: string,
-      ref: VersionedPathReference<Opaque>
-    ): TagWrapper<TwoWayFlushDetectionTag> {
-      return new TagWrapper((tag as any).type, new TwoWayFlushDetectionTag(tag, key, ref));
+  TwoWayFlushDetectionTag = class TwoWayFlushDetectionTag {
+    static create(tag: Tag, key: string, ref: VersionedPathReference<Opaque>): Tag {
+      return (new TwoWayFlushDetectionTag(tag, key, ref) as unknown) as Tag;
     }
-
-    private parent: Opaque = null;
 
     constructor(
       private tag: Tag,
@@ -130,24 +120,11 @@ if (DEBUG) {
       private ref: VersionedPathReference<Opaque>
     ) {}
 
-    value(): Revision {
-      return this.tag.value();
-    }
-
-    validate(ticket: Revision): boolean {
-      let { parent, key, ref } = this;
-
-      let isValid = this.tag.validate(ticket);
-
-      if (isValid && parent) {
-        didRender(parent, key, ref);
-      }
-
-      return isValid;
+    [COMPUTE](): Revision {
+      return this.tag[COMPUTE]();
     }
 
     didCompute(parent: Opaque): void {
-      this.parent = parent;
       didRender(parent, this.key, this.ref);
     }
   };
@@ -172,15 +149,16 @@ export abstract class PropertyReference extends CachedReference {
 export class RootPropertyReference extends PropertyReference
   implements VersionedPathReference<Opaque> {
   public tag: Tag;
-  private propertyTag: TagWrapper<UpdatableTag>;
+  private propertyTag: UpdatableTag;
 
   constructor(private parentValue: object, private propertyKey: string) {
     super();
 
     if (EMBER_METAL_TRACKED_PROPERTIES) {
-      this.propertyTag = UpdatableTag.create(CONSTANT_TAG);
+      this.propertyTag = createUpdatableTag();
     } else {
-      this.propertyTag = UpdatableTag.create(tagForProperty(parentValue, propertyKey));
+      let tag = (this.propertyTag = createUpdatableTag());
+      update(tag, tagForProperty(parentValue, propertyKey));
     }
 
     if (DEBUG) {
@@ -198,7 +176,7 @@ export class RootPropertyReference extends PropertyReference
     let { parentValue, propertyKey } = this;
 
     if (DEBUG) {
-      (this.tag.inner as ITwoWayFlushDetectionTag).didCompute(parentValue);
+      (this.tag as any).didCompute(parentValue);
     }
 
     let ret;
@@ -209,7 +187,7 @@ export class RootPropertyReference extends PropertyReference
       });
 
       consume(tag);
-      this.propertyTag.inner.update(tag);
+      update(this.propertyTag, tag);
     } else {
       ret = get(parentValue, propertyKey);
     }
@@ -224,7 +202,7 @@ export class RootPropertyReference extends PropertyReference
 
 export class NestedPropertyReference extends PropertyReference {
   public tag: Tag;
-  private propertyTag: TagWrapper<UpdatableTag>;
+  private propertyTag: UpdatableTag;
 
   constructor(
     private parentReference: VersionedPathReference<Opaque>,
@@ -233,7 +211,7 @@ export class NestedPropertyReference extends PropertyReference {
     super();
 
     let parentReferenceTag = parentReference.tag;
-    let propertyTag = (this.propertyTag = UpdatableTag.create(CONSTANT_TAG));
+    let propertyTag = (this.propertyTag = createUpdatableTag());
 
     if (DEBUG) {
       let tag = combine([parentReferenceTag, propertyTag]);
@@ -261,7 +239,7 @@ export class NestedPropertyReference extends PropertyReference {
       }
 
       if (DEBUG) {
-        (this.tag.inner as ITwoWayFlushDetectionTag).didCompute(parentValue);
+        (this.tag as any).didCompute(parentValue);
       }
 
       let ret;
@@ -273,10 +251,10 @@ export class NestedPropertyReference extends PropertyReference {
 
         consume(tag);
 
-        propertyTag.inner.update(tag);
+        update(propertyTag, tag);
       } else {
         ret = get(parentValue, propertyKey);
-        propertyTag.inner.update(tagForProperty(parentValue, propertyKey));
+        update(propertyTag, tagForProperty(parentValue, propertyKey));
       }
 
       return ret;
@@ -295,13 +273,13 @@ export class NestedPropertyReference extends PropertyReference {
 }
 
 export class UpdatableReference extends EmberPathReference {
-  public tag: TagWrapper<DirtyableTag>;
+  public tag: DirtyableTag;
   private _value: Opaque;
 
   constructor(value: Opaque) {
     super();
 
-    this.tag = DirtyableTag.create();
+    this.tag = createTag();
     this._value = value;
   }
 
@@ -313,7 +291,7 @@ export class UpdatableReference extends EmberPathReference {
     let { _value } = this;
 
     if (value !== _value) {
-      this.tag.inner.dirty();
+      dirty(this.tag);
       this._value = value;
     }
   }
@@ -321,7 +299,7 @@ export class UpdatableReference extends EmberPathReference {
 
 export class ConditionalReference extends GlimmerConditionalReference
   implements VersionedReference<boolean> {
-  public objectTag: TagWrapper<UpdatableTag>;
+  public objectTag: UpdatableTag;
   static create(reference: VersionedReference<Opaque>): VersionedReference<boolean> {
     if (isConst(reference)) {
       let value = reference.value();
@@ -336,16 +314,16 @@ export class ConditionalReference extends GlimmerConditionalReference
 
   constructor(reference: VersionedReference<Opaque>) {
     super(reference);
-    this.objectTag = UpdatableTag.create(CONSTANT_TAG);
+    this.objectTag = createUpdatableTag();
     this.tag = combine([reference.tag, this.objectTag]);
   }
 
   toBool(predicate: Opaque): boolean {
     if (isProxy(predicate)) {
-      this.objectTag.inner.update(tagForProperty(predicate, 'isTruthy'));
+      update(this.objectTag, tagForProperty(predicate, 'isTruthy'));
       return Boolean(get(predicate, 'isTruthy'));
     } else {
-      this.objectTag.inner.update(tagFor(predicate));
+      update(this.objectTag, tagFor(predicate));
       return emberToBool(predicate);
     }
   }

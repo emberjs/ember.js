@@ -31,6 +31,8 @@ const BREAK = {};
   disrupt the control flow.
 */
 export function setupAssertionHelpers(hooks: NestedHooks, env: DebugEnv) {
+  let originalAssertFunc = env.getDebugFunction('assert');
+
   hooks.beforeEach(function(assert) {
     let expectAssertion: ExpectAssertionFunc = (func: () => void, expectedMessage: Message) => {
       if (!DEBUG) {
@@ -70,6 +72,10 @@ export function setupAssertionHelpers(hooks: NestedHooks, env: DebugEnv) {
   });
 
   hooks.afterEach(function() {
+    // Edge will occasionally not run finally blocks, so we have to be extra
+    // sure we restore the original assert function
+    env.setDebugFunction('assert', originalAssertFunc);
+
     window.expectAssertion = null;
     window.ignoreAssertion = null;
   });

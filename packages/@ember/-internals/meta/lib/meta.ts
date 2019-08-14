@@ -1,7 +1,9 @@
 import { lookupDescriptor, symbol, toString } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { Tag } from '@glimmer/reference';
+import { createUpdatableTag, UpdatableTag } from '@glimmer/reference';
+
+type ObjMap<T> = { [key: string]: T };
 
 const objectPrototype = Object.prototype;
 
@@ -98,10 +100,10 @@ export class Meta {
   _deps: any | undefined;
   _chainWatchers: any | undefined;
   _chains: any | undefined;
-  _tag: Tag | undefined;
-  _tags: any | undefined;
+  _tag: UpdatableTag | undefined;
+  _tags: ObjMap<UpdatableTag> | undefined;
   _flags: MetaFlags;
-  _lazyChains: Map<string, Array<[string, Tag]>> | undefined;
+  _lazyChains: ObjMap<ObjMap<UpdatableTag>> | undefined;
   source: object;
   proto: object | undefined;
   _parent: Meta | undefined | null;
@@ -342,7 +344,7 @@ export class Meta {
     return this._tags;
   }
 
-  writableTag(create: (obj: object) => Tag) {
+  writableTag() {
     assert(
       this.isMetaDestroyed()
         ? `Cannot create a new tag for \`${toString(this.source)}\` after it has been destroyed.`
@@ -351,7 +353,7 @@ export class Meta {
     );
     let ret = this._tag;
     if (ret === undefined) {
-      ret = this._tag = create(this.source);
+      ret = this._tag = createUpdatableTag();
     }
     return ret;
   }
@@ -368,7 +370,7 @@ export class Meta {
     let lazyChains = this._getOrCreateOwnMap('_lazyChains');
 
     if (!(key in lazyChains)) {
-      lazyChains[key] = [];
+      lazyChains[key] = Object.create(null);
     }
 
     return lazyChains[key];
@@ -384,6 +386,8 @@ export class Meta {
     if (lazyChains !== undefined) {
       return lazyChains[key];
     }
+
+    return undefined;
   }
 
   writableChainWatchers(create: (source: object) => any) {

@@ -59,13 +59,7 @@ export { default as expandProperties } from './lib/expand_properties';
 export { addObserver, activateObserver, removeObserver, flushAsyncObservers } from './lib/observer';
 export { Mixin, aliasMethod, mixin, observer, applyMixin } from './lib/mixin';
 export { default as inject, DEBUG_INJECTION_FUNCTIONS } from './lib/injected_property';
-export {
-  tagForProperty,
-  tagFor,
-  markObjectAsDirty,
-  UNKNOWN_PROPERTY_TAG,
-  update,
-} from './lib/tags';
+export { tagForProperty, tagFor, markObjectAsDirty, UNKNOWN_PROPERTY_TAG } from './lib/tags';
 export { default as runInTransaction, didRender, assertNotRendered } from './lib/transaction';
 export { consume, Tracker, tracked, track } from './lib/tracked';
 

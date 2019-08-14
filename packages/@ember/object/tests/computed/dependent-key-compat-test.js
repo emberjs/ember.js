@@ -85,6 +85,9 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
 
         assert.equal(count, 0);
 
+        // check the alias, and bootstrap it
+        assert.equal(tom.givenName, 'Tom', 'alias works');
+
         tom.firstName = 'Thomas';
         await runLoopSettled();
 

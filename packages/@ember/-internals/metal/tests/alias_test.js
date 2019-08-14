@@ -13,6 +13,7 @@ import {
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
+import { value, validate } from '@glimmer/reference';
 
 let obj, count;
 
@@ -131,10 +132,10 @@ moduleFor(
       get(obj, 'bar');
 
       let tag = EMBER_METAL_TRACKED_PROPERTIES ? tagForProperty(obj, 'bar') : tagFor(obj);
-      let tagValue = tag.value();
+      let tagValue = value(tag);
       set(obj, 'foo.faz', 'BAR');
 
-      assert.ok(!tag.validate(tagValue), 'setting the aliased key should dirty the object');
+      assert.ok(!validate(tag, tagValue), 'setting the aliased key should dirty the object');
     }
 
     ['@test setting alias on self should fail assertion']() {
@@ -206,24 +207,20 @@ moduleFor(
     ['@test property tags are bumped when the source changes [GH#17243]'](assert) {
       function assertPropertyTagChanged(obj, keyName, callback) {
         let tag = tagForProperty(obj, keyName);
-        let before = tag.value();
+        let before = value(tag);
 
         callback();
 
-        let after = tag.value();
-
-        assert.notEqual(after, before, `tagForProperty ${keyName} should change`);
+        assert.notOk(validate(tag, before), `tagForProperty ${keyName} should change`);
       }
 
       function assertPropertyTagUnchanged(obj, keyName, callback) {
         let tag = tagForProperty(obj, keyName);
-        let before = tag.value();
+        let before = value(tag);
 
         callback();
 
-        let after = tag.value();
-
-        assert.equal(after, before, `tagForProperty ${keyName} should not change`);
+        assert.ok(validate(tag, before), `tagForProperty ${keyName} should not change`);
       }
 
       defineProperty(obj, 'bar', alias('foo.faz'));

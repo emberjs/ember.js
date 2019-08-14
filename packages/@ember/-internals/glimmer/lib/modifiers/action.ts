@@ -4,7 +4,7 @@ import { assert, deprecate } from '@ember/debug';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { join } from '@ember/runloop';
 import { Opaque, Simple } from '@glimmer/interfaces';
-import { RevisionTag, TagWrapper } from '@glimmer/reference';
+import { Tag } from '@glimmer/reference';
 import {
   Arguments,
   CapturedNamedArguments,
@@ -70,7 +70,7 @@ export class ActionState {
   public implicitTarget: any;
   public dom: any;
   public eventName: any;
-  public tag: TagWrapper<RevisionTag | null>;
+  public tag: Tag;
 
   constructor(
     element: Simple.Element,
@@ -81,7 +81,7 @@ export class ActionState {
     positionalArgs: CapturedPositionalArguments,
     implicitTarget: any,
     dom: any,
-    tag: TagWrapper<RevisionTag | null>
+    tag: Tag
   ) {
     this.element = element;
     this.actionId = actionId;

@@ -1,10 +1,10 @@
 import { isEmberArray } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { combine, CONSTANT_TAG, Tag } from '@glimmer/reference';
+import { combine, CONSTANT_TAG, Tag, UpdatableTag, update } from '@glimmer/reference';
 import { Decorator, DecoratorPropertyDescriptor, isElementDescriptor } from './decorator';
 import { setClassicDecorator } from './descriptor_map';
-import { markObjectAsDirty, tagForProperty, update } from './tags';
+import { markObjectAsDirty, tagForProperty } from './tags';
 
 type Option<T> = T | null;
 
@@ -190,7 +190,7 @@ function descriptorForField([_target, key, desc]: [
     configurable: true,
 
     get(): any {
-      let propertyTag = tagForProperty(this, key);
+      let propertyTag = tagForProperty(this, key) as UpdatableTag;
 
       if (CURRENT_TRACKER) CURRENT_TRACKER.add(propertyTag);
 
@@ -266,6 +266,17 @@ export function consume(tag: Tag) {
 
 export function isTracking() {
   return CURRENT_TRACKER !== null;
+}
+
+export function untrack(callback: () => void) {
+  let parent = CURRENT_TRACKER;
+  CURRENT_TRACKER = null;
+
+  try {
+    callback();
+  } finally {
+    CURRENT_TRACKER = parent;
+  }
 }
 
 export type Key = string;
