@@ -72,7 +72,7 @@
   "devDependencies": {
     "@babel/helper-module-imports": "^7.0.0",
     "@babel/preset-env": "^7.5.5",
-    "@glimmer/compiler": "0.38.5-alpha.2",
+    "@glimmer/compiler": "0.42.0",
     "@glimmer/env": "^0.1.7",
     "@glimmer/interfaces": "0.38.5-alpha.2",
     "@glimmer/node": "0.38.5-alpha.2",
