@@ -74,7 +74,7 @@
     "@babel/preset-env": "^7.5.5",
     "@glimmer/compiler": "0.38.5-alpha.2",
     "@glimmer/env": "^0.1.7",
-    "@glimmer/interfaces": "0.38.5-alpha.2",
+    "@glimmer/interfaces": "0.42.0",
     "@glimmer/node": "0.38.5-alpha.2",
     "@glimmer/opcode-compiler": "0.38.5-alpha.2",
     "@glimmer/program": "0.38.5-alpha.2",
