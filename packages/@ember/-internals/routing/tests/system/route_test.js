@@ -163,7 +163,7 @@ moduleFor(
       runDestroy(owner);
     }
 
-    ["@test _optionsForQueryParam should work with nested properties"](assert) {
+    ['@test _optionsForQueryParam should work with nested properties'](assert) {
       let route = EmberRoute.extend({
         queryParams: {
           'nested.foo': {
@@ -180,15 +180,18 @@ moduleFor(
             // By default, the query param URL key is the same name as
             // the controller property name. Use `as` to specify a
             // different URL key.
-            as: 'foobar'
-          }
-        }
+            as: 'foobar',
+          },
+        },
       }).create();
 
-      assert.strictEqual(route._optionsForQueryParam({
-        prop: 'nested.foo',
-        urlKey: 'foobar'
-      }), route.queryParams['nested.foo']);
+      assert.strictEqual(
+        route._optionsForQueryParam({
+          prop: 'nested.foo',
+          urlKey: 'foobar',
+        }),
+        route.queryParams['nested.foo']
+      );
     }
 
     ["@test modelFor doesn't require the routerMicrolib"](assert) {

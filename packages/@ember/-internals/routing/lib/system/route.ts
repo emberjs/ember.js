@@ -307,8 +307,14 @@ class Route extends EmberObject implements IRoute {
     @property _optionsForQueryParam
   */
   _optionsForQueryParam(qp: QueryParam) {
-    const queryParams = get(this, 'queryParams')
-    return get(queryParams, qp.urlKey) || get(queryParams, qp.prop) || queryParams[qp.urlKey] || queryParams[qp.prop] || {}
+    const queryParams = get(this, 'queryParams');
+    return (
+      get(queryParams, qp.urlKey) ||
+      get(queryParams, qp.prop) ||
+      queryParams[qp.urlKey] ||
+      queryParams[qp.prop] ||
+      {}
+    );
   }
 
   /**
