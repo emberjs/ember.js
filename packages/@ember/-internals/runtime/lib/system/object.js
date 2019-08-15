@@ -12,7 +12,7 @@ import Observable from '../mixins/observable';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 
-let OVERRIDE_OWNER = symbol('OVERRIDE_OWNER');
+const instanceOwner = new WeakMap();
 
 /**
   `EmberObject` is the main base class for all Ember objects. It is a subclass
@@ -31,8 +31,10 @@ export default class EmberObject extends CoreObject {
   }
 
   get [OWNER]() {
-    if (this[OVERRIDE_OWNER]) {
-      return this[OVERRIDE_OWNER];
+    let owner = instanceOwner.get(this);
+
+    if (owner !== undefined) {
+      return owner;
     }
 
     let factory = FACTORY_FOR.get(this);
@@ -42,7 +44,7 @@ export default class EmberObject extends CoreObject {
   // we need a setter here largely to support
   // folks calling `owner.ownerInjection()` API
   set [OWNER](value) {
-    this[OVERRIDE_OWNER] = value;
+    instanceOwner.set(this, value);
   }
 }
 
