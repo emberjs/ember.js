@@ -1,1 +1,1 @@
-export { setModifierManager, modifierCapabilties as capabilties } from '@ember/-internals/glimmer';
+export { setModifierManager, modifierCapabilities as capabilties } from '@ember/-internals/glimmer';

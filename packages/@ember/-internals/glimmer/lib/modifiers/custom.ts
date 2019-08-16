@@ -1,6 +1,8 @@
+import { track, untrack } from '@ember/-internals/metal';
 import { Factory } from '@ember/-internals/owner';
+import { assert, deprecate } from '@ember/debug';
 import { Dict, Opaque, Simple } from '@glimmer/interfaces';
-import { CONSTANT_TAG, Tag } from '@glimmer/reference';
+import { combine, CONSTANT_TAG, createUpdatableTag, Tag, update } from '@glimmer/reference';
 import { Arguments, CapturedArguments, ModifierManager } from '@glimmer/runtime';
 
 export interface CustomModifierDefinitionState<ModifierInstance> {
@@ -9,11 +11,36 @@ export interface CustomModifierDefinitionState<ModifierInstance> {
   delegate: ModifierManagerDelegate<ModifierInstance>;
 }
 
-export interface Capabilities {}
+export interface OptionalCapabilities {
+  disableAutoTracking?: boolean;
+}
 
-// Currently there are no capabilities for modifiers
-export function capabilities(_managerAPI: string, _optionalFeatures?: {}): Capabilities {
-  return {};
+export interface Capabilities {
+  disableAutoTracking: boolean;
+}
+
+export function capabilities(
+  managerAPI: string,
+  optionalFeatures: OptionalCapabilities = {}
+): Capabilities {
+  if (managerAPI !== '3.13') {
+    managerAPI = '3.13';
+
+    deprecate(
+      'Modifier manager capabilities now require you to pass a valid version when being generated. Valid versions include: 3.13',
+      false,
+      {
+        until: '3.17.0',
+        id: 'implicit-modifier-manager-capabilities',
+      }
+    );
+  }
+
+  assert('Invalid modifier manager compatibility specified', managerAPI === '3.13');
+
+  return {
+    disableAutoTracking: Boolean(optionalFeatures.disableAutoTracking),
+  };
 }
 
 export class CustomModifierDefinition<ModifierInstance> {
@@ -39,6 +66,8 @@ export class CustomModifierDefinition<ModifierInstance> {
 }
 
 export class CustomModifierState<ModifierInstance> {
+  public tag = createUpdatableTag();
+
   constructor(
     public element: Simple.Element,
     public delegate: ModifierManagerDelegate<ModifierInstance>,
@@ -101,26 +130,55 @@ class InteractiveCustomModifierManager<ModifierInstance>
     definition: CustomModifierDefinitionState<ModifierInstance>,
     args: Arguments
   ) {
+    let { delegate, ModifierClass } = definition;
     const capturedArgs = args.capture();
-    let instance = definition.delegate.createModifier(
-      definition.ModifierClass,
-      capturedArgs.value()
-    );
-    return new CustomModifierState(element, definition.delegate, instance, capturedArgs);
+
+    let instance = definition.delegate.createModifier(ModifierClass, capturedArgs.value());
+
+    if (delegate.capabilities === undefined) {
+      delegate.capabilities = capabilities('3.13');
+
+      deprecate(
+        'Custom modifier managers must define their capabilities using the capabilities() helper function',
+        false,
+        {
+          until: '3.17.0',
+          id: 'implicit-modifier-manager-capabilities',
+        }
+      );
+    }
+
+    return new CustomModifierState(element, delegate, instance, capturedArgs);
   }
 
-  getTag({ args }: CustomModifierState<ModifierInstance>): Tag {
-    return args.tag;
+  getTag({ args, tag }: CustomModifierState<ModifierInstance>): Tag {
+    return combine([tag, args.tag]);
   }
 
   install(state: CustomModifierState<ModifierInstance>) {
-    let { element, args, delegate, modifier } = state;
-    delegate.installModifier(modifier, element, args.value());
+    let { element, args, delegate, modifier, tag } = state;
+    let { capabilities } = delegate;
+
+    if (capabilities.disableAutoTracking === true) {
+      untrack(() => delegate.installModifier(modifier, element, args.value()));
+    } else {
+      let combinedTrackingTag = track(() =>
+        delegate.installModifier(modifier, element, args.value())
+      );
+      update(tag, combinedTrackingTag);
+    }
   }
 
   update(state: CustomModifierState<ModifierInstance>) {
-    let { args, delegate, modifier } = state;
-    delegate.updateModifier(modifier, args.value());
+    let { args, delegate, modifier, tag } = state;
+    let { capabilities } = delegate;
+
+    if (capabilities.disableAutoTracking === true) {
+      untrack(() => delegate.updateModifier(modifier, args.value()));
+    } else {
+      let combinedTrackingTag = track(() => delegate.updateModifier(modifier, args.value()));
+      update(tag, combinedTrackingTag);
+    }
   }
 
   getDestructor(state: CustomModifierState<ModifierInstance>) {
