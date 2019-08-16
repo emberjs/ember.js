@@ -20,8 +20,8 @@ import { setAdapter, getAdapter } from '../lib/test/adapter';
 import { registerWaiter, unregisterWaiter } from '../lib/test/waiters';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 
-var originalInfo = getDebugFunction('info');
-var noop = function() {};
+const originalInfo = getDebugFunction('info');
+const noop = function() {};
 
 function registerHelper() {
   Test.registerHelper('LeakyMcLeakLeak', () => {});
@@ -36,8 +36,8 @@ function assertHelpers(assert, application, helperContainer, expected) {
   }
 
   function checkHelperPresent(helper, expected) {
-    var presentInHelperContainer = Boolean(helperContainer[helper]);
-    var presentInTestHelpers = Boolean(application.testHelpers[helper]);
+    let presentInHelperContainer = Boolean(helperContainer[helper]);
+    let presentInTestHelpers = Boolean(application.testHelpers[helper]);
 
     assert.ok(
       presentInHelperContainer === expected,

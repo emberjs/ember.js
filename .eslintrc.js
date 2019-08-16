@@ -22,6 +22,7 @@ module.exports = {
     'no-unused-vars': 'error',
     'no-throw-literal': 'error',
     'no-useless-escape': 'off', // TODO: bring this back
+    'no-var': 'error',
     'prettier/prettier': 'error',
     'qunit/no-commented-tests': 'off',
     'qunit/require-expect': 'off',

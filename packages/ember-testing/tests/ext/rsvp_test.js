@@ -107,13 +107,13 @@ moduleFor(
     ['able to get last Promise'](assert) {
       assert.expect(2);
 
-      var p1 = new TestPromise(function(resolve) {
+      let p1 = new TestPromise(function(resolve) {
         resolve();
       }).then(function() {
         assert.ok(true);
       });
 
-      var p2 = new TestPromise(function(resolve) {
+      let p2 = new TestPromise(function(resolve) {
         resolve();
       });
 

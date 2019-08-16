@@ -2,7 +2,7 @@ import { DEBUG } from '@glimmer/env';
 
 const setPrototypeOf = Object.setPrototypeOf;
 
-var nativeWrapperCache = new Map();
+const nativeWrapperCache = new Map();
 
 // Super minimal version of Babel's wrapNativeSuper. We only use this for
 // extending Function, for ComputedDecoratorImpl and AliasDecoratorImpl. We know
@@ -70,8 +70,8 @@ export function taggedTemplateLiteralLoose(strings, raw) {
 }
 
 function _defineProperties(target, props) {
-  for (var i = 0; i < props.length; i++) {
-    var descriptor = props[i];
+  for (let i = 0; i < props.length; i++) {
+    let descriptor = props[i];
     descriptor.enumerable = descriptor.enumerable || false;
     descriptor.configurable = true;
     if ('value' in descriptor) descriptor.writable = true;

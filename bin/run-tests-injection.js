@@ -3,12 +3,12 @@
 /* globals QUnit */
 'use strict';
 document.addEventListener('DOMContentLoaded', function() {
-  var testsTotal = 0;
-  var testsPassed = 0;
-  var testsFailed = 0;
-  var currentTestAssertions = [];
+  let testsTotal = 0;
+  let testsPassed = 0;
+  let testsFailed = 0;
+  let currentTestAssertions = [];
   QUnit.log(function(details) {
-    var response;
+    let response;
 
     // Ignore passing assertions
     if (details.result) {
@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   QUnit.testDone(function(result) {
-    var i,
+    let i,
       len,
       name = '';
 

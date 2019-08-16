@@ -27,7 +27,7 @@ GlimmerTemplatePrecompiler.prototype.baseDir = function() {
 };
 
 GlimmerTemplatePrecompiler.prototype.processString = function(content, relativePath) {
-  var compiled = this.precompile(content, {
+  let compiled = this.precompile(content, {
     meta: { moduleName: relativePath },
   });
   return stripIndent`

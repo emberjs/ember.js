@@ -1,8 +1,8 @@
 'use strict';
 
-var stringUtil = require('ember-cli-string-utils');
-var path = require('path');
-var inflector = require('inflection');
+const stringUtil = require('ember-cli-string-utils');
+const path = require('path');
+const inflector = require('inflection');
 
 module.exports = {
   description: 'Generates an import wrapper.',
@@ -25,11 +25,11 @@ module.exports = {
   },
 
   locals: function(options) {
-    var addonRawName = options.inRepoAddon ? options.inRepoAddon : options.project.name();
-    var addonName = stringUtil.dasherize(addonRawName);
-    var fileName = stringUtil.dasherize(options.entity.name);
-    var blueprintName = options.originBlueprintName;
-    var modulePathSegments = [
+    let addonRawName = options.inRepoAddon ? options.inRepoAddon : options.project.name();
+    let addonName = stringUtil.dasherize(addonRawName);
+    let fileName = stringUtil.dasherize(options.entity.name);
+    let blueprintName = options.originBlueprintName;
+    let modulePathSegments = [
       addonName,
       inflector.pluralize(options.originBlueprintName),
       fileName,

@@ -687,7 +687,7 @@ if (HAS_NATIVE_SYMBOL) {
 
 // Utils
 function makeIterator(ary) {
-  var index = 0;
+  let index = 0;
 
   return {
     next() {

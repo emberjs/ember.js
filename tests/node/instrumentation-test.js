@@ -1,8 +1,8 @@
 'use strict';
 
-var path = require('path');
-var distPath = path.join(__dirname, '../../dist');
-var emberPath = path.join(distPath, 'tests/ember');
+const path = require('path');
+const distPath = path.join(__dirname, '../../dist');
+const emberPath = path.join(distPath, 'tests/ember');
 
 QUnit.module('instrumentation', function(hooks) {
   hooks.afterEach(function() {
@@ -11,12 +11,12 @@ QUnit.module('instrumentation', function(hooks) {
   });
 
   QUnit.test('it works in FastBoot environment', function(assert) {
-    var _originalWindow = global.window;
+    let _originalWindow = global.window;
 
     global.window = {}; // mock window without `performance` property
-    var Ember = require(emberPath);
+    let Ember = require(emberPath);
 
-    var result = Ember.instrument('render', {}, function() {
+    let result = Ember.instrument('render', {}, function() {
       return 'hello';
     });
 

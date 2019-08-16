@@ -1,10 +1,10 @@
-var setupComponentTest = require('./helpers/setup-component');
+const setupComponentTest = require('./helpers/setup-component');
 
 QUnit.module('Components can be rendered without a DOM dependency', function(hooks) {
   setupComponentTest(hooks);
 
   QUnit.test('Simple component', function(assert) {
-    var html = this.render('<h1>Hello</h1>');
+    let html = this.render('<h1>Hello</h1>');
 
     assert.ok(html.match(/<h1>Hello<\/h1>/));
   });
@@ -12,7 +12,7 @@ QUnit.module('Components can be rendered without a DOM dependency', function(hoo
   QUnit.test('Component with dynamic value', function(assert) {
     this.set('location', 'World');
 
-    var html = this.render('<h1>Hello {{location}}</h1>');
+    let html = this.render('<h1>Hello {{location}}</h1>');
 
     assert.ok(html.match(/<h1>Hello World<\/h1>/));
   });
@@ -29,7 +29,7 @@ QUnit.module('Components can be rendered without a DOM dependency', function(hoo
       })
     );
 
-    var html = this.render('{{fake-link}}');
+    let html = this.render('{{fake-link}}');
 
     assert.ok(html.match(/rel="canonical"/));
   });

@@ -1363,7 +1363,7 @@ moduleFor(
       this.setSingleQPController('home', 'foo', [1, 2]);
 
       await this.visitAndAssert('/home');
-      var controller = this.getController('home');
+      let controller = this.getController('home');
 
       assert.deepEqual(controller.get('foo'), [1, 2]);
       this.assertCurrentPath('/home');

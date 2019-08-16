@@ -30,7 +30,7 @@ moduleFor(
       this.sendCount = 0;
       this.actionArguments = null;
 
-      var self = this;
+      let self = this;
 
       this.registerComponent('action-delegate', {
         ComponentClass: Component.extend({

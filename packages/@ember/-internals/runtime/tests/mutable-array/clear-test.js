@@ -35,7 +35,7 @@ class ClearTests extends AbstractTestCase {
   }
 
   async '@test [X].clear() => [] + notify'() {
-    var obj, before, after, observer;
+    let obj, before, after, observer;
 
     before = newFixture(1);
     after = [];

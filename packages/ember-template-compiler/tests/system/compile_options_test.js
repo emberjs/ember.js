@@ -43,7 +43,7 @@ class LegacyCustomTransform {
         return;
       }
 
-      for (var i = 0; i < node.attributes.length; i++) {
+      for (let i = 0; i < node.attributes.length; i++) {
         let attribute = node.attributes[i];
 
         if (attribute.name === 'data-test') {
@@ -64,7 +64,7 @@ function customTransform() {
 
     visitor: {
       ElementNode(node) {
-        for (var i = 0; i < node.attributes.length; i++) {
+        for (let i = 0; i < node.attributes.length; i++) {
           let attribute = node.attributes[i];
 
           if (attribute.name === 'data-test') {
