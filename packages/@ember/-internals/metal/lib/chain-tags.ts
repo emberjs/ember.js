@@ -49,6 +49,7 @@ export function getChainTagsForKey(obj: any, path: string) {
 
   let current: any = obj;
 
+  let pathLength = path.length;
   let segmentEnd = -1;
   // prevent closures
   let segment: string, descriptor: any;
@@ -66,12 +67,12 @@ export function getChainTagsForKey(obj: any, path: string) {
     segmentEnd = path.indexOf('.', lastSegmentEnd);
 
     if (segmentEnd === -1) {
-      segmentEnd = path.length;
+      segmentEnd = pathLength;
     }
 
     segment = path.slice(lastSegmentEnd, segmentEnd);
 
-    if (segment === '@each' && segmentEnd !== path.length) {
+    if (segment === '@each' && segmentEnd !== pathLength) {
       assert(
         `When using @each, the value you are attempting to watch must be an array, was: ${current.toString()}`,
         Array.isArray(current) || isEmberArray(current)
@@ -104,20 +105,25 @@ export function getChainTagsForKey(obj: any, path: string) {
     if (segment === 'args' && ARGS_PROXY_TAGS.has(current.args)) {
       assert(
         `When watching the 'args' on a GlimmerComponent, you must watch a value on the args. You cannot watch the object itself, as it never changes.`,
-        segmentEnd !== path.length
+        segmentEnd !== pathLength
       );
 
-      segment = path.substr(segmentEnd + 1)!;
-      segmentEnd = path.indexOf('.', segmentEnd);
+      lastSegmentEnd = segmentEnd + 1;
+      segmentEnd = path.indexOf('.', lastSegmentEnd);
+
+      if (segmentEnd === -1) {
+        segmentEnd = pathLength;
+      }
+
+      segment = path.slice(lastSegmentEnd, segmentEnd)!;
 
       let namedArgs = ARGS_PROXY_TAGS.get(current.args);
       let ref = namedArgs.get(segment);
 
       chainTags.push(ref.tag);
 
-      if (segmentEnd !== -1) {
+      if (segmentEnd !== pathLength) {
         current = ref.value();
-        segment = path.substr(segmentEnd + 1);
         continue;
       }
     }
@@ -126,7 +132,7 @@ export function getChainTagsForKey(obj: any, path: string) {
 
     chainTags.push(propertyTag);
 
-    if (segmentEnd === path.length) {
+    if (segmentEnd === pathLength) {
       break;
     }
 
