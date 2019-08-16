@@ -192,6 +192,15 @@ moduleFor(
         let obj = {};
         defineProperty(obj, 'someProp', computed('todos.@each.owner.@each.name', () => {}));
       }, /You used the key "todos\.@each\.owner\.@each\.name" which is invalid\. /);
+
+      expectDeprecation(() => {
+        let obj = {
+          todos: [],
+        };
+        defineProperty(obj, 'someProp', computed('todos.@each.owner.name', () => {}));
+
+        get(obj, 'someProp');
+      }, /When using @each, you can only chain one property level deep, but todos.@each.owner.name contains a nested chain. Please create an intermediary computed property or switch to tracked properties./);
     }
   }
 );
