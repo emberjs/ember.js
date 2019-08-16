@@ -516,6 +516,36 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
           this.assertText('hello!');
         }
 
+        '@test computed properties can depend on nested args'() {
+          let foo = EmberObject.create({
+            text: 'hello!',
+          });
+
+          class TestComponent extends GlimmerishComponent {
+            @computed('args.foo.text')
+            get text() {
+              return this.args.foo.text;
+            }
+          }
+
+          this.registerComponent('test', {
+            ComponentClass: TestComponent,
+            template: '<p>{{this.text}}</p>',
+          });
+
+          this.render('<Test @foo={{this.foo}}/>', {
+            foo: foo,
+          });
+
+          this.assertText('hello!');
+
+          runTask(() => foo.set('text', 'hello world!'));
+          this.assertText('hello world!');
+
+          runTask(() => foo.set('text', 'hello!'));
+          this.assertText('hello!');
+        }
+
         '@test named args are enumerable'() {
           class TestComponent extends GlimmerishComponent {
             get objectKeys() {
