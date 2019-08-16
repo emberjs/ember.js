@@ -1791,7 +1791,13 @@ EmberRouter.reopen(Evented, {
    @private
  */
   url: computed(function(this: Router<Route>) {
-    return get(this, 'location').getURL();
+    let location = get(this, 'location');
+
+    if (typeof location === 'string') {
+      return undefined;
+    }
+
+    return location.getURL();
   }),
 });
 
