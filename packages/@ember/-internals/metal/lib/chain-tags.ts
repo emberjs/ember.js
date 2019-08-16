@@ -1,6 +1,6 @@
 import { meta as metaFor, peekMeta } from '@ember/-internals/meta';
 import { isEmberArray } from '@ember/-internals/utils';
-import { assert } from '@ember/debug';
+import { assert, deprecate } from '@ember/debug';
 import { combine, createUpdatableTag, Tag, update, validate } from '@glimmer/reference';
 import { getLastRevisionFor, peekCacheFor } from './computed_cache';
 import { descriptorForProperty } from './descriptor_map';
@@ -77,13 +77,28 @@ export function getChainTagsForKey(obj: any, path: string) {
         Array.isArray(current) || isEmberArray(current)
       );
 
-      segment = path.substr(segmentEnd + 1)!;
+      lastSegmentEnd = segmentEnd + 1;
+      segmentEnd = path.indexOf('.', lastSegmentEnd);
 
       // There shouldn't be any more segments after an `@each`, so break
-      assert(
-        `When using @each, you can only chain one property level deep`,
-        segment.indexOf('.') === -1
+      deprecate(
+        `When using @each, you can only chain one property level deep, but ${path} contains a nested chain. Please create an intermediary computed property or switch to tracked properties.`,
+        segmentEnd === -1,
+        {
+          until: '3.17.0',
+          id: 'ember-metal.computed-deep-each',
+        }
       );
+
+      if (segmentEnd === -1) {
+        segmentEnd = pathLength;
+      }
+
+      segment = path.slice(lastSegmentEnd, segmentEnd)!;
+
+      if (segment.indexOf('.') !== -1) {
+        segment = segment.substr(0, segment.indexOf('.'));
+      }
 
       // Push the tags for each item's property
       let tags = (current as Array<any>).map(item => {
