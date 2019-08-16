@@ -186,10 +186,10 @@ function mapBy(key) {
   concrete implementation, but it can be used up by other classes that want
   to appear like arrays.
 
-  For example, ArrayProxy is a concrete classes that can
-  be instantiated to implement array-like behavior. Both of these classes use
-  the Array Mixin by way of the MutableArray mixin, which allows observable
-  changes to be made to the underlying array.
+  For example, ArrayProxy is a concrete class that can be instantiated to
+  implement array-like behavior. This class uses the Array Mixin by way of
+  the MutableArray mixin, which allows observable changes to be made to the
+  underlying array.
 
   This mixin defines methods specifically for collections that provide
   index-ordered access to their contents. When you are designing code that
@@ -203,8 +203,8 @@ function mapBy(key) {
   as controllers and collections.
 
   You can use the methods defined in this module to access and modify array
-  contents in a KVO-friendly way. You can also be notified whenever the
-  membership of an array changes by using `.observes('myArray.[]')`.
+  contents in an observable-friendly way. You can also be notified whenever
+  the membership of an array changes by using `.observes('myArray.[]')`.
 
   To support `EmberArray` in your own class, you must override two
   primitives to use it: `length()` and `objectAt()`.
