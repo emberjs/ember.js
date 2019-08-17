@@ -35,7 +35,7 @@ function getBrowserRunner() {
 }
 
 function run(queryString) {
-  var url = 'http://localhost:' + PORT + '/tests/?' + queryString;
+  let url = 'http://localhost:' + PORT + '/tests/?' + queryString;
   return runInBrowser(url, 3);
 }
 
@@ -44,7 +44,7 @@ function runInBrowser(url, attempts) {
   return getBrowserRunner().run(url, attempts);
 }
 
-var testFunctions = [];
+let testFunctions = [];
 
 function generateTestsFor(packageName) {
   let relativePath = path.join('packages', packageName);
@@ -95,11 +95,11 @@ function generateExtendPrototypeTests() {
 }
 
 function runInSequence(tasks) {
-  var length = tasks.length;
-  var current = Promise.resolve();
-  var results = new Array(length);
+  let length = tasks.length;
+  let current = Promise.resolve();
+  let results = new Array(length);
 
-  for (var i = 0; i < length; ++i) {
+  for (let i = 0; i < length; ++i) {
     current = results[i] = current.then(tasks[i]);
   }
 

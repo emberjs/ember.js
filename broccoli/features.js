@@ -39,8 +39,8 @@ function getFeatures() {
   }
 
   if (process.env.OVERRIDE_FEATURES) {
-    var forcedFeatures = process.env.OVERRIDE_FEATURES.split(',');
-    for (var i = 0; i < forcedFeatures.length; i++) {
+    let forcedFeatures = process.env.OVERRIDE_FEATURES.split(',');
+    for (let i = 0; i < forcedFeatures.length; i++) {
       featureName = forcedFeatures[i];
 
       features[featureName] = true;

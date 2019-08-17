@@ -32,7 +32,7 @@ moduleFor(
     }
 
     ['@test run unwinds despite unhandled exception'](assert) {
-      var initialRunLoop = getCurrentRunLoop();
+      let initialRunLoop = getCurrentRunLoop();
 
       assert.throws(
         () => {

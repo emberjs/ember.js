@@ -3088,7 +3088,7 @@ moduleFor(
           },
 
           updateValue() {
-            var newValue = this.get('options.lastObject.value');
+            let newValue = this.get('options.lastObject.value');
 
             this.set('value', newValue);
           },

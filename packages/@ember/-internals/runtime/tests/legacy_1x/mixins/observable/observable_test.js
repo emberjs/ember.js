@@ -32,10 +32,10 @@ import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpe
 // Ember.Observable Tests
 // ========================================================================
 
-var object, ObjectC, ObjectD, objectA, objectB, lookup;
+let object, ObjectC, ObjectD, objectA, objectB, lookup;
 
-var ObservableObject = EmberObject.extend(Observable);
-var originalLookup = context.lookup;
+const ObservableObject = EmberObject.extend(Observable);
+const originalLookup = context.lookup;
 
 // ..........................................................
 // GET()
@@ -73,7 +73,7 @@ moduleFor(
     }
 
     ['@test should return the function for a non-computed property'](assert) {
-      var value = object.get('method');
+      let value = object.get('method');
       assert.equal(typeof value, 'function');
     }
 
@@ -127,7 +127,7 @@ moduleFor(
     }
 
     ['@test should return the function for a non-computed property on Ember.Observable'](assert) {
-      var value = get(objectA, 'method');
+      let value = get(objectA, 'method');
       assert.equal(typeof value, 'function');
     }
 
@@ -160,7 +160,7 @@ moduleFor(
   'Ember.get() with paths',
   class extends AbstractTestCase {
     ['@test should return a property at a given path relative to the passed object'](assert) {
-      var foo = ObservableObject.create({
+      let foo = ObservableObject.create({
         bar: ObservableObject.extend({
           baz: computed(function() {
             return 'blargh';
@@ -174,7 +174,7 @@ moduleFor(
     ['@test should return a property at a given path relative to the passed object - JavaScript hash'](
       assert
     ) {
-      var foo = {
+      let foo = {
         bar: {
           baz: 'blargh',
         },
@@ -236,38 +236,38 @@ moduleFor(
     }
 
     ['@test should change normal properties and return the value'](assert) {
-      var ret = object.set('normal', 'changed');
+      let ret = object.set('normal', 'changed');
       assert.equal(object.get('normal'), 'changed');
       assert.equal(ret, 'changed');
     }
 
     ['@test should call computed properties passing value and return the value'](assert) {
-      var ret = object.set('computed', 'changed');
+      let ret = object.set('computed', 'changed');
       assert.equal(object.get('_computed'), 'changed');
       assert.equal(ret, 'changed');
     }
 
     ['@test should change normal properties when passing undefined'](assert) {
-      var ret = object.set('normal', undefined);
+      let ret = object.set('normal', undefined);
       assert.equal(object.get('normal'), undefined);
       assert.equal(ret, undefined);
     }
 
     ['@test should replace the function for a non-computed property and return the value'](assert) {
-      var ret = object.set('method', 'changed');
+      let ret = object.set('method', 'changed');
       assert.equal(object.get('_method'), 'method'); // make sure this was NOT run
       assert.ok(typeof object.get('method') !== 'function');
       assert.equal(ret, 'changed');
     }
 
     ['@test should replace prover when property value is null'](assert) {
-      var ret = object.set('nullProperty', 'changed');
+      let ret = object.set('nullProperty', 'changed');
       assert.equal(object.get('nullProperty'), 'changed');
       assert.equal(ret, 'changed');
     }
 
     ['@test should call unknownProperty with value when property is undefined'](assert) {
-      var ret = object.set('unknown', 'changed');
+      let ret = object.set('unknown', 'changed');
       assert.equal(object.get('_unknown'), 'changed');
       assert.equal(ret, 'changed');
     }
@@ -381,7 +381,7 @@ moduleFor(
 
     ['@test getting values should call function return value'](assert) {
       // get each property twice. Verify return.
-      var keys = w('computed computedCached dependent dependentFront dependentCached');
+      let keys = w('computed computedCached dependent dependentFront dependentCached');
 
       keys.forEach(function(key) {
         assert.equal(object.get(key), key, `Try #1: object.get(${key}) should run function`);
@@ -400,8 +400,8 @@ moduleFor(
 
     ['@test setting values should call function return value'](assert) {
       // get each property twice. Verify return.
-      var keys = w('computed dependent dependentFront computedCached dependentCached');
-      var values = w('value1 value2');
+      let keys = w('computed dependent dependentFront computedCached dependentCached');
+      let values = w('value1 value2');
 
       keys.forEach(key => {
         assert.equal(
@@ -427,8 +427,8 @@ moduleFor(
 
       // verify each call count.  cached should only be called once
       keys.forEach(key => {
-        var calls = object[key + 'Calls'];
-        var idx, expectedLength;
+        let calls = object[key + 'Calls'];
+        let idx, expectedLength;
 
         // Cached properties first check their cached value before setting the
         // property. Other properties blindly call set.
@@ -461,7 +461,7 @@ moduleFor(
 
     ['@test change dependent should clear cache'](assert) {
       // call get several times to collect call count
-      var ret1 = object.get('inc'); // should run func
+      let ret1 = object.get('inc'); // should run func
       assert.equal(object.get('inc'), ret1, 'multiple calls should not run cached prop');
 
       object.set('changer', 'bar');
@@ -471,7 +471,7 @@ moduleFor(
 
     ['@test just notifying change of dependent should clear cache'](assert) {
       // call get several times to collect call count
-      var ret1 = object.get('inc'); // should run func
+      let ret1 = object.get('inc'); // should run func
       assert.equal(object.get('inc'), ret1, 'multiple calls should not run cached prop');
 
       object.notifyPropertyChange('changer');
@@ -481,7 +481,7 @@ moduleFor(
 
     ['@test changing dependent should clear nested cache'](assert) {
       // call get several times to collect call count
-      var ret1 = object.get('nestedInc'); // should run func
+      let ret1 = object.get('nestedInc'); // should run func
       assert.equal(object.get('nestedInc'), ret1, 'multiple calls should not run cached prop');
 
       object.set('changer', 'bar');
@@ -495,7 +495,7 @@ moduleFor(
 
     ['@test just notifying change of dependent should clear nested cache'](assert) {
       // call get several times to collect call count
-      var ret1 = object.get('nestedInc'); // should run func
+      let ret1 = object.get('nestedInc'); // should run func
       assert.equal(object.get('nestedInc'), ret1, 'multiple calls should not run cached prop');
 
       object.notifyPropertyChange('changer');
@@ -511,7 +511,7 @@ moduleFor(
     // properties would fire before their prop caches were cleared.
     ['@test change dependent should clear cache when observers of dependent are called'](assert) {
       // call get several times to collect call count
-      var ret1 = object.get('inc'); // should run func
+      let ret1 = object.get('inc'); // should run func
       assert.equal(object.get('inc'), ret1, 'multiple calls should not run cached prop');
 
       // add observer to verify change...
@@ -537,7 +537,7 @@ moduleFor(
     }
 
     ['@test dependent keys should be able to be specified as property paths'](assert) {
-      var depObj = ObservableObject.extend({
+      let depObj = ObservableObject.extend({
         menuPrice: computed('menu.price', function() {
           return this.get('menu.price');
         }),
@@ -561,7 +561,7 @@ moduleFor(
     ['@test cacheable nested dependent keys should clear after their dependencies update'](assert) {
       assert.ok(true);
 
-      var DepObj;
+      let DepObj;
 
       run(function() {
         lookup.DepObj = DepObj = ObservableObject.extend({
@@ -645,9 +645,9 @@ moduleFor(
     beforeEach() {
       object = ObservableObject.extend({
         getEach() {
-          var keys = ['normal', 'abnormal'];
-          var ret = [];
-          for (var idx = 0; idx < keys.length; idx++) {
+          let keys = ['normal', 'abnormal'];
+          let ret = [];
+          for (let idx = 0; idx < keys.length; idx++) {
             ret[ret.length] = this.get(keys[idx]);
           }
           return ret;
@@ -676,7 +676,7 @@ moduleFor(
     }
 
     ['@test incrementProperty and decrementProperty'](assert) {
-      var newValue = object.incrementProperty('numberVal');
+      let newValue = object.incrementProperty('numberVal');
 
       assert.equal(25, newValue, 'numerical value incremented');
       object.numberVal = 24;
@@ -892,7 +892,7 @@ moduleFor(
     ) {
       // The observable system should be protected against clients removing
       // observers in the middle of observer notification.
-      var encounteredError = false;
+      let encounteredError = false;
       try {
         ObjectD.addObserver('observableValue', null, 'observer1');
         ObjectD.addObserver('observableValue', null, 'observer2');

@@ -3,7 +3,7 @@ import Test from '../lib/test';
 import EmberApplication from '@ember/application';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
-var App, appBooted, helperContainer;
+let App, appBooted, helperContainer;
 
 function registerHelper() {
   Test.registerHelper('boot', function(app) {
@@ -17,7 +17,7 @@ function unregisterHelper() {
   Test.unregisterHelper('boot');
 }
 
-var originalAdapter = Test.adapter;
+const originalAdapter = Test.adapter;
 
 function setupApp() {
   appBooted = false;

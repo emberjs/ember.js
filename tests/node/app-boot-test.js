@@ -79,7 +79,7 @@ QUnit.module('App Boot', function(hooks) {
     this.template('index', '<span>index</span>');
     this.template('photos', '<em>photos</em>');
 
-    var promises = [];
+    let promises = [];
     promises.push(
       this.renderToHTML('/').then(function(html) {
         assert.htmlMatches(

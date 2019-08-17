@@ -33,8 +33,8 @@ function fileMap(revision, tag, date) {
 }
 
 function fileObject(baseName, extension, contentType, currentRevision, tag, date) {
-  var fullName = '/' + baseName + extension;
-  var obj = {
+  let fullName = '/' + baseName + extension;
+  let obj = {
     contentType: contentType,
     destinations: {
       alpha: [

@@ -2,7 +2,7 @@ import { run } from '@ember/runloop';
 import Adapter from '../../lib/adapters/adapter';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
-var adapter;
+let adapter;
 
 moduleFor(
   'ember-testing Adapter',
@@ -17,8 +17,8 @@ moduleFor(
     }
 
     ['@test exception throws'](assert) {
-      var error = 'Hai';
-      var thrown;
+      let error = 'Hai';
+      let thrown;
 
       try {
         adapter.exception(error);

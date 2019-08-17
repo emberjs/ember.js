@@ -1,10 +1,10 @@
 /* eslint-disable no-console */
 
-var path = require('path');
-var distPath = path.join(__dirname, '../../../dist');
-var emberPath = path.join(distPath, 'tests/ember');
-var templateCompilerPath = path.join(distPath, 'ember-template-compiler');
-var SimpleDOM = require('simple-dom');
+const path = require('path');
+const distPath = path.join(__dirname, '../../../dist');
+const emberPath = path.join(distPath, 'tests/ember');
+const templateCompilerPath = path.join(distPath, 'ember-template-compiler');
+const SimpleDOM = require('simple-dom');
 
 /*
  * This helper sets up a QUnit test module with all of the environment and
@@ -60,14 +60,14 @@ var SimpleDOM = require('simple-dom');
 
 module.exports = function(hooks) {
   hooks.beforeEach(function() {
-    var Ember = (this.Ember = require(emberPath));
+    let Ember = (this.Ember = require(emberPath));
 
     Ember.testing = true;
 
-    var precompile = require(templateCompilerPath).precompile;
+    let precompile = require(templateCompilerPath).precompile;
     this.compile = function(templateString, options) {
-      var templateSpec = precompile(templateString, options);
-      var template = new Function('return ' + templateSpec)();
+      let templateSpec = precompile(templateString, options);
+      let template = new Function('return ' + templateSpec)();
 
       return Ember.HTMLBars.template(template);
     };
@@ -102,7 +102,7 @@ module.exports = function(hooks) {
 function createApplication() {
   if (this.app) return this.app;
 
-  var app = this.Ember.Application.extend().create({
+  let app = this.Ember.Application.extend().create({
     autoboot: false,
   });
 
@@ -129,8 +129,8 @@ function register(containerKey, klass) {
 }
 
 function visit(url) {
-  var app = this.createApplication();
-  var dom = new SimpleDOM.Document();
+  let app = this.createApplication();
+  let dom = new SimpleDOM.Document();
 
   return this.run(app, 'visit', url, {
     isBrowser: false,
@@ -142,16 +142,16 @@ function visit(url) {
 }
 
 function renderToHTML(url) {
-  var app = this.createApplication();
-  var dom = new SimpleDOM.Document();
-  var root = dom.body;
+  let app = this.createApplication();
+  let dom = new SimpleDOM.Document();
+  let root = dom.body;
 
   return this.run(app, 'visit', url, {
     isBrowser: false,
     document: dom,
     rootElement: root,
   }).then(function() {
-    var serializer = new SimpleDOM.HTMLSerializer(SimpleDOM.voidMap);
+    let serializer = new SimpleDOM.HTMLSerializer(SimpleDOM.voidMap);
     return serializer.serialize(root);
   });
 }
@@ -160,7 +160,7 @@ function registerApplicationClasses(app, registry) {
   app.initializer({
     name: 'register-application-classes',
     initialize: function(app) {
-      for (var key in registry) {
+      for (let key in registry) {
         app.register(key, registry[key]);
       }
     },
@@ -172,22 +172,22 @@ function registerTemplate(name, template) {
 }
 
 function registerComponent(name, componentProps) {
-  var component = this.Ember.Component.extend(componentProps);
+  let component = this.Ember.Component.extend(componentProps);
   this.register('component:' + name, component);
 }
 
 function registerController(name, controllerProps) {
-  var controller = this.Ember.Controller.extend(controllerProps);
+  let controller = this.Ember.Controller.extend(controllerProps);
   this.register('controller:' + name, controller);
 }
 
 function registerRoute(name, routeProps) {
-  var route = this.Ember.Route.extend(routeProps);
+  let route = this.Ember.Route.extend(routeProps);
   this.register('route:' + name, route);
 }
 
 function registerService(name, serviceProps) {
-  var service = this.Ember.Object.extend(serviceProps);
+  let service = this.Ember.Object.extend(serviceProps);
   this.register('service:' + name, service);
 }
 

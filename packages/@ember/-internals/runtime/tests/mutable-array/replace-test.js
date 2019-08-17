@@ -32,8 +32,8 @@ class ReplaceTests extends AbstractTestCase {
   }
 
   async '@test [].replace(0,0,"X") => ["X"] + avoid calling objectAt and notifying fistObject/lastObject when not in cache'() {
-    var obj, exp, observer;
-    var called = 0;
+    let obj, exp, observer;
+    let called = 0;
     exp = newFixture(1);
     obj = this.newObject([]);
     obj.objectAt = function() {

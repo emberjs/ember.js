@@ -169,7 +169,7 @@ class RemoveAtTests extends AbstractTestCase {
   }
 
   async '@test [A,B,C,D].removeAt(1,2) => [A,D] + notify'() {
-    var obj, before, after, observer;
+    let obj, before, after, observer;
 
     before = newFixture(4);
     after = [before[0], before[3]];

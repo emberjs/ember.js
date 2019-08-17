@@ -10,7 +10,7 @@ import { DebugEnv } from './utils';
 import { setupWarningHelpers } from './warning';
 
 declare global {
-  var Ember: any;
+  let Ember: any;
 
   interface Assert {
     rejects(promise: Promise<any>, expected?: string | RegExp, message?: string): Promise<any>;

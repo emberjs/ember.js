@@ -133,11 +133,11 @@ module.exports.handlebarsES = function _handlebars() {
 };
 
 function handlebarsFix() {
-  var HANDLEBARS_PARSER = /[\/\\]parser.js$/;
+  let HANDLEBARS_PARSER = /[\/\\]parser.js$/;
   return {
     load: function(id) {
       if (HANDLEBARS_PARSER.test(id)) {
-        var code = readFileSync(id, 'utf8');
+        let code = readFileSync(id, 'utf8');
         return {
           code: code
             .replace('exports.__esModule = true;', '')

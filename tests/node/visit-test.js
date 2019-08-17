@@ -1,5 +1,5 @@
-var SimpleDOM = require('simple-dom');
-var setupAppTest = require('./helpers/setup-app');
+const SimpleDOM = require('simple-dom');
+const setupAppTest = require('./helpers/setup-app');
 
 function assertHTMLMatches(assert, actualHTML, expectedHTML) {
   assert.ok(actualHTML.match(expectedHTML), actualHTML + ' matches ' + expectedHTML);
@@ -12,12 +12,12 @@ function handleError(assert) {
 }
 
 // This is based on what fastboot-server does
-var HTMLSerializer = new SimpleDOM.HTMLSerializer(SimpleDOM.voidMap);
+let HTMLSerializer = new SimpleDOM.HTMLSerializer(SimpleDOM.voidMap);
 
 function fastbootVisit(App, url) {
-  var doc = new SimpleDOM.Document();
-  var rootElement = doc.body;
-  var options = { isBrowser: false, document: doc, rootElement: rootElement };
+  let doc = new SimpleDOM.Document();
+  let rootElement = doc.body;
+  let options = { isBrowser: false, document: doc, rootElement: rootElement };
 
   return App.visit(url, options).then(function(instance) {
     try {
@@ -53,8 +53,8 @@ QUnit.module('Ember.Application - visit() Integration Tests', function(hooks) {
     this.template('b', '<h2>{{x-foo page="B"}}</h2>');
     this.template('components/x-foo', 'Page {{page}}');
 
-    var initCalled = false;
-    var didInsertElementCalled = false;
+    let initCalled = false;
+    let didInsertElementCalled = false;
 
     this.component('x-foo', {
       tagName: 'span',
@@ -67,7 +67,7 @@ QUnit.module('Ember.Application - visit() Integration Tests', function(hooks) {
       },
     });
 
-    var App = this.createApplication();
+    let App = this.createApplication();
 
     return Promise.all([
       fastbootVisit(App, '/a').then(
@@ -114,7 +114,7 @@ QUnit.module('Ember.Application - visit() Integration Tests', function(hooks) {
       },
     });
 
-    var App = this.createApplication();
+    let App = this.createApplication();
 
     return Promise.all([
       fastbootVisit(App, '/a').then(
@@ -141,7 +141,7 @@ QUnit.module('Ember.Application - visit() Integration Tests', function(hooks) {
       test: 'javascript:alert("hello")',
     });
 
-    var App = this.createApplication();
+    let App = this.createApplication();
 
     return Promise.all([
       fastbootVisit(App, '/').then(
@@ -175,7 +175,7 @@ QUnit.module('Ember.Application - visit() Integration Tests', function(hooks) {
       },
     });
 
-    var App = this.createApplication();
+    let App = this.createApplication();
 
     return Promise.all([
       fastbootVisit(App, '/a').then(
@@ -213,7 +213,7 @@ QUnit.module('Ember.Application - visit() Integration Tests', function(hooks) {
       },
     });
 
-    var App = this.createApplication();
+    let App = this.createApplication();
 
     return Promise.all([
       fastbootVisit(App, '/a').then(
@@ -291,7 +291,7 @@ QUnit.module('Ember.Application - visit() Integration Tests', function(hooks) {
     this.template('d', '{{x-foo}}');
     this.template('e', '{{x-foo}}');
 
-    var xFooInstances = 0;
+    let xFooInstances = 0;
 
     this.component('x-foo', {
       init: function() {
@@ -300,17 +300,17 @@ QUnit.module('Ember.Application - visit() Integration Tests', function(hooks) {
       },
     });
 
-    var App = this.createApplication();
+    let App = this.createApplication();
 
     App.inject('route', 'network', 'service:network');
 
     function assertResources(url, resources) {
       return App.visit(url, { isBrowser: false, shouldRender: false }).then(function(instance) {
         try {
-          var viewRegistry = instance.lookup('-view-registry:main');
+          let viewRegistry = instance.lookup('-view-registry:main');
           assert.strictEqual(Object.keys(viewRegistry).length, 0, 'did not create any views');
 
-          var networkService = instance.lookup('service:network');
+          let networkService = instance.lookup('service:network');
           assert.deepEqual(networkService.get('requests'), resources);
         } finally {
           instance.destroy();
@@ -334,7 +334,7 @@ QUnit.module('Ember.Application - visit() Integration Tests', function(hooks) {
     this.component('my-component', { tagName: '' });
     this.template('components/my-component', '<h1>hello world</h1>');
 
-    var App = this.createApplication();
+    let App = this.createApplication();
 
     return Promise.all([
       fastbootVisit(App, '/').then(

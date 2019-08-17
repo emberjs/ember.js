@@ -13,9 +13,9 @@ const HAS_UNHANDLED_REJECTION_HANDLER = 'onunhandledrejection' in window;
 const originalDebug = getDebugFunction('debug');
 const noop = function() {};
 
-var App, originalAdapter, originalQUnit, originalWindowOnerror, originalQUnitUnhandledRejection;
+let App, originalAdapter, originalQUnit, originalWindowOnerror, originalQUnitUnhandledRejection;
 
-var originalConsoleError = console.error; // eslint-disable-line no-console
+const originalConsoleError = console.error; // eslint-disable-line no-console
 
 function runThatThrowsSync(message = 'Error for testing error handling') {
   return run(() => {
@@ -63,7 +63,7 @@ moduleFor(
   class extends AdapterSetupAndTearDown {
     ['@test Setting a test adapter manually'](assert) {
       assert.expect(1);
-      var CustomAdapter;
+      let CustomAdapter;
 
       CustomAdapter = Adapter.extend({
         asyncStart() {
