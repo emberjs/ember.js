@@ -1,5 +1,16 @@
 # Ember Changelog
 
+### v3.13.0-beta.3 (August 19, 2019)
+
+- [#18223](https://github.com/emberjs/ember.js/pull/18223) [FEATURE] Tracked Props Performance Tuning
+- [#18208](https://github.com/emberjs/ember.js/pull/18208) [BUGFIX] Compile Ember dynamically in consuming applications
+- [#18266](https://github.com/emberjs/ember.js/pull/18266) [BUGFIX] Autotrack Modifiers and Helpers
+- [#18267](https://github.com/emberjs/ember.js/pull/18267) [BUGFIX] Router#url should not error when `location` is a string
+- [#18270](https://github.com/emberjs/ember.js/pull/18270) [BUGFIX] Prevent cycle dependency with owner association.
+- [#18274](https://github.com/emberjs/ember.js/pull/18274) [BUGFIX] Allow CPs to depend on nested args
+- [#18276](https://github.com/emberjs/ember.js/pull/18276) [BUGFIX] Change the assertion for @each dependencies into a deprecation
+- [#18281](https://github.com/emberjs/ember.js/pull/18281) [BUGFIX] Check length of targets
+
 ### v3.13.0.beta.2 (August 12, 2019)
 
 - [#18248](https://github.com/emberjs/ember.js/pull/18248) [BUGFIX] Ensures that observers are flushed after CPs are updated
