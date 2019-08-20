@@ -578,6 +578,13 @@ const ArrayMixin = Mixin.create(Enumerable, {
     implements Observable, the value will be changed to `set(),` otherwise
     it will be set directly. `null` objects are skipped.
 
+    ```javascript
+    let people = [{name: 'Joe'}, {name: 'Matt'}];
+    
+    people.setEach('zipCode', '10011);
+    // [{name: 'Joe', zipCode: '10011'}, {name: 'Matt', zipCode: '10011'}];
+    ```
+
     @method setEach
     @param {String} key The key to set
     @param {Object} value The object to set
