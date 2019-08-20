@@ -982,6 +982,18 @@ const ArrayMixin = Mixin.create(Enumerable, {
     implements it. This method corresponds to the implementation in
     Prototype 1.6.
 
+    ```javascript
+    const Person = EmberObject.extend({
+      name: null,
+      greet(prefix) {
+        return `${prefix} ${this.name}`;
+      }
+    });
+    let people = [Person.create('Joe'), Person.create('Matt')];
+
+    people.invoke('greet', 'Hello'); // ['Hello Joe', 'Hello Matt']
+    ```
+
     @method invoke
     @param {String} methodName the name of the method
     @param {Object...} args optional arguments to pass as well.
