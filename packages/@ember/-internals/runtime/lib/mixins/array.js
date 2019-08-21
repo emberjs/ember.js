@@ -992,13 +992,15 @@ const ArrayMixin = Mixin.create(Enumerable, {
     ```javascript
     const Person = EmberObject.extend({
       name: null,
-      greet(prefix) {
+      greet(prefix='Hello') {
         return `${prefix} ${this.name}`;
-      }
+      },
+      
     });
     let people = [Person.create('Joe'), Person.create('Matt')];
 
-    people.invoke('greet', 'Hello'); // ['Hello Joe', 'Hello Matt']
+    people.invoke('greet'); // ['Hello Joe', 'Hello Matt']
+    people.invoke('greet', 'Bonjour'); // ['Bonjour Joe', 'Bonjour Matt']
     ```
 
     @method invoke
