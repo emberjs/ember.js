@@ -276,6 +276,15 @@ const ArrayMixin = Mixin.create(Enumerable, {
     this property, it will return this. If you set this property to a new
     array, it will replace the current content.
 
+    ```javascript
+    let peopleToMoon = ['Armstrong', 'Aldrin'];
+    
+    peopleToMoon.get('[]'); // ['Armstrong', 'Aldrin']
+
+    peopleToMoon.set('[]', ['Collins']); // ['Collins']
+    peopleToMoon.get('[]'); // ['Collins']
+    ```
+
     @property []
     @return this
     @public
