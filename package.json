@@ -53,7 +53,7 @@
     "@babel/plugin-transform-object-assign": "^7.2.0",
     "babel-plugin-debug-macros": "^0.3.2",
     "babel-plugin-filter-imports": "^3.0.0",
-    "broccoli-concat": "^3.7.3",
+    "broccoli-concat": "^3.7.4",
     "broccoli-funnel": "^2.0.2",
     "broccoli-merge-trees": "^3.0.2",
     "chalk": "^2.4.2",
