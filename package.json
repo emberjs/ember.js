@@ -128,7 +128,7 @@
     "mkdirp": "^0.5.1",
     "mocha": "^6.1.4",
     "prettier": "^1.18.2",
-    "puppeteer": "^1.18.0",
+    "puppeteer": "^1.19.0",
     "qunit": "^2.9.2",
     "rollup-plugin-commonjs": "^9.3.4",
     "rollup-plugin-node-resolve": "^4.2.4",
