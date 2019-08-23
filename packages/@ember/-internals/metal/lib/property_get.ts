@@ -111,9 +111,11 @@ export function get(obj: object, keyName: string): any {
       }
     }
 
-    let descriptor = descriptorForProperty(obj, keyName);
-    if (descriptor !== undefined) {
-      return descriptor.get(obj, keyName);
+    if (!EMBER_METAL_TRACKED_PROPERTIES) {
+      let descriptor = descriptorForProperty(obj, keyName);
+      if (descriptor !== undefined) {
+        return descriptor.get(obj, keyName);
+      }
     }
 
     if (DEBUG && HAS_NATIVE_PROXY) {
