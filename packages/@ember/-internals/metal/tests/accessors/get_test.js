@@ -1,6 +1,6 @@
 import { ENV } from '@ember/-internals/environment';
 import { Object as EmberObject } from '@ember/-internals/runtime';
-import { get, getWithDefault, Mixin, observer } from '../..';
+import { get, getWithDefault, Mixin, observer, computed } from '../..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
 
@@ -312,6 +312,51 @@ moduleFor(
         'foo',
         'should return the set value, not false'
       );
+    }
+
+    ['@test should respect prototypical inheritance when subclasses override CPs'](assert) {
+      let ParentClass = EmberObject.extend({
+        prop: computed({
+          get() {
+            assert.ok(false, 'incorrect getter called');
+            return 123;
+          },
+        }),
+      });
+
+      let SubClass = ParentClass.extend({
+        get prop() {
+          assert.ok(true, 'correct getter called');
+          return 456;
+        },
+      });
+
+      let instance = SubClass.create();
+
+      instance.prop;
+    }
+
+    ['@test should respect prototypical inheritance when subclasses override CPs with native classes'](
+      assert
+    ) {
+      class ParentClass extends EmberObject {
+        @computed
+        get prop() {
+          assert.ok(false, 'incorrect getter called');
+          return 123;
+        }
+      }
+
+      class SubClass extends ParentClass {
+        get prop() {
+          assert.ok(true, 'correct getter called');
+          return 456;
+        }
+      }
+
+      let instance = SubClass.create();
+
+      instance.prop;
     }
   }
 );

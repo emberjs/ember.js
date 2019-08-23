@@ -633,6 +633,8 @@ export class ComputedProperty extends ComputedDescriptor {
       } finally {
         endPropertyChanges();
       }
+
+      return ret;
     } else {
       return this.setWithSuspend(obj, keyName, value);
     }
