@@ -297,6 +297,22 @@ class EachInTest extends AbstractEachInTest {
 
     this.assertText('Empty!');
   }
+
+  [`@test it can render items that contain keys with periods in them`]() {
+    this.makeHash({ 'period.key': 'a', 'other.period.key': 'b' });
+
+    this.render(
+      `<ul>{{#each-in hash as |key value|}}<li>{{key}}: {{value}}</li>{{else}}Empty!{{/each-in}}</ul>`
+    );
+
+    this.assertText('period.key: aother.period.key: b');
+
+    this.assertStableRerender();
+
+    this.clear();
+
+    this.assertText('Empty!');
+  }
 }
 
 moduleFor(

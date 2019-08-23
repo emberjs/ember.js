@@ -1,6 +1,14 @@
-import { get, objectAt, tagFor, tagForProperty } from '@ember/-internals/metal';
+import {
+  consume,
+  get,
+  isTracking,
+  objectAt,
+  tagFor,
+  tagForProperty,
+} from '@ember/-internals/metal';
 import { _contentFor } from '@ember/-internals/runtime';
 import { guidFor, HAS_NATIVE_SYMBOL, isEmberArray, isProxy } from '@ember/-internals/utils';
+import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import {
   AbstractIterable,
@@ -127,7 +135,22 @@ class ObjectIterator extends BoundedIterator {
     } else {
       let values: Opaque[] = [];
       for (let i = 0; i < length; i++) {
-        values.push(get(obj, keys[i]));
+        let value: any;
+        let key = keys[i];
+
+        value = obj[key];
+
+        // Add the tag of the returned value if it is an array, since arrays
+        // should always cause updates if they are consumed and then changed
+        if (EMBER_METAL_TRACKED_PROPERTIES && isTracking()) {
+          consume(tagForProperty(obj, key));
+
+          if (Array.isArray(value) || isEmberArray(value)) {
+            consume(tagForProperty(value, '[]'));
+          }
+        }
+
+        values.push(value);
       }
       return new this(keys, values, length, keyFor);
     }
