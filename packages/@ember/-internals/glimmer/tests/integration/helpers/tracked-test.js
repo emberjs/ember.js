@@ -304,6 +304,48 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
 
         assert.strictEqual(computeCount, 2, 'compute is called exactly 2 times');
       }
+
+      '@test each-in autotracks non-tracked values correctly'() {
+        let obj = EmberObject.create({ value: 'bob' });
+
+        this.registerComponent('person', {
+          ComponentClass: Component.extend({ obj }),
+          template: strip`
+            {{#each-in this.obj as |key value|}}
+              {{value}}-{{key}}
+            {{/each-in}}
+          `,
+        });
+
+        this.render('<Person/>');
+
+        this.assertText('bob-value');
+
+        runTask(() => obj.set('value', 'sal'));
+
+        this.assertText('sal-value');
+      }
+
+      '@test each-in autotracks arrays acorrectly'() {
+        let obj = EmberObject.create({ arr: A([1]) });
+
+        this.registerComponent('person', {
+          ComponentClass: Component.extend({ obj }),
+          template: strip`
+            {{#each-in this.obj as |key arr|}}
+              {{#each arr as |v|}}{{v}}{{/each}}
+            {{/each-in}}
+          `,
+        });
+
+        this.render('<Person/>');
+
+        this.assertText('1');
+
+        runTask(() => obj.arr.pushObject(2));
+
+        this.assertText('12');
+      }
     }
   );
 }
