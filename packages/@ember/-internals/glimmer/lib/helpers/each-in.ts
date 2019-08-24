@@ -64,6 +64,7 @@ import { Opaque } from '@glimmer/util';
 
   ```handlebars
   {{#each @model key="id" as |item|}}
+    {{item}}
   {{/each}}
   ```
 
