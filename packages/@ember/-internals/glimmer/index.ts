@@ -96,11 +96,11 @@
   If the aliased property is "falsey", for example: `false`, `undefined` `null`, `""`, `0`, `NaN` or
   an empty array, the block will not be rendered.
 
-  ```handlebars
+  ```app/templates/application.hbs
   {{! Will only render if user.posts contains items}}
-  {{#with user.posts as |blogPosts|}}
+  {{#with @model.posts as |blogPosts|}}
     <div class="notice">
-      There are {{blogPosts.length}} blog posts written by {{user.name}}.
+      There are {{blogPosts.length}} blog posts written by {{@model.name}}.
     </div>
     {{#each blogPosts as |post|}}
       <li>{{post.title}}</li>
@@ -108,9 +108,7 @@
   {{/with}}
   ```
 
-  NOTE: The alias should not reuse a name from the bound property path.
-
-  For example: `{{#with foo.bar as |foo|}}` is not supported because it attempts to alias using
+  Note that `{{#with foo.bar as |foo|}}` is not supported because it attempts to alias using
   the first part of the property path, `foo`. Instead, use `{{#with foo.bar as |baz|}}`.
 
   @method with
