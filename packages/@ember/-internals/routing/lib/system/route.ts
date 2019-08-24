@@ -560,10 +560,11 @@ class Route extends EmberObject implements IRoute {
     ```app/routes/index.js
     import { on } from '@ember/object/evented';
     import Route from '@ember/routing/route';
+    import { trackAnalytics } from "./analytics";
 
     export default Route.extend({
       trackPageLeaveAnalytics: on('deactivate', function(){
-        trackPageLeaveAnalytics();
+        trackAnalytics();
       })
     });
     ```
@@ -576,6 +577,18 @@ class Route extends EmberObject implements IRoute {
   /**
     This hook is executed when the router completely exits this route. It is
     not executed when the model for the route changes.
+    
+     ```app/routes/index.js
+    import { on } from '@ember/object/evented';
+    import Route from '@ember/routing/route';
+    import { trackAnalytics } from "./analytics";
+
+    export default Route.extend({
+      trackPageLeaveAnalytics: on('deactivate', function(){
+        trackAnalytics();
+      })
+    });
+    ```
 
     @method deactivate
     @since 1.0.0
