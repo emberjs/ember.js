@@ -100,7 +100,7 @@ class ConditionalHelperReference extends CachedReference {
   ```
 
   If you call it by saying `isCold` is true:
-  
+
   ```app/templates/application.hbs
   <Weather @isCold={{true}} />
   ```
@@ -222,7 +222,7 @@ export function inlineIf(_vm: VM, { positional }: Arguments) {
 
   ```app/templates/application.hbs
   <LoggedIn @userData=false />
-
+  ```
 
   Will render:
 

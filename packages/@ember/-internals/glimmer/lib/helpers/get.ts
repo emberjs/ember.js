@@ -42,7 +42,6 @@ import { CachedReference, referenceFromParts, UPDATE } from '../utils/references
   If there were several facts about a person, the `{{get}}` helper can dynamically
   pick one:
 
-
   ```app/templates/application.hbs
   <DeveloperDetail @factName="language" />
   ```

@@ -128,14 +128,14 @@
   template, an optional block passed to the component should render:
 
   ```app/templates/application.hbs
-  {{#labeled-textfield value=someProperty}}
+  <LabeledTextfield @value={{@model.name}}>
     First name:
-  {{/labeled-textfield}}
+  </LabeledTextfield>
   ```
 
-  ```app/templates/components/labeled-textfield.hbs
+  ```app/components/labeled-textfield.hbs
   <label>
-    {{yield}} {{input value=value}}
+    {{yield}} <Input @value={{value}} />
   </label>
   ```
 
@@ -150,7 +150,7 @@
   Additionally you can `yield` properties into the context for use by the consumer:
 
   ```app/templates/application.hbs
-  {{#labeled-textfield value=someProperty validator=(action 'firstNameValidator') as |validationError|}}
+  <LabeledTextfield @value={{@model.validation}} @validator={{this.firstNameValidator}} as |validationError|>
     {{#if validationError}}
       <p class="error">{{validationError}}</p>
     {{/if}}
@@ -160,7 +160,7 @@
 
   ```app/templates/components/labeled-textfield.hbs
   <label>
-    {{yield validationError}} {{input value=value}}
+    {{yield this.validationError}} <Input @value={{value}} />
   </label>
   ```
 
