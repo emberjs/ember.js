@@ -63,17 +63,17 @@ class ConditionalHelperReference extends CachedReference {
   Like so:
 
   ```app/templates/application.hbs
-  <Welcome />
+  <Weather />
   ```
 
-  ```app/components/welcome.js
+  ```app/components/weather.hbs
   {{! will not render because greeting is undefined}}
-  {{#if @greeting}}
-    Welcome to our website!
+  {{#if @isRaining}}
+    Yes, grab an umbrella!
   {{/if}}
   ```
 
-  You can also what to show if the property is falsey by using
+  You can also define what to show if the property is falsey by using
   the `else` helper.
 
   ```app/components/weather.hbs
@@ -89,23 +89,23 @@ class ConditionalHelperReference extends CachedReference {
 
   For the following template:
 
-  ```app/components/greeting.hbs
-  {{#if @isMorning}}
-    Good morning
-  {{else if @isAfternoon}}
-    Good afternoon
+    ```app/components/weather.hbs
+  {{#if @isRaining}}
+    Yes, grab an umbrella!
+  {{else if @isCold}}
+    Grab a coat, it's chilly!
   {{else}}
-    Good night
+    No, it's lovely outside!
   {{/if}}
   ```
 
-  If you call it by saying `isAfternoon` is true:
+  If you call it by saying `isCold` is true:
   
   ```app/templates/application.hbs
-  <Greeting @isAfternoon={{true}} />
+  <Weather @isCold={{true}} />
   ```
 
-  Then `Good afternoon` will be rendered.
+  Then `Grab a coat, it's chilly!` will be rendered.
 
   ## Inline form
 
@@ -115,6 +115,10 @@ class ConditionalHelperReference extends CachedReference {
   the value to render when truthy, and the value to render when falsey.
 
   For example, if `useLongGreeting` is truthy, the following:
+
+  ```app/templates/application.hbs
+  <Greeting @useLongGreeting={{true}} />
+  ```
 
   ```app/components/greeting.hbs
   {{if @useLongGreeting "Hello" "Hi"}} Alex
@@ -168,7 +172,7 @@ export function inlineIf(_vm: VM, { positional }: Arguments) {
   Then it will display:
 
   ```html
-  Hi
+  Hi Ben
   ```
 
   ## Block form
