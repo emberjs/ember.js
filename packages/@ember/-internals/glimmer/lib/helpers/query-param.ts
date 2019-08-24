@@ -11,10 +11,15 @@ import { InternalHelperReference } from '../utils/references';
   This is a helper to be used in conjunction with the link-to helper.
   It will supply url query parameters to the target route.
 
-  Example
+  @example In this example we are setting the `direction` query param to the value `"asc"`
 
-  ```handlebars
-  {{#link-to 'posts' (query-params direction="asc")}}Sort{{/link-to}}
+  ```app/templates/application.hbs
+  <LinkTo
+    @route="posts"
+    {{query-params direction="asc"}}
+  >
+    Sort
+  </LinkTo>
   ```
 
   @method query-params
