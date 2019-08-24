@@ -46,11 +46,11 @@ import { OutletReference, OutletState } from '../utils/outlet';
   ```app/routes/menu.js
   import Route from '@ember/routing/route';
 
-  export default Route.extend({
+  export default class extends Route {
     renderTemplate() {
       this.render({ outlet: 'menu' });
     }
-  });
+  }
   ```
 
   See the [routing guide](https://guides.emberjs.com/release/routing/rendering-a-template/) for more
