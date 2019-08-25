@@ -491,20 +491,23 @@ const ArrayMixin = Mixin.create(Enumerable, {
     invalidate any related properties. Pass the starting index of the change
     as well as a delta of the amounts to change.
 
-    ```javascript
+    ```app/components/show-post.js
+    import Component from '@ember/component';
+    import EmberObject from '@ember/object';
+
     const Post = EmberObject.extend({
       body: '',
       save() {}
     })
 
     export default Component.extend({
-
       attemptsToModify: 0,
       successfulModifications: 0,
       posts: null,
 
       init() {
         this._super(...arguments);
+
         this.posts = [1, 2, 3].map(i => Post.create({ body: i }));
         this.posts.addArrayObserver(this, {
           willChange() {
@@ -518,13 +521,15 @@ const ArrayMixin = Mixin.create(Enumerable, {
 
       actions: {
         editPost(post, newContent) {
-          let oldContent = post.body;
-          this.posts.arrayContentWillChange(); // attemptsToModify = 1
+          let oldContent = post.body,
+              postIndex = this.posts.indexOf(post);
+              
+          this.posts.arrayContentWillChange(postIndex, 0, 0); // attemptsToModify = 1
           post.set('body', newContent);
 
           post.save()
             .then(response => {
-              this.posts.arrayContentDidChange(); // successfulModifications = 1
+              this.posts.arrayContentDidChange(postIndex, 0, 0); // successfulModifications = 1
             })
             .catch(error => {
               post.set('body', oldContent);
