@@ -67,7 +67,7 @@ export function isSimpleHelper(helper: SimpleHelper | HelperInstance): helper is
   ```app/helpers/format-currency.js
   import Helper from '@ember/component/helper';
 
-  export default class extends Helper {
+  export default class FormatCurrencyHelper extends Helper {
     compute([cents], { currency }) {
       return `${currency}${cents * 0.01}`;
     }
@@ -104,7 +104,7 @@ let Helper = FrameworkObject.extend({
     import { inject as service } from '@ember/service'
     import { observer } from '@ember/object'
 
-    export default class extends Helper {
+    export default class CurrentUserEmailHelper extends Helper {
       @service session;
 
       @observer('session.currentUser)

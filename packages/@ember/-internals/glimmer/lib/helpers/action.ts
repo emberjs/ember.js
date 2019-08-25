@@ -64,7 +64,7 @@ import { ACTION, INVOKE, UnboundReference } from '../utils/references';
   import Component from '@glimmer/component';
   import { action } from '@ember/object';
 
-  export default class extends Component {
+  export default class MyComponentComponent extends Component {
     @action
     save() {
       this.model.save();
@@ -96,7 +96,7 @@ import { ACTION, INVOKE, UnboundReference } from '../utils/references';
   import Component from '@glimmer/component';
   import { action } from '@ember/object';
 
-  export default class extends Component {
+  export default class UpdateNameComponent extends Component {
     @action
     setName(model, name) {
       model.set('name', name);
@@ -120,7 +120,7 @@ import { ACTION, INVOKE, UnboundReference } from '../utils/references';
   import Component from '@glimmer/component';
   import { action } from '@ember/object';
 
-  export default class extends Component {
+  export default class MyInputComponent extends Component {
     @action
     setName(model, name) {
       model.set('name', name);
@@ -265,7 +265,7 @@ import { ACTION, INVOKE, UnboundReference } from '../utils/references';
   import Controller from '@ember/controller';
   import { inject as service } from '@ember/service';
 
-  export default class extends Controller {
+  export default class ApplicationController extends Controller {
     @service someService;
   }
   ```

@@ -38,12 +38,12 @@ function cleanURL(url: string, rootURL: string) {
    In this example, the Router service is injected into a component to initiate a transition
    to a dedicated route:
 
-   ```javascript
+   ```app/components/demo.js
    import Component from '@glimmer/component';
    import { action } from '@ember/object';
    import { inject as service } from '@ember/service';
 
-   export default class extends Component {
+   export default class DemoComponent extends Component {
      @service router;
 
      @action
@@ -94,12 +94,12 @@ export default class RouterService extends Service {
      In the following example we use the Router service to navigate to a route with a
      specific model from a Component.
 
-     ```javascript
+     ```app/components/blog-post.js
      import Component from '@glimmer/component';
      import { action } from '@ember/object';
      import { inject as service } from '@ember/service';
 
-     export default class extends Component {
+     export default class BlogPostComponent extends Component {
        @service router;
 
        @action
@@ -147,7 +147,7 @@ export default class RouterService extends Service {
      ```app/routes/application.js
      import Route from '@ember/routing/route';
 
-     export default class extends Route {
+     export default class ApplicationRoute extends Route {
        beforeModel() {
          if (!authorized()){
            this.replaceWith('unauthorized');
@@ -186,7 +186,7 @@ export default class RouterService extends Service {
     import { inject as service } from '@ember/service';
     import { action } from '@ember/object';
 
-    export default class extends Component {
+    export default class CopyLinkComponent extends Component {
       @service router;
       @service clipboard;
       
@@ -212,7 +212,7 @@ export default class RouterService extends Service {
     import { inject as service } from '@ember/service';
     import { action } from '@ember/object';
 
-    export default class extends Component {
+    export default class CopyLinkComponent extends Component {
       @service router;
       @service clipboard;
 
@@ -287,7 +287,7 @@ export default class RouterService extends Service {
      application before transitioning to it.
 
      ```
-     import Component from '@ember/component';
+     import Component from '@ember/component';x
      import { inject as service } from '@ember/service';
 
      export default class extends Component {
@@ -349,7 +349,7 @@ export default class RouterService extends Service {
     import { action } from '@ember/object';
     import { inject as service } from '@ember/service';
 
-    export default class extends Route {
+    export default class ContactFormRoute extends Route {
       @service router;
 
       constructor() {
@@ -384,7 +384,7 @@ export default class RouterService extends Service {
     import { action } from '@ember/object';
     import { inject as service } from '@ember/service';
 
-    export default class extends Route {
+    export default class ContactFormRoute extends Route {
       @service router;
 
       constructor() {
@@ -549,7 +549,7 @@ RouterService.reopen(Evented, {
       import { inject as service } from '@ember/service';
       import { notEmpty } from '@ember/object/computed';
 
-      export default class extends Component {
+      export default class HeaderComponent extends Component {
         @service router;
 
         @notEmpty('router.currentRoute.child') isChildRoute;

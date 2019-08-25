@@ -15,7 +15,7 @@ import { Opaque } from '@glimmer/util';
   ```app/components/developer-listing.js
   import Component from '@glimmer/component';
 
-  export default class extends Component {
+  export default class DeveloperListingComponent extends Component {
     developers = [{ name: 'Yehuda' },{ name: 'Tom' }, { name: 'Paul' }];
   }
   ```
@@ -32,7 +32,7 @@ import { Opaque } from '@glimmer/util';
   ```app/components/developer-listing.js
   import Component from '@glimmer/component';
 
-  export default class extends Component {
+  export default class DeveloperListingComponent extends Component {
     developerNames = ['Yehuda', 'Tom', 'Paul']
   }
   ```
@@ -99,7 +99,7 @@ import { Opaque } from '@glimmer/util';
   ```app/components/developer-details.js
   import Component from '@glimmer/component';
 
-  export default class extends Component {
+  export default class DeveloperDetailsComponent extends Component {
     developer = {
       "name": "Shelly Sails",
       "age": 42

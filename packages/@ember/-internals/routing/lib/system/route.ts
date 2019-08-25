@@ -679,7 +679,7 @@ class Route extends EmberObject implements IRoute {
     import Route from '@ember/routing/route';
     import { action } from '@ember/object';
 
-    export default class extends Route {
+    export default class IndexRoute extends Route {
       @action
       moveToSecret(context) {
         if (authorized()) {
@@ -709,7 +709,7 @@ class Route extends EmberObject implements IRoute {
     import Route from '@ember/routing/route';
     import { action } from '@ember/object';
 
-    export default class extends Route {
+    export default class IndexRoute extends Route {
       @action
       transitionToNewArticle() {
         this.transitionTo('articles.new');
@@ -737,7 +737,7 @@ class Route extends EmberObject implements IRoute {
     import Route from '@ember/routing/route';
     import { action } from '@ember/object';
 
-    export default class extends Route {
+    export default class IndexRoute extends Route {
       @action
       moveToChocolateCereal() {
         let cereal = { cerealId: 'ChocolateYumminess' };
@@ -765,7 +765,7 @@ class Route extends EmberObject implements IRoute {
     ```app/routes/index.js
     import Route from '@ember/routing/route';
 
-    export default class extends Route {
+    export default class IndexRoute extends Route {
       @action
       transitionToApples() {
         this.transitionTo('fruits.apples', { queryParams: { color: 'red' } });
@@ -1376,7 +1376,7 @@ class Route extends EmberObject implements IRoute {
     ```app/routes/post/comments.js
     import Route from '@ember/routing/route';
 
-    export default class extends Route {
+    export default class PostCommentsRoute extends Route {
       async model() {
         let post = this.modelFor('post');
 
@@ -1433,7 +1433,7 @@ class Route extends EmberObject implements IRoute {
     ```app/routes/posts.js
     import Route from '@ember/routing/route';
 
-    export default class extends Route {
+    export default class PostsRoute extends Route {
       renderTemplate(controller, model) {
         let favController = this.controllerFor('favoritePost');
 
@@ -1495,7 +1495,7 @@ class Route extends EmberObject implements IRoute {
     ```app/routes/post.js
     import Route from '@ember/routing/route';
 
-    export default class extends Route {
+    export default class PostRoute extends Route {
       renderTemplate() {
         this.render('photos', {
           into: 'application',
@@ -1549,7 +1549,7 @@ class Route extends EmberObject implements IRoute {
     ```app/routes/post.js
     import Route from '@ember/routing/route';
 
-    export default class extends Route {
+    export default class PostRoute extends Route {
       renderTemplate() {
         this.render(); // all defaults apply
       }
@@ -1619,7 +1619,7 @@ class Route extends EmberObject implements IRoute {
     import Route from '@ember/routing/route';
     import { action } from '@ember/object';
 
-    export default class extends Route {
+    export default class ApplicationRoute extends Route {
       @action
       showModal(evt) {
         this.render(evt.modalName, {
@@ -1646,7 +1646,7 @@ class Route extends EmberObject implements IRoute {
     import Route from '@ember/routing/route';
     import { action } from '@ember/object';
 
-    export default class extends Route {
+    export default class ApplicationRoute extends Route {
       @action
       showModal(evt) {
         // ...
@@ -1750,7 +1750,7 @@ class Route extends EmberObject implements IRoute {
     ```app/routes/posts/index.js
     import Route from '@ember/routing/route';
 
-    export default class extends Route {
+    export default class PostsIndexRoute extends Route {
       buildRouteInfoMetadata() {
         return { title: 'Posts Page' }
       }
@@ -1761,7 +1761,7 @@ class Route extends EmberObject implements IRoute {
     import Route from '@ember/routing/route';
     import { inject as service } from '@ember/service';
 
-    export default class extends Route {
+    export default class ApplicationRoute extends Route {
       @service router
 
       constructor() {
@@ -2033,7 +2033,7 @@ function getEngineRouteName(engine: Owner, routeName: string) {
     ```app/routes/post.js
     import Route from '@ember/routing/route';
 
-    export default class extends Route {
+    export default class PostRoute extends Route {
       async model({ post_id }) {
         // the server returns `{ id: 12 }`
         return fetch(`/posts/${post_id}`;
@@ -2119,7 +2119,7 @@ Route.reopen(ActionHandler, Evented, {
     ```app/routes/posts/list.js
     import Route from '@ember/routing/route';
 
-    export default class extends Route {
+    export default class PostsListRoute extends Route {
       templateName = 'posts/list'
     });
     ```
@@ -2127,13 +2127,13 @@ Route.reopen(ActionHandler, Evented, {
     ```app/routes/posts/index.js
     import PostsList from '../posts/list';
 
-    export default class extends PostsList {};
+    export default class PostsIndexRoute extends PostsList {};
     ```
 
     ```app/routes/posts/archived.js
     import PostsList from '../posts/list';
 
-    export default class extends PostsList {};
+    export default class PostsArchivedRoute extends PostsList {};
     ```
 
     @property templateName
@@ -2372,7 +2372,7 @@ Route.reopen(ActionHandler, Evented, {
     import Route from '@ember/routing/route';
     import { action } from '@ember/object';
 
-    export default class extends Route {
+    export default class ApplicationRoute extends Route {
       @action
       track(arg) {
         console.log(arg, 'was clicked');
