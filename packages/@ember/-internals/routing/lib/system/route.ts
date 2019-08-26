@@ -201,25 +201,25 @@ class Route extends EmberObject implements IRoute {
     ```app/routes/member.js
     import Route from '@ember/routing/route';
 
-    export default Route.extend({
-      queryParams: {
+    export default class MemberRoute extends Route {
+      queryParams = {
         memberQp: { refreshModel: true }
       }
-    });
+    }
     ```
 
     ```app/routes/member/interest.js
     import Route from '@ember/routing/route';
 
-    export default Route.extend({
-      queryParams: {
+    export default class MemberInterestRoute Route {
+      queryParams = {
         interestQp: { refreshModel: true }
-      },
+      }
 
       model() {
         return this.paramsFor('member');
       }
-    });
+    }
     ```
 
     If we visit `/turing/maths?memberQp=member&interestQp=interest` the model for
@@ -317,13 +317,13 @@ class Route extends EmberObject implements IRoute {
     ```app/routes/articles.js
     import Route from '@ember/routing/route';
 
-    export default Route.extend({
+    export default class ArticlesRoute extends Route {
       resetController(controller, isExiting, transition) {
         if (isExiting && transition.targetName !== 'error') {
           controller.set('page', 1);
         }
       }
-    });
+    }
     ```
 
     @method resetController
@@ -860,13 +860,13 @@ class Route extends EmberObject implements IRoute {
     ```app/routes/secret.js
     import Route from '@ember/routing/route';
 
-    export default Route.extend({
+    export default class SecretRoute Route {
       afterModel() {
         if (!authorized()){
           this.replaceWith('index');
         }
       }
-    });
+    }
     ```
 
     @method replaceWith
@@ -1005,13 +1005,13 @@ class Route extends EmberObject implements IRoute {
     ```app/routes/posts.js
     import Route from '@ember/routing/route';
 
-    export default Route.extend({
+    export default class PostsRoute extends Route {
       afterModel(posts, transition) {
         if (posts.get('length') === 1) {
           this.transitionTo('post.show', posts.get('firstObject'));
         }
       }
-    });
+    }
     ```
 
     Refer to documentation for `beforeModel` for a description
@@ -1130,11 +1130,11 @@ class Route extends EmberObject implements IRoute {
     ```app/routes/post.js
     import Route from '@ember/routing/route';
 
-    export default Route.extend({
+    export default class PostRoute extends Route {
       model(params) {
         return this.store.findRecord('post', params.post_id);
       }
-    });
+    }
     ```
 
     @method model
@@ -1214,23 +1214,22 @@ class Route extends EmberObject implements IRoute {
     If you implement the `setupController` hook in your Route, it will
     prevent this default behavior. If you want to preserve that behavior
     when implementing your `setupController` function, make sure to call
-    `_super`:
+    `super`:
 
     ```app/routes/photos.js
     import Route from '@ember/routing/route';
 
-    export default Route.extend({
+    export default class PhotosRoute extendes Route {
       model() {
         return this.store.findAll('photo');
-      },
+      }
 
       setupController(controller, model) {
-        // Call _super for default behavior
-        this._super(controller, model);
-        // Implement your custom setup after
+        super.setupController(controller, model);
+
         this.controllerFor('application').set('showingPhotos', true);
       }
-    });
+    }
     ```
 
     The provided controller will be one resolved based on the name
@@ -1250,16 +1249,16 @@ class Route extends EmberObject implements IRoute {
     export default Router;
     ```
 
-    For the `post` route, a controller named `App.PostController` would
-    be used if it is defined. If it is not defined, a basic `Controller`
-    instance would be used.
+    If you have defined a file for the post controller, 
+    the framework will use it.
+    If it is not defined, a basic `Controller` instance would be used.
 
-    Example
+    @example Behavior of a basic Controller
 
     ```app/routes/post.js
     import Route from '@ember/routing/route';
 
-    export default Route.extend({
+    export default class PostRoute extends Route {
       setupController(controller, model) {
         controller.set('model', model);
       }
@@ -1289,12 +1288,13 @@ class Route extends EmberObject implements IRoute {
     ```app/routes/post.js
     import Route from '@ember/routing/route';
 
-    export default Route.extend({
+    export default class PostRoute extends Route {
       setupController(controller, post) {
-        this._super(controller, post);
+        super.setupController(controller, post);
+
         this.controllerFor('posts').set('currentPost', post);
       }
-    });
+    }
     ```
 
     @method controllerFor
@@ -1332,12 +1332,13 @@ class Route extends EmberObject implements IRoute {
     ```app/routes/post.js
     import Route from '@ember/routing/route';
 
-    export default Route.extend({
+    export default class Post extends Route {
       setupController(controller, post) {
-        this._super(controller, post);
+        super.setupController(controller, post);
+
         this.generateController('posts');
       }
-    });
+    }
     ```
 
     @method generateController
@@ -2377,16 +2378,16 @@ Route.reopen(ActionHandler, Evented, {
 
     ```app/routes/index.js
     import Route from '@ember/routing/route';
+    import { action } from '@glimmer/tracking';
 
-    export default Route.extend({
-      actions: {
-        trackIfDebug(arg) {
-          if (debug) {
-            this.send('track', arg);
-          }
+    export default class IndexRoute extends Route {
+      @action
+      trackIfDebug(arg) {
+        if (debug) {
+          this.send('track', arg);
         }
       }
-    });
+    }
     ```
 
     @method send
