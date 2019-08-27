@@ -1,5 +1,12 @@
 # Ember Changelog
 
+### v3.13.0-beta.4 (August 26, 2019)
+
+- [#18278](https://github.com/emberjs/ember.js/pull/18278) [BUGFIX] Bump ember-router-generator from v1.2.3 to v2.0.0 to support parsing `app/router.js` with native class.
+- [#18291](https://github.com/emberjs/ember.js/pull/18291) [BUGFIX] Adds the babel-helpers injection plugin back and include `ember-template-compiler` in the vendor folder for Ember.
+- [#18296](https://github.com/emberjs/ember.js/pull/18296) [BUGFIX] Ensure {{each-in}} can iterate over keys with periods
+- [#18304](https://github.com/emberjs/ember.js/pull/18304) [BUGFIX] Check the EMBER_ENV environment variable after it is set
+
 ### v3.13.0-beta.3 (August 19, 2019)
 
 - [#18223](https://github.com/emberjs/ember.js/pull/18223) [FEATURE] Tracked Props Performance Tuning
