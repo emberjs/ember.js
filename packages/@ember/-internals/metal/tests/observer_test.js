@@ -18,6 +18,7 @@ import {
 } from '..';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 import { FUNCTION_PROTOTYPE_EXTENSIONS } from '@ember/deprecated-features';
+import { readOnly } from '@ember/object/computed';
 
 function K() {}
 
@@ -130,6 +131,29 @@ moduleFor(
 
       assert.equal(count, 1, 'should have invoked observer');
       assert.equal(get(obj, 'foo'), 'baz', 'computed should have correct value');
+    }
+
+    // https://github.com/emberjs/ember.js/issues/18318
+    async ['@test observer should fire when readOnly computed property is modified'](assert) {
+      let obj = { bar: 'bar' };
+
+      defineProperty(obj, 'readOnlyBar', readOnly('bar'));
+
+      let count = 0;
+      addObserver(obj, 'readOnlyBar', function() {
+        assert.equal(
+          get(obj, 'readOnlyBar'),
+          'barUpdated',
+          'should have invoked after prop change'
+        );
+        count++;
+      });
+
+      set(obj, 'bar', 'barUpdated');
+      await runLoopSettled();
+
+      assert.equal(count, 1, 'should have invoked observer');
+      assert.equal(get(obj, 'readOnlyBar'), 'barUpdated', 'computed should have correct value');
     }
 
     async ['@test observer should continue to fire after dependent properties are accessed'](
