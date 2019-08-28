@@ -1,4 +1,5 @@
-import { get, set, trySet } from '../..';
+import { Object as EmberObject } from '@ember/-internals/runtime';
+import { get, set, trySet, computed } from '../..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
 moduleFor(
@@ -141,6 +142,51 @@ moduleFor(
       assert.equal(set(obj, 'foo', 'bar'), 'bar', 'should return set value');
       assert.equal(count, 1, 'should have native setter');
       assert.equal(get(obj, 'foo'), 'computed bar', 'should return new value');
+    }
+
+    ['@test should respect prototypical inheritance when subclasses override CPs'](assert) {
+      let ParentClass = EmberObject.extend({
+        prop: computed({
+          set(key, val) {
+            assert.ok(false, 'incorrect setter called');
+            this._val = val;
+          },
+        }),
+      });
+
+      let SubClass = ParentClass.extend({
+        set prop(val) {
+          assert.ok(true, 'correct setter called');
+          this._val = val;
+        },
+      });
+
+      let instance = SubClass.create();
+
+      instance.prop = 123;
+    }
+
+    ['@test should respect prototypical inheritance when subclasses override CPs with native classes'](
+      assert
+    ) {
+      class ParentClass extends EmberObject {
+        @computed
+        set prop(val) {
+          assert.ok(false, 'incorrect setter called');
+          this._val = val;
+        }
+      }
+
+      class SubClass extends ParentClass {
+        set prop(val) {
+          assert.ok(true, 'correct setter called');
+          this._val = val;
+        }
+      }
+
+      let instance = SubClass.create();
+
+      instance.prop = 123;
     }
   }
 );

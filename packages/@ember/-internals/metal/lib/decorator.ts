@@ -1,6 +1,7 @@
 import { Meta, meta as metaFor } from '@ember/-internals/meta';
 import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { assert } from '@ember/debug';
+import { _WeakSet as WeakSet } from '@ember/polyfills';
 import { setClassicDecorator } from './descriptor_map';
 import { unwatch, watch } from './watching';
 
@@ -140,10 +141,16 @@ function DESCRIPTOR_SETTER_FUNCTION(
   name: string,
   descriptor: ComputedDescriptor
 ): (value: any) => void {
-  return function CPSETTER_FUNCTION(this: object, value: any): void {
+  let func = function CPSETTER_FUNCTION(this: object, value: any): void {
     return descriptor.set(this, name, value);
   };
+
+  CP_SETTER_FUNCS.add(func);
+
+  return func;
 }
+
+export const CP_SETTER_FUNCS = new WeakSet();
 
 export function makeComputedDecorator(
   desc: ComputedDescriptor,

@@ -9,6 +9,7 @@ import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import EmberError from '@ember/error';
 import { DEBUG } from '@glimmer/env';
+import { CP_SETTER_FUNCS } from './decorator';
 import { descriptorForProperty } from './descriptor_map';
 import { isPath } from './path_cache';
 import { MandatorySetterFunction } from './properties';
@@ -85,11 +86,22 @@ export function set(obj: object, keyName: string, value: any, tolerant?: boolean
   }
 
   let meta = peekMeta(obj);
-  let descriptor = descriptorForProperty(obj, keyName, meta);
 
-  if (descriptor !== undefined) {
-    descriptor.set(obj, keyName, value);
-    return value;
+  if (!EMBER_METAL_TRACKED_PROPERTIES) {
+    let descriptor = descriptorForProperty(obj, keyName, meta);
+
+    if (descriptor !== undefined) {
+      descriptor.set(obj, keyName, value);
+      return value;
+    }
+  } else {
+    let descriptor = lookupDescriptor(obj, keyName);
+    let setter = descriptor === null ? undefined : descriptor.set;
+
+    if (setter !== undefined && CP_SETTER_FUNCS.has(setter)) {
+      obj[keyName] = value;
+      return value;
+    }
   }
 
   let currentValue: any;
