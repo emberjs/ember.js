@@ -778,6 +778,20 @@ const ArrayMixin = Mixin.create(Enumerable, {
     Note that in addition to a callback, you can also pass an optional target
     object that will be set as `this` on the context. This is a good way
     to give your iterator function access to the current object.
+    
+    Example Usage:
+
+    ```javascript
+    let users = [
+      { id: 1, name: 'Yehuda' },
+      { id: 2, name: 'Tom' },
+      { id: 3, name: 'Melanie' },
+      { id: 4, name: 'Leah' }
+    ];
+
+    users.find((user) => user.name == 'Tom'); // [{ id: 2, name: 'Tom' }]
+    users.find(({ id }) => id == 3); // [{ id: 3, name: 'Melanie' }]
+    ```
 
     @method find
     @param {Function} callback The callback to execute
