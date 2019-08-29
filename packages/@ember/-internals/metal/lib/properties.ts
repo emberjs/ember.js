@@ -9,6 +9,7 @@ import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { Decorator } from './decorator';
 import { descriptorForProperty, isClassicDecorator } from './descriptor_map';
+import { revalidateObservers } from './observer';
 import { overrideChains } from './property_events';
 
 export type MandatorySetterFunction = ((this: object, value: any) => void) & {
@@ -203,8 +204,14 @@ export function defineProperty(
 
   // if key is being watched, override chains that
   // were initialized with the prototype
-  if (watching) {
-    overrideChains(obj, keyName, meta);
+  if (EMBER_METAL_TRACKED_PROPERTIES) {
+    if (!meta.isPrototypeMeta(obj)) {
+      revalidateObservers(obj);
+    }
+  } else {
+    if (watching) {
+      overrideChains(obj, keyName, meta);
+    }
   }
 
   // The `value` passed to the `didDefineProperty` hook is
