@@ -13,7 +13,6 @@ import {
   setObservers,
   wrap,
 } from '@ember/-internals/utils';
-import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { assert, deprecate } from '@ember/debug';
 import { ALIAS_METHOD } from '@ember/deprecated-features';
 import { assign } from '@ember/polyfills';
@@ -33,7 +32,7 @@ import {
 import { addListener, removeListener } from './events';
 import expandProperties from './expand_properties';
 import { classToString, setUnprocessedMixins } from './namespace_search';
-import { addObserver, removeObserver, revalidateObservers } from './observer';
+import { addObserver, removeObserver } from './observer';
 import { defineProperty } from './properties';
 
 const a_concat = Array.prototype.concat;
@@ -477,12 +476,6 @@ export function applyMixin(obj: { [key: string]: any }, mixins: Mixin[]) {
     }
 
     defineProperty(obj, key, desc, value, meta);
-  }
-
-  if (EMBER_METAL_TRACKED_PROPERTIES) {
-    if (!meta.isPrototypeMeta(obj)) {
-      revalidateObservers(obj);
-    }
   }
 
   return obj;

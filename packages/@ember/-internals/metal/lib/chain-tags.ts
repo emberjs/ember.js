@@ -4,9 +4,7 @@ import { assert, deprecate } from '@ember/debug';
 import { combine, createUpdatableTag, Tag, update, validate } from '@glimmer/reference';
 import { getLastRevisionFor, peekCacheFor } from './computed_cache';
 import { descriptorForProperty } from './descriptor_map';
-import get from './property_get';
 import { tagForProperty } from './tags';
-import { untrack } from './tracked';
 
 export const ARGS_PROXY_TAGS = new WeakMap();
 
@@ -72,6 +70,7 @@ export function getChainTagsForKey(obj: any, path: string) {
 
     segment = path.slice(lastSegmentEnd, segmentEnd);
 
+    // If the segment is an @each, we can process it and then opt-
     if (segment === '@each' && segmentEnd !== pathLength) {
       assert(
         `When using @each, the value you are attempting to watch must be an array, was: ${current.toString()}`,
@@ -117,6 +116,10 @@ export function getChainTagsForKey(obj: any, path: string) {
       break;
     }
 
+    // If the segment is linking to an args proxy, we need to manually access
+    // the tags for the args, since they are direct references and don't have a
+    // tagForProperty. We then continue chaining like normal after it, since
+    // you could chain off an arg if it were an object, for instance.
     if (segment === 'args' && ARGS_PROXY_TAGS.has(current.args)) {
       assert(
         `When watching the 'args' on a GlimmerComponent, you must watch a value on the args. You cannot watch the object itself, as it never changes.`,
@@ -137,24 +140,48 @@ export function getChainTagsForKey(obj: any, path: string) {
 
       chainTags.push(ref.tag);
 
-      if (segmentEnd !== pathLength) {
-        current = ref.value();
-        continue;
+      // We still need to break if we're at the end of the path.
+      if (segmentEnd === pathLength) {
+        break;
       }
+
+      // Otherwise, set the current value and then continue to the next segment
+      current = ref.value();
+      continue;
     }
 
+    // TODO: Assert that current[segment] isn't an undecorated, non-MANDATORY_SETTER/dependentKeyCompat getter
+
     let propertyTag = tagForProperty(current, segment);
+    descriptor = descriptorForProperty(current, segment);
 
     chainTags.push(propertyTag);
 
+    // If the key was an alias, we should always get the next value in order to
+    // bootstrap the alias. This is because aliases, unlike other CPs, should
+    // always be in sync with the aliased value.
+    if (descriptor !== undefined && typeof descriptor.altKey === 'string') {
+      current = current[segment];
+
+      // We still need to break if we're at the end of the path.
+      if (segmentEnd === pathLength) {
+        break;
+      }
+
+      // Otherwise, continue to process the next segment
+      continue;
+    }
+
+    // If we're at the end of the path, processing the last segment, and it's
+    // not an alias, we should _not_ get the last value, since we already have
+    // its tag. There's no reason to access it and do more work.
     if (segmentEnd === pathLength) {
       break;
     }
 
-    descriptor = descriptorForProperty(current, segment);
-
     if (descriptor === undefined) {
-      // TODO: Assert that current[segment] isn't an undecorated, non-MANDATORY_SETTER getter
+      // If the descriptor is undefined, then its a normal property, so we should
+      // lookup the value to chain off of like normal.
 
       if (!(segment in current) && typeof current.unknownProperty === 'function') {
         current = current.unknownProperty(segment);
@@ -162,17 +189,15 @@ export function getChainTagsForKey(obj: any, path: string) {
         current = current[segment];
       }
     } else {
+      // If the descriptor is defined, then its a normal CP (not an alias, which
+      // would have been handled earlier). We get the last revision to check if
+      // the CP is still valid, and if so we use the cached value. If not, then
+      // we create a lazy chain lookup, and the next time the CP is caluculated,
+      // it will update that lazy chain.
       let lastRevision = getLastRevisionFor(current, segment);
 
       if (validate(propertyTag, lastRevision)) {
-        if (typeof descriptor.altKey === 'string') {
-          // it's an alias, so just get the altkey without tracking
-          untrack(() => {
-            current = get(current, descriptor.altKey);
-          });
-        } else {
-          current = peekCacheFor(current).get(segment);
-        }
+        current = peekCacheFor(current).get(segment);
       } else {
         let lazyChains = metaFor(current).writableLazyChainsFor(segment);
 
