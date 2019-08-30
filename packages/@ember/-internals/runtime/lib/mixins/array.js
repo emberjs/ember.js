@@ -452,6 +452,29 @@ const ArrayMixin = Mixin.create(Enumerable, {
       `willChange` and `didChange` option.
     @return {EmberArray} receiver
     @public
+    @example
+        import Service from '@ember/service';
+
+        export default Service.extend({
+          data: Ember.A(),
+
+          init() {
+            this._super(...arguments);
+
+            this.data.addArrayObserver(this, {
+              willChange: 'dataWillChange',
+              didChange: 'dataDidChange'
+            });
+          },
+
+          dataWillChange(array, start, removeCount, addCount) {
+            console.log('array will change', array, start, removeCount, addCount);
+          },
+
+          dataDidChange(array, start, removeCount, addCount) {
+            console.log('array did change', array, start, removeCount, addCount);
+          }
+        });
   */
 
   addArrayObserver(target, opts) {
