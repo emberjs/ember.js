@@ -45,7 +45,7 @@
   ```
 
   or
-  
+
   ```app/templates/application.hbs
   {{live-updating-chart}}
   ```
