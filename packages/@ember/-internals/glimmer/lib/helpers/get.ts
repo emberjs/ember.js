@@ -25,9 +25,10 @@ import { CachedReference, referenceFromParts, UPDATE } from '../utils/references
 
   ```app/components/developer-detail.js
   import Component from '@glimmer/component';
+  import { tracked } from '@glimmer/tracking';
 
   export default class extends Component {
-    developer = {
+    @tracked developer = {
       name: "Sandi Metz",
       language: "Ruby"
     }
@@ -58,8 +59,7 @@ import { CachedReference, referenceFromParts, UPDATE } from '../utils/references
   import { tracked } from '@glimmer/tracking';
 
   export default class extends Component {
-    @tracked
-    developer = {
+    @tracked developer = {
       name: "Sandi Metz",
       language: "Ruby"
     }
