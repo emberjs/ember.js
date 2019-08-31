@@ -85,7 +85,7 @@ import { CachedReference, referenceFromParts, UPDATE } from '../utils/references
   ```app/components/developer-detail.js
   <Input @value=(mut (get this.person this.currentFact)) />
 
-  <button {{on 'click' (fn showFact "name")}}>Show name</button>
+  <button {{on 'click' (fn this.showFact "name")}}>Show name</button>
   <button {{on 'click' (fn this.showFact "language")}}>Show language</button>
   ```
 
