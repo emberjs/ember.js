@@ -119,9 +119,10 @@ import { Opaque } from '@glimmer/util';
 
   ```app/components/developer-details.js
   import Component from '@glimmer/component';
+  import { tracked } from '@glimmer/tracking';
 
   export default class extends Component {
-    developer = {
+    @tracked developer = {
       "name": "Shelly Sails",
       "age": 42
     };
