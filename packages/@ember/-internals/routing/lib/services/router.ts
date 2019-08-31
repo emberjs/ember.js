@@ -197,6 +197,7 @@ export default class RouterService extends Service {
         }
       }
     }
+    ```
 
     Just like with `transitionTo` and `replaceWith`, `urlFor` can also handle
     query parameters.
