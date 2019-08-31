@@ -185,7 +185,7 @@ export default class RouterService extends Service {
       @service router;
       @service clipboard;
 
-      // Provided` in the template
+      // Provided in the template
       // { id: 'tomster', name: 'Tomster' }
       author: null,
 
