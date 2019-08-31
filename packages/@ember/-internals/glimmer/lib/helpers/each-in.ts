@@ -133,9 +133,9 @@ import { Opaque } from '@glimmer/util';
 
   ```app/components/developer-details.hbs
   <ul>
-  {{#each-in @user as |key value|}}
-    <li>{{key}}: {{value}}</li>
-  {{/each-in}}
+    {{#each-in @user as |key value|}}
+      <li>{{key}}: {{value}}</li>
+    {{/each-in}}
   </ul>
   ```
 
