@@ -76,7 +76,7 @@ import { CachedReference, referenceFromParts, UPDATE } from '../utils/references
   ```app/components/developer-detail.js
   {{get this.developer this.currentFact}}
 
-  <button {{on 'click' (fn showFact "name")}}>Show name</button>
+  <button {{on 'click' (fn this.showFact "name")}}>Show name</button>
   <button {{on 'click' (fn showFact "language")}}>Show language</button>
   ```
 
