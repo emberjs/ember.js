@@ -83,7 +83,7 @@ import { CachedReference, referenceFromParts, UPDATE } from '../utils/references
   The `{{get}}` helper can also respect mutable values itself. For example:
 
   ```app/components/developer-detail.js
-  <Input @value=(mut (get person currentFact)) />
+  <Input @value=(mut (get this.person this.currentFact)) />
 
   <button {{on 'click' (fn showFact "name")}}>Show name</button>
   <button {{on 'click' (fn this.showFact "language")}}>Show language</button>
