@@ -108,9 +108,6 @@
   {{/with}}
   ```
 
-  Note that `{{#with foo.bar as |foo|}}` is not supported because it attempts to alias using
-  the first part of the property path, `foo`. Instead, use `{{#with foo.bar as |baz|}}`.
-
   @method with
   @for Ember.Templates.helpers
   @param {Object} options
