@@ -77,7 +77,7 @@ import { CachedReference, referenceFromParts, UPDATE } from '../utils/references
   {{get this.developer this.currentFact}}
 
   <button {{on 'click' (fn this.showFact "name")}}>Show name</button>
-  <button {{on 'click' (fn showFact "language")}}>Show language</button>
+  <button {{on 'click' (fn this.showFact "language")}}>Show language</button>
   ```
 
   The `{{get}}` helper can also respect mutable values itself. For example:
