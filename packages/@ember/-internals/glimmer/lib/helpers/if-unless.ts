@@ -177,7 +177,7 @@ export function inlineIf(_vm: VM, { positional }: Arguments) {
 
   ## Block form
 
-  Like the `if` helper, `unless` helper also has a block form.
+  Like the `if` helper, the `unless` helper also has a block form.
 
   The following:
 
