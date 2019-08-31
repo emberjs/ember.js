@@ -86,7 +86,7 @@ import { CachedReference, referenceFromParts, UPDATE } from '../utils/references
   <Input @value=(mut (get person currentFact)) />
 
   <button {{on 'click' (fn showFact "name")}}>Show name</button>
-  <button {{on 'click' (fn showFact "language")}}>Show language</button>
+  <button {{on 'click' (fn this.showFact "language")}}>Show language</button>
   ```
 
   Would allow the user to swap what fact is being displayed, and also edit
