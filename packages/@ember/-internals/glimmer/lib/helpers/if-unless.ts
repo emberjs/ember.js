@@ -89,7 +89,7 @@ class ConditionalHelperReference extends CachedReference {
 
   For the following template:
 
-    ```app/components/weather.hbs
+   ```app/components/weather.hbs
   {{#if @isRaining}}
     Yes, grab an umbrella!
   {{else if @isCold}}
