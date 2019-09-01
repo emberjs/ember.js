@@ -735,6 +735,7 @@ class Route extends EmberObject implements IRoute {
 
     ```app/routes/index.js
     import Route from '@ember/routing/route';
+    import { action } from '@ember/object';
 
     export default class IndexRoute extends Route {
       @action
@@ -1377,9 +1378,10 @@ class Route extends EmberObject implements IRoute {
     import Route from '@ember/routing/route';
 
     export default class PostCommentsRoute extends Route {
-      model() {
+      async model() {
         let post = this.modelFor('post');
-        return post.get('comments');
+
+        return post.comments;
       }
     }
     ```
@@ -1519,7 +1521,7 @@ class Route extends EmberObject implements IRoute {
           model: model            // the model to set on `options.controller`.
         })
       }
-    });
+    }
     ```
 
     The string values provided for the template name, and controller
@@ -1552,7 +1554,7 @@ class Route extends EmberObject implements IRoute {
       renderTemplate() {
         this.render(); // all defaults apply
       }
-    });
+    }
     ```
 
     The name of the route, defined by the router, is `post`.
@@ -1618,7 +1620,7 @@ class Route extends EmberObject implements IRoute {
     import Route from '@ember/routing/route';
     import { action } from '@ember/object';
 
-    export default Route {
+    export default class ApplicationRoute extends Route {
       @action
       showModal(evt) {
         this.render(evt.modalName, {
@@ -1628,13 +1630,12 @@ class Route extends EmberObject implements IRoute {
       }
 
       @action
-      hideModal(evt) {
+      hideModal() {
         this.disconnectOutlet({
           outlet: 'modal',
           parentView: 'application'
         });
       }
-    }
     }
     ```
 
@@ -1754,7 +1755,7 @@ class Route extends EmberObject implements IRoute {
       buildRouteInfoMetadata() {
         return { title: 'Posts Page' }
       }
-    });
+    }
     ```
 
     ```app/routes/application.js
@@ -2031,13 +2032,12 @@ function getEngineRouteName(engine: Owner, routeName: string) {
     ```
 
     ```app/routes/post.js
-    import $ from 'jquery';
     import Route from '@ember/routing/route';
 
     export default class PostRoute extends Route {
-      model(params) {
+      async model({ post_id }) {
         // the server returns `{ id: 12 }`
-        return $.getJSON('/posts/' + params.post_id);
+        return fetch(`/posts/${post_id}`;
       }
 
       serialize(model) {
@@ -2120,21 +2120,21 @@ Route.reopen(ActionHandler, Evented, {
     ```app/routes/posts/list.js
     import Route from '@ember/routing/route';
 
-    export default Route.extend({
-      templateName: 'posts/list'
+    export default class extends Route {
+      templateName = 'posts/list'
     });
     ```
 
     ```app/routes/posts/index.js
     import PostsList from '../posts/list';
 
-    export default PostsList.extend();
+    export default class extends PostsList {};
     ```
 
     ```app/routes/posts/archived.js
     import PostsList from '../posts/list';
 
-    export default PostsList.extend();
+    export default class extends PostsList {};
     ```
 
     @property templateName
