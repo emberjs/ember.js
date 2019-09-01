@@ -1248,7 +1248,7 @@ class Route extends EmberObject implements IRoute {
     export default Router;
     ```
 
-    If you have defined a file for the post controller, 
+    If you have defined a file for the post controller,
     the framework will use it.
     If it is not defined, a basic `Controller` instance would be used.
 
