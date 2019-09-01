@@ -523,6 +523,54 @@ const ArrayMixin = Mixin.create(Enumerable, {
     invalidate any related properties. Pass the starting index of the change
     as well as a delta of the amounts to change.
 
+    ```app/components/show-post.js
+    import Component from '@ember/component';
+    import EmberObject from '@ember/object';
+
+    const Post = EmberObject.extend({
+      body: '',
+      save() {}
+    })
+
+    export default Component.extend({
+      attemptsToModify: 0,
+      successfulModifications: 0,
+      posts: null,
+
+      init() {
+        this._super(...arguments);
+
+        this.posts = [1, 2, 3].map(i => Post.create({ body: i }));
+        this.posts.addArrayObserver(this, {
+          willChange() {
+            this.incrementProperty('attemptsToModify');
+          },
+          didChange() {
+            this.incrementProperty('successfulModifications');
+          }
+        });
+      },
+
+      actions: {
+        editPost(post, newContent) {
+          let oldContent = post.body,
+              postIndex = this.posts.indexOf(post);
+              
+          this.posts.arrayContentWillChange(postIndex, 0, 0); // attemptsToModify = 1
+          post.set('body', newContent);
+
+          post.save()
+            .then(response => {
+              this.posts.arrayContentDidChange(postIndex, 0, 0); // successfulModifications = 1
+            })
+            .catch(error => {
+              post.set('body', oldContent);
+            })
+        }
+      }
+    });
+    ```
+
     @method arrayContentWillChange
     @param {Number} startIdx The starting index in the array that will change.
     @param {Number} removeAmt The number of items that will be removed. If you
@@ -541,6 +589,15 @@ const ArrayMixin = Mixin.create(Enumerable, {
     method just after the array content changes to notify any observers and
     invalidate any related properties. Pass the starting index of the change
     as well as a delta of the amounts to change.
+
+    ```javascript
+    let arr = [1, 2, 3, 4, 5];
+
+    arr.copyWithin(-2); // [1, 2, 3, 1, 2]
+    // arr.lastObject = 5
+    arr.arrayContentDidChange(3, 2, 2);
+    // arr.lastObject = 2
+    ```
 
     @method arrayContentDidChange
     @param {Number} startIdx The starting index in the array that did change.
