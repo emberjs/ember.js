@@ -189,7 +189,7 @@ export default class RouterService extends Service {
     export default class CopyLinkComponent extends Component {
       @service router;
       @service clipboard;
-      
+
       @action
       copyBooksURL() {
         if (this.author) {
@@ -355,7 +355,7 @@ export default class RouterService extends Service {
 
       constructor() {
         super(...arguments);
-        
+
         this.router.on('routeWillChange', (transition) => {
           if (!transition.to.find(route => route.name === this.routeName)) {
             alert("Please save or cancel your changes.");
@@ -390,7 +390,7 @@ export default class RouterService extends Service {
 
       constructor() {
         super(...arguments);
-        
+
         this.router.on('routeDidChange', (transition) => {
           ga.send('pageView', {
             current: transition.to.name,
