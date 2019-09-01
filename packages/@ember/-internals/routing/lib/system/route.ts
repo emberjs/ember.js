@@ -383,17 +383,17 @@ class Route extends EmberObject implements IRoute {
 
     ```app/routes/contact-form.js
     import Route from '@ember/routing/route';
+    import { action } from '@ember/object';
 
-    export default Route.extend({
-      actions: {
-        willTransition(transition) {
-          if (this.controller.get('userHasEnteredData')) {
-            this.controller.displayNavigationConfirm();
-            transition.abort();
-          }
+    export default class ContactFormRoute extends Route {
+      @action
+      willTransition(transition) {
+        if (this.controller.get('userHasEnteredData')) {
+          this.controller.displayNavigationConfirm();
+          transition.abort();
         }
       }
-    });
+    }
     ```
 
     You can also redirect elsewhere by calling
@@ -426,15 +426,15 @@ class Route extends EmberObject implements IRoute {
 
     ```app/routes/login.js
     import Route from '@ember/routing/route';
+    import { action } from '@ember/object';
 
-    export default Route.extend({
-      actions: {
-        didTransition() {
-          this.controller.get('errors.base').clear();
-          return true; // Bubble the didTransition event
-        }
+    export default class LoginRoute extends Route {
+      @action
+      didTransition() {
+        this.controller.get('errors.base').clear();
+        return true; // Bubble the didTransition event
       }
-    });
+    }
     ```
 
     @event didTransition
@@ -450,19 +450,19 @@ class Route extends EmberObject implements IRoute {
 
     ```app/routes/application.js
     import Route from '@ember/routing/route';
+    import { action } from '@ember/object';
 
-    export default Route.extend({
-      actions: {
-        loading(transition, route) {
-          let controller = this.controllerFor('foo');
-          controller.set('currentlyLoading', true);
+    export default class ApplicationRoute extends Route {
+      @action
+      loading(transition, route) {
+        let controller = this.controllerFor('foo');
+        controller.set('currentlyLoading', true);
 
-          transition.finally(function() {
-            controller.set('currentlyLoading', false);
-          });
-        }
+        transition.finally(function() {
+          controller.set('currentlyLoading', false);
+        });
       }
-    });
+    }
     ```
 
     @event loading
@@ -486,28 +486,28 @@ class Route extends EmberObject implements IRoute {
     ```app/routes/admin.js
     import { reject } from 'rsvp';
     import Route from '@ember/routing/route';
+    import { action } from '@ember/object';
 
-    export default Route.extend({
+    export default class AdminRoute extends Route {
       beforeModel() {
         return reject('bad things!');
-      },
-
-      actions: {
-        error(error, transition) {
-          // Assuming we got here due to the error in `beforeModel`,
-          // we can expect that error === "bad things!",
-          // but a promise model rejecting would also
-          // call this hook, as would any errors encountered
-          // in `afterModel`.
-
-          // The `error` hook is also provided the failed
-          // `transition`, which can be stored and later
-          // `.retry()`d if desired.
-
-          this.transitionTo('login');
-        }
       }
-    });
+
+      @action
+      error(error, transition) {
+        // Assuming we got here due to the error in `beforeModel`,
+        // we can expect that error === "bad things!",
+        // but a promise model rejecting would also
+        // call this hook, as would any errors encountered
+        // in `afterModel`.
+
+        // The `error` hook is also provided the failed
+        // `transition`, which can be stored and later
+        // `.retry()`d if desired.
+
+        this.transitionTo('login');
+      }
+    }
     ```
 
     `error` actions that bubble up all the way to `ApplicationRoute`
@@ -517,14 +517,14 @@ class Route extends EmberObject implements IRoute {
 
     ```app/routes/application.js
     import Route from '@ember/routing/route';
+    import { action } from '@ember/object';
 
-    export default Route.extend({
-      actions: {
-        error(error, transition) {
-          this.controllerFor('banner').displayError(error.message);
-        }
+    export default class ApplicationRoute extends Route {
+      @action
+      error(error, transition) {
+        this.controllerFor('banner').displayError(error.message);
       }
-    });
+    }
     ```
     @event error
     @param {Error} error
@@ -2423,21 +2423,21 @@ Route.reopen(ActionHandler, Evented, {
 
     ```app/routes/form.js
     import Route from '@ember/routing/route';
+    import { action } from '@ember/object';
 
-    export default Route.extend({
-      actions: {
-        willTransition(transition) {
-          if (this.controller.get('userHasEnteredData') &&
-              !confirm('Are you sure you want to abandon progress?')) {
-            transition.abort();
-          } else {
-            // Bubble the `willTransition` action so that
-            // parent routes can decide whether or not to abort.
-            return true;
-          }
+    export default class FormRoute extends Route {
+      @action
+      willTransition(transition) {
+        if (this.controller.get('userHasEnteredData') &&
+            !confirm('Are you sure you want to abandon progress?')) {
+          transition.abort();
+        } else {
+          // Bubble the `willTransition` action so that
+          // parent routes can decide whether or not to abort.
+          return true;
         }
       }
-    });
+    }
     ```
 
     @property controller
