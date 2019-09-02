@@ -1170,7 +1170,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     ```javascript
    let colors = [
      { name: 'red', weight: 500 },
-     {name: 'green', weight: 600 },
+     { name: 'green', weight: 600 },
      {name: 'blue', weight: 500 }
     ];
    
