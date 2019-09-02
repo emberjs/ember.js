@@ -56,12 +56,10 @@ export function setupTestClass(hooks, TestClass, ...mixins) {
 
   function shouldTest(features) {
     return features.every(feature => {
-      if (feature[0] === '!' && isEnabled(feature.slice(1))) {
-        return false;
-      } else if (!isEnabled(feature)) {
-        return false;
+      if (feature[0] === '!') {
+        return !isEnabled(feature.slice(1));
       } else {
-        return true;
+        return isEnabled(feature);
       }
     });
   }
