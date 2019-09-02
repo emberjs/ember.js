@@ -475,27 +475,41 @@ moduleFor(
       });
 
       this.add(
-        'route:routeWithError',
-        Route.extend({
-          model() {
-            return { name: 'Alex' };
+        'controller:routeWithError',
+        Controller.extend({
+          toString() {
+            return 'RouteWithErrorController';
           },
         })
       );
 
-      this.addTemplate('routeWithError', 'Hi {{model.name}} {{x-foo person=model}}');
+      this.add(
+        'route:routeWithError',
+        Route.extend({
+          model() {
+            return {
+              name: 'Alex',
+              toString() {
+                return `Person (${this.name})`;
+              },
+            };
+          },
+        })
+      );
 
-      this.addComponent('x-foo', {
+      this.addTemplate('routeWithError', 'Hi {{this.model.name}} <Foo @person={{this.model}} />');
+
+      this.addComponent('foo', {
         ComponentClass: Component.extend({
           init() {
             this._super(...arguments);
             this.set('person.name', 'Ben');
           },
         }),
-        template: 'Hi {{person.name}} from component',
+        template: 'Hi {{this.person.name}} from component',
       });
 
-      let expectedBacktrackingMessage = /modified "model\.name" twice on \[object Object\] in a single render\. It was rendered in "template:my-app\/templates\/routeWithError.hbs" and modified in "component:x-foo"/;
+      let expectedBacktrackingMessage = /modified `Person \(Ben\)` twice in a single render\. It was first rendered as `this\.model\.name` in "template:my-app\/templates\/routeWithError\.hbs" and then modified later in "component:foo"/;
 
       await this.visit('/');
 

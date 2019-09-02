@@ -86,22 +86,16 @@ if (DEBUG) {
           let { lastRef, lastRenderedIn } = this.getKey(object, key);
           let currentlyIn = this.debugStack!.peek();
 
-          let parts = [];
-          let label;
+          let label = '';
 
-          if (lastRef !== undefined) {
-            while (lastRef && lastRef.propertyKey) {
-              parts.unshift(lastRef.propertyKey);
-              lastRef = lastRef.parentReference;
-            }
-
-            label = parts.join('.');
+          if (lastRef && typeof lastRef.debug === 'function') {
+            label = `as \`${lastRef.debug()}\` in ${lastRenderedIn}`;
           } else {
-            label = 'the same value';
+            label = `in ${lastRenderedIn}`;
           }
 
           assert(
-            `You modified "${label}" twice on ${object} in a single render. It was rendered in ${lastRenderedIn} and modified in ${currentlyIn}. This was unreliable and slow in Ember 1.x and is no longer supported. See https://github.com/emberjs/ember.js/issues/13948 for more details.`,
+            `You modified \`${object}\` twice in a single render. It was first rendered ${label} and then modified later in ${currentlyIn}. This was unreliable and slow in Ember 1.x and is no longer supported. See https://github.com/emberjs/ember.js/issues/13948 for more details.`,
             false
           );
         }

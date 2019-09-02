@@ -12,7 +12,6 @@ import {
   ElementOperations,
   Environment,
   Invocation,
-  UNDEFINED_REFERENCE,
   WithDynamicTagName,
   WithStaticLayout,
 } from '@glimmer/runtime';
@@ -74,10 +73,8 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
     }
     dynamicScope.outletState = definition.ref;
 
-    let controller = definition.controller;
-    let self = controller === undefined ? UNDEFINED_REFERENCE : new RootReference(controller);
     return {
-      self,
+      self: RootReference.create(definition.controller),
       finalize: _instrumentStart('render.outlet', instrumentationPayload, definition),
     };
   }

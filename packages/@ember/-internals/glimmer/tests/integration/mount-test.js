@@ -114,7 +114,12 @@ moduleFor(
         { moduleName: 'my-app/templates/application.hbs' }
       );
       this.engineRegistrations['controller:application'] = Controller.extend({
-        person: { name: 'Alex' },
+        person: {
+          name: 'Alex',
+          toString() {
+            return `Person (${this.name})`;
+          },
+        },
       });
 
       this.engineRegistrations['template:components/component-with-backtracking-set'] = compile(
@@ -130,7 +135,7 @@ moduleFor(
         },
       });
 
-      let expectedBacktrackingMessage = /modified "person\.name" twice on \[object Object\] in a single render\. It was rendered in "template:my-app\/templates\/route-with-mount.hbs" \(in "engine:chat"\) and modified in "component:component-with-backtracking-set" \(in "engine:chat"\)/;
+      let expectedBacktrackingMessage = /modified `Person \(Ben\)` twice in a single render\. It was first rendered as `this\.person\.name` in "template:my-app\/templates\/route-with-mount.hbs" \(in "engine:chat"\) and then modified later in "component:component-with-backtracking-set" \(in "engine:chat"\)/;
 
       await this.visit('/');
 
