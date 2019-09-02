@@ -1378,7 +1378,7 @@ class Route extends EmberObject implements IRoute {
     import Route from '@ember/routing/route';
 
     export default class PostCommentsRoute extends Route {
-      async model() {
+      model() {
         let post = this.modelFor('post');
 
         return post.comments;
@@ -2035,7 +2035,7 @@ function getEngineRouteName(engine: Owner, routeName: string) {
     import Route from '@ember/routing/route';
 
     export default class PostRoute extends Route {
-      async model({ post_id }) {
+      model({ post_id }) {
         // the server returns `{ id: 12 }`
         return fetch(`/posts/${post_id}`;
       }
