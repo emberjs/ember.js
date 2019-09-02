@@ -1175,10 +1175,10 @@ const ArrayMixin = Mixin.create(Enumerable, {
     ];
    
    colors.sortBy('name');
-   // [{name: "blue", weight: 500}, {name: "green", weight: 600}, {name: "red", weight: 500}]
+   // [{name: 'blue', weight: 500}, {name: 'green', weight: 600}, {name: 'red', weight: 500}]
    
    colors.sortBy('weight', 'name');
-   // [{name: "blue", weight: 500}, {name: "red", weight: 500}, {name: "green", weight: 600}]
+   // [{name: 'blue', weight: 500}, {name: 'red', weight: 500}, {name: 'green', weight: 600}]
    ```
 
     @method sortBy
