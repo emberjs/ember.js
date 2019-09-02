@@ -1,10 +1,11 @@
 import { moduleFor, ApplicationTestCase, strip, runTaskNext } from 'internal-test-helpers';
 
-import Controller from '@ember/controller';
-import { RSVP } from '@ember/-internals/runtime';
 import { Component } from '@ember/-internals/glimmer';
-import Engine from '@ember/engine';
 import { Route } from '@ember/-internals/routing';
+import { RSVP } from '@ember/-internals/runtime';
+import { EMBER_ROUTING_MODEL_ARG } from '@ember/canary-features';
+import Controller from '@ember/controller';
+import Engine from '@ember/engine';
 import { next } from '@ember/runloop';
 
 import { compile } from '../../utils/helpers';
@@ -517,7 +518,12 @@ moduleFor(
             },
           })
         );
-        this.register('template:application_error', compile('Error! {{model.message}}'));
+        this.register(
+          'template:application_error',
+          compile(
+            EMBER_ROUTING_MODEL_ARG ? 'Error! {{@model.message}}' : 'Error! {{this.model.message}}'
+          )
+        );
         this.register(
           'route:post',
           Route.extend({
@@ -556,7 +562,12 @@ moduleFor(
             },
           })
         );
-        this.register('template:error', compile('Error! {{model.message}}'));
+        this.register(
+          'template:error',
+          compile(
+            EMBER_ROUTING_MODEL_ARG ? 'Error! {{@model.message}}' : 'Error! {{this.model.message}}'
+          )
+        );
         this.register(
           'route:post',
           Route.extend({
@@ -595,7 +606,12 @@ moduleFor(
             },
           })
         );
-        this.register('template:post_error', compile('Error! {{model.message}}'));
+        this.register(
+          'template:post_error',
+          compile(
+            EMBER_ROUTING_MODEL_ARG ? 'Error! {{@model.message}}' : 'Error! {{this.model.message}}'
+          )
+        );
         this.register(
           'route:post',
           Route.extend({
@@ -634,7 +650,12 @@ moduleFor(
             },
           })
         );
-        this.register('template:post.error', compile('Error! {{model.message}}'));
+        this.register(
+          'template:post.error',
+          compile(
+            EMBER_ROUTING_MODEL_ARG ? 'Error! {{@model.message}}' : 'Error! {{this.model.message}}'
+          )
+        );
         this.register(
           'route:post.comments',
           Route.extend({

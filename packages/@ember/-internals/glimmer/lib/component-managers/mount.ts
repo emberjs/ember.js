@@ -1,12 +1,15 @@
 import { DEBUG } from '@glimmer/env';
 import { ComponentCapabilities } from '@glimmer/interfaces';
-import { CONSTANT_TAG, Tag, validate, value, VersionedPathReference } from '@glimmer/reference';
-import { ComponentDefinition, Invocation, WithDynamicLayout } from '@glimmer/runtime';
+import { CONSTANT_TAG, Tag, VersionedPathReference } from '@glimmer/reference';
+import { Arguments, ComponentDefinition, Invocation, WithDynamicLayout } from '@glimmer/runtime';
 import { Destroyable, Opaque, Option } from '@glimmer/util';
 
 import { Owner } from '@ember/-internals/owner';
 import { generateControllerFactory } from '@ember/-internals/routing';
 import { OwnedTemplateMeta } from '@ember/-internals/views';
+import { EMBER_ROUTING_MODEL_ARG } from '@ember/canary-features';
+import { assert } from '@ember/debug';
+
 import { TemplateFactory } from '../..';
 import Environment from '../environment';
 import RuntimeResolver from '../resolver';
@@ -23,24 +26,18 @@ interface EngineState {
   engine: EngineInstance;
   controller: any;
   self: RootReference<any>;
-  tag: Tag;
-}
-
-interface EngineWithModelState extends EngineState {
-  modelRef: VersionedPathReference<Opaque>;
-  modelRev: number;
+  modelRef?: VersionedPathReference<Opaque>;
 }
 
 interface EngineDefinitionState {
   name: string;
-  modelRef: VersionedPathReference<Opaque> | undefined;
 }
 
 const CAPABILITIES = {
   dynamicLayout: true,
   dynamicTag: false,
   prepareArgs: false,
-  createArgs: false,
+  createArgs: true,
   attributeHook: false,
   elementHook: false,
   createCaller: true,
@@ -49,10 +46,13 @@ const CAPABILITIES = {
   createInstance: true,
 };
 
-class MountManager
-  extends AbstractManager<EngineState | EngineWithModelState, EngineDefinitionState>
-  implements
-    WithDynamicLayout<EngineState | EngineWithModelState, OwnedTemplateMeta, RuntimeResolver> {
+// TODO
+// This "disables" the "@model" feature by making the arg untypable syntatically
+// Delete this when EMBER_ROUTING_MODEL_ARG has shipped
+export const MODEL_ARG_NAME = EMBER_ROUTING_MODEL_ARG || !DEBUG ? 'model' : ' untypable model arg ';
+
+class MountManager extends AbstractManager<EngineState, EngineDefinitionState>
+  implements WithDynamicLayout<EngineState, OwnedTemplateMeta, RuntimeResolver> {
   getDynamicLayout(state: EngineState, _: RuntimeResolver): Invocation {
     let templateFactory = state.engine.lookup('template:application') as TemplateFactory;
     let template = templateFactory(state.engine);
@@ -68,9 +68,9 @@ class MountManager
     return CAPABILITIES;
   }
 
-  create(environment: Environment, state: EngineDefinitionState) {
+  create(environment: Environment, { name }: EngineDefinitionState, args: Arguments) {
     if (DEBUG) {
-      this._pushEngineToDebugStack(`engine:${state.name}`, environment);
+      this._pushEngineToDebugStack(`engine:${name}`, environment);
     }
 
     // TODO
@@ -78,7 +78,7 @@ class MountManager
     // we should resolve the engine app template in the helper
     // it also should use the owner that looked up the mount helper.
 
-    let engine = environment.owner.buildChildEngineInstance<EngineInstance>(state.name);
+    let engine = environment.owner.buildChildEngineInstance<EngineInstance>(name);
 
     engine.boot();
 
@@ -86,21 +86,22 @@ class MountManager
     let controllerFactory = applicationFactory || generateControllerFactory(engine, 'application');
     let controller: any;
     let self: RootReference<any>;
-    let bucket: EngineState | EngineWithModelState;
-    let tag: Tag;
-    let modelRef = state.modelRef;
+    let bucket: EngineState;
+    let modelRef;
+
+    if (args.named.has(MODEL_ARG_NAME)) {
+      modelRef = args.named.get(MODEL_ARG_NAME);
+    }
+
     if (modelRef === undefined) {
       controller = controllerFactory.create();
       self = new RootReference(controller);
-      tag = CONSTANT_TAG;
-      bucket = { engine, controller, self, tag };
+      bucket = { engine, controller, self };
     } else {
       let model = modelRef.value();
-      let modelRev = value(modelRef.tag);
       controller = controllerFactory.create({ model });
       self = new RootReference(controller);
-      tag = modelRef.tag;
-      bucket = { engine, controller, self, tag, modelRef, modelRev };
+      bucket = { engine, controller, self, modelRef };
     }
 
     return bucket;
@@ -110,8 +111,12 @@ class MountManager
     return self;
   }
 
-  getTag(state: EngineState | EngineWithModelState): Tag {
-    return state.tag;
+  getTag(state: EngineState): Tag {
+    if (state.modelRef) {
+      return state.modelRef.tag;
+    } else {
+      return CONSTANT_TAG;
+    }
   }
 
   getDestructor({ engine }: EngineState): Option<Destroyable> {
@@ -124,13 +129,9 @@ class MountManager
     }
   }
 
-  update(bucket: EngineWithModelState): void {
-    let { controller, modelRef, modelRev } = bucket;
-    if (!validate(modelRef.tag, modelRev!)) {
-      let model = modelRef.value();
-      bucket.modelRev = value(modelRef.tag);
-      controller.set('model', model);
-    }
+  update({ controller, modelRef }: EngineState): void {
+    assert('[BUG] `update` should only be called when modelRef is present', modelRef !== undefined);
+    controller.set('model', modelRef!.value());
   }
 }
 
@@ -140,7 +141,7 @@ export class MountDefinition implements ComponentDefinition {
   public state: EngineDefinitionState;
   public manager = MOUNT_MANAGER;
 
-  constructor(name: string, modelRef: VersionedPathReference<Opaque> | undefined) {
-    this.state = { name, modelRef };
+  constructor(name: string) {
+    this.state = { name };
   }
 }
