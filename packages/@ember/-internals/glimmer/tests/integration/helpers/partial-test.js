@@ -27,7 +27,7 @@ moduleFor(
     }
 
     ['@test should use the current context']() {
-      this.registerPartial('_person_name', '{{model.firstName}} {{model.lastName}}');
+      this.registerPartial('_person_name', '{{this.model.firstName}} {{this.model.lastName}}');
 
       this.render('Who is {{partial "person_name"}}?', {
         model: {
@@ -82,9 +82,9 @@ moduleFor(
 
       this.render(
         strip`
-      {{#each model.items as |item|}}
-        {{item}}: {{partial 'show-item'}} |
-      {{/each}}`,
+        {{#each this.model.items as |item|}}
+          {{item}}: {{partial 'show-item'}} |
+        {{/each}}`,
         {
           model: {
             items: emberA(['apple', 'orange', 'banana']),
@@ -114,9 +114,9 @@ moduleFor(
 
       this.render(
         strip`
-      {{#with model as |item|}}
-        {{item.name}}: {{partial 'show-id'}}
-      {{/with}}`,
+        {{#with this.model as |item|}}
+          {{item.name}}: {{partial 'show-id'}}
+        {{/with}}`,
         {
           model: { id: 1, name: 'foo' },
         }
@@ -287,9 +287,9 @@ moduleFor(
 
       this.render(
         strip`
-      {{#each model.items as |template i|}}
-        {{model.type}}: {{partial template}}
-      {{/each}}`,
+        {{#each this.model.items as |template i|}}
+          {{this.model.type}}: {{partial template}}
+        {{/each}}`,
         {
           model: {
             items: ['even', 'odd', 'even', 'odd'],

@@ -79,7 +79,7 @@ moduleFor(
     ['@test input disabled attribute']() {
       let model = { model: { value: false } };
 
-      this.render(`<input disabled={{model.value}}>`, model);
+      this.render(`<input disabled={{this.model.value}}>`, model);
 
       this.assert.equal(this.$inputElement().prop('disabled'), false);
 

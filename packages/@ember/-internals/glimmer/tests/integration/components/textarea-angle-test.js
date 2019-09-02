@@ -150,7 +150,7 @@ moduleFor(
     }
 
     ['@test Should bind its contents to the specified @value']() {
-      this.render('<Textarea @value={{model.val}} />', {
+      this.render('<Textarea @value={{this.model.val}} />', {
         model: { val: 'A beautiful day in Seattle' },
       });
       this.assertTextArea({ value: 'A beautiful day in Seattle' });
@@ -181,7 +181,7 @@ moduleFor(
     }
 
     ['@test should update the @value for `cut` / `input` / `change` events']() {
-      this.render('<Textarea @value={{model.val}} />', {
+      this.render('<Textarea @value={{this.model.val}} />', {
         model: { val: 'A beautiful day in Seattle' },
       });
       this.assertTextArea({ value: 'A beautiful day in Seattle' });

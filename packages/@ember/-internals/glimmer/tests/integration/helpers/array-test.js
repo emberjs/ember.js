@@ -137,7 +137,7 @@ moduleFor(
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: `{{yield (hash people=(array model.personOne))}}`,
+        template: `{{yield (hash people=(array this.model.personOne))}}`,
       });
 
       this.render(strip`
@@ -176,15 +176,16 @@ moduleFor(
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: `{{yield (hash people=(array model.personOne personTwo))}}`,
+        template: `{{yield (hash people=(array this.model.personOne personTwo))}}`,
       });
 
       this.render(
-        strip`{{#foo-bar personTwo=model.personTwo as |values|}}
-              {{#each values.people as |personName|}}
-                {{personName}},
-              {{/each}}
-            {{/foo-bar}}`,
+        strip`
+        {{#foo-bar personTwo=this.model.personTwo as |values|}}
+          {{#each values.people as |personName|}}
+            {{personName}},
+          {{/each}}
+        {{/foo-bar}}`,
         {
           model: { personTwo: 'Tom' },
         }

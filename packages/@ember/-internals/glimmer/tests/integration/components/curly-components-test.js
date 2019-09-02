@@ -429,7 +429,7 @@ moduleFor(
     ['@test should apply classes of the dasherized property name when bound property specified is true']() {
       this.registerComponent('foo-bar', { template: 'hello' });
 
-      this.render('{{foo-bar class=model.someTruth}}', {
+      this.render('{{foo-bar class=this.model.someTruth}}', {
         model: { someTruth: true },
       });
 
@@ -688,7 +688,7 @@ moduleFor(
         template: '{{@foo}}',
       });
 
-      this.render('{{foo-bar foo=model.bar}}', {
+      this.render('{{foo-bar foo=this.model.bar}}', {
         model: {
           bar: 'Hola',
         },
@@ -714,7 +714,7 @@ moduleFor(
         template: '{{foo}}',
       });
 
-      this.render('{{foo-bar foo=model.bar}}', {
+      this.render('{{foo-bar foo=this.model.bar}}', {
         model: {
           bar: 'Hola',
         },
@@ -1478,7 +1478,7 @@ moduleFor(
       `,
       });
 
-      this.render('{{foo-bar value=model.value items=model.items}}', {
+      this.render('{{foo-bar value=this.model.value items=this.model.items}}', {
         model: {
           value: 'wat',
           items: [1, 2, 3],

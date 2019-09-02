@@ -22,7 +22,7 @@ moduleFor(
       super(...arguments);
       this.addTemplate('home', '<h3 class="hours">Hours</h3>');
       this.addTemplate('camelot', '<section id="camelot"><h3>Is a silly place</h3></section>');
-      this.addTemplate('homepage', '<h3 id="troll">Megatroll</h3><p>{{model.home}}</p>');
+      this.addTemplate('homepage', '<h3 id="troll">Megatroll</h3><p>{{this.name}}</p>');
 
       this.router.map(function() {
         this.route('home', { path: '/' });
@@ -143,7 +143,7 @@ moduleFor(
       });
     }
 
-    [`@test an alternate template will pull in an alternate controller`](assert) {
+    async [`@test an alternate template will pull in an alternate controller`](assert) {
       this.add(
         'route:home',
         Route.extend({
@@ -157,19 +157,17 @@ moduleFor(
         Controller.extend({
           init() {
             this._super(...arguments);
-            this.model = { home: 'Comes from homepage' };
+            this.name = 'Comes from homepage';
           },
         })
       );
 
-      return this.visit('/').then(() => {
-        let text = this.$('p').text();
+      await this.visit('/');
 
-        assert.equal(text, 'Comes from homepage', 'the homepage template was rendered');
-      });
+      assert.equal(this.$('p').text(), 'Comes from homepage', 'the homepage template was rendered');
     }
 
-    [`@test An alternate template will pull in an alternate controller instead of controllerName`](
+    async [`@test An alternate template will pull in an alternate controller instead of controllerName`](
       assert
     ) {
       this.add(
@@ -186,7 +184,7 @@ moduleFor(
         Controller.extend({
           init() {
             this._super(...arguments);
-            this.model = { home: 'Comes from foo' };
+            this.name = 'Comes from foo';
           },
         })
       );
@@ -195,19 +193,17 @@ moduleFor(
         Controller.extend({
           init() {
             this._super(...arguments);
-            this.model = { home: 'Comes from homepage' };
+            this.name = 'Comes from homepage';
           },
         })
       );
 
-      return this.visit('/').then(() => {
-        let text = this.$('p').text();
+      await this.visit('/');
 
-        assert.equal(text, 'Comes from homepage', 'the homepage template was rendered');
-      });
+      assert.equal(this.$('p').text(), 'Comes from homepage', 'the homepage template was rendered');
     }
 
-    [`@test The template will pull in an alternate controller via key/value`](assert) {
+    async [`@test The template will pull in an alternate controller via key/value`](assert) {
       this.router.map(function() {
         this.route('homepage', { path: '/' });
       });
@@ -225,29 +221,29 @@ moduleFor(
         Controller.extend({
           init() {
             this._super(...arguments);
-            this.model = { home: 'Comes from home.' };
+            this.name = 'Comes from home.';
           },
         })
       );
 
-      return this.visit('/').then(() => {
-        let text = this.$('p').text();
+      await this.visit('/');
 
-        assert.equal(
-          text,
-          'Comes from home.',
-          'the homepage template was rendered from data from the HomeController'
-        );
-      });
+      assert.equal(
+        this.$('p').text(),
+        'Comes from home.',
+        'the homepage template was rendered from data from the HomeController'
+      );
     }
 
-    [`@test The Homepage with explicit template name in renderTemplate and controller`](assert) {
+    async [`@test The Homepage with explicit template name in renderTemplate and controller`](
+      assert
+    ) {
       this.add(
         'controller:home',
         Controller.extend({
           init() {
             this._super(...arguments);
-            this.model = { home: 'YES I AM HOME' };
+            this.name = 'YES I AM HOME';
           },
         })
       );
@@ -260,11 +256,9 @@ moduleFor(
         })
       );
 
-      return this.visit('/').then(() => {
-        let text = this.$('p').text();
+      await this.visit('/');
 
-        assert.equal(text, 'YES I AM HOME', 'The homepage template was rendered');
-      });
+      assert.equal(this.$('p').text(), 'YES I AM HOME', 'The homepage template was rendered');
     }
 
     [`@test Model passed via renderTemplate model is set as controller's model`](assert) {
@@ -590,7 +584,7 @@ moduleFor(
 
       this.addTemplate(
         'home',
-        '<ul>{{#each model as |passage|}}<li>{{passage}}</li>{{/each}}</ul>'
+        '<ul>{{#each this.model as |passage|}}<li>{{passage}}</li>{{/each}}</ul>'
       );
 
       return this.visit('/').then(() => {

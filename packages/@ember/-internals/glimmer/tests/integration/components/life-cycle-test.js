@@ -1465,16 +1465,16 @@ moduleFor(
 
       this.render(
         strip`
-      {{#each items as |item|}}
-        {{#parent-component itemId=item.id}}{{item.id}}{{/parent-component}}
-      {{/each}}
-      {{#if model.shouldShow}}
-        {{#parent-component itemId=6}}6{{/parent-component}}
-      {{/if}}
-      {{#if model.shouldShow}}
-        {{#parent-component itemId=7}}7{{/parent-component}}
-      {{/if}}
-    `,
+        {{#each items as |item|}}
+          {{#parent-component itemId=item.id}}{{item.id}}{{/parent-component}}
+        {{/each}}
+        {{#if this.model.shouldShow}}
+          {{#parent-component itemId=6}}6{{/parent-component}}
+        {{/if}}
+        {{#if this.model.shouldShow}}
+          {{#parent-component itemId=7}}7{{/parent-component}}
+        {{/if}}
+        `,
         {
           items: array,
           model: { shouldShow: true },

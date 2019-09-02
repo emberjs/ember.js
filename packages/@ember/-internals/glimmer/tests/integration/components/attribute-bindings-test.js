@@ -66,7 +66,7 @@ moduleFor(
         template: 'hello',
       });
 
-      this.render('{{foo-bar foo=model.foo baz=model.baz}}', {
+      this.render('{{foo-bar foo=this.model.foo baz=this.model.baz}}', {
         model: { foo: undefined, baz: { bar: 'bar' } },
       });
 
