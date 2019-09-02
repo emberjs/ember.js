@@ -38,7 +38,8 @@ export interface OutletDefinitionState {
   name: string;
   outlet: string;
   template: OwnedTemplate;
-  controller: any | undefined;
+  controller: unknown;
+  model: unknown;
 }
 
 const CAPABILITIES: ComponentCapabilities = {

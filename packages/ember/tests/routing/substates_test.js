@@ -381,10 +381,10 @@ moduleFor(
       return promise;
     }
 
-    ['@test Prioritized error substate entry works with preserved-namespaec nested routes'](
+    ['@feature(!EMBER_ROUTING_MODEL_ARG) Prioritized error substate entry works with preserved-namespace nested routes'](
       assert
     ) {
-      this.addTemplate('foo.bar_error', 'FOOBAR ERROR: {{model.msg}}');
+      this.addTemplate('foo.bar_error', 'FOOBAR ERROR: {{this.model.msg}}');
       this.addTemplate('foo.bar', 'YAY');
 
       this.router.map(function() {
@@ -415,6 +415,41 @@ moduleFor(
         });
       });
     }
+
+    async ['@feature(EMBER_ROUTING_MODEL_ARG) Prioritized error substate entry works with preserved-namespace nested routes'](
+      assert
+    ) {
+      this.addTemplate('foo.bar_error', 'FOOBAR ERROR: {{@model.msg}}');
+      this.addTemplate('foo.bar', 'YAY');
+
+      this.router.map(function() {
+        this.route('foo', function() {
+          this.route('bar');
+        });
+      });
+
+      this.add(
+        'route:foo.bar',
+        Route.extend({
+          model() {
+            return RSVP.reject({
+              msg: 'did it broke?',
+            });
+          },
+        })
+      );
+
+      await this.visit('/');
+
+      await this.visit('/foo/bar');
+
+      assert.equal(
+        this.$('#app').text(),
+        'FOOBAR ERROR: did it broke?',
+        `foo.bar_error was entered (as opposed to something like foo/foo/bar_error)`
+      );
+    }
+
     ['@test Prioritized loading substate entry works with auto-generated index routes'](assert) {
       let deferred = RSVP.defer();
       this.addTemplate('foo.index_loading', 'FOO LOADING');
@@ -457,8 +492,10 @@ moduleFor(
       return promise;
     }
 
-    ['@test Prioritized error substate entry works with auto-generated index routes'](assert) {
-      this.addTemplate('foo.index_error', 'FOO ERROR: {{model.msg}}');
+    ['@feature(!EMBER_ROUTING_MODEL_ARG) Prioritized error substate entry works with auto-generated index routes'](
+      assert
+    ) {
+      this.addTemplate('foo.index_error', 'FOO ERROR: {{this.model.msg}}');
       this.addTemplate('foo.index', 'YAY');
       this.addTemplate('foo', '{{outlet}}');
 
@@ -496,7 +533,50 @@ moduleFor(
       });
     }
 
-    ['@test Rejected promises returned from ApplicationRoute transition into top-level application_error'](
+    async ['@feature(EMBER_ROUTING_MODEL_ARG) Prioritized error substate entry works with auto-generated index routes'](
+      assert
+    ) {
+      this.addTemplate('foo.index_error', 'FOO ERROR: {{@model.msg}}');
+      this.addTemplate('foo.index', 'YAY');
+      this.addTemplate('foo', '{{outlet}}');
+
+      this.router.map(function() {
+        this.route('foo', function() {
+          this.route('bar');
+        });
+      });
+
+      this.add(
+        'route:foo.index',
+        Route.extend({
+          model() {
+            return RSVP.reject({
+              msg: 'did it broke?',
+            });
+          },
+        })
+      );
+      this.add(
+        'route:foo',
+        Route.extend({
+          model() {
+            return true;
+          },
+        })
+      );
+
+      await this.visit('/');
+
+      await this.visit('/foo');
+
+      assert.equal(
+        this.$('#app').text(),
+        'FOO ERROR: did it broke?',
+        'foo.index_error was entered'
+      );
+    }
+
+    ['@feature(!EMBER_ROUTING_MODEL_ARG) Rejected promises returned from ApplicationRoute transition into top-level application_error'](
       assert
     ) {
       let reject = true;
@@ -520,9 +600,7 @@ moduleFor(
 
       this.addTemplate(
         'application_error',
-        `
-      <p id="toplevel-error">TOPLEVEL ERROR: {{model.msg}}</p>
-    `
+        `<p id="toplevel-error">TOPLEVEL ERROR: {{this.model.msg}}</p>`
       );
 
       return this.visit('/')
@@ -538,6 +616,48 @@ moduleFor(
           let text = this.$('#index').text();
           assert.equal(text, 'INDEX', 'the index route resolved');
         });
+    }
+
+    async ['@feature(EMBER_ROUTING_MODEL_ARG) Rejected promises returned from ApplicationRoute transition into top-level application_error'](
+      assert
+    ) {
+      let reject = true;
+
+      this.addTemplate('index', '<div id="index">INDEX</div>');
+      this.add(
+        'route:application',
+        Route.extend({
+          init() {
+            this._super(...arguments);
+          },
+          model() {
+            if (reject) {
+              return RSVP.reject({ msg: 'BAD NEWS BEARS' });
+            } else {
+              return {};
+            }
+          },
+        })
+      );
+
+      this.addTemplate(
+        'application_error',
+        `<p id="toplevel-error">TOPLEVEL ERROR: {{@model.msg}}</p>`
+      );
+
+      await this.visit('/');
+
+      assert.equal(
+        this.$('#toplevel-error').text(),
+        'TOPLEVEL ERROR: BAD NEWS BEARS',
+        'toplevel error rendered'
+      );
+
+      reject = false;
+
+      await this.visit('/');
+
+      assert.equal(this.$('#index').text(), 'INDEX', 'the index route resolved');
     }
   }
 );
@@ -674,10 +794,12 @@ moduleFor(
       return promise;
     }
 
-    async ['@test Default error event moves into nested route'](assert) {
+    async ['@feature(!EMBER_ROUTING_MODEL_ARG) Default error event moves into nested route'](
+      assert
+    ) {
       await this.visit('/');
 
-      this.addTemplate('grandma.error', 'ERROR: {{model.msg}}');
+      this.addTemplate('grandma.error', 'ERROR: {{this.model.msg}}');
 
       this.add(
         'route:mom.sally',
@@ -705,6 +827,39 @@ moduleFor(
         assert.equal(text, 'GRANDMA ERROR: did it broke?', 'error bubbles');
         assert.equal(this.currentPath, 'grandma.error', 'Initial route fully loaded');
       });
+    }
+
+    async ['@feature(EMBER_ROUTING_MODEL_ARG) Default error event moves into nested route'](
+      assert
+    ) {
+      await this.visit('/');
+
+      this.addTemplate('grandma.error', 'ERROR: {{@model.msg}}');
+
+      this.add(
+        'route:mom.sally',
+        Route.extend({
+          model() {
+            step(assert, 1, 'MomSallyRoute#model');
+            return RSVP.reject({
+              msg: 'did it broke?',
+            });
+          },
+          actions: {
+            error() {
+              step(assert, 2, 'MomSallyRoute#actions.error');
+              return true;
+            },
+          },
+        })
+      );
+
+      await this.visit('/grandma/mom/sally');
+
+      step(assert, 3, 'App finished loading');
+
+      assert.equal(this.$('#app').text(), 'GRANDMA ERROR: did it broke?', 'error bubbles');
+      assert.equal(this.currentPath, 'grandma.error', 'Initial route fully loaded');
     }
 
     async [`@test Non-bubbled errors that re-throw aren't swallowed`](assert) {
@@ -856,13 +1011,52 @@ moduleFor(
       );
     }
 
-    async ['@test Default error events move into nested route, prioritizing more specifically named error routes - NEW'](
+    async ['@feature(!EMBER_ROUTING_MODEL_ARG) Default error events move into nested route, prioritizing more specifically named error routes - NEW'](
       assert
     ) {
       await this.visit('/');
 
-      this.addTemplate('grandma.error', 'ERROR: {{model.msg}}');
-      this.addTemplate('mom_error', 'MOM ERROR: {{model.msg}}');
+      this.addTemplate('grandma.error', 'ERROR: {{this.model.msg}}');
+      this.addTemplate('mom_error', 'MOM ERROR: {{this.model.msg}}');
+
+      this.add(
+        'route:mom.sally',
+        Route.extend({
+          model() {
+            step(assert, 1, 'MomSallyRoute#model');
+            return RSVP.reject({
+              msg: 'did it broke?',
+            });
+          },
+          actions: {
+            error() {
+              step(assert, 2, 'MomSallyRoute#actions.error');
+              return true;
+            },
+          },
+        })
+      );
+
+      await this.visit('/grandma/mom/sally');
+
+      step(assert, 3, 'Application finished booting');
+
+      assert.equal(
+        this.$('#app').text(),
+        'GRANDMA MOM ERROR: did it broke?',
+        'the more specifically named mome error substate was entered over the other error route'
+      );
+
+      assert.equal(this.currentPath, 'grandma.mom_error', 'Initial route fully loaded');
+    }
+
+    async ['@feature(EMBER_ROUTING_MODEL_ARG) Default error events move into nested route, prioritizing more specifically named error routes - NEW'](
+      assert
+    ) {
+      await this.visit('/');
+
+      this.addTemplate('grandma.error', 'ERROR: {{@model.msg}}');
+      this.addTemplate('mom_error', 'MOM ERROR: {{@model.msg}}');
 
       this.add(
         'route:mom.sally',

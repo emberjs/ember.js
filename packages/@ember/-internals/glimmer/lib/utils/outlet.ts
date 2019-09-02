@@ -36,7 +36,12 @@ export interface RenderState {
   /**
    * The controller (the self of the outlet component)
    */
-  controller: any | undefined;
+  controller: unknown;
+
+  /**
+   * The model (the resolved value of the model hook)
+   */
+  model: unknown;
 
   /**
    * template (the layout of the outlet component)

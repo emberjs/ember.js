@@ -57,6 +57,7 @@ export default class OutletView {
         outlet: TOP_LEVEL_OUTLET,
         name: TOP_LEVEL_NAME,
         controller: undefined,
+        model: undefined,
         template,
       },
     }));
@@ -66,6 +67,7 @@ export default class OutletView {
       outlet: TOP_LEVEL_OUTLET,
       template,
       controller: undefined,
+      model: undefined,
     };
   }
 

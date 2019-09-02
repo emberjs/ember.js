@@ -606,7 +606,7 @@ moduleFor(
       });
     }
 
-    [`@test Ember Islands-style setup`](assert) {
+    [`@feature(!EMBER_ROUTING_MODEL_ARG) Ember Islands-style setup`](assert) {
       let xFooInitCalled = false;
       let xFooDidInsertElementCalled = false;
 
@@ -647,14 +647,17 @@ moduleFor(
         instantiate: false,
       });
 
-      this.addTemplate('show', '{{component model.componentName model=model.componentData}}');
+      this.addTemplate(
+        'show',
+        '{{component this.model.componentName model=this.model.componentData}}'
+      );
 
       this.addTemplate(
         'components/x-foo',
         `
-      <h1>X-Foo</h1>
-      <p>Hello {{model.name}}, I have been clicked {{isolatedCounter.value}} times ({{sharedCounter.value}} times combined)!</p>
-    `
+        <h1>X-Foo</h1>
+        <p>Hello {{@model.name}}, I have been clicked {{this.isolatedCounter.value}} times ({{this.sharedCounter.value}} times combined)!</p>
+        `
       );
 
       this.add(
@@ -684,9 +687,183 @@ moduleFor(
       this.addTemplate(
         'components/x-bar',
         `
-      <h1>X-Bar</h1>
-      <button {{action "incrementCounter"}}>Join {{counter.value}} others in clicking me!</button>
-    `
+        <h1>X-Bar</h1>
+        <button {{action "incrementCounter"}}>Join {{this.counter.value}} others in clicking me!</button>
+        `
+      );
+
+      this.add(
+        'component:x-bar',
+        Component.extend({
+          counter: injectService('sharedCounter'),
+
+          actions: {
+            incrementCounter() {
+              this.get('counter').increment();
+            },
+          },
+
+          init() {
+            this._super();
+            xBarInitCalled = true;
+          },
+
+          didInsertElement() {
+            xBarDidInsertElementCalled = true;
+          },
+        })
+      );
+
+      let fixtureElement = document.querySelector('#qunit-fixture');
+      let foo = document.createElement('div');
+      let bar = document.createElement('div');
+      fixtureElement.appendChild(foo);
+      fixtureElement.appendChild(bar);
+
+      let data = encodeURIComponent(JSON.stringify({ name: 'Godfrey' }));
+      let instances = [];
+
+      return RSVP.all([
+        runTask(() => {
+          return this.application.visit(`/x-foo?data=${data}`, {
+            rootElement: foo,
+          });
+        }),
+        runTask(() => {
+          return this.application.visit('/x-bar', { rootElement: bar });
+        }),
+      ])
+        .then(_instances => {
+          instances = _instances;
+
+          assert.ok(xFooInitCalled);
+          assert.ok(xFooDidInsertElementCalled);
+
+          assert.ok(xBarInitCalled);
+          assert.ok(xBarDidInsertElementCalled);
+
+          assert.equal(foo.querySelector('h1').textContent, 'X-Foo');
+          assert.equal(
+            foo.querySelector('p').textContent,
+            'Hello Godfrey, I have been clicked 0 times (0 times combined)!'
+          );
+          assert.ok(foo.textContent.indexOf('X-Bar') === -1);
+
+          assert.equal(bar.querySelector('h1').textContent, 'X-Bar');
+          assert.equal(bar.querySelector('button').textContent, 'Join 0 others in clicking me!');
+          assert.ok(bar.textContent.indexOf('X-Foo') === -1);
+
+          runTask(() => {
+            this.click(foo.querySelector('x-foo'));
+          });
+
+          assert.equal(
+            foo.querySelector('p').textContent,
+            'Hello Godfrey, I have been clicked 1 times (1 times combined)!'
+          );
+          assert.equal(bar.querySelector('button').textContent, 'Join 1 others in clicking me!');
+
+          runTask(() => {
+            this.click(bar.querySelector('button'));
+            this.click(bar.querySelector('button'));
+          });
+
+          assert.equal(
+            foo.querySelector('p').textContent,
+            'Hello Godfrey, I have been clicked 1 times (3 times combined)!'
+          );
+          assert.equal(bar.querySelector('button').textContent, 'Join 3 others in clicking me!');
+        })
+        .finally(() => {
+          runTask(() => {
+            instances.forEach(instance => {
+              instance.destroy();
+            });
+          });
+        });
+    }
+
+    [`@feature(EMBER_ROUTING_MODEL_ARG) Ember Islands-style setup`](assert) {
+      let xFooInitCalled = false;
+      let xFooDidInsertElementCalled = false;
+
+      let xBarInitCalled = false;
+      let xBarDidInsertElementCalled = false;
+
+      this.router.map(function() {
+        this.route('show', { path: '/:component_name' });
+      });
+
+      this.add(
+        'route:show',
+        Route.extend({
+          queryParams: {
+            data: { refreshModel: true },
+          },
+
+          model(params) {
+            return {
+              componentName: params.component_name,
+              componentData: params.data ? JSON.parse(params.data) : undefined,
+            };
+          },
+        })
+      );
+
+      let Counter = EmberObject.extend({
+        value: 0,
+
+        increment() {
+          this.incrementProperty('value');
+        },
+      });
+
+      this.add('service:isolatedCounter', Counter);
+      this.add('service:sharedCounter', Counter.create());
+      this.application.registerOptions('service:sharedCounter', {
+        instantiate: false,
+      });
+
+      this.addTemplate('show', '{{component @model.componentName model=@model.componentData}}');
+
+      this.addTemplate(
+        'components/x-foo',
+        `
+        <h1>X-Foo</h1>
+        <p>Hello {{@model.name}}, I have been clicked {{this.isolatedCounter.value}} times ({{this.sharedCounter.value}} times combined)!</p>
+        `
+      );
+
+      this.add(
+        'component:x-foo',
+        Component.extend({
+          tagName: 'x-foo',
+
+          isolatedCounter: injectService(),
+          sharedCounter: injectService(),
+
+          init() {
+            this._super();
+            xFooInitCalled = true;
+          },
+
+          didInsertElement() {
+            xFooDidInsertElementCalled = true;
+          },
+
+          click() {
+            this.get('isolatedCounter').increment();
+            this.get('sharedCounter').increment();
+          },
+        })
+      );
+
+      this.addTemplate(
+        'components/x-bar',
+        `
+        <h1>X-Bar</h1>
+        <button {{action "incrementCounter"}}>Join {{this.counter.value}} others in clicking me!</button>
+        `
       );
 
       this.add(

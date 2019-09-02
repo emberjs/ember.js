@@ -1,19 +1,25 @@
 import { OwnedTemplateMeta } from '@ember/-internals/views';
-import { Option } from '@glimmer/interfaces';
+import { EMBER_ROUTING_MODEL_ARG } from '@ember/canary-features';
+import { DEBUG } from '@glimmer/env';
+import { Option, unsafe } from '@glimmer/interfaces';
 import { OpcodeBuilder } from '@glimmer/opcode-compiler';
 import { ConstReference, Reference, Tag, VersionedPathReference } from '@glimmer/reference';
 import {
   Arguments,
+  CapturedArguments,
   CurriedComponentDefinition,
   curry,
+  EMPTY_ARGS,
   UNDEFINED_REFERENCE,
   VM,
 } from '@glimmer/runtime';
+import { Dict, dict, Opaque } from '@glimmer/util';
 import * as WireFormat from '@glimmer/wire-format';
 import { OutletComponentDefinition, OutletDefinitionState } from '../component-managers/outlet';
 import { DynamicScope } from '../renderer';
 import { isTemplateFactory } from '../template';
 import { OutletReference, OutletState } from '../utils/outlet';
+import { NestedPropertyReference, PropertyReference } from '../utils/references';
 
 /**
   The `{{outlet}}` helper lets you specify where a child route will render in
@@ -85,17 +91,93 @@ export function outletMacro(
   return true;
 }
 
+class OutletModelReference implements VersionedPathReference {
+  public tag: Tag;
+
+  constructor(private parent: VersionedPathReference<OutletState | undefined>) {
+    this.tag = parent.tag;
+  }
+
+  value(): Opaque {
+    let state = this.parent.value();
+
+    if (state === undefined) {
+      return undefined;
+    }
+
+    let { render } = state;
+
+    if (render === undefined) {
+      return undefined;
+    }
+
+    return render.model as Opaque;
+  }
+
+  get(property: string): VersionedPathReference {
+    if (DEBUG) {
+      // This guarentees that we preserve the `debug()` output below
+      return new NestedPropertyReference(this, property);
+    } else {
+      return PropertyReference.create(this, property);
+    }
+  }
+}
+
+if (DEBUG) {
+  OutletModelReference.prototype['debug'] = function debug(): string {
+    return '@model';
+  };
+}
+
 class OutletComponentReference
   implements VersionedPathReference<CurriedComponentDefinition | null> {
   public tag: Tag;
-  private definition: CurriedComponentDefinition | null;
-  private lastState: OutletDefinitionState | null;
+  private args: Option<CapturedArguments> = null;
+  private definition: Option<CurriedComponentDefinition> = null;
+  private lastState: Option<OutletDefinitionState> = null;
 
   constructor(private outletRef: VersionedPathReference<OutletState | undefined>) {
-    this.definition = null;
-    this.lastState = null;
     // The router always dirties the root state.
-    this.tag = outletRef.tag;
+    let tag = (this.tag = outletRef.tag);
+
+    if (EMBER_ROUTING_MODEL_ARG) {
+      let modelRef = new OutletModelReference(outletRef);
+      let map = dict<VersionedPathReference>();
+      map.model = modelRef;
+
+      // TODO: the functionailty to create a proper CapturedArgument should be
+      // exported by glimmer, or that it should provide an overload for `curry`
+      // that takes `PreparedArguments`
+      this.args = {
+        tag,
+        positional: EMPTY_ARGS.positional,
+        named: {
+          tag,
+          map,
+          names: ['model'],
+          references: [modelRef],
+          length: 1,
+          has(key: string): boolean {
+            return key === 'model';
+          },
+          get<T extends VersionedPathReference>(key: string): T {
+            return (key === 'model' ? modelRef : UNDEFINED_REFERENCE) as unsafe;
+          },
+          value(): Dict<Opaque> {
+            let model = modelRef.value();
+            return { model };
+          },
+        },
+        length: 1,
+        value() {
+          return {
+            named: this.named.value(),
+            positional: this.positional.value(),
+          };
+        },
+      };
+    }
   }
 
   value(): CurriedComponentDefinition | null {
@@ -106,7 +188,7 @@ class OutletComponentReference
     this.lastState = state;
     let definition = null;
     if (state !== null) {
-      definition = curry(new OutletComponentDefinition(state));
+      definition = curry(new OutletComponentDefinition(state), this.args);
     }
     return (this.definition = definition);
   }
@@ -138,6 +220,7 @@ function stateFor(
     outlet: render.outlet,
     template,
     controller: render.controller,
+    model: render.model,
   };
 }
 
