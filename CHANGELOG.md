@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### v3.13.0-beta.5 (September 3, 2019)
+
+- [#18314](https://github.com/emberjs/ember.js/pull/18314) [BUGFIX] Use class inheritance for getters and setters
+- [#18329](https://github.com/emberjs/ember.js/pull/18329) [BUGFIX] Eagerly consume aliases
+
 ### v3.13.0-beta.4 (August 26, 2019)
 
 - [#18278](https://github.com/emberjs/ember.js/pull/18278) [BUGFIX] Bump ember-router-generator from v1.2.3 to v2.0.0 to support parsing `app/router.js` with native class.
