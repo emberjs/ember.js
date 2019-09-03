@@ -1052,8 +1052,13 @@ const Component = CoreView.extend(
       Returns a jQuery object for this component's element. If you pass in a selector
       string, this method will return a jQuery object, using the current element
       as its buffer.
+
       For example, calling `component.$('li')` will return a jQuery object containing
       all of the `li` elements inside the DOM element of this component.
+
+      Please note that jQuery integration is off by default and this feature will
+      not work properly. To enable this feature, you can read the instructions in
+      the [jquery-integration optional feature guide](https://guides.emberjs.com/release/configuring-ember/optional-features/#toc_jquery-integration).
       @method $
       @param {String} [selector] a jQuery-compatible selector string
       @return {jQuery} the jQuery object for the DOM node
