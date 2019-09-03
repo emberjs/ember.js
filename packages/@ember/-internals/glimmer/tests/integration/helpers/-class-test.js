@@ -40,7 +40,7 @@ moduleFor(
 
     ['@tests casts leaf path of binding to dasherized class']() {
       this.registerComponent('foo-bar', { template: '' });
-      this.render(`{{foo-bar class=(-class model.someTruth "someTruth")}}`, {
+      this.render(`{{foo-bar class=(-class this.model.someTruth "someTruth")}}`, {
         model: {
           someTruth: true,
         },

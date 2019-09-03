@@ -235,7 +235,7 @@ moduleFor(
       });
     }
 
-    ['@test generates proper href for `LinkTo` with no @route after transitioning to an error route GH#17963'](
+    ['@feature(!EMBER_ROUTING_MODEL_ARG) generates proper href for `LinkTo` with no @route after transitioning to an error route GH#17963'](
       assert
     ) {
       this.router.map(function() {
@@ -258,7 +258,7 @@ moduleFor(
         })
       );
 
-      this.addTemplate('error', `Error: {{model.message}}`);
+      this.addTemplate('error', `Error: {{this.model.message}}`);
 
       this.addTemplate(
         'application',
@@ -304,6 +304,75 @@ moduleFor(
             'index controller QP properties updated'
           );
         });
+    }
+
+    async ['@feature(EMBER_ROUTING_MODEL_ARG) generates proper href for `LinkTo` with no @route after transitioning to an error route GH#17963'](
+      assert
+    ) {
+      this.router.map(function() {
+        this.route('bad');
+      });
+
+      this.add(
+        'controller:application',
+        Controller.extend({
+          queryParams: ['baz'],
+        })
+      );
+
+      this.add(
+        'route:bad',
+        Route.extend({
+          model() {
+            throw new Error('bad!');
+          },
+        })
+      );
+
+      this.addTemplate('error', `Error: {{@model.message}}`);
+
+      this.addTemplate(
+        'application',
+        `
+        <LinkTo id="bad-link" @route="bad">
+          Bad
+        </LinkTo>
+
+        <LinkTo id="good-link" @query={{hash baz='lol'}}>
+          Good
+        </LinkTo>
+
+        {{outlet}}
+        `
+      );
+
+      await this.visit('/');
+
+      assert.equal(this.$('#good-link').length, 1, 'good-link should be in the DOM');
+      assert.equal(this.$('#bad-link').length, 1, 'bad-link should be in the DOM');
+
+      let goodLink = this.$('#good-link');
+      assert.equal(goodLink.attr('href'), '/?baz=lol');
+
+      await this.visit('/bad');
+
+      assert.equal(this.$('#good-link').length, 1, 'good-link should be in the DOM');
+      assert.equal(this.$('#bad-link').length, 1, 'bad-link should be in the DOM');
+
+      goodLink = this.$('#good-link');
+      // should still be / because we never entered /bad (it errored before being fully entered)
+      // and error states do not get represented in the URL, so we are _effectively_ still
+      // on /
+      assert.equal(goodLink.attr('href'), '/?baz=lol');
+
+      runTask(() => this.click('#good-link'));
+
+      let applicationController = this.getController('application');
+      assert.deepEqual(
+        applicationController.getProperties('baz'),
+        { baz: 'lol' },
+        'index controller QP properties updated'
+      );
     }
 
     ['@test supplied QP properties can be bound'](assert) {

@@ -51,7 +51,7 @@ moduleFor(
         template: '{{#each params as |p|}}{{p}}{{/each}}',
       });
 
-      this.render('{{component (component "-looked-up" model.greeting model.name)}}', {
+      this.render('{{component (component "-looked-up" this.model.greeting this.model.name)}}', {
         model: {
           greeting: 'Gabon ',
           name: 'Zack',
@@ -87,7 +87,7 @@ moduleFor(
       });
 
       this.render(
-        '{{component (component "-looked-up" model.greeting model.name) model.name model.greeting}}',
+        '{{component (component "-looked-up" this.model.greeting this.model.name) this.model.name this.model.greeting}}',
         {
           model: {
             greeting: 'Gabon ',
@@ -123,12 +123,15 @@ moduleFor(
         template: '{{#each params as |p|}}{{p}}{{/each}}',
       });
 
-      this.render('{{component (component (component "-looked-up" model.greeting model.name))}}', {
-        model: {
-          greeting: 'Gabon ',
-          name: 'Zack',
-        },
-      });
+      this.render(
+        '{{component (component (component "-looked-up" this.model.greeting this.model.name))}}',
+        {
+          model: {
+            greeting: 'Gabon ',
+            name: 'Zack',
+          },
+        }
+      );
 
       this.assertText('Gabon Zack');
 
@@ -158,7 +161,7 @@ moduleFor(
       });
 
       this.render(
-        '{{component (component (component "-looked-up" model.greeting model.name) model.name model.greeting)}}',
+        '{{component (component (component "-looked-up" this.model.greeting this.model.name) this.model.name this.model.greeting)}}',
         {
           model: {
             greeting: 'Gabon ',
@@ -214,7 +217,7 @@ moduleFor(
         template: 'Namaste',
       });
 
-      this.render('{{component (component model.lookupComponent)}}', {
+      this.render('{{component (component this.model.lookupComponent)}}', {
         model: {
           lookupComponent: '-mandarin',
         },
@@ -240,7 +243,7 @@ moduleFor(
         template: '{{greeting}}',
       });
 
-      this.render(`{{component (component "-looked-up" greeting=model.greeting)}}`, {
+      this.render(`{{component (component "-looked-up" greeting=this.model.greeting)}}`, {
         model: {
           greeting: 'Hodi',
         },
@@ -268,7 +271,7 @@ moduleFor(
 
       this.render(
         strip`
-      {{#with (hash comp=(component "-looked-up" greeting=model.greeting)) as |my|}}
+      {{#with (hash comp=(component "-looked-up" greeting=this.model.greeting)) as |my|}}
         {{#my.comp}}{{/my.comp}}
       {{/with}}`,
         {
@@ -338,7 +341,7 @@ moduleFor(
         strip`
       {{#with (component "-looked-up" greeting="Hola" name="Dolores" age=33) as |first|}}
         {{#with (component first greeting="Hej" name="Sigmundur") as |second|}}
-          {{component second greeting=model.greeting}}
+          {{component second greeting=this.model.greeting}}
         {{/with}}
       {{/with}}`,
         {
@@ -379,7 +382,7 @@ moduleFor(
       });
 
       this.render(
-        '{{component "-inner-component" (component "-looked-up" model.outerName model.outerAge)}}',
+        '{{component "-inner-component" (component "-looked-up" this.model.outerName this.model.outerAge)}}',
         {
           model: {
             outerName: 'Outer',
@@ -425,7 +428,7 @@ moduleFor(
       });
 
       this.render(
-        '{{component "-inner-component" (component "-looked-up" name=model.outerName age=model.outerAge)}}',
+        '{{component "-inner-component" (component "-looked-up" name=this.model.outerName age=this.model.outerAge)}}',
         {
           model: {
             outerName: 'Outer',
@@ -468,7 +471,7 @@ moduleFor(
         template: '{{greeting}} {{name}}',
       });
 
-      this.render('{{component (component "-looked-up" model.name greeting="Hodi")}}', {
+      this.render('{{component (component "-looked-up" this.model.name greeting="Hodi")}}', {
         model: {
           name: 'Hodari',
         },
@@ -622,7 +625,7 @@ moduleFor(
       this.render(
         strip`
       {{#with (hash lookedup=(component "-looked-up")) as |object|}}
-        {{object.lookedup expectedText=model.expectedText}}
+        {{object.lookedup expectedText=this.model.expectedText}}
       {{/with}}`,
         {
           model: {
@@ -654,7 +657,7 @@ moduleFor(
 
       this.render(
         strip`
-      {{#with (hash lookedup=(component "-looked-up" expectedText=model.expectedText)) as |object|}}
+      {{#with (hash lookedup=(component "-looked-up" expectedText=this.model.expectedText)) as |object|}}
         {{object.lookedup}}
       {{/with}}`,
         {
@@ -692,7 +695,7 @@ moduleFor(
       this.render(
         strip`
       {{#with (hash lookedup=(component "-looked-up")) as |object|}}
-        {{object.lookedup model.expectedText "Hola"}}
+        {{object.lookedup this.model.expectedText "Hola"}}
       {{/with}}`,
         {
           model: {
@@ -774,7 +777,7 @@ moduleFor(
         <button onclick={{action 'changeValue'}}>Change value</button>`,
       });
 
-      this.render('{{my-action-component myProp=model.myProp}}', {
+      this.render('{{my-action-component myProp=this.model.myProp}}', {
         model: {
           myProp: 1,
         },
@@ -839,8 +842,8 @@ moduleFor(
 
       this.render(
         strip`
-      {{component (component "change-button" model.val2)}}
-      <span class="value">{{model.val2}}</span>`,
+      {{component (component "change-button" this.model.val2)}}
+      <span class="value">{{this.model.val2}}</span>`,
         {
           model: {
             val2: 8,
@@ -1363,7 +1366,7 @@ moduleFor(
 class ContextualComponentMutableParamsTest extends RenderingTestCase {
   render(templateStr, context = {}) {
     super.render(
-      `${templateStr}<span class="value">{{model.val2}}</span>`,
+      `${templateStr}<span class="value">{{this.model.val2}}</span>`,
       assign(context, { model: { val2: 8 } })
     );
   }
@@ -1413,7 +1416,7 @@ applyMixins(
     {
       title: 'param',
       setup() {
-        this.render('{{component (component "change-button" model.val2)}}');
+        this.render('{{component (component "change-button" this.model.val2)}}');
       },
     },
 
@@ -1427,7 +1430,7 @@ applyMixins(
           template: '{{component components.comp}}',
         });
 
-        this.render('{{my-comp (hash comp=(component "change-button" model.val2))}}');
+        this.render('{{my-comp (hash comp=(component "change-button" this.model.val2))}}');
       },
     },
 
@@ -1438,7 +1441,7 @@ applyMixins(
           template: '{{component component}}',
         });
 
-        this.render('{{my-comp component=(component "change-button" val=model.val2)}}');
+        this.render('{{my-comp component=(component "change-button" val=this.model.val2)}}');
       },
     },
 
@@ -1450,7 +1453,7 @@ applyMixins(
         });
 
         this.render(
-          '{{my-comp components=(hash button=(component "change-button" val=model.val2))}}'
+          '{{my-comp components=(hash button=(component "change-button" val=this.model.val2))}}'
         );
       },
     },

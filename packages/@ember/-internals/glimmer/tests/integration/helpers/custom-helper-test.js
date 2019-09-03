@@ -209,7 +209,7 @@ moduleFor(
         return hash.model;
       });
 
-      this.render(`{{get (hello-world model=model) 'name'}}`, {
+      this.render(`{{get (hello-world model=this.model) 'name'}}`, {
         model: { name: 'bob' },
       });
 
@@ -224,7 +224,7 @@ moduleFor(
         return `${value}-value`;
       });
 
-      this.render('{{hello-world model.name}}', {
+      this.render('{{hello-world this.model.name}}', {
         model: { name: 'bob' },
       });
 
@@ -266,7 +266,7 @@ moduleFor(
         },
       });
 
-      this.render('{{hello-world model.name}}', {
+      this.render('{{hello-world this.model.name}}', {
         model: { name: 'bob' },
       });
 
@@ -299,7 +299,7 @@ moduleFor(
         return `params: ${JSON.stringify(_params)}, hash: ${JSON.stringify(_hash)}`;
       });
 
-      this.render('{{hello-world model.name "rich" first=model.age last="sam"}}', {
+      this.render('{{hello-world this.model.name "rich" first=this.model.age last="sam"}}', {
         model: {
           name: 'bob',
           age: 42,
@@ -332,7 +332,7 @@ moduleFor(
         },
       });
 
-      this.render('{{hello-world model.name "rich" first=model.age last="sam"}}', {
+      this.render('{{hello-world this.model.name "rich" first=this.model.age last="sam"}}', {
         model: {
           name: 'bob',
           age: 42,
@@ -368,7 +368,7 @@ moduleFor(
       this.render(
         `{{join-words "Who"
                    (join-words "overcomes" "by")
-                   model.reason
+                   this.model.reason
                    (join-words (join-words "hath overcome but" "half"))
                    (join-words "his" (join-words "foe"))}}`,
         { model: { reason: 'force' } }

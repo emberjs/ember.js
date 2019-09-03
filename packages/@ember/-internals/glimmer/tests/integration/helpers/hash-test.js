@@ -31,7 +31,7 @@ moduleFor(
 
     ['@test binds values when variables are used']() {
       this.render(
-        `{{#with (hash name=model.firstName lastName="Arbeo") as |person|}}{{person.name}} {{person.lastName}}{{/with}}`,
+        `{{#with (hash name=this.model.firstName lastName="Arbeo") as |person|}}{{person.name}} {{person.lastName}}{{/with}}`,
         {
           model: {
             firstName: 'Marisa',
@@ -56,7 +56,7 @@ moduleFor(
 
     ['@test binds multiple values when variables are used']() {
       this.render(
-        `{{#with (hash name=model.firstName lastName=model.lastName) as |person|}}{{person.name}} {{person.lastName}}{{/with}}`,
+        `{{#with (hash name=this.model.firstName lastName=this.model.lastName) as |person|}}{{person.name}} {{person.lastName}}{{/with}}`,
         {
           model: {
             firstName: 'Marisa',
@@ -91,7 +91,7 @@ moduleFor(
 
     ['@test hash helpers can be nested']() {
       this.render(
-        `{{#with (hash person=(hash name=model.firstName)) as |ctx|}}{{ctx.person.name}}{{/with}}`,
+        `{{#with (hash person=(hash name=this.model.firstName)) as |ctx|}}{{ctx.person.name}}{{/with}}`,
         {
           model: { firstName: 'Balint' },
         }
@@ -124,7 +124,7 @@ moduleFor(
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: `{{yield (hash firstName=model.firstName)}}`,
+        template: `{{yield (hash firstName=this.model.firstName)}}`,
       });
 
       this.render(`{{#foo-bar as |values|}}{{values.firstName}}{{/foo-bar}}`);
@@ -156,11 +156,11 @@ moduleFor(
 
       this.registerComponent('foo-bar', {
         ComponentClass: FooBarComponent,
-        template: `{{yield (hash firstName=model.firstName lastName=lastName)}}`,
+        template: `{{yield (hash firstName=this.model.firstName lastName=lastName)}}`,
       });
 
       this.render(
-        `{{#foo-bar lastName=model.lastName as |values|}}{{values.firstName}} {{values.lastName}}{{/foo-bar}}`,
+        `{{#foo-bar lastName=this.model.lastName as |values|}}{{values.firstName}} {{values.lastName}}{{/foo-bar}}`,
         {
           model: { lastName: 'Hietala' },
         }

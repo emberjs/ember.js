@@ -73,6 +73,7 @@ function setupComponentTest() {
       outlet: 'main',
       name: 'application',
       controller: module,
+      model: undefined,
       template: outletTemplateFactory(module.owner),
     },
 
@@ -102,6 +103,7 @@ function render(_template) {
     outlet: 'main',
     name: 'index',
     controller: this,
+    model: undefined,
     template: templateFactory(this.owner),
   };
 

@@ -429,7 +429,7 @@ moduleFor(
     ['@test should apply classes of the dasherized property name when bound property specified is true']() {
       this.registerComponent('foo-bar', { template: 'hello' });
 
-      this.render('{{foo-bar class=model.someTruth}}', {
+      this.render('{{foo-bar class=this.model.someTruth}}', {
         model: { someTruth: true },
       });
 
@@ -688,7 +688,7 @@ moduleFor(
         template: '{{@foo}}',
       });
 
-      this.render('{{foo-bar foo=model.bar}}', {
+      this.render('{{foo-bar foo=this.model.bar}}', {
         model: {
           bar: 'Hola',
         },
@@ -714,7 +714,7 @@ moduleFor(
         template: '{{foo}}',
       });
 
-      this.render('{{foo-bar foo=model.bar}}', {
+      this.render('{{foo-bar foo=this.model.bar}}', {
         model: {
           bar: 'Hola',
         },
@@ -1478,7 +1478,7 @@ moduleFor(
       `,
       });
 
-      this.render('{{foo-bar value=model.value items=model.items}}', {
+      this.render('{{foo-bar value=this.model.value items=this.model.items}}', {
         model: {
           value: 'wat',
           items: [1, 2, 3],
@@ -2533,7 +2533,7 @@ moduleFor(
         template: '<div id="inner-value">{{value}}</div>',
       });
 
-      let expectedBacktrackingMessage = /modified "value" twice on <.+?> in a single render\. It was rendered in "component:x-middle" and modified in "component:x-inner"/;
+      let expectedBacktrackingMessage = /modified `<.+?>` twice in a single render\. It was first rendered as `this\.value` in "component:x-middle" and then modified later in "component:x-inner"/;
 
       expectAssertion(() => {
         this.render('{{x-outer}}');
@@ -2560,7 +2560,7 @@ moduleFor(
         template: '<div id="inner-value">{{wrapper.content}}</div>',
       });
 
-      let expectedBacktrackingMessage = /modified "wrapper\.content" twice on <.+?> in a single render\. It was rendered in "component:x-outer" and modified in "component:x-inner"/;
+      let expectedBacktrackingMessage = /modified `<.+?>` twice in a single render\. It was first rendered as `this\.wrapper\.content` in "component:x-outer" and then modified later in "component:x-inner"/;
 
       expectAssertion(() => {
         this.render('{{x-outer}}');

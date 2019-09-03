@@ -916,7 +916,9 @@ moduleFor(
         });
     }
 
-    [`@test The {{link-to}} component moves into the named route with context`](assert) {
+    [`@feature(!EMBER_ROUTING_MODEL_ARG) The {{link-to}} component moves into the named route with context`](
+      assert
+    ) {
       this.router.map(function() {
         this.route('about');
         this.route('item', { path: '/item/:id' });
@@ -927,7 +929,7 @@ moduleFor(
         `
         <h3 class="list">List</h3>
         <ul>
-          {{#each model as |person|}}
+          {{#each this.model as |person|}}
             <li>
               {{#link-to 'item' person id=person.id}}
                 {{person.name}}
@@ -943,7 +945,7 @@ moduleFor(
         'item',
         `
         <h3 class="item">Item</h3>
-        <p>{{model.name}}</p>
+        <p>{{this.model.name}}</p>
         {{#link-to 'index' id='home-link'}}Home{{/link-to}}
         `
       );
@@ -1000,6 +1002,89 @@ moduleFor(
           assert.equal(this.$('h3.item').length, 1, 'The item template was rendered');
           assert.equal(this.$('p').text(), 'Erik Brynroflsson', 'The name is correct');
         });
+    }
+
+    async [`@feature(EMBER_ROUTING_MODEL_ARG) The {{link-to}} component moves into the named route with context`](
+      assert
+    ) {
+      this.router.map(function() {
+        this.route('about');
+        this.route('item', { path: '/item/:id' });
+      });
+
+      this.addTemplate(
+        'about',
+        `
+        <h3 class="list">List</h3>
+        <ul>
+          {{#each @model as |person|}}
+            <li>
+              {{#link-to 'item' person id=person.id}}
+                {{person.name}}
+              {{/link-to}}
+            </li>
+          {{/each}}
+        </ul>
+        {{#link-to 'index' id='home-link'}}Home{{/link-to}}
+        `
+      );
+
+      this.addTemplate(
+        'item',
+        `
+        <h3 class="item">Item</h3>
+        <p>{{@model.name}}</p>
+        {{#link-to 'index' id='home-link'}}Home{{/link-to}}
+        `
+      );
+
+      this.addTemplate(
+        'index',
+        `
+        <h3 class="home">Home</h3>
+        {{#link-to 'about' id='about-link'}}About{{/link-to}}
+        `
+      );
+
+      this.add(
+        'route:about',
+        Route.extend({
+          model() {
+            return [
+              { id: 'yehuda', name: 'Yehuda Katz' },
+              { id: 'tom', name: 'Tom Dale' },
+              { id: 'erik', name: 'Erik Brynroflsson' },
+            ];
+          },
+        })
+      );
+
+      await this.visit('/about');
+
+      assert.equal(this.$('h3.list').length, 1, 'The home template was rendered');
+      assert.equal(
+        normalizeUrl(this.$('#home-link').attr('href')),
+        '/',
+        'The home link points back at /'
+      );
+
+      await this.click('#yehuda');
+
+      assert.equal(this.$('h3.item').length, 1, 'The item template was rendered');
+      assert.equal(this.$('p').text(), 'Yehuda Katz', 'The name is correct');
+
+      await this.click('#home-link');
+
+      await this.click('#about-link');
+
+      assert.equal(normalizeUrl(this.$('li a#yehuda').attr('href')), '/item/yehuda');
+      assert.equal(normalizeUrl(this.$('li a#tom').attr('href')), '/item/tom');
+      assert.equal(normalizeUrl(this.$('li a#erik').attr('href')), '/item/erik');
+
+      await this.click('#erik');
+
+      assert.equal(this.$('h3.item').length, 1, 'The item template was rendered');
+      assert.equal(this.$('p').text(), 'Erik Brynroflsson', 'The name is correct');
     }
 
     [`@test The {{link-to}} component binds some anchor html tag common attributes`](assert) {
@@ -1539,7 +1624,7 @@ moduleFor(
         });
     }
 
-    [`@test The non-block form {{link-to}} component moves into the named route with context`](
+    [`@feature(!EMBER_ROUTING_MODEL_ARG) The non-block form {{link-to}} component moves into the named route with context`](
       assert
     ) {
       assert.expect(5);
@@ -1566,7 +1651,7 @@ moduleFor(
         `
         <h3 class="home">Home</h3>
         <ul>
-          {{#each model as |person|}}
+          {{#each this.model as |person|}}
             <li>
               {{link-to person.name 'item' person id=person.id}}
             </li>
@@ -1578,7 +1663,7 @@ moduleFor(
         'item',
         `
         <h3 class="item">Item</h3>
-        <p>{{model.name}}</p>
+        <p>{{this.model.name}}</p>
         {{#link-to 'index' id='home-link'}}Home{{/link-to}}
         `
       );
@@ -1598,6 +1683,64 @@ moduleFor(
           assert.equal(normalizeUrl(this.$('li a#tom').attr('href')), '/item/tom');
           assert.equal(normalizeUrl(this.$('li a#erik').attr('href')), '/item/erik');
         });
+    }
+
+    async [`@feature(EMBER_ROUTING_MODEL_ARG) The non-block form {{link-to}} component moves into the named route with context`](
+      assert
+    ) {
+      assert.expect(5);
+
+      this.router.map(function() {
+        this.route('item', { path: '/item/:id' });
+      });
+
+      this.add(
+        'route:index',
+        Route.extend({
+          model() {
+            return [
+              { id: 'yehuda', name: 'Yehuda Katz' },
+              { id: 'tom', name: 'Tom Dale' },
+              { id: 'erik', name: 'Erik Brynroflsson' },
+            ];
+          },
+        })
+      );
+
+      this.addTemplate(
+        'index',
+        `
+        <h3 class="home">Home</h3>
+        <ul>
+          {{#each @model as |person|}}
+            <li>
+              {{link-to person.name 'item' person id=person.id}}
+            </li>
+          {{/each}}
+        </ul>
+        `
+      );
+      this.addTemplate(
+        'item',
+        `
+        <h3 class="item">Item</h3>
+        <p>{{@model.name}}</p>
+        {{#link-to 'index' id='home-link'}}Home{{/link-to}}
+        `
+      );
+
+      await this.visit('/');
+
+      await this.click('#yehuda');
+
+      assert.equal(this.$('h3.item').length, 1, 'The item template was rendered');
+      assert.equal(this.$('p').text(), 'Yehuda Katz', 'The name is correct');
+
+      await this.click('#home-link');
+
+      assert.equal(normalizeUrl(this.$('li a#yehuda').attr('href')), '/item/yehuda');
+      assert.equal(normalizeUrl(this.$('li a#tom').attr('href')), '/item/tom');
+      assert.equal(normalizeUrl(this.$('li a#erik').attr('href')), '/item/erik');
     }
 
     [`@test The non-block form {{link-to}} performs property lookup`](assert) {
@@ -1865,7 +2008,7 @@ moduleFor(
         });
     }
 
-    ['@test [GH#17018] passing model to link-to with `hash` helper works']() {
+    ['@feature(!EMBER_ROUTING_MODEL_ARG) [GH#17018] passing model to link-to with `hash` helper works']() {
       this.router.map(function() {
         this.route('post', { path: '/posts/:post_id' });
       });
@@ -1886,6 +2029,40 @@ moduleFor(
         `{{link-to 'Post' 'post' (hash id="someId" user=this.model.user)}}`
       );
       this.addTemplate('post', 'Post: {{this.model.user.name}}');
+
+      return this.visit('/')
+        .then(() => {
+          this.assertComponentElement(this.firstChild, {
+            tagName: 'a',
+            attrs: { href: '/posts/someId' },
+            content: 'Post',
+          });
+
+          return this.click('a');
+        })
+        .then(() => {
+          this.assertText('Post: Papa Smurf');
+        });
+    }
+
+    ['@feature(EMBER_ROUTING_MODEL_ARG) [GH#17018] passing model to link-to with `hash` helper works']() {
+      this.router.map(function() {
+        this.route('post', { path: '/posts/:post_id' });
+      });
+
+      this.add(
+        'route:index',
+        Route.extend({
+          model() {
+            return RSVP.hash({
+              user: { name: 'Papa Smurf' },
+            });
+          },
+        })
+      );
+
+      this.addTemplate('index', `{{link-to 'Post' 'post' (hash id="someId" user=@model.user)}}`);
+      this.addTemplate('post', 'Post: {{@model.user.name}}');
 
       return this.visit('/')
         .then(() => {

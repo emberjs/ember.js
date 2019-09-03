@@ -10,7 +10,7 @@ import {
 } from '@ember/-internals/metal';
 import { isProxy, symbol } from '@ember/-internals/utils';
 import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
-import { debugFreeze } from '@ember/debug';
+import { assert, debugFreeze } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { Dict, Opaque } from '@glimmer/interfaces';
 import {
@@ -200,6 +200,12 @@ export class RootPropertyReference extends PropertyReference
   }
 }
 
+if (DEBUG) {
+  RootPropertyReference.prototype['debug'] = function debug(): string {
+    return `this.${this['propertyKey']}`;
+  };
+}
+
 export class NestedPropertyReference extends PropertyReference {
   public tag: Tag;
   private propertyTag: UpdatableTag;
@@ -270,6 +276,20 @@ export class NestedPropertyReference extends PropertyReference {
       value
     );
   }
+}
+
+if (DEBUG) {
+  NestedPropertyReference.prototype['debug'] = function debug(): string {
+    let parent = this['parentReference'];
+    let parentKey = 'unknownObject';
+    let selfKey = this['propertyKey'];
+
+    if (typeof parent['debug'] === 'function') {
+      parentKey = parent['debug']();
+    }
+
+    return `${parentKey}.${selfKey}`;
+  };
 }
 
 export class UpdatableReference extends EmberPathReference {
@@ -487,30 +507,38 @@ export function referenceFromParts(
 
 type Primitive = undefined | null | boolean | number | string;
 
-function isObject(value: Opaque): value is object {
+function isObject(value: unknown): value is object {
   return value !== null && typeof value === 'object';
 }
 
-function isFunction(value: Opaque): value is Function {
+function isFunction(value: unknown): value is Function {
   return typeof value === 'function';
 }
 
-function isPrimitive(value: Opaque): value is Primitive {
+function isPrimitive(value: unknown): value is Primitive {
   if (DEBUG) {
-    let type = typeof value;
-    return (
+    let label;
+
+    try {
+      label = ` (was \`${String(value)}\`)`;
+    } catch (e) {
+      label = null;
+    }
+
+    assert(
+      `This is a fall-through check for typing purposes only! \`value\` must already be a primitive at this point.${label})`,
       value === undefined ||
-      value === null ||
-      type === 'boolean' ||
-      type === 'number' ||
-      type === 'string'
+        value === null ||
+        typeof value === 'boolean' ||
+        typeof value === 'number' ||
+        typeof value === 'string'
     );
-  } else {
-    return true;
   }
+
+  return true;
 }
 
-function valueToRef<T = Opaque>(value: T, bound = true): VersionedPathReference<T> {
+function valueToRef<T = unknown>(value: T, bound = true): VersionedPathReference<T> {
   if (isObject(value)) {
     // root of interop with ember objects
     return bound ? new RootReference(value) : new UnboundReference(value);
@@ -539,7 +567,7 @@ function valueToRef<T = Opaque>(value: T, bound = true): VersionedPathReference<
   }
 }
 
-function valueKeyToRef(value: Opaque, key: string): VersionedPathReference<Opaque> {
+function valueKeyToRef(value: unknown, key: string): VersionedPathReference<Opaque> {
   if (isObject(value)) {
     // root of interop with ember objects
     return new RootPropertyReference(value, key);

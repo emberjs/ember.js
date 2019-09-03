@@ -418,7 +418,7 @@ moduleFor(
         template: '{{@foo}}',
       });
 
-      this.render('<FooBar @foo={{model.bar}} />', {
+      this.render('<FooBar @foo={{this.model.bar}} />', {
         model: {
           bar: 'Hola',
         },
@@ -444,7 +444,7 @@ moduleFor(
         template: '{{foo}}',
       });
 
-      this.render('<FooBar @foo={{model.bar}} />', {
+      this.render('<FooBar @foo={{this.model.bar}} />', {
         model: {
           bar: 'Hola',
         },

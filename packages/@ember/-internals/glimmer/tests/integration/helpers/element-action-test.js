@@ -1095,7 +1095,7 @@ moduleFor(
 
       this.registerComponent('example-component', {
         ComponentClass: ExampleComponent,
-        template: '<button {{action "edit" "herp" model}}>click me</button>',
+        template: '<button {{action "edit" "herp" this.model}}>click me</button>',
       });
 
       this.render('{{example-component}}');

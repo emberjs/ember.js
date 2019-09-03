@@ -1712,6 +1712,7 @@ class Route extends EmberObject implements IRoute {
           name: connection.name,
           controller: undefined,
           template: undefined,
+          model: undefined,
         };
         once(this._router, '_setOutlets');
       }
@@ -1848,7 +1849,9 @@ function buildRenderOptions(
     );
   }
 
-  if (model) {
+  if (model === undefined) {
+    model = route.currentModel;
+  } else {
     (controller! as any).set('model', model);
   }
 
@@ -1869,6 +1872,7 @@ function buildRenderOptions(
     outlet,
     name,
     controller,
+    model,
     template: template !== undefined ? template(owner) : route._topLevelViewTemplate(owner),
   };
 
@@ -1889,13 +1893,14 @@ export interface RenderOptions {
   into?: string;
   outlet: string;
   name: string;
-  controller: any;
+  controller: unknown;
+  model: unknown;
   template: OwnedTemplate;
 }
 
 interface PartialRenderOptions {
   into?: string;
-  outlet: string;
+  outlet?: string;
   controller?: string | any;
   model?: {};
 }

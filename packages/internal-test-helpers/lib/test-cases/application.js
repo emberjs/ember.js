@@ -33,9 +33,16 @@ export default class ApplicationTestCase extends TestResolverApplicationTestCase
     return this.applicationInstance.lookup('router:main');
   }
 
+  get currentURL() {
+    return this.appRouter.get('currentURL');
+  }
+
   async transitionTo() {
     await this.appRouter.transitionTo(...arguments);
-
     await runLoopSettled();
+  }
+
+  controllerFor(name) {
+    return this.applicationInstance.lookup(`controller:${name}`);
   }
 }

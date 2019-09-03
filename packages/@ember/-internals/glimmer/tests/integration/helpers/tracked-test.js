@@ -66,7 +66,7 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
           return `${value}-value`;
         });
 
-        this.render('{{hello-world model.name}}', {
+        this.render('{{hello-world this.model.name}}', {
           model: Person.create(),
         });
 
@@ -189,7 +189,7 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
           return value;
         });
 
-        this.render('{{hello-world model.full}}', {
+        this.render('{{hello-world this.model.full}}', {
           model: Person.create(),
         });
 

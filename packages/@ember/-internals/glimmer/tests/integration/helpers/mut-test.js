@@ -202,10 +202,10 @@ moduleFor(
       });
 
       this.registerComponent('middle-mut', {
-        template: '{{#bottom-mut}}{{model.name}}{{/bottom-mut}}',
+        template: '{{#bottom-mut}}{{@model.name}}{{/bottom-mut}}',
       });
 
-      this.render('{{middle-mut model=(mut model)}}', {
+      this.render('{{middle-mut model=(mut this.model)}}', {
         model: { name: 'Matthew Beale' },
       });
 
@@ -370,11 +370,11 @@ moduleFor(
             inner = this;
           },
         }),
-        template: '{{model}}',
+        template: '{{@model}}',
       });
 
       this.registerComponent('x-outer', {
-        template: '{{x-inner model=nonexistent}}',
+        template: '{{x-inner model=this.nonexistent}}',
       });
 
       this.render('{{x-outer}}');
@@ -403,11 +403,14 @@ moduleFor(
             inner = this;
           },
         }),
-        template: 'hello{{model}}',
+        template: 'hello{{@model}}',
       });
 
       this.registerComponent('x-outer', {
-        template: '{{x-inner model=x}}',
+        // Use `this.x` here instead of `@x` to let `x-inner` mutate `this.x`.
+        // `@x` points to the literal binding from `x-outer`, which is of
+        // course immutable.
+        template: '{{x-inner model=this.x}}',
       });
 
       this.render('{{x-outer x="foo"}}');
