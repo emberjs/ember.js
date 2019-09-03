@@ -79,7 +79,7 @@ export function setupTestClass(hooks, TestClass, ...mixins) {
         return this.instance[name](assert);
       });
     } else {
-      let match = /^@feature\(([A-Z_a-z-!]+)\) /.exec(name);
+      let match = /^@feature\(([A-Z_a-z-! ,]+)\) /.exec(name);
 
       if (match) {
         let features = match[1].replace(/ /g, '').split(',');

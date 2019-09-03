@@ -75,10 +75,6 @@ moduleFor(
       return currentPath;
     }
 
-    get currentURL() {
-      return this.appRouter.get('currentURL');
-    }
-
     handleURLRejectsWith(context, assert, path, expectedReason) {
       return context
         .visit(path)

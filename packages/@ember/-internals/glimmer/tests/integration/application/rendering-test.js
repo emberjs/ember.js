@@ -4,6 +4,8 @@ import { ENV } from '@ember/-internals/environment';
 import Controller from '@ember/controller';
 import { Route } from '@ember/-internals/routing';
 import { Component } from '@ember/-internals/glimmer';
+import { set, tracked } from '@ember/-internals/metal';
+import { runTask } from '../../../../../../internal-test-helpers/lib/run';
 
 moduleFor(
   'Application test: rendering',
@@ -38,7 +40,7 @@ moduleFor(
       });
     }
 
-    ['@feature(!EMBER_ROUTING_MODEL_ARG) it can access the model provided by the route']() {
+    ['@feature(EMBER_ROUTING_MODEL_ARG) it can access the model provided by the route via @model']() {
       this.add(
         'route:application',
         Route.extend({
@@ -52,7 +54,7 @@ moduleFor(
         'application',
         strip`
         <ul>
-          {{#each this.model as |item|}}
+          {{#each @model as |item|}}
             <li>{{item}}</li>
           {{/each}}
         </ul>
@@ -96,7 +98,7 @@ moduleFor(
       });
     }
 
-    ['@feature(EMBER_ROUTING_MODEL_ARG) it can access the model provided by the route']() {
+    ['@test it can access the model provided by the route via this.model']() {
       this.add(
         'route:application',
         Route.extend({
@@ -110,7 +112,7 @@ moduleFor(
         'application',
         strip`
         <ul>
-          {{#each @model as |item|}}
+          {{#each this.model as |item|}}
             <li>{{item}}</li>
           {{/each}}
         </ul>
@@ -126,6 +128,283 @@ moduleFor(
         </ul>
       `);
       });
+    }
+
+    ['@test it can access the model provided by the route via implicit this fallback']() {
+      this.add(
+        'route:application',
+        Route.extend({
+          model() {
+            return ['red', 'yellow', 'blue'];
+          },
+        })
+      );
+
+      this.addTemplate(
+        'application',
+        strip`
+        <ul>
+          {{#each model as |item|}}
+            <li>{{item}}</li>
+          {{/each}}
+        </ul>
+        `
+      );
+
+      return this.visit('/').then(() => {
+        this.assertInnerHTML(strip`
+        <ul>
+          <li>red</li>
+          <li>yellow</li>
+          <li>blue</li>
+        </ul>
+      `);
+      });
+    }
+
+    async ['@feature(EMBER_ROUTING_MODEL_ARG) interior mutations on the model with set'](assert) {
+      this.router.map(function() {
+        this.route('color', { path: '/:color' });
+      });
+
+      this.add(
+        'route:color',
+        Route.extend({
+          model({ color }) {
+            return { color };
+          },
+        })
+      );
+
+      this.addTemplate(
+        'color',
+        strip`
+        [@model: {{@model.color}}]
+        [this.model: {{this.model.color}}]
+        [model: {{model.color}}]
+        `
+      );
+
+      await this.visit('/red');
+
+      assert.equal(this.currentURL, '/red');
+
+      this.assertInnerHTML(strip`
+        [@model: red]
+        [this.model: red]
+        [model: red]
+      `);
+
+      await this.visit('/yellow');
+
+      assert.equal(this.currentURL, '/yellow');
+
+      this.assertInnerHTML(strip`
+        [@model: yellow]
+        [this.model: yellow]
+        [model: yellow]
+      `);
+
+      runTask(() => {
+        let { model } = this.controllerFor('color');
+        set(model, 'color', 'blue');
+      });
+
+      assert.equal(this.currentURL, '/yellow');
+
+      this.assertInnerHTML(strip`
+        [@model: blue]
+        [this.model: blue]
+        [model: blue]
+      `);
+    }
+
+    async ['@feature(EMBER_ROUTING_MODEL_ARG, EMBER_METAL_TRACKED_PROPERTIES) interior mutations on the model with tracked properties'](
+      assert
+    ) {
+      class Model {
+        @tracked color;
+
+        constructor(color) {
+          this.color = color;
+        }
+      }
+
+      this.router.map(function() {
+        this.route('color', { path: '/:color' });
+      });
+
+      this.add(
+        'route:color',
+        Route.extend({
+          model({ color }) {
+            return new Model(color);
+          },
+        })
+      );
+
+      this.addTemplate(
+        'color',
+        strip`
+        [@model: {{@model.color}}]
+        [this.model: {{this.model.color}}]
+        [model: {{model.color}}]
+        `
+      );
+
+      await this.visit('/red');
+
+      assert.equal(this.currentURL, '/red');
+
+      this.assertInnerHTML(strip`
+        [@model: red]
+        [this.model: red]
+        [model: red]
+      `);
+
+      await this.visit('/yellow');
+
+      assert.equal(this.currentURL, '/yellow');
+
+      this.assertInnerHTML(strip`
+        [@model: yellow]
+        [this.model: yellow]
+        [model: yellow]
+      `);
+
+      runTask(() => {
+        this.controllerFor('color').model.color = 'blue';
+      });
+
+      assert.equal(this.currentURL, '/yellow');
+
+      this.assertInnerHTML(strip`
+        [@model: blue]
+        [this.model: blue]
+        [model: blue]
+      `);
+    }
+
+    async ['@feature(EMBER_ROUTING_MODEL_ARG) exterior mutations on the model with set'](assert) {
+      this.router.map(function() {
+        this.route('color', { path: '/:color' });
+      });
+
+      this.add(
+        'route:color',
+        Route.extend({
+          model({ color }) {
+            return color;
+          },
+        })
+      );
+
+      this.addTemplate(
+        'color',
+        strip`
+        [@model: {{@model}}]
+        [this.model: {{this.model}}]
+        [model: {{model}}]
+        `
+      );
+
+      await this.visit('/red');
+
+      assert.equal(this.currentURL, '/red');
+
+      this.assertInnerHTML(strip`
+        [@model: red]
+        [this.model: red]
+        [model: red]
+      `);
+
+      await this.visit('/yellow');
+
+      assert.equal(this.currentURL, '/yellow');
+
+      this.assertInnerHTML(strip`
+        [@model: yellow]
+        [this.model: yellow]
+        [model: yellow]
+      `);
+
+      runTask(() => {
+        let controller = this.controllerFor('color');
+        set(controller, 'model', 'blue');
+      });
+
+      assert.equal(this.currentURL, '/yellow');
+
+      this.assertInnerHTML(strip`
+        [@model: yellow]
+        [this.model: blue]
+        [model: blue]
+      `);
+    }
+
+    async ['@feature(EMBER_ROUTING_MODEL_ARG, EMBER_METAL_TRACKED_PROPERTIES) exterior mutations on the model with tracked properties'](
+      assert
+    ) {
+      this.router.map(function() {
+        this.route('color', { path: '/:color' });
+      });
+
+      this.add(
+        'route:color',
+        Route.extend({
+          model({ color }) {
+            return color;
+          },
+        })
+      );
+
+      this.add(
+        'controller:color',
+        class ColorController extends Controller {
+          @tracked model;
+        }
+      );
+
+      this.addTemplate(
+        'color',
+        strip`
+        [@model: {{@model}}]
+        [this.model: {{this.model}}]
+        [model: {{model}}]
+        `
+      );
+
+      await this.visit('/red');
+
+      assert.equal(this.currentURL, '/red');
+
+      this.assertInnerHTML(strip`
+        [@model: red]
+        [this.model: red]
+        [model: red]
+      `);
+
+      await this.visit('/yellow');
+
+      assert.equal(this.currentURL, '/yellow');
+
+      this.assertInnerHTML(strip`
+        [@model: yellow]
+        [this.model: yellow]
+        [model: yellow]
+      `);
+
+      runTask(() => {
+        this.controllerFor('color').model = 'blue';
+      });
+
+      assert.equal(this.currentURL, '/yellow');
+
+      this.assertInnerHTML(strip`
+        [@model: yellow]
+        [this.model: blue]
+        [model: blue]
+      `);
     }
 
     ['@feature(!EMBER_ROUTING_MODEL_ARG) it can render a nested route']() {
