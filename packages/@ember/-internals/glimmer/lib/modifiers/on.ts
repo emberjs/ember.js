@@ -101,11 +101,15 @@ export class OnModifierState {
       this.eventName = eventName;
       this.shouldUpdate = true;
     }
+    if (DEBUG) {
+      const debug = args.positional.at(1) && (<any>args.positional.at(1)).debug();
+      const value = args.positional.at(1) && args.positional.at(1).value();
+      assert(
+        `You must pass a function as the second argument to the \`on\` modifier, you passed ${debug} to \`on\` but it was ${value}`,
+        value !== undefined && typeof value === 'function'
+      );
+    }
 
-    assert(
-      'You must pass a function as the second argument to the `on` modifier',
-      args.positional.at(1) !== undefined && typeof args.positional.at(1).value() === 'function'
-    );
     let userProvidedCallback = args.positional.at(1).value() as EventListener;
     if (userProvidedCallback !== this.userProvidedCallback) {
       this.userProvidedCallback = userProvidedCallback;
