@@ -1182,9 +1182,18 @@ const ArrayMixin = Mixin.create(Enumerable, {
     You may provide multiple arguments to sort by multiple properties.
 
     ```javascript
-   let colors = [{name: 'red'}, {name: 'green'}, {name: 'blue'}];
-   colors.sortBy('name'); // [{name: 'blue'}, {name: 'green'}, {name: 'red'}]
-    ```
+   let colors = [
+     { name: 'red', weight: 500 },
+     { name: 'green', weight: 600 },
+     { name: 'blue', weight: 500 }
+    ];
+   
+   colors.sortBy('name');
+   // [{name: 'blue', weight: 500}, {name: 'green', weight: 600}, {name: 'red', weight: 500}]
+   
+   colors.sortBy('weight', 'name');
+   // [{name: 'blue', weight: 500}, {name: 'red', weight: 500}, {name: 'green', weight: 600}]
+   ```
 
     @method sortBy
     @param {String} property name(s) to sort on
