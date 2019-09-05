@@ -3,7 +3,7 @@ import { dasherize } from '@ember/string';
 import { RSVP, Object as EmberObject, A as emberA } from '@ember/-internals/runtime';
 import { run } from '@ember/runloop';
 import { peekMeta } from '@ember/-internals/meta';
-import { get, computed } from '@ember/-internals/metal';
+import { get, computed, tracked } from '@ember/-internals/metal';
 import { Route } from '@ember/-internals/routing';
 import { PARAMS_SYMBOL } from 'router_js';
 
@@ -1580,6 +1580,72 @@ moduleFor(
       await this.transitionTo('constructor', { queryParams: { foo: '999' } });
       let controller = this.getController('constructor');
       assert.equal(get(controller, 'foo'), '999');
+    }
+
+    async ['@test Single query params defined with tracked properties can be on the controller and reflected in the url'](
+      assert
+    ) {
+      assert.expect(3);
+
+      this.router.map(function() {
+        this.route('home', { path: '/' });
+      });
+
+      this.add(
+        `controller:home`,
+        Controller.extend({
+          queryParams: ['foo'],
+          foo: tracked(),
+        })
+      );
+
+      await this.visitAndAssert('/');
+      let controller = this.getController('home');
+
+      controller.foo = '456';
+      await runLoopSettled();
+      this.assertCurrentPath('/?foo=456');
+
+      controller.foo = '987';
+      await runLoopSettled();
+      this.assertCurrentPath('/?foo=987');
+    }
+
+    async ['@test Single query params defined with native getters and tracked properties can be on the controller and reflected in the url'](
+      assert
+    ) {
+      assert.expect(3);
+
+      this.router.map(function() {
+        this.route('home', { path: '/' });
+      });
+
+      this.add(
+        `controller:home`,
+        Controller.extend({
+          queryParams: ['foo'],
+          get foo() {
+            return this.bar;
+          },
+
+          set foo(value) {
+            this.bar = value;
+          },
+
+          bar: tracked(),
+        })
+      );
+
+      await this.visitAndAssert('/');
+      let controller = this.getController('home');
+
+      controller.bar = '456';
+      await runLoopSettled();
+      this.assertCurrentPath('/?foo=456');
+
+      controller.bar = '987';
+      await runLoopSettled();
+      this.assertCurrentPath('/?foo=987');
     }
   }
 );
