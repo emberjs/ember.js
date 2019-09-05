@@ -201,25 +201,25 @@ class Route extends EmberObject implements IRoute {
     ```app/routes/member.js
     import Route from '@ember/routing/route';
 
-    export default Route.extend({
-      queryParams: {
+    export default class MemberRoute extends Route {
+      queryParams = {
         memberQp: { refreshModel: true }
       }
-    });
+    }
     ```
 
     ```app/routes/member/interest.js
     import Route from '@ember/routing/route';
 
-    export default Route.extend({
-      queryParams: {
+    export default class MemberInterestRoute Route {
+      queryParams = {
         interestQp: { refreshModel: true }
-      },
+      }
 
       model() {
         return this.paramsFor('member');
       }
-    });
+    }
     ```
 
     If we visit `/turing/maths?memberQp=member&interestQp=interest` the model for
@@ -317,13 +317,13 @@ class Route extends EmberObject implements IRoute {
     ```app/routes/articles.js
     import Route from '@ember/routing/route';
 
-    export default Route.extend({
+    export default class ArticlesRoute extends Route {
       resetController(controller, isExiting, transition) {
         if (isExiting && transition.targetName !== 'error') {
           controller.set('page', 1);
         }
       }
-    });
+    }
     ```
 
     @method resetController
@@ -383,17 +383,17 @@ class Route extends EmberObject implements IRoute {
 
     ```app/routes/contact-form.js
     import Route from '@ember/routing/route';
+    import { action } from '@ember/object';
 
-    export default Route.extend({
-      actions: {
-        willTransition(transition) {
-          if (this.controller.get('userHasEnteredData')) {
-            this.controller.displayNavigationConfirm();
-            transition.abort();
-          }
+    export default class ContactFormRoute extends Route {
+      @action
+      willTransition(transition) {
+        if (this.controller.get('userHasEnteredData')) {
+          this.controller.displayNavigationConfirm();
+          transition.abort();
         }
       }
-    });
+    }
     ```
 
     You can also redirect elsewhere by calling
@@ -426,15 +426,15 @@ class Route extends EmberObject implements IRoute {
 
     ```app/routes/login.js
     import Route from '@ember/routing/route';
+    import { action } from '@ember/object';
 
-    export default Route.extend({
-      actions: {
-        didTransition() {
-          this.controller.get('errors.base').clear();
-          return true; // Bubble the didTransition event
-        }
+    export default class LoginRoute extends Route {
+      @action
+      didTransition() {
+        this.controller.get('errors.base').clear();
+        return true; // Bubble the didTransition event
       }
-    });
+    }
     ```
 
     @event didTransition
@@ -450,19 +450,19 @@ class Route extends EmberObject implements IRoute {
 
     ```app/routes/application.js
     import Route from '@ember/routing/route';
+    import { action } from '@ember/object';
 
-    export default Route.extend({
-      actions: {
-        loading(transition, route) {
-          let controller = this.controllerFor('foo');
-          controller.set('currentlyLoading', true);
+    export default class ApplicationRoute extends Route {
+      @action
+      loading(transition, route) {
+        let controller = this.controllerFor('foo');
+        controller.set('currentlyLoading', true);
 
-          transition.finally(function() {
-            controller.set('currentlyLoading', false);
-          });
-        }
+        transition.finally(function() {
+          controller.set('currentlyLoading', false);
+        });
       }
-    });
+    }
     ```
 
     @event loading
@@ -486,28 +486,28 @@ class Route extends EmberObject implements IRoute {
     ```app/routes/admin.js
     import { reject } from 'rsvp';
     import Route from '@ember/routing/route';
+    import { action } from '@ember/object';
 
-    export default Route.extend({
+    export default class AdminRoute extends Route {
       beforeModel() {
         return reject('bad things!');
-      },
-
-      actions: {
-        error(error, transition) {
-          // Assuming we got here due to the error in `beforeModel`,
-          // we can expect that error === "bad things!",
-          // but a promise model rejecting would also
-          // call this hook, as would any errors encountered
-          // in `afterModel`.
-
-          // The `error` hook is also provided the failed
-          // `transition`, which can be stored and later
-          // `.retry()`d if desired.
-
-          this.transitionTo('login');
-        }
       }
-    });
+
+      @action
+      error(error, transition) {
+        // Assuming we got here due to the error in `beforeModel`,
+        // we can expect that error === "bad things!",
+        // but a promise model rejecting would also
+        // call this hook, as would any errors encountered
+        // in `afterModel`.
+
+        // The `error` hook is also provided the failed
+        // `transition`, which can be stored and later
+        // `.retry()`d if desired.
+
+        this.transitionTo('login');
+      }
+    }
     ```
 
     `error` actions that bubble up all the way to `ApplicationRoute`
@@ -517,14 +517,14 @@ class Route extends EmberObject implements IRoute {
 
     ```app/routes/application.js
     import Route from '@ember/routing/route';
+    import { action } from '@ember/object';
 
-    export default Route.extend({
-      actions: {
-        error(error, transition) {
-          this.controllerFor('banner').displayError(error.message);
-        }
+    export default class ApplicationRoute extends Route {
+      @action
+      error(error, transition) {
+        this.controllerFor('banner').displayError(error.message);
       }
-    });
+    }
     ```
     @event error
     @param {Error} error
@@ -677,18 +677,18 @@ class Route extends EmberObject implements IRoute {
 
     ```app/routes/index.js
     import Route from '@ember/routing/route';
+    import { action } from '@ember/object';
 
-    export Route.extend({
-      actions: {
-        moveToSecret(context) {
-          if (authorized()) {
-            this.transitionTo('secret', context);
-          } else {
-            this.transitionTo('fourOhFour');
-          }
+    export default class IndexRoute extends Route {
+      @action
+      moveToSecret(context) {
+        if (authorized()) {
+          this.transitionTo('secret', context);
+        } else {
+          this.transitionTo('fourOhFour');
         }
       }
-    });
+    }
     ```
 
     Transition to a nested route
@@ -707,14 +707,14 @@ class Route extends EmberObject implements IRoute {
 
     ```app/routes/index.js
     import Route from '@ember/routing/route';
+    import { action } from '@ember/object';
 
-    export default Route.extend({
-      actions: {
-        transitionToNewArticle() {
-          this.transitionTo('articles.new');
-        }
+    export default class IndexRoute extends Route {
+      @action
+      transitionToNewArticle() {
+        this.transitionTo('articles.new');
       }
-    });
+    }
     ```
 
     Multiple Models Example
@@ -735,17 +735,17 @@ class Route extends EmberObject implements IRoute {
 
     ```app/routes/index.js
     import Route from '@ember/routing/route';
+    import { action } from '@ember/object';
 
-    export default Route.extend({
-      actions: {
-        moveToChocolateCereal() {
-          let cereal = { cerealId: 'ChocolateYumminess' };
-          let breakfast = { breakfastId: 'CerealAndMilk' };
+    export default class IndexRoute extends Route {
+      @action
+      moveToChocolateCereal() {
+        let cereal = { cerealId: 'ChocolateYumminess' };
+        let breakfast = { breakfastId: 'CerealAndMilk' };
 
-          this.transitionTo('breakfast.cereal', breakfast, cereal);
-        }
+        this.transitionTo('breakfast.cereal', breakfast, cereal);
       }
-    });
+    }
     ```
 
     Nested Route with Query String Example
@@ -765,13 +765,12 @@ class Route extends EmberObject implements IRoute {
     ```app/routes/index.js
     import Route from '@ember/routing/route';
 
-    export default Route.extend({
-      actions: {
-        transitionToApples() {
-          this.transitionTo('fruits.apples', { queryParams: { color: 'red' } });
-        }
+    export default class IndexRoute extends Route {
+      @action
+      transitionToApples() {
+        this.transitionTo('fruits.apples', { queryParams: { color: 'red' } });
       }
-    });
+    }
     ```
 
     @method transitionTo
@@ -860,13 +859,13 @@ class Route extends EmberObject implements IRoute {
     ```app/routes/secret.js
     import Route from '@ember/routing/route';
 
-    export default Route.extend({
+    export default class SecretRoute Route {
       afterModel() {
         if (!authorized()){
           this.replaceWith('index');
         }
       }
-    });
+    }
     ```
 
     @method replaceWith
@@ -1005,13 +1004,13 @@ class Route extends EmberObject implements IRoute {
     ```app/routes/posts.js
     import Route from '@ember/routing/route';
 
-    export default Route.extend({
+    export default class PostsRoute extends Route {
       afterModel(posts, transition) {
         if (posts.get('length') === 1) {
           this.transitionTo('post.show', posts.get('firstObject'));
         }
       }
-    });
+    }
     ```
 
     Refer to documentation for `beforeModel` for a description
@@ -1130,11 +1129,11 @@ class Route extends EmberObject implements IRoute {
     ```app/routes/post.js
     import Route from '@ember/routing/route';
 
-    export default Route.extend({
+    export default class PostRoute extends Route {
       model(params) {
         return this.store.findRecord('post', params.post_id);
       }
-    });
+    }
     ```
 
     @method model
@@ -1214,23 +1213,22 @@ class Route extends EmberObject implements IRoute {
     If you implement the `setupController` hook in your Route, it will
     prevent this default behavior. If you want to preserve that behavior
     when implementing your `setupController` function, make sure to call
-    `_super`:
+    `super`:
 
     ```app/routes/photos.js
     import Route from '@ember/routing/route';
 
-    export default Route.extend({
+    export default class PhotosRoute extendes Route {
       model() {
         return this.store.findAll('photo');
-      },
+      }
 
       setupController(controller, model) {
-        // Call _super for default behavior
-        this._super(controller, model);
-        // Implement your custom setup after
+        super.setupController(controller, model);
+
         this.controllerFor('application').set('showingPhotos', true);
       }
-    });
+    }
     ```
 
     The provided controller will be one resolved based on the name
@@ -1250,16 +1248,16 @@ class Route extends EmberObject implements IRoute {
     export default Router;
     ```
 
-    For the `post` route, a controller named `App.PostController` would
-    be used if it is defined. If it is not defined, a basic `Controller`
-    instance would be used.
+    If you have defined a file for the post controller,
+    the framework will use it.
+    If it is not defined, a basic `Controller` instance would be used.
 
-    Example
+    @example Behavior of a basic Controller
 
     ```app/routes/post.js
     import Route from '@ember/routing/route';
 
-    export default Route.extend({
+    export default class PostRoute extends Route {
       setupController(controller, model) {
         controller.set('model', model);
       }
@@ -1289,12 +1287,13 @@ class Route extends EmberObject implements IRoute {
     ```app/routes/post.js
     import Route from '@ember/routing/route';
 
-    export default Route.extend({
+    export default class PostRoute extends Route {
       setupController(controller, post) {
-        this._super(controller, post);
+        super.setupController(controller, post);
+
         this.controllerFor('posts').set('currentPost', post);
       }
-    });
+    }
     ```
 
     @method controllerFor
@@ -1332,12 +1331,13 @@ class Route extends EmberObject implements IRoute {
     ```app/routes/post.js
     import Route from '@ember/routing/route';
 
-    export default Route.extend({
+    export default class Post extends Route {
       setupController(controller, post) {
-        this._super(controller, post);
+        super.setupController(controller, post);
+
         this.generateController('posts');
       }
-    });
+    }
     ```
 
     @method generateController
@@ -1377,12 +1377,13 @@ class Route extends EmberObject implements IRoute {
     ```app/routes/post/comments.js
     import Route from '@ember/routing/route';
 
-    export default Route.extend({
+    export default class PostCommentsRoute extends Route {
       model() {
         let post = this.modelFor('post');
-        return post.get('comments');
+
+        return post.comments;
       }
-    });
+    }
     ```
 
     @method modelFor
@@ -1433,7 +1434,7 @@ class Route extends EmberObject implements IRoute {
     ```app/routes/posts.js
     import Route from '@ember/routing/route';
 
-    export default Route.extend({
+    export default class PostsRoute extends Route {
       renderTemplate(controller, model) {
         let favController = this.controllerFor('favoritePost');
 
@@ -1445,7 +1446,7 @@ class Route extends EmberObject implements IRoute {
           controller: favController
         });
       }
-    });
+    }
     ```
 
     @method renderTemplate
@@ -1495,14 +1496,14 @@ class Route extends EmberObject implements IRoute {
     ```app/routes/post.js
     import Route from '@ember/routing/route';
 
-    export default Route.extend({
+    export default class PostRoute extends Route {
       renderTemplate() {
         this.render('photos', {
           into: 'application',
           outlet: 'anOutletName'
         })
       }
-    });
+    }
     ```
 
     `render` additionally allows you to supply which `controller` and
@@ -1511,7 +1512,7 @@ class Route extends EmberObject implements IRoute {
     ```app/routes/posts.js
     import Route from '@ember/routing/route';
 
-    export default Route.extend({
+    export default class PostsRoute extends Route {
       renderTemplate(controller, model){
         this.render('posts', {    // the template to render, referenced by name
           into: 'application',    // the template to render into, referenced by name
@@ -1520,7 +1521,7 @@ class Route extends EmberObject implements IRoute {
           model: model            // the model to set on `options.controller`.
         })
       }
-    });
+    }
     ```
 
     The string values provided for the template name, and controller
@@ -1549,11 +1550,11 @@ class Route extends EmberObject implements IRoute {
     ```app/routes/post.js
     import Route from '@ember/routing/route';
 
-    export default Route.extend({
+    export default class PostRoute extends Route {
       renderTemplate() {
         this.render(); // all defaults apply
       }
-    });
+    }
     ```
 
     The name of the route, defined by the router, is `post`.
@@ -1617,24 +1618,25 @@ class Route extends EmberObject implements IRoute {
 
     ```app/routes/application.js
     import Route from '@ember/routing/route';
+    import { action } from '@ember/object';
 
-    export default Route.extend({
-      actions: {
-        showModal(evt) {
-          this.render(evt.modalName, {
-            outlet: 'modal',
-            into: 'application'
-          });
-        },
-
-        hideModal(evt) {
-          this.disconnectOutlet({
-            outlet: 'modal',
-            parentView: 'application'
-          });
-        }
+    export default class ApplicationRoute extends Route {
+      @action
+      showModal(evt) {
+        this.render(evt.modalName, {
+          outlet: 'modal',
+          into: 'application'
+        });
       }
-    });
+
+      @action
+      hideModal() {
+        this.disconnectOutlet({
+          outlet: 'modal',
+          parentView: 'application'
+        });
+      }
+    }
     ```
 
     Alternatively, you can pass the `outlet` name directly as a string.
@@ -1643,18 +1645,20 @@ class Route extends EmberObject implements IRoute {
 
     ```app/routes/application.js
     import Route from '@ember/routing/route';
+    import { action } from '@ember/object';
 
-    export default Route.extend({
-      actions: {
-        showModal(evt) {
-          // ...
-        },
-        hideModal(evt) {
-          this.disconnectOutlet('modal');
-        }
+    export default class ApplicationRoute extends Route {
+      @action
+      showModal(evt) {
+        // ...
       }
-    });
-        ```
+
+      @action
+      hideModal(evt) {
+        this.disconnectOutlet('modal');
+      }
+    }
+    ```
 
     @method disconnectOutlet
     @param {Object|String} options the options hash or outlet name
@@ -1748,26 +1752,29 @@ class Route extends EmberObject implements IRoute {
     ```app/routes/posts/index.js
     import Route from '@ember/routing/route';
 
-    export default Route.extend({
+    export default class PostsIndexRoute extends Route {
       buildRouteInfoMetadata() {
         return { title: 'Posts Page' }
       }
-    });
+    }
     ```
+
     ```app/routes/application.js
     import Route from '@ember/routing/route';
     import { inject as service } from '@ember/service';
 
-    export default Route.extend({
-      router: service('router'),
-      init() {
-        this._super(...arguments);
+    export default class ApplicationRoute extends Route {
+      @service router
+
+      constructor() {
+        super(...arguments);
+
         this.router.on('routeDidChange', transition => {
           document.title = transition.to.metadata.title;
           // would update document's title to "Posts Page"
         });
       }
-    });
+    }
     ```
 
     @return any
@@ -2030,20 +2037,19 @@ function getEngineRouteName(engine: Owner, routeName: string) {
     ```
 
     ```app/routes/post.js
-    import $ from 'jquery';
     import Route from '@ember/routing/route';
 
-    export default Route.extend({
-      model(params) {
+    export default class PostRoute extends Route {
+      model({ post_id }) {
         // the server returns `{ id: 12 }`
-        return $.getJSON('/posts/' + params.post_id);
-      },
+        return fetch(`/posts/${post_id}`;
+      }
 
       serialize(model) {
         // this will make the URL `/posts/12`
         return { post_id: model.id };
       }
-    });
+    }
     ```
 
     The default `serialize` method will insert the model's `id` into the
@@ -2119,21 +2125,21 @@ Route.reopen(ActionHandler, Evented, {
     ```app/routes/posts/list.js
     import Route from '@ember/routing/route';
 
-    export default Route.extend({
-      templateName: 'posts/list'
+    export default class extends Route {
+      templateName = 'posts/list'
     });
     ```
 
     ```app/routes/posts/index.js
     import PostsList from '../posts/list';
 
-    export default PostsList.extend();
+    export default class extends PostsList {};
     ```
 
     ```app/routes/posts/archived.js
     import PostsList from '../posts/list';
 
-    export default PostsList.extend();
+    export default class extends PostsList {};
     ```
 
     @property templateName
@@ -2370,28 +2376,28 @@ Route.reopen(ActionHandler, Evented, {
 
     ```app/routes/application.js
     import Route from '@ember/routing/route';
+    import { action } from '@ember/object';
 
-    export default Route.extend({
-      actions: {
-        track(arg) {
-          console.log(arg, 'was clicked');
-        }
+    export default class ApplicationRoute extends Route {
+      @action
+      track(arg) {
+        console.log(arg, 'was clicked');
       }
-    });
+    }
     ```
 
     ```app/routes/index.js
     import Route from '@ember/routing/route';
+    import { action } from '@glimmer/tracking';
 
-    export default Route.extend({
-      actions: {
-        trackIfDebug(arg) {
-          if (debug) {
-            this.send('track', arg);
-          }
+    export default class IndexRoute extends Route {
+      @action
+      trackIfDebug(arg) {
+        if (debug) {
+          this.send('track', arg);
         }
       }
-    });
+    }
     ```
 
     @method send
@@ -2422,21 +2428,21 @@ Route.reopen(ActionHandler, Evented, {
 
     ```app/routes/form.js
     import Route from '@ember/routing/route';
+    import { action } from '@ember/object';
 
-    export default Route.extend({
-      actions: {
-        willTransition(transition) {
-          if (this.controller.get('userHasEnteredData') &&
-              !confirm('Are you sure you want to abandon progress?')) {
-            transition.abort();
-          } else {
-            // Bubble the `willTransition` action so that
-            // parent routes can decide whether or not to abort.
-            return true;
-          }
+    export default class FormRoute extends Route {
+      @action
+      willTransition(transition) {
+        if (this.controller.get('userHasEnteredData') &&
+            !confirm('Are you sure you want to abandon progress?')) {
+          transition.abort();
+        } else {
+          // Bubble the `willTransition` action so that
+          // parent routes can decide whether or not to abort.
+          return true;
         }
       }
-    });
+    }
     ```
 
     @property controller
