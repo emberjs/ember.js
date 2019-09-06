@@ -25,11 +25,12 @@ export interface EngineInstanceOptions {
   routable: boolean;
 }
 
+import EngineInstance from '@ember/engine/instance';
 export interface Owner {
   lookup<T>(fullName: string, options?: LookupOptions): T | undefined;
   factoryFor<T, C>(fullName: string, options?: LookupOptions): Factory<T, C> | undefined;
   factoryFor(fullName: string, options?: LookupOptions): Factory<any, any> | undefined;
-  buildChildEngineInstance<T>(name: string, options?: EngineInstanceOptions): T;
+  buildChildEngineInstance(name: string, options?: EngineInstanceOptions): EngineInstance;
   register<T, C>(fullName: string, factory: Factory<T, C>, options?: object): void;
   hasRegistration(name: string, options?: LookupOptions): boolean;
   mountPoint?: string;

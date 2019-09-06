@@ -234,6 +234,7 @@ let allExports = [
   EMBER_GLIMMER_SET_COMPONENT_TEMPLATE
     ? ['_templateOnlyComponent', '@ember/component/template-only', 'default']
     : null,
+  ['_captureRenderTree', '@ember/debug', 'captureRenderTree'],
 
   // @ember/-internals/runtime
   ['A', '@ember/-internals/runtime'],

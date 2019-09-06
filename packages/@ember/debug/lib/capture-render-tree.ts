@@ -1,0 +1,28 @@
+import { CapturedRenderNode, Environment } from '@ember/-internals/glimmer';
+import { Owner } from '@ember/-internals/owner';
+import { expect } from '@glimmer/util';
+
+/**
+  @module @ember/debug
+*/
+/**
+  Ember Inspector calls this function to capture the current render tree.
+
+  In production mode, this requires turning on `ENV._DEBUG_RENDER_TREE`
+  before loading Ember.
+
+  @private
+  @static
+  @method captureRenderTree
+  @for @ember/debug
+  @param app {ApplicationInstance} An `ApplicationInstance`.
+  @since 3.14.0
+*/
+export default function captureRenderTree(app: Owner): CapturedRenderNode[] {
+  let env = expect(
+    app.lookup<Environment>('service:-glimmer-environment'),
+    'BUG: owner is missing service:-glimmer-environment'
+  );
+
+  return env.debugRenderTree.capture();
+}

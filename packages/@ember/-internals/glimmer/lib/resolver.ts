@@ -436,13 +436,13 @@ export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMe
 
     if (pair.component === null) {
       if (ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS) {
-        definition = new TemplateOnlyComponentDefinition(layout!);
+        definition = new TemplateOnlyComponentDefinition(name, layout!);
       }
     } else if (
       EMBER_GLIMMER_SET_COMPONENT_TEMPLATE &&
       isTemplateOnlyComponent(pair.component.class)
     ) {
-      definition = new TemplateOnlyComponentDefinition(layout!);
+      definition = new TemplateOnlyComponentDefinition(name, layout!);
     }
 
     if (pair.component !== null) {

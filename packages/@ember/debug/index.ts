@@ -8,6 +8,7 @@ import _warn, { WarnFunc } from './lib/warn';
 export { registerHandler as registerWarnHandler } from './lib/warn';
 export { registerHandler as registerDeprecationHandler } from './lib/deprecate';
 export { isTesting, setTesting } from './lib/testing';
+export { default as captureRenderTree } from './lib/capture-render-tree';
 
 export type DebugFunctionType =
   | 'assert'

@@ -1,4 +1,3 @@
-import { DEBUG } from '@glimmer/env';
 import { ComponentCapabilities, Simple } from '@glimmer/interfaces';
 import { Tag, VersionedPathReference } from '@glimmer/reference';
 import {
@@ -11,20 +10,14 @@ import {
   PreparedArguments,
 } from '@glimmer/runtime';
 import { Destroyable, Opaque, Option } from '@glimmer/util';
-import DebugStack from '../utils/debug-stack';
+import { DebugStack } from '../utils/debug-stack';
 
 // implements the ComponentManager interface as defined in glimmer:
 // tslint:disable-next-line:max-line-length
 // https://github.com/glimmerjs/glimmer-vm/blob/v0.24.0-beta.4/packages/%40glimmer/runtime/lib/component/interfaces.ts#L21
 
 export default abstract class AbstractManager<T, U> implements ComponentManager<T, U> {
-  public debugStack: typeof DebugStack;
-  public _pushToDebugStack!: (name: string, environment: any) => void;
-  public _pushEngineToDebugStack!: (name: string, environment: any) => void;
-
-  constructor() {
-    this.debugStack = undefined;
-  }
+  public debugStack: DebugStack | undefined = undefined;
 
   prepareArgs(_state: U, _args: Arguments): Option<PreparedArguments> {
     return null;
@@ -82,16 +75,4 @@ export default abstract class AbstractManager<T, U> implements ComponentManager<
   }
 
   abstract getDestructor(bucket: T): Option<Destroyable>;
-}
-
-if (DEBUG) {
-  AbstractManager.prototype._pushToDebugStack = function(name: string, environment) {
-    this.debugStack = environment.debugStack;
-    this.debugStack.push(name);
-  };
-
-  AbstractManager.prototype._pushEngineToDebugStack = function(name: string, environment) {
-    this.debugStack = environment.debugStack;
-    this.debugStack.pushEngine(name);
-  };
 }

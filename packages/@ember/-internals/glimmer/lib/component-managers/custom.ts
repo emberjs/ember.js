@@ -15,6 +15,7 @@ import {
 import { createTag, isConst, PathReference, Tag } from '@glimmer/reference';
 import {
   Arguments,
+  Bounds,
   CapturedArguments,
   ComponentDefinition,
   Invocation,
@@ -22,6 +23,7 @@ import {
 } from '@glimmer/runtime';
 import { Destroyable } from '@glimmer/util';
 
+import { ENV } from '@ember/-internals/environment';
 import Environment from '../environment';
 import RuntimeResolver from '../resolver';
 import { OwnedTemplate } from '../template';
@@ -184,7 +186,7 @@ export default class CustomComponentManager<ComponentInstance>
       RuntimeResolver
     > {
   create(
-    _env: Environment,
+    env: Environment,
     definition: CustomComponentDefinitionState<ComponentInstance>,
     args: Arguments
   ): CustomComponentState<ComponentInstance> {
@@ -267,10 +269,27 @@ export default class CustomComponentManager<ComponentInstance>
 
     const component = delegate.createComponent(definition.ComponentClass.class, value);
 
-    return new CustomComponentState(delegate, component, capturedArgs, namedArgsProxy);
+    let bucket = new CustomComponentState(delegate, component, capturedArgs, env, namedArgsProxy);
+
+    if (ENV._DEBUG_RENDER_TREE) {
+      env.debugRenderTree.create(bucket, {
+        type: 'component',
+        name: definition.name,
+        args: args.capture(),
+        instance: component,
+      });
+    }
+
+    return bucket;
   }
 
-  update({ delegate, component, args, namedArgsProxy }: CustomComponentState<ComponentInstance>) {
+  update(bucket: CustomComponentState<ComponentInstance>) {
+    if (ENV._DEBUG_RENDER_TREE) {
+      bucket.env.debugRenderTree.update(bucket);
+    }
+
+    let { delegate, component, args, namedArgsProxy } = bucket;
+
     let value;
 
     if (EMBER_CUSTOM_COMPONENT_ARG_PROXY) {
@@ -308,18 +327,34 @@ export default class CustomComponentManager<ComponentInstance>
   }
 
   getDestructor(state: CustomComponentState<ComponentInstance>): Option<Destroyable> {
+    let destructor: Option<Destroyable> = null;
+
     if (hasDestructors(state.delegate)) {
-      return state;
-    } else {
-      return null;
+      destructor = state;
     }
+
+    if (ENV._DEBUG_RENDER_TREE) {
+      let inner = destructor;
+
+      destructor = {
+        destroy() {
+          state.env.debugRenderTree.willDestroy(state);
+
+          if (inner) {
+            inner.destroy();
+          }
+        },
+      };
+    }
+
+    return destructor;
   }
 
   getCapabilities({
     delegate,
   }: CustomComponentDefinitionState<ComponentInstance>): ComponentCapabilities {
     return Object.assign({}, CAPABILITIES, {
-      updateHook: delegate.capabilities.updateHook,
+      updateHook: ENV._DEBUG_RENDER_TREE || delegate.capabilities.updateHook,
     });
   }
 
@@ -332,7 +367,17 @@ export default class CustomComponentManager<ComponentInstance>
     }
   }
 
-  didRenderLayout() {}
+  didRenderLayout(bucket: CustomComponentState<ComponentInstance>, bounds: Bounds) {
+    if (ENV._DEBUG_RENDER_TREE) {
+      bucket.env.debugRenderTree.didRender(bucket, bounds);
+    }
+  }
+
+  didUpdateLayout(bucket: CustomComponentState<ComponentInstance>, bounds: Bounds) {
+    if (ENV._DEBUG_RENDER_TREE) {
+      bucket.env.debugRenderTree.didRender(bucket, bounds);
+    }
+  }
 
   getLayout(state: DefinitionState<ComponentInstance>): Invocation {
     return {
@@ -351,6 +396,7 @@ export class CustomComponentState<ComponentInstance> {
     public delegate: ManagerDelegate<ComponentInstance>,
     public component: ComponentInstance,
     public args: CapturedArguments,
+    public env: Environment,
     public namedArgsProxy?: {}
   ) {}
 

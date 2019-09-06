@@ -1,9 +1,10 @@
 import { FACTORY_FOR } from '@ember/-internals/container';
+import { ENV } from '@ember/-internals/environment';
 import { Factory } from '@ember/-internals/owner';
 import { _instrumentStart } from '@ember/instrumentation';
 import { DEBUG } from '@glimmer/env';
-import { ComponentCapabilities } from '@glimmer/interfaces';
-import { Arguments, ComponentDefinition } from '@glimmer/runtime';
+import { ComponentCapabilities, Option } from '@glimmer/interfaces';
+import { Arguments, ComponentDefinition, EMPTY_ARGS } from '@glimmer/runtime';
 import { DIRTY_TAG } from '../component';
 import Environment from '../environment';
 import { DynamicScope } from '../renderer';
@@ -33,14 +34,14 @@ class RootComponentManager extends CurlyComponentManager {
 
   create(
     environment: Environment,
-    _state: DefinitionState,
-    _args: Arguments | null,
+    state: DefinitionState,
+    _args: Option<Arguments>,
     dynamicScope: DynamicScope
   ) {
     let component = this.component;
 
     if (DEBUG) {
-      this._pushToDebugStack((component as any)._debugContainerKey, environment);
+      environment.debugStack.push((component as any)._debugContainerKey);
     }
 
     let finalizer = _instrumentStart('render.component', initialRenderInstrumentDetails, component);
@@ -66,7 +67,24 @@ class RootComponentManager extends CurlyComponentManager {
       processComponentInitializationAssertions(component, {});
     }
 
-    return new ComponentStateBucket(environment, component, null, finalizer, hasWrappedElement);
+    let bucket = new ComponentStateBucket(
+      environment,
+      component,
+      null,
+      finalizer,
+      hasWrappedElement
+    );
+
+    if (ENV._DEBUG_RENDER_TREE) {
+      environment.debugRenderTree.create(bucket, {
+        type: 'component',
+        name: state.name,
+        args: EMPTY_ARGS,
+        instance: component,
+      });
+    }
+
+    return bucket;
   }
 }
 

@@ -15,6 +15,6 @@ import compileOptions, { CompileOptions } from './compile-options';
   @method precompile
   @param {String} templateString This is the string to be compiled by HTMLBars.
 */
-export default function precompile(templateString: string, options: CompileOptions): string {
+export default function precompile(templateString: string, options: CompileOptions = {}): string {
   return glimmerPrecompile(templateString, compileOptions(options));
 }

@@ -1,6 +1,6 @@
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
-import { DebugStack } from '@ember/-internals/glimmer';
+import { getDebugStack } from '@ember/-internals/glimmer';
 import { DEBUG } from '@glimmer/env';
 
 moduleFor(
@@ -8,7 +8,7 @@ moduleFor(
   class extends AbstractTestCase {
     ['@test pushing and popping'](assert) {
       if (DEBUG) {
-        let stack = new DebugStack();
+        let stack = getDebugStack(this.owner);
 
         assert.equal(stack.peek(), undefined);
 
