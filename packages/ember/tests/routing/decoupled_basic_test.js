@@ -302,12 +302,12 @@ moduleFor(
       let text = this.$('p').text();
 
       assert.ok(
-        text.includes('Model: emberjs'),
+        text.indexOf('Model: emberjs') > -1,
         'Passed model was available as the `@model` argument'
       );
 
       assert.ok(
-        text.includes('Controller: emberjs'),
+        text.indexOf('Controller: emberjs') > -1,
         "Passed model was set as controller's `model` property"
       );
     }
