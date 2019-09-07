@@ -9,37 +9,44 @@ import { Opaque } from '@glimmer/util';
 /**
   The `{{#each}}` helper loops over elements in a collection. It is an extension
   of the base Handlebars `{{#each}}` helper.
+
   The default behavior of `{{#each}}` is to yield its inner block once for every
   item in an array passing the item as the first block parameter.
 
+  Assuming the `@developers` argument contains this array:
+
   ```javascript
-  var developers = [{ name: 'Yehuda' },{ name: 'Tom' }, { name: 'Paul' }];
+  [{ name: 'Yehuda' },{ name: 'Tom' }, { name: 'Paul' }];
   ```
 
   ```handlebars
-  {{#each developers key="name" as |person|}}
-    {{person.name}}
-    {{! `this` is whatever it was outside the #each }}
-  {{/each}}
+  <ul>
+    {{#each @developers as |person|}}
+      <li>Hello, {{person.name}}!</li>
+    {{/each}}
+  </ul>
   ```
 
   The same rules apply to arrays of primitives.
 
   ```javascript
-  var developerNames = ['Yehuda', 'Tom', 'Paul']
+  ['Yehuda', 'Tom', 'Paul']
   ```
-
-  ```handlebars
-  {{#each developerNames key="@index" as |name|}}
-    {{name}}
-  {{/each}}
-  ```
-
-  During iteration, the index of each item in the array is provided as a second block parameter.
 
   ```handlebars
   <ul>
-    {{#each people as |person index|}}
+    {{#each @developerNames as |name|}}
+      <li>Hello, {{name}}!</li>
+    {{/each}}
+  </ul>
+  ```
+
+  During iteration, the index of each item in the array is provided as a second block
+  parameter.
+
+  ```handlebars
+  <ul>
+    {{#each @developers as |person index|}}
       <li>Hello, {{person.name}}! You're number {{index}} in line</li>
     {{/each}}
   </ul>
@@ -47,22 +54,43 @@ import { Opaque } from '@glimmer/util';
 
   ### Specifying Keys
 
-  The `key` option is used to tell Ember how to determine if the array being
-  iterated over with `{{#each}}` has changed between renders. By helping Ember
-  detect that some elements in the array are the same, DOM elements can be
-  re-used, significantly improving rendering speed.
+  In order to improve rendering speed, Ember will try to reuse the DOM elements
+  where possible. Specifically, if the same item is present in the array both
+  before and after the change, its DOM output will be reused.
 
-  For example, here's the `{{#each}}` helper with its `key` set to `id`:
+  The `key` option is used to tell Ember how to determine if the items in the
+  array being iterated over with `{{#each}}` has changed between renders. By
+  default the item's object identity is used.
 
-  ```handlebars
-  {{#each model key="id" as |item|}}
-  {{/each}}
+  This is usually sufficient, so in most cases, the `key` option is simply not
+  needed. However, in some rare cases, the objects' identities may change even
+  though they represent the same underlying data.
+
+  For example:
+
+  ```javascript
+  people.map(person => {
+    return { ...person, type: 'developer' };
+  });
   ```
 
-  When this `{{#each}}` re-renders, Ember will match up the previously rendered
-  items (and reorder the generated DOM elements) based on each item's `id`
-  property.
-  By default the item's own reference is used.
+  In this case, each time the `people` array is `map`-ed over, it will produce
+  an new array with completely different objects between renders. In these cases,
+  you can help Ember determine how these objects related to each other with the
+  `key` option:
+
+  ```handlebars
+  <ul>
+    {{#each @developers key="name" as |person|}}
+      <li>Hello, {{person.name}}!</li>
+    {{/each}}
+  </ul>
+  ```
+
+  By doing so, Ember will use the value of the property specified (`person.name`
+  in the example) to find a "match" from the previous render. That is, if Ember
+  has previously seen an object from the `@developers` array with a matching
+  name, its DOM elements will be re-used.
 
   ### {{else}} condition
 
@@ -70,11 +98,13 @@ import { Opaque } from '@glimmer/util';
   if the collection is empty.
 
   ```handlebars
-  {{#each developers as |person|}}
-    {{person.name}}
-  {{else}}
-    <p>Sorry, nobody is available for this task.</p>
-  {{/each}}
+  <ul>
+    {{#each @developers as |person|}}
+      <li>{{person.name}} is available!</li>
+    {{else}}
+      <li>Sorry, nobody is available for this task.</li>
+    {{/each}}
+  </ul>
   ```
 
   @method each
@@ -85,7 +115,7 @@ import { Opaque } from '@glimmer/util';
 /**
   The `{{each-in}}` helper loops over properties on an object.
 
-  For example, given a `user` object that looks like:
+  For example, if the `@user` argument contains this object:
 
   ```javascript
   {
@@ -94,12 +124,12 @@ import { Opaque } from '@glimmer/util';
   }
   ```
 
-  This template would display all properties on the `user`
+  This template would display all properties on the `@user`
   object in a list:
 
   ```handlebars
   <ul>
-  {{#each-in user as |key value|}}
+  {{#each-in @user as |key value|}}
     <li>{{key}}: {{value}}</li>
   {{/each-in}}
   </ul>
