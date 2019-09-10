@@ -244,7 +244,7 @@ module.exports = {
         'no-undef-init': 'off',
         'no-unneeded-ternary': 'off',
         'no-unsafe-finally': 'off',
-        'no-unused-expressions': 'off',
+        'no-unused-expressions': 'error',
         'no-useless-call': 'off',
         'no-useless-concat': 'off',
         'no-useless-constructor': 'off',
