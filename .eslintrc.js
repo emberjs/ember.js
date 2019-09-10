@@ -107,7 +107,7 @@ module.exports = {
     'no-shadow': 'error',
     'no-sync': 'off',
     'no-template-curly-in-string': 'error',
-    'no-ternary': 'error',
+    'no-ternary': 'off',
     'no-throw-literal': 'error',
     'no-undef-init': 'error',
     'no-undefined': 'error',
