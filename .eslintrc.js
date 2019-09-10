@@ -205,6 +205,7 @@ module.exports = {
         sourceType: 'module',
       },
       rules: {
+        '@typescript-eslint/consistent-type-assertions': 'error',
         '@typescript-eslint/no-empty-function': 'off',
         '@typescript-eslint/no-unused-vars': 'off',
         'callback-return': 'off',
