@@ -1,17 +1,18 @@
 module.exports = {
   root: true,
+  parser: '@typescript-eslint/parser',
   parserOptions: {
     ecmaVersion: 2019,
   },
   extends: ['eslint:recommended', 'plugin:prettier/recommended'],
   plugins: ['prettier'],
+  plugins: ['@typescript-eslint', 'prettier'],
   rules: {
     'prettier/prettier': 'error',
     'accessor-pairs': 'error',
     'array-callback-return': 'error',
     'block-scoped-var': 'error',
     'callback-return': 'error',
-    camelcase: 'error',
     'capitalized-comments': 'off',
     'class-methods-use-this': 'off',
     complexity: 'error',
@@ -45,7 +46,6 @@ module.exports = {
     'newline-after-var': 'off',
     'newline-before-return': 'off',
     'no-alert': 'error',
-    'no-array-constructor': 'error',
     'no-await-in-loop': 'off',
     'no-bitwise': 'error',
     'no-caller': 'error',
@@ -55,7 +55,6 @@ module.exports = {
     'no-div-regex': 'error',
     'no-duplicate-imports': 'error',
     'no-else-return': 'error',
-    'no-empty-function': 'error',
     'no-eq-null': 'error',
     'no-eval': 'error',
     'no-extend-native': 'error',
@@ -151,6 +150,16 @@ module.exports = {
     'valid-jsdoc': 'off',
     'vars-on-top': 'error',
     yoda: ['error', 'never'],
+
+    // replace ESLint rules with TypeScript-compatible rules
+    camelcase: 'off',
+    '@typescript-eslint/camelcase': 'error',
+    'no-array-constructor': 'off',
+    '@typescript-eslint/no-array-constructor': 'error',
+    'no-empty-function': 'off',
+    '@typescript-eslint/no-empty-function': 'error',
+    'no-unused-vars': 'off',
+    '@typescript-eslint/no-unused-vars': 'error',
   },
   overrides: [
     // node files
