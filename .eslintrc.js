@@ -164,12 +164,12 @@ module.exports = {
         'testem-browserstack.js',
         'bin/**/*.js',
         'build/**/*.js',
-        'server/**/*.js'
+        'server/**/*.js',
       ],
       env: {
         es6: true,
         node: true,
       },
-    }
-  ]
+    },
+  ],
 };
