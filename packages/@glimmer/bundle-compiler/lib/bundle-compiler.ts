@@ -228,9 +228,7 @@ export default class BundleCompiler {
     // bundle via the add() or addCompilableTemplate() methods.
     let compilableTemplate = expect(
       this.context.compilableTemplates.get(locator),
-      `Can't compile a template that wasn't already added to the bundle (${locator.name} @ ${
-        locator.module
-      })`
+      `Can't compile a template that wasn't already added to the bundle (${locator.name} @ ${locator.module})`
     );
 
     // Compile the template, which writes opcodes to the heap and returns the VM

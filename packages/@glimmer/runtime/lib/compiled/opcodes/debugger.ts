@@ -4,9 +4,9 @@ import { dict } from '@glimmer/util';
 import { APPEND_OPCODES } from '../../opcodes';
 import { CONSTANTS } from '../../symbols';
 
-export type DebugGet = ((path: string) => unknown);
+export type DebugGet = (path: string) => unknown;
 
-export type DebugCallback = ((context: unknown, get: DebugGet) => void);
+export type DebugCallback = (context: unknown, get: DebugGet) => void;
 
 /* tslint:disable */
 function debugCallback(context: unknown, get: DebugGet): void {

@@ -6,13 +6,13 @@ import { module } from './support';
 module('Render Tests: I-N-U-R', ({ test }) => {
   test('Can set properties', assert => {
     // tslint:disable-next-line:no-unused-expression
-    new class extends RenderTest {
+    new (class extends RenderTest {
       constructor(delegate: JitRenderDelegate) {
         super(delegate);
         this.setProperties({ foo: 'bar' });
         assert.equal(this.context.foo, 'bar');
       }
-    }(new JitRenderDelegate());
+    })(new JitRenderDelegate());
   });
 
   test('Can take basic snapshots', assert => {
@@ -21,14 +21,14 @@ module('Render Tests: I-N-U-R', ({ test }) => {
     div.appendChild(text);
 
     // tslint:disable-next-line:no-unused-expression
-    new class extends RenderTest {
+    new (class extends RenderTest {
       element = div;
       constructor(delegate: JitRenderDelegate) {
         super(delegate);
         let snapShot = this.takeSnapshot();
         assert.deepEqual(snapShot, [text, 'up']);
       }
-    }(new JitRenderDelegate());
+    })(new JitRenderDelegate());
   });
 
   test('Can take nested snapshots', assert => {
@@ -39,14 +39,14 @@ module('Render Tests: I-N-U-R', ({ test }) => {
     div.appendChild(p);
 
     // tslint:disable-next-line:no-unused-expression
-    new class extends RenderTest {
+    new (class extends RenderTest {
       element = div;
       constructor(delegate: JitRenderDelegate) {
         super(delegate);
         let snapShot = this.takeSnapshot();
         assert.deepEqual(snapShot, [p, 'down', text, 'up', 'up']);
       }
-    }(new JitRenderDelegate());
+    })(new JitRenderDelegate());
   });
 
   test('Can take nested snapshots of serialized blocks', assert => {
@@ -59,13 +59,13 @@ module('Render Tests: I-N-U-R', ({ test }) => {
     div.appendChild(close);
 
     // tslint:disable-next-line:no-unused-expression
-    new class extends RenderTest {
+    new (class extends RenderTest {
       element = div;
       constructor(delegate: JitRenderDelegate) {
         super(delegate);
         let snapShot = this.takeSnapshot();
         assert.deepEqual(snapShot, [open, text, close, 'up']);
       }
-    }(new JitRenderDelegate());
+    })(new JitRenderDelegate());
   });
 });
