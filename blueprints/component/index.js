@@ -1,5 +1,5 @@
 'use strict';
-
+const chalk = require('chalk');
 const path = require('path');
 const SilentError = require('silent-error');
 const stringUtil = require('ember-cli-string-utils');
@@ -80,6 +80,10 @@ module.exports = {
         );
       }
     }
+
+    let tip = `Tip: run \`ember generate component-class ${options.name}\` if you want to add a class`;
+
+    this._writeStatusToUI(chalk.green, 'tip', tip);
 
     return this._super.install.apply(this, arguments);
   },

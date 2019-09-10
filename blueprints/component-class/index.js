@@ -70,10 +70,6 @@ module.exports = {
       }
     }
 
-    let tip = `Tip: run \`ember generate component-class ${options.name}\` if you want to add a class`;
-
-    this._writeStatusToUI(chalk.green, 'tip', tip);
-
     return this._super.install.apply(this, arguments);
   },
 
