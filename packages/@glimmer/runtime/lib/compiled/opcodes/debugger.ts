@@ -15,6 +15,7 @@ function debugCallback(context: unknown, get: DebugGet): void {
   // for example...
   context === get('this');
 
+  // eslint-disable-next-line no-debugger
   debugger;
 }
 /* tslint:enable */

@@ -223,7 +223,7 @@ module.exports = {
         'no-case-declarations': 'off',
         'no-constant-condition': 'off',
         'no-continue': 'off',
-        'no-debugger': 'off',
+        'no-debugger': 'error',
         'no-duplicate-imports': 'off',
         'no-else-return': 'off',
         'no-empty': 'off',
