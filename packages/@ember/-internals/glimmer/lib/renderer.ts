@@ -6,6 +6,7 @@ import { backburner, getCurrentRunLoop } from '@ember/runloop';
 import { Option, Simple } from '@glimmer/interfaces';
 import { CURRENT_TAG, validate, value, VersionedPathReference } from '@glimmer/reference';
 import {
+  Bounds,
   clientBuilder,
   CurriedComponentDefinition,
   curry,
@@ -363,8 +364,12 @@ export abstract class Renderer {
 
   abstract getElement(view: Opaque): Option<Simple.Element>;
 
-  getBounds(view: Component) {
-    let bounds = view[BOUNDS];
+  getBounds(
+    view: object
+  ): { parentElement: Simple.Element; firstNode: Simple.Node; lastNode: Simple.Node } {
+    let bounds: Bounds = view[BOUNDS];
+
+    assert('object passed to getBounds must have the BOUNDS symbol as a property', Boolean(bounds));
 
     let parentElement = bounds.parentElement();
     let firstNode = bounds.firstNode();
