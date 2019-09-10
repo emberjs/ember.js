@@ -39,7 +39,7 @@ module.exports = {
     'line-comment-position': 'error',
     'lines-around-directive': 'error',
     'max-depth': 'off',
-    'max-lines': 'error',
+    'max-lines': 'off',
     'max-nested-callbacks': 'error',
     'max-params': 'error',
     'new-cap': 'error',
