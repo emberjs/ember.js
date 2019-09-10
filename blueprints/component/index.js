@@ -85,14 +85,14 @@ module.exports = {
     return this._super.install.apply(this, arguments);
   },
 
-  afterInstall(options) {
+  afterInstall({ componentClass, entity }) {
     this._super.afterInstall.apply(this, arguments);
 
-    // let ui = (this.ui = options.ui);
-    let { name } = options.entity;
-    let tip = `Tip: run \`ember generate component-class ${name}\` if you want to add a class`;
+    if (!componentClass) {
+      let tip = `Tip: run \`ember generate component-class ${entity.name}\` if you want to add a class`;
 
-    this.ui.writeLine(chalk.green(tip));
+      this.ui.writeLine(chalk.green(tip));
+    }
   },
 
   fileMapTokens(options) {
