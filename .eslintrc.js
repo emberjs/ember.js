@@ -95,6 +95,7 @@ module.exports = {
     'no-process-env': 'off',
     'no-process-exit': 'error',
     'no-proto': 'error',
+    'no-redeclare': 'error',
     'no-restricted-globals': 'error',
     'no-restricted-imports': 'error',
     'no-restricted-modules': 'error',
