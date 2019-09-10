@@ -141,7 +141,7 @@ module.exports = {
     radix: 'error',
     'require-await': 'error',
     'require-jsdoc': 'off',
-    'sort-imports': 'error',
+    'sort-imports': 'off',
     'sort-keys': 'off',
     'sort-vars': 'error',
     'spaced-comment': ['error', 'always'],
