@@ -38,7 +38,7 @@ module.exports = {
     'init-declarations': 'off',
     'line-comment-position': 'error',
     'lines-around-directive': 'error',
-    'max-depth': 'error',
+    'max-depth': 'off',
     'max-lines': 'error',
     'max-nested-callbacks': 'error',
     'max-params': 'error',
