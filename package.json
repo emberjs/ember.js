@@ -140,7 +140,7 @@
     "simple-dom": "^1.4.0",
     "testem": "^2.17.0",
     "testem-failure-only-reporter": "^0.0.1",
-    "tslint": "^5.19.0",
+    "tslint": "^5.20.0",
     "typescript-eslint-parser": "^22.0.0"
   },
   "engines": {
