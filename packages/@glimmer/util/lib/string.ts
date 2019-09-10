@@ -9,11 +9,11 @@ export function strip(strings: TemplateStringsArray, ...args: unknown[]) {
 
   let lines = out.split('\n');
 
-  while (lines && lines[0].match(/^\s*$/)) {
+  while (lines.length && lines[0].match(/^\s*$/)) {
     lines.shift();
   }
 
-  while (lines && lines[lines.length - 1].match(/^\s*$/)) {
+  while (lines.length && lines[lines.length - 1].match(/^\s*$/)) {
     lines.pop();
   }
 
