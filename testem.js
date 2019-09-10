@@ -1,3 +1,5 @@
+/* eslint-disable camelcase */
+
 'use strict';
 
 let isCI = !!process.env.CI;
