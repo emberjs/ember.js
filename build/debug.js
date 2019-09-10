@@ -2,9 +2,8 @@
 
 const { normalizeAll, buildEnum, buildMetas, strip } = require('../dist/@glimmer/debug');
 const fs = require('fs');
-const path = require('path');
 const toml = require('toml');
-const tslint = require('tslint');
+const prettier = require('prettier');
 
 function parse(file) {
   let opcodes = fs.readFileSync(file, { encoding: 'utf8' });
@@ -68,15 +67,10 @@ ${contents}
   test failures.
 */
 function format(file, contents) {
-  let linter = new tslint.Linter({ fix: true });
-  let config = tslint.Configuration.findConfiguration(
-    path.resolve(__dirname, '..', 'tslint.json'),
-    __filename
-  );
-  linter.lint(file, contents, config.results);
-  let result = linter.getResult();
+  let options = prettier.resolveConfig.sync(file);
+  let newContents = prettier.format(contents, Object.assign({}, options, { filepath: file }));
 
-  if (result.fixes.length === 0) {
-    fs.writeFileSync(file, contents, { encoding: 'utf8' });
+  if (newContents !== contents) {
+    fs.writeFileSync(file, newContents, { encoding: 'utf8' });
   }
 }
