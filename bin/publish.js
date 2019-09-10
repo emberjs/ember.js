@@ -32,7 +32,6 @@ let packages = Project.from(DIST_PATH)
   .packages
   .filter(pkg => pkg.isPublishable);
 
-let packageNames = packages.map(pkg => pkg.name);
 let newVersion;
 
 // Begin interactive CLI
