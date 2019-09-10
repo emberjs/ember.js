@@ -1,5 +1,3 @@
-/*jshint node:true*/
-
 const merge = require('broccoli-merge-trees');
 const funnel = require('broccoli-funnel');
 const typescript = require('broccoli-typescript-compiler').default;
