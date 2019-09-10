@@ -171,5 +171,12 @@ module.exports = {
         node: true,
       },
     },
+    // bin scripts
+    {
+      files: ['bin/**/*.js'],
+      rules: {
+        'no-process-exit': 'off',
+      },
+    },
   ],
 };
