@@ -176,5 +176,12 @@ module.exports = {
         'no-process-exit': 'off',
       },
     },
+    // source packages
+    {
+      files: ['packages/**/*.js'],
+      parserOptions: {
+        sourceType: 'module',
+      },
+    },
   ],
 };
