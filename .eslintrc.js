@@ -107,7 +107,7 @@ module.exports = {
     'no-ternary': 'off',
     'no-throw-literal': 'error',
     'no-undef-init': 'error',
-    'no-undefined': 'error',
+    'no-undefined': 'off',
     'no-unmodified-loop-condition': 'error',
     'no-unneeded-ternary': 'error',
     'no-unused-expressions': 'error',
