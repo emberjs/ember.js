@@ -14,7 +14,7 @@ const PACKAGES_PATH = path.resolve(__dirname, '../packages');
 
 const DRY_RUN = process.argv.indexOf('--dry-run') > -1;
 if (DRY_RUN) {
-  console.log(chalk.yellow("--dry-run"), "- side effects disabled");
+  console.log(chalk.yellow('--dry-run'), '- side effects disabled');
 }
 
 // Fail fast if we haven't done a build first.
@@ -24,13 +24,11 @@ assertPassesSmokeTest();
 
 let cli = readline.createInterface({
   input: process.stdin,
-  output: process.stdout
+  output: process.stdout,
 });
 
 // Load up the built packages in dist.
-let packages = Project.from(DIST_PATH)
-  .packages
-  .filter(pkg => pkg.isPublishable);
+let packages = Project.from(DIST_PATH).packages.filter(pkg => pkg.isPublishable);
 
 let newVersion;
 
@@ -78,12 +76,20 @@ function generateDefaultVersion() {
 }
 
 function validateNewVersion(version) {
-  if (version === '') { fatalError("Version must not be empty."); }
-  if (!semver.valid(version)) { fatalError("Version must be a valid SemVer version."); }
+  if (version === '') {
+    fatalError('Version must not be empty.');
+  }
+  if (!semver.valid(version)) {
+    fatalError('Version must be a valid SemVer version.');
+  }
 
   packages.forEach(pkg => {
     if (!semver.gt(version, pkg.version)) {
-      fatalError(`Version must be greater than existing versions. ${pkg.name} has version ${pkg.version}, which is greater than or equal to ${version}.`);
+      fatalError(
+        `Version must be greater than existing versions. ${pkg.name} has version ${
+          pkg.version
+        }, which is greater than or equal to ${version}.`
+      );
     }
   });
 }
@@ -108,23 +114,21 @@ function applyNewVersion() {
   });
 
   // Update source packages
-  Project.from(PACKAGES_PATH)
-    .packages
-    .forEach(pkg => {
-      pkg.pkg.version = newVersion;
-      pkg.updateDependencies(newVersion);
-      pkg.updateSimpleHTMLTokenizer(rootSimpleHTMLTokenizerVersion);
+  Project.from(PACKAGES_PATH).packages.forEach(pkg => {
+    pkg.pkg.version = newVersion;
+    pkg.updateDependencies(newVersion);
+    pkg.updateSimpleHTMLTokenizer(rootSimpleHTMLTokenizerVersion);
 
-      if (!DRY_RUN) {
-        pkg.savePackageJSON();
-      }
-      execWithSideEffects(`git add "${pkg.packageJSONPath}"`);
-    });
+    if (!DRY_RUN) {
+      pkg.savePackageJSON();
+    }
+    execWithSideEffects(`git add "${pkg.packageJSONPath}"`);
+  });
 
   rootPkg.version = newVersion;
   if (!DRY_RUN) {
     fs.writeFileSync(rootPkgPath, JSON.stringify(rootPkg, null, 2));
-      execWithSideEffects(`git add package.json`);
+    execWithSideEffects(`git add package.json`);
   }
 }
 
@@ -141,17 +145,17 @@ async function getOTPToken() {
 
 function publishPackage(distTag, otp, cwd) {
   execWithSideEffects(`npm publish --tag ${distTag} --access public --otp ${otp}`, {
-    cwd
+    cwd,
   });
 }
 
 async function confirmPublish() {
-  console.log(chalk.blue("Version"), newVersion);
+  console.log(chalk.blue('Version'), newVersion);
 
-  let answer = await question(chalk.bgRed.white.bold("Are you sure? [Y/N]") + " ");
+  let answer = await question(chalk.bgRed.white.bold('Are you sure? [Y/N]') + ' ');
 
   if (answer !== 'y' && answer !== 'Y') {
-    console.log(chalk.red("Aborting"));
+    console.log(chalk.red('Aborting'));
     return;
   }
 
@@ -163,7 +167,7 @@ async function confirmPublish() {
 
     try {
       publishPackage(distTag, otp, pkg.absolutePath);
-    } catch(e) {
+    } catch (e) {
       // the token is outdated, we need another one
       if (e.message.includes('E401') || e.message.includes('EOTP')) {
         otp = await getOTPToken();
@@ -187,7 +191,7 @@ function fatalError(message) {
 }
 
 function throwNoPackagesErr() {
-  console.log(chalk.red('No dist directory found. Did you do a build first? (npm run build)'))
+  console.log(chalk.red('No dist directory found. Did you do a build first? (npm run build)'));
   process.exit(1);
 }
 
@@ -195,7 +199,7 @@ function assertDistExists() {
   try {
     let stat = fs.statSync(DIST_PATH);
     if (!stat.isDirectory()) {
-      throwNoPackagesErr()
+      throwNoPackagesErr();
     }
   } catch (e) {
     throwNoPackagesErr();
@@ -208,7 +212,7 @@ function assertGitIsClean() {
 
   if (!status.match(/^nothing to commit/m)) {
     if (force) {
-      console.log(chalk.yellow("--force"), "- ignoring unclean git working tree");
+      console.log(chalk.yellow('--force'), '- ignoring unclean git working tree');
     } else {
       console.log(chalk.red("Git working tree isn't clean. Use --force to ignore this warning."));
       process.exit(1);
@@ -220,7 +224,7 @@ function assertPassesSmokeTest() {
   try {
     execSync('./bin/run-types-tests.js');
   } catch (err) {
-    console.log(chalk.red("Types smoke test failed: "));
+    console.log(chalk.red('Types smoke test failed: '));
     console.log(err.stdout.toString());
 
     process.exit(1);
@@ -242,10 +246,10 @@ function execWithSideEffects(cmd, options) {
 function printPadded(table) {
   let maxWidth = Math.max(...table.map(r => r[0].length));
   table.forEach(row => {
-    console.log(chalk.blue(pad(row[0], maxWidth)) + "  " + row[1]);
-  })
+    console.log(chalk.blue(pad(row[0], maxWidth)) + '  ' + row[1]);
+  });
 }
 
 function pad(string, width) {
-  return string + " ".repeat(width - string.length);
+  return string + ' '.repeat(width - string.length);
 }

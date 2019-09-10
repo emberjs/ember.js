@@ -10,7 +10,7 @@ const globSync = require('glob').sync;
 
 let name = require('../package.json').name;
 
-console.log("Looking for existing owners on " + name + " on npm...");
+console.log('Looking for existing owners on ' + name + ' on npm...');
 
 let owners = execSync('npm owner ls')
   .toString()
@@ -20,14 +20,14 @@ let owners = execSync('npm owner ls')
 
 console.log(owners.map(o => `✅  ${o}`).join('\n'));
 
-console.log("\nLooking for packages...");
+console.log('\nLooking for packages...');
 
 let packages = globSync('@glimmer/*/package.json', {
-  cwd: __dirname + '/../dist'
+  cwd: __dirname + '/../dist',
 }).map(package => package.replace('/package.json', ''));
 
 if (!packages.length) {
-  console.log("No packages found. Did you do a build first?");
+  console.log('No packages found. Did you do a build first?');
   process.exit(1);
 }
 
