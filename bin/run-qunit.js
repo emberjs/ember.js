@@ -1,6 +1,5 @@
 const requireQUnit = require('qunit/src/cli/require-qunit');
 const FindReporter = require('qunit/src/cli/find-reporter');
-const fs = require('fs');
 const path = require('path');
 const glob = require('glob');
 const execa = require('execa');
