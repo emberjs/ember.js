@@ -163,17 +163,13 @@ export class AppendOpcodes {
     if (operation.syscall) {
       assert(
         !opcode.isMachine,
-        `BUG: Mismatch between operation.syscall (${operation.syscall}) and opcode.isMachine (${
-          opcode.isMachine
-        }) for ${opcode.type}`
+        `BUG: Mismatch between operation.syscall (${operation.syscall}) and opcode.isMachine (${opcode.isMachine}) for ${opcode.type}`
       );
       operation.evaluate(vm, opcode);
     } else {
       assert(
         opcode.isMachine,
-        `BUG: Mismatch between operation.syscall (${operation.syscall}) and opcode.isMachine (${
-          opcode.isMachine
-        }) for ${opcode.type}`
+        `BUG: Mismatch between operation.syscall (${operation.syscall}) and opcode.isMachine (${opcode.isMachine}) for ${opcode.type}`
       );
       operation.evaluate(vm[INNER_VM], opcode);
     }

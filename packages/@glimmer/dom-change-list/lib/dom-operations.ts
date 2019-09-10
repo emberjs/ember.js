@@ -165,7 +165,7 @@ export function run(opcodes: ReadonlyArray<number>, options: RunOptions) {
   return tokens;
 }
 
-type ConstructionFunction = ((state: ConstructionState, ...args: number[]) => void);
+type ConstructionFunction = (state: ConstructionState, ...args: number[]) => void;
 
 const ConstructionOperations: ConstructionFunction[] = [
   /* (OpenElement tag namespace) */

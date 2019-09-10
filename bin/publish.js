@@ -86,9 +86,7 @@ function validateNewVersion(version) {
   packages.forEach(pkg => {
     if (!semver.gt(version, pkg.version)) {
       fatalError(
-        `Version must be greater than existing versions. ${pkg.name} has version ${
-          pkg.version
-        }, which is greater than or equal to ${version}.`
+        `Version must be greater than existing versions. ${pkg.name} has version ${pkg.version}, which is greater than or equal to ${version}.`
       );
     }
   });
