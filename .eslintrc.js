@@ -41,7 +41,7 @@ module.exports = {
     'max-depth': 'off',
     'max-lines': 'off',
     'max-nested-callbacks': 'error',
-    'max-params': 'error',
+    'max-params': 'off',
     'new-cap': 'error',
     'newline-after-var': 'off',
     'newline-before-return': 'off',
