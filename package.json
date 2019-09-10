@@ -24,7 +24,7 @@
     "test:types": "node bin/run-types-tests.js",
     "test:smoke": "SMOKE_TESTS=true ember test",
     "tslint": "tslint --project tsconfig.json",
-    "eslint": "eslint . --cache",
+    "eslint": "eslint . --cache --ext .js,.ts",
     "problems": "tsc -p tsconfig.json --noEmit --pretty false",
     "yarn:link": "node bin/yarn-link-all",
     "yarn:unlink": "node bin/yarn-link-all --unlink",
