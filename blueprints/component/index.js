@@ -37,6 +37,7 @@ module.exports = {
         { tc: '@ember/component/template-only' },
         { nc: '' },
         { 'no-component-class': '' },
+        { 'with-component-class': '@glimmer/component' },
       ],
     },
     {
@@ -81,11 +82,17 @@ module.exports = {
       }
     }
 
-    let tip = `Tip: run \`ember generate component-class ${options.name}\` if you want to add a class`;
-
-    this._writeStatusToUI(chalk.green, 'tip', tip);
-
     return this._super.install.apply(this, arguments);
+  },
+
+  afterInstall(options) {
+    this._super.afterInstall.apply(this, arguments);
+
+    // let ui = (this.ui = options.ui);
+    let { name } = options.entity;
+    let tip = `Tip: run \`ember generate component-class ${name}\` if you want to add a class`;
+
+    this.ui.writeLine(chalk.green(tip));
   },
 
   fileMapTokens(options) {
