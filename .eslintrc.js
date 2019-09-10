@@ -15,7 +15,7 @@ module.exports = {
     'callback-return': 'error',
     'capitalized-comments': 'off',
     'class-methods-use-this': 'off',
-    complexity: 'error',
+    complexity: 'off',
     'consistent-return': 'error',
     'consistent-this': 'error',
     'default-case': 'error',
