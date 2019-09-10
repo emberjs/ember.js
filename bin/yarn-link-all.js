@@ -54,8 +54,3 @@ function link(dir) {
     process.chdir(cwd);
   }
 }
-
-function exec(cmd) {
-  console.log(chalk.blue(cmd));
-  return execSync(cmd, { cwd });
-}
