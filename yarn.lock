@@ -409,7 +409,7 @@
   dependencies:
     "@babel/helper-plugin-utils" "^7.0.0"
 
-"@babel/plugin-transform-block-scoping@^7.5.5", "@babel/plugin-transform-block-scoping@^7.6.0":
+"@babel/plugin-transform-block-scoping@^7.6.0":
   version "7.6.0"
   resolved "https://registry.yarnpkg.com/@babel/plugin-transform-block-scoping/-/plugin-transform-block-scoping-7.6.0.tgz#c49e21228c4bbd4068a35667e6d951c75439b1dc"
   integrity sha512-tIt4E23+kw6TgL/edACZwP1OUKrjOTyMrFMLoT5IOFrfMRabCgekjqFd5o6PaAMildBu46oFkekIdMuGkkPEpA==
@@ -1300,10 +1300,10 @@ auto-dist-tag@^1.0.0:
     pkg-up "^2.0.0"
     semver "^5.3.0"
 
-aws-sdk@^2.0.9, aws-sdk@^2.524.0:
-  version "2.524.0"
-  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.524.0.tgz#0acbd6a066cfb5b357b254b6ed273cca98ca6d5f"
-  integrity sha512-nCnKEExs1OqwNG6sIrRy+Lj8Zt2M6BTa6YlEMQ1gIpdwznaAN9XyTnm+MDc3iYsSl58MOBwiKpY8d6CONuxuDw==
+aws-sdk@^2.0.9, aws-sdk@^2.525.0:
+  version "2.525.0"
+  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.525.0.tgz#220da4ff859947bac9b2d391cae5a459fef3989e"
+  integrity sha512-UgigVfY4ayrffOMbybyz3F1bbIpEhuiO4yfYXultBC1LfIhZaFSFWLqzEBnm9srhydJhfLDftkL0WXVJtfJ4ng==
   dependencies:
     buffer "4.9.1"
     events "1.1.1"
