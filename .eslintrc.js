@@ -208,6 +208,7 @@ module.exports = {
       rules: {
         '@typescript-eslint/consistent-type-assertions': 'error',
         '@typescript-eslint/no-empty-function': 'off',
+        '@typescript-eslint/no-inferrable-types': 'error',
         '@typescript-eslint/no-unused-vars': 'off',
         'callback-return': 'off',
         'consistent-return': 'off',
