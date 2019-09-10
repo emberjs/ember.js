@@ -32,7 +32,6 @@ let packages = Project.from(DIST_PATH)
   .packages
   .filter(pkg => pkg.isPublishable);
 
-let packageNames = packages.map(pkg => pkg.name);
 let newVersion;
 
 // Begin interactive CLI
@@ -236,7 +235,7 @@ function execWithSideEffects(cmd, options) {
 
   console.log(chalk.green('>') + ' ' + chalk.gray(cmd) + cwd);
   if (!DRY_RUN) {
-    return execSync.apply(null, arguments);
+    execSync(cmd, options);
   }
 }
 

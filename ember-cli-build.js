@@ -1,5 +1,3 @@
-/*jshint node:true*/
-
 const merge = require('broccoli-merge-trees');
 const funnel = require('broccoli-funnel');
 const typescript = require('broccoli-typescript-compiler').default;
@@ -17,7 +15,7 @@ const PRODUCTION = process.env.EMBER_ENV === 'production';
  * tests). For production builds, we omit tests but include all target
  * formats.
  */
-module.exports = function(_options) {
+module.exports = function() {
   // First, get all of our TypeScript packages while preserving their relative
   // path in the filesystem. This is important because tsconfig.json paths are
   // relative to the project root and we want to use the tsconfig as-is.

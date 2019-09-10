@@ -40,10 +40,9 @@ function link(dir) {
     if (stat.isDirectory()) {
       console.log(chalk.blue(command), dir);
       process.chdir(dir);
-      let result;
 
       try {
-        result = execSync(command, {
+        execSync(command, {
           stdio: ['ignore', 'ignore', 'pipe']
         });
       } catch (err) {
@@ -53,9 +52,4 @@ function link(dir) {
   } finally {
     process.chdir(cwd);
   }
-}
-
-function exec(cmd) {
-  console.log(chalk.blue(cmd));
-  return execSync(cmd, { cwd });
 }
