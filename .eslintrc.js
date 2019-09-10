@@ -155,8 +155,17 @@ module.exports = {
     yoda: ['error', 'never'],
   },
   overrides: [
+    // node files
     {
-      files: ['build/**/*.js'],
+      files: [
+        '.eslintrc.js',
+        'ember-cli-build.js',
+        'testem.js',
+        'testem-browserstack.js',
+        'bin/**/*.js',
+        'build/**/*.js',
+        'server/**/*.js'
+      ],
       env: {
         es6: true,
         node: true,
