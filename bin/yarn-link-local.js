@@ -4,7 +4,6 @@ const fs = require('fs');
 const path = require('path');
 const mkdirp = require('mkdirp');
 const glob = require('glob');
-const chalk = require('chalk');
 
 let cwd = path.resolve(__dirname, '..');
 let packages = glob.sync('dist/@glimmer/*/', { cwd }).map(f => path.resolve(cwd, f));
@@ -33,11 +32,6 @@ function link(dir) {
   } finally {
     process.chdir(cwd);
   }
-}
-
-function exec(cmd) {
-  console.log(chalk.blue(cmd));
-  return execSync(cmd, { cwd });
 }
 
 function isDirectory(file) {
