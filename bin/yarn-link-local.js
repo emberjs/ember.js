@@ -20,7 +20,6 @@ function link(dir) {
     let target = path.join(node_modules, path.basename(dir));
 
     if (isDirectory(dir) && !isSymlink(target)) {
-      let target = path.join(node_modules, path.basename(dir));
       let source = dir;
 
       // console.log(chalk.blue(source), '->', chalk.blue(target));
