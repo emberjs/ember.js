@@ -1,8 +1,5 @@
 module.exports = {
-  env: {
-    es6: true,
-    node: true,
-  },
+  root: true,
   extends: ['eslint:recommended', 'plugin:prettier/recommended'],
   plugins: ['prettier'],
   rules: {
@@ -154,4 +151,13 @@ module.exports = {
     'vars-on-top': 'error',
     yoda: ['error', 'never'],
   },
+  overrides: [
+    {
+      files: ['build/**/*.js'],
+      env: {
+        es6: true,
+        node: true,
+      },
+    }
+  ]
 };
