@@ -235,7 +235,7 @@ function execWithSideEffects(cmd, options) {
 
   console.log(chalk.green('>') + ' ' + chalk.gray(cmd) + cwd);
   if (!DRY_RUN) {
-    return execSync.apply(null, arguments);
+    execSync(cmd, options);
   }
 }
 
