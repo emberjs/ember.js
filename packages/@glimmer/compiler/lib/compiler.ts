@@ -16,10 +16,8 @@ declare function require(id: string): any;
 export const defaultId: TemplateIdFn = (() => {
   if (typeof require === 'function') {
     try {
-      /* tslint:disable:no-require-imports */
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       const crypto = require('crypto');
-      /* tslint:enable:no-require-imports */
 
       let idFn: TemplateIdFn = src => {
         let hash = crypto.createHash('sha1');

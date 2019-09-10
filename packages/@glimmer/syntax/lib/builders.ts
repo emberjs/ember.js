@@ -209,7 +209,6 @@ export function normalizeModifier(sexp: ModifierSexp): AST.ElementModifierStatem
   let parts = sexp.slice(1);
   let next = parts.shift();
 
-  // tslint:disable-next-line:label-position
   process: {
     if (isParamsSexp(next)) {
       params = next as AST.Expression[];
