@@ -13,6 +13,7 @@ function debugCallback(context: unknown, get: DebugGet): void {
   console.info('Use `context`, and `get(<path>)` to debug this template.');
 
   // for example...
+  // eslint-disable-next-line no-unused-expressions
   context === get('this');
 
   // eslint-disable-next-line no-debugger
