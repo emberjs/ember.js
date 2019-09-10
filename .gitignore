@@ -1,6 +1,7 @@
 /dist
 node_modules
 tmp
+.eslintcache
 
 npm-debug.log
 sauce-example.log
