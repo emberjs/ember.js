@@ -27,8 +27,6 @@ interface LazyDebugConstants {
 
 export function debugSlice(context: TemplateCompilationContext, start: number, end: number) {
   if (DEBUG) {
-    /* tslint:disable:no-console */
-
     (console as any).group(`%c${start}:${end}`, 'color: #999');
 
     let heap = context.syntax.program.heap;
@@ -48,7 +46,6 @@ export function debugSlice(context: TemplateCompilationContext, start: number, e
     }
     opcode.offset = -_size;
     console.groupEnd();
-    /* tslint:enable:no-console */
   }
 }
 
