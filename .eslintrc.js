@@ -143,7 +143,7 @@ module.exports = {
     'require-jsdoc': 'off',
     'sort-imports': 'off',
     'sort-keys': 'off',
-    'sort-vars': 'error',
+    'sort-vars': 'off',
     'spaced-comment': ['error', 'always'],
     strict: 'off',
     'symbol-description': 'error',
