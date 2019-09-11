@@ -37,7 +37,7 @@ module.exports = {
         { tc: '@ember/component/template-only' },
         { nc: '' },
         { 'no-component-class': '' },
-        { 'with-component-class': '@glimmer/component' },
+        { 'with-component-class': OCTANE ? '@glimmer/component' : '@ember/component' },
       ],
     },
     {
