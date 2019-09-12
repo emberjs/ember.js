@@ -607,5 +607,62 @@ moduleFor(
       runTask(() => this.context.set('value', 'bar'));
       assert.verifySteps(['didUpdateComponent']);
     }
+
+    ['@test updating arguments does not trigger updateComponent or didUpdateComponent if `updateHook` is false'](
+      assert
+    ) {
+      let TestManager = EmberObject.extend({
+        capabilities: capabilities('3.13', {
+          updateHook: false,
+        }),
+
+        createComponent(factory, args) {
+          assert.step('createComponent');
+          return factory.create({ args });
+        },
+
+        updateComponent(component, args) {
+          assert.step('updateComponent');
+          set(component, 'args', args);
+        },
+
+        destroyComponent(component) {
+          component.destroy();
+        },
+
+        getContext(component) {
+          assert.step('getContext');
+          return component;
+        },
+
+        didUpdateComponent(component) {
+          assert.step('didUpdateComponent');
+          component.didUpdate();
+        },
+      });
+
+      let ComponentClass = setComponentManager(
+        () => {
+          return TestManager.create();
+        },
+        EmberObject.extend({
+          didRender() {},
+          didUpdate() {},
+        })
+      );
+
+      this.registerComponent('foo-bar', {
+        template: `<p ...attributes>Hello world!</p>`,
+        ComponentClass,
+      });
+
+      this.render('<FooBar data-test={{value}} />', { value: 'foo' });
+
+      this.assertHTML(`<p data-test="foo">Hello world!</p>`);
+      assert.verifySteps(['createComponent', 'getContext']);
+
+      runTask(() => this.context.set('value', 'bar'));
+      assert.verifySteps([]);
+    }
   }
 );
