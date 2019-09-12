@@ -693,6 +693,13 @@ const ArrayMixin = Mixin.create(Enumerable, {
 
     ```javascript
     function(item, index, array);
+    let arr = [1, 2, 3, 4, 5, 6];
+
+    arr.map(element => element * element);
+    // [1, 4, 9, 16, 25, 36];
+
+    arr.map((element, index) => element + index);
+    // [1, 3, 5, 7, 9, 11];
     ```
 
     - `item` is the current item in the iteration.
@@ -724,6 +731,16 @@ const ArrayMixin = Mixin.create(Enumerable, {
   /**
     Similar to map, this specialized function returns the value of the named
     property on all items in the enumeration.
+
+    ```javascript
+    let people = [{name: 'Joe'}, {name: 'Matt'}];
+
+    people.mapBy('name');
+    // ['Joe', 'Matt'];
+
+    people.mapBy('unknownProperty');
+    // [undefined, undefined];
+    ```
 
     @method mapBy
     @param {String} key name of the property
