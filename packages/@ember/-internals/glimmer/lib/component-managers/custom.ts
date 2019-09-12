@@ -93,7 +93,6 @@ export interface Args {
 export interface ManagerDelegate<ComponentInstance> {
   capabilities: Capabilities;
   createComponent(factory: Opaque, args: Args): ComponentInstance;
-  updateComponent(instance: ComponentInstance, args: Args): void;
   getContext(instance: ComponentInstance): Opaque;
 }
 
@@ -106,6 +105,28 @@ export function hasAsyncLifeCycleCallbacks<ComponentInstance>(
 export interface ManagerDelegateWithAsyncLifeCycleCallbacks<ComponentInstance>
   extends ManagerDelegate<ComponentInstance> {
   didCreateComponent(instance: ComponentInstance): void;
+}
+
+export function hasUpdateHook<ComponentInstance>(
+  delegate: ManagerDelegate<ComponentInstance>
+): delegate is ManagerDelegateWithUpdateHook<ComponentInstance> {
+  return delegate.capabilities.updateHook;
+}
+
+export interface ManagerDelegateWithUpdateHook<ComponentInstance>
+  extends ManagerDelegate<ComponentInstance> {
+  updateComponent(instance: ComponentInstance, args: Args): void;
+}
+
+export function hasAsyncUpdateHook<ComponentInstance>(
+  delegate: ManagerDelegate<ComponentInstance>
+): delegate is ManagerDelegateWithAsyncUpdateHook<ComponentInstance> {
+  return hasAsyncLifeCycleCallbacks(delegate) && hasUpdateHook(delegate);
+}
+
+export interface ManagerDelegateWithAsyncUpdateHook<ComponentInstance>
+  extends ManagerDelegateWithAsyncLifeCycleCallbacks<ComponentInstance>,
+    ManagerDelegateWithUpdateHook<ComponentInstance> {
   didUpdateComponent(instance: ComponentInstance): void;
 }
 
@@ -261,7 +282,9 @@ export default class CustomComponentManager<ComponentInstance>
       value = args.value();
     }
 
-    delegate.updateComponent(component, value);
+    if (hasUpdateHook(delegate)) {
+      delegate.updateComponent(component, value);
+    }
   }
 
   didCreate({ delegate, component }: CustomComponentState<ComponentInstance>) {
@@ -271,7 +294,7 @@ export default class CustomComponentManager<ComponentInstance>
   }
 
   didUpdate({ delegate, component }: CustomComponentState<ComponentInstance>) {
-    if (hasAsyncLifeCycleCallbacks(delegate)) {
+    if (hasAsyncUpdateHook(delegate)) {
       delegate.didUpdateComponent(component);
     }
   }
