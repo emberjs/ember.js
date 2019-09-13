@@ -106,12 +106,13 @@ import { isElementDescriptor, setClassicDecorator } from '@ember/-internals/meta
   They also do not have equivalents in JavaScript directly, so they cannot be
   used for other situations where binding would be useful.
 
+  @public
   @method action
   @for @ember/object
   @static
-  @param {} elementDesc the descriptor of the element to decorate
-  @return {ElementDescriptor} the decorated descriptor
-  @private
+  @param {Function|undefined} callback The function to turn into an action,
+                                       when used in classic classes
+  @return {PropertyDecorator} property decorator instance
 */
 
 const BINDINGS_MAP = new WeakMap();
