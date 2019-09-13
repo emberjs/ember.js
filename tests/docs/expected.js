@@ -163,6 +163,7 @@ module.exports = {
     'defineProperty',
     'deleteMeta',
     'denodeify',
+    'dependentKeyCompat',
     'deprecate',
     'deprecateFunc',
     'deprecateProperty',
