@@ -162,7 +162,7 @@ export function revalidateObservers(target: object) {
 
 let lastKnownRevision = 0;
 
-export function flushAsyncObservers() {
+export function flushAsyncObservers(shouldSchedule = true) {
   if (lastKnownRevision === value(CURRENT_TAG)) {
     return;
   }
@@ -179,14 +179,20 @@ export function flushAsyncObservers() {
 
     activeObservers.forEach((observer, eventName) => {
       if (!validate(observer.tag, observer.lastRevision)) {
-        schedule('actions', () => {
+        let sendObserver = () => {
           try {
             sendEvent(target, eventName, [target, observer.path]);
           } finally {
             observer.tag = combine(getChainTagsForKey(target, observer.path));
             observer.lastRevision = value(observer.tag);
           }
-        });
+        };
+
+        if (shouldSchedule) {
+          schedule('actions', sendObserver);
+        } else {
+          sendObserver();
+        }
       }
     });
   });

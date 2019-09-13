@@ -1,7 +1,10 @@
 import { OwnedTemplate, TemplateFactory } from '@ember/-internals/glimmer';
 import {
+  addObserver,
   computed,
   defineProperty,
+  descriptorForProperty,
+  flushAsyncObservers,
   get,
   getProperties,
   isEmpty,
@@ -17,9 +20,12 @@ import {
   setFrameworkClass,
   typeOf,
 } from '@ember/-internals/runtime';
+import { lookupDescriptor } from '@ember/-internals/utils';
+import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import Controller from '@ember/controller';
 import { assert, deprecate, info, isTesting } from '@ember/debug';
 import { ROUTER_EVENTS } from '@ember/deprecated-features';
+import { dependentKeyCompat } from '@ember/object/compat';
 import { assign } from '@ember/polyfills';
 import { once } from '@ember/runloop';
 import { classify } from '@ember/string';
@@ -940,6 +946,12 @@ class Route extends EmberObject implements IRoute {
 
     if (this._environment.options.shouldRender) {
       this.renderTemplate(controller, context);
+    }
+
+    // Setup can cause changes to QPs which need to be propogated immediately in
+    // some situations. Eventually, we should work on making these async somehow.
+    if (EMBER_METAL_TRACKED_PROPERTIES) {
+      flushAsyncObservers(false);
     }
   }
 
@@ -2005,7 +2017,22 @@ function mergeEachQueryParams(controllerQP: {}, routeQP: {}) {
 
 function addQueryParamsObservers(controller: any, propNames: string[]) {
   propNames.forEach(prop => {
-    controller.addObserver(`${prop}.[]`, controller, controller._qpChanged);
+    if (descriptorForProperty(controller, prop) === undefined) {
+      let desc = lookupDescriptor(controller, prop);
+
+      if (desc !== null && (typeof desc.get === 'function' || typeof desc.set === 'function')) {
+        defineProperty(
+          controller,
+          prop,
+          dependentKeyCompat({
+            get: desc.get,
+            set: desc.set,
+          })
+        );
+      }
+    }
+
+    addObserver(controller, `${prop}.[]`, controller, controller._qpChanged, false);
   });
 }
 
@@ -2495,6 +2522,7 @@ Route.reopen(ActionHandler, Evented, {
       let router = this._router;
       let qpMeta = router._queryParamsFor(routeInfos);
       let changes = router._qpUpdates;
+      let qpUpdated = false;
       let replaceUrl;
 
       stashParamNames(router, routeInfos);
@@ -2543,6 +2571,8 @@ Route.reopen(ActionHandler, Evented, {
           }
 
           set(controller, qp.prop, value);
+
+          qpUpdated = true;
         }
 
         // Stash current serialized value of controller.
@@ -2556,6 +2586,12 @@ Route.reopen(ActionHandler, Evented, {
             key: presentKey || qp.urlKey,
           });
         }
+      }
+
+      // Some QPs have been updated, and those changes need to be propogated
+      // immediately. Eventually, we should work on making this async somehow.
+      if (EMBER_METAL_TRACKED_PROPERTIES && qpUpdated === true) {
+        flushAsyncObservers(false);
       }
 
       if (replaceUrl) {
