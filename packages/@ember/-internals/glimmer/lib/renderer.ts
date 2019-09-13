@@ -145,15 +145,17 @@ class RootState {
 
        */
       let needsTransaction = !env.inTransaction;
+      let completedWithoutError = false;
 
       if (needsTransaction) {
         env.begin();
       }
       try {
         result.destroy();
+        completedWithoutError = true;
       } finally {
         if (needsTransaction) {
-          env.commit();
+          env.commit(completedWithoutError);
         }
       }
     }
@@ -401,6 +403,7 @@ export abstract class Renderer {
 
     do {
       env.begin();
+      let completedWithoutError = false;
       try {
         // ensure that for the first iteration of the loop
         // each root is processed
@@ -437,8 +440,9 @@ export abstract class Renderer {
         }
 
         this._lastRevision = value(CURRENT_TAG);
+        completedWithoutError = true;
       } finally {
-        env.commit();
+        env.commit(completedWithoutError);
       }
     } while (globalShouldReflush || roots.length > initialRootsLength);
 
@@ -474,7 +478,7 @@ export abstract class Renderer {
       if (!completedWithoutError) {
         this._lastRevision = value(CURRENT_TAG);
         if (this._env.inTransaction === true) {
-          this._env.commit();
+          this._env.commit(false);
         }
       }
       this._isRenderingRoots = false;

@@ -87,7 +87,7 @@ export default class Environment extends GlimmerEnvironment {
     super.begin();
   }
 
-  commit(): void {
+  commit(completedWithoutError = true): void {
     let destroyedComponents = this.destroyedComponents;
     this.destroyedComponents = [];
     // components queued for destruction must be destroyed before firing
@@ -99,6 +99,12 @@ export default class Environment extends GlimmerEnvironment {
 
     try {
       super.commit();
+    } catch(error) {
+      if (completedWithoutError) {
+        throw error;
+      } else {
+        console.error(error);
+      }
     } finally {
       this.inTransaction = false;
     }
