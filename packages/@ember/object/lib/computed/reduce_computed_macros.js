@@ -1428,7 +1428,7 @@ export function collect(...dependentKeys) {
   @param {String} itemsKey
   @param {Array} [additionalDependentKeys] optional array of additional
   dependent keys
-  @param {String or Function} sortDefinition a dependent key to an array of sort
+  @param {Array or Function} sortDefinition a dependent key to an array of sort
   properties (add `:desc` to the arrays sort properties to sort descending) or a
   function to use when sorting
   @return {ComputedProperty} computes a new sorted array based on the sort
