@@ -1,7 +1,6 @@
 'use strict';
 
 const path = require('path');
-const chalk = require('chalk');
 const SilentError = require('silent-error');
 const stringUtil = require('ember-cli-string-utils');
 const pathUtil = require('ember-cli-path-utils');
