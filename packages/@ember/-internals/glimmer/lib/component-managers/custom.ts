@@ -12,7 +12,7 @@ import {
   Option,
   ProgramSymbolTable,
 } from '@glimmer/interfaces';
-import { PathReference, Tag } from '@glimmer/reference';
+import { createTag, isConst, PathReference, Tag } from '@glimmer/reference';
 import {
   Arguments,
   CapturedArguments,
@@ -324,7 +324,12 @@ export default class CustomComponentManager<ComponentInstance>
   }
 
   getTag({ args }: CustomComponentState<ComponentInstance>): Tag {
-    return args.tag;
+    if (isConst(args)) {
+      // returning a const tag skips the update hook (VM BUG?)
+      return createTag();
+    } else {
+      return args.tag;
+    }
   }
 
   didRenderLayout() {}
