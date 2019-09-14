@@ -30,7 +30,7 @@ export default Component.extend({
 });
 `;
 
-describe('Blueprint: component', function() {
+describe('Blueprint: component-class', function() {
   setupTestHooks(this);
 
   describe('in app', function() {
@@ -807,8 +807,7 @@ describe('Blueprint: component', function() {
       return emberGenerateDestroy(
         ['component-class', 'x-foo', '--in-repo-addon=my-addon'],
         _file => {
-          expect(_file('lib/my-addon/addon/components/x-foo.js')).to.not.exist;
-          expect(_file('lib/my-addon/addon/components/x-foo.hbs')).to.equal('{{yield}}');
+          expect(_file('lib/my-addon/addon/components/x-foo.js')).to.exist;
           expect(_file('lib/my-addon/addon/templates/components/x-foo.hbs')).to.not.exist;
 
           expect(_file('lib/my-addon/app/components/x-foo.js')).to.contain(
@@ -817,15 +816,6 @@ describe('Blueprint: component', function() {
 
           expect(_file('lib/my-addon/app/templates/components/x-foo.js')).to.not.exist;
           expect(_file('lib/my-addon/app/components/x-foo.hbs')).to.not.exist;
-
-          expect(_file('tests/integration/components/x-foo-test.js')).to.equal(
-            fixture('component-test/default-template.js', {
-              replace: {
-                component: 'x-foo',
-                componentInvocation: 'XFoo',
-              },
-            })
-          );
         }
       );
     });

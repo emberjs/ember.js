@@ -77,6 +77,9 @@ module.exports = {
 
     if (commandOptions.pod) {
       return {
+        __name__() {
+          return 'component';
+        },
         __path__() {
           return path.join(options.podPath, options.locals.path, options.dasherizedModuleName);
         },
@@ -97,6 +100,9 @@ module.exports = {
       return {
         __path__() {
           return 'components';
+        },
+        __name__() {
+          return commandOptions.entity.name;
         },
       };
     } else if (
@@ -166,12 +172,14 @@ module.exports = {
         break;
     }
 
-    return {
+    let locals = {
       importTemplate,
       importComponent,
       defaultExport,
       path: getPathOption(options),
       componentClass: options.componentClass,
     };
+
+    return locals;
   },
 };
