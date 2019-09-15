@@ -56,7 +56,7 @@ Promise.resolve()
   .then(() => {
     updatePackageJSONVersion();
     // ensures that we tag this correctly
-    return exec('auto-dist-tag', ['--write']);
+    return exec('node_modules/.bin/auto-dist-tag', ['--write']);
   })
   .then(() => {
     // do a production build

@@ -137,7 +137,7 @@ module.exports = {
         'lib/**/*.js',
         'server/**/*.js',
         'testem.js',
-        'testem.travis-browsers.js',
+        'testem.ci-browsers.js',
         'testem.browserstack.js',
         'd8-runner.js',
         'broccoli/**/*.js',

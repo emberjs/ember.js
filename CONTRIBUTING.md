@@ -250,19 +250,19 @@ And in case we didn't emphasize it enough: we love tests!
 
 NOTE: Partially copied from https://raw.github.com/thoughtbot/factory_girl_rails/master/CONTRIBUTING.md
 
-# Travis CI Tests
+# CI (Github Actions) Tests
 
-We use [Travis CI](https://travis-ci.org/emberjs/ember.js/pull_requests) to test each PR before it is merged.
+We use [GitHub Actions](https://github.com/ember.js/ember.js/actions?query=workflow%3ABuild+event%3Apull_request) to test each PR before it is merged.
 
-When you submit your PR (or later change that code), a Travis build will automatically be kicked off.  A note will be added to the PR, and will indicate the current status of the build.
+When you submit your PR (or later change that code), a CI build will automatically be kicked off.  A note will be added to the PR, and will indicate the current status of the build.
 
-Within the Travis build, you can see that we (currently) run six different test suites.
+Within the CI build, you can see that we (currently) run six different test suites.
 
 * The `each-package` test suite is closest to what you normally run locally on your machine.
 * The `build-tests EMBER_ENV=production...` test suite runs tests against a production build.
 * The `browserstack` test suite runs tests against various supported browsers.
 
-## Common Travis CI Build Issues
+## Common CI Build Issues
 
 ### Production Build Failures
 
@@ -289,7 +289,7 @@ To recreate this build environment locally:
 
 Sometimes a single test suite will fail, without giving any indication of a real error.
 * Try to recreate the test environment locally (see above for production builds)
-* Restart all the test suites on Travis CI by doing another push
+* Restart all the test suites on CI by doing another push
 * Ask a repo collab to restart that single test suite
 
 # Appendix
