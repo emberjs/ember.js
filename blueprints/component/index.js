@@ -8,8 +8,9 @@ const getPathOption = require('ember-cli-get-component-path-option');
 const normalizeEntityName = require('ember-cli-normalize-entity-name');
 const { isModuleUnificationProject } = require('../module-unification');
 const { EOL } = require('os');
+const { has } = require('@ember/edition-utils');
 
-const OCTANE = process.env.EMBER_VERSION === 'octane';
+const OCTANE = has('octane');
 
 // TODO: this should be reading from the @ember/canary-features module
 // need to refactor broccoli/features.js to be able to work more similarly
@@ -49,7 +50,7 @@ module.exports = {
 
   init() {
     this._super && this._super.init.apply(this, arguments);
-    let isOctane = process.env.EMBER_VERSION === 'OCTANE';
+    let isOctane = has('octane');
 
     this.availableOptions.forEach(option => {
       if (option.name === 'component-class') {

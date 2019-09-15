@@ -1,10 +1,12 @@
+const { setEdition, clearEdition } = require('@ember/edition-utils');
+
 function enableOctane() {
   beforeEach(function() {
-    process.env.EMBER_VERSION = 'OCTANE';
+    setEdition('octane');
   });
 
   afterEach(function() {
-    delete process.env.EMBER_VERSION;
+    clearEdition();
   });
 }
 
