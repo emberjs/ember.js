@@ -1,10 +1,11 @@
 'use strict';
 
+const { has } = require('@ember/edition-utils');
 const path = require('path');
 
 module.exports = function(blueprint) {
   blueprint.filesPath = function() {
-    let rootPath = process.env.EMBER_VERSION === 'OCTANE' ? 'native-files' : 'files';
+    let rootPath = has('octane') ? 'native-files' : 'files';
     return path.join(this.path, rootPath);
   };
 
