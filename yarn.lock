@@ -3385,10 +3385,10 @@ ember-cli-broccoli-sane-watcher@^3.0.0:
     rsvp "^3.0.18"
     sane "^4.0.0"
 
-ember-cli-browserstack@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/ember-cli-browserstack/-/ember-cli-browserstack-1.0.1.tgz#ecca7bd72503b58f8185effb14215d703826b0c1"
-  integrity sha512-jujodiUQrt7NddYTeoYXesmQE6SzRP7mla2FYikR49DBCoTIVUOg2J9tfqQL5AroMxmeRIsDveVJPseDyrOyaw==
+ember-cli-browserstack@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/ember-cli-browserstack/-/ember-cli-browserstack-1.1.0.tgz#1d2bcf84370c196dc0c091ee65d54193072dadfc"
+  integrity sha512-nSYHa5YP0RjthfMBpasLJt4bnodV2AgKR4KZ4DaFrboiW+FVfqNZ8MRLBrTfaH3NqDWofcnCQTfqriByAcqbRA==
   dependencies:
     browserstack "^1.5.3"
     browserstack-local "^1.4.2"
