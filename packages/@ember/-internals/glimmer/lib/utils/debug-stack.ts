@@ -2,7 +2,16 @@
 
 import { DEBUG } from '@glimmer/env';
 
-let DebugStack: any;
+export interface DebugStack {
+  push(name: string): void;
+  pushEngine(name: string): void;
+  pop(): string | void;
+  peek(): string | void;
+}
+
+let getDebugStack: () => DebugStack = () => {
+  throw new Error("Can't access the DebugStack class outside of debug mode");
+};
 
 if (DEBUG) {
   class Element {
@@ -12,8 +21,7 @@ if (DEBUG) {
   class TemplateElement extends Element {}
   class EngineElement extends Element {}
 
-  // tslint:disable-next-line:no-shadowed-variable
-  DebugStack = class DebugStack {
+  let DebugStackImpl = class DebugStackImpl implements DebugStack {
     private _stack: TemplateElement[] = [];
 
     push(name: string) {
@@ -60,6 +68,8 @@ if (DEBUG) {
       }
     }
   };
+
+  getDebugStack = () => new DebugStackImpl();
 }
 
-export default DebugStack;
+export default getDebugStack;

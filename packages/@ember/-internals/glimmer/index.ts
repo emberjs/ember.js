@@ -388,7 +388,7 @@ export { default as AbstractComponentManager } from './lib/component-managers/ab
 // it supports for example
 export { UpdatableReference, INVOKE } from './lib/utils/references';
 export { default as iterableFor } from './lib/utils/iterable';
-export { default as DebugStack } from './lib/utils/debug-stack';
+export { default as getDebugStack, DebugStack } from './lib/utils/debug-stack';
 export { default as OutletView } from './lib/views/outlet';
 export { capabilities } from './lib/component-managers/custom';
 export { setComponentManager, getComponentManager } from './lib/utils/custom-component-manager';
@@ -396,3 +396,4 @@ export { setModifierManager, getModifierManager } from './lib/utils/custom-modif
 export { capabilities as modifierCapabilities } from './lib/modifiers/custom';
 export { isSerializationFirstNode } from './lib/utils/serialization-first-node-helpers';
 export { setComponentTemplate, getComponentTemplate } from './lib/utils/component-template';
+export { CapturedRenderNode } from './lib/utils/debug-render-tree';

@@ -1,4 +1,5 @@
 import { privatize as P } from '@ember/-internals/container';
+import { ENV } from '@ember/-internals/environment';
 import { getOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
 import {
@@ -239,7 +240,7 @@ export default class CurlyComponentManager
     hasBlock: boolean
   ): ComponentStateBucket {
     if (DEBUG) {
-      this._pushToDebugStack(`component:${state.name}`, environment);
+      environment.debugStack.push(`component:${state.name}`);
     }
 
     // Get the nearest concrete component instance from the scope. "Virtual"
@@ -274,6 +275,12 @@ export default class CurlyComponentManager
     if (state.template) {
       props.layout = state.template;
     }
+
+    // caller:
+    // <FaIcon @name="bug" />
+    //
+    // callee:
+    // <i class="fa-{{@name}}"></i>
 
     // Now that we've built up all of the properties to set on the component instance,
     // actually create it.
@@ -328,6 +335,15 @@ export default class CurlyComponentManager
 
     if (environment.isInteractive && hasWrappedElement) {
       component.trigger('willRender');
+    }
+
+    if (ENV._DEBUG_RENDER_TREE) {
+      environment.debugRenderTree.create(bucket, {
+        type: 'component',
+        name: state.name,
+        args: args.capture(),
+        instance: component,
+      });
     }
 
     return bucket;
@@ -388,8 +404,12 @@ export default class CurlyComponentManager
     bucket.component[BOUNDS] = bounds;
     bucket.finalize();
 
+    if (ENV._DEBUG_RENDER_TREE) {
+      bucket.environment.debugRenderTree.didRender(bucket, bounds);
+    }
+
     if (DEBUG) {
-      this.debugStack.pop();
+      bucket.environment.debugStack.pop();
     }
   }
 
@@ -408,8 +428,12 @@ export default class CurlyComponentManager
   update(bucket: ComponentStateBucket): void {
     let { component, args, argsRevision, environment } = bucket;
 
+    if (ENV._DEBUG_RENDER_TREE) {
+      environment.debugRenderTree.update(bucket);
+    }
+
     if (DEBUG) {
-      this._pushToDebugStack(component._debugContainerKey, environment);
+      environment.debugStack.push(component._debugContainerKey);
     }
 
     bucket.finalizer = _instrumentStart('render.component', rerenderInstrumentDetails, component);
@@ -433,11 +457,15 @@ export default class CurlyComponentManager
     }
   }
 
-  didUpdateLayout(bucket: ComponentStateBucket): void {
+  didUpdateLayout(bucket: ComponentStateBucket, bounds: Bounds): void {
     bucket.finalize();
 
+    if (ENV._DEBUG_RENDER_TREE) {
+      bucket.environment.debugRenderTree.didRender(bucket, bounds);
+    }
+
     if (DEBUG) {
-      this.debugStack.pop();
+      bucket.environment.debugStack.pop();
     }
   }
 
@@ -448,8 +476,17 @@ export default class CurlyComponentManager
     }
   }
 
-  getDestructor(stateBucket: ComponentStateBucket): Option<Destroyable> {
-    return stateBucket;
+  getDestructor(bucket: ComponentStateBucket): Option<Destroyable> {
+    if (ENV._DEBUG_RENDER_TREE) {
+      return {
+        destroy() {
+          bucket.environment.debugRenderTree.willDestroy(bucket);
+          bucket.destroy();
+        },
+      };
+    } else {
+      return bucket;
+    }
   }
 }
 

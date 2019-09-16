@@ -5,7 +5,11 @@ import require, { has } from 'require';
 import { CompileOptions } from './compile-options';
 import precompile from './precompile';
 
-let template: (templateJS: () => string) => string;
+// FIXME
+type StaticTemplate = unknown;
+type Factory = any;
+
+let template: (templateJS: StaticTemplate) => Factory;
 
 /**
   Uses HTMLBars `compile` function to process a string into a compiled template.
@@ -17,7 +21,7 @@ let template: (templateJS: () => string) => string;
   @param {String} templateString This is the string to be compiled by HTMLBars.
   @param {Object} options This is an options hash to augment the compiler options.
 */
-export default function compile(templateString: string, options: CompileOptions) {
+export default function compile(templateString: string, options: CompileOptions = {}): Factory {
   if (!template && has('@ember/-internals/glimmer')) {
     // tslint:disable-next-line:no-require-imports
     template = require('@ember/-internals/glimmer').template;
@@ -29,7 +33,9 @@ export default function compile(templateString: string, options: CompileOptions)
     );
   }
 
-  let precompiledTemplateString = precompile(templateString, options);
-  let templateJS = new Function(`return ${precompiledTemplateString}`)();
-  return template(templateJS);
+  return template(evaluate(precompile(templateString, options)));
+}
+
+function evaluate(precompiled: string): StaticTemplate {
+  return new Function(`return ${precompiled}`)();
 }

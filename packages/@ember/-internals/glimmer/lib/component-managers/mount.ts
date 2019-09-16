@@ -1,31 +1,38 @@
 import { DEBUG } from '@glimmer/env';
 import { ComponentCapabilities } from '@glimmer/interfaces';
-import { CONSTANT_TAG, Tag, VersionedPathReference } from '@glimmer/reference';
-import { Arguments, ComponentDefinition, Invocation, WithDynamicLayout } from '@glimmer/runtime';
+import {
+  CONSTANT_TAG,
+  createTag,
+  isConstTag,
+  Tag,
+  VersionedPathReference,
+} from '@glimmer/reference';
+import {
+  Arguments,
+  Bounds,
+  ComponentDefinition,
+  Invocation,
+  WithDynamicLayout,
+} from '@glimmer/runtime';
 import { Destroyable, Opaque, Option } from '@glimmer/util';
 
-import { Owner } from '@ember/-internals/owner';
 import { generateControllerFactory } from '@ember/-internals/routing';
 import { OwnedTemplateMeta } from '@ember/-internals/views';
 import { EMBER_ROUTING_MODEL_ARG } from '@ember/canary-features';
-import { assert } from '@ember/debug';
 
+import { ENV } from '@ember/-internals/environment';
+import EngineInstance from '@ember/engine/instance';
 import { TemplateFactory } from '../..';
 import Environment from '../environment';
 import RuntimeResolver from '../resolver';
 import { RootReference } from '../utils/references';
 import AbstractManager from './abstract';
 
-// TODO: remove these stubbed interfaces when better typing is in place
-interface EngineInstance extends Owner {
-  boot(): void;
-  destroy(): void;
-}
-
 interface EngineState {
   engine: EngineInstance;
   controller: any;
   self: RootReference<any>;
+  environment: Environment;
   modelRef?: VersionedPathReference<Opaque>;
 }
 
@@ -70,7 +77,7 @@ class MountManager extends AbstractManager<EngineState, EngineDefinitionState>
 
   create(environment: Environment, { name }: EngineDefinitionState, args: Arguments) {
     if (DEBUG) {
-      this._pushEngineToDebugStack(`engine:${name}`, environment);
+      environment.debugStack.pushEngine(`engine:${name}`);
     }
 
     // TODO
@@ -78,7 +85,7 @@ class MountManager extends AbstractManager<EngineState, EngineDefinitionState>
     // we should resolve the engine app template in the helper
     // it also should use the owner that looked up the mount helper.
 
-    let engine = environment.owner.buildChildEngineInstance<EngineInstance>(name);
+    let engine = environment.owner.buildChildEngineInstance(name);
 
     engine.boot();
 
@@ -96,12 +103,28 @@ class MountManager extends AbstractManager<EngineState, EngineDefinitionState>
     if (modelRef === undefined) {
       controller = controllerFactory.create();
       self = new RootReference(controller);
-      bucket = { engine, controller, self };
+      bucket = { engine, controller, self, environment };
     } else {
       let model = modelRef.value();
       controller = controllerFactory.create({ model });
       self = new RootReference(controller);
-      bucket = { engine, controller, self, modelRef };
+      bucket = { engine, controller, self, modelRef, environment };
+    }
+
+    if (ENV._DEBUG_RENDER_TREE) {
+      environment.debugRenderTree.create(bucket, {
+        type: 'engine',
+        name,
+        args: args.capture(),
+        instance: engine,
+      });
+
+      environment.debugRenderTree.create(controller, {
+        type: 'route-template',
+        name: 'application',
+        args: args.capture(),
+        instance: controller,
+      });
     }
 
     return bucket;
@@ -112,26 +135,64 @@ class MountManager extends AbstractManager<EngineState, EngineDefinitionState>
   }
 
   getTag(state: EngineState): Tag {
+    let tag: Tag = CONSTANT_TAG;
+
     if (state.modelRef) {
-      return state.modelRef.tag;
+      tag = state.modelRef.tag;
+    }
+
+    if (ENV._DEBUG_RENDER_TREE && isConstTag(tag)) {
+      tag = createTag();
+    }
+
+    return tag;
+  }
+
+  getDestructor(bucket: EngineState): Option<Destroyable> {
+    let { engine, environment, controller } = bucket;
+
+    if (ENV._DEBUG_RENDER_TREE) {
+      return {
+        destroy() {
+          environment.debugRenderTree.willDestroy(controller);
+          environment.debugRenderTree.willDestroy(bucket);
+          engine.destroy();
+        },
+      };
     } else {
-      return CONSTANT_TAG;
+      return engine;
     }
   }
 
-  getDestructor({ engine }: EngineState): Option<Destroyable> {
-    return engine;
-  }
-
-  didRenderLayout(): void {
+  didRenderLayout(bucket: EngineState, bounds: Bounds): void {
     if (DEBUG) {
-      this.debugStack.pop();
+      bucket.environment.debugStack.pop();
+    }
+
+    if (ENV._DEBUG_RENDER_TREE) {
+      bucket.environment.debugRenderTree.didRender(bucket.controller, bounds);
+      bucket.environment.debugRenderTree.didRender(bucket, bounds);
     }
   }
 
-  update({ controller, modelRef }: EngineState): void {
-    assert('[BUG] `update` should only be called when modelRef is present', modelRef !== undefined);
-    controller.set('model', modelRef!.value());
+  update(bucket: EngineState): void {
+    let { controller, environment, modelRef } = bucket;
+
+    if (modelRef !== undefined) {
+      controller.set('model', modelRef!.value());
+    }
+
+    if (ENV._DEBUG_RENDER_TREE) {
+      environment.debugRenderTree.update(bucket);
+      environment.debugRenderTree.update(bucket.controller);
+    }
+  }
+
+  didUpdateLayout(bucket: EngineState, bounds: Bounds): void {
+    if (ENV._DEBUG_RENDER_TREE) {
+      bucket.environment.debugRenderTree.didRender(bucket.controller, bounds);
+      bucket.environment.debugRenderTree.didRender(bucket, bounds);
+    }
   }
 }
 

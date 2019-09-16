@@ -9,7 +9,7 @@ import { deleteMeta, meta } from '@ember/-internals/meta';
 import * as metal from '@ember/-internals/metal';
 import { FEATURES, isEnabled, EMBER_GLIMMER_SET_COMPONENT_TEMPLATE } from '@ember/canary-features';
 import * as EmberDebug from '@ember/debug';
-import { assert, deprecate } from '@ember/debug';
+import { assert, captureRenderTree, deprecate } from '@ember/debug';
 import Backburner from 'backburner';
 import Logger from '@ember/-internals/console';
 import Controller, { inject as injectController } from '@ember/controller';
@@ -534,6 +534,7 @@ if (EMBER_GLIMMER_SET_COMPONENT_TEMPLATE) {
   Ember._setComponentTemplate = setComponentTemplate;
   Ember._templateOnlyComponent = templateOnlyComponent;
 }
+Ember._captureRenderTree = captureRenderTree;
 Ember.Handlebars = {
   template,
   Utils: {

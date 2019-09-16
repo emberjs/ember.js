@@ -1,10 +1,12 @@
+import { ENV } from '@ember/-internals/environment';
 import { set } from '@ember/-internals/metal';
 import { Owner } from '@ember/-internals/owner';
 import { assert, debugFreeze } from '@ember/debug';
 import { ComponentCapabilities, Dict } from '@glimmer/interfaces';
-import { CONSTANT_TAG, isConst, VersionedPathReference } from '@glimmer/reference';
-import { Arguments, DynamicScope, Environment, PreparedArguments } from '@glimmer/runtime';
+import { CONSTANT_TAG, createTag, isConst, VersionedPathReference } from '@glimmer/reference';
+import { Arguments, Bounds, DynamicScope, PreparedArguments } from '@glimmer/runtime';
 import { Destroyable } from '@glimmer/util';
+import Environment from '../environment';
 import { RootReference } from '../utils/references';
 import InternalComponentManager, { InternalDefinitionState } from './internal';
 
@@ -22,6 +24,7 @@ const CAPABILITIES: ComponentCapabilities = {
 };
 
 export interface InputComponentState {
+  env: Environment;
   type: VersionedPathReference;
   instance: Destroyable;
 }
@@ -53,7 +56,7 @@ export default class InputComponentManager extends InternalComponentManager<Inpu
   }
 
   create(
-    _env: Environment,
+    env: Environment,
     { ComponentClass }: InternalDefinitionState,
     args: Arguments,
     _dynamicScope: DynamicScope,
@@ -68,7 +71,18 @@ export default class InputComponentManager extends InternalComponentManager<Inpu
       type: type.value(),
     });
 
-    return { type, instance };
+    let state = { env, type, instance };
+
+    if (ENV._DEBUG_RENDER_TREE) {
+      env.debugRenderTree.create(state, {
+        type: 'component',
+        name: 'input',
+        args: args.capture(),
+        instance,
+      });
+    }
+
+    return state;
   }
 
   getSelf({ instance }: InputComponentState): VersionedPathReference {
@@ -76,15 +90,46 @@ export default class InputComponentManager extends InternalComponentManager<Inpu
   }
 
   getTag() {
-    return CONSTANT_TAG;
+    if (ENV._DEBUG_RENDER_TREE) {
+      // returning a const tag skips the update hook (VM BUG?)
+      return createTag();
+    } else {
+      // an outlet has no hooks
+      return CONSTANT_TAG;
+    }
   }
 
-  update({ type, instance }: InputComponentState): void {
-    set(instance, 'type', type.value());
+  didRenderLayout(state: InputComponentState, bounds: Bounds): void {
+    if (ENV._DEBUG_RENDER_TREE) {
+      state.env.debugRenderTree.didRender(state, bounds);
+    }
   }
 
-  getDestructor({ instance }: InputComponentState): Destroyable {
-    return instance;
+  update(state: InputComponentState): void {
+    set(state.instance, 'type', state.type.value());
+
+    if (ENV._DEBUG_RENDER_TREE) {
+      state.env.debugRenderTree.update(state);
+    }
+  }
+
+  didUpdateLayout(state: InputComponentState, bounds: Bounds): void {
+    if (ENV._DEBUG_RENDER_TREE) {
+      state.env.debugRenderTree.didRender(state, bounds);
+    }
+  }
+
+  getDestructor(state: InputComponentState): Destroyable {
+    if (ENV._DEBUG_RENDER_TREE) {
+      return {
+        destroy() {
+          state.env.debugRenderTree.willDestroy(state);
+          state.instance.destroy();
+        },
+      };
+    } else {
+      return state.instance;
+    }
   }
 }
 

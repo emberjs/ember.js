@@ -64,6 +64,7 @@ module.exports = {
       rules: {
         // the TypeScript compiler already takes care of this and
         // leaving it enabled results in false positives for interface imports
+        'no-dupe-class-members': 'off',
         'no-unused-vars': 'off',
         'no-undef': 'off',
 

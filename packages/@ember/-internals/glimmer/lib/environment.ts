@@ -10,14 +10,16 @@ import {
   SimpleDynamicAttribute,
 } from '@glimmer/runtime';
 import { Destroyable, Opaque } from '@glimmer/util';
-import DebugStack from './utils/debug-stack';
+import getDebugStack, { DebugStack } from './utils/debug-stack';
 import createIterable from './utils/iterable';
 import { ConditionalReference, UpdatableReference } from './utils/references';
 import { isHTMLSafe } from './utils/string';
 
 import installPlatformSpecificProtocolForURL from './protocol-for-url';
 
+import { ENV } from '@ember/-internals/environment';
 import { OwnedTemplate } from './template';
+import DebugRenderTree from './utils/debug-render-tree';
 
 export interface CompilerFactory {
   id: string;
@@ -33,13 +35,17 @@ export default class Environment extends GlimmerEnvironment {
   public isInteractive: boolean;
   public destroyedComponents: Destroyable[];
 
-  public debugStack: typeof DebugStack;
+  private _debugStack: DebugStack | undefined;
+  private _debugRenderTree: DebugRenderTree | undefined;
   public inTransaction = false;
 
   constructor(injections: any) {
     super(injections);
-    this.owner = injections[OWNER];
-    this.isInteractive = this.owner.lookup<any>('-environment:main').isInteractive;
+
+    let owner: Owner = injections[OWNER];
+
+    this.owner = owner;
+    this.isInteractive = owner.lookup<any>('-environment:main').isInteractive;
 
     // can be removed once https://github.com/tildeio/glimmer/pull/305 lands
     this.destroyedComponents = [];
@@ -47,7 +53,29 @@ export default class Environment extends GlimmerEnvironment {
     installPlatformSpecificProtocolForURL(this);
 
     if (DEBUG) {
-      this.debugStack = new DebugStack();
+      this._debugStack = getDebugStack();
+    }
+
+    if (ENV._DEBUG_RENDER_TREE) {
+      this._debugRenderTree = new DebugRenderTree();
+    }
+  }
+
+  get debugStack(): DebugStack {
+    if (DEBUG) {
+      return this._debugStack!;
+    } else {
+      throw new Error("Can't access debug stack outside of debug mode");
+    }
+  }
+
+  get debugRenderTree(): DebugRenderTree {
+    if (ENV._DEBUG_RENDER_TREE) {
+      return this._debugRenderTree!;
+    } else {
+      throw new Error(
+        "Can't access debug render tree outside of the inspector (_DEBUG_RENDER_TREE flag is disabled)"
+      );
     }
   }
 
@@ -82,6 +110,10 @@ export default class Environment extends GlimmerEnvironment {
   }
 
   begin(): void {
+    if (ENV._DEBUG_RENDER_TREE) {
+      this.debugRenderTree.begin();
+    }
+
     this.inTransaction = true;
 
     super.begin();
@@ -101,6 +133,10 @@ export default class Environment extends GlimmerEnvironment {
       super.commit();
     } finally {
       this.inTransaction = false;
+    }
+
+    if (ENV._DEBUG_RENDER_TREE) {
+      this.debugRenderTree.commit();
     }
   }
 }

@@ -1,21 +1,25 @@
 import { ENV } from '@ember/-internals/environment';
 import { guidFor } from '@ember/-internals/utils';
 import { OwnedTemplateMeta } from '@ember/-internals/views';
+import { assert } from '@ember/debug';
+import EngineInstance from '@ember/engine/instance';
 import { _instrumentStart } from '@ember/instrumentation';
 import { assign } from '@ember/polyfills';
 import { DEBUG } from '@glimmer/env';
 import { ComponentCapabilities, Option, Simple } from '@glimmer/interfaces';
-import { CONSTANT_TAG, Tag, VersionedPathReference } from '@glimmer/reference';
+import { CONSTANT_TAG, createTag, Tag, VersionedPathReference } from '@glimmer/reference';
 import {
   Arguments,
+  Bounds,
   ComponentDefinition,
   ElementOperations,
-  Environment,
+  EMPTY_ARGS,
   Invocation,
   WithDynamicTagName,
   WithStaticLayout,
 } from '@glimmer/runtime';
 import { Destroyable } from '@glimmer/util';
+import Environment from '../environment';
 import { DynamicScope } from '../renderer';
 import RuntimeResolver from '../resolver';
 import { OwnedTemplate } from '../template';
@@ -30,6 +34,9 @@ function instrumentationPayload(def: OutletDefinitionState) {
 
 interface OutletInstanceState {
   self: VersionedPathReference<any | undefined>;
+  environment: Environment;
+  outlet?: { name: string };
+  engine?: { mountPoint: string };
   finalize: () => void;
 }
 
@@ -46,12 +53,12 @@ const CAPABILITIES: ComponentCapabilities = {
   dynamicLayout: false,
   dynamicTag: false,
   prepareArgs: false,
-  createArgs: false,
+  createArgs: ENV._DEBUG_RENDER_TREE,
   attributeHook: false,
   elementHook: false,
-  createCaller: true,
+  createCaller: false,
   dynamicScope: true,
-  updateHook: false,
+  updateHook: ENV._DEBUG_RENDER_TREE,
   createInstance: true,
 };
 
@@ -66,18 +73,65 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
   create(
     environment: Environment,
     definition: OutletDefinitionState,
-    _args: Arguments,
+    args: Arguments,
     dynamicScope: DynamicScope
-  ) {
+  ): OutletInstanceState {
     if (DEBUG) {
-      this._pushToDebugStack(`template:${definition.template.referrer.moduleName}`, environment);
+      environment.debugStack.push(`template:${definition.template.referrer.moduleName}`);
     }
-    dynamicScope.outletState = definition.ref;
 
-    return {
+    let parentStateRef = dynamicScope.outletState;
+    let currentStateRef = definition.ref;
+
+    dynamicScope.outletState = currentStateRef;
+
+    let state: OutletInstanceState = {
       self: RootReference.create(definition.controller),
+      environment,
       finalize: _instrumentStart('render.outlet', instrumentationPayload, definition),
     };
+
+    if (ENV._DEBUG_RENDER_TREE) {
+      state.outlet = { name: definition.outlet };
+
+      environment.debugRenderTree.create(state.outlet, {
+        type: 'outlet',
+        name: state.outlet.name,
+        args: EMPTY_ARGS,
+        instance: undefined,
+      });
+
+      let parentState = parentStateRef.value();
+      let parentOwner = parentState && parentState.render && parentState.render.owner;
+      let currentOwner = currentStateRef.value()!.render!.owner;
+
+      if (parentOwner && parentOwner !== currentOwner) {
+        let engine = currentOwner as EngineInstance;
+
+        assert('invalid engine: missing mountPoint', typeof currentOwner.mountPoint === 'string');
+        assert('invalid engine: missing routable', currentOwner.routable === true);
+
+        let mountPoint = engine.mountPoint!;
+
+        state.engine = { mountPoint };
+
+        environment.debugRenderTree.create(state.engine, {
+          type: 'engine',
+          name: mountPoint,
+          args: EMPTY_ARGS,
+          instance: engine,
+        });
+      }
+
+      environment.debugRenderTree.create(state, {
+        type: 'route-template',
+        name: definition.name,
+        args: args.capture(),
+        instance: definition.controller,
+      });
+    }
+
+    return state;
   }
 
   getLayout({ template }: OutletDefinitionState, _resolver: RuntimeResolver): Invocation {
@@ -98,20 +152,73 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
   }
 
   getTag(): Tag {
-    // an outlet has no hooks
-    return CONSTANT_TAG;
-  }
-
-  didRenderLayout(state: OutletInstanceState) {
-    state.finalize();
-
-    if (DEBUG) {
-      this.debugStack.pop();
+    if (ENV._DEBUG_RENDER_TREE) {
+      // returning a const tag skips the update hook (VM BUG?)
+      return createTag();
+    } else {
+      // an outlet has no hooks
+      return CONSTANT_TAG;
     }
   }
 
-  getDestructor(): Option<Destroyable> {
-    return null;
+  didRenderLayout(state: OutletInstanceState, bounds: Bounds): void {
+    state.finalize();
+
+    if (DEBUG) {
+      state.environment.debugStack.pop();
+    }
+
+    if (ENV._DEBUG_RENDER_TREE) {
+      state.environment.debugRenderTree.didRender(state, bounds);
+
+      if (state.engine) {
+        state.environment.debugRenderTree.didRender(state.engine, bounds);
+      }
+
+      state.environment.debugRenderTree.didRender(state.outlet!, bounds);
+    }
+  }
+
+  update(state: OutletInstanceState): void {
+    if (ENV._DEBUG_RENDER_TREE) {
+      state.environment.debugRenderTree.update(state.outlet!);
+
+      if (state.engine) {
+        state.environment.debugRenderTree.update(state.engine);
+      }
+
+      state.environment.debugRenderTree.update(state);
+    }
+  }
+
+  didUpdateLayout(state: OutletInstanceState, bounds: Bounds): void {
+    if (ENV._DEBUG_RENDER_TREE) {
+      state.environment.debugRenderTree.didRender(state, bounds);
+
+      if (state.engine) {
+        state.environment.debugRenderTree.didRender(state.engine, bounds);
+      }
+
+      state.environment.debugRenderTree.didRender(state.outlet!, bounds);
+    }
+  }
+
+  getDestructor(state: OutletInstanceState): Option<Destroyable> {
+    if (ENV._DEBUG_RENDER_TREE) {
+      return {
+        destroy() {
+          state.environment.debugRenderTree.willDestroy(state);
+
+          if (state.engine) {
+            state.environment.debugRenderTree.willDestroy(state.engine);
+          }
+
+          state.environment.debugRenderTree.willDestroy(state.outlet!);
+        },
+      };
+    } else {
+      return null;
+    }
   }
 }
 

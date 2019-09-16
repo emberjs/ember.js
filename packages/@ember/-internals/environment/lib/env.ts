@@ -1,4 +1,5 @@
 import { FUNCTION_PROTOTYPE_EXTENSIONS } from '@ember/deprecated-features';
+import { DEBUG } from '@glimmer/env';
 import global from './global';
 
 /**
@@ -97,6 +98,39 @@ export const ENV = {
     @private
   */
   _TEMPLATE_ONLY_GLIMMER_COMPONENTS: false,
+
+  /**
+    Whether to perform extra bookkeeping needed to make the `captureRenderTree`
+    API work.
+
+    This has to be set before the ember JavaScript code is evaluated. This is
+    usually done by setting `window.EmberENV = { _DEBUG_RENDER_TREE: true };`
+    or `window.ENV = { _DEBUG_RENDER_TREE: true };` before the "vendor"
+    `<script>` tag in `index.html`.
+
+    Setting the flag after Ember is already loaded will not work correctly. It
+    may appear to work somewhat, but fundamentally broken.
+
+    This is not intended to be set directly. Ember Inspector will enable the
+    flag on behalf of the user as needed.
+
+    This flag is always on in development mode.
+
+    The flag is off by default in production mode, due to the cost associated
+    with the the bookkeeping work.
+
+    The expected flow is that Ember Inspector will ask the user to refresh the
+    page after enabling the feature. It could also offer a feature where the
+    user add some domains to the "always on" list. In either case, Ember
+    Inspector will inject the code on the page to set the flag if needed.
+
+    @property _DEBUG_RENDER_TREE
+    @for EmberENV
+    @type Boolean
+    @default false
+    @private
+  */
+  _DEBUG_RENDER_TREE: DEBUG,
 
   /**
     Whether the app is using jQuery. See RFC #294.
@@ -202,6 +236,10 @@ export const ENV = {
       if (!FEATURES.hasOwnProperty(feature)) continue;
       ENV.FEATURES[feature] = FEATURES[feature] === true;
     }
+  }
+
+  if (DEBUG) {
+    ENV._DEBUG_RENDER_TREE = true;
   }
 })(global.EmberENV || global.ENV);
 
