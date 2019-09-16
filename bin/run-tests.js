@@ -35,6 +35,10 @@ function getBrowserRunner() {
 }
 
 function run(queryString) {
+  if (process.env.DEBUG_RENDER_TREE) {
+    queryString = `${queryString}&debugrendertree`;
+  }
+
   let url = 'http://localhost:' + PORT + '/tests/?' + queryString;
   return runInBrowser(url, 3);
 }

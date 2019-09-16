@@ -58,6 +58,10 @@
         }
 
         ENV['RAISE_ON_DEPRECATION'] = true;
+
+        if (QUnit.urlParams.debugrendertree) {
+          ENV['_DEBUG_RENDER_TREE'] = true;
+        }
       })();
     </script>
 

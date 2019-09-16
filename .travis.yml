@@ -82,6 +82,12 @@ jobs:
         - yarn ember build -prod
         - yarn test
 
+    - name: Production (All Tests + Canary Features + Debug Render Tree)
+      env: DEBUG_RENDER_TREE=true
+      script:
+        - yarn ember build -prod
+        - yarn test
+
     - name: Old Jquery and Extend Prototypes
       env: TEST_SUITE=old-jquery-and-extend-prototypes
       script:
