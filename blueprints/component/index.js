@@ -42,9 +42,9 @@ module.exports = {
     },
     {
       name: 'component-structure',
-      type: ['flat', 'nested', 'classic'],
+      type: OCTANE ? ['flat', 'nested', 'classic'] : ['classic'],
       default: OCTANE ? 'flat' : 'classic',
-      aliases: [{ fs: 'flat' }, { ns: 'nested' }, { cs: 'classic' }],
+      aliases: OCTANE ? [{ fs: 'flat' }, { ns: 'nested' }, { cs: 'classic' }] : [{ cs: 'classic' }],
     },
   ],
 
@@ -60,7 +60,15 @@ module.exports = {
           option.default = '@ember/component';
         }
       } else if (option.name === 'component-structure') {
-        option.default = isOctane ? 'flat' : 'classic';
+        if (isOctane) {
+          option.type = ['flat', 'nested', 'classic'];
+          option.default = 'flat';
+          option.aliases = [{ fs: 'flat' }, { ns: 'nested' }, { cs: 'classic' }];
+        } else {
+          option.type = ['classic'];
+          option.default = 'classic';
+          option.aliases = [{ cs: 'classic' }];
+        }
       }
     });
 
