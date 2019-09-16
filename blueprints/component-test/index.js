@@ -7,12 +7,9 @@ const getPathOption = require('ember-cli-get-component-path-option');
 
 const useTestFrameworkDetector = require('../test-framework-detector');
 
-function needsCurlyBracketInvocation(options) {
-  let path = options.path || '';
-  let fullPaths = [...path.split('/'), ...options.entity.name.split('/')];
-  let ignoreCommonPrefix = ['', 'components'].includes(fullPaths[0]);
-  if (ignoreCommonPrefix) fullPaths.shift();
-  return fullPaths.length > 1;
+function invocationFor(options) {
+  let parts = options.entity.name.split('/');
+  return parts.map(p => stringUtil.classify(p)).join('::');
 }
 
 module.exports = useTestFrameworkDetector({
@@ -52,10 +49,7 @@ module.exports = useTestFrameworkDetector({
   locals: function(options) {
     let dasherizedModuleName = stringUtil.dasherize(options.entity.name);
     let componentPathName = dasherizedModuleName;
-    let classifiedModuleName = stringUtil.classify(options.entity.name);
-    let templateInvocation = classifiedModuleName;
     let testType = options.testType || 'integration';
-    let componentName, openComponent, closeComponent, selfCloseComponent;
 
     let friendlyTestDescription = [
       testType === 'unit' ? 'Unit' : 'Integration',
@@ -67,17 +61,11 @@ module.exports = useTestFrameworkDetector({
       componentPathName = [options.path, dasherizedModuleName].filter(Boolean).join('/');
     }
 
-    if (needsCurlyBracketInvocation(options)) {
-      componentName = componentPathName;
-      openComponent = descriptor => `{{#${descriptor}}}`;
-      closeComponent = descriptor => `{{/${descriptor}}}`;
-      selfCloseComponent = descriptor => `{{${descriptor}}}`;
-    } else {
-      componentName = templateInvocation;
-      openComponent = descriptor => `<${descriptor}>`;
-      closeComponent = descriptor => `</${descriptor}>`;
-      selfCloseComponent = descriptor => `<${descriptor} />`;
-    }
+    let templateInvocation = invocationFor(options);
+    let componentName = templateInvocation;
+    let openComponent = descriptor => `<${descriptor}>`;
+    let closeComponent = descriptor => `</${descriptor}>`;
+    let selfCloseComponent = descriptor => `<${descriptor} />`;
 
     return {
       path: getPathOption(options),
