@@ -97,48 +97,6 @@ moduleFor(
       location.initState();
     }
 
-    ['@test base URL is removed when retrieving the current pathname'](assert) {
-      assert.expect(1);
-
-      HistoryTestLocation.reopen({
-        init() {
-          this._super(...arguments);
-
-          set(this, 'location', mockBrowserLocation('/base/foo/bar'));
-          set(this, 'baseURL', '/base/');
-        },
-
-        initState() {
-          this._super(...arguments);
-
-          assert.equal(this.getURL(), '/foo/bar');
-        },
-      });
-
-      createLocation();
-      location.initState();
-    }
-
-    ['@test base URL is preserved when moving around'](assert) {
-      assert.expect(2);
-
-      HistoryTestLocation.reopen({
-        init() {
-          this._super(...arguments);
-
-          set(this, 'location', mockBrowserLocation('/base/foo/bar'));
-          set(this, 'baseURL', '/base/');
-        },
-      });
-
-      createLocation();
-      location.initState();
-      location.setURL('/one/two');
-
-      assert.equal(location._historyState.path, '/base/one/two');
-      assert.ok(location._historyState.uuid);
-    }
-
     ['@test setURL continues to set even with a null state (iframes may set this)'](assert) {
       createLocation();
       location.initState();
@@ -161,22 +119,19 @@ moduleFor(
       assert.ok(location._historyState.uuid);
     }
 
-    ['@test HistoryLocation.getURL() returns the current url, excluding both rootURL and baseURL'](
-      assert
-    ) {
+    ['@test HistoryLocation.getURL() returns the current url, excluding rootURL'](assert) {
       HistoryTestLocation.reopen({
         init() {
           this._super(...arguments);
 
           set(this, 'location', mockBrowserLocation('/base/foo/bar'));
           set(this, 'rootURL', '/app/');
-          set(this, 'baseURL', '/base/');
         },
       });
 
       createLocation();
 
-      assert.equal(location.getURL(), '/foo/bar');
+      assert.equal(location.getURL(), '/base/foo/bar');
     }
 
     ['@test HistoryLocation.getURL() returns the current url, does not remove rootURL if its not at start of url'](

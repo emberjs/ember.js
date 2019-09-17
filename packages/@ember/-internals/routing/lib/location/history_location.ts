@@ -73,13 +73,6 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
   init() {
     this._super(...arguments);
 
-    let base = document.querySelector('base');
-    let baseURL: string | null = '';
-    if (base) {
-      baseURL = base.getAttribute('href');
-    }
-
-    set(this, 'baseURL', baseURL);
     set(this, 'location', this.location || window.location);
 
     this._popstateHandler = undefined;
@@ -111,25 +104,21 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
   }
 
   /**
-    Returns the current `location.pathname` without `rootURL` or `baseURL`
+    Returns the current `location.pathname` without `rootURL`
 
     @private
     @method getURL
     @return url {String}
   */
   getURL() {
-    let { location, rootURL, baseURL } = this;
+    let { location, rootURL } = this;
     let path = location.pathname;
 
     // remove trailing slashes if they exists
     rootURL = rootURL.replace(/\/$/, '');
-    baseURL = baseURL.replace(/\/$/, '');
 
-    // remove baseURL and rootURL from start of path
-    let url = path
-      .replace(new RegExp(`^${baseURL}(?=/|$)`), '')
-      .replace(new RegExp(`^${rootURL}(?=/|$)`), '')
-      .replace(/\/\//g, '/'); // remove extra slashes
+    // remove rootURL from start of path
+    let url = path.replace(new RegExp(`^${rootURL}(?=/|$)`), '').replace(/\/\//g, '/'); // remove extra slashes
 
     let search = location.search || '';
     url += search + this.getHash();
@@ -262,19 +251,14 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
     @return formatted url {String}
   */
   formatURL(url: string) {
-    let { rootURL, baseURL } = this;
+    let { rootURL } = this;
 
     if (url !== '') {
       // remove trailing slashes if they exists
       rootURL = rootURL.replace(/\/$/, '');
-      baseURL = baseURL.replace(/\/$/, '');
-    } else if (baseURL[0] === '/' && rootURL[0] === '/') {
-      // if baseURL and rootURL both start with a slash
-      // ... remove trailing slash from baseURL if it exists
-      baseURL = baseURL.replace(/\/$/, '');
     }
 
-    return baseURL + rootURL + url;
+    return rootURL + url;
   }
 
   /**
