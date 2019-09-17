@@ -6,7 +6,6 @@ const stringUtil = require('ember-cli-string-utils');
 const pathUtil = require('ember-cli-path-utils');
 const getPathOption = require('ember-cli-get-component-path-option');
 const normalizeEntityName = require('ember-cli-normalize-entity-name');
-const { isModuleUnificationProject } = require('../module-unification');
 const { EOL } = require('os');
 const { has } = require('@ember/edition-utils');
 
@@ -96,31 +95,7 @@ module.exports = {
   fileMapTokens(options) {
     let commandOptions = this.options;
 
-    if (isModuleUnificationProject(this.project)) {
-      return {
-        __name__: function() {
-          return 'component';
-        },
-        __root__(options) {
-          if (options.inRepoAddon) {
-            return path.join('packages', options.inRepoAddon, 'src');
-          }
-          if (options.inDummy) {
-            return path.join('tests', 'dummy', 'src');
-          }
-          return 'src';
-        },
-        __path__(options) {
-          return path.join('ui', 'components', options.dasherizedModuleName);
-        },
-        __templatepath__(options) {
-          return path.join('ui', 'components', options.dasherizedModuleName);
-        },
-        __templatename__: function() {
-          return 'template';
-        },
-      };
-    } else if (commandOptions.pod) {
+    if (commandOptions.pod) {
       return {
         __path__() {
           return path.join(options.podPath, options.locals.path, options.dasherizedModuleName);
@@ -210,21 +185,16 @@ module.exports = {
     let importComponent = '';
     let importTemplate = '';
     let defaultExport = '';
-    let contents = '';
 
-    if (!isModuleUnificationProject(this.project)) {
-      // if we're in an addon, build import statement
-      if (options.project.isEmberCLIAddon() || (options.inRepoAddon && !options.inDummy)) {
-        if (options.pod) {
-          templatePath = './template';
-        } else {
-          templatePath =
-            pathUtil.getRelativeParentPath(options.entity.name) +
-            'templates/components/' +
-            stringUtil.dasherize(options.entity.name);
-        }
-        importTemplate = "import layout from '" + templatePath + "';" + EOL;
-        contents = EOL + '  layout';
+    // if we're in an addon, build import statement
+    if (options.project.isEmberCLIAddon() || (options.inRepoAddon && !options.inDummy)) {
+      if (options.pod) {
+        templatePath = './template';
+      } else {
+        templatePath =
+          pathUtil.getRelativeParentPath(options.entity.name) +
+          'templates/components/' +
+          stringUtil.dasherize(options.entity.name);
       }
     }
 
@@ -235,13 +205,17 @@ module.exports = {
     switch (componentClass) {
       case '@ember/component':
         importComponent = `import Component from '@ember/component';`;
-        defaultExport = `Component.extend({${contents}\n});`;
+        if (templatePath) {
+          importTemplate = `import layout from '${templatePath}';${EOL}`;
+          defaultExport = `Component.extend({${EOL}  layout${EOL}});`;
+        } else {
+          defaultExport = `Component.extend({${EOL}});`;
+        }
         break;
       case '@glimmer/component':
         importComponent = `import Component from '@glimmer/component';`;
-        defaultExport = `class ${classifiedModuleName}Component extends Component {\n}`;
+        defaultExport = `class ${classifiedModuleName}Component extends Component {${EOL}}`;
         break;
-      case '':
       case '@ember/component/template-only':
         importComponent = `import templateOnly from '@ember/component/template-only';`;
         defaultExport = `templateOnly();`;

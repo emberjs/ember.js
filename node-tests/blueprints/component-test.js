@@ -15,7 +15,6 @@ const generateFakePackageManifest = require('../helpers/generate-fake-package-ma
 const fixture = require('../helpers/fixture');
 
 const setupTestEnvironment = require('../helpers/setup-test-environment');
-const enableModuleUnification = setupTestEnvironment.enableModuleUnification;
 const enableOctane = setupTestEnvironment.enableOctane;
 
 const { EMBER_SET_COMPONENT_TEMPLATE } = require('../../blueprints/component');
@@ -289,9 +288,10 @@ describe('Blueprint: component', function() {
         expect(_file('app/templates/components/foo/x-foo.hbs')).to.equal('{{yield}}');
 
         expect(_file('tests/integration/components/foo/x-foo-test.js')).to.equal(
-          fixture('component-test/default-curly-template.js', {
+          fixture('component-test/default-template.js', {
             replace: {
               component: 'foo/x-foo',
+              componentInvocation: 'Foo::XFoo',
             },
           })
         );
@@ -305,9 +305,10 @@ describe('Blueprint: component', function() {
         expect(_file('app/templates/components/x-foo.hbs')).to.equal('{{yield}}');
 
         expect(_file('tests/integration/components/x-foo-test.js')).to.equal(
-          fixture('component-test/default-curly-template.js', {
+          fixture('component-test/default-template.js', {
             replace: {
               component: 'x-foo',
+              componentInvocation: 'XFoo',
             },
           })
         );
@@ -363,9 +364,10 @@ describe('Blueprint: component', function() {
         expect(_file('app/components/foo/x-foo/template.hbs')).to.equal('{{yield}}');
 
         expect(_file('tests/integration/components/foo/x-foo/component-test.js')).to.equal(
-          fixture('component-test/default-curly-template.js', {
+          fixture('component-test/default-template.js', {
             replace: {
               component: 'foo/x-foo',
+              componentInvocation: 'Foo::XFoo',
             },
           })
         );
@@ -381,9 +383,10 @@ describe('Blueprint: component', function() {
         expect(_file('app/foo/x-foo/template.hbs')).to.equal('{{yield}}');
 
         expect(_file('tests/integration/foo/x-foo/component-test.js')).to.equal(
-          fixture('component-test/default-curly-template.js', {
+          fixture('component-test/default-template.js', {
             replace: {
               component: 'x-foo',
+              componentInvocation: 'XFoo',
               path: 'foo/',
             },
           })
@@ -400,9 +403,10 @@ describe('Blueprint: component', function() {
         expect(_file('app/bar/foo/x-foo/template.hbs')).to.equal('{{yield}}');
 
         expect(_file('tests/integration/bar/foo/x-foo/component-test.js')).to.equal(
-          fixture('component-test/default-curly-template.js', {
+          fixture('component-test/default-template.js', {
             replace: {
               component: 'foo/x-foo',
+              componentInvocation: 'Foo::XFoo',
               path: 'bar/',
             },
           })
@@ -419,9 +423,10 @@ describe('Blueprint: component', function() {
         expect(_file('app/bar/foo/x-foo/template.hbs')).to.equal('{{yield}}');
 
         expect(_file('tests/integration/bar/foo/x-foo/component-test.js')).to.equal(
-          fixture('component-test/default-curly-template.js', {
+          fixture('component-test/default-template.js', {
             replace: {
               component: 'x-foo',
+              componentInvocation: 'XFoo',
               path: 'bar/foo/',
             },
           })
@@ -440,9 +445,10 @@ describe('Blueprint: component', function() {
           expect(_file('app/bar/baz/foo/x-foo/template.hbs')).to.equal('{{yield}}');
 
           expect(_file('tests/integration/bar/baz/foo/x-foo/component-test.js')).to.equal(
-            fixture('component-test/default-curly-template.js', {
+            fixture('component-test/default-template.js', {
               replace: {
                 component: 'foo/x-foo',
+                componentInvocation: 'Foo::XFoo',
                 path: 'bar/baz/',
               },
             })
@@ -477,9 +483,10 @@ describe('Blueprint: component', function() {
         expect(_file('app/foo/x-foo/template.hbs')).to.equal('{{yield}}');
 
         expect(_file('tests/integration/foo/x-foo/component-test.js')).to.equal(
-          fixture('component-test/default-curly-template.js', {
+          fixture('component-test/default-template.js', {
             replace: {
               component: 'foo/x-foo',
+              componentInvocation: 'Foo::XFoo',
             },
           })
         );
@@ -561,9 +568,10 @@ describe('Blueprint: component', function() {
           expect(_file('app/pods/components/foo/x-foo/template.hbs')).to.equal('{{yield}}');
 
           expect(_file('tests/integration/pods/components/foo/x-foo/component-test.js')).to.equal(
-            fixture('component-test/default-curly-template.js', {
+            fixture('component-test/default-template.js', {
               replace: {
                 component: 'foo/x-foo',
+                componentInvocation: 'Foo::XFoo',
               },
             })
           );
@@ -579,9 +587,10 @@ describe('Blueprint: component', function() {
           expect(_file('app/pods/foo/x-foo/template.hbs')).to.equal('{{yield}}');
 
           expect(_file('tests/integration/pods/foo/x-foo/component-test.js')).to.equal(
-            fixture('component-test/default-curly-template.js', {
+            fixture('component-test/default-template.js', {
               replace: {
                 component: 'x-foo',
+                componentInvocation: 'XFoo',
                 path: 'foo/',
               },
             })
@@ -598,9 +607,10 @@ describe('Blueprint: component', function() {
           expect(_file('app/pods/bar/foo/x-foo/template.hbs')).to.equal('{{yield}}');
 
           expect(_file('tests/integration/pods/bar/foo/x-foo/component-test.js')).to.equal(
-            fixture('component-test/default-curly-template.js', {
+            fixture('component-test/default-template.js', {
               replace: {
                 component: 'foo/x-foo',
+                componentInvocation: 'Foo::XFoo',
                 path: 'bar/',
               },
             })
@@ -616,9 +626,10 @@ describe('Blueprint: component', function() {
 
           expect(_file('app/pods/bar/foo/x-foo/template.hbs')).to.equal('{{yield}}');
           expect(_file('tests/integration/pods/bar/foo/x-foo/component-test.js')).to.equal(
-            fixture('component-test/default-curly-template.js', {
+            fixture('component-test/default-template.js', {
               replace: {
                 component: 'x-foo',
+                componentInvocation: 'XFoo',
                 path: 'bar/foo/',
               },
             })
@@ -637,9 +648,10 @@ describe('Blueprint: component', function() {
             expect(_file('app/pods/bar/baz/foo/x-foo/template.hbs')).to.equal('{{yield}}');
 
             expect(_file('tests/integration/pods/bar/baz/foo/x-foo/component-test.js')).to.equal(
-              fixture('component-test/default-curly-template.js', {
+              fixture('component-test/default-template.js', {
                 replace: {
                   component: 'foo/x-foo',
+                  componentInvocation: 'Foo::XFoo',
                   path: 'bar/baz/',
                 },
               })
@@ -676,107 +688,14 @@ describe('Blueprint: component', function() {
           expect(_file('app/pods/foo/x-foo/template.hbs')).to.equal('{{yield}}');
 
           expect(_file('tests/integration/pods/foo/x-foo/component-test.js')).to.equal(
-            fixture('component-test/default-curly-template.js', {
+            fixture('component-test/default-template.js', {
               replace: {
                 component: 'foo/x-foo',
+                componentInvocation: 'Foo::XFoo',
               },
             })
           );
         });
-      });
-    });
-  });
-
-  describe('in app - module unification', function() {
-    enableModuleUnification();
-
-    beforeEach(function() {
-      return emberNew()
-        .then(() =>
-          modifyPackages([
-            { name: 'ember-qunit', delete: true },
-            { name: 'ember-cli-qunit', dev: true },
-          ])
-        )
-        .then(() => generateFakePackageManifest('ember-cli-qunit', '4.1.0'));
-    });
-
-    it('component foo', function() {
-      return emberGenerateDestroy(['component', 'foo'], _file => {
-        expect(_file('src/ui/components/foo/component.js')).to.equal(
-          fixture('component/component.js')
-        );
-
-        expect(_file('src/ui/components/foo/template.hbs')).to.equal('{{yield}}');
-
-        expect(_file('src/ui/components/foo/component-test.js')).to.equal(
-          fixture('component-test/default-template.js', {
-            replace: {
-              component: 'foo',
-              componentInvocation: 'Foo',
-            },
-          })
-        );
-      });
-    });
-
-    it('component x-foo', function() {
-      return emberGenerateDestroy(['component', 'x-foo'], _file => {
-        expect(_file('src/ui/components/x-foo/component.js')).to.equal(
-          fixture('component/component-dash.js')
-        );
-
-        expect(_file('src/ui/components/x-foo/template.hbs')).to.equal('{{yield}}');
-
-        expect(_file('src/ui/components/x-foo/component-test.js')).to.equal(
-          fixture('component-test/default-template.js', {
-            replace: {
-              component: 'x-foo',
-              componentInvocation: 'XFoo',
-            },
-          })
-        );
-      });
-    });
-
-    it('component foo/x-foo', function() {
-      return emberGenerateDestroy(['component', 'foo/x-foo'], _file => {
-        expect(_file('src/ui/components/foo/x-foo/component.js')).to.equal(
-          fixture('component/component-nested.js')
-        );
-
-        expect(_file('src/ui/components/foo/x-foo/template.hbs')).to.equal('{{yield}}');
-
-        expect(_file('src/ui/components/foo/x-foo/component-test.js')).to.equal(
-          fixture('component-test/default-curly-template.js', {
-            replace: {
-              component: 'foo/x-foo',
-            },
-          })
-        );
-      });
-    });
-
-    it('component foo.js', function() {
-      return emberGenerateDestroy(['component', 'foo.js'], _file => {
-        expect(_file('src/ui/components/foo.js/component.js')).to.not.exist;
-        expect(_file('src/ui/components/foo.js/template.hbs')).to.not.exist;
-        expect(_file('src/ui/components/foo.js/component-test.js')).to.not.exist;
-
-        expect(_file('src/ui/components/foo/component.js')).to.equal(
-          fixture('component/component.js')
-        );
-
-        expect(_file('src/ui/components/foo/template.hbs')).to.equal('{{yield}}');
-
-        expect(_file('src/ui/components/foo/component-test.js')).to.equal(
-          fixture('component-test/default-template.js', {
-            replace: {
-              component: 'foo',
-              componentInvocation: 'Foo',
-            },
-          })
-        );
       });
     });
   });
@@ -853,9 +772,10 @@ describe('Blueprint: component', function() {
         expect(_file('app/components/foo/x-foo.hbs')).to.equal('{{yield}}');
 
         expect(_file('tests/integration/components/foo/x-foo-test.js')).to.equal(
-          fixture('component-test/default-curly-template.js', {
+          fixture('component-test/default-template.js', {
             replace: {
               component: 'foo/x-foo',
+              componentInvocation: 'Foo::XFoo',
             },
           })
         );
@@ -872,9 +792,10 @@ describe('Blueprint: component', function() {
           expect(_file('app/components/foo/x-foo.hbs')).to.equal('{{yield}}');
 
           expect(_file('tests/integration/components/foo/x-foo-test.js')).to.equal(
-            fixture('component-test/default-curly-template.js', {
+            fixture('component-test/default-template.js', {
               replace: {
                 component: 'foo/x-foo',
+                componentInvocation: 'Foo::XFoo',
               },
             })
           );
@@ -980,9 +901,10 @@ describe('Blueprint: component', function() {
         );
 
         expect(_file('tests/integration/components/foo/x-foo-test.js')).to.equal(
-          fixture('component-test/default-curly-template.js', {
+          fixture('component-test/default-template.js', {
             replace: {
               component: 'foo/x-foo',
+              componentInvocation: 'Foo::XFoo',
             },
           })
         );
@@ -1134,9 +1056,10 @@ describe('Blueprint: component', function() {
         expect(_file('app/templates/components/foo/x-foo.js')).to.not.exist;
 
         expect(_file('tests/integration/components/foo/x-foo-test.js')).to.equal(
-          fixture('component-test/default-curly-template.js', {
+          fixture('component-test/default-template.js', {
             replace: {
               component: 'foo/x-foo',
+              componentInvocation: 'Foo::XFoo',
             },
           })
         );
@@ -1274,9 +1197,10 @@ describe('Blueprint: component', function() {
         );
 
         expect(_file('tests/integration/components/foo/x-foo-test.js')).to.equal(
-          fixture('component-test/default-curly-template.js', {
+          fixture('component-test/default-template.js', {
             replace: {
               component: 'foo/x-foo',
+              componentInvocation: 'Foo::XFoo',
             },
           })
         );
@@ -1357,9 +1281,10 @@ describe('Blueprint: component', function() {
           );
 
           expect(_file('tests/integration/components/foo/x-foo/component-test.js')).to.equal(
-            fixture('component-test/default-curly-template.js', {
+            fixture('component-test/default-template.js', {
               replace: {
                 component: 'foo/x-foo',
+                componentInvocation: 'Foo::XFoo',
               },
             })
           );
