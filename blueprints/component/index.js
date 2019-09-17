@@ -195,7 +195,6 @@ module.exports = {
     let importComponent = '';
     let importTemplate = '';
     let defaultExport = '';
-    let contents = '';
 
     // if we're in an addon, build import statement
     if (options.project.isEmberCLIAddon() || (options.inRepoAddon && !options.inDummy)) {
@@ -207,8 +206,6 @@ module.exports = {
           'templates/components/' +
           stringUtil.dasherize(options.entity.name);
       }
-      importTemplate = "import layout from '" + templatePath + "';" + EOL;
-      contents = EOL + '  layout';
     }
 
     let componentClass = this.EMBER_GLIMMER_SET_COMPONENT_TEMPLATE
@@ -218,13 +215,17 @@ module.exports = {
     switch (componentClass) {
       case '@ember/component':
         importComponent = `import Component from '@ember/component';`;
-        defaultExport = `Component.extend({${contents}\n});`;
+        if (templatePath) {
+          importTemplate = `import layout from '${templatePath}';${EOL}`;
+          defaultExport = `Component.extend({${EOL}  layout${EOL}});`;
+        } else {
+          defaultExport = `Component.extend({${EOL}});`;
+        }
         break;
       case '@glimmer/component':
         importComponent = `import Component from '@glimmer/component';`;
-        defaultExport = `class ${classifiedModuleName}Component extends Component {\n}`;
+        defaultExport = `class ${classifiedModuleName}Component extends Component {${EOL}}`;
         break;
-      case '':
       case '@ember/component/template-only':
         importComponent = `import templateOnly from '@ember/component/template-only';`;
         defaultExport = `templateOnly();`;
