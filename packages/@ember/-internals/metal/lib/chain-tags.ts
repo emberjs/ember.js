@@ -1,7 +1,7 @@
 import { meta as metaFor, peekMeta } from '@ember/-internals/meta';
-import { isEmberArray } from '@ember/-internals/utils';
 import { assert, deprecate } from '@ember/debug';
 import { combine, createUpdatableTag, Tag, update, validate } from '@glimmer/reference';
+import { objectAt } from './array';
 import { getLastRevisionFor, peekCacheFor } from './computed_cache';
 import { descriptorForProperty } from './descriptor_map';
 import { tagForProperty } from './tags';
@@ -70,13 +70,8 @@ export function getChainTagsForKey(obj: any, path: string) {
 
     segment = path.slice(lastSegmentEnd, segmentEnd);
 
-    // If the segment is an @each, we can process it and then opt-
+    // If the segment is an @each, we can process it and then break
     if (segment === '@each' && segmentEnd !== pathLength) {
-      assert(
-        `When using @each, the value you are attempting to watch must be an array, was: ${current.toString()}`,
-        Array.isArray(current) || isEmberArray(current)
-      );
-
       lastSegmentEnd = segmentEnd + 1;
       segmentEnd = path.indexOf('.', lastSegmentEnd);
 
@@ -90,6 +85,22 @@ export function getChainTagsForKey(obj: any, path: string) {
         }
       );
 
+      let arrLength = current.length;
+
+      if (
+        typeof arrLength !== 'number' ||
+        // TODO: should the second test be `isEmberArray` instead?
+        !(Array.isArray(current) || 'objectAt' in current)
+      ) {
+        // If the current object isn't an array, there's nothing else to do,
+        // we don't watch individual properties. Break out of the loop.
+        break;
+      } else if (arrLength === 0) {
+        // Fast path for empty arrays
+        chainTags.push(tagForProperty(current, '[]'));
+        break;
+      }
+
       if (segmentEnd === -1) {
         segmentEnd = pathLength;
       }
@@ -101,17 +112,19 @@ export function getChainTagsForKey(obj: any, path: string) {
       }
 
       // Push the tags for each item's property
-      let tags = (current as Array<any>).map(item => {
+      for (let i = 0; i < arrLength; i++) {
+        let item = objectAt(current as Array<any>, i);
+
         assert(
           `When using @each to observe the array \`${current.toString()}\`, the items in the array must be objects`,
           typeof item === 'object'
         );
 
-        return tagForProperty(item, segment);
-      });
+        chainTags.push(tagForProperty(item, segment));
+      }
 
       // Push the tag for the array length itself
-      chainTags.push(...tags, tagForProperty(current, '[]'));
+      chainTags.push(tagForProperty(current, '[]'));
 
       break;
     }
