@@ -18,7 +18,7 @@ const EMBER_GLIMMER_SET_COMPONENT_TEMPLATE = true;
 
 // intentionally avoiding use-edition-detector
 module.exports = {
-  description: 'Generates a component.',
+  description: 'Generates a component class.',
 
   availableOptions: [
     {
@@ -29,15 +29,12 @@ module.exports = {
     },
     {
       name: 'component-class',
-      type: ['@ember/component', '@glimmer/component', '@ember/component/template-only', ''],
-      default: OCTANE ? '--no-component-class' : '@ember/component',
+      type: ['@ember/component', '@glimmer/component', '@ember/component/template-only'],
+      default: OCTANE ? '@glimmer/component' : '@ember/component',
       aliases: [
         { cc: '@ember/component' },
         { gc: '@glimmer/component' },
         { tc: '@ember/component/template-only' },
-        { nc: '' },
-        { 'no-component-class': '' },
-        { 'with-component-class': OCTANE ? '@glimmer/component' : '@ember/component' },
       ],
     },
     {
@@ -55,7 +52,7 @@ module.exports = {
     this.availableOptions.forEach(option => {
       if (option.name === 'component-class') {
         if (isOctane) {
-          option.default = '--no-component-class';
+          option.default = '@glimmer/component';
         } else {
           option.default = '@ember/component';
         }
@@ -75,31 +72,14 @@ module.exports = {
     this.EMBER_GLIMMER_SET_COMPONENT_TEMPLATE = EMBER_GLIMMER_SET_COMPONENT_TEMPLATE || isOctane;
   },
 
-  install(options) {
+  install() {
     if (!this.EMBER_GLIMMER_SET_COMPONENT_TEMPLATE) {
-      if (options.componentClass !== '@ember/component') {
-        throw new SilentError(
-          'Usage of --component-class argument to `ember generate component` is only available on canary'
-        );
-      }
-
-      if (options.componentStructure !== 'classic') {
-        throw new SilentError(
-          'Usage of --component-structure argument to `ember generate component` is only available on canary'
-        );
-      }
+      throw new SilentError(
+        'Usage of `ember generate component-class` is only available on canary'
+      );
     }
 
     return this._super.install.apply(this, arguments);
-  },
-
-  afterInstall({ componentClass, entity }) {
-    this._super.afterInstall.apply(this, arguments);
-
-    if (!componentClass) {
-      let tip = `Tip: run \`ember generate component-class ${entity.name}\` if you want to add a class`;
-      this.ui.writeLine(tip);
-    }
   },
 
   fileMapTokens(options) {
@@ -110,47 +90,20 @@ module.exports = {
         __path__() {
           return path.join(options.podPath, options.locals.path, options.dasherizedModuleName);
         },
-        __templatepath__() {
-          return path.join(options.podPath, options.locals.path, options.dasherizedModuleName);
-        },
-        __templatename__() {
-          return 'template';
+        __name__() {
+          return 'component';
         },
       };
     } else if (
-      !this.EMBER_GLIMMER_SET_COMPONENT_TEMPLATE ||
-      commandOptions.componentStructure === 'classic'
-    ) {
-      return {
-        __path__() {
-          return 'components';
-        },
-        __templatepath__() {
-          return 'templates/components';
-        },
-        __templatename__() {
-          return options.dasherizedModuleName;
-        },
-      };
-    } else if (
-      this.EMBER_GLIMMER_SET_COMPONENT_TEMPLATE &&
+      commandOptions.componentStructure === 'classic' ||
       commandOptions.componentStructure === 'flat'
     ) {
       return {
         __path__() {
           return 'components';
         },
-        __templatepath__() {
-          return 'components';
-        },
-        __templatename__() {
-          return options.dasherizedModuleName;
-        },
       };
-    } else if (
-      this.EMBER_GLIMMER_SET_COMPONENT_TEMPLATE &&
-      commandOptions.componentStructure === 'nested'
-    ) {
+    } else if (commandOptions.componentStructure === 'nested') {
       return {
         __path__() {
           return `components/${options.dasherizedModuleName}`;
@@ -158,27 +111,8 @@ module.exports = {
         __name__() {
           return 'index';
         },
-        __templatepath__() {
-          return `components/${options.dasherizedModuleName}`;
-        },
-        __templatename__() {
-          return `index`;
-        },
       };
     }
-  },
-
-  files() {
-    let files = this._super.files.apply(this, arguments);
-
-    if (
-      this.EMBER_GLIMMER_SET_COMPONENT_TEMPLATE &&
-      (this.options.componentClass === '' || this.options.componentClass === '--no-component-class')
-    ) {
-      files = files.filter(file => !file.endsWith('.js'));
-    }
-
-    return files;
   },
 
   normalizeEntityName(entityName) {
@@ -208,9 +142,7 @@ module.exports = {
       }
     }
 
-    let componentClass = this.EMBER_GLIMMER_SET_COMPONENT_TEMPLATE
-      ? options.componentClass
-      : '@ember/component';
+    let componentClass = options.componentClass;
 
     switch (componentClass) {
       case '@ember/component':
@@ -224,7 +156,7 @@ module.exports = {
         break;
       case '@glimmer/component':
         importComponent = `import Component from '@glimmer/component';`;
-        defaultExport = `class ${classifiedModuleName}Component extends Component {${EOL}}`;
+        defaultExport = `class ${classifiedModuleName}Component extends Component {\n}`;
         break;
       case '@ember/component/template-only':
         importComponent = `import templateOnly from '@ember/component/template-only';`;
@@ -237,7 +169,7 @@ module.exports = {
       importComponent,
       defaultExport,
       path: getPathOption(options),
-      componentClass: options.componentClass,
+      componentClass,
     };
   },
 };
