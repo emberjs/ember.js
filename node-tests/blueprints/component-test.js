@@ -1,6 +1,5 @@
 'use strict';
 
-const fs = require('fs');
 const blueprintHelpers = require('ember-cli-blueprint-test-helpers/helpers');
 const setupTestHooks = blueprintHelpers.setupTestHooks;
 const emberNew = blueprintHelpers.emberNew;
@@ -247,7 +246,7 @@ describe('Blueprint: component', function() {
 
       it('component foo --no-component-class', function() {
         return emberGenerateDestroy(['component', '--no-component-class', 'foo'], _file => {
-          expect(fs.existsSync('app/components/foo.js')).to.equal(false);
+          expect(_file('app/components/foo.js')).to.not.exist;
 
           expect(_file('app/templates/components/foo.hbs')).to.equal('{{yield}}');
 
