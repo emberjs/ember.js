@@ -294,7 +294,7 @@ export default Mixin.create({
     observer should be prepared to handle that.
 
     There are two common invocation patterns for `.addObserver()`:
-    
+
     - Passing two arguments:
       - the name of the property to observe (as a string)
       - the function to invoke (an actual function)
@@ -362,11 +362,12 @@ export default Mixin.create({
     @param {String} key The key to observe
     @param {Object} target The target object to invoke
     @param {String|Function} method The method to invoke
+    @param {Boolean} async Whether the observer is async or not
     @return {Observable}
     @public
   */
-  addObserver(key, target, method) {
-    addObserver(this, key, target, method);
+  addObserver(key, target, method, async) {
+    addObserver(this, key, target, method, async);
     return this;
   },
 
@@ -379,11 +380,12 @@ export default Mixin.create({
     @param {String} key The key to observe
     @param {Object} target The target object to invoke
     @param {String|Function} method The method to invoke
+    @param {Boolean} async Whether the observer is async or not
     @return {Observable}
     @public
   */
-  removeObserver(key, target, method) {
-    removeObserver(this, key, target, method);
+  removeObserver(key, target, method, async) {
+    removeObserver(this, key, target, method, async);
     return this;
   },
 
