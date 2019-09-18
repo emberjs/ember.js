@@ -193,6 +193,21 @@ moduleFor(
         defineProperty(obj, 'someProp', computed('todos.@each.owner.@each.name', () => {}));
       }, /You used the key "todos\.@each\.owner\.@each\.name" which is invalid\. /);
 
+      let expected = new RegExp(
+        'When using @each in a dependent-key or an observer, ' +
+          'you can only chain one property level deep after the @each\\. ' +
+          'That is, `todos\\.@each\\.owner` is allowed but ' +
+          '`todos\\.@each\\.owner\\.name` \\(which is what you passed\\) is not\\.\n\n' +
+          'This was never supported\\. Currently, the extra segments ' +
+          'are silently ignored, i\\.e\\. `todos\\.@each\\.owner\\.name` ' +
+          'behaves exactly the same as `todos\\.@each\\.owner`\\. ' +
+          'In the future, this will throw an error\\.\n\n' +
+          'If the current behavior is acceptable for your use case, ' +
+          'please remove the extraneous segments by changing your key to ' +
+          '`todos\\.@each\\.owner`\\. Otherwise, please create an ' +
+          'intermediary computed property or switch to using tracked properties\\.'
+      );
+
       expectDeprecation(() => {
         let obj = {
           todos: [],
@@ -200,7 +215,7 @@ moduleFor(
         defineProperty(obj, 'someProp', computed('todos.@each.owner.name', () => {}));
 
         get(obj, 'someProp');
-      }, /When using @each, you can only chain one property level deep, but todos.@each.owner.name contains a nested chain. Please create an intermediary computed property or switch to tracked properties./);
+      }, expected);
     }
   }
 );
