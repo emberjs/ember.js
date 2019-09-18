@@ -497,5 +497,26 @@ moduleFor(
       set(options.objectAt(0), 'value', 'bar');
       assert.deepEqual(n.normalized, ['bar']);
     }
+
+    ['@test lazy computation cannot cause infinite cycles'](assert) {
+      // This is based off a real world bug found in ember-cp-validations:
+      // https://github.com/offirgolan/ember-cp-validations/issues/659
+      let CycleObject = EmberObject.extend({
+        foo: computed(function() {
+          return EmberObject.extend({
+            parent: this,
+            alias: alias('parent.foo'),
+          }).create();
+        }),
+        bar: computed('foo.alias', () => {}),
+      });
+
+      let obj = CycleObject.create();
+
+      obj.bar;
+      obj.foo;
+
+      assert.ok(true);
+    }
   }
 );
