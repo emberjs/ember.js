@@ -1,5 +1,6 @@
 'use strict';
 
+const chalk = require('chalk');
 const path = require('path');
 const SilentError = require('silent-error');
 const stringUtil = require('ember-cli-string-utils');
@@ -72,10 +73,20 @@ module.exports = {
       }
     });
 
+    this.skippedJsFiles = new Set();
+    this.savedLocals = {};
+
     this.EMBER_GLIMMER_SET_COMPONENT_TEMPLATE = EMBER_GLIMMER_SET_COMPONENT_TEMPLATE || isOctane;
   },
 
   install(options) {
+    // Normalize the `componentClass` option. This is usually handled for us,
+    // but we wanted to show '--no-component-class' as the default so that is
+    // what's passed to us literally if the user didn't override it.
+    if (options.componentClass === '--no-component-class') {
+      options.componentClass = '';
+    }
+
     if (!this.EMBER_GLIMMER_SET_COMPONENT_TEMPLATE) {
       if (options.componentClass !== '@ember/component') {
         throw new SilentError(
@@ -93,12 +104,31 @@ module.exports = {
     return this._super.install.apply(this, arguments);
   },
 
-  afterInstall({ componentClass, entity }) {
+  uninstall(options) {
+    // Force the `componentClass` option to be non-empty. It doesn't really
+    // matter what it is set to. All we want is to delete the optional JS
+    // file if the user had created one (when using this generator, created
+    // manually, added later with component-class generator...).
+    options.componentClass = '@ember/component';
+
+    return this._super.uninstall.apply(this, arguments);
+  },
+
+  beforeInstall(options, locals) {
+    this.savedLocals = locals;
+  },
+
+  afterInstall(options) {
     this._super.afterInstall.apply(this, arguments);
 
-    if (!componentClass) {
-      let tip = `Tip: run \`ember generate component-class ${entity.name}\` if you want to add a class`;
-      this.ui.writeLine(tip);
+    this.skippedJsFiles.forEach(file => {
+      let mapped = this.mapFile(file, this.savedLocals);
+      this.ui.writeLine(`  ${chalk.yellow('skip')} ${mapped}`);
+    });
+
+    if (this.skippedJsFiles.size > 0) {
+      let command = `ember generate component-class ${options.entity.name}`;
+      this.ui.writeLine(`  ${chalk.cyan('tip')} to add a class, run \`${command}\``);
     }
   },
 
@@ -171,11 +201,15 @@ module.exports = {
   files() {
     let files = this._super.files.apply(this, arguments);
 
-    if (
-      this.EMBER_GLIMMER_SET_COMPONENT_TEMPLATE &&
-      (this.options.componentClass === '' || this.options.componentClass === '--no-component-class')
-    ) {
-      files = files.filter(file => !file.endsWith('.js'));
+    if (this.EMBER_GLIMMER_SET_COMPONENT_TEMPLATE && this.options.componentClass === '') {
+      files = files.filter(file => {
+        if (file.endsWith('.js')) {
+          this.skippedJsFiles.add(file);
+          return false;
+        } else {
+          return true;
+        }
+      });
     }
 
     return files;
