@@ -174,8 +174,8 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     if (currentCursor.openBlockDepth === this.blockDepth) {
       assert(
         currentCursor.nextSibling !== null &&
-          isComment(currentCursor.nextSibling) &&
-          getCloseBlockDepth(currentCursor.nextSibling) === openBlockDepth,
+        isComment(currentCursor.nextSibling) &&
+        getCloseBlockDepth(currentCursor.nextSibling) === openBlockDepth,
         'expected close block to match rehydrated open block'
       );
       currentCursor.candidate = this.remove(currentCursor.nextSibling!);
@@ -388,7 +388,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     if (marker.parentNode === element) {
       if (insertBefore === undefined) {
         while (element.lastChild !== marker) {
-          element.removeChild(element.lastChild!);
+          this.remove(element.lastChild!);
         }
       }
 
