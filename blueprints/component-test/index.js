@@ -4,6 +4,7 @@ const path = require('path');
 const stringUtil = require('ember-cli-string-utils');
 const isPackageMissing = require('ember-cli-is-package-missing');
 const getPathOption = require('ember-cli-get-component-path-option');
+const semver = require('semver');
 
 const useTestFrameworkDetector = require('../test-framework-detector');
 
@@ -61,6 +62,10 @@ module.exports = useTestFrameworkDetector({
       componentPathName = [options.path, dasherizedModuleName].filter(Boolean).join('/');
     }
 
+    let inlinePrecompileModule = this._useSeparateInlinePrecompileAddon()
+      ? 'htmlbars-inline-precompile'
+      : 'ember-cli-htmlbars';
+
     let templateInvocation = invocationFor(options);
     let componentName = templateInvocation;
     let openComponent = descriptor => `<${descriptor}>`;
@@ -70,20 +75,32 @@ module.exports = useTestFrameworkDetector({
     return {
       path: getPathOption(options),
       testType: testType,
-      componentName: componentName,
-      componentPathName: componentPathName,
-      templateInvocation: templateInvocation,
-      openComponent: openComponent,
-      closeComponent: closeComponent,
-      selfCloseComponent: selfCloseComponent,
-      friendlyTestDescription: friendlyTestDescription,
+      componentName,
+      componentPathName,
+      templateInvocation,
+      openComponent,
+      closeComponent,
+      selfCloseComponent,
+      friendlyTestDescription,
+      inlinePrecompileModule,
     };
+  },
+
+  _useSeparateInlinePrecompileAddon() {
+    let htmlbarsAddon = this.project.addons.find(a => a.name === 'ember-cli-htmlbars');
+
+    if (htmlbarsAddon === undefined) {
+      return true;
+    } else if (semver.gte(htmlbarsAddon.pkg.version, '4.0.0-alpha.1')) {
+      return false;
+    }
   },
 
   afterInstall: function(options) {
     if (
       !options.dryRun &&
       options.testType === 'integration' &&
+      this._useSeparateInlinePrecompileAddon() &&
       isPackageMissing(this, 'ember-cli-htmlbars-inline-precompile')
     ) {
       return this.addPackagesToProject([

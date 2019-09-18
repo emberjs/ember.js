@@ -22,6 +22,24 @@ describe('Blueprint: component-test', function() {
       return emberNew();
     });
 
+    describe('with default setup', function() {
+      it('component-test x-foo', function() {
+        return emberGenerateDestroy(['component-test', 'x-foo'], _file => {
+          expect(_file('tests/integration/components/x-foo-test.js')).to.equal(
+            fixture('component-test/rfc232.js')
+          );
+        });
+      });
+
+      it('component-test x-foo --unit', function() {
+        return emberGenerateDestroy(['component-test', 'x-foo', '--unit'], _file => {
+          expect(_file('tests/unit/components/x-foo-test.js')).to.equal(
+            fixture('component-test/rfc232-unit.js')
+          );
+        });
+      });
+    });
+
     describe('with ember-cli-qunit@4.1.0', function() {
       beforeEach(function() {
         modifyPackages([
