@@ -552,8 +552,6 @@ export class ComputedProperty extends ComputedDescriptor {
           });
         }
 
-        finishLazyChains(obj, keyName, ret);
-
         if (this._dependentKeys !== undefined) {
           let tag = combine(getChainTagsForKeys(obj, this._dependentKeys));
 
@@ -565,6 +563,10 @@ export class ComputedProperty extends ComputedDescriptor {
         }
 
         setLastRevisionFor(obj, keyName, tagValue(propertyTag));
+
+        cache.set(keyName, ret);
+
+        finishLazyChains(obj, keyName, ret);
       }
 
       consume(propertyTag!);
@@ -574,8 +576,6 @@ export class ComputedProperty extends ComputedDescriptor {
       if (Array.isArray(ret) || isEmberArray(ret)) {
         consume(tagForProperty(ret, '[]'));
       }
-
-      cache.set(keyName, ret);
 
       return ret;
     } else {
