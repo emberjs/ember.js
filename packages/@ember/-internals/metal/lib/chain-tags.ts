@@ -75,9 +75,22 @@ export function getChainTagsForKey(obj: any, path: string) {
       lastSegmentEnd = segmentEnd + 1;
       segmentEnd = path.indexOf('.', lastSegmentEnd);
 
-      // There shouldn't be any more segments after an `@each`, so break
+      // There should be exactly one segment after an `@each` (i.e. `@each.foo`, not `@each.foo.bar`)
       deprecate(
-        `When using @each, you can only chain one property level deep, but ${path} contains a nested chain. Please create an intermediary computed property or switch to tracked properties.`,
+        `When using @each in a dependent-key or an observer, ` +
+          `you can only chain one property level deep after ` +
+          `the @each. That is, \`${path.slice(0, segmentEnd)}\` ` +
+          `is allowed but \`${path}\` (which is what you passed) ` +
+          `is not.\n\n` +
+          `This was never supported. Currently, the extra segments ` +
+          `are silently ignored, i.e. \`${path}\` behaves exactly ` +
+          `the same as \`${path.slice(0, segmentEnd)}\`. ` +
+          `In the future, this will throw an error.\n\n` +
+          `If the current behavior is acceptable for your use case, ` +
+          `please remove the extraneous segments by changing your ` +
+          `key to \`${path.slice(0, segmentEnd)}\`. ` +
+          `Otherwise, please create an intermediary computed property ` +
+          `or switch to using tracked properties.`,
         segmentEnd === -1,
         {
           until: '3.17.0',
@@ -102,13 +115,10 @@ export function getChainTagsForKey(obj: any, path: string) {
       }
 
       if (segmentEnd === -1) {
-        segmentEnd = pathLength;
-      }
-
-      segment = path.slice(lastSegmentEnd, segmentEnd)!;
-
-      if (segment.indexOf('.') !== -1) {
-        segment = segment.substr(0, segment.indexOf('.'));
+        segment = path.slice(lastSegmentEnd);
+      } else {
+        // Deprecated, remove once we turn the deprecation into an assertion
+        segment = path.slice(lastSegmentEnd, segmentEnd);
       }
 
       // Push the tags for each item's property
