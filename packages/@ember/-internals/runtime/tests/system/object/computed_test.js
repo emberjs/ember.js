@@ -9,6 +9,7 @@ import {
 } from '@ember/-internals/metal';
 import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { oneWay as reads } from '@ember/object/computed';
+import { A as EmberArray, isArray } from '../../..';
 import EmberObject from '../../../lib/system/object';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 
@@ -402,6 +403,99 @@ moduleFor(
       assert.equal(instance.foo, 123, 'getters work');
       instance.foo = 456;
       assert.equal(instance.bar, 456, 'setters work');
+    }
+
+    ['@test @each on maybe array'](assert) {
+      let Normalizer = EmberObject.extend({
+        options: null, // null | undefined | { value: any } | Array<{ value: any }>
+
+        // Normalize into Array<any>
+        normalized: computed('options', 'options.value', 'options.@each.value', function() {
+          let { options } = this;
+
+          if (isArray(options)) {
+            return options.map(item => item.value);
+          } else if (options !== null && typeof options === 'object') {
+            return [options.value];
+          } else {
+            return [];
+          }
+        }),
+      });
+
+      let n = Normalizer.create();
+      assert.deepEqual(n.normalized, []);
+
+      n.set('options', { value: 'foo' });
+      assert.deepEqual(n.normalized, ['foo']);
+
+      n.set('options.value', 'bar');
+      assert.deepEqual(n.normalized, ['bar']);
+
+      n.set('options', { extra: 'wat', value: 'baz' });
+      assert.deepEqual(n.normalized, ['baz']);
+
+      n.set('options', EmberArray([{ value: 'foo' }]));
+      assert.deepEqual(n.normalized, ['foo']);
+
+      n.options.pushObject({ value: 'bar' });
+      assert.deepEqual(n.normalized, ['foo', 'bar']);
+
+      n.options.pushObject({ extra: 'wat', value: 'baz' });
+      assert.deepEqual(n.normalized, ['foo', 'bar', 'baz']);
+
+      n.options.clear();
+      assert.deepEqual(n.normalized, []);
+
+      n.set('options', [{ value: 'foo' }, { value: 'bar' }]);
+      assert.deepEqual(n.normalized, ['foo', 'bar']);
+
+      set(n.options[0], 'value', 'FOO');
+      assert.deepEqual(n.normalized, ['FOO', 'bar']);
+
+      n.set('options', null);
+      assert.deepEqual(n.normalized, []);
+    }
+
+    ['@test @each works with array-likes'](assert) {
+      class ArrayLike {
+        constructor(arr = []) {
+          this.inner = arr;
+        }
+
+        get length() {
+          return this.inner.length;
+        }
+
+        objectAt(index) {
+          return this.inner[index];
+        }
+
+        map(fn) {
+          return this.inner.map(fn);
+        }
+      }
+
+      let Normalizer = EmberObject.extend({
+        options: null, // null | ArrayLike<{ value: any }>
+
+        // Normalize into Array<any>
+        normalized: computed('options.@each.value', function() {
+          let options = this.options || [];
+          return options.map(item => item.value);
+        }),
+      });
+
+      let n = Normalizer.create();
+      assert.deepEqual(n.normalized, []);
+
+      let options = new ArrayLike([{ value: 'foo' }]);
+
+      n.set('options', options);
+      assert.deepEqual(n.normalized, ['foo']);
+
+      set(options.objectAt(0), 'value', 'bar');
+      assert.deepEqual(n.normalized, ['bar']);
     }
   }
 );

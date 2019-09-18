@@ -1,7 +1,7 @@
 import { meta as metaFor, peekMeta } from '@ember/-internals/meta';
-import { isEmberArray } from '@ember/-internals/utils';
 import { assert, deprecate } from '@ember/debug';
 import { combine, createUpdatableTag, Tag, update, validate } from '@glimmer/reference';
+import { objectAt } from './array';
 import { getLastRevisionFor, peekCacheFor } from './computed_cache';
 import { descriptorForProperty } from './descriptor_map';
 import { tagForProperty } from './tags';
@@ -70,19 +70,27 @@ export function getChainTagsForKey(obj: any, path: string) {
 
     segment = path.slice(lastSegmentEnd, segmentEnd);
 
-    // If the segment is an @each, we can process it and then opt-
+    // If the segment is an @each, we can process it and then break
     if (segment === '@each' && segmentEnd !== pathLength) {
-      assert(
-        `When using @each, the value you are attempting to watch must be an array, was: ${current.toString()}`,
-        Array.isArray(current) || isEmberArray(current)
-      );
-
       lastSegmentEnd = segmentEnd + 1;
       segmentEnd = path.indexOf('.', lastSegmentEnd);
 
-      // There shouldn't be any more segments after an `@each`, so break
+      // There should be exactly one segment after an `@each` (i.e. `@each.foo`, not `@each.foo.bar`)
       deprecate(
-        `When using @each, you can only chain one property level deep, but ${path} contains a nested chain. Please create an intermediary computed property or switch to tracked properties.`,
+        `When using @each in a dependent-key or an observer, ` +
+          `you can only chain one property level deep after ` +
+          `the @each. That is, \`${path.slice(0, segmentEnd)}\` ` +
+          `is allowed but \`${path}\` (which is what you passed) ` +
+          `is not.\n\n` +
+          `This was never supported. Currently, the extra segments ` +
+          `are silently ignored, i.e. \`${path}\` behaves exactly ` +
+          `the same as \`${path.slice(0, segmentEnd)}\`. ` +
+          `In the future, this will throw an error.\n\n` +
+          `If the current behavior is acceptable for your use case, ` +
+          `please remove the extraneous segments by changing your ` +
+          `key to \`${path.slice(0, segmentEnd)}\`. ` +
+          `Otherwise, please create an intermediary computed property ` +
+          `or switch to using tracked properties.`,
         segmentEnd === -1,
         {
           until: '3.17.0',
@@ -90,28 +98,43 @@ export function getChainTagsForKey(obj: any, path: string) {
         }
       );
 
-      if (segmentEnd === -1) {
-        segmentEnd = pathLength;
+      let arrLength = current.length;
+
+      if (
+        typeof arrLength !== 'number' ||
+        // TODO: should the second test be `isEmberArray` instead?
+        !(Array.isArray(current) || 'objectAt' in current)
+      ) {
+        // If the current object isn't an array, there's nothing else to do,
+        // we don't watch individual properties. Break out of the loop.
+        break;
+      } else if (arrLength === 0) {
+        // Fast path for empty arrays
+        chainTags.push(tagForProperty(current, '[]'));
+        break;
       }
 
-      segment = path.slice(lastSegmentEnd, segmentEnd)!;
-
-      if (segment.indexOf('.') !== -1) {
-        segment = segment.substr(0, segment.indexOf('.'));
+      if (segmentEnd === -1) {
+        segment = path.slice(lastSegmentEnd);
+      } else {
+        // Deprecated, remove once we turn the deprecation into an assertion
+        segment = path.slice(lastSegmentEnd, segmentEnd);
       }
 
       // Push the tags for each item's property
-      let tags = (current as Array<any>).map(item => {
+      for (let i = 0; i < arrLength; i++) {
+        let item = objectAt(current as Array<any>, i);
+
         assert(
           `When using @each to observe the array \`${current.toString()}\`, the items in the array must be objects`,
           typeof item === 'object'
         );
 
-        return tagForProperty(item, segment);
-      });
+        chainTags.push(tagForProperty(item, segment));
+      }
 
       // Push the tag for the array length itself
-      chainTags.push(...tags, tagForProperty(current, '[]'));
+      chainTags.push(tagForProperty(current, '[]'));
 
       break;
     }
