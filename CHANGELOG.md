@@ -1,5 +1,16 @@
 # Ember Changelog
 
+### Unreleased
+
+- [#18396](https://github.com/emberjs/ember.js/pull/18396) [FEATURE] Implement component-class generator
+- [#18383](https://github.com/emberjs/ember.js/pull/18383) [BUGFIX] Fix `updateHook` capability opt-in types
+- [#18389](https://github.com/emberjs/ember.js/pull/18389) [BUGFIX] Update edition detection to use @ember/edition-utils
+- [#18394](https://github.com/emberjs/ember.js/pull/18394) [BUGFIX] Disable co-location in non-Octane blueprints
+- [#18395](https://github.com/emberjs/ember.js/pull/18395) [BUGFIX] Use `<Nested::Invocation>` in component tests blueprint
+- [#18397](https://github.com/emberjs/ember.js/pull/18397) [BUGFIX] Ensure QP definitions interop with tracked props
+- [#18399](https://github.com/emberjs/ember.js/pull/18399) [BUGFIX] Ensures that `@each` works with non-arrays and array-likes
+- [#18406](https://github.com/emberjs/ember.js/pull/18406) [BUGFIX] Prevent infinite cycles from lazy computed computation
+
 ### v3.13.0-beta.5 (September 3, 2019)
 
 - [#18314](https://github.com/emberjs/ember.js/pull/18314) [BUGFIX] Use class inheritance for getters and setters
