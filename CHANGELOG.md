@@ -1,49 +1,28 @@
 # Ember Changelog
 
-### Unreleased
+### v3.13.0 (September 19, 2019)
 
+- [#16366](https://github.com/emberjs/ember.js/pull/16366) / [#16903](https://github.com/emberjs/ember.js/pull/16903) / [#17572](https://github.com/emberjs/ember.js/pull/17572) / [#17682](https://github.com/emberjs/ember.js/pull/17682) / [#17765](https://github.com/emberjs/ember.js/pull/17765) / [#17751](https://github.com/emberjs/ember.js/pull/17751) / [#17835](https://github.com/emberjs/ember.js/pull/17835) / [#18059](https://github.com/emberjs/ember.js/pull/18059) / [#17951](https://github.com/emberjs/ember.js/pull/17951) / [#18069](https://github.com/emberjs/ember.js/pull/18069) / [#18074](https://github.com/emberjs/ember.js/pull/18074) / [#18073](https://github.com/emberjs/ember.js/pull/18073) / [#18091](https://github.com/emberjs/ember.js/pull/18091) / [#18186](https://github.com/emberjs/ember.js/pull/18186) / [#18223](https://github.com/emberjs/ember.js/pull/18223) / [#18358](https://github.com/emberjs/ember.js/pull/18358) / [#18266](https://github.com/emberjs/ember.js/pull/18266) [FEATURE] Implement the [Tracked Properties](https://github.com/emberjs/rfcs/blob/master/text/0410-tracked-properties.md) and [Tracked Property Updates](https://github.com/emberjs/rfcs/blob/master/text/0478-tracked-properties-updates.md) RFCs.
+- [#18158](https://github.com/emberjs/ember.js/pull/18158) / [#18203](https://github.com/emberjs/ember.js/pull/18203) / [#18198](https://github.com/emberjs/ember.js/pull/18198) / [#18190](https://github.com/emberjs/ember.js/pull/18190) / [#18394](https://github.com/emberjs/ember.js/pull/18394) [FEATURE] Implement the [Component Templates Co-location](https://github.com/emberjs/rfcs/blob/master/text/0481-component-templates-co-location.md) RFC, including the setComponentTemplate(), getComponentTemplate() and templateOnlyComponent() APIs. Note that while these low-level APIs are enabled, the co-location feature is only enabled in Octane apps as of this release. This restriction will be removed in a future version.
+- [#18241](https://github.com/emberjs/ember.js/pull/18241) / [#18383](https://github.com/emberjs/ember.js/pull/18383) [FEATURE] Add `updateHook` component-manager capability
 - [#18396](https://github.com/emberjs/ember.js/pull/18396) [FEATURE] Implement component-class generator
-- [#18383](https://github.com/emberjs/ember.js/pull/18383) [BUGFIX] Fix `updateHook` capability opt-in types
-- [#18389](https://github.com/emberjs/ember.js/pull/18389) [BUGFIX] Update edition detection to use @ember/edition-utils
-- [#18394](https://github.com/emberjs/ember.js/pull/18394) [BUGFIX] Disable co-location in non-Octane blueprints
+- [#18389](https://github.com/emberjs/ember.js/pull/18389) [FEATURE] Use @ember/edition-utils to detect the edition that is in use
+- [#18214](https://github.com/emberjs/ember.js/pull/18214) [DEPRECATION] Implement the [Deprecate support for mouseEnter/Leave/Move Ember events RFC](https://github.com/emberjs/rfcs/blob/master/text/0486-deprecate-mouseenter.md).
 - [#18395](https://github.com/emberjs/ember.js/pull/18395) [BUGFIX] Use `<Nested::Invocation>` in component tests blueprint
-- [#18397](https://github.com/emberjs/ember.js/pull/18397) [BUGFIX] Ensure QP definitions interop with tracked props
-- [#18399](https://github.com/emberjs/ember.js/pull/18399) [BUGFIX] Ensures that `@each` works with non-arrays and array-likes
 - [#18406](https://github.com/emberjs/ember.js/pull/18406) [BUGFIX] Prevent infinite cycles from lazy computed computation
-
-### v3.13.0-beta.5 (September 3, 2019)
-
 - [#18314](https://github.com/emberjs/ember.js/pull/18314) [BUGFIX] Use class inheritance for getters and setters
 - [#18329](https://github.com/emberjs/ember.js/pull/18329) [BUGFIX] Eagerly consume aliases
-
-### v3.13.0-beta.4 (August 26, 2019)
-
 - [#18278](https://github.com/emberjs/ember.js/pull/18278) [BUGFIX] Bump ember-router-generator from v1.2.3 to v2.0.0 to support parsing `app/router.js` with native class.
 - [#18291](https://github.com/emberjs/ember.js/pull/18291) [BUGFIX] Adds the babel-helpers injection plugin back and include `ember-template-compiler` in the vendor folder for Ember.
 - [#18296](https://github.com/emberjs/ember.js/pull/18296) [BUGFIX] Ensure {{each-in}} can iterate over keys with periods
-- [#18304](https://github.com/emberjs/ember.js/pull/18304) [BUGFIX] Check the EMBER_ENV environment variable after it is set
-
-### v3.13.0-beta.3 (August 19, 2019)
-
-- [#18223](https://github.com/emberjs/ember.js/pull/18223) [FEATURE] Tracked Props Performance Tuning
+- [#18304](https://github.com/emberjs/ember.js/pull/18304) [BUGFIX] Correctly determine the environment by checking the EMBER_ENV environment variable only after it is set
 - [#18208](https://github.com/emberjs/ember.js/pull/18208) [BUGFIX] Compile Ember dynamically in consuming applications
-- [#18266](https://github.com/emberjs/ember.js/pull/18266) [BUGFIX] Autotrack Modifiers and Helpers
 - [#18267](https://github.com/emberjs/ember.js/pull/18267) [BUGFIX] Router#url should not error when `location` is a string
 - [#18270](https://github.com/emberjs/ember.js/pull/18270) [BUGFIX] Prevent cycle dependency with owner association.
 - [#18274](https://github.com/emberjs/ember.js/pull/18274) [BUGFIX] Allow CPs to depend on nested args
 - [#18276](https://github.com/emberjs/ember.js/pull/18276) [BUGFIX] Change the assertion for @each dependencies into a deprecation
 - [#18281](https://github.com/emberjs/ember.js/pull/18281) [BUGFIX] Check length of targets
-
-### v3.13.0.beta.2 (August 12, 2019)
-
 - [#18248](https://github.com/emberjs/ember.js/pull/18248) [BUGFIX] Ensures that observers are flushed after CPs are updated
-- [#18241](https://github.com/emberjs/ember.js/pull/18241) [BUGFIX] Adds Component Manager 3.13 Capabilities
-
-### v3.13.0-beta.1 (August 6, 2019)
-
-- [#16366](https://github.com/emberjs/ember.js/pull/16366) / [#16903](https://github.com/emberjs/ember.js/pull/16903) / [#17572](https://github.com/emberjs/ember.js/pull/17572) / [#17682](https://github.com/emberjs/ember.js/pull/17682) / [#17765](https://github.com/emberjs/ember.js/pull/17765) / [#17751](https://github.com/emberjs/ember.js/pull/17751) / [#17835](https://github.com/emberjs/ember.js/pull/17835) / [#18059](https://github.com/emberjs/ember.js/pull/18059) / [#17951](https://github.com/emberjs/ember.js/pull/17951) / [#18069](https://github.com/emberjs/ember.js/pull/18069) / [#18074](https://github.com/emberjs/ember.js/pull/18074) / [#18073](https://github.com/emberjs/ember.js/pull/18073) / [#18091](https://github.com/emberjs/ember.js/pull/18091) / [#18186](https://github.com/emberjs/ember.js/pull/18186) [FEATURE] Implement the [Tracked Properties](https://github.com/emberjs/rfcs/blob/master/text/0410-tracked-properties.md) and [Tracked Property Updates](https://github.com/emberjs/rfcs/blob/master/text/0478-tracked-properties-updates.md) RFCs.
-- [#18158](https://github.com/emberjs/ember.js/pull/18158) / [#18203](https://github.com/emberjs/ember.js/pull/18203) / [#18198](https://github.com/emberjs/ember.js/pull/18198) / [#18190](https://github.com/emberjs/ember.js/pull/18190) [FEATURE] Implement the [Component Templates Co-location](https://github.com/emberjs/rfcs/blob/master/text/0481-component-templates-co-location.md).
-- [#18214](https://github.com/emberjs/ember.js/pull/18214) [DEPRECATION] Implement the [Deprecate support for mouseEnter/Leave/Move Ember events](https://github.com/emberjs/rfcs/blob/master/text/0486-deprecate-mouseenter.md).
 - [#18217](https://github.com/emberjs/ember.js/pull/18217) [BUGFIX] Adds ability for computed props to depend on args
 - [#18222](https://github.com/emberjs/ember.js/pull/18222) [BUGFIX] Matches assertion behavior for CPs computing after destroy
 
