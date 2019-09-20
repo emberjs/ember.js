@@ -62,9 +62,9 @@ module.exports = useTestFrameworkDetector({
       componentPathName = [options.path, dasherizedModuleName].filter(Boolean).join('/');
     }
 
-    let inlinePrecompileModule = this._useSeparateInlinePrecompileAddon()
-      ? 'htmlbars-inline-precompile'
-      : 'ember-cli-htmlbars';
+    let hbsImportStatement = this._useSeparateInlinePrecompileAddon()
+      ? "import hbs from 'htmlbars-inline-precompile';"
+      : "import { hbs } from 'ember-cli-htmlbars';";
 
     let templateInvocation = invocationFor(options);
     let componentName = templateInvocation;
@@ -82,7 +82,7 @@ module.exports = useTestFrameworkDetector({
       closeComponent,
       selfCloseComponent,
       friendlyTestDescription,
-      inlinePrecompileModule,
+      hbsImportStatement,
     };
   },
 
