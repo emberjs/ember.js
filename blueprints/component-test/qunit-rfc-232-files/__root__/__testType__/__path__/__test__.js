@@ -1,7 +1,7 @@
 <% if (testType === 'integration') { %>import { module, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
 import { render } from '@ember/test-helpers';
-import hbs from '<%= inlinePrecompileModule %>';
+<%= hbsImportStatement %>
 
 module('<%= friendlyTestDescription %>', function(hooks) {
   setupRenderingTest(hooks);
