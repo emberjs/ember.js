@@ -24,7 +24,7 @@ import { defineProperty } from './properties';
 import { get } from './property_get';
 import { set } from './property_set';
 import { tagForProperty } from './tags';
-import { consume, untrack } from './tracked';
+import { consume, untrack } from './tracked/index';
 
 const CONSUMED = Object.freeze({});
 

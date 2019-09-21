@@ -8,7 +8,7 @@ import { DEBUG } from '@glimmer/env';
 import { descriptorForProperty } from './descriptor_map';
 import { isPath } from './path_cache';
 import { tagForProperty } from './tags';
-import { consume, isTracking } from './tracked';
+import { consume, isTracking } from './tracked/index';
 
 export const PROXY_CONTENT = symbol('PROXY_CONTENT');
 

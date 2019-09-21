@@ -1,43 +1,16 @@
 import { isEmberArray } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { combine, CONSTANT_TAG, Tag, UpdatableTag, update } from '@glimmer/reference';
-import { Decorator, DecoratorPropertyDescriptor, isElementDescriptor } from './decorator';
-import { setClassicDecorator } from './descriptor_map';
-import { markObjectAsDirty, tagForProperty } from './tags';
+import { Tag, UpdatableTag, update } from '@glimmer/reference';
+import { Decorator, DecoratorPropertyDescriptor, isElementDescriptor } from '../decorator';
+import { setClassicDecorator } from '../descriptor_map';
+import { markObjectAsDirty, tagForProperty } from '../tags';
+import { debugTracker, debugConsume } from './debugging';
 
-type Option<T> = T | null;
+import { Tracker } from './tracker';
+import { Option } from './types';
 
-/**
-  An object that that tracks @tracked properties that were consumed.
-
-  @private
-*/
-export class Tracker {
-  private tags = new Set<Tag>();
-  private last: Option<Tag> = null;
-
-  add(tag: Tag): void {
-    this.tags.add(tag);
-    this.last = tag;
-  }
-
-  get size(): number {
-    return this.tags.size;
-  }
-
-  combine(): Tag {
-    if (this.tags.size === 0) {
-      return CONSTANT_TAG;
-    } else if (this.tags.size === 1) {
-      return this.last as Tag;
-    } else {
-      let tags: Tag[] = [];
-      this.tags.forEach(tag => tags.push(tag));
-      return combine(tags);
-    }
-  }
-}
+export { Tracker } from './tracker';
 
 /**
   @decorator
@@ -192,7 +165,10 @@ function descriptorForField([_target, key, desc]: [
     get(): any {
       let propertyTag = tagForProperty(this, key) as UpdatableTag;
 
-      if (CURRENT_TRACKER) CURRENT_TRACKER.add(propertyTag);
+      if (CURRENT_TRACKER) {
+        CURRENT_TRACKER.add(propertyTag);
+        debugConsume(CURRENT_TRACKER, propertyTag, this);
+      }
 
       let value;
 
@@ -251,6 +227,8 @@ export function track(callback: () => void) {
 
   try {
     callback();
+
+    debugTracker(current, parent);
   } finally {
     CURRENT_TRACKER = parent;
   }
@@ -261,6 +239,7 @@ export function track(callback: () => void) {
 export function consume(tag: Tag) {
   if (CURRENT_TRACKER !== null) {
     CURRENT_TRACKER.add(tag);
+    debugConsume(CURRENT_TRACKER, tag);
   }
 }
 
