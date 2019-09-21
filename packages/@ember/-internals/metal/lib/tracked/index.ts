@@ -167,7 +167,7 @@ function descriptorForField([_target, key, desc]: [
 
       if (CURRENT_TRACKER) {
         CURRENT_TRACKER.add(propertyTag);
-        debugConsume(CURRENT_TRACKER, propertyTag, this);
+        debugConsume(CURRENT_TRACKER, propertyTag);
       }
 
       let value;
@@ -226,14 +226,20 @@ export function track(callback: () => void) {
   CURRENT_TRACKER = current;
 
   try {
+    console.log('pre-callback', current, parent);
     callback();
+    console.log('post-callback', current, parent);
+
 
     debugTracker(current, parent);
   } finally {
     CURRENT_TRACKER = parent;
   }
 
-  return current.combine();
+  let result = current.combine();
+
+  console.log('post combine', current, parent);
+  return result;
 }
 
 export function consume(tag: Tag) {

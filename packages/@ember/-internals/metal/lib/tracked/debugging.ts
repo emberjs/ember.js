@@ -73,6 +73,7 @@ function prettyPrintTrackingInfo() {
 Ember.EMBER_DEBUG.TRACKING.print = prettyPrintTrackingInfo;
 
 export function debugTracker(current: Tracker, parent: Option<Tracker>) {
+  console.log('debugTrack', current, parent);
   // Convert the Tracker to an isolated moment in time
   Ember.EMBER_DEBUG.TRACKING.history.push({
     // hack around tags being a private field
@@ -81,6 +82,6 @@ export function debugTracker(current: Tracker, parent: Option<Tracker>) {
 }
 
 
-export function debugConsume(tracker: Tracker, tag: Tag | UpdatableTag, target: any) {
-  console.log('Consume started', tracker, tag);
+export function debugConsume(tracker: Tracker, tag: Tag | UpdatableTag) {
+  console.log('Consume', tracker, tag);
 }
