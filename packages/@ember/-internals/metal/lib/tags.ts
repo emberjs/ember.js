@@ -37,6 +37,7 @@ export function tagForProperty(object: any, propertyKey: string | symbol, _meta?
       }
 
       (newTag as any)._propertyKey = propertyKey;
+      (newTag as any)._object = object;
     }
 
     return (tags[propertyKey] = newTag);
