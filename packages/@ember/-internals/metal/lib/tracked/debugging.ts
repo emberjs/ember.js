@@ -26,43 +26,6 @@ Ember.EMBER_DEBUG.TRACKING = {
   history: [],
 } as DebugTracking;
 
-/*
- * example / summary of how tracking works:
- *
-from @pzuraq:
-
-class Component {
-  get foo() {
-    return this.bar;
-  }
-
-  get bar() {
-    consume(this._barTag);
-    return this._bar;
-  }
-
-  set bar(value) {
-    dirty(this._barTag);
-    this._bar = value;
-  }
-}
-
-let component = new Component();
-
-let tag = track(() => {
-  // get {{this.foo}} to render it
-  component.foo
-});
-let tagValue = value(tag);
-validate(tag, tagValue); // true, nothing has changed
-
-// later
-component.bar = 123;
-
-validate(tag, tagValue); // false, something has changed
-
- *
- */
 function getTrackingInfo(): DebugTracking {
   return Ember.EMBER_DEBUG.TRACKING;
 }
@@ -82,15 +45,18 @@ function prettyPrintTrackingInfo() {
     currentRevision = revisions[i];
     currentBatch = history[currentRevision] || [];
 
+    // eslint-disable-next-line no-console
     console.log(`[Revision: ${currentRevision}]`, currentBatch);
     changedTag = currentBatch[0];
 
     currentBatch.forEach((tracker, idx: number) => {
       if (tracker.dependents.length === 0) {
+        // eslint-disable-next-line no-console
         console.log(
           `  #${idx}: ${tracker.tag.propertyName} on ${tracker.tag.objectName} has been set!`
         );
       } else {
+        // eslint-disable-next-line no-console
         console.log(
           `  #${idx}: ${tracker.tag.propertyName} on ${tracker.tag.objectName} has changed!`
         );
@@ -98,8 +64,9 @@ function prettyPrintTrackingInfo() {
         tracker.dependents.forEach(dependent => {
           let isChangedProperty = changedTag.tag.propertyName === dependent.propertyName;
 
+          // eslint-disable-next-line no-console
           console.log(
-            `      Dependency: ${dependent.propertyName} on ${dependent.objectName} ` +
+            `      Dependency: ${dependent.propertyName} (rev: ${(dependent.tag as any).revision}) on ${dependent.objectName} ` +
               `${isChangedProperty ? 'changed' : 'did not change'}`
           );
         });
@@ -115,7 +82,6 @@ export function debugTracker(current: Tracker, _parent: Option<Tracker>) {
   // (because the revision of a tag may not have changed if the value didn't changed
   //  but last-checked is the last revision to inspect it)
   let lastChecked = `${(current as any).last.lastChecked}`;
-  console.log('debugTrack', current, lastChecked);
 
   // Convert the Tracker to an isolated moment in time
   // hack around tags being a private field
@@ -125,7 +91,7 @@ export function debugTracker(current: Tracker, _parent: Option<Tracker>) {
   // TODO: tests -- this is getting complicated
   let normalizedTags = tags.map(toTagSnapshot);
   let [trackedTag, ...trackedDependents] = normalizedTags;
-  let dependents = trackedDependents || (trackedTag.tag.subtags || []).map(toTagSnapshot);
+  let dependents = trackedDependents || ((trackedTag.tag as any).subtags || []).map(toTagSnapshot);
 
   let trackerSnapshot = {
     tag: trackedTag,
@@ -165,6 +131,4 @@ function toTagSnapshot(tag: any): TagSnapshot {
 //  })
 //
 //  dirty(someTag); // also invalidates 'tag';
-export function debugConsume(tracker: Tracker, tag: Tag | UpdatableTag) {
-  console.log('Consume', tracker, tag);
-}
+export function debugConsume(_tracker: Tracker, _tag: Tag | UpdatableTag) {}
