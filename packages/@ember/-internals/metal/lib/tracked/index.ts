@@ -5,7 +5,7 @@ import { Tag, UpdatableTag, update } from '@glimmer/reference';
 import { Decorator, DecoratorPropertyDescriptor, isElementDescriptor } from '../decorator';
 import { setClassicDecorator } from '../descriptor_map';
 import { markObjectAsDirty, tagForProperty } from '../tags';
-import { debugTracker, debugConsume } from './debugging';
+import { debugTracker } from './debugging';
 
 import { Tracker } from './tracker';
 import { Option } from './types';
@@ -167,7 +167,6 @@ function descriptorForField([_target, key, desc]: [
 
       if (CURRENT_TRACKER) {
         CURRENT_TRACKER.add(propertyTag);
-        debugConsume(CURRENT_TRACKER, propertyTag);
       }
 
       let value;
@@ -241,7 +240,6 @@ export function track(callback: () => void) {
 export function consume(tag: Tag) {
   if (CURRENT_TRACKER !== null) {
     CURRENT_TRACKER.add(tag);
-    debugConsume(CURRENT_TRACKER, tag);
   }
 }
 

@@ -10,7 +10,7 @@ interface DebugTracking {
 
 interface TrackerSnapshot {
   tag: TagSnapshot;
-  dependents: TagSnapshot[];
+  dependencies: TagSnapshot[];
   all: TagSnapshot[];
 }
 
@@ -19,6 +19,7 @@ interface TagSnapshot {
   objectName: string;
   objectRef: object;
   tag: Tag | UpdatableTag;
+  dependencies: TagSnapshot[];
 }
 
 Ember.EMBER_DEBUG = {};
@@ -50,7 +51,7 @@ function prettyPrintTrackingInfo() {
     changedTag = currentBatch[0];
 
     currentBatch.forEach((tracker, idx: number) => {
-      if (tracker.dependents.length === 0) {
+      if (tracker.dependencies.length === 0) {
         // eslint-disable-next-line no-console
         console.log(
           `  #${idx}: ${tracker.tag.propertyName} on ${tracker.tag.objectName} has been set!`
@@ -61,22 +62,49 @@ function prettyPrintTrackingInfo() {
           `  #${idx}: ${tracker.tag.propertyName} on ${tracker.tag.objectName} has changed!`
         );
 
-        tracker.dependents.forEach(dependent => {
-          let isChangedProperty = changedTag.tag.propertyName === dependent.propertyName;
-
-          // eslint-disable-next-line no-console
-          console.log(
-            `      Dependency: ${dependent.propertyName} (rev: ${(dependent.tag as any).revision}) on ${dependent.objectName} ` +
-              `${isChangedProperty ? 'changed' : 'did not change'}`
-          );
-        });
+        printDependents(changedTag, tracker.dependencies);
       }
     });
   }
 }
 
+function printDependents(rootTag: TrackerSnapshot, dependencies: TagSnapshot[], indent = 6) {
+  if (!dependencies || dependencies.length === 0) return;
+
+  let indentation = ' '.repeat(indent);
+
+  dependencies.forEach(dependency => {
+    let isChangedProperty = rootTag.tag.propertyName === dependency.propertyName;
+
+    if (!dependency.objectRef && !dependency.propertyName) {
+      // eslint-disable-next-line no-console
+      console.log(`${indentation} Intermediate Tracking Tag @ rev: ${(dependency.tag as any).revision}`);
+    } else {
+      // eslint-disable-next-line no-console
+      console.log(
+        `${indentation}Dependency: ${dependency.propertyName} ` +
+          `(rev: ${(dependency.tag as any).revision}) on ` +
+          `${dependency.objectName} ` +
+          `${isChangedProperty ? 'changed' : 'did not change'}`
+      );
+    }
+
+    printDependents(rootTag, dependency.dependencies, indent + 2);
+  });
+}
+
 Ember.EMBER_DEBUG.TRACKING.print = prettyPrintTrackingInfo;
 
+// NOTE:
+//  track is a wrapper around a tag
+//    cosume is called on other tags
+//
+//  let tag = track(() => {
+//    cosume(someTag);
+//    cosume(someTagB);
+//  })
+//
+//  dirty(someTag); // also invalidates 'tag';
 export function debugTracker(current: Tracker, _parent: Option<Tracker>) {
   // Put into "revision" buckets, based on "lastChecked"
   // (because the revision of a tag may not have changed if the value didn't changed
@@ -87,17 +115,7 @@ export function debugTracker(current: Tracker, _parent: Option<Tracker>) {
   // hack around tags being a private field
   let tags = Array.from((current as any).tags.values()) as Tag[];
 
-  // NOTE: if a tag has subtags, it is computed
-  // TODO: tests -- this is getting complicated
-  let normalizedTags = tags.map(toTagSnapshot);
-  let [trackedTag, ...trackedDependents] = normalizedTags;
-  let dependents = trackedDependents || ((trackedTag.tag as any).subtags || []).map(toTagSnapshot);
-
-  let trackerSnapshot = {
-    tag: trackedTag,
-    dependents,
-    all: normalizedTags,
-  } as TrackerSnapshot;
+  let trackerSnapshot = normalizeTags(tags);
 
   let currentBatch = getTrackingInfo().history[lastChecked];
   let batch = currentBatch || [];
@@ -105,6 +123,40 @@ export function debugTracker(current: Tracker, _parent: Option<Tracker>) {
   batch.push(trackerSnapshot);
 
   Ember.EMBER_DEBUG.TRACKING.history[lastChecked] = batch;
+}
+
+function normalizeTags(tags: any[]): TrackerSnapshot {
+  let [tag, ...trackedDependents] = tags;
+
+  let normalizedDependents = normalizeDependents(tag, trackedDependents);
+
+  let normalizedTag = toTagSnapshot(tag);
+
+  return {
+    tag: normalizedTag,
+    dependencies: normalizedDependents,
+    all: tags,
+  } as TrackerSnapshot;
+}
+
+function normalizeDependents(root: any, dependencies?: any) {
+  let result: any[] = [];
+
+  result = result.concat(dependencies);
+  result = result.concat(root.subtag);
+  result = result.concat(root.subtags);
+
+  return result
+    .flat()
+    .compact()
+    .map(toTagSnapshot)
+    .map((snapshot: TagSnapshot) => {
+      let subDependents = normalizeDependents(snapshot.tag);
+
+      snapshot.dependencies = subDependents;
+
+      return snapshot;
+    });
 }
 
 function toTagSnapshot(tag: any): TagSnapshot {
@@ -120,15 +172,3 @@ function toTagSnapshot(tag: any): TagSnapshot {
 
   return result as TagSnapshot;
 }
-
-// NOTE:
-//  track is a wrapper around a tag
-//    cosume is called on other tags
-//
-//  let tag = track(() => {
-//    cosume(someTag);
-//    cosume(someTagB);
-//  })
-//
-//  dirty(someTag); // also invalidates 'tag';
-export function debugConsume(_tracker: Tracker, _tag: Tag | UpdatableTag) {}
