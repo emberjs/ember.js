@@ -226,10 +226,7 @@ export function track(callback: () => void) {
   CURRENT_TRACKER = current;
 
   try {
-    console.log('pre-callback', current, parent);
     callback();
-    console.log('post-callback', current, parent);
-
 
     debugTracker(current, parent);
   } finally {
@@ -238,7 +235,6 @@ export function track(callback: () => void) {
 
   let result = current.combine();
 
-  console.log('post combine', current, parent);
   return result;
 }
 
