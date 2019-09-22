@@ -174,8 +174,8 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     if (currentCursor.openBlockDepth === this.blockDepth) {
       assert(
         currentCursor.nextSibling !== null &&
-        isComment(currentCursor.nextSibling) &&
-        getCloseBlockDepth(currentCursor.nextSibling) === openBlockDepth,
+          isComment(currentCursor.nextSibling) &&
+          getCloseBlockDepth(currentCursor.nextSibling) === openBlockDepth,
         'expected close block to match rehydrated open block'
       );
       currentCursor.candidate = this.remove(currentCursor.nextSibling!);
@@ -369,13 +369,12 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     super.willCloseElement();
   }
 
-  getMarker(element: HTMLElement, guid: string): SimpleNode {
+  getMarker(element: HTMLElement, guid: string): Option<SimpleNode> {
     let marker = element.querySelector(`script[glmr="${guid}"]`);
     if (marker) {
       return marker as SimpleNode;
     }
-
-    throw new Error('Cannot find serialized cursor for `in-element`');
+    return null;
   }
 
   __pushRemoteElement(
@@ -385,26 +384,27 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
   ): Option<RemoteLiveBlock> {
     let marker = this.getMarker(element as HTMLElement, cursorId);
 
-    if (marker.parentNode === element) {
-      if (insertBefore === undefined) {
-        while (element.lastChild !== marker) {
-          this.remove(element.lastChild!);
-        }
+    assert(
+      !marker || marker.parentNode === element,
+      `expected remote element marker's parent node to match remote element`
+    );
+
+    if (insertBefore === undefined) {
+      while (element.lastChild !== marker) {
+        this.remove(element.lastChild!);
       }
-
-      let currentCursor = this.currentCursor;
-      let candidate = currentCursor!.candidate;
-
-      this.pushElement(element, insertBefore);
-
-      currentCursor!.candidate = candidate;
-      this.candidate = this.remove(marker);
-
-      let block = new RemoteLiveBlock(element);
-      return this.pushLiveBlock(block, true);
     }
 
-    return null;
+    let currentCursor = this.currentCursor;
+    let candidate = currentCursor!.candidate;
+
+    this.pushElement(element, insertBefore);
+
+    currentCursor!.candidate = candidate;
+    this.candidate = marker ? this.remove(marker) : null;
+
+    let block = new RemoteLiveBlock(element);
+    return this.pushLiveBlock(block, true);
   }
 
   didAppendBounds(bounds: Bounds): Bounds {

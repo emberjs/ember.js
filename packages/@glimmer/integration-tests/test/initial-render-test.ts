@@ -244,9 +244,17 @@ class Rehydration extends AbstractRehydrationTests {
 
   @test
   'in-element can rehydrate'() {
-    let template = '<outer>{{#in-element remote}}<inner>Wat Wat</inner>{{/in-element}}</outer>';
+    let template = strip`
+      <outer><prefix></prefix>
+      {{#in-element remote}}<inner>Wat Wat</inner>{{/in-element}}
+      <suffix></suffix></outer>
+      `;
     let doc = this.delegate.serverDoc;
     let remote = doc.createElement('remote');
+    let prefix = doc.createElement('prefix');
+    let suffix = doc.createElement('suffix');
+    remote.appendChild(prefix);
+    remote.appendChild(suffix);
 
     this.renderServerSide(template, { remote });
     let serializedRemote = this.delegate.serialize(remote);
@@ -270,7 +278,192 @@ class Rehydration extends AbstractRehydrationTests {
 
     this.renderClientSide(template, { remote: clientRemote });
     this.assertRehydrationStats({ nodesRemoved: 1 });
+    this.assert.equal(
+      toInnerHTML(clientRemote),
+      '<prefix></prefix><suffix></suffix><inner>Wat Wat</inner>'
+    );
+  }
+
+  @test
+  'in-element with insertBefore=null can rehydrate'() {
+    let template = strip`
+      <outer><prefix></prefix>
+      {{#in-element remote insertBefore=null}}<inner>Wat Wat</inner>{{/in-element}}
+      <suffix></suffix></outer>
+      `;
+    let doc = this.delegate.serverDoc;
+    let remote = doc.createElement('remote');
+    let prefix = doc.createElement('prefix');
+    let suffix = doc.createElement('suffix');
+    remote.appendChild(prefix);
+    remote.appendChild(suffix);
+
+    this.renderServerSide(template, { remote });
+    let serializedRemote = this.delegate.serialize(remote);
+    let b = blockStack();
+    assertSerializedInElement(
+      serializedRemote,
+      strip`
+      ${b(2)}
+      <inner>Wat Wat</inner>
+      ${b(2)}
+    `
+    );
+
+    doc = this.delegate.clientDoc;
+    let clientRemote = (remote = doc.createElement('remote'));
+    let host = doc.createElement('div');
+    host.appendChild(this.element);
+    host.appendChild(clientRemote);
+    replaceHTML(clientRemote, serializedRemote);
+    this.element = assertElement(host.firstChild);
+
+    this.renderClientSide(template, { remote: clientRemote });
+    this.assertRehydrationStats({ nodesRemoved: 0 });
+    this.assert.equal(
+      toInnerHTML(clientRemote),
+      '<prefix></prefix><suffix></suffix><inner>Wat Wat</inner>'
+    );
+  }
+
+  @test
+  'in-element with insertBefore=element can rehydrate'() {
+    let template = strip`
+      <outer><prefix></prefix>
+      {{#in-element remote insertBefore=prefix}}<inner>Wat Wat</inner>{{/in-element}}
+      <suffix></suffix></outer>
+      `;
+    let doc = this.delegate.serverDoc;
+    let remote = doc.createElement('remote');
+    let prefix = doc.createElement('prefix');
+    let suffix = doc.createElement('suffix');
+    remote.appendChild(prefix);
+    remote.appendChild(suffix);
+
+    this.renderServerSide(template, { remote, prefix, suffix });
+    let serializedRemote = this.delegate.serialize(remote);
+    let b = blockStack();
+    assertSerializedInElement(
+      serializedRemote,
+      strip`
+      ${b(2)}
+      <inner>Wat Wat</inner>
+      ${b(2)}
+      <prefix></prefix>
+      <suffix></suffix>
+    `
+    );
+
+    doc = this.delegate.clientDoc;
+    let clientRemote = (remote = doc.createElement('remote'));
+    let host = doc.createElement('div');
+    host.appendChild(this.element);
+    host.appendChild(clientRemote);
+    replaceHTML(clientRemote, serializedRemote);
+    this.element = assertElement(host.firstChild);
+    let clientPrefix = clientRemote.childNodes[4];
+
+    this.renderClientSide(template, { remote: clientRemote, prefix: clientPrefix });
+    this.assertRehydrationStats({ nodesRemoved: 0 });
+    this.assert.equal(
+      toInnerHTML(clientRemote),
+      '<inner>Wat Wat</inner><prefix></prefix><suffix></suffix>'
+    );
+  }
+
+  @test
+  'in-element can rehydrate into pre-existing content'() {
+    let template = strip`
+      <outer>
+      {{#in-element remote insertBefore=undefined}}<inner>Wat Wat</inner>{{/in-element}}
+      </outer>
+      `;
+    let doc = this.delegate.serverDoc;
+    let remote = doc.createElement('remote');
+
+    this.renderServerSide(template, { remote });
+    let serializedRemote = '<preexisting><preexisting>';
+
+    doc = this.delegate.clientDoc;
+    let clientRemote = (remote = doc.createElement('remote'));
+    let host = doc.createElement('div');
+    host.appendChild(this.element);
+    host.appendChild(clientRemote);
+    replaceHTML(clientRemote, serializedRemote);
+    this.element = assertElement(host.firstChild);
+
+    this.renderClientSide(template, { remote: clientRemote });
+    this.assertRehydrationStats({ nodesRemoved: 1 });
     this.assert.equal(toInnerHTML(clientRemote), '<inner>Wat Wat</inner>');
+  }
+
+  @test
+  'in-element with insertBefore=null can rehydrate into pre-existing content'() {
+    let template = strip`
+      <outer>
+      {{#in-element remote insertBefore=null}}<inner>Wat Wat</inner>{{/in-element}}
+      </outer>
+      `;
+    let doc = this.delegate.serverDoc;
+    let remote = doc.createElement('remote');
+    let preexisting = doc.createElement('preexisting');
+    remote.appendChild(preexisting);
+
+    this.renderServerSide(template, { remote, preexisting });
+    let serializedRemote = '<preexisting></preexisting>';
+
+    doc = this.delegate.clientDoc;
+    let clientRemote = (remote = doc.createElement('remote'));
+    let host = doc.createElement('div');
+    host.appendChild(this.element);
+    host.appendChild(clientRemote);
+    replaceHTML(clientRemote, serializedRemote);
+    this.element = assertElement(host.firstChild);
+
+    this.renderClientSide(template, { remote: clientRemote });
+    this.assertRehydrationStats({ nodesRemoved: 0 });
+    this.assert.equal(
+      toInnerHTML(clientRemote),
+      '<preexisting></preexisting><inner>Wat Wat</inner>'
+    );
+  }
+
+  @test
+  'in-element with insertBefore=element can rehydrate into pre-existing content'() {
+    let template = strip`
+      <outer>
+      {{#in-element remote insertBefore=preexisting}}<inner>Wat Wat</inner>{{/in-element}}
+      </outer>
+      `;
+    let doc = this.delegate.serverDoc;
+    let remote = doc.createElement('remote');
+    let prefix = doc.createElement('prefix');
+    let preexisting = doc.createElement('preexisting');
+    remote.appendChild(prefix);
+    remote.appendChild(preexisting);
+
+    this.renderServerSide(template, { remote, prefix, preexisting });
+    let serializedRemote = '<prefix></prefix><preexisting></preexisting>';
+
+    doc = this.delegate.clientDoc;
+    let clientRemote = (remote = doc.createElement('remote'));
+    let host = doc.createElement('div');
+    host.appendChild(this.element);
+    host.appendChild(clientRemote);
+    replaceHTML(clientRemote, serializedRemote);
+    let clientPreexisting = clientRemote.childNodes[1];
+    this.element = assertElement(host.firstChild);
+
+    this.renderClientSide(template, {
+      remote: clientRemote,
+      prefix,
+      preexisting: clientPreexisting,
+    });
+    this.assertRehydrationStats({ nodesRemoved: 0 });
+    this.assert.equal(
+      toInnerHTML(clientRemote),
+      '<prefix></prefix><inner>Wat Wat</inner><preexisting></preexisting>'
+    );
   }
 
   @test
