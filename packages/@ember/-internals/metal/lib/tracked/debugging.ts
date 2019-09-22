@@ -6,6 +6,9 @@ type Option<T> = T | null;
 
 interface DebugTracking {
   history: { [revision: number]: TrackerSnapshot[] };
+  isRecording: boolean;
+  start: () => void;
+  stop: () => void;
 }
 
 interface TrackerSnapshot {
@@ -26,11 +29,54 @@ interface TagSnapshot {
 
 Ember.EMBER_DEBUG = {};
 Ember.EMBER_DEBUG.TRACKING = {
-  history: [],
+  history: {},
+  isRecording: false,
+  start() {
+    getTrackingInfo().history = {};
+    getTrackingInfo().isRecording = true;
+  },
+  stop() {
+    getTrackingInfo().isRecording = false;
+  },
 } as DebugTracking;
 
 function getTrackingInfo(): DebugTracking {
   return Ember.EMBER_DEBUG.TRACKING;
+}
+
+// NOTE:
+//  track is a wrapper around a tag
+//    cosume is called on other tags
+//
+//  let tag = track(() => {
+//    cosume(someTag);
+//    cosume(someTagB);
+//  })
+//
+//  dirty(someTag); // also invalidates 'tag';
+export function debugTracker(current: Tracker, _parent: Option<Tracker>) {
+  if (!getTrackingInfo().isRecording) return;
+
+  // In what scenarios would we get here with nothing on the tracker?
+  if (!(current as any).last) return;
+
+  // Put into "revision" buckets, based on "lastChecked"
+  // (because the revision of a tag may not have changed if the value didn't changed
+  //  but last-checked is the last revision to inspect it)
+  let lastChecked = `${(current as any).last.lastChecked}`;
+
+  // Convert the Tracker to an isolated moment in time
+  // hack around tags being a private field
+  let tags = Array.from((current as any).tags.values()) as Tag[];
+
+  let trackerSnapshot = normalizeTags(tags);
+
+  let currentBatch = getTrackingInfo().history[lastChecked];
+  let batch = currentBatch || [];
+
+  batch.push(trackerSnapshot);
+
+  Ember.EMBER_DEBUG.TRACKING.history[lastChecked] = batch;
 }
 
 function prettyPrintTrackingInfo() {
@@ -97,36 +143,6 @@ function printDependents(rootTag: TrackerSnapshot, dependencies: TagSnapshot[], 
 
 Ember.EMBER_DEBUG.TRACKING.print = prettyPrintTrackingInfo;
 
-// NOTE:
-//  track is a wrapper around a tag
-//    cosume is called on other tags
-//
-//  let tag = track(() => {
-//    cosume(someTag);
-//    cosume(someTagB);
-//  })
-//
-//  dirty(someTag); // also invalidates 'tag';
-export function debugTracker(current: Tracker, _parent: Option<Tracker>) {
-  // Put into "revision" buckets, based on "lastChecked"
-  // (because the revision of a tag may not have changed if the value didn't changed
-  //  but last-checked is the last revision to inspect it)
-  let lastChecked = `${(current as any).last.lastChecked}`;
-
-  // Convert the Tracker to an isolated moment in time
-  // hack around tags being a private field
-  let tags = Array.from((current as any).tags.values()) as Tag[];
-
-  let trackerSnapshot = normalizeTags(tags);
-
-  let currentBatch = getTrackingInfo().history[lastChecked];
-  let batch = currentBatch || [];
-
-  batch.push(trackerSnapshot);
-
-  Ember.EMBER_DEBUG.TRACKING.history[lastChecked] = batch;
-}
-
 function normalizeTags(tags: any[]): TrackerSnapshot {
   let [tag, ...trackedDependents] = tags;
 
@@ -150,7 +166,7 @@ function normalizeDependents(root: any, dependencies?: any) {
 
   return result
     .flat()
-    .compact()
+    .filter((item?: Tag) => item) // filter out falsey
     .map(toTagSnapshot)
     .map((snapshot: TagSnapshot) => {
       let subDependents = normalizeDependents(snapshot.tag);
