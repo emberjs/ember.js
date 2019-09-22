@@ -18,6 +18,8 @@ interface TagSnapshot {
   propertyName: string;
   objectName: string;
   objectRef: object;
+  revision: number;
+  lastChecked: number;
   tag: Tag | UpdatableTag;
   dependencies: TagSnapshot[];
 }
@@ -35,7 +37,7 @@ function prettyPrintTrackingInfo() {
   let history = getTrackingInfo().history;
   let revisions = Object.keys(history)
     .map(revision => parseInt(revision, 10))
-    .sort();
+    .sort((a, b) => a - b);
 
   let i;
   let currentRevision: number;
@@ -78,12 +80,12 @@ function printDependents(rootTag: TrackerSnapshot, dependencies: TagSnapshot[], 
 
     if (!dependency.objectRef && !dependency.propertyName) {
       // eslint-disable-next-line no-console
-      console.log(`${indentation} Intermediate Tracking Tag @ rev: ${(dependency.tag as any).revision}`);
+      console.log(`${indentation} Intermediate Tracking Tag @ rev: ${dependency.revision}`);
     } else {
       // eslint-disable-next-line no-console
       console.log(
         `${indentation}Dependency: ${dependency.propertyName} ` +
-          `(rev: ${(dependency.tag as any).revision}) on ` +
+          `(rev: ${dependency.revision}) on ` +
           `${dependency.objectName} ` +
           `${isChangedProperty ? 'changed' : 'did not change'}`
       );
@@ -165,6 +167,8 @@ function toTagSnapshot(tag: any): TagSnapshot {
   let result: Partial<TagSnapshot> = {
     objectName: hostObject && hostObject.__proto__.constructor.name,
     objectRef: hostObject,
+    revision: tag.revision,
+    lastChecked: tag.lastChecked,
     tag,
   };
 
