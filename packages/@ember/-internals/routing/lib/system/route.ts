@@ -474,6 +474,11 @@ class Route extends EmberObject implements IRoute {
     });
     ```
 
+    To allow the `didTransition` event to continue bubbling to the 
+    parent route, use `return true;`. When the `didTransition` method 
+    has a return value of true then the parent route's `didTransition` 
+    method will be fired, enabling "bubbling" behavior for the event.
+
     @event loading
     @param {Transition} transition
     @param {Route} route The route that triggered the loading event
