@@ -1,5 +1,11 @@
 # Ember Changelog
 
+### v3.14.0-beta.2 (September 24, 2019)
+
+- [#18273](https://github.com/emberjs/ember.js/pull/18273) [BUGFIX] Fix issues with SSR rehydration of <title>.
+- [#18415](https://github.com/emberjs/ember.js/pull/18415) [BUGFIX] Fix hbs import path in test blueprint.
+- [#18418](https://github.com/emberjs/ember.js/pull/18418) / [#18419](https://github.com/emberjs/ember.js/pull/18419) [BUGFIX] Require Octane features when using Octane preview.
+
 ### v3.14.0-beta.1 (September 19, 2019)
 
 - [#18345](https://github.com/emberjs/ember.js/pull/18345) / [#18363](https://github.com/emberjs/ember.js/pull/18363) [FEATURE] Implement the [Provide @model named argument to route templates](https://github.com/emberjs/rfcs/blob/master/text/0523-model-argument-for-route-templates.md RFC.
@@ -10,8 +16,8 @@
 
 ### v3.13.1 (September 23, 2019)
 
-- [#18273](https://github.com/emberjs/ember.js/pull/18273) [BUGFIX] Fix issues with SSR rehydration of <title>. (#18273)
-- [#18418](https://github.com/emberjs/ember.js/pull/18418) / [#18418](https://github.com/emberjs/ember.js/pull/18418) [BUGFIX] Require Octane features when using Octane preview (#18418)
+- [#18273](https://github.com/emberjs/ember.js/pull/18273) [BUGFIX] Fix issues with SSR rehydration of <title>.
+- [#18418](https://github.com/emberjs/ember.js/pull/18418) / [#18419](https://github.com/emberjs/ember.js/pull/18419) [BUGFIX] Require Octane features when using Octane preview.
 
 ### v3.13.0 (September 19, 2019)
 
