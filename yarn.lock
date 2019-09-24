@@ -1609,10 +1609,10 @@ broccoli-amd-funnel@^2.0.1:
     broccoli-plugin "^1.3.0"
     symlink-or-copy "^1.2.0"
 
-broccoli-babel-transpiler@^7.1.2, broccoli-babel-transpiler@^7.2.0:
-  version "7.2.0"
-  resolved "https://registry.yarnpkg.com/broccoli-babel-transpiler/-/broccoli-babel-transpiler-7.2.0.tgz#5c0d694c4055106abb385e2d3d88936d35b7cb18"
-  integrity sha512-lkP9dNFfK810CRHHWsNl9rjyYqcXH3qg0kArnA6tV9Owx3nlZm3Eyr0cGo6sMUQCNLH+2oKrRjOdUGSc6Um6Cw==
+broccoli-babel-transpiler@^7.1.2, broccoli-babel-transpiler@^7.2.0, broccoli-babel-transpiler@^7.3.0:
+  version "7.3.0"
+  resolved "https://registry.yarnpkg.com/broccoli-babel-transpiler/-/broccoli-babel-transpiler-7.3.0.tgz#a0ad3a37dbf74469664bbca403d652070c2c1317"
+  integrity sha512-tsXNvDf3gp6g8rGkz234AhbaIRUsCdd6CM3ikfkJVB0EpC8ZAczGsFKTjENLy1etx4s7FkruW/QjI7Wfdhx6Ng==
   dependencies:
     "@babel/core" "^7.3.3"
     "@babel/polyfill" "^7.0.0"
