@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### v3.13.1 (September 23, 2019)
+
+- [#18273](https://github.com/emberjs/ember.js/pull/18273) [BUGFIX] Fix issues with SSR rehydration of <title>. (#18273)
+- [#18418](https://github.com/emberjs/ember.js/pull/18418) / [#18418](https://github.com/emberjs/ember.js/pull/18418) [BUGFIX] Require Octane features when using Octane preview (#18418)
+
 ### v3.13.0 (September 19, 2019)
 
 - [#16366](https://github.com/emberjs/ember.js/pull/16366) / [#16903](https://github.com/emberjs/ember.js/pull/16903) / [#17572](https://github.com/emberjs/ember.js/pull/17572) / [#17682](https://github.com/emberjs/ember.js/pull/17682) / [#17765](https://github.com/emberjs/ember.js/pull/17765) / [#17751](https://github.com/emberjs/ember.js/pull/17751) / [#17835](https://github.com/emberjs/ember.js/pull/17835) / [#18059](https://github.com/emberjs/ember.js/pull/18059) / [#17951](https://github.com/emberjs/ember.js/pull/17951) / [#18069](https://github.com/emberjs/ember.js/pull/18069) / [#18074](https://github.com/emberjs/ember.js/pull/18074) / [#18073](https://github.com/emberjs/ember.js/pull/18073) / [#18091](https://github.com/emberjs/ember.js/pull/18091) / [#18186](https://github.com/emberjs/ember.js/pull/18186) / [#18223](https://github.com/emberjs/ember.js/pull/18223) / [#18358](https://github.com/emberjs/ember.js/pull/18358) / [#18266](https://github.com/emberjs/ember.js/pull/18266) [FEATURE] Implement the [Tracked Properties](https://github.com/emberjs/rfcs/blob/master/text/0410-tracked-properties.md) and [Tracked Property Updates](https://github.com/emberjs/rfcs/blob/master/text/0478-tracked-properties-updates.md) RFCs.
