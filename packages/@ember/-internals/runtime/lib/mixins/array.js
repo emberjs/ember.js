@@ -302,6 +302,20 @@ const ArrayMixin = Mixin.create(Enumerable, {
   /**
     The first object in the array, or `undefined` if the array is empty.
 
+    ```javascript
+    let vowels = ['a', 'e', 'i', 'o', 'u'];
+    vowels.firstObject; // 'a'
+
+    vowels.shiftObject();
+    vowels.firstObject; // 'e'
+
+    vowels.reverseObjects();
+    vowels.firstObject; // 'u'
+    
+    vowels.clear();
+    vowels.firstObject; // undefined
+    ```
+
     @property firstObject
     @return {Object | undefined} The first object in the array
     @public
