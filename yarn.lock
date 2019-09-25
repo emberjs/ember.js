@@ -199,9 +199,10 @@ amd-name-resolver@0.0.4:
   resolved "https://registry.yarnpkg.com/amd-name-resolver/-/amd-name-resolver-0.0.4.tgz#aa19f1b9a0afcef975451b263b7dfb690a9c0ca3"
   integrity sha1-qhnxuaCvzvl1RRsmO337aQqcDKM=
 
-amd-name-resolver@^1.0.0, amd-name-resolver@^1.2.0:
+amd-name-resolver@^1.0.0, amd-name-resolver@^1.2.0, amd-name-resolver@^1.3.1:
   version "1.3.1"
-  resolved "https://github.com/ember-cli/amd-name-resolver.git#9d519b14987bcfa3f9c6012f3808ac24fac1e9c0"
+  resolved "https://registry.yarnpkg.com/amd-name-resolver/-/amd-name-resolver-1.3.1.tgz#ffe71c683c6e7191fc4ae1bb3aaed15abea135d9"
+  integrity sha512-26qTEWqZQ+cxSYygZ4Cf8tsjDBLceJahhtewxtKZA3SRa4PluuqYCuheemDQD+7Mf5B7sr+zhTDWAHDh02a1Dw==
   dependencies:
     ensure-posix-path "^1.0.1"
     object-hash "^1.3.1"
