@@ -182,12 +182,12 @@ export function inlineIf(_vm: VM, { positional }: Arguments) {
   The following:
 
   ```app/templates/application.hbs
-  <Greetings />
+  <Greeting />
   ```
 
-  ```app/components/greetings.hbs
-  {{#unless greetings}}
-    No greetings were found. Why not set one?
+  ```app/components/greeting.hbs
+  {{#unless @greeting}}
+    No greeting was found. Why not set one?
   {{/unless}}
   ```
 
