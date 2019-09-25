@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.13.2 (September 25, 2019)
+
+- [#18429](https://github.com/emberjs/ember.js/pull/18429) [BUGFIX] Fix incorrect error message when opting into using Octane, and missing optional features.
+
 ### v3.13.1 (September 23, 2019)
 
 - [#18273](https://github.com/emberjs/ember.js/pull/18273) [BUGFIX] Fix issues with SSR rehydration of <title>. (#18273)
