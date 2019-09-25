@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-"use strict";
+
+'use strict';
 
 /*
  * This script loops through the compiled packages in `dist` and links them
@@ -18,7 +19,9 @@ const LINK_COMMAND = 'yarn link';
 const UNLINK_COMMAND = 'yarn unlink';
 
 if (!fs.existsSync('dist')) {
-  console.log(chalk.red('No dist directory found. Run `ember build` first before running this command.'))
+  console.log(
+    chalk.red('No dist directory found. Run `ember build` first before running this command.')
+  );
   process.exit(1);
 }
 
@@ -27,7 +30,7 @@ let packages = globSync('dist/@glimmer/*/', { cwd });
 
 packages.forEach(link);
 
-console.log('\nIn your project...\n')
+console.log('\nIn your project...\n');
 packages.forEach(dir => {
   let name = dir.replace(/^dist\//, '').replace(/\/$/, '');
   console.log(`${chalk.blue('yarn link')} ${name}`);
@@ -43,7 +46,7 @@ function link(dir) {
 
       try {
         execSync(command, {
-          stdio: ['ignore', 'ignore', 'pipe']
+          stdio: ['ignore', 'ignore', 'pipe'],
         });
       } catch (err) {
         console.log(err.toString());
