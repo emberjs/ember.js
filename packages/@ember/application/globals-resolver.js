@@ -4,7 +4,7 @@
 
 import { dictionary } from '@ember/-internals/utils';
 import { get, findNamespace } from '@ember/-internals/metal';
-import { assert, info } from '@ember/debug';
+import { assert, info, deprecate } from '@ember/debug';
 import { capitalize, classify, dasherize, decamelize } from '@ember/string';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import { getTemplate } from '@ember/-internals/glimmer';
@@ -77,6 +77,7 @@ import { DEBUG } from '@glimmer/env';
   @class GlobalsResolver
   @extends EmberObject
   @public
+  @deprecated
 */
 
 class DefaultResolver extends EmberObject {
@@ -93,9 +94,20 @@ class DefaultResolver extends EmberObject {
 
     @property namespace
     @public
+    @deprecated
   */
 
   init() {
+    deprecate(
+      'Using the globals resolver is deprecated. Use the ember-resolver package instead. See https://deprecations.emberjs.com/v3.x#toc_ember-deprecate-globals-resolver',
+      false,
+      {
+        until: '4.0.0',
+        id: 'globals-resolver',
+        url: 'https://deprecations.emberjs.com/v3.x#toc_ember-deprecate-globals-resolver',
+      }
+    );
+
     this._parseNameCache = dictionary(null);
   }
 
