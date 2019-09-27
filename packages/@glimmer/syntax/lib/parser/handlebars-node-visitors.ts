@@ -213,11 +213,7 @@ export abstract class HandlebarsNodeVisitors extends Parser {
 
       default:
         throw new SyntaxError(
-          `Using a Handlebars comment when in the \`${
-            tokenizer['state']
-          }\` state is not supported: "${comment.value}" on line ${loc.start.line}:${
-            loc.start.column
-          }`,
+          `Using a Handlebars comment when in the \`${tokenizer['state']}\` state is not supported: "${comment.value}" on line ${loc.start.line}:${loc.start.column}`,
           rawComment.loc
         );
     }
@@ -284,25 +280,19 @@ export abstract class HandlebarsNodeVisitors extends Parser {
     if (original.indexOf('/') !== -1) {
       if (original.slice(0, 2) === './') {
         throw new SyntaxError(
-          `Using "./" is not supported in Glimmer and unnecessary: "${path.original}" on line ${
-            loc.start.line
-          }.`,
+          `Using "./" is not supported in Glimmer and unnecessary: "${path.original}" on line ${loc.start.line}.`,
           path.loc
         );
       }
       if (original.slice(0, 3) === '../') {
         throw new SyntaxError(
-          `Changing context using "../" is not supported in Glimmer: "${path.original}" on line ${
-            loc.start.line
-          }.`,
+          `Changing context using "../" is not supported in Glimmer: "${path.original}" on line ${loc.start.line}.`,
           path.loc
         );
       }
       if (original.indexOf('.') !== -1) {
         throw new SyntaxError(
-          `Mixing '.' and '/' in paths is not supported in Glimmer; use only '.' to separate property paths: "${
-            path.original
-          }" on line ${loc.start.line}.`,
+          `Mixing '.' and '/' in paths is not supported in Glimmer; use only '.' to separate property paths: "${path.original}" on line ${loc.start.line}.`,
           path.loc
         );
       }

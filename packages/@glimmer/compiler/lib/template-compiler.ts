@@ -537,9 +537,7 @@ function assertValidPartial(statement: AST.MustacheStatement) /* : expr */ {
 
   if (params && params.length !== 1) {
     throw new SyntaxError(
-      `Partial found with no arguments. You must specify a template name. (on line ${
-        loc.start.line
-      })`,
+      `Partial found with no arguments. You must specify a template name. (on line ${loc.start.line})`,
       statement.loc
     );
   } else if (hash && hash.pairs.length > 0) {
@@ -549,9 +547,7 @@ function assertValidPartial(statement: AST.MustacheStatement) /* : expr */ {
     );
   } else if (!escaped) {
     throw new SyntaxError(
-      `{{{partial ...}}} is not supported, please use {{partial ...}} instead (on line ${
-        loc.start.line
-      })`,
+      `{{{partial ...}}} is not supported, please use {{partial ...}} instead (on line ${loc.start.line})`,
       statement.loc
     );
   }
