@@ -5,7 +5,6 @@ import { module } from './support';
 
 module('Render Tests: I-N-U-R', ({ test }) => {
   test('Can set properties', assert => {
-    // tslint:disable-next-line:no-unused-expression
     new (class extends RenderTest {
       constructor(delegate: JitRenderDelegate) {
         super(delegate);
@@ -20,7 +19,6 @@ module('Render Tests: I-N-U-R', ({ test }) => {
     let text = document.createTextNode('Foo') as SimpleText;
     div.appendChild(text);
 
-    // tslint:disable-next-line:no-unused-expression
     new (class extends RenderTest {
       element = div;
       constructor(delegate: JitRenderDelegate) {
@@ -38,7 +36,6 @@ module('Render Tests: I-N-U-R', ({ test }) => {
     p.appendChild(text);
     div.appendChild(p);
 
-    // tslint:disable-next-line:no-unused-expression
     new (class extends RenderTest {
       element = div;
       constructor(delegate: JitRenderDelegate) {
@@ -58,7 +55,6 @@ module('Render Tests: I-N-U-R', ({ test }) => {
     div.appendChild(text);
     div.appendChild(close);
 
-    // tslint:disable-next-line:no-unused-expression
     new (class extends RenderTest {
       element = div;
       constructor(delegate: JitRenderDelegate) {

@@ -8,16 +8,16 @@ export type DebugGet = (path: string) => unknown;
 
 export type DebugCallback = (context: unknown, get: DebugGet) => void;
 
-/* tslint:disable */
 function debugCallback(context: unknown, get: DebugGet): void {
   console.info('Use `context`, and `get(<path>)` to debug this template.');
 
   // for example...
+  // eslint-disable-next-line no-unused-expressions
   context === get('this');
 
+  // eslint-disable-next-line no-debugger
   debugger;
 }
-/* tslint:enable */
 
 let callback = debugCallback;
 

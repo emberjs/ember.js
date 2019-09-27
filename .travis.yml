@@ -60,7 +60,6 @@ jobs:
 
       script:
         - yarn problems
-        - yarn tslint
         - yarn eslint
     # Temporarily disabling the smoke test as it is causing timeouts on Travis
     # - name: Smoke Test

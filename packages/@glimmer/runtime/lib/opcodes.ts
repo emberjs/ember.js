@@ -69,7 +69,6 @@ export class AppendOpcodes {
     if (DEBUG) {
       let pos = vm[INNER_VM].fetchRegister($pc) - opcode.size;
 
-      /* tslint:disable */
       [opName, params] = debug(vm[CONSTANTS], vm.runtime.resolver, opcode, opcode.isMachine);
 
       // console.log(`${typePos(vm['pc'])}.`);
@@ -81,7 +80,6 @@ export class AppendOpcodes {
       }
 
       console.log(...debugParams);
-      /* tslint:enable */
     }
 
     let sp: number;
@@ -123,7 +121,6 @@ export class AppendOpcodes {
         );
       }
 
-      /* tslint:disable */
       console.log(
         '%c -> pc: %d, ra: %d, fp: %d, sp: %d, s0: %O, s1: %O, t0: %O, t1: %O, v0: %O',
         'color: orange',
@@ -153,7 +150,6 @@ export class AppendOpcodes {
       console.log('%c -> elements', 'color: blue', vm.elements()[CURSOR_STACK].current!.element);
 
       console.log('%c -> constructing', 'color: aqua', vm.elements()['constructing']);
-      /* tslint:enable */
     }
   }
 
