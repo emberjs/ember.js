@@ -20,15 +20,15 @@ export type RegisteredExpressionSyntax = LeafCompilerFunction<WireFormat.TupleEx
 
 export type RegisteredSyntax = RegisteredStatementSyntax | RegisteredExpressionSyntax;
 
-export type LeafCompilerFunction<T extends TupleSyntax> = ((
+export type LeafCompilerFunction<T extends TupleSyntax> = (
   sexp: T,
   meta: ContainingMetadata
-) => ExpressionCompileActions);
+) => ExpressionCompileActions;
 
-export type StatementCompilerFunction<T extends WireFormat.Statement> = ((
+export type StatementCompilerFunction<T extends WireFormat.Statement> = (
   sexp: T,
   meta: ContainingMetadata
-) => StatementCompileActions);
+) => StatementCompileActions;
 
 export interface StatementCompilationContext {
   meta: ContainingMetadata;
@@ -66,10 +66,10 @@ export class StatementCompilers extends Compilers<RegisteredStatementSyntax> {
   }
 }
 
-export type SimpleCompilerFunction<T extends TupleSyntax> = ((
+export type SimpleCompilerFunction<T extends TupleSyntax> = (
   sexp: T,
   meta: ContainingMetadata
-) => ExpressionCompileActions);
+) => ExpressionCompileActions;
 
 export const ATTRS_BLOCK = '&attrs';
 

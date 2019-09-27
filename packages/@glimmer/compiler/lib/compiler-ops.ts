@@ -59,7 +59,7 @@ export type Processor<
   OutVariable,
   OutOps extends CompilerOps<OutVariable>
 > = {
-  [P in keyof InOps & keyof OutOps]: (operand: InOps[P]) => void | Op<OutVariable, OutOps, OpName>
+  [P in keyof InOps & keyof OutOps]: (operand: InOps[P]) => void | Op<OutVariable, OutOps, OpName>;
 };
 
 export type Op<V, O extends CompilerOps<V>, K extends keyof O = keyof O> = {

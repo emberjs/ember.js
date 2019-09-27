@@ -125,7 +125,7 @@ export type BuilderOperandsTuple =
 
 export type SingleBuilderOperands = SingleBuilderOperandsTuple & SingleBuilderOperand[];
 
-export type BuilderHandleThunk = (() => number);
+export type BuilderHandleThunk = () => number;
 
 export type Operand = number | BuilderHandleThunk | StdlibOperand;
 
