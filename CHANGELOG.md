@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.14.0-beta.3 (October 1, 2019)
+
+- [#18429](https://github.com/emberjs/ember.js/pull/18429) [BUGFIX] Fix incorrect error message for octane features.
+
 ### v3.14.0-beta.2 (September 24, 2019)
 
 - [#18273](https://github.com/emberjs/ember.js/pull/18273) [BUGFIX] Fix issues with SSR rehydration of <title>.
