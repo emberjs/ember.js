@@ -1,3 +1,4 @@
+import { deprecate } from '@ember/debug';
 import { FUNCTION_PROTOTYPE_EXTENSIONS } from '@ember/deprecated-features';
 import { DEBUG } from '@glimmer/env';
 import global from './global';
@@ -182,6 +183,20 @@ export const ENV = {
   },
 };
 
+let providedEnv = global.EmberENV;
+if (providedEnv === undefined) {
+  providedEnv = global.ENV;
+
+  deprecate(
+    "Configuring Ember's boot options via `window.ENV` is deprecated, please migrate to `window.EmberENV` instead.",
+    providedEnv === undefined,
+    {
+      id: 'ember-environment.window.env',
+      until: '3.17.0',
+    }
+  );
+}
+
 (EmberENV => {
   if (typeof EmberENV !== 'object' || EmberENV === null) return;
 
@@ -241,7 +256,7 @@ export const ENV = {
   if (DEBUG) {
     ENV._DEBUG_RENDER_TREE = true;
   }
-})(global.EmberENV || global.ENV);
+})(providedEnv);
 
 export function getENV() {
   return ENV;
