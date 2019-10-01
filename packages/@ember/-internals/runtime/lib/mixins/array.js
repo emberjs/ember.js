@@ -863,9 +863,21 @@ const ArrayMixin = Mixin.create(Enumerable, {
   },
 
   /**
-    Returns an array with the items that do not have truthy values for
-    key.  You can pass an optional second argument with the target value.  Otherwise
-    this will match any property that evaluates to false.
+    Returns an array with the items that do not have truthy values for the provided key.
+    You can pass an optional second argument with a target value to reject for the key.
+    Otherwise this will reject objects where the provided property evaluates to false.
+
+    Example Usage:
+
+    ```javascript
+      let food = [
+        { name: "apple", isFruit: true },
+        { name: "carrot", isFruit: false },
+        { name: "bread", isFruit: false },
+      ];
+      food.rejectBy('isFruit'); // [{ name: "carrot", isFruit: false }, { name: "bread", isFruit: false }]
+      food.rejectBy('name', 'carrot'); // [{ name: "apple", isFruit: true }}, { name: "bread", isFruit: false }]
+    ```
 
     @method rejectBy
     @param {String} key the property to test
