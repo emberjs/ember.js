@@ -5,10 +5,9 @@ import { DEBUG } from '@glimmer/env';
 import { Option, Simple } from '@glimmer/interfaces';
 import { OpaqueIterable, VersionedReference } from '@glimmer/reference';
 import {
-  ElementBuilder,
-  Environment as GlimmerEnvironment,
   SimpleDynamicAttribute,
 } from '@glimmer/runtime';
+import { Environment as GlimmerEnvironment, ElementBuilder } from '@glimmer/interfaces';
 import { Destroyable } from '@glimmer/util';
 import getDebugStack, { DebugStack } from './utils/debug-stack';
 import createIterable from './utils/iterable';

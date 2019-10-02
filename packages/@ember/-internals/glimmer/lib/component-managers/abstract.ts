@@ -1,10 +1,5 @@
-import { ComponentCapabilities, DynamicScope, VMArguments as Arguments, Bounds, PreparedArguments } from '@glimmer/interfaces';
+import { ComponentCapabilities, DynamicScope, VMArguments as Arguments, Bounds, PreparedArguments, ComponentManager, Environment, ElementOperations } from '@glimmer/interfaces';
 import { Tag, VersionedPathReference } from '@glimmer/reference';
-import {
-  ComponentManager,
-  ElementOperations,
-  Environment
-} from '@glimmer/runtime';
 import { Destroyable, Option } from '@glimmer/util';
 import { SimpleElement } from '@simple-dom/interface';
 import { DebugStack } from '../utils/debug-stack';

@@ -1,5 +1,5 @@
 import { DEBUG } from '@glimmer/env';
-import { ComponentCapabilities, VMArguments as Arguments, Bounds } from '@glimmer/interfaces';
+import { ComponentCapabilities, VMArguments as Arguments, Bounds, ComponentDefinition } from '@glimmer/interfaces';
 import {
   CONSTANT_TAG,
   createTag,
@@ -7,9 +7,8 @@ import {
   Tag,
   VersionedPathReference,
 } from '@glimmer/reference';
+import { Invocation } from '@glimmer/interfaces';
 import {
-  ComponentDefinition,
-  Invocation,
   WithDynamicLayout,
 } from '@glimmer/runtime';
 import { Destroyable, Option } from '@glimmer/util';

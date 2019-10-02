@@ -5,8 +5,10 @@ import {
   ComponentCapabilities,
   Option,
   ProgramSymbolTable,
+  ComponentDefinition,
+  ComponentManager
 } from '@glimmer/interfaces';
-import { ComponentDefinition, ComponentManager, WithStaticLayout } from '@glimmer/runtime';
+import { WithStaticLayout } from '@glimmer/runtime';
 import RuntimeResolver from './resolver';
 
 interface StaticComponentManager<DefinitionState>

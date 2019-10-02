@@ -1,6 +1,7 @@
 import { Factory, Owner } from '@ember/-internals/owner';
 import { OwnedTemplateMeta } from '@ember/-internals/views';
-import { ComponentDefinition, Invocation, WithStaticLayout } from '@glimmer/runtime';
+import { WithStaticLayout } from '@glimmer/runtime';
+import { ComponentDefinition, Invocation } from '@glimmer/interfaces';
 import RuntimeResolver from '../resolver';
 import { OwnedTemplate } from '../template';
 import AbstractComponentManager from './abstract';

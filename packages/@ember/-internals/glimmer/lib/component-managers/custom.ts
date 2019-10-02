@@ -12,12 +12,12 @@ import {
   ProgramSymbolTable,
   VMArguments as Arguments,
   CapturedArguments,
-  Bounds
+  Bounds,
+  ComponentDefinition,
+  Invocation
 } from '@glimmer/interfaces';
 import { createTag, isConst, PathReference, Tag } from '@glimmer/reference';
 import {
-  ComponentDefinition,
-  Invocation,
   WithStaticLayout,
 } from '@glimmer/runtime';
 import { Destroyable } from '@glimmer/util';

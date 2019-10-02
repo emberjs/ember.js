@@ -20,13 +20,13 @@ import {
   VMHandle,
   VMArguments as Arguments,
   Bounds,
-  PreparedArguments
+  PreparedArguments,
+  ComponentDefinition,
+  ElementOperations,
+  Invocation
 } from '@glimmer/interfaces';
 import { combine, Tag, validate, value, VersionedPathReference } from '@glimmer/reference';
 import {
-  ComponentDefinition,
-  ElementOperations,
-  Invocation,
   PrimitiveReference,
   WithDynamicLayout,
   WithDynamicTagName,

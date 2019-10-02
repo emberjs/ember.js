@@ -6,13 +6,10 @@ import EngineInstance from '@ember/engine/instance';
 import { _instrumentStart } from '@ember/instrumentation';
 import { assign } from '@ember/polyfills';
 import { DEBUG } from '@glimmer/env';
-import { ComponentCapabilities, Option, VMArguments as Arguments, Bounds } from '@glimmer/interfaces';
+import { ComponentCapabilities, Option, VMArguments as Arguments, Bounds, ComponentDefinition, Invocation, ElementOperations } from '@glimmer/interfaces';
 import { CONSTANT_TAG, createTag, Tag, VersionedPathReference } from '@glimmer/reference';
 import {
-  ComponentDefinition,
-  ElementOperations,
   EMPTY_ARGS,
-  Invocation,
   WithDynamicTagName,
   WithStaticLayout,
 } from '@glimmer/runtime';
