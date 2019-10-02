@@ -139,7 +139,7 @@
  * where the router is transitioning to. It's important
  * to note that a `RouteInfo` is a linked list and this
  * property represents the leafmost route.
- * @property {?RouteInfo|RouteInfoWithAttributes} to
+ * @property {null|RouteInfo|RouteInfoWithAttributes} to
  * @public
  */
 
