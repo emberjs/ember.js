@@ -1,9 +1,9 @@
 import { get } from '@ember/-internals/metal';
 import { assert } from '@ember/debug';
 import { dasherize } from '@ember/string';
-import { Option } from '@glimmer/interfaces';
+import { Option, ElementOperations } from '@glimmer/interfaces';
 import { CachedReference, combine, map, Reference, Tag } from '@glimmer/reference';
-import { ElementOperations, PrimitiveReference } from '@glimmer/runtime';
+import { PrimitiveReference } from '@glimmer/runtime';
 import { Core, Ops } from '@glimmer/wire-format';
 import { SimpleElement } from '@simple-dom/interface';
 import { ROOT_REF } from '../component';

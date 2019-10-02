@@ -1,8 +1,7 @@
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { Tag, VersionedPathReference } from '@glimmer/reference';
-import { VMArguments as Arguments, VM } from '@glimmer/interfaces';
-import { Helper } from '@glimmer/runtime';
+import { VMArguments as Arguments, VM, Helper } from '@glimmer/interfaces';
 
 let helper: Helper;
 

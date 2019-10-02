@@ -13,9 +13,10 @@ import {
   ComponentDefinition,
   Option,
   RuntimeResolver as IRuntimeResolver,
+  Helper
 } from '@glimmer/interfaces';
 import { LazyCompiler, Macros, PartialDefinition } from '@glimmer/opcode-compiler';
-import { getDynamicVar, Helper, ModifierDefinition } from '@glimmer/runtime';
+import { getDynamicVar, ModifierDefinition } from '@glimmer/runtime';
 import CompileTimeLookup from './compile-time-lookup';
 import { CurlyComponentDefinition } from './component-managers/curly';
 import { CustomManagerDefinition, ManagerDelegate } from './component-managers/custom';

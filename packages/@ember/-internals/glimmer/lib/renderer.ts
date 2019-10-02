@@ -3,16 +3,14 @@ import { runInTransaction } from '@ember/-internals/metal';
 import { getViewElement, getViewId } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { backburner, getCurrentRunLoop } from '@ember/runloop';
-import { Option, Cursor, DynamicScope as GlimmerDynamicScope, Bounds } from '@glimmer/interfaces';
+import { Option, Cursor, DynamicScope as GlimmerDynamicScope, Bounds, RenderResult, ElementBuilder } from '@glimmer/interfaces';
 import { CURRENT_TAG, validate, value, VersionedPathReference } from '@glimmer/reference';
 import {
   clientBuilder,
   CurriedComponentDefinition,
   curry,
-  ElementBuilder,
   IteratorResult,
   renderMain,
-  RenderResult,
   UNDEFINED_REFERENCE,
 } from '@glimmer/runtime';
 import RSVP from 'rsvp';

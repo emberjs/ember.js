@@ -1,6 +1,5 @@
 import { assert } from '@ember/debug';
-import { CapturedArguments } from '@glimmer/interfaces';
-import { Bounds } from '@glimmer/runtime';
+import { CapturedArguments, Bounds } from '@glimmer/interfaces';
 import { expect, Option, Stack } from '@glimmer/util';
 import { SimpleElement, SimpleNode } from '@simple-dom/interface';
 
