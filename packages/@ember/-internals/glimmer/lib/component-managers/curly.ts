@@ -18,15 +18,15 @@ import {
   Option,
   ProgramSymbolTable,
   VMHandle,
-  VMArguments as Arguments
+  VMArguments as Arguments,
+  Bounds,
+  PreparedArguments
 } from '@glimmer/interfaces';
 import { combine, Tag, validate, value, VersionedPathReference } from '@glimmer/reference';
 import {
-  Bounds,
   ComponentDefinition,
   ElementOperations,
   Invocation,
-  PreparedArguments,
   PrimitiveReference,
   WithDynamicLayout,
   WithDynamicTagName,

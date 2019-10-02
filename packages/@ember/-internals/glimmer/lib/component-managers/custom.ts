@@ -11,11 +11,11 @@ import {
   Option,
   ProgramSymbolTable,
   VMArguments as Arguments,
-  CapturedArguments
+  CapturedArguments,
+  Bounds
 } from '@glimmer/interfaces';
 import { createTag, isConst, PathReference, Tag } from '@glimmer/reference';
 import {
-  Bounds,
   ComponentDefinition,
   Invocation,
   WithStaticLayout,
