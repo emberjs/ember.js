@@ -1,9 +1,8 @@
 import { ENV } from '@ember/-internals/environment';
 import { OwnedTemplateMeta } from '@ember/-internals/views';
-import { ComponentCapabilities, Option } from '@glimmer/interfaces';
+import { ComponentCapabilities, Option, VMArguments as Arguments } from '@glimmer/interfaces';
 import { CONSTANT_TAG, createTag } from '@glimmer/reference';
 import {
-  Arguments,
   Bounds,
   ComponentDefinition,
   Invocation,

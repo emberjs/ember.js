@@ -1,19 +1,16 @@
 import { OwnedTemplateMeta } from '@ember/-internals/views';
 import { EMBER_ROUTING_MODEL_ARG } from '@ember/canary-features';
 import { DEBUG } from '@glimmer/env';
-import { Option, unsafe } from '@glimmer/interfaces';
+import { Option, unsafe, VMArguments as Arguments, CapturedArguments, VM, Dict } from '@glimmer/interfaces';
 import { OpcodeBuilder } from '@glimmer/opcode-compiler';
 import { ConstReference, Reference, Tag, VersionedPathReference } from '@glimmer/reference';
 import {
-  Arguments,
-  CapturedArguments,
   CurriedComponentDefinition,
   curry,
   EMPTY_ARGS,
   UNDEFINED_REFERENCE,
-  VM,
 } from '@glimmer/runtime';
-import { Dict, dict } from '@glimmer/util';
+import { dict } from '@glimmer/util';
 import * as WireFormat from '@glimmer/wire-format';
 import { OutletComponentDefinition, OutletDefinitionState } from '../component-managers/outlet';
 import { DynamicScope } from '../renderer';

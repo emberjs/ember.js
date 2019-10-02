@@ -10,12 +10,12 @@ import {
   Dict,
   Option,
   ProgramSymbolTable,
+  VMArguments as Arguments,
+  CapturedArguments
 } from '@glimmer/interfaces';
 import { createTag, isConst, PathReference, Tag } from '@glimmer/reference';
 import {
-  Arguments,
   Bounds,
-  CapturedArguments,
   ComponentDefinition,
   Invocation,
   WithStaticLayout,

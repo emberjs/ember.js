@@ -3,13 +3,11 @@ import { ActionManager, isSimpleClick } from '@ember/-internals/views';
 import { assert, deprecate } from '@ember/debug';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { join } from '@ember/runloop';
-import { Simple } from '@glimmer/interfaces';
+import { Simple, DynamicScope, VMArguments as Arguments } from '@glimmer/interfaces';
 import { Tag } from '@glimmer/reference';
 import {
-  Arguments,
   CapturedNamedArguments,
   CapturedPositionalArguments,
-  DynamicScope,
   ModifierManager,
 } from '@glimmer/runtime';
 import { Destroyable } from '@glimmer/util';

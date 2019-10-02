@@ -1,9 +1,9 @@
 import { track, untrack } from '@ember/-internals/metal';
 import { Factory } from '@ember/-internals/owner';
 import { assert, deprecate } from '@ember/debug';
-import { Dict, Simple } from '@glimmer/interfaces';
+import { Dict, Simple, VMArguments as Arguments, CapturedArguments } from '@glimmer/interfaces';
 import { combine, CONSTANT_TAG, createUpdatableTag, Tag, update } from '@glimmer/reference';
-import { Arguments, CapturedArguments, ModifierManager } from '@glimmer/runtime';
+import { ModifierManager } from '@glimmer/runtime';
 
 export interface CustomModifierDefinitionState<ModifierInstance> {
   ModifierClass: Factory<ModifierInstance>;

@@ -1,4 +1,4 @@
-import { Arguments, CapturedArguments, VM } from '@glimmer/runtime';
+import { VMArguments as Arguments, CapturedArguments, VM } from '@glimmer/interfaces';
 import { InternalHelperReference } from '../utils/references';
 /**
 @module ember

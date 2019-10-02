@@ -1,5 +1,5 @@
 import { DEBUG } from '@glimmer/env';
-import { ComponentCapabilities } from '@glimmer/interfaces';
+import { ComponentCapabilities, VMArguments as Arguments } from '@glimmer/interfaces';
 import {
   CONSTANT_TAG,
   createTag,
@@ -8,7 +8,6 @@ import {
   VersionedPathReference,
 } from '@glimmer/reference';
 import {
-  Arguments,
   Bounds,
   ComponentDefinition,
   Invocation,

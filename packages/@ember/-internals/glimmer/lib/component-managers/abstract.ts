@@ -1,10 +1,8 @@
-import { ComponentCapabilities, Simple } from '@glimmer/interfaces';
+import { ComponentCapabilities, Simple, DynamicScope, VMArguments as Arguments } from '@glimmer/interfaces';
 import { Tag, VersionedPathReference } from '@glimmer/reference';
 import {
-  Arguments,
   Bounds,
   ComponentManager,
-  DynamicScope,
   ElementOperations,
   Environment,
   PreparedArguments,

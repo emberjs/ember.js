@@ -12,7 +12,7 @@ import { isProxy, symbol } from '@ember/-internals/utils';
 import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { assert, debugFreeze } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { Dict } from '@glimmer/interfaces';
+import { Dict, CapturedArguments } from '@glimmer/interfaces';
 import {
   combine,
   COMPUTE,
@@ -32,7 +32,6 @@ import {
   VersionedReference,
 } from '@glimmer/reference';
 import {
-  CapturedArguments,
   ConditionalReference as GlimmerConditionalReference,
   PrimitiveReference,
   UNDEFINED_REFERENCE,

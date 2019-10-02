@@ -1,4 +1,4 @@
-import { Arguments, VM } from '@glimmer/runtime';
+import { VMArguments as Arguments, VM } from '@glimmer/interfaces';
 import { InternalHelperReference } from '../utils/references';
 
 function inputTypeHelper({ positional }: any) {

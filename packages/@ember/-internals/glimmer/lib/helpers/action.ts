@@ -7,7 +7,7 @@ import { flaggedInstrument } from '@ember/instrumentation';
 import { join } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import { isConst, VersionedPathReference } from '@glimmer/reference';
-import { Arguments, VM } from '@glimmer/runtime';
+import { VMArguments as Arguments, VM } from '@glimmer/interfaces';
 import { ACTION, INVOKE, UnboundReference } from '../utils/references';
 
 /**

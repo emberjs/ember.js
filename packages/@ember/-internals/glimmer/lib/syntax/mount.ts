@@ -4,17 +4,14 @@
 import { OwnedTemplateMeta } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { Option } from '@glimmer/interfaces';
+import { Option, VMArguments as Arguments, CapturedArguments, VM } from '@glimmer/interfaces';
 import { OpcodeBuilder } from '@glimmer/opcode-compiler';
 import { Tag, VersionedPathReference } from '@glimmer/reference';
 import {
-  Arguments,
-  CapturedArguments,
   CurriedComponentDefinition,
   curry,
   EMPTY_ARGS,
   UNDEFINED_REFERENCE,
-  VM,
 } from '@glimmer/runtime';
 import * as WireFormat from '@glimmer/wire-format';
 import { MODEL_ARG_NAME, MountDefinition } from '../component-managers/mount';

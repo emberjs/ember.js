@@ -9,7 +9,8 @@ import {
   update,
   VersionedPathReference,
 } from '@glimmer/reference';
-import { Arguments, NULL_REFERENCE, VM } from '@glimmer/runtime';
+import { NULL_REFERENCE } from '@glimmer/runtime';
+import { VMArguments as Arguments, VM } from '@glimmer/interfaces';
 import { CachedReference, referenceFromParts, UPDATE } from '../utils/references';
 
 /**

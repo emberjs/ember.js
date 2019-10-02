@@ -1,8 +1,8 @@
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { Simple } from '@glimmer/interfaces';
+import { Simple, VMArguments as Arguments, CapturedArguments } from '@glimmer/interfaces';
 import { CONSTANT_TAG, Tag } from '@glimmer/reference';
-import { Arguments, CapturedArguments, ModifierManager } from '@glimmer/runtime';
+import { ModifierManager } from '@glimmer/runtime';
 import { Destroyable } from '@glimmer/util';
 import buildUntouchableThis from '../utils/untouchable-this';
 

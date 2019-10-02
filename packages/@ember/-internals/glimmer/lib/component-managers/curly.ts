@@ -19,10 +19,10 @@ import {
   ProgramSymbolTable,
   Simple,
   VMHandle,
+  VMArguments as Arguments
 } from '@glimmer/interfaces';
 import { combine, Tag, validate, value, VersionedPathReference } from '@glimmer/reference';
 import {
-  Arguments,
   Bounds,
   ComponentDefinition,
   ElementOperations,

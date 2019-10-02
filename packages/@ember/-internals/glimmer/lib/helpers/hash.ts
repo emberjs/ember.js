@@ -1,6 +1,5 @@
 import { PathReference } from '@glimmer/reference';
-import { Arguments, VM } from '@glimmer/runtime';
-import { Dict } from '@glimmer/util';
+import { VMArguments as Arguments, VM, Dict } from '@glimmer/interfaces';
 
 /**
 @module ember

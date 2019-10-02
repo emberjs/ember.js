@@ -4,7 +4,7 @@
 import { QueryParams } from '@ember/-internals/routing';
 import { assert } from '@ember/debug';
 import { assign } from '@ember/polyfills';
-import { Arguments, CapturedArguments, VM } from '@glimmer/runtime';
+import { VMArguments as Arguments, CapturedArguments, VM } from '@glimmer/interfaces';
 import { InternalHelperReference } from '../utils/references';
 
 /**

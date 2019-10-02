@@ -3,7 +3,7 @@
 */
 
 import { assert } from '@ember/debug';
-import { Arguments, VM } from '@glimmer/runtime';
+import { VMArguments as Arguments, VM } from '@glimmer/interfaces';
 import { UnboundReference } from '../utils/references';
 
 /**

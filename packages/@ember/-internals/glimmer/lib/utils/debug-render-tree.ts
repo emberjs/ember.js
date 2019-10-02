@@ -1,6 +1,6 @@
 import { assert } from '@ember/debug';
-import { Simple } from '@glimmer/interfaces';
-import { Bounds, CapturedArguments } from '@glimmer/runtime';
+import { Simple, CapturedArguments } from '@glimmer/interfaces';
+import { Bounds } from '@glimmer/runtime';
 import { expect, Option, Stack } from '@glimmer/util';
 
 export type RenderNodeType = 'outlet' | 'engine' | 'route-template' | 'component';

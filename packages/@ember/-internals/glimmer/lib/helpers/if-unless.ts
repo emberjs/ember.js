@@ -4,7 +4,8 @@
 
 import { assert } from '@ember/debug';
 import { combine, createUpdatableTag, isConst, UpdatableTag, update } from '@glimmer/reference';
-import { Arguments, PrimitiveReference, VM } from '@glimmer/runtime';
+import { PrimitiveReference } from '@glimmer/runtime';
+import { VMArguments as Arguments, VM } from '@glimmer/interfaces';
 import { CachedReference, ConditionalReference } from '../utils/references';
 
 class ConditionalHelperReference extends CachedReference {

@@ -3,7 +3,7 @@
 */
 import { symbol } from '@ember/-internals/utils';
 import { Tag, VersionedPathReference } from '@glimmer/reference';
-import { Arguments, VM } from '@glimmer/runtime';
+import { VMArguments as Arguments, VM } from '@glimmer/interfaces';
 
 /**
   The `{{#each}}` helper loops over elements in a collection. It is an extension
