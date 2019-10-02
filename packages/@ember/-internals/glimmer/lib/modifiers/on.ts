@@ -1,6 +1,6 @@
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { Opaque, Simple } from '@glimmer/interfaces';
+import { Simple } from '@glimmer/interfaces';
 import { CONSTANT_TAG, Tag } from '@glimmer/reference';
 import { Arguments, CapturedArguments, ModifierManager } from '@glimmer/runtime';
 import { Destroyable } from '@glimmer/util';
@@ -301,7 +301,7 @@ function addEventListener(
   @public
   @since 3.11.0
 */
-export default class OnModifierManager implements ModifierManager<OnModifierState | null, Opaque> {
+export default class OnModifierManager implements ModifierManager<OnModifierState | null, unknown> {
   public SUPPORTS_EVENT_OPTIONS: boolean = SUPPORTS_EVENT_OPTIONS;
   public isInteractive: boolean;
 
@@ -313,7 +313,7 @@ export default class OnModifierManager implements ModifierManager<OnModifierStat
     return { adds, removes };
   }
 
-  create(element: Simple.Element | Element, _state: Opaque, args: Arguments) {
+  create(element: Simple.Element | Element, _state: unknown, args: Arguments) {
     if (!this.isInteractive) {
       return null;
     }

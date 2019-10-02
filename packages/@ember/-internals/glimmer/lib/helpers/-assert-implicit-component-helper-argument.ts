@@ -1,20 +1,19 @@
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { Opaque } from '@glimmer/interfaces';
 import { Tag, VersionedPathReference } from '@glimmer/reference';
 import { Arguments, Helper, VM } from '@glimmer/runtime';
 
 let helper: Helper;
 
 if (DEBUG) {
-  class ComponentAssertionReference implements VersionedPathReference<Opaque> {
+  class ComponentAssertionReference implements VersionedPathReference<unknown> {
     public tag: Tag;
 
-    constructor(private component: VersionedPathReference<Opaque>, private message: string) {
+    constructor(private component: VersionedPathReference<unknown>, private message: string) {
       this.tag = component.tag;
     }
 
-    value(): Opaque {
+    value(): unknown {
       let value = this.component.value();
 
       assert(this.message, typeof value !== 'string');
@@ -22,7 +21,7 @@ if (DEBUG) {
       return value;
     }
 
-    get(property: string): VersionedPathReference<Opaque> {
+    get(property: string): VersionedPathReference<unknown> {
       return this.component.get(property);
     }
   }

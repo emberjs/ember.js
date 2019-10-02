@@ -9,7 +9,7 @@ import {
   Environment as GlimmerEnvironment,
   SimpleDynamicAttribute,
 } from '@glimmer/runtime';
-import { Destroyable, Opaque } from '@glimmer/util';
+import { Destroyable } from '@glimmer/util';
 import getDebugStack, { DebugStack } from './utils/debug-stack';
 import createIterable from './utils/iterable';
 import { ConditionalReference, UpdatableReference } from './utils/references';
@@ -143,7 +143,7 @@ export default class Environment extends GlimmerEnvironment {
 
 if (DEBUG) {
   class StyleAttributeManager extends SimpleDynamicAttribute {
-    set(dom: ElementBuilder, value: Opaque, env: GlimmerEnvironment): void {
+    set(dom: ElementBuilder, value: unknown, env: GlimmerEnvironment): void {
       warn(
         constructStyleDeprecationMessage(value),
         (() => {
@@ -156,7 +156,7 @@ if (DEBUG) {
       );
       super.set(dom, value, env);
     }
-    update(value: Opaque, env: GlimmerEnvironment): void {
+    update(value: unknown, env: GlimmerEnvironment): void {
       warn(
         constructStyleDeprecationMessage(value),
         (() => {

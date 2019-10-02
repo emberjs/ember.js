@@ -13,7 +13,7 @@ import {
   UNDEFINED_REFERENCE,
   VM,
 } from '@glimmer/runtime';
-import { Dict, dict, Opaque } from '@glimmer/util';
+import { Dict, dict } from '@glimmer/util';
 import * as WireFormat from '@glimmer/wire-format';
 import { OutletComponentDefinition, OutletDefinitionState } from '../component-managers/outlet';
 import { DynamicScope } from '../renderer';
@@ -98,7 +98,7 @@ class OutletModelReference implements VersionedPathReference {
     this.tag = parent.tag;
   }
 
-  value(): Opaque {
+  value(): unknown {
     let state = this.parent.value();
 
     if (state === undefined) {
@@ -111,7 +111,7 @@ class OutletModelReference implements VersionedPathReference {
       return undefined;
     }
 
-    return render.model as Opaque;
+    return render.model as unknown;
   }
 
   get(property: string): VersionedPathReference {
@@ -164,7 +164,7 @@ class OutletComponentReference
           get<T extends VersionedPathReference>(key: string): T {
             return (key === 'model' ? modelRef : UNDEFINED_REFERENCE) as unsafe;
           },
-          value(): Dict<Opaque> {
+          value(): Dict<unknown> {
             let model = modelRef.value();
             return { model };
           },

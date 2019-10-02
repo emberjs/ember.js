@@ -1,7 +1,6 @@
 import { clearElementView, clearViewElement, getViewElement } from '@ember/-internals/views';
 import { Revision, value, VersionedReference } from '@glimmer/reference';
 import { CapturedNamedArguments } from '@glimmer/runtime';
-import { Opaque } from '@glimmer/util';
 import Environment from '../environment';
 import { Factory as TemplateFactory, OwnedTemplate } from '../template';
 
@@ -37,7 +36,7 @@ function NOOP() {}
   @private
 */
 export default class ComponentStateBucket {
-  public classRef: VersionedReference<Opaque> | null = null;
+  public classRef: VersionedReference<unknown> | null = null;
   public argsRevision: Revision;
 
   constructor(

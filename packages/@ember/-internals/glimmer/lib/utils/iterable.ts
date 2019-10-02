@@ -20,17 +20,17 @@ import {
   update,
   VersionedReference,
 } from '@glimmer/reference';
-import { Opaque, Option } from '@glimmer/util';
+import { Option } from '@glimmer/util';
 import { isEachIn } from '../helpers/each-in';
 import { UpdatableReference } from './references';
 
 const ITERATOR_KEY_GUID = 'be277757-bbbe-4620-9fcb-213ef433cca2';
 
 // FIXME: export this from Glimmer
-type OpaqueIterationItem = IterationItem<Opaque, Opaque>;
+type OpaqueIterationItem = IterationItem<unknown, unknown>;
 type EmberIterable = AbstractIterable<
-  Opaque,
-  Opaque,
+  unknown,
+  unknown,
   OpaqueIterationItem,
   UpdatableReference,
   UpdatableReference
@@ -56,9 +56,9 @@ abstract class BoundedIterator implements OpaqueIterator {
     return false;
   }
 
-  abstract valueFor(position: number): Opaque;
+  abstract valueFor(position: number): unknown;
 
-  memoFor(position: number): Opaque {
+  memoFor(position: number): unknown {
     return position;
   }
 
@@ -80,7 +80,7 @@ abstract class BoundedIterator implements OpaqueIterator {
 }
 
 class ArrayIterator extends BoundedIterator {
-  static from(array: Opaque[], keyFor: KeyFor): OpaqueIterator {
+  static from(array: unknown[], keyFor: KeyFor): OpaqueIterator {
     let { length } = array;
 
     if (length === 0) {
@@ -91,22 +91,22 @@ class ArrayIterator extends BoundedIterator {
   }
 
   static fromForEachable(object: ForEachable, keyFor: KeyFor): OpaqueIterator {
-    let array: Opaque[] = [];
+    let array: unknown[] = [];
     object.forEach(item => array.push(item));
     return this.from(array, keyFor);
   }
 
-  constructor(private array: Opaque[], length: number, keyFor: KeyFor) {
+  constructor(private array: unknown[], length: number, keyFor: KeyFor) {
     super(length, keyFor);
   }
 
-  valueFor(position: number): Opaque {
+  valueFor(position: number): unknown {
     return this.array[position];
   }
 }
 
 class EmberArrayIterator extends BoundedIterator {
-  static from(array: Opaque[], keyFor: KeyFor): OpaqueIterator {
+  static from(array: unknown[], keyFor: KeyFor): OpaqueIterator {
     let { length } = array;
 
     if (length === 0) {
@@ -116,11 +116,11 @@ class EmberArrayIterator extends BoundedIterator {
     }
   }
 
-  constructor(private array: Opaque, length: number, keyFor: KeyFor) {
+  constructor(private array: unknown, length: number, keyFor: KeyFor) {
     super(length, keyFor);
   }
 
-  valueFor(position: number): Opaque {
+  valueFor(position: number): unknown {
     return objectAt(this.array as any, position);
   }
 }
@@ -133,7 +133,7 @@ class ObjectIterator extends BoundedIterator {
     if (length === 0) {
       return EMPTY_ITERATOR;
     } else {
-      let values: Opaque[] = [];
+      let values: unknown[] = [];
       for (let i = 0; i < length; i++) {
         let value: any;
         let key = keys[i];
@@ -157,12 +157,12 @@ class ObjectIterator extends BoundedIterator {
   }
 
   static fromForEachable(obj: ForEachable, keyFor: KeyFor): OpaqueIterator {
-    let keys: Opaque[] = [];
-    let values: Opaque[] = [];
+    let keys: unknown[] = [];
+    let values: unknown[] = [];
     let length = 0;
     let isMapLike = false;
 
-    obj.forEach((value: Opaque, key: Opaque) => {
+    obj.forEach((value: unknown, key: unknown) => {
       isMapLike = isMapLike || arguments.length >= 2;
 
       if (isMapLike) {
@@ -182,24 +182,24 @@ class ObjectIterator extends BoundedIterator {
     }
   }
 
-  constructor(private keys: Opaque[], private values: Opaque[], length: number, keyFor: KeyFor) {
+  constructor(private keys: unknown[], private values: unknown[], length: number, keyFor: KeyFor) {
     super(length, keyFor);
   }
 
-  valueFor(position: number): Opaque {
+  valueFor(position: number): unknown {
     return this.values[position];
   }
 
-  memoFor(position: number): Opaque {
+  memoFor(position: number): unknown {
     return this.keys[position];
   }
 }
 
-interface NativeIteratorConstructor<T = Opaque> {
+interface NativeIteratorConstructor<T = unknown> {
   new (iterable: Iterator<T>, result: IteratorResult<T>, keyFor: KeyFor): NativeIterator<T>;
 }
 
-abstract class NativeIterator<T = Opaque> implements OpaqueIterator {
+abstract class NativeIterator<T = unknown> implements OpaqueIterator {
   static from<T>(
     this: NativeIteratorConstructor<T>,
     iterable: Iterable<T>,
@@ -230,8 +230,8 @@ abstract class NativeIterator<T = Opaque> implements OpaqueIterator {
     return false;
   }
 
-  abstract valueFor(result: IteratorResult<T>, position: number): Opaque;
-  abstract memoFor(result: IteratorResult<T>, position: number): Opaque;
+  abstract valueFor(result: IteratorResult<T>, position: number): unknown;
+  abstract memoFor(result: IteratorResult<T>, position: number): unknown;
 
   next(): Option<OpaqueIterationItem> {
     let { iterable, result, position, keyFor } = this;
@@ -252,21 +252,21 @@ abstract class NativeIterator<T = Opaque> implements OpaqueIterator {
 }
 
 class ArrayLikeNativeIterator extends NativeIterator {
-  valueFor(result: IteratorResult<Opaque>): Opaque {
+  valueFor(result: IteratorResult<unknown>): unknown {
     return result.value;
   }
 
-  memoFor(_result: IteratorResult<Opaque>, position: number): Opaque {
+  memoFor(_result: IteratorResult<unknown>, position: number): unknown {
     return position;
   }
 }
 
-class MapLikeNativeIterator extends NativeIterator<[Opaque, Opaque]> {
-  valueFor(result: IteratorResult<[Opaque, Opaque]>): Opaque {
+class MapLikeNativeIterator extends NativeIterator<[unknown, unknown]> {
+  valueFor(result: IteratorResult<[unknown, unknown]>): unknown {
     return result.value[1];
   }
 
-  memoFor(result: IteratorResult<[Opaque, Opaque]>): Opaque {
+  memoFor(result: IteratorResult<[unknown, unknown]>): unknown {
     return result.value[0];
   }
 }
@@ -310,7 +310,7 @@ class EachInIterable implements EmberIterable {
 
     if (Array.isArray(iterable) || isEmberArray(iterable)) {
       return ObjectIterator.fromIndexable(iterable, this.keyFor(true));
-    } else if (HAS_NATIVE_SYMBOL && isNativeIterable<[Opaque, Opaque]>(iterable)) {
+    } else if (HAS_NATIVE_SYMBOL && isNativeIterable<[unknown, unknown]>(iterable)) {
       return MapLikeNativeIterator.from(iterable, this.keyFor());
     } else if (hasForEach(iterable)) {
       return ObjectIterator.fromForEachable(iterable, this.keyFor());
@@ -376,7 +376,7 @@ class EachIterable implements EmberIterable {
     if (Array.isArray(iterable)) {
       return ArrayIterator.from(iterable, keyFor);
     } else if (isEmberArray(iterable)) {
-      return EmberArrayIterator.from(iterable as Opaque[], keyFor);
+      return EmberArrayIterator.from(iterable as unknown[], keyFor);
     } else if (HAS_NATIVE_SYMBOL && isNativeIterable(iterable)) {
       return ArrayLikeNativeIterator.from(iterable, keyFor);
     } else if (hasForEach(iterable)) {
@@ -418,43 +418,43 @@ class EachIterable implements EmberIterable {
 }
 
 interface ForEachable {
-  forEach(callback: (item: Opaque, key: Opaque) => void): void;
+  forEach(callback: (item: unknown, key: unknown) => void): void;
 }
 
 function hasForEach(value: object): value is ForEachable {
   return typeof value['forEach'] === 'function';
 }
 
-function isNativeIterable<T = Opaque>(value: object): value is Iterable<T> {
+function isNativeIterable<T = unknown>(value: object): value is Iterable<T> {
   return typeof value[Symbol.iterator] === 'function';
 }
 
 interface Indexable {
-  readonly [key: string]: Opaque;
+  readonly [key: string]: unknown;
 }
 
-function isIndexable(value: Opaque): value is Indexable {
+function isIndexable(value: unknown): value is Indexable {
   return value !== null && (typeof value === 'object' || typeof value === 'function');
 }
 
-type KeyFor = (value: Opaque, memo: Opaque, position: number) => string;
+type KeyFor = (value: unknown, memo: unknown, position: number) => string;
 
 // Position in an array is guarenteed to be unique
-function Index(_value: Opaque, _memo: Opaque, position: number): string {
+function Index(_value: unknown, _memo: unknown, position: number): string {
   return String(position);
 }
 
 // Object.keys(...) is guarenteed to be strings and unique
-function ObjectKey(_value: Opaque, memo: Opaque): string {
+function ObjectKey(_value: unknown, memo: unknown): string {
   return memo as string;
 }
 
 // Map keys can be any objects
-function MapKey(_value: Opaque, memo: Opaque): string {
+function MapKey(_value: unknown, memo: unknown): string {
   return Identity(memo);
 }
 
-function Identity(value: Opaque): string {
+function Identity(value: unknown): string {
   switch (typeof value) {
     case 'string':
       return value as string;
@@ -466,13 +466,13 @@ function Identity(value: Opaque): string {
 }
 
 function KeyPath(keyPath: string): KeyFor {
-  return (value: Opaque) => String(get(value as any, keyPath));
+  return (value: unknown) => String(get(value as any, keyPath));
 }
 
 function Unique(func: KeyFor): KeyFor {
   let seen = {};
 
-  return (value: Opaque, memo: Opaque, position: number) => {
+  return (value: unknown, memo: unknown, position: number) => {
     let key = func(value, memo, position);
     let count = seen[key];
 

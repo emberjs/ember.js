@@ -1,7 +1,7 @@
 import { track, untrack } from '@ember/-internals/metal';
 import { Factory } from '@ember/-internals/owner';
 import { assert, deprecate } from '@ember/debug';
-import { Dict, Opaque, Simple } from '@glimmer/interfaces';
+import { Dict, Simple } from '@glimmer/interfaces';
 import { combine, CONSTANT_TAG, createUpdatableTag, Tag, update } from '@glimmer/reference';
 import { Arguments, CapturedArguments, ModifierManager } from '@glimmer/runtime';
 
@@ -83,13 +83,13 @@ export class CustomModifierState<ModifierInstance> {
 
 // TODO: export ICapturedArgumentsValue from glimmer and replace this
 export interface Args {
-  named: Dict<Opaque>;
-  positional: Opaque[];
+  named: Dict<unknown>;
+  positional: unknown[];
 }
 
 export interface ModifierManagerDelegate<ModifierInstance> {
   capabilities: Capabilities;
-  createModifier(factory: Opaque, args: Args): ModifierInstance;
+  createModifier(factory: unknown, args: Args): ModifierInstance;
   installModifier(instance: ModifierInstance, element: Simple.Element, args: Args): void;
   updateModifier(instance: ModifierInstance, args: Args): void;
   destroyModifier(instance: ModifierInstance, args: Args): void;

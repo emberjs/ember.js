@@ -1,7 +1,7 @@
 import { get } from '@ember/-internals/metal';
 import { assert } from '@ember/debug';
 import { dasherize } from '@ember/string';
-import { Opaque, Option, Simple } from '@glimmer/interfaces';
+import { Option, Simple } from '@glimmer/interfaces';
 import { CachedReference, combine, map, Reference, Tag } from '@glimmer/reference';
 import { ElementOperations, PrimitiveReference } from '@glimmer/runtime';
 import { Core, Ops } from '@glimmer/wire-format';
@@ -120,7 +120,7 @@ const SAFE_DISPLAY_NONE = htmlSafe(DISPLAY_NONE);
 
 class StyleBindingReference extends CachedReference<string | SafeString> {
   public tag: Tag;
-  constructor(private inner: Reference<string>, private isVisible: Reference<Opaque>) {
+  constructor(private inner: Reference<string>, private isVisible: Reference<unknown>) {
     super();
 
     this.tag = combine([inner.tag, isVisible.tag]);
@@ -197,7 +197,7 @@ export class SimpleClassNameBindingReference extends CachedReference<Option<stri
   public tag: Tag;
   private dasherizedPath: Option<string>;
 
-  constructor(private inner: Reference<Opaque | number>, private path: string) {
+  constructor(private inner: Reference<unknown | number>, private path: string) {
     super();
 
     this.tag = inner.tag;
@@ -224,7 +224,7 @@ class ColonClassNameBindingReference extends CachedReference<Option<string>> {
   public tag: Tag;
 
   constructor(
-    private inner: Reference<Opaque>,
+    private inner: Reference<unknown>,
     private truthy: Option<string> = null,
     private falsy: Option<string> = null
   ) {

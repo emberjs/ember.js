@@ -3,7 +3,7 @@ import { ActionManager, isSimpleClick } from '@ember/-internals/views';
 import { assert, deprecate } from '@ember/debug';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { join } from '@ember/runloop';
-import { Opaque, Simple } from '@glimmer/interfaces';
+import { Simple } from '@glimmer/interfaces';
 import { Tag } from '@glimmer/reference';
 import {
   Arguments,
@@ -186,10 +186,10 @@ export class ActionState {
 }
 
 // implements ModifierManager<Action>
-export default class ActionModifierManager implements ModifierManager<ActionState, Opaque> {
+export default class ActionModifierManager implements ModifierManager<ActionState, unknown> {
   create(
     element: Simple.Element,
-    _state: Opaque,
+    _state: unknown,
     args: Arguments,
     _dynamicScope: DynamicScope,
     dom: any

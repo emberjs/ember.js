@@ -1,6 +1,6 @@
 import { PathReference } from '@glimmer/reference';
 import { Arguments, VM } from '@glimmer/runtime';
-import { Dict, Opaque } from '@glimmer/util';
+import { Dict } from '@glimmer/util';
 
 /**
 @module ember
@@ -45,6 +45,6 @@ import { Dict, Opaque } from '@glimmer/util';
    @public
  */
 
-export default function(_vm: VM, args: Arguments): PathReference<Dict<Opaque>> {
+export default function(_vm: VM, args: Arguments): PathReference<Dict<unknown>> {
   return args.named.capture();
 }

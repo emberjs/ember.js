@@ -8,7 +8,6 @@ import { DEBUG } from '@glimmer/env';
 import {
   ComponentCapabilities,
   Dict,
-  Opaque,
   Option,
   ProgramSymbolTable,
 } from '@glimmer/interfaces';
@@ -88,14 +87,14 @@ export interface Capabilities {
 
 // TODO: export ICapturedArgumentsValue from glimmer and replace this
 export interface Args {
-  named: Dict<Opaque>;
-  positional: Opaque[];
+  named: Dict<unknown>;
+  positional: unknown[];
 }
 
 export interface ManagerDelegate<ComponentInstance> {
   capabilities: Capabilities;
-  createComponent(factory: Opaque, args: Args): ComponentInstance;
-  getContext(instance: ComponentInstance): Opaque;
+  createComponent(factory: unknown, args: Args): ComponentInstance;
+  getContext(instance: ComponentInstance): unknown;
 }
 
 export function hasAsyncLifeCycleCallbacks<ComponentInstance>(
@@ -144,8 +143,8 @@ export interface ManagerDelegateWithDestructors<ComponentInstance>
 }
 
 export interface ComponentArguments {
-  positional: Opaque[];
-  named: Dict<Opaque>;
+  positional: unknown[];
+  named: Dict<unknown>;
 }
 
 /**
@@ -322,7 +321,7 @@ export default class CustomComponentManager<ComponentInstance>
     delegate.getContext(component);
   }
 
-  getSelf({ delegate, component }: CustomComponentState<ComponentInstance>): PathReference<Opaque> {
+  getSelf({ delegate, component }: CustomComponentState<ComponentInstance>): PathReference<unknown> {
     return RootReference.create(delegate.getContext(component));
   }
 
