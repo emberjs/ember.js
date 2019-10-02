@@ -1,4 +1,4 @@
 declare module 'simple-dom' {
-  import { Simple } from '@glimmer/interfaces';
-  export interface Document extends Simple.Document {}
+  import { SimpleDocument } from '@simple-dom/interface';
+  export interface Document extends SimpleDocument {}
 }

@@ -1,9 +1,10 @@
 import { track, untrack } from '@ember/-internals/metal';
 import { Factory } from '@ember/-internals/owner';
 import { assert, deprecate } from '@ember/debug';
-import { Dict, Simple, VMArguments as Arguments, CapturedArguments } from '@glimmer/interfaces';
+import { Dict, VMArguments as Arguments, CapturedArguments } from '@glimmer/interfaces';
 import { combine, CONSTANT_TAG, createUpdatableTag, Tag, update } from '@glimmer/reference';
 import { ModifierManager } from '@glimmer/runtime';
+import { SimpleElement } from '@simple-dom/interface';
 
 export interface CustomModifierDefinitionState<ModifierInstance> {
   ModifierClass: Factory<ModifierInstance>;
@@ -69,7 +70,7 @@ export class CustomModifierState<ModifierInstance> {
   public tag = createUpdatableTag();
 
   constructor(
-    public element: Simple.Element,
+    public element: SimpleElement,
     public delegate: ModifierManagerDelegate<ModifierInstance>,
     public modifier: ModifierInstance,
     public args: CapturedArguments
@@ -90,7 +91,7 @@ export interface Args {
 export interface ModifierManagerDelegate<ModifierInstance> {
   capabilities: Capabilities;
   createModifier(factory: unknown, args: Args): ModifierInstance;
-  installModifier(instance: ModifierInstance, element: Simple.Element, args: Args): void;
+  installModifier(instance: ModifierInstance, element: SimpleElement, args: Args): void;
   updateModifier(instance: ModifierInstance, args: Args): void;
   destroyModifier(instance: ModifierInstance, args: Args): void;
 }
@@ -126,7 +127,7 @@ class InteractiveCustomModifierManager<ModifierInstance>
       CustomModifierDefinitionState<ModifierInstance>
     > {
   create(
-    element: Simple.Element,
+    element: SimpleElement,
     definition: CustomModifierDefinitionState<ModifierInstance>,
     args: Arguments
   ) {

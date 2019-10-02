@@ -1,10 +1,11 @@
 import { get } from '@ember/-internals/metal';
 import { assert } from '@ember/debug';
 import { dasherize } from '@ember/string';
-import { Option, Simple } from '@glimmer/interfaces';
+import { Option } from '@glimmer/interfaces';
 import { CachedReference, combine, map, Reference, Tag } from '@glimmer/reference';
 import { ElementOperations, PrimitiveReference } from '@glimmer/runtime';
 import { Core, Ops } from '@glimmer/wire-format';
+import { SimpleElement } from '@simple-dom/interface';
 import { ROOT_REF } from '../component';
 import { Component } from './curly-component-state-bucket';
 import { referenceFromParts } from './references';
@@ -78,7 +79,7 @@ export const AttributeBinding = {
   },
 
   install(
-    _element: Simple.Element,
+    _element: SimpleElement,
     component: Component,
     parsed: [string, string, boolean],
     operations: ElementOperations
@@ -142,7 +143,7 @@ class StyleBindingReference extends CachedReference<string | SafeString> {
 }
 
 export const IsVisibleBinding = {
-  install(_element: Simple.Element, component: Component, operations: ElementOperations) {
+  install(_element: SimpleElement, component: Component, operations: ElementOperations) {
     operations.setAttribute(
       'style',
       map(referenceForKey(component, 'isVisible'), this.mapStyleValue),
@@ -162,7 +163,7 @@ export const IsVisibleBinding = {
 
 export const ClassNameBinding = {
   install(
-    _element: Simple.Element,
+    _element: SimpleElement,
     component: Component,
     microsyntax: string,
     operations: ElementOperations
