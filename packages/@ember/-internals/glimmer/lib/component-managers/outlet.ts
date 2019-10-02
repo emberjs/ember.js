@@ -7,7 +7,7 @@ import { _instrumentStart } from '@ember/instrumentation';
 import { assign } from '@ember/polyfills';
 import { DEBUG } from '@glimmer/env';
 import { ComponentCapabilities, Option, VMArguments as Arguments, Bounds, ComponentDefinition, Invocation, ElementOperations } from '@glimmer/interfaces';
-import { CONSTANT_TAG, createTag, Tag, VersionedPathReference } from '@glimmer/reference';
+import { CONSTANT_TAG, DirtyableTag, Tag, VersionedPathReference } from '@glimmer/reference';
 import {
   EMPTY_ARGS,
   WithDynamicTagName,
@@ -150,7 +150,7 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
   getTag(): Tag {
     if (ENV._DEBUG_RENDER_TREE) {
       // returning a const tag skips the update hook (VM BUG?)
-      return createTag();
+      return DirtyableTag.create();
     } else {
       // an outlet has no hooks
       return CONSTANT_TAG;

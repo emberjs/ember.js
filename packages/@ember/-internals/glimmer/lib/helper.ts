@@ -7,7 +7,7 @@ import { FrameworkObject, setFrameworkClass } from '@ember/-internals/runtime';
 import { symbol } from '@ember/-internals/utils';
 import { join } from '@ember/runloop';
 import { Dict } from '@glimmer/interfaces';
-import { createTag, dirty } from '@glimmer/reference';
+import { DirtyableTag, dirty } from '@glimmer/reference';
 
 export const RECOMPUTE_TAG = symbol('RECOMPUTE_TAG');
 
@@ -89,7 +89,7 @@ export function isSimpleHelper(helper: SimpleHelper | HelperInstance): helper is
 let Helper = FrameworkObject.extend({
   init() {
     this._super(...arguments);
-    this[RECOMPUTE_TAG] = createTag();
+    this[RECOMPUTE_TAG] = DirtyableTag.create();
   },
 
   /**

@@ -16,7 +16,7 @@ import {
   ComponentDefinition,
   Invocation
 } from '@glimmer/interfaces';
-import { createTag, isConst, PathReference, Tag } from '@glimmer/reference';
+import { DirtyableTag, isConst, PathReference, Tag } from '@glimmer/reference';
 import {
   WithStaticLayout,
 } from '@glimmer/runtime';
@@ -360,7 +360,7 @@ export default class CustomComponentManager<ComponentInstance>
   getTag({ args }: CustomComponentState<ComponentInstance>): Tag {
     if (isConst(args)) {
       // returning a const tag skips the update hook (VM BUG?)
-      return createTag();
+      return DirtyableTag.create();
     } else {
       return args.tag;
     }

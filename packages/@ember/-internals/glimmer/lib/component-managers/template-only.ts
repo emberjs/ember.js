@@ -1,7 +1,7 @@
 import { ENV } from '@ember/-internals/environment';
 import { OwnedTemplateMeta } from '@ember/-internals/views';
 import { ComponentCapabilities, Option, VMArguments as Arguments, Bounds, ComponentDefinition, Invocation } from '@glimmer/interfaces';
-import { CONSTANT_TAG, createTag } from '@glimmer/reference';
+import { CONSTANT_TAG, DirtyableTag } from '@glimmer/reference';
 import {
   NULL_REFERENCE,
   WithStaticLayout,
@@ -75,7 +75,7 @@ export default class TemplateOnlyComponentManager
   getTag() {
     if (ENV._DEBUG_RENDER_TREE) {
       // returning a const tag skips the update hook (VM BUG?)
-      return createTag();
+      return DirtyableTag.create();
     } else {
       // an outlet has no hooks
       return CONSTANT_TAG;

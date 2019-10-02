@@ -3,7 +3,7 @@ import { set } from '@ember/-internals/metal';
 import { Owner } from '@ember/-internals/owner';
 import { assert, debugFreeze } from '@ember/debug';
 import { ComponentCapabilities, Dict, DynamicScope, VMArguments as Arguments, Bounds, PreparedArguments } from '@glimmer/interfaces';
-import { CONSTANT_TAG, createTag, isConst, VersionedPathReference } from '@glimmer/reference';
+import { CONSTANT_TAG, isConst, VersionedPathReference, DirtyableTag } from '@glimmer/reference';
 import { Destroyable } from '@glimmer/util';
 import Environment from '../environment';
 import { RootReference } from '../utils/references';
@@ -91,7 +91,7 @@ export default class InputComponentManager extends InternalComponentManager<Inpu
   getTag() {
     if (ENV._DEBUG_RENDER_TREE) {
       // returning a const tag skips the update hook (VM BUG?)
-      return createTag();
+      return DirtyableTag.create();
     } else {
       // an outlet has no hooks
       return CONSTANT_TAG;

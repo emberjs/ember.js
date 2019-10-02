@@ -80,7 +80,7 @@
     "@glimmer/node": "0.38.5-alpha.3",
     "@glimmer/opcode-compiler": "0.38.5-alpha.3",
     "@glimmer/program": "0.38.5-alpha.3",
-    "@glimmer/reference": "0.38.5-alpha.3",
+    "@glimmer/reference": "0.39.1",
     "@glimmer/runtime": "0.39.1",
     "@types/qunit": "^2.5.4",
     "@types/rsvp": "^4.0.3",

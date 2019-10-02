@@ -2,7 +2,7 @@ import { DEBUG } from '@glimmer/env';
 import { ComponentCapabilities, VMArguments as Arguments, Bounds, ComponentDefinition } from '@glimmer/interfaces';
 import {
   CONSTANT_TAG,
-  createTag,
+  DirtyableTag,
   isConstTag,
   Tag,
   VersionedPathReference,
@@ -139,7 +139,7 @@ class MountManager extends AbstractManager<EngineState, EngineDefinitionState>
     }
 
     if (ENV._DEBUG_RENDER_TREE && isConstTag(tag)) {
-      tag = createTag();
+      tag = DirtyableTag.create();
     }
 
     return tag;

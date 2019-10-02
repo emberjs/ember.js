@@ -1,11 +1,11 @@
 import { Owner } from '@ember/-internals/owner';
 import {
   combine,
-  createTag,
   dirty,
   Reference,
   Tag,
   VersionedPathReference,
+  DirtyableTag,
 } from '@glimmer/reference';
 import { Factory as TemplateFactory, OwnedTemplate } from '../template';
 
@@ -74,7 +74,7 @@ export interface OutletState {
  * Represents the root outlet.
  */
 export class RootOutletReference implements VersionedPathReference<OutletState> {
-  tag = createTag();
+  tag = DirtyableTag.create();
 
   constructor(public outletState: OutletState) {}
 

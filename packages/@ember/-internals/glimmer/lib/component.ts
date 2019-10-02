@@ -13,7 +13,7 @@ import {
 } from '@ember/-internals/views';
 import { assert, deprecate } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { createTag, dirty } from '@glimmer/reference';
+import { DirtyableTag, dirty } from '@glimmer/reference';
 import { normalizeProperty, SVG_NAMESPACE } from '@glimmer/runtime';
 
 import { RootReference, UPDATE } from './utils/references';
@@ -721,7 +721,7 @@ const Component = CoreView.extend(
     init() {
       this._super(...arguments);
       this[IS_DISPATCHING_ATTRS] = false;
-      this[DIRTY_TAG] = createTag();
+      this[DIRTY_TAG] = DirtyableTag.create();
       this[ROOT_REF] = new RootReference(this);
       this[BOUNDS] = null;
 
