@@ -1752,9 +1752,14 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
         params && params.length > 0
       );
 
-      let disabledWhen = get(this, 'disabledWhen');
-      if (disabledWhen !== undefined) {
-        this.set('disabled', disabledWhen);
+      let { _models: models } = this;
+      if (models.length > 0) {
+        let lastModel = models[models.length - 1];
+
+        if (typeof lastModel === 'object' && lastModel !== null && lastModel.isQueryParams) {
+          this.query = lastModel.values;
+          models.pop();
+        }
       }
 
       // Process the positional arguments, in order.
