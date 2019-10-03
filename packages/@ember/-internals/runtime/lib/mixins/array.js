@@ -1086,8 +1086,8 @@ const ArrayMixin = Mixin.create(Enumerable, {
   },
 
   /**
-    This will combine the values of the enumerator into a single value. It
-    is a useful way to collect a summary value from an enumeration. This
+    This will combine the values of the array into a single value. It
+    is a useful way to collect a summary value from an array. This
     corresponds to the `reduce()` method defined in JavaScript 1.8.
 
     The callback method you provide should have the following signature (all
@@ -1111,6 +1111,27 @@ const ArrayMixin = Mixin.create(Enumerable, {
     Note that unlike the other methods, this method does not allow you to
     pass a target object to set as this for the callback. It's part of the
     spec. Sorry.
+
+    Example Usage:
+
+    ```javascript
+      let numbers = [1, 2, 3, 4, 5];
+
+      numbers.reduce(function(summation, current) {
+        return summation + current;
+      }); // 15 (1 + 2 + 3 + 4 + 5)
+
+      numbers.reduce(function(summation, current) {
+        return summation + current;
+      }, -15); // 0 (-15 + 1 + 2 + 3 + 4 + 5)
+
+
+      let binaryValues = [true, false, false];
+
+      binaryValues.reduce(function(truthValue, current) {
+        return truthValue && current;
+      }); // false (true && false && false)
+    ```
 
     @method reduce
     @param {Function} callback The callback to execute
