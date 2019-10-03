@@ -524,6 +524,18 @@ const ArrayMixin = Mixin.create(Enumerable, {
     Becomes true whenever the array currently has observers watching changes
     on the array.
 
+    ```javascript
+    let arr = [1, 2, 3, 4, 5];
+    arr.hasArrayObservers; // false
+
+    arr.addArrayObserver(this, {
+      willChange() {
+        console.log('willChange');
+      }
+    });
+    arr.hasArrayObservers; // true
+    ```
+
     @property {Boolean} hasArrayObservers
     @public
   */
