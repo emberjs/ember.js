@@ -3,7 +3,6 @@
 */
 
 import { alias, computed } from '@ember/-internals/metal';
-import { isQueryParams } from '@ember/-internals/routing/lib/system/query_params';
 import { isSimpleClick } from '@ember/-internals/views';
 import { assert, warn } from '@ember/debug';
 import { flaggedInstrument } from '@ember/instrumentation';
@@ -839,21 +838,14 @@ const LinkComponent = EmberComponent.extend({
         )
       );
 
-      if (this.query === UNDEFINED) {
-        let { _models: models } = this;
-        if (models.length > 0) {
-          let lastModel = models[models.length - 1];
+      let { _models: models } = this;
+      if (models.length > 0) {
+        let lastModel = models[models.length - 1];
 
-          if (typeof lastModel === 'object' && lastModel !== null && lastModel.isQueryParams) {
-            this.query = lastModel.values;
-            models.pop();
-          }
+        if (typeof lastModel === 'object' && lastModel !== null && lastModel.isQueryParams) {
+          this.query = lastModel.values;
+          models.pop();
         }
-      } else {
-        assert(
-          'Cannot pass a QueryParams object in @models and @query at the same time',
-          !(this.models.length === 0 || isQueryParams(this.models[this.models.length - 1]))
-        );
       }
 
       return;
