@@ -377,10 +377,14 @@ const ArrayMixin = Mixin.create(Enumerable, {
   },
 
   /**
-    Returns the index of the given object's first occurrence.
-    If no `startAt` argument is given, the starting location to
-    search is 0. If it's negative, will count backward from
-    the end of the array. Returns -1 if no match is found.
+    Used to determine the passed object's first occurence in the array.
+    Returns the index if found, -1 if no match is found.
+
+    The optional `startAt` argument can be used to pass a starting
+    index to search from, effectively slicing the searchable portion 
+    of the array. If it's negative it will add the array length to
+    the startAt value passed in as the index to search from. If less
+    than or equal to `-1 * array.length` the entire array is searched.
 
     ```javascript
     let arr = ['a', 'b', 'c', 'd', 'a'];
@@ -388,9 +392,19 @@ const ArrayMixin = Mixin.create(Enumerable, {
     arr.indexOf('a');       //  0
     arr.indexOf('z');       // -1
     arr.indexOf('a', 2);    //  4
-    arr.indexOf('a', -1);   //  4
+    arr.indexOf('a', -1);   //  4, equivalent to indexOf('a', 4)
+    arr.indexOf('a', -100); //  0, searches entire array
     arr.indexOf('b', 3);    // -1
     arr.indexOf('a', 100);  // -1
+
+    let people = [{ name: 'Zoey' }, { name: 'Bob' }]
+    let newPerson = { name: 'Tom' };
+    people = [newPerson, ...people, newPerson];
+
+    people.indexOf(newPerson);     //  0
+    people.indexOf(newPerson, 1);  //  3
+    people.indexOf(newPerson, -4); //  0
+    people.indexOf(newPerson, 10); // -1
     ```
 
     @method indexOf
