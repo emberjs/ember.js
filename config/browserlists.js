@@ -1,3 +1,4 @@
+// The list of supported browsers
 const allSupportedBrowsers = [
   'last 2 Chrome versions',
   'last 2 Firefox versions',
@@ -6,6 +7,7 @@ const allSupportedBrowsers = [
   'ie 11',
 ];
 
+// Browser that can adapt and running
 const modernBrowsers = [
   'last 1 Chrome versions',
   'last 1 Firefox versions',
