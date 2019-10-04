@@ -1,5 +1,5 @@
 import { run } from '@ember/runloop';
-import { observer, get, set } from '@ember/-internals/metal';
+import { alias, observer, get, set } from '@ember/-internals/metal';
 import EmberObject from '../../../lib/system/object';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 
@@ -260,6 +260,37 @@ moduleFor(
       await runLoopSettled();
 
       assert.equal(changed, true, 'child should have been notified of change to path');
+    }
+
+    async ['@test cannot re-enter observer while it is flushing'](assert) {
+      let changed = false;
+
+      let Class = EmberObject.extend({
+        bar: 0,
+
+        get foo() {
+          // side effects during creation, setting a value and running through
+          // sync observers for a second time.
+          return this.incrementProperty('bar');
+        },
+
+        // Ensures we get `foo` eagerly when attempting to observe it
+        fooAlias: alias('foo'),
+
+        parentOneTwoDidChange: observer({
+          dependentKeys: ['fooAlias'],
+          fn() {
+            changed = true;
+          },
+          sync: true,
+        }),
+      });
+
+      let obj = Class.create();
+
+      obj.notifyPropertyChange('foo');
+
+      assert.equal(changed, true, 'observer fired successfully');
     }
   }
 );
