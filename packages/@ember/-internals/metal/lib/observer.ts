@@ -217,9 +217,9 @@ export function flushSyncObservers() {
           observer.suspended = true;
           sendEvent(target, eventName, [target, observer.path]);
         } finally {
-          observer.suspended = false;
           observer.tag = combine(getChainTagsForKey(target, observer.path));
           observer.lastRevision = value(observer.tag);
+          observer.suspended = false;
         }
       }
     });
