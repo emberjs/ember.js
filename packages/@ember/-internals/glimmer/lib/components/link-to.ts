@@ -2,7 +2,8 @@
 @module ember
 */
 
-import { alias, computed, get } from '@ember/-internals/metal';
+import { alias, computed } from '@ember/-internals/metal';
+import { isQueryParams } from '@ember/-internals/routing/lib/system/query_params';
 import { isSimpleClick } from '@ember/-internals/views';
 import { EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS } from '@ember/canary-features';
 import { assert, warn } from '@ember/debug';
@@ -1752,14 +1753,21 @@ if (EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS) {
         params && params.length > 0
       );
 
-      let { _models: models } = this;
-      if (models.length > 0) {
-        let lastModel = models[models.length - 1];
+      if (this.query === UNDEFINED) {
+        let { _models: models } = this;
+        if (models.length > 0) {
+          let lastModel = models[models.length - 1];
 
-        if (typeof lastModel === 'object' && lastModel !== null && lastModel.isQueryParams) {
-          this.query = lastModel.values;
-          models.pop();
+          if (typeof lastModel === 'object' && lastModel !== null && lastModel.isQueryParams) {
+            this.query = lastModel.values;
+            models.pop();
+          }
         }
+      } else {
+        assert(
+          'Cannot pass a QueryParams object in @models and @query at the same time',
+          !(this.models.length === 0 || isQueryParams(this.models[this.models.length - 1]))
+        );
       }
 
       // Process the positional arguments, in order.
