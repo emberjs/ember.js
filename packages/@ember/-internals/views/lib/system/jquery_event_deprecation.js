@@ -15,26 +15,38 @@ export default function addJQueryEventDeprecation(jqEvent) {
     return new Proxy(jqEvent, {
       get(target, name) {
         switch (name) {
-          case 'originalEvent':
+          case 'originalEvent': {
+            let providedEnv = global.EmberENV;
+            if (providedEnv === undefined) {
+              providedEnv = global.ENV;
+
+              deprecate(
+                "Configuring Ember's boot options via `window.ENV` is deprecated, please migrate to `window.EmberENV` instead.",
+                providedEnv === undefined,
+                {
+                  id: 'ember-environment.window.env',
+                  until: '3.17.0',
+                }
+              );
+            }
+
             deprecate(
               'Accessing jQuery.Event specific properties is deprecated. Either use the ember-jquery-legacy addon to normalize events to native events, or explicitly opt into jQuery integration using @ember/optional-features.',
-              (EmberENV => {
-                // this deprecation is intentionally checking `global.EmberENV` /
-                // `global.ENV` so that we can ensure we _only_ deprecate in the
-                // case where jQuery integration is enabled implicitly (e.g.
-                // "defaulted" to enabled) as opposed to when the user explicitly
-                // opts in to using jQuery
-                if (typeof EmberENV !== 'object' || EmberENV === null) return false;
-
-                return EmberENV._JQUERY_INTEGRATION === true;
-              })(global.EmberENV || global.ENV),
+              // this deprecation is intentionally checking `global.EmberENV`
+              // so that we can ensure we _only_ deprecate in the
+              // case where jQuery integration is enabled implicitly (e.g.
+              // "defaulted" to enabled) as opposed to when the user explicitly
+              // opts in to using jQuery
+              providedEnv,
               {
                 id: 'ember-views.event-dispatcher.jquery-event',
                 until: '4.0.0',
                 url: 'https://emberjs.com/deprecations/v3.x#toc_jquery-event',
               }
             );
+
             return target[name];
+          }
 
           // provide an escape hatch for ember-jquery-legacy to access originalEvent without a deprecation
           case '__originalEvent':
