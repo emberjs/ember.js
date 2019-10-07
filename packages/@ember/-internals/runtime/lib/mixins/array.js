@@ -687,7 +687,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     people.getEach('name');
     // ['Joe', 'Matt'];
 
-    people.getEach('unknownProperty');
+    people.getEach('nonexistentProperty');
     // [undefined, undefined];
     ```
 
