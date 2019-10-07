@@ -1234,7 +1234,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     the startAt value passed in as the index to search from. If less
     than or equal to `-1 * array.length` the entire array is searched.
 
-    This method is a Polyfill for ES 2016 Array.includes.
+    This method has the same behavior of JavaScript's [Array.includes](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/includes).
 
     ```javascript
     [1, 2, 3].includes(2);     // true
