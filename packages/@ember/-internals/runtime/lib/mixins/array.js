@@ -661,10 +661,18 @@ const ArrayMixin = Mixin.create(Enumerable, {
     Example Usage:
 
     ```javascript
-      let foods = ['apple', 'banana', carrot'];
+    let foods = [
+      { name: 'apple', eaten: false },
+      { name: 'banana', eaten: false },
+      { name: carrot': eaten: false }
+    ];
 
-      foods.forEach(food => console.log(`You should eat a ${food}`));
-      foods.forEach((item, index, array) => console.log(`${index + 1}/${array.length}) ${item}`));
+    foods.forEach((food) => food.eaten = true);
+
+    let output = '';
+    foods.forEach((item, index, array) => 
+      output += `${index + 1}/${array.length}) ${item}\n`
+    );
     ```
 
     @method forEach
