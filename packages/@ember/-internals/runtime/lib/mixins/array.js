@@ -1241,9 +1241,9 @@ const ArrayMixin = Mixin.create(Enumerable, {
     [1, 2, 3].includes(4);     // false
     [1, 2, 3].includes(3, 2);  // true
     [1, 2, 3].includes(3, 3);  // false
-    [1, 2, 3].includes(3, -1); // true, equivalent to includes(3, 2)
-    [1, 2, 3].includes(1, -1); // false, equivalent to includes(1, 2)
-    [1, 2, 3].includes(1, -4); // true, searches entire array
+    [1, 2, 3].includes(3, -1); // true
+    [1, 2, 3].includes(1, -1); // false
+    [1, 2, 3].includes(1, -4); // true
     [1, 2, NaN].includes(NaN); // true
     ```
 
