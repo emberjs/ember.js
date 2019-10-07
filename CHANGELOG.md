@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.14.0-beta.4 (October 7, 2019)
+
+- [#18462](https://github.com/emberjs/ember.js/pull/18462) [BUGFIX] Prevents observer re-entry
+
 ### v3.14.0-beta.3 (October 1, 2019)
 
 - [#18429](https://github.com/emberjs/ember.js/pull/18429) [BUGFIX] Fix incorrect error message for octane features.
