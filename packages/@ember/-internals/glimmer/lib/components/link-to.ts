@@ -838,14 +838,14 @@ const LinkComponent = EmberComponent.extend({
         )
       );
 
-      if (DEBUG && this.query === UNDEFINED) {
-        let { _models: models } = this;
-        let lastModel = models.length > 0 && models[models.length - 1];
+      let { _models: models } = this;
+      if (models.length > 0) {
+        let lastModel = models[models.length - 1];
 
-        assert(
-          'The `(query-params)` helper can only be used when invoking the `{{link-to}}` component.',
-          !(lastModel && lastModel.isQueryParams)
-        );
+        if (typeof lastModel === 'object' && lastModel !== null && lastModel.isQueryParams) {
+          this.query = lastModel.values;
+          models.pop();
+        }
       }
 
       return;
