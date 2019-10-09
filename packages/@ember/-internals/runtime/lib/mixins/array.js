@@ -1225,11 +1225,16 @@ const ArrayMixin = Mixin.create(Enumerable, {
   },
 
   /**
-    Returns `true` if the passed object can be found in the array.
-    This method is a Polyfill for ES 2016 Array.includes.
-    If no `startAt` argument is given, the starting location to
-    search is 0. If it's negative, searches from the index of
-    `this.length + startAt` by asc.
+    Used to determine if the array contains the passed object.
+    Returns `true` if found, `false` otherwise.
+
+    The optional `startAt` argument can be used to pass a starting
+    index to search from, effectively slicing the searchable portion 
+    of the array. If it's negative it will add the array length to
+    the startAt value passed in as the index to search from. If less
+    than or equal to `-1 * array.length` the entire array is searched.
+
+    This method has the same behavior of JavaScript's [Array.includes](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/includes).
 
     ```javascript
     [1, 2, 3].includes(2);     // true
