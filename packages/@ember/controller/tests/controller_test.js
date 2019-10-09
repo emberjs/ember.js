@@ -4,7 +4,70 @@ import Service, { inject as injectService } from '@ember/service';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import { Mixin, get } from '@ember/-internals/metal';
 import { runDestroy, buildOwner } from 'internal-test-helpers';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, ApplicationTestCase, AbstractTestCase, runTask } from 'internal-test-helpers';
+import { action } from '@ember/object';
+
+moduleFor(
+  'Controller model',
+  class extends ApplicationTestCase {
+    async '@test model is tracked'() {
+      this.add(
+        'controller:index',
+        class extends Controller {
+          constructor() {
+            super(...arguments);
+            this.model = 0;
+          }
+
+          get derived() {
+            return this.model + 1;
+          }
+
+          @action
+          update() {
+            this.model++;
+          }
+        }
+      );
+
+      this.addTemplate('index', '<button {{on "click" this.update}}>{{this.derived}}</button>');
+
+      await this.visit('/');
+
+      this.assertText('1');
+
+      runTask(() => this.$('button').click());
+      this.assertText('2');
+    }
+
+    async '@test model can be observed with sync observers'(assert) {
+      let observerRunCount = 0;
+
+      this.add(
+        'controller:index',
+        class extends Controller {
+          constructor() {
+            super(...arguments);
+            this.model = 0;
+
+            this.addObserver('model', this, () => observerRunCount++, true);
+          }
+
+          @action
+          update() {
+            this.model++;
+          }
+        }
+      );
+
+      this.addTemplate('index', '<button {{on "click" this.update}}>{{this.model}}</button>');
+
+      await this.visit('/');
+      runTask(() => this.$('button').click());
+      assert.equal(observerRunCount, 1, 'observer ran exactly once');
+    }
+  }
+);
 
 moduleFor(
   'Controller event handling',
