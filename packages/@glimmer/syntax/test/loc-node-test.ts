@@ -326,20 +326,24 @@ foo"
   data-derp="foo
 {{concat ''}}
     huzzah"
+  data-qux="{{zomg}} static"
     ></div>
   `);
 
   let [, div] = ast.body;
   if (assertNodeType(div, 'ElementNode')) {
-    let [dataFoo, dataBar, dataDerp] = div.attributes;
+    let [dataFoo, dataBar, dataDerp, dataQux] = div.attributes;
     let dataFooValue = dataFoo.value;
     let dataBarValue = dataBar.value;
     let dataDerpValue = dataDerp.value;
+    let dataQuxValue = dataQux.value;
     locEqual(dataFoo, 2, 9, 6, 5);
     locEqual(dataBar, 7, 2, 8, 4);
+    locEqual(dataQux, 12, 2, 12, 28);
     locEqual(dataBarValue, 7, 11, 8, 4);
     locEqual(dataDerpValue, 9, 12, 11, 11);
     locEqual(dataFooValue, 2, 18, 6, 5);
+    locEqual(dataQuxValue, 12, 11, 12, 28);
 
     if (assertNodeType(dataFooValue, 'ConcatStatement')) {
       let [inlineIf, staticDerpText] = dataFooValue.parts;
@@ -349,9 +353,15 @@ foo"
 
     if (assertNodeType(dataDerpValue, 'ConcatStatement')) {
       let [fooStaticText, concat, huzzahStaticText] = dataDerpValue.parts;
-      locEqual(fooStaticText, 9, 14, 10, 0);
+      locEqual(fooStaticText, 9, 13, 10, 0);
       locEqual(concat, 10, 0, 10, 13);
       locEqual(huzzahStaticText, 10, 13, 11, 10);
+    }
+
+    if (assertNodeType(dataQuxValue, 'ConcatStatement')) {
+      let [mustacheZomg, staticStatic] = dataQuxValue.parts;
+      locEqual(mustacheZomg, 12, 12, 12, 20);
+      locEqual(staticStatic, 12, 20, 12, 27);
     }
   }
 });
