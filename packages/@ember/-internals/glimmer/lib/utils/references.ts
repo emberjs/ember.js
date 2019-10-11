@@ -33,6 +33,7 @@ import {
 } from '@glimmer/reference';
 import {
   CapturedArguments,
+  CapturedPositionalArguments,
   ConditionalReference as GlimmerConditionalReference,
   PrimitiveReference,
   UNDEFINED_REFERENCE,
@@ -77,6 +78,52 @@ export abstract class CachedReference extends EmberPathReference {
     }
 
     return lastValue;
+  }
+}
+
+export class EmberCapturedArrayReference implements VersionedPathReference<Opaque[]> {
+  public tag: Tag;
+  public references: VersionedPathReference<Opaque>[];
+  public length: number;
+
+  constructor(args: CapturedPositionalArguments) {
+    this.tag = args.tag;
+    this.references = args.references;
+    this.length = args.length;
+  }
+
+  private valueOf(this: void, reference: VersionedPathReference<Opaque>): Opaque {
+    return reference.value();
+  }
+
+  value(): Opaque[] {
+    return this.references.map(this.valueOf);
+  }
+
+  get(name: string): VersionedPathReference<Opaque> {
+    let { references, length } = this;
+
+    if (name === 'length') {
+      return PrimitiveReference.create(length);
+    }
+
+    if (length === 0) {
+      return UNDEFINED_REFERENCE;
+    }
+
+    if (name === 'firstObject') {
+      return references[0];
+    } else if (name === 'lastObject') {
+      return references[length - 1];
+    } else {
+      let idx = parseInt(name, 10);
+
+      if (idx < 0 || idx >= length) {
+        return UNDEFINED_REFERENCE;
+      } else {
+        return references[idx];
+      }
+    }
   }
 }
 
