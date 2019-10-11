@@ -1,5 +1,41 @@
 # Changelog
 
+## v0.42.2 (2019-10-11)
+
+#### :bug: Bug Fix
+* `@glimmer/syntax`
+  * [#979](https://github.com/glimmerjs/glimmer-vm/pull/979) Fix AST loc info for `ConcatStatement`s containing `TextNode`s ([@rwjblue](https://github.com/rwjblue))
+
+#### :house: Internal
+* `@glimmer/compiler`, `@glimmer/integration-tests`, `@glimmer/opcode-compiler`, `@glimmer/runtime`, `@glimmer/syntax`
+  * [#976](https://github.com/glimmerjs/glimmer-vm/pull/976) Replace TSLint with ESLint ([@Turbo87](https://github.com/Turbo87))
+* `@glimmer/bundle-compiler`, `@glimmer/compiler`, `@glimmer/dom-change-list`, `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/opcode-compiler`, `@glimmer/runtime`, `@glimmer/syntax`
+  * [#975](https://github.com/glimmerjs/glimmer-vm/pull/975) Update `prettier` to v1.18.2 ([@Turbo87](https://github.com/Turbo87))
+* Other
+  * [#977](https://github.com/glimmerjs/glimmer-vm/pull/977) CI: Use Node 8 ([@Turbo87](https://github.com/Turbo87))
+
+#### Committers: 2
+- Robert Jackson ([@rwjblue](https://github.com/rwjblue))
+- Tobias Bieniek ([@Turbo87](https://github.com/Turbo87))
+
+## v0.42.1 (2019-09-26)
+
+#### :bug: Bug Fix
+* `@glimmer/util`
+  * [#969](https://github.com/glimmerjs/glimmer-vm/pull/969) util/string: Fix broken array length conditions ([@Turbo87](https://github.com/Turbo87))
+* `@glimmer/runtime`
+  * [#971](https://github.com/glimmerjs/glimmer-vm/pull/971) Handle missing remote element marker gracefully. ([@melmerp](https://github.com/melmerp))
+
+#### :house: Internal
+* [#968](https://github.com/glimmerjs/glimmer-vm/pull/968) Run ESLint on *all* JS files in the project ([@Turbo87](https://github.com/Turbo87))
+* [#973](https://github.com/glimmerjs/glimmer-vm/pull/973) Upgrade amd-name-resolver dependency to 1.3.1 ([@tomdale](https://github.com/tomdale))
+* [#970](https://github.com/glimmerjs/glimmer-vm/pull/970) build/debug: Use `prettier` API directly instead of going through TSLint ([@Turbo87](https://github.com/Turbo87))
+* [#967](https://github.com/glimmerjs/glimmer-vm/pull/967) Cleanup Node.js files ([@Turbo87](https://github.com/Turbo87))
+
+#### Committers: 2
+- Tobias Bieniek ([@Turbo87](https://github.com/Turbo87))
+- Tom Dale ([@tomdale](https://github.com/tomdale))
+
 ## v0.42.0 (2019-08-13)
 
 #### :boom: Breaking Change
