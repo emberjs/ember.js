@@ -85,7 +85,28 @@ export function debugTracker(current: Tracker, _parent: Option<Tracker>) {
   Ember.EMBER_DEBUG.TRACKING.history[lastChecked] = batch;
 }
 
-function prettyPrintTrackingInfo() {
+function hasBeenSet(tracker: TrackerSnapshot) {
+  return tracker.dependencies.length === 0;
+}
+
+function hasChanged(rootTag: TrackerSnapshot, dependencies: TagSnapshot[]): boolean {
+  if (!dependencies || dependencies.length === 0) return false;
+
+  for (let i = 0; i < dependencies.length; i++) {
+    let dependency = dependencies[i];
+    let isChangedProperty = rootTag.tag.propertyName === dependency.propertyName;
+
+    if (isChangedProperty) {
+      return true;
+    }
+
+    return hasChanged(rootTag, dependency.dependencies);
+  }
+
+  return false;
+}
+
+function prettyPrintTrackingInfo({ verbose = false }) {
   let history = getTrackingInfo().history;
   let revisions = Object.keys(history)
     .map(revision => parseInt(revision, 10))
@@ -111,26 +132,40 @@ function prettyPrintTrackingInfo() {
     currentBatch.forEach((tracker, idx: number) => {
       let { objectName, propertyName, objectId } = tracker.tag;
 
-      if (tracker.dependencies.length === 0) {
+      let wasSet = hasBeenSet(tracker);
+      let wasChanged = hasChanged(changedTag, tracker.dependencies);
+
+      if (wasSet) {
         // eslint-disable-next-line no-console
         console.log(`  #${idx}: ${propertyName} on ${objectName} (#${objectId}) has been set!`);
       } else {
         // eslint-disable-next-line no-console
         console.log(`  #${idx}: ${propertyName} on ${objectName} (#${objectId}) has changed!`);
 
-        printDependents(changedTag, tracker.dependencies);
+        printDependents(changedTag, tracker.dependencies, verbose);
       }
     });
   }
 }
 
-function printDependents(rootTag: TrackerSnapshot, dependencies: TagSnapshot[], indent = 6) {
+function printDependents(
+  rootTag: TrackerSnapshot,
+  dependencies: TagSnapshot[],
+  verbose: boolean,
+  indent = 6
+) {
   if (!dependencies || dependencies.length === 0) return;
 
   let indentation = ' '.repeat(indent);
 
   dependencies.forEach(dependency => {
     let isChangedProperty = rootTag.tag.propertyName === dependency.propertyName;
+
+    let wasChanged = hasChanged(rootTag, dependency.dependencies);
+
+    if (!verbose && !wasChanged) {
+      return;
+    }
 
     if (!dependency.objectRef && !dependency.propertyName) {
       // eslint-disable-next-line no-console
@@ -145,7 +180,7 @@ function printDependents(rootTag: TrackerSnapshot, dependencies: TagSnapshot[], 
       );
     }
 
-    printDependents(rootTag, dependency.dependencies, indent + 2);
+    printDependents(rootTag, dependency.dependencies, verbose, indent + 2);
   });
 }
 
