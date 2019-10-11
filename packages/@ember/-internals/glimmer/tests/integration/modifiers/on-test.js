@@ -373,6 +373,25 @@ moduleFor(
 
       this.assertCounts({ adds: 1, removes: 1 });
     }
+
+    '@test it respects boolean attributes'() {
+      this.render(
+        `
+        <input id='autofocus' autofocus {{on "input" this.callback}} />
+        <input id='readonly' readonly {{on "input" this.callback}} />
+        <input id='required' required {{on "input" this.callback}} />
+        <button id='disabled' disabled {{on "click" this.callback}}>Click Me</button> />
+      `,
+        {
+          callback() {},
+        }
+      );
+
+      this.assert.equal(this.$('#autofocus').prop('autofocus'), true, 'input has autofocus');
+      this.assert.equal(this.$('#readonly').prop('readOnly'), true, 'input is readonly');
+      this.assert.equal(this.$('#required').prop('required'), true, 'input is required');
+      this.assert.equal(this.$('#disabled').prop('disabled'), true, 'button is disabled');
+    }
   }
 );
 
