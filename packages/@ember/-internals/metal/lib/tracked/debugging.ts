@@ -6,6 +6,7 @@ type Option<T> = T | null;
 
 interface DebugTracking {
   history: { [revision: number]: TrackerSnapshot[] };
+  objectMap: WeakMap<object, number>;
   isRecording: boolean;
   start: () => void;
   stop: () => void;
@@ -21,18 +22,23 @@ interface TagSnapshot {
   propertyName: string;
   objectName: string;
   objectRef: object;
+  objectId: number;
   revision: number;
   lastChecked: number;
   tag: Tag | UpdatableTag;
   dependencies: TagSnapshot[];
 }
 
+let objectId = 0;
+
 Ember.EMBER_DEBUG = {};
 Ember.EMBER_DEBUG.TRACKING = {
   history: {},
   isRecording: false,
+  objectMap: new WeakMap(),
   start() {
     getTrackingInfo().history = {};
+    getTrackingInfo().objectMap = new WeakMap();
     getTrackingInfo().isRecording = true;
   },
   stop() {
@@ -94,21 +100,23 @@ function prettyPrintTrackingInfo() {
     currentRevision = revisions[i];
     currentBatch = history[currentRevision] || [];
 
+    if (`${currentRevision}` === '1') {
+      continue;
+    }
+
     // eslint-disable-next-line no-console
     console.log(`[Revision: ${currentRevision}]`, currentBatch);
     changedTag = currentBatch[0];
 
     currentBatch.forEach((tracker, idx: number) => {
+      let { objectName, propertyName, objectId } = tracker.tag;
+
       if (tracker.dependencies.length === 0) {
         // eslint-disable-next-line no-console
-        console.log(
-          `  #${idx}: ${tracker.tag.propertyName} on ${tracker.tag.objectName} has been set!`
-        );
+        console.log(`  #${idx}: ${propertyName} on ${objectName} (#${objectId}) has been set!`);
       } else {
         // eslint-disable-next-line no-console
-        console.log(
-          `  #${idx}: ${tracker.tag.propertyName} on ${tracker.tag.objectName} has changed!`
-        );
+        console.log(`  #${idx}: ${propertyName} on ${objectName} (#${objectId}) has changed!`);
 
         printDependents(changedTag, tracker.dependencies);
       }
@@ -177,12 +185,32 @@ function normalizeDependents(root: any, dependencies?: any) {
     });
 }
 
+function getOrAssignId(obj: object) {
+  if (!obj) {
+    return undefined;
+  }
+
+  let map = getTrackingInfo().objectMap;
+  let id = map.get(obj);
+
+  if (!id) {
+    map.set(obj, ++objectId);
+  }
+
+  id = map.get(obj);
+
+  return id;
+}
+
 function toTagSnapshot(tag: any): TagSnapshot {
   let hostObject = tag.key ? tag.ref.parentValue : tag._object;
+
+  let objectId = getOrAssignId(hostObject);
 
   let result: Partial<TagSnapshot> = {
     objectName: hostObject && hostObject.__proto__.constructor.name,
     objectRef: hostObject,
+    objectId,
     revision: tag.revision,
     lastChecked: tag.lastChecked,
     tag,
