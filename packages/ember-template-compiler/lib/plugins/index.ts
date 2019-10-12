@@ -13,6 +13,7 @@ import TransformInElement from './transform-in-element';
 import TransformLinkTo from './transform-link-to';
 import TransformOldClassBindingSyntax from './transform-old-class-binding-syntax';
 import TransformQuotedBindingsIntoJustBindings from './transform-quoted-bindings-into-just-bindings';
+import TransformBigNumberIntoParseIntHelper from './transform-big-number-into-parse-int-helper';
 
 import { SEND_ACTION } from '@ember/deprecated-features';
 import { ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
@@ -26,6 +27,7 @@ const transforms: Array<APluginFunc> = [
   AssertReservedNamedArguments,
   TransformActionSyntax,
   TransformAttrsIntoArgs,
+  TransformBigNumberIntoParseIntHelper,
   TransformEachInIntoEach,
   TransformHasBlockSyntax,
   AssertLocalVariableShadowingHelperInvocation,

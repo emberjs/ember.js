@@ -28,6 +28,7 @@ import { isHelperFactory, isSimpleHelper } from './helper';
 import { default as componentAssertionHelper } from './helpers/-assert-implicit-component-helper-argument';
 import { default as classHelper } from './helpers/-class';
 import { default as inputTypeHelper } from './helpers/-input-type';
+import { default as parseIntHelper } from './helpers/-parse-int';
 import { default as normalizeClassHelper } from './helpers/-normalize-class';
 import { default as action } from './helpers/action';
 import { default as array } from './helpers/array';
@@ -197,6 +198,7 @@ const BUILTINS_HELPERS: IBuiltInHelpers = {
   '-class': classHelper,
   '-each-in': eachIn,
   '-input-type': inputTypeHelper,
+  '-parse-int': parseIntHelper,
   '-normalize-class': normalizeClassHelper,
   '-get-dynamic-var': getDynamicVar,
   '-mount': mountHelper,
