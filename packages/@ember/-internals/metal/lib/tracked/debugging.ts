@@ -139,7 +139,6 @@ export function debugTracker(current: Tracker, _parent: Option<Tracker>) {
   }
 
   if (isWatching) {
-    console.clear();
     prettyPrintTrackingInfo();
   }
 }
