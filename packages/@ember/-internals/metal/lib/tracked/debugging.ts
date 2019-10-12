@@ -135,7 +135,7 @@ export function debugTracker(current: Tracker, _parent: Option<Tracker>) {
 
     Ember.EMBER_DEBUG.TRACKING.history[revision] = batch;
   } else {
-    Ember.EMBER_DEBUG.TRACKING.history['latest'] = [trackerSnapshot];
+    Ember.EMBER_DEBUG.TRACKING.history['0'] = [trackerSnapshot];
   }
 
   if (isWatching) {
