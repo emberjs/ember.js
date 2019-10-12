@@ -5,14 +5,20 @@ import { Tracker } from './tracker';
 
 type Option<T> = T | null;
 
+interface StartOptions {
+  watch?: boolean;
+  forObject?: object;
+  history?: boolean;
+}
 interface DebugTracking {
   history: { [revision: number]: TrackerSnapshot[] };
   objectMap: WeakMap<object, number>;
   isRecording: boolean;
   isWatching: boolean;
-  start: () => void;
+  isTrackingHistory: boolean;
+  objectOfRelevance?: object;
+  start: (options: StartOptions) => void;
   stop: () => void;
-  watch: () => void;
 }
 
 interface TrackerSnapshot {
@@ -38,21 +44,56 @@ Ember.EMBER_DEBUG.TRACKING = {
   history: {},
   isRecording: false,
   objectMap: new WeakMap(),
-  start() {
+  start({ watch = false, forObject, history = true }: StartOptions) {
     getTrackingInfo().history = {};
     getTrackingInfo().objectMap = new WeakMap();
     getTrackingInfo().isRecording = true;
-  },
-  watch() {
-    getTrackingInfo().isWatching = true;
+    getTrackingInfo().isTrackingHistory = history;
+
+    if (watch) {
+      getTrackingInfo().isWatching = true;
+    }
+
+    if (forObject) {
+      getTrackingInfo().objectOfRelevance = forObject;
+    }
   },
   stop() {
     getTrackingInfo().isRecording = false;
+    getTrackingInfo().isWatching = false;
+    getTrackingInfo().objectOfRelevance = undefined;
+    getTrackingInfo().objectMap = new WeakMap();
   },
 } as DebugTracking;
 
 function getTrackingInfo(): DebugTracking {
   return Ember.EMBER_DEBUG.TRACKING;
+}
+
+function containsRelevantObject(trackerSnapshot: TrackerSnapshot): boolean {
+  let obj = getTrackingInfo().objectOfRelevance;
+
+  function isRelevant(tag: TagSnapshot): boolean {
+    if (tag.objectRef === obj) {
+      return true;
+    }
+
+    for (let dep of tag.dependencies || []) {
+      if (isRelevant(dep)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  for (let tag of trackerSnapshot.all) {
+    if (isRelevant(tag)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 // NOTE:
@@ -66,7 +107,9 @@ function getTrackingInfo(): DebugTracking {
 //
 //  dirty(someTag); // also invalidates 'tag';
 export function debugTracker(current: Tracker, _parent: Option<Tracker>) {
-  if (!getTrackingInfo().isRecording) return;
+  let { isRecording, isWatching, isTrackingHistory, objectOfRelevance } = getTrackingInfo();
+
+  if (!isRecording) return;
 
   // In what scenarios would we get here with nothing on the tracker?
   if (!(current as any).last) return;
@@ -77,19 +120,25 @@ export function debugTracker(current: Tracker, _parent: Option<Tracker>) {
 
   let trackerSnapshot = normalizeTags(tags);
 
-  // Put into "revision" buckets, based on "lastChecked"
-  // (because the revision of a tag may not have changed if the value didn't changed
-  //  but last-checked is the last revision to inspect it)
-  let revision = `${trackerSnapshot.tag.revision}`;
+  // if we're watching an object, and this snapshot does not
+  // include the object we're watching, throw it all away!
+  //
+  // this is to help with performance of cpu / memory
+  if (objectOfRelevance && !containsRelevantObject(trackerSnapshot)) return;
 
-  let currentBatch = getTrackingInfo().history[revision];
-  let batch = currentBatch || [];
+  if (isTrackingHistory) {
+    let revision = `${trackerSnapshot.tag.revision}`;
+    let currentBatch = getTrackingInfo().history[revision];
+    let batch = currentBatch || [];
 
-  batch.push(trackerSnapshot);
+    batch.push(trackerSnapshot);
 
-  Ember.EMBER_DEBUG.TRACKING.history[revision] = batch;
+    Ember.EMBER_DEBUG.TRACKING.history[revision] = batch;
+  } else {
+    Ember.EMBER_DEBUG.TRACKING.history['latest'] = [trackerSnapshot];
+  }
 
-  if (getTrackingInfo().isWatching) {
+  if (isWatching) {
     console.clear();
     prettyPrintTrackingInfo();
   }
