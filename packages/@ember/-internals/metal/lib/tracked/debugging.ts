@@ -1,50 +1,21 @@
-import { Tag, UpdatableTag } from '@glimmer/reference';
-// import { TwoWayFlushDetectionTag } from '@ember/-internals/glimmer/lib/utils/references';
+import { Tag } from '@glimmer/reference';
 
 import { Tracker } from './tracker';
 
+import { StartOptions, DebugTracking, TrackerSnapshot, TagSnapshot } from './debug-types';
+import { prettyPrintTrackingInfo } from './debug-printing';
+import { getTrackingInfo, containsRelevantObject } from './debug-utils';
+
 type Option<T> = T | null;
-
-interface StartOptions {
-  watch?: boolean;
-  forObject?: object;
-  history?: boolean;
-}
-interface DebugTracking {
-  history: { [revision: number]: TrackerSnapshot[] };
-  objectMap: WeakMap<object, number>;
-  isRecording: boolean;
-  isWatching: boolean;
-  isTrackingHistory: boolean;
-  objectOfRelevance?: object;
-  start: (options: StartOptions) => void;
-  stop: () => void;
-}
-
-interface TrackerSnapshot {
-  tag: TagSnapshot;
-  dependencies: TagSnapshot[];
-  all: TagSnapshot[];
-}
-
-interface TagSnapshot {
-  propertyName: string;
-  objectName: string;
-  objectRef: object;
-  objectId: number;
-  revision: number;
-  tag: Tag | UpdatableTag;
-  dependencies: TagSnapshot[];
-}
-
-let objectId = 0;
 
 Ember.EMBER_DEBUG = {};
 Ember.EMBER_DEBUG.TRACKING = {
   history: {},
   isRecording: false,
+  verbose: false,
   objectMap: new WeakMap(),
-  start({ watch = false, forObject, history = true }: StartOptions) {
+  print: prettyPrintTrackingInfo,
+  start({ watch = false, forObject, history = true, verbose = false }: StartOptions) {
     getTrackingInfo().history = {};
     getTrackingInfo().objectMap = new WeakMap();
     getTrackingInfo().isRecording = true;
@@ -57,44 +28,19 @@ Ember.EMBER_DEBUG.TRACKING = {
     if (forObject) {
       getTrackingInfo().objectOfRelevance = forObject;
     }
+
+    if (verbose) {
+      getTrackingInfo().verbose = true;
+    }
   },
   stop() {
     getTrackingInfo().isRecording = false;
     getTrackingInfo().isWatching = false;
+    getTrackingInfo().verbose = false;
     getTrackingInfo().objectOfRelevance = undefined;
     getTrackingInfo().objectMap = new WeakMap();
   },
 } as DebugTracking;
-
-function getTrackingInfo(): DebugTracking {
-  return Ember.EMBER_DEBUG.TRACKING;
-}
-
-function containsRelevantObject(trackerSnapshot: TrackerSnapshot): boolean {
-  let obj = getTrackingInfo().objectOfRelevance;
-
-  function isRelevant(tag: TagSnapshot): boolean {
-    if (tag.objectRef === obj) {
-      return true;
-    }
-
-    for (let dep of tag.dependencies || []) {
-      if (isRelevant(dep)) {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-  for (let tag of trackerSnapshot.all) {
-    if (isRelevant(tag)) {
-      return true;
-    }
-  }
-
-  return false;
-}
 
 // NOTE:
 //  track is a wrapper around a tag
@@ -126,8 +72,9 @@ export function debugTracker(current: Tracker, _parent: Option<Tracker>) {
   // this is to help with performance of cpu / memory
   if (objectOfRelevance && !containsRelevantObject(trackerSnapshot)) return;
 
+  let revision = `${trackerSnapshot.tag.revision}`;
+
   if (isTrackingHistory) {
-    let revision = `${trackerSnapshot.tag.revision}`;
     let currentBatch = getTrackingInfo().history[revision];
     let batch = currentBatch || [];
 
@@ -135,110 +82,13 @@ export function debugTracker(current: Tracker, _parent: Option<Tracker>) {
 
     Ember.EMBER_DEBUG.TRACKING.history[revision] = batch;
   } else {
-    Ember.EMBER_DEBUG.TRACKING.history['0'] = [trackerSnapshot];
+    Ember.EMBER_DEBUG.TRACKING.history[revision] = [trackerSnapshot];
   }
 
   if (isWatching) {
     prettyPrintTrackingInfo();
   }
 }
-
-function hasBeenSet(tracker: TrackerSnapshot) {
-  return tracker.dependencies.length === 0;
-}
-
-function hasChanged(rootTag: TrackerSnapshot, dependencies: TagSnapshot[]): boolean {
-  if (!dependencies || dependencies.length === 0) return false;
-
-  for (let i = 0; i < dependencies.length; i++) {
-    let dependency = dependencies[i];
-    let isChangedProperty = rootTag.tag.propertyName === dependency.propertyName;
-
-    if (isChangedProperty) {
-      return true;
-    }
-
-    return hasChanged(rootTag, dependency.dependencies);
-  }
-
-  return false;
-}
-
-function prettyPrintTrackingInfo({ verbose = false } = {}) {
-  let history = getTrackingInfo().history;
-  let revisions = Object.keys(history)
-    .map(revision => parseInt(revision, 10))
-    .sort((a, b) => a - b);
-
-  let i;
-  let currentRevision: number;
-  let currentBatch: TrackerSnapshot[];
-  let changedTag: TrackerSnapshot;
-
-  for (i = 0; i < revisions.length; i++) {
-    currentRevision = revisions[i];
-    currentBatch = history[currentRevision] || [];
-
-    // eslint-disable-next-line no-console
-    console.log(`[Revision: ${currentRevision}]`, currentBatch);
-    changedTag = currentBatch[0];
-
-    currentBatch.forEach((tracker, idx: number) => {
-      let { objectName, propertyName, objectId } = tracker.tag;
-
-      let wasSet = hasBeenSet(tracker);
-
-      if (wasSet) {
-        // eslint-disable-next-line no-console
-        console.log(`  #${idx}: ${propertyName} on ${objectName} (#${objectId}) has been set!`);
-      } else {
-        // eslint-disable-next-line no-console
-        console.log(`  #${idx}: ${propertyName} on ${objectName} (#${objectId}) has changed!`);
-      }
-
-      printDependents(changedTag, tracker.dependencies, verbose);
-    });
-  }
-}
-
-function printDependents(
-  rootTag: TrackerSnapshot,
-  dependencies: TagSnapshot[],
-  verbose: boolean,
-  indent = 6
-) {
-  if (!dependencies || dependencies.length === 0) return;
-
-  let indentation = ' '.repeat(indent);
-
-  dependencies.forEach(dependency => {
-    let isChangedProperty = rootTag.tag.propertyName === dependency.propertyName;
-
-    let wasChanged = hasChanged(rootTag, dependency.dependencies);
-
-    if (!verbose && !wasChanged) {
-      return;
-    }
-
-    if (!dependency.objectRef && !dependency.propertyName) {
-      // eslint-disable-next-line no-console
-      console.log(`${indentation} Intermediate Tracking Tag @ rev: ${dependency.revision}`);
-    } else {
-      // eslint-disable-next-line no-console
-      console.log(
-        `${indentation}Dependency: ${dependency.propertyName} ` +
-          `(rev: ${dependency.revision}) on ` +
-          `${dependency.objectName} ` +
-          `(#${dependency.objectId}) ` +
-          `${isChangedProperty ? 'changed' : 'did not change'}`
-      );
-    }
-
-    printDependents(rootTag, dependency.dependencies, verbose, indent + 2);
-  });
-}
-
-Ember.EMBER_DEBUG.TRACKING.print = prettyPrintTrackingInfo;
 
 function normalizeTags(tags: any[]): TrackerSnapshot {
   let [tag, ...trackedDependents] = tags;
@@ -274,6 +124,7 @@ function normalizeDependents(root: any, dependencies?: any) {
     });
 }
 
+let objectId = 0;
 function getOrAssignId(obj: object) {
   if (!obj) {
     return undefined;
