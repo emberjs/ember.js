@@ -136,9 +136,9 @@ function prettyPrintTrackingInfo({ verbose = false }) {
       } else {
         // eslint-disable-next-line no-console
         console.log(`  #${idx}: ${propertyName} on ${objectName} (#${objectId}) has changed!`);
-
-        printDependents(changedTag, tracker.dependencies, verbose);
       }
+
+      printDependents(changedTag, tracker.dependencies, verbose);
     });
   }
 }
