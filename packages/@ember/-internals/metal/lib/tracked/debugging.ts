@@ -1,4 +1,5 @@
 import { Tag, UpdatableTag } from '@glimmer/reference';
+// import { TwoWayFlushDetectionTag } from '@ember/-internals/glimmer/lib/utils/references';
 
 import { Tracker } from './tracker';
 
@@ -66,23 +67,23 @@ export function debugTracker(current: Tracker, _parent: Option<Tracker>) {
   // In what scenarios would we get here with nothing on the tracker?
   if (!(current as any).last) return;
 
-  // Put into "revision" buckets, based on "lastChecked"
-  // (because the revision of a tag may not have changed if the value didn't changed
-  //  but last-checked is the last revision to inspect it)
-  let lastChecked = `${(current as any).last.lastChecked}`;
-
   // Convert the Tracker to an isolated moment in time
   // hack around tags being a private field
   let tags = Array.from((current as any).tags.values()) as Tag[];
 
   let trackerSnapshot = normalizeTags(tags);
 
-  let currentBatch = getTrackingInfo().history[lastChecked];
+  // Put into "revision" buckets, based on "lastChecked"
+  // (because the revision of a tag may not have changed if the value didn't changed
+  //  but last-checked is the last revision to inspect it)
+  let revision = `${trackerSnapshot.tag.revision}`;
+
+  let currentBatch = getTrackingInfo().history[revision];
   let batch = currentBatch || [];
 
   batch.push(trackerSnapshot);
 
-  Ember.EMBER_DEBUG.TRACKING.history[lastChecked] = batch;
+  Ember.EMBER_DEBUG.TRACKING.history[revision] = batch;
 }
 
 function hasBeenSet(tracker: TrackerSnapshot) {
@@ -121,10 +122,6 @@ function prettyPrintTrackingInfo({ verbose = false }) {
     currentRevision = revisions[i];
     currentBatch = history[currentRevision] || [];
 
-    if (`${currentRevision}` === '1') {
-      continue;
-    }
-
     // eslint-disable-next-line no-console
     console.log(`[Revision: ${currentRevision}]`, currentBatch);
     changedTag = currentBatch[0];
@@ -133,7 +130,6 @@ function prettyPrintTrackingInfo({ verbose = false }) {
       let { objectName, propertyName, objectId } = tracker.tag;
 
       let wasSet = hasBeenSet(tracker);
-      let wasChanged = hasChanged(changedTag, tracker.dependencies);
 
       if (wasSet) {
         // eslint-disable-next-line no-console
@@ -176,6 +172,7 @@ function printDependents(
         `${indentation}Dependency: ${dependency.propertyName} ` +
           `(rev: ${dependency.revision}) on ` +
           `${dependency.objectName} ` +
+          `(#${dependency.objectId}) ` +
           `${isChangedProperty ? 'changed' : 'did not change'}`
       );
     }
@@ -237,21 +234,38 @@ function getOrAssignId(obj: object) {
   return id;
 }
 
+// the attributes we want live all over the place
 function toTagSnapshot(tag: any): TagSnapshot {
-  let hostObject = tag.key ? tag.ref.parentValue : tag._object;
+  let kind = tag.__proto__.constructor.name;
 
-  let objectId = getOrAssignId(hostObject);
+  if (kind === 'TwoWayFlushDetectionTag') {
+    let hostObject = tag.ref.propertyTag.subtag._object;
+    let objectId = getOrAssignId(hostObject);
+    let revision = Math.max(tag.ref.lastRevision, tag.ref.propertyTag.lastChecked);
 
-  let result: Partial<TagSnapshot> = {
-    objectName: hostObject && hostObject.__proto__.constructor.name,
-    objectRef: hostObject,
-    objectId,
-    revision: tag.revision,
-    lastChecked: tag.lastChecked,
-    tag,
-  };
+    return {
+      objectName: hostObject && hostObject.__proto__.constructor.name,
+      objectRef: hostObject,
+      objectId: objectId || -1,
+      propertyName: tag.key,
+      revision,
+      tag,
+    } as TagSnapshot;
+  } else if (kind === 'MonomorphicTagImpl') {
+    let hostObject = tag._object;
+    let objectId = getOrAssignId(hostObject);
+    let revision = Math.max(tag.lastValue, tag.lastChecked);
 
-  result.propertyName = tag.key || tag._propertyKey;
+    return {
+      objectName: hostObject && hostObject.__proto__.constructor.name,
+      objectRef: hostObject,
+      objectId: objectId || -1,
+      lastChecked: tag.lastChecked,
+      propertyName: tag._propertyKey,
+      revision,
+      tag,
+    } as TagSnapshot;
+  }
 
-  return result as TagSnapshot;
+  throw new Error(`tag: ${kind} not handled`);
 }
