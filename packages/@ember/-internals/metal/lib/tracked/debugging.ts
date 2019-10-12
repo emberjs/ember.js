@@ -25,7 +25,6 @@ interface TagSnapshot {
   objectRef: object;
   objectId: number;
   revision: number;
-  lastChecked: number;
   tag: Tag | UpdatableTag;
   dependencies: TagSnapshot[];
 }
@@ -234,9 +233,13 @@ function getOrAssignId(obj: object) {
   return id;
 }
 
+function nameOf(obj: any) {
+  return obj && obj.__proto__.constructor.name;
+}
+
 // the attributes we want live all over the place
 function toTagSnapshot(tag: any): TagSnapshot {
-  let kind = tag.__proto__.constructor.name;
+  let kind = nameOf(tag);
 
   if (kind === 'TwoWayFlushDetectionTag') {
     let hostObject = tag.ref.propertyTag.subtag._object;
@@ -244,7 +247,7 @@ function toTagSnapshot(tag: any): TagSnapshot {
     let revision = Math.max(tag.ref.lastRevision, tag.ref.propertyTag.lastChecked);
 
     return {
-      objectName: hostObject && hostObject.__proto__.constructor.name,
+      objectName: nameOf(hostObject),
       objectRef: hostObject,
       objectId: objectId || -1,
       propertyName: tag.key,
@@ -257,10 +260,9 @@ function toTagSnapshot(tag: any): TagSnapshot {
     let revision = Math.max(tag.lastValue, tag.lastChecked);
 
     return {
-      objectName: hostObject && hostObject.__proto__.constructor.name,
+      objectName: nameOf(hostObject),
       objectRef: hostObject,
       objectId: objectId || -1,
-      lastChecked: tag.lastChecked,
       propertyName: tag._propertyKey,
       revision,
       tag,
