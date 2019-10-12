@@ -54,12 +54,11 @@ function printDependents(
   let verboseOverride = getTrackingInfo().verbose;
 
   dependencies.forEach(dependency => {
-    let isChangedProperty = rootTag.tag.propertyName === dependency.propertyName;
-
-    let wasChanged = hasChanged(rootTag, dependency.dependencies);
+    let isChanged = rootTag.tag.lastChecked === dependency.revision;
+    let isChangedProperty = isChanged;
 
     if (!verboseOverride) {
-      if (!verbose && !wasChanged) {
+      if (!verbose && !isChangedProperty) {
         return;
       }
     }
@@ -81,4 +80,3 @@ function printDependents(
     printDependents(rootTag, dependency.dependencies, verbose, indent + 2);
   });
 }
-

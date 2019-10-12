@@ -31,6 +31,7 @@ export interface TagSnapshot {
   objectRef: object;
   objectId: number;
   revision: number;
+  lastChecked: number;
   tag: Tag | UpdatableTag;
   dependencies: TagSnapshot[];
 }

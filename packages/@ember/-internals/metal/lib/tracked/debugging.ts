@@ -72,7 +72,7 @@ export function debugTracker(current: Tracker, _parent: Option<Tracker>) {
   // this is to help with performance of cpu / memory
   if (objectOfRelevance && !containsRelevantObject(trackerSnapshot)) return;
 
-  let revision = `${trackerSnapshot.tag.revision}`;
+  let revision = `${trackerSnapshot.tag.lastChecked}`;
 
   if (isTrackingHistory) {
     let currentBatch = getTrackingInfo().history[revision];
@@ -153,27 +153,27 @@ function toTagSnapshot(tag: any): TagSnapshot {
   if (kind === 'TwoWayFlushDetectionTag') {
     let hostObject = tag.ref.propertyTag.subtag._object;
     let objectId = getOrAssignId(hostObject);
-    let revision = Math.max(tag.ref.lastRevision, tag.ref.propertyTag.lastChecked);
 
     return {
       objectName: nameOf(hostObject),
       objectRef: hostObject,
       objectId: objectId || -1,
       propertyName: tag.key,
-      revision,
+      revision: tag.ref.lastRevision,
+      lastChecked: tag.ref.propertyTag.lastChecked,
       tag,
     } as TagSnapshot;
   } else if (kind === 'MonomorphicTagImpl') {
     let hostObject = tag._object;
     let objectId = getOrAssignId(hostObject);
-    let revision = Math.max(tag.lastValue, tag.lastChecked);
 
     return {
       objectName: nameOf(hostObject),
       objectRef: hostObject,
       objectId: objectId || -1,
       propertyName: tag._propertyKey,
-      revision,
+      revision: tag.lastValue,
+      lastChecked: tag.lastChecked,
       tag,
     } as TagSnapshot;
   }
