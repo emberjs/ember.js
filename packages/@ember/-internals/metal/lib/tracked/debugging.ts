@@ -9,8 +9,10 @@ interface DebugTracking {
   history: { [revision: number]: TrackerSnapshot[] };
   objectMap: WeakMap<object, number>;
   isRecording: boolean;
+  isWatching: boolean;
   start: () => void;
   stop: () => void;
+  watch: () => void;
 }
 
 interface TrackerSnapshot {
@@ -40,6 +42,9 @@ Ember.EMBER_DEBUG.TRACKING = {
     getTrackingInfo().history = {};
     getTrackingInfo().objectMap = new WeakMap();
     getTrackingInfo().isRecording = true;
+  },
+  watch() {
+    getTrackingInfo().isWatching = true;
   },
   stop() {
     getTrackingInfo().isRecording = false;
@@ -83,6 +88,11 @@ export function debugTracker(current: Tracker, _parent: Option<Tracker>) {
   batch.push(trackerSnapshot);
 
   Ember.EMBER_DEBUG.TRACKING.history[revision] = batch;
+
+  if (getTrackingInfo().isWatching) {
+    console.clear();
+    prettyPrintTrackingInfo();
+  }
 }
 
 function hasBeenSet(tracker: TrackerSnapshot) {
@@ -106,7 +116,7 @@ function hasChanged(rootTag: TrackerSnapshot, dependencies: TagSnapshot[]): bool
   return false;
 }
 
-function prettyPrintTrackingInfo({ verbose = false }) {
+function prettyPrintTrackingInfo({ verbose = false } = {}) {
   let history = getTrackingInfo().history;
   let revisions = Object.keys(history)
     .map(revision => parseInt(revision, 10))
