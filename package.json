@@ -126,7 +126,7 @@
     "github": "^0.2.3",
     "glob": "^7.1.4",
     "html-differ": "^1.4.0",
-    "lerna-changelog": "0.8.0",
+    "lerna-changelog": "0.8.2",
     "lodash.uniq": "^4.5.0",
     "mkdirp": "^0.5.1",
     "mocha": "^6.2.1",
