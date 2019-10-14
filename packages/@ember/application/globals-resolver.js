@@ -7,7 +7,6 @@ import { get, findNamespace } from '@ember/-internals/metal';
 import { assert, info } from '@ember/debug';
 import { capitalize, classify, dasherize, decamelize } from '@ember/string';
 import { Object as EmberObject } from '@ember/-internals/runtime';
-import validateType from './lib/validate-type';
 import { getTemplate } from '@ember/-internals/glimmer';
 import { DEBUG } from '@glimmer/env';
 
@@ -144,10 +143,27 @@ class DefaultResolver extends EmberObject {
       if (parsedName.root && parsedName.root.LOG_RESOLVER) {
         this._logLookup(resolved, parsedName);
       }
-    }
 
-    if (resolved) {
-      validateType(resolved, parsedName);
+      if (resolved) {
+        let VALIDATED_TYPES = {
+          route: ['isRouteFactory', 'Ember.Route'],
+          component: ['isComponentFactory', 'Ember.Component'],
+          view: ['isViewFactory', 'Ember.View'],
+          service: ['isServiceFactory', 'Ember.Service'],
+        };
+
+        let validationAttributes = VALIDATED_TYPES[parsedName.type];
+
+        if (validationAttributes) {
+          let [factoryFlag, expectedType] = validationAttributes;
+
+          assert(
+            `Expected ${parsedName.fullName} to resolve to an ${expectedType} but ` +
+              `instead it was ${resolved}.`,
+            Boolean(resolved[factoryFlag])
+          );
+        }
+      }
     }
 
     return resolved;
