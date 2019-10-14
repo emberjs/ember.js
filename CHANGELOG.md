@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### v3.14.0-beta.5 (October 14, 2019)
+
+- [#18476](https://github.com/emberjs/ember.js/pull/18476) [BUGFIX] Ensure model can be observed by sync observers
+- [#18458](https://github.com/emberjs/ember.js/pull/18458) [BUGFIX] Using query params helper outside of link-to
+
 ### v3.14.0-beta.4 (October 7, 2019)
 
 - [#18462](https://github.com/emberjs/ember.js/pull/18462) [BUGFIX] Prevents observer re-entry
