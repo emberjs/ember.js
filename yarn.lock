@@ -775,15 +775,15 @@
   resolved "https://registry.yarnpkg.com/@ember/edition-utils/-/edition-utils-1.1.1.tgz#d5732c3da593f202e6e1ac6dbee56a758242403f"
   integrity sha512-GEhri78jdQp/xxPpM6z08KlB0wrHfnfrJ9dmQk7JeQ4XCiMzXsJci7yooQgg/IcTKCM/PxE/IkGCQAo80adMkw==
 
-"@glimmer/compiler@0.38.5-alpha.3":
-  version "0.38.5-alpha.3"
-  resolved "https://registry.yarnpkg.com/@glimmer/compiler/-/compiler-0.38.5-alpha.3.tgz#1e5c5e6779c95dac77e81dc96822bef035a68c57"
-  integrity sha512-ih35kzH9iCl9RP8awREVVr25+27HxcbkDQuPdApmeDTuc+7tTvr40OBcEG9GLLPfdWXd5bP5eq0hITlAQvVW4g==
+"@glimmer/compiler@0.42.2":
+  version "0.42.2"
+  resolved "https://registry.yarnpkg.com/@glimmer/compiler/-/compiler-0.42.2.tgz#505778ab9dc66f65307dfd450e1ae075dfe33581"
+  integrity sha512-/NSp8sAlvRjMwa/4c35/m7W+E5xRohzN0Fwc7t+7rrSYwbZD/B9T5n4oXZjwWrXpGOYaIrzXSGGTbozqbRIIag==
   dependencies:
-    "@glimmer/interfaces" "^0.38.5-alpha.3"
-    "@glimmer/syntax" "^0.38.5-alpha.3"
-    "@glimmer/util" "^0.38.5-alpha.3"
-    "@glimmer/wire-format" "^0.38.5-alpha.3"
+    "@glimmer/interfaces" "^0.42.2"
+    "@glimmer/syntax" "^0.42.2"
+    "@glimmer/util" "^0.42.2"
+    "@glimmer/wire-format" "^0.42.2"
 
 "@glimmer/encoder@^0.38.5-alpha.3":
   version "0.38.5-alpha.3"
@@ -805,6 +805,11 @@
   dependencies:
     "@glimmer/wire-format" "^0.38.5-alpha.3"
     "@simple-dom/interface" "1.4.0"
+
+"@glimmer/interfaces@^0.42.2":
+  version "0.42.2"
+  resolved "https://registry.yarnpkg.com/@glimmer/interfaces/-/interfaces-0.42.2.tgz#9cf8d6f8f5eee6bfcfa36919ca68ae716e1f78db"
+  integrity sha512-7LOuQd02cxxNNHChzdHMAU8/qOeQvTro141CU5tXITP7z6aOv2D2gkFdau97lLQiVxezGrh8J7h8GCuF7TEqtg==
 
 "@glimmer/low-level@^0.38.5-alpha.3":
   version "0.38.5-alpha.3"
@@ -862,20 +867,25 @@
     "@glimmer/wire-format" "^0.38.5-alpha.3"
     "@simple-dom/interface" "^1.4.0"
 
-"@glimmer/syntax@^0.38.5-alpha.3":
-  version "0.38.5-alpha.3"
-  resolved "https://registry.yarnpkg.com/@glimmer/syntax/-/syntax-0.38.5-alpha.3.tgz#da6c1daba1ada18493a1fc0879b2e8d1313b35af"
-  integrity sha512-hpYevmtgXrJxqJ9/07VAUNx86FGzoCcZi5SzVdFmN/YUuWEdjZjx2bNOCUDSx8SwssWpJJnxizHx77YII0Ftbw==
+"@glimmer/syntax@^0.42.2":
+  version "0.42.2"
+  resolved "https://registry.yarnpkg.com/@glimmer/syntax/-/syntax-0.42.2.tgz#89bb3cb787285b84665dc0d8907d94b008e5be9a"
+  integrity sha512-SR26SmF/Mb5o2cc4eLHpOyoX5kwwXP4KRhq4fbWfrvan74xVWA38PLspPCzwGhyVH/JsE7tUEPMjSo2DcJge/Q==
   dependencies:
-    "@glimmer/interfaces" "^0.38.5-alpha.3"
-    "@glimmer/util" "^0.38.5-alpha.3"
-    handlebars "^4.0.6"
+    "@glimmer/interfaces" "^0.42.2"
+    "@glimmer/util" "^0.42.2"
+    handlebars "^4.0.13"
     simple-html-tokenizer "^0.5.8"
 
 "@glimmer/util@^0.38.5-alpha.3":
   version "0.38.5-alpha.3"
   resolved "https://registry.yarnpkg.com/@glimmer/util/-/util-0.38.5-alpha.3.tgz#8d8084cef9ebbac1a757ac1b5bc6ba4948bd7e68"
   integrity sha512-0gu7hN37tYhsGy+eHrAEYcielPNwDXsMo3IvD02K8MPJNHfhitofV5kFYJ8DpkNvZ5gMhD2As/461XKrwUdQKw==
+
+"@glimmer/util@^0.42.2":
+  version "0.42.2"
+  resolved "https://registry.yarnpkg.com/@glimmer/util/-/util-0.42.2.tgz#9ca1631e42766ea6059f4b49d0bdfb6095aad2c4"
+  integrity sha512-Heck0baFSaWDanCYtmOcLeaz7v+rSqI8ovS7twrp2/FWEteb3Ze5sWQ2BEuSAG23L/k/lzVwYM/MY7ZugxBpaA==
 
 "@glimmer/vm@^0.38.5-alpha.3":
   version "0.38.5-alpha.3"
@@ -891,6 +901,14 @@
   integrity sha512-HQaNJCDTHNQTrTwCSKNB2vAsHW/gbYl+C7hPyZSbSYsEz3y+YOf6eZC8GSUMprErBeWkSLdXAa0RYUavUEEzLQ==
   dependencies:
     "@glimmer/util" "^0.38.5-alpha.3"
+
+"@glimmer/wire-format@^0.42.2":
+  version "0.42.2"
+  resolved "https://registry.yarnpkg.com/@glimmer/wire-format/-/wire-format-0.42.2.tgz#b95062b594dddeb8bd11cba3a6a0accbfabc9930"
+  integrity sha512-IqUo6mdJ7GRsK7KCyZxrc17ioSg9RBniEnb418ZMQxsV/WBv9NQ359MuClUck2M24z1AOXo4TerUw0U7+pb1/A==
+  dependencies:
+    "@glimmer/interfaces" "^0.42.2"
+    "@glimmer/util" "^0.42.2"
 
 "@simple-dom/document@^1.4.0":
   version "1.4.0"
@@ -4348,12 +4366,23 @@ growly@^1.3.0:
   resolved "https://registry.yarnpkg.com/growly/-/growly-1.3.0.tgz#f10748cbe76af964b7c96c93c6bcc28af120c081"
   integrity sha1-8QdIy+dq+WS3yWyTxrzCivEgwIE=
 
-handlebars@^4.0.11, handlebars@^4.0.4, handlebars@^4.0.6:
+handlebars@^4.0.11, handlebars@^4.0.4:
   version "4.1.0"
   resolved "https://registry.yarnpkg.com/handlebars/-/handlebars-4.1.0.tgz#0d6a6f34ff1f63cecec8423aa4169827bf787c3a"
   integrity sha512-l2jRuU1NAWK6AW5qqcTATWQJvNPEwkM7NEKSiv/gqOsoSQbVoWyqVEY5GS+XPQ88zLNmqASRpzfdm8d79hJS+w==
   dependencies:
     async "^2.5.0"
+    optimist "^0.6.1"
+    source-map "^0.6.1"
+  optionalDependencies:
+    uglify-js "^3.1.4"
+
+handlebars@^4.0.13:
+  version "4.4.3"
+  resolved "https://registry.yarnpkg.com/handlebars/-/handlebars-4.4.3.tgz#180bae52c1d0e9ec0c15d7e82a4362d662762f6e"
+  integrity sha512-B0W4A2U1ww3q7VVthTKfh+epHx+q4mCt6iK+zEAzbMBpWQAwxCeKxEGpj/1oQTpzPXDNSOG7hmG14TsISH50yw==
+  dependencies:
+    neo-async "^2.6.0"
     optimist "^0.6.1"
     source-map "^0.6.1"
   optionalDependencies:
@@ -6130,6 +6159,11 @@ negotiator@0.6.2:
   version "0.6.2"
   resolved "https://registry.yarnpkg.com/negotiator/-/negotiator-0.6.2.tgz#feacf7ccf525a77ae9634436a64883ffeca346fb"
   integrity sha512-hZXc7K2e+PgeI1eDBe/10Ard4ekbfrrqG8Ep+8Jmf4JID2bNg7NvCPOZN+kfF574pFQI7mum2AUqDidoKqcTOw==
+
+neo-async@^2.6.0:
+  version "2.6.1"
+  resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.1.tgz#ac27ada66167fa8849a6addd837f6b189ad2081c"
+  integrity sha512-iyam8fBuCUpWeKPGpaNMetEocMt364qkCsfL9JuhjXX6dRnguRVOfk2GZaDpPjcOKiiXCPINZC1GczQ7iTq3Zw==
 
 nice-try@^1.0.4:
   version "1.0.5"
