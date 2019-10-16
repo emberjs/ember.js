@@ -512,13 +512,13 @@ export class BlockArgumentsImpl<C extends JitOrAotBlock> implements BlockArgumen
   }
 
   get(name: string): Option<ScopeBlock<C>> {
-    let { base, stack, names } = this;
+    let idx = this.names!.indexOf(name);
 
-    let idx = names!.indexOf(name);
-
-    if (names!.indexOf(name) === -1) {
+    if (idx === -1) {
       return null;
     }
+
+    let { base, stack } = this;
 
     let table = check(stack.get(idx * 3, base), CheckOption(CheckBlockSymbolTable));
     let scope = check(stack.get(idx * 3 + 1, base), CheckOption(CheckScope));
