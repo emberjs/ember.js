@@ -44,3 +44,11 @@ export function fillNulls<T>(count: number): T[] {
 
   return arr;
 }
+
+export function values<T>(obj: { [s: string]: T }): T[] {
+  const vals = [];
+  for (const key in obj) {
+    vals.push(obj[key]);
+  }
+  return vals;
+}

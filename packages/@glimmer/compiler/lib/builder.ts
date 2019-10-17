@@ -1,7 +1,7 @@
 import { WireFormat, Option, Dict, Expressions, ExpressionContext } from '@glimmer/interfaces';
 
 import Op = WireFormat.SexpOpcodes;
-import { dict, assertNever, assert } from '@glimmer/util';
+import { dict, assertNever, assert, values } from '@glimmer/util';
 import {
   BuilderStatement,
   BuilderComment,
@@ -94,7 +94,7 @@ class LocalSymbols implements Symbols {
   }
 
   get paramSymbols(): number[] {
-    return Object.values(this.locals);
+    return values(this.locals);
   }
 
   get top(): ProgramSymbols {
