@@ -244,11 +244,17 @@ alter@~0.2.0:
   dependencies:
     stable "~0.1.3"
 
-amd-name-resolver@0.0.4, amd-name-resolver@^1.0.0, amd-name-resolver@^1.2.0, amd-name-resolver@^1.3.1, "amd-name-resolver@https://github.com/ember-cli/amd-name-resolver.git":
+amd-name-resolver@0.0.4:
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/amd-name-resolver/-/amd-name-resolver-0.0.4.tgz#aa19f1b9a0afcef975451b263b7dfb690a9c0ca3"
+  integrity sha1-qhnxuaCvzvl1RRsmO337aQqcDKM=
+
+amd-name-resolver@^1.0.0, amd-name-resolver@^1.2.0, amd-name-resolver@^1.3.1:
   version "1.3.1"
-  resolved "https://github.com/ember-cli/amd-name-resolver.git#7433667199538b1688ac57394531fe26ab2a84b8"
+  resolved "https://registry.yarnpkg.com/amd-name-resolver/-/amd-name-resolver-1.3.1.tgz#ffe71c683c6e7191fc4ae1bb3aaed15abea135d9"
+  integrity sha512-26qTEWqZQ+cxSYygZ4Cf8tsjDBLceJahhtewxtKZA3SRa4PluuqYCuheemDQD+7Mf5B7sr+zhTDWAHDh02a1Dw==
   dependencies:
-    ensure-posix-path "^1.1.1"
+    ensure-posix-path "^1.0.1"
     object-hash "^1.3.1"
 
 amdefine@>=0.0.4:
@@ -1941,9 +1947,10 @@ broccoli-string-replace@0.1.1:
     broccoli-persistent-filter "^1.1.5"
     minimatch "^2.0.8"
 
-"broccoli-typescript-compiler@http://github.com/wycats/broccoli-typescript-compiler.git#upgrade-typescript":
-  version "4.1.0"
-  resolved "http://github.com/wycats/broccoli-typescript-compiler.git#ab0bd39d3645bdc4fcbe76ab701664de5a868158"
+broccoli-typescript-compiler@^4.2.0:
+  version "4.2.0"
+  resolved "https://registry.yarnpkg.com/broccoli-typescript-compiler/-/broccoli-typescript-compiler-4.2.0.tgz#b0c75898c75b897f40d3f627d548a64e0bb3d9f2"
+  integrity sha512-Fk17EapT3Yye5pUNC3lzxq78KdFTWGC7m8Zi8BnIfwD6ZPzVT+uEYMEcYXsfCtMD//jHSIXDQi9YlWZcHVjiDw==
   dependencies:
     broccoli-funnel "^2.0.1"
     broccoli-merge-trees "^3.0.0"
@@ -1951,7 +1958,7 @@ broccoli-string-replace@0.1.1:
     fs-tree-diff "^0.5.7"
     heimdalljs "0.3.3"
     md5-hex "^2.0.0"
-    typescript "~3.5.1"
+    typescript "~3.5.3"
     walk-sync "^0.3.2"
 
 broccoli-uglify-sourcemap@^1.0.1:
@@ -3342,11 +3349,6 @@ ensure-posix-path@^1.0.0, ensure-posix-path@^1.0.1, ensure-posix-path@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/ensure-posix-path/-/ensure-posix-path-1.0.2.tgz#a65b3e42d0b71cfc585eb774f9943c8d9b91b0c2"
   integrity sha1-pls+QtC3HPxYXrd0+ZQ8jZuRsMI=
-
-ensure-posix-path@^1.1.1:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/ensure-posix-path/-/ensure-posix-path-1.1.1.tgz#3c62bdb19fa4681544289edb2b382adc029179ce"
-  integrity sha512-VWU0/zXzVbeJNXvME/5EmLuEj2TauvoaTz6aFYK1Z92JCBlDlZ3Gu0tuGR42kpW1754ywTs+QB0g5TP0oj9Zaw==
 
 entities@~1.1.1:
   version "1.1.2"
@@ -9892,7 +9894,7 @@ typedarray@^0.0.6:
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
   integrity sha1-hnrHTjhkGHsdPUfZlqeOxciDB3c=
 
-typescript@3.5.3, typescript@~3.5.1:
+typescript@~3.5.3:
   version "3.5.3"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.5.3.tgz#c830f657f93f1ea846819e929092f5fe5983e977"
   integrity sha512-ACzBtm/PhXBDId6a6sDJfroT2pOWt/oOnk4/dElG5G33ZL776N3Y6/6bKZJBFpd+b05F3Ct9qDjMeJmRWtE2/g==

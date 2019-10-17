@@ -29,12 +29,6 @@
     "yarn:unlink": "node bin/yarn-link-all --unlink",
     "link:local": "node bin/yarn-link-local"
   },
-  "resolutions": {
-    "typescript": "3.5.3",
-    "amd-name-resolver": "https://github.com/ember-cli/amd-name-resolver.git",
-    "broccoli-typescript-compiler": "http://github.com/wycats/broccoli-typescript-compiler.git#upgrade-typescript",
-    "broccoli-typescript-compiler/typescript": "3.5.3"
-  },
   "dependencies": {
     "@simple-dom/document": "^1.4.0",
     "@simple-dom/interface": "^1.4.0",
@@ -65,7 +59,7 @@
     "broccoli-persistent-filter": "^2.1.1",
     "broccoli-rollup": "^2.0.0",
     "broccoli-source": "^1.1.0",
-    "broccoli-typescript-compiler": "http://github.com/wycats/broccoli-typescript-compiler.git#upgrade-typescript",
+    "broccoli-typescript-compiler": "^4.2.0",
     "dag-map": "^2.0.2",
     "ember-cli": "~3.6.1",
     "ember-cli-release": "^1.0.0-beta.2",
