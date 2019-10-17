@@ -147,7 +147,7 @@ export default class TemplateCompiler implements Processor<InputOps> {
   closeElement([action]: [AST.ElementNode]) {
     if (isNamedBlock(action)) {
       this.opcode(['closeNamedBlock', action]);
-    } else if (!!destructureDynamicComponent(action)) {
+    } else if (destructureDynamicComponent(action)) {
       this.opcode(['closeDynamicComponent', action], action);
     } else if (isComponent(action)) {
       this.opcode(['closeComponent', action], action);
@@ -227,7 +227,6 @@ export default class TemplateCompiler implements Processor<InputOps> {
       this.opcode(['append', !mustache.escaped], mustache);
     } else if (isHelperInvocation(mustache)) {
       this.prepareHelper(mustache, 'helper');
-      debugger;
       this.expression(mustache.path, ExpressionContext.CallHead, mustache.path);
       this.opcode(['helper'], mustache);
       this.opcode(['append', !mustache.escaped], mustache);

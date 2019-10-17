@@ -25,8 +25,7 @@ export default class WireFormatDebugger {
       switch (opcode[0]) {
         case Op.Append:
           return ['append', this.formatOpcode(opcode[1]), opcode[2]];
-        case Op.AttrSplat:
-          return ['attr-splat'];
+
         case Op.Block:
           return [
             'block',
@@ -129,7 +128,6 @@ export default class WireFormatDebugger {
           return ['undefined'];
 
         case Op.Call:
-          debugger;
           return [
             'call',
             this.formatOpcode(opcode[3]),

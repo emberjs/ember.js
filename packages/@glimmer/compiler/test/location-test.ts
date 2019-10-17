@@ -43,7 +43,7 @@ QUnit.module('locations - position');
 
 Object.keys(cases).forEach(string => {
   for (let [span, offset] of cases[string]) {
-    let [line, column] = span.split(':').map(i => parseInt(i));
+    let [line, column] = span.split(':').map(i => parseInt(i, 10));
 
     if (offset === null) continue;
 
@@ -57,7 +57,7 @@ QUnit.module('locations - location');
 
 Object.keys(cases).forEach(string => {
   for (let [span, offset] of cases[string]) {
-    let [line, column] = span.split(':').map(i => parseInt(i));
+    let [line, column] = span.split(':').map(i => parseInt(i, 10));
 
     test(`${string} @ ${line}:${column} -> ${offset}`, assert => {
       assert.deepEqual(locationToOffset(string, line, column), offset === null ? null : offset);
