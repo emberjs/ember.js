@@ -106,7 +106,7 @@ APPEND_OPCODES.add(Op.JitSpreadBlock, vm => {
 });
 
 APPEND_OPCODES.add(Op.HasBlock, vm =>
-  vm.stack.push(!!vm.stack.pop() ? TRUE_REFERENCE : FALSE_REFERENCE)
+  vm.stack.push(vm.stack.pop() ? TRUE_REFERENCE : FALSE_REFERENCE)
 );
 
 APPEND_OPCODES.add(Op.HasBlockParams, vm => {

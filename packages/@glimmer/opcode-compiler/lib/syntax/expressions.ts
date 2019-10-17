@@ -48,7 +48,6 @@ EXPRESSIONS.add(SexpOpcodes.Call, ([, start, offset, name, params, hash], meta) 
     );
   }
 
-  debugger;
   let nameOrError = expectString(name, meta, 'Expected call head to be a string');
 
   if (typeof nameOrError !== 'string') {
@@ -91,7 +90,6 @@ function isComponent(expr: Expressions.Expression, meta: ContainingMetadata): bo
 EXPRESSIONS.add(SexpOpcodes.GetSymbol, ([, head]) => [op(Op.GetVariable, head)]);
 
 EXPRESSIONS.add(SexpOpcodes.GetPath, ([, head, tail]) => {
-  debugger;
   return [op('Expr', head), ...tail.map(p => op(Op.GetProperty, p))];
 });
 
