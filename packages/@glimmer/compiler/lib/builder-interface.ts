@@ -533,16 +533,10 @@ export type TupleBuilderExpression =
   | [Builder.Literal, string | boolean | null | undefined]
   | [Builder.Get, string]
   | [Builder.Get, string, string[]]
-  | Concat
+  | [Builder.Concat, ...any[]] // TODO: replace with recursive types in TS3.7
   | [Builder.HasBlock, string]
   | [Builder.HasBlockParams, string]
   | BuilderCallExpression;
-
-type RawConcat = Recursive<[Builder.Concat, ...readonly BuilderExpression[]]>;
-
-// not sure why this error occurs -- fingers crossed
-// @ts-ignore
-interface Concat extends RawConcat {}
 
 type Recursive<T> = T;
 
