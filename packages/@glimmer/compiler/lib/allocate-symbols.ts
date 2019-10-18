@@ -218,7 +218,7 @@ export class SymbolAllocator implements Processor<AllocateSymbolsOps> {
     return ['append', trusted];
   }
 
-  literal(value: string | boolean | number | null | undefined) {
+  literal(value: string | boolean | number | null | undefined): Op<AllocateSymbolsOps, 'literal'> {
     return ['literal', value];
   }
 
