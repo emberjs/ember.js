@@ -17,7 +17,7 @@ export function strip(strings: TemplateStringsArray, ...args: unknown[]) {
     lines.pop();
   }
 
-  let min = Number.MAX_SAFE_INTEGER;
+  let min = Infinity;
 
   for (let line of lines) {
     let leading = line.match(/^\s*/)![0].length;
