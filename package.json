@@ -35,7 +35,6 @@
     "@simple-dom/serializer": "^1.4.0",
     "@simple-dom/void-map": "^1.4.0",
     "babel-plugin-debug-macros": "^0.1.11",
-    "ember-cli-browserstack": "^0.0.7",
     "handlebars": "^4.0.13",
     "simple-html-tokenizer": "^0.5.8"
   },
@@ -62,6 +61,7 @@
     "broccoli-typescript-compiler": "^4.2.0",
     "dag-map": "^2.0.2",
     "ember-cli": "~3.6.1",
+    "ember-cli-browserstack": "^1.0.1",
     "ember-cli-release": "^1.0.0-beta.2",
     "emberjs-build": "^0.19.0",
     "eslint": "^5.10.0",
