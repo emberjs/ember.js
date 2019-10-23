@@ -278,7 +278,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
 
     ```javascript
     let peopleToMoon = ['Armstrong', 'Aldrin'];
-    
+
     peopleToMoon.get('[]'); // ['Armstrong', 'Aldrin']
 
     peopleToMoon.set('[]', ['Collins']); // ['Collins']
@@ -311,7 +311,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
 
     vowels.reverseObjects();
     vowels.firstObject; // 'u'
-    
+
     vowels.clear();
     vowels.firstObject; // undefined
     ```
@@ -381,7 +381,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     Returns the index if found, -1 if no match is found.
 
     The optional `startAt` argument can be used to pass a starting
-    index to search from, effectively slicing the searchable portion 
+    index to search from, effectively slicing the searchable portion
     of the array. If it's negative it will add the array length to
     the startAt value passed in as the index to search from. If less
     than or equal to `-1 * array.length` the entire array is searched.
@@ -595,7 +595,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
         editPost(post, newContent) {
           let oldContent = post.body,
               postIndex = this.posts.indexOf(post);
-              
+
           this.posts.arrayContentWillChange(postIndex, 0, 0); // attemptsToModify = 1
           post.set('body', newContent);
 
@@ -709,7 +709,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
 
     ```javascript
     let people = [{name: 'Joe'}, {name: 'Matt'}];
-    
+
     people.setEach('zipCode', '10011);
     // [{name: 'Joe', zipCode: '10011'}, {name: 'Matt', zipCode: '10011'}];
     ```
@@ -936,7 +936,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     Note that in addition to a callback, you can also pass an optional target
     object that will be set as `this` on the context. This is a good way
     to give your iterator function access to the current object.
-    
+
     Example Usage:
 
     ```javascript
@@ -1041,6 +1041,19 @@ const ArrayMixin = Mixin.create(Enumerable, {
 
     Note that like the native `Array.every`, `isEvery` will return true when called
     on any empty array.
+
+    Example usage:
+    ```javascript
+    const food = [
+      { food: 'apple', isFruit: true},
+      { food: 'bread', isFruit: false },
+      { food: 'banana', isFruit: true }
+    ];
+    food.isEvery('isFruit'); // false
+
+    const empty = []
+    empty.isEvery('isFruit'); // true
+    ```
 
     @method isEvery
     @param {String} key the property to test
@@ -1248,7 +1261,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     Returns `true` if found, `false` otherwise.
 
     The optional `startAt` argument can be used to pass a starting
-    index to search from, effectively slicing the searchable portion 
+    index to search from, effectively slicing the searchable portion
     of the array. If it's negative it will add the array length to
     the startAt value passed in as the index to search from. If less
     than or equal to `-1 * array.length` the entire array is searched.
@@ -1287,10 +1300,10 @@ const ArrayMixin = Mixin.create(Enumerable, {
      { name: 'green', weight: 600 },
      { name: 'blue', weight: 500 }
     ];
-   
+
    colors.sortBy('name');
    // [{name: 'blue', weight: 500}, {name: 'green', weight: 600}, {name: 'red', weight: 500}]
-   
+
    colors.sortBy('weight', 'name');
    // [{name: 'blue', weight: 500}, {name: 'red', weight: 500}, {name: 'green', weight: 600}]
    ```
