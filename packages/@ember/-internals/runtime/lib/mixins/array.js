@@ -1196,14 +1196,19 @@ const ArrayMixin = Mixin.create(Enumerable, {
     Prototype 1.6.
 
     ```javascript
-    const Person = EmberObject.extend({
-      name: null,
+    class Person {
+      name = null;
+
+      constructor(name) {
+        this.name = name;
+      }
+
       greet(prefix='Hello') {
         return `${prefix} ${this.name}`;
-      },
+      }
+    }
 
-    });
-    let people = [Person.create('Joe'), Person.create('Matt')];
+    let people = [new Person('Joe'), new Person('Matt')];
 
     people.invoke('greet'); // ['Hello Joe', 'Hello Matt']
     people.invoke('greet', 'Bonjour'); // ['Bonjour Joe', 'Bonjour Matt']
