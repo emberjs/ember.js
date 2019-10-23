@@ -419,10 +419,18 @@ const ArrayMixin = Mixin.create(Enumerable, {
   },
 
   /**
-    Returns the index of the given object's last occurrence.
-    If no `startAt` argument is given, the search starts from
-    the last position. If it's negative, will count backward
-    from the end of the array. Returns -1 if no match is found.
+    Returns the index of the given `object`'s last occurrence.
+
+    - If no `startAt` argument is given, the search starts from
+    the last position.
+    - If it's greater than or equal to the length of the array,
+    the search starts from the last position.
+    - If it's negative, it is taken as the offset from the end
+    of the array i.e. `startAt + array.length`.
+    - If it's any other positive number, will search backwards
+    from that index of the array.
+
+    Returns -1 if no match is found.
 
     ```javascript
     let arr = ['a', 'b', 'c', 'd', 'a'];
@@ -431,14 +439,17 @@ const ArrayMixin = Mixin.create(Enumerable, {
     arr.lastIndexOf('z');       // -1
     arr.lastIndexOf('a', 2);    //  0
     arr.lastIndexOf('a', -1);   //  4
+    arr.lastIndexOf('a', -3);   //  0
     arr.lastIndexOf('b', 3);    //  1
     arr.lastIndexOf('a', 100);  //  4
     ```
 
     @method lastIndexOf
     @param {Object} object the item to search for
-    @param {Number} startAt optional starting location to search, default 0
-    @return {Number} index or -1 if not found
+    @param {Number} startAt optional starting location to search from
+    backwards, defaults to `(array.length - 1)`
+    @return {Number} The last index of the `object` in the array or -1
+    if not found
     @public
   */
   lastIndexOf(object, startAt) {
