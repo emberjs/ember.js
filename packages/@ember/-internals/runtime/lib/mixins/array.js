@@ -1100,6 +1100,28 @@ const ArrayMixin = Mixin.create(Enumerable, {
     argument for any item in the array. This method is often simpler/faster
     than using a callback.
 
+    ```javascript
+    class Jedi {
+      constructor(name, dark) {
+        this.name = name;
+        this.dark = dark;
+      }
+    }
+    const jediKnights = [
+      new Jedi('Luke Skywalker', false),
+      new Jedi('Anakin Skywalker', true),
+      new Jedi('Obi-Wan Kenobi', false)
+    ];
+
+    const jediHighCouncil = [
+      new Jedi('Master Yoda', false),
+      new Jedi('Master Mace Windu', false)
+    ]
+
+    jediKnights.isAny('dark'); // true
+    jediHighCouncil.isAny('dark'); // false
+    ```
+
     @method isAny
     @param {String} key the property to test
     @param {String} [value] optional value to test against. Defaults to `true`
