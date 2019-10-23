@@ -1123,6 +1123,18 @@ const ArrayMixin = Mixin.create(Enumerable, {
     argument for any item in the array. This method is often simpler/faster
     than using a callback.
 
+    Example usage:
+
+    ```javascript
+    const food = [
+      { food: 'apple', isFruit: true},
+      { food: 'bread', isFruit: false },
+      { food: 'banana', isFruit: true }
+    ];
+    food.isAny('isFruit'); // true
+
+    ```
+
     @method isAny
     @param {String} key the property to test
     @param {String} [value] optional value to test against. Defaults to `true`
