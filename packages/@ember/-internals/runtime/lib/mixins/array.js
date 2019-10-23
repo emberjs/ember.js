@@ -856,7 +856,11 @@ const ArrayMixin = Mixin.create(Enumerable, {
     Example Usage:
 
     ```javascript
-    const food = Ember.A().addObjects([{food: 'apple', isFruit: true}, {food: 'bread', isFruit: false}, food: 'banana', isFruit: true}]);
+    const food = [
+      { food: 'apple', isFruit: true},
+      { food: 'bread', isFruit: false },
+      { food: 'banana', isFruit: true }
+    ];
     const nonFruits = food.reject(function(thing) {
       return thing.isFruit;
     }); // [{food: 'beans', isFruit: false}]
