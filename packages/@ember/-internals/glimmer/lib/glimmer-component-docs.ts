@@ -24,7 +24,7 @@ export default class SomeComponent extends Component {
 }
 ```
 
-@module @glimmer/something
+@module @glimmer/component
 @public
 */
 
@@ -38,7 +38,7 @@ export default class SomeComponent extends Component {
 Constructs a new component and assigns itself the passed properties.
 @method constructor
 @static
-@for @glimmer/something
+@for @glimmer/component
 @public
 */
 
@@ -47,7 +47,7 @@ Constructs a new component and assigns itself the passed properties.
 Override this function to do any set up that requires an element in the document body.
 @method didInsertElement
 @static
-@for @glimmer/something
+@for @glimmer/component
 @public
 */
 
@@ -56,7 +56,7 @@ Override this function to do any set up that requires an element in the document
 It is called only during a rerender, not during an initial render.
 @method didUpdate
 @static
-@for @glimmer/something
+@for @glimmer/component
 @public
 */
 
@@ -64,6 +64,6 @@ It is called only during a rerender, not during an initial render.
 `willDestroy` is called before the component has been removed from the DOM.
 @method willDestroy
 @static
-@for @glimmer/something
+@for @glimmer/component
 @public
 */
