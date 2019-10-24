@@ -40,6 +40,19 @@ Constructs a new component and assigns itself the passed properties.
 @static
 @for @glimmer/component
 @public
+
+```javascript
+import Component from '@glimmer/component';
+
+export default class SomeComponent extends Component {
+  constructor(owner, args) {
+    super(...arguments);
+    if (this.args.fadeIn === true) {
+      // fade in logic here
+    }
+  }
+}
+```
 */
 
 /**
@@ -49,6 +62,8 @@ Override this function to do any set up that requires an element in the document
 @static
 @for @glimmer/component
 @public
+
+
 */
 
 /**
