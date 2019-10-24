@@ -29,7 +29,7 @@ export default class SomeComponent extends Component {
 */
 
 /**
- @class GlimmerComponentApi
+ @class GlimmerComponent
  @public
  @static
 */
