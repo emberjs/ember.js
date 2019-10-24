@@ -46,6 +46,7 @@ Constructs a new component and assigns itself the passed properties.
 `didInsertElement` is called when the component has been inserted into the DOM.
 Override this function to do any set up that requires an element in the document body.
 @method didInsertElement
+@static
 @for @ember/something
 @public
 */
@@ -54,6 +55,7 @@ Override this function to do any set up that requires an element in the document
 `didUpdate` is called when the component has updated and rerendered itself.
 It is called only during a rerender, not during an initial render.
 @method didUpdate
+@static
 @for @ember/something
 @public
 */
@@ -61,6 +63,7 @@ It is called only during a rerender, not during an initial render.
 /**
 `willDestroy` is called before the component has been removed from the DOM.
 @method willDestroy
+@static
 @for @ember/something
 @public
 */
