@@ -25,17 +25,13 @@ export default class SomeComponent extends Component {
 ```
 
 @module @glimmer/component
-@main @glimmer/component
 @public
 */
 
 /**
- @module ember
- */
-
-/**
  @class GlimmerThings
  @public
+ @static
 */
 
 /**
