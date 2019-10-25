@@ -1054,6 +1054,29 @@ const ArrayMixin = Mixin.create(Enumerable, {
 
     Note that like the native `Array.every`, `isEvery` will return true when called
     on any empty array.
+    ```javascript
+    class Language {
+      constructor(name, isProgrammingLanguage) {
+        this.name = name;
+        this.programmingLanguage = isProgrammingLanguage;
+      }
+    }
+
+    const compiledLanguages = [
+      new Language('Java', true),
+      new Language('Go', true),
+      new Language('Rust', true)
+    ]
+
+    const languagesKnownByMe = [
+      new Language('Javascript', true),
+      new Language('English', false),
+      new Language('Ruby', true)
+    ]
+
+    compiledLanguages.isEvery('programmingLanguage'); // true
+    languagesKnownByMe.isEvery('programmingLanguage'); // false
+    ```
 
     @method isEvery
     @param {String} key the property to test
