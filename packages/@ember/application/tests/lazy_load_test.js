@@ -44,7 +44,7 @@ moduleFor(
       assert.equal(count, 1, 'the original object was passed into the load hook');
     }
 
-    ["@test hooks in ENV.EMBER_LOAD_HOOKS['hookName'] get executed"](assert) {
+    ["@test hooks in EmberENV.EMBER_LOAD_HOOKS['hookName'] get executed"](assert) {
       // Note that the necessary code to perform this test is run before
       // the Ember lib is loaded in tests/index.html
 
@@ -52,7 +52,11 @@ moduleFor(
         runLoadHooks('__before_ember_test_hook__', 1);
       });
 
-      assert.equal(window.ENV.__test_hook_count__, 1, 'the object was passed into the load hook');
+      assert.equal(
+        window.EmberENV.__test_hook_count__,
+        1,
+        'the object was passed into the load hook'
+      );
     }
 
     ['@test load hooks trigger a custom event'](assert) {
