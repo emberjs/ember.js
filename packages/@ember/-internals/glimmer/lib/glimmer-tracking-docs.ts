@@ -7,7 +7,7 @@ Trackable values are values that:
 
 We can do this by marking the field with the @tracked decorator.
 
-@module @glimmer/component
+@module @glimmer/tracking
 @public
 */
 
