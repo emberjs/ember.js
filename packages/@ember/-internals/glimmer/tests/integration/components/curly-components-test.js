@@ -760,7 +760,9 @@ moduleFor(
         template: '{{partial "partialWithYield"}} - In component',
       });
 
-      this.render('{{#foo-bar}}hello{{/foo-bar}}');
+      expectDeprecation(() => {
+        this.render('{{#foo-bar}}hello{{/foo-bar}}');
+      }, 'The use of `{{partial}}` is deprecated, please refactor the "partialWithYield" partial to a component');
 
       this.assertComponentElement(this.firstChild, {
         content: 'yielded: [hello] - In component',
@@ -780,7 +782,9 @@ moduleFor(
         template: '{{partial "partialWithYield"}} - In component',
       });
 
-      this.render('{{#foo-bar as |value|}}{{value}}{{/foo-bar}}');
+      expectDeprecation(() => {
+        this.render('{{#foo-bar as |value|}}{{value}}{{/foo-bar}}');
+      }, 'The use of `{{partial}}` is deprecated, please refactor the "partialWithYield" partial to a component');
 
       this.assertComponentElement(this.firstChild, {
         content: 'yielded: [hello] - In component',
