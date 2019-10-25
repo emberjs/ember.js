@@ -23,12 +23,7 @@ a component's properties are expected to be static,
 meaning you are not able to update them and have the template update
 accordingly. Marking a property as tracked means that when that
 property changes, a rerender of the component is scheduled so the
-template is kept up to date. 
-
-@method tracked
-@static
-@for @glimmer/tracking
-@public
+template is kept up to date.
 
 ```javascript
 import Component from '@glimmer/component';
@@ -44,4 +39,9 @@ export default class SomeComponent extends Component {
   }
 }
 ```
+
+@method tracked
+@static
+@for @glimmer/tracking
+@public
 */
