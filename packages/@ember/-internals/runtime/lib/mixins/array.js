@@ -834,7 +834,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
 
   /**
     Returns an array with all of the items in the enumeration where the passed
-    function returns false. This method is the inverse of filter().
+    function returns false. This method is the inverse of `filter()`.
 
     The callback method you provide should have the following signature (all
     parameters are optional):
@@ -852,6 +852,20 @@ const ArrayMixin = Mixin.create(Enumerable, {
     Note that in addition to a callback, you can also pass an optional target
     object that will be set as "this" on the context. This is a good way
     to give your iterator function access to the current object.
+
+    ```javascript
+    const things = [
+      { name: 'apple', isFruit: true },
+      { name: 'mango', isFruit: true },
+      { name: 'orange', isFruit: true },
+      { name: 'beans', isFruit: false }
+    ];
+
+    things.reject(function(fruit) {
+      return fruit.isFruit;
+    });
+    // [{ name: 'beans', isFruit: false }]
+    ```
 
     @method reject
     @param {Function} callback The callback to execute
