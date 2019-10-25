@@ -857,7 +857,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
 
     ```javascript
     const food = [
-      { food: 'apple', isFruit: true},
+      { food: 'apple', isFruit: true },
       { food: 'bread', isFruit: false },
       { food: 'banana', isFruit: true }
     ];
