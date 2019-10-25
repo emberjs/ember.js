@@ -863,7 +863,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     ];
     const nonFruits = food.reject(function(thing) {
       return thing.isFruit;
-    }); // [{food: 'beans', isFruit: false}]
+    }); // [{food: 'bread', isFruit: false}]
     ```
 
     @method reject
