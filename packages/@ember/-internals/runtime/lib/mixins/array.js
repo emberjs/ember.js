@@ -853,6 +853,19 @@ const ArrayMixin = Mixin.create(Enumerable, {
     object that will be set as "this" on the context. This is a good way
     to give your iterator function access to the current object.
 
+    Example Usage:
+
+    ```javascript
+    const food = [
+      { food: 'apple', isFruit: true },
+      { food: 'bread', isFruit: false },
+      { food: 'banana', isFruit: true }
+    ];
+    const nonFruits = food.reject(function(thing) {
+      return thing.isFruit;
+    }); // [{food: 'bread', isFruit: false}]
+    ```
+
     @method reject
     @param {Function} callback The callback to execute
     @param {Object} [target] The target object to use
