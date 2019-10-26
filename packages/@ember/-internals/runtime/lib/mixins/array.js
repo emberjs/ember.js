@@ -814,12 +814,10 @@ const ArrayMixin = Mixin.create(Enumerable, {
   mapBy,
 
   /**
-    Returns an array with all of the items in the enumeration that the passed
-    function returns true for. This method corresponds to `filter()` defined in
-    JavaScript 1.6.
+    Returns a new array with all of the items in the enumeration that the provided
+    callback function returns true for. This method corresponds to [Array.prototype.filter()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter).
 
-    The callback method you provide should have the following signature (all
-    parameters are optional):
+    The callback method should have the following signature:
 
     ```javascript
     function(item, index, array);
@@ -829,12 +827,24 @@ const ArrayMixin = Mixin.create(Enumerable, {
     - `index` is the current index in the iteration.
     - `array` is the array itself.
 
-    It should return `true` to include the item in the results, `false`
-    otherwise.
+    All parameters are optional. The function should return `true` to include the item
+    in the results, and `false` otherwise.
 
-    Note that in addition to a callback, you can also pass an optional target
-    object that will be set as `this` on the context. This is a good way
-    to give your iterator function access to the current object.
+    Example:
+
+    ```javascript
+    function isAdult(person) {
+      return person.age > 18;
+    };
+
+    let people = Ember.A([{ name: 'John', age: 14 }, { name: 'Joan', age: 45 }]);
+
+    people.filter(isAdult); // returns [{ name: 'Joan', age: 45 }];
+    ```
+
+    Note that in addition to a callback, you can pass an optional target object
+    that will be set as `this` on the context. This is a good way to give your
+    iterator function access to the current object.
 
     @method filter
     @param {Function} callback The callback to execute
@@ -904,15 +914,17 @@ const ArrayMixin = Mixin.create(Enumerable, {
   },
 
   /**
-    Returns an array with just the items with the matched property. You
-    can pass an optional second argument with the target value. Otherwise
-    this will match any property that evaluates to `true`.
+    Filters the array by the property and an optional value. If a value is given, it returns
+    the items that have said value for the property. If not, it returns all the items that
+    have a truthy value for the property.
 
     Example Usage:
 
     ```javascript
-    const things = Ember.A().addObjects([{food: 'apple'}, {food: 'beans'}]);
-    things.filterBy('food', 'beans'); // [{food: 'beans'}]
+    let things = Ember.A([{ food: 'apple', isFruit: true }, { food: 'beans', isFruit: false }]);
+
+    things.filterBy('food', 'beans'); // [{ food: 'beans' }]
+    things.filterBy('isFruit'); // [{ food: 'apple' }]
     ```
 
     @method filterBy
