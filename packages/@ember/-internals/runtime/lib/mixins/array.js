@@ -1033,10 +1033,9 @@ const ArrayMixin = Mixin.create(Enumerable, {
 
   /**
     Returns `true` if the passed function returns true for every item in the
-    enumeration. This corresponds with the `every()` method in JavaScript 1.6.
+    enumeration. This corresponds with the `Array.prototype.every()` method defined in ES5.
 
-    The callback method you provide should have the following signature (all
-    parameters are optional):
+    The callback method should have the following signature:
 
     ```javascript
     function(item, index, array);
@@ -1046,18 +1045,21 @@ const ArrayMixin = Mixin.create(Enumerable, {
     - `index` is the current index in the iteration.
     - `array` is the array itself.
 
-    It should return the `true` or `false`.
+    All params are optional. The method should return `true` or `false`.
 
     Note that in addition to a callback, you can also pass an optional target
     object that will be set as `this` on the context. This is a good way
     to give your iterator function access to the current object.
 
-    Example Usage:
+    Usage example:
 
     ```javascript
-    if (people.every(isEngineer)) {
-      Paychecks.addBigBonus();
-    }
+    function isAdult(person) {
+      return person.age > 18;
+    };
+
+    const people = Ember.A([{ name: 'John', age: 24 }, { name: 'Joan', age: 45 }]);
+    const areAllAdults = people.every(isAdult);
     ```
 
     @method every
