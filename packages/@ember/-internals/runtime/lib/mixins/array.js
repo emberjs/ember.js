@@ -703,7 +703,20 @@ const ArrayMixin = Mixin.create(Enumerable, {
   },
 
   /**
-    Alias for `mapBy`
+    Alias for `mapBy`.
+    
+    Returns the value of the named
+    property on all items in the enumeration.
+
+    ```javascript
+    let people = [{name: 'Joe'}, {name: 'Matt'}];
+
+    people.getEach('name');
+    // ['Joe', 'Matt'];
+
+    people.getEach('nonexistentProperty');
+    // [undefined, undefined];
+    ```
 
     @method getEach
     @param {String} key name of the property
