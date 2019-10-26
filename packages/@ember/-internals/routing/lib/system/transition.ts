@@ -150,7 +150,7 @@
  * property represents the head node of the list.
  * In the case of an initial render, `from` will be set to
  * `null`.
- * @property {RouteInfoWithAttributes} from
+ * @property {null|RouteInfoWithAttributes} from
  * @public
  */
 
