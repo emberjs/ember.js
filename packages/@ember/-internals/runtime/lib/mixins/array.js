@@ -678,7 +678,9 @@ const ArrayMixin = Mixin.create(Enumerable, {
   },
 
   /**
-    Alias for `mapBy`, returns the value of the named
+    Alias for `mapBy`.
+    
+    Returns the value of the named
     property on all items in the enumeration.
 
     ```javascript
