@@ -61,19 +61,20 @@ export const OWNER = symbol('OWNER');
 
   // Usage:
   //
-  //   {{play-audio audioType=model.audioType audioFile=model.file}}
+  //   <PlayAudio @audioType={{model.audioType}} @audioFile={{model.file}}/>
   //
-  export default Component.extend({
-    audioService: computed('audioType', function() {
+  export default class extends Component {
+    @computed('audioType')
+    get audioService() {
       let owner = getOwner(this);
       return owner.lookup(`service:${this.get('audioType')}`);
-    }),
+    }
 
     click() {
       let player = this.get('audioService');
       player.play(this.get('audioFile'));
     }
-  });
+  }
   ```
 
   @method getOwner
