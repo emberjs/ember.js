@@ -99,7 +99,7 @@ let librariesRegistered = false;
   specify the event name with a `null` value in the `customEvents`
   property:
 
-  ```javascript
+  ```app/app.js
   import Application from '@ember/application';
 
   let App = Application.extend({
