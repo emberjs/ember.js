@@ -52,28 +52,29 @@ export const OWNER = symbol('OWNER');
   into the owner.
 
   For example, this component dynamically looks up a service based on the
-  `audioType` passed as an attribute:
+  `audioType` passed as an argument:
 
   ```app/components/play-audio.js
-  import Component from '@ember/component';
-  import { computed } from '@ember/object';
+  import Component from '@glimmer/component';
+  import { action } from '@ember/object';
   import { getOwner } from '@ember/application';
 
   // Usage:
   //
-  //   {{play-audio audioType=model.audioType audioFile=model.file}}
+  //   <PlayAudio @audioType={{@model.audioType}} @audioFile={{@model.file}}/>
   //
-  export default Component.extend({
-    audioService: computed('audioType', function() {
+  export default class extends Component {
+    get audioService() {
       let owner = getOwner(this);
-      return owner.lookup(`service:${this.get('audioType')}`);
-    }),
-
-    click() {
-      let player = this.get('audioService');
-      player.play(this.get('audioFile'));
+      return owner.lookup(`service:${this.args.audioType}`);
     }
-  });
+
+    @action
+    onPlay() {
+      let player = this.audioService;
+      player.play(this.args.audioFile);
+    }
+  }
   ```
 
   @method getOwner
