@@ -84,7 +84,7 @@ let librariesRegistered = false;
   default, you can specify custom events and their corresponding view method
   names by setting the application's `customEvents` property:
 
-  ```javascript
+  ```app/app.js
   import Application from '@ember/application';
 
   let App = Application.extend({
