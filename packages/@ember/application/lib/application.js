@@ -239,7 +239,7 @@ const Application = Engine.extend({
 
     To add new events to be listened to:
 
-    ```javascript
+    ```app/app.js
     import Application from '@ember/application';
 
     let App = Application.extend({
