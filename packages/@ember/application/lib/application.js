@@ -119,7 +119,7 @@ let librariesRegistered = false;
   For example, if only events inside a DOM element with the ID of `ember-app`
   should be delegated, set your application's `rootElement` property:
 
-  ```javascript
+  ```app/app.js
   import Application from '@ember/application';
 
   let App = Application.extend({
