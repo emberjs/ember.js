@@ -252,7 +252,7 @@ const Application = Engine.extend({
 
     To prevent default events from being listened to:
 
-    ```javascript
+    ```app/app.js
     import Application from '@ember/application';
 
     let App = Application.extend({
