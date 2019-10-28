@@ -97,25 +97,19 @@ QUnit.module('[glimmer-syntax] Code generation - source -> source', function() {
   templates.forEach(buildTest);
 
   [
+    // custom HTML Entities
     '&lt; &amp; &nbsp; &gt; &copy;2018',
+
+    // whitespace control
+    '\n{{~var~}}  ',
+    '\n{{~#foo-bar~}} {{~else if x~}} {{~else~}} {{~/foo-bar~}}  ',
 
     // newlines after opening block
     '{{#each}}\n  <li> foo </li>\n{{/each}}',
+
+    // "stand alone"
+    ' {{#foo}}\n  {{bar}}\n {{/foo}}',
   ].forEach(buildTest);
-
-  test('whitespace control is preserved', function(assert) {
-    let before = '\n{{~var~}}  ';
-    let after = '{{~var~}}';
-
-    assert.equal(printTransform(before), after);
-  });
-
-  test('block whitespace control is preserved', function(assert) {
-    let before = '\n{{~#foo-bar~}} {{~else if x~}} {{~else~}} {{~/foo-bar~}}  ';
-    let after = '{{~#foo-bar~}}{{~else if x~}}{{~else~}}{{~/foo-bar~}}';
-
-    assert.equal(printTransform(before), after);
-  });
 });
 
 QUnit.module('[glimmer-syntax] Code generation - override', function() {
