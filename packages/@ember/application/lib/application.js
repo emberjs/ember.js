@@ -46,7 +46,7 @@ let librariesRegistered = false;
   initialized.
 
   ```javascript
-  let App = Application.extend({
+  const App = Application.extend({
     ready() {
       // your code here
     }
