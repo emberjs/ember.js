@@ -1,5 +1,27 @@
 # Changelog
 
+
+## v0.43.0 (2019-10-27)
+
+#### :boom: Breaking Change
+* `@glimmer/syntax`
+  * [#983](https://github.com/glimmerjs/glimmer-vm/pull/983) Ensure codemod mode ignores whitespace control. ([@rwjblue](https://github.com/rwjblue))
+
+#### :rocket: Enhancement
+* [#972](https://github.com/glimmerjs/glimmer-vm/pull/972) Lay groundwork for lexical scope & improve errors ([@wycats](https://github.com/wycats) / [@tomdale](https://github.com/tomdale))
+
+#### :house: Internal
+* Other
+  * [#981](https://github.com/glimmerjs/glimmer-vm/pull/981) Update ember-cli-browserstack so that BrowserStack tests will continue to work ([@kategengler](https://github.com/kategengler))
+* `@glimmer/runtime`
+  * [#980](https://github.com/glimmerjs/glimmer-vm/pull/980) Avoid duplicate `indexOf` in `BlockArguments` ([@bekzod](https://github.com/bekzod))
+
+#### Committers: 3
+- Katie Gengler ([@kategengler](https://github.com/kategengler))
+- Robert Jackson ([@rwjblue](https://github.com/rwjblue))
+- bek ([@bekzod](https://github.com/bekzod))
+
+
 ## v0.42.2 (2019-10-11)
 
 #### :bug: Bug Fix
