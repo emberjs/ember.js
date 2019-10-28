@@ -55,7 +55,7 @@ export const OWNER = symbol('OWNER');
   `audioType` passed as an attribute:
 
   ```app/components/play-audio.js
-  import Component from '@ember/component';
+  import Component from '@glimmer/component';
   import { computed } from '@ember/object';
   import { getOwner } from '@ember/application';
 
@@ -67,12 +67,12 @@ export const OWNER = symbol('OWNER');
     @computed('audioType')
     get audioService() {
       let owner = getOwner(this);
-      return owner.lookup(`service:${this.get('audioType')}`);
+      return owner.lookup(`service:${this.args.audioType}`);
     }
 
     click() {
-      let player = this.get('audioService');
-      player.play(this.get('audioFile'));
+      let player = this.audioService;
+      player.play(this.args.audioFile);
     }
   }
   ```
