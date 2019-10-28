@@ -52,7 +52,7 @@ export const OWNER = symbol('OWNER');
   into the owner.
 
   For example, this component dynamically looks up a service based on the
-  `audioType` passed as an attribute:
+  `audioType` passed as an argument:
 
   ```app/components/play-audio.js
   import Component from '@glimmer/component';
@@ -60,7 +60,7 @@ export const OWNER = symbol('OWNER');
 
   // Usage:
   //
-  //   <PlayAudio @audioType={{model.audioType}} @audioFile={{model.file}}/>
+  //   <PlayAudio @audioType={{@model.audioType}} @audioFile={{@model.file}}/>
   //
   export default class extends Component {
     get audioService() {
