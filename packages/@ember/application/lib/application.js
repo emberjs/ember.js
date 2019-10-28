@@ -45,7 +45,7 @@ let librariesRegistered = false;
   `Application` class, which will be run by Ember when the application is
   initialized.
 
-  ```javascript
+  ```app/app.js
   const App = Application.extend({
     ready() {
       // your code here
