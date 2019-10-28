@@ -56,7 +56,6 @@ export const OWNER = symbol('OWNER');
 
   ```app/components/play-audio.js
   import Component from '@glimmer/component';
-  import { computed } from '@ember/object';
   import { getOwner } from '@ember/application';
 
   // Usage:
@@ -64,7 +63,6 @@ export const OWNER = symbol('OWNER');
   //   <PlayAudio @audioType={{model.audioType}} @audioFile={{model.file}}/>
   //
   export default class extends Component {
-    @computed('audioType')
     get audioService() {
       let owner = getOwner(this);
       return owner.lookup(`service:${this.args.audioType}`);
