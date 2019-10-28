@@ -379,20 +379,26 @@ const syntax: Syntax = {
   Walker,
 };
 
+// emulate parseWithoutProcessing (from https://github.com/wycats/handlebars.js/pull/1584)
+// can be removed when we update to Handlebars 4.5.0
+function codemodParse(html: string, parseOptions?: HandlebarsParseOptions) {
+  // this sets up parser.yy and parser.yy.locInfo
+  handlebars.parse(html, parseOptions);
+
+  // casting to any here, because Parser is not listed in the types
+  return (handlebars as any).Parser.parse(html);
+}
+
 export function preprocess(html: string, options: PreprocessOptions = {}): AST.Template {
   let mode = options.mode || 'precompile';
 
   let ast: HBS.Program;
   if (typeof html === 'object') {
     ast = html;
+  } else if (mode === 'codemod') {
+    ast = codemodParse(html, options.parseOptions);
   } else {
-    let parseOptions = options.parseOptions || {};
-
-    if (mode === 'codemod') {
-      parseOptions.ignoreStandalone = true;
-    }
-
-    ast = handlebars.parse(html, parseOptions) as HBS.Program;
+    ast = handlebars.parse(html, options.parseOptions) as HBS.Program;
   }
 
   let entityParser = undefined;

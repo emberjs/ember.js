@@ -1,2 +1,1 @@
-import { parse } from './handlebars/compiler/base';
-export { parse };
+export { parse, parser as Parser } from './handlebars/compiler/base';
