@@ -8,6 +8,7 @@ import * as AST from '../types/nodes';
 import { deprecate } from '@glimmer/util';
 import { DEVMODE } from '@glimmer/local-debug-flags';
 import { NodeHandler, NodeVisitor, KeyHandler, NodeTraversal, KeyTraversal } from './visitor';
+import Path from './path';
 
 function getEnterFunction<N extends AST.Node>(
   handler: NodeTraversal<N>
@@ -81,8 +82,10 @@ function getNodeHandler<N extends AST.Node>(
 
 function visitNode<N extends AST.Node>(
   visitor: NodeVisitor,
-  node: N
+  path: Path<N>
 ): AST.Node | AST.Node[] | undefined | null | void {
+  let { node, parent, parentKey } = path;
+
   let handler: NodeTraversal<N> = getNodeHandler(visitor, node.type);
   let enter;
   let exit;
@@ -94,17 +97,18 @@ function visitNode<N extends AST.Node>(
 
   let result: AST.Node | AST.Node[] | undefined | null | void;
   if (enter !== undefined) {
-    result = enter(node);
+    result = enter(node, path);
   }
 
   if (result !== undefined && result !== null) {
     if (JSON.stringify(node) === JSON.stringify(result)) {
       result = undefined;
     } else if (Array.isArray(result)) {
-      visitArray(visitor, result);
+      visitArray(visitor, result, parent, parentKey);
       return result;
     } else {
-      return visitNode(visitor, result) || result;
+      let path = new Path(result, parent, parentKey);
+      return visitNode(visitor, path) || result;
     }
   }
 
@@ -114,11 +118,11 @@ function visitNode<N extends AST.Node>(
     for (let i = 0; i < keys.length; i++) {
       let key = keys[i] as VisitorKeys[N['type']] & keyof N;
       // we know if it has child keys we can widen to a ParentNode
-      visitKey(visitor, handler, node as N, key);
+      visitKey(visitor, handler, path, key);
     }
 
     if (exit !== undefined) {
-      result = exit(node);
+      result = exit(node, path);
     }
   }
 
@@ -139,9 +143,11 @@ function set<N extends AST.Node, K extends keyof N>(node: N, key: K, value: N[K]
 function visitKey<N extends AST.Node>(
   visitor: NodeVisitor,
   handler: NodeTraversal<N>,
-  node: N,
+  path: Path<N>,
   key: VisitorKeys[N['type']] & keyof N
 ) {
+  let { node } = path;
+
   let value = get(node, key);
   if (!value) {
     return;
@@ -165,9 +171,10 @@ function visitKey<N extends AST.Node>(
   }
 
   if (Array.isArray(value)) {
-    visitArray(visitor, value);
+    visitArray(visitor, value, path, key);
   } else {
-    let result = visitNode(visitor, value);
+    let keyPath = new Path(value, path, key);
+    let result = visitNode(visitor, keyPath);
     if (result !== undefined) {
       // TODO: dynamically check the results by having a table of
       // expected node types in value space, not just type space
@@ -182,9 +189,16 @@ function visitKey<N extends AST.Node>(
   }
 }
 
-function visitArray(visitor: NodeVisitor, array: AST.Node[]) {
+function visitArray(
+  visitor: NodeVisitor,
+  array: AST.Node[],
+  parent: Path<AST.Node> | null,
+  parentKey: string | null
+) {
   for (let i = 0; i < array.length; i++) {
-    let result = visitNode(visitor, array[i]);
+    let node = array[i];
+    let path = new Path(node, parent, parentKey);
+    let result = visitNode(visitor, path);
     if (result !== undefined) {
       i += spliceArray(array, i, result) - 1;
     }
@@ -228,5 +242,6 @@ function spliceArray(array: AST.Node[], index: number, result: AST.Node | AST.No
 }
 
 export default function traverse(node: AST.Node, visitor: NodeVisitor) {
-  visitNode(visitor, node);
+  let path = new Path(node);
+  visitNode(visitor, path);
 }
