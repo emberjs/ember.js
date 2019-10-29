@@ -1,1 +1,1 @@
-export { parse, parser as Parser } from './handlebars/compiler/base';
+export { parse, parseWithoutProcessing } from './handlebars/compiler/base';
