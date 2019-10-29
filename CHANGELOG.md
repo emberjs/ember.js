@@ -1,29 +1,12 @@
 # Ember Changelog
 
-### v3.14.0-beta.5 (October 14, 2019)
-
-- [#18476](https://github.com/emberjs/ember.js/pull/18476) [BUGFIX] Ensure model can be observed by sync observers
-- [#18458](https://github.com/emberjs/ember.js/pull/18458) [BUGFIX] Using query params helper outside of link-to
-
-### v3.14.0-beta.4 (October 7, 2019)
-
-- [#18462](https://github.com/emberjs/ember.js/pull/18462) [BUGFIX] Prevents observer re-entry
-
-### v3.14.0-beta.3 (October 1, 2019)
-
-- [#18429](https://github.com/emberjs/ember.js/pull/18429) [BUGFIX] Fix incorrect error message for octane features.
-
-### v3.14.0-beta.2 (September 24, 2019)
-
-- [#18273](https://github.com/emberjs/ember.js/pull/18273) [BUGFIX] Fix issues with SSR rehydration of <title>.
-- [#18415](https://github.com/emberjs/ember.js/pull/18415) [BUGFIX] Fix hbs import path in test blueprint.
-- [#18418](https://github.com/emberjs/ember.js/pull/18418) / [#18419](https://github.com/emberjs/ember.js/pull/18419) [BUGFIX] Require Octane features when using Octane preview.
-
-### v3.14.0-beta.1 (September 19, 2019)
+### v3.14.0 (October 29, 2019)
 
 - [#18345](https://github.com/emberjs/ember.js/pull/18345) / [#18363](https://github.com/emberjs/ember.js/pull/18363) [FEATURE] Implement the [Provide @model named argument to route templates](https://github.com/emberjs/rfcs/blob/master/text/0523-model-argument-for-route-templates.md RFC.
+- [#18458](https://github.com/emberjs/ember.js/pull/18458) [BUGFIX] Using query params helper outside of link-to
+- [#18429](https://github.com/emberjs/ember.js/pull/18429) [BUGFIX] Fix incorrect error message for octane features.
+- [#18415](https://github.com/emberjs/ember.js/pull/18415) [BUGFIX] Fix hbs import path in test blueprint.
 - [#18387](https://github.com/emberjs/ember.js/pull/18387) [BUGFIX] Ensure `updateComponent` is fired consistently
-- [#18372](https://github.com/emberjs/ember.js/pull/18372) Debug Render Tree (for Ember Inspector)
 - [#18381](https://github.com/emberjs/ember.js/pull/18381) Drop Node 6 and 11 support.
 - [#18410](https://github.com/emberjs/ember.js/pull/18410) Use ember-cli-htmlbars for inline precompilation if possible.
 
