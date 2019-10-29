@@ -1,7 +1,6 @@
 import Controller from '@ember/controller';
 import { RSVP } from '@ember/-internals/runtime';
 import { Route } from '@ember/-internals/routing';
-import { DEBUG } from '@glimmer/env';
 import {
   ApplicationTestCase,
   classes as classMatcher,
