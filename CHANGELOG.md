@@ -27,6 +27,12 @@
 - [#18381](https://github.com/emberjs/ember.js/pull/18381) Drop Node 6 and 11 support.
 - [#18410](https://github.com/emberjs/ember.js/pull/18410) Use ember-cli-htmlbars for inline precompilation if possible.
 
+### v3.13.4 (October 29,2019)
+
+- [#18476](https://github.com/emberjs/ember.js/pull/18476) [BUGFIX] Ensure model can be observed by sync observers.
+- [#18477](https://github.com/emberjs/ember.js/pull/18477) [BUGFIX] Allows @each to work with arrays that contain falsy values.
+- [#18500](https://github.com/emberjs/ember.js/pull/18500) [BUGFIX] Remove requirement for disabling jquery-integration in Octane.
+
 ### v3.13.3 (October 8, 2019)
 
 - [#18462](https://github.com/emberjs/ember.js/pull/18462) [BUGFIX] Prevents observer re-entry.
