@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.14.1 (October 30, 2019)
+
+- [#18244](https://github.com/emberjs/ember.js/pull/18244) [BUGFIX] Fix query param assertion when using the router services `transitionTo` to redirect _during_ an existing transition.
+
 ### v3.14.0 (October 29, 2019)
 
 - [#18345](https://github.com/emberjs/ember.js/pull/18345) / [#18363](https://github.com/emberjs/ember.js/pull/18363) [FEATURE] Implement the [Provide @model named argument to route templates](https://github.com/emberjs/rfcs/blob/master/text/0523-model-argument-for-route-templates.md RFC.
