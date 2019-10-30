@@ -1063,7 +1063,10 @@ class EmberRouter extends EmberObject {
               return true;
             }
 
-            if (_fromRouterService && presentProp !== false) {
+            if (_fromRouterService && presentProp !== false && qp.urlKey !== qp.prop) {
+              // assumptions (mainly from current transitionTo_test):
+              // - this is only supposed to be run when there is an alias to a query param and the alias is used to set the param
+              // - when there is no alias: qp.urlKey == qp.prop
               return false;
             }
 
