@@ -664,15 +664,19 @@ const ArrayMixin = Mixin.create(Enumerable, {
     let foods = [
       { name: 'apple', eaten: false },
       { name: 'banana', eaten: false },
-      { name: carrot': eaten: false }
+      { name: 'carrot', eaten: false }
     ];
 
     foods.forEach((food) => food.eaten = true);
 
     let output = '';
     foods.forEach((item, index, array) => 
-      output += `${index + 1}/${array.length}) ${item}\n`
+      output += `${index + 1}/${array.length} ${item.name}\n`;
     );
+    console.log(output);
+    // 1/3 apple
+    // 2/3 banana
+    // 3/3 carrot
     ```
 
     @method forEach
