@@ -29,6 +29,11 @@ import {
 import { expect } from '@glimmer/util';
 import { SimpleElement } from '@simple-dom/interface';
 
+// `window.ActiveXObject` is "falsey" in IE11 (but not `undefined` or `false`)
+// `"ActiveXObject" in window` returns `true` in all IE versions
+// only IE11 will pass _both_ of these conditions
+const isIE11 = !(window as any).ActiveXObject && 'ActiveXObject' in window;
+
 class RenderTests extends InitialRenderSuite {
   static suiteName = 'initial render (client)';
   name = 'client';
@@ -872,6 +877,33 @@ class RehydratingComponents extends AbstractRehydrationTests {
     this.assertRehydrationStats({ nodesRemoved: 0 });
     this.assertComponent('Hello Chad');
     this.assertStableRerender();
+  }
+
+  @test
+  '<p> invoking a block which emits a <div>'() {
+    let componentToRender = {
+      layout: '<p>hello {{#if @show}}<div>world!</div>{{/if}}</p>',
+      args: { show: 'show' },
+    };
+
+    this.renderServerSide(componentToRender, { show: true });
+    let b = blockStack();
+
+    let id = this.testType === 'Dynamic' ? 3 : 2;
+
+    // assert that we are in a "browser corrected" state (note the `</p>` before the `<div>world!</div>`)
+    if (isIE11) {
+      // IE11 doesn't behave the same as modern browsers
+      this.assertServerComponent(`<p>hello ${b(id)}<div>world!</div>${b(id)}<p></p>`);
+    } else {
+      this.assertServerComponent(`<p>hello ${b(id)}</p><div>world!</div>${b(id)}<p></p>`);
+    }
+
+    this.renderClientSide(componentToRender, { show: true });
+    this.assertComponent('<p>hello <div>world!</div></p>');
+
+    this.assertRehydrationStats({ nodesRemoved: 2 });
+    this.assertStableNodes();
   }
 
   @test
