@@ -1,4 +1,3 @@
-import { Slice, LinkedListNode, assert } from '@glimmer/util';
 import { DEBUG } from '@glimmer/local-debug-flags';
 
 //////////
@@ -123,7 +122,7 @@ interface MonomorphicTagMapping {
 type MonomorphicTag = UnionToIntersection<MonomorphicTagMapping[MonomorphicTagTypes]>;
 type MonomorphicTagType = UnionToIntersection<MonomorphicTagTypes>;
 
-export class MonomorphicTagImpl implements MonomorphicTag {
+class MonomorphicTagImpl implements MonomorphicTag {
   private revision = INITIAL;
   private lastChecked = INITIAL;
   private lastValue = INITIAL;
@@ -177,11 +176,8 @@ export class MonomorphicTagImpl implements MonomorphicTag {
   }
 
   static update(_tag: UpdatableTag, subtag: Tag) {
-    if (DEBUG) {
-      assert(
-        _tag[TYPE] === MonomorphicTagTypes.Updatable,
-        'Attempted to update a tag that was not updatable'
-      );
+    if (DEBUG && _tag[TYPE] !== MonomorphicTagTypes.Updatable) {
+      throw new Error('Attempted to update a tag that was not updatable');
     }
 
     // TODO: TS 3.7 should allow us to do this via assertion
@@ -201,11 +197,11 @@ export class MonomorphicTagImpl implements MonomorphicTag {
   }
 
   static dirty(tag: DirtyableTag | UpdatableTag) {
-    if (DEBUG) {
-      assert(
-        tag[TYPE] === MonomorphicTagTypes.Updatable || tag[TYPE] === MonomorphicTagTypes.Dirtyable,
-        'Attempted to dirty a tag that was not dirtyable'
-      );
+    if (
+      DEBUG &&
+      !(tag[TYPE] === MonomorphicTagTypes.Updatable || tag[TYPE] === MonomorphicTagTypes.Dirtyable)
+    ) {
+      throw new Error('Attempted to dirty a tag that was not dirtyable');
     }
 
     (tag as MonomorphicTagImpl).revision = ++$REVISION;
@@ -259,34 +255,6 @@ export const CURRENT_TAG = new CurrentTag();
 
 //////////
 
-export function combineTagged(tagged: ReadonlyArray<Tagged>): Tag {
-  let optimized: Tag[] = [];
-
-  for (let i = 0, l = tagged.length; i < l; i++) {
-    let tag = tagged[i].tag;
-    if (tag === CONSTANT_TAG) continue;
-    optimized.push(tag);
-  }
-
-  return _combine(optimized);
-}
-
-export function combineSlice(slice: Slice<Tagged & LinkedListNode>): Tag {
-  let optimized: Tag[] = [];
-
-  let node = slice.head();
-
-  while (node !== null) {
-    let tag = node.tag;
-
-    if (tag !== CONSTANT_TAG) optimized.push(tag);
-
-    node = slice.nextNode(node);
-  }
-
-  return _combine(optimized);
-}
-
 export function combine(tags: Tag[]): Tag {
   let optimized: Tag[] = [];
 
@@ -296,10 +264,10 @@ export function combine(tags: Tag[]): Tag {
     optimized.push(tag);
   }
 
-  return _combine(optimized);
+  return createCombinatorTag(optimized);
 }
 
-function _combine(tags: Tag[]): Tag {
+export function createCombinatorTag(tags: Tag[]): Tag {
   switch (tags.length) {
     case 0:
       return CONSTANT_TAG;

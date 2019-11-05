@@ -6,7 +6,7 @@ const { isArray } = Array;
 
 import { ROOT } from './utils';
 import { Option, Dict } from '@glimmer/interfaces';
-import { bump } from '@glimmer/reference';
+import { bump } from '@glimmer/tag';
 
 export const EMPTY_CACHE = function EMPTY_CACHE() {};
 

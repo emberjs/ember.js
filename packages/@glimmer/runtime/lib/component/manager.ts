@@ -13,7 +13,8 @@ import {
   Environment,
 } from '@glimmer/interfaces';
 import { MINIMAL_CAPABILITIES } from './interfaces';
-import { VersionedPathReference, Tag } from '@glimmer/reference';
+import { VersionedPathReference } from '@glimmer/reference';
+import { Tag } from '@glimmer/tag';
 import { UNDEFINED_REFERENCE } from '../references';
 
 export class SimpleComponentManager implements ComponentManager {

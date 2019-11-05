@@ -24,12 +24,7 @@ import {
 } from '@glimmer/interfaces';
 import { DEBUG } from '@glimmer/local-debug-flags';
 import { RuntimeOpImpl } from '@glimmer/program';
-import {
-  combineSlice,
-  PathReference,
-  ReferenceIterator,
-  VersionedPathReference,
-} from '@glimmer/reference';
+import { PathReference, ReferenceIterator, VersionedPathReference } from '@glimmer/reference';
 import {
   associateDestructor,
   destructor,
@@ -55,6 +50,7 @@ import {
   Register,
   SyscallRegister,
 } from '@glimmer/vm';
+import { combineSlice } from '../tags';
 import { DidModifyOpcode, JumpIfNotModifiedOpcode, LabelOpcode } from '../compiled/opcodes/vm';
 import { ScopeImpl } from '../environment';
 import { APPEND_OPCODES, DebugState, UpdatingOpcode } from '../opcodes';

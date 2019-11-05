@@ -1,4 +1,5 @@
-import { Reference, PathReference, Tag } from '@glimmer/reference';
+import { Reference, PathReference } from '@glimmer/reference';
+import { Tag } from '@glimmer/tag';
 import { Option } from '@glimmer/util';
 import {
   CapturedArguments,

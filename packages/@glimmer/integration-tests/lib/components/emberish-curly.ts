@@ -22,16 +22,8 @@ import {
   ComponentCapabilities,
 } from '@glimmer/interfaces';
 import { Attrs, AttrsDiff } from './emberish-glimmer';
-import {
-  createTag,
-  dirty,
-  DirtyableTag,
-  VersionedPathReference,
-  combine,
-  UpdatableReference,
-  PathReference,
-  Tag,
-} from '@glimmer/reference';
+import { VersionedPathReference, UpdatableReference, PathReference } from '@glimmer/reference';
+import { combine, createTag, dirty, DirtyableTag, Tag } from '@glimmer/tag';
 import { keys, EMPTY_ARRAY, assign } from '@glimmer/util';
 import { TestComponentDefinitionState } from './test-component';
 import { PrimitiveReference } from '@glimmer/runtime';

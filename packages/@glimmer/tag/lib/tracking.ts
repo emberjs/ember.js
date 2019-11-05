@@ -1,7 +1,8 @@
-import { Tag, combine, update, UpdatableTag, createUpdatableTag } from './validators';
-import { Option } from '@glimmer/interfaces';
-import { getStateFor, setStateFor } from './tracked';
-import { tagFor } from './tags';
+import { Tag, combine, update, UpdatableTag, createUpdatableTag } from './tags';
+import { getStateFor, setStateFor } from './property-meta';
+import { tagFor } from './object-meta';
+
+type Option<T> = T | null;
 
 class Tracker {
   private tags = new Set<Tag>();

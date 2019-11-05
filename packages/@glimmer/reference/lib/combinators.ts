@@ -1,7 +1,13 @@
-import { Tag, createUpdatableTag, combine, update } from './validators';
+import {
+  Tag,
+  createUpdatableTag,
+  combine,
+  update,
+  pushTrackFrame,
+  popTrackFrame,
+} from '@glimmer/tag';
 import { property } from './property';
 import { VersionedPathReference } from './reference';
-import { pushTrackFrame, popTrackFrame } from './autotrack';
 
 export function map<T, U>(
   input: VersionedPathReference<T>,

@@ -8,7 +8,7 @@ import {
   VMArguments,
   CapturedArguments,
 } from '@glimmer/interfaces';
-import { Tag } from '@glimmer/reference';
+import { Tag } from '@glimmer/tag';
 
 export interface TestModifierConstructor {
   new (): TestModifierInstance;

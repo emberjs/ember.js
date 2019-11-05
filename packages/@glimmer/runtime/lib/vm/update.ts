@@ -14,7 +14,6 @@ import {
   UpdatableBlock,
 } from '@glimmer/interfaces';
 import {
-  // Tags
   combine,
   value,
   update,
@@ -23,8 +22,9 @@ import {
   Tag,
   UpdatableTag,
   Revision,
-  combineSlice,
   INITIAL,
+} from '@glimmer/tag';
+import {
   IterationArtifacts,
   IteratorSynchronizer,
   IteratorSynchronizerDelegate,
@@ -35,6 +35,7 @@ import { associate, expect, LinkedList, Option, Stack } from '@glimmer/util';
 import { SimpleComment, SimpleNode } from '@simple-dom/interface';
 import { move as moveBounds } from '../bounds';
 import { asyncReset, detach } from '../lifetime';
+import { combineSlice } from '../tags';
 import { UpdatingOpcode, UpdatingOpSeq } from '../opcodes';
 import { InternalVM, VmInitCallback, JitVM } from './append';
 import { NewElementBuilder } from './element-builder';
