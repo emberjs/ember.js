@@ -37,14 +37,8 @@ import {
   RuntimeResolver,
   ModifierManager,
 } from '@glimmer/interfaces';
-import {
-  CONSTANT_TAG,
-  isConst,
-  isConstTag,
-  Tag,
-  VersionedPathReference,
-  VersionedReference,
-} from '@glimmer/reference';
+import { VersionedPathReference, VersionedReference } from '@glimmer/reference';
+import { CONSTANT_TAG, isConst, isConstTag, Tag } from '@glimmer/tag';
 import { assert, dict, expect, Option, unreachable } from '@glimmer/util';
 import { $t0, $t1, $v0 } from '@glimmer/vm';
 import {

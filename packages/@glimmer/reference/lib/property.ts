@@ -10,15 +10,16 @@ import {
   value,
   dirty,
   update,
-} from './validators';
+  pushTrackFrame,
+  popTrackFrame,
+  tagFor,
+} from '@glimmer/tag';
 import { VersionedPathReference } from './reference';
-import { pushTrackFrame, popTrackFrame } from './autotrack';
-import { tagFor } from './tags';
 
 export class RootReference<T> implements VersionedPathReference<T> {
   private children = dict<RootPropertyReference>();
 
-  tag = CONSTANT_TAG;
+  tag: Tag = CONSTANT_TAG;
 
   constructor(private inner: T) {}
 
@@ -40,7 +41,7 @@ export class RootReference<T> implements VersionedPathReference<T> {
 export class ImmutableRootReference<T> implements VersionedPathReference<T> {
   private children = dict<RootPropertyReference>();
 
-  tag = CONSTANT_TAG;
+  tag: Tag = CONSTANT_TAG;
 
   constructor(private inner: T) {}
 
@@ -62,7 +63,7 @@ export class ImmutableRootReference<T> implements VersionedPathReference<T> {
 export type Primitive = undefined | null | boolean | number | string;
 
 export class PrimitiveReference<T extends Primitive> implements VersionedPathReference<T> {
-  readonly tag = CONSTANT_TAG;
+  readonly tag: Tag = CONSTANT_TAG;
 
   constructor(private inner: T) {}
 

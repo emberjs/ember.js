@@ -1,6 +1,5 @@
+import { Reference, CachedReference } from '@glimmer/reference';
 import {
-  Reference,
-  CachedReference,
   combine,
   Tag,
   DirtyableTag,
@@ -9,8 +8,7 @@ import {
   createUpdatableTag,
   dirty,
   update,
-} from '@glimmer/reference';
-
+} from '@glimmer/tag';
 import { dict } from '@glimmer/util';
 
 class UpdatableReference<T> implements Reference<T> {

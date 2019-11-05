@@ -1,11 +1,5 @@
-import {
-  PathReference,
-  combine,
-  UpdatableReference,
-  UpdatableTag,
-  Tag,
-  createUpdatableTag,
-} from '@glimmer/reference';
+import { PathReference, UpdatableReference } from '@glimmer/reference';
+import { combine, createUpdatableTag, UpdatableTag, Tag } from '@glimmer/tag';
 import {
   Dict,
   Option,

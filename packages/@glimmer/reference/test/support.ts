@@ -1,4 +1,4 @@
-import { setStateFor, trackedData } from '@glimmer/reference';
+import { setStateFor, trackedData } from '@glimmer/tag';
 
 export function tracked<T extends object, K extends keyof T>(obj: T, key: K): void;
 export function tracked<T extends object, K extends keyof T>(

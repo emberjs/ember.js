@@ -9,7 +9,8 @@ import {
   EncoderError,
 } from '@glimmer/interfaces';
 import { UpdatableReference } from '@glimmer/object-reference';
-import { bump, ConstReference } from '@glimmer/reference';
+import { ConstReference } from '@glimmer/reference';
+import { bump } from '@glimmer/tag';
 import {
   clientBuilder,
   PrimitiveReference,
