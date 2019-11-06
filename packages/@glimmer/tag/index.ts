@@ -29,8 +29,6 @@ export {
   VOLATILE,
 } from './lib/tags';
 
-export { EPOCH, getStateFor, setStateFor } from './lib/property-meta';
+export { dirtyTag, tagFor, updateTag } from './lib/meta';
 
-export { dirtyTag, tagFor, updateTag } from './lib/object-meta';
-
-export { pushTrackFrame, popTrackFrame, trackedData } from './lib/tracking';
+export { track, consume, EPOCH, trackedData } from './lib/tracking';
