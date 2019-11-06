@@ -1,4 +1,4 @@
-import { setStateFor, trackedData } from '@glimmer/tag';
+import { trackedData } from '@glimmer/tag';
 
 export function tracked<T extends object, K extends keyof T>(obj: T, key: K): void;
 export function tracked<T extends object, K extends keyof T>(
@@ -10,15 +10,17 @@ export function tracked<T extends object, K extends keyof T>(
   key: K
 ): void {
   let target: T;
+  let initializer: (() => T[K]) | undefined;
 
   if (typeof obj === 'function') {
     target = obj.prototype;
   } else {
     target = obj;
-    setStateFor(target, key, target[key]);
+    let initialValue = target[key];
+    initializer = () => initialValue;
   }
 
-  let { getter, setter } = trackedData<T, K>(key);
+  let { getter, setter } = trackedData<T, K>(key, initializer);
 
   Object.defineProperty(target, key, {
     get() {

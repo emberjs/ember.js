@@ -1,11 +1,4 @@
-import {
-  Tag,
-  createUpdatableTag,
-  combine,
-  update,
-  pushTrackFrame,
-  popTrackFrame,
-} from '@glimmer/tag';
+import { Tag, createUpdatableTag, combine, update, track } from '@glimmer/tag';
 import { property } from './property';
 import { VersionedPathReference } from './reference';
 
@@ -27,12 +20,11 @@ class MapReference<T, U> implements VersionedPathReference<U> {
   value(): U {
     let { inner, callback } = this;
 
-    let old = pushTrackFrame();
-    let ret = callback(inner.value());
-    let tag = popTrackFrame(old);
+    let ret: U;
+    let tag = track(() => (ret = callback(inner.value())));
     update(this.updatable, tag);
 
-    return ret;
+    return ret!;
   }
 
   get(key: string): VersionedPathReference {
