@@ -8,6 +8,7 @@ import {
   SimpleElement,
   SimpleNode,
   SimpleText,
+  NodeType,
 } from '@simple-dom/interface';
 import { ConcreteBounds, CursorImpl } from '../bounds';
 import { CURSOR_STACK, NewElementBuilder, RemoteLiveBlock } from './element-builder';
@@ -101,16 +102,26 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     this[CURSOR_STACK].push(cursor);
   }
 
+  // clears until the end of the current container
+  // either the current open block or higher
   private clearMismatch(candidate: SimpleNode) {
     let current: Option<SimpleNode> = candidate;
     let currentCursor = this.currentCursor;
     if (currentCursor !== null) {
       let openBlockDepth = currentCursor.openBlockDepth;
       if (openBlockDepth >= currentCursor.startingBlockDepth) {
-        while (current && !(isComment(current) && getCloseBlockDepth(current) === openBlockDepth)) {
+        while (current) {
+          if (isCloseBlock(current)) {
+            let closeBlockDepth = getBlockDepth(current);
+            if (openBlockDepth >= closeBlockDepth) {
+              // cleared up until the close but we haven't closed the current
+              // block unless we are above
+              currentCursor.openBlockDepth = closeBlockDepth;
+              break;
+            }
+          }
           current = this.remove(current);
         }
-        assert(current !== null, 'should have found closing block');
       } else {
         while (current !== null) {
           current = this.remove(current);
@@ -137,7 +148,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
 
     let { tagName } = currentCursor.element;
 
-    if (isComment(candidate) && getOpenBlockDepth(candidate) === blockDepth) {
+    if (isOpenBlock(candidate) && getBlockDepth(candidate) === blockDepth) {
       currentCursor.candidate = this.remove(candidate);
       currentCursor.openBlockDepth = blockDepth;
     } else if (tagName !== 'TITLE' && tagName !== 'SCRIPT' && tagName !== 'STYLE') {
@@ -156,30 +167,49 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     this.blockDepth--;
 
     let { candidate } = currentCursor;
-    // rehydrating
+
+    let isRehydrating = false;
+
     if (candidate !== null) {
+      isRehydrating = true;
       assert(
         openBlockDepth === this.blockDepth,
         'when rehydrating, openBlockDepth should match this.blockDepth here'
       );
-      if (isComment(candidate) && getCloseBlockDepth(candidate) === openBlockDepth) {
+
+      if (isCloseBlock(candidate) && getBlockDepth(candidate) === openBlockDepth) {
         currentCursor.candidate = this.remove(candidate);
         currentCursor.openBlockDepth--;
       } else {
+        // close the block and clear mismatch in parent container
+        // we will be either at the end of the element
+        // or at the end of our containing block
         this.clearMismatch(candidate);
+        isRehydrating = false;
       }
-      // if the openBlockDepth matches the blockDepth we just closed to
-      // then restore rehydration
     }
-    if (currentCursor.openBlockDepth === this.blockDepth) {
-      assert(
-        currentCursor.nextSibling !== null &&
-          isComment(currentCursor.nextSibling) &&
-          getCloseBlockDepth(currentCursor.nextSibling) === openBlockDepth,
-        'expected close block to match rehydrated open block'
-      );
-      currentCursor.candidate = this.remove(currentCursor.nextSibling!);
-      currentCursor.openBlockDepth--;
+
+    if (!isRehydrating) {
+      // check if nextSibling matches our expected close block
+      // if so, we remove the close block comment and
+      // restore rehydration after clearMismatch disabled
+      let nextSibling = currentCursor.nextSibling;
+      if (
+        nextSibling !== null &&
+        isCloseBlock(nextSibling) &&
+        getBlockDepth(nextSibling) === openBlockDepth
+      ) {
+        // restore rehydration state
+        let candidate = this.remove(nextSibling);
+        if (candidate === null) {
+          // there is nothing more in the current element
+          currentCursor.candidate = currentCursor.nextSibling = null;
+        } else {
+          currentCursor.candidate = candidate;
+          currentCursor.nextSibling = candidate.nextSibling;
+        }
+        currentCursor.openBlockDepth--;
+      }
     }
   }
 
@@ -255,19 +285,26 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
           candidate.nodeValue = string;
         }
         this.candidate = candidate.nextSibling;
+
         return candidate;
-      } else if (candidate && (isSeparator(candidate) || isEmpty(candidate))) {
+      } else if (isSeparator(candidate)) {
         this.candidate = candidate.nextSibling;
         this.remove(candidate);
+
         return this.__appendText(string);
       } else if (isEmpty(candidate)) {
-        let next = this.remove(candidate);
-        this.candidate = next;
-        let text = this.dom.createTextNode(string);
-        this.dom.insertBefore(this.element, text, next);
-        return text;
+        let nextSibling = this.remove(candidate);
+
+        // super.__appendText (the append mode builder) will use `currentCursor.nextSibling`
+        // to insert the text node before (so it must be set), once that is done rehydration
+        // should continue at that same node
+        let currentCursor = this.currentCursor!;
+        currentCursor.candidate = currentCursor.nextSibling = nextSibling;
+
+        return super.__appendText(string);
       } else {
         this.clearMismatch(candidate);
+
         return super.__appendText(string);
       }
     } else {
@@ -425,24 +462,16 @@ function isComment(node: SimpleNode): node is SimpleComment {
   return node.nodeType === 8;
 }
 
-function getOpenBlockDepth(node: SimpleComment): Option<number> {
-  let boundsDepth = node.nodeValue!.match(/^%\+b:(\d+)%$/);
-
-  if (boundsDepth && boundsDepth[1]) {
-    return Number(boundsDepth[1] as string);
-  } else {
-    return null;
-  }
+function isOpenBlock(node: SimpleNode): node is SimpleComment {
+  return node.nodeType === NodeType.COMMENT_NODE && node.nodeValue.lastIndexOf('%+b:', 0) === 0;
 }
 
-function getCloseBlockDepth(node: SimpleComment): Option<number> {
-  let boundsDepth = node.nodeValue!.match(/^%\-b:(\d+)%$/);
+function isCloseBlock(node: SimpleNode): node is SimpleComment {
+  return node.nodeType === NodeType.COMMENT_NODE && node.nodeValue.lastIndexOf('%-b:', 0) === 0;
+}
 
-  if (boundsDepth && boundsDepth[1]) {
-    return Number(boundsDepth[1] as string);
-  } else {
-    return null;
-  }
+function getBlockDepth(node: SimpleComment): number {
+  return parseInt(node.nodeValue.slice(4), 10);
 }
 
 function isElement(node: SimpleNode): node is SimpleElement {
@@ -460,6 +489,7 @@ function isSeparator(node: SimpleNode): boolean {
 function isEmpty(node: SimpleNode): boolean {
   return node.nodeType === 8 && node.nodeValue === '% %';
 }
+
 function isSameNodeType(candidate: SimpleElement, tag: string) {
   if (candidate.namespaceURI === Namespace.SVG) {
     return candidate.tagName === tag;
