@@ -23,7 +23,7 @@ import {
   UpdatableTag,
   Revision,
   INITIAL,
-} from '@glimmer/tag';
+} from '@glimmer/validator';
 import {
   IterationArtifacts,
   IteratorSynchronizer,
@@ -35,7 +35,7 @@ import { associate, expect, LinkedList, Option, Stack } from '@glimmer/util';
 import { SimpleComment, SimpleNode } from '@simple-dom/interface';
 import { move as moveBounds } from '../bounds';
 import { asyncReset, detach } from '../lifetime';
-import { combineSlice } from '../tags';
+import { combineSlice } from '../utils/tags';
 import { UpdatingOpcode, UpdatingOpSeq } from '../opcodes';
 import { InternalVM, VmInitCallback, JitVM } from './append';
 import { NewElementBuilder } from './element-builder';

@@ -1,5 +1,5 @@
 import { Reference, ReferenceCache, VersionedReference } from '@glimmer/reference';
-import { Revision, Tag, isConst, isConstTag, value, validate } from '@glimmer/tag';
+import { Revision, Tag, isConst, isConstTag, value, validate } from '@glimmer/validator';
 import { check, CheckString, CheckElement, CheckOption, CheckNode } from '@glimmer/debug';
 import { Op, Option, ModifierManager } from '@glimmer/interfaces';
 import { $t0 } from '@glimmer/vm';

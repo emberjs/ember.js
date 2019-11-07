@@ -7,7 +7,7 @@ import {
   CONSTANT_TAG,
   Tag,
   tagFor,
-} from '@glimmer/tag';
+} from '@glimmer/validator';
 import { unwrap } from '@glimmer/util';
 import { tracked } from './support';
 

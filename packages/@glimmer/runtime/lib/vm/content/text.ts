@@ -1,7 +1,7 @@
 import { isEmpty, isString } from '../../dom/normalize';
 import { UpdatingOpcode } from '../../opcodes';
 import { VersionedReference } from '@glimmer/reference';
-import { Tag, value, validate, Revision } from '@glimmer/tag';
+import { Tag, value, validate, Revision } from '@glimmer/validator';
 import { SimpleText } from '@simple-dom/interface';
 
 export default class DynamicTextContent extends UpdatingOpcode {

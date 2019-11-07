@@ -1,4 +1,4 @@
-import { trackedData } from '@glimmer/tag';
+import { trackedData } from '@glimmer/validator';
 
 export function tracked<T extends object, K extends keyof T>(obj: T, key: K): void;
 export function tracked<T extends object, K extends keyof T>(

@@ -1,4 +1,4 @@
-import { CONSTANT_TAG, Tag } from '@glimmer/tag';
+import { CONSTANT_TAG, Tag } from '@glimmer/validator';
 import { VersionedPathReference } from './reference';
 import { UNDEFINED_REFERENCE } from './property';
 

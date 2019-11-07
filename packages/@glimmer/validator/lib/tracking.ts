@@ -1,5 +1,5 @@
-import { Tag, combine, CONSTANT_TAG } from './tags';
-import { createTag, dirty } from './tags';
+import { Tag, combine, CONSTANT_TAG } from './validators';
+import { createTag, dirty } from './validators';
 import { tagFor, dirtyTag } from './meta';
 
 type Option<T> = T | null;

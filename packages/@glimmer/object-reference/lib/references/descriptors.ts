@@ -1,6 +1,6 @@
 import Meta from '../meta';
 import { Reference } from '@glimmer/reference';
-import { Tag, CURRENT_TAG } from '@glimmer/tag';
+import { Tag, CURRENT_TAG } from '@glimmer/validator';
 import { NotifiableReference } from '../types';
 
 export interface InnerReferenceFactory<T> {

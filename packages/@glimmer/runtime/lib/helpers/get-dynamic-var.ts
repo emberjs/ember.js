@@ -1,5 +1,5 @@
 import { PathReference } from '@glimmer/reference';
-import { Tag, UpdatableTag, combine, createUpdatableTag, update } from '@glimmer/tag';
+import { Tag, UpdatableTag, combine, createUpdatableTag, update } from '@glimmer/validator';
 import { DynamicScope, VM as PublicVM, VMArguments, Helper } from '@glimmer/interfaces';
 
 class DynamicVarReference implements PathReference<unknown> {

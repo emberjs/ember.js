@@ -1,6 +1,6 @@
 import { Dict, CapturedArguments, VMArguments } from '@glimmer/interfaces';
 import { VersionedPathReference, Reference } from '@glimmer/reference';
-import { CURRENT_TAG, Tag } from '@glimmer/tag';
+import { CURRENT_TAG, Tag } from '@glimmer/validator';
 
 export type UserHelper = (args: ReadonlyArray<unknown>, named: Dict<unknown>) => unknown;
 

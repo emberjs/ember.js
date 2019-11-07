@@ -23,7 +23,7 @@ import {
 } from '@glimmer/interfaces';
 import { Attrs, AttrsDiff } from './emberish-glimmer';
 import { VersionedPathReference, UpdatableReference, PathReference } from '@glimmer/reference';
-import { combine, createTag, dirty, DirtyableTag, Tag } from '@glimmer/tag';
+import { combine, createTag, dirty, DirtyableTag, Tag } from '@glimmer/validator';
 import { keys, EMPTY_ARRAY, assign } from '@glimmer/util';
 import { TestComponentDefinitionState } from './test-component';
 import { PrimitiveReference } from '@glimmer/runtime';

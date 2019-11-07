@@ -12,7 +12,7 @@ import {
 } from './types';
 
 import { PathReference as IPathReference } from '@glimmer/reference';
-import { CURRENT_TAG } from '@glimmer/tag';
+import { CURRENT_TAG } from '@glimmer/validator';
 
 import { InnerReferenceFactory } from './references/descriptors';
 import { Dict } from '@glimmer/interfaces';

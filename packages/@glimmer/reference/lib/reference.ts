@@ -1,5 +1,5 @@
 import { Option } from '@glimmer/util';
-import { Revision, Tag, Tagged, value, validate } from '@glimmer/tag';
+import { Revision, Tag, Tagged, value, validate } from '@glimmer/validator';
 
 export interface Reference<T> {
   value(): T;

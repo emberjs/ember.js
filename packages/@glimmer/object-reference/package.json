@@ -7,7 +7,7 @@
   "dependencies": {
     "@glimmer/util": "^0.43.0",
     "@glimmer/reference": "^0.43.0",
-    "@glimmer/tag": "^0.43.0"
+    "@glimmer/validator": "^0.43.0"
   },
   "devDependencies": {
     "typescript": "^2.8.3"

@@ -12,7 +12,7 @@ import {
   update,
   track,
   tagFor,
-} from '@glimmer/tag';
+} from '@glimmer/validator';
 import { Dict } from '@glimmer/interfaces';
 import { VersionedPathReference } from './reference';
 
