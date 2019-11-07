@@ -683,6 +683,27 @@ const ArrayMixin = Mixin.create(Enumerable, {
     object that will be set as `this` on the context. This is a good way
     to give your iterator function access to the current object.
 
+    Example Usage:
+
+    ```javascript
+    let foods = [
+      { name: 'apple', eaten: false },
+      { name: 'banana', eaten: false },
+      { name: 'carrot', eaten: false }
+    ];
+
+    foods.forEach((food) => food.eaten = true);
+
+    let output = '';
+    foods.forEach((item, index, array) => 
+      output += `${index + 1}/${array.length} ${item.name}\n`;
+    );
+    console.log(output);
+    // 1/3 apple
+    // 2/3 banana
+    // 3/3 carrot
+    ```
+
     @method forEach
     @param {Function} callback The callback to execute
     @param {Object} [target] The target object to use
