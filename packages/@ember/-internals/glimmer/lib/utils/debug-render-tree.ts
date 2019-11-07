@@ -18,6 +18,7 @@ interface InternalRenderNode<T extends object> extends RenderNode {
 }
 
 export interface CapturedRenderNode {
+  id: string;
   type: RenderNodeType;
   name: string;
   args: ReturnType<CapturedArguments['value']>;
@@ -33,7 +34,7 @@ export interface CapturedRenderNode {
 let GUID = 0;
 
 export class Ref<T extends object> {
-  private id: number = GUID++;
+  readonly id: number = GUID++;
   private value: Option<T>;
 
   constructor(value: T) {
@@ -157,7 +158,7 @@ export default class DebugRenderTree<Bucket extends object = object> {
       let state = ref.get();
 
       if (state) {
-        captured.push(this.captureNode(state));
+        captured.push(this.captureNode(`render-node:${ref.id}`, state));
       } else {
         refs.delete(ref);
       }
@@ -166,12 +167,12 @@ export default class DebugRenderTree<Bucket extends object = object> {
     return captured;
   }
 
-  private captureNode(state: Bucket): CapturedRenderNode {
+  private captureNode(id: string, state: Bucket): CapturedRenderNode {
     let node = this.nodeFor(state);
     let { type, name, args, instance, refs } = node;
     let bounds = this.captureBounds(node);
     let children = this.captureRefs(refs);
-    return { type, name, args: args.value(), instance, bounds, children };
+    return { id, type, name, args: args.value(), instance, bounds, children };
   }
 
   private captureBounds(node: InternalRenderNode<Bucket>): CapturedRenderNode['bounds'] {
