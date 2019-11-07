@@ -309,11 +309,8 @@ class Rehydration extends AbstractRehydrationTests {
     this.element = assertElement(host.firstChild);
 
     this.renderClientSide(template, { remote: clientRemote });
-    this.assertRehydrationStats({ nodesRemoved: 1 });
-    this.assert.equal(
-      toInnerHTML(clientRemote),
-      '<prefix></prefix><suffix></suffix><inner>Wat Wat</inner>'
-    );
+    this.assertRehydrationStats({ nodesRemoved: 2 });
+    this.assert.equal(toInnerHTML(clientRemote), '<inner>Wat Wat</inner>');
   }
 
   @test
@@ -548,7 +545,7 @@ class Rehydration extends AbstractRehydrationTests {
       remoteParent: clientRemoteParent,
       remoteChild: clientRemoteChild,
     });
-    this.assertRehydrationStats({ nodesRemoved: 2 });
+    this.assertRehydrationStats({ nodesRemoved: 0 });
     this.assert.equal(toInnerHTML(clientRemoteParent), '<inner><!----></inner>');
     this.assert.equal(toInnerHTML(clientRemoteChild), 'Wat Wat');
   }

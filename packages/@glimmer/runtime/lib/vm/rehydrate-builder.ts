@@ -36,9 +36,7 @@ export class RehydratingCursor extends CursorImpl {
 export class RehydrateBuilder extends NewElementBuilder implements ElementBuilder {
   private unmatchedAttributes: Option<SimpleAttr[]> = null;
   [CURSOR_STACK]!: Stack<RehydratingCursor>; // Hides property on base class
-  private blockDepth = 0;
-
-  // private candidate: Option<SimpleNode> = null;
+  blockDepth = 0;
 
   constructor(env: Environment, parentNode: SimpleElement, nextSibling: Option<SimpleNode>) {
     super(env, parentNode, nextSibling);
@@ -73,32 +71,54 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
   }
 
   set candidate(node: Option<SimpleNode>) {
-    this.currentCursor!.candidate = node;
+    let currentCursor = this.currentCursor!;
+
+    currentCursor.candidate = node;
   }
 
-  pushElement(element: SimpleElement, nextSibling: Maybe<SimpleNode> = null) {
-    let { blockDepth = 0 } = this;
-    let cursor = new RehydratingCursor(element, nextSibling, blockDepth);
-    let currentCursor = this.currentCursor;
-    if (currentCursor) {
-      if (currentCursor.candidate) {
-        /**
-         * <div>   <---------------  currentCursor.element
-         *   <!--%+b:1%-->
-         *   <div> <---------------  currentCursor.candidate -> cursor.element
-         *     <!--%+b:2%--> <-  currentCursor.candidate.firstChild -> cursor.candidate
-         *     Foo
-         *     <!--%-b:2%-->
-         *   </div>
-         *   <!--%-b:1%-->  <--  becomes currentCursor.candidate
-         */
+  disableRehydration(nextSibling: Option<SimpleNode>) {
+    let currentCursor = this.currentCursor!;
 
-        // where to rehydrate from if we are in rehydration mode
-        cursor.candidate = element.firstChild;
-        // where to continue when we pop
-        currentCursor.candidate = element.nextSibling;
-      }
+    // rehydration will be disabled until we either:
+    // * hit popElement (and return to using the parent elements cursor)
+    // * hit closeBlock and the next sibling is a close block comment
+    //   matching the expected openBlockDepth
+    currentCursor.candidate = null;
+    currentCursor.nextSibling = nextSibling;
+  }
+
+  enableRehydration(candidate: Option<SimpleNode>) {
+    let currentCursor = this.currentCursor!;
+
+    currentCursor.candidate = candidate;
+    currentCursor.nextSibling = null;
+  }
+
+  pushElement(
+    /** called from parent constructor before we initialize this */
+    this:
+      | RehydrateBuilder
+      | (NewElementBuilder & Partial<Pick<RehydrateBuilder, 'blockDepth' | 'candidate'>>),
+    element: SimpleElement,
+    nextSibling: Maybe<SimpleNode> = null
+  ) {
+    let cursor = new RehydratingCursor(element, nextSibling, this.blockDepth || 0);
+
+    /**
+     * <div>   <---------------  currentCursor.element
+     *   <!--%+b:1%--> <-------  would have been removed during openBlock
+     *   <div> <---------------  currentCursor.candidate -> cursor.element
+     *     <!--%+b:2%--> <-----  currentCursor.candidate.firstChild -> cursor.candidate
+     *     Foo
+     *     <!--%-b:2%-->
+     *   </div>
+     *   <!--%-b:1%-->  <------  becomes currentCursor.candidate
+     */
+    if (this.candidate !== null) {
+      cursor.candidate = element.firstChild;
+      this.candidate = element.nextSibling;
     }
+
     this[CURSOR_STACK].push(cursor);
   }
 
@@ -114,9 +134,6 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
           if (isCloseBlock(current)) {
             let closeBlockDepth = getBlockDepth(current);
             if (openBlockDepth >= closeBlockDepth) {
-              // cleared up until the close but we haven't closed the current
-              // block unless we are above
-              currentCursor.openBlockDepth = closeBlockDepth;
               break;
             }
           }
@@ -129,9 +146,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
       }
       // current cursor parentNode should be openCandidate if element
       // or openCandidate.parentNode if comment
-      currentCursor.nextSibling = current;
-      // disable rehydration until we popElement or closeBlock for openBlockDepth
-      currentCursor.candidate = null;
+      this.disableRehydration(current);
     }
   }
 
@@ -149,7 +164,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
     let { tagName } = currentCursor.element;
 
     if (isOpenBlock(candidate) && getBlockDepth(candidate) === blockDepth) {
-      currentCursor.candidate = this.remove(candidate);
+      this.candidate = this.remove(candidate);
       currentCursor.openBlockDepth = blockDepth;
     } else if (tagName !== 'TITLE' && tagName !== 'SCRIPT' && tagName !== 'STYLE') {
       this.clearMismatch(candidate);
@@ -178,7 +193,8 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
       );
 
       if (isCloseBlock(candidate) && getBlockDepth(candidate) === openBlockDepth) {
-        currentCursor.candidate = this.remove(candidate);
+        let nextSibling = this.remove(candidate);
+        this.candidate = nextSibling;
         currentCursor.openBlockDepth--;
       } else {
         // close the block and clear mismatch in parent container
@@ -189,7 +205,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
       }
     }
 
-    if (!isRehydrating) {
+    if (isRehydrating === false) {
       // check if nextSibling matches our expected close block
       // if so, we remove the close block comment and
       // restore rehydration after clearMismatch disabled
@@ -197,17 +213,12 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
       if (
         nextSibling !== null &&
         isCloseBlock(nextSibling) &&
-        getBlockDepth(nextSibling) === openBlockDepth
+        getBlockDepth(nextSibling) === this.blockDepth
       ) {
         // restore rehydration state
         let candidate = this.remove(nextSibling);
-        if (candidate === null) {
-          // there is nothing more in the current element
-          currentCursor.candidate = currentCursor.nextSibling = null;
-        } else {
-          currentCursor.candidate = candidate;
-          currentCursor.nextSibling = candidate.nextSibling;
-        }
+        this.enableRehydration(candidate);
+
         currentCursor.openBlockDepth--;
       }
     }
@@ -288,20 +299,13 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
 
         return candidate;
       } else if (isSeparator(candidate)) {
-        this.candidate = candidate.nextSibling;
-        this.remove(candidate);
+        this.candidate = this.remove(candidate);
 
         return this.__appendText(string);
-      } else if (isEmpty(candidate)) {
-        let nextSibling = this.remove(candidate);
+      } else if (isEmpty(candidate) && string === '') {
+        this.candidate = this.remove(candidate);
 
-        // super.__appendText (the append mode builder) will use `currentCursor.nextSibling`
-        // to insert the text node before (so it must be set), once that is done rehydration
-        // should continue at that same node
-        let currentCursor = this.currentCursor!;
-        currentCursor.candidate = currentCursor.nextSibling = nextSibling;
-
-        return super.__appendText(string);
+        return this.__appendText(string);
       } else {
         this.clearMismatch(candidate);
 
@@ -426,19 +430,22 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
       `expected remote element marker's parent node to match remote element`
     );
 
+    // when insertBefore is not present, we clear the element
     if (insertBefore === undefined) {
-      while (element.lastChild !== marker) {
-        this.remove(element.lastChild!);
+      while (element.firstChild !== null && element.firstChild !== marker) {
+        this.remove(element.firstChild);
       }
+      insertBefore = null;
     }
 
-    let currentCursor = this.currentCursor;
-    let candidate = currentCursor!.candidate;
+    let cursor = new RehydratingCursor(element, null, this.blockDepth);
+    this[CURSOR_STACK].push(cursor);
 
-    this.pushElement(element, insertBefore);
-
-    currentCursor!.candidate = candidate;
-    this.candidate = marker ? this.remove(marker) : null;
+    if (marker === null) {
+      this.disableRehydration(insertBefore);
+    } else {
+      this.candidate = this.remove(marker);
+    }
 
     let block = new RemoteLiveBlock(element);
     return this.pushLiveBlock(block, true);
