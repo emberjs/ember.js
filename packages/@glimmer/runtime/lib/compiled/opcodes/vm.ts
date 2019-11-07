@@ -1,14 +1,6 @@
 import { PrimitiveType, CompilableTemplate, Option, Op } from '@glimmer/interfaces';
-import {
-  CONSTANT_TAG,
-  isConst,
-  isModified,
-  ReferenceCache,
-  Revision,
-  Tag,
-  value,
-  validate,
-} from '@glimmer/reference';
+import { isModified, ReferenceCache } from '@glimmer/reference';
+import { CONSTANT_TAG, isConst, Revision, Tag, value, validate } from '@glimmer/validator';
 import { initializeGuid, assert } from '@glimmer/util';
 import {
   CheckNumber,

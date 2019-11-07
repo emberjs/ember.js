@@ -2,7 +2,8 @@ import { EMPTY_CACHE } from '../utils';
 import { dict } from '@glimmer/util';
 import Meta from '../meta';
 import { PropertyReference } from './descriptors';
-import { PathReference as IPathReference, Reference, Tag, CURRENT_TAG } from '@glimmer/reference';
+import { PathReference as IPathReference, Reference } from '@glimmer/reference';
+import { Tag, CURRENT_TAG } from '@glimmer/validator';
 import { HasGuid } from '@glimmer/util';
 import { Option, Dict } from '@glimmer/interfaces';
 

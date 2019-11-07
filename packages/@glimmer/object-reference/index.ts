@@ -8,4 +8,5 @@ export { setProperty, notifyProperty } from './lib/object';
 export * from './lib/types';
 export { default as ObjectReference } from './lib/references/path';
 export { default as UpdatableReference, State } from './lib/references/root';
-export { ConstReference, isConst } from '@glimmer/reference';
+export { ConstReference } from '@glimmer/reference';
+export { isConst } from '@glimmer/validator';

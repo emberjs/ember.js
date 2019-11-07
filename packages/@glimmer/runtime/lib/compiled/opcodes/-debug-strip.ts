@@ -24,7 +24,8 @@ import {
   CapturedArgumentsValue,
   Option,
 } from '@glimmer/interfaces';
-import { Tag, VersionedPathReference, Reference, COMPUTE } from '@glimmer/reference';
+import { VersionedPathReference, Reference } from '@glimmer/reference';
+import { Tag, COMPUTE } from '@glimmer/validator';
 import { ScopeImpl } from '../../environment';
 import CurryComponentReference from '../../references/curry-component';
 import {

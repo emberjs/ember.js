@@ -1,6 +1,8 @@
-import { Reference, Tag, combineTagged } from '@glimmer/reference';
+import { Reference } from '@glimmer/reference';
+import { Tag } from '@glimmer/validator';
 import { Option } from '@glimmer/util';
 
+import { combineTagged } from '../utils/tags';
 import { normalizeStringValue } from '../dom/normalize';
 
 export default class ClassListReference implements Reference<Option<string>> {

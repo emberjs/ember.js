@@ -1,15 +1,5 @@
-import {
-  State,
-  VersionedPathReference,
-  UpdatableReference,
-  map,
-  createTag,
-  dirty,
-  value,
-  validate,
-  combine,
-  CONSTANT_TAG,
-} from '@glimmer/reference';
+import { State, VersionedPathReference, UpdatableReference, map } from '@glimmer/reference';
+import { createTag, dirty, value, validate, combine, CONSTANT_TAG } from '@glimmer/validator';
 import { tracked } from './support';
 
 QUnit.module('@glimmer/reference - combinators: map');

@@ -1,5 +1,6 @@
 import { Dict, Maybe, Option, RenderResult } from '@glimmer/interfaces';
-import { bump, isConst, UpdatableReference } from '@glimmer/reference';
+import { UpdatableReference } from '@glimmer/reference';
+import { bump, isConst } from '@glimmer/validator';
 import { clearElement, dict, expect, assign } from '@glimmer/util';
 import { SimpleElement, SimpleNode } from '@simple-dom/interface';
 import {

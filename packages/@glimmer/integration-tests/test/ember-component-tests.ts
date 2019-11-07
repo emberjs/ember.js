@@ -10,7 +10,7 @@ import {
 import { unwrapTemplate, unwrapHandle } from '@glimmer/opcode-compiler';
 import EmberObject from '@glimmer/object';
 import { CLASS_META, setProperty as set, UpdatableReference } from '@glimmer/object-reference';
-import { bump } from '@glimmer/reference';
+import { bump } from '@glimmer/validator';
 import { clientBuilder, renderJitMain } from '@glimmer/runtime';
 import { assign, dict, unwrap } from '@glimmer/util';
 import { SimpleElement } from '@simple-dom/interface';

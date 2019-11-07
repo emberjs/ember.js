@@ -1,3 +1,4 @@
+import { State } from '@glimmer/reference';
 import {
   dirty,
   value,
@@ -5,9 +6,8 @@ import {
   createUpdatableTag,
   CONSTANT_TAG,
   Tag,
-  State,
   tagFor,
-} from '@glimmer/reference';
+} from '@glimmer/validator';
 import { unwrap } from '@glimmer/util';
 import { tracked } from './support';
 

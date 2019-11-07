@@ -7,11 +7,9 @@ import {
   ReferenceIterator,
   IteratorSynchronizer,
   IteratorSynchronizerDelegate,
-  Tag,
-  CURRENT_TAG,
   END,
 } from '@glimmer/reference';
-
+import { Tag, CURRENT_TAG } from '@glimmer/validator';
 import { UpdatableReference } from '@glimmer/object-reference';
 
 import { Option, LinkedList, ListNode } from '@glimmer/util';

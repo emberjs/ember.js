@@ -1,4 +1,5 @@
-import { Tag, VersionedPathReference } from '@glimmer/reference';
+import { VersionedPathReference } from '@glimmer/reference';
+import { Tag } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
 import ComponentCapabilities from '../component-capabilities';
 import { ComponentDefinitionState, PreparedArguments, ComponentInstanceState } from '../components';

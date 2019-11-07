@@ -10,15 +10,16 @@ import {
   value,
   dirty,
   update,
-} from './validators';
+  track,
+  tagFor,
+} from '@glimmer/validator';
+import { Dict } from '@glimmer/interfaces';
 import { VersionedPathReference } from './reference';
-import { pushTrackFrame, popTrackFrame } from './autotrack';
-import { tagFor } from './tags';
 
 export class RootReference<T> implements VersionedPathReference<T> {
   private children = dict<RootPropertyReference>();
 
-  tag = CONSTANT_TAG;
+  tag: Tag = CONSTANT_TAG;
 
   constructor(private inner: T) {}
 
@@ -40,7 +41,7 @@ export class RootReference<T> implements VersionedPathReference<T> {
 export class ImmutableRootReference<T> implements VersionedPathReference<T> {
   private children = dict<RootPropertyReference>();
 
-  tag = CONSTANT_TAG;
+  tag: Tag = CONSTANT_TAG;
 
   constructor(private inner: T) {}
 
@@ -62,7 +63,7 @@ export class ImmutableRootReference<T> implements VersionedPathReference<T> {
 export type Primitive = undefined | null | boolean | number | string;
 
 export class PrimitiveReference<T extends Primitive> implements VersionedPathReference<T> {
-  readonly tag = CONSTANT_TAG;
+  readonly tag: Tag = CONSTANT_TAG;
 
   constructor(private inner: T) {}
 
@@ -135,9 +136,10 @@ export class RootPropertyReference implements VersionedPathReference {
   value(): unknown {
     let { _parentValue } = this;
     if (isDict(_parentValue)) {
-      let old = pushTrackFrame();
-      let ret = _parentValue[this._propertyKey];
-      let tag = popTrackFrame(old);
+      let ret;
+      let tag = track(() => {
+        ret = (_parentValue as Dict)[this._propertyKey];
+      });
       update(this.tag, tag);
       return ret;
     } else {
@@ -169,9 +171,10 @@ export class NestedPropertyReference implements VersionedPathReference {
     update(_parentObjectTag, tagFor(parentValue, _propertyKey));
 
     if (isDict(parentValue)) {
-      let old = pushTrackFrame();
-      let ret = parentValue[_propertyKey];
-      let tag = popTrackFrame(old);
+      let ret;
+      let tag = track(() => {
+        ret = (parentValue as Dict)[_propertyKey];
+      });
       update(_parentObjectTag, tag);
       return ret;
     } else {

@@ -1,4 +1,5 @@
-import { Reference, Tag, isConst } from '@glimmer/reference';
+import { Reference } from '@glimmer/reference';
+import { Tag, isConst } from '@glimmer/validator';
 import {
   check,
   CheckString,

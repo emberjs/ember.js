@@ -11,7 +11,8 @@ import {
   RootReference as IRootReference,
 } from './types';
 
-import { PathReference as IPathReference, CURRENT_TAG } from '@glimmer/reference';
+import { PathReference as IPathReference } from '@glimmer/reference';
+import { CURRENT_TAG } from '@glimmer/validator';
 
 import { InnerReferenceFactory } from './references/descriptors';
 import { Dict } from '@glimmer/interfaces';

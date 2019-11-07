@@ -16,7 +16,6 @@ export { ConstReference } from './lib/const';
 
 export { ListItem, END } from './lib/iterable';
 
-export * from './lib/validators';
 export * from './lib/property';
 
 export {
@@ -34,7 +33,4 @@ export {
 } from './lib/iterable';
 
 export * from './lib/iterable-impl';
-export * from './lib/tracked';
-export * from './lib/autotrack';
-export * from './lib/tags';
 export * from './lib/combinators';

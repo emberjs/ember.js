@@ -1,4 +1,3 @@
-import { isObject } from '@glimmer/util';
 import {
   dirty,
   update,
@@ -11,6 +10,10 @@ import {
 
 type Tags = Map<PropertyKey, UpdatableTag>;
 const TRACKED_TAGS = new WeakMap<object, Tags>();
+
+function isObject<T>(u: T): u is object & T {
+  return typeof u === 'object' && u !== null;
+}
 
 export function dirtyTag<T>(obj: T, key: keyof T): void {
   if (isObject(obj)) {

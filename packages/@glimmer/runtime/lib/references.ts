@@ -1,5 +1,6 @@
 import { Option, Recast } from '@glimmer/interfaces';
-import { ConstReference, PathReference, Reference, Tag } from '@glimmer/reference';
+import { ConstReference, PathReference, Reference } from '@glimmer/reference';
+import { Tag } from '@glimmer/validator';
 
 export type Primitive = undefined | null | boolean | number | string;
 
