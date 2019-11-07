@@ -62,6 +62,22 @@
         label: 'Enable Smoke Tests',
         tooltip: 'Enable Smoke Tests',
       });
+
+      // since all of our tests are synchronous, the QUnit
+      // UI never has a chance to rerender / update. This
+      // leads to a very long "white screen" when running
+      // the tests
+      //
+      // this adds a very small amount of async, just to allow
+      // the QUnit UI to rerender once per module completed
+      if (typeof Promise !== 'undefined') {
+        QUnit.moduleDone(function() {
+          return new Promise(function(resolve) {
+            setTimeout(resolve, 0);
+          });
+        });
+      }
+
       var SMOKE_TESTS = (function() {
         let location = typeof window !== 'undefined' && window.location;
         if (location && /[?&]smoke_tests/.test(window.location.search)) {
