@@ -197,6 +197,33 @@ class Rehydration extends AbstractRehydrationTests {
   }
 
   @test
+  'missing closing block within multiple text nodes'() {
+    let template = '<div>a {{b}}{{c}}{{d}}</div>';
+    let context = { b: '', c: '', d: '' };
+
+    this.renderServerSide(template, context);
+
+    let b = blockStack();
+    this.assertServerOutput(
+      `<div>a ${b(1)}<!--% %-->${b(1)}${b(1)}<!--% %-->${b(1)}${b(1)}<!--% %-->${b(1)}</div>`
+    );
+
+    // remove the first `<!--%-b:1%-->`
+    let element = this.element as Element;
+    let [div] = element.children;
+    let commentToRemove = div.childNodes[3];
+    div.removeChild(commentToRemove);
+
+    this.renderClientSide(template, context);
+    this.assertHTML('<div>a </div>');
+    this.assertRehydrationStats({ nodesRemoved: 0 });
+
+    // TODO: handle % % in the testing DSL
+    // this.assertStableNodes();
+    this.assertStableRerender();
+  }
+
+  @test
   'mismatched elements'() {
     let template = '{{#if admin}}<div>hi admin</div>{{else}}<p>HAXOR</p>{{/if}}';
     this.renderServerSide(template, { admin: true });
