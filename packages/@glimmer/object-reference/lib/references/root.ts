@@ -2,7 +2,7 @@ import { Option, dict } from '@glimmer/util';
 import { PathReference } from './path';
 import { RootReference as IRootReference } from '../types';
 import { PathReference as IPathReference } from '@glimmer/reference';
-import { Tag, CURRENT_TAG, bump } from '@glimmer/tag';
+import { Tag, CURRENT_TAG, bump } from '@glimmer/validator';
 
 export default class RootReference<T = unknown> implements IRootReference<T>, IPathReference<T> {
   private object: T;

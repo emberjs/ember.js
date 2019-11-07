@@ -1,4 +1,4 @@
-import { bump } from '@glimmer/tag';
+import { bump } from '@glimmer/validator';
 
 // import { metaFor } from './meta';
 // import { intern } from '@glimmer/util';

@@ -19,7 +19,7 @@ import {
   BlockArguments,
 } from '@glimmer/interfaces';
 import { VersionedPathReference } from '@glimmer/reference';
-import { Tag, CONSTANT_TAG } from '@glimmer/tag';
+import { Tag, CONSTANT_TAG } from '@glimmer/validator';
 import { PrimitiveReference, UNDEFINED_REFERENCE } from '../references';
 import { CheckBlockSymbolTable, check, CheckHandle, CheckOption, CheckOr } from '@glimmer/debug';
 import {
@@ -27,7 +27,7 @@ import {
   CheckCompilableBlock,
   CheckScope,
 } from '../compiled/opcodes/-debug-strip';
-import { combineTagged } from '../tags';
+import { combineTagged } from '../utils/tags';
 import { REGISTERS } from '../symbols';
 import { $sp } from '@glimmer/vm';
 

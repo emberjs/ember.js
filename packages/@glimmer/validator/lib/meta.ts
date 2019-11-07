@@ -6,7 +6,7 @@ import {
   CONSTANT_TAG,
   isConstTag,
   ConstantTag,
-} from './tags';
+} from './validators';
 
 type Tags = Map<PropertyKey, UpdatableTag>;
 const TRACKED_TAGS = new WeakMap<object, Tags>();

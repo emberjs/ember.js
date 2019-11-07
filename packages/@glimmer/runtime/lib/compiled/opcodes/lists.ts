@@ -1,5 +1,5 @@
 import { IterationArtifacts, Reference, ReferenceIterator } from '@glimmer/reference';
-import { Tag } from '@glimmer/tag';
+import { Tag } from '@glimmer/validator';
 import { APPEND_OPCODES } from '../../opcodes';
 import { CheckPathReference } from './-debug-strip';
 import { check, CheckInstanceof } from '@glimmer/debug';

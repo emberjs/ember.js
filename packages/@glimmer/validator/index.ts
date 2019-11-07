@@ -27,7 +27,7 @@ export {
   value,
   VOLATILE_TAG,
   VOLATILE,
-} from './lib/tags';
+} from './lib/validators';
 
 export { dirtyTag, tagFor, updateTag } from './lib/meta';
 

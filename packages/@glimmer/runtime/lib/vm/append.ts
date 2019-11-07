@@ -50,7 +50,7 @@ import {
   Register,
   SyscallRegister,
 } from '@glimmer/vm';
-import { combineSlice } from '../tags';
+import { combineSlice } from '../utils/tags';
 import { DidModifyOpcode, JumpIfNotModifiedOpcode, LabelOpcode } from '../compiled/opcodes/vm';
 import { ScopeImpl } from '../environment';
 import { APPEND_OPCODES, DebugState, UpdatingOpcode } from '../opcodes';

@@ -12,7 +12,7 @@ import {
 import { TestComponentDefinitionState } from './test-component';
 import { unreachable, expect } from '@glimmer/util';
 import { VersionedPathReference, UpdatableReference } from '@glimmer/reference';
-import { Tag, CONSTANT_TAG } from '@glimmer/tag';
+import { Tag, CONSTANT_TAG } from '@glimmer/validator';
 import { unwrapTemplate } from '@glimmer/opcode-compiler';
 
 export interface BasicComponentFactory {

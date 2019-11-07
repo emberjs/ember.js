@@ -38,7 +38,7 @@ import {
   ModifierManager,
 } from '@glimmer/interfaces';
 import { VersionedPathReference, VersionedReference } from '@glimmer/reference';
-import { CONSTANT_TAG, isConst, isConstTag, Tag } from '@glimmer/tag';
+import { CONSTANT_TAG, isConst, isConstTag, Tag } from '@glimmer/validator';
 import { assert, dict, expect, Option, unreachable } from '@glimmer/util';
 import { $t0, $t1, $v0 } from '@glimmer/vm';
 import {

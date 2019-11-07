@@ -1,5 +1,5 @@
 import { VersionedPathReference } from '@glimmer/reference';
-import { Tag } from '@glimmer/tag';
+import { Tag } from '@glimmer/validator';
 import { Dict, Option } from '../core';
 import { ScopeBlock, JitOrAotBlock } from './scope';
 

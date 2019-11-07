@@ -1,4 +1,4 @@
-import { Tag, createUpdatableTag, combine, update, track } from '@glimmer/tag';
+import { Tag, createUpdatableTag, combine, update, track } from '@glimmer/validator';
 import { property } from './property';
 import { VersionedPathReference } from './reference';
 

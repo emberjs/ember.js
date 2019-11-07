@@ -8,7 +8,7 @@ import {
   createUpdatableTag,
   dirty,
   update,
-} from '@glimmer/tag';
+} from '@glimmer/validator';
 import { dict } from '@glimmer/util';
 
 class UpdatableReference<T> implements Reference<T> {
