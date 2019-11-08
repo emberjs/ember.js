@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.44.0 (2019-11-08)
+
+#### :boom: Breaking Change
+* `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/object-reference`, `@glimmer/object`, `@glimmer/reference`, `@glimmer/runtime`, `@glimmer/validator`
+  * [#987](https://github.com/glimmerjs/glimmer-vm/pull/987) Extract validation system and tags into `@glimmer/validator` package ([@pzuraq](https://github.com/pzuraq))
+
+#### :house: Internal
+* Other
+  * [#989](https://github.com/glimmerjs/glimmer-vm/pull/989) Allow test runner to rerender between modules. ([@rwjblue](https://github.com/rwjblue))
+* `@glimmer/syntax`
+  * [#986](https://github.com/glimmerjs/glimmer-vm/pull/986) Update to handlebars@4.5.1. ([@rwjblue](https://github.com/rwjblue))
+
+#### Committers: 2
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+- Robert Jackson ([@rwjblue](https://github.com/rwjblue))
 
 ## v0.43.0 (2019-10-27)
 
