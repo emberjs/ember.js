@@ -3,7 +3,7 @@ import { isProxy, setupMandatorySetter, symbol } from '@ember/-internals/utils';
 import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { backburner } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
-import { CONSTANT_TAG, UpdatableDirtyableTag, dirty, Tag, DirtyableTag } from '@glimmer/reference';
+import { CONSTANT_TAG, UpdatableDirtyableTag, Tag, DirtyableTag } from '@glimmer/reference';
 
 export const UNKNOWN_PROPERTY_TAG = symbol('UNKNOWN_PROPERTY_TAG');
 
@@ -62,14 +62,14 @@ export function markObjectAsDirty(obj: object, propertyKey: string, _meta?: Meta
   let objectTag = meta.readableTag();
 
   if (objectTag !== undefined) {
-    dirty(objectTag);
+    objectTag.inner.dirty();
   }
 
   let tags = meta.readableTags();
   let propertyTag = tags !== undefined ? tags[propertyKey] : undefined;
 
   if (propertyTag !== undefined) {
-    dirty(propertyTag);
+    propertyTag.inner.dirty();
   }
 
   if (objectTag !== undefined || propertyTag !== undefined) {

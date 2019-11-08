@@ -17,10 +17,8 @@ import {
   combine,
   COMPUTE,
   ConstReference,
-  createTag,
-  createUpdatableTag,
-  dirty,
   DirtyableTag,
+  UpdatableDirtyableTag,
   isConst,
   Revision,
   Tag,
@@ -148,15 +146,15 @@ export abstract class PropertyReference extends CachedReference {
 export class RootPropertyReference extends PropertyReference
   implements VersionedPathReference<unknown> {
   public tag: Tag;
-  private propertyTag: UpdatableTag;
+  private propertyTag: UpdatableDirtyableTag;
 
   constructor(private parentValue: object, private propertyKey: string) {
     super();
 
     if (EMBER_METAL_TRACKED_PROPERTIES) {
-      this.propertyTag = createUpdatableTag();
+      this.propertyTag = UpdatableDirtyableTag.create();
     } else {
-      let tag = (this.propertyTag = createUpdatableTag());
+      let tag = (this.propertyTag = UpdatableDirtyableTag.create());
       update(tag, tagForProperty(parentValue, propertyKey));
     }
 
@@ -298,7 +296,7 @@ export class UpdatableReference extends EmberPathReference {
   constructor(value: unknown) {
     super();
 
-    this.tag = createTag();
+    this.tag = DirtyableTag.create();
     this._value = value;
   }
 
@@ -311,6 +309,7 @@ export class UpdatableReference extends EmberPathReference {
 
     if (value !== _value) {
       dirty(this.tag);
+      this.tag.inner.dirty();
       this._value = value;
     }
   }
