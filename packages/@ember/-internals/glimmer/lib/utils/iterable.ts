@@ -12,14 +12,16 @@ import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import {
   AbstractIterable,
-  combine,
-  createUpdatableTag,
   IterationItem,
   OpaqueIterator,
-  Tag,
-  update,
   VersionedReference,
 } from '@glimmer/reference';
+import {
+  Tag,
+  combine,
+  createUpdatableTag,
+  update
+} from '@glimmer/validator';
 import { Option } from '@glimmer/util';
 import { isEachIn } from '../helpers/each-in';
 import { UpdatableReference } from './references';
@@ -377,9 +379,9 @@ class EachIterable implements EmberIterable {
       return ArrayIterator.from(iterable, keyFor);
     } else if (isEmberArray(iterable)) {
       return EmberArrayIterator.from(iterable as unknown[], keyFor);
-    } else if (HAS_NATIVE_SYMBOL && isNativeIterable(iterable)) {
+    } else if (HAS_NATIVE_SYMBOL && isNativeIterable(iterable!)) {
       return ArrayLikeNativeIterator.from(iterable, keyFor);
-    } else if (hasForEach(iterable)) {
+    } else if (hasForEach(iterable!)) {
       return ArrayIterator.fromForEachable(iterable, keyFor);
     } else {
       return EMPTY_ITERATOR;
