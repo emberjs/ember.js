@@ -1,10 +1,14 @@
 import { get } from '@ember/-internals/metal';
 import { assert } from '@ember/debug';
 import { dasherize } from '@ember/string';
-import { Option, ElementOperations } from '@glimmer/interfaces';
-import { CachedReference, combine, map, Reference, Tag } from '@glimmer/reference';
+import { Option, ElementOperations, Core } from '@glimmer/interfaces';
+import { CachedReference, map, Reference } from '@glimmer/reference';
+import {
+  combine,
+  Tag
+} from '@glimmer/validator';
 import { PrimitiveReference } from '@glimmer/runtime';
-import { Core, Ops } from '@glimmer/wire-format';
+import { isGet, isMaybeLocal, Ops } from '@glimmer/wire-format';
 import { SimpleElement } from '@simple-dom/interface';
 import { ROOT_REF } from '../component';
 import { Component } from './curly-component-state-bucket';
@@ -47,7 +51,7 @@ export function wrapComponentClassAttribute(hash: Core.Hash) {
 
     let [type] = value;
 
-    if (type === Ops.Get || type === Ops.MaybeLocal) {
+    if (isGet(type) || isMaybeLocal(type)) {
       let path = value[value.length - 1];
       let propName = path[path.length - 1];
       values[index] = [Ops.Helper, '-class', [value, propName], null];
