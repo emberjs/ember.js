@@ -1,5 +1,5 @@
 import { Option } from '@glimmer/util';
-import { Core } from '@glimmer/wire-format';
+import { Core } from '@glimmer/interfaces';
 
 export function hashToArgs(hash: Option<Core.Hash>): Option<Core.Hash> {
   if (hash === null) return null;

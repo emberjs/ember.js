@@ -4,7 +4,7 @@
 import { OwnedTemplateMeta } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { Option, VMArguments as Arguments, CapturedArguments, VM } from '@glimmer/interfaces';
+import { Option, VMArguments as Arguments, CapturedArguments, VM, Core } from '@glimmer/interfaces';
 import { OpcodeBuilder } from '@glimmer/opcode-compiler';
 import { VersionedPathReference } from '@glimmer/reference';
 import {
@@ -102,8 +102,8 @@ export function mountHelper(
 */
 export function mountMacro(
   _name: string,
-  params: Option<WireFormat.Core.Params>,
-  hash: Option<WireFormat.Core.Hash>,
+  params: Option<Core.Params>,
+  hash: Option<Core.Hash>,
   builder: OpcodeBuilder<OwnedTemplateMeta>
 ) {
   assert(

@@ -1,7 +1,7 @@
 import { OwnedTemplateMeta } from '@ember/-internals/views';
 import { EMBER_ROUTING_MODEL_ARG } from '@ember/canary-features';
 import { DEBUG } from '@glimmer/env';
-import { Option, unsafe, VMArguments as Arguments, CapturedArguments, VM, Dict } from '@glimmer/interfaces';
+import { Option, unsafe, VMArguments as Arguments, CapturedArguments, VM, Dict, Core, Expressions } from '@glimmer/interfaces';
 import { OpcodeBuilder } from '@glimmer/opcode-compiler';
 import { ConstReference, Reference, VersionedPathReference } from '@glimmer/reference';
 import { Tag } from '@glimmer/validator';
@@ -80,11 +80,11 @@ export function outletHelper(vm: VM, args: Arguments) {
 
 export function outletMacro(
   _name: string,
-  params: Option<WireFormat.Core.Params>,
-  hash: Option<WireFormat.Core.Hash>,
+  params: Option<Core.Params>,
+  hash: Option<Core.Hash>,
   builder: OpcodeBuilder<OwnedTemplateMeta>
 ) {
-  let expr: WireFormat.Expressions.Helper = [WireFormat.Ops.Helper, '-outlet', params || [], hash];
+  let expr: Expressions.Helper = [WireFormat.Ops.Helper, '-outlet', params || [], hash];
   builder.dynamicComponent(expr, null, [], null, false, null, null);
   return true;
 }
