@@ -8,6 +8,7 @@ import { Destroyable } from '@glimmer/util';
 import Environment from '../environment';
 import { RootReference } from '../utils/references';
 import InternalComponentManager, { InternalDefinitionState } from './internal';
+import { createTag } from '@glimmer/validator';
 
 const CAPABILITIES: ComponentCapabilities = {
   dynamicLayout: false,
@@ -91,7 +92,7 @@ export default class InputComponentManager extends InternalComponentManager<Inpu
   getTag() {
     if (ENV._DEBUG_RENDER_TREE) {
       // returning a const tag skips the update hook (VM BUG?)
-      return DirtyableTag.create();
+      return createTag();
     } else {
       // an outlet has no hooks
       return CONSTANT_TAG;

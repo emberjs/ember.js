@@ -10,6 +10,7 @@ import Environment from '../environment';
 import RuntimeResolver from '../resolver';
 import { OwnedTemplate } from '../template';
 import AbstractManager from './abstract';
+import { createTag } from '@glimmer/validator';
 
 const CAPABILITIES: ComponentCapabilities = {
   dynamicLayout: false,
@@ -75,7 +76,7 @@ export default class TemplateOnlyComponentManager
   getTag() {
     if (ENV._DEBUG_RENDER_TREE) {
       // returning a const tag skips the update hook (VM BUG?)
-      return DirtyableTag.create();
+      return createTag();
     } else {
       // an outlet has no hooks
       return CONSTANT_TAG;

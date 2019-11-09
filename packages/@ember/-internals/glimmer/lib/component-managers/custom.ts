@@ -28,6 +28,7 @@ import RuntimeResolver from '../resolver';
 import { OwnedTemplate } from '../template';
 import { RootReference } from '../utils/references';
 import AbstractComponentManager from './abstract';
+import { createTag } from '@glimmer/validator';
 
 const CAPABILITIES = {
   dynamicLayout: false,
@@ -360,7 +361,7 @@ export default class CustomComponentManager<ComponentInstance>
   getTag({ args }: CustomComponentState<ComponentInstance>): Tag {
     if (isConst(args)) {
       // returning a const tag skips the update hook (VM BUG?)
-      return DirtyableTag.create();
+      return createTag();
     } else {
       return args.tag;
     }

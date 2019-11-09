@@ -24,6 +24,7 @@ import Environment from '../environment';
 import RuntimeResolver from '../resolver';
 import { RootReference } from '../utils/references';
 import AbstractManager from './abstract';
+import { createTag } from '@glimmer/validator';
 
 interface EngineState {
   engine: EngineInstance;
@@ -139,7 +140,7 @@ class MountManager extends AbstractManager<EngineState, EngineDefinitionState>
     }
 
     if (ENV._DEBUG_RENDER_TREE && isConstTag(tag)) {
-      tag = DirtyableTag.create();
+      tag = createTag();
     }
 
     return tag;

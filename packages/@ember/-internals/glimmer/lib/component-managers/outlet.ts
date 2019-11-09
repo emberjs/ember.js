@@ -23,6 +23,7 @@ import { OutletState } from '../utils/outlet';
 import { RootReference } from '../utils/references';
 import OutletView from '../views/outlet';
 import AbstractManager from './abstract';
+import { createTag } from '@glimmer/validator';
 
 function instrumentationPayload(def: OutletDefinitionState) {
   return { object: `${def.name}:${def.outlet}` };
@@ -150,7 +151,7 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
   getTag(): Tag {
     if (ENV._DEBUG_RENDER_TREE) {
       // returning a const tag skips the update hook (VM BUG?)
-      return DirtyableTag.create();
+      return createTag();
     } else {
       // an outlet has no hooks
       return CONSTANT_TAG;
