@@ -3,9 +3,8 @@ import { ActionManager, isSimpleClick } from '@ember/-internals/views';
 import { assert, deprecate } from '@ember/debug';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { join } from '@ember/runloop';
-import { DynamicScope, VMArguments as Arguments, CapturedNamedArguments, CapturedPositionalArguments, ModifierManager } from '@glimmer/interfaces';
-import { Tag } from '@glimmer/reference';
-import { Destroyable } from '@glimmer/util';
+import { DynamicScope, VMArguments as Arguments, CapturedNamedArguments, CapturedPositionalArguments, ModifierManager, Destroyable } from '@glimmer/interfaces';
+import { Tag } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
 import { INVOKE } from '../utils/references';
 

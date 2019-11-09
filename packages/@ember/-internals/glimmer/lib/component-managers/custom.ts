@@ -14,14 +14,14 @@ import {
   CapturedArguments,
   Bounds,
   ComponentDefinition,
-  Invocation
+  Invocation,
+  Destroyable
 } from '@glimmer/interfaces';
-import { DirtyableTag, isConst, PathReference, Tag } from '@glimmer/reference';
+import { PathReference } from '@glimmer/reference';
+import { isConst, Tag } from '@glimmer/validator';
 import {
   WithStaticLayout,
 } from '@glimmer/runtime';
-import { Destroyable } from '@glimmer/util';
-
 import { ENV } from '@ember/-internals/environment';
 import Environment from '../environment';
 import RuntimeResolver from '../resolver';

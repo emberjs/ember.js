@@ -10,7 +10,7 @@ import {
 } from '@ember/-internals/metal';
 import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { assert } from '@ember/debug';
-import { UpdatableTag, update } from '@glimmer/reference';
+import { UpdatableTag, update } from '@glimmer/validator';
 
 let wrapGetterSetter = function(_target: object, key: string, desc: PropertyDescriptor) {
   let { get: originalGet } = desc;

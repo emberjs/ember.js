@@ -16,7 +16,7 @@ import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import EmberObject from './object';
 import { isArray, MutableArray } from '../mixins/array';
 import { assert } from '@ember/debug';
-import { combine, validate, value } from '@glimmer/reference';
+import { combine, validate, value } from '@glimmer/validator';
 
 const ARRAY_OBSERVER_MAPPING = {
   willChange: '_arrangedContentArrayWillChange',

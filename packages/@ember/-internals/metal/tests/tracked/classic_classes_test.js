@@ -2,7 +2,7 @@ import { AbstractTestCase, moduleFor } from 'internal-test-helpers';
 import { defineProperty, tracked, track, nativeDescDecorator } from '../..';
 
 import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
-import { value, validate } from '@glimmer/reference';
+import { value, validate } from '@glimmer/validator';
 
 if (EMBER_METAL_TRACKED_PROPERTIES) {
   moduleFor(

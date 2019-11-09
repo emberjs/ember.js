@@ -3,7 +3,7 @@ import { inspect } from '@ember/-internals/utils';
 import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import EmberError from '@ember/error';
-import { combine, UpdatableTag, update, validate, value } from '@glimmer/reference';
+import { combine, UpdatableTag, update, validate, value } from '@glimmer/validator';
 import { finishLazyChains, getChainTagsForKey } from './chain-tags';
 import {
   getCachedValueFor,

@@ -13,7 +13,7 @@ import {
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
-import { value, validate } from '@glimmer/reference';
+import { value, validate } from '@glimmer/validator';
 
 let obj, count;
 

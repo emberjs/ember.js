@@ -19,7 +19,7 @@ import {
 import { setProxy } from '@ember/-internals/utils';
 import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { assert } from '@ember/debug';
-import { combine, update } from '@glimmer/reference';
+import { combine, update } from '@glimmer/validator';
 
 export function contentFor(proxy, m) {
   let content = get(proxy, 'content');

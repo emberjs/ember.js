@@ -1,7 +1,7 @@
 import { ENV } from '@ember/-internals/environment';
 import { OwnedTemplateMeta } from '@ember/-internals/views';
 import { ComponentCapabilities, Option, VMArguments as Arguments, Bounds, ComponentDefinition, Invocation } from '@glimmer/interfaces';
-import { CONSTANT_TAG, DirtyableTag } from '@glimmer/reference';
+import { CONSTANT_TAG } from '@glimmer/validator';
 import {
   NULL_REFERENCE,
   WithStaticLayout,

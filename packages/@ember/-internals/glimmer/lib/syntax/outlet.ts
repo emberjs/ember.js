@@ -3,7 +3,8 @@ import { EMBER_ROUTING_MODEL_ARG } from '@ember/canary-features';
 import { DEBUG } from '@glimmer/env';
 import { Option, unsafe, VMArguments as Arguments, CapturedArguments, VM, Dict } from '@glimmer/interfaces';
 import { OpcodeBuilder } from '@glimmer/opcode-compiler';
-import { ConstReference, Reference, Tag, VersionedPathReference } from '@glimmer/reference';
+import { ConstReference, Reference, VersionedPathReference } from '@glimmer/reference';
+import { Tag } from '@glimmer/validator';
 import {
   CurriedComponentDefinition,
   curry,
