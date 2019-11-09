@@ -1,9 +1,8 @@
 import { OwnedTemplateMeta } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
-import { CompilableBlock } from '@glimmer/interfaces';
+import { CompilableBlock, Core } from '@glimmer/interfaces';
 import { Macros, OpcodeBuilder } from '@glimmer/opcode-compiler';
 import { Option } from '@glimmer/util';
-import { Core } from '@glimmer/wire-format';
 import CompileTimeLookup from './compile-time-lookup';
 import { blockLetMacro } from './syntax/let';
 import { mountMacro } from './syntax/mount';
