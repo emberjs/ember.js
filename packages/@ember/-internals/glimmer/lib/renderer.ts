@@ -4,7 +4,12 @@ import { getViewElement, getViewId } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { backburner, getCurrentRunLoop } from '@ember/runloop';
 import { Option, Cursor, DynamicScope as GlimmerDynamicScope, Bounds, RenderResult, ElementBuilder } from '@glimmer/interfaces';
-import { CURRENT_TAG, validate, value, VersionedPathReference } from '@glimmer/reference';
+import { VersionedPathReference } from '@glimmer/reference';
+import {
+  CURRENT_TAG,
+  validate,
+  value
+} from '@glimmer/validator';
 import {
   clientBuilder,
   CurriedComponentDefinition,
