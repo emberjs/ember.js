@@ -14,11 +14,15 @@ import { assert, debugFreeze } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { Dict, CapturedArguments } from '@glimmer/interfaces';
 import {
+  ConstReference,
+  VersionedPathReference,
+  VersionedReference,
+} from '@glimmer/reference';
+import {
   combine,
   COMPUTE,
-  ConstReference,
   DirtyableTag,
-  UpdatableDirtyableTag,
+  dirty,
   isConst,
   Revision,
   Tag,
@@ -26,9 +30,9 @@ import {
   update,
   validate,
   value,
-  VersionedPathReference,
-  VersionedReference,
-} from '@glimmer/reference';
+  createUpdatableTag,
+  createTag
+} from '@glimmer/validator';
 import {
   ConditionalReference as GlimmerConditionalReference,
   PrimitiveReference,
@@ -146,15 +150,15 @@ export abstract class PropertyReference extends CachedReference {
 export class RootPropertyReference extends PropertyReference
   implements VersionedPathReference<unknown> {
   public tag: Tag;
-  private propertyTag: UpdatableDirtyableTag;
+  private propertyTag: UpdatableTag;
 
   constructor(private parentValue: object, private propertyKey: string) {
     super();
 
     if (EMBER_METAL_TRACKED_PROPERTIES) {
-      this.propertyTag = UpdatableDirtyableTag.create();
+      this.propertyTag = createUpdatableTag();
     } else {
-      let tag = (this.propertyTag = UpdatableDirtyableTag.create());
+      let tag = (this.propertyTag = createUpdatableTag());
       update(tag, tagForProperty(parentValue, propertyKey));
     }
 
@@ -296,7 +300,7 @@ export class UpdatableReference extends EmberPathReference {
   constructor(value: unknown) {
     super();
 
-    this.tag = DirtyableTag.create();
+    this.tag = createTag();
     this._value = value;
   }
 
@@ -309,7 +313,6 @@ export class UpdatableReference extends EmberPathReference {
 
     if (value !== _value) {
       dirty(this.tag);
-      this.tag.inner.dirty();
       this._value = value;
     }
   }
@@ -336,7 +339,7 @@ export class ConditionalReference extends GlimmerConditionalReference
     this.tag = combine([reference.tag, this.objectTag]);
   }
 
-  toBool(predicate: unknown): boolean {
+  private toBool(predicate: unknown): boolean {
     if (isProxy(predicate)) {
       update(this.objectTag, tagForProperty(predicate, 'isTruthy'));
       return Boolean(get(predicate, 'isTruthy'));
