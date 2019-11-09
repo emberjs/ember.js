@@ -1,17 +1,18 @@
 import { DEBUG } from '@glimmer/env';
-import { ComponentCapabilities, VMArguments as Arguments, Bounds, ComponentDefinition } from '@glimmer/interfaces';
+import { ComponentCapabilities, VMArguments as Arguments, Bounds, ComponentDefinition, Destroyable } from '@glimmer/interfaces';
 import {
-  CONSTANT_TAG,
-  DirtyableTag,
-  isConstTag,
-  Tag,
   VersionedPathReference,
 } from '@glimmer/reference';
+import {
+  CONSTANT_TAG,
+  isConstTag,
+  Tag
+} from '@glimmer/validator';
 import { Invocation } from '@glimmer/interfaces';
 import {
   WithDynamicLayout,
 } from '@glimmer/runtime';
-import { Destroyable, Option } from '@glimmer/util';
+import { Option } from '@glimmer/util';
 
 import { generateControllerFactory } from '@ember/-internals/routing';
 import { OwnedTemplateMeta } from '@ember/-internals/views';

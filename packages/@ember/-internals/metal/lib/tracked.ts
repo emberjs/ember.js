@@ -1,7 +1,7 @@
 import { isEmberArray } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { combine, CONSTANT_TAG, Tag, UpdatableTag, update } from '@glimmer/reference';
+import { combine, CONSTANT_TAG, Tag, UpdatableTag, update } from '@glimmer/validator';
 import { Decorator, DecoratorPropertyDescriptor, isElementDescriptor } from './decorator';
 import { setClassicDecorator } from './descriptor_map';
 import { markObjectAsDirty, tagForProperty } from './tags';

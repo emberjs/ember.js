@@ -6,7 +6,10 @@ import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { Option, VMArguments as Arguments, CapturedArguments, VM } from '@glimmer/interfaces';
 import { OpcodeBuilder } from '@glimmer/opcode-compiler';
-import { Tag, VersionedPathReference } from '@glimmer/reference';
+import { VersionedPathReference } from '@glimmer/reference';
+import {
+  Tag
+} from '@glimmer/validator';
 import {
   CurriedComponentDefinition,
   curry,

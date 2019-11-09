@@ -23,16 +23,18 @@ import {
   PreparedArguments,
   ComponentDefinition,
   ElementOperations,
-  Invocation
+  Invocation,
+  Destroyable
 } from '@glimmer/interfaces';
-import { combine, Tag, validate, value, VersionedPathReference } from '@glimmer/reference';
+import { VersionedPathReference } from '@glimmer/reference';
+import { combine, Tag, validate, value, } from '@glimmer/validator';
 import {
   PrimitiveReference,
   WithDynamicLayout,
   WithDynamicTagName,
   WithStaticLayout,
 } from '@glimmer/runtime';
-import { Destroyable, EMPTY_ARRAY } from '@glimmer/util';
+import { EMPTY_ARRAY } from '@glimmer/util';
 import { SimpleElement } from '@simple-dom/interface';
 import { BOUNDS, DIRTY_TAG, HAS_BLOCK, IS_DISPATCHING_ATTRS, ROOT_REF } from '../component';
 import Environment from '../environment';
