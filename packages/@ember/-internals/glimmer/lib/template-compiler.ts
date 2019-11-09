@@ -1,4 +1,4 @@
-import { Compiler } from '@glimmer/interfaces';
+import { CompileOp } from '@glimmer/interfaces';
 import RuntimeResolver from './resolver';
 
 export interface ICompilerOptions {
@@ -9,7 +9,7 @@ export interface ICompilerOptions {
 
 // factory for DI
 export default {
-  create({ environment }: ICompilerOptions): Compiler {
+  create({ environment }: ICompilerOptions): CompileOp {
     return new RuntimeResolver(environment.isInteractive).compiler;
   },
 };
