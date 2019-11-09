@@ -1,9 +1,8 @@
 import { privatize as P } from '@ember/-internals/container';
 import { Owner } from '@ember/-internals/owner';
 import { OwnedTemplateMeta, StaticTemplateMeta } from '@ember/-internals/views';
-import { Template } from '@glimmer/interfaces';
+import { Template, SerializedTemplateWithLazyBlock } from '@glimmer/interfaces';
 import { LazyCompiler, templateFactory } from '@glimmer/opcode-compiler';
-import { SerializedTemplateWithLazyBlock } from '@glimmer/wire-format';
 
 export type StaticTemplate = SerializedTemplateWithLazyBlock<StaticTemplateMeta>;
 export type OwnedTemplate = Template<OwnedTemplateMeta>;
