@@ -4,11 +4,11 @@ import calculateLocationDisplay from '../system/calculate-location-display';
 import { Builders } from '../types';
 
 function isInlineLinkTo(node: AST.MustacheStatement): boolean {
-  return node.path.original === 'link-to';
+  return expectPath(node.path).original === 'link-to';
 }
 
 function isBlockLinkTo(node: AST.BlockStatement): boolean {
-  return node.path.original === 'link-to';
+  return expectPath(node.path).original === 'link-to';
 }
 
 function isSubExpression(node: AST.Expression): node is AST.SubExpression {
@@ -16,7 +16,15 @@ function isSubExpression(node: AST.Expression): node is AST.SubExpression {
 }
 
 function isQueryParams(node: AST.Expression): node is AST.SubExpression {
-  return isSubExpression(node) && node.path.original === 'query-params';
+  return isSubExpression(node) && expectPath(node.path).original === 'query-params';
+}
+
+function expectPath(node: AST.Expression): AST.PathExpression {
+  if (node.type !== 'PathExpression') {
+    throw new Error(`Expected a PathExpression, got ${node.type}`);
+  }
+
+  return node;
 }
 
 function transformInlineLinkToIntoBlockForm(
