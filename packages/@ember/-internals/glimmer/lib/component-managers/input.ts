@@ -2,7 +2,15 @@ import { ENV } from '@ember/-internals/environment';
 import { set } from '@ember/-internals/metal';
 import { Owner } from '@ember/-internals/owner';
 import { assert, debugFreeze } from '@ember/debug';
-import { ComponentCapabilities, Dict, DynamicScope, VMArguments as Arguments, Bounds, PreparedArguments, Destroyable } from '@glimmer/interfaces';
+import {
+  ComponentCapabilities,
+  Dict,
+  DynamicScope,
+  VMArguments as Arguments,
+  Bounds,
+  PreparedArguments,
+  Destroyable,
+} from '@glimmer/interfaces';
 import { VersionedPathReference } from '@glimmer/reference';
 import { CONSTANT_TAG, isConst } from '@glimmer/validator';
 import Environment from '../environment';

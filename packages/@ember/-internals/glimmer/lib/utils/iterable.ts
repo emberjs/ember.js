@@ -16,12 +16,7 @@ import {
   OpaqueIterator,
   VersionedReference,
 } from '@glimmer/reference';
-import {
-  Tag,
-  combine,
-  createUpdatableTag,
-  update
-} from '@glimmer/validator';
+import { Tag, combine, createUpdatableTag, update } from '@glimmer/validator';
 import { Option } from '@glimmer/util';
 import { isEachIn } from '../helpers/each-in';
 import { UpdatableReference } from './references';

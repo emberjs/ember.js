@@ -6,7 +6,7 @@ import {
   Option,
   ProgramSymbolTable,
   ComponentDefinition,
-  ComponentManager
+  ComponentManager,
 } from '@glimmer/interfaces';
 import { WithStaticLayout } from '@glimmer/runtime';
 import RuntimeResolver from './resolver';

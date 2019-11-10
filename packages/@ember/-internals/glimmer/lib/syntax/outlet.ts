@@ -1,7 +1,16 @@
 import { OwnedTemplateMeta } from '@ember/-internals/views';
 import { EMBER_ROUTING_MODEL_ARG } from '@ember/canary-features';
 import { DEBUG } from '@glimmer/env';
-import { Option, unsafe, VMArguments as Arguments, CapturedArguments, VM, Dict, Core, Expressions } from '@glimmer/interfaces';
+import {
+  Option,
+  unsafe,
+  VMArguments as Arguments,
+  CapturedArguments,
+  VM,
+  Dict,
+  Core,
+  Expressions,
+} from '@glimmer/interfaces';
 import { OpcodeBuilder } from '@glimmer/opcode-compiler';
 import { ConstReference, Reference, VersionedPathReference } from '@glimmer/reference';
 import { Tag } from '@glimmer/validator';

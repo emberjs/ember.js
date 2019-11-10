@@ -7,9 +7,7 @@ import { DEBUG } from '@glimmer/env';
 import { Option, VMArguments as Arguments, CapturedArguments, VM, Core } from '@glimmer/interfaces';
 import { OpcodeBuilder } from '@glimmer/opcode-compiler';
 import { VersionedPathReference } from '@glimmer/reference';
-import {
-  Tag
-} from '@glimmer/validator';
+import { Tag } from '@glimmer/validator';
 import {
   CurriedComponentDefinition,
   curry,

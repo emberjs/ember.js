@@ -4,10 +4,7 @@ import { EMBER_COMPONENT_IS_VISIBLE } from '@ember/deprecated-features';
 import { dasherize } from '@ember/string';
 import { Option, ElementOperations, Core } from '@glimmer/interfaces';
 import { CachedReference, map, Reference } from '@glimmer/reference';
-import {
-  combine,
-  Tag
-} from '@glimmer/validator';
+import { combine, Tag } from '@glimmer/validator';
 import { PrimitiveReference } from '@glimmer/runtime';
 import { isGet, isMaybeLocal, Ops } from '@glimmer/wire-format';
 import { SimpleElement } from '@simple-dom/interface';

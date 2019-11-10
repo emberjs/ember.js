@@ -15,7 +15,7 @@ import {
   ComponentDefinition,
   Option,
   RuntimeResolver as IRuntimeResolver,
-  Helper
+  Helper,
 } from '@glimmer/interfaces';
 import { LazyCompiler, Macros, PartialDefinition } from '@glimmer/opcode-compiler';
 import { getDynamicVar, ModifierDefinition } from '@glimmer/runtime';

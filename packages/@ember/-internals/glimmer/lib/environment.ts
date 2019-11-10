@@ -4,13 +4,9 @@ import { warn } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { Option, Destroyable } from '@glimmer/interfaces';
 import { OpaqueIterable, VersionedReference } from '@glimmer/reference';
-import {
-  SimpleDynamicAttribute,
-} from '@glimmer/runtime';
+import { SimpleDynamicAttribute } from '@glimmer/runtime';
 import { Environment as GlimmerEnvironment, ElementBuilder } from '@glimmer/interfaces';
-import {
-  AttrNamespace,
-} from '@simple-dom/interface';
+import { AttrNamespace } from '@simple-dom/interface';
 import getDebugStack, { DebugStack } from './utils/debug-stack';
 import createIterable from './utils/iterable';
 import { ConditionalReference, UpdatableReference } from './utils/references';

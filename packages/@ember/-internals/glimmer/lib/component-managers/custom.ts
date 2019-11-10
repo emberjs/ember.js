@@ -15,13 +15,11 @@ import {
   Bounds,
   ComponentDefinition,
   Invocation,
-  Destroyable
+  Destroyable,
 } from '@glimmer/interfaces';
 import { PathReference } from '@glimmer/reference';
 import { isConst, Tag } from '@glimmer/validator';
-import {
-  WithStaticLayout,
-} from '@glimmer/runtime';
+import { WithStaticLayout } from '@glimmer/runtime';
 import { ENV } from '@ember/-internals/environment';
 import Environment from '../environment';
 import RuntimeResolver from '../resolver';
@@ -322,7 +320,10 @@ export default class CustomComponentManager<ComponentInstance>
     delegate.getContext(component);
   }
 
-  getSelf({ delegate, component }: CustomComponentState<ComponentInstance>): PathReference<unknown> {
+  getSelf({
+    delegate,
+    component,
+  }: CustomComponentState<ComponentInstance>): PathReference<unknown> {
     return RootReference.create(delegate.getContext(component));
   }
 

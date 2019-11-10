@@ -1,15 +1,12 @@
 import { set } from '@ember/-internals/metal';
-import {
-  PathReference,
-  VersionedPathReference,
-} from '@glimmer/reference';
+import { PathReference, VersionedPathReference } from '@glimmer/reference';
 import {
   Tag,
   UpdatableTag,
   update,
   combine,
   createUpdatableTag,
-  isConst
+  isConst,
 } from '@glimmer/validator';
 import { NULL_REFERENCE } from '@glimmer/runtime';
 import { VMArguments as Arguments, VM } from '@glimmer/interfaces';

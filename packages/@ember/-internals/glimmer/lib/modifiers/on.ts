@@ -1,6 +1,11 @@
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { VMArguments as Arguments, CapturedArguments, ModifierManager, Destroyable } from '@glimmer/interfaces';
+import {
+  VMArguments as Arguments,
+  CapturedArguments,
+  ModifierManager,
+  Destroyable,
+} from '@glimmer/interfaces';
 import { CONSTANT_TAG, Tag } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
 import buildUntouchableThis from '../utils/untouchable-this';

@@ -3,7 +3,12 @@ import { ENV } from '@ember/-internals/environment';
 import { Factory } from '@ember/-internals/owner';
 import { _instrumentStart } from '@ember/instrumentation';
 import { DEBUG } from '@glimmer/env';
-import { ComponentCapabilities, Option, VMArguments as Arguments, ComponentDefinition } from '@glimmer/interfaces';
+import {
+  ComponentCapabilities,
+  Option,
+  VMArguments as Arguments,
+  ComponentDefinition,
+} from '@glimmer/interfaces';
 import { EMPTY_ARGS } from '@glimmer/runtime';
 import { DIRTY_TAG } from '../component';
 import Environment from '../environment';

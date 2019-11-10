@@ -1,17 +1,15 @@
 import { DEBUG } from '@glimmer/env';
-import { ComponentCapabilities, VMArguments as Arguments, Bounds, ComponentDefinition, Destroyable } from '@glimmer/interfaces';
 import {
-  VersionedPathReference,
-} from '@glimmer/reference';
-import {
-  CONSTANT_TAG,
-  isConstTag,
-  Tag
-} from '@glimmer/validator';
+  ComponentCapabilities,
+  VMArguments as Arguments,
+  Bounds,
+  ComponentDefinition,
+  Destroyable,
+} from '@glimmer/interfaces';
+import { VersionedPathReference } from '@glimmer/reference';
+import { CONSTANT_TAG, isConstTag, Tag } from '@glimmer/validator';
 import { Invocation } from '@glimmer/interfaces';
-import {
-  WithDynamicLayout,
-} from '@glimmer/runtime';
+import { WithDynamicLayout } from '@glimmer/runtime';
 import { Option } from '@glimmer/util';
 
 import { generateControllerFactory } from '@ember/-internals/routing';

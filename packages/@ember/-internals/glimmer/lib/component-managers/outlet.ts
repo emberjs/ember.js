@@ -6,17 +6,19 @@ import EngineInstance from '@ember/engine/instance';
 import { _instrumentStart } from '@ember/instrumentation';
 import { assign } from '@ember/polyfills';
 import { DEBUG } from '@glimmer/env';
-import { ComponentCapabilities, Option, VMArguments as Arguments, Bounds, ComponentDefinition, Invocation, ElementOperations, Destroyable } from '@glimmer/interfaces';
+import {
+  ComponentCapabilities,
+  Option,
+  VMArguments as Arguments,
+  Bounds,
+  ComponentDefinition,
+  Invocation,
+  ElementOperations,
+  Destroyable,
+} from '@glimmer/interfaces';
 import { VersionedPathReference } from '@glimmer/reference';
-import {
-  CONSTANT_TAG,
-  Tag
-} from '@glimmer/validator';
-import {
-  EMPTY_ARGS,
-  WithDynamicTagName,
-  WithStaticLayout,
-} from '@glimmer/runtime';
+import { CONSTANT_TAG, Tag } from '@glimmer/validator';
+import { EMPTY_ARGS, WithDynamicTagName, WithStaticLayout } from '@glimmer/runtime';
 import { SimpleElement } from '@simple-dom/interface';
 import Environment from '../environment';
 import { DynamicScope } from '../renderer';

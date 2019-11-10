@@ -3,9 +3,7 @@
 */
 import { symbol } from '@ember/-internals/utils';
 import { VersionedPathReference } from '@glimmer/reference';
-import {
-  Tag
-} from '@glimmer/validator';
+import { Tag } from '@glimmer/validator';
 import { VMArguments as Arguments, VM } from '@glimmer/interfaces';
 
 /**

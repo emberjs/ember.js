@@ -1,14 +1,6 @@
 import { Owner } from '@ember/-internals/owner';
-import {
-  Reference,
-  VersionedPathReference
-} from '@glimmer/reference';
-import {
-  combine,
-  Tag,
-  createTag,
-  dirty
-} from '@glimmer/validator';
+import { Reference, VersionedPathReference } from '@glimmer/reference';
+import { combine, Tag, createTag, dirty } from '@glimmer/validator';
 import { Factory as TemplateFactory, OwnedTemplate } from '../template';
 
 export interface RenderState {

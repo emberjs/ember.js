@@ -25,10 +25,10 @@ import {
   ComponentDefinition,
   ElementOperations,
   Invocation,
-  Destroyable
+  Destroyable,
 } from '@glimmer/interfaces';
 import { VersionedPathReference } from '@glimmer/reference';
-import { combine, Tag, validate, value, } from '@glimmer/validator';
+import { combine, Tag, validate, value } from '@glimmer/validator';
 import {
   PrimitiveReference,
   WithDynamicLayout,

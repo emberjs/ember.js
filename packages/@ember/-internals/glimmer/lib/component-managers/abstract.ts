@@ -1,4 +1,14 @@
-import { ComponentCapabilities, DynamicScope, VMArguments as Arguments, Bounds, PreparedArguments, ComponentManager, Environment, ElementOperations, Destroyable } from '@glimmer/interfaces';
+import {
+  ComponentCapabilities,
+  DynamicScope,
+  VMArguments as Arguments,
+  Bounds,
+  PreparedArguments,
+  ComponentManager,
+  Environment,
+  ElementOperations,
+  Destroyable,
+} from '@glimmer/interfaces';
 import { VersionedPathReference } from '@glimmer/reference';
 import { Tag } from '@glimmer/validator';
 import { Option } from '@glimmer/util';

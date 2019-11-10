@@ -1,6 +1,10 @@
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { VMArguments as Arguments, VM, CapturedArguments as ICapturedArguments } from '@glimmer/interfaces';
+import {
+  VMArguments as Arguments,
+  VM,
+  CapturedArguments as ICapturedArguments,
+} from '@glimmer/interfaces';
 import { InternalHelperReference, INVOKE } from '../utils/references';
 import buildUntouchableThis from '../utils/untouchable-this';
 

@@ -13,11 +13,7 @@ import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { assert, debugFreeze } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { Dict, CapturedArguments } from '@glimmer/interfaces';
-import {
-  ConstReference,
-  VersionedPathReference,
-  VersionedReference,
-} from '@glimmer/reference';
+import { ConstReference, VersionedPathReference, VersionedReference } from '@glimmer/reference';
 import {
   combine,
   COMPUTE,
@@ -31,7 +27,7 @@ import {
   validate,
   value,
   createUpdatableTag,
-  createTag
+  createTag,
 } from '@glimmer/validator';
 import {
   ConditionalReference as GlimmerConditionalReference,

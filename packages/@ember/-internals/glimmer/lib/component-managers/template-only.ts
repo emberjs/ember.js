@@ -1,11 +1,15 @@
 import { ENV } from '@ember/-internals/environment';
 import { OwnedTemplateMeta } from '@ember/-internals/views';
-import { ComponentCapabilities, Option, VMArguments as Arguments, Bounds, ComponentDefinition, Invocation } from '@glimmer/interfaces';
-import { CONSTANT_TAG } from '@glimmer/validator';
 import {
-  NULL_REFERENCE,
-  WithStaticLayout,
-} from '@glimmer/runtime';
+  ComponentCapabilities,
+  Option,
+  VMArguments as Arguments,
+  Bounds,
+  ComponentDefinition,
+  Invocation,
+} from '@glimmer/interfaces';
+import { CONSTANT_TAG } from '@glimmer/validator';
+import { NULL_REFERENCE, WithStaticLayout } from '@glimmer/runtime';
 import Environment from '../environment';
 import RuntimeResolver from '../resolver';
 import { OwnedTemplate } from '../template';
