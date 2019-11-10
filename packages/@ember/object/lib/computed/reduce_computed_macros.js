@@ -1426,11 +1426,9 @@ export function collect(...dependentKeys) {
   @for @ember/object/computed
   @static
   @param {String} itemsKey
-  @param {Array} [additionalDependentKeys] optional array of additional
-  dependent keys
-  @param {String or Function} sortDefinition a dependent key to an array of sort
-  properties (add `:desc` to the arrays sort properties to sort descending) or a
-  function to use when sorting
+  @param {String|Function|Array} sortDefinitionOrDependentKeys The key of the sort definition (an array of sort properties),
+  the sort function, or an array of additional dependent keys
+  @param {Function?} sortDefinition the sort function (when used with additional dependent keys)
   @return {ComputedProperty} computes a new sorted array based on the sort
   property array or callback function
   @public

@@ -457,6 +457,28 @@ moduleFor(
       assert.deepEqual(n.normalized, []);
     }
 
+    ['@test @each works on array with falsy values'](assert) {
+      let obj = EmberObject.extend({
+        falsy: [null, undefined, false, '', 0, {}],
+        truthy: [true, 'foo', 123],
+
+        falsyComputed: computed('falsy.@each.foo', () => {
+          assert.ok(true, 'falsy computed');
+        }),
+
+        truthyComputed: computed('truthy.@each.foo', () => {
+          assert.ok(true, 'truthy computed');
+        }),
+      }).create();
+
+      // should throw no errors
+      obj.falsyComputed;
+
+      expectAssertion(() => {
+        obj.truthyComputed;
+      }, /When using @each to observe the array `true,foo,123`, the items in the array must be objects/);
+    }
+
     ['@test @each works with array-likes'](assert) {
       class ArrayLike {
         constructor(arr = []) {

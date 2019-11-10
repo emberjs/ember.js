@@ -1104,6 +1104,7 @@ const Component = CoreView.extend(
      @property isVisible
      @type Boolean
      @default null
+     @deprecated Use `<div hidden={{this.isHidden}}>` or `{{#if this.showComponent}} <MyComponent /> {{/if}}`
      @public
      */
   }

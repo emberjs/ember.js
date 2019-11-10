@@ -157,7 +157,7 @@ if (DEBUG) {
     @for @ember/debug
     @param {String} description Describes the expectation. This will become the
       text of the Error thrown if the assertion fails.
-    @param {Boolean} condition Must be truthy for the assertion to pass. If
+    @param {any} condition Must be truthy for the assertion to pass. If
       falsy, an exception will be thrown.
     @public
     @since 1.0.0

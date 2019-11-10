@@ -1,5 +1,6 @@
 import { get } from '@ember/-internals/metal';
-import { assert } from '@ember/debug';
+import { assert, deprecate } from '@ember/debug';
+import { EMBER_COMPONENT_IS_VISIBLE } from '@ember/deprecated-features';
 import { dasherize } from '@ember/string';
 import { Option, ElementOperations, Core } from '@glimmer/interfaces';
 import { CachedReference, map, Reference } from '@glimmer/reference';
@@ -111,8 +112,16 @@ export const AttributeBinding = {
       !(isSimple && isPath)
     );
 
-    if (attribute === 'style') {
-      reference = new StyleBindingReference(reference, referenceForKey(component, 'isVisible'));
+    if (
+      EMBER_COMPONENT_IS_VISIBLE &&
+      attribute === 'style' &&
+      StyleBindingReference !== undefined
+    ) {
+      reference = new StyleBindingReference(
+        reference,
+        referenceForKey(component, 'isVisible'),
+        component
+      );
     }
 
     operations.setAttribute(attribute, reference, false, null);
@@ -123,47 +132,94 @@ export const AttributeBinding = {
 const DISPLAY_NONE = 'display: none;';
 const SAFE_DISPLAY_NONE = htmlSafe(DISPLAY_NONE);
 
-class StyleBindingReference extends CachedReference<string | SafeString> {
-  public tag: Tag;
-  constructor(private inner: Reference<string>, private isVisible: Reference<unknown>) {
-    super();
+let StyleBindingReference:
+  | undefined
+  | { new (...args: any[]): CachedReference<string | SafeString> };
 
-    this.tag = combine([inner.tag, isVisible.tag]);
-  }
+if (EMBER_COMPONENT_IS_VISIBLE) {
+  StyleBindingReference = class extends CachedReference<string | SafeString> {
+    public tag: Tag;
+    private component: Component;
+    constructor(
+      private inner: Reference<string>,
+      private isVisible: Reference<unknown>,
+      component: Component
+    ) {
+      super();
 
-  compute(): string | SafeString {
-    let value = this.inner.value();
-    let isVisible = this.isVisible.value();
-
-    if (isVisible !== false) {
-      return value;
-    } else if (!value) {
-      return SAFE_DISPLAY_NONE;
-    } else {
-      let style = value + ' ' + DISPLAY_NONE;
-      return isHTMLSafe(value) ? htmlSafe(style) : style;
+      this.tag = combine([inner.tag, isVisible.tag]);
+      this.component = component;
     }
-  }
+
+    compute(): string | SafeString {
+      let value = this.inner.value();
+      let isVisible = this.isVisible.value();
+
+      if (isVisible !== undefined) {
+        deprecate(
+          `\`isVisible\` is deprecated (from "${this.component._debugContainerKey}")`,
+          false,
+          {
+            id: 'ember-component.is-visible',
+            until: '4.0.0',
+            url: 'https://deprecations.emberjs.com/v3.x#toc_ember-component-is-visible',
+          }
+        );
+      }
+
+      if (isVisible !== false) {
+        return value;
+      }
+
+      if (!value) {
+        return SAFE_DISPLAY_NONE;
+      } else {
+        let style = value + ' ' + DISPLAY_NONE;
+        return isHTMLSafe(value) ? htmlSafe(style) : style;
+      }
+    }
+  };
 }
 
-export const IsVisibleBinding = {
-  install(_element: SimpleElement, component: Component, operations: ElementOperations) {
-    operations.setAttribute(
-      'style',
-      map(referenceForKey(component, 'isVisible'), this.mapStyleValue),
-      false,
-      null
-    );
-    // // the upstream type for addDynamicAttribute's `value` argument
-    // // appears to be incorrect. It is currently a Reference<string>, I
-    // // think it should be a Reference<string|null>.
-    // operations.addDynamicAttribute(element, 'style', ref as any as Reference<string>, false);
-  },
+export let IsVisibleBinding:
+  | undefined
+  | {
+      install(element: SimpleElement, component: Component, operations: ElementOperations): void;
+      mapStyleValue(isVisible: boolean, component: Component): SafeString | null;
+    };
 
-  mapStyleValue(isVisible: boolean) {
-    return isVisible === false ? SAFE_DISPLAY_NONE : null;
-  },
-};
+if (EMBER_COMPONENT_IS_VISIBLE) {
+  IsVisibleBinding = {
+    install(_element: SimpleElement, component: Component, operations: ElementOperations) {
+      let componentMapStyleValue = (isVisible: boolean) => {
+        return this.mapStyleValue(isVisible, component);
+      };
+
+      operations.setAttribute(
+        'style',
+        map(referenceForKey(component, 'isVisible'), componentMapStyleValue),
+        false,
+        null
+      );
+      // // the upstream type for addDynamicAttribute's `value` argument
+      // // appears to be incorrect. It is currently a Reference<string>, I
+      // // think it should be a Reference<string|null>.
+      // operations.addDynamicAttribute(element, 'style', ref as any as Reference<string>, false);
+    },
+
+    mapStyleValue(isVisible: boolean, component: Component) {
+      if (isVisible !== undefined) {
+        deprecate(`\`isVisible\` is deprecated (from "${component._debugContainerKey}")`, false, {
+          id: 'ember-component.is-visible',
+          until: '4.0.0',
+          url: 'https://deprecations.emberjs.com/v3.x#toc_ember-component-is-visible',
+        });
+      }
+
+      return isVisible === false ? SAFE_DISPLAY_NONE : null;
+    },
+  };
+}
 
 export const ClassNameBinding = {
   install(

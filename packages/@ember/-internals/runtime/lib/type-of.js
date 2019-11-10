@@ -61,6 +61,7 @@ const { toString } = Object.prototype;
   typeOf(true);                   // 'boolean'
   typeOf(new Boolean(true));      // 'boolean'
   typeOf(A);                      // 'function'
+  typeOf(A());                    // 'array'
   typeOf([1, 2, 90]);             // 'array'
   typeOf(/abc/);                  // 'regexp'
   typeOf(new Date());             // 'date'

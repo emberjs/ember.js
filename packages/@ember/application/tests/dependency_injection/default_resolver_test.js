@@ -203,27 +203,27 @@ moduleFor(
       this.privateRegistry.resolve(`route:foo`);
     }
 
-    [`@test deprecation warning for service factories without isServiceFactory property`]() {
+    [`@test assertion for service factories without isServiceFactory property`]() {
       expectAssertion(() => {
         this.application.FooService = EmberObject.extend();
         this.privateRegistry.resolve('service:foo');
       }, /Expected service:foo to resolve to an Ember.Service but instead it was TestApp\.FooService\./);
     }
 
-    [`@test no deprecation warning for service factories that extend from Service`](assert) {
+    [`@test no assertion for service factories that extend from Service`](assert) {
       assert.expect(0);
       this.application.FooService = Service.extend();
       this.privateRegistry.resolve('service:foo');
     }
 
-    [`@test deprecation warning for component factories without isComponentFactory property`]() {
+    [`@test assertion for component factories without isComponentFactory property`]() {
       expectAssertion(() => {
         this.application.FooComponent = EmberObject.extend();
         this.privateRegistry.resolve('component:foo');
       }, /Expected component:foo to resolve to an Ember\.Component but instead it was TestApp\.FooComponent\./);
     }
 
-    [`@test no deprecation warning for component factories that extend from Component`]() {
+    [`@test no assertion for component factories that extend from Component`]() {
       expectNoDeprecation();
       this.application.FooView = Component.extend();
       this.privateRegistry.resolve('component:foo');

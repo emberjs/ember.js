@@ -247,7 +247,6 @@ module.exports = {
     'getRecordKeywords',
     'getRecords',
     'getRootViews',
-    'getState',
     'getURL',
     'getViewBoundingClientRect',
     'getViewBounds',

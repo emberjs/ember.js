@@ -38,29 +38,29 @@
 
     <script>
       (function() {
-        window.ENV = window.ENV || {};
+        window.EmberENV = window.EmberENV || {};
 
-        // Test for "hooks in ENV.EMBER_LOAD_HOOKS['hookName'] get executed"
-        ENV.EMBER_LOAD_HOOKS = ENV.EMBER_LOAD_HOOKS || {};
-        ENV.EMBER_LOAD_HOOKS.__before_ember_test_hook__ = ENV.EMBER_LOAD_HOOKS.__before_ember_test_hook__ || [];
-        ENV.__test_hook_count__ = 0;
-        ENV.EMBER_LOAD_HOOKS.__before_ember_test_hook__.push(function(object) {
-          ENV.__test_hook_count__ += object;
+        // Test for "hooks in EmberENV.EMBER_LOAD_HOOKS['hookName'] get executed"
+        EmberENV.EMBER_LOAD_HOOKS = EmberENV.EMBER_LOAD_HOOKS || {};
+        EmberENV.EMBER_LOAD_HOOKS.__before_ember_test_hook__ = EmberENV.EMBER_LOAD_HOOKS.__before_ember_test_hook__ || [];
+        EmberENV.__test_hook_count__ = 0;
+        EmberENV.EMBER_LOAD_HOOKS.__before_ember_test_hook__.push(function(object) {
+          EmberENV.__test_hook_count__ += object;
         });
 
 
         // Handle extending prototypes
-        ENV['EXTEND_PROTOTYPES'] = !!QUnit.urlParams.extendprototypes;
+        EmberENV['EXTEND_PROTOTYPES'] = !!QUnit.urlParams.extendprototypes;
 
         // Handle testing feature flags
         if (QUnit.urlParams.enableoptionalfeatures) {
-          ENV.ENABLE_OPTIONAL_FEATURES = true;
+          EmberENV.ENABLE_OPTIONAL_FEATURES = true;
         }
 
-        ENV['RAISE_ON_DEPRECATION'] = true;
+        EmberENV['RAISE_ON_DEPRECATION'] = true;
 
         if (QUnit.urlParams.debugrendertree) {
-          ENV['_DEBUG_RENDER_TREE'] = true;
+          EmberENV['_DEBUG_RENDER_TREE'] = true;
         }
       })();
     </script>

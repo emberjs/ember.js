@@ -14,3 +14,5 @@ export const ALIAS_METHOD = !!'3.9.0';
 export const APP_CTRL_ROUTER_PROPS = !!'3.10.0-beta.1';
 export const FUNCTION_PROTOTYPE_EXTENSIONS = !!'3.11.0-beta.1';
 export const MOUSE_ENTER_LEAVE_MOVE_EVENTS = !!'3.13.0-beta.1';
+export const EMBER_COMPONENT_IS_VISIBLE = !!'3.15.0-beta.1';
+export const PARTIALS = !!'3.15.0-beta.1';

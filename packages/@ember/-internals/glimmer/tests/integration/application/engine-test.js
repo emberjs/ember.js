@@ -251,6 +251,10 @@ moduleFor(
     }
 
     ['@test attrs in an engine']() {
+      expectDeprecation(
+        `The use of \`{{partial}}\` is deprecated, please refactor the "troll" partial to a component`
+      );
+
       this.setupEngineWithAttrs([]);
 
       return this.visit('/').then(() => {
@@ -431,7 +435,11 @@ moduleFor(
     }
 
     ['@test visit() with partials in routable engine'](assert) {
-      assert.expect(2);
+      assert.expect(3);
+
+      expectDeprecation(
+        `The use of \`{{partial}}\` is deprecated, please refactor the "foo" partial to a component`
+      );
 
       let hooks = [];
 
@@ -449,7 +457,11 @@ moduleFor(
     }
 
     ['@test visit() with partials in non-routable engine'](assert) {
-      assert.expect(2);
+      assert.expect(3);
+
+      expectDeprecation(
+        `The use of \`{{partial}}\` is deprecated, please refactor the "foo" partial to a component`
+      );
 
       let hooks = [];
 

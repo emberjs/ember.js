@@ -9,6 +9,7 @@ import {
   setViewElement,
 } from '@ember/-internals/views';
 import { assert, debugFreeze } from '@ember/debug';
+import { EMBER_COMPONENT_IS_VISIBLE } from '@ember/deprecated-features';
 import { _instrumentStart } from '@ember/instrumentation';
 import { assign } from '@ember/polyfills';
 import { DEBUG } from '@glimmer/env';
@@ -94,7 +95,11 @@ function applyAttributeBindings(
     operations.setAttribute('id', PrimitiveReference.create(id), false, null);
   }
 
-  if (seen.indexOf('style') === -1) {
+  if (
+    EMBER_COMPONENT_IS_VISIBLE &&
+    IsVisibleBinding !== undefined &&
+    seen.indexOf('style') === -1
+  ) {
     IsVisibleBinding.install(element, component, operations);
   }
 }
@@ -370,7 +375,9 @@ export default class CurlyComponentManager
     } else {
       let id = component.elementId ? component.elementId : guidFor(component);
       operations.setAttribute('id', PrimitiveReference.create(id), false, null);
-      IsVisibleBinding.install(element, component, operations);
+      if (EMBER_COMPONENT_IS_VISIBLE && IsVisibleBinding !== undefined) {
+        IsVisibleBinding.install(element, component, operations);
+      }
     }
 
     if (classRef) {
