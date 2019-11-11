@@ -36,7 +36,7 @@ let librariesRegistered = false;
 
 /**
   An instance of `Application` is the starting point for every Ember
-  application. instantiates, initializes and coordinates the
+  application. It instantiates, initializes and coordinates the
   objects that make up your app.
 
   Each Ember app has one and only one `Application` object. Although
