@@ -236,6 +236,42 @@ class Rehydration extends AbstractRehydrationTests {
   }
 
   @test
+  'text nodes surrounding single line handlebars comments'() {
+    let template = 'hello{{! hmm, why is this here?! }} world';
+    this.renderServerSide(template, {});
+    this.assertServerOutput('hello', '<!--%|%-->', ' world');
+
+    this.renderClientSide(template, {});
+    this.assertRehydrationStats({ nodesRemoved: 0 });
+    this.assertHTML('hello world');
+    this.assertStableRerender();
+  }
+
+  @test
+  'text nodes surrounding multi line handlebars comments'() {
+    let template = 'hello{{!-- hmm, why is this here?! --}} world';
+    this.renderServerSide(template, {});
+    this.assertServerOutput('hello', '<!--%|%-->', ' world');
+
+    this.renderClientSide(template, {});
+    this.assertRehydrationStats({ nodesRemoved: 0 });
+    this.assertHTML('hello world');
+    this.assertStableRerender();
+  }
+
+  @test
+  'text nodes surrounding "stand alone" handlebars comment'() {
+    let template = '<div></div>\n{{! hmm, why is this here?! }}\n<div></div>';
+    this.renderServerSide(template, {});
+    this.assertServerOutput('<div></div>', '\n', '<div></div>');
+
+    this.renderClientSide(template, {});
+    this.assertRehydrationStats({ nodesRemoved: 0 });
+    this.assertHTML('<div></div>\n<div></div>');
+    this.assertStableRerender();
+  }
+
+  @test
   'extra nodes at the end'() {
     let template = '{{#if admin}}<div>hi admin</div>{{else}}<div>HAXOR{{stopHaxing}}</div>{{/if}}';
     this.renderServerSide(template, { admin: false, stopHaxing: 'stahp' });
