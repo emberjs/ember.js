@@ -232,7 +232,7 @@ export default class CustomComponentManager<ComponentInstance>
         if (DEBUG) {
           handler.set = function(_target, prop) {
             assert(
-              `You attempted to set ${definition.ComponentClass.class}#${String(
+              `You attempted to set ${definition.name}#${String(
                 prop
               )} on a components arguments. Component arguments are immutable and cannot be updated directly, they always represent the values that are passed to your component. If you want to set default values, you should use a getter instead`
             );
