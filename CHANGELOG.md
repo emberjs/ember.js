@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.15.0-beta.2 (November 11, 2019)
+
+- [#18539](https://github.com/emberjs/ember.js/pull/18539) [BUGFIX] Add ID to `CapturedRenderNode`
+
 ### v3.15.0-beta.1 (October 31, 2019)
 
 - [#17948](https://github.com/emberjs/ember.js/pull/17948) [DEPRECATION] Deprecate `Component#isVisible` per [RFC #324](https://github.com/emberjs/rfcs/blob/master/text/0324-deprecate-component-isvisible.md).
