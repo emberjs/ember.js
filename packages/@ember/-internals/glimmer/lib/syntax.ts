@@ -1,76 +1,14 @@
-import { OwnedTemplateMeta } from '@ember/-internals/views';
-import { assert } from '@ember/debug';
-import { CompilableBlock } from '@glimmer/interfaces';
-import { Macros, OpcodeBuilder } from '@glimmer/opcode-compiler';
-import { Option } from '@glimmer/util';
-import { Core } from '@glimmer/wire-format';
-import CompileTimeLookup from './compile-time-lookup';
-import { blockLetMacro } from './syntax/let';
-import { mountMacro } from './syntax/mount';
-import { outletMacro } from './syntax/outlet';
-import { hashToArgs } from './syntax/utils';
-
-function refineInlineSyntax(
-  name: string,
-  params: Option<Core.Params>,
-  hash: Option<Core.Hash>,
-  builder: OpcodeBuilder<OwnedTemplateMeta>
-): boolean {
-  assert(
-    `You attempted to overwrite the built-in helper "${name}" which is not allowed. Please rename the helper.`,
-    !(
-      (builder.compiler['resolver'] as CompileTimeLookup)['resolver']['builtInHelpers'][name] &&
-      builder.referrer.owner.hasRegistration(`helper:${name}`)
-    )
-  );
-
-  let handle = builder.compiler['resolver'].lookupComponentDefinition(name, builder.referrer);
-
-  if (handle !== null) {
-    builder.component.static(handle, [params === null ? [] : params, hashToArgs(hash), null, null]);
-    return true;
-  }
-
-  return false;
-}
-
-function refineBlockSyntax(
-  name: string,
-  params: Core.Params,
-  hash: Core.Hash,
-  template: Option<CompilableBlock>,
-  inverse: Option<CompilableBlock>,
-  builder: OpcodeBuilder<OwnedTemplateMeta>
-) {
-  let handle = builder.compiler['resolver'].lookupComponentDefinition(name, builder.referrer);
-
-  if (handle !== null) {
-    builder.component.static(handle, [params, hashToArgs(hash), template, inverse]);
-    return true;
-  }
-
-  assert(
-    `A component or helper named "${name}" could not be found`,
-    builder.referrer.owner.hasRegistration(`helper:${name}`)
-  );
-
-  assert(
-    `Helpers may not be used in the block form, for example {{#${name}}}{{/${name}}}. Please use a component, or alternatively use the helper in combination with a built-in Ember helper, for example {{#if (${name})}}{{/if}}.`,
-    !(() => {
-      const resolver = (builder.compiler['resolver'] as CompileTimeLookup)['resolver'];
-      const { owner, moduleName } = builder.referrer;
-      if (name === 'component' || resolver['builtInHelpers'][name]) {
-        return true;
-      }
-      let options = { source: `template:${moduleName}` };
-      return (
-        owner.hasRegistration(`helper:${name}`, options) || owner.hasRegistration(`helper:${name}`)
-      );
-    })()
-  );
-
-  return false;
-}
+// import { OwnedTemplateMeta } from '@ember/-internals/views';
+// import { assert } from '@ember/debug';
+import {  Macros,  } from '@glimmer/interfaces';
+// import { staticComponent } from '@glimmer/opcode-compiler';
+// import { Option } from '@glimmer/util';
+// import CompileTimeLookup from './compile-time-lookup';
+// import { blockLetMacro } from './syntax/let';
+// import { mountMacro } from './syntax/mount';
+// import { outletMacro } from './syntax/outlet';
+// import { hashToArgs } from './syntax/utils';
+// import { wrapComponentClassAttribute } from './utils/bindings';
 
 export const experimentalMacros: any[] = [];
 
@@ -83,13 +21,13 @@ export function registerMacros(macro: any) {
 
 export function populateMacros(macros: Macros) {
   let { inlines, blocks } = macros;
-  inlines.add('outlet', outletMacro);
-  inlines.add('mount', mountMacro);
+  // inlines.add('outlet', outletMacro);
+  // inlines.add('mount', mountMacro);
 
-  inlines.addMissing(refineInlineSyntax);
+  // inlines.addMissing(refineInlineSyntax);
 
-  blocks.add('let', blockLetMacro);
-  blocks.addMissing(refineBlockSyntax);
+  // blocks.add('let', blockLetMacro);
+  // blocks.addMissing(refineBlockSyntax);
 
   for (let i = 0; i < experimentalMacros.length; i++) {
     let macro = experimentalMacros[i];
