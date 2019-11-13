@@ -4,9 +4,7 @@ import {
   Option,
   CompileTimeComponent,
   CompilableProgram,
-  Template,
 } from '@glimmer/interfaces';
-import { preprocess } from '../compilable-template';
 
 export const DEFAULT_CAPABILITIES: ComponentCapabilities = {
   dynamicLayout: true,
@@ -129,10 +127,6 @@ export class DefaultCompileTimeResolverDelegate implements CompileTimeResolverDe
         `Can't compile global partial invocations without an implementation of lookupPartial`
       );
     }
-  }
-
-  compile(source: string): Template {
-    return preprocess(source, {});
   }
 
   // For debugging
