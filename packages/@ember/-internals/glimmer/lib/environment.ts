@@ -2,7 +2,7 @@ import { OWNER, Owner } from '@ember/-internals/owner';
 import { constructStyleDeprecationMessage } from '@ember/-internals/views';
 import { warn } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { Option, Simple } from '@glimmer/interfaces';
+import { Option } from '@glimmer/interfaces';
 import { OpaqueIterable, VersionedReference } from '@glimmer/reference';
 import {
   ElementBuilder,
@@ -10,6 +10,7 @@ import {
   SimpleDynamicAttribute,
 } from '@glimmer/runtime';
 import { Destroyable } from '@glimmer/util';
+import { AttrNamespace as SimpleAttrNamespace } from '@simple-dom/interface';
 import createIterable from './utils/iterable';
 import { ConditionalReference, UpdatableReference } from './utils/references';
 import { isHTMLSafe } from './utils/string';
@@ -161,7 +162,7 @@ if (DEBUG) {
     element,
     attribute: string,
     isTrusting: boolean,
-    namespace: Option<Simple.AttrNamespace>
+    namespace: Option<SimpleAttrNamespace>
   ) {
     if (attribute === 'style' && !isTrusting) {
       return new StyleAttributeManager({ element, name: attribute, namespace });

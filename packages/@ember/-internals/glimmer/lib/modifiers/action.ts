@@ -3,7 +3,6 @@ import { ActionManager, isSimpleClick } from '@ember/-internals/views';
 import { assert, deprecate } from '@ember/debug';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { join } from '@ember/runloop';
-import { Simple } from '@glimmer/interfaces';
 import { Tag } from '@glimmer/reference';
 import {
   Arguments,
@@ -13,6 +12,7 @@ import {
   ModifierManager,
 } from '@glimmer/runtime';
 import { Destroyable } from '@glimmer/util';
+import { SimpleElement } from '@simple-dom/interface';
 import { INVOKE } from '../utils/references';
 
 const MODIFIERS = ['alt', 'shift', 'meta', 'ctrl'];
@@ -61,7 +61,7 @@ export let ActionHelper = {
 };
 
 export class ActionState {
-  public element: Simple.Element;
+  public element: SimpleElement;
   public actionId: number;
   public actionName: any;
   public actionArgs: any;
@@ -73,7 +73,7 @@ export class ActionState {
   public tag: Tag;
 
   constructor(
-    element: Simple.Element,
+    element: SimpleElement,
     actionId: number,
     actionName: any,
     actionArgs: any[],
@@ -188,7 +188,7 @@ export class ActionState {
 // implements ModifierManager<Action>
 export default class ActionModifierManager implements ModifierManager<ActionState, unknown> {
   create(
-    element: Simple.Element,
+    element: SimpleElement,
     _state: unknown,
     args: Arguments,
     _dynamicScope: DynamicScope,

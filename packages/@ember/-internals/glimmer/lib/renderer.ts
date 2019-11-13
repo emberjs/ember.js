@@ -4,7 +4,7 @@ import { getViewElement, getViewId } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { backburner, getCurrentRunLoop } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
-import { Option, Simple } from '@glimmer/interfaces';
+import { Option } from '@glimmer/interfaces';
 import { CURRENT_TAG, validate, value, VersionedPathReference } from '@glimmer/reference';
 import {
   Bounds,
@@ -19,6 +19,7 @@ import {
   RenderResult,
   UNDEFINED_REFERENCE,
 } from '@glimmer/runtime';
+import { SimpleElement, SimpleNode } from '@simple-dom/interface';
 import RSVP from 'rsvp';
 import { BOUNDS } from './component';
 import { createRootOutlet } from './component-managers/outlet';
@@ -76,7 +77,7 @@ class RootState {
     env: Environment,
     template: OwnedTemplate,
     self: VersionedPathReference<unknown>,
-    parentElement: Simple.Element,
+    parentElement: SimpleElement,
     dynamicScope: DynamicScope,
     builder: IBuilder
   ) {
@@ -271,12 +272,12 @@ export abstract class Renderer {
 
   // renderer HOOKS
 
-  appendOutletView(view: OutletView, target: Simple.Element) {
+  appendOutletView(view: OutletView, target: SimpleElement) {
     let definition = createRootOutlet(view);
     this._appendDefinition(view, curry(definition), target);
   }
 
-  appendTo(view: Component, target: Simple.Element) {
+  appendTo(view: Component, target: SimpleElement) {
     let definition = new RootComponentDefinition(view);
     this._appendDefinition(view, curry(definition), target);
   }
@@ -284,7 +285,7 @@ export abstract class Renderer {
   _appendDefinition(
     root: OutletView | Component,
     definition: CurriedComponentDefinition,
-    target: Simple.Element
+    target: SimpleElement
   ) {
     let self = new UnboundReference(definition);
     let dynamicScope = new DynamicScope(null, UNDEFINED_REFERENCE);
@@ -355,11 +356,11 @@ export abstract class Renderer {
     this._clearAllRoots();
   }
 
-  abstract getElement(view: unknown): Option<Simple.Element>;
+  abstract getElement(view: unknown): Option<SimpleElement>;
 
   getBounds(
     view: object
-  ): { parentElement: Simple.Element; firstNode: Simple.Node; lastNode: Simple.Node } {
+  ): { parentElement: SimpleElement; firstNode: SimpleNode; lastNode: SimpleNode } {
     let bounds: Bounds = view[BOUNDS];
 
     assert('object passed to getBounds must have the BOUNDS symbol as a property', Boolean(bounds));
@@ -371,7 +372,7 @@ export abstract class Renderer {
     return { parentElement, firstNode, lastNode };
   }
 
-  createElement(tagName: string): Simple.Element {
+  createElement(tagName: string): SimpleElement {
     return this._env.getAppendOperations().createElement(tagName);
   }
 
@@ -519,7 +520,7 @@ export class InertRenderer extends Renderer {
     return new this(env, rootTemplate, _viewRegistry, false, builder);
   }
 
-  getElement(_view: unknown): Option<Simple.Element> {
+  getElement(_view: unknown): Option<SimpleElement> {
     throw new Error(
       'Accessing `this.element` is not allowed in non-interactive environments (such as FastBoot).'
     );
@@ -541,7 +542,7 @@ export class InteractiveRenderer extends Renderer {
     return new this(env, rootTemplate, _viewRegistry, true, builder);
   }
 
-  getElement(view: unknown): Option<Simple.Element> {
+  getElement(view: unknown): Option<SimpleElement> {
     return getViewElement(view);
   }
 }

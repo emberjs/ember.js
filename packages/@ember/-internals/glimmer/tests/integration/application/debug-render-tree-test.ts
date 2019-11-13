@@ -20,15 +20,15 @@ import Controller from '@ember/controller';
 import { captureRenderTree } from '@ember/debug';
 import Engine from '@ember/engine';
 import EngineInstance from '@ember/engine/instance';
-import { Simple } from '@glimmer/interfaces';
 import { expect } from '@glimmer/util';
+import { SimpleElement, SimpleNode } from '@simple-dom/interface';
 import { compile } from 'ember-template-compiler';
 import { runTask } from 'internal-test-helpers/lib/run';
 
 interface CapturedBounds {
-  parentElement: Simple.Element;
-  firstNode: Simple.Node;
-  lastNode: Simple.Node;
+  parentElement: SimpleElement;
+  firstNode: SimpleNode;
+  lastNode: SimpleNode;
 }
 
 type Expected<T> = T | ((actual: T) => boolean);
@@ -1529,17 +1529,17 @@ if (ENV._DEBUG_RENDER_TREE) {
           parentElement: (expect(
             node.parentNode,
             'BUG: detached node'
-          ) as Simple.Node) as Simple.Element,
-          firstNode: node as Simple.Node,
-          lastNode: node as Simple.Node,
+          ) as SimpleNode) as SimpleElement,
+          firstNode: node as SimpleNode,
+          lastNode: node as SimpleNode,
         };
       }
 
       elementBounds(element: Element): CapturedBounds {
         return {
-          parentElement: element as Simple.Element,
-          firstNode: element.firstChild! as Simple.Node,
-          lastNode: element.lastChild! as Simple.Node,
+          parentElement: element as SimpleElement,
+          firstNode: element.firstChild! as SimpleNode,
+          lastNode: element.lastChild! as SimpleNode,
         };
       }
 

@@ -2,9 +2,11 @@ import { get } from '@ember/-internals/metal';
 import { assert, deprecate } from '@ember/debug';
 import { EMBER_COMPONENT_IS_VISIBLE } from '@ember/deprecated-features';
 import { dasherize } from '@ember/string';
-import { Option, Simple } from '@glimmer/interfaces';
+import { Option } from '@glimmer/interfaces';
 import { CachedReference, combine, map, Reference, Tag } from '@glimmer/reference';
 import { ElementOperations, PrimitiveReference } from '@glimmer/runtime';
+import { Core, Ops } from '@glimmer/wire-format';
+import { SimpleElement } from '@simple-dom/interface';
 import { Component } from './curly-component-state-bucket';
 import { referenceFromParts, RootReference } from './references';
 import { htmlSafe, isHTMLSafe, SafeString } from './string';
@@ -52,7 +54,7 @@ export const AttributeBinding = {
   },
 
   install(
-    _element: Simple.Element,
+    _element: SimpleElement,
     component: Component,
     rootRef: RootReference<Component>,
     parsed: [string, string, boolean],
@@ -152,7 +154,7 @@ export let IsVisibleBinding:
   | undefined
   | {
       install(
-        element: Simple.Element,
+        element: SimpleElement,
         component: Component,
         rootRef: RootReference<Component>,
         operations: ElementOperations
@@ -163,7 +165,7 @@ export let IsVisibleBinding:
 if (EMBER_COMPONENT_IS_VISIBLE) {
   IsVisibleBinding = {
     install(
-      _element: Simple.Element,
+      _element: SimpleElement,
       component: Component,
       rootRef: RootReference<Component>,
       operations: ElementOperations
@@ -200,7 +202,7 @@ if (EMBER_COMPONENT_IS_VISIBLE) {
 
 export const ClassNameBinding = {
   install(
-    _element: Simple.Element,
+    _element: SimpleElement,
     rootRef: RootReference<Component>,
     microsyntax: string,
     operations: ElementOperations

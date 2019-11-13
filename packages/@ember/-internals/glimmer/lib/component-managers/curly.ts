@@ -17,7 +17,6 @@ import {
   ComponentCapabilities,
   Option,
   ProgramSymbolTable,
-  Simple,
   VMHandle,
 } from '@glimmer/interfaces';
 import { combine, Tag, validate, value, VersionedPathReference } from '@glimmer/reference';
@@ -34,6 +33,7 @@ import {
   WithStaticLayout,
 } from '@glimmer/runtime';
 import { Destroyable, EMPTY_ARRAY } from '@glimmer/util';
+import { SimpleElement } from '@simple-dom/interface';
 import { BOUNDS, DIRTY_TAG, HAS_BLOCK, IS_DISPATCHING_ATTRS } from '../component';
 import Environment from '../environment';
 import { DynamicScope } from '../renderer';
@@ -67,7 +67,7 @@ function aliasIdToElementId(args: Arguments, props: any) {
 // what has already been applied. This is essentially refining the concatenated
 // properties applying right to left.
 function applyAttributeBindings(
-  element: Simple.Element,
+  element: SimpleElement,
   attributeBindings: Array<string>,
   component: Component,
   rootRef: RootReference<Component>,
@@ -359,7 +359,7 @@ export default class CurlyComponentManager
 
   didCreateElement(
     { component, classRef, environment, rootRef }: ComponentStateBucket,
-    element: Simple.Element,
+    element: SimpleElement,
     operations: ElementOperations
   ): void {
     setViewElement(component, element);
