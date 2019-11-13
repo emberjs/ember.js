@@ -1,6 +1,5 @@
 import { PathReference } from '@glimmer/reference';
 import { Arguments, VM } from '@glimmer/runtime';
-import { Opaque } from '@glimmer/util';
 
 /**
 @module ember
@@ -42,6 +41,6 @@ import { Opaque } from '@glimmer/util';
    @public
  */
 
-export default function(_vm: VM, args: Arguments): PathReference<Opaque[]> {
+export default function(_vm: VM, args: Arguments): PathReference<unknown[]> {
   return args.positional.capture();
 }

@@ -2,7 +2,6 @@ import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { Arguments, VM } from '@glimmer/runtime';
 import { ICapturedArguments } from '@glimmer/runtime/dist/types/lib/vm/arguments';
-import { Opaque } from '@glimmer/util';
 import { InternalHelperReference, INVOKE } from '../utils/references';
 import buildUntouchableThis from '../utils/untouchable-this';
 
@@ -92,7 +91,7 @@ function fnHelper({ positional }: ICapturedArguments) {
     );
   }
 
-  return (...invocationArgs: Opaque[]) => {
+  return (...invocationArgs: unknown[]) => {
     let [fn, ...args] = positional.value();
 
     if (typeof callbackRef[INVOKE] === 'function') {

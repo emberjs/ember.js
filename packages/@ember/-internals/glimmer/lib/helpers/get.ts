@@ -1,5 +1,4 @@
 import { set } from '@ember/-internals/metal';
-import { Opaque } from '@glimmer/interfaces';
 import {
   combine,
   createUpdatableTag,
@@ -103,9 +102,9 @@ export default function(_vm: VM, args: Arguments) {
 }
 
 function referenceFromPath(
-  source: VersionedPathReference<Opaque>,
+  source: VersionedPathReference<unknown>,
   path: string
-): VersionedPathReference<Opaque> {
+): VersionedPathReference<unknown> {
   let innerReference;
   if (path === undefined || path === null || path === '') {
     innerReference = NULL_REFERENCE;
@@ -118,15 +117,15 @@ function referenceFromPath(
 }
 
 class GetHelperReference extends CachedReference {
-  public sourceReference: VersionedPathReference<Opaque>;
+  public sourceReference: VersionedPathReference<unknown>;
   public pathReference: PathReference<string>;
   public lastPath: string | null;
-  public innerReference: VersionedPathReference<Opaque>;
+  public innerReference: VersionedPathReference<unknown>;
   public innerTag: UpdatableTag;
   public tag: Tag;
 
   static create(
-    sourceReference: VersionedPathReference<Opaque>,
+    sourceReference: VersionedPathReference<unknown>,
     pathReference: PathReference<string>
   ) {
     if (isConst(pathReference)) {
@@ -138,7 +137,7 @@ class GetHelperReference extends CachedReference {
   }
 
   constructor(
-    sourceReference: VersionedPathReference<Opaque>,
+    sourceReference: VersionedPathReference<unknown>,
     pathReference: PathReference<string>
   ) {
     super();

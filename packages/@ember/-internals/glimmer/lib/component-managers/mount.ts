@@ -14,7 +14,7 @@ import {
   Invocation,
   WithDynamicLayout,
 } from '@glimmer/runtime';
-import { Destroyable, Opaque, Option } from '@glimmer/util';
+import { Destroyable, Option } from '@glimmer/util';
 
 import { generateControllerFactory } from '@ember/-internals/routing';
 import { OwnedTemplateMeta } from '@ember/-internals/views';
@@ -33,7 +33,7 @@ interface EngineState {
   controller: any;
   self: RootReference<any>;
   environment: Environment;
-  modelRef?: VersionedPathReference<Opaque>;
+  modelRef?: VersionedPathReference<unknown>;
 }
 
 interface EngineDefinitionState {
@@ -133,7 +133,7 @@ class MountManager extends AbstractManager<EngineState, EngineDefinitionState>
     return bucket;
   }
 
-  getSelf({ self }: EngineState): VersionedPathReference<Opaque> {
+  getSelf({ self }: EngineState): VersionedPathReference<unknown> {
     return self;
   }
 

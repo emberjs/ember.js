@@ -4,7 +4,6 @@
 import { symbol } from '@ember/-internals/utils';
 import { Tag, VersionedPathReference } from '@glimmer/reference';
 import { Arguments, VM } from '@glimmer/runtime';
-import { Opaque } from '@glimmer/util';
 
 /**
   The `{{#each}}` helper loops over elements in a collection. It is an extension
@@ -157,7 +156,7 @@ class EachInReference implements VersionedPathReference {
     this[EACH_IN_REFERENCE] = true;
   }
 
-  value(): Opaque {
+  value(): unknown {
     return this.inner.value();
   }
 
@@ -166,7 +165,7 @@ class EachInReference implements VersionedPathReference {
   }
 }
 
-export function isEachIn(ref: Opaque): ref is VersionedPathReference {
+export function isEachIn(ref: unknown): ref is VersionedPathReference {
   return ref !== null && typeof ref === 'object' && ref[EACH_IN_REFERENCE];
 }
 

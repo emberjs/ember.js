@@ -8,7 +8,6 @@ import { join } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import { isConst, VersionedPathReference } from '@glimmer/reference';
 import { Arguments, VM } from '@glimmer/runtime';
-import { Opaque } from '@glimmer/util';
 import { ACTION, INVOKE, UnboundReference } from '../utils/references';
 
 /**
@@ -311,8 +310,8 @@ function NOOP(args: Arguments) {
 }
 
 function makeArgsProcessor(
-  valuePathRef: VersionedPathReference<Opaque> | false,
-  actionArgsRef: Array<VersionedPathReference<Opaque>>
+  valuePathRef: VersionedPathReference<unknown> | false,
+  actionArgsRef: Array<VersionedPathReference<unknown>>
 ) {
   let mergeArgs: any;
 

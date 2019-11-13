@@ -19,7 +19,6 @@ import {
   RenderResult,
   UNDEFINED_REFERENCE,
 } from '@glimmer/runtime';
-import { Opaque } from '@glimmer/util';
 import RSVP from 'rsvp';
 import { BOUNDS } from './component';
 import { createRootOutlet } from './component-managers/outlet';
@@ -76,7 +75,7 @@ class RootState {
     root: Component | OutletView,
     env: Environment,
     template: OwnedTemplate,
-    self: VersionedPathReference<Opaque>,
+    self: VersionedPathReference<unknown>,
     parentElement: Simple.Element,
     dynamicScope: DynamicScope,
     builder: IBuilder
@@ -113,7 +112,7 @@ class RootState {
     };
   }
 
-  isFor(possibleRoot: Opaque): boolean {
+  isFor(possibleRoot: unknown): boolean {
     return this.root === possibleRoot;
   }
 
@@ -236,7 +235,7 @@ backburner.on('begin', loopBegin);
 backburner.on('end', loopEnd);
 
 interface ViewRegistry {
-  [viewId: string]: Opaque;
+  [viewId: string]: unknown;
 }
 
 export abstract class Renderer {
@@ -328,7 +327,7 @@ export abstract class Renderer {
     }
   }
 
-  cleanupRootFor(view: Opaque) {
+  cleanupRootFor(view: unknown) {
     // no need to cleanup roots if we have already been destroyed
     if (this._destroyed) {
       return;
@@ -356,7 +355,7 @@ export abstract class Renderer {
     this._clearAllRoots();
   }
 
-  abstract getElement(view: Opaque): Option<Simple.Element>;
+  abstract getElement(view: unknown): Option<Simple.Element>;
 
   getBounds(
     view: object
@@ -520,7 +519,7 @@ export class InertRenderer extends Renderer {
     return new this(env, rootTemplate, _viewRegistry, false, builder);
   }
 
-  getElement(_view: Opaque): Option<Simple.Element> {
+  getElement(_view: unknown): Option<Simple.Element> {
     throw new Error(
       'Accessing `this.element` is not allowed in non-interactive environments (such as FastBoot).'
     );
@@ -542,7 +541,7 @@ export class InteractiveRenderer extends Renderer {
     return new this(env, rootTemplate, _viewRegistry, true, builder);
   }
 
-  getElement(view: Opaque): Option<Simple.Element> {
+  getElement(view: unknown): Option<Simple.Element> {
     return getViewElement(view);
   }
 }

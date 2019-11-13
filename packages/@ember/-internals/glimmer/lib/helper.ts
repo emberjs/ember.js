@@ -6,12 +6,12 @@ import { Factory } from '@ember/-internals/owner';
 import { FrameworkObject, setFrameworkClass } from '@ember/-internals/runtime';
 import { symbol } from '@ember/-internals/utils';
 import { join } from '@ember/runloop';
-import { Dict, Opaque } from '@glimmer/interfaces';
+import { Dict } from '@glimmer/interfaces';
 import { createTag, dirty } from '@glimmer/reference';
 
 export const RECOMPUTE_TAG = symbol('RECOMPUTE_TAG');
 
-export type HelperFunction = (positional: Opaque[], named: Dict<Opaque>) => Opaque;
+export type HelperFunction = (positional: unknown[], named: Dict<unknown>) => unknown;
 
 export type SimpleHelperFactory = Factory<SimpleHelper, HelperFactory<SimpleHelper>>;
 export type ClassHelperFactory = Factory<HelperInstance, HelperFactory<HelperInstance>>;
@@ -22,7 +22,7 @@ export interface HelperFactory<T> {
 }
 
 export interface HelperInstance {
-  compute(positional: Opaque[], named: Dict<Opaque>): Opaque;
+  compute(positional: unknown[], named: Dict<unknown>): unknown;
   destroy(): void;
 }
 

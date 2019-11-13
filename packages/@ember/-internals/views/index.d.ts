@@ -1,5 +1,4 @@
 import { Simple, Template, Option } from '@glimmer/interfaces';
-import { Opaque } from '@glimmer/util';
 import { Factory, Owner } from '@ember/-internals/owner';
 import { TemplateFactory } from '@ember/-internals/glimmer';
 
@@ -22,14 +21,14 @@ export const ViewMixin: any;
 export const ViewStateSupport: any;
 export const TextSupport: any;
 
-export function getElementView(element: Simple.Element): Opaque;
-export function getViewElement(view: Opaque): Option<Simple.Element>;
-export function setElementView(element: Simple.Element, view: Opaque): void;
-export function setViewElement(view: Opaque, element: Simple.Element): void;
+export function getElementView(element: Simple.Element): unknown;
+export function getViewElement(view: unknown): Option<Simple.Element>;
+export function setElementView(element: Simple.Element, view: unknown): void;
+export function setViewElement(view: unknown, element: Simple.Element): void;
 export function clearElementView(element: Simple.Element): void;
-export function clearViewElement(view: Opaque): void;
+export function clearViewElement(view: unknown): void;
 
-export function addChildView(parent: Opaque, child: Opaque): void;
+export function addChildView(parent: unknown, child: unknown): void;
 
 export function isSimpleClick(event: Event): boolean;
 

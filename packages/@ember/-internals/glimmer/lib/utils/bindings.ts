@@ -2,7 +2,7 @@ import { get } from '@ember/-internals/metal';
 import { assert, deprecate } from '@ember/debug';
 import { EMBER_COMPONENT_IS_VISIBLE } from '@ember/deprecated-features';
 import { dasherize } from '@ember/string';
-import { Opaque, Option, Simple } from '@glimmer/interfaces';
+import { Option, Simple } from '@glimmer/interfaces';
 import { CachedReference, combine, map, Reference, Tag } from '@glimmer/reference';
 import { ElementOperations, PrimitiveReference } from '@glimmer/runtime';
 import { Component } from './curly-component-state-bucket';
@@ -110,7 +110,7 @@ if (EMBER_COMPONENT_IS_VISIBLE) {
     public tag: Tag;
     constructor(
       private inner: Reference<string>,
-      private isVisible: Reference<Opaque>,
+      private isVisible: Reference<unknown>,
       private component: Component
     ) {
       super();
@@ -235,7 +235,7 @@ export class SimpleClassNameBindingReference extends CachedReference<Option<stri
   public tag: Tag;
   private dasherizedPath: Option<string>;
 
-  constructor(private inner: Reference<Opaque | number>, private path: string) {
+  constructor(private inner: Reference<unknown | number>, private path: string) {
     super();
 
     this.tag = inner.tag;
@@ -262,7 +262,7 @@ class ColonClassNameBindingReference extends CachedReference<Option<string>> {
   public tag: Tag;
 
   constructor(
-    private inner: Reference<Opaque>,
+    private inner: Reference<unknown>,
     private truthy: Option<string> = null,
     private falsy: Option<string> = null
   ) {

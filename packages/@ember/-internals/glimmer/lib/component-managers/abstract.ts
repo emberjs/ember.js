@@ -9,7 +9,7 @@ import {
   Environment,
   PreparedArguments,
 } from '@glimmer/runtime';
-import { Destroyable, Opaque, Option } from '@glimmer/util';
+import { Destroyable, Option } from '@glimmer/util';
 
 // implements the ComponentManager interface as defined in glimmer:
 // tslint:disable-next-line:max-line-length
@@ -29,7 +29,7 @@ export default abstract class AbstractManager<T, U> implements ComponentManager<
     hasDefaultBlock: boolean
   ): T;
 
-  abstract getSelf(component: T): VersionedPathReference<Opaque>;
+  abstract getSelf(component: T): VersionedPathReference<unknown>;
   abstract getCapabilities(state: U): ComponentCapabilities;
 
   didCreateElement(_component: T, _element: Simple.Element, _operations: ElementOperations): void {
