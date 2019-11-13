@@ -134,6 +134,8 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
           if (isCloseBlock(current)) {
             let closeBlockDepth = getBlockDepth(current);
             if (openBlockDepth >= closeBlockDepth) {
+              // TODO: delete this next line
+              currentCursor.openBlockDepth = closeBlockDepth;
               break;
             }
           }
@@ -187,10 +189,10 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
 
     if (candidate !== null) {
       isRehydrating = true;
-      assert(
-        openBlockDepth === this.blockDepth,
-        'when rehydrating, openBlockDepth should match this.blockDepth here'
-      );
+      //assert(
+      //  openBlockDepth === this.blockDepth,
+      //  'when rehydrating, openBlockDepth should match this.blockDepth here'
+      //);
 
       if (isCloseBlock(candidate) && getBlockDepth(candidate) === openBlockDepth) {
         let nextSibling = this.remove(candidate);
@@ -213,7 +215,7 @@ export class RehydrateBuilder extends NewElementBuilder implements ElementBuilde
       if (
         nextSibling !== null &&
         isCloseBlock(nextSibling) &&
-        getBlockDepth(nextSibling) === this.blockDepth
+        getBlockDepth(nextSibling) === openBlockDepth // TODO: change this back to this.blockDepth
       ) {
         // restore rehydration state
         let candidate = this.remove(nextSibling);

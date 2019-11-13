@@ -224,6 +224,40 @@ class Rehydration extends AbstractRehydrationTests {
   }
 
   @test
+  'resumes correct block after reenabling rehydration'() {
+    let template = strip`
+      <div>
+        {{#if a}}
+          {{#if b}}
+            {{#if c}}
+              <inside-c></inside-c>
+            {{/if}}
+            <after-c></after-c>
+          {{/if}}
+          <after-b></after-b>
+        {{/if}}
+        <after-a></after-a>
+      </div>
+    `;
+    let context = { a: false, b: false, c: false };
+
+    this.renderServerSide(template, context);
+
+    let b = blockStack();
+    this.assertServerOutput(`<div>${b(1)}<!---->${b(1)}<after-a></after-a></div>`);
+
+    this.renderClientSide(template, { a: true, b: true, c: true });
+    this.assertHTML(
+      '<div><inside-c></inside-c><after-c></after-c><after-b></after-b><after-a></after-a></div>'
+    );
+    this.assertRehydrationStats({ nodesRemoved: 0 });
+
+    // TODO: handle % % in the testing DSL
+    // this.assertStableNodes();
+    this.assertStableRerender();
+  }
+
+  @test
   'mismatched elements'() {
     let template = '{{#if admin}}<div>hi admin</div>{{else}}<p>HAXOR</p>{{/if}}';
     this.renderServerSide(template, { admin: true });
