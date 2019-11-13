@@ -13,8 +13,8 @@ import EmberError from '@ember/error';
 import { _instrumentStart } from '@ember/instrumentation';
 import {
   ComponentDefinition,
+  JitRuntimeResolver,
   Option,
-  RuntimeResolver as IRuntimeResolver,
 } from '@glimmer/interfaces';
 import { LazyCompiler, Macros, PartialDefinition } from '@glimmer/opcode-compiler';
 import { getDynamicVar, Helper, ModifierDefinition } from '@glimmer/runtime';
@@ -263,7 +263,7 @@ interface IBuiltInModifiers {
   [name: string]: ModifierDefinition | undefined;
 }
 
-export default class RuntimeResolver implements IRuntimeResolver<OwnedTemplateMeta> {
+export default class RuntimeResolver implements JitRuntimeResolver<OwnedTemplateMeta> {
   public isInteractive: boolean;
   public compiler: LazyCompiler<OwnedTemplateMeta>;
 
