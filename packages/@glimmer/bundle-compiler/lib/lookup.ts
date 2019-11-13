@@ -6,11 +6,9 @@ import {
   CompileTimeResolverDelegate,
   ModuleLocator,
   CompileTimeComponent,
-  Template,
 } from '@glimmer/interfaces';
 import { expect, Option } from '@glimmer/util';
 import { ModuleLocatorMap } from '..';
-import { preprocess } from '@glimmer/opcode-compiler';
 
 /**
  * The BundleCompilerResolver resolves references to objects inside a template into
@@ -106,9 +104,5 @@ export default class BundleCompilerLookup<R> implements CompileTimeResolverDeleg
 
   lookupPartial(_name: string, _meta: R): Option<number> {
     throw new Error('Method not implemented.');
-  }
-
-  compile(source: string): Template {
-    return preprocess(source, {});
   }
 }

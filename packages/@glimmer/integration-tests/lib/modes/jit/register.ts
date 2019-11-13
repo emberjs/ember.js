@@ -38,7 +38,6 @@ import { preprocess } from '../../compile';
 import { StaticTaglessComponentManager } from '../../components/static-tagless';
 
 const BASIC_COMPONENT_MANAGER = new BasicComponentManager();
-const EMBERISH_CURLY_COMPONENT_MANAGER = new EmberishCurlyComponentManager();
 const EMBERISH_GLIMMER_COMPONENT_MANAGER = new EmberishGlimmerComponentManager();
 const STATIC_TAGLESS_COMPONENT_MANAGER = new StaticTaglessComponentManager();
 
@@ -111,7 +110,7 @@ export function registerEmberishCurlyComponent(
     registry,
     name,
     'Curly',
-    EMBERISH_CURLY_COMPONENT_MANAGER,
+    new EmberishCurlyComponentManager(registry),
     handle,
     ComponentClass,
     CURLY_CAPABILITIES

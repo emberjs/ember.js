@@ -3,14 +3,12 @@ import {
   CapturedNamedArguments,
   Bounds,
   WithDynamicTagName,
-  JitRuntimeResolver,
   WithJitDynamicLayout,
   WithAotStaticLayout,
   ModuleLocator,
   ProgramSymbolTable,
   AotRuntimeResolver,
   Invocation,
-  SyntaxCompilationContext,
   Template,
   VMArguments,
   PreparedArguments,
@@ -20,6 +18,7 @@ import {
   Destroyable,
   Dict,
   ComponentCapabilities,
+  JitRuntimeResolver,
 } from '@glimmer/interfaces';
 import { Attrs, AttrsDiff } from './emberish-glimmer';
 import { VersionedPathReference, UpdatableReference, PathReference } from '@glimmer/reference';
@@ -28,6 +27,8 @@ import { keys, EMPTY_ARRAY, assign } from '@glimmer/util';
 import { TestComponentDefinitionState } from './test-component';
 import { PrimitiveReference } from '@glimmer/runtime';
 import { TestComponentConstructor } from './types';
+import TestJitRuntimeResolver from '../modes/jit/resolver';
+import { TestJitRegistry } from '../modes/jit/registry';
 
 export interface EmberishCurlyComponentFactory
   extends TestComponentConstructor<EmberishCurlyComponent> {
@@ -114,12 +115,14 @@ export interface EmberishCurlyComponentDefinitionState {
 export class EmberishCurlyComponentManager
   implements
     WithDynamicTagName<EmberishCurlyComponent>,
-    WithJitDynamicLayout<EmberishCurlyComponent, JitRuntimeResolver>,
+    WithJitDynamicLayout<EmberishCurlyComponent, TestJitRuntimeResolver>,
     WithAotStaticLayout<
       EmberishCurlyComponent,
       EmberishCurlyComponentDefinitionState,
       AotRuntimeResolver
     > {
+  constructor(private registry?: TestJitRegistry) {}
+
   getCapabilities(state: TestComponentDefinitionState): ComponentCapabilities {
     return state.capabilities;
   }
@@ -131,11 +134,13 @@ export class EmberishCurlyComponentManager
     return resolver.getInvocation(state.locator);
   }
 
-  getJitDynamicLayout(
-    { layout }: EmberishCurlyComponent,
-    resolver: JitRuntimeResolver,
-    { program: { resolverDelegate } }: SyntaxCompilationContext
-  ): Template {
+  getJitDynamicLayout({ layout }: EmberishCurlyComponent, resolver: JitRuntimeResolver): Template {
+    if (!this.registry) {
+      throw new Error(
+        'BUG: Must provide a test registry to component managers when attempting to lookup component layouts dynamically'
+      );
+    }
+
     if (!layout) {
       throw new Error('BUG: missing dynamic layout');
     }
@@ -147,7 +152,7 @@ export class EmberishCurlyComponentManager
       throw new Error(`BUG: Missing dynamic layout for ${layout.name}`);
     }
 
-    return resolverDelegate.compile(source, layout.name);
+    return this.registry.templateFromSource(source, layout.name);
   }
 
   prepareArgs(
