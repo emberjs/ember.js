@@ -516,7 +516,7 @@ APPEND_OPCODES.add(
       layout = manager.getJitStaticLayout(definition.state, vm.runtime.resolver);
     } else if (hasDynamicLayoutCapability(capabilities, manager)) {
       let template = unwrapTemplate(
-        manager.getJitDynamicLayout(instance.state, vm.runtime.resolver, vm.context)
+        manager.getJitDynamicLayout(instance.state, vm.runtime.resolver)
       );
 
       if (hasCapability(capabilities, Capability.Wrapped)) {

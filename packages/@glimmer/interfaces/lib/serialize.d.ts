@@ -87,10 +87,6 @@ export interface CompileTimeResolverDelegate<M = unknown> extends HandleResolver
   lookupComponent(name: string, referrer: M): Option<CompileTimeComponent>;
   lookupPartial(name: string, referrer: M): Option<number>;
 
-  // `name` is a cache key.
-  // TODO: The caller should cache
-  compile(source: string, name: string): Template;
-
   // For debugging
   resolve(handle: number): M;
 }

@@ -10,7 +10,6 @@ import {
   SyntaxCompilationContext,
   CompilableBlock,
   CompilableProgram,
-  Template,
   HandleResult,
 } from '@glimmer/interfaces';
 import { meta } from './opcode-builder/helpers/shared';
@@ -21,8 +20,6 @@ import { DEBUG } from '@glimmer/local-debug-flags';
 import { debugCompiler } from './compiler';
 import { patchStdlibs } from '@glimmer/program';
 import { STATEMENTS } from './syntax/statements';
-import { precompile } from '@glimmer/compiler';
-import templateFactory from './template';
 
 export const PLACEHOLDER_HANDLE = -1;
 
@@ -40,12 +37,6 @@ class CompilableTemplateImpl<S extends SymbolTable> implements CompilableTemplat
   compile(context: SyntaxCompilationContext): HandleResult {
     return maybeCompile(this, context);
   }
-}
-
-export function preprocess<M>(template: string, meta: M): Template<M> {
-  let wrapper = JSON.parse(precompile(template));
-  let factory = templateFactory<M>(wrapper);
-  return factory.create(meta);
 }
 
 export function compilable<R>(layout: LayoutWithContext<R>): CompilableProgram {

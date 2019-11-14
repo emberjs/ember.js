@@ -94,18 +94,16 @@ export class TestJitRegistry {
     return compilable;
   }
 
-  templateFromSource(
-    source: string,
-    templateName: string,
-    create: (source: string) => Template
-  ): Template {
+  templateFromSource(source: string, templateName: string): Template {
     let compilableHandle = this.lookup('compilable', templateName);
 
     if (compilableHandle) {
       return this.resolve<Template>(compilableHandle);
     }
 
-    let template = create(source);
+    let factory = createTemplate<AnnotatedModuleLocator>(source);
+    let template = factory.create();
+
     this.register('compilable', templateName, template);
     return template;
   }
