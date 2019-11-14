@@ -2,7 +2,7 @@
 @module ember
 */
 
-import { alias, computed } from '@ember/-internals/metal';
+import { alias, computed, get } from '@ember/-internals/metal';
 import { isSimpleClick } from '@ember/-internals/views';
 import { EMBER_GLIMMER_ANGLE_BRACKET_BUILT_INS } from '@ember/canary-features';
 import { assert, warn } from '@ember/debug';
