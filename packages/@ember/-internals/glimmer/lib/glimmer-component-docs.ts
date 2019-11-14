@@ -7,7 +7,8 @@
   The APIs available in a component vary depending on whether they import from
   `@glimmer/component` or the older "classic" type, `@ember/component`. The
   documentation below covers 100% of the available methods, hooks, and
-  properties of `@glimmer/component`.
+  properties of `@glimmer/component`. The source code can be found in
+  [`@glimmer/component`](https://github.com/glimmerjs/glimmer.js/tree/master/packages/%40glimmer/component).
 
   ## Defining a component
 
@@ -22,17 +23,10 @@
   }
   ```
 
-  @module @glimmer/component
-  @public
-*/
+  ## `constructor`
 
-/**
-  @class GlimmerComponent
-  @public
-  @static
-*/
+  params: `owner` object and `args` object
 
-/**
   Constructs a new component and assigns itself the passed properties. The
   constructor is run whenever a new instance of the component is created, and
   can be used to setup the initial state of the component.
@@ -70,14 +64,8 @@
   }
   ```
 
-  @method constructor
-  @for @glimmer/component
-  @param {Object} owner An owner object.
-  @param {Object} args An args object.
-  @public
-*/
+  ## `willDestroy`
 
-/**
   `willDestroy` is called after the component has been removed from the DOM, but
   before the component is fully destroyed. This lifecycle hook can be used to
   cleanup the component and any related state.
@@ -95,14 +83,11 @@
   }
   ```
 
-  @method willDestroy
-  @for @glimmer/component
-  @public
-*/
+  ## `args`
 
-/**
-  The `args` property of Glimmer components contains the _arguments_ that are
-  passed to the component. For instance, the following component usage:
+  The `args` property of Glimmer components is an object that contains the
+  _arguments_ that are passed to the component. For instance, the
+  following component usage:
 
   ```handlebars
   <SomeComponent @fadeIn={{true}} />
@@ -138,28 +123,16 @@
   }
   ```
 
-  @property args
-  @for @glimmer/component
-  @type Object
-  @public
-*/
+  ## `isDestroying`
 
-/**
-  Flag to tell if the component is in the process of destroying. This is set to
+  A boolean flag to tell if the component is in the process of destroying. This is set to
   true before `willDestroy` is called.
 
-  @property isDestroying
-  @for @glimmer/component
-  @type boolean
-  @public
-*/
-
-/**
-  Flag to tell if the component has been fully destroyed. This is set to true
+  ## `isDestroyed`
+  A boolean to tell if the component has been fully destroyed. This is set to true
   after `willDestroy` is called.
 
-  @property isDestroyed
-  @for @glimmer/component
-  @type boolean
+  @module @glimmer/component
   @public
 */
+
