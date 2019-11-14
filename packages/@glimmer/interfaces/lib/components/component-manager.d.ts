@@ -167,7 +167,7 @@ export interface WithJitDynamicLayout<
   // *after* the component instance has been created, because you might
   // want to return a different layout per-instance for optimization reasons
   // or to implement features like Ember's "late-bound" layouts.
-  getJitDynamicLayout(component: I, resolver: R, context: SyntaxCompilationContext): Template;
+  getJitDynamicLayout(component: I, resolver: R): Template;
 }
 
 export interface WithAotDynamicLayout<

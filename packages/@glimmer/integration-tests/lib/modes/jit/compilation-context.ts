@@ -8,14 +8,12 @@ import {
   Option,
   ComponentDefinition,
   AnnotatedModuleLocator,
-  Template,
   CompileTimeComponent,
 } from '@glimmer/interfaces';
 import { Constants, HeapImpl, RuntimeProgramImpl } from '@glimmer/program';
 import { TestJitRegistry } from './registry';
 import { compileStd, unwrapTemplate } from '@glimmer/opcode-compiler';
 import TestJitRuntimeResolver from './resolver';
-import { createTemplate } from '../../compile';
 
 export class TestJitCompilationContext implements WholeProgramCompilationContext {
   readonly constants = new Constants();
@@ -55,17 +53,6 @@ export default class JitCompileTimeLookup implements CompileTimeResolverDelegate
     return this.resolver.lookupModifier(name, referrer);
   }
 
-  // name is a cache key
-  compile(source: string, name: string): Template {
-    // throw new Error('NOPE');
-    // TODO: This whole thing probably should have a more first-class
-    // structure.
-    return this.registry.templateFromSource(source, name, source => {
-      let factory = createTemplate<AnnotatedModuleLocator>(source);
-      return factory.create();
-    });
-  }
-
   lookupComponent(name: string, referrer: AnnotatedModuleLocator): Option<CompileTimeComponent> {
     let definitionHandle = this.registry.lookupComponentHandle(name, referrer);
 
@@ -97,7 +84,7 @@ export default class JitCompileTimeLookup implements CompileTimeResolverDelegate
       throw new Error('UH OH');
     }
 
-    let template = unwrapTemplate(this.compile(source, name));
+    let template = unwrapTemplate(this.registry.templateFromSource(source, name));
     let compilable = capabilities.wrapped ? template.asWrappedLayout() : template.asLayout();
 
     return {
