@@ -99,6 +99,7 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
         name: state.outlet.name,
         args: EMPTY_ARGS,
         instance: undefined,
+        template: undefined,
       });
 
       let parentState = parentStateRef.value();
@@ -120,6 +121,7 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
           name: mountPoint,
           args: EMPTY_ARGS,
           instance: engine,
+          template: undefined,
         });
       }
 
@@ -128,6 +130,7 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
         name: definition.name,
         args: args.capture(),
         instance: definition.controller,
+        template: definition.template,
       });
     }
 
