@@ -18,7 +18,7 @@ export default class TestResolverApplicationTestCase extends AbstractApplication
     this.resolver.add(
       `template:${templateName}`,
       this.compile(templateString, {
-        moduleName: `my-app/templates/${templateName}.hbs`,
+        moduleName: `my-app/templates/${templateName.replace(/\./g, '/')}.hbs`,
       })
     );
   }

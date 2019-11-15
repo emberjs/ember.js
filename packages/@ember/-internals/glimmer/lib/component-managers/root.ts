@@ -81,6 +81,7 @@ class RootComponentManager extends CurlyComponentManager {
         name: state.name,
         args: EMPTY_ARGS,
         instance: component,
+        template: state.template,
       });
     }
 

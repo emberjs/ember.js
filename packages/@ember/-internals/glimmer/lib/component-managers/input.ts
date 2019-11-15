@@ -57,7 +57,7 @@ export default class InputComponentManager extends InternalComponentManager<Inpu
 
   create(
     env: Environment,
-    { ComponentClass }: InternalDefinitionState,
+    { ComponentClass, layout }: InternalDefinitionState,
     args: Arguments,
     _dynamicScope: DynamicScope,
     caller: VersionedPathReference
@@ -79,6 +79,7 @@ export default class InputComponentManager extends InternalComponentManager<Inpu
         name: 'input',
         args: args.capture(),
         instance,
+        template: layout,
       });
     }
 

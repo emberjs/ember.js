@@ -2,6 +2,7 @@ import { assert } from '@ember/debug';
 import { Simple } from '@glimmer/interfaces';
 import { Bounds, CapturedArguments } from '@glimmer/runtime';
 import { expect, Option, Stack } from '@glimmer/util';
+import { OwnedTemplate } from '../template';
 
 export type RenderNodeType = 'outlet' | 'engine' | 'route-template' | 'component';
 
@@ -10,6 +11,7 @@ export interface RenderNode {
   name: string;
   args: CapturedArguments;
   instance: unknown;
+  template?: OwnedTemplate;
 }
 
 interface InternalRenderNode<T extends object> extends RenderNode {
@@ -23,6 +25,7 @@ export interface CapturedRenderNode {
   name: string;
   args: ReturnType<CapturedArguments['value']>;
   instance: unknown;
+  template: Option<string>;
   bounds: Option<{
     parentElement: Simple.Element;
     firstNode: Simple.Node;
@@ -88,6 +91,11 @@ export default class DebugRenderTree<Bucket extends object = object> {
 
   update(state: Bucket): void {
     this.enter(state);
+  }
+
+  // for dynamic layouts
+  setTemplate(state: Bucket, template: OwnedTemplate): void {
+    this.nodeFor(state).template = template;
   }
 
   didRender(state: Bucket, bounds: Bounds): void {
@@ -170,9 +178,14 @@ export default class DebugRenderTree<Bucket extends object = object> {
   private captureNode(id: string, state: Bucket): CapturedRenderNode {
     let node = this.nodeFor(state);
     let { type, name, args, instance, refs } = node;
+    let template = this.captureTemplate(node);
     let bounds = this.captureBounds(node);
     let children = this.captureRefs(refs);
-    return { id, type, name, args: args.value(), instance, bounds, children };
+    return { id, type, name, args: args.value(), instance, template, bounds, children };
+  }
+
+  private captureTemplate({ template }: InternalRenderNode<Bucket>): Option<string> {
+    return (template && template.referrer.moduleName) || null;
   }
 
   private captureBounds(node: InternalRenderNode<Bucket>): CapturedRenderNode['bounds'] {

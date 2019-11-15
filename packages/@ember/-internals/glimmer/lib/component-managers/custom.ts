@@ -277,6 +277,7 @@ export default class CustomComponentManager<ComponentInstance>
         name: definition.name,
         args: args.capture(),
         instance: component,
+        template: definition.template,
       });
     }
 
