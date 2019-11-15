@@ -1,5 +1,5 @@
 import { ENV } from '@ember/-internals/environment';
-import { runInTransaction } from '@ember/-internals/metal';
+import { notifyPropertyChange, runInTransaction, tagForProperty } from '@ember/-internals/metal';
 import { getViewElement, getViewId } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { backburner, getCurrentRunLoop } from '@ember/runloop';
@@ -220,6 +220,15 @@ function resolveRenderPromise() {
   }
 }
 
+function rejectRenderPromise(error: unknown) {
+  if (renderSettledDeferred !== null) {
+    let reject = renderSettledDeferred.reject;
+    renderSettledDeferred = null;
+
+    backburner.join(null, reject, error);
+  }
+}
+
 let loops = 0;
 function loopEnd() {
   for (let i = 0; i < renderers.length; i++) {
@@ -274,6 +283,8 @@ export abstract class Renderer {
     this._isRenderingRoots = false;
     this._removedRoots = [];
     this._builder = builder;
+
+    tagForProperty(this, '_roots');
   }
 
   // renderer HOOKS
@@ -386,12 +397,13 @@ export abstract class Renderer {
     let { _roots: roots } = this;
 
     roots.push(root);
+    notifyPropertyChange(this, '_roots');
 
     if (roots.length === 1) {
       register(this);
     }
 
-    this._renderRootsTransaction();
+    this._revalidate();
   }
 
   _renderRoots() {
@@ -467,6 +479,7 @@ export abstract class Renderer {
     this._isRenderingRoots = true;
 
     let completedWithoutError = false;
+
     try {
       this._renderRoots();
       completedWithoutError = true;
@@ -483,17 +496,19 @@ export abstract class Renderer {
 
   _clearAllRoots() {
     let roots = this._roots;
+    let hadRoots = roots.length > 0;
+
     for (let i = 0; i < roots.length; i++) {
       let root = roots[i];
       root.destroy();
     }
 
     this._removedRoots.length = 0;
-    this._roots = [];
+    this._roots.length = 0;
 
     // if roots were present before destroying
     // deregister this renderer instance
-    if (roots.length) {
+    if (hadRoots) {
       deregister(this);
     }
   }
@@ -510,7 +525,16 @@ export abstract class Renderer {
     if (this._isValid()) {
       return;
     }
-    this._renderRootsTransaction();
+
+    if (renderSettledDeferred !== null) {
+      try {
+        this._renderRootsTransaction();
+      } catch (error) {
+        rejectRenderPromise(error);
+      }
+    } else {
+      this._renderRootsTransaction();
+    }
   }
 }
 
