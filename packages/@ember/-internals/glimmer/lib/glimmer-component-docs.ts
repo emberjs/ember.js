@@ -58,7 +58,7 @@
       super(owner, args);
 
       if (this.args.fadeIn === true) {
-        this.animation.register(this, 'fade-in');
+        this.myAnimations.register(this, 'fade-in');
       }
     }
   }
