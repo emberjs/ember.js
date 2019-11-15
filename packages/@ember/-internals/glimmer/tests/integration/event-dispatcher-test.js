@@ -403,7 +403,7 @@ moduleFor(
       });
 
       expectDeprecation(
-        'Using `mouseMove` event handler methods in components has been deprecated.'
+        /Using `mouseMove` event handler methods in components has been deprecated\./
       );
 
       this.render(`{{x-foo}}`);
