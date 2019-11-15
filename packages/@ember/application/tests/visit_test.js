@@ -267,6 +267,30 @@ moduleFor(
       );
     }
 
+    [`@test visit() rejects on component rendering failures`](assert) {
+      this.addComponent('go-boom', {
+        ComponentClass: Component.extend({
+          didInsertElement() {
+            this._super(...arguments);
+
+            throw new Error('Go boom!');
+          },
+        }),
+      });
+
+      this.addTemplate('index', '{{go-boom}}');
+
+      return this.visit('/').then(
+        () => {
+          assert.ok(false, 'It should not resolve the promise');
+        },
+        error => {
+          assert.ok(error instanceof Error, 'It should reject the promise with the boot error');
+          assert.equal(error.message, 'Go boom!');
+        }
+      );
+    }
+
     [`@test visit() follows redirects`](assert) {
       this.router.map(function() {
         this.route('a');
