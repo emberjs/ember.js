@@ -145,9 +145,14 @@ export default class CurlyComponentManager
     return factory(owner);
   }
 
-  getDynamicLayout({ component }: ComponentStateBucket): Invocation {
+  getDynamicLayout(bucket: ComponentStateBucket): Invocation {
+    let component = bucket.component;
     let template = this.templateFor(component);
     let layout = template.asWrappedLayout();
+
+    if (ENV._DEBUG_RENDER_TREE) {
+      bucket.environment.debugRenderTree.setTemplate(bucket, template);
+    }
 
     return {
       handle: layout.compile(),
@@ -348,6 +353,7 @@ export default class CurlyComponentManager
         name: state.name,
         args: args.capture(),
         instance: component,
+        template: state.template,
       });
     }
 

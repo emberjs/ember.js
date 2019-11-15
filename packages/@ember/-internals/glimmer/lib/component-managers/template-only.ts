@@ -55,7 +55,7 @@ export default class TemplateOnlyComponentManager
 
   create(
     environment: Environment,
-    { name }: TemplateOnlyComponentDefinitionState,
+    { name, template }: TemplateOnlyComponentDefinitionState,
     args: Arguments
   ): Option<DebugStateBucket> {
     if (ENV._DEBUG_RENDER_TREE) {
@@ -65,6 +65,7 @@ export default class TemplateOnlyComponentManager
         name: name,
         args: args.capture(),
         instance: null,
+        template,
       });
       return bucket;
     } else {
