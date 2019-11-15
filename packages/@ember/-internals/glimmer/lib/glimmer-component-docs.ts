@@ -78,7 +78,7 @@
     @service animation;
 
     willDestroy() {
-      this.animation.unregister(this);
+      this.myAnimations.unregister(this);
     }
   }
   ```
