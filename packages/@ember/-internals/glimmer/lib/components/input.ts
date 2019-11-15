@@ -30,7 +30,7 @@ import { setManager } from '../utils/managers';
 
   ```handlebars
   Search:
-  <Input @value={{this.searchWord}}>
+  <Input @value={{this.searchWord}} />
   ```
 
   In this example, the initial value in the `<input>` will be set to the value of
