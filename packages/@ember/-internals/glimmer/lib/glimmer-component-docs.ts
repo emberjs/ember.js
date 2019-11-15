@@ -135,4 +135,3 @@
   @module @glimmer/component
   @public
 */
-
