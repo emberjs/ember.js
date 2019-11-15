@@ -15,11 +15,12 @@ import {
   DynamicScope as GlimmerDynamicScope,
   ElementBuilder,
   IteratorResult,
-  renderMain,
+  renderJitMain,
   RenderResult,
   UNDEFINED_REFERENCE,
+  JitRuntimeFromProgram,
 } from '@glimmer/runtime';
-import { SimpleElement, SimpleNode } from '@simple-dom/interface';
+import { SimpleElement, SimpleNode, SimpleDocument } from '@simple-dom/interface';
 import RSVP from 'rsvp';
 import { BOUNDS } from './component';
 import { createRootOutlet } from './component-managers/outlet';
@@ -30,6 +31,10 @@ import { Component } from './utils/curly-component-state-bucket';
 import { OutletState } from './utils/outlet';
 import { UnboundReference } from './utils/references';
 import OutletView from './views/outlet';
+import { unwrapTemplate, JitContext, unwrapHandle } from '@glimmer/opcode-compiler';
+import CompileTimeResolver from './compile-time-lookup';
+import RuntimeResolver from './resolver';
+import { artifacts } from '@glimmer/program';
 
 export type IBuilder = (env: Environment, cursor: Cursor) => ElementBuilder;
 
@@ -77,6 +82,7 @@ class RootState {
     env: Environment,
     template: OwnedTemplate,
     self: VersionedPathReference<unknown>,
+    document: SimpleDocument,
     parentElement: SimpleElement,
     dynamicScope: DynamicScope,
     builder: IBuilder
@@ -90,16 +96,34 @@ class RootState {
     this.shouldReflush = false;
     this.destroyed = false;
 
+    let options = (this.options = {
+      alwaysRevalidate: false,
+    });
+
+    let runtimeResolver = new RuntimeResolver(env.isInteractive);
+    let compileTimeResolver = new CompileTimeResolver(runtimeResolver);
+
+    let context = JitContext(compileTimeResolver);
+
     this.render = () => {
-      let layout = template.asLayout();
-      let handle = layout.compile();
-      let iterator = renderMain(
-        layout['compiler'].program,
-        env,
+      let layout = unwrapTemplate(template).asLayout();
+      let handle = layout.compile(context);
+      let program = artifacts(context);
+
+      let runtime = new JitRuntimeFromProgram(
+        document,
+        program,
+        runtimeResolver,
+        compileTimeResolver
+      );
+
+      let iterator = renderJitMain(
+        runtime,
+        context,
         self,
-        dynamicScope,
         builder(env, { element: parentElement, nextSibling: null }),
-        handle
+        unwrapHandle(handle),
+        dynamicScope
       );
       let iteratorResult: IteratorResult<RenderResult>;
       do {

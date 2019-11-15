@@ -39,7 +39,7 @@ export interface Owner {
 
 import { symbol } from '@ember/-internals/utils';
 
-export const OWNER = symbol('OWNER');
+export const OWNER: unique symbol = symbol('OWNER') as any;
 
 /**
   Framework objects in an Ember application (components, services, routes, etc.)

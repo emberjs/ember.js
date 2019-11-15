@@ -1,15 +1,12 @@
 import { OwnedTemplateMeta } from '@ember/-internals/views';
 import {
-  CompilableTemplate,
-  CompileTimeResolverDelegate,
+  CompileTimeComponent,
   ComponentCapabilities,
   ComponentDefinition,
   ComponentManager,
-  WithJitStaticLayout,
   Option,
-  ProgramSymbolTable,
-  CompileTimeComponent,
-  JitRuntimeResolver,
+  WithJitStaticLayout,
+  CompileTimeResolverDelegate,
 } from '@glimmer/interfaces';
 import RuntimeResolver from './resolver';
 
@@ -21,7 +18,7 @@ function isStaticComponentManager(_manager: ComponentManager, capabilities: Comp
   return !capabilities.dynamicLayout;
 }
 
-export default class CompileTimeLookup implements CompileTimeResolverDelegate<OwnedTemplateMeta> {
+export default class CompileTimeResolver implements CompileTimeResolverDelegate<OwnedTemplateMeta> {
   constructor(private resolver: RuntimeResolver) {}
 
   lookupHelper(name: string, referrer: OwnedTemplateMeta): Option<number> {
@@ -67,9 +64,5 @@ export default class CompileTimeLookup implements CompileTimeResolverDelegate<Ow
 
   resolve(handle: number): OwnedTemplateMeta {
     return this.resolver.resolve(handle);
-  }
-
-  compile(_source: string, _name: string): any {
-    // What is this for?
   }
 }

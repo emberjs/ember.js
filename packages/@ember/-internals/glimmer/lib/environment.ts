@@ -2,11 +2,11 @@ import { OWNER, Owner } from '@ember/-internals/owner';
 import { constructStyleDeprecationMessage } from '@ember/-internals/views';
 import { warn } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { Option } from '@glimmer/interfaces';
+import { Option, EnvironmentOptions } from '@glimmer/interfaces';
 import { OpaqueIterable, VersionedReference } from '@glimmer/reference';
 import {
   ElementBuilder,
-  Environment as GlimmerEnvironment,
+  EnvironmentImpl as GlimmerEnvironment,
   SimpleDynamicAttribute,
 } from '@glimmer/runtime';
 import { Destroyable } from '@glimmer/util';
@@ -38,10 +38,13 @@ export default class Environment extends GlimmerEnvironment {
   private _debugRenderTree: DebugRenderTree | undefined;
   public inTransaction = false;
 
-  constructor(injections: any) {
-    super(injections);
+  constructor(document: SimpleDocument, owner: Owner) {
+    super({
+      appendOperations: new Dom
+      updateOperations:
+    });
 
-    let owner: Owner = injections[OWNER];
+    let owner: Owner = options[OWNER];
 
     this.owner = owner;
     this.isInteractive = owner.lookup<any>('-environment:main').isInteractive;

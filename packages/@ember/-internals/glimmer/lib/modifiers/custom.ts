@@ -34,7 +34,7 @@ export function capabilities(
       'Modifier manager capabilities now require you to pass a valid version when being generated. Valid versions include: 3.13',
       false,
       {
-        until: '3.17.0',
+        // until: '3.17.0',
         id: 'implicit-modifier-manager-capabilities',
       }
     );

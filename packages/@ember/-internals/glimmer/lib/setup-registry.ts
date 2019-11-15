@@ -27,12 +27,12 @@ import RootTemplate from './templates/root';
 import OutletView from './views/outlet';
 
 export function setupApplicationRegistry(registry: Registry) {
-  registry.injection(
-    'service:-glimmer-environment',
-    'appendOperations',
-    'service:-dom-tree-construction'
-  );
-  registry.injection('renderer', 'env', 'service:-glimmer-environment');
+  // registry.injection(
+  //   'service:-glimmer-environment',
+  //   'appendOperations',
+  //   'service:-dom-tree-construction'
+  // );
+  // registry.injection('renderer', 'env', 'service:-glimmer-environment');
 
   // because we are using injections we can't use instantiate false
   // we need to use bind() to copy the function so factory for
@@ -60,22 +60,24 @@ export function setupApplicationRegistry(registry: Registry) {
   registry.register('renderer:-dom', InteractiveRenderer);
   registry.register('renderer:-inert', InertRenderer);
 
-  if (hasDOM) {
-    registry.injection('service:-glimmer-environment', 'updateOperations', 'service:-dom-changes');
-  }
+  registry.injection('renderer', 'document', 'service:-document');
 
-  registry.register('service:-dom-changes', {
-    create({ document }: { document: SimpleDocument }) {
-      return new DOMChanges(document);
-    },
-  });
+  // if (hasDOM) {
+  //   registry.injection('service:-glimmer-environment', 'updateOperations', 'service:-dom-changes');aaoeuaoeuaoeuaoeuuaoeuaoeuaoeuaoeuaoeu
+  // }
 
-  registry.register('service:-dom-tree-construction', {
-    create({ document }: { document: SimpleDocument }) {
-      let Implementation = hasDOM ? DOMTreeConstruction : NodeDOMTreeConstruction;
-      return new Implementation(document);
-    },
-  });
+  // registry.register('service:-dom-changes', {
+  //   create({ document }: { document: SimpleDocument }) {
+  //     return new DOMChanges(document);
+  //   },
+  // });
+
+  // registry.register('service:-dom-tree-construction', {
+  //   create({ document }: { document: SimpleDocument }) {
+  //     let Implementation = hasDOM ? DOMTreeConstruction : NodeDOMTreeConstruction;
+  //     return new Implementation(document);
+  //   },
+  // });
 }
 
 export function setupEngineRegistry(registry: Registry) {
@@ -85,12 +87,13 @@ export function setupEngineRegistry(registry: Registry) {
   registry.register('template:-outlet', OutletTemplate as any);
   registry.injection('view:-outlet', 'template', 'template:-outlet');
 
-  registry.injection('service:-dom-changes', 'document', 'service:-document');
-  registry.injection('service:-dom-tree-construction', 'document', 'service:-document');
+  // registry.injection('service:-dom-changes', 'document', 'service:-document');
+  // registry.injection('service:-dom-tree-construction', 'document', 'service:-document');
 
   registry.register(P`template:components/-default`, ComponentTemplate as any);
 
   registry.register('service:-glimmer-environment', Environment);
+  registry.injection('service:-glimmer-environment', 'document', 'service:-document');
 
   registry.register(P`template-compiler:main`, TemplateCompiler);
   registry.injection(P`template-compiler:main`, 'environment', '-environment:main');

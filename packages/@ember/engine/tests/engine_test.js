@@ -103,14 +103,14 @@ moduleFor(
       verifyRegistration(assert, engine, 'container-debug-adapter:main');
       verifyRegistration(assert, engine, 'component-lookup:main');
 
-      verifyInjection(assert, engine, 'service:-dom-changes', 'document', 'service:-document');
-      verifyInjection(
-        assert,
-        engine,
-        'service:-dom-tree-construction',
-        'document',
-        'service:-document'
-      );
+      // verifyInjection(assert, engine, 'service:-dom-changes', 'document', 'service:-document');
+      // verifyInjection(
+      //   assert,
+      //   engine,
+      //   'service:-dom-tree-construction',
+      //   'document',
+      //   'service:-document'
+      // );
       verifyRegistration(assert, engine, 'view:-outlet');
       verifyRegistration(assert, engine, P`template:components/-default`);
       verifyRegistration(assert, engine, 'template:-outlet');

@@ -15,7 +15,7 @@ const untouchableContext = buildUntouchableThis('`on` modifier');
 /*
   Internet Explorer 11 does not support `once` and also does not support
   passing `eventOptions`. In some situations it then throws a weird script
-  error, like:
+  // error, like:
 
   ```
   Could not complete the operation due to error 80020101
