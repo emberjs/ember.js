@@ -84,6 +84,7 @@
     "@glimmer/runtime": "0.38.5-alpha.3",
     "@types/qunit": "^2.5.4",
     "@types/rsvp": "^4.0.3",
+    "@typescript-eslint/parser": "^2.7.0",
     "auto-dist-tag": "^1.0.0",
     "aws-sdk": "^2.538.0",
     "babel-eslint": "^10.0.3",
@@ -141,8 +142,7 @@
     "simple-dom": "^1.4.0",
     "testem": "^2.17.0",
     "testem-failure-only-reporter": "^0.0.1",
-    "tslint": "^5.20.0",
-    "typescript-eslint-parser": "^22.0.0"
+    "tslint": "^5.20.0"
   },
   "engines": {
     "node": "8.* || 10.* || >= 12.*"
