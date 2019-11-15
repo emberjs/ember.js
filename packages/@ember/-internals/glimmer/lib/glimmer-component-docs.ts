@@ -75,7 +75,7 @@
   import { inject as service } from '@ember/service';
 
   export default class SomeComponent extends Component {
-    @service animation;
+    @service myAnimations;
 
     willDestroy() {
       this.myAnimations.unregister(this);
