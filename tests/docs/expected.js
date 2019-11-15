@@ -546,6 +546,7 @@ module.exports = {
     'toArray',
     'toString',
     'toggleProperty',
+    'tracked',
     'transitionTo',
     'transitionToRoute',
     'translateToContainerFullname',
