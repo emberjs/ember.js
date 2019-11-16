@@ -68,7 +68,11 @@ moduleFor(
       });
     }
 
-    ['@test `(query-params)` can be used outside of `{{link-to}}']() {
+    ['@test `(query-params)` can be used outside of `{{link-to}}'](assert) {
+      if (!DEBUG) {
+        assert.expect(0);
+        return;
+      }
       this.addTemplate(
         'index',
         `{{#let (query-params foo='456' alon='BUKAI') as |qp|}}{{link-to 'Index' 'index' qp}}{{/let}}`
