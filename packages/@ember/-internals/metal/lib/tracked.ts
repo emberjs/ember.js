@@ -70,6 +70,7 @@ if (DEBUG) {
     if (
       name &&
       name.match(/<.*:ember\d+>/) &&
+      className &&
       !className.startsWith('_') &&
       className.length > 2 &&
       className !== 'Class'

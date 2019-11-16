@@ -1,5 +1,5 @@
 import { ENV } from '@ember/-internals/environment';
-import { runInAutotrackingTransaction, runInTransaction } from '@ember/-internals/metal';
+import { runInAutotrackingTransaction } from '@ember/-internals/metal';
 import { getViewElement, getViewId } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { backburner, getCurrentRunLoop } from '@ember/runloop';
@@ -432,9 +432,7 @@ export abstract class Renderer {
           root.options.alwaysRevalidate = shouldReflush;
           // track shouldReflush based on this roots render result
           if (DEBUG) {
-            runInAutotrackingTransaction(() => {
-              shouldReflush = root.shouldReflush = runInTransaction(root, 'render');
-            });
+            runInAutotrackingTransaction(() => root.render());
           } else {
             root.render();
           }
