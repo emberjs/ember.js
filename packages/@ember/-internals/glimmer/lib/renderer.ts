@@ -1,5 +1,5 @@
 import { ENV } from '@ember/-internals/environment';
-import { runInTransaction } from '@ember/-internals/metal';
+import { runInTransaction, runInAutotrackingTransaction } from '@ember/-internals/metal';
 import { getViewElement, getViewId } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { backburner, getCurrentRunLoop } from '@ember/runloop';
@@ -398,6 +398,7 @@ export abstract class Renderer {
     let { _roots: roots, _env: env, _removedRoots: removedRoots } = this;
     let globalShouldReflush = false;
     let initialRootsLength: number;
+    let root: RootState, shouldReflush: boolean;
 
     do {
       env.begin();
@@ -408,7 +409,7 @@ export abstract class Renderer {
         globalShouldReflush = false;
 
         for (let i = 0; i < roots.length; i++) {
-          let root = roots[i];
+          root = roots[i];
 
           if (root.destroyed) {
             // add to the list of roots to be removed
@@ -419,7 +420,7 @@ export abstract class Renderer {
             continue;
           }
 
-          let { shouldReflush } = root;
+          shouldReflush = root.shouldReflush;
 
           // when processing non-initial reflush loops,
           // do not process more roots than needed
@@ -429,7 +430,9 @@ export abstract class Renderer {
 
           root.options.alwaysRevalidate = shouldReflush;
           // track shouldReflush based on this roots render result
-          shouldReflush = root.shouldReflush = runInTransaction(root, 'render');
+          runInAutotrackingTransaction(() => {
+            shouldReflush = root.shouldReflush = runInTransaction(root, 'render');
+          });
 
           // globalShouldReflush should be `true` if *any* of
           // the roots need to reflush

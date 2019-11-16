@@ -782,7 +782,7 @@ moduleFor(
         template: '{{person.name}}',
       });
 
-      let expectedBacktrackingMessage = /modified `Person \(Ben\)` twice in a single render\. It was first rendered as `this\.person\.name` in "component:outer-component" and then modified later in "component:error-component"/;
+      let expectedBacktrackingMessage = /You attempted to dirty `name` on `Person \(Ben\)`, but it had already been consumed previously in the same render/;
 
       expectAssertion(() => {
         this.render('{{component componentName}}', {

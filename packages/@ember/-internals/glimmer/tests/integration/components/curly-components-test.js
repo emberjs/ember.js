@@ -2537,7 +2537,7 @@ moduleFor(
         template: '<div id="inner-value">{{value}}</div>',
       });
 
-      let expectedBacktrackingMessage = /modified `<.+?>` twice in a single render\. It was first rendered as `this\.value` in "component:x-middle" and then modified later in "component:x-inner"/;
+      let expectedBacktrackingMessage = /You attempted to dirty `value` on `<.+?>`, but it had already been consumed previously in the same render/;
 
       expectAssertion(() => {
         this.render('{{x-outer}}');
@@ -2564,7 +2564,7 @@ moduleFor(
         template: '<div id="inner-value">{{wrapper.content}}</div>',
       });
 
-      let expectedBacktrackingMessage = /modified `<.+?>` twice in a single render\. It was first rendered as `this\.wrapper\.content` in "component:x-outer" and then modified later in "component:x-inner"/;
+      let expectedBacktrackingMessage = /You attempted to dirty `content` on `<.+?>`, but it had already been consumed previously in the same render/;
 
       expectAssertion(() => {
         this.render('{{x-outer}}');
