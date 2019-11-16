@@ -32,15 +32,16 @@ import {
   CompileTimeConstants,
   CompileTimeHeap,
   Macros,
+  EnvironmentSetupOptions,
 } from '@glimmer/interfaces';
 import {
   IterableImpl,
-  IterableKeyDefinitions,
   OpaqueIterable,
   PathReference,
   Reference,
   VersionedPathReference,
   VersionedReference,
+  IteratorDelegate,
 } from '@glimmer/reference';
 import { assert, DROP, expect, Option } from '@glimmer/util';
 import { AttrNamespace, SimpleDocument, SimpleElement } from '@simple-dom/interface';
@@ -325,8 +326,9 @@ export abstract class EnvironmentImpl implements Environment {
 }
 
 export interface RuntimeEnvironmentDelegate {
+  getPath?(obj: any, path: string): any;
   protocolForURL?(url: string): string;
-  iterable?: IterableKeyDefinitions;
+  toIterator?(value: unknown): IteratorDelegate | undefined;
   toBool?(value: unknown): boolean;
   attributeFor?(
     element: SimpleElement,
@@ -338,12 +340,30 @@ export interface RuntimeEnvironmentDelegate {
 
 export class RuntimeEnvironmentDelegateImpl implements RuntimeEnvironmentDelegate {
   readonly toBool: (value: unknown) => boolean;
+  readonly toIterator: (value: unknown) => IteratorDelegate | undefined;
+  readonly getPath: (obj: any, path: string) => any;
 
   constructor(private inner: RuntimeEnvironmentDelegate = {}) {
     if (inner.toBool) {
       this.toBool = inner.toBool;
     } else {
       this.toBool = value => !!value;
+    }
+
+    if (inner.toIterator) {
+      this.toIterator = inner.toIterator;
+    } else {
+      this.toIterator = (value: any) => {
+        if (value && value[Symbol.iterator]) {
+          return value[Symbol.iterator]();
+        }
+      };
+    }
+
+    if (inner.getPath) {
+      this.getPath = inner.getPath;
+    } else {
+      this.getPath = (value, key) => value[key];
     }
   }
 
@@ -371,15 +391,6 @@ export class RuntimeEnvironmentDelegateImpl implements RuntimeEnvironmentDelegat
       return dynamicAttribute(element, attr, namespace);
     }
   }
-
-  readonly iterable: IterableKeyDefinitions = {
-    named: {
-      '@index': (_, index) => String(index),
-      '@primitive': item => String(item),
-      '@identity': item => item,
-    },
-    default: key => item => item[key],
-  };
 }
 
 function legacyProtocolForURL(url: string): string {
@@ -477,12 +488,12 @@ export class DefaultRuntimeResolver<R extends { module: string }>
 }
 
 export function AotRuntime(
-  document: SimpleDocument,
+  options: EnvironmentSetupOptions,
   program: CompilerArtifacts,
   resolver: RuntimeResolverDelegate = {},
   delegate: RuntimeEnvironmentDelegate = {}
 ): AotRuntimeContext {
-  let env = new RuntimeEnvironment(document, new RuntimeEnvironmentDelegateImpl(delegate));
+  let env = new RuntimeEnvironment(options, new RuntimeEnvironmentDelegateImpl(delegate));
 
   return {
     env,
@@ -520,11 +531,11 @@ export function CustomJitRuntime(
 }
 
 export function JitRuntime(
-  document: SimpleDocument,
+  options: EnvironmentSetupOptions,
   resolver: RuntimeResolverDelegate = {},
   delegate: RuntimeEnvironmentDelegate = {}
 ): JitRuntimeContext {
-  let env = new RuntimeEnvironment(document, new RuntimeEnvironmentDelegateImpl(delegate));
+  let env = new RuntimeEnvironment(options, new RuntimeEnvironmentDelegateImpl(delegate));
 
   let constants = new Constants();
   let heap = new HeapImpl();
@@ -538,12 +549,12 @@ export function JitRuntime(
 }
 
 export function JitRuntimeFromProgram(
-  document: SimpleDocument,
+  options: EnvironmentSetupOptions,
   program: RuntimeProgram,
   resolver: RuntimeResolverDelegate = {},
   delegate: RuntimeEnvironmentDelegate = {}
 ): JitRuntimeContext {
-  let env = new RuntimeEnvironment(document, new RuntimeEnvironmentDelegateImpl(delegate));
+  let env = new RuntimeEnvironment(options, new RuntimeEnvironmentDelegateImpl(delegate));
 
   return {
     env,
@@ -555,11 +566,21 @@ export function JitRuntimeFromProgram(
 export class RuntimeEnvironment extends EnvironmentImpl {
   private delegate: RuntimeEnvironmentDelegateImpl;
 
-  constructor(document: SimpleDocument, delegate: RuntimeEnvironmentDelegateImpl) {
-    super({
-      appendOperations: new DOMTreeConstruction(document),
-      updateOperations: new DOMChangesImpl(document),
-    });
+  constructor(options: EnvironmentSetupOptions, delegate: RuntimeEnvironmentDelegateImpl) {
+    let envOptions: EnvironmentOptions;
+
+    if (options.appendOperations && options.updateOperations) {
+      envOptions = options as EnvironmentOptions;
+    } else if (options.document) {
+      envOptions = {
+        appendOperations: new DOMTreeConstruction(options.document),
+        updateOperations: new DOMChangesImpl(options.document),
+      };
+    } else {
+      throw new Error('you must pass a document or append and update operations to a new runtime');
+    }
+
+    super(envOptions);
 
     this.delegate = new RuntimeEnvironmentDelegateImpl(delegate);
   }
@@ -570,11 +591,8 @@ export class RuntimeEnvironment extends EnvironmentImpl {
 
   iterableFor(ref: Reference, inputKey: unknown): OpaqueIterable {
     let key = String(inputKey);
-    let def = this.delegate.iterable;
 
-    let keyFor = key in def.named ? def.named[key] : def.default(key);
-
-    return new IterableImpl(ref, keyFor);
+    return new IterableImpl(ref, key, this.delegate.toIterator, this.delegate.getPath);
   }
 
   toConditionalReference(input: VersionedPathReference): VersionedReference<boolean> {

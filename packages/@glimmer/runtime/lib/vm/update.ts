@@ -225,12 +225,8 @@ class ListRevalidationDelegate implements IteratorSynchronizerDelegate<Environme
     let nextSibling: Option<SimpleNode> = null;
     let reference: Option<BlockOpcode> = null;
 
-    if (typeof before === 'string') {
-      reference = map.get(before)!;
-      nextSibling = reference['bounds'].firstNode();
-    } else {
-      nextSibling = this.marker;
-    }
+    reference = map.get(before)!;
+    nextSibling = reference !== undefined ? reference['bounds'].firstNode() : this.marker;
 
     let vm = opcode.vmForInsertion(nextSibling);
     let tryOpcode: Option<TryOpcode> = null;

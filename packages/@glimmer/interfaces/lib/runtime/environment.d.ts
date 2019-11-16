@@ -1,12 +1,18 @@
 import { OpaqueIterable, VersionedPathReference, VersionedReference } from '@glimmer/reference';
 import { AttributeOperation } from '@glimmer/runtime';
-import { AttrNamespace, SimpleElement } from '@simple-dom/interface';
+import { AttrNamespace, SimpleElement, SimpleDocument } from '@simple-dom/interface';
 import { ComponentDefinitionState, ComponentInstanceState } from '../components';
 import { ComponentManager } from '../components/component-manager';
 import { Drop, Option } from '../core';
 import { GlimmerTreeChanges, GlimmerTreeConstruction } from '../dom/changes';
 import { ModifierManager } from './modifier';
 import { Cursor } from '../dom/bounds';
+
+export interface EnvironmentSetupOptions {
+  document?: SimpleDocument;
+  appendOperations?: GlimmerTreeConstruction;
+  updateOperations?: GlimmerTreeChanges;
+}
 
 export interface EnvironmentOptions {
   appendOperations: GlimmerTreeConstruction;

@@ -245,7 +245,7 @@ export class AotRenderDelegate implements RenderDelegate {
   private getRuntimeContext({ table, pool, heap }: BundleCompilationResult): AotRuntimeContext {
     let resolver = new AotRuntimeResolverImpl(table, this.registry.modules, this.symbolTables);
 
-    return AotRuntime(this.doc, { constants: pool, heap }, resolver);
+    return AotRuntime({ document: this.doc }, { constants: pool, heap }, resolver);
   }
 
   renderComponent(

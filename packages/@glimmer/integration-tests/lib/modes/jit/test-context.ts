@@ -35,7 +35,7 @@ export function JitTestContext(delegate: RuntimeEnvironmentDelegate = {}): TestC
   let doc = document as SimpleDocument;
 
   let runtime = JitRuntimeFromProgram(
-    document as SimpleDocument,
+    { document: document as SimpleDocument },
     context.program(),
     resolver,
     assign(
