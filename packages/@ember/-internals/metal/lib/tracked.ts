@@ -8,6 +8,31 @@ import { markObjectAsDirty, tagForProperty } from './tags';
 
 type Option<T> = T | null;
 
+let AUTOTRACKING_TRANSACTION: WeakMap<Tag, Error> | null = null;
+
+export let runInAutotrackingTransaction: (fn: () => void) => void;
+export let getAutotrackingTransactionSourceForTag: (tag: Tag) => Error | undefined;
+
+if (DEBUG) {
+  runInAutotrackingTransaction = (fn: () => void) => {
+    AUTOTRACKING_TRANSACTION = new WeakMap();
+
+    try {
+      fn();
+    } finally {
+      AUTOTRACKING_TRANSACTION = null;
+    }
+  }
+
+  getAutotrackingTransactionSourceForTag = (tag: Tag) => {
+    if (AUTOTRACKING_TRANSACTION !== null) {
+      return AUTOTRACKING_TRANSACTION.get(tag);
+    }
+
+    return;
+  }
+}
+
 /**
   An object that that tracks @tracked properties that were consumed.
 
@@ -19,6 +44,11 @@ export class Tracker {
 
   add(tag: Tag): void {
     this.tags.add(tag);
+
+    if (DEBUG && AUTOTRACKING_TRANSACTION !== null && !AUTOTRACKING_TRANSACTION.has(tag)) {
+      AUTOTRACKING_TRANSACTION.set(tag, new Error());
+    }
+
     this.last = tag;
   }
 
