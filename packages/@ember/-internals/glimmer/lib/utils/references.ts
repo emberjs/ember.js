@@ -1,6 +1,5 @@
 import {
   consume,
-  didRender,
   get,
   set,
   tagFor,
@@ -16,7 +15,6 @@ import { DEBUG } from '@glimmer/env';
 import { Dict, Opaque } from '@glimmer/interfaces';
 import {
   combine,
-  COMPUTE,
   ConstReference,
   createTag,
   createUpdatableTag,
@@ -105,32 +103,6 @@ export class RootReference<T extends object> extends ConstReference<T>
   }
 }
 
-let TwoWayFlushDetectionTag: {
-  create(tag: Tag, key: string, ref: VersionedPathReference<Opaque>): Tag;
-};
-
-if (DEBUG) {
-  TwoWayFlushDetectionTag = class TwoWayFlushDetectionTag {
-    static create(tag: Tag, key: string, ref: VersionedPathReference<Opaque>): Tag {
-      return (new TwoWayFlushDetectionTag(tag, key, ref) as unknown) as Tag;
-    }
-
-    constructor(
-      private tag: Tag,
-      private key: string,
-      private ref: VersionedPathReference<Opaque>
-    ) {}
-
-    [COMPUTE](): Revision {
-      return this.tag[COMPUTE]();
-    }
-
-    didCompute(parent: Opaque): void {
-      didRender(parent, this.key, this.ref);
-    }
-  };
-}
-
 export abstract class PropertyReference extends CachedReference {
   abstract tag: Tag;
 
@@ -162,11 +134,7 @@ export class RootPropertyReference extends PropertyReference
       update(tag, tagForProperty(parentValue, propertyKey));
     }
 
-    if (DEBUG) {
-      this.tag = TwoWayFlushDetectionTag.create(this.propertyTag, propertyKey, this);
-    } else {
-      this.tag = this.propertyTag;
-    }
+    this.tag = this.propertyTag;
 
     if (DEBUG && !EMBER_METAL_TRACKED_PROPERTIES) {
       watchKey(parentValue, propertyKey);
@@ -175,10 +143,6 @@ export class RootPropertyReference extends PropertyReference
 
   compute(): Opaque {
     let { parentValue, propertyKey } = this;
-
-    if (DEBUG) {
-      (this.tag as any).didCompute(parentValue);
-    }
 
     let ret;
 
@@ -220,12 +184,7 @@ export class NestedPropertyReference extends PropertyReference {
     let parentReferenceTag = parentReference.tag;
     let propertyTag = (this.propertyTag = createUpdatableTag());
 
-    if (DEBUG) {
-      let tag = combine([parentReferenceTag, propertyTag]);
-      this.tag = TwoWayFlushDetectionTag.create(tag, propertyKey, this);
-    } else {
-      this.tag = combine([parentReferenceTag, propertyTag]);
-    }
+    this.tag = combine([parentReferenceTag, propertyTag]);
   }
 
   compute(): Opaque {
@@ -243,10 +202,6 @@ export class NestedPropertyReference extends PropertyReference {
 
       if (DEBUG && !EMBER_METAL_TRACKED_PROPERTIES) {
         watchKey(parentValue, propertyKey);
-      }
-
-      if (DEBUG) {
-        (this.tag as any).didCompute(parentValue);
       }
 
       let ret;
