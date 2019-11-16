@@ -403,7 +403,7 @@ moduleFor(
       });
 
       expectDeprecation(
-        'Using `mouseMove` event handler methods in components has been deprecated.'
+        /Using `mouseMove` event handler methods in components has been deprecated\./
       );
 
       this.render(`{{x-foo}}`);
@@ -621,11 +621,11 @@ if (jQueryDisabled) {
     'EventDispatcher#jquery-events',
     class extends RenderingTestCase {
       beforeEach() {
-        this.jqueryIntegration = window.ENV._JQUERY_INTEGRATION;
+        this.jqueryIntegration = window.EmberENV._JQUERY_INTEGRATION;
       }
 
       afterEach() {
-        window.ENV._JQUERY_INTEGRATION = this.jqueryIntegration;
+        window.EmberENV._JQUERY_INTEGRATION = this.jqueryIntegration;
       }
 
       ['@test jQuery events are passed when jQuery is present'](assert) {
@@ -699,7 +699,7 @@ if (jQueryDisabled) {
         assert
       ) {
         let receivedEvent;
-        window.ENV._JQUERY_INTEGRATION = true;
+        window.EmberENV._JQUERY_INTEGRATION = true;
 
         this.registerComponent('x-foo', {
           ComponentClass: Component.extend({

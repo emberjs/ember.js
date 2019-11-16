@@ -76,13 +76,16 @@ moduleFor(
 
       this.addTemplate(
         'index',
-        `{{#let (query-params foo='456' bar='NAW') as |qp|}}{{link-to 'Index' 'index' qp}}{{/let}}`
+        `{{#let (query-params foo='456' alon='BUKAI') as |qp|}}{{link-to 'Index' 'index' qp}}{{/let}}`
       );
 
-      return assert.rejectsAssertion(
-        this.visit('/'),
-        /The `\(query-params\)` helper can only be used when invoking the `{{link-to}}` component\./
-      );
+      return this.visit('/').then(() => {
+        this.assertComponentElement(this.firstChild, {
+          tagName: 'a',
+          attrs: { href: '/?alon=BUKAI&foo=456', class: classMatcher('ember-view') },
+          content: 'Index',
+        });
+      });
     }
   }
 );

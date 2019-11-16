@@ -340,6 +340,7 @@
   @method partial
   @for Ember.Templates.helpers
   @param {String} partialName The name of the template to render minus the leading underscore.
+  @deprecated Use a component instead
   @public
 */
 

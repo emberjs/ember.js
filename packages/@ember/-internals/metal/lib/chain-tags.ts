@@ -125,12 +125,14 @@ export function getChainTagsForKey(obj: any, path: string) {
       for (let i = 0; i < arrLength; i++) {
         let item = objectAt(current as Array<any>, i);
 
-        assert(
-          `When using @each to observe the array \`${current.toString()}\`, the items in the array must be objects`,
-          typeof item === 'object'
-        );
+        if (item) {
+          assert(
+            `When using @each to observe the array \`${current.toString()}\`, the items in the array must be objects`,
+            typeof item === 'object'
+          );
 
-        chainTags.push(tagForProperty(item, segment));
+          chainTags.push(tagForProperty(item, segment));
+        }
       }
 
       // Push the tag for the array length itself

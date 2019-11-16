@@ -37,7 +37,7 @@ import {
   PrimitiveReference,
   UNDEFINED_REFERENCE,
 } from '@glimmer/runtime';
-import { Option, unreachable } from '@glimmer/util';
+import { Option } from '@glimmer/util';
 import { HelperFunction, HelperInstance, RECOMPUTE_TAG } from '../helper';
 import emberToBool from './to-bool';
 
@@ -505,8 +505,6 @@ export function referenceFromParts(
   return reference;
 }
 
-type Primitive = undefined | null | boolean | number | string;
-
 function isObject(value: unknown): value is object {
   return value !== null && typeof value === 'object';
 }
@@ -515,7 +513,7 @@ function isFunction(value: unknown): value is Function {
   return typeof value === 'function';
 }
 
-function isPrimitive(value: unknown): value is Primitive {
+function ensurePrimitive(value: unknown) {
   if (DEBUG) {
     let label;
 
@@ -534,8 +532,6 @@ function isPrimitive(value: unknown): value is Primitive {
         typeof value === 'string'
     );
   }
-
-  return true;
 }
 
 function valueToRef<T = unknown>(value: T, bound = true): VersionedPathReference<T> {
@@ -545,25 +541,9 @@ function valueToRef<T = unknown>(value: T, bound = true): VersionedPathReference
   } else if (isFunction(value)) {
     // ember doesn't do observing with functions
     return new UnboundReference(value);
-  } else if (isPrimitive(value)) {
-    return PrimitiveReference.create(value);
-  } else if (DEBUG) {
-    let type = typeof value;
-    let output: Option<string>;
-
-    try {
-      output = String(value);
-    } catch (e) {
-      output = null;
-    }
-
-    if (output) {
-      throw unreachable(`[BUG] Unexpected ${type} (${output})`);
-    } else {
-      throw unreachable(`[BUG] Unexpected ${type}`);
-    }
   } else {
-    throw unreachable();
+    ensurePrimitive(value);
+    return PrimitiveReference.create(value as any);
   }
 }
 
@@ -574,24 +554,8 @@ function valueKeyToRef(value: unknown, key: string): VersionedPathReference<Opaq
   } else if (isFunction(value)) {
     // ember doesn't do observing with functions
     return new UnboundReference(value[key]);
-  } else if (isPrimitive(value)) {
-    return UNDEFINED_REFERENCE;
-  } else if (DEBUG) {
-    let type = typeof value;
-    let output: Option<string>;
-
-    try {
-      output = String(value);
-    } catch (e) {
-      output = null;
-    }
-
-    if (output) {
-      throw unreachable(`[BUG] Unexpected ${type} (${output})`);
-    } else {
-      throw unreachable(`[BUG] Unexpected ${type}`);
-    }
   } else {
-    throw unreachable();
+    ensurePrimitive(value);
+    return UNDEFINED_REFERENCE;
   }
 }

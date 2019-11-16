@@ -747,7 +747,7 @@ const Component = CoreView.extend(
       }
 
       deprecate(
-        `Using \`mouseEnter\` event handler methods in components has been deprecated.`,
+        `${this}: Using \`mouseEnter\` event handler methods in components has been deprecated.`,
         this.mouseEnter === undefined,
         {
           id: 'ember-views.event-dispatcher.mouseenter-leave-move',
@@ -756,7 +756,7 @@ const Component = CoreView.extend(
         }
       );
       deprecate(
-        `Using \`mouseLeave\` event handler methods in components has been deprecated.`,
+        `${this}: Using \`mouseLeave\` event handler methods in components has been deprecated.`,
         this.mouseLeave === undefined,
         {
           id: 'ember-views.event-dispatcher.mouseenter-leave-move',
@@ -765,7 +765,7 @@ const Component = CoreView.extend(
         }
       );
       deprecate(
-        `Using \`mouseMove\` event handler methods in components has been deprecated.`,
+        `${this}: Using \`mouseMove\` event handler methods in components has been deprecated.`,
         this.mouseMove === undefined,
         {
           id: 'ember-views.event-dispatcher.mouseenter-leave-move',
@@ -1104,6 +1104,7 @@ const Component = CoreView.extend(
      @property isVisible
      @type Boolean
      @default null
+     @deprecated Use `<div hidden={{this.isHidden}}>` or `{{#if this.showComponent}} <MyComponent /> {{/if}}`
      @public
      */
   }

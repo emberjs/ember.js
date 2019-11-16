@@ -65,6 +65,10 @@ class MountManager extends AbstractManager<EngineState, EngineDefinitionState>
     let template = templateFactory(state.engine);
     let layout = template.asLayout();
 
+    if (ENV._DEBUG_RENDER_TREE) {
+      state.environment.debugRenderTree.setTemplate(state.controller, template);
+    }
+
     return {
       handle: layout.compile(),
       symbolTable: layout.symbolTable,
@@ -117,6 +121,7 @@ class MountManager extends AbstractManager<EngineState, EngineDefinitionState>
         name,
         args: args.capture(),
         instance: engine,
+        template: undefined,
       });
 
       environment.debugRenderTree.create(controller, {
@@ -124,6 +129,8 @@ class MountManager extends AbstractManager<EngineState, EngineDefinitionState>
         name: 'application',
         args: args.capture(),
         instance: controller,
+        // set in getDynamicLayout
+        template: undefined,
       });
     }
 

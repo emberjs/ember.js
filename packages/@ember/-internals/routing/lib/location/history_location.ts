@@ -95,11 +95,7 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
     let history = this.history || window.history;
     set(this, 'history', history);
 
-    if (history && 'state' in history) {
-      this.supportsHistory = true;
-    }
-
-    let state = this.getState();
+    let { state } = history;
     let path = this.formatURL(this.getURL());
     if (state && state.path === path) {
       // preserve existing state
@@ -145,7 +141,7 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
     @param path {String}
   */
   setURL(path: string) {
-    let state = this.getState();
+    let { state } = this.history;
     path = this.formatURL(path);
 
     if (!state || state.path !== path) {
@@ -162,34 +158,12 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
     @param path {String}
   */
   replaceURL(path: string) {
-    let state = this.getState();
+    let { state } = this.history;
     path = this.formatURL(path);
 
     if (!state || state.path !== path) {
       this.replaceState(path);
     }
-  }
-
-  /**
-    Get the current `history.state`. Checks for if a polyfill is
-    required and if so fetches this._historyState. The state returned
-    from getState may be null if an iframe has changed a window's
-    history.
-
-    The object returned will contain a `path` for the given state as well
-    as a unique state `id`. The state index will allow the app to distinguish
-    between two states with similar paths but should be unique from one another.
-
-    @private
-    @method getState
-    @return state {Object}
-  */
-  getState() {
-    if (this.supportsHistory) {
-      return this.history.state;
-    }
-
-    return this._historyState;
   }
 
   /**
@@ -203,8 +177,6 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
     let state = { path, uuid: _uuid() };
 
     this.history.pushState(state, null, path);
-
-    this._historyState = state;
 
     // used for webkit workaround
     this._previousURL = this.getURL();
@@ -221,8 +193,6 @@ export default class HistoryLocation extends EmberObject implements EmberLocatio
     let state = { path, uuid: _uuid() };
 
     this.history.replaceState(state, null, path);
-
-    this._historyState = state;
 
     // used for webkit workaround
     this._previousURL = this.getURL();
