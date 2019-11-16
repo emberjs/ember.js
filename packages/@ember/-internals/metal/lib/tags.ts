@@ -4,8 +4,7 @@ import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { backburner } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import { CONSTANT_TAG, createTag, createUpdatableTag, dirty, Tag } from '@glimmer/reference';
-import { AUTOTRACKING_TRANSACTION, getAutotrackingTransactionSourceForTag } from './tracked';
-import { assert } from '@ember/debug';
+import { assertPropertyNotTracked } from './tracked';
 
 export const UNKNOWN_PROPERTY_TAG = symbol('UNKNOWN_PROPERTY_TAG');
 
@@ -65,15 +64,7 @@ export function markObjectAsDirty(obj: object, propertyKey: string, _meta?: Meta
 
   if (objectTag !== undefined) {
     if (DEBUG) {
-      let source = getAutotrackingTransactionSourceForTag(objectTag);
-
-      assert(
-        `You attempted to dirty \`${String(
-          obj
-        )}\`, but it had already been consumed previously in the same render. Attempting to dirty an a value after using it in the same render will cause infinite rerender bugs and performance issues, and is not supported. It was first used at: ${source &&
-          source.stack}\n\nAnd was updated at:`,
-        !source
-      );
+      assertPropertyNotTracked(objectTag, obj);
     }
 
     dirty(objectTag);
@@ -84,15 +75,7 @@ export function markObjectAsDirty(obj: object, propertyKey: string, _meta?: Meta
 
   if (propertyTag !== undefined) {
     if (DEBUG) {
-      let source = getAutotrackingTransactionSourceForTag(propertyTag);
-
-      assert(
-        `You attempted to dirty \`${propertyKey}\` on \`${String(
-          obj
-        )}\`, but it had already been consumed previously in the same render. Attempting to dirty an a value after using it in the same render will cause infinite rerender bugs and performance issues, and is not supported. It was first used at: ${source &&
-          source.stack}\n\nAnd was updated at:`,
-        !source
-      );
+      assertPropertyNotTracked(propertyTag, obj, propertyKey);
     }
 
     dirty(propertyTag);

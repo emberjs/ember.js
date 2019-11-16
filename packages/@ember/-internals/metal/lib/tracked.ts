@@ -1,5 +1,5 @@
 import { isEmberArray } from '@ember/-internals/utils';
-import { assert } from '@ember/debug';
+import { assert, warn } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { combine, CONSTANT_TAG, Tag, UpdatableTag, update } from '@glimmer/reference';
 import { Decorator, DecoratorPropertyDescriptor, isElementDescriptor } from './decorator';
@@ -8,10 +8,17 @@ import { markObjectAsDirty, tagForProperty } from './tags';
 
 type Option<T> = T | null;
 
+let WARN_IN_AUTOTRACKING_TRANSACTION = false;
 let AUTOTRACKING_TRANSACTION: WeakMap<Tag, Error> | null = null;
 
 export let runInAutotrackingTransaction: (fn: () => void) => void;
-export let getAutotrackingTransactionSourceForTag: (tag: Tag) => Error | undefined;
+export let warnInAutotrackingTransaction: (fn: () => void) => void;
+export let assertPropertyNotTracked: (
+  tag: Tag,
+  obj: object,
+  keyName?: string,
+  forHardError?: boolean
+) => void;
 
 if (DEBUG) {
   runInAutotrackingTransaction = (fn: () => void) => {
@@ -22,15 +29,78 @@ if (DEBUG) {
     } finally {
       AUTOTRACKING_TRANSACTION = null;
     }
-  }
+  };
 
-  getAutotrackingTransactionSourceForTag = (tag: Tag) => {
-    if (AUTOTRACKING_TRANSACTION !== null) {
-      return AUTOTRACKING_TRANSACTION.get(tag);
+  warnInAutotrackingTransaction = (fn: () => void) => {
+    WARN_IN_AUTOTRACKING_TRANSACTION = true;
+
+    try {
+      fn();
+    } finally {
+      WARN_IN_AUTOTRACKING_TRANSACTION = false;
+    }
+  };
+
+  let getClassName = (obj: object) => {
+    let name;
+    let className;
+
+    if (obj.constructor) {
+      className = obj.constructor.name;
+
+      if (!className) {
+        let match = obj.constructor.toString().match(/function (\w+)\s*\(/);
+
+        className = match && match[1];
+      }
     }
 
-    return;
-  }
+    if (
+      'toString' in obj &&
+      obj.toString !== Object.prototype.toString &&
+      obj.toString !== Function.prototype.toString
+    ) {
+      name = obj.toString();
+    }
+
+    // If the class has a decent looking name, and the `toString` is one of the
+    // default Ember toStrings, replace the constructor portion of the toString
+    // with the class name. We check the length of the class name to prevent doing
+    // this when the value is minified.
+    if (
+      name &&
+      name.match(/<.*:ember\d+>/) &&
+      !className.startsWith('_') &&
+      className.length > 2 &&
+      className !== 'Class'
+    ) {
+      return name.replace(/<.*:/, `<${className}:`);
+    }
+
+    return name || className;
+  };
+
+  let makeAutotrackingErrorMessage = (sourceError: Error, obj: object, keyName?: string) => {
+    let dirtyString = keyName
+      ? `\`${keyName}\` on \`${getClassName(obj)}\``
+      : `\`${getClassName(obj)}\``;
+
+    return `You attempted to dirty ${dirtyString}, but it had already been consumed previously in the same render. Attempting to dirty an a value after using it in the same render will cause infinite rerender bugs and performance issues, and is not supported. It was first used at: ${sourceError.stack}\n\nAnd was updated at:`;
+  };
+
+  assertPropertyNotTracked = (tag: Tag, obj: object, keyName?: string, forceHardError = false) => {
+    if (AUTOTRACKING_TRANSACTION === null) return;
+
+    let sourceError = AUTOTRACKING_TRANSACTION.get(tag);
+
+    if (!sourceError) return;
+
+    if (WARN_IN_AUTOTRACKING_TRANSACTION && !forceHardError) {
+      warn(makeAutotrackingErrorMessage(sourceError, obj, keyName), false);
+    } else {
+      assert(makeAutotrackingErrorMessage(sourceError, obj, keyName), false);
+    }
+  };
 }
 
 /**
@@ -245,6 +315,10 @@ function descriptorForField([_target, key, desc]: [
     },
 
     set(newValue: any): void {
+      if (DEBUG) {
+        assertPropertyNotTracked(tagForProperty(this, key), this, key, true);
+      }
+
       markObjectAsDirty(this, key);
 
       values.set(this, newValue);

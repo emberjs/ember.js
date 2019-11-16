@@ -7,12 +7,14 @@ import {
   tracked,
   track,
   notifyPropertyChange,
+  runInAutotrackingTransaction,
 } from '../..';
 
 import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { EMBER_ARRAY } from '@ember/-internals/utils';
 import { AbstractTestCase, moduleFor } from 'internal-test-helpers';
 import { value, validate } from '@glimmer/reference';
+import { DEBUG } from '@glimmer/env';
 
 if (EMBER_METAL_TRACKED_PROPERTIES) {
   moduleFor(
@@ -337,6 +339,25 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
           false,
           'invalid after setting a property on the object'
         );
+      }
+
+      ['@test gives helpful assertion when a tracked property is mutated after access in with an autotracking transaction']() {
+        class EmberObject {
+          @tracked value;
+        }
+
+        let obj = new EmberObject();
+
+        expectAssertion(() => {
+          if (DEBUG) {
+            runInAutotrackingTransaction(() => {
+              track(() => {
+                obj.value;
+                obj.value = 123;
+              });
+            });
+          }
+        }, /You attempted to dirty `value` on `EmberObject`, but it had already been consumed previously in the same render/);
       }
     }
   );
