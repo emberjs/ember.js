@@ -107,6 +107,7 @@ jobs:
 
     - name: Browser Tests (Firefox)
       script:
+        - yarn ember build
         - yarn ember test -c testem.travis-browsers.js
 
     - stage: deploy
