@@ -68,7 +68,7 @@ moduleFor(
       });
     }
 
-    ['@test `(query-params)` must be used in conjunction with `{{link-to}}'](assert) {
+    ['@test `(query-params)` can be used outside of `{{link-to}}'](assert) {
       if (!DEBUG) {
         assert.expect(0);
         return;
