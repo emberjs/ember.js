@@ -14,7 +14,6 @@ import { assign } from '@ember/polyfills';
 import { DEBUG } from '@glimmer/env';
 import {
   ComponentCapabilities,
-  Dict,
   Option,
   ProgramSymbolTable,
   Simple,
@@ -171,19 +170,15 @@ export default class CurlyComponentManager
 
   prepareArgs(state: DefinitionState, args: Arguments): Option<PreparedArguments> {
     if (args.named.has('__ARGS__')) {
-      let __args__ = args.named.get('__ARGS__').value() as Dict<VersionedPathReference>;
+      let { __ARGS__, ...rest } = args.named.capture().map;
 
       let prepared = {
         positional: EMPTY_POSITIONAL_ARGS,
         named: {
-          ...args.named.capture().map,
-          ...__args__,
+          ...rest,
+          ...__ARGS__.value(),
         },
       };
-
-      if (DEBUG) {
-        delete prepared.named.__ARGS__;
-      }
 
       return prepared;
     }
