@@ -1,8 +1,9 @@
 import { ENV } from '@ember/-internals/environment';
-import { runInTransaction, runInAutotrackingTransaction } from '@ember/-internals/metal';
+import { runInAutotrackingTransaction, runInTransaction } from '@ember/-internals/metal';
 import { getViewElement, getViewId } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { backburner, getCurrentRunLoop } from '@ember/runloop';
+import { DEBUG } from '@glimmer/env';
 import { Option, Simple } from '@glimmer/interfaces';
 import { CURRENT_TAG, validate, value, VersionedPathReference } from '@glimmer/reference';
 import {
@@ -430,9 +431,13 @@ export abstract class Renderer {
 
           root.options.alwaysRevalidate = shouldReflush;
           // track shouldReflush based on this roots render result
-          runInAutotrackingTransaction(() => {
-            shouldReflush = root.shouldReflush = runInTransaction(root, 'render');
-          });
+          if (DEBUG) {
+            runInAutotrackingTransaction(() => {
+              shouldReflush = root.shouldReflush = runInTransaction(root, 'render');
+            });
+          } else {
+            root.render();
+          }
 
           // globalShouldReflush should be `true` if *any* of
           // the roots need to reflush

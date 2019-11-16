@@ -6,6 +6,7 @@ import {
   tagFor,
   tagForProperty,
   track,
+  warnInAutotrackingTransaction,
   watchKey,
 } from '@ember/-internals/metal';
 import { isProxy, symbol } from '@ember/-internals/utils';
@@ -434,9 +435,15 @@ export class ClassBasedHelperReference extends CachedReference {
     }
 
     let computedValue;
-    let combinedTrackingTag = track(
-      () => (computedValue = instance.compute(positionalValue, namedValue))
-    );
+    let combinedTrackingTag = track(() => {
+      if (DEBUG) {
+        warnInAutotrackingTransaction(() => {
+          computedValue = instance.compute(positionalValue, namedValue);
+        });
+      } else {
+        computedValue = instance.compute(positionalValue, namedValue);
+      }
+    });
 
     update(computeTag, combinedTrackingTag);
 

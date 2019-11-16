@@ -2,7 +2,7 @@ import { DEBUG } from '@glimmer/env';
 
 import { RenderingTestCase, moduleFor, runDestroy, runTask } from 'internal-test-helpers';
 import { Helper } from '@ember/-internals/glimmer';
-import { set } from '@ember/-internals/metal';
+import { set, tracked } from '@ember/-internals/metal';
 
 moduleFor(
   'Helpers test: custom helpers',
@@ -657,6 +657,40 @@ moduleFor(
       this.render('{{hello-world}}');
 
       this.assertText('huzza!');
+    }
+
+    ['@test class-based helper gives helpful warning when mutating a value that was tracked already']() {
+      this.add(
+        'helper:hello-world',
+        class extends Helper {
+          compute() {
+            this.get('value');
+            this.set('value', 123);
+          }
+        }
+      );
+
+      expectWarning(() => {
+        this.render('{{hello-world}}');
+      }, /You attempted to dirty `value` on `<.+?>`, but it had already been consumed previously in the same render/);
+    }
+
+    ['@test class-based helper gives helpful assertion when mutating a tracked property that was tracked already']() {
+      this.add(
+        'helper:hello-world',
+        class extends Helper {
+          @tracked value;
+
+          compute() {
+            this.value;
+            this.value = 123;
+          }
+        }
+      );
+
+      expectAssertion(() => {
+        this.render('{{hello-world}}');
+      }, /You attempted to dirty `value` on `<.+?>`, but it had already been consumed previously in the same render/);
     }
   }
 );
