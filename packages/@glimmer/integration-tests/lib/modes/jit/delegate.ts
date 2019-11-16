@@ -44,7 +44,7 @@ export function JitDelegateContext(
 ): JitTestDelegateContext {
   registerInternalHelper(registry, '-get-dynamic-var', getDynamicVar);
   let context = new TestJitCompilationContext(resolver, registry);
-  let runtime = JitRuntimeFromProgram(doc, context.program(), resolver);
+  let runtime = JitRuntimeFromProgram({ document: doc }, context.program(), resolver);
   let syntax = { program: context, macros: new TestMacros() };
   return { runtime, syntax };
 }
