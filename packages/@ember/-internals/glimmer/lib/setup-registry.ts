@@ -61,6 +61,7 @@ export function setupApplicationRegistry(registry: Registry) {
   registry.register('renderer:-inert', InertRenderer);
 
   registry.injection('renderer', 'document', 'service:-document');
+  // registry.injection('service:-glimmer-environment', 'document', 'service:-document');
 
   // if (hasDOM) {
   //   registry.injection('service:-glimmer-environment', 'updateOperations', 'service:-dom-changes');aaoeuaoeuaoeuaoeuuaoeuaoeuaoeuaoeuaoeu
@@ -92,11 +93,11 @@ export function setupEngineRegistry(registry: Registry) {
 
   registry.register(P`template:components/-default`, ComponentTemplate as any);
 
-  registry.register('service:-glimmer-environment', Environment);
-  registry.injection('service:-glimmer-environment', 'document', 'service:-document');
+  // registry.register('service:-glimmer-environment', Environment);
+  // registry.injection('service:-glimmer-environment', 'document', 'service:-document');
 
-  registry.register(P`template-compiler:main`, TemplateCompiler);
-  registry.injection(P`template-compiler:main`, 'environment', '-environment:main');
+  // registry.register(P`template-compiler:main`, TemplateCompiler);
+  // registry.injection(P`template-compiler:main`, 'environment', '-environment:main');
 
   registry.optionsForType('helper', { instantiate: false });
 

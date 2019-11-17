@@ -4,7 +4,7 @@ import { getViewElement, getViewId } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { backburner, getCurrentRunLoop } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
-import { Option } from '@glimmer/interfaces';
+import { Option, RuntimeProgram as IRuntimeProgram, WholeProgramCompilationContext, ElementBuilder, JitRuntimeContext } from '@glimmer/interfaces';
 import { CURRENT_TAG, validate, value, VersionedPathReference } from '@glimmer/reference';
 import {
   Bounds,
@@ -13,19 +13,23 @@ import {
   curry,
   Cursor,
   DynamicScope as GlimmerDynamicScope,
-  ElementBuilder,
   IteratorResult,
   renderJitMain,
   RenderResult,
   UNDEFINED_REFERENCE,
   JitRuntimeFromProgram,
+  JitRuntime,
+  DOMTreeConstruction,
+  DOMChanges,
+  RuntimeEnvironment as IRuntimeEnvironment
+  RuntimeResolver as IRuntimeResolver
 } from '@glimmer/runtime';
 import { SimpleElement, SimpleNode, SimpleDocument } from '@simple-dom/interface';
 import RSVP from 'rsvp';
 import { BOUNDS } from './component';
 import { createRootOutlet } from './component-managers/outlet';
 import { RootComponentDefinition } from './component-managers/root';
-import Environment from './environment';
+import RuntimeEnvironment from './environment';
 import { Factory as TemplateFactory, OwnedTemplate } from './template';
 import { Component } from './utils/curly-component-state-bucket';
 import { OutletState } from './utils/outlet';
@@ -35,6 +39,8 @@ import { unwrapTemplate, JitContext, unwrapHandle } from '@glimmer/opcode-compil
 import CompileTimeResolver from './compile-time-lookup';
 import RuntimeResolver from './resolver';
 import { artifacts } from '@glimmer/program';
+import { NodeDOMTreeConstruction } from '..';
+import { Owner } from '@ember/-internals/owner';
 
 export type IBuilder = (env: Environment, cursor: Cursor) => ElementBuilder;
 
@@ -70,19 +76,19 @@ export class DynamicScope implements GlimmerDynamicScope {
 
 class RootState {
   public id: string;
-  public env: Environment;
   public root: Component | OutletView;
   public result: RenderResult | undefined;
-  public shouldReflush: boolean;
   public destroyed: boolean;
   public render: () => void;
 
   constructor(
+    owner: Owner,
     root: Component | OutletView,
-    env: Environment,
+    renderer: Renderer,
+    runtime: IRuntimeEnvironment,
+    context: JitRuntimeContext,
     template: OwnedTemplate,
     self: VersionedPathReference<unknown>,
-    document: SimpleDocument,
     parentElement: SimpleElement,
     dynamicScope: DynamicScope,
     builder: IBuilder
@@ -90,38 +96,24 @@ class RootState {
     assert(`You cannot render \`${self.value()}\` without a template.`, template !== undefined);
 
     this.id = getViewId(root);
-    this.env = env;
     this.root = root;
     this.result = undefined;
-    this.shouldReflush = false;
     this.destroyed = false;
+    this.renderer = renderer;
 
     let options = (this.options = {
       alwaysRevalidate: false,
     });
 
-    let runtimeResolver = new RuntimeResolver(env.isInteractive);
-    let compileTimeResolver = new CompileTimeResolver(runtimeResolver);
-
-    let context = JitContext(compileTimeResolver);
-
     this.render = () => {
       let layout = unwrapTemplate(template).asLayout();
       let handle = layout.compile(context);
-      let program = artifacts(context);
-
-      let runtime = new JitRuntimeFromProgram(
-        document,
-        program,
-        runtimeResolver,
-        compileTimeResolver
-      );
 
       let iterator = renderJitMain(
         runtime,
         context,
         self,
-        builder(env, { element: parentElement, nextSibling: null }),
+        builder(runtime.env, { element: parentElement, nextSibling: null }),
         unwrapHandle(handle),
         dynamicScope
       );
@@ -264,7 +256,6 @@ interface ViewRegistry {
 }
 
 export abstract class Renderer {
-  private _env: Environment;
   private _rootTemplate: OwnedTemplate;
   private _viewRegistry: ViewRegistry;
   private _destinedForDOM: boolean;
@@ -275,15 +266,23 @@ export abstract class Renderer {
   private _removedRoots: RootState[];
   private _builder: IBuilder;
 
+  private _context: WholeProgramCompilationContext;
+  private _runtime: {
+    env: IRuntimeEnvironment,
+    resolver: IRuntimeResolver,
+    program: IRuntimeProgram
+  };
+
   constructor(
-    env: Environment,
+    owner: Owner,
+    document: SimpleDocument,
+    env: { isInteractive: boolean, hasDOM: boolean },
     rootTemplate: TemplateFactory,
     viewRegistry: ViewRegistry,
     destinedForDOM = false,
     builder = clientBuilder
   ) {
-    this._env = env;
-    this._rootTemplate = rootTemplate(env.owner);
+    this._rootTemplate = rootTemplate(owner);
     this._viewRegistry = viewRegistry;
     this._destinedForDOM = destinedForDOM;
     this._destroyed = false;
@@ -292,6 +291,25 @@ export abstract class Renderer {
     this._isRenderingRoots = false;
     this._removedRoots = [];
     this._builder = builder;
+
+    let runtimeResolver = new RuntimeResolver(env.isInteractive);
+    let compileTimeResolver = new CompileTimeResolver(runtimeResolver);
+
+    this._context = JitContext(compileTimeResolver);
+
+    let program = artifacts(this._context);
+
+    let runtimeEvironment = new RuntimeEnvironment(owner, env.isInteractive);
+
+    this._runtime = JitRuntimeFromProgram(
+      {
+        appendOperations: env.hasDOM ? new DOMTreeConstruction(document) : new NodeDOMTreeConstruction(document),
+        updateOperations: new DOMChanges(document)
+      },
+      program,
+      runtimeResolver,
+      runtimeEvironment
+    );
   }
 
   // renderer HOOKS

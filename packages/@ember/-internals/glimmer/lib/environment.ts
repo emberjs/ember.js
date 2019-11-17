@@ -1,16 +1,16 @@
-import { OWNER, Owner } from '@ember/-internals/owner';
+import { Owner } from '@ember/-internals/owner';
 import { constructStyleDeprecationMessage } from '@ember/-internals/views';
 import { warn } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { Option, EnvironmentOptions } from '@glimmer/interfaces';
+import { ElementBuilder, Option } from '@glimmer/interfaces';
 import { OpaqueIterable, VersionedReference } from '@glimmer/reference';
 import {
-  ElementBuilder,
+  DynamicAttribute,
   EnvironmentImpl as GlimmerEnvironment,
+  RuntimeEnvironmentDelegate,
   SimpleDynamicAttribute,
 } from '@glimmer/runtime';
-import { Destroyable } from '@glimmer/util';
-import { AttrNamespace as SimpleAttrNamespace } from '@simple-dom/interface';
+import { AttrNamespace as SimpleAttrNamespace, SimpleElement } from '@simple-dom/interface';
 import createIterable from './utils/iterable';
 import { ConditionalReference, UpdatableReference } from './utils/references';
 import { isHTMLSafe } from './utils/string';
@@ -19,6 +19,7 @@ import installPlatformSpecificProtocolForURL from './protocol-for-url';
 
 import { ENV } from '@ember/-internals/environment';
 import { OwnedTemplate } from './template';
+import { Component } from './utils/curly-component-state-bucket';
 import DebugRenderTree from './utils/debug-render-tree';
 
 export interface CompilerFactory {
@@ -26,28 +27,28 @@ export interface CompilerFactory {
   new (template: OwnedTemplate): any;
 }
 
-export default class Environment extends GlimmerEnvironment {
-  static create(options: any) {
-    return new this(options);
-  }
+export default class RuntimeEnvironment implements RuntimeEnvironmentDelegate {
+  // static create(options: any) {
+  //   return new this(options);
+  // }
 
   public owner: Owner;
   public isInteractive: boolean;
-  public destroyedComponents: Destroyable[];
+  public destroyedComponents: Component[];
+  public attributeFor?: (
+    element: SimpleElement,
+    attr: string,
+    isTrusting: boolean,
+    namespace: Option<SimpleAttrNamespace>
+  ) => DynamicAttribute;
 
   private _debugRenderTree: DebugRenderTree | undefined;
+
   public inTransaction = false;
 
-  constructor(document: SimpleDocument, owner: Owner) {
-    super({
-      appendOperations: new Dom
-      updateOperations:
-    });
-
-    let owner: Owner = options[OWNER];
-
+  constructor(owner: Owner, isInteractive: boolean) {
     this.owner = owner;
-    this.isInteractive = owner.lookup<any>('-environment:main').isInteractive;
+    this.isInteractive = isInteractive; // owner.lookup<any>('-environment:main').isInteractive;
 
     // can be removed once https://github.com/tildeio/glimmer/pull/305 lands
     this.destroyedComponents = [];
@@ -83,52 +84,52 @@ export default class Environment extends GlimmerEnvironment {
     return createIterable(ref, key);
   }
 
-  scheduleInstallModifier(modifier: any, manager: any): void {
-    if (this.isInteractive) {
-      super.scheduleInstallModifier(modifier, manager);
-    }
-  }
+  // scheduleInstallModifier(modifier: any, manager: any): void {
+  //   if (this.isInteractive) {
+  //     super.scheduleInstallModifier(modifier, manager);
+  //   }
+  // }
 
-  scheduleUpdateModifier(modifier: any, manager: any): void {
-    if (this.isInteractive) {
-      super.scheduleUpdateModifier(modifier, manager);
-    }
-  }
+  // scheduleUpdateModifier(modifier: any, manager: any): void {
+  //   if (this.isInteractive) {
+  //     super.scheduleUpdateModifier(modifier, manager);
+  //   }
+  // }
 
-  didDestroy(destroyable: Destroyable): void {
-    destroyable.destroy();
-  }
+  // didDestroy(destroyable: Destroyable): void {
+  //   destroyable.destroy();
+  // }
 
-  begin(): void {
-    if (ENV._DEBUG_RENDER_TREE) {
-      this.debugRenderTree.begin();
-    }
+  // begin(): void {
+  //   if (ENV._DEBUG_RENDER_TREE) {
+  //     this.debugRenderTree.begin();
+  //   }
 
-    this.inTransaction = true;
+  //   this.inTransaction = true;
 
-    super.begin();
-  }
+  //   super.begin();
+  // }
 
-  commit(): void {
-    let destroyedComponents = this.destroyedComponents;
-    this.destroyedComponents = [];
-    // components queued for destruction must be destroyed before firing
-    // `didCreate` to prevent errors when removing and adding a component
-    // with the same name (would throw an error when added to view registry)
-    for (let i = 0; i < destroyedComponents.length; i++) {
-      destroyedComponents[i].destroy();
-    }
+  // commit(): void {
+  //   let destroyedComponents = this.destroyedComponents;
+  //   this.destroyedComponents = [];
+  //   // components queued for destruction must be destroyed before firing
+  //   // `didCreate` to prevent errors when removing and adding a component
+  //   // with the same name (would throw an error when added to view registry)
+  //   for (let i = 0; i < destroyedComponents.length; i++) {
+  //     destroyedComponents[i].destroy();
+  //   }
 
-    try {
-      super.commit();
-    } finally {
-      this.inTransaction = false;
-    }
+  //   try {
+  //     super.commit();
+  //   } finally {
+  //     this.inTransaction = false;
+  //   }
 
-    if (ENV._DEBUG_RENDER_TREE) {
-      this.debugRenderTree.commit();
-    }
-  }
+  //   if (ENV._DEBUG_RENDER_TREE) {
+  //     this.debugRenderTree.commit();
+  //   }
+  // }
 }
 
 if (DEBUG) {
