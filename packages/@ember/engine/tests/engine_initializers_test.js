@@ -297,9 +297,7 @@ moduleFor(
         },
       });
 
-      let SecondEngine = FirstEngine.extend({
-        Resolver: ModuleBasedTestResolver,
-      });
+      let SecondEngine = FirstEngine.extend();
 
       SecondEngine.initializer({
         name: 'second',
