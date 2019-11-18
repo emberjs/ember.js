@@ -5,7 +5,7 @@ import { moduleFor, AbstractTestCase as TestCase } from 'internal-test-helpers';
 let application, registry;
 
 moduleFor(
-  'Application Dependency Injection - normalize',
+  'Application Dependency Injection - Globals Resolver - normalize [DEPRECATED]',
   class extends TestCase {
     constructor() {
       super();

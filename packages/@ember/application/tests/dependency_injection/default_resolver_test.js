@@ -11,7 +11,7 @@ import { Component, Helper, helper as makeHelper } from '@ember/-internals/glimm
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 
 moduleFor(
-  'Application Dependency Injection - Integration - default resolver',
+  'Application Dependency Injection - Integration - globals resolver [DEPRECATED]',
   class extends DefaultResolverApplicationTestCase {
     beforeEach() {
       runTask(() => this.createApplication());
@@ -161,6 +161,22 @@ moduleFor(
       }, /fullName must be a proper full name/);
     }
 
+    ['@test the default resolver normalizes lookups'](assert) {
+      let locator = this.applicationInstance.__container__;
+      this.application.PostIndexController = EmberObject.extend({});
+      this.application.register('controller:postIndex', this.application.PostIndexController, {
+        singleton: true,
+      });
+
+      let dotNotationController = locator.lookup('controller:post.index');
+      let camelCaseController = locator.lookup('controller:postIndex');
+
+      assert.ok(dotNotationController instanceof this.application.PostIndexController);
+      assert.ok(camelCaseController instanceof this.application.PostIndexController);
+
+      assert.equal(dotNotationController, camelCaseController);
+    }
+
     /*
      * The following are integration tests against the private registry API.
      */
@@ -198,7 +214,7 @@ moduleFor(
     }
 
     [`@test no assertion for routes that extend from Route`](assert) {
-      assert.test.assertions = []; // clear assertions that occurred in beforeEach
+      assert.test.assertions = []; // clear assertions that occurred in beforeEach so they don't affect count
       assert.expect(0);
       this.application.FooRoute = Route.extend();
       this.privateRegistry.resolve(`route:foo`);
@@ -212,7 +228,7 @@ moduleFor(
     }
 
     [`@test no assertion for service factories that extend from Service`](assert) {
-      assert.test.assertions = []; // clear assertions that occurred in beforeEach
+      assert.test.assertions = []; // clear assertions that occurred in beforeEach so they don't affect count
       assert.expect(0);
       this.application.FooService = Service.extend();
       this.privateRegistry.resolve('service:foo');
@@ -311,7 +327,7 @@ moduleFor(
         return;
       }
 
-      assert.test.assertions = []; // clear assertions that occurred in beforeEach
+      assert.test.assertions = []; // clear assertions that occurred in beforeEach so they don't affect count
       assert.expect(3);
 
       this.application.LOG_RESOLVER = true;
@@ -333,7 +349,7 @@ moduleFor(
         return;
       }
 
-      assert.test.assertions = []; // clear assertions that occurred in beforeEach
+      assert.test.assertions = []; // clear assertions that occurred in beforeEach so they don't affect count
       assert.expect(3);
 
       this.application.LOG_RESOLVER = true;

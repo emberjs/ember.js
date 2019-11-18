@@ -2,7 +2,11 @@ import { context } from '@ember/-internals/environment';
 import { run } from '@ember/runloop';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import EmberApplication from '@ember/application';
-import { moduleFor, AbstractTestCase as TestCase } from 'internal-test-helpers';
+import {
+  moduleFor,
+  ModuleBasedTestResolver,
+  AbstractTestCase as TestCase,
+} from 'internal-test-helpers';
 
 let originalLookup = context.lookup;
 let registry, locator, application;
@@ -13,11 +17,8 @@ moduleFor(
     constructor() {
       super();
 
-      // Must use default resolver because test resolver does not normalize
-      run(() => {
-        expectDeprecation(() => {
-          application = EmberApplication.create();
-        });
+      application = run(EmberApplication, 'create', {
+        Resolver: ModuleBasedTestResolver,
       });
 
       application.Person = EmberObject.extend({});
@@ -51,16 +52,6 @@ moduleFor(
       run(application, 'destroy');
       registry = application = locator = null;
       context.lookup = originalLookup;
-    }
-
-    ['@test container lookup is normalized'](assert) {
-      let dotNotationController = locator.lookup('controller:post.index');
-      let camelCaseController = locator.lookup('controller:postIndex');
-
-      assert.ok(dotNotationController instanceof application.PostIndexController);
-      assert.ok(camelCaseController instanceof application.PostIndexController);
-
-      assert.equal(dotNotationController, camelCaseController);
     }
 
     ['@test registered entities can be looked up later'](assert) {
