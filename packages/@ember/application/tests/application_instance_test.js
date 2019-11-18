@@ -5,7 +5,11 @@ import { run } from '@ember/runloop';
 import { privatize as P } from '@ember/-internals/container';
 import { factory } from 'internal-test-helpers';
 import { Object as EmberObject } from '@ember/-internals/runtime';
-import { moduleFor, AbstractTestCase as TestCase } from 'internal-test-helpers';
+import {
+  moduleFor,
+  ModuleBasedTestResolver,
+  AbstractTestCase as TestCase,
+} from 'internal-test-helpers';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 
 const originalDebug = getDebugFunction('debug');
@@ -23,7 +27,13 @@ moduleFor(
       document.getElementById('qunit-fixture').innerHTML = `
       <div id='one'><div id='one-child'>HI</div></div><div id='two'>HI</div>
     `;
-      application = run(() => Application.create({ rootElement: '#one', router: null }));
+      application = run(() =>
+        Application.create({
+          rootElement: '#one',
+          router: null,
+          Resolver: ModuleBasedTestResolver,
+        })
+      );
     }
 
     teardown() {
@@ -167,7 +177,9 @@ moduleFor(
     ['@test can build and boot a registered engine'](assert) {
       assert.expect(11);
 
-      let ChatEngine = Engine.extend();
+      let ChatEngine = Engine.extend({
+        Resolver: ModuleBasedTestResolver,
+      });
       let chatEngineInstance;
 
       application.register('engine:chat', ChatEngine);

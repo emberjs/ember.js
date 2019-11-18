@@ -1,6 +1,10 @@
 import { run } from '@ember/runloop';
 import Engine from '@ember/engine';
-import { moduleFor, AbstractTestCase as TestCase } from 'internal-test-helpers';
+import {
+  moduleFor,
+  ModuleBasedTestResolver,
+  AbstractTestCase as TestCase,
+} from 'internal-test-helpers';
 
 let MyEngine, myEngine, myEngineInstance;
 
@@ -22,7 +26,9 @@ moduleFor(
     }
 
     ["@test initializers require proper 'name' and 'initialize' properties"]() {
-      MyEngine = Engine.extend();
+      MyEngine = Engine.extend({
+        Resolver: ModuleBasedTestResolver,
+      });
 
       expectAssertion(() => {
         run(() => {
@@ -38,7 +44,9 @@ moduleFor(
     }
 
     ['@test initializers are passed an Engine'](assert) {
-      MyEngine = Engine.extend();
+      MyEngine = Engine.extend({
+        Resolver: ModuleBasedTestResolver,
+      });
 
       MyEngine.initializer({
         name: 'initializer',
@@ -54,7 +62,9 @@ moduleFor(
     ['@test initializers can be registered in a specified order'](assert) {
       let order = [];
 
-      MyEngine = Engine.extend();
+      MyEngine = Engine.extend({
+        Resolver: ModuleBasedTestResolver,
+      });
       MyEngine.initializer({
         name: 'fourth',
         after: 'third',
@@ -112,7 +122,9 @@ moduleFor(
     ['@test initializers can be registered in a specified order as an array'](assert) {
       let order = [];
 
-      MyEngine = Engine.extend();
+      MyEngine = Engine.extend({
+        Resolver: ModuleBasedTestResolver,
+      });
 
       MyEngine.initializer({
         name: 'third',
@@ -171,7 +183,9 @@ moduleFor(
     ['@test initializers can have multiple dependencies'](assert) {
       let order = [];
 
-      MyEngine = Engine.extend();
+      MyEngine = Engine.extend({
+        Resolver: ModuleBasedTestResolver,
+      });
 
       let a = {
         name: 'a',
@@ -226,7 +240,9 @@ moduleFor(
     ['@test initializers set on Engine subclasses are not shared between engines'](assert) {
       let firstInitializerRunCount = 0;
       let secondInitializerRunCount = 0;
-      let FirstEngine = Engine.extend();
+      let FirstEngine = Engine.extend({
+        Resolver: ModuleBasedTestResolver,
+      });
 
       FirstEngine.initializer({
         name: 'first',
@@ -235,7 +251,9 @@ moduleFor(
         },
       });
 
-      let SecondEngine = Engine.extend();
+      let SecondEngine = Engine.extend({
+        Resolver: ModuleBasedTestResolver,
+      });
 
       SecondEngine.initializer({
         name: 'second',
@@ -268,7 +286,9 @@ moduleFor(
     ['@test initializers are concatenated'](assert) {
       let firstInitializerRunCount = 0;
       let secondInitializerRunCount = 0;
-      let FirstEngine = Engine.extend();
+      let FirstEngine = Engine.extend({
+        Resolver: ModuleBasedTestResolver,
+      });
 
       FirstEngine.initializer({
         name: 'first',
@@ -277,7 +297,9 @@ moduleFor(
         },
       });
 
-      let SecondEngine = FirstEngine.extend();
+      let SecondEngine = FirstEngine.extend({
+        Resolver: ModuleBasedTestResolver,
+      });
 
       SecondEngine.initializer({
         name: 'second',
@@ -323,7 +345,9 @@ moduleFor(
     ['@test initializers are per-engine'](assert) {
       assert.expect(2);
 
-      let FirstEngine = Engine.extend();
+      let FirstEngine = Engine.extend({
+        Resolver: ModuleBasedTestResolver,
+      });
 
       FirstEngine.initializer({
         name: 'abc',
@@ -337,7 +361,9 @@ moduleFor(
         });
       });
 
-      let SecondEngine = Engine.extend();
+      let SecondEngine = Engine.extend({
+        Resolver: ModuleBasedTestResolver,
+      });
       SecondEngine.instanceInitializer({
         name: 'abc',
         initialize() {},
@@ -349,7 +375,9 @@ moduleFor(
     ['@test initializers are executed in their own context'](assert) {
       assert.expect(1);
 
-      MyEngine = Engine.extend();
+      MyEngine = Engine.extend({
+        Resolver: ModuleBasedTestResolver,
+      });
 
       MyEngine.initializer({
         name: 'coolInitializer',

@@ -1,4 +1,10 @@
-import { moduleFor, ApplicationTestCase, strip, runTaskNext } from 'internal-test-helpers';
+import {
+  moduleFor,
+  ApplicationTestCase,
+  ModuleBasedTestResolver,
+  strip,
+  runTaskNext,
+} from 'internal-test-helpers';
 
 import { Component } from '@ember/-internals/glimmer';
 import { Route } from '@ember/-internals/routing';
@@ -80,6 +86,8 @@ moduleFor(
       this.add(
         'engine:blog',
         Engine.extend({
+          Resolver: ModuleBasedTestResolver,
+
           init() {
             this._super(...arguments);
             this.register(
@@ -131,6 +139,8 @@ moduleFor(
       this.add(
         'engine:chat-engine',
         Engine.extend({
+          Resolver: ModuleBasedTestResolver,
+
           init() {
             this._super(...arguments);
             this.register('template:application', compile('Engine'));
@@ -167,6 +177,8 @@ moduleFor(
       this.add(
         'engine:blog',
         Engine.extend({
+          Resolver: ModuleBasedTestResolver,
+
           init() {
             this._super(...arguments);
             this.register('template:foo', compile('foo partial'));
@@ -202,6 +214,8 @@ moduleFor(
       this.add(
         'engine:chat-engine',
         Engine.extend({
+          Resolver: ModuleBasedTestResolver,
+
           init() {
             this._super(...arguments);
             this.register('template:foo', compile('foo partial'));
@@ -230,6 +244,8 @@ moduleFor(
       this.add(
         'engine:chat-engine',
         Engine.extend({
+          Resolver: ModuleBasedTestResolver,
+
           init() {
             this._super(...arguments);
             this.register('template:components/foo-bar', compile(`{{partial "troll"}}`));
@@ -289,6 +305,8 @@ moduleFor(
       this.add(
         'engine:blog',
         Engine.extend({
+          Resolver: ModuleBasedTestResolver,
+
           init() {
             this._super(...arguments);
 
@@ -344,6 +362,8 @@ moduleFor(
       this.add(
         'engine:blog',
         Engine.extend({
+          Resolver: ModuleBasedTestResolver,
+
           init() {
             this._super(...arguments);
             this.register(
@@ -486,6 +506,8 @@ moduleFor(
       this.add(
         'engine:blog',
         Engine.extend({
+          Resolver: ModuleBasedTestResolver,
+
           init() {
             this._super(...arguments);
             this.register('template:application', compile('Engine{{outlet}}'));

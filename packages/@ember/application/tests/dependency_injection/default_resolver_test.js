@@ -198,6 +198,7 @@ moduleFor(
     }
 
     [`@test no assertion for routes that extend from Route`](assert) {
+      assert.test.assertions = []; // clear assertions that occurred in beforeEach
       assert.expect(0);
       this.application.FooRoute = Route.extend();
       this.privateRegistry.resolve(`route:foo`);
@@ -211,6 +212,7 @@ moduleFor(
     }
 
     [`@test no assertion for service factories that extend from Service`](assert) {
+      assert.test.assertions = []; // clear assertions that occurred in beforeEach
       assert.expect(0);
       this.application.FooService = Service.extend();
       this.privateRegistry.resolve('service:foo');
@@ -309,6 +311,7 @@ moduleFor(
         return;
       }
 
+      assert.test.assertions = []; // clear assertions that occurred in beforeEach
       assert.expect(3);
 
       this.application.LOG_RESOLVER = true;
@@ -330,6 +333,7 @@ moduleFor(
         return;
       }
 
+      assert.test.assertions = []; // clear assertions that occurred in beforeEach
       assert.expect(3);
 
       this.application.LOG_RESOLVER = true;

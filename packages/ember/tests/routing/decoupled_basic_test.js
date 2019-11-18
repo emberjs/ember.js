@@ -5,10 +5,16 @@ import { compile } from 'ember-template-compiler';
 import { Route, NoneLocation, HistoryLocation } from '@ember/-internals/routing';
 import Controller from '@ember/controller';
 import { Object as EmberObject, A as emberA } from '@ember/-internals/runtime';
-import { moduleFor, ApplicationTestCase, runDestroy, runTask } from 'internal-test-helpers';
+import {
+  moduleFor,
+  ApplicationTestCase,
+  getTextOf,
+  ModuleBasedTestResolver,
+  runDestroy,
+  runTask,
+} from 'internal-test-helpers';
 import { run } from '@ember/runloop';
 import { Mixin, computed, set, addObserver } from '@ember/-internals/metal';
-import { getTextOf } from 'internal-test-helpers';
 import { Component } from '@ember/-internals/glimmer';
 import Engine from '@ember/engine';
 import { InternalTransition as Transition } from 'router_js';
@@ -4618,7 +4624,9 @@ moduleFor(
       assert.expect(2);
 
       // Register engine
-      let BlogEngine = Engine.extend();
+      let BlogEngine = Engine.extend({
+        Resolver: ModuleBasedTestResolver,
+      });
       this.add('engine:blog', BlogEngine);
 
       // Register engine route map
@@ -4654,7 +4662,9 @@ moduleFor(
       assert.expect(1);
 
       // Register engine
-      let BlogEngine = Engine.extend();
+      let BlogEngine = Engine.extend({
+        Resolver: ModuleBasedTestResolver,
+      });
       this.add('engine:blog', BlogEngine);
 
       // Register engine route map
@@ -4688,7 +4698,9 @@ moduleFor(
 
       let engineInstance;
       // Register engine
-      let BlogEngine = Engine.extend();
+      let BlogEngine = Engine.extend({
+        Resolver: ModuleBasedTestResolver,
+      });
       this.add('engine:blog', BlogEngine);
       let EngineIndexRoute = Route.extend({
         init() {

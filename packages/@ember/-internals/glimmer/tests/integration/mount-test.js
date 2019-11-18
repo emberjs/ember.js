@@ -1,4 +1,10 @@
-import { moduleFor, ApplicationTestCase, RenderingTestCase, runTask } from 'internal-test-helpers';
+import {
+  moduleFor,
+  ApplicationTestCase,
+  ModuleBasedTestResolver,
+  RenderingTestCase,
+  runTask,
+} from 'internal-test-helpers';
 
 import { set } from '@ember/-internals/metal';
 import { getOwner } from '@ember/-internals/owner';
@@ -48,6 +54,7 @@ moduleFor(
         'engine:chat',
         Engine.extend({
           router: null,
+          Resolver: ModuleBasedTestResolver,
 
           init() {
             this._super(...arguments);
@@ -165,6 +172,8 @@ moduleFor(
         'engine:foo',
         Engine.extend({
           router: null,
+          Resolver: ModuleBasedTestResolver,
+
           init() {
             this._super(...arguments);
             this.register(
@@ -180,6 +189,8 @@ moduleFor(
         'engine:bar',
         Engine.extend({
           router: null,
+          Resolver: ModuleBasedTestResolver,
+
           init() {
             this._super(...arguments);
             this.register(
@@ -244,6 +255,8 @@ moduleFor(
         'engine:foo',
         Engine.extend({
           router: null,
+          Resolver: ModuleBasedTestResolver,
+
           init() {
             this._super(...arguments);
             this.register(
@@ -299,6 +312,8 @@ moduleFor(
         'engine:paramEngine',
         Engine.extend({
           router: null,
+          Resolver: ModuleBasedTestResolver,
+
           init() {
             this._super(...arguments);
             this.register(
@@ -393,6 +408,8 @@ moduleFor(
         'engine:componentParamEngine',
         Engine.extend({
           router: null,
+          Resolver: ModuleBasedTestResolver,
+
           init() {
             this._super(...arguments);
             this.register(
@@ -429,6 +446,8 @@ if (!EMBER_ROUTING_MODEL_ARG) {
           'engine:paramEngine',
           Engine.extend({
             router: null,
+            Resolver: ModuleBasedTestResolver,
+
             init() {
               this._super(...arguments);
               this.register(

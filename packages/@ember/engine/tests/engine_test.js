@@ -6,6 +6,7 @@ import { privatize as P } from '@ember/-internals/container';
 import {
   moduleFor,
   AbstractTestCase as TestCase,
+  ModuleBasedTestResolver,
   verifyInjection,
   verifyRegistration,
 } from 'internal-test-helpers';
@@ -20,7 +21,9 @@ moduleFor(
       super();
 
       run(() => {
-        engine = Engine.create();
+        engine = Engine.create({
+          Resolver: ModuleBasedTestResolver,
+        });
         context.lookup = { TestEngine: engine };
       });
     }

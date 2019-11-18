@@ -13,7 +13,12 @@ moduleFor(
     constructor() {
       super();
 
-      application = run(EmberApplication, 'create');
+      // Must use default resolver because test resolver does not normalize
+      run(() => {
+        expectDeprecation(() => {
+          application = EmberApplication.create();
+        });
+      });
 
       application.Person = EmberObject.extend({});
       application.Orange = EmberObject.extend({});

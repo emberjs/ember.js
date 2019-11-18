@@ -10,7 +10,12 @@ moduleFor(
     constructor() {
       super();
 
-      application = run(Application, 'create');
+      // Must use default resolver because test resolver does not normalize
+      run(() => {
+        expectDeprecation(() => {
+          application = Application.create();
+        });
+      });
       registry = application.__registry__;
     }
 
