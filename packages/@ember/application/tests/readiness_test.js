@@ -1,4 +1,4 @@
-import { moduleFor, ApplicationTestCase } from 'internal-test-helpers';
+import { moduleFor, ModuleBasedTestResolver, ApplicationTestCase } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
 import EmberApplication from '..';
 
@@ -45,6 +45,7 @@ moduleFor(
 
       Application = EmberApplication.extend({
         $: jQuery,
+        Resolver: ModuleBasedTestResolver,
 
         ready() {
           readyWasCalled++;

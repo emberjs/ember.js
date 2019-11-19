@@ -1,4 +1,9 @@
-import { moduleFor, ApplicationTestCase, runTask } from 'internal-test-helpers';
+import {
+  moduleFor,
+  ModuleBasedTestResolver,
+  ApplicationTestCase,
+  runTask,
+} from 'internal-test-helpers';
 import { inject as injectService } from '@ember/service';
 import { Object as EmberObject, RSVP, onerrorDefault } from '@ember/-internals/runtime';
 import { later } from '@ember/runloop';
@@ -465,7 +470,9 @@ moduleFor(
       this.addTemplate('application', '<h1>Hello world</h1>');
 
       // Register engine
-      let BlogEngine = Engine.extend();
+      let BlogEngine = Engine.extend({
+        Resolver: ModuleBasedTestResolver,
+      });
       this.add('engine:blog', BlogEngine);
 
       // Register engine route map
@@ -502,6 +509,8 @@ moduleFor(
 
       // Register engine
       let BlogEngine = Engine.extend({
+        Resolver: ModuleBasedTestResolver,
+
         init(...args) {
           this._super.apply(this, args);
           this.register('template:application', compile('{{cache-money}}'));
@@ -544,6 +553,8 @@ moduleFor(
 
       // Register engine
       let BlogEngine = Engine.extend({
+        Resolver: ModuleBasedTestResolver,
+
         init(...args) {
           this._super.apply(this, args);
           this.register('template:application', compile('{{cache-money}}'));
@@ -582,6 +593,8 @@ moduleFor(
 
       // Register engine
       let BlogEngine = Engine.extend({
+        Resolver: ModuleBasedTestResolver,
+
         init(...args) {
           this._super.apply(this, args);
           this.register('template:application', compile('{{swag}}'));

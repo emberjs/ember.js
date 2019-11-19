@@ -2,6 +2,7 @@ import { Promise } from 'rsvp';
 import Application from '@ember/application';
 import { run, hasScheduledTimers, getCurrentRunLoop } from '@ember/runloop';
 import { compile } from 'ember-template-compiler';
+import { ModuleBasedTestResolver } from 'internal-test-helpers';
 
 const { module, test } = QUnit;
 
@@ -110,6 +111,7 @@ module('@ember/test-helpers emulation test', function() {
         this.application = Application.create({
           rootElement: '#qunit-fixture',
           autoboot: false,
+          Resolver: ModuleBasedTestResolver,
         });
 
         await setupContext(this);

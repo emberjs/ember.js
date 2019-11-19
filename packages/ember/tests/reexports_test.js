@@ -7,6 +7,7 @@ import {
 import { confirmExport } from 'internal-test-helpers';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 import { jQueryDisabled, jQuery } from '@ember/-internals/views';
+import Resolver from '@ember/application/globals-resolver';
 
 moduleFor(
   'ember reexports',
@@ -52,6 +53,18 @@ moduleFor(
       expectDeprecation(() => {
         Ember._setComputedDecorator;
       }, 'Please migrate from Ember._setComputedDecorator to Ember._setClassicDecorator');
+    }
+
+    ['@test Ember.Resolver is present (but deprecated)'](assert) {
+      expectDeprecation(() => {
+        assert.strictEqual(Ember.Resolver, Resolver, 'Ember.Resolver exists');
+      }, /Using the globals resolver is deprecated/);
+    }
+
+    ['@test Ember.DefaultResolver is present (but deprecated)'](assert) {
+      expectDeprecation(() => {
+        assert.strictEqual(Ember.DefaultResolver, Resolver, 'Ember.DefaultResolver exists');
+      }, /Using the globals resolver is deprecated/);
     }
   }
 );
@@ -340,8 +353,6 @@ let allExports = [
   ['ApplicationInstance', '@ember/application/instance', 'default'],
   ['Engine', '@ember/engine', 'default'],
   ['EngineInstance', '@ember/engine/instance', 'default'],
-  ['Resolver', '@ember/application/globals-resolver', 'default'],
-  ['DefaultResolver', '@ember/application/globals-resolver', 'default'],
 
   // @ember/-internals/extension-support
   ['DataAdapter', '@ember/-internals/extension-support'],
