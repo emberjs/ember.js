@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.15.0-beta.3 (November 18, 2019)
+
+- [#18549](https://github.com/emberjs/ember.js/pull/18549) [BUGFIX] Add component reference to the mouse event handler deprecation warnings
+
 ### v3.15.0-beta.2 (November 11, 2019)
 
 - [#18539](https://github.com/emberjs/ember.js/pull/18539) [BUGFIX] Add ID to `CapturedRenderNode`
