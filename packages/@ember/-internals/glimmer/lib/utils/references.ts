@@ -520,7 +520,8 @@ function ensurePrimitive(value: unknown) {
         value === null ||
         typeof value === 'boolean' ||
         typeof value === 'number' ||
-        typeof value === 'string'
+        typeof value === 'string' ||
+        typeof value === 'symbol'
     );
   }
 }
