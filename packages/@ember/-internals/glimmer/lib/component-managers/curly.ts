@@ -251,10 +251,6 @@ export default class CurlyComponentManager
     callerSelfRef: VersionedPathReference,
     hasBlock: boolean
   ): ComponentStateBucket {
-    if (DEBUG) {
-      environment.debugStack.push(`component:${state.name}`);
-    }
-
     // Get the nearest concrete component instance from the scope. "Virtual"
     // components will be skipped.
     let parentView = dynamicScope.view;
@@ -425,10 +421,6 @@ export default class CurlyComponentManager
     if (ENV._DEBUG_RENDER_TREE) {
       bucket.environment.debugRenderTree.didRender(bucket, bounds);
     }
-
-    if (DEBUG) {
-      bucket.environment.debugStack.pop();
-    }
   }
 
   getTag({ args, component }: ComponentStateBucket): Tag {
@@ -448,10 +440,6 @@ export default class CurlyComponentManager
 
     if (ENV._DEBUG_RENDER_TREE) {
       environment.debugRenderTree.update(bucket);
-    }
-
-    if (DEBUG) {
-      environment.debugStack.push(component._debugContainerKey);
     }
 
     bucket.finalizer = _instrumentStart('render.component', rerenderInstrumentDetails, component);
@@ -480,10 +468,6 @@ export default class CurlyComponentManager
 
     if (ENV._DEBUG_RENDER_TREE) {
       bucket.environment.debugRenderTree.didRender(bucket, bounds);
-    }
-
-    if (DEBUG) {
-      bucket.environment.debugStack.pop();
     }
   }
 

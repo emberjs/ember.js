@@ -136,6 +136,9 @@ export class RootPropertyReference extends PropertyReference
     super();
 
     if (DEBUG) {
+      // Capture the stack when this reference is created, as that is the
+      // component/context that the component was created _in_. Later, it could
+      // be accessed from any number of components.
       this.debugStackLog = env ? env.debugRenderTree.logCurrentRenderStack() : '';
     }
 
