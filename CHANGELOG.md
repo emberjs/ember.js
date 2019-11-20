@@ -78,6 +78,11 @@
 - [#18217](https://github.com/emberjs/ember.js/pull/18217) [BUGFIX] Adds ability for computed props to depend on args
 - [#18222](https://github.com/emberjs/ember.js/pull/18222) [BUGFIX] Matches assertion behavior for CPs computing after destroy
 
+### v3.12.1 (November 20, 2019)
+
+- [#18244](https://github.com/emberjs/ember.js/pull/18244) Fix query param assertion when using the router services `transitionTo` to redirect _during_ an existing transition.
+- [#18458](https://github.com/emberjs/ember.js/pull/18458) / [#18555](https://github.com/emberjs/ember.js/pull/18555) Ensure `(query-params)` helper can be used outside of direct `{{link-to}}` / `<LinkTo />` invocation.
+
 ### v3.12.0 (August 5, 2019)
 
 - [#18159](https://github.com/emberjs/ember.js/pull/18159) [BUGFIX] Update router.js to ensure buildRouteInfoMetadata does not eagerly cache routes in lazy Engines
