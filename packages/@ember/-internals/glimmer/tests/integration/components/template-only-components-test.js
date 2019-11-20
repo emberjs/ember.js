@@ -160,7 +160,7 @@ moduleFor(
       this.registerTemplateOnlyComponent('x-inner-template-only', '{{@value}}');
 
       let expectedBacktrackingMessage = backtrackingMessageFor('content', '<.+?>', {
-        renderTree: ['-top-level', 'x-outer', 'this.wrapper.content'],
+        renderTree: ['x-outer', 'this.wrapper.content'],
       });
 
       expectAssertion(() => {

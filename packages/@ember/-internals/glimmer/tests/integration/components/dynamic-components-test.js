@@ -784,7 +784,7 @@ moduleFor(
       });
 
       let expectedBacktrackingMessage = backtrackingMessageFor('name', 'Person \\(Ben\\)', {
-        renderTree: ['-top-level', 'outer-component', 'this.person.name'],
+        renderTree: ['outer-component', 'this.person.name'],
       });
 
       expectAssertion(() => {

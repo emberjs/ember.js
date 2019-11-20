@@ -6,16 +6,15 @@ import { Opaque, Option, Simple } from '@glimmer/interfaces';
 import { CachedReference, combine, map, Reference, Tag } from '@glimmer/reference';
 import { ElementOperations, PrimitiveReference } from '@glimmer/runtime';
 import { Core, Ops } from '@glimmer/wire-format';
-import { ROOT_REF } from '../component';
 import { Component } from './curly-component-state-bucket';
-import { referenceFromParts } from './references';
+import { referenceFromParts, RootReference } from './references';
 import { htmlSafe, isHTMLSafe, SafeString } from './string';
 
-export function referenceForKey(component: Component, key: string) {
-  return component[ROOT_REF].get(key);
+export function referenceForKey(rootRef: RootReference<Component>, key: string) {
+  return rootRef.get(key);
 }
 
-function referenceForParts(component: Component, parts: string[]): Reference {
+function referenceForParts(rootRef: RootReference<Component>, parts: string[]): Reference {
   let isAttrs = parts[0] === 'attrs';
 
   // TODO deprecate this
@@ -23,11 +22,11 @@ function referenceForParts(component: Component, parts: string[]): Reference {
     parts.shift();
 
     if (parts.length === 1) {
-      return referenceForKey(component, parts[0]);
+      return referenceForKey(rootRef, parts[0]);
     }
   }
 
-  return referenceFromParts(component[ROOT_REF], parts);
+  return referenceFromParts(rootRef, parts);
 }
 
 // TODO we should probably do this transform at build time
@@ -81,6 +80,7 @@ export const AttributeBinding = {
   install(
     _element: Simple.Element,
     component: Component,
+    rootRef: RootReference<Component>,
     parsed: [string, string, boolean],
     operations: ElementOperations
   ) {
@@ -99,8 +99,8 @@ export const AttributeBinding = {
 
     let isPath = prop.indexOf('.') > -1;
     let reference = isPath
-      ? referenceForParts(component, prop.split('.'))
-      : referenceForKey(component, prop);
+      ? referenceForParts(rootRef, prop.split('.'))
+      : referenceForKey(rootRef, prop);
 
     assert(
       `Illegal attributeBinding: '${prop}' is not a valid attribute name.`,
@@ -114,7 +114,7 @@ export const AttributeBinding = {
     ) {
       reference = new StyleBindingReference(
         reference,
-        referenceForKey(component, 'isVisible'),
+        referenceForKey(rootRef, 'isVisible'),
         component
       );
     }
@@ -134,16 +134,14 @@ let StyleBindingReference:
 if (EMBER_COMPONENT_IS_VISIBLE) {
   StyleBindingReference = class extends CachedReference<string | SafeString> {
     public tag: Tag;
-    private component: Component;
     constructor(
       private inner: Reference<string>,
       private isVisible: Reference<Opaque>,
-      component: Component
+      private component: Component
     ) {
       super();
 
       this.tag = combine([inner.tag, isVisible.tag]);
-      this.component = component;
     }
 
     compute(): string | SafeString {
@@ -179,20 +177,30 @@ if (EMBER_COMPONENT_IS_VISIBLE) {
 export let IsVisibleBinding:
   | undefined
   | {
-      install(element: Simple.Element, component: Component, operations: ElementOperations): void;
+      install(
+        element: Simple.Element,
+        component: Component,
+        rootRef: RootReference<Component>,
+        operations: ElementOperations
+      ): void;
       mapStyleValue(isVisible: boolean, component: Component): SafeString | null;
     };
 
 if (EMBER_COMPONENT_IS_VISIBLE) {
   IsVisibleBinding = {
-    install(_element: Simple.Element, component: Component, operations: ElementOperations) {
+    install(
+      _element: Simple.Element,
+      component: Component,
+      rootRef: RootReference<Component>,
+      operations: ElementOperations
+    ) {
       let componentMapStyleValue = (isVisible: boolean) => {
         return this.mapStyleValue(isVisible, component);
       };
 
       operations.setAttribute(
         'style',
-        map(referenceForKey(component, 'isVisible'), componentMapStyleValue),
+        map(referenceForKey(rootRef, 'isVisible') as any, componentMapStyleValue),
         false,
         null
       );
@@ -219,7 +227,7 @@ if (EMBER_COMPONENT_IS_VISIBLE) {
 export const ClassNameBinding = {
   install(
     _element: Simple.Element,
-    component: Component,
+    rootRef: RootReference<Component>,
     microsyntax: string,
     operations: ElementOperations
   ) {
@@ -231,7 +239,7 @@ export const ClassNameBinding = {
     } else {
       let isPath = prop.indexOf('.') > -1;
       let parts = isPath ? prop.split('.') : [];
-      let value = isPath ? referenceForParts(component, parts) : referenceForKey(component, prop);
+      let value = isPath ? referenceForParts(rootRef, parts) : referenceForKey(rootRef, prop);
       let ref;
 
       if (truthy === undefined) {

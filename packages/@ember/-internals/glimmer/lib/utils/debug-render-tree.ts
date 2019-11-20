@@ -136,7 +136,7 @@ export default class DebugRenderTree<Bucket extends object = object> {
   logCurrentRenderStack(): string {
     let nodes = this.stack.toArray().map(bucket => this.nodeFor(bucket));
     let message = nodes
-      .filter(node => node.type !== 'outlet')
+      .filter(node => node.type !== 'outlet' && node.name !== '-top-level')
       .map((node, index) => `${repeatString(' ', index * 2)}${node.name}`);
 
     message.push(`${repeatString(' ', message.length * 2)}`);

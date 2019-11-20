@@ -16,15 +16,13 @@ import { DEBUG } from '@glimmer/env';
 import { createTag, dirty } from '@glimmer/reference';
 import { normalizeProperty, SVG_NAMESPACE } from '@glimmer/runtime';
 
-import { RootReference, UPDATE } from './utils/references';
+import { UPDATE } from './utils/references';
 
 export const DIRTY_TAG = symbol('DIRTY_TAG');
 export const ARGS = symbol('ARGS');
-export const ROOT_REF = symbol('ROOT_REF');
 export const IS_DISPATCHING_ATTRS = symbol('IS_DISPATCHING_ATTRS');
 export const HAS_BLOCK = symbol('HAS_BLOCK');
 export const BOUNDS = symbol('BOUNDS');
-export const GLIMMER_ENV = symbol('GLIMMER_ENV');
 
 /**
 @module @ember/component
@@ -723,7 +721,6 @@ const Component = CoreView.extend(
       this._super(...arguments);
       this[IS_DISPATCHING_ATTRS] = false;
       this[DIRTY_TAG] = createTag();
-      this[ROOT_REF] = new RootReference(this, this[GLIMMER_ENV]);
       this[BOUNDS] = null;
 
       if (DEBUG && this.renderer._destinedForDOM && this.tagName === '') {

@@ -1016,7 +1016,7 @@ moduleFor(
       });
 
       let expectedBacktrackingMessage = backtrackingMessageFor('name', 'Person \\(Ben\\)', {
-        renderTree: ['-top-level', 'application', 'routeWithError', 'this.mount.name'],
+        renderTree: ['application', 'routeWithError', 'this.model.name'],
       });
 
       await this.visit('/');
@@ -1048,7 +1048,7 @@ moduleFor(
       this.addTemplate('routeWithError', 'Hi {{@model.name}} <Foo @person={{@model}} />');
 
       let expectedBacktrackingMessage = backtrackingMessageFor('name', 'Person \\(Ben\\)', {
-        renderTree: ['-top-level', 'application', 'routeWithError', '@mount.name'],
+        renderTree: ['application', 'routeWithError', '@model.name'],
       });
 
       await this.visit('/');

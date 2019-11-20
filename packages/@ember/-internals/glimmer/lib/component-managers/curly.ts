@@ -35,14 +35,7 @@ import {
   WithStaticLayout,
 } from '@glimmer/runtime';
 import { Destroyable, EMPTY_ARRAY } from '@glimmer/util';
-import {
-  BOUNDS,
-  DIRTY_TAG,
-  GLIMMER_ENV,
-  HAS_BLOCK,
-  IS_DISPATCHING_ATTRS,
-  ROOT_REF,
-} from '../component';
+import { BOUNDS, DIRTY_TAG, HAS_BLOCK, IS_DISPATCHING_ATTRS } from '../component';
 import Environment from '../environment';
 import { DynamicScope } from '../renderer';
 import RuntimeResolver from '../resolver';
@@ -56,6 +49,7 @@ import {
 } from '../utils/bindings';
 import ComponentStateBucket, { Component } from '../utils/curly-component-state-bucket';
 import { processComponentArgs } from '../utils/process-args';
+import { RootReference } from '../utils/references';
 import AbstractManager from './abstract';
 import DefinitionState from './definition-state';
 
@@ -77,6 +71,7 @@ function applyAttributeBindings(
   element: Simple.Element,
   attributeBindings: Array<string>,
   component: Component,
+  rootRef: RootReference<Component>,
   operations: ElementOperations
 ) {
   let seen: string[] = [];
@@ -89,7 +84,7 @@ function applyAttributeBindings(
 
     if (seen.indexOf(attribute) === -1) {
       seen.push(attribute);
-      AttributeBinding.install(element, component, parsed, operations);
+      AttributeBinding.install(element, component, rootRef, parsed, operations);
     }
 
     i--;
@@ -105,7 +100,7 @@ function applyAttributeBindings(
     IsVisibleBinding !== undefined &&
     seen.indexOf('style') === -1
   ) {
-    IsVisibleBinding.install(element, component, operations);
+    IsVisibleBinding.install(element, component, rootRef, operations);
   }
 }
 
@@ -289,9 +284,6 @@ export default class CurlyComponentManager
       props.layout = state.template;
     }
 
-    // Pass the environment for the root reference
-    props[GLIMMER_ENV] = environment;
-
     // caller:
     // <FaIcon @name="bug" />
     //
@@ -366,12 +358,12 @@ export default class CurlyComponentManager
     return bucket;
   }
 
-  getSelf({ component }: ComponentStateBucket): VersionedPathReference {
-    return component[ROOT_REF];
+  getSelf({ rootRef }: ComponentStateBucket): VersionedPathReference {
+    return rootRef;
   }
 
   didCreateElement(
-    { component, classRef, environment }: ComponentStateBucket,
+    { component, classRef, environment, rootRef }: ComponentStateBucket,
     element: Simple.Element,
     operations: ElementOperations
   ): void {
@@ -381,12 +373,12 @@ export default class CurlyComponentManager
     let { attributeBindings, classNames, classNameBindings } = component;
 
     if (attributeBindings && attributeBindings.length) {
-      applyAttributeBindings(element, attributeBindings, component, operations);
+      applyAttributeBindings(element, attributeBindings, component, rootRef, operations);
     } else {
       let id = component.elementId ? component.elementId : guidFor(component);
       operations.setAttribute('id', PrimitiveReference.create(id), false, null);
       if (EMBER_COMPONENT_IS_VISIBLE && IsVisibleBinding !== undefined) {
-        IsVisibleBinding.install(element, component, operations);
+        IsVisibleBinding.install(element, component, rootRef, operations);
       }
     }
 
@@ -403,13 +395,13 @@ export default class CurlyComponentManager
 
     if (classNameBindings && classNameBindings.length) {
       classNameBindings.forEach((binding: string) => {
-        ClassNameBinding.install(element, component, binding, operations);
+        ClassNameBinding.install(element, rootRef, binding, operations);
       });
     }
     operations.setAttribute('class', PrimitiveReference.create('ember-view'), false, null);
 
     if ('ariaRole' in component) {
-      operations.setAttribute('role', referenceForKey(component, 'ariaRole'), false, null);
+      operations.setAttribute('role', referenceForKey(rootRef, 'ariaRole'), false, null);
     }
 
     component._transitionTo('hasElement');
