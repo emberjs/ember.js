@@ -374,7 +374,7 @@ moduleFor(
         },
 
         compute([value]) {
-          if (this.get('value')) {
+          if (this.value) {
             this.removeObserver('value.firstName', this, this.recompute);
           }
           this.set('value', value);
@@ -393,7 +393,7 @@ moduleFor(
           this.removeObserver('value.lastName', this, this.recompute);
         },
         compute([value]) {
-          if (this.get('value')) {
+          if (this.value) {
             this.teardown();
           }
           this.set('value', value);
@@ -493,7 +493,7 @@ moduleFor(
         },
 
         compute([value]) {
-          if (this.get('value')) {
+          if (this.value) {
             this.removeObserver('value.firstName', this, this.recompute);
           }
           this.set('value', value);
@@ -512,7 +512,7 @@ moduleFor(
           this.removeObserver('value.lastName', this, this.recompute);
         },
         compute([value]) {
-          if (this.get('value')) {
+          if (this.value) {
             this.teardown();
           }
           this.set('value', value);

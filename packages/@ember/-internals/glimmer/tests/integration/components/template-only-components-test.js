@@ -5,9 +5,12 @@ import { ENV } from '@ember/-internals/environment';
 import { setComponentTemplate } from '@ember/-internals/glimmer';
 import templateOnly from '@ember/component/template-only';
 import { compile } from 'ember-template-compiler';
+import { Object as EmberObject } from '@ember/-internals/runtime';
+import { Component } from '../../utils/helpers';
+import { backtrackingMessageFor } from '../../utils/backtracking-rerender';
 
 class TemplateOnlyComponentsTest extends RenderingTestCase {
-  registerComponent(name, template) {
+  registerTemplateOnlyComponent(name, template) {
     super.registerComponent(name, { template, ComponentClass: null });
   }
 }
@@ -27,7 +30,7 @@ moduleFor(
     }
 
     ['@test it can render a template-only component']() {
-      this.registerComponent('foo-bar', 'hello');
+      this.registerTemplateOnlyComponent('foo-bar', 'hello');
 
       this.render('{{foo-bar}}');
 
@@ -37,7 +40,7 @@ moduleFor(
     }
 
     ['@test it can render named arguments']() {
-      this.registerComponent('foo-bar', '|{{@foo}}|{{@bar}}|');
+      this.registerTemplateOnlyComponent('foo-bar', '|{{@foo}}|{{@bar}}|');
 
       this.render('{{foo-bar foo=foo bar=bar}}', {
         foo: 'foo',
@@ -62,7 +65,7 @@ moduleFor(
     }
 
     ['@test it does not reflected arguments as properties']() {
-      this.registerComponent('foo-bar', '|{{foo}}|{{this.bar}}|');
+      this.registerTemplateOnlyComponent('foo-bar', '|{{foo}}|{{this.bar}}|');
 
       this.render('{{foo-bar foo=foo bar=bar}}', {
         foo: 'foo',
@@ -87,7 +90,7 @@ moduleFor(
     }
 
     ['@test it does not have curly component features']() {
-      this.registerComponent('foo-bar', 'hello');
+      this.registerTemplateOnlyComponent('foo-bar', 'hello');
 
       this.render('{{foo-bar tagName="p" class=class}}', {
         class: 'foo bar',
@@ -111,7 +114,7 @@ moduleFor(
     }
 
     ['@test it has the correct bounds']() {
-      this.registerComponent('foo-bar', 'hello');
+      this.registerTemplateOnlyComponent('foo-bar', 'hello');
 
       this.render('outside {{#if this.isShowing}}before {{foo-bar}} after{{/if}} outside', {
         isShowing: true,
@@ -133,6 +136,37 @@ moduleFor(
 
       this.assertInnerHTML('outside before hello after outside');
     }
+
+    ['@test asserts when a shared dependency is changed during rendering, and keeps original context']() {
+      this.registerComponent('x-outer', {
+        ComponentClass: Component.extend({
+          value: 1,
+          wrapper: EmberObject.create({ content: null }),
+        }),
+        template:
+          '<div id="outer-value">{{x-inner-template-only value=this.wrapper.content wrapper=wrapper}}</div>{{x-inner value=value wrapper=wrapper}}',
+      });
+
+      this.registerComponent('x-inner', {
+        ComponentClass: Component.extend({
+          didReceiveAttrs() {
+            this.get('wrapper').set('content', this.get('value'));
+          },
+          value: null,
+        }),
+        template: '<div id="inner-value">{{wrapper.content}}</div>',
+      });
+
+      this.registerTemplateOnlyComponent('x-inner-template-only', '{{@value}}');
+
+      let expectedBacktrackingMessage = backtrackingMessageFor('content', '<.+?>', {
+        renderTree: ['x-outer', 'this.wrapper.content'],
+      });
+
+      expectAssertion(() => {
+        this.render('{{x-outer}}');
+      }, expectedBacktrackingMessage);
+    }
   }
 );
 
@@ -151,7 +185,7 @@ moduleFor(
     }
 
     ['@test it can render a template-only component']() {
-      this.registerComponent('foo-bar', 'hello');
+      this.registerTemplateOnlyComponent('foo-bar', 'hello');
 
       this.render('{{foo-bar}}');
 
@@ -161,7 +195,7 @@ moduleFor(
     }
 
     ['@test it can render named arguments']() {
-      this.registerComponent('foo-bar', '|{{@foo}}|{{@bar}}|');
+      this.registerTemplateOnlyComponent('foo-bar', '|{{@foo}}|{{@bar}}|');
 
       this.render('{{foo-bar foo=foo bar=bar}}', {
         foo: 'foo',
@@ -186,7 +220,7 @@ moduleFor(
     }
 
     ['@test it renders named arguments as reflected properties']() {
-      this.registerComponent('foo-bar', '|{{foo}}|{{this.bar}}|');
+      this.registerTemplateOnlyComponent('foo-bar', '|{{foo}}|{{this.bar}}|');
 
       this.render('{{foo-bar foo=foo bar=bar}}', {
         foo: 'foo',
@@ -211,7 +245,7 @@ moduleFor(
     }
 
     ['@test it has curly component features']() {
-      this.registerComponent('foo-bar', 'hello');
+      this.registerTemplateOnlyComponent('foo-bar', 'hello');
 
       this.render('{{foo-bar tagName="p" class=class}}', {
         class: 'foo bar',

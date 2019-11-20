@@ -10,7 +10,6 @@ import {
   SimpleDynamicAttribute,
 } from '@glimmer/runtime';
 import { Destroyable, Opaque } from '@glimmer/util';
-import getDebugStack, { DebugStack } from './utils/debug-stack';
 import createIterable from './utils/iterable';
 import { ConditionalReference, UpdatableReference } from './utils/references';
 import { isHTMLSafe } from './utils/string';
@@ -35,7 +34,6 @@ export default class Environment extends GlimmerEnvironment {
   public isInteractive: boolean;
   public destroyedComponents: Destroyable[];
 
-  private _debugStack: DebugStack | undefined;
   private _debugRenderTree: DebugRenderTree | undefined;
   public inTransaction = false;
 
@@ -52,20 +50,8 @@ export default class Environment extends GlimmerEnvironment {
 
     installPlatformSpecificProtocolForURL(this);
 
-    if (DEBUG) {
-      this._debugStack = getDebugStack();
-    }
-
     if (ENV._DEBUG_RENDER_TREE) {
       this._debugRenderTree = new DebugRenderTree();
-    }
-  }
-
-  get debugStack(): DebugStack {
-    if (DEBUG) {
-      return this._debugStack!;
-    } else {
-      throw new Error("Can't access debug stack outside of debug mode");
     }
   }
 

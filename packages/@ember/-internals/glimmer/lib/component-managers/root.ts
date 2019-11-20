@@ -40,10 +40,6 @@ class RootComponentManager extends CurlyComponentManager {
   ) {
     let component = this.component;
 
-    if (DEBUG) {
-      environment.debugStack.push((component as any)._debugContainerKey);
-    }
-
     let finalizer = _instrumentStart('render.component', initialRenderInstrumentDetails, component);
 
     dynamicScope.view = component;

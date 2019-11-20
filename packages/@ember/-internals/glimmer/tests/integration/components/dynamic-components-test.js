@@ -4,6 +4,7 @@ import { set, computed } from '@ember/-internals/metal';
 import { jQueryDisabled } from '@ember/-internals/views';
 
 import { Component } from '../../utils/helpers';
+import { backtrackingMessageFor } from '../../utils/backtracking-rerender';
 
 moduleFor(
   'Components test: dynamic components',
@@ -782,7 +783,9 @@ moduleFor(
         template: '{{person.name}}',
       });
 
-      let expectedBacktrackingMessage = /modified `Person \(Ben\)` twice in a single render\. It was first rendered as `this\.person\.name` in "component:outer-component" and then modified later in "component:error-component"/;
+      let expectedBacktrackingMessage = backtrackingMessageFor('name', 'Person \\(Ben\\)', {
+        renderTree: ['outer-component', 'this.person.name'],
+      });
 
       expectAssertion(() => {
         this.render('{{component componentName}}', {

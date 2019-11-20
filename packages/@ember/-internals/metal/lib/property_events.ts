@@ -1,14 +1,12 @@
 import { Meta, peekMeta } from '@ember/-internals/meta';
 import { symbol } from '@ember/-internals/utils';
 import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
-import { DEBUG } from '@glimmer/env';
 import changeEvent from './change_event';
 import { descriptorForProperty } from './descriptor_map';
 import { sendEvent } from './events';
 import { flushSyncObservers } from './observer';
 import ObserverSet from './observer_set';
 import { markObjectAsDirty } from './tags';
-import { assertNotRendered } from './transaction';
 
 /**
  @module ember
@@ -68,10 +66,6 @@ function notifyPropertyChange(obj: object, keyName: string, _meta?: Meta | null)
 
   if (PROPERTY_DID_CHANGE in obj) {
     obj[PROPERTY_DID_CHANGE](keyName);
-  }
-
-  if (DEBUG) {
-    assertNotRendered(obj, keyName);
   }
 }
 

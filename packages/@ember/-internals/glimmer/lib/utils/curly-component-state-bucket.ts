@@ -4,6 +4,7 @@ import { CapturedNamedArguments } from '@glimmer/runtime';
 import { Opaque } from '@glimmer/util';
 import Environment from '../environment';
 import { Factory as TemplateFactory, OwnedTemplate } from '../template';
+import { RootReference } from './references';
 
 export interface Component {
   _debugContainerKey: string;
@@ -38,6 +39,7 @@ function NOOP() {}
 */
 export default class ComponentStateBucket {
   public classRef: VersionedReference<Opaque> | null = null;
+  public rootRef: RootReference<Component>;
   public argsRevision: Revision;
 
   constructor(
@@ -49,6 +51,7 @@ export default class ComponentStateBucket {
   ) {
     this.classRef = null;
     this.argsRevision = args === null ? 0 : value(args.tag);
+    this.rootRef = new RootReference(component, environment);
   }
 
   destroy() {

@@ -10,22 +10,15 @@ import {
   PreparedArguments,
 } from '@glimmer/runtime';
 import { Destroyable, Opaque, Option } from '@glimmer/util';
-import { DebugStack } from '../utils/debug-stack';
 
 // implements the ComponentManager interface as defined in glimmer:
 // tslint:disable-next-line:max-line-length
 // https://github.com/glimmerjs/glimmer-vm/blob/v0.24.0-beta.4/packages/%40glimmer/runtime/lib/component/interfaces.ts#L21
 
 export default abstract class AbstractManager<T, U> implements ComponentManager<T, U> {
-  public debugStack: DebugStack | undefined = undefined;
-
   prepareArgs(_state: U, _args: Arguments): Option<PreparedArguments> {
     return null;
   }
-
-  // must be implemented by inheritors, inheritors should also
-  // call `this._pushToDebugStack` to ensure the rerendering
-  // assertion messages are properly maintained
 
   abstract create(
     env: Environment,
@@ -43,9 +36,6 @@ export default abstract class AbstractManager<T, U> implements ComponentManager<
     // noop
   }
 
-  // inheritors should also call `this.debugStack.pop()` to
-  // ensure the rerendering assertion messages are properly
-  // maintained
   didRenderLayout(_component: T, _bounds: Bounds): void {
     // noop
   }
@@ -56,16 +46,10 @@ export default abstract class AbstractManager<T, U> implements ComponentManager<
 
   abstract getTag(_bucket: T): Tag;
 
-  // inheritors should also call `this._pushToDebugStack`
-  // to ensure the rerendering assertion messages are
-  // properly maintained
   update(_bucket: T, _dynamicScope: DynamicScope): void {
     // noop
   }
 
-  // inheritors should also call `this.debugStack.pop()` to
-  // ensure the rerendering assertion messages are properly
-  // maintained
   didUpdateLayout(_bucket: T, _bounds: Bounds): void {
     // noop
   }

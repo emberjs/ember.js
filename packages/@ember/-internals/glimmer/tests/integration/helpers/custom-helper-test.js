@@ -2,7 +2,8 @@ import { DEBUG } from '@glimmer/env';
 
 import { RenderingTestCase, moduleFor, runDestroy, runTask } from 'internal-test-helpers';
 import { Helper } from '@ember/-internals/glimmer';
-import { set } from '@ember/-internals/metal';
+import { set, tracked } from '@ember/-internals/metal';
+import { backtrackingMessageFor } from '../../utils/backtracking-rerender';
 
 moduleFor(
   'Helpers test: custom helpers',
@@ -657,6 +658,48 @@ moduleFor(
       this.render('{{hello-world}}');
 
       this.assertText('huzza!');
+    }
+
+    ['@test class-based helper gives helpful warning when mutating a value that was tracked already']() {
+      this.add(
+        'helper:hello-world',
+        class extends Helper {
+          compute() {
+            this.get('value');
+            this.set('value', 123);
+          }
+        }
+      );
+
+      let expectedMessage = backtrackingMessageFor('value', '<.+?>', {
+        renderTree: ['\\(result of a `<\\(unknown\\).*?>` helper\\)'],
+      });
+
+      expectDeprecation(() => {
+        this.render('{{hello-world}}');
+      }, expectedMessage);
+    }
+
+    ['@test class-based helper gives helpful assertion when mutating a tracked property that was tracked already']() {
+      this.add(
+        'helper:hello-world',
+        class HelloWorld extends Helper {
+          @tracked value;
+
+          compute() {
+            this.value;
+            this.value = 123;
+          }
+        }
+      );
+
+      let expectedMessage = backtrackingMessageFor('value', '<HelloWorld.+?>', {
+        renderTree: ['\\(result of a `<HelloWorld.*?>` helper\\)'],
+      });
+
+      expectAssertion(() => {
+        this.render('{{hello-world}}');
+      }, expectedMessage);
     }
   }
 );

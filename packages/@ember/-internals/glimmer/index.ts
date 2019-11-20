@@ -355,7 +355,7 @@ export { default as Checkbox } from './lib/components/checkbox';
 export { default as TextField } from './lib/components/text-field';
 export { default as TextArea } from './lib/components/textarea';
 export { default as LinkComponent } from './lib/components/link-to';
-export { default as Component, ROOT_REF } from './lib/component';
+export { default as Component } from './lib/component';
 export { default as Helper, helper } from './lib/helper';
 export { default as Environment } from './lib/environment';
 export { SafeString, escapeExpression, htmlSafe, isHTMLSafe } from './lib/utils/string';
@@ -385,11 +385,8 @@ export { default as AbstractComponentManager } from './lib/component-managers/ab
 // TODO just test these through public API
 // a lot of these are testing how a problem was solved
 // rather than the problem was solved
-// DebugStack should just test the assert message
-// it supports for example
 export { UpdatableReference, INVOKE } from './lib/utils/references';
 export { default as iterableFor } from './lib/utils/iterable';
-export { default as getDebugStack, DebugStack } from './lib/utils/debug-stack';
 export { default as OutletView } from './lib/views/outlet';
 export { capabilities } from './lib/component-managers/custom';
 export { setComponentManager, getComponentManager } from './lib/utils/custom-component-manager';

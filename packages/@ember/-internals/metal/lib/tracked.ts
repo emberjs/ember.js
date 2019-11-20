@@ -1,5 +1,5 @@
-import { isEmberArray } from '@ember/-internals/utils';
-import { assert } from '@ember/debug';
+import { getDebugName, isEmberArray } from '@ember/-internals/utils';
+import { assert, deprecate } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { combine, CONSTANT_TAG, Tag, UpdatableTag, update } from '@glimmer/reference';
 import { Decorator, DecoratorPropertyDescriptor, isElementDescriptor } from './decorator';
@@ -7,6 +7,163 @@ import { setClassicDecorator } from './descriptor_map';
 import { markObjectAsDirty, tagForProperty } from './tags';
 
 type Option<T> = T | null;
+
+interface AutotrackingTransactionSourceData {
+  context?: string;
+  error: Error;
+}
+
+let WARN_IN_AUTOTRACKING_TRANSACTION = false;
+let AUTOTRACKING_TRANSACTION: WeakMap<Tag, AutotrackingTransactionSourceData> | null = null;
+
+export let runInAutotrackingTransaction: undefined | ((fn: () => void) => void);
+export let deprecateMutationsInAutotrackingTransaction: undefined | ((fn: () => void) => void);
+
+let debuggingContexts: string[] | undefined;
+
+export let assertTagNotConsumed:
+  | undefined
+  | ((tag: Tag, obj: object, keyName?: string, forHardError?: boolean) => void);
+
+let markTagAsConsumed: undefined | ((_tag: Tag, sourceError: Error) => void);
+
+if (DEBUG) {
+  runInAutotrackingTransaction = (fn: () => void) => {
+    if (AUTOTRACKING_TRANSACTION !== null) {
+      // already in a transaction, continue and let the original transaction finish
+      fn();
+      return;
+    }
+
+    AUTOTRACKING_TRANSACTION = new WeakMap();
+
+    try {
+      fn();
+    } finally {
+      AUTOTRACKING_TRANSACTION = null;
+    }
+  };
+
+  deprecateMutationsInAutotrackingTransaction = (fn: () => void) => {
+    assert(
+      'deprecations can only occur inside of an autotracking transaction',
+      AUTOTRACKING_TRANSACTION !== null
+    );
+
+    if (WARN_IN_AUTOTRACKING_TRANSACTION) {
+      // already in a transaction, continue and let the original transaction finish
+      fn();
+      return;
+    }
+
+    WARN_IN_AUTOTRACKING_TRANSACTION = true;
+
+    try {
+      fn();
+    } finally {
+      WARN_IN_AUTOTRACKING_TRANSACTION = false;
+    }
+  };
+
+  let nthIndex = (str: string, pattern: string, n: number, startingPos = -1) => {
+    let i = startingPos;
+
+    while (n-- > 0 && i++ < str.length) {
+      i = str.indexOf(pattern, i);
+      if (i < 0) break;
+    }
+
+    return i;
+  };
+
+  let makeAutotrackingErrorMessage = (
+    sourceData: AutotrackingTransactionSourceData,
+    obj: object,
+    keyName?: string
+  ) => {
+    let dirtyString = keyName
+      ? `\`${keyName}\` on \`${getDebugName!(obj)}\``
+      : `\`${getDebugName!(obj)}\``;
+
+    let message = [
+      `You attempted to update ${dirtyString}, but it had already been used previously in the same computation.  Attempting to update a value after using it in a computation can cause logical errors, infinite revalidation bugs, and performance issues, and is not supported.`,
+    ];
+
+    if (sourceData.context) {
+      message.push(`\`${keyName}\` was first used:\n\n${sourceData.context}`);
+    }
+
+    if (sourceData.error.stack) {
+      let sourceStack = sourceData.error.stack;
+      let thirdIndex = nthIndex(sourceStack, '\n', 3);
+      sourceStack = sourceStack.substr(thirdIndex);
+
+      message.push(`Stack trace for the first usage: ${sourceStack}`);
+    }
+
+    message.push(`Stack trace for the update:`);
+
+    return message.join('\n\n');
+  };
+
+  debuggingContexts = [];
+
+  markTagAsConsumed = (_tag: Tag, sourceError: Error) => {
+    if (!AUTOTRACKING_TRANSACTION || AUTOTRACKING_TRANSACTION.has(_tag)) return;
+
+    AUTOTRACKING_TRANSACTION.set(_tag, {
+      context: debuggingContexts!.map(c => c.replace(/^/gm, '  ').replace(/^ /, '-')).join('\n\n'),
+      error: sourceError,
+    });
+
+    // We need to mark the tag and all of its subtags as consumed, so we need to
+    // cast in and access its internals. In the future this shouldn't be necessary,
+    // this is only for computed properties.e
+    let tag = _tag as any;
+
+    if (tag.subtag) {
+      markTagAsConsumed!(tag.subtag, sourceError);
+    }
+
+    if (tag.subtags) {
+      tag.subtags.forEach((tag: Tag) => markTagAsConsumed!(tag, sourceError));
+    }
+  };
+
+  assertTagNotConsumed = (tag: Tag, obj: object, keyName?: string, forceHardError = false) => {
+    if (AUTOTRACKING_TRANSACTION === null) return;
+
+    let sourceData = AUTOTRACKING_TRANSACTION.get(tag);
+
+    if (!sourceData) return;
+
+    if (WARN_IN_AUTOTRACKING_TRANSACTION && !forceHardError) {
+      deprecate(makeAutotrackingErrorMessage(sourceData, obj, keyName), false, {
+        id: 'autotracking.mutation-after-consumption',
+        until: '4.0.0',
+      });
+    } else {
+      // This hack makes the assertion message nicer, we can cut off the first
+      // few lines of the stack trace and let users know where the actual error
+      // occurred.
+      try {
+        assert(makeAutotrackingErrorMessage(sourceData, obj, keyName), false);
+      } catch (e) {
+        if (e.stack) {
+          let updateStackBegin = e.stack.indexOf('Stack trace for the update:');
+
+          if (updateStackBegin !== -1) {
+            let start = nthIndex(e.stack, '\n', 1, updateStackBegin);
+            let end = nthIndex(e.stack, '\n', 4, updateStackBegin);
+            e.stack = e.stack.substr(0, start) + e.stack.substr(end);
+          }
+        }
+
+        throw e;
+      }
+    }
+  };
+}
 
 /**
   An object that that tracks @tracked properties that were consumed.
@@ -19,6 +176,11 @@ export class Tracker {
 
   add(tag: Tag): void {
     this.tags.add(tag);
+
+    if (DEBUG) {
+      markTagAsConsumed!(tag, new Error());
+    }
+
     this.last = tag;
   }
 
@@ -215,6 +377,10 @@ function descriptorForField([_target, key, desc]: [
     },
 
     set(newValue: any): void {
+      if (DEBUG) {
+        assertTagNotConsumed!(tagForProperty(this, key), this, key, true);
+      }
+
       markObjectAsDirty(this, key);
 
       values.set(this, newValue);
@@ -243,15 +409,27 @@ function descriptorForField([_target, key, desc]: [
 */
 let CURRENT_TRACKER: Option<Tracker> = null;
 
-export function track(callback: () => void) {
+export function track(callback: () => void, debuggingContext?: string | false) {
+  // Note: debuggingContext is allowed to be false so `DEBUG && 'debug message'` works
+
   let parent = CURRENT_TRACKER;
   let current = new Tracker();
 
   CURRENT_TRACKER = current;
 
   try {
-    callback();
+    if (DEBUG) {
+      if (debuggingContext) {
+        debuggingContexts!.unshift(debuggingContext);
+      }
+      runInAutotrackingTransaction!(callback);
+    } else {
+      callback();
+    }
   } finally {
+    if (DEBUG && debuggingContext) {
+      debuggingContexts!.shift();
+    }
     CURRENT_TRACKER = parent;
   }
 

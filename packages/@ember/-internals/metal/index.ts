@@ -60,8 +60,16 @@ export { addObserver, activateObserver, removeObserver, flushAsyncObservers } fr
 export { Mixin, aliasMethod, mixin, observer, applyMixin } from './lib/mixin';
 export { default as inject, DEBUG_INJECTION_FUNCTIONS } from './lib/injected_property';
 export { tagForProperty, tagFor, markObjectAsDirty, UNKNOWN_PROPERTY_TAG } from './lib/tags';
-export { default as runInTransaction, didRender, assertNotRendered } from './lib/transaction';
-export { consume, Tracker, tracked, track, untrack, isTracking } from './lib/tracked';
+export {
+  consume,
+  Tracker,
+  tracked,
+  track,
+  untrack,
+  isTracking,
+  runInAutotrackingTransaction,
+  deprecateMutationsInAutotrackingTransaction,
+} from './lib/tracked';
 
 export {
   NAMESPACES,

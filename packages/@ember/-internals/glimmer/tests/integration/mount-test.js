@@ -12,6 +12,7 @@ import { EMBER_ROUTING_MODEL_ARG } from '@ember/canary-features';
 import Controller from '@ember/controller';
 import Engine, { getEngineParent } from '@ember/engine';
 
+import { backtrackingMessageFor } from '../utils/backtracking-rerender';
 import { compile, Component } from '../utils/helpers';
 
 moduleFor(
@@ -144,7 +145,9 @@ moduleFor(
         },
       });
 
-      let expectedBacktrackingMessage = /modified `Person \(Ben\)` twice in a single render\. It was first rendered as `this\.person\.name` in "template:my-app\/templates\/route-with-mount.hbs" \(in "engine:chat"\) and then modified later in "component:component-with-backtracking-set" \(in "engine:chat"\)/;
+      let expectedBacktrackingMessage = backtrackingMessageFor('name', 'Person \\(Ben\\)', {
+        renderTree: ['application', 'route-with-mount', 'chat', 'application', 'this.person.name'],
+      });
 
       await this.visit('/');
 

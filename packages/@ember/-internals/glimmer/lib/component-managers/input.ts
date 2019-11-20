@@ -86,8 +86,8 @@ export default class InputComponentManager extends InternalComponentManager<Inpu
     return state;
   }
 
-  getSelf({ instance }: InputComponentState): VersionedPathReference {
-    return new RootReference(instance);
+  getSelf({ env, instance }: InputComponentState): VersionedPathReference {
+    return new RootReference(instance, env);
   }
 
   getTag() {
