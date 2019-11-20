@@ -59,6 +59,11 @@ function fileObject(baseName, extension, contentType, currentRevision, tag, date
         'beta/daily/' + date + fullName,
         'beta/shas/' + currentRevision + fullName,
       ],
+      'lts-3-12': [
+        'lts-3-12' + fullName,
+        'lts-3-12/daily/' + date + fullName,
+        'lts-3-12/shas/' + currentRevision + fullName,
+      ],
       wildcard: [],
     },
   };
