@@ -318,6 +318,81 @@ class Rehydration extends AbstractRehydrationTests {
   }
 
   @test
+  'missing attributes'() {
+    let template = '<div data-foo="true"></div>';
+    this.renderServerSide(template, {});
+    this.assertServerOutput('<div data-foo="true"></div>');
+
+    // remove the attribute
+    let element = this.element as Element;
+    let [div] = element.children;
+    div.removeAttribute('data-foo');
+
+    this.renderClientSide(template, {});
+    this.assertRehydrationStats({ nodesRemoved: 0 });
+    this.assertHTML('<div data-foo="true"></div>');
+    this.assertStableRerender();
+  }
+
+  @test
+  'remove extra attributes'() {
+    let template = '<div data-foo="true"></div>';
+    this.renderServerSide(template, {});
+    this.assertServerOutput('<div data-foo="true"></div>');
+
+    // add an extra attribute
+    let element = this.element as Element;
+    let [div] = element.children;
+    div.setAttribute('data-bar', 'oops');
+
+    this.renderClientSide(template, {});
+    this.assertRehydrationStats({ nodesRemoved: 0 });
+    this.assertHTML('<div data-foo="true"></div>');
+    this.assertStableRerender();
+  }
+
+  @test
+  'updates attribute to current value'() {
+    let template = '<div class="always-present show-me"></div>';
+    this.renderServerSide(template, {});
+    this.assertServerOutput('<div class="always-present show-me"></div>');
+
+    // mutate the attribute
+    let element = this.element as Element;
+    let [div] = element.children;
+    div.setAttribute('class', 'zomg');
+
+    this.renderClientSide(template, {});
+    this.assertRehydrationStats({ nodesRemoved: 0 });
+    this.assertHTML('<div class="always-present show-me"></div>');
+    this.assertStableRerender();
+  }
+
+  @test
+  'does not mutate attributes that already match'() {
+    let observer = new MutationObserver(mutationList => {
+      mutationList.forEach(mutation => {
+        let target = mutation.target as Element;
+        this.assert.ok(
+          false,
+          `should not have updated ${mutation.attributeName} on ${target.outerHTML}`
+        );
+      });
+    });
+
+    let template = '<div data-foo="whatever"></div>';
+    this.renderServerSide(template, {});
+    this.assertServerOutput('<div data-foo="whatever"></div>');
+
+    observer.observe(this.element as Element, { attributes: true, subtree: true });
+
+    this.renderClientSide(template, {});
+    this.assertRehydrationStats({ nodesRemoved: 0 });
+    this.assertHTML('<div data-foo="whatever"></div>');
+    this.assertStableRerender();
+  }
+
+  @test
   'Node curlies'() {
     let template = '<div>{{node}}</div>';
 
