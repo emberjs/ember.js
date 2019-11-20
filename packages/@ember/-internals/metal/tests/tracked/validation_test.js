@@ -7,7 +7,6 @@ import {
   tracked,
   track,
   notifyPropertyChange,
-  runInAutotrackingTransaction,
 } from '../..';
 
 import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
@@ -350,14 +349,12 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
 
         expectAssertion(() => {
           if (DEBUG) {
-            runInAutotrackingTransaction(() => {
-              track(() => {
-                obj.value;
-                obj.value = 123;
-              });
+            track(() => {
+              obj.value;
+              obj.value = 123;
             });
           }
-        }, /You attempted to dirty `value` on `EmberObject`, but it had already been consumed previously in the same render/);
+        }, /You attempted to update `value` on `EmberObject`, but it had already been used previously in the same computation/);
       }
     }
   );

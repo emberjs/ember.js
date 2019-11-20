@@ -1,6 +1,13 @@
-import { track, untrack } from '@ember/-internals/metal';
+import {
+  clearRenderingContextDesc,
+  setRenderingContextDesc,
+  track,
+  untrack,
+} from '@ember/-internals/metal';
 import { Factory } from '@ember/-internals/owner';
+import { getDebugName } from '@ember/-internals/utils';
 import { assert, deprecate } from '@ember/debug';
+import { DEBUG } from '@glimmer/env';
 import { Dict, Opaque, Simple } from '@glimmer/interfaces';
 import { combine, CONSTANT_TAG, createUpdatableTag, Tag, update } from '@glimmer/reference';
 import { Arguments, CapturedArguments, ModifierManager } from '@glimmer/runtime';
@@ -162,9 +169,19 @@ class InteractiveCustomModifierManager<ModifierInstance>
     if (capabilities.disableAutoTracking === true) {
       untrack(() => delegate.installModifier(modifier, element, args.value()));
     } else {
+      if (DEBUG) {
+        let debugName = getDebugName!(modifier);
+        setRenderingContextDesc!(`(instance of a \`${debugName}\` modifier)`);
+      }
+
       let combinedTrackingTag = track(() =>
         delegate.installModifier(modifier, element, args.value())
       );
+
+      if (DEBUG) {
+        clearRenderingContextDesc!();
+      }
+
       update(tag, combinedTrackingTag);
     }
   }

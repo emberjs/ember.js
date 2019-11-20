@@ -323,8 +323,12 @@ export default class CustomComponentManager<ComponentInstance>
     delegate.getContext(component);
   }
 
-  getSelf({ delegate, component }: CustomComponentState<ComponentInstance>): PathReference<Opaque> {
-    return RootReference.create(delegate.getContext(component));
+  getSelf({
+    env,
+    delegate,
+    component,
+  }: CustomComponentState<ComponentInstance>): PathReference<Opaque> {
+    return RootReference.create(delegate.getContext(component), env);
   }
 
   getDestructor(state: CustomComponentState<ComponentInstance>): Option<Destroyable> {

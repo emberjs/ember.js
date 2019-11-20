@@ -1,9 +1,10 @@
 import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { Object as EmberObject, A } from '@ember/-internals/runtime';
-import { tracked, nativeDescDecorator as descriptor } from '@ember/-internals/metal';
+import { get, set, tracked, nativeDescDecorator as descriptor } from '@ember/-internals/metal';
 import Service, { inject } from '@ember/service';
 import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
 
+import { backtrackingMessageFor } from '../../utils/backtracking-rerender';
 import { Component } from '../../utils/helpers';
 
 if (EMBER_METAL_TRACKED_PROPERTIES) {
@@ -345,6 +346,40 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
         runTask(() => obj.arr.pushObject(2));
 
         this.assertText('12');
+      }
+
+      '@test simple helper gives helpful warning when mutating a value that was tracked already'() {
+        this.registerHelper('hello-world', function helloWorld([person]) {
+          get(person, 'name');
+          set(person, 'name', 'sam');
+        });
+
+        let expectedMessage = backtrackingMessageFor('name', '\\(unknown object\\)', {
+          renderTree: ['\\(result of a `helloWorld` helper\\)'],
+        });
+
+        expectDeprecation(() => {
+          this.render('{{hello-world this.model}}', { model: {} });
+        }, expectedMessage);
+      }
+
+      '@test simple helper gives helpful assertion when mutating a tracked property that was tracked already'() {
+        class Person {
+          @tracked name = 'bob';
+        }
+
+        this.registerHelper('hello-world', ([person]) => {
+          person.name;
+          person.name = 'sam';
+        });
+
+        let expectedMessage = backtrackingMessageFor('name', 'Person', {
+          renderTree: ['\\(result of a `\\(unknown function\\)` helper\\)'],
+        });
+
+        expectAssertion(() => {
+          this.render('{{hello-world this.model}}', { model: new Person() });
+        }, expectedMessage);
       }
     }
   );

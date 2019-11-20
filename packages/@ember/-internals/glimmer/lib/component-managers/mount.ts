@@ -106,12 +106,12 @@ class MountManager extends AbstractManager<EngineState, EngineDefinitionState>
 
     if (modelRef === undefined) {
       controller = controllerFactory.create();
-      self = new RootReference(controller);
+      self = new RootReference(controller, environment);
       bucket = { engine, controller, self, environment };
     } else {
       let model = modelRef.value();
       controller = controllerFactory.create({ model });
-      self = new RootReference(controller);
+      self = new RootReference(controller, environment);
       bucket = { engine, controller, self, modelRef, environment };
     }
 

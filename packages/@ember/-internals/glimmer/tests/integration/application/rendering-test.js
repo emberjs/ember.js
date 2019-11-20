@@ -5,6 +5,7 @@ import Controller from '@ember/controller';
 import { Route } from '@ember/-internals/routing';
 import { Component } from '@ember/-internals/glimmer';
 import { set, tracked } from '@ember/-internals/metal';
+import { backtrackingMessageFor } from '../../utils/backtracking-rerender';
 import { runTask } from '../../../../../../internal-test-helpers/lib/run';
 
 moduleFor(
@@ -1014,7 +1015,9 @@ moduleFor(
         template: 'Hi {{this.person.name}} from component',
       });
 
-      let expectedBacktrackingMessage = /You attempted to dirty `name` on `Person \(Ben\)`, but it had already been consumed previously in the same render/;
+      let expectedBacktrackingMessage = backtrackingMessageFor('name', 'Person \\(Ben\\)', {
+        renderTree: ['-top-level', 'application', 'routeWithError', 'this.mount.name'],
+      });
 
       await this.visit('/');
 
@@ -1044,7 +1047,9 @@ moduleFor(
 
       this.addTemplate('routeWithError', 'Hi {{@model.name}} <Foo @person={{@model}} />');
 
-      let expectedBacktrackingMessage = /You attempted to dirty `name` on `Person \(Ben\)`, but it had already been consumed previously in the same render/;
+      let expectedBacktrackingMessage = backtrackingMessageFor('name', 'Person \\(Ben\\)', {
+        renderTree: ['-top-level', 'application', 'routeWithError', '@mount.name'],
+      });
 
       await this.visit('/');
 

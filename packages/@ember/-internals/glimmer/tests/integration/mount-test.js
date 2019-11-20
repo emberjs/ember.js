@@ -6,6 +6,7 @@ import { EMBER_ROUTING_MODEL_ARG } from '@ember/canary-features';
 import Controller from '@ember/controller';
 import Engine, { getEngineParent } from '@ember/engine';
 
+import { backtrackingMessageFor } from '../utils/backtracking-rerender';
 import { compile, Component } from '../utils/helpers';
 
 moduleFor(
@@ -137,7 +138,16 @@ moduleFor(
         },
       });
 
-      let expectedBacktrackingMessage = /You attempted to dirty `name` on `Person \(Ben\)`, but it had already been consumed previously in the same render/;
+      let expectedBacktrackingMessage = backtrackingMessageFor('name', 'Person \\(Ben\\)', {
+        renderTree: [
+          '-top-level',
+          'application',
+          'route-with-mount',
+          'chat',
+          'application',
+          'this.person.name',
+        ],
+      });
 
       await this.visit('/');
 
