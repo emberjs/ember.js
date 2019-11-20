@@ -4,6 +4,7 @@ import { set, computed } from '@ember/-internals/metal';
 import { jQueryDisabled } from '@ember/-internals/views';
 
 import { Component } from '../../utils/helpers';
+import { backtrackingMessageFor } from '../../utils/backtracking-rerender';
 
 moduleFor(
   'Components test: dynamic components',
@@ -782,7 +783,9 @@ moduleFor(
         template: '{{person.name}}',
       });
 
-      let expectedBacktrackingMessage = /You attempted to dirty `name` on `Person \(Ben\)`, but it had already been consumed previously in the same render/;
+      let expectedBacktrackingMessage = backtrackingMessageFor('name', 'Person \\(Ben\\)', {
+        renderTree: ['-top-level', 'outer-component', 'this.person.name'],
+      });
 
       expectAssertion(() => {
         this.render('{{component componentName}}', {

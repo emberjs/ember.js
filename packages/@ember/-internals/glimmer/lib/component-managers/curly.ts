@@ -35,7 +35,14 @@ import {
   WithStaticLayout,
 } from '@glimmer/runtime';
 import { Destroyable, EMPTY_ARRAY } from '@glimmer/util';
-import { BOUNDS, DIRTY_TAG, HAS_BLOCK, IS_DISPATCHING_ATTRS, ROOT_REF } from '../component';
+import {
+  BOUNDS,
+  DIRTY_TAG,
+  GLIMMER_ENV,
+  HAS_BLOCK,
+  IS_DISPATCHING_ATTRS,
+  ROOT_REF,
+} from '../component';
 import Environment from '../environment';
 import { DynamicScope } from '../renderer';
 import RuntimeResolver from '../resolver';
@@ -285,6 +292,9 @@ export default class CurlyComponentManager
     if (state.template) {
       props.layout = state.template;
     }
+
+    // Pass the environment for the root reference
+    props[GLIMMER_ENV] = environment;
 
     // caller:
     // <FaIcon @name="bug" />

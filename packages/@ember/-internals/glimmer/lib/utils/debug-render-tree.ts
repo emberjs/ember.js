@@ -68,8 +68,25 @@ export class Ref<T extends object> {
   }
 }
 
+const _repeat =
+  String.prototype.repeat ||
+  function(this: string, count: number) {
+    return new Array(count + 1).join(this);
+  };
+
+function repeatString(str: string, count: number) {
+  return _repeat.call(str, count);
+}
+
+class StackWithToArray<T> extends Stack<T> {
+  toArray(): T[] {
+    // polyfilling feature of modern Glimmer VM
+    return this['stack'];
+  }
+}
+
 export default class DebugRenderTree<Bucket extends object = object> {
-  private stack = new Stack<Bucket>();
+  private stack = new StackWithToArray<Bucket>();
 
   private refs = new WeakMap<Bucket, Ref<Bucket>>();
   private roots = new Set<Ref<Bucket>>();
@@ -114,6 +131,17 @@ export default class DebugRenderTree<Bucket extends object = object> {
 
   capture(): CapturedRenderNode[] {
     return this.captureRefs(this.roots);
+  }
+
+  logCurrentRenderStack(): string {
+    let nodes = this.stack.toArray().map(bucket => this.nodeFor(bucket));
+    let message = nodes
+      .filter(node => node.type !== 'outlet')
+      .map((node, index) => `${repeatString(' ', index * 2)}${node.name}`);
+
+    message.push(`${repeatString(' ', message.length * 2)}`);
+
+    return message.join('\n');
   }
 
   private reset(): void {

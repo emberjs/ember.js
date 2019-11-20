@@ -19,6 +19,7 @@ import { Object as EmberObject, A as emberA } from '@ember/-internals/runtime';
 import { jQueryDisabled } from '@ember/-internals/views';
 
 import { Component, compile, htmlSafe } from '../../utils/helpers';
+import { backtrackingMessageFor } from '../../utils/backtracking-rerender';
 
 moduleFor(
   'Components test: curly components',
@@ -2537,7 +2538,9 @@ moduleFor(
         template: '<div id="inner-value">{{value}}</div>',
       });
 
-      let expectedBacktrackingMessage = /You attempted to dirty `value` on `<.+?>`, but it had already been consumed previously in the same render/;
+      let expectedBacktrackingMessage = backtrackingMessageFor('value', '<.+?>', {
+        renderTree: ['-top-level', 'x-outer', 'x-middle', 'this.value'],
+      });
 
       expectAssertion(() => {
         this.render('{{x-outer}}');
@@ -2564,7 +2567,9 @@ moduleFor(
         template: '<div id="inner-value">{{wrapper.content}}</div>',
       });
 
-      let expectedBacktrackingMessage = /You attempted to dirty `content` on `<.+?>`, but it had already been consumed previously in the same render/;
+      let expectedBacktrackingMessage = backtrackingMessageFor('content', '<.+?>', {
+        renderTree: ['-top-level', 'x-outer', 'this.wrapper.content'],
+      });
 
       expectAssertion(() => {
         this.render('{{x-outer}}');

@@ -69,6 +69,8 @@ export {
   isTracking,
   runInAutotrackingTransaction,
   warnInAutotrackingTransaction,
+  setRenderingContextDesc,
+  clearRenderingContextDesc,
 } from './lib/tracked';
 
 export {

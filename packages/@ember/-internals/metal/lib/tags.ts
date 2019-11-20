@@ -4,7 +4,7 @@ import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { backburner } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import { CONSTANT_TAG, createTag, createUpdatableTag, dirty, Tag } from '@glimmer/reference';
-import { assertPropertyNotTracked } from './tracked';
+import { assertTagNotConsumed } from './tracked';
 
 export const UNKNOWN_PROPERTY_TAG = symbol('UNKNOWN_PROPERTY_TAG');
 
@@ -64,7 +64,7 @@ export function markObjectAsDirty(obj: object, propertyKey: string, _meta?: Meta
 
   if (objectTag !== undefined) {
     if (DEBUG) {
-      assertPropertyNotTracked(objectTag, obj);
+      assertTagNotConsumed!(objectTag, obj);
     }
 
     dirty(objectTag);
@@ -75,7 +75,7 @@ export function markObjectAsDirty(obj: object, propertyKey: string, _meta?: Meta
 
   if (propertyTag !== undefined) {
     if (DEBUG) {
-      assertPropertyNotTracked(propertyTag, obj, propertyKey);
+      assertTagNotConsumed!(propertyTag, obj, propertyKey);
     }
 
     dirty(propertyTag);
