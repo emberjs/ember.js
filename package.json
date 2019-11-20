@@ -82,6 +82,7 @@
     "@glimmer/program": "0.44.0",
     "@glimmer/reference": "0.44.0",
     "@glimmer/runtime": "0.44.0",
+    "@glimmer/validator": "0.44.0",
     "@simple-dom/document": "^1.4.0",
     "@types/qunit": "^2.5.4",
     "@types/rsvp": "^4.0.3",

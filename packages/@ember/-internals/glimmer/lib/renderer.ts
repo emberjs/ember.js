@@ -1,5 +1,6 @@
 import { ENV } from '@ember/-internals/environment';
 import { runInAutotrackingTransaction } from '@ember/-internals/metal';
+import { Owner, OWNER } from '@ember/-internals/owner';
 import { getViewElement, getViewId } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { backburner, getCurrentRunLoop } from '@ember/runloop';
@@ -8,39 +9,44 @@ import { Option, RuntimeProgram as IRuntimeProgram, WholeProgramCompilationConte
 import { CURRENT_TAG, validate, value, VersionedPathReference } from '@glimmer/reference';
 import {
   Bounds,
+  Cursor,
+  DynamicScope as GlimmerDynamicScope,
+  ElementBuilder,
+  Environment,
+  JitRuntimeContext,
+  Option,
+  RenderResult,
+  SyntaxCompilationContext,
+} from '@glimmer/interfaces';
+import { JitContext, unwrapHandle, unwrapTemplate } from '@glimmer/opcode-compiler';
+import { artifacts } from '@glimmer/program';
+import { VersionedPathReference } from '@glimmer/reference';
+import {
   clientBuilder,
   CurriedComponentDefinition,
   curry,
-  Cursor,
-  DynamicScope as GlimmerDynamicScope,
-  IteratorResult,
-  renderJitMain,
-  RenderResult,
-  UNDEFINED_REFERENCE,
-  JitRuntimeFromProgram,
-  JitRuntime,
-  DOMTreeConstruction,
   DOMChanges,
-  RuntimeEnvironment as IRuntimeEnvironment
-  RuntimeResolver as IRuntimeResolver
+  DOMTreeConstruction,
+  IteratorResult,
+  JitRuntimeFromProgram,
+  renderJitMain,
+  UNDEFINED_REFERENCE,
 } from '@glimmer/runtime';
-import { SimpleElement, SimpleNode, SimpleDocument } from '@simple-dom/interface';
+import { CURRENT_TAG, validate, value } from '@glimmer/validator';
+import { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
 import RSVP from 'rsvp';
+import { NodeDOMTreeConstruction } from '../';
+import CompileTimeResolver from './compile-time-lookup';
 import { BOUNDS } from './component';
 import { createRootOutlet } from './component-managers/outlet';
 import { RootComponentDefinition } from './component-managers/root';
 import RuntimeEnvironment from './environment';
+import RuntimeResolver from './resolver';
 import { Factory as TemplateFactory, OwnedTemplate } from './template';
 import { Component } from './utils/curly-component-state-bucket';
 import { OutletState } from './utils/outlet';
 import { UnboundReference } from './utils/references';
 import OutletView from './views/outlet';
-import { unwrapTemplate, JitContext, unwrapHandle } from '@glimmer/opcode-compiler';
-import CompileTimeResolver from './compile-time-lookup';
-import RuntimeResolver from './resolver';
-import { artifacts } from '@glimmer/program';
-import { NodeDOMTreeConstruction } from '..';
-import { Owner } from '@ember/-internals/owner';
 
 export type IBuilder = (env: Environment, cursor: Cursor) => ElementBuilder;
 
@@ -76,17 +82,19 @@ export class DynamicScope implements GlimmerDynamicScope {
 
 class RootState {
   public id: string;
-  public root: Component | OutletView;
   public result: RenderResult | undefined;
   public destroyed: boolean;
+  public options: {
+    alwaysRevalidate: boolean;
+  };
+  public runtime: JitRuntimeContext;
   public render: () => void;
 
   constructor(
-    owner: Owner,
-    root: Component | OutletView,
-    renderer: Renderer,
-    runtime: IRuntimeEnvironment,
-    context: JitRuntimeContext,
+    public root: Component | OutletView,
+    public renderer: Renderer,
+    runtime: JitRuntimeContext,
+    context: SyntaxCompilationContext,
     template: OwnedTemplate,
     self: VersionedPathReference<unknown>,
     parentElement: SimpleElement,
@@ -96,10 +104,9 @@ class RootState {
     assert(`You cannot render \`${self.value()}\` without a template.`, template !== undefined);
 
     this.id = getViewId(root);
-    this.root = root;
     this.result = undefined;
     this.destroyed = false;
-    this.renderer = renderer;
+    this.runtime = runtime;
 
     let options = (this.options = {
       alwaysRevalidate: false,
@@ -134,11 +141,12 @@ class RootState {
   }
 
   destroy() {
-    let { result, env } = this;
+    let { result, runtime: { env }, renderer } = this;
 
     this.destroyed = true;
 
-    this.env = undefined as any;
+    this.renderer = undefined as any;
+    this.runtime = undefined as any;
     this.root = null as any;
     this.result = undefined;
     this.render = undefined as any;
@@ -154,7 +162,7 @@ class RootState {
        * When roots are being destroyed during `Renderer#destroy`, no transaction exists
 
        */
-      let needsTransaction = !env.inTransaction;
+      let needsTransaction = !renderer.inRenderTransaction;
 
       if (needsTransaction) {
         env.begin();
@@ -259,19 +267,16 @@ export abstract class Renderer {
   private _rootTemplate: OwnedTemplate;
   private _viewRegistry: ViewRegistry;
   private _destinedForDOM: boolean;
-  private _destroyed: boolean;
   private _roots: RootState[];
-  private _lastRevision: number;
-  private _isRenderingRoots: boolean;
   private _removedRoots: RootState[];
   private _builder: IBuilder;
 
-  private _context: WholeProgramCompilationContext;
-  private _runtime: {
-    env: IRuntimeEnvironment,
-    resolver: IRuntimeResolver,
-    program: IRuntimeProgram
-  };
+  private _context: SyntaxCompilationContext;
+  private _runtime: JitRuntimeContext;
+
+  private _lastRevision = -1;
+  private _destroyed = false;
+  public inRenderTransaction = false;
 
   constructor(
     owner: Owner,
@@ -285,10 +290,7 @@ export abstract class Renderer {
     this._rootTemplate = rootTemplate(owner);
     this._viewRegistry = viewRegistry;
     this._destinedForDOM = destinedForDOM;
-    this._destroyed = false;
     this._roots = [];
-    this._lastRevision = -1;
-    this._isRenderingRoots = false;
     this._removedRoots = [];
     this._builder = builder;
 
@@ -333,7 +335,9 @@ export abstract class Renderer {
     let dynamicScope = new DynamicScope(null, UNDEFINED_REFERENCE);
     let rootState = new RootState(
       root,
-      this._env,
+      this,
+      this._runtime,
+      this._context,
       this._rootTemplate,
       self,
       target,
@@ -415,7 +419,7 @@ export abstract class Renderer {
   }
 
   createElement(tagName: string): SimpleElement {
-    return this._env.getAppendOperations().createElement(tagName);
+    return this._runtime.env.getAppendOperations().createElement(tagName);
   }
 
   _renderRoot(root: RootState) {
@@ -431,12 +435,13 @@ export abstract class Renderer {
   }
 
   _renderRoots() {
-    let { _roots: roots, _env: env, _removedRoots: removedRoots } = this;
+    let { _roots: roots, _runtime: runtime, _removedRoots: removedRoots } = this;
     let initialRootsLength: number;
 
     do {
-      env.begin();
       try {
+        runtime.env.begin();
+
         // ensure that for the first iteration of the loop
         // each root is processed
         initialRootsLength = roots.length;
@@ -471,7 +476,7 @@ export abstract class Renderer {
 
         this._lastRevision = value(CURRENT_TAG);
       } finally {
-        env.commit();
+        runtime.env.commit();
       }
     } while (roots.length > initialRootsLength);
 
@@ -489,7 +494,7 @@ export abstract class Renderer {
   }
 
   _renderRootsTransaction() {
-    if (this._isRenderingRoots) {
+    if (this.inRenderTransaction) {
       // currently rendering roots, a new root was added and will
       // be processed by the existing _renderRoots invocation
       return;
@@ -497,7 +502,7 @@ export abstract class Renderer {
 
     // used to prevent calling _renderRoots again (see above)
     // while we are actively rendering roots
-    this._isRenderingRoots = true;
+    this.inRenderTransaction = true;
 
     let completedWithoutError = false;
     try {
@@ -506,11 +511,8 @@ export abstract class Renderer {
     } finally {
       if (!completedWithoutError) {
         this._lastRevision = value(CURRENT_TAG);
-        if (this._env.inTransaction === true) {
-          this._env.commit();
-        }
       }
-      this._isRenderingRoots = false;
+      this.inRenderTransaction = false;
     }
   }
 
@@ -549,17 +551,21 @@ export abstract class Renderer {
 
 export class InertRenderer extends Renderer {
   static create({
+    [OWNER]: owner,
+    document,
     env,
     rootTemplate,
     _viewRegistry,
     builder,
   }: {
-    env: Environment;
+    [OWNER]: Owner,
+    document: SimpleDocument,
+    env: { isInteractive: boolean, hasDOM: boolean },
     rootTemplate: TemplateFactory;
     _viewRegistry: any;
     builder: any;
   }) {
-    return new this(env, rootTemplate, _viewRegistry, false, builder);
+    return new this(owner, document, env, rootTemplate, _viewRegistry, false, builder);
   }
 
   getElement(_view: unknown): Option<SimpleElement> {
@@ -571,17 +577,21 @@ export class InertRenderer extends Renderer {
 
 export class InteractiveRenderer extends Renderer {
   static create({
+    [OWNER]: owner,
+    document,
     env,
     rootTemplate,
     _viewRegistry,
     builder,
   }: {
-    env: Environment;
+    [OWNER]: Owner,
+    document: SimpleDocument,
+    env: { isInteractive: boolean, hasDOM: boolean },
     rootTemplate: TemplateFactory;
     _viewRegistry: any;
     builder: any;
   }) {
-    return new this(env, rootTemplate, _viewRegistry, true, builder);
+    return new this(owner, document, env, rootTemplate, _viewRegistry, true, builder);
   }
 
   getElement(view: unknown): Option<SimpleElement> {

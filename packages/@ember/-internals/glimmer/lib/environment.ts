@@ -162,7 +162,7 @@ if (DEBUG) {
     }
   }
 
-  Environment.prototype.attributeFor = function(
+  RuntimeEnvironment.prototype.attributeFor = function(
     element,
     attribute: string,
     isTrusting: boolean,
