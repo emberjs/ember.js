@@ -2539,7 +2539,7 @@ moduleFor(
       });
 
       let expectedBacktrackingMessage = backtrackingMessageFor('value', '<.+?>', {
-        renderTree: ['-top-level', 'x-outer', 'x-middle', 'this.value'],
+        renderTree: ['x-outer', 'x-middle', 'this.value'],
       });
 
       expectAssertion(() => {
@@ -2568,7 +2568,7 @@ moduleFor(
       });
 
       let expectedBacktrackingMessage = backtrackingMessageFor('content', '<.+?>', {
-        renderTree: ['-top-level', 'x-outer', 'this.wrapper.content'],
+        renderTree: ['x-outer', 'this.wrapper.content'],
       });
 
       expectAssertion(() => {

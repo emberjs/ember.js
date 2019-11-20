@@ -144,7 +144,7 @@ class OutletModelReference implements VersionedPathReference {
 
 if (DEBUG) {
   OutletModelReference.prototype['debug'] = function debug(subPath: string): string {
-    return `${this['debugStackLog']}@mount.${subPath}`;
+    return `${this['debugStackLog']}@model.${subPath}`;
   };
 }
 

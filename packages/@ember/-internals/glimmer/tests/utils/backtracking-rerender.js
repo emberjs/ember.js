@@ -6,7 +6,9 @@ export function backtrackingMessageFor(key, obj, { renderTree } = {}) {
 
   if (renderTree) {
     // match the renderTree if it was included
-    regex.push(`\`${key}\` was first used when rendering:`, renderTree.join('\\n\\s*'));
+    regex.push(`\`${key}\` was first used:`);
+    regex.push('- While rendering:');
+    regex.push(renderTree.join('\\n\\s*'));
   }
 
   // Ensure both stack traces are given

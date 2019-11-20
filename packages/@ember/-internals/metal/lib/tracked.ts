@@ -17,12 +17,9 @@ let WARN_IN_AUTOTRACKING_TRANSACTION = false;
 let AUTOTRACKING_TRANSACTION: WeakMap<Tag, AutotrackingTransactionSourceData> | null = null;
 
 export let runInAutotrackingTransaction: undefined | ((fn: () => void) => void);
-export let warnInAutotrackingTransaction: undefined | ((fn: () => void) => void);
+export let deprecateMutationsInAutotrackingTransaction: undefined | ((fn: () => void) => void);
 
-let renderingContextDescription: string | undefined;
-
-export let setRenderingContextDesc: undefined | ((desc: string) => void);
-export let clearRenderingContextDesc: undefined | (() => void);
+let debuggingContexts: string[] | undefined;
 
 export let assertTagNotConsumed:
   | undefined
@@ -47,7 +44,12 @@ if (DEBUG) {
     }
   };
 
-  warnInAutotrackingTransaction = (fn: () => void) => {
+  deprecateMutationsInAutotrackingTransaction = (fn: () => void) => {
+    assert(
+      'deprecations can only occur inside of an autotracking transaction',
+      AUTOTRACKING_TRANSACTION !== null
+    );
+
     if (WARN_IN_AUTOTRACKING_TRANSACTION) {
       // already in a transaction, continue and let the original transaction finish
       fn();
@@ -88,8 +90,7 @@ if (DEBUG) {
     ];
 
     if (sourceData.context) {
-      message.push(`\`${keyName}\` was first used when rendering:`);
-      message.push(sourceData.context.replace(/^/gm, '    '));
+      message.push(`\`${keyName}\` was first used:\n\n${sourceData.context}`);
     }
 
     if (sourceData.error.stack) {
@@ -105,19 +106,13 @@ if (DEBUG) {
     return message.join('\n\n');
   };
 
-  setRenderingContextDesc = (desc: string) => {
-    renderingContextDescription = desc;
-  };
-
-  clearRenderingContextDesc = () => {
-    renderingContextDescription = '';
-  };
+  debuggingContexts = [];
 
   markTagAsConsumed = (_tag: Tag, sourceError: Error) => {
     if (!AUTOTRACKING_TRANSACTION || AUTOTRACKING_TRANSACTION.has(_tag)) return;
 
     AUTOTRACKING_TRANSACTION.set(_tag, {
-      context: renderingContextDescription,
+      context: debuggingContexts!.map(c => c.replace(/^/gm, '  ').replace(/^ /, '-')).join('\n\n'),
       error: sourceError,
     });
 
@@ -414,7 +409,9 @@ function descriptorForField([_target, key, desc]: [
 */
 let CURRENT_TRACKER: Option<Tracker> = null;
 
-export function track(callback: () => void) {
+export function track(callback: () => void, debuggingContext?: string | false) {
+  // Note: debuggingContext is allowed to be false so `DEBUG && 'debug message'` works
+
   let parent = CURRENT_TRACKER;
   let current = new Tracker();
 
@@ -422,11 +419,17 @@ export function track(callback: () => void) {
 
   try {
     if (DEBUG) {
+      if (debuggingContext) {
+        debuggingContexts!.unshift(debuggingContext);
+      }
       runInAutotrackingTransaction!(callback);
     } else {
       callback();
     }
   } finally {
+    if (DEBUG && debuggingContext) {
+      debuggingContexts!.shift();
+    }
     CURRENT_TRACKER = parent;
   }
 

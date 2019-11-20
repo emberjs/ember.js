@@ -418,7 +418,9 @@ export abstract class Renderer {
           }
 
           if (DEBUG) {
-            // run in an autotracking transaction to prevent backflow errors
+            // run in an autotracking transaction to prevent backflow errors.
+            // we use `bind` here to avoid creating a closure (and requiring a
+            // hoisted variable).
             runInAutotrackingTransaction!(root.render.bind(root));
           } else {
             root.render();

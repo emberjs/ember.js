@@ -1,13 +1,11 @@
 import {
-  clearRenderingContextDesc,
   consume,
+  deprecateMutationsInAutotrackingTransaction,
   get,
   set,
-  setRenderingContextDesc,
   tagFor,
   tagForProperty,
   track,
-  warnInAutotrackingTransaction,
   watchKey,
 } from '@ember/-internals/metal';
 import { getDebugName, isProxy, symbol } from '@ember/-internals/utils';
@@ -41,6 +39,7 @@ import {
 import { Option, unreachable } from '@glimmer/util';
 import Environment from '../environment';
 import { HelperFunction, HelperInstance, RECOMPUTE_TAG } from '../helper';
+import debugRenderMessage from './debug-render-message';
 import emberToBool from './to-bool';
 
 export const UPDATE = symbol('UPDATE');
@@ -162,17 +161,10 @@ export class RootPropertyReference extends PropertyReference
     let ret;
 
     if (EMBER_METAL_TRACKED_PROPERTIES) {
-      if (DEBUG) {
-        setRenderingContextDesc!(this['debug']());
-      }
-
-      let tag = track(() => {
-        ret = get(parentValue, propertyKey);
-      });
-
-      if (DEBUG) {
-        clearRenderingContextDesc!();
-      }
+      let tag = track(
+        () => (ret = get(parentValue, propertyKey)),
+        DEBUG && debugRenderMessage!(this['debug']())
+      );
 
       consume(tag);
       update(this.propertyTag, tag);
@@ -236,17 +228,10 @@ export class NestedPropertyReference extends PropertyReference {
       let ret;
 
       if (EMBER_METAL_TRACKED_PROPERTIES) {
-        if (DEBUG) {
-          setRenderingContextDesc!(this['debug']());
-        }
-
-        let tag = track(() => {
-          ret = get(parentValue, propertyKey);
-        });
-
-        if (DEBUG) {
-          clearRenderingContextDesc!();
-        }
+        let tag = track(
+          () => (ret = get(parentValue, propertyKey)),
+          DEBUG && debugRenderMessage!(this['debug']())
+        );
 
         consume(tag);
 
@@ -381,28 +366,21 @@ export class SimpleHelperReference extends CachedReference {
     let positionalValue = positional.value();
     let namedValue = named.value();
 
-    let computedValue;
-    let combinedTrackingTag;
-
     if (DEBUG) {
       debugFreeze(positionalValue);
       debugFreeze(namedValue);
+    }
 
-      let debugName = getDebugName!(helper);
-      setRenderingContextDesc!(`(result of a \`${debugName}\` helper)`);
-
-      combinedTrackingTag = track(() => {
-        warnInAutotrackingTransaction!(() => {
+    let computedValue;
+    let combinedTrackingTag = track(() => {
+      if (DEBUG) {
+        deprecateMutationsInAutotrackingTransaction!(() => {
           computedValue = helper(positionalValue, namedValue);
         });
-      });
-
-      clearRenderingContextDesc!();
-    } else {
-      combinedTrackingTag = track(() => {
+      } else {
         computedValue = helper(positionalValue, namedValue);
-      });
-    }
+      }
+    }, DEBUG && debugRenderMessage!(`(result of a \`${getDebugName!(helper)}\` helper)`));
 
     update(computeTag, combinedTrackingTag);
 
@@ -443,18 +421,13 @@ export class ClassBasedHelperReference extends CachedReference {
     let computedValue;
     let combinedTrackingTag = track(() => {
       if (DEBUG) {
-        let debugName = getDebugName!(instance);
-        setRenderingContextDesc!(`(result of a \`${debugName}\` helper)`);
-
-        warnInAutotrackingTransaction!(() => {
+        deprecateMutationsInAutotrackingTransaction!(() => {
           computedValue = instance.compute(positionalValue, namedValue);
         });
-
-        clearRenderingContextDesc!();
       } else {
         computedValue = instance.compute(positionalValue, namedValue);
       }
-    });
+    }, DEBUG && debugRenderMessage!(`(result of a \`${getDebugName!(instance)}\` helper)`));
 
     update(computeTag, combinedTrackingTag);
 
