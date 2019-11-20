@@ -8,6 +8,7 @@ import * as environment from '@ember/-internals/browser-environment';
 import { jQuery } from '@ember/-internals/views';
 import EngineInstance from '@ember/engine/instance';
 import { renderSettled } from '@ember/-internals/glimmer';
+import { Promise } from 'rsvp';
 
 /**
   The `ApplicationInstance` encapsulates all of the stateful aspects of a
@@ -246,24 +247,13 @@ const ApplicationInstance = EngineInstance.extend({
 
     let router = this.router;
 
-    let handleTransitionResolve = () => {
-      if (!bootOptions.options.shouldRender) {
-        // No rendering is needed, and routing has completed, simply return.
-        return this;
-      } else {
-        // Ensure that the visit promise resolves when all rendering has completed
-        return renderSettled().then(() => this);
-      }
-    };
+    let shouldRender = bootOptions.options.shouldRender;
 
     let handleTransitionReject = error => {
       if (error.error) {
         throw error.error;
       } else if (error.name === 'TransitionAborted' && router._routerMicrolib.activeTransition) {
-        return router._routerMicrolib.activeTransition.then(
-          handleTransitionResolve,
-          handleTransitionReject
-        );
+        return router._routerMicrolib.activeTransition.catch(handleTransitionReject);
       } else if (error.name === 'TransitionAborted') {
         throw new Error(error.message);
       } else {
@@ -276,10 +266,12 @@ const ApplicationInstance = EngineInstance.extend({
     // Keeps the location adapter's internal URL in-sync
     location.setURL(url);
 
-    // getURL returns the set url with the rootURL stripped off
-    return router
-      .handleURL(location.getURL())
-      .then(handleTransitionResolve, handleTransitionReject);
+    return Promise.all([
+      shouldRender && renderSettled(),
+
+      // getURL returns the set url with the rootURL stripped off
+      router.handleURL(location.getURL()).then(null, handleTransitionReject),
+    ]).then(() => this);
   },
 
   willDestroy() {
