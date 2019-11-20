@@ -1,15 +1,17 @@
-import { ComponentCapabilities } from '@glimmer/interfaces';
-import { Tag, VersionedPathReference } from '@glimmer/reference';
 import {
-  Arguments,
   Bounds,
+  ComponentCapabilities,
   ComponentManager,
+  Destroyable,
   DynamicScope,
   ElementOperations,
   Environment,
   PreparedArguments,
-} from '@glimmer/runtime';
-import { Destroyable, Option } from '@glimmer/util';
+  VMArguments,
+} from '@glimmer/interfaces';
+import { VersionedPathReference } from '@glimmer/reference';
+import { Option } from '@glimmer/util';
+import { Tag } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
 
 // implements the ComponentManager interface as defined in glimmer:
@@ -17,14 +19,14 @@ import { SimpleElement } from '@simple-dom/interface';
 // https://github.com/glimmerjs/glimmer-vm/blob/v0.24.0-beta.4/packages/%40glimmer/runtime/lib/component/interfaces.ts#L21
 
 export default abstract class AbstractManager<T, U> implements ComponentManager<T, U> {
-  prepareArgs(_state: U, _args: Arguments): Option<PreparedArguments> {
+  prepareArgs(_state: U, _args: VMArguments): Option<PreparedArguments> {
     return null;
   }
 
   abstract create(
     env: Environment,
     definition: U,
-    args: Arguments,
+    args: VMArguments,
     dynamicScope: DynamicScope,
     caller: VersionedPathReference<void | {}>,
     hasDefaultBlock: boolean
