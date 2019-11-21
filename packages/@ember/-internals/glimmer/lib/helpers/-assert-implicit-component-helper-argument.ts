@@ -1,7 +1,8 @@
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { Tag, VersionedPathReference } from '@glimmer/reference';
-import { Arguments, Helper, VM } from '@glimmer/runtime';
+import { Helper, VMArguments } from '@glimmer/interfaces';
+import { VersionedPathReference } from '@glimmer/reference';
+import { Tag } from '@glimmer/validator';
 
 let helper: Helper;
 
@@ -26,10 +27,10 @@ if (DEBUG) {
     }
   }
 
-  helper = (_vm: VM, args: Arguments) =>
+  helper = (args: VMArguments) =>
     new ComponentAssertionReference(args.positional.at(0), args.positional.at(1).value() as string);
 } else {
-  helper = (_vm: VM, args: Arguments) => args.positional.at(0);
+  helper = (args: VMArguments) => args.positional.at(0);
 }
 
 export default helper;

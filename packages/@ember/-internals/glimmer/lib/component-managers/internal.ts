@@ -1,6 +1,5 @@
 import { Factory, Owner } from '@ember/-internals/owner';
-import { OwnedTemplateMeta } from '@ember/-internals/views';
-import { ComponentDefinition, Invocation, WithStaticLayout } from '@glimmer/runtime';
+import { ComponentDefinition, Invocation, WithJitStaticLayout } from '@glimmer/interfaces';
 import RuntimeResolver from '../resolver';
 import { OwnedTemplate } from '../template';
 import AbstractComponentManager from './abstract';
@@ -11,7 +10,7 @@ export interface InternalDefinitionState {
 }
 
 export class InternalComponentDefinition<T>
-  implements ComponentDefinition<InternalDefinitionState, InternalManager<T>> {
+  implements ComponentDefinition<InternalDefinitionState, T, InternalManager<T>> {
   public state: InternalDefinitionState;
 
   constructor(
@@ -25,7 +24,7 @@ export class InternalComponentDefinition<T>
 
 export default abstract class InternalManager<T>
   extends AbstractComponentManager<T, InternalDefinitionState>
-  implements WithStaticLayout<T, InternalDefinitionState, OwnedTemplateMeta, RuntimeResolver> {
+  implements WithJitStaticLayout<T, InternalDefinitionState, RuntimeResolver> {
   constructor(protected owner: Owner) {
     super();
   }

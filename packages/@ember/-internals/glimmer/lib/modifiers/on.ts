@@ -1,8 +1,7 @@
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { CONSTANT_TAG, Tag } from '@glimmer/reference';
-import { Arguments, CapturedArguments, ModifierManager } from '@glimmer/runtime';
-import { Destroyable } from '@glimmer/util';
+import { CapturedArguments, Destroyable, ModifierManager, VMArguments } from '@glimmer/interfaces';
+import { CONSTANT_TAG, Tag } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
 import buildUntouchableThis from '../utils/untouchable-this';
 
@@ -313,7 +312,7 @@ export default class OnModifierManager implements ModifierManager<OnModifierStat
     return { adds, removes };
   }
 
-  create(element: SimpleElement | Element, _state: unknown, args: Arguments) {
+  create(element: SimpleElement | Element, _state: unknown, args: VMArguments) {
     if (!this.isInteractive) {
       return null;
     }

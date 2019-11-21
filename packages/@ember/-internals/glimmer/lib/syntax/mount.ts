@@ -4,25 +4,23 @@
 import { OwnedTemplateMeta } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { Option } from '@glimmer/interfaces';
+import { CapturedArguments, Option, VM, VMArguments } from '@glimmer/interfaces';
 import { OpcodeBuilder } from '@glimmer/opcode-compiler';
-import { Tag, VersionedPathReference } from '@glimmer/reference';
+import { VersionedPathReference } from '@glimmer/reference';
 import {
-  Arguments,
-  CapturedArguments,
   CurriedComponentDefinition,
   curry,
   EMPTY_ARGS,
   UNDEFINED_REFERENCE,
-  VM,
 } from '@glimmer/runtime';
+import { Tag } from '@glimmer/validator';
 import * as WireFormat from '@glimmer/wire-format';
 import { MODEL_ARG_NAME, MountDefinition } from '../component-managers/mount';
 import Environment from '../environment';
 
 export function mountHelper(
-  vm: VM,
-  args: Arguments
+  args: VMArguments,
+  vm: VM
 ): VersionedPathReference<CurriedComponentDefinition | null> {
   let env = vm.env as Environment;
   let nameRef = args.positional.at(0);

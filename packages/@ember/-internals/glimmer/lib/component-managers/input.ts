@@ -2,10 +2,17 @@ import { ENV } from '@ember/-internals/environment';
 import { set } from '@ember/-internals/metal';
 import { Owner } from '@ember/-internals/owner';
 import { assert, debugFreeze } from '@ember/debug';
-import { ComponentCapabilities, Dict } from '@glimmer/interfaces';
-import { CONSTANT_TAG, createTag, isConst, VersionedPathReference } from '@glimmer/reference';
-import { Arguments, Bounds, DynamicScope, PreparedArguments } from '@glimmer/runtime';
-import { Destroyable } from '@glimmer/util';
+import {
+  Bounds,
+  ComponentCapabilities,
+  Destroyable,
+  Dict,
+  DynamicScope,
+  PreparedArguments,
+  VMArguments,
+} from '@glimmer/interfaces';
+import { VersionedPathReference } from '@glimmer/reference';
+import { CONSTANT_TAG, createTag, isConst } from '@glimmer/validator';
 import Environment from '../environment';
 import { RootReference } from '../utils/references';
 import InternalComponentManager, { InternalDefinitionState } from './internal';
@@ -38,7 +45,7 @@ export default class InputComponentManager extends InternalComponentManager<Inpu
     return CAPABILITIES;
   }
 
-  prepareArgs(_state: InternalDefinitionState, args: Arguments): PreparedArguments {
+  prepareArgs(_state: InternalDefinitionState, args: VMArguments): PreparedArguments {
     assert(
       'The `<Input />` component does not take any positional arguments',
       args.positional.length === 0
@@ -58,7 +65,7 @@ export default class InputComponentManager extends InternalComponentManager<Inpu
   create(
     env: Environment,
     { ComponentClass, layout }: InternalDefinitionState,
-    args: Arguments,
+    args: VMArguments,
     _dynamicScope: DynamicScope,
     caller: VersionedPathReference
   ): InputComponentState {

@@ -1,6 +1,6 @@
 import { meta as metaFor, peekMeta } from '@ember/-internals/meta';
 import { assert, deprecate } from '@ember/debug';
-import { combine, createUpdatableTag, Tag, update, validate } from '@glimmer/reference';
+import { combine, createUpdatableTag, Tag, update, validate } from '@glimmer/validator';
 import { objectAt } from './array';
 import { getLastRevisionFor, peekCacheFor } from './computed_cache';
 import { descriptorForProperty } from './descriptor_map';

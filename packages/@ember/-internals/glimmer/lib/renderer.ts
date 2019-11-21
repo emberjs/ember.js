@@ -5,8 +5,6 @@ import { getViewElement, getViewId } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { backburner, getCurrentRunLoop } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
-import { Option, RuntimeProgram as IRuntimeProgram, WholeProgramCompilationContext, ElementBuilder, JitRuntimeContext } from '@glimmer/interfaces';
-import { CURRENT_TAG, validate, value, VersionedPathReference } from '@glimmer/reference';
 import {
   Bounds,
   Cursor,

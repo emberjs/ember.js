@@ -13,11 +13,12 @@ import EmberError from '@ember/error';
 import { _instrumentStart } from '@ember/instrumentation';
 import {
   ComponentDefinition,
+  Helper,
   JitRuntimeResolver,
   Option,
 } from '@glimmer/interfaces';
 import { LazyCompiler, Macros, PartialDefinition } from '@glimmer/opcode-compiler';
-import { getDynamicVar, Helper, ModifierDefinition } from '@glimmer/runtime';
+import { getDynamicVar, ModifierDefinition } from '@glimmer/runtime';
 import CompileTimeLookup from './compile-time-lookup';
 import { CurlyComponentDefinition } from './component-managers/curly';
 import { CustomManagerDefinition, ManagerDelegate } from './component-managers/custom';

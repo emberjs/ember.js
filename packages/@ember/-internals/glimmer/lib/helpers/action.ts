@@ -6,8 +6,9 @@ import { assert } from '@ember/debug';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { join } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
-import { isConst, VersionedPathReference } from '@glimmer/reference';
-import { Arguments, VM } from '@glimmer/runtime';
+import { VMArguments } from '@glimmer/interfaces';
+import { VersionedPathReference } from '@glimmer/reference';
+import { isConst } from '@glimmer/validator';
 import { ACTION, INVOKE, UnboundReference } from '../utils/references';
 
 /**
@@ -273,7 +274,7 @@ import { ACTION, INVOKE, UnboundReference } from '../utils/references';
   @for Ember.Templates.helpers
   @public
 */
-export default function(_vm: VM, args: Arguments): UnboundReference<Function> {
+export default function(args: VMArguments): UnboundReference<Function> {
   let { named, positional } = args;
 
   let capturedArgs = positional.capture();
@@ -305,7 +306,7 @@ export default function(_vm: VM, args: Arguments): UnboundReference<Function> {
   return new UnboundReference(fn);
 }
 
-function NOOP(args: Arguments) {
+function NOOP(args: VMArguments) {
   return args;
 }
 
@@ -316,7 +317,7 @@ function makeArgsProcessor(
   let mergeArgs: any;
 
   if (actionArgsRef.length > 0) {
-    mergeArgs = (args: Arguments) => {
+    mergeArgs = (args: VMArguments) => {
       return actionArgsRef.map(ref => ref.value()).concat(args);
     };
   }
@@ -336,7 +337,7 @@ function makeArgsProcessor(
   }
 
   if (mergeArgs && readValue) {
-    return (args: Arguments) => {
+    return (args: VMArguments) => {
       return readValue(mergeArgs(args));
     };
   } else {

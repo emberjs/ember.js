@@ -4,7 +4,6 @@ import { getOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
 import {
   addChildView,
-  OwnedTemplateMeta,
   setElementView,
   setViewElement,
 } from '@ember/-internals/views';
@@ -14,25 +13,24 @@ import { _instrumentStart } from '@ember/instrumentation';
 import { assign } from '@ember/polyfills';
 import { DEBUG } from '@glimmer/env';
 import {
-  ComponentCapabilities,
-  Option,
-  ProgramSymbolTable,
-  VMHandle,
-} from '@glimmer/interfaces';
-import { combine, Tag, validate, value, VersionedPathReference } from '@glimmer/reference';
-import {
-  Arguments,
   Bounds,
+  ComponentCapabilities,
   ComponentDefinition,
+  Destroyable,
   ElementOperations,
   Invocation,
+  Option,
   PreparedArguments,
-  PrimitiveReference,
-  WithDynamicLayout,
+  ProgramSymbolTable,
+  VMArguments,
   WithDynamicTagName,
-  WithStaticLayout,
-} from '@glimmer/runtime';
-import { Destroyable, EMPTY_ARRAY } from '@glimmer/util';
+  WithJitDynamicLayout,
+  WithJitStaticLayout,
+} from '@glimmer/interfaces';
+import { VersionedPathReference } from '@glimmer/reference';
+import { PrimitiveReference } from '@glimmer/runtime';
+import { EMPTY_ARRAY } from '@glimmer/util';
+import { combine, Tag, validate, value } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
 import { BOUNDS, DIRTY_TAG, HAS_BLOCK, IS_DISPATCHING_ATTRS } from '../component';
 import Environment from '../environment';
@@ -52,7 +50,7 @@ import { RootReference } from '../utils/references';
 import AbstractManager from './abstract';
 import DefinitionState from './definition-state';
 
-function aliasIdToElementId(args: Arguments, props: any) {
+function aliasIdToElementId(args: VMArguments, props: any) {
   if (args.named.has('id')) {
     // tslint:disable-next-line:max-line-length
     assert(
@@ -111,9 +109,9 @@ debugFreeze(EMPTY_POSITIONAL_ARGS);
 export default class CurlyComponentManager
   extends AbstractManager<ComponentStateBucket, DefinitionState>
   implements
-    WithStaticLayout<ComponentStateBucket, DefinitionState, OwnedTemplateMeta, RuntimeResolver>,
-    WithDynamicTagName<ComponentStateBucket>,
-    WithDynamicLayout<ComponentStateBucket, OwnedTemplateMeta, RuntimeResolver> {
+    WithJitStaticLayout<ComponentStateBucket, DefinitionState, RuntimeResolver>,
+    WithJitDynamicLayout<ComponentStateBucket, RuntimeResolver>,
+    WithDynamicTagName<ComponentStateBucket> {
   getLayout(state: DefinitionState, _resolver: RuntimeResolver): Invocation {
     return {
       // TODO fix
@@ -175,7 +173,7 @@ export default class CurlyComponentManager
     return state.capabilities;
   }
 
-  prepareArgs(state: DefinitionState, args: Arguments): Option<PreparedArguments> {
+  prepareArgs(state: DefinitionState, args: VMArguments): Option<PreparedArguments> {
     if (args.named.has('__ARGS__')) {
       let { __ARGS__, ...rest } = args.named.capture().map;
 
@@ -241,7 +239,7 @@ export default class CurlyComponentManager
   create(
     environment: Environment,
     state: DefinitionState,
-    args: Arguments,
+    args: VMArguments,
     dynamicScope: DynamicScope,
     callerSelfRef: VersionedPathReference,
     hasBlock: boolean
@@ -610,7 +608,7 @@ export class CurlyComponentDefinition implements ComponentDefinition {
   constructor(
     public name: string,
     public ComponentClass: any,
-    public handle: Option<VMHandle>,
+    public handle: Option<number>,
     public template: Option<OwnedTemplate>,
     args?: CurriedArgs
   ) {

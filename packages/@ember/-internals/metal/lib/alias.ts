@@ -2,7 +2,7 @@ import { Meta } from '@ember/-internals/meta';
 import { inspect } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import EmberError from '@ember/error';
-import { combine, UpdatableTag, update, validate, value } from '@glimmer/reference';
+import { combine, UpdatableTag, update, validate, value } from '@glimmer/validator';
 import { finishLazyChains, getChainTagsForKey } from './chain-tags';
 import { getLastRevisionFor, setLastRevisionFor } from './computed_cache';
 import {

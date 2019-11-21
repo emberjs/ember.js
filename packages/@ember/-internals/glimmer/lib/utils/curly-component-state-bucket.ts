@@ -1,6 +1,7 @@
 import { clearElementView, clearViewElement, getViewElement } from '@ember/-internals/views';
-import { Revision, value, VersionedReference } from '@glimmer/reference';
-import { CapturedNamedArguments } from '@glimmer/runtime';
+import { CapturedNamedArguments } from '@glimmer/interfaces';
+import { VersionedReference } from '@glimmer/reference';
+import { Revision, value } from '@glimmer/validator';
 import Environment from '../environment';
 import { Factory as TemplateFactory, OwnedTemplate } from '../template';
 import { RootReference } from './references';

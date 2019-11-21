@@ -2,7 +2,7 @@ import { Meta, meta as metaFor } from '@ember/-internals/meta';
 import { setupMandatorySetter, symbol } from '@ember/-internals/utils';
 import { backburner } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
-import { CONSTANT_TAG, createUpdatableTag, dirty, Tag } from '@glimmer/reference';
+import { CONSTANT_TAG, createUpdatableTag, dirty, Tag } from '@glimmer/validator';
 import { assertTagNotConsumed } from './tracked';
 
 export const UNKNOWN_PROPERTY_TAG = symbol('UNKNOWN_PROPERTY_TAG');

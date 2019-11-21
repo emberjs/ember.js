@@ -3,8 +3,13 @@ import { ENV } from '@ember/-internals/environment';
 import { Factory } from '@ember/-internals/owner';
 import { _instrumentStart } from '@ember/instrumentation';
 import { DEBUG } from '@glimmer/env';
-import { ComponentCapabilities, Option } from '@glimmer/interfaces';
-import { Arguments, ComponentDefinition, EMPTY_ARGS } from '@glimmer/runtime';
+import {
+  ComponentCapabilities,
+  ComponentDefinition,
+  Option,
+  VMArguments,
+} from '@glimmer/interfaces';
+import { EMPTY_ARGS } from '@glimmer/runtime';
 import { DIRTY_TAG } from '../component';
 import Environment from '../environment';
 import { DynamicScope } from '../renderer';
@@ -35,7 +40,7 @@ class RootComponentManager extends CurlyComponentManager {
   create(
     environment: Environment,
     state: DefinitionState,
-    _args: Option<Arguments>,
+    _args: Option<VMArguments>,
     dynamicScope: DynamicScope
   ) {
     let component = this.component;

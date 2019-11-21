@@ -2,8 +2,9 @@
 @module ember
 */
 import { symbol } from '@ember/-internals/utils';
-import { Tag, VersionedPathReference } from '@glimmer/reference';
-import { Arguments, VM } from '@glimmer/runtime';
+import { VMArguments } from '@glimmer/interfaces';
+import { VersionedPathReference } from '@glimmer/reference';
+import { Tag } from '@glimmer/validator';
 
 /**
   The `{{#each}}` helper loops over elements in a collection. It is an extension
@@ -166,9 +167,9 @@ class EachInReference implements VersionedPathReference {
 }
 
 export function isEachIn(ref: unknown): ref is VersionedPathReference {
-  return ref !== null && typeof ref === 'object' && ref[EACH_IN_REFERENCE];
+  return ref !== null && typeof ref === 'object' && ref![EACH_IN_REFERENCE];
 }
 
-export default function(_vm: VM, args: Arguments) {
+export default function(args: VMArguments) {
   return new EachInReference(args.positional.at(0));
 }

@@ -1,23 +1,25 @@
 import { ENV } from '@ember/-internals/environment';
 import { guidFor } from '@ember/-internals/utils';
-import { OwnedTemplateMeta } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import EngineInstance from '@ember/engine/instance';
 import { _instrumentStart } from '@ember/instrumentation';
 import { assign } from '@ember/polyfills';
-import { ComponentCapabilities, Option } from '@glimmer/interfaces';
-import { CONSTANT_TAG, createTag, Tag, VersionedPathReference } from '@glimmer/reference';
 import {
-  Arguments,
   Bounds,
+  ComponentCapabilities,
   ComponentDefinition,
+  Destroyable,
   ElementOperations,
-  EMPTY_ARGS,
   Invocation,
+  Option,
+  VMArguments,
   WithDynamicTagName,
-  WithStaticLayout,
-} from '@glimmer/runtime';
-import { Destroyable } from '@glimmer/util';
+  WithJitStaticLayout,
+ } from '@glimmer/interfaces';
+import { VersionedPathReference } from '@glimmer/reference';
+import { EMPTY_ARGS } from '@glimmer/runtime';
+import { CONSTANT_TAG, createTag, Tag } from '@glimmer/validator';
+
 import { SimpleElement } from '@simple-dom/interface';
 import Environment from '../environment';
 import { DynamicScope } from '../renderer';
@@ -64,16 +66,15 @@ const CAPABILITIES: ComponentCapabilities = {
 
 class OutletComponentManager extends AbstractManager<OutletInstanceState, OutletDefinitionState>
   implements
-    WithStaticLayout<
+    WithJitStaticLayout<
       OutletInstanceState,
       OutletDefinitionState,
-      OwnedTemplateMeta,
       RuntimeResolver
     > {
   create(
     environment: Environment,
     definition: OutletDefinitionState,
-    args: Arguments,
+    args: VMArguments,
     dynamicScope: DynamicScope
   ): OutletInstanceState {
     let parentStateRef = dynamicScope.outletState;
@@ -220,7 +221,7 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
 const OUTLET_MANAGER = new OutletComponentManager();
 
 export class OutletComponentDefinition
-  implements ComponentDefinition<OutletDefinitionState, OutletComponentManager> {
+  implements ComponentDefinition<OutletDefinitionState, OutletInstanceState, OutletComponentManager> {
   constructor(
     public state: OutletDefinitionState,
     public manager: OutletComponentManager = OUTLET_MANAGER

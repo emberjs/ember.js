@@ -13,8 +13,9 @@ import {
 } from '@ember/-internals/views';
 import { assert, deprecate } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { createTag, dirty } from '@glimmer/reference';
-import { normalizeProperty, SVG_NAMESPACE } from '@glimmer/runtime';
+import { normalizeProperty } from '@glimmer/runtime';
+import { createTag, dirty } from '@glimmer/validator';
+import { Namespace } from '@simple-dom/interface';
 
 import { UPDATE } from './utils/references';
 
@@ -837,7 +838,7 @@ const Component = CoreView.extend(
       );
 
       let element = _element!;
-      let isSVG = element.namespaceURI === SVG_NAMESPACE;
+      let isSVG = element.namespaceURI === Namespace.SVG;
       let { type, normalized } = normalizeProperty(element, name);
 
       if (isSVG || type === 'attr') {

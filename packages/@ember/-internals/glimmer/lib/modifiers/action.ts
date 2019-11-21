@@ -3,15 +3,15 @@ import { ActionManager, isSimpleClick } from '@ember/-internals/views';
 import { assert, deprecate } from '@ember/debug';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { join } from '@ember/runloop';
-import { Tag } from '@glimmer/reference';
 import {
-  Arguments,
   CapturedNamedArguments,
   CapturedPositionalArguments,
+  Destroyable,
   DynamicScope,
   ModifierManager,
-} from '@glimmer/runtime';
-import { Destroyable } from '@glimmer/util';
+  VMArguments,
+} from '@glimmer/interfaces';
+import { Tag } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
 import { INVOKE } from '../utils/references';
 
@@ -190,7 +190,7 @@ export default class ActionModifierManager implements ModifierManager<ActionStat
   create(
     element: SimpleElement,
     _state: unknown,
-    args: Arguments,
+    args: VMArguments,
     _dynamicScope: DynamicScope,
     dom: any
   ) {

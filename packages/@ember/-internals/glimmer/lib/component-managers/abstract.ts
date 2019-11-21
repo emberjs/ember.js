@@ -5,14 +5,14 @@ import {
   Destroyable,
   DynamicScope,
   ElementOperations,
-  Environment,
+  Option,
   PreparedArguments,
   VMArguments,
 } from '@glimmer/interfaces';
 import { VersionedPathReference } from '@glimmer/reference';
-import { Option } from '@glimmer/util';
 import { Tag } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
+import RuntimeEnvironment from '../environment';
 
 // implements the ComponentManager interface as defined in glimmer:
 // tslint:disable-next-line:max-line-length
@@ -24,7 +24,7 @@ export default abstract class AbstractManager<T, U> implements ComponentManager<
   }
 
   abstract create(
-    env: Environment,
+    env: RuntimeEnvironment,
     definition: U,
     args: VMArguments,
     dynamicScope: DynamicScope,

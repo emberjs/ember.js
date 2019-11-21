@@ -1,5 +1,5 @@
+import { VMArguments } from '@glimmer/interfaces';
 import { PathReference } from '@glimmer/reference';
-import { Arguments, VM } from '@glimmer/runtime';
 
 /**
 @module ember
@@ -41,6 +41,6 @@ import { Arguments, VM } from '@glimmer/runtime';
    @public
  */
 
-export default function(_vm: VM, args: Arguments): PathReference<unknown[]> {
+export default function(args: VMArguments): PathReference<unknown[]> {
   return args.positional.capture();
 }

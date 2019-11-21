@@ -1,15 +1,15 @@
 import { ENV } from '@ember/-internals/environment';
-import { OwnedTemplateMeta } from '@ember/-internals/views';
-import { ComponentCapabilities, Option } from '@glimmer/interfaces';
-import { CONSTANT_TAG, createTag } from '@glimmer/reference';
 import {
-  Arguments,
   Bounds,
+  ComponentCapabilities,
   ComponentDefinition,
   Invocation,
-  NULL_REFERENCE,
-  WithStaticLayout,
-} from '@glimmer/runtime';
+  Option,
+  VMArguments,
+  WithJitStaticLayout,
+} from '@glimmer/interfaces';
+import { NULL_REFERENCE } from '@glimmer/runtime';
+import { CONSTANT_TAG, createTag } from '@glimmer/validator';
 import Environment from '../environment';
 import RuntimeResolver from '../resolver';
 import { OwnedTemplate } from '../template';
@@ -35,10 +35,9 @@ export interface DebugStateBucket {
 export default class TemplateOnlyComponentManager
   extends AbstractManager<Option<DebugStateBucket>, TemplateOnlyComponentDefinitionState>
   implements
-    WithStaticLayout<
+    WithJitStaticLayout<
       Option<DebugStateBucket>,
       TemplateOnlyComponentDefinitionState,
-      OwnedTemplateMeta,
       RuntimeResolver
     > {
   getLayout({ template }: TemplateOnlyComponentDefinitionState): Invocation {
@@ -56,7 +55,7 @@ export default class TemplateOnlyComponentManager
   create(
     environment: Environment,
     { name, template }: TemplateOnlyComponentDefinitionState,
-    args: Arguments
+    args: VMArguments
   ): Option<DebugStateBucket> {
     if (ENV._DEBUG_RENDER_TREE) {
       let bucket = { environment };
@@ -128,7 +127,11 @@ export interface TemplateOnlyComponentDefinitionState {
 export class TemplateOnlyComponentDefinition
   implements
     TemplateOnlyComponentDefinitionState,
-    ComponentDefinition<TemplateOnlyComponentDefinitionState, TemplateOnlyComponentManager> {
+    ComponentDefinition<
+      TemplateOnlyComponentDefinitionState,
+      Option<DebugStateBucket>,
+      TemplateOnlyComponentManager
+    > {
   manager = MANAGER;
   constructor(public name: string, public template: OwnedTemplate) {}
 

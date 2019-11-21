@@ -1,4 +1,4 @@
-import { Option } from '@glimmer/util';
+import { Option } from '@glimmer/interfaces';
 import { Core } from '@glimmer/wire-format';
 
 export function hashToArgs(hash: Option<Core.Hash>): Option<Core.Hash> {

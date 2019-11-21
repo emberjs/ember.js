@@ -1,23 +1,23 @@
 import { DEBUG } from '@glimmer/env';
-import { ComponentCapabilities } from '@glimmer/interfaces';
+import {
+  Bounds,
+  ComponentCapabilities,
+  ComponentDefinition,
+  Destroyable,
+  Invocation,
+  Option,
+  VMArguments,
+  WithJitDynamicLayout,
+} from '@glimmer/interfaces';
+import { VersionedPathReference } from '@glimmer/reference';
 import {
   CONSTANT_TAG,
   createTag,
   isConstTag,
   Tag,
-  VersionedPathReference,
-} from '@glimmer/reference';
-import {
-  Arguments,
-  Bounds,
-  ComponentDefinition,
-  Invocation,
-  WithDynamicLayout,
-} from '@glimmer/runtime';
-import { Destroyable, Option } from '@glimmer/util';
+} from '@glimmer/validator';
 
 import { generateControllerFactory } from '@ember/-internals/routing';
-import { OwnedTemplateMeta } from '@ember/-internals/views';
 import { EMBER_ROUTING_MODEL_ARG } from '@ember/canary-features';
 
 import { ENV } from '@ember/-internals/environment';
@@ -59,7 +59,7 @@ const CAPABILITIES = {
 export const MODEL_ARG_NAME = EMBER_ROUTING_MODEL_ARG || !DEBUG ? 'model' : ' untypable model arg ';
 
 class MountManager extends AbstractManager<EngineState, EngineDefinitionState>
-  implements WithDynamicLayout<EngineState, OwnedTemplateMeta, RuntimeResolver> {
+  implements WithJitDynamicLayout<EngineState, RuntimeResolver> {
   getDynamicLayout(state: EngineState, _: RuntimeResolver): Invocation {
     let templateFactory = state.engine.lookup('template:application') as TemplateFactory;
     let template = templateFactory(state.engine);
@@ -79,7 +79,7 @@ class MountManager extends AbstractManager<EngineState, EngineDefinitionState>
     return CAPABILITIES;
   }
 
-  create(environment: Environment, { name }: EngineDefinitionState, args: Arguments) {
+  create(environment: Environment, { name }: EngineDefinitionState, args: VMArguments) {
     // TODO
     // mount is a runtime helper, this shouldn't use dynamic layout
     // we should resolve the engine app template in the helper

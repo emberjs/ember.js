@@ -1,5 +1,5 @@
 import { dasherize } from '@ember/string';
-import { Arguments, VM } from '@glimmer/runtime';
+import { VMArguments } from '@glimmer/interfaces';
 import { InternalHelperReference } from '../utils/references';
 
 function normalizeClass({ positional }: any) {
@@ -19,6 +19,6 @@ function normalizeClass({ positional }: any) {
   }
 }
 
-export default function(_vm: VM, args: Arguments) {
+export default function(args: VMArguments) {
   return new InternalHelperReference(normalizeClass, args.capture());
 }

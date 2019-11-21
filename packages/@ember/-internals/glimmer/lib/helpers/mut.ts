@@ -3,7 +3,7 @@
 */
 import { symbol } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
-import { Arguments, VM } from '@glimmer/runtime';
+import { VMArguments } from '@glimmer/interfaces';
 import { INVOKE, UPDATE } from '../utils/references';
 
 /**
@@ -96,7 +96,7 @@ export function unMut(ref: any) {
   return ref[SOURCE] || ref;
 }
 
-export default function(_vm: VM, args: Arguments) {
+export default function(args: VMArguments) {
   let rawRef = args.positional.at(0);
 
   if (isMut(rawRef)) {

@@ -7,7 +7,7 @@ import { FrameworkObject, setFrameworkClass } from '@ember/-internals/runtime';
 import { symbol } from '@ember/-internals/utils';
 import { join } from '@ember/runloop';
 import { Dict } from '@glimmer/interfaces';
-import { createTag, dirty } from '@glimmer/reference';
+import { createTag, dirty } from '@glimmer/validator';
 
 export const RECOMPUTE_TAG = symbol('RECOMPUTE_TAG');
 

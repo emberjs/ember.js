@@ -3,9 +3,8 @@ import { Factory } from '@ember/-internals/owner';
 import { getDebugName } from '@ember/-internals/utils';
 import { assert, deprecate } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { Dict } from '@glimmer/interfaces';
-import { combine, CONSTANT_TAG, createUpdatableTag, Tag, update } from '@glimmer/reference';
-import { Arguments, CapturedArguments, ModifierManager } from '@glimmer/runtime';
+import { CapturedArguments, Dict, ModifierManager, VMArguments } from '@glimmer/interfaces';
+import { combine, CONSTANT_TAG, createUpdatableTag, Tag, update } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
 import debugRenderMessage from '../utils/debug-render-message';
 
@@ -34,7 +33,7 @@ export function capabilities(
       'Modifier manager capabilities now require you to pass a valid version when being generated. Valid versions include: 3.13',
       false,
       {
-        // until: '3.17.0',
+        until: '3.17.0',
         id: 'implicit-modifier-manager-capabilities',
       }
     );
@@ -132,7 +131,7 @@ class InteractiveCustomModifierManager<ModifierInstance>
   create(
     element: SimpleElement,
     definition: CustomModifierDefinitionState<ModifierInstance>,
-    args: Arguments
+    args: VMArguments
   ) {
     let { delegate, ModifierClass } = definition;
     const capturedArgs = args.capture();

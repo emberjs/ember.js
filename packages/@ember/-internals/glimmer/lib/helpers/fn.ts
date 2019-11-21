@@ -1,7 +1,6 @@
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { Arguments, VM } from '@glimmer/runtime';
-import { ICapturedArguments } from '@glimmer/runtime/dist/types/lib/vm/arguments';
+import { CapturedArguments, VMArguments } from '@glimmer/interfaces';
 import { InternalHelperReference, INVOKE } from '../utils/references';
 import buildUntouchableThis from '../utils/untouchable-this';
 
@@ -79,7 +78,7 @@ const context = buildUntouchableThis('`fn` helper');
   @since 3.11.0
 */
 
-function fnHelper({ positional }: ICapturedArguments) {
+function fnHelper({ positional }: CapturedArguments) {
   let callbackRef = positional.at(0);
 
   if (DEBUG && typeof callbackRef[INVOKE] !== 'function') {
@@ -99,11 +98,11 @@ function fnHelper({ positional }: ICapturedArguments) {
       // the symbol to be bound to the reference
       return callbackRef[INVOKE](...args, ...invocationArgs);
     } else {
-      return fn!['call'](context, ...args, ...invocationArgs);
+      return (fn as Function).call(context, ...args, ...invocationArgs);
     }
   };
 }
 
-export default function(_vm: VM, args: Arguments) {
+export default function(args: VMArguments) {
   return new InternalHelperReference(fnHelper, args.capture());
 }

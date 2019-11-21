@@ -1,4 +1,4 @@
-import { Arguments, VM } from '@glimmer/runtime';
+import { VMArguments } from '@glimmer/interfaces';
 import { InternalHelperReference } from '../utils/references';
 
 function inputTypeHelper({ positional }: any) {
@@ -9,6 +9,6 @@ function inputTypeHelper({ positional }: any) {
   return '-text-field';
 }
 
-export default function(_vm: VM, args: Arguments) {
+export default function(args: VMArguments) {
   return new InternalHelperReference(inputTypeHelper, args.capture());
 }

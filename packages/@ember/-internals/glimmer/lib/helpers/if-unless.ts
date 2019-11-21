@@ -3,8 +3,9 @@
 */
 
 import { assert } from '@ember/debug';
-import { combine, createUpdatableTag, isConst, UpdatableTag, update } from '@glimmer/reference';
-import { Arguments, PrimitiveReference, VM } from '@glimmer/runtime';
+import { VMArguments } from '@glimmer/interfaces';
+import { PrimitiveReference } from '@glimmer/runtime';
+import { combine, createUpdatableTag, isConst, UpdatableTag, update } from '@glimmer/validator';
 import { CachedReference, ConditionalReference } from '../utils/references';
 
 class ConditionalHelperReference extends CachedReference {
@@ -138,7 +139,7 @@ class ConditionalHelperReference extends CachedReference {
   @for Ember.Templates.helpers
   @public
 */
-export function inlineIf(_vm: VM, { positional }: Arguments) {
+export function inlineIf({ positional }: VMArguments) {
   assert(
     'The inline form of the `if` helper expects two or three arguments, e.g. ' +
       '`{{if trialExpired "Expired" expiryDate}}`.',
@@ -232,7 +233,7 @@ export function inlineIf(_vm: VM, { positional }: Arguments) {
   @for Ember.Templates.helpers
   @public
 */
-export function inlineUnless(_vm: VM, { positional }: Arguments) {
+export function inlineUnless({ positional }: VMArguments) {
   assert(
     'The inline form of the `unless` helper expects two or three arguments, e.g. ' +
       '`{{unless isFirstLogin "Welcome back!"}}`.',

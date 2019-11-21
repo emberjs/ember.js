@@ -4,7 +4,7 @@
 import { QueryParams } from '@ember/-internals/routing';
 import { assert } from '@ember/debug';
 import { assign } from '@ember/polyfills';
-import { Arguments, CapturedArguments, VM } from '@glimmer/runtime';
+import { VMArguments, CapturedArguments } from '@glimmer/interfaces';
 import { InternalHelperReference } from '../utils/references';
 
 /**
@@ -38,6 +38,6 @@ function queryParams({ positional, named }: CapturedArguments) {
   return new QueryParams(assign({}, named.value() as any));
 }
 
-export default function(_vm: VM, args: Arguments) {
+export default function(args: VMArguments) {
   return new InternalHelperReference(queryParams, args.capture());
 }

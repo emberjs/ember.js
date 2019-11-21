@@ -1,15 +1,15 @@
 import { set } from '@ember/-internals/metal';
+import { VMArguments } from '@glimmer/interfaces';
+import { PathReference, VersionedPathReference } from '@glimmer/reference';
+import { NULL_REFERENCE } from '@glimmer/runtime';
 import {
   combine,
   createUpdatableTag,
   isConst,
-  PathReference,
   Tag,
   UpdatableTag,
   update,
-  VersionedPathReference,
-} from '@glimmer/reference';
-import { Arguments, NULL_REFERENCE, VM } from '@glimmer/runtime';
+} from '@glimmer/validator';
 import { CachedReference, referenceFromParts, UPDATE } from '../utils/references';
 
 /**
@@ -97,7 +97,7 @@ import { CachedReference, referenceFromParts, UPDATE } from '../utils/references
   @since 2.1.0
  */
 
-export default function(_vm: VM, args: Arguments) {
+export default function(args: VMArguments) {
   return GetHelperReference.create(args.positional.at(0), args.positional.at(1));
 }
 

@@ -9,17 +9,14 @@ import {
 import { _contentFor } from '@ember/-internals/runtime';
 import { guidFor, HAS_NATIVE_SYMBOL, isEmberArray, isProxy } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
+import { Option } from '@glimmer/interfaces';
 import {
   AbstractIterable,
-  combine,
-  createUpdatableTag,
   IterationItem,
   OpaqueIterator,
-  Tag,
-  update,
   VersionedReference,
 } from '@glimmer/reference';
-import { Option } from '@glimmer/util';
+import { combine, createUpdatableTag, Tag, update } from '@glimmer/validator';
 import { isEachIn } from '../helpers/each-in';
 import { UpdatableReference } from './references';
 

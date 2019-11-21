@@ -10,10 +10,19 @@ import {
 import { getDebugName, isProxy, symbol } from '@ember/-internals/utils';
 import { assert, debugFreeze } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { Dict } from '@glimmer/interfaces';
+import { CapturedArguments, Dict, Option } from '@glimmer/interfaces';
+import {
+  ConstReference,
+  VersionedPathReference,
+  VersionedReference,
+} from '@glimmer/reference';
+import {
+  ConditionalReference as GlimmerConditionalReference,
+  PrimitiveReference,
+  UNDEFINED_REFERENCE,
+} from '@glimmer/runtime';
 import {
   combine,
-  ConstReference,
   createTag,
   createUpdatableTag,
   dirty,
@@ -25,16 +34,7 @@ import {
   update,
   validate,
   value,
-  VersionedPathReference,
-  VersionedReference,
-} from '@glimmer/reference';
-import {
-  CapturedArguments,
-  ConditionalReference as GlimmerConditionalReference,
-  PrimitiveReference,
-  UNDEFINED_REFERENCE,
-} from '@glimmer/runtime';
-import { Option } from '@glimmer/util';
+} from '@glimmer/validator';
 import Environment from '../environment';
 import { HelperFunction, HelperInstance, RECOMPUTE_TAG } from '../helper';
 import debugRenderMessage from './debug-render-message';

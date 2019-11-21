@@ -1,7 +1,7 @@
 /**
 @module ember
 */
-import { Arguments, VM } from '@glimmer/runtime';
+import { VMArguments } from '@glimmer/interface';
 import { ReadonlyReference } from '../utils/references';
 import { unMut } from './mut';
 
@@ -120,7 +120,7 @@ import { unMut } from './mut';
   @for Ember.Templates.helpers
   @private
 */
-export default function(_vm: VM, args: Arguments) {
+export default function(args: VMArguments) {
   let ref = unMut(args.positional.at(0));
 
   return new ReadonlyReference(ref);

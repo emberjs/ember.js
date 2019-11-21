@@ -6,21 +6,20 @@ import { EMBER_CUSTOM_COMPONENT_ARG_PROXY } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import {
-  ComponentCapabilities,
-  Dict,
-  Option,
-  ProgramSymbolTable,
-} from '@glimmer/interfaces';
-import { createTag, isConst, PathReference, Tag } from '@glimmer/reference';
-import {
-  Arguments,
   Bounds,
   CapturedArguments,
+  ComponentCapabilities,
   ComponentDefinition,
+  Destroyable,
+  Dict,
   Invocation,
-  WithStaticLayout,
-} from '@glimmer/runtime';
-import { Destroyable } from '@glimmer/util';
+  Option,
+  ProgramSymbolTable,
+  VMArguments,
+  WithJitStaticLayout,
+} from '@glimmer/interfaces';
+import { PathReference, } from '@glimmer/reference';
+import { createTag, isConst, Tag } from '@glimmer/validator';
 
 import { ENV } from '@ember/-internals/environment';
 import Environment from '../environment';
@@ -178,16 +177,15 @@ export default class CustomComponentManager<ComponentInstance>
     CustomComponentDefinitionState<ComponentInstance>
   >
   implements
-    WithStaticLayout<
+    WithJitStaticLayout<
       CustomComponentState<ComponentInstance>,
       CustomComponentDefinitionState<ComponentInstance>,
-      OwnedTemplateMeta,
       RuntimeResolver
     > {
   create(
     env: Environment,
     definition: CustomComponentDefinitionState<ComponentInstance>,
-    args: Arguments
+    args: VMArguments
   ): CustomComponentState<ComponentInstance> {
     const { delegate } = definition;
     const capturedArgs = args.capture();

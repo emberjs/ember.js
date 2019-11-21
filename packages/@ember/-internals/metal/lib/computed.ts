@@ -9,7 +9,7 @@ import {
   update,
   validate,
   value as tagValue,
-} from '@glimmer/reference';
+} from '@glimmer/validator';
 import { finishLazyChains, getChainTagsForKeys } from './chain-tags';
 import {
   getCachedValueFor,

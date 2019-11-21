@@ -1,19 +1,25 @@
 import { OwnedTemplateMeta } from '@ember/-internals/views';
 import { EMBER_ROUTING_MODEL_ARG } from '@ember/canary-features';
 import { DEBUG } from '@glimmer/env';
-import { Option, unsafe } from '@glimmer/interfaces';
-import { OpcodeBuilder } from '@glimmer/opcode-compiler';
-import { ConstReference, Reference, Tag, VersionedPathReference } from '@glimmer/reference';
 import {
-  Arguments,
   CapturedArguments,
+  Dict,
+  Option,
+  unsafe,
+  VM,
+  VMArguments,
+} from '@glimmer/interfaces';
+import { OpcodeBuilder } from '@glimmer/opcode-compiler';
+import { ConstReference, Reference, VersionedPathReference } from '@glimmer/reference';
+import {
+
   CurriedComponentDefinition,
   curry,
   EMPTY_ARGS,
   UNDEFINED_REFERENCE,
-  VM,
 } from '@glimmer/runtime';
-import { Dict, dict } from '@glimmer/util';
+import { dict } from '@glimmer/util';
+import { Tag } from '@glimmer/validator';
 import * as WireFormat from '@glimmer/wire-format';
 import { OutletComponentDefinition, OutletDefinitionState } from '../component-managers/outlet';
 import Environment from '../environment';
@@ -69,7 +75,7 @@ import { NestedPropertyReference, PropertyReference } from '../utils/references'
   @for Ember.Templates.helpers
   @public
 */
-export function outletHelper(vm: VM, args: Arguments) {
+export function outletHelper(args: VMArguments, vm: VM) {
   let scope = vm.dynamicScope() as DynamicScope;
   let nameRef: Reference<string>;
   if (args.positional.length === 0) {

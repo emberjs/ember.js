@@ -21,16 +21,19 @@
 
     "newLine": "LF",
     "noEmit": true,
-    "allowJs": false
+    "allowJs": false,
+
+    "paths": {
+      "@glimmer/*": ["../node_modules/@glimmer/*"]
+    }
   },
 
   "include": [
-    "packages/**/*.ts"
+    "packages/**/*.ts",
   ],
 
   "exclude": [
     "dist",
     "tmp",
-    "node_modules"
   ]
 }

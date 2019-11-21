@@ -1,4 +1,4 @@
-import { Arguments, CapturedArguments, VM } from '@glimmer/runtime';
+import { CapturedArguments, VMArguments } from '@glimmer/interfaces';
 import { InternalHelperReference } from '../utils/references';
 
 const isEmpty = (value: any): boolean => {
@@ -45,6 +45,6 @@ function concat({ positional }: CapturedArguments) {
     .join('');
 }
 
-export default function(_vm: VM, args: Arguments) {
+export default function(args: VMArguments) {
   return new InternalHelperReference(concat, args.capture());
 }
