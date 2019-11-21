@@ -8,7 +8,7 @@ import { assertTagNotConsumed } from './tracked';
 
 export const UNKNOWN_PROPERTY_TAG = symbol('UNKNOWN_PROPERTY_TAG');
 
-export function tagForProperty(object: any, propertyKey: string | symbol, _meta?: Meta): Tag {
+export function tagForProperty(object: any, propertyKey: string | number | symbol, _meta?: Meta): Tag {
   let objectType = typeof object;
   if (objectType !== 'function' && (objectType !== 'object' || object === null)) {
     return CONSTANT_TAG;

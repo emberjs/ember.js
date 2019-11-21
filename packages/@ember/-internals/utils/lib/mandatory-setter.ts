@@ -3,8 +3,12 @@ import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import lookupDescriptor from './lookup-descriptor';
 
-export let setupMandatorySetter: ((obj: object, keyName: string | symbol) => void) | undefined;
-export let teardownMandatorySetter: ((obj: object, keyName: string | symbol) => void) | undefined;
+export let setupMandatorySetter:
+  | ((obj: object, keyName: string | number | symbol) => void)
+  | undefined;
+export let teardownMandatorySetter:
+  | ((obj: object, keyName: string | number | symbol) => void)
+  | undefined;
 export let setWithMandatorySetter:
   | ((obj: object, keyName: string | symbol, value: any) => void)
   | undefined;
@@ -18,11 +22,11 @@ if (DEBUG && EMBER_METAL_TRACKED_PROPERTIES) {
     { [key: string | symbol]: PropertyDescriptorWithMeta }
   > = new WeakMap();
 
-  let propertyIsEnumerable = function(obj: object, key: string | symbol) {
+  let propertyIsEnumerable = function(obj: object, key: string | number | symbol) {
     return Object.prototype.propertyIsEnumerable.call(obj, key);
   };
 
-  setupMandatorySetter = function(obj: object, keyName: string | symbol) {
+  setupMandatorySetter = function(obj: object, keyName: string | number | symbol) {
     let desc = (lookupDescriptor(obj, keyName) as PropertyDescriptorWithMeta) || {};
 
     if (desc.get || desc.set) {
@@ -71,7 +75,7 @@ if (DEBUG && EMBER_METAL_TRACKED_PROPERTIES) {
     });
   };
 
-  teardownMandatorySetter = function(obj: object, keyName: string | symbol) {
+  teardownMandatorySetter = function(obj: object, keyName: string | number | symbol) {
     let setters = MANDATORY_SETTERS.get(obj);
 
     if (setters !== undefined && setters[keyName] !== undefined) {
@@ -81,7 +85,7 @@ if (DEBUG && EMBER_METAL_TRACKED_PROPERTIES) {
     }
   };
 
-  setWithMandatorySetter = function(obj: object, keyName: string | symbol, value: any) {
+  setWithMandatorySetter = function(obj: object, keyName: string | number | symbol, value: any) {
     let setters = MANDATORY_SETTERS.get(obj);
 
     if (setters !== undefined && setters[keyName] !== undefined) {

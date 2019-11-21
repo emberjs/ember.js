@@ -15,7 +15,11 @@ const DECORATOR_DESCRIPTOR_MAP: WeakMap<
   @return {Descriptor}
   @private
 */
-export function descriptorForProperty(obj: object, keyName: string, _meta?: Meta | null) {
+export function descriptorForProperty(
+  obj: object,
+  keyName: string | number | symbol,
+  _meta?: Meta | null
+) {
   assert('Cannot call `descriptorForProperty` on null', obj !== null);
   assert('Cannot call `descriptorForProperty` on undefined', obj !== undefined);
   assert(

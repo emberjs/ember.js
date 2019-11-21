@@ -1,10 +1,10 @@
 import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
-const COMPUTED_PROPERTY_CACHED_VALUES = new WeakMap<object, Map<string, any | null | undefined>>();
+const COMPUTED_PROPERTY_CACHED_VALUES = new WeakMap<object, Map<string | number | symbol, any | null | undefined>>();
 const COMPUTED_PROPERTY_LAST_REVISION = EMBER_METAL_TRACKED_PROPERTIES
-  ? new WeakMap<object, Map<string, number>>()
+  ? new WeakMap<object, Map<string | number | symbol, number>>()
   : undefined;
 
-export function getCacheFor(obj: object): Map<string, any> {
+export function getCacheFor(obj: object): Map<string | number | symbol, any> {
   let cache = COMPUTED_PROPERTY_CACHED_VALUES.get(obj);
   if (cache === undefined) {
     cache = new Map<string, any>();
@@ -29,15 +29,19 @@ export function getCacheFor(obj: object): Map<string, any> {
   @return {Object} the cached value
   @public
 */
-export function getCachedValueFor(obj: object, key: string): any {
+export function getCachedValueFor(obj: object, key: string | number | symbol): any {
   let cache = COMPUTED_PROPERTY_CACHED_VALUES.get(obj);
   if (cache !== undefined) {
     return cache.get(key);
   }
 }
 
-export let setLastRevisionFor: (obj: object, key: string, revision: number) => void;
-export let getLastRevisionFor: (obj: object, key: string) => number;
+export let setLastRevisionFor: (
+  obj: object,
+  key: string | number | symbol,
+  revision: number
+) => void;
+export let getLastRevisionFor: (obj: object, key: string | number | symbol) => number;
 
 if (EMBER_METAL_TRACKED_PROPERTIES) {
   setLastRevisionFor = (obj, key, revision) => {
