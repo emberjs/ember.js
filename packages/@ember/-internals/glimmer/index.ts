@@ -132,7 +132,7 @@
 
   ```app/components/labeled-textfield.hbs
   <label>
-    {{yield}} <Input @value={{value}} />
+    {{yield}} <Input @value={{@value}} />
   </label>
   ```
 
@@ -157,7 +157,7 @@
 
   ```app/templates/components/labeled-textfield.hbs
   <label>
-    {{yield this.validationError}} <Input @value={{value}} />
+    {{yield this.validationError}} <Input @value={{@value}} />
   </label>
   ```
 

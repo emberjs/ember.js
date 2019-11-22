@@ -179,7 +179,7 @@ export function inlineIf(_vm: VM, { positional }: Arguments) {
 
   Like the `if` helper, the `unless` helper also has a block form.
 
-  The following:
+  The following will not render anything:
 
   ```app/templates/application.hbs
   <Greeting />
@@ -190,8 +190,6 @@ export function inlineIf(_vm: VM, { positional }: Arguments) {
     No greeting was found. Why not set one?
   {{/unless}}
   ```
-
-  Will not render anything.
 
   You can also use an `else` helper with the `unless` block. The
   `else` will display if the value is truthy.
@@ -221,7 +219,7 @@ export function inlineIf(_vm: VM, { positional }: Arguments) {
   and calling it with a falsey `userData`:
 
   ```app/templates/application.hbs
-  <LoggedIn @userData=false />
+  <LoggedIn @userData={{false}} />
   ```
 
   Will render:
