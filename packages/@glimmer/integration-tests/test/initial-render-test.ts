@@ -29,6 +29,11 @@ import {
 import { expect } from '@glimmer/util';
 import { SimpleElement } from '@simple-dom/interface';
 
+// `window.ActiveXObject` is "falsey" in IE11 (but not `undefined` or `false`)
+// `"ActiveXObject" in window` returns `true` in all IE versions
+// only IE11 will pass _both_ of these conditions
+const isIE11 = !(window as any).ActiveXObject && 'ActiveXObject' in window;
+
 class RenderTests extends InitialRenderSuite {
   static suiteName = 'initial render (client)';
   name = 'client';
@@ -192,6 +197,67 @@ class Rehydration extends AbstractRehydrationTests {
   }
 
   @test
+  'missing closing block within multiple text nodes'() {
+    let template = '<div>a {{b}}{{c}}{{d}}</div>';
+    let context = { b: '', c: '', d: '' };
+
+    this.renderServerSide(template, context);
+
+    let b = blockStack();
+    this.assertServerOutput(
+      `<div>a ${b(1)}<!--% %-->${b(1)}${b(1)}<!--% %-->${b(1)}${b(1)}<!--% %-->${b(1)}</div>`
+    );
+
+    // remove the first `<!--%-b:1%-->`
+    let element = this.element as Element;
+    let [div] = element.children;
+    let commentToRemove = div.childNodes[3];
+    div.removeChild(commentToRemove);
+
+    this.renderClientSide(template, context);
+    this.assertHTML('<div>a </div>');
+    this.assertRehydrationStats({ nodesRemoved: 0 });
+
+    // TODO: handle % % in the testing DSL
+    // this.assertStableNodes();
+    this.assertStableRerender();
+  }
+
+  @test
+  'resumes correct block after reenabling rehydration'() {
+    let template = strip`
+      <div>
+        {{#if a}}
+          {{#if b}}
+            {{#if c}}
+              <inside-c></inside-c>
+            {{/if}}
+            <after-c></after-c>
+          {{/if}}
+          <after-b></after-b>
+        {{/if}}
+        <after-a></after-a>
+      </div>
+    `;
+    let context = { a: false, b: false, c: false };
+
+    this.renderServerSide(template, context);
+
+    let b = blockStack();
+    this.assertServerOutput(`<div>${b(1)}<!---->${b(1)}<after-a></after-a></div>`);
+
+    this.renderClientSide(template, { a: true, b: true, c: true });
+    this.assertHTML(
+      '<div><inside-c></inside-c><after-c></after-c><after-b></after-b><after-a></after-a></div>'
+    );
+    this.assertRehydrationStats({ nodesRemoved: 0 });
+
+    // TODO: handle % % in the testing DSL
+    // this.assertStableNodes();
+    this.assertStableRerender();
+  }
+
+  @test
   'mismatched elements'() {
     let template = '{{#if admin}}<div>hi admin</div>{{else}}<p>HAXOR</p>{{/if}}';
     this.renderServerSide(template, { admin: true });
@@ -204,6 +270,42 @@ class Rehydration extends AbstractRehydrationTests {
   }
 
   @test
+  'text nodes surrounding single line handlebars comments'() {
+    let template = 'hello{{! hmm, why is this here?! }} world';
+    this.renderServerSide(template, {});
+    this.assertServerOutput('hello', '<!--%|%-->', ' world');
+
+    this.renderClientSide(template, {});
+    this.assertRehydrationStats({ nodesRemoved: 0 });
+    this.assertHTML('hello world');
+    this.assertStableRerender();
+  }
+
+  @test
+  'text nodes surrounding multi line handlebars comments'() {
+    let template = 'hello{{!-- hmm, why is this here?! --}} world';
+    this.renderServerSide(template, {});
+    this.assertServerOutput('hello', '<!--%|%-->', ' world');
+
+    this.renderClientSide(template, {});
+    this.assertRehydrationStats({ nodesRemoved: 0 });
+    this.assertHTML('hello world');
+    this.assertStableRerender();
+  }
+
+  @test
+  'text nodes surrounding "stand alone" handlebars comment'() {
+    let template = '<div></div>\n{{! hmm, why is this here?! }}\n<div></div>';
+    this.renderServerSide(template, {});
+    this.assertServerOutput('<div></div>', '\n', '<div></div>');
+
+    this.renderClientSide(template, {});
+    this.assertRehydrationStats({ nodesRemoved: 0 });
+    this.assertHTML('<div></div>\n<div></div>');
+    this.assertStableRerender();
+  }
+
+  @test
   'extra nodes at the end'() {
     let template = '{{#if admin}}<div>hi admin</div>{{else}}<div>HAXOR{{stopHaxing}}</div>{{/if}}';
     this.renderServerSide(template, { admin: false, stopHaxing: 'stahp' });
@@ -212,6 +314,81 @@ class Rehydration extends AbstractRehydrationTests {
     this.renderClientSide(template, { admin: true });
     this.assertRehydrationStats({ nodesRemoved: 1 });
     this.assertHTML('<div>hi admin</div>');
+    this.assertStableRerender();
+  }
+
+  @test
+  'missing attributes'() {
+    let template = '<div data-foo="true"></div>';
+    this.renderServerSide(template, {});
+    this.assertServerOutput('<div data-foo="true"></div>');
+
+    // remove the attribute
+    let element = this.element as Element;
+    let [div] = element.children;
+    div.removeAttribute('data-foo');
+
+    this.renderClientSide(template, {});
+    this.assertRehydrationStats({ nodesRemoved: 0 });
+    this.assertHTML('<div data-foo="true"></div>');
+    this.assertStableRerender();
+  }
+
+  @test
+  'remove extra attributes'() {
+    let template = '<div data-foo="true"></div>';
+    this.renderServerSide(template, {});
+    this.assertServerOutput('<div data-foo="true"></div>');
+
+    // add an extra attribute
+    let element = this.element as Element;
+    let [div] = element.children;
+    div.setAttribute('data-bar', 'oops');
+
+    this.renderClientSide(template, {});
+    this.assertRehydrationStats({ nodesRemoved: 0 });
+    this.assertHTML('<div data-foo="true"></div>');
+    this.assertStableRerender();
+  }
+
+  @test
+  'updates attribute to current value'() {
+    let template = '<div class="always-present show-me"></div>';
+    this.renderServerSide(template, {});
+    this.assertServerOutput('<div class="always-present show-me"></div>');
+
+    // mutate the attribute
+    let element = this.element as Element;
+    let [div] = element.children;
+    div.setAttribute('class', 'zomg');
+
+    this.renderClientSide(template, {});
+    this.assertRehydrationStats({ nodesRemoved: 0 });
+    this.assertHTML('<div class="always-present show-me"></div>');
+    this.assertStableRerender();
+  }
+
+  @test
+  'does not mutate attributes that already match'() {
+    let observer = new MutationObserver(mutationList => {
+      mutationList.forEach(mutation => {
+        let target = mutation.target as Element;
+        this.assert.ok(
+          false,
+          `should not have updated ${mutation.attributeName} on ${target.outerHTML}`
+        );
+      });
+    });
+
+    let template = '<div data-foo="whatever"></div>';
+    this.renderServerSide(template, {});
+    this.assertServerOutput('<div data-foo="whatever"></div>');
+
+    observer.observe(this.element as Element, { attributes: true, subtree: true });
+
+    this.renderClientSide(template, {});
+    this.assertRehydrationStats({ nodesRemoved: 0 });
+    this.assertHTML('<div data-foo="whatever"></div>');
     this.assertStableRerender();
   }
 
@@ -277,11 +454,8 @@ class Rehydration extends AbstractRehydrationTests {
     this.element = assertElement(host.firstChild);
 
     this.renderClientSide(template, { remote: clientRemote });
-    this.assertRehydrationStats({ nodesRemoved: 1 });
-    this.assert.equal(
-      toInnerHTML(clientRemote),
-      '<prefix></prefix><suffix></suffix><inner>Wat Wat</inner>'
-    );
+    this.assertRehydrationStats({ nodesRemoved: 2 });
+    this.assert.equal(toInnerHTML(clientRemote), '<inner>Wat Wat</inner>');
   }
 
   @test
@@ -516,7 +690,7 @@ class Rehydration extends AbstractRehydrationTests {
       remoteParent: clientRemoteParent,
       remoteChild: clientRemoteChild,
     });
-    this.assertRehydrationStats({ nodesRemoved: 2 });
+    this.assertRehydrationStats({ nodesRemoved: 0 });
     this.assert.equal(toInnerHTML(clientRemoteParent), '<inner><!----></inner>');
     this.assert.equal(toInnerHTML(clientRemoteChild), 'Wat Wat');
   }
@@ -872,6 +1046,33 @@ class RehydratingComponents extends AbstractRehydrationTests {
     this.assertRehydrationStats({ nodesRemoved: 0 });
     this.assertComponent('Hello Chad');
     this.assertStableRerender();
+  }
+
+  @test
+  '<p> invoking a block which emits a <div>'() {
+    let componentToRender = {
+      layout: '<p>hello {{#if @show}}<div>world!</div>{{/if}}</p>',
+      args: { show: 'show' },
+    };
+
+    this.renderServerSide(componentToRender, { show: true });
+    let b = blockStack();
+
+    let id = this.testType === 'Dynamic' ? 3 : 2;
+
+    // assert that we are in a "browser corrected" state (note the `</p>` before the `<div>world!</div>`)
+    if (isIE11) {
+      // IE11 doesn't behave the same as modern browsers
+      this.assertServerComponent(`<p>hello ${b(id)}<div>world!</div>${b(id)}<p></p>`);
+    } else {
+      this.assertServerComponent(`<p>hello ${b(id)}</p><div>world!</div>${b(id)}<p></p>`);
+    }
+
+    this.renderClientSide(componentToRender, { show: true });
+    this.assertComponent('<p>hello <div>world!</div></p>');
+
+    this.assertRehydrationStats({ nodesRemoved: 2 });
+    this.assertStableNodes();
   }
 
   @test
