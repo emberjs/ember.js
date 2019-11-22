@@ -111,11 +111,11 @@ export default class ArrayProxy extends EmberObject {
       this._arrangedContentRevision = value(this._arrangedContentTag);
     }
 
-    this._addArrangedContentArrayObsever();
+    this._addArrangedContentArrayObserver();
   }
 
   willDestroy() {
-    this._removeArrangedContentArrayObsever();
+    this._removeArrangedContentArrayObserver();
   }
 
   /**
@@ -251,16 +251,16 @@ export default class ArrayProxy extends EmberObject {
     let arrangedContent = get(this, 'arrangedContent');
     let newLength = arrangedContent ? get(arrangedContent, 'length') : 0;
 
-    this._removeArrangedContentArrayObsever();
+    this._removeArrangedContentArrayObserver();
     this.arrayContentWillChange(0, oldLength, newLength);
 
     this._invalidate();
 
     this.arrayContentDidChange(0, oldLength, newLength);
-    this._addArrangedContentArrayObsever();
+    this._addArrangedContentArrayObserver();
   }
 
-  _addArrangedContentArrayObsever() {
+  _addArrangedContentArrayObserver() {
     let arrangedContent = get(this, 'arrangedContent');
     if (arrangedContent && !arrangedContent.isDestroyed) {
       assert("Can't set ArrayProxy's content to itself", arrangedContent !== this);
@@ -275,7 +275,7 @@ export default class ArrayProxy extends EmberObject {
     }
   }
 
-  _removeArrangedContentArrayObsever() {
+  _removeArrangedContentArrayObserver() {
     if (this._arrangedContent) {
       removeArrayObserver(this._arrangedContent, this, ARRAY_OBSERVER_MAPPING);
     }

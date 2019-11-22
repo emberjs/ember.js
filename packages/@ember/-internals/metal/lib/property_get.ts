@@ -8,7 +8,7 @@ import { DEBUG } from '@glimmer/env';
 import { descriptorForProperty } from './descriptor_map';
 import { isPath } from './path_cache';
 import { tagForProperty } from './tags';
-import { consume, isTracking } from './tracked';
+import { consume, deprecateMutationsInAutotrackingTransaction, isTracking } from './tracked';
 
 export const PROXY_CONTENT = symbol('PROXY_CONTENT');
 
@@ -143,7 +143,17 @@ export function get(obj: object, keyName: string): any {
       !(keyName in obj) &&
       typeof (obj as MaybeHasUnknownProperty).unknownProperty === 'function'
     ) {
-      return (obj as MaybeHasUnknownProperty).unknownProperty!(keyName);
+      if (DEBUG) {
+        let ret;
+
+        deprecateMutationsInAutotrackingTransaction!(() => {
+          ret = (obj as MaybeHasUnknownProperty).unknownProperty!(keyName);
+        });
+
+        return ret;
+      } else {
+        return (obj as MaybeHasUnknownProperty).unknownProperty!(keyName);
+      }
     }
   }
   return value;
