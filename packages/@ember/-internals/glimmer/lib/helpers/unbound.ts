@@ -13,7 +13,7 @@ import { UnboundReference } from '../utils/references';
   if it is set with a new value:
 
   ```handlebars
-  {{unbound name}}
+  {{unbound this.name}}
   ```
 
   Like any helper, the `unbound` helper can accept a nested helper expression.
@@ -21,9 +21,9 @@ import { UnboundReference } from '../utils/references';
 
   ```handlebars
   {{unbound (some-custom-helper)}}
-  {{unbound (capitalize name)}}
+  {{unbound (capitalize this.name)}}
   {{! You can use any helper, including unbound, in a nested expression }}
-  {{capitalize (unbound name)}}
+  {{capitalize (unbound this.name)}}
   ```
 
   The `unbound` helper only accepts a single argument, and it return an

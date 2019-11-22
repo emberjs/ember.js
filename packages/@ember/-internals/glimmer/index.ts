@@ -96,22 +96,17 @@
   If the aliased property is "falsey", for example: `false`, `undefined` `null`, `""`, `0`, `NaN` or
   an empty array, the block will not be rendered.
 
-  ```handlebars
+  ```app/templates/application.hbs
   {{! Will only render if user.posts contains items}}
-  {{#with user.posts as |blogPosts|}}
+  {{#with @model.posts as |blogPosts|}}
     <div class="notice">
-      There are {{blogPosts.length}} blog posts written by {{user.name}}.
+      There are {{blogPosts.length}} blog posts written by {{@model.name}}.
     </div>
     {{#each blogPosts as |post|}}
       <li>{{post.title}}</li>
     {{/each}}
   {{/with}}
   ```
-
-  NOTE: The alias should not reuse a name from the bound property path.
-
-  For example: `{{#with foo.bar as |foo|}}` is not supported because it attempts to alias using
-  the first part of the property path, `foo`. Instead, use `{{#with foo.bar as |baz|}}`.
 
   @method with
   @for Ember.Templates.helpers
@@ -130,14 +125,14 @@
   template, an optional block passed to the component should render:
 
   ```app/templates/application.hbs
-  {{#labeled-textfield value=someProperty}}
+  <LabeledTextfield @value={{@model.name}}>
     First name:
-  {{/labeled-textfield}}
+  </LabeledTextfield>
   ```
 
-  ```app/templates/components/labeled-textfield.hbs
+  ```app/components/labeled-textfield.hbs
   <label>
-    {{yield}} {{input value=value}}
+    {{yield}} <Input @value={{@value}} />
   </label>
   ```
 
@@ -152,7 +147,7 @@
   Additionally you can `yield` properties into the context for use by the consumer:
 
   ```app/templates/application.hbs
-  {{#labeled-textfield value=someProperty validator=(action 'firstNameValidator') as |validationError|}}
+  <LabeledTextfield @value={{@model.validation}} @validator={{this.firstNameValidator}} as |validationError|>
     {{#if validationError}}
       <p class="error">{{validationError}}</p>
     {{/if}}
@@ -162,7 +157,7 @@
 
   ```app/templates/components/labeled-textfield.hbs
   <label>
-    {{yield validationError}} {{input value=value}}
+    {{yield this.validationError}} <Input @value={{@value}} />
   </label>
   ```
 
