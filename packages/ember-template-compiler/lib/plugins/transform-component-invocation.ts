@@ -1,6 +1,8 @@
+import { StaticTemplateMeta } from '@ember/-internals/views';
 import { AST, ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
 import calculateLocationDisplay from '../system/calculate-location-display';
 import { Builders } from '../types';
+import { isPath } from './utils';
 
 /**
   Transforms unambigious invocations of closure components to be wrapped with
@@ -121,7 +123,7 @@ import { Builders } from '../types';
   @class TransFormComponentInvocation
 */
 export default function transformComponentInvocation(env: ASTPluginEnvironment): ASTPlugin {
-  let { moduleName } = env.meta;
+  let { moduleName } = env.meta as StaticTemplateMeta;
   let { builders: b } = env.syntax;
   let locals: string[][] = [];
   let isAttrs = false;
@@ -184,10 +186,6 @@ function isInlineInvocation(node: AST.MustacheStatement, locals: string[][]): bo
   return isPath(path) && isIllegalName(path, locals) && hasArguments(node);
 }
 
-function isPath(node: AST.PathExpression | AST.Literal): node is AST.PathExpression {
-  return node.type === 'PathExpression';
-}
-
 function isIllegalName(node: AST.PathExpression, locals: string[][]): boolean {
   return isThisPath(node) || isDotPath(node) || isNamedArg(node) || isLocalVariable(node, locals);
 }
@@ -217,7 +215,7 @@ function hasArguments(node: AST.MustacheStatement): boolean {
 }
 
 function isBlockInvocation(node: AST.BlockStatement, locals: string[][]): boolean {
-  return isIllegalName(node.path, locals);
+  return isPath(node.path) && isIllegalName(node.path, locals);
 }
 
 function wrapInAssertion(moduleName: string, node: AST.PathExpression, b: Builders) {

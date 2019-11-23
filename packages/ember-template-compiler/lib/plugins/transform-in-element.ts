@@ -1,6 +1,8 @@
+import { StaticTemplateMeta } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { AST, ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
 import calculateLocationDisplay from '../system/calculate-location-display';
+import { isPath } from './utils';
 
 /**
  @module ember
@@ -45,7 +47,7 @@ import calculateLocationDisplay from '../system/calculate-location-display';
   @class TransformHasBlockSyntax
 */
 export default function transformInElement(env: ASTPluginEnvironment): ASTPlugin {
-  let { moduleName } = env.meta;
+  let { moduleName } = env.meta as StaticTemplateMeta;
   let { builders: b } = env.syntax;
   let cursorCount = 0;
 
@@ -54,6 +56,8 @@ export default function transformInElement(env: ASTPluginEnvironment): ASTPlugin
 
     visitor: {
       BlockStatement(node: AST.BlockStatement) {
+        if (!isPath(node.path)) return;
+
         if (node.path.original === 'in-element') {
           assert(assertMessage(moduleName, node));
         } else if (node.path.original === '-in-element') {

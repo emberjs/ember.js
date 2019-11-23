@@ -1,22 +1,20 @@
+import { StaticTemplateMeta } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { AST, ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
 import calculateLocationDisplay from '../system/calculate-location-display';
 import { Builders } from '../types';
+import { isPath, isSubExpression } from './utils';
 
 function isInlineLinkTo(node: AST.MustacheStatement): boolean {
-  return node.path.original === 'link-to';
+  return isPath(node.path) && node.path.original === 'link-to';
 }
 
 function isBlockLinkTo(node: AST.BlockStatement): boolean {
-  return node.path.original === 'link-to';
-}
-
-function isSubExpression(node: AST.Expression): node is AST.SubExpression {
-  return node.type === 'SubExpression';
+  return isPath(node.path) && node.path.original === 'link-to';
 }
 
 function isQueryParams(node: AST.Expression): node is AST.SubExpression {
-  return isSubExpression(node) && node.path.original === 'query-params';
+  return isSubExpression(node) && isPath(node.path) && node.path.original === 'query-params';
 }
 
 function transformInlineLinkToIntoBlockForm(
@@ -40,7 +38,7 @@ function transformPositionalLinkToIntoNamedArguments(
   node: AST.BlockStatement
 ): AST.BlockStatement {
   let { builders: b } = env.syntax;
-  let { moduleName } = env.meta;
+  let { moduleName } = env.meta as StaticTemplateMeta;
   let {
     params,
     hash: { pairs },

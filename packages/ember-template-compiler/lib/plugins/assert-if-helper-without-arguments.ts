@@ -1,16 +1,18 @@
+import { StaticTemplateMeta } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { AST, ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
 import calculateLocationDisplay from '../system/calculate-location-display';
+import { isPath } from './utils';
 
 export default function assertIfHelperWithoutArguments(env: ASTPluginEnvironment): ASTPlugin {
-  let { moduleName } = env.meta;
+  let { moduleName } = env.meta as StaticTemplateMeta;
 
   return {
     name: 'assert-if-helper-without-arguments',
 
     visitor: {
       BlockStatement(node: AST.BlockStatement) {
-        if (isInvalidBlockIf(node)) {
+        if (isPath(node.path) && isInvalidBlockIf(node.path, node.params)) {
           assert(
             `${blockAssertMessage(node.path.original)} ${calculateLocationDisplay(
               moduleName,
@@ -21,7 +23,7 @@ export default function assertIfHelperWithoutArguments(env: ASTPluginEnvironment
       },
 
       MustacheStatement(node: AST.MustacheStatement) {
-        if (isInvalidInlineIf(node)) {
+        if (isPath(node.path) && isInvalidInlineIf(node.path, node.params)) {
           assert(
             `${inlineAssertMessage(node.path.original as string)} ${calculateLocationDisplay(
               moduleName,
@@ -32,7 +34,7 @@ export default function assertIfHelperWithoutArguments(env: ASTPluginEnvironment
       },
 
       SubExpression(node: AST.SubExpression) {
-        if (isInvalidInlineIf(node)) {
+        if (isPath(node.path) && isInvalidInlineIf(node.path, node.params)) {
           assert(
             `${inlineAssertMessage(node.path.original)} ${calculateLocationDisplay(
               moduleName,
@@ -53,13 +55,18 @@ function inlineAssertMessage(original: string) {
   return `The inline form of the '${original}' helper expects two or three arguments.`;
 }
 
-function isInvalidInlineIf(node: AST.BlockStatement | AST.MustacheStatement | AST.SubExpression) {
+function isInvalidInlineIf(path: AST.PathExpression, params: AST.Expression[]) {
   return (
-    node.path.original === 'if' &&
-    (!node.params || node.params.length < 2 || node.params.length > 3)
+    isPath(path) &&
+    path.original === 'if' &&
+    (!params || params.length < 2 || params.length > 3)
   );
 }
 
-function isInvalidBlockIf(node: AST.BlockStatement | AST.MustacheStatement | AST.SubExpression) {
-  return node.path.original === 'if' && (!node.params || node.params.length !== 1);
+function isInvalidBlockIf(path: AST.PathExpression, params: AST.Expression[]) {
+  return (
+    isPath(path) &&
+    path.original === 'if' &&
+    (!params || params.length !== 1)
+  );
 }

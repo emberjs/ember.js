@@ -1,20 +1,20 @@
+import { StaticTemplateMeta } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { AST, ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
 import calculateLocationDisplay from '../system/calculate-location-display';
+import { isPath } from './utils';
 
 export default function errorOnInputWithContent(env: ASTPluginEnvironment): ASTPlugin {
-  let { moduleName } = env.meta;
+  let { moduleName } = env.meta as StaticTemplateMeta;
 
   return {
     name: 'assert-input-helper-without-block',
 
     visitor: {
       BlockStatement(node: AST.BlockStatement) {
-        if (node.path.original !== 'input') {
-          return;
+        if (isPath(node.path) && node.path.original === 'input') {
+          assert(assertMessage(moduleName, node));
         }
-
-        assert(assertMessage(moduleName, node));
       },
     },
   };

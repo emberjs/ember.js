@@ -1,9 +1,10 @@
+import { StaticTemplateMeta } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { AST, ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
 import calculateLocationDisplay from '../system/calculate-location-display';
 
 export default function assertReservedNamedArguments(env: ASTPluginEnvironment): ASTPlugin {
-  let { moduleName } = env.meta;
+  let { moduleName } = env.meta as StaticTemplateMeta;
 
   return {
     name: 'assert-reserved-named-arguments',
