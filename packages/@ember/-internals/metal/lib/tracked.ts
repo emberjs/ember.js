@@ -5,6 +5,7 @@ import { combine, CONSTANT_TAG, Tag, UpdatableTag, update } from '@glimmer/refer
 import { Decorator, DecoratorPropertyDescriptor, isElementDescriptor } from './decorator';
 import { setClassicDecorator } from './descriptor_map';
 import { markObjectAsDirty, tagForProperty } from './tags';
+import { assertNotRendered } from './transaction';
 
 type Option<T> = T | null;
 
@@ -218,6 +219,10 @@ function descriptorForField([_target, key, desc]: [
       markObjectAsDirty(this, key);
 
       values.set(this, newValue);
+
+      if (DEBUG) {
+        assertNotRendered(this, key);
+      }
 
       if (propertyDidChange !== null) {
         propertyDidChange();

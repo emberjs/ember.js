@@ -12,7 +12,7 @@ import {
 
 import { run } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
-import { alias, set, get, observer, on, computed } from '@ember/-internals/metal';
+import { alias, set, get, observer, on, computed, tracked } from '@ember/-internals/metal';
 import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import Service, { inject as injectService } from '@ember/service';
 import { Object as EmberObject, A as emberA } from '@ember/-internals/runtime';
@@ -2561,6 +2561,42 @@ moduleFor(
       });
 
       let expectedBacktrackingMessage = /modified `<.+?>` twice in a single render\. It was first rendered as `this\.wrapper\.content` in "component:x-outer" and then modified later in "component:x-inner"/;
+
+      expectAssertion(() => {
+        this.render('{{x-outer}}');
+      }, expectedBacktrackingMessage);
+    }
+
+    ["@test when a shared dependency is changed during children's rendering (tracked)"](assert) {
+      if (!EMBER_METAL_TRACKED_PROPERTIES) {
+        assert.expect(0);
+        return;
+      }
+
+      class Wrapper {
+        @tracked content = null;
+      }
+
+      this.registerComponent('x-outer', {
+        ComponentClass: Component.extend({
+          value: 1,
+          wrapper: new Wrapper(),
+        }),
+        template:
+          '<div id="outer-value">{{wrapper.content}}</div> {{x-inner value=value wrapper=wrapper}}',
+      });
+
+      this.registerComponent('x-inner', {
+        ComponentClass: Component.extend({
+          didReceiveAttrs() {
+            this.get('wrapper').content = this.get('value');
+          },
+          value: null,
+        }),
+        template: '<div id="inner-value">{{wrapper.content}}</div>',
+      });
+
+      let expectedBacktrackingMessage = /modified `\[object Object\]` twice in a single render\. It was first rendered as `this\.wrapper\.content` in "component:x-outer" and then modified later in "component:x-inner"/;
 
       expectAssertion(() => {
         this.render('{{x-outer}}');
