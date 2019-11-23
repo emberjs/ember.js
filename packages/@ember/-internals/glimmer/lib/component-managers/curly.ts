@@ -181,7 +181,7 @@ export default class CurlyComponentManager
         positional: EMPTY_POSITIONAL_ARGS,
         named: {
           ...rest,
-          ...__ARGS__.value(),
+          ...__ARGS__.value() as { [key: string]: VersionedPathReference<unknown> },
         },
       };
 
@@ -596,6 +596,7 @@ export const CURLY_CAPABILITIES: ComponentCapabilities = {
   dynamicScope: true,
   updateHook: true,
   createInstance: true,
+  wrapped: true,
 };
 
 const CURLY_COMPONENT_MANAGER = new CurlyComponentManager();

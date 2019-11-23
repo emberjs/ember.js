@@ -1,7 +1,7 @@
 /**
 @module ember
 */
-import { VMArguments } from '@glimmer/interface';
+import { VMArguments } from '@glimmer/interfaces';
 import { ReadonlyReference } from '../utils/references';
 import { unMut } from './mut';
 

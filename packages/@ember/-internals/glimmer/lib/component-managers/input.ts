@@ -28,6 +28,7 @@ const CAPABILITIES: ComponentCapabilities = {
   dynamicScope: false,
   updateHook: true,
   createInstance: true,
+  wrapped: false,
 };
 
 export interface InputComponentState {

@@ -33,6 +33,7 @@ import Router, {
   TransitionState,
 } from 'router_js';
 import { EngineRouteInfo } from './engines';
+import Controller from '@ember/controller';
 
 function defaultDidTransition(this: EmberRouter, infos: PrivateRouteInfo[]) {
   updatePaths(this);
@@ -455,7 +456,7 @@ class EmberRouter extends EmberObject {
         }
       }
       if (connections.length === 0) {
-        ownState = representEmptyRoute(liveRoutes!, defaultParentState as OutletState, route!);
+        ownState = representEmptyRoute(liveRoutes!, defaultParentState! as OutletState, route!);
       }
       defaultParentState = ownState!;
     }
@@ -1463,7 +1464,7 @@ function updatePaths(router: EmberRouter) {
   set(router, 'currentRouteName', currentRouteName);
   set(router, 'currentURL', currentURL);
 
-  let appController = getOwner(router).lookup('controller:application');
+  let appController = getOwner(router).lookup<Controller>('controller:application');
 
   if (!appController) {
     // appController might not exist when top-level loading/error

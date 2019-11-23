@@ -131,6 +131,6 @@ class PathReference implements VersionedPathReference<unknown> {
 
   value(): unknown {
     let parent = this.parent.value();
-    return parent && parent[this.key];
+    return parent && (parent as any)[this.key];
   }
 }

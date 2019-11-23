@@ -62,6 +62,7 @@ const CAPABILITIES: ComponentCapabilities = {
   dynamicScope: true,
   updateHook: ENV._DEBUG_RENDER_TREE,
   createInstance: true,
+  wrapped: false,
 };
 
 class OutletComponentManager extends AbstractManager<OutletInstanceState, OutletDefinitionState>

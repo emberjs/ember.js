@@ -103,6 +103,7 @@ export const ROOT_CAPABILITIES: ComponentCapabilities = {
   dynamicScope: true,
   updateHook: true,
   createInstance: true,
+  wrapped: true,
 };
 
 export class RootComponentDefinition implements ComponentDefinition {

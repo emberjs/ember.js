@@ -39,6 +39,7 @@ const CAPABILITIES = {
   dynamicScope: true,
   updateHook: true,
   createInstance: true,
+  wrapped: false,
 };
 
 export interface OptionalCapabilities {

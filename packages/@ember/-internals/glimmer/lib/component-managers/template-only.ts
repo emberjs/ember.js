@@ -26,6 +26,7 @@ const CAPABILITIES: ComponentCapabilities = {
   dynamicScope: false,
   updateHook: ENV._DEBUG_RENDER_TREE,
   createInstance: true,
+  wrapped: false,
 };
 
 export interface DebugStateBucket {
