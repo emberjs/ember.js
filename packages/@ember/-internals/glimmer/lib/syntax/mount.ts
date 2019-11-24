@@ -1,11 +1,11 @@
 /**
 @module ember
 */
-import { OwnedTemplateMeta } from '@ember/-internals/views';
+// import { OwnedTemplateMeta } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { CapturedArguments, Option, VM, VMArguments } from '@glimmer/interfaces';
-import { OpcodeBuilder } from '@glimmer/opcode-compiler';
+// import { OpcodeBuilder } from '@glimmer/opcode-compiler';
 import { VersionedPathReference } from '@glimmer/reference';
 import {
   CurriedComponentDefinition,
@@ -14,7 +14,7 @@ import {
   UNDEFINED_REFERENCE,
 } from '@glimmer/runtime';
 import { Tag } from '@glimmer/validator';
-import * as WireFormat from '@glimmer/wire-format';
+// import * as WireFormat from '@glimmer/wire-format';
 import { MODEL_ARG_NAME, MountDefinition } from '../component-managers/mount';
 import Environment from '../environment';
 
@@ -98,33 +98,33 @@ export function mountHelper(
   @for Ember.Templates.helpers
   @public
 */
-export function mountMacro(
-  _name: string,
-  params: Option<WireFormat.Core.Params>,
-  hash: Option<WireFormat.Core.Hash>,
-  builder: OpcodeBuilder<OwnedTemplateMeta>
-) {
-  assert(
-    'You can only pass a single positional argument to the {{mount}} helper, e.g. {{mount "chat-engine"}}.',
-    params!.length === 1
-  );
+// export function mountMacro(
+//   _name: string,
+//   params: Option<WireFormat.Core.Params>,
+//   hash: Option<WireFormat.Core.Hash>,
+//   builder: OpcodeBuilder<OwnedTemplateMeta>
+// ) {
+//   assert(
+//     'You can only pass a single positional argument to the {{mount}} helper, e.g. {{mount "chat-engine"}}.',
+//     params!.length === 1
+//   );
 
-  if (DEBUG && hash) {
-    let keys = hash[0];
-    let extra = keys.filter(k => k !== 'model');
+//   if (DEBUG && hash) {
+//     let keys = hash[0];
+//     let extra = keys.filter(k => k !== 'model');
 
-    assert(
-      'You can only pass a `model` argument to the {{mount}} helper, ' +
-        'e.g. {{mount "profile-engine" model=this.profile}}. ' +
-        `You passed ${extra.join(',')}.`,
-      extra.length === 0
-    );
-  }
+//     assert(
+//       'You can only pass a `model` argument to the {{mount}} helper, ' +
+//         'e.g. {{mount "profile-engine" model=this.profile}}. ' +
+//         `You passed ${extra.join(',')}.`,
+//       extra.length === 0
+//     );
+//   }
 
-  let expr: WireFormat.Expressions.Helper = [WireFormat.Ops.Helper, '-mount', params || [], hash];
-  builder.dynamicComponent(expr, null, [], null, false, null, null);
-  return true;
-}
+//   let expr: WireFormat.Expressions.Helper = [WireFormat.Ops.Helper, '-mount', params || [], hash];
+//   builder.dynamicComponent(expr, null, [], null, false, null, null);
+//   return true;
+// }
 
 class DynamicEngineReference implements VersionedPathReference<Option<CurriedComponentDefinition>> {
   public tag: Tag;

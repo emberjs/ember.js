@@ -2,11 +2,10 @@ import { get } from '@ember/-internals/metal';
 import { assert, deprecate } from '@ember/debug';
 import { EMBER_COMPONENT_IS_VISIBLE } from '@ember/deprecated-features';
 import { dasherize } from '@ember/string';
-import { ElementOperations, Option } from '@glimmer/interfaces';
+import { ElementOperations, Option, WireFormat, SexpOpcodes } from '@glimmer/interfaces';
 import { CachedReference, map, Reference } from '@glimmer/reference';
 import { PrimitiveReference } from '@glimmer/runtime';
 import { combine, Tag } from '@glimmer/validator';
-import { Core, Ops } from '@glimmer/wire-format';
 import { SimpleElement } from '@simple-dom/interface';
 import { Component } from './curly-component-state-bucket';
 import { referenceFromParts, RootReference } from './references';
@@ -30,6 +29,31 @@ function referenceForParts(rootRef: RootReference<Component>, parts: string[]): 
 
   return referenceFromParts(rootRef, parts);
 }
+
+// TODO we should probably do this transform at build time
+// export function wrapComponentClassAttribute(hash: Core.Hash) {
+//   if (hash === null) {
+//     return;
+//   }
+
+//   let [keys, values] = hash;
+//   let index = keys === null ? -1 : keys.indexOf('class');
+
+//   if (index !== -1) {
+//     let value = values[index];
+//     if (!Array.isArray(value)) {
+//       return;
+//     }
+
+//     let [type] = value;
+
+//     if (type === Ops.Get || type === Ops.MaybeLocal) {
+//       let path = value[value.length - 1];
+//       let propName = path[path.length - 1];
+//       values[index] = [Ops.Helper, '-class', [value, propName], null];
+//     }
+//   }
+// }
 
 export const AttributeBinding = {
   parse(microsyntax: string): [string, string, boolean] {

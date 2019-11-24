@@ -1,4 +1,4 @@
-import { OwnedTemplateMeta } from '@ember/-internals/views';
+// import { OwnedTemplateMeta } from '@ember/-internals/views';
 import { EMBER_ROUTING_MODEL_ARG } from '@ember/canary-features';
 import { DEBUG } from '@glimmer/env';
 import {
@@ -9,7 +9,7 @@ import {
   VM,
   VMArguments,
 } from '@glimmer/interfaces';
-import { OpcodeBuilder } from '@glimmer/opcode-compiler';
+// import { OpcodeBuilder } from '@glimmer/opcode-compiler';
 import { ConstReference, Reference, VersionedPathReference } from '@glimmer/reference';
 import {
 
@@ -20,7 +20,7 @@ import {
 } from '@glimmer/runtime';
 import { dict } from '@glimmer/util';
 import { Tag } from '@glimmer/validator';
-import * as WireFormat from '@glimmer/wire-format';
+// import * as WireFormat from '@glimmer/wire-format';
 import { OutletComponentDefinition, OutletDefinitionState } from '../component-managers/outlet';
 import Environment from '../environment';
 import { DynamicScope } from '../renderer';
@@ -89,16 +89,16 @@ export function outletHelper(args: VMArguments, vm: VM) {
   );
 }
 
-export function outletMacro(
-  _name: string,
-  params: Option<WireFormat.Core.Params>,
-  hash: Option<WireFormat.Core.Hash>,
-  builder: OpcodeBuilder<OwnedTemplateMeta>
-) {
-  let expr: WireFormat.Expressions.Helper = [WireFormat.Ops.Helper, '-outlet', params || [], hash];
-  builder.dynamicComponent(expr, null, [], null, false, null, null);
-  return true;
-}
+// export function outletMacro(
+//   _name: string,
+//   params: Option<WireFormat.Core.Params>,
+//   hash: Option<WireFormat.Core.Hash>,
+//   builder: OpcodeBuilder<OwnedTemplateMeta>
+// ) {
+//   let expr: WireFormat.Expressions.Helper = [WireFormat.Ops.Helper, '-outlet', params || [], hash];
+//   builder.dynamicComponent(expr, null, [], null, false, null, null);
+//   return true;
+// }
 
 class OutletModelReference implements VersionedPathReference {
   public tag: Tag;
