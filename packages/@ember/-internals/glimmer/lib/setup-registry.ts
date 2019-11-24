@@ -10,16 +10,11 @@ import TextField from './components/text-field';
 import TextArea from './components/textarea';
 import {
   clientBuilder,
-  DOMChanges,
-  DOMTreeConstruction,
-  NodeDOMTreeConstruction,
   rehydrationBuilder,
   serializeBuilder,
 } from './dom';
-import Environment from './environment';
 import loc from './helpers/loc';
 import { InertRenderer, InteractiveRenderer } from './renderer';
-import TemplateCompiler from './template-compiler';
 import ComponentTemplate from './templates/component';
 import InputTemplate from './templates/input';
 import OutletTemplate from './templates/outlet';

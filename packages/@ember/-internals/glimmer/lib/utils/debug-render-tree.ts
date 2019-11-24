@@ -1,5 +1,6 @@
 import { assert } from '@ember/debug';
 import { Bounds, CapturedArguments, Option } from '@glimmer/interfaces';
+import { unwrapTemplate } from '@glimmer/opcode-compiler';
 import { expect, Stack } from '@glimmer/util';
 import { SimpleElement, SimpleNode } from '@simple-dom/interface';
 import { OwnedTemplate } from '../template';
@@ -213,7 +214,7 @@ export default class DebugRenderTree<Bucket extends object = object> {
   }
 
   private captureTemplate({ template }: InternalRenderNode<Bucket>): Option<string> {
-    return (template && template.referrer.moduleName) || null;
+    return (template && unwrapTemplate(template).referrer.moduleName) || null;
   }
 
   private captureBounds(node: InternalRenderNode<Bucket>): CapturedRenderNode['bounds'] {

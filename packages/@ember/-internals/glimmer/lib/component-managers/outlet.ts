@@ -29,6 +29,7 @@ import { OutletState } from '../utils/outlet';
 import { RootReference } from '../utils/references';
 import OutletView from '../views/outlet';
 import AbstractManager from './abstract';
+import { unwrapTemplate } from '@glimmer/opcode-compiler';
 
 function instrumentationPayload(def: OutletDefinitionState) {
   return { object: `${def.name}:${def.outlet}` };
@@ -135,13 +136,9 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
     return state;
   }
 
-  getLayout({ template }: OutletDefinitionState, _resolver: RuntimeResolver): Invocation {
+  getJitStaticLayout({ template }: OutletDefinitionState, _resolver: RuntimeResolver) {
     // The router has already resolved the template
-    const layout = template.asLayout();
-    return {
-      handle: layout.compile(),
-      symbolTable: layout.symbolTable,
-    };
+    return unwrapTemplate(template).asLayout();
   }
 
   getCapabilities(): ComponentCapabilities {
@@ -242,14 +239,9 @@ export function createRootOutlet(outletView: OutletView): OutletComponentDefinit
         return 'div';
       }
 
-      getLayout(state: OutletDefinitionState): Invocation {
+      getLayout(state: OutletDefinitionState) {
         // The router has already resolved the template
-        const template = state.template;
-        const layout = template.asWrappedLayout();
-        return {
-          handle: layout.compile(),
-          symbolTable: layout.symbolTable,
-        };
+        return unwrapTemplate(state.template).asWrappedLayout();
       }
 
       getCapabilities(): ComponentCapabilities {

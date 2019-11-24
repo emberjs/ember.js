@@ -1,5 +1,6 @@
 import { Factory } from '@ember/-internals/owner';
-import { ComponentCapabilities, Option, ProgramSymbolTable } from '@glimmer/interfaces';
+import { ComponentCapabilities, Option } from '@glimmer/interfaces';
+import { OwnedTemplate } from '../template';
 import { Component } from '../utils/curly-component-state-bucket';
 
 export default interface DefinitionState {
@@ -9,7 +10,7 @@ export default interface DefinitionState {
     Component,
     { create(props?: any): Component; positionalParams: string | string[] | undefined | null }
   >;
-  handle: Option<number>;
-  symbolTable?: ProgramSymbolTable;
-  template?: any;
+  // handle: Option<number>;
+  // symbolTable?: ProgramSymbolTable;
+  template?: OwnedTemplate;
 }

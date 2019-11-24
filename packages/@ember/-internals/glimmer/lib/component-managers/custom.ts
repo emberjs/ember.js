@@ -1,7 +1,6 @@
 import { ARGS_PROXY_TAGS, consume } from '@ember/-internals/metal';
 import { Factory } from '@ember/-internals/owner';
 import { HAS_NATIVE_PROXY } from '@ember/-internals/utils';
-import { OwnedTemplateMeta } from '@ember/-internals/views';
 import { EMBER_CUSTOM_COMPONENT_ARG_PROXY } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
@@ -12,12 +11,11 @@ import {
   ComponentDefinition,
   Destroyable,
   Dict,
-  Invocation,
   Option,
-  ProgramSymbolTable,
   VMArguments,
   WithJitStaticLayout,
 } from '@glimmer/interfaces';
+import { unwrapTemplate } from '@glimmer/opcode-compiler';
 import { PathReference, } from '@glimmer/reference';
 import { createTag, isConst, Tag } from '@glimmer/validator';
 
@@ -75,8 +73,7 @@ export function capabilities(
 export interface DefinitionState<ComponentInstance> {
   name: string;
   ComponentClass: Factory<ComponentInstance>;
-  symbolTable: ProgramSymbolTable;
-  template?: any;
+  template: OwnedTemplate;
 }
 
 export interface Capabilities {
@@ -382,11 +379,8 @@ export default class CustomComponentManager<ComponentInstance>
     }
   }
 
-  getLayout(state: DefinitionState<ComponentInstance>): Invocation {
-    return {
-      handle: state.template.asLayout().compile(),
-      symbolTable: state.symbolTable!,
-    };
+  getJitStaticLayout(state: DefinitionState<ComponentInstance>) {
+    return unwrapTemplate(state.template).asLayout();
   }
 }
 const CUSTOM_COMPONENT_MANAGER = new CustomComponentManager();
@@ -419,7 +413,6 @@ export interface CustomComponentDefinitionState<ComponentInstance>
 
 export class CustomManagerDefinition<ComponentInstance> implements ComponentDefinition {
   public state: CustomComponentDefinitionState<ComponentInstance>;
-  public symbolTable: ProgramSymbolTable;
   public manager: CustomComponentManager<
     ComponentInstance
   > = CUSTOM_COMPONENT_MANAGER as CustomComponentManager<ComponentInstance>;
@@ -430,15 +423,10 @@ export class CustomManagerDefinition<ComponentInstance> implements ComponentDefi
     public delegate: ManagerDelegate<ComponentInstance>,
     public template: OwnedTemplate
   ) {
-    const layout = template.asLayout();
-    const symbolTable = layout.symbolTable;
-    this.symbolTable = symbolTable;
-
     this.state = {
       name,
       ComponentClass,
       template,
-      symbolTable,
       delegate,
     };
   }

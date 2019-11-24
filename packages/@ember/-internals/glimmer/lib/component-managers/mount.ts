@@ -4,7 +4,6 @@ import {
   ComponentCapabilities,
   ComponentDefinition,
   Destroyable,
-  Invocation,
   Option,
   VMArguments,
   WithJitDynamicLayout,
@@ -61,19 +60,15 @@ export const MODEL_ARG_NAME = EMBER_ROUTING_MODEL_ARG || !DEBUG ? 'model' : ' un
 
 class MountManager extends AbstractManager<EngineState, EngineDefinitionState>
   implements WithJitDynamicLayout<EngineState, RuntimeResolver> {
-  getDynamicLayout(state: EngineState, _: RuntimeResolver): Invocation {
+  getJitDynamicLayout(state: EngineState, _: RuntimeResolver) {
     let templateFactory = state.engine.lookup('template:application') as TemplateFactory;
     let template = templateFactory(state.engine);
-    let layout = template.asLayout();
 
     if (ENV._DEBUG_RENDER_TREE) {
       state.environment.debugRenderTree.setTemplate(state.controller, template);
     }
 
-    return {
-      handle: layout.compile(),
-      symbolTable: layout.symbolTable,
-    };
+    return template;
   }
 
   getCapabilities(): ComponentCapabilities {

@@ -9,6 +9,7 @@ import {
   Option,
   VMArguments,
 } from '@glimmer/interfaces';
+import { unwrapTemplate } from '@glimmer/opcode-compiler';
 import { EMPTY_ARGS } from '@glimmer/runtime';
 import { DIRTY_TAG } from '../component';
 import Environment from '../environment';
@@ -28,13 +29,9 @@ class RootComponentManager extends CurlyComponentManager {
     this.component = component;
   }
 
-  getLayout(_state: DefinitionState) {
+  getJitStaticLayout(_state: DefinitionState) {
     const template = this.templateFor(this.component);
-    const layout = template.asWrappedLayout();
-    return {
-      handle: layout.compile(),
-      symbolTable: layout.symbolTable,
-    };
+    return unwrapTemplate(template).asWrappedLayout();
   }
 
   create(
@@ -82,7 +79,7 @@ class RootComponentManager extends CurlyComponentManager {
         name: state.name,
         args: EMPTY_ARGS,
         instance: component,
-        template: state.template,
+        template: state.template!,
       });
     }
 
@@ -118,7 +115,6 @@ export class RootComponentDefinition implements ComponentDefinition {
       name: factory!.fullName.slice(10),
       capabilities: ROOT_CAPABILITIES,
       ComponentClass: factory as Factory<any, any>,
-      handle: null,
     };
   }
 

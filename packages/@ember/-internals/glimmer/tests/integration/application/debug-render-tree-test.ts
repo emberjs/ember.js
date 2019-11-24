@@ -51,6 +51,8 @@ if (ENV._DEBUG_RENDER_TREE) {
   moduleFor(
     'Application test: debug render tree',
     class extends ApplicationTestCase {
+      _TEMPLATE_ONLY_GLIMMER_COMPONENTS: boolean;
+
       constructor() {
         super(...arguments);
         this._TEMPLATE_ONLY_GLIMMER_COMPONENTS = ENV._TEMPLATE_ONLY_GLIMMER_COMPONENTS;

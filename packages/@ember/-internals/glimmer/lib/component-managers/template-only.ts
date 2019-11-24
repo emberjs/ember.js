@@ -3,11 +3,11 @@ import {
   Bounds,
   ComponentCapabilities,
   ComponentDefinition,
-  Invocation,
   Option,
   VMArguments,
   WithJitStaticLayout,
 } from '@glimmer/interfaces';
+import { unwrapTemplate } from '@glimmer/opcode-compiler';
 import { NULL_REFERENCE } from '@glimmer/runtime';
 import { CONSTANT_TAG, createTag } from '@glimmer/validator';
 import Environment from '../environment';
@@ -41,12 +41,8 @@ export default class TemplateOnlyComponentManager
       TemplateOnlyComponentDefinitionState,
       RuntimeResolver
     > {
-  getLayout({ template }: TemplateOnlyComponentDefinitionState): Invocation {
-    const layout = template.asLayout();
-    return {
-      handle: layout.compile(),
-      symbolTable: layout.symbolTable,
-    };
+  getJitStaticLayout({ template }: TemplateOnlyComponentDefinitionState) {
+    return unwrapTemplate(template).asLayout();
   }
 
   getCapabilities(): ComponentCapabilities {

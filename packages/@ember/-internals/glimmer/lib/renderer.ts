@@ -17,7 +17,7 @@ import {
   SyntaxCompilationContext,
 } from '@glimmer/interfaces';
 import { JitContext, unwrapHandle, unwrapTemplate } from '@glimmer/opcode-compiler';
-import { artifacts } from '@glimmer/program';
+import { artifacts, hydrateProgram } from '@glimmer/program';
 import { VersionedPathReference } from '@glimmer/reference';
 import {
   clientBuilder,
@@ -297,7 +297,7 @@ export abstract class Renderer {
 
     this._context = JitContext(compileTimeResolver);
 
-    let program = artifacts(this._context);
+    let program = hydrateProgram(artifacts(this._context));
 
     let runtimeEvironment = new RuntimeEnvironment(owner, env.isInteractive);
 

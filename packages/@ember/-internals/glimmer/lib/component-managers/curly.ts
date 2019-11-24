@@ -4,6 +4,7 @@ import { getOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
 import {
   addChildView,
+  OwnedTemplateMeta,
   setElementView,
   setViewElement,
 } from '@ember/-internals/views';
@@ -18,15 +19,15 @@ import {
   ComponentDefinition,
   Destroyable,
   ElementOperations,
-  Invocation,
   Option,
   PreparedArguments,
-  ProgramSymbolTable,
+  TemplateOk,
   VMArguments,
   WithDynamicTagName,
   WithJitDynamicLayout,
   WithJitStaticLayout,
 } from '@glimmer/interfaces';
+import { unwrapTemplate } from '@glimmer/opcode-compiler';
 import { VersionedPathReference } from '@glimmer/reference';
 import { PrimitiveReference } from '@glimmer/runtime';
 import { EMPTY_ARRAY } from '@glimmer/util';
@@ -112,14 +113,6 @@ export default class CurlyComponentManager
     WithJitStaticLayout<ComponentStateBucket, DefinitionState, RuntimeResolver>,
     WithJitDynamicLayout<ComponentStateBucket, RuntimeResolver>,
     WithDynamicTagName<ComponentStateBucket> {
-  getLayout(state: DefinitionState, _resolver: RuntimeResolver): Invocation {
-    return {
-      // TODO fix
-      handle: (state.handle as any) as number,
-      symbolTable: state.symbolTable!,
-    };
-  }
-
   protected templateFor(component: Component): OwnedTemplate {
     let { layout, layoutName } = component;
     let owner = getOwner(component);
@@ -144,19 +137,19 @@ export default class CurlyComponentManager
     return factory(owner);
   }
 
-  getDynamicLayout(bucket: ComponentStateBucket): Invocation {
+  getJitStaticLayout(state: DefinitionState, _resolver: RuntimeResolver) {
+    return unwrapTemplate(state.template!).asLayout();
+  }
+
+  getJitDynamicLayout(bucket: ComponentStateBucket) {
     let component = bucket.component;
     let template = this.templateFor(component);
-    let layout = template.asWrappedLayout();
 
     if (ENV._DEBUG_RENDER_TREE) {
       bucket.environment.debugRenderTree.setTemplate(bucket, template);
     }
 
-    return {
-      handle: layout.compile(),
-      symbolTable: layout.symbolTable,
-    };
+    return template;
   }
 
   getTagName(state: ComponentStateBucket): Option<string> {
@@ -601,30 +594,26 @@ export const CURLY_CAPABILITIES: ComponentCapabilities = {
 
 const CURLY_COMPONENT_MANAGER = new CurlyComponentManager();
 export class CurlyComponentDefinition implements ComponentDefinition {
-  public args: CurriedArgs | undefined;
   public state: DefinitionState;
-  public symbolTable: ProgramSymbolTable | undefined;
+  // public symbolTable: ProgramSymbolTable | undefined;
   public manager: CurlyComponentManager = CURLY_COMPONENT_MANAGER;
-  // tslint:disable-next-line:no-shadowed-variable
+
   constructor(
     public name: string,
     public ComponentClass: any,
-    public handle: Option<number>,
-    public template: Option<OwnedTemplate>,
-    args?: CurriedArgs
+    public template?: OwnedTemplate,
+    public args?: CurriedArgs
   ) {
-    const layout = template && template.asLayout();
-    const symbolTable = layout ? layout.symbolTable : undefined;
-    this.symbolTable = symbolTable;
-    this.template = template;
-    this.args = args;
+    // const layout = template && template.asLayout();
+    // const symbolTable = layout ? layout.symbolTable : undefined;
+    // this.symbolTable = symbolTable;
+    // this.template = template;
     this.state = {
       name,
       ComponentClass,
-      handle,
       template,
       capabilities: CURLY_CAPABILITIES,
-      symbolTable,
+      // symbolTable,
     };
   }
 }
