@@ -4,13 +4,11 @@
 
 import { Meta, meta as metaFor, peekMeta, UNDEFINED } from '@ember/-internals/meta';
 import { setWithMandatorySetter } from '@ember/-internals/utils';
-import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { Decorator } from './decorator';
 import { descriptorForProperty, isClassicDecorator } from './descriptor_map';
 import { revalidateObservers } from './observer';
-import { overrideChains } from './property_events';
 
 export type MandatorySetterFunction = ((this: object, value: any) => void) & {
   isMandatorySetter: true;
@@ -189,7 +187,7 @@ export function defineProperty(
         value,
       });
     } else {
-      if (EMBER_METAL_TRACKED_PROPERTIES && DEBUG) {
+      if (DEBUG) {
         setWithMandatorySetter!(obj, keyName, data);
       } else {
         obj[keyName] = data;
@@ -204,14 +202,8 @@ export function defineProperty(
 
   // if key is being watched, override chains that
   // were initialized with the prototype
-  if (EMBER_METAL_TRACKED_PROPERTIES) {
-    if (!meta.isPrototypeMeta(obj)) {
-      revalidateObservers(obj);
-    }
-  } else {
-    if (watching) {
-      overrideChains(obj, keyName, meta);
-    }
+  if (!meta.isPrototypeMeta(obj)) {
+    revalidateObservers(obj);
   }
 
   // The `value` passed to the `didDefineProperty` hook is

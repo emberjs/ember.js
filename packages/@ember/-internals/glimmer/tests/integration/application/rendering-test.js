@@ -220,7 +220,7 @@ moduleFor(
       `);
     }
 
-    async ['@feature(EMBER_ROUTING_MODEL_ARG, EMBER_METAL_TRACKED_PROPERTIES) interior mutations on the model with tracked properties'](
+    async ['@feature(EMBER_ROUTING_MODEL_ARG) interior mutations on the model with tracked properties'](
       assert
     ) {
       class Model {
@@ -343,7 +343,7 @@ moduleFor(
       `);
     }
 
-    async ['@feature(EMBER_ROUTING_MODEL_ARG, EMBER_METAL_TRACKED_PROPERTIES) exterior mutations on the model with tracked properties'](
+    async ['@feature(EMBER_ROUTING_MODEL_ARG) exterior mutations on the model with tracked properties'](
       assert
     ) {
       this.router.map(function() {

@@ -12,7 +12,6 @@ import {
   replace,
   getChainTagsForKey,
 } from '@ember/-internals/metal';
-import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import EmberObject from './object';
 import { isArray, MutableArray } from '../mixins/array';
 import { assert } from '@ember/debug';
@@ -105,11 +104,9 @@ export default class ArrayProxy extends EmberObject {
 
     this._arrangedContent = null;
 
-    if (EMBER_METAL_TRACKED_PROPERTIES) {
-      this._arrangedContentIsUpdating = false;
-      this._arrangedContentTag = combine(getChainTagsForKey(this, 'arrangedContent'));
-      this._arrangedContentRevision = value(this._arrangedContentTag);
-    }
+    this._arrangedContentIsUpdating = false;
+    this._arrangedContentTag = combine(getChainTagsForKey(this, 'arrangedContent'));
+    this._arrangedContentRevision = value(this._arrangedContentTag);
 
     this._addArrangedContentArrayObserver();
   }
@@ -174,9 +171,7 @@ export default class ArrayProxy extends EmberObject {
 
   // Overriding objectAt is not supported.
   objectAt(idx) {
-    if (EMBER_METAL_TRACKED_PROPERTIES) {
-      this._revalidate();
-    }
+    this._revalidate();
 
     if (this._objects === null) {
       this._objects = [];
@@ -201,9 +196,7 @@ export default class ArrayProxy extends EmberObject {
 
   // Overriding length is not supported.
   get length() {
-    if (EMBER_METAL_TRACKED_PROPERTIES) {
-      this._revalidate();
-    }
+    this._revalidate();
 
     if (this._lengthDirty) {
       let arrangedContent = get(this, 'arrangedContent');
@@ -234,16 +227,8 @@ export default class ArrayProxy extends EmberObject {
     }
   }
 
-  [PROPERTY_DID_CHANGE](key) {
-    if (EMBER_METAL_TRACKED_PROPERTIES) {
-      this._revalidate();
-    } else {
-      if (key === 'arrangedContent') {
-        this._updateArrangedContentArray();
-      } else if (key === 'content') {
-        this._invalidate();
-      }
-    }
+  [PROPERTY_DID_CHANGE]() {
+    this._revalidate();
   }
 
   _updateArrangedContentArray() {
@@ -305,12 +290,8 @@ export default class ArrayProxy extends EmberObject {
     this._objectsDirtyIndex = 0;
     this._lengthDirty = true;
   }
-}
 
-let _revalidate;
-
-if (EMBER_METAL_TRACKED_PROPERTIES) {
-  _revalidate = function() {
+  _revalidate() {
     if (
       !this._arrangedContentIsUpdating &&
       !validate(this._arrangedContentTag, this._arrangedContentRevision)
@@ -322,7 +303,7 @@ if (EMBER_METAL_TRACKED_PROPERTIES) {
       this._arrangedContentTag = combine(getChainTagsForKey(this, 'arrangedContent'));
       this._arrangedContentRevision = value(this._arrangedContentTag);
     }
-  };
+  }
 }
 
 ArrayProxy.reopen(MutableArray, {
@@ -335,6 +316,4 @@ ArrayProxy.reopen(MutableArray, {
     @public
   */
   arrangedContent: alias('content'),
-
-  _revalidate,
 });

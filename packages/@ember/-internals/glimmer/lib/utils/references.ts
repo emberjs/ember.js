@@ -6,10 +6,8 @@ import {
   tagFor,
   tagForProperty,
   track,
-  watchKey,
 } from '@ember/-internals/metal';
 import { getDebugName, isProxy, symbol } from '@ember/-internals/utils';
-import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { assert, debugFreeze } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { Dict, Opaque } from '@glimmer/interfaces';
@@ -141,18 +139,9 @@ export class RootPropertyReference extends PropertyReference
       this.debugStackLog = env ? env.debugRenderTree.logCurrentRenderStack() : '';
     }
 
-    if (EMBER_METAL_TRACKED_PROPERTIES) {
-      this.propertyTag = createUpdatableTag();
-    } else {
-      let tag = (this.propertyTag = createUpdatableTag());
-      update(tag, tagForProperty(parentValue, propertyKey));
-    }
+    this.propertyTag = createUpdatableTag();
 
     this.tag = this.propertyTag;
-
-    if (DEBUG && !EMBER_METAL_TRACKED_PROPERTIES) {
-      watchKey(parentValue, propertyKey);
-    }
   }
 
   compute(): Opaque {
@@ -160,17 +149,13 @@ export class RootPropertyReference extends PropertyReference
 
     let ret;
 
-    if (EMBER_METAL_TRACKED_PROPERTIES) {
-      let tag = track(
-        () => (ret = get(parentValue, propertyKey)),
-        DEBUG && debugRenderMessage!(this['debug']())
-      );
+    let tag = track(
+      () => (ret = get(parentValue, propertyKey)),
+      DEBUG && debugRenderMessage!(this['debug']())
+    );
 
-      consume(tag);
-      update(this.propertyTag, tag);
-    } else {
-      ret = get(parentValue, propertyKey);
-    }
+    consume(tag);
+    update(this.propertyTag, tag);
 
     return ret;
   }
@@ -221,25 +206,16 @@ export class NestedPropertyReference extends PropertyReference {
     if ((parentValueType === 'object' && _parentValue !== null) || parentValueType === 'function') {
       let parentValue = _parentValue as object;
 
-      if (DEBUG && !EMBER_METAL_TRACKED_PROPERTIES) {
-        watchKey(parentValue, propertyKey);
-      }
-
       let ret;
 
-      if (EMBER_METAL_TRACKED_PROPERTIES) {
-        let tag = track(
-          () => (ret = get(parentValue, propertyKey)),
-          DEBUG && debugRenderMessage!(this['debug']())
-        );
+      let tag = track(
+        () => (ret = get(parentValue, propertyKey)),
+        DEBUG && debugRenderMessage!(this['debug']())
+      );
 
-        consume(tag);
+      consume(tag);
 
-        update(propertyTag, tag);
-      } else {
-        ret = get(parentValue, propertyKey);
-        update(propertyTag, tagForProperty(parentValue, propertyKey));
-      }
+      update(propertyTag, tag);
 
       return ret;
     } else {

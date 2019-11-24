@@ -14,12 +14,10 @@ import {
   HAS_NATIVE_PROXY,
   isInternalSymbol,
 } from '@ember/-internals/utils';
-import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { schedule } from '@ember/runloop';
 import { meta, peekMeta, deleteMeta } from '@ember/-internals/meta';
 import {
   PROXY_CONTENT,
-  finishChains,
   sendEvent,
   Mixin,
   activateObserver,
@@ -135,17 +133,12 @@ function initialize(obj, properties) {
 
   m.unsetInitializing();
 
-  if (EMBER_METAL_TRACKED_PROPERTIES) {
-    let observerEvents = m.observerEvents();
+  let observerEvents = m.observerEvents();
 
-    if (observerEvents !== undefined) {
-      for (let i = 0; i < observerEvents.length; i++) {
-        activateObserver(obj, observerEvents[i].event, observerEvents[i].sync);
-      }
+  if (observerEvents !== undefined) {
+    for (let i = 0; i < observerEvents.length; i++) {
+      activateObserver(obj, observerEvents[i].event, observerEvents[i].sync);
     }
-  } else {
-    // re-enable chains
-    finishChains(m);
   }
 
   sendEvent(obj, 'init', undefined, undefined, undefined, m);

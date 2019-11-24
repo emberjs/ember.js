@@ -3,7 +3,6 @@ import { Object as EmberObject } from '@ember/-internals/runtime';
 import { get, set, track, getWithDefault, Mixin, observer, computed } from '../..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
-import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 
 function aget(x, y) {
   return x[y];
@@ -291,14 +290,7 @@ moduleFor(
       }
     }
 
-    ['@test gives helpful deprecation when a property tracked with `get` is mutated after access within unknownProperty within an autotracking transaction'](
-      assert
-    ) {
-      if (!EMBER_METAL_TRACKED_PROPERTIES) {
-        assert.expect(0);
-        return;
-      }
-
+    ['@test gives helpful deprecation when a property tracked with `get` is mutated after access within unknownProperty within an autotracking transaction']() {
       class EmberObject {
         foo = null;
 

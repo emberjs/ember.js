@@ -1,5 +1,4 @@
 import { ENV } from '@ember/-internals/environment';
-import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import {
   addObserver,
   removeObserver,
@@ -12,7 +11,6 @@ import {
   observer,
   beginPropertyChanges,
   endPropertyChanges,
-  changeProperties,
   get,
   set,
 } from '..';
@@ -325,30 +323,6 @@ moduleFor(
       assert.equal(count, 2, 'observer not fired on unspecified property');
     }
 
-    ['@test nested observers should fire in order'](assert) {
-      if (EMBER_METAL_TRACKED_PROPERTIES) {
-        // We can no longer guarantee order
-        return assert.expect(0);
-      }
-
-      let obj = { foo: 'foo', bar: 'bar' };
-      let fooCount = 0;
-      let barCount = 0;
-
-      addObserver(obj, 'foo', function() {
-        fooCount++;
-      });
-      addObserver(obj, 'bar', function() {
-        set(obj, 'foo', 'BAZ');
-        assert.equal(fooCount, 1, 'fooCount should have fired already');
-        barCount++;
-      });
-
-      set(obj, 'bar', 'BIFF');
-      assert.equal(barCount, 1, 'barCount should have fired');
-      assert.equal(fooCount, 1, 'foo should have fired');
-    }
-
     async ['@test removing an chain observer on change should not fail'](assert) {
       let foo = { bar: 'bar' };
       let obj1 = { foo: foo };
@@ -408,68 +382,6 @@ moduleFor(
       await runLoopSettled();
 
       assert.equal(fooCount, 1, 'foo should have fired once');
-    }
-
-    async ['@test deferring property change notifications safely despite exceptions'](assert) {
-      if (EMBER_METAL_TRACKED_PROPERTIES) {
-        // changeProperties isn't a thing anymore
-        return assert.expect(0);
-      }
-
-      let obj = { foo: 'foo' };
-      let fooCount = 0;
-      let exc = new Error('Something unexpected happened!');
-
-      assert.expect(2);
-      addObserver(obj, 'foo', function() {
-        fooCount++;
-      });
-
-      try {
-        changeProperties(function() {
-          set(obj, 'foo', 'BIFF');
-          set(obj, 'foo', 'BAZ');
-          throw exc;
-        });
-      } catch (err) {
-        if (err !== exc) {
-          throw err;
-        }
-      }
-
-      assert.equal(fooCount, 1, 'foo should have fired once');
-
-      changeProperties(function() {
-        set(obj, 'foo', 'BIFF2');
-        set(obj, 'foo', 'BAZ2');
-      });
-
-      assert.equal(fooCount, 2, 'foo should have fired again once');
-    }
-
-    ['@test addObserver should propagate through prototype'](assert) {
-      if (EMBER_METAL_TRACKED_PROPERTIES) {
-        // We no longer inherit unless it's an EmberObject
-        return assert.expect(0);
-      }
-
-      let obj = { foo: 'foo', count: 0 };
-      let obj2;
-
-      addObserver(obj, 'foo', function() {
-        this.count++;
-      });
-      obj2 = Object.create(obj);
-
-      set(obj2, 'foo', 'bar');
-
-      assert.equal(obj2.count, 1, 'should have invoked observer on inherited');
-      assert.equal(obj.count, 0, 'should not have invoked observer on parent');
-
-      obj2.count = 0;
-      set(obj, 'foo', 'baz');
-      assert.equal(obj.count, 0, 'should not have invoked observer on parent');
-      assert.equal(obj2.count, 0, 'should not have invoked observer on inherited');
     }
 
     async ['@test addObserver should respect targets with methods'](assert) {
@@ -885,117 +797,6 @@ moduleFor(
     }
   }
 );
-
-if (!EMBER_METAL_TRACKED_PROPERTIES) {
-  moduleFor(
-    'changeProperties',
-    class extends AbstractTestCase {
-      ['@test observers added/removed during changeProperties should do the right thing.'](assert) {
-        let obj = {
-          foo: 0,
-        };
-        function Observer() {
-          this.didChangeCount = 0;
-        }
-        Observer.prototype = {
-          add() {
-            addObserver(obj, 'foo', this, 'didChange');
-          },
-          remove() {
-            removeObserver(obj, 'foo', this, 'didChange');
-          },
-          didChange() {
-            this.didChangeCount++;
-          },
-        };
-        let addedBeforeFirstChangeObserver = new Observer();
-        let addedAfterFirstChangeObserver = new Observer();
-        let addedAfterLastChangeObserver = new Observer();
-        let removedBeforeFirstChangeObserver = new Observer();
-        let removedBeforeLastChangeObserver = new Observer();
-        let removedAfterLastChangeObserver = new Observer();
-        removedBeforeFirstChangeObserver.add();
-        removedBeforeLastChangeObserver.add();
-        removedAfterLastChangeObserver.add();
-        changeProperties(function() {
-          removedBeforeFirstChangeObserver.remove();
-          addedBeforeFirstChangeObserver.add();
-
-          set(obj, 'foo', 1);
-
-          assert.equal(
-            addedBeforeFirstChangeObserver.didChangeCount,
-            0,
-            'addObserver called before the first change is deferred'
-          );
-
-          addedAfterFirstChangeObserver.add();
-          removedBeforeLastChangeObserver.remove();
-
-          set(obj, 'foo', 2);
-
-          assert.equal(
-            addedAfterFirstChangeObserver.didChangeCount,
-            0,
-            'addObserver called after the first change is deferred'
-          );
-
-          addedAfterLastChangeObserver.add();
-          removedAfterLastChangeObserver.remove();
-        });
-
-        assert.equal(
-          removedBeforeFirstChangeObserver.didChangeCount,
-          0,
-          'removeObserver called before the first change sees none'
-        );
-        assert.equal(
-          addedBeforeFirstChangeObserver.didChangeCount,
-          1,
-          'addObserver called before the first change sees only 1'
-        );
-        assert.equal(
-          addedAfterFirstChangeObserver.didChangeCount,
-          1,
-          'addObserver called after the first change sees 1'
-        );
-        assert.equal(
-          addedAfterLastChangeObserver.didChangeCount,
-          1,
-          'addObserver called after the last change sees 1'
-        );
-        assert.equal(
-          removedBeforeLastChangeObserver.didChangeCount,
-          0,
-          'removeObserver called before the last change sees none'
-        );
-        assert.equal(
-          removedAfterLastChangeObserver.didChangeCount,
-          0,
-          'removeObserver called after the last change sees none'
-        );
-      }
-
-      ['@test calling changeProperties while executing deferred observers works correctly'](
-        assert
-      ) {
-        let obj = { foo: 0 };
-        let fooDidChange = 0;
-
-        addObserver(obj, 'foo', () => {
-          fooDidChange++;
-          changeProperties(() => {});
-        });
-
-        changeProperties(() => {
-          set(obj, 'foo', 1);
-        });
-
-        assert.equal(fooDidChange, 1);
-      }
-    }
-  );
-}
 
 moduleFor(
   'Keys behavior with observers',

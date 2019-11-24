@@ -6,8 +6,6 @@ import { meta } from '@ember/-internals/meta';
 import {
   get,
   set,
-  addObserver,
-  removeObserver,
   notifyPropertyChange,
   defineProperty,
   Mixin,
@@ -17,7 +15,6 @@ import {
   getChainTagsForKey,
 } from '@ember/-internals/metal';
 import { setProxy } from '@ember/-internals/utils';
-import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { combine, update } from '@glimmer/reference';
 
@@ -65,19 +62,9 @@ export default Mixin.create({
     return Boolean(get(this, 'content'));
   }),
 
-  willWatchProperty(key) {
-    if (!EMBER_METAL_TRACKED_PROPERTIES) {
-      let contentKey = `content.${key}`;
-      addObserver(this, contentKey, null, '_contentPropertyDidChange');
-    }
-  },
+  willWatchProperty() {},
 
-  didUnwatchProperty(key) {
-    if (!EMBER_METAL_TRACKED_PROPERTIES) {
-      let contentKey = `content.${key}`;
-      removeObserver(this, contentKey, null, '_contentPropertyDidChange');
-    }
-  },
+  didUnwatchProperty() {},
 
   _contentPropertyDidChange(content, contentKey) {
     let key = contentKey.slice(8); // remove "content."

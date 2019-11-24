@@ -1,6 +1,5 @@
-import { Meta, meta as metaFor } from '@ember/-internals/meta';
+import { Meta } from '@ember/-internals/meta';
 import { inspect } from '@ember/-internals/utils';
-import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import EmberError from '@ember/error';
 import { combine, UpdatableTag, update, validate, value } from '@glimmer/reference';
@@ -69,58 +68,39 @@ export class AliasedProperty extends ComputedDescriptor {
     super();
 
     this.altKey = altKey;
-    if (!EMBER_METAL_TRACKED_PROPERTIES) {
-      this._dependentKeys = [altKey];
-    }
   }
 
   setup(obj: object, keyName: string, propertyDesc: PropertyDescriptor, meta: Meta): void {
     assert(`Setting alias '${keyName}' on self`, this.altKey !== keyName);
     super.setup(obj, keyName, propertyDesc, meta);
-
-    if (!EMBER_METAL_TRACKED_PROPERTIES && meta.peekWatching(keyName) > 0) {
-      this.consume(obj, keyName, meta);
-    }
   }
 
   teardown(obj: object, keyName: string, meta: Meta): void {
-    if (!EMBER_METAL_TRACKED_PROPERTIES) {
-      this.unconsume(obj, keyName, meta);
-    }
     super.teardown(obj, keyName, meta);
   }
 
-  willWatch(obj: object, keyName: string, meta: Meta): void {
-    if (!EMBER_METAL_TRACKED_PROPERTIES) {
-      this.consume(obj, keyName, meta);
-    }
-  }
+  willWatch(): void {}
 
   get(obj: object, keyName: string): any {
     let ret: any;
 
-    if (EMBER_METAL_TRACKED_PROPERTIES) {
-      let propertyTag = tagForProperty(obj, keyName) as UpdatableTag;
+    let propertyTag = tagForProperty(obj, keyName) as UpdatableTag;
 
-      // We don't use the tag since CPs are not automatic, we just want to avoid
-      // anything tracking while we get the altKey
-      untrack(() => {
-        ret = get(obj, this.altKey);
-      });
-
-      let lastRevision = getLastRevisionFor(obj, keyName);
-
-      if (!validate(propertyTag, lastRevision)) {
-        update(propertyTag, combine(getChainTagsForKey(obj, this.altKey)));
-        setLastRevisionFor(obj, keyName, value(propertyTag));
-        finishLazyChains(obj, keyName, ret);
-      }
-
-      consume(propertyTag);
-    } else {
+    // We don't use the tag since CPs are not automatic, we just want to avoid
+    // anything tracking while we get the altKey
+    untrack(() => {
       ret = get(obj, this.altKey);
-      this.consume(obj, keyName, metaFor(obj));
+    });
+
+    let lastRevision = getLastRevisionFor(obj, keyName);
+
+    if (!validate(propertyTag, lastRevision)) {
+      update(propertyTag, combine(getChainTagsForKey(obj, this.altKey)));
+      setLastRevisionFor(obj, keyName, value(propertyTag));
+      finishLazyChains(obj, keyName, ret);
     }
+
+    consume(propertyTag);
 
     return ret;
   }

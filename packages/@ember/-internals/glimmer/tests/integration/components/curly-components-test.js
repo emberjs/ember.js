@@ -13,7 +13,6 @@ import {
 import { run } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import { alias, set, get, observer, on, computed } from '@ember/-internals/metal';
-import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import Service, { inject as injectService } from '@ember/service';
 import { Object as EmberObject, A as emberA } from '@ember/-internals/runtime';
 import { jQueryDisabled } from '@ember/-internals/views';
@@ -2704,9 +2703,7 @@ moduleFor(
       this.assertText('initial value - initial value');
 
       if (DEBUG) {
-        let message = EMBER_METAL_TRACKED_PROPERTIES
-          ? /You attempted to update .*, but it is being tracked by a tracking context/
-          : /You must use set\(\) to set the `bar` property \(of .+\) to `foo-bar`\./;
+        let message = /You attempted to update .*, but it is being tracked by a tracking context/;
 
         expectAssertion(() => {
           component.bar = 'foo-bar';

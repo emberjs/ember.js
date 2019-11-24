@@ -31,7 +31,6 @@ import {
   intersect,
   collect,
 } from '@ember/object/computed';
-import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 
 let obj;
@@ -1786,32 +1785,6 @@ moduleFor(
         ['Jaime', 'Tyrion', 'Bran', 'Robb'],
         'updating a specified property on an item resorts it'
       );
-    }
-
-    ['@test changing item properties not specified via @each does not trigger a resort'](assert) {
-      if (!EMBER_METAL_TRACKED_PROPERTIES) {
-        let items = obj.get('items');
-        let cersei = items[1];
-
-        assert.deepEqual(
-          obj.get('sortedItems').mapBy('fname'),
-          ['Cersei', 'Jaime', 'Bran', 'Robb'],
-          'precond - array is initially sorted'
-        );
-
-        set(cersei, 'lname', 'Stark'); // plot twist! (possibly not canon)
-
-        // The array has become unsorted.  If your sort function is sensitive to
-        // properties, they *must* be specified as dependent item property keys or
-        // we'll be doing binary searches on unsorted arrays.
-        assert.deepEqual(
-          obj.get('sortedItems').mapBy('fname'),
-          ['Cersei', 'Jaime', 'Bran', 'Robb'],
-          'updating an unspecified property on an item does not resort it'
-        );
-      } else {
-        assert.expect(0);
-      }
     }
 
     ['@test sort updates if additional dependent keys are present'](assert) {

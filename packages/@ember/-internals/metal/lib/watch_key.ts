@@ -1,6 +1,5 @@
 import { Meta, meta as metaFor, peekMeta } from '@ember/-internals/meta';
 import { lookupDescriptor } from '@ember/-internals/utils';
-import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { DEBUG } from '@glimmer/env';
 import { descriptorForProperty, isClassicDecorator } from './descriptor_map';
 import {
@@ -12,10 +11,6 @@ import {
 } from './properties';
 
 let handleMandatorySetter: (meta: Meta, obj: object, keyName: string) => void;
-
-interface MaybeHasWillWatchProperty {
-  willWatchProperty?: (keyName: string) => void;
-}
 
 interface MaybeHasDidUnwatchProperty {
   didUnwatchProperty?: (keyName: string) => void;
@@ -32,12 +27,6 @@ export function watchKey(obj: object, keyName: string, _meta?: Meta): void {
 
     if (possibleDesc !== undefined && possibleDesc.willWatch !== undefined) {
       possibleDesc.willWatch(obj, keyName, meta);
-    }
-
-    if (!EMBER_METAL_TRACKED_PROPERTIES) {
-      if (typeof (obj as MaybeHasWillWatchProperty).willWatchProperty === 'function') {
-        (obj as MaybeHasWillWatchProperty).willWatchProperty!(keyName);
-      }
     }
 
     if (DEBUG) {

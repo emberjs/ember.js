@@ -1,5 +1,4 @@
 import { Meta, meta as metaFor } from '@ember/-internals/meta';
-import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { _WeakSet as WeakSet } from '@ember/polyfills';
 import { setClassicDecorator } from './descriptor_map';
@@ -178,11 +177,8 @@ export function makeComputedDecorator(
       enumerable: desc.enumerable,
       configurable: desc.configurable,
       get: DESCRIPTOR_GETTER_FUNCTION(key, desc),
+      set: DESCRIPTOR_SETTER_FUNCTION(key, desc),
     };
-
-    if (EMBER_METAL_TRACKED_PROPERTIES) {
-      computedDesc.set = DESCRIPTOR_SETTER_FUNCTION(key, desc);
-    }
 
     return computedDesc;
   };

@@ -7,7 +7,6 @@ import {
   observer,
   defineProperty,
 } from '@ember/-internals/metal';
-import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { oneWay as reads } from '@ember/object/computed';
 import { A as EmberArray, isArray } from '../../..';
 import EmberObject from '../../../lib/system/object';
@@ -380,10 +379,6 @@ moduleFor(
     }
 
     ['@test native getters and setters work'](assert) {
-      if (!EMBER_METAL_TRACKED_PROPERTIES) {
-        return assert.expect(0);
-      }
-
       let MyClass = EmberObject.extend({
         bar: 123,
 
