@@ -24,6 +24,7 @@ module.exports = function processModulesOnly(tree, strict = false) {
       // in both browser and node-land
       injectNodeGlobals,
       ['@babel/transform-template-literals', { loose: true }],
+      ['@babel/transform-block-scoping', { throwIfClosureRequired: true }],
       ['module-resolver', { resolvePath: resolveRelativeModulePath }],
       ['@babel/transform-modules-amd', transformOptions],
       enifed,
