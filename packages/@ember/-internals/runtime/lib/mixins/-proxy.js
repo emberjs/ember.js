@@ -6,7 +6,6 @@ import { meta } from '@ember/-internals/meta';
 import {
   get,
   set,
-  notifyPropertyChange,
   defineProperty,
   Mixin,
   tagFor,
@@ -61,18 +60,6 @@ export default Mixin.create({
   isTruthy: computed('content', function() {
     return Boolean(get(this, 'content'));
   }),
-
-  willWatchProperty() {},
-
-  didUnwatchProperty() {},
-
-  _contentPropertyDidChange(content, contentKey) {
-    let key = contentKey.slice(8); // remove "content."
-    if (key in this) {
-      return;
-    } // if shadowed in proxy
-    notifyPropertyChange(this, key);
-  },
 
   [UNKNOWN_PROPERTY_TAG](key) {
     return combine(getChainTagsForKey(this, `content.${key}`));

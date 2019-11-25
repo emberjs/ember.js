@@ -1,4 +1,4 @@
-import { lookupDescriptor, symbol, toString } from '@ember/-internals/utils';
+import { symbol, toString } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { createUpdatableTag, UpdatableTag } from '@glimmer/reference';
@@ -95,11 +95,7 @@ let currentListenerVersion = 1;
 
 export class Meta {
   _descriptors: Map<string, any> | undefined;
-  _watching: any | undefined;
   _mixins: any | undefined;
-  _deps: any | undefined;
-  _chainWatchers: any | undefined;
-  _chains: any | undefined;
   _tag: UpdatableTag | undefined;
   _tags: ObjMap<UpdatableTag> | undefined;
   _flags: MetaFlags;
@@ -123,11 +119,7 @@ export class Meta {
     }
     this._parent = undefined;
     this._descriptors = undefined;
-    this._watching = undefined;
     this._mixins = undefined;
-    this._deps = undefined;
-    this._chainWatchers = undefined;
-    this._chains = undefined;
     this._tag = undefined;
     this._tags = undefined;
 
@@ -172,12 +164,6 @@ export class Meta {
       return;
     }
     this.setMetaDestroyed();
-
-    // remove chainWatchers to remove circular references that would prevent GC
-    let chains = this.readableChains();
-    if (chains !== undefined) {
-      chains.destroy();
-    }
   }
 
   isSourceDestroying() {
@@ -216,48 +202,6 @@ export class Meta {
     return this[key] || (this[key] = new Set());
   }
 
-  _findInherited1(key: string): any | undefined {
-    let pointer: Meta | null = this;
-    while (pointer !== null) {
-      let map = pointer[key];
-      if (map !== undefined) {
-        return map;
-      }
-      pointer = pointer.parent;
-    }
-  }
-
-  _findInherited2(key: string, subkey: string): any | undefined {
-    let pointer: Meta | null = this;
-    while (pointer !== null) {
-      let map = pointer[key];
-      if (map !== undefined) {
-        let value = map[subkey];
-        if (value !== undefined) {
-          return value;
-        }
-      }
-      pointer = pointer.parent;
-    }
-  }
-
-  _findInherited3(key: string, subkey: string, subsubkey: string): any | undefined {
-    let pointer: Meta | null = this;
-    while (pointer !== null) {
-      let map = pointer[key];
-      if (map !== undefined) {
-        let submap = map[subkey];
-        if (submap !== undefined) {
-          let value = submap[subsubkey];
-          if (value !== undefined) {
-            return value;
-          }
-        }
-      }
-      pointer = pointer.parent;
-    }
-  }
-
   _findInheritedMap(key: string, subkey: string): any | undefined {
     let pointer: Meta | null = this;
     while (pointer !== null) {
@@ -282,59 +226,6 @@ export class Meta {
       pointer = pointer.parent;
     }
     return false;
-  }
-
-  // Implements a member that provides a lazily created map of maps,
-  // with inheritance at both levels.
-  writeDeps(subkey: string, itemkey: string, count: number) {
-    assert(
-      this.isMetaDestroyed()
-        ? `Cannot modify dependent keys for \`${itemkey}\` on \`${toString(
-            this.source
-          )}\` after it has been destroyed.`
-        : '',
-      !this.isMetaDestroyed()
-    );
-
-    let outerMap = this._getOrCreateOwnMap('_deps');
-    let innerMap = outerMap[subkey];
-    if (innerMap === undefined) {
-      innerMap = outerMap[subkey] = Object.create(null);
-    }
-    innerMap[itemkey] = count;
-  }
-
-  peekDeps(subkey: string, itemkey: string): number {
-    let val = this._findInherited3('_deps', subkey, itemkey);
-    return val === undefined ? 0 : val;
-  }
-
-  hasDeps(subkey: string): boolean {
-    let val = this._findInherited2('_deps', subkey);
-    return val !== undefined;
-  }
-
-  forEachInDeps(subkey: string, fn: Function) {
-    let pointer: Meta | null = this;
-    let seen: Set<any> | undefined;
-    while (pointer !== null) {
-      let map = pointer._deps;
-      if (map !== undefined) {
-        let innerMap = map[subkey];
-        if (innerMap !== undefined) {
-          seen = seen === undefined ? new Set() : seen;
-          for (let innerKey in innerMap) {
-            if (!seen.has(innerKey)) {
-              seen.add(innerKey);
-              if (innerMap[innerKey] > 0) {
-                fn(innerKey);
-              }
-            }
-          }
-        }
-      }
-      pointer = pointer.parent;
-    }
   }
 
   writableTags() {
@@ -388,68 +279,6 @@ export class Meta {
     }
 
     return undefined;
-  }
-
-  writableChainWatchers(create: (source: object) => any) {
-    assert(
-      this.isMetaDestroyed()
-        ? `Cannot create a new chain watcher for \`${toString(
-            this.source
-          )}\` after it has been destroyed.`
-        : '',
-      !this.isMetaDestroyed()
-    );
-    let ret = this._chainWatchers;
-    if (ret === undefined) {
-      ret = this._chainWatchers = create(this.source);
-    }
-    return ret;
-  }
-
-  readableChainWatchers() {
-    return this._chainWatchers;
-  }
-
-  writableChains(create: (source: object) => any) {
-    assert(
-      this.isMetaDestroyed()
-        ? `Cannot create a new chains for \`${toString(this.source)}\` after it has been destroyed.`
-        : '',
-      !this.isMetaDestroyed()
-    );
-    let { _chains: ret } = this;
-    if (ret === undefined) {
-      this._chains = ret = create(this.source);
-
-      let { parent } = this;
-      if (parent !== null) {
-        let parentChains = parent.writableChains(create);
-        parentChains.copyTo(ret);
-      }
-    }
-    return ret;
-  }
-
-  readableChains() {
-    return this._findInherited1('_chains');
-  }
-
-  writeWatching(subkey: string, value: any) {
-    assert(
-      this.isMetaDestroyed()
-        ? `Cannot update watchers for \`${subkey}\` on \`${toString(
-            this.source
-          )}\` after it has been destroyed.`
-        : '',
-      !this.isMetaDestroyed()
-    );
-    let map = this._getOrCreateOwnMap('_watching');
-    map[subkey] = value;
-  }
-
-  peekWatching(subkey: string): number {
-    let count = this._findInherited2('_watching', subkey);
-    return count === undefined ? 0 : count;
   }
 
   addMixin(mixin: any) {
@@ -785,55 +614,6 @@ export class Meta {
 
     return result;
   }
-}
-
-export interface Meta {
-  writeValues(subkey: string, value: any): void;
-  peekValues(key: string): any;
-  deleteFromValues(key: string): any;
-  readInheritedValue(key: string): any;
-  writeValue(obj: object, key: string, value: any): any;
-}
-
-if (DEBUG) {
-  Meta.prototype.writeValues = function(subkey: string, value: any) {
-    assert(
-      this.isMetaDestroyed()
-        ? `Cannot set the value of \`${subkey}\` on \`${toString(
-            this.source
-          )}\` after it has been destroyed.`
-        : '',
-      !this.isMetaDestroyed()
-    );
-
-    let map = this._getOrCreateOwnMap('_values');
-    map[subkey] = value === undefined ? UNDEFINED : value;
-  };
-
-  Meta.prototype.peekValues = function(key: string) {
-    let val = this._findInherited2('_values', key);
-    return val === UNDEFINED ? undefined : val;
-  };
-
-  Meta.prototype.deleteFromValues = function(key: string) {
-    delete this._getOrCreateOwnMap('_values')[key];
-  };
-
-  Meta.prototype.readInheritedValue = function(key: string) {
-    return this._findInherited2('_values', key);
-  };
-
-  Meta.prototype.writeValue = function(obj: object, key: string, value: any) {
-    let descriptor = lookupDescriptor(obj, key);
-    let isMandatorySetter =
-      descriptor !== null && descriptor.set && (descriptor.set as any).isMandatorySetter;
-
-    if (isMandatorySetter) {
-      this.writeValues(key, value);
-    } else {
-      obj[key] = value;
-    }
-  };
 }
 
 const getPrototypeOf = Object.getPrototypeOf;

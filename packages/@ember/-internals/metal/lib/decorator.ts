@@ -2,7 +2,6 @@ import { Meta, meta as metaFor } from '@ember/-internals/meta';
 import { assert } from '@ember/debug';
 import { _WeakSet as WeakSet } from '@ember/polyfills';
 import { setClassicDecorator } from './descriptor_map';
-import { unwatch, watch } from './watching';
 
 export type DecoratorPropertyDescriptor = PropertyDescriptor & { initializer?: any } | undefined;
 
@@ -35,54 +34,6 @@ export function isElementDescriptor(
       // TS compatibility
       maybeDesc === undefined)
   );
-}
-
-// ..........................................................
-// DEPENDENT KEYS
-//
-
-export function addDependentKeys(
-  desc: ComputedDescriptor,
-  obj: object,
-  keyName: string,
-  meta: Meta
-): void {
-  // the descriptor has a list of dependent keys, so
-  // add all of its dependent keys.
-  let depKeys = desc._dependentKeys;
-  if (depKeys === null || depKeys === undefined) {
-    return;
-  }
-
-  for (let idx = 0; idx < depKeys.length; idx++) {
-    let depKey = depKeys[idx];
-    // Increment the number of times depKey depends on keyName.
-    meta.writeDeps(depKey, keyName, meta.peekDeps(depKey, keyName) + 1);
-    // Watch the depKey
-    watch(obj, depKey, meta);
-  }
-}
-
-export function removeDependentKeys(
-  desc: ComputedDescriptor,
-  obj: object,
-  keyName: string,
-  meta: Meta
-): void {
-  // the descriptor has a list of dependent keys, so
-  // remove all of its dependent keys.
-  let depKeys = desc._dependentKeys;
-  if (depKeys === null || depKeys === undefined) {
-    return;
-  }
-
-  for (let idx = 0; idx < depKeys.length; idx++) {
-    let depKey = depKeys[idx];
-    // Decrement the number of times depKey depends on keyName.
-    meta.writeDeps(depKey, keyName, meta.peekDeps(depKey, keyName) - 1);
-    // Unwatch the depKey
-    unwatch(obj, depKey, meta);
-  }
 }
 
 export function nativeDescDecorator(propertyDesc: PropertyDescriptor) {
@@ -123,11 +74,6 @@ export abstract class ComputedDescriptor {
 
   abstract get(obj: object, keyName: string): any | null | undefined;
   abstract set(obj: object, keyName: string, value: any | null | undefined): any | null | undefined;
-
-  willWatch?(obj: object, keyName: string, meta: Meta): void;
-  didUnwatch?(obj: object, keyName: string, meta: Meta): void;
-
-  didChange?(obj: object, keyName: string): void;
 }
 
 function DESCRIPTOR_GETTER_FUNCTION(name: string, descriptor: ComputedDescriptor): () => any {

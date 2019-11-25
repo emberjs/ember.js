@@ -4,19 +4,12 @@ import { assert } from '@ember/debug';
 import EmberError from '@ember/error';
 import { combine, UpdatableTag, update, validate, value } from '@glimmer/reference';
 import { finishLazyChains, getChainTagsForKey } from './chain-tags';
+import { getLastRevisionFor, setLastRevisionFor } from './computed_cache';
 import {
-  getCachedValueFor,
-  getCacheFor,
-  getLastRevisionFor,
-  setLastRevisionFor,
-} from './computed_cache';
-import {
-  addDependentKeys,
   ComputedDescriptor,
   Decorator,
   isElementDescriptor,
   makeComputedDecorator,
-  removeDependentKeys,
 } from './decorator';
 import { descriptorForDecorator } from './descriptor_map';
 import { defineProperty } from './properties';
@@ -24,8 +17,6 @@ import { get } from './property_get';
 import { set } from './property_set';
 import { tagForProperty } from './tags';
 import { consume, untrack } from './tracked';
-
-const CONSUMED = Object.freeze({});
 
 export type AliasDecorator = Decorator & PropertyDecorator & AliasDecoratorImpl;
 
@@ -79,8 +70,6 @@ export class AliasedProperty extends ComputedDescriptor {
     super.teardown(obj, keyName, meta);
   }
 
-  willWatch(): void {}
-
   get(obj: object, keyName: string): any {
     let ret: any;
 
@@ -103,24 +92,6 @@ export class AliasedProperty extends ComputedDescriptor {
     consume(propertyTag);
 
     return ret;
-  }
-
-  unconsume(obj: object, keyName: string, meta: Meta): void {
-    let wasConsumed = getCachedValueFor(obj, keyName) === CONSUMED;
-    if (wasConsumed || meta.peekWatching(keyName) > 0) {
-      removeDependentKeys(this, obj, keyName, meta);
-    }
-    if (wasConsumed) {
-      getCacheFor(obj).delete(keyName);
-    }
-  }
-
-  consume(obj: object, keyName: string, meta: Meta): void {
-    let cache = getCacheFor(obj);
-    if (cache.get(keyName) !== CONSUMED) {
-      cache.set(keyName, CONSUMED);
-      addDependentKeys(this, obj, keyName, meta);
-    }
   }
 
   set(obj: object, _keyName: string, value: any): any {

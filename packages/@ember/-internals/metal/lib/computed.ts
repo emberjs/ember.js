@@ -1,4 +1,4 @@
-import { Meta, meta as metaFor, peekMeta } from '@ember/-internals/meta';
+import { Meta, meta as metaFor } from '@ember/-internals/meta';
 import { inspect, isEmberArray, toString } from '@ember/-internals/utils';
 import { assert, deprecate, warn } from '@ember/debug';
 import EmberError from '@ember/error';
@@ -24,7 +24,6 @@ import {
   DecoratorPropertyDescriptor,
   isElementDescriptor,
   makeComputedDecorator,
-  removeDependentKeys,
 } from './decorator';
 import {
   descriptorForDecorator,
@@ -597,26 +596,6 @@ export class ComputedProperty extends ComputedDescriptor {
     @public
   */
 
-  // invalidate cache when CP key changes
-  didChange(obj: object, keyName: string): void {
-    // _suspended is set via a CP.set to ensure we don't clear
-    // the cached value set by the setter
-    if (this._volatile || this._suspended === obj) {
-      return;
-    }
-
-    // don't create objects just to invalidate
-    let meta = peekMeta(obj);
-    if (meta === null || meta.source !== obj) {
-      return;
-    }
-
-    let cache = peekCacheFor(obj);
-    if (cache !== undefined && cache.delete(keyName)) {
-      removeDependentKeys(this, obj, keyName, meta);
-    }
-  }
-
   get(obj: object, keyName: string): any {
     if (this._volatile) {
       return this._getter!.call(obj, keyName);
@@ -783,8 +762,8 @@ export class ComputedProperty extends ComputedDescriptor {
   teardown(obj: object, keyName: string, meta?: any): void {
     if (!this._volatile) {
       let cache = peekCacheFor(obj);
-      if (cache !== undefined && cache.delete(keyName)) {
-        removeDependentKeys(this, obj, keyName, meta);
+      if (cache !== undefined) {
+        cache.delete(keyName);
       }
     }
     super.teardown(obj, keyName, meta);

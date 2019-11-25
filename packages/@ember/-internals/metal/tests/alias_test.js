@@ -164,7 +164,6 @@ moduleFor(
       });
 
       assertPropertyTagUnchanged(obj, 'bar', () => {
-        // trigger willWatch, then didUnwatch
         addObserver(obj, 'bar', incrementCount);
         removeObserver(obj, 'bar', incrementCount);
       });

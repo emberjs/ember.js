@@ -49,13 +49,6 @@ function notifyPropertyChange(obj: object, keyName: string, _meta?: Meta | null)
   }
 }
 
-function overrideChains(_obj: object, keyName: string, meta: Meta): void {
-  let chainWatchers = meta.readableChainWatchers();
-  if (chainWatchers !== undefined) {
-    chainWatchers.revalidate(keyName);
-  }
-}
-
 /**
   @method beginPropertyChanges
   @chainable
@@ -100,10 +93,4 @@ function changeProperties(callback: () => void): void {
   }
 }
 
-export {
-  notifyPropertyChange,
-  overrideChains,
-  beginPropertyChanges,
-  endPropertyChanges,
-  changeProperties,
-};
+export { notifyPropertyChange, beginPropertyChanges, endPropertyChanges, changeProperties };

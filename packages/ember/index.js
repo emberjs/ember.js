@@ -323,7 +323,6 @@ Ember.isEmpty = metal.isEmpty;
 Ember.isBlank = metal.isBlank;
 Ember.isPresent = metal.isPresent;
 Ember.notifyPropertyChange = metal.notifyPropertyChange;
-Ember.overrideChains = metal.overrideChains;
 Ember.beginPropertyChanges = metal.beginPropertyChanges;
 Ember.endPropertyChanges = metal.endPropertyChanges;
 Ember.changeProperties = metal.changeProperties;
@@ -332,16 +331,6 @@ Ember.platform = {
   hasPropertyAccessors: true,
 };
 Ember.defineProperty = metal.defineProperty;
-Ember.watchKey = metal.watchKey;
-Ember.unwatchKey = metal.unwatchKey;
-Ember.removeChainWatcher = metal.removeChainWatcher;
-Ember._ChainNode = metal.ChainNode;
-Ember.finishChains = metal.finishChains;
-Ember.watchPath = metal.watchPath;
-Ember.unwatchPath = metal.unwatchPath;
-Ember.watch = metal.watch;
-Ember.isWatching = metal.isWatching;
-Ember.unwatch = metal.unwatch;
 Ember.destroy = deleteMeta;
 Ember.libraries = metal.libraries;
 Ember.getProperties = metal.getProperties;
