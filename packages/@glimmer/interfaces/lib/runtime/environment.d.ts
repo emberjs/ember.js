@@ -52,6 +52,8 @@ export interface Environment {
 
   iterableFor(reference: VersionedReference<unknown>, key: unknown): OpaqueIterable;
   toConditionalReference(reference: VersionedReference<unknown>): VersionedReference<boolean>;
+
+  extra?: any;
 }
 
 export interface DynamicScope {
