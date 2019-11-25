@@ -33,11 +33,11 @@ import {
 import { CURRENT_TAG, validate, value } from '@glimmer/validator';
 import { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
 import RSVP from 'rsvp';
-import { NodeDOMTreeConstruction } from '../';
 import CompileTimeResolver from './compile-time-lookup';
 import { BOUNDS } from './component';
 import { createRootOutlet } from './component-managers/outlet';
 import { RootComponentDefinition } from './component-managers/root';
+import { NodeDOMTreeConstruction } from './dom';
 import RuntimeEnvironment from './environment';
 import RuntimeResolver from './resolver';
 import { Factory as TemplateFactory, OwnedTemplate } from './template';
@@ -82,9 +82,6 @@ class RootState {
   public id: string;
   public result: RenderResult | undefined;
   public destroyed: boolean;
-  public options: {
-    alwaysRevalidate: boolean;
-  };
   public runtime: JitRuntimeContext;
   public render: () => void;
 
@@ -105,10 +102,6 @@ class RootState {
     this.result = undefined;
     this.destroyed = false;
     this.runtime = runtime;
-
-    let options = (this.options = {
-      alwaysRevalidate: false,
-    });
 
     this.render = () => {
       let layout = unwrapTemplate(template).asLayout();
@@ -589,6 +582,7 @@ export class InteractiveRenderer extends Renderer {
     _viewRegistry: any;
     builder: any;
   }) {
+    debugger
     return new this(owner, document, env, rootTemplate, _viewRegistry, true, builder);
   }
 

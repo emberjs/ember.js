@@ -1,7 +1,5 @@
-import { hasDOM } from '@ember/-internals/browser-environment';
 import { privatize as P, Registry } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
-import { SimpleDocument } from '@simple-dom/interface';
 import Component from './component';
 import Checkbox from './components/checkbox';
 import Input from './components/input';
@@ -27,7 +25,7 @@ export function setupApplicationRegistry(registry: Registry) {
   //   'appendOperations',
   //   'service:-dom-tree-construction'
   // );
-  // registry.injection('renderer', 'env', 'service:-glimmer-environment');
+  registry.injection('renderer', 'env', '-environment:main');
 
   // because we are using injections we can't use instantiate false
   // we need to use bind() to copy the function so factory for

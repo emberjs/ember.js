@@ -4,9 +4,11 @@
 
 import { assert } from '@ember/debug';
 import { VMArguments } from '@glimmer/interfaces';
+import { VersionedPathReference } from '@glimmer/reference';
 import { PrimitiveReference } from '@glimmer/runtime';
 import { combine, createUpdatableTag, isConst, UpdatableTag, update } from '@glimmer/validator';
-import { CachedReference, ConditionalReference } from '../utils/references';
+import { CachedReference } from '../utils/references';
+import emberToBool from '../utils/to-bool';
 
 class ConditionalHelperReference extends CachedReference {
   public branchTag: UpdatableTag;
@@ -16,13 +18,13 @@ class ConditionalHelperReference extends CachedReference {
   public falsy: any;
 
   static create(
-    _condRef: any,
+    condRef: VersionedPathReference<unknown>,
     truthyRef: PrimitiveReference<boolean>,
     falsyRef: PrimitiveReference<boolean>
   ) {
-    let condRef = ConditionalReference.create(_condRef);
+    // let condRef = ConditionalReference.create(_condRef);
     if (isConst(condRef)) {
-      return condRef.value() ? truthyRef : falsyRef;
+      return emberToBool(condRef.value()) ? truthyRef : falsyRef;
     } else {
       return new ConditionalHelperReference(condRef, truthyRef, falsyRef);
     }

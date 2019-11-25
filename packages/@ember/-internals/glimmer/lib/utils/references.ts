@@ -270,37 +270,37 @@ export class UpdatableReference extends EmberPathReference {
   }
 }
 
-export class ConditionalReference extends GlimmerConditionalReference
-  implements VersionedReference<boolean> {
-  public objectTag: UpdatableTag;
-  static create(reference: VersionedReference<unknown>): VersionedReference<boolean> {
-    if (isConst(reference)) {
-      let value = reference.value();
+// export class ConditionalReference extends GlimmerConditionalReference
+//   implements VersionedReference<boolean> {
+//   public objectTag: UpdatableTag;
+//   static create(reference: VersionedReference<unknown>): VersionedReference<boolean> {
+//     if (isConst(reference)) {
+//       let value = reference.value();
 
-      if (!isProxy(value)) {
-        return PrimitiveReference.create(emberToBool(value));
-      }
-    }
+//       if (!isProxy(value)) {
+//         return PrimitiveReference.create(emberToBool(value));
+//       }
+//     }
 
-    return new ConditionalReference(reference);
-  }
+//     return new ConditionalReference(reference);
+//   }
 
-  constructor(reference: VersionedReference<unknown>) {
-    super(reference);
-    this.objectTag = createUpdatableTag();
-    this.tag = combine([reference.tag, this.objectTag]);
-  }
+//   constructor(reference: VersionedReference<unknown>) {
+//     super(reference);
+//     this.objectTag = createUpdatableTag();
+//     this.tag = combine([reference.tag, this.objectTag]);
+//   }
 
-  toBool(predicate: unknown): boolean {
-    if (isProxy(predicate)) {
-      update(this.objectTag, tagForProperty(predicate, 'isTruthy'));
-      return Boolean(get(predicate, 'isTruthy'));
-    } else {
-      update(this.objectTag, tagFor(predicate));
-      return emberToBool(predicate);
-    }
-  }
-}
+//   toBool(predicate: unknown): boolean {
+//     if (isProxy(predicate)) {
+//       update(this.objectTag, tagForProperty(predicate, 'isTruthy'));
+//       return Boolean(get(predicate, 'isTruthy'));
+//     } else {
+//       update(this.objectTag, tagFor(predicate));
+//       return emberToBool(predicate);
+//     }
+//   }
+// }
 
 export class SimpleHelperReference extends CachedReference {
   static create(helper: HelperFunction, args: CapturedArguments) {

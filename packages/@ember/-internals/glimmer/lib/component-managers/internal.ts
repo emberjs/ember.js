@@ -1,5 +1,6 @@
 import { Factory, Owner } from '@ember/-internals/owner';
-import { ComponentDefinition, Invocation, WithJitStaticLayout } from '@glimmer/interfaces';
+import { ComponentDefinition, WithJitStaticLayout } from '@glimmer/interfaces';
+import { unwrapTemplate } from '@glimmer/opcode-compiler';
 import RuntimeResolver from '../resolver';
 import { OwnedTemplate } from '../template';
 import AbstractComponentManager from './abstract';
@@ -29,12 +30,7 @@ export default abstract class InternalManager<T>
     super();
   }
 
-  getLayout({ layout: _layout }: InternalDefinitionState): Invocation {
-    let layout = _layout.asLayout();
-
-    return {
-      handle: layout.compile(),
-      symbolTable: layout.symbolTable,
-    };
+  getJitStaticLayout({ layout: template }: InternalDefinitionState) {
+    return unwrapTemplate(template).asLayout();
   }
 }

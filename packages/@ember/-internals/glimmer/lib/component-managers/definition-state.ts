@@ -1,5 +1,5 @@
 import { Factory } from '@ember/-internals/owner';
-import { ComponentCapabilities, Option } from '@glimmer/interfaces';
+import { ComponentCapabilities } from '@glimmer/interfaces';
 import { OwnedTemplate } from '../template';
 import { Component } from '../utils/curly-component-state-bucket';
 

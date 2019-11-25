@@ -19,7 +19,6 @@ import {
 } from '@glimmer/interfaces';
 import { PartialDefinition, unwrapTemplate } from '@glimmer/opcode-compiler';
 import { getDynamicVar, ModifierDefinition } from '@glimmer/runtime';
-import CompileTimeLookup from './compile-time-lookup';
 import { CurlyComponentDefinition } from './component-managers/curly';
 import { CustomManagerDefinition, ManagerDelegate } from './component-managers/custom';
 import InternalComponentManager, {

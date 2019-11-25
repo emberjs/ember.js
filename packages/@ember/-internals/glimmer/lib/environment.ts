@@ -12,7 +12,7 @@ import {
 } from '@glimmer/runtime';
 import { AttrNamespace as SimpleAttrNamespace, SimpleElement } from '@simple-dom/interface';
 import createIterable from './utils/iterable';
-import { ConditionalReference, UpdatableReference } from './utils/references';
+// import { ConditionalReference, UpdatableReference } from './utils/references';
 import { isHTMLSafe } from './utils/string';
 
 import installPlatformSpecificProtocolForURL from './protocol-for-url';
@@ -76,9 +76,9 @@ export default class RuntimeEnvironment implements RuntimeEnvironmentDelegate {
     return s;
   }
 
-  toConditionalReference(reference: UpdatableReference): VersionedReference<boolean> {
-    return ConditionalReference.create(reference);
-  }
+  // toConditionalReference(reference: UpdatableReference): VersionedReference<boolean> {
+  //   return ConditionalReference.create(reference);
+  // }
 
   iterableFor(ref: VersionedReference, key: string): OpaqueIterable {
     return createIterable(ref, key);

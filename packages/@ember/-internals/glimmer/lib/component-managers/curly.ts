@@ -4,7 +4,6 @@ import { getOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
 import {
   addChildView,
-  OwnedTemplateMeta,
   setElementView,
   setViewElement,
 } from '@ember/-internals/views';
@@ -21,7 +20,6 @@ import {
   ElementOperations,
   Option,
   PreparedArguments,
-  TemplateOk,
   VMArguments,
   WithDynamicTagName,
   WithJitDynamicLayout,

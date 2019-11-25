@@ -10,13 +10,13 @@ import {
   ComponentDefinition,
   Destroyable,
   ElementOperations,
-  Invocation,
   Option,
   VMArguments,
   WithDynamicTagName,
   WithJitStaticLayout,
  } from '@glimmer/interfaces';
-import { VersionedPathReference } from '@glimmer/reference';
+ import { unwrapTemplate } from '@glimmer/opcode-compiler';
+ import { VersionedPathReference } from '@glimmer/reference';
 import { EMPTY_ARGS } from '@glimmer/runtime';
 import { CONSTANT_TAG, createTag, Tag } from '@glimmer/validator';
 
@@ -29,7 +29,6 @@ import { OutletState } from '../utils/outlet';
 import { RootReference } from '../utils/references';
 import OutletView from '../views/outlet';
 import AbstractManager from './abstract';
-import { unwrapTemplate } from '@glimmer/opcode-compiler';
 
 function instrumentationPayload(def: OutletDefinitionState) {
   return { object: `${def.name}:${def.outlet}` };

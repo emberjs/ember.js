@@ -23,9 +23,9 @@
     "noEmit": true,
     "allowJs": false,
 
-    "paths": {
-      "@glimmer/*": ["../node_modules/@glimmer/*"]
-    }
+    // "paths": {
+    //   "@glimmer/*": ["../node_modules/@glimmer/*"]
+    // }
   },
 
   "include": [
@@ -34,6 +34,7 @@
 
   "exclude": [
     "dist",
+    "node_modules",
     "tmp",
   ]
 }
