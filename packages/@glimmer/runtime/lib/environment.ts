@@ -254,12 +254,15 @@ function toBool(value: unknown): boolean {
 export abstract class EnvironmentImpl implements Environment {
   [TRANSACTION]: Option<TransactionImpl> = null;
 
+  protected isInteractive: boolean;
+
   protected updateOperations: GlimmerTreeChanges;
   protected appendOperations: GlimmerTreeConstruction;
 
   constructor({ appendOperations, updateOperations }: EnvironmentOptions) {
     this.appendOperations = appendOperations;
     this.updateOperations = updateOperations;
+    this.isInteractive = true;
   }
 
   toConditionalReference(reference: Reference): Reference<boolean> {
@@ -298,11 +301,15 @@ export abstract class EnvironmentImpl implements Environment {
   }
 
   scheduleInstallModifier(modifier: unknown, manager: ModifierManager) {
-    this.transaction.scheduleInstallModifier(modifier, manager);
+    if (this.isInteractive) {
+      this.transaction.scheduleInstallModifier(modifier, manager);
+    }
   }
 
   scheduleUpdateModifier(modifier: unknown, manager: ModifierManager) {
-    this.transaction.scheduleUpdateModifier(modifier, manager);
+    if (this.isInteractive) {
+      this.transaction.scheduleUpdateModifier(modifier, manager);
+    }
   }
 
   didDestroy(d: Drop) {
@@ -326,24 +333,75 @@ export abstract class EnvironmentImpl implements Environment {
 }
 
 export interface RuntimeEnvironmentDelegate {
+  /**
+   * Used to determine the the environment is interactive (e.g. SSR is not
+   * interactive). Interactive environments schedule modifiers, among other things.
+   */
+  isInteractive?: boolean;
+
+  /**
+   * Hook for specifying how Glimmer should access paths in cases where it needs
+   * to. For instance, the `key` value of `{{each}}` loops.
+   *
+   * @param obj The object provided to get a value from
+   * @param path The path to get the value from
+   */
   getPath?(obj: any, path: string): any;
+
+  /**
+   * TODO
+   *
+   * @param url
+   */
   protocolForURL?(url: string): string;
+
+  /**
+   * Hook to provide iterators for `{{each}}` loops
+   *
+   * @param value The value to create an iterator for
+   */
   toIterator?(value: unknown): IteratorDelegate | undefined;
+
+  /**
+   * Hook to specify truthiness within Glimmer
+   *
+   * @param value The value to convert to a boolean
+   */
   toBool?(value: unknown): boolean;
+
+  /**
+   * TODO
+   *
+   * @param element
+   * @param attr
+   * @param isTrusting
+   * @param namespace
+   */
   attributeFor?(
     element: SimpleElement,
     attr: string,
     isTrusting: boolean,
     namespace: Option<AttrNamespace>
   ): DynamicAttribute;
+
+  /**
+   * Slot for any extra values that the embedding environment wants to add,
+   * providing/passing around additional context to various users in the VM.
+   */
+  extra?: any;
 }
 
 export class RuntimeEnvironmentDelegateImpl implements RuntimeEnvironmentDelegate {
+  readonly isInteractive: boolean;
   readonly toBool: (value: unknown) => boolean;
   readonly toIterator: (value: unknown) => IteratorDelegate | undefined;
   readonly getPath: (obj: any, path: string) => any;
+  readonly extra: any;
 
   constructor(private inner: RuntimeEnvironmentDelegate = {}) {
+    this.isInteractive = 'isInteractive' in inner ? inner.isInteractive! : true;
+    this.extra = inner.extra;
+
     if (inner.toBool) {
       this.toBool = inner.toBool;
     } else {
@@ -583,6 +641,11 @@ export class RuntimeEnvironment extends EnvironmentImpl {
     super(envOptions);
 
     this.delegate = new RuntimeEnvironmentDelegateImpl(delegate);
+    this.isInteractive = this.delegate.isInteractive;
+  }
+
+  get extra() {
+    return this.delegate.extra;
   }
 
   protocolForURL(url: string): string {
