@@ -1,5 +1,5 @@
-import { NoneLocation } from '@ember/-internals/routing';
-import { RouterTestCase, moduleFor } from 'internal-test-helpers';
+import { Route, NoneLocation } from '@ember/-internals/routing';
+import { RouterTestCase, moduleFor, runLoopSettled } from 'internal-test-helpers';
 import { InternalTransition as Transition } from 'router_js';
 import Controller from '@ember/controller';
 
@@ -135,6 +135,46 @@ moduleFor(
         .then(() => {
           assert.deepEqual(this.state, ['/', '/child?sort=ASC']);
         });
+    }
+
+    async ['@test RouterService#replaceWith with `refreshModel: true` query param does not always refresh'](
+      assert
+    ) {
+      assert.expect(3);
+
+      let parentBeforeModelCount = 0;
+
+      this.add(
+        'route:parent',
+        Route.extend({
+          beforeModel() {
+            parentBeforeModelCount++;
+          },
+          queryParams: {
+            foo: {
+              refreshModel: true,
+            },
+          },
+        })
+      );
+
+      this.add(
+        'controller:parent',
+        Controller.extend({
+          queryParams: ['foo'],
+          foo: 'default',
+        })
+      );
+
+      await this.visit('/child');
+
+      assert.equal(parentBeforeModelCount, 1, 'parent.beforeModel called once');
+
+      this.routerService.replaceWith('parent.sister');
+      await runLoopSettled();
+
+      assert.equal(this.routerService.get('currentURL'), '/sister', 'transitioned');
+      assert.equal(parentBeforeModelCount, 1, 'parent.beforeModel still called only once');
     }
   }
 );
