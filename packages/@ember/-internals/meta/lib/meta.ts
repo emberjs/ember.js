@@ -94,7 +94,7 @@ type Listener = StringListener | FunctionListener;
 let currentListenerVersion = 1;
 
 export class Meta {
-  _descriptors: Map<string, any> | undefined;
+  _descriptors: Map<string | number | symbol, any> | undefined;
   _watching: any | undefined;
   _mixins: any | undefined;
   _deps: any | undefined;
@@ -258,10 +258,10 @@ export class Meta {
     }
   }
 
-  _findInheritedMap(key: string, subkey: string): any | undefined {
+  _findInheritedMap(key: string, subkey: string | number | symbol): any | undefined {
     let pointer: Meta | null = this;
     while (pointer !== null) {
-      let map: Map<string, any> = pointer[key];
+      let map: Map<string | number | symbol, any> = pointer[key];
       if (map !== undefined) {
         let value = map.get(subkey);
         if (value !== undefined) {
@@ -376,7 +376,7 @@ export class Meta {
     return lazyChains[key];
   }
 
-  readableLazyChainsFor(key: string) {
+  readableLazyChainsFor(key: string | number | symbol) {
     if (DEBUG) {
       counters!.readableLazyChainsCalls++;
     }
@@ -384,7 +384,9 @@ export class Meta {
     let lazyChains = this._lazyChains;
 
     if (lazyChains !== undefined) {
-      return lazyChains[key];
+      // casting to any here due to lack of TS support for indexing with symbols
+      // https://github.com/microsoft/TypeScript/issues/1863
+      return lazyChains[key as any];
     }
 
     return undefined;
@@ -488,10 +490,10 @@ export class Meta {
     }
   }
 
-  writeDescriptors(subkey: string, value: any) {
+  writeDescriptors(subkey: string | number | symbol, value: any) {
     assert(
       this.isMetaDestroyed()
-        ? `Cannot update descriptors for \`${subkey}\` on \`${toString(
+        ? `Cannot update descriptors for \`${String(subkey)}\` on \`${toString(
             this.source
           )}\` after it has been destroyed.`
         : '',
@@ -501,7 +503,7 @@ export class Meta {
     map.set(subkey, value);
   }
 
-  peekDescriptors(subkey: string) {
+  peekDescriptors(subkey: string | number | symbol) {
     let possibleDesc = this._findInheritedMap('_descriptors', subkey);
     return possibleDesc === UNDEFINED ? undefined : possibleDesc;
   }

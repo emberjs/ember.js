@@ -138,7 +138,7 @@ moduleFor(
 
       expectAssertion(function() {
         set(obj, 'bar', 'BAZ');
-      }, `calling set on destroyed object: ${obj}.bar = BAZ`);
+      }, `calling set on destroyed object: ${obj}['bar'] = BAZ`);
 
       assert.equal(get(obj, 'count'), 0, 'should not invoke observer after change');
     }

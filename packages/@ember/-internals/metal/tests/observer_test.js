@@ -539,6 +539,37 @@ moduleFor(
       assert.equal(target1.count, 1, 'target1 observer should have fired');
       assert.equal(target2.count, 1, 'target2 observer should have fired');
     }
+
+    async '@test observer should fire when depending on number property that is modified'(assert) {
+      let obj = {};
+      let count = 0;
+
+      addObserver(obj, 42, function() {
+        assert.equal(get(obj, 42), 'bar', 'should invoke AFTER value changed');
+        count++;
+      });
+
+      set(obj, 42, 'bar');
+      await runLoopSettled();
+
+      assert.equal(count, 1, 'should have invoked observer');
+    }
+
+    async '@test observer should fire when depending on symbol property that is modified'(assert) {
+      let obj = {};
+      let count = 0;
+      let foo = Symbol('foo');
+
+      addObserver(obj, foo, function() {
+        assert.equal(get(obj, foo), 'bar', 'should invoke AFTER value changed');
+        count++;
+      });
+
+      set(obj, foo, 'bar');
+      await runLoopSettled();
+
+      assert.equal(count, 1, 'should have invoked observer');
+    }
   }
 );
 
@@ -565,6 +596,54 @@ moduleFor(
       removeObserver(obj, 'foo', F);
 
       set(obj, 'foo', 'baz');
+      await runLoopSettled();
+
+      assert.equal(count, 1, "removed observer shouldn't fire");
+    }
+
+    async '@test removing observer watching number property should stop firing'(assert) {
+      let obj = {};
+      let count = 0;
+      function F() {
+        count++;
+      }
+      addObserver(obj, 42, F);
+
+      set(obj, 42, 'bar');
+      await runLoopSettled();
+
+      assert.equal(count, 1, 'should have invoked observer');
+
+      removeObserver(obj, 42, F);
+
+      set(obj, 42, 'baz');
+      await runLoopSettled();
+
+      assert.equal(count, 1, "removed observer shouldn't fire");
+    }
+
+    async '@test removing observer watching symbol property should stop firing'(assert) {
+      if (typeof Symbol === 'undefined') {
+        assert.expect(0);
+        return;
+      }
+
+      let obj = {};
+      let foo = Symbol('foo');
+      let count = 0;
+      function F() {
+        count++;
+      }
+      addObserver(obj, foo, F);
+
+      set(obj, foo, 'bar');
+      await runLoopSettled();
+
+      assert.equal(count, 1, 'should have invoked observer');
+
+      removeObserver(obj, foo, F);
+
+      set(obj, foo, 'baz');
       await runLoopSettled();
 
       assert.equal(count, 1, "removed observer shouldn't fire");

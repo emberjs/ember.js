@@ -82,8 +82,10 @@ export function get(obj: object, keyName: string): any {
     obj !== undefined && obj !== null
   );
   assert(
-    `The key provided to get must be a string or number, you passed ${keyName}`,
-    typeof keyName === 'string' || (typeof keyName === 'number' && !isNaN(keyName))
+    `The key provided to get must be a string, number, or symbol; you passed ${String(keyName)}`,
+    typeof keyName === 'string' ||
+      typeof keyName === 'symbol' ||
+      (typeof keyName === 'number' && !isNaN(keyName))
   );
   assert(
     `'this' in paths is not supported`,

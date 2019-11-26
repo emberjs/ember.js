@@ -61,12 +61,14 @@ export function set(obj: object, keyName: string, value: any, tolerant?: boolean
     arguments.length === 3 || arguments.length === 4
   );
   assert(
-    `Cannot call set with '${keyName}' on an undefined object.`,
+    `Cannot call set with '${String(keyName)}' on an undefined object.`,
     (obj && typeof obj === 'object') || typeof obj === 'function'
   );
   assert(
-    `The key provided to set must be a string or number, you passed ${keyName}`,
-    typeof keyName === 'string' || (typeof keyName === 'number' && !isNaN(keyName))
+    `The key provided to set must be a string, number, or symbol; you passed ${String(keyName)}`,
+    typeof keyName === 'string' ||
+      typeof keyName === 'symbol' ||
+      (typeof keyName === 'number' && !isNaN(keyName))
   );
   assert(
     `'this' in paths is not supported`,
@@ -75,7 +77,9 @@ export function set(obj: object, keyName: string, value: any, tolerant?: boolean
 
   if ((obj as ExtendedObject).isDestroyed) {
     assert(
-      `calling set on destroyed object: ${toString(obj)}.${keyName} = ${toString(value)}`,
+      `calling set on destroyed object: ${toString(obj)}['${toString(keyName)}'] = ${toString(
+        value
+      )}`,
       tolerant
     );
     return;

@@ -8,7 +8,7 @@ import { tagForProperty } from './tags';
 
 export const ARGS_PROXY_TAGS = new WeakMap();
 
-export function finishLazyChains(obj: any, key: string, value: any) {
+export function finishLazyChains(obj: any, key: string | number | symbol, value: any) {
   let meta = peekMeta(obj);
   let lazyTags = meta !== null ? meta.readableLazyChainsFor(key) : undefined;
 
@@ -32,7 +32,7 @@ export function finishLazyChains(obj: any, key: string, value: any) {
   }
 }
 
-export function getChainTagsForKeys(obj: any, keys: string[]) {
+export function getChainTagsForKeys(obj: any, keys: Array<string | number | symbol>) {
   let chainTags: Tag[] = [];
 
   for (let i = 0; i < keys.length; i++) {
@@ -42,15 +42,18 @@ export function getChainTagsForKeys(obj: any, keys: string[]) {
   return chainTags;
 }
 
-export function getChainTagsForKey(obj: any, path: string) {
+export function getChainTagsForKey(obj: any, path: string | number | symbol) {
   let chainTags: Tag[] = [];
 
   let current: any = obj;
 
-  let pathLength = path.length;
+  let stringPath: null | string = typeof path === 'string' ? path : null;
+  let stringPathLength: null | number = stringPath !== null ? stringPath.length : null;
+
   let segmentEnd = -1;
+
   // prevent closures
-  let segment: string, descriptor: any;
+  let segment: string | number | symbol, descriptor: any;
 
   // eslint-disable-next-line no-constant-condition
   while (true) {
@@ -61,34 +64,39 @@ export function getChainTagsForKey(obj: any, path: string) {
       break;
     }
 
-    let lastSegmentEnd = segmentEnd + 1;
-    segmentEnd = path.indexOf('.', lastSegmentEnd);
-
-    if (segmentEnd === -1) {
-      segmentEnd = pathLength;
-    }
-
-    segment = path.slice(lastSegmentEnd, segmentEnd);
-
-    // If the segment is an @each, we can process it and then break
-    if (segment === '@each' && segmentEnd !== pathLength) {
+    let lastSegmentEnd: number;
+    if (typeof path === 'string') {
       lastSegmentEnd = segmentEnd + 1;
       segmentEnd = path.indexOf('.', lastSegmentEnd);
+
+      if (segmentEnd === -1) {
+        segmentEnd = stringPathLength!;
+      }
+
+      segment = path.slice(lastSegmentEnd, segmentEnd);
+    } else {
+      segment = path;
+    }
+
+    // If the segment is an @each, we can process it and then break
+    if (segment === '@each' && segmentEnd !== stringPathLength) {
+      lastSegmentEnd = segmentEnd + 1;
+      segmentEnd = (path as string).indexOf('.', lastSegmentEnd);
 
       // There should be exactly one segment after an `@each` (i.e. `@each.foo`, not `@each.foo.bar`)
       deprecate(
         `When using @each in a dependent-key or an observer, ` +
           `you can only chain one property level deep after ` +
-          `the @each. That is, \`${path.slice(0, segmentEnd)}\` ` +
-          `is allowed but \`${path}\` (which is what you passed) ` +
+          `the @each. That is, \`${stringPath!.slice(0, segmentEnd)}\` ` +
+          `is allowed but \`${stringPath}\` (which is what you passed) ` +
           `is not.\n\n` +
           `This was never supported. Currently, the extra segments ` +
-          `are silently ignored, i.e. \`${path}\` behaves exactly ` +
-          `the same as \`${path.slice(0, segmentEnd)}\`. ` +
+          `are silently ignored, i.e. \`${stringPath}\` behaves exactly ` +
+          `the same as \`${stringPath!.slice(0, segmentEnd)}\`. ` +
           `In the future, this will throw an error.\n\n` +
           `If the current behavior is acceptable for your use case, ` +
           `please remove the extraneous segments by changing your ` +
-          `key to \`${path.slice(0, segmentEnd)}\`. ` +
+          `key to \`${stringPath!.slice(0, segmentEnd)}\`. ` +
           `Otherwise, please create an intermediary computed property ` +
           `or switch to using tracked properties.`,
         segmentEnd === -1,
@@ -115,10 +123,10 @@ export function getChainTagsForKey(obj: any, path: string) {
       }
 
       if (segmentEnd === -1) {
-        segment = path.slice(lastSegmentEnd);
+        segment = stringPath!.slice(lastSegmentEnd);
       } else {
         // Deprecated, remove once we turn the deprecation into an assertion
-        segment = path.slice(lastSegmentEnd, segmentEnd);
+        segment = stringPath!.slice(lastSegmentEnd, segmentEnd);
       }
 
       // Push the tags for each item's property
@@ -148,17 +156,17 @@ export function getChainTagsForKey(obj: any, path: string) {
     if (segment === 'args' && ARGS_PROXY_TAGS.has(current.args)) {
       assert(
         `When watching the 'args' on a GlimmerComponent, you must watch a value on the args. You cannot watch the object itself, as it never changes.`,
-        segmentEnd !== pathLength
+        segmentEnd !== stringPathLength
       );
 
       lastSegmentEnd = segmentEnd + 1;
-      segmentEnd = path.indexOf('.', lastSegmentEnd);
+      segmentEnd = stringPath!.indexOf('.', lastSegmentEnd);
 
       if (segmentEnd === -1) {
-        segmentEnd = pathLength;
+        segmentEnd = stringPathLength!;
       }
 
-      segment = path.slice(lastSegmentEnd, segmentEnd)!;
+      segment = stringPath!.slice(lastSegmentEnd, segmentEnd)!;
 
       let namedArgs = ARGS_PROXY_TAGS.get(current.args);
       let ref = namedArgs.get(segment);
@@ -166,7 +174,7 @@ export function getChainTagsForKey(obj: any, path: string) {
       chainTags.push(ref.tag);
 
       // We still need to break if we're at the end of the path.
-      if (segmentEnd === pathLength) {
+      if (segmentEnd === stringPathLength) {
         break;
       }
 
@@ -189,7 +197,7 @@ export function getChainTagsForKey(obj: any, path: string) {
       current = current[segment];
 
       // We still need to break if we're at the end of the path.
-      if (segmentEnd === pathLength) {
+      if (segmentEnd === stringPathLength) {
         break;
       }
 
@@ -200,7 +208,7 @@ export function getChainTagsForKey(obj: any, path: string) {
     // If we're at the end of the path, processing the last segment, and it's
     // not an alias, we should _not_ get the last value, since we already have
     // its tag. There's no reason to access it and do more work.
-    if (segmentEnd === pathLength) {
+    if (segmentEnd === stringPathLength) {
       break;
     }
 
