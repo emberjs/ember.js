@@ -1,4 +1,4 @@
-import { CapturedRenderNode, Environment } from '@ember/-internals/glimmer';
+import { CapturedRenderNode, Renderer } from '@ember/-internals/glimmer';
 import { Owner } from '@ember/-internals/owner';
 import { expect } from '@glimmer/util';
 
@@ -20,9 +20,16 @@ import { expect } from '@glimmer/util';
 */
 export default function captureRenderTree(app: Owner): CapturedRenderNode[] {
   let env = expect(
-    app.lookup<Environment>('service:-glimmer-environment'),
-    'BUG: owner is missing service:-glimmer-environment'
+    app.lookup<{ isInteractive: boolean }>('-environment:main'),
+    'BUG: owner is missing -environment:main'
   );
 
-  return env.debugRenderTree.capture();
+  let rendererType = env.isInteractive ? 'renderer:-dom' : 'renderer:-inert'
+
+  let renderer = expect(
+    app.lookup<Renderer>(rendererType),
+    `BUG: owner is missing ${rendererType}`
+  );
+
+  return renderer.debugRenderTree.capture();
 }

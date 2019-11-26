@@ -1,59 +1,39 @@
+import { ENV } from '@ember/-internals/environment';
 import { Owner } from '@ember/-internals/owner';
 import { constructStyleDeprecationMessage } from '@ember/-internals/views';
 import { warn } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { ElementBuilder, Option } from '@glimmer/interfaces';
+import { ElementBuilder, Environment, Option } from '@glimmer/interfaces';
 import { OpaqueIterable, VersionedReference } from '@glimmer/reference';
 import {
   DynamicAttribute,
-  EnvironmentImpl as GlimmerEnvironment,
+  dynamicAttribute,
+  RuntimeEnvironment,
   RuntimeEnvironmentDelegate,
   SimpleDynamicAttribute,
 } from '@glimmer/runtime';
 import { AttrNamespace as SimpleAttrNamespace, SimpleElement } from '@simple-dom/interface';
-import createIterable from './utils/iterable';
-// import { ConditionalReference, UpdatableReference } from './utils/references';
-import { isHTMLSafe } from './utils/string';
-
 import installPlatformSpecificProtocolForURL from './protocol-for-url';
-
-import { ENV } from '@ember/-internals/environment';
 import { OwnedTemplate } from './template';
 import { Component } from './utils/curly-component-state-bucket';
 import DebugRenderTree from './utils/debug-render-tree';
+import createIterable from './utils/iterable';
+// import { ConditionalReference, UpdatableReference } from './utils/references';
+import { isHTMLSafe } from './utils/string';
 
 export interface CompilerFactory {
   id: string;
   new (template: OwnedTemplate): any;
 }
 
-export default class RuntimeEnvironment implements RuntimeEnvironmentDelegate {
-  // static create(options: any) {
-  //   return new this(options);
-  // }
+export class EmberEnvironmentExtra {
+  private _debugRenderTree?: DebugRenderTree;
 
-  public owner: Owner;
-  public isInteractive: boolean;
   public destroyedComponents: Component[];
-  public attributeFor?: (
-    element: SimpleElement,
-    attr: string,
-    isTrusting: boolean,
-    namespace: Option<SimpleAttrNamespace>
-  ) => DynamicAttribute;
 
-  private _debugRenderTree: DebugRenderTree | undefined;
-
-  public inTransaction = false;
-
-  constructor(owner: Owner, isInteractive: boolean) {
-    this.owner = owner;
-    this.isInteractive = isInteractive; // owner.lookup<any>('-environment:main').isInteractive;
-
+  constructor(public owner: Owner) {
     // can be removed once https://github.com/tildeio/glimmer/pull/305 lands
     this.destroyedComponents = [];
-
-    installPlatformSpecificProtocolForURL(this);
 
     if (ENV._DEBUG_RENDER_TREE) {
       this._debugRenderTree = new DebugRenderTree();
@@ -68,6 +48,47 @@ export default class RuntimeEnvironment implements RuntimeEnvironmentDelegate {
         "Can't access debug render tree outside of the inspector (_DEBUG_RENDER_TREE flag is disabled)"
       );
     }
+  }
+
+  begin(): void {
+    if (ENV._DEBUG_RENDER_TREE) {
+      this.debugRenderTree.begin();
+    }
+  }
+
+  commit(): void {
+    let destroyedComponents = this.destroyedComponents;
+
+    this.destroyedComponents = [];
+    // components queued for destruction must be destroyed before firing
+    // `didCreate` to prevent errors when removing and adding a component
+    // with the same name (would throw an error when added to view registry)
+    for (let i = 0; i < destroyedComponents.length; i++) {
+      destroyedComponents[i].destroy();
+    }
+
+    if (ENV._DEBUG_RENDER_TREE) {
+      this.debugRenderTree.commit();
+    }
+  }
+}
+
+export class EmberEnvironmentDelegate implements RuntimeEnvironmentDelegate<EmberEnvironmentExtra> {
+  public isInteractive: boolean;
+  public attributeFor?: (
+    element: SimpleElement,
+    attr: string,
+    isTrusting: boolean,
+    namespace: Option<SimpleAttrNamespace>
+  ) => DynamicAttribute;
+
+  public extra: EmberEnvironmentExtra;
+
+  constructor(owner: Owner, isInteractive: boolean) {
+    this.extra = new EmberEnvironmentExtra(owner);
+    this.isInteractive = isInteractive;
+
+    installPlatformSpecificProtocolForURL(this);
   }
 
   // this gets clobbered by installPlatformSpecificProtocolForURL
@@ -99,42 +120,13 @@ export default class RuntimeEnvironment implements RuntimeEnvironmentDelegate {
   // didDestroy(destroyable: Destroyable): void {
   //   destroyable.destroy();
   // }
-
-  // begin(): void {
-  //   if (ENV._DEBUG_RENDER_TREE) {
-  //     this.debugRenderTree.begin();
-  //   }
-
-  //   this.inTransaction = true;
-
-  //   super.begin();
-  // }
-
-  // commit(): void {
-  //   let destroyedComponents = this.destroyedComponents;
-  //   this.destroyedComponents = [];
-  //   // components queued for destruction must be destroyed before firing
-  //   // `didCreate` to prevent errors when removing and adding a component
-  //   // with the same name (would throw an error when added to view registry)
-  //   for (let i = 0; i < destroyedComponents.length; i++) {
-  //     destroyedComponents[i].destroy();
-  //   }
-
-  //   try {
-  //     super.commit();
-  //   } finally {
-  //     this.inTransaction = false;
-  //   }
-
-  //   if (ENV._DEBUG_RENDER_TREE) {
-  //     this.debugRenderTree.commit();
-  //   }
-  // }
 }
+
+export type EmberVMEnvironment = Environment<EmberEnvironmentExtra>;
 
 if (DEBUG) {
   class StyleAttributeManager extends SimpleDynamicAttribute {
-    set(dom: ElementBuilder, value: unknown, env: GlimmerEnvironment): void {
+    set(dom: ElementBuilder, value: unknown, env: RuntimeEnvironment): void {
       warn(
         constructStyleDeprecationMessage(value),
         (() => {
@@ -147,7 +139,7 @@ if (DEBUG) {
       );
       super.set(dom, value, env);
     }
-    update(value: unknown, env: GlimmerEnvironment): void {
+    update(value: unknown, env: RuntimeEnvironment): void {
       warn(
         constructStyleDeprecationMessage(value),
         (() => {
@@ -162,7 +154,7 @@ if (DEBUG) {
     }
   }
 
-  RuntimeEnvironment.prototype.attributeFor = function(
+  EmberEnvironmentDelegate.prototype.attributeFor = function(
     element,
     attribute: string,
     isTrusting: boolean,
@@ -172,12 +164,6 @@ if (DEBUG) {
       return new StyleAttributeManager({ element, name: attribute, namespace });
     }
 
-    return GlimmerEnvironment.prototype.attributeFor.call(
-      this,
-      element,
-      attribute,
-      isTrusting,
-      namespace
-    );
+    return dynamicAttribute(element, attribute, namespace);
   };
 }

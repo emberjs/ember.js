@@ -1,7 +1,7 @@
 import { ENV } from '@ember/-internals/environment';
 import { runInAutotrackingTransaction } from '@ember/-internals/metal';
 import { Owner, OWNER } from '@ember/-internals/owner';
-import { getViewElement, getViewId } from '@ember/-internals/views';
+import { getViewElement, getViewId, OwnedTemplateMeta } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { backburner, getCurrentRunLoop } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
@@ -17,7 +17,7 @@ import {
   SyntaxCompilationContext,
 } from '@glimmer/interfaces';
 import { JitContext, unwrapHandle, unwrapTemplate } from '@glimmer/opcode-compiler';
-import { artifacts, hydrateProgram } from '@glimmer/program';
+import { RuntimeProgramImpl } from '@glimmer/program';
 import { VersionedPathReference } from '@glimmer/reference';
 import {
   clientBuilder,
@@ -27,6 +27,7 @@ import {
   DOMTreeConstruction,
   IteratorResult,
   JitRuntimeFromProgram,
+  JitSyntaxCompilationContext,
   renderJitMain,
   UNDEFINED_REFERENCE,
 } from '@glimmer/runtime';
@@ -38,7 +39,7 @@ import { BOUNDS } from './component';
 import { createRootOutlet } from './component-managers/outlet';
 import { RootComponentDefinition } from './component-managers/root';
 import { NodeDOMTreeConstruction } from './dom';
-import RuntimeEnvironment from './environment';
+import { EmberEnvironmentDelegate, EmberEnvironmentExtra } from './environment';
 import RuntimeResolver from './resolver';
 import { Factory as TemplateFactory, OwnedTemplate } from './template';
 import { Component } from './utils/curly-component-state-bucket';
@@ -82,13 +83,12 @@ class RootState {
   public id: string;
   public result: RenderResult | undefined;
   public destroyed: boolean;
-  public runtime: JitRuntimeContext;
   public render: () => void;
 
   constructor(
     public root: Component | OutletView,
     public renderer: Renderer,
-    runtime: JitRuntimeContext,
+    public runtime: JitRuntimeContext<OwnedTemplateMeta, EmberEnvironmentExtra>,
     context: SyntaxCompilationContext,
     template: OwnedTemplate,
     self: VersionedPathReference<unknown>,
@@ -101,7 +101,6 @@ class RootState {
     this.id = getViewId(root);
     this.result = undefined;
     this.destroyed = false;
-    this.runtime = runtime;
 
     this.render = () => {
       let layout = unwrapTemplate(template).asLayout();
@@ -132,7 +131,11 @@ class RootState {
   }
 
   destroy() {
-    let { result, runtime: { env }, renderer } = this;
+    let {
+      result,
+      runtime: { env },
+      renderer,
+    } = this;
 
     this.destroyed = true;
 
@@ -155,14 +158,17 @@ class RootState {
        */
       let needsTransaction = !renderer.inRenderTransaction;
 
-      if (needsTransaction) {
-        env.begin();
-      }
       try {
+        if (needsTransaction) {
+          env.begin();
+          env.extra.begin();
+        }
+
         result.destroy();
       } finally {
         if (needsTransaction) {
           env.commit();
+          env.extra.commit();
         }
       }
     }
@@ -262,17 +268,20 @@ export abstract class Renderer {
   private _removedRoots: RootState[];
   private _builder: IBuilder;
 
-  private _context: SyntaxCompilationContext;
-  private _runtime: JitRuntimeContext;
+  private _context: JitSyntaxCompilationContext;
+  private _runtime: JitRuntimeContext<OwnedTemplateMeta, EmberEnvironmentExtra>;
 
   private _lastRevision = -1;
   private _destroyed = false;
+
+  readonly _runtimeResolver: RuntimeResolver;
+
   public inRenderTransaction = false;
 
   constructor(
     owner: Owner,
     document: SimpleDocument,
-    env: { isInteractive: boolean, hasDOM: boolean },
+    env: { isInteractive: boolean; hasDOM: boolean },
     rootTemplate: TemplateFactory,
     viewRegistry: ViewRegistry,
     destinedForDOM = false,
@@ -285,24 +294,31 @@ export abstract class Renderer {
     this._removedRoots = [];
     this._builder = builder;
 
-    let runtimeResolver = new RuntimeResolver(env.isInteractive);
+    // resolver is exposed for tests
+    let runtimeResolver = this._runtimeResolver = new RuntimeResolver(env.isInteractive);
     let compileTimeResolver = new CompileTimeResolver(runtimeResolver);
 
     this._context = JitContext(compileTimeResolver);
 
-    let program = hydrateProgram(artifacts(this._context));
+    let program = new RuntimeProgramImpl(this._context.program.constants, this._context.program.heap);
 
-    let runtimeEvironment = new RuntimeEnvironment(owner, env.isInteractive);
+    let runtimeEnvironmentDelegate = new EmberEnvironmentDelegate(owner, env.isInteractive);
 
     this._runtime = JitRuntimeFromProgram(
       {
-        appendOperations: env.hasDOM ? new DOMTreeConstruction(document) : new NodeDOMTreeConstruction(document),
-        updateOperations: new DOMChanges(document)
+        appendOperations: env.hasDOM
+          ? new DOMTreeConstruction(document)
+          : new NodeDOMTreeConstruction(document),
+        updateOperations: new DOMChanges(document),
       },
       program,
       runtimeResolver,
-      runtimeEvironment
+      runtimeEnvironmentDelegate
     );
+  }
+
+  get debugRenderTree() {
+    return this._runtime.env.extra.debugRenderTree;
   }
 
   // renderer HOOKS
@@ -432,6 +448,7 @@ export abstract class Renderer {
     do {
       try {
         runtime.env.begin();
+        runtime.env.extra.begin();
 
         // ensure that for the first iteration of the loop
         // each root is processed
@@ -468,6 +485,7 @@ export abstract class Renderer {
         this._lastRevision = value(CURRENT_TAG);
       } finally {
         runtime.env.commit();
+        runtime.env.extra.commit();
       }
     } while (roots.length > initialRootsLength);
 
@@ -549,9 +567,9 @@ export class InertRenderer extends Renderer {
     _viewRegistry,
     builder,
   }: {
-    [OWNER]: Owner,
-    document: SimpleDocument,
-    env: { isInteractive: boolean, hasDOM: boolean },
+    [OWNER]: Owner;
+    document: SimpleDocument;
+    env: { isInteractive: boolean; hasDOM: boolean };
     rootTemplate: TemplateFactory;
     _viewRegistry: any;
     builder: any;
@@ -575,14 +593,13 @@ export class InteractiveRenderer extends Renderer {
     _viewRegistry,
     builder,
   }: {
-    [OWNER]: Owner,
-    document: SimpleDocument,
-    env: { isInteractive: boolean, hasDOM: boolean },
+    [OWNER]: Owner;
+    document: SimpleDocument;
+    env: { isInteractive: boolean; hasDOM: boolean };
     rootTemplate: TemplateFactory;
     _viewRegistry: any;
     builder: any;
   }) {
-    debugger
     return new this(owner, document, env, rootTemplate, _viewRegistry, true, builder);
   }
 

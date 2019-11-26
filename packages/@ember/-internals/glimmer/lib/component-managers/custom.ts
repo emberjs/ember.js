@@ -20,7 +20,7 @@ import { PathReference, } from '@glimmer/reference';
 import { createTag, isConst, Tag } from '@glimmer/validator';
 
 import { ENV } from '@ember/-internals/environment';
-import Environment from '../environment';
+import { EmberVMEnvironment } from '../environment';
 import RuntimeResolver from '../resolver';
 import { OwnedTemplate } from '../template';
 import { RootReference } from '../utils/references';
@@ -181,7 +181,7 @@ export default class CustomComponentManager<ComponentInstance>
       RuntimeResolver
     > {
   create(
-    env: Environment,
+    env: EmberVMEnvironment,
     definition: CustomComponentDefinitionState<ComponentInstance>,
     args: VMArguments
   ): CustomComponentState<ComponentInstance> {
@@ -267,7 +267,7 @@ export default class CustomComponentManager<ComponentInstance>
     let bucket = new CustomComponentState(delegate, component, capturedArgs, env, namedArgsProxy);
 
     if (ENV._DEBUG_RENDER_TREE) {
-      env.debugRenderTree.create(bucket, {
+      env.extra.debugRenderTree.create(bucket, {
         type: 'component',
         name: definition.name,
         args: args.capture(),
@@ -281,7 +281,7 @@ export default class CustomComponentManager<ComponentInstance>
 
   update(bucket: CustomComponentState<ComponentInstance>) {
     if (ENV._DEBUG_RENDER_TREE) {
-      bucket.env.debugRenderTree.update(bucket);
+      bucket.env.extra.debugRenderTree.update(bucket);
     }
 
     let { delegate, component, args, namedArgsProxy } = bucket;
@@ -338,7 +338,7 @@ export default class CustomComponentManager<ComponentInstance>
 
       destructor = {
         destroy() {
-          state.env.debugRenderTree.willDestroy(state);
+          state.env.extra.debugRenderTree.willDestroy(state);
 
           if (inner) {
             inner.destroy();
@@ -369,13 +369,13 @@ export default class CustomComponentManager<ComponentInstance>
 
   didRenderLayout(bucket: CustomComponentState<ComponentInstance>, bounds: Bounds) {
     if (ENV._DEBUG_RENDER_TREE) {
-      bucket.env.debugRenderTree.didRender(bucket, bounds);
+      bucket.env.extra.debugRenderTree.didRender(bucket, bounds);
     }
   }
 
   didUpdateLayout(bucket: CustomComponentState<ComponentInstance>, bounds: Bounds) {
     if (ENV._DEBUG_RENDER_TREE) {
-      bucket.env.debugRenderTree.didRender(bucket, bounds);
+      bucket.env.extra.debugRenderTree.didRender(bucket, bounds);
     }
   }
 
@@ -393,7 +393,7 @@ export class CustomComponentState<ComponentInstance> {
     public delegate: ManagerDelegate<ComponentInstance>,
     public component: ComponentInstance,
     public args: CapturedArguments,
-    public env: Environment,
+    public env: EmberVMEnvironment,
     public namedArgsProxy?: {}
   ) {}
 

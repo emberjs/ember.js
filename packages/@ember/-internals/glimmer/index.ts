@@ -352,7 +352,6 @@ export { default as TextArea } from './lib/components/textarea';
 export { default as LinkComponent } from './lib/components/link-to';
 export { default as Component } from './lib/component';
 export { default as Helper, helper } from './lib/helper';
-export { default as Environment } from './lib/environment';
 export { SafeString, escapeExpression, htmlSafe, isHTMLSafe } from './lib/utils/string';
 export {
   Renderer,

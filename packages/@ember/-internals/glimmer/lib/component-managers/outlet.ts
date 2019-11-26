@@ -21,7 +21,7 @@ import { EMPTY_ARGS } from '@glimmer/runtime';
 import { CONSTANT_TAG, createTag, Tag } from '@glimmer/validator';
 
 import { SimpleElement } from '@simple-dom/interface';
-import Environment from '../environment';
+import { EmberVMEnvironment } from '../environment';
 import { DynamicScope } from '../renderer';
 import RuntimeResolver from '../resolver';
 import { OwnedTemplate } from '../template';
@@ -36,7 +36,7 @@ function instrumentationPayload(def: OutletDefinitionState) {
 
 interface OutletInstanceState {
   self: VersionedPathReference<any | undefined>;
-  environment: Environment;
+  environment: EmberVMEnvironment;
   outlet?: { name: string };
   engine?: { mountPoint: string };
   finalize: () => void;
@@ -73,7 +73,7 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
       RuntimeResolver
     > {
   create(
-    environment: Environment,
+    environment: EmberVMEnvironment,
     definition: OutletDefinitionState,
     args: VMArguments,
     dynamicScope: DynamicScope
@@ -92,7 +92,7 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
     if (ENV._DEBUG_RENDER_TREE) {
       state.outlet = { name: definition.outlet };
 
-      environment.debugRenderTree.create(state.outlet, {
+      environment.extra.debugRenderTree.create(state.outlet, {
         type: 'outlet',
         name: state.outlet.name,
         args: EMPTY_ARGS,
@@ -114,7 +114,7 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
 
         state.engine = { mountPoint };
 
-        environment.debugRenderTree.create(state.engine, {
+        environment.extra.debugRenderTree.create(state.engine, {
           type: 'engine',
           name: mountPoint,
           args: EMPTY_ARGS,
@@ -123,7 +123,7 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
         });
       }
 
-      environment.debugRenderTree.create(state, {
+      environment.extra.debugRenderTree.create(state, {
         type: 'route-template',
         name: definition.name,
         args: args.capture(),
@@ -162,37 +162,37 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
     state.finalize();
 
     if (ENV._DEBUG_RENDER_TREE) {
-      state.environment.debugRenderTree.didRender(state, bounds);
+      state.environment.extra.debugRenderTree.didRender(state, bounds);
 
       if (state.engine) {
-        state.environment.debugRenderTree.didRender(state.engine, bounds);
+        state.environment.extra.debugRenderTree.didRender(state.engine, bounds);
       }
 
-      state.environment.debugRenderTree.didRender(state.outlet!, bounds);
+      state.environment.extra.debugRenderTree.didRender(state.outlet!, bounds);
     }
   }
 
   update(state: OutletInstanceState): void {
     if (ENV._DEBUG_RENDER_TREE) {
-      state.environment.debugRenderTree.update(state.outlet!);
+      state.environment.extra.debugRenderTree.update(state.outlet!);
 
       if (state.engine) {
-        state.environment.debugRenderTree.update(state.engine);
+        state.environment.extra.debugRenderTree.update(state.engine);
       }
 
-      state.environment.debugRenderTree.update(state);
+      state.environment.extra.debugRenderTree.update(state);
     }
   }
 
   didUpdateLayout(state: OutletInstanceState, bounds: Bounds): void {
     if (ENV._DEBUG_RENDER_TREE) {
-      state.environment.debugRenderTree.didRender(state, bounds);
+      state.environment.extra.debugRenderTree.didRender(state, bounds);
 
       if (state.engine) {
-        state.environment.debugRenderTree.didRender(state.engine, bounds);
+        state.environment.extra.debugRenderTree.didRender(state.engine, bounds);
       }
 
-      state.environment.debugRenderTree.didRender(state.outlet!, bounds);
+      state.environment.extra.debugRenderTree.didRender(state.outlet!, bounds);
     }
   }
 
@@ -200,13 +200,13 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
     if (ENV._DEBUG_RENDER_TREE) {
       return {
         destroy() {
-          state.environment.debugRenderTree.willDestroy(state);
+          state.environment.extra.debugRenderTree.willDestroy(state);
 
           if (state.engine) {
-            state.environment.debugRenderTree.willDestroy(state.engine);
+            state.environment.extra.debugRenderTree.willDestroy(state.engine);
           }
 
-          state.environment.debugRenderTree.willDestroy(state.outlet!);
+          state.environment.extra.debugRenderTree.willDestroy(state.outlet!);
         },
       };
     } else {

@@ -2,7 +2,7 @@ import { clearElementView, clearViewElement, getViewElement } from '@ember/-inte
 import { CapturedNamedArguments } from '@glimmer/interfaces';
 import { VersionedReference } from '@glimmer/reference';
 import { Revision, value } from '@glimmer/validator';
-import Environment from '../environment';
+import { EmberVMEnvironment } from '../environment';
 import { Factory as TemplateFactory, OwnedTemplate } from '../template';
 import { RootReference } from './references';
 
@@ -43,7 +43,7 @@ export default class ComponentStateBucket {
   public argsRevision: Revision;
 
   constructor(
-    public environment: Environment,
+    public environment: EmberVMEnvironment,
     public component: Component,
     public args: CapturedNamedArguments | null,
     public finalizer: Finalizer,
@@ -69,7 +69,7 @@ export default class ComponentStateBucket {
       }
     }
 
-    environment.destroyedComponents.push(component);
+    environment.extra.destroyedComponents.push(component);
   }
 
   finalize() {

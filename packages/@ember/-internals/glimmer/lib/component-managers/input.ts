@@ -13,7 +13,7 @@ import {
 } from '@glimmer/interfaces';
 import { VersionedPathReference } from '@glimmer/reference';
 import { CONSTANT_TAG, createTag, isConst } from '@glimmer/validator';
-import Environment from '../environment';
+import { EmberVMEnvironment } from '../environment';
 import { RootReference } from '../utils/references';
 import InternalComponentManager, { InternalDefinitionState } from './internal';
 
@@ -32,7 +32,7 @@ const CAPABILITIES: ComponentCapabilities = {
 };
 
 export interface InputComponentState {
-  env: Environment;
+  env: EmberVMEnvironment;
   type: VersionedPathReference;
   instance: Destroyable;
 }
@@ -64,7 +64,7 @@ export default class InputComponentManager extends InternalComponentManager<Inpu
   }
 
   create(
-    env: Environment,
+    env: EmberVMEnvironment,
     { ComponentClass, layout }: InternalDefinitionState,
     args: VMArguments,
     _dynamicScope: DynamicScope,
@@ -82,7 +82,7 @@ export default class InputComponentManager extends InternalComponentManager<Inpu
     let state = { env, type, instance };
 
     if (ENV._DEBUG_RENDER_TREE) {
-      env.debugRenderTree.create(state, {
+      env.extra.debugRenderTree.create(state, {
         type: 'component',
         name: 'input',
         args: args.capture(),
@@ -110,7 +110,7 @@ export default class InputComponentManager extends InternalComponentManager<Inpu
 
   didRenderLayout(state: InputComponentState, bounds: Bounds): void {
     if (ENV._DEBUG_RENDER_TREE) {
-      state.env.debugRenderTree.didRender(state, bounds);
+      state.env.extra.debugRenderTree.didRender(state, bounds);
     }
   }
 
@@ -118,13 +118,13 @@ export default class InputComponentManager extends InternalComponentManager<Inpu
     set(state.instance, 'type', state.type.value());
 
     if (ENV._DEBUG_RENDER_TREE) {
-      state.env.debugRenderTree.update(state);
+      state.env.extra.debugRenderTree.update(state);
     }
   }
 
   didUpdateLayout(state: InputComponentState, bounds: Bounds): void {
     if (ENV._DEBUG_RENDER_TREE) {
-      state.env.debugRenderTree.didRender(state, bounds);
+      state.env.extra.debugRenderTree.didRender(state, bounds);
     }
   }
 
@@ -132,7 +132,7 @@ export default class InputComponentManager extends InternalComponentManager<Inpu
     if (ENV._DEBUG_RENDER_TREE) {
       return {
         destroy() {
-          state.env.debugRenderTree.willDestroy(state);
+          state.env.extra.debugRenderTree.willDestroy(state);
           state.instance.destroy();
         },
       };

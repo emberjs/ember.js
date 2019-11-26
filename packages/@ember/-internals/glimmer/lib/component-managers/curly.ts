@@ -32,7 +32,7 @@ import { EMPTY_ARRAY } from '@glimmer/util';
 import { combine, Tag, validate, value } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
 import { BOUNDS, DIRTY_TAG, HAS_BLOCK, IS_DISPATCHING_ATTRS } from '../component';
-import Environment from '../environment';
+import { EmberVMEnvironment } from '../environment';
 import { DynamicScope } from '../renderer';
 import RuntimeResolver from '../resolver';
 import { Factory as TemplateFactory, isTemplateFactory, OwnedTemplate } from '../template';
@@ -144,7 +144,7 @@ export default class CurlyComponentManager
     let template = this.templateFor(component);
 
     if (ENV._DEBUG_RENDER_TREE) {
-      bucket.environment.debugRenderTree.setTemplate(bucket, template);
+      bucket.environment.extra.debugRenderTree.setTemplate(bucket, template);
     }
 
     return template;
@@ -228,7 +228,7 @@ export default class CurlyComponentManager
    * etc.
    */
   create(
-    environment: Environment,
+    environment: EmberVMEnvironment,
     state: DefinitionState,
     args: VMArguments,
     dynamicScope: DynamicScope,
@@ -330,7 +330,7 @@ export default class CurlyComponentManager
     }
 
     if (ENV._DEBUG_RENDER_TREE) {
-      environment.debugRenderTree.create(bucket, {
+      environment.extra.debugRenderTree.create(bucket, {
         type: 'component',
         name: state.name,
         args: args.capture(),
@@ -400,7 +400,7 @@ export default class CurlyComponentManager
     bucket.finalize();
 
     if (ENV._DEBUG_RENDER_TREE) {
-      bucket.environment.debugRenderTree.didRender(bucket, bounds);
+      bucket.environment.extra.debugRenderTree.didRender(bucket, bounds);
     }
   }
 
@@ -420,7 +420,7 @@ export default class CurlyComponentManager
     let { component, args, argsRevision, environment } = bucket;
 
     if (ENV._DEBUG_RENDER_TREE) {
-      environment.debugRenderTree.update(bucket);
+      environment.extra.debugRenderTree.update(bucket);
     }
 
     bucket.finalizer = _instrumentStart('render.component', rerenderInstrumentDetails, component);
@@ -448,7 +448,7 @@ export default class CurlyComponentManager
     bucket.finalize();
 
     if (ENV._DEBUG_RENDER_TREE) {
-      bucket.environment.debugRenderTree.didRender(bucket, bounds);
+      bucket.environment.extra.debugRenderTree.didRender(bucket, bounds);
     }
   }
 
@@ -463,7 +463,7 @@ export default class CurlyComponentManager
     if (ENV._DEBUG_RENDER_TREE) {
       return {
         destroy() {
-          bucket.environment.debugRenderTree.willDestroy(bucket);
+          bucket.environment.extra.debugRenderTree.willDestroy(bucket);
           bucket.destroy();
         },
       };

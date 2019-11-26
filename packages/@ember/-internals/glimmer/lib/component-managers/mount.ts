@@ -22,7 +22,7 @@ import { EMBER_ROUTING_MODEL_ARG } from '@ember/canary-features';
 import { ENV } from '@ember/-internals/environment';
 import EngineInstance from '@ember/engine/instance';
 import { TemplateFactory } from '../..';
-import Environment from '../environment';
+import { EmberVMEnvironment } from '../environment';
 import RuntimeResolver from '../resolver';
 import { RootReference } from '../utils/references';
 import AbstractManager from './abstract';
@@ -31,7 +31,7 @@ interface EngineState {
   engine: EngineInstance;
   controller: any;
   self: RootReference<any>;
-  environment: Environment;
+  environment: EmberVMEnvironment;
   modelRef?: VersionedPathReference<unknown>;
 }
 
@@ -65,7 +65,7 @@ class MountManager extends AbstractManager<EngineState, EngineDefinitionState>
     let template = templateFactory(state.engine);
 
     if (ENV._DEBUG_RENDER_TREE) {
-      state.environment.debugRenderTree.setTemplate(state.controller, template);
+      state.environment.extra.debugRenderTree.setTemplate(state.controller, template);
     }
 
     return template;
@@ -75,13 +75,13 @@ class MountManager extends AbstractManager<EngineState, EngineDefinitionState>
     return CAPABILITIES;
   }
 
-  create(environment: Environment, { name }: EngineDefinitionState, args: VMArguments) {
+  create(environment: EmberVMEnvironment, { name }: EngineDefinitionState, args: VMArguments) {
     // TODO
     // mount is a runtime helper, this shouldn't use dynamic layout
     // we should resolve the engine app template in the helper
     // it also should use the owner that looked up the mount helper.
 
-    let engine = environment.owner.buildChildEngineInstance(name);
+    let engine = environment.extra.owner.buildChildEngineInstance(name);
 
     engine.boot();
 
@@ -108,7 +108,7 @@ class MountManager extends AbstractManager<EngineState, EngineDefinitionState>
     }
 
     if (ENV._DEBUG_RENDER_TREE) {
-      environment.debugRenderTree.create(bucket, {
+      environment.extra.debugRenderTree.create(bucket, {
         type: 'engine',
         name,
         args: args.capture(),
@@ -116,7 +116,7 @@ class MountManager extends AbstractManager<EngineState, EngineDefinitionState>
         template: undefined,
       });
 
-      environment.debugRenderTree.create(controller, {
+      environment.extra.debugRenderTree.create(controller, {
         type: 'route-template',
         name: 'application',
         args: args.capture(),
@@ -153,8 +153,8 @@ class MountManager extends AbstractManager<EngineState, EngineDefinitionState>
     if (ENV._DEBUG_RENDER_TREE) {
       return {
         destroy() {
-          environment.debugRenderTree.willDestroy(controller);
-          environment.debugRenderTree.willDestroy(bucket);
+          environment.extra.debugRenderTree.willDestroy(controller);
+          environment.extra.debugRenderTree.willDestroy(bucket);
           engine.destroy();
         },
       };
@@ -165,8 +165,8 @@ class MountManager extends AbstractManager<EngineState, EngineDefinitionState>
 
   didRenderLayout(bucket: EngineState, bounds: Bounds): void {
     if (ENV._DEBUG_RENDER_TREE) {
-      bucket.environment.debugRenderTree.didRender(bucket.controller, bounds);
-      bucket.environment.debugRenderTree.didRender(bucket, bounds);
+      bucket.environment.extra.debugRenderTree.didRender(bucket.controller, bounds);
+      bucket.environment.extra.debugRenderTree.didRender(bucket, bounds);
     }
   }
 
@@ -178,15 +178,15 @@ class MountManager extends AbstractManager<EngineState, EngineDefinitionState>
     }
 
     if (ENV._DEBUG_RENDER_TREE) {
-      environment.debugRenderTree.update(bucket);
-      environment.debugRenderTree.update(bucket.controller);
+      environment.extra.debugRenderTree.update(bucket);
+      environment.extra.debugRenderTree.update(bucket.controller);
     }
   }
 
   didUpdateLayout(bucket: EngineState, bounds: Bounds): void {
     if (ENV._DEBUG_RENDER_TREE) {
-      bucket.environment.debugRenderTree.didRender(bucket.controller, bounds);
-      bucket.environment.debugRenderTree.didRender(bucket, bounds);
+      bucket.environment.extra.debugRenderTree.didRender(bucket.controller, bounds);
+      bucket.environment.extra.debugRenderTree.didRender(bucket, bounds);
     }
   }
 }

@@ -295,7 +295,7 @@ module.exports.glimmerCompilerES = () => {
 };
 
 module.exports.glimmerES = function glimmerES(environment) {
-  let glimmerEntries = ['@glimmer/node', '@simple-dom/document', '@glimmer/opcode-compiler', '@glimmer/syntax', '@glimmer/runtime'];
+  let glimmerEntries = ['@glimmer/node', '@simple-dom/document', '@glimmer/opcode-compiler', '@glimmer/runtime'];
 
   if (environment === 'development') {
     let hasGlimmerDebug = true;

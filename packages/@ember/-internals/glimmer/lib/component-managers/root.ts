@@ -12,7 +12,7 @@ import {
 import { unwrapTemplate } from '@glimmer/opcode-compiler';
 import { EMPTY_ARGS } from '@glimmer/runtime';
 import { DIRTY_TAG } from '../component';
-import Environment from '../environment';
+import { EmberVMEnvironment } from '../environment';
 import { DynamicScope } from '../renderer';
 import ComponentStateBucket, { Component } from '../utils/curly-component-state-bucket';
 import CurlyComponentManager, {
@@ -35,7 +35,7 @@ class RootComponentManager extends CurlyComponentManager {
   }
 
   create(
-    environment: Environment,
+    environment: EmberVMEnvironment,
     state: DefinitionState,
     _args: Option<VMArguments>,
     dynamicScope: DynamicScope
@@ -74,7 +74,7 @@ class RootComponentManager extends CurlyComponentManager {
     );
 
     if (ENV._DEBUG_RENDER_TREE) {
-      environment.debugRenderTree.create(bucket, {
+      environment.extra.debugRenderTree.create(bucket, {
         type: 'component',
         name: state.name,
         args: EMPTY_ARGS,

@@ -6,6 +6,7 @@ export default class RenderingTestCase extends AbstractRenderingTestCase {
     super(...arguments);
     let { owner } = this;
 
+    this.renderer
     // this.env = owner.lookup('service:-glimmer-environment');
     // this.templateOptions = owner.lookup(P`template-compiler:main`);
     // this.compileTimeLookup = this.templateOptions.resolver;

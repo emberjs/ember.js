@@ -22,7 +22,7 @@ import { dict } from '@glimmer/util';
 import { Tag } from '@glimmer/validator';
 // import * as WireFormat from '@glimmer/wire-format';
 import { OutletComponentDefinition, OutletDefinitionState } from '../component-managers/outlet';
-import Environment from '../environment';
+import { EmberVMEnvironment } from '../environment';
 import { DynamicScope } from '../renderer';
 import { isTemplateFactory } from '../template';
 import { OutletReference, OutletState } from '../utils/outlet';
@@ -85,7 +85,7 @@ export function outletHelper(args: VMArguments, vm: VM) {
   }
   return new OutletComponentReference(
     new OutletReference(scope.outletState, nameRef),
-    vm.env as Environment
+    vm.env as EmberVMEnvironment
   );
 }
 
@@ -106,7 +106,7 @@ class OutletModelReference implements VersionedPathReference {
 
   constructor(
     private parent: VersionedPathReference<OutletState | undefined>,
-    private env: Environment
+    private env: EmberVMEnvironment
   ) {
     this.tag = parent.tag;
   }
@@ -137,7 +137,7 @@ class OutletModelReference implements VersionedPathReference {
       //
       // TODO: This feels messy, side-effect of the fact that this ref is
       // created well before the component itself.
-      this.debugStackLog = this.env.debugRenderTree.logCurrentRenderStack();
+      this.debugStackLog = this.env.extra.debugRenderTree.logCurrentRenderStack();
 
       // This guarantees that we preserve the `debug()` output below
       return new NestedPropertyReference(this, property);
@@ -162,7 +162,7 @@ class OutletComponentReference
 
   constructor(
     private outletRef: VersionedPathReference<OutletState | undefined>,
-    env: Environment
+    env: EmberVMEnvironment
   ) {
     // The router always dirties the root state.
     let tag = (this.tag = outletRef.tag);

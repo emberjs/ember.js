@@ -16,13 +16,13 @@ import {
 import { Tag } from '@glimmer/validator';
 // import * as WireFormat from '@glimmer/wire-format';
 import { MODEL_ARG_NAME, MountDefinition } from '../component-managers/mount';
-import Environment from '../environment';
+import { EmberVMEnvironment } from '../environment';
 
 export function mountHelper(
   args: VMArguments,
   vm: VM
 ): VersionedPathReference<CurriedComponentDefinition | null> {
-  let env = vm.env as Environment;
+  let env = vm.env as EmberVMEnvironment;
   let nameRef = args.positional.at(0);
   let captured: Option<CapturedArguments> = null;
 
@@ -133,7 +133,7 @@ class DynamicEngineReference implements VersionedPathReference<Option<CurriedCom
 
   constructor(
     public nameRef: VersionedPathReference<any | undefined | null>,
-    public env: Environment,
+    public env: EmberVMEnvironment,
     public args: Option<CapturedArguments>
   ) {
     this.tag = nameRef.tag;
@@ -150,10 +150,10 @@ class DynamicEngineReference implements VersionedPathReference<Option<CurriedCom
 
       assert(
         `You used \`{{mount '${name}'}}\`, but the engine '${name}' can not be found.`,
-        env.owner.hasRegistration(`engine:${name}`)
+        env.extra.owner.hasRegistration(`engine:${name}`)
       );
 
-      if (!env.owner.hasRegistration(`engine:${name}`)) {
+      if (!env.extra.owner.hasRegistration(`engine:${name}`)) {
         return null;
       }
 

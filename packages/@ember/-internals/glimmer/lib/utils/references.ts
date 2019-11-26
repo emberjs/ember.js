@@ -35,7 +35,7 @@ import {
   validate,
   value,
 } from '@glimmer/validator';
-import Environment from '../environment';
+import { EmberVMEnvironment } from '../environment';
 import { HelperFunction, HelperInstance, RECOMPUTE_TAG } from '../helper';
 import debugRenderMessage from './debug-render-message';
 import emberToBool from './to-bool';
@@ -81,13 +81,13 @@ export abstract class CachedReference extends EmberPathReference {
 
 export class RootReference<T extends object> extends ConstReference<T>
   implements VersionedPathReference<T> {
-  static create<T>(value: T, env?: Environment): VersionedPathReference<T> {
+  static create<T>(value: T, env?: EmberVMEnvironment): VersionedPathReference<T> {
     return valueToRef(value, true, env);
   }
 
   private children: Dict<VersionedPathReference<unknown>>;
 
-  constructor(value: T, private env?: Environment) {
+  constructor(value: T, private env?: EmberVMEnvironment) {
     super(value);
     this.children = Object.create(null);
   }
@@ -129,14 +129,14 @@ export class RootPropertyReference extends PropertyReference
   private propertyTag: UpdatableTag;
   private debugStackLog?: string;
 
-  constructor(private parentValue: object, private propertyKey: string, env?: Environment) {
+  constructor(private parentValue: object, private propertyKey: string, env?: EmberVMEnvironment) {
     super();
 
     if (DEBUG) {
       // Capture the stack when this reference is created, as that is the
       // component/context that the component was created _in_. Later, it could
       // be accessed from any number of components.
-      this.debugStackLog = env ? env.debugRenderTree.logCurrentRenderStack() : '';
+      this.debugStackLog = env ? env.extra.debugRenderTree.logCurrentRenderStack() : '';
     }
 
     this.propertyTag = createUpdatableTag();
@@ -504,7 +504,7 @@ function ensurePrimitive(value: unknown) {
 function valueToRef<T = unknown>(
   value: T,
   bound = true,
-  env?: Environment
+  env?: EmberVMEnvironment
 ): VersionedPathReference<T> {
   if (isObject(value)) {
     // root of interop with ember objects
