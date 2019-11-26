@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### v3.15.0-beta.4 (November 25, 2019)
+
+- [#17834](https://github.com/emberjs/ember.js/pull/17834) [BUGFIX] Prevents autotracking ArrayProxy creation
+- [#18554](https://github.com/emberjs/ember.js/pull/18554) [BREAKING BUGFIX] Adds autotracking transaction
+
 ### v3.15.0-beta.3 (November 18, 2019)
 
 - [#18549](https://github.com/emberjs/ember.js/pull/18549) [BUGFIX] Add component reference to the mouse event handler deprecation warnings
