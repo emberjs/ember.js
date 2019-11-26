@@ -1,4 +1,3 @@
-import { peekMeta } from '@ember/-internals/meta';
 import {
   HAS_NATIVE_PROXY,
   lookupDescriptor,
@@ -73,8 +72,6 @@ export function set(obj: object, keyName: string, value: any, tolerant?: boolean
     return setPath(obj, keyName, value, tolerant);
   }
 
-  let meta = peekMeta(obj);
-
   let descriptor = lookupDescriptor(obj, keyName);
   let setter = descriptor === null ? undefined : descriptor.set;
 
@@ -106,7 +103,7 @@ export function set(obj: object, keyName: string, value: any, tolerant?: boolean
     }
 
     if (currentValue !== value) {
-      notifyPropertyChange(obj, keyName, meta);
+      notifyPropertyChange(obj, keyName);
     }
   }
 
