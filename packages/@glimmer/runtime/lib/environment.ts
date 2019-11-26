@@ -251,13 +251,15 @@ function toBool(value: unknown): boolean {
   return !!value;
 }
 
-export abstract class EnvironmentImpl implements Environment {
+export abstract class EnvironmentImpl<Extra> implements Environment<Extra> {
   [TRANSACTION]: Option<TransactionImpl> = null;
 
-  protected isInteractive: boolean;
 
   protected updateOperations: GlimmerTreeChanges;
   protected appendOperations: GlimmerTreeConstruction;
+
+  public isInteractive: boolean;
+  abstract extra: Extra;
 
   constructor({ appendOperations, updateOperations }: EnvironmentOptions) {
     this.appendOperations = appendOperations;
@@ -332,7 +334,7 @@ export abstract class EnvironmentImpl implements Environment {
   }
 }
 
-export interface RuntimeEnvironmentDelegate {
+export interface RuntimeEnvironmentDelegate<Extra = undefined> {
   /**
    * Used to determine the the environment is interactive (e.g. SSR is not
    * interactive). Interactive environments schedule modifiers, among other things.
@@ -388,19 +390,19 @@ export interface RuntimeEnvironmentDelegate {
    * Slot for any extra values that the embedding environment wants to add,
    * providing/passing around additional context to various users in the VM.
    */
-  extra?: any;
+  extra?: Extra;
 }
 
-export class RuntimeEnvironmentDelegateImpl implements RuntimeEnvironmentDelegate {
+export class RuntimeEnvironmentDelegateImpl<Extra = undefined> implements RuntimeEnvironmentDelegate<Extra> {
   readonly isInteractive: boolean;
   readonly toBool: (value: unknown) => boolean;
   readonly toIterator: (value: unknown) => IteratorDelegate | undefined;
   readonly getPath: (obj: any, path: string) => any;
-  readonly extra: any;
+  readonly extra: Extra;
 
-  constructor(private inner: RuntimeEnvironmentDelegate = {}) {
+  constructor(private inner: RuntimeEnvironmentDelegate<Extra> = {}) {
     this.isInteractive = 'isInteractive' in inner ? inner.isInteractive! : true;
-    this.extra = inner.extra;
+    this.extra = inner.extra!;
 
     if (inner.toBool) {
       this.toBool = inner.toBool;
@@ -462,11 +464,11 @@ function legacyProtocolForURL(url: string): string {
   return anchor.protocol;
 }
 
-export class DefaultRuntimeResolver<R extends { module: string }>
+export class DefaultRuntimeResolver<R>
   implements JitRuntimeResolver<R>, AotRuntimeResolver {
-  constructor(private inner: RuntimeResolverDelegate) {}
+  constructor(private inner: RuntimeResolverDelegate<R>) {}
 
-  lookupComponent(name: string, referrer?: unknown): Option<any> {
+  lookupComponent(name: string, referrer?: R): Option<any> {
     if (this.inner.lookupComponent) {
       let component = this.inner.lookupComponent(name, referrer);
 
@@ -482,7 +484,7 @@ export class DefaultRuntimeResolver<R extends { module: string }>
     }
   }
 
-  lookupPartial(name: string, referrer?: unknown): Option<number> {
+  lookupPartial(name: string, referrer?: R): Option<number> {
     if (this.inner.lookupPartial) {
       let partial = this.inner.lookupPartial(name, referrer);
 
@@ -512,7 +514,7 @@ export class DefaultRuntimeResolver<R extends { module: string }>
     }
   }
 
-  compilable(locator: { module: string }): Template {
+  compilable(locator: R): Template {
     if (this.inner.compilable) {
       let resolved = this.inner.compilable(locator);
 
@@ -588,11 +590,11 @@ export function CustomJitRuntime(
   };
 }
 
-export function JitRuntime(
+export function JitRuntime<R, E>(
   options: EnvironmentSetupOptions,
-  resolver: RuntimeResolverDelegate = {},
-  delegate: RuntimeEnvironmentDelegate = {}
-): JitRuntimeContext {
+  resolver: RuntimeResolverDelegate<R> = {},
+  delegate: RuntimeEnvironmentDelegate<E> = {}
+): JitRuntimeContext<R, E> {
   let env = new RuntimeEnvironment(options, new RuntimeEnvironmentDelegateImpl(delegate));
 
   let constants = new Constants();
@@ -606,12 +608,12 @@ export function JitRuntime(
   };
 }
 
-export function JitRuntimeFromProgram(
+export function JitRuntimeFromProgram<R, E>(
   options: EnvironmentSetupOptions,
   program: RuntimeProgram,
-  resolver: RuntimeResolverDelegate = {},
-  delegate: RuntimeEnvironmentDelegate = {}
-): JitRuntimeContext {
+  resolver: RuntimeResolverDelegate<R> = {},
+  delegate: RuntimeEnvironmentDelegate<E> = {}
+): JitRuntimeContext<R, E> {
   let env = new RuntimeEnvironment(options, new RuntimeEnvironmentDelegateImpl(delegate));
 
   return {
@@ -621,10 +623,10 @@ export function JitRuntimeFromProgram(
   };
 }
 
-export class RuntimeEnvironment extends EnvironmentImpl {
-  private delegate: RuntimeEnvironmentDelegateImpl;
+export class RuntimeEnvironment<Extra = undefined> extends EnvironmentImpl<Extra> {
+  private delegate: RuntimeEnvironmentDelegateImpl<Extra>;
 
-  constructor(options: EnvironmentSetupOptions, delegate: RuntimeEnvironmentDelegateImpl) {
+  constructor(options: EnvironmentSetupOptions, delegate: RuntimeEnvironmentDelegateImpl<Extra>) {
     let envOptions: EnvironmentOptions;
 
     if (options.appendOperations && options.updateOperations) {
@@ -685,7 +687,7 @@ export function inTransaction(env: Environment, cb: () => void): void {
   }
 }
 
-export abstract class DefaultEnvironment extends EnvironmentImpl {
+export abstract class DefaultEnvironment extends EnvironmentImpl<undefined> {
   constructor(options?: EnvironmentOptions) {
     if (!options) {
       let document = window.document as SimpleDocument;

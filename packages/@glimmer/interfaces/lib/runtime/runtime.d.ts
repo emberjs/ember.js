@@ -14,19 +14,19 @@ import {
   The contents of the Runtime do not change as the VM executes, unlike
   the VM state.
  */
-export interface RuntimeContext<R = unknown> {
-  env: Environment;
+export interface RuntimeContext<R = unknown, E = unknown> {
+  env: Environment<E>;
   program: RuntimeProgram;
   resolver: RuntimeResolver<R>;
 }
 
-export interface AotRuntimeContext<R = unknown> {
-  env: Environment;
+export interface AotRuntimeContext<R = unknown, E = unknown> {
+  env: Environment<E>;
   program: RuntimeProgram;
   resolver: AotRuntimeResolver<R>;
 }
 
-export interface JitRuntimeContext<R = unknown> extends RuntimeContext<R> {
+export interface JitRuntimeContext<R = unknown, E = unknown> extends RuntimeContext<R, E> {
   resolver: JitRuntimeResolver<R>;
 }
 
