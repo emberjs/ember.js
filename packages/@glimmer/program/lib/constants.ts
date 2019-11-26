@@ -61,6 +61,10 @@ export class WriteOnlyConstants implements CompileTimeConstants {
   }
 
   templateMeta(value: unknown): number {
+    if (value.owner) {
+      value.owner.toJSON = () => '';
+    }
+
     let str = JSON.stringify(value);
     let index = this.strings.indexOf(str);
     if (index > -1) {
