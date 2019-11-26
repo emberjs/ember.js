@@ -30,7 +30,11 @@ class ConditionalHelperReference extends CachedReference {
     }
   }
 
-  constructor(cond: any, truthy: any, falsy: any) {
+  constructor(
+    cond: VersionedPathReference<unknown>,
+    truthy: PrimitiveReference<boolean>,
+    falsy: PrimitiveReference<boolean>
+  ) {
     super();
 
     this.branchTag = createUpdatableTag();

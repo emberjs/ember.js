@@ -1,5 +1,7 @@
 import { ENV } from '@ember/-internals/environment';
+import { get } from '@ember/-internals/metal';
 import { Owner } from '@ember/-internals/owner';
+import { isProxy } from '@ember/-internals/utils';
 import { constructStyleDeprecationMessage } from '@ember/-internals/views';
 import { warn } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
@@ -20,6 +22,7 @@ import DebugRenderTree from './utils/debug-render-tree';
 import createIterable from './utils/iterable';
 // import { ConditionalReference, UpdatableReference } from './utils/references';
 import { isHTMLSafe } from './utils/string';
+import emberToBool from './utils/to-bool';
 
 export interface CompilerFactory {
   id: string;
@@ -97,13 +100,17 @@ export class EmberEnvironmentDelegate implements RuntimeEnvironmentDelegate<Embe
     return s;
   }
 
-  // toConditionalReference(reference: UpdatableReference): VersionedReference<boolean> {
-  //   return ConditionalReference.create(reference);
-  // }
-
-  iterableFor(ref: VersionedReference, key: string): OpaqueIterable {
-    return createIterable(ref, key);
+  toBool(value: unknown) {
+    if (isProxy(value)) {
+      return Boolean(get(value, 'isTruthy'));
+    } else {
+      return emberToBool(value);
+    }
   }
+
+  // iterableFor(ref: VersionedReference, key: string): OpaqueIterable {
+  //   return createIterable(ref, key);
+  // }
 
   // scheduleInstallModifier(modifier: any, manager: any): void {
   //   if (this.isInteractive) {

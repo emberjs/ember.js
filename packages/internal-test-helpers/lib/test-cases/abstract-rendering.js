@@ -149,7 +149,7 @@ export default class AbstractRenderingTestCase extends AbstractTestCase {
   }
 
   registerPartial(name, template) {
-    let owner = this.env.owner || this.owner;
+    let owner = this.owner;
     if (typeof template === 'string') {
       owner.register(
         `template:${name}`,
@@ -182,7 +182,7 @@ export default class AbstractRenderingTestCase extends AbstractTestCase {
   }
 
   registerComponentManager(name, manager) {
-    let owner = this.env.owner || this.owner;
+    let owner = this.owner;
     owner.register(`component-manager:${name}`, manager);
   }
 

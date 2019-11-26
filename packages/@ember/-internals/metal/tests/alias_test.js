@@ -10,7 +10,7 @@ import {
 } from '..';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
-import { value, validate } from '@glimmer/reference';
+import { value, validate } from '@glimmer/validator';
 
 let obj, count;
 

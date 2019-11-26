@@ -11,7 +11,7 @@ import {
 
 import { EMBER_ARRAY } from '@ember/-internals/utils';
 import { AbstractTestCase, moduleFor } from 'internal-test-helpers';
-import { value, validate } from '@glimmer/reference';
+import { value, validate } from '@glimmer/validator';
 
 moduleFor(
   '@tracked get validation',

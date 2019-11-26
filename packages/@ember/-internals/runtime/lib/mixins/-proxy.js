@@ -15,7 +15,7 @@ import {
 } from '@ember/-internals/metal';
 import { setProxy } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
-import { combine, update } from '@glimmer/reference';
+import { combine, update } from '@glimmer/validator';
 
 export function contentFor(proxy, m) {
   let content = get(proxy, 'content');
