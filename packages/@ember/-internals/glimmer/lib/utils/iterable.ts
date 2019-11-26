@@ -8,7 +8,6 @@ import {
 } from '@ember/-internals/metal';
 import { _contentFor } from '@ember/-internals/runtime';
 import { guidFor, HAS_NATIVE_SYMBOL, isEmberArray, isProxy } from '@ember/-internals/utils';
-import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import {
   AbstractIterable,
@@ -142,7 +141,7 @@ class ObjectIterator extends BoundedIterator {
 
         // Add the tag of the returned value if it is an array, since arrays
         // should always cause updates if they are consumed and then changed
-        if (EMBER_METAL_TRACKED_PROPERTIES && isTracking()) {
+        if (isTracking()) {
           consume(tagForProperty(obj, key));
 
           if (Array.isArray(value) || isEmberArray(value)) {

@@ -21,7 +21,6 @@ import {
   typeOf,
 } from '@ember/-internals/runtime';
 import { lookupDescriptor } from '@ember/-internals/utils';
-import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import Controller from '@ember/controller';
 import { assert, deprecate, info, isTesting } from '@ember/debug';
 import { ROUTER_EVENTS } from '@ember/deprecated-features';
@@ -950,9 +949,7 @@ class Route extends EmberObject implements IRoute {
 
     // Setup can cause changes to QPs which need to be propogated immediately in
     // some situations. Eventually, we should work on making these async somehow.
-    if (EMBER_METAL_TRACKED_PROPERTIES) {
-      flushAsyncObservers(false);
-    }
+    flushAsyncObservers(false);
   }
 
   /*
@@ -2590,7 +2587,7 @@ Route.reopen(ActionHandler, Evented, {
 
       // Some QPs have been updated, and those changes need to be propogated
       // immediately. Eventually, we should work on making this async somehow.
-      if (EMBER_METAL_TRACKED_PROPERTIES && qpUpdated === true) {
+      if (qpUpdated === true) {
         flushAsyncObservers(false);
       }
 

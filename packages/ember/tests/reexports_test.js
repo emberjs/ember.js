@@ -1,9 +1,5 @@
 import Ember from '../index';
-import {
-  FEATURES,
-  EMBER_METAL_TRACKED_PROPERTIES,
-  EMBER_GLIMMER_SET_COMPONENT_TEMPLATE,
-} from '@ember/canary-features';
+import { FEATURES, EMBER_GLIMMER_SET_COMPONENT_TEMPLATE } from '@ember/canary-features';
 import { confirmExport } from 'internal-test-helpers';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 import { jQueryDisabled, jQuery } from '@ember/-internals/views';
@@ -177,23 +173,12 @@ let allExports = [
   ['run.currentRunLoop', '@ember/runloop', { get: 'getCurrentRunLoop' }],
   ['run.cancelTimers', '@ember/runloop', 'cancelTimers'],
   ['notifyPropertyChange', '@ember/-internals/metal'],
-  ['overrideChains', '@ember/-internals/metal'],
   ['beginPropertyChanges', '@ember/-internals/metal'],
   ['endPropertyChanges', '@ember/-internals/metal'],
   ['changeProperties', '@ember/-internals/metal'],
   ['platform.defineProperty', null, { value: true }],
   ['platform.hasPropertyAccessors', null, { value: true }],
   ['defineProperty', '@ember/-internals/metal'],
-  ['watchKey', '@ember/-internals/metal'],
-  ['unwatchKey', '@ember/-internals/metal'],
-  ['removeChainWatcher', '@ember/-internals/metal'],
-  ['_ChainNode', '@ember/-internals/metal', 'ChainNode'],
-  ['finishChains', '@ember/-internals/metal'],
-  ['watchPath', '@ember/-internals/metal'],
-  ['unwatchPath', '@ember/-internals/metal'],
-  ['watch', '@ember/-internals/metal'],
-  ['isWatching', '@ember/-internals/metal'],
-  ['unwatch', '@ember/-internals/metal'],
   ['destroy', '@ember/-internals/meta', 'deleteMeta'],
   ['libraries', '@ember/-internals/metal'],
   ['getProperties', '@ember/-internals/metal'],
@@ -300,9 +285,7 @@ let allExports = [
     { get: 'isNamespaceSearchDisabled', set: 'setNamespaceSearchDisabled' },
   ],
   ['_action', '@ember/object', 'action'],
-  EMBER_METAL_TRACKED_PROPERTIES
-    ? ['_dependentKeyCompat', '@ember/object/compat', 'dependentKeyCompat']
-    : null,
+  ['_dependentKeyCompat', '@ember/object/compat', 'dependentKeyCompat'],
   ['computed.empty', '@ember/object/computed', 'empty'],
   ['computed.notEmpty', '@ember/object/computed', 'notEmpty'],
   ['computed.none', '@ember/object/computed', 'none'],

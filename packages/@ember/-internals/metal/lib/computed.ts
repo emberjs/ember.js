@@ -1,6 +1,5 @@
-import { Meta, meta as metaFor, peekMeta } from '@ember/-internals/meta';
+import { Meta, meta as metaFor } from '@ember/-internals/meta';
 import { inspect, isEmberArray, toString } from '@ember/-internals/utils';
-import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { assert, deprecate, warn } from '@ember/debug';
 import EmberError from '@ember/error';
 import {
@@ -20,13 +19,11 @@ import {
   setLastRevisionFor,
 } from './computed_cache';
 import {
-  addDependentKeys,
   ComputedDescriptor,
   Decorator,
   DecoratorPropertyDescriptor,
   isElementDescriptor,
   makeComputedDecorator,
-  removeDependentKeys,
 } from './decorator';
 import {
   descriptorForDecorator,
@@ -599,104 +596,65 @@ export class ComputedProperty extends ComputedDescriptor {
     @public
   */
 
-  // invalidate cache when CP key changes
-  didChange(obj: object, keyName: string): void {
-    // _suspended is set via a CP.set to ensure we don't clear
-    // the cached value set by the setter
-    if (this._volatile || this._suspended === obj) {
-      return;
-    }
-
-    // don't create objects just to invalidate
-    let meta = peekMeta(obj);
-    if (meta === null || meta.source !== obj) {
-      return;
-    }
-
-    let cache = peekCacheFor(obj);
-    if (cache !== undefined && cache.delete(keyName)) {
-      removeDependentKeys(this, obj, keyName, meta);
-    }
-  }
-
   get(obj: object, keyName: string): any {
     if (this._volatile) {
       return this._getter!.call(obj, keyName);
     }
 
     let cache = getCacheFor(obj);
-    if (EMBER_METAL_TRACKED_PROPERTIES) {
-      let propertyTag = tagForProperty(obj, keyName) as UpdatableTag;
+    let propertyTag = tagForProperty(obj, keyName) as UpdatableTag;
 
-      let ret;
+    let ret;
 
-      if (cache.has(keyName) && validate(propertyTag, getLastRevisionFor(obj, keyName))) {
-        ret = cache.get(keyName);
-      } else {
-        // For backwards compatibility, we only throw if the CP has any dependencies. CPs without dependencies
-        // should be allowed, even after the object has been destroyed, which is why we check _dependentKeys.
-        assert(
-          `Attempted to access the computed ${obj}.${keyName} on a destroyed object, which is not allowed`,
-          this._dependentKeys === undefined || !metaFor(obj).isMetaDestroyed()
-        );
-
-        let upstreamTag: Tag | undefined = undefined;
-
-        if (this._auto === true) {
-          upstreamTag = track(() => {
-            ret = this._getter!.call(obj, keyName);
-          });
-        } else {
-          // Create a tracker that absorbs any trackable actions inside the CP
-          untrack(() => {
-            ret = this._getter!.call(obj, keyName);
-          });
-        }
-
-        if (this._dependentKeys !== undefined) {
-          let tag = combine(getChainTagsForKeys(obj, this._dependentKeys));
-
-          upstreamTag = upstreamTag === undefined ? tag : combine([upstreamTag, tag]);
-        }
-
-        if (upstreamTag !== undefined) {
-          update(propertyTag!, upstreamTag);
-        }
-
-        setLastRevisionFor(obj, keyName, tagValue(propertyTag));
-
-        cache.set(keyName, ret);
-
-        finishLazyChains(obj, keyName, ret);
-      }
-
-      consume(propertyTag!);
-
-      // Add the tag of the returned value if it is an array, since arrays
-      // should always cause updates if they are consumed and then changed
-      if (Array.isArray(ret) || isEmberArray(ret)) {
-        consume(tagForProperty(ret, '[]'));
-      }
-
-      return ret;
+    if (cache.has(keyName) && validate(propertyTag, getLastRevisionFor(obj, keyName))) {
+      ret = cache.get(keyName);
     } else {
-      if (cache.has(keyName)) {
-        return cache.get(keyName);
+      // For backwards compatibility, we only throw if the CP has any dependencies. CPs without dependencies
+      // should be allowed, even after the object has been destroyed, which is why we check _dependentKeys.
+      assert(
+        `Attempted to access the computed ${obj}.${keyName} on a destroyed object, which is not allowed`,
+        this._dependentKeys === undefined || !metaFor(obj).isMetaDestroyed()
+      );
+
+      let upstreamTag: Tag | undefined = undefined;
+
+      if (this._auto === true) {
+        upstreamTag = track(() => {
+          ret = this._getter!.call(obj, keyName);
+        });
+      } else {
+        // Create a tracker that absorbs any trackable actions inside the CP
+        untrack(() => {
+          ret = this._getter!.call(obj, keyName);
+        });
       }
 
-      let ret = this._getter!.call(obj, keyName);
+      if (this._dependentKeys !== undefined) {
+        let tag = combine(getChainTagsForKeys(obj, this._dependentKeys));
+
+        upstreamTag = upstreamTag === undefined ? tag : combine([upstreamTag, tag]);
+      }
+
+      if (upstreamTag !== undefined) {
+        update(propertyTag!, upstreamTag);
+      }
+
+      setLastRevisionFor(obj, keyName, tagValue(propertyTag));
 
       cache.set(keyName, ret);
 
-      let meta = metaFor(obj);
-      let chainWatchers = meta.readableChainWatchers();
-      if (chainWatchers !== undefined) {
-        chainWatchers.revalidate(keyName);
-      }
-      addDependentKeys(this, obj, keyName, meta);
-
-      return ret;
+      finishLazyChains(obj, keyName, ret);
     }
+
+    consume(propertyTag!);
+
+    // Add the tag of the returned value if it is an array, since arrays
+    // should always cause updates if they are consumed and then changed
+    if (Array.isArray(ret) || isEmberArray(ret)) {
+      consume(tagForProperty(ret, '[]'));
+    }
+
+    return ret;
   }
 
   set(obj: object, keyName: string, value: any): any {
@@ -712,30 +670,26 @@ export class ComputedProperty extends ComputedDescriptor {
       return this.volatileSet(obj, keyName, value);
     }
 
-    if (EMBER_METAL_TRACKED_PROPERTIES) {
-      let ret;
+    let ret;
 
-      try {
-        beginPropertyChanges();
-        ret = this._set(obj, keyName, value);
+    try {
+      beginPropertyChanges();
+      ret = this._set(obj, keyName, value);
 
-        finishLazyChains(obj, keyName, ret);
+      finishLazyChains(obj, keyName, ret);
 
-        let propertyTag = tagForProperty(obj, keyName) as UpdatableTag;
+      let propertyTag = tagForProperty(obj, keyName) as UpdatableTag;
 
-        if (this._dependentKeys !== undefined) {
-          update(propertyTag, combine(getChainTagsForKeys(obj, this._dependentKeys)));
-        }
-
-        setLastRevisionFor(obj, keyName, tagValue(propertyTag));
-      } finally {
-        endPropertyChanges();
+      if (this._dependentKeys !== undefined) {
+        update(propertyTag, combine(getChainTagsForKeys(obj, this._dependentKeys)));
       }
 
-      return ret;
-    } else {
-      return this.setWithSuspend(obj, keyName, value);
+      setLastRevisionFor(obj, keyName, tagValue(propertyTag));
+    } finally {
+      endPropertyChanges();
     }
+
+    return ret;
   }
 
   _throwReadOnlyError(obj: object, keyName: string): never {
@@ -782,16 +736,12 @@ export class ComputedProperty extends ComputedDescriptor {
 
     let ret;
 
-    if (EMBER_METAL_TRACKED_PROPERTIES) {
-      setObserverSuspended(obj, keyName, true);
+    setObserverSuspended(obj, keyName, true);
 
-      try {
-        ret = this._setter!.call(obj, keyName, value, cachedValue);
-      } finally {
-        setObserverSuspended(obj, keyName, false);
-      }
-    } else {
+    try {
       ret = this._setter!.call(obj, keyName, value, cachedValue);
+    } finally {
+      setObserverSuspended(obj, keyName, false);
     }
 
     // allows setter to return the same value that is cached already
@@ -800,9 +750,6 @@ export class ComputedProperty extends ComputedDescriptor {
     }
 
     let meta = metaFor(obj);
-    if (!EMBER_METAL_TRACKED_PROPERTIES && !hadCachedValue) {
-      addDependentKeys(this, obj, keyName, meta);
-    }
 
     cache.set(keyName, ret);
 
@@ -815,20 +762,16 @@ export class ComputedProperty extends ComputedDescriptor {
   teardown(obj: object, keyName: string, meta?: any): void {
     if (!this._volatile) {
       let cache = peekCacheFor(obj);
-      if (cache !== undefined && cache.delete(keyName)) {
-        removeDependentKeys(this, obj, keyName, meta);
+      if (cache !== undefined) {
+        cache.delete(keyName);
       }
     }
     super.teardown(obj, keyName, meta);
   }
 
-  auto!: () => void;
-}
-
-if (EMBER_METAL_TRACKED_PROPERTIES) {
-  ComputedProperty.prototype.auto = function() {
+  auto() {
     this._auto = true;
-  };
+  }
 }
 
 export type ComputedDecorator = Decorator & PropertyDecorator & ComputedDecoratorImpl;
