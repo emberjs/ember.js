@@ -1,10 +1,9 @@
 import { AbstractIterable, IterationItem, OpaqueIterator, OpaqueIterationItem } from './iterable';
-import { VersionedReference } from './reference';
 import { Tag } from '@glimmer/validator';
-import { Option, Dict } from '@glimmer/interfaces';
+import { Option, Dict, Environment } from '@glimmer/interfaces';
 import { EMPTY_ARRAY, isObject } from '@glimmer/util';
 import { DEBUG } from '@glimmer/local-debug-flags';
-import { UpdatableReference } from './property';
+import { IterationItemReference, TemplatePathReference } from './template';
 
 export interface IteratorDelegate {
   isEmpty(): boolean;
@@ -135,36 +134,31 @@ export class IterableImpl
       unknown,
       unknown,
       IterationItem<unknown, unknown>,
-      UpdatableReference<unknown>,
-      UpdatableReference<unknown>
+      IterationItemReference<unknown>,
+      IterationItemReference<unknown>
     > {
   public tag: Tag;
 
   constructor(
-    private ref: VersionedReference,
+    private parentRef: TemplatePathReference,
     private key: string,
-    private iteratorFor: (iterable: unknown) => IteratorDelegate | undefined,
-    private getPath: (item: any, path: string) => any
+    private env: Environment
   ) {
-    this.tag = ref.tag;
-    this.ref = ref;
-    this.key = key;
-    this.iteratorFor = iteratorFor;
-    this.getPath = getPath;
+    this.tag = parentRef.tag;
   }
 
   iterate(): OpaqueIterator {
-    let { ref, key, iteratorFor, getPath } = this;
+    let { parentRef, key, env } = this;
 
-    let iterable = ref.value() as { [Symbol.iterator]: any } | null | false;
+    let iterable = parentRef.value() as { [Symbol.iterator]: any } | null | false;
 
-    let keyFor = makeKeyFor(key, getPath);
+    let keyFor = makeKeyFor(key, env.getPath);
 
     if (Array.isArray(iterable)) {
       return new ArrayIterator(iterable, keyFor);
     }
 
-    let maybeIterator = iteratorFor(iterable);
+    let maybeIterator = env.toIterator(iterable);
 
     if (maybeIterator === undefined) {
       return new ArrayIterator(EMPTY_ARRAY, () => null);
@@ -173,26 +167,30 @@ export class IterableImpl
     return new IteratorWrapper(maybeIterator, keyFor);
   }
 
-  valueReferenceFor(item: IterationItem<unknown, unknown>): UpdatableReference<unknown> {
-    return new UpdatableReference(item.value);
+  valueReferenceFor(item: IterationItem<unknown, unknown>): IterationItemReference<unknown> {
+    let { parentRef, env } = this;
+
+    return new IterationItemReference(parentRef, item.value, item.key, env);
   }
 
   updateValueReference(
-    reference: UpdatableReference<unknown>,
+    reference: IterationItemReference<unknown>,
     item: IterationItem<unknown, unknown>
   ) {
-    reference.forceUpdate(item.value);
+    reference.update(item.value);
   }
 
-  memoReferenceFor(item: IterationItem<unknown, unknown>): UpdatableReference<unknown> {
-    return new UpdatableReference(item.memo);
+  memoReferenceFor(item: IterationItem<unknown, unknown>): IterationItemReference<unknown> {
+    let { parentRef, env } = this;
+
+    return new IterationItemReference(parentRef, item.memo, item.key, env);
   }
 
   updateMemoReference(
-    reference: UpdatableReference<unknown>,
+    reference: IterationItemReference<unknown>,
     item: IterationItem<unknown, unknown>
   ) {
-    reference.forceUpdate(item.memo);
+    reference.update(item.memo);
   }
 }
 

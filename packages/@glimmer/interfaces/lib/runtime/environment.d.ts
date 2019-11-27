@@ -1,4 +1,4 @@
-import { OpaqueIterable, VersionedPathReference, VersionedReference } from '@glimmer/reference';
+import { OpaqueIterable, VersionedPathReference, VersionedReference, IteratorDelegate } from '@glimmer/reference';
 import { AttributeOperation } from '@glimmer/runtime';
 import { AttrNamespace, SimpleElement, SimpleDocument } from '@simple-dom/interface';
 import { ComponentDefinitionState, ComponentInstanceState } from '../components';
@@ -8,15 +8,10 @@ import { GlimmerTreeChanges, GlimmerTreeConstruction } from '../dom/changes';
 import { ModifierManager } from './modifier';
 import { Cursor } from '../dom/bounds';
 
-export interface EnvironmentSetupOptions {
+export interface EnvironmentOptions {
   document?: SimpleDocument;
   appendOperations?: GlimmerTreeConstruction;
   updateOperations?: GlimmerTreeChanges;
-}
-
-export interface EnvironmentOptions {
-  appendOperations: GlimmerTreeConstruction;
-  updateOperations: GlimmerTreeChanges;
 }
 
 export type InternalComponent = ComponentInstanceState;
@@ -50,9 +45,22 @@ export interface Environment<Extra = unknown> {
   ): AttributeOperation;
   getAppendOperations(): GlimmerTreeConstruction;
 
+  // Moving away from these, toward `toIterator` and `toBool` respectively
   iterableFor(reference: VersionedReference<unknown>, key: unknown): OpaqueIterable;
   toConditionalReference(reference: VersionedReference<unknown>): VersionedReference<boolean>;
 
+  toBool(value: unknown): boolean;
+  toIterator(value: unknown): IteratorDelegate | void;
+
+  getPath(item: unknown, path: string): unknown;
+  setPath(item: unknown, path: string, value: unknown): unknown;
+  getDebugContext(): string;
+
+  isInteractive: boolean;
+  extra: Extra;
+}
+
+export interface PublicEnvironment<Extra = unknown> {
   isInteractive: boolean;
   extra: Extra;
 }

@@ -1,6 +1,6 @@
 import { CONSTANT_TAG, Tag } from '@glimmer/validator';
 import { VersionedPathReference } from './reference';
-import { UNDEFINED_REFERENCE } from './property';
+import { UNDEFINED_REFERENCE } from './primitive';
 
 export class ConstReference<T = unknown> implements VersionedPathReference<T> {
   public tag: Tag = CONSTANT_TAG;

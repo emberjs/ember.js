@@ -39,6 +39,7 @@
     "simple-html-tokenizer": "^0.5.8"
   },
   "devDependencies": {
+    "@glimmer/env": "0.1.7",
     "@types/qunit": "^2.0.31",
     "@typescript-eslint/eslint-plugin": "^2.2.0",
     "@typescript-eslint/parser": "^2.2.0",

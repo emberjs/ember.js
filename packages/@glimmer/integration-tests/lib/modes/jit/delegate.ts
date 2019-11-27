@@ -29,7 +29,7 @@ import { EmberishCurlyComponentFactory } from '../../components/emberish-curly';
 import { EmberishGlimmerComponentFactory } from '../../components/emberish-glimmer';
 import { TestModifierConstructor } from '../../modifiers';
 import { UserHelper } from '../../helpers';
-import { UpdatableReference, ConstReference } from '@glimmer/reference';
+import { UpdatableRootReference, ConstReference } from '@glimmer/reference';
 import { renderTemplate } from './render';
 
 export interface JitTestDelegateContext {
@@ -56,7 +56,7 @@ export class JitRenderDelegate implements RenderDelegate {
   private resolver: TestJitRuntimeResolver = new TestJitRuntimeResolver();
   private registry: TestJitRegistry = this.resolver.registry;
   private context: JitTestDelegateContext;
-  private self: Option<UpdatableReference> = null;
+  private self: Option<UpdatableRootReference> = null;
 
   constructor(private doc: SimpleDocument = document as SimpleDocument) {
     this.context = this.getContext();
@@ -124,9 +124,9 @@ export class JitRenderDelegate implements RenderDelegate {
     return clientBuilder(env, cursor);
   }
 
-  getSelf(context: unknown): UpdatableReference | ConstReference {
+  getSelf(context: unknown): UpdatableRootReference | ConstReference {
     if (!this.self) {
-      this.self = new UpdatableReference(context);
+      this.self = new UpdatableRootReference(context);
     }
 
     return this.self;

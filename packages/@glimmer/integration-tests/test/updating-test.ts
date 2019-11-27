@@ -8,7 +8,7 @@ import {
   ErrHandle,
   EncoderError,
 } from '@glimmer/interfaces';
-import { UpdatableReference } from '@glimmer/object-reference';
+import { UpdatableRootReference } from '@glimmer/object-reference';
 import { ConstReference } from '@glimmer/reference';
 import { bump } from '@glimmer/validator';
 import {
@@ -45,7 +45,7 @@ const SVG_NAMESPACE = Namespace.SVG;
 const XLINK_NAMESPACE = Namespace.XLink;
 const XHTML_NAMESPACE = 'http://www.w3.org/1999/xhtml';
 
-let self: UpdatableReference<any>;
+let self: UpdatableRootReference<any>;
 let result: RenderResult;
 
 let context: TestContext;
@@ -82,7 +82,7 @@ function compileTemplate(template: TemplateOk<AnnotatedModuleLocator>): HandleRe
 }
 
 function render(template: TemplateOk<AnnotatedModuleLocator>, state = {}): RenderResult {
-  self = new UpdatableReference(state);
+  self = new UpdatableRootReference(state);
   context.env.begin();
   let cursor = { element: context.root, nextSibling: null };
 
@@ -1352,7 +1352,7 @@ module('[jit] integration - Updating', hooks => {
     let { template, truthyValue, falsyValue, element = context.root } = arg1;
     let didCreate = 0;
     let didDestroy = 0;
-    let reference: UpdatableReference<T | U> | undefined;
+    let reference: UpdatableRootReference<T | U> | undefined;
 
     registerInternalHelper(context.registry, 'stateful-foo', (_args, vm) => {
       didCreate++;
@@ -1363,7 +1363,7 @@ module('[jit] integration - Updating', hooks => {
         },
       });
 
-      return (reference = new UpdatableReference(truthyValue));
+      return (reference = new UpdatableRootReference(truthyValue));
     });
 
     assert.strictEqual(didCreate, 0, 'didCreate: before render');

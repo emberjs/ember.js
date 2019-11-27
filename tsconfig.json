@@ -25,7 +25,7 @@
     "noEmit": true,
 
     "paths": {
-      "@glimmer/*": ["@glimmer/*"]
+      "@glimmer/*": ["@glimmer/*", "../node_modules/@glimmer/*"]
     }
   },
   "include": ["packages/**/*.ts"],
