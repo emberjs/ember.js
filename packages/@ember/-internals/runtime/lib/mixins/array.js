@@ -670,7 +670,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
     ```javascript
     let people = [{name: 'Joe'}, {name: 'Matt'}];
     
-    people.setEach('zipCode', '10011);
+    people.setEach('zipCode', '10011');
     // [{name: 'Joe', zipCode: '10011'}, {name: 'Matt', zipCode: '10011'}];
     ```
 
