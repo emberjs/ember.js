@@ -11,7 +11,7 @@ import {
 } from '@glimmer/validator';
 import { dict } from '@glimmer/util';
 
-class UpdatableReference<T> implements Reference<T> {
+class UpdatableRootReference<T> implements Reference<T> {
   public tag: DirtyableTag;
   private _tag: DirtyableTag;
 
@@ -134,7 +134,7 @@ QUnit.test('CachedReference caches nested computation correctly', assert => {
   let first = new TaggedDict<string>();
   let second = new TaggedDict<string>();
 
-  let dictReference = new UpdatableReference(first);
+  let dictReference = new UpdatableRootReference(first);
   let valueReference = new DictValueReference(dictReference, 'foo');
 
   first.set('foo', 'bar');

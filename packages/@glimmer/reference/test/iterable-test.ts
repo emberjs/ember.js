@@ -10,7 +10,7 @@ import {
   END,
 } from '@glimmer/reference';
 import { Tag, CURRENT_TAG } from '@glimmer/validator';
-import { UpdatableReference } from '@glimmer/object-reference';
+import { UpdatableRootReference } from '@glimmer/object-reference';
 
 import { Option, LinkedList, ListNode } from '@glimmer/util';
 
@@ -159,13 +159,13 @@ class TestIterable
       unknown,
       unknown,
       IterationItem<unknown, unknown>,
-      UpdatableReference<unknown>,
-      UpdatableReference<unknown>
+      UpdatableRootReference<unknown>,
+      UpdatableRootReference<unknown>
     > {
   public tag: Tag;
-  private arrayRef: UpdatableReference<TestItem[]>;
+  private arrayRef: UpdatableRootReference<TestItem[]>;
 
-  constructor(arrayRef: UpdatableReference<TestItem[]>) {
+  constructor(arrayRef: UpdatableRootReference<TestItem[]>) {
     this.tag = arrayRef.tag;
     this.arrayRef = arrayRef;
   }
@@ -174,28 +174,28 @@ class TestIterable
     return new TestIterator(this.arrayRef.value());
   }
 
-  valueReferenceFor(item: TestIterationItem): UpdatableReference<unknown> {
-    return new UpdatableReference(item.value);
+  valueReferenceFor(item: TestIterationItem): UpdatableRootReference<unknown> {
+    return new UpdatableRootReference(item.value);
   }
 
-  updateValueReference(reference: UpdatableReference<unknown>, item: TestIterationItem) {
+  updateValueReference(reference: UpdatableRootReference<unknown>, item: TestIterationItem) {
     reference.update(item.value);
   }
 
-  memoReferenceFor(item: TestIterationItem): UpdatableReference<unknown> {
-    return new UpdatableReference(item.memo);
+  memoReferenceFor(item: TestIterationItem): UpdatableRootReference<unknown> {
+    return new UpdatableRootReference(item.memo);
   }
 
-  updateMemoReference(reference: UpdatableReference<unknown>, item: TestIterationItem) {
+  updateMemoReference(reference: UpdatableRootReference<unknown>, item: TestIterationItem) {
     reference.update(item.memo);
   }
 }
 
 function initialize(
   arr: TestItem[]
-): { artifacts: IterationArtifacts; target: Target; reference: UpdatableReference<TestItem[]> } {
+): { artifacts: IterationArtifacts; target: Target; reference: UpdatableRootReference<TestItem[]> } {
   let target = new Target();
-  let reference = new UpdatableReference(arr);
+  let reference = new UpdatableRootReference(arr);
   let iterator = new ReferenceIterator(new TestIterable(reference));
   let item;
 

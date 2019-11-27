@@ -21,7 +21,7 @@ import {
   JitRuntimeResolver,
 } from '@glimmer/interfaces';
 import { Attrs, AttrsDiff } from './emberish-glimmer';
-import { VersionedPathReference, UpdatableReference, PathReference } from '@glimmer/reference';
+import { VersionedPathReference, UpdatableRootReference, PathReference } from '@glimmer/reference';
 import { combine, createTag, dirty, DirtyableTag, Tag } from '@glimmer/validator';
 import { keys, EMPTY_ARRAY, assign } from '@glimmer/util';
 import { TestComponentDefinitionState } from './test-component';
@@ -102,7 +102,7 @@ export class EmberishCurlyComponent {
   didRender() {}
 }
 
-const SELF_REF = new WeakMap<object, UpdatableReference>();
+const SELF_REF = new WeakMap<object, UpdatableRootReference>();
 
 export interface EmberishCurlyComponentDefinitionState {
   name: string;
@@ -251,7 +251,7 @@ export class EmberishCurlyComponentManager
   }
 
   getSelf(component: EmberishCurlyComponent): PathReference<unknown> {
-    let ref = new UpdatableReference(component);
+    let ref = new UpdatableRootReference(component);
     SELF_REF.set(component, ref);
     return ref;
   }
@@ -287,7 +287,7 @@ export class EmberishCurlyComponentManager
     if (bindings) {
       for (let i = 0; i < bindings.length; i++) {
         let attribute = bindings[i];
-        let reference = rootRef.get(attribute) as PathReference<string>;
+        let reference = rootRef.get(attribute);
 
         operations.setAttribute(attribute, reference, false, null);
       }

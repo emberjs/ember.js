@@ -4,7 +4,7 @@ import {
   SyntaxCompilationContext,
   Template,
 } from '@glimmer/interfaces';
-import { UpdatableReference } from '@glimmer/object-reference';
+import { UpdatableRootReference } from '@glimmer/object-reference';
 import { clientBuilder, renderJitMain } from '@glimmer/runtime';
 import {
   BasicComponent,
@@ -26,7 +26,7 @@ import { unwrapTemplate, unwrapHandle } from '@glimmer/opcode-compiler';
 
 let context: TestContext;
 let result: RenderResult;
-let self: UpdatableReference<unknown>;
+let self: UpdatableRootReference<unknown>;
 
 function compile(template: string) {
   return preprocess(template);
@@ -37,7 +37,7 @@ function commonSetup() {
 }
 
 function render(template: Template, state = {}) {
-  self = new UpdatableReference(state);
+  self = new UpdatableRootReference(state);
   context.env.begin();
   let cursor = { element: context.root, nextSibling: null };
 

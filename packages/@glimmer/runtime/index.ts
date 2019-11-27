@@ -29,12 +29,10 @@ export { DefaultDynamicScope } from './lib/dynamic-scope';
 export {
   AotRuntime,
   default as EnvironmentImpl,
-  DefaultEnvironment,
   CustomJitRuntime,
   JitRuntimeFromProgram,
   JitRuntime,
-  RuntimeEnvironment,
-  RuntimeEnvironmentDelegate,
+  EnvironmentDelegate as RuntimeEnvironmentDelegate,
   ScopeImpl,
   JitSyntaxCompilationContext,
 } from './lib/environment';

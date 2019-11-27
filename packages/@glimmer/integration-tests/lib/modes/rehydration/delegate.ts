@@ -7,7 +7,7 @@ import {
   Option,
 } from '@glimmer/interfaces';
 import { serializeBuilder } from '@glimmer/node';
-import { UpdatableReference } from '@glimmer/reference';
+import { UpdatableRootReference } from '@glimmer/reference';
 import createHTMLDocument from '@simple-dom/document';
 import { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
 import { ComponentKind } from '../../components';
@@ -44,7 +44,7 @@ export class RehydrationDelegate implements RenderDelegate {
 
   public rehydrationStats!: RehydrationStats;
 
-  private self: Option<UpdatableReference> = null;
+  private self: Option<UpdatableRootReference> = null;
 
   constructor() {
     this.clientDoc = document as SimpleDocument;
@@ -94,9 +94,9 @@ export class RehydrationDelegate implements RenderDelegate {
     return this.serialize(element);
   }
 
-  getSelf(context: unknown): UpdatableReference {
+  getSelf(context: unknown): UpdatableRootReference {
     if (!this.self) {
-      this.self = new UpdatableReference(context);
+      this.self = new UpdatableRootReference(context);
     }
 
     return this.self;

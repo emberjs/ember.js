@@ -22,7 +22,7 @@ import {
   DynamicScope,
 } from '@glimmer/interfaces';
 import { WrappedBuilder } from '@glimmer/opcode-compiler';
-import { PathReference, UpdatableReference, StableState } from '@glimmer/reference';
+import { PathReference, UpdatableRootReference, StableState } from '@glimmer/reference';
 import {
   clientBuilder,
   getDynamicVar,
@@ -153,7 +153,7 @@ export class AotRenderDelegate implements RenderDelegate {
     this.registry.addComponent(module, manager, state);
   }
 
-  getSelf(context: object): UpdatableReference {
+  getSelf(context: object): UpdatableRootReference {
     return StableState(context);
   }
 

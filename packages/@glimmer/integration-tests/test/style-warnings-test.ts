@@ -6,7 +6,7 @@ import {
   Environment,
   ElementBuilder,
 } from '@glimmer/interfaces';
-import { UpdatableReference } from '@glimmer/object-reference';
+import { UpdatableRootReference } from '@glimmer/object-reference';
 import {
   clientBuilder,
   DynamicAttribute,
@@ -51,7 +51,7 @@ function render(template: Template<AnnotatedModuleLocator>, self: any) {
   let templateIterator = renderJitMain(
     context.runtime,
     context.syntax,
-    new UpdatableReference(self),
+    new UpdatableRootReference(self),
     clientBuilder(context.env, cursor),
     unwrapHandle(handle)
   );

@@ -9,7 +9,7 @@ import {
 } from '@glimmer/interfaces';
 import { unwrapTemplate, unwrapHandle } from '@glimmer/opcode-compiler';
 import EmberObject from '@glimmer/object';
-import { CLASS_META, setProperty as set, UpdatableReference } from '@glimmer/object-reference';
+import { CLASS_META, setProperty as set, UpdatableRootReference } from '@glimmer/object-reference';
 import { bump } from '@glimmer/validator';
 import { clientBuilder, renderJitMain } from '@glimmer/runtime';
 import { assign, dict, unwrap } from '@glimmer/util';
@@ -68,7 +68,7 @@ export class EmberishRootView extends EmberObject {
 
   appendTo(selector: string) {
     let element = (this.parent = assertElement(document.querySelector(selector) as SimpleElement));
-    let self = new UpdatableReference(this);
+    let self = new UpdatableRootReference(this);
     let cursor = { element, nextSibling: null };
 
     let handle = unwrapTemplate(this.template)
