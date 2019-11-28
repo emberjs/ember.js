@@ -1,6 +1,7 @@
-import { Tag, combine, CONSTANT_TAG } from './validators';
-import { createTag, dirty } from './validators';
-import { tagFor, dirtyTag } from './meta';
+import { DEBUG } from '@glimmer/env';
+import { Tag, combine, createTag, dirty, CONSTANT_TAG } from './validators';
+import { tagFor, dirtyTagFor } from './meta';
+import { markTagAsConsumed, runInAutotrackingTransaction } from './debug';
 
 type Option<T> = T | null;
 
@@ -28,6 +29,11 @@ class Tracker {
 
   add(tag: Tag) {
     this.tags.add(tag);
+
+    if (DEBUG) {
+      markTagAsConsumed!(tag, new Error());
+    }
+
     this.last = tag;
   }
 
@@ -46,14 +52,20 @@ class Tracker {
   }
 }
 
-export function track(callback: () => void): Tag {
+//////////
+
+export function track(callback: () => void, debuggingContext?: string | false): Tag {
   let parent = CURRENT_TRACKER;
   let current = new Tracker();
 
   CURRENT_TRACKER = current;
 
   try {
-    callback();
+    if (DEBUG) {
+      runInAutotrackingTransaction!(callback, debuggingContext);
+    } else {
+      callback();
+    }
   } finally {
     CURRENT_TRACKER = parent;
   }
@@ -67,12 +79,34 @@ export function consume(tag: Tag) {
   }
 }
 
+export function isTracking() {
+  return CURRENT_TRACKER !== null;
+}
+
+export function untrack(callback: () => void) {
+  let parent = CURRENT_TRACKER;
+  CURRENT_TRACKER = null;
+
+  try {
+    callback();
+  } finally {
+    CURRENT_TRACKER = parent;
+  }
+}
+
+
 //////////
 
 export const EPOCH = createTag();
 
 export type Getter<T, K extends keyof T> = (self: T) => T[K] | undefined;
 export type Setter<T, K extends keyof T> = (self: T, value: T[K]) => void;
+
+export let propertyDidChange = function() {};
+
+export function setPropertyDidChange(cb: () => void) {
+  propertyDidChange = cb;
+}
 
 export function trackedData<T extends object, K extends keyof T>(
   key: K,
@@ -99,8 +133,9 @@ export function trackedData<T extends object, K extends keyof T>(
 
   function setter(self: T, value: T[K]): void {
     dirty(EPOCH);
-    dirtyTag(self, key);
+    dirtyTagFor(self, key);
     values.set(self, value);
+    propertyDidChange();
   }
 
   return { getter, setter };
