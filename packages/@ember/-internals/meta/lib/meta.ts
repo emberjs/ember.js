@@ -1,7 +1,7 @@
 import { symbol, toString } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { createUpdatableTag, UpdatableTag } from '@glimmer/validator';
+import { UpdatableTag } from '@glimmer/validator';
 
 type ObjMap<T> = { [key: string]: T };
 
@@ -96,8 +96,6 @@ let currentListenerVersion = 1;
 export class Meta {
   _descriptors: Map<string, any> | undefined;
   _mixins: any | undefined;
-  _tag: UpdatableTag | undefined;
-  _tags: ObjMap<UpdatableTag> | undefined;
   _flags: MetaFlags;
   _lazyChains: ObjMap<ObjMap<UpdatableTag>> | undefined;
   source: object;
@@ -120,8 +118,6 @@ export class Meta {
     this._parent = undefined;
     this._descriptors = undefined;
     this._mixins = undefined;
-    this._tag = undefined;
-    this._tags = undefined;
 
     // initial value for all flags right now is false
     // see FLAGS const for detailed list of flags used
@@ -226,31 +222,6 @@ export class Meta {
       pointer = pointer.parent;
     }
     return false;
-  }
-
-  writableTags() {
-    return this._getOrCreateOwnMap('_tags');
-  }
-  readableTags() {
-    return this._tags;
-  }
-
-  writableTag() {
-    assert(
-      this.isMetaDestroyed()
-        ? `Cannot create a new tag for \`${toString(this.source)}\` after it has been destroyed.`
-        : '',
-      !this.isMetaDestroyed()
-    );
-    let ret = this._tag;
-    if (ret === undefined) {
-      ret = this._tag = createUpdatableTag();
-    }
-    return ret;
-  }
-
-  readableTag() {
-    return this._tag;
   }
 
   writableLazyChainsFor(key: string) {

@@ -1,9 +1,7 @@
 import {
-  consume,
   get,
-  isTracking,
   objectAt,
-  tagFor,
+  tagForObject,
   tagForProperty,
 } from '@ember/-internals/metal';
 import { _contentFor } from '@ember/-internals/runtime';
@@ -16,7 +14,7 @@ import {
   OpaqueIterator,
   VersionedReference,
 } from '@glimmer/reference';
-import { combine, createUpdatableTag, Tag, update } from '@glimmer/validator';
+import { combine, consume, createUpdatableTag, isTracking, Tag, update } from '@glimmer/validator';
 import { isEachIn } from '../helpers/each-in';
 import { UpdatableReference } from './references';
 
@@ -290,7 +288,7 @@ class EachInIterable implements EmberIterable {
     let { ref, valueTag } = this;
 
     let iterable = ref.value();
-    let tag = tagFor(iterable);
+    let tag = tagForObject(iterable);
 
     if (isProxy(iterable)) {
       // this is because the each-in doesn't actually get(proxy, 'key') but bypasses it

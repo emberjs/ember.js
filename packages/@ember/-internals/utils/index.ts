@@ -29,6 +29,7 @@ export { canInvoke, tryInvoke } from './lib/invoke';
 export { default as makeArray } from './lib/make-array';
 export { getName, setName } from './lib/name';
 export { default as toString } from './lib/to-string';
+export { isObject } from './lib/spec';
 export { HAS_NATIVE_SYMBOL } from './lib/symbol-utils';
 export { HAS_NATIVE_PROXY } from './lib/proxy-utils';
 export { isProxy, setProxy } from './lib/is_proxy';

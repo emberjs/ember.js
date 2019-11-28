@@ -1,15 +1,13 @@
 import { Meta } from '@ember/-internals/meta';
 import {
-  consume,
   Decorator,
   DecoratorPropertyDescriptor,
   isElementDescriptor,
   setClassicDecorator,
   tagForProperty,
-  track,
 } from '@ember/-internals/metal';
 import { assert } from '@ember/debug';
-import { UpdatableTag, update } from '@glimmer/validator';
+import { consume, track, UpdatableTag, update } from '@glimmer/validator';
 
 let wrapGetterSetter = function(_target: object, key: string, desc: PropertyDescriptor) {
   let { get: originalGet } = desc;

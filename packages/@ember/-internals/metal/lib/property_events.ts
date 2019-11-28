@@ -36,9 +36,7 @@ function notifyPropertyChange(obj: object, keyName: string, _meta?: Meta | null)
     return;
   }
 
-  if (meta !== null) {
-    markObjectAsDirty(obj, keyName, meta);
-  }
+  markObjectAsDirty(obj, keyName);
 
   if (deferred <= 0) {
     flushSyncObservers();

@@ -4,9 +4,9 @@
 import { HAS_NATIVE_PROXY, isEmberArray, isProxy, symbol } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
+import { consume, deprecateMutationsInAutotrackingTransaction, isTracking } from '@glimmer/validator';
 import { isPath } from './path_cache';
-import { tagFor, tagForProperty } from './tags';
-import { consume, deprecateMutationsInAutotrackingTransaction, isTracking } from './tracked';
+import { tagForProperty } from './tags';
 
 export const PROXY_CONTENT = symbol('PROXY_CONTENT');
 

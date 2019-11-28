@@ -1,11 +1,8 @@
 import {
-  consume,
-  deprecateMutationsInAutotrackingTransaction,
   get,
   set,
-  tagFor,
+  tagForObject,
   tagForProperty,
-  track,
 } from '@ember/-internals/metal';
 import { getDebugName, isProxy, symbol } from '@ember/-internals/utils';
 import { assert, debugFreeze } from '@ember/debug';
@@ -23,13 +20,16 @@ import {
 } from '@glimmer/runtime';
 import {
   combine,
+  consume,
   createTag,
   createUpdatableTag,
+  deprecateMutationsInAutotrackingTransaction,
   dirty,
   DirtyableTag,
   isConst,
   Revision,
   Tag,
+  track,
   UpdatableTag,
   update,
   validate,
@@ -186,6 +186,7 @@ export class NestedPropertyReference extends PropertyReference {
     private propertyKey: string
   ) {
     super();
+    debugger
 
     let parentReferenceTag = parentReference.tag;
     let propertyTag = (this.propertyTag = createUpdatableTag());

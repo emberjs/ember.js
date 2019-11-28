@@ -8,7 +8,7 @@ import {
   set,
   defineProperty,
   Mixin,
-  tagFor,
+  tagForObject,
   computed,
   UNKNOWN_PROPERTY_TAG,
   getChainTagsForKey,
@@ -21,7 +21,7 @@ export function contentFor(proxy, m) {
   let content = get(proxy, 'content');
   let tag = (m === undefined ? meta(proxy) : m).readableTag();
   if (tag !== undefined) {
-    update(tag, tagFor(content));
+    update(tag, tagForObject(content));
   }
   return content;
 }

@@ -78,6 +78,9 @@ export class EmberEnvironmentExtra {
 
 export class EmberEnvironmentDelegate implements RuntimeEnvironmentDelegate<EmberEnvironmentExtra> {
   public isInteractive: boolean;
+
+  public getPath = get;
+
   public attributeFor?: (
     element: SimpleElement,
     attr: string,
@@ -108,24 +111,8 @@ export class EmberEnvironmentDelegate implements RuntimeEnvironmentDelegate<Embe
     }
   }
 
-  // iterableFor(ref: VersionedReference, key: string): OpaqueIterable {
-  //   return createIterable(ref, key);
-  // }
+  // toIterator(value: unknown) {
 
-  // scheduleInstallModifier(modifier: any, manager: any): void {
-  //   if (this.isInteractive) {
-  //     super.scheduleInstallModifier(modifier, manager);
-  //   }
-  // }
-
-  // scheduleUpdateModifier(modifier: any, manager: any): void {
-  //   if (this.isInteractive) {
-  //     super.scheduleUpdateModifier(modifier, manager);
-  //   }
-  // }
-
-  // didDestroy(destroyable: Destroyable): void {
-  //   destroyable.destroy();
   // }
 }
 

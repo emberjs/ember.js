@@ -5,13 +5,12 @@ import {
   set,
   tagForProperty,
   tracked,
-  track,
   notifyPropertyChange,
 } from '../..';
 
 import { EMBER_ARRAY } from '@ember/-internals/utils';
 import { AbstractTestCase, moduleFor } from 'internal-test-helpers';
-import { value, validate } from '@glimmer/validator';
+import { track, value, validate } from '@glimmer/validator';
 
 moduleFor(
   '@tracked get validation',

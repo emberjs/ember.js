@@ -1,10 +1,17 @@
-import { track, untrack } from '@ember/-internals/metal';
 import { Factory } from '@ember/-internals/owner';
 import { getDebugName } from '@ember/-internals/utils';
 import { assert, deprecate } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { CapturedArguments, Dict, ModifierManager, VMArguments } from '@glimmer/interfaces';
-import { combine, CONSTANT_TAG, createUpdatableTag, Tag, update } from '@glimmer/validator';
+import {
+  combine,
+  CONSTANT_TAG,
+  createUpdatableTag,
+  Tag,
+  track,
+  untrack,
+  update,
+} from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
 import debugRenderMessage from '../utils/debug-render-message';
 

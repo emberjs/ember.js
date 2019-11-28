@@ -1,4 +1,4 @@
-import { ARGS_PROXY_TAGS, consume } from '@ember/-internals/metal';
+import { ARGS_PROXY_TAGS } from '@ember/-internals/metal';
 import { Factory } from '@ember/-internals/owner';
 import { HAS_NATIVE_PROXY } from '@ember/-internals/utils';
 import { EMBER_CUSTOM_COMPONENT_ARG_PROXY } from '@ember/canary-features';
@@ -17,7 +17,7 @@ import {
 } from '@glimmer/interfaces';
 import { unwrapTemplate } from '@glimmer/opcode-compiler';
 import { PathReference, } from '@glimmer/reference';
-import { createTag, isConst, Tag } from '@glimmer/validator';
+import { consume, createTag, isConst, Tag } from '@glimmer/validator';
 
 import { ENV } from '@ember/-internals/environment';
 import { EmberVMEnvironment } from '../environment';

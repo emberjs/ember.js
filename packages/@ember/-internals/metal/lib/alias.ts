@@ -2,7 +2,7 @@ import { Meta } from '@ember/-internals/meta';
 import { inspect } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import EmberError from '@ember/error';
-import { combine, UpdatableTag, update, validate, value } from '@glimmer/validator';
+import { combine, consume, untrack, UpdatableTag, update, validate, value } from '@glimmer/validator';
 import { finishLazyChains, getChainTagsForKey } from './chain-tags';
 import { getLastRevisionFor, setLastRevisionFor } from './computed_cache';
 import {
@@ -16,7 +16,6 @@ import { defineProperty } from './properties';
 import { get } from './property_get';
 import { set } from './property_set';
 import { tagForProperty } from './tags';
-import { consume, untrack } from './tracked';
 
 export type AliasDecorator = Decorator & PropertyDecorator & AliasDecoratorImpl;
 
