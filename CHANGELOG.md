@@ -1,5 +1,10 @@
 # Ember Changelog
 
+### v3.14.3 (December 3, 2019)
+
+- [#18582](https://github.com/emberjs/ember.js/pull/18582) [BUGFIX release] Ensure `loader.js` is transpiled to the applications specified targets (from `config/targets.js`).
+
+
 ### v3.14.2 (November 20, 2019)
 
 - [#18539](https://github.com/emberjs/ember.js/pull/18539) / [#18548](https://github.com/emberjs/ember.js/pull/18548) [BUGFIX] Fix issues with the new APIs to be used by ember-inspector for building the "component's tree" including `@glimmer/component`.
