@@ -1,7 +1,7 @@
-import { VMArguments } from '@glimmer/interfaces';
-import { InternalHelperReference } from '../utils/references';
+import { CapturedArguments, VM, VMArguments } from '@glimmer/interfaces';
+import { HelperRootReference } from '@glimmer/reference';
 
-function inputTypeHelper({ positional }: any) {
+function inputTypeHelper({ positional }: CapturedArguments) {
   let type = positional.at(0).value();
   if (type === 'checkbox') {
     return '-checkbox';
@@ -9,6 +9,6 @@ function inputTypeHelper({ positional }: any) {
   return '-text-field';
 }
 
-export default function(args: VMArguments) {
-  return new InternalHelperReference(inputTypeHelper, args.capture());
+export default function(args: VMArguments, vm: VM) {
+  return new HelperRootReference(inputTypeHelper, args.capture(), vm.env);
 }

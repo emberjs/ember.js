@@ -96,28 +96,6 @@ export function tagForObject(obj: unknown | null): Tag {
 }
 
 export function markObjectAsDirty(obj: object, propertyKey: string): void {
-  // let meta = _meta === undefined ? metaFor(obj) : _meta;
-  // let objectTag = meta.readableTag();
-
-  // if (objectTag !== undefined) {
-  //   if (DEBUG) {
-  //     assertTagNotConsumed!(objectTag, obj);
-  //   }
-
-  //   dirty(objectTag);
-  // }
-
-  // let tags = meta.readableTags();
-  // let propertyTag = tags !== undefined ? tags[propertyKey] : undefined;
-
-  // if (propertyTag !== undefined) {
-  //   if (DEBUG) {
-  //     assertTagNotConsumed!(propertyTag, obj, propertyKey);
-  //   }
-
-  //   dirty(propertyTag);
-  // }
-
   dirtyTagFor(obj, propertyKey);
   dirtyTagFor(obj, SELF_TAG);
 }

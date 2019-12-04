@@ -11,7 +11,7 @@ import { createTag, dirty } from '@glimmer/validator';
 
 export const RECOMPUTE_TAG = symbol('RECOMPUTE_TAG');
 
-export type HelperFunction = (positional: unknown[], named: Dict<unknown>) => unknown;
+export type HelperFunction<T = unknown> = (positional: unknown[], named: Dict<unknown>) => T;
 
 export type SimpleHelperFactory = Factory<SimpleHelper, HelperFactory<SimpleHelper>>;
 export type ClassHelperFactory = Factory<HelperInstance, HelperFactory<HelperInstance>>;
@@ -21,13 +21,13 @@ export interface HelperFactory<T> {
   create(): T;
 }
 
-export interface HelperInstance {
-  compute(positional: unknown[], named: Dict<unknown>): unknown;
+export interface HelperInstance<T = unknown> {
+  compute(positional: unknown[], named: Dict<unknown>): T;
   destroy(): void;
 }
 
-export interface SimpleHelper {
-  compute: HelperFunction;
+export interface SimpleHelper<T = unknown> {
+  compute: HelperFunction<T>;
 }
 
 export function isHelperFactory(

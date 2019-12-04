@@ -16,7 +16,7 @@ import {
   WithJitStaticLayout,
  } from '@glimmer/interfaces';
  import { unwrapTemplate } from '@glimmer/opcode-compiler';
- import { VersionedPathReference } from '@glimmer/reference';
+ import { ComponentRootReference, VersionedPathReference } from '@glimmer/reference';
 import { EMPTY_ARGS } from '@glimmer/runtime';
 import { CONSTANT_TAG, createTag, Tag } from '@glimmer/validator';
 
@@ -26,7 +26,6 @@ import { DynamicScope } from '../renderer';
 import RuntimeResolver from '../resolver';
 import { OwnedTemplate } from '../template';
 import { OutletState } from '../utils/outlet';
-import { RootReference } from '../utils/references';
 import OutletView from '../views/outlet';
 import AbstractManager from './abstract';
 
@@ -84,7 +83,7 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
     dynamicScope.outletState = currentStateRef;
 
     let state: OutletInstanceState = {
-      self: RootReference.create(definition.controller),
+      self: new ComponentRootReference(definition.controller, environment),
       environment,
       finalize: _instrumentStart('render.outlet', instrumentationPayload, definition),
     };

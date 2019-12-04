@@ -1,7 +1,8 @@
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { CapturedArguments, VMArguments } from '@glimmer/interfaces';
-import { InternalHelperReference, INVOKE } from '../utils/references';
+import { CapturedArguments, VM, VMArguments } from '@glimmer/interfaces';
+import { HelperRootReference } from '@glimmer/reference';
+import { INVOKE } from '../utils/references';
 import buildUntouchableThis from '../utils/untouchable-this';
 
 const context = buildUntouchableThis('`fn` helper');
@@ -78,7 +79,7 @@ const context = buildUntouchableThis('`fn` helper');
   @since 3.11.0
 */
 
-function fnHelper({ positional }: CapturedArguments) {
+function fn({ positional }: CapturedArguments) {
   let callbackRef = positional.at(0);
 
   if (DEBUG && typeof callbackRef[INVOKE] !== 'function') {
@@ -103,6 +104,6 @@ function fnHelper({ positional }: CapturedArguments) {
   };
 }
 
-export default function(args: VMArguments) {
-  return new InternalHelperReference(fnHelper, args.capture());
+export default function(args: VMArguments, vm: VM) {
+  return new HelperRootReference(fn, args.capture(), vm.env);
 }

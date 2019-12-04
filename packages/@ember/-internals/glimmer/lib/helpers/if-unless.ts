@@ -3,54 +3,41 @@
 */
 
 import { assert } from '@ember/debug';
-import { VMArguments } from '@glimmer/interfaces';
-import { VersionedPathReference } from '@glimmer/reference';
-import { PrimitiveReference } from '@glimmer/runtime';
-import { combine, createUpdatableTag, isConst, UpdatableTag, update } from '@glimmer/validator';
-import { CachedReference } from '../utils/references';
+import { CapturedArguments, VM, VMArguments } from '@glimmer/interfaces';
+import { HelperRootReference } from '@glimmer/reference';
 import emberToBool from '../utils/to-bool';
 
-class ConditionalHelperReference extends CachedReference {
-  public branchTag: UpdatableTag;
-  public tag: any;
-  public cond: any;
-  public truthy: any;
-  public falsy: any;
+function ifHelper({ positional }: CapturedArguments) {
+  assert(
+    'The inline form of the `if` helper expects two or three arguments, e.g. `{{if trialExpired "Expired" expiryDate}}`.',
+    positional.length === 3 || positional.length === 2
+  );
 
-  static create(
-    condRef: VersionedPathReference<unknown>,
-    truthyRef: PrimitiveReference<boolean>,
-    falsyRef: PrimitiveReference<boolean>
-  ) {
-    // let condRef = ConditionalReference.create(_condRef);
-    if (isConst(condRef)) {
-      return emberToBool(condRef.value()) ? truthyRef : falsyRef;
-    } else {
-      return new ConditionalHelperReference(condRef, truthyRef, falsyRef);
-    }
+  let condition = positional.at(0);
+  let truthyValue = positional.at(1);
+  let falsyValue = positional.at(2);
+
+  if (emberToBool(condition.value()) === true) {
+    return truthyValue.value();
+  } else {
+    return falsyValue !== undefined ? falsyValue.value() : undefined;
   }
+}
 
-  constructor(
-    cond: VersionedPathReference<unknown>,
-    truthy: PrimitiveReference<boolean>,
-    falsy: PrimitiveReference<boolean>
-  ) {
-    super();
+function unless({ positional }: CapturedArguments) {
+  assert(
+    'The inline form of the `unless` helper expects two or three arguments, e.g. `{{unless isFirstLogin "Welcome back!"}}`.',
+    positional.length === 3 || positional.length === 2
+  );
 
-    this.branchTag = createUpdatableTag();
-    this.tag = combine([cond.tag, this.branchTag]);
+  let condition = positional.at(0);
+  let truthyValue = positional.at(2);
+  let falsyValue = positional.at(1);
 
-    this.cond = cond;
-    this.truthy = truthy;
-    this.falsy = falsy;
-  }
-
-  compute() {
-    let branch = this.cond.value() ? this.truthy : this.falsy;
-
-    update(this.branchTag, branch.tag);
-
-    return branch.value();
+  if (emberToBool(condition.value()) === true) {
+    return truthyValue !== undefined ? truthyValue.value() : undefined;
+  } else {
+    return falsyValue.value();
   }
 }
 
@@ -145,13 +132,8 @@ class ConditionalHelperReference extends CachedReference {
   @for Ember.Templates.helpers
   @public
 */
-export function inlineIf({ positional }: VMArguments) {
-  assert(
-    'The inline form of the `if` helper expects two or three arguments, e.g. ' +
-      '`{{if trialExpired "Expired" expiryDate}}`.',
-    positional.length === 3 || positional.length === 2
-  );
-  return ConditionalHelperReference.create(positional.at(0), positional.at(1), positional.at(2));
+export function inlineIf(args: VMArguments, vm: VM) {
+  return new HelperRootReference(ifHelper, args.capture(), vm.env);
 }
 
 /**
@@ -239,11 +221,6 @@ export function inlineIf({ positional }: VMArguments) {
   @for Ember.Templates.helpers
   @public
 */
-export function inlineUnless({ positional }: VMArguments) {
-  assert(
-    'The inline form of the `unless` helper expects two or three arguments, e.g. ' +
-      '`{{unless isFirstLogin "Welcome back!"}}`.',
-    positional.length === 3 || positional.length === 2
-  );
-  return ConditionalHelperReference.create(positional.at(0), positional.at(2), positional.at(1));
+export function inlineUnless(args: VMArguments, vm: VM) {
+  return new HelperRootReference(unless, args.capture(), vm.env);
 }

@@ -1,12 +1,12 @@
 import { OwnedTemplateMeta } from '@ember/-internals/views';
 import {
   CompileTimeComponent,
+  CompileTimeResolverDelegate,
   ComponentCapabilities,
   ComponentDefinition,
   ComponentManager,
   Option,
   WithJitStaticLayout,
-  CompileTimeResolverDelegate,
 } from '@glimmer/interfaces';
 import RuntimeResolver from './resolver';
 

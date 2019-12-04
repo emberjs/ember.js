@@ -6,11 +6,10 @@ import { constructStyleDeprecationMessage } from '@ember/-internals/views';
 import { warn } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { ElementBuilder, Environment, Option } from '@glimmer/interfaces';
-import { OpaqueIterable, VersionedReference } from '@glimmer/reference';
+import { IterationItemReference, PropertyReference, VersionedPathReference } from '@glimmer/reference';
 import {
   DynamicAttribute,
   dynamicAttribute,
-  RuntimeEnvironment,
   RuntimeEnvironmentDelegate,
   SimpleDynamicAttribute,
 } from '@glimmer/runtime';
@@ -18,8 +17,8 @@ import { AttrNamespace as SimpleAttrNamespace, SimpleElement } from '@simple-dom
 import installPlatformSpecificProtocolForURL from './protocol-for-url';
 import { OwnedTemplate } from './template';
 import { Component } from './utils/curly-component-state-bucket';
-import DebugRenderTree from './utils/debug-render-tree';
-import createIterable from './utils/iterable';
+import DebugRenderTree, { PathNodeType } from './utils/debug-render-tree';
+// import createIterable from './utils/iterable';
 // import { ConditionalReference, UpdatableReference } from './utils/references';
 import { isHTMLSafe } from './utils/string';
 import emberToBool from './utils/to-bool';
@@ -114,13 +113,29 @@ export class EmberEnvironmentDelegate implements RuntimeEnvironmentDelegate<Embe
   // toIterator(value: unknown) {
 
   // }
+
+  getTemplatePathDebugContext(pathRef: VersionedPathReference) {
+    return this.extra.debugRenderTree.logRenderStackForPath(pathRef);
+  }
+
+  setTemplatePathDebugContext(pathRef: VersionedPathReference, desc: string, parentRef: Option<VersionedPathReference>) {
+    let type: PathNodeType = 'root';
+
+    if (pathRef instanceof IterationItemReference) {
+      type = 'iterator';
+    } else if (pathRef instanceof PropertyReference) {
+      type = 'property';
+    }
+
+    this.extra.debugRenderTree.createPath(pathRef, desc, type, parentRef);
+  }
 }
 
 export type EmberVMEnvironment = Environment<EmberEnvironmentExtra>;
 
 if (DEBUG) {
   class StyleAttributeManager extends SimpleDynamicAttribute {
-    set(dom: ElementBuilder, value: unknown, env: RuntimeEnvironment): void {
+    set(dom: ElementBuilder, value: unknown, env: Environment): void {
       warn(
         constructStyleDeprecationMessage(value),
         (() => {
@@ -133,7 +148,7 @@ if (DEBUG) {
       );
       super.set(dom, value, env);
     }
-    update(value: unknown, env: RuntimeEnvironment): void {
+    update(value: unknown, env: Environment): void {
       warn(
         constructStyleDeprecationMessage(value),
         (() => {

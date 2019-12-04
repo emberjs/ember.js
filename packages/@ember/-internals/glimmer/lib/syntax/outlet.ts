@@ -10,7 +10,7 @@ import {
   VMArguments,
 } from '@glimmer/interfaces';
 // import { OpcodeBuilder } from '@glimmer/opcode-compiler';
-import { ConstReference, Reference, VersionedPathReference } from '@glimmer/reference';
+import { ConstReference, PropertyReference, Reference, VersionedPathReference } from '@glimmer/reference';
 import {
 
   CurriedComponentDefinition,
@@ -26,7 +26,7 @@ import { EmberVMEnvironment } from '../environment';
 import { DynamicScope } from '../renderer';
 import { isTemplateFactory } from '../template';
 import { OutletReference, OutletState } from '../utils/outlet';
-import { NestedPropertyReference, PropertyReference } from '../utils/references';
+// import { NestedPropertyReference, PropertyReference } from '../utils/references';
 
 /**
   The `{{outlet}}` helper lets you specify where a child route will render in
@@ -102,7 +102,7 @@ export function outletHelper(args: VMArguments, vm: VM) {
 
 class OutletModelReference implements VersionedPathReference {
   public tag: Tag;
-  private debugStackLog?: string;
+  private didSetupDebugContext?: boolean;
 
   constructor(
     private parent: VersionedPathReference<OutletState | undefined>,
@@ -128,82 +128,79 @@ class OutletModelReference implements VersionedPathReference {
   }
 
   get(property: string): VersionedPathReference {
-    if (DEBUG) {
-      // We capture the log stack now, as accessing `{{@model}}` directly can't
-      // cause issues (doesn't autotrack) but accessing subproperties can. We
-      // don't want to capture the log stack when `value` or `debug` are called,
-      // because the ref might have been passed downward, so we'd have the
-      // incorrect context.
-      //
-      // TODO: This feels messy, side-effect of the fact that this ref is
-      // created well before the component itself.
-      this.debugStackLog = this.env.extra.debugRenderTree.logCurrentRenderStack();
-
-      // This guarantees that we preserve the `debug()` output below
-      return new NestedPropertyReference(this, property);
-    } else {
-      return PropertyReference.create(this, property);
+    // We register the template debug context now since the reference is created
+    // before the component itself. It shouldn't be possible to cause errors when
+    // accessing {{@model}}, only subproperties of the model, so this should be
+    // fine for the time being.
+    //
+    // TODO: This points to a need for more first class support for arguments in
+    // the debugRenderTree. The fact that we can't accurately relate an argument
+    // reference to its component is problematic for debug tooling.
+    if (DEBUG && !this.didSetupDebugContext) {
+      this.didSetupDebugContext = true;
+      this.env.setTemplatePathDebugContext(this, '@model', null);
     }
+
+    return new PropertyReference(this, property, this.env);
   }
 }
 
-if (DEBUG) {
-  OutletModelReference.prototype['debug'] = function debug(subPath: string): string {
-    return `${this['debugStackLog']}@model.${subPath}`;
-  };
-}
+// if (DEBUG) {
+//   OutletModelReference.prototype['debug'] = function debug(subPath: string): string {
+//     return `${this['debugStackLog']}@model.${subPath}`;
+//   };
+// }
 
 class OutletComponentReference
   implements VersionedPathReference<CurriedComponentDefinition | null> {
   public tag: Tag;
-  private args: Option<CapturedArguments> = null;
   private definition: Option<CurriedComponentDefinition> = null;
   private lastState: Option<OutletDefinitionState> = null;
 
   constructor(
     private outletRef: VersionedPathReference<OutletState | undefined>,
-    env: EmberVMEnvironment
+    private env: EmberVMEnvironment
   ) {
     // The router always dirties the root state.
-    let tag = (this.tag = outletRef.tag);
+    this.tag = outletRef.tag;
 
-    if (EMBER_ROUTING_MODEL_ARG) {
-      let modelRef = new OutletModelReference(outletRef, env);
-      let map = dict<VersionedPathReference>();
-      map.model = modelRef;
+    // if (EMBER_ROUTING_MODEL_ARG) {
+    //   let modelRef = new OutletModelReference(outletRef, env);
+    //   let map = dict<VersionedPathReference>();
+    //   map.model = modelRef;
 
-      // TODO: the functionality to create a proper CapturedArgument should be
-      // exported by glimmer, or that it should provide an overload for `curry`
-      // that takes `PreparedArguments`
-      this.args = {
-        tag,
-        positional: EMPTY_ARGS.positional,
-        named: {
-          tag,
-          map,
-          names: ['model'],
-          references: [modelRef],
-          length: 1,
-          has(key: string): boolean {
-            return key === 'model';
-          },
-          get<T extends VersionedPathReference>(key: string): T {
-            return (key === 'model' ? modelRef : UNDEFINED_REFERENCE) as unsafe;
-          },
-          value(): Dict<unknown> {
-            let model = modelRef.value();
-            return { model };
-          },
-        },
-        length: 1,
-        value() {
-          return {
-            named: this.named.value(),
-            positional: this.positional.value(),
-          };
-        },
-      };
-    }
+    //   // TODO: the functionailty to create a proper CapturedArgument should be
+    //   // exported by glimmer, or that it should provide an overload for `curry`
+    //   // that takes `PreparedArguments`
+    //   this.args = {
+    //     tag,
+    //     positional: EMPTY_ARGS.positional,
+    //     named: {
+    //       tag,
+    //       map,
+    //       names: ['model'],
+    //       references: [modelRef],
+    //       length: 1,
+    //       has(key: string): boolean {
+    //         return key === 'model';
+    //       },
+    //       get<T extends VersionedPathReference>(key: string): T {
+    //         return (key === 'model' ? modelRef : UNDEFINED_REFERENCE) as unsafe;
+    //       },
+    //       value(): Dict<unknown> {
+    //         let model = modelRef.value();
+    //         return { model };
+    //       },
+    //     },
+    //     length: 1,
+    //     value() {
+    //       return {
+    //         named: this.named.value(),
+    //         positional: this.positional.value(),
+    //       };
+    //     },
+    //   };
+    // }
   }
 
   value(): CurriedComponentDefinition | null {
@@ -212,16 +209,60 @@ class OutletComponentReference
       return this.definition;
     }
     this.lastState = state;
+
     let definition = null;
+
     if (state !== null) {
-      definition = curry(new OutletComponentDefinition(state), this.args);
+      let args = EMBER_ROUTING_MODEL_ARG ? makeArgs(this.outletRef, this.env) : null;
+
+      definition = curry(new OutletComponentDefinition(state), args);
     }
+
     return (this.definition = definition);
   }
 
   get(_key: string) {
     return UNDEFINED_REFERENCE;
   }
+}
+
+function makeArgs(outletRef: VersionedPathReference<OutletState | undefined>, env: EmberVMEnvironment): CapturedArguments {
+  let tag = outletRef.tag;
+  let modelRef = new OutletModelReference(outletRef, env);
+  let map = dict<VersionedPathReference>();
+  map.model = modelRef;
+
+  // TODO: the functionailty to create a proper CapturedArgument should be
+  // exported by glimmer, or that it should provide an overload for `curry`
+  // that takes `PreparedArguments`
+  return {
+    tag,
+    positional: EMPTY_ARGS.positional,
+    named: {
+      tag,
+      map,
+      names: ['model'],
+      references: [modelRef],
+      length: 1,
+      has(key: string): boolean {
+        return key === 'model';
+      },
+      get<T extends VersionedPathReference>(key: string): T {
+        return (key === 'model' ? modelRef : UNDEFINED_REFERENCE) as unsafe;
+      },
+      value(): Dict<unknown> {
+        let model = modelRef.value();
+        return { model };
+      },
+    },
+    length: 1,
+    value() {
+      return {
+        named: this.named.value(),
+        positional: this.positional.value(),
+      };
+    },
+  };
 }
 
 function stateFor(

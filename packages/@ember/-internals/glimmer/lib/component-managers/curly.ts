@@ -26,7 +26,7 @@ import {
   WithJitStaticLayout,
 } from '@glimmer/interfaces';
 import { unwrapTemplate } from '@glimmer/opcode-compiler';
-import { VersionedPathReference } from '@glimmer/reference';
+import { RootReference, VersionedPathReference } from '@glimmer/reference';
 import { PrimitiveReference } from '@glimmer/runtime';
 import { EMPTY_ARRAY } from '@glimmer/util';
 import { combine, Tag, validate, value } from '@glimmer/validator';
@@ -39,13 +39,12 @@ import { Factory as TemplateFactory, isTemplateFactory, OwnedTemplate } from '..
 import {
   AttributeBinding,
   ClassNameBinding,
-  IsVisibleBinding,
+  installIsVisibleBinding,
   referenceForKey,
   SimpleClassNameBindingReference,
 } from '../utils/bindings';
 import ComponentStateBucket, { Component } from '../utils/curly-component-state-bucket';
 import { processComponentArgs } from '../utils/process-args';
-import { RootReference } from '../utils/references';
 import AbstractManager from './abstract';
 import DefinitionState from './definition-state';
 
@@ -68,7 +67,8 @@ function applyAttributeBindings(
   attributeBindings: Array<string>,
   component: Component,
   rootRef: RootReference<Component>,
-  operations: ElementOperations
+  operations: ElementOperations,
+  environment: EmberVMEnvironment,
 ) {
   let seen: string[] = [];
   let i = attributeBindings.length - 1;
@@ -80,7 +80,7 @@ function applyAttributeBindings(
 
     if (seen.indexOf(attribute) === -1) {
       seen.push(attribute);
-      AttributeBinding.install(element, component, rootRef, parsed, operations);
+      AttributeBinding.install(component, rootRef, parsed, operations, environment);
     }
 
     i--;
@@ -93,10 +93,10 @@ function applyAttributeBindings(
 
   if (
     EMBER_COMPONENT_IS_VISIBLE &&
-    IsVisibleBinding !== undefined &&
+    installIsVisibleBinding !== undefined &&
     seen.indexOf('style') === -1
   ) {
-    IsVisibleBinding.install(element, component, rootRef, operations);
+    installIsVisibleBinding(rootRef, operations, environment);
   }
 }
 
@@ -357,12 +357,12 @@ export default class CurlyComponentManager
     let { attributeBindings, classNames, classNameBindings } = component;
 
     if (attributeBindings && attributeBindings.length) {
-      applyAttributeBindings(element, attributeBindings, component, rootRef, operations);
+      applyAttributeBindings(element, attributeBindings, component, rootRef, operations, environment);
     } else {
       let id = component.elementId ? component.elementId : guidFor(component);
       operations.setAttribute('id', PrimitiveReference.create(id), false, null);
-      if (EMBER_COMPONENT_IS_VISIBLE && IsVisibleBinding !== undefined) {
-        IsVisibleBinding.install(element, component, rootRef, operations);
+      if (EMBER_COMPONENT_IS_VISIBLE) {
+        installIsVisibleBinding!(rootRef, operations, environment);
       }
     }
 

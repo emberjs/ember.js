@@ -11,6 +11,8 @@ import { assert, deprecate } from '@ember/debug';
 import { PARTIALS } from '@ember/deprecated-features';
 import EmberError from '@ember/error';
 import { _instrumentStart } from '@ember/instrumentation';
+import { DEBUG } from '@glimmer/env';
+
 import { ComponentDefinition, Helper, JitRuntimeResolver, Option } from '@glimmer/interfaces';
 import { PartialDefinition, unwrapTemplate } from '@glimmer/opcode-compiler';
 import { getDynamicVar, ModifierDefinition } from '@glimmer/runtime';
@@ -46,7 +48,7 @@ import { Factory as TemplateFactory, OwnedTemplate } from './template';
 import { getComponentTemplate } from './utils/component-template';
 import { getModifierManager } from './utils/custom-modifier-manager';
 import { getManager } from './utils/managers';
-import { ClassBasedHelperReference, SimpleHelperReference } from './utils/references';
+import { EmberHelperRootReference } from './utils/references';
 
 function instrumentationPayload(name: string) {
   return { object: `component:${name}` };
@@ -409,11 +411,15 @@ export default class RuntimeResolver implements JitRuntimeResolver<OwnedTemplate
 
     return (args, vm) => {
       const helper = factory.create();
-      if (isSimpleHelper(helper)) {
-        return SimpleHelperReference.create(helper.compute, args.capture());
+
+      if (!isSimpleHelper(helper)) {
+        vm.associateDestroyable(helper);
+      } else if (DEBUG) {
+        // TODO: Give this a better error message
+        helper.compute = helper.compute.bind(null);
       }
-      vm.associateDestroyable(helper);
-      return ClassBasedHelperReference.create(helper, args.capture());
+
+      return new EmberHelperRootReference(helper, args.capture(), vm.env);
     };
   }
 

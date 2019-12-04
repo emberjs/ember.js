@@ -8,7 +8,7 @@ import {
   VMArguments,
   WithJitDynamicLayout,
 } from '@glimmer/interfaces';
-import { VersionedPathReference } from '@glimmer/reference';
+import { ComponentRootReference, VersionedPathReference } from '@glimmer/reference';
 import {
   CONSTANT_TAG,
   createTag,
@@ -24,13 +24,12 @@ import EngineInstance from '@ember/engine/instance';
 import { TemplateFactory } from '../..';
 import { EmberVMEnvironment } from '../environment';
 import RuntimeResolver from '../resolver';
-import { RootReference } from '../utils/references';
 import AbstractManager from './abstract';
 
 interface EngineState {
   engine: EngineInstance;
   controller: any;
-  self: RootReference<any>;
+  self: ComponentRootReference<any>;
   environment: EmberVMEnvironment;
   modelRef?: VersionedPathReference<unknown>;
 }
@@ -88,7 +87,7 @@ class MountManager extends AbstractManager<EngineState, EngineDefinitionState>
     let applicationFactory = engine.factoryFor(`controller:application`);
     let controllerFactory = applicationFactory || generateControllerFactory(engine, 'application');
     let controller: any;
-    let self: RootReference<any>;
+    let self: ComponentRootReference<any>;
     let bucket: EngineState;
     let modelRef;
 
@@ -98,12 +97,12 @@ class MountManager extends AbstractManager<EngineState, EngineDefinitionState>
 
     if (modelRef === undefined) {
       controller = controllerFactory.create();
-      self = new RootReference(controller, environment);
+      self = new ComponentRootReference(controller, environment);
       bucket = { engine, controller, self, environment };
     } else {
       let model = modelRef.value();
       controller = controllerFactory.create({ model });
-      self = new RootReference(controller, environment);
+      self = new ComponentRootReference(controller, environment);
       bucket = { engine, controller, self, modelRef, environment };
     }
 

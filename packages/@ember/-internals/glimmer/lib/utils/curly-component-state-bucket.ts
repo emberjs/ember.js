@@ -1,10 +1,9 @@
 import { clearElementView, clearViewElement, getViewElement } from '@ember/-internals/views';
 import { CapturedNamedArguments } from '@glimmer/interfaces';
-import { VersionedReference } from '@glimmer/reference';
+import { ComponentRootReference, VersionedReference } from '@glimmer/reference';
 import { Revision, value } from '@glimmer/validator';
 import { EmberVMEnvironment } from '../environment';
 import { Factory as TemplateFactory, OwnedTemplate } from '../template';
-import { RootReference } from './references';
 
 export interface Component {
   _debugContainerKey: string;
@@ -39,7 +38,7 @@ function NOOP() {}
 */
 export default class ComponentStateBucket {
   public classRef: VersionedReference<unknown> | null = null;
-  public rootRef: RootReference<Component>;
+  public rootRef: ComponentRootReference<Component>;
   public argsRevision: Revision;
 
   constructor(
@@ -51,7 +50,7 @@ export default class ComponentStateBucket {
   ) {
     this.classRef = null;
     this.argsRevision = args === null ? 0 : value(args.tag);
-    this.rootRef = new RootReference(component, environment);
+    this.rootRef = new ComponentRootReference(component, environment);
   }
 
   destroy() {

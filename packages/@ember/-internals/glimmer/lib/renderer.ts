@@ -1,5 +1,4 @@
 import { ENV } from '@ember/-internals/environment';
-import { runInAutotrackingTransaction } from '@ember/-internals/metal';
 import { Owner, OWNER } from '@ember/-internals/owner';
 import { getViewElement, getViewId, OwnedTemplateMeta } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
@@ -31,7 +30,7 @@ import {
   renderJitMain,
   UNDEFINED_REFERENCE,
 } from '@glimmer/runtime';
-import { CURRENT_TAG, validate, value } from '@glimmer/validator';
+import { CURRENT_TAG, runInAutotrackingTransaction, validate, value } from '@glimmer/validator';
 import { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
 import RSVP from 'rsvp';
 import CompileTimeResolver from './compile-time-lookup';
@@ -44,7 +43,7 @@ import RuntimeResolver from './resolver';
 import { Factory as TemplateFactory, OwnedTemplate } from './template';
 import { Component } from './utils/curly-component-state-bucket';
 import { OutletState } from './utils/outlet';
-import { UnboundReference } from './utils/references';
+import { UnboundRootReference } from './utils/references';
 import OutletView from './views/outlet';
 
 export type IBuilder = (env: Environment, cursor: Cursor) => ElementBuilder;
@@ -338,7 +337,7 @@ export abstract class Renderer {
     definition: CurriedComponentDefinition,
     target: SimpleElement
   ) {
-    let self = new UnboundReference(definition);
+    let self = new UnboundRootReference(definition, this._runtime.env);
     let dynamicScope = new DynamicScope(null, UNDEFINED_REFERENCE);
     let rootState = new RootState(
       root,

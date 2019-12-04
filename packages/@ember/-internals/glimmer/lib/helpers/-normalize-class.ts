@@ -1,12 +1,9 @@
 import { dasherize } from '@ember/string';
-import { VMArguments } from '@glimmer/interfaces';
-import { InternalHelperReference } from '../utils/references';
+import { CapturedArguments, VM, VMArguments } from '@glimmer/interfaces';
+import { HelperRootReference } from '@glimmer/reference';
 
-function normalizeClass({ positional }: any) {
-  let classNameParts = positional
-    .at(0)
-    .value()
-    .split('.');
+function normalizeClass({ positional }: CapturedArguments) {
+  let classNameParts = (positional.at(0).value() as string).split('.');
   let className = classNameParts[classNameParts.length - 1];
   let value = positional.at(1).value();
 
@@ -19,6 +16,6 @@ function normalizeClass({ positional }: any) {
   }
 }
 
-export default function(args: VMArguments) {
-  return new InternalHelperReference(normalizeClass, args.capture());
+export default function(args: VMArguments, vm: VM) {
+  return new HelperRootReference(normalizeClass, args.capture(), vm.env);
 }

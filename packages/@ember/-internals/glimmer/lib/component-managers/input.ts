@@ -11,10 +11,9 @@ import {
   PreparedArguments,
   VMArguments,
 } from '@glimmer/interfaces';
-import { VersionedPathReference } from '@glimmer/reference';
+import { ConstReference, ComponentRootReference, VersionedPathReference } from '@glimmer/reference';
 import { CONSTANT_TAG, createTag, isConst } from '@glimmer/validator';
 import { EmberVMEnvironment } from '../environment';
-import { RootReference } from '../utils/references';
 import InternalComponentManager, { InternalDefinitionState } from './internal';
 
 const CAPABILITIES: ComponentCapabilities = {
@@ -57,7 +56,7 @@ export default class InputComponentManager extends InternalComponentManager<Inpu
     return {
       positional: EMPTY_POSITIONAL_ARGS,
       named: {
-        __ARGS__: new RootReference(__ARGS__),
+        __ARGS__: new ConstReference(__ARGS__),
         type: args.named.get('type'),
       },
     };
@@ -95,7 +94,7 @@ export default class InputComponentManager extends InternalComponentManager<Inpu
   }
 
   getSelf({ env, instance }: InputComponentState): VersionedPathReference {
-    return new RootReference(instance, env);
+    return new ComponentRootReference(instance, env);
   }
 
   getTag() {

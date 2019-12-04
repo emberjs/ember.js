@@ -16,14 +16,13 @@ import {
   WithJitStaticLayout,
 } from '@glimmer/interfaces';
 import { unwrapTemplate } from '@glimmer/opcode-compiler';
-import { PathReference, } from '@glimmer/reference';
+import { PathReference, ComponentRootReference } from '@glimmer/reference';
 import { consume, createTag, isConst, Tag } from '@glimmer/validator';
 
 import { ENV } from '@ember/-internals/environment';
 import { EmberVMEnvironment } from '../environment';
 import RuntimeResolver from '../resolver';
 import { OwnedTemplate } from '../template';
-import { RootReference } from '../utils/references';
 import AbstractComponentManager from './abstract';
 
 const CAPABILITIES = {
@@ -323,7 +322,7 @@ export default class CustomComponentManager<ComponentInstance>
     delegate,
     component,
   }: CustomComponentState<ComponentInstance>): PathReference<unknown> {
-    return RootReference.create(delegate.getContext(component), env);
+    return new ComponentRootReference(delegate.getContext(component), env);
   }
 
   getDestructor(state: CustomComponentState<ComponentInstance>): Option<Destroyable> {

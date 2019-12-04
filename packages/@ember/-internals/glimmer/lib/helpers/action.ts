@@ -6,10 +6,10 @@ import { assert } from '@ember/debug';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { join } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
-import { VMArguments } from '@glimmer/interfaces';
+import { VM, VMArguments } from '@glimmer/interfaces';
 import { VersionedPathReference } from '@glimmer/reference';
 import { isConst } from '@glimmer/validator';
-import { ACTION, INVOKE, UnboundReference } from '../utils/references';
+import { ACTION, INVOKE, UnboundRootReference } from '../utils/references';
 
 /**
   The `{{action}}` helper provides a way to pass triggers for behavior (usually
@@ -274,7 +274,7 @@ import { ACTION, INVOKE, UnboundReference } from '../utils/references';
   @for Ember.Templates.helpers
   @public
 */
-export default function(args: VMArguments): UnboundReference<Function> {
+export default function(args: VMArguments, vm: VM): UnboundRootReference<Function> {
   let { named, positional } = args;
 
   let capturedArgs = positional.capture();
@@ -303,7 +303,7 @@ export default function(args: VMArguments): UnboundReference<Function> {
 
   fn[ACTION] = true;
 
-  return new UnboundReference(fn);
+  return new UnboundRootReference(fn, vm.env);
 }
 
 function NOOP(args: VMArguments) {

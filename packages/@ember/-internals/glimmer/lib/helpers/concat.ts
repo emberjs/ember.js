@@ -1,5 +1,5 @@
-import { CapturedArguments, VMArguments } from '@glimmer/interfaces';
-import { InternalHelperReference } from '../utils/references';
+import { CapturedArguments, VM, VMArguments } from '@glimmer/interfaces';
+import { HelperRootReference } from '@glimmer/reference';
 
 const isEmpty = (value: any): boolean => {
   return value === null || value === undefined || typeof value.toString !== 'function';
@@ -45,6 +45,6 @@ function concat({ positional }: CapturedArguments) {
     .join('');
 }
 
-export default function(args: VMArguments) {
-  return new InternalHelperReference(concat, args.capture());
+export default function(args: VMArguments, vm: VM) {
+  return new HelperRootReference(concat, args.capture(), vm.env);
 }

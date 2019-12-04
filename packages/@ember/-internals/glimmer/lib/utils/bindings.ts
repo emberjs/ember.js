@@ -2,13 +2,15 @@ import { get } from '@ember/-internals/metal';
 import { assert, deprecate } from '@ember/debug';
 import { EMBER_COMPONENT_IS_VISIBLE } from '@ember/deprecated-features';
 import { dasherize } from '@ember/string';
+import { DEBUG } from '@glimmer/env';
 import { ElementOperations, Option, WireFormat, SexpOpcodes } from '@glimmer/interfaces';
-import { CachedReference, map, Reference } from '@glimmer/reference';
-import { PrimitiveReference } from '@glimmer/runtime';
+import { Reference, RootReference, VersionedPathReference, VersionedReference } from '@glimmer/reference';
+import { PrimitiveReference, UNDEFINED_REFERENCE } from '@glimmer/runtime';
 import { combine, Tag } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
+import { EmberVMEnvironment } from '../environment';
 import { Component } from './curly-component-state-bucket';
-import { referenceFromParts, RootReference } from './references';
+import { referenceFromParts } from './references';
 import { htmlSafe, isHTMLSafe, SafeString } from './string';
 
 export function referenceForKey(rootRef: RootReference<Component>, key: string) {
@@ -79,11 +81,11 @@ export const AttributeBinding = {
   },
 
   install(
-    _element: SimpleElement,
     component: Component,
     rootRef: RootReference<Component>,
     parsed: [string, string, boolean],
-    operations: ElementOperations
+    operations: ElementOperations,
+    env: EmberVMEnvironment
   ) {
     let [prop, attribute, isSimple] = parsed;
 
@@ -113,11 +115,7 @@ export const AttributeBinding = {
       attribute === 'style' &&
       StyleBindingReference !== undefined
     ) {
-      reference = new StyleBindingReference(
-        reference,
-        referenceForKey(rootRef, 'isVisible'),
-        component
-      );
+      reference = new StyleBindingReference(rootRef, reference, referenceForKey(rootRef, 'isVisible'), env);
     }
 
     operations.setAttribute(attribute, reference, false, null);
@@ -130,28 +128,48 @@ const SAFE_DISPLAY_NONE = htmlSafe(DISPLAY_NONE);
 
 let StyleBindingReference:
   | undefined
-  | { new (...args: any[]): CachedReference<string | SafeString> };
+  | {
+      new (
+        parent: VersionedPathReference<Component>,
+        inner: Reference<unknown>,
+        isVisible: Reference<unknown>,
+        env: EmberVMEnvironment
+      ): VersionedReference<string | SafeString>;
+    };
+
+export let installIsVisibleBinding:
+  | undefined
+  | ((
+      rootRef: RootReference<Component>,
+      operations: ElementOperations,
+      environment: EmberVMEnvironment
+    ) => void);
 
 if (EMBER_COMPONENT_IS_VISIBLE) {
-  StyleBindingReference = class extends CachedReference<string | SafeString> {
+  StyleBindingReference = class implements VersionedPathReference<string | SafeString> {
     public tag: Tag;
     constructor(
-      private inner: Reference<string>,
+      parent: VersionedPathReference<Component>,
+      private inner: Reference<unknown>,
       private isVisible: Reference<unknown>,
-      private component: Component
+      private env: EmberVMEnvironment
     ) {
-      super();
-
       this.tag = combine([inner.tag, isVisible.tag]);
+
+      if (DEBUG) {
+        env.setTemplatePathDebugContext(this, 'style', parent);
+      }
     }
 
-    compute(): string | SafeString {
+    value(): string | SafeString {
       let value = this.inner.value();
       let isVisible = this.isVisible.value();
 
       if (isVisible !== undefined) {
         deprecate(
-          `\`isVisible\` is deprecated (from "${this.component._debugContainerKey}")`,
+          `\`isVisible\` is deprecated. Was accessed from:\n\n${this.env.getTemplatePathDebugContext(
+            this
+          )}`,
           false,
           {
             id: 'ember-component.is-visible',
@@ -162,66 +180,31 @@ if (EMBER_COMPONENT_IS_VISIBLE) {
       }
 
       if (isVisible !== false) {
-        return value;
-      }
-
-      if (!value) {
+        return value as string;
+      } else if (!value) {
         return SAFE_DISPLAY_NONE;
       } else {
         let style = value + ' ' + DISPLAY_NONE;
         return isHTMLSafe(value) ? htmlSafe(style) : style;
       }
     }
+
+    get() {
+      return UNDEFINED_REFERENCE;
+    }
   };
-}
 
-export let IsVisibleBinding:
-  | undefined
-  | {
-      install(
-        element: SimpleElement,
-        component: Component,
-        rootRef: RootReference<Component>,
-        operations: ElementOperations
-      ): void;
-      mapStyleValue(isVisible: boolean, component: Component): SafeString | null;
-    };
-
-if (EMBER_COMPONENT_IS_VISIBLE) {
-  IsVisibleBinding = {
-    install(
-      _element: SimpleElement,
-      component: Component,
-      rootRef: RootReference<Component>,
-      operations: ElementOperations
-    ) {
-      let componentMapStyleValue = (isVisible: boolean) => {
-        return this.mapStyleValue(isVisible, component);
-      };
-
-      operations.setAttribute(
-        'style',
-        map(referenceForKey(rootRef, 'isVisible') as any, componentMapStyleValue),
-        false,
-        null
-      );
-      // // the upstream type for addDynamicAttribute's `value` argument
-      // // appears to be incorrect. It is currently a Reference<string>, I
-      // // think it should be a Reference<string|null>.
-      // operations.addDynamicAttribute(element, 'style', ref as any as Reference<string>, false);
-    },
-
-    mapStyleValue(isVisible: boolean, component: Component) {
-      if (isVisible !== undefined) {
-        deprecate(`\`isVisible\` is deprecated (from "${component._debugContainerKey}")`, false, {
-          id: 'ember-component.is-visible',
-          until: '4.0.0',
-          url: 'https://deprecations.emberjs.com/v3.x#toc_ember-component-is-visible',
-        });
-      }
-
-      return isVisible === false ? SAFE_DISPLAY_NONE : null;
-    },
+  installIsVisibleBinding = (
+    rootRef: RootReference<Component>,
+    operations: ElementOperations,
+    environment: EmberVMEnvironment
+  ) => {
+    operations.setAttribute(
+      'style',
+      new StyleBindingReference!(rootRef, UNDEFINED_REFERENCE, rootRef.get('isVisible'), environment),
+      false,
+      null
+    );
   };
 }
 
@@ -250,28 +233,20 @@ export const ClassNameBinding = {
       }
 
       operations.setAttribute('class', ref, false, null);
-      // // the upstream type for addDynamicAttribute's `value` argument
-      // // appears to be incorrect. It is currently a Reference<string>, I
-      // // think it should be a Reference<string|null>.
-      // operations.addDynamicAttribute(element, 'class', ref as any as Reference<string>, false);
     }
   },
 };
 
-export class SimpleClassNameBindingReference extends CachedReference<Option<string>> {
+export class SimpleClassNameBindingReference implements VersionedReference<Option<string>> {
   public tag: Tag;
   private dasherizedPath: Option<string>;
 
   constructor(private inner: Reference<unknown | number>, private path: string) {
-    super();
-
     this.tag = inner.tag;
-    this.inner = inner;
-    this.path = path;
     this.dasherizedPath = null;
   }
 
-  compute(): Option<string> {
+  value(): Option<string> {
     let value = this.inner.value();
 
     if (value === true) {
@@ -285,7 +260,7 @@ export class SimpleClassNameBindingReference extends CachedReference<Option<stri
   }
 }
 
-class ColonClassNameBindingReference extends CachedReference<Option<string>> {
+class ColonClassNameBindingReference implements VersionedReference<Option<string>> {
   public tag: Tag;
 
   constructor(
@@ -293,12 +268,10 @@ class ColonClassNameBindingReference extends CachedReference<Option<string>> {
     private truthy: Option<string> = null,
     private falsy: Option<string> = null
   ) {
-    super();
-
     this.tag = inner.tag;
   }
 
-  compute(): Option<string> {
+  value(): Option<string> {
     let { inner, truthy, falsy } = this;
     return inner.value() ? truthy : falsy;
   }

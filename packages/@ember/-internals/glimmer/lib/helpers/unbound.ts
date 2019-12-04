@@ -3,8 +3,8 @@
 */
 
 import { assert } from '@ember/debug';
-import { VMArguments } from '@glimmer/interfaces';
-import { UnboundReference } from '../utils/references';
+import { VM, VMArguments } from '@glimmer/interfaces';
+import { UnboundRootReference } from '../utils/references';
 
 /**
   The `{{unbound}}` helper disconnects the one-way binding of a property,
@@ -34,11 +34,11 @@ import { UnboundReference } from '../utils/references';
   @public
 */
 
-export default function(args: VMArguments) {
+export default function(args: VMArguments, vm: VM) {
   assert(
     'unbound helper cannot be called with multiple params or hash params',
     args.positional.length === 1 && args.named.length === 0
   );
 
-  return UnboundReference.create(args.positional.at(0).value());
+  return new UnboundRootReference(args.positional.at(0).value(), vm.env);
 }
