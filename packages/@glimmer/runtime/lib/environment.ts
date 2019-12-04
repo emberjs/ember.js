@@ -42,7 +42,8 @@ import {
   VersionedPathReference,
   VersionedReference,
   IteratorDelegate,
-  TemplatePathReference,
+  RootReference,
+  PropertyReference,
 } from '@glimmer/reference';
 import { assert, DROP, expect, Option } from '@glimmer/util';
 import { AttrNamespace, SimpleElement } from '@simple-dom/interface';
@@ -254,8 +255,8 @@ export class EnvironmentImpl<Extra> implements Environment<Extra> {
 
   // Delegate methods and values
   public extra = this.delegate.extra!;
-  public getDebugContext = this.delegate.getDebugContext || defaultGetDebugContext;
-  public isInteractive = typeof this.delegate.isInteractive === 'boolean' ? this.delegate.isInteractive : true;
+  public isInteractive =
+    typeof this.delegate.isInteractive === 'boolean' ? this.delegate.isInteractive : true;
 
   public protocolForURL = this.delegate.protocolForURL || defaultGetProtocolForURL;
   public attributeFor = this.delegate.attributeFor || defaultAttributeFor;
@@ -263,7 +264,10 @@ export class EnvironmentImpl<Extra> implements Environment<Extra> {
   public getPath = this.delegate.getPath || defaultGetPath;
   public setPath = this.delegate.setPath || defaultSetPath;
 
-  public toBool = this.delegate.toBool || defaultToBool
+  public getTemplatePathDebugContext = this.delegate.getTemplatePathDebugContext || defaultGetDebugContext;
+  public setTemplatePathDebugContext = this.delegate.setTemplatePathDebugContext || defaultSetDebugContext;
+
+  public toBool = this.delegate.toBool || defaultToBool;
   public toIterator = this.delegate.toIterator || defaultToIterator;
 
   constructor(options: EnvironmentOptions, private delegate: EnvironmentDelegate<Extra>) {
@@ -295,9 +299,12 @@ export class EnvironmentImpl<Extra> implements Environment<Extra> {
     // this.toIterator = delegateWrapper.toIterator;
   }
 
-  iterableFor(ref: TemplatePathReference, inputKey: unknown): OpaqueIterable {
+  iterableFor(ref: VersionedPathReference, inputKey: unknown): OpaqueIterable {
     if (DEBUG) {
-      assert(typeof ref.getDebugPath === 'function', 'BUG: Attempted to create an iterable for a non-template-path');
+      assert(
+        ref instanceof RootReference || ref instanceof PropertyReference,
+        'BUG: Attempted to create an iterable for a non-template-path'
+      );
     }
 
     let key = String(inputKey);
@@ -368,13 +375,6 @@ export interface EnvironmentDelegate<Extra = undefined> {
   isInteractive?: boolean;
 
   /**
-   * Allows the embedding environment to provide debugging context at certain
-   * points during rendering. This is useful for making error messages that can
-   * display where the error occured.
-   */
-  getDebugContext?(): string;
-
-  /**
    * Hook to provide iterators for `{{each}}` loops
    *
    * @param value The value to create an iterator for
@@ -397,7 +397,7 @@ export interface EnvironmentDelegate<Extra = undefined> {
    */
   getPath?(obj: unknown, path: string): unknown;
 
-    /**
+  /**
    * Hook for specifying how Glimmer should update paths in cases where it needs
    * to. For instance, when updating a template reference (e.g. 2-way-binding)
    *
@@ -406,6 +406,30 @@ export interface EnvironmentDelegate<Extra = undefined> {
    * @param value The value to set the value to
    */
   setPath?(obj: unknown, path: string, value: unknown): unknown;
+
+  /**
+   * Allows the embedding environment to provide debugging context at certain
+   * points during rendering. This is useful for making error messages that can
+   * display where the error occured.
+   *
+   * @param ref The reference to get context for
+   */
+  getTemplatePathDebugContext?(ref: VersionedPathReference): string;
+
+  /**
+   * Allows the embedding environment to setup debugging context at certain
+   * points during rendering. This is useful for making error messages that can
+   * display where the error occured.
+   *
+   * @param ref The reference to set context for
+   * @param desc The description for the reference
+   * @param parentRef The parent reference
+   */
+  setTemplatePathDebugContext?(
+    ref: VersionedPathReference,
+    desc: string,
+    parentRef: Option<VersionedPathReference>
+  ): void;
 
   /**
    * TODO
@@ -460,7 +484,7 @@ function defaultGetPath(obj: unknown, key: string): unknown {
 }
 
 function defaultSetPath(obj: unknown, key: string, value: unknown): unknown {
-  return (obj as Dict)[key] = value;
+  return ((obj as Dict)[key] = value);
 }
 
 function defaultToBool(value: unknown) {
@@ -477,6 +501,8 @@ function defaultGetDebugContext() {
   return '';
 }
 
+function defaultSetDebugContext() {}
+
 // export class EnvironmentDelegateWrapper<Extra = undefined> implements EnvironmentDelegate<Extra> {
 //   readonly isInteractive: boolean;
 //   readonly toBool: (value: unknown) => boolean;
@@ -484,7 +510,7 @@ function defaultGetDebugContext() {
 //   readonly getPath: (obj: unknown, path: string) => unknown;
 //   readonly setPath: (obj: unknown, path: string, value: unknown) => unknown;
 //   readonly extra: Extra;
-//   readonly getDebugContext
+//   readonly getTemplatePathDebugContext
 
 //   constructor(private inner: EnvironmentDelegate<Extra> = {}) {
 //     this.isInteractive = 'isInteractive' in inner ? inner.isInteractive! : true;
@@ -556,8 +582,7 @@ function legacyProtocolForURL(url: string): string {
   return anchor.protocol;
 }
 
-export class DefaultRuntimeResolver<R>
-  implements JitRuntimeResolver<R>, AotRuntimeResolver {
+export class DefaultRuntimeResolver<R> implements JitRuntimeResolver<R>, AotRuntimeResolver {
   constructor(private inner: RuntimeResolverDelegate<R>) {}
 
   lookupComponent(name: string, referrer?: R): Option<any> {
@@ -771,7 +796,7 @@ export function JitRuntimeFromProgram<R, E>(
 // }
 
 export function inTransaction(_env: PublicEnvironment, cb: () => void): void {
-  let env = _env as unknown as Environment;
+  let env = (_env as unknown) as Environment;
 
   if (!env[TRANSACTION]) {
     env.begin();
