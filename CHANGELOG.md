@@ -4,7 +4,6 @@
 
 - [#18582](https://github.com/emberjs/ember.js/pull/18582) [BUGFIX release] Ensure `loader.js` is transpiled to the applications specified targets (from `config/targets.js`).
 
-
 ### v3.14.2 (November 20, 2019)
 
 - [#18539](https://github.com/emberjs/ember.js/pull/18539) / [#18548](https://github.com/emberjs/ember.js/pull/18548) [BUGFIX] Fix issues with the new APIs to be used by ember-inspector for building the "component's tree" including `@glimmer/component`.
@@ -68,6 +67,16 @@
 - [#18248](https://github.com/emberjs/ember.js/pull/18248) [BUGFIX] Ensures that observers are flushed after CPs are updated
 - [#18217](https://github.com/emberjs/ember.js/pull/18217) [BUGFIX] Adds ability for computed props to depend on args
 - [#18222](https://github.com/emberjs/ember.js/pull/18222) [BUGFIX] Matches assertion behavior for CPs computing after destroy
+
+### v3.12.2 (December 4, 2019)
+
+- [#18576](https://github.com/emberjs/ember.js/pull/18576) [BUGFIX] Fix leftover `const` expressions in legacy builds
+
+### v3.12.1 (November 20, 2019)
+
+- [#18244](https://github.com/emberjs/ember.js/pull/18244) Fix query param assertion when using the router services `transitionTo` to redirect _during_ an existing transition.
+- [#18458](https://github.com/emberjs/ember.js/pull/18458) / [#18555](https://github.com/emberjs/ember.js/pull/18555) Ensure `(query-params)` helper can be used outside of direct `{{link-to}}` / `<LinkTo />` invocation.
+
 
 ### v3.12.0 (August 5, 2019)
 
