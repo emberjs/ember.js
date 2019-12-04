@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.12.2 (December 4, 2019)
+
+- [#18576](https://github.com/emberjs/ember.js/pull/18576) [BUGFIX] Fix leftover `const` expressions in legacy builds
+
 ### v3.12.1 (November 20, 2019)
 
 - [#18244](https://github.com/emberjs/ember.js/pull/18244) Fix query param assertion when using the router services `transitionTo` to redirect _during_ an existing transition.
