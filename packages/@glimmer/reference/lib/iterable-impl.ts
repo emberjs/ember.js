@@ -3,7 +3,8 @@ import { Tag } from '@glimmer/validator';
 import { Option, Dict, Environment } from '@glimmer/interfaces';
 import { EMPTY_ARRAY, isObject } from '@glimmer/util';
 import { DEBUG } from '@glimmer/local-debug-flags';
-import { IterationItemReference, TemplatePathReference } from './template';
+import { IterationItemReference } from './template';
+import { VersionedPathReference } from './reference';
 
 export interface IteratorDelegate {
   isEmpty(): boolean;
@@ -140,7 +141,7 @@ export class IterableImpl
   public tag: Tag;
 
   constructor(
-    private parentRef: TemplatePathReference,
+    private parentRef: VersionedPathReference,
     private key: string,
     private env: Environment
   ) {

@@ -1,4 +1,9 @@
-import { OpaqueIterable, VersionedPathReference, VersionedReference, IteratorDelegate } from '@glimmer/reference';
+import {
+  OpaqueIterable,
+  VersionedPathReference,
+  VersionedReference,
+  IteratorDelegate,
+} from '@glimmer/reference';
 import { AttributeOperation } from '@glimmer/runtime';
 import { AttrNamespace, SimpleElement, SimpleDocument } from '@simple-dom/interface';
 import { ComponentDefinitionState, ComponentInstanceState } from '../components';
@@ -54,7 +59,13 @@ export interface Environment<Extra = unknown> {
 
   getPath(item: unknown, path: string): unknown;
   setPath(item: unknown, path: string, value: unknown): unknown;
-  getDebugContext(): string;
+
+  getTemplatePathDebugContext(ref: VersionedPathReference): string;
+  setTemplatePathDebugContext(
+    ref: VersionedPathReference,
+    desc: string,
+    parentRef: Option<VersionedPathReference>
+  ): void;
 
   isInteractive: boolean;
   extra: Extra;

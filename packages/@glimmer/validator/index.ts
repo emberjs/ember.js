@@ -31,7 +31,15 @@ export {
 
 export { dirtyTagFor, tagFor } from './lib/meta';
 
-export { track, consume, isTracking, untrack, trackedData, setPropertyDidChange, EPOCH } from './lib/tracking';
+export {
+  consume,
+  EPOCH,
+  isTracking,
+  setPropertyDidChange,
+  track,
+  trackedData,
+  untrack,
+} from './lib/tracking';
 
 export {
   setAutotrackingTransactionEnv,

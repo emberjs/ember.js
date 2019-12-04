@@ -9,8 +9,12 @@ import { Dict } from '@glimmer/interfaces';
 export class UpdatableRootReference<T = unknown> extends RootReference<T> {
   public tag = createUpdatableTag();
 
-  constructor(inner: T, env: TemplateReferenceEnvironment = DEFAULT_TEMPLATE_REF_ENV) {
-    super(inner, env);
+  constructor(private inner: T, env: TemplateReferenceEnvironment = DEFAULT_TEMPLATE_REF_ENV) {
+    super(env);
+  }
+
+  value() {
+    return this.inner;
   }
 
   update(value: T) {
@@ -30,6 +34,10 @@ export class UpdatableRootReference<T = unknown> extends RootReference<T> {
   dirty() {
     dirty(this.tag);
   }
+
+  getDebugPath() {
+    return 'this';
+  }
 }
 
 const DEFAULT_TEMPLATE_REF_ENV = {
@@ -41,9 +49,11 @@ const DEFAULT_TEMPLATE_REF_ENV = {
     return (obj as Dict)[key] = value;
   },
 
-  getDebugContext() {
+  getTemplatePathDebugContext() {
     return '';
-  }
+  },
+
+  setTemplatePathDebugContext() {}
 }
 
 export function State<T>(data: T): UpdatableRootReference<T> {

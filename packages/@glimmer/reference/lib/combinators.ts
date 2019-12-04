@@ -1,19 +1,18 @@
 // import { Tag, createUpdatableTag, combine, update, track } from '@glimmer/validator';
-// import { PropertyReference } from './template';
-// import { VersionedPathReference } from './reference';
+// import { VersionedReference } from './reference';
 
 // export function map<T, U>(
-//   input: VersionedPathReference<T>,
-//   callback: (value: T) => U
-// ): VersionedPathReference<U> {
+//   input: VersionedReference<T>,
+//   callback: (value: T) => U,
+// ): VersionedReference<U> {
 //   return new MapReference(input, callback);
 // }
 
-// class MapReference<T, U> implements VersionedPathReference<U> {
+// class MapReference<T, U> implements VersionedReference<U> {
 //   readonly tag: Tag;
 //   readonly updatable = createUpdatableTag();
 
-//   constructor(private inner: VersionedPathReference<T>, private callback: (value: T) => U) {
+//   constructor(private inner: VersionedReference<T>, private callback: (value: T) => U) {
 //     this.tag = combine([inner.tag, this.updatable]);
 //   }
 
@@ -25,9 +24,5 @@
 //     update(this.updatable, tag);
 
 //     return ret!;
-//   }
-
-//   get(key: string): VersionedPathReference {
-//     return new PropertyReference(this, key);
 //   }
 // }
