@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.15.0-beta.5 (December 4, 2019)
+
+- [#18582](https://github.com/emberjs/ember.js/pull/18582) [BUGFIX] Ensure `loader.js` is transpiled to the applications specified targets (from `config/targets.js`).
+
 ### v3.15.0-beta.4 (November 25, 2019)
 
 - [#17834](https://github.com/emberjs/ember.js/pull/17834) [BUGFIX] Prevents autotracking ArrayProxy creation
@@ -21,7 +25,7 @@
 
 ### v3.14.3 (December 3, 2019)
 
-- [#18582](https://github.com/emberjs/ember.js/pull/18582) [BUGFIX release] Ensure `loader.js` is transpiled to the applications specified targets (from `config/targets.js`).
+- [#18582](https://github.com/emberjs/ember.js/pull/18582) [BUGFIX] Ensure `loader.js` is transpiled to the applications specified targets (from `config/targets.js`).
 
 ### v3.14.2 (November 20, 2019)
 
