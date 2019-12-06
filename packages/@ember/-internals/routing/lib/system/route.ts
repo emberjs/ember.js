@@ -1282,6 +1282,7 @@ class Route extends EmberObject implements IRoute {
     @method setupController
     @param {Controller} controller instance
     @param {Object} model
+    @param {Object} transition
     @since 1.0.0
     @public
   */
