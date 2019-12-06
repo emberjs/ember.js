@@ -9,22 +9,22 @@ import _ProxyMixin from '../mixins/-proxy';
   import EmberObject from '@ember/object';
   import ObjectProxy from '@ember/object/proxy';
 
-  object = EmberObject.create({
+  const exampleObject = EmberObject.create({
     name: 'Foo'
   });
 
-  proxy = ObjectProxy.create({
-    content: object
+  const exampleProxy = ObjectProxy.create({
+    content: exampleObject
   });
 
   // Access and change existing properties
-  proxy.get('name')          // 'Foo'
-  proxy.set('name', 'Bar');
-  object.get('name')         // 'Bar'
+  exampleProxy.get('name');          // 'Foo'
+  exampleProxy.set('name', 'Bar');
+  exampleObject.get('name');         // 'Bar'
 
-  // Create new 'description' property on `object`
-  proxy.set('description', 'Foo is a whizboo baz');
-  object.get('description')  // 'Foo is a whizboo baz'
+  // Create new 'description' property on `exampleObject`
+  exampleProxy.set('description', 'Foo is a whizboo baz');
+  exampleObject.get('description');  // 'Foo is a whizboo baz'
   ```
 
   While `content` is unset, setting a property to be delegated will throw an
@@ -33,14 +33,14 @@ import _ProxyMixin from '../mixins/-proxy';
   ```javascript
   import ObjectProxy from '@ember/object/proxy';
 
-  proxy = ObjectProxy.create({
+  const exampleProxy = ObjectProxy.create({
     content: null,
     flag: null
   });
-  proxy.set('flag', true);
-  proxy.get('flag');         // true
-  proxy.get('foo');          // undefined
-  proxy.set('foo', 'data');  // throws Error
+  exampleProxy.set('flag', true);
+  exampleProxy.get('flag');         // true
+  exampleProxy.get('foo');          // undefined
+  exampleProxy.set('foo', 'data');  // throws Error
   ```
 
   Delegated properties can be bound to and will change when content is updated.
@@ -62,14 +62,14 @@ import _ProxyMixin from '../mixins/-proxy';
     })
   });
 
-  proxy = ProxyWithComputedProperty.create();
+  const exampleProxy = ProxyWithComputedProperty.create();
 
-  proxy.get('fullName');  // undefined
-  proxy.set('content', {
+  exampleProxy.get('fullName');  // undefined
+  exampleProxy.set('content', {
     firstName: 'Tom', lastName: 'Dale'
   }); // triggers property change for fullName on proxy
 
-  proxy.get('fullName');  // 'Tom Dale'
+  exampleProxy.get('fullName');  // 'Tom Dale'
   ```
 
   @class ObjectProxy
