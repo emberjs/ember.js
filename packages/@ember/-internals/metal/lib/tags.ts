@@ -7,20 +7,19 @@ import { assertTagNotConsumed } from './tracked';
 
 export const UNKNOWN_PROPERTY_TAG = symbol('UNKNOWN_PROPERTY_TAG');
 
-export function tagForProperty(object: any, propertyKey: string | symbol, _meta?: Meta): Tag {
+export function tagForProperty(object: any, propertyKey: string | symbol): Tag {
   let objectType = typeof object;
   if (objectType !== 'function' && (objectType !== 'object' || object === null)) {
     return CONSTANT_TAG;
   }
-  let meta = _meta === undefined ? metaFor(object) : _meta;
 
   if (!(propertyKey in object) && typeof object[UNKNOWN_PROPERTY_TAG] === 'function') {
     return object[UNKNOWN_PROPERTY_TAG](propertyKey);
   }
 
-  let tags = meta.writableTags();
+  let tags = metaFor(object).writableTags();
   let tag = tags[propertyKey];
-  if (tag) {
+  if (tag !== undefined) {
     return tag;
   }
 
@@ -28,16 +27,15 @@ export function tagForProperty(object: any, propertyKey: string | symbol, _meta?
 
   if (DEBUG) {
     setupMandatorySetter!(object, propertyKey);
-
     (newTag as any)._propertyKey = propertyKey;
   }
 
   return (tags[propertyKey] = newTag);
 }
 
-export function tagFor(object: any | null, _meta?: Meta): Tag {
+export function tagFor(object: any | null): Tag {
   if (typeof object === 'object' && object !== null) {
-    let meta = _meta === undefined ? metaFor(object) : _meta;
+    let meta = metaFor(object);
 
     if (!meta.isMetaDestroyed()) {
       return meta.writableTag();
