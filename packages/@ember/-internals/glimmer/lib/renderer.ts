@@ -213,7 +213,7 @@ function resolveRenderPromise() {
   if (renderSettledDeferred !== null) {
     let resolve = renderSettledDeferred.resolve;
     renderSettledDeferred = null;
-    backburner.join(resolve);
+    resolve();
   }
 }
 

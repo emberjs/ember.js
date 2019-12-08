@@ -3,6 +3,7 @@ import { EMBER_CUSTOM_COMPONENT_ARG_PROXY } from '@ember/canary-features';
 import { computed, get, tracked, nativeDescDecorator as descriptor } from '@ember/-internals/metal';
 import { Promise } from 'rsvp';
 import { moduleFor, RenderingTestCase, strip, runTask } from 'internal-test-helpers';
+import { renderSettled } from '@ember/-internals/glimmer';
 import GlimmerishComponent from '../../utils/glimmerish-component';
 import { Component } from '../../utils/helpers';
 
@@ -44,7 +45,7 @@ moduleFor(
       this.assertText('max jackson | max jackson');
     }
 
-    '@test creating an array proxy inside a tracking context does not trigger backtracking assertion'() {
+    async '@test creating an array proxy inside a tracking context does not trigger backtracking assertion'() {
       let PromiseArray = ArrayProxy.extend(PromiseProxyMixin);
 
       class LoaderComponent extends GlimmerishComponent {
@@ -65,6 +66,8 @@ moduleFor(
       });
 
       this.render('<Loader/>');
+
+      await renderSettled();
 
       this.assertText('123');
     }
