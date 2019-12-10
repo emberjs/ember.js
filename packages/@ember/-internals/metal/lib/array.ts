@@ -1,3 +1,4 @@
+import { EmberArray } from '@ember/-internals/utils';
 import { arrayContentDidChange, arrayContentWillChange } from './array_events';
 import { addListener, removeListener } from './events';
 import { notifyPropertyChange } from './property_events';
@@ -6,13 +7,6 @@ const EMPTY_ARRAY = Object.freeze([]);
 
 interface ObjectHasArrayObservers {
   hasArrayObservers?: boolean;
-}
-
-export interface EmberArray<T> extends ObjectHasArrayObservers {
-  length: number;
-  objectAt(index: number): T | undefined;
-  replace(start: number, deleteCount: number, items: T[]): void;
-  splice(start: number, deleteCount: number, ...items: T[]): void;
 }
 
 export function objectAt<T>(array: T[] | EmberArray<T>, index: number): T | undefined {

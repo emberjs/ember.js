@@ -8,6 +8,7 @@ import TransformActionSyntax from './transform-action-syntax';
 import TransformAttrsIntoArgs from './transform-attrs-into-args';
 import TransformComponentInvocation from './transform-component-invocation';
 import TransformEachInIntoEach from './transform-each-in-into-each';
+import TransformEachTrackArray from './transform-each-track-array';
 import TransformHasBlockSyntax from './transform-has-block-syntax';
 import TransformInElement from './transform-in-element';
 import TransformLinkTo from './transform-link-to';
@@ -27,6 +28,7 @@ const transforms: Array<APluginFunc> = [
   TransformActionSyntax,
   TransformAttrsIntoArgs,
   TransformEachInIntoEach,
+  TransformEachTrackArray,
   TransformHasBlockSyntax,
   AssertLocalVariableShadowingHelperInvocation,
   TransformLinkTo,

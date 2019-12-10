@@ -26,6 +26,7 @@ import { isHelperFactory, isSimpleHelper } from './helper';
 import { default as componentAssertionHelper } from './helpers/-assert-implicit-component-helper-argument';
 import { default as inputTypeHelper } from './helpers/-input-type';
 import { default as normalizeClassHelper } from './helpers/-normalize-class';
+import { default as trackArray } from './helpers/-track-array';
 import { default as action } from './helpers/action';
 import { default as array } from './helpers/array';
 import { default as concat } from './helpers/concat';
@@ -250,6 +251,7 @@ const BUILTINS_HELPERS: IBuiltInHelpers = {
   '-each-in': eachIn,
   '-input-type': inputTypeHelper,
   '-normalize-class': normalizeClassHelper,
+  '-track-array': trackArray,
   '-get-dynamic-var': getDynamicVar,
   '-mount': mountHelper,
   '-outlet': outletHelper,

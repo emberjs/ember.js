@@ -22,6 +22,7 @@ import DebugRenderTree, { PathNodeType } from './utils/debug-render-tree';
 // import { ConditionalReference, UpdatableReference } from './utils/references';
 import { isHTMLSafe } from './utils/string';
 import emberToBool from './utils/to-bool';
+import toIterator from './utils/iterator';
 
 export interface CompilerFactory {
   id: string;
@@ -111,9 +112,7 @@ export class EmberEnvironmentDelegate implements RuntimeEnvironmentDelegate<Embe
     }
   }
 
-  // toIterator(value: unknown) {
-
-  // }
+  toIterator = toIterator;
 
   // getPath(obj: unknown, key: string) {
   //   return get(obj as object, key);

@@ -1,10 +1,12 @@
 /**
 @module ember
 */
-import { symbol } from '@ember/-internals/utils';
+import { tagForObject } from '@ember/-internals/metal';
+import { _contentFor } from '@ember/-internals/runtime';
+import { isProxy } from '@ember/-internals/utils';
 import { VMArguments } from '@glimmer/interfaces';
 import { VersionedPathReference } from '@glimmer/reference';
-import { Tag } from '@glimmer/validator';
+import { combine, createUpdatableTag, Tag, update } from '@glimmer/validator';
 
 /**
   The `{{#each}}` helper loops over elements in a collection. It is an extension
@@ -147,18 +149,28 @@ import { Tag } from '@glimmer/validator';
   @public
   @since 2.1.0
 */
-const EACH_IN_REFERENCE = symbol('EACH_IN');
-
 class EachInReference implements VersionedPathReference {
   public tag: Tag;
+  private valueTag = createUpdatableTag();
 
   constructor(private inner: VersionedPathReference) {
-    this.tag = inner.tag;
-    this[EACH_IN_REFERENCE] = true;
+    this.tag = combine([inner.tag, this.valueTag]);
   }
 
   value(): unknown {
-    return this.inner.value();
+    let iterable = this.inner.value();
+
+    let tag = tagForObject(iterable);
+
+    if (isProxy(iterable)) {
+      // this is because the each-in doesn't actually get(proxy, 'key') but bypasses it
+      // and the proxy's tag is lazy updated on access
+      iterable = _contentFor(iterable);
+    }
+
+    update(this.valueTag, tag);
+
+    return new EachInWrapper(iterable);
   }
 
   get(key: string): VersionedPathReference {
@@ -166,8 +178,8 @@ class EachInReference implements VersionedPathReference {
   }
 }
 
-export function isEachIn(ref: unknown): ref is VersionedPathReference {
-  return ref !== null && typeof ref === 'object' && ref![EACH_IN_REFERENCE];
+export class EachInWrapper {
+  constructor(public inner: unknown) {}
 }
 
 export default function(args: VMArguments) {

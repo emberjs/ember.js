@@ -34,7 +34,7 @@ export { HAS_NATIVE_SYMBOL } from './lib/symbol-utils';
 export { HAS_NATIVE_PROXY } from './lib/proxy-utils';
 export { isProxy, setProxy } from './lib/is_proxy';
 export { default as Cache } from './lib/cache';
-export { EMBER_ARRAY, isEmberArray } from './lib/ember-array';
+export { EMBER_ARRAY, EmberArray, isEmberArray } from './lib/ember-array';
 export {
   setupMandatorySetter,
   teardownMandatorySetter,
