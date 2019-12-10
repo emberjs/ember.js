@@ -9,7 +9,6 @@ import { blockLetMacro } from './syntax/let';
 import { mountMacro } from './syntax/mount';
 import { outletMacro } from './syntax/outlet';
 import { hashToArgs } from './syntax/utils';
-import { wrapComponentClassAttribute } from './utils/bindings';
 
 function refineInlineSyntax(
   name: string,
@@ -46,7 +45,6 @@ function refineBlockSyntax(
   let handle = builder.compiler['resolver'].lookupComponentDefinition(name, builder.referrer);
 
   if (handle !== null) {
-    wrapComponentClassAttribute(hash);
     builder.component.static(handle, [params, hashToArgs(hash), template, inverse]);
     return true;
   }
