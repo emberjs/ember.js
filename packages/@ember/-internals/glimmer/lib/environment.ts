@@ -1,5 +1,5 @@
 import { ENV } from '@ember/-internals/environment';
-import { get } from '@ember/-internals/metal';
+import { get, set } from '@ember/-internals/metal';
 import { Owner } from '@ember/-internals/owner';
 import { isProxy } from '@ember/-internals/utils';
 import { constructStyleDeprecationMessage } from '@ember/-internals/views';
@@ -79,6 +79,7 @@ export class EmberEnvironmentDelegate implements RuntimeEnvironmentDelegate<Embe
   public isInteractive: boolean;
 
   public getPath = get;
+  public setPath = set;
 
   public attributeFor?: (
     element: SimpleElement,
@@ -112,6 +113,14 @@ export class EmberEnvironmentDelegate implements RuntimeEnvironmentDelegate<Embe
 
   // toIterator(value: unknown) {
 
+  // }
+
+  // getPath(obj: unknown, key: string) {
+  //   return get(obj as object, key);
+  // }
+
+  // setPath(obj: unknown, key: string, value: unknown) {
+  //   return set(obj as object, key, value);
   // }
 
   getTemplatePathDebugContext(pathRef: VersionedPathReference) {

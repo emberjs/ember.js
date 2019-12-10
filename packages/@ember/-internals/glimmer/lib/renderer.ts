@@ -40,6 +40,7 @@ import { RootComponentDefinition } from './component-managers/root';
 import { NodeDOMTreeConstruction } from './dom';
 import { EmberEnvironmentDelegate, EmberEnvironmentExtra } from './environment';
 import RuntimeResolver from './resolver';
+import { populateMacros } from './syntax';
 import { Factory as TemplateFactory, OwnedTemplate } from './template';
 import { Component } from './utils/curly-component-state-bucket';
 import { OutletState } from './utils/outlet';
@@ -298,6 +299,8 @@ export abstract class Renderer {
     let compileTimeResolver = new CompileTimeResolver(runtimeResolver);
 
     this._context = JitContext(compileTimeResolver);
+
+    populateMacros(this._context.macros);
 
     let program = new RuntimeProgramImpl(this._context.program.constants, this._context.program.heap);
 

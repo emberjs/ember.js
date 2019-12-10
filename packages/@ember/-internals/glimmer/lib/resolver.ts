@@ -279,8 +279,6 @@ export default class RuntimeResolver implements JitRuntimeResolver<OwnedTemplate
   public helperDefinitionCount = 0;
 
   constructor(isInteractive: boolean) {
-    // let macros = new Macros();
-    // populateMacros(macros);
     // this.compiler = new LazyCompiler<OwnedTemplateMeta>(new CompileTimeLookup(this), this, macros);
     this.isInteractive = isInteractive;
 
@@ -385,6 +383,11 @@ export default class RuntimeResolver implements JitRuntimeResolver<OwnedTemplate
   }
 
   private _lookupHelper(_name: string, meta: OwnedTemplateMeta): Option<Helper> {
+    assert(
+      `You attempted to overwrite the built-in helper "${_name}" which is not allowed. Please rename the helper.`,
+      !(this.builtInHelpers[_name] && meta.owner.hasRegistration(`helper:${_name}`))
+    );
+
     const helper = this.builtInHelpers[_name];
     if (helper !== undefined) {
       return helper;
