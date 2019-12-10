@@ -1,27 +1,12 @@
 # Ember Changelog
 
-### v3.15.0-beta.5 (December 4, 2019)
-
-- [#18582](https://github.com/emberjs/ember.js/pull/18582) [BUGFIX] Ensure `loader.js` is transpiled to the applications specified targets (from `config/targets.js`).
-
-### v3.15.0-beta.4 (November 25, 2019)
-
-- [#17834](https://github.com/emberjs/ember.js/pull/17834) [BUGFIX] Prevents autotracking ArrayProxy creation
-- [#18554](https://github.com/emberjs/ember.js/pull/18554) [BREAKING BUGFIX] Adds autotracking transaction
-
-### v3.15.0-beta.3 (November 18, 2019)
-
-- [#18549](https://github.com/emberjs/ember.js/pull/18549) [BUGFIX] Add component reference to the mouse event handler deprecation warnings
-
-### v3.15.0-beta.2 (November 11, 2019)
-
-- [#18539](https://github.com/emberjs/ember.js/pull/18539) [BUGFIX] Add ID to `CapturedRenderNode`
-
-### v3.15.0-beta.1 (October 31, 2019)
+### v3.15.0 (December 9, 2019)
 
 - [#17948](https://github.com/emberjs/ember.js/pull/17948) [DEPRECATION] Deprecate `Component#isVisible` per [RFC #324](https://github.com/emberjs/rfcs/blob/master/text/0324-deprecate-component-isvisible.md).
 - [#18491](https://github.com/emberjs/ember.js/pull/18491) [DEPRECATION] Deprecate `{{partial}}` per [RFC #449](https://github.com/emberjs/rfcs/blob/master/text/0449-deprecate-partials.md).
-- [#18441](https://github.com/emberjs/ember.js/pull/18441) [DEPRECATION] Deprecate window.ENV
+- [#18441](https://github.com/emberjs/ember.js/pull/18441) [DEPRECATION] Deprecate use of window.ENV to configure boot options
+- [#18554](https://github.com/emberjs/ember.js/pull/18554) [BREAKING BUGFIX] Adds autotracking transaction
+- [#17834](https://github.com/emberjs/ember.js/pull/17834) [BUGFIX] Prevents autotracking ArrayProxy creation
 
 ### v3.14.3 (December 3, 2019)
 
