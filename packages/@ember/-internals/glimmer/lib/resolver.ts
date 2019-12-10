@@ -334,6 +334,8 @@ export default class RuntimeResolver implements JitRuntimeResolver<OwnedTemplate
    * Called by CompileTimeLookup compiling Unknown or Helper OpCode
    */
   lookupHelper(name: string, meta: OwnedTemplateMeta): Option<number> {
+    debugger
+
     let nextHandle = this.handles.length;
     let helper = this._lookupHelper(name, meta);
     if (helper !== null) {

@@ -9,10 +9,8 @@ import {
   VM,
   VMArguments,
 } from '@glimmer/interfaces';
-// import { OpcodeBuilder } from '@glimmer/opcode-compiler';
 import { ConstReference, PropertyReference, Reference, VersionedPathReference } from '@glimmer/reference';
 import {
-
   CurriedComponentDefinition,
   curry,
   EMPTY_ARGS,
@@ -20,7 +18,6 @@ import {
 } from '@glimmer/runtime';
 import { dict } from '@glimmer/util';
 import { Tag } from '@glimmer/validator';
-// import * as WireFormat from '@glimmer/wire-format';
 import { OutletComponentDefinition, OutletDefinitionState } from '../component-managers/outlet';
 import { EmberVMEnvironment } from '../environment';
 import { DynamicScope } from '../renderer';
@@ -78,11 +75,13 @@ import { OutletReference, OutletState } from '../utils/outlet';
 export function outletHelper(args: VMArguments, vm: VM) {
   let scope = vm.dynamicScope() as DynamicScope;
   let nameRef: Reference<string>;
+
   if (args.positional.length === 0) {
     nameRef = new ConstReference('main');
   } else {
     nameRef = args.positional.at<VersionedPathReference<string>>(0);
   }
+
   return new OutletComponentReference(
     new OutletReference(scope.outletState, nameRef),
     vm.env as EmberVMEnvironment
@@ -93,8 +92,8 @@ export function outletHelper(args: VMArguments, vm: VM) {
 //   _name: string,
 //   params: Option<WireFormat.Core.Params>,
 //   hash: Option<WireFormat.Core.Hash>,
-//   builder: OpcodeBuilder<OwnedTemplateMeta>
-// ) {
+//   context: MacroContext
+// ): StatementCompileActions | Unhandled {
 //   let expr: WireFormat.Expressions.Helper = [WireFormat.Ops.Helper, '-outlet', params || [], hash];
 //   builder.dynamicComponent(expr, null, [], null, false, null, null);
 //   return true;

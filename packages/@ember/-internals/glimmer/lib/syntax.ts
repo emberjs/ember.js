@@ -6,11 +6,10 @@ import { staticComponent, NONE } from '@glimmer/opcode-compiler';
 // import { Option } from '@glimmer/util';
 // import CompileTimeLookup from './compile-time-lookup';
 // import { blockLetMacro } from './syntax/let';
-// import { mountMacro } from './syntax/mount';
-// import { outletMacro } from './syntax/outlet';
+import { mountMacro } from './syntax/mount';
+import { outletMacro } from './syntax/outlet';
 import { hashToArgs } from './syntax/utils';
 import { UNHANDLED, EMPTY_BLOCKS } from '@glimmer/opcode-compiler';
-import { wrapComponentClassAttribute } from './utils/bindings';
 import { OwnedTemplateMeta } from '@ember/-internals/views';
 
 export const experimentalMacros: any[] = [];
@@ -30,6 +29,8 @@ function refineInlineSyntax(
 ): StatementCompileActions | Unhandled {
   let component = context.resolver.lookupComponent(name, context.meta.referrer);
 
+  debugger
+
   if (component !== null) {
     return staticComponent(component, [params === null ? [] : params, hashToArgs(hash), EMPTY_BLOCKS]);
   }
@@ -47,7 +48,6 @@ function refineBlockSyntax(
   let handle = context.resolver.lookupComponent(name, context.meta.referrer);
 
   if (handle !== null) {
-    // wrapComponentClassAttribute(hash);
     return staticComponent(handle, [params, hashToArgs(hash), blocks]);
   }
 

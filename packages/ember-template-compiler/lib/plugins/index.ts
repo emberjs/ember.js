@@ -14,6 +14,7 @@ import TransformInElement from './transform-in-element';
 import TransformLinkTo from './transform-link-to';
 import TransformOldClassBindingSyntax from './transform-old-class-binding-syntax';
 import TransformQuotedBindingsIntoJustBindings from './transform-quoted-bindings-into-just-bindings';
+import TransformWrapMountAndOutlet from './transform-wrap-mount-and-outlet';
 
 import { SEND_ACTION } from '@ember/deprecated-features';
 import { ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
@@ -21,21 +22,22 @@ import { ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
 export type APluginFunc = (env: ASTPluginEnvironment) => ASTPlugin | undefined;
 
 const transforms: Array<APluginFunc> = [
-  TransformComponentInvocation,
-  TransformOldClassBindingSyntax,
-  TransformQuotedBindingsIntoJustBindings,
+  AssertIfHelperWithoutArguments,
+  AssertInputHelperWithoutBlock,
+  AssertLocalVariableShadowingHelperInvocation,
   AssertReservedNamedArguments,
+  AssertSplattributeExpressions,
   TransformActionSyntax,
   TransformAttrsIntoArgs,
+  TransformComponentInvocation,
   TransformEachInIntoEach,
   TransformEachTrackArray,
   TransformHasBlockSyntax,
-  AssertLocalVariableShadowingHelperInvocation,
-  TransformLinkTo,
-  AssertInputHelperWithoutBlock,
   TransformInElement,
-  AssertIfHelperWithoutArguments,
-  AssertSplattributeExpressions,
+  TransformLinkTo,
+  TransformOldClassBindingSyntax,
+  TransformQuotedBindingsIntoJustBindings,
+  TransformWrapMountAndOutlet,
 ];
 
 if (SEND_ACTION) {

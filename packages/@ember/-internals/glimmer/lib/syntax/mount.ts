@@ -25,6 +25,7 @@ export function mountHelper(
   let env = vm.env as EmberVMEnvironment;
   let nameRef = args.positional.at(0);
   let captured: Option<CapturedArguments> = null;
+  debugger
 
   // TODO: the functionality to create a proper CapturedArgument should be
   // exported by glimmer, or that it should provide an overload for `curry`
@@ -102,8 +103,8 @@ export function mountHelper(
 //   _name: string,
 //   params: Option<WireFormat.Core.Params>,
 //   hash: Option<WireFormat.Core.Hash>,
-//   builder: OpcodeBuilder<OwnedTemplateMeta>
-// ) {
+//   context: MacroContext
+// ): StatementCompileActions | Unhandled {
 //   assert(
 //     'You can only pass a single positional argument to the {{mount}} helper, e.g. {{mount "chat-engine"}}.',
 //     params!.length === 1

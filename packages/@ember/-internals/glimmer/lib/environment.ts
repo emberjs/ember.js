@@ -1,7 +1,6 @@
 import { ENV } from '@ember/-internals/environment';
 import { get, set } from '@ember/-internals/metal';
 import { Owner } from '@ember/-internals/owner';
-import { isProxy } from '@ember/-internals/utils';
 import { constructStyleDeprecationMessage } from '@ember/-internals/views';
 import { warn } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
@@ -18,11 +17,9 @@ import installPlatformSpecificProtocolForURL from './protocol-for-url';
 import { OwnedTemplate } from './template';
 import { Component } from './utils/curly-component-state-bucket';
 import DebugRenderTree, { PathNodeType } from './utils/debug-render-tree';
-// import createIterable from './utils/iterable';
-// import { ConditionalReference, UpdatableReference } from './utils/references';
-import { isHTMLSafe } from './utils/string';
-import emberToBool from './utils/to-bool';
 import toIterator from './utils/iterator';
+import { isHTMLSafe } from './utils/string';
+import toBool from './utils/to-bool';
 
 export interface CompilerFactory {
   id: string;
@@ -79,6 +76,9 @@ export class EmberEnvironmentExtra {
 export class EmberEnvironmentDelegate implements RuntimeEnvironmentDelegate<EmberEnvironmentExtra> {
   public isInteractive: boolean;
 
+  public toBool = toBool;
+  public toIterator = toIterator;
+
   public getPath = get;
   public setPath = set;
 
@@ -103,24 +103,6 @@ export class EmberEnvironmentDelegate implements RuntimeEnvironmentDelegate<Embe
   protocolForURL(s: string): string {
     return s;
   }
-
-  toBool(value: unknown) {
-    if (isProxy(value)) {
-      return Boolean(get(value, 'isTruthy'));
-    } else {
-      return emberToBool(value);
-    }
-  }
-
-  toIterator = toIterator;
-
-  // getPath(obj: unknown, key: string) {
-  //   return get(obj as object, key);
-  // }
-
-  // setPath(obj: unknown, key: string, value: unknown) {
-  //   return set(obj as object, key, value);
-  // }
 
   getTemplatePathDebugContext(pathRef: VersionedPathReference) {
     return this.extra.debugRenderTree.logRenderStackForPath(pathRef);

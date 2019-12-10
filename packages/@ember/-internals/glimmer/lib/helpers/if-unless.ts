@@ -5,7 +5,7 @@
 import { assert } from '@ember/debug';
 import { CapturedArguments, VM, VMArguments } from '@glimmer/interfaces';
 import { HelperRootReference } from '@glimmer/reference';
-import emberToBool from '../utils/to-bool';
+import toBool from '../utils/to-bool';
 
 function ifHelper({ positional }: CapturedArguments) {
   assert(
@@ -17,7 +17,7 @@ function ifHelper({ positional }: CapturedArguments) {
   let truthyValue = positional.at(1);
   let falsyValue = positional.at(2);
 
-  if (emberToBool(condition.value()) === true) {
+  if (toBool(condition.value()) === true) {
     return truthyValue.value();
   } else {
     return falsyValue !== undefined ? falsyValue.value() : undefined;
@@ -34,7 +34,7 @@ function unless({ positional }: CapturedArguments) {
   let truthyValue = positional.at(2);
   let falsyValue = positional.at(1);
 
-  if (emberToBool(condition.value()) === true) {
+  if (toBool(condition.value()) === true) {
     return truthyValue !== undefined ? truthyValue.value() : undefined;
   } else {
     return falsyValue.value();
