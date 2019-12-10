@@ -5,7 +5,6 @@ import { dasherize } from '@ember/string';
 import { Opaque, Option, Simple } from '@glimmer/interfaces';
 import { CachedReference, combine, map, Reference, Tag } from '@glimmer/reference';
 import { ElementOperations, PrimitiveReference } from '@glimmer/runtime';
-import { Core, Ops } from '@glimmer/wire-format';
 import { Component } from './curly-component-state-bucket';
 import { referenceFromParts, RootReference } from './references';
 import { htmlSafe, isHTMLSafe, SafeString } from './string';
@@ -27,31 +26,6 @@ function referenceForParts(rootRef: RootReference<Component>, parts: string[]): 
   }
 
   return referenceFromParts(rootRef, parts);
-}
-
-// TODO we should probably do this transform at build time
-export function wrapComponentClassAttribute(hash: Core.Hash) {
-  if (hash === null) {
-    return;
-  }
-
-  let [keys, values] = hash;
-  let index = keys === null ? -1 : keys.indexOf('class');
-
-  if (index !== -1) {
-    let value = values[index];
-    if (!Array.isArray(value)) {
-      return;
-    }
-
-    let [type] = value;
-
-    if (type === Ops.Get || type === Ops.MaybeLocal) {
-      let path = value[value.length - 1];
-      let propName = path[path.length - 1];
-      values[index] = [Ops.Helper, '-class', [value, propName], null];
-    }
-  }
 }
 
 export const AttributeBinding = {
