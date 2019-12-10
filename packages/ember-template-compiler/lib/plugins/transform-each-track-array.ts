@@ -9,13 +9,13 @@ import { isPath } from './utils';
   A Glimmer2 AST transformation that replaces all instances of
 
   ```handlebars
- {{#each iterableThing as |key value|}}
+  {{#each iterableThing as |key value|}}
   ```
 
   with
 
   ```handlebars
- {{#each (-track-array iterableThing) as |key value|}}
+  {{#each (-track-array iterableThing) as |key value|}}
   ```
 
   @private
