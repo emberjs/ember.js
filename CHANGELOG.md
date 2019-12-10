@@ -1,5 +1,9 @@
 # Ember Changelog
 
+### v3.16.0-beta.1 (December 9, 2019)
+
+- [#18436](https://github.com/emberjs/ember.js/pull/18436) [DEPRECATION] Deprecate globals resolver per [RFC #331](https://github.com/emberjs/rfcs/blob/master/text/0331-deprecate-globals-resolver.md).
+
 ### v3.15.0 (December 9, 2019)
 
 - [#17948](https://github.com/emberjs/ember.js/pull/17948) [DEPRECATION] Deprecate `Component#isVisible` per [RFC #324](https://github.com/emberjs/rfcs/blob/master/text/0324-deprecate-component-isvisible.md).
