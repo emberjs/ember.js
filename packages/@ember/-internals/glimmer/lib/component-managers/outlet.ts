@@ -229,6 +229,7 @@ export function createRootOutlet(outletView: OutletView): OutletComponentDefinit
     const WRAPPED_CAPABILITIES = assign({}, CAPABILITIES, {
       dynamicTag: true,
       elementHook: true,
+      wrapped: true,
     });
 
     const WrappedOutletComponentManager = class extends OutletComponentManager
@@ -237,9 +238,9 @@ export function createRootOutlet(outletView: OutletView): OutletComponentDefinit
         return 'div';
       }
 
-      getLayout(state: OutletDefinitionState) {
+      getJitStaticLayout({ template }: OutletDefinitionState) {
         // The router has already resolved the template
-        return unwrapTemplate(state.template).asWrappedLayout();
+        return unwrapTemplate(template).asWrappedLayout();
       }
 
       getCapabilities(): ComponentCapabilities {
