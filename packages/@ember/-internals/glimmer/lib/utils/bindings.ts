@@ -4,7 +4,12 @@ import { EMBER_COMPONENT_IS_VISIBLE } from '@ember/deprecated-features';
 import { dasherize } from '@ember/string';
 import { DEBUG } from '@glimmer/env';
 import { Core, ElementOperations, Option, WireFormat, SexpOpcodes } from '@glimmer/interfaces';
-import { Reference, RootReference, VersionedPathReference, VersionedReference } from '@glimmer/reference';
+import {
+  Reference,
+  RootReference,
+  VersionedPathReference,
+  VersionedReference,
+} from '@glimmer/reference';
 import { PrimitiveReference, UNDEFINED_REFERENCE } from '@glimmer/runtime';
 import { combine, Tag } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
@@ -90,7 +95,12 @@ export const AttributeBinding = {
       attribute === 'style' &&
       StyleBindingReference !== undefined
     ) {
-      reference = new StyleBindingReference(rootRef, reference, referenceForKey(rootRef, 'isVisible'), env);
+      reference = new StyleBindingReference(
+        rootRef,
+        reference,
+        referenceForKey(rootRef, 'isVisible'),
+        env
+      );
     }
 
     operations.setAttribute(attribute, reference, false, null);
@@ -142,9 +152,9 @@ if (EMBER_COMPONENT_IS_VISIBLE) {
 
       if (isVisible !== undefined) {
         deprecate(
-          `\`isVisible\` is deprecated. Was accessed from:\n\n${this.env.getTemplatePathDebugContext(
-            this
-          )}`,
+          `The \`isVisible\` property on classic component classes is deprecated. Was accessed ${this.env
+            .getTemplatePathDebugContext(this)
+            .replace(/^W/, 'w')}`,
           false,
           {
             id: 'ember-component.is-visible',
@@ -176,7 +186,12 @@ if (EMBER_COMPONENT_IS_VISIBLE) {
   ) => {
     operations.setAttribute(
       'style',
-      new StyleBindingReference!(rootRef, UNDEFINED_REFERENCE, rootRef.get('isVisible'), environment),
+      new StyleBindingReference!(
+        rootRef,
+        UNDEFINED_REFERENCE,
+        rootRef.get('isVisible'),
+        environment
+      ),
       false,
       null
     );
