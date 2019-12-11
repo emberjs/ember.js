@@ -24,7 +24,7 @@ export type InternalComponentManager = ComponentManager<ComponentInstanceState>;
 
 export interface Transaction {}
 
-declare const TransactionSymbol: 'TRANSACTION [c3938885-aba0-422f-b540-3fd3431c78b5]';
+declare const TransactionSymbol: unique symbol;
 export type TransactionSymbol = typeof TransactionSymbol;
 
 export interface Environment<Extra = unknown> {

@@ -2,7 +2,7 @@ import { PropertyReference } from './references/descriptors';
 import RootReference from './references/root';
 import { MetaOptions } from './types';
 
-import { Option, DictSet, HasGuid, Set, dict } from '@glimmer/util';
+import { Option, DictSet, HasGuid, Set, dict, symbol } from '@glimmer/util';
 
 import {
   RootReferenceFactory,
@@ -86,7 +86,7 @@ class ConstMeta /*implements IMeta*/ {
   }
 }
 
-export const CLASS_META = 'df8be4c8-4e89-44e2-a8f9-550c8dacdca7';
+export const CLASS_META: unique symbol = symbol('CLASS_META');
 
 const hasOwnProperty = Object.hasOwnProperty;
 

@@ -1,4 +1,4 @@
-import { Option } from '@glimmer/util';
+import { Option, symbol } from '@glimmer/util';
 import { Revision, Tag, Tagged, value, validate } from '@glimmer/validator';
 
 export interface Reference<T> {
@@ -98,9 +98,9 @@ export class ReferenceCache<T> implements Tagged {
 
 export type Validation<T> = T | NotModified;
 
-export type NotModified = 'adb3b78e-3d22-4e4b-877a-6317c2c5c145';
+export type NotModified = typeof NOT_MODIFIED;
 
-const NOT_MODIFIED: NotModified = 'adb3b78e-3d22-4e4b-877a-6317c2c5c145';
+const NOT_MODIFIED: unique symbol = symbol('NOT_MODIFIED');
 
 export function isModified<T>(value: Validation<T>): value is T {
   return value !== NOT_MODIFIED;
