@@ -39,7 +39,7 @@ import {
 } from '@glimmer/interfaces';
 import { VersionedPathReference, VersionedReference } from '@glimmer/reference';
 import { CONSTANT_TAG, isConst, isConstTag, Tag } from '@glimmer/validator';
-import { assert, dict, expect, Option, unreachable } from '@glimmer/util';
+import { assert, dict, expect, Option, unreachable, symbol } from '@glimmer/util';
 import { $t0, $t1, $v0 } from '@glimmer/vm';
 import {
   Capability,
@@ -84,7 +84,7 @@ import { unwrapTemplate } from '@glimmer/opcode-compiler';
  * component type's ComponentDefinition.
  */
 
-export const COMPONENT_INSTANCE = 'COMPONENT_INSTANCE [c56c57de-e73a-4ef0-b137-07661da17029]';
+export const COMPONENT_INSTANCE: unique symbol = symbol('COMPONENT_INSTANCE');
 
 export interface ComponentInstance {
   [COMPONENT_INSTANCE]: true;

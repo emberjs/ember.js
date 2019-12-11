@@ -1,20 +1,19 @@
 import { CapturedArguments, ComponentDefinition, Dict, Maybe } from '@glimmer/interfaces';
-import { Option } from '@glimmer/util';
+import { Option, symbol } from '@glimmer/util';
 import { VMArgumentsImpl } from '../vm/arguments';
 
-const CURRIED_COMPONENT_DEFINITION_BRAND =
-  'CURRIED COMPONENT DEFINITION [id=6f00feb9-a0ef-4547-99ea-ac328f80acea]';
+const CURRIED_COMPONENT_DEFINITION_BRAND: unique symbol = symbol('CURRIED COMPONENT DEFINITION');
 
 export function isCurriedComponentDefinition(
   definition: unknown
 ): definition is CurriedComponentDefinition {
-  return !!(definition && (definition as Dict)[CURRIED_COMPONENT_DEFINITION_BRAND]);
+  return !!(definition && (definition as CurriedComponentDefinition)[CURRIED_COMPONENT_DEFINITION_BRAND]);
 }
 
 export function isComponentDefinition(
   definition: Maybe<Dict> | CurriedComponentDefinition
 ): definition is CurriedComponentDefinition {
-  return !!(definition && definition[CURRIED_COMPONENT_DEFINITION_BRAND]);
+  return !!(definition && (definition as CurriedComponentDefinition)[CURRIED_COMPONENT_DEFINITION_BRAND]);
 }
 
 export class CurriedComponentDefinition {

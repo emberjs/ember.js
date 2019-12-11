@@ -45,7 +45,7 @@ import {
   RootReference,
   PropertyReference,
 } from '@glimmer/reference';
-import { assert, DROP, expect, Option } from '@glimmer/util';
+import { assert, DROP, expect, Option, symbol } from '@glimmer/util';
 import { AttrNamespace, SimpleElement } from '@simple-dom/interface';
 import { DOMChangesImpl, DOMTreeConstruction } from './dom/helper';
 import { ConditionalReference, UNDEFINED_REFERENCE } from './references';
@@ -167,7 +167,7 @@ export class ScopeImpl<C extends JitOrAotBlock> implements PartialScope<C> {
   }
 }
 
-export const TRANSACTION: TransactionSymbol = 'TRANSACTION [c3938885-aba0-422f-b540-3fd3431c78b5]';
+export const TRANSACTION: TransactionSymbol = symbol('TRANSACTION');
 
 class TransactionImpl implements Transaction {
   readonly [TRANSACTION]: Option<TransactionImpl>;

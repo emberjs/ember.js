@@ -9,10 +9,11 @@ import {
 } from '@glimmer/interfaces';
 import { LinkedList, LinkedListNode } from './list-utils';
 import { DEVMODE } from '@glimmer/local-debug-flags';
+import { symbol } from './platform-utils';
 
 export const LINKED: WeakMap<object, Set<Drop>> = new WeakMap();
-export const DROP: DropSymbol = 'DROP [94d46cf3-3974-435d-b278-3e60d1155290]';
-export const CHILDREN: ChildrenSymbol = 'CHILDREN [7142e52a-8600-4e01-a773-42055b96630d]';
+export const DROP: DropSymbol = symbol('DROP');
+export const CHILDREN: ChildrenSymbol = symbol('CHILDREN');
 export const DESTRUCTORS = new WeakMap();
 
 export function isDrop(value: unknown): value is Drop {
