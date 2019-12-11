@@ -29,8 +29,6 @@ function refineInlineSyntax(
 ): StatementCompileActions | Unhandled {
   let component = context.resolver.lookupComponent(name, context.meta.referrer);
 
-  debugger
-
   if (component !== null) {
     return staticComponent(component, [params === null ? [] : params, hashToArgs(hash), EMPTY_BLOCKS]);
   }

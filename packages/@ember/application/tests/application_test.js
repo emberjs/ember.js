@@ -178,24 +178,6 @@ moduleFor(
       verifyRegistration(assert, application, 'container-debug-adapter:main');
       verifyRegistration(assert, application, 'component-lookup:main');
 
-      verifyRegistration(assert, application, 'service:-glimmer-environment');
-      // verifyRegistration(assert, application, 'service:-dom-changes');
-      // verifyRegistration(assert, application, 'service:-dom-tree-construction');
-      // verifyInjection(
-      //   assert,
-      //   application,
-      //   'service:-glimmer-environment',
-      //   'appendOperations',
-      //   'service:-dom-tree-construction'
-      // );
-      // verifyInjection(
-      //   assert,
-      //   application,
-      //   'service:-glimmer-environment',
-      //   'updateOperations',
-      //   'service:-dom-changes'
-      // );
-      verifyInjection(assert, application, 'renderer', 'env', 'service:-glimmer-environment');
       verifyRegistration(assert, application, 'view:-outlet');
       verifyRegistration(assert, application, 'renderer:-dom');
       verifyRegistration(assert, application, 'renderer:-inert');

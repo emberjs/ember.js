@@ -25,7 +25,6 @@ export function mountHelper(
   let env = vm.env as EmberVMEnvironment;
   let nameRef = args.positional.at(0);
   let captured: Option<CapturedArguments> = null;
-  debugger
 
   // TODO: the functionality to create a proper CapturedArgument should be
   // exported by glimmer, or that it should provide an overload for `curry`

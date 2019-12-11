@@ -193,7 +193,7 @@ moduleFor(
       return chatEngineInstance.boot().then(() => {
         assert.ok(true, 'boot successful');
 
-        let registrations = ['route:basic', 'service:-routing', 'service:-glimmer-environment'];
+        let registrations = ['route:basic', 'service:-routing'];
 
         registrations.forEach(key => {
           assert.strictEqual(

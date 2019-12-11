@@ -18,9 +18,7 @@ moduleFor(
     getOnManagerInstance() {
       // leveraging private APIs, this can be deleted if these APIs change
       // but it has been useful to verify some internal details
-      let templateCompiler = this.owner.lookup(P`template-compiler:main`);
-
-      return templateCompiler.resolver.resolver.builtInModifiers.on.manager;
+      return this.renderer._runtimeResolver.builtInModifiers.on.manager;
     }
 
     assertCounts(expected) {
@@ -391,9 +389,7 @@ moduleFor(
     getOnManagerInstance() {
       // leveraging private APIs, this can be deleted if these APIs change
       // but it has been useful to verify some internal details
-      let templateCompiler = this.owner.lookup(P`template-compiler:main`);
-
-      return templateCompiler.resolver.resolver.builtInModifiers.on.manager;
+      return this.renderer._runtimeResolver.builtInModifiers.on.manager;
     }
 
     assertCounts(expected) {
