@@ -21,22 +21,23 @@ import { ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
 
 export type APluginFunc = (env: ASTPluginEnvironment) => ASTPlugin | undefined;
 
+// order of plugins is important
 const transforms: Array<APluginFunc> = [
-  AssertIfHelperWithoutArguments,
-  AssertInputHelperWithoutBlock,
-  AssertLocalVariableShadowingHelperInvocation,
-  AssertReservedNamedArguments,
-  AssertSplattributeExpressions,
-  TransformActionSyntax,
-  TransformAttrsIntoArgs,
   TransformComponentInvocation,
-  TransformEachInIntoEach,
-  TransformEachTrackArray,
-  TransformHasBlockSyntax,
-  TransformInElement,
-  TransformLinkTo,
   TransformOldClassBindingSyntax,
   TransformQuotedBindingsIntoJustBindings,
+  AssertReservedNamedArguments,
+  TransformActionSyntax,
+  TransformAttrsIntoArgs,
+  TransformEachInIntoEach,
+  TransformHasBlockSyntax,
+  AssertLocalVariableShadowingHelperInvocation,
+  TransformLinkTo,
+  AssertInputHelperWithoutBlock,
+  TransformInElement,
+  AssertIfHelperWithoutArguments,
+  AssertSplattributeExpressions,
+  TransformEachTrackArray,
   TransformWrapMountAndOutlet,
 ];
 
