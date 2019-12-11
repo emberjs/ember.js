@@ -32,6 +32,9 @@ import { DEBUG } from '@glimmer/env';
  * reference. Paths are represented by a chain of references, and iterables
  * consist of an array of many item references.
  */
+export interface TemplatePathReference<T = unknown> extends VersionedPathReference<T> {
+  updateReferencedValue?: (value: T) => void;
+}
 
 /**
  * Define a minimal subset of Environment so that reference roots can be used
@@ -65,8 +68,11 @@ export interface TemplateReferenceEnvironment {
  * chain off a root reference in the template, and can then be passed around and
  * used at will.
  */
-export abstract class RootReference<T = unknown> implements VersionedPathReference<T> {
+export abstract class RootReference<T = unknown> implements TemplatePathReference<T> {
   private children = dict<PropertyReference>();
+
+  protected didSetupDebugContext?: boolean;
+  protected debugLogName?: string;
 
   tag: Tag = CONSTANT_TAG;
 
@@ -74,11 +80,25 @@ export abstract class RootReference<T = unknown> implements VersionedPathReferen
 
   abstract value(): T;
 
-  get(key: string): VersionedPathReference {
+  get(key: string): TemplatePathReference {
     // References should in general be identical to one another, so we can usually
     // deduplicate them in production. However, in DEBUG we need unique references
     // so we can properly key off them for the logging context.
     if (DEBUG) {
+      // We register the template debug context now since the reference is
+      // created before the component itself. It shouldn't be possible to cause
+      // errors when accessing the root, only subproperties of the root, so this
+      // should be fine for the time being. The exception is helpers, but they
+      // set their context earlier.
+      //
+      // TODO: This points to a need for more first class support for arguments in
+      // the debugRenderTree. The fact that we can't accurately relate an argument
+      // reference to its component is problematic for debug tooling.
+      if (!this.didSetupDebugContext) {
+        this.didSetupDebugContext = true;
+        this.env.setTemplatePathDebugContext(this, this.debugLogName || 'this', null);
+      }
+
       return new PropertyReference(this, key, this.env);
     } else {
       let ref = this.children[key];
@@ -95,10 +115,6 @@ export abstract class RootReference<T = unknown> implements VersionedPathReferen
 export class ComponentRootReference<T extends ComponentInstanceState> extends RootReference<T> {
   constructor(private inner: T, env: TemplateReferenceEnvironment) {
     super(env);
-
-    if (DEBUG) {
-      env.setTemplatePathDebugContext(this, 'this', null);
-    }
   }
 
   value() {
@@ -122,6 +138,13 @@ export class HelperRootReference<T = unknown> extends RootReference<T> {
   ) {
     super(env);
 
+    if (DEBUG) {
+      let name = debugName || fn.name;
+
+      env.setTemplatePathDebugContext(this, `(result of a \`(${name})\` helper)`, null);
+      this.didSetupDebugContext = true;
+    }
+
     if (isConst(args)) {
       this.compute();
     }
@@ -132,6 +155,7 @@ export class HelperRootReference<T = unknown> extends RootReference<T> {
       // If the args are constant, and the first computation is constant, then
       // the helper itself is constant and will never update.
       tag = this.tag = CONSTANT_TAG;
+      this.computeRevision = value(tag);
     } else {
       let valueTag = (this.valueTag = createUpdatableTag());
       tag = this.tag = combine([args.tag, valueTag]);
@@ -141,12 +165,6 @@ export class HelperRootReference<T = unknown> extends RootReference<T> {
         update(valueTag, computeTag);
         this.computeRevision = value(tag);
       }
-    }
-
-    if (DEBUG) {
-      let name = debugName || fn.name;
-
-      env.setTemplatePathDebugContext(this, `(result of a \`(${name})\` helper)`, null);
     }
   }
 
@@ -169,80 +187,6 @@ export class HelperRootReference<T = unknown> extends RootReference<T> {
   }
 }
 
-// export function cached<T>(inner: VersionedPathReference<T>): VersionedPathReference<T> {
-//   return new Cached(inner);
-// }
-
-// export class Cached<T = unknown> implements VersionedPathReference<T> {
-//   private _lastRevision: number | null = null;
-//   private _lastValue: any = null;
-
-//   tag: Tag = CONSTANT_TAG;
-
-//   constructor(private inner: VersionedPathReference<T>) {}
-
-//   value() {
-//     let { tag, _lastRevision, _lastValue } = this;
-
-//     if (!_lastRevision || !validate(tag, _lastRevision)) {
-//       _lastValue = this._lastValue = this.inner.value();
-//       this._lastRevision = value(tag);
-//     }
-
-//     return _lastValue;
-//   }
-
-//   get(key: string): VersionedPathReference {
-//     return new PropertyReference(this, key);
-//   }
-// }
-
-// export function data(value: unknown): VersionedPathReference {
-//   if (isDict(value)) {
-//     return new RootReference(value);
-//   } else {
-//     return new PrimitiveReference(value as null | undefined);
-//   }
-// }
-
-// export function property(parentReference: VersionedPathReference, propertyKey: string) {
-//   // if (isConst(parentReference)) {
-//   //   return new RootPropertyReference(parentReference.value(), propertyKey);
-//   // } else {
-//     return new PropertyReference(parentReference, propertyKey);
-//   // }
-// }
-
-// function isMutable(value: unknown): boolean {
-//   return value !== null && typeof value === 'object' && !Object.isFrozen(value);
-// }
-
-// function child(value: unknown, key: string): VersionedPathReference {}
-
-// export class RootPropertyReference implements VersionedPathReference {
-//   tag = createUpdatableTag();
-
-//   constructor(private _parentValue: unknown, private _propertyKey: string) {}
-
-//   value(): unknown {
-//     let { _parentValue } = this;
-//     if (isDict(_parentValue)) {
-//       let ret;
-//       let tag = track(() => {
-//         ret = (_parentValue as Dict)[this._propertyKey];
-//       });
-//       update(this.tag, tag);
-//       return ret;
-//     } else {
-//       return undefined;
-//     }
-//   }
-
-//   get(key: string): VersionedPathReference {
-//     return new PropertyReference(this, key);
-//   }
-// }
-
 /**
  * PropertyReferences represent a property that has been accessed on a root, or
  * another property (or iterable, see below). `some` and `prop` in
@@ -251,13 +195,13 @@ export class HelperRootReference<T = unknown> extends RootReference<T> {
  * recursively calling `get` on the previous reference as a template chain is
  * followed.
  */
-export class PropertyReference implements VersionedPathReference {
+export class PropertyReference implements TemplatePathReference {
   public tag: Tag;
   private parentObjectTag: UpdatableTag;
   private children = dict<PropertyReference>();
 
   constructor(
-    protected parentReference: VersionedPathReference,
+    protected parentReference: TemplatePathReference,
     protected propertyKey: string,
     protected env: TemplateReferenceEnvironment
   ) {
@@ -290,7 +234,7 @@ export class PropertyReference implements VersionedPathReference {
     }
   }
 
-  get(key: string): VersionedPathReference {
+  get(key: string): TemplatePathReference {
     // References should in general be identical to one another, so we can usually
     // deduplicate them in production. However, in DEBUG we need unique references
     // so we can properly key off them for the logging context.
@@ -313,12 +257,6 @@ export class PropertyReference implements VersionedPathReference {
 
     this.env.setPath(parentValue, propertyKey, value);
   }
-
-  // getDebugPath() {
-  //   let parentPath = this.parentReference.getDebugPath();
-
-  //   return `${parentPath}.${this.propertyKey}`;
-  // }
 }
 
 //////////
@@ -338,11 +276,12 @@ export class PropertyReference implements VersionedPathReference {
  * Properties can chain off an iteration item, just like with the other template
  * reference types.
  */
-export class IterationItemReference<T = unknown> implements VersionedPathReference<T> {
+export class IterationItemReference<T = unknown> implements TemplatePathReference<T> {
   public tag = createUpdatableTag();
+  private children = dict<PropertyReference>();
 
   constructor(
-    public parentReference: VersionedPathReference,
+    public parentReference: TemplatePathReference,
     private itemValue: T,
     itemKey: unknown,
     private env: TemplateReferenceEnvironment
@@ -361,17 +300,20 @@ export class IterationItemReference<T = unknown> implements VersionedPathReferen
     this.itemValue = value;
   }
 
-  // dirty() {
-  //   dirty(this.tag);
-  // }
+  get(key: string): TemplatePathReference {
+    // References should in general be identical to one another, so we can usually
+    // deduplicate them in production. However, in DEBUG we need unique references
+    // so we can properly key off them for the logging context.
+    if (DEBUG) {
+      return new PropertyReference(this, key, this.env);
+    } else {
+      let ref = this.children[key];
 
-  get(key: string): VersionedPathReference {
-    return new PropertyReference(this, key, this.env);
+      if (ref === undefined) {
+        ref = this.children[key] = new PropertyReference(this, key, this.env);
+      }
+
+      return ref;
+    }
   }
-
-  // getDebugPath() {
-  //   let parentPath = this.parentReference.getDebugPath();
-
-  //   return `${parentPath}[${this.itemKey}]`;
-  // }
 }
