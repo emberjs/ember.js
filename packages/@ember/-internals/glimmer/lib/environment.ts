@@ -105,7 +105,9 @@ export class EmberEnvironmentDelegate implements RuntimeEnvironmentDelegate<Embe
   }
 
   getTemplatePathDebugContext(pathRef: VersionedPathReference) {
-    return this.extra.debugRenderTree.logRenderStackForPath(pathRef);
+    let stack = this.extra.debugRenderTree.logRenderStackForPath(pathRef);
+
+    return `While rendering:\n\n${stack}`;
   }
 
   setTemplatePathDebugContext(pathRef: VersionedPathReference, desc: string, parentRef: Option<VersionedPathReference>) {

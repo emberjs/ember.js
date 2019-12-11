@@ -4,7 +4,7 @@
 import { symbol } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { VMArguments } from '@glimmer/interfaces';
-import { INVOKE, UPDATE } from '../utils/references';
+import { INVOKE } from '../utils/references';
 
 /**
   The `mut` helper lets you __clearly specify__ that a child `Component` can update the
@@ -115,12 +115,12 @@ export default function(args: VMArguments) {
   //
   // This message is alright for the first case, but could be quite
   // confusing for the second case.
-  assert('You can only pass a path to mut', rawRef[UPDATE]);
+  assert('You can only pass a path to mut', 'updateReferencedValue' in rawRef);
 
   let wrappedRef = Object.create(rawRef);
 
   wrappedRef[SOURCE] = rawRef;
-  wrappedRef[INVOKE] = rawRef[UPDATE];
+  wrappedRef[INVOKE] = rawRef['updateReferencedValue'];
   wrappedRef[MUT_REFERENCE] = true;
 
   return wrappedRef;

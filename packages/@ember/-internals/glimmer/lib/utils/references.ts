@@ -4,10 +4,9 @@ import { DEBUG } from '@glimmer/env';
 import { CapturedArguments, Environment } from '@glimmer/interfaces';
 import { HelperRootReference, RootReference, VersionedPathReference } from '@glimmer/reference';
 import { PrimitiveReference } from '@glimmer/runtime';
-import { deprecateMutationsInAutotrackingTransaction, Tag } from '@glimmer/validator';
-import { HelperInstance, isSimpleHelper, SimpleHelper } from '../helper';
+import { consume, deprecateMutationsInAutotrackingTransaction, Tag } from '@glimmer/validator';
+import { HelperInstance, isSimpleHelper, RECOMPUTE_TAG, SimpleHelper } from '../helper';
 
-export const UPDATE = symbol('UPDATE');
 export const INVOKE = symbol('INVOKE');
 export const ACTION = symbol('ACTION');
 
@@ -34,6 +33,10 @@ export class EmberHelperRootReference<T = unknown> extends HelperRootReference<T
         });
       } else {
         ret = helper.compute(positionalValue, namedValue);
+      }
+
+      if (helper[RECOMPUTE_TAG]) {
+        consume(helper[RECOMPUTE_TAG]);
       }
 
       return ret!;

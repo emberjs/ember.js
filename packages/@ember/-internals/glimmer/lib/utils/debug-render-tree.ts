@@ -1,10 +1,10 @@
 import { assert } from '@ember/debug';
 import { Bounds, CapturedArguments, Option } from '@glimmer/interfaces';
 import { unwrapTemplate } from '@glimmer/opcode-compiler';
+import { VersionedPathReference } from '@glimmer/reference';
 import { expect, Stack } from '@glimmer/util';
 import { SimpleElement, SimpleNode } from '@simple-dom/interface';
 import { OwnedTemplate } from '../template';
-import { VersionedPathReference } from '@glimmer/reference';
 
 export type RenderNodeType = 'outlet' | 'engine' | 'route-template' | 'component';
 
@@ -234,7 +234,7 @@ export default class DebugRenderTree<Bucket extends object = object> {
 
         node = node.parent;
       } else {
-        pathParts.push(node.name);
+        pathParts.unshift(node.name);
       }
 
       node = node.parent;
@@ -252,9 +252,7 @@ export default class DebugRenderTree<Bucket extends object = object> {
       node = node.parent;
     }
 
-    messageParts.map((part, index) => `${repeatString(' ', index * 2)}${part}`);
-
-    return messageParts.join('\n');
+    return messageParts.map((part, index) => `${repeatString(' ', index * 2)}${part}`).join('\n');
   }
 
   private reset(): void {
