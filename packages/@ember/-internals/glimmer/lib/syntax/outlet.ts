@@ -1,4 +1,3 @@
-// import { OwnedTemplateMeta } from '@ember/-internals/views';
 import { EMBER_ROUTING_MODEL_ARG } from '@ember/canary-features';
 import { DEBUG } from '@glimmer/env';
 import {
@@ -87,17 +86,6 @@ export function outletHelper(args: VMArguments, vm: VM) {
     vm.env as EmberVMEnvironment
   );
 }
-
-// export function outletMacro(
-//   _name: string,
-//   params: Option<WireFormat.Core.Params>,
-//   hash: Option<WireFormat.Core.Hash>,
-//   context: MacroContext
-// ): StatementCompileActions | Unhandled {
-//   let expr: WireFormat.Expressions.Helper = [WireFormat.Ops.Helper, '-outlet', params || [], hash];
-//   builder.dynamicComponent(expr, null, [], null, false, null, null);
-//   return true;
-// }
 
 class OutletModelReference implements VersionedPathReference {
   public tag: Tag;

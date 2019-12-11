@@ -1,16 +1,17 @@
-// import { assert } from '@ember/debug';
-import { Core, MacroContext, Macros, Option, StatementCompileActions, Unhandled, NamedBlocks } from '@glimmer/interfaces';
-import { assert } from '@ember/debug';
-import CompileTimeResolver from './compile-time-lookup';
-import { staticComponent, NONE } from '@glimmer/opcode-compiler';
-// import { Option } from '@glimmer/util';
-// import CompileTimeLookup from './compile-time-lookup';
-// import { blockLetMacro } from './syntax/let';
-import { mountMacro } from './syntax/mount';
-import { outletMacro } from './syntax/outlet';
-import { hashToArgs } from './syntax/utils';
-import { UNHANDLED, EMPTY_BLOCKS } from '@glimmer/opcode-compiler';
 import { OwnedTemplateMeta } from '@ember/-internals/views';
+import { assert } from '@ember/debug';
+import {
+  Core,
+  MacroContext,
+  Macros,
+  NamedBlocks,
+  Option,
+  StatementCompileActions,
+  Unhandled,
+} from '@glimmer/interfaces';
+import { EMPTY_BLOCKS, NONE, staticComponent, UNHANDLED } from '@glimmer/opcode-compiler';
+import { hashToArgs } from './syntax/utils';
+import { getTemplateMetaOwner } from './template';
 
 export const experimentalMacros: any[] = [];
 
@@ -51,14 +52,15 @@ function refineBlockSyntax(
 
   assert(
     `A component or helper named "${name}" could not be found`,
-    (context.meta.referrer as OwnedTemplateMeta).owner.hasRegistration(`helper:${name}`)
+    getTemplateMetaOwner(context.meta.referrer as OwnedTemplateMeta).hasRegistration(`helper:${name}`)
   );
 
   assert(
     `Helpers may not be used in the block form, for example {{#${name}}}{{/${name}}}. Please use a component, or alternatively use the helper in combination with a built-in Ember helper, for example {{#if (${name})}}{{/if}}.`,
     !(() => {
       const resolver = context.resolver['resolver'];
-      const { owner, moduleName } = context.meta.referrer as OwnedTemplateMeta;
+      const { moduleName } = context.meta.referrer as OwnedTemplateMeta;
+      const owner = getTemplateMetaOwner(context.meta.referrer as OwnedTemplateMeta)
       if (name === 'component' || resolver['builtInHelpers'][name]) {
         return true;
       }

@@ -12,15 +12,12 @@ import { PARTIALS } from '@ember/deprecated-features';
 import EmberError from '@ember/error';
 import { _instrumentStart } from '@ember/instrumentation';
 import { DEBUG } from '@glimmer/env';
-
 import { ComponentDefinition, Helper, JitRuntimeResolver, Option } from '@glimmer/interfaces';
 import { PartialDefinition, unwrapTemplate } from '@glimmer/opcode-compiler';
 import { getDynamicVar, ModifierDefinition } from '@glimmer/runtime';
 import { CurlyComponentDefinition } from './component-managers/curly';
 import { CustomManagerDefinition, ManagerDelegate } from './component-managers/custom';
-import InternalComponentManager, {
-  InternalComponentDefinition,
-} from './component-managers/internal';
+import InternalComponentManager, { InternalComponentDefinition } from './component-managers/internal';
 import { TemplateOnlyComponentDefinition } from './component-managers/template-only';
 import { isHelperFactory, isSimpleHelper } from './helper';
 import { default as componentAssertionHelper } from './helpers/-assert-implicit-component-helper-argument';
@@ -45,7 +42,7 @@ import { CustomModifierDefinition, ModifierManagerDelegate } from './modifiers/c
 import OnModifierManager from './modifiers/on';
 import { mountHelper } from './syntax/mount';
 import { outletHelper } from './syntax/outlet';
-import { Factory as TemplateFactory, OwnedTemplate } from './template';
+import { Factory as TemplateFactory, getTemplateMetaOwner, OwnedTemplate } from './template';
 import { getComponentTemplate } from './utils/component-template';
 import { getModifierManager } from './utils/custom-modifier-manager';
 import { getManager } from './utils/managers';
@@ -387,7 +384,7 @@ export default class RuntimeResolver implements JitRuntimeResolver<OwnedTemplate
   private _lookupHelper(_name: string, meta: OwnedTemplateMeta): Option<Helper> {
     assert(
       `You attempted to overwrite the built-in helper "${_name}" which is not allowed. Please rename the helper.`,
-      !(this.builtInHelpers[_name] && meta.owner.hasRegistration(`helper:${_name}`))
+      !(this.builtInHelpers[_name] && getTemplateMetaOwner(meta).hasRegistration(`helper:${_name}`))
     );
 
     const helper = this.builtInHelpers[_name];
@@ -395,7 +392,8 @@ export default class RuntimeResolver implements JitRuntimeResolver<OwnedTemplate
       return helper;
     }
 
-    const { owner, moduleName } = meta;
+    const { moduleName } = meta;
+    let owner = getTemplateMetaOwner(meta);
 
     let name = _name;
     let namespace = undefined;
@@ -429,8 +427,9 @@ export default class RuntimeResolver implements JitRuntimeResolver<OwnedTemplate
   }
 
   private _lookupPartial(name: string, meta: OwnedTemplateMeta): PartialDefinition {
-    let templateFactory = lookupPartial(name, meta.owner);
-    let template = templateFactory(meta.owner);
+    let owner = getTemplateMetaOwner(meta)
+    let templateFactory = lookupPartial(name, owner);
+    let template = templateFactory(owner);
 
     return new PartialDefinition(name, template);
   }
@@ -439,7 +438,7 @@ export default class RuntimeResolver implements JitRuntimeResolver<OwnedTemplate
     let builtin = this.builtInModifiers[name];
 
     if (builtin === undefined) {
-      let { owner } = meta;
+      let owner = getTemplateMetaOwner(meta);
       let modifier = owner.factoryFor<unknown, FactoryClass>(`modifier:${name}`);
       if (modifier !== undefined) {
         let managerFactory = getModifierManager<ModifierManagerDelegate<unknown>>(modifier.class);
@@ -466,10 +465,13 @@ export default class RuntimeResolver implements JitRuntimeResolver<OwnedTemplate
 
   private _lookupComponentDefinition(
     _name: string,
-    { moduleName, owner }: OwnedTemplateMeta
+    meta: OwnedTemplateMeta
   ): Option<ComponentDefinition> {
     let name = _name;
     let namespace = undefined;
+    let owner = getTemplateMetaOwner(meta);
+    let { moduleName } = meta;
+
     if (EMBER_MODULE_UNIFICATION) {
       const parsed = this._parseNameForNamespace(_name);
       name = parsed.name;
