@@ -1,3 +1,4 @@
+import { DEBUG } from '@glimmer/env';
 import {
   dirty,
   createUpdatableTag,
@@ -6,6 +7,7 @@ import {
   ConstantTag,
 } from './validators';
 import { propertyDidChange } from './tracking';
+import { assertTagNotConsumed } from './debug';
 
 
 function isObject<T>(u: T): u is object & T {
@@ -29,6 +31,10 @@ export function dirtyTagFor<T>(obj: T, key: keyof T | string | symbol): void {
     let propertyTag = tags.get(key);
 
     if (propertyTag !== undefined) {
+      if (DEBUG) {
+        assertTagNotConsumed!(propertyTag, obj, key);
+      }
+
       dirty(propertyTag);
       propertyDidChange();
     }

@@ -55,7 +55,7 @@ export interface Environment<Extra = unknown> {
   toConditionalReference(reference: VersionedReference<unknown>): VersionedReference<boolean>;
 
   toBool(value: unknown): boolean;
-  toIterator(value: unknown): IteratorDelegate | void;
+  toIterator(value: unknown): Option<IteratorDelegate>;
 
   getPath(item: unknown, path: string): unknown;
   setPath(item: unknown, path: string, value: unknown): unknown;

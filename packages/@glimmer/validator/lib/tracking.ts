@@ -1,7 +1,7 @@
 import { DEBUG } from '@glimmer/env';
 import { Tag, combine, createTag, dirty, CONSTANT_TAG } from './validators';
 import { tagFor, dirtyTagFor } from './meta';
-import { markTagAsConsumed, runInAutotrackingTransaction } from './debug';
+import { markTagAsConsumed, runInAutotrackingTransaction, assertTagNotConsumed } from './debug';
 
 type Option<T> = T | null;
 
@@ -132,6 +132,10 @@ export function trackedData<T extends object, K extends keyof T>(
   }
 
   function setter(self: T, value: T[K]): void {
+    if (DEBUG) {
+      assertTagNotConsumed!(tagFor(self, key), self, key, true);
+    }
+
     dirty(EPOCH);
     dirtyTagFor(self, key);
     values.set(self, value);

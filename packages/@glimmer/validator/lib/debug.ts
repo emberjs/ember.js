@@ -6,17 +6,22 @@ interface AutotrackingTransactionSourceData {
   error: Error;
 }
 
-export let runInAutotrackingTransaction: undefined | ((fn: () => void, debuggingContext?: string | false) => void);
+export let runInAutotrackingTransaction:
+  | undefined
+  | ((fn: () => void, debuggingContext?: string | false) => void);
 export let deprecateMutationsInAutotrackingTransaction: undefined | ((fn: () => void) => void);
-export let setAutotrackingTransactionEnv: undefined | (
-  (env: {
-    assert?(message: string): void,
-    deprecate?(message: string): void,
-    debugMessage?(obj: unknown, keyName: string): string,
-  }) => void
-);
+export let setAutotrackingTransactionEnv:
+  | undefined
+  | ((env: {
+      assert?(message: string): void;
+      deprecate?(message: string): void;
+      debugMessage?(obj: unknown, keyName: string): string;
+    }) => void);
 
-export let assertTagNotConsumed: undefined | ((tag: Tag, obj: object, keyName?: string, forceHardError?: boolean) => void);
+export let assertTagNotConsumed:
+  | undefined
+  | (<T>(tag: Tag, obj: T, keyName?: keyof T | string | symbol, forceHardError?: boolean) => void);
+
 export let markTagAsConsumed: undefined | ((_tag: Tag, sourceError: Error) => void);
 
 if (DEBUG) {
@@ -29,7 +34,7 @@ if (DEBUG) {
 
   let TRANSACTION_ENV = {
     assert(message: string): void {
-      throw new Error(message)
+      throw new Error(message);
     },
 
     deprecate(message: string): void {
@@ -42,21 +47,20 @@ if (DEBUG) {
       if (typeof obj === 'function') {
         objName = obj.name;
       } else if (typeof obj === 'object' && obj !== null) {
-        let className = obj.constructor && obj.constructor.name || '(unknown class)';
+        let className = (obj.constructor && obj.constructor.name) || '(unknown class)';
 
-        objName = `(an instance of ${className})`
+        objName = `(an instance of ${className})`;
       } else {
         objName = String(obj);
       }
 
       let dirtyString = keyName ? `\`${keyName}\` on \`${objName}\`` : `\`${objName}\``;
 
-
       return `You attempted to update ${dirtyString}, but it had already been used previously in the same computation.  Attempting to update a value after using it in a computation can cause logical errors, infinite revalidation bugs, and performance issues, and is not supported.`;
-    }
-  }
+    },
+  };
 
-  setAutotrackingTransactionEnv = (env) => Object.assign(TRANSACTION_ENV, env);
+  setAutotrackingTransactionEnv = env => Object.assign(TRANSACTION_ENV, env);
 
   /**
    * Creates a global autotracking transaction. This will prevent any backflow
@@ -133,9 +137,7 @@ if (DEBUG) {
     obj: object,
     keyName?: string
   ) => {
-    let message = [
-      TRANSACTION_ENV.debugMessage(obj, keyName),
-    ];
+    let message = [TRANSACTION_ENV.debugMessage(obj, keyName)];
 
     if (sourceData.context) {
       message.push(`\`${keyName}\` was first used:\n\n${sourceData.context}`);

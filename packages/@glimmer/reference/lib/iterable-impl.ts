@@ -161,7 +161,7 @@ export class IterableImpl
 
     let maybeIterator = env.toIterator(iterable);
 
-    if (maybeIterator === undefined) {
+    if (maybeIterator === null) {
       return new ArrayIterator(EMPTY_ARRAY, () => null);
     }
 

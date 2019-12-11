@@ -280,23 +280,6 @@ export class EnvironmentImpl<Extra> implements Environment<Extra> {
     } else {
       throw new Error('you must pass a document or append and update operations to a new runtime');
     }
-
-    // // let delegateWrapper = new EnvironmentDelegateWrapper(delegate);
-
-    // // Assign all of these directly to the Environment so that we don't have to
-    // // do nested property lookups
-    // this.delegate = delegateWrapper;
-    // this.extra = delegateWrapper.extra;
-
-    // this.isInteractive = delegateWrapper.isInteractive;
-    // this.protocolForURL = delegateWrapper.protocolForURL;
-    // this.attributeFor = delegateWrapper.attributeFor;
-
-    // this.getPath = delegateWrapper.getPath;
-    // this.setPath = delegateWrapper.setPath;
-
-    // this.toBool = delegateWrapper.toBool;
-    // this.toIterator = delegateWrapper.toIterator;
   }
 
   iterableFor(ref: VersionedPathReference, inputKey: unknown): OpaqueIterable {
@@ -307,7 +290,7 @@ export class EnvironmentImpl<Extra> implements Environment<Extra> {
       );
     }
 
-    let key = String(inputKey);
+    let key = inputKey === null ? '@identity' : String(inputKey);
 
     return new IterableImpl(ref, key, this);
   }
@@ -379,7 +362,7 @@ export interface EnvironmentDelegate<Extra = undefined> {
    *
    * @param value The value to create an iterator for
    */
-  toIterator?(value: unknown): IteratorDelegate | void;
+  toIterator?(value: unknown): Option<IteratorDelegate>;
 
   /**
    * Hook to specify truthiness within Glimmer
@@ -491,10 +474,12 @@ function defaultToBool(value: unknown) {
   return Boolean(value);
 }
 
-function defaultToIterator(value: any): IteratorDelegate | void {
+function defaultToIterator(value: any): Option<IteratorDelegate> {
   if (value && value[Symbol.iterator]) {
     return value[Symbol.iterator]();
   }
+
+  return null;
 }
 
 function defaultGetDebugContext() {
@@ -502,74 +487,6 @@ function defaultGetDebugContext() {
 }
 
 function defaultSetDebugContext() {}
-
-// export class EnvironmentDelegateWrapper<Extra = undefined> implements EnvironmentDelegate<Extra> {
-//   readonly isInteractive: boolean;
-//   readonly toBool: (value: unknown) => boolean;
-//   readonly toIterator: (value: unknown) => IteratorDelegate | undefined;
-//   readonly getPath: (obj: unknown, path: string) => unknown;
-//   readonly setPath: (obj: unknown, path: string, value: unknown) => unknown;
-//   readonly extra: Extra;
-//   readonly getTemplatePathDebugContext
-
-//   constructor(private inner: EnvironmentDelegate<Extra> = {}) {
-//     this.isInteractive = 'isInteractive' in inner ? inner.isInteractive! : true;
-//     this.extra = inner.extra!;
-
-//     if (inner.toBool) {
-//       this.toBool = inner.toBool;
-//     } else {
-//       this.toBool = value => !!value;
-//     }
-
-//     if (inner.toIterator) {
-//       this.toIterator = inner.toIterator;
-//     } else {
-//       this.toIterator = (value: any) => {
-//         if (value && value[Symbol.iterator]) {
-//           return value[Symbol.iterator]();
-//         }
-//       };
-//     }
-
-//     if (inner.getPath) {
-//       this.getPath = inner.getPath;
-//     } else {
-//       this.getPath = (obj, key) => (obj as Dict)[key];
-//     }
-
-//     if (inner.setPath) {
-//       this.setPath = inner.setPath;
-//     } else {
-//       this.setPath = (obj, key, value) => (obj as Dict)[key] = value;
-//     }
-//   }
-
-//   protocolForURL(url: string): string {
-//     if (this.inner.protocolForURL) {
-//       return this.inner.protocolForURL(url);
-//     } else if (typeof URL === 'object' || typeof URL === 'undefined') {
-//       return legacyProtocolForURL(url);
-//     } else if (typeof document !== 'undefined') {
-//       return new URL(url, document.baseURI).protocol;
-//     } else {
-//       return new URL(url, 'https://www.example.com').protocol;
-//     }
-//   }
-
-//   attributeFor(
-//     element: SimpleElement,
-//     attr: string,
-//     isTrusting: boolean,
-//     namespace: Option<AttrNamespace>
-//   ): DynamicAttribute {
-//     if (this.inner.attributeFor) {
-//       return this.inner.attributeFor(element, attr, isTrusting, namespace);
-//     } else {
-//       return dynamicAttribute(element, attr, namespace);
-//     }
-//   }
-// }
 
 function legacyProtocolForURL(url: string): string {
   if (typeof window === 'undefined') {
@@ -740,61 +657,6 @@ export function JitRuntimeFromProgram<R, E>(
   };
 }
 
-// export class RuntimeEnvironment<Extra = undefined> extends EnvironmentImpl<Extra> {
-//   private delegate: EnvironmentDelegateWrapper<Extra>;
-
-//   constructor(options: EnvironmentSetupOptions, delegate: EnvironmentDelegateWrapper<Extra>) {
-//     let envOptions: EnvironmentOptions;
-
-//     if (options.appendOperations && options.updateOperations) {
-//       envOptions = options as EnvironmentOptions;
-//     } else if (options.document) {
-//       envOptions = {
-//         appendOperations: new DOMTreeConstruction(options.document),
-//         updateOperations: new DOMChangesImpl(options.document),
-//       };
-//     } else {
-//       throw new Error('you must pass a document or append and update operations to a new runtime');
-//     }
-
-//     super(envOptions);
-
-//     this.delegate = new EnvironmentDelegateWrapper(delegate);
-//     this.isInteractive = this.delegate.isInteractive;
-//   }
-
-//   get extra() {
-//     return this.delegate.extra;
-//   }
-
-//   protocolForURL(url: string): string {
-//     return this.delegate.protocolForURL(url);
-//   }
-
-//   iterableFor(ref: TemplatePathReference, inputKey: unknown): OpaqueIterable {
-//     if (DEBUG) {
-//       assert(typeof ref.getDebugPath === 'function', 'BUG: Attempted to create an iterable for a non-template-path');
-//     }
-
-//     let key = String(inputKey);
-
-//     return new IterableImpl(ref, key, this);
-//   }
-
-//   toConditionalReference(input: VersionedPathReference): VersionedReference<boolean> {
-//     return new ConditionalReference(input, this.delegate.toBool);
-//   }
-
-//   attributeFor(
-//     element: SimpleElement,
-//     attr: string,
-//     isTrusting: boolean,
-//     namespace: Option<AttrNamespace>
-//   ): DynamicAttribute {
-//     return this.delegate.attributeFor(element, attr, isTrusting, namespace);
-//   }
-// }
-
 export function inTransaction(_env: PublicEnvironment, cb: () => void): void {
   let env = (_env as unknown) as Environment;
 
@@ -809,18 +671,5 @@ export function inTransaction(_env: PublicEnvironment, cb: () => void): void {
     cb();
   }
 }
-
-// export abstract class DefaultEnvironment extends EnvironmentImpl<undefined> {
-//   constructor(options?: EnvironmentOptions) {
-//     if (!options) {
-//       let document = window.document as SimpleDocument;
-//       let appendOperations = new DOMTreeConstruction(document);
-//       let updateOperations = new DOMChangesImpl(document);
-//       options = { appendOperations, updateOperations };
-//     }
-
-//     super(options);
-//   }
-// }
 
 export default EnvironmentImpl;
