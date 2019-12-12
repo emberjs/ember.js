@@ -126,7 +126,7 @@ function transformPositionalLinkToIntoNamedArguments(
     );
 
     pairs.push(
-      b.pair('query', b.sexpr(b.path('hash', query.path.loc), [], query.hash, query.loc), query.loc)
+      b.pair('query', b.sexpr(b.path('-hash', query.path.loc), [], query.hash, query.loc), query.loc)
     );
   }
 

@@ -245,6 +245,8 @@ const BUILTINS_HELPERS: IBuiltInHelpers = {
   readonly,
   unbound,
   unless: inlineUnless,
+  '-hash': hash,
+  '-class': classHelper,
   '-each-in': eachIn,
   '-input-type': inputTypeHelper,
   '-normalize-class': normalizeClassHelper,
