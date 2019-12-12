@@ -4,11 +4,8 @@ import { DEBUG } from '@glimmer/env';
 import { CapturedArguments, Environment } from '@glimmer/interfaces';
 import { HelperRootReference, RootReference, VersionedPathReference } from '@glimmer/reference';
 import { PrimitiveReference } from '@glimmer/runtime';
-import { consume, deprecateMutationsInAutotrackingTransaction, Tag } from '@glimmer/validator';
+import { consume, deprecateMutationsInAutotrackingTransaction } from '@glimmer/validator';
 import { HelperInstance, isSimpleHelper, RECOMPUTE_TAG, SimpleHelper } from '../helper';
-
-export const INVOKE = symbol('INVOKE');
-export const ACTION = symbol('ACTION');
 
 export class EmberHelperRootReference<T = unknown> extends HelperRootReference<T> {
   constructor(
@@ -51,23 +48,6 @@ export class EmberHelperRootReference<T = unknown> extends HelperRootReference<T
     } else {
       super(fnWrapper, args, env);
     }
-  }
-}
-
-export class ReadonlyReference extends RootReference {
-  public tag: Tag;
-
-  constructor(protected inner: VersionedPathReference, env: Environment) {
-    super(env);
-    this.tag = inner.tag;
-  }
-
-  value(): unknown {
-    return this.inner.value();
-  }
-
-  get(key: string): VersionedPathReference {
-    return this.inner.get(key);
   }
 }
 

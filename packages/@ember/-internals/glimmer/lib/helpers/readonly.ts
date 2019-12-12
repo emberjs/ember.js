@@ -1,9 +1,10 @@
 /**
 @module ember
 */
-import { VMArguments } from '@glimmer/interfaces';
-import { ReadonlyReference } from '../utils/references';
-import { unMut } from './mut';
+import { Environment, VM, VMArguments } from '@glimmer/interfaces';
+import { RootReference, VersionedPathReference } from '@glimmer/reference';
+import { Tag } from '@glimmer/validator';
+import { unMut, INVOKE } from './mut';
 
 /**
   The `readonly` helper let's you specify that a binding is one-way only,
@@ -120,8 +121,29 @@ import { unMut } from './mut';
   @for Ember.Templates.helpers
   @private
 */
-export default function(args: VMArguments) {
+class ReadonlyReference extends RootReference {
+  public tag: Tag;
+
+  constructor(protected inner: VersionedPathReference, env: Environment) {
+    super(env);
+    this.tag = inner.tag;
+  }
+
+  get [INVOKE](): Function | undefined {
+    return this.inner[INVOKE];
+  }
+
+  value(): unknown {
+    return this.inner.value();
+  }
+
+  get(key: string): VersionedPathReference {
+    return this.inner.get(key);
+  }
+}
+
+export default function(args: VMArguments, vm: VM) {
   let ref = unMut(args.positional.at(0));
 
-  return new ReadonlyReference(ref);
+  return new ReadonlyReference(ref, vm.env);
 }

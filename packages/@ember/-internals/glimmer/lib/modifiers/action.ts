@@ -13,7 +13,7 @@ import {
 } from '@glimmer/interfaces';
 import { Tag } from '@glimmer/validator';
 import { SimpleElement } from '@simple-dom/interface';
-import { INVOKE } from '../utils/references';
+import { INVOKE } from '../helpers/mut';
 
 const MODIFIERS = ['alt', 'shift', 'meta', 'ctrl'];
 const POINTER_EVENT_TYPE_REGEX = /^click|mouse|touch/;

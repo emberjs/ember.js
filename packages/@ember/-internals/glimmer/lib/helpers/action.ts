@@ -2,6 +2,7 @@
 @module ember
 */
 import { get } from '@ember/-internals/metal';
+import { symbol } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { join } from '@ember/runloop';
@@ -9,7 +10,10 @@ import { DEBUG } from '@glimmer/env';
 import { VM, VMArguments } from '@glimmer/interfaces';
 import { VersionedPathReference } from '@glimmer/reference';
 import { isConst } from '@glimmer/validator';
-import { ACTION, INVOKE, UnboundRootReference } from '../utils/references';
+import { UnboundRootReference } from '../utils/references';
+import { INVOKE } from './mut';
+
+export const ACTION = symbol('ACTION');
 
 /**
   The `{{action}}` helper provides a way to pass triggers for behavior (usually

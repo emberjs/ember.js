@@ -16,6 +16,7 @@ import { DEBUG } from '@glimmer/env';
 import { normalizeProperty } from '@glimmer/runtime';
 import { createTag, dirty } from '@glimmer/validator';
 import { Namespace } from '@simple-dom/interface';
+import { UPDATE_REFERENCED_VALUE } from '@glimmer/reference';
 
 export const DIRTY_TAG = symbol('DIRTY_TAG');
 export const ARGS = symbol('ARGS');
@@ -785,8 +786,8 @@ const Component = CoreView.extend(
       let args = this[ARGS];
       let reference = args !== undefined ? args[key] : undefined;
 
-      if (reference !== undefined && reference['updateReferencedValue'] !== undefined) {
-        reference['updateReferencedValue'](get(this, key));
+      if (reference !== undefined && reference[UPDATE_REFERENCED_VALUE] !== undefined) {
+        reference[UPDATE_REFERENCED_VALUE](get(this, key));
       }
     },
 

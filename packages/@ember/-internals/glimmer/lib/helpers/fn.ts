@@ -2,8 +2,8 @@ import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { CapturedArguments, VM, VMArguments } from '@glimmer/interfaces';
 import { HelperRootReference } from '@glimmer/reference';
-import { INVOKE } from '../utils/references';
 import buildUntouchableThis from '../utils/untouchable-this';
+import { INVOKE } from './mut';
 
 const context = buildUntouchableThis('`fn` helper');
 

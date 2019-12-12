@@ -1,6 +1,6 @@
 import { get as emberGet, set as emberSet } from '@ember/-internals/metal';
 import { CapturedArguments, Environment, VM, VMArguments } from '@glimmer/interfaces';
-import { HelperRootReference, VersionedPathReference } from '@glimmer/reference';
+import { HelperRootReference, VersionedPathReference, UPDATE_REFERENCED_VALUE } from '@glimmer/reference';
 import { NULL_REFERENCE } from '@glimmer/runtime';
 import { isConst } from '@glimmer/validator';
 import { referenceFromParts } from '../utils/references';
@@ -131,7 +131,7 @@ class GetHelperRootReference extends HelperRootReference {
     this.pathReference = args.positional.at(1);
   }
 
-  updateReferencedValue(value: any) {
+  [UPDATE_REFERENCED_VALUE](value: any) {
     emberSet(this.sourceReference.value() as any, this.pathReference.value(), value);
   }
 }
