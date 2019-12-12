@@ -1,5 +1,5 @@
 import { AST, ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
-import { isPath } from './utils';
+import { isPath, trackLocals } from './utils';
 
 /**
  @module ember
@@ -36,14 +36,20 @@ import { isPath } from './utils';
 export default function transformWrapMountAndOutlet(env: ASTPluginEnvironment): ASTPlugin {
   let { builders: b } = env.syntax;
 
+  let { hasLocal, node } = trackLocals();
+
   return {
     name: 'transform-wrap-mount-and-outlet',
 
     visitor: {
+      Program: node,
+      ElementNode: node,
+
       MustacheStatement(node: AST.MustacheStatement): AST.Node | void {
         if (
           isPath(node.path) &&
-          (node.path.original === 'mount' || node.path.original === 'outlet')
+          (node.path.original === 'mount' || node.path.original === 'outlet') &&
+          !hasLocal(node.path.original)
         ) {
 
           let subexpression = b.sexpr(

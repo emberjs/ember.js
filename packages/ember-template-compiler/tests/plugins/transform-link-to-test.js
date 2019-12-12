@@ -286,29 +286,31 @@ moduleFor(
     }
 
     ['@test query params']() {
+      QUnit.dump.maxDepth = 100;
+
       this.assertTransformed(
         `{{#link-to (query-params)}}Foo{{/link-to}}`,
-        `{{#link-to query=(hash)}}Foo{{/link-to}}`
+        `{{#link-to query=(-hash)}}Foo{{/link-to}}`
       );
 
       this.assertTransformed(
         `{{#link-to (query-params foo='bar' baz=bat)}}Foo{{/link-to}}`,
-        `{{#link-to query=(hash foo='bar' baz=bat)}}Foo{{/link-to}}`
+        `{{#link-to query=(-hash foo='bar' baz=bat)}}Foo{{/link-to}}`
       );
 
       this.assertTransformed(
         `{{#link-to 'foo' (query-params foo='bar' baz=bat)}}Foo{{/link-to}}`,
-        `{{#link-to query=(hash foo='bar' baz=bat) route='foo'}}Foo{{/link-to}}`
+        `{{#link-to query=(-hash foo='bar' baz=bat) route='foo'}}Foo{{/link-to}}`
       );
 
       this.assertTransformed(
         `{{#link-to 'foo' 'bar' (query-params foo='bar' baz=bat)}}Foo{{/link-to}}`,
-        `{{#link-to query=(hash foo='bar' baz=bat) route='foo' model='bar'}}Foo{{/link-to}}`
+        `{{#link-to query=(-hash foo='bar' baz=bat) route='foo' model='bar'}}Foo{{/link-to}}`
       );
 
       this.assertTransformed(
         `{{#link-to 'foo' 'bar' 'baz' 'bat' 'wat' (query-params foo='bar' baz=bat)}}Foo{{/link-to}}`,
-        `{{#link-to query=(hash foo='bar' baz=bat) route='foo' models=(array 'bar' 'baz' 'bat' 'wat')}}Foo{{/link-to}}`
+        `{{#link-to query=(-hash foo='bar' baz=bat) route='foo' models=(array 'bar' 'baz' 'bat' 'wat')}}Foo{{/link-to}}`
       );
     }
   }

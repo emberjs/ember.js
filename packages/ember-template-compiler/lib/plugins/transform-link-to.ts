@@ -27,7 +27,7 @@ function transformInlineLinkToIntoBlockForm(
     'link-to',
     node.params.slice(1),
     node.hash,
-    buildProgram(b, node.params[0], node.escaped, node.loc),
+    b.blockItself([buildStatement(b, node.params[0], node.escaped, node.loc)], undefined, false, node.loc),
     null,
     node.loc
   );
@@ -156,10 +156,6 @@ function transformPositionalLinkToIntoNamedArguments(
     node.inverse,
     node.loc
   );
-}
-
-function buildProgram(b: Builders, content: AST.Node, escaped: boolean, loc: AST.SourceLocation) {
-  return b.program([buildStatement(b, content, escaped, loc)], undefined, loc);
 }
 
 function buildStatement(b: Builders, content: AST.Node, escaped: boolean, loc: AST.SourceLocation) {

@@ -32,20 +32,5 @@ moduleFor(
         }
       }
     }
-
-    ['@test meta.writableTag issues useful error after destroy']() {
-      let target = {
-        toString() {
-          return '<special-sauce:123>';
-        },
-      };
-      let targetMeta = meta(target);
-
-      targetMeta.destroy();
-
-      expectAssertion(() => {
-        targetMeta.writableTag(() => {});
-      }, 'Cannot create a new tag for `<special-sauce:123>` after it has been destroyed.');
-    }
   }
 );

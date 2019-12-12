@@ -2,39 +2,23 @@ import { StaticTemplateMeta } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { AST, ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
 import calculateLocationDisplay from '../system/calculate-location-display';
-import { isPath } from './utils';
+import { isPath, trackLocals } from './utils';
 
 export default function assertLocalVariableShadowingHelperInvocation(
   env: ASTPluginEnvironment
 ): ASTPlugin {
   let { moduleName } = env.meta as StaticTemplateMeta;
-  let locals: string[][] = [];
+  let { hasLocal, node } = trackLocals();
 
   return {
     name: 'assert-local-variable-shadowing-helper-invocation',
 
     visitor: {
-      Program: {
-        enter(node: AST.Program) {
-          locals.push(node.blockParams);
-        },
-
-        exit() {
-          locals.pop();
-        },
-      },
+      Program: node,
 
       ElementNode: {
         keys: {
-          children: {
-            enter(node: AST.ElementNode) {
-              locals.push(node.blockParams);
-            },
-
-            exit() {
-              locals.pop();
-            },
-          },
+          children: node,
         },
       },
 
@@ -45,7 +29,7 @@ export default function assertLocalVariableShadowingHelperInvocation(
 
           assert(
             `${messageFor(name, type)} ${calculateLocationDisplay(moduleName, node.loc)}`,
-            !isLocalVariable(node.path, locals)
+            !isLocalVariable(node.path, hasLocal)
           );
         }
       },
@@ -57,7 +41,7 @@ export default function assertLocalVariableShadowingHelperInvocation(
 
           assert(
             `${messageFor(name, type)} ${calculateLocationDisplay(moduleName, node.loc)}`,
-            !isLocalVariable(node.path, locals)
+            !isLocalVariable(node.path, hasLocal)
           );
         }
       },
@@ -69,7 +53,7 @@ export default function assertLocalVariableShadowingHelperInvocation(
 
           assert(
             `${messageFor(name, type)} ${calculateLocationDisplay(moduleName, node.loc)}`,
-            !isLocalVariable(node.path, locals)
+            !isLocalVariable(node.path, hasLocal)
           );
         }
       },
@@ -77,12 +61,8 @@ export default function assertLocalVariableShadowingHelperInvocation(
   };
 }
 
-function isLocalVariable(node: AST.PathExpression, locals: string[][]): boolean {
-  return !node.this && node.parts.length === 1 && hasLocalVariable(node.parts[0], locals);
-}
-
-function hasLocalVariable(name: string, locals: string[][]): boolean {
-  return locals.some(names => names.indexOf(name) !== -1);
+function isLocalVariable(node: AST.PathExpression, hasLocal: (k: string) => boolean): boolean {
+  return !node.this && node.parts.length === 1 && hasLocal(node.parts[0])
 }
 
 function messageFor(name: string, type: string): string {
