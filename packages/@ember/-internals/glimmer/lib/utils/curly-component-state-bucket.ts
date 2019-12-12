@@ -3,6 +3,7 @@ import { CapturedNamedArguments } from '@glimmer/interfaces';
 import { ComponentRootReference, VersionedReference } from '@glimmer/reference';
 import { Revision, value } from '@glimmer/validator';
 import { EmberVMEnvironment } from '../environment';
+import { Renderer } from '../renderer';
 import { Factory as TemplateFactory, OwnedTemplate } from '../template';
 
 export interface Component {
@@ -20,6 +21,7 @@ export interface Component {
   trigger(event: string): void;
   destroy(): void;
   setProperties(props: { [key: string]: any }): void;
+  renderer: Renderer;
 }
 
 type Finalizer = () => void;
@@ -67,6 +69,8 @@ export default class ComponentStateBucket {
         clearViewElement(component);
       }
     }
+
+    component.renderer.unregister(component);
   }
 
   destroy() {
