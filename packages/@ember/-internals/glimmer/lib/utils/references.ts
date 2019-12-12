@@ -40,7 +40,6 @@ export class EmberHelperRootReference<T = unknown> extends HelperRootReference<T
     };
 
     if (DEBUG) {
-      debugger
       let debugName = isSimpleHelper(helper)
         ? getDebugName!(helper.compute)
         : getDebugName!(helper);

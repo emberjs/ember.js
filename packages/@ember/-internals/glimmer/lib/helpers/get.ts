@@ -1,6 +1,7 @@
 import { get as emberGet, set as emberSet } from '@ember/-internals/metal';
+import { isObject } from '@ember/-internals/utils';
 import { CapturedArguments, Environment, VM, VMArguments } from '@glimmer/interfaces';
-import { HelperRootReference, VersionedPathReference, UPDATE_REFERENCED_VALUE } from '@glimmer/reference';
+import { HelperRootReference, UPDATE_REFERENCED_VALUE, VersionedPathReference } from '@glimmer/reference';
 import { NULL_REFERENCE } from '@glimmer/runtime';
 import { isConst } from '@glimmer/validator';
 import { referenceFromParts } from '../utils/references';
@@ -91,7 +92,7 @@ import { referenceFromParts } from '../utils/references';
  */
 export default function(args: VMArguments, vm: VM) {
   let sourceReference = args.positional.at(0);
-  let pathReference = args.positional.at(1) as VersionedPathReference<string>;
+  let pathReference = args.positional.at(1);
 
   if (isConst(pathReference)) {
     // Since the path is constant, we can create a normal chain of property
@@ -104,7 +105,7 @@ export default function(args: VMArguments, vm: VM) {
     } else if (typeof path === 'string' && path.indexOf('.') > -1) {
       return referenceFromParts(sourceReference, path.split('.'));
     } else {
-      return sourceReference.get(path);
+      return sourceReference.get(String(path));
     }
   } else {
     return new GetHelperRootReference(args.capture(), vm.env);
@@ -112,10 +113,13 @@ export default function(args: VMArguments, vm: VM) {
 }
 
 function get({ positional }: CapturedArguments) {
-  let source = positional.at(0).value() as object;
-  let path = positional.at(1).value() as string;
+  let source = positional.at(0).value();
 
-  return emberGet(source, path);
+  if (isObject(source)) {
+    let path = positional.at(1).value();
+
+    return emberGet(source, String(path));
+  }
 }
 
 class GetHelperRootReference extends HelperRootReference {
@@ -132,6 +136,12 @@ class GetHelperRootReference extends HelperRootReference {
   }
 
   [UPDATE_REFERENCED_VALUE](value: any) {
-    emberSet(this.sourceReference.value() as any, this.pathReference.value(), value);
+    let source = this.sourceReference.value();
+
+    if (isObject(source)) {
+      let path = String(this.pathReference.value());
+
+      emberSet(source, path, value);
+    }
   }
 }
