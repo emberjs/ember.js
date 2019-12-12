@@ -101,6 +101,7 @@ export const ROOT_CAPABILITIES: ComponentCapabilities = {
   updateHook: true,
   createInstance: true,
   wrapped: true,
+  willDestroy: false,
 };
 
 export class RootComponentDefinition implements ComponentDefinition {

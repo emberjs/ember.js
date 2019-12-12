@@ -486,8 +486,8 @@ export abstract class Renderer {
 
         this._lastRevision = value(CURRENT_TAG);
       } finally {
-        runtime.env.commit();
         runtime.env.extra.commit();
+        runtime.env.commit();
       }
     } while (roots.length > initialRootsLength);
 

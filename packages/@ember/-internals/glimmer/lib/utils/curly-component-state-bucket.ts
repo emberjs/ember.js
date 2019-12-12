@@ -53,7 +53,7 @@ export default class ComponentStateBucket {
     this.rootRef = new ComponentRootReference(component, environment);
   }
 
-  destroy() {
+  willDestroy() {
     let { component, environment } = this;
 
     if (environment.isInteractive) {
@@ -67,8 +67,10 @@ export default class ComponentStateBucket {
         clearViewElement(component);
       }
     }
+  }
 
-    environment.extra.destroyedComponents.push(component);
+  destroy() {
+    this.component.destroy();
   }
 
   finalize() {

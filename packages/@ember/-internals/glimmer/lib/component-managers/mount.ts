@@ -50,6 +50,7 @@ const CAPABILITIES = {
   updateHook: true,
   createInstance: true,
   wrapped: false,
+  willDestroy: false,
 };
 
 // TODO

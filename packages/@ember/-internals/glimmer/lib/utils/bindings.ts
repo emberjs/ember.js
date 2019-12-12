@@ -3,7 +3,7 @@ import { assert, deprecate } from '@ember/debug';
 import { EMBER_COMPONENT_IS_VISIBLE } from '@ember/deprecated-features';
 import { dasherize } from '@ember/string';
 import { DEBUG } from '@glimmer/env';
-import { Core, ElementOperations, Option, WireFormat, SexpOpcodes } from '@glimmer/interfaces';
+import { ElementOperations, Option } from '@glimmer/interfaces';
 import {
   Reference,
   RootReference,

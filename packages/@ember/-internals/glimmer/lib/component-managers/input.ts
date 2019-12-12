@@ -11,7 +11,7 @@ import {
   PreparedArguments,
   VMArguments,
 } from '@glimmer/interfaces';
-import { ConstReference, ComponentRootReference, VersionedPathReference } from '@glimmer/reference';
+import { ComponentRootReference, ConstReference, VersionedPathReference } from '@glimmer/reference';
 import { CONSTANT_TAG, createTag, isConst } from '@glimmer/validator';
 import { EmberVMEnvironment } from '../environment';
 import InternalComponentManager, { InternalDefinitionState } from './internal';
@@ -28,6 +28,7 @@ const CAPABILITIES: ComponentCapabilities = {
   updateHook: true,
   createInstance: true,
   wrapped: false,
+  willDestroy: false,
 };
 
 export interface InputComponentState {

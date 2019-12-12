@@ -63,7 +63,6 @@ function aliasIdToElementId(args: VMArguments, props: any) {
 // what has already been applied. This is essentially refining the concatenated
 // properties applying right to left.
 function applyAttributeBindings(
-  element: SimpleElement,
   attributeBindings: Array<string>,
   component: Component,
   rootRef: RootReference<Component>,
@@ -357,7 +356,7 @@ export default class CurlyComponentManager
     let { attributeBindings, classNames, classNameBindings } = component;
 
     if (attributeBindings && attributeBindings.length) {
-      applyAttributeBindings(element, attributeBindings, component, rootRef, operations, environment);
+      applyAttributeBindings(attributeBindings, component, rootRef, operations, environment);
     } else {
       let id = component.elementId ? component.elementId : guidFor(component);
       operations.setAttribute('id', PrimitiveReference.create(id), false, null);
@@ -462,6 +461,9 @@ export default class CurlyComponentManager
   getDestructor(bucket: ComponentStateBucket): Option<Destroyable> {
     if (ENV._DEBUG_RENDER_TREE) {
       return {
+        willDestroy() {
+          bucket.willDestroy();
+        },
         destroy() {
           bucket.environment.extra.debugRenderTree.willDestroy(bucket);
           bucket.destroy();
@@ -588,12 +590,12 @@ export const CURLY_CAPABILITIES: ComponentCapabilities = {
   updateHook: true,
   createInstance: true,
   wrapped: true,
+  willDestroy: true,
 };
 
 const CURLY_COMPONENT_MANAGER = new CurlyComponentManager();
 export class CurlyComponentDefinition implements ComponentDefinition {
   public state: DefinitionState;
-  // public symbolTable: ProgramSymbolTable | undefined;
   public manager: CurlyComponentManager = CURLY_COMPONENT_MANAGER;
 
   constructor(
@@ -602,16 +604,11 @@ export class CurlyComponentDefinition implements ComponentDefinition {
     public template?: OwnedTemplate,
     public args?: CurriedArgs
   ) {
-    // const layout = template && template.asLayout();
-    // const symbolTable = layout ? layout.symbolTable : undefined;
-    // this.symbolTable = symbolTable;
-    // this.template = template;
     this.state = {
       name,
       ComponentClass,
       template,
       capabilities: CURLY_CAPABILITIES,
-      // symbolTable,
     };
   }
 }

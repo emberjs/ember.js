@@ -15,7 +15,6 @@ import {
 import { AttrNamespace as SimpleAttrNamespace, SimpleElement } from '@simple-dom/interface';
 import installPlatformSpecificProtocolForURL from './protocol-for-url';
 import { OwnedTemplate } from './template';
-import { Component } from './utils/curly-component-state-bucket';
 import DebugRenderTree, { PathNodeType } from './utils/debug-render-tree';
 import toIterator from './utils/iterator';
 import { isHTMLSafe } from './utils/string';
@@ -29,12 +28,7 @@ export interface CompilerFactory {
 export class EmberEnvironmentExtra {
   private _debugRenderTree?: DebugRenderTree;
 
-  public destroyedComponents: Component[];
-
   constructor(public owner: Owner) {
-    // can be removed once https://github.com/tildeio/glimmer/pull/305 lands
-    this.destroyedComponents = [];
-
     if (ENV._DEBUG_RENDER_TREE) {
       this._debugRenderTree = new DebugRenderTree();
     }
@@ -57,16 +51,6 @@ export class EmberEnvironmentExtra {
   }
 
   commit(): void {
-    let destroyedComponents = this.destroyedComponents;
-
-    this.destroyedComponents = [];
-    // components queued for destruction must be destroyed before firing
-    // `didCreate` to prevent errors when removing and adding a component
-    // with the same name (would throw an error when added to view registry)
-    for (let i = 0; i < destroyedComponents.length; i++) {
-      destroyedComponents[i].destroy();
-    }
-
     if (ENV._DEBUG_RENDER_TREE) {
       this.debugRenderTree.commit();
     }
