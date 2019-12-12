@@ -1,4 +1,4 @@
-import { getDebugName, isObject, symbol } from '@ember/-internals/utils';
+import { getDebugName, isObject } from '@ember/-internals/utils';
 import { debugFreeze } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { CapturedArguments, Environment } from '@glimmer/interfaces';
@@ -40,6 +40,7 @@ export class EmberHelperRootReference<T = unknown> extends HelperRootReference<T
     };
 
     if (DEBUG) {
+      debugger
       let debugName = isSimpleHelper(helper)
         ? getDebugName!(helper.compute)
         : getDebugName!(helper);

@@ -146,6 +146,7 @@ class Wrapper implements HelperFactory<SimpleHelper> {
   constructor(public compute: HelperFunction) {}
 
   create() {
+    debugger
     // needs new instance or will leak containers
     return {
       compute: this.compute,
