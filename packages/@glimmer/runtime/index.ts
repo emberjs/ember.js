@@ -32,7 +32,7 @@ export {
   CustomJitRuntime,
   JitRuntimeFromProgram,
   JitRuntime,
-  EnvironmentDelegate as RuntimeEnvironmentDelegate,
+  EnvironmentDelegate,
   ScopeImpl,
   JitSyntaxCompilationContext,
 } from './lib/environment';

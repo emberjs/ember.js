@@ -13,7 +13,7 @@ import {
   SimpleDynamicAttribute,
   dynamicAttribute,
   renderJitMain,
-  RuntimeEnvironmentDelegate,
+  EnvironmentDelegate,
 } from '@glimmer/runtime';
 import { AttrNamespace, SimpleElement } from '@simple-dom/interface';
 import { module, test } from './support';
@@ -34,7 +34,7 @@ function compile(template: string) {
   return out;
 }
 
-function commonSetup(delegate?: RuntimeEnvironmentDelegate) {
+function commonSetup(delegate?: EnvironmentDelegate) {
   context = JitTestContext(delegate);
   root = qunitFixture();
 }

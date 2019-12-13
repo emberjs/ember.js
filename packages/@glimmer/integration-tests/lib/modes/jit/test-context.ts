@@ -8,7 +8,7 @@ import {
   Dict,
 } from '@glimmer/interfaces';
 import { SimpleDocument, SimpleElement } from '@simple-dom/interface';
-import { RuntimeEnvironmentDelegate, JitRuntimeFromProgram } from '@glimmer/runtime';
+import { EnvironmentDelegate, JitRuntimeFromProgram } from '@glimmer/runtime';
 import { registerHelper } from './register';
 import { TestJitCompilationContext } from './compilation-context';
 import { TestMacros } from '../../compile/macros';
@@ -25,7 +25,7 @@ export interface TestContext extends Dict {
   env: Environment;
 }
 
-export function JitTestContext(delegate: RuntimeEnvironmentDelegate = {}): TestContext {
+export function JitTestContext(delegate: EnvironmentDelegate = {}): TestContext {
   let resolver = new TestJitRuntimeResolver();
   let registry = resolver.registry;
   registerHelper(registry, 'hash', (_positional, named) => named);

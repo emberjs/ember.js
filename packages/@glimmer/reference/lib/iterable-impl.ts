@@ -28,14 +28,14 @@ const IDENTITY: KeyFor = item => {
   return item;
 };
 
-function keyForPath(path: string, getPath: (item: any, path: string) => any): KeyFor {
+function keyForPath(path: string, getPath: (item: unknown, path: string) => any): KeyFor {
   if (DEBUG && path[0] === '@') {
     throw new Error(`invalid keypath: '${keyForPath}'`);
   }
   return uniqueKeyFor(item => getPath(item, path));
 }
 
-function makeKeyFor(key: string, getPath: (item: any, path: string) => any) {
+function makeKeyFor(key: string, getPath: (item: unknown, path: string) => any) {
   switch (key) {
     case '@key':
       return uniqueKeyFor(KEY);
