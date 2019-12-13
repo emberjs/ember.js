@@ -58,7 +58,7 @@ function refineBlockSyntax(
   assert(
     `Helpers may not be used in the block form, for example {{#${name}}}{{/${name}}}. Please use a component, or alternatively use the helper in combination with a built-in Ember helper, for example {{#if (${name})}}{{/if}}.`,
     !(() => {
-      const resolver = context.resolver['resolver'];
+      const resolver = context.resolver['inner']['resolver'];
       const { moduleName } = context.meta.referrer as OwnedTemplateMeta;
       const owner = getTemplateMetaOwner(context.meta.referrer as OwnedTemplateMeta)
       if (name === 'component' || resolver['builtInHelpers'][name]) {
@@ -76,12 +76,8 @@ function refineBlockSyntax(
 
 export function populateMacros(macros: Macros) {
   let { inlines, blocks } = macros;
-  // inlines.add('outlet', outletMacro);
-  // inlines.add('mount', mountMacro);
 
   inlines.addMissing(refineInlineSyntax);
-
-  // blocks.add('let', blockLetMacro);
   blocks.addMissing(refineBlockSyntax);
 
   for (let i = 0; i < experimentalMacros.length; i++) {
