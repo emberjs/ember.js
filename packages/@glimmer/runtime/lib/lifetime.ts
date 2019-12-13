@@ -5,12 +5,28 @@ import { BlockOpcode } from './vm/update';
 import { Option, Bounds, Environment } from '@glimmer/interfaces';
 import { SimpleNode } from '@simple-dom/interface';
 
+export function legacySyncReset(parent: object, env: Environment) {
+  let linked = takeAssociated(parent);
+
+  if (linked) {
+    env.willDestroy(snapshot(linked));
+  }
+}
+
 export function asyncReset(parent: object, env: Environment) {
   let linked = takeAssociated(parent);
 
   if (linked) {
     env.didDestroy(snapshot(linked));
   }
+}
+
+export function legacySyncDestroy(parent: object, env: Environment) {
+  if (DEBUG) {
+    console.log('legacySyncDestroy', parent, LINKED.get(parent));
+  }
+
+  env.willDestroy(destructor(parent));
 }
 
 export function asyncDestroy(parent: object, env: Environment) {
@@ -26,6 +42,7 @@ export function detach(parent: BlockOpcode, env: Environment) {
     console.log('asyncClear', parent, LINKED.get(parent));
   }
 
+  legacySyncDestroy(parent, env);
   clear(parent);
   asyncDestroy(parent, env);
 }
@@ -35,6 +52,7 @@ export function detachChildren(parent: Bounds, env: Environment): Option<SimpleN
     console.log('asyncClear', parent, LINKED.get(parent));
   }
 
+  legacySyncReset(parent, env);
   asyncReset(parent, env);
   return clear(parent);
 }

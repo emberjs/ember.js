@@ -57,6 +57,7 @@ export interface CapabilityMap {
   [Capability.UpdateHook]: WithUpdateHook;
   [Capability.CreateInstance]: WithCreateInstance;
   [Capability.Wrapped]: ComponentManager;
+  [Capability.WillDestroy]: ComponentManager;
 }
 
 export function managerHasCapability<F extends keyof CapabilityMap>(

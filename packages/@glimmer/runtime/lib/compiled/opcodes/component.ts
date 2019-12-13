@@ -36,6 +36,7 @@ import {
   JitRuntimeResolver,
   RuntimeResolver,
   ModifierManager,
+  Destroyable,
 } from '@glimmer/interfaces';
 import { VersionedPathReference, VersionedReference } from '@glimmer/reference';
 import { CONSTANT_TAG, isConst, isConstTag, Tag } from '@glimmer/validator';
@@ -73,6 +74,7 @@ import { ContentTypeReference } from './content';
 import { UpdateDynamicAttributeOpcode } from './dom';
 import { ConditionalReference } from '../../references';
 import { unwrapTemplate } from '@glimmer/opcode-compiler';
+import { DEBUG } from '@glimmer/env';
 
 /**
  * The VM creates a new ComponentInstance data structure for every component
@@ -370,9 +372,20 @@ APPEND_OPCODES.add(Op.CreateComponent, (vm, { op1: flags, op2: _state }) => {
 });
 
 APPEND_OPCODES.add(Op.RegisterComponentDestructor, (vm, { op1: _state }) => {
-  let { manager, state } = check(vm.fetchValue(_state), CheckComponentInstance);
+  let { manager, state, capabilities } = check(vm.fetchValue(_state), CheckComponentInstance);
 
   let d = manager.getDestructor(state);
+
+  if (
+    DEBUG &&
+    !hasCapability(capabilities, Capability.WillDestroy) &&
+    typeof 'willDestroy' in (d as Destroyable)
+  ) {
+    throw new Error(
+      'BUG: Destructor has willDestroy, but the willDestroy capability was not enabled for this component. Pre-destruction hooks must be explicitly opted into'
+    );
+  }
+
   if (d) vm.associateDestroyable(d);
 });
 

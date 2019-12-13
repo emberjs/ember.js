@@ -31,6 +31,7 @@ export type RichIteratorResult<Tick, Return> =
 
 export interface Destroyable {
   destroy(): void;
+  willDestroy?(): void;
 }
 
 declare const DestroySymbol: unique symbol;
@@ -40,13 +41,16 @@ export interface SymbolDestroyable {
   [DestroySymbol](): void;
 }
 
-declare const DropSymbol: unique symbol;
-export type DropSymbol = typeof DropSymbol;
+declare const WillDropSymbol: unique symbol;
+export type WillDropSymbol = typeof WillDropSymbol;
+declare const DidDropSymbol: unique symbol;
+export type DidDropSymbol = typeof DidDropSymbol;
 declare const ChildrenSymbol: unique symbol;
 export type ChildrenSymbol = typeof ChildrenSymbol;
 
 export interface Drop {
-  [DropSymbol](): void;
+  [WillDropSymbol](): void;
+  [DidDropSymbol](): void;
 
   // Debug only
   [ChildrenSymbol]: Iterable<Drop>;

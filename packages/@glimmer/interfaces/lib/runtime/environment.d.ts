@@ -32,6 +32,8 @@ export interface Environment<Extra = unknown> {
 
   didCreate(component: InternalComponent, manager: InternalComponentManager): void;
   didUpdate(component: unknown, manager: ComponentManager<unknown>): void;
+
+  willDestroy(drop: Drop): void;
   didDestroy(drop: Drop): void;
 
   scheduleInstallModifier(modifier: unknown, manager: ModifierManager): void;

@@ -1,5 +1,5 @@
 import { ComponentInstanceState, CapturedArguments, Option } from '@glimmer/interfaces';
-import { dict, isDict } from '@glimmer/util';
+import { dict, isDict, symbol } from '@glimmer/util';
 import {
   CONSTANT_TAG,
   Tag,
@@ -18,6 +18,8 @@ import {
 import { VersionedPathReference } from './reference';
 import { DEBUG } from '@glimmer/env';
 
+export const UPDATE_REFERENCED_VALUE: unique symbol = symbol('UPDATE_REFERENCED_VALUE');
+
 /**
  * This module contains the references relevant to the Glimmer templating layer.
  * Fundamentally, templates consist of 3 basic types of references:
@@ -33,7 +35,7 @@ import { DEBUG } from '@glimmer/env';
  * consist of an array of many item references.
  */
 export interface TemplatePathReference<T = unknown> extends VersionedPathReference<T> {
-  updateReferencedValue?: (value: T) => void;
+  [UPDATE_REFERENCED_VALUE]?: (value: T) => void;
 }
 
 /**
@@ -141,7 +143,7 @@ export class HelperRootReference<T = unknown> extends RootReference<T> {
     if (DEBUG) {
       let name = debugName || fn.name;
 
-      env.setTemplatePathDebugContext(this, `(result of a \`(${name})\` helper)`, null);
+      env.setTemplatePathDebugContext(this, `(result of a \`${name}\` helper)`, null);
       this.didSetupDebugContext = true;
     }
 
@@ -197,8 +199,10 @@ export class HelperRootReference<T = unknown> extends RootReference<T> {
  */
 export class PropertyReference implements TemplatePathReference {
   public tag: Tag;
-  private parentObjectTag: UpdatableTag;
+  private valueTag: UpdatableTag;
   private children = dict<PropertyReference>();
+  private lastRevision: Option<Revision> = null;
+  private lastValue: unknown;
 
   constructor(
     protected parentReference: TemplatePathReference,
@@ -209,29 +213,33 @@ export class PropertyReference implements TemplatePathReference {
       env.setTemplatePathDebugContext(this, propertyKey, parentReference);
     }
 
-    let parentObjectTag = (this.parentObjectTag = createUpdatableTag());
+    let valueTag = (this.valueTag = createUpdatableTag());
     let parentReferenceTag = parentReference.tag;
 
-    this.tag = combine([parentReferenceTag, parentObjectTag]);
+    this.tag = combine([parentReferenceTag, valueTag]);
   }
 
   value() {
-    let { parentReference, parentObjectTag, propertyKey } = this;
+    let { tag, lastRevision, lastValue, parentReference, valueTag, propertyKey } = this;
 
-    let parentValue = parentReference.value();
+    if (lastRevision === null || !validate(tag, lastRevision)) {
+      let parentValue = parentReference.value();
 
-    if (isDict(parentValue)) {
-      let ret;
+      if (isDict(parentValue)) {
+        let combined = track(() => {
+          lastValue = this.env.getPath(parentValue, propertyKey);
+        }, DEBUG && this.env.getTemplatePathDebugContext(this));
 
-      let tag = track(() => {
-        ret = this.env.getPath(parentValue, propertyKey);
-      }, DEBUG && this.env.getTemplatePathDebugContext(this));
+        update(valueTag, combined);
+      } else {
+        lastValue = undefined;
+      }
 
-      update(parentObjectTag, tag);
-      return ret;
-    } else {
-      return undefined;
+      this.lastValue = lastValue;
+      this.lastRevision = value(tag);
     }
+
+    return lastValue;
   }
 
   get(key: string): TemplatePathReference {
@@ -251,7 +259,7 @@ export class PropertyReference implements TemplatePathReference {
     }
   }
 
-  updateReferencedValue(value: unknown) {
+  [UPDATE_REFERENCED_VALUE](value: unknown) {
     let { parentReference, propertyKey } = this;
     let parentValue = parentReference.value();
 

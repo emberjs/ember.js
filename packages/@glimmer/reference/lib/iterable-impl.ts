@@ -13,10 +13,20 @@ export interface IteratorDelegate {
 
 type KeyFor = (item: unknown, index: unknown) => unknown;
 
+const NULL_IDENTITY = {};
+
 const KEY: KeyFor = (_, index) => index;
 const INDEX: KeyFor = (_, index) => String(index);
 const PRIMITIVE: KeyFor = item => String(item);
-const IDENTITY: KeyFor = item => item;
+const IDENTITY: KeyFor = item => {
+  if (item === null) {
+    // Returning null as an identity will cause failures since the iterator
+    // can't tell that it's actually supposed to be null
+    return NULL_IDENTITY
+  }
+
+  return item;
+};
 
 function keyForPath(path: string, getPath: (item: any, path: string) => any): KeyFor {
   if (DEBUG && path[0] === '@') {
@@ -61,7 +71,7 @@ class WeakMapWithPrimitives<T> {
   }
 
   set(key: unknown, value: T) {
-    if (isObject(key)) {
+    if (isObject(key) || typeof key === 'function') {
       this.weakMap.set(key as object, value);
     } else {
       this.primitiveMap.set(key, value);
@@ -69,7 +79,7 @@ class WeakMapWithPrimitives<T> {
   }
 
   get(key: unknown): T | undefined {
-    if (isObject(key)) {
+    if (isObject(key) || typeof key === 'function') {
       return this.weakMap.get(key as object);
     } else {
       return this.primitiveMap.get(key);

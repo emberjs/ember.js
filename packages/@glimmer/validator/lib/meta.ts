@@ -11,7 +11,7 @@ import { assertTagNotConsumed } from './debug';
 
 
 function isObject<T>(u: T): u is object & T {
-  return typeof u === 'object' && u !== null;
+  return (typeof u === 'object' && u !== null) || typeof u === 'function';
 }
 
 ///////////

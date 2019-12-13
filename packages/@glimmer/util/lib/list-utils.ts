@@ -1,5 +1,5 @@
 import { Option } from './platform-utils';
-import { DROP, destructor, CHILDREN } from './lifetimes';
+import { WILL_DROP, DID_DROP, destructor, CHILDREN } from './lifetimes';
 import { Drop } from '@glimmer/interfaces';
 
 export interface LinkedListNode {
@@ -97,8 +97,12 @@ export class LinkedList<T extends LinkedListNode> implements Slice<T>, Drop {
     return node;
   }
 
-  [DROP]() {
-    this.forEachNode(d => destructor(d)[DROP]());
+  [WILL_DROP]() {
+    this.forEachNode(d => destructor(d)[WILL_DROP]());
+  }
+
+  [DID_DROP]() {
+    this.forEachNode(d => destructor(d)[DID_DROP]());
   }
 
   get [CHILDREN](): Iterable<Drop> {

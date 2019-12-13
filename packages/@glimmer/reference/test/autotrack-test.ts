@@ -203,13 +203,13 @@ QUnit.test('can track a computed property', assert => {
   let root = State(obj);
   let first = root.get('firstName');
   assert.strictEqual(first.value(), 'Tom0');
-  assert.strictEqual(first.value(), 'Tom1');
+  assert.strictEqual(first.value(), 'Tom0');
 
   let tag = first.tag;
   let snapshot = value(tag);
   assert.ok(validate(tag, snapshot), 'tag should be valid to start');
 
-  assert.strictEqual(obj.firstName, 'Tom2');
+  assert.strictEqual(obj.firstName, 'Tom1');
   assert.equal(
     validate(tag, snapshot),
     false,
@@ -222,7 +222,7 @@ QUnit.test('can track a computed property', assert => {
 
   unrelatedBump(tag, snapshot);
 
-  assert.strictEqual(obj.firstName, 'Edsger3');
+  assert.strictEqual(obj.firstName, 'Edsger2');
   assert.strictEqual(
     validate(tag, snapshot),
     false,

@@ -45,7 +45,7 @@ import {
   RootReference,
   PropertyReference,
 } from '@glimmer/reference';
-import { assert, DROP, expect, Option, symbol } from '@glimmer/util';
+import { assert, WILL_DROP, DID_DROP, expect, Option, symbol } from '@glimmer/util';
 import { AttrNamespace, SimpleElement } from '@simple-dom/interface';
 import { DOMChangesImpl, DOMTreeConstruction } from './dom/helper';
 import { ConditionalReference, UNDEFINED_REFERENCE } from './references';
@@ -202,6 +202,10 @@ class TransactionImpl implements Transaction {
     this.scheduledUpdateModifierManagers.push(manager);
   }
 
+  willDestroy(d: Drop) {
+    d[WILL_DROP]();
+  }
+
   didDestroy(d: Drop) {
     this.destructors.push(d);
   }
@@ -226,7 +230,7 @@ class TransactionImpl implements Transaction {
     let { destructors } = this;
 
     for (let i = 0; i < destructors.length; i++) {
-      destructors[i][DROP]();
+      destructors[i][DID_DROP]();
     }
 
     let { scheduledInstallManagers, scheduledInstallModifiers } = this;
@@ -337,6 +341,10 @@ export class EnvironmentImpl<Extra> implements Environment<Extra> {
     if (this.isInteractive) {
       this.transaction.scheduleUpdateModifier(modifier, manager);
     }
+  }
+
+  willDestroy(d: Drop) {
+    this.transaction.willDestroy(d);
   }
 
   didDestroy(d: Drop) {
