@@ -249,6 +249,18 @@ class TransactionImpl implements Transaction {
   }
 }
 
+function defaultDelegateFn(delegateFn: Function | undefined, delegateDefault: Function) {
+  let defaultFn = delegateFn !== undefined ? delegateFn : delegateDefault;
+
+  if (DEBUG) {
+    // Bind to `null` in DEBUG since these methods are assumed to be pure
+    // functions, so we can reassign them.
+    return defaultFn.bind(null);
+  }
+
+  return defaultFn;
+}
+
 export class EnvironmentImpl<Extra> implements Environment<Extra> {
   [TRANSACTION]: Option<TransactionImpl> = null;
 
@@ -260,14 +272,14 @@ export class EnvironmentImpl<Extra> implements Environment<Extra> {
   public isInteractive =
     typeof this.delegate.isInteractive === 'boolean' ? this.delegate.isInteractive : true;
 
-  public protocolForURL = this.delegate.protocolForURL || defaultGetProtocolForURL;
-  public attributeFor = this.delegate.attributeFor || defaultAttributeFor;
+  public protocolForURL = defaultDelegateFn(this.delegate.protocolForURL, defaultGetProtocolForURL);
+  public attributeFor = defaultDelegateFn(this.delegate.attributeFor, defaultAttributeFor);
 
-  public getPath = this.delegate.getPath || defaultGetPath;
-  public setPath = this.delegate.setPath || defaultSetPath;
+  public getPath = defaultDelegateFn(this.delegate.getPath, defaultGetPath);
+  public setPath = defaultDelegateFn(this.delegate.setPath, defaultSetPath);
 
-  public toBool = this.delegate.toBool || defaultToBool;
-  public toIterator = this.delegate.toIterator || defaultToIterator;
+  public toBool = defaultDelegateFn(this.delegate.toBool, defaultToBool);
+  public toIterator = defaultDelegateFn(this.delegate.toIterator, defaultToIterator);
 
   constructor(options: EnvironmentOptions, private delegate: EnvironmentDelegate<Extra>) {
     if (options.appendOperations && options.updateOperations) {
