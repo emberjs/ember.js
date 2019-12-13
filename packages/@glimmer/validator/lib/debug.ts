@@ -178,7 +178,12 @@ if (DEBUG) {
     }
   };
 
-  assertTagNotConsumed = <T>(tag: Tag, obj: T, keyName?: keyof T | string | symbol, forceHardError: boolean = false) => {
+  assertTagNotConsumed = <T>(
+    tag: Tag,
+    obj: T,
+    keyName?: keyof T | string | symbol,
+    forceHardError: boolean | undefined = false
+  ) => {
     if (AUTOTRACKING_TRANSACTION === null) return;
 
     let sourceData = AUTOTRACKING_TRANSACTION.get(tag);

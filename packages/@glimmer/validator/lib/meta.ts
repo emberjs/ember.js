@@ -1,14 +1,7 @@
 import { DEBUG } from '@glimmer/env';
-import {
-  dirty,
-  createUpdatableTag,
-  UpdatableTag,
-  CONSTANT_TAG,
-  ConstantTag,
-} from './validators';
+import { dirty, createUpdatableTag, UpdatableTag, CONSTANT_TAG, ConstantTag } from './validators';
 import { propertyDidChange } from './tracking';
 import { assertTagNotConsumed } from './debug';
-
 
 function isObject<T>(u: T): u is object & T {
   return (typeof u === 'object' && u !== null) || typeof u === 'function';

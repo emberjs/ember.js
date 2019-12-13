@@ -17,8 +17,6 @@ function link(dir) {
   try {
     let target = path.join(nodeModules, path.basename(dir));
 
-    console.log(nodeModules);
-
     if (isDirectory(dir) && !isSymlink(target)) {
       let source = dir;
 

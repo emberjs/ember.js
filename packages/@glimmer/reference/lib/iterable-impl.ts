@@ -22,7 +22,7 @@ const IDENTITY: KeyFor = item => {
   if (item === null) {
     // Returning null as an identity will cause failures since the iterator
     // can't tell that it's actually supposed to be null
-    return NULL_IDENTITY
+    return NULL_IDENTITY;
   }
 
   return item;
