@@ -175,7 +175,7 @@ moduleFor(
     }
 
     ['@test can build and boot a registered engine'](assert) {
-      assert.expect(11);
+      assert.expect(10);
 
       let ChatEngine = Engine.extend({
         Resolver: ModuleBasedTestResolver,
