@@ -66,11 +66,13 @@ export default function transformInElement(env: ASTPluginEnvironment): ASTPlugin
 
           // replicate special hash arguments added here:
           // https://github.com/glimmerjs/glimmer-vm/blob/ba9b37d44b85fa1385eeeea71910ff5798198c8e/packages/%40glimmer/syntax/lib/parser/handlebars-node-visitors.ts#L340-L363
-          let hasNextSibling = false;
+          let hasInsertBefore = false;
           let hash = node.hash;
           hash.pairs.forEach(pair => {
-            if (pair.key === 'nextSibling') {
-              hasNextSibling = true;
+            if (pair.key === 'insertBefore') {
+              assert(`Can only pass a null literal to insertBefore in -in-element, received: ${JSON.stringify(pair.value)}`, pair.value.type === 'NullLiteral');
+
+              hasInsertBefore = true;
             }
           });
 
@@ -78,9 +80,9 @@ export default function transformInElement(env: ASTPluginEnvironment): ASTPlugin
           let guidPair = b.pair('guid', guid);
           hash.pairs.unshift(guidPair);
 
-          if (!hasNextSibling) {
-            let nullLiteral = b.literal('NullLiteral', null);
-            let nextSibling = b.pair('nextSibling', nullLiteral);
+          if (!hasInsertBefore) {
+            let undefinedLiteral = b.literal('UndefinedLiteral', undefined);
+            let nextSibling = b.pair('insertBefore', undefinedLiteral);
             hash.pairs.push(nextSibling);
           }
         }

@@ -21,10 +21,10 @@ moduleFor(
 
       this.render(
         strip`
-      {{#-in-element someElement}}
-        {{text}}
-      {{/-in-element}}
-    `,
+          {{#-in-element someElement}}
+            {{text}}
+          {{/-in-element}}
+        `,
         {
           someElement,
           text: 'Whoop!',
@@ -45,6 +45,55 @@ moduleFor(
 
       equalTokens(this.element, '<!---->');
       equalTokens(someElement, 'Whoop!');
+    }
+
+    ['@test allows insertBefore=null']() {
+      let someElement = document.createElement('div');
+
+      this.render(
+        strip`
+          {{#-in-element someElement insertBefore=null}}
+            {{text}}
+          {{/-in-element}}
+        `,
+        {
+          someElement,
+          text: 'Whoop!',
+        }
+      );
+
+      equalTokens(this.element, '<!---->');
+      equalTokens(someElement, 'Whoop!');
+
+      this.assertStableRerender();
+
+      runTask(() => set(this.context, 'text', 'Huzzah!!'));
+
+      equalTokens(this.element, '<!---->');
+      equalTokens(someElement, 'Huzzah!!');
+
+      runTask(() => set(this.context, 'text', 'Whoop!'));
+
+      equalTokens(this.element, '<!---->');
+      equalTokens(someElement, 'Whoop!');
+    }
+
+    ['@test does not allow insertBefore=non-null-value']() {
+      let someElement = document.createElement('div');
+
+      expectAssertion(() => {
+        this.render(
+          strip`
+            {{#-in-element someElement insertBefore=".foo"}}
+              {{text}}
+            {{/-in-element}}
+          `,
+          {
+            someElement,
+            text: 'Whoop!',
+          }
+        );
+      }, /Can only pass a null literal to insertBefore in -in-element, received:/)
     }
 
     ['@test components are cleaned up properly'](assert) {
@@ -68,12 +117,12 @@ moduleFor(
 
       this.render(
         strip`
-      {{#if showModal}}
-        {{#-in-element someElement}}
-          {{modal-display text=text}}
-        {{/-in-element}}
-      {{/if}}
-    `,
+          {{#if showModal}}
+            {{#-in-element someElement}}
+              {{modal-display text=text}}
+            {{/-in-element}}
+          {{/if}}
+        `,
         {
           someElement,
           text: 'Whoop!',
