@@ -34,5 +34,3 @@ export {
 } from './lib/iterable';
 
 export * from './lib/iterable-impl';
-
-// export { map } from './lib/combinators';
