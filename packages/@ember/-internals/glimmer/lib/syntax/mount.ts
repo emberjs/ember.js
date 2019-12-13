@@ -23,7 +23,24 @@ export function mountHelper(
   let nameRef = args.positional.at(0);
   let captured: Option<CapturedArguments> = null;
 
-  // TODO: the functionality to create a proper CapturedArgument should be
+  assert(
+    'You can only pass a single positional argument to the {{mount}} helper, e.g. {{mount "chat-engine"}}.',
+    args.positional.length === 1
+  );
+
+  if (DEBUG && args.named) {
+    let keys = args.named.names;
+    let extra = keys.filter(k => k !== 'model');
+
+    assert(
+      'You can only pass a `model` argument to the {{mount}} helper, ' +
+        'e.g. {{mount "profile-engine" model=this.profile}}. ' +
+        `You passed ${extra.join(',')}.`,
+      extra.length === 0
+    );
+  }
+
+  // TODO: the functionailty to create a proper CapturedArgument should be
   // exported by glimmer, or that it should provide an overload for `curry`
   // that takes `PreparedArguments`
   if (args.named.has('model')) {
