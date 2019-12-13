@@ -145,7 +145,7 @@ export function InvokeStaticComponent({
   let { symbols } = symbolTable;
 
   if (capabilities.createArgs) {
-    out.push(op(MachineOp.PushFrame), op('SimpleArgs', { params: null, hash, atNames: true }));
+    out.push(op(MachineOp.PushFrame), op('SimpleArgs', { params, hash, atNames: true }));
   }
 
   out.push(op(Op.BeginComponentTransaction));

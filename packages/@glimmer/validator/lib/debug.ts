@@ -132,15 +132,15 @@ if (DEBUG) {
     return i;
   };
 
-  let makeAutotrackingErrorMessage = (
+  let makeAutotrackingErrorMessage = <T>(
     sourceData: AutotrackingTransactionSourceData,
-    obj: object,
-    keyName?: string
+    obj: T,
+    keyName?: keyof T | string | symbol
   ) => {
-    let message = [TRANSACTION_ENV.debugMessage(obj, keyName)];
+    let message = [TRANSACTION_ENV.debugMessage(obj, String(keyName))];
 
     if (sourceData.context) {
-      message.push(`\`${keyName}\` was first used:\n\n${sourceData.context}`);
+      message.push(`\`${String(keyName)}\` was first used:\n\n${sourceData.context}`);
     }
 
     if (sourceData.error.stack) {
@@ -178,7 +178,7 @@ if (DEBUG) {
     }
   };
 
-  assertTagNotConsumed = (tag: Tag, obj: object, keyName?: string, forceHardError = false) => {
+  assertTagNotConsumed = <T>(tag: Tag, obj: T, keyName?: keyof T | string | symbol, forceHardError: boolean = false) => {
     if (AUTOTRACKING_TRANSACTION === null) return;
 
     let sourceData = AUTOTRACKING_TRANSACTION.get(tag);
