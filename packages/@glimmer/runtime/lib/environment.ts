@@ -266,11 +266,6 @@ export class EnvironmentImpl<Extra> implements Environment<Extra> {
   public getPath = this.delegate.getPath || defaultGetPath;
   public setPath = this.delegate.setPath || defaultSetPath;
 
-  public getTemplatePathDebugContext =
-    this.delegate.getTemplatePathDebugContext || defaultGetDebugContext;
-  public setTemplatePathDebugContext =
-    this.delegate.setTemplatePathDebugContext || defaultSetDebugContext;
-
   public toBool = this.delegate.toBool || defaultToBool;
   public toIterator = this.delegate.toIterator || defaultToIterator;
 
@@ -283,6 +278,20 @@ export class EnvironmentImpl<Extra> implements Environment<Extra> {
       this.updateOperations = new DOMChangesImpl(options.document);
     } else {
       throw new Error('you must pass a document or append and update operations to a new runtime');
+    }
+  }
+
+  getTemplatePathDebugContext(ref: PathReference) {
+    if (this.delegate.getTemplatePathDebugContext !== undefined){
+      return this.delegate.getTemplatePathDebugContext(ref);
+    }
+
+    return '';
+  }
+
+  setTemplatePathDebugContext(ref: PathReference, desc: string, parentRef: Option<PathReference>) {
+    if (this.delegate.setTemplatePathDebugContext !== undefined) {
+      this.delegate.setTemplatePathDebugContext(ref, desc, parentRef);
     }
   }
 
@@ -507,12 +516,6 @@ function defaultToIterator(value: any): Option<IteratorDelegate> {
 
   return null;
 }
-
-function defaultGetDebugContext() {
-  return '';
-}
-
-function defaultSetDebugContext() {}
 
 function legacyProtocolForURL(url: string): string {
   if (typeof window === 'undefined') {
