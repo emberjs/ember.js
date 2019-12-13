@@ -73,11 +73,6 @@ export interface Environment<Extra = unknown> {
   extra: Extra;
 }
 
-export interface PublicEnvironment<Extra = unknown> {
-  isInteractive: boolean;
-  extra: Extra;
-}
-
 export interface DynamicScope {
   get(key: string): VersionedPathReference<unknown>;
   set(key: string, reference: VersionedPathReference<unknown>): VersionedPathReference<unknown>;

@@ -1,3 +1,4 @@
+import { DEBUG } from '@glimmer/env';
 import {
   Dict,
   Drop,
@@ -33,9 +34,7 @@ import {
   CompileTimeHeap,
   Macros,
   Option,
-  PublicEnvironment,
 } from '@glimmer/interfaces';
-import { DEBUG } from '@glimmer/local-debug-flags';
 import {
   IterableImpl,
   OpaqueIterable,
@@ -171,8 +170,6 @@ export class ScopeImpl<C extends JitOrAotBlock> implements PartialScope<C> {
 export const TRANSACTION: TransactionSymbol = symbol('TRANSACTION');
 
 class TransactionImpl implements Transaction {
-  readonly [TRANSACTION]: Option<TransactionImpl>;
-
   public scheduledInstallManagers: ModifierManager[] = [];
   public scheduledInstallModifiers: unknown[] = [];
   public scheduledUpdateModifierManagers: ModifierManager[] = [];
@@ -319,6 +316,10 @@ export class EnvironmentImpl<Extra> implements Environment<Extra> {
       'A glimmer transaction was begun, but one already exists. You may have a nested transaction, possibly caused by an earlier runtime exception while rendering. Please check your console for the stack trace of any prior exceptions.'
     );
 
+    if (this.delegate.onTransactionBegin !== undefined) {
+      this.delegate.onTransactionBegin();
+    }
+
     this[TRANSACTION] = new TransactionImpl();
   }
 
@@ -358,6 +359,10 @@ export class EnvironmentImpl<Extra> implements Environment<Extra> {
     let transaction = this.transaction;
     this[TRANSACTION] = null;
     transaction.commit();
+
+    if (this.delegate.onTransactionCommit !== undefined) {
+      this.delegate.onTransactionCommit();
+    }
   }
 }
 
@@ -452,6 +457,16 @@ export interface EnvironmentDelegate<Extra = undefined> {
    * providing/passing around additional context to various users in the VM.
    */
   extra?: Extra;
+
+  /**
+   * Callback to be called when an environment transaction begins
+   */
+  onTransactionBegin?: () => void;
+
+  /**
+   * Callback to be called when an environment transaction commits
+   */
+  onTransactionCommit?: () => void;
 }
 
 function defaultGetProtocolForURL(url: string): string {
@@ -668,9 +683,7 @@ export function JitRuntimeFromProgram<R, E>(
   };
 }
 
-export function inTransaction(_env: PublicEnvironment, cb: () => void): void {
-  let env = (_env as unknown) as Environment;
-
+export function inTransaction(env: Environment, cb: () => void): void {
   if (!env[TRANSACTION]) {
     env.begin();
     try {
