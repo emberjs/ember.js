@@ -32,6 +32,7 @@ import {
   CompileTimeConstants,
   CompileTimeHeap,
   Macros,
+  Option,
   PublicEnvironment,
 } from '@glimmer/interfaces';
 import { DEBUG } from '@glimmer/local-debug-flags';
@@ -45,7 +46,7 @@ import {
   RootReference,
   PropertyReference,
 } from '@glimmer/reference';
-import { assert, WILL_DROP, DID_DROP, expect, Option, symbol } from '@glimmer/util';
+import { assert, WILL_DROP, DID_DROP, expect, symbol } from '@glimmer/util';
 import { AttrNamespace, SimpleElement } from '@simple-dom/interface';
 import { DOMChangesImpl, DOMTreeConstruction } from './dom/helper';
 import { ConditionalReference, UNDEFINED_REFERENCE } from './references';
@@ -268,8 +269,10 @@ export class EnvironmentImpl<Extra> implements Environment<Extra> {
   public getPath = this.delegate.getPath || defaultGetPath;
   public setPath = this.delegate.setPath || defaultSetPath;
 
-  public getTemplatePathDebugContext = this.delegate.getTemplatePathDebugContext || defaultGetDebugContext;
-  public setTemplatePathDebugContext = this.delegate.setTemplatePathDebugContext || defaultSetDebugContext;
+  public getTemplatePathDebugContext =
+    this.delegate.getTemplatePathDebugContext || defaultGetDebugContext;
+  public setTemplatePathDebugContext =
+    this.delegate.setTemplatePathDebugContext || defaultSetDebugContext;
 
   public toBool = this.delegate.toBool || defaultToBool;
   public toIterator = this.delegate.toIterator || defaultToIterator;

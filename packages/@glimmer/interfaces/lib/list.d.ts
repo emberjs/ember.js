@@ -1,4 +1,4 @@
-import { Option, Drop, DropSymbol, ChildrenSymbol } from './core';
+import { Option, Drop, WillDropSymbol, DidDropSymbol, ChildrenSymbol } from './core';
 
 export interface LinkedListNode {
   next: Option<LinkedListNode>;
@@ -25,7 +25,8 @@ export interface LinkedList<T extends LinkedListNode> extends Slice<T>, Drop {
   insertBefore(node: T, reference?: Option<T>): T;
   append(node: T): T;
   remove(node: T): T;
-  [DropSymbol](): void;
+  [WillDropSymbol](): void;
+  [DidDropSymbol](): void;
   [ChildrenSymbol]: Iterable<Drop>;
 }
 

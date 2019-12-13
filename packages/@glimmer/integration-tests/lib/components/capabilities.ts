@@ -13,6 +13,7 @@ export const BASIC_CAPABILITIES: ComponentCapabilities = {
   updateHook: false,
   createInstance: true,
   wrapped: false,
+  willDestroy: false,
 };
 
 export const STATIC_TAGLESS_CAPABILITIES = {
@@ -27,6 +28,7 @@ export const STATIC_TAGLESS_CAPABILITIES = {
   createCaller: false,
   createInstance: false,
   wrapped: false,
+  willDestroy: false,
 };
 
 export const CURLY_CAPABILITIES: ComponentCapabilities = {
@@ -41,6 +43,7 @@ export const CURLY_CAPABILITIES: ComponentCapabilities = {
   updateHook: true,
   createInstance: true,
   wrapped: true,
+  willDestroy: true,
 };
 
 export const EMBERISH_CURLY_CAPABILITIES: ComponentCapabilities = assign({}, CURLY_CAPABILITIES, {

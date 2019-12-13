@@ -193,7 +193,11 @@ class TestIterable
 
 function initialize(
   arr: TestItem[]
-): { artifacts: IterationArtifacts; target: Target; reference: UpdatableRootReference<TestItem[]> } {
+): {
+  artifacts: IterationArtifacts;
+  target: Target;
+  reference: UpdatableRootReference<TestItem[]>;
+} {
   let target = new Target();
   let reference = new UpdatableRootReference(arr);
   let iterator = new ReferenceIterator(new TestIterable(reference));

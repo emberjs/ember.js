@@ -7,13 +7,17 @@ const CURRIED_COMPONENT_DEFINITION_BRAND: unique symbol = symbol('CURRIED COMPON
 export function isCurriedComponentDefinition(
   definition: unknown
 ): definition is CurriedComponentDefinition {
-  return !!(definition && (definition as CurriedComponentDefinition)[CURRIED_COMPONENT_DEFINITION_BRAND]);
+  return !!(
+    definition && (definition as CurriedComponentDefinition)[CURRIED_COMPONENT_DEFINITION_BRAND]
+  );
 }
 
 export function isComponentDefinition(
   definition: Maybe<Dict> | CurriedComponentDefinition
 ): definition is CurriedComponentDefinition {
-  return !!(definition && (definition as CurriedComponentDefinition)[CURRIED_COMPONENT_DEFINITION_BRAND]);
+  return !!(
+    definition && (definition as CurriedComponentDefinition)[CURRIED_COMPONENT_DEFINITION_BRAND]
+  );
 }
 
 export class CurriedComponentDefinition {

@@ -47,6 +47,7 @@ export const DEFAULT_CAPABILITIES: ComponentCapabilities = {
   updateHook: true,
   createInstance: true,
   wrapped: false,
+  willDestroy: false,
 };
 
 export const MINIMAL_CAPABILITIES: ComponentCapabilities = {
@@ -61,4 +62,5 @@ export const MINIMAL_CAPABILITIES: ComponentCapabilities = {
   updateHook: false,
   createInstance: false,
   wrapped: false,
+  willDestroy: false,
 };

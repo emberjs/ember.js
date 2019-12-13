@@ -1,5 +1,5 @@
 import { RootReference, TemplateReferenceEnvironment } from './template';
-import { createUpdatableTag, dirty } from '@glimmer/validator';
+import { createUpdatableTag, dirty, UpdatableTag } from '@glimmer/validator';
 import { Dict } from '@glimmer/interfaces';
 
 /**
@@ -7,7 +7,7 @@ import { Dict } from '@glimmer/interfaces';
  * currently used in tests and the `State` helper used for embedding.
  */
 export class UpdatableRootReference<T = unknown> extends RootReference<T> {
-  public tag = createUpdatableTag();
+  public tag: UpdatableTag = createUpdatableTag();
 
   constructor(private inner: T, env: TemplateReferenceEnvironment = DEFAULT_TEMPLATE_REF_ENV) {
     super(env);
@@ -46,15 +46,15 @@ const DEFAULT_TEMPLATE_REF_ENV = {
   },
 
   setPath(obj: unknown, key: string, value: unknown) {
-    return (obj as Dict)[key] = value;
+    return ((obj as Dict)[key] = value);
   },
 
   getTemplatePathDebugContext() {
     return '';
   },
 
-  setTemplatePathDebugContext() {}
-}
+  setTemplatePathDebugContext() {},
+};
 
 export function State<T>(data: T): UpdatableRootReference<T> {
   return new UpdatableRootReference(data, DEFAULT_TEMPLATE_REF_ENV);

@@ -1,4 +1,9 @@
-import { Meta, InnerReferenceFactory, PropertyReference, CLASS_META } from '@glimmer/object-reference';
+import {
+  Meta,
+  InnerReferenceFactory,
+  PropertyReference,
+  CLASS_META,
+} from '@glimmer/object-reference';
 import { dict, assign, initializeGuid } from '@glimmer/util';
 import { Mixin, extend as extendClass, toMixin, relinkSubclasses, wrapMethod } from './mixin';
 

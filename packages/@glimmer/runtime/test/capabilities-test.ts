@@ -16,8 +16,9 @@ QUnit.test('encodes a capabilities object into a bitmap', assert => {
       updateHook: false,
       createInstance: false,
       wrapped: false,
+      willDestroy: false,
     }),
-    0b00000000000,
+    0b000000000000,
     'empty capabilities'
   );
 
@@ -34,8 +35,9 @@ QUnit.test('encodes a capabilities object into a bitmap', assert => {
       updateHook: true,
       createInstance: true,
       wrapped: true,
+      willDestroy: true,
     }),
-    0b11111111111,
+    0b111111111111,
     'all capabilities'
   );
 
@@ -52,8 +54,9 @@ QUnit.test('encodes a capabilities object into a bitmap', assert => {
       updateHook: true,
       createInstance: false,
       wrapped: true,
+      willDestroy: false,
     }),
-    0b10100100101,
+    0b010100100101,
     'random sample'
   );
 });
@@ -71,6 +74,7 @@ QUnit.test('allows querying bitmap for a capability', assert => {
     updateHook: true,
     createInstance: false,
     wrapped: true,
+    willDestroy: false,
   });
 
   assert.strictEqual(true, hasCapability(capabilities, Capability.DynamicLayout));
@@ -83,4 +87,5 @@ QUnit.test('allows querying bitmap for a capability', assert => {
   assert.strictEqual(false, hasCapability(capabilities, Capability.CreateCaller));
   assert.strictEqual(true, hasCapability(capabilities, Capability.UpdateHook));
   assert.strictEqual(false, hasCapability(capabilities, Capability.CreateInstance));
+  assert.strictEqual(false, hasCapability(capabilities, Capability.WillDestroy));
 });
