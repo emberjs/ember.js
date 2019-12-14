@@ -8,7 +8,6 @@ import {
   tagForProperty,
   track,
 } from '@ember/-internals/metal';
-import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { UpdatableTag, update } from '@glimmer/reference';
 
@@ -129,11 +128,6 @@ export function dependentKeyCompat(
   key?: string,
   desc?: PropertyDescriptor
 ) {
-  assert(
-    'The dependentKeyCompat decorator can only be used if the tracked properties feature is enabled',
-    Boolean(EMBER_METAL_TRACKED_PROPERTIES)
-  );
-
   if (!isElementDescriptor([target, key, desc])) {
     desc = target as PropertyDescriptor;
 

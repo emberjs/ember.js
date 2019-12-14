@@ -1,9 +1,12 @@
 import { track, untrack } from '@ember/-internals/metal';
 import { Factory } from '@ember/-internals/owner';
+import { getDebugName } from '@ember/-internals/utils';
 import { assert, deprecate } from '@ember/debug';
+import { DEBUG } from '@glimmer/env';
 import { Dict, Opaque, Simple } from '@glimmer/interfaces';
 import { combine, CONSTANT_TAG, createUpdatableTag, Tag, update } from '@glimmer/reference';
 import { Arguments, CapturedArguments, ModifierManager } from '@glimmer/runtime';
+import debugRenderMessage from '../utils/debug-render-message';
 
 export interface CustomModifierDefinitionState<ModifierInstance> {
   ModifierClass: Factory<ModifierInstance>;
@@ -162,9 +165,11 @@ class InteractiveCustomModifierManager<ModifierInstance>
     if (capabilities.disableAutoTracking === true) {
       untrack(() => delegate.installModifier(modifier, element, args.value()));
     } else {
-      let combinedTrackingTag = track(() =>
-        delegate.installModifier(modifier, element, args.value())
+      let combinedTrackingTag = track(
+        () => delegate.installModifier(modifier, element, args.value()),
+        DEBUG && debugRenderMessage!(`(instance of a \`${getDebugName!(modifier)}\` modifier)`)
       );
+
       update(tag, combinedTrackingTag);
     }
   }
@@ -176,7 +181,10 @@ class InteractiveCustomModifierManager<ModifierInstance>
     if (capabilities.disableAutoTracking === true) {
       untrack(() => delegate.updateModifier(modifier, args.value()));
     } else {
-      let combinedTrackingTag = track(() => delegate.updateModifier(modifier, args.value()));
+      let combinedTrackingTag = track(
+        () => delegate.updateModifier(modifier, args.value()),
+        DEBUG && debugRenderMessage!(`(instance of a \`${getDebugName!(modifier)}\` modifier)`)
+      );
       update(tag, combinedTrackingTag);
     }
   }

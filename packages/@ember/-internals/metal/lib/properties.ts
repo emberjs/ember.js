@@ -2,76 +2,15 @@
 @module @ember/object
 */
 
-import { Meta, meta as metaFor, peekMeta, UNDEFINED } from '@ember/-internals/meta';
+import { Meta, meta as metaFor } from '@ember/-internals/meta';
 import { setWithMandatorySetter } from '@ember/-internals/utils';
-import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
-import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { Decorator } from './decorator';
 import { descriptorForProperty, isClassicDecorator } from './descriptor_map';
 import { revalidateObservers } from './observer';
-import { overrideChains } from './property_events';
-
-export type MandatorySetterFunction = ((this: object, value: any) => void) & {
-  isMandatorySetter: true;
-};
-export type DefaultGetterFunction = (this: object) => void;
-export type InheritingGetterFunction = ((this: object) => void) & {
-  isInheritingGetter: true;
-};
 
 interface ExtendedObject {
   didDefineProperty?: (obj: object, keyName: string, value: any) => void;
-}
-
-// ..........................................................
-// DEFINING PROPERTIES API
-//
-
-export function MANDATORY_SETTER_FUNCTION(name: string): MandatorySetterFunction {
-  function SETTER_FUNCTION(this: object, value: any | undefined | null): void {
-    let m = peekMeta(this)!;
-    if (m.isInitializing() || m.isPrototypeMeta(this)) {
-      m.writeValues(name, value);
-    } else {
-      assert(
-        `You must use set() to set the \`${name}\` property (of ${this}) to \`${value}\`.`,
-        false
-      );
-    }
-  }
-  return Object.assign(SETTER_FUNCTION as MandatorySetterFunction, { isMandatorySetter: true });
-}
-
-export function DEFAULT_GETTER_FUNCTION(name: string): DefaultGetterFunction {
-  return function GETTER_FUNCTION(this: any): void {
-    let meta = peekMeta(this);
-    if (meta !== null) {
-      return meta.peekValues(name);
-    }
-  };
-}
-
-export function INHERITING_GETTER_FUNCTION(name: string): InheritingGetterFunction {
-  function IGETTER_FUNCTION(this: any): void {
-    let meta = peekMeta(this);
-    let val;
-    if (meta !== null) {
-      val = meta.readInheritedValue(name);
-      if (val === undefined) {
-        let proto = Object.getPrototypeOf(this);
-        val = proto === null ? undefined : proto[name];
-      } else {
-        val = val === UNDEFINED ? undefined : val;
-      }
-    }
-
-    return val;
-  }
-
-  return Object.assign(IGETTER_FUNCTION as InheritingGetterFunction, {
-    isInheritingGetter: true,
-  });
 }
 
 /**
@@ -132,8 +71,6 @@ export function defineProperty(
   if (meta === undefined) {
     meta = metaFor(obj);
   }
-
-  let watching = meta.peekWatching(keyName) > 0;
   let previousDesc = descriptorForProperty(obj, keyName, meta);
   let wasDescriptor = previousDesc !== undefined;
 
@@ -170,18 +107,7 @@ export function defineProperty(
   } else if (desc === undefined || desc === null) {
     value = data;
 
-    if (DEBUG && watching) {
-      meta.writeValues(keyName, data);
-
-      let defaultDescriptor = {
-        configurable: true,
-        enumerable,
-        set: MANDATORY_SETTER_FUNCTION(keyName),
-        get: DEFAULT_GETTER_FUNCTION(keyName),
-      };
-
-      Object.defineProperty(obj, keyName, defaultDescriptor);
-    } else if (wasDescriptor || enumerable === false) {
+    if (wasDescriptor || enumerable === false) {
       Object.defineProperty(obj, keyName, {
         configurable: true,
         enumerable,
@@ -189,7 +115,7 @@ export function defineProperty(
         value,
       });
     } else {
-      if (EMBER_METAL_TRACKED_PROPERTIES && DEBUG) {
+      if (DEBUG) {
         setWithMandatorySetter!(obj, keyName, data);
       } else {
         obj[keyName] = data;
@@ -204,14 +130,8 @@ export function defineProperty(
 
   // if key is being watched, override chains that
   // were initialized with the prototype
-  if (EMBER_METAL_TRACKED_PROPERTIES) {
-    if (!meta.isPrototypeMeta(obj)) {
-      revalidateObservers(obj);
-    }
-  } else {
-    if (watching) {
-      overrideChains(obj, keyName, meta);
-    }
+  if (!meta.isPrototypeMeta(obj)) {
+    revalidateObservers(obj);
   }
 
   // The `value` passed to the `didDefineProperty` hook is

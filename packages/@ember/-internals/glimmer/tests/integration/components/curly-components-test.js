@@ -13,12 +13,12 @@ import {
 import { run } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import { alias, set, get, observer, on, computed } from '@ember/-internals/metal';
-import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import Service, { inject as injectService } from '@ember/service';
 import { Object as EmberObject, A as emberA } from '@ember/-internals/runtime';
 import { jQueryDisabled } from '@ember/-internals/views';
 
 import { Component, compile, htmlSafe } from '../../utils/helpers';
+import { backtrackingMessageFor } from '../../utils/backtracking-rerender';
 
 moduleFor(
   'Components test: curly components',
@@ -760,7 +760,9 @@ moduleFor(
         template: '{{partial "partialWithYield"}} - In component',
       });
 
-      this.render('{{#foo-bar}}hello{{/foo-bar}}');
+      expectDeprecation(() => {
+        this.render('{{#foo-bar}}hello{{/foo-bar}}');
+      }, 'The use of `{{partial}}` is deprecated, please refactor the "partialWithYield" partial to a component');
 
       this.assertComponentElement(this.firstChild, {
         content: 'yielded: [hello] - In component',
@@ -780,7 +782,9 @@ moduleFor(
         template: '{{partial "partialWithYield"}} - In component',
       });
 
-      this.render('{{#foo-bar as |value|}}{{value}}{{/foo-bar}}');
+      expectDeprecation(() => {
+        this.render('{{#foo-bar as |value|}}{{value}}{{/foo-bar}}');
+      }, 'The use of `{{partial}}` is deprecated, please refactor the "partialWithYield" partial to a component');
 
       this.assertComponentElement(this.firstChild, {
         content: 'yielded: [hello] - In component',
@@ -2533,7 +2537,9 @@ moduleFor(
         template: '<div id="inner-value">{{value}}</div>',
       });
 
-      let expectedBacktrackingMessage = /modified `<.+?>` twice in a single render\. It was first rendered as `this\.value` in "component:x-middle" and then modified later in "component:x-inner"/;
+      let expectedBacktrackingMessage = backtrackingMessageFor('value', '<.+?>', {
+        renderTree: ['x-outer', 'x-middle', 'this.value'],
+      });
 
       expectAssertion(() => {
         this.render('{{x-outer}}');
@@ -2560,7 +2566,9 @@ moduleFor(
         template: '<div id="inner-value">{{wrapper.content}}</div>',
       });
 
-      let expectedBacktrackingMessage = /modified `<.+?>` twice in a single render\. It was first rendered as `this\.wrapper\.content` in "component:x-outer" and then modified later in "component:x-inner"/;
+      let expectedBacktrackingMessage = backtrackingMessageFor('content', '<.+?>', {
+        renderTree: ['x-outer', 'this.wrapper.content'],
+      });
 
       expectAssertion(() => {
         this.render('{{x-outer}}');
@@ -2695,9 +2703,7 @@ moduleFor(
       this.assertText('initial value - initial value');
 
       if (DEBUG) {
-        let message = EMBER_METAL_TRACKED_PROPERTIES
-          ? /You attempted to update .*, but it is being tracked by a tracking context/
-          : /You must use set\(\) to set the `bar` property \(of .+\) to `foo-bar`\./;
+        let message = /You attempted to update .*, but it is being tracked by a tracking context/;
 
         expectAssertion(() => {
           component.bar = 'foo-bar';
@@ -2904,22 +2910,30 @@ moduleFor(
         template: `<p>foo</p>`,
       });
 
-      this.render(`{{foo-bar id="foo-bar" isVisible=visible}}`, {
-        visible: false,
-      });
+      expectDeprecation(() => {
+        this.render(`{{foo-bar id="foo-bar" isVisible=visible}}`, {
+          visible: false,
+        });
+      }, '`isVisible` is deprecated (from "component:foo-bar")');
 
       assertStyle('display: none;');
 
       this.assertStableRerender();
 
-      runTask(() => {
-        set(this.context, 'visible', true);
-      });
+      expectDeprecation(() => {
+        runTask(() => {
+          set(this.context, 'visible', true);
+        });
+      }, '`isVisible` is deprecated (from "component:foo-bar")');
+
       assertStyle('');
 
-      runTask(() => {
-        set(this.context, 'visible', false);
-      });
+      expectDeprecation(() => {
+        runTask(() => {
+          set(this.context, 'visible', false);
+        });
+      }, '`isVisible` is deprecated (from "component:foo-bar")');
+
       assertStyle('display: none;');
     }
 
@@ -2933,9 +2947,11 @@ moduleFor(
         template: `<p>foo</p>`,
       });
 
-      this.render(`{{foo-bar id="foo-bar" isVisible=visible}}`, {
-        visible: false,
-      });
+      expectDeprecation(() => {
+        this.render(`{{foo-bar id="foo-bar" isVisible=visible}}`, {
+          visible: false,
+        });
+      }, '`isVisible` is deprecated (from "component:foo-bar")');
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -2944,18 +2960,22 @@ moduleFor(
 
       this.assertStableRerender();
 
-      runTask(() => {
-        set(this.context, 'visible', true);
-      });
+      expectDeprecation(() => {
+        runTask(() => {
+          set(this.context, 'visible', true);
+        });
+      }, '`isVisible` is deprecated (from "component:foo-bar")');
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
         attrs: { id: 'foo-bar', style: styles('color: blue;') },
       });
 
-      runTask(() => {
-        set(this.context, 'visible', false);
-      });
+      expectDeprecation(() => {
+        runTask(() => {
+          set(this.context, 'visible', false);
+        });
+      }, '`isVisible` is deprecated (from "component:foo-bar")');
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -2986,25 +3006,31 @@ moduleFor(
         template: `<p>foo</p>`,
       });
 
-      this.render(`{{foo-bar id="foo-bar" foo=foo isVisible=visible}}`, {
-        visible: false,
-        foo: 'baz',
-      });
+      expectDeprecation(() => {
+        this.render(`{{foo-bar id="foo-bar" foo=foo isVisible=visible}}`, {
+          visible: false,
+          foo: 'baz',
+        });
+      }, '`isVisible` is deprecated (from "component:foo-bar")');
 
       assertStyle('display: none;');
 
       this.assertStableRerender();
 
-      runTask(() => {
-        set(this.context, 'visible', true);
-      });
+      expectDeprecation(() => {
+        runTask(() => {
+          set(this.context, 'visible', true);
+        });
+      }, '`isVisible` is deprecated (from "component:foo-bar")');
 
       assertStyle('');
 
-      runTask(() => {
-        set(this.context, 'visible', false);
-        set(this.context, 'foo', 'woo');
-      });
+      expectDeprecation(() => {
+        runTask(() => {
+          set(this.context, 'visible', false);
+          set(this.context, 'foo', 'woo');
+        });
+      }, '`isVisible` is deprecated (from "component:foo-bar")');
 
       assertStyle('display: none;');
       assert.equal(this.firstChild.getAttribute('foo'), 'woo');

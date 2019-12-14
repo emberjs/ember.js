@@ -1,8 +1,9 @@
 import { ENV } from '@ember/-internals/environment';
-import { runInTransaction } from '@ember/-internals/metal';
+import { runInAutotrackingTransaction } from '@ember/-internals/metal';
 import { getViewElement, getViewId } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { backburner, getCurrentRunLoop } from '@ember/runloop';
+import { DEBUG } from '@glimmer/env';
 import { Option, Simple } from '@glimmer/interfaces';
 import { CURRENT_TAG, validate, value, VersionedPathReference } from '@glimmer/reference';
 import {
@@ -69,9 +70,6 @@ class RootState {
   public result: RenderResult | undefined;
   public shouldReflush: boolean;
   public destroyed: boolean;
-  public options: {
-    alwaysRevalidate: boolean;
-  };
   public render: () => void;
 
   constructor(
@@ -92,10 +90,6 @@ class RootState {
     this.shouldReflush = false;
     this.destroyed = false;
 
-    let options = (this.options = {
-      alwaysRevalidate: false,
-    });
-
     this.render = () => {
       let layout = template.asLayout();
       let handle = layout.compile();
@@ -115,7 +109,7 @@ class RootState {
       let result = (this.result = iteratorResult.value);
 
       // override .render function after initial render
-      this.render = () => result.rerender(options);
+      this.render = () => result.rerender({ alwaysRevalidate: false });
     };
   }
 
@@ -396,7 +390,6 @@ export abstract class Renderer {
 
   _renderRoots() {
     let { _roots: roots, _env: env, _removedRoots: removedRoots } = this;
-    let globalShouldReflush = false;
     let initialRootsLength: number;
 
     do {
@@ -405,7 +398,6 @@ export abstract class Renderer {
         // ensure that for the first iteration of the loop
         // each root is processed
         initialRootsLength = roots.length;
-        globalShouldReflush = false;
 
         for (let i = 0; i < roots.length; i++) {
           let root = roots[i];
@@ -419,28 +411,27 @@ export abstract class Renderer {
             continue;
           }
 
-          let { shouldReflush } = root;
-
           // when processing non-initial reflush loops,
           // do not process more roots than needed
-          if (i >= initialRootsLength && !shouldReflush) {
+          if (i >= initialRootsLength) {
             continue;
           }
 
-          root.options.alwaysRevalidate = shouldReflush;
-          // track shouldReflush based on this roots render result
-          shouldReflush = root.shouldReflush = runInTransaction(root, 'render');
-
-          // globalShouldReflush should be `true` if *any* of
-          // the roots need to reflush
-          globalShouldReflush = globalShouldReflush || shouldReflush;
+          if (DEBUG) {
+            // run in an autotracking transaction to prevent backflow errors.
+            // we use `bind` here to avoid creating a closure (and requiring a
+            // hoisted variable).
+            runInAutotrackingTransaction!(root.render.bind(root));
+          } else {
+            root.render();
+          }
         }
 
         this._lastRevision = value(CURRENT_TAG);
       } finally {
         env.commit();
       }
-    } while (globalShouldReflush || roots.length > initialRootsLength);
+    } while (roots.length > initialRootsLength);
 
     // remove any roots that were destroyed during this transaction
     while (removedRoots.length) {

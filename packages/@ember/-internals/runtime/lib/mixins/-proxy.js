@@ -6,9 +6,6 @@ import { meta } from '@ember/-internals/meta';
 import {
   get,
   set,
-  addObserver,
-  removeObserver,
-  notifyPropertyChange,
   defineProperty,
   Mixin,
   tagFor,
@@ -17,7 +14,6 @@ import {
   getChainTagsForKey,
 } from '@ember/-internals/metal';
 import { setProxy } from '@ember/-internals/utils';
-import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { combine, update } from '@glimmer/reference';
 
@@ -64,28 +60,6 @@ export default Mixin.create({
   isTruthy: computed('content', function() {
     return Boolean(get(this, 'content'));
   }),
-
-  willWatchProperty(key) {
-    if (!EMBER_METAL_TRACKED_PROPERTIES) {
-      let contentKey = `content.${key}`;
-      addObserver(this, contentKey, null, '_contentPropertyDidChange');
-    }
-  },
-
-  didUnwatchProperty(key) {
-    if (!EMBER_METAL_TRACKED_PROPERTIES) {
-      let contentKey = `content.${key}`;
-      removeObserver(this, contentKey, null, '_contentPropertyDidChange');
-    }
-  },
-
-  _contentPropertyDidChange(content, contentKey) {
-    let key = contentKey.slice(8); // remove "content."
-    if (key in this) {
-      return;
-    } // if shadowed in proxy
-    notifyPropertyChange(this, key);
-  },
 
   [UNKNOWN_PROPERTY_TAG](key) {
     return combine(getChainTagsForKey(this, `content.${key}`));

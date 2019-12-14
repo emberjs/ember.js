@@ -5,12 +5,17 @@ import { moduleFor, AbstractTestCase as TestCase } from 'internal-test-helpers';
 let application, registry;
 
 moduleFor(
-  'Application Dependency Injection - normalize',
+  'Application Dependency Injection - Globals Resolver - normalize [DEPRECATED]',
   class extends TestCase {
     constructor() {
       super();
 
-      application = run(Application, 'create');
+      // Must use default resolver because test resolver does not normalize
+      run(() => {
+        expectDeprecation(() => {
+          application = Application.create();
+        });
+      });
       registry = application.__registry__;
     }
 

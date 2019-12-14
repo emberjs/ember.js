@@ -115,23 +115,28 @@ import { Opaque } from '@glimmer/util';
 /**
   The `{{each-in}}` helper loops over properties on an object.
 
-  For example, if the `@user` argument contains this object:
+  For example, given this component definition:
 
-  ```javascript
-  {
-    "name": "Shelly Sails",
-    "age": 42
+  ```app/components/developer-details.js
+  import Component from '@glimmer/component';
+  import { tracked } from '@glimmer/tracking';
+
+  export default class extends Component {
+    @tracked developer = {
+      "name": "Shelly Sails",
+      "age": 42
+    };
   }
   ```
 
-  This template would display all properties on the `@user`
+  This template would display all properties on the `developer`
   object in a list:
 
-  ```handlebars
+  ```app/components/developer-details.hbs
   <ul>
-  {{#each-in @user as |key value|}}
-    <li>{{key}}: {{value}}</li>
-  {{/each-in}}
+    {{#each-in this.developer as |key value|}}
+      <li>{{key}}: {{value}}</li>
+    {{/each-in}}
   </ul>
   ```
 

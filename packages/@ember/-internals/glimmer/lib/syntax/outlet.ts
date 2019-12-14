@@ -16,6 +16,7 @@ import {
 import { Dict, dict, Opaque } from '@glimmer/util';
 import * as WireFormat from '@glimmer/wire-format';
 import { OutletComponentDefinition, OutletDefinitionState } from '../component-managers/outlet';
+import Environment from '../environment';
 import { DynamicScope } from '../renderer';
 import { isTemplateFactory } from '../template';
 import { OutletReference, OutletState } from '../utils/outlet';
@@ -26,22 +27,21 @@ import { NestedPropertyReference, PropertyReference } from '../utils/references'
   your template. An important use of the `{{outlet}}` helper is in your
   application's `application.hbs` file:
 
-  ```handlebars
-  {{! app/templates/application.hbs }}
-  <!-- header content goes here, and will always display -->
+  ```app/templates/application.hbs
   <MyHeader />
+
   <div class="my-dynamic-content">
     <!-- this content will change based on the current route, which depends on the current URL -->
     {{outlet}}
   </div>
-  <!-- footer content goes here, and will always display -->
+
   <MyFooter />
   ```
 
   You may also specify a name for the `{{outlet}}`, which is useful when using more than one
   `{{outlet}}` in a template:
 
-  ```handlebars
+  ```app/templates/application.hbs
   {{outlet "menu"}}
   {{outlet "sidebar"}}
   {{outlet "main"}}
@@ -53,11 +53,11 @@ import { NestedPropertyReference, PropertyReference } from '../utils/references'
   ```app/routes/menu.js
   import Route from '@ember/routing/route';
 
-  export default Route.extend({
+  export default class MenuRoute extends Route {
     renderTemplate() {
       this.render({ outlet: 'menu' });
     }
-  });
+  }
   ```
 
   See the [routing guide](https://guides.emberjs.com/release/routing/rendering-a-template/) for more
@@ -77,7 +77,10 @@ export function outletHelper(vm: VM, args: Arguments) {
   } else {
     nameRef = args.positional.at<VersionedPathReference<string>>(0);
   }
-  return new OutletComponentReference(new OutletReference(scope.outletState, nameRef));
+  return new OutletComponentReference(
+    new OutletReference(scope.outletState, nameRef),
+    vm.env as Environment
+  );
 }
 
 export function outletMacro(
@@ -93,8 +96,12 @@ export function outletMacro(
 
 class OutletModelReference implements VersionedPathReference {
   public tag: Tag;
+  private debugStackLog?: string;
 
-  constructor(private parent: VersionedPathReference<OutletState | undefined>) {
+  constructor(
+    private parent: VersionedPathReference<OutletState | undefined>,
+    private env: Environment
+  ) {
     this.tag = parent.tag;
   }
 
@@ -116,6 +123,16 @@ class OutletModelReference implements VersionedPathReference {
 
   get(property: string): VersionedPathReference {
     if (DEBUG) {
+      // We capture the log stack now, as accessing `{{@model}}` directly can't
+      // cause issues (doesn't autotrack) but accessing subproperties can. We
+      // don't want to capture the log stack when `value` or `debug` are called,
+      // because the ref might have been passed downward, so we'd have the
+      // incorrect context.
+      //
+      // TODO: This feels messy, side-effect of the fact that this ref is
+      // created well before the component itself.
+      this.debugStackLog = this.env.debugRenderTree.logCurrentRenderStack();
+
       // This guarentees that we preserve the `debug()` output below
       return new NestedPropertyReference(this, property);
     } else {
@@ -125,8 +142,8 @@ class OutletModelReference implements VersionedPathReference {
 }
 
 if (DEBUG) {
-  OutletModelReference.prototype['debug'] = function debug(): string {
-    return '@model';
+  OutletModelReference.prototype['debug'] = function debug(subPath: string): string {
+    return `${this['debugStackLog']}@model.${subPath}`;
   };
 }
 
@@ -137,12 +154,15 @@ class OutletComponentReference
   private definition: Option<CurriedComponentDefinition> = null;
   private lastState: Option<OutletDefinitionState> = null;
 
-  constructor(private outletRef: VersionedPathReference<OutletState | undefined>) {
+  constructor(
+    private outletRef: VersionedPathReference<OutletState | undefined>,
+    env: Environment
+  ) {
     // The router always dirties the root state.
     let tag = (this.tag = outletRef.tag);
 
     if (EMBER_ROUTING_MODEL_ARG) {
-      let modelRef = new OutletModelReference(outletRef);
+      let modelRef = new OutletModelReference(outletRef, env);
       let map = dict<VersionedPathReference>();
       map.model = modelRef;
 

@@ -2,7 +2,6 @@ import { assert } from '@ember/debug';
 import { onErrorTarget } from '@ember/-internals/error-handling';
 import { flushAsyncObservers } from '@ember/-internals/metal';
 import Backburner from 'backburner';
-import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 
 let currentRunLoop = null;
 export function getCurrentRunLoop() {
@@ -16,21 +15,15 @@ function onBegin(current) {
 function onEnd(current, next) {
   currentRunLoop = next;
 
-  if (EMBER_METAL_TRACKED_PROPERTIES) {
-    flushAsyncObservers();
-  }
+  flushAsyncObservers();
 }
 
-let flush;
+function flush(queueName, next) {
+  if (queueName === 'render' || queueName === _rsvpErrorQueue) {
+    flushAsyncObservers();
+  }
 
-if (EMBER_METAL_TRACKED_PROPERTIES) {
-  flush = function(queueName, next) {
-    if (queueName === 'render' || queueName === _rsvpErrorQueue) {
-      flushAsyncObservers();
-    }
-
-    next();
-  };
+  next();
 }
 
 export const _rsvpErrorQueue = `${Math.random()}${Date.now()}`.replace('.', '');

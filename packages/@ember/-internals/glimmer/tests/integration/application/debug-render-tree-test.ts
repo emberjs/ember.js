@@ -1,4 +1,9 @@
-import { ApplicationTestCase, moduleFor, strip } from 'internal-test-helpers';
+import {
+  ApplicationTestCase,
+  ModuleBasedTestResolver,
+  moduleFor,
+  strip,
+} from 'internal-test-helpers';
 
 import { ENV } from '@ember/-internals/environment';
 import {
@@ -292,6 +297,7 @@ if (ENV._DEBUG_RENDER_TREE) {
           'engine:foo',
           class extends Engine {
             isFooEngine = true;
+            Resolver = ModuleBasedTestResolver;
 
             init() {
               super.init(...arguments);
@@ -327,6 +333,8 @@ if (ENV._DEBUG_RENDER_TREE) {
         this.add(
           'engine:bar',
           class extends Engine {
+            Resolver = ModuleBasedTestResolver;
+
             init() {
               super.init(...arguments);
               this.register(
@@ -670,6 +678,7 @@ if (ENV._DEBUG_RENDER_TREE) {
           'engine:foo',
           class extends Engine {
             isFooEngine = true;
+            Resolver = ModuleBasedTestResolver;
 
             init() {
               super.init(...arguments);

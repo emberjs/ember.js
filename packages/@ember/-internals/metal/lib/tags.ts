@@ -1,9 +1,9 @@
 import { Meta, meta as metaFor } from '@ember/-internals/meta';
-import { isProxy, setupMandatorySetter, symbol } from '@ember/-internals/utils';
-import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
+import { setupMandatorySetter, symbol } from '@ember/-internals/utils';
 import { backburner } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
-import { CONSTANT_TAG, createTag, createUpdatableTag, dirty, Tag } from '@glimmer/reference';
+import { CONSTANT_TAG, createUpdatableTag, dirty, Tag } from '@glimmer/reference';
+import { assertTagNotConsumed } from './tracked';
 
 export const UNKNOWN_PROPERTY_TAG = symbol('UNKNOWN_PROPERTY_TAG');
 
@@ -14,12 +14,8 @@ export function tagForProperty(object: any, propertyKey: string | symbol, _meta?
   }
   let meta = _meta === undefined ? metaFor(object) : _meta;
 
-  if (EMBER_METAL_TRACKED_PROPERTIES) {
-    if (!(propertyKey in object) && typeof object[UNKNOWN_PROPERTY_TAG] === 'function') {
-      return object[UNKNOWN_PROPERTY_TAG](propertyKey);
-    }
-  } else if (isProxy(object)) {
-    return tagFor(object, meta);
+  if (!(propertyKey in object) && typeof object[UNKNOWN_PROPERTY_TAG] === 'function') {
+    return object[UNKNOWN_PROPERTY_TAG](propertyKey);
   }
 
   let tags = meta.writableTags();
@@ -28,21 +24,15 @@ export function tagForProperty(object: any, propertyKey: string | symbol, _meta?
     return tag;
   }
 
-  if (EMBER_METAL_TRACKED_PROPERTIES) {
-    let newTag = createUpdatableTag();
+  let newTag = createUpdatableTag();
 
-    if (DEBUG) {
-      if (EMBER_METAL_TRACKED_PROPERTIES) {
-        setupMandatorySetter!(object, propertyKey);
-      }
+  if (DEBUG) {
+    setupMandatorySetter!(object, propertyKey);
 
-      (newTag as any)._propertyKey = propertyKey;
-    }
-
-    return (tags[propertyKey] = newTag);
-  } else {
-    return (tags[propertyKey] = createTag());
+    (newTag as any)._propertyKey = propertyKey;
   }
+
+  return (tags[propertyKey] = newTag);
 }
 
 export function tagFor(object: any | null, _meta?: Meta): Tag {
@@ -62,6 +52,10 @@ export function markObjectAsDirty(obj: object, propertyKey: string, _meta?: Meta
   let objectTag = meta.readableTag();
 
   if (objectTag !== undefined) {
+    if (DEBUG) {
+      assertTagNotConsumed!(objectTag, obj);
+    }
+
     dirty(objectTag);
   }
 
@@ -69,6 +63,10 @@ export function markObjectAsDirty(obj: object, propertyKey: string, _meta?: Meta
   let propertyTag = tags !== undefined ? tags[propertyKey] : undefined;
 
   if (propertyTag !== undefined) {
+    if (DEBUG) {
+      assertTagNotConsumed!(propertyTag, obj, propertyKey);
+    }
+
     dirty(propertyTag);
   }
 

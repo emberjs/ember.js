@@ -5,6 +5,7 @@ import Controller from '@ember/controller';
 import { Route } from '@ember/-internals/routing';
 import { Component } from '@ember/-internals/glimmer';
 import { set, tracked } from '@ember/-internals/metal';
+import { backtrackingMessageFor } from '../../utils/backtracking-rerender';
 import { runTask } from '../../../../../../internal-test-helpers/lib/run';
 
 moduleFor(
@@ -219,7 +220,7 @@ moduleFor(
       `);
     }
 
-    async ['@feature(EMBER_ROUTING_MODEL_ARG, EMBER_METAL_TRACKED_PROPERTIES) interior mutations on the model with tracked properties'](
+    async ['@feature(EMBER_ROUTING_MODEL_ARG) interior mutations on the model with tracked properties'](
       assert
     ) {
       class Model {
@@ -342,7 +343,7 @@ moduleFor(
       `);
     }
 
-    async ['@feature(EMBER_ROUTING_MODEL_ARG, EMBER_METAL_TRACKED_PROPERTIES) exterior mutations on the model with tracked properties'](
+    async ['@feature(EMBER_ROUTING_MODEL_ARG) exterior mutations on the model with tracked properties'](
       assert
     ) {
       this.router.map(function() {
@@ -1014,7 +1015,9 @@ moduleFor(
         template: 'Hi {{this.person.name}} from component',
       });
 
-      let expectedBacktrackingMessage = /modified `Person \(Ben\)` twice in a single render\. It was first rendered as `this\.model\.name` in "template:my-app\/templates\/routeWithError\.hbs" and then modified later in "component:foo"/;
+      let expectedBacktrackingMessage = backtrackingMessageFor('name', 'Person \\(Ben\\)', {
+        renderTree: ['application', 'routeWithError', 'this.model.name'],
+      });
 
       await this.visit('/');
 
@@ -1044,7 +1047,9 @@ moduleFor(
 
       this.addTemplate('routeWithError', 'Hi {{@model.name}} <Foo @person={{@model}} />');
 
-      let expectedBacktrackingMessage = /modified `Person \(Ben\)` twice in a single render\. It was first rendered as `@model\.name` in "template:my-app\/templates\/routeWithError\.hbs" and then modified later in "component:foo"/;
+      let expectedBacktrackingMessage = backtrackingMessageFor('name', 'Person \\(Ben\\)', {
+        renderTree: ['application', 'routeWithError', '@model.name'],
+      });
 
       await this.visit('/');
 

@@ -17,7 +17,6 @@ export {
   removeArrayObserver,
 } from './lib/array';
 export { arrayContentWillChange, arrayContentDidChange } from './lib/array_events';
-export { eachProxyFor } from './lib/each_proxy';
 export { eachProxyArrayWillChange, eachProxyArrayDidChange } from './lib/each_proxy_events';
 export { addListener, hasListeners, on, removeListener, sendEvent } from './lib/events';
 
@@ -30,7 +29,6 @@ export {
   changeProperties,
   endPropertyChanges,
   notifyPropertyChange,
-  overrideChains,
   PROPERTY_DID_CHANGE,
 } from './lib/property_events';
 export { defineProperty } from './lib/properties';
@@ -46,11 +44,7 @@ export {
   isClassicDecorator,
   setClassicDecorator,
 } from './lib/descriptor_map';
-export { watchKey, unwatchKey } from './lib/watch_key';
-export { ChainNode, finishChains, removeChainWatcher } from './lib/chains';
 export { getChainTagsForKey, ARGS_PROXY_TAGS } from './lib/chain-tags';
-export { watchPath, unwatchPath } from './lib/watch_path';
-export { isWatching, unwatch, watch, watcherCount } from './lib/watching';
 export { default as libraries, Libraries } from './lib/libraries';
 export { default as getProperties } from './lib/get_properties';
 export { default as setProperties } from './lib/set_properties';
@@ -60,8 +54,16 @@ export { addObserver, activateObserver, removeObserver, flushAsyncObservers } fr
 export { Mixin, aliasMethod, mixin, observer, applyMixin } from './lib/mixin';
 export { default as inject, DEBUG_INJECTION_FUNCTIONS } from './lib/injected_property';
 export { tagForProperty, tagFor, markObjectAsDirty, UNKNOWN_PROPERTY_TAG } from './lib/tags';
-export { default as runInTransaction, didRender, assertNotRendered } from './lib/transaction';
-export { consume, Tracker, tracked, track, untrack, isTracking } from './lib/tracked';
+export {
+  consume,
+  Tracker,
+  tracked,
+  track,
+  untrack,
+  isTracking,
+  runInAutotrackingTransaction,
+  deprecateMutationsInAutotrackingTransaction,
+} from './lib/tracked';
 
 export {
   NAMESPACES,

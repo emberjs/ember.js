@@ -80,10 +80,6 @@ class MountManager extends AbstractManager<EngineState, EngineDefinitionState>
   }
 
   create(environment: Environment, { name }: EngineDefinitionState, args: Arguments) {
-    if (DEBUG) {
-      environment.debugStack.pushEngine(`engine:${name}`);
-    }
-
     // TODO
     // mount is a runtime helper, this shouldn't use dynamic layout
     // we should resolve the engine app template in the helper
@@ -106,12 +102,12 @@ class MountManager extends AbstractManager<EngineState, EngineDefinitionState>
 
     if (modelRef === undefined) {
       controller = controllerFactory.create();
-      self = new RootReference(controller);
+      self = new RootReference(controller, environment);
       bucket = { engine, controller, self, environment };
     } else {
       let model = modelRef.value();
       controller = controllerFactory.create({ model });
-      self = new RootReference(controller);
+      self = new RootReference(controller, environment);
       bucket = { engine, controller, self, modelRef, environment };
     }
 
@@ -172,10 +168,6 @@ class MountManager extends AbstractManager<EngineState, EngineDefinitionState>
   }
 
   didRenderLayout(bucket: EngineState, bounds: Bounds): void {
-    if (DEBUG) {
-      bucket.environment.debugStack.pop();
-    }
-
     if (ENV._DEBUG_RENDER_TREE) {
       bucket.environment.debugRenderTree.didRender(bucket.controller, bounds);
       bucket.environment.debugRenderTree.didRender(bucket, bounds);

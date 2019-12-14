@@ -1,6 +1,6 @@
 import { ENV } from '@ember/-internals/environment';
 import { Object as EmberObject } from '@ember/-internals/runtime';
-import { get, getWithDefault, Mixin, observer, computed } from '../..';
+import { get, set, track, getWithDefault, Mixin, observer, computed } from '../..';
 import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
 import { run } from '@ember/runloop';
 
@@ -288,6 +288,25 @@ moduleFor(
       } else {
         assert.ok('SKIPPING ACCESSORS');
       }
+    }
+
+    ['@test gives helpful deprecation when a property tracked with `get` is mutated after access within unknownProperty within an autotracking transaction']() {
+      class EmberObject {
+        foo = null;
+
+        unknownProperty() {
+          get(this, 'foo');
+          set(this, 'foo', 123);
+        }
+      }
+
+      let obj = new EmberObject();
+
+      expectDeprecation(() => {
+        track(() => {
+          get(obj, 'bar');
+        });
+      }, /You attempted to update `foo` on `EmberObject`, but it had already been used previously in the same computation/);
     }
 
     // ..........................................................

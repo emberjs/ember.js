@@ -39,7 +39,7 @@ module.exports = {
       'node-module',
     ],
     'import/parsers': {
-      'typescript-eslint-parser': ['.ts'],
+      '@typescript-eslint/parser': ['.ts'],
     },
     'import/resolver': {
       node: {
@@ -55,7 +55,7 @@ module.exports = {
     {
       files: [ '**/*.ts' ],
 
-      parser: 'typescript-eslint-parser',
+      parser: '@typescript-eslint/parser',
 
       parserOptions: {
         sourceType: 'module',

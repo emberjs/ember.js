@@ -4,6 +4,23 @@
 
 - [#18582](https://github.com/emberjs/ember.js/pull/18582) [BUGFIX release] Ensure `loader.js` is transpiled to the applications specified targets (from `config/targets.js`).
 
+### v3.16.0-beta.1 (December 9, 2019)
+
+- [#18436](https://github.com/emberjs/ember.js/pull/18436) [DEPRECATION] Deprecate globals resolver per [RFC #331](https://github.com/emberjs/rfcs/blob/master/text/0331-deprecate-globals-resolver.md).
+
+### v3.15.0 (December 9, 2019)
+
+- [#17948](https://github.com/emberjs/ember.js/pull/17948) [DEPRECATION] Deprecate `Component#isVisible` per [RFC #324](https://github.com/emberjs/rfcs/blob/master/text/0324-deprecate-component-isvisible.md).
+- [#18491](https://github.com/emberjs/ember.js/pull/18491) [DEPRECATION] Deprecate `{{partial}}` per [RFC #449](https://github.com/emberjs/rfcs/blob/master/text/0449-deprecate-partials.md).
+- [#18441](https://github.com/emberjs/ember.js/pull/18441) [DEPRECATION] Deprecate use of window.ENV to configure boot options
+- [#18554](https://github.com/emberjs/ember.js/pull/18554) [BREAKING BUGFIX] Adds autotracking transaction
+- [#17834](https://github.com/emberjs/ember.js/pull/17834) [BUGFIX] Prevents autotracking ArrayProxy creation
+
+### v3.14.3 (December 3, 2019)
+
+- [#18582](https://github.com/emberjs/ember.js/pull/18582) [BUGFIX] Ensure `loader.js` is transpiled to the applications specified targets (from `config/targets.js`).
+
+
 ### v3.14.2 (November 20, 2019)
 
 - [#18539](https://github.com/emberjs/ember.js/pull/18539) / [#18548](https://github.com/emberjs/ember.js/pull/18548) [BUGFIX] Fix issues with the new APIs to be used by ember-inspector for building the "component's tree" including `@glimmer/component`.
@@ -76,7 +93,6 @@
 
 - [#18244](https://github.com/emberjs/ember.js/pull/18244) Fix query param assertion when using the router services `transitionTo` to redirect _during_ an existing transition.
 - [#18458](https://github.com/emberjs/ember.js/pull/18458) / [#18555](https://github.com/emberjs/ember.js/pull/18555) Ensure `(query-params)` helper can be used outside of direct `{{link-to}}` / `<LinkTo />` invocation.
-
 
 ### v3.12.0 (August 5, 2019)
 

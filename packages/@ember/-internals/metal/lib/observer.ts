@@ -1,12 +1,10 @@
 import { ENV } from '@ember/-internals/environment';
 import { peekMeta } from '@ember/-internals/meta';
-import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { schedule } from '@ember/runloop';
 import { combine, CURRENT_TAG, Tag, validate, value } from '@glimmer/reference';
 import { getChainTagsForKey } from './chain-tags';
 import changeEvent from './change_event';
 import { addListener, removeListener, sendEvent } from './events';
-import { unwatch, watch } from './watching';
 
 interface ActiveObserver {
   tag: Tag;
@@ -45,14 +43,10 @@ export function addObserver(
 
   addListener(obj, eventName, target, method, false, sync);
 
-  if (EMBER_METAL_TRACKED_PROPERTIES) {
-    let meta = peekMeta(obj);
+  let meta = peekMeta(obj);
 
-    if (meta === null || !(meta.isPrototypeMeta(obj) || meta.isInitializing())) {
-      activateObserver(obj, eventName, sync);
-    }
-  } else {
-    watch(obj, path);
+  if (meta === null || !(meta.isPrototypeMeta(obj) || meta.isInitializing())) {
+    activateObserver(obj, eventName, sync);
   }
 }
 
@@ -75,14 +69,10 @@ export function removeObserver(
 ): void {
   let eventName = changeEvent(path);
 
-  if (EMBER_METAL_TRACKED_PROPERTIES) {
-    let meta = peekMeta(obj);
+  let meta = peekMeta(obj);
 
-    if (meta === null || !(meta.isPrototypeMeta(obj) || meta.isInitializing())) {
-      deactivateObserver(obj, eventName, sync);
-    }
-  } else {
-    unwatch(obj, path);
+  if (meta === null || !(meta.isPrototypeMeta(obj) || meta.isInitializing())) {
+    deactivateObserver(obj, eventName, sync);
   }
 
   removeListener(obj, eventName, target, method);

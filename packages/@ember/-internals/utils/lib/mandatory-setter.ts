@@ -1,4 +1,3 @@
-import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import lookupDescriptor from './lookup-descriptor';
@@ -11,7 +10,7 @@ export let setWithMandatorySetter:
 
 type PropertyDescriptorWithMeta = PropertyDescriptor & { hadOwnProperty?: boolean };
 
-if (DEBUG && EMBER_METAL_TRACKED_PROPERTIES) {
+if (DEBUG) {
   let MANDATORY_SETTERS: WeakMap<
     object,
     // @ts-ignore

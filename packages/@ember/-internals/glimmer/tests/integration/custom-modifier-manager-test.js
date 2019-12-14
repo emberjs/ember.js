@@ -3,6 +3,7 @@ import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 import { Object as EmberObject } from '@ember/-internals/runtime';
 import { setModifierManager, modifierCapabilities } from '@ember/-internals/glimmer';
 import { set, tracked } from '@ember/-internals/metal';
+import { backtrackingMessageFor } from '../utils/backtracking-rerender';
 
 class ModifierManagerTest extends RenderingTestCase {}
 
@@ -277,6 +278,45 @@ moduleFor(
 
       runTask(() => trackedTwo.count++);
       assert.equal(updateCount, 2);
+    }
+
+    '@test provides a helpful assertion when mutating a value that was consumed already'() {
+      class Person {
+        @tracked name = 'bob';
+      }
+
+      let ModifierClass = setModifierManager(
+        owner => {
+          return new CustomModifierManager(owner);
+        },
+        class {
+          static create() {
+            return new this();
+          }
+
+          didInsertElement() {}
+          didUpdate() {}
+          willDestroyElement() {}
+        }
+      );
+
+      this.registerModifier(
+        'foo-bar',
+        class MyModifier extends ModifierClass {
+          didInsertElement([person]) {
+            person.name;
+            person.name = 'sam';
+          }
+        }
+      );
+
+      let expectedMessage = backtrackingMessageFor('name', 'Person', {
+        renderTree: ['\\(instance of a `MyModifier` modifier\\)'],
+      });
+
+      expectAssertion(() => {
+        this.render('<h1 {{foo-bar this.person}}>hello world</h1>', { person: new Person() });
+      }, expectedMessage);
     }
   }
 );

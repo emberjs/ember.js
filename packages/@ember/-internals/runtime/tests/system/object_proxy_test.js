@@ -1,15 +1,6 @@
 import { DEBUG } from '@glimmer/env';
-import {
-  addObserver,
-  observer,
-  computed,
-  get,
-  set,
-  isWatching,
-  removeObserver,
-} from '@ember/-internals/metal';
+import { addObserver, observer, computed, get, set, removeObserver } from '@ember/-internals/metal';
 import { HAS_NATIVE_PROXY } from '@ember/-internals/utils';
-import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import ObjectProxy from '../../lib/system/object_proxy';
 import { moduleFor, AbstractTestCase, runLoopSettled } from 'internal-test-helpers';
 
@@ -233,12 +224,6 @@ moduleFor(
       // both dependent keys changed
       assert.equal(count, 5);
       assert.equal(last, 'Yehuda Katz');
-
-      if (!EMBER_METAL_TRACKED_PROPERTIES) {
-        // content1 is no longer watched
-        assert.ok(!isWatching(content1, 'firstName'), 'not watching firstName');
-        assert.ok(!isWatching(content1, 'lastName'), 'not watching lastName');
-      }
 
       // setting property in new content
       set(content2, 'firstName', 'Tomhuda');

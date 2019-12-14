@@ -4,7 +4,7 @@ import Test from '../lib/test';
 import Adapter from '../lib/adapters/adapter';
 import QUnitAdapter from '../lib/adapters/qunit';
 import EmberApplication from '@ember/application';
-import { moduleFor, AbstractTestCase } from 'internal-test-helpers';
+import { moduleFor, ModuleBasedTestResolver, AbstractTestCase } from 'internal-test-helpers';
 import { RSVP } from '@ember/-internals/runtime';
 import { getDebugFunction, setDebugFunction } from '@ember/debug';
 
@@ -72,7 +72,9 @@ moduleFor(
       });
 
       run(function() {
-        App = EmberApplication.create();
+        App = EmberApplication.create({
+          Resolver: ModuleBasedTestResolver,
+        });
         Test.adapter = CustomAdapter.create();
         App.setupForTesting();
       });
@@ -86,7 +88,9 @@ moduleFor(
       Test.adapter = null;
 
       run(function() {
-        App = EmberApplication.create();
+        App = EmberApplication.create({
+          Resolver: ModuleBasedTestResolver,
+        });
         App.setupForTesting();
       });
 
@@ -101,7 +105,9 @@ moduleFor(
       Test.adapter = null;
 
       run(function() {
-        App = EmberApplication.create();
+        App = EmberApplication.create({
+          Resolver: ModuleBasedTestResolver,
+        });
         App.setupForTesting();
       });
 

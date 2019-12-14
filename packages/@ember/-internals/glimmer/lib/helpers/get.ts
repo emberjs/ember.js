@@ -23,33 +23,70 @@ import { CachedReference, referenceFromParts, UPDATE } from '../utils/references
 
   For example, these two usages are equivalent:
 
+  ```app/components/developer-detail.js
+  import Component from '@glimmer/component';
+  import { tracked } from '@glimmer/tracking';
+
+  export default class extends Component {
+    @tracked developer = {
+      name: "Sandi Metz",
+      language: "Ruby"
+    }
+  }
+  ```
+
   ```handlebars
-  {{person.height}}
-  {{get person "height"}}
+  {{this.developer.name}}
+  {{get this.developer "name"}}
   ```
 
   If there were several facts about a person, the `{{get}}` helper can dynamically
   pick one:
 
+  ```app/templates/application.hbs
+  <DeveloperDetail @factName="language" />
+  ```
+
   ```handlebars
-  {{get person factName}}
+  {{get this.developer @factName}}
   ```
 
   For a more complex example, this template would allow the user to switch
   between showing the user's height and weight with a click:
 
-  ```handlebars
-  {{get person factName}}
-  <button {{action (fn (mut factName)) "height"}}>Show height</button>
-  <button {{action (fn (mut factName)) "weight"}}>Show weight</button>
+  ```app/components/developer-detail.js
+  import Component from '@glimmer/component';
+  import { tracked } from '@glimmer/tracking';
+
+  export default class extends Component {
+    @tracked developer = {
+      name: "Sandi Metz",
+      language: "Ruby"
+    }
+
+    @tracked currentFact = 'name'
+
+    @action
+    showFact(fact) {
+      this.currentFact = fact;
+    }
+  }
+  ```
+
+  ```app/components/developer-detail.js
+  {{get this.developer this.currentFact}}
+
+  <button {{on 'click' (fn this.showFact "name")}}>Show name</button>
+  <button {{on 'click' (fn this.showFact "language")}}>Show language</button>
   ```
 
   The `{{get}}` helper can also respect mutable values itself. For example:
 
-  ```handlebars
-  {{input value=(mut (get person factName)) type="text"}}
-  <button {{action (fn (mut factName)) "height"}}>Show height</button>
-  <button {{action (fn (mut factName)) "weight"}}>Show weight</button>
+  ```app/components/developer-detail.js
+  <Input @value={{mut (get this.person this.currentFact)}} />
+
+  <button {{on 'click' (fn this.showFact "name")}}>Show name</button>
+  <button {{on 'click' (fn this.showFact "language")}}>Show language</button>
   ```
 
   Would allow the user to swap what fact is being displayed, and also edit

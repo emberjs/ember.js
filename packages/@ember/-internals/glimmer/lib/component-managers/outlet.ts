@@ -5,7 +5,6 @@ import { assert } from '@ember/debug';
 import EngineInstance from '@ember/engine/instance';
 import { _instrumentStart } from '@ember/instrumentation';
 import { assign } from '@ember/polyfills';
-import { DEBUG } from '@glimmer/env';
 import { ComponentCapabilities, Option, Simple } from '@glimmer/interfaces';
 import { CONSTANT_TAG, createTag, Tag, VersionedPathReference } from '@glimmer/reference';
 import {
@@ -76,10 +75,6 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
     args: Arguments,
     dynamicScope: DynamicScope
   ): OutletInstanceState {
-    if (DEBUG) {
-      environment.debugStack.push(`template:${definition.template.referrer.moduleName}`);
-    }
-
     let parentStateRef = dynamicScope.outletState;
     let currentStateRef = definition.ref;
 
@@ -166,10 +161,6 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
 
   didRenderLayout(state: OutletInstanceState, bounds: Bounds): void {
     state.finalize();
-
-    if (DEBUG) {
-      state.environment.debugStack.pop();
-    }
 
     if (ENV._DEBUG_RENDER_TREE) {
       state.environment.debugRenderTree.didRender(state, bounds);

@@ -35,10 +35,6 @@ export function isSimpleClick(event: Event): boolean;
 
 export function constructStyleDeprecationMessage(affectedStyle: any): string;
 
-export function hasPartial(name: string, owner: any): boolean;
-
-export function lookupPartial(templateName: string, owner: Owner): TemplateFactory;
-
 export function getViewId(view: any): string;
 
 export const MUTABLE_CELL: string;

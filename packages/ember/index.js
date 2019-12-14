@@ -133,6 +133,7 @@ import EngineInstance from '@ember/engine/instance';
 import { assign, merge } from '@ember/polyfills';
 import { LOGGER, EMBER_EXTEND_PROTOTYPES, JQUERY_INTEGRATION } from '@ember/deprecated-features';
 import templateOnlyComponent from '@ember/component/template-only';
+
 // ****@ember/-internals/environment****
 
 const Ember = (typeof context.imports.Ember === 'object' && context.imports.Ember) || {};
@@ -175,8 +176,29 @@ if (EMBER_EXTEND_PROTOTYPES) {
 Ember.getOwner = getOwner;
 Ember.setOwner = setOwner;
 Ember.Application = Application;
-Ember.DefaultResolver = Ember.Resolver = Resolver;
 Ember.ApplicationInstance = ApplicationInstance;
+
+Object.defineProperty(Ember, 'Resolver', {
+  get() {
+    deprecate(
+      'Using the globals resolver is deprecated. Use the ember-resolver package instead. See https://deprecations.emberjs.com/v3.x#toc_ember-deprecate-globals-resolver',
+      false,
+      {
+        id: 'ember.globals-resolver',
+        until: '4.0.0',
+        url: 'https://deprecations.emberjs.com/v3.x#toc_ember-deprecate-globals-resolver',
+      }
+    );
+
+    return Resolver;
+  },
+});
+
+Object.defineProperty(Ember, 'DefaultResolver', {
+  get() {
+    return Ember.Resolver;
+  },
+});
 
 // ****@ember/engine****
 Ember.Engine = Engine;
@@ -301,7 +323,6 @@ Ember.isEmpty = metal.isEmpty;
 Ember.isBlank = metal.isBlank;
 Ember.isPresent = metal.isPresent;
 Ember.notifyPropertyChange = metal.notifyPropertyChange;
-Ember.overrideChains = metal.overrideChains;
 Ember.beginPropertyChanges = metal.beginPropertyChanges;
 Ember.endPropertyChanges = metal.endPropertyChanges;
 Ember.changeProperties = metal.changeProperties;
@@ -310,16 +331,6 @@ Ember.platform = {
   hasPropertyAccessors: true,
 };
 Ember.defineProperty = metal.defineProperty;
-Ember.watchKey = metal.watchKey;
-Ember.unwatchKey = metal.unwatchKey;
-Ember.removeChainWatcher = metal.removeChainWatcher;
-Ember._ChainNode = metal.ChainNode;
-Ember.finishChains = metal.finishChains;
-Ember.watchPath = metal.watchPath;
-Ember.unwatchPath = metal.unwatchPath;
-Ember.watch = metal.watch;
-Ember.isWatching = metal.isWatching;
-Ember.unwatch = metal.unwatch;
 Ember.destroy = deleteMeta;
 Ember.libraries = metal.libraries;
 Ember.getProperties = metal.getProperties;

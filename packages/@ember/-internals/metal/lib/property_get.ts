@@ -2,13 +2,11 @@
 @module @ember/object
 */
 import { HAS_NATIVE_PROXY, isEmberArray, symbol } from '@ember/-internals/utils';
-import { EMBER_METAL_TRACKED_PROPERTIES } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { descriptorForProperty } from './descriptor_map';
 import { isPath } from './path_cache';
 import { tagForProperty } from './tags';
-import { consume, isTracking } from './tracked';
+import { consume, deprecateMutationsInAutotrackingTransaction, isTracking } from './tracked';
 
 export const PROXY_CONTENT = symbol('PROXY_CONTENT');
 
@@ -105,17 +103,8 @@ export function get(obj: object, keyName: string): any {
   if (isObjectLike) {
     let tracking = isTracking();
 
-    if (EMBER_METAL_TRACKED_PROPERTIES) {
-      if (tracking) {
-        consume(tagForProperty(obj, keyName));
-      }
-    }
-
-    if (!EMBER_METAL_TRACKED_PROPERTIES) {
-      let descriptor = descriptorForProperty(obj, keyName);
-      if (descriptor !== undefined) {
-        return descriptor.get(obj, keyName);
-      }
+    if (tracking) {
+      consume(tagForProperty(obj, keyName));
     }
 
     if (DEBUG && HAS_NATIVE_PROXY) {
@@ -126,11 +115,7 @@ export function get(obj: object, keyName: string): any {
 
     // Add the tag of the returned value if it is an array, since arrays
     // should always cause updates if they are consumed and then changed
-    if (
-      EMBER_METAL_TRACKED_PROPERTIES &&
-      tracking &&
-      (Array.isArray(value) || isEmberArray(value))
-    ) {
+    if (tracking && (Array.isArray(value) || isEmberArray(value))) {
       consume(tagForProperty(value, '[]'));
     }
   } else {
@@ -143,7 +128,17 @@ export function get(obj: object, keyName: string): any {
       !(keyName in obj) &&
       typeof (obj as MaybeHasUnknownProperty).unknownProperty === 'function'
     ) {
-      return (obj as MaybeHasUnknownProperty).unknownProperty!(keyName);
+      if (DEBUG) {
+        let ret;
+
+        deprecateMutationsInAutotrackingTransaction!(() => {
+          ret = (obj as MaybeHasUnknownProperty).unknownProperty!(keyName);
+        });
+
+        return ret;
+      } else {
+        return (obj as MaybeHasUnknownProperty).unknownProperty!(keyName);
+      }
     }
   }
   return value;
