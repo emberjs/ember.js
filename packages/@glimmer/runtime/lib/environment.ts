@@ -42,8 +42,6 @@ import {
   VersionedPathReference,
   VersionedReference,
   IteratorDelegate,
-  RootReference,
-  PropertyReference,
 } from '@glimmer/reference';
 import { assert, WILL_DROP, DID_DROP, expect, symbol } from '@glimmer/util';
 import { AttrNamespace, SimpleElement } from '@simple-dom/interface';
@@ -308,13 +306,9 @@ export class EnvironmentImpl<Extra> implements Environment<Extra> {
   }
 
   iterableFor(ref: VersionedPathReference, inputKey: unknown): OpaqueIterable {
-    if (DEBUG) {
-      assert(
-        ref instanceof RootReference || ref instanceof PropertyReference,
-        'BUG: Attempted to create an iterable for a non-template-path'
-      );
-    }
-
+    // TODO: We should add an assertion here to verify that we are passed a
+    // TemplatePathReference, but we can only do that once we remove
+    // or significantly rewrite @glimmer/object-reference
     let key = inputKey === null ? '@identity' : String(inputKey);
 
     return new IterableImpl(ref, key, this);

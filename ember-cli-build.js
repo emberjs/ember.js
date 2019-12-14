@@ -6,6 +6,7 @@ const buildTests = require('./build/broccoli/build-tests');
 const buildPackages = require('./build/broccoli/build-packages.js');
 const mergeDefinitionFiles = require('./build/broccoli/merge-definition-files');
 const stripGlimmerUtilities = require('./build/broccoli/strip-glimmer-utilities');
+const addGlimmerEnv = require('./build/broccoli/add-glimmer-env');
 const writeSmokeTest = require('./build/broccoli/write-smoke-test');
 
 const PRODUCTION = process.env.EMBER_ENV === 'production';
@@ -42,6 +43,8 @@ module.exports = function() {
       });
     }
     jsTree = stripGlimmerUtilities(jsTree);
+  } else {
+    jsTree = addGlimmerEnv(jsTree);
   }
 
   let matrix;

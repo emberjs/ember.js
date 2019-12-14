@@ -75,10 +75,11 @@ export class ReferenceCache<T> implements Tagged {
     let tag = reference.tag;
 
     if (validate(tag, lastRevision as number)) return NOT_MODIFIED;
-    this.lastRevision = value(tag);
 
     let { lastValue } = this;
     let currentValue = reference.value();
+    this.lastRevision = value(tag);
+
     if (currentValue === lastValue) return NOT_MODIFIED;
     this.lastValue = currentValue;
 

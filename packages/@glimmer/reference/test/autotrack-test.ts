@@ -189,9 +189,7 @@ QUnit.test('can track a computed property', assert => {
 
   class TrackedPerson {
     get firstName() {
-      let c = count.value;
-      count.value = count.value + 1;
-      return firstName.value + c;
+      return firstName.value + count.value;
     }
 
     set firstName(value) {
@@ -209,11 +207,12 @@ QUnit.test('can track a computed property', assert => {
   let snapshot = value(tag);
   assert.ok(validate(tag, snapshot), 'tag should be valid to start');
 
-  assert.strictEqual(obj.firstName, 'Tom1');
+  count.value++;
+  assert.strictEqual(first.value(), 'Tom1');
   assert.equal(
     validate(tag, snapshot),
     false,
-    'reading from property invalidates the tag because it mutated a child cell'
+    'updating the cell invalidates the tag'
   );
 
   obj.firstName = 'Edsger';
@@ -222,11 +221,11 @@ QUnit.test('can track a computed property', assert => {
 
   unrelatedBump(tag, snapshot);
 
-  assert.strictEqual(obj.firstName, 'Edsger2');
+  assert.strictEqual(obj.firstName, 'Edsger1');
   assert.strictEqual(
     validate(tag, snapshot),
-    false,
-    'tag is invalid, since reading always recomputes the tags'
+    true,
+    'tag is valid'
   );
   snapshot = value(tag);
 
