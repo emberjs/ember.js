@@ -10,7 +10,7 @@ import {
   END,
 } from '@glimmer/reference';
 import { Tag, CURRENT_TAG } from '@glimmer/validator';
-import { UpdatableRootReference } from '@glimmer/object-reference';
+import { UpdatableRootReference } from '@glimmer/reference';
 
 import { Option, LinkedList, ListNode } from '@glimmer/util';
 
