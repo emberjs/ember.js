@@ -36,7 +36,6 @@ import {
   JitRuntimeResolver,
   RuntimeResolver,
   ModifierManager,
-  Destroyable,
 } from '@glimmer/interfaces';
 import { VersionedPathReference, VersionedReference } from '@glimmer/reference';
 import { CONSTANT_TAG, isConst, isConstTag, Tag } from '@glimmer/validator';
@@ -379,7 +378,8 @@ APPEND_OPCODES.add(Op.RegisterComponentDestructor, (vm, { op1: _state }) => {
   if (
     DEBUG &&
     !hasCapability(capabilities, Capability.WillDestroy) &&
-    typeof 'willDestroy' in (d as Destroyable)
+    d !== null &&
+    typeof 'willDestroy' in d
   ) {
     throw new Error(
       'BUG: Destructor has willDestroy, but the willDestroy capability was not enabled for this component. Pre-destruction hooks must be explicitly opted into'

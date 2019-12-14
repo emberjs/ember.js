@@ -38,6 +38,10 @@ export function associateDestructor(parent: object, child: Drop): void {
   associated.add(child);
 }
 
+export function peekAssociated(parent: object): Option<Set<Drop>> {
+  return LINKED.get(parent) || null;
+}
+
 export function takeAssociated(parent: object): Option<Set<Drop>> {
   let linked = LINKED.get(parent);
 

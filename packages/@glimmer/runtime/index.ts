@@ -35,6 +35,7 @@ export {
   EnvironmentDelegate,
   ScopeImpl,
   JitSyntaxCompilationContext,
+  inTransaction,
 } from './lib/environment';
 export { default as getDynamicVar } from './lib/helpers/get-dynamic-var';
 export { PublicModifierDefinition as ModifierDefinition } from './lib/modifier/interfaces';

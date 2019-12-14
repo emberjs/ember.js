@@ -1,4 +1,4 @@
-import { takeAssociated, snapshot, destructor, LINKED } from '@glimmer/util';
+import { takeAssociated, peekAssociated, snapshot, destructor, LINKED } from '@glimmer/util';
 import { DEBUG } from '@glimmer/local-debug-flags';
 import { clear } from './bounds';
 import { BlockOpcode } from './vm/update';
@@ -6,9 +6,9 @@ import { Option, Bounds, Environment } from '@glimmer/interfaces';
 import { SimpleNode } from '@simple-dom/interface';
 
 export function legacySyncReset(parent: object, env: Environment) {
-  let linked = takeAssociated(parent);
+  let linked = peekAssociated(parent);
 
-  if (linked) {
+  if (linked !== null) {
     env.willDestroy(snapshot(linked));
   }
 }
@@ -16,7 +16,7 @@ export function legacySyncReset(parent: object, env: Environment) {
 export function asyncReset(parent: object, env: Environment) {
   let linked = takeAssociated(parent);
 
-  if (linked) {
+  if (linked !== null) {
     env.didDestroy(snapshot(linked));
   }
 }
