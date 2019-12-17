@@ -41,6 +41,10 @@ export class UpdatableRootReference<T = unknown> extends RootReference<T> {
 }
 
 const DEFAULT_TEMPLATE_REF_ENV = {
+  toIterator() {
+    return null;
+  },
+
   getPath(obj: unknown, key: string) {
     return (obj as Dict)[key];
   },

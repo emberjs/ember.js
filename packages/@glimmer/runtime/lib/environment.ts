@@ -292,7 +292,7 @@ export class EnvironmentImpl<Extra> implements Environment<Extra> {
   }
 
   getTemplatePathDebugContext(ref: PathReference) {
-    if (this.delegate.getTemplatePathDebugContext !== undefined){
+    if (this.delegate.getTemplatePathDebugContext !== undefined) {
       return this.delegate.getTemplatePathDebugContext(ref);
     }
 

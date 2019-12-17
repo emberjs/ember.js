@@ -147,7 +147,7 @@ module('@glimmer/validator: validators', () => {
         // Now we update the parent to the new subtag, BEFORE its value has been
         // calculated. Since we know the value hasn't been calculated or locked into
         // the cache, this update is valid.
-        update(tag as any, subtag),
+        update(tag as any, subtag);
 
         // Then we get the parent tag's value, which does lock in the value.
         snapshot = value(tag);
@@ -179,8 +179,8 @@ module('@glimmer/validator: validators', () => {
 
         let snapshot = value(tag);
 
-        ALLOW_CYCLES!.add(tag);
-        ALLOW_CYCLES!.add(subtag);
+        ALLOW_CYCLES!.set(tag, true);
+        ALLOW_CYCLES!.set(subtag, true);
 
         update(tag, subtag);
         update(subtag, tag);
