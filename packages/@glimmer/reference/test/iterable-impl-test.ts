@@ -6,6 +6,7 @@ import { symbol } from '@glimmer/util';
 import { initialize as utilInitialize, sync, Target } from './utils/iterator';
 
 import { TestEnv } from './utils/template';
+import objectValues from './utils/platform';
 
 function initialize(
   arr: unknown,
@@ -63,26 +64,26 @@ module('@glimmer/reference: IterableImpl', () => {
       let obj = { a: 'Yehuda', b: 'Godfrey' };
       let { target } = initialize(obj);
 
-      assert.deepEqual(target.toValues(), Object.values(obj));
+      assert.deepEqual(target.toValues(), objectValues(obj));
     });
 
     test('it correctly synchronizes delegates when changed', assert => {
       let obj = { a: 'Yehuda', b: 'Godfrey' } as any;
       let { target, artifacts } = initialize(obj);
 
-      assert.deepEqual(target.toValues(), Object.values(obj));
+      assert.deepEqual(target.toValues(), objectValues(obj));
 
       obj.c = 'Rob';
 
       sync(target, artifacts);
 
-      assert.deepEqual(target.toValues(), Object.values(obj));
+      assert.deepEqual(target.toValues(), objectValues(obj));
 
       obj.a = 'Godhuda';
 
       sync(target, artifacts);
 
-      assert.deepEqual(target.toValues(), Object.values(obj));
+      assert.deepEqual(target.toValues(), objectValues(obj));
     });
 
     test('it handles null delegates', assert => {

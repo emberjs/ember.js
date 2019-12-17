@@ -1,6 +1,7 @@
 import { Option } from '@glimmer/interfaces';
 import { TemplateReferenceEnvironment, IteratorDelegate } from '@glimmer/reference';
 import { TemplatePathReference } from '../../lib/template';
+import objectValues from './platform';
 
 abstract class BoundedIterator implements IteratorDelegate {
   private position = 0;
@@ -40,7 +41,7 @@ interface Indexable {
 class ObjectIterator extends BoundedIterator {
   static fromIndexable(obj: Indexable) {
     let keys = Object.keys(obj);
-    let values = Object.values(obj);
+    let values = objectValues(obj);
 
     return new this(keys, values);
   }
