@@ -30,7 +30,7 @@ moduleFor(
       }, /silly mistake in init/);
 
       assert.equal(
-        this.renderer.inRenderTransaction,
+        this.renderer._inRenderTransaction,
         false,
         'should not be in a transaction even though an error was thrown'
       );
@@ -79,7 +79,7 @@ moduleFor(
       }, /silly mistake in init/);
 
       assert.equal(
-        this.renderer.inRenderTransaction,
+        this.renderer._inRenderTransaction,
         false,
         'should not be in a transaction even though an error was thrown'
       );
@@ -117,7 +117,7 @@ moduleFor(
       }, /silly mistake/);
 
       assert.equal(
-        this.renderer.inRenderTransaction,
+        this.renderer._inRenderTransaction,
         false,
         'should not be in a transaction even though an error was thrown'
       );

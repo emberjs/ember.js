@@ -24,6 +24,7 @@ import {
   curry,
   DOMChanges,
   DOMTreeConstruction,
+  inTransaction,
   IteratorResult,
   JitRuntimeFromProgram,
   JitSyntaxCompilationContext,
@@ -87,7 +88,6 @@ class RootState {
 
   constructor(
     public root: Component | OutletView,
-    public renderer: Renderer,
     public runtime: JitRuntimeContext<OwnedTemplateMeta, EmberEnvironmentExtra>,
     context: SyntaxCompilationContext,
     template: OwnedTemplate,
@@ -134,12 +134,10 @@ class RootState {
     let {
       result,
       runtime: { env },
-      renderer,
     } = this;
 
     this.destroyed = true;
 
-    this.renderer = undefined as any;
     this.runtime = undefined as any;
     this.root = null as any;
     this.result = undefined;
@@ -156,21 +154,8 @@ class RootState {
        * When roots are being destroyed during `Renderer#destroy`, no transaction exists
 
        */
-      let needsTransaction = !renderer.inRenderTransaction;
 
-      try {
-        if (needsTransaction) {
-          env.begin();
-          env.extra.begin();
-        }
-
-        result.destroy();
-      } finally {
-        if (needsTransaction) {
-          env.commit();
-          env.extra.commit();
-        }
-      }
+      inTransaction(env, () => result!.destroy());
     }
   }
 }
@@ -267,6 +252,7 @@ export abstract class Renderer {
   private _roots: RootState[];
   private _removedRoots: RootState[];
   private _builder: IBuilder;
+  private _inRenderTransaction = false;
 
   private _context: JitSyntaxCompilationContext;
   private _runtime: JitRuntimeContext<OwnedTemplateMeta, EmberEnvironmentExtra>;
@@ -276,7 +262,6 @@ export abstract class Renderer {
 
   readonly _runtimeResolver: RuntimeResolver;
 
-  public inRenderTransaction = false;
 
   constructor(
     owner: Owner,
@@ -344,7 +329,6 @@ export abstract class Renderer {
     let dynamicScope = new DynamicScope(null, UNDEFINED_REFERENCE);
     let rootState = new RootState(
       root,
-      this,
       this._runtime,
       this._context,
       this._rootTemplate,
@@ -448,14 +432,11 @@ export abstract class Renderer {
     let initialRootsLength: number;
 
     do {
-      try {
-        runtime.env.begin();
-        runtime.env.extra.begin();
+      initialRootsLength = roots.length;
 
+      inTransaction(runtime.env, () => {
         // ensure that for the first iteration of the loop
         // each root is processed
-        initialRootsLength = roots.length;
-
         for (let i = 0; i < roots.length; i++) {
           let root = roots[i];
 
@@ -485,10 +466,7 @@ export abstract class Renderer {
         }
 
         this._lastRevision = value(CURRENT_TAG);
-      } finally {
-        runtime.env.extra.commit();
-        runtime.env.commit();
-      }
+      });
     } while (roots.length > initialRootsLength);
 
     // remove any roots that were destroyed during this transaction
@@ -505,7 +483,7 @@ export abstract class Renderer {
   }
 
   _renderRootsTransaction() {
-    if (this.inRenderTransaction) {
+    if (this._inRenderTransaction) {
       // currently rendering roots, a new root was added and will
       // be processed by the existing _renderRoots invocation
       return;
@@ -513,7 +491,7 @@ export abstract class Renderer {
 
     // used to prevent calling _renderRoots again (see above)
     // while we are actively rendering roots
-    this.inRenderTransaction = true;
+    this._inRenderTransaction = true;
 
     let completedWithoutError = false;
     try {
@@ -523,7 +501,7 @@ export abstract class Renderer {
       if (!completedWithoutError) {
         this._lastRevision = value(CURRENT_TAG);
       }
-      this.inRenderTransaction = false;
+      this._inRenderTransaction = false;
     }
   }
 

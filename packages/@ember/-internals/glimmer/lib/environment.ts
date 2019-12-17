@@ -9,7 +9,7 @@ import { IterationItemReference, PropertyReference, VersionedPathReference } fro
 import {
   DynamicAttribute,
   dynamicAttribute,
-  RuntimeEnvironmentDelegate,
+  EnvironmentDelegate,
   SimpleDynamicAttribute,
 } from '@glimmer/runtime';
 import { AttrNamespace as SimpleAttrNamespace, SimpleElement } from '@simple-dom/interface';
@@ -57,7 +57,7 @@ export class EmberEnvironmentExtra {
   }
 }
 
-export class EmberEnvironmentDelegate implements RuntimeEnvironmentDelegate<EmberEnvironmentExtra> {
+export class EmberEnvironmentDelegate implements EnvironmentDelegate<EmberEnvironmentExtra> {
   public isInteractive: boolean;
 
   public toBool = toBool;
@@ -104,6 +104,14 @@ export class EmberEnvironmentDelegate implements RuntimeEnvironmentDelegate<Embe
     }
 
     this.extra.debugRenderTree.createPath(pathRef, desc, type, parentRef);
+  }
+
+  onTransactionBegin() {
+    this.extra.begin();
+  }
+
+  onTransactionCommit() {
+    this.extra.commit();
   }
 }
 

@@ -93,7 +93,7 @@ moduleFor(
             text: 'Whoop!',
           }
         );
-      }, /Can only pass a null literal to insertBefore in -in-element, received:/)
+      }, /Can only pass a null literal to insertBefore in -in-element, received:/);
     }
 
     ['@test components are cleaned up properly'](assert) {

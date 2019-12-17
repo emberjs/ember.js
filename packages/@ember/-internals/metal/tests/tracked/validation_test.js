@@ -141,12 +141,9 @@ moduleFor(
       let obj = new Tracked(tom);
 
       let tag = track(() => obj.full);
-      let snapshot = value(tag);
-
       assert.equal(obj.full, 'Tom Dale');
-      assert.equal(validate(tag, snapshot), true);
 
-      snapshot = value(tag);
+      let snapshot = value(tag);
       assert.equal(validate(tag, snapshot), true);
 
       set(tom, 'first', 'Thomas');
@@ -199,13 +196,10 @@ moduleFor(
       let obj = new EmberObject(tom);
 
       let tag = tagForProperty(obj, 'full');
-      let snapshot = value(tag);
-
       let full = get(obj, 'full');
       assert.equal(full, 'Tom Dale');
-      assert.equal(validate(tag, snapshot), true);
 
-      snapshot = value(tag);
+      let snapshot = value(tag);
       assert.equal(validate(tag, snapshot), true);
 
       tom.first = 'Thomas';
@@ -259,13 +253,10 @@ moduleFor(
       let obj = new EmberObject(contact);
 
       let tag = tagForProperty(obj, 'full');
-      let snapshot = value(tag);
-
       let full = get(obj, 'full');
       assert.equal(full, 'Tom Dale');
-      assert.equal(validate(tag, snapshot), true);
 
-      snapshot = value(tag);
+      let snapshot = value(tag);
       assert.equal(validate(tag, snapshot), true);
 
       set(tom, 'first', 'Thomas');

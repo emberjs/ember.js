@@ -150,10 +150,6 @@ function descriptorForField([_target, key, desc]: [
 
   let { getter, setter } = trackedData<any, any>(key, desc ? desc.initializer : undefined)
 
-  // let initializer = desc ? desc.initializer : undefined;
-  // let values = new WeakMap();
-  // let hasInitializer = typeof initializer === 'function';
-
   return {
     enumerable: true,
     configurable: true,
