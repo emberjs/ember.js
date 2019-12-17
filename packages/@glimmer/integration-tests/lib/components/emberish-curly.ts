@@ -95,6 +95,7 @@ export class EmberishCurlyComponent {
   didUpdateAttrs(_diff: AttrsDiff) {}
   didReceiveAttrs(_diff: AttrsDiff) {}
   willInsertElement() {}
+  willDestroyElement() {}
   willUpdate() {}
   willRender() {}
   didInsertElement() {}
@@ -324,6 +325,9 @@ export class EmberishCurlyComponentManager
 
   getDestructor(component: EmberishCurlyComponent): Destroyable {
     return {
+      willDestroy() {
+        component.willDestroyElement();
+      },
       destroy() {
         component.destroy();
       },

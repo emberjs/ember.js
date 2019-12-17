@@ -15,12 +15,12 @@ export let setAutotrackingTransactionEnv:
   | ((env: {
       assert?(message: string): void;
       deprecate?(message: string): void;
-      debugMessage?(obj: unknown, keyName: string): string;
+      debugMessage?(obj?: unknown, keyName?: string): string;
     }) => void);
 
 export let assertTagNotConsumed:
   | undefined
-  | (<T>(tag: Tag, obj: T, keyName?: keyof T | string | symbol, forceHardError?: boolean) => void);
+  | (<T>(tag: Tag, obj?: T, keyName?: keyof T | string | symbol, forceHardError?: boolean) => void);
 
 export let markTagAsConsumed: undefined | ((_tag: Tag, sourceError: Error) => void);
 
@@ -41,7 +41,7 @@ if (DEBUG) {
       console.warn(message);
     },
 
-    debugMessage(obj: unknown, keyName?: string) {
+    debugMessage(obj?: unknown, keyName?: string) {
       let objName;
 
       if (typeof obj === 'function') {
@@ -50,6 +50,8 @@ if (DEBUG) {
         let className = (obj.constructor && obj.constructor.name) || '(unknown class)';
 
         objName = `(an instance of ${className})`;
+      } else if (obj === undefined) {
+        objName = '(an unknown tag)';
       } else {
         objName = String(obj);
       }
@@ -134,10 +136,10 @@ if (DEBUG) {
 
   let makeAutotrackingErrorMessage = <T>(
     sourceData: AutotrackingTransactionSourceData,
-    obj: T,
+    obj?: T,
     keyName?: keyof T | string | symbol
   ) => {
-    let message = [TRANSACTION_ENV.debugMessage(obj, String(keyName))];
+    let message = [TRANSACTION_ENV.debugMessage(obj, keyName && String(keyName))];
 
     if (sourceData.context) {
       message.push(`\`${String(keyName)}\` was first used:\n\n${sourceData.context}`);
@@ -180,7 +182,7 @@ if (DEBUG) {
 
   assertTagNotConsumed = <T>(
     tag: Tag,
-    obj: T,
+    obj?: T,
     keyName?: keyof T | string | symbol,
     forceHardError: boolean | undefined = false
   ) => {

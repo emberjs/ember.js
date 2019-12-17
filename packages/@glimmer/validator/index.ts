@@ -29,13 +29,16 @@ export {
   VOLATILE,
 } from './lib/validators';
 
-export { dirtyTagFor, tagFor } from './lib/meta';
+export {
+  dirtyTagFor,
+  tagFor,
+  setPropertyDidChange,
+} from './lib/meta';
 
 export {
   consume,
   EPOCH,
   isTracking,
-  setPropertyDidChange,
   track,
   trackedData,
   untrack,

@@ -101,12 +101,6 @@ export const EPOCH = createTag();
 export type Getter<T, K extends keyof T> = (self: T) => T[K] | undefined;
 export type Setter<T, K extends keyof T> = (self: T, value: T[K]) => void;
 
-export let propertyDidChange = function() {};
-
-export function setPropertyDidChange(cb: () => void) {
-  propertyDidChange = cb;
-}
-
 export function trackedData<T extends object, K extends keyof T>(
   key: K,
   initializer?: () => T[K]
@@ -138,7 +132,6 @@ export function trackedData<T extends object, K extends keyof T>(
     dirty(EPOCH);
     dirtyTagFor(self, key);
     values.set(self, value);
-    propertyDidChange();
   }
 
   return { getter, setter };

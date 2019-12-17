@@ -3,7 +3,7 @@ import { Tag } from '@glimmer/validator';
 import { Option, Dict, Environment } from '@glimmer/interfaces';
 import { EMPTY_ARRAY, isObject } from '@glimmer/util';
 import { DEBUG } from '@glimmer/local-debug-flags';
-import { IterationItemReference } from './template';
+import { IterationItemReference, TemplateReferenceEnvironment } from './template';
 import { VersionedPathReference } from './reference';
 
 export interface IteratorDelegate {
@@ -17,7 +17,6 @@ const NULL_IDENTITY = {};
 
 const KEY: KeyFor = (_, index) => index;
 const INDEX: KeyFor = (_, index) => String(index);
-const PRIMITIVE: KeyFor = item => String(item);
 const IDENTITY: KeyFor = item => {
   if (item === null) {
     // Returning null as an identity will cause failures since the iterator
@@ -41,8 +40,6 @@ function makeKeyFor(key: string, getPath: (item: unknown, path: string) => any) 
       return uniqueKeyFor(KEY);
     case '@index':
       return uniqueKeyFor(INDEX);
-    case '@primitive':
-      return uniqueKeyFor(PRIMITIVE);
     case '@identity':
       return uniqueKeyFor(IDENTITY);
     default:
@@ -153,7 +150,7 @@ export class IterableImpl
   constructor(
     private parentRef: VersionedPathReference,
     private key: string,
-    private env: Environment
+    private env: TemplateReferenceEnvironment
   ) {
     this.tag = parentRef.tag;
   }

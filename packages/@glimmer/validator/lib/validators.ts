@@ -1,5 +1,6 @@
 import { DEBUG } from '@glimmer/env';
 import { UnionToIntersection, symbol } from './utils';
+import { assertTagNotConsumed } from './debug';
 
 //////////
 
@@ -110,7 +111,7 @@ const enum MonomorphicTagTypes {
 
 const TYPE: unique symbol = symbol('TAG_TYPE');
 
-export let ALLOW_CYCLES: WeakSet<Tag>;
+export let ALLOW_CYCLES: WeakSet<Tag> | undefined;
 
 if (DEBUG) {
   ALLOW_CYCLES = new WeakSet();
@@ -154,7 +155,7 @@ class MonomorphicTagImpl implements MonomorphicTag {
     let { lastChecked } = this;
 
     if (this.isUpdating === true) {
-      if (DEBUG && !ALLOW_CYCLES.has(this)) {
+      if (DEBUG && !ALLOW_CYCLES!.has(this)) {
         throw new Error('Cycles in tags are not allowed');
       }
 
@@ -210,7 +211,7 @@ class MonomorphicTagImpl implements MonomorphicTag {
     if (subtag === CONSTANT_TAG) {
       tag.subtag = null;
     } else {
-      if (DEBUG && tag.lastChecked === $REVISION && (subtag as MonomorphicTagImpl).lastValue > tag.lastValue) {
+      if (DEBUG && tag.lastChecked === $REVISION && (subtag as MonomorphicTagImpl)[COMPUTE]() > tag.lastValue) {
         throw new Error('BUG: attempted to update a tag with a tag that has a more recent revision as its value');
       }
 
@@ -224,6 +225,12 @@ class MonomorphicTagImpl implements MonomorphicTag {
       !(tag[TYPE] === MonomorphicTagTypes.Updatable || tag[TYPE] === MonomorphicTagTypes.Dirtyable)
     ) {
       throw new Error('Attempted to dirty a tag that was not dirtyable');
+    }
+
+    if (DEBUG) {
+      // Usually by this point, we've already asserted with better error information,
+      // but this is our last line of defense.
+      assertTagNotConsumed!(tag);
     }
 
     (tag as MonomorphicTagImpl).revision = ++$REVISION;
