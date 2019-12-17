@@ -75,6 +75,7 @@ export class EmberishGlimmerComponent {
   didInsertElement() {}
   didUpdate() {}
   didRender() {}
+  willDestroyElement() {}
 }
 
 export interface EmberishGlimmerComponentFactory
@@ -193,6 +194,9 @@ export class EmberishGlimmerComponentManager
 
   getDestructor({ component }: EmberishGlimmerComponentState): Destroyable {
     return {
+      willDestroy() {
+        component.willDestroyElement();
+      },
       destroy() {
         component.destroy();
       },

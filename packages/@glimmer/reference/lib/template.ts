@@ -17,6 +17,7 @@ import {
 } from '@glimmer/validator';
 import { VersionedPathReference } from './reference';
 import { DEBUG } from '@glimmer/env';
+import { IteratorDelegate } from './iterable-impl';
 
 export const UPDATE_REFERENCED_VALUE: unique symbol = symbol('UPDATE_REFERENCED_VALUE');
 
@@ -56,6 +57,8 @@ export interface TemplateReferenceEnvironment {
     desc: string,
     parentRef: Option<VersionedPathReference>
   ): void;
+
+  toIterator(obj: unknown): Option<IteratorDelegate>;
 }
 
 /**

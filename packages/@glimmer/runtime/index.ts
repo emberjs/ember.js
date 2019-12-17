@@ -56,7 +56,12 @@ export {
 } from './lib/render';
 export { SafeString } from './lib/upsert';
 export { InternalVM, UpdatingVM, VM as LowLevelVM } from './lib/vm';
-export { EMPTY_ARGS } from './lib/vm/arguments';
+export {
+  EMPTY_ARGS,
+  CapturedArgumentsImpl,
+  CapturedNamedArgumentsImpl,
+  CapturedPositionalArgumentsImpl,
+} from './lib/vm/arguments';
 export { AttributeOperation } from './lib/vm/attributes';
 export {
   DynamicAttribute,

@@ -1762,9 +1762,15 @@ QUnit.test('Glimmer component hooks (force recompute)', assert => {
 module('Teardown');
 
 QUnit.test('curly components are destroyed', function(assert) {
+  let willDestroy = 0;
   let destroyed = 0;
 
   class DestroyMeComponent extends EmberishCurlyComponent {
+    willDestroyElement() {
+      super.willDestroyElement();
+      willDestroy++;
+    }
+
     destroy() {
       super.destroy();
       destroyed++;
@@ -1780,10 +1786,12 @@ QUnit.test('curly components are destroyed', function(assert) {
 
   appendViewFor(`{{#if cond}}{{destroy-me}}{{/if}}`, { cond: true });
 
+  assert.strictEqual(willDestroy, 0, 'destroy should not be called');
   assert.strictEqual(destroyed, 0, 'destroy should not be called');
 
   view.rerender({ cond: false });
 
+  assert.strictEqual(willDestroy, 1, 'destroy should not be called');
   assert.strictEqual(destroyed, 1, 'destroy should be called exactly one');
 });
 
@@ -1865,7 +1873,7 @@ QUnit.test('components inside a list are destroyed', function(assert) {
     '<div>destroy me!</div>'
   );
 
-  appendViewFor(`{{#each list key='@primitive' as |item|}}<DestroyMe @item={{item}} />{{/each}}`, {
+  appendViewFor(`{{#each list as |item|}}<DestroyMe @item={{item}} />{{/each}}`, {
     list: [1, 2, 3, 4, 5],
   });
 
