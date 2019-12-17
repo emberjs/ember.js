@@ -22,6 +22,7 @@ export function asyncReset(parent: object, env: Environment) {
 }
 
 export function legacySyncDestroy(parent: object, env: Environment) {
+  // NOTE: This is LOCAL_DEBUG really, but we need to update it everywhere
   if (DEBUG) {
     console.log('legacySyncDestroy', parent, LINKED.get(parent));
   }

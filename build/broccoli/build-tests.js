@@ -83,11 +83,7 @@ function includeVendorDependencies() {
     include: ['*/dist/amd/es5/*.{js,map}'],
   });
 
-  let glimmerEnv = funnel('node_modules/@glimmer/env', {
-    include: ['dist/amd/es5/*.{js,map}'],
-  });
-
-  return concat(merge([transpiled, simpleDOM, glimmerEnv]), {
+  return concat(merge([transpiled, simpleDOM]), {
     inputFiles: ['**/*.js'],
     outputFile: 'assets/vendor.js',
   });

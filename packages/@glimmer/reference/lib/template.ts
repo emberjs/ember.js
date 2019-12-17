@@ -176,7 +176,7 @@ export class HelperRootReference<T = unknown> extends RootReference<T> {
   compute() {
     this.computeTag = track(() => {
       this.computeValue = this.fn(this.args);
-    }, DEBUG && `${this.env.getTemplatePathDebugContext(this)}`);
+    }, DEBUG && this.env.getTemplatePathDebugContext(this));
   }
 
   value(): T {
