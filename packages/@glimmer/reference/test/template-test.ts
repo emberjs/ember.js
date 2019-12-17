@@ -109,7 +109,7 @@ module('@glimmer/reference: template', () => {
         new (class extends TestEnv {
           setTemplatePathDebugContext(ref: TemplatePathReference, key: string) {
             assert.ok(ref instanceof HelperRootReference);
-            assert.equal(key, '(result of a `myHelper` helper)');
+            assert.ok(key.match(/result of a `.*` helper/));
           }
         })()
       );

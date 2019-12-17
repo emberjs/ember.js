@@ -294,7 +294,7 @@ module('@glimmer/validator: tracking', () => {
               });
             });
           });
-        }, /Error: You attempted to update `bar` on `\(an instance of Foo\)`/);
+        }, /Error: You attempted to update `bar` on `\(an instance of .*\)`/);
       });
     });
   }
