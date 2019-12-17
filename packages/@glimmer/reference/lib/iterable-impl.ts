@@ -1,6 +1,6 @@
 import { AbstractIterable, IterationItem, OpaqueIterator, OpaqueIterationItem } from './iterable';
 import { Tag } from '@glimmer/validator';
-import { Option, Dict, Environment } from '@glimmer/interfaces';
+import { Option, Dict } from '@glimmer/interfaces';
 import { EMPTY_ARRAY, isObject } from '@glimmer/util';
 import { DEBUG } from '@glimmer/local-debug-flags';
 import { IterationItemReference, TemplateReferenceEnvironment } from './template';

@@ -71,7 +71,6 @@ export function value(tag: Tag): Revision {
  * @param snapshot
  */
 export function validate(tag: Tag, snapshot: Revision) {
-
   if (DEBUG) {
     IS_VALIDATING = true;
   }
@@ -93,7 +92,6 @@ export function validate(tag: Tag, snapshot: Revision) {
 
 let IS_VALIDATING: boolean | undefined;
 
-
 //////////
 
 /**
@@ -111,10 +109,10 @@ const enum MonomorphicTagTypes {
 
 const TYPE: unique symbol = symbol('TAG_TYPE');
 
-export let ALLOW_CYCLES: WeakSet<Tag> | undefined;
+export let ALLOW_CYCLES: WeakMap<Tag, boolean> | undefined;
 
 if (DEBUG) {
-  ALLOW_CYCLES = new WeakSet();
+  ALLOW_CYCLES = new WeakMap();
 }
 
 interface MonomorphicTagBase<T extends MonomorphicTagTypes> extends Tag {
@@ -211,8 +209,14 @@ class MonomorphicTagImpl implements MonomorphicTag {
     if (subtag === CONSTANT_TAG) {
       tag.subtag = null;
     } else {
-      if (DEBUG && tag.lastChecked === $REVISION && (subtag as MonomorphicTagImpl)[COMPUTE]() > tag.lastValue) {
-        throw new Error('BUG: attempted to update a tag with a tag that has a more recent revision as its value');
+      if (
+        DEBUG &&
+        tag.lastChecked === $REVISION &&
+        (subtag as MonomorphicTagImpl)[COMPUTE]() > tag.lastValue
+      ) {
+        throw new Error(
+          'BUG: attempted to update a tag with a tag that has a more recent revision as its value'
+        );
       }
 
       tag.subtag = subtag;

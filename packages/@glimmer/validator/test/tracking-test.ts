@@ -216,7 +216,7 @@ module('@glimmer/validator: tracking', () => {
       });
 
       test('it ignores untrack for consumption', assert => {
-        assert.expect(0)
+        assert.expect(0);
         let tag = createTag();
 
         runInAutotrackingTransaction!(() => {
@@ -252,7 +252,7 @@ module('@glimmer/validator: tracking', () => {
         let originalConsoleWarn = console.warn;
         console.warn = () => {
           assert.ok(true);
-        }
+        };
 
         runInAutotrackingTransaction!(() => {
           track(() => {

@@ -59,20 +59,23 @@ class ObjectIterator extends BoundedIterator {
 }
 
 export class TestEnv implements TemplateReferenceEnvironment {
-
   getPath(obj: unknown, path: string) {
     return (obj as any)[path];
   }
 
   setPath(obj: unknown, path: string, value: unknown) {
-    return (obj as any)[path] = value;
+    return ((obj as any)[path] = value);
   }
 
   getTemplatePathDebugContext(_ref: TemplatePathReference) {
     return '';
   }
 
-  setTemplatePathDebugContext(_ref: TemplatePathReference, _key: string, _parentRef: Option<TemplatePathReference>) {}
+  setTemplatePathDebugContext(
+    _ref: TemplatePathReference,
+    _key: string,
+    _parentRef: Option<TemplatePathReference>
+  ) {}
 
   toIterator(obj: unknown) {
     if (typeof obj === 'object' && obj !== null) {

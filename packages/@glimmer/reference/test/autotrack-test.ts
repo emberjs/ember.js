@@ -209,11 +209,7 @@ QUnit.test('can track a computed property', assert => {
 
   count.value++;
   assert.strictEqual(first.value(), 'Tom1');
-  assert.equal(
-    validate(tag, snapshot),
-    false,
-    'updating the cell invalidates the tag'
-  );
+  assert.equal(validate(tag, snapshot), false, 'updating the cell invalidates the tag');
 
   obj.firstName = 'Edsger';
   assert.strictEqual(validate(tag, snapshot), false, 'tag is invalidated after property is set');
@@ -222,11 +218,7 @@ QUnit.test('can track a computed property', assert => {
   unrelatedBump(tag, snapshot);
 
   assert.strictEqual(obj.firstName, 'Edsger1');
-  assert.strictEqual(
-    validate(tag, snapshot),
-    true,
-    'tag is valid'
-  );
+  assert.strictEqual(validate(tag, snapshot), true, 'tag is valid');
   snapshot = value(tag);
 
   unrelatedBump(tag, snapshot);
