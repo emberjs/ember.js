@@ -2501,16 +2501,6 @@ module('[jit] integration - Updating', hooks => {
 
     equalTokens(context.root, '<ul><li>first!</li><li></li></ul>', 'After prepending list item');
 
-    // object = { list: ['', 'first!', '', 'first!'] };
-    // rerender(object);
-
-    // equalTokens(context.root, '<ul><li></li><li>first!</li><li></li><li>first!</li></ul>', 'After prepending list item');
-
-    // object = { list: ['', '', 'first!', '', 'first!'] };
-    // rerender(object);
-
-    // equalTokens(context.root, '<ul><li></li><li></li><li>first!</li><li></li><li>first!</li></ul>', 'After prepending list item');
-
     let newItems = getElementsByTagName(context.root, 'li');
     let newLastNode = newItems[newItems.length - 1];
 
