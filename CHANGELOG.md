@@ -1,5 +1,38 @@
 # Changelog
 
+
+## v0.45.0 (2019-12-18)
+
+#### :boom: Breaking Change
+* `@glimmer/integration-tests`, `@glimmer/interfaces`, `@glimmer/object-reference`, `@glimmer/object`, `@glimmer/opcode-compiler`, `@glimmer/reference`, `@glimmer/runtime`, `@glimmer/util`, `@glimmer/validator`
+  * [#993](https://github.com/glimmerjs/glimmer-vm/pull/993) [REFACTOR] Refactors while integrating with Ember ([@pzuraq](https://github.com/pzuraq))
+    * `@glimmer/runtime`
+      * Removed `DefaultEnvironment`
+      * `RuntimeEnvironmentDelegate` -> `EnvironmentDelegate`
+        * `iterable` -> `toIterator`, now returns an `IteratorDelegate`
+      * Changed `JitRuntime` creation methods to receive EnvironmentOptions instead
+        a `document` object
+      * Added `willDestroy` component capability. Should generally be avoided, it's
+        just for classic interop.
+    * `@glimmer/reference`
+      * Removed `MapReference`
+      * Removed `UpdatableReference`, replaced it with `UpdatableRootReference` and
+        `IterationItemReference`
+      * Most references now require the `env`
+      * Refactor property and root references generally, not a complete rewrite, but
+        large enough that embedders should really pay attention to that code and
+        will have to rewrite some things.
+      * Major changes
+    * `@glimmer/validator`
+      * Simplified `meta` implementation in general. `tagFor` and `dirtyTagFor` have
+        changed decently.
+      * Added assertions to tags to prevent incorrect usage
+
+#### Committers: 2
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
+- Robert Jackson ([@rwjblue](https://github.com/rwjblue))
+
+
 ## v0.44.0 (2019-11-08)
 
 #### :boom: Breaking Change
