@@ -1,115 +1,18 @@
-import {
-  BasicReference,
-  AbstractIterable,
-  Iterator,
-  IterationItem,
-  IterationArtifacts,
-  ReferenceIterator,
-  IteratorSynchronizer,
-  IteratorSynchronizerDelegate,
-  END,
-} from '@glimmer/reference';
-import { Tag, CURRENT_TAG } from '@glimmer/validator';
-import { UpdatableReference } from '@glimmer/object-reference';
+import { AbstractIterable, Iterator, IterationItem, IterationArtifacts } from '@glimmer/reference';
+import { Tag } from '@glimmer/validator';
+import { UpdatableRootReference } from '@glimmer/reference';
 
-import { Option, LinkedList, ListNode } from '@glimmer/util';
+import { Option } from '@glimmer/util';
+
+import {
+  initialize as utilInitialize,
+  sync,
+  shuffleArray,
+  getInitialArray,
+  Target,
+} from './utils/iterator';
 
 QUnit.module('Reference iterables');
-
-type IteratorAction = 'retain' | 'append' | 'insert' | 'move' | 'delete';
-type HistoryZip = [IteratorAction, any];
-class Target implements IteratorSynchronizerDelegate<null> {
-  private map = new Map<unknown, ListNode<BasicReference<unknown>>>();
-  private list = new LinkedList<ListNode<BasicReference<unknown>>>();
-  public tag = CURRENT_TAG;
-  public history: HistoryZip[] = [];
-
-  cleanHistory() {
-    this.history = [];
-  }
-
-  serializeHistory() {
-    return this.history.map((item: any) => item.join(':')).join(',');
-  }
-
-  get historyStats() {
-    const stats = {
-      retain: 0,
-      append: 0,
-      insert: 0,
-      move: 0,
-      delete: 0,
-    };
-    this.history.forEach(([key]: HistoryZip) => {
-      stats[key]++;
-    });
-    return stats;
-  }
-
-  retain(_env: null, key: unknown, item: BasicReference<unknown>) {
-    if (item !== this.map.get(key)!.value) {
-      throw new Error('unstable reference');
-    }
-    this.history.push(['retain', key]);
-  }
-
-  done() {}
-
-  append(key: unknown, item: BasicReference<unknown>) {
-    let node = new ListNode(item);
-    this.map.set(key, node);
-    this.list.append(node);
-    this.history.push(['append', key]);
-  }
-
-  insert(
-    _env: null,
-    key: unknown,
-    item: BasicReference<unknown>,
-    _: BasicReference<unknown>,
-    before: unknown
-  ) {
-    let referenceNode = before === END ? null : this.map.get(before);
-    let node = new ListNode(item);
-    this.map.set(key, node);
-    this.list.insertBefore(node, referenceNode);
-    this.history.push(['insert', key]);
-  }
-
-  move(
-    _env: null,
-    key: unknown,
-    item: BasicReference<unknown>,
-    _: BasicReference<unknown>,
-    before: unknown
-  ) {
-    let referenceNode = before === END ? null : this.map.get(before);
-    let node = this.map.get(key)!;
-
-    if (item !== node.value) {
-      throw new Error('unstable reference');
-    }
-
-    this.list.remove(node);
-    this.list.insertBefore(node, referenceNode);
-    this.history.push(['move', key]);
-  }
-
-  delete(_env: null, key: string) {
-    let node = this.map.get(key)!;
-    this.map.delete(key);
-    this.list.remove(node);
-    this.history.push(['delete', key]);
-  }
-
-  toArray(): BasicReference<unknown>[] {
-    return this.list.toArray().map(node => node.value);
-  }
-
-  toValues(): unknown[] {
-    return this.toArray().map(ref => ref.value());
-  }
-}
 
 interface TestItem {
   key: string;
@@ -159,13 +62,13 @@ class TestIterable
       unknown,
       unknown,
       IterationItem<unknown, unknown>,
-      UpdatableReference<unknown>,
-      UpdatableReference<unknown>
+      UpdatableRootReference<unknown>,
+      UpdatableRootReference<unknown>
     > {
   public tag: Tag;
-  private arrayRef: UpdatableReference<TestItem[]>;
+  private arrayRef: UpdatableRootReference<TestItem[]>;
 
-  constructor(arrayRef: UpdatableReference<TestItem[]>) {
+  constructor(arrayRef: UpdatableRootReference<TestItem[]>) {
     this.tag = arrayRef.tag;
     this.arrayRef = arrayRef;
   }
@@ -174,60 +77,35 @@ class TestIterable
     return new TestIterator(this.arrayRef.value());
   }
 
-  valueReferenceFor(item: TestIterationItem): UpdatableReference<unknown> {
-    return new UpdatableReference(item.value);
+  valueReferenceFor(item: TestIterationItem): UpdatableRootReference<unknown> {
+    return new UpdatableRootReference(item.value);
   }
 
-  updateValueReference(reference: UpdatableReference<unknown>, item: TestIterationItem) {
+  updateValueReference(reference: UpdatableRootReference<unknown>, item: TestIterationItem) {
     reference.update(item.value);
   }
 
-  memoReferenceFor(item: TestIterationItem): UpdatableReference<unknown> {
-    return new UpdatableReference(item.memo);
+  memoReferenceFor(item: TestIterationItem): UpdatableRootReference<unknown> {
+    return new UpdatableRootReference(item.memo);
   }
 
-  updateMemoReference(reference: UpdatableReference<unknown>, item: TestIterationItem) {
+  updateMemoReference(reference: UpdatableRootReference<unknown>, item: TestIterationItem) {
     reference.update(item.memo);
   }
 }
 
 function initialize(
   arr: TestItem[]
-): { artifacts: IterationArtifacts; target: Target; reference: UpdatableReference<TestItem[]> } {
-  let target = new Target();
-  let reference = new UpdatableReference(arr);
-  let iterator = new ReferenceIterator(new TestIterable(reference));
-  let item;
+): {
+  artifacts: IterationArtifacts;
+  target: Target;
+  reference: UpdatableRootReference<TestItem[]>;
+} {
+  let reference = new UpdatableRootReference(arr);
+  let iterable = new TestIterable(reference);
+  let { target, artifacts } = utilInitialize(iterable);
 
-  while ((item = iterator.next())) {
-    target.append(item.key, item.value);
-  }
-
-  return { reference, target, artifacts: iterator.artifacts };
-}
-
-function shuffleArray(array: any) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-}
-
-function getInitialArray(length = 10, firstItem = 0, namePrefix = 'i-') {
-  // Array.fill don't work in IE, going to Grow array manually.
-  const result = [];
-  for (let i = 0; i < length; i++) {
-    result.push({
-      key: String(i + firstItem),
-      name: `${namePrefix}${String(i + firstItem)}`,
-    });
-  }
-  return result;
-}
-
-function sync(target: Target, artifacts: IterationArtifacts) {
-  let synchronizer = new IteratorSynchronizer({ target, artifacts, env: null });
-  synchronizer.sync();
+  return { reference, target, artifacts };
 }
 
 QUnit.test('They provide a sequence of references with keys', assert => {

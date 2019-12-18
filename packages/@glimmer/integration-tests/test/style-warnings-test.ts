@@ -6,14 +6,14 @@ import {
   Environment,
   ElementBuilder,
 } from '@glimmer/interfaces';
-import { UpdatableReference } from '@glimmer/object-reference';
+import { UpdatableRootReference } from '@glimmer/object-reference';
 import {
   clientBuilder,
   DynamicAttribute,
   SimpleDynamicAttribute,
   dynamicAttribute,
   renderJitMain,
-  RuntimeEnvironmentDelegate,
+  EnvironmentDelegate,
 } from '@glimmer/runtime';
 import { AttrNamespace, SimpleElement } from '@simple-dom/interface';
 import { module, test } from './support';
@@ -34,7 +34,7 @@ function compile(template: string) {
   return out;
 }
 
-function commonSetup(delegate?: RuntimeEnvironmentDelegate) {
+function commonSetup(delegate?: EnvironmentDelegate) {
   context = JitTestContext(delegate);
   root = qunitFixture();
 }
@@ -51,7 +51,7 @@ function render(template: Template<AnnotatedModuleLocator>, self: any) {
   let templateIterator = renderJitMain(
     context.runtime,
     context.syntax,
-    new UpdatableReference(self),
+    new UpdatableRootReference(self),
     clientBuilder(context.env, cursor),
     unwrapHandle(handle)
   );

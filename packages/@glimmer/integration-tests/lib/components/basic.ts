@@ -11,7 +11,7 @@ import {
 } from '@glimmer/interfaces';
 import { TestComponentDefinitionState } from './test-component';
 import { unreachable, expect } from '@glimmer/util';
-import { VersionedPathReference, UpdatableReference } from '@glimmer/reference';
+import { VersionedPathReference, UpdatableRootReference } from '@glimmer/reference';
 import { Tag, CONSTANT_TAG } from '@glimmer/validator';
 import { unwrapTemplate } from '@glimmer/opcode-compiler';
 
@@ -61,7 +61,7 @@ export class BasicComponentManager
   }
 
   getSelf(component: BasicComponent): VersionedPathReference {
-    return new UpdatableReference(component);
+    return new UpdatableRootReference(component);
   }
 
   getTag(): Tag {

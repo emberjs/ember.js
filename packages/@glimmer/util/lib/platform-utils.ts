@@ -28,3 +28,8 @@ export function exhausted(value: never): never {
 export type Lit = string | number | boolean | undefined | null | void | {};
 
 export const tuple = <T extends Lit[]>(...args: T) => args;
+
+export const symbol =
+  typeof Symbol !== 'undefined'
+    ? Symbol
+    : (key: string) => `__${key}${Math.floor(Math.random() * Date.now())}__` as any;

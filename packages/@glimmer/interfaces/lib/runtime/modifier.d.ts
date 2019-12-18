@@ -2,7 +2,7 @@ import { VMArguments } from './arguments';
 import { DynamicScope } from './environment';
 import { GlimmerTreeChanges } from '../dom/changes';
 import { Tag } from '@glimmer/validator';
-import { Option, SymbolDestroyable, Unique, Destroyable } from '../core';
+import { Option, SymbolDestroyable, Destroyable } from '../core';
 import { SimpleElement } from '@simple-dom/interface';
 
 export interface ModifierManager<

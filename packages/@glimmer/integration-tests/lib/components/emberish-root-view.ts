@@ -1,7 +1,7 @@
 import { preprocess } from '../compile';
 import { JitRuntimeContext, SyntaxCompilationContext, Template, Option } from '@glimmer/interfaces';
 import { assertElement, firstElementChild } from '../dom/simple-utils';
-import { UpdatableReference } from '@glimmer/reference';
+import { UpdatableRootReference } from '@glimmer/reference';
 import { renderJitMain, clientBuilder } from '@glimmer/runtime';
 import { SimpleElement } from '@simple-dom/interface';
 import { assign } from '@glimmer/util';
@@ -23,7 +23,7 @@ export class EmberishRootView {
 
   appendTo(selector: string) {
     let element = assertElement(document.querySelector(selector) as SimpleElement);
-    let self = new UpdatableReference(this);
+    let self = new UpdatableRootReference(this);
     let cursor = { element, nextSibling: null };
 
     let handle = unwrapTemplate(this.template)

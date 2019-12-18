@@ -1,18 +1,6 @@
-import { DEBUG } from '@glimmer/local-debug-flags';
-
-//////////
-
-// utils
-type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends ((
-  k: infer I
-) => void)
-  ? I
-  : never;
-
-const symbol =
-  typeof Symbol !== 'undefined'
-    ? Symbol
-    : (key: string) => `__${key}${Math.floor(Math.random() * Date.now())}__` as any;
+import { DEBUG } from '@glimmer/env';
+import { UnionToIntersection, symbol } from './utils';
+import { assertTagNotConsumed } from './debug';
 
 //////////
 
@@ -62,7 +50,13 @@ export interface Tagged {
  *
  * @param tag
  */
-export function value(_tag: Tag): Revision {
+export function value(tag: Tag): Revision {
+  if (DEBUG) {
+    // compute to cache the latest value, which will prevent us from doing
+    // invalid updates later on.
+    tag[COMPUTE]();
+  }
+
   return $REVISION;
 }
 
@@ -77,8 +71,26 @@ export function value(_tag: Tag): Revision {
  * @param snapshot
  */
 export function validate(tag: Tag, snapshot: Revision) {
-  return snapshot >= tag[COMPUTE]();
+  if (DEBUG) {
+    IS_VALIDATING = true;
+  }
+
+  let isValid = snapshot >= tag[COMPUTE]();
+
+  if (DEBUG) {
+    IS_VALIDATING = false;
+
+    if (isValid) {
+      // compute to cache the latest value, which will prevent us from doing
+      // invalid updates later on.
+      tag[COMPUTE]();
+    }
+  }
+
+  return isValid;
 }
+
+let IS_VALIDATING: boolean | undefined;
 
 //////////
 
@@ -97,10 +109,10 @@ const enum MonomorphicTagTypes {
 
 const TYPE: unique symbol = symbol('TAG_TYPE');
 
-export let ALLOW_CYCLES: WeakSet<UpdatableTag>;
+export let ALLOW_CYCLES: WeakMap<Tag, boolean> | undefined;
 
 if (DEBUG) {
-  ALLOW_CYCLES = new WeakSet();
+  ALLOW_CYCLES = new WeakMap();
 }
 
 interface MonomorphicTagBase<T extends MonomorphicTagTypes> extends Tag {
@@ -140,9 +152,28 @@ class MonomorphicTagImpl implements MonomorphicTag {
   [COMPUTE](): Revision {
     let { lastChecked } = this;
 
-    if (lastChecked !== $REVISION) {
+    if (this.isUpdating === true) {
+      if (DEBUG && !ALLOW_CYCLES!.has(this)) {
+        throw new Error('Cycles in tags are not allowed');
+      }
+
+      this.lastChecked = ++$REVISION;
+    } else if (lastChecked !== $REVISION) {
       this.isUpdating = true;
-      this.lastChecked = $REVISION;
+
+      if (DEBUG) {
+        // In DEBUG, we don't cache while validating only, because it is valid
+        // update a tag between calling `validate()` and `value()`. Once you
+        // call `value()` on a tag, its revision is effectively locked in, and
+        // if you attempt to update it to a tag that is more recent it could
+        // break assumptions in our system. This is why the assertion exists in
+        // the static `update()` method below.
+        if (!IS_VALIDATING) {
+          this.lastChecked = $REVISION;
+        }
+      } else {
+        this.lastChecked = $REVISION;
+      }
 
       try {
         let { subtags, subtag, revision } = this;
@@ -164,14 +195,6 @@ class MonomorphicTagImpl implements MonomorphicTag {
       }
     }
 
-    if (this.isUpdating === true) {
-      if (DEBUG && !ALLOW_CYCLES.has(this)) {
-        throw new Error('Cycles in tags are not allowed');
-      }
-
-      this.lastChecked = ++$REVISION;
-    }
-
     return this.lastValue;
   }
 
@@ -186,13 +209,17 @@ class MonomorphicTagImpl implements MonomorphicTag {
     if (subtag === CONSTANT_TAG) {
       tag.subtag = null;
     } else {
-      tag.subtag = subtag;
+      if (
+        DEBUG &&
+        tag.lastChecked === $REVISION &&
+        (subtag as MonomorphicTagImpl)[COMPUTE]() > tag.lastValue
+      ) {
+        throw new Error(
+          'BUG: attempted to update a tag with a tag that has a more recent revision as its value'
+        );
+      }
 
-      // subtag could be another type of tag, e.g. CURRENT_TAG or VOLATILE_TAG.
-      // If so, lastChecked/lastValue will be undefined, result in these being
-      // NaN. This is fine, it will force the system to recompute.
-      tag.lastChecked = Math.min(tag.lastChecked, (subtag as any).lastChecked);
-      tag.lastValue = Math.max(tag.lastValue, (subtag as any).lastValue);
+      tag.subtag = subtag;
     }
   }
 
@@ -202,6 +229,12 @@ class MonomorphicTagImpl implements MonomorphicTag {
       !(tag[TYPE] === MonomorphicTagTypes.Updatable || tag[TYPE] === MonomorphicTagTypes.Dirtyable)
     ) {
       throw new Error('Attempted to dirty a tag that was not dirtyable');
+    }
+
+    if (DEBUG) {
+      // Usually by this point, we've already asserted with better error information,
+      // but this is our last line of defense.
+      assertTagNotConsumed!(tag);
     }
 
     (tag as MonomorphicTagImpl).revision = ++$REVISION;

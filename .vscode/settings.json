@@ -6,14 +6,13 @@
   "files.exclude": {
     "**/.DS_Store": true,
     "**/.git": true,
-    "**/dist/**": true,
-    "dist": true,
     "tmp/**": true
   },
   "files.watcherExclude": {
     "**/.git/objects/**": true,
     "**/.git/subtree-cache/**": true,
     "tmp": true,
+    "**/dist/**": true,
     "dist": true
   },
   "files.insertFinalNewline": true,

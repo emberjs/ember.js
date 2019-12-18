@@ -20,7 +20,7 @@ function link(dir) {
     if (isDirectory(dir) && !isSymlink(target)) {
       let source = dir;
 
-      // console.log(chalk.blue(source), '->', chalk.blue(target));
+      console.log(source, '->', target);
 
       try {
         fs.symlinkSync(source, target, 'junction');

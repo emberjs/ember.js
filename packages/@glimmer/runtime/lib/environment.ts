@@ -1,3 +1,4 @@
+import { DEBUG } from '@glimmer/env';
 import {
   Dict,
   Drop,
@@ -32,18 +33,18 @@ import {
   CompileTimeConstants,
   CompileTimeHeap,
   Macros,
+  Option,
 } from '@glimmer/interfaces';
 import {
   IterableImpl,
-  IterableKeyDefinitions,
   OpaqueIterable,
   PathReference,
-  Reference,
   VersionedPathReference,
   VersionedReference,
+  IteratorDelegate,
 } from '@glimmer/reference';
-import { assert, DROP, expect, Option } from '@glimmer/util';
-import { AttrNamespace, SimpleDocument, SimpleElement } from '@simple-dom/interface';
+import { assert, WILL_DROP, DID_DROP, expect, symbol } from '@glimmer/util';
+import { AttrNamespace, SimpleElement } from '@simple-dom/interface';
 import { DOMChangesImpl, DOMTreeConstruction } from './dom/helper';
 import { ConditionalReference, UNDEFINED_REFERENCE } from './references';
 import { DynamicAttribute, dynamicAttribute } from './vm/attributes/dynamic';
@@ -164,11 +165,9 @@ export class ScopeImpl<C extends JitOrAotBlock> implements PartialScope<C> {
   }
 }
 
-export const TRANSACTION: TransactionSymbol = 'TRANSACTION [c3938885-aba0-422f-b540-3fd3431c78b5]';
+export const TRANSACTION: TransactionSymbol = symbol('TRANSACTION');
 
 class TransactionImpl implements Transaction {
-  readonly [TRANSACTION]: Option<TransactionImpl>;
-
   public scheduledInstallManagers: ModifierManager[] = [];
   public scheduledInstallModifiers: unknown[] = [];
   public scheduledUpdateModifierManagers: ModifierManager[] = [];
@@ -199,6 +198,10 @@ class TransactionImpl implements Transaction {
     this.scheduledUpdateModifierManagers.push(manager);
   }
 
+  willDestroy(d: Drop) {
+    d[WILL_DROP]();
+  }
+
   didDestroy(d: Drop) {
     this.destructors.push(d);
   }
@@ -223,7 +226,7 @@ class TransactionImpl implements Transaction {
     let { destructors } = this;
 
     for (let i = 0; i < destructors.length; i++) {
-      destructors[i][DROP]();
+      destructors[i][DID_DROP]();
     }
 
     let { scheduledInstallManagers, scheduledInstallModifiers } = this;
@@ -244,29 +247,76 @@ class TransactionImpl implements Transaction {
   }
 }
 
-export type ToBool = (value: unknown) => boolean;
+function defaultDelegateFn(delegateFn: Function | undefined, delegateDefault: Function) {
+  let defaultFn = delegateFn !== undefined ? delegateFn : delegateDefault;
 
-function toBool(value: unknown): boolean {
-  return !!value;
+  if (DEBUG) {
+    // Bind to `null` in DEBUG since these methods are assumed to be pure
+    // functions, so we can reassign them.
+    return defaultFn.bind(null);
+  }
+
+  return defaultFn;
 }
 
-export abstract class EnvironmentImpl implements Environment {
+export class EnvironmentImpl<Extra> implements Environment<Extra> {
   [TRANSACTION]: Option<TransactionImpl> = null;
 
   protected updateOperations: GlimmerTreeChanges;
   protected appendOperations: GlimmerTreeConstruction;
 
-  constructor({ appendOperations, updateOperations }: EnvironmentOptions) {
-    this.appendOperations = appendOperations;
-    this.updateOperations = updateOperations;
+  // Delegate methods and values
+  public extra = this.delegate.extra!;
+  public isInteractive =
+    typeof this.delegate.isInteractive === 'boolean' ? this.delegate.isInteractive : true;
+
+  public protocolForURL = defaultDelegateFn(this.delegate.protocolForURL, defaultGetProtocolForURL);
+  public attributeFor = defaultDelegateFn(this.delegate.attributeFor, defaultAttributeFor);
+
+  public getPath = defaultDelegateFn(this.delegate.getPath, defaultGetPath);
+  public setPath = defaultDelegateFn(this.delegate.setPath, defaultSetPath);
+
+  public toBool = defaultDelegateFn(this.delegate.toBool, defaultToBool);
+  public toIterator = defaultDelegateFn(this.delegate.toIterator, defaultToIterator);
+
+  constructor(options: EnvironmentOptions, private delegate: EnvironmentDelegate<Extra>) {
+    if (options.appendOperations && options.updateOperations) {
+      this.appendOperations = options.appendOperations;
+      this.updateOperations = options.updateOperations;
+    } else if (options.document) {
+      this.appendOperations = new DOMTreeConstruction(options.document);
+      this.updateOperations = new DOMChangesImpl(options.document);
+    } else {
+      throw new Error('you must pass a document or append and update operations to a new runtime');
+    }
   }
 
-  toConditionalReference(reference: Reference): Reference<boolean> {
-    return new ConditionalReference(reference, toBool);
+  getTemplatePathDebugContext(ref: PathReference) {
+    if (this.delegate.getTemplatePathDebugContext !== undefined) {
+      return this.delegate.getTemplatePathDebugContext(ref);
+    }
+
+    return '';
   }
 
-  abstract iterableFor(reference: Reference, key: unknown): OpaqueIterable;
-  abstract protocolForURL(s: string): string;
+  setTemplatePathDebugContext(ref: PathReference, desc: string, parentRef: Option<PathReference>) {
+    if (this.delegate.setTemplatePathDebugContext !== undefined) {
+      this.delegate.setTemplatePathDebugContext(ref, desc, parentRef);
+    }
+  }
+
+  iterableFor(ref: VersionedPathReference, inputKey: unknown): OpaqueIterable {
+    // TODO: We should add an assertion here to verify that we are passed a
+    // TemplatePathReference, but we can only do that once we remove
+    // or significantly rewrite @glimmer/object-reference
+    let key = inputKey === null ? '@identity' : String(inputKey);
+
+    return new IterableImpl(ref, key, this);
+  }
+
+  toConditionalReference(input: VersionedPathReference): VersionedReference<boolean> {
+    return new ConditionalReference(input, this.delegate.toBool);
+  }
 
   getAppendOperations(): GlimmerTreeConstruction {
     return this.appendOperations;
@@ -280,6 +330,10 @@ export abstract class EnvironmentImpl implements Environment {
       !this[TRANSACTION],
       'A glimmer transaction was begun, but one already exists. You may have a nested transaction, possibly caused by an earlier runtime exception while rendering. Please check your console for the stack trace of any prior exceptions.'
     );
+
+    if (this.delegate.onTransactionBegin !== undefined) {
+      this.delegate.onTransactionBegin();
+    }
 
     this[TRANSACTION] = new TransactionImpl();
   }
@@ -297,11 +351,19 @@ export abstract class EnvironmentImpl implements Environment {
   }
 
   scheduleInstallModifier(modifier: unknown, manager: ModifierManager) {
-    this.transaction.scheduleInstallModifier(modifier, manager);
+    if (this.isInteractive) {
+      this.transaction.scheduleInstallModifier(modifier, manager);
+    }
   }
 
   scheduleUpdateModifier(modifier: unknown, manager: ModifierManager) {
-    this.transaction.scheduleUpdateModifier(modifier, manager);
+    if (this.isInteractive) {
+      this.transaction.scheduleUpdateModifier(modifier, manager);
+    }
+  }
+
+  willDestroy(d: Drop) {
+    this.transaction.willDestroy(d);
   }
 
   didDestroy(d: Drop) {
@@ -312,74 +374,153 @@ export abstract class EnvironmentImpl implements Environment {
     let transaction = this.transaction;
     this[TRANSACTION] = null;
     transaction.commit();
-  }
 
-  attributeFor(
-    element: SimpleElement,
-    attr: string,
-    _isTrusting: boolean,
-    namespace: Option<AttrNamespace> = null
-  ): DynamicAttribute {
-    return dynamicAttribute(element, attr, namespace);
+    if (this.delegate.onTransactionCommit !== undefined) {
+      this.delegate.onTransactionCommit();
+    }
   }
 }
 
-export interface RuntimeEnvironmentDelegate {
-  protocolForURL?(url: string): string;
-  iterable?: IterableKeyDefinitions;
+export interface EnvironmentDelegate<Extra = undefined> {
+  /**
+   * Used to determine the the environment is interactive (e.g. SSR is not
+   * interactive). Interactive environments schedule modifiers, among other things.
+   */
+  isInteractive?: boolean;
+
+  /**
+   * Hook to provide iterators for `{{each}}` loops
+   *
+   * @param value The value to create an iterator for
+   */
+  toIterator?(value: unknown): Option<IteratorDelegate>;
+
+  /**
+   * Hook to specify truthiness within Glimmer
+   *
+   * @param value The value to convert to a boolean
+   */
   toBool?(value: unknown): boolean;
+
+  /**
+   * Hook for specifying how Glimmer should access paths in cases where it needs
+   * to. For instance, the `key` value of `{{each}}` loops.
+   *
+   * @param obj The object provided to get a value from
+   * @param path The path to get the value from
+   */
+  getPath?(obj: unknown, path: string): unknown;
+
+  /**
+   * Hook for specifying how Glimmer should update paths in cases where it needs
+   * to. For instance, when updating a template reference (e.g. 2-way-binding)
+   *
+   * @param obj The object provided to get a value from
+   * @param path The path to set the value at
+   * @param value The value to set the value to
+   */
+  setPath?(obj: unknown, path: string, value: unknown): unknown;
+
+  /**
+   * Allows the embedding environment to provide debugging context at certain
+   * points during rendering. This is useful for making error messages that can
+   * display where the error occured.
+   *
+   * @param ref The reference to get context for
+   */
+  getTemplatePathDebugContext?(ref: VersionedPathReference): string;
+
+  /**
+   * Allows the embedding environment to setup debugging context at certain
+   * points during rendering. This is useful for making error messages that can
+   * display where the error occured.
+   *
+   * @param ref The reference to set context for
+   * @param desc The description for the reference
+   * @param parentRef The parent reference
+   */
+  setTemplatePathDebugContext?(
+    ref: VersionedPathReference,
+    desc: string,
+    parentRef: Option<VersionedPathReference>
+  ): void;
+
+  /**
+   * TODO
+   *
+   * @param url
+   */
+  protocolForURL?(url: string): string;
+
+  /**
+   * TODO
+   *
+   * @param element
+   * @param attr
+   * @param isTrusting
+   * @param namespace
+   */
   attributeFor?(
     element: SimpleElement,
     attr: string,
     isTrusting: boolean,
     namespace: Option<AttrNamespace>
   ): DynamicAttribute;
+
+  /**
+   * Slot for any extra values that the embedding environment wants to add,
+   * providing/passing around additional context to various users in the VM.
+   */
+  extra?: Extra;
+
+  /**
+   * Callback to be called when an environment transaction begins
+   */
+  onTransactionBegin?: () => void;
+
+  /**
+   * Callback to be called when an environment transaction commits
+   */
+  onTransactionCommit?: () => void;
 }
 
-export class RuntimeEnvironmentDelegateImpl implements RuntimeEnvironmentDelegate {
-  readonly toBool: (value: unknown) => boolean;
+function defaultGetProtocolForURL(url: string): string {
+  if (typeof URL === 'object' || typeof URL === 'undefined') {
+    return legacyProtocolForURL(url);
+  } else if (typeof document !== 'undefined') {
+    return new URL(url, document.baseURI).protocol;
+  } else {
+    return new URL(url, 'https://www.example.com').protocol;
+  }
+}
 
-  constructor(private inner: RuntimeEnvironmentDelegate = {}) {
-    if (inner.toBool) {
-      this.toBool = inner.toBool;
-    } else {
-      this.toBool = value => !!value;
-    }
+function defaultAttributeFor(
+  element: SimpleElement,
+  attr: string,
+  _isTrusting: boolean,
+  namespace: Option<AttrNamespace>
+): DynamicAttribute {
+  return dynamicAttribute(element, attr, namespace);
+}
+
+function defaultGetPath(obj: unknown, key: string): unknown {
+  return (obj as Dict)[key];
+}
+
+function defaultSetPath(obj: unknown, key: string, value: unknown): unknown {
+  return ((obj as Dict)[key] = value);
+}
+
+function defaultToBool(value: unknown) {
+  return Boolean(value);
+}
+
+function defaultToIterator(value: any): Option<IteratorDelegate> {
+  if (value && value[Symbol.iterator]) {
+    return value[Symbol.iterator]();
   }
 
-  protocolForURL(url: string): string {
-    if (this.inner.protocolForURL) {
-      return this.inner.protocolForURL(url);
-    } else if (typeof URL === 'object' || typeof URL === 'undefined') {
-      return legacyProtocolForURL(url);
-    } else if (typeof document !== 'undefined') {
-      return new URL(url, document.baseURI).protocol;
-    } else {
-      return new URL(url, 'https://www.example.com').protocol;
-    }
-  }
-
-  attributeFor(
-    element: SimpleElement,
-    attr: string,
-    isTrusting: boolean,
-    namespace: Option<AttrNamespace>
-  ): DynamicAttribute {
-    if (this.inner.attributeFor) {
-      return this.inner.attributeFor(element, attr, isTrusting, namespace);
-    } else {
-      return dynamicAttribute(element, attr, namespace);
-    }
-  }
-
-  readonly iterable: IterableKeyDefinitions = {
-    named: {
-      '@index': (_, index) => String(index),
-      '@primitive': item => String(item),
-      '@identity': item => item,
-    },
-    default: key => item => item[key],
-  };
+  return null;
 }
 
 function legacyProtocolForURL(url: string): string {
@@ -393,11 +534,10 @@ function legacyProtocolForURL(url: string): string {
   return anchor.protocol;
 }
 
-export class DefaultRuntimeResolver<R extends { module: string }>
-  implements JitRuntimeResolver<R>, AotRuntimeResolver {
-  constructor(private inner: RuntimeResolverDelegate) {}
+export class DefaultRuntimeResolver<R> implements JitRuntimeResolver<R>, AotRuntimeResolver {
+  constructor(private inner: RuntimeResolverDelegate<R>) {}
 
-  lookupComponent(name: string, referrer?: unknown): Option<any> {
+  lookupComponent(name: string, referrer?: R): Option<any> {
     if (this.inner.lookupComponent) {
       let component = this.inner.lookupComponent(name, referrer);
 
@@ -413,7 +553,7 @@ export class DefaultRuntimeResolver<R extends { module: string }>
     }
   }
 
-  lookupPartial(name: string, referrer?: unknown): Option<number> {
+  lookupPartial(name: string, referrer?: R): Option<number> {
     if (this.inner.lookupPartial) {
       let partial = this.inner.lookupPartial(name, referrer);
 
@@ -443,7 +583,7 @@ export class DefaultRuntimeResolver<R extends { module: string }>
     }
   }
 
-  compilable(locator: { module: string }): Template {
+  compilable(locator: R): Template {
     if (this.inner.compilable) {
       let resolved = this.inner.compilable(locator);
 
@@ -477,12 +617,12 @@ export class DefaultRuntimeResolver<R extends { module: string }>
 }
 
 export function AotRuntime(
-  document: SimpleDocument,
+  options: EnvironmentOptions,
   program: CompilerArtifacts,
   resolver: RuntimeResolverDelegate = {},
-  delegate: RuntimeEnvironmentDelegate = {}
+  delegate: EnvironmentDelegate = {}
 ): AotRuntimeContext {
-  let env = new RuntimeEnvironment(document, new RuntimeEnvironmentDelegateImpl(delegate));
+  let env = new EnvironmentImpl(options, delegate);
 
   return {
     env,
@@ -519,12 +659,12 @@ export function CustomJitRuntime(
   };
 }
 
-export function JitRuntime(
-  document: SimpleDocument,
-  resolver: RuntimeResolverDelegate = {},
-  delegate: RuntimeEnvironmentDelegate = {}
-): JitRuntimeContext {
-  let env = new RuntimeEnvironment(document, new RuntimeEnvironmentDelegateImpl(delegate));
+export function JitRuntime<R, E>(
+  options: EnvironmentOptions,
+  resolver: RuntimeResolverDelegate<R> = {},
+  delegate: EnvironmentDelegate<E> = {}
+): JitRuntimeContext<R, E> {
+  let env = new EnvironmentImpl(options, delegate);
 
   let constants = new Constants();
   let heap = new HeapImpl();
@@ -537,58 +677,19 @@ export function JitRuntime(
   };
 }
 
-export function JitRuntimeFromProgram(
-  document: SimpleDocument,
+export function JitRuntimeFromProgram<R, E>(
+  options: EnvironmentOptions,
   program: RuntimeProgram,
-  resolver: RuntimeResolverDelegate = {},
-  delegate: RuntimeEnvironmentDelegate = {}
-): JitRuntimeContext {
-  let env = new RuntimeEnvironment(document, new RuntimeEnvironmentDelegateImpl(delegate));
+  resolver: RuntimeResolverDelegate<R> = {},
+  delegate: EnvironmentDelegate<E> = {}
+): JitRuntimeContext<R, E> {
+  let env = new EnvironmentImpl(options, delegate);
 
   return {
     env,
     resolver: new DefaultRuntimeResolver(resolver),
     program,
   };
-}
-
-export class RuntimeEnvironment extends EnvironmentImpl {
-  private delegate: RuntimeEnvironmentDelegateImpl;
-
-  constructor(document: SimpleDocument, delegate: RuntimeEnvironmentDelegateImpl) {
-    super({
-      appendOperations: new DOMTreeConstruction(document),
-      updateOperations: new DOMChangesImpl(document),
-    });
-
-    this.delegate = new RuntimeEnvironmentDelegateImpl(delegate);
-  }
-
-  protocolForURL(url: string): string {
-    return this.delegate.protocolForURL(url);
-  }
-
-  iterableFor(ref: Reference, inputKey: unknown): OpaqueIterable {
-    let key = String(inputKey);
-    let def = this.delegate.iterable;
-
-    let keyFor = key in def.named ? def.named[key] : def.default(key);
-
-    return new IterableImpl(ref, keyFor);
-  }
-
-  toConditionalReference(input: VersionedPathReference): VersionedReference<boolean> {
-    return new ConditionalReference(input, this.delegate.toBool);
-  }
-
-  attributeFor(
-    element: SimpleElement,
-    attr: string,
-    isTrusting: boolean,
-    namespace: Option<AttrNamespace>
-  ): DynamicAttribute {
-    return this.delegate.attributeFor(element, attr, isTrusting, namespace);
-  }
 }
 
 export function inTransaction(env: Environment, cb: () => void): void {
@@ -601,19 +702,6 @@ export function inTransaction(env: Environment, cb: () => void): void {
     }
   } else {
     cb();
-  }
-}
-
-export abstract class DefaultEnvironment extends EnvironmentImpl {
-  constructor(options?: EnvironmentOptions) {
-    if (!options) {
-      let document = window.document as SimpleDocument;
-      let appendOperations = new DOMTreeConstruction(document);
-      let updateOperations = new DOMChangesImpl(document);
-      options = { appendOperations, updateOperations };
-    }
-
-    super(options);
   }
 }
 

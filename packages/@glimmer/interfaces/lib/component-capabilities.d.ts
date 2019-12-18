@@ -79,4 +79,10 @@ export default interface ComponentCapabilities {
    * the component is a "template only component"
    */
   createInstance: boolean;
+
+  /**
+   * Whether or not the component has a `willDestroy` hook that should fire
+   * prior to the component being removed from the DOM.
+   */
+  willDestroy: boolean;
 }

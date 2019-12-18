@@ -10,17 +10,18 @@ import {
 import { check, CheckNumber } from '@glimmer/debug';
 
 export const enum Capability {
-  DynamicLayout = 0b00000000001,
-  DynamicTag = 0b00000000010,
-  PrepareArgs = 0b00000000100,
-  CreateArgs = 0b00000001000,
-  AttributeHook = 0b00000010000,
-  ElementHook = 0b00000100000,
-  DynamicScope = 0b00001000000,
-  CreateCaller = 0b00010000000,
-  UpdateHook = 0b00100000000,
-  CreateInstance = 0b01000000000,
-  Wrapped = 0b10000000000,
+  DynamicLayout = 0b000000000001,
+  DynamicTag = 0b000000000010,
+  PrepareArgs = 0b000000000100,
+  CreateArgs = 0b000000001000,
+  AttributeHook = 0b000000010000,
+  ElementHook = 0b000000100000,
+  DynamicScope = 0b000001000000,
+  CreateCaller = 0b000010000000,
+  UpdateHook = 0b000100000000,
+  CreateInstance = 0b001000000000,
+  Wrapped = 0b010000000000,
+  WillDestroy = 0b100000000000,
 }
 
 /**
@@ -39,7 +40,8 @@ export function capabilityFlagsFrom(capabilities: ComponentCapabilities): Capabi
     (capabilities.createCaller ? Capability.CreateCaller : 0) |
     (capabilities.updateHook ? Capability.UpdateHook : 0) |
     (capabilities.createInstance ? Capability.CreateInstance : 0) |
-    (capabilities.wrapped ? Capability.Wrapped : 0)
+    (capabilities.wrapped ? Capability.Wrapped : 0) |
+    (capabilities.willDestroy ? Capability.WillDestroy : 0)
   );
 }
 
@@ -55,6 +57,7 @@ export interface CapabilityMap {
   [Capability.UpdateHook]: WithUpdateHook;
   [Capability.CreateInstance]: WithCreateInstance;
   [Capability.Wrapped]: ComponentManager;
+  [Capability.WillDestroy]: ComponentManager;
 }
 
 export function managerHasCapability<F extends keyof CapabilityMap>(

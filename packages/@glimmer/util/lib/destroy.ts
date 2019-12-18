@@ -1,6 +1,7 @@
 import { Maybe, SymbolDestroyable, Destroyable, DestroySymbol } from '@glimmer/interfaces';
+import { symbol } from './platform-utils';
 
-export const DESTROY: DestroySymbol = 'DESTROY [fc611582-3742-4845-88e1-971c3775e0b8]';
+export const DESTROY: DestroySymbol = symbol('DESTROY');
 
 export function isDestroyable(
   value: Maybe<object> | SymbolDestroyable
