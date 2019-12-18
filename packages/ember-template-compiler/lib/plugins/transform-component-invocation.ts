@@ -167,7 +167,10 @@ export default function transformComponentInvocation(env: ASTPluginEnvironment):
   };
 }
 
-function isInlineInvocation(node: AST.MustacheStatement, hasLocal: (k: string) => boolean): boolean {
+function isInlineInvocation(
+  node: AST.MustacheStatement,
+  hasLocal: (k: string) => boolean
+): boolean {
   let { path } = node;
   return isPath(path) && isIllegalName(path, hasLocal) && hasArguments(node);
 }

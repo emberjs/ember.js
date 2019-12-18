@@ -17,7 +17,9 @@ import { PartialDefinition, unwrapTemplate } from '@glimmer/opcode-compiler';
 import { getDynamicVar, ModifierDefinition } from '@glimmer/runtime';
 import { CurlyComponentDefinition } from './component-managers/curly';
 import { CustomManagerDefinition, ManagerDelegate } from './component-managers/custom';
-import InternalComponentManager, { InternalComponentDefinition } from './component-managers/internal';
+import InternalComponentManager, {
+  InternalComponentDefinition,
+} from './component-managers/internal';
 import { TemplateOnlyComponentDefinition } from './component-managers/template-only';
 import { isHelperFactory, isSimpleHelper } from './helper';
 import { default as componentAssertionHelper } from './helpers/-assert-implicit-component-helper-argument';
@@ -428,7 +430,7 @@ export default class RuntimeResolver implements JitRuntimeResolver<OwnedTemplate
   }
 
   private _lookupPartial(name: string, meta: OwnedTemplateMeta): PartialDefinition {
-    let owner = getTemplateMetaOwner(meta)
+    let owner = getTemplateMetaOwner(meta);
     let templateFactory = lookupPartial(name, owner);
     let template = templateFactory(owner);
 

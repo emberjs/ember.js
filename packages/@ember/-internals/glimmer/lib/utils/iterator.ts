@@ -101,7 +101,7 @@ class ArrayIterator extends BoundedIterator {
 
 class EmberArrayIterator extends BoundedIterator {
   static from(iterable: EmberArray<unknown>) {
-    return iterable.length > 0 ? new this(iterable): null;
+    return iterable.length > 0 ? new this(iterable) : null;
   }
 
   constructor(private array: EmberArray<unknown>) {

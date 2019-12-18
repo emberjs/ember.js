@@ -27,7 +27,12 @@ function transformInlineLinkToIntoBlockForm(
     'link-to',
     node.params.slice(1),
     node.hash,
-    b.blockItself([buildStatement(b, node.params[0], node.escaped, node.loc)], undefined, false, node.loc),
+    b.blockItself(
+      [buildStatement(b, node.params[0], node.escaped, node.loc)],
+      undefined,
+      false,
+      node.loc
+    ),
     null,
     node.loc
   );
@@ -126,7 +131,11 @@ function transformPositionalLinkToIntoNamedArguments(
     );
 
     pairs.push(
-      b.pair('query', b.sexpr(b.path('-hash', query.path.loc), [], query.hash, query.loc), query.loc)
+      b.pair(
+        'query',
+        b.sexpr(b.path('-hash', query.path.loc), [], query.hash, query.loc),
+        query.loc
+      )
     );
   }
 

@@ -49,7 +49,9 @@ export interface CapturedRenderNode {
 
 let GUID = 0;
 
-function isPathNode<T extends object>(node: RenderNode | InternalPathNode<T>): node is InternalPathNode<T> {
+function isPathNode<T extends object>(
+  node: RenderNode | InternalPathNode<T>
+): node is InternalPathNode<T> {
   return (
     node.type === 'root' ||
     node.type === 'argument' ||
@@ -202,7 +204,6 @@ export default class DebugRenderTree<Bucket extends object = object> {
 
         parent = this.pathNodes.get(parentRef)!;
       }
-
     }
 
     let pathNode: InternalPathNode<Bucket> = {

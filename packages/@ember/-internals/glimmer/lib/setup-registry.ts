@@ -6,11 +6,7 @@ import Input from './components/input';
 import LinkToComponent from './components/link-to';
 import TextField from './components/text-field';
 import TextArea from './components/textarea';
-import {
-  clientBuilder,
-  rehydrationBuilder,
-  serializeBuilder,
-} from './dom';
+import { clientBuilder, rehydrationBuilder, serializeBuilder } from './dom';
 import loc from './helpers/loc';
 import { InertRenderer, InteractiveRenderer } from './renderer';
 import ComponentTemplate from './templates/component';

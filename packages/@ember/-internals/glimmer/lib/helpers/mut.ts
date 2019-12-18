@@ -91,7 +91,7 @@ const SOURCE: unique symbol = symbol('SOURCE') as any;
 
 class MutReference extends RootReference {
   public tag: Tag;
-  public [SOURCE]: VersionedPathReference
+  public [SOURCE]: VersionedPathReference;
 
   constructor(protected inner: VersionedPathReference, env: Environment) {
     super(env);

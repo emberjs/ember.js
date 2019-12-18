@@ -2,11 +2,7 @@ import { privatize as P } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
 import { getOwner } from '@ember/-internals/owner';
 import { guidFor } from '@ember/-internals/utils';
-import {
-  addChildView,
-  setElementView,
-  setViewElement,
-} from '@ember/-internals/views';
+import { addChildView, setElementView, setViewElement } from '@ember/-internals/views';
 import { assert, debugFreeze } from '@ember/debug';
 import { EMBER_COMPONENT_IS_VISIBLE } from '@ember/deprecated-features';
 import { _instrumentStart } from '@ember/instrumentation';
@@ -67,7 +63,7 @@ function applyAttributeBindings(
   component: Component,
   rootRef: RootReference<Component>,
   operations: ElementOperations,
-  environment: EmberVMEnvironment,
+  environment: EmberVMEnvironment
 ) {
   let seen: string[] = [];
   let i = attributeBindings.length - 1;
@@ -171,7 +167,7 @@ export default class CurlyComponentManager
         positional: EMPTY_POSITIONAL_ARGS,
         named: {
           ...rest,
-          ...__ARGS__.value() as { [key: string]: VersionedPathReference<unknown> },
+          ...(__ARGS__.value() as { [key: string]: VersionedPathReference<unknown> }),
         },
       };
 

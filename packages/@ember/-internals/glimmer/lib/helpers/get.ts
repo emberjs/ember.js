@@ -1,7 +1,11 @@
 import { get as emberGet, set as emberSet } from '@ember/-internals/metal';
 import { isObject } from '@ember/-internals/utils';
 import { CapturedArguments, Environment, VM, VMArguments } from '@glimmer/interfaces';
-import { HelperRootReference, UPDATE_REFERENCED_VALUE, VersionedPathReference } from '@glimmer/reference';
+import {
+  HelperRootReference,
+  UPDATE_REFERENCED_VALUE,
+  VersionedPathReference,
+} from '@glimmer/reference';
 import { NULL_REFERENCE } from '@glimmer/runtime';
 import { isConst } from '@glimmer/validator';
 import { referenceFromParts } from '../utils/references';
@@ -123,13 +127,10 @@ function get({ positional }: CapturedArguments) {
 }
 
 class GetHelperRootReference extends HelperRootReference {
-  private sourceReference: VersionedPathReference<object>
-  private pathReference: VersionedPathReference<string>
+  private sourceReference: VersionedPathReference<object>;
+  private pathReference: VersionedPathReference<string>;
 
-  constructor(
-    args: CapturedArguments,
-    env: Environment
-  ) {
+  constructor(args: CapturedArguments, env: Environment) {
     super(get, args, env);
     this.sourceReference = args.positional.at(0);
     this.pathReference = args.positional.at(1);

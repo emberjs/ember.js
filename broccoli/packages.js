@@ -230,17 +230,6 @@ function rollupGlimmerPackage(pkg) {
           file: name + '.js',
           format: 'es',
         },
-        // plugins: [{
-        //   resolveId(id) {
-        //     if (pkg.name === '@glimmer/opcode-compiler') {
-        //       if (id === '@glimmer/compiler') {
-        //         return require.resolve('./glimmer-compiler-stub');
-        //       } else if (id === '@glimmer/bundle-compiler') {
-        //         return require.resolve('./glimmer-bundle-compiler-stub');
-        //       }
-        //     }
-        //   }
-        // }]
       },
       annotation: name,
     });
@@ -265,7 +254,7 @@ function glimmerTrees(entries) {
     }
     seen.add(name);
 
-    if (!name.startsWith('@glimmer/') && !name.startsWith("@simple-dom/")) {
+    if (!name.startsWith('@glimmer/') && !name.startsWith('@simple-dom/')) {
       continue;
     }
 
@@ -295,7 +284,12 @@ module.exports.glimmerCompilerES = () => {
 };
 
 module.exports.glimmerES = function glimmerES(environment) {
-  let glimmerEntries = ['@glimmer/node', '@simple-dom/document', '@glimmer/opcode-compiler', '@glimmer/runtime'];
+  let glimmerEntries = [
+    '@glimmer/node',
+    '@simple-dom/document',
+    '@glimmer/opcode-compiler',
+    '@glimmer/runtime',
+  ];
 
   if (environment === 'development') {
     let hasGlimmerDebug = true;

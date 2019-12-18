@@ -57,16 +57,10 @@ function inlineAssertMessage(original: string) {
 
 function isInvalidInlineIf(path: AST.PathExpression, params: AST.Expression[]) {
   return (
-    isPath(path) &&
-    path.original === 'if' &&
-    (!params || params.length < 2 || params.length > 3)
+    isPath(path) && path.original === 'if' && (!params || params.length < 2 || params.length > 3)
   );
 }
 
 function isInvalidBlockIf(path: AST.PathExpression, params: AST.Expression[]) {
-  return (
-    isPath(path) &&
-    path.original === 'if' &&
-    (!params || params.length !== 1)
-  );
+  return isPath(path) && path.original === 'if' && (!params || params.length !== 1);
 }

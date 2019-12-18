@@ -5,7 +5,11 @@ import { constructStyleDeprecationMessage } from '@ember/-internals/views';
 import { warn } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { ElementBuilder, Environment, Option } from '@glimmer/interfaces';
-import { IterationItemReference, PropertyReference, VersionedPathReference } from '@glimmer/reference';
+import {
+  IterationItemReference,
+  PropertyReference,
+  VersionedPathReference,
+} from '@glimmer/reference';
 import {
   DynamicAttribute,
   dynamicAttribute,
@@ -94,7 +98,11 @@ export class EmberEnvironmentDelegate implements EnvironmentDelegate<EmberEnviro
     return `While rendering:\n\n${stack}`;
   }
 
-  setTemplatePathDebugContext(pathRef: VersionedPathReference, desc: string, parentRef: Option<VersionedPathReference>) {
+  setTemplatePathDebugContext(
+    pathRef: VersionedPathReference,
+    desc: string,
+    parentRef: Option<VersionedPathReference>
+  ) {
     let type: PathNodeType = 'root';
 
     if (pathRef instanceof IterationItemReference) {

@@ -279,14 +279,17 @@ export abstract class Renderer {
     this._builder = builder;
 
     // resolver is exposed for tests
-    let runtimeResolver = this._runtimeResolver = new RuntimeResolver(env.isInteractive);
+    let runtimeResolver = (this._runtimeResolver = new RuntimeResolver(env.isInteractive));
     let compileTimeResolver = new CompileTimeResolver(runtimeResolver);
 
     this._context = JitContext(compileTimeResolver);
 
     populateMacros(this._context.macros);
 
-    let program = new RuntimeProgramImpl(this._context.program.constants, this._context.program.heap);
+    let program = new RuntimeProgramImpl(
+      this._context.program.constants,
+      this._context.program.heap
+    );
 
     let runtimeEnvironmentDelegate = new EmberEnvironmentDelegate(owner, env.isInteractive);
 

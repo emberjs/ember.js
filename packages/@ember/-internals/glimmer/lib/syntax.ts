@@ -31,7 +31,11 @@ function refineInlineSyntax(
   let component = context.resolver.lookupComponent(name, context.meta.referrer);
 
   if (component !== null) {
-    return staticComponent(component, [params === null ? [] : params, hashToArgs(hash), EMPTY_BLOCKS]);
+    return staticComponent(component, [
+      params === null ? [] : params,
+      hashToArgs(hash),
+      EMPTY_BLOCKS,
+    ]);
   }
 
   return UNHANDLED;
@@ -52,7 +56,9 @@ function refineBlockSyntax(
 
   assert(
     `A component or helper named "${name}" could not be found`,
-    getTemplateMetaOwner(context.meta.referrer as OwnedTemplateMeta).hasRegistration(`helper:${name}`)
+    getTemplateMetaOwner(context.meta.referrer as OwnedTemplateMeta).hasRegistration(
+      `helper:${name}`
+    )
   );
 
   assert(
@@ -60,7 +66,7 @@ function refineBlockSyntax(
     !(() => {
       const resolver = context.resolver['inner']['resolver'];
       const { moduleName } = context.meta.referrer as OwnedTemplateMeta;
-      const owner = getTemplateMetaOwner(context.meta.referrer as OwnedTemplateMeta)
+      const owner = getTemplateMetaOwner(context.meta.referrer as OwnedTemplateMeta);
       if (name === 'component' || resolver['builtInHelpers'][name]) {
         return true;
       }

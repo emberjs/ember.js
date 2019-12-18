@@ -1,14 +1,12 @@
 import { EMBER_ROUTING_MODEL_ARG } from '@ember/canary-features';
 import { DEBUG } from '@glimmer/env';
+import { CapturedArguments, Dict, Option, unsafe, VM, VMArguments } from '@glimmer/interfaces';
 import {
-  CapturedArguments,
-  Dict,
-  Option,
-  unsafe,
-  VM,
-  VMArguments,
-} from '@glimmer/interfaces';
-import { ConstReference, Reference, RootReference, VersionedPathReference } from '@glimmer/reference';
+  ConstReference,
+  Reference,
+  RootReference,
+  VersionedPathReference,
+} from '@glimmer/reference';
 import {
   CurriedComponentDefinition,
   curry,
@@ -155,7 +153,10 @@ class OutletComponentReference
   }
 }
 
-function makeArgs(outletRef: VersionedPathReference<OutletState | undefined>, env: EmberVMEnvironment): CapturedArguments {
+function makeArgs(
+  outletRef: VersionedPathReference<OutletState | undefined>,
+  env: EmberVMEnvironment
+): CapturedArguments {
   let tag = outletRef.tag;
   let modelRef = new OutletModelReference(outletRef, env);
   let map = dict<VersionedPathReference>();

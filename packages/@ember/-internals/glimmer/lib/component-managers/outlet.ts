@@ -14,9 +14,9 @@ import {
   VMArguments,
   WithDynamicTagName,
   WithJitStaticLayout,
- } from '@glimmer/interfaces';
- import { unwrapTemplate } from '@glimmer/opcode-compiler';
- import { ComponentRootReference, VersionedPathReference } from '@glimmer/reference';
+} from '@glimmer/interfaces';
+import { unwrapTemplate } from '@glimmer/opcode-compiler';
+import { ComponentRootReference, VersionedPathReference } from '@glimmer/reference';
 import { EMPTY_ARGS } from '@glimmer/runtime';
 import { CONSTANT_TAG, createTag, Tag } from '@glimmer/validator';
 
@@ -66,12 +66,7 @@ const CAPABILITIES: ComponentCapabilities = {
 };
 
 class OutletComponentManager extends AbstractManager<OutletInstanceState, OutletDefinitionState>
-  implements
-    WithJitStaticLayout<
-      OutletInstanceState,
-      OutletDefinitionState,
-      RuntimeResolver
-    > {
+  implements WithJitStaticLayout<OutletInstanceState, OutletDefinitionState, RuntimeResolver> {
   create(
     environment: EmberVMEnvironment,
     definition: OutletDefinitionState,
@@ -218,7 +213,8 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
 const OUTLET_MANAGER = new OutletComponentManager();
 
 export class OutletComponentDefinition
-  implements ComponentDefinition<OutletDefinitionState, OutletInstanceState, OutletComponentManager> {
+  implements
+    ComponentDefinition<OutletDefinitionState, OutletInstanceState, OutletComponentManager> {
   constructor(
     public state: OutletDefinitionState,
     public manager: OutletComponentManager = OUTLET_MANAGER

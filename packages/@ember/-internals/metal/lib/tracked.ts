@@ -148,7 +148,7 @@ function descriptorForField([_target, key, desc]: [
     !desc || (!desc.value && !desc.get && !desc.set)
   );
 
-  let { getter, setter } = trackedData<any, any>(key, desc ? desc.initializer : undefined)
+  let { getter, setter } = trackedData<any, any>(key, desc ? desc.initializer : undefined);
 
   return {
     enumerable: true,

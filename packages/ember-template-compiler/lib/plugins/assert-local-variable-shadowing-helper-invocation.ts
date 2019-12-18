@@ -62,7 +62,7 @@ export default function assertLocalVariableShadowingHelperInvocation(
 }
 
 function isLocalVariable(node: AST.PathExpression, hasLocal: (k: string) => boolean): boolean {
-  return !node.this && node.parts.length === 1 && hasLocal(node.parts[0])
+  return !node.this && node.parts.length === 1 && hasLocal(node.parts[0]);
 }
 
 function messageFor(name: string, type: string): string {

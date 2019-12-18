@@ -9,12 +9,7 @@ import {
   WithJitDynamicLayout,
 } from '@glimmer/interfaces';
 import { ComponentRootReference, VersionedPathReference } from '@glimmer/reference';
-import {
-  CONSTANT_TAG,
-  createTag,
-  isConstTag,
-  Tag,
-} from '@glimmer/validator';
+import { CONSTANT_TAG, createTag, isConstTag, Tag } from '@glimmer/validator';
 
 import { generateControllerFactory } from '@ember/-internals/routing';
 import { EMBER_ROUTING_MODEL_ARG } from '@ember/canary-features';

@@ -29,11 +29,11 @@ export function trackLocals() {
           locals.set(param, value);
         }
       }
-    }
+    },
   };
 
   return {
     hasLocal: (key: string) => locals.has(key),
-    node
+    node,
   };
 }

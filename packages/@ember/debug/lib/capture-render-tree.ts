@@ -24,7 +24,7 @@ export default function captureRenderTree(app: Owner): CapturedRenderNode[] {
     'BUG: owner is missing -environment:main'
   );
 
-  let rendererType = env.isInteractive ? 'renderer:-dom' : 'renderer:-inert'
+  let rendererType = env.isInteractive ? 'renderer:-dom' : 'renderer:-inert';
 
   let renderer = expect(
     app.lookup<Renderer>(rendererType),

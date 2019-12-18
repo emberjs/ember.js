@@ -70,7 +70,12 @@ export default function transformInElement(env: ASTPluginEnvironment): ASTPlugin
           let hash = node.hash;
           hash.pairs.forEach(pair => {
             if (pair.key === 'insertBefore') {
-              assert(`Can only pass a null literal to insertBefore in -in-element, received: ${JSON.stringify(pair.value)}`, pair.value.type === 'NullLiteral');
+              assert(
+                `Can only pass a null literal to insertBefore in -in-element, received: ${JSON.stringify(
+                  pair.value
+                )}`,
+                pair.value.type === 'NullLiteral'
+              );
 
               hasInsertBefore = true;
             }

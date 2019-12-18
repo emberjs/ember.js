@@ -10,11 +10,14 @@ import {
 } from '@glimmer/interfaces';
 import RuntimeResolver from './resolver';
 
-interface StaticComponentManager extends
-  WithJitStaticLayout<unknown, unknown, RuntimeResolver>,
-  ComponentManager<unknown, unknown> {}
+interface StaticComponentManager
+  extends WithJitStaticLayout<unknown, unknown, RuntimeResolver>,
+    ComponentManager<unknown, unknown> {}
 
-function isStaticComponentManager(_manager: ComponentManager, capabilities: ComponentCapabilities): _manager is StaticComponentManager {
+function isStaticComponentManager(
+  _manager: ComponentManager,
+  capabilities: ComponentCapabilities
+): _manager is StaticComponentManager {
   return !capabilities.dynamicLayout;
 }
 
@@ -36,7 +39,9 @@ export default class CompileTimeResolver implements CompileTimeResolverDelegate<
       return null;
     }
 
-    const { manager, state } = this.resolver.resolve<ComponentDefinition<unknown, unknown>>(definitionHandle);
+    const { manager, state } = this.resolver.resolve<ComponentDefinition<unknown, unknown>>(
+      definitionHandle
+    );
     const capabilities = manager.getCapabilities(state);
 
     if (!isStaticComponentManager(manager, capabilities)) {

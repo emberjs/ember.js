@@ -1,5 +1,11 @@
 import { meta as metaFor } from '@ember/-internals/meta';
-import { getDebugName, isObject, setupMandatorySetter, symbol, toString } from '@ember/-internals/utils';
+import {
+  getDebugName,
+  isObject,
+  setupMandatorySetter,
+  symbol,
+  toString,
+} from '@ember/-internals/utils';
 import { assert, deprecate } from '@ember/debug';
 import { backburner } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
@@ -27,7 +33,7 @@ if (DEBUG) {
     deprecate(message) {
       deprecate(message, false, {
         id: 'autotracking.mutation-after-consumption',
-        until: '4.0.0'
+        until: '4.0.0',
       });
     },
 

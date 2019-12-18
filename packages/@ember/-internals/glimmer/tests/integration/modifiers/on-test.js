@@ -1,6 +1,5 @@
 import { moduleFor, RenderingTestCase, runTask } from 'internal-test-helpers';
 import { isChrome, isFirefox } from '@ember/-internals/browser-environment';
-import { privatize as P } from '@ember/-internals/container';
 import { HAS_NATIVE_PROXY } from '@ember/-internals/utils';
 
 import { Component } from '../../utils/helpers';
