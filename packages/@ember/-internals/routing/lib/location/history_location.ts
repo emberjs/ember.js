@@ -50,6 +50,8 @@ function _uuid() {
 */
 export default class HistoryLocation extends EmberObject implements EmberLocation {
   implementation = 'history';
+  _previousURL?: string;
+  _popstateHandler?: EventListener;
 
   /**
     Will be pre-pended to path upon state change

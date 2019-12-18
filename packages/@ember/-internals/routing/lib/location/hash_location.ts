@@ -38,6 +38,7 @@ import { getHash } from './util';
 */
 export default class HashLocation extends EmberObject implements EmberLocation {
   implementation = 'hash';
+  _hashchangeHandler?: EventListener;
 
   init() {
     set(this, 'location', this._location || window.location);
@@ -135,7 +136,7 @@ export default class HashLocation extends EmberObject implements EmberLocation {
       callback(path);
     });
 
-    window.addEventListener('hashchange', this._hashchangeHandler);
+    window.addEventListener('hashchange', this._hashchangeHandler!);
   }
 
   /**

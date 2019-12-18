@@ -90,8 +90,15 @@ export function hasDefaultSerialize(route: Route) {
 
 class Route extends EmberObject implements IRoute {
   routeName!: string;
-  _internalName!: string;
+  fullRouteName!: string;
   context: {} = {};
+  controller!: Controller;
+  currentModel: unknown;
+
+  _internalName!: string;
+  _names: unknown;
+
+
   serialize!: (model: {}, params: string[]) => object | undefined;
 
   _router!: EmberRouter;
@@ -133,7 +140,7 @@ class Route extends EmberObject implements IRoute {
   */
   _setRouteName(name: string) {
     this.routeName = name;
-    this.fullRouteName = getEngineRouteName(getOwner(this), name);
+    this.fullRouteName = getEngineRouteName(getOwner(this), name)!;
   }
 
   /**
@@ -250,7 +257,7 @@ class Route extends EmberObject implements IRoute {
     let state = transition ? transition[STATE_SYMBOL] : this._router._routerMicrolib.state;
 
     let fullName = route.fullRouteName;
-    let params = assign({}, state!.params[fullName]);
+    let params = assign({}, state!.params[fullName!]);
     let queryParams = getQueryParamsFor(route, state!);
 
     return Object.keys(queryParams).reduce((params, key) => {
@@ -361,7 +368,7 @@ class Route extends EmberObject implements IRoute {
   */
   _internalReset(isExiting: boolean, transition: Transition) {
     let controller = this.controller;
-    controller._qpDelegate = get(this, '_qp.states.inactive');
+    controller['_qpDelegate'] = get(this, '_qp.states.inactive');
 
     this.resetController(controller, isExiting, transition);
   }
@@ -2598,7 +2605,7 @@ Route.reopen(ActionHandler, Evented, {
       qpMeta.qps.forEach((qp: QueryParam) => {
         let routeQpMeta = get(qp.route, '_qp');
         let finalizedController = qp.route.controller;
-        finalizedController._qpDelegate = get(routeQpMeta, 'states.active');
+        finalizedController['_qpDelegate'] = get(routeQpMeta, 'states.active');
       });
 
       router._qpUpdates.clear();

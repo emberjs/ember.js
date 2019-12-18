@@ -23,6 +23,9 @@
     "noEmit": true,
     "allowJs": false,
 
+    // TODO: remove this once router_js types have been fixed
+    "skipLibCheck": true,
+
     "paths": {
       "@glimmer/*": ["../node_modules/@glimmer/*"]
     }

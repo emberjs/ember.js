@@ -16,7 +16,7 @@ import {
   WithJitStaticLayout,
 } from '@glimmer/interfaces';
 import { unwrapTemplate } from '@glimmer/opcode-compiler';
-import { PathReference, ComponentRootReference } from '@glimmer/reference';
+import { ComponentRootReference, PathReference } from '@glimmer/reference';
 import { consume, createTag, isConst, Tag } from '@glimmer/validator';
 
 import { ENV } from '@ember/-internals/environment';
