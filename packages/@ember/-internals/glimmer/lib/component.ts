@@ -13,10 +13,10 @@ import {
 } from '@ember/-internals/views';
 import { assert, deprecate } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
+import { UPDATE_REFERENCED_VALUE } from '@glimmer/reference';
 import { normalizeProperty } from '@glimmer/runtime';
 import { createTag, dirty } from '@glimmer/validator';
 import { Namespace } from '@simple-dom/interface';
-import { UPDATE_REFERENCED_VALUE } from '@glimmer/reference';
 
 export const DIRTY_TAG = symbol('DIRTY_TAG');
 export const ARGS = symbol('ARGS');

@@ -98,7 +98,6 @@ class Route extends EmberObject implements IRoute {
   _internalName!: string;
   _names: unknown;
 
-
   serialize!: (model: {}, params: string[]) => object | undefined;
 
   _router!: EmberRouter;

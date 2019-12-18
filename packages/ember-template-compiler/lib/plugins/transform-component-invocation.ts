@@ -128,7 +128,6 @@ export default function transformComponentInvocation(env: ASTPluginEnvironment):
 
   let { hasLocal, node } = trackLocals();
 
-
   let isAttrs = false;
 
   return {

@@ -4,7 +4,7 @@
 import { Environment, VM, VMArguments } from '@glimmer/interfaces';
 import { RootReference, VersionedPathReference } from '@glimmer/reference';
 import { Tag } from '@glimmer/validator';
-import { unMut, INVOKE } from './mut';
+import { INVOKE, unMut } from './mut';
 
 /**
   The `readonly` helper let's you specify that a binding is one-way only,

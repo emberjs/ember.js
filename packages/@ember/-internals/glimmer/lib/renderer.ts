@@ -262,7 +262,6 @@ export abstract class Renderer {
 
   readonly _runtimeResolver: RuntimeResolver;
 
-
   constructor(
     owner: Owner,
     document: SimpleDocument,

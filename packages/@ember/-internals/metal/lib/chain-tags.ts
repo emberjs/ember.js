@@ -1,11 +1,18 @@
 import { meta as metaFor, peekMeta } from '@ember/-internals/meta';
 import { assert, deprecate } from '@ember/debug';
-import { combine, createUpdatableTag, Tag, update, validate, ALLOW_CYCLES } from '@glimmer/validator';
+import { DEBUG } from '@glimmer/env';
+import {
+  ALLOW_CYCLES,
+  combine,
+  createUpdatableTag,
+  Tag,
+  update,
+  validate,
+} from '@glimmer/validator';
 import { objectAt } from './array';
 import { getLastRevisionFor, peekCacheFor } from './computed_cache';
 import { descriptorForProperty } from './descriptor_map';
 import { tagForProperty } from './tags';
-import { DEBUG } from '@glimmer/env';
 
 export const ARGS_PROXY_TAGS = new WeakMap();
 
