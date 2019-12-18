@@ -1,5 +1,5 @@
 import { Dict, Maybe, Option, RenderResult } from '@glimmer/interfaces';
-import { UpdatableReference } from '@glimmer/reference';
+import { UpdatableRootReference } from '@glimmer/reference';
 import { bump, isConst } from '@glimmer/validator';
 import { clearElement, dict, expect, assign } from '@glimmer/util';
 import { SimpleElement, SimpleNode } from '@simple-dom/interface';
@@ -369,7 +369,7 @@ export class RenderTest implements IRenderTest {
     let self = this.delegate.getSelf(this.context);
 
     if (!isConst(self)) {
-      (self as UpdatableReference).forceUpdate(this.context);
+      (self as UpdatableRootReference).forceUpdate(this.context);
     }
 
     let result = expect(this.renderResult, 'the test should call render() before rerender()');

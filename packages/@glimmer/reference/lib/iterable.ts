@@ -1,4 +1,4 @@
-import { LinkedList, ListNode, Option } from '@glimmer/util';
+import { LinkedList, ListNode, Option, symbol } from '@glimmer/util';
 import { Tag } from '@glimmer/validator';
 import { VersionedPathReference as PathReference } from './reference';
 
@@ -249,7 +249,7 @@ enum Phase {
   Done,
 }
 
-export const END = 'END [2600abdf-889f-4406-b059-b44ecbafa5c5]';
+export const END = symbol('END');
 
 export class IteratorSynchronizer<Env> {
   private target: IteratorSynchronizerDelegate<Env>;

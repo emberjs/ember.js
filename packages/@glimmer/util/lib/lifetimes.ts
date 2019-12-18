@@ -4,20 +4,23 @@ import {
   SymbolDestroyable,
   Destroyable,
   Drop,
-  DropSymbol,
+  WillDropSymbol,
+  DidDropSymbol,
   ChildrenSymbol,
 } from '@glimmer/interfaces';
 import { LinkedList, LinkedListNode } from './list-utils';
 import { DEVMODE } from '@glimmer/local-debug-flags';
+import { symbol } from './platform-utils';
 
 export const LINKED: WeakMap<object, Set<Drop>> = new WeakMap();
-export const DROP: DropSymbol = 'DROP [94d46cf3-3974-435d-b278-3e60d1155290]';
-export const CHILDREN: ChildrenSymbol = 'CHILDREN [7142e52a-8600-4e01-a773-42055b96630d]';
+export const WILL_DROP: WillDropSymbol = symbol('WILL_DROP');
+export const DID_DROP: DidDropSymbol = symbol('DID_DROP');
+export const CHILDREN: ChildrenSymbol = symbol('CHILDREN');
 export const DESTRUCTORS = new WeakMap();
 
 export function isDrop(value: unknown): value is Drop {
   if (value === null || typeof value !== 'object') return false;
-  return DROP in (value as object);
+  return DID_DROP in (value as object);
 }
 
 export function associate(parent: object, child: object) {
@@ -35,6 +38,10 @@ export function associateDestructor(parent: object, child: Drop): void {
   associated.add(child);
 }
 
+export function peekAssociated(parent: object): Option<Set<Drop>> {
+  return LINKED.get(parent) || null;
+}
+
 export function takeAssociated(parent: object): Option<Set<Drop>> {
   let linked = LINKED.get(parent);
 
@@ -46,12 +53,22 @@ export function takeAssociated(parent: object): Option<Set<Drop>> {
   }
 }
 
-export function destroyAssociated(parent: object) {
+export function willDestroyAssociated(parent: object) {
   let associated = LINKED.get(parent);
 
   if (associated) {
     associated.forEach(item => {
-      item[DROP]();
+      item[WILL_DROP]();
+    });
+  }
+}
+
+export function didDestroyAssociated(parent: object) {
+  let associated = LINKED.get(parent);
+
+  if (associated) {
+    associated.forEach(item => {
+      item[DID_DROP]();
       associated!.delete(item);
     });
   }
@@ -82,8 +99,12 @@ export function snapshot(values: Set<Drop>): Drop {
 class SnapshotDestructor implements Drop {
   constructor(private destructors: Set<Drop>) {}
 
-  [DROP]() {
-    this.destructors.forEach(item => item[DROP]());
+  [WILL_DROP]() {
+    this.destructors.forEach(item => item[WILL_DROP]());
+  }
+
+  [DID_DROP]() {
+    this.destructors.forEach(item => item[DID_DROP]());
   }
 
   get [CHILDREN](): Iterable<Drop> {
@@ -98,9 +119,13 @@ class SnapshotDestructor implements Drop {
 class DestroyableDestructor implements Drop {
   constructor(private inner: SymbolDestroyable) {}
 
-  [DROP]() {
+  [WILL_DROP]() {
+    willDestroyAssociated(this.inner);
+  }
+
+  [DID_DROP]() {
     this.inner[DESTROY]();
-    destroyAssociated(this.inner);
+    didDestroyAssociated(this.inner);
   }
 
   get [CHILDREN](): Iterable<Drop> {
@@ -115,9 +140,16 @@ class DestroyableDestructor implements Drop {
 class StringDestroyableDestructor implements Drop {
   constructor(private inner: Destroyable) {}
 
-  [DROP]() {
+  [WILL_DROP]() {
+    if (typeof this.inner.willDestroy === 'function') {
+      this.inner.willDestroy();
+    }
+    willDestroyAssociated(this.inner);
+  }
+
+  [DID_DROP]() {
     this.inner.destroy();
-    destroyAssociated(this.inner);
+    didDestroyAssociated(this.inner);
   }
 
   get [CHILDREN](): Iterable<Drop> {
@@ -132,8 +164,12 @@ class StringDestroyableDestructor implements Drop {
 class SimpleDestructor implements Drop {
   constructor(private inner: object) {}
 
-  [DROP]() {
-    destroyAssociated(this.inner);
+  [WILL_DROP]() {
+    willDestroyAssociated(this.inner);
+  }
+
+  [DID_DROP]() {
+    didDestroyAssociated(this.inner);
   }
 
   get [CHILDREN](): Iterable<Drop> {
@@ -148,8 +184,12 @@ class SimpleDestructor implements Drop {
 export class ListContentsDestructor implements Drop {
   constructor(private inner: LinkedList<LinkedListNode>) {}
 
-  [DROP]() {
-    this.inner.forEachNode(d => destructor(d)[DROP]());
+  [WILL_DROP]() {
+    this.inner.forEachNode(d => destructor(d)[WILL_DROP]());
+  }
+
+  [DID_DROP]() {
+    this.inner.forEachNode(d => destructor(d)[DID_DROP]());
   }
 
   get [CHILDREN](): Iterable<Drop> {

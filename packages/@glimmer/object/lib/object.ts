@@ -1,4 +1,9 @@
-import { Meta, InnerReferenceFactory, PropertyReference } from '@glimmer/object-reference';
+import {
+  Meta,
+  InnerReferenceFactory,
+  PropertyReference,
+  CLASS_META,
+} from '@glimmer/object-reference';
 import { dict, assign, initializeGuid } from '@glimmer/util';
 import { Mixin, extend as extendClass, toMixin, relinkSubclasses, wrapMethod } from './mixin';
 
@@ -10,10 +15,8 @@ import { bump } from '@glimmer/validator';
 
 export const EMPTY_CACHE = function EMPTY_CACHE() {};
 
-const CLASS_META = 'df8be4c8-4e89-44e2-a8f9-550c8dacdca7';
-
 export interface ObjectWithMixins {
-  'df8be4c8-4e89-44e2-a8f9-550c8dacdca7': ClassMeta;
+  [CLASS_META]: ClassMeta;
   _meta: Meta;
 }
 
@@ -31,7 +34,7 @@ export interface GlimmerObjectFactory<T> {
   reopenClass<U>(extensions: U): void;
   metaForProperty(property: string): Object;
   eachComputedProperty(callback: (s: string, o: Object) => void): void;
-  'df8be4c8-4e89-44e2-a8f9-550c8dacdca7': InstanceMeta;
+  [CLASS_META]: InstanceMeta;
 }
 
 export function turbocharge<T>(obj: T): T {
@@ -318,7 +321,7 @@ function mergeMergedProperties(attrs: Dict, parent: Dict) {
 }
 
 export class InstanceMeta extends ClassMeta {
-  public 'df8be4c8-4e89-44e2-a8f9-550c8dacdca7': ClassMeta = ClassMeta.fromParent(null);
+  public [CLASS_META]: ClassMeta = ClassMeta.fromParent(null);
 
   static fromParent(parent: Option<InstanceMeta>): InstanceMeta {
     return super.fromParent(parent) as InstanceMeta;
@@ -338,7 +341,7 @@ export class InstanceMeta extends ClassMeta {
 export default class GlimmerObject {
   [index: string]: unknown;
 
-  static 'df8be4c8-4e89-44e2-a8f9-550c8dacdca7': InstanceMeta = InstanceMeta.fromParent(null);
+  static [CLASS_META]: InstanceMeta = InstanceMeta.fromParent(null);
   static isClass = true;
 
   static extend(): GlimmerObjectFactory<any> & typeof GlimmerObject;

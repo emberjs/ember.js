@@ -29,6 +29,12 @@ export {
   VOLATILE,
 } from './lib/validators';
 
-export { dirtyTag, tagFor, updateTag } from './lib/meta';
+export { dirtyTagFor, tagFor, setPropertyDidChange } from './lib/meta';
 
-export { track, consume, EPOCH, trackedData } from './lib/tracking';
+export { consume, EPOCH, isTracking, track, trackedData, untrack } from './lib/tracking';
+
+export {
+  setAutotrackingTransactionEnv,
+  runInAutotrackingTransaction,
+  deprecateMutationsInAutotrackingTransaction,
+} from './lib/debug';

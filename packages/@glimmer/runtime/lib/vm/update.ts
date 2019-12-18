@@ -34,7 +34,7 @@ import {
 import { associate, expect, LinkedList, Option, Stack } from '@glimmer/util';
 import { SimpleComment, SimpleNode } from '@simple-dom/interface';
 import { move as moveBounds } from '../bounds';
-import { asyncReset, detach } from '../lifetime';
+import { asyncReset, detach, legacySyncReset } from '../lifetime';
 import { combineSlice } from '../utils/tags';
 import { UpdatingOpcode, UpdatingOpSeq } from '../opcodes';
 import { InternalVM, VmInitCallback, JitVM } from './append';
@@ -181,6 +181,7 @@ export class TryOpcode extends BlockOpcode implements ExceptionHandler {
   handleException() {
     let { state, bounds, children, prev, next, runtime } = this;
 
+    legacySyncReset(this, runtime.env);
     children.clear();
     asyncReset(this, runtime.env);
 
@@ -225,12 +226,8 @@ class ListRevalidationDelegate implements IteratorSynchronizerDelegate<Environme
     let nextSibling: Option<SimpleNode> = null;
     let reference: Option<BlockOpcode> = null;
 
-    if (typeof before === 'string') {
-      reference = map.get(before)!;
-      nextSibling = reference['bounds'].firstNode();
-    } else {
-      nextSibling = this.marker;
-    }
+    reference = map.get(before)!;
+    nextSibling = reference !== undefined ? reference['bounds'].firstNode() : this.marker;
 
     let vm = opcode.vmForInsertion(nextSibling);
     let tryOpcode: Option<TryOpcode> = null;

@@ -1,6 +1,11 @@
-import { OpaqueIterable, VersionedPathReference, VersionedReference } from '@glimmer/reference';
+import {
+  OpaqueIterable,
+  VersionedPathReference,
+  VersionedReference,
+  IteratorDelegate,
+} from '@glimmer/reference';
 import { AttributeOperation } from '@glimmer/runtime';
-import { AttrNamespace, SimpleElement } from '@simple-dom/interface';
+import { AttrNamespace, SimpleElement, SimpleDocument } from '@simple-dom/interface';
 import { ComponentDefinitionState, ComponentInstanceState } from '../components';
 import { ComponentManager } from '../components/component-manager';
 import { Drop, Option } from '../core';
@@ -9,8 +14,9 @@ import { ModifierManager } from './modifier';
 import { Cursor } from '../dom/bounds';
 
 export interface EnvironmentOptions {
-  appendOperations: GlimmerTreeConstruction;
-  updateOperations: GlimmerTreeChanges;
+  document?: SimpleDocument;
+  appendOperations?: GlimmerTreeConstruction;
+  updateOperations?: GlimmerTreeChanges;
 }
 
 export type InternalComponent = ComponentInstanceState;
@@ -18,14 +24,16 @@ export type InternalComponentManager = ComponentManager<ComponentInstanceState>;
 
 export interface Transaction {}
 
-declare const TransactionSymbol: 'TRANSACTION [c3938885-aba0-422f-b540-3fd3431c78b5]';
+declare const TransactionSymbol: unique symbol;
 export type TransactionSymbol = typeof TransactionSymbol;
 
-export interface Environment {
+export interface Environment<Extra = unknown> {
   [TransactionSymbol]: Option<Transaction>;
 
   didCreate(component: InternalComponent, manager: InternalComponentManager): void;
   didUpdate(component: unknown, manager: ComponentManager<unknown>): void;
+
+  willDestroy(drop: Drop): void;
   didDestroy(drop: Drop): void;
 
   scheduleInstallModifier(modifier: unknown, manager: ModifierManager): void;
@@ -44,8 +52,25 @@ export interface Environment {
   ): AttributeOperation;
   getAppendOperations(): GlimmerTreeConstruction;
 
+  // Moving away from these, toward `toIterator` and `toBool` respectively
   iterableFor(reference: VersionedReference<unknown>, key: unknown): OpaqueIterable;
   toConditionalReference(reference: VersionedReference<unknown>): VersionedReference<boolean>;
+
+  toBool(value: unknown): boolean;
+  toIterator(value: unknown): Option<IteratorDelegate>;
+
+  getPath(item: unknown, path: string): unknown;
+  setPath(item: unknown, path: string, value: unknown): unknown;
+
+  getTemplatePathDebugContext(ref: VersionedPathReference): string;
+  setTemplatePathDebugContext(
+    ref: VersionedPathReference,
+    desc: string,
+    parentRef: Option<VersionedPathReference>
+  ): void;
+
+  isInteractive: boolean;
+  extra: Extra;
 }
 
 export interface DynamicScope {

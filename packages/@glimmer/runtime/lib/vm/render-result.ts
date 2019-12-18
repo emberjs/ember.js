@@ -3,7 +3,7 @@ import { associate, DESTROY, LinkedList } from '@glimmer/util';
 import { SimpleElement, SimpleNode } from '@simple-dom/interface';
 import { clear } from '../bounds';
 import { inTransaction } from '../environment';
-import { asyncDestroy } from '../lifetime';
+import { asyncDestroy, legacySyncDestroy } from '../lifetime';
 import { UpdatingOpcode } from '../opcodes';
 import UpdatingVM from './update';
 
@@ -45,6 +45,9 @@ export default class RenderResultImpl implements RenderResult {
 
   // compat, as this is a user-exposed API
   destroy() {
-    inTransaction(this.env, () => asyncDestroy(this, this.env));
+    inTransaction(this.env, () => {
+      legacySyncDestroy(this, this.env);
+      asyncDestroy(this, this.env);
+    });
   }
 }

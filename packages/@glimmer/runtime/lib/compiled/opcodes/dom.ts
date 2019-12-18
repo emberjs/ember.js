@@ -184,8 +184,8 @@ export class UpdateDynamicAttributeOpcode extends UpdatingOpcode {
   evaluate(vm: UpdatingVM) {
     let { attribute, reference, tag } = this;
     if (!validate(tag, this.lastRevision)) {
-      this.lastRevision = value(tag);
       attribute.update(reference.value(), vm.env);
+      this.lastRevision = value(tag);
     }
   }
 }

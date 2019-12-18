@@ -39,7 +39,7 @@ import {
 } from '@glimmer/interfaces';
 import { VersionedPathReference, VersionedReference } from '@glimmer/reference';
 import { CONSTANT_TAG, isConst, isConstTag, Tag } from '@glimmer/validator';
-import { assert, dict, expect, Option, unreachable } from '@glimmer/util';
+import { assert, dict, expect, Option, unreachable, symbol } from '@glimmer/util';
 import { $t0, $t1, $v0 } from '@glimmer/vm';
 import {
   Capability,
@@ -73,6 +73,7 @@ import { ContentTypeReference } from './content';
 import { UpdateDynamicAttributeOpcode } from './dom';
 import { ConditionalReference } from '../../references';
 import { unwrapTemplate } from '@glimmer/opcode-compiler';
+import { DEBUG } from '@glimmer/env';
 
 /**
  * The VM creates a new ComponentInstance data structure for every component
@@ -84,7 +85,7 @@ import { unwrapTemplate } from '@glimmer/opcode-compiler';
  * component type's ComponentDefinition.
  */
 
-export const COMPONENT_INSTANCE = 'COMPONENT_INSTANCE [c56c57de-e73a-4ef0-b137-07661da17029]';
+export const COMPONENT_INSTANCE: unique symbol = symbol('COMPONENT_INSTANCE');
 
 export interface ComponentInstance {
   [COMPONENT_INSTANCE]: true;
@@ -370,9 +371,21 @@ APPEND_OPCODES.add(Op.CreateComponent, (vm, { op1: flags, op2: _state }) => {
 });
 
 APPEND_OPCODES.add(Op.RegisterComponentDestructor, (vm, { op1: _state }) => {
-  let { manager, state } = check(vm.fetchValue(_state), CheckComponentInstance);
+  let { manager, state, capabilities } = check(vm.fetchValue(_state), CheckComponentInstance);
 
   let d = manager.getDestructor(state);
+
+  if (
+    DEBUG &&
+    !hasCapability(capabilities, Capability.WillDestroy) &&
+    d !== null &&
+    typeof 'willDestroy' in d
+  ) {
+    throw new Error(
+      'BUG: Destructor has willDestroy, but the willDestroy capability was not enabled for this component. Pre-destruction hooks must be explicitly opted into'
+    );
+  }
+
   if (d) vm.associateDestroyable(d);
 });
 

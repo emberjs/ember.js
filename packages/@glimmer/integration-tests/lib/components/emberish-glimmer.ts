@@ -1,4 +1,4 @@
-import { PathReference, UpdatableReference } from '@glimmer/reference';
+import { PathReference, UpdatableRootReference } from '@glimmer/reference';
 import { combine, createUpdatableTag, UpdatableTag, Tag } from '@glimmer/validator';
 import {
   Dict,
@@ -29,13 +29,13 @@ export type Attrs = Dict;
 export type AttrsDiff = { oldAttrs: Option<Attrs>; newAttrs: Attrs };
 export type EmberishGlimmerArgs = { attrs: Attrs };
 
-const SELF_REF = new WeakMap<EmberishGlimmerComponent, UpdatableReference>();
+const SELF_REF = new WeakMap<EmberishGlimmerComponent, UpdatableRootReference>();
 
-function getSelf(obj: EmberishGlimmerComponent): UpdatableReference {
+function getSelf(obj: EmberishGlimmerComponent): UpdatableRootReference {
   if (SELF_REF.has(obj)) {
     return SELF_REF.get(obj)!;
   } else {
-    let ref = new UpdatableReference(obj);
+    let ref = new UpdatableRootReference(obj);
     SELF_REF.set(obj, ref);
     return ref;
   }
@@ -75,6 +75,7 @@ export class EmberishGlimmerComponent {
   didInsertElement() {}
   didUpdate() {}
   didRender() {}
+  willDestroyElement() {}
 }
 
 export interface EmberishGlimmerComponentFactory
@@ -193,6 +194,9 @@ export class EmberishGlimmerComponentManager
 
   getDestructor({ component }: EmberishGlimmerComponentState): Destroyable {
     return {
+      willDestroy() {
+        component.willDestroyElement();
+      },
       destroy() {
         component.destroy();
       },

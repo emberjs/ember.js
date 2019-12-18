@@ -1,5 +1,5 @@
 import { CLASS_META } from '@glimmer/object-reference';
-import { dict, assign } from '@glimmer/util';
+import { dict, assign, symbol } from '@glimmer/util';
 import GlimmerObject, {
   GlimmerObjectFactory,
   ClassMeta,
@@ -12,16 +12,16 @@ import { Dict } from '@glimmer/interfaces';
 
 const { isArray } = Array;
 
-export const DESCRIPTOR = '5d90f84f-908e-4a42-9749-3d0f523c262c';
-export const BLUEPRINT = '8d97cf5f-db9e-48d8-a6b2-7a75b7170805';
+export const DESCRIPTOR: unique symbol = symbol('DESCRIPTOR');
+export const BLUEPRINT: unique symbol = symbol('BLUEPRINT');
 
 export abstract class Descriptor {
-  '5d90f84f-908e-4a42-9749-3d0f523c262c' = true;
+  [DESCRIPTOR] = true;
   abstract define(prototype: Object, key: string, home: Object): void;
 }
 
 export abstract class Blueprint {
-  '8d97cf5f-db9e-48d8-a6b2-7a75b7170805' = true;
+  [BLUEPRINT] = true;
   abstract descriptor(target: Object, key: string, classMeta: ClassMeta): Descriptor;
 }
 

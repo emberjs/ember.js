@@ -29,14 +29,13 @@ export { DefaultDynamicScope } from './lib/dynamic-scope';
 export {
   AotRuntime,
   default as EnvironmentImpl,
-  DefaultEnvironment,
   CustomJitRuntime,
   JitRuntimeFromProgram,
   JitRuntime,
-  RuntimeEnvironment,
-  RuntimeEnvironmentDelegate,
+  EnvironmentDelegate,
   ScopeImpl,
   JitSyntaxCompilationContext,
+  inTransaction,
 } from './lib/environment';
 export { default as getDynamicVar } from './lib/helpers/get-dynamic-var';
 export { PublicModifierDefinition as ModifierDefinition } from './lib/modifier/interfaces';
@@ -57,7 +56,12 @@ export {
 } from './lib/render';
 export { SafeString } from './lib/upsert';
 export { InternalVM, UpdatingVM, VM as LowLevelVM } from './lib/vm';
-export { EMPTY_ARGS } from './lib/vm/arguments';
+export {
+  EMPTY_ARGS,
+  CapturedArgumentsImpl,
+  CapturedNamedArgumentsImpl,
+  CapturedPositionalArgumentsImpl,
+} from './lib/vm/arguments';
 export { AttributeOperation } from './lib/vm/attributes';
 export {
   DynamicAttribute,

@@ -1,4 +1,4 @@
-import { Unique, Option } from './core';
+import { Option } from './core';
 import { STDLib, ContainingMetadata, HandleResult } from './template';
 import { StdlibOperand, CompileMode, Encoder, Macros, EncoderError } from './compile';
 import { Op } from './vm-opcodes';

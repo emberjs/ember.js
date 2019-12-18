@@ -10,11 +10,9 @@ import {
 } from '@glimmer/interfaces';
 import { WriteOnlyConstants, HeapImpl, Constants } from '@glimmer/program';
 import { compileStd } from './opcode-builder/helpers/stdlib';
-import { DebugConstants } from '@glimmer/bundle-compiler';
-import { DEBUG } from '@glimmer/local-debug-flags';
 
 export class ProgramCompilationContext implements WholeProgramCompilationContext {
-  readonly constants = DEBUG ? new DebugConstants() : new WriteOnlyConstants();
+  readonly constants = new WriteOnlyConstants();
   readonly resolverDelegate: CompileTimeResolverDelegate;
   readonly heap: CompileTimeHeap = new HeapImpl();
   readonly stdlib: STDLib;
@@ -26,9 +24,7 @@ export class ProgramCompilationContext implements WholeProgramCompilationContext
 }
 
 export class JitProgramCompilationContext implements JitProgramCompilationContext {
-  readonly constants: CompileTimeConstants & RuntimeConstants = DEBUG
-    ? new DebugConstants()
-    : new Constants();
+  readonly constants: CompileTimeConstants & RuntimeConstants = new Constants();
   readonly resolverDelegate: CompileTimeResolverDelegate;
   readonly heap: CompileTimeHeap & RuntimeHeap = new HeapImpl();
   readonly stdlib: STDLib;

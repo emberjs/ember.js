@@ -1,6 +1,6 @@
 import { ComputedReferenceBlueprint, Meta } from '@glimmer/object-reference';
 import { EMPTY_CACHE, ClassMeta } from './object';
-import { Descriptor, Blueprint } from './mixin';
+import { Descriptor, Blueprint, DESCRIPTOR } from './mixin';
 
 export interface ComputedGetCallback {
   (): any;
@@ -63,7 +63,7 @@ class Computed implements Descriptor {
   configurable: boolean;
 
   private accessor: ComputedDescriptor;
-  '5d90f84f-908e-4a42-9749-3d0f523c262c' = true;
+  [DESCRIPTOR] = true;
 
   constructor(accessor: ComputedDescriptor) {
     this.accessor = accessor;
