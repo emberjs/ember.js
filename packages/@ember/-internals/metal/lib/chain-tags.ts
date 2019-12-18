@@ -243,7 +243,7 @@ export function getChainTagsForKey(obj: any, path: string) {
   }
 
   if (DEBUG) {
-    chainTags.forEach(t => ALLOW_CYCLES.set(t, true));
+    chainTags.forEach(t => ALLOW_CYCLES!.set(t, true));
   }
 
   return chainTags;

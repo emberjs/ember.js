@@ -37,6 +37,7 @@ const CAPABILITIES = {
   updateHook: true,
   createInstance: true,
   wrapped: false,
+  willDestroy: false,
 };
 
 export interface OptionalCapabilities {
