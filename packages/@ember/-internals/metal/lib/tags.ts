@@ -7,6 +7,7 @@ import {
   toString,
 } from '@ember/-internals/utils';
 import { assert, deprecate } from '@ember/debug';
+import { _WeakSet as WeakSet } from '@ember/polyfills';
 import { backburner } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
 import {
