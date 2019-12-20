@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.45.1 (2019-12-20)
+
+#### :bug: Bug Fix
+* `@glimmer/util`
+  * [#994](https://github.com/glimmerjs/glimmer-vm/pull/994) [BUGFIX] Avoid in operator with symbols ([@pzuraq](https://github.com/pzuraq))
+
+#### Committers: 1
+- Chris Garrett ([@pzuraq](https://github.com/pzuraq))
 
 ## v0.45.0 (2019-12-18)
 
