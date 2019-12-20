@@ -20,7 +20,7 @@ export const DESTRUCTORS = new WeakMap();
 
 export function isDrop(value: unknown): value is Drop {
   if (value === null || typeof value !== 'object') return false;
-  return DID_DROP in (value as object);
+  return (value as Drop)[DID_DROP] !== undefined;
 }
 
 export function associate(parent: object, child: object) {

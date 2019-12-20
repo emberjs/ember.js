@@ -6,7 +6,7 @@ export const DESTROY: DestroySymbol = symbol('DESTROY');
 export function isDestroyable(
   value: Maybe<object> | SymbolDestroyable
 ): value is SymbolDestroyable {
-  return !!(value && DESTROY in value);
+  return !!(value && (value as SymbolDestroyable)[DESTROY] !== undefined);
 }
 
 export function isStringDestroyable(value: Maybe<Partial<Destroyable>>): value is Destroyable {
