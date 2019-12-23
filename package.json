@@ -81,7 +81,7 @@
     "@glimmer/opcode-compiler": "0.38.5-alpha.3",
     "@glimmer/program": "0.38.5-alpha.3",
     "@glimmer/reference": "0.38.5-alpha.3",
-    "@glimmer/runtime": "0.38.5-alpha.3",
+    "@glimmer/runtime": "0.45.1",
     "@types/qunit": "^2.5.4",
     "@types/rsvp": "^4.0.3",
     "@typescript-eslint/parser": "^2.7.0",
