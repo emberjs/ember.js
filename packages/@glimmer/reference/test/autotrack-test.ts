@@ -107,6 +107,7 @@ QUnit.skip('can request a tag for non-objects and get a CONSTANT_TAG', assert =>
   hasConstChildren(false);
   hasConstChildren('hello world');
 
+  // eslint-disable-next-line symbol-description
   if (typeof Symbol !== 'undefined') hasConstChildren(Symbol());
 });
 
