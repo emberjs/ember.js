@@ -13,8 +13,6 @@ module.exports = {
   ],
   plugins: ['@typescript-eslint', 'prettier'],
   rules: {
-    'node/no-extraneous-require': 'off',
-
     'prettier/prettier': 'error',
     'accessor-pairs': 'error',
     'array-callback-return': 'error',
