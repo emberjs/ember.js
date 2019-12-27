@@ -209,7 +209,6 @@ module.exports = {
       },
       rules: {
         'no-label-var': 'off',
-        'symbol-description': 'off',
 
         'node/no-extraneous-import': 'off',
         'node/no-missing-import': 'off',
