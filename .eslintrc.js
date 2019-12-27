@@ -208,8 +208,6 @@ module.exports = {
         sourceType: 'module',
       },
       rules: {
-        'no-label-var': 'off',
-
         'node/no-extraneous-import': 'off',
         'node/no-missing-import': 'off',
         'node/no-unpublished-import': 'off',
