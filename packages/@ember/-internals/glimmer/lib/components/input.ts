@@ -47,6 +47,7 @@ import { setManager } from '../utils/managers';
   * `escape-press`
   * `focus-in`
   * `focus-out`
+  * `key-down`
   * `key-press`
   * `key-up`
 
