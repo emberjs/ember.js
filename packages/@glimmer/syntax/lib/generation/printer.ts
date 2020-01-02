@@ -1,5 +1,6 @@
 import {
   AttrNode,
+  Block,
   BlockStatement,
   ElementNode,
   MustacheStatement,
@@ -22,7 +23,8 @@ import {
   NumberLiteral,
   UndefinedLiteral,
   NullLiteral,
-  Statement,
+  TopLevelStatement,
+  Template,
 } from '../types/nodes';
 import { voidMap } from '../parser/tokenizer-event-handlers';
 import { escapeText, escapeAttrValue } from './util';
@@ -64,7 +66,10 @@ export default class Printer {
       case 'CommentStatement':
       case 'TextNode':
       case 'ElementNode':
-        return this.Statement(node);
+      case 'AttrNode':
+      case 'Block':
+      case 'Template':
+        return this.TopLevelStatement(node);
       case 'StringLiteral':
       case 'BooleanLiteral':
       case 'NumberLiteral':
@@ -74,10 +79,7 @@ export default class Printer {
       case 'SubExpression':
         return this.Expression(node);
       case 'Program':
-        return this.Program(node);
-      case 'AttrNode':
-        // should have element
-        return this.AttrNode(node);
+        return this.Block(node);
       case 'ConcatStatement':
         // should have an AttrNode parent
         return this.ConcatStatement(node);
@@ -124,7 +126,7 @@ export default class Printer {
     return unreachable(literal);
   }
 
-  Statement(statement: Statement) {
+  TopLevelStatement(statement: TopLevelStatement) {
     switch (statement.type) {
       case 'MustacheStatement':
         return this.MustacheStatement(statement);
@@ -140,21 +142,27 @@ export default class Printer {
         return this.TextNode(statement);
       case 'ElementNode':
         return this.ElementNode(statement);
+      case 'Block':
+      case 'Template':
+        return this.Block(statement);
+      case 'AttrNode':
+        // should have element
+        return this.AttrNode(statement);
     }
     unreachable(statement);
   }
 
-  Program(program: Program): void {
-    this.Statements(program.body);
+  Block(block: Block | Program | Template): void {
+    this.TopLevelStatements(block.body);
   }
 
-  Statements(statements: Statement[]) {
-    statements.forEach(statement => this.Statement(statement));
+  TopLevelStatements(statements: TopLevelStatement[]) {
+    statements.forEach(statement => this.TopLevelStatement(statement));
   }
 
   ElementNode(el: ElementNode): void {
     this.OpenElementNode(el);
-    this.Statements(el.children);
+    this.TopLevelStatements(el.children);
     this.CloseElementNode(el);
   }
 
@@ -249,10 +257,10 @@ export default class Printer {
       this.BlockParams(block.program.blockParams);
     }
     this.buffer += '}}';
-    this.Program(block.program);
+    this.Block(block.program);
     if (block.inverse) {
       this.buffer += '{{else}}';
-      this.Program(block.inverse);
+      this.Block(block.inverse);
     }
     this.buffer += '{{/';
     this.PathExpression(block.path);
@@ -263,8 +271,12 @@ export default class Printer {
     this.buffer += ` as |${blockParams.join(' ')}|`;
   }
 
-  PartialStatement(_: PartialStatement): void {
-    throw new Error('Method not implemented.');
+  PartialStatement(partial: PartialStatement): void {
+    this.buffer += '{{>';
+    this.Expression(partial.name);
+    this.Params(partial.params);
+    this.Hash(partial.hash);
+    this.buffer += '}}';
   }
 
   ConcatStatement(concat: ConcatStatement): void {
