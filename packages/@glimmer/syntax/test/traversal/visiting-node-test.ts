@@ -1,4 +1,4 @@
-import { preprocess as parse, traverse, AST } from '@glimmer/syntax';
+import { preprocess as parse, traverse, AST, Path } from '@glimmer/syntax';
 
 const { test } = QUnit;
 
@@ -283,3 +283,79 @@ test('Comments', function() {
     ['exit', ast],
   ]);
 });
+
+QUnit.module('[glimmer-syntax] Traversal - visiting - paths');
+
+test('Basics', function(assert) {
+  assert.expect(3);
+
+  let ast = parse(`{{#if foo}}<div>bar</div>{{/if}}`);
+
+  traverse(ast, {
+    TextNode(node, path) {
+      assert.equal(node.chars, 'bar');
+      assert.strictEqual(path.node, node);
+      assert.deepEqual(describeFullPath(path), [
+        { nodeType: 'Template', key: 'body' },
+        { nodeType: 'BlockStatement', key: 'program' },
+        { nodeType: 'Block', key: 'body' },
+        { nodeType: 'ElementNode', key: 'children' },
+        { nodeType: 'TextNode', key: null },
+      ]);
+    },
+  });
+});
+
+test('Helper', function(assert) {
+  assert.expect(2);
+
+  let ast = parse(`{{#foo (bar this.blah)}}{{/foo}}`);
+
+  traverse(ast, {
+    PathExpression(node, path) {
+      if (node.original === 'this.blah') {
+        assert.deepEqual(describeFullPath(path), [
+          { nodeType: 'Template', key: 'body' },
+          { nodeType: 'BlockStatement', key: 'params' },
+          { nodeType: 'SubExpression', key: 'params' },
+          { nodeType: 'PathExpression', key: null },
+        ]);
+
+        assert.ok((path.parent!.node as AST.SubExpression).params.indexOf(node) !== -1);
+      }
+    },
+  });
+});
+
+test('Modifier', function(assert) {
+  assert.expect(2);
+
+  let ast = parse(`<div {{foo}}></div>`);
+
+  traverse(ast, {
+    PathExpression(node, path) {
+      if (node.original === 'foo') {
+        assert.deepEqual(describeFullPath(path), [
+          { nodeType: 'Template', key: 'body' },
+          { nodeType: 'ElementNode', key: 'modifiers' },
+          { nodeType: 'ElementModifierStatement', key: 'path' },
+          { nodeType: 'PathExpression', key: null },
+        ]);
+
+        assert.strictEqual((path.parent!.node as AST.ElementModifierStatement).path, node);
+      }
+    },
+  });
+});
+
+function describeFullPath(path: Path<AST.Node>): Array<{ nodeType: string; key: string | null }> {
+  let description = [];
+  description.push({ nodeType: path.node.type, key: null });
+
+  while (path.parent) {
+    description.unshift({ nodeType: path.parent.node.type, key: path.parentKey });
+    path = path.parent;
+  }
+
+  return description;
+}
