@@ -190,7 +190,7 @@ export default class Printer {
       this.BlockParams(el.blockParams);
     }
     if (el.selfClosing) {
-      this.buffer += '/';
+      this.buffer += ' /';
     }
     this.buffer += '>';
   }
