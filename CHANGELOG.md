@@ -1,5 +1,26 @@
 # Changelog
 
+## v0.45.2 (2020-01-02)
+
+#### :rocket: Enhancement
+* `@glimmer/syntax`
+  * [#985](https://github.com/glimmerjs/glimmer-vm/pull/985) Add optional `path` argument to visitor functions ([@Turbo87](https://github.com/Turbo87))
+
+#### :bug: Bug Fix
+* `@glimmer/syntax`
+  * [#835](https://github.com/glimmerjs/glimmer-vm/pull/835) Refactor printer ([@krisselden](https://github.com/krisselden))
+
+#### :house: Internal
+* Other
+  * [#996](https://github.com/glimmerjs/glimmer-vm/pull/996) Update run-types-test.js to use local `tsc`. ([@rwjblue](https://github.com/rwjblue))
+* `@glimmer/reference`, `@glimmer/syntax`
+  * [#995](https://github.com/glimmerjs/glimmer-vm/pull/995) ESLint: Add `node` plugin ([@Turbo87](https://github.com/Turbo87))
+
+#### Committers: 3
+- Kris Selden ([@krisselden](https://github.com/krisselden))
+- Robert Jackson ([@rwjblue](https://github.com/rwjblue))
+- Tobias Bieniek ([@Turbo87](https://github.com/Turbo87))
+
 ## v0.45.1 (2019-12-20)
 
 #### :bug: Bug Fix
