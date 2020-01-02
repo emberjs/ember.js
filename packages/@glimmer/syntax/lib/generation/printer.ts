@@ -153,6 +153,11 @@ export default class Printer {
   }
 
   Block(block: Block | Program | Template): void {
+    if (block.chained) {
+      let firstChild = block.body[0] as BlockStatement;
+      firstChild.chained = true;
+    }
+
     this.TopLevelStatements(block.body);
   }
 
@@ -249,22 +254,43 @@ export default class Printer {
   }
 
   BlockStatement(block: BlockStatement): void {
-    this.buffer += '{{#';
+    if (block.chained) {
+      this.buffer += block.inverseStrip.open ? '{{~' : '{{';
+      this.buffer += 'else ';
+    } else {
+      this.buffer += block.openStrip.open ? '{{~#' : '{{#';
+    }
+
     this.Expression(block.path);
     this.Params(block.params);
     this.Hash(block.hash);
     if (block.program.blockParams.length) {
       this.BlockParams(block.program.blockParams);
     }
-    this.buffer += '}}';
+
+    if (block.chained) {
+      this.buffer += block.inverseStrip.close ? '~}}' : '}}';
+    } else {
+      this.buffer += block.openStrip.close ? '~}}' : '}}';
+    }
+
     this.Block(block.program);
+
     if (block.inverse) {
-      this.buffer += '{{else}}';
+      if (!block.inverse.chained) {
+        this.buffer += block.inverseStrip.open ? '{{~' : '{{';
+        this.buffer += 'else';
+        this.buffer += block.inverseStrip.close ? '~}}' : '}}';
+      }
+
       this.Block(block.inverse);
     }
-    this.buffer += '{{/';
-    this.Expression(block.path);
-    this.buffer += '}}';
+
+    if (!block.chained) {
+      this.buffer += block.closeStrip.open ? '{{~/' : '{{/';
+      this.Expression(block.path);
+      this.buffer += block.closeStrip.close ? '~}}' : '}}';
+    }
   }
 
   BlockParams(blockParams: string[]) {
