@@ -237,7 +237,7 @@ export default class Printer {
       this.buffer += '~';
     }
 
-    this.Node(mustache.path);
+    this.Expression(mustache.path);
     this.Params(mustache.params);
     this.Hash(mustache.hash);
 
@@ -250,7 +250,7 @@ export default class Printer {
 
   BlockStatement(block: BlockStatement): void {
     this.buffer += '{{#';
-    this.PathExpression(block.path);
+    this.Expression(block.path);
     this.Params(block.params);
     this.Hash(block.hash);
     if (block.program.blockParams.length) {
@@ -263,7 +263,7 @@ export default class Printer {
       this.Block(block.inverse);
     }
     this.buffer += '{{/';
-    this.PathExpression(block.path);
+    this.Expression(block.path);
     this.buffer += '}}';
   }
 
@@ -297,7 +297,7 @@ export default class Printer {
 
   ElementModifierStatement(mod: ElementModifierStatement): void {
     this.buffer += '{{';
-    this.PathExpression(mod.path);
+    this.Expression(mod.path);
     this.Params(mod.params);
     this.Hash(mod.hash);
     this.buffer += '}}';
@@ -313,7 +313,7 @@ export default class Printer {
 
   SubExpression(sexp: SubExpression): void {
     this.buffer += '(';
-    this.PathExpression(sexp.path);
+    this.Expression(sexp.path);
     this.Params(sexp.params);
     this.Hash(sexp.hash);
     this.buffer += ')';
