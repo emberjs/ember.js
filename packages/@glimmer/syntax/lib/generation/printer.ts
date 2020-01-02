@@ -174,6 +174,40 @@ export default class Printer {
   }
 
   Block(block: Block | Program | Template): void {
+    /*
+      When processing a template like:
+
+      ```hbs
+      {{#if whatever}}
+        whatever
+      {{else if somethingElse}}
+        something else
+      {{else}}
+        fallback
+      {{/if}}
+      ```
+
+      The AST still _effectively_ looks like:
+
+      ```hbs
+      {{#if whatever}}
+        whatever
+      {{else}}{{#if somethingElse}}
+        something else
+      {{else}}
+        fallback
+      {{/if}}{{/if}}
+      ```
+
+      The only way we can tell if that is the case is by checking for
+      `block.chained`, but unfortunately when the actual statements are
+      processed the `block.body[0]` node (which will always be a
+      `BlockStatement`) has no clue that its anscestor `Block` node was
+      chained.
+
+      This "forwards" the `chained` setting so that we can check
+      it later when processing the `BlockStatement`.
+    */
     if (block.chained) {
       let firstChild = block.body[0] as BlockStatement;
       firstChild.chained = true;
@@ -421,6 +455,7 @@ export default class Printer {
   }
 
   Params(params: Expression[]) {
+    // TODO: implement a top level Params AST node (just like the Hash object)
     params.forEach(param => {
       this.buffer += ' ';
       this.Expression(param);
