@@ -80,17 +80,7 @@ export type Statement =
   | TextNode
   | ElementNode;
 
-export type TopLevelStatement =
-  | Template
-  | Block
-  | ElementNode
-  | AttrNode
-  | TextNode
-  | BlockStatement
-  | PartialStatement
-  | CommentStatement
-  | MustacheCommentStatement
-  | MustacheStatement;
+export type TopLevelStatement = Statement | Template | Block | AttrNode;
 
 export interface Call extends BaseNode {
   name?: Expression;
