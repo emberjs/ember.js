@@ -47,6 +47,7 @@ let templates = [
   // attributes escaping
   '<h1 class="foo" id="title" data-a="&quot;Foo&nbsp;&amp;&nbsp;Bar&quot;"></h1>',
   '<h1 class="< &nbsp; {{if x "&" "<"}} &amp; &quot;">Test</h1>',
+  '{{foo-bar placeholder="Choose a \\"thing\\""}}',
 
   // slash in path
   '{{namespace/foo "bar" baz="qux"}}',
