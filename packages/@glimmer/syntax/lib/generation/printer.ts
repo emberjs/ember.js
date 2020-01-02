@@ -228,7 +228,9 @@ export default class Printer {
   }
 
   TextNode(text: TextNode, isAttr?: boolean): void {
-    if (isAttr) {
+    if (this.options.entityEncoding === 'raw') {
+      this.buffer += text.chars;
+    } else if (isAttr) {
       this.buffer += escapeAttrValue(text.chars);
     } else {
       this.buffer += escapeText(text.chars);
