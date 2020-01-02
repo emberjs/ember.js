@@ -158,7 +158,7 @@ moduleFor(
 
       expectDeprecation(() => {
         set(obj, 'cpWithoutSetter', 'test');
-      }, /The \[object Object\]#cpWithoutSetter computed property was just overriden./);
+      }, /The \[object Object\]#cpWithoutSetter computed property was just overridden./);
 
       assert.equal(
         get(obj, 'cpWithoutSetter'),

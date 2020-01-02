@@ -86,7 +86,7 @@ Promise.resolve()
   })
   .then(
     // eslint-disable-next-line
-    () => console.log('build-for-publishing completed succesfully!'),
+    () => console.log('build-for-publishing completed successfully!'),
     error => {
       // eslint-disable-next-line
       console.error(error);

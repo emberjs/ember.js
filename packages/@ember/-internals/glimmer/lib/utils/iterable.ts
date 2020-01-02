@@ -438,12 +438,12 @@ function isIndexable(value: Opaque): value is Indexable {
 
 type KeyFor = (value: Opaque, memo: Opaque, position: number) => string;
 
-// Position in an array is guarenteed to be unique
+// Position in an array is guaranteed to be unique
 function Index(_value: Opaque, _memo: Opaque, position: number): string {
   return String(position);
 }
 
-// Object.keys(...) is guarenteed to be strings and unique
+// Object.keys(...) is guaranteed to be strings and unique
 function ObjectKey(_value: Opaque, memo: Opaque): string {
   return memo as string;
 }

@@ -128,7 +128,7 @@ moduleFor(
 
       expectDeprecation(() => {
         set(obj, 'foo', 'boom');
-      }, /The \[object Object\]#foo computed property was just overriden./);
+      }, /The \[object Object\]#foo computed property was just overridden./);
 
       assert.equal(obj.foo, 'boom');
     }
@@ -776,7 +776,7 @@ moduleFor(
 
       expectDeprecation(() => {
         testObj.set('aInt', '123');
-      }, /The <\(unknown\):ember\d*>#aInt computed property was just overriden/);
+      }, /The <\(unknown\):ember\d*>#aInt computed property was just overridden/);
 
       assert.ok(testObj.get('aInt') === '123', 'cp has been updated too');
     }
@@ -985,7 +985,7 @@ moduleFor(
 
       expectDeprecation(() => {
         set(obj, 'foo', 'bar');
-      }, /The \[object Object\]#foo computed property was just overriden./);
+      }, /The \[object Object\]#foo computed property was just overridden./);
 
       assert.equal(get(obj, 'foo'), 'bar', 'The set value is properly returned');
       assert.ok(typeof obj.foo === 'string', 'The computed property was removed');

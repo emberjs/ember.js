@@ -543,7 +543,7 @@ Fixes a few issues:
 - [#15849](https://github.com/emberjs/ember.js/pull/15849) [BUGFIX] Fix issue when observing a computed property that is clobbered during creation.
 - [#15797](https://github.com/emberjs/ember.js/pull/15797) [BUGFIX] Fix issues with using partials nested within other partials.
 - [#15808](https://github.com/emberjs/ember.js/pull/15808) [BUGFIX] Fix a memory leak in certain testing scenarios.
-- [#15746](https://github.com/emberjs/ember.js/pull/15746) [BUGFIX] Fix computed sort regression when array property is initally `null`.
+- [#15746](https://github.com/emberjs/ember.js/pull/15746) [BUGFIX] Fix computed sort regression when array property is initially `null`.
 - [#15777](https://github.com/emberjs/ember.js/pull/15777) [BUGFIX] Fix various issues around accessing dynamic data within a partial.
 - [#15606](https://github.com/emberjs/ember.js/pull/15606) [BUGFIX] Add fs-extra to deps
 - [#15697](https://github.com/emberjs/ember.js/pull/15697) [BUGFIX] Move accessing meta out of the loop
@@ -569,7 +569,7 @@ Fixes a few issues:
 ### 2.16.1 (October 29, 2017)
 
 - [#15722](https://github.com/emberjs/ember.js/pull/15722) [BUGFIX] Avoid assertion when using `(get` helper with empty paths.
-- [#15746](https://github.com/emberjs/ember.js/pull/15746) [BUGFIX] Fix computed sort regression when array property is initally `null`.
+- [#15746](https://github.com/emberjs/ember.js/pull/15746) [BUGFIX] Fix computed sort regression when array property is initially `null`.
 - [#15613](https://github.com/emberjs/ember.js/pull/15613) [BUGFIX] Prevent an error from being thrown when partial set of query params are passed to the router service.
 - [#15777](https://github.com/emberjs/ember.js/pull/15777) [BUGFIX] Fix various issues around accessing dynamic data within a partial.
 

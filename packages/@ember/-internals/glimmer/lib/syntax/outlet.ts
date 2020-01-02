@@ -133,7 +133,7 @@ class OutletModelReference implements VersionedPathReference {
       // created well before the component itself.
       this.debugStackLog = this.env.debugRenderTree.logCurrentRenderStack();
 
-      // This guarentees that we preserve the `debug()` output below
+      // This guarantees that we preserve the `debug()` output below
       return new NestedPropertyReference(this, property);
     } else {
       return PropertyReference.create(this, property);
@@ -166,7 +166,7 @@ class OutletComponentReference
       let map = dict<VersionedPathReference>();
       map.model = modelRef;
 
-      // TODO: the functionailty to create a proper CapturedArgument should be
+      // TODO: the functionality to create a proper CapturedArgument should be
       // exported by glimmer, or that it should provide an overload for `curry`
       // that takes `PreparedArguments`
       this.args = {

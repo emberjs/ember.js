@@ -40,7 +40,7 @@ export function classCallCheck(instance, Constructor) {
   Overrides default `inheritsLoose` to _also_ call `Object.setPrototypeOf`.
   This is needed so that we can use `loose` option with the
   `@babel/plugin-transform-classes` (because we want simple assignment to the
-  prototype whereever possible) but also keep our constructor based prototypal
+  prototype wherever possible) but also keep our constructor based prototypal
   inheritance working properly
 */
 export function inheritsLoose(subClass, superClass) {

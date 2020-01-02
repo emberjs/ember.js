@@ -7,7 +7,7 @@ const DECORATOR_DESCRIPTOR_MAP: WeakMap<
 > = new WeakMap();
 
 /**
-  Returns the CP descriptor assocaited with `obj` and `keyName`, if any.
+  Returns the CP descriptor associated with `obj` and `keyName`, if any.
 
   @method descriptorForProperty
   @param {Object} obj the object to check

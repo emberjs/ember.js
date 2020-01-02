@@ -109,7 +109,7 @@ export function makeComputedDecorator(
     isClassicDecorator?: boolean
   ): DecoratorPropertyDescriptor {
     assert(
-      `Only one computed property decorator can be applied to a class field or accessor, but '${key}' was decorated twice. You may have added the decorator to both a getter and setter, which is unecessary.`,
+      `Only one computed property decorator can be applied to a class field or accessor, but '${key}' was decorated twice. You may have added the decorator to both a getter and setter, which is unnecessary.`,
       isClassicDecorator ||
         !propertyDesc ||
         !propertyDesc.get ||

@@ -401,7 +401,7 @@ export class Meta {
 
     // if not found, push. Note that we must always push if a listener is not
     // found, even in the case of a function listener remove, because we may be
-    // attempting to add or remove listeners _before_ flattening has occured.
+    // attempting to add or remove listeners _before_ flattening has occurred.
     if (i === -1) {
       assert(
         'You cannot add function listeners to prototypes. Convert the listener to a string listener, or add it to the instance instead.',
@@ -486,7 +486,7 @@ export class Meta {
        listeners
     3. A new listener is subsequently added to the meta (e.g. via `.reopen()`)
 
-    This is a very rare occurence, so while the counter is global it shouldn't
+    This is a very rare occurrence, so while the counter is global it shouldn't
     be updated very often in practice.
   */
   private flattenedListeners(): Listener[] | undefined {

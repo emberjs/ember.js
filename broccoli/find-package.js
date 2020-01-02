@@ -20,11 +20,11 @@ module.exports = function findPackage(name, from) {
 };
 
 class PackageInfo {
-  constructor(resovled) {
-    let config = require(resovled);
+  constructor(resolved) {
+    let config = require(resolved);
     this.name = config.name;
     this.config = config;
-    this.dir = path.dirname(resovled);
+    this.dir = path.dirname(resolved);
   }
 
   get main() {

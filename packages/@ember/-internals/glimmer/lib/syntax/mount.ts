@@ -28,7 +28,7 @@ export function mountHelper(
   let nameRef = args.positional.at(0);
   let captured: Option<CapturedArguments> = null;
 
-  // TODO: the functionailty to create a proper CapturedArgument should be
+  // TODO: the functionality to create a proper CapturedArgument should be
   // exported by glimmer, or that it should provide an overload for `curry`
   // that takes `PreparedArguments`
   if (args.named.has('model')) {

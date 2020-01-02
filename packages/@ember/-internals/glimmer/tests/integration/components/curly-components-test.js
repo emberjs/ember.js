@@ -3520,7 +3520,7 @@ moduleFor(
       class FooBarComponent extends Component {
         constructor(injections) {
           super(injections);
-          // analagous to class field defaults
+          // analogous to class field defaults
           this.foo = 'bar';
         }
 

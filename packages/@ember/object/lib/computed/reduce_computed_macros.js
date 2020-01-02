@@ -1453,7 +1453,7 @@ export function sort(itemsKey, additionalDependentKeys, sortDefinition) {
     }
 
     assert(
-      '`computed.sort` can either be used with an array of sort properties or with a sort function. If used with an array of sort properties, it must receive exactly two arguments: the key of the array to sort, and the key of the array of sort properties. If used with a sort function, it may recieve up to three arguments: the key of the array to sort, an optional additional array of dependent keys for the computed property, and the sort function.',
+      '`computed.sort` can either be used with an array of sort properties or with a sort function. If used with an array of sort properties, it must receive exactly two arguments: the key of the array to sort, and the key of the array of sort properties. If used with a sort function, it may receive up to three arguments: the key of the array to sort, an optional additional array of dependent keys for the computed property, and the sort function.',
       argumentsValid
     );
   }
