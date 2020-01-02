@@ -57,6 +57,27 @@ export default class Printer {
     this.options = options;
   }
 
+  /*
+    This is used by _all_ methods on this Printer class that add to `this.buffer`,
+    it allows consumers of the printer to use alternate string representations for
+    a given node.
+
+    The primary use case for this are things like source -> source codemod utilities.
+    For example, ember-template-recast attempts to always preserve the original string
+    formatting in each AST node if no modifications are made to it.
+  */
+  handledByOverride(node: Node): boolean {
+    if (this.options.override !== undefined) {
+      let result = this.options.override(node, this.options);
+      if (typeof result === 'string') {
+        this.buffer += result;
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   Node(node: Node): void {
     switch (node.type) {
       case 'MustacheStatement':
@@ -158,6 +179,10 @@ export default class Printer {
       firstChild.chained = true;
     }
 
+    if (this.handledByOverride(block)) {
+      return;
+    }
+
     this.TopLevelStatements(block.body);
   }
 
@@ -166,6 +191,10 @@ export default class Printer {
   }
 
   ElementNode(el: ElementNode): void {
+    if (this.handledByOverride(el)) {
+      return;
+    }
+
     this.OpenElementNode(el);
     this.TopLevelStatements(el.children);
     this.CloseElementNode(el);
@@ -208,6 +237,10 @@ export default class Printer {
   }
 
   AttrNode(attr: AttrNode): void {
+    if (this.handledByOverride(attr)) {
+      return;
+    }
+
     let { name, value } = attr;
 
     this.buffer += name;
@@ -228,6 +261,10 @@ export default class Printer {
   }
 
   TextNode(text: TextNode, isAttr?: boolean): void {
+    if (this.handledByOverride(text)) {
+      return;
+    }
+
     if (this.options.entityEncoding === 'raw') {
       this.buffer += text.chars;
     } else if (isAttr) {
@@ -238,6 +275,10 @@ export default class Printer {
   }
 
   MustacheStatement(mustache: MustacheStatement): void {
+    if (this.handledByOverride(mustache)) {
+      return;
+    }
+
     this.buffer += mustache.escaped ? '{{' : '{{{';
 
     if (mustache.strip.open) {
@@ -256,6 +297,10 @@ export default class Printer {
   }
 
   BlockStatement(block: BlockStatement): void {
+    if (this.handledByOverride(block)) {
+      return;
+    }
+
     if (block.chained) {
       this.buffer += block.inverseStrip.open ? '{{~' : '{{';
       this.buffer += 'else ';
@@ -300,6 +345,10 @@ export default class Printer {
   }
 
   PartialStatement(partial: PartialStatement): void {
+    if (this.handledByOverride(partial)) {
+      return;
+    }
+
     this.buffer += '{{>';
     this.Expression(partial.name);
     this.Params(partial.params);
@@ -308,6 +357,10 @@ export default class Printer {
   }
 
   ConcatStatement(concat: ConcatStatement): void {
+    if (this.handledByOverride(concat)) {
+      return;
+    }
+
     this.buffer += '"';
     concat.parts.forEach(part => {
       if (part.type === 'TextNode') {
@@ -320,10 +373,18 @@ export default class Printer {
   }
 
   MustacheCommentStatement(comment: MustacheCommentStatement): void {
+    if (this.handledByOverride(comment)) {
+      return;
+    }
+
     this.buffer += `{{!--${comment.value}--}}`;
   }
 
   ElementModifierStatement(mod: ElementModifierStatement): void {
+    if (this.handledByOverride(mod)) {
+      return;
+    }
+
     this.buffer += '{{';
     this.Expression(mod.path);
     this.Params(mod.params);
@@ -332,14 +393,26 @@ export default class Printer {
   }
 
   CommentStatement(comment: CommentStatement): void {
+    if (this.handledByOverride(comment)) {
+      return;
+    }
+
     this.buffer += `<!--${comment.value}-->`;
   }
 
   PathExpression(path: PathExpression): void {
+    if (this.handledByOverride(path)) {
+      return;
+    }
+
     this.buffer += path.original;
   }
 
   SubExpression(sexp: SubExpression): void {
+    if (this.handledByOverride(sexp)) {
+      return;
+    }
+
     this.buffer += '(';
     this.Expression(sexp.path);
     this.Params(sexp.params);
@@ -355,6 +428,10 @@ export default class Printer {
   }
 
   Hash(hash: Hash): void {
+    if (this.handledByOverride(hash)) {
+      return;
+    }
+
     hash.pairs.forEach(pair => {
       this.buffer += ' ';
       this.HashPair(pair);
@@ -362,28 +439,52 @@ export default class Printer {
   }
 
   HashPair(pair: HashPair): void {
+    if (this.handledByOverride(pair)) {
+      return;
+    }
+
     this.buffer += pair.key;
     this.buffer += '=';
     this.Node(pair.value);
   }
 
   StringLiteral(str: StringLiteral): void {
+    if (this.handledByOverride(str)) {
+      return;
+    }
+
     this.buffer += JSON.stringify(str.value);
   }
 
   BooleanLiteral(bool: BooleanLiteral): void {
+    if (this.handledByOverride(bool)) {
+      return;
+    }
+
     this.buffer += bool.value;
   }
 
   NumberLiteral(number: NumberLiteral): void {
+    if (this.handledByOverride(number)) {
+      return;
+    }
+
     this.buffer += number.value;
   }
 
-  UndefinedLiteral(_: UndefinedLiteral): void {
+  UndefinedLiteral(node: UndefinedLiteral): void {
+    if (this.handledByOverride(node)) {
+      return;
+    }
+
     this.buffer += 'undefined';
   }
 
-  NullLiteral(_: NullLiteral): void {
+  NullLiteral(node: NullLiteral): void {
+    if (this.handledByOverride(node)) {
+      return;
+    }
+
     this.buffer += 'null';
   }
 
