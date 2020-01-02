@@ -209,11 +209,11 @@ export function normalizeModifier(sexp: ModifierSexp): AST.ElementModifierStatem
   let parts = sexp.slice(1);
   let next = parts.shift();
 
-  process: {
+  _process: {
     if (isParamsSexp(next)) {
       params = next as AST.Expression[];
     } else {
-      break process;
+      break _process;
     }
 
     next = parts.shift();
@@ -221,7 +221,7 @@ export function normalizeModifier(sexp: ModifierSexp): AST.ElementModifierStatem
     if (isHashSexp(next)) {
       hash = normalizeHash(next as Dict<AST.Expression>);
     } else {
-      break process;
+      break _process;
     }
   }
 

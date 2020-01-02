@@ -1,5 +1,6 @@
 // @ts-check
 
+// eslint-disable-next-line node/no-missing-require
 const { normalizeAll, buildEnum, buildMetas, strip } = require('../dist/@glimmer/debug');
 const fs = require('fs');
 const toml = require('toml');

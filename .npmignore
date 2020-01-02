@@ -1,10 +1,16 @@
+/bin
+/build
 /node_modules
+/packages/@glimmer/integration-tests
 tmp
 .eslintcache
+ember-cli-build.js
 
 npm-debug.log
 sauce-example.log
 
+testem.js
+testem-browserstack.js
 testem.log
 
 .vscode

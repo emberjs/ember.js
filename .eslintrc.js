@@ -7,6 +7,7 @@ module.exports = {
   extends: [
     'eslint:recommended',
     'plugin:@typescript-eslint/eslint-recommended',
+    'plugin:node/recommended',
     'prettier',
     'prettier/@typescript-eslint',
   ],
@@ -189,6 +190,7 @@ module.exports = {
       files: ['bin/**/*.js'],
       rules: {
         'no-process-exit': 'off',
+        'node/shebang': 'off',
       },
     },
     // source packages
@@ -206,12 +208,19 @@ module.exports = {
         sourceType: 'module',
       },
       rules: {
+        'node/no-extraneous-import': 'off',
+        'node/no-missing-import': 'off',
+        'node/no-unpublished-import': 'off',
+        'node/no-unsupported-features/es-syntax': 'off',
+        'node/no-unsupported-features/node-builtins': 'off',
+
         '@typescript-eslint/class-name-casing': 'error',
         '@typescript-eslint/consistent-type-assertions': 'error',
         '@typescript-eslint/no-empty-function': 'off',
         '@typescript-eslint/no-inferrable-types': 'error',
         '@typescript-eslint/no-require-imports': 'error',
         '@typescript-eslint/no-unused-vars': 'off',
+
         'callback-return': 'off',
         'consistent-return': 'off',
         'consistent-this': 'off',
