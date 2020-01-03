@@ -17,7 +17,10 @@ moduleFor(
       let a = null;
       let arr = [1, 2, 3];
       let obj = {};
-      let instance = EmberObject.create({ method() {} });
+      let instance = EmberObject.create({
+        method() {},
+        async asyncMethod() {},
+      });
 
       assert.equal(typeOf(), 'undefined', 'undefined');
       assert.equal(typeOf(null), 'null', 'null');
@@ -36,6 +39,7 @@ moduleFor(
       assert.equal(typeOf(obj), 'object', 'item of type object');
       assert.equal(typeOf(instance), 'instance', 'item of type instance');
       assert.equal(typeOf(instance.method), 'function', 'item of type function');
+      assert.equal(typeOf(instance.asyncMethod), 'function', 'item of type async function');
       assert.equal(typeOf(EmberObject.extend()), 'class', 'item of type class');
       assert.equal(typeOf(new Error()), 'error', 'item of type error');
     }
