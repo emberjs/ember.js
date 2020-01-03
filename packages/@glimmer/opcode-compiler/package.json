@@ -12,7 +12,6 @@
     "@glimmer/reference": "^0.45.2"
   },
   "devDependencies": {
-    "@glimmer/local-debug-flags": "^0.45.2",
-    "typescript": "^2.8.3"
+    "@glimmer/local-debug-flags": "^0.45.2"
   }
 }

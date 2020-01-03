@@ -23,7 +23,6 @@
     "simple-html-tokenizer": "^0.5.8"
   },
   "devDependencies": {
-    "@types/qunit": "^2.0.31",
-    "typescript": "^2.8.3"
+    "@types/qunit": "^2.0.31"
   }
 }

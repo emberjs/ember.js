@@ -7,8 +7,5 @@
   "dependencies": {
     "@glimmer/util": "^0.45.2",
     "@glimmer/interfaces": "^0.45.2"
-  },
-  "devDependencies": {
-    "typescript": "^2.8.3"
   }
 }
