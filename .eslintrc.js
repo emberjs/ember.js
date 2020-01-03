@@ -7,12 +7,15 @@ module.exports = {
   extends: [
     'eslint:recommended',
     'plugin:@typescript-eslint/eslint-recommended',
+    'plugin:qunit/recommended',
     'plugin:node/recommended',
     'prettier',
     'prettier/@typescript-eslint',
   ],
-  plugins: ['@typescript-eslint', 'prettier'],
+  plugins: ['@typescript-eslint', 'prettier', 'qunit'],
   rules: {
+    'qunit/no-commented-tests': 'off',
+
     'prettier/prettier': 'error',
     'accessor-pairs': 'error',
     'array-callback-return': 'error',
