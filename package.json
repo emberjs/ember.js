@@ -77,7 +77,7 @@
     "@glimmer/compiler": "0.38.5-alpha.3",
     "@glimmer/env": "^0.1.7",
     "@glimmer/interfaces": "0.38.5-alpha.3",
-    "@glimmer/node": "0.38.5-alpha.3",
+    "@glimmer/node": "0.45.2",
     "@glimmer/opcode-compiler": "0.38.5-alpha.3",
     "@glimmer/program": "0.38.5-alpha.3",
     "@glimmer/reference": "0.38.5-alpha.3",
