@@ -4,8 +4,6 @@ import { module } from '../support';
 import { assign } from '@glimmer/util';
 import { unwrapTemplate } from '@glimmer/opcode-compiler';
 
-QUnit.module('[glimmer-compiler] precompile');
-
 module('[glimmer-compiler] Compile options', ({ test }) => {
   test('moduleName option is passed into meta', assert => {
     let moduleName = "It ain't hard to tell";
