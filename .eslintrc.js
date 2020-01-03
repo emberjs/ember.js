@@ -14,6 +14,12 @@ module.exports = {
     'prettier/@typescript-eslint',
   ],
   plugins: ['@typescript-eslint', 'prettier', 'qunit'],
+  settings: {
+    node: {
+      resolvePaths: [`${__dirname}/packages/`],
+      tryExtensions: ['.js', '.ts', '.d.ts'],
+    },
+  },
   rules: {
     // disabled because we still have a few commented tests
     'qunit/no-commented-tests': 'off',
@@ -220,7 +226,6 @@ module.exports = {
       },
       rules: {
         'node/no-extraneous-import': 'off',
-        'node/no-missing-import': 'off',
         'node/no-unpublished-import': 'off',
         'node/no-unsupported-features/es-syntax': 'off',
         'node/no-unsupported-features/node-builtins': 'off',
