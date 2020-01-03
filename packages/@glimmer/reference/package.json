@@ -7,8 +7,5 @@
     "@glimmer/env": "^0.1.7",
     "@glimmer/util": "^0.45.2",
     "@glimmer/validator": "^0.45.2"
-  },
-  "devDependencies": {
-    "typescript": "^2.8.3"
   }
 }

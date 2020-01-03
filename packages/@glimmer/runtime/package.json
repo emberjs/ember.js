@@ -22,7 +22,6 @@
     "@glimmer/object-reference": "^0.45.2",
     "@glimmer/opcode-compiler": "^0.45.2",
     "@glimmer/debug": "^0.45.2",
-    "@types/qunit": "^2.0.31",
-    "typescript": "^2.8.3"
+    "@types/qunit": "^2.0.31"
   }
 }

@@ -12,7 +12,6 @@
     "@glimmer/opcode-compiler": "^0.45.2"
   },
   "devDependencies": {
-    "typescript": "^2.8.3",
     "@glimmer/runtime": "^0.45.2"
   }
 }
