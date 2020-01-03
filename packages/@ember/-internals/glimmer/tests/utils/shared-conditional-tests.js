@@ -402,6 +402,7 @@ const IfUnlessWithTestCases = [
     ObjectProxy.create({ content: true }),
     Object,
     function() {},
+    async function() {},
     new String('hello'),
     new String(''),
     new Boolean(true),

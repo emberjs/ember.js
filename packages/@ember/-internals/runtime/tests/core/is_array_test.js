@@ -18,6 +18,7 @@ moduleFor(
       let length = { length: 12 };
       let strangeLength = { length: 'yes' };
       let fn = function() {};
+      let asyncFn = async function() {};
       let arrayProxy = ArrayProxy.create({ content: emberA() });
 
       assert.equal(isArray(numarray), true, '[1,2,3]');
@@ -29,6 +30,7 @@ moduleFor(
       assert.equal(isArray(strangeLength), false, '{ length: "yes" }');
       assert.equal(isArray(global), false, 'global');
       assert.equal(isArray(fn), false, 'function() {}');
+      assert.equal(isArray(asyncFn), false, 'async function() {}');
       assert.equal(isArray(arrayProxy), true, '[]');
     }
 
