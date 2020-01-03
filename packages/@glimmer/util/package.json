@@ -4,11 +4,13 @@
   "description": "Common utilities used in Glimmer",
   "repository": "https://github.com/tildeio/glimmer/tree/master/packages/@glimmer/util",
   "license": "MIT",
+  "dependencies": {
+    "@simple-dom/interface": "^1.4.0"
+  },
   "devDependencies": {
     "@glimmer/local-debug-flags": "^0.45.2",
     "@glimmer/interfaces": "^0.45.2",
     "@types/qunit": "^2.0.31",
-    "@simple-dom/interface": "^1.4.0",
     "typescript": "^2.8.3"
   },
   "typings": "index.ts"
