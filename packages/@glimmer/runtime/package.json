@@ -13,7 +13,8 @@
     "@glimmer/wire-format": "^0.45.2",
     "@glimmer/interfaces": "^0.45.2",
     "@glimmer/program": "^0.45.2",
-    "@glimmer/vm": "^0.45.2"
+    "@glimmer/vm": "^0.45.2",
+    "@simple-dom/interface": "^1.4.0"
   },
   "devDependencies": {
     "@glimmer/local-debug-flags": "^0.45.2",
