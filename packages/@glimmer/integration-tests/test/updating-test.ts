@@ -39,7 +39,6 @@ import {
 import { Namespace, SimpleElement, SimpleNode } from '@simple-dom/interface';
 import { assert, module, test } from './support';
 import { unwrapHandle } from '@glimmer/opcode-compiler';
-import { QUnitAssert } from '../../dom-change-list/test/interfaces';
 
 const SVG_NAMESPACE = Namespace.SVG;
 const XLINK_NAMESPACE = Namespace.XLink;
@@ -3605,7 +3604,11 @@ QUnit.module('integration - Updating Element Modifiers', hooks => {
   });
 });
 
-function assertHandleError(assert: QUnitAssert, result: HandleResult, ...errors: EncoderError[]) {
+function assertHandleError(
+  assert: typeof QUnit.assert,
+  result: HandleResult,
+  ...errors: EncoderError[]
+) {
   assert.ok(typeof result !== 'number', 'Expected errors, found none');
   assert.deepEqual((result as ErrHandle).errors, errors);
 }
