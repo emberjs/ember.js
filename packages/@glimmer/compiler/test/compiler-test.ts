@@ -1,3 +1,5 @@
+/* eslint-disable qunit/no-test-expect-argument */
+
 import {
   precompile,
   WireFormatDebugger,

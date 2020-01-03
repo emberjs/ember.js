@@ -7,12 +7,23 @@ module.exports = {
   extends: [
     'eslint:recommended',
     'plugin:@typescript-eslint/eslint-recommended',
+    'plugin:qunit/recommended',
+    'plugin:qunit/two',
     'plugin:node/recommended',
     'prettier',
     'prettier/@typescript-eslint',
   ],
-  plugins: ['@typescript-eslint', 'prettier'],
+  plugins: ['@typescript-eslint', 'prettier', 'qunit'],
   rules: {
+    // disabled because we still have a few commented tests
+    'qunit/no-commented-tests': 'off',
+    // disabled due to false positives
+    'qunit/no-global-expect': 'off',
+    // disabled because we still use this pattern everywhere
+    'qunit/no-global-module-test': 'off',
+    // disabled due to false positives
+    'qunit/no-global-stop-start': 'off',
+
     'prettier/prettier': 'error',
     'accessor-pairs': 'error',
     'array-callback-return': 'error',
