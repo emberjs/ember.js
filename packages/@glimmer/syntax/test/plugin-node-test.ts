@@ -6,8 +6,8 @@ import {
   ASTPluginEnvironment,
   ASTPluginBuilder,
 } from '@glimmer/syntax';
-import { ModuleLocator } from '../../interfaces';
-import { expect } from '../../util';
+import { ModuleLocator } from '@glimmer/interfaces';
+import { expect } from '@glimmer/util';
 
 const { test } = QUnit;
 
