@@ -321,7 +321,7 @@ test('Helper', function(assert) {
           { nodeType: 'PathExpression', key: null },
         ]);
 
-        assert.ok((path.parent!.node as AST.SubExpression).params.indexOf(node) !== -1);
+        assert.notEqual((path.parent!.node as AST.SubExpression).params.indexOf(node), -1);
       }
     },
   });
