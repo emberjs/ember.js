@@ -4,7 +4,9 @@
   "repository": "https://github.com/glimmerjs/glimmer-vm/tree/master/packages/@glimmer/node",
   "dependencies": {
     "@glimmer/runtime": "^0.45.2",
-    "@glimmer/interfaces": "^0.45.2"
+    "@glimmer/interfaces": "^0.45.2",
+    "@simple-dom/document": "^1.4.0",
+    "@simple-dom/interface": "^1.4.0"
   },
   "devDependencies": {
     "typescript": "^2.8.3",
