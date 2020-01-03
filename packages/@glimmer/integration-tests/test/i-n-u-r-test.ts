@@ -1,4 +1,4 @@
-import { JitRenderDelegate, RenderTest } from '@glimmer/integration-tests';
+import { JitRenderDelegate, RenderTest } from '..';
 import { SimpleComment, SimpleElement, SimpleText } from '@simple-dom/interface';
 
 import { module } from './support';

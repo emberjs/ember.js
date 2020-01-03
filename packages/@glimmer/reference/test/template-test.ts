@@ -8,7 +8,7 @@ import {
   PropertyReference,
   IterationItemReference,
   TemplatePathReference,
-} from '@glimmer/reference';
+} from '..';
 import { TestEnv } from './utils/template';
 import {
   EMPTY_ARGS,

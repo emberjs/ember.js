@@ -12,7 +12,7 @@ import {
   AotSerializationDelegate,
   CompilationTests,
   componentSuite,
-} from '@glimmer/integration-tests';
+} from '..';
 
 nodeSuite(ServerSideSuite);
 nodeComponentSuite(ServerSideComponentSuite);

@@ -1,6 +1,6 @@
 import { module, test } from './utils/qunit';
 
-import { IterableImpl, IterationArtifacts, UpdatableRootReference } from '@glimmer/reference';
+import { IterableImpl, IterationArtifacts, UpdatableRootReference } from '..';
 import { symbol } from '@glimmer/util';
 
 import { initialize as utilInitialize, sync, Target } from './utils/iterator';

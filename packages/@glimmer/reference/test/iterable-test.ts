@@ -1,6 +1,11 @@
-import { AbstractIterable, Iterator, IterationItem, IterationArtifacts } from '@glimmer/reference';
+import {
+  AbstractIterable,
+  Iterator,
+  IterationItem,
+  IterationArtifacts,
+  UpdatableRootReference,
+} from '..';
 import { Tag } from '@glimmer/validator';
-import { UpdatableRootReference } from '@glimmer/reference';
 
 import { Option } from '@glimmer/util';
 

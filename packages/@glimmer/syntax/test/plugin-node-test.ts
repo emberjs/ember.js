@@ -1,11 +1,4 @@
-import {
-  preprocess,
-  Syntax,
-  Walker,
-  AST,
-  ASTPluginEnvironment,
-  ASTPluginBuilder,
-} from '@glimmer/syntax';
+import { preprocess, Syntax, Walker, AST, ASTPluginEnvironment, ASTPluginBuilder } from '..';
 import { ModuleLocator } from '@glimmer/interfaces';
 import { expect } from '@glimmer/util';
 

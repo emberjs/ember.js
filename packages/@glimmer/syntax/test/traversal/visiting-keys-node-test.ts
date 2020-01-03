@@ -1,4 +1,4 @@
-import { preprocess as parse, traverse, AST } from '@glimmer/syntax';
+import { preprocess as parse, traverse, AST } from '../..';
 
 function traversalEqual(node: AST.Node, expectedTraversal: Array<[string, AST.Node]>) {
   let actualTraversal: Array<[string, AST.BaseNode]> = [];

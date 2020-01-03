@@ -1,4 +1,4 @@
-import { alias } from '@glimmer/object';
+import { alias } from '..';
 import { Meta } from '@glimmer/object-reference';
 import { get, set, defineProperty } from './support';
 

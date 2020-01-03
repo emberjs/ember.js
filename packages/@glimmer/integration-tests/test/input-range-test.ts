@@ -8,7 +8,7 @@ import {
   TestContext,
   registerEmberishCurlyComponent,
   EmberishRootView,
-} from '@glimmer/integration-tests';
+} from '..';
 
 abstract class RangeTests extends AttributesTests {
   min = -5;

@@ -1,4 +1,4 @@
-import EmberObject from '@glimmer/object';
+import EmberObject from '..';
 
 QUnit.module('GlimmerObject.extend');
 

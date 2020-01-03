@@ -1,4 +1,4 @@
-import { BundleCompiler } from '@glimmer/bundle-compiler';
+import { BundleCompiler } from '..';
 import { ComponentCapabilities, ModuleLocator } from '@glimmer/interfaces';
 import { MINIMAL_CAPABILITIES } from '@glimmer/opcode-compiler';
 import { assign } from '@glimmer/util';
