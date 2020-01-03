@@ -25,7 +25,7 @@ QUnit.test('reopening a parent flushes the child', assert => {
   assert.equal(sub.hello(), 'hello');
 });
 
-QUnit.test('reopening a parent flushes the child', assert => {
+QUnit.test('reopening a parent flushes the child #2', assert => {
   let MyClass = EmberObject.extend({
     hello() {
       return 'original hello';

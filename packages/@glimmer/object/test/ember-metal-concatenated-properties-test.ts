@@ -17,7 +17,7 @@ QUnit.test('defining concatenated properties should concat future version', asse
   assert.deepEqual(get(obj, 'foo'), ['a', 'b', 'c', 'd', 'e', 'f']);
 });
 
-QUnit.test('defining concatenated properties should concat future version', assert => {
+QUnit.test('defining concatenated properties should concat future version #2', assert => {
   let MixinA = Mixin.create({
     concatenatedProperties: null,
   });
@@ -71,7 +71,7 @@ QUnit.test('adding a prop that is not an array should make array', assert => {
   assert.deepEqual(get(obj, 'foo'), [1, 2, 3, 4]);
 });
 
-QUnit.test('adding a prop that is not an array should make array', assert => {
+QUnit.test('adding a prop that is not an array should make array #2', assert => {
   let MixinA = Mixin.create({
     concatenatedProperties: ['foo'],
     foo: 'bar',
