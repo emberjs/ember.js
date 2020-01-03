@@ -8,11 +8,10 @@ import {
 } from '@simple-dom/interface';
 import { Option, DestroySymbol, SymbolDestroyable, Maybe } from '../core';
 import { Bounds, Cursor } from './bounds';
-import { ElementOperations, Environment } from '../runtime';
+import { ElementOperations, Environment, ModifierManager } from '../runtime';
 import { GlimmerTreeConstruction, GlimmerTreeChanges } from './changes';
 import { Stack } from '../stack';
 import { LinkedList, LinkedListNode } from '../list';
-import { ModifierManager } from '@glimmer/interfaces';
 
 export interface LiveBlock extends Bounds {
   openElement(element: SimpleElement): void;

@@ -11,7 +11,7 @@ import {
   c,
   NEWLINE,
   unicode,
-} from '@glimmer/compiler';
+} from '..';
 import {
   SerializedTemplateWithLazyBlock,
   SerializedTemplate,

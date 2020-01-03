@@ -1,4 +1,4 @@
-import { Reference, CachedReference } from '@glimmer/reference';
+import { Reference, CachedReference } from '..';
 import {
   combine,
   Tag,

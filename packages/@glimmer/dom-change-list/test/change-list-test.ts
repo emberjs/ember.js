@@ -1,4 +1,4 @@
-import { DOMTreeConstruction, NodeTokensImpl } from '@glimmer/dom-change-list';
+import { DOMTreeConstruction, NodeTokensImpl } from '..';
 
 import { TestCase, module, test } from './test-case';
 import { Builder as TestBuilder, toHTML, toHTMLNS } from './support';

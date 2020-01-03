@@ -1,4 +1,4 @@
-import GlimmerObject, { computed } from '@glimmer/object';
+import GlimmerObject, { computed } from '..';
 import { UpdatableRootReference, metaFor, setProperty } from '@glimmer/object-reference';
 import { Reference } from '@glimmer/reference';
 

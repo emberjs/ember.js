@@ -1,4 +1,4 @@
-import { Mixin, Blueprint, toMixin } from '@glimmer/object';
+import { Mixin, Blueprint, toMixin } from '..';
 import { setProperty } from '@glimmer/object-reference';
 import { dict } from '@glimmer/util';
 export { Mixin };

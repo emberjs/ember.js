@@ -1,5 +1,5 @@
 import { mixin } from './support';
-import { Mixin } from '@glimmer/object';
+import { Mixin } from '..';
 import { dict } from '@glimmer/util';
 
 QUnit.module('Mixin.create - Methods');

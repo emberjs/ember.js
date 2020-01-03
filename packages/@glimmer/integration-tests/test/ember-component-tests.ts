@@ -43,7 +43,7 @@ import {
   registerStaticTaglessComponent,
   registerTemplate,
   componentHelper,
-} from '@glimmer/integration-tests';
+} from '..';
 import { EmberishGlimmerArgs, EmberishCurlyComponentFactory } from '../lib/components';
 
 let context: TestContext;

@@ -20,7 +20,7 @@ import {
   strip,
   TestContext,
   TestMacros,
-} from '@glimmer/integration-tests';
+} from '..';
 import { SimpleNode } from '@simple-dom/interface';
 import { unwrapTemplate, unwrapHandle } from '@glimmer/opcode-compiler';
 
