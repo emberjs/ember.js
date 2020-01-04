@@ -5,7 +5,7 @@
   - Can change over their component’s lifetime and
   - Should cause Ember to rerender if and when they change
 
-  We can do this by marking the field with the @tracked decorator.
+  We can do this by marking the field with the `@tracked` decorator.
 
   @module @glimmer/tracking
   @public
@@ -33,7 +33,7 @@
   import { tracked } from '@glimmer/tracking';
   import { action } from '@ember/object';
 
-  export default class Counter extends Component {
+  export default class CounterComponent extends Component {
     @tracked count = 0;
 
     get timesTen() {
@@ -42,7 +42,7 @@
 
     @action
     plusOne() {
-      this.item += 1;
+      this.count += 1;
     }
   }
   ```
@@ -56,9 +56,8 @@
   ```javascript
   import Component from '@glimmer/component';
   import { tracked } from '@glimmer/tracking';
-  import { action } from '@ember/object';
 
-  class Entries {
+  class Entry {
     @tracked name;
     @tracked phoneNumber;
 
@@ -68,7 +67,7 @@
     }
   }
 
-  export default class PhoneBook extends Component {
+  export default class PhoneBookComponent extends Component {
     entries = [
       new Entry('Pizza Palace', 5551234),
       new Entry('1st Street Cleaners', 5554321),
