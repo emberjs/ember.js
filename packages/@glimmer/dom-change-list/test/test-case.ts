@@ -1,10 +1,9 @@
 import { Dict } from '@glimmer/interfaces';
-import { QUnitAssert } from './interfaces';
 
 // A bunch of this file was extracted from the Glimmer testing harness.
 // TODO: Clean this up and eliminate anything that isn't generically unnecessary.
 
-export type TestFunction = (this: TestCase, assert: QUnitAssert) => void;
+export type TestFunction = (this: TestCase, assert: typeof QUnit.assert) => void;
 
 function setTestingDescriptor(descriptor: PropertyDescriptor): void {
   let testFunction = descriptor.value as Function & { isTest: boolean };
@@ -60,7 +59,7 @@ export function module(name: string): (klass: (typeof TestCase) & Constructor) =
 export abstract class TestCase {
   before() {}
 
-  run(test: TestFunction, assert: QUnitAssert): void | Promise<void> {
+  run(test: TestFunction, assert: typeof QUnit.assert): void | Promise<void> {
     this.before();
     return test.call(this, assert);
   }
