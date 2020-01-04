@@ -15,10 +15,10 @@
   });
   ```
 
-  ```app/templates/components/person-profile.hbs
-  {{name}}
-  <div>{{name}}</div>
-  <span data-name={{name}}></span>
+  ```app/components/person-profile.hbs
+  {{this.name}}
+  <div>{{this.name}}</div>
+  <span data-name={{this.name}}></span>
   ```
 
   Any time the "name" property on the component changes, the DOM will be
@@ -27,8 +27,8 @@
   Properties can be chained as well:
 
   ```handlebars
-  {{aUserModel.name}}
-  <div>{{listOfUsers.firstObject.name}}</div>
+  {{@aUserModel.name}}
+  <div>{{@listOfUsers.firstObject.name}}</div>
   ```
 
   ### Using Ember helpers
@@ -36,19 +36,19 @@
   When content is passed in mustaches `{{}}`, Ember will first try to find a helper
   or component with that name. For example, the `if` helper:
 
-  ```handlebars
-  {{if name "I have a name" "I have no name"}}
-  <span data-has-name={{if name true}}></span>
+  ```app/components/person-profile.hbs
+  {{if this.name "I have a name" "I have no name"}}
+  <span data-has-name={{if this.name true}}></span>
   ```
 
   The returned value is placed where the `{{}}` is called. The above style is
   called "inline". A second style of helper usage is called "block". For example:
 
   ```handlebars
-  {{#if name}}
-  I have a name
+  {{#if this.name}}
+    I have a name
   {{else}}
-  I have no name
+    I have no name
   {{/if}}
   ```
 
@@ -58,8 +58,8 @@
   helper will add " Doe" to a displayed name if the person has no last name:
 
   ```handlebars
-  <span data-name={{concat firstName (
-  if lastName (concat " " lastName) "Doe"
+  <span data-name={{concat this.firstName (
+    if this.lastName (concat " " this.lastName) "Doe"
   )}}></span>
   ```
 
@@ -155,7 +155,7 @@
   {{/labeled-textfield}}
   ```
 
-  ```app/templates/components/labeled-textfield.hbs
+  ```app/components/labeled-textfield.hbs
   <label>
     {{yield this.validationError}} <Input @value={{@value}} />
   </label>
@@ -180,6 +180,7 @@
   `{{has-block}}` indicates if the component was invoked with a block.
 
   This component is invoked with a block:
+
   ```handlebars
   {{#my-component}}
     Hi Jen!
@@ -187,11 +188,13 @@
   ```
 
   This component is invoked without a block:
+
   ```handlebars
   {{my-component}}
   ```
 
   Using angle bracket invocation, this looks like:
+
   ```html
   <MyComponent>Hi Jen!</MyComponent> {{! with a block}}
   ```
@@ -222,6 +225,7 @@
   `{{has-block-params}}` indicates if the component was invoked with block params.
 
   This component is invoked with block params:
+
   ```handlebars
   {{#my-component as |favoriteFlavor|}}
     Hi Jen!
@@ -229,10 +233,27 @@
   ```
 
   This component is invoked without block params:
+
   ```handlebars
   {{#my-component}}
     Hi Jenn!
   {{/my-component}}
+  ```
+
+  With angle bracket syntax, block params look like this:
+
+    ```handlebars
+  <MyComponent as |favoriteFlavor|>
+    Hi Jen!
+  </MyComponent>
+  ```
+
+  And without block params:
+
+  ```handlebars
+  <MyComponent as |favoriteFlavor|>
+    Hi Jen!
+  </MyComponent>
   ```
 
   This is useful when you want to create a component that can render itself
@@ -240,7 +261,7 @@
 
   ```app/templates/components/my-component.hbs
   {{#if (has-block-params)}}
-    Welcome {{yield favoriteFlavor}}, we're happy you're here and hope you
+    Welcome {{yield this.favoriteFlavor}}, we're happy you're here and hope you
     enjoy your favorite ice cream flavor.
   {{else}}
     Welcome {{yield}}, we're happy you're here, but we're unsure what
@@ -275,7 +296,7 @@
   `get` is also aware of keywords. So in this situation
 
   ```handlebars
-  {{#each items as |item|}}
+  {{#each this.items as |item|}}
     {{debugger}}
   {{/each}}
   ```
