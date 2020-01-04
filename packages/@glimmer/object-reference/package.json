@@ -8,8 +8,5 @@
     "@glimmer/util": "^0.45.2",
     "@glimmer/reference": "^0.45.2",
     "@glimmer/validator": "^0.45.2"
-  },
-  "devDependencies": {
-    "typescript": "^2.8.3"
   }
 }
