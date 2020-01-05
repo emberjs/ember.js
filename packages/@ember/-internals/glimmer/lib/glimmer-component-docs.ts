@@ -105,7 +105,6 @@
 
   ```javascript
   import Component from '@glimmer/component';
-  import { tracked } from '@ember/tracking';
   import { computed } from '@ember/object';
 
   export default class SomeComponent extends Component {
