@@ -220,7 +220,7 @@ function addEventListener(
   For example, if you'd like to run a function on your component when a `<button>`
   in the components template is clicked you might do something like:
 
-  ```app/templates/components/like-post.hbs
+  ```app/components/like-post.hbs
   <button {{on 'click' this.saveLike}}>Like this post!</button>
   ```
 
@@ -268,7 +268,7 @@ function addEventListener(
   For example, in our example case above if you'd like to pass in the post that
   was being liked when the button is clicked you could do something like:
 
-  ```app/templates/components/like-post.js
+  ```app/components/like-post.hbs
   <button {{on 'click' (fn this.saveLike @post)}}>Like this post!</button>
   ```
 
