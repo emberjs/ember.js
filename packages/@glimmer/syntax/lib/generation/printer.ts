@@ -29,6 +29,8 @@ import {
 import { voidMap } from '../parser/tokenizer-event-handlers';
 import { escapeText, escapeAttrValue } from './util';
 
+const NON_WHITESPACE = /\S/;
+
 export interface PrinterOptions {
   entityEncoding: 'transformed' | 'raw';
 
@@ -66,10 +68,14 @@ export default class Printer {
     For example, ember-template-recast attempts to always preserve the original string
     formatting in each AST node if no modifications are made to it.
   */
-  handledByOverride(node: Node): boolean {
+  handledByOverride(node: Node, ensureLeadingWhitespace = false): boolean {
     if (this.options.override !== undefined) {
       let result = this.options.override(node, this.options);
       if (typeof result === 'string') {
+        if (ensureLeadingWhitespace && NON_WHITESPACE.test(result[0])) {
+          result = ` ${result}`;
+        }
+
         this.buffer += result;
         return true;
       }
@@ -456,14 +462,17 @@ export default class Printer {
 
   Params(params: Expression[]) {
     // TODO: implement a top level Params AST node (just like the Hash object)
-    params.forEach(param => {
-      this.buffer += ' ';
-      this.Expression(param);
-    });
+    // so that this can also be overridden
+    if (params.length) {
+      params.forEach(param => {
+        this.buffer += ' ';
+        this.Expression(param);
+      });
+    }
   }
 
   Hash(hash: Hash): void {
-    if (this.handledByOverride(hash)) {
+    if (this.handledByOverride(hash, true)) {
       return;
     }
 
