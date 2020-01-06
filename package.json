@@ -1,6 +1,6 @@
 {
   "name": "glimmer-engine",
-  "version": "0.45.2",
+  "version": "0.45.3",
   "private": true,
   "description": "Glimmer compiles Handlebars templates into document fragments rather than string buffers",
   "license": "MIT",
@@ -87,7 +87,9 @@
     "testem-failure-only-reporter": "^0.0.1",
     "toml": "^2.3.3"
   },
-  "workspaces": ["packages/*/*"],
+  "workspaces": [
+    "packages/*/*"
+  ],
   "changelog": {
     "repo": "glimmerjs/glimmer-vm",
     "labels": {
