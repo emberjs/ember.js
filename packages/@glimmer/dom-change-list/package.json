@@ -10,6 +10,7 @@
   },
   "devDependencies": {
     "@simple-dom/serializer": "^1.4.0",
-    "@simple-dom/void-map": "^1.4.0"
+    "@simple-dom/void-map": "^1.4.0",
+    "@types/qunit": "^2.0.31"
   }
 }
