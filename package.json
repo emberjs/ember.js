@@ -87,6 +87,7 @@
     "testem-failure-only-reporter": "^0.0.1",
     "toml": "^2.3.3"
   },
+  "workspaces": ["packages/*/*"],
   "changelog": {
     "repo": "glimmerjs/glimmer-vm",
     "labels": {

@@ -16,7 +16,6 @@ module.exports = {
   plugins: ['@typescript-eslint', 'prettier', 'qunit'],
   settings: {
     node: {
-      resolvePaths: [`${__dirname}/packages/`],
       tryExtensions: ['.js', '.ts', '.d.ts'],
     },
   },
