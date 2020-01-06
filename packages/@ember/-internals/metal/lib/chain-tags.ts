@@ -217,7 +217,7 @@ export function getChainTagsForKey(obj: any, path: string) {
       // If the descriptor is defined, then its a normal CP (not an alias, which
       // would have been handled earlier). We get the last revision to check if
       // the CP is still valid, and if so we use the cached value. If not, then
-      // we create a lazy chain lookup, and the next time the CP is caluculated,
+      // we create a lazy chain lookup, and the next time the CP is calculated,
       // it will update that lazy chain.
       let lastRevision = getLastRevisionFor(current, segment);
 

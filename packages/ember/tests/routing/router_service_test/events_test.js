@@ -552,13 +552,13 @@ moduleFor(
     '@test params'(assert) {
       assert.expect(14);
 
-      let inital = true;
+      let initial = true;
 
       this.add(
         'route:dynamic',
         Route.extend({
           model(params) {
-            if (inital) {
+            if (initial) {
               assert.deepEqual(params, { dynamic_id: '123' });
             } else {
               assert.deepEqual(params, { dynamic_id: '1' });
@@ -577,7 +577,7 @@ moduleFor(
 
             this.router.on('routeWillChange', transition => {
               assert.equal(transition.to.name, 'dynamic');
-              if (inital) {
+              if (initial) {
                 assert.deepEqual(transition.to.paramNames, ['dynamic_id']);
                 assert.deepEqual(transition.to.params, { dynamic_id: '123' });
               } else {
@@ -589,7 +589,7 @@ moduleFor(
             this.router.on('routeDidChange', transition => {
               assert.equal(transition.to.name, 'dynamic');
               assert.deepEqual(transition.to.paramNames, ['dynamic_id']);
-              if (inital) {
+              if (initial) {
                 assert.deepEqual(transition.to.params, { dynamic_id: '123' });
               } else {
                 assert.deepEqual(transition.to.params, { dynamic_id: '1' });
@@ -600,7 +600,7 @@ moduleFor(
       );
 
       return this.visit('/dynamic/123').then(() => {
-        inital = false;
+        initial = false;
         return this.routerService.transitionTo('dynamic', 1);
       });
     }

@@ -1227,7 +1227,7 @@ class Route extends EmberObject implements IRoute {
     ```app/routes/photos.js
     import Route from '@ember/routing/route';
 
-    export default class PhotosRoute extendes Route {
+    export default class PhotosRoute extends Route {
       model() {
         return this.store.findAll('photo');
       }

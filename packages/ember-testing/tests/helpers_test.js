@@ -979,7 +979,7 @@ if (!jQueryDisabled) {
 
       [`@test pauseTest pauses`](assert) {
         assert.expect(1);
-        // overwrite info to supress the console output (see https://github.com/emberjs/ember.js/issues/16391)
+        // overwrite info to suppress the console output (see https://github.com/emberjs/ember.js/issues/16391)
         setDebugFunction('info', noop);
 
         let { andThen, pauseTest } = this.application.testHelpers;
@@ -995,7 +995,7 @@ if (!jQueryDisabled) {
 
       [`@test resumeTest resumes paused tests`](assert) {
         assert.expect(1);
-        // overwrite info to supress the console output (see https://github.com/emberjs/ember.js/issues/16391)
+        // overwrite info to suppress the console output (see https://github.com/emberjs/ember.js/issues/16391)
         setDebugFunction('info', noop);
 
         let {

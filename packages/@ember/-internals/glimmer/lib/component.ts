@@ -575,10 +575,10 @@ export const BOUNDS = symbol('BOUNDS');
   actions with angle bracket invocation, adding event handler methods to the
   component's class, or adding actions to the component's template.
 
-  ### Passing Actions With Angle Bracket Invoation
+  ### Passing Actions With Angle Bracket Invocation
 
   For one-off events specific to particular instance of a component, it is possible
-  to pass actions to the component's element using angle bracket invoation syntax.
+  to pass actions to the component's element using angle bracket invocation syntax.
 
   ```handlebars
   <MyWidget {{action 'firstWidgetClicked'}} />
@@ -596,7 +596,7 @@ export const BOUNDS = symbol('BOUNDS');
   ### Event Handler Methods
 
   Components can also respond to user-initiated events by implementing a method
-  that matches the event name. This approach is appropiate when the same event
+  that matches the event name. This approach is appropriate when the same event
   should be handled by all instances of the same component.
 
   An event object will be passed as the argument to the event handler method.

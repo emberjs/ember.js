@@ -523,7 +523,7 @@ const LinkComponent = EmberComponent.extend({
     get(_key: string): boolean {
       // always returns false for `get` because (due to the `set` just below)
       // the cached return value from the set will prevent this getter from _ever_
-      // being called after a set has occured
+      // being called after a set has occurred
       return false;
     },
 

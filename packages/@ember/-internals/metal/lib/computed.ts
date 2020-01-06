@@ -700,7 +700,7 @@ export class ComputedProperty extends ComputedDescriptor {
     deprecate(
       `The ${toString(
         obj
-      )}#${keyName} computed property was just overriden. This removes the computed property and replaces it with a plain value, and has been deprecated. If you want this behavior, consider defining a setter which does it manually.`,
+      )}#${keyName} computed property was just overridden. This removes the computed property and replaces it with a plain value, and has been deprecated. If you want this behavior, consider defining a setter which does it manually.`,
       false,
       {
         id: 'computed-property.override',

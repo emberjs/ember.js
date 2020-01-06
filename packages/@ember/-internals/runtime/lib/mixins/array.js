@@ -378,7 +378,7 @@ const ArrayMixin = Mixin.create(Enumerable, {
   },
 
   /**
-    Used to determine the passed object's first occurence in the array.
+    Used to determine the passed object's first occurrence in the array.
     Returns the index if found, -1 if no match is found.
 
     The optional `startAt` argument can be used to pass a starting

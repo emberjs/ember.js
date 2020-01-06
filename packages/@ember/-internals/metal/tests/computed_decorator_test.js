@@ -320,7 +320,7 @@ moduleFor(
           }
         }
         new Obj();
-      }, "Only one computed property decorator can be applied to a class field or accessor, but 'foo' was decorated twice. You may have added the decorator to both a getter and setter, which is unecessary.");
+      }, "Only one computed property decorator can be applied to a class field or accessor, but 'foo' was decorated twice. You may have added the decorator to both a getter and setter, which is unnecessary.");
     }
   }
 );
