@@ -131,4 +131,22 @@ QUnit.module('[glimmer-syntax] Code generation - override', function() {
 
     assert.equal(actual, `<FooBar @baz="ZOMG!!!!" @derp="qux" />`);
   });
+
+  test('maintains proper spacing when overriding hash', function(assert) {
+    let ast = parse(`{{foo-bar blah=baz}}`);
+
+    let actual = print(ast, {
+      entityEncoding: 'transformed',
+
+      override(ast) {
+        if (ast.type === 'Hash') {
+          return 'baz="ZOMG!!!!"';
+        }
+
+        return;
+      },
+    });
+
+    assert.equal(actual, `{{foo-bar baz="ZOMG!!!!"}}`);
+  });
 });
