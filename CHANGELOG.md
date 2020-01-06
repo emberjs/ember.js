@@ -1,5 +1,27 @@
 # Changelog
 
+## v0.45.3 (2020-01-06)
+
+#### :bug: Bug Fix
+* `@glimmer/syntax`
+  * [#1006](https://github.com/glimmerjs/glimmer-vm/pull/1006) Ensure spacing before `Hash` exists when printing with overrides. ([@rwjblue](https://github.com/rwjblue))
+
+#### :house: Internal
+* `@glimmer/syntax`
+  * [#1004](https://github.com/glimmerjs/glimmer-vm/pull/1004) syntax/test/plugin-node: Replace relative imports with package imports ([@Turbo87](https://github.com/Turbo87))
+* `@glimmer/dom-change-list`, `@glimmer/integration-tests`
+  * [#1003](https://github.com/glimmerjs/glimmer-vm/pull/1003) Use type signatures from `@types/qunit` and `qunit` instead of local copy ([@Turbo87](https://github.com/Turbo87))
+* Other
+  * [#1002](https://github.com/glimmerjs/glimmer-vm/pull/1002) Use Yarn workspaces ([@Turbo87](https://github.com/Turbo87))
+  * [#998](https://github.com/glimmerjs/glimmer-vm/pull/998) ESLint: Enable `node/no-missing-import` rule ([@Turbo87](https://github.com/Turbo87))
+  * [#1001](https://github.com/glimmerjs/glimmer-vm/pull/1001) Remove outdated `typescript` dev dependencies ([@Turbo87](https://github.com/Turbo87))
+  * [#1000](https://github.com/glimmerjs/glimmer-vm/pull/1000) Add missing `@simple-dom` dependencies ([@Turbo87](https://github.com/Turbo87))
+  * [#997](https://github.com/glimmerjs/glimmer-vm/pull/997) ESLint: Add `qunit` plugin ([@Turbo87](https://github.com/Turbo87))
+
+#### Committers: 2
+- Robert Jackson ([@rwjblue](https://github.com/rwjblue))
+- Tobias Bieniek ([@Turbo87](https://github.com/Turbo87))
+
 ## v0.45.2 (2020-01-02)
 
 #### :rocket: Enhancement
