@@ -2,14 +2,12 @@
 @module @ember/engine
 */
 
-import { guidFor } from '@ember/-internals/utils';
 import {
   Object as EmberObject,
   ContainerProxyMixin,
   RegistryProxyMixin,
   RSVP,
 } from '@ember/-internals/runtime';
-import { OWNER_MAP } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import EmberError from '@ember/error';
 import { Registry, privatize as P } from '@ember/-internals/container';
