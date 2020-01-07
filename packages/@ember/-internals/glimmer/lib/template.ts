@@ -7,14 +7,6 @@ import { templateFactory } from '@glimmer/opcode-compiler';
 export type StaticTemplate = SerializedTemplateWithLazyBlock<StaticTemplateMeta>;
 export type OwnedTemplate = Template<OwnedTemplateMeta>;
 
-const OWNER_ID_TO_HANDLE = new Map<string, {}>();
-const HANDLE_TO_OWNER = new WeakMap<{}, Owner>();
-
-export function getTemplateMetaOwner({ ownerId }: OwnedTemplateMeta): Owner {
-  let handle = OWNER_ID_TO_HANDLE.get(ownerId)!;
-  return HANDLE_TO_OWNER.get(handle)!;
-}
-
 export function isTemplateFactory(template: OwnedTemplate | Factory): template is Factory {
   return typeof template === 'function';
 }
@@ -41,12 +33,6 @@ export default function template(json: StaticTemplate): Factory {
   let factory = ((owner: Owner) => {
     let result = cache.get(owner);
     let ownerId = guidFor(owner);
-
-    if (!OWNER_ID_TO_HANDLE.has(ownerId)) {
-      let handle = {};
-      OWNER_ID_TO_HANDLE.set(ownerId, handle);
-      HANDLE_TO_OWNER.set(handle, owner);
-    }
 
     if (result === undefined) {
       counters.cacheMiss++;

@@ -1,3 +1,4 @@
+import { getOwnerById } from '@ember/-internals/owner';
 import { OwnedTemplateMeta } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import {
@@ -11,7 +12,6 @@ import {
 } from '@glimmer/interfaces';
 import { EMPTY_BLOCKS, NONE, staticComponent, UNHANDLED } from '@glimmer/opcode-compiler';
 import { hashToArgs } from './syntax/utils';
-import { getTemplateMetaOwner } from './template';
 
 export const experimentalMacros: any[] = [];
 
@@ -56,7 +56,7 @@ function refineBlockSyntax(
 
   assert(
     `A component or helper named "${name}" could not be found`,
-    getTemplateMetaOwner(context.meta.referrer as OwnedTemplateMeta).hasRegistration(
+    getOwnerById((context.meta.referrer as OwnedTemplateMeta).ownerId).hasRegistration(
       `helper:${name}`
     )
   );
@@ -66,7 +66,7 @@ function refineBlockSyntax(
     !(() => {
       const resolver = context.resolver['inner']['resolver'];
       const { moduleName } = context.meta.referrer as OwnedTemplateMeta;
-      const owner = getTemplateMetaOwner(context.meta.referrer as OwnedTemplateMeta);
+      const owner = getOwnerById((context.meta.referrer as OwnedTemplateMeta).ownerId);
       if (name === 'component' || resolver['builtInHelpers'][name]) {
         return true;
       }

@@ -9,6 +9,7 @@ import {
   RegistryProxyMixin,
   RSVP,
 } from '@ember/-internals/runtime';
+import { OWNER_MAP } from '@ember/-internals/owner';
 import { assert } from '@ember/debug';
 import EmberError from '@ember/error';
 import { Registry, privatize as P } from '@ember/-internals/container';
@@ -36,8 +37,6 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
 
   init() {
     this._super(...arguments);
-
-    guidFor(this);
 
     let base = this.base;
 
