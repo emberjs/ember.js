@@ -14,7 +14,7 @@ import {
   update,
   validate,
   value,
-} from '@glimmer/validator';
+} from '..';
 
 module('@glimmer/validator: validators', () => {
   module('DirtyableTag', () => {

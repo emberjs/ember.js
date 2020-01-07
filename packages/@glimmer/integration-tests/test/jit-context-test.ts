@@ -1,4 +1,4 @@
-import { JitTestContext } from '@glimmer/integration-tests';
+import { JitTestContext } from '..';
 
 QUnit.module('[integration] env');
 

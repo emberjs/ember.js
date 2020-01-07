@@ -1,4 +1,4 @@
-import { RenderTest, test, jitSuite, preprocess } from '@glimmer/integration-tests';
+import { RenderTest, test, jitSuite, preprocess } from '..';
 
 class CompileErrorTests extends RenderTest {
   static suiteName = 'compile errors';

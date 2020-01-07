@@ -32,7 +32,7 @@ write(
 
 let debugMetadata = strip`
   import { MachineOp, Op, Option } from '@glimmer/interfaces';
-  import { NormalizedMetadata } from '@glimmer/debug';
+  import { NormalizedMetadata } from './metadata';
 
   function fillNulls<T>(count: number): T[] {
     let arr = new Array(count);

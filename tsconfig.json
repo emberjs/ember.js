@@ -22,11 +22,7 @@
     "noImplicitReturns": true,
 
     "newLine": "LF",
-    "noEmit": true,
-
-    "paths": {
-      "@glimmer/*": ["@glimmer/*"]
-    }
+    "noEmit": true
   },
   "include": ["packages/**/*.ts"],
   "exclude": [

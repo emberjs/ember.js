@@ -17,7 +17,7 @@ import {
   untrack,
   validate,
   value,
-} from '@glimmer/validator';
+} from '..';
 
 module('@glimmer/validator: tracking', () => {
   module('track', () => {

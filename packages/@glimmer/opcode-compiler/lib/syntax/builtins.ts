@@ -5,7 +5,7 @@ import {
   MacroBlocks,
   MacroInlines,
 } from '@glimmer/interfaces';
-import { invokeStaticBlock, invokeStaticBlockWithStack } from '@glimmer/opcode-compiler';
+import { invokeStaticBlock, invokeStaticBlockWithStack } from '../../index';
 import { assert, unwrap } from '@glimmer/util';
 import { $fp, $sp } from '@glimmer/vm';
 import { op, error } from '../opcode-builder/encoder';

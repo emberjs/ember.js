@@ -1,4 +1,4 @@
-import { Storage } from '@glimmer/low-level';
+import { Storage } from '../..';
 
 QUnit.module('[low-level glue] Storage');
 

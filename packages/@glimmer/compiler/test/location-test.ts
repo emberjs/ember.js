@@ -1,4 +1,4 @@
-import { offsetToLocation, locationToOffset } from '@glimmer/compiler';
+import { offsetToLocation, locationToOffset } from '..';
 import { Dict } from '@glimmer/interfaces';
 
 const test = QUnit.test;

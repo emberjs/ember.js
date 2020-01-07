@@ -1,4 +1,4 @@
-import { preprocess as parse, AST, PreprocessOptions } from '@glimmer/syntax';
+import { preprocess as parse, AST, PreprocessOptions } from '..';
 
 function normalizeNode(obj: AST.Node | Array<AST.Node>): AST.Node | Array<AST.Node> {
   if (obj && typeof obj === 'object') {

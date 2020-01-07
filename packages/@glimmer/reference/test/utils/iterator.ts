@@ -8,7 +8,7 @@ import {
   IteratorSynchronizerDelegate,
   VersionedPathReference,
   END,
-} from '@glimmer/reference';
+} from '../..';
 import { Tag, CURRENT_TAG } from '@glimmer/validator';
 
 import { LinkedList, ListNode } from '@glimmer/util';
