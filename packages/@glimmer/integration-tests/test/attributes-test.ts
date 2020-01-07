@@ -8,7 +8,7 @@ import {
   RenderTest,
   test,
   JitRenderDelegate,
-} from '@glimmer/integration-tests';
+} from '..';
 import { isDict } from '@glimmer/util';
 import { Namespace, SimpleElement } from '@simple-dom/interface';
 

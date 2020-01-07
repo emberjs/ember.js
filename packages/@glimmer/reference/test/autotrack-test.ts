@@ -1,4 +1,4 @@
-import { State } from '@glimmer/reference';
+import { State } from '..';
 import {
   dirty,
   value,

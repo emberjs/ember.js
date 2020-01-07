@@ -1,5 +1,5 @@
 import { Option } from '@glimmer/interfaces';
-import { TemplateReferenceEnvironment, IteratorDelegate } from '@glimmer/reference';
+import { TemplateReferenceEnvironment, IteratorDelegate } from '../..';
 import { TemplatePathReference } from '../../lib/template';
 import objectValues from './platform';
 

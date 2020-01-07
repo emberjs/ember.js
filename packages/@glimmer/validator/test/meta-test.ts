@@ -1,6 +1,6 @@
 import { module, test } from './-utils';
 
-import { dirtyTagFor, tagFor, validate, value } from '@glimmer/validator';
+import { dirtyTagFor, tagFor, validate, value } from '..';
 
 module('@glimmer/validator: meta', () => {
   test('it creates a unique tag for a property on a given object', assert => {

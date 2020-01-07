@@ -1,4 +1,4 @@
-import { metaFor, setProperty } from '@glimmer/object-reference';
+import { metaFor, setProperty } from '..';
 import { Reference } from '@glimmer/reference';
 
 //function computed(obj, name, getter, depStrings) {

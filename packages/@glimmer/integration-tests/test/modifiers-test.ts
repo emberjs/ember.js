@@ -1,4 +1,4 @@
-import { RenderTest, jitSuite, test, Count } from '@glimmer/integration-tests';
+import { RenderTest, jitSuite, test, Count } from '..';
 import { Dict } from '@glimmer/interfaces';
 import { SimpleElement } from '@simple-dom/interface';
 import { Option } from '@glimmer/interfaces';

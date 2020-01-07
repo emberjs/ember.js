@@ -25,7 +25,7 @@ import {
   assertElement,
   assertElementShape,
   componentSuite,
-} from '@glimmer/integration-tests';
+} from '..';
 import { expect } from '@glimmer/util';
 import { SimpleElement } from '@simple-dom/interface';
 

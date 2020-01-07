@@ -1,5 +1,5 @@
 import { preprocess } from '@glimmer/syntax';
-import { TemplateVisitor } from '@glimmer/compiler';
+import { TemplateVisitor } from '..';
 
 const { test, assert } = QUnit;
 

@@ -13,7 +13,7 @@ import {
   WithDynamicVarsSuite,
   YieldSuite,
   jitComponentSuite,
-} from '@glimmer/integration-tests';
+} from '..';
 
 jitSuite(DebuggerSuite);
 jitSuite(EachSuite);

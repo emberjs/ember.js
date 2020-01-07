@@ -1,5 +1,5 @@
 import { Option, NodeTokens } from '@glimmer/interfaces';
-import { DOMTreeConstruction, TreeBuilder } from '@glimmer/dom-change-list';
+import { DOMTreeConstruction, TreeBuilder } from '..';
 import {
   Namespace,
   AttrNamespace,

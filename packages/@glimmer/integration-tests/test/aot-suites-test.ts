@@ -16,7 +16,7 @@ import {
   WithDynamicVarsSuite,
   YieldSuite,
   EntryPointTest,
-} from '@glimmer/integration-tests';
+} from '..';
 
 aotSuite(DebuggerSuite);
 aotSuite(EachSuite);

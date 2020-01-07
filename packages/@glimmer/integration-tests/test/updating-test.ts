@@ -35,7 +35,7 @@ import {
   JitTestContext,
   TestContext,
   BasicComponent,
-} from '@glimmer/integration-tests';
+} from '..';
 import { Namespace, SimpleElement, SimpleNode } from '@simple-dom/interface';
 import { assert, module, test } from './support';
 import { unwrapHandle } from '@glimmer/opcode-compiler';
