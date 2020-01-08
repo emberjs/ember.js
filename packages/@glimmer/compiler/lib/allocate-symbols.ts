@@ -211,7 +211,7 @@ export class SymbolAllocator implements Processor<AllocateSymbolsOps> {
   }
 
   trustingComponentAttr([name, ns]: [string, Option<string>]) {
-    return ['trustedComponentAttr', [name, ns]];
+    return ['trustingComponentAttr', [name, ns]];
   }
 
   append(trusted: boolean) {
