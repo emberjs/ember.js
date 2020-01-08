@@ -139,7 +139,7 @@ export default function(args: VMArguments, vm: VM) {
   //
   // This message is alright for the first case, but could be quite
   // confusing for the second case.
-  assert('You can only pass a path to mut', UPDATE_REFERENCED_VALUE in rawRef);
+  assert('You can only pass a path to mut', rawRef[UPDATE_REFERENCED_VALUE] !== undefined);
 
   return new MutReference(rawRef, vm.env);
 }

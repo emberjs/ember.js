@@ -353,7 +353,7 @@ moduleFor(
       });
 
       let expectedMessage = backtrackingMessageFor('name', '\\(unknown object\\)', {
-        renderTree: ['\\(result of a `helloWorld` helper\\)'],
+        renderTree: ['\\(result of a `.*` helper\\)'],
       });
 
       expectDeprecation(() => {

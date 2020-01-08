@@ -150,7 +150,8 @@ class ObjectIterator extends BoundedIterator {
     let length = 0;
     let isMapLike = false;
 
-    obj.forEach((value: unknown, key: unknown) => {
+    // Not using an arrow function here so we can get an accurate `arguments`
+    obj.forEach(function(value: unknown, key: unknown) {
       isMapLike = isMapLike || arguments.length >= 2;
 
       if (isMapLike) {
