@@ -1,7 +1,7 @@
 /**
 @module @ember/object
 */
-import { HAS_NATIVE_PROXY, isEmberArray, symbol } from '@ember/-internals/utils';
+import { HAS_NATIVE_PROXY, isEmberArray, isProxy, symbol } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import { isPath } from './path_cache';
@@ -101,22 +101,10 @@ export function get(obj: object, keyName: string): any {
   let value: any;
 
   if (isObjectLike) {
-    let tracking = isTracking();
-
-    if (tracking) {
-      consume(tagForProperty(obj, keyName));
-    }
-
     if (DEBUG && HAS_NATIVE_PROXY) {
       value = getPossibleMandatoryProxyValue(obj, keyName);
     } else {
       value = obj[keyName];
-    }
-
-    // Add the tag of the returned value if it is an array, since arrays
-    // should always cause updates if they are consumed and then changed
-    if (tracking && (Array.isArray(value) || isEmberArray(value))) {
-      consume(tagForProperty(value, '[]'));
     }
   } else {
     value = obj[keyName];
@@ -129,18 +117,31 @@ export function get(obj: object, keyName: string): any {
       typeof (obj as MaybeHasUnknownProperty).unknownProperty === 'function'
     ) {
       if (DEBUG) {
-        let ret;
-
         deprecateMutationsInAutotrackingTransaction!(() => {
-          ret = (obj as MaybeHasUnknownProperty).unknownProperty!(keyName);
+          value = (obj as MaybeHasUnknownProperty).unknownProperty!(keyName);
         });
-
-        return ret;
       } else {
-        return (obj as MaybeHasUnknownProperty).unknownProperty!(keyName);
+        value = (obj as MaybeHasUnknownProperty).unknownProperty!(keyName);
       }
     }
   }
+
+  if (isObjectLike && isTracking()) {
+    consume(tagForProperty(obj, keyName));
+
+    // Add the tag of the returned value if it is an array, since arrays
+    // should always cause updates if they are consumed and then changed
+    if (Array.isArray(value) || isEmberArray(value)) {
+      consume(tagForProperty(value, '[]'));
+    }
+
+    // Add the value of the content if the value is a proxy. This is because
+    // content changes the truthiness/falsiness of the proxy.
+    if (isProxy(value)) {
+      consume(tagForProperty(value, 'content'));
+    }
+  }
+
   return value;
 }
 

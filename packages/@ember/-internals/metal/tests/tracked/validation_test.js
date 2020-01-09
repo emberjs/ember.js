@@ -366,5 +366,25 @@ moduleFor(
         });
       }, /You attempted to update `foo` on `EmberObject`, but it had already been used previously in the same computation/);
     }
+
+    ['@test get() does not entangle in the autotracking stack until after retrieving the value'](
+      assert
+    ) {
+      assert.expect(0);
+
+      class EmberObject {
+        get foo() {
+          notifyPropertyChange(this, 'foo');
+
+          return 123;
+        }
+      }
+
+      let obj = new EmberObject();
+
+      track(() => {
+        get(obj, 'foo');
+      });
+    }
   }
 );
