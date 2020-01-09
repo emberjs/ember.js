@@ -59,10 +59,6 @@ export default class CompileTimeResolver implements CompileTimeResolverDelegate<
     };
   }
 
-  // lookupComponentDefinition(name: string, referrer: OwnedTemplateMeta): Option<number> {
-  //   return this.resolver.lookupComponentHandle(name, referrer);
-  // }
-
   lookupPartial(name: string, referrer: OwnedTemplateMeta): Option<number> {
     return this.resolver.lookupPartial(name, referrer);
   }

@@ -10,7 +10,5 @@ export default interface DefinitionState {
     Component,
     { create(props?: any): Component; positionalParams: string | string[] | undefined | null }
   >;
-  // handle: Option<number>;
-  // symbolTable?: ProgramSymbolTable;
   template?: OwnedTemplate;
 }

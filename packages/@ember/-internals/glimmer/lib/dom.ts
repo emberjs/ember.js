@@ -1,4 +1,3 @@
-///<reference path="./simple-dom.d.ts" />
 export {
   DOMChanges,
   DOMTreeConstruction,

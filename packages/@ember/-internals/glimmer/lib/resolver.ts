@@ -95,6 +95,7 @@ function lookupModuleUnificationComponentPair(
   ) {
     localComponent = null;
   }
+  // TODO: Remove this when the MU feature flag is removed
   if (
     localLayout !== null &&
     globalLayout !== null &&
@@ -264,7 +265,6 @@ interface IBuiltInModifiers {
 
 export default class RuntimeResolver implements JitRuntimeResolver<OwnedTemplateMeta> {
   public isInteractive: boolean;
-  // public compiler: LazyCompiler<OwnedTemplateMeta>;
 
   private handles: any[] = [
     undefined, // ensure no falsy handle
@@ -281,7 +281,6 @@ export default class RuntimeResolver implements JitRuntimeResolver<OwnedTemplate
   public helperDefinitionCount = 0;
 
   constructor(isInteractive: boolean) {
-    // this.compiler = new LazyCompiler<OwnedTemplateMeta>(new CompileTimeLookup(this), this, macros);
     this.isInteractive = isInteractive;
 
     this.builtInModifiers = {
@@ -366,7 +365,8 @@ export default class RuntimeResolver implements JitRuntimeResolver<OwnedTemplate
     }
   }
 
-  // TODO: Do we need this?
+  // TODO: This isn't necessary in all embedding environments, we should likely
+  // make it optional within Glimmer-VM
   compilable(): any {}
 
   // end CompileTimeLookup
@@ -421,7 +421,11 @@ export default class RuntimeResolver implements JitRuntimeResolver<OwnedTemplate
       if (!isSimpleHelper(helper)) {
         vm.associateDestroyable(helper);
       } else if (DEBUG) {
-        // TODO: Give this a better error message
+        // Bind to null in case someone accidentally passed an unbound function
+        // in, and attempts use `this` on it.
+        //
+        // TODO: Update buildUntouchableThis to be flexible enough to provide a
+        // nice error message here.
         helper.compute = helper.compute.bind(null);
       }
 

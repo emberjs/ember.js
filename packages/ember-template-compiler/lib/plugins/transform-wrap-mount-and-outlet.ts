@@ -51,7 +51,12 @@ export default function transformWrapMountAndOutlet(env: ASTPluginEnvironment): 
           (node.path.original === 'mount' || node.path.original === 'outlet') &&
           !hasLocal(node.path.original)
         ) {
-          let subexpression = b.sexpr(b.path(`-${node.path.original}`), node.params, node.hash);
+          let subexpression = b.sexpr(
+            b.path(`-${node.path.original}`),
+            node.params,
+            node.hash,
+            node.loc
+          );
 
           return b.mustache(b.path('component'), [subexpression], b.hash(), undefined, node.loc);
         }

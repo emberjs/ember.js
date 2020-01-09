@@ -40,7 +40,7 @@ export function mountHelper(
     );
   }
 
-  // TODO: the functionailty to create a proper CapturedArgument should be
+  // TODO: the functionality to create a proper CapturedArgument should be
   // exported by glimmer, or that it should provide an overload for `curry`
   // that takes `PreparedArguments`
   if (args.named.has('model')) {
