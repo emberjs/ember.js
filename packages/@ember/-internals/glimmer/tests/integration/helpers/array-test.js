@@ -236,6 +236,36 @@ moduleFor(
       this.assertText('Tom,Chad,');
     }
 
+    ['@test can reference firstObject/lastObject']() {
+      let FooBarComponent = Component.extend({});
+      this.registerComponent('foo-bar', {
+        ComponentClass: FooBarComponent,
+        template: strip`
+          {{#let (array this.first "two" this.last) as |items|}}
+            first: {{items.firstObject}}, last: {{items.lastObject}}
+          {{/let}}
+        `,
+      });
+
+      this.render(strip`{{foo-bar first=first last=last}}`);
+
+      this.assertText('first: , last: ');
+
+      this.assertStableRerender();
+
+      runTask(() => set(this.context, 'first', 'one'));
+
+      this.assertText('first: one, last: ');
+
+      this.assertStableRerender();
+
+      runTask(() => set(this.context, 'last', 'three'));
+
+      this.assertText('first: one, last: three');
+
+      this.assertStableRerender();
+    }
+
     ['@test should return an entirely new array when any argument change']() {
       let fooBarInstance;
       let FooBarComponent = Component.extend({

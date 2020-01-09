@@ -1,6 +1,7 @@
 import { PathReference } from '@glimmer/reference';
 import { Arguments, VM } from '@glimmer/runtime';
 import { Opaque } from '@glimmer/util';
+import { EmberCapturedArrayReference } from '../utils/references';
 
 /**
 @module ember
@@ -43,5 +44,5 @@ import { Opaque } from '@glimmer/util';
  */
 
 export default function(_vm: VM, args: Arguments): PathReference<Opaque[]> {
-  return args.positional.capture();
+  return new EmberCapturedArrayReference(args.positional.capture());
 }
