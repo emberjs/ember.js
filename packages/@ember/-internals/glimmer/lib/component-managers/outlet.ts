@@ -1,29 +1,31 @@
 import { ENV } from '@ember/-internals/environment';
 import { guidFor } from '@ember/-internals/utils';
-import { OwnedTemplateMeta } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import EngineInstance from '@ember/engine/instance';
 import { _instrumentStart } from '@ember/instrumentation';
 import { assign } from '@ember/polyfills';
-import { ComponentCapabilities, Option, Simple } from '@glimmer/interfaces';
-import { CONSTANT_TAG, createTag, Tag, VersionedPathReference } from '@glimmer/reference';
 import {
-  Arguments,
   Bounds,
+  ComponentCapabilities,
   ComponentDefinition,
+  Destroyable,
   ElementOperations,
-  EMPTY_ARGS,
-  Invocation,
+  Option,
+  VMArguments,
   WithDynamicTagName,
-  WithStaticLayout,
-} from '@glimmer/runtime';
-import { Destroyable } from '@glimmer/util';
-import Environment from '../environment';
+  WithJitStaticLayout,
+} from '@glimmer/interfaces';
+import { unwrapTemplate } from '@glimmer/opcode-compiler';
+import { ComponentRootReference, VersionedPathReference } from '@glimmer/reference';
+import { EMPTY_ARGS } from '@glimmer/runtime';
+import { CONSTANT_TAG, createTag, Tag } from '@glimmer/validator';
+
+import { SimpleElement } from '@simple-dom/interface';
+import { EmberVMEnvironment } from '../environment';
 import { DynamicScope } from '../renderer';
 import RuntimeResolver from '../resolver';
 import { OwnedTemplate } from '../template';
 import { OutletState } from '../utils/outlet';
-import { RootReference } from '../utils/references';
 import OutletView from '../views/outlet';
 import AbstractManager from './abstract';
 
@@ -33,7 +35,7 @@ function instrumentationPayload(def: OutletDefinitionState) {
 
 interface OutletInstanceState {
   self: VersionedPathReference<any | undefined>;
-  environment: Environment;
+  environment: EmberVMEnvironment;
   outlet?: { name: string };
   engine?: { mountPoint: string };
   finalize: () => void;
@@ -59,20 +61,16 @@ const CAPABILITIES: ComponentCapabilities = {
   dynamicScope: true,
   updateHook: ENV._DEBUG_RENDER_TREE,
   createInstance: true,
+  wrapped: false,
+  willDestroy: false,
 };
 
 class OutletComponentManager extends AbstractManager<OutletInstanceState, OutletDefinitionState>
-  implements
-    WithStaticLayout<
-      OutletInstanceState,
-      OutletDefinitionState,
-      OwnedTemplateMeta,
-      RuntimeResolver
-    > {
+  implements WithJitStaticLayout<OutletInstanceState, OutletDefinitionState, RuntimeResolver> {
   create(
-    environment: Environment,
+    environment: EmberVMEnvironment,
     definition: OutletDefinitionState,
-    args: Arguments,
+    args: VMArguments,
     dynamicScope: DynamicScope
   ): OutletInstanceState {
     let parentStateRef = dynamicScope.outletState;
@@ -81,7 +79,7 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
     dynamicScope.outletState = currentStateRef;
 
     let state: OutletInstanceState = {
-      self: RootReference.create(definition.controller),
+      self: new ComponentRootReference(definition.controller, environment),
       environment,
       finalize: _instrumentStart('render.outlet', instrumentationPayload, definition),
     };
@@ -89,7 +87,7 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
     if (ENV._DEBUG_RENDER_TREE) {
       state.outlet = { name: definition.outlet };
 
-      environment.debugRenderTree.create(state.outlet, {
+      environment.extra.debugRenderTree.create(state.outlet, {
         type: 'outlet',
         name: state.outlet.name,
         args: EMPTY_ARGS,
@@ -111,7 +109,7 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
 
         state.engine = { mountPoint };
 
-        environment.debugRenderTree.create(state.engine, {
+        environment.extra.debugRenderTree.create(state.engine, {
           type: 'engine',
           name: mountPoint,
           args: EMPTY_ARGS,
@@ -120,7 +118,7 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
         });
       }
 
-      environment.debugRenderTree.create(state, {
+      environment.extra.debugRenderTree.create(state, {
         type: 'route-template',
         name: definition.name,
         args: args.capture(),
@@ -132,13 +130,9 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
     return state;
   }
 
-  getLayout({ template }: OutletDefinitionState, _resolver: RuntimeResolver): Invocation {
+  getJitStaticLayout({ template }: OutletDefinitionState, _resolver: RuntimeResolver) {
     // The router has already resolved the template
-    const layout = template.asLayout();
-    return {
-      handle: layout.compile(),
-      symbolTable: layout.symbolTable,
-    };
+    return unwrapTemplate(template).asLayout();
   }
 
   getCapabilities(): ComponentCapabilities {
@@ -163,37 +157,37 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
     state.finalize();
 
     if (ENV._DEBUG_RENDER_TREE) {
-      state.environment.debugRenderTree.didRender(state, bounds);
+      state.environment.extra.debugRenderTree.didRender(state, bounds);
 
       if (state.engine) {
-        state.environment.debugRenderTree.didRender(state.engine, bounds);
+        state.environment.extra.debugRenderTree.didRender(state.engine, bounds);
       }
 
-      state.environment.debugRenderTree.didRender(state.outlet!, bounds);
+      state.environment.extra.debugRenderTree.didRender(state.outlet!, bounds);
     }
   }
 
   update(state: OutletInstanceState): void {
     if (ENV._DEBUG_RENDER_TREE) {
-      state.environment.debugRenderTree.update(state.outlet!);
+      state.environment.extra.debugRenderTree.update(state.outlet!);
 
       if (state.engine) {
-        state.environment.debugRenderTree.update(state.engine);
+        state.environment.extra.debugRenderTree.update(state.engine);
       }
 
-      state.environment.debugRenderTree.update(state);
+      state.environment.extra.debugRenderTree.update(state);
     }
   }
 
   didUpdateLayout(state: OutletInstanceState, bounds: Bounds): void {
     if (ENV._DEBUG_RENDER_TREE) {
-      state.environment.debugRenderTree.didRender(state, bounds);
+      state.environment.extra.debugRenderTree.didRender(state, bounds);
 
       if (state.engine) {
-        state.environment.debugRenderTree.didRender(state.engine, bounds);
+        state.environment.extra.debugRenderTree.didRender(state.engine, bounds);
       }
 
-      state.environment.debugRenderTree.didRender(state.outlet!, bounds);
+      state.environment.extra.debugRenderTree.didRender(state.outlet!, bounds);
     }
   }
 
@@ -201,13 +195,13 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
     if (ENV._DEBUG_RENDER_TREE) {
       return {
         destroy() {
-          state.environment.debugRenderTree.willDestroy(state);
+          state.environment.extra.debugRenderTree.willDestroy(state);
 
           if (state.engine) {
-            state.environment.debugRenderTree.willDestroy(state.engine);
+            state.environment.extra.debugRenderTree.willDestroy(state.engine);
           }
 
-          state.environment.debugRenderTree.willDestroy(state.outlet!);
+          state.environment.extra.debugRenderTree.willDestroy(state.outlet!);
         },
       };
     } else {
@@ -219,7 +213,8 @@ class OutletComponentManager extends AbstractManager<OutletInstanceState, Outlet
 const OUTLET_MANAGER = new OutletComponentManager();
 
 export class OutletComponentDefinition
-  implements ComponentDefinition<OutletDefinitionState, OutletComponentManager> {
+  implements
+    ComponentDefinition<OutletDefinitionState, OutletInstanceState, OutletComponentManager> {
   constructor(
     public state: OutletDefinitionState,
     public manager: OutletComponentManager = OUTLET_MANAGER
@@ -231,6 +226,7 @@ export function createRootOutlet(outletView: OutletView): OutletComponentDefinit
     const WRAPPED_CAPABILITIES = assign({}, CAPABILITIES, {
       dynamicTag: true,
       elementHook: true,
+      wrapped: true,
     });
 
     const WrappedOutletComponentManager = class extends OutletComponentManager
@@ -239,14 +235,9 @@ export function createRootOutlet(outletView: OutletView): OutletComponentDefinit
         return 'div';
       }
 
-      getLayout(state: OutletDefinitionState): Invocation {
+      getJitStaticLayout({ template }: OutletDefinitionState) {
         // The router has already resolved the template
-        const template = state.template;
-        const layout = template.asWrappedLayout();
-        return {
-          handle: layout.compile(),
-          symbolTable: layout.symbolTable,
-        };
+        return unwrapTemplate(template).asWrappedLayout();
       }
 
       getCapabilities(): ComponentCapabilities {
@@ -255,7 +246,7 @@ export function createRootOutlet(outletView: OutletView): OutletComponentDefinit
 
       didCreateElement(
         component: OutletInstanceState,
-        element: Simple.Element,
+        element: SimpleElement,
         _operations: ElementOperations
       ): void {
         // to add GUID id and class

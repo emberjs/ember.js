@@ -1,33 +1,28 @@
-import { ARGS_PROXY_TAGS, consume } from '@ember/-internals/metal';
+import { ARGS_PROXY_TAGS } from '@ember/-internals/metal';
 import { Factory } from '@ember/-internals/owner';
 import { HAS_NATIVE_PROXY } from '@ember/-internals/utils';
-import { OwnedTemplateMeta } from '@ember/-internals/views';
 import { EMBER_CUSTOM_COMPONENT_ARG_PROXY } from '@ember/canary-features';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
 import {
-  ComponentCapabilities,
-  Dict,
-  Opaque,
-  Option,
-  ProgramSymbolTable,
-} from '@glimmer/interfaces';
-import { createTag, isConst, PathReference, Tag } from '@glimmer/reference';
-import {
-  Arguments,
   Bounds,
   CapturedArguments,
+  ComponentCapabilities,
   ComponentDefinition,
-  Invocation,
-  WithStaticLayout,
-} from '@glimmer/runtime';
-import { Destroyable } from '@glimmer/util';
+  Destroyable,
+  Dict,
+  Option,
+  VMArguments,
+  WithJitStaticLayout,
+} from '@glimmer/interfaces';
+import { unwrapTemplate } from '@glimmer/opcode-compiler';
+import { ComponentRootReference, PathReference } from '@glimmer/reference';
+import { consume, createTag, isConst, Tag } from '@glimmer/validator';
 
 import { ENV } from '@ember/-internals/environment';
-import Environment from '../environment';
+import { EmberVMEnvironment } from '../environment';
 import RuntimeResolver from '../resolver';
 import { OwnedTemplate } from '../template';
-import { RootReference } from '../utils/references';
 import AbstractComponentManager from './abstract';
 
 const CAPABILITIES = {
@@ -41,6 +36,8 @@ const CAPABILITIES = {
   dynamicScope: true,
   updateHook: true,
   createInstance: true,
+  wrapped: false,
+  willDestroy: false,
 };
 
 export interface OptionalCapabilities {
@@ -76,8 +73,7 @@ export function capabilities(
 export interface DefinitionState<ComponentInstance> {
   name: string;
   ComponentClass: Factory<ComponentInstance>;
-  symbolTable: ProgramSymbolTable;
-  template?: any;
+  template: OwnedTemplate;
 }
 
 export interface Capabilities {
@@ -88,14 +84,14 @@ export interface Capabilities {
 
 // TODO: export ICapturedArgumentsValue from glimmer and replace this
 export interface Args {
-  named: Dict<Opaque>;
-  positional: Opaque[];
+  named: Dict<unknown>;
+  positional: unknown[];
 }
 
 export interface ManagerDelegate<ComponentInstance> {
   capabilities: Capabilities;
-  createComponent(factory: Opaque, args: Args): ComponentInstance;
-  getContext(instance: ComponentInstance): Opaque;
+  createComponent(factory: unknown, args: Args): ComponentInstance;
+  getContext(instance: ComponentInstance): unknown;
 }
 
 export function hasAsyncLifeCycleCallbacks<ComponentInstance>(
@@ -144,8 +140,8 @@ export interface ManagerDelegateWithDestructors<ComponentInstance>
 }
 
 export interface ComponentArguments {
-  positional: Opaque[];
-  named: Dict<Opaque>;
+  positional: unknown[];
+  named: Dict<unknown>;
 }
 
 /**
@@ -179,16 +175,15 @@ export default class CustomComponentManager<ComponentInstance>
     CustomComponentDefinitionState<ComponentInstance>
   >
   implements
-    WithStaticLayout<
+    WithJitStaticLayout<
       CustomComponentState<ComponentInstance>,
       CustomComponentDefinitionState<ComponentInstance>,
-      OwnedTemplateMeta,
       RuntimeResolver
     > {
   create(
-    env: Environment,
+    env: EmberVMEnvironment,
     definition: CustomComponentDefinitionState<ComponentInstance>,
-    args: Arguments
+    args: VMArguments
   ): CustomComponentState<ComponentInstance> {
     const { delegate } = definition;
     const capturedArgs = args.capture();
@@ -272,7 +267,7 @@ export default class CustomComponentManager<ComponentInstance>
     let bucket = new CustomComponentState(delegate, component, capturedArgs, env, namedArgsProxy);
 
     if (ENV._DEBUG_RENDER_TREE) {
-      env.debugRenderTree.create(bucket, {
+      env.extra.debugRenderTree.create(bucket, {
         type: 'component',
         name: definition.name,
         args: args.capture(),
@@ -286,7 +281,7 @@ export default class CustomComponentManager<ComponentInstance>
 
   update(bucket: CustomComponentState<ComponentInstance>) {
     if (ENV._DEBUG_RENDER_TREE) {
-      bucket.env.debugRenderTree.update(bucket);
+      bucket.env.extra.debugRenderTree.update(bucket);
     }
 
     let { delegate, component, args, namedArgsProxy } = bucket;
@@ -327,8 +322,8 @@ export default class CustomComponentManager<ComponentInstance>
     env,
     delegate,
     component,
-  }: CustomComponentState<ComponentInstance>): PathReference<Opaque> {
-    return RootReference.create(delegate.getContext(component), env);
+  }: CustomComponentState<ComponentInstance>): PathReference<unknown> {
+    return new ComponentRootReference(delegate.getContext(component), env);
   }
 
   getDestructor(state: CustomComponentState<ComponentInstance>): Option<Destroyable> {
@@ -343,7 +338,7 @@ export default class CustomComponentManager<ComponentInstance>
 
       destructor = {
         destroy() {
-          state.env.debugRenderTree.willDestroy(state);
+          state.env.extra.debugRenderTree.willDestroy(state);
 
           if (inner) {
             inner.destroy();
@@ -374,21 +369,18 @@ export default class CustomComponentManager<ComponentInstance>
 
   didRenderLayout(bucket: CustomComponentState<ComponentInstance>, bounds: Bounds) {
     if (ENV._DEBUG_RENDER_TREE) {
-      bucket.env.debugRenderTree.didRender(bucket, bounds);
+      bucket.env.extra.debugRenderTree.didRender(bucket, bounds);
     }
   }
 
   didUpdateLayout(bucket: CustomComponentState<ComponentInstance>, bounds: Bounds) {
     if (ENV._DEBUG_RENDER_TREE) {
-      bucket.env.debugRenderTree.didRender(bucket, bounds);
+      bucket.env.extra.debugRenderTree.didRender(bucket, bounds);
     }
   }
 
-  getLayout(state: DefinitionState<ComponentInstance>): Invocation {
-    return {
-      handle: state.template.asLayout().compile(),
-      symbolTable: state.symbolTable!,
-    };
+  getJitStaticLayout(state: DefinitionState<ComponentInstance>) {
+    return unwrapTemplate(state.template).asLayout();
   }
 }
 const CUSTOM_COMPONENT_MANAGER = new CustomComponentManager();
@@ -401,7 +393,7 @@ export class CustomComponentState<ComponentInstance> {
     public delegate: ManagerDelegate<ComponentInstance>,
     public component: ComponentInstance,
     public args: CapturedArguments,
-    public env: Environment,
+    public env: EmberVMEnvironment,
     public namedArgsProxy?: {}
   ) {}
 
@@ -421,7 +413,6 @@ export interface CustomComponentDefinitionState<ComponentInstance>
 
 export class CustomManagerDefinition<ComponentInstance> implements ComponentDefinition {
   public state: CustomComponentDefinitionState<ComponentInstance>;
-  public symbolTable: ProgramSymbolTable;
   public manager: CustomComponentManager<
     ComponentInstance
   > = CUSTOM_COMPONENT_MANAGER as CustomComponentManager<ComponentInstance>;
@@ -432,15 +423,10 @@ export class CustomManagerDefinition<ComponentInstance> implements ComponentDefi
     public delegate: ManagerDelegate<ComponentInstance>,
     public template: OwnedTemplate
   ) {
-    const layout = template.asLayout();
-    const symbolTable = layout.symbolTable;
-    this.symbolTable = symbolTable;
-
     this.state = {
       name,
       ComponentClass,
       template,
-      symbolTable,
       delegate,
     };
   }

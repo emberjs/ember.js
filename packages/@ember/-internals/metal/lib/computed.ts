@@ -4,12 +4,15 @@ import { assert, deprecate, warn } from '@ember/debug';
 import EmberError from '@ember/error';
 import {
   combine,
+  consume,
   Tag,
+  track,
+  untrack,
   UpdatableTag,
   update,
   validate,
   value as tagValue,
-} from '@glimmer/reference';
+} from '@glimmer/validator';
 import { finishLazyChains, getChainTagsForKeys } from './chain-tags';
 import {
   getCachedValueFor,
@@ -36,7 +39,6 @@ import { defineProperty } from './properties';
 import { beginPropertyChanges, endPropertyChanges, notifyPropertyChange } from './property_events';
 import { set } from './property_set';
 import { tagForProperty } from './tags';
-import { consume, track, untrack } from './tracked';
 
 export type ComputedPropertyGetter = (keyName: string) => any;
 export type ComputedPropertySetter = (keyName: string, value: any, cachedValue?: any) => any;

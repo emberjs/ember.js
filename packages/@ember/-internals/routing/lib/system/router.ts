@@ -1,6 +1,8 @@
+import { OutletState as GlimmerOutletState, OutletView } from '@ember/-internals/glimmer';
 import { computed, get, notifyPropertyChange, set } from '@ember/-internals/metal';
 import { getOwner, Owner } from '@ember/-internals/owner';
 import { A as emberA, Evented, Object as EmberObject, typeOf } from '@ember/-internals/runtime';
+import Controller from '@ember/controller';
 import { assert, deprecate, info } from '@ember/debug';
 import { APP_CTRL_ROUTER_PROPS, ROUTER_EVENTS } from '@ember/deprecated-features';
 import EmberError from '@ember/error';
@@ -132,10 +134,14 @@ class EmberRouter extends EmberObject {
 
   _qpCache = Object.create(null);
   _qpUpdates = new Set();
+  _queuedQPChanges: { [key: string]: unknown } = {};
 
+  _toplevelView: OutletView | null = null;
   _handledErrors = new Set();
   _engineInstances: { [name: string]: { [id: string]: EngineInstance } } = Object.create(null);
   _engineInfoByRoute = Object.create(null);
+
+  _slowTransitionTimer: unknown;
 
   constructor() {
     super(...arguments);
@@ -455,7 +461,7 @@ class EmberRouter extends EmberObject {
         }
       }
       if (connections.length === 0) {
-        ownState = representEmptyRoute(liveRoutes!, defaultParentState as OutletState, route!);
+        ownState = representEmptyRoute(liveRoutes!, defaultParentState! as OutletState, route!);
       }
       defaultParentState = ownState!;
     }
@@ -472,12 +478,12 @@ class EmberRouter extends EmberObject {
     if (!this._toplevelView) {
       let owner = getOwner(this);
       let OutletView = owner.factoryFor('view:-outlet')!;
-      this._toplevelView = OutletView.create();
-      this._toplevelView.setOutletState(liveRoutes);
+      this._toplevelView = OutletView.create() as OutletView;
+      this._toplevelView.setOutletState(liveRoutes as GlimmerOutletState);
       let instance: any = owner.lookup('-application-instance:main');
       instance.didCreateRootView(this._toplevelView);
     } else {
-      this._toplevelView.setOutletState(liveRoutes);
+      this._toplevelView.setOutletState(liveRoutes as GlimmerOutletState);
     }
   }
 
@@ -1463,7 +1469,7 @@ function updatePaths(router: EmberRouter) {
   set(router, 'currentRouteName', currentRouteName);
   set(router, 'currentURL', currentURL);
 
-  let appController = getOwner(router).lookup('controller:application');
+  let appController = getOwner(router).lookup<Controller>('controller:application');
 
   if (!appController) {
     // appController might not exist when top-level loading/error

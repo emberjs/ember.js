@@ -1,6 +1,14 @@
 import { meta as metaFor, peekMeta } from '@ember/-internals/meta';
 import { assert, deprecate } from '@ember/debug';
-import { combine, createUpdatableTag, Tag, update, validate } from '@glimmer/reference';
+import { DEBUG } from '@glimmer/env';
+import {
+  ALLOW_CYCLES,
+  combine,
+  createUpdatableTag,
+  Tag,
+  update,
+  validate,
+} from '@glimmer/validator';
 import { objectAt } from './array';
 import { getLastRevisionFor, peekCacheFor } from './computed_cache';
 import { descriptorForProperty } from './descriptor_map';
@@ -239,6 +247,10 @@ export function getChainTagsForKey(obj: any, path: string) {
         break;
       }
     }
+  }
+
+  if (DEBUG) {
+    chainTags.forEach(t => ALLOW_CYCLES!.set(t, true));
   }
 
   return chainTags;

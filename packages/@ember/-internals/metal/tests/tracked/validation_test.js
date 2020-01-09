@@ -5,13 +5,12 @@ import {
   set,
   tagForProperty,
   tracked,
-  track,
   notifyPropertyChange,
 } from '../..';
 
 import { EMBER_ARRAY } from '@ember/-internals/utils';
 import { AbstractTestCase, moduleFor } from 'internal-test-helpers';
-import { value, validate } from '@glimmer/reference';
+import { track, value, validate } from '@glimmer/validator';
 
 moduleFor(
   '@tracked get validation',
@@ -142,12 +141,9 @@ moduleFor(
       let obj = new Tracked(tom);
 
       let tag = track(() => obj.full);
-      let snapshot = value(tag);
-
       assert.equal(obj.full, 'Tom Dale');
-      assert.equal(validate(tag, snapshot), true);
 
-      snapshot = value(tag);
+      let snapshot = value(tag);
       assert.equal(validate(tag, snapshot), true);
 
       set(tom, 'first', 'Thomas');
@@ -200,13 +196,10 @@ moduleFor(
       let obj = new EmberObject(tom);
 
       let tag = tagForProperty(obj, 'full');
-      let snapshot = value(tag);
-
       let full = get(obj, 'full');
       assert.equal(full, 'Tom Dale');
-      assert.equal(validate(tag, snapshot), true);
 
-      snapshot = value(tag);
+      let snapshot = value(tag);
       assert.equal(validate(tag, snapshot), true);
 
       tom.first = 'Thomas';
@@ -260,13 +253,10 @@ moduleFor(
       let obj = new EmberObject(contact);
 
       let tag = tagForProperty(obj, 'full');
-      let snapshot = value(tag);
-
       let full = get(obj, 'full');
       assert.equal(full, 'Tom Dale');
-      assert.equal(validate(tag, snapshot), true);
 
-      snapshot = value(tag);
+      let snapshot = value(tag);
       assert.equal(validate(tag, snapshot), true);
 
       set(tom, 'first', 'Thomas');
@@ -287,17 +277,17 @@ moduleFor(
       assert.equal(get(obj, 'full'), 'Tizzle Dale');
     }
 
-    ['@test interaction with arrays'](assert) {
+    ['@test ember get interaction with arrays'](assert) {
       class EmberObject {
-        @tracked array = [];
+        array = [];
       }
 
       let obj = new EmberObject();
+      let array;
 
-      let tag = tagForProperty(obj, 'array');
+      let tag = track(() => (array = get(obj, 'array')));
       let snapshot = value(tag);
 
-      let array = get(obj, 'array');
       assert.deepEqual(array, []);
       assert.equal(validate(tag, snapshot), true);
 
@@ -310,7 +300,53 @@ moduleFor(
       );
     }
 
-    ['@test interaction with ember arrays'](assert) {
+    ['@test native get interaction with arrays'](assert) {
+      class EmberObject {
+        @tracked array = [];
+      }
+
+      let obj = new EmberObject();
+      let array;
+
+      let tag = track(() => (array = obj.array));
+      let snapshot = value(tag);
+
+      assert.deepEqual(array, []);
+      assert.equal(validate(tag, snapshot), true);
+
+      array.push(1);
+      notifyPropertyChange(array, '[]');
+      assert.equal(
+        validate(tag, snapshot),
+        false,
+        'invalid after pushing an object and notifying on the array'
+      );
+    }
+
+    ['@test ember get interaction with ember arrays'](assert) {
+      class EmberObject {
+        emberArray = {
+          [EMBER_ARRAY]: true,
+        };
+      }
+
+      let obj = new EmberObject();
+      let emberArray;
+
+      let tag = track(() => (emberArray = get(obj, 'emberArray')));
+      let snapshot = value(tag);
+
+      assert.equal(validate(tag, snapshot), true);
+
+      notifyPropertyChange(emberArray, '[]');
+      assert.equal(
+        validate(tag, snapshot),
+        false,
+        'invalid after setting a property on the object'
+      );
+    }
+
+    ['@test native get interaction with ember arrays'](assert) {
       class EmberObject {
         @tracked emberArray = {
           [EMBER_ARRAY]: true,
@@ -318,11 +354,11 @@ moduleFor(
       }
 
       let obj = new EmberObject();
+      let emberArray;
 
-      let tag = tagForProperty(obj, 'emberArray');
+      let tag = track(() => (emberArray = obj.emberArray));
       let snapshot = value(tag);
 
-      let emberArray = get(obj, 'emberArray');
       assert.equal(validate(tag, snapshot), true);
 
       notifyPropertyChange(emberArray, '[]');

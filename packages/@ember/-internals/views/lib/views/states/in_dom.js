@@ -28,10 +28,6 @@ const inDOM = assign({}, hasElement, {
       });
     }
   },
-
-  exit(view) {
-    view.renderer.unregister(view);
-  },
 });
 
 export default Object.freeze(inDOM);

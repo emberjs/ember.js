@@ -10,6 +10,8 @@ const rollupPackage = require('./broccoli/rollup-package');
 const minify = require('./broccoli/minify');
 const debugTree = require('broccoli-debug').buildDebugCallback('ember-source:ember-cli-build');
 
+Error.stackTraceLimit = Infinity;
+
 const {
   routerES,
   jquery,

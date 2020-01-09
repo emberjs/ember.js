@@ -1,12 +1,12 @@
 /* globals module, URL */
 
 import { hasDOM } from '@ember/-internals/browser-environment';
-import Environment from './environment';
+import { EmberEnvironmentDelegate } from './environment';
 
 let nodeURL: any;
 let parsingNode: HTMLAnchorElement;
 
-export default function installProtocolForURL(environment: Environment) {
+export default function installProtocolForURL(environment: EmberEnvironmentDelegate) {
   let protocol;
 
   if (hasDOM) {

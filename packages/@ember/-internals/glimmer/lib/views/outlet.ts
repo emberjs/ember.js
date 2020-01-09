@@ -1,7 +1,7 @@
 import { OWNER, Owner } from '@ember/-internals/owner';
 import { assign } from '@ember/polyfills';
 import { schedule } from '@ember/runloop';
-import { Simple } from '@glimmer/interfaces';
+import { SimpleElement } from '@simple-dom/interface';
 import { OutletDefinitionState } from '../component-managers/outlet';
 import { Renderer } from '../renderer';
 import { OwnedTemplate } from '../template';
@@ -71,7 +71,7 @@ export default class OutletView {
     };
   }
 
-  appendTo(selector: string | Simple.Element) {
+  appendTo(selector: string | SimpleElement) {
     let target;
 
     if (this._environment.hasDOM) {

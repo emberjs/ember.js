@@ -1,32 +1,44 @@
 /**
 @module ember
 */
-import { OwnedTemplateMeta } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { Option } from '@glimmer/interfaces';
-import { OpcodeBuilder } from '@glimmer/opcode-compiler';
-import { Tag, VersionedPathReference } from '@glimmer/reference';
+import { CapturedArguments, Option, VM, VMArguments } from '@glimmer/interfaces';
+import { VersionedPathReference } from '@glimmer/reference';
 import {
-  Arguments,
-  CapturedArguments,
   CurriedComponentDefinition,
   curry,
   EMPTY_ARGS,
   UNDEFINED_REFERENCE,
-  VM,
 } from '@glimmer/runtime';
-import * as WireFormat from '@glimmer/wire-format';
+import { Tag } from '@glimmer/validator';
 import { MODEL_ARG_NAME, MountDefinition } from '../component-managers/mount';
-import Environment from '../environment';
+import { EmberVMEnvironment } from '../environment';
 
 export function mountHelper(
-  vm: VM,
-  args: Arguments
+  args: VMArguments,
+  vm: VM
 ): VersionedPathReference<CurriedComponentDefinition | null> {
-  let env = vm.env as Environment;
+  let env = vm.env as EmberVMEnvironment;
   let nameRef = args.positional.at(0);
   let captured: Option<CapturedArguments> = null;
+
+  assert(
+    'You can only pass a single positional argument to the {{mount}} helper, e.g. {{mount "chat-engine"}}.',
+    args.positional.length === 1
+  );
+
+  if (DEBUG && args.named) {
+    let keys = args.named.names;
+    let extra = keys.filter(k => k !== 'model');
+
+    assert(
+      'You can only pass a `model` argument to the {{mount}} helper, ' +
+        'e.g. {{mount "profile-engine" model=this.profile}}. ' +
+        `You passed ${extra.join(',')}.`,
+      extra.length === 0
+    );
+  }
 
   // TODO: the functionality to create a proper CapturedArgument should be
   // exported by glimmer, or that it should provide an overload for `curry`
@@ -100,33 +112,6 @@ export function mountHelper(
   @for Ember.Templates.helpers
   @public
 */
-export function mountMacro(
-  _name: string,
-  params: Option<WireFormat.Core.Params>,
-  hash: Option<WireFormat.Core.Hash>,
-  builder: OpcodeBuilder<OwnedTemplateMeta>
-) {
-  assert(
-    'You can only pass a single positional argument to the {{mount}} helper, e.g. {{mount "chat-engine"}}.',
-    params!.length === 1
-  );
-
-  if (DEBUG && hash) {
-    let keys = hash[0];
-    let extra = keys.filter(k => k !== 'model');
-
-    assert(
-      'You can only pass a `model` argument to the {{mount}} helper, ' +
-        'e.g. {{mount "profile-engine" model=this.profile}}. ' +
-        `You passed ${extra.join(',')}.`,
-      extra.length === 0
-    );
-  }
-
-  let expr: WireFormat.Expressions.Helper = [WireFormat.Ops.Helper, '-mount', params || [], hash];
-  builder.dynamicComponent(expr, null, [], null, false, null, null);
-  return true;
-}
 
 class DynamicEngineReference implements VersionedPathReference<Option<CurriedComponentDefinition>> {
   public tag: Tag;
@@ -135,7 +120,7 @@ class DynamicEngineReference implements VersionedPathReference<Option<CurriedCom
 
   constructor(
     public nameRef: VersionedPathReference<any | undefined | null>,
-    public env: Environment,
+    public env: EmberVMEnvironment,
     public args: Option<CapturedArguments>
   ) {
     this.tag = nameRef.tag;
@@ -152,10 +137,10 @@ class DynamicEngineReference implements VersionedPathReference<Option<CurriedCom
 
       assert(
         `You used \`{{mount '${name}'}}\`, but the engine '${name}' can not be found.`,
-        env.owner.hasRegistration(`engine:${name}`)
+        env.extra.owner.hasRegistration(`engine:${name}`)
       );
 
-      if (!env.owner.hasRegistration(`engine:${name}`)) {
+      if (!env.extra.owner.hasRegistration(`engine:${name}`)) {
         return null;
       }
 

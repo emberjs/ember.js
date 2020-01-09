@@ -53,17 +53,8 @@ export { default as expandProperties } from './lib/expand_properties';
 export { addObserver, activateObserver, removeObserver, flushAsyncObservers } from './lib/observer';
 export { Mixin, aliasMethod, mixin, observer, applyMixin } from './lib/mixin';
 export { default as inject, DEBUG_INJECTION_FUNCTIONS } from './lib/injected_property';
-export { tagForProperty, tagFor, markObjectAsDirty, UNKNOWN_PROPERTY_TAG } from './lib/tags';
-export {
-  consume,
-  Tracker,
-  tracked,
-  track,
-  untrack,
-  isTracking,
-  runInAutotrackingTransaction,
-  deprecateMutationsInAutotrackingTransaction,
-} from './lib/tracked';
+export { tagForProperty, tagForObject, markObjectAsDirty, UNKNOWN_PROPERTY_TAG } from './lib/tags';
+export { tracked } from './lib/tracked';
 
 export {
   NAMESPACES,

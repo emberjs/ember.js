@@ -1,5 +1,6 @@
 import { AST, ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
 import { Builders } from '../types';
+import { isPath } from './utils';
 
 /**
  @module ember
@@ -55,7 +56,7 @@ export default function transformActionSyntax({ syntax }: ASTPluginEnvironment):
 }
 
 function isAction(node: AST.ElementModifierStatement | AST.MustacheStatement | AST.SubExpression) {
-  return node.path.original === 'action';
+  return isPath(node.path) && node.path.original === 'action';
 }
 
 function insertThisAsFirstParam(

@@ -2,7 +2,6 @@
 @module @ember/engine
 */
 
-import { guidFor } from '@ember/-internals/utils';
 import {
   Object as EmberObject,
   ContainerProxyMixin,
@@ -36,8 +35,6 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
 
   init() {
     this._super(...arguments);
-
-    guidFor(this);
 
     let base = this.base;
 
@@ -172,7 +169,7 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
   cloneParentDependencies() {
     let parent = getEngineParent(this);
 
-    let registrations = ['route:basic', 'service:-routing', 'service:-glimmer-environment'];
+    let registrations = ['route:basic', 'service:-routing'];
 
     registrations.forEach(key => this.register(key, parent.resolveRegistration(key)));
 
@@ -185,7 +182,6 @@ const EngineInstance = EmberObject.extend(RegistryProxyMixin, ContainerProxyMixi
       '-view-registry:main',
       `renderer:-${env.isInteractive ? 'dom' : 'inert'}`,
       'service:-document',
-      P`template-compiler:main`,
     ];
 
     if (env.isInteractive) {

@@ -1,25 +1,14 @@
-import { hasDOM } from '@ember/-internals/browser-environment';
 import { privatize as P, Registry } from '@ember/-internals/container';
 import { ENV } from '@ember/-internals/environment';
-import { Simple } from '@glimmer/interfaces';
 import Component from './component';
 import Checkbox from './components/checkbox';
 import Input from './components/input';
 import LinkToComponent from './components/link-to';
 import TextField from './components/text-field';
 import TextArea from './components/textarea';
-import {
-  clientBuilder,
-  DOMChanges,
-  DOMTreeConstruction,
-  NodeDOMTreeConstruction,
-  rehydrationBuilder,
-  serializeBuilder,
-} from './dom';
-import Environment from './environment';
+import { clientBuilder, rehydrationBuilder, serializeBuilder } from './dom';
 import loc from './helpers/loc';
 import { InertRenderer, InteractiveRenderer } from './renderer';
-import TemplateCompiler from './template-compiler';
 import ComponentTemplate from './templates/component';
 import InputTemplate from './templates/input';
 import OutletTemplate from './templates/outlet';
@@ -27,12 +16,7 @@ import RootTemplate from './templates/root';
 import OutletView from './views/outlet';
 
 export function setupApplicationRegistry(registry: Registry) {
-  registry.injection(
-    'service:-glimmer-environment',
-    'appendOperations',
-    'service:-dom-tree-construction'
-  );
-  registry.injection('renderer', 'env', 'service:-glimmer-environment');
+  registry.injection('renderer', 'env', '-environment:main');
 
   // because we are using injections we can't use instantiate false
   // we need to use bind() to copy the function so factory for
@@ -60,22 +44,7 @@ export function setupApplicationRegistry(registry: Registry) {
   registry.register('renderer:-dom', InteractiveRenderer);
   registry.register('renderer:-inert', InertRenderer);
 
-  if (hasDOM) {
-    registry.injection('service:-glimmer-environment', 'updateOperations', 'service:-dom-changes');
-  }
-
-  registry.register('service:-dom-changes', {
-    create({ document }: { document: Simple.Document }) {
-      return new DOMChanges(document);
-    },
-  });
-
-  registry.register('service:-dom-tree-construction', {
-    create({ document }: { document: Simple.Document }) {
-      let Implementation = hasDOM ? DOMTreeConstruction : NodeDOMTreeConstruction;
-      return new Implementation(document);
-    },
-  });
+  registry.injection('renderer', 'document', 'service:-document');
 }
 
 export function setupEngineRegistry(registry: Registry) {
@@ -85,15 +54,7 @@ export function setupEngineRegistry(registry: Registry) {
   registry.register('template:-outlet', OutletTemplate as any);
   registry.injection('view:-outlet', 'template', 'template:-outlet');
 
-  registry.injection('service:-dom-changes', 'document', 'service:-document');
-  registry.injection('service:-dom-tree-construction', 'document', 'service:-document');
-
   registry.register(P`template:components/-default`, ComponentTemplate as any);
-
-  registry.register('service:-glimmer-environment', Environment);
-
-  registry.register(P`template-compiler:main`, TemplateCompiler);
-  registry.injection(P`template-compiler:main`, 'environment', '-environment:main');
 
   registry.optionsForType('helper', { instantiate: false });
 

@@ -1,7 +1,7 @@
 import { ENV } from '@ember/-internals/environment';
 import { peekMeta } from '@ember/-internals/meta';
 import { schedule } from '@ember/runloop';
-import { combine, CURRENT_TAG, Tag, validate, value } from '@glimmer/reference';
+import { combine, CURRENT_TAG, Tag, validate, value } from '@glimmer/validator';
 import { getChainTagsForKey } from './chain-tags';
 import changeEvent from './change_event';
 import { addListener, removeListener, sendEvent } from './events';

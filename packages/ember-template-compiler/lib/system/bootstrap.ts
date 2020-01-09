@@ -5,7 +5,7 @@
 import compile from './compile';
 
 export interface BootstrapOptions {
-  context?: NodeSelector;
+  context?: Document | HTMLElement;
   hasTemplate(templateName: string): boolean;
   setTemplate(templateName: string, template: string): void;
 }

@@ -2,14 +2,18 @@
 @module ember
 */
 import { get } from '@ember/-internals/metal';
+import { symbol } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
 import { flaggedInstrument } from '@ember/instrumentation';
 import { join } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
-import { isConst, VersionedPathReference } from '@glimmer/reference';
-import { Arguments, VM } from '@glimmer/runtime';
-import { Opaque } from '@glimmer/util';
-import { ACTION, INVOKE, UnboundReference } from '../utils/references';
+import { VM, VMArguments } from '@glimmer/interfaces';
+import { VersionedPathReference } from '@glimmer/reference';
+import { isConst } from '@glimmer/validator';
+import { UnboundRootReference } from '../utils/references';
+import { INVOKE } from './mut';
+
+export const ACTION = symbol('ACTION');
 
 /**
   The `{{action}}` helper provides a way to pass triggers for behavior (usually
@@ -274,7 +278,7 @@ import { ACTION, INVOKE, UnboundReference } from '../utils/references';
   @for Ember.Templates.helpers
   @public
 */
-export default function(_vm: VM, args: Arguments): UnboundReference<Function> {
+export default function(args: VMArguments, vm: VM): UnboundRootReference<Function> {
   let { named, positional } = args;
 
   let capturedArgs = positional.capture();
@@ -303,21 +307,21 @@ export default function(_vm: VM, args: Arguments): UnboundReference<Function> {
 
   fn[ACTION] = true;
 
-  return new UnboundReference(fn);
+  return new UnboundRootReference(fn, vm.env);
 }
 
-function NOOP(args: Arguments) {
+function NOOP(args: VMArguments) {
   return args;
 }
 
 function makeArgsProcessor(
-  valuePathRef: VersionedPathReference<Opaque> | false,
-  actionArgsRef: Array<VersionedPathReference<Opaque>>
+  valuePathRef: VersionedPathReference<unknown> | false,
+  actionArgsRef: Array<VersionedPathReference<unknown>>
 ) {
   let mergeArgs: any;
 
   if (actionArgsRef.length > 0) {
-    mergeArgs = (args: Arguments) => {
+    mergeArgs = (args: VMArguments) => {
       return actionArgsRef.map(ref => ref.value()).concat(args);
     };
   }
@@ -337,7 +341,7 @@ function makeArgsProcessor(
   }
 
   if (mergeArgs && readValue) {
-    return (args: Arguments) => {
+    return (args: VMArguments) => {
       return readValue(mergeArgs(args));
     };
   } else {

@@ -1,9 +1,8 @@
 import { assert } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { Opaque, Simple } from '@glimmer/interfaces';
-import { CONSTANT_TAG, Tag } from '@glimmer/reference';
-import { Arguments, CapturedArguments, ModifierManager } from '@glimmer/runtime';
-import { Destroyable } from '@glimmer/util';
+import { CapturedArguments, Destroyable, ModifierManager, VMArguments } from '@glimmer/interfaces';
+import { CONSTANT_TAG, Tag } from '@glimmer/validator';
+import { SimpleElement } from '@simple-dom/interface';
 import buildUntouchableThis from '../utils/untouchable-this';
 
 const untouchableContext = buildUntouchableThis('`on` modifier');
@@ -301,7 +300,7 @@ function addEventListener(
   @public
   @since 3.11.0
 */
-export default class OnModifierManager implements ModifierManager<OnModifierState | null, Opaque> {
+export default class OnModifierManager implements ModifierManager<OnModifierState | null, unknown> {
   public SUPPORTS_EVENT_OPTIONS: boolean = SUPPORTS_EVENT_OPTIONS;
   public isInteractive: boolean;
 
@@ -313,7 +312,7 @@ export default class OnModifierManager implements ModifierManager<OnModifierStat
     return { adds, removes };
   }
 
-  create(element: Simple.Element | Element, _state: Opaque, args: Arguments) {
+  create(element: SimpleElement | Element, _state: unknown, args: VMArguments) {
     if (!this.isInteractive) {
       return null;
     }

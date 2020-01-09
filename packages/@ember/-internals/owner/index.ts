@@ -38,8 +38,9 @@ export interface Owner {
 }
 
 import { symbol } from '@ember/-internals/utils';
+import { assert } from '@ember/debug';
 
-export const OWNER = symbol('OWNER');
+export const OWNER: unique symbol = symbol('OWNER') as any;
 
 /**
   Framework objects in an Ember application (components, services, routes, etc.)
@@ -103,4 +104,12 @@ export function getOwner(object: any): Owner {
 */
 export function setOwner(object: any, owner: Owner): void {
   object[OWNER] = owner;
+}
+
+export const OWNER_MAP = new Map<string, Owner>();
+
+export function getOwnerById(ownerId: string): Owner {
+  assert('Attempted to lookup an owner that no longer exists', OWNER_MAP.has(ownerId));
+
+  return OWNER_MAP.get(ownerId)!;
 }

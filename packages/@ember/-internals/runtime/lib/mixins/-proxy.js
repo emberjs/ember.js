@@ -8,21 +8,18 @@ import {
   set,
   defineProperty,
   Mixin,
-  tagFor,
+  tagForObject,
   computed,
   UNKNOWN_PROPERTY_TAG,
   getChainTagsForKey,
 } from '@ember/-internals/metal';
 import { setProxy } from '@ember/-internals/utils';
 import { assert } from '@ember/debug';
-import { combine, update } from '@glimmer/reference';
+import { combine, update } from '@glimmer/validator';
 
-export function contentFor(proxy, m) {
+export function contentFor(proxy) {
   let content = get(proxy, 'content');
-  let tag = (m === undefined ? meta(proxy) : m).readableTag();
-  if (tag !== undefined) {
-    update(tag, tagFor(content));
-  }
+  update(tagForObject(proxy), tagForObject(content));
   return content;
 }
 
@@ -48,8 +45,7 @@ export default Mixin.create({
   init() {
     this._super(...arguments);
     setProxy(this);
-    let m = meta(this);
-    m.writableTag();
+    tagForObject(this);
   },
 
   willDestroy() {
@@ -82,7 +78,7 @@ export default Mixin.create({
       return value;
     }
 
-    let content = contentFor(this, m);
+    let content = contentFor(this);
 
     assert(
       `Cannot delegate set('${key}', ${value}) to the \'content\' property of object proxy ${this}: its 'content' is undefined.`,

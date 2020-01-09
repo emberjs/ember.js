@@ -1,10 +1,10 @@
 import { clearElementView, clearViewElement, getViewElement } from '@ember/-internals/views';
-import { Revision, value, VersionedReference } from '@glimmer/reference';
-import { CapturedNamedArguments } from '@glimmer/runtime';
-import { Opaque } from '@glimmer/util';
-import Environment from '../environment';
+import { CapturedNamedArguments } from '@glimmer/interfaces';
+import { ComponentRootReference, VersionedReference } from '@glimmer/reference';
+import { Revision, value } from '@glimmer/validator';
+import { EmberVMEnvironment } from '../environment';
+import { Renderer } from '../renderer';
 import { Factory as TemplateFactory, OwnedTemplate } from '../template';
-import { RootReference } from './references';
 
 export interface Component {
   _debugContainerKey: string;
@@ -21,6 +21,7 @@ export interface Component {
   trigger(event: string): void;
   destroy(): void;
   setProperties(props: { [key: string]: any }): void;
+  renderer: Renderer;
 }
 
 type Finalizer = () => void;
@@ -38,12 +39,12 @@ function NOOP() {}
   @private
 */
 export default class ComponentStateBucket {
-  public classRef: VersionedReference<Opaque> | null = null;
-  public rootRef: RootReference<Component>;
+  public classRef: VersionedReference<unknown> | null = null;
+  public rootRef: ComponentRootReference<Component>;
   public argsRevision: Revision;
 
   constructor(
-    public environment: Environment,
+    public environment: EmberVMEnvironment,
     public component: Component,
     public args: CapturedNamedArguments | null,
     public finalizer: Finalizer,
@@ -51,10 +52,10 @@ export default class ComponentStateBucket {
   ) {
     this.classRef = null;
     this.argsRevision = args === null ? 0 : value(args.tag);
-    this.rootRef = new RootReference(component, environment);
+    this.rootRef = new ComponentRootReference(component, environment);
   }
 
-  destroy() {
+  willDestroy() {
     let { component, environment } = this;
 
     if (environment.isInteractive) {
@@ -69,7 +70,11 @@ export default class ComponentStateBucket {
       }
     }
 
-    environment.destroyedComponents.push(component);
+    component.renderer.unregister(component);
+  }
+
+  destroy() {
+    this.component.destroy();
   }
 
   finalize() {

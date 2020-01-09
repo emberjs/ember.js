@@ -3,10 +3,16 @@ import { ENV } from '@ember/-internals/environment';
 import { Factory } from '@ember/-internals/owner';
 import { _instrumentStart } from '@ember/instrumentation';
 import { DEBUG } from '@glimmer/env';
-import { ComponentCapabilities, Option } from '@glimmer/interfaces';
-import { Arguments, ComponentDefinition, EMPTY_ARGS } from '@glimmer/runtime';
+import {
+  ComponentCapabilities,
+  ComponentDefinition,
+  Option,
+  VMArguments,
+} from '@glimmer/interfaces';
+import { unwrapTemplate } from '@glimmer/opcode-compiler';
+import { EMPTY_ARGS } from '@glimmer/runtime';
 import { DIRTY_TAG } from '../component';
-import Environment from '../environment';
+import { EmberVMEnvironment } from '../environment';
 import { DynamicScope } from '../renderer';
 import ComponentStateBucket, { Component } from '../utils/curly-component-state-bucket';
 import CurlyComponentManager, {
@@ -23,19 +29,15 @@ class RootComponentManager extends CurlyComponentManager {
     this.component = component;
   }
 
-  getLayout(_state: DefinitionState) {
+  getJitStaticLayout(_state: DefinitionState) {
     const template = this.templateFor(this.component);
-    const layout = template.asWrappedLayout();
-    return {
-      handle: layout.compile(),
-      symbolTable: layout.symbolTable,
-    };
+    return unwrapTemplate(template).asWrappedLayout();
   }
 
   create(
-    environment: Environment,
+    environment: EmberVMEnvironment,
     state: DefinitionState,
-    _args: Option<Arguments>,
+    _args: Option<VMArguments>,
     dynamicScope: DynamicScope
   ) {
     let component = this.component;
@@ -72,12 +74,12 @@ class RootComponentManager extends CurlyComponentManager {
     );
 
     if (ENV._DEBUG_RENDER_TREE) {
-      environment.debugRenderTree.create(bucket, {
+      environment.extra.debugRenderTree.create(bucket, {
         type: 'component',
         name: state.name,
         args: EMPTY_ARGS,
         instance: component,
-        template: state.template,
+        template: state.template!,
       });
     }
 
@@ -98,6 +100,8 @@ export const ROOT_CAPABILITIES: ComponentCapabilities = {
   dynamicScope: true,
   updateHook: true,
   createInstance: true,
+  wrapped: true,
+  willDestroy: false,
 };
 
 export class RootComponentDefinition implements ComponentDefinition {
@@ -112,7 +116,6 @@ export class RootComponentDefinition implements ComponentDefinition {
       name: factory!.fullName.slice(10),
       capabilities: ROOT_CAPABILITIES,
       ComponentClass: factory as Factory<any, any>,
-      handle: null,
     };
   }
 

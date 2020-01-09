@@ -1,17 +1,14 @@
-import { set } from '@ember/-internals/metal';
-import { Opaque } from '@glimmer/interfaces';
+import { get as emberGet, set as emberSet } from '@ember/-internals/metal';
+import { isObject } from '@ember/-internals/utils';
+import { CapturedArguments, Environment, VM, VMArguments } from '@glimmer/interfaces';
 import {
-  combine,
-  createUpdatableTag,
-  isConst,
-  PathReference,
-  Tag,
-  UpdatableTag,
-  update,
+  HelperRootReference,
+  UPDATE_REFERENCED_VALUE,
   VersionedPathReference,
 } from '@glimmer/reference';
-import { Arguments, NULL_REFERENCE, VM } from '@glimmer/runtime';
-import { CachedReference, referenceFromParts, UPDATE } from '../utils/references';
+import { NULL_REFERENCE } from '@glimmer/runtime';
+import { isConst } from '@glimmer/validator';
+import { referenceFromParts } from '../utils/references';
 
 /**
 @module ember
@@ -97,77 +94,55 @@ import { CachedReference, referenceFromParts, UPDATE } from '../utils/references
   @for Ember.Templates.helpers
   @since 2.1.0
  */
+export default function(args: VMArguments, vm: VM) {
+  let sourceReference = args.positional.at(0);
+  let pathReference = args.positional.at(1);
 
-export default function(_vm: VM, args: Arguments) {
-  return GetHelperReference.create(args.positional.at(0), args.positional.at(1));
-}
+  if (isConst(pathReference)) {
+    // Since the path is constant, we can create a normal chain of property
+    // references. The source reference will update like normal, and all of the
+    // child references will update accordingly.
+    let path = pathReference.value();
 
-function referenceFromPath(
-  source: VersionedPathReference<Opaque>,
-  path: string
-): VersionedPathReference<Opaque> {
-  let innerReference;
-  if (path === undefined || path === null || path === '') {
-    innerReference = NULL_REFERENCE;
-  } else if (typeof path === 'string' && path.indexOf('.') > -1) {
-    innerReference = referenceFromParts(source, path.split('.'));
-  } else {
-    innerReference = source.get(path);
-  }
-  return innerReference;
-}
-
-class GetHelperReference extends CachedReference {
-  public sourceReference: VersionedPathReference<Opaque>;
-  public pathReference: PathReference<string>;
-  public lastPath: string | null;
-  public innerReference: VersionedPathReference<Opaque>;
-  public innerTag: UpdatableTag;
-  public tag: Tag;
-
-  static create(
-    sourceReference: VersionedPathReference<Opaque>,
-    pathReference: PathReference<string>
-  ) {
-    if (isConst(pathReference)) {
-      let path = pathReference.value();
-      return referenceFromPath(sourceReference, path);
+    if (path === undefined || path === null || path === '') {
+      return NULL_REFERENCE;
+    } else if (typeof path === 'string' && path.indexOf('.') > -1) {
+      return referenceFromParts(sourceReference, path.split('.'));
     } else {
-      return new GetHelperReference(sourceReference, pathReference);
+      return sourceReference.get(String(path));
     }
+  } else {
+    return new GetHelperRootReference(args.capture(), vm.env);
+  }
+}
+
+function get({ positional }: CapturedArguments) {
+  let source = positional.at(0).value();
+
+  if (isObject(source)) {
+    let path = positional.at(1).value();
+
+    return emberGet(source, String(path));
+  }
+}
+
+class GetHelperRootReference extends HelperRootReference {
+  private sourceReference: VersionedPathReference<object>;
+  private pathReference: VersionedPathReference<string>;
+
+  constructor(args: CapturedArguments, env: Environment) {
+    super(get, args, env);
+    this.sourceReference = args.positional.at(0);
+    this.pathReference = args.positional.at(1);
   }
 
-  constructor(
-    sourceReference: VersionedPathReference<Opaque>,
-    pathReference: PathReference<string>
-  ) {
-    super();
-    this.sourceReference = sourceReference;
-    this.pathReference = pathReference;
+  [UPDATE_REFERENCED_VALUE](value: any) {
+    let source = this.sourceReference.value();
 
-    this.lastPath = null;
-    this.innerReference = NULL_REFERENCE;
+    if (isObject(source)) {
+      let path = String(this.pathReference.value());
 
-    let innerTag = (this.innerTag = createUpdatableTag());
-
-    this.tag = combine([sourceReference.tag, pathReference.tag, innerTag]);
-  }
-
-  compute() {
-    let { lastPath, innerReference, innerTag } = this;
-    let path = this.pathReference.value();
-
-    if (path !== lastPath) {
-      innerReference = referenceFromPath(this.sourceReference, path);
-      update(innerTag, innerReference.tag);
-      this.innerReference = innerReference;
-      this.lastPath = path;
+      emberSet(source, path, value);
     }
-
-    return innerReference.value();
-  }
-
-  [UPDATE](value: any) {
-    set(this.sourceReference.value() as any, this.pathReference.value(), value);
   }
 }

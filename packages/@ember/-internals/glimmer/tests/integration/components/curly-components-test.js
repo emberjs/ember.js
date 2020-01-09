@@ -2914,7 +2914,7 @@ moduleFor(
         this.render(`{{foo-bar id="foo-bar" isVisible=visible}}`, {
           visible: false,
         });
-      }, '`isVisible` is deprecated (from "component:foo-bar")');
+      }, /The `isVisible` property on classic component classes is deprecated. Was accessed while rendering:\n\nfoo-bar/);
 
       assertStyle('display: none;');
 
@@ -2924,7 +2924,7 @@ moduleFor(
         runTask(() => {
           set(this.context, 'visible', true);
         });
-      }, '`isVisible` is deprecated (from "component:foo-bar")');
+      }, /The `isVisible` property on classic component classes is deprecated. Was accessed while rendering:\n\nfoo-bar/);
 
       assertStyle('');
 
@@ -2932,7 +2932,7 @@ moduleFor(
         runTask(() => {
           set(this.context, 'visible', false);
         });
-      }, '`isVisible` is deprecated (from "component:foo-bar")');
+      }, /The `isVisible` property on classic component classes is deprecated. Was accessed while rendering:\n\nfoo-bar/);
 
       assertStyle('display: none;');
     }
@@ -2951,7 +2951,7 @@ moduleFor(
         this.render(`{{foo-bar id="foo-bar" isVisible=visible}}`, {
           visible: false,
         });
-      }, '`isVisible` is deprecated (from "component:foo-bar")');
+      }, /The `isVisible` property on classic component classes is deprecated. Was accessed while rendering:\n\nfoo-bar/);
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -2964,7 +2964,7 @@ moduleFor(
         runTask(() => {
           set(this.context, 'visible', true);
         });
-      }, '`isVisible` is deprecated (from "component:foo-bar")');
+      }, /The `isVisible` property on classic component classes is deprecated. Was accessed while rendering:\n\nfoo-bar/);
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -2975,7 +2975,7 @@ moduleFor(
         runTask(() => {
           set(this.context, 'visible', false);
         });
-      }, '`isVisible` is deprecated (from "component:foo-bar")');
+      }, /The `isVisible` property on classic component classes is deprecated. Was accessed while rendering:\n\nfoo-bar/);
 
       this.assertComponentElement(this.firstChild, {
         tagName: 'div',
@@ -3011,7 +3011,7 @@ moduleFor(
           visible: false,
           foo: 'baz',
         });
-      }, '`isVisible` is deprecated (from "component:foo-bar")');
+      }, /The `isVisible` property on classic component classes is deprecated. Was accessed while rendering:\n\nfoo-bar/);
 
       assertStyle('display: none;');
 
@@ -3021,7 +3021,7 @@ moduleFor(
         runTask(() => {
           set(this.context, 'visible', true);
         });
-      }, '`isVisible` is deprecated (from "component:foo-bar")');
+      }, /The `isVisible` property on classic component classes is deprecated. Was accessed while rendering:\n\nfoo-bar/);
 
       assertStyle('');
 
@@ -3030,7 +3030,7 @@ moduleFor(
           set(this.context, 'visible', false);
           set(this.context, 'foo', 'woo');
         });
-      }, '`isVisible` is deprecated (from "component:foo-bar")');
+      }, /The `isVisible` property on classic component classes is deprecated. Was accessed while rendering:\n\nfoo-bar/);
 
       assertStyle('display: none;');
       assert.equal(this.firstChild.getAttribute('foo'), 'woo');

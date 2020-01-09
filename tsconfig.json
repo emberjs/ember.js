@@ -21,16 +21,24 @@
 
     "newLine": "LF",
     "noEmit": true,
-    "allowJs": false
+    "allowJs": false,
+
+    // TODO: remove this once router_js types have been fixed
+    // https://github.com/tildeio/router.js/issues/290
+    "skipLibCheck": true,
+
+    "paths": {
+      "@glimmer/*": ["../node_modules/@glimmer/*"]
+    }
   },
 
   "include": [
-    "packages/**/*.ts"
+    "packages/**/*.ts",
   ],
 
   "exclude": [
     "dist",
+    "node_modules",
     "tmp",
-    "node_modules"
   ]
 }

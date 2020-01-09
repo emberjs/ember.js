@@ -1,11 +1,11 @@
 import { getOwner } from '@ember/-internals/owner';
 import { FrameworkObject } from '../../../index';
-import { moduleFor, AbstractRenderingTestCase } from 'internal-test-helpers';
+import { moduleFor, RenderingTestCase } from 'internal-test-helpers';
 import { setFrameworkClass } from '../../../lib/system/core_object';
 
 moduleFor(
   'FrameworkObject',
-  class extends AbstractRenderingTestCase {
+  class extends RenderingTestCase {
     ['@test tunnels the owner through to the base constructor for framework classes'](assert) {
       assert.expect(2);
 

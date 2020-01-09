@@ -1,39 +1,32 @@
 import { DEBUG } from '@glimmer/env';
-import { ComponentCapabilities } from '@glimmer/interfaces';
 import {
-  CONSTANT_TAG,
-  createTag,
-  isConstTag,
-  Tag,
-  VersionedPathReference,
-} from '@glimmer/reference';
-import {
-  Arguments,
   Bounds,
+  ComponentCapabilities,
   ComponentDefinition,
-  Invocation,
-  WithDynamicLayout,
-} from '@glimmer/runtime';
-import { Destroyable, Opaque, Option } from '@glimmer/util';
+  Destroyable,
+  Option,
+  VMArguments,
+  WithJitDynamicLayout,
+} from '@glimmer/interfaces';
+import { ComponentRootReference, VersionedPathReference } from '@glimmer/reference';
+import { CONSTANT_TAG, createTag, isConstTag, Tag } from '@glimmer/validator';
 
 import { generateControllerFactory } from '@ember/-internals/routing';
-import { OwnedTemplateMeta } from '@ember/-internals/views';
 import { EMBER_ROUTING_MODEL_ARG } from '@ember/canary-features';
 
 import { ENV } from '@ember/-internals/environment';
 import EngineInstance from '@ember/engine/instance';
 import { TemplateFactory } from '../..';
-import Environment from '../environment';
+import { EmberVMEnvironment } from '../environment';
 import RuntimeResolver from '../resolver';
-import { RootReference } from '../utils/references';
 import AbstractManager from './abstract';
 
 interface EngineState {
   engine: EngineInstance;
   controller: any;
-  self: RootReference<any>;
-  environment: Environment;
-  modelRef?: VersionedPathReference<Opaque>;
+  self: ComponentRootReference<any>;
+  environment: EmberVMEnvironment;
+  modelRef?: VersionedPathReference<unknown>;
 }
 
 interface EngineDefinitionState {
@@ -51,6 +44,8 @@ const CAPABILITIES = {
   dynamicScope: true,
   updateHook: true,
   createInstance: true,
+  wrapped: false,
+  willDestroy: false,
 };
 
 // TODO
@@ -59,40 +54,36 @@ const CAPABILITIES = {
 export const MODEL_ARG_NAME = EMBER_ROUTING_MODEL_ARG || !DEBUG ? 'model' : ' untypable model arg ';
 
 class MountManager extends AbstractManager<EngineState, EngineDefinitionState>
-  implements WithDynamicLayout<EngineState, OwnedTemplateMeta, RuntimeResolver> {
-  getDynamicLayout(state: EngineState, _: RuntimeResolver): Invocation {
+  implements WithJitDynamicLayout<EngineState, RuntimeResolver> {
+  getJitDynamicLayout(state: EngineState, _: RuntimeResolver) {
     let templateFactory = state.engine.lookup('template:application') as TemplateFactory;
     let template = templateFactory(state.engine);
-    let layout = template.asLayout();
 
     if (ENV._DEBUG_RENDER_TREE) {
-      state.environment.debugRenderTree.setTemplate(state.controller, template);
+      state.environment.extra.debugRenderTree.setTemplate(state.controller, template);
     }
 
-    return {
-      handle: layout.compile(),
-      symbolTable: layout.symbolTable,
-    };
+    return template;
   }
 
   getCapabilities(): ComponentCapabilities {
     return CAPABILITIES;
   }
 
-  create(environment: Environment, { name }: EngineDefinitionState, args: Arguments) {
+  create(environment: EmberVMEnvironment, { name }: EngineDefinitionState, args: VMArguments) {
     // TODO
     // mount is a runtime helper, this shouldn't use dynamic layout
     // we should resolve the engine app template in the helper
     // it also should use the owner that looked up the mount helper.
 
-    let engine = environment.owner.buildChildEngineInstance(name);
+    let engine = environment.extra.owner.buildChildEngineInstance(name);
 
     engine.boot();
 
     let applicationFactory = engine.factoryFor(`controller:application`);
     let controllerFactory = applicationFactory || generateControllerFactory(engine, 'application');
     let controller: any;
-    let self: RootReference<any>;
+    let self: ComponentRootReference<any>;
     let bucket: EngineState;
     let modelRef;
 
@@ -102,17 +93,17 @@ class MountManager extends AbstractManager<EngineState, EngineDefinitionState>
 
     if (modelRef === undefined) {
       controller = controllerFactory.create();
-      self = new RootReference(controller, environment);
+      self = new ComponentRootReference(controller, environment);
       bucket = { engine, controller, self, environment };
     } else {
       let model = modelRef.value();
       controller = controllerFactory.create({ model });
-      self = new RootReference(controller, environment);
+      self = new ComponentRootReference(controller, environment);
       bucket = { engine, controller, self, modelRef, environment };
     }
 
     if (ENV._DEBUG_RENDER_TREE) {
-      environment.debugRenderTree.create(bucket, {
+      environment.extra.debugRenderTree.create(bucket, {
         type: 'engine',
         name,
         args: args.capture(),
@@ -120,7 +111,7 @@ class MountManager extends AbstractManager<EngineState, EngineDefinitionState>
         template: undefined,
       });
 
-      environment.debugRenderTree.create(controller, {
+      environment.extra.debugRenderTree.create(controller, {
         type: 'route-template',
         name: 'application',
         args: args.capture(),
@@ -133,7 +124,7 @@ class MountManager extends AbstractManager<EngineState, EngineDefinitionState>
     return bucket;
   }
 
-  getSelf({ self }: EngineState): VersionedPathReference<Opaque> {
+  getSelf({ self }: EngineState): VersionedPathReference<unknown> {
     return self;
   }
 
@@ -157,8 +148,8 @@ class MountManager extends AbstractManager<EngineState, EngineDefinitionState>
     if (ENV._DEBUG_RENDER_TREE) {
       return {
         destroy() {
-          environment.debugRenderTree.willDestroy(controller);
-          environment.debugRenderTree.willDestroy(bucket);
+          environment.extra.debugRenderTree.willDestroy(controller);
+          environment.extra.debugRenderTree.willDestroy(bucket);
           engine.destroy();
         },
       };
@@ -169,8 +160,8 @@ class MountManager extends AbstractManager<EngineState, EngineDefinitionState>
 
   didRenderLayout(bucket: EngineState, bounds: Bounds): void {
     if (ENV._DEBUG_RENDER_TREE) {
-      bucket.environment.debugRenderTree.didRender(bucket.controller, bounds);
-      bucket.environment.debugRenderTree.didRender(bucket, bounds);
+      bucket.environment.extra.debugRenderTree.didRender(bucket.controller, bounds);
+      bucket.environment.extra.debugRenderTree.didRender(bucket, bounds);
     }
   }
 
@@ -182,15 +173,15 @@ class MountManager extends AbstractManager<EngineState, EngineDefinitionState>
     }
 
     if (ENV._DEBUG_RENDER_TREE) {
-      environment.debugRenderTree.update(bucket);
-      environment.debugRenderTree.update(bucket.controller);
+      environment.extra.debugRenderTree.update(bucket);
+      environment.extra.debugRenderTree.update(bucket.controller);
     }
   }
 
   didUpdateLayout(bucket: EngineState, bounds: Bounds): void {
     if (ENV._DEBUG_RENDER_TREE) {
-      bucket.environment.debugRenderTree.didRender(bucket.controller, bounds);
-      bucket.environment.debugRenderTree.didRender(bucket, bounds);
+      bucket.environment.extra.debugRenderTree.didRender(bucket.controller, bounds);
+      bucket.environment.extra.debugRenderTree.didRender(bucket, bounds);
     }
   }
 }

@@ -2,12 +2,18 @@ import { ENV } from '@ember/-internals/environment';
 import { set } from '@ember/-internals/metal';
 import { Owner } from '@ember/-internals/owner';
 import { assert, debugFreeze } from '@ember/debug';
-import { ComponentCapabilities, Dict } from '@glimmer/interfaces';
-import { CONSTANT_TAG, createTag, isConst, VersionedPathReference } from '@glimmer/reference';
-import { Arguments, Bounds, DynamicScope, PreparedArguments } from '@glimmer/runtime';
-import { Destroyable } from '@glimmer/util';
-import Environment from '../environment';
-import { RootReference } from '../utils/references';
+import {
+  Bounds,
+  ComponentCapabilities,
+  Destroyable,
+  Dict,
+  DynamicScope,
+  PreparedArguments,
+  VMArguments,
+} from '@glimmer/interfaces';
+import { ComponentRootReference, ConstReference, VersionedPathReference } from '@glimmer/reference';
+import { CONSTANT_TAG, createTag, isConst } from '@glimmer/validator';
+import { EmberVMEnvironment } from '../environment';
 import InternalComponentManager, { InternalDefinitionState } from './internal';
 
 const CAPABILITIES: ComponentCapabilities = {
@@ -21,10 +27,12 @@ const CAPABILITIES: ComponentCapabilities = {
   dynamicScope: false,
   updateHook: true,
   createInstance: true,
+  wrapped: false,
+  willDestroy: false,
 };
 
 export interface InputComponentState {
-  env: Environment;
+  env: EmberVMEnvironment;
   type: VersionedPathReference;
   instance: Destroyable;
 }
@@ -38,7 +46,7 @@ export default class InputComponentManager extends InternalComponentManager<Inpu
     return CAPABILITIES;
   }
 
-  prepareArgs(_state: InternalDefinitionState, args: Arguments): PreparedArguments {
+  prepareArgs(_state: InternalDefinitionState, args: VMArguments): PreparedArguments {
     assert(
       'The `<Input />` component does not take any positional arguments',
       args.positional.length === 0
@@ -49,16 +57,16 @@ export default class InputComponentManager extends InternalComponentManager<Inpu
     return {
       positional: EMPTY_POSITIONAL_ARGS,
       named: {
-        __ARGS__: new RootReference(__ARGS__),
+        __ARGS__: new ConstReference(__ARGS__),
         type: args.named.get('type'),
       },
     };
   }
 
   create(
-    env: Environment,
+    env: EmberVMEnvironment,
     { ComponentClass, layout }: InternalDefinitionState,
-    args: Arguments,
+    args: VMArguments,
     _dynamicScope: DynamicScope,
     caller: VersionedPathReference
   ): InputComponentState {
@@ -74,7 +82,7 @@ export default class InputComponentManager extends InternalComponentManager<Inpu
     let state = { env, type, instance };
 
     if (ENV._DEBUG_RENDER_TREE) {
-      env.debugRenderTree.create(state, {
+      env.extra.debugRenderTree.create(state, {
         type: 'component',
         name: 'input',
         args: args.capture(),
@@ -87,7 +95,7 @@ export default class InputComponentManager extends InternalComponentManager<Inpu
   }
 
   getSelf({ env, instance }: InputComponentState): VersionedPathReference {
-    return new RootReference(instance, env);
+    return new ComponentRootReference(instance, env);
   }
 
   getTag() {
@@ -102,7 +110,7 @@ export default class InputComponentManager extends InternalComponentManager<Inpu
 
   didRenderLayout(state: InputComponentState, bounds: Bounds): void {
     if (ENV._DEBUG_RENDER_TREE) {
-      state.env.debugRenderTree.didRender(state, bounds);
+      state.env.extra.debugRenderTree.didRender(state, bounds);
     }
   }
 
@@ -110,13 +118,13 @@ export default class InputComponentManager extends InternalComponentManager<Inpu
     set(state.instance, 'type', state.type.value());
 
     if (ENV._DEBUG_RENDER_TREE) {
-      state.env.debugRenderTree.update(state);
+      state.env.extra.debugRenderTree.update(state);
     }
   }
 
   didUpdateLayout(state: InputComponentState, bounds: Bounds): void {
     if (ENV._DEBUG_RENDER_TREE) {
-      state.env.debugRenderTree.didRender(state, bounds);
+      state.env.extra.debugRenderTree.didRender(state, bounds);
     }
   }
 
@@ -124,7 +132,7 @@ export default class InputComponentManager extends InternalComponentManager<Inpu
     if (ENV._DEBUG_RENDER_TREE) {
       return {
         destroy() {
-          state.env.debugRenderTree.willDestroy(state);
+          state.env.extra.debugRenderTree.willDestroy(state);
           state.instance.destroy();
         },
       };

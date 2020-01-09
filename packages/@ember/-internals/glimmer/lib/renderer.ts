@@ -1,34 +1,51 @@
 import { ENV } from '@ember/-internals/environment';
-import { runInAutotrackingTransaction } from '@ember/-internals/metal';
-import { getViewElement, getViewId } from '@ember/-internals/views';
+import { Owner, OWNER } from '@ember/-internals/owner';
+import { getViewElement, getViewId, OwnedTemplateMeta } from '@ember/-internals/views';
 import { assert } from '@ember/debug';
 import { backburner, getCurrentRunLoop } from '@ember/runloop';
 import { DEBUG } from '@glimmer/env';
-import { Option, Simple } from '@glimmer/interfaces';
-import { CURRENT_TAG, validate, value, VersionedPathReference } from '@glimmer/reference';
 import {
   Bounds,
-  clientBuilder,
-  CurriedComponentDefinition,
-  curry,
   Cursor,
   DynamicScope as GlimmerDynamicScope,
   ElementBuilder,
-  IteratorResult,
-  renderMain,
+  Environment,
+  JitRuntimeContext,
+  Option,
   RenderResult,
+  SyntaxCompilationContext,
+} from '@glimmer/interfaces';
+import { JitContext, unwrapHandle, unwrapTemplate } from '@glimmer/opcode-compiler';
+import { RuntimeProgramImpl } from '@glimmer/program';
+import { VersionedPathReference } from '@glimmer/reference';
+import {
+  clientBuilder,
+  CurriedComponentDefinition,
+  curry,
+  DOMChanges,
+  DOMTreeConstruction,
+  inTransaction,
+  IteratorResult,
+  JitRuntimeFromProgram,
+  JitSyntaxCompilationContext,
+  renderJitMain,
   UNDEFINED_REFERENCE,
 } from '@glimmer/runtime';
-import { Opaque } from '@glimmer/util';
+import { CURRENT_TAG, runInAutotrackingTransaction, validate, value } from '@glimmer/validator';
+import { SimpleDocument, SimpleElement, SimpleNode } from '@simple-dom/interface';
 import RSVP from 'rsvp';
+import CompileTimeResolver from './compile-time-lookup';
 import { BOUNDS } from './component';
 import { createRootOutlet } from './component-managers/outlet';
 import { RootComponentDefinition } from './component-managers/root';
-import Environment from './environment';
+import { NodeDOMTreeConstruction } from './dom';
+import { EmberEnvironmentDelegate, EmberEnvironmentExtra } from './environment';
+import RuntimeResolver from './resolver';
+import { populateMacros } from './syntax';
 import { Factory as TemplateFactory, OwnedTemplate } from './template';
 import { Component } from './utils/curly-component-state-bucket';
 import { OutletState } from './utils/outlet';
-import { UnboundReference } from './utils/references';
+import { UnboundRootReference } from './utils/references';
 import OutletView from './views/outlet';
 
 export type IBuilder = (env: Environment, cursor: Cursor) => ElementBuilder;
@@ -65,41 +82,37 @@ export class DynamicScope implements GlimmerDynamicScope {
 
 class RootState {
   public id: string;
-  public env: Environment;
-  public root: Component | OutletView;
   public result: RenderResult | undefined;
-  public shouldReflush: boolean;
   public destroyed: boolean;
   public render: () => void;
 
   constructor(
-    root: Component | OutletView,
-    env: Environment,
+    public root: Component | OutletView,
+    public runtime: JitRuntimeContext<OwnedTemplateMeta, EmberEnvironmentExtra>,
+    context: SyntaxCompilationContext,
     template: OwnedTemplate,
-    self: VersionedPathReference<Opaque>,
-    parentElement: Simple.Element,
+    self: VersionedPathReference<unknown>,
+    parentElement: SimpleElement,
     dynamicScope: DynamicScope,
     builder: IBuilder
   ) {
     assert(`You cannot render \`${self.value()}\` without a template.`, template !== undefined);
 
     this.id = getViewId(root);
-    this.env = env;
-    this.root = root;
     this.result = undefined;
-    this.shouldReflush = false;
     this.destroyed = false;
 
     this.render = () => {
-      let layout = template.asLayout();
-      let handle = layout.compile();
-      let iterator = renderMain(
-        layout['compiler'].program,
-        env,
+      let layout = unwrapTemplate(template).asLayout();
+      let handle = layout.compile(context);
+
+      let iterator = renderJitMain(
+        runtime,
+        context,
         self,
-        dynamicScope,
-        builder(env, { element: parentElement, nextSibling: null }),
-        handle
+        builder(runtime.env, { element: parentElement, nextSibling: null }),
+        unwrapHandle(handle),
+        dynamicScope
       );
       let iteratorResult: IteratorResult<RenderResult>;
       do {
@@ -113,16 +126,19 @@ class RootState {
     };
   }
 
-  isFor(possibleRoot: Opaque): boolean {
+  isFor(possibleRoot: unknown): boolean {
     return this.root === possibleRoot;
   }
 
   destroy() {
-    let { result, env } = this;
+    let {
+      result,
+      runtime: { env },
+    } = this;
 
     this.destroyed = true;
 
-    this.env = undefined as any;
+    this.runtime = undefined as any;
     this.root = null as any;
     this.result = undefined;
     this.render = undefined as any;
@@ -138,18 +154,8 @@ class RootState {
        * When roots are being destroyed during `Renderer#destroy`, no transaction exists
 
        */
-      let needsTransaction = !env.inTransaction;
 
-      if (needsTransaction) {
-        env.begin();
-      }
-      try {
-        result.destroy();
-      } finally {
-        if (needsTransaction) {
-          env.commit();
-        }
-      }
+      inTransaction(env, () => result!.destroy());
     }
   }
 }
@@ -236,48 +242,82 @@ backburner.on('begin', loopBegin);
 backburner.on('end', loopEnd);
 
 interface ViewRegistry {
-  [viewId: string]: Opaque;
+  [viewId: string]: unknown;
 }
 
 export abstract class Renderer {
-  private _env: Environment;
   private _rootTemplate: OwnedTemplate;
   private _viewRegistry: ViewRegistry;
   private _destinedForDOM: boolean;
-  private _destroyed: boolean;
   private _roots: RootState[];
-  private _lastRevision: number;
-  private _isRenderingRoots: boolean;
   private _removedRoots: RootState[];
   private _builder: IBuilder;
+  private _inRenderTransaction = false;
+
+  private _context: JitSyntaxCompilationContext;
+  private _runtime: JitRuntimeContext<OwnedTemplateMeta, EmberEnvironmentExtra>;
+
+  private _lastRevision = -1;
+  private _destroyed = false;
+
+  readonly _runtimeResolver: RuntimeResolver;
 
   constructor(
-    env: Environment,
+    owner: Owner,
+    document: SimpleDocument,
+    env: { isInteractive: boolean; hasDOM: boolean },
     rootTemplate: TemplateFactory,
     viewRegistry: ViewRegistry,
     destinedForDOM = false,
     builder = clientBuilder
   ) {
-    this._env = env;
-    this._rootTemplate = rootTemplate(env.owner);
+    this._rootTemplate = rootTemplate(owner);
     this._viewRegistry = viewRegistry;
     this._destinedForDOM = destinedForDOM;
-    this._destroyed = false;
     this._roots = [];
-    this._lastRevision = -1;
-    this._isRenderingRoots = false;
     this._removedRoots = [];
     this._builder = builder;
+
+    // resolver is exposed for tests
+    let runtimeResolver = (this._runtimeResolver = new RuntimeResolver(env.isInteractive));
+    let compileTimeResolver = new CompileTimeResolver(runtimeResolver);
+
+    this._context = JitContext(compileTimeResolver);
+
+    populateMacros(this._context.macros);
+
+    let program = new RuntimeProgramImpl(
+      this._context.program.constants,
+      this._context.program.heap
+    );
+
+    let runtimeEnvironmentDelegate = new EmberEnvironmentDelegate(owner, env.isInteractive);
+
+    this._runtime = JitRuntimeFromProgram(
+      {
+        appendOperations: env.hasDOM
+          ? new DOMTreeConstruction(document)
+          : new NodeDOMTreeConstruction(document),
+        updateOperations: new DOMChanges(document),
+      },
+      program,
+      runtimeResolver,
+      runtimeEnvironmentDelegate
+    );
+  }
+
+  get debugRenderTree() {
+    return this._runtime.env.extra.debugRenderTree;
   }
 
   // renderer HOOKS
 
-  appendOutletView(view: OutletView, target: Simple.Element) {
+  appendOutletView(view: OutletView, target: SimpleElement) {
     let definition = createRootOutlet(view);
     this._appendDefinition(view, curry(definition), target);
   }
 
-  appendTo(view: Component, target: Simple.Element) {
+  appendTo(view: Component, target: SimpleElement) {
     let definition = new RootComponentDefinition(view);
     this._appendDefinition(view, curry(definition), target);
   }
@@ -285,13 +325,14 @@ export abstract class Renderer {
   _appendDefinition(
     root: OutletView | Component,
     definition: CurriedComponentDefinition,
-    target: Simple.Element
+    target: SimpleElement
   ) {
-    let self = new UnboundReference(definition);
+    let self = new UnboundRootReference(definition, this._runtime.env);
     let dynamicScope = new DynamicScope(null, UNDEFINED_REFERENCE);
     let rootState = new RootState(
       root,
-      this._env,
+      this._runtime,
+      this._context,
       this._rootTemplate,
       self,
       target,
@@ -328,7 +369,7 @@ export abstract class Renderer {
     }
   }
 
-  cleanupRootFor(view: Opaque) {
+  cleanupRootFor(view: unknown) {
     // no need to cleanup roots if we have already been destroyed
     if (this._destroyed) {
       return;
@@ -356,11 +397,11 @@ export abstract class Renderer {
     this._clearAllRoots();
   }
 
-  abstract getElement(view: Opaque): Option<Simple.Element>;
+  abstract getElement(view: unknown): Option<SimpleElement>;
 
   getBounds(
     view: object
-  ): { parentElement: Simple.Element; firstNode: Simple.Node; lastNode: Simple.Node } {
+  ): { parentElement: SimpleElement; firstNode: SimpleNode; lastNode: SimpleNode } {
     let bounds: Bounds = view[BOUNDS];
 
     assert('object passed to getBounds must have the BOUNDS symbol as a property', Boolean(bounds));
@@ -372,8 +413,8 @@ export abstract class Renderer {
     return { parentElement, firstNode, lastNode };
   }
 
-  createElement(tagName: string): Simple.Element {
-    return this._env.getAppendOperations().createElement(tagName);
+  createElement(tagName: string): SimpleElement {
+    return this._runtime.env.getAppendOperations().createElement(tagName);
   }
 
   _renderRoot(root: RootState) {
@@ -389,16 +430,15 @@ export abstract class Renderer {
   }
 
   _renderRoots() {
-    let { _roots: roots, _env: env, _removedRoots: removedRoots } = this;
+    let { _roots: roots, _runtime: runtime, _removedRoots: removedRoots } = this;
     let initialRootsLength: number;
 
     do {
-      env.begin();
-      try {
+      initialRootsLength = roots.length;
+
+      inTransaction(runtime.env, () => {
         // ensure that for the first iteration of the loop
         // each root is processed
-        initialRootsLength = roots.length;
-
         for (let i = 0; i < roots.length; i++) {
           let root = roots[i];
 
@@ -428,9 +468,7 @@ export abstract class Renderer {
         }
 
         this._lastRevision = value(CURRENT_TAG);
-      } finally {
-        env.commit();
-      }
+      });
     } while (roots.length > initialRootsLength);
 
     // remove any roots that were destroyed during this transaction
@@ -447,7 +485,7 @@ export abstract class Renderer {
   }
 
   _renderRootsTransaction() {
-    if (this._isRenderingRoots) {
+    if (this._inRenderTransaction) {
       // currently rendering roots, a new root was added and will
       // be processed by the existing _renderRoots invocation
       return;
@@ -455,7 +493,7 @@ export abstract class Renderer {
 
     // used to prevent calling _renderRoots again (see above)
     // while we are actively rendering roots
-    this._isRenderingRoots = true;
+    this._inRenderTransaction = true;
 
     let completedWithoutError = false;
     try {
@@ -464,11 +502,8 @@ export abstract class Renderer {
     } finally {
       if (!completedWithoutError) {
         this._lastRevision = value(CURRENT_TAG);
-        if (this._env.inTransaction === true) {
-          this._env.commit();
-        }
       }
-      this._isRenderingRoots = false;
+      this._inRenderTransaction = false;
     }
   }
 
@@ -507,20 +542,24 @@ export abstract class Renderer {
 
 export class InertRenderer extends Renderer {
   static create({
+    [OWNER]: owner,
+    document,
     env,
     rootTemplate,
     _viewRegistry,
     builder,
   }: {
-    env: Environment;
+    [OWNER]: Owner;
+    document: SimpleDocument;
+    env: { isInteractive: boolean; hasDOM: boolean };
     rootTemplate: TemplateFactory;
     _viewRegistry: any;
     builder: any;
   }) {
-    return new this(env, rootTemplate, _viewRegistry, false, builder);
+    return new this(owner, document, env, rootTemplate, _viewRegistry, false, builder);
   }
 
-  getElement(_view: Opaque): Option<Simple.Element> {
+  getElement(_view: unknown): Option<SimpleElement> {
     throw new Error(
       'Accessing `this.element` is not allowed in non-interactive environments (such as FastBoot).'
     );
@@ -529,20 +568,24 @@ export class InertRenderer extends Renderer {
 
 export class InteractiveRenderer extends Renderer {
   static create({
+    [OWNER]: owner,
+    document,
     env,
     rootTemplate,
     _viewRegistry,
     builder,
   }: {
-    env: Environment;
+    [OWNER]: Owner;
+    document: SimpleDocument;
+    env: { isInteractive: boolean; hasDOM: boolean };
     rootTemplate: TemplateFactory;
     _viewRegistry: any;
     builder: any;
   }) {
-    return new this(env, rootTemplate, _viewRegistry, true, builder);
+    return new this(owner, document, env, rootTemplate, _viewRegistry, true, builder);
   }
 
-  getElement(view: Opaque): Option<Simple.Element> {
+  getElement(view: unknown): Option<SimpleElement> {
     return getViewElement(view);
   }
 }

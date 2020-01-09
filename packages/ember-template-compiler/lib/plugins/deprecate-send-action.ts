@@ -1,7 +1,9 @@
+import { StaticTemplateMeta } from '@ember/-internals/views';
 import { deprecate } from '@ember/debug';
 import { SEND_ACTION } from '@ember/deprecated-features';
 import { AST, ASTPlugin, ASTPluginEnvironment } from '@glimmer/syntax';
 import calculateLocationDisplay from '../system/calculate-location-display';
+import { isPath } from './utils';
 
 const EVENTS = [
   'insert-newline',
@@ -16,7 +18,7 @@ const EVENTS = [
 
 export default function deprecateSendAction(env: ASTPluginEnvironment): ASTPlugin | undefined {
   if (SEND_ACTION) {
-    let { moduleName } = env.meta;
+    let { moduleName } = env.meta as StaticTemplateMeta;
 
     let deprecationMessage = (node: AST.Node, eventName: string, actionName: string) => {
       let sourceInformation = calculateLocationDisplay(moduleName, node.loc);
@@ -64,7 +66,7 @@ export default function deprecateSendAction(env: ASTPluginEnvironment): ASTPlugi
         },
 
         MustacheStatement(node: AST.MustacheStatement) {
-          if (node.path.original !== 'input') {
+          if (!isPath(node.path) || node.path.original !== 'input') {
             return;
           }
 

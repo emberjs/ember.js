@@ -441,7 +441,7 @@ moduleFor(
 
       this.assert.throws(() => {
         this.render(`<div {{some-helper}}></div>`);
-      }, /Compile Error some-helper is not a modifier: Helpers may not be used in the element form/);
+      }, /Error: Compile Error: Unexpected Modifier some-helper @ 0..0/);
     }
 
     ['@test class-based helper not usable within element']() {
@@ -451,7 +451,7 @@ moduleFor(
 
       this.assert.throws(() => {
         this.render(`<div {{some-helper}}></div>`);
-      }, /Compile Error some-helper is not a modifier: Helpers may not be used in the element form/);
+      }, /Error: Compile Error: Unexpected Modifier some-helper @ 0..0/);
     }
 
     ['@test class-based helper is torn down'](assert) {

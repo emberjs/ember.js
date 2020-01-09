@@ -1,13 +1,6 @@
 import { Owner } from '@ember/-internals/owner';
-import { Opaque } from '@glimmer/interfaces';
-import {
-  combine,
-  createTag,
-  dirty,
-  Reference,
-  Tag,
-  VersionedPathReference,
-} from '@glimmer/reference';
+import { Reference, VersionedPathReference } from '@glimmer/reference';
+import { combine, createTag, dirty, Tag } from '@glimmer/validator';
 import { Factory as TemplateFactory, OwnedTemplate } from '../template';
 
 export interface RenderState {
@@ -79,7 +72,7 @@ export class RootOutletReference implements VersionedPathReference<OutletState> 
 
   constructor(public outletState: OutletState) {}
 
-  get(key: string): VersionedPathReference<Opaque> {
+  get(key: string): VersionedPathReference<unknown> {
     return new PathReference(this, key);
   }
 
@@ -112,7 +105,7 @@ export class OutletReference implements VersionedPathReference<OutletState | und
     return outlets === undefined ? undefined : outlets[this.outletNameRef.value()];
   }
 
-  get(key: string): VersionedPathReference<Opaque> {
+  get(key: string): VersionedPathReference<unknown> {
     return new PathReference(this, key);
   }
 }
@@ -121,23 +114,23 @@ export class OutletReference implements VersionedPathReference<OutletState | und
  * Outlet state is dirtied from root.
  * This just using the parent tag for dirtiness.
  */
-class PathReference implements VersionedPathReference<Opaque> {
-  public parent: VersionedPathReference<Opaque>;
+class PathReference implements VersionedPathReference<unknown> {
+  public parent: VersionedPathReference<unknown>;
   public key: string;
   public tag: Tag;
 
-  constructor(parent: VersionedPathReference<Opaque>, key: string) {
+  constructor(parent: VersionedPathReference<unknown>, key: string) {
     this.parent = parent;
     this.key = key;
     this.tag = parent.tag;
   }
 
-  get(key: string): VersionedPathReference<Opaque> {
+  get(key: string): VersionedPathReference<unknown> {
     return new PathReference(this, key);
   }
 
-  value(): Opaque {
+  value(): unknown {
     let parent = this.parent.value();
-    return parent && parent[this.key];
+    return parent && (parent as object)[this.key];
   }
 }

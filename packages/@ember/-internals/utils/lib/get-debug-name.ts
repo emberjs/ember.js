@@ -12,7 +12,7 @@ if (DEBUG) {
       functionName = (match && match[1]) || '';
     }
 
-    return functionName;
+    return functionName.replace(/^bound /, '');
   };
 
   let getObjectName = (obj: object) => {

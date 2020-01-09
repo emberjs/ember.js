@@ -1,11 +1,18 @@
-import { track, untrack } from '@ember/-internals/metal';
 import { Factory } from '@ember/-internals/owner';
 import { getDebugName } from '@ember/-internals/utils';
 import { assert, deprecate } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { Dict, Opaque, Simple } from '@glimmer/interfaces';
-import { combine, CONSTANT_TAG, createUpdatableTag, Tag, update } from '@glimmer/reference';
-import { Arguments, CapturedArguments, ModifierManager } from '@glimmer/runtime';
+import { CapturedArguments, Dict, ModifierManager, VMArguments } from '@glimmer/interfaces';
+import {
+  combine,
+  CONSTANT_TAG,
+  createUpdatableTag,
+  Tag,
+  track,
+  untrack,
+  update,
+} from '@glimmer/validator';
+import { SimpleElement } from '@simple-dom/interface';
 import debugRenderMessage from '../utils/debug-render-message';
 
 export interface CustomModifierDefinitionState<ModifierInstance> {
@@ -72,7 +79,7 @@ export class CustomModifierState<ModifierInstance> {
   public tag = createUpdatableTag();
 
   constructor(
-    public element: Simple.Element,
+    public element: SimpleElement,
     public delegate: ModifierManagerDelegate<ModifierInstance>,
     public modifier: ModifierInstance,
     public args: CapturedArguments
@@ -86,14 +93,14 @@ export class CustomModifierState<ModifierInstance> {
 
 // TODO: export ICapturedArgumentsValue from glimmer and replace this
 export interface Args {
-  named: Dict<Opaque>;
-  positional: Opaque[];
+  named: Dict<unknown>;
+  positional: unknown[];
 }
 
 export interface ModifierManagerDelegate<ModifierInstance> {
   capabilities: Capabilities;
-  createModifier(factory: Opaque, args: Args): ModifierInstance;
-  installModifier(instance: ModifierInstance, element: Simple.Element, args: Args): void;
+  createModifier(factory: unknown, args: Args): ModifierInstance;
+  installModifier(instance: ModifierInstance, element: SimpleElement, args: Args): void;
   updateModifier(instance: ModifierInstance, args: Args): void;
   destroyModifier(instance: ModifierInstance, args: Args): void;
 }
@@ -129,9 +136,9 @@ class InteractiveCustomModifierManager<ModifierInstance>
       CustomModifierDefinitionState<ModifierInstance>
     > {
   create(
-    element: Simple.Element,
+    element: SimpleElement,
     definition: CustomModifierDefinitionState<ModifierInstance>,
-    args: Arguments
+    args: VMArguments
   ) {
     let { delegate, ModifierClass } = definition;
     const capturedArgs = args.capture();

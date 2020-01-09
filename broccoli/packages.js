@@ -254,7 +254,7 @@ function glimmerTrees(entries) {
     }
     seen.add(name);
 
-    if (!name.startsWith('@glimmer/')) {
+    if (!name.startsWith('@glimmer/') && !name.startsWith('@simple-dom/')) {
       continue;
     }
 
@@ -284,7 +284,12 @@ module.exports.glimmerCompilerES = () => {
 };
 
 module.exports.glimmerES = function glimmerES(environment) {
-  let glimmerEntries = ['@glimmer/node', '@glimmer/opcode-compiler', '@glimmer/runtime'];
+  let glimmerEntries = [
+    '@glimmer/node',
+    '@simple-dom/document',
+    '@glimmer/opcode-compiler',
+    '@glimmer/runtime',
+  ];
 
   if (environment === 'development') {
     let hasGlimmerDebug = true;

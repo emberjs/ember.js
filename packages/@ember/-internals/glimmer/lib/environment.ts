@@ -1,55 +1,38 @@
-import { OWNER, Owner } from '@ember/-internals/owner';
+import { ENV } from '@ember/-internals/environment';
+import { get, set } from '@ember/-internals/metal';
+import { Owner } from '@ember/-internals/owner';
 import { constructStyleDeprecationMessage } from '@ember/-internals/views';
 import { warn } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { Option, Simple } from '@glimmer/interfaces';
-import { OpaqueIterable, VersionedReference } from '@glimmer/reference';
+import { ElementBuilder, Environment, Option } from '@glimmer/interfaces';
 import {
-  ElementBuilder,
-  Environment as GlimmerEnvironment,
+  IterationItemReference,
+  PropertyReference,
+  VersionedPathReference,
+} from '@glimmer/reference';
+import {
+  DynamicAttribute,
+  dynamicAttribute,
+  EnvironmentDelegate,
   SimpleDynamicAttribute,
 } from '@glimmer/runtime';
-import { Destroyable, Opaque } from '@glimmer/util';
-import createIterable from './utils/iterable';
-import { ConditionalReference, UpdatableReference } from './utils/references';
-import { isHTMLSafe } from './utils/string';
-
+import { AttrNamespace as SimpleAttrNamespace, SimpleElement } from '@simple-dom/interface';
 import installPlatformSpecificProtocolForURL from './protocol-for-url';
-
-import { ENV } from '@ember/-internals/environment';
 import { OwnedTemplate } from './template';
-import DebugRenderTree from './utils/debug-render-tree';
+import DebugRenderTree, { PathNodeType } from './utils/debug-render-tree';
+import toIterator from './utils/iterator';
+import { isHTMLSafe } from './utils/string';
+import toBool from './utils/to-bool';
 
 export interface CompilerFactory {
   id: string;
   new (template: OwnedTemplate): any;
 }
 
-export default class Environment extends GlimmerEnvironment {
-  static create(options: any) {
-    return new this(options);
-  }
+export class EmberEnvironmentExtra {
+  private _debugRenderTree?: DebugRenderTree;
 
-  public owner: Owner;
-  public isInteractive: boolean;
-  public destroyedComponents: Destroyable[];
-
-  private _debugRenderTree: DebugRenderTree | undefined;
-  public inTransaction = false;
-
-  constructor(injections: any) {
-    super(injections);
-
-    let owner: Owner = injections[OWNER];
-
-    this.owner = owner;
-    this.isInteractive = owner.lookup<any>('-environment:main').isInteractive;
-
-    // can be removed once https://github.com/tildeio/glimmer/pull/305 lands
-    this.destroyedComponents = [];
-
-    installPlatformSpecificProtocolForURL(this);
-
+  constructor(public owner: Owner) {
     if (ENV._DEBUG_RENDER_TREE) {
       this._debugRenderTree = new DebugRenderTree();
     }
@@ -65,71 +48,86 @@ export default class Environment extends GlimmerEnvironment {
     }
   }
 
-  // this gets clobbered by installPlatformSpecificProtocolForURL
-  // it really should just delegate to a platform specific injection
-  protocolForURL(s: string): string {
-    return s;
-  }
-
-  toConditionalReference(reference: UpdatableReference): VersionedReference<boolean> {
-    return ConditionalReference.create(reference);
-  }
-
-  iterableFor(ref: VersionedReference, key: string): OpaqueIterable {
-    return createIterable(ref, key);
-  }
-
-  scheduleInstallModifier(modifier: any, manager: any): void {
-    if (this.isInteractive) {
-      super.scheduleInstallModifier(modifier, manager);
-    }
-  }
-
-  scheduleUpdateModifier(modifier: any, manager: any): void {
-    if (this.isInteractive) {
-      super.scheduleUpdateModifier(modifier, manager);
-    }
-  }
-
-  didDestroy(destroyable: Destroyable): void {
-    destroyable.destroy();
-  }
-
   begin(): void {
     if (ENV._DEBUG_RENDER_TREE) {
       this.debugRenderTree.begin();
     }
-
-    this.inTransaction = true;
-
-    super.begin();
   }
 
   commit(): void {
-    let destroyedComponents = this.destroyedComponents;
-    this.destroyedComponents = [];
-    // components queued for destruction must be destroyed before firing
-    // `didCreate` to prevent errors when removing and adding a component
-    // with the same name (would throw an error when added to view registry)
-    for (let i = 0; i < destroyedComponents.length; i++) {
-      destroyedComponents[i].destroy();
-    }
-
-    try {
-      super.commit();
-    } finally {
-      this.inTransaction = false;
-    }
-
     if (ENV._DEBUG_RENDER_TREE) {
       this.debugRenderTree.commit();
     }
   }
 }
 
+export class EmberEnvironmentDelegate implements EnvironmentDelegate<EmberEnvironmentExtra> {
+  public isInteractive: boolean;
+
+  public toBool = toBool;
+  public toIterator = toIterator;
+
+  public getPath = get;
+  public setPath = set;
+
+  public attributeFor?: (
+    element: SimpleElement,
+    attr: string,
+    isTrusting: boolean,
+    namespace: Option<SimpleAttrNamespace>
+  ) => DynamicAttribute;
+
+  public extra: EmberEnvironmentExtra;
+
+  constructor(owner: Owner, isInteractive: boolean) {
+    this.extra = new EmberEnvironmentExtra(owner);
+    this.isInteractive = isInteractive;
+
+    installPlatformSpecificProtocolForURL(this);
+  }
+
+  // this gets clobbered by installPlatformSpecificProtocolForURL
+  // it really should just delegate to a platform specific injection
+  protocolForURL(s: string): string {
+    return s;
+  }
+
+  getTemplatePathDebugContext(pathRef: VersionedPathReference) {
+    let stack = this.extra.debugRenderTree.logRenderStackForPath(pathRef);
+
+    return `While rendering:\n\n${stack}`;
+  }
+
+  setTemplatePathDebugContext(
+    pathRef: VersionedPathReference,
+    desc: string,
+    parentRef: Option<VersionedPathReference>
+  ) {
+    let type: PathNodeType = 'root';
+
+    if (pathRef instanceof IterationItemReference) {
+      type = 'iterator';
+    } else if (pathRef instanceof PropertyReference) {
+      type = 'property';
+    }
+
+    this.extra.debugRenderTree.createPath(pathRef, desc, type, parentRef);
+  }
+
+  onTransactionBegin() {
+    this.extra.begin();
+  }
+
+  onTransactionCommit() {
+    this.extra.commit();
+  }
+}
+
+export type EmberVMEnvironment = Environment<EmberEnvironmentExtra>;
+
 if (DEBUG) {
   class StyleAttributeManager extends SimpleDynamicAttribute {
-    set(dom: ElementBuilder, value: Opaque, env: GlimmerEnvironment): void {
+    set(dom: ElementBuilder, value: unknown, env: Environment): void {
       warn(
         constructStyleDeprecationMessage(value),
         (() => {
@@ -142,7 +140,7 @@ if (DEBUG) {
       );
       super.set(dom, value, env);
     }
-    update(value: Opaque, env: GlimmerEnvironment): void {
+    update(value: unknown, env: Environment): void {
       warn(
         constructStyleDeprecationMessage(value),
         (() => {
@@ -157,22 +155,16 @@ if (DEBUG) {
     }
   }
 
-  Environment.prototype.attributeFor = function(
+  EmberEnvironmentDelegate.prototype.attributeFor = function(
     element,
     attribute: string,
     isTrusting: boolean,
-    namespace: Option<Simple.AttrNamespace>
+    namespace: Option<SimpleAttrNamespace>
   ) {
     if (attribute === 'style' && !isTrusting) {
       return new StyleAttributeManager({ element, name: attribute, namespace });
     }
 
-    return GlimmerEnvironment.prototype.attributeFor.call(
-      this,
-      element,
-      attribute,
-      isTrusting,
-      namespace
-    );
+    return dynamicAttribute(element, attribute, namespace);
   };
 }

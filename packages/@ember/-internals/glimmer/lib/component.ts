@@ -13,10 +13,10 @@ import {
 } from '@ember/-internals/views';
 import { assert, deprecate } from '@ember/debug';
 import { DEBUG } from '@glimmer/env';
-import { createTag, dirty } from '@glimmer/reference';
-import { normalizeProperty, SVG_NAMESPACE } from '@glimmer/runtime';
-
-import { UPDATE } from './utils/references';
+import { UPDATE_REFERENCED_VALUE } from '@glimmer/reference';
+import { normalizeProperty } from '@glimmer/runtime';
+import { createTag, dirty } from '@glimmer/validator';
+import { Namespace } from '@simple-dom/interface';
 
 export const DIRTY_TAG = symbol('DIRTY_TAG');
 export const ARGS = symbol('ARGS');
@@ -786,8 +786,8 @@ const Component = CoreView.extend(
       let args = this[ARGS];
       let reference = args !== undefined ? args[key] : undefined;
 
-      if (reference !== undefined && reference[UPDATE] !== undefined) {
-        reference[UPDATE](get(this, key));
+      if (reference !== undefined && reference[UPDATE_REFERENCED_VALUE] !== undefined) {
+        reference[UPDATE_REFERENCED_VALUE](get(this, key));
       }
     },
 
@@ -837,7 +837,7 @@ const Component = CoreView.extend(
       );
 
       let element = _element!;
-      let isSVG = element.namespaceURI === SVG_NAMESPACE;
+      let isSVG = element.namespaceURI === Namespace.SVG;
       let { type, normalized } = normalizeProperty(element, name);
 
       if (isSVG || type === 'attr') {

@@ -1,9 +1,8 @@
-import { privatize as P } from '@ember/-internals/container';
 import { Owner } from '@ember/-internals/owner';
+import { guidFor } from '@ember/-internals/utils';
 import { OwnedTemplateMeta, StaticTemplateMeta } from '@ember/-internals/views';
-import { Template } from '@glimmer/interfaces';
-import { LazyCompiler, templateFactory } from '@glimmer/opcode-compiler';
-import { SerializedTemplateWithLazyBlock } from '@glimmer/wire-format';
+import { SerializedTemplateWithLazyBlock, Template } from '@glimmer/interfaces';
+import { templateFactory } from '@glimmer/opcode-compiler';
 
 export type StaticTemplate = SerializedTemplateWithLazyBlock<StaticTemplateMeta>;
 export type OwnedTemplate = Template<OwnedTemplateMeta>;
@@ -25,19 +24,19 @@ export let counters = {
   cacheMiss: 0,
 };
 
-const TEMPLATE_COMPILER_MAIN = P`template-compiler:main`;
-
 export default function template(json: StaticTemplate): Factory {
   let glimmerFactory = templateFactory(json);
   let cache = new WeakMap<Owner, OwnedTemplate>();
 
+  const meta = glimmerFactory.meta as StaticTemplateMeta;
+
   let factory = ((owner: Owner) => {
     let result = cache.get(owner);
+    let ownerId = guidFor(owner);
 
     if (result === undefined) {
       counters.cacheMiss++;
-      let compiler = owner.lookup<LazyCompiler<StaticTemplateMeta>>(TEMPLATE_COMPILER_MAIN)!;
-      result = glimmerFactory.create(compiler, { owner });
+      result = glimmerFactory.create(Object.assign({ ownerId }, meta));
       cache.set(owner, result);
     } else {
       counters.cacheHit++;
@@ -47,7 +46,7 @@ export default function template(json: StaticTemplate): Factory {
   }) as Factory;
 
   factory.__id = glimmerFactory.id;
-  factory.__meta = glimmerFactory.meta;
+  factory.__meta = meta;
 
   return factory;
 }
