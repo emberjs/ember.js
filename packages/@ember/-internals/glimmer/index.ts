@@ -251,7 +251,7 @@
   And without block params:
 
   ```handlebars
-  <MyComponent as |favoriteFlavor|>
+  <MyComponent>
     Hi Jen!
   </MyComponent>
   ```
