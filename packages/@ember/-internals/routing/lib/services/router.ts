@@ -94,7 +94,7 @@ export default class RouterService extends Service {
      In the following example we use the Router service to navigate to a route with a
      specific model from a Component.
 
-     ```javascript
+     ```app/components/example.js
      import Component from '@glimmer/component';
      import { action } from '@ember/object';
      import { inject as service } from '@ember/service';
@@ -244,12 +244,47 @@ export default class RouterService extends Service {
   }
 
   /**
-     Determines whether a route is active.
+     Returns `true` if `routeName/models/queryParams` is the active route, where `models` and `queryParams` are optional.
+     See [model](api/ember/release/classes/Route/methods/model?anchor=model) and
+     [queryParams](/api/ember/3.7/classes/Route/properties/queryParams?anchor=queryParams) for more information about these arguments.
+
+     In the following example, `isActive` will return `true` if the current route is `/posts`.
+
+     ```app/components/posts.js
+     import Component from '@glimmer/component';
+     import { inject as service } from '@ember/service';
+
+     export default class extends Component {
+       @service router;
+
+       displayComments() {
+         return this.get('router').isActive('posts');
+       }
+     });
+     ```
+
+     The next example includes a dynamic segment, and will return `true` if the current route is `/posts/1`,
+     assuming the post has an id of 1:
+
+     ```app/components/posts.js
+     import Component from '@glimmer/component';
+     import { inject as service } from '@ember/service';
+
+     export default class extends Component {
+       @service router;
+
+       displayComments(post) {
+         return this.get('router').isActive('posts', post.id);
+       }
+     });
+     ```
+
+     Where `post.id` is the id of a specific post, which is represented in the route as /posts/[post.id].
+     If `post.id` is equal to 1, then isActive will return true if the current route is /posts/1, and false if the route is anything else.
 
      @method isActive
      @param {String} routeName the name of the route
-     @param {...Object} models the model(s) or identifier(s) to be used while
-       transitioning to the route.
+     @param {...Object} models the model(s) or identifier(s) to be used when determining the active route.
      @param {Object} [options] optional hash with a queryParams property
        containing a mapping of query parameters
      @return {boolean} true if the provided routeName/models/queryParams are active
