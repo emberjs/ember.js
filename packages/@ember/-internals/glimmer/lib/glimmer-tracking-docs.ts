@@ -97,6 +97,13 @@
     }
   }
   ```
+  
+  ### When `@tracked` is not needed
+  
+  * The property is already a `computed`
+  * ember-data attrs (which are computeds behind the scenes)
+  * Using Ember `get` / `set` will auto track
+  
 
   @method tracked
   @static
