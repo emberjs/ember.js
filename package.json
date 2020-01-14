@@ -52,7 +52,7 @@
     "@babel/plugin-transform-object-assign": "^7.2.0",
     "@ember/edition-utils": "^1.1.1",
     "babel-plugin-debug-macros": "^0.3.3",
-    "babel-plugin-filter-imports": "^3.0.0",
+    "babel-plugin-filter-imports": "^4.0.0",
     "broccoli-concat": "^3.7.4",
     "broccoli-debug": "^0.6.4",
     "broccoli-funnel": "^2.0.2",
