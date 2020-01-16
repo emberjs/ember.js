@@ -160,7 +160,7 @@ export default class RouterService extends Service {
      ```
 
      @method replaceWith
-     @param {String} routeNameOrUrl the name of the route or a URL of the desired  destination 
+     @param {String} routeNameOrUrl the name of the route or a URL of the desired destination 
      @param {...Object} models the model(s) or identifier(s) to be used while
        transitioning to the route i.e. an object of params to pass to the destination route
      @param {Object} [options] optional hash with a queryParams property
