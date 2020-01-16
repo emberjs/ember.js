@@ -8,7 +8,7 @@ import {
   CompileTimeConstants,
   RuntimeConstants,
 } from '@glimmer/interfaces';
-import { WriteOnlyConstants, HeapImpl, Constants } from '@glimmer/program';
+import { WriteOnlyConstants, HeapImpl, JitConstants } from '@glimmer/program';
 import { compileStd } from './opcode-builder/helpers/stdlib';
 
 export class ProgramCompilationContext implements WholeProgramCompilationContext {
@@ -24,7 +24,7 @@ export class ProgramCompilationContext implements WholeProgramCompilationContext
 }
 
 export class JitProgramCompilationContext implements JitProgramCompilationContext {
-  readonly constants: CompileTimeConstants & RuntimeConstants = new Constants();
+  readonly constants: CompileTimeConstants & RuntimeConstants = new JitConstants();
   readonly resolverDelegate: CompileTimeResolverDelegate;
   readonly heap: CompileTimeHeap & RuntimeHeap = new HeapImpl();
   readonly stdlib: STDLib;
